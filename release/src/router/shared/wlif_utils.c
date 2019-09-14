@@ -390,6 +390,28 @@ wl_wlif_is_psr_ap(char *ifname)
 	return FALSE;
 }
 
+bool
+wl_wlif_is_wet_ap(char *ifname)
+{
+	int wet = 0, ap = 0;
+
+#ifdef __CONFIG_DHDAP__
+	if (!dhd_probe(ifname)) {
+		wl_iovar_getint(ifname, "wet_enab", &wet);
+	} else
+#endif /* __CONFIG_DHDAP__ */
+	{
+		wl_iovar_getint(ifname, "wet", &wet);
+	}
+
+	if (wl_probe(ifname) < 0)
+		return FALSE;
+
+	wl_iovar_getint(ifname, "ap", &ap);
+
+	return (wet && ap);
+}
+
 /*
  * Get LAN or WAN ifname by wl mac
  * NOTE: We pass ifname in case of same mac in vifs (like URE TR mode)
@@ -417,30 +439,6 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 
 	if (osifname_to_nvifname(os_name, nv_name, sizeof(nv_name)) < 0)
 		return 0;
-
-	/* find for dpsta */
-	if (wl_wlif_is_psta(os_name))
-		return name;
-
-	ifnames = nvram_get("dpsta_ifnames");
-	if (ifnames && (find_in_list(ifnames, nv_name) || find_in_list(ifnames, os_name))) {
-		/* find dpsta in which bridge */
-		for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {
-			sprintf(tmptr, "br%d_ifnames", i);
-			sprintf(if_name, "br%d", i);
-			ifnames = nvram_get(tmptr);
-			if (!ifnames && !i)
-			ifnames = nvram_get("lan_ifnames");
-			ifname = if_name;
-
-			if (ifnames) {
-				/* the name in ifnames may nvifname or osifname */
-				if (find_in_list(ifnames, nv_name) ||
-					find_in_list(ifnames, os_name))
-					return ifname;
-			}
-		}
-	}
 
 	/* find for lan */
 	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {

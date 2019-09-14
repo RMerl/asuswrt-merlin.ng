@@ -81,6 +81,13 @@
 #define WAN_TMP         "/tmp/bwdpi/dev_wan"
 #define QOS_TMP         "/tmp/bwdpi/qos_rul"
 
+// node
+#if defined(RTCONFIG_HND_ROUTER_AX)
+#define DEVNODE         "/dev/idp"
+#else
+#define DEVNODE         "/dev/detector"
+#endif
+
 // database hidden path and function path
 #define BWDPI_DB_DIR    "/jffs/.sys"
 #define BWDPI_ANA_DIR   BWDPI_DB_DIR"/TrafficAnalyzer"

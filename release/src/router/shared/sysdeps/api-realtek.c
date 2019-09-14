@@ -1390,24 +1390,27 @@ uint32_t get_phy_status(uint32_t portmask)
   	return value;	
 #endif		
 }
-#define RTL_WAN_LINKSTATUS	"proc/eth1/link_status"
 
 uint32_t rtkswitch_wanPort_phyStatus(uint32_t wan_unit)
 {
-	FILE *fp;
-	unsigned int value=0;
-	char buff[32];
-	if(wan_unit==0)
-	{
-		if((fp= fopen(RTL_WAN_LINKSTATUS, "r"))==NULL)
-			return value;
-		fgets(buff, 32, fp);
-		value =atoi(buff);
-		fclose(fp);
+	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
+	char *wan_ifname;
+	char buf[32];
 
-		
-	}
-	return value;
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	wan_ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	if(strlen(wan_ifname) <= 0)
+		return 0;
+
+	snprintf(tmp, sizeof(tmp), "/proc/%s/link_status", wan_ifname);
+
+	memset(buf, 0 ,sizeof(buf));
+	f_read_string(tmp, buf, sizeof(buf));
+	if(atoi(buf) == 1)
+		return 1;
+	else
+		return 0;
 }
 
 void rtl_init_qos_patch( void)
@@ -1428,7 +1431,7 @@ void rtl_init_qos_patch( void)
 	int v4v6_ok;
 	//_dprintf("qos init patch\n");
 	//to do fastpath
-	if(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0)
+	if(IS_TQOS())
 	{
 		qos_enabled =1;
 	}
@@ -1685,12 +1688,12 @@ int getWlSiteSurveyResult(char *interface, SS_STATUS_Tp pStatus )
 	pStatus->number=15;
 	for(i=0;i<15;i++)
 	{
-		pStatus->bssdb[i].bdBssId[0]=0;
+		pStatus->bssdb[i].bssid[0]=0;
 		for(j=1;i<6;j++)
-			pStatus->bssdb[i].bdBssId[j]=i*j;
+			pStatus->bssdb[i].bssid[j]=i*j;
 		pStatus->bssdb[i].bdSsId.Octet="ssidtest";
 		pStatus->bssdb[i].bdSsId.Length=strlen("ssidtest");
-		pStatus->bssdb[i].ChannelNumber=23;
+		pStatus->bssdb[i].channel=23;
 	}
 	return 0;
 }
@@ -1709,9 +1712,9 @@ int getWlStaInfo( char *interface,  WLAN_STA_INFO_Tp pInfo )
       close( skfd );
         return -1;
 	}
+	memset(pInfo, 0, sizeof(WLAN_STA_INFO_T) * (MAX_STA_NUM+1));
     wrq.u.data.pointer = (caddr_t)pInfo;
     wrq.u.data.length = sizeof(WLAN_STA_INFO_T) * (MAX_STA_NUM+1);
-    memset(pInfo, 0, sizeof(WLAN_STA_INFO_T) * (MAX_STA_NUM+1));
 
     if (iw_get_ext(skfd, interface, SIOCGIWRTLSTAINFO, &wrq) < 0){
     	close( skfd );
@@ -1957,6 +1960,51 @@ int getAclList(char *interface, WLAN_ACL_CLIENT_LIST_Tp pRtk_acl_client_list)
 	return 0;
 }
 
+int issue_beacon_measurement(char *ifname, unsigned char * macaddr, 
+    struct dot11k_beacon_measurement_req* beacon_req)
+{
+    int sock;
+    struct iwreq wrq;
+    int err;
+    int len = 0;
+    unsigned char tempbuf[1024];
+
+    /*** Inizializzazione socket ***/
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sock < 0)
+    {
+        err = errno;
+        printf("%s(%s): Can't create socket for ioctl.(%d)", __FUNCTION__, ifname, err);
+        goto out;
+    }
+    memset(tempbuf, 0, sizeof(tempbuf));
+    memcpy(tempbuf, macaddr, MACADDRLEN);
+    len += MACADDRLEN;
+    memcpy(tempbuf + len, beacon_req, sizeof(struct dot11k_beacon_measurement_req));
+    len += sizeof(struct dot11k_beacon_measurement_req);
+    
+    /*** Inizializzazione struttura iwreq ***/
+    memset(&wrq, 0, sizeof(wrq));
+    strncpy(wrq.ifr_name, ifname, IFNAMSIZ);
+
+    /*** give parameter and buffer ***/
+    wrq.u.data.pointer = (caddr_t)tempbuf;
+    wrq.u.data.length = len;
+
+    /*** ioctl ***/
+    if(ioctl(sock, SIOC11KBEACONREQ, &wrq) < 0)
+    {
+        err = errno;
+        printf("%s(%s): ioctl Error.(%d)", __FUNCTION__, ifname, err);
+        goto out;
+    }
+    err = 0;
+
+out:
+    close(sock);
+    return err;
+}
+
 void set_11ac_txrate(WLAN_STA_INFO_Tp pInfo,char* txrate)
 {
 	char channelWidth=0;//20M 0,40M 1,80M 2
@@ -2020,6 +2068,89 @@ void dump_sta_info(WLAN_STA_INFO_Tp staInfoList)
 	rtk_printf("%s:%d\n",__FUNCTION__,__LINE__);
 }
 
+// data need to be DOT11_SET_USERIE
+int update_vsie(char *interface, void *data)
+{
+	int skfd = 0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (skfd == -1)
+		return -1;
+
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+		/* If no wireless name : no wireless extensions */
+		close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (void*)data;
+
+	if (iw_get_ext(skfd, interface, RTL8192CD_IOCTL_USER_DAEMON_REQUEST, &wrq) < 0) {
+		close( skfd );
+		return -1;
+	}
+
+	close( skfd );
+	return 0;
+}
+
+int getmibInfo(const char *interface, void *data, int *length)
+{
+	int skfd=0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(skfd==-1)
+		return -1;
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+	  /* If no wireless name : no wireless extensions */
+
+		 close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (void*)data;
+	wrq.u.data.length = *length;
+
+    if (iw_get_ext(skfd, (char*)interface, RTL8192CD_IOCTL_GET_MIB, &wrq) < 0){
+		close( skfd );
+		return -1;
+	}
+	*length = wrq.u.data.length;
+	close( skfd );
+
+	return 0;
+}
+int setmibInfo(const char *interface, void *data, int length)
+{
+	int skfd=0;
+	struct iwreq wrq;
+
+	skfd = socket(AF_INET, SOCK_DGRAM, 0);
+	if(skfd==-1)
+		return -1;
+	/* Get wireless name */
+	if ( iw_get_ext(skfd, interface, SIOCGIWNAME, &wrq) < 0) {
+	  /* If no wireless name : no wireless extensions */
+
+		 close( skfd );
+		return -1;
+	}
+
+	wrq.u.data.pointer = (void*)data;
+	wrq.u.data.length = length;
+
+    if (iw_get_ext(skfd, (char*)interface, RTL8192CD_IOCTL_SET_MIB, &wrq) < 0){
+		close( skfd );
+		return -1;
+	}
+	close( skfd );
+
+	return 1;
+}
 int
 wl_ioctl(char *name, int cmd, void *buf, int len)
 {
@@ -2180,64 +2311,64 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 			bzero(apinfos,sizeof(apinf_t)*APINFO_MAX);
 			for(i=0;i<scan_status.number;i++)
 			{
-				rtklog("%s:%d bdBssId=%02x:%02x:%02x:%02x:%02x:%02x\n",__FUNCTION__,__LINE__,
-					scan_status.bssdb[i].bdBssId[0],
-					scan_status.bssdb[i].bdBssId[1],
-					scan_status.bssdb[i].bdBssId[2],
-					scan_status.bssdb[i].bdBssId[3],
-					scan_status.bssdb[i].bdBssId[4],
-					scan_status.bssdb[i].bdBssId[5]);
+				rtklog("%s:%d bssid=%02x:%02x:%02x:%02x:%02x:%02x\n",__FUNCTION__,__LINE__,
+					scan_status.bssdb[i].bssid[0],
+					scan_status.bssdb[i].bssid[1],
+					scan_status.bssdb[i].bssid[2],
+					scan_status.bssdb[i].bssid[3],
+					scan_status.bssdb[i].bssid[4],
+					scan_status.bssdb[i].bssid[5]);
 				
 				sprintf(apinfos[i].BSSID,"%02x:%02x:%02x:%02x:%02x:%02x",
-					scan_status.bssdb[i].bdBssId[0],
-					scan_status.bssdb[i].bdBssId[1],
-					scan_status.bssdb[i].bdBssId[2],
-					scan_status.bssdb[i].bdBssId[3],
-					scan_status.bssdb[i].bdBssId[4],
-					scan_status.bssdb[i].bdBssId[5]);
-				memcpy(apinfos[i].SSID,scan_status.bssdb[i].bdSsIdBuf,SSID_LEN);
+					scan_status.bssdb[i].bssid[0],
+					scan_status.bssdb[i].bssid[1],
+					scan_status.bssdb[i].bssid[2],
+					scan_status.bssdb[i].bssid[3],
+					scan_status.bssdb[i].bssid[4],
+					scan_status.bssdb[i].bssid[5]);
+				memcpy(apinfos[i].SSID,scan_status.bssdb[i].ssid,SSID_LEN);
 				//apinfos[i].SSID_len=strlen(list->bss_info[i].SSID);
-				apinfos[i].ctl_ch=scan_status.bssdb[i].ChannelNumber;	
-				apinfos[i].channel=scan_status.bssdb[i].ChannelNumber;
+				apinfos[i].ctl_ch=scan_status.bssdb[i].channel;	
+				apinfos[i].channel=scan_status.bssdb[i].channel;
 				//apinfos[i].length = sizeof(wl_bss_info_t);
 				apinfos[i].RSSI_Quality=scan_status.bssdb[i].rssi;
-				if ((scan_status.bssdb[i].bdCap & cPrivacy) == 0)
+				if ((scan_status.bssdb[i].capability & cPrivacy) == 0)
 				{
 					apinfos[i].wep=0;
 					apinfos[i].wpa=0;
 				}
 				else {
-					if (scan_status.bssdb[i].bdTstamp[0] == 0)						
+					if (scan_status.bssdb[i].t_stamp[0] == 0)						
 						apinfos[i].wep=1;					
 					else {
 						int wpa_exist = 0, idx = 0;
 						apinfos[i].wpa=1;
-						if (scan_status.bssdb[i].bdTstamp[0] & 0x0000ffff) {
+						if (scan_status.bssdb[i].t_stamp[0] & 0x0000ffff) {
 							
-							if (((scan_status.bssdb[i].bdTstamp[0] & 0x0000f000) >> 12) == 0x4)
+							if (((scan_status.bssdb[i].t_stamp[0] & 0x0000f000) >> 12) == 0x4)
 								apinfos[i].wid.key_mgmt=WPA_KEY_MGMT_PSK_;
-							else if(((scan_status.bssdb[i].bdTstamp[0] & 0x0000f000) >> 12) == 0x2)
+							else if(((scan_status.bssdb[i].t_stamp[0] & 0x0000f000) >> 12) == 0x2)
 								apinfos[i].wid.key_mgmt=WPA_KEY_MGMT_IEEE8021X_;
 							
 
-							if (((scan_status.bssdb[i].bdTstamp[0] & 0x00000f00) >> 8) == 0x5)
+							if (((scan_status.bssdb[i].t_stamp[0] & 0x00000f00) >> 8) == 0x5)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_TKIP_|WPA_CIPHER_CCMP_);
-							else if (((scan_status.bssdb[i].bdTstamp[0] & 0x00000f00) >> 8) == 0x4)
+							else if (((scan_status.bssdb[i].t_stamp[0] & 0x00000f00) >> 8) == 0x4)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_CCMP_);
-							else if (((scan_status.bssdb[i].bdTstamp[0] & 0x00000f00) >> 8) == 0x1)
+							else if (((scan_status.bssdb[i].t_stamp[0] & 0x00000f00) >> 8) == 0x1)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_TKIP_);
 						}
-						if (scan_status.bssdb[i].bdTstamp[0] & 0xffff0000) {
+						if (scan_status.bssdb[i].t_stamp[0] & 0xffff0000) {
 							
-							if (((scan_status.bssdb[i].bdTstamp[0] & 0xf0000000) >> 28) == 0x4)
+							if (((scan_status.bssdb[i].t_stamp[0] & 0xf0000000) >> 28) == 0x4)
 								apinfos[i].wid.key_mgmt=WPA_KEY_MGMT_PSK2_;
-							else if (((scan_status.bssdb[i].bdTstamp[0] & 0xf0000000) >> 28) == 0x2)
+							else if (((scan_status.bssdb[i].t_stamp[0] & 0xf0000000) >> 28) == 0x2)
 								apinfos[i].wid.key_mgmt=WPA_KEY_MGMT_IEEE8021X2_;
-							if (((scan_status.bssdb[i].bdTstamp[0] & 0x0f000000) >> 24) == 0x5)
+							if (((scan_status.bssdb[i].t_stamp[0] & 0x0f000000) >> 24) == 0x5)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_TKIP_|WPA_CIPHER_CCMP_);
-							else if (((scan_status.bssdb[i].bdTstamp[0] & 0x0f000000) >> 24) == 0x4)
+							else if (((scan_status.bssdb[i].t_stamp[0] & 0x0f000000) >> 24) == 0x4)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_CCMP_);
-							else if (((scan_status.bssdb[i].bdTstamp[0] & 0x0f000000) >> 24) == 0x1)
+							else if (((scan_status.bssdb[i].t_stamp[0] & 0x0f000000) >> 24) == 0x1)
 								apinfos[i].wid.pairwise_cipher=(WPA_CIPHER_TKIP_);
 						}
 					}
@@ -2542,8 +2673,25 @@ int get_channel_list_via_country(int unit, const char *country_code, char *buffe
 
 int get_channel_list_via_driver(int unit, char *buffer, int len)
 {
-	//TODO
-	return -1;
+    int length;
+    int num = -1;
+    char tmp[32]="regdomain";
+    length = sizeof(tmp);
+
+    getmibInfo(get_wififname(unit), tmp, &length);
+    int i = (int)*tmp;
+
+    if(unit > 0 && i>0 && i<DOMAIN_MAX)
+    {
+        num = (len < reg_channel_5g_full_band[i-1].len)?len:reg_channel_5g_full_band[i-1].len;
+        memcpy(buffer, reg_channel_5g_full_band[i-1].channel, num);
+    } else if(unit == 0 && i>0 && i<DOMAIN_MAX)
+    {
+        num = (len < reg_channel_2_4g[i-1].len)?len:reg_channel_2_4g[i-1].len;
+        memcpy(buffer, reg_channel_2_4g[i-1].channel, num);
+    }
+
+    return num;
 }
 
 char *get_wififname(int band)
@@ -2554,4 +2702,165 @@ char *get_wififname(int band)
 		band = 0;
 	}
 	return (char*) wif[band];
+}
+
+char *get_staifname(int band)
+{
+	const char *sta[] = { VXD_2G, VXD_5G };
+	if (band < 0 || band >= ARRAY_SIZE(sta)) {
+		dbg("%s: Invalid wl%d band!\n", __func__, band);
+		band = 0;
+	}
+	return (char*) sta[band];
+}
+
+int get_channel(const char *ifname)
+{
+	int length;
+	char tmp[32]="channel";
+	length = sizeof(tmp);
+
+	getmibInfo(ifname, tmp, &length);
+
+	return (int)(*(unsigned char*)tmp);
+}
+
+int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb) {
+	int length;
+	char tmp[32]="\0";
+
+	snprintf(tmp, sizeof(tmp), "use40M");
+	length = sizeof(tmp);
+	getmibInfo(ifname, tmp, &length);
+	switch((int)(*tmp)) {
+	case 0:
+		*bw = 20;
+		break;
+	case 1:
+		*bw = 40;
+		break;
+	case 2:
+		*bw = 80;
+		break;
+	default:
+		*bw = 0;
+	}
+
+	snprintf(tmp, sizeof(tmp), "2ndchoffset");
+	length = sizeof(tmp);
+	getmibInfo(ifname, tmp, &length);
+	switch((int)(*tmp)) {
+	case 1:
+		*nctrlsb = 1;
+		break;
+	case 2:
+		*nctrlsb = 0;
+		break;
+	default:
+		*nctrlsb = -1;
+	}
+	return *bw;
+}
+
+void set_channel(const char *ifname, int channel)
+{
+	char tmp[32]="\0";
+	snprintf(tmp, sizeof(tmp), "channel=%d", channel);
+
+	setmibInfo(ifname, tmp, sizeof(tmp));
+}
+
+void set_bw_nctrlsb(const char* ifname, int bw, int nctrlsb)
+{
+	char tmp[32]="\0";
+	int bw_mib=-1, nctrlsb_mib=-1;
+
+	switch(bw) {
+	case 20:
+		bw_mib = 0;
+		break;
+	case 40:
+		bw_mib = 1;
+		break;
+	case 80:
+		bw_mib = 2;
+		break;
+	default:
+		bw_mib = -1;
+	}
+	switch(nctrlsb) {
+	case 0:
+		nctrlsb_mib = 2;
+		break;
+	case 1:
+		nctrlsb_mib = 1;
+		break;
+	default:
+		nctrlsb_mib = -1;
+	}
+
+	if(bw_mib > -1) {
+		snprintf(tmp, sizeof(tmp), "use40M=%d", bw_mib);
+		setmibInfo(ifname, tmp, sizeof(tmp));
+	}
+	if(nctrlsb_mib > -1) {
+		snprintf(tmp, sizeof(tmp), "2ndchoffset=%d", nctrlsb_mib);
+		setmibInfo(ifname, tmp, sizeof(tmp));
+	}
+}
+int set_mib_acladdr(const char* ifname, char* addr) {
+	char tmp[32]="\0";
+	snprintf(tmp, sizeof(tmp), "acladdr=%s", addr);
+
+	return setmibInfo(ifname, tmp, sizeof(tmp));
+}
+
+int get_radar_channel_list(const char *ifname, int radar_list[], int size){
+    int skfd=0;
+    struct iwreq wrq;
+
+    skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(skfd==-1)
+        return -1;
+    /* Get wireless name */
+    if ( iw_get_ext(skfd, ifname, SIOCGIWNAME, &wrq) < 0) {
+      /* If no wireless name : no wireless extensions */
+        close( skfd );
+        return -1;
+    }
+
+    wrq.u.data.pointer = (void*)radar_list;
+    wrq.u.data.length = size;
+
+    if (iw_get_ext(skfd, ifname, IOCTL_GET_DFS_NOP_CHANNEL, &wrq) < 0){
+        close( skfd );
+        return -1;
+    }
+    close( skfd );
+    return wrq.u.data.length;
+}
+
+int get_radar_channel_num(const char *ifname, int *num){
+    int skfd=0;
+    struct iwreq wrq;
+
+    skfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(skfd==-1)
+        return -1;
+    /* Get wireless name */
+    if ( iw_get_ext(skfd, ifname, SIOCGIWNAME, &wrq) < 0) {
+      /* If no wireless name : no wireless extensions */
+        close( skfd );
+        return -1;
+    }
+
+    wrq.u.data.pointer = (void*)num;
+    wrq.u.data.length = sizeof(int);
+
+    if (iw_get_ext(skfd, ifname, IOCTL_GET_DFS_STATUS, &wrq) < 0){
+        close( skfd );
+        return -1;
+    }
+    close( skfd );
+    return *num;
 }

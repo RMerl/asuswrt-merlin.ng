@@ -7,9 +7,14 @@
 #include "rc.h"
 #include "interface.h"
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <string.h>
+#include <time.h>
 #ifdef HND_ROUTER
 #include <limits.h>
-#include <time.h>
 #endif
 
 #ifdef RTCONFIG_RALINK
@@ -24,9 +29,18 @@
 #include <lp5523led.h>
 #endif
 
+#if defined(RTCONFIG_SOC_IPQ8074)
+#include <sys/vfs.h>
+#include <inttypes.h>
+#endif
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
+
+#if defined(RTCONFIG_PTHSAFE_POPEN)
+void PS_pod_main(void);
+#endif
 
 #ifdef  __CONFIG_WBD__
 static void
@@ -259,9 +273,9 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
-#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_PUSH_EMAIL)
-	else if (strcmp(argv[1], "sendmail")==0) {
-		start_DSLsendmail();
+#if defined(RTCONFIG_FRS_FEEDBACK)
+	else if (strcmp(argv[1], "sendfeedback")==0) {
+		start_sendfeedback();
 	}
 #endif
 #ifdef RTCONFIG_BCM_7114
@@ -425,7 +439,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_psta_monitor();
 		}
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK))
 		else if (strcmp(argv[1], "obd") == 0) {
 			if (on) start_obd();
 			else stop_obd();
@@ -483,7 +497,7 @@ static int rctest_main(int argc, char *argv[])
 					f_write_string("/proc/sys/net/ipv4/conf/all/force_igmp_version", "2", 0, 0);
 #endif
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP)
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined (RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC51UP) || defined(RTAC53) || defined(RTN800HP) || defined(RTACRH26)
 					if (!(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")))
 #endif
 					{
@@ -578,10 +592,46 @@ static int rctest_main(int argc, char *argv[])
 }
 #endif
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_SOC_IPQ8074)
+/* Adjust @orig_fw_name if necessary.
+ * "IPQ8074/xxx" should be translated as "IPQ8074A/xxx" on Hawkeye 2.0 board.
+ * @orig_fw_name:
+ * @return:		pointer to new filename, maybe equal to @orig_fw_name
+ */
+char *fix_fw_name(char *orig_fw_name)
+{
+	static char fw_name_buf[512];
+	unsigned char v;
+	char *p, *q;
+
+	if (!orig_fw_name || *orig_fw_name == '\0')
+		return orig_fw_name;
+
+	v = get_soc_version_major();
+	if (v != 2 || !(q = strstr(orig_fw_name, "IPQ8074/")))
+		return orig_fw_name;
+
+	if (sizeof(fw_name_buf) < (strlen(orig_fw_name) + 1 + 1)) {
+		dbg("%s: fw_name_buf too small. orig_fw_name [%s]\n", __func__, orig_fw_name);
+		return orig_fw_name;
+	}
+
+
+	/* replace "IPQ8074/" as "IPQ8074A/" */
+	p = stpncpy(fw_name_buf, orig_fw_name, q - orig_fw_name);
+	p = stpcpy(p, "IPQ8074A/");
+	p = stpcpy(p, q + strlen("IPQ8074/"));
+
+	return fw_name_buf;
+}
+#else
+static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
+#endif
+
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_QCA)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -597,7 +647,13 @@ static int hotplug_firmware(void)
 	char sysfs_path[PATH_MAX], fw_path[PATH_MAX];
 	unsigned char buf[FW_BUF_SIZE] __attribute__((aligned(4)));
 	char *action, *devpath, *fw_name;
-	char *fw_root = FIRMWARE_DIR;
+	const char *fw_root_tbl[] = {
+		FIRMWARE_DIR,
+#if defined(RTCONFIG_GLOBAL_INI)
+		GLOBAL_INI_TOPDIR,
+#endif
+		NULL
+	}, **fw_root;
 	char *sysfs_root = "/sys";
 	const void *hook_data;
 	size_t hook_size = 0, len, tlen = 0;
@@ -613,6 +669,8 @@ static int hotplug_firmware(void)
 	if (strcmp(action, "add"))	/* Only "add" action is required to support downloade firmware */
 		return 0;
 
+	fw_name = fix_fw_name(fw_name);
+
 	// Generate filename that are required.
 	sysfs_path[0] = fw_path[0] = '\0';
 	sprintf(sysfs_path, "%s/%s/loading", sysfs_root, devpath);
@@ -627,8 +685,10 @@ static int hotplug_firmware(void)
 
 	hook_data = req_fw_hook(fw_name, &hook_size);
 	if (!hook_data || !hook_size) {
-		sprintf(fw_path, "%s/%s", fw_root, fw_name);
-		f_fw = fopen(fw_path, "rb");
+		for (fw_root = &fw_root_tbl[0]; f_fw == NULL && *fw_root != NULL; ++fw_root) {
+			sprintf(fw_path, "%s/%s", *fw_root, fw_name);
+			f_fw = fopen(fw_path, "rb");
+		}
 	}
 	// If open firmware successful, notify kernel we are going to download firmware.
 	// If open firmware failure, notify kernel we cannot get firmware
@@ -675,6 +735,136 @@ err_exit1:
 }
 #endif
 
+#if defined(RTCONFIG_SOC_IPQ8074)
+static int count_q6mem_size(const char *basedir, const struct dirent *de, void *arg)
+{
+	uint64_t *space = arg;
+	struct stat s = { 0 };
+	char path[sizeof("/jffs/dmesg_YYYYMMDD_HHMMSS.txtXXX")];
+
+	if (!basedir || !de || !arg)
+		return -1;
+
+	if (strncmp(de->d_name, "q6mem_", 6) && strncmp(de->d_name, "dmesg_", 6))
+		return 0;
+
+	snprintf(path, sizeof(path), "%s/%s", basedir, de->d_name);
+	if (stat(path, &s) == -1 || S_ISDIR(s.st_mode))
+		return 0;
+
+	*space += s.st_size;
+	return 0;
+}
+
+static int del_q6mem(const char *basedir, const struct dirent *de, void *arg)
+{
+	char path[sizeof("/jffs/dmesg_YYYYMMDD_HHMMSS.txtXXX")];
+
+	if (!basedir || !de)
+		return -1;
+
+	if (strncmp(de->d_name, "q6mem_", 6) && strncmp(de->d_name, "dmesg_", 6))
+		return 0;
+
+	snprintf(path, sizeof(path), "%s/%s", basedir, de->d_name);
+
+	unlink(path);
+	return 0;
+}
+
+static int __hotplug_dump_q6mem(void)
+{
+	int ret = EINVAL;
+	time_t now;
+	uint64_t space = 25;	/* one copy of compressed q6mem is around 25MB. */
+	struct tm *tm = NULL;
+	struct statfs s = { 0 };
+	char *action, *devicename, *major, *minor;
+	char path[128], ts[sizeof("YYYYMMDD_HHMMSSXXX")];
+	char gz_cmd[sizeof("gzip -c /dev/q6mem > /jffs/q6mem_XXXXXX.gz") + sizeof(ts)];
+	char dmesg_cmd[sizeof("dmesg > /jffs/dmesg_XXXXXX.txt") + sizeof(ts)];
+	char cp_cmd[sizeof("sleep 30 ; cp -f /tmp/dmesg_XXX.txt /tmp/q6mem_XXX.gz /jffs &") + 2 * sizeof(ts)];
+
+	action = getenv("ACTION");
+	devicename = getenv("DEVICENAME");
+	if (!action || strcmp(action, "add") || !devicename) {
+		dbg("ACTION (%s), DEVICENAME (%s) \n", action? : "<NULL>", devicename? : "<NULL>");
+		return ret;
+	}
+
+	snprintf(path, sizeof(path), "/dev/%s", devicename);
+	if (!f_exists(path)) {
+		major = getenv("MAJOR");
+		minor = getenv("MINOR");
+		if (!major || !minor)
+			return ret;
+
+		if (mknod(path, S_IFCHR | 0644, makedev(safe_atoi(major), safe_atoi(minor))) && errno != EEXIST) {
+			dbg("%s: mknod failed, errno %d (%s)\n", __func__, errno, strerror(errno));
+			return ret;
+		}
+	}
+
+	time(&now);
+	if (!(tm = localtime(&now)))
+		return ret;
+
+	snprintf(ts, sizeof(ts), "%04d%02d%02d_%02d%02d%02d", tm->tm_year + 1900,
+		tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+	/* Delete old Q6 crashdump and dmesgs */
+	system("rm -f /tmp/dmesg_*.txt /tmp/q6mem_*.gz");
+	readdir_wrapper("/jffs", NULL, count_q6mem_size, &space);
+	if ((space >> 20) > 55 || (!statfs("/jffs", &s) && (s.f_bfree * s.f_bsize >> 20) < (27 + 5))) {
+		dbg("%s: /jffs/{q6mem,dmesg}_* occupies %"PRIu64" MB\n", __func__, space >> 20);
+		readdir_wrapper("/jffs", NULL, del_q6mem, NULL);
+	}
+
+	snprintf(dmesg_cmd, sizeof(dmesg_cmd), "dmesg > /tmp/dmesg_%s.txt", ts);
+	system(dmesg_cmd);
+	snprintf(path, sizeof(path), "/tmp/%s_%s.gz", devicename, ts);
+	snprintf(gz_cmd, sizeof(gz_cmd), "gzip -c /dev/%s > %s", devicename, path);
+	dbg("%s: gzip /dev/%s to %s ...\n", __func__, devicename, path);
+	system(gz_cmd);
+	system("restart_wireless &");
+	dbg("%s: gzip /dev/%s to %s done, copy it to /jffs and restart_wireless\n", __func__, devicename, path);
+	snprintf(cp_cmd, sizeof(cp_cmd), "sleep 30 ; cp -f /tmp/dmesg_%s.txt /tmp/q6mem_%s.gz /jffs &", ts, ts);
+	system(cp_cmd);
+
+	return 0;
+}
+
+static int hotplug_dump(void)
+{
+	int ret = EINVAL;
+	char *devicename = getenv("DEVICENAME");
+	struct dump_fn_s {
+		char *devicename;
+		int (*func)(void);
+	} dump_fn_tbl[] = {
+		{ "q6mem", __hotplug_dump_q6mem },
+
+		{ NULL, NULL }
+	}, *p;
+
+	if (!devicename)
+		return ret;
+
+	for (p = &dump_fn_tbl[0]; p->devicename != NULL; ++p) {
+		if (strcmp(devicename, p->devicename))
+			continue;
+
+		if (p->func)
+			ret = p->func();
+		else
+			ret = 0;
+		break;
+	}
+
+	return ret;
+}
+#endif
+
 static int hotplug_main(int argc, char *argv[])
 {
 	if (argc >= 2) {
@@ -696,14 +886,133 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
+		}
+#endif
+#if defined(RTCONFIG_SOC_IPQ8074)
+		else if(!strcmp(argv[1], "dump")) {
+			hotplug_dump();
 		}
 #endif
 	}
 	return 0;
 }
+
+#if defined(RTCONFIG_QCA) && defined(RTCONFIG_TURBO_BTN) && defined(RTCONFIG_BLINK_LED)
+/**
+ * Blink WiFi LED in router/access-point mode if bit-rate is zero and waiting for it becomes non-zero value in background.
+ * If WiFi is disabled, wlX_radio = 0, @onoff must be zero.
+ * @led_id:
+ * @onoff:
+ * @return:
+ */
+static int do_led_ctrl(enum led_id led_id, int onoff)
+{
+	enum wl_band_id band = WL_NR_BANDS;
+	char *prefix = NULL, *led_gpio = NULL, vap[IFNAMSIZ];
+	int t1, t2, fd, ret = 0;
+	pid_t pid;
+	const int sw_mode = sw_mode();
+
+	if (led_id < 0 || led_id >= LED_ID_MAX)
+		return -1;
+
+	/* Don't change BLED setting of WiFi LED, just turn on/off WiFi LED.
+	 * Because we use BLED to blink WiFi LED of upper link to reflect status of it too.
+	 */
+	if (__repeater_mode(sw_mode) || __mediabridge_mode(sw_mode)) {
+		led_control(led_id, (!inhibit_led_on() && onoff)? LED_ON : LED_OFF);
+		return 0;
+	}
+
+	switch (led_id) {
+	case LED_5G:
+		band = WL_5G_BAND;
+		prefix = "wl1_";
+		led_gpio = "led_5g_gpio";
+		break;
+	case LED_5G2:
+		band = WL_5G_2_BAND;
+		prefix = "wl2_";
+		led_gpio = "led_5g2_gpio";
+		break;
+	default:
+		led_control(led_id, (!inhibit_led_on() && onoff)? LED_ON : LED_OFF);
+		return 0;
+	}
+
+	if (band >= WL_NR_BANDS || !prefix || !led_gpio || absent_band(band))
+		return -1;
+
+	/* Switch to daemon mode and wait VAP up for 1 minute. */
+	pid = fork();
+	if (pid == -1) {
+		ret = -1;
+		goto exit_do_led_ctrl;
+	} else if (pid != 0) {
+		exit(EXIT_SUCCESS);
+	}
+
+	if (setsid() == -1 || chdir("/") == -1) {
+		ret = -1;
+		goto exit_do_led_ctrl;
+	}
+
+	/* redirect fd's 0,1,2 to /dev/null */
+	fd = open("/dev/null", O_RDWR);
+	dup2(fd, 0);
+	dup2(fd, 1);
+	dup2(fd, 2);
+
+	/* Always blink LED due to we need to wait qca-wifi to settle mode, 8 seconds,
+	 * even LED is inhibited. (AllLED = 0).
+	 */
+	led_control(led_id, LED_ON);
+	set_bled_udef_pattern(led_gpio, 60, "0 1 0 1 0 1 0 1 0 1 0 1 0 0 0 0 1 1 1 1");
+	set_bled_udef_pattern_mode(led_gpio);
+
+	strlcpy(vap, get_wififname(band), sizeof(vap));
+	t1 = uptime();
+	while ((uptime() - t1) < 10 && !get_radio_status(vap)) {
+		sleep(1);
+	}
+
+	/* If bit-rate is non-zero value turn on/off WiFi LED directly. */
+	if (get_bitrate(vap) > 0) {
+		goto exit_do_led_ctrl;
+		return 0;
+	}
+
+	/* DFS channel is used, blink WiFi LED until bitrate becomes non-zero value or 80 seconds elapsed,
+	 * even LED is inhibited. (AllLED = 0).
+	 */
+	t1 = uptime();
+	while ((uptime() - t1) < (10 * 60 + 5) && get_bitrate(vap) <= 0) {
+		sleep(1);
+	}
+
+	if (get_bitrate(vap) <= 0) {
+		t2 = uptime();
+		dbg("Bit-rate of %s is 0 for %d seconds.\n", vap, t2 - t1);
+		logmessage("Bit-rate of %s is 0 for %d seconds.\n", vap, t2 - t1);
+	}
+
+ exit_do_led_ctrl:
+	set_bled_normal_mode(led_gpio);
+	led_control(led_id, (!inhibit_led_on() && onoff)? LED_ON : LED_OFF);
+
+	return ret;
+}
+#else
+static int do_led_ctrl(enum led_id led_id, int onoff)
+{
+	if (led_id < 0 || led_id >= LED_ID_MAX)
+		return -1;
+	return led_control_atomic(led_id, onoff);
+}
+#endif
 
 typedef struct {
 	const char *name;
@@ -739,6 +1048,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_OPENVPN
 	{ "ovpn-up",			ovpn_up_main				},
 	{ "ovpn-down",			ovpn_down_main			},
+	{ "ovpn-route-up",		ovpn_route_up_main				},
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
@@ -755,6 +1065,9 @@ static const applets_t applets[] = {
 	{ "mtd-unlock",			mtd_unlock_erase_main		},
 #endif
 #endif
+#if defined(RTCONFIG_DUAL_TRX2)
+	{ "fixdmgfw",			fixdmgfw_main			},
+#endif
 	{ "watchdog",			watchdog_main			},
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",                     pctime_main                     },
@@ -768,13 +1081,13 @@ static const applets_t applets[] = {
 #if defined(RTAC1200G) || defined(RTAC1200GP)
 	{ "wdg_monitor",		wdg_monitor_main		},
 #endif
-#ifdef RTCONFIG_FANCTRL
+#if defined(CONFIG_BCMWL5) && defined(RTCONFIG_FANCTRL)
 	{ "phy_tempsense",		phy_tempsense_main		},
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
 	{ "obd",			obd_main			},
 #endif
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
@@ -815,6 +1128,9 @@ static const applets_t applets[] = {
 	{ "wpsaide",			wpsaide_main			},
 #ifdef RTCONFIG_QCA
 	{ "get_wps_er",			get_wps_er_main			},
+#if defined(RTCONFIG_CFG80211)
+	{ "vap_evhandler",		vap_evhandler_main		},
+#endif
 #endif
 #endif
 	{ "halt",			reboothalt_main			},
@@ -863,12 +1179,18 @@ static const applets_t applets[] = {
 	{ "disk_remove",		diskremove_main			},
 #endif
 	{ "firmware_check",		firmware_check_main		},
+#if defined(RTCONFIG_FRS_LIVE_UPDATE)
+	{ "firmware_check_update",	firmware_check_update_main	},
+#endif
 #ifdef RTAC68U
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
+#endif
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	{ "stress_pktgen",		stress_pktgen_main		},
 #endif
 #ifdef RTCONFIG_HTTPS
 	{ "rsasign_check",		rsasign_check_main		},
@@ -884,11 +1206,11 @@ static const applets_t applets[] = {
 	{ "bwdpi_wred_alive",		bwdpi_wred_alive_main		},
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
+	{ "hour_monitor",		hour_monitor_main		},
 #endif
 #ifdef RTCONFIG_AMAS
 	{ "amas_lib",		        amas_lib_main			},
 #endif
-	{ "hour_monitor",		hour_monitor_main		},
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
 	{ "lteled",			lteled_main			},
@@ -1011,6 +1333,12 @@ int main(int argc, char **argv)
 		}
 	}
 
+#if defined(RTCONFIG_PTHSAFE_POPEN)
+	if(!strcmp(base, "PS_pod")){
+		PS_pod_main();
+		return 0;
+	}
+#endif
 
 #ifdef RTCONFIG_WIFI_SON
         if(!strcmp(base, "hive_cap")){
@@ -1444,6 +1772,33 @@ int main(int argc, char **argv)
 
 		return asus_usb_interface(argv[1], argv[2]);
 	}
+	else if (!strcmp(base, "get_usb_node_by_string")) {
+		char usb_node[16];
+
+		if(argc != 2)
+			return 0;
+
+		if(!get_usb_node_by_string(argv[1], usb_node, sizeof(usb_node)))
+			return -1;
+
+		printf("%s", usb_node);
+
+		return 0;
+	}
+	else if (!strcmp(base, "unset_usb_nvram")) {
+		if(argc > 2)
+			return 0;
+
+		if(argc == 2)
+			unset_usb_nvram(argv[1]);
+		else
+			unset_usb_nvram(NULL);
+
+		return 0;
+	}
+	else if (!strcmp(base, "detect_usb_devices")) {
+		return detect_usb_devices();
+	}
 	else if (!strcmp(base, "usb_notify")) {
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 		usb_notify();
@@ -1532,12 +1887,6 @@ int main(int argc, char **argv)
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
-	else if(!strcmp(base, "update_client")) {
-		_dprintf("update_client\n");
-		if(argc == 4)
-			update_client_event(argv[1], argv[2], atoi(argv[3]));
-		return 0;
-	}
 	else if(!strcmp(base, "restart_bluetoothd")) {
 		system("killall bluetoothd");
 		system("hciconfig hci0 down");
@@ -1760,7 +2109,7 @@ int main(int argc, char **argv)
 		if (argc != 3)
 			return 0;
 
-		return(led_control_atomic(atoi(argv[1]), atoi(argv[2])));
+		return do_led_ctrl(atoi(argv[1]), atoi(argv[2]));
 	}
 #ifdef HND_ROUTER
 	else if (!strcmp(base, "hnd-erase")) {

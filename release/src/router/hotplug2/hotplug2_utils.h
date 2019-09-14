@@ -9,6 +9,7 @@
 #ifndef HOTPLUG2_UTILS_H
 #define HOTPLUG2_UTILS_H 1
 
+#include "mem_utils.h"
 #include "hotplug2.h"
 
 #ifdef HND_ROUTER

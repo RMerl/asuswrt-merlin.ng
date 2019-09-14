@@ -21,6 +21,7 @@
 
 #define PARTITION_FILE "/proc/partitions"
 #define MOUNT_FILE "/proc/mounts"
+#define CDROM_FILE "/proc/sys/dev/cdrom/info"
 
 #define USB_DISK_MAJOR 8
 #define DEFAULT_USB_TAG "USB disk"
@@ -29,6 +30,11 @@
 #ifdef BCM_MMC
 #define MMC_DISK_MAJOR 179
 #define DEFAULT_MMC_TAG "SD card"
+#endif
+
+#ifdef RTCONFIG_USB_CDROM
+#define USB_CDROM_MAJOR 11
+#define DEFAULT_CDROM_TAG "USB optical disk"
 #endif
 
 #define PARTITION_TYPE_UNKNOWN "unknown"
@@ -68,6 +74,9 @@ struct partition_info{
 
 extern disk_info_t *read_disk_data();
 extern int is_disk_name(const char *device_name);
+#ifdef RTCONFIG_USB_CDROM
+extern int is_cdrom_name(const char *device_name);
+#endif
 extern disk_info_t *create_disk(const char *device_name, disk_info_t **new_disk_info);
 extern disk_info_t *initial_disk_data(disk_info_t **disk_info_list);
 extern void free_disk_data(disk_info_t **disk_info_list);

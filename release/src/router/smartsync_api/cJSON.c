@@ -272,7 +272,7 @@ char *cJSON_PrintUnformatted(cJSON *item)	{return print_value(item,0,0);}
 /* Parser core - when encountering text, process appropriately. */
 static const char *parse_value(cJSON *item,const char *value)
 {
-    if (!value)						{printf("return 1\n");return 0;}	/* Fail on null. */
+    if (!value)						{return 0;}	/* Fail on null. */
     if (!strncmp(value,"null",4))	{ item->type=cJSON_NULL;  return value+4; }
     if (!strncmp(value,"false",5))	{ item->type=cJSON_False; return value+5; }
     if (!strncmp(value,"true",4))	{ item->type=cJSON_True; item->valueint=1;	return value+4; }
@@ -281,7 +281,7 @@ static const char *parse_value(cJSON *item,const char *value)
     if (*value=='[')				{ return parse_array(item,value); }
     if (*value=='{')				{ return parse_object(item,value); }
 
-    ep=value;printf("return 9\n");return 0;	/* failure. */
+    ep=value;return 0;	/* failure. */
 }
 
 /* Render a value to text. */

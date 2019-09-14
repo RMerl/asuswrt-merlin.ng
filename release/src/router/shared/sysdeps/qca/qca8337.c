@@ -33,7 +33,7 @@
 #define NR_WANLAN_PORT	5
 #define MAX_WANLAN_PORT	5
 
-#if defined(RTAC55U) || defined(RTAC55UHP) || defined(RT4GAC55U) || defined(PLN12) || defined(PLAC56) || defined(PLAC66U) || defined(RPAC51)
+#if defined(RTAC55U) || defined(RTAC55UHP) || defined(RT4GAC55U) || defined(RTAC59U) || defined(PLN12) || defined(PLAC56) || defined(PLAC66U) || defined(RPAC51)
 /// RT-AC55U/RT-AC55UHP/4G-AC55U mapping
 enum {
 	P0_PORT=0,
@@ -67,6 +67,17 @@ enum {
 	P6_PORT=6,
 	P7_PORT=6,
 };
+#elif defined(RTN19) // QCN5502 ESW
+enum {
+	P0_PORT=0,
+	LAN1_PORT=3,
+	LAN2_PORT=2,
+	LAN3_PORT=1,	/* unused */
+	LAN4_PORT=5,	/* unused */
+	WAN_PORT=4,
+	P6_PORT=6,
+	P7_PORT=6,
+};
 #else
 #error Define WAN/LAN ports!
 #endif
@@ -83,6 +94,16 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 	{1,1,0,0,0}, //LLWWW
 	{0,0,1,1,0}, //WWLLW
 	{1,1,1,1,1}  //ALL
+#elif defined(RTN19)
+	/* W, L1, L2, X, X */
+	{0,1,1,1,1}, //WLLLL
+	{0,0,1,1,1}, //WWLLL
+	{0,1,0,1,1}, //WLWLL
+	{0,0,1,1,1}, //WWLLL
+	{0,1,0,1,1}, //WLWLL
+	{0,0,0,1,1}, //WWWLL
+	{0,0,0,1,1}, //WWWLL
+	{1,1,1,1,1}  //ALL
 #else
 	/* W, L1, L2, L3, L4 */
 	{0,1,1,1,1}, //WLLLL
@@ -98,14 +119,14 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 
 void reset_qca_switch(void);
 
-#if defined(RTAC55U) || defined(RTAC55UHP) || defined(RT4GAC55U) || defined(RPAC51)
+#if defined(RTAC55U) || defined(RTAC55UHP) || defined(RT4GAC55U) || defined(PLAC56) || defined(PLAC66U) || defined(RPAC51)
 ////// RT-AC55U/RT-AC55UHP/4G-AC55U definition
 #define RGMII_PORT		P6_PORT
 #define SGMII_PORT		P0_PORT
 #elif defined(RTAC88N) || defined(BRTAC828) || defined(RTAC88S)
 #define RGMII_PORT		P0_PORT
 #define SGMII_PORT		P6_PORT
-#elif defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#elif defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
 #define RGMII_PORT		P0_PORT
 #define SGMII_PORT		P0_PORT
 #endif
@@ -113,7 +134,7 @@ void reset_qca_switch(void);
 #if defined(RTCONFIG_QCA953X)
 #define	CPU_PORT_TO_WAN		P0_PORT // QCA953X GMAC1(eth1) connect to WAN port
 #define CPU_PORT_TO_LAN		P0_PORT // QCA953X GMAC1(eth1) connect to LAN port
-#elif defined(RTCONFIG_QCA956X)
+#elif defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
 #define	CPU_PORT_TO_WAN		SGMII_PORT // QCA956X SGMII MAC0(eth0) connect to WAN port
 #define CPU_PORT_TO_LAN		SGMII_PORT // QCA956X SGMII MAC0(eth0) connect to LAN port
 #else /* RT-AC55U || RT-AC55UHP || 4G-AC55U || RTAC88N || BRTAC828 || RTAC88S */
@@ -138,6 +159,30 @@ static unsigned int wans_lan_mask = 0;	/* wan_type = WANS_DUALWAN_IF_LAN. */
  * ==> Model-specific port number.
  */
 static int switch_port_mapping[] = {
+#if defined(MAPAC1750)
+	//IPTV (VoIP & STB) use LAN3 but only LAN4 or WAN to be real port in Lyra_Trio
+	LAN4_PORT,	//0000 0000 0001 LAN4
+	LAN4_PORT,	//0000 0000 0010 LAN3 (convert to LAN4)
+	LAN2_PORT,	//0000 0000 0100 LAN2
+	LAN1_PORT,	//0000 0000 1000 LAN1
+	WAN_PORT,	//0000 0001 0000 WAN
+	P7_PORT,	//0000 0010 0000 -
+	P7_PORT,	//0000 0100 0000 -
+	P7_PORT,	//0000 1000 0000 -
+	SGMII_PORT,	//0001 0000 0000 RGMII LAN
+	RGMII_PORT,	//0010 0000 0000 RGMII WAN
+#elif defined(RTN19)
+	LAN2_PORT,	//0000 0000 0001 LAN4 (convert to LAN2)
+	LAN1_PORT,	//0000 0000 0010 LAN3 (convert to LAN1)
+	LAN2_PORT,	//0000 0000 0100 LAN2
+	LAN1_PORT,	//0000 0000 1000 LAN1
+	WAN_PORT,	//0000 0001 0000 WAN
+	P7_PORT,	//0000 0010 0000 -
+	P7_PORT,	//0000 0100 0000 -
+	P7_PORT,	//0000 1000 0000 -
+	SGMII_PORT,	//0001 0000 0000 RGMII LAN
+	RGMII_PORT,	//0010 0000 0000 RGMII WAN
+#else
 	LAN4_PORT,	//0000 0000 0001 LAN4
 	LAN3_PORT,	//0000 0000 0010 LAN3
 	LAN2_PORT,	//0000 0000 0100 LAN2
@@ -148,6 +193,7 @@ static int switch_port_mapping[] = {
 	P7_PORT,	//0000 1000 0000 -
 	SGMII_PORT,	//0001 0000 0000 RGMII LAN
 	RGMII_PORT,	//0010 0000 0000 RGMII WAN
+#endif
 };
 
 int esw_stb;
@@ -654,7 +700,7 @@ static void config_qca8337_LANWANPartition(int type)
 	// LAN 
 #if defined(PLAC56) || defined(PLAC66U) // QCA8337 RGMII_PORT connect to PLC
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK | (1U << RGMII_PORT)), lan_mask | (1U << RGMII_PORT));
-#elif (defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)) && !defined(RPAC51)
+#elif (defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)) && !defined(RPAC51)
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK), lan_mask);
 #else /* RT-AC55U || 4G-AC55U */
 	qca8337_vlan_set(1, 1, 0, (lan_mask | CPU_PORT_LAN_MASK), (lan_mask | CPU_PORT_LAN_MASK));
@@ -671,7 +717,7 @@ static void config_qca8337_LANWANPartition(int type)
 			qca8337_vlan_set(2, 2, 0, (wans_lan_mask | CPU_PORT_WAN_MASK), (wans_lan_mask | CPU_PORT_WAN_MASK));
 			break;
 		case WANSCAP_WAN:
-#if defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#if defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
 			qca8337_vlan_set(2, 2, 0, (wan_mask      | CPU_PORT_WAN_MASK), wan_mask);
 #else /* RT-AC55U || 4G-AC55U */
 			qca8337_vlan_set(2, 2, 0, (wan_mask      | CPU_PORT_WAN_MASK), (wan_mask      | CPU_PORT_WAN_MASK));
@@ -801,15 +847,6 @@ static int convert_n56u_to_qca_bitmask(int orig)
 		if (orig & bit)
 			bitmask |= (1 << switch_port_mapping[i]);
 	}
-
-#if defined(MAPAC1750)
-	//iptv (VoIP & STB) use LAN3 but only LAN4 OR WAN to be real port in Lyra_Trio
-	if (bitmask & (1 << LAN3_PORT)) {
-		bitmask &= ~(1 << LAN3_PORT);
-		bitmask |= (1 << LAN4_PORT);
-	}
-#endif
-
 	return bitmask;
 }
 
@@ -1178,6 +1215,11 @@ void ATE_port_status(void)
 	snprintf(buf, sizeof(buf), "W=%C;L=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X');
+#elif defined(RTN19)
+	snprintf(buf, sizeof(buf), "W0=%C;L1=%C;L2=%C;",
+		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
+		(pS.link[1] == 1) ? (pS.speed[1] == 2) ? 'G' : 'M': 'X',
+		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X');
 #else
 	// RT-AC55U 
 	snprintf(buf, sizeof(buf), "W0=%C;L1=%C;L2=%C;L3=%C;L4=%C;",
@@ -1189,6 +1231,39 @@ void ATE_port_status(void)
 #endif	
 	puts(buf);
 }
+
+#ifdef RTCONFIG_LAN4WAN_LED
+int led_ctrl(void)
+{
+	phyState pS;
+	int led, i;
+
+	for (i = 1; i < NR_WANLAN_PORT; i++) {
+		if (skip_ports[i]) continue;
+		led = LED_ID_MAX;
+		pS.link[i] = 0;
+		pS.speed[i] = 0;
+		get_qca8337_port_info(lan_id_to_port_nr(i), &pS.link[i], &pS.speed[i]);
+		switch(i) {
+			case 1: led = LED_LAN1;
+				break;
+			case 2: led = LED_LAN2;
+				break;
+			case 3: led = LED_LAN3;
+				break;
+			case 4: led = LED_LAN4;
+				break;
+			default: break;
+		}
+		if (pS.link[i] == 1)
+			led_control(led, LED_ON);
+		else
+			led_control(led, LED_OFF);
+	}
+
+	return 1;
+}
+#endif	/* LAN4WAN_LED*/
 
 #if 0
 void usage(char *cmd)

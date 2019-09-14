@@ -1,0 +1,31 @@
+# This is more or less the sample config, but without imklog being
+# active. imklog must not always be present and as such may spoil
+# our testing result. The core point at this test is that a valid
+# config file should not lead to any error messages.
+# It may be a good idea to update this file from time to time, so that
+# it contains a reasonable complex config sample.
+
+# if you experience problems, check
+# http://www.rsyslog.com/troubleshoot for assistance
+
+# rsyslog v3: load input modules
+# If you do not load inputs, nothing happens!
+# You may need to set the module load path if modules are not found.
+
+
+
+# ######### Receiving Messages from Remote Hosts ########## 
+# TCP Syslog Server:
+# provides TCP syslog reception and GSS-API (if compiled to support it)
+#$ModLoad imtcp.so  # load module
+#$InputTCPServerRun 514 # start up TCP listener at port 514
+
+# UDP Syslog Server:
+$ModLoad imudp.so  # provides UDP syslog reception
+$ModLoad omoracle.so
+$UDPServerRun 514 # start a UDP syslog server at standard port 514
+
+$IncludeConfig /home/munoz/logging/rsyslog/20*conf
+$IncludeConfig /home/munoz/logging/rsyslog/30*conf
+
+#*.* ~

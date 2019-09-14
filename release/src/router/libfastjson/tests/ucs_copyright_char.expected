@@ -1,0 +1,4 @@
+string = { "foo" : "©" }
+json = {
+  "foo":"©"
+}

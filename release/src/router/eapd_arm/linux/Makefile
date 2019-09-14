@@ -52,6 +52,11 @@ CFLAGS += -DBCM_BSD
 endif
 #endif
 
+#ifdef BCM_EVENTD
+OBJS += eventd_eap.o
+CFLAGS += -DBCM_EVENTD
+#endif
+
 OBJS += wlceventd_eap.o
 CFLAGS += -DBCM_WLCEVENTD
 

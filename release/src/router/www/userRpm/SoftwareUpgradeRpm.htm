@@ -74,7 +74,7 @@ function detect_firmware(){
     				setTimeout("detect_firmware();", 1000);
 						else{
       					document.getElementById('update_scan').style.display="none";
-      					document.getElementById('update_states').innerHTML="<#connect_failed#>";
+      					document.getElementById('update_states').innerHTML="<#info_failed#>";
 						}
     		},
 
@@ -84,7 +84,7 @@ function detect_firmware(){
       			}else{	// got wlan_update.zip
       					if(webs_state_error==1){
       								document.getElementById('update_scan').style.display="none";
-      								document.getElementById('update_states').innerHTML="<#connect_failed#>";
+      								document.getElementById('update_states').innerHTML="<#info_failed#>";
       								return;
       					}
       					else{

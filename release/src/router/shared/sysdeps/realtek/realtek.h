@@ -385,7 +385,7 @@ static struct channel_list reg_channel_2_4g[] = {
 	/* SPAIN */		{{1,2,3,4,5,6,7,8,9,10,11,12,13},13},
 	/* FRANCE */	{{10,11,12,13},4},
 	/* MKK */		{{1,2,3,4,5,6,7,8,9,10,11,12,13,13},13},
-	/* ISRAEL */	{{3,4,5,6,7,8,9,10,11,12,13},11},
+	/* ISRAEL */	{{1,2,3,4,5,6,7,8,9,10,11,12,13},13},
 	/* MKK1 */		{{1,2,3,4,5,6,7,8,9,10,11,12,13,14},14},
 	/* MKK2 */		{{1,2,3,4,5,6,7,8,9,10,11,12,13,14},14},
 	/* MKK3 */		{{1,2,3,4,5,6,7,8,9,10,11,12,13,14},14},
@@ -409,7 +409,7 @@ static struct channel_list reg_channel_5g_full_band[] = {
 	/* SPAIN */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
 	/* FRANCE */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
 	/* MKK */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
-	/* ISRAEL */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
+	/* ISRAEL */	{{36,40,44,48,52,56,60,64},8},
 	/* MKK1 */		{{34,38,42,46},4},
 	/* MKK2 */		{{36,40,44,48},4},
 	/* MKK3 */		{{36,40,44,48,52,56,60,64},8},
@@ -672,6 +672,7 @@ typedef struct hw_setting {
 	unsigned char countryCode[6] __PACK__;
 	unsigned char territoryCode[8] __PACK__;
 	unsigned char modelName[16] __PACK__;
+    unsigned char amas_bdl __PACK__;
 } HW_SETTING_T, *HW_SETTING_Tp;
 #ifdef BLUETOOTH_HW_SETTING_SUPPORT
 typedef struct bluetooth_hw_setting {
@@ -1045,7 +1046,11 @@ typedef struct {
  */
 static const reg_domain_t reg_domain[] = {
 	{ "US", DOMAIN_FCC,  DOMAIN_FCC,  0  },
+#ifdef RPAC55
+	{ "CA", DOMAIN_IC,   DOMAIN_IC,	  5  },
+#else
 	{ "CA", DOMAIN_FCC,  DOMAIN_FCC,  3  },
+#endif
 	{ "EU", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
 	{ "AA", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
 	{ "TW", DOMAIN_FCC,  DOMAIN_FCC,  0  },
@@ -1054,6 +1059,9 @@ static const reg_domain_t reg_domain[] = {
 	{ "KR", DOMAIN_KR,   DOMAIN_KR,   0  },
 	{ "JP", DOMAIN_MKK,  DOMAIN_MKK,  3  },
 	{ "AU", DOMAIN_AU,   DOMAIN_AU,   4  },
+    { "IL", DOMAIN_ISRAEL, DOMAIN_ISRAEL, 2},
 };
-
+#ifdef RTCONFIG_AMAS
+void wait_connection_finished(char *ifname);
+#endif
 #endif/*__REALTEK_H__*/

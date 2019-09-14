@@ -1,0 +1,16 @@
+{
+   CentOS 6.9 problem in either helgrind or system lib
+   Helgrind:Misc
+   fun:pthread_cond_destroy_WRK
+   fun:pthread_cond_destroy@*
+   fun:qqueueDestruct
+   fun:actionDestruct
+   fun:cnfstmtDestruct
+   fun:cnfstmtDestructLst
+   fun:cnfstmtDestruct
+   fun:cnfstmtDestructLst
+   fun:doDestructCnfStmt
+   fun:llExecFunc
+   fun:destructAllActions
+   fun:main
+}

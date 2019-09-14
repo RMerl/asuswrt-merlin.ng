@@ -1,0 +1,98 @@
+This directory contains the rsyslog testbench. It is slowly
+evolving. New tests are always welcome. So far, most tests check
+out the functionality of a single module. More complex tests are
+welcome.
+
+For a simple sample, see rtinit.c, which does a simple
+init/deinit check of the runtime system.
+
+Test Naming
+===========
+
+Test that use valgrind shall end in "-vg.sh".
+Test that use valgrind's helgrind thread debugger shall end in "-vgthread.sh".
+
+Setting up Test Environments
+============================
+
+Setting up MariaDB/MySQL
+------------------------
+to create the necessary user:
+
+echo "create user 'rsyslog'@'localhost' identified by 'testbench';" | mysql -u root
+mysql -u root < ../plugins/ommysql/createDB.sql
+echo "grant all on Syslog.* to 'rsyslog'@'localhost';" | mysql -u root
+
+openSUSE
+--------
+To configure system properties like hostname and firewall, use the
+graphical "yast2" administration tool. Note the ssh-access by default
+is disable in the firewall!
+
+Before running tests
+====================
+make check - this will compile all of the C code used in the tests, as well as
+do any other preparations, and will start running all of the tests.  Ctrl-C to
+stop running all of the tests.
+
+Running all tests
+=================
+make check
+
+Running named tests
+===================
+make testname.sh.log
+
+For example, to run the imfile-basic.sh test, use
+
+make imfile-basic.sh.log
+
+Test output is in imfile-basic.sh.log
+
+To re-run the test, first remove imfile-basic.sh.log then make again
+
+* Using gdb to debug rsyslog during a test run
+
+Edit your test like this:
+
+    . $srcdir/diag.sh startup
+    if [ -n "${USE_GDB:-}" ] ; then
+        echo attach gdb here
+        sleep 54321 || :
+    fi
+
+Run your test in the background:
+
+    USE_GDB=1 make mytest.sh.log &
+
+Tail mytest.sh.log until you see 'attach gdb here'.  The log should also
+tell you what is the rsyslogd pid.
+
+   gdb ../tools/rsyslogd $rsyslogd_pid
+
+Set breakpoints, whatever, then 'continue'
+
+In another window, do ps -ef|grep 54321, then kill that pid
+
+Core Dump Analysis
+==================
+The testbench contains some limited (yet useful) support for automatically
+anaylzing core dumps. In order for this to work, obviously core files need
+to be generated. This often doesn't work as intended. If you hit this problem,
+check
+
+1. ulimit -c unlimited (or a reasonable limit)
+   Note that root may need to increase a system-wide limit, which is
+   usually recorded in /etc/security/limits.conf
+   You need:
+   *     soft    core      unlimited
+
+2. cat  /proc/sys/kernel/core_pattern"
+   On systemd systems (and some others), the pattern is changed to save
+   core files so that systemd can import them -- with the result that the
+   testbench doesn't see them any longer. We require classic format, which
+   can be set via
+   $ sudo bash -c "echo \"core\" > /proc/sys/kernel/core_pattern"
+
+Note that you probably want to do neither of these changes to a production
+system.

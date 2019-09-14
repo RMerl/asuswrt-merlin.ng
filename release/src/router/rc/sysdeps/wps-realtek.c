@@ -156,6 +156,22 @@ int start_wps_pbc_method(WPS_MODE mode)
 	char pbc_stat_file[64] = {0};
 	if(mode == WPS_MODE_CLIENT)
 	{
+#ifdef RTCONFIG_AMAS
+	/*	nvram wps_amas_enrollee indicate that the wps request send
+	 *	from "obd". And it will set wps as enrollee.
+	 */
+		if(nvram_get_int("wps_amas_enrollee") == 1) {
+		/*	AiMesh use 2G for connect with CAP in onboarding */
+			fp = fopen("/var/run/wscd-wl0-vxd.pid","r");
+			if(fp != NULL)
+			{
+				fscanf(fp,"%d",&pid);
+				fclose(fp);
+			}
+			write_pbc_state_file(pid,"/var/pbc_state1");
+
+		} else
+#endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
 		if (sw_mode() == SW_MODE_REPEATER && nvram_get_int("wlc_express") != 0) { // Express mode
 			if (nvram_get_int("wlc_express") == 1) { // 2.4G
@@ -203,20 +219,22 @@ int start_wps_pbc_method(WPS_MODE mode)
 			write_pbc_state_file(pid,"/var/pbc_state2");
 		}
 #else
-		wps_band = nvram_get_int("wlc_band");
-
-		if (sw_mdoe() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1) // media bridge
-			sprintf(pid_file,"/var/run/wscd-wl%d.pid",wps_band);
-		else
-			sprintf(pid_file,"/var/run/wscd-wl%d-vxd.pid",wps_band);
-
-		sprintf(pbc_stat_file,"/var/pbc_state%d",wps_band+1);
-		fp = fopen(pid_file,"r");
-		if(fp != NULL)
 		{
-			fscanf(fp,"%d",&pid);
-			fclose(fp);
-			write_pbc_state_file(pid,pbc_stat_file);
+			wps_band = nvram_get_int("wlc_band");
+
+			if (sw_mdoe() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1) // media bridge
+				sprintf(pid_file,"/var/run/wscd-wl%d.pid",wps_band);
+			else
+				sprintf(pid_file,"/var/run/wscd-wl%d-vxd.pid",wps_band);
+
+			sprintf(pbc_stat_file,"/var/pbc_state%d",wps_band+1);
+			fp = fopen(pid_file,"r");
+			if(fp != NULL)
+			{
+				fscanf(fp,"%d",&pid);
+				fclose(fp);
+				write_pbc_state_file(pid,pbc_stat_file);
+			}
 		}
 #endif
 #ifdef RPAC68U
@@ -271,6 +289,20 @@ start_wps_method(void)
 	int wps_band = 0;
 	
 	wlc_express = nvram_get_int("wlc_express");
+#ifdef RTCONFIG_AMAS
+	/*	nvram wps_amas_enrollee indicate that the wps request send
+	 *	from "obd". And it will set wps as enrollee.
+	 */
+	if(nvram_get_int("wps_amas_enrollee") == 1) {
+	/*	AiMesh use 2G for connect with CAP in onboarding */
+		eval("iwpriv", "wl0-vxd", "set_mib","wsc_enable=1");
+		eval("ifconfig", "wl0-vxd", "down");
+		eval("ifconfig", "wl0-vxd", "up");
+
+		start_wps_pbc_method(WPS_MODE_CLIENT);
+
+	} else
+#endif
 	if(sw_mode == SW_MODE_REPEATER && wlc_express == 0)
 	{
 #ifdef RTCONFIG_CONCURRENTREPEATER
@@ -465,8 +497,8 @@ int is_wps_stopped(void)
 		fscanf(fp,"%d",&status);
 		fclose(fp);
 	}
-	if(status == -1 || status == 2)
-	{
+	nvram_set_int("wps_status", status);
+	if(status == -1 || status == 2) {
 		return 1;
 	}
 	return 0;
@@ -474,7 +506,12 @@ int is_wps_stopped(void)
 
 int is_wps_success(void)
 {
-	return 0; // TODO need to finish this.
+	nvram_unset("wps_amas_enrollee");
+	nvram_commit();
+	if(nvram_get_int("wps_e_success") == 1)
+		return 1;
+	else
+		return 0;
 }
 
 void

@@ -38,13 +38,25 @@ NTFSCK(8)</td>
 <dt>
 <b>-a</b>, <b>--automatic-repair</b></dt>
 <dd>
-Repair the volume if it appears to be in need of a repair. This options makes <b>ntfsck</b> exit immediately if the volume appears to be in order (no dirty flag set, logfile clean, no hibernated Windows session, ...), but otherwise a full repair is performed.</dd>
+Repair the volume if it appears to be in need of a repair. This options makes <b>ntfsck</b> exit immediately if the volume appears to be in order (no dirty flag set, logfile clean, no hibernated Windows session, ...), but otherwise a full repair is performed.  Note that volume is considered dirty if either one or more of follwing is true a) dirty flag set b) logfile clean c) hibernated windows volume.</dd>
 </dl>
 <dl>
 <dt>
 <b>-c</b>, <b>--fast-check</b></dt>
 <dd>
-Check if volume is dirty then exit. If the volume is dirty then the exit value will be 100.</dd>
+Check if volume is dirty then exit. If the volume is dirty then the exit value will be 100. If used with  <b>-m</b>/<b>--mount-check-only</b> then also repairs any issues which prevent volume from being mounted. Read the definition of dirty volume from  <b>-a</b>/<b>--automatic-repair</b> option.</dd>
+</dl>
+<dl>
+<dt>
+<b>-m</b>, <b>--mount-check-only</b></dt>
+<dd>
+Check if volume can be mounted safely and if volume can be mounted then exit. If volume cannot be mounted then fix it and exit. Also works if used with  <b>-c</b>/<b>--fast-check</b>.</dd>
+</dl>
+<dl>
+<dt>
+<b>-s</b>, <b>--simulate</b></dt>
+<dd>
+Simulate repair of the volume. This option caches all the changes made by ntfsck in memory and never writes to the device. This can be done with a write-protected volume to check what changes ntfsck would make if it would be able to write to it. Exit value will be the same as you'd expect during a normal repair.</dd>
 </dl>
 <dl>
 <dt>
@@ -68,13 +80,7 @@ Don't check for orphaned files. This option speeds up <b>ntfsck.</b></dd>
 <dt>
 <b>-M</b>, <b>--no-mft-scan</b></dt>
 <dd>
-Don't scan $MFT. This option typically slows down <b>ntfsck.</b></dd>
-</dl>
-<dl>
-<dt>
-<b>-S</b>, <b>--no-sync</b></dt>
-<dd>
-Don't sync NTFS metadata before exit. This option speeds up <b>ntfsck</b> however it's safe to use only if device is not removed/ejected.</dd>
+Don't scan $MFT.  <b>-S</b>, <b>--no-sync</b> Don't sync NTFS metadata before exit. This option speeds up <b>ntfsck</b> however it's safe to use only if device is not removed/ejected.</dd>
 </dl>
 <dl>
 <dt>
@@ -90,9 +96,65 @@ Correct inode NUMBER only and its children.</dd>
 </dl>
 <dl>
 <dt>
+<b>-t</b>, <b>--timeout</b> SECONDS</dt>
+<dd>
+Timeout in seconds before ntfsck will abort the volume check/repair. If specified, this sets an upper limit on the execution time of ntfsck. After the timeout occurs, ntfsck will clear all its pending tasks and return as soon as possible.<div style="height: 0.00em;">
+&#160;</div>
+As a special case, a timeout value of 0 means that there is no timeout, i.e. it is equivalent to not specifying the timeout option at all.</dd>
+</dl>
+<dl>
+<dt>
 <b>-f</b>, <b>--force</b></dt>
 <dd>
 This will override some sensible defaults. Use this option with caution.</dd>
+</dl>
+<dl>
+<dt>
+<b>-D</b>, <b>--delete-crosslinked</b></dt>
+<dd>
+Delete cross linked clusters.</dd>
+</dl>
+<dl>
+<dt>
+<b>-b</b>, <b>--crosslinked-check</b></dt>
+<dd>
+Run crosslinked check. Remember without this option we will see cross linked messages i.e. information regarding cross linked clusters will always appear in the output. It is disabled by default because resolving cross-links without data loss means moving clusters around which may take extra time if number of cross-linked clusters is high. If ntfsck with this option is run periodically then it can be switched on.</dd>
+</dl>
+<dl>
+<dt>
+<b>-e</b>, <b>--delete-crosslinked-if-no-space</b></dt>
+<dd>
+Delete cross linked clusters in case ntfsck cannot resolve them by moving to empty space.</dd>
+</dl>
+<dl>
+<dt>
+<b>-w</b>, <b>--mem</b> NUMBER</dt>
+<dd>
+Set memory limit in system (in MB). This is useful for running ntfsck in systems with low memory, and when user already knows the minimum available memory which should be available. Chances of failure because of low memory are reduced but not entirely removed. This can still result in failure if required memory at certain stage in check increases, and system really has nothing available at that point in time. Chances of that happening are very less though. One disadvantage of not having enough memory is that for large storage devices, ntfsck would take more time to run.</dd>
+</dl>
+<dl>
+<dt>
+<b>-u</b>, <b>--automatic-mem</b></dt>
+<dd>
+Same as --mem but this time user doesn't mention available memory and instead ntfsck tries to automatically detect it. Note that this option also has similar limitations as mentioned in --mem option above description.</dd>
+</dl>
+<dl>
+<dt>
+<b>-p</b>, <b>--playlog</b></dt>
+<dd>
+Play NTFS Journal if volume is dirty, needs a journal replay and $LogFile isn't corrupt. In case $LogFile is corrupt reset it or if we encounter specification changes or un-supported actions then also reset it.</dd>
+</dl>
+<dl>
+<dt>
+<b>-r</b>, <b>--replay</b></dt>
+<dd>
+Same as --playlog but doesn't invoke fsck run after journal has been played.</dd>
+</dl>
+<dl>
+<dt>
+<b>-B</b>, <b>--progress-fd</b></dt>
+<dd>
+This option is similar to '-C fd' in e2fsck. It causes fsck to write progress of ntfsck to specified file descriptor. If file descriptor is negative, then progress is suppressed and can only be enabled by sending SIGUSR1 signal. Once this signal arrives absolute value of input is used as file descriptor. SIGUSR2 signal can be used to stop progress information being written to file descriptor.</dd>
 </dl>
 <dl>
 <dt>
@@ -128,9 +190,9 @@ Show the version number of <b>ntfsck</b>.</dd>
 <table class="foot">
 <tr>
 <td class="foot-date">
-October 2012</td>
+January 2017</td>
 <td class="foot-os">
-Tuxera NTFS Utilities 3014.5.21</td>
+Tuxera NTFS Utilities 3017.7.18.13</td>
 </tr>
 </table>
 </div>

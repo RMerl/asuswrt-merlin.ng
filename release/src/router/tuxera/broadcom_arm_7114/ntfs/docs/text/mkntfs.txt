@@ -116,6 +116,16 @@ OPTIONS
        -U, --with-uuid
               Generate a random volume UUID.
 
+       -l, --large-file-records
+              Format with large file records.
+
+       -N, --enable-short-filenames
+              Enable short filenames. By default they are disabled.
+
+       -b, --show-progress
+              Show approximate progress (Only available for platforms using
+              linux kernel > 2.6.22 and glibc).
+
        -F, --force
               Force mkntfs to run, even if the specified device is not a block
               special device, or is entire device, or appears to be mounted.
@@ -154,4 +164,4 @@ AVAILABILITY
 
 
 
-Tuxera NTFS Utilities 3014.5.21    Sept 2011                         MKNTFS(8)
+Tuxera NTFS Utilities 3017.7.18.13 Sept 2011                         MKNTFS(8)

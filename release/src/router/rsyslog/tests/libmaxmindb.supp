@@ -1,0 +1,38 @@
+{
+   libmaxmindb_known_leak_(fixed_in_later_versions)
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:MMDB_open
+   fun:createWrkrInstance
+   fun:actionCheckAndCreateWrkrInstance
+   fun:actionPrepare
+   fun:actionProcessMessage
+   fun:processMsgMain
+   fun:doSubmitToActionQ
+   fun:execAct
+   fun:scriptExec
+   fun:processBatch
+   fun:msgConsumer
+}
+{
+   another_incarnation_of_the_same
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:populate_languages_metadata
+   fun:read_metadata
+   fun:MMDB_open
+   fun:createWrkrInstance
+   fun:actionCheckAndCreateWrkrInstance
+   fun:actionPrepare
+   fun:actionProcessMessage
+   fun:processMsgMain
+   fun:doSubmitToActionQ
+   fun:execAct
+   fun:scriptExec
+   fun:processBatch
+   fun:msgConsumer
+   fun:ConsumerReg
+   fun:wtiWorker
+}

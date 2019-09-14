@@ -628,10 +628,6 @@ void cprintf(const char *format, ...)
 	FILE *f;
 	int nfd;
 	va_list args;
-#ifdef RTCONFIG_NVRAM_FILE
-	int debug_cprintf = 1;
-	int debug_cprintf_file = 0;
-#endif
 
 #if defined(DEBUG_NOISY) && !defined(HND_ROUTER)
 	{
@@ -644,11 +640,7 @@ void cprintf(const char *format, ...)
 		return;
 	{
 #else
-#ifdef RTCONFIG_NVRAM_FILE
-	if ( debug_cprintf == 1 ) {
-#else
 	if (nvram_match("debug_cprintf", "1")) {
-#endif
 #endif
 #endif
 		if((nfd = open("/dev/console", O_WRONLY | O_NONBLOCK)) >= 0){
@@ -662,11 +654,7 @@ void cprintf(const char *format, ...)
 		}
 	}
 #if 1
-#ifdef RTCONFIG_NVRAM_FILE
-	if (debug_cprintf_file == 1) {
-#else
 	if (nvram_match("debug_cprintf_file", "1")) {
-#endif
 //		char s[32];
 //		sprintf(s, "/tmp/cprintf.%d", getpid());
 //		if ((f = fopen(s, "a")) != NULL) {
@@ -1755,7 +1743,11 @@ int doSystem(char *fmt, ...)
 	va_end(vargs);
 
 	if(cmd) {
-		if (!strncmp(cmd, "iwpriv", 6))
+		if (!strncmp(cmd, "iwpriv", 6)
+#if defined(RTCONFIG_CFG80211)
+		    || !strncmp(cmd, "cfg80211tool", 12)
+#endif
+		   )
 			_dprintf("[doSystem] %s\n", cmd);
 		rc = system(cmd);
 		bfree(B_L, cmd);
@@ -2132,6 +2124,97 @@ sysfail:
  if (pt)
   free(pt);
  return NULL;
+}
+
+#if 0 // replaced by #define in rc.h
+int modprobe(const char *mod)
+{
+#if 1
+	return eval("modprobe", "-s", (char *)mod);
+#else
+	int r = eval("modprobe", "-s", (char *)mod);
+	cprintf("modprobe %s = %d\n", mod, r);
+	return r;
+#endif
+}
+#endif // 0
+
+int modprobe_r(const char *mod)
+{
+#if 1
+	return eval("modprobe", "-r", (char *)mod);
+#else
+	int r = eval("modprobe", "-r", (char *)mod);
+	cprintf("modprobe -r %s = %d\n", mod, r);
+	return r;
+#endif
+}
+
+/**
+ * Load kernel modules in @kmods_list in original order.
+ * @kmods_list:	a string contains all kernel modules should be loaded by this function.
+ * @return:
+ * 	0:	success
+ *     -1:	invalid parameter
+ */
+int load_kmods(char *kmods_list)
+{
+	char kmod[128], *next;
+
+	if (!kmods_list)
+		return -1;
+
+	foreach(kmod, kmods_list, next) {
+		if (module_loaded(kmod))
+			continue;
+
+		modprobe(kmod);
+	}
+
+	return 0;
+}
+
+/**
+ * Remove kernel modules in @kmods_list in REVERSE order.
+ * @kmods_list:	a string contains all kernel modules should be loaded by this function.
+ * @return:
+ * 	0:	success
+ *     -1:	invalid parameter
+ *     -2:	can't allocate memory for holding parameter.
+ */
+int remove_kmods(char *kmods_list)
+{
+	char buf[256], *p, *q;
+
+	if (!kmods_list)
+		return -1;
+
+	if (strlen(kmods_list) > sizeof(buf) - 1) {
+		p = strdup(kmods_list);
+		if (p == NULL) {
+			dbg("%s: Can't allocate memory for [%s]\n",
+				__func__, kmods_list);
+			return -2;
+		}
+	} else
+		p = strcpy(buf, kmods_list);
+
+	for (q = NULL; q != p;) {
+		q = strrchr(p, ' ') ? : p;
+		if (*q == ' ')
+			*q++ = '\0';
+		if (*q == '\0')
+			continue;
+		if (!module_loaded(q))
+			continue;
+
+		modprobe_r(q);
+	}
+
+	if (p != buf)
+		free(p);
+
+	return 0;
 }
 
 int num_of_wl_if()

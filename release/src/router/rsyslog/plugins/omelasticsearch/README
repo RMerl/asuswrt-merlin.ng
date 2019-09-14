@@ -1,0 +1,21 @@
+How to access ElasticSearch on local machine (for testing):
+===========================================================
+see: https://github.com/mobz/elasticsearch-head
+
+How to produce an error:
+========================
+It's quite easy to get 400, if you put a wrong mapping to your
+index. That would be easy to reproduce in "normal" omelasticsearch usage
+conditions, by only altering the ES configuration:
+
+1. Make your index first. Let's call it "testindex":
+$ curl -XPUT localhost:9200/testindex/
+
+2. Put your mapping for a search type called "mytype", where you specify
+that date property should be an integer:
+$ curl -XPUT localhost:9200/testindex/mytype/_mapping -d '{"mytype":{"properties": {"timegenerated":{"type":"integer"}}}}'
+
+3. Now try to insert something where date is not an integer:
+$ curl -XPOST localhost:9200/testindex/mytype/ -d '{"timegenerated":"bla"}'
+{"error":"MapperParsingException[Failed to parse [date]]; nested: NumberFormatException[For input string: \"bla\"]; ","status":400}
+

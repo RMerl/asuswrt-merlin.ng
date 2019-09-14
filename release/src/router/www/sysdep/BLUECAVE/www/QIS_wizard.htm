@@ -33,16 +33,20 @@
 
 				// setup systemVariables
 				setTimeout(function(){
-					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta"]);
+					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_pppoe_username", "wan0_pppoe_passwd", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta"]);
 
 					systemVariable.historyPage = [];
 					systemVariable.originWanType = initNvram.wan0_proto;
+					if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
+						systemVariable.originPppAccount.username = initNvram.wan0_pppoe_username;
+						systemVariable.originPppAccount.password = initNvram.wan0_pppoe_passwd;
+					}
 					systemVariable.wanDnsenable = initNvram.wan0_dnsenable_x;
 					systemVariable.originOpMode = (function(){
 						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
 						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
 						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "2" && initNvram.wlc_dpsta == "1") return "RP";
-						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "0" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
+						else if(initNvram.sw_mode == "3" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "AP";
 						else if(initNvram.sw_mode == "2" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
 						else if(initNvram.sw_mode == "3" && initNvram.wlc_psta == "1" && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "MB";
 						else return "RT";
@@ -59,8 +63,19 @@
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 
+					if(isSupport("2p5G_LWAN"))
+						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
+					if(isSupport("10G_LWAN") || isSupport("10GS_LWAN"))
+						systemVariable.originWansDualwan = httpApi.nvramGet(["wans_dualwan"]).wans_dualwan;
 					$("#switchWanTagContainer").append(Get_Component_ISPSelect);
 					$("#switch_wantag").attr("class", "optionInput");
+
+					var allWlArray =  getAllWlArray();
+					for(var i = 0; i < allWlArray.length; i += 1){
+						systemVariable.multiPAP.wlcStatus["wlc" + allWlArray[i].ifname + "_checked"] = false;
+						systemVariable.multiPAP.wlcStatus["wlc" + allWlArray[i].ifname + "_manual"] = false;
+						systemVariable.multiPAP.wlcStatus["wlc" + allWlArray[i].ifname + "_skip"] = false;
+					}
 
 					handleSysDep();
 					var getJsonFromUrl =  (function(){
@@ -136,8 +151,12 @@
 				<div id="welcomeTitle"></div>
 				<div class="pageDesc" style="display:none"></div>
 
-				<div class="productIconContainer">
+				<div class="productIconContainer nonROG">
 					<div><div id="ModelPid_img"></div></div>
+				</div>
+
+				<div class="productIconContainer ROG" style="display:none">
+					<div><div id="ROGLOGO"></div></div>
 				</div>
 
 				<div style="text-align:center;margin:50px 0">
@@ -273,7 +292,7 @@
 								<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="16" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<div>
@@ -281,7 +300,7 @@
 								<div class="inputTitle"><#PASS_retype#></div>
 							</div>
 							<div class="inputContainer">
-								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="16" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="17" class="textInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
 						<!-- Action Button -->
@@ -714,10 +733,11 @@
 								</div>
 							</div>
 						</div>
-
-						<div class="labelContainer iptv">
-							<label for="iptv_checkbox" class="labelInput"><#PPPConnection_x_HostNameForISP_sectionname#></label>
-			  				<input type="checkbox" id="iptv_checkbox" value="1" data-mini="true" />
+						<div id= "wan_iptv_checkbox">
+							<div id="iptv_check_container" class="labelContainer iptv">
+								<label for="iptv_checkbox" class="labelInput"><#PPPConnection_x_HostNameForISP_sectionname#></label>
+								<input type="checkbox" id="iptv_checkbox" value="1" data-mini="true" />
+							</div>
 						</div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
@@ -727,6 +747,90 @@
 							<table style="width:100%;" cellpadding="0" cellspacing="0">
 								<tr>
 									<td class="mobileAbort" style="width:100%;" onclick='abort.wan()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- WAN Option Setting -->
+		<div id="wanOption_setting" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Connectiontype#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc" id="connTypeDesc"><#Layer3Forwarding_x_ConnectionType_itemname#></div>
+					<div>
+						<div class="selectorTopContainer">
+							<div class="selectorContainer">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN1G();">
+										<#wan_port#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_2p5G">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN2p5G();">
+										2.5G <#wan_ethernet#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_10G">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN10G();">
+										10G base-T
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer LWAN_10GS">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WAN10GS();">
+										10G SFP+
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer modem">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="apply.WANModem();">
+										<#menu5_4_4#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.wanType()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.wanType()'>
 										<div class="mobile_abortBtn"><#CTL_prev#></div>
 									</td>
 								</tr>
@@ -829,6 +933,7 @@
 								<input id="wan_heartbeat_x" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="64" class="textInput pppInput" data-role="none" value="" data-clear-btn="true" />
 							</div>
 						</div>
+						<div id="pppoe_iptv_checkbox"></div>
 						<!-- Action Button -->
 						<div class="footer_desktop">
 							<div class="desktop_abortBtn" onclick='abort.pppoe()'><#CTL_prev#></div>
@@ -1097,6 +1202,162 @@
 									</td>
 									<td class="mobileApply" onclick="apply.iptv();">
 										<div class="mobile_applyBtn"><#CTL_next#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- SIM PIN Setting -->
+		<div id="simpin_setting" data-role="page" class="qisBackground" >
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Mobile_title#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc" id="sim_desc"><#Mobile_pin_hint#></div>
+					<div>
+						<div id="pin_setting" class="dongle">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><span id="sim_input_title"><#PIN_code#></span>&nbsp;&nbsp;<span style="font-size: 0.75em;">(<#Mobile_remaining_num#>: <span id="remaing_num"></span>)</span></div>
+								<div class="secureInput icon_eye_close" for="sim_pincode"></div>
+							</div>
+							<div class="inputContainer">
+								<input id="sim_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
+								<span id="verify_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+							</div>
+						</div>
+
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.simpin()'><#CTL_prev#></div>
+							<div id="pin_apply" class="desktop_applyBtn sim_pin_apply" onclick="apply.simpin();"><#CTL_apply#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%" onclick='abort.simpin()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="apply.simpin();">
+										<div id="pin_mobileApply" class="mobile_applyBtn sim_pin_apply"><#CTL_apply#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- SIM Unlock Selection -->
+		<div id="simunlock_selection" data-role="page" class="qisBackground" >
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Mobile_title#></div>
+					</div>
+				</div>
+				<div id="lock_selection" class="table_td">
+					<div class="pageDesc" id="connTypeDesc"><#Mobile_sim_lock#></div>
+					<div>
+						<div class="selectorTopContainer">
+							<div class="selectorContainer autoIP">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.PUK()">
+										<#Mobile_unblock_sim#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="selectorContainer dailIP">
+								<div class="selectorContainerDiv">
+									<div class="selectBar" onclick="goTo.Wireless()">
+										<#CTL_Skip#>
+									</div>
+									<div class="narrowContainer">
+										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.simunblock()'><#CTL_prev#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:100%;" onclick='abort.simunblock()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- SIM PUK Setting -->
+		<div id="simpuk_setting" data-role="page" class="qisBackground" >
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub"><#Mobile_title#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc"><#Mobile_puk_hint#></div>
+					<div>
+						<div class="dongle">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#Mobile_puk#></span>&nbsp;&nbsp;<span style="font-size: 0.75em;">(<#Mobile_remaining_num#>: <span id="puk_remaing_num"></span>)</span></div>
+								<div class="secureInput icon_eye_close" for="sim_puk"></div>
+							</div>
+							<div class="inputContainer">
+								<input id="sim_puk" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
+								<span id="verify_puk_status" class="inputTitle hint_yellow" style="display:none;"></span>
+							</div>
+						</div>
+
+						<div id="new_pin_div" class="dongle">
+							<div class="inputTitleContainer">
+								<div class="inputTitle"><#Mobile_new_pin#></div>
+								<div class="secureInput icon_eye_close" for="new_pincode"></div>
+							</div>
+							<div class="inputContainer">
+								<input id="new_pincode" class="textInput" data-role="none" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-clear-btn="true" />
+								<span id="new_pincode_status" class="inputTitle hint_yellow" style="display:none;"></span>
+							</div>
+						</div>
+
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" onclick='abort.simpuk()'><#CTL_prev#></div>
+							<div class="desktop_applyBtn sim_puk_apply" onclick="apply.simpuk();"><#CTL_next#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%" onclick='abort.simpuk()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="apply.simpuk();">
+										<div class="mobile_applyBtn sim_puk_apply"><#CTL_next#></div>
 									</td>
 								</tr>
 							</table>
@@ -1729,7 +1990,7 @@
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" id="desktop_abortBtn_update" onclick='abort.update();'><#CTL_Cancel#></div>
-						<div class="desktop_applyBtn" id="desktop_applyBtn_update" onclick="apply.update();"><#CTL_Agree#></div>
+						<div class="desktop_applyBtn" id="desktop_applyBtn_update" onclick="apply.update();"><#CTL_upgrade#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -1738,7 +1999,7 @@
 									<div class="mobile_abortBtn" id="mobile_abortBtn_update"><#CTL_Cancel#></div>
 								</td>
 								<td class="mobileApply" onclick="apply.update();">
-									<div class="mobile_applyBtn" id="mobile_applyBtn_update"><#CTL_Agree#></div>
+									<div class="mobile_applyBtn" id="mobile_applyBtn_update"><#CTL_upgrade#></div>
 								</td>
 							</tr>
 						</table>
@@ -1942,6 +2203,12 @@
 
 		<!-- ASUS Terms of Use -->
 		<div id="asustos_page" data-role="page" class="qisBackground"></div>
+
+		<!-- ROG Turbo Key -->
+		<div id="boostKey_page" data-role="page" class="qisBackground"></div>
+
+		<!-- 802.11AX mode -->
+		<div id="axMode_page" data-role="page" class="qisBackground"></div>
 
 		<!-- AiMesh Site Survey option-->
 		<div id="amas_option_page" data-role="page" class="qisBackground aimeshPages">

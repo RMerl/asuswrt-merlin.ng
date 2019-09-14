@@ -17,6 +17,7 @@ NT_CENTER_DIR=$(TOP)/nt_center
 ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 SW_HW_AUTH_DIR=$(TOP)/sw-hw-auth
 endif
+SQLITE_DIR=$(TOP)/sqlite
 
 NATNL_DIR=$(TOP)/asusnatnl/natnl
 ASUSNATNL_CFLAGS=-I$(NATNL_DIR)
@@ -50,6 +51,12 @@ ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(QCSAPI_DIR)
 else
 ROUTER_LIBS=-lnvram -lshared
 ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
+endif
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+ROUTER_LIBS += -lsqlite3
+ROUTER_LDFLAGS += -L$(SQLITE_DIR)/.libs
+ROUTER_LIBS += -lnt
+ROUTER_LDFLAGS += -L$(NT_CENTER_DIR)/lib
 endif
 endif
 

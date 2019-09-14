@@ -287,30 +287,6 @@ void usage_exit(const char *cmd, const char *help)
 	exit(1);
 }
 
-#if 0 // replaced by #define in rc.h
-int modprobe(const char *mod)
-{
-#if 1
-	return eval("modprobe", "-s", (char *)mod);
-#else
-	int r = eval("modprobe", "-s", (char *)mod);
-	cprintf("modprobe %s = %d\n", mod, r);
-	return r;
-#endif
-}
-#endif // 0
-
-int modprobe_r(const char *mod)
-{
-#if 1
-	return eval("modprobe", "-r", (char *)mod);
-#else
-	int r = eval("modprobe", "-r", (char *)mod);
-	cprintf("modprobe -r %s = %d\n", mod, r);
-	return r;
-#endif
-}
-
 #ifndef ct_modprobe
 #ifdef LINUX26
 #define ct_modprobe(mod, args...) ({ \
@@ -849,12 +825,28 @@ void setup_pt_conntrack(void)
 	}
 
 #ifdef LINUX26
+#if defined(BRTAC828)
+	if (!nvram_match("fw_pt_sip", "0")) {
+		if (nvram_get_int("fw_pt_sip_mode") == 1) {
+			ct_modprobe_r("sip");
+			ct_modprobe("cisco_sip");
+		} else {
+			ct_modprobe_r("cisco_sip");
+			ct_modprobe("sip");
+		}
+	}
+	else {
+		ct_modprobe_r("sip");
+		ct_modprobe_r("cisco_sip");
+	}
+#else
 	if (nvram_match("fw_pt_sip", "1")) {
 		ct_modprobe("sip");
 	}
 	else {
 		ct_modprobe_r("sip");
 	}
+#endif
 #endif
 }
 
@@ -866,6 +858,9 @@ void remove_conntrack(void)
 	ct_modprobe_r("h323");
 #ifdef LINUX26
 	ct_modprobe_r("sip");
+#if defined(BRTAC828)
+	ct_modprobe_r("cisco_sip");
+#endif
 #endif
 }
 

@@ -21,7 +21,8 @@
 
 typedef enum {
 	DPSTA_MODE_PSTA = 1,
-	DPSTA_MODE_DWDS = 2
+	DPSTA_MODE_DWDS = 2,
+	DPSTA_MODE_WET = 3
 } dpsta_mode_e;
 
 typedef struct psta_if psta_if_t;

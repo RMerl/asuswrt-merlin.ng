@@ -2,6 +2,8 @@
 # Enable Swap script
 # $1: usb path  $2: Swap enable/disable
 
+IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+
 SWAP_THRESHOLD=`nvram get apps_swap_threshold`
 SWAP_FILE=`nvram get apps_swap_file`
 SWAP_SIZE=`nvram get apps_swap_size`
@@ -30,7 +32,9 @@ if [ "$SWAP_ENABLE" != "1" ]; then
 	if [ -e "$USB_PATH/$SWAP_FILE" ]; then
 		swapoff $USB_PATH/$SWAP_FILE
 		rm -rf $USB_PATH/$SWAP_FILE
-		echo 1 > /proc/sys/vm/drop_caches
+		if [ -z "$IS_BCMHND" ]; then
+			echo 1 > /proc/sys/vm/drop_caches
+		fi
 	fi	
 else
 	mem_size=`free |sed '1,3d' |awk '{print $4}'`
@@ -71,7 +75,9 @@ else
 					exit 1
 				fi
 		fi
-		echo 1 > /proc/sys/vm/drop_caches
+		if [ -z "$IS_BCMHND" ]; then
+			echo 1 > /proc/sys/vm/drop_caches
+		fi
 	fi
 fi
 

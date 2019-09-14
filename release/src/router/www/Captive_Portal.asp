@@ -23,6 +23,7 @@
 <script type="text/javascript" src="disk_functions.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/Captive_Portal_template.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 var disk_flag = true;
 var splash_image_base64 = "";
@@ -82,6 +83,12 @@ function initial(){
 		captivePortalShowAndHide(0);
 		$("#apply_button").val('<#CTL_Apply_Enable#>');
 	}
+
+	var series = productid.split("-")[0].toUpperCase();
+	if(series == "BRT")
+		httpApi.faqURL("1034971", function(url){document.getElementById("faq").href=url;});
+	else
+		$(".brt_series").remove();
 }
 function captivePortalShowAndHide(_flag) {
 	if(_flag == 1) {
@@ -1714,7 +1721,7 @@ var third_party_wl_used = new Array();
 function create_third_party_wl_used() {
 	var _enable_flag = "";
 	var _third_party_wl_used = new Array();
-	for(var i = 1; i <= multissid_support; i += 1) {
+	for(var i = 1; i <= multissid_count; i += 1) {
 		_third_party_wl_used[i] = "not_used";
 	}
 
@@ -1773,7 +1780,7 @@ function change_wl_input_status(_idx) {
 function find_empty_gn_group() {
 	var _empty_wl_idx = "";
 	var _empty_flag = false;
-	var _gn_count = multissid_support;
+	var _gn_count = multissid_count;
 	for(_gn_count; _gn_count > 0; _gn_count -= 1) {
 		_empty_flag = (gn_array_2g[(_gn_count - 1)][0] == "0") ? true : false;
 		if(!_empty_flag)
@@ -1823,7 +1830,7 @@ function check_gn_if_status(_subunit, _gn_array) {
 
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="full_screen_bg" class="full_screen_bg" onselectstart="return false;"></div>
 <div id="guestnetwork_wl" class="guestnetwork_wl"></div>
 <div id='folderTree_panel' class='landing_folder_content'>
@@ -1886,6 +1893,9 @@ function check_gn_if_status(_subunit, _gn_array) {
 									<div style='float:left;width:80%;'>
 									<div class="cp_page_intro_txt" style="color:#FC0;"><#FreeWiFi_desc1#></div>
 									<div class="cp_page_intro_txt"><#FreeWiFi_desc2#></div>
+									<div class="cp_page_intro_txt brt_series">
+										<#FAQ_Find#> : <a id="faq" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;" href="" target="_blank">GO</a>
+									</div>
 									<div align="center" class="left" style="float:left;margin-left:20px;margin-top:10px;cursor:pointer;" id="radio_captive_portal_enable"></div>
 									<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden;"></div>
 									<script type="text/javascript">

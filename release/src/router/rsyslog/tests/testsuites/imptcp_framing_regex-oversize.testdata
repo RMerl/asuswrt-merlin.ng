@@ -1,0 +1,22 @@
+<33>Mar  1 01:00:00 172.20.245.8 tag test1
+<33>Mar  1 01:00:00 172.20.245.8 tag test xml-ish
+<test/>
+<33>Mar  1 01:00:00 172.20.245.8 tag test2
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+line1
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+ 1-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 2-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 3-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 4-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 5-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 6-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 7-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+ 8-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+END
+<33>Mar  1 01:00:00 172.20.245.8 tag test3
+<33>Mar  1 01:00:00 172.20.245.8 tag multi
+line3
+<33>Mar  1 01:00:00 172.20.245.8 tag test4
+<33>Mar  1 01:00:00 172.20.245.8 tag test end
+

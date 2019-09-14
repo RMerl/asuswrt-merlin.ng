@@ -1686,7 +1686,7 @@ function onDropBoxLogin(_parm){
 </script>
 </head>
 
-	<body onload="initial();" onunload="return unload_body();">
+	<body onload="initial();" onunload="return unload_body();" class="bg">
 	<div id="TopBanner"></div>
 	
 <div id="invitationBg" class="invitepopup_bg">

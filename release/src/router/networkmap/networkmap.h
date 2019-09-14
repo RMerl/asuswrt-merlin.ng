@@ -131,7 +131,7 @@ typedef unsigned char UCHAR;
 typedef unsigned short USHORT;
 typedef unsigned long ULONG;
 
-#if defined(RTCONFIG_SOC_IPQ8064) && defined(RTCONFIG_WIFI_QCA9994_QCA9994)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 #define MAX_NR_CLIENT_LIST	1024	/* occupies 436252 bytes. */
 #else
 #define MAX_NR_CLIENT_LIST	255	/* occupies 108656 bytes. */

@@ -144,3 +144,130 @@ int module_loaded(const char *module)
 	}
 	return d_exists(sys_path);
 }
+
+#if defined(RTCONFIG_PTHSAFE_POPEN)
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
+#include <sys/un.h>
+#include <signal.h>
+#include <wait.h>
+
+static int un_tcpsock_connect(char *path, int nodelay)
+{
+	int sock;
+	struct sockaddr_un uaddr;
+	const int on = 1;
+
+	memset ((char *)&uaddr, 0, sizeof(uaddr));
+
+	sock = socket(AF_LOCAL, SOCK_STREAM, 0);
+	if ( sock == -1 ) {
+		_dprintf("%s: socket: %s\n", __func__, strerror(errno));
+		return -1;
+	}
+
+	uaddr.sun_family = AF_LOCAL;
+	strcpy(uaddr.sun_path, path);
+
+	if ( connect(sock, (struct sockaddr*)(&uaddr), sizeof(uaddr)) == -1 ) {
+		_dprintf("%s: connect[%s]: %s\n", __func__, path, strerror(errno));
+		return -1;
+	}
+
+	if (nodelay)
+		setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char *)&on, sizeof(on));
+	return sock;
+}
+
+#if defined(RTCONFIG_QCA)
+static int not_in_thread(void)
+{
+	struct stat task_stat;
+
+	if (stat("/proc/self/task", &task_stat))
+		return 1;
+
+	if (task_stat.st_nlink <= 3) return 1;
+	else return 0;
+}
+#else
+#warning WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+#warning WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+#warning WWWWWWW implement your own pthread detection mechanism WWWWWWW
+#warning WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+#warning WWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW
+static int not_in_thread(void)
+{
+	return 0; // assume always in pthread
+}
+#endif
+
+#ifdef popen
+#undef popen
+#endif
+#ifdef pclose
+#undef pclose
+#endif
+#define SELECT_TIMEOUT	2
+FILE *PS_popen(const char *cmd, const char *mode)
+{
+	int sfd, ret, len;
+	fd_set rmask;
+	struct timeval select_timeout;
+
+	if (not_in_thread())
+		return popen(cmd, mode);
+#if 0 /* debug message */
+	_dprintf("%s: PID[%d], CMD[%s]\n", __func__, getpid(), cmd);
+#endif
+
+	if (!mode || strcmp(mode, "r")!=0) {
+		_dprintf("%s: EEEEEError!!!! [%s][%s]\n", __func__, cmd, mode);
+		return NULL;
+	}
+
+	sfd = un_tcpsock_connect(PS_SOCK, 1);
+	if (sfd==-1) {
+		_dprintf("%s: tcpsock_connect!\n", __func__);
+		return NULL;
+	}
+
+	len = strlen(cmd);
+	write(sfd, cmd, len);
+	FD_ZERO(&rmask);
+	FD_SET(sfd, &rmask);
+	select_timeout.tv_sec = SELECT_TIMEOUT;
+	select_timeout.tv_usec = 0;
+
+	ret = select(sfd+1, &rmask, NULL, NULL, &select_timeout);
+	if (ret > 0) {
+		FILE *fp;
+		fp = fdopen(sfd, "r");
+		if (fp) {
+			return fp;
+		}
+	}
+	close(sfd);
+	return NULL;
+}
+
+int PS_pclose(FILE *fp)
+{
+	if (fp) {
+		if (not_in_thread())
+			return pclose(fp);
+		fclose(fp);
+	}
+	return 0;
+}
+#endif

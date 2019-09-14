@@ -526,6 +526,7 @@ function set_manual_items(){
 function enable_ISP_special(){
 	if(document.form.specialisp.checked){
 		if(isSku("TW")){
+			document.form.switch_wantag.value = "hinet";
 			ISP_Profile_Selection("hinet");
 			document.getElementById("profile_setting").style.display = "";
 		}

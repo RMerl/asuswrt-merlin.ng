@@ -1,0 +1,225 @@
+2005-01-30  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.1: bugfixes, features enhancement.
+
+	* Changes:
+	- was fixed vulnerability to a DoS attack, as described in "Denial
+          of Service via Algorithmic Complexity Attacks" by Scott A
+          Crosby and Dan S Wallach: http://www.cs.rice.edu/~scrosby/hash,
+	  by strengthening the crc16 hash function implementation;
+	  note that xor8 and xor16 hashes remain vulnerable
+	- default hash was changed to crc16
+	- -B option was added
+
+2004-09-22  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.6: minor bugfixes.
+
+	* Changes:
+	- security fix for "change user" feature
+	- debian/* files were removed
+
+2004-08-14  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.5: minor bugfixes, features enhancement.
+
+	* Changes:
+	- Typo in configure.in was fixed (ICMP_TRICK_CISCO).
+	- my_inttypes.h would fix bsdi 4.0 compilation problem
+	- New options -c and -u
+	- Default tool location changed to /usr/sbin,
+	  manual page section changed to 8
+
+2004-02-02  Slava Astashonok <sla@0n.ru>
+
+
+	* Release 1.0.4: minor bugfixes, features enhancement.
+
+	* Changes:
+	- Fixed trailer bug for hardware with limitation of the minimal
+	  size of a frame. This error was appearing as incorrect size
+	  calculation for tiny packets. For example (for ethernet
+	  hardware) length of TCP ACK packet is usually 40 bytes, but
+	  because of frame trailer it would be counted as 46 bytes.
+	- Fixed minor bug in "uptime trick" mechanism.
+	- Added ability to process files produced by tcpdump -w.
+	- Now fprobe creates pidfiles.
+	- TCP flags support was extended for CWR and ECE flags.
+
+2004-01-06  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.3: features enhancement.
+
+	* Changes:
+	- Multiple collectors support was added.
+	- Cisco's ICMP type/code storing method was added.
+
+2003-10-30  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.2: minor bugfixes.
+	
+	* Changes:
+	- NetFlow v1 and v7 support was fixed.
+	- -x option behaviuor was changed.
+	- Manpage updates.
+
+2003-10-13  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.1: minor bugfixes.
+	
+	* Changes:
+	- Fixed bug 819380 (command line parser bug).
+	- Updated manpage.
+
+2003-10-07  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0: features enhancement.
+
+	* Changes:
+	- Changed -f option behaviour - there is no more default filter.
+	  Consider with attention, read manual!
+	- Added option -K.
+	- Manpage updates.
+
+2003-06-03  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.pre5: bugfixes, perfomance improvements.
+
+2003-03-22  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.pre4: fixed one stupid mistake.
+
+2003-03-21  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.pre3:
+	- Many changes, including bugfixes, code cleanups,
+	  perfomance and, even, design improvements.
+
+	* Changes:
+	- TCP flags code actually did not work.
+	- Fixed inexact code in find().
+	- New option -k.
+	- Removed option -z.
+	- New data link layer types.
+	- IPv4 detection reinforced with pcap's filter: ip&&(user filter).
+	- Initial debianization.
+	- Rudimentary documentation.
+
+2003-01-23  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.pre2:
+	- Minor bugfixes.
+
+	* Changes:
+	- Fixed unfortunate misprint in --with-pcap handling.
+	- Fixed bug in "uptime trick" mechanism after receiving SIGTERM.
+	- Emit flows cache after pcap_loop() termination
+	  (e.g. interface shut down).
+	- Added scrip contrib/redhat-init.d:
+	  Placed in /etc/rc.d/init.d/fprobe on linux, it can be controlled
+	  with chkconfig (on systems that use it).
+	  Thanks to Daniel Senie <dts@senie.com>
+
+2003-01-07  Slava Astashonok <sla@0n.ru>
+
+	* Release 1.0.pre1:
+	- New features, minor fixes.
+
+	* Changes:
+	- Daemonize done. The default behaviour of fprobe now is run
+	  in background. Note that if log destination contains `stdout'
+	  (equal 2 or 3) fprobe will run in foreground.
+	- Default log destination changed to syslog.
+	- Now fprobe catch SIGTERM signal and emit flows cache before exit.
+	- Changed --enable-debug arguments. Now valid arguments are
+	  C, U, S, E, M, F and I. Example: --enable-debug="C M I E" -
+	  enable Capture, Memory, Info and Emit debug messages.
+	  "I"-debug information accessible via SIGUSR1 signal.
+	  Note that SIGUSR1 will cause program termination if it
+	  compiled without --enable-debug="I".
+	- Manpage updates.
+
+2002-12-19  Slava Astashonok <sla@0n.ru>
+
+	* Release 0.91:
+	- Bugfixes, new features.
+
+	* Bugfixes:
+	- Fixed snmp_index typo, sorry.
+	- Fixed potential flaw with non-realtime scheduling.
+
+	* Misc:
+	- New options:
+	  -a Now possible to specify source address for NetFlow flow.
+	  -t Emitting rate limit. Used relatively silly way.
+	- Internal time resolution changed from miliseconds to microseconds.
+	- ToS field support added. Why it wasn't done early? :-/
+	- At last added TCP flags field support.
+	- Added RPM specfile.
+	- Manpage updates.
+
+2002-12-09  Slava Astashonok <sla@0n.ru>
+
+	* Release 0.90.1:
+	- Typo in usage() information
+
+2002-12-08  Slava Astashonok <sla@0n.ru>
+
+	* Release 0.90:
+	- The main goal of this release is perfomance improvement.
+	  Almost all was rewrited from this point of view.
+	- It seems version 1.0 it is not far, so I made big jump in
+	  version enumeration.
+
+	* Perfomance fixes:
+	- Hash size expanded from 8 to 16 bits.
+	- New fast and efficient memory subsystem.
+	- Realtime scheduling.
+
+	* Bugfixes, portability fixes:
+	- Correct ctime updating after packet "reassembling".
+	- NETFLOW_SRC_AS_SIZE and NETFLOW_DST_AS_SIZE in netflow.h was wrong.
+	  Previous versions unaffected to this bug.
+	- Handling RedHad's pcap.h location.
+
+	* Misc:
+	- Changed -e option sense - now it equivalent to Cisco's active timer.
+	- Added new hash types: xor16 and crc16.
+	- New options:
+	  -x Workaround for SNMP interface index
+	  -b Memory bulk size in flow entries
+	  -m Memory limit in kilobytes
+	  -q Pending queue length in flow entries
+	  -r Realtime priority
+	- New compiling options:
+	  --with-pcap=<path> Example: /usr/local/pcap/include
+	  --with-libpcap=<path> Example: /usr/local/pcap/lib
+	  --with-membulk=<mode> ptr - less efficient, but fastest
+	  --with-hash=<type> crc16 - slowest, but smooth
+	  --enable-messages Enable runtime error and warning messages
+	- Added simple script for stress tests: contrib/tg.sh
+	- Manpage updates.
+
+2002-11-08  Slava Astashonok <sla@0n.ru>
+
+	* Release 0.9:
+	- Bugfixes, portability fixes, code cleanup
+	- New option -z for timezone correction
+	- New data link layer types: DLT_IP_OVER_FC and DLT_SUNATM
+	- New options in configure script:
+	  --enable-uptime_trick: this option may used to solve potential
+	  uptime wraparound bug in NetFlow collectors
+	  --enable-icmp_trick: if this option enabled fprobe will
+	  store ICMP type and code in srcport and dstport fields
+	- Manpage updates
+
+2002-10-25  Slava Astashonok <sla@0n.ru>
+
+	* Release 0.8 (first public release):
+	- NetFlow 1, 5 and 7 partially supported:
+	  supported fields in header record: version, count, SysUptime,
+	  unix_secs, unix_nsecs, flow_sequence
+	  in flow record: srcaddr, dstaddr, dPkts, dOctets, First,
+	  Last, srcport, dstport
+	- Compiled on Linux, FreeBSD, Solaris (all x86)
+	- Seems work, but not properly tested

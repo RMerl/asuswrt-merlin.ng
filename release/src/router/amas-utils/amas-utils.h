@@ -57,6 +57,9 @@ typedef struct _ob_status{
 	unsigned char modelname[64];
 	int obstatus; 		//1 (OB_OFF),  2 (OB_Available), 3 (OB_REQ), 4 (OB_LOCKED), 5 (OB_SUCCESS)
 	int timestamp;
+	int reboottime;
+	int conntimeout;
+	int traffictimeout;
 }ob_status,*ptr_obstatus;
 
 
@@ -131,4 +134,5 @@ AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_wifisec(char *type, unsigned char *val
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_obdinfo(id_info **P_idinfo, int *len);
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_set_group(unsigned char *group);
 AMAS_FUNC AMAS_RESULT   AMAS_API amas_get_group(unsigned char *group, int *len);
+AMAS_FUNC void   AMAS_API amas_set_timeout(int rtime, int ctimeout, int ttimeout);
 #endif /* !__AMASUTILSH__ */

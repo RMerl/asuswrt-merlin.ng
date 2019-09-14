@@ -171,6 +171,13 @@ struct REPLACE_ODMPID_S {
 #define GETIFTTTOKEN "get_IFTTTtoken.cgi"
 #endif
 
+/* networkmap offline clientlist path */
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#define NMP_CL_JSON_FILE                "/jffs/nmp_cl_json.js"
+#else
+#define NMP_CL_JSON_FILE                "/tmp/nmp_cl_json.js"
+#endif
+
 /* Exception MIME handler */
 struct except_mime_handler {
 	char *pattern;
@@ -395,6 +402,7 @@ extern char referer_host[64];
 extern char host_name[64];
 extern char user_agent[1024];
 extern char gen_token[32];
+extern char indexpage[128];
 extern unsigned int login_ip_tmp;
 extern int check_user_agent(char* user_agent);
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
@@ -450,5 +458,12 @@ extern int wave_handle_app_flag(char *name, int wave_app_flag);
 #ifdef RTCONFIG_TCODE
 extern int change_location(char *lang);
 #endif
+#ifdef RTCONFIG_WTF_REDEEM
+extern void wtfast_gen_partnercode(char *str, size_t size);
+#endif
 extern void update_wlan_log(int sig);
+extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
+extern void do_feedback_mail_cgi(char *url, FILE *stream);
+extern void do_dfb_log_file(char *url, FILE *stream);
+extern int is_amas_support(void);
 #endif /* _httpd_h_ */

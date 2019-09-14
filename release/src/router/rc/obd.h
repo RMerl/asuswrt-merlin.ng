@@ -23,7 +23,7 @@
 
 #if 1
 #define ETHER_ADDRESS_LEN 6
-#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK)
 #define OUI_LEN 3
 #define VS_ID 221
 #else

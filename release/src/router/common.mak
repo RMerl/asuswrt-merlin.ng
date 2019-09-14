@@ -49,6 +49,7 @@ export OBJDUMP := $(CROSS_COMPILE)objdump
 export RANLIB := $(CROSS_COMPILE)ranlib
 export READELF ?= $(CROSS_COMPILE)readelf
 export STRIPX := $(CROSS_COMPILE)strip -x
+export KSTRIPX := $(patsubst %-gcc,%-,$(KERNELCC))strip -x
 ifeq ($(RTCONFIG_BCMARM),y)
 export STRIP := $(CROSS_COMPILE)strip
 else

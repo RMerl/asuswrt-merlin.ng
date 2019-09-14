@@ -20,7 +20,7 @@
 #define FT_REGION	BIT(8)	/* system reboot */
 #define FT_CENTRAL_LED		BIT(9)
 
-#if defined(MAPAC2200) || defined(RTAC92U)
+#if defined(MAPAC2200) || defined(RTAC95U)
 #define FT_BHBLOCK	BIT(10)	/* normal client blocking in backhaul */
 #endif
 #ifdef RTCONFIG_WIFI_SON
@@ -41,14 +41,14 @@ struct feature_mapping_s feature_mapping_list[] = {
 	{ "time",		FT_TIME,			"restart_time" },
 	{ "misc",		FT_MISC,			NULL },
 	{ "logger",	FT_LOGGER,		"restart_logger" },
-	{ "feedback",	FT_FEEDBACK,	"restart_sendmail" },
+	{ "feedback",	FT_FEEDBACK,	"restart_sendfeedback" },
 	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
 	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
 	{ "central_led",	FT_CENTRAL_LED,	"reset_led" },
 	/* END */
 	{ "region", FT_REGION, 	"reboot" },
 #ifdef RTCONFIG_WIFI_SON
-#if defined(MAPAC2200) || defined(RTAC92U)
+#if defined(MAPAC2200)
 	{ "bhblock", 	FT_BHBLOCK,	"restart_bhblock" },
 #endif
 	{ "spcmd", 	FT_SPCMD,	"restart_spcmd" },
@@ -132,7 +132,7 @@ enum {
 
 	/* sub feature for smart connect */
 	SUBFT_SMART_CONNECT,	/* smart connect */
-#if defined(MAPAC2200) || defined(RTAC92U)
+#if defined(MAPAC2200) || defined(RTAC95U)
 	SUBFT_NCB,
 #endif
 #ifdef RTCONFIG_WIFI_SON
@@ -177,7 +177,17 @@ enum {
 	/* sub feature for WPS */
 	SUBFT_WPS,
 	/* sub feature for Reboot schedule */
-	SUBFT_REBOOT_SCHEDULE
+	SUBFT_REBOOT_SCHEDULE,
+	/* sub feature for bandwidth 160 support */
+	SUBFT_BW_160_2G,
+	SUBFT_BW_160_5G,
+	SUBFT_BW_160_5G1,	
+	/* sub feature for HE ddfeatures */
+	SUBFT_HE_FEATURES_2G,
+	SUBFT_HE_FEATURES_5G,
+	SUBFT_HE_FEATURES_5G1,
+	/* sub feature for ACS include DFS */
+	SUBFT_ACS_INCLUDE_DFS,
 };
 
 struct subfeature_mapping_s subfeature_mapping_list[] = {
@@ -280,13 +290,27 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "wps", SUBFT_WPS, FT_WIRELESS },
 	/* sub feature for Reboot schedule */
 	{ "reboot_schedule", SUBFT_REBOOT_SCHEDULE, FT_TIME },
-#if defined(MAPAC2200) || defined(RTAC92U)
+#if defined(MAPAC2200) || defined(RTAC95U)
 	{ "ncb",		SUBFT_NCB,	FT_BHBLOCK },
 #endif
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
 #endif
 	{ "lp55xx_led",		SUBFT_LP55XX_LED,	FT_LP55XX_LED },
+#if defined(RTCONFIG_BW160M)
+	/* sub feature for bandwidth 160 support */	
+	{ "bw_160_2g", SUBFT_BW_160_2G, FT_WIRELESS },
+	{ "bw_160_5g", SUBFT_BW_160_5G, FT_WIRELESS },
+	{ "bw_160_5g1", SUBFT_BW_160_5G1, FT_WIRELESS },
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX) 	
+	/* HE feaure */
+	{ "he_features_2g", SUBFT_HE_FEATURES_2G, FT_WIRELESS },
+	{ "he_features_5g", SUBFT_HE_FEATURES_5G, FT_WIRELESS },
+	{ "he_features_5g1", SUBFT_HE_FEATURES_5G1, FT_WIRELESS },
+	/* sub feature for ACS include DFS */
+	{ "acs_dfs", SUBFT_ACS_INCLUDE_DFS, FT_WIRELESS },
+#endif	
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -495,15 +519,15 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "fb_pdesc", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_country", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_browserInfo", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
-	{ "PM_attach_syslog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
-	{ "PM_attach_cfgfile", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
-	{ "PM_attach_modemlog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
-	{ "PM_attach_wlanlog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_attach_syslog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_attach_cfgfile", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_attach_modemlog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_attach_wlanlog", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
 #ifdef RTCONFIG_DSL
 	{ "fb_ISP", 				FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_availability", 			FT_FEEDBACK,		SUBFT_FEEDBACK},
 	{ "fb_Subscribed_Info", 	FT_FEEDBACK,		SUBFT_FEEDBACK},
-	{ "PM_attach_iptables", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
+	{ "fb_attach_iptables", 		FT_FEEDBACK,		SUBFT_FEEDBACK},
 #endif
 	{ "oauth_google_refresh_token", FT_FEEDBACK, SUBFT_FEEDBACK },
 	{ "oauth_google_user_email", FT_FEEDBACK, SUBFT_FEEDBACK },
@@ -618,13 +642,26 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0_txpower", FT_WIRELESS, SUBFT_ADVANCED_2G },
 	{ "wl1_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G },
 	{ "wl2_txpower", FT_WIRELESS, SUBFT_ADVANCED_5G1 },
-#if defined(MAPAC2200) || defined(RTAC92U)
+#if defined(MAPAC2200) || defined(RTAC95U)
 	/* normal client blocking in backhaul */
 	{ "ncb_enable", 	FT_BHBLOCK,		SUBFT_NCB},
 #endif
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
 #endif
+#if defined(RTCONFIG_BW160M)
+	/* Bandwidth 160 support */
+	{ "wl0_bw_160", FT_WIRELESS, SUBFT_BW_160_2G },
+	{ "wl1_bw_160", FT_WIRELESS, SUBFT_BW_160_5G },
+	{ "wl2_bw_160", FT_WIRELESS, SUBFT_BW_160_5G1 },
+#endif	
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	{ "wl0_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_2G },
+	{ "wl1_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G },
+	{ "wl2_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G1 },
+	/* ACS include DFS channels */
+	{ "acs_dfs", FT_WIRELESS, SUBFT_ACS_INCLUDE_DFS },
+#endif	
 	/* END */
 	{ NULL, 0, 0 }
 };

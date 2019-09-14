@@ -16,7 +16,7 @@ body{
 	font-family: Arial;
 }
 .wrapper{
-	background:url(images/New_ui/login_bg.png) #283437 no-repeat;
+	background:url(images/New_ui/login_bg.png) #1F1F1F no-repeat;
 	background-size: 1280px 1076px;
 	background-position: center 0%;
 	margin: 0px; 
@@ -258,7 +258,7 @@ function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];
 	var html_code = '';
 	var url_flag = "";
-	var html_code_notlogin = "<ul><li>Please check with your network administrator.</li></ul>";	
+	var html_code_notlogin = "<ul><li><#web_redirect_suggestion_admin#></li></ul>";	
 	var showtext = function(obj, str){if(obj)obj.innerHTML=str;}
 
 	if(casenum == 1){
@@ -304,7 +304,7 @@ function initial(){
 			//html_code += "</div>";
 			$("#animation_field").show();
 			detect_ppp_connect();
-			$("#page_title").html("Please Wait for Internet Reconnecting");
+			$("#page_title").html("<#web_redirect_reconnecting#>");
 			$("#reason_title").hide();
 			$("#reason_field").hide();
 			$("#suggest_title").hide();
@@ -447,8 +447,8 @@ function initial(){
 	else if(casenum == 9) {
 		$("#page_title").html("<#web_redirect_case8_title#>");
 		html_code += "<ul>";
-		html_code += "<li>Make sure your AiMesh router is power on</li>";
-		html_code += "<li>Reboot AiMesh router and try again.</li>";
+		html_code += "<li><#web_redirect_case9_suggestion1#></li>";
+		html_code += "<li><#web_redirect_case9_suggestion2#></li>";
 		html_code += "</ul>";
 		$("#wanLink").hide();
 		$("#reason_title").hide();

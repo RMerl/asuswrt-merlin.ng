@@ -360,7 +360,7 @@ properExit(int sig)
 	dsbDestroy(global_msg);
 
 	if(sig == ERROR) {
-		system("nvram set fb_state=2");
+		system("nvram set PM_state=2");
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 		extern int report_f;
 		extern int sendId;

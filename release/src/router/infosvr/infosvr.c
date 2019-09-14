@@ -22,6 +22,7 @@
 #include <rtconfig.h>
 #include <shutils.h>
 #include <wlutils.h>
+#include <shared.h>
 
 #define SRV_PORT 9999
 #define PRINT(fmt, args...) fprintf(stderr, fmt, ## args)
@@ -32,7 +33,7 @@
 #define PRODUCTCFG "/etc/linuxigd/general.log"
 #define LAN_DEV "br0"
 
-DWORD RECV(int sockfd , PBYTE pRcvbuf , DWORD dwlen , struct sockaddr *from, int *fromlen , DWORD timeout);
+DWORD RECV(int sockfd , PBYTE pRcvbuf , DWORD dwlen , struct sockaddr *from, socklen_t *fromlen , DWORD timeout);
 int waitsock(int sockfd , int sec , int usec);
 int closesocket(int sockfd);
 void readPrnID(char *prninfo);
@@ -42,6 +43,8 @@ int check_par_usb_prn(void);
 int  set_pid(int pid);	//deliver process id to driver
 void sig_usr1(int sig);	//signal handler to handle signal send from driver
 void sig_usr2(int sig);
+int processReq(int sockfd);
+extern char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port);
 
 int timeup=0;
 
@@ -67,84 +70,9 @@ void sig_do_nothing(int sig)
 
 void load_sysparam(void)
 {
-	char *p, macstr[32], label_macstr[32];
-#if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
-	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
-#endif
-#ifdef RTCONFIG_DPSTA
-	char word[80], *next;
-	int unit, connected;
-#endif
+	char macstr[32], label_macstr[32];
 
-#ifdef RTCONFIG_WIRELESSREPEATER
-	if (sw_mode() == SW_MODE_REPEATER)
-	{
-#ifdef RTCONFIG_CONCURRENTREPEATER
-		if (nvram_get_int("wlc_band") < 0 || nvram_get_int("wlc_express") == 0)
-			snprintf(prefix, sizeof(prefix), "wl0.1_");
-		else if (nvram_get_int("wlc_express") == 1)
-			snprintf(prefix, sizeof(prefix), "wl1.1_");
-		else if (nvram_get_int("wlc_express") == 2)
-			snprintf(prefix, sizeof(prefix), "wl0.1_");
-		else
-
-#endif
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-		strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), sizeof(ssid_g));
-
-	}
-	else
-#ifdef RTCONFIG_REALTEK
-/* {, [MUST] Need to discuss to add new mode for MediaBridge */
-	if (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1)
-	{
-#ifdef RTCONFIG_CONCURRENTREPEATER
-		snprintf(prefix, sizeof(prefix), "wl0_");
-#else
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-#endif
-		strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), 32);		
-	}
-	else
-/* }, [MUST] Need to discuss to add new mode for MediaBridge */
-#endif
-#endif
-#ifdef RTCONFIG_BCMWL6
-#ifdef RTCONFIG_PROXYSTA
-#ifdef RTCONFIG_DPSTA
-	if (dpsta_mode() && nvram_get_int("re_mode") == 0)
-	{
-		connected = 0;
-		foreach(word, nvram_safe_get("dpsta_ifnames"), next) {
-			wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
-			snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
-			if (nvram_get_int(strcat_r(prefix, "state", tmp)) == 2) {
-				connected = 1;
-				snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-				strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), 32);
-				break;
-			}
-		}
-
-		if (!connected)
-			strncpy(ssid_g, nvram_safe_get("wl0.1_ssid"), 32);
-	}
-	else
-#endif
-	if (is_psta(nvram_get_int("wlc_band")))
-	{
-		snprintf(prefix, sizeof(prefix), "wl%d_", nvram_get_int("wlc_band"));
-		strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), 32);
-	}
-	else if (is_psr(nvram_get_int("wlc_band")))
-	{
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
-		strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), 32);
-	}
-	else
-#endif
-#endif
-	strncpy(ssid_g, nvram_safe_get("wl0_ssid"), sizeof(ssid_g));
+	get_discovery_ssid(ssid_g, sizeof(ssid_g));
 	strncpy(netmask_g, nvram_safe_get("lan_netmask"), sizeof(netmask_g));
 	strncpy(productid_g, get_productid(), sizeof(productid_g));
 
@@ -258,7 +186,7 @@ int processReq(int sockfd)
 {
 //    IBOX_COMM_PKT_HDR*  phdr;
     int		 /*iLen , iRes , iCount , */iRcv;
-    int		 fromlen;
+    socklen_t		 fromlen;
     char		*hdr;
     char		pdubuf[INFO_PDU_LENGTH];
     struct sockaddr_in  from_addr;
@@ -298,7 +226,7 @@ int processReq(int sockfd)
 /***  Receive the socket	  ***/
 /***  with a timeout value	***/
 /************************************/
-DWORD RECV(int sockfd , PBYTE pRcvbuf , DWORD dwlen , struct sockaddr *from, int *fromlen , DWORD timeout)
+DWORD RECV(int sockfd , PBYTE pRcvbuf , DWORD dwlen , struct sockaddr *from, socklen_t *fromlen , DWORD timeout)
 {
     if ( waitsock(sockfd , timeout , 0) == 0)
     {
@@ -392,7 +320,7 @@ void deCR(char *str)
 	len = strlen(str);
 	for (i=0; i<len; i++)
 	{
-		if (*(str+i) == '\r' || *(str+i) == '\n', *(str+i) == '"')
+		if (*(str+i) == '\r' || *(str+i) == '\n' || *(str+i) == '"')
 		{
 			*(str+i) = 0;
 			break;

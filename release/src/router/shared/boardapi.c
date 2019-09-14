@@ -68,6 +68,10 @@ static const struct led_btn_table_s {
 #ifdef RTCONFIG_WIFI_TOG_BTN
 	{ "btn_wltog_gpio",	&btn_gpio_table[BTN_WIFI_TOG] },
 #endif
+#ifdef RTCONFIG_TURBO_BTN
+	{ "btn_turbo_gpio",     &btn_gpio_table[BTN_TURBO] },
+	{ "led_turbo_gpio",	&led_gpio_table[LED_TURBO] },
+#endif
 #ifdef RTCONFIG_LED_BTN
 	{ "btn_led_gpio",	&btn_gpio_table[BTN_LED] },
 #endif
@@ -95,13 +99,19 @@ static const struct led_btn_table_s {
 	{ "led_lan4_gpio",	&led_gpio_table[LED_LAN4] },
 #else
 	{ "led_lan_gpio",	&led_gpio_table[LED_LAN] },
-#endif	/* LAN4WAN_LED */
+#endif
 	{ "led_wan_gpio",	&led_gpio_table[LED_WAN] },
 #ifdef HND_ROUTER
 	{ "led_wan_normal_gpio",&led_gpio_table[LED_WAN_NORMAL] },
 #endif
-#if defined(RTCONFIG_WANPORT2)
+#if defined(RTCONFIG_WANLEDX2)
 	{ "led_wan2_gpio",	&led_gpio_table[LED_WAN2] },
+#endif
+#if defined(RTCONFIG_R10G_LED)
+	{ "led_r10g_gpio",	&led_gpio_table[LED_R10G] },
+#endif
+#if defined(RTCONFIG_SFPP_LED)
+	{ "led_sfpp_gpio",	&led_gpio_table[LED_SFPP] },
 #endif
 #if defined(RTCONFIG_FAILOVER_LED)
 	{ "led_failover_gpio",	&led_gpio_table[LED_FAILOVER] },
@@ -124,7 +134,7 @@ static const struct led_btn_table_s {
 	{ "led_logo_gpio",	&led_gpio_table[LED_LOGO] },
 #endif
 	{ "led_wan_red_gpio",	&led_gpio_table[LED_WAN_RED] },
-#if defined(RTCONFIG_WANPORT2) && defined(RTCONFIG_WANRED_LED)
+#if defined(RTCONFIG_WANLEDX2) && defined(RTCONFIG_WANRED_LED)
 	{ "led_wan2_red_gpio",	&led_gpio_table[LED_WAN2_RED] },
 #endif
 #ifdef RTCONFIG_QTN
@@ -197,8 +207,8 @@ static const struct led_btn_table_s {
 #if defined(RPAC51)
 	{ "led_pwr_red_gpio",&led_gpio_table[LED_RED_POWER] },
 	{ "led_single_gpio",	&led_gpio_table[LED_SINGLE] },
-	{ "led_far_gpio",	&led_gpio_table[LED_FAR] },
 	{ "led_near_gpio",	&led_gpio_table[LED_NEAR] },
+	{ "led_far_gpio",	&led_gpio_table[LED_FAR] },
 #endif
 #ifdef RPAC87
 	{ "led_2g_green_gpio1",	&led_gpio_table[LED_2G_GREEN1] },
@@ -246,6 +256,9 @@ int init_gpio(void)
 		, "btn_swmode1_gpio", "btn_swmode2_gpio", "btn_swmode3_gpio"
 #endif	/* Mode */
 #endif	/* RTCONFIG_SWMODE_SWITCH */
+#ifdef RTCONFIG_TURBO_BTN
+		, "btn_turbo_gpio"
+#endif
 #ifdef RTCONFIG_LED_BTN
 		, "btn_led_gpio"
 #endif
@@ -256,7 +269,7 @@ int init_gpio(void)
 		, "btn_ejusb1_gpio", "btn_ejusb2_gpio"
 #endif
 	};
-	char *led_list[] = { "led_pwr_gpio", "led_usb_gpio", "led_wps_gpio", "fan_gpio", "have_fan_gpio", "led_lan_gpio", "led_wan_gpio", "led_usb3_gpio", "led_2g_gpio", "led_5g_gpio"
+	char *led_list[] = { "led_pwr_gpio", "led_usb_gpio", "led_wps_gpio", "fan_gpio", "have_fan_gpio", "led_wan_gpio", "led_usb3_gpio", "led_2g_gpio", "led_5g_gpio"
 #if defined(RTCONFIG_HAS_5G_2)
 		, "led_5g2_gpio"
 #endif
@@ -269,23 +282,34 @@ int init_gpio(void)
 #if defined(RTCONFIG_PWRRED_LED)
 		, "led_pwr_red_gpio"
 #endif
+#ifdef RTCONFIG_TURBO_BTN
+		, "led_turbo_gpio"
+#endif
 #ifdef RTCONFIG_LOGO_LED
 		, "led_logo_gpio"
 #endif
 #ifdef RTCONFIG_LAN4WAN_LED
 		, "led_lan1_gpio", "led_lan2_gpio", "led_lan3_gpio", "led_lan4_gpio"
-#endif	/* LAN4WAN_LED */
+#else
+		, "led_lan_gpio"
+#endif
 #ifdef RTCONFIG_LED_ALL
 		, "led_all_gpio"
 #endif
-#if defined(RTCONFIG_WANPORT2)
+#if defined(RTCONFIG_WANLEDX2)
 		, "led_wan2_gpio"
 #endif
 #if defined(RTCONFIG_WANRED_LED)
 		, "led_wan_red_gpio"
-#if defined(RTCONFIG_WANPORT2)
+#if defined(RTCONFIG_WANLEDX2)
 		, "led_wan2_red_gpio"
 #endif
+#endif
+#if defined(RTCONFIG_R10G_LED)
+		, "led_r10g_gpio"
+#endif
+#if defined(RTCONFIG_SFPP_LED)
+		, "led_sfpp_gpio"
 #endif
 #ifdef RTCONFIG_QTN
 		, "reset_qtn_gpio"
@@ -411,7 +435,7 @@ int init_gpio(void)
 		gpio_dir(gpio_pin, GPIO_DIR_OUT);
 #endif
 
-#if defined(RTCONFIG_WANPORT2)
+#if defined(RTCONFIG_WANLEDX2)
 		/* Turn on WAN RED LED at system start-up if and only if coresponding WAN unit is enabled. */
 		if (is_router_mode()) {
 			if ((!strcmp(led_list[i], "led_wan_red_gpio") && get_dualwan_by_unit(0) != WANS_DUALWAN_IF_NONE) ||
@@ -1095,7 +1119,7 @@ int lanport_ctrl(int ctrl)
 	else
 		rtkswitch_LanPort_linkDown();
 	return 1;
-#elif RTCONFIG_REALTEK
+#elif defined(RTCONFIG_REALTEK)
 	char word[100], *next;
 	int mask = 0;
 	char cmd[64];

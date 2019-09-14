@@ -1,0 +1,14 @@
+Thankfully, we have had so many contributions that maintaining the
+AUTHORS file would be a big task in itself. On the other hand, we
+now use git and I make sure that each author receives proper credit
+for patches I receive.
+
+So rather than trying to reproduce the git author log here (and
+often making mistakes in that), I invite you to check the git logs.
+You can also do this online at
+
+http://git.adiscon.com/?p=rsyslog.git;a=summary
+
+Rainer Gerhards
+<rgerhards@adiscon.com>
+lead rsyslog developer

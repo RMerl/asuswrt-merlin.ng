@@ -829,7 +829,7 @@ function applyRule(){
 			}
 		}
 
-		if(IPv61_Passthrough_support && document.form.ipv61_service.value=="flets"){
+		if(IPv6_Passthrough_support && document.form.ipv61_service.value=="flets"){
 			inputCtrl(document.form.ipv61_ifdev_select, 1);
 			document.form.ipv61_ifdev.value = "eth";
 		}else if(document.form.ipv61_ifdev_select.disabled){	// set ipv6_ifdev="ppp" while interface is disabled.
@@ -947,6 +947,13 @@ function genWANSoption(){
 				
 			document.form.wan_selection.options[i] = new Option(wans_dualwan_NAME, i);
 		}
+
+		if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
+			if(wans_dualwan_NAME == "WAN2")
+				document.form.wan_selection.options[i] = new Option("10G base-T", i);
+			else if(wans_dualwan_NAME == "SFP+")
+				document.form.wan_selection.options[i] = new Option("10G SFP+", i);
+		}
 	}
 
 	document.form.wan_selection.selectedIndex = parseInt(ipv6_unit);
@@ -955,7 +962,7 @@ function genWANSoption(){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="hiddenMask" class="popup_bg">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
@@ -1312,8 +1319,8 @@ function genWANSoption(){
 				  <tr>
 						<th><#Enable_Router_AD#></th>
 		     			<td>
-							<input type="radio" name="_ipv6_radvd" class="input" value="1" <% nvram_match("ipv6_radvd", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
-							<input type="radio" name="_ipv6_radvd" class="input" value="0" <% nvram_match("ipv6_radvd", "0","checked"); %>><#btn_disable#>
+							<input type="radio" name="_ipv61_radvd" class="input" value="1" <% nvram_match("ipv61_radvd", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
+							<input type="radio" name="_ipv61_radvd" class="input" value="0" <% nvram_match("ipv61_radvd", "0","checked"); %>><#btn_disable#>
 		     			</td>
 		     	  </tr>
 			</table>

@@ -138,21 +138,35 @@ install: all
 	@install -d $(INSTALLDIR)/usr/bin/
 	@install -d $(INSTALLDIR)/usr/sbin/
 	@install -d $(INSTALLDIR)/usr/lib/
+ifeq ($(and $(RTCONFIG_SAMBA3),$(RTCONFIG_SAMBA36X)),y)
+	@install -D $(srcdir)/bin/smbd $(INSTALLDIR)/usr/bin/smbd
+	@install -D $(srcdir)/bin/nmbd $(INSTALLDIR)/usr/bin/nmbd
+	@install -D $(srcdir)/bin/smbpasswd $(INSTALLDIR)/usr/bin/smbpasswd
+else
 	@install -D $(srcdir)/bin/smbd $(INSTALLDIR)/usr/sbin/smbd
 	@install -D $(srcdir)/bin/nmbd $(INSTALLDIR)/usr/sbin/nmbd
-	@install -D $(srcdir)/bin/smbpasswd $(INSTALLDIR)/usr/bin/smbpasswd
+	@install -D $(srcdir)/bin/smbpasswd $(INSTALLDIR)/usr/sbin/smbpasswd
+endif
 	#@install -D $(srcdir)/bin/libsmbclient.so $(INSTALLDIR)/usr/lib/libsmbclient.so
 	#@install -D $(srcdir)/bin/libbigballofmud.so.0 $(INSTALLDIR)/usr/lib/libbigballofmud.so.0
 ifeq ($(HND_ROUTER),y)
 	@install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/lib/libresolv.so.2 $(INSTALLDIR)/usr/lib/libresolv.so.2
+else ifeq ($(QCA),y)
+	# Do nothing
 else
 	@install -D $(shell dirname $(shell which $(CXX)))/../lib/libresolv.so.0 $(INSTALLDIR)/usr/lib/libresolv.so.0
 endif
 ###############################Charles Modify##########	
 
+ifeq ($(and $(RTCONFIG_SAMBA3),$(RTCONFIG_SAMBA36X)),y)
+	$(STRIP) -s $(INSTALLDIR)/usr/bin/smbd
+	$(STRIP) -s $(INSTALLDIR)/usr/bin/nmbd
+	$(STRIP) -s $(INSTALLDIR)/usr/bin/smbpasswd
+else
 	$(STRIP) -s $(INSTALLDIR)/usr/sbin/smbd
 	$(STRIP) -s $(INSTALLDIR)/usr/sbin/nmbd
-	$(STRIP) -s $(INSTALLDIR)/usr/bin/smbpasswd
+	$(STRIP) -s $(INSTALLDIR)/usr/sbin/smbpasswd
+endif
 #	$(STRIP) -s $(INSTALLDIR)/usr/lib/libsmbclient.so
 	# do not strip shared library, it will be optimized by libfoo.pl
 	# $(STRIP) -s $(INSTALLDIR)/usr/lib/libbigballofmud.so

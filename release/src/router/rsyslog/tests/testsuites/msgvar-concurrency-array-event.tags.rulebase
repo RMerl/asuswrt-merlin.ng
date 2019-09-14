@@ -1,0 +1,11 @@
+version=2
+rule=tag1,tag1,tag3:msg: %{"name":"numbers", "type":"repeat",
+			"parser":[
+			  {"name":"n1", "type":"number"},
+			  {"type":"literal", "text":":"},
+			  {"name":"n2", "type":"number"}
+			  ],
+			"while":[
+			  {"type":"literal", "text":", "}
+			]
+       		   }% b %w:word%

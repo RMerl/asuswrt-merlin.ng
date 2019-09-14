@@ -57,7 +57,15 @@ var wanObj = {
 		"wan_dns1_x": "",
 		"wan_dns2_x": "",
 		"wan_heartbeat_x": ""
-	}	
+	},
+
+	"LWAN_2p5G": {
+		"wans_extwan": "0"
+	},
+
+	"dualWan": {
+		"wans_dualwan": ""
+	}
 }
 
 var lanObj = {
@@ -93,6 +101,12 @@ var wirelessObj = {
 		"wl2_wpa_psk": "",
 		"wl2_auth_mode_x": "",
 		"wl2_crypto": ""
+	},
+	"wl3": {
+		"wl3_ssid": "",
+		"wl3_wpa_psk": "",
+		"wl3_auth_mode_x": "",
+		"wl3_crypto": ""
 	}
 }
 
@@ -216,6 +230,12 @@ var modemObj = {
 
 var systemVariable = {
 	"originWanType": "", /* ToDo: Secondary WAN support */
+	"originPppAccount":{
+		"username": "",
+		"password": ""
+	},
+	"originWansExtwan": "",
+	"originWansDualwan": "",
 	"manualWanSetup": false,
 	"wanDnsenable": "",
 	"detwanResult": {
@@ -241,9 +261,21 @@ var systemVariable = {
 	"multiPAP" : {
 		"wlcOrder": [],
 		"wlcStatus": {}
-	}
+	},
+	"wanOption": false,
+	"skipAiMeshOptionPage": false
 }
 
 var aimeshObj = {
 	"cfg_master": "1"
+}
+
+var boostKeyObj = {
+	"turbo_mode": "1"
+}
+
+var axModeObj = {
+	"wl0_he_features": "3",
+	"wl1_he_features": "7",
+	"wl2_he_features": "7"
 }

@@ -90,7 +90,7 @@
 </style>
 <script>
 $(function () {
-	if(amesh_support) {
+	if(amesh_support && ameshRouter_support) {
 		addNewScript('/require/modules/amesh.js');
 	}
 });
@@ -146,7 +146,7 @@ function initial(){
 				"value" : "1"
 			},
 			"label" : {
-				"text" : (amesh_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
+				"text" : (amesh_support && ameshRouter_support) ? "<#AiMesh_GW_item#>" : "<#OP_GW_item#>"
 			},
 			"mode" : "1",
 			"express" : "0"
@@ -161,7 +161,7 @@ function initial(){
 				"value" : "3"
 			},
 			"label" : {
-				"text" : (amesh_support) ? "<#AiMesh_AP_item#>" : "<#OP_AP_item#>"
+				"text" : (amesh_support && ameshRouter_support) ? "<#AiMesh_AP_item#>" : "<#OP_AP_item#>"
 			},
 			"mode" : "3",
 			"express" : "0"
@@ -361,7 +361,7 @@ function saveMode(){
 		}
 	}
 
-	if(amesh_support) {
+	if(amesh_support && ameshRouter_support) {
 		if(!AiMesh_confirm_msg("Operation_Mode", document.form.sw_mode.value))
 			return false;
 	}
@@ -395,7 +395,7 @@ function saveMode(){
 		document.form.wlc_psta.value = 0;
 		document.form.wlc_psta.disabled = false;
 
-		if(amesh_support) {
+		if(amesh_support && ameshRouter_support) {
 			document.form.cfg_master.disabled = false;
 			document.form.cfg_master.value = 1;
 		}
@@ -626,7 +626,7 @@ function setScenerion(mode, express){
 			$("#mode_desc").html("<#OP_AP_desc#><br/><span style=\"color:#FC0\"><#OP_AP_hint#></span>");
 		}else{*/
 			var desc = "";
-			if(amesh_support) {
+			if(amesh_support && ameshRouter_support) {
 				desc += "<#AiMesh_AP_desc#>";
 				desc += "<br>";
 				desc += "<#AiMesh_Node_Add#>";
@@ -653,7 +653,7 @@ function setScenerion(mode, express){
 			pstaDesc += "<br/><span style=\"color:#FC0\"><#deviceDiscorvy4#></span>";
 
 		var url = "/images/New_ui/mb.jpg";
-		var height = "250px";
+		var height = "305px";
 		if(odmpid == "RT-AC66U_B1" || odmpid == "RT-AC1750_B1" || odmpid == "RT-N66U_C1" || odmpid == "RT-AC1900U" || odmpid == "RT-AC67U")
 			url = "/images/RT-AC66U_V2/mb.jpg";
 		else if(odmpid == "RP-AC1900")
@@ -690,7 +690,7 @@ function setScenerion(mode, express){
 		else
 			$("#Senario").css({"height": "", "background": "url(/images/New_ui/rt.jpg) center no-repeat", "margin": "auto", "margin-bottom": "30px"});
 		var desc = "";
-		if(amesh_support) {
+		if(amesh_support && ameshRouter_support) {
 			desc += "<#AiMesh_GW_desc#>";
 			desc += "<br>";
 			desc += "<#AiMesh_Node_Add#>";
@@ -765,7 +765,7 @@ function change_smart_con(v){
 }
 </script>
 </head>
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="hiddenMask" class="popup_bg">
 <table cellpadding="4" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">

@@ -68,11 +68,11 @@ function initial(){
 	show_menu();
 	if(is_CN){
 		$("#googleplay").hide();
-		$("#wandoujia").show();
+		$("#googleApp_CN").show();
 	}
 	else{
 		$("#googleplay").show();
-		$("#wandoujia").hide();
+		$("#googleApp_CN").hide();
 	}
 	document.getElementById("app_state").style.display = "";
 	
@@ -192,6 +192,7 @@ function show_warning_message(){
 	}
 }
 
+<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',
@@ -635,7 +636,7 @@ function update_applist(e){
 
 </script>
 </head>
-<body onload="initial();" onunload="return unload_body();">
+<body onload="initial();" onunload="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">
@@ -711,7 +712,7 @@ function update_applist(e){
 
 									  <tr class="block_bg">
 									    <td colspan="5" class="cloud_main_radius">
-												<div style="padding:10px;width:95%;font-style:italic;font-size:14px;">
+												<div style="padding:10px;width:95%;font-size:14px;">
 												<#AiCloud_maintext_note#>
 													<br/><br/>
 													<table width="100%" >
@@ -730,8 +731,8 @@ function update_applist(e){
 																<a id="googleplay" href="https://play.google.com/store/apps/details?id=com.asustek.aicloud" target="_blank">
 																	<div style="width:172px;height:51px;background:url('images/googleplay.png') no-repeat;background-size:75%;"></div>
 																</a>												
-																<a id="wandoujia" href="http://www.wandoujia.com/apps/com.asus.aihome" target="_blank" style="display:none">
-																	<div style="width:130px;height:51px;text-align: center;line-height:51px;line-height: 51px;font-size: 20px;font-weight: bold;text-decoration: underline;">豌豆荚</div>
+																<a id="googleApp_CN" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank" style="display:none">
+																	<div style="width:130px;text-align: center;font-size: 20px;border: 1px solid #BDBDBD;border-radius: 6px;padding: 7px 4px;margin-bottom:12px;">Android App</div>
 																</a>			
 																<a href="https://itunes.apple.com/us/app/aicloud-lite/id527118674" target="_blank">
 																	<div style="width:172px;height:51px;background:url('images/AppStore.png') no-repeat;background-size:75%;"></div>
@@ -763,7 +764,7 @@ function update_applist(e){
 									    <td width="1px"></td>
 
 									    <td>
-											<div style="padding:10px;width:95%;font-style:italic;font-size:14px;">
+											<div style="padding:10px;width:95%;font-size:14px;">
 												<#aicloud_disk_desc#>												
 											</div>
 										</td>
@@ -815,7 +816,7 @@ function update_applist(e){
 												&nbsp;
 											</td>
 									    <td>
-												<div style="padding:10px;width:95%;font-style:italic;font-size:14px;">
+												<div style="padding:10px;width:95%;font-size:14px;">
 													<#smart_access_desc#>
 												</div>
 											</td>
@@ -864,7 +865,7 @@ function update_applist(e){
 												&nbsp;
 											</td>
 									    <td width="">
-												<div style="padding:10px;width:95%;font-style:italic;font-size:14px;">
+												<div style="padding:10px;width:95%;font-size:14px;">
 													<#smart_sync_desc#>
 												</div>
 											</td>

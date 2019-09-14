@@ -1863,6 +1863,34 @@ void config_switch(void)
 }
 
 #else
+#ifdef RTCONFIG_BCM_7114
+void ctf_blocknat()
+{
+	f_write_string("/proc/net/ctfnat", "1", 0, 0);
+	nvram_unset("ctf_nonat_force");
+}
+
+int vpncoppp()
+{
+	char tmp[100], wan_prefix[] = "wanXXXXXXXXXX_";
+	int ret = 0;
+
+	if(nvram_match("passvc", "1"))
+		return 0;
+
+	snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
+
+	if (!nvram_match("vpnc_proto", "disable") && nvram_match(strcat_r(wan_prefix, "proto", tmp), "pppoe"))
+		ret = 1;
+	else
+		ret = 0;
+
+	nvram_set_int("vpncoppp", ret);
+
+	return ret;
+}
+#endif
+
 void init_switch()
 {
 	generate_switch_para();
@@ -1890,12 +1918,12 @@ void init_switch()
 
 #ifdef CONFIG_BCMWL5
 	// ctf should be disabled when some functions are enabled
-	if ((nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0) ||
-	    (check_wl_guest_bw_enable()  || (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2)) ||
+	if (IS_TQOS() ||
+	IS_BW_QOS() ||
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BCM_7114)
 	(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) ||
 #endif
-	    nvram_get_int("ctf_disable_force")
+	nvram_get_int("ctf_disable_force")
 #ifndef RTCONFIG_BCMARM
 	|| sw_mode() == SW_MODE_REPEATER
 #endif
@@ -1913,6 +1941,13 @@ void init_switch()
 	}
 #ifdef RTCONFIG_BCMFA
 	fa_nvram_adjust();
+#endif
+#ifdef RTCONFIG_BCM_7114
+	int retv = vpncoppp();
+
+        if( nvram_match("ctf_disable", "0") &&
+	(nvram_match("ctf_nonat_force", "1") || retv))
+		ctf_blocknat();
 #endif
 
 /* Requires bridge netfilter, but slows down and breaks EMF/IGS IGMP IPTV Snooping
@@ -2219,9 +2254,14 @@ reset_mssid_hwaddr(int unit)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 					|| (is_psr(unit) &&
 #ifdef RTCONFIG_PSR_GUEST
-						!nvram_match(strcat_r(prefix, "psr_guest", tmp), "1") &&
+						!nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1") &&
 #endif
 						(subunit > 1))
+#ifdef RTCONFIG_PSR_GUEST
+					|| (!unit && is_psr(unit) &&
+						nvram_match(strcat_r(prefix, "psr_mbss", tmp), "1") &&
+						subunit == 4)
+#endif
 #endif
 				)
 					macp = (unsigned char*) &macvalue_local;
@@ -2292,27 +2332,15 @@ reset_psr_hwaddr()
 #ifdef RTCONFIG_DHDAP
 void load_wl()
 {
-	char module[80], *modules, *next;
-#ifdef RTCONFIG_DPSTA
-#ifdef RTCONFIG_BCM_7114
-	modules = "dpsta dhd dhd24";	// now 7114 models use this
-#else
-	modules = "dpsta dhd";
-#endif
-#else   // DPSTA
-#ifdef RTCONFIG_BCM_7114
-	modules = "dhd dhd24";		// now 7114 models use this
-#else
-	modules = "dhd";
-#endif
-#endif
+	char module[80], modules[80], *next;
 	int i = 0, maxunit = -1;
 	int unit;
 	char ifname[16] = {0};
 	char instance_base[128];
-#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX) && !defined(RTCONFIG_MFGFW)
 	char word[100], tmp[100], prefix[] = "wlXXXXXXXXXX_";
 	int dhd_chk_cnt = nvram_get_int("dhd_chk_cnt");
+	int org, cur, count;
 	if (dhd_chk_cnt < 5) {
 		nvram_set_int("dhd_chk_cnt", ++dhd_chk_cnt);
 
@@ -2328,7 +2356,36 @@ void load_wl()
 		nvram_commit();
 	}
 
-	dbg("dhd_chk_cnt: %d\n",  nvram_get_int("dhd_chk_cnt"));
+	dbg("dhd_chk_cnt: %d\n", nvram_get_int("dhd_chk_cnt"));
+
+	unit = 0;
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		cur = nvram_get_int(strcat_r(prefix, "failed", tmp));
+		org = nvram_get_int(strcat_r(prefix, "failed_org", tmp));
+
+		nvram_set_int(strcat_r(prefix, "failed_org", tmp), cur);
+		nvram_set_int(strcat_r(prefix, "ok", tmp), 0);
+
+		if ((cur > org) || (dhd_chk_cnt == 5)) {
+			count = (dhd_chk_cnt == 5) ? 5 : (cur - org);
+			wl_fail_db(unit, 2, count);
+
+			nvram_commit();
+		}
+
+		unit++;
+	}
+#endif
+
+	memset(modules, 0, sizeof(modules));
+#if defined(RTCONFIG_BCM_7114) && defined(RTCONFIG_MFGFW)
+	add_to_list("dhdtest", modules, sizeof(modules));
+#else
+	add_to_list("dhd", modules, sizeof(modules));
+#ifdef RTCONFIG_BCM_7114
+	add_to_list("dhd24", modules, sizeof(modules));
+#endif
 #endif
 
 	foreach(module, modules, next) {
@@ -2357,6 +2414,7 @@ void load_wl()
 			eval("insmod", module, instance_base);
 		} else {
 			eval("insmod", module);
+			 _dprintf("\nmodule %s loaded\n", module); 
 		}
 	}
 
@@ -2364,9 +2422,18 @@ void load_wl()
 	download_clmblob_files();
 #endif /* WLCLMLOAD */
 
-#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
-        nvram_set_int("dhd_chk_cnt", 0);
-        nvram_commit();
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX) && !defined(RTCONFIG_MFGFW)
+	nvram_set_int("dhd_chk_cnt", 0);
+	nvram_commit();
+
+	unit = 0;
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		if (nvram_get_int(strcat_r(prefix, "ok", tmp)))
+			wl_fail_db(unit, 1, 1);
+
+		unit++;
+	}
 #endif
 }
 #endif
@@ -2396,12 +2463,12 @@ void init_wl(void)
 #endif
 	set_wltxpower();
 
-#ifdef RTCONFIG_DHDAP
-	load_wl();
-#else
 #ifdef RTCONFIG_DPSTA
 	eval("insmod", "dpsta");
 #endif
+#ifdef RTCONFIG_DHDAP
+	load_wl();
+#else
 	eval("insmod", "wl");
 #endif
 
@@ -2805,6 +2872,10 @@ void init_others(void)
 	f_write_string("/proc/sys/net/core/wmem_max", "524288", 0, 0);
 	f_write_string("/proc/sys/net/core/rmem_default", "524288", 0, 0);
 	f_write_string("/proc/sys/net/core/rmem_max", "524288", 0, 0);
+
+#ifdef GTAC2900
+	update_cfe_ac2900();
+#endif
 }
 #else
 
@@ -3119,9 +3190,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	char buf[8];
 	int bss_opmode_cap_reqd = 0;
 #endif
-#ifdef RTCONFIG_PSR_GUEST
-	char tmp3[100];
-#endif
 
 	if (subunit == -1)
 	{
@@ -3278,16 +3346,6 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			if (!nvram_match(strcat_r(prefix2, "psr_mbss", tmp), "1"))
 #endif
 				nvram_set(strcat_r(prefix, "bss_enabled", tmp), "0");
-
-#ifdef RTCONFIG_PSR_GUEST
-			nvram_set(strcat_r(prefix, "mbss_rmac", tmp), (nvram_match(strcat_r(prefix, "bss_enabled", tmp2), "1") && nvram_match(strcat_r(prefix2, "psr_mbss", tmp3), "1") && (dpsr_mode()
-#ifdef RTCONFIG_DPSTA
-				|| dpsta_mode()
-#endif
-				)) ? "1" : "0");
-#else
-			nvram_unset(strcat_r(prefix, "mbss_rmac", tmp));
-#endif
 		}
 #endif
 	}
@@ -3571,7 +3629,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			if (!(dpsta_mode() && nvram_get_int("re_mode") == 1))
 #endif
 			nvram_set(strcat_r(prefix, "bw_160", tmp), nvram_match(strcat_r(prefix, "nband", tmp2), "1") ? "1" : "0");
-		}
+                }
 #endif
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
@@ -3834,11 +3892,10 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 				)
 #if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BW160M)
 					if (nvram_match(strcat_r(prefix, "bw_160", tmp), "1"))
-						nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? "15" : "3");  // 160M
+						nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? "15" : "3");	// 160M
 					else
 #endif
-
-					nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? "7" : "3");// 80M
+					nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? "7" : "3");		// 80M
 				else
 #endif
 				if (nvram_match(strcat_r(prefix, "nmode", tmp), "-1"))
@@ -3873,15 +3930,15 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set(strcat_r(prefix, "obss_coex", tmp), "0");
 		}
 #endif
-		else if (nvram_match(strcat_r(prefix, "bw", tmp), "4"))         // 80+80M
+		else if (nvram_match(strcat_r(prefix, "bw", tmp), "4"))		// 80+80M
 		{
 			//TBD
 		}
 #if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BW160M)
-		else if (nvram_match(strcat_r(prefix, "bw", tmp), "5") &&       // 160M
+		else if (nvram_match(strcat_r(prefix, "bw", tmp), "5") &&	// 160M
 			nvram_match(strcat_r(prefix, "vreqd", tmp2), "1"))
 		{
-			if (nvram_match(strcat_r(prefix, "nband", tmp), "2"))   // 2.4G
+			if (nvram_match(strcat_r(prefix, "nband", tmp), "2"))	// 2.4G
 				nvram_set(strcat_r(prefix, "bw_cap", tmp), "3");
 			else
 				nvram_set(strcat_r(prefix, "bw_cap", tmp), hw_vht_cap() ? "15" : "3");
@@ -4019,7 +4076,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 
 #ifdef RTCONFIG_EMF
 		/* Wireless IGMP Snooping */
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		i = nvram_get_int(strcat_r(prefix, "igs", tmp)) || is_psta(unit) || is_psr(unit);
+#else
+		i = nvram_get_int(strcat_r(prefix, "igs", tmp));
+#endif
 		nvram_set_int(strcat_r(prefix, "wmf_bss_enable", tmp), i ? 1 : 0);
 #ifdef RTCONFIG_BCMWL6
 		nvram_set_int(strcat_r(prefix, "wmf_ucigmp_query", tmp), 1);
@@ -4057,6 +4118,17 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			nvram_set_int(strcat_r(prefix, "probresp_sw", tmp), 1);
 		else
 			nvram_set_int(strcat_r(prefix, "probresp_sw", tmp), 0);
+#endif
+
+#ifdef RTCONFIG_BCMARM
+		if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+			|| is_psta(unit) || is_psr(unit)
+#endif
+		) {
+			if (!nvram_get_int(strcat_r(prefix, "mfp", tmp)))
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+		}
 #endif
 
 		dbG("bw: %s\n", nvram_safe_get(strcat_r(prefix, "bw", tmp)));
@@ -4134,6 +4206,15 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #ifdef RTCONFIG_BCMARM
 			if (!nvram_get_int("dwds_ctrl"))
 			nvram_set(strcat_r(prefix, "dwds", tmp), is_ure(unit) ? "0" : "1");
+
+			if (is_ure(unit)
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+				|| is_psta(unit) || is_psr(unit)
+#endif
+			) {
+				if (!nvram_get_int(strcat_r(prefix2, "mfp", tmp)))
+					nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+			}
 #endif
 		}
 		else
@@ -5184,7 +5265,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 		}
 
 		/* Using vlanctl to handle vlan forwarding */
-		if (wan_vid || switch_stb > 0 || nvram_match("switch_wantag", "unifi_biz")) { /* config wan port or bridge hinet IPTV traffic */
+		if ((wan_vid || switch_stb > 0 || nvram_match("switch_wantag", "unifi_biz")) && !nvram_match("switch_wantag", "superonline")) { /* config wan port or bridge hinet IPTV traffic */
 #if 0
 			/* Handle no vid traffic */
 #endif
@@ -5198,7 +5279,7 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
 				nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
 				nvram_match("switch_wantag", "iprimus") ||
-				(nvram_match("switch_wantag", "none") && switch_stb == 0 && !wan_vid)) {
+				(nvram_match("switch_wantag", "manual") && switch_stb == 0 && wan_vid)) {
 				eval("vconfig", "add", "eth0", port_id);
 				sprintf(wan_dev, "vlan%d", wan_vid);
 				eval("ifconfig", wan_dev, "allmulti", "up");
@@ -5232,12 +5313,17 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				/*
 					multicast iptv no need to forward vlan packets from wan to lan
 				*/
-				if (switch_stb <= 6) {
+				if ((switch_stb <= 6)
+#ifdef RTAC86U
+					|| (switch_stb == SWCFG_PASSTHROUGH)
+#endif
+				) {
 					/* Add wan bridge */
 					eval("brctl", "addbr", "br1");
 					eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "1",  "-m", "0");
 					eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "2",  "-m", "0");
-					eval("brctl", "stp", "br1", "on");
+					if (!nvram_match("switch_wantag", "unifi_home"))
+						eval("brctl", "stp", "br1", "on");
 					eval("ifconfig", "br1", "up");
 					eval("brctl", "addif", "br1", "eth0.v0");
 					set_wan_phy("");
@@ -5399,6 +5485,21 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", "br1", vlanDev1);
 			}
+			else if (nvram_match("switch_wantag", "superonline")) {
+				sprintf(port_id, "%d", iptv_vid);
+				eval("vconfig", "add", "eth0", port_id);
+				sprintf(vlanDev1, "vlan%d", iptv_vid);
+				if (!nvram_match("switch_wan1prio", "0"))
+					eval("vconfig", "set_egress_map", vlanDev1, "0", nvram_get("switch_wan1prio"));
+				eval("ifconfig", vlanDev1, "allmulti", "up");
+				eval("brctl", "addbr", "br1");
+				eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "1",  "-m", "0");
+				eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "2",  "-m", "0");
+				eval("ifconfig", "br1", "allmulti", "up");
+				eval("brctl", "delif", "br0", ethPort1);
+				eval("brctl", "addif", "br1", vlanDev1);
+				eval("brctl", "addif", "br1", ethPort1);
+			}
 			else {  /* Nomo case, untag it. */
 				/* config ethPort1 = IPTV */
 				sprintf(vlan_entry, "0x%x", iptv_vid);
@@ -5417,6 +5518,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("vlanctl", "--if", ethPort1, "--tx", "--tags", "1", "--filter-vid", vlan_entry, "0", "--filter-txif", vlanDev1, "--pop-tag", "--rule-append");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", "br1", vlanDev1);
+				if (nvram_match("switch_wantag", "unifi_home"))
+					eval("ethswctl", "-c", "hwstp",  "-i",  vlanDev1, "-o",  "disable");
 			}
 		} else if (nvram_match("switch_stb_x", "5") && nvram_match("switch_wantag", "none")) {
 			if (model == MODEL_RTAC86U) {
@@ -5514,6 +5617,48 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("brctl", "addif", "br1", vlanDev1);
 			}
 		}
+#ifdef RTAC86U
+		else if (nvram_get_int("switch_stb_x") == SWCFG_PASSTHROUGH && nvram_match("switch_wantag", "none")) {
+			switch_stb = -1;
+
+			sprintf(ethPort1, "eth1");
+			sprintf(vlanDev1, "eth1.v0");
+			sprintf(ethPort2, "eth2");
+			sprintf(vlanDev2, "eth2.v0");
+			sprintf(ethPort3, "eth3");
+			sprintf(vlanDev3, "eth3.v0");
+			sprintf(ethPort4, "eth4");
+			sprintf(vlanDev4, "eth4.v0");
+
+			/* Just forward packets between wan & vlanDev1, no tag */
+			eval("brctl", "delif", "br0", ethPort1);
+			eval("brctl", "delif", "br0", ethPort2);
+			eval("brctl", "delif", "br0", ethPort3);
+			eval("brctl", "delif", "br0", ethPort4);
+			eval("vlanctl", "--mcast", "--if-create", ethPort1, "0");
+			eval("vlanctl", "--mcast", "--if-create", ethPort2, "0");
+			eval("vlanctl", "--mcast", "--if-create", ethPort3, "0");
+			eval("vlanctl", "--mcast", "--if-create", ethPort4, "0");
+			/* pop tag (lan bridge) */
+			eval("vlanctl", "--if", ethPort1, "--rx", "--tags", "0", "--set-rxif", vlanDev1, "--rule-append");
+			eval("vlanctl", "--if", ethPort1, "--tx", "--tags", "0", "--filter-txif", vlanDev1, "--rule-append");
+			eval("ifconfig", vlanDev1, "allmulti", "up");
+			eval("brctl", "addif", "br1", vlanDev1);
+			eval("vlanctl", "--if", ethPort2, "--rx", "--tags", "0", "--set-rxif", vlanDev2, "--rule-append");
+			eval("vlanctl", "--if", ethPort2, "--tx", "--tags", "0", "--filter-txif", vlanDev2, "--rule-append");
+			eval("ifconfig", vlanDev2, "allmulti", "up");
+			eval("brctl", "addif", "br1", vlanDev2);
+			eval("vlanctl", "--if", ethPort3, "--rx", "--tags", "0", "--set-rxif", vlanDev3, "--rule-append");
+			eval("vlanctl", "--if", ethPort3, "--tx", "--tags", "0", "--filter-txif", vlanDev3, "--rule-append");
+			eval("ifconfig", vlanDev3, "allmulti", "up");
+			eval("brctl", "addif", "br1", vlanDev3);
+			eval("vlanctl", "--if", ethPort4, "--rx", "--tags", "0", "--set-rxif", vlanDev4, "--rule-append");
+			eval("vlanctl", "--if", ethPort4, "--tx", "--tags", "0", "--filter-txif", vlanDev4, "--rule-append");
+			eval("ifconfig", vlanDev4, "allmulti", "up");
+			eval("brctl", "addif", "br1", vlanDev4);
+		}
+#endif
+
 #ifdef RTCONFIG_MULTICAST_IPTV
 		if (switch_stb >= 7) {
 			/* handle vlan + pppoe w/o bridge case. Using vconfig instead */
@@ -6988,6 +7133,109 @@ ERROR:
 	return 0;
 }
 
+#ifdef RTCONFIG_AVBLCHAN
+#define MAX_5G_CHANNEL_LIST_NUM		32
+#define MAX_CHANS			MAX_5G_CHANNEL_LIST_NUM*4 
+
+void add_cfgexcl_2_acsexcl(unsigned int *echx)
+{
+	char ex_tmp[24], word[256], *next, *asus_excl;
+	int i = 0, unit = 0, exist = 0;
+	unsigned int ech;
+	char acsexcl_wlx[1000], chtmp[7], *sp;
+
+	for(unit = 0; unit < 3; ++unit) {
+		memset(ex_tmp, 0, sizeof(ex_tmp));
+		sprintf(ex_tmp, "wl%d_acs_excl_chans", unit);
+		asus_excl = nvram_safe_get(ex_tmp);
+
+		foreach_44 (word, asus_excl, next) {
+			ech = strtol(word, NULL, 16);
+			exist = 0;
+			if(!ech) continue;
+			for(i=0; i<MAX_CHANS; ++i) {
+				if(ech == *(echx + unit*MAX_CHANS + i)) {
+					exist = 1;
+					break;
+				} else if(!*(echx + unit*MAX_CHANS + i))
+					break;
+			}
+			if(!exist) {
+				*(echx + unit*MAX_CHANS + i) = ech;
+			}
+		}
+		memset(acsexcl_wlx, 0, sizeof(acsexcl_wlx));
+		for(i=0; i<MAX_CHANS; ++i) {
+			sp = acsexcl_wlx[0]?",":"";
+			if(*(echx + unit*MAX_CHANS + i) && snprintf(chtmp, sizeof(chtmp), "0x%x", *(echx + unit*MAX_CHANS + i)) > 0) {
+				if(strlen(acsexcl_wlx) + 6 < sizeof(acsexcl_wlx) - 1) {
+					strncat(acsexcl_wlx, sp, sizeof(acsexcl_wlx)-strlen(acsexcl_wlx)-1);
+					strncat(acsexcl_wlx, chtmp, sizeof(acsexcl_wlx)-strlen(acsexcl_wlx)-1);
+				} else
+					_dprintf("acsexcl_wlx full!(rc)\n");
+			}
+		}
+		nvram_set(ex_tmp, acsexcl_wlx);
+	}
+}
+
+void init_cfg_excl(char *cfg_excl, unsigned int *ech, int unit)
+{
+	char word[256], *next;
+	int i = 0, ui = 0;
+	unsigned int chan;
+
+	foreach_44 (word, cfg_excl, next) {
+		chan = strtol(word, NULL, 16);
+		if(chan > 0) {
+			if(i < MAX_CHANS) {
+				*(ech + unit*MAX_CHANS + i) = chan;
+			} else
+				break;
+			i++;
+		}
+	}
+}
+
+void dump_exclchans(unsigned int *excs, char *des) {
+	int i=0 , j= 0, k=0;
+
+	_dprintf("\n%s. dump cfg_excl_chans:\n", des);
+
+	for(i=0; i<3; ++i) {
+		_dprintf("\n<wl%d>\n", i);
+		k=0;
+		for(j=0; j<MAX_CHANS; ++j) {
+			if(*(excs + i*MAX_CHANS + j)) {
+				_dprintf("[%2x] ", *(excs + i*MAX_CHANS + j));
+				++k;
+				if(k%10==0)
+					_dprintf("\n");
+			}
+		}
+	}
+	_dprintf("\n");
+}
+
+int init_exclbase(int unit)
+{
+	if(!nvram_get_int("excbase")) {
+		nvram_set("excbase", "1");
+		nvram_set("wl0_acs_excl_chans_base", nvram_safe_get("wl0_acs_excl_chans"));
+		nvram_set("wl1_acs_excl_chans_base", nvram_safe_get("wl1_acs_excl_chans"));
+		if(unit == 3)
+			nvram_set("wl2_acs_excl_chans_base", nvram_safe_get("wl2_acs_excl_chans"));
+
+		_dprintf("\nset exclchans base:\n0:[%s]\n1:[%s]\n2:[%s]\n", nvram_safe_get("wl0_acs_excl_chans_base"), nvram_safe_get("wl1_acs_excl_chans_base"), nvram_safe_get("wl2_acs_excl_chans_base"));
+		nvram_set("wl0_acs_excl_chans_cfg", "");
+		nvram_set("wl1_acs_excl_chans_cfg", "");
+		nvram_set("wl2_acs_excl_chans_cfg", "");
+		return 0;
+	}
+	return 1;
+}
+#endif
+
 #ifdef RTCONFIG_BCMWL6
 void set_acs_ifnames()
 {
@@ -7000,6 +7248,12 @@ void set_acs_ifnames()
 	char wlvif[] = "wlxxxx";
 #endif
 	char list[1024], list_5g_band1_chans[1024], list_5g_band2_chans[1024], list_5g_band3_chans[1024];
+
+#ifdef RTCONFIG_AVBLCHAN
+	char *cfg_excl = NULL;
+	unsigned int cfg_excl_chans[3][MAX_CHANS];	// 2g/5g chans num
+	memset(cfg_excl_chans, 0, sizeof(cfg_excl_chans));
+#endif
 
 	wl_check_5g_band_group();
 
@@ -7016,6 +7270,13 @@ void set_acs_ifnames()
 		if (!strcmp(word, "wifi0")) break;
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+
+#ifdef RTCONFIG_AVBLCHAN
+		cfg_excl = nvram_safe_get(strcat_r(prefix, "acs_excl_chans_cfg", tmp));
+		if(*cfg_excl) {
+			init_cfg_excl(cfg_excl, cfg_excl_chans, unit);
+		}
+#endif
 
 		if (nvram_match(strcat_r(prefix, "radio", tmp), "1") &&
 			((nvram_match(strcat_r(prefix, "mode", tmp), "ap") &&
@@ -7046,7 +7307,7 @@ void set_acs_ifnames()
 		}
 
 #ifndef RTCONFIG_BCM_7114
-		nvram_set(strcat_r(prefix, "acs_pol", tmp), "-65 40 -1 -100 -100 -1 -100 50 -100 0 1 0");
+		nvram_set(strcat_r(prefix, "acs_pol", tmp), "-65 40 -1 -100 -100 -1 -100 50 -100 1 1 0");
 #endif
 
 		unit++;
@@ -7114,6 +7375,13 @@ void set_acs_ifnames()
 		/* exclude acsd from selecting chanspec 165 */
 		nvram_set("wl1_acs_excl_chans", "0xd0a5");
 	}
+#endif
+
+#ifdef RTCONFIG_AVBLCHAN
+	int excinit = 0;
+	excinit = init_exclbase(unit);
+	if(excinit)
+		add_cfgexcl_2_acsexcl(cfg_excl_chans);
 #endif
 
 	nvram_set_int("wl0_acs_dfs", 0);
@@ -7595,12 +7863,11 @@ void fc_fini()
 
 void hnd_nat_ac_init(int bootup)
 {
-	int qos_en = nvram_match("qos_enable", "1");
 	int routing_mode = is_routing_enabled();
 
 	// traditional qos / bandwidth limter: disable fc
-	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (routing_mode && qos_en && (nvram_get_int("qos_type") != 1)) ? 1 : 0);
-	nvram_set_int("runner_disable", nvram_get_int("runner_disable_force") || (routing_mode && qos_en) ? 1 : 0);
+	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (routing_mode && IS_NON_AQOS()) ? 1 : 0);
+	nvram_set_int("runner_disable", nvram_get_int("runner_disable_force") || (routing_mode && IS_NON_AQOS()) ? 1 : 0);
 
 	if (nvram_match("fc_disable", "1"))
 		fc_fini();

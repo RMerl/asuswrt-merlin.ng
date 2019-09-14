@@ -29,7 +29,6 @@ void config_blocking_redirect(FILE *fp){
 	}
 
 	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next){
-		const char *chk_mac = iptables_chk_mac;
 		const char *chk_type;
 		char follow_addr[18] = {0};
 #ifdef RTCONFIG_AMAS

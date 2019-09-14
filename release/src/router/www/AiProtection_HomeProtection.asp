@@ -19,6 +19,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
+*{
+	box-sizing: content-box;
+}
 .weakness{
 	width:650px;
 	height:590px;
@@ -160,7 +163,7 @@ function initial(){
 	show_menu();
 	//	https://www.asus.com/support/FAQ/1008719/
 	httpApi.faqURL("1008719", function(url){document.getElementById("faq").href=url;});
-	if(lyra_hide_support){
+	if(based_modelid == "MAP-AC1750"){
 		$("#scenario_tr").css({"visibility":"hidden"});
 		$("#scenario_img").attr({"height":"0"});
 		$("#security_scan_tr").hide();
@@ -921,7 +924,7 @@ function shadeHandle(flag){
 </script>
 </head>
 
-<body onload="initial();" onunload="unload_body();">
+<body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">

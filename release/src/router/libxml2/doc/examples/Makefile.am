@@ -13,7 +13,7 @@ index.html: examples.xml examples.xsl
 
 install-data-local: 
 	$(mkinstalldirs) $(DESTDIR)$(HTML_DIR)
-	-@INSTALL@ -m 0644 $(srcdir)/*.html $(srcdir)/*.c $(srcdir)/*.xml $(srcdir)/*.xsl $(srcdir)/*.res $(DESTDIR)$(HTML_DIR)
+	-@INSTALL@ -m 0644 $(srcdir)/*.c $(srcdir)/*.xml $(srcdir)/*.xsl $(srcdir)/*.res $(DESTDIR)$(HTML_DIR)
 
 EXTRA_DIST=examples.xsl index.py examples.xml writer.xml test3.xml tst.xml test1.xml test2.xml io2.res xpath2.res tree1.res reader4.res io1.res tree2.res reader3.res xpath1.res reader1.res 
 

@@ -16,6 +16,7 @@
 #define TERRITORY_CODE_LEN	33
 #define RE_LIST_JSON_FILE	"/tmp/relist.json"
 #define MAX_RELIST_COUNT		10
+#define LLDP_STAT_LEN       128
 enum reListAction {
 	RELIST_ADD,
 	RELIST_DEL,
@@ -44,18 +45,25 @@ typedef struct _CM_CLIENT_TABLE {
 	char modelName[CFG_CLIENT_NUM][MODEL_NAME_LEN];
 	char territoryCode[CFG_CLIENT_NUM][TERRITORY_CODE_LEN];
 	int activePath[CFG_CLIENT_NUM];
+	int bandnum[CFG_CLIENT_NUM];
 	int maxLevel;
 	int count;
+    char lldp_wlc_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
+    char lldp_eth_stat[CFG_CLIENT_NUM][LLDP_STAT_LEN];
 } CM_CLIENT_TABLE, *P_CM_CLIENT_TABLE;
 
 extern int cm_checkReListExist(char *Mac);
 extern int cm_checkReListUpdate(char *newReMac, char *sta2gMac, char *sta5gMac);
 extern void cm_updateReList(char *newReMac, char *sta2gMac, char *sta5gMac, int action);
 extern void cm_handleReListUpdate(unsigned char *decodeMsg);
+extern int cm_isReWifiUpstreamMac(char *staMac);
 extern int cm_prepareReListMsg(char *msg, int msgLen);
 extern void cm_generateReList();
 extern void cm_updateReListTimestamp(unsigned char *decodeMsg);
 extern int cm_isSlaveOnline(time_t startTime);
+#ifdef RTCONFIG_BCN_RPT
+extern void cm_handleAPListUpdate(unsigned char *decodeMsg);
+#endif
 extern void cm_updateTribandReList(char *newReMac, int bandNum, char *modelName, int action, int commit);
 
 #endif /* __CFG_SLAVELIST_H__ */

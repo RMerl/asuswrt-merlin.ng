@@ -1,0 +1,1 @@
+<167>Mar  6 16:57:54 172.20.245.8 %PIX-7-710005:@cee:{"foo": {"str1": "abc0", "str2": "def1", "str3": "ghi2", "obj": {"bar": {"k1": "important_msg", "k2": "other_msg"}}}}

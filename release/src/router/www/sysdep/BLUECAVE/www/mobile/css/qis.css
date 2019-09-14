@@ -178,6 +178,9 @@ a{
 	border-color: #007AFF;
 	color: #333332;
 }
+#welcome{
+	min-height: 750px;
+}
 #welcomeTitle{
 	font-family:Uni Sans Thin, Helvetica W01 Light, Arial;
 	font-size:5em;
@@ -243,7 +246,7 @@ a{
 	color: #FFF;
 	margin: 30px 0 20px 45px;
 	text-align: left;
-	width: 90%;
+	width: 85%;
 	max-width: 1000px;
 }
 .inputTitle{
@@ -430,15 +433,17 @@ a{
 }
 #noWanContainer{
     padding: 17%;
+    height: 504px;
+}
+#noWanPic{
+	position: absolute;
 }
 #noWanEth{
 	position: absolute;
-	margin-top: -396px;
 	display: none;
 }
 #noWanUsb{
 	position: absolute;
-	margin-top: -396px;
 	display: none;
 }
 .green{
@@ -898,7 +903,7 @@ a{
 		width: 650px;
 	}
 	.tosDesc{
-		width: 80%;
+		width: 95%;
 	}
 	.textInput{
 		max-width: 1000px;
@@ -960,7 +965,7 @@ a{
 		margin-right: 0px;
 	}
 	.sort_field{
-		top: 80px;
+		top: 0%;
 		bottom: initial;
 	}
 	@media screen and (max-height: 1000px){

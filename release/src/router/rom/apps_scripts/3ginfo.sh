@@ -1,14 +1,8 @@
 #!/bin/sh
 
-kernel_version=`uname -r`
-ver_1st=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $1}'`
-ver_2nd=`echo -n $kernel_version |awk 'BEGIN{FS="."}{print $2}'`
-
 
 echo ">"
-if [ "$ver_1st" -ge "4" ]; then
-	cat /sys/kernel/debug/usb/devices
-elif [ "$ver_1st" -ge "3" ] && [ "$ver_2nd" -ge "2" ]; then
+if [ -f "/sys/kernel/debug/usb/devices" ]; then
 	cat /sys/kernel/debug/usb/devices
 else
 	cat /proc/bus/usb/devices
@@ -60,6 +54,10 @@ echo "modem state:>"
 nvram show |grep g3state
 echo ">"
 nvram show |grep g3err
+
+echo ">"
+echo "FW upgrade nvram:>"
+nvram show |grep ^webs_state
 
 for modem_unit in 0 1; do
 	if [ "$modem_unit" -eq "0" ]; then
@@ -163,3 +161,10 @@ echo ">"
 echo "ps>"
 ps
 
+echo ">"
+echo "brctl show >"
+/usr/sbin/brctl show
+
+echo ">"
+echo "ATE Get_WanLanStatus >"
+/sbin/ATE Get_WanLanStatus

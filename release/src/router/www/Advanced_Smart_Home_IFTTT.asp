@@ -122,10 +122,10 @@ var realip_state = "";
 
 var StatusList = {
 	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
-	"SvrFail": "Server connection failed",
+	"SvrFail": "<#Alexa_Server_Failed#>",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
-	"Success": "IFTTT account is registered"
+	"Success": "<#IFTTT_Registered#>"
 }
 
 var AccLinkStatus = {
@@ -183,6 +183,7 @@ function tag_control(){
 	document.getElementById("ifttt_asus_channel").target="_blank";
 }
 
+<% get_realip(); %>
 function get_real_ip(){
 	if(AccLinkStatus.RemoteStatus.link_internet == '2'){
 		$.ajax({
@@ -389,7 +390,7 @@ function show_account_state(){
 }
 </script>
 </head>
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 

@@ -116,6 +116,8 @@ struct ndev_bled {
 struct swport_bled {
 	struct bled_common bled;
 	unsigned int port_mask;		/* bit0=port0, bit1=port1, etc. port0~BLED_MAX_NR_SWPORTS-1 only */
+	unsigned int nr_if;
+	char ifname[BLED_MAX_NR_NETDEV_IF][IFNAMSIZ];
 };
 
 struct usbbus_bled {
@@ -141,6 +143,7 @@ struct interrupt_bled {
 #define BLED_CTL_SET_UDEF_PATTERN	_IOW('B', 9, struct bled_common)	/* gpio_nr, pattern_interval, nr_pattern, pattern[] */
 #define BLED_CTL_SET_MODE		_IOW('B',10, struct bled_common)	/* gpio_nr, mode */
 #define BLED_CTL_ADD_INTERRUPT_BLED	_IOW('B',11, struct interrupt_bled)	/* all fields; except mode, state */
+#define BLED_CTL_GET_SWPORTS_SETTINGS	_IOWR('B',12, struct swport_bled)	/* input: gpio_nr; output: port_mask, nr_if, ifname */
 #define BLED_CTL_ADD_GPIO		_IOW('B',13, struct bled_common)	/* gpio_nr, active_low, gpio2_nr */
 #define BLED_CTL_SET_UDEF_TRIGGER	_IOW('B',14, struct bled_common)	/* gpio_nr, trigger */
 
@@ -149,6 +152,10 @@ struct interrupt_bled {
 
 /* If interface doesn't exist, check it per BLED_WAIT_IF_INTERVAL. */
 #define BLED_WAIT_IF_INTERVAL		(5 * HZ)
+
+/*****************************************************************************
+ * Definitions for kernel space only.                                        *
+ *****************************************************************************/
 
 #if defined(__KERNEL__)
 

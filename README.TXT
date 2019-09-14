@@ -7,49 +7,50 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 	a. Ubuntu
 		Install these packages (I used synaptic: "sudo synaptic")
 
-		libncurses5
-		libncurses5-dev
-		m4
-		bison
-		gawk
-		flex
-		libstdc++6-4.4-dev
-		g++-4.4
-		g++
-		gengetopt
-		git (or git-core)
-		gitk
-		zlib1g-dev
-		autoconf
-		autopoint (or gettext)
-		libtool
-		shtool
-		autogen
-		mtd-utils
-		intltool
-		sharutils
-		docbook-xsl-*
-		libstdc++5
-		texinfo
-		dos2unix (or tofrodos)
-		xsltproc
-		uboot-mkimage
-		device-tree-compiler
-		python 2.7 or above.
-		qemu
-		gperf
-		liblzo2-dev
-		uuid-dev
-		build-essential
-		lzma-dev
-		liblzma-dev
-		lzma
-		binutils-dev
-		patch
-		cmake
-		intltool
-		libglib2.0-dev
-		gtk-doc-tools
+		Ubuntu 14.04 or old distro
+			libncurses5
+			libncurses5-dev
+			m4
+			bison
+			gawk
+			flex
+			libstdc++6-4.4-dev
+			g++-4.4
+			g++
+			gengetopt
+			git (or git-core)
+			gitk
+			zlib1g-dev
+			autoconf
+			autopoint (or gettext)
+			libtool
+			shtool
+			autogen
+			mtd-utils
+			intltool
+			sharutils
+			docbook-xsl-*
+			libstdc++5
+			texinfo
+			dos2unix (or tofrodos)
+			xsltproc
+			uboot-mkimage
+			device-tree-compiler
+			python 2.7 or above.
+			qemu
+			gperf
+			liblzo2-dev
+			uuid-dev
+			build-essential
+			lzma-dev
+			liblzma-dev
+			lzma
+			binutils-dev
+			patch
+			cmake
+			intltool
+			libglib2.0-dev
+			gtk-doc-tools
 
 		If you are using Ubuntu amd64, you may need to install 32-bit packages listed below.
 			libc6-i386
@@ -60,12 +61,26 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 			ia32-libs
 			libc6-dev-i386
 
+		Ubuntu 16.04
+			python 2.7 or above.
+
+			libncurses5 libncurses5-dev m4 bison gawk flex libstdc++6-4.7-dev g++-4.7 g++
+			gengetopt git gitk zlib1g-dev autoconf autopoint libtool-bin shtool autogen
+			mtd-utils intltool sharutils docbook-xsl-* libstdc++5 texinfo dos2unix xsltproc
+			u-boot-tools device-tree-compiler qemu gperf liblzo2-dev uuid-dev build-essential
+			lzma-dev liblzma-dev lzma binutils-dev patch cmake intltool libglib2.0-dev
+			gtk-doc-tools
+
+		If you are using Ubuntu amd64, you may need to install 32-bit packages listed below.
+			libc6-i386 lib32stdc++6 lib32z1 libelf1:i386 lib32ncurses5 libc6-dev-i386
+
 	b. Fedora
 		python 2.7 or above.
 		sudo yum groupinstall "Development Tools"
 		sudo yum install gettext-devel libxml2-devel mtd-utils-ubi ncurses-devel \
 			zlib-devel intltool sharutils docbook-dtds docbook-style-xsl \
-			uboot-tools dtc gengetopt qemu gperf cmake glib2-devel gtk-doc
+			uboot-tools dtc gengetopt qemu gperf cmake glib2-devel gtk-doc \
+			texinfo lzo-devel
 
 		If you are using Fedora 19 or above, you need to install below packages.
 		sudo yum groupinstall "C Development Tools and Libraries"
@@ -78,6 +93,9 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 
 		If you are using Fedora 24+, you may need to install 32-bit packages listed below.
 			ncurses-compat-libs.i686
+
+		If you are using Fedora 29+, you may need to install 32-bit packages listed below.
+			glibc-devel.i686
 
    2. prepare source to, ex, $HOME/asuswrt
 
@@ -121,7 +139,7 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		    - add /opt/mips-2012.03/bin to your uboot path
 
 	Qualcomm QCA9557/QCA953x/QCA956x MIPS SoC models
-	================================
+	================================================
 
 		To install the tools:
 		    Mesh Router:
@@ -140,10 +158,10 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 
 		      export STAGING_DIR=/opt/openwrt-gcc463.mips
 
-	Qualcomm IPQ806x/IPQ40xx ARM SoC models
-	===============================
+	Qualcomm IPQ806x/IPQ807x/IPQ40xx ARM SoC models
+	===============================================
 
-		For example, BRT-AC828.
+		For example, BRT-AC828, RT-AC58U, GT-AXY16000, RT-AX89U.
 
 		To install the tools:
 		    - extract tools/openwrt-gcc463.arm.tar.bz2 directory to /opt
@@ -188,18 +206,21 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		make rt-ac55u
 		( make rt-ac55uhp )
 
-	g. brt-ac828 (/ rt-ac88q / rt-ad7200 )
-		cd release/src-qca-ipq8064
+	g. brt-ac828 (/ rt-ad7200 / gt-axy16000 / rt-ax89u)
+		cd release/src-qca-ipq806x
 		make brt-ac828
 		( make rt-ad7200 )
+		( make gt-axy16000 )
+		( make rt-ax89u )	//also rt-ax89x by odmpid
 
-	h. rt-ac58u (/ rt-ac82u / map-ac1300 / map-ac2200 / vrz-ac1300 )
+	h. rt-ac58u (/ rt-ac82u / map-ac1300 / map-ac2200 / vzw-ac1300 / rt-ac95u )
 		cd release/src-qca-dakota
 		make rt-ac58u
 		( make rt-ac82u )
 		( make map-ac1300 )
 		( make map-ac2200 )
-		( make vrz-ac1300 )
+		( make vzw-ac1300 )
+		( make rt-ac95u )
 
 	i. rt-ac85u (/ rt-ac85u / rt-ac65u / rp-ac87 )
 		cd release/src-ra-5010
@@ -222,3 +243,6 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		( make rp-ac53 )
 		( make rp-ac55 )
 
+	l. rt-ac1200_v2
+		cd release/src-mtk3.5
+		make rt-ac1200_v2

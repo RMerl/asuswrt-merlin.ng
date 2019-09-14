@@ -1,0 +1,324 @@
+[{
+  "log": "not in right format",
+  "testid": 1
+},
+{
+  "message": "not in right format",
+  "testid": 2
+},
+{
+  "kubernetes": {
+    "namespace_id": "namespace-name2-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name2-id",
+    "labels": {
+      "custom_label": "pod-name2-label-value",
+      "deploymentconfig": "pod-name2-dc",
+      "component": "pod-name2-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name2-deployment"
+    },
+    "pod_name": "pod-name2",
+    "namespace_name": "namespace-name2",
+    "container_name": "container-name2",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id2"
+  },
+  "testid": 4
+},
+{
+  "message": "a message from container 4",
+  "CONTAINER_NAME": "some-prefix_container-name4_pod-name4_namespace-name4_unused4_unused44",
+  "CONTAINER_ID_FULL": "id4",
+  "kubernetes": {
+    "namespace_id": "namespace-name4-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name4-id",
+    "labels": {
+      "custom_label": "pod-name4-label-value",
+      "deploymentconfig": "pod-name4-dc",
+      "component": "pod-name4-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name4-deployment"
+    },
+    "pod_name": "pod-name4",
+    "namespace_name": "namespace-name4",
+    "container_name": "container-name4",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id4"
+  },
+  "testid": 6
+},
+{
+  "kubernetes": {
+    "namespace_id": "namespace-name1-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name1-id",
+    "labels": {
+      "custom_label": "pod-name1-label-value",
+      "deploymentconfig": "pod-name1-dc",
+      "component": "pod-name1-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name1-deployment"
+    },
+    "pod_name": "pod-name1",
+    "namespace_name": "namespace-name1",
+    "container_name": "container-name1",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id1"
+  },
+  "testid": 3
+},
+{
+  "message": "a message from container 3",
+  "CONTAINER_NAME": "some-prefix_container-name3.container-hash3_pod-name3_namespace-name3_unused3_unused33",
+  "CONTAINER_ID_FULL": "id3",
+  "kubernetes": {
+    "namespace_id": "namespace-name3-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name3-id",
+    "labels": {
+      "custom_label": "pod-name3-label-value",
+      "deploymentconfig": "pod-name3-dc",
+      "component": "pod-name3-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name3-deployment"
+    },
+    "pod_name": "pod-name3",
+    "namespace_name": "namespace-name3",
+    "container_name": "container-name3",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id3"
+  },
+  "testid": 5
+},
+{
+  "message": "a message from container 5",
+  "CONTAINER_NAME": "some-prefix_container-name5_pod-name5.with.dot.in.pod.name_namespace-name5_unused5_unused55",
+  "CONTAINER_ID_FULL": "id5",
+  "kubernetes": {
+    "namespace_id": "namespace-name5-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name5.with.dot.in.pod.name-id",
+    "labels": {
+      "custom_label": "pod-name5.with.dot.in.pod.name-label-value",
+      "deploymentconfig": "pod-name5.with.dot.in.pod.name-dc",
+      "component": "pod-name5.with.dot.in.pod.name-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name5.with.dot.in.pod.name-deployment"
+    },
+    "pod_name": "pod-name5.with.dot.in.pod.name",
+    "namespace_name": "namespace-name5",
+    "container_name": "container-name5",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id5"
+  },
+  "testid": 7
+},
+{
+  "message":"this record should have no namespace metadata",
+  "CONTAINER_NAME":"some-prefix_container-name-6_pod-name-6_namespace-name-6-not-found_unused6_unused66",
+  "CONTAINER_ID_FULL":"id6",
+  "kubernetes": {
+    "pod_id":"pod-name-6-id",
+    "labels": {
+      "custom_label":"pod-name-6-label-value",
+      "deploymentconfig":"pod-name-6-dc",
+      "component":"pod-name-6-component",
+      "label_with_empty_value":"",
+      "deployment":"pod-name-6-deployment"
+    },
+    "pod_name":"pod-name-6",
+    "namespace_name":"namespace-name-6-not-found",
+    "container_name":"container-name-6",
+    "master_url":"http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id":"id6"
+  },
+  "testid": 8
+},
+{
+  "message": "this record should have no pod metadata",
+  "CONTAINER_NAME": "some-prefix_container-name-7_pod-name-7-not-found_namespace-name-7_unused7_unused77",
+  "CONTAINER_ID_FULL": "id7",
+  "kubernetes": {
+    "namespace_id": "namespace-name-7-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_name": "pod-name-7-not-found",
+    "namespace_name": "namespace-name-7",
+    "container_name": "container-name-7",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id7"
+  },
+  "testid": 9
+},
+{
+  "message": "this record should have no namespace or pod metadata and retry",
+  "CONTAINER_NAME": "some-prefix_container-name-8_pod-name-8_namespace-name-8-busy_unused8_unused88",
+  "CONTAINER_ID_FULL": "id8",
+  "kubernetes": {
+    "pod_name": "pod-name-8",
+    "namespace_name": "namespace-name-8-busy",
+    "container_name": "container-name-8",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id8"
+  },
+  "testid": 10
+},
+{
+  "message": "this record should have namespace and pod metadata after retry",
+  "CONTAINER_NAME": "some-prefix_container-name-8_pod-name-8_namespace-name-8-busy_unused8_unused88",
+  "CONTAINER_ID_FULL": "id8",
+  "kubernetes": {
+    "namespace_id": "namespace-name-8-busy-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name-8-id",
+    "labels": {
+      "custom_label": "pod-name-8-label-value",
+      "deploymentconfig": "pod-name-8-dc",
+      "component": "pod-name-8-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name-8-deployment"
+    },
+    "pod_name": "pod-name-8",
+    "namespace_name": "namespace-name-8-busy",
+    "container_name": "container-name-8",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id8"
+  },
+  "testid": 11
+},
+{
+  "message": "this record should have no pod metadata and retry",
+  "CONTAINER_NAME": "some-prefix_container-name-9_pod-name-9-busy_namespace-name-9_unused9_unused99",
+  "CONTAINER_ID_FULL": "id9",
+  "kubernetes": {
+    "namespace_id": "namespace-name-9-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_name": "pod-name-9-busy",
+    "namespace_name": "namespace-name-9",
+    "container_name": "container-name-9",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id9"
+  },
+  "testid": 12
+},
+{
+  "message": "this record should have pod metadata after retry",
+  "CONTAINER_NAME": "some-prefix_container-name-9_pod-name-9-busy_namespace-name-9_unused9_unused99",
+  "CONTAINER_ID_FULL": "id9",
+  "kubernetes": {
+    "namespace_id": "namespace-name-9-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name-9-busy-id",
+    "labels": {
+      "custom_label": "pod-name-9-busy-label-value",
+      "deploymentconfig": "pod-name-9-busy-dc",
+      "component": "pod-name-9-busy-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name-9-busy-deployment"
+    },
+    "pod_name": "pod-name-9-busy",
+    "namespace_name": "namespace-name-9",
+    "container_name": "container-name-9",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id9"
+  },
+  "testid": 13
+},
+{
+  "message": "this record should process normally",
+  "CONTAINER_NAME": "some-prefix_container-name-10_pod-name-10_namespace-name-10_unused10_unused100",
+  "CONTAINER_ID_FULL": "id10",
+  "kubernetes": {
+    "namespace_id": "namespace-name-10-id",
+    "namespace_labels": {
+      "label_1_key": "label 1 value",
+      "label_with_empty_value": "",
+      "label_2_key": "label 2 value"
+    },
+    "creation_timestamp": "2018-04-09T21:56:39Z",
+    "pod_id": "pod-name-10-id",
+    "labels": {
+      "custom_label": "pod-name-10-label-value",
+      "deploymentconfig": "pod-name-10-dc",
+      "component": "pod-name-10-component",
+      "label_with_empty_value": "",
+      "deployment": "pod-name-10-deployment"
+    },
+    "pod_name": "pod-name-10",
+    "namespace_name": "namespace-name-10",
+    "container_name": "container-name-10",
+    "master_url": "http://localhost:{k8s_srv_port}"
+  },
+  "docker": {
+    "container_id": "id10"
+  },
+  "testid": 14
+}]

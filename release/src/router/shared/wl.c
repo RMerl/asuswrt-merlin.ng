@@ -428,6 +428,98 @@ dhd_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val)
 {
 	return dhd_bssiovar_set(ifname, iovar, bssidx, &val, sizeof(int));
 }
+
+static int
+dhd_get(void *dhd, int cmd, void *buf, int len)
+{
+	return dhd_ioctl(dhd, cmd, buf, len);
+}
+
+static int
+dhd_bssiovar_mkbuf(const char *iovar, int bssidx, void *param,
+	int paramlen, void *bufptr, int buflen, int *perr)
+{
+	const char *prefix = "bsscfg:";
+	int8* p;
+	uint prefixlen;
+	uint namelen;
+	uint iolen;
+
+	prefixlen = strlen(prefix);	/* length of bsscfg prefix */
+	namelen = strlen(iovar) + 1;	/* length of iovar name + null */
+	iolen = prefixlen + namelen + sizeof(int) + paramlen;
+
+	/* check for overflow */
+	if (buflen < 0 || iolen > (uint)buflen) {
+		*perr = BCME_BUFTOOSHORT;
+		return 0;
+	}
+
+	p = (int8*)bufptr;
+
+	/* copy prefix, no null */
+	memcpy(p, prefix, prefixlen);
+	p += prefixlen;
+
+	/* copy iovar name including null */
+	memcpy(p, iovar, namelen);
+	p += namelen;
+
+	/* bss config index as first param */
+	bssidx = bssidx;
+	memcpy(p, &bssidx, sizeof(int32));
+	p += sizeof(int32);
+
+	/* parameter buffer follows */
+	if (paramlen) {
+		memcpy(p, param, paramlen);
+	}
+
+	*perr = 0;
+	return iolen;
+}
+
+static int
+dhd_bssiovar_getbuf(void* dhd, const char *iovar, int bssidx,
+	void *param, int paramlen, void *bufptr, int buflen)
+{
+	int err;
+
+	dhd_bssiovar_mkbuf(iovar, bssidx, param, paramlen, bufptr, buflen, &err);
+	if (err) {
+		return err;
+	}
+
+	return dhd_get(dhd, DHD_GET_VAR, bufptr, buflen);
+}
+
+int
+dhd_bssiovar_get(void *dhd, const char *iovar, int bssidx, void *outbuf, int len)
+{
+	char smbuf[DHD_IOCTL_SMLEN] = {0};
+	int err;
+
+	/* use the return buffer if it is bigger than what we have on the stack */
+	if (len > (int)sizeof(smbuf)) {
+		err = dhd_bssiovar_getbuf(dhd, iovar, bssidx, NULL, 0, outbuf, len);
+	} else {
+		err = dhd_bssiovar_getbuf(dhd, iovar, bssidx, NULL, 0, smbuf, sizeof(smbuf));
+		if (err == 0) {
+			memcpy(outbuf, smbuf, len);
+		}
+	}
+
+	return err;
+}
+
+int
+dhd_bssiovar_getint(void *dhd, const char *iovar, int bssidx, int *pval)
+{
+	int ret;
+
+	ret = dhd_bssiovar_get(dhd, iovar, bssidx, pval, sizeof(int));
+	return ret;
+}
 #endif
 
 /*

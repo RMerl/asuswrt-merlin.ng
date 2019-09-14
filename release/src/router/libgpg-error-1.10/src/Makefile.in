@@ -851,7 +851,7 @@ mkerrcodes.h: Makefile mkerrcodes.awk $(gpg_extra_headers)
 ifeq ($(HND_ROUTER),y)
 	$(CPP) $(extra_cppflags) _$@ | sed '/^#/d'|sed '/extern/d' |sed '/^$$/d' |sed 'N;s/\n//g' |grep GPG_ERR_ | $(AWK) -f $(srcdir)/mkerrcodes.awk >$@
 else
-	$(CPP) $(extra_cppflags) _$@ | grep GPG_ERR_ | $(AWK) -f $(srcdir)/mkerrcodes.awk >$@
+	$(CPP) $(extra_cppflags) -P _$@ | grep GPG_ERR_ | $(AWK) -f $(srcdir)/mkerrcodes.awk >$@
 endif
 	-rm _$@
 

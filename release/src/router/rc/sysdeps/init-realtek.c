@@ -80,6 +80,30 @@ void init_igmpsnooping()
     //_dprintf("init_igmpsnooping: command = %s\n", command);
     system(command);
 }
+
+
+/**
+ * @brief      Check if the nvram value is normal.
+ *
+ * @return     Values are normal, return 0. Values are unusual, return 1.
+ */
+int rtk_check_nvram_partation(void)
+{
+	char buf[MAX_NVRAM_SPACE] = {0};
+	char *name = NULL;
+	int i = 0;
+	nvram_getall(buf, sizeof(buf));
+
+	for (name = buf; *name; name += strlen(name) + 1) {
+		for (i = 0; i < strlen(name) + 1; i++) {
+			if (*(name + i) == 0xffffffff) {
+				printf("\nInvalid nvram...Restore default\n");
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
 #endif
 
 void init_switch()
@@ -94,6 +118,11 @@ void init_switch()
 		}
 	}
 
+#ifdef RTCONFIG_ATEFROMWAN
+	if(repeater_mode() && !nvram_get_int("x_Setting")) {
+		doSystem("ifconfig %s %s", nvram_safe_get("wan_ifnames"), nvram_safe_get("wan_ate_ipaddr"));
+	}
+#endif
 	mac_addr = nvram_safe_get("et1macaddr");
 
 	if(strlen(nvram_safe_get("wan0_ifname")))
@@ -134,6 +163,9 @@ void init_syspara(void)
 	set_country_code();
 #ifdef RTCONFIG_TCODE
 	set_territory_code();
+#endif
+#ifdef RTCONFIG_AMAS
+    init_amas_bdl();
 #endif
 }
 
@@ -182,6 +214,12 @@ int wl_exist(char *ifname, int band)
 
 char *get_wlifname(int unit, int subunit, int subunit_x, char *buf)
 {
+#if defined(RTCONFIG_REALTEK) && defined(RTCONFIG_AMAS)
+	// for AMAS router use
+	if(sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1") && subunit == 1)
+		sprintf(buf, "wl%d", unit);
+	else
+#endif
 	sprintf(buf, "wl%d.%d", unit, subunit);
 	return buf;
 }

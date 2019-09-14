@@ -113,6 +113,13 @@
 }
 </style>
 <script>
+function initial() {
+	var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf('odm') != -1) ? true : false;
+	if(odm_support)
+		document.body.className = "bg-odm";
+	else
+		document.body.className = "bg";
+}
 function dr_advise() {
 	htmlbodyforIE = document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
 	htmlbodyforIE[0].style.overflow = "hidden";	  //hidden the Y-scrollbar for preventing from user scroll it.
@@ -239,7 +246,7 @@ function open_AiMesh_node_fw_upgrade() {
 }
 </script>
 </head>
-<body>
+<body onload="initial();">
 <div id="LoadingBar" class="popup_bar_bg">
 <table cellpadding="5" cellspacing="0" id="loadingBarBlock" class="loadingBarBlock AiMesh_fw_loading" align="center">
 	<tr>

@@ -51,15 +51,15 @@ char *search_mnt(char *mac)
 		size_ncl = ftell(fp_mnt);
 		fseek(fp_mnt, 0L, SEEK_SET);
 		if (size_ncl) {
-			while (line_buf = fgets(line_buf_s, sizeof(line_buf_s), fp_mnt)) {
+			while ((line_buf = fgets(line_buf_s, sizeof(line_buf_s), fp_mnt)) != NULL) {
 				MNT_DEBUG("[MNT]: DB %s\n", line_buf);
-				if(t_str1 = strstr(line_buf, s_mac)) {
-					if(t_str1 = strstr(t_str1, "name")) {
-						if(t_str1 = strchr(t_str1, '"')) {
+				if((t_str1 = strstr(line_buf, s_mac)) != NULL) {
+					if((t_str1 = strstr(t_str1, "name")) != NULL) {
+						if((t_str1 = strchr(t_str1, '"')) != NULL) {
 							++t_str1;
-							if(t_str1 = strchr(t_str1, '"')) {
+							if((t_str1 = strchr(t_str1, '"')) != NULL) {
 								++t_str1;
-								if(t_str2 = strchr(t_str1, '"')) {
+								if((t_str2 = strchr(t_str1, '"')) != NULL) {
 									*t_str2 = '\0';
 									if(strlen(t_str1) > 1) {
 										strlcpy(host_name, t_str1, sizeof(host_name));

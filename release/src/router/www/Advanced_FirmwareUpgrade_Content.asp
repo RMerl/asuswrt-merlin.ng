@@ -89,7 +89,7 @@
 <script language="JavaScript" type="text/javascript" src="js/httpApi.js"></script>
 <script>
 $(function () {
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		addNewCSS('/device-map/amesh.css');
 	}
 });
@@ -141,12 +141,10 @@ function initial(){
 
 	showtext(document.getElementById("FWString"), FWString);
 
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		$(".aimesh_manual_fw_update_hint").css("display", "block");
-		var get_cfg_clientlist_ori = [<% get_cfg_clientlist(); %>];
 		var have_node = false;
-		var get_cfg_clientlist = [];
-		get_cfg_clientlist = get_cfg_clientlist_ori[0];
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 		$("#fw_version_tr").empty();
 		var html = "";
 		html += "<tr id='update_div' style='display:none;'>";
@@ -180,7 +178,7 @@ function initial(){
 		html += "</th>";
 		html += "<td id='amas_" + mac_id + "'>";
 		html += "<div id='current_version'><#ADSL_FW_item1#> : " + FWString + "</div>";
-		html += "<div>";
+		html += "<div id='amesh_manual_upload_fw'>";
 		html += "<#FW_manual_update#> : ";
 		html += "<span class='aimesh_fw_update_offline' style='margin-left:0px;' onclick='open_AiMesh_router_fw_upgrade();'><#CTL_upload#></span>";
 		html += "</div>";
@@ -224,7 +222,7 @@ function initial(){
 				html += "<th>";
 				html += model_name + " ( " + labelMac + " )";
 				html += "<br>";
-				html += "<#AiMesh_NodeLocation#> : " + alias;
+				html += "<#AiMesh_NodeLocation#> : " + htmlEnDeCode.htmlEncode(alias);
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "'>";
 				if (check_is_merlin_fw(fwver))
@@ -274,7 +272,7 @@ function initial(){
 		}
 	}
 
-	if(no_update_support){
+	if(no_update_support){	//no live update
 		document.getElementById("update_div").style.display = "none";
 		document.getElementById("fw_tr").style.display = "none";
 		document.getElementById("linkpage_div").style.display = "none";
@@ -295,7 +293,7 @@ function initial(){
 				do_show_confirm(webs_state_flag);
 			}
 			else if(confirm_show.length > 0 && confirm_show == 0){
-				if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+				if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 					var interval = setInterval(function() {
 						if(link_status != undefined) {
 							clearInterval(interval);
@@ -347,12 +345,27 @@ function initial(){
 		inputCtrl(document.form.upload, 1);
 	}
 
-	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+	if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 		$("#manually_upgrade_tr").css("display", "none");
 		$("#productid_tr").css("display", "none");
 		document.form.file.onchange = function() {
 			submitForm();
 		}
+	}
+
+	if(based_modelid == "DSL-AC68U"){
+		$("#dsl_ac68u_fwver").show();
+		$("#dsl_ac68u_drvver").show();
+	}
+
+	if(based_modelid == "DSL-N55U" || based_modelid == "DSL-N55U-B"){
+		$("#dsl_n55u_fwver").show();
+		$("#dsl_n55u_ras").show();
+	}
+
+	if(support_site_modelid == "GT-AC2900_SH"){	//No manual
+		$("div").remove("#amesh_manual_upload_fw")
+		$("tr").remove("#manually_upgrade_tr")
 	}
 }
 
@@ -368,7 +381,7 @@ function detect_firmware(flag){
 				setTimeout("detect_firmware();", 1000);
 			else{
   				document.getElementById('update_scan').style.display="none";
-  				document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
+  				document.getElementById('update_states').innerHTML="<#info_failed#>";
 				document.getElementById('update').disabled = false;
 			}
 		},
@@ -381,7 +394,7 @@ function detect_firmware(flag){
 				else{	// got fw info
 					if(cfg_check == "2" || cfg_check == "3"){
 						document.getElementById('update_scan').style.display="none";
-						document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
+						document.getElementById('update_states').innerHTML="<#info_failed#>";
 						document.getElementById('update').disabled = false;
 					}
 					else if(cfg_check == "7" || cfg_check == "9"){
@@ -391,7 +404,7 @@ function detect_firmware(flag){
 						var check_webs_state_info = webs_state_info;						
 						note_display=0;
 												
-						if(amesh_support && (isSwMode("rt") || isSwMode("ap")))
+						if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support)
 							show_amas_fw_result();
 						else
 							do_show_confirm(webs_state_flag);
@@ -405,7 +418,7 @@ function detect_firmware(flag){
 				else{	// got fw info
 					if(webs_state_error == "1"){	//1:wget fail
 						document.getElementById('update_scan').style.display="none";
-						document.getElementById('update_states').innerHTML="Unable to connect to the update server.";
+						document.getElementById('update_states').innerHTML="<#info_failed#>";
 						document.getElementById('update').disabled = false;
 					}
 					else if(webs_state_error == "3"){	//3: FW check/RSA check fail
@@ -570,7 +583,7 @@ function isDownloading(){
 					if(rebooting < 30){
 							setTimeout("isDownloading();", 1000);
 					}
-					else{							
+					else{
 							document.getElementById("drword").innerHTML = "<#connect_failed#>";
 							return false;
 					}
@@ -657,7 +670,7 @@ function submitForm(){
 			return;
 	else {
 		var status = onSubmitCtrlOnly(document.form.upload, 'Upload1');
-		if(amesh_support && status && (isSwMode("rt") || isSwMode("ap"))) {
+		if(amesh_support && status && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 			if(interval_update_AiMesh_fw_status) {
 				clearInterval(interval_update_AiMesh_fw_status);
 				interval_update_AiMesh_fw_status = false;
@@ -1040,10 +1053,10 @@ function show_fw_relese_note_result(_status) {
 function open_AiMesh_node_fw_upgrade(_ip) {
 	var url = "http://" + _ip + "/AiMesh_Node_FirmwareUpgrade.asp";
 	var window_width = 550;
-	var window_height = 450;
+	var window_height = 550;
 	var window_top = screen.availHeight / 2 - window_height / 2;
 	var window_left = screen.availWidth / 2 - window_width / 2;
-	window.open(url, '_new' ,'width=' + window_width + ',height=' + window_height + ', top=' + window_top + ',left=' + window_left + ',menubar=no,scrollbars=no,toolbar=no,resizable=no,status=no,location=no');
+	window.open(url, '_new' ,'width=' + window_width + ',height=' + window_height + ', top=' + window_top + ',left=' + window_left + ',menubar=no,scrollbars=yes,toolbar=no,resizable=no,status=no,location=no');
 }
 function open_AiMesh_router_fw_upgrade() {
 	document.form.file.click();
@@ -1102,6 +1115,9 @@ function check_AiMesh_fw_version(_fw) {
 			manual_status = true;
 		}
 	}
+	if(support_site_modelid == "GT-AC2900_SH"){
+		manual_status = false;
+	}
 	return manual_status;
 }
 
@@ -1121,7 +1137,7 @@ function toggle_fw_check(state) {
 
 </script>
 </head>
-<body onload="initial();">
+<body onload="initial();" class="bg">
 
 <div id="TopBanner"></div>
 
@@ -1207,32 +1223,24 @@ function toggle_fw_check(state) {
 				<th><#FW_item1#></th>
 				<td><#Web_Title2#></td>
 			</tr>
-<!--###HTML_PREP_START###-->
-<!--###HTML_PREP_ELSE###-->
-<!--
-[DSL-N55U][DSL-N55U-B]
-{ADSL firmware version}
-			<tr>
+
+			<tr id="dsl_n55u_fwver" style="display:none;">
 				<th><#adsl_fw_ver_itemname#></th>
 				<td><input type="text" class="input_15_table" value="<% nvram_dump("adsl/tc_fw_ver_short.txt",""); %>" readonly="1" autocorrect="off" autocapitalize="off"></td>
 			</tr>
-			<tr>
+			<tr id="dsl_n55u_ras" style="display:none;">
 				<th>RAS</th>
 				<td><input type="text" class="input_20_table" value="<% nvram_dump("adsl/tc_ras_ver.txt",""); %>" readonly="1" autocorrect="off" autocapitalize="off"></td>
 			</tr>
-[DSL-AC68U]
-                        <tr>
-                                <th>DSL <#FW_item2#></th>
-                                <td><% nvram_get("dsllog_fwver"); %></td>
-                        </tr>
-                        <tr>
-                                <th><#adsl_fw_ver_itemname#></th>
-                                <td><% nvram_get("dsllog_drvver"); %></td>
-                        </tr>
--->
-
-<!--###HTML_PREP_END###-->
-			<tr id="sig_ver_field" style="display:none">
+			<tr id="dsl_ac68u_fwver" style="display:none;">
+				<th>DSL <#FW_item2#></th>
+				<td><% nvram_get("dsllog_fwver"); %></td>
+			</tr>
+			<tr id="dsl_ac68u_drvver" style="display:none;">
+				<th><#adsl_fw_ver_itemname#></th>
+				<td><% nvram_get("dsllog_drvver"); %></td>
+			</tr>
+			<tr id="sig_ver_field" style="display:none;">
 				<th><#sig_ver#></th>
 				<td >
 					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>

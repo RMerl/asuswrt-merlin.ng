@@ -1,0 +1,1 @@
+rule=hms:%hr:number%:%min:number%:%sec:number% %zone:word%

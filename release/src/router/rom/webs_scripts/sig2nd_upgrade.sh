@@ -1,5 +1,7 @@
 #!/bin/sh
 
+IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+
 wget_timeout=`nvram get apps_wget_timeout`
 wget_options="-q -t 2 -T $wget_timeout"
 
@@ -26,7 +28,9 @@ echo "$sig_rsasign" >> /tmp/sig_upgrade.log
 # get signature zip file
 forsq=`nvram get apps_sq`
 #urlpath=`nvram get sig_state_url`
-echo 3 > /proc/sys/vm/drop_caches
+if [ -z "$IS_BCMHND" ]; then
+	echo 3 > /proc/sys/vm/drop_caches
+fi
 if [ "$forsq" == "1" ]; then
 	echo "---- wget trf sq ----"
 	echo "---- wget trf sq ----" >> /tmp/sig_upgrade.log
@@ -81,7 +85,9 @@ else
 				echo "stop_wrs_force and free memory"
 				echo "stop_wrs_force and free memory" >> /tmp/sig_upgrade.log
 				rc rc_service stop_wrs_force
-				echo 1 > /proc/sys/vm/drop_caches
+				if [ -z "$IS_BCMHND" ]; then
+					echo 1 > /proc/sys/vm/drop_caches
+				fi
 			fi
 			echo "Do restart_wrs"
 			echo "Do restart_wrs" >> /tmp/sig_upgrade.log

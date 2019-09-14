@@ -1730,8 +1730,13 @@ static int start_bandwidth_limiter(void)
 			fprintf(f, "\tTQA%d%d=\"tc qdisc add dev $GUEST%d%d\"\n", i, j, i, j);
 			fprintf(f, "\tTCA%d%d=\"tc class add dev $GUEST%d%d\"\n", i, j, i, j);
 			fprintf(f, "\tTFA%d%d=\"tc filter add dev $GUEST%d%d\"\n", i, j, i, j); // 5
+#if defined(RTCONFIG_SOC_IPQ8074)
+			fprintf(f, "\n"
+				   "\t$TQA%d%d root handle %d: htb default %d\n", i, j, guest, guest_mark);
+#else
 			fprintf(f, "\n"
 				   "\t$TQA%d%d root handle %d: htb\n", i, j, guest);
+#endif
 			fprintf(f, "\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n", i, j, guest, guest, nvram_pf_safe_get(wlv, "_bw_dl")); //7
 			fprintf(f, "\n"
 				   "\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n", i, j, guest, guest, guest_mark, nvram_pf_safe_get(wlv, "_bw_dl"), guest_mark);

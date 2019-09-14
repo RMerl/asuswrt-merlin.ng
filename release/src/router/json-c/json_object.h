@@ -339,7 +339,7 @@ extern void json_object_object_del(struct json_object* obj, const char *key);
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__) && __STDC_VERSION__ >= 199901L
 
 # define json_object_object_foreach(obj,key,val) \
-	char *key = NULL; \
+	char *key __attribute__ ((unused)) = NULL; \
 	struct json_object *val = NULL; \
 	for(struct lh_entry *entry ## key = json_object_get_object(obj)->head, *entry_next ## key = NULL; \
 		({ if(entry ## key) { \
@@ -352,8 +352,8 @@ extern void json_object_object_del(struct json_object* obj, const char *key);
 #else /* ANSI C or MSC */
 
 # define json_object_object_foreach(obj,key,val) \
-	char *key;\
-	struct json_object *val; \
+	char *key __attribute__ ((unused));\
+	struct json_object *val __attribute__ ((unused)); \
 	struct lh_entry *entry ## key; \
 	struct lh_entry *entry_next ## key = NULL; \
 	for(entry ## key = json_object_get_object(obj)->head; \

@@ -16,7 +16,7 @@
 	background:rgba(40,52,55,0.1);
 }
 .wrapper{
-	background:url(images/New_ui/login_bg.png) no-repeat center center fixed;
+	background:#1F1F1F url(images/New_ui/login_bg.png) no-repeat center center fixed;
 	background-size: cover;
 }
 .title_name {
@@ -314,7 +314,15 @@ var validator = {
 			obj.focus();
 			obj.select();
 			return false;
-		}		
+		}
+		
+		if(obj.value.length > 16){
+            showError("<#JS_max_password#>");
+            obj.value = "";
+            obj.focus();
+            obj.select();
+            return false;
+        }
 
 		if(obj.value.charAt(0) == '"'){
 			showError('<#JS_validstr1#> ["]');
@@ -356,6 +364,14 @@ var validator = {
 				return false;	
 		}	
 		
+		if(obj.value.length > 16){
+            showError("<#JS_max_password#>");
+            obj.value = "";
+            obj.focus();
+            obj.select();
+            return false;
+        }
+
 		var invalid_char = "";
 		for(var i = 0; i < obj.value.length; ++i){
 			if(obj.value.charAt(i) <= ' ' || obj.value.charAt(i) > '~'){
@@ -444,7 +460,7 @@ function showError(str){
 					<tr style="height:72px;">
 						<td colspan="2">
 							<div style="margin:30px 0px 0px 78px;">
-								<input type="password" autocapitalize="off" autocomplete="off" value="" name="http_passwd_x" tabindex="2" class="form_input" maxlength="16" onkeyup="" onpaste="return false;"/ onBlur="" placeholder="<#PASS_new#>">
+								<input type="password" autocapitalize="off" autocomplete="off" value="" name="http_passwd_x" tabindex="2" class="form_input" maxlength="17" onkeyup="" onpaste="return false;"/ onBlur="" placeholder="<#PASS_new#>">
 							</div>
 						</td>
 					</tr>
@@ -456,7 +472,7 @@ function showError(str){
 					<tr style="height:72px;">
 						<td colspan="2">
 							<div style="margin:30px 0px 0px 78px;">
-								<input type="password" autocapitalize="off" autocomplete="off" value="" name="http_passwd_2_x" tabindex="3" class="form_input" maxlength="16" onkeyup="" onpaste="return false;"/ onBlur="" placeholder="<#Confirmpassword#>">
+								<input type="password" autocapitalize="off" autocomplete="off" value="" name="http_passwd_2_x" tabindex="3" class="form_input" maxlength="17" onkeyup="" onpaste="return false;"/ onBlur="" placeholder="<#Confirmpassword#>">
 							</div>
 						</td>
 					</tr>

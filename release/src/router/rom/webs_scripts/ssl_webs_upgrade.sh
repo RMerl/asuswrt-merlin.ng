@@ -1,15 +1,35 @@
 #!/bin/sh
 
+IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+
 wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T $wget_timeout --no-check-certificate"
 
 dl_path_MR="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/MR"
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
+dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
 dl_path_file="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 
 nvram set webs_state_upgrade=0 # INITIALIZING
-nvram set webs_state_error=0
+nvram set auto_upgrade=1
+
+force_upgrade=`nvram get webs_state_dl`
+if [ "$force_upgrade" == "1" ]; then
+	record="webs_state_dl_error"
+	nvram set webs_state_dl_error=0
+	nvram set webs_state_dl_error_day=
+else
+	record="webs_state_error"
+	nvram set webs_state_error=0
+fi
+
+
+webs_state_dl_error_count=`nvram get webs_state_dl_error_count`
+if [ -z "$webs_state_dl_error_count" ]; then
+	webs_state_dl_error_count=0
+fi
+error_day=`date |awk '{print $1}'`
 
 # get specific model
 fw_check=`nvram get fw_check`
@@ -53,49 +73,84 @@ if [ "$small_fw_update" != "" ]; then
 else
 	firmware_path="/tmp/linux.trx"
 fi
+rsa_path=/tmp/rsasign.bin
+
+rm -f $firmware_path
+wget_result=0
 
 # get firmware zip file
 formr=`nvram get MRFLAG`
 forsq=`nvram get apps_sq`
 urlpath=`nvram get webs_state_url`
-echo 3 > /proc/sys/vm/drop_caches
+if [ -z "$IS_BCMHND" ]; then
+	echo 3 > /proc/sys/vm/drop_caches
+fi
 if [ "$update_url" != "" ]; then
 	echo "---- wget fw nvram webs_state_url ----" > /tmp/webs_upgrade.log
-	wget -t 2 -T $wget_timeout --output-file=/tmp/fwget_log ${update_url}/$firmware_file -O $firmware_path
+	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log ${update_url}/$firmware_file -O $firmware_path
+	wget_result=$?
 	if [ "$rsa_enabled" != "" ]; then
-		wget $wget_options ${update_url}/$firmware_rsasign -O /tmp/rsasign.bin
+		wget $wget_options ${update_url}/$firmware_rsasign -O $rsa_path
 	fi
 elif [ "$formr" == "1" ]; then
 	echo "---- wget fw MR1 ${dl_path_MR}1/$firmware_file ----" >> /tmp/webs_upgrade.log
 	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_MR}1/$firmware_file -O $firmware_path
+	wget_result=$?
 	if [ "$rsa_enabled" != "" ]; then
 		echo "---- wget fw MR1 ${dl_path_MR}1/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
-		wget $wget_options ${dl_path_MR}1/$firmware_rsasign -O /tmp/rsasign.bin
+		wget $wget_options ${dl_path_MR}1/$firmware_rsasign -O $rsa_path
+	fi
+elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+	echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_file ----" >> /tmp/webs_upgrade.log
+	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ_beta}${forsq}/$firmware_file -O $firmware_path
+	wget_result=$?
+	if [ "$rsa_enabled" != "" ]; then
+		echo "---- wget fw sq beta_user ${dl_path_SQ_beta}${forsq}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
+		wget $wget_options ${dl_path_SQ_beta}${forsq}/$firmware_rsasign -O $rsa_path
 	fi
 elif [ "$forsq" == "1" ]; then
 	echo "---- wget fw sq ${dl_path_SQ}/$firmware_file ----" >> /tmp/webs_upgrade.log
-	wget -t 2 -T $wget_timeout --output-file=/tmp/fwget_log https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_file -O $firmware_path
+	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_SQ}/$firmware_file -O $firmware_path
+	wget_result=$?
 	if [ "$rsa_enabled" != "" ]; then
 		echo "---- wget fw sq ${dl_path_SQ}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_rsasign -O /tmp/rsasign.bin
+		wget $wget_options ${dl_path_SQ}/$firmware_rsasign -O $rsa_path
 	fi
 elif [ "$urlpath" == "" ]; then
 	echo "---- wget fw Real ${dl_path_file}/$firmware_file ----" >> /tmp/webs_upgrade.log
-	wget -t 2 -T $wget_timeout --output-file=/tmp/fwget_log https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_file -O $firmware_path
+	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log ${dl_path_file}/$firmware_file -O $firmware_path
+	wget_result=$?
 	if [ "$rsa_enabled" != "" ]; then
 		echo "---- wget fw Real ${dl_path_file}/$firmware_rsasign ----" >> /tmp/webs_upgrade.log
-		wget $wget_options https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$firmware_rsasign -O /tmp/rsasign.bin
+		wget $wget_options ${dl_path_file}/$firmware_rsasign -O $rsa_path
 	fi
 else
 	echo "---- wget fw URL ----" >> /tmp/webs_upgrade.log
-	wget -t 2 -T $wget_timeout --output-file=/tmp/fwget_log $urlpath/$firmware_file -O $firmware_path
+	wget -t 2 -T $wget_timeout --no-check-certificate --output-file=/tmp/fwget_log $urlpath/$firmware_file -O $firmware_path
+	wget_result=$?
 	if [ "$rsa_enabled" != "" ]; then
-		wget $wget_options $urlpath/$firmware_rsasign -O /tmp/rsasign.bin
+		wget $wget_options $urlpath/$firmware_rsasign -O $rsa_path
 	fi
 fi	
 
-if [ "$?" != "0" ]; then	#download failure
-	nvram set webs_state_error=1
+if [ "$wget_result" != "0" ]; then
+	echo "---- download fw failure: $wget_result ----" >> /tmp/webs_upgrade.log
+	rm -f $firmware_path
+	nvram set $record=1	# fail to download the firmware
+	if [ "$force_upgrade" == "1" ]; then
+		webs_state_dl_error_count=$((webs_state_dl_error_count+1))
+		nvram set webs_state_dl_error_count=$webs_state_dl_error_count
+		nvram set webs_state_dl_error_day=$error_day
+	fi
+elif [ "$rsa_enabled" != "" ] && [ "$?" != "0" ]; then
+	echo "---- download rsa failure ----" >> /tmp/webs_upgrade.log
+	rm -f $firmware_path
+	nvram set $record=2	# fail to download the rsa
+	if [ "$force_upgrade" == "1" ]; then
+		webs_state_dl_error_count=$((webs_state_dl_error_count+1))
+		nvram set webs_state_dl_error_count=$webs_state_dl_error_count
+		nvram set webs_state_dl_error_day=$error_day
+	fi
 else
 	nvram set webs_state_upgrade=2	
 	echo "---- mv trx OK ----" >> /tmp/webs_upgrade.log
@@ -121,19 +176,28 @@ else
 		echo "---- fw check OK ----" >> /tmp/webs_upgrade.log
 		/sbin/ejusb -1 0
 		nvram set fwpath=2
+		nvram set auto_upgrade=0
+		nvram set webs_state_dl=0
 		nvram commit
 		rc rc_service restart_upgrade
 	else
 		echo "---- fw check error ----" >> /tmp/webs_upgrade.log
-		nvram set webs_state_error=3	# wrong fw
+		rm -f $firmware_path
+		nvram set $record=3	# wrong fw
+		if [ "$force_upgrade" == "1" ]; then
+			webs_state_dl_error_count=$((webs_state_dl_error_count+1))
+			nvram set webs_state_dl_error_count=$webs_state_dl_error_count
+			nvram set webs_state_dl_error_day=$error_day
+		fi
 		if [ "$productid" == "BLUECAVE" ]; then
 			rc rc_service start_wrs
 		fi
 	fi
 fi
 
-rm -f /tmp/rsasign.bin
+rm -f $rsa_path
 
 fi
 
 nvram set webs_state_upgrade=1
+nvram commit

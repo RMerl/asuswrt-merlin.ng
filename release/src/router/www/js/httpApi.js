@@ -321,8 +321,9 @@ var httpApi ={
 	},
 
 	"detwanGetRet": function(){
-		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto", "link_internet", "x_Setting"], true);
-	
+		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto",
+										 "link_internet", "x_Setting", "usb_modem_act_sim"], true);
+
 		var wanTypeList = {
 			"dhcp": "DHCP",
 			"static": "STATIC",
@@ -337,20 +338,56 @@ var httpApi ={
 			"noWan": "NOWAN"
 		}
 
+		var simStateList = {
+			"nosim": "NOSIM",
+			"ready": "READY",
+			"pin": "PIN",
+			"puk": "PUK",
+			"pin2": "PIN2",
+			"puk2": "PUK2",
+			"wait": "WAITING",
+			"fail": "FAIL"
+		}
+
 		var retData = {
 			"wanType": "CHECKING",
 			"isIPConflict": (function(){
 				return (wanInfo.wan0_state_t == "4" && wanInfo.wan0_sbstate_t == "4")
 			})(),
+			"simState": "WAITING",
 			"isError": false
 		};
 
 		var hadPlugged = function(deviceType){
-			var usbDeviceList = httpApi.hookGet("show_usb_path")[0] || [];
+			var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
 			return (usbDeviceList.join().search(deviceType) != -1)
 		}
 
-		var iCanUsePPPoE = (wanInfo.autodet_state == "6" || wanInfo.autodet_auxstate == "6")
+		var iCanUsePPPoE = (wanInfo.autodet_state == "6" || wanInfo.autodet_auxstate == "6");
+		var sim_state = parseInt(wanInfo.usb_modem_act_sim);
+
+		if(isSupport("gobi") && (sim_state >= 1 && sim_state <= 6)){
+			switch(wanInfo.usb_modem_act_sim){
+				case "1":
+					retData.simState = simStateList.ready;
+					break;
+				case "2":
+					retData.simState = simStateList.pin;
+					break;
+				case "3":
+					retData.simState = simStateList.puk;
+					break;
+				case "4":
+					retData.simState = simStateList.pin2;
+					break;
+				case "5":
+					retData.simState = simStateList.puk2;
+					break;
+				case "6":
+					retData.simState = simStateList.wait;
+					break;
+			}
+		}
 
 		if(wanInfo.isError){
 			retData.wanType = wanTypeList.check;
@@ -366,12 +403,12 @@ var httpApi ={
 			retData.wanType = (iCanUsePPPoE && wanInfo.x_Setting  == "0") ? wanTypeList.pppdhcp : wanTypeList.connected;
 		}
 		else if(wanInfo.autodet_state == ""){
-			retData.wanType = wanTypeList.check;			
+			retData.wanType = wanTypeList.check;
 		}
 		else if(iCanUsePPPoE){
 			retData.wanType = wanTypeList.pppoe;
 		}
-		else if(hadPlugged("modem")){
+		else if(!isSupport("gobi") && hadPlugged("modem")){
 			retData.wanType = wanTypeList.modem;
 		}
 		else if(wanInfo.wan0_auxstate_t == "1"){
@@ -579,6 +616,69 @@ var httpApi ={
 		$.get("/update_wlanlog.cgi");
 	},
 
+	"boostKey_support": function(){
+		var retData = {
+				"GAME_BOOST": {
+					"value": 3,
+					"text": "Enable GameBoost",
+					"desc": "<#BoostKey_Boost_desc#>"
+				},
+				"ACS_DFS": {
+					"value": 1,
+					"text": "<#WLANConfig11b_EChannel_dfs#>",
+					"desc": "<#BoostKey_DFS_desc#>"
+				},
+				"LED": {
+					"value": 0,
+					"text": "LED On/Off",
+					"desc": "The LED on/off control is used to turn off all LEDs includes Aura light."
+				},
+				"AURA_RGB": {
+					"value": 2,
+					"text": "Aura RGB",
+					"desc": "Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB."
+				}
+		};
+
+		var productid = httpApi.nvramGet(["productid"]).productid;
+		if(productid == "GT-AC2900"){
+			delete retData.LED;
+			delete retData.AURA_RGB;
+
+			retData.AURA_SHUFFLE = {
+				"value": 4,
+				"text": "Aura Shuffle",
+				"desc": "<#BoostKey_AURA_Shuffle_desc#>"				
+			}
+
+			retData.GEFORCE_NOW = {
+				"value": 5,
+				"text": "GeForce Now",
+				"desc": "<#BoostKey_GeForce_desc#>"				
+			}
+		}
+
+		var sw_mode = (window.hasOwnProperty("qisPostData") && qisPostData.hasOwnProperty("sw_mode")) ? qisPostData.sw_mode : httpApi.nvramGet(["sw_mode"]).sw_mode;
+		if(sw_mode != "1"){
+			delete retData.GAME_BOOST;
+		}
+
+		if(sw_mode == "1" || sw_mode == "3"){
+			var ch_5g1 = httpApi.hookGet("channel_list_5g");
+			var ch_5g2 = httpApi.hookGet("channel_list_5g_2");
+			var ch = ch_5g1.concat(ch_5g2).toString().split(",");
+
+			if((ch.indexOf("52") == -1 && ch.indexOf("56") == -1 && ch.indexOf("60") == -1 && ch.indexOf("64") == -1 && ch.indexOf("100") == -1 && ch.indexOf("104") == -1 && ch.indexOf("108") == -1 && ch.indexOf("112") == -1 && ch.indexOf("116") == -1 && ch.indexOf("120") == -1 && ch.indexOf("124") == -1 && ch.indexOf("128") == -1 && ch.indexOf("132") == -1 && ch.indexOf("136") == -1 && ch.indexOf("140") == -1 && ch.indexOf("144") == -1)){
+				delete retData.ACS_DFS;
+			}
+		}
+		else{
+			delete retData.ACS_DFS;
+		}
+
+		return retData;
+	},
+
 	"getPAPStatus": function(_band){
 		var papStatus = "";
 		var get_ssid = function(_band){
@@ -683,7 +783,7 @@ var httpApi ={
 			return;
 		}
 
-		if(modelName != "Lyra" && modelName != "Lyra_Mini" && modelName != "LyraMini" && modelName != "LYRA_VOICE" && modelName != "Lyra_Trio")
+		if(modelName != "Lyra" && modelName != "Lyra_Mini" && modelName != "LyraMini" && modelName != "LYRA_VOICE" && modelName != "Lyra_Trio" && modelName != "GT-AXY16000" && modelName != "RT-AX89X")
 			return;
 
 		var isMac = function(_mac){
@@ -740,6 +840,10 @@ var httpApi ={
 			case "Lyra_Trio":
 				offset = -1;
 				break;
+			case "GT-AXY16000":
+			case "RT-AX89X":
+				offset = -5;
+				break;
 			default:
 				offset = 0;
 				break;
@@ -762,13 +866,86 @@ var httpApi ={
 
 	"hasAiMeshNode": function(){
 		var status = false;
-		if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
+		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
-			get_cfg_clientlist.shift();//filter CAP
-			var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
-			if(online_node_list.length > 0)
-				status = true;
+			if(get_cfg_clientlist != undefined && get_cfg_clientlist.length > 1) {
+				get_cfg_clientlist.shift();//filter CAP
+				var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
+				if(online_node_list.length > 0)
+					status = true;
+			}
 		}
 		return status;
+	},
+
+	"ftp_port_conflict_check" : {
+		usb_ftp : {
+			enabled : function(){
+				if(noftp_support)
+					return 0;
+				else{
+					var enable_ftp = httpApi.nvramGet(["enable_ftp"], true).enable_ftp;
+					if(enable_ftp == "")
+						return 0;
+					else
+						return parseInt(enable_ftp);
+				}
+			},
+			hint : "<#IPConnection_VServer_usb_port_conflict#>\n<#IPConnection_VServer_go_VS_change_lan_port#>"
+		},
+		port_forwarding : {
+			enabled : function(){
+				if(isSwMode("rt")){
+					var vts_enable_x = httpApi.nvramGet(["vts_enable_x"], true).vts_enable_x;
+					if(vts_enable_x == "0")
+						return 0;
+					else{
+						return httpApi.ftp_port_conflict_check.port_forwarding.use_usb_ftp_port();
+					}
+				}
+				else
+					return 0;
+			},
+			use_usb_ftp_port : function(){
+				var state = 0;
+				var lan_ipaddr = httpApi.nvramGet(["lan_ipaddr"], true).lan_ipaddr;
+				var usb_ftp_port = 21;
+				var vts_rulelist = decodeURIComponent(httpApi.nvramCharToAscii(["vts_rulelist"], true).vts_rulelist);
+				var dual_wan_lb_status = (check_dual_wan_status().status == "1" && check_dual_wan_status().mode == "lb") ? true : false;
+				var support_dual_wan_unit_flag = (mtwancfg_support && dual_wan_lb_status) ? true : false;
+				if(support_dual_wan_unit_flag)
+					vts_rulelist += decodeURIComponent(httpApi.nvramCharToAscii(["vts1_rulelist"], true).vts1_rulelist);
+
+				var eachRulelist = decodeURIComponent(vts_rulelist).split('<');
+				break_loop:
+					for(var i = 0; i < eachRulelist.length; i += 1){
+						if(eachRulelist[i] != "") {
+							var eachRuleItem = eachRulelist[i].split('>');
+							var externalPort = eachRuleItem[1];
+							var internalIP = eachRuleItem[2];
+							var eachPort = externalPort.split(",");
+							for(var j = 0; j < eachPort.length; j += 1){
+								if(eachPort[j].indexOf(":") != -1){//port range
+									var portS = eachPort[j].split(":")[0];
+									var portE = eachPort[j].split(":")[1];
+									if(parseInt(portS) <= usb_ftp_port && parseInt(portE) >= usb_ftp_port && internalIP != lan_ipaddr){
+										state = 1;
+										break break_loop;
+									}
+								}
+								else if(parseInt(eachPort[j]) == usb_ftp_port && internalIP != lan_ipaddr){
+									state = 1;
+									break break_loop;
+								}
+							}
+						}
+					}
+				return state;
+			},
+			hint : "<#IPConnection_VServer_usb_port_conflict#>\n<#IPConnection_VServer_change_lan_port#>"
+		},
+		conflict : function(){
+			return (httpApi.ftp_port_conflict_check.usb_ftp.enabled() && httpApi.ftp_port_conflict_check.port_forwarding.enabled()) ? true : false;
+		}
 	}
 }

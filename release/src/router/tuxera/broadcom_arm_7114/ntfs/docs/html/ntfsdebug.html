@@ -42,6 +42,24 @@ NTFSDEBUG(8)</td>
 <b>ntfsdebug /dev/sda1 | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
 &#160;</div>
 </div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with less memory e.g. for 20 MB memory use:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 --mem 20 | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with less memory and letting tool adjust memory usage:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 --automatic-mem | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image but also collect a full NTFS Journal ($LogFile), use:<div style="margin-left: 5.00ex;">
+<div style="height: 1.00em;">
+&#160;</div>
+<b>ntfsdebug /dev/sda1 --logfile | bzip2 &gt; sda1.img.bz2</b><div style="height: 1.00em;">
+&#160;</div>
+</div>
 Dump NTFS metadata to a remote host, using ssh. Please note that ssh may ask for a password.<div style="margin-left: 5.00ex;">
 <div style="height: 1.00em;">
 &#160;</div>
@@ -56,7 +74,7 @@ Dump NTFS metadata to a remote host, using ssh. Please note that ssh may ask for
 <td class="foot-date">
 Sept 2011</td>
 <td class="foot-os">
-Tuxera NTFS Utilities 3014.5.21</td>
+Tuxera NTFS Utilities 3017.7.18.13</td>
 </tr>
 </table>
 </div>

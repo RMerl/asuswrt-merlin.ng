@@ -1,0 +1,11 @@
+my_object=
+	abc: 12
+	foo: "bar"
+	bool0: false
+	bool1: true
+my_object.to_string()={
+  "abc":12,
+  "foo":"bar",
+  "bool0":false,
+  "bool1":true
+}

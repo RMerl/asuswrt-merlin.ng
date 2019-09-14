@@ -105,10 +105,10 @@ var realip_state = "";
 
 var StatusList = {
 	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
-	"SvrFail": "Server connection failed",
+	"SvrFail": "<#Alexa_Server_Failed#>",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
-	"Success": "Amazon Alexa account is registered"
+	"Success": "<#Alexa_Registered#>"
 }
 
 var AccLinkStatus = {
@@ -128,16 +128,16 @@ var AccLinkStatus = {
 }
 
 var Amazon_URLs = [
-	{ "Region": "Australia and New Zealand", "WebSite": "https://www.amazon.com.au/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Canada", "WebSite": "https://www.amazon.ca/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "France", "WebSite": "https://www.amazon.fr/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Germany and Austria", "WebSite": "https://www.amazon.de/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "India", "WebSite": "https://www.amazon.in/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Italy", "WebSite": "https://www.amazon.it/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Japan", "WebSite": "https://www.amazon.co.jp/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "Spain", "WebSite": "https://www.amazon.es/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "United States", "WebSite": "https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK" },
-	{ "Region": "United Kingdom and Ireland", "WebSite": "https://www.amazon.co.uk/ASUS-ROUTER/dp/B07285G1RK" }
+	{ "Region": "<#Alexa_Region_au#>", "WebSite": "https://www.amazon.com.au/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_ca#>", "WebSite": "https://www.amazon.ca/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_fr#>", "WebSite": "https://www.amazon.fr/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_de#>", "WebSite": "https://www.amazon.de/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_in#>", "WebSite": "https://www.amazon.in/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_it#>", "WebSite": "https://www.amazon.it/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_jp#>", "WebSite": "https://www.amazon.co.jp/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_es#>", "WebSite": "https://www.amazon.es/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_us#>", "WebSite": "https://www.amazon.com/ASUS-ROUTER/dp/B07285G1RK" },
+	{ "Region": "<#Alexa_Region_uk#>", "WebSite": "https://www.amazon.co.uk/ASUS-ROUTER/dp/B07285G1RK" }
 ]
 
 function initial(){
@@ -166,6 +166,10 @@ function initial(){
 	if(isSupport("amazon_avs")){
 		document.getElementById("amazon_avs_div").style.display = "";
 	}
+
+	$("#alexa_ex1").html("<#Alexa_Example1#>".replace("ASUS ROUTER", "MY ROUTER"));
+	$("#alexa_ex2").html("<#Alexa_Example2#>".replace("ASUS ROUTER", "MY ROUTER"));
+	$("#alexa_ex3").html("<#Alexa_Example3#>".replace("ASUS ROUTER", "MY ROUTER"));
 }
 
 function create_AmazonRegion_select(){
@@ -177,7 +181,7 @@ function create_AmazonRegion_select(){
 		select.length = 0;
 		for(var i = 0; i < Amazon_URLs.length; i++){
 			text = Amazon_URLs[i].Region;
-			if(Amazon_URLs[i].Region == "United States")
+			if(Amazon_URLs[i].Region == "<#Alexa_Region_us#>")
 				selected = true;
 			else
 				selected = false;
@@ -201,6 +205,7 @@ function tag_control(){
 	}
 }
 
+<% get_realip(); %>
 function get_real_ip(){
 	if(AccLinkStatus.RemoteStatus.link_internet == '2'){
 		$.ajax({
@@ -406,7 +411,7 @@ function show_account_state(){
 }
 </script>
 </head>
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -450,9 +455,9 @@ function show_account_state(){
 													<div style="padding:0px 40px;font-family:Arial, Helvetica, sans-serif;font-size:13px;">
 														<span><#Alexa_Desc2#></span>
 														<p style="font-size:13px;padding-top: 20px;font-style:italic;"><#Alexa_Example0#></p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example1#>”</p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example2#>”</p>
-														<p style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example3#>”</p>
+														<p id="alexa_ex1" style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example1#>”</p>
+														<p id="alexa_ex2" style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example2#>”</p>
+														<p id="alexa_ex3" style="font-size:13px;padding-left: 20px;font-style:italic;">“<#Alexa_Example3#>”</p>
 														<a id="faq" href="" style="font-family:Arial, Helvetica, sans-serif;font-size:13px;padding-top: 2px;padding-left: 20px;font-style:italic;text-decoration: underline;cursor:pointer;" target="_blank"><#Alexa_More_Skill#></a>
 														<p id="network_services_Remind" style="font-size:13px;padding-top: 10px;font-style:italic;color:#FFCC00;font-size:13px;display: none;">WARNING: The current network service filter policy for firewall will be overwritten once you say “Alexa, ask ASUS Router to pause the Internet</p>
 													</div>
@@ -466,10 +471,10 @@ function show_account_state(){
 																		<div class="title_num">1</div>
 																	</div>
 																	<div class="div_td step_div" style="padding-top:0px;">
-																		Select and go to your preferred Amazon country/region website
+																		<#Alexa_Region_select#>
 																		<select class="input_option" id="service_region" name="service_region" style="margin-top: 10px;">
 																		</select>
-																		<input class="button_gen" style="margin-top: 10px;" type="button" onclick="window.open(document.form.service_region.value);" value="GO">
+																		<input class="button_gen" style="margin-top: 10px;" type="button" onclick="window.open(document.form.service_region.value);" value="<#CTL_link#>">
 																	</div>
 																</div>
 																<div class="div_tr">

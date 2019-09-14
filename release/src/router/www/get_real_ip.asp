@@ -1,5 +1,4 @@
-﻿<% get_realip(); %>
-var wan0_realip_state = "<% nvram_get("wan0_realip_state"); %>";
+﻿var wan0_realip_state = "<% nvram_get("wan0_realip_state"); %>";
 var wan1_realip_state = "<% nvram_get("wan1_realip_state"); %>";
 var wan0_realip_ip = "<% nvram_get("wan0_realip_ip"); %>";
 var wan1_realip_ip = "<% nvram_get("wan1_realip_ip"); %>";

@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "nomatch": "baz",
+  "type" : "sparseArray",
+  "table":[
+      {"index":"00000000" },
+      {"index":"00000001" }]
+}

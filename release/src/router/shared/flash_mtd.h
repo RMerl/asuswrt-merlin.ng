@@ -19,7 +19,6 @@
 #else
 #define FACTORY_MTD_NAME	"Factory"
 #endif
-#define LINUX_MTD_NAME		"linux"
 #define CALDATA_MTD_NAME	"caldata"
 
 struct mtd_info {

@@ -14,7 +14,13 @@ ifeq ($(RTCONFIG_SOC_QCA9557),y)
 SRCFILE = $(if $(RT4GAC55U),qca_4gac55u,qca)
 else ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 SRCFILE = qca_ipq806x
-TNSA_SMBD = $(SRCFILE)/tnsa/smbd
+TNSA_SMBD = $(if $(RTCONFIG_SAMBA36X),,$(SRCFILE)/tnsa/smbd)
+else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
+ifneq ($(findstring $(_BUILD_NAME_),$(SPF8_MODEL_LIST)),)
+SRCFILE = qca_ipq807x.spf8
+else ifneq ($(findstring $(_BUILD_NAME_),$(IPQ807X_MODEL_LIST)),)
+SRCFILE = qca_ipq807x
+endif
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 SRCFILE = qca_ipq40xx
 else

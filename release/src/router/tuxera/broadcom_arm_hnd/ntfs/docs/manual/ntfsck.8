@@ -1,4 +1,4 @@
-.TH NTFSCK 8 "January 2017" "Tuxera NTFS Utilities 3017.7.18.4"
+.TH NTFSCK 8 "January 2017" "Tuxera NTFS Utilities 3017.7.18.13"
 .SH NAME
 ntfsck \- check and repair an NTFS file system 
 .SH SYNOPSIS
@@ -63,6 +63,8 @@ Use this option with caution.
 Don't check for orphaned files. This option speeds up 
 .B ntfsck.
 .TP
+\fB\-M\fR, \fB\-\-no\-mft\-scan\fR
+Don't scan $MFT.
 \fB\-S\fR, \fB\-\-no\-sync\fR
 Don't sync NTFS metadata before exit. This option speeds up 
 .B ntfsck

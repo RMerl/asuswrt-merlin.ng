@@ -1,0 +1,12 @@
+{
+  "nomatch": "quux",
+  "type" : "sparseArray",
+  "table":[
+      {"index": 2, "value": "foo_latest" },
+      {"index": 3, "value": "baz_latest" },
+      {"index": 4, "value": "foo_latest" },
+      {"index": 5, "value": "foo_latest" },
+      {"index": 8, "value": "baz_latest" },
+      {"index": 10, "value": "baz_latest" },
+      {"index": 12, "value": "foo_latest" }]
+}

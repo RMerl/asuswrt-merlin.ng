@@ -1121,7 +1121,6 @@ var tableApi = {
 				switch(editMode) {
 					case "text" :
 					case "select" :
-					case "pureText" :
 						$("tr[row_tr_idx='" + i + "']").find($("td[row_td_idx='" + j + "']")).click(
 							function(event) {
 								if($(".row_tr").children().find(".hint").length != 0) {
@@ -1161,6 +1160,8 @@ var tableApi = {
 								_callBackFun($(this));
 							}
 						);
+						break;
+					case "pureText" :
 						break;
 				}
 				

@@ -1424,6 +1424,7 @@ static void create_Vlan(int bitmask)
 	if (switch_init() < 0)
 		return;
 #if defined(RTCONFIG_RALINK_MT7628)
+
 	/* Set PVID & VLAN member port */
 	strlcpy(portmap, "00000000", sizeof(portmap));
 	strlcpy(untag_portmap, "00000000", sizeof(untag_portmap));
@@ -1778,7 +1779,7 @@ ralink_gpio_write_bit(int idx, int value)
 	}	
 	else if (idx==96) 
 	{              
-#if defined (RTAC1200) || defined (RTN11P_B1) || defined(RTN10P_V3) //wlan led
+#if defined (RTAC1200) || defined (RTAC1200V2) || defined (RTN11P_B1) || defined(RTN10P_V3) //wlan led
 		req=RALINK_ATE_GPIO96;
 		idx=value;
 #else
@@ -1868,7 +1869,7 @@ ralink_gpio_init(unsigned int idx, int dir)
 	int fd, req;
 	unsigned long arg;
 	
-#if defined(RTAC1200)
+#if defined(RTAC1200) || defined(RTAC1200V2)
 	if(idx==96) //discard gpio96
 		return 0;
 #endif

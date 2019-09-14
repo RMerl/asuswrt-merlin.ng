@@ -477,11 +477,13 @@ wan_prefix(char *ifname, char *prefix)
 	int unit;
 
 	if ((unit = wan_ifunit(ifname)) < 0 &&
-	    (unit = wanx_ifunit(ifname)) < 0){
+	    (unit = wanx_ifunit(ifname)) < 0) {
+#ifdef DEBUG
 		if(wan_ifunit(ifname) < 0)
 			logmessage("wan", "[%s] exit [%d], ifname:[%s]", __FUNCTION__, __LINE__, ifname);
 		if(wanx_ifunit(ifname) < 0)
 			logmessage("wan", "[%s] exit [%d], ifname:[%s]", __FUNCTION__, __LINE__, ifname);
+#endif
 		return -1;
 	}
 
@@ -629,17 +631,6 @@ void update_wan_state(char *prefix, int state, int reason)
 		run_custom_script("wan-start", 0, tmp, NULL);
         }
 
-#if defined(RTCONFIG_WANRED_LED)
-	switch (state) {
-	case WAN_STATE_INITIALIZING:
-	case WAN_STATE_STOPPED:
-	case WAN_STATE_CONNECTING:
-	case WAN_STATE_STOPPING:
-	case WAN_STATE_CONNECTED:
-		/* update WAN LED(s) as soon as possible. */
-		update_wan_leds(unit);
-	}
-#endif
 }
 
 #ifdef RTCONFIG_IPV6
@@ -1418,10 +1409,21 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				nvram_set(strcat_r(prefix, "hwaddr", tmp), ether_etoa((unsigned char *) ifr.ifr_hwaddr.sa_data, eabuf));
 			}
 			else {
-				ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 #if defined(RTCONFIG_DETWAN)
-				if (strcmp(prefix, "wan0_")) // do not change MAC for ethX
+				unsigned char lan[6], wan[6];
+
+				ether_atoe((const char *) get_lan_hwaddr(), lan);
+				ether_atoe((const char *) get_wan_hwaddr(), wan);
+
+				if (nvram_match(strcat_r(prefix, "ifname", tmp), "eth0")) {
+					if(memcmp(ifr.ifr_hwaddr.sa_data, lan, 6) == 0)
+						memcpy(ifr.ifr_hwaddr.sa_data, wan, 6);	//change to the original mac when same as lan in eth0
+				} else if (nvram_match(strcat_r(prefix, "ifname", tmp), "eth1")) {
+					if(memcmp(ifr.ifr_hwaddr.sa_data, wan, 6) == 0)
+						memcpy(ifr.ifr_hwaddr.sa_data, lan, 6);	//change to the original mac when same as wan in eth1
+				}
 #endif	/* RTCONFIG_DETWAN */
+				ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 				ioctl(s, SIOCSIFHWADDR, &ifr);
 			}
 
@@ -1598,7 +1600,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 					start_igmpproxy(wan_ifname);
 			}
 
-#ifdef HND_ROUTER
+#if defined(HND_ROUTER) || defined(RTAC1200V2)
 			if (!strcmp(wan_proto, "pptp") && !module_loaded("pptp"))
 				modprobe("pptp");
 #endif
@@ -1745,7 +1747,9 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				return;
 			}
 #endif
+#if defined(RTCONFIG_COOVACHILLI)
 			restart_coovachilli_if_conflicts(nvram_pf_get(prefix, "ipaddr"), nvram_pf_get(prefix, "netmask"));
+#endif
 
 			/* Assign static IP address to i/f */
 			ifconfig(wan_ifname, IFUP,
@@ -1796,7 +1800,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 	_dprintf("%s(): End.\n", __FUNCTION__);
 
 #ifdef RTCONFIG_IPSEC
-	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")){
+	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -1904,6 +1908,10 @@ stop_wan_if(int unit)
 		if(strlen(wan_ifname) > 0){
 #ifdef RTCONFIG_SOC_IPQ40XX
 			if (strcmp(wan_ifname, "eth0") == 0)
+				ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
+			else
+#elif defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+			if (strcmp(wan_ifname, "eth5") == 0)
 				ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
 			else
 #endif
@@ -2025,6 +2033,8 @@ int update_resolvconf(void)
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *wan_dns, *wan_domain, *next;
 	char wan_dns_buf[INET6_ADDRSTRLEN*3 + 3], wan_domain_buf[256];
+	char *wan_xdns, *wan_xdomain;
+	char wan_xdns_buf[sizeof("255.255.255.255 ")*2], wan_xdomain_buf[256];
 	char domain[64], *next_domain;
 	int unit, lock;
 #ifdef RTCONFIG_YANDEXDNS
@@ -2036,8 +2046,10 @@ int update_resolvconf(void)
 #ifdef RTCONFIG_OPENVPN
         int dnsmode;
 #endif
-#ifdef RTCONFIG_DUALWAN
-	int primary_unit = wan_primary_ifunit();
+
+#if defined(RTCONFIG_VPNC) || (RTCONFIG_VPN_FUSION)
+	if (is_vpnc_dns_active())
+		return 0;
 #endif
 
 	lock = file_lock("resolv");
@@ -2059,15 +2071,11 @@ int update_resolvconf(void)
 #endif
 	{
 		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
-			char *wan_xdns, *wan_xdomain;
-			char wan_xdns_buf[sizeof("255.255.255.255 ")*2], wan_xdomain_buf[256];
-
 #ifdef RTCONFIG_DUALWAN
-			if (unit != primary_unit && nvram_invmatch("wans_mode", "lb"))
+			/* skip disconnected WANs in LB mode */
+			if (nvram_match("wans_mode", "lb") && !is_phy_connect(unit))
 				continue;
 #endif
-			if (!is_phy_connect(unit))
-				continue;
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
@@ -2079,7 +2087,6 @@ int update_resolvconf(void)
 			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
 				fprintf(fp, "nameserver %s\n", tmp);
 
-#ifdef NORESOLV /* dnsmasq uses no resolv.conf */
 			do {
 #ifdef RTCONFIG_YANDEXDNS
 				if (yadns_mode != YADNS_DISABLED)
@@ -2091,13 +2098,12 @@ int update_resolvconf(void)
 #endif
 #ifdef RTCONFIG_DUALWAN
 				/* Skip not fully connected WANs in LB mode */
-				if (unit != primary_unit && nvram_match("wans_mode", "lb") && !*wan_dns)
+				if (nvram_match("wans_mode", "lb") && !*wan_dns)
 					break;
 #endif
 				foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
 					fprintf(fp_servers, "server=%s\n", tmp);
 			} while (0);
-#endif
 
 			wan_domain = nvram_safe_get_r(strcat_r(prefix, "domain", tmp), wan_domain_buf, sizeof(wan_domain_buf));
 			foreach (tmp, wan_dns, next) {
@@ -2146,7 +2152,6 @@ int update_resolvconf(void)
 		fprintf(fp_servers, "server=%s\n", "127.0.1.1");
 	} else
 #endif
-	;
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled() && is_routing_enabled()) {
@@ -2448,7 +2453,7 @@ static void adjust_netdev_if_of_wan_bled(int action, int wan_unit, char *wan_ifn
 		func = append_netdev_bled_if;
 	else
 		func = remove_netdev_bled_if;
-#if defined(RTCONFIG_WANPORT2)
+#if defined(RTCONFIG_WANLEDX2)
 	if (wan_unit == 1)
 		wan_gpio = "led_wan2_gpio";
 #endif
@@ -2773,7 +2778,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_IPSEC
-	if(nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
+	if (nvram_get_int("ipsec_server_enable") || nvram_get_int("ipsec_client_enable")) {
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -2821,13 +2826,13 @@ wan_up(const char *pwan_ifname)
 			start_firewall(wan_unit, 0);
 		}
 
-		if(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1){
+		if(IS_NON_AQOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
 	}
 	else{
-		if(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1){
+		if(IS_NON_AQOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
@@ -2884,7 +2889,7 @@ wan_up(const char *pwan_ifname)
 				break;
 			}
 		}
-		fclose(fp);
+		pclose(fp);
 	}
 #else
 	snprintf(tmp, sizeof(tmp), "ip neigh show %s dev %s 2>/dev/null", gateway, wan_ifname);
@@ -2915,6 +2920,9 @@ wan_up(const char *pwan_ifname)
 		AMAS_EVENT_TRIGGER(NULL, NULL, 3);
 	}
 #endif
+#ifdef RTCONFIG_FPROBE
+	start_fprobe();
+#endif
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 
@@ -2932,6 +2940,10 @@ wan_down(char *wan_ifname)
 #endif
 
 	_dprintf("%s(%s)\n", __FUNCTION__, wan_ifname);
+
+#ifdef RTCONFIG_FPROBE
+	stop_fprobe();
+#endif
 
 	/* Skip physical interface of VPN connections */
 	if ((wan_unit = wan_ifunit(wan_ifname)) < 0)
@@ -3756,7 +3768,12 @@ int autodet_main(int argc, char *argv[]){
 	nvram_set("autodet_proceeding", "1");//Cherry Cho added for httpd checking in 2016/4/22.
 	f_write_string("/tmp/detect_wrong.log", "", 0, 0);
 	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
-		if(get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_LAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN2)
+
+#ifdef RTCONFIG_DUALWAN
+		if (!eth_wantype(unit))
+#else
+    		if(get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_LAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN2)
+#endif
 			continue;
 
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -4003,6 +4020,12 @@ void detwan_apply_wan(const char *wan_ifname, unsigned int wan_mask, unsigned in
 					eval("ifconfig", ifname, "up");
 				}
 			}
+#ifdef RTCONFIG_HND_ROUTER
+			else if(!strcmp(wans_mode, "fo") || !strcmp(wans_mode, "fb")){
+				_dprintf("%s: stop_wan_if(%d) for IFUP only!\n", __func__, unit);
+				stop_wan_if(unit);
+			}
+#endif
 		}
 	}
 

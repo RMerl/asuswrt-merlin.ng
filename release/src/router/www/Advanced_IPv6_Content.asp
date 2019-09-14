@@ -65,10 +65,14 @@ function initial(){
 		}
 	}
 
-	if(!wans_flag)
+	if(!wans_flag){
 		inputCtrl(document.form.wan_selection, 0);
-	else
+	}	
+	else{
 		genWANSoption();
+		if(mtwancfg_support)
+			document.getElementById("wan_sel_tr").style.display = "";
+	}
 
 	if(based_modelid == "BRT-AC828")
 		document.getElementById("wan_sel_tr").style.display = "";
@@ -955,6 +959,13 @@ function genWANSoption(){
 				
 			document.form.wan_selection.options[i] = new Option(wans_dualwan_NAME, i);
 		}
+
+		if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
+			if(wans_dualwan_NAME == "WAN2")
+				document.form.wan_selection.options[i] = new Option("10G base-T", i);
+			else if(wans_dualwan_NAME == "SFP+")
+				document.form.wan_selection.options[i] = new Option("10G SFP+", i);
+		}
 	}
 
 	document.form.wan_selection.selectedIndex = parseInt(ipv6_unit);	
@@ -963,7 +974,7 @@ function genWANSoption(){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="hiddenMask" class="popup_bg">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">

@@ -244,6 +244,7 @@ function show_warning_message(){
 	}
 }
 
+<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',
@@ -312,14 +313,8 @@ function showipsec_clientlist() {
 					else
 						code +='<td width="45%" title="' + ipsec_client_list_col[0] + '">' + ipsec_client_list_col[0] + '</td>';
 				}
-				else if(j == 1) {
-					if(ipsec_client_list_col[1].length > 28) {
-						ipsec_user_pwd = ipsec_client_list_col[1].substring(0, 26)+"...";
-						code +='<td width="45%" title="' + ipsec_client_list_col[1] + '">'+ ipsec_user_pwd +'</td>';
-					}
-					else
-						code +='<td width="45%" title="' + ipsec_client_list_col[1] + '">'+ ipsec_client_list_col[1] +'</td>';
-				} 
+				else if(j == 1)
+					code +='<td width="45%" title="' + ipsec_client_list_col[1] + '" style="pointer-events:none;">-</td>';
 			}
 			
 			code +='<td width="10%">';
@@ -722,7 +717,7 @@ function showIPSecClients(profileName, e) {
 </script>
 </head>
 
-<body onload="initial();">
+<body onload="initial();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 

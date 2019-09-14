@@ -45,13 +45,14 @@ all:
 	-cp -f prebuild$(BCMEX)$(EXHND)/protect_srv protect_srv
 	-cp -f prebuild$(BCMEX)$(EXHND)/Send_Event2ptcsrv Send_Event2ptcsrv
 	-cp -f lib/prebuild$(BCMEX)$(EXHND)/libptcsrv.so lib
-
+	-cp -f prebuild$(BCMEX)$(EXHND)/req_ptcsrv req_ptcsrv
 else
-all: ptcsrvdir Send_Event2ptcsrv protect_srv
+all: ptcsrvdir Send_Event2ptcsrv protect_srv req_ptcsrv
 endif
 
 protect_srv: protect_srv.o
 Send_Event2ptcsrv: Send_Event2ptcsrv.o
+req_ptcsrv: req_ptcsrv.o
 
 ptcsrvdir:
 	set -e; for d in ${MDIRS}; do $(MAKE) -C $${d}; done
@@ -63,6 +64,9 @@ Send_Event2ptcsrv:
 	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
 	@$(STRIP) $@
 
+req_ptcsrv:
+	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
+	@$(STRIP) $@
 
 else # DSL_ASUSWRT_SDK 
 
@@ -92,6 +96,7 @@ all: ptcsrvdir Send_Event2ptcsrv protect_srv
 
 protect_srv: protect_srv.o
 Send_Event2ptcsrv: Send_Event2ptcsrv.o
+req_ptcsrv: req_ptcsrv.o
 
 ptcsrvdir:
 	set -e; for d in ${MDIRS}; do $(MAKE) -C $${d}; done
@@ -99,6 +104,8 @@ ptcsrvdir:
 protect_srv:
 	@${CC} ${CFLAGS} $< -o $@ ${LDFLAGS}
 Send_Event2ptcsrv:
+	@${CC} ${CFLAGS} $< -o $@ ${LDFLAGS}
+req_ptcsrv:
 	@${CC} ${CFLAGS} $< -o $@ ${LDFLAGS}
 
 endif

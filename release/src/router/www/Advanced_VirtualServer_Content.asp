@@ -84,9 +84,17 @@ if(support_dual_wan_unit_flag){
 	rulelist_nv.push("vts1_rulelist");
 }
 var profileMaxNum = 64;
+var usb_port_conflict_faq = "https://www.asus.com/support/FAQ/1037906";
+var usb_port_conflict_current = false;
+var vts_enable_current = "0";
 function initial(){
 	show_menu();
-	httpApi.faqURL("1037906", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1037906", function(url){
+		document.getElementById("faq").href = url;
+		usb_port_conflict_faq = url;
+		if($("#ftpPortConflict").find("#ftp_port_conflict_faq").length)
+			$("#ftpPortConflict").find("#ftp_port_conflict_faq").attr("href", usb_port_conflict_faq);
+	});
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];
@@ -145,6 +153,16 @@ function initial(){
 
 	if(based_modelid == "GT-AC5300" || based_modelid == "GT-AC9600")
 		document.getElementById("VSGameList").parentNode.style.display = "none";
+
+	vts_enable_current = httpApi.nvramGet(["vts_enable_x"]).vts_enable_x;
+	usb_port_conflict_current = httpApi.ftp_port_conflict_check.conflict();
+	if(vts_enable_current == "1" && usb_port_conflict_current){
+		$("#ftpPortConflict").show();
+		var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
+		text += "<br>";
+		text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+		$("#ftpPortConflict").html(text);
+	}
 }
 
 function isChange(){
@@ -171,6 +189,14 @@ function applyRule(_status){
 	}
 	obj["vts_enable_x"] = _status;
 	httpApi.nvramSet(obj);
+
+	if(_status == "1" && httpApi.ftp_port_conflict_check.usb_ftp.enabled() && httpApi.ftp_port_conflict_check.port_forwarding.use_usb_ftp_port()){
+		var hint = httpApi.ftp_port_conflict_check.port_forwarding.hint;
+		hint += "\n";
+		hint += "<#FAQ_Find#> : ";
+		hint += usb_port_conflict_faq;
+		alert(hint);
+	}
 
 	showLoading();
 	document.form.submit();
@@ -368,6 +394,14 @@ function del_Row(_this){
 	}
 	obj["" +  rulelist_nv[wan_idx] + ""] = parseArrayToNvram(vts_rulelist_array["vts_rulelist_" + wan_idx + ""]);
 	httpApi.nvramSet(obj);
+	if(vts_enable_current == "1"){
+		var usb_port_conflict_mod = httpApi.ftp_port_conflict_check.conflict();
+		if(usb_port_conflict_current && !usb_port_conflict_mod){//true to false, not conflict
+			$("#ftpPortConflict").hide();
+			$("#ftpPortConflict").empty();
+		}
+		usb_port_conflict_current = usb_port_conflict_mod;
+	}
 }
 
 function showvts_rulelist(_arrayData, _tableID) {
@@ -651,7 +685,29 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 		obj["" +  rulelist_nv[idx] + ""] = parseArrayToNvram(vts_rulelist_array[element]);
 	});
 	httpApi.nvramSet(obj);
-	$("#profile_setting").fadeOut(300);
+	$("#profile_setting").fadeOut(300,function(){
+		if(vts_enable_current == "1"){
+			var usb_port_conflict_mod = httpApi.ftp_port_conflict_check.conflict();
+			if(!usb_port_conflict_current && usb_port_conflict_mod){//false to true, first time conflict
+				$("#ftpPortConflict").show();
+				var text = httpApi.ftp_port_conflict_check.port_forwarding.hint;
+				text += "<br>";
+				text += "<a id='ftp_port_conflict_faq' href='" + usb_port_conflict_faq + "' target='_blank' style='text-decoration:underline;color:#FC0;'><#FAQ_Find#></a>";
+				$("#ftpPortConflict").html(text);
+
+				var hint = httpApi.ftp_port_conflict_check.port_forwarding.hint;
+				hint += "\n";
+				hint += "<#FAQ_Find#> : ";
+				hint += usb_port_conflict_faq;
+				alert(hint);
+			}
+			else if(usb_port_conflict_current && !usb_port_conflict_mod){//true to false, not conflict
+				$("#ftpPortConflict").hide();
+				$("#ftpPortConflict").empty();
+			}
+			usb_port_conflict_current = usb_port_conflict_mod;
+		}
+	});
 }
 function cancelProfile() {
 	$("#profile_setting").fadeOut(300);
@@ -659,7 +715,7 @@ function cancelProfile() {
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -695,6 +751,7 @@ function cancelProfile() {
 								<div class="formfonttitle"><#menu5_3#> - <#menu5_3_4#></div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 								<div>
+									<div id="ftpPortConflict" class="formfontdesc" style="display:none;color:#FFCC00;"></div>
 									<div class="formfontdesc"><#IPConnection_VServerEnable_sectiondesc#></div>
 									<ul style="margin-left:-25px; *margin-left:10px;">
 										<div class="formfontdesc"><li><#FirewallConfig_Port80_itemdesc#></div>

@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libestr
+Description: some essentials for string processing
+Version: @VERSION@
+Libs: -L${libdir} @rt_libs@ -lestr
+Cflags: -I${includedir}

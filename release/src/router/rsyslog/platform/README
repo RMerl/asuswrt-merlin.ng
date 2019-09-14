@@ -1,0 +1,4 @@
+This subdirectory contains platform-specific files. They are maintained
+based on a best effort basis, and are not necessarily the same like the
+specific platform ships them. Some files are changed in the way the
+rsyslog projects would recommend them; some may even be outdated.

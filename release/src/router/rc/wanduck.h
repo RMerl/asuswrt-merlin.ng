@@ -210,7 +210,7 @@ int disconn_case_old[WAN_UNIT_MAX], disconn_case[WAN_UNIT_MAX];
 int ppp_fail_state;
 int rule_setup;
 int link_changed[WAN_UNIT_MAX], link_setup[WAN_UNIT_MAX];
-int link_wan[WAN_UNIT_MAX];
+int link_wan[WAN_UNIT_MAX], link_wan_old;
 int got_notify;
 int modem_act_reset;
 int nat_state;

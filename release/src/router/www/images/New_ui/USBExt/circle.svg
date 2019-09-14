@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="144px" height="288px" viewBox="0 0 144 288" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>bt-usb-application</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="-5.97711268%" y1="-4.86572266%" x2="106.051937%" y2="110.864258%" id="linearGradient-1">
+            <stop stop-color="#C4EDFE" stop-opacity="0.5" offset="0%"></stop>
+            <stop stop-color="#74C8EA" offset="52.6779263%"></stop>
+            <stop stop-color="#4F595D" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-2" cx="62" cy="62" r="62"></circle>
+        <filter x="-5.4%" y="-5.4%" width="110.9%" height="110.9%" filterUnits="objectBoundingBox" id="filter-3">
+            <feMorphology radius="1.75" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <circle id="path-4" cx="62" cy="62" r="62"></circle>
+        <filter x="-5.4%" y="-5.4%" width="110.9%" height="110.9%" filterUnits="objectBoundingBox" id="filter-5">
+            <feMorphology radius="1.75" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feMorphology radius="2" operator="erode" in="SourceAlpha" result="shadowInner"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowInner" result="shadowInner"></feOffset>
+            <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"></feComposite>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.2 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <circle id="path-6" cx="48.7142857" cy="48.7142857" r="48.7142857"></circle>
+        <filter x="-6.2%" y="-6.2%" width="112.3%" height="112.3%" filterUnits="objectBoundingBox" id="filter-7">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"></feComposite>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.4 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="1.56349868%" y1="2.92399627%" x2="93.9404146%" y2="98.3526261%" id="linearGradient-8">
+            <stop stop-color="#4B89A1" stop-opacity="0.5" offset="0%"></stop>
+            <stop stop-color="#94D8F3" offset="44.7796243%"></stop>
+            <stop stop-color="#4F595D" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="0%" y1="26.5797335%" x2="100%" y2="84.5768776%" id="linearGradient-9">
+            <stop stop-color="#787878" offset="0%"></stop>
+            <stop stop-color="#ECECEC" offset="48.6905905%"></stop>
+            <stop stop-color="#7C7C7C" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-10" cx="62" cy="62" r="62"></circle>
+        <filter x="-11.5%" y="-11.5%" width="123.0%" height="123.0%" filterUnits="objectBoundingBox" id="filter-11">
+            <feMorphology radius="3.75" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feMorphology radius="4" operator="erode" in="SourceAlpha" result="shadowInner"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowInner" result="shadowInner"></feOffset>
+            <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"></feComposite>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.05 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="Proxima-Nova---Dark-Screens" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="bt_usb-application">
+            <g id="circle-active-1-copy" transform="translate(10.000000, 154.000000)">
+                <g id="out">
+                    <circle id="color" stroke="url(#linearGradient-1)" stroke-width="1.5" cx="62" cy="62" r="62"></circle>
+                    <g id="fill+shadows" opacity="0.156634964">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-3)" xlink:href="#path-2"></use>
+                        <use stroke="#5F507E" stroke-width="1.5" fill-opacity="0.4" fill="#FFFFFF" fill-rule="evenodd" xlink:href="#path-2"></use>
+                    </g>
+                    <g id="line-blending" opacity="0.156634964">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-4"></use>
+                        <use stroke-opacity="0.3" stroke="#25333D" stroke-width="1.5" xlink:href="#path-4"></use>
+                    </g>
+                </g>
+                <g id="in" transform="translate(13.285714, 13.285714)">
+                    <g id="fill+shadows" opacity="0.2">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-7)" xlink:href="#path-6"></use>
+                        <use fill-opacity="0.3" fill="#232427" fill-rule="evenodd" xlink:href="#path-6"></use>
+                    </g>
+                    <circle id="line-color" stroke="url(#linearGradient-8)" cx="48.7142857" cy="48.7142857" r="48.2142857"></circle>
+                </g>
+            </g>
+            <g id="circle-nomal-copy" transform="translate(10.000000, 10.000000)">
+                <g id="Oval" opacity="0.6">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-11)" xlink:href="#path-10"></use>
+                    <use stroke="url(#linearGradient-9)" stroke-width="1.5" xlink:href="#path-10"></use>
+                </g>
+                <circle id="Oval" stroke="url(#linearGradient-9)" cx="62" cy="62" r="48.2142857"></circle>
+            </g>
+        </g>
+    </g>
+</svg>

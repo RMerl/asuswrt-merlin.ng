@@ -133,12 +133,12 @@ static int erp_check_wl_auth_stat()
 		}
 		unit++;
 	}
+	if(mac_list) free(mac_list);
 
-	free(mac_list);
 	return total_sta_cnt;
 
 exit:
-        if(mac_list) free(mac_list);
+	if(mac_list) free(mac_list);
 	return -1;
 
 }
@@ -513,7 +513,7 @@ static void ERP_CHECK_MODE()
 		&& model != MODEL_RTN66U
 		&& model != MODEL_GTAC5300)
 	{
-		ERP_DBG("The model isn't under support list!\n");
+//		ERP_DBG("The model isn't under support list!\n");
 		return;
 	}
 
@@ -655,7 +655,7 @@ int erp_monitor_main(int argc, char **argv)
 		&& model != MODEL_RTN66U
 		&& model != MODEL_GTAC5300)
 	{
-		logmessage("ERP", "The model isn't under support list!\n");
+//		logmessage("ERP", "The model isn't under support list!\n");
 		return -1;
 	}
 

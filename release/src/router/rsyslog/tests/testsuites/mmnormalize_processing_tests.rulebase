@@ -1,0 +1,14 @@
+rule=WIN:<%n1:number%>1 %-:date-rfc5424% %n2:word% %v_tag:word% - - - %v_svc:word% %v_ret:word% %v_os:word% %v_msg:rest%
+annotate=WIN:+v_analytics_prefix="EvntSLog: "
+
+rule=ESX:<%-:number%>%-:date-rfc5424% %-:word% %v_tag:char-to:\x3a%: %v_msg:rest%
+annotate=ESX:+v_svc="SER2"
+annotate=ESX:+v_ret="Y01"
+annotate=ESX:+v_file="esx"
+annotate=ESX:+v_os="ESX"
+
+rule=LNX:<%-:number%>%-:date-rfc3164% %v_hostname:word% %v_tag:char-to:\x3a%: {%v_svc:char-to:\x2e%.%v_file:word% %v_ret:word% %v_os:word% [%v_forward:char-to:\x5d%]} %v_msg:rest%
+rule=LNX:<%-:number%>%-:date-rfc3164% %v_hostname:word% %v_tag:char-to:\x20% {%v_svc:char-to:\x2e%.%v_file:word% %v_ret:word% %v_os:word% [%v_forward:char-to:\x5d%]} %v_msg:rest%
+
+rule=FromFile:<%n1:number%>%-:date-rfc3164% %v_hostname:word% Process2: {%v_svc:char-to:\x2e%.%-:word% %v_ret:word% %v_os:word% [%v_forward:char-to:\x5d%]} (/%v_file:char-to:\x29%) %v_msg:rest%
+annotate=FromFile:+v_tag="Process2"

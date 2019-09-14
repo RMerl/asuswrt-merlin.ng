@@ -35,9 +35,9 @@ typedef struct
 	int (*dpi_port_scan_context_dealloc)(void *ctx);
 } udb_anomaly_ops_t;
 
-extern int ioctl_ano_op_get(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
-extern int ioctl_ano_op_get_v2(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
-extern int ioctl_ano_op_clear(void);
+extern int tdts_core_ioctl_ano_op_get(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int tdts_core_ioctl_ano_op_get_v2(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
+extern int tdts_core_udb_ano_entry_free(void);
 extern int udb_core_anomaly_init(udb_anomaly_ops_t *ops);
 extern int udb_core_anomaly_exit(void);
 extern int udb_core_anomaly_setup(tdts_pkt_parameter_t *fw_param);

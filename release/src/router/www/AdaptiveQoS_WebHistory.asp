@@ -23,6 +23,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
+*{
+	box-sizing: content-box;
+}	
 .transition_style{
 	-webkit-transition: all 0.2s ease-in-out;
 	-moz-transition: all 0.2s ease-in-out;
@@ -41,8 +44,10 @@ function initial(){
 	else{
 		document.getElementById("log_field").style.display = "none";
 	}
-	if(!ASUS_EULA.status("tm"))
+
+	if(!ASUS_EULA.status("tm")){
 		ASUS_EULA.config(eula_confirm, cancel);
+	}	
 }
 
 var htmlEnDeCode = (function() {
@@ -105,7 +110,7 @@ var htmlEnDeCode = (function() {
 
 var data_array = new Array();
 function parsingAjaxResult(rawData){
-	var match = 0;;
+	var match = 0;
 	for(i=0;i<rawData.length;i++){
 		var thisRawData = rawData[i];
 		thisRawData[2] = htmlEnDeCode.htmlEncode(rawData[i][2]);
@@ -124,31 +129,33 @@ function parsingAjaxResult(rawData){
 
 		match = 0;
 	}
-
+												
 	var code = "";
-	code += "<tr>";
-	code += "<th style='width:20%;text-align:left'><#Access_Time#></th>";
-	code += "<th style='width:30%;text-align:left'><#PPPConnection_x_MacAddressForISP_itemname#> / <#Client_Name#></th>";
-	code += "<th style='width:50%;text-align:left'><#Domain_Name#></th>";
-	code += "</tr>";
+	code += '<div style="display:flex;margin:3px 12px;">';
+	code += "<div style='width:20%;'><#Access_Time#></div>";
+	code += "<div style='width:30%;'><#PPPConnection_x_MacAddressForISP_itemname#> / <#Client_Name#></div>";
+	code += "<div style='width:50%;'><#Domain_Name#></div>";
+	code += "</div>";
 	for(var i=0; i<data_array.length; i++){
 		var thisLog = {
 			macAddr: data_array[i][0],
 			timeStamp: data_array[i][1],
 			hostName: data_array[i][2]
 		}
+		
 
-		code += "<tr style='line-height:15px;'>";
-		code += "<td>" + convertTime(thisLog.timeStamp) + "</td>";
+		code += '<div style="display:flex;margin:3px 12px;">';
+		code += "<div style='width:20%;'>" + convertTime(thisLog.timeStamp) + "</div>";
 		if(clientList[thisLog.macAddr] != undefined) {
 			var clientName = (clientList[thisLog.macAddr].nickName == "") ? clientList[thisLog.macAddr].name : clientList[thisLog.macAddr].nickName;
-			code += "<td title="+ thisLog.macAddr + ">" + clientName + "</td>";
+			code += "<div style='width:30%;' title="+ thisLog.macAddr + ">" + clientName + "</div>";
 		}
-		else
-			code += "<td>" + thisLog.macAddr + "</td>";
+		else{
+			code += "<div style='width:30%;'>" + thisLog.macAddr + "</div>";
+		}	
 
-		code += "<td>" + thisLog.hostName + "</td>";
-		code += "</tr>";
+		code += "<div style='width:50%;'>" + thisLog.hostName + "</div>";
+		code += "</div>";
 	}
 
 	document.getElementById('log_table').innerHTML = code;
@@ -178,6 +185,7 @@ function transform_time_format(time){
 }
 
 var history_array = new Array();
+var temp = new Array();
 function getWebHistory(mac, page){
 	var page_count = page;
 	var client = "?client=" + mac + "&page=" + page_count;
@@ -186,33 +194,23 @@ function getWebHistory(mac, page){
 		url: '/getWebHistory.asp' + client,
 		dataType: 'script',
 		error: function(xhr){
-			setTimeout("getWebHistory();", 1000);
+			setTimeout("getWebHistory(mac, page);", 1000);
 		},
 		success: function(response){
 			history_array = array_temp;
-			parsingAjaxResult(array_temp);
-			if(page_count == "1"){
-				document.getElementById('previous_button').style.visibility = "hidden";
-			}
-			else{
-				document.getElementById('previous_button').style.visibility = "visible";
-			}
+			if(page == '1'){
+				temp = [];
+			}	
 
-			if(history_array.length < 50){
-				document.getElementById('next_button').style.visibility = "hidden";
-			}
-			else{
-				document.getElementById('next_button').style.visibility = "visible";
-			}
+			temp = temp.concat(array_temp);
+			temp.sort(function(a,b){
+				return b[1] - a[1];
+			});            
 
-			if(page_count == "1" && history_array.length < 50){
-				document.getElementById('current_page').style.visibility = "hidden";
+			parsingAjaxResult(temp);
+			if(history_array.length == 50){
+				getWebHistory(mac, parseInt(page_count)+1)
 			}
-			else{
-				document.getElementById('current_page').style.visibility = "visible";
-			}
-
-			document.getElementById('current_page').value = page_count;
 		}
 	});
 }
@@ -236,21 +234,6 @@ function genClientListOption(){
 	}
 }
 
-function change_page(flag, target){
-	var current_page = document.getElementById('current_page').value;
-	var page = 1;
-	if(flag == "next"){
-		page = parseInt(current_page) + 1;
-		getWebHistory(target, page);
-	}
-	else{
-		page = parseInt(current_page) - 1;
-		if(page < 1)
-			page = 1;
-
-		getWebHistory(target, page);
-	}
-}
 function applyRule(){
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
@@ -318,12 +301,12 @@ function cal_panel_block(obj){
 }
 function updateWebHistory() {
 	setTimeout(function() {
-		getWebHistory(document.form.clientList.value);
+		getWebHistory(document.form.clientList.value, '1');
 	}, 200);
 }
 </script>
 </head>
-<body onload="initial();" onunload="unload_body();">
+<body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
@@ -387,16 +370,13 @@ function updateWebHistory() {
 											<select id="clientListOption" class="input_option" name="clientList" onchange="getWebHistory(this.value, '1');">
 												<option value="all" selected><#All_Client#></option>
 											</select>
-											<label style="margin: 0 5px 0 20px;visibility:hidden;cursor:pointer" id="previous_button" onclick="change_page('previous', document.getElementById('clientListOption').value);">Previous</label>
-											<input class="input_3_table" value="1" id="current_page"></input>
-											<label style="margin-left:5px;cursor:pointer" id="next_button" onclick="change_page('next', document.getElementById('clientListOption').value);">Next</label>
 										</div>
-										<div class="web_frame" style="height:600px;overflow:auto;margin:5px">
-											<table style="width:100%" id="log_table"></table>
+										<div class="web_frame" style="height:700px;overflow:auto;margin:5px">
+											<div style="width:100%" id="log_table"></div>
 										</div>
 										<div class="apply_gen">
 											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
-											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
+											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value, '1')" type="button" value="<#CTL_refresh#>">
 										</div>
 									</div>
 								</td>

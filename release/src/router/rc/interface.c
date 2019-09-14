@@ -608,29 +608,9 @@ int start_vlan(void)
 #if (defined(RTCONFIG_QCA) || (defined(RTCONFIG_RALINK) && (defined(RTCONFIG_RALINK_MT7620) || defined(RTCONFIG_RALINK_MT7621))))
 	if(!nvram_match("switch_wantag", "none")&&!nvram_match("switch_wantag", "")&&!nvram_match("switch_wantag", "hinet"))
 	{
-#if defined(RTCONFIG_QCA)
-#if defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
-		char *wan_base_if = "eth1";	/* lan_1, WAN interface if IPTV is enabled. */
-#else
-		char *wan_base_if = "eth0";
-#endif
-#if defined(RTCONFIG_DETWAN)
-		char buf[32];
-		char *detwan_ifname;
+		char wan_base_if[IFNAMSIZ] = "";
 
-		if((detwan_ifname = nvram_get("detwan_ifname")) != NULL) {
-			strncpy(buf, detwan_ifname, sizeof(buf)-1);
-			buf[sizeof(buf)-1] = '\0';
-			wan_base_if = buf;
-		}
-#endif	/* RTCONFIG_DETWAN */
-#elif defined(RTCONFIG_RALINK)
-#if defined(RTCONFIG_RALINK_MT7620) /* RT-N14U, RT-AC52U, RT-AC51U, RT-N11P, RT-N54U, RT-AC1200HP, RT-AC54U */
-		char *wan_base_if = "eth2";
-#elif defined(RTCONFIG_RALINK_MT7621) /* RT-N56UB1, RT-N56UB2 */
-		char *wan_base_if = "eth3";
-#endif
-#endif
+		strlcpy(wan_base_if, get_wan_base_if(), sizeof(wan_base_if));
 		set_wan_tag(wan_base_if);
 	}
 #endif

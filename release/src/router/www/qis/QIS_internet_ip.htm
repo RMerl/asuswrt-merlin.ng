@@ -690,13 +690,8 @@ function submitForm(){
 		else
 				document.form.wan_heartbeat_x.disabled = 1;
 
-		// uinfi
+		// unifi
 		document.form.switch_wantag.value = parent.document.QKform.switch_wantag.value;
-		document.form.emf_enable.value = parent.document.QKform.emf_enable.value;
-		document.form.ttl_inc_enable.value = parent.document.QKform.ttl_inc_enable.value;
-		document.form.wan_vpndhcp.value = parent.document.QKform.wan_vpndhcp.value;
-		document.form.quagga_enable.value = parent.document.QKform.quagga_enable.value;
-		document.form.mr_altnet_x.value = parent.document.QKform.mr_altnet_x.value;
 		if(document.form.switch_wantag.value == "manual"){
 			document.form.switch_wan0tagid.disabled = false;
 			document.form.switch_wan0prio.disabled = false;
@@ -894,12 +889,6 @@ function displayDNSCtrl(){
 <input type="hidden" name="switch_wan2tagid" value="" disabled>
 <input type="hidden" name="switch_wan2prio" value="" disabled>
 <input type="hidden" name="switch_stb_x" value="" disabled>
-<input type="hidden" name="mr_enable_x" value='<% nvram_get("mr_enable_x"); %>'>
-<input type="hidden" name="emf_enable" value='<% nvram_get("emf_enable"); %>'>
-<input type="hidden" name="ttl_inc_enable" value='<% nvram_get("ttl_inc_enable"); %>'>
-<input type="hidden" name="wan_vpndhcp" value='<% nvram_get("wan_vpndhcp"); %>'>
-<input type="hidden" name="quagga_enable" value='<% nvram_get("quagga_enable"); %>'>
-<input type="hidden" name="mr_altnet_x" value='<% nvram_get("mr_altnet_x"); %>'>
 <div class="QISmain" id="QISmain">
 		<div>
 			<table width="730px">

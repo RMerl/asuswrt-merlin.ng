@@ -1,9 +1,9 @@
 .\" Copyright (c) 2001\-2006 Anton Altaparmakov.
 .\" Copyright (c) 2005 Richard Russon.
 .\" Copyright (c) 2005\-2006 Szabolcs Szakacsits.
-.\" This file may be copied under the terms of the GNU Public License.
+.\" See LICENSE file for licensing information.
 .\"
-.TH MKNTFS 8 "Sept 2011" "Tuxera NTFS Utilities 3014.5.21"
+.TH MKNTFS 8 "Sept 2011" "Tuxera NTFS Utilities 3017.7.18.13"
 .SH NAME
 mkntfs \- create an NTFS file system on a device or file
 .SH SYNOPSIS
@@ -204,6 +204,15 @@ time.  This is only really useful for debugging purposes.
 .TP
 \fB\-U\fR, \fB\-\-with\-uuid\fR
 Generate a random volume UUID.
+.TP
+\fB\-l\fR, \fB\-\-large\-file\-records\fR
+Format with large file records.
+.TP
+\fB\-N\fR, \fB\-\-enable\-short\-filenames\fR
+Enable short filenames. By default they are disabled.
+.TP
+\fB\-b\fR, \fB\-\-show\-progress\fR
+Show approximate progress (Only available for platforms using linux kernel > 2.6.22 and glibc).
 .TP
 \fB\-F\fR, \fB\-\-force\fR
 Force

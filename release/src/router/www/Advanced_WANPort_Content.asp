@@ -119,6 +119,7 @@ function initial(){
 	
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
+
 	httpApi.faqURL("1011718", function(url){document.getElementById("dualwan_faq").href=url;});
 	httpApi.faqURL("1037368", function(url){document.getElementById("network_detect_faq").href=url;});
 
@@ -143,13 +144,20 @@ function initial(){
 	};
 
 	wans_routing_rulelist_array = parseNvramToArray();
-
 	form_show(wans_flag);		
 	setTimeout("showLANIPList();", 1000);
 
 	if(based_modelid == "RT-AC87U"){ //MODELDEP: RT-AC87 : Quantenna port
                 document.form.wans_lanport1.remove(0);   //Primary LAN1
                 document.form.wans_lanport2.remove(0);   //Secondary LAN1
+	}else if(based_modelid == "RT-N19"){
+		document.form.wans_lanport1.remove(3);
+		document.form.wans_lanport1.remove(2);
+		document.form.wans_lanport2.remove(3);
+		document.form.wans_lanport2.remove(2);
+	}else if(based_modelid == "RT-AC95U"){
+		document.form.wans_lanport1.remove(3);
+		document.form.wans_lanport2.remove(3);
 	}
 
 	if(based_modelid == "GT-AC5300"){ //MODELDEP: GT-AC5300 : TRUNK PORT
@@ -190,7 +198,18 @@ function form_show(v){
 		document.form.wans_routing_enable[1].disabled = true;
 		document.getElementById('watchdog_table').style.display = "none";
 		document.getElementById('Routing_rules_table').style.display = "none";
-		document.form.wans_primary.value = wans_dualwan_array[0];	
+		if(based_modelid == "GT-AX11000"){
+			if( wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1"){
+				document.form.wans_primary.value = "lan2";
+			}
+			else{
+				document.form.wans_primary.value = wans_dualwan_array[0];
+			}			
+		}
+		else{
+			document.form.wans_primary.value = wans_dualwan_array[0];
+		}
+			
 		appendLANoption1(document.form.wans_primary);
 		document.getElementById("wans_mode_tr").style.display = "none";
 		document.getElementById("wandog_fb_count_tr").style.display = "none";	
@@ -199,13 +218,28 @@ function form_show(v){
 		inputCtrl(document.form.wans_standby, 0);
 	}
 	else{ //DualWAN enabled
-		document.form.wans_primary.value = wans_dualwan_array[0];
+		if(based_modelid == "GT-AX11000"){
+			if( wans_dualwan_array[0] == "wan" && document.form.wans_extwan.value == "1"){
+				document.form.wans_primary.value = "lan2";
+			}
+			else{
+				document.form.wans_primary.value = wans_dualwan_array[0];
+			}
+		}
+		else{
+			document.form.wans_primary.value = wans_dualwan_array[0];
+		}
+		
 		if(wans_dualwan_array[1] == "none"){
 
 			if(wans_dualwan_array[0] == "dsl"){
 				
 				if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
+				else if(wans_caps.search("wan2") >= 0)
+					document.form.wans_second.value = "wan2";
+				else if(wans_caps.search("sfp+") >= 0)
+					document.form.wans_second.value = "sfp+";
 				else if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
 				else
@@ -215,19 +249,39 @@ function form_show(v){
 
 				if(wans_caps.search("wan2") >= 0)
 					document.form.wans_second.value = "wan2";
+				else if(wans_caps.search("sfp+") >= 0)
+					document.form.wans_second.value = "sfp+";
 				else if(wans_caps.search("usb") >= 0)
 					document.form.wans_second.value = "usb";
 				else
 					document.form.wans_second.value = "lan";
-
 			}
 			else{
 				if(wans_caps.search("wan") >= 0)
 					document.form.wans_second.value = "wan";
 			}
 		}	
-		else
-			document.form.wans_second.value = wans_dualwan_array[1];
+		else{
+			if(based_modelid == "GT-AX11000"){
+				if(wans_dualwan_array[0] == "wan" && wans_dualwan_array[1] == "lan" && document.form.wans_lanport.value == "5"){
+					if(document.form.wans_extwan.value == "0"){
+						document.form.wans_second.value = "lan2";
+					}
+					else{
+						document.form.wans_second.value = "wan";
+					}					
+				}
+				else if(wans_dualwan_array[1] == "wan" && document.form.wans_lanport.value == "5" && document.form.wans_extwan.value == "1"){
+					document.form.wans_second.value = "lan2";
+				}
+				else{
+					document.form.wans_second.value = wans_dualwan_array[1];
+				}
+			}
+			else{
+				document.form.wans_second.value = wans_dualwan_array[1];
+			}
+		}
 		
 		appendLANoption1(document.form.wans_primary);
 		appendLANoption2(document.form.wans_second);
@@ -302,13 +356,40 @@ function applyRule(){
 	}
 
 	if(wans_flag == 1){
-		document.form.wans_dualwan.value = document.form.wans_primary.value +" "+ document.form.wans_second.value;
+		document.form.wans_extwan.value = 0;
+		if(document.form.wans_primary.value == "lan2"){
+			if(document.form.wans_second.value == "wan"){
+				document.form.wans_dualwan.value = "wan lan";
+				document.form.wans_lanport.value = "5";
+			}
+			else{
+				document.form.wans_dualwan.value = "wan " + document.form.wans_second.value;
+			}
+			
+			document.form.wans_extwan.value = 1;
+		}
+		else if(document.form.wans_second.value == "lan2"){
+			if(document.form.wans_primary.value == "wan"){
+				document.form.wans_dualwan.value = "wan lan";
+				document.form.wans_lanport.value = "5";
+				document.form.wans_extwan.value = 0;
+			}
+			else{
+				document.form.wans_dualwan.value = document.form.wans_primary.value +" wan";
+				document.form.wans_extwan.value = 1;
+			}			
+		}
+		else{
+			document.form.wans_dualwan.value = document.form.wans_primary.value +" "+ document.form.wans_second.value;
+		}
 		
-		if(!dsl_support && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb")){
+		
+		if(!dsl_support && (document.form.wans_dualwan.value == "usb lan" || document.form.wans_dualwan.value == "lan usb") && based_modelid != "GT-AX11000"){
 			alert("WAN port should be selected in Dual WAN.");
 			document.form.wans_primary.focus();
 			return;
 		}
+
 		document.form.wan_unit.value = "<% nvram_get("wan_unit"); %>";
 		if(document.form.wans_mode.value == "lb"){
 
@@ -375,7 +456,14 @@ function applyRule(){
 		document.form.wan1_routing_isp_enable.disabled = true;
 		document.form.wan1_routing_isp.disabled = true;
 		document.form.wans_routing_rulelist.disabled =true;
-		document.form.wans_dualwan.value = document.form.wans_primary.value + " none";
+		if(document.form.wans_primary.value == "lan2"){
+			document.form.wans_dualwan.value = "wan none";
+			document.form.wans_extwan.value = "1";
+		}
+		else{
+			document.form.wans_dualwan.value = document.form.wans_primary.value + " none";
+			document.form.wans_extwan.value = "0";
+		}
 		document.form.wan_unit.value = 0;
 		document.form.wandog_enable.value = "0";
 	}	
@@ -384,20 +472,23 @@ function applyRule(){
 		document.form.wans_lanport.value = document.form.wans_lanport1.value;
 	else if(document.form.wans_second.value =="lan")
 		document.form.wans_lanport.value = document.form.wans_lanport2.value;
-	else	
-		document.form.wans_lanport.disabled = true;
+	else{
+		if(based_modelid != "GT-AX11000"){
+			document.form.wans_lanport.disabled = true;
+		}
+	}
 
-	if (document.form.wans_primary.value == "lan" || document.form.wans_second.value == "lan") {
+	if (document.form.wans_dualwan.value.indexOf("lan") != -1) {
 		var port_conflict = false;
 		var lan_port_num = document.form.wans_lanport.value;
 		
 		if(switch_stb_x == lan_port_num)
 			port_conflict = true;
 		else if (switch_stb_x == '5' && (lan_port_num == '1' || lan_port_num == '2')) 
-			port_conflict = true;					
-		else if (switch_stb_x == '6' && (lan_port_num == '3' || lan_port_num == '4'))
-			port_conflict = true;	
-						
+			port_conflict = true;
+		else if ((switch_stb_x == '6' || switch_stb_x == '8') && (lan_port_num == '3' || lan_port_num == '4'))
+			port_conflict = true;
+
 		if (port_conflict) {
 			alert("<#RouterConfig_IPTV_conflict#>");
 			return;
@@ -408,7 +499,7 @@ function applyRule(){
 			var conflict_lanport_text = "";
 			if(based_modelid == "GT-AC5300")
 				var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
-			else if(based_modelid == "RT-AC86U")
+			else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
 				var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
 			else
 				var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
@@ -499,16 +590,62 @@ function addWANOption(obj, wanscapItem){
 				wanscapName = "Ethernet LAN";
 			else if(wanscapName == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 				wanscapName = "<#Mobile_title#>";
+
+			if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
+				if(wanscapName == "WAN2")
+					wanscapName = "10G base-T";
+				else if(wanscapName == "SFP+")
+					wanscapName = "10G SFP+";
+			}
+
 			obj.options[i] = new Option(wanscapName, wanscapItem[i]);
-		}	
+		}
+
+		if(based_modelid == "GT-AX11000" && i == wanscapItem.length-1){
+			obj.options[i+1] = new Option("2.5G WAN", "lan2");
+		}
 	}
 }
 
 function changeWANProto(obj){	
 	if(wans_flag == 1){	//dual WAN on
-		if(document.form.wans_primary.value == document.form.wans_second.value){
+		if(document.form.wans_primary.value == document.form.wans_second.value
+		|| (document.form.wans_primary.value == "lan2" && document.form.wans_second.value == "lan")
+		|| (document.form.wans_primary.value == "lan" && document.form.wans_second.value == "lan2")){
 			if(obj.name == "wans_primary"){
 				if (obj.value == "dsl"){				
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_second.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_second.value = "sfp+";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_second.value = "usb";
+					else
+						document.form.wans_second.value = "lan";
+				}
+				else if(obj.value == "wan"){				
+					if(wans_caps.search("wan2") >= 0)
+						document.form.wans_second.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_second.value = "sfp+";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_second.value = "usb";
+					else
+						document.form.wans_second.value = "lan";
+				}
+				else if(obj.value == "wan2"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_second.value = "sfp+";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_second.value = "usb";
+					else
+						document.form.wans_second.value = "lan";
+				}
+				else if(obj.value == "sfp+"){
 					if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
 					else if(wans_caps.search("wan2") >= 0)
@@ -518,23 +655,29 @@ function changeWANProto(obj){
 					else
 						document.form.wans_second.value = "lan";
 				}
-				else if(obj.value == "wan"){				
-					if(wans_caps.search("wan2") >= 0)
-						document.form.wans_second.value = "wan2";
-					else if(wans_caps.search("usb") >= 0)
-						document.form.wans_second.value = "usb";
-					else
-						document.form.wans_second.value = "lan";
-				}
 				else if(obj.value == "usb"){
 					if(wans_caps.search("wan") >= 0)
 						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_second.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_second.value = "sfp+";
 					else if(wans_caps.search("lan") >= 0)
 						document.form.wans_second.value = "lan";
 				}
+				else if(obj.value == "lan2"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_second.value = "usb";
+				}
 				else{
 					if(wans_caps.search("wan") >= 0)
-						document.form.wans_second.value = "wan";					
+						document.form.wans_second.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_second.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_second.value = "sfp+";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_second.value = "usb";
 				}
@@ -545,19 +688,64 @@ function changeWANProto(obj){
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_primary.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_primary.value = "sfp+";
 					else if(wans_caps.search("usb") >= 0)
 						document.form.wans_primary.value = "usb";
 					else
 						document.form.wans_primary.value = "lan";
 				}
-				else{
-
+				else if(obj.value == "wan2"){
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_primary.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_primary.value = "sfp+";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_primary.value = "usb";
+					else
+						document.form.wans_primary.value = "lan";
+				}
+				else if(obj.value == "sfp+"){
 					if(wans_caps.search("dsl") >= 0)
 						document.form.wans_primary.value = "dsl";
 					else if(wans_caps.search("wan") >= 0)
 						document.form.wans_primary.value = "wan";
 					else if(wans_caps.search("wan2") >= 0)
 						document.form.wans_primary.value = "wan2";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_primary.value = "usb";
+					else
+						document.form.wans_primary.value = "lan";
+				}
+				else if(obj.value == "usb"){
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_primary.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_primary.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_primary.value = "sfp+";
+					else
+						document.form.wans_primary.value = "lan";
+				}
+				else if(obj.value == "lan2"){
+					if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("usb") >= 0)
+						document.form.wans_primary.value = "usb";
+				}
+				else{
+					if(wans_caps.search("dsl") >= 0)
+						document.form.wans_primary.value = "dsl";
+					else if(wans_caps.search("wan") >= 0)
+						document.form.wans_primary.value = "wan";
+					else if(wans_caps.search("wan2") >= 0)
+						document.form.wans_primary.value = "wan2";
+					else if(wans_caps.search("sfp+") >= 0)
+						document.form.wans_primary.value = "sfp+";
 				}
 			}			
 		}
@@ -1013,7 +1201,7 @@ function remain_origins(){
 
 </script>
 </head>
-<body onload="initial();">
+<body onload="initial();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -1028,6 +1216,7 @@ function remain_origins(){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="wl_ssid" value="<% nvram_get("wl_ssid"); %>">
 <input type="hidden" name="wan_unit" value="<% nvram_get("wan_unit"); %>">
+<input type="hidden" name="wans_extwan" value="<% nvram_get("wans_extwan"); %>">
 <input type="hidden" name="wans_dualwan" value="<% nvram_get("wans_dualwan"); %>">
 <input type="hidden" name="wans_lanport" value="<% nvram_get("wans_lanport"); %>">
 <input type="hidden" name="wans_lb_ratio" value="<% nvram_get("wans_lb_ratio"); %>">
@@ -1091,7 +1280,7 @@ function remain_origins(){
 									<div>&nbsp;</div>
 									<div class="formfonttitle"><#menu5_3#> - <#dualwan#></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" href="" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
+									<div class="formfontdesc"><#dualwan_desc#><a id="dualwan_faq" target="_blank" style="margin-left:5px; text-decoration: underline;"><#dualwan#> FAQ</a></div>
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 										
 			  						<thead>
@@ -1111,7 +1300,7 @@ function remain_origins(){
 														 	curState = "1";
 															wans_flag = 1;
 															inputCtrl(document.form.wans_second, 1);
-															if(wans_caps.search("wan2") >= 0)
+															if(wans_caps.search("wan2") >= 0 && wans_caps.search("sfp+") == -1)
 																document.form.wans_mode.value = "lb";
 															else
 																document.form.wans_mode.value = "fo";

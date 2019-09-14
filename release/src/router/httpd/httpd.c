@@ -254,6 +254,7 @@ char login_url[128];
 int login_error_status = 0;
 char cloud_file[256];
 int add_try = 0;
+char indexpage[128];
 
 
 /* Added by Joey for handle one people at the same time */
@@ -375,7 +376,7 @@ page_default_redirect(int fromapp_flag, char* url)
 	char inviteCode[256]={0};
 
 	if(check_xss_blacklist(url, 1))
-		strncpy(login_url, INDEXPAGE, sizeof(login_url));
+		strncpy(login_url, indexpage, sizeof(login_url));
 	else
 		strncpy(login_url, url, sizeof(login_url));
 
@@ -410,7 +411,7 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 	}
 
 	if(url == NULL)
-		strncpy(login_url, INDEXPAGE, sizeof(login_url));
+		strncpy(login_url, indexpage, sizeof(login_url));
 	else
 		strncpy(login_url, url, sizeof(login_url));
 
@@ -725,17 +726,69 @@ int do_fwrite(const char *buffer, int len, FILE *stream)
 	return r;
 }
 
+#if 0 //defined(GTAX6000)
+#define MOD_URL_ODMPID	"GX-AC5400"
+static const char *mod_filter = ".png";
+static const char *mod_url_fn[] = { "/modem_plug.png", "/modem_unplug.png", "/WANunplug.png",
+	"/WAN-connection-defaultPage.png", "/WAN-connection-type.png", "/GT-bg_header.png", NULL
+};
+
+/**
+ * This function is used to select different files for different models
+ * that share same firmware. If @path include one string of mod_url_fn,
+ * insert /.MODEL_NAME/ before it.
+ * If mod_filter is not NULL, ignore @path that doesn't contait it.
+ */
+static char *mod_url_path(char *path, char *tpath, size_t tpath_size)
+{
+	int l;
+	char *_path = path;
+	const char **v, *q, tmpl[] = "/." MOD_URL_ODMPID "/";
+
+	if (!path || !tpath || !tpath_size)
+		return path;
+
+	if (!nvram_match("odmpid", MOD_URL_ODMPID) || (mod_filter && !strstr(path, mod_filter)))
+		return path;
+
+	l = strlen(path) + strlen(tmpl) + 1;	/* Insert "/.MODEL_NAME/ */
+	for (v = &mod_url_fn[0]; *v != NULL; ++v) {
+		if (!(q = strstr(path, *v)) || strstr(path, tmpl))
+			continue;
+		if (tpath_size < l) {
+			if (!(tpath = malloc(l)))
+				break;
+			tpath_size = l;
+		}
+
+		strlcpy(tpath, path, q - path + 1);
+		strlcat(tpath, tmpl, tpath_size);
+		strlcat(tpath, q + 1, tpath_size);
+		_path = tpath;
+		break;
+	}
+
+	return _path;
+}
+#else
+static inline char *mod_url_path(char *path, char *tpath, size_t tpath_size) { return path; }
+#endif
+
 void do_file(char *path, FILE *stream)
 {
 	FILE *fp;
-	char buf[1024];
+	char buf[1024], tmp_path[256];
+	char *_path = mod_url_path(path, tmp_path, sizeof(tmp_path));
 	int nr;
 
-	if ((fp = fopen(path, "r")) != NULL) {
+	if ((fp = fopen(_path, "r")) != NULL) {
 		while ((nr = fread(buf, 1, sizeof(buf), fp)) > 0)
 			do_fwrite(buf, nr, stream);
 		fclose(fp);
 	}
+
+	if (_path != path && _path != tmp_path)
+		free(_path);
 }
 
 #endif
@@ -887,55 +940,38 @@ handle_request(void)
 		}
 #ifdef TRANSLATE_ON_FLY
 		else if ( strncasecmp( cur, "Accept-Language:", 16) == 0 ) {
-			if(change_preferred_lang(0)){
-				char *p;
+			if (change_preferred_lang(0)) {
 				struct language_table *pLang;
-				char lang_buf[256];
-				memset(lang_buf, 0, sizeof(lang_buf));
-				alang = &cur[16];
-				strncpy(lang_buf, alang, sizeof(lang_buf)-1);
-				p = lang_buf;
-				while (p != NULL && (p - lang_buf) < sizeof(lang_buf))
+				char lang_buf[256], *p, *saveptr;
+
+				alang = cur + 16;
+				strlcpy(lang_buf, alang, sizeof(lang_buf));
+
+				p = lang_buf, strsep(&p, "\r\n");
+				for (p = strtok_r(lang_buf, " ,;", &saveptr); p; p = strtok_r(NULL, " ,;", &saveptr))
 				{
-					p = strtok (p, "\r\n ,;");
-					if (p == NULL)  break;
-					//2008.11 magic{
-					int i, len=strlen(p);
-
-					for (i=0;i<len;++i)
-						if (isupper(p[i])) {
-							p[i]=tolower(p[i]);
-						}
-
-					//2008.11 magic}
-					for (pLang = language_tables; pLang->Lang != NULL; ++pLang)
+					for (pLang = language_tables; pLang->Lang != NULL; pLang++)
 					{
-						if (strcasecmp(p, pLang->Lang)==0)
+						if (strcasecmp(p, pLang->Lang) == 0)
 						{
 							char dictname[32];
 							_dprintf("handle_request: pLang->Lang = %s\n", pLang->Lang);
 							if (!check_lang_support(pLang->Target_Lang))
 								break;
 
-							snprintf(dictname,sizeof(dictname),"%s.dict", pLang->Target_Lang);
-							if(!check_if_file_exist(dictname))
-							{
+							snprintf(dictname, sizeof(dictname), "%s.dict", pLang->Target_Lang);
+							if (!check_if_file_exist(dictname))
 								break;
-							}
 
-							snprintf(Accept_Language,sizeof(Accept_Language),"%s",pLang->Target_Lang);
+							snprintf(Accept_Language, sizeof(Accept_Language), "%s", pLang->Target_Lang);
 							break;
 						}
 					}
 
-					if (Accept_Language[0] != 0) {
+					if (*Accept_Language) {
+						nvram_set("preferred_lang", Accept_Language);
 						break;
 					}
-					p+=strlen(p)+1;
-				}
-
-				if (Accept_Language[0] != 0) {
-					nvram_set("preferred_lang", Accept_Language);
 				}
 
 				change_preferred_lang(1);
@@ -1056,7 +1092,7 @@ handle_request(void)
 			file = "find_device.asp";
 #endif
 		else
-			file = INDEXPAGE;
+			file = indexpage;
 	}
 
 	char *query;
@@ -2024,6 +2060,9 @@ int main(int argc, char **argv)
 	FD_ZERO(&active_rfds);
 	TAILQ_INIT(&pool.head);
 	pool.count = 0;
+
+	/* handler global variable */
+	get_index_page(indexpage, sizeof(indexpage));
 
 	/* Loop forever handling requests */
 	for (;;) {

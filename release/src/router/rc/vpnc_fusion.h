@@ -21,7 +21,7 @@
 
 #define MAX_VPNC_DATA_LEN	68
 #define MAX_VPNC_PROFILE	16
-#define MAX_DEV_POLICY		32
+#define MAX_DEV_POLICY		64
 #define MAX_VPNC_CONN		4
 
 typedef enum{

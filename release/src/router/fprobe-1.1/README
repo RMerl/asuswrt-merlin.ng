@@ -1,0 +1,105 @@
+First of all sorry for my clumsy English.
+
+General information:
+====================
+
+fprobe: a NetFlow probe - libpcap-based tool that collect network
+traffic data and emit it as NetFlow flows towards the specified
+collector.
+
+URL: http://fprobe.sourceforge.net
+
+Compiling and installing:
+=========================
+
+Read INSTALL file for basic installation instructions. Below I'll try to
+describe advanced compilation options.
+
+--with-pcap=DIR         pcap.h location
+--with-libpcap=DIR      libpcap location
+These are self-explaining options. They specify location of libpcap
+headers and library files respectively.
+Example:
+--with-pcap=/usr/local/pcap/include
+--with-libpcap=/usr/local/pcap/lib
+
+--with-membulk=MODE     indexing mode: index8|index16|ptr [default=ptr]
+This option concerns to memory management and defines indexing mode and
+maximum memory bulk size. I only shall tell, that the `index8' is most
+frugal mode, `ptr' - fastest and `index16' somewhere in the middle.
+
+--with-hash=TYPE        hash type: xor8|xor16|crc16 [default=xor16]
+fprobe use hashing to speedup flows cache searching. This option
+specifies the hash type. `xor8' is very frugal with memory - it uses
+only 1KB (on 32-bit systems) for hash structure while `xor16' and
+`crc16' - 256KB. But, on the other hand, bigger hash gives better
+performance.
+Hash functions xor8 and xor16 faster then crc16, but they are vulnerable
+to a DoS attack, as described in "Denial of Service via Algorithmic
+Complexity Attacks" by Scott A Crosby and Dan S Wallach:
+http://www.cs.rice.edu/~scrosby/hash
+
+--enable-uptime_trick   enable uptime trick [default=yes]
+Maybe later...
+
+--enable-icmp_trick     enable icmp trick: yes|cisco|no [default=yes]
+If this option set to "yes" fprobe will store ICMP type and code in
+srcport and dstport NetFlow fields.
+If this option set to "cisco" only dstport field will used (ICMP type is
+the higher eight bits and ICMP code is the lower eight bits). This
+storing method used in some Cisco NetFlow implementations.
+
+--enable-debug          enable debugging [default=no]
+You may select different events for debugging: (C)apture, (U)npending,
+(S)can, (E)mit, (M)emory, (F)ill and (I)nfo. Most interesting (for end
+user) from above is Info debugging - you may get general statistic about
+captured packets, emitted flows, allocated memory, using kill -s USR1.
+Don't forget to run fprobe with `-v7' otherwise you'll not see debugging
+output.
+Example:
+--enable-debug (enable all events debugging)
+--enable-debug=I,C,U,E (enable Info, Capture, Unpending and Emit debugging)
+
+Brief explanation of Info debug messages:
+I: received:[total packets]/[fragmented] ([total size])
+   pending:[now in queue]/[maximum]
+I: ignored:[non-IP] lost:[pending queue full]+[no memory for caching]
+   dropped:[by kernel (if supported)]
+I: cache:[flows]/[fragmented] emit:[sent datagrams]/[sent flows]/[flows
+   in emit queue]
+I: memory:[allocated flows]/[free] ([allocated memory in bytes])
+
+--enable-messages       enable runtime messages [default=no]
+This option enables non-fatal runtime errors reporting. Be carefull - it
+may flood your syslog.
+
+--with-piddir=DIR       pidfiles location [default=/var/run]
+Directory to store pidfiles.
+
+Useful links:
+=============
+
+nProbe - NetFlow probe by Luca Deri:
+http://www.ntop.org/nProbe.html
+
+fprobe (namesake of mine project) - NetFlow probe by Bogdan Surdu:
+http://psi.home.ro/flow
+
+Softflowd - traffic analyzer capable of Cisco NetFlow data export:
+http://www.mindrot.org/softflowd.html
+
+Cisco's NetFlow links:
+http://www.cisco.com/go/netflow
+
+Excellent links collection about Network Monitoring and Analysis:
+http://www.switch.ch/tf-tant/floma
+
+Contacts:
+=========
+
+Feel free to send any questions, comments, bug reports etc.
+Contributions are welcome, including cosmetic fixes and pointing out
+usability problems.
+
+Sincerely yours,
+Slava Astashonok <sla@0n.ru>

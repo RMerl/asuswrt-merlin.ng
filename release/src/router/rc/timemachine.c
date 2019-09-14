@@ -109,15 +109,15 @@ int start_afpd()
 	return ret;
 }
 
-void stop_afpd()
+void stop_afpd(int force)
 {
-	if (getpid() != 1) {
+	if(!force && getpid() != 1){
 		notify_rc("stop_afpd");
+		return;
 	}
 
 	//killall_tk("afpd");
 	system("killall -SIGKILL afpd");
-	return;
 }
 
 int start_cnid_metad()
@@ -136,16 +136,17 @@ int start_cnid_metad()
 	return ret;
 }
 
-void stop_cnid_metad()
+void stop_cnid_metad(int force)
 {
-	if (getpid() != 1) {
+	if(!force && getpid() != 1){
 		notify_rc("stop_cnid_metad");
+		return;
 	}
 
 	//killall_tk("cnid_metad");
 	system("killall -SIGKILL cnid_metad");
-	return;
 }
+
 #if 0
 int generate_avahi_config()
 {
@@ -592,12 +593,10 @@ int start_timemachine()
 	return ret;
 }
 
-void stop_timemachine()
+void stop_timemachine(int force)
 {
-	stop_afpd();
-	stop_cnid_metad();
+	stop_afpd(force);
+	stop_cnid_metad(force);
 	restart_mdns();
 	logmessage("Timemachine", "daemon is stopped");
 }
-
-

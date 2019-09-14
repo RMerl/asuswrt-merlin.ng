@@ -369,7 +369,7 @@ void adjust_access_restrict_config(void)
 }
 
 #if defined(RTCONFIG_VPN_FUSION)
-static VPNC_PROFILE vpnc_profile_tmp[MAX_VPNC_PROFILE] = {0};
+static VPNC_PROFILE vpnc_profile_tmp[MAX_VPNC_PROFILE] = {{0}};
 static int vpnc_prof_cnt_tmp;
 
 static int _find_active_vpnc_id()
@@ -436,7 +436,7 @@ void adjust_vpnc_config(void)
 	char *vpnc_dev_policy_list;
 	int active_id, i, default_wan_idx = 0, flag = 0;
 	char buf[1024];
-	char *nv = NULL, *nvp = NULL, *b = NULL, *mac, *static_ip, *desc, *proto, *server, *username, *passwd;
+	char *nv = NULL, *nvp = NULL, *b = NULL, *mac, *static_ip, *desc, *proto, *server, *username, *passwd, *dns;
 
 	_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
 	vpnc_clientlist = nvram_safe_get("vpnc_clientlist");
@@ -494,7 +494,7 @@ void adjust_vpnc_config(void)
 		i = 0;
 		
 		while (nv && (b = strsep(&nvp, "<")) != NULL ) {
-			if (vstrsep(b, ">", &mac, &static_ip) < 2)
+			if (vstrsep(b, ">", &mac, &static_ip, &dns) < 2)
 				continue;
 
 #ifdef USE_IPTABLE_ROUTE_TARGE

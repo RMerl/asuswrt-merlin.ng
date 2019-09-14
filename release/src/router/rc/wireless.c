@@ -256,7 +256,8 @@ static void wlcconnect_safeleave(int signo) {
 //	when wlc_list, then connect to it according to priority
 int wlcconnect_main(void)
 {
-	int ret, old_ret = -1;
+_dprintf("%s: Start to run...\n", __FUNCTION__);
+	int ret, old_ret = -1, sleep_s = 0, sleep_us = 0;
 	int link_setup = 0, wlc_count = 0;
 	int wanduck_notify = NOTIFY_IDLE;
 	int wlc_wait_time = nvram_get_int("wl_time") ? : 5;
@@ -274,6 +275,17 @@ int wlcconnect_main(void)
 
 #ifdef RTCONFIG_LANTIQ
 	start_repeater();
+#endif
+
+#if defined(RPAC51)
+	sleep_us = 500;
+#elif defined(RTCONFIG_RALINK)
+	sleep_s = 1;
+#elif defined(RTCONFIG_QCA)
+	if (mediabridge_mode())
+		sleep_s = 20;
+	else
+		sleep_s = 5;
 #endif
 
 	while (1) {
@@ -297,23 +309,11 @@ int wlcconnect_main(void)
 			if(ret != WLC_STATE_CONNECTED){
 				if(wlc_count < 3){
 					wlc_count++;
-					_dprintf("Ready to disconnect...%d.\n", wlc_count);
-#ifdef RTCONFIG_RALINK
-					sleep(1);
-#else
-#ifdef RTCONFIG_QCA
-#ifdef RTCONFIG_PROXYSTA
-					if (mediabridge_mode())
-						sleep(10);
-					else
-#endif
-#endif
-#if defined(RPAC51)
-					usleep(500);
-#else
-					sleep(5);
-#endif
-#endif
+_dprintf("Ready to disconnect...%d.\n", wlc_count);
+					if (sleep_s > 0)
+						sleep(sleep_s);
+					if (sleep_us > 0)
+						usleep(sleep_us);
 					continue;
 				}
 			}

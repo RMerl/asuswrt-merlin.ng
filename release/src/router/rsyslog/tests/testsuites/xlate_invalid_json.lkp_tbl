@@ -1,0 +1,4 @@
+{
+  version": "baz_sparse_arr",
+  "type" : "sparseArray",
+  "table":[]

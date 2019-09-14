@@ -44,7 +44,7 @@ function initial(){
 		document.getElementById("wl_unit_field").style.display = "none";
 
 	if(((sw_mode == 2 || sw_mode == 4) && '<% nvram_get("wl_unit"); %>' == '<% nvram_get("wlc_band"); %>') ||
-	   (based_modelid == "RT-AD7200" && '<% nvram_get("wl_unit"); %>' == '3')){
+	   (band60g_support && '<% nvram_get("wl_unit"); %>' == '3')){
 		for(var i=4; i>=2; i--)
 			document.getElementById("MainTable1").deleteRow(i);
 		document.getElementById("repeaterModeHint_desc").innerHTML = "<#CTL_nonsupported#>";
@@ -136,7 +136,7 @@ function checkWLReady(){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>

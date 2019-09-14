@@ -544,7 +544,7 @@ function transformHEXtoRGB(_hex) {
 }
 </script>
 </head>
-<body id='component_body' onload='initial();' style='overflow-x:hidden;overflow-y:auto;;background-color:#21333E;font-family:Arial,Helvetica,sans-serif;'>
+<body id='component_body' onload='initial();' class="bg" style='overflow-x:hidden;overflow-y:auto;font-family:Arial,Helvetica,sans-serif;'>
 <div id='terms_service' class='terms_service'></div>
 <div id='component_container' class='component_container'></div>
 <div id='component_background' class='component_background'></div>

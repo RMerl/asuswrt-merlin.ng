@@ -61,7 +61,7 @@ if [ "$autofix" == "1" ]; then
 			autofix_option="-f"
 		elif [ "$ntfs_mod" == "tuxera" ]; then
 			autocheck_option=
-			autofix_option="-f"
+			autofix_option="-fu"
 		fi
 	elif [ "$1" == "hfs" ] || [ "$1" == "hfsplus" ] || [ "$1" == "thfsplus" ] || [ "$1" == "hfs+j" ] || [ "$1" == "hfs+jx" ]; then
 		if [ "$hfs_mod" == "open" ]; then

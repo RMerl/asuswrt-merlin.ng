@@ -30,7 +30,7 @@ DEVICENAME ~~ ^(sg[0-9]+)$, ACTION == add {
 	exec /sbin/asus_sg %DEVICENAME% %ACTION% ;
 }
 
-SUBSYSTEM == block, DEVICENAME ~~ ^(sr[0-9]+)$, ACTION == add {
+SUBSYSTEM == block, DEVICENAME ~~ ^(sr[0-9]+)$, ACTION ~~ ^(add|remove)$ {
 	exec /sbin/asus_sr %DEVICENAME% %ACTION% ;
 }
 
@@ -63,3 +63,6 @@ SUBSYSTEM == bluetooth, DEVICENAME == hci0, ACTION == add {
 	exec sh -c "nvram get x_Setting | grep -q 1 || start_bluetooth_service" ;
 }
 
+SUBSYSTEM == dump, ACTION == add {
+	exec /sbin/hotplug %SUBSYSTEM% ;
+}

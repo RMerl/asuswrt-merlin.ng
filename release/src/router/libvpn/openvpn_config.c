@@ -107,7 +107,7 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		set_ovpn_key(type, unit, OVPN_SERVER_DH, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_SERVER_STATIC, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_SERVER_CA, NULL, NULL);
-		set_ovpn_key(type, unit, OVPN_SERVER_CA_EXTRA, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_SERVER_EXTRA, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_SERVER_CERT, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_SERVER_KEY, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_SERVER_CRL, NULL, NULL);
@@ -117,14 +117,14 @@ void reset_ovpn_setting(ovpn_type_t type, int unit, int full){
 		set_ovpn_key(type, unit, OVPN_CLIENT_CERT, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_CLIENT_KEY, NULL, NULL);
 		set_ovpn_key(type, unit, OVPN_CLIENT_CRL, NULL, NULL);
-		set_ovpn_key(type, unit, OVPN_CLIENT_CA_EXTRA, NULL, NULL);
+		set_ovpn_key(type, unit, OVPN_CLIENT_EXTRA, NULL, NULL);
 	}
 
 	nvram_commit();
 }
 
 
-void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type)
+void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, ovpn_errno_t err_no)
 {
 	char varname[32];
 
@@ -182,8 +182,8 @@ char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *b
 		case OVPN_SERVER_CLIENT_KEY:
 			keyStr = "client_key";
 			break;
-		case OVPN_CLIENT_CA_EXTRA:
-		case OVPN_SERVER_CA_EXTRA:
+		case OVPN_CLIENT_EXTRA:
+		case OVPN_SERVER_EXTRA:
 			keyStr = "extra";
 			break;
 		default:

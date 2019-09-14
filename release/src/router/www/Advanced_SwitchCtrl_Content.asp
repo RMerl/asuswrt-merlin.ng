@@ -22,7 +22,7 @@ var lacp_support = isSupport("lacp");
 var lacp_enabled = '<% nvram_get("lacp_enabled"); %>' == 1 ?true: false;
 var bonding_policy_support = false;
 if( lacp_support 
-&& (based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC5300" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC3100")){
+&& (based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC87U" || based_modelid == "RT-AC5300" || based_modelid == "RT-AC88U" || based_modelid == "RT-AC3100")){
 	bonding_policy_support = true;
 	var bonding_policy_value = '<% nvram_get("bonding_policy"); %>';
 }
@@ -94,7 +94,7 @@ function initial(){
 		var wan_lanport_text = "";
 		if(based_modelid == "GT-AC5300")
 			var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
-		else if(based_modelid == "RT-AC86U")
+		else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
 			var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
 		else
 			var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
@@ -160,7 +160,7 @@ function applyRule(){
 
 function check_bonding_policy(obj){
 	if(obj.value == "1"){
-		if(based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U"){
+		if(based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900"){
 			document.getElementById("lacp_policy_tr").style.display = "";
 		}
 		
@@ -168,7 +168,7 @@ function check_bonding_policy(obj){
 		document.getElementById("lacp_desc").style.display = "";
 	}
 	else{
-		if(based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U"){
+		if(based_modelid == "GT-AC5300" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900"){
 			document.getElementById("lacp_policy_tr").style.display = "none";
 		}
 		
@@ -180,7 +180,7 @@ function check_bonding_policy(obj){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="hiddenMask" class="popup_bg">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center">

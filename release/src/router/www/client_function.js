@@ -148,6 +148,7 @@ var setClientAttr = function(){
 	this.amesh_isRe = false;
 	this.amesh_isReClient = false;
 	this.amesh_papMac = "";
+	this.ROG = false;
 }
 
 var clientList = new Array(0);
@@ -263,6 +264,8 @@ function genClientList(){
 					}
 				}
 			}
+
+			clientList[thisClientMacAddr].ROG = (thisClient.ROG == "1");
 		}
 	}
 
@@ -298,6 +301,8 @@ function genClientList(){
 				clientList[thisClientMacAddr].vendor = thisClient.vendor.trim();
 				if(amesh_support)
 					clientList[thisClientMacAddr].amesh_isRe = thisClientReNode;
+
+				clientList[thisClientMacAddr].ROG = (thisClient.ROG == "1");
 				nmpCount++;
 			}
 			else if(!clientList[thisClientMacAddr].isOnline) {
@@ -886,19 +891,33 @@ function card_confirm(callBack) {
 		document.getElementById("card_client_name").value = document.getElementById("card_client_name").value.trim();
 		if(document.getElementById("card_client_name").value.length == 0){
 			alert("<#File_Pop_content_alert_desc1#>");
-			document.getElementById("card_client_name").style.display = "";
 			document.getElementById("card_client_name").focus();
 			document.getElementById("card_client_name").select();
+			document.getElementById("card_client_name").value = "";
 			return false;
 		}
 		else if(document.getElementById("card_client_name").value.indexOf(">") != -1 || document.getElementById("card_client_name").value.indexOf("<") != -1){
 			alert("<#JS_validstr2#> '<', '>'");
 			document.getElementById("card_client_name").focus();
 			document.getElementById("card_client_name").select();
-			document.getElementById("card_client_name").value = "";		
+			document.getElementById("card_client_name").value = "";
 			return false;
 		}
+
+		if(utf8_ssid_support){
+			var len = validator.lengthInUtf8(document.getElementById('card_client_name').value);
+			if(len > 32){
+				alert("Username cannot be greater than 32 characters.");/* untranslated */
+				document.getElementById('card_client_name').focus();
+				document.getElementById('card_client_name').select();
+				document.getElementById('card_client_name').value = "";
+				return false;
+			}
+		}
 		else if(!validator.haveFullWidthChar(document.getElementById("card_client_name"))) {
+			document.getElementById('card_client_name').focus();
+			document.getElementById('card_client_name').select();
+			document.getElementById('card_client_name').value = "";
 			return false;
 		}
 		return true;
@@ -932,6 +951,10 @@ function card_confirm(callBack) {
 				if(originalCustomListArray[i].split('>')[1].toUpperCase() == onEditClient[1].toUpperCase()){
 					onEditClient[4] = originalCustomListArray[i].split('>')[4]; // set back callback for ROG device
 					onEditClient[5] = originalCustomListArray[i].split('>')[5]; // set back keeparp for ROG device
+					var app_group_tag = originalCustomListArray[i].split('>')[6]; // for app group tag
+					if(typeof app_group_tag != "undefined")	onEditClient[6] = app_group_tag;
+					var app_age_tag = originalCustomListArray[i].split('>')[7]; // for app age tag
+					if(typeof app_age_tag != "undefined")	onEditClient[7] = app_age_tag;
 					originalCustomListArray.splice(i, 1); // remove the selected client from original list
 				}
 			}
@@ -2115,7 +2138,10 @@ function drawClientListBlock(objID) {
 					if(clientlist_sort[j].type == "0") {
 						icon_type = "type0_viewMode";
 					}
-					clientListCode += "<div style='height:40px;width:40px;cursor:default;' class='clientIcon_no_hover " + icon_type + "' title='"+ clientlist_sort[j].deviceTypeName +"'></div>";
+					clientListCode += "<div style='height:40px;width:40px;cursor:default;' class='clientIcon_no_hover " + icon_type + "' title='"+ clientlist_sort[j].deviceTypeName +"'>";
+					if(clientlist_sort[j].type == "36")
+						clientListCode += "<div class='flash'></div>";
+					clientListCode += "</div>";
 				}
 				else if(clientlist_sort[j].vender != "" ) {
 					var venderIconClassName = getVenderIconClassName(clientlist_sort[j].vender.toLowerCase());
@@ -2135,7 +2161,7 @@ function drawClientListBlock(objID) {
 				clientListCode += "<td style='word-wrap:break-word; word-break:break-all;' width='" + obj_width[2] + "'>";
 				var clientNameEnCode = htmlEnDeCode.htmlEncode(decodeURIComponent(clientlist_sort[j].name));
 				clientListCode += "<div id='div_clientName_"+objID+"_"+j+"' class='viewclientlist_clientName_edit' onclick='editClientName(\""+objID+"_"+j+"\");'>"+clientNameEnCode+"</div>";
-				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientNameEnCode+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", this);'>";
+				clientListCode += "<input id='client_name_"+objID+"_"+j+"' type='text' value='"+clientNameEnCode+"' class='input_25_table' maxlength='32' style='width:95%;margin-left:0px;display:none;' onblur='saveClientName(\""+objID+"_"+j+"\", "+clientlist_sort[j].type+", \"" + clientlist_sort[j].mac + "\");'>";
 				clientListCode += "</td>";
 				var ipStyle = ('<% nvram_get("sw_mode"); %>' == "1") ? "line-height:16px;text-align:left;padding-left:10px;" : "line-height:16px;text-align:center;";
 				clientListCode += "<td width='" + obj_width[3] + "' style='" + ipStyle + "'>";
@@ -2335,7 +2361,7 @@ function editClientName(index) {
 	edit_client_name_flag = true;
 }
 var view_custom_name = decodeURIComponent('<% nvram_char_to_ascii("", "custom_clientlist"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<");
-function saveClientName(index, type, obj) {
+function saveClientName(index, type, mac) {
 	document.getElementById("client_name_"+index).value = document.getElementById("client_name_"+index).value.trim();
 	var client_name_obj = document.getElementById("client_name_"+index);
 	if(client_name_obj.value.length == 0){
@@ -2343,6 +2369,7 @@ function saveClientName(index, type, obj) {
 		window.setTimeout(function () { 
 			client_name_obj.focus();
 			client_name_obj.select();
+			client_name_obj.value = "";
 		}, 10);
 		return false;
 	}
@@ -2355,11 +2382,25 @@ function saveClientName(index, type, obj) {
 		}, 10);
 		return false;
 	}
+
+	if(utf8_ssid_support){
+		var len = validator.lengthInUtf8(client_name_obj.value);
+		if(len > 32){
+			alert("Username cannot be greater than 32 characters.");/* untranslated */
+			window.setTimeout(function () {
+				client_name_obj.focus();
+				client_name_obj.select();
+				client_name_obj.value = "";
+			}, 10);
+			return false;
+		}
+	}
 	else if(!validator.haveFullWidthChar(client_name_obj)) {
 		alert('<#JS_validchar#>');
 		window.setTimeout(function () { 
 			client_name_obj.focus();
 			client_name_obj.select();
+			client_name_obj.value = "";
 		}, 10);
 		return false;
 	}
@@ -2373,7 +2414,7 @@ function saveClientName(index, type, obj) {
 	originalCustomListArray = view_custom_name.split('<');
 	
 	onEditClient[0] = client_name_obj.value;
-	onEditClient[1] = obj.parentNode.parentNode.childNodes[4].innerHTML;
+	onEditClient[1] = mac.toUpperCase();
 	onEditClient[2] = 0;
 	onEditClient[3] = type;
 	onEditClient[4] = "";
@@ -2385,6 +2426,10 @@ function saveClientName(index, type, obj) {
 			if(originalCustomListArray[i].split('>')[1].toUpperCase() == onEditClient[1].toUpperCase()){
 				onEditClient[4] = originalCustomListArray[i].split('>')[4]; // set back callback for ROG device
 				onEditClient[5] = originalCustomListArray[i].split('>')[5]; // set back keeparp for ROG device
+				var app_group_tag = originalCustomListArray[i].split('>')[6]; // for app group tag
+				if(typeof app_group_tag != "undefined")	onEditClient[6] = app_group_tag;
+				var app_age_tag = originalCustomListArray[i].split('>')[7]; // for app age tag
+				if(typeof app_age_tag != "undefined")	onEditClient[7] = app_age_tag;
 				originalCustomListArray.splice(i, 1); // remove the selected client from original list
 			}
 		}

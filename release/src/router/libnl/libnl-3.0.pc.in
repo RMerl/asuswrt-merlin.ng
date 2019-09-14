@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: libnl
+Description: Convenience library for netlink sockets
+Version: @PACKAGE_VERSION@
+Libs: -L${libdir} -lnl-@MAJ_VERSION@
+Cflags: -I${includedir}/libnl@MAJ_VERSION@

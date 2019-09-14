@@ -964,7 +964,7 @@ function handle_value(){
 }
 </style>
 </head>
-<body>
+<body class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 

@@ -167,10 +167,8 @@ ttcp: epi_ttcp.c
 clean:
 	rm -f *.o *~ $(UTILS)
 	rm -rf socket wifi epi_ttcp
-	rm -f $(INSTALLDIR)/usr/sbin/WlGetDriverCfg.sh
 
 install: all
 	install -d $(INSTALLDIR)/usr/sbin
 	install $(UTILS) $(INSTALLDIR)/usr/sbin
-	install -D -m 755 WlGetDriverCfg.sh $(INSTALLDIR)/usr/sbin/WlGetDriverCfg.sh
 	$(STRIP) $(foreach file,$(UTILS),$(INSTALLDIR)/usr/sbin/$(file))

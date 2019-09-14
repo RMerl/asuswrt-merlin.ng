@@ -58,4 +58,4 @@ AVAILABILITY
 
 
 
-Tuxera NTFS Utilities 3014.5.21    Sept 2011                       NTFSINFO(8)
+Tuxera NTFS Utilities 3017.7.18.13 Sept 2011                       NTFSINFO(8)

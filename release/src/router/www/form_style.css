@@ -2090,13 +2090,15 @@ padding-top:1px;
 	background: #475A5F;
 }
 .eula_panel_container{
-	margin-left: 25%;
+	margin: 20px 0 0 210px;
 	display: none;
-	position: absolute;
-	width: 50%;
+	position: fixed;
+	width: 600px;
 	z-index: 10000;
 	border: 3px solid #4D5C63;
-	border-radius: 4px;
+	border-radius: 8px;
+	background-color: #232E32;
+	text-align: left;
 }
 
 #bottom_border{
@@ -2108,12 +2110,18 @@ padding-top:1px;
 	height: 102px;
 	background: #354248;
 }
-#oauth_google_btn{
+.oauth_google_btn{
+	float: left;
 	background: transparent url(images/New_ui/btn_google_signin_dark_normal_web.png) no-repeat scroll center top;
-	position: relative;
-	top: 10px;
 	width: 133px;
 	height: 26px;
+	cursor: pointer;
+}
+.oauth_google_status{
+	float: left;
+	margin-top: 3px;
+	margin-left: 5px;
+	display: none;
 }
 .quotabar{
 	background: #8DB6D8;

@@ -630,6 +630,7 @@ function previous_step(flag){
 function enable_ISP_special(){
 	if(document.applyForm.specialisp.checked){
 		if(isSku("TW")){
+			document.applyForm.switch_wantag.value = "hinet";
 			ISP_Profile_Selection("hinet");
 			document.getElementById("profile_setting").style.display = "";
 		}

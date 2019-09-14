@@ -1,0 +1,70 @@
+Redis Outplug Plugin using hiredis library
+
+REQUIREMENTS:
+
+* hiredis ( https://github.com/redis/hiredis.git )
+
+USAGE:
+
+This plugin has three current "modes" that it supports:
+
+1. "template"
+
+This is the original mode that the plugin supported. You use an rsyslog template
+to construct a command that is sent directly to redis. This mode currently has
+an issue dealing with strings that contain spaces. It's useful for doing things
+like incrementing counters for statistics.
+
+```
+module(load="omhiredis")
+
+template(
+    name="simple_count"
+    type="string"
+    string="HINCRBY testcount %programname% 1")
+
+*.*     action(
+            name="count_redis"
+            type="omhiredis"
+            mode="template"
+            template="simple_count"
+        )
+```
+
+2. "queue"
+The queue mode will LPUSH your message to a redis list. Unlike the template
+mode, it handles full rsyslog messages properly. If a template is not 
+supplied, it will default to the RSYSLOG_ForwardFormat template. The "key" 
+parameter is required.
+
+```
+module(load="omhiredis")
+
+*.*     action(
+            name="push_redis"
+            type="omhiredis"
+            mode="queue"
+            key="testqueue"
+        )
+```
+
+3. "publish"
+The publish mode will PUBLISH to a redis channel. Unlike the template mode, 
+it handles full rsyslog messages properly. If a template is not supplied,
+it will default to the RSYSLOG_ForwardFormat template. The "key" 
+parameter is required and will be used for the publish channel.
+
+```
+module(load="omhiredis")
+
+*.*     action(
+            name="publish_redis"
+            type="omhiredis"
+            mode="publish"
+            key="testpublish"
+        )
+```
+
+
+NOTES
+* dequeuebatchsize now sets the pipeline size for hiredis, allowing pipelining commands.

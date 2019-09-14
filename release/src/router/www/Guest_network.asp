@@ -48,6 +48,7 @@ var wl_maclist_x_array = gn_array[0][16];
 var captive_portal_used_wl_array = new Array();
 
 var manually_maclist_list_array = new Array();
+var all_gn_status = [];
 Object.prototype.getKey = function(value) {
 	for(var key in this) {
 		if(this[key] == value) {
@@ -203,15 +204,21 @@ function translate_auth(flag){
 	else if(flag == "psk")
 		return "WPA-Personal";
 	else if(flag == "psk2")
- 		return "WPA2-Personal";
+		 return "WPA2-Personal";
+	else if(flag == "sae"){
+		return "WPA3-Personal";
+	}	 
 	else if(flag == "pskpsk2")
 		return "WPA-Auto-Personal";
+	else if(flag == "psk2sae"){
+		return "WPA2/WPA3-Personal";	
+	}	
 	else if(flag == "wpa")
 		return "WPA-Enterprise";
 	else if(flag == "wpa2")
 		return "WPA2-Enterprise";
 	else if(flag == "wpawpa2")
-		return "WPA-Auto-Enterprise";
+		return "WPA-Auto-Enterprise";	
 	else if(flag == "radius")
 		return "Radius with 802.1x";
 	else
@@ -332,7 +339,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					
 					if(gn_array[i][2].indexOf("wpa") >= 0 || gn_array[i][2].indexOf("radius") >= 0)
 							show_str = "";
-					else if(gn_array[i][2].indexOf("psk") >= 0)
+					else if(gn_array[i][2].indexOf("psk") >= 0 || gn_array[i][2].indexOf("sae") >= 0)
 							show_str = gn_array[i][4];
 					else if(gn_array[i][2] == "open" && gn_array[i][5] == "0")
 							show_str = "None";
@@ -375,7 +382,10 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			}														
 			
 			if(sw_mode != "3"){
-					if(gn_array[i][0] == "1" && control_setting_flag) htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ gn_array[i][12] +'</td></tr>';
+					if(gn_array[i][0] == "1" && control_setting_flag){
+						var status_Access_Intranet = (gn_array[i][12]=="on")?"<#WLANConfig11b_WirelessCtrl_button1name#>":"<#btn_disable#>";
+						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ status_Access_Intranet +'</td></tr>';
+					}
 			}
 										
 			if(gn_array[i][0] == "1" && control_setting_flag){
@@ -393,6 +403,8 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none"><#Guest_Network_AlexaIFTTT_setting#></div></td></tr></tfoot>';
 			}
 			htmlcode += '</table></td>';		
+
+			all_gn_status.push({"idx" : unit_subunit, "enable" : (gn_array[i][0] == '1'), "bw_enabled" : (gn_array[i][18] == '1')});
 	}	
 
 	if(slicesb > 0){
@@ -557,6 +569,8 @@ function applyRule(){
 			}
 		}
 
+		dis_qos_enable(document.form.wl_unit.value + "." + document.form.wl_subunit.value, document.form, "bw_enabled");
+
 		var _unit_subunit = "wl" + document.form.wl_unit.value + "." + document.form.wl_subunit.value;
 		if(captive_portal_used_wl_array[_unit_subunit] != undefined) {
 			document.form.wl_key.disabled = true;
@@ -605,7 +619,7 @@ function validForm(){
 	if(document.form.wl_wep_x.value != "0")
 		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
 			return false;	
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "sae" || auth_mode == "pskpsk2" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.form.wl_wpa_psk, document.form.wl_unit.value))
 				return false;
@@ -747,7 +761,7 @@ function mbss_display_ctrl(){
 	if(multissid_support){
 		document.getElementById("wl_channel_field").style.display = "none";
 		document.getElementById("wl_nctrlsb_field").style.display = "none";
-		for(var i=1; i<multissid_support+1; i++)
+		for(var i=1; i<multissid_count+1; i++)
 			add_options_value(document.form.wl_subunit, i, '<% nvram_get("wl_subunit"); %>');
 	}
 	else{
@@ -780,6 +794,10 @@ function en_dis_guest_unit(_unit, _subunit, _setting){
 	document.unitform.appendChild(NewInput);
 	document.unitform.wl_unit.value = _unit;
 	document.unitform.wl_subunit.value = _subunit;
+
+	if(_setting == "0")
+		dis_qos_enable(_unit + "." + _subunit, document.unitform, "enable");
+
 	document.unitform.submit();
 }
 
@@ -1185,10 +1203,46 @@ function show_bandwidth(flag){
 		inputCtrl(document.form.wl_bw_ul_x, 0);		
 	}	
 }
+
+function dis_qos_enable(_wl_idx, _form_obj, _control_item){
+	if(_wl_idx == "" || _wl_idx == undefined || _form_obj == "" || _form_obj == undefined || _control_item == "" || _control_item == undefined)
+		return;
+
+	if(!(all_gn_status.some(function(item, index, array){return (item.enable == true && item.bw_enabled == true)})))//if all gn bw disabled, not need disable qos
+		return;
+
+	var sw_mode_support = isSwMode("rt");
+	var cp_wifi_not_used = (captive_portal_used_wl_array["wl" + _wl_idx] == undefined) ? true : false;
+	if(sw_mode_support && cp_wifi_not_used){
+		var specific_gn = all_gn_status.filter(function(item, index, array){
+			return (item.idx == _wl_idx);
+		})[0];
+
+		if(_control_item == "enable")
+			specific_gn.enable = false;
+		else if(_control_item == "bw_enabled")
+			specific_gn.bw_enabled = document.form.bw_enabled_x[0].checked;
+
+		var all_gn_bw_dis = !(all_gn_status.some(function(item, index, array){return (item.enable == true && item.bw_enabled == true)}));
+		var QoS_bw_rulelist_orig = '<% nvram_get("qos_bw_rulelist"); %>';
+		var qos_can_dis = (QoS_enable_orig == "1" && QoS_type_orig == "2" && QoS_bw_rulelist_orig == "") ? true : false;
+		if(all_gn_bw_dis && qos_can_dis){
+			if(_form_obj.qos_enable == undefined){
+				var qos_enable = document.createElement("input");
+				qos_enable.type = "hidden";
+				qos_enable.name = "qos_enable";
+				qos_enable.value = "0";
+				_form_obj.appendChild(qos_enable);
+			}
+			else
+				_form_obj.qos_enable.value = "0";
+		}
+	}
+}
 </script>
 </head>
 
-<body onload="initial();">
+<body onload="initial();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <div id="hiddenMask" class="popup_bg">
@@ -1412,7 +1466,9 @@ function show_bandwidth(flag){
 										<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 										<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
 										<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
+										<option value="sae"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA3-Personal</option>
 										<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
+										<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
 									</select>
 									<br>
 									<span id="wl_nmode_x_hint" style="display:none;"><#WLANConfig11n_automode_limition_hint#></span>

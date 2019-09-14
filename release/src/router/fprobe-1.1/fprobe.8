@@ -1,0 +1,226 @@
+.TH fprobe 8 "2005-01-29" "fprobe 1.1"
+
+.SH NAME
+fprobe \- a NetFlow probe
+
+.SH SYNOPSIS
+.BI fprobe
+[\fIoptions\fR] \fIremote:port[/[local][/type]] ...\fR
+
+.SH DESCRIPTION
+.B fprobe
+\- libpcap-based tool that collect network traffic data and emit it as
+NetFlow flows towards the specified collector.
+
+.SH OPTIONS
+.TP
+.B -h
+Display short help
+.TP
+.B -p
+\fIDon't\fR put the interface into promiscuous mode.  Note that even if
+this option is used, the interface might be in promiscuous mode for some
+other reason.
+.TP
+.B -i \fI<interface>\fR
+Listen on \fIinterface\fR. If unspecified, \fBfprobe\fR will use result
+of pcap_lookupdev() function. On Linux systems with 2.2 or later
+kernels, an \fIinterface\fR argument of `\fIany\fR' can be used to
+capture packets from all interfaces. Note that captures on the
+`\fIany\fR' device will not be done in promiscuous mode.
+.br
+You may use `\fI-\fR' as \fIinterface\fR name to process files produced
+by \fItcpdump\fR with \fI-w\fR flag. \fBfprobe\fR will read data from
+\fIstdin\fR.
+.TP
+.B -f \fI<expression>\fR
+Filter \fIexpression\fR selects which packets will be captured. If no
+\fIexpression\fR is given, all packets on the net will be captured.
+Otherwise, only packets for which \fIexpression\fR is `true' will be
+captured.
+.br
+\fBfprobe\fR use silly IP-packet detection method, so it is bad idea
+to leave the filter empty. For general use `ip' (-fip) is good filter
+expression.
+.br
+Read
+.BR tcpdump 
+manual for detailed \fIexpression\fR syntax.
+.TP
+.B -s \fI<seconds>\fR
+How often scan for expired flows. [default=5]
+.TP
+.B -g \fI<seconds>\fR
+Fragmented flow lifetime. [default=30]
+.TP
+.B -d \fI<seconds>\fR
+Idle flow lifetime (inactive timer). [default=60]
+.TP
+.B -e \fI<seconds>\fR
+Active flow lifetime (active timer). [default=300]
+.TP
+.B -n \fI<version>\fR
+NetFlow version for use (1, 5, 7). [default=5]
+.TP
+.B -a \fI<address>\fR
+Use \fIaddress\fR as source for NetFlow flow.
+.TP
+.B -x \fI<inputID>[:<outputID>]\fR
+Workaround for SNMP interfaces indexes. [default=0]
+.br
+The second parameter may be omitted - in this case its value will be
+equal to the first.
+.br
+See BUGS section.
+.TP
+.B -b \fI<flows>\fR
+Memory bulk size. [default=200 or 10000]
+.br
+Note that maximum and default values depends on compiling options
+(\fI--with-membulk\fR parameter).
+.TP
+.B -m \fI<kilobytes>\fR
+Memory limit for flows cache (0=no limit). [default=0]
+.TP
+.B -q \fI<flows>\fR
+Pending queue length. [default=100]
+.br
+Each captured packet at first puts into special buffer called `pending
+queue'. Purpose of this buffer is to separate most time-critical packet
+capture thread from other.
+.TP
+.B -B \fI<kilobytes>\fR
+Kernel capture buffer size (0=don't change). [default=0]
+.br
+Increase kernel capture buffer size is most adequate way to prevent
+packets loss. Unfortunately, at present there is no straight way to set
+the buffer size throught libpcap, so this option is a hack. Moreover,
+now this hack take effect only on socket()-based capture mechanisms: it
+mean that it work on Linux and don't work on BSD systems with their
+bpf().
+.br
+Note that maximum allowed size of the buffer in Linux limited and
+generally relatively small, so it should need to change the maximum:
+sysctl -w net/core/rmem_max=4194304
+.TP
+.B -r \fI<priority>\fR
+Real-time priority (0=disabled). [default=0]
+.br
+If parameter greater then zero \fBfprobe\fR will use real-time scheduling
+policy to prevent packets loss. Note that possible values for this
+option depends on operating system.
+.TP
+.B -t \fI<B:N>\fR
+Emitting rate limit (0:0=no limit). [default=0:0]
+.br
+Produce \fIN\fR nanosecond delay after each \fIB\fR bytes sent. This
+option may be useful with slow interfaces and slow collectors. Note that
+the suspension time may be longer than requested because the argument
+value is rounded up to an integer multiple of the sleep resolution (it
+depends on operating system and hardware) or because of the scheduling
+of other activity by the system.
+.br
+See BUGS section.
+.TP
+.B -S \fI<bytes>\fR
+Snaplen (0=whole packet). [default=256]
+.br
+Number of bytes to capture from packet on wire.
+.TP
+.B -K \fI<bytes>\fR
+Link layer header size. By default \fBfprobe\fR take this information
+from libpcap, but sometimes obtained size unsuitable for our purpose. It
+occurs, for example, on trunk interfaces in VLAN enviroment, where link
+layer header contain additional VLAN header.
+.br
+See EXAMPLES section.
+.TP
+.B -k
+Don't exclude link layer header from packet size. By default
+\fBfprobe\fR counts only IP-part of packet.
+.TP
+.B -c \fI<directory>\fR
+Directory to chroot to.
+.TP
+.B -u \fI<user>\fR
+User to run as.
+.TP
+.B -v \fI<level>\fR
+Maximum displayed log level. (0=EMERG, 1=ALERT, 2=CRIT, 3=ERR, 4=WARNING,
+5=NOTICE, 6=INFO, 7=DEBUG) [default=6]
+.TP
+.B -l \fI<[dst][:id]>\fR
+Log destination (0=none, 1=syslog, 2=stdout, 3=both) and log/pidfile
+identifier. [default=1]
+.br
+This option allows to select opportune log destination and process
+identifier. The identifier helps to distinguish pidfile and logs of one
+\fBfprobe\fR process from other.
+.br
+Note that if log destination contains `\fIstdout\fR' (equal 2 or 3)
+\fBfprobe\fR will run in foreground.
+.TP
+.B remote:port/local/type
+Parameters \fIremote\fR and \fIport\fR are respectively define address
+and port of the NetFlow collector.
+.br
+The \fIlocal\fR parameter allows binding certain local IP address with
+specified collector. If the parameter is omitted the value (if any) of
+\fI-a\fR option will be used.
+.br
+The \fItype\fR parameter determines emitting behavior. It may be `m' for
+mirroring (by default) and `r' for collectors round-robin rotating.
+.br
+You may specify multiple collectors.
+
+.SH EXAMPLES
+Web traffic trivial capturing:
+.br
+\fBfprobe -ippp0 -f"tcp&&port 80" localhost:2055\fR
+.br
+
+Capturing from trunk interface:
+.br
+\fBfprobe -ieth0 -f"vlan&&ip" -K18 localhost:2055\fR
+.br
+
+Reasonable configuration to run under heavy load:
+.br
+\fBfprobe -fip -B4096 -r2 -q10000 -t10000:10000000 localhost:2055\fR
+
+Send packets to collector at 10.1.1.1:2055 and distribute them between
+collectors at 10.1.1.2:2055 and at 10.1.1.3:2055 on a round-robin basis:
+.br
+\fBfprobe 10.1.1.1:2055 10.1.1.2:2055//r 10.1.1.3:2055//r\fR
+
+.SH BUGS
+.B SNMP interfaces indexes and packet direction.
+.br
+Unfortunately libpcap don't provide any routing-related information
+about captured packet, therefore there are no straight ways to determine
+and distinguish input and output interfaces. However \fI-x\fR option at
+least can tell that flow was passed through the certain interface. Also
+you may launch several instances of the program with tricky set of
+filters to mark out each possible packet direction:
+.br
+\fBfprobe -x1:2 -ieth1 -f"ip&&dst net 10.2" localhost:2055\fR
+.br
+\fBfprobe -x2:1 -ieth2 -f"ip&&dst net 10.1" localhost:2055\fR
+
+.B Slow interfaces and slow collectors.
+.br
+There are may be problems with slow interfaces and slow collectors. It
+effects as emitted packets loss. On the one hand silent non-blocking
+sendto() implementation can't guarantee that packet was really sent to
+collector - it may be dropped by kernel due to outgoing buffer shortage
+(slow interface's problem) and on the other hand packet may be dropped
+on collector's machine due the similar reason - incoming buffer shortage
+(slow collector's problem).
+.br
+Use \fI-t\fR option as workaround for this issue.
+
+.SH SEE ALSO
+.BR tcpdump
+.BR pcap(3)
+.br
+.BR http://www.cisco.com/go/netflow

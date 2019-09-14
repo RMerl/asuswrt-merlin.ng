@@ -36,6 +36,7 @@
 #define ETHEVENT_STATUS_MSG	 "{\""ETHEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""OB_STATUS"\":%d,\""OB_KEY"\":\"%s\"}}"
 
 /* source */
+#define FROM_NONE	0x0
 #define FROM_WIRELESS	0x1
 #define FROM_ETHERNET	0x2
 

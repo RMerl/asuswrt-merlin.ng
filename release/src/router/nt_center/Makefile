@@ -1,7 +1,7 @@
 include ./Makefile.config
 
 ifeq ($(ASUSWRT_SDK),y)
-include $(SRCBASE)/router/.config
+-include $(SRCBASE)/router/.config
 MAKE = make
 CFLAGS = -Wall -O2 -g  $(EXTRACFLAGS)
 CFLAGS += -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/nt_center/lib/

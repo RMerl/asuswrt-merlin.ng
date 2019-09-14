@@ -170,7 +170,10 @@ function drawClientList(tab){
 			clientHtmlTd += clientObj.type;
 			clientHtmlTd += '" title="';
 			clientHtmlTd += deviceTitle;
-			clientHtmlTd += '"></div>';
+			clientHtmlTd += '">';
+			if(clientObj.type == "36")
+				clientHtmlTd += '<div class="flash"></div>';
+			clientHtmlTd += '</div>';
 		}
 		else if(clientObj.vendor != "") {
 			var venderIconClassName = getVenderIconClassName(clientObj.vendor.toLowerCase());

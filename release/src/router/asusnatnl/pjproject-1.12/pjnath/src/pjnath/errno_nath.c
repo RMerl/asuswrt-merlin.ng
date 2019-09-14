@@ -72,6 +72,8 @@ static const struct
 
     /* TURN related errors */
     PJ_BUILD_ERR( PJNATH_ETURNINTP,	    "Invalid/unsupported transport"),
+	PJ_BUILD_ERR( PJNATH_ETURNINSERVER,	    "Invalid TURN server or server not configured"),
+	PJ_BUILD_ERR( PJNATH_ETURNTIMEDOUT,	    "TURN allocation has timed out"),
 
 };
 #endif	/* PJ_HAS_ERROR_STRING */
@@ -175,12 +177,12 @@ PJ_DEF(pj_status_t) pjnath_init(void)
 {
     pj_status_t status;
 
-    status = pj_register_strerror(PJNATH_ERRNO_START, 299, 
+    status = pj_register_strerror(PJNATH_ERRNO_START, 329, 
 				  &pjnath_strerror);
     pj_assert(status == PJ_SUCCESS);
 
-    status = pj_register_strerror(PJ_STATUS_FROM_STUN_CODE(300), 
-				  699 - 300, 
+    status = pj_register_strerror(PJ_STATUS_FROM_STUN_CODE(330), 
+				  699 - 330, 
 				  &pjnath_strerror2);
     pj_assert(status == PJ_SUCCESS);
 

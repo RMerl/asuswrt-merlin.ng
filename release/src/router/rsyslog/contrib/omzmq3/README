@@ -1,0 +1,25 @@
+ZeroMQ 3.x Output Plugin
+
+DEPRECATION NOTICE
+------------------
+This plugin is not maintained and is deprecated. For ZeroMQ output support,
+please use contrib/omczmq, which is actively developed and maintained - Brian
+------------------
+
+Building this plugin:
+Requires libzmq and libczmq. First, download the tarballs of both libzmq
+and its supporting libczmq from http://download.zeromq.org. As of this
+writing (04/23/2013), the most recent versions of libzmq and czmq are
+3.2.2 and 1.3.2 respectively. Configure, build, and then install both libs.
+
+Omzmq3 allows you to push data out of rsyslog from a zeromq socket.  The example
+below binds a PUB socket to port 7171, and any message fitting the criteria will
+be output to the zmq socket.
+
+Example Rsyslog.conf snippet (NOTE: v6 format):
+-------------------------------------------------------------------------------
+if $msg then {
+    action(type="omzmq3", sockType="PUB", action="BIND", 
+           description="tcp://*:7172)
+}
+-------------------------------------------------------------------------------

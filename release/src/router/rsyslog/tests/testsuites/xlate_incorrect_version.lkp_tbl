@@ -1,0 +1,8 @@
+{
+  "version": 3,
+  "nomatch": "baz",
+  "type" : "string",
+  "table":[
+      {"index": "00000000", "value":"foo" },
+      {"index": "00000001", "value":"bar" }]
+}

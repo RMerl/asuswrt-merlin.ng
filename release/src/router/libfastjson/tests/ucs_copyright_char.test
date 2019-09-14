@@ -1,0 +1,19 @@
+#!/bin/sh
+# Common definitions
+if test -z "$srcdir"; then
+    srcdir="${0%/*}"
+    test "$srcdir" = "$0" && srcdir=.
+    test -z "$srcdir" && srcdir=.
+fi
+. "$srcdir/test-defs.sh"
+
+#if [ "x$CI_SOLARIS" = "xyes" ] ; then
+uname
+if [ `uname` = "SunOS" ] ; then
+   echo "This test currently does not work on all flavors of Solaris."
+   exit 77
+fi
+
+
+run_output_test ucs_copyright_char
+exit $?

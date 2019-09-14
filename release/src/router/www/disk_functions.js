@@ -668,3 +668,26 @@ function get_folderBarCode_in_pool(poolName, folderName){
 	
 	return "";
 }
+
+function get_app_dev_info(callback){
+	require(['/require/modules/diskList.js?hash=' + Math.random().toString()], function(diskList){
+		var usbAppDevInfo = {hasAppDev : false, mountPoint : "", availableSize : false};
+		var usbDevicesList = diskList.list();
+		break_loop:
+			for(var i=0; i < usbDevicesList.length; i++){
+				for(var j=0; j < usbDevicesList[i].partition.length; j++){
+					if(usbDevicesList[i].partition[j].status == "unmounted")
+						continue;
+					if(usbDevicesList[i].partition[j].isAppDev){
+						usbAppDevInfo.hasAppDev = true;
+						usbAppDevInfo.mountPoint = usbDevicesList[i].partition[j].mountPoint;
+						var accessableSize = simpleNum(usbDevicesList[i].partition[j].size-usbDevicesList[i].partition[j].used);
+						if(accessableSize > 1)
+							usbAppDevInfo.availableSize = true;
+						break break_loop;
+					}
+				}
+			}
+		return callback(usbAppDevInfo);
+	});
+}

@@ -1,0 +1,3 @@
+rsyslogd: invalid or yet-unknown config file command - have you forgotten to load a module? [try http://www.rsyslog.com/e/3003 ]
+rsyslogd: the last error occured in cfg1.testin, line 2
+rsyslogd: End of config validation run. Bye.

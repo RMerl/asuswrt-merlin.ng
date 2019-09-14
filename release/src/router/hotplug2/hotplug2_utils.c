@@ -12,6 +12,7 @@
 #include <linux/types.h>
 #include <linux/netlink.h>
 
+#include "mem_utils.h"
 #include "hotplug2_utils.h"
 
 #ifdef HND_ROUTER

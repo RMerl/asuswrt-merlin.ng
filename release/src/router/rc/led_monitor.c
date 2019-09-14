@@ -23,7 +23,7 @@
 #define link_quality_level4  70
 #endif
 
-#ifdef RPAC66
+#if  defined(RPAC51) || defined(RPAC66)
 #define link_quality_level1  0
 #define link_quality_level2  70
 #define link_quality_level3  80
@@ -35,7 +35,7 @@
 #define link_quality_level3  60
 #endif
 
-#if defined(RPAC51) || defined(RPAC55)
+#if defined(RPAC55)
 #define link_quality_level1  0
 #define link_quality_level2  35 // RSSI: -65
 #define link_quality_level3  80 // RSSI: -20
@@ -86,10 +86,10 @@ led_state_t leds[LEDS_COUNT] = {
 		.id = LED_SINGLE
 	},
 	[2] = {
-		.id = LED_FAR
+		.id = LED_NEAR
 	},
 	[3] = {
-		.id = LED_NEAR
+		.id = LED_FAR
 	},
 };
 #else /* RP-AC66 */
@@ -523,12 +523,14 @@ static void detect_conn_link_zone()
 	/* Stop detect conn link */
 	if (sw_mode != SW_MODE_REPEATER
 #ifdef RTCONFIG_REALTEK
-	&& !mediabridge_mode()
+    && !mediabridge_mode()
+#ifdef RTCONFIG_AMAS
+    && !((sw_mode == SW_MODE_AP) && nvram_match("re_mode", "1"))
+#endif
 #endif
 	   ) {// Only for repeater mode
 		return;
 	}
-
 	static int pre_link_status = -1;
 	int link_quality = 0;
 	static int band = -1;

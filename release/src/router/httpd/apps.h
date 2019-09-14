@@ -1,5 +1,8 @@
 #define APPS_LIST_ASUS "/opt/lib/ipkg/lists/optware.asus"
 #define APPS_LIST_OLEG "/opt/lib/ipkg/lists/optware.oleg"
+#ifdef RTCONFIG_APP_FILEFLEX
+#define APPS_LIST_FILEFLEX "/opt/lib/ipkg/lists/optware.qnext"
+#endif
 #define APPS_STATUS "/opt/lib/ipkg/status"
 #define APPS_INFO "/opt/lib/ipkg/info"
 #define APPS_FILE_END "\n\n"
@@ -18,6 +21,9 @@
 #define APP_OWNER_ALL "all"
 #define APP_OWNER_ASUS "asus"
 #define APP_OWNER_OLEG "oleg"
+#ifdef RTCONFIG_APP_FILEFLEX
+#define APP_OWNER_FILEFLEX "fileflex"
+#endif
 #define APP_OWNER_OTHERS "others"
 
 #define FIELD_YES "yes"

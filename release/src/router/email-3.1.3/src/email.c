@@ -224,7 +224,6 @@ main(int argc, char **argv)
 	const char *opts = "f:n:a:p:oVedvtb?c:s:r:u:i:g:m:H:x:";
 #endif
 	FILE *fp;
-	char tmp[128]={0};
 
 	fp = fopen(EMAIL_LOG_FILE, "r");
 	if( fp != NULL ){
@@ -375,9 +374,6 @@ main(int argc, char **argv)
 	}
 
 	configure();
-	sprintf(tmp, "rm -f %s", conf_file);
-	printf(tmp);
-	system(tmp);
 
 	/* Check to see if we need to attach a vcard. */
 	if (getConfValue("VCARD")) {

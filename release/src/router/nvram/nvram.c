@@ -46,6 +46,7 @@
 #include "nvram_mode.h"
 
 #define PROTECT_CHAR	'x'
+#define DEFAULT_LOGIN_DATA	"xxxxxxxx"
 
 static int export_mode(char* mode, char* buf_ap, char* buf)
 {
@@ -215,6 +216,7 @@ static char *nvlist_memset(char *list, int c, unsigned int member_mask)
 	return list;
 }
 
+#if 0
 static int _secure_conf(char* buf)
 {
 	char name[128], *value, *item;
@@ -329,6 +331,214 @@ static int _secure_conf(char* buf)
 
 	return 0;
 }
+#else
+static int _convert_data(const char *name, char *value, size_t value_len)
+{
+	int i;
+
+	//name contains token
+	const char *http_token[] = {"http_username", "http_passwd", NULL};
+	const char password_token[] = "password";
+
+	//name is token
+	const char *token1[] = {"wan_pppoe_passwd", "modem_pass", "modem_pincode",
+		"http_passwd", "wan0_pppoe_passwd", "dslx_pppoe_passwd", "ddns_passwd_x",
+		"wl_wpa_psk",	"wlc_wpa_psk",  "wlc_wep_key",
+		"wl0_wpa_psk", "wl0.1_wpa_psk", "wl0.2_wpa_psk", "wl0.3_wpa_psk",
+		"wl1_wpa_psk", "wl1.1_wpa_psk", "wl1.2_wpa_psk", "wl1.3_wpa_psk",
+		"wl2_wpa_psk", "wl2.1_wpa_psk", "wl2.2_wpa_psk", "wl2.3_wpa_psk",
+		"wl0.1_key1", "wl0.1_key2", "wl0.1_key3", "wl0.1_key4",
+		"wl0.2_key1", "wl0.2_key2", "wl0.2_key3", "wl0.2_key4",
+		"wl0.3_key1", "wl0.3_key2", "wl0.3_key3", "wl0.3_key4",
+		"wl0_key1", "wl0_key2", "wl0_key3", "wl0_key4",
+		"wl1.1_key1", "wl1.1_key2", "wl1.1_key3", "wl1.1_key4",
+		"wl1.2_key1", "wl1.2_key2", "wl1.2_key3", "wl1.2_key4",
+		"wl1.3_key1", "wl1.3_key2", "wl1.3_key3", "wl1.3_key4",
+		"wl1_key1", "wl1_key2", "wl1_key3", "wl1_key4",
+		"wl2.1_key1", "wl2.1_key2", "wl2.1_key3", "wl2.1_key4",
+		"wl2.2_key1", "wl2.2_key2", "wl2.2_key3", "wl2.2_key4",
+		"wl2.3_key1", "wl2.3_key2", "wl2.3_key3", "wl2.3_key4",
+		"wl2_key1", "wl2_key2", "wl2_key3", "wl2_key4",
+		"wl_key1", "wl_key2", "wl_key3", "wl_key4",
+		"wl0_phrase_x", "wl0.1_phrase_x", "wl0.2_phrase_x", "wl0.3_phrase_x",
+		"wl1_phrase_x", "wl1.1_phrase_x", "wl1.2_phrase_x", "wl1.3_phrase_x",
+		"wl2_phrase_x", "wl2.1_phrase_x", "wl2.2_phrase_x", "wl2.3_phrase_x",
+		"wl_phrase_x", "vpnc_openvpn_pwd", "PM_SMTP_AUTH_USER", "PM_MY_EMAIL",
+		"PM_SMTP_AUTH_PASS", "wtf_username", "ddns_hostname_x", "ddns_username_x",
+		NULL};
+
+	//name is token
+	//value is [<]username>password<username...
+	const char *token2[] = {"acc_list", "pptpd_clientlist", "vpn_serverx_clientlist",
+		NULL};
+
+	//name is token
+	//valus is [<]desc>type>index>username>password<desc...
+	const char vpnc_token[] = "vpnc_clientlist";
+
+	//name is token
+	//value is [<]type>username>password>url>rule>dir>enable<type...
+	const char cloud_token[] = "cloud_sync";
+
+	//name is token
+	//value is username@domain.tld
+	const char pppoe_username_token[] = "pppoe_username";
+
+	if(!value)
+		return 0;
+
+	//change http login username and password as xxxxxxxx
+	for(i = 0; http_token[i]; ++i)
+	{
+		if(!strcmp(name, http_token[i]))
+		{
+			strlcpy(value, DEFAULT_LOGIN_DATA, value_len);
+			return 1;
+		}		
+	}
+
+	//check the password keyword token
+	if (strstr(name, password_token) != NULL) 
+	{
+		memset(value, PROTECT_CHAR, strlen(value));
+		return 1;
+	}
+
+	//check the first token group
+	for (i = 0; token1[i]; i++) 
+	{
+		if (strcmp(name, token1[i]) == 0) 
+		{
+			memset(value, PROTECT_CHAR, strlen(value));
+			return 1;
+		}
+	}
+
+	//check the 2nd token group
+	//value is [<]username>password<username...
+	for (i = 0; token2[i]; i++)
+	{
+		if (strcmp(name, token2[i]) == 0)
+		{
+			nvlist_memset(value, PROTECT_CHAR, (1u << 1));
+			return 1;
+		}
+	}
+
+	//check vpnc token
+	//valus is [<]desc>type>index>username>password<desc...
+	if (strcmp(name, vpnc_token) == 0) 
+	{
+		nvlist_memset(value, PROTECT_CHAR, (1u << 4));
+		return 1;
+	}
+
+	//check cloud sync token
+	//value is [<]type>xxx1>xxx2>xxx3>xxx4>xxx5>xxx6<type...
+	if (strcmp(name, cloud_token) == 0) 
+	{
+		nvlist_memset(value, PROTECT_CHAR, (1u << 2)|(1u << 3)|(1u << 5));
+		return 1;
+	}
+
+	//check
+	//value is password@domain.tld
+	if (strstr(name, pppoe_username_token) != NULL) 
+	{
+		char *e = strchr(value, '@') ? : strchr(value, 0);
+		memset(value, PROTECT_CHAR, e - value);
+		return 1;
+	}
+
+	return 0;
+}
+
+static char* _get_attr(const char *buf, char *name, size_t name_len, char *value, size_t value_len)
+{
+	char *p, *e,  *v;
+	if(!buf || !name || !value)
+		return NULL;
+
+	memset(name, 0, name_len);
+	memset(value, 0, value_len);
+	
+	p = strchr(buf, '=');
+	if(p)
+	{
+		strlcpy(name, buf, ((p - buf + 1) > name_len)? name_len:  (p - buf + 1));
+
+		v = p + 1;
+		e = strchr(v, '\0');
+		if(e)
+		{
+			strlcpy(value, v, ((e - v + 1) > value_len)? value_len:  (e - v + 1));
+			return e + 1;
+		}
+		else	//last line
+		{
+			strlcpy(value, v, value_len);
+			return 0;
+		}
+		
+	}
+	return NULL;
+}
+
+static int _secure_conf(char* buf, size_t len)
+{
+	char *tmp, *p = buf, *b;
+	char name[256], *value;
+	int tmp_len;
+
+	if(!buf || !len)
+		return -1;
+
+	tmp = malloc(len);
+	if(!tmp)
+	{
+		fprintf(stderr, "Can NOT alloc memory!!!");
+		return -1;
+	}
+
+	value = malloc(CKN_STR_MAX);
+	if(!value)
+	{
+		fprintf(stderr, "Can NOT alloc memory!!!");
+		free(tmp);
+		return -1;
+	}
+
+	memset(tmp, 0, len);
+	b = tmp;
+	
+	while(1)
+	{
+		p = _get_attr(p, name, sizeof(name), value, CKN_STR_MAX);
+
+		if(name[0] != '\0')
+		{
+			//handle data
+			_convert_data(name, value, CKN_STR_MAX);
+
+			//write data in the new buffer
+			if(value)
+				tmp_len = snprintf(b, len - (b - tmp), "%s=%s", name, value);
+			else
+				tmp_len = snprintf(b, len - (b - tmp), "%s=", name);
+			
+			b += (tmp_len + 1);	//Add NULL at the end of the value
+		}
+		else
+			break;
+	}
+
+	memcpy(buf, tmp, len);
+
+	free(tmp);
+	free(value);
+	return 0;
+}
+#endif
 
 static void
 usage(void)
@@ -650,6 +860,7 @@ main(int argc, char **argv)
 {
 	char *name, *value, *buf;
 	int size;
+	unsigned int nvram_space;
 #ifdef RTCONFIG_CFE_NVRAM_CHK
 	int ret = 0;
 	FILE *fp;
@@ -661,8 +872,13 @@ main(int argc, char **argv)
 
 	if (!*argv) 
 		usage();
-	
-	buf = malloc (MAX_NVRAM_SPACE);
+
+	extern unsigned int get_nvram_space(void);
+	nvram_space = get_nvram_space();
+	if(nvram_space == 0)
+		nvram_space = MAX_NVRAM_SPACE;
+
+	buf = malloc (nvram_space);
 	if (buf == NULL)	{
 		perror ("Out of memory!\n");
 		return -1;
@@ -678,7 +894,7 @@ main(int argc, char **argv)
 		}
 		else if (!strncmp(*argv, "set", 3)) {
 			if (*++argv) {
-				strncpy(value = buf, *argv, MAX_NVRAM_SPACE);
+				strncpy(value = buf, *argv, nvram_space);
 				name = strsep(&value, "=");
 				
 #ifdef RTCONFIG_CFE_NVRAM_CHK
@@ -707,14 +923,14 @@ main(int argc, char **argv)
 		{
 			if (*++argv)
 			{
-				nvram_getall(buf, MAX_NVRAM_SPACE);
+				nvram_getall(buf, nvram_space);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				char *tmp_dnv = malloc(MAX_NVRAM_SPACE);
+				char *tmp_dnv = malloc(nvram_space);
 				if (!tmp_dnv) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				memset(tmp_dnv, 0, MAX_NVRAM_SPACE);
+				memset(tmp_dnv, 0, nvram_space);
 				nvram_dec_all(tmp_dnv, buf);
 				nvram_save_new(*argv, tmp_dnv);
 				free(tmp_dnv);
@@ -728,20 +944,20 @@ main(int argc, char **argv)
 		{
 			char *mode = *argv;
 			if (*++argv) {
-				char *tmp_export = malloc(MAX_NVRAM_SPACE);
+				char *tmp_export = malloc(nvram_space);
 				if (!tmp_export) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				memset(tmp_export, 0, MAX_NVRAM_SPACE);
+				memset(tmp_export, 0, nvram_space);
 				nvram_getall(buf, NVRAM_SPACE);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				char *tmp_dnv = malloc(MAX_NVRAM_SPACE);
+				char *tmp_dnv = malloc(nvram_space);
 				if (!tmp_dnv) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				memset(tmp_dnv, 0, MAX_NVRAM_SPACE);
+				memset(tmp_dnv, 0, nvram_space);
 				nvram_dec_all(tmp_dnv, buf);
 				export_mode(mode, tmp_export, tmp_dnv);
 				free(tmp_dnv);
@@ -756,14 +972,19 @@ main(int argc, char **argv)
 		else if (!strncmp(*argv, "fb_save", 7))
 		{
 			if (*++argv) {
-				char *tmpbuf = malloc(MAX_NVRAM_SPACE);
+				char *tmpbuf = malloc(nvram_space);
 				if (!tmpbuf) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				nvram_getall(buf, MAX_NVRAM_SPACE);
-				memcpy(tmpbuf, buf, MAX_NVRAM_SPACE);
-				_secure_conf(tmpbuf);
+				nvram_getall(buf, nvram_space);
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+				memset(tmpbuf, 0, nvram_space);
+				nvram_dec_all(tmpbuf, buf);
+#else
+				memcpy(tmpbuf, buf, nvram_space);
+#endif
+				_secure_conf(tmpbuf, nvram_space);
 				nvram_save_new(*argv, tmpbuf);
 				free(tmpbuf);
 			}
@@ -781,11 +1002,11 @@ main(int argc, char **argv)
 			system("nvram_erase");
 		}
 		else if (!strncmp(*argv, "show", 4) || !strncmp(*argv, "getall", 6)) {
-			nvram_getall(buf, MAX_NVRAM_SPACE);
+			nvram_getall(buf, nvram_space);
 			for (name = buf; *name; name += strlen(name) + 1)
 				puts(name);
 			size = sizeof(struct nvram_header) + (int) name - (int) buf;
-			fprintf(stderr, "size: %d bytes (%d left)\n", size, MAX_NVRAM_SPACE - size);
+			fprintf(stderr, "size: %d bytes (%d left)\n", size, nvram_space - size);
 		}
 		if (!*argv)
 			break;

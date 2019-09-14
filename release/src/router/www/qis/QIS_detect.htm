@@ -124,7 +124,7 @@ function getWANStatus(){
 		},
 		success: function(response){
 			parent.wan_autodet_state = autodet_state;
-			RetryCountDown_fail = 10;
+			--qtn_ready_fail_count;
 			if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 				getDualWANState();
 				if(wans_mode == 'lb'){
@@ -142,14 +142,18 @@ function getWANStatus(){
 			}
 
 			if(autodet_state == "" || autodet_state == "0" || autodet_state == "1"){
-				setTimeout('getWANStatus();', 500);
+				if(qtn_ready_fail_count < 1){
+					redirect_page("internet_type");
+				}
+				else{
+					setTimeout('getWANStatus();', 500);
+				}
 			}
 			else if( qtn_ready_t != "1" && '<% nvram_get("productid"); %>' == "RT-AC87U"){
 				if(apps_sq == '1'){
 					if(qtn_ready_fail_count < 1)
 						alert("QTN not ready");
 					else{
-						--qtn_ready_fail_count;
 						setTimeout('getWANStatus();', 500);
 					}
 				}else{

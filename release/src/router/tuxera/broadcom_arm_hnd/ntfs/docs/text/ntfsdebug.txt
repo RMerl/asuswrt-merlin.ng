@@ -30,6 +30,11 @@ EXAMPLES
 
               ntfsdebug /dev/sda1 --mem 20 | bzip2 > sda1.img.bz2
 
+       Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a
+       system with less memory and letting tool adjust memory usage:
+
+              ntfsdebug /dev/sda1 --automatic-mem | bzip2 > sda1.img.bz2
+
        Dump NTFS metadata on /dev/sda1 to a compressed metadata image but also
        collect a full NTFS Journal ($LogFile), use:
 
@@ -49,4 +54,4 @@ AVAILABILITY
 
 
 
-Tuxera NTFS Utilities 3017.7.18.4  Sept 2011                      NTFSDEBUG(8)
+Tuxera NTFS Utilities 3017.7.18.13 Sept 2011                      NTFSDEBUG(8)

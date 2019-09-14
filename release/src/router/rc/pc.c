@@ -529,7 +529,7 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 			}
 #ifdef HND_ROUTER
 			eval("fc", "flush");
-#elif RTCONFIG_BCMARM
+#elif defined(RTCONFIG_BCMARM)
 			/* TBD. ctf ipct entries cleanup. */
 #endif
 			if(follow_pc->dtimes-- > 0) 
@@ -810,12 +810,7 @@ int pc_main(int argc, char *argv[]){
 		free_pc_list(&daytime_list);
 	}
 	else if(argc == 2 && !strcmp(argv[1], "apply")){
-		char prefix[]="wanXXXXXX_", tmp[100];
 		int wan_unit = wan_primary_ifunit();
-		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
-
-		char *wan_if = get_wan_ifname(wan_unit);
-		char *wan_ip = nvram_safe_get(strcat_r(prefix, "ipaddr", tmp));
 		char *lan_if = nvram_safe_get("lan_ifname");
 		char *lan_ip = nvram_safe_get("lan_ipaddr");
 		char logaccept[32], logdrop[32];
@@ -831,7 +826,7 @@ int pc_main(int argc, char *argv[]){
 
 		match_enabled_pc_list(pc_list, &enabled_list, 1);
 
-		filter_setting(wan_if, wan_ip, lan_if, lan_ip, logaccept, logdrop);
+		filter_setting(wan_unit, lan_if, lan_ip, logaccept, logdrop);
 
 		free_pc_list(&enabled_list);
 	}

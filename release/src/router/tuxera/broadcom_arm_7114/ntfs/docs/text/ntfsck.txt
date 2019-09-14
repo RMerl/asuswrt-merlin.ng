@@ -25,10 +25,29 @@ OPTIONS
               options makes ntfsck exit immediately if the volume appears to
               be in order (no dirty flag set, logfile clean, no hibernated
               Windows session, ...), but otherwise a full repair is performed.
+              Note that volume is considered dirty if either one or more of
+              follwing is true a) dirty flag set b) logfile clean c)
+              hibernated windows volume.
 
        -c, --fast-check
               Check if volume is dirty then exit. If the volume is dirty then
-              the exit value will be 100.
+              the exit value will be 100. If used with -m/--mount-check-only
+              then also repairs any issues which prevent volume from being
+              mounted. Read the definition of dirty volume from
+              -a/--automatic-repair option.
+
+       -m, --mount-check-only
+              Check if volume can be mounted safely and if volume can be
+              mounted then exit. If volume cannot be mounted then fix it and
+              exit. Also works if used with -c/--fast-check.
+
+       -s, --simulate
+              Simulate repair of the volume. This option caches all the
+              changes made by ntfsck in memory and never writes to the device.
+              This can be done with a write-protected volume to check what
+              changes ntfsck would make if it would be able to write to it.
+              Exit value will be the same as you'd expect during a normal
+              repair.
 
        -P, --no-progress-bar
               Don't show progress bars.
@@ -41,12 +60,9 @@ OPTIONS
               Don't check for orphaned files. This option speeds up ntfsck.
 
        -M, --no-mft-scan
-              Don't scan $MFT. This option typically slows down ntfsck.
-
-       -S, --no-sync
-              Don't sync NTFS metadata before exit. This option speeds up
-              ntfsck however it's safe to use only if device is not
-              removed/ejected.
+              Don't scan $MFT.  -S, --no-sync Don't sync NTFS metadata before
+              exit. This option speeds up ntfsck however it's safe to use only
+              if device is not removed/ejected.
 
        -F, --file FILE
               Check and repair FILE only. FILE is absolute path to a file or
@@ -55,9 +71,71 @@ OPTIONS
        -i, --inode NUMBER
               Correct inode NUMBER only and its children.
 
+       -t, --timeout SECONDS
+              Timeout in seconds before ntfsck will abort the volume
+              check/repair. If specified, this sets an upper limit on the
+              execution time of ntfsck. After the timeout occurs, ntfsck will
+              clear all its pending tasks and return as soon as possible.
+              As a special case, a timeout value of 0 means that there is no
+              timeout, i.e. it is equivalent to not specifying the timeout
+              option at all.
+
        -f, --force
               This will override some sensible defaults. Use this option with
               caution.
+
+       -D, --delete-crosslinked
+              Delete cross linked clusters.
+
+       -b, --crosslinked-check
+              Run crosslinked check. Remember without this option we will see
+              cross linked messages i.e. information regarding cross linked
+              clusters will always appear in the output. It is disabled by
+              default because resolving cross-links without data loss means
+              moving clusters around which may take extra time if number of
+              cross-linked clusters is high. If ntfsck with this option is run
+              periodically then it can be switched on.
+
+       -e, --delete-crosslinked-if-no-space
+              Delete cross linked clusters in case ntfsck cannot resolve them
+              by moving to empty space.
+
+       -w, --mem NUMBER
+              Set memory limit in system (in MB). This is useful for running
+              ntfsck in systems with low memory, and when user already knows
+              the minimum available memory which should be available. Chances
+              of failure because of low memory are reduced but not entirely
+              removed. This can still result in failure if required memory at
+              certain stage in check increases, and system really has nothing
+              available at that point in time.  Chances of that happening are
+              very less though. One disadvantage of not having enough memory
+              is that for large storage devices, ntfsck would take more time
+              to run.
+
+       -u, --automatic-mem
+              Same as --mem but this time user doesn't mention available
+              memory and instead ntfsck tries to automatically detect it. Note
+              that this option also has similar limitations as mentioned in
+              --mem option above description.
+
+       -p, --playlog
+              Play NTFS Journal if volume is dirty, needs a journal replay and
+              $LogFile isn't corrupt. In case $LogFile is corrupt reset it or
+              if we encounter specification changes or un-supported actions
+              then also reset it.
+
+       -r, --replay
+              Same as --playlog but doesn't invoke fsck run after journal has
+              been played.
+
+       -B, --progress-fd
+              This option is similar to '-C fd' in e2fsck. It causes fsck to
+              write progress of ntfsck to specified file descriptor. If file
+              descriptor is negative, then progress is suppressed and can only
+              be enabled by sending SIGUSR1 signal. Once this signal arrives
+              absolute value of input is used as file descriptor. SIGUSR2
+              signal can be used to stop progress information being written to
+              file descriptor.
 
        -h, --help
               Show a list of options with a brief description of each one.
@@ -84,4 +162,5 @@ SEE ALSO
 
 
 
-Tuxera NTFS Utilities 3014.5.21  October 2012                        NTFSCK(8)
+Tuxera NTFS Utilities 3017.7.18.13
+                                 January 2017                        NTFSCK(8)

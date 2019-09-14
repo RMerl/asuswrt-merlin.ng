@@ -15,7 +15,7 @@ modem_type=`nvram get ${prefix}act_type`
 modem_vid=`nvram get ${prefix}act_vid`
 modem_pid=`nvram get ${prefix}act_pid`
 usb_gobi2=`nvram get usb_gobi2`
-dev_home=/dev
+dev_home=/sys/class/tty
 
 stop_lock=`nvram get stop_atlock`
 if [ -n "$stop_lock" ] && [ "$stop_lock" -eq "1" ]; then
@@ -28,21 +28,20 @@ fi
 _find_act_devs(){
 	act_devs=
 
-	ttyUSB_devs=`cd $dev_home && ls ttyUSB* 2>/dev/null`
-	if [ -n "$ttyUSB_devs" ]; then
-		tty_devs=`echo $ttyUSB_devs`
+	new_tty_devs=`cd $dev_home && ls -d ttyUSB* 2>/dev/null`
+	if [ -n "$new_tty_devs" ]; then
+		tty_devs=`echo $new_tty_devs`
 	fi
-	ttyACM_devs=`cd $dev_home && ls ttyACM* 2>/dev/null`
-	if [ -n "$ttyACM_devs" ]; then
-		ttyACM_devs=`echo $ttyACM_devs`
-
-		tty_devs=$tty_devs" "$ttyACM_devs
+	new_tty_devs=`cd $dev_home && ls -d ttyACM* 2>/dev/null`
+	if [ -n "$new_tty_devs" ]; then
+		tty_devs=$tty_devs" "$new_tty_devs
 	fi
 	tty_devs=`echo $tty_devs |sed 's/$/ /g' |sed 's/ $//g'`
 
 	for dev in $tty_devs; do
-		path=`nvram get usb_path_$dev`
-		if [ "$path" == "$modem_act_path" ]; then
+		path=`readlink -f $dev_home/$dev/device`
+		usb_node=`get_usb_node_by_string $path`
+		if [ "$usb_node" == "$modem_act_path" ]; then
 			if [ -n "$act_devs" ]; then
 				act_devs=$act_devs" "$dev
 			else
@@ -69,7 +68,7 @@ _find_in_out_devs(){
 			continue
 		fi
 
-		real_path=`readlink -f /sys/class/tty/$dev/device`"/.."
+		real_path=`readlink -f $dev_home/$dev/device`"/.."
 		eps=`cd $real_path && ls -d ep_* 2>/dev/null`
 		if [ -z "$eps" ]; then
 			continue
@@ -151,7 +150,7 @@ _find_int_devs(){
 			first_dev=$dev
 		fi
 
-		real_path=`readlink -f /sys/class/tty/$dev/device`"/.."
+		real_path=`readlink -f $dev_home/$dev/device`"/.."
 		eps=`cd $real_path && ls -d ep_* 2>/dev/null`
 		if [ -z "$eps" ]; then
 			continue
@@ -191,7 +190,7 @@ _find_noint_devs(){
 	noint_devs=
 
 	for dev in $1; do
-		real_path=`readlink -f /sys/class/tty/$dev/device`"/.."
+		real_path=`readlink -f $dev_home/$dev/device`"/.."
 		eps=`cd $real_path && ls -d ep_* 2>/dev/null`
 		if [ -z "$eps" ]; then
 			continue

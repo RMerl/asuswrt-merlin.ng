@@ -32,4 +32,5 @@ extern int ioctl_vp_op_get(char *buf, uint32_t tbl_len, uint32_t *tbl_used_len);
 extern int ioctl_vp_op_clear(void);
 extern int ioctl_vp_op_set(char *buf, uint32_t tbl_len);
 
+
 #endif //__UDB_VP_H__

@@ -86,27 +86,27 @@ void UnpackKey(int keytype, char *keystr, char *key1, char *key2, char *key3, ch
 {	
 	int i, j;
 	
-	if (keytype==ENCRYPTION_WEP64)	j=5;			
+	if (keytype==ENCRYPTION_WEP64)	j=5;
 	else j=13;
 	
-	sprintf(key1,"");	
-	sprintf(key2,"");		
-	sprintf(key3,"");		
-	sprintf(key4,"");			
+	strcpy(key1, "");
+	strcpy(key2, "");
+	strcpy(key3, "");
+	strcpy(key4, "");
 	for (i=0;i<j;i++)
 	{
-	    sprintf(key1, "%s%02x", key1, (unsigned char)keystr[i]);
-	    sprintf(key2, "%s%02x", key2, (unsigned char)keystr[i+16]);
-	    sprintf(key3, "%s%02x", key3, (unsigned char)keystr[i+32]);
-	    sprintf(key4, "%s%02x", key4, (unsigned char)keystr[i+48]);
+		sprintf(key1, "%s%02x", key1, (unsigned char)keystr[i]);
+		sprintf(key2, "%s%02x", key2, (unsigned char)keystr[i+16]);
+		sprintf(key3, "%s%02x", key3, (unsigned char)keystr[i+32]);
+		sprintf(key4, "%s%02x", key4, (unsigned char)keystr[i+48]);
 	}	
 }
 
 DWORD PackCmdHdr(char *pdubuf, WORD cmd, char *mac, char *password)
 {
-	IBOX_COMM_PKT_HDR_EX *hdr;	      
-						
-	hdr=(IBOX_COMM_PKT_HDR_EX *)pdubuf;     						
+	IBOX_COMM_PKT_HDR_EX *hdr;
+
+	hdr=(IBOX_COMM_PKT_HDR_EX *)pdubuf;
 	hdr->ServiceID = NET_SERVICE_ID_IBOX_INFO;
 	hdr->PacketType = NET_PACKET_TYPE_CMD;  
 	hdr->OpCode = __cpu_to_le16(cmd);
@@ -114,7 +114,7 @@ DWORD PackCmdHdr(char *pdubuf, WORD cmd, char *mac, char *password)
 	memcpy(hdr->MacAddress, mac, 6);
 	memcpy(hdr->Password, password, 32);   
 	return (hdr->Info);
-}	
+}
 
 int UnpackResHdrNoCheck(char *pdubuf)
 {

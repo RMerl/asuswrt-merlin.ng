@@ -1,0 +1,32 @@
+Grok Message Modify Plugin
+
+Using hundreds of grok patterns from logstash-patterns-core.
+
+Build
+
+This plugin requires libfastjson (always present in rsyslog core), glib2, and grok packages.
+
+If you use RH/CentOS/Fedora, you'll have to build grok rpms by yourself as follow:
+
+    sudo yum install -y yum-utils rpmdevtools
+    git clone git@github.com:jordansissel/grok.git
+    mkdir -p ~/rpmbuild/SPECS/; cp grok/grok.spec.template ~/rpmbuild/SPECS/grok.spec
+    (mkdir -p ~/rpmbuld/SOURCES/; cd ~/rpmbuild/SOURCES/; spectool -g ../SPECS/grok.spec)
+    sudo yum-builddep ~/rpmbuild/SPECS/grok.spec
+    rpmbuild -bb ~/rpmbuild/SPECS/grok.spec
+    # use yum command instead of rpm, because grok depends on libevent, pcre, tokyocabinet
+    sudo yum install -y libjson-c-devel glib2-devel ~/rpbuild/RPMS/x86_64/grok*.rpm
+
+Example
+
+module(load="mmgrok")
+template(name="tmlp" type="string" string="%$!msg!test%\n")
+action(type="mmgrok" patterndir="path/to/yourpatternsDir" match="%{WORD:test}" source="msg" target="!msg")
+action(type="omfile"  file="path/to/file" template="tmlp")
+
+Descrption
+
+patterndir: path to grok patterns dir, default: /usr/share/grok/patterns/base
+match：the pattern used to match message
+source: the source message/variable to be matched
+target: the root path to write the captured json tree

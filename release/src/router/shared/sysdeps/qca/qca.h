@@ -21,6 +21,27 @@
 
 #include "rtconfig.h"
 
+#define MAX_INI_PARM_NAME_LEN	128
+#define MAX_INI_PARM_VAL_LEN	128
+#define MAX_INI_PARM_LINE_LEN	(MAX_INI_PARM_NAME_LEN + 1 + MAX_INI_PARM_VAL_LEN + 1)
+#define GLOBAL_INI_TOPDIR	"/etc/Wireless/ini"
+#define GLOBAL_INI		GLOBAL_INI_TOPDIR "/global.ini"
+#define GLOBAL_I_INI		GLOBAL_INI_TOPDIR "/internal/global_i.ini"
+#define QCA8074_I_INI		GLOBAL_INI_TOPDIR "/internal/QCA8074_i.ini"
+#define QCA8074V2_I_INI		GLOBAL_INI_TOPDIR "/internal/QCA8074V2_i.ini"
+#define CNSS2_SYSFS_COLDBOOT	"/sys/module/cnss2/parameters/cold_boot_support"
+#define CNSS2_SYSFS_DAEMON	"/sys/module/cnss2/parameters/daemon_support"
+
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#define EXTRA_PBUF_CORE0_FN		"/proc/sys/dev/nss/n2hcfg/extra_pbuf_core0"
+#define N2H_QUEUE_LIMIT_CORE0_FN	"/proc/sys/dev.nss/n2hcfg/n2h_queue_limit_core0"
+#define N2H_QUEUE_LIMIT_CORE1_FN	"/proc/sys/dev.nss/n2hcfg/n2h_queue_limit_core1"
+#else
+#define EXTRA_PBUF_CORE0_FN		"/proc/sys/dev/nss/general/extra_pbuf_core0"
+#endif
+#define N2H_HIGH_WATER_CORE0_FN		"/proc/sys/dev/nss/n2hcfg/n2h_high_water_core0"
+#define N2H_WIFI_POOL_BUF_FN		"/proc/sys/dev/nss/n2hcfg/n2h_wifi_pool_buf"
+
 #define NAWDS_SH_FMT	"/etc/Wireless/sh/nawds_%s.sh"
 
 
@@ -43,6 +64,23 @@ extern const char WIF_60G[];
 extern const char STA_60G[];
 extern const char VPHY_60G[];
 
+extern const char *max_2g_ax_mode;
+extern const char *max_5g_ax_mode;
+extern const char *max_2g_n_mode;
+extern const char *max_5g_ac_mode;
+extern const char *bw20[2], *bw40[2], *bw80[2];
+extern const char *bw80_80_tbl[2], *bw160_tbl[2];
+
+#define SSDK_DEV_ID	"/sys/ssdk/dev_id"
+#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+#define SWID_IPQ807X    "sw0"
+#define SWID_QCA8337    "sw1"
+#endif
+
+#define QWPA_CLI		"/usr/bin/wpa_cli"		/* wpa_cli, installed by qca-hostap */
+#define QHOSTAPD_CTRL_IFACE	"/var/run/hostapd/global"	/* ctrl_interface of hostapd_athX.conf must be directory and can't use this directive. */
+#define QHOSTAPD_PID_PATH	"/var/run/hostapd_global.pid"	/* for RTCONFIG_SINGLE_HOSTAPD */
+
 #define URE	"apcli0"
 
 #ifndef ETHER_ADDR_LEN
@@ -64,6 +102,31 @@ extern const char VPHY_60G[];
 
 #define INIC_VLAN_ID_START	4 //first vlan id used for RT3352 iNIC MII
 #define INIC_VLAN_IDX_START	2 //first available index to set vlan id and its group.
+
+typedef struct _WLANCONFIG_LIST {
+	char addr[18];
+	unsigned int aid;
+	unsigned int chan;
+	char txrate[10];
+	char rxrate[10];
+	int rssi;
+	char conn_time[12];
+	char mode[31];
+	char subunit_id;	/* '0': main 2G/5G network, '1' ~ '7': Guest network (MAX_NO_MSSID = 8), 'B': Facebook Wi-Fi, 'F': Free Wi-Fi, 'C': Captive Portal */
+} WLANCONFIG_LIST;
+
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
+    defined(RTCONFIG_WIFI_QCA9994_QCA9994) || \
+    defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#define MAX_STA_NUM 512
+#else
+#define MAX_STA_NUM 256
+#endif
+
+typedef struct _WIFI_STA_TABLE {
+	int Num;
+	WLANCONFIG_LIST Entry[ MAX_STA_NUM ];
+} WIFI_STA_TABLE;
 
 // MIMO Tx parameter, ShortGI, MCS, STBC, etc.  these are fields in TXWI. Don't change this definition!!!
 typedef union  _MACHTTRANSMIT_SETTING {
@@ -278,15 +341,15 @@ enum ASUS_IOCTL_SUBCMD {
 	ASUS_SUBCMD_MAX
 };
 
-#define SPI_PARALLEL_NOR_FLASH_FACTORY_LENGTH	0x10000
 /* Below offset addresses, actually, based on start address of Flash.
  * Thus, there are absolute addresses and only valid on products
  * associated with parallel NOR Flash and SPI Flash.
  */
 
-#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
 #define ETH0_MAC_OFFSET			0x1002
 #define ETH1_MAC_OFFSET			0x5006
+
 #elif defined(RTCONFIG_SOC_IPQ8064)
 
 #if defined(BRTAC828) || defined(RTAD7200) || defined(RTAC88S)
@@ -308,24 +371,40 @@ enum ASUS_IOCTL_SUBCMD {
 #define ETH2_MAC_OFFSET			0x9006	/* 5G2 EEPROM */
 #endif
 
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#define ETH0_MAC_OFFSET			0x1014	/* 2G+5G EEPROM, second set of MAC address. */
+#define ETH1_MAC_OFFSET			0x100E	/* 2G+5G EEPROM, first set of MAC address. */
+
 #else
 #error Define MAC address offset.
 #endif
 
 #define MTD_FACTORY_BASE_ADDRESS	0x40000
-
-#define OFFSET_RFCA_COPIED		(MTD_FACTORY_BASE_ADDRESS + 0x0D00A)	/* 4 bytes */
-#define OFFSET_FORCE_USB3		(MTD_FACTORY_BASE_ADDRESS + 0x0D010)	/* 1 bytes */
 #define OFFSET_MTD_FACTORY		(MTD_FACTORY_BASE_ADDRESS + 0x00000)
-#define OFFSET_BOOT_VER			(MTD_FACTORY_BASE_ADDRESS + 0x0D18A)	/* 0x4018A -> 0x4D18A */
-#define OFFSET_COUNTRY_CODE		(MTD_FACTORY_BASE_ADDRESS + 0x0D188)	/* 0x40188 -> 0x4D188 */
-#define	FACTORY_COUNTRY_CODE_LEN	2
-#define OFFSET_RTAG			(MTD_FACTORY_BASE_ADDRESS + 0x0D19C)	/* 0x40188 -> 0x4D19C, len 4 */
-#if defined(RTAC58U)
-#define OFFSET_RTAG2			(MTD_FACTORY_BASE_ADDRESS + 0x0D1AC)	/* 4 bytes */
+
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+/* EEPROM size of QCN50x4 is up to 128KB now, may group up to 256KB,
+ * Shifts OFFSET_XXX at lease 0x40000 bytes for QCN50x4 Wi-Fi platform.
+ * Because start offset of EEPROM is 0x1000.  We mustn't define new
+ * ASUSWRT parameters in 0x40000 ~ (0x40000 + 0x1000 - 1) on QCN50X4
+ * Wi-Fi  platform.
+ */
+#define FTRY_PARM_SHIFT			(0x40000)
+#else
+#define FTRY_PARM_SHIFT			(0)
 #endif
 
-#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
+#define OFFSET_RFCA_COPIED		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D00A)	/* 4 bytes */
+#define OFFSET_FORCE_USB3		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D010)	/* 1 bytes */
+#define OFFSET_BOOT_VER			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D18A)	/* 0x4018A -> 0x4D18A */
+#define OFFSET_COUNTRY_CODE		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D188)	/* 0x40188 -> 0x4D188 */
+#define	FACTORY_COUNTRY_CODE_LEN	2
+#define OFFSET_RTAG			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D19C)	/* 0x40188 -> 0x4D19C, len 4 */
+#if defined(RTAC58U)
+#define OFFSET_RTAG2			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1AC)	/* 4 bytes */
+#endif
+
+#if defined(RTCONFIG_WIFI_QCA9557_QCA9882) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
 /* WAN: eth0
  * LAN: eth1
  * 2G: follow WAN
@@ -335,13 +414,14 @@ enum ASUS_IOCTL_SUBCMD {
 #define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)	/* FIXME: How to map 2G/5G to eth0/1? */
 #define	QCA9557_EEPROM_SIZE		1088
 #define	QCA9557_EEPROM_MAC_OFFSET	(OFFSET_MAC_ADDR_2G & 0xFFF) // 2
-#if defined(RPAC51)
+#if defined(RTCONFIG_PCIE_QCA9888)
 #define	QC98XX_EEPROM_SIZE_LARGEST	12064 // sync with driver
-#else
+#else /* RTCONFIG_PCIE_AR9888 */
 #define	QC98XX_EEPROM_SIZE_LARGEST	2116 // sync with driver
 #endif
 #define	QC98XX_EEPROM_MAC_OFFSET	(OFFSET_MAC_ADDR & 0xFFF) // 6
-#elif defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994)
+#elif defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
+      defined(RTCONFIG_WIFI_QCA9994_QCA9994)
 
 /* WAN: eth0	(FIXME)
  * LAN: eth1	(FIXME)
@@ -351,9 +431,6 @@ enum ASUS_IOCTL_SUBCMD {
 #if defined(BRTAC828) || defined(RTAD7200) || defined(RTAC88S)
 #define OFFSET_MAC_ADDR_2G		(MTD_FACTORY_BASE_ADDRESS + ETH0_MAC_OFFSET)
 #define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)
-#elif defined(RTAC88N)
-#define OFFSET_MAC_ADDR_2G		(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)
-#define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH0_MAC_OFFSET)
 #else
 #error
 #endif
@@ -368,47 +445,117 @@ enum ASUS_IOCTL_SUBCMD {
 #define	QC98XX_EEPROM_SIZE_LARGEST	12064 // sync with driver
 #define	QC98XX_EEPROM_MAC_OFFSET	(OFFSET_MAC_ADDR & 0xFFF) // 6
 
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+/* Because 2G and 5G share same EEPROM, only one MAC address is defined in EEPROM,
+ * and ath0 of GT-AXY16000 is 5G.  Save 2G MAC address at GMAC0 MAC address space, out
+ * of EEPROM, and assume MAC address in EEPROM as 5G MAC address.  2G MAC address
+ * is equal to 5G MAC address + 01:00 without carry to left byte.
+ */
+#define OFFSET_MAC_ADDR_2G		(MTD_FACTORY_BASE_ADDRESS + ETH0_MAC_OFFSET)	/* GMAC0 MAC address, out of EEPROM */
+#define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)	/* MAC address in 2G+5G EEPROM */
+#define	QCN50X4_EEPROM_SIZE		131072
+
 #else
 #error Define EEPROM offset and size
 #endif
 
-#define OFFSET_PIN_CODE			(MTD_FACTORY_BASE_ADDRESS + 0x0D180)	/* 0x40180 -> 0x4D180 */
-#define OFFSET_PSK			(MTD_FACTORY_BASE_ADDRESS + 0x0ff60)    /* 15 bytes */  
-#define OFFSET_TERRITORY_CODE		(MTD_FACTORY_BASE_ADDRESS + 0x0ff90)	/* 5 bytes, e.g., US/01, US/02, TW/01, etc. */
+
+/*
+ * Define ASUSWRT specific parameters.
+ */
+#define SPI_PARALLEL_NOR_FLASH_FACTORY_LENGTH	(0x10000 + FTRY_PARM_SHIFT)
+
+#define OFFSET_PIN_CODE			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D180)	/*  8 bytes */
 /*
  * PIB parameters of Powerline Communication (PLC)
  */
 #ifdef RTCONFIG_QCA_PLC_UTILS
-#define OFFSET_PLC_MAC			(MTD_FACTORY_BASE_ADDRESS + 0x0D18E)	// 6
-#define OFFSET_PLC_NMK			(MTD_FACTORY_BASE_ADDRESS + 0x0D194)	// 16
+#define OFFSET_PLC_MAC			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D18E)	// 6
+#define OFFSET_PLC_NMK			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D194)	// 16
 #endif
 /*
  * disable DHCP client and DHCP override during ATE
  */
 #ifdef RTCONFIG_DEFAULT_AP_MODE
-#define OFFSET_FORCE_DISABLE_DHCP	(MTD_FACTORY_BASE_ADDRESS + 0x0D1AA)	// 1
+//#define OFFSET_FORCE_DISABLE_DHCP	(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1AA)	// 1
+#define OFFSET_FORCE_DISABLE_DHCP	(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1AB)	// 1
 #endif
 
-#ifdef RTCONFIG_CFGSYNC
-#define OFFSET_DEF_GROUPID		(MTD_FACTORY_BASE_ADDRESS + 0x0D1B0)	// CFGSYNC_GROUPID_LEN (32 bytes)
+#ifdef RTCONFIG_AMAS
+#define OFFSET_AMAS_BUNDLE_FLAG		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1AB)	// 1
+#define OFFSET_DEF_GROUPID		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1B0)  // reserved for CFGSYNC_GROUPID_LEN (32 bytes)
+#define OFFSET_AMAS_BUNDLE_KEY		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1D0)	// 32 bytes, same as groupkey
 #endif
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) /* for Lyra */
-#define OFFSET_DISABLE_WIFI_DRV		(MTD_FACTORY_BASE_ADDRESS + 0x0D1F2)	// 1 byte
+#if defined(RTCONFIG_WIFI_DRV_DISABLE) || defined(MAPAC2200V) /* for IPQ40XX */
+#define OFFSET_DISABLE_WIFI_DRV		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1F2)	// 1 byte
 #endif
 
-#define OFFSET_IPADDR_LAN               (MTD_FACTORY_BASE_ADDRESS + 0x0D1F4) 
+#if defined(RTCONFIG_CSR8811)
+#define OFFSET_CSR8811_MAC		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1F3)	// 6 byte
+#define OFFSET_CSR8811_CAL		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D1F9)	// 1 byte
+#endif
 
+#if defined(MAPAC2200V)
+#define OFFSET_SPEAKER_VER		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0D208)	// 1 byte
+#define OFFSET_CERT_PEM			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0A200)    // 4096 byte
+#define OFFSET_CERT_KEY			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0B200)	// 4096 byte
+#endif
 
-#define OFFSET_DEV_FLAGS		(MTD_FACTORY_BASE_ADDRESS + 0x0ffa0)	//device dependent flags
+#define OFFSET_IPADDR_LAN               (MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FEF0)
+
+#define OFFSET_HWID			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF00)  /*  4 bytes */
+#define HWID_LENGTH			(4)
+#define OFFSET_HWVERSION		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF10)  /*  8 bytes */
+#define HWVERSION_LENGTH		(8)
+#define OFFSET_DATECODE			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF18)  /*  8 bytes */
+#define DATECODE_LENGTH			(8)
+#define OFFSET_HWBOM			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF20)  /* 32 bytes */
+#define HWBOM_LENGTH			(32)
+
+#define OFFSET_PSK			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF60)  /* 15 bytes */
 #ifdef RTCONFIG_32BYTES_ODMPID
-#define OFFSET_32BYTES_ODMPID		(MTD_FACTORY_BASE_ADDRESS + 0x0ff70)	/* 32 bytes */
+#define OFFSET_32BYTES_ODMPID		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF70)	/* 32 bytes */
 #endif
-#define OFFSET_ODMPID			(MTD_FACTORY_BASE_ADDRESS + 0x0ffb0)	//the shown model name (for Bestbuy and others)
-#define OFFSET_FAIL_RET			(MTD_FACTORY_BASE_ADDRESS + 0x0ffc0)
-#define OFFSET_FAIL_BOOT_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffd0)	//bit operation for max 100
-#define OFFSET_FAIL_DEV_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffe0)	//bit operation for max 100
-#define OFFSET_SERIAL_NUMBER		(MTD_FACTORY_BASE_ADDRESS + 0x0fff0)
+#define OFFSET_TERRITORY_CODE		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FF90)	/*  5 bytes, e.g., US/01, US/02, TW/01, etc. */
+#define OFFSET_DEV_FLAGS		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFA0)	//device dependent flags
+#define OFFSET_ODMPID			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFB0)	//the shown model name (for Bestbuy and others)
+#define OFFSET_FAIL_RET			(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFC0)
+#define OFFSET_FAIL_BOOT_LOG		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFD0)	//bit operation for max 100
+#define OFFSET_FAIL_DEV_LOG		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFE0)	//bit operation for max 100
+#define OFFSET_SERIAL_NUMBER		(MTD_FACTORY_BASE_ADDRESS + FTRY_PARM_SHIFT + 0x0FFF0)
+
+/*
+ * EEPROM definitions of each band.
+ */
+#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
+#define QCA_5G_EEPROM_CSUM_OFFSET	(2)
+#define QCA_5G_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+
+#elif defined(RTCONFIG_SOC_IPQ8064)
+
+#define QCA_2G_EEPROM_CSUM_OFFSET	(2)
+#define QCA_5G_EEPROM_CSUM_OFFSET	(2)
+#define QCA_2G_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+#define QCA_5G_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+
+#elif defined(RTCONFIG_SOC_IPQ40XX)
+
+#define QCA_2G_EEPROM_CSUM_OFFSET	(0x2)
+#define QCA_5G_EEPROM_CSUM_OFFSET	(0x2)
+#define QCA_5G2_EEPROM_CSUM_OFFSET	(0x2)
+#define QCA_2G_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+#define QCA_5G_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+#define QCA_5G2_EEPROM_SIZE		(QC98XX_EEPROM_SIZE_LARGEST)
+
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+
+#define QCA_2G_EEPROM_CSUM_OFFSET	(0xa)
+#define QCA_5G_EEPROM_CSUM_OFFSET	(0xa)
+#define QCA_2G_EEPROM_SIZE		(QCN50X4_EEPROM_SIZE)
+#define QCA_5G_EEPROM_SIZE		(QCN50X4_EEPROM_SIZE)
+
+#endif
 
 /*
  * LED/Button GPIO# definitions
@@ -432,9 +579,13 @@ enum ASUS_IOCTL_SUBCMD {
 /*
  * interface of CPU to LAN
  */
-#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA956X)
+#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
+#if defined(RTN19)
+#define MII_IFNAME	"eth1"
+#else
 #define MII_IFNAME	"eth0"
-#elif defined(RTCONFIG_SOC_IPQ8064)
+#endif
+#elif defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 #define MII_IFNAME	"switch0"
 #elif defined(RTCONFIG_QCA953X) || defined(RTCONFIG_SOC_IPQ40XX)
 #define MII_IFNAME	"eth1"
@@ -448,8 +599,8 @@ unsigned long task_mask;
 extern int switch_init(void);
 extern void switch_fini(void);
 extern int wl_ioctl(const char *ifname, int cmd, struct iwreq *pwrq);
-extern int qc98xx_verify_checksum(void *eeprom);
-extern int calc_qca_eeprom_csum(void *ptr, unsigned int eeprom_size);
+extern int verify_qca_eeprom_csum(void *eeprom, unsigned int eeprom_length);
+extern int calc_qca_eeprom_csum(void *ptr, unsigned int eeprom_size, unsigned int eeprom_csum_offset);
 #if defined(RTAC58U)
 extern int check_mid(char *mid);
 #endif
@@ -457,6 +608,8 @@ extern int check_mid(char *mid);
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || \
     defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 #define MAX_NR_SWITCH_PORTS	8
+#elif defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+#define MAX_NR_SWITCH_PORTS	11
 #else
 #define MAX_NR_SWITCH_PORTS	5
 #endif
@@ -465,13 +618,22 @@ typedef struct {
 	unsigned int speed[MAX_NR_SWITCH_PORTS];
 } phyState;
 
-#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994)
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
+    defined(RTCONFIG_WIFI_QCA9994_QCA9994)
 #define BD_2G_PREFIX	"boardData_QCA9984_CUS260_2G_"
 #define BD_5G_PREFIX	"boardData_QCA9984_CUS239_5G_"
 #define BD_2G_CHIP_DIR	"QCA9984"
 #define BD_2G_HW_DIR	"hw.1"
 #define BD_5G_CHIP_DIR	"QCA9984"
 #define BD_5G_HW_DIR	"hw.1"
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+/* 2G and 5G share same boarddata. */
+#define BD_2G_PREFIX	"bdwlan"
+#define BD_2G_CHIP_DIR	"IPQ8074"
+#define BD_2G_HW_DIR	"."
+#define BD_5G_PREFIX	BD_2G_PREFIX
+#define BD_5G_CHIP_DIR	BD_2G_CHIP_DIR
+#define BD_5G_HW_DIR	BD_2G_HW_DIR
 #elif defined(RTAC58U) || defined(VZWAC1300) || defined(RT4GAC53U)
 #define BD_2G_PREFIX	"boardData_1_0_IPQ4019_Y9803_wifi0"
 #define BD_5G_PREFIX	"boardData_1_0_IPQ4019_Y9803_wifi1"
@@ -493,7 +655,7 @@ typedef struct {
 #define BD_2G_HW_DIR	"hw.1"
 #define BD_5G_CHIP_DIR	"IPQ4019"
 #define BD_5G_HW_DIR	"hw.1"
-#elif defined(MAPAC2200) || defined(RTAC92U)
+#elif defined(MAPAC2200)
 #define BD_2G_PREFIX	"boardData_1_0_IPQ4019_DK04_2G"
 #define BD_5G_PREFIX	"boardData_1_0_IPQ4019_DK04_5G"
 #define BD_5G2_PREFIX	"boardData_2_0_QCA9888_5G_Y9484"
@@ -503,6 +665,20 @@ typedef struct {
 #define BD_5G_HW_DIR	"hw.1"
 #define BD_5G2_CHIP_DIR	"QCA9888"
 #define BD_5G2_HW_DIR	"hw.2"
+#elif defined(RTAC95U)
+#define BD_2G_PREFIX	"boardData_1_0_IPQ4019_DK04_2G"
+#define BD_5G_PREFIX	"boardData_1_0_IPQ4019_DK04_5G"
+#define BD_5G2_PREFIX	"boardData_QCA9984_CUS239_high_band_5G_v1_006"
+#define BD_2G_CHIP_DIR	"IPQ4019"
+#define BD_2G_HW_DIR	"hw.1"
+#define BD_5G_CHIP_DIR	"IPQ4019"
+#define BD_5G_HW_DIR	"hw.1"
+#define BD_5G2_CHIP_DIR	"QCA9984"
+#define BD_5G2_HW_DIR	"hw.1"
+#elif defined(RTAC59U)
+#define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_Y9690"
+#define BD_5G_CHIP_DIR	"QCA9888"
+#define BD_5G_HW_DIR	"hw.2"
 #elif defined(RPAC51)
 #define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_Y9484"
 #define BD_5G_CHIP_DIR	"QCA9888"
@@ -515,12 +691,26 @@ typedef struct {
 #define	QCA_DELMAC	"delmac"
 #define	QCA_GETMAC	"getmac"
 
-#define QCA_DEFAULT_NOISE_FLOOR (-96)	/* via QCA case #03626623 */
-
 #if defined(RTCONFIG_LYRA_5G_SWAP)
 extern int swap_5g_band(int band);
 #else
 #define swap_5g_band(b) (b)
+#endif
+
+/* qca.c */
+extern unsigned char get_soc_version_major(void);
+extern int get_parameter_from_ini_file(const char *param_name, char *param_val, size_t param_val_size, const char *ini_fn);
+extern int get_integer_parameter_from_ini_file(const char *param_name, int *param_val, const char *ini_fn);
+extern int get_channf(int band, const char *ifname);
+extern int __get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, int (*handler)(const WLANCONFIG_LIST *rptr, void *arg), void *arg);
+extern int get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, WIFI_STA_TABLE *sta_info);
+
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) \
+ || defined(RTCONFIG_WIFI_QCA9994_QCA9994) \
+ || defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+extern int nss_wifi_offloading(void);
+#else
+static inline int nss_wifi_offloading(void) { return 0; }
 #endif
 
 #endif	/* _QCA_H_ */

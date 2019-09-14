@@ -17,8 +17,8 @@ extern void cm_updateChanspec(char *msg);
 extern void cm_removeChanspecByMac(char *mac);
 extern int cm_getChanspec(json_object *chanspecObj, int check);
 extern void cm_updatePrivateChanspec();
-extern int cm_loadPrivateChannel(chinfo_t *avblChannel, int channelCount);
-extern int cm_isValidChannel(int channel);
+extern int cm_loadPrivateChannel(int unit, chinfo_t *avblChannel, int channelCount);
+extern int cm_isValidChannel(int unit, int channel);
 extern void cm_resetChanspec();
 extern int cm_checkBwCapability(int unit, int *bwCap, int *nctrlsbCap, int *bwRe, int *nctrlsbRe);
 

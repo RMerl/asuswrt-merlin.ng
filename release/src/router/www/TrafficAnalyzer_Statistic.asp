@@ -25,6 +25,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
+*{
+	box-sizing: content-box;
+}
 #holder {
     height: 330px;
     left: 50%;
@@ -1533,7 +1536,7 @@ function updateTrafficAnalyzer() {
 }
 </script>
 </head>
-<body onload="initial();" onunload="unload_body();">
+<body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <div id="agreement_panel" class="eula_panel_container"></div>
@@ -1629,7 +1632,7 @@ function updateTrafficAnalyzer() {
 																		<div style="font-size:16px;"><#Statistic_display_type#>:</div>
 																	</td>
 																	<td>
-																		<div id="router" style="width:100px;text-align:center;font-size:14px;border-radius:5px" class="block_filter_pressed" onclick="switch_content(this);">Clients</div>
+																		<div id="router" style="width:100px;text-align:center;font-size:14px;border-radius:5px" class="block_filter_pressed" onclick="switch_content(this);"><#Permission_Management_Devices#></div>
 																	</td>
 																	<td>
 																		<div id="apps" style="width:100px;text-align:center;font-size:14px;border-radius:5px" class="block_filter" onclick="switch_content(this);"><#Apps#></div>

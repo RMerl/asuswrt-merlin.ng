@@ -75,7 +75,6 @@
 	background-repeat: no-repeat;
 	border-radius: 3px;
 	position:absolute;
-	top:126px;
 	z-index:1;
 	width:760px; 
 	height:800px; 
@@ -276,10 +275,9 @@ function initial(){
 	if( sVer!= -1 || rv == 11)
   		document.getElementById("pull_arrow").style.marginLeft = "-4px";
 
-  	if(based_modelid === "GT-AC5300" || based_modelid == "GT-AC9600"){ 
+	if(rog_support){
   		$("#goBackBtn").hide();
   		$("#goBackBtn_M").hide();
-  		document.getElementById("WTFast_login_div").style.top = "150px";
   	}
 
 	var Newstr = document.getElementById("benefit3").innerHTML.replace(/, Console game/, "");
@@ -1007,7 +1005,7 @@ function clean_macerr(){
 </script>
 </head>
 
-<body onload="initial();">
+<body onload="initial();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>

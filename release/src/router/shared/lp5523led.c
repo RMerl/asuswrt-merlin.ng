@@ -38,6 +38,16 @@
 static const char lp55xx_path[] = "/sys/class/leds/blue1/device/";
 static int brightness = 100;
 static int max_unit = 0;
+#if defined(RTAC95U)
+static char led_red[]	="000000001";
+static char led_green[]	="000010000";
+static char led_blue[]	="000001000";
+#else
+static char led_red[]	="000000111";
+static char led_green[]	="000111000";
+static char led_blue[]	="111000000";
+#endif
+
 
 //	Voltage of LEDS
 struct lp55xx_leds_pattern lp55xx_leds_col[] = {
@@ -275,17 +285,17 @@ void lp55xx_set_pattern_led(int col_mode, int beh_mode)
 			if (i==LP55XX_ENGINE_1)
 			{
 				engine_save(i, "load", tmp1);
-				engine_save(i, "leds", "111000000");
+				engine_save(i, "leds", led_blue);
 			}
 			else if (i==LP55XX_ENGINE_2)
 			{
 				engine_save(i, "load", tmp2);
-				engine_save(i, "leds", "000111000");
+				engine_save(i, "leds", led_green);
 			}
 			else
 			{
 				engine_save(i, "load", tmp3);
-				engine_save(i, "leds", "000000111");
+				engine_save(i, "leds", led_red);
 			}
 		}
 	}
@@ -351,7 +361,6 @@ void lp55xx_leds_proc(int col_mode, int beh_mode)
 		default:
 			nvram_set_int("lp55xx_lp5523_col", col_mode);
 			nvram_set_int("lp55xx_lp5523_beh", beh_mode_tmp);
-			nvram_commit();
 			break;
 	}
 

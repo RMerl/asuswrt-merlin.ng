@@ -1,0 +1,178 @@
+/* font family collection */
+.triLv-level, .triLv-step{
+    font-family: ROG;
+}
+.triLv-desc, .border2-title-desc, .content-desc-title{
+    font-family: Xolonium;
+}
+.content-detail, .content-desc, .gameBoost-enable-desc{
+    font-family: Roboto;
+}
+/* End font family collection */
+.triLv-level, .triLv-step{
+    color:#FF8C00;
+}
+.triLv-desc, .content-desc-title{
+    color:#E64100;
+}
+.title-content, .border2-title-desc{
+    color:#DFDFDF;
+}
+.content-detail a{
+    color:#4A90E2;
+}
+.content-desc{
+    color:#BBC5D5;
+}
+.gameBoost-enable-desc{
+    color:#7F8FA4;
+}
+/* End color collection */
+.border1-container, .border2-container{
+    width: 756px;
+}
+.border1-container{  
+    height: 418px;
+    background-image: url('../images/triLvGameAcceleration/triLv_main_bg.png');
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.border1-modelProduct, .Game-Packet-Pri-modelProduct{
+    background-image: url('../images/Model_product.png');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: 50%;
+    position: absolute;
+}
+
+.border1-modelProduct{
+    width: 180px;
+    height: 180px;
+    left: 320px;
+    top: 135px;
+}
+.border1-LV-container{
+    margin-top: 200px;
+}
+.triLv-container{
+    margin: 0 12px 0 32px;
+}
+.triLv-level, .triLv-step{
+    background: -webkit-linear-gradient(#ff8c00 50%, #f90000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.triLv-level{
+    width: 48px;
+    font-size: 16px;
+    text-align: center;
+    margin-bottom: 4px;
+}
+.triLv-border{
+    width: 38px;
+    height: 38px;
+    background-image: url('../images/triLvGameAcceleration/triLv_frame.svg');
+    background-repeat: no-repeat;
+    background-size: 100%;
+}
+.triLv-step{
+    font-size: 48px;
+    margin-top: -34px;
+}
+.triLv-desc{
+    width: 148px;
+    font-size: 18px;
+    margin: 12px 0 0 6px;
+}
+
+.card-boder{
+    border: 1px solid #232426;
+    border-radius: 4px;
+    margin: 18px 15px 18px 24px;
+    padding-bottom: 12px;
+}
+
+.border2-title{
+    margin: 0 24px 0 32px;
+}
+.border2-title-container{
+    width: 100%;
+    margin: 18px 24px 10px 0 !important;
+}
+.border2-title-desc{
+    font-size: 24px !important;
+    margin: -12px 0 0 18px !important;
+}
+.content-image-container{
+    width: 180px;
+    height: 125px;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    margin: 12px 0 0 24px;
+    position: relative;
+}
+.ROG-D-Opt-image{
+    background-image: url('../images/triLvGameAcceleration/triLv1.png');
+}
+.Game-D-device-image{
+    background-image: url('../images/triLvGameAcceleration/triLv1_device.png');
+}
+.Game-Packet-Pri-iamge{
+    background-image: url('../images/triLvGameAcceleration/triLv2.png');
+}
+.Game-Packet-Pri-modelProduct{
+    width: 110px;
+    height: 110px;
+    top: 20px;
+    left: 60px;
+}
+.Game-wtfast-image{
+    background-image: url('../images/triLvGameAcceleration/triLv3_wtfast.png');
+}
+.Game-uu-image{
+    background-image: url('../images/uu_accelerator.png');
+}
+.content-divide-line, .content-divide-line-sm{
+    width: 1px;
+    margin: 0 8px;
+}
+.content-divide-line{
+    height: 131px;
+    background-color:#232426;
+}
+.content-divide-line-sm{
+    height: 12px;
+    background-color:#55585d;
+}
+.content-desc-container{
+    width: 305px;
+    margin: 24px 0 12px 12px;
+}
+.content-desc-title{
+    font-size: 16px;
+    width: 80%;
+}
+.content-detail{
+    font-size: 12px;    
+}
+.content-desc{
+    font-size: 12px;
+    margin-top: 12px;
+    line-height: 18px;
+}
+.content-action-container{
+    margin: 0 auto;
+}
+.button-container-sm{
+    padding: 12px 24px;
+}
+.button-container-sm .button-text{
+    font-size: 12px;
+}
+.gameBoost-enable-desc{
+    font-size:12px;
+    margin: 8px 0;
+}
+.gameBoost-enable-offset{
+    margin: 12px 0 12px 65px !important;
+}

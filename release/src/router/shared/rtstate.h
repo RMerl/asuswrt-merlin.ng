@@ -294,6 +294,7 @@ enum {
 #define WANSCAP_5G	0x10
 #define WANSCAP_USB	0x20
 #define WANSCAP_WAN2	0x40
+#define WANSCAP_SFPP	0x80	/* SFP+ */
 
 // the following definition is for wans_dualwan
 #define WANS_DUALWAN_IF_NONE    0
@@ -305,9 +306,10 @@ enum {
 #define WANS_DUALWAN_IF_5G      6
 #define WANS_DUALWAN_IF_WAN2	7
 #define WANS_DUALWAN_IF_USB2    8
+#define WANS_DUALWAN_IF_SFPP	9
 
 // the following definition is for free_caches()
-#define FREE_MEM_NONE  "0"
+#define FREE_MEM_NONE  "0"	/* kernel < v2.6.39 */
 #define FREE_MEM_PAGE  "1"
 #define FREE_MEM_INODE "2"
 #define FREE_MEM_ALL   "3"
@@ -353,7 +355,6 @@ extern char *get_wan6_ifname(int unit);
 #endif
 extern int get_ports_status(unsigned int port_status);
 extern int get_wanports_status(int wan_unit);
-extern char *get_usb_xhci_port(int port);
 extern char *get_usb_ehci_port(int port);
 extern char *get_usb_ohci_port(int port);
 extern int get_usb_port_number(const char *usb_port);
@@ -364,9 +365,9 @@ extern void add_wanscap_support(char *feature);
 extern int get_wans_dualwan(void);
 extern int get_dualwan_by_unit(int unit);
 extern int get_wanunit_by_type(int wan_type);
+extern char *get_wantype_str_by_unit(int unit);
 extern int get_dualwan_primary(void);
 extern int get_dualwan_secondary(void);
-extern int get_gate_num(void);
 #else
 static inline int get_wanunit_by_type(int wan_type){
 #ifdef RTCONFIG_USB_MODEM

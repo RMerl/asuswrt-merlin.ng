@@ -16,7 +16,7 @@ body{
 	font-family: Arial;
 }
 .wrapper{
-	background:url(images/New_ui/login_bg.png) #283437 no-repeat;
+	background:url(images/New_ui/login_bg.png) #1F1F1F no-repeat;
 	background-size: 1280px 1076px;
 	background-position: center 0%;
 	margin: 0px; 
@@ -342,9 +342,9 @@ function show_information(){
 		document.getElementById('go_btn').style.display = "";
 	}
 	else if(target_info.category_type == "Home Protection"){
-		code_title = "<div class='er_title' style='height:auto;'>Warning! The website contains malware. Visiting this site may harm your computer</div>"//untranslated string
+		code_title = "<div class='er_title' style='height:auto;'><#block_HP_Title#></div>";
 		code_suggestion = "<ul>";
-		code_suggestion += "<li>If you are a manager and consider to disable this protection, please go to Home Protection page for configuration.</li>";//untranslated string
+		code_suggestion += "<li><#block_HP_suggest1#></li>";
 		code_suggestion += '<li><#AiProtection_sites_report_desc#><a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank"><#AiProtection_sites_report_tm#></a></li>';
 		code_suggestion += "</ul>";
 		document.getElementById('tm_block').style.display = "";
@@ -354,16 +354,16 @@ function show_information(){
 		document.getElementById('go_btn').style.display = "";
 	}
 	else if(flag != ""){
-		code_title = "<div class='er_title' style='height:auto;'>You failed to access to the web page that you want to view.</div>"//untranslated string
-		document.getElementById('main_reason').innerHTML = "Reason for failed connection";		
+		code_title = "<div class='er_title' style='height:auto;'><#web_redirect_message#></div>";
+		document.getElementById('main_reason').innerHTML = "<#web_redirect_fail_reason0#>";		
 		code = "";
-		code += "<div>The total traffic reaches limited. Internet connection was cut off temporarily.</div>";
+		code += "<div><#web_redirect_reason_limited#></div>";
 	
 		document.getElementById('detail_info').innerHTML = code;
 
 		code_suggestion = "<ul>";
-		code_suggestion += "<li><span>Disable cut-off Internet function in traffic limiter to restore Internet connection.</span></li>";//untranslated string
-		code_suggestion += "<li><span>Raise max value of cut-off Internet.</span></li>";		//untranslated string
+		code_suggestion += "<li><span><#web_redirect_reason_limited_1#></span></li>";
+		code_suggestion += "<li><span><#web_redirect_reason_limited_2#></span></li>";
 		code_suggestion += "</ul>";		
 		
 		$("#go_btn").click(function(){
@@ -420,8 +420,7 @@ function show_information(){
 				<div id="case_content"></div>
 				<div id="suggestion"></div>
 				<div id="tm_block" style="display:none">
-					<div>For more completed security protection for your endpoint sides, Trend Micro offers you a more advanced home security solution. Please click the <a href="http://bit.do/bcLqZ" target="_blank">download</a> link for the free trial or <a href="http://www.trendmicro.com" target="_blank">visit the site</a> online scan service.</div>
-					<!--untranslated string-->
+					<div><#block_HP_suggest2#></div>
 					<div class="tm_logo"></div>
 				</div>
 			</div>

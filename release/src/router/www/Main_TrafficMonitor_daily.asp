@@ -222,7 +222,7 @@ function draw_chart(){
 </script>
 </head>
 
-<body onload="init();" >
+<body onload="init();" class="bg">
 
 <div id="TopBanner"></div>
 

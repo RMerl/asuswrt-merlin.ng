@@ -565,7 +565,9 @@ exit___config_swports_bled:
  */
 int update_swports_bled(const char *led_gpio, unsigned int port_mask)
 {
-	int gpio_nr, fd, r;
+	const char *iface;
+	int gpio_nr, fd, r, i, vport, found;
+	unsigned int m;
 	struct swport_bled sl;
 	struct bled_common *bl = &sl.bled;
 
@@ -583,9 +585,45 @@ int update_swports_bled(const char *led_gpio, unsigned int port_mask)
 		return -4;
 	}
 
+	/* Get old swports bled settings */
 	memset(&sl, 0, sizeof(sl));
 	bl->gpio_nr = gpio_nr;
-	sl.port_mask = port_mask;
+	if ((r = ioctl(fd, BLED_CTL_GET_SWPORTS_SETTINGS, &sl)) < 0) {
+		_dprintf("%s: ioctl(BLED_CTL_GET_SWPORTS_SETTINGS) fail, return %d errno %d (%s)\n",
+			__func__, r, errno, strerror(errno));
+	} else {
+		/* Find interface backed virtual ports.
+		 * If found, remove it from port_mask and add/remove interface to/from bled
+		 * based on it is used or not.
+		 */
+		for (vport = 0, m = port_mask ; m > 0 ; vport++, m >>= 1) {
+			if (!(iface = vport_to_iface_name(vport)))
+				continue;
+
+			port_mask &= ~(1U << vport);
+			for (found = 0, i = 0; !found && i < sl.nr_if; ++i) {
+				if (strcmp(iface, sl.ifname[i]))
+					continue;
+				found = 1;
+			}
+
+			if (m & 1) {
+				/* add interface to bled. */
+				if (found)
+					continue;
+				append_netdev_bled_if(led_gpio, iface);
+			} else {
+				/* remove interface from bled. */
+				if (!found)
+					continue;
+				remove_netdev_bled_if(led_gpio, iface);
+			}
+		}
+	}
+
+	memset(&sl, 0, sizeof(sl));
+	bl->gpio_nr = gpio_nr;
+	sl.port_mask = vportmask_to_rportmask(port_mask);
 
 	if ((r = ioctl(fd, BLED_CTL_UPD_SWPORTS_MASK, &sl)) < 0) {
 		_dprintf("%s: ioctl(BLED_CTL_UPD_SWPORTS_MASK) fail, return %d errno %d (%s)\n",

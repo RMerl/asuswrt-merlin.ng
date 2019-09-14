@@ -1156,7 +1156,7 @@ eprintf("------------ try %d ---\n", try);
 		}
 
 		retval = select(max_fd + 1, &rfds, NULL, NULL, &tv);
-eprintf("--- %s(%s): tv(%d.%06d) retval(%d) ---\n", __func__, wan_ifNames, tv.tv_sec, tv.tv_usec, retval);
+eprintf("--- %s(%s): tv(%lu.%06lu) retval(%d) ---\n", __func__, wan_ifNames, tv.tv_sec, tv.tv_usec, retval);
 
 
 		if (retval == -1) {

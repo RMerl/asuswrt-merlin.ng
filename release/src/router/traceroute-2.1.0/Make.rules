@@ -153,11 +153,16 @@ LIBDEPS = $(filter-out -L%,$(LIBS))
 
 ## Carlos 2016/10/27
 ifneq ($(HND_ROUTER),y)
+__GNUC__ := $(shell $(CROSS_COMPILE)gcc -dumpversion | cut -d '.' -f 1)
+__GNUC__GT_5 := $(shell echo $(__GNUC__) \>= 5 | bc)
+ifeq ($(__GNUC__GT_5),1)
+CFLAGS += -DAI_FLAGS
+else
 ## For fix mod-dccp.c:180: error: 'SOCK_DCCP' undeclared (first use in this function)
 ## If not help, try to just remove the mod-dccp.c file from the source 
 ## (no other changes needed) to drop DCCP support.
-
 CFLAGS += -D_GNU_SOURCE -DIPPROTO_ICCP=33 -DSOCK_DCCP=6
+endif
 
 else
 ## For fix 

@@ -425,7 +425,7 @@ function isMobile() {
 }
 </script>
 </head>
-<body onload="initial();" id='splash_body' class='splash_body' >
+<body onload="initial();" id='splash_body' class='splash_body bg' >
 <div id='terms_service' class='terms_service'></div>
 <div id='splash_template_bg' class='splash_template_bg'>
 	<div id='splash_template_content' class='splash_template_content'>

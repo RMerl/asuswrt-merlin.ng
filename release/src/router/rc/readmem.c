@@ -32,6 +32,7 @@ static unsigned long limit_length(unsigned long addr, unsigned long len)
 		unsigned long first_addr;
 		unsigned long last_addr;
 	} region_tbl[] = {
+#if defined(RTCONFIG_SOC_QCA9557)
 		{ 0x18000000, 0x1800015C },
 		{ 0x18018000, 0x18018080 },
 		{ 0x18020000, 0x18020018 },
@@ -72,6 +73,7 @@ static unsigned long limit_length(unsigned long addr, unsigned long len)
 		{ 0x18116200, 0x18116208 },
 		{ 0x18116240, 0x18116248 },
 		{ 0x18116C00, 0x18116C08 },
+#endif
 
 		{ 0, 0 },
 	}, *p;
@@ -143,6 +145,8 @@ int get_var(unsigned long addr, int len, int unit)
 	ret = munmap(map, PAGE_SIZE);
 	if (ret)
 		printf("munmap() return %d errno %d(%s)\n", ret, errno, strerror(errno));
+
+	close(kfd);
 
 	return 0;
 }

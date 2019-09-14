@@ -96,18 +96,6 @@ function add_lanport_number(if_name)
 				return "lan" + "6";
 		}
 	}
-	else if(based_modelid == "AC2900"){
-		if(if_name == "lan"){
-			if(wans_lanport == "4")
-				return "lan" + "1";
-			if(wans_lanport == "3")
-				return "lan" + "2";
-			if(wans_lanport == "2")
-				return "lan" + "3";
-			if(wans_lanport == "1")
-				return "lan" + "4";
-		}
-	}
 	else if (if_name == "lan") {
 		return "lan" + wans_lanport;
 	}
@@ -145,6 +133,17 @@ function initial(){
 		sec_if = add_lanport_number(sec_if);
 		pri_if = pri_if.toUpperCase();
 		sec_if = sec_if.toUpperCase();
+
+		if(based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U"){
+			if(pri_if == "WAN2")
+				pri_if = "10G base-T";
+			else if(pri_if == "SFP+")
+				pri_if = "10G SFP+";
+			if(sec_if == "WAN2")
+				sec_if = "10G base-T";
+			else if(sec_if == "SFP+")
+				sec_if = "10G SFP+";
+		}
 
 		if(sec_if != 'NONE'){
 			document.getElementById("dualwan_row_main").style.display = "";	
@@ -190,7 +189,7 @@ function initial(){
 				document.getElementById("goDualWANSetting").style.display = "none";
 				document.getElementById("dualwan_enable_button").style.display = "none";
 			}			
-			else if(parent.document.form.dual_wan_flag.value == 0){
+			else if(parent.document.form.dual_wan_flag.value == 0 && wans_caps != "wan lan"){
 				document.getElementById("goDualWANSetting").style.display = "none";
 				document.getElementById("dualwan_enable_button").style.display = "";
 			}

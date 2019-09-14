@@ -1,6 +1,10 @@
 
 mainmenu "Router Configuration"
 
+config RTCONFIG_FW_JUMP
+	bool "build the jumped firmware"
+	default n
+
 config RTCONFIG_REALTEK
 	bool "Realtek SoC support"
 	default n
@@ -20,6 +24,10 @@ config RTCONFIG_RTK_NAND
 config RTCONFIG_OPTIMIZE_SHARED_LIBS
 	bool "Optimize shared libraries (remove unused symbols)"
 	default y
+
+config RTCONFIG_MUSL_LIBC
+	bool "MUSL libc"
+	default n
 
 config RTCONFIG_L2TP
 	bool "L2TP"
@@ -69,9 +77,9 @@ config RTCONFIG_HND_ROUTER
 	bool "Bcm hnd bsp"
 	default n
 
-config RTCONFIG_HNDMFG
-	bool "HND MFG mode"
-	depends on RTCONFIG_HND_ROUTER
+config RTCONFIG_BCM_MFG
+	bool "BCM MFG mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
 config RTCONFIG_DFS_US
@@ -286,6 +294,11 @@ config RTCONFIG_BCMWL6A
 	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
+config RTCONFIG_BCM4708
+	bool "BCM WL 6.37.14"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
 config RTCONFIG_WIRELESSWAN
 	bool "Wireless WAN Function"
 	default n
@@ -382,6 +395,10 @@ config RTCONFIG_VDSL
 	bool "VDSL Support"
 	default n
 
+config RTCONFIG_SFPP
+	bool "10G SFP+ support"
+	default n
+
 config RTCONFIG_SYSSTATE
 	bool "Support additional debug logs"
 	default n
@@ -394,16 +411,32 @@ config RTCONFIG_HW_DUALWAN
 	bool "Dual WAN with Support"
 	default n
 
+config RTCONFIG_MFGFW
+	bool "mfgfw built in"
+	default n
+
 config RTCONFIG_USER_LOW_RSSI
 	bool "User specified accepted min rssi"
+	default n
+
+config RTCONFIG_WATCH_WLREINIT
+	bool "reboot when wlreinit cannot save wl"
 	default n
 
 config RTCONFIG_NEW_USER_LOW_RSSI
 	bool "User specified accepted min rssi"
 	default n
 
+config RTCONFIG_FRS_FEEDBACK
+	bool "Feedback features Support"
+	default n
+
 config RTCONFIG_PUSH_EMAIL
 	bool "Push Mail Service Support"
+	default n
+
+config RTCONFIG_RSYSLOGD
+	bool "rsyslogd Support"
 	default n
 
 config RTCONFIG_DBLOG
@@ -615,6 +648,11 @@ config RTCONFIG_USB_PRINTER
 	depends on RTCONFIG_USB
 	default n
 
+config RTCONFIG_USB_CDROM
+	bool "USB CDROM Support"
+	depends on RTCONFIG_USB
+	default n
+
 config RTCONFIG_USB_MODEM
 	bool "USB Modem Support"
 	depends on RTCONFIG_USB
@@ -637,12 +675,7 @@ config RTCONFIG_USB_SMS_MODEM
 
 config RTCONFIG_USB_MULTIMODEM
 	bool "Multi USB Modem Support"
-	depends on RTCONFIG_USB_MODEM && RTCONFIG_DUALWAN && !RTCONFIG_USB_BECEEM && !RTCONFIG_RALINK
-	default n
-
-config RTCONFIG_USB_BECEEM
-	bool "BECEEM USB dongle Support"
-	depends on RTCONFIG_USB_MODEM
+	depends on RTCONFIG_USB_MODEM && RTCONFIG_DUALWAN && !RTCONFIG_RALINK
 	default n
 
 config RTCONFIG_INTERNAL_GOBI
@@ -673,6 +706,11 @@ config RTCONFIG_APP_PREINSTALLED
 config RTCONFIG_APP_NETINSTALLED
 	bool "Install APP Packages through Network Support"
 	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_APP_FILEFLEX
+	bool "FileFlex support"
+	depends on RTCONFIG_APP_PREINSTALLED || RTCONFIG_APP_NETINSTALLED
 	default n
 
 config RTCONFIG_RALINK
@@ -733,6 +771,10 @@ config RTCONFIG_NEWSSID_REV2
 	bool "New ASUS_2GMAC_xG rule"
 	default n
 
+config RTCONFIG_NEWSSID_REV4
+	bool "RT-V4 SSID rule"
+	default n
+
 config RTCONFIG_QCA
 	bool "Qualcomm Atheros Chip Support"
 	default n
@@ -759,9 +801,14 @@ config RTCONFIG_SOC_IPQ8064
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_SOC_IPQ8074
+	bool "Qualcomm Atheros IPQ8074 SoC"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_NSS_IPSEC
 	bool "Qualcomm NSS IPSec tunnel support"
-	depends on RTCONFIG_SOC_IPQ8064
+	depends on RTCONFIG_SOC_IPQ8064 || RTCONFIG_SOC_IPQ8074
 	default n
 
 config RTCONFIG_PCIE_AR9888
@@ -776,6 +823,11 @@ config RTCONFIG_PCIE_QCA9888
 
 config RTCONFIG_PCIE_QCA9984
 	bool "Qualcomm Atheros QCA9994 WiFi chip (Cascade)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WIFI_QCN5024_QCN5054
+	bool "Qualcomm Atheros QCN5024 and QCN5054 WiFi chip"
 	depends on RTCONFIG_QCA
 	default n
 
@@ -794,9 +846,34 @@ config RTCONFIG_WIFI_QCA9994_QCA9994
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_CFG80211
+	bool "Qualcomm Atheros cfg80211 support"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_GLOBAL_INI
+	bool "Qualcomm globa.ini support. (SPF9 or above)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SINGLE_HOSTAPD
+	bool "Single QCA hostapd instance. (need newer QSDK, e.g., IPQ8064 ILQ3.1, SPF5.2, or SPF8.0)"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_TEST_BOARDDATA_FILE
 	bool "Copy /lib/firmware/* to /jffs and bind mount /jffs to /lib/firmware for testing."
-	depends on RTCONFIG_SOC_IPQ8064
+	depends on RTCONFIG_SOC_IPQ8064 || RTCONFIG_SOC_IPQ8074
+	default n
+
+config RTCONFIG_SWITCH_QCA8075_PHY_AQR107
+	bool "Qualcomm Atheros QCA8075 + AQR107"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033
+	bool "Qualcomm Atheros QCA8075 + QCA8337 + AQR107 + AR8035 + QCA8033"
+	depends on RTCONFIG_QCA
 	default n
 
 config RTCONFIG_SWITCH_QCA8337N
@@ -820,6 +897,10 @@ config RTCONFIG_QCA953X
 
 config RTCONFIG_QCA956X
 	bool "Qualcomm Atheros QCA956X Chip Support"
+	default n
+
+config RTCONFIG_QCN550X
+	bool "Qualcomm Atheros QCN550X Chip Support"
 	default n
 
 config RTCONFIG_SOC_IPQ40XX
@@ -1016,6 +1097,10 @@ config RTCONFIG_WPS_ALLLED_BTN
 	bool "HW Button for WPS and LED dual function"
 	default n
 
+config RTCONFIG_TURBO_BTN
+	bool "HW Button for Turbo (Boost) key function"
+	default n
+
 config RTCONFIG_LOGO_LED
 	bool "Logo LED"
 	default n
@@ -1042,10 +1127,6 @@ config RTCONFIG_ISP_METER
 
 config RTCONFIG_NVRAM_64K
 	bool "NVRAM_64K"
-	default n
-
-config RTCONFIG_NVRAM_FILE
-	bool "NVRAM_FILE"
 	default n
 
 config RTCONFIG_USB_XHCI
@@ -1080,12 +1161,21 @@ config RTCONFIG_WLMODULE_MT7615E_AP
 	bool "Wireless module MT7615E ap"
 	default n
 
+config RTCONFIG_WLMODULE_MT7663E_AP
+	bool "Wireless module MT7663E ap"
+	default n
+
 config RTCONFIG_PSISTLOG
 	bool "Persistent syslog"
 	default n
 
 config RTCONFIG_DUAL_TRX
 	bool "DUAL_TRX"
+	default n
+
+config RTCONFIG_DUAL_TRX2
+	bool "Firmware is incharge of recover damaged FW, not bootcode."
+	depends on RTCONFIG_DUAL_TRX
 	default n
 
 config RTCONFIG_UBI
@@ -1201,6 +1291,19 @@ config RTCONFIG_WANRED_LED
 	bool "WAN RED LED"
 	default n
 
+config RTCONFIG_WANLEDX2
+	bool "Two WAN LEDs"
+	default n
+
+config RTCONFIG_SFPP_LED
+	bool "10G SFP+ LED"
+	depends on RTCONFIG_SFPP
+	default n
+
+config RTCONFIG_R10G_LED
+	bool "10G RJ-45 LED"
+	default n
+
 config RTCONFIG_PWRRED_LED
 	bool "Power RED LED"
 	default n
@@ -1230,7 +1333,7 @@ config RTCONFIG_M2_SSD
 	default n
 
 config RTCONFIG_WIGIG
-	bool "Wigig (11ad) support"
+	bool "Wigig (11ad/11ay) support"
 	default n
 
 config RTCONFIG_CFE_NVRAM_CHK
@@ -1239,10 +1342,6 @@ config RTCONFIG_CFE_NVRAM_CHK
 
 config RTCONFIG_DEBUG
 	bool "debug mode"
-	default n
-
-config RTCONFIG_LLDP
-	bool "lldpd"
 	default n
 
 config RTCONFIG_HAS_5G
@@ -1314,6 +1413,10 @@ config RTCONFIG_UIDEBUG
 
 config RTCONFIG_ROG
 	bool "Get APP Traffic from ROG client"
+	default n
+
+config RTCONFIG_ROG_UI
+	bool "ROG theme support"
 	default n
 
 config RTCONFIG_GEOIP
@@ -1681,6 +1784,11 @@ config RTCONFIG_CFGSYNC
 	bool "Sync config"
 	default n
 
+config RTCONFIG_CFGSYNC_LOCSYNC
+	bool "Sync location code config"
+	depends RTCONFIG_CFGSYNC
+	default n
+
 config RTCONFIG_LP5523
 	bool "Have LP5523 LED controller"
 	default n
@@ -1691,6 +1799,10 @@ config RTCONFIG_SINGLE_SSID
 
 config RTCONFIG_SSID_AMAPS
 	bool "Single SSID rule as ASUS_2X(MAC)_AMAPS"
+	default n
+
+config RTCONFIG_PTHSAFE_POPEN
+	bool "pthread safe popen workaround"
 	default n
 
 config RTCONFIG_WIFI_SON
@@ -1718,6 +1830,22 @@ config RTCONFIG_ADV_RAST
 	bool "enable advanced roaming assistant"
 	default n
 
+config RTCONFIG_BCN_RPT
+	bool "enable 802.11k beacon request/report for roaming"
+	default n
+
+config RTCONFIG_BTM_11V
+	bool "enable 802.11v BTM request/report for roaming"
+	default n
+
+config RTCONFIG_RAST_NONMESH_KVONLY
+	bool "enable roamast in a nonmesh device"
+	default n
+
+config RTCONFIG_CONN_EVENT_TO_EX_AP
+	bool "enable AP to info the EX-Ap of the connect event of a connected client"
+	default n
+
 config RTCONFIG_CFGSYNC
 	bool "Sync config"
 
@@ -1738,6 +1866,10 @@ config RTCONFIG_RGBLED
 	bool "RGB LED control"
 	default n
 
+config RTCONFIG_AURASYNC
+	bool "AURASYNC support"
+	default n
+
 config RTCONFIG_I2CTOOLS
 	bool "I2CTOOLS"
 	default n
@@ -1756,6 +1888,14 @@ config RTCONFIG_DBG_BLUECAVE_OBD
 
 config RTCONFIG_AMAS
 	bool "AMAS architecture."
+	default n
+
+config RTCONFIG_AMASDB
+	bool "AMAS DB-sta collection."
+	default n
+
+config RTCONFIG_AVBLCHAN
+	bool "(CAP)exclude (RE)unavailble chanspec."
 	default n
 
 config RTCONFIG_LYRA_5G_SWAP
@@ -1838,8 +1978,28 @@ config RTCONFIG_NTPD
 	bool "ntp & ntpd support"
 	default n
 
+config RTCONFIG_WTF_REDEEM
+	bool "wtf_redeem support"
+	default n
+
 config RTCONFIG_QCA_LBD
 	bool "qca lbd support"
+	default n
+
+config RTCONFIG_GEFORCENOW
+	bool "GeForceNow QoS feature (includes UPnP QoS)"
+	default n
+
+config RTCONFIG_FPROBE
+	bool "nfcapd netflow packet sender"
+	default n
+
+config RTCONFIG_ISP_CUSTOMIZE
+	bool "ISP customization"
+	default n
+
+config RTCONFIG_IPERF3
+	bool "Iperf3"
 	default n
 
 choice
@@ -1853,3 +2013,27 @@ config RTCONFIG_OPENSSL11
 	bool "OpenSSL 1.1.x"
 
 endchoice
+
+config RTCONFIG_NO_PTHREAD_TIMEDWAIT
+	bool "not use pthread_cond_timedwait"
+	default n
+
+config RTCONFIG_OPEN_NAT
+	bool "OPEN NAT support"
+	default n
+
+config RTCONFIG_FRS_LIVE_UPDATE
+	bool "RTCONFIG_FRS_LIVE_UPDATE support"
+	default n
+
+config RTCONFIG_UUPLUGIN
+	bool "UU plugin support"
+	default n
+
+config RTCONFIG_WIFI_DRV_DISABLE
+	bool "QCA WIFI Driver disable"
+	default n
+
+config RTCONFIG_ATEFROMWAN
+	bool "Set IP in default for device only one WAN port"
+	default n

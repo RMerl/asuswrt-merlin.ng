@@ -21,6 +21,10 @@
 #define APP_KEY   "g2hkhuig238789ajkhc"
 #endif
 
+#if defined(RTCONFIG_BWDPI) && !defined(RTCONFIG_LANTIQ)
+#include <TrendMicro.h>
+#endif
+
 /* global variables */
 #define MAX_DEV_LIST 256
 #define AMAS_ENTRY_FILE_LOCK   "amas_entry_list"
@@ -96,7 +100,7 @@ static void setup_re_device_into_tdts(char *mac)
 	{
 		if (strcasecmp(mylist->mac, mac) != 0) continue;
 
-		if (ret = get_fw_mesh_user((void **) &buf, &buf_used_len))
+		if ((ret = get_fw_mesh_user((void **) &buf, &buf_used_len)) != 0)
 		{
 			printf("Fail to get_fw_meash_user\n");
 			goto __ret;
@@ -206,7 +210,7 @@ static int check_re_node_exist_in_tdts(char *mac)
 
 	if (mac == NULL || !strcmp(mac, "")) return 2;
 
-	if (ret = get_fw_mesh_extender((void **) &buf, &buf_used_len))
+	if ((ret = get_fw_mesh_extender((void **) &buf, &buf_used_len)) != 0)
 	{
 		printf("Fail to get_fw_meash_extender\n");
 		goto __ret;
@@ -334,6 +338,7 @@ static int check_TQoS_amaslib_setting()
 		}
 	}
 CHECK_DONE:
+	free(buf);
 	file_unlock(lock);
 	return is_checked;
 }
@@ -363,6 +368,7 @@ static int check_BW_limiter_amaslib_setting()
 		}
 	}
 CHECK_DONE:
+	free(buf);
 	file_unlock(lock);
 	return is_checked;
 }
@@ -391,14 +397,14 @@ static void setup_amaslib_related_fun()
 	}
 
 	// T.QoS
-	if (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 0) {
+	if (IS_TQOS()) {
 		if (check_TQoS_amaslib_setting()) {
 			restart_flag |= FLAG_RESTART_QOS;
 		}
 	}
 
 	// bandwidth limiter
-	if (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2) {
+	if (IS_BW_QOS()) {
 		if (check_BW_limiter_amaslib_setting()) {
 			restart_flag |= FLAG_RESTART_QOS;
 		}
@@ -911,7 +917,7 @@ static int event_handler_threading(int newsockfd)
 #ifdef PTHREAD_STACK_SIZE
 	pthread_attr_setstacksize(&attr, PTHREAD_STACK_SIZE);
 #endif
-	if(status = pthread_create(&tid, &attr, (void *)&event_handler, &newsockfd)){
+	if ((status = pthread_create(&tid, &attr, (void *)&event_handler, &newsockfd)) != 0){
 		status =  -1;
 		pthread_attr_destroy(&attr);
 		return status;
@@ -1058,8 +1064,8 @@ int amas_lib_device_ip_query(char *mac, char *ip)
 #endif
 
 #if defined(RTCONFIG_WIFI_SON)
-        if (nvram_match("wifison_ready", "1"))
-                return ret;
+	if (nvram_match("wifison_ready", "1"))
+		return ret;
 #endif
 
 	if (!mac)
@@ -1102,8 +1108,8 @@ int amas_lib_main(int argc, char **argv)
 	AMASLIB_DBG(" amas_lib is starting ...\n");
 
 #if defined(RTCONFIG_WIFI_SON)
-        if (nvram_match("wifison_ready", "1"))
-                return 0;
+	if (nvram_match("wifison_ready", "1"))
+		return 0;
 #endif
 
 #ifdef RTCONFIG_SW_HW_AUTH
@@ -1139,7 +1145,7 @@ int amas_lib_main(int argc, char **argv)
 	/* write pid */
 	if ((fp = fopen(AMASLIB_PID_PATH, "w")) != NULL) {
 		fprintf(fp, "%d", getpid());
-		if (fp) fclose(fp);
+		fclose(fp);
 	}
 	else {
 		printf("Fail to write amas_lib.pid");
@@ -1209,7 +1215,7 @@ int amas_lib_main(int argc, char **argv)
 		if (selectRet == -1)  {
 			printf("select error %s\n", strerror(errno));
 			if (errno == EINTR) continue;
-			return 0;
+			goto err;
 		} else if (selectRet == 0) {
 			continue;
 		}
@@ -1224,6 +1230,8 @@ int amas_lib_main(int argc, char **argv)
 		event_handler_threading(newsockfd);
 	}
 
+err:
+	close(sockfd);
 	return 0;
 }
 
@@ -1238,8 +1246,8 @@ void start_amas_lib()
 	pid_t pid;
 
 #if defined(RTCONFIG_WIFI_SON)
-        if (nvram_match("wifison_ready", "1"))
-                return;
+	if (nvram_match("wifison_ready", "1"))
+		return;
 #endif
 
 	if (repeater_mode() || mediabridge_mode())
@@ -1263,8 +1271,8 @@ void start_amas_lib()
 int amaslib_lease_main(int argc, char **argv)
 {
 #if defined(RTCONFIG_WIFI_SON)
-        if (nvram_match("wifison_ready", "1"))
-                return -1;
+	if (nvram_match("wifison_ready", "1"))
+		return -1;
 #endif
 
 	if (argc < 4)

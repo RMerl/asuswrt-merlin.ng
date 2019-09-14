@@ -1,0 +1,1 @@
+rule=:http host ports are %hps:regex:([0-9.\x3a]+(, )?)+% etc

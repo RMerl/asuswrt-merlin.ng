@@ -1,3 +1,5 @@
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,24 +10,21 @@
 
 #include "apps.h"
 
-char *get_status_field(const char *target, const char *field){
-	char *buf;
-	char *ptr_head, *ptr_tail, backup;
+char *alloc_string(const char *string){
+	return strdup(string);
+}
 
-	if((ptr_head = strstr(target, field)) == NULL)
+char *get_status_field(const char *target, const char *field){
+	char *ptr_head, *ptr_tail;
+
+	ptr_head = strstr(target, field);
+	if (ptr_head == NULL)
 		return NULL;
 
 	ptr_head += strlen(field);
+	ptr_tail = strchrnul(ptr_head, '\n');
 
-	if((ptr_tail = strchr(ptr_head, '\n')) == NULL)
-		ptr_tail = ptr_head+strlen(ptr_head);
-
-	backup = ptr_tail[0];
-	ptr_tail[0] = '\0';
-	buf = strdup(ptr_head);
-	ptr_tail[0] = backup;
-
-	return buf;
+	return strndup(ptr_head, ptr_tail - ptr_head);
 }
 
 apps_info_t *initial_apps_data(){
@@ -266,6 +265,86 @@ _dprintf("httpd: get the Zero size of the third-party APP list.\n");
 		}
 		fclose(fp);
 	}
+
+#ifdef RTCONFIG_APP_FILEFLEX
+	if(!argv || strcmp(argv, APP_OWNER_OTHERS)){
+		// Get the newest version of the installed packages,
+		// and information of the non-installed packages from APPS_LIST_FILEFLEX.
+		if((fp = fopen(APPS_LIST_FILEFLEX, "r")) == NULL)
+			return apps_info_list;
+
+		fseek(fp, 0, SEEK_END);
+		file_size = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+		if(file_size <= 0){
+			_dprintf("httpd: get the Zero size of the FILEFLEX APP list.\n");
+			fclose(fp);
+			_eval(cmd, NULL, 0, &pid);
+			return apps_info_list;
+		}
+
+		memset(line, 0, sizeof(line));
+		while(fgets(line, sizeof(line), fp) != NULL){
+			if((tmp_apps_name = get_status_field(line, FIELD_PACKAGE)) == NULL)
+				continue;
+
+			memset(buf, 0, sizeof(buf));
+			pkg_tail = pkg_head = buf;
+			do{
+				sprintf(pkg_tail, "%s", line);
+				pkg_tail += strlen(line);
+
+				memset(line, 0, sizeof(line));
+			}while(fgets(line, 128, fp) != NULL && strlen(line) > 1);
+
+			follow_apps_info = apps_info_list;
+			got_apps = 0;
+			while(follow_apps_info != NULL){
+				if(!strcmp(follow_apps_info->name, tmp_apps_name)){
+					got_apps = 1;
+					break;
+				}
+
+				follow_apps_info = follow_apps_info->next;
+			}
+			free(tmp_apps_name);
+
+			// Installed package.
+			if(got_apps){
+				follow_apps_info->new_version = get_status_field(pkg_head, FIELD_VERSION);
+				follow_apps_info->new_optional_utility = get_status_field(pkg_head, FIELD_OPTIONALUTILITY);
+				follow_apps_info->new_file_name = get_status_field(pkg_head, FIELD_FILENAME);
+				if(follow_apps_info->from_owner != NULL)
+					free(follow_apps_info->from_owner);
+				follow_apps_info->from_owner = alloc_string(APP_OWNER_FILEFLEX);
+			}
+			// Non-installed package.
+			else{
+				follow_apps_info_list = &apps_info_list;
+				while(*follow_apps_info_list != NULL)
+					follow_apps_info_list = &((*follow_apps_info_list)->next);
+
+				*follow_apps_info_list = initial_apps_data();
+
+				(*follow_apps_info_list)->name = get_status_field(pkg_head, FIELD_PACKAGE);
+				(*follow_apps_info_list)->new_version = get_status_field(pkg_head, FIELD_VERSION);
+				(*follow_apps_info_list)->installed = alloc_string(FIELD_NO);
+				(*follow_apps_info_list)->enabled = alloc_string(FIELD_NO);
+				(*follow_apps_info_list)->source = get_status_field(pkg_head, FIELD_SOURCE);
+				(*follow_apps_info_list)->url = get_status_field(pkg_head, FIELD_URL);
+				(*follow_apps_info_list)->description = get_status_field(pkg_head, FIELD_DESCRIPTION);
+				(*follow_apps_info_list)->depends = get_status_field(pkg_head, FIELD_DEPENDS);
+				(*follow_apps_info_list)->new_optional_utility = get_status_field(pkg_head, FIELD_OPTIONALUTILITY);
+				(*follow_apps_info_list)->help_path = get_status_field(pkg_head, FIELD_HELPPATH);
+				(*follow_apps_info_list)->new_file_name = get_status_field(pkg_head, FIELD_FILENAME);
+				(*follow_apps_info_list)->from_owner = alloc_string(APP_OWNER_FILEFLEX);
+			}
+
+			memset(line, 0, sizeof(line));
+		}
+		fclose(fp);
+	}
+#endif
 
 	// Get the name and version of the installed packages from APPS_STATUS.
 	if((fp = fopen(APPS_STATUS, "r")) == NULL)

@@ -1,0 +1,22 @@
+Slava Astashonok <sla@0n.ru>
+
+Thanks:
+- Alex Antropoff <alex@tirastel.md>:
+  note about RedHad's pcap.h location
+
+- Daniel Senie <dts@senie.com>:
+  contrib/redhat-init.d script
+
+- Dmitry Vagin <dmitry@orbitel.ru>:
+  more universal SNMP ifIndexes workaround (tricky filters)
+
+- Thierry MARTIN <thierry_martin@users.sourceforge.net>
+  NetFlow v7 fix
+
+- Viktor Fomichev <vfom@sicex.ru>
+  Cisco's ICMP type/code storing method
+
+- Alexey A. Stroganov <alexey@stroganov.org>
+  notes about trailer bug and flow's start time corruption
+
+Lot of thanks to other folks for support and [not so ;-)] smart questions.

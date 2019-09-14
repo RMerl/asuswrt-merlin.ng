@@ -96,6 +96,7 @@ extern int get_wsec(wsec_info_t *info, unsigned char *mac, char *osifname);
 extern bool wl_wlif_is_psta(char *ifname);
 extern bool wl_wlif_is_dwds(char *ifname);
 extern bool wl_wlif_is_psr_ap(char *ifname);
+extern bool wl_wlif_is_wet_ap(char *ifname);
 
 extern int wl_wlif_do_bss_trans(void *hdl, char *ifname, uint8 rclass, chanspec_t chanspec,
 	struct ether_addr bssid, struct ether_addr addr, int timeout, int event_fd);

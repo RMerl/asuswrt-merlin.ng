@@ -50,12 +50,12 @@ static char push_reply_cmd[] = "PUSH_REPLY";
 void
 receive_auth_failed(struct context *c, const struct buffer *buffer)
 {
-    //Sam.B 2014/12/08
-    update_nvram_status(RCV_AUTH_FAILED_ERROR);
-    //Sam.E 2014/12/08
-
     msg(M_VERB0, "AUTH: Received control message: %s", BSTR(buffer));
     c->options.no_advance = true;
+
+#ifdef ASUSWRT
+    update_nvram_status(EVENT_AUTH_FAILED);
+#endif
 
     if (c->options.pull)
     {

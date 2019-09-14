@@ -87,6 +87,18 @@ hex2bin(const char *value, size_t *size)
 }
 #endif
 
+/* safely check nvram value
+ * returns:
+ *  0 if not equal
+ *  1 if equal */
+static int
+nvram_check(const char *name, const char *value)
+{
+	char *nvalue = nvram_get(name);
+
+	return (nvalue == value || strcmp(nvalue ? : "", value ? : "") == 0);
+}
+
 /* set nvram to value
  * returns:
  *  0 if not changed
@@ -94,9 +106,7 @@ hex2bin(const char *value, size_t *size)
 static int
 nvram_set_check(const char *name, const char *value)
 {
-	char *nvalue = nvram_get(name);
-
-	if (nvalue == value || strcmp(nvalue ? : "", value ? : "") == 0)
+	if (nvram_check(name, value))
 		return 0;
 
 	nvram_set(name, value);
@@ -115,7 +125,7 @@ nvram_set_env(const char *name, const char *env)
 	if (evalue)
 		evalue = trim_r(evalue);
 
-	return nvram_set_check(name, evalue);
+	return nvram_set_check(name, evalue ? : "");
 }
 
 struct viopt_hdr {
@@ -291,10 +301,10 @@ deconfig(int zcip)
  * other relavent parameters (default gateway, dns server, etc).
 */
 static int
-bound(void)
+bound(int renew)
 {
 	char *wan_ifname = safe_getenv("interface");
-	char *value, *gateway;
+	char *value;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char wanprefix[sizeof("wanXXXXXXXXXX_")];
 	int unit, ifunit;
@@ -335,14 +345,12 @@ bound(void)
 
 	if (dualwan_unit__usbif(ifunit) && nvram_match(strcat_r(prefix2, "act_type", tmp2), "gobi")) {
 		changed += nvram_set_check(strcat_r(prefix, "netmask", tmp), "255.255.255.255");
-		if ((gateway = getenv("ip")))
-			nvram_set(strcat_r(prefix, "gateway", tmp), trim_r(gateway));
+		changed += nvram_set_env(strcat_r(prefix, "gateway", tmp), "ip");
 	} else
 #endif
 	{
 		changed += nvram_set_env(strcat_r(prefix, "netmask", tmp), "subnet");
-		if ((gateway = getenv("router")))
-			nvram_set(strcat_r(prefix, "gateway", tmp), trim_r(gateway));
+		changed += nvram_set_env(strcat_r(prefix, "gateway", tmp), "router");
 	}
 
 	if (nvram_get_int(strcat_r(wanprefix, "dnsenable_x", tmp))) {
@@ -468,7 +476,8 @@ bound(void)
 	// check if the ipaddr is safe to apply
 	// only handle one lan instance so far
 	// update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_INVALID_IPADDR)
-	if (inet_equal(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)), nvram_safe_get(strcat_r(prefix, "netmask", tmp)), nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"))) {
+	if (inet_equal(nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)), nvram_safe_get(strcat_r(prefix, "netmask", tmp)),
+		       nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"))) {
 		update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_INVALID_IPADDR);
 		return 0;
 	}
@@ -486,7 +495,9 @@ bound(void)
 		return 0;
 	}
 #endif
+#if defined(RTCONFIG_COOVACHILLI)
 	restart_coovachilli_if_conflicts(nvram_pf_get(prefix, "ipaddr"), nvram_pf_get(prefix, "netmask"));
+#endif
 
 	/* Clean nat conntrack for this interface,
 	 * but skip physical VPN subinterface for PPTP/L2TP */
@@ -500,8 +511,10 @@ bound(void)
 
 	wan_up(wan_ifname);
 
-	logmessage("dhcp client", "bound %s via %s during %d seconds.",
+	logmessage("dhcp client", "%s %s/%s via %s for %d seconds.",
+		renew ? "renew" : "bound",
 		nvram_safe_get(strcat_r(prefix, "ipaddr", tmp)),
+		nvram_safe_get(strcat_r(prefix, "netmask", tmp)),
 		nvram_safe_get(strcat_r(prefix, "gateway", tmp)),
 		nvram_get_int(strcat_r(prefix, "lease", tmp)));
 
@@ -520,7 +533,7 @@ static int
 renew(void)
 {
 	char *wan_ifname = safe_getenv("interface");
-	char *value, *gateway;
+	char *value;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char wanprefix[sizeof("wanXXXXXXXXXX_")];
 	int unit, ifunit;
@@ -538,9 +551,8 @@ renew(void)
 	else
 		snprintf(prefix, sizeof(prefix), "wan%d_", ifunit);
 
-	if ((value = getenv("ip")) == NULL ||
-			!nvram_match(strcat_r(prefix, "ipaddr", tmp), trim_r(value)))
-		return bound();
+	if (!nvram_check(strcat_r(prefix, "ipaddr", tmp), trim_r(getenv("ip"))))
+		return bound(1);
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
 	if (dualwan_unit__usbif(ifunit)) {
 		modem_unit = get_modemunit_by_dev(wan_ifname);
@@ -553,20 +565,17 @@ renew(void)
 	}
 
 	if (dualwan_unit__usbif(ifunit) && nvram_match(strcat_r(prefix2, "act_type", tmp2), "gobi")) {
-		if (!nvram_match(strcat_r(prefix, "netmask", tmp), "255.255.255.255"))
-			return bound();
-		if ((gateway = getenv("ip")) == NULL ||
-		    !nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
-			return bound();
+		if (!nvram_check(strcat_r(prefix, "netmask", tmp), "255.255.255.255"))
+			return bound(1);
+		if (!nvram_check(strcat_r(prefix, "gateway", tmp), trim_r(getenv("ip"))))
+			return bound(1);
 	} else
 #endif
 	{
-		if ((value = getenv("subnet")) == NULL ||
-		    !nvram_match(strcat_r(prefix, "netmask", tmp), trim_r(value)))
-			return bound();
-		if ((gateway = getenv("router")) == NULL ||
-		    !nvram_match(strcat_r(prefix, "gateway", tmp), trim_r(gateway)))
-			return bound();
+		if (!nvram_check(strcat_r(prefix, "netmask", tmp), trim_r(getenv("subnet"))))
+			return bound(1);
+		if (!nvram_check(strcat_r(prefix, "gateway", tmp), trim_r(getenv("router"))))
+			return bound(1);
 	}
 
 	if (nvram_get_int(strcat_r(wanprefix, "dnsenable_x", tmp))) {
@@ -645,7 +654,7 @@ udhcpc_wan(int argc, char **argv)
 	else if (strstr(argv[1], "deconfig"))
 		return deconfig(0);
 	else if (strstr(argv[1], "bound"))
-		return bound();
+		return bound(0);
 	else if (strstr(argv[1], "renew"))
 		return renew();
 	else if (strstr(argv[1], "leasefail"))
@@ -679,7 +688,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		NULL,		/* -T5 */
 		NULL,		/* -A120 */
 		NULL,		/* -b */
-		NULL, NULL,	/* -H wan_hostname */
+		NULL, NULL,	/* -H/-F wan_hostname */
 		NULL,		/* -Oroutes */
 		NULL,		/* -Ostaticroutes */
 		NULL,		/* -Omsstaticroutes */
@@ -725,9 +734,12 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		dhcp_argv[index++] = "-b";
 
 	value = nvram_safe_get(strcat_r(prefix, "hostname", tmp));
-	if (*value && is_valid_hostname(value)) {
-		dhcp_argv[index++] = "-H";
-		dhcp_argv[index++] = value;
+	if (*value) {
+		char *fqdn = strchr(value, '.');
+		if (fqdn ? is_valid_domainname(value) : is_valid_hostname(value)) {
+			dhcp_argv[index++] = fqdn ? "-F" : "-H";
+			dhcp_argv[index++] = value;
+		}
 	}
 
 	/* 0: disable, 1: MS routes, 2: RFC routes, 3: Both */
@@ -848,7 +860,6 @@ static int
 config(void)
 {
 	char *wan_ifname = safe_getenv("interface");
-	char *value;
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char wanprefix[sizeof("wanXXXXXXXXXX_")];
 	int unit, ifunit;
@@ -861,13 +872,9 @@ config(void)
 		snprintf(prefix, sizeof(prefix), "wan%d_x", ifunit);
 	else	snprintf(prefix, sizeof(prefix), "wan%d_", ifunit);
 
-	if ((value = getenv("ip"))) {
-		changed = !nvram_match(strcat_r(prefix, "ipaddr", tmp), trim_r(value));
-		nvram_set(strcat_r(prefix, "ipaddr", tmp), trim_r(value));
-	}
-
-	nvram_set(strcat_r(prefix, "netmask", tmp), "255.255.0.0");
-	nvram_set(strcat_r(prefix, "gateway", tmp), "");
+	changed += nvram_set_env(strcat_r(prefix, "ipaddr", tmp), "ip");
+	changed += nvram_set_check(strcat_r(prefix, "netmask", tmp), "255.255.0.0");
+	changed += nvram_set_check(strcat_r(prefix, "gateway", tmp), "");
 	if (nvram_get_int(strcat_r(wanprefix, "dnsenable_x", tmp)))
 		nvram_set(strcat_r(prefix, "dns", tmp), "");
 	nvram_unset(strcat_r(prefix, "wins", tmp));
@@ -1091,7 +1098,7 @@ bound_lan(void)
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 	ipaddr = getifaddr(lan_ifname, AF_INET, 0);
-	if (ipaddr != NULL && (sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
+	if (ipaddr != NULL && (sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", (char*) ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
 		return 0;
 	}
 

@@ -1160,9 +1160,10 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 			retval += websWrite(wp, "HT Capable:\n");
 		retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
 			CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
-		       (CHSPEC_IS80(bi->chanspec) ?
-			80 : (CHSPEC_IS40(bi->chanspec) ?
-			      40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10))),
+		       (CHSPEC_IS160(bi->chanspec) ?
+			160 : CHSPEC_IS80(bi->chanspec) ?
+				80 : (CHSPEC_IS40(bi->chanspec) ?
+					40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10))),
 			bi->chanspec);
 		retval += websWrite(wp, "\tPrimary channel: %d\n", bi->ctl_ch);
 		retval += websWrite(wp, "\tHT Capabilities: ");
@@ -5402,7 +5403,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			if (!with_non_dfs_chspec(name)) {
 				dbg("%s scan rejected under DFS mode\n", name);
 				return 0;
-			} else if (wl_iovar_getint(name, "chanspec", (int *) &chspec_cur) < 0) {
+			} else if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
 				dbg("get current chanpsec failed\n");
 				return 0;
 			} else {

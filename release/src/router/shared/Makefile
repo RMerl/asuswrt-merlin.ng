@@ -36,7 +36,7 @@ endif
 
 ifeq ($(RTCONFIG_QCA),y)
 CFLAGS += -I./sysdeps/qca -I$(TOP)/wireless_tools/ -DWE_NOLIBM
-CFLAGS += $(if $(RTCONFIG_SOC_IPQ8064),-DSMP)
+CFLAGS += $(if $(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074)),-DSMP)
 endif
 
 ifeq ($(RTCONFIG_ALPINE),y)
@@ -104,6 +104,14 @@ ifeq ($(BUILD_NAME), RT-N10P_V3)
 CFLAGS += -DRTN10P_V3
 endif
 
+ifeq ($(BUILD_NAME), RT-AC1200_V2)
+CFLAGS += -DRTAC1200V2
+endif
+
+ifeq ($(RTCONFIG_RGBLED),y)
+CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
+endif
+
 OBJS = shutils.o linux_timer.o defaults.o model.o rtstate.o boardapi.o
 OBJS += network_utility.o
 OBJS += misc.o version.o files.o strings.o process.o 
@@ -116,6 +124,9 @@ OBJS += bwdpi_utils.o
 OBJS += mac_name_tbl.o
 OBJS += stun.o
 OBJS += scripts.o
+ifeq ($(RTCONFIG_RGBLED),y)
+OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
+endif
 OBJS += timer_utils.o
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
 OBJS += tld_utils.o
@@ -137,7 +148,7 @@ OBJS += et_linux.o
 endif
 endif
 ifeq ($(RTCONFIG_REALTEK),y)
-OBJS += api-realtek.o
+OBJS += api-realtek.o realtek.o
 
 else ifeq ($(RTCONFIG_RALINK),y)
 OBJS += $(TOP)/wireless_tools/iwlib.o
@@ -145,7 +156,7 @@ OBJS += flash_mtd.o api-ralink.o
 ifeq ($(RTCONFIG_RALINK_RT3052),y)
 OBJS += ra3052.o
 endif
-ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTAC85P)$(RTN800HP),y)
+ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200GA1)$(RTAC1200GU)$(RPAC87)$(RTAC85U)$(RTAC85P)$(RTN800HP)$(RTACRH26)$(TUFAC1750),y)
 CFLAGS += -DRA_ESW
 OBJS += mt7620.o
 else
@@ -173,6 +184,10 @@ else ifeq ($(RTCONFIG_QCA8033),y)
 OBJS += qca8033.o
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 OBJS += ipq40xx.o
+else ifeq ($(RTCONFIG_SWITCH_QCA8075_PHY_AQR107),y)
+OBJS += qca8075_phy_aqr107.o
+else ifeq ($(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033),y)
+OBJS += qca8075_qca8337_phy_aqr107_ar8035_qca8033.o mdio.o ethtool.o
 else
 OBJS += qca8337.o
 endif
@@ -220,13 +235,15 @@ ID_OBJS += $(TOP)/$(BUSYBOX_DIR)/util-linux/volume_id/fat.o
 ID_OBJS += $(TOP)/$(BUSYBOX_DIR)/util-linux/volume_id/ntfs.o
 ID_OBJS += $(if $(HFS),$(TOP)/$(BUSYBOX_DIR)/util-linux/volume_id/hfs.o)
 ID_OBJS += $(if $(HFS),$(patsubst %.c,%.o,$(wildcard $(TOP)/$(BUSYBOX_DIR)/libbb/hash_md5.c)))
-ID_OBJS += $(if $(HFS),$(patsubst %.c,%.o,$(wildcard $(TOP)/$(BUSYBOX_DIR)/libbb/bb_bswap_64.c)))
+ID_OBJS += $(patsubst %.c,%.o,$(wildcard $(TOP)/$(BUSYBOX_DIR)/libbb/bb_bswap_64.c))
+ID_OBJS += $(if $(RTCONFIG_USB_CDROM),$(TOP)/$(BUSYBOX_DIR)/util-linux/volume_id/udf.o)
+ID_OBJS += $(if $(RTCONFIG_USB_CDROM),$(TOP)/$(BUSYBOX_DIR)/util-linux/volume_id/iso9660.o)
 ID_OBJS += volume_id.o
 #OBJS += volume_id.lib.o
 OBJS += $(notdir $(ID_OBJS))
 
-ifeq ($(RTCONFIG_USB_MODEM),y)
 CFLAGS += -I$(TOP)/libdisk
+ifeq ($(RTCONFIG_USB_MODEM),y)
 OBJS += at_cmd.o
 endif
 endif
@@ -261,6 +278,10 @@ endif
 
 OBJS	+= $(if $(wildcard shutils_private.c),shutils_private.o,prebuild/shutils_private.o)
 
+ifeq ($(RTCONFIG_ISP_CUSTOMIZE),y)
+OBJS	+= $(if $(wildcard customize_shared.c),customize_shared.o,prebuild/customize_shared.o)
+endif
+
 OBJS += $(if $(wildcard spwenc.c), spwenc.o, prebuild/spwenc.o)
 
 ifeq ($(CONFIG_BCMWL5),y)
@@ -292,6 +313,11 @@ ifeq ($(RTCONFIG_BCMBSD),y)
 CFLAGS += -DSMART_CONNECT
 endif
 OBJS += $(if $(wildcard sysdeps/amas/amas_dwb.c),amas_dwb.o,prebuild/amas_dwb.o)
+endif
+OBJS += amas_utils.o
+OBJS += $(if $(wildcard amas_utils.c),amas_utils.o,prebuild/amas_utils.o)
+ifeq ($(RTCONFIG_AMASDB),y)
+CFLAGS += -DAMASDB
 endif
 vpath %.c sysdeps/amas
 endif
@@ -329,6 +355,10 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 OBJS += sw_auth.o hw_auth.o
 CFLAGS  += -I$(TOP)/sw-hw-auth
 vpath %.c $(TOP)/sw-hw-auth
+endif
+
+ifeq ($(RTCONFIG_GEFORCENOW), y)
+OBJS += nvgfn.o
 endif
 
 all: libshared.so libshared.a

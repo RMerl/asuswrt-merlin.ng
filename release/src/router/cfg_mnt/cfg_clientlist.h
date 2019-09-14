@@ -9,6 +9,7 @@
 extern int cm_prepareClientListMsg(char *msg, int msgLen);
 extern void cm_processClientList(char *msg);
 extern void cm_processWiredClientList(char *msg, char *brMac);
+extern int cm_checkReWiredConnected(char *reMac, char *modelName);
 
 #endif /* __CFG_CLIENTLIST_H__ */
 /* End of cfg_clientlist.h */

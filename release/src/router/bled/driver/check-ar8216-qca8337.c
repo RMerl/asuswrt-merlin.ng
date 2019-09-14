@@ -27,9 +27,35 @@
 #include <linux/version.h>
 #include <linux/phy.h>
 #include <linux/time.h>
+#if defined(CONFIG_ARCH_IPQ807x)
+#else
 #include <../drivers/net/ethernet/atheros/ag71xx/ag71xx.h>	/* struct ag71xx */
+#endif
 #include "../bled_defs.h"
 #include "check.h"
+
+#if defined(CONFIG_ARCH_IPQ807x)
+/* copy from nss_dp_dev.h */
+struct nss_dp_dev {
+	uint32_t macid;			/* Sequence# of Mac on the platform */
+	uint32_t vsi;			/* vsi number */
+	unsigned long flags;		/* Status flags */
+	unsigned long drv_flags;	/* Driver specific feature flags */
+
+	/* Phy related stuff */
+	struct phy_device *phydev;	/* Phy device */
+	struct mii_bus *miibus;		/* MII bus */
+	uint32_t phy_mii_type;		/* RGMII/SGMII/QSGMII */
+	uint32_t phy_mdio_addr;		/* Mdio address */
+	bool link_poll;			/* Link polling enable? */
+	uint32_t forced_speed;		/* Forced speed? */
+	uint32_t forced_duplex;		/* Forced duplex? */
+	uint32_t link_state;		/* Current link state */
+	uint32_t pause;			/* Current flow control settings */
+
+	/* rest. fields are omitted. */
+};
+#endif
 
 /* copy from ar8216.h */
 #define AR8236_STATS_RXGOODBYTE		0x3c
@@ -101,7 +127,11 @@ unsigned int swports_check_traffic(struct bled_priv *bp)
 	unsigned int b = 0, m;
 	unsigned long diff, rx_bytes, tx_bytes;
 	struct net_device *dev = dev_get_by_name(&init_net, "eth0");
+#if defined(CONFIG_ARCH_IPQ807x)
+	struct nss_dp_dev *dp_priv;
+#else
 	struct ag71xx *ag;
+#endif
 	struct mii_bus *bus;
 	struct swport_bled_ifstat *ifs;
 	struct swport_bled_priv *sp = bp->check_priv;
@@ -113,8 +143,13 @@ unsigned int swports_check_traffic(struct bled_priv *bp)
 		return -1;
 	}
 
+#if defined(CONFIG_ARCH_IPQ807x)
+	dp_priv = (struct nss_dp_dev *)netdev_priv(dev);
+	bus = dp_priv->miibus;
+#else
 	ag = netdev_priv(dev);
 	bus = ag->mii_bus;
+#endif
 	if (unlikely(!bus)) {
 		dbg_bl_v("%s: mii_bus = NULL!\n", __func__);
 		dev_put(dev);

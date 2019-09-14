@@ -419,8 +419,6 @@ static int validate_usbbus_bled(struct usbbus_bled *ul)
 		return -EINVAL;
 	if (validate_bled(&ul->bled, 1))
 		return -EINVAL;
-	if (!ul->bus_mask)
-		return -EINVAL;
 
 	return 0;
 }
@@ -1611,6 +1609,46 @@ static int handle_add_gpio(unsigned long arg)
 	return 0;
 }
 
+/**
+ * Handle BLED_CTL_GET_SWPORTS_SETTINGS ioctl command.
+ * @arg:	pointer to parameter in user-space
+ * 		(pointer to  struct bled_common)
+ * @return:
+ * 	0:	success
+ *  otherwise:	fail
+ */
+static int handle_get_swports_settings(unsigned long arg)
+{
+	int i;
+	struct swport_bled sl;
+	struct bled_common *bc = &sl.bled;
+	struct ndev_bled_priv *np;
+	struct bled_priv *bp;
+	struct swport_bled_priv *sp;
+
+	if (copy_from_user(&sl, (void __user *) arg, sizeof(sl)))
+		return -EFAULT;
+
+	if (validate_bled(bc, 0))
+		return -EINVAL;
+	if (!(bp = find_bled_priv_by_gpio(bc->gpio_nr)))
+		return -ENODEV;
+
+	if (bp->type != BLED_TYPE_SWPORTS_BLED)
+		return -EINVAL;
+
+	sp = to_check_priv(bp);
+	np = &sp->ndev_priv;
+	memset(&sl, 0, sizeof(sl));
+	sl.port_mask = sp->port_mask;
+	for (i = 0; i < np->nr_if; ++i) {
+		strlcpy(sl.ifname[i], np->ifstat[i].ifname, IFNAMSIZ);
+	}
+	sl.nr_if = np->nr_if;
+
+	return 0;
+}
+
 static long bled_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	int ret = -EINVAL;
@@ -1653,18 +1691,27 @@ static long bled_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case BLED_CTL_GET_BLED_TYPE:
 		ret = handle_get_bled_type(arg);
 		break;
+
 	case BLED_CTL_SET_UDEF_PATTERN:
 		ret = handle_set_udef_pattern(arg);
 		break;
+
 	case BLED_CTL_SET_UDEF_TRIGGER:
 		ret = handle_set_udef_trigger(arg);
 		break;
+
 	case BLED_CTL_SET_MODE:
 		ret = handle_set_mode(arg);
 		break;
+
 	case BLED_CTL_ADD_INTERRUPT_BLED:
 		ret = handle_add_interrupt_bled(arg);
 		break;
+
+	case BLED_CTL_GET_SWPORTS_SETTINGS:
+		ret = handle_get_swports_settings(arg);
+		break;
+
 	case BLED_CTL_ADD_GPIO:
 		ret = handle_add_gpio(arg);
 		break;

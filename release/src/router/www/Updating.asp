@@ -23,8 +23,8 @@
 	 || parent.based_modelid == "RT-AC3200" 
 	 || parent.based_modelid == "RT-AC5300" || parent.based_modelid == "GT-AC5300"
 	 || parent.based_modelid == "GT-AC9600"
-	 || parent.based_modelid == "RT-AC88U"  || parent.based_modelid == "RT-AC3100"
-	 || parent.based_modelid == "RT-AC86U" || parent.based_modelid == "AC2900"
+	 || parent.based_modelid == "RT-AC88U"  || parent.based_modelid == "RT-AX88U" || parent.based_modelid == "RT-AC3100"
+	 || parent.based_modelid == "RT-AC86U" || parent.based_modelid == "GT-AC2900" || parent.based_modelid == "GT-AX11000" || parent.based_modelid == "RT-AX92U"
 	){
 		reboot_needed_time += 40;		
 		parent.showLoadingBar(reboot_needed_time);

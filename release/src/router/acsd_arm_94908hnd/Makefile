@@ -2,9 +2,10 @@
 
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -Wall
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
-#CFLAGS	+= -g -DDEBUG
+CFLAGS	+= -g
+CFLAGS	+= $(EXTRACFLAGS)
 #CFLAGS	+= -DACS_DEBUG
-CFLAGS	+= -s -O2
+#CFLAGS	+= -s -O2
 CFLAGS  += -DWL11AC_80P80 -DWL11AC_160
 LDFLAGS += -L$(TOP)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
@@ -31,7 +32,7 @@ install: all
 	install -d $(INSTALLDIR)/usr/sbin/
 	install acsd $(INSTALLDIR)/usr/sbin/
 	#install acs_cli $(INSTALLDIR)/usr/sbin/
-	$(STRIP) $(INSTALLDIR)/usr/sbin/acsd
+#	$(STRIP) $(INSTALLDIR)/usr/sbin/acsd
 	#$(STRIP) $(INSTALLDIR)/usr/sbin/acs_cli
 
 clean:

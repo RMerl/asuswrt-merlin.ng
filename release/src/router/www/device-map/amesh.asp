@@ -524,12 +524,12 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 							code += "</div>";
 							code += "<div class='horizontal_line'></div>";
 							code += "<div style='position:relative;'>";
-								code += "<div class='amesh_router_info_text location' title='" + alias + "'>";
+								code += "<div class='amesh_router_info_text location' title='" + htmlEnDeCode.htmlEncode(alias) + "'>";
 								var location = alias;
 								if(alias.length > 22) {
 									location = alias.substring(0, 20) + "..";
 								}
-								code += "<span class='amesh_node_content'>" + location + "</span>";
+								code += "<span class='amesh_node_content'>" + htmlEnDeCode.htmlEncode(location) + "</span>";
 								code += "</div>";
 								code += "<div class='amesh_router_info_text'><#Full_Clients#>: ";
 								var re_client_num = 0;
@@ -1480,7 +1480,7 @@ function popAMeshClientListEditTable(event) {
 		}
 	}
 	var title_name = node_info.model_name + " in " +  alias;
-	$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+	$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 
 	if(checkCloudIconExist[node_info.model_name])
 		$popupBgHtml.find(".amesh_router_image_web").css('background-image', 'url(' + checkCloudIconExist[node_info.model_name] + ')');
@@ -1549,26 +1549,46 @@ function popAMeshClientListEditTable(event) {
 			var data = new Object();
 			data.cfg_alias = $popupBgHtml.find("#aimesh_node_location_input").val();
 			var title_name = node_info.model_name + " in " +  $popupBgHtml.find("#aimesh_node_location_input").val();
-			$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+			$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 			set_AiMesh_node_config(data, node_info.mac)
 		}
 	);
 	$popupBgHtml.find("#aimesh_node_location_input").blur(
 		function() {
 			var validAiMeshLocation = function() {
-				var location = $popupBgHtml.find("#aimesh_node_location_input").val();
-				if(location.length == 0){
+				var location = $.trim($popupBgHtml.find("#aimesh_node_location_input").val());
+				$popupBgHtml.find("#aimesh_node_location_input").val(location);
+				var show_valid_hint = function(_hint){
 					$popupBgHtml.find("#aimesh_node_location_hint").css("display", "block");
-					$popupBgHtml.find("#aimesh_node_location_hint").html("<#File_Pop_content_alert_desc1#>");
+					$popupBgHtml.find("#aimesh_node_location_hint").html(_hint);
 					$popupBgHtml.find("#aimesh_node_location_input").focus();
 					$popupBgHtml.find("#aimesh_node_location_input").select();
+				};
+				if(location.length == 0){
+					show_valid_hint("<#JS_fieldblank#>");
 					return false;
 				}
-				else if(!parent.validator.haveFullWidthChar($popupBgHtml.find("#aimesh_node_location_input")[0])) {
-					$popupBgHtml.find("#aimesh_node_location_hint").css("display", "block");
-					$popupBgHtml.find("#aimesh_node_location_hint").html("<#JS_validchar#>");
-					$popupBgHtml.find("#aimesh_node_location_input").focus();
-					$popupBgHtml.find("#aimesh_node_location_input").select();
+
+				var block_chars_array = ["\""];
+				var block_chars_hint = "";
+				for(var i = 0; i < block_chars_array.length; i++) {
+					if(location.indexOf(block_chars_array[i]) >= 0)
+						block_chars_hint = block_chars_array[i] + " <#JS_invalid_chars#>";
+				}
+				if(block_chars_hint != "") {
+					show_valid_hint(block_chars_hint);
+					return false;
+				}
+
+				if(utf8_ssid_support){
+					var len = parent.validator.lengthInUtf8(location);
+					if(len > 32){
+						show_valid_hint("The field cannot be greater than 32 characters.");/* untranslated */
+						return false;
+					}
+				}
+				else if(!parent.validator.haveFullWidthChar($obj[0])) {
+					show_valid_hint("<#JS_validchar#>");
 					return false;
 				}
 				$popupBgHtml.find("#aimesh_node_location_hint").css("display", "none");
@@ -1582,8 +1602,8 @@ function popAMeshClientListEditTable(event) {
 					$popupBgHtml.find("#aimesh_node_location_select").val("");
 				var data = new Object();
 				data.cfg_alias = $popupBgHtml.find("#aimesh_node_location_input").val();
-				var title_name = "AiMesh node in " + $popupBgHtml.find("#aimesh_node_location_input").val();
-				$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+				var title_name = node_info.model_name + " in " +  $popupBgHtml.find("#aimesh_node_location_input").val();
+				$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 				set_AiMesh_node_config(data, node_info.mac);
 			}
 		}

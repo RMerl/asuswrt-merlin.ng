@@ -769,7 +769,7 @@ function set_dms_dir(obj){
 </script>
 </head>
 
-<body onload="initial();" onunload="unload_body();">
+<body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <!-- floder tree-->
 <div id="DM_mask" class="mask_bg"></div>

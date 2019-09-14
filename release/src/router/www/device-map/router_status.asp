@@ -194,6 +194,9 @@ function tabclickhandler(wl_unit){
 	if(wl_unit == "status"){
 		location.href = "router_status.asp";
 	}
+/*	else if (wl_unit == "compatibility") {
+		location.href = "compatibility.asp";
+	}*/
 	else{
 		if((parent.sw_mode == 2 || parent.sw_mode == 4) && '<% nvram_get("wlc_band"); %>' == wl_unit)
 			document.form.wl_subunit.value = 1;
@@ -293,6 +296,7 @@ function tab_reset(v){
 	var tab_array1 = document.getElementsByClassName("tab_NW");
 	var tab_array2 = document.getElementsByClassName("tabclick_NW");
 	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
+
 	var i = 0;
 	while(i < tab_array1.length){
 		tab_array1[i].style.width = tab_width + 'px';
@@ -328,7 +332,7 @@ function tab_reset(v){
 			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
 		}
 		else {
-			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300")
+			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
@@ -375,7 +379,7 @@ function generate_cpu_field(){
 		code += "</div>";
 		code += "</td>";	
 		code += "<td>";
-		code += "<div>Core "+parseInt(i+1)+"</div>";
+		code += "<div><#Status_Core#> "+parseInt(i+1)+"</div>";
 		code += "</td>";		
 		code += "<td class='percentage_bar'>";
 		code += "<div id='cpu"+i+"_quantification'>0%</div>";
@@ -406,10 +410,14 @@ function get_ethernet_ports() {
 			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
 			//parse nvram to array
 			var parseStrToArray = function(_array) {
-				var speedMapping = new Array();
+				var speedMapping = new Array();	
 				speedMapping["M"] = "100 Mbps";
 				speedMapping["G"] = "1 Gbps";
-				speedMapping["X"] = "Unplugged"; /*untranslated*/
+				speedMapping["Q"] = "2.5 Gbps";
+				speedMapping["F"] = "5 Gbps";
+				speedMapping["T"] = "10 Gbps";
+				speedMapping["X"] = "<#Status_Unplugged#>";
+				
 				var parseArray = [];
 				for (var prop in _array) {
 					if (_array.hasOwnProperty(prop)) {
@@ -419,13 +427,17 @@ function get_ethernet_ports() {
 							if(port_name.substr(0, 3) == "WAN") {
 								if(parseInt(wanCount) > 1) {
 									var port_idx = port_name.split(" ");
-									port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
+									if (port_idx.length >= 2)
+										port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
+									else
+										port_name = "WAN";
 								}
 								else {
 									port_name = "WAN";
 								}
 							}
 						}
+
 						newRuleArray.push(port_name);
 						newRuleArray.push(speedMapping[_array[prop]]);
 						parseArray.push(newRuleArray);
@@ -478,27 +490,32 @@ function get_ethernet_ports() {
 	<td>		
 		<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">
 			<td>
-				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(0)">
+				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(0)">
 					<span id="span0" style="cursor:pointer;font-weight: bolder;">2.4GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(1)">
+				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(1)">
 					<span id="span1" style="cursor:pointer;font-weight: bolder;">5GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(2)">
+				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(2)">
 					<span id="span2" style="cursor:pointer;font-weight: bolder;">5GHz-2</span>
 				</div>
 			</td>
 			<td>
-				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(3)">
+				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(3)">
 					<span id="span3" style="cursor:pointer;font-weight: bolder;">60GHz</span>
 				</div>
 			</td>
+			<!--td>
+				<div id="t_compatibility" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('compatibility')">
+					<span style="cursor:pointer;font-weight: bolder;">Compatibility</span>
+				</div>
+			</td-->
 			<td>
-				<div id="t_status" class="tabclick_NW" align="center" style="font-weight: bolder; margin-right:2px; width:90px;" onclick="tabclickhandler('status')">
+				<div id="t_status" class="tabclick_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('status')">
 					<span id="span_status" style="cursor:pointer;font-weight: bolder;"><#Status_Str#></span>
 				</div>
 			</td>

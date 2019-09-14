@@ -929,6 +929,9 @@ function showConnStatus() {
 				case "6":
 					code = "Error - Authentication failure!";
 					break;
+				case "7":
+					code = "Error - Key/Certificate error!";
+					break;
 				default:
 					code = "Error - check configuration!";
 					break;
@@ -960,7 +963,7 @@ function refreshVPNIP() {
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 	<div id="tlsKey_panel"  class="contentM_qis" style="box-shadow: 3px 3px 10px #000;">
 		<table class="QISform_wireless" border=0 align="center" cellpadding="5" cellspacing="0">
 			<tr>

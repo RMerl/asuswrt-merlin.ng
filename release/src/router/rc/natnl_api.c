@@ -33,7 +33,7 @@ void start_aae()
 		// add enable
 		//nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | 1));
 		system("aaews &");
-		logmessage("AAE", "AAE Service is started");
+		//logmessage("AAE", "AAE Service is started");
 	}
 }
 
@@ -47,19 +47,24 @@ void stop_aae()
 	// remove enable
 	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") & ~1));
 	killall_tk("aaews");
-	logmessage("NAT Tunnel", "AAE Service is stopped");
+	//logmessage("NAT Tunnel", "AAE Service is stopped");
 }
 
 void start_mastiff()
 {
 #ifdef CONFIG_BCMWL5
-#if !(defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG))
+#ifndef RTCONFIG_BCM_MFG
 	if (factory_debug())
 #endif
 #else
 	if (IS_ATE_FACTORY_MODE())
 #endif
 	return;
+
+#ifdef RTCONFIG_MFGFW
+	if(nvram_match("mfgfw", "1"))
+		return;
+#endif
 
 	if (is_mesh_re_mode())
 		return;
@@ -76,7 +81,7 @@ void start_mastiff()
 
 	if ( !pids("mastiff" )){
 		system("mastiff &");
-		logmessage("AAE", "AAE Service is started");
+		//logmessage("AAE", "AAE Service is started");
 		//start_aae();
 	}
 
@@ -90,7 +95,7 @@ void stop_mastiff()
 	}
 	
 	killall_tk("mastiff");
-	logmessage("NAT Tunnel", "AAE Service is stopped");
+	//logmessage("NAT Tunnel", "AAE Service is stopped");
 	
 	stop_aae();
 }

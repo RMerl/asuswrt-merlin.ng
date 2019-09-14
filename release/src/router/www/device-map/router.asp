@@ -14,6 +14,7 @@
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style>
 .cancel{
 	border: 2px solid #898989;
@@ -129,7 +130,7 @@ $(function () {
 			.attr('src', _src)
 			.appendTo('head');
 	};
-	if(parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
+	if(parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap")) && parent.ameshRouter_support)
 		dynamic_include_js('/require/modules/amesh.js');
 	if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
 		dynamic_include_js('/switcherplugin/jquery.iphone-switch.js');
@@ -421,6 +422,9 @@ function tabclickhandler(wl_unit){
 	if(wl_unit == 'status'){
 		location.href = "router_status.asp";
 	}
+	/*else if (wl_unit == "compatibility") {
+		location.href = "compatibility.asp";
+	}*/
 	else{
 		if(parent.sw_mode == 2 && parent.wlc_express != 0){
 			document.form.wl_subunit.value = 1;
@@ -477,13 +481,13 @@ function change_wpa_type(mode){
 	var new_array;
 	var cur_crypto;
 	/* enable/disable crypto algorithm */
-	if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "pskpsk2")
+	if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "sae" || mode == "pskpsk2" || mode == "psk2sae")
 		inputCtrl(document.form.wl_crypto, 1);
 	else
 		inputCtrl(document.form.wl_crypto, 0);
 	
 	/* enable/disable psk passphrase */
-	if(mode == "psk" || mode == "psk2" || mode == "pskpsk2")
+	if(mode == "psk" || mode == "psk2" || mode == "sae" || mode == "pskpsk2" || mode == "psk2sae")
 		inputCtrl(document.form.wl_wpa_psk, 1);
 	else
 		inputCtrl(document.form.wl_wpa_psk, 0);
@@ -496,11 +500,11 @@ function change_wpa_type(mode){
 		}
 	
 	/* Reconstruct algorithm array from new crypto algorithms */
-	if(mode == "psk" || mode == "psk2" || mode == "pskpsk2" || mode == "wpa" || mode == "wpa2" || mode == "wpawpa2"){
+	if(mode == "psk" || mode == "psk2" || mode == "sae" || mode == "pskpsk2" || mode == "psk2sae" || mode == "wpa" || mode == "wpa2" || mode == "wpawpa2"){
 		/* Save current crypto algorithm */
 			if(opts[opts.selectedIndex].text == "WPA-Personal" || opts[opts.selectedIndex].text == "WPA-Enterprise")
 				new_array = new Array("TKIP");
-			else if(opts[opts.selectedIndex].text == "WPA2-Personal" || opts[opts.selectedIndex].text == "WPA2-Enterprise")
+			else if(opts[opts.selectedIndex].text == "WPA2-Personal" || opts[opts.selectedIndex].text == "WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2/WPA3-Personal" || opts[opts.selectedIndex].text == "WPA2-Enterprise")
 				new_array = new Array("AES");
 			else
 				new_array = new Array("AES", "TKIP+AES");
@@ -715,7 +719,7 @@ function submitForm(){
 	document.form.current_page.value = '/';
 	document.form.next_page.value = '/';
 	
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "sae" || auth_mode == "pskpsk2" || auth_mode == "psk2sae"){
 		if(is_KR_sku){
 			if(!parent.validator.psk_KR(document.form.wl_wpa_psk))
 				return false;
@@ -753,7 +757,14 @@ function submitForm(){
 	}
 	document.form.wsc_config_state.value = "1";
 
-	if(parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap"))) {
+	if(auth_mode == 'sae'){
+		document.form.wl_mfp.value = '2';
+	}
+	else if(auth_mode == 'psk' || auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'psk2sae' || auth_mode == 'wpa' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
+		document.form.wl_mfp.value = '1';
+	}
+
+	if(parent.amesh_support && (parent.isSwMode("rt") || parent.isSwMode("ap")) && parent.ameshRouter_support) {
 		if(!check_wl_auth_support(auth_mode, $("select[name=wl_auth_mode_x] option:selected")))
 			return false;
 		else {
@@ -789,6 +800,13 @@ function submitForm(){
 			alert("The fronthaul SSID is the same as the backhaul SSID.");/* untranslated */
 			return false;
 		}
+	}
+
+	if (Qcawifi_support) {
+		document.form.action_wait.value = "30";
+	}
+	else if (Rawifi_support) {
+		document.form.action_wait.value = "20";
 	}
 
 	parent.showLoading();
@@ -831,6 +849,11 @@ function tab_reset(v){
 	var tab_array1 = document.getElementsByClassName("tab_NW");
 	var tab_array2 = document.getElementsByClassName("tabclick_NW");
 	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
+
+	/*if (Bcmwifi_support && band5g_11ax_support) {
+		tab_width = "60";
+	}*/
+
 	var i = 0;
 
 	while(i < tab_array1.length){
@@ -840,7 +863,7 @@ function tab_reset(v){
 	}
 
 	if(typeof tab_array2[0] != "undefined"){
-		tab_array2[0].style.width=tab_width+'px';
+		tab_array2[0].style.width = tab_width + 'px';
 		tab_array2[0].style.display = "";
 	}
 	if(v == 0){
@@ -972,35 +995,41 @@ function checkWLReady(){
 <input type="hidden" name="wl_nmode_x" value="<% nvram_get("wl_nmode_x"); %>"><!--Lock Add 20091210 for n only-->
 <input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>">
 <input type="hidden" name="wl_unit" value="<% nvram_get("wl_unit"); %>">
+<input type="hidden" name="wl_mfp" value="<% nvram_get("wl_mfp"); %>">
 <input type="hidden" name="wl_subunit" value="-1">
 <input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
-
 <table width="100%" border="0" cellpadding="0" cellspacing="0" id="rt_table">
 <tr>
 	<td>		
 		<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">
 			<td>
-				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(0)">
+				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(0)">
 					<span id="span0" style="cursor:pointer;font-weight: bolder;">2.4GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(1)">
+				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(1)">
 					<span id="span1" style="cursor:pointer;font-weight: bolder;">5GHz</span>
 				</div>
 			</td>
 			<td>
-				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(2)">
+				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(2)">
 					<span id="span2" style="cursor:pointer;font-weight: bolder;">5GHz-2</span>
 				</div>
 			</td>
 			<td>
-				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px; width:90px;" onclick="tabclickhandler(3)">
+				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(3)">
 					<span id="span3" style="cursor:pointer;font-weight: bolder;">60GHz</span>
 				</div>
 			</td>
+			<!--td>
+				<div id="t_compatibility" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;"
+				 onclick="tabclickhandler('compatibility')">
+					<span style="cursor:pointer;font-weight: bolder;">Compatibility</span>
+				</div>
+			</td-->
 			<td>
-				<div id="t_status" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px; width:90px;" onclick="tabclickhandler('status')">
+				<div id="t_status" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('status')">
 					<span id="span_status" style="cursor:pointer;font-weight: bolder;"><#Status_Str#></span>
 				</div>
 			</td>
@@ -1067,7 +1096,9 @@ function checkWLReady(){
 							<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 							<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
 							<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
+							<option value="sae"    <% nvram_match("wl_auth_mode_x", "sae",   "selected"); %>>WPA3-Personal</option>
 							<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
+							<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
 							<option value="wpa"     <% nvram_match("wl_auth_mode_x", "wpa",    "selected"); %>>WPA-Enterprise</option>
 							<option value="wpa2"    <% nvram_match("wl_auth_mode_x", "wpa2",   "selected"); %>>WPA2-Enterprise</option>
 							<option value="wpawpa2" <% nvram_match("wl_auth_mode_x", "wpawpa2","selected"); %>>WPA-Auto-Enterprise</option>

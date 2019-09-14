@@ -71,7 +71,7 @@ if(dsl_support){
 }
 
 var aimesh_system_new_fw_flag = false;
-if(amesh_support) {
+if(amesh_support && ameshRouter_support) {
 	var get_cfg_clientlist = [<% get_cfg_clientlist(); %>][0];
 	for (var idx in get_cfg_clientlist) {
 		if(get_cfg_clientlist.hasOwnProperty(idx)) {
@@ -227,7 +227,7 @@ var notification = {
 		}else
 			notification.acpw = 0;
 
-		if(amesh_support) {
+		if(amesh_support && ameshRouter_support) {
 			if(aimesh_system_new_fw_flag) {
 				notification.array[1] = 'noti_upgrade';
 				notification.upgrade = 1;

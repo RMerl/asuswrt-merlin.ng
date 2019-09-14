@@ -6,6 +6,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <net/if.h>
 #include <bcmnvram.h>
 #include <shutils.h>

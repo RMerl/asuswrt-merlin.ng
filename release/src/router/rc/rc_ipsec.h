@@ -191,6 +191,7 @@ typedef struct ipsec_prof_s{
 	uint16_t dh_group;
 	uint16_t encryption_p2_ext;
 	uint16_t hash_p2_ext;
+	uint16_t pfs_group;
 }ipsec_prof_t;
 
 

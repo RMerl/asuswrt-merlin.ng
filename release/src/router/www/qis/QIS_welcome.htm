@@ -169,12 +169,7 @@ function QKinternettype_load_body(){
 	}
 
 	/* MODELDEP */
-	if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-		document.getElementById("Div_Manual_Setting").style.display = "none";
-		document.getElementById("main_manual").style.display = "none";
-		document.getElementById("lte_manual").style.display = "none";
-	}	
-	else if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
+	if(based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"){
 		document.getElementById("main_manual").style.display = "none";
 		document.getElementById("lte_manual").style.display = "";
 	}
@@ -526,7 +521,7 @@ function uploadSetting(){
 										</div>
 									</div>									
 								</div>
-								<div id="Div_Manual_Setting" style="margin: 30px 0">
+								<div style="margin: 30px 0">
 									<div style="">
 										<div style="margin: 0 0 10px 6px"><#QIS_desc_2#></div>
 									</div>

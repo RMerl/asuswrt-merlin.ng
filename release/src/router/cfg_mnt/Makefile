@@ -16,11 +16,27 @@ LDFLAGS += -lm
 ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/amas-utils -I$(TOP)/shared/sysdeps/amas -DUPDATECOST
 LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
+ifeq ($(RTCONFIG_AVBLCHAN),y)
+CFLAGS += -DAVBLCHAN
+endif
+CFLAGS += -DFREE_MEMORY_DOWNLOAD
 endif
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -DPTHREAD_STACK_SIZE_256K -DPTHREAD_EXIT
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+else ifeq ($(RTCONFIG_QCA),y)
+CFLAGS += -DPTHREAD_STACK_SIZE_256K -DPTHREAD_EXIT
+endif
+
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+CFLAGS  += -I$(TOP)/sqlite
+CFLAGS  += -I$(TOP)/nt_center/lib
+CFLAGS  += -I$(TOP)/nt_center/actMail
+CFLAGS  += -I$(TOP)/wlc_nt
+CFLAGS  += -DASUSWRT_SDK
+LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3 -lpthread -L$(TOP)/nt_center/lib -lnt
+LDFLAGS += -L$(TOP)/wlc_nt -lwlc_nt_client
 endif
 
 ifeq ($(RTCONFIG_DHDAP), y)
@@ -81,14 +97,17 @@ COMMON_OBJS += cfg_dwb.o
 endif
 COMMON_OBJS += cfg_chanspec.o
 COMMON_OBJS += cfg_parammgnt.o
-SERVER_OBJS += $(COMMON_OBJS) cfg_eventnotify.o cfg_mnt.o
+ifeq ($(RTCONFIG_AMAS),y)
+SERVER_OBJS += $(COMMON_OBJS) cfg_eventnotify.o
+endif
+SERVER_OBJS += $(COMMON_OBJS) cfg_mnt.o
 CLIENT_OBJS += $(COMMON_OBJS) cfg_capability.o cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
 
 ifeq ($(RTCONFIG_WIFI_SON),y)
 CFLAGS += -DREPORT_PAP_INFO
 endif
-ifneq ($(RTCONFIG_REALTEK),y)
+ifeq ($(RTCONFIG_AMAS),y)
 COMMON_OBJS += cfg_roaming.o
 CFLAGS += -DLEGACY_ROAMING
 COMMON_OBJS += cfg_onboarding.o cfg_ethevent.o
@@ -107,7 +126,18 @@ COMMON_OBJS += cfg_conndiag.o
 CFLAGS += -DCONN_DIAG
 endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 MAP-AC2200 RT-AC92U))
+ifeq ($(RTCONFIG_AMASDB),y)
+CFLAGS += -DDUAL_BAND_DETECTION
+COMMON_OBJS += cfg_dualbandlist.o
+endif
+
+ifeq ($(RTCONFIG_TCODE),y)
+ifeq ($(RTCONFIG_CFGSYNC_LOCSYNC),y)
+COMMON_OBJS += cfg_loclist.o
+endif
+endif
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 MAP-AC2200 RT-AC95U))
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
@@ -129,7 +159,6 @@ endif
 ifeq ($(RTCONFIG_BCMBSD),y)
 CFLAGS += -DSMART_CONNECT
 endif
-
 
 ifeq ($(wildcard $(SRCBASE)/router/cfg_mnt/*.c),)
 all:

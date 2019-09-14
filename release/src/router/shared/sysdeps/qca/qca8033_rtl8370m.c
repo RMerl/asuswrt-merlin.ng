@@ -363,37 +363,87 @@ int rtkswitch_Reset_Storm_Control(void)
 }
 
 typedef struct {
-	unsigned int link[5];
-	unsigned int speed[5];
+	unsigned int link[8];
+	unsigned int speed[8];
 } phyState;
 
-int rtkswitch_AllPort_phyState(void)
+/**
+ * @link:
+ * 	0:	no-link
+ * 	1:	link-up
+ * @speed:
+ * 	0,10:		10Mbps		==> 'M'
+ * 	1,100:		100Mbps		==> 'M'
+ * 	2,1000:		1000Mbps	==> 'G'
+ * 	3,10000:	10Gbps		==> 'T'
+ * 	4,2500:		2.5Gbps		==> 'Q'
+ * 	5,5000:		5Gbps		==> 'F'
+ */
+static char conv_speed(unsigned int link, unsigned int speed)
 {
-	char buf[32];
-	int porder_56u[5] = {4,3,2,1,0};
-	int *o = porder_56u;
-	const char *portMark = "W0=%C;L1=%C;L2=%C;L3=%C;L4=%C;";
+	char ret = 'X';
+
+	if (link != 1)
+		return ret;
+
+	if (speed == 2 || speed == 1000)
+		ret = 'G';
+	else if (speed == 3 || speed == 10000)
+		ret = 'T';
+	else if (speed == 4 || speed == 2500)
+		ret = 'Q';
+	else if (speed == 5 || speed == 5000)
+		ret = 'F';
+	else
+		ret = 'M';
+
+	return ret;
+}
+void ATE_port_status(void)
+{
+	int i, fd;
+	char buf[64];
+	unsigned int wan_link[2], wan_speed[2];
 	phyState pS;
+#if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2)
+	char *wan_ifname[2] = { "eth2", "eth3" };	/* BRT-AC828 SR1~SR3: wan0, wan1 interface. */
+#else
+	char *wan_ifname[2] = { "eth0", "eth3" };	/* BRT-AC828 SR4 or above: wan0, wan1 interface. */
+#endif
 
-	pS.link[0] = pS.link[1] = pS.link[2] = pS.link[3] = pS.link[4] = 0;
-	pS.speed[0] = pS.speed[1] = pS.speed[2] = pS.speed[3] = pS.speed[4] = 0;
+	fd = open(RTKSWITCH_DEV, O_RDONLY);
+	if (fd < 0) {
+		perror(RTKSWITCH_DEV);
+		return;
+	}
 
-	if (rtkswitch_ioctl(18, (int*) &pS) < 0)
-		return -1;
+	memset(&pS, 0, sizeof(pS));
+	if (ioctl(fd, 18, &pS) < 0) {
+		snprintf(buf, sizeof(buf), "ioctl: %s", RTKSWITCH_DEV);
+		perror(buf);
+		close(fd);
+		return;
+	}
+	close(fd);
 
-	if (get_model() == MODEL_RTN65U)
-		portMark = "W0=%C;L4=%C;L3=%C;L2=%C;L1=%C;";
+	for (i = 0; i < 2; ++i) {
+		wan_link[i] = !!(mdio_read(wan_ifname[i], MII_BMSR) & BMSR_LSTATUS);
+		wan_speed[i] = mdio_phy_speed(wan_ifname[i]);
+	}
 
-	snprintf(buf, sizeof(buf), portMark,
-		(pS.link[o[0]] == 1) ? (pS.speed[o[0]] == 2) ? 'G' : 'M': 'X',
-		(pS.link[o[1]] == 1) ? (pS.speed[o[1]] == 2) ? 'G' : 'M': 'X',
-		(pS.link[o[2]] == 1) ? (pS.speed[o[2]] == 2) ? 'G' : 'M': 'X',
-		(pS.link[o[3]] == 1) ? (pS.speed[o[3]] == 2) ? 'G' : 'M': 'X',
-		(pS.link[o[4]] == 1) ? (pS.speed[o[4]] == 2) ? 'G' : 'M': 'X');
+	snprintf(buf, sizeof(buf), "W0=%C;W1=%C;L1=%C;L2=%C;L3=%C;L4=%C;L5=%C;L6=%C;L7=%C;L8=%C;",
+		conv_speed(wan_link[0], wan_speed[0]),
+		conv_speed(wan_link[1], wan_speed[1]),
+		conv_speed(pS.link[0], pS.speed[0]),
+		conv_speed(pS.link[1], pS.speed[1]),
+		conv_speed(pS.link[2], pS.speed[2]),
+		conv_speed(pS.link[3], pS.speed[3]),
+		conv_speed(pS.link[4], pS.speed[4]),
+		conv_speed(pS.link[5], pS.speed[5]),
+		conv_speed(pS.link[6], pS.speed[6]),
+		conv_speed(pS.link[7], pS.speed[7]));
 
 	puts(buf);
-
-	return 0;
 }
 
 #if 0

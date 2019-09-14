@@ -242,7 +242,7 @@ function getASUSDDNS_enable(){
 </script>
 </head>
 
-<body onload="initial();" onunload="return unload_body();">
+<body onload="initial();" onunload="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>

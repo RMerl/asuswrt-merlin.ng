@@ -27,7 +27,7 @@
 
 typedef uint32_t __u32;
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) ||defined(RTAC54U) || defined(RTAC51UP)|| defined(RTAC53) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC1200) || defined(RTN11P_B1) || defined(RPAC87) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U) || defined(RTN800HP)
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) ||defined(RTAC54U) || defined(RTAC51UP)|| defined(RTAC53) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTN11P_B1) || defined(RPAC87) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U) || defined(RTN800HP) || defined(RTACRH26) || defined(TUFAC1750)
 const char WIF_5G[]	= "rai0";
 const char WIF_2G[]	= "ra0";
 const char WDSIF_5G[]	= "wdsi";
@@ -181,7 +181,7 @@ void set_radio(int on, int unit, int subunit)
 		doSystem("iwpriv %s set RadioOn=%d", WIF_2G, on);
 	else doSystem("iwpriv %s set RadioOn=%d", WIF_5G, on);
 
-#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U)  || defined(RTN800HP) //5G:7612E 2G:7603E
+#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U)  || defined(RTN800HP)  || defined(RTACRH26) || defined(TUFAC1750) //5G:7612E 2G:7603E
 	led_onoff(unit);
 #endif	
 }
@@ -231,6 +231,27 @@ int get_channel_list_via_driver(int unit, char *buffer, int len)
 	wrq.u.data.pointer = buffer;
 	wrq.u.data.length  = len;
 	wrq.u.data.flags   = ASUS_SUBCMD_CHLIST;
+	if (wl_ioctl(ifname, RTPRIV_IOCTL_ASUSCMD, &wrq) < 0)
+		return -1;
+
+	return wrq.u.data.length;
+}
+
+int get_mtk_wifi_driver_version(char *buffer, int len)
+{
+	struct iwreq wrq;
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_", *ifname;
+	int unit = 0;
+
+	if (buffer == NULL || len <= 0)
+		return -1;
+	memset(buffer, 0, len);
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+	memset(&wrq, 0, sizeof(wrq));
+	wrq.u.data.pointer = buffer;
+	wrq.u.data.length  = len;
+	wrq.u.data.flags   = ASUS_SUBCMD_DRIVERVER;
 	if (wl_ioctl(ifname, RTPRIV_IOCTL_ASUSCMD, &wrq) < 0)
 		return -1;
 
@@ -664,7 +685,7 @@ int get_channel_list_via_country(int unit, const char *country_code, char *buffe
 }
 
 
-#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U) || defined(RTN800HP)
+#if defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(RTAC65U) || defined(RTN800HP) || defined(RTACRH26) || defined(TUFAC1750)
 void led_onoff(int unit)
 {   
 #if defined(RTAC1200HP)
@@ -676,6 +697,22 @@ void led_onoff(int unit)
 			led_control(get_wl_led_id(unit), LED_OFF);
 }
 #endif
+
+/* Return wan_base_if for start_vlan().
+ * @return:	pointer to base interface name for start_vlan().
+ */
+char *get_wan_base_if(void)
+{
+	static char wan_base_if[IFNAMSIZ] = "";
+
+#if defined(RTCONFIG_RALINK_MT7620) /* RT-N14U, RT-AC52U, RT-AC51U, RT-N11P, RT-N54U, RT-AC1200HP, RT-AC54U */
+	strlcpy(wan_base_if, "eth2", sizeof(wan_base_if));
+#elif defined(RTCONFIG_RALINK_MT7621) /* RT-N56UB1, RT-N56UB2 */
+	strlcpy(wan_base_if, "eth3", sizeof(wan_base_if));
+#endif
+
+	return wan_base_if;
+}
 
 /* Return nvram variable name, e.g. et0macaddr, which is used to repented as LAN MAC.
  * @return:

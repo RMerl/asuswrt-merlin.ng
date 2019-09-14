@@ -17,11 +17,11 @@
 
 #include <shared.h>
 
-#ifdef RTCONFIG_RALINK
-#elif defined(RTCONFIG_QCA)
-#elif defined(RTCONFIG_ALPINE)
-#elif defined(RTCONFIG_LANTIQ)
-#else
+#ifdef RTCONFIG_REALTEK
+#include <wlioctl.h>
+extern int wl_ioctl(char *name, int cmd, void *buf, int len);
+#endif //RTCONFIG_REALTEK
+#ifdef CONFIG_BCMWL5
 #include <typedefs.h>
 #include <proto/ethernet.h>
 #include <wlioctl.h>
@@ -126,5 +126,8 @@ extern int wl_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val);
 
 extern char * wl_ether_etoa(const struct ether_addr *n);
 
+#ifdef __CONFIG_DHDAP__
+extern int dhd_probe(char *name);
+#endif // endif
 #endif /* CONFIG_BCMWL5 */
 #endif /* _wlutils_h_ */

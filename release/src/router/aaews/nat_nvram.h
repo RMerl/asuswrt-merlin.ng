@@ -24,12 +24,16 @@
 
 #define NVARM_LYRA_MASTER_MODE "cfg_master"
 #define NVARM_AIMESH_RE_MODE "re_mode"
+
+#define NVRAM_RETRY_COUNT "aae_retry_cnt"
+
 /*#define HTTP_WAN_PORT "misc_httpport_x"
 #define HTTP_ENABLE "http_enable"*/
 //#define AAE_SEM_NAME "AAE_ENABLE_SEM"
 #define NV_DBG 1
 int nvram_is_aae_enable();
 int nvram_set_aae_status(const char* api, const int curl_status, const char* aae_status);
+int nvram_set_server_status(const char* server, const int status, const char* status_text);
 int nvram_set_aae_sip_connected(const char* aae_sip_connected);
 int nvram_get_aae_pwd(char** aae_pwd);
 int nvram_get_aae_username(char** aae_username);
@@ -38,9 +42,11 @@ int nvram_get_aae_sdk_log_level();
 int nvram_set_aae_sdk_log_level(const char* aae_sdk_log_level);
 int nvram_get_wan_access(char* wan_access);
 int nvram_get_ddns_name(char* ddns_hostname);
-/*int nvram_get_https_wan_port(char* https_wan_port);
+int nvram_get_https_wan_port(char* https_wan_port);
+/*
 int nvram_get_http_wan_port(char* http_wan_port);
-int nvram_get_http_enable(char* http_enable);*/
+int nvram_get_http_enable(char* http_enable);
+*/
 void WatchingNVram();
 int nvram_get_mac_addr(char* mac_addr);
 int nvram_get_link_internet();

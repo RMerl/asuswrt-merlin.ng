@@ -286,7 +286,7 @@ char* GetBW(int BW)
 		case BW_40:
 			return "40M";
 
-#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200GA1) || defined(RTAC1200GU)
+#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
 		case BW_80:
 			return "80M";
 #endif
@@ -311,7 +311,7 @@ char* GetPhyMode(int Mode)
 		case MODE_HTGREENFIELD:
 			return "GREEN";
 
-#if defined(RTAC52U) || defined(RTAC51U)  || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200)  || defined(RTAC1200GA1) || defined(RTAC1200GU)
+#if defined(RTAC52U) || defined(RTAC51U)  || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
 		case MODE_VHT:
 			return "VHT";
 #endif
@@ -548,7 +548,7 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	else
 		ret+=websWrite(wp, "OP Mode		: AP\n");
 
-#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U)  || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(MTK_REP)
+#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U)  || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC85U) || defined(RTAC85P) || defined(MTK_REP) || defined(RTACRH26) || defined(TUFAC1750)
 	if (unit == 1)
 	{
 		char *p = tmp;
@@ -874,24 +874,13 @@ wl_wps_info(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 #if defined(RTCONFIG_WPSMULTIBAND)
 	for (j = -1; j < MAX_NR_WL_IF; ++j) {
-#if !defined(RTCONFIG_HAS_5G)
-		if (unit == 1)
-			continue;
-#endif
-#if !defined(RTCONFIG_HAS_5G_2)
-		if (unit == 2)
-			continue;
-#endif
-#if !defined(RTCONFIG_WIGIG)
-		if (unit == 3)
-			continue;
-#endif
+		SKIP_ABSENT_BAND(unit);
 #endif
 		switch (j) {
-		case 0: /* fall through */
-		case 1: /* fall through */
-		case 2: /* fall through */
-		case 3: /* fall through */
+		case WL_2G_BAND:	/* fall through */
+		case WL_5G_BAND:	/* fall through */
+		case WL_5G_2_BAND:	/* fall through */
+		case WL_60G_BAND:	/* fall through */
 			u = j;
 			snprintf(tag1, sizeof(tag1), "<wps_info%d>", j);
 			snprintf(tag2, sizeof(tag2), "</wps_info%d>", j);
@@ -1042,7 +1031,7 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 
 	memset(mac, 0, sizeof(mac));
 
-#if defined(RTAC85U) || defined(RTAC85P)
+#if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	if (!nvram_get_int("wlready"))
 		goto exit;
 #endif
@@ -1142,7 +1131,7 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 
 	memset(mac, 0, sizeof(mac));
 
-#if defined(RTAC85U) || defined(RTAC85P)
+#if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	if (!nvram_get_int("wlready"))
 		goto exit;
 #endif
@@ -1681,6 +1670,65 @@ ej_wl_scan_5g(int eid, webs_t wp, int argc, char_t **argv)
 	return wl_scan(eid, wp, argc, argv, 1);
 }
 
+const char *
+get_wifname(int band)
+{
+	if (band)
+		return WIF_5G;
+	else
+		return WIF_2G;
+}
+int
+getChannel(int band)
+{
+	int channel;
+	struct iw_range	range;
+	double freq;
+	struct iwreq wrq1;
+	struct iwreq wrq2;
+	if (wl_ioctl(get_wifname(band), SIOCGIWFREQ, &wrq1) < 0)
+		return 0;
+	char buffer[sizeof(iwrange) * 2];
+	bzero(buffer, sizeof(buffer));
+	wrq2.u.data.pointer = (caddr_t) buffer;
+	wrq2.u.data.length = sizeof(buffer);
+	wrq2.u.data.flags = 0;
+
+	if (wl_ioctl(get_wifname(band), SIOCGIWRANGE, &wrq2) < 0)
+		return 0;
+
+	if (ralink_get_range_info(&range, buffer, wrq2.u.data.length) < 0)
+		return 0;
+
+	freq = iw_freq2float(&(wrq1.u.freq));
+	if (freq < KILO)
+		channel = (int) freq;
+	else
+	{
+		channel = iw_freq_to_channel(freq, &range);
+		if (channel < 0)
+			return 0;
+	}
+	return channel;
+}
+int
+ej_wl_control_channel(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int ret = 0;
+	int channel_24 = 0, channel_50 = 0;
+	if (!(channel_24 = getChannel(0)))
+	{
+		ret = websWrite(wp, "[\"0\"]");
+		return ret;
+	}
+	if (!(channel_50 = getChannel(1)))
+		ret = websWrite(wp, "[\"%d\", \"%d\"]", channel_24, 0);
+	else
+		ret = websWrite(wp, "[\"%d\", \"%d\"]", channel_24, channel_50);
+
+	return ret;
+}
+
 
 static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
@@ -1698,7 +1746,7 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 
 	if (band != 0 && band != 1) return retval;
 
-#if defined(RTAC85U) || defined(RTAC85P)
+#if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	if (!nvram_get_int("wlready")) return retval;
 #endif
 
@@ -1747,7 +1795,6 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char tmp[256], prefix[] = "wlXXXXXXXXXX_";
 	char *name;
 	char word[256], *next;
-	int unit_max = MAX_NR_WL_IF;
 	int rate=0;
 	int status;
 	char rate_buf[32];
@@ -1763,12 +1810,8 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	strlcpy(rate_buf, "0 Mbps", sizeof(rate_buf));	
 #endif
 
-	if (unit > (unit_max - 1))
+	if (absent_band(unit))
 		goto ERROR;
-#if !defined(RTCONFIG_HAS_5G_2)
-	if (unit == 2)
-		goto ERROR;
-#endif
 #ifdef RTCONFIG_CONCURRENTREPEATER
 	if (sw_mode == SW_MODE_REPEATER || sw_mode == SW_MODE_HOTSPOT)
 #else	

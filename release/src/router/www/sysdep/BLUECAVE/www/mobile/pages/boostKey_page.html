@@ -1,0 +1,175 @@
+<style>
+	#boostKeyImgContainer{
+		text-align: center;
+		margin: 20px;
+	}
+	#boostKeyImg{
+		width:90%;
+	}
+	#boostKeyFuncDesc{
+		font-weight: unset;
+		color: #999;
+	}
+</style>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">Boost Key</div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc"><#BoostKey_desc#></div>
+
+		<div>
+			<div id="boostKeyImgContainer">
+				<img id="boostKeyImg" src="../../images/New_ui/Img-subProd-base.png">
+			</div>
+
+			<div class="inputContainer">
+				<select id="boostKeyMode" class="optionInput"></select>
+				<script>
+					var boostKey_support = httpApi.boostKey_support();
+					var turbo_mode = httpApi.nvramGet(["turbo_mode"]).turbo_mode;
+					var matchFlag = false;
+
+					turbo_mode = (turbo_mode == "") ? "0" : turbo_mode;
+
+					for(var i in boostKey_support){
+						$("#boostKeyMode").append($('<option />')
+							.attr({"id": i})
+							.text(boostKey_support[i].text)
+        					.val(boostKey_support[i].value)
+						)
+
+						if(turbo_mode == boostKey_support[i].value) matchFlag = true;
+					}
+
+					if(!matchFlag) turbo_mode = $("#boostKeyMode option:first").val();
+
+					$("#boostKeyMode")
+						.val(turbo_mode)
+						.selectmenu()
+						.selectmenu("refresh")
+						.change(function(){
+       						var clickedId = $(this).children(":selected").attr("id");
+       						var textContent = (boostKey_support[clickedId]) ? boostKey_support[clickedId].desc : "";
+
+							$("#tmtos_gameboost").hide();
+							if(clickedId == "GAME_BOOST"){
+								var TM_EULA_Signed = (httpApi.nvramGet(["TM_EULA"]).TM_EULA == 1);
+								if(!TM_EULA_Signed) $("#tmtos_gameboost").show();
+							}
+
+      						$("#boostKeyFuncDesc").html(textContent);
+						})
+						.change()
+				</script>
+			</div>
+		</div>
+
+		<div class="pageDesc" id="boostKeyFuncDesc"></div>
+
+		<div class="labelContainer" id="tmtos_gameboost">
+			<div class="ui-checkbox ui-mini">
+				<label for="tmtos_checkbox" class="labelInput ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off">
+					By using GameBoost, you agree to the
+					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
+				</label>
+				<input type="checkbox" id="tmtos_checkbox" value="0" data-mini="false">
+			</div>
+		</div>
+
+		<div>
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick="abort.boostKey()"><#CTL_prev#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.boostKey()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="mobileAbort" style="width:50%" onclick="abort.boostKey()">
+							<div class="mobile_abortBtn"><#CTL_prev#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.boostKey()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+	$(".btn_wireless_apply").html("<#CTL_next#>");
+
+	$("#tmtos_checkbox").click(function(){
+		$(this).enableCheckBox($(this).is(":checked"))
+	})
+
+	apply.boostKey = function(){
+		var TM_EULA = (httpApi.nvramGet(["TM_EULA"]).TM_EULA == 1);
+
+		if($("#tmtos_gameboost").is(":visible")){
+			if(!$("#tmtos_checkbox").is(":checked")){
+				$("#tmtos_gameboost").fadeOut(500).fadeIn(500);
+				return false;
+			}
+			else{
+				httpApi.enableEula("tm", "1");
+			}
+		}
+
+		postDataModel.insert(boostKeyObj);
+		qisPostData.turbo_mode = $("#boostKeyMode").val()
+
+		if(systemVariable.forceChangePwInTheEnd){
+			goTo.changePwInTheEnd();
+		}
+		else{
+			if(isSwMode("RP")){
+				transformWLToGuest();
+				if(!isSupport("concurrep"))
+					transformWLCObj();
+			}
+
+			$(".btn_wireless_apply").html(Get_Component_btnLoading);
+			apply.submitQIS();
+		}
+	};
+
+	abort.boostKey = function(){
+		postDataModel.remove(boostKeyObj);
+
+		if(isSupport("11AX")){
+			goTo.loadPage("axMode_page", true);
+		}
+		else{
+			goTo.loadPage("wireless_setting", true);
+		}
+	};
+</script>

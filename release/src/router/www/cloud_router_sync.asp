@@ -1025,7 +1025,7 @@ function checkDDNSReturnCode(){
 </script>
 </head>
 
-<body onload="initial();" onunload="return unload_body();">
+<body onload="initial();" onunload="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <!-- floder tree-->

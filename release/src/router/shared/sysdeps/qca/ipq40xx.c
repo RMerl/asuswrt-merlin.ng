@@ -34,7 +34,7 @@
 #define MAX_WANLAN_PORT	5
 
 enum {
-#if defined(RTAC58U)
+#if defined(RTAC58U) || defined(RTAC95U)
 	CPU_PORT=0,
 	LAN1_PORT=4,
 	LAN2_PORT=3,
@@ -58,7 +58,7 @@ enum {
 	LAN4_PORT=4,
 	WAN_PORT=5,
 	P6_PORT=5,
-#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) 
+#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
 	CPU_PORT=0,
 	LAN1_PORT=1,
 	LAN2_PORT=2,
@@ -74,6 +74,17 @@ enum {
 
 //0:WAN, 1:LAN, lan_wan_partition[][0] is port0
 static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
+#if defined(RTAC95U)
+	/* W, L1, L2, L3, X */
+	{0,1,1,1,1}, //WLLLL
+	{0,0,1,1,1}, //WWLLL
+	{0,1,0,1,1}, //WLWLL
+	{0,1,1,0,1}, //WLLWL
+	{0,1,1,0,1}, //WLLWL
+	{0,0,0,1,1}, //WWWLL
+	{0,1,0,0,1}, //WLWWL
+	{1,1,1,1,1}  //ALL
+#else
 	/* W, L1, L2, L3, L4 */
 	{0,1,1,1,1}, //WLLLL
 	{0,0,1,1,1}, //WWLLL
@@ -83,6 +94,7 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 	{0,0,0,1,1}, //WWWLL
 	{0,1,1,0,0}, //WLLWW
 	{1,1,1,1,1}  //ALL
+#endif
 };
 
 #define	CPU_PORT_WAN_MASK	(1U << CPU_PORT)
@@ -104,6 +116,18 @@ static unsigned int wans_lan_mask = 0;	/* wan_type = WANS_DUALWAN_IF_LAN. */
  * ==> Model-specific port number.
  */
 static int switch_port_mapping[] = {
+#if defined(RTAC95U)
+	LAN3_PORT,	//0000 0000 0001 LAN4 (convert to LAN3)
+	LAN2_PORT,	//0000 0000 0010 LAN3 (convert to LAN2)
+	LAN2_PORT,	//0000 0000 0100 LAN2
+	LAN1_PORT,	//0000 0000 1000 LAN1
+	WAN_PORT,	//0000 0001 0000 WAN
+	P6_PORT,	//0000 0010 0000 -
+	P6_PORT,	//0000 0100 0000 -
+	P6_PORT,	//0000 1000 0000 -
+	P6_PORT,	//0001 0000 0000 -
+	CPU_PORT,	//0010 0000 0000 CPU port
+#else
 	LAN4_PORT,	//0000 0000 0001 LAN4
 	LAN3_PORT,	//0000 0000 0010 LAN3
 	LAN2_PORT,	//0000 0000 0100 LAN2
@@ -114,6 +138,7 @@ static int switch_port_mapping[] = {
 	P6_PORT,	//0000 1000 0000 -
 	P6_PORT,	//0001 0000 0000 -
 	CPU_PORT,	//0010 0000 0000 CPU port
+#endif
 };
 
 /* Model-specific LANx ==> Model-specific PortX mapping */
@@ -125,7 +150,7 @@ const int lan_id_to_port_mapping[NR_WANLAN_PORT] = {
 	LAN4_PORT,
 };
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U) /* for Lyra */
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) /* for Lyra */
 /* this table is mapping to lan_id_to_port_mapping */
 static const int skip_ports[NR_WANLAN_PORT] = {
 	0,  /* WAN_PORT */
@@ -434,6 +459,14 @@ static void build_wan_lan_mask(int stb)
 	}
 	else
 		f_write_string("/proc/sys/net/edma/merge_wan_into_lan", "0", 0, 0);
+#endif
+#if defined(MAPAC1300) /* Lyra mini WAN/LAN port exchanged. */
+	if (!nvram_match("switch_wantag", "none") && !nvram_match("switch_wantag", "")) {
+		if (stb==4 || stb==6) // All WAN.
+			stb = 7;
+		else if (stb == 7) // All LAN.
+			stb = 4;
+	}
 #endif
 
 #if 0	/* TODO: no WAN port */
@@ -922,6 +955,7 @@ static int convert_n56u_to_qca_bitmask(int orig)
 		if (orig & bit)
 			bitmask |= (1 << switch_port_mapping[i]);
 	}
+#if defined(RTCONFIG_PORT2_DEVICE)
 #if defined(RTCONFIG_DETWAN)
 	if(nvram_match("wifison_ready", "1")) {
 		if(nvram_safe_get("detwan_phy")[0] != '\0')
@@ -940,18 +974,19 @@ static int convert_n56u_to_qca_bitmask(int orig)
 			bitmask |= mask;
 		}
 	}
-#elif defined(VZWAC1300)
+	else
+#endif	/* RTCONFIG_DETWAN */
 	{
 		int mask = 0;
 		//iptv (VoIP & STB) use LAN3/LAN4 but only LAN1 OR WAN to be real port in LYRA
 		if((bitmask & (1 << LAN4_PORT)) || (bitmask & (1 << LAN3_PORT))) {
 			bitmask &= ~(1 << LAN4_PORT);
 			bitmask &= ~(1 << LAN3_PORT);
-			mask |= LAN1_PORT;
+			mask |= (1 << LAN4_PORT);
 		}
 		bitmask |= mask;
 	}
-#endif
+#endif	/* RTCONFIG_PORT2_DEVICE */
 
 	return bitmask;
 }
@@ -1392,10 +1427,16 @@ void ATE_port_status(void)
 	sprintf(buf, "L1=%C;L2=%C;",
 		(pS.link[1] == 1) ? (pS.speed[1] == 2) ? 'G' : 'M': 'X',
 		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X');
+#elif defined(RTAC95U)
+	sprintf(buf, "W0=%C;L1=%C;L2=%C;L3=%C;",
+		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
+		(pS.link[1] == 1) ? (pS.speed[1] == 2) ? 'G' : 'M': 'X',
+		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X',
+		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X');
 #else
 	sprintf(buf, "W0=%C;L1=%C;L2=%C;L3=%C;L4=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X',
 		'X',
 		'X',
@@ -1405,7 +1446,7 @@ void ATE_port_status(void)
 		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X',
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X'
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || RTAC92U */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
 		);
 #endif
 	puts(buf);
@@ -1472,12 +1513,12 @@ int detwan_set_def_vid(const char *ifname, int setVid, int needTagged, int avoid
 				int new_vid;
 				new_vid = detwan_set_def_vid(ipq40xx_net[i].ifname, 0, 0, setVid);
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(RTAC92U)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
 				if (IPTV_ports_cnt() >= 2)
 				{
 					doSystem("ssdk_sh vlan entry del %d", new_vid);	/* remove new vid (NOT USED) */
 				}
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || RTAC92U */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
 			}
 		}
 	}

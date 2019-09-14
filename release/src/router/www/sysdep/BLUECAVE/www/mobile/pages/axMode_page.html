@@ -1,0 +1,141 @@
+<style>
+.axMode_label{
+	color: #FC0 !important;
+}
+</style>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">802.11ax</div>
+			<div class="titleSub"><#QIS_ax_Ready_Title#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc">
+			<#QIS_ax_Ready_Desc1#>
+			<#QIS_ax_Ready_Desc2#>
+		</div>
+
+		<div class="labelContainer" id="axMode_checkbox_container">
+			<div class="ui-checkbox ui-mini">
+				<label for="axMode_checkbox" class="labelInput ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off axMode_label">
+					<#WLANConfig11b_HE_Frame_Mode_itemname#>
+				</label>
+				<input type="checkbox" id="axMode_checkbox" value="0" data-mini="false">
+			</div>
+		</div>		
+
+		<div class="pageDesc">
+			<ul>
+				<li><#QIS_ax_Ready_note_Intel#>
+					<ul>
+						<li><b>Intel:</b> <a target="_blank" href="https://downloadcenter.intel.com">https://downloadcenter.intel.com</a></li>
+						<li><b>Mediatek:</b> <a target="_blank" href="https://www.mediatek.com/products/connectivity-and-networking/broadband-wifi">https://www.mediatek.com/products/connectivity-and-networking/broadband-wifi</a></li>
+						<li><b>Realtek:</b> <a target="_blank" href="https://www.realtek.com/en/downloads">https://www.realtek.com/en/downloads</a></li>
+					</ul>
+				</li>
+				<li id="dfs_160_desc" style="margin-top: 15px"><#QIS_ax_Ready_note_DFS#></li>
+			</ul>
+		</div>
+
+		<div>
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick="abort.axMode()"><#CTL_prev#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.axMode()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="mobileAbort" style="width:50%" onclick="abort.axMode()">
+							<div class="mobile_abortBtn"><#CTL_prev#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.axMode()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+	var wl0_he_features_orig = httpApi.nvramGet(["wl0_he_features"]).wl0_he_features;
+	var enableAx = (wl0_he_features_orig != "0") ? true : false;
+
+	if (systemVariable.productid == "GT-AXY16000" || systemVariable.productid == "RT-AX89U")
+		$("#dfs_160_desc").hide();
+
+	$("#Intel_dl_link")	//for string tag: QIS_ax_Ready_note_Intel
+		.attr('target', '_blank')
+		.attr('href', 'https://downloadcenter.intel.com');
+
+	$("#axMode_checkbox")
+		.enableCheckBox((systemVariable.isDefault) ? true : enableAx)
+	
+	$(".btn_wireless_apply")
+		.html("<#CTL_next#>");
+
+	$("#axMode_checkbox")
+		.click(function(){
+			$(this).enableCheckBox($(this).is(":checked"))
+		})
+
+	apply.axMode = function(){
+		postDataModel.insert(axModeObj);
+		if(!$("#axMode_checkbox").is(":checked")){
+			qisPostData.wl0_he_features = 0;
+			qisPostData.wl1_he_features = 0;
+			qisPostData.wl2_he_features = 0;
+		}
+
+		if(wl0_he_features_orig == qisPostData.wl0_he_features){
+			postDataModel.remove(axModeObj);
+		}
+
+		if(isSupport("boostkey")){
+			goTo.boostKey();
+		}
+		else if(systemVariable.forceChangePwInTheEnd){
+			goTo.changePwInTheEnd();
+		}
+		else{
+			if(isSwMode("RP")){
+				transformWLToGuest();
+				if(!isSupport("concurrep"))
+					transformWLCObj();
+			}
+
+			$(".btn_wireless_apply").html(Get_Component_btnLoading);
+			apply.submitQIS();
+		}
+	};
+
+	abort.axMode = function(){
+		postDataModel.remove(axModeObj);
+		goTo.loadPage("wireless_setting", true);
+	};
+</script>

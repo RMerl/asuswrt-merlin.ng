@@ -1,4 +1,7 @@
-﻿2018:01-08: 2.1.0.126
+﻿2019-05-28: 2.1.0.127
+==> SDK : Enhance SIP retry mechanism. Let retry period get longer for every retry to avoid DDoS attack to SIP server.
+
+2018:01-08: 2.1.0.126
 ==> SDK : 1. [bug fix] ANT : deadlock issue when 477 error received at make_call.
           2. [bug fix] ANT : crash issue when make_call/hangup frequently.
 

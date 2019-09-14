@@ -619,8 +619,6 @@ function initial(){
 	else if(current_page.indexOf("Feedback") != -1){
 		if(action_script == "stop_dblog")
 			setTimeout("top_delay_redirect('"+current_page+"');", restart_time*1000);
-		else if(dsl_support)
-			setTimeout("parent.redirect();", action_wait*1000);
 		else
 			setTimeout("parent.CheckFBSize();", 15000);
 	}	
@@ -693,7 +691,7 @@ function initial(){
 				setTimeout("top_delay_redirect('/');", restart_time*1000);
 			}
 			else if(current_page.indexOf("Advanced_OperationMode_Content.asp") != -1){
-				parent.document.getElementById('drword').innerHTML = "<#LAN_IP_changed_suggedtion1#>"+parent.document.form.lan_ipaddr.value+"<#LAN_IP_changed_suggedtion2#><br/>";
+				parent.document.getElementById('drword').innerHTML = "<#LAN_IP_changed_suggedtion1#>&nbsp;"+parent.document.form.lan_ipaddr.value+"<#LAN_IP_changed_suggedtion2#><br/>";
 				setTimeout("hideLoading()	",20000);
 				setTimeout("parent.document.getElementById('Loading').style.display = 'none';",20000);
 				setTimeout("parent.dr_advise();",20000);
@@ -704,7 +702,7 @@ function initial(){
 					parent.document.getElementById('drword').innerHTML = "<#Main_alert_proceeding_desc3#>.<#LANConfig_ChangedLANIP#>";
 				}
 				else{
-					parent.document.getElementById('drword').innerHTML = "<#LAN_IP_changed_suggedtion1#>"+parent.document.form.lan_ipaddr.value+"<#LAN_IP_changed_suggedtion2#><br/>";
+					parent.document.getElementById('drword').innerHTML = "<#LAN_IP_changed_suggedtion1#>&nbsp;"+parent.document.form.lan_ipaddr.value+"<#LAN_IP_changed_suggedtion2#><br/>";
 				}
 				setTimeout("hideLoading();",20000);
 				setTimeout("parent.dr_advise();",20000);

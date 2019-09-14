@@ -24,6 +24,7 @@
 <script type="text/javascript" src="switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="jscolor/jscolor.js"></script>
 <script type="text/javascript" src="Captive_Portal_Advanced_template.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 // disable auto log out
 AUTOLOGOUT_MAX_MINUTE = 0;
@@ -73,6 +74,12 @@ function initial(){
 	if(captive_portal_adv_profile_list == "") {
 		editProfile("new");
 	}
+
+	var series = productid.split("-")[0].toUpperCase();
+	if(series == "BRT")
+		httpApi.faqURL("1034977", function(url){document.getElementById("faq").href=url;});
+	else
+		$(".brt_series").remove();
 }
 function captivePortalAdvShowAndHide(_flag) {
 	if(_flag == 1) {
@@ -1714,9 +1721,10 @@ function edit_text_tool_combine_select_change(_component_id) {
 	edit_update_content_text(_component_id);
 }
 function edit_text_tool_combine_input_blur(_component_id) {
-	if(!validator.numberRange($('#edit_text_tool_combine_input')[0], 12, 72)){
-		return false;
-	}
+	var textSize = Math.abs(parseInt($('#edit_text_tool_combine_input').val(), 10) || 12);
+	if(textSize > 72) textSize = 72;
+	else if(textSize < 12) textSize = 12;
+	$('#edit_text_tool_combine_input').val(textSize);
 	$('#edit_text_tool_combine_select').val($('#edit_text_tool_combine_input').val());
 	edit_update_content_text(_component_id);
 }
@@ -4951,7 +4959,7 @@ function re_gen_wl_if(_wl_list) {
 function find_empty_gn_group() {
 	var _empty_wl_idx = "";
 	var _empty_flag = false;
-	var _gn_count = multissid_support;
+	var _gn_count = multissid_count;
 	for(_gn_count; _gn_count > 0; _gn_count -= 1) {
 		_empty_flag = (gn_array_2g[(_gn_count - 1)][0] == "0") ? true : false;
 		if(!_empty_flag)
@@ -5015,7 +5023,7 @@ function remove_hint_msg() {
 
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="captive_portal_adv_log_panel" class="captive_portal_adv_log_panel"></div>
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
@@ -5070,6 +5078,9 @@ function remove_hint_msg() {
 									<div style='float:left;width:80%;'>
 									<div class="captive_portal_adv_intro_txt" style="color:#FC0;"><#Captive_Portal_desc1#></div>
 									<div class="captive_portal_adv_intro_txt"><#Captive_Portal_desc2#></div>
+									<div class="captive_portal_adv_intro_txt brt_series">
+										<#FAQ_Find#> : <a id="faq" href="" target="_blank" style="font-weight:bolder;text-decoration:underline;" href="" target="_blank">GO</a>
+									</div>
 									</div>
 									<div style="clear:both;"></div>
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>

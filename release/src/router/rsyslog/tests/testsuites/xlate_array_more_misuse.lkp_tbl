@@ -1,0 +1,7 @@
+{
+  "type" : "array",
+  "table":[
+      {"index": 2, "value":"baz" },
+      {"index": 1, "value":"foo_new" },
+      {"index": 1, "value":"bar_new" }]
+}

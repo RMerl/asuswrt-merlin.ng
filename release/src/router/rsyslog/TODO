@@ -1,0 +1,10 @@
+--enable-omhttpfs
+	--enable-valgrind
+	--enable-libgcrypt \
+	--enable-libdbi \
+	--enable-mmsnmptrapd \
+	--enable-omhiredis \
+	--enable-ommongodb \
+	--enable-mmnormalize \
+	--enable-mmdblookup \
+	--enable-gssapi-krb5 \

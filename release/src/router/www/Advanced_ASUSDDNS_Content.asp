@@ -20,6 +20,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
+*{
+    box-sizing: content-box;
+}
 .contentM_upload{
 	position:absolute;
 	-webkit-border-radius: 5px;
@@ -133,6 +136,7 @@ function show_warning_message(){
 		showhide("wan_ip_hide2", 1);
 }
 
+<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',
@@ -197,11 +201,6 @@ function force_update() {
 }
 
 function ddns_load_body(){
-	/* MODELDEP */
-	if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-		document.getElementById('ASUSOption').outerHTML = "";
-	}	
-
     if(ddns_enable_x == 1){
         inputCtrl(document.form.ddns_server_x, 1);
         document.getElementById('ddns_hostname_tr').style.display = "";
@@ -575,7 +574,7 @@ function show_cert_details(){
 			document.getElementById("cert_status").innerHTML = "<#CTL_ok#>";
 	}
 	else{
-		document.getElementById("cert_status").innerHTML = "Authorizing";
+		document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
 		setTimeout("get_cert_info();", 1000);
 	}
 	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
@@ -622,7 +621,7 @@ function save_cert_key(){
 </script>
 </head>
 
-<body onload="init();" onunLoad="return unload_body();">
+<body onload="init();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>
@@ -709,7 +708,7 @@ function save_cert_key(){
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>
 					<select name="ddns_server_x"class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
-						<option id="ASUSOption" value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
+						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>
@@ -830,14 +829,14 @@ function save_cert_key(){
 			</tr>
 
 			<tr id="cert_details" style="display:none;">
-				<th>Server Certificate</th><!--untranslated-->
+				<th>vpn_openvpn_KC_SA</th>
 				<td>
 					<div style="display:table-row;white-space: nowrap;">
 						<div style="display:table-cell;white-space: nowrap;"><#Status_Str#> :</div>
 						<div id="cert_status" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;">Issued to :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_to#> :</div> <!--untranslated-->
 						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;">
@@ -845,11 +844,11 @@ function save_cert_key(){
 						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;">Issued by :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_by#> :</div> <!--untranslated-->
 						<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;">Expires on :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_expire#> :</div> <!--untranslated-->
 						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div>
@@ -885,17 +884,17 @@ function save_cert_key(){
 <input type="hidden" name="action_wait" value="">
 <input type="hidden" name="le_enable" value="2">
 <div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
-	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;">Import your own certificate</div><!--untranslated-->
-	<div class="formfontdesc" style="margin-left: 15px;">Upload a certificate issued by a certification authority here. Your private key and SSL certificate is necessary.</div><!--untranslated-->
+	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;"><#DDNS_https_cert_Import#></div>
+	<div class="formfontdesc" style="margin-left: 15px;"><#DDNS_https_cert_Import_desc#></div>
 	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">Private Key :</div>
+		<div style="display:table-cell; width: 45%;"><#DDNS_https_cert_PrivateKey#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_key" class="input Upload_file"></div>
 	</div>
 	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">SSL Certificate :</div>
+		<div style="display:table-cell; width: 45%;"><#DDNS_ssl_cert#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
 	</div>
-	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">*Private keys cannot be passphrase protected.</div>
+	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">* <#DDNS_https_cert_PrivateKey_note#></div>
 	<div align="center" style="margin-top:30px; padding-bottom:15px;">
 		<div style="display:table-cell;"><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
 		<div style="display:table-cell; padding-left: 5px;"><input class="button_gen" type="button" onclick="upload_cert_key();" value="<#CTL_ok#>"></div>

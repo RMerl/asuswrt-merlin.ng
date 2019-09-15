@@ -233,7 +233,7 @@ function draw_chart(){
 </script>
 </head>
 
-<body onload="show_menu();init();" >
+<body onload="show_menu();init();" class="bg" >
 
 <div id="TopBanner"></div>
 

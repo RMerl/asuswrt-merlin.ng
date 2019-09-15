@@ -518,7 +518,7 @@ function refresh_ipsec_data() {
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>

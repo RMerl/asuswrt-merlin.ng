@@ -600,7 +600,7 @@ function done_validating(action){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <!-- floder tree-->

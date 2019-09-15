@@ -236,7 +236,7 @@ function rescan(){
 </script>
 </head>
 
-<body onload="initial();" onunload="">
+<body onload="initial();" onunload="" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>

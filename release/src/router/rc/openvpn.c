@@ -295,9 +295,25 @@ void start_ovpn_client(int clientNum)
 			if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_KEY))
 				fprintf(fp, "key client.key\n");
 		}
-		if (nvram_pf_get_int(prefix, "tlsremote"))
+		nvi = nvram_pf_get_int(prefix, "tlsremote");
+		if (nvi)
 		{
-			fprintf(fp, "verify-x509-name \"%s\" name\n", nvram_pf_safe_get(prefix, "cn"));
+			fprintf(fp, "verify-x509-name \"%s\" ",  nvram_pf_safe_get(prefix, "cn"));
+			switch(nvi)
+			{
+				case 1:
+					fprintf(fp, "name\n");
+					break;
+				case 2:
+					fprintf(fp, "name-prefix\n");
+					break;
+				case 3:
+					fprintf(fp, "subject\n");
+					break;
+				default:
+					fprintf(fp, "name\n");
+					break;
+			}
 		}
 		if (userauth)
 			fprintf(fp, "auth-user-pass up\n");

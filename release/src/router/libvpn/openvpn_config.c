@@ -130,8 +130,26 @@ void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, o
 
 	sprintf(varname, "vpn_%s%d_state", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
 	nvram_set_int(varname, status_type);
+        sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+        nvram_set_int(varname, err_no);
 }
 
+ovpn_status_t get_ovpn_status(ovpn_type_t type, int unit)
+{
+	char varname[32];
+
+	sprintf(varname, "vpn_%s%d_state", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+	return nvram_get_int(varname);
+
+}
+
+ovpn_errno_t get_ovpn_errno(ovpn_type_t type, int unit)
+{
+	char varname[32];
+
+	sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+	return nvram_get_int(varname);
+}
 
 char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, size_t buf_len)
 {
@@ -448,7 +466,7 @@ int get_max_dnsmode() {
 }
 
 
-void write_ovpn_dns(FILE* dnsmasq_conf) {
+void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf) {
 	int unit;
 	char filename[40], prefix[16];
 	char *buffer;

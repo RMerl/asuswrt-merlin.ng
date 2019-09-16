@@ -2126,7 +2126,7 @@ sysfail:
  return NULL;
 }
 
-#if 0 // replaced by #define in rc.h
+#if 0 // replaced by #define in shared.h
 int modprobe(const char *mod)
 {
 #if 1

@@ -956,11 +956,16 @@ ifneq ($(RTCONFIG_8M_SFP),y)
 #obj-$(NEED_SAMBA3) += brcmssp_util
 #endif
 obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba-3.0.33)
+obj-$(NEED_SAMBA3BOTH) += samba-3.0.33
 else
 obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
 endif
 else
+ifeq ($(RTCONFIG_QCA),y)
 obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
+else
+obj-$(NEED_SAMBA3) += samba3
+endif
 endif
 
 ifeq ($(RTCONFIG_NTFS),y)

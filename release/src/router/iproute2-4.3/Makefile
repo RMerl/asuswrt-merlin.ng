@@ -51,12 +51,10 @@ check_config: $(APP)/Makefile
 # Depend on check_config so that make progress can continue where it is stopped before
 $(APP): check_config
 	$(MAKE) -C $(APP) ;
-	install -m 755 $(APP)/ip/ip  $(INSTALL_DIR)/bin/ip
-	install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/bin/tc
-	install -D -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/usr/sbin/realtc
-	$(STRIP) $(INSTALL_DIR)/bin/tc
-	$(STRIP) $(INSTALL_DIR)/usr/sbin/realtc
-	$(STRIP) $(INSTALL_DIR)/bin/ip
+	#install -m 755 $(APP)/ip/ip  $(INSTALL_DIR)/bin/ip
+	#install -m 755 $(APP)/tc/tc  $(INSTALL_DIR)/bin/tc
+	#$(STRIP) $(INSTALL_DIR)/bin/tc
+	#$(STRIP) $(INSTALL_DIR)/bin/ip
 	@echo "Done building $(APP)"
 	
 else
@@ -69,7 +67,6 @@ endif
 # entire directory to ensure consistency.
 clean:
 	rm -f $(INSTALL_DIR)/bin/tc
-	rm -f $(INSTALL_DIR)/usr/sbin/realtc
 	rm -f $(INSTALL_DIR)/bin/ip
 	$(MAKE) -C $(APP) clean
 	#rm -rf $(APP)

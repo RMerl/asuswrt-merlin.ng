@@ -27,7 +27,7 @@ CFLAGS	+=	-I../shared
 ifeq ($(RTCONFIG_FTP_SSL),y)
 LIBS	=	-lnsl -pthread
 ifeq ($(RTCONFIG_OPENSSL11),y)
-OPENSSLDIR = ../openssl-1.1.x
+OPENSSLDIR = ../openssl-1.1
 else
 OPENSSLDIR = ../openssl
 endif
@@ -63,7 +63,7 @@ LDFLAGS += -lpthread -ldl
 endif
 CFLAGS += -I$(TOP)/sqlCipher
 CFLAGS += -I$(TOP)/PMS_DBapis
-LDFLAGS += -L$(TOP)/openssl -lcrypto
+LDFLAGS += -L$(TOP)/$(OPENSSLDIR) -lcrypto
 LDFLAGS += -L$(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif

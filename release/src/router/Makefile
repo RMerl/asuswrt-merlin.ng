@@ -463,6 +463,16 @@ obj-y += nvram_arm
 endif
 endif
 
+ifeq ($(RTCONFIG_OPENSSL11),y)
+OPENSSL := openssl-1.1
+CURL := curl
+else ifeq ($(RTCONFIG_OPENSSL10),y)
+OPENSSL := openssl-1.0
+CURL := curl
+else
+$(error OpenSSL is not defined)
+endif
+
 obj-$(RTCONFIG_LIBASUSLOG) += libasuslog
 
 obj-$(RTCONFIG_SW_HW_AUTH) += sw-hw-auth
@@ -1084,7 +1094,7 @@ obj-$(RTCONFIG_PPP_BASE) += pppd rp-pppoe
 obj-$(RTCONFIG_L2TP) += rp-l2tp
 obj-$(RTCONFIG_PPTP) += accel-pptp
 obj-$(RTCONFIG_EAPOL) += wpa_supplicant
-obj-$(RTCONFIG_HTTPS) += $(OPENSSLDIR)
+obj-$(RTCONFIG_HTTPS) += $(OPENSSL)
 obj-$(RTCONFIG_HTTPS) += wget
 obj-$(RTCONFIG_HTTPS) += zlib
 obj-$(RTCONFIG_SSH) += dropbear
@@ -1095,7 +1105,7 @@ obj-$(RTCONFIG_QUAGGA) += quagga
 obj-$(RTCONFIG_LZO) += lzo
 obj-$(RTCONFIG_OPENVPN) += lz4
 obj-$(RTCONFIG_OPENVPN) += openpam
-obj-$(RTCONFIG_OPENVPN) += $(OPENSSLDIR) openvpn
+obj-$(RTCONFIG_OPENVPN) += $(OPENSSL) openvpn
 
 obj-$(CONFIG_LINUX26) += hotplug2
 obj-$(CONFIG_LINUX26) += udev
@@ -1234,20 +1244,12 @@ obj-$(RTCONFIG_TRANSMISSION) += Transmission $(CURL) libevent-2.0.21
 obj-$(RTCONFIG_NANO) += ncurses-6.0
 obj-$(RTCONFIG_NANO) += nano
 obj-$(RTCONFIG_OPENVPN) += ministun
-obj-$(RTCONFIG_DNSSEC) += $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl-1.1.x,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
+obj-$(RTCONFIG_DNSSEC) += $(if $(RTCONFIG_DNSSEC_OPENSSL),$(OPENSSL),) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
 obj-$(RTCONFIG_SAMBA36X) += libiconv-1.14
 obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += inadyn
 obj-y += libconfuse
 obj-y += wsdd2
-
-ifeq ($(RTCONFIG_OPENSSL11),y)
-obj-$(RTCONFIG_OPENSSL11) += openssl-1.1.x
-CURL := curl
-OPENSSLDIR=openssl-1.1.x
-else
-OPENSSLDIR=openssl-1.0
-endif
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -1265,7 +1267,7 @@ obj-$(RTCONFIG_NFS) += portmap
 # End merlin add-ons
 
 ifeq ($(RTCONFIG_TOR),y)
-obj-y += openssl
+obj-y += $(OPENSSL)
 obj-y += zlib
 obj-y += libevent-2.0.21
 obj-y += tor
@@ -2543,30 +2545,6 @@ cyassl-clean:
 cyassl-install:
 	@true
 
-ifeq ($(RTCONFIG_OPENVPN),y)
-OPENSSL_CIPHERS:=enable-rc5 no-rc4 no-ssl3
-else
-#OPENSSL_CIPHERS:=no-dh no-idea no-rc2 no-rc5 no-aes no-aes192 no-cast no-des no-modes no-tls1 no-tlsext
-OPENSSL_CIPHERS:=no-rc4
-endif
-
-#OPENSSL_CIPHERS:=enable-aes enable-tls1 enable-tlsext
-
-openssl/Makefile:
-	cd openssl && \
-	./Configure $(HOSTCONFIG) -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
-	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections -Wa,--noexecstack \
-	shared $(OPENSSL_CIPHERS) no-ssl2 no-err
-#	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
-#	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
-#	no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
-#	no-zlib no-engine no-engines no-sse2 no-perlasm \
-#	no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
-
-	-@$(MAKE) -C openssl depend clean
-	@touch $@
-
 ifeq ($(HND_ROUTER),y)
 fsbuild:
 	-mkdir -p $(BCM_FSBUILD_DIR)/public/lib
@@ -2593,45 +2571,125 @@ fsbuild:
 	#-cd $(INSTALL_DIR)/lib/public && rm -f libgcc_s.so && ln -sf libgcc_s.so.1 libgcc_s.so
 endif
 
+#OPENSSL_CIPHERS:=no-dh no-idea no-rc2 no-rc5 no-aes no-aes192 no-cast no-des no-modes no-tls1 no-tlsext
+#      no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
+#      no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
+#      no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
+#      no-zlib no-engine no-engines no-sse2 no-perlasm \
+#      no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
+OPENSSL_CIPHERS := no-ssl2 no-gost no-heartbeats no-err no-unit-test
+ifeq ($(RTCONFIG_OPENVPN),y)
+OPENSSL_CIPHERS += enable-rc5
+endif
 
-openssl: openssl/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
+ifeq ($(HND_ROUTER),y)
+INSTALLSUBDIR =
+else
+INSTALLSUBDIR = /openssl
+endif
+
+# Hardcoded to 1.0 until Asus makes the switch to 1.1  -rm
+openssl: openssl-1.0/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
 	@$(SEP)
-	$(MAKE) -C openssl && $(MAKE) $@-stage
+	[ "$(notdir $(realpath $@))" = "openssl-1.0" ] || (rm -f $@ && ln -s openssl-1.0 $@)
+	$(MAKE) openssl-1.0
 
 openssl-clean:
-	[ ! -f openssl/Makefile ] || $(MAKE) -C openssl clean
-	@rm -f openssl/Makefile
-
-ifeq ($(HND_ROUTER),y)
-INSTALLSUBDIR=
-else
-INSTALLSUBDIR=/openssl
-endif
+	@$(MAKE) openssl-1.0-clean
+	rm -f openssl
 
 openssl-install:
-	[ ! -f openssl/Makefile ] || install -D openssl/libcrypto.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
-	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
-	[ ! -f openssl/Makefile ] || cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.0.0 libcrypto.so
-
-	[ ! -f openssl/Makefile ] || install -D openssl/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-	[ ! -f openssl/Makefile ] || chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-
-ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
-	[ ! -f openssl/Makefile ] || install -D openssl/libssl.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
-	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
-	[ ! -f openssl/Makefile ] || cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.0.0 libssl.so
-endif
+ifneq ($(wildcard openssl-1.0/Makefile),)
+	@$(MAKE) openssl-1.0-install
 ifeq ($(HND_ROUTER),y)
-	[ ! -f openssl/Makefile ] || mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
-	[ ! -f openssl/Makefile ] || cp -u openssl/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
+	mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
+	cp -u openssl-1.0/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
 endif
-	[ ! -f openssl/Makefile ] || install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+	install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
+endif
 
 openssl-stage:
-	$(MAKE) -C openssl install_sw INSTALL_PREFIX=$(STAGEDIR)
+	@$(MAKE) openssl-1.0-stage
 
-mssl: $(OPENSSLDIR)
+openssl-1.1/Makefile:
+	cd openssl-1.1 && \
+	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
+	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+	-ffunction-sections -fdata-sections -Wl,--gc-sections \
+	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
+	no-aria no-sm2 no-sm3 no-sm4 \
+	$(if $(filter y,$(HND_ROUTER)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
+	-@$(MAKE) -C openssl-1.1 depend clean
+	@touch $@
+
+openssl-1.1: openssl-1.1/Makefile
+	$(MAKE) -C openssl-1.1 $(PARALLEL_BUILD)
+
+openssl-1.1-clean:
+	[ ! -f openssl-1.1/Makefile ] || $(MAKE) -C openssl-1.1 clean
+	@rm -f openssl-1.1/Makefile
+
+openssl-1.1-install:
+	$(SEP)
+	if [ -f openssl-1.1/Makefile ] ; then \
+		install -D openssl-1.1/libcrypto.so.1.1 $(INSTALLDIR)/openssl-1.1/usr/lib/libcrypto.so.1.1 ; \
+		install -D openssl-1.1/libssl.so.1.1 $(INSTALLDIR)/openssl-1.1/usr/lib/libssl.so.1.1 ; \
+		$(STRIP) $(INSTALLDIR)/openssl-1.1/usr/lib/libssl.so.1.1 ; \
+		$(STRIP) $(INSTALLDIR)/openssl-1.1/usr/lib/libcrypto.so.1.1 ; \
+		install -D openssl-1.1/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
+		$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
+		chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
+	fi
+
+openssl-1.1-stage:
+	$(MAKE) -C openssl-1.1 install_sw INSTALL_PREFIX=$(STAGEDIR)
+
+openssl-1.0/Makefile:
+	[ "$(notdir $(realpath $@))" = "openssl-1.0" ] || (rm -f openssl && ln -s openssl-1.0 openssl)
+	cd openssl && \
+	./Configure $(HOSTCONFIG) -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
+	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+	-ffunction-sections -fdata-sections -Wl,--gc-sections -Wa,--noexecstack \
+	shared $(OPENSSL_CIPHERS) no-ssl2 no-err
+#	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
+#	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
+#	no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
+#	no-zlib no-engine no-engines no-sse2 no-perlasm \
+#	no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
+
+	-@$(MAKE) -C openssl depend clean
+	@touch $@
+
+openssl-1.0: openssl-1.0/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
+	@$(SEP)
+	$(MAKE) -C openssl-1.0 && $(MAKE) $@-stage
+
+openssl-1.0-clean:
+	[ ! -f openssl-1.0/Makefile ] || $(MAKE) -C openssl-1.0 clean
+	@rm -f openssl-1.0/Makefile
+
+openssl-1.0-install:
+ifneq ($(wildcard openssl-1.0/Makefile),)
+	install -D openssl-1.0/libcrypto.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
+	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
+ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
+	install -D openssl-1.0/libssl.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
+	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
+endif
+#ifeq ($(RTCONFIG_OPENSSL10),y)	// we want both 1.1 and 1.0  -rm
+	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.0.0 libcrypto.so
+	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0 ] || \
+		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.0.0 libssl.so
+	install -D openssl-1.0/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+#endif
+endif
+
+openssl-1.0-stage:
+	$(MAKE) -C openssl-1.0 install_sw INSTALL_PREFIX=$(STAGEDIR)
+
+mssl: $(OPENSSL)
 
 mssl-install:
 	$(MAKE) -C mssl INSTALLDIR=$(INSTALLDIR)/mssl install
@@ -2783,7 +2841,7 @@ ifeq ($(RTCONFIG_DHDAP),y)
 endif
 endif
 
-dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl-1.1.x,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
+dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),$(OPENSSL),) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
 	@$(SEP)
 	$(MAKE) -C dnsmasq \
 	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE -DEDNS_PKTSZ=1280 \
@@ -2791,13 +2849,13 @@ dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl-1.1.x,) $(if $(RTCONFIG_DNSSEC
 		$(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6) \
 		$(if $(RTCONFIG_USB_EXTRAS)||$(RTCONFIG_TR069),,-DNO_SCRIPT) \
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
-		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/openssl-1.1.x/include -DHAVE_DNSSEC,) \
+		$(if $(RTCONFIG_DNSSEC_OPENSSL),-I$(TOP)/$(OPENSSL)/include -DHAVE_DNSSEC,) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-I$(TOP)/nettle/include -I$(TOP)/gmp -DHAVE_DNSSEC -DHAVE_DNSSEC_STATIC -DNO_GOST,)" \
 	CFLAGS="-Os -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(EXTRALDFLAGS) \
-		$(if $(RTCONFIG_DNSSEC_OPENSSL),-pthread -L$(TOP)/openssl-1.1.x,) \
+		$(if $(RTCONFIG_DNSSEC_OPENSSL),-pthread -L$(TOP)/$(OPENSSL),) \
 		$(if $(RTCONFIG_DNSSEC_NETTLE),-L$(TOP)/nettle/lib -L$(TOP)/gmp/.libs,)" \
-	$(if $(RTCONFIG_DNSSEC_OPENSSL),PKG_CONFIG_PATH="$(TOP)/openssl-1.1.x" CRYPTO=openssl,) \
+	$(if $(RTCONFIG_DNSSEC_OPENSSL),PKG_CONFIG_PATH="$(TOP)/$(OPENSSL)" CRYPTO=openssl,) \
 	$(if $(RTCONFIG_DNSSEC_NETTLE),PKG_CONFIG_PATH="$(TOP)/nettle/lib/pkgconfig",)
 
 dnsmasq-install:
@@ -2838,7 +2896,7 @@ getdns-configure: getdns/configure
 		LDFLAGS="-L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(EXTRALDFLAGS)" \
 		LIBS="-lcrypto -lssl -lyaml"
 
-getdns: openssl libyaml getdns/Makefile
+getdns: $(OPENSSL) libyaml getdns/Makefile
 	$(MAKE) -C $@
 
 getdns-install:
@@ -3072,7 +3130,7 @@ shared-install:
 	$(MAKE) -C shared INSTALLDIR=$(INSTALLDIR)/shared install
 
 ifeq ($(RTCONFIG_FTP_SSL),y)
-ftp_dep=openssl
+ftp_dep=$(OPENSSL)
 else
 ftp_dep=
 endif
@@ -3656,8 +3714,6 @@ endif
 
 ez-ipupdate: openssl mssl
 
-ez-ipupdate: openssl mssl
-
 ez-ipupdate-install:
 	install -D ez-ipupdate/ez-ipupdate $(INSTALLDIR)/ez-ipupdate/usr/sbin/ez-ipupdate
 	$(STRIP) $(INSTALLDIR)/ez-ipupdate/usr/sbin/ez-ipupdate
@@ -4030,17 +4086,17 @@ libevent-2.0.21-clean:
 	[ ! -f libevent-2.0.21/Makefile ] || $(MAKE) -C libevent-2.0.21 distclean
 	@rm -f libevent-2.0.21/Makefile
 
-tor: $(OPENSSLDIR) zlib libevent-2.0.21 tor/Makefile
+tor: $(OPENSSL) zlib libevent-2.0.21 tor/Makefile
 	@$(SEP)
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 tor/Makefile:
 	(cd tor ; $(CONFIGURE) --with-libevent-dir=$(STAGEDIR)/usr \
-		--with-openssl-dir=$(TOP)/$(OPENSSLDIR) --with-zlib-dir=$(TOP)/zlib \
+		--with-openssl-dir=$(TOP)/$(OPENSSL) --with-zlib-dir=$(TOP)/zlib \
 		--disable-asciidoc --disable-unittests \
 		--disable-tool-name-check --disable-unittests \
-		CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
-		CPPFLAGS="-I$(TOP)/$(OPENSSLDIR)/include")
+		CFLAGS="-I$(TOP)/$(OPENSSL)/include" \
+		CPPFLAGS="-I$(TOP)/$(OPENSSL)/include")
 
 tor-install:
 	install -D tor/src/app/tor $(INSTALLDIR)/tor/usr/sbin/Tor
@@ -4952,13 +5008,13 @@ openpam-clean:
 	[ ! -f openpam/Makefile ] || $(MAKE) -C openpam distclean
 	@rm -f openpam/Makefile
 
-openvpn: shared $(OPENSSLDIR) lzo openpam zlib openvpn/Makefile
+openvpn: shared $(OPENSSL) lzo openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 openvpn/Makefile:
 	( cd openvpn ; ./autogen.sh ; \
-		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
-		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR)/ -lcrypto -lssl" \
+		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSL)/include" \
+		OPENSSL_LIBS="-L$(TOP)/$(OPENSSL)/ -lcrypto -lssl" \
 		LIBPAM_CFLAGS="-I$(TOP)/openpam/include" \
 		LIBPAM_LIBS="-L$(TOP)/openpam/lib/libpam/.libs -lpam" \
 		LZO_CFLAGS="-I$(TOP)/lzo/include" \
@@ -5326,12 +5382,12 @@ strongswan/Makefile: strongswan/configure
 	--with-strongswan-conf=/etc/strongswan.conf \
 	--with-user=admin \
 	CFLAGS="-O2 -Wall -Wno-format -Wno-format-security -Wno-pointer-sign \
-		-I$(TOP)/$(OPENSSLDIR)/include -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
+		-I$(TOP)/$(OPENSSL)/include -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
 		$(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
-	LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \
+	LDFLAGS="-L$(TOP)/$(OPENSSL) -L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \
 	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
 
-strongswan: $(OPENSSLDIR) strongswan/Makefile
+strongswan: $(OPENSSL) strongswan/Makefile
 	@$(SEP)
 	$(MAKE) -j 8 -C strongswan
 
@@ -5373,7 +5429,7 @@ neon/Makefile neon/config.h:
 	cp -f neon/config.h neon/src/config.h
 	touch $@
 
-neon: libxml2 $(OPENSSLDIR) neon/Makefile neon/config.h
+neon: libxml2 $(OPENSSL) neon/Makefile neon/config.h
 	$(MAKE) -C neon && $(MAKE) $@-stage
 
 neon-install:
@@ -5479,8 +5535,8 @@ net-snmp-5.7.2/stamp-h1:
 	cd $(TOP)/net-snmp-5.7.2 && $(CONFIGURE) --prefix=$(INSTALLDIR)/net-snmp-5.7.2/usr \
 		--disable-embedded-perl --with-perl-modules=no --disable-debugging --enable-mini-agent \
 		--with-transports=UDP --without-kmem-usage --disable-applications --disable-mib-loading \
-		--disable-scripts --disable-mibs --disable-manuals --with-openssl=$(TOP)/$(OPENSSLDIR) \
-		--with-ldflags="-L$(TOP)/$(OPENSSLDIR)" --with-libs="$(EXTRA_FLAG) -pthread" \
+		--disable-scripts --disable-mibs --disable-manuals --with-openssl=$(TOP)/$(OPENSSL) \
+		--with-ldflags="-L$(TOP)/$(OPENSSL)" --with-libs="$(EXTRA_FLAG) -pthread" \
 		--with-cflags="$(SNMPD_CFLAGS)" --with-default-snmp-version="3" \
 		--with-sys-location=Unknown --with-logfile=/var/log/snmpd.log \
 		--with-persistent-directory=/var/net-snmp --with-sys-contact=root@localhost \
@@ -5693,7 +5749,7 @@ db-4.8.30-clean:
 	-@$(MAKE) -C db-4.8.30/build_unix clean
 	@rm -f db-4.8.30/build_unix/stamp-h1
 
-netatalk-3.0.5-dep: $(OPENSSLDIR) libgcrypt-1.5.1 db-4.8.30
+netatalk-3.0.5-dep: $(OPENSSL) libgcrypt-1.5.1 db-4.8.30
 
 netaconfig netatalk-3.0.5/stamp-h1:
 	if [ ! -f netatalk-3.0.5/stamp-h1 ] ; then \
@@ -5708,7 +5764,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		--with-bdb=$(TOP)/db-4.8.30/build_unix \
 		--prefix=/usr \
 		--with-dtrace=no \
-		--with-ssl-dir=$(TOP)/$(OPENSSLDIR) \
+		--with-ssl-dir=$(TOP)/$(OPENSSL) \
 		--with-libgcrypt-dir=$(TOP)/libgcrypt-1.5.1 \
 		--with-ld-library-path=$(SRCBASE)/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/lib ; \
 		touch stamp-h1 ; \
@@ -6213,19 +6269,19 @@ norton${BCMEX}-clean:
 .PHONY : email-3.1.3 email-3.1.3-clean
 
 ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
-email-3.1.3/Makefile: $(OPENSSLDIR)
+email-3.1.3/Makefile: $(OPENSSL)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSLDIR)/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
-		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR) -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
+		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSL)/include -I$(TOP)/nt_center/lib -I$(TOP)/sqlite -DRTCONFIG_NOTIFICATION_CENTER" \
+		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSL) -L$(TOP)/nt_center/lib -L$(TOP)/sqlite/.libs" \
 		LIBS="-lnt -lsqlite3 -lpthread -lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 else
-email-3.1.3/Makefile: $(OPENSSLDIR)
+email-3.1.3/Makefile: $(OPENSSL)
 	cd $(TOP)/email-3.1.3 && \
 	$(CONFIGURE) --with-ssl --sysconfdir=/etc \
-		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSLDIR)/include" \
-		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSLDIR)" \
+		CFLAGS="-Os -Wall -I$(SRCBASE)/router/$(OPENSSL)/include" \
+		LDFLAGS="-L$(SRCBASE)/router/$(OPENSSL)" \
 		LIBS="-lcrypto -lssl $(if $(RTCONFIG_QCA), -ldl)"
 	touch $@
 endif
@@ -6318,14 +6374,14 @@ wget/Makefile: wget/Makefile.in
 		--disable-opie --disable-ntlm --disable-debug --disable-nls --disable-rpath \
 		$(if $(RTCONFIG_IPV6),,--disable-ipv6) --disable-iri --without-included-regex  \
 		--disable-dependency-tracking \
-		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl" \
-		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		OPENSSL_LIBS="-L$(TOP)/$(OPENSSL) -lcrypto -lssl" \
+		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSL)/include" \
 		ZLIB_CFLAGS="-I$(TOP)zlib" \
 		ZLIB_LIBS="-L$(TOP)/zlib -lz "\
 		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(STAGEDIR)/usr/include" \
 		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -pthread"
 
-wget: $(OPENSSLDIR) zlib wget/Makefile
+wget: $(OPENSSL) zlib wget/Makefile
 	$(MAKE) -C $@
 
 wget-clean:
@@ -6804,8 +6860,8 @@ inadyn/Makefile:
 	cd inadyn && $(CONFIGURE) \
 		confuse_CFLAGS="-I$(TOP)/libconfuse/src" \
 		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
-		OpenSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
-		OpenSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto" \
+		OpenSSL_CFLAGS="-I$(TOP)/$(OPENSSL)/include" \
+		OpenSSL_LIBS="-L$(TOP)/$(OPENSSL) -lcrypto" \
 		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUS_LE,)" \
 		LDFLAGS="$(LDFLAGS) $(EXTRA_NV_LDFLAGS) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections -pthread" \
 		--prefix="" --enable-openssl
@@ -7039,39 +7095,6 @@ portmap: portmap/Makefile
 portmap-install:
 	install -D portmap/portmap $(INSTALLDIR)/portmap/usr/sbin/portmap
 	$(STRIP) $(INSTALLDIR)/portmap/usr/sbin/portmap
-
-openssl-1.1.x/Makefile:
-	cd openssl-1.1.x && \
-	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
-	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
-	-ffunction-sections -fdata-sections -Wl,--gc-sections \
-	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
-	no-aria no-sm2 no-sm3 no-sm4 \
-	$(if $(filter y,$(HND_ROUTER)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
-	-@$(MAKE) -C openssl-1.1.x depend clean
-	@touch $@
-
-openssl-1.1.x: openssl-1.1.x/Makefile
-	$(MAKE) -C openssl-1.1.x $(PARALLEL_BUILD)
-
-openssl-1.1.x-clean:
-	[ ! -f openssl-1.1.x/Makefile ] || $(MAKE) -C openssl-1.1.x clean
-	@rm -f openssl-1.1.x/Makefile
-
-openssl-1.1.x-install:
-	$(SEP)
-	if [ -f openssl-1.1.x/Makefile ] ; then \
-		install -D openssl-1.1.x/libcrypto.so.1.1 $(INSTALLDIR)/openssl-1.1.x/usr/lib/libcrypto.so.1.1 ; \
-		install -D openssl-1.1.x/libssl.so.1.1 $(INSTALLDIR)/openssl-1.1.x/usr/lib/libssl.so.1.1 ; \
-		$(STRIP) $(INSTALLDIR)/openssl-1.1.x/usr/lib/libssl.so.1.1 ; \
-		$(STRIP) $(INSTALLDIR)/openssl-1.1.x/usr/lib/libcrypto.so.1.1 ; \
-		install -D openssl-1.1.x/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
-		$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
-		chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl11 ; \
-	fi
-
-openssl-1.1.x-stage:
-	 $(MAKE) -C openssl-1.1.x install_sw INSTALL_PREFIX=$(STAGEDIR)
 
 libvpn: shared nvram$(BCMEX)$(EX7)
 	@$(SEP)

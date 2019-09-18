@@ -17,16 +17,24 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
-<script type='text/javascript'>var fanctrl_info = [<% get_fanctrl_info(); %>];
+<script type='text/javascript'>
+var fanctrl_info = [<% get_fanctrl_info(); %>];
+var temp_base = 30;
+var d_temp = 20;
+var rpm_base = 1500;
+var d_rpm = 250;
 curr_coreTmp_2 = "<% sysinfo("temperature.2"); %>".replace("&deg;C", "");
 curr_coreTmp_5 = "<% sysinfo("temperature.5"); %>".replace("&deg;C", ""); 
-curr_coreTmp_cpu = "<% get_cpu_temperature(); %>";
+curr_cpuTemp = "<% get_cpu_temperature(); %>";
 var coreTmp_2 = new Array();
 var coreTmp_5 = new Array();
-var coreTmp_cpu = new Array();
+var cpuTemp = new Array();
 coreTmp_2 = [curr_coreTmp_2];
 coreTmp_5 = [curr_coreTmp_5];
-coreTmp_cpu = [curr_coreTmp_cpu];
+cpuTemp = [curr_cpuTemp];
+var curr_rxData = fanctrl_info[3];
+var rxData = new Array();
+rxData = [(curr_rxData - rpm_base) / (d_rpm / d_temp) + temp_base];
 var wl_control_channel = <% wl_control_channel(); %>;
 
 function initial(){
@@ -38,7 +46,7 @@ function initial(){
 	code1 = '<br>Legend: <span style="color: #FF9900;">2.4 GHz</span> - <span style="color: #33CCFF;">5 GHz</span>';
 	code2 = '<br>Current Temperatures: <span id="coreTemp_2" style="text-align:center; font-weight:bold;color:#FF9900"></span> - <span id="coreTemp_5" style="text-align:center; font-weight:bold;color:#33CCFF"></span>';
 
-	if(curr_coreTmp_cpu != "") {
+	if(curr_cpuTemp != "") {
 		code1 += ' - <span style="color: #00FF33;">CPU</span>';
 		code2 += ' - <span id="coreTemp_cpu" style="text-align:center; font-weight:bold;color:#00FF33"></span>';
 	}
@@ -55,7 +63,7 @@ function update_coretmp(e){
       update_coretmp();
     },
     success: function(response){
-			updateNum(curr_coreTmp_2, curr_coreTmp_5, parseInt(curr_coreTmp_cpu));
+			updateNum(curr_coreTmp_2, curr_coreTmp_5, parseInt(curr_cpuTemp));
 			setTimeout("update_coretmp();", 5000);
 		}    
   });
@@ -88,6 +96,15 @@ function changeTempUnit(num){
 	cookie.set("CoreTmpUnit", num, 365);
 	refreshpage();
 }
+
+function setCookie(num){
+	cookie.set("CoreTmpUnit", num, 365);
+}
+
+function getCookie(c_name)
+{
+	return cookie.get("CoreTmpUnit");
+}
 </script>
 </head>
 
@@ -96,6 +113,18 @@ function changeTempUnit(num){
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
+<input type="hidden" name="current_page" value="Advanced_PerformanceTuning_Content.asp">
+<input type="hidden" name="next_page" value="Advanced_PerformanceTuning_Content.asp">
+<input type="hidden" name="modified" value="0">
+<input type="hidden" name="action_mode" value="apply">
+<input type="hidden" name="action_wait" value="5">
+<input type="hidden" name="action_script" value="">
+<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
+<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="wl_ssid" value="<% nvram_get("wl_ssid"); %>">
+<input type="hidden" name="wl0_TxPower_orig" value="<% nvram_get("wl0_TxPower"); %>" disabled>
+<input type="hidden" name="wl1_TxPower_orig" value="<% nvram_get("wl1_TxPower"); %>" disabled>
+<input type="hidden" name="btn_led_mode" value="<% nvram_get("btn_led_mode"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>		
@@ -104,41 +133,26 @@ function changeTempUnit(num){
 			<div id="subMenu"></div>		
 		</td>						
     <td valign="top">
-			<div id="tabMenu" class="submenuBlock"></div>
-			
+			<div id="tabMenu" class="submenuBlock"></div>			
 			<!--===================================Beginning of Main Content===========================================-->
-			<input type="hidden" name="current_page" value="Advanced_PerformanceTuning_Content.asp">
-			<input type="hidden" name="next_page" value="Advanced_PerformanceTuning_Content.asp">
-			<input type="hidden" name="modified" value="0">
-			<input type="hidden" name="action_mode" value="apply">
-			<input type="hidden" name="action_wait" value="5">
-			<input type="hidden" name="action_script" value="">
-			<input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
-			<input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-			<input type="hidden" name="wl_ssid" value="<% nvram_get("wl_ssid"); %>">
-			<input type="hidden" name="wl0_TxPower_orig" value="<% nvram_get("wl0_TxPower"); %>" disabled>
-			<input type="hidden" name="wl1_TxPower_orig" value="<% nvram_get("wl1_TxPower"); %>" disabled>
-			<input type="hidden" name="btn_led_mode" value="<% nvram_get("btn_led_mode"); %>">
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 				<tr>
 					<td valign="top">
 						<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 							<tbody>
-								<tr bgcolor="#4D595D" style="height:10px">
-								  <td valign="top">
+                <tr bgcolor="#4D595D" style="height:10px">
+	                <td valign="top">
 									  <div>&nbsp;</div>
 									  <div class="formfonttitle"><#menu5_6#> - Temperature</div>
 									  <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-									  <!--div class="formfontdesc"><#PerformaceTuning_desc#></div-->
 									</td>
 								</tr>
-
-								<tr>
+								<tr style="height:10px">
 									<td bgcolor="#4D595D" valign="top">
 										<table width="99%" border="0" align="center" cellpadding="0" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 											<thead>
 											<tr>
-												<td colspan="2">Cooler status</td>
+												<td colspan="2">System Temperature</td><!-- untranslated -->
 											</tr>
 											</thead>
 											
@@ -163,7 +177,7 @@ function changeTempUnit(num){
 										<div id="legend"></div>
 									</td>
 								</tr>
-								<tr>
+								<tr style="height:10px">
 									<td bgcolor="#4D595D" valign="top">
 										<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 											<thead>
@@ -171,34 +185,33 @@ function changeTempUnit(num){
 												<td colspan="2">System adjustment</td>
 											</tr>
 											</thead>
-
 											<tr>
 												<th>Temperature unit</th>
 												<td>
 													<select name="fanctrl_fullspeed_temp_unit" class="input_option" onchange="changeTempUnit(this.value)">
 														<option class="content_input_fd" value="0">°C</option>
 														<option class="content_input_fd" value="1">°F</option>
-													</select>
+													</select>			
 												</td>
 											</tr>
 										</table>
 									</td>
-								</tr>
+							</tr>
 
-								<tr valign="top" style="height:10px">
+								<tr valign="top" style="height:10px;display:none;">
 									<td bgcolor="#4D595D" valign="top">
 										<div class="apply_gen">
 											<input class="button_gen" onclick="applyRule();" type="button" value="<#CTL_apply#>"/>
 										</div>
 									</td>
-								</tr>
+					  		</tr>
 
 								<tr valign="top">
 									<td bgcolor="#4D595D" valign="top">
 										<div>
 										</div>
 									</td>
-								</tr>
+					  		</tr>
 							</tbody>
 						</table>
 					</td>
@@ -211,3 +224,4 @@ function changeTempUnit(num){
 <div id="footer"></div>
 </body>
 </html>
+

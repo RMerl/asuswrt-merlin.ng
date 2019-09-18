@@ -1010,7 +1010,7 @@ static int do_led_ctrl(enum led_id led_id, int onoff)
 {
 	if (led_id < 0 || led_id >= LED_ID_MAX)
 		return -1;
-	return led_control_atomic(led_id, onoff);
+	return led_control(led_id, onoff);
 }
 #endif
 

@@ -8140,12 +8140,15 @@ iproute2-4.3:
 
 iproute2-4.3-install:
 	install -D iproute2-4.3/iproute2-4.3.0/tc/tc $(INSTALLDIR)/iproute2-4.3/usr/sbin/tc
+	install -D iproute2-4.3/iproute2-4.3.0/tc/tc  $(INSTALL_DIR)/iproute2-4.3/usr/sbin/realtc
 	$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/sbin/tc
+	$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/sbin/realtc
 	install -D iproute2-4.3/iproute2-4.3.0/ip/ip $(INSTALLDIR)/iproute2-4.3/usr/sbin/ip
 	$(STRIP) $(INSTALLDIR)/iproute2-4.3/usr/sbin/ip
 
 iproute2-4.3-clean:
 	-@$(MAKE) -C iproute2-4.3 clean
+	-rm -f $(INSTALL_DIR)/usr/sbin/realtc
 	-rm -f iproute2-4.3/iproute2-4.3.0/Config
 
 .PHONY : iproute2-4.3

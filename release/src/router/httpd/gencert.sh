@@ -10,6 +10,13 @@ else
 	OPENSSL=/usr/sbin/openssl
 fi
 
+if [ $(nvram get ntp_ready) = "1" ]
+then
+        DAYS=720
+else
+        DAYS=3653
+fi
+
 WAITTIMER=0
 while [ -f "/var/run/gencert.pid" -a $WAITTIMER -lt 14 ]
 do
@@ -49,6 +56,9 @@ else
 	echo "0.emailAddress=E" >> $OPENSSLCNF
 	echo "0.emailAddress_value=root@localhost" >> $OPENSSLCNF
 fi
+
+# Required extension
+sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSLCNF
 
 I=0
 # Start of SAN extensions
@@ -127,7 +137,7 @@ fi
 # create the key
 $OPENSSL genpkey -out $KEYNAME.$PID -algorithm rsa -pkeyopt rsa_keygen_bits:2048
 # create certificate request and sign it
-$OPENSSL req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days 3653 -config $OPENSSLCNF -set_serial $1
+$OPENSSL req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days $DAYS -config $OPENSSLCNF -set_serial $1
 
 # server.pem for WebDav SSL
 cat $KEYNAME.$PID $CERTNAME.$PID > server.pem

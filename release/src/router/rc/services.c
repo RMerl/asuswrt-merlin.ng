@@ -15581,7 +15581,6 @@ void setup_leds()
 #if defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
 		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
 		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
-		led_control(LED_WAN_NORMAL, LED_ON);
 #elif defined(HND_ROUTER)
 		led_control(LED_WAN_NORMAL, LED_ON);
 		setLANLedOn();

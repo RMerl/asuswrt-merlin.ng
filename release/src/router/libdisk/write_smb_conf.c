@@ -257,11 +257,13 @@ int main(int argc, char *argv[])
 #endif
 
 #if defined(RTCONFIG_SAMBA36X)
+#if 0
 	snprintf(st_samba_proto, sizeof(st_samba_proto), "%s", nvram_safe_get("st_samba_proto"));
 	samba_proto = atoi(st_samba_proto);
 	if(*st_samba_proto && samba_proto >= 2)
 		fprintf(fp, "max protocol = SMB%s\n", st_samba_proto); /* enable SMB1 & SMB2 simultaneously, rewrite when GUI is ready!! */
 	fprintf(fp, "passdb backend = smbpasswd\n");
+#endif //0
 //#endif
 //#if defined(RTCONFIG_SAMBA36X) && defined(RTCONFIG_QCA)
 #if defined(RTCONFIG_QCA)

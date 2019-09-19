@@ -1268,7 +1268,7 @@ void start_ovpn_server(int serverNum)
 					fclose(fp);
 				}
 				if ((valid != 0) && (valid < 1024)) {
-					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", serverNum, valid);
+					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", serverNum, i);
 				}
 			} else {
 				valid = 1024;

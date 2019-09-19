@@ -1,4 +1,4 @@
-{
+updateManufacturer({
 "E043DB":"Shenzhen ViewAt Technology Co.,Ltd. ",
 "2405F5":"Integrated Device Technology (Malaysia) Sdn. Bhd.",
 "3CD92B":"Hewlett Packard",
@@ -25294,4 +25294,4 @@
 "586B14":"Apple, Inc.",
 "94B01F":"Apple, Inc.",
 "timestamp":"1534487875"
-};
+});

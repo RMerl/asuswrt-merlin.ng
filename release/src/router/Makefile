@@ -1245,6 +1245,7 @@ obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += inadyn
 obj-y += libconfuse
 obj-y += wsdd2
+obj-$(RTCONFIG_BWDPI) += faketc
 
 ifeq ($(RTCONFIG_OPENSSL11),y)
 obj-$(RTCONFIG_OPENSSL11) += openssl-1.1.x

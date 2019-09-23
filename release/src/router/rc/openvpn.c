@@ -1412,8 +1412,11 @@ void start_ovpn_server(int serverNum)
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
-	nvram_pf_set_int(prefix, "state", OVPN_STS_RUNNING);
-	nvram_pf_set_int(prefix, "error", OVPN_ERRNO_NONE);
+	if ( cryptMode == SECRET )
+	{
+		nvram_pf_set_int(prefix, "state", OVPN_STS_RUNNING);
+		nvram_pf_set_int(prefix, "error", OVPN_ERRNO_NONE);
+	}
 
 	// watchdog
 	sprintf(buffer, "/etc/openvpn/server%d/vpns-watchdog%d.sh", serverNum, serverNum);

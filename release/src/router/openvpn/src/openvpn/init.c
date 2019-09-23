@@ -1555,6 +1555,8 @@ initialization_sequence_completed(struct context *c, const unsigned int flags)
         c->options.no_advance = true;
     }
 
+    update_nvram_status(0);
+
 #ifdef _WIN32
     fork_register_dns_action(c->c1.tuntap);
 #endif

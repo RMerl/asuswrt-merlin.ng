@@ -905,6 +905,10 @@ PERL
 IPV6_ENABLED
 FISH_FUNCTIONS_DIR
 ZSH_FUNCTIONS_DIR
+USE_QUICHE
+USE_NGHTTP3
+USE_NGTCP2_CRYPTO_OPENSSL
+USE_NGTCP2
 USE_NGHTTP2
 IDN_ENABLED
 CURL_LT_SHLIB_USE_VERSIONED_SYMBOLS_FALSE
@@ -1020,7 +1024,6 @@ am__nodep
 AMDEPBACKSLASH
 AMDEP_FALSE
 AMDEP_TRUE
-am__quote
 am__include
 DEPDIR
 am__untar
@@ -1108,7 +1111,8 @@ PACKAGE_VERSION
 PACKAGE_TARNAME
 PACKAGE_NAME
 SHELL
-PATH_SEPARATOR'
+PATH_SEPARATOR
+am__quote'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
@@ -1188,6 +1192,9 @@ enable_versioned_symbols
 with_winidn
 with_libidn2
 with_nghttp2
+with_ngtcp2
+with_nghttp3
+with_quiche
 with_zsh_functions_dir
 with_fish_functions_dir
 enable_threaded_resolver
@@ -2067,6 +2074,12 @@ Optional Packages:
   --without-libidn2       Disable libidn2 usage
   --with-nghttp2=PATH     Enable nghttp2 usage
   --without-nghttp2       Disable nghttp2 usage
+  --with-ngtcp2=PATH      Enable ngtcp2 usage
+  --without-ngtcp2        Disable ngtcp2 usage
+  --with-nghttp3=PATH     Enable nghttp3 usage
+  --without-nghttp3       Disable nghttp3 usage
+  --with-quiche=PATH      Enable quiche usage
+  --without-quiche        Disable quiche usage
   --with-zsh-functions-dir=PATH
                           Install zsh completions to PATH
   --without-zsh-functions-dir
@@ -5153,7 +5166,7 @@ fi
   fi
 
 
-am__api_version='1.15'
+am__api_version='1.16'
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether build environment is sane" >&5
 $as_echo_n "checking whether build environment is sane... " >&6; }
@@ -5486,45 +5499,45 @@ DEPDIR="${am__leading_dot}deps"
 
 ac_config_commands="$ac_config_commands depfiles"
 
-
-am_make=${MAKE-make}
-cat > confinc << 'END'
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ${MAKE-make} supports the include directive" >&5
+$as_echo_n "checking whether ${MAKE-make} supports the include directive... " >&6; }
+cat > confinc.mk << 'END'
 am__doit:
-	@echo this is the am__doit target
+	@echo this is the am__doit target >confinc.out
 .PHONY: am__doit
 END
-# If we don't find an include directive, just comment out the code.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for style of include used by $am_make" >&5
-$as_echo_n "checking for style of include used by $am_make... " >&6; }
 am__include="#"
 am__quote=
-_am_result=none
-# First try GNU make style include.
-echo "include confinc" > confmf
-# Ignore all kinds of additional output from 'make'.
-case `$am_make -s -f confmf 2> /dev/null` in #(
-*the\ am__doit\ target*)
-  am__include=include
-  am__quote=
-  _am_result=GNU
-  ;;
-esac
-# Now try BSD make style include.
-if test "$am__include" = "#"; then
-   echo '.include "confinc"' > confmf
-   case `$am_make -s -f confmf 2> /dev/null` in #(
-   *the\ am__doit\ target*)
-     am__include=.include
-     am__quote="\""
-     _am_result=BSD
+# BSD make does it like this.
+echo '.include "confinc.mk" # ignored' > confmf.BSD
+# Other make implementations (GNU, Solaris 10, AIX) do it like this.
+echo 'include confinc.mk # ignored' > confmf.GNU
+_am_result=no
+for s in GNU BSD; do
+  { echo "$as_me:$LINENO: ${MAKE-make} -f confmf.$s && cat confinc.out" >&5
+   (${MAKE-make} -f confmf.$s && cat confinc.out) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); }
+  case $?:`cat confinc.out 2>/dev/null` in #(
+  '0:this is the am__doit target') :
+    case $s in #(
+  BSD) :
+    am__include='.include' am__quote='"' ;; #(
+  *) :
+    am__include='include' am__quote='' ;;
+esac ;; #(
+  *) :
      ;;
-   esac
-fi
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $_am_result" >&5
-$as_echo "$_am_result" >&6; }
-rm -f confinc confmf
+esac
+  if test "$am__include" != "#"; then
+    _am_result="yes ($s style)"
+    break
+  fi
+done
+rm -f confinc.* confmf.*
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: ${_am_result}" >&5
+$as_echo "${_am_result}" >&6; }
 
 # Check whether --enable-dependency-tracking was given.
 if test "${enable_dependency_tracking+set}" = set; then :
@@ -5601,8 +5614,8 @@ MAKEINFO=${MAKEINFO-"${am_missing_run}makeinfo"}
 
 # For better backward compatibility.  To be removed once Automake 1.9.x
 # dies out for good.  For more background, see:
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
-# <http://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00001.html>
+# <https://lists.gnu.org/archive/html/automake/2012-07/msg00014.html>
 mkdir_p='$(MKDIR_P)'
 
 # We need awk for the "check" target (and possibly the TAP driver).  The
@@ -5781,7 +5794,7 @@ END
 Aborting the configuration process, to ensure you take notice of the issue.
 
 You can download and install GNU coreutils to get an 'rm' implementation
-that behaves properly: <http://www.gnu.org/software/coreutils/>.
+that behaves properly: <https://www.gnu.org/software/coreutils/>.
 
 If you want to complete the configuration process using your problematic
 'rm' anyway, export the environment variable ACCEPT_INFERIOR_RM_PROGRAM
@@ -9221,11 +9234,8 @@ _LT_EOF
   test $ac_status = 0; }; then
     # Now try to grab the symbols.
     nlist=conftest.nm
-    if { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist\""; } >&5
-  (eval $NM conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; } && test -s "$nlist"; then
+    $ECHO "$as_me:$LINENO: $NM conftest.$ac_objext | $lt_cv_sys_global_symbol_pipe > $nlist" >&5
+    if eval "$NM" conftest.$ac_objext \| "$lt_cv_sys_global_symbol_pipe" \> $nlist 2>&5 && test -s "$nlist"; then
       # Try sorting and uniquifying the output.
       if sort "$nlist" | uniq > "$nlist"T; then
 	mv -f "$nlist"T "$nlist"
@@ -11836,6 +11846,12 @@ lt_prog_compiler_static=
       ecc*)
 	lt_prog_compiler_wl='-Wl,'
 	lt_prog_compiler_pic='-KPIC'
+	lt_prog_compiler_static='-static'
+        ;;
+      # flang / f18. f95 an alias for gfortran or flang on Debian
+      flang* | f18* | f95*)
+	lt_prog_compiler_wl='-Wl,'
+	lt_prog_compiler_pic='-fPIC'
 	lt_prog_compiler_static='-static'
         ;;
       # icc used to be incompatible with GCC.
@@ -25376,7 +25392,7 @@ _ACEOF
 fi
 
 
-if test "$check_for_ca_bundle" -gt 0; then
+if test -n "$check_for_ca_bundle"; then
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking default CA cert bundle/path" >&5
@@ -27623,6 +27639,1067 @@ fi
     fi
   fi
 
+fi
+
+
+OPT_TCP2="yes"
+curl_h3_msg="disabled (--with-ngtcp2, --with-quiche)"
+
+if test "x$disable_http" = "xyes"; then
+  # without HTTP, ngtcp2 is no use
+  OPT_TCP2="no"
+fi
+
+
+# Check whether --with-ngtcp2 was given.
+if test "${with_ngtcp2+set}" = set; then :
+  withval=$with_ngtcp2; OPT_TCP2=$withval
+fi
+
+case "$OPT_TCP2" in
+  no)
+        want_tcp2="no"
+    ;;
+  yes)
+        want_tcp2="default"
+    want_tcp2_path=""
+    ;;
+  *)
+        want_tcp2="yes"
+    want_tcp2_path="$withval/lib/pkgconfig"
+    ;;
+esac
+
+curl_tcp2_msg="disabled (--with-ngtcp2)"
+if test X"$want_tcp2" != Xno; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libngtcp2 options with pkg-config" >&5
+$as_echo_n "checking for libngtcp2 options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists libngtcp2 >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_TCP2=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-l libngtcp2`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -l is $LIB_TCP2" >&5
+$as_echo "$as_me: -l is $LIB_TCP2" >&6;}
+
+    CPP_TCP2=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+       $PKGCONFIG --cflags-only-I libngtcp2`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -I is $CPP_TCP2" >&5
+$as_echo "$as_me: -I is $CPP_TCP2" >&6;}
+
+    LD_TCP2=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-L libngtcp2`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -L is $LD_TCP2" >&5
+$as_echo "$as_me: -L is $LD_TCP2" >&6;}
+
+    LDFLAGS="$LDFLAGS $LD_TCP2"
+    CPPFLAGS="$CPPFLAGS $CPP_TCP2"
+    LIBS="$LIB_TCP2 $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_TCP2=`echo $LD_TCP2 | $SED -e 's/-L//'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ngtcp2_conn_client_new in -lngtcp2" >&5
+$as_echo_n "checking for ngtcp2_conn_client_new in -lngtcp2... " >&6; }
+if ${ac_cv_lib_ngtcp2_ngtcp2_conn_client_new+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lngtcp2  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char ngtcp2_conn_client_new ();
+int main (void)
+{
+return ngtcp2_conn_client_new ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ngtcp2_ngtcp2_conn_client_new=yes
+else
+  ac_cv_lib_ngtcp2_ngtcp2_conn_client_new=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ngtcp2_ngtcp2_conn_client_new" >&5
+$as_echo "$ac_cv_lib_ngtcp2_ngtcp2_conn_client_new" >&6; }
+if test "x$ac_cv_lib_ngtcp2_ngtcp2_conn_client_new" = xyes; then :
+
+       for ac_header in ngtcp2/ngtcp2.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "ngtcp2/ngtcp2.h" "ac_cv_header_ngtcp2_ngtcp2_h" "$ac_includes_default"
+if test "x$ac_cv_header_ngtcp2_ngtcp2_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NGTCP2_NGTCP2_H 1
+_ACEOF
+ NGTCP2_ENABLED=1
+
+$as_echo "#define USE_NGTCP2 1" >>confdefs.h
+
+          USE_NGTCP2=1
+
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_TCP2"
+          export CURL_LIBRARY_PATH
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_TCP2 to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_TCP2 to CURL_LIBRARY_PATH" >&6;}
+
+fi
+
+done
+
+
+else
+          LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+
+fi
+
+
+  else
+        if test X"$want_tcp2" != Xdefault; then
+                  as_fn_error $? "--with-ngtcp2 was specified but could not find ngtcp2 pkg-config file." "$LINENO" 5
+    fi
+  fi
+
+fi
+
+if test "x$NGTCP2_ENABLED" = "x1"; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libngtcp2_crypto_openssl options with pkg-config" >&5
+$as_echo_n "checking for libngtcp2_crypto_openssl options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists libngtcp2_crypto_openssl >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_NGTCP2_CRYPTO_OPENSSL=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-l libngtcp2_crypto_openssl`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -l is $LIB_NGTCP2_CRYPTO_OPENSSL" >&5
+$as_echo "$as_me: -l is $LIB_NGTCP2_CRYPTO_OPENSSL" >&6;}
+
+    CPP_NGTCP2_CRYPTO_OPENSSL=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+       $PKGCONFIG --cflags-only-I libngtcp2_crypto_openssl`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -I is $CPP_NGTCP2_CRYPTO_OPENSSL" >&5
+$as_echo "$as_me: -I is $CPP_NGTCP2_CRYPTO_OPENSSL" >&6;}
+
+    LD_NGTCP2_CRYPTO_OPENSSL=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-L libngtcp2_crypto_openssl`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -L is $LD_NGTCP2_CRYPTO_OPENSSL" >&5
+$as_echo "$as_me: -L is $LD_NGTCP2_CRYPTO_OPENSSL" >&6;}
+
+    LDFLAGS="$LDFLAGS $LD_NGTCP2_CRYPTO_OPENSSL"
+    CPPFLAGS="$CPPFLAGS $CPP_NGTCP2_CRYPTO_OPENSSL"
+    LIBS="$LIB_NGTCP2_CRYPTO_OPENSSL $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_NGTCP2_CRYPTO_OPENSSL=`echo $LD_NGTCP2_CRYPTO_OPENSSL | $SED -e 's/-L//'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_openssl" >&5
+$as_echo_n "checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_openssl... " >&6; }
+if ${ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lngtcp2_crypto_openssl  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char ngtcp2_crypto_ctx_initial ();
+int main (void)
+{
+return ngtcp2_crypto_ctx_initial ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial=yes
+else
+  ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial" >&5
+$as_echo "$ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial" >&6; }
+if test "x$ac_cv_lib_ngtcp2_crypto_openssl_ngtcp2_crypto_ctx_initial" = xyes; then :
+
+       for ac_header in ngtcp2/ngtcp2_crypto.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "ngtcp2/ngtcp2_crypto.h" "ac_cv_header_ngtcp2_ngtcp2_crypto_h" "$ac_includes_default"
+if test "x$ac_cv_header_ngtcp2_ngtcp2_crypto_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NGTCP2_NGTCP2_CRYPTO_H 1
+_ACEOF
+ NGTCP2_ENABLED=1
+
+$as_echo "#define USE_NGTCP2_CRYPTO_OPENSSL 1" >>confdefs.h
+
+          USE_NGTCP2_CRYPTO_OPENSSL=1
+
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_NGTCP2_CRYPTO_OPENSSL"
+          export CURL_LIBRARY_PATH
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_NGTCP2_CRYPTO_OPENSSL to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_NGTCP2_CRYPTO_OPENSSL to CURL_LIBRARY_PATH" >&6;}
+
+fi
+
+done
+
+
+else
+          LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+
+fi
+
+
+  else
+        if test X"$want_tcp2" != Xdefault; then
+                  as_fn_error $? "--with-ngtcp2 was specified but could not find ngtcp2_crypto_openssl pkg-config file." "$LINENO" 5
+    fi
+  fi
+fi
+
+
+OPT_NGHTTP3="yes"
+
+if test "x$NGTCP2_ENABLED" = "x"; then
+  # without ngtcp2, nghttp3 is of no use for us
+  OPT_NGHTTP3="no"
+fi
+
+
+# Check whether --with-nghttp3 was given.
+if test "${with_nghttp3+set}" = set; then :
+  withval=$with_nghttp3; OPT_NGHTTP3=$withval
+fi
+
+case "$OPT_NGHTTP3" in
+  no)
+        want_nghttp3="no"
+    ;;
+  yes)
+        want_nghttp3="default"
+    want_nghttp3_path=""
+    ;;
+  *)
+        want_nghttp3="yes"
+    want_nghttp3_path="$withval/lib/pkgconfig"
+    ;;
+esac
+
+curl_http3_msg="disabled (--with-nghttp3)"
+if test X"$want_nghttp3" != Xno; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libnghttp3 options with pkg-config" >&5
+$as_echo_n "checking for libnghttp3 options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$want_nghttp3_path"; then
+      PKG_CONFIG_LIBDIR="$want_nghttp3_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists libnghttp3 >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_NGHTTP3=`
+    if test -n "$want_nghttp3_path"; then
+      PKG_CONFIG_LIBDIR="$want_nghttp3_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-l libnghttp3`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -l is $LIB_NGHTTP3" >&5
+$as_echo "$as_me: -l is $LIB_NGHTTP3" >&6;}
+
+    CPP_NGHTTP3=`
+    if test -n "$want_nghttp3_path"; then
+      PKG_CONFIG_LIBDIR="$want_nghttp3_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+       $PKGCONFIG --cflags-only-I libnghttp3`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -I is $CPP_NGHTTP3" >&5
+$as_echo "$as_me: -I is $CPP_NGHTTP3" >&6;}
+
+    LD_NGHTTP3=`
+    if test -n "$want_nghttp3_path"; then
+      PKG_CONFIG_LIBDIR="$want_nghttp3_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-L libnghttp3`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -L is $LD_NGHTTP3" >&5
+$as_echo "$as_me: -L is $LD_NGHTTP3" >&6;}
+
+    LDFLAGS="$LDFLAGS $LD_NGHTTP3"
+    CPPFLAGS="$CPPFLAGS $CPP_NGHTTP3"
+    LIBS="$LIB_NGHTTP3 $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_NGHTTP3=`echo $LD_NGHTTP3 | $SED -e 's/-L//'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nghttp3_conn_client_new in -lnghttp3" >&5
+$as_echo_n "checking for nghttp3_conn_client_new in -lnghttp3... " >&6; }
+if ${ac_cv_lib_nghttp3_nghttp3_conn_client_new+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lnghttp3  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char nghttp3_conn_client_new ();
+int main (void)
+{
+return nghttp3_conn_client_new ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_nghttp3_nghttp3_conn_client_new=yes
+else
+  ac_cv_lib_nghttp3_nghttp3_conn_client_new=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nghttp3_nghttp3_conn_client_new" >&5
+$as_echo "$ac_cv_lib_nghttp3_nghttp3_conn_client_new" >&6; }
+if test "x$ac_cv_lib_nghttp3_nghttp3_conn_client_new" = xyes; then :
+
+       for ac_header in nghttp3/nghttp3.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "nghttp3/nghttp3.h" "ac_cv_header_nghttp3_nghttp3_h" "$ac_includes_default"
+if test "x$ac_cv_header_nghttp3_nghttp3_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NGHTTP3_NGHTTP3_H 1
+_ACEOF
+ curl_h3_msg="enabled (ngtcp2 + nghttp3)"
+          NGHTTP3_ENABLED=1
+
+$as_echo "#define USE_NGHTTP3 1" >>confdefs.h
+
+          USE_NGHTTP3=1
+
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_NGHTTP3"
+          export CURL_LIBRARY_PATH
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_NGHTTP3 to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_NGHTTP3 to CURL_LIBRARY_PATH" >&6;}
+          experimental="$experimental HTTP3"
+
+fi
+
+done
+
+
+else
+          LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+
+fi
+
+
+  else
+        if test X"$want_nghttp3" != Xdefault; then
+                  as_fn_error $? "--with-nghttp3 was specified but could not find nghttp3 pkg-config file." "$LINENO" 5
+    fi
+  fi
+
+fi
+
+
+OPT_QUICHE="yes"
+
+if test "x$disable_http" = "xyes" -o "x$USE_NGTCP" = "x1"; then
+  # without HTTP or with ngtcp2, quiche is no use
+  OPT_QUICHE="no"
+fi
+
+
+# Check whether --with-quiche was given.
+if test "${with_quiche+set}" = set; then :
+  withval=$with_quiche; OPT_QUICHE=$withval
+fi
+
+case "$OPT_QUICHE" in
+  no)
+        want_quiche="no"
+    ;;
+  yes)
+        want_quiche="default"
+    want_quiche_path=""
+    ;;
+  *)
+        want_quiche="yes"
+    want_quiche_path="$withval"
+    ;;
+esac
+
+if test X"$want_quiche" != Xno; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quiche options with pkg-config" >&5
+$as_echo_n "checking for quiche options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$want_quiche_path"; then
+      PKG_CONFIG_LIBDIR="$want_quiche_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists quiche >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_QUICHE=`
+    if test -n "$want_quiche_path"; then
+      PKG_CONFIG_LIBDIR="$want_quiche_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-l quiche`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -l is $LIB_QUICHE" >&5
+$as_echo "$as_me: -l is $LIB_QUICHE" >&6;}
+
+    CPP_QUICHE=`
+    if test -n "$want_quiche_path"; then
+      PKG_CONFIG_LIBDIR="$want_quiche_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+       $PKGCONFIG --cflags-only-I quiche`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -I is $CPP_QUICHE" >&5
+$as_echo "$as_me: -I is $CPP_QUICHE" >&6;}
+
+    LD_QUICHE=`
+    if test -n "$want_quiche_path"; then
+      PKG_CONFIG_LIBDIR="$want_quiche_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-L quiche`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -L is $LD_QUICHE" >&5
+$as_echo "$as_me: -L is $LD_QUICHE" >&6;}
+
+    LDFLAGS="$LDFLAGS $LD_QUICHE"
+    CPPFLAGS="$CPPFLAGS $CPP_QUICHE"
+    LIBS="$LIB_QUICHE $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_QUICHE=`echo $LD_QUICHE | $SED -e 's/-L//'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quiche_connect in -lquiche" >&5
+$as_echo_n "checking for quiche_connect in -lquiche... " >&6; }
+if ${ac_cv_lib_quiche_quiche_connect+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lquiche  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char quiche_connect ();
+int main (void)
+{
+return quiche_connect ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_quiche_quiche_connect=yes
+else
+  ac_cv_lib_quiche_quiche_connect=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_quiche_quiche_connect" >&5
+$as_echo "$ac_cv_lib_quiche_quiche_connect" >&6; }
+if test "x$ac_cv_lib_quiche_quiche_connect" = xyes; then :
+
+       for ac_header in quiche.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "quiche.h" "ac_cv_header_quiche_h" "$ac_includes_default"
+if test "x$ac_cv_header_quiche_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICHE_H 1
+_ACEOF
+ experimental="$experimental HTTP3"
+          { $as_echo "$as_me:${as_lineno-$LINENO}: HTTP3 support is experimental" >&5
+$as_echo "$as_me: HTTP3 support is experimental" >&6;}
+          curl_h3_msg="enabled (quiche)"
+          QUICHE_ENABLED=1
+
+$as_echo "#define USE_QUICHE 1" >>confdefs.h
+
+          USE_QUICHE=1
+
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_QUICHE"
+          export CURL_LIBRARY_PATH
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_QUICHE to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_QUICHE to CURL_LIBRARY_PATH" >&6;}
+fi
+
+done
+
+
+else
+          LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+
+fi
+
+  else
+        if test X"$want_quiche" != Xdefault; then
+                  as_fn_error $? "--with-quiche was specified but could not find quiche pkg-config file." "$LINENO" 5
+    fi
+  fi
 fi
 
 
@@ -40305,6 +41382,7 @@ for ac_func in fnmatch \
   setlocale \
   setmode \
   setrlimit \
+  usleep \
   utime \
   utimes
 
@@ -41527,7 +42605,6 @@ $as_echo "no" >&6; }
 $as_echo "yes" >&6; }
        curl_altsvc_msg="enabled";
        enable_altsvc="yes"
-       experimental="alt-svc"
        ;;
   esac
 else
@@ -41541,7 +42618,7 @@ if test "$enable_altsvc" = "yes"; then
 
 $as_echo "#define USE_ALTSVC 1" >>confdefs.h
 
-  experimental="alt-svc"
+  experimental="$experimental alt-svc"
 fi
 
 
@@ -41671,6 +42748,10 @@ fi
 
 if test "x$USE_NGHTTP2" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES HTTP2"
+fi
+
+if test "x$USE_NGTCP2" = "x1" -o "x$USE_QUICHE" = "x1"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES HTTP3"
 fi
 
 if test "x$CURL_WITH_MULTI_SSL" = "x1"; then
@@ -42738,7 +43819,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 #
 # INIT-COMMANDS
 #
-AMDEP_TRUE="$AMDEP_TRUE" ac_aux_dir="$ac_aux_dir"
+AMDEP_TRUE="$AMDEP_TRUE" MAKE="${MAKE-make}"
 
 
 # The HP-UX ksh and POSIX shell print the target directory to stdout
@@ -43658,29 +44739,35 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
   # Older Autoconf quotes --file arguments for eval, but not when files
   # are listed without --file.  Let's play safe and only enable the eval
   # if we detect the quoting.
-  case $CONFIG_FILES in
-  *\'*) eval set x "$CONFIG_FILES" ;;
-  *)   set x $CONFIG_FILES ;;
-  esac
+  # TODO: see whether this extra hack can be removed once we start
+  # requiring Autoconf 2.70 or later.
+  case $CONFIG_FILES in #(
+  *\'*) :
+    eval set x "$CONFIG_FILES" ;; #(
+  *) :
+    set x $CONFIG_FILES ;; #(
+  *) :
+     ;;
+esac
   shift
-  for mf
+  # Used to flag and report bootstrapping failures.
+  am_rc=0
+  for am_mf
   do
     # Strip MF so we end up with the name of the file.
-    mf=`echo "$mf" | sed -e 's/:.*$//'`
-    # Check whether this is an Automake generated Makefile or not.
-    # We used to match only the files named 'Makefile.in', but
-    # some people rename them; so instead we look at the file content.
-    # Grep'ing the first line is not enough: some people post-process
-    # each Makefile.in and add a new line on top of each file to say so.
-    # Grep'ing the whole file is not good either: AIX grep has a line
+    am_mf=`$as_echo "$am_mf" | sed -e 's/:.*$//'`
+    # Check whether this is an Automake generated Makefile which includes
+    # dependency-tracking related rules and includes.
+    # Grep'ing the whole file directly is not great: AIX grep has a line
     # limit of 2048, but all sed's we know have understand at least 4000.
-    if sed -n 's,^#.*generated by automake.*,X,p' "$mf" | grep X >/dev/null 2>&1; then
-      dirpart=`$as_dirname -- "$mf" ||
-$as_expr X"$mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$mf" : 'X\(//\)[^/]' \| \
-	 X"$mf" : 'X\(//\)$' \| \
-	 X"$mf" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$mf" |
+    sed -n 's,^am--depfiles:.*,X,p' "$am_mf" | grep X >/dev/null 2>&1 \
+      || continue
+    am_dirpart=`$as_dirname -- "$am_mf" ||
+$as_expr X"$am_mf" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$am_mf" : 'X\(//\)[^/]' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X"$am_mf" |
     sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
 	    s//\1/
 	    q
@@ -43698,53 +44785,48 @@ $as_echo X"$mf" |
 	    q
 	  }
 	  s/.*/./; q'`
-    else
-      continue
-    fi
-    # Extract the definition of DEPDIR, am__include, and am__quote
-    # from the Makefile without running 'make'.
-    DEPDIR=`sed -n 's/^DEPDIR = //p' < "$mf"`
-    test -z "$DEPDIR" && continue
-    am__include=`sed -n 's/^am__include = //p' < "$mf"`
-    test -z "$am__include" && continue
-    am__quote=`sed -n 's/^am__quote = //p' < "$mf"`
-    # Find all dependency output files, they are included files with
-    # $(DEPDIR) in their names.  We invoke sed twice because it is the
-    # simplest approach to changing $(DEPDIR) to its actual value in the
-    # expansion.
-    for file in `sed -n "
-      s/^$am__include $am__quote\(.*(DEPDIR).*\)$am__quote"'$/\1/p' <"$mf" | \
-	 sed -e 's/\$(DEPDIR)/'"$DEPDIR"'/g'`; do
-      # Make sure the directory exists.
-      test -f "$dirpart/$file" && continue
-      fdir=`$as_dirname -- "$file" ||
-$as_expr X"$file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
-	 X"$file" : 'X\(//\)[^/]' \| \
-	 X"$file" : 'X\(//\)$' \| \
-	 X"$file" : 'X\(/\)' \| . 2>/dev/null ||
-$as_echo X"$file" |
-    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+    am_filepart=`$as_basename -- "$am_mf" ||
+$as_expr X/"$am_mf" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$am_mf" : 'X\(//\)$' \| \
+	 X"$am_mf" : 'X\(/\)' \| . 2>/dev/null ||
+$as_echo X/"$am_mf" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)[^/].*/{
+	  /^X\/\(\/\/\)$/{
 	    s//\1/
 	    q
 	  }
-	  /^X\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\(\/\).*/{
+	  /^X\/\(\/\).*/{
 	    s//\1/
 	    q
 	  }
 	  s/.*/./; q'`
-      as_dir=$dirpart/$fdir; as_fn_mkdir_p
-      # echo "creating $dirpart/$file"
-      echo '# dummy' > "$dirpart/$file"
-    done
+    { echo "$as_me:$LINENO: cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles" >&5
+   (cd "$am_dirpart" \
+      && sed -e '/# am--include-marker/d' "$am_filepart" \
+        | $MAKE -f - am--depfiles) >&5 2>&5
+   ac_status=$?
+   echo "$as_me:$LINENO: \$? = $ac_status" >&5
+   (exit $ac_status); } || am_rc=$?
   done
+  if test $am_rc -ne 0; then
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "Something went wrong bootstrapping makefile fragments
+    for automatic dependency tracking.  Try re-running configure with the
+    '--disable-dependency-tracking' option to at least be able to build
+    the package (albeit without support for automatic dependency tracking).
+See \`config.log' for more details" "$LINENO" 5; }
+  fi
+  { am_dirpart=; unset am_dirpart;}
+  { am_filepart=; unset am_filepart;}
+  { am_mf=; unset am_mf;}
+  { am_rc=; unset am_rc;}
+  rm -f conftest-deps.mk
 }
  ;;
     "libtool":C)
@@ -44651,6 +45733,7 @@ done
   PSL:              ${curl_psl_msg}
   Alt-svc:          ${curl_altsvc_msg}
   HTTP2:            ${curl_h2_msg}
+  HTTP3:            ${curl_h3_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
   Features:         ${SUPPORT_FEATURES}
 " >&5
@@ -44692,11 +45775,12 @@ $as_echo "$as_me: Configured to build curl/libcurl:
   PSL:              ${curl_psl_msg}
   Alt-svc:          ${curl_altsvc_msg}
   HTTP2:            ${curl_h2_msg}
+  HTTP3:            ${curl_h3_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
   Features:         ${SUPPORT_FEATURES}
 " >&6;}
 if test -n "$experimental"; then
  cat >&2 << _EOF
-  WARNING: $experimental is enabled but marked EXPERIMENTAL. Use with caution!
+  WARNING: $experimental enabled but marked EXPERIMENTAL. Use with caution!
 _EOF
 fi

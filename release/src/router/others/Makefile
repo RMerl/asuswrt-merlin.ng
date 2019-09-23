@@ -42,11 +42,6 @@ endif
 # Postconf helper script
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin
 
-# Adaptive QoS tc patch
-ifeq ($(RTCONFIG_BCMARM),y)
-	install -m 0700 -D faketc $(INSTALLDIR)/usr/sbin
-endif
-
 
 
 ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200)$(RTAC1200V2)$(RTAC1200GA1)$(RTAC1200GU)$(RTN11PB1)$(RTAC85U)$(RTAC85P)$(RPAC87)$(RTN800HP)$(RTACRH26),y)

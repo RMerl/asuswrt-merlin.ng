@@ -1250,6 +1250,7 @@ obj-$(RTCONFIG_TELENET) += lanauth
 obj-y += inadyn
 obj-y += libconfuse
 obj-y += wsdd2
+obj-$(RTCONFIG_BWDPI) += faketc
 
 ifneq ($(HND_ROUTER),y)
 obj-y += cstats
@@ -4172,7 +4173,7 @@ iproute2-4.3-install:
 
 iproute2-4.3-clean:
 	-@$(MAKE) -C iproute2-4.3 clean
-	-rm -f $(INSTALL_DIR)/usr/sbin/rtc
+	-rm -f $(INSTALL_DIR)/usr/sbin/tc
 	-rm -f $(INSTALL_DIR)/usr/sbin/realtc
 	-rm -f $(INSTALL_DIR)/usr/sbin/ip
 	-rm -f iproute2-4.3/iproute2-4.3.0/Config
@@ -5032,7 +5033,7 @@ openvpn/Makefile:
 			-Wl,--gc-sections \
 			-lpthread -ldl \
 			-L$(TOP)/zlib -lz" \
-		IPROUTE="$(if $(RTCONFIG_HND_ROUTER),/bin/ip,/usr/sbin/ip)" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
+		IPROUTE="/usr/sbin/ip" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 			--disable-debug --enable-management --disable-small \
 			--disable-selinux --disable-socks --enable-password-save \
@@ -5518,11 +5519,11 @@ curl: openssl curl/Makefile
 
 curl-install:
 	@$(SEP)
-	install -D curl/lib/.libs/libcurl.so.4.5.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.5.0
-	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.5.0
+	install -D curl/lib/.libs/libcurl.so.4.6.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.6.0
+	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.6.0
 	cd $(INSTALLDIR)/curl/usr/lib && \
-		ln -sf libcurl.so.4.5.0 libcurl.so && \
-		ln -sf libcurl.so.4.5.0 libcurl.so.4
+		ln -sf libcurl.so.4.6.0 libcurl.so && \
+		ln -sf libcurl.so.4.6.0 libcurl.so.4
 #ifeq ($(RTCONFIG_SPEEDTEST),y)
 	# for speedtest
 	install -D curl/src/.libs/curl $(INSTALLDIR)/curl/usr/sbin/curl

@@ -260,7 +260,7 @@ if(ENABLE_THREADED_RESOLVER)
 endif()
 
 # Check for all needed libraries
-check_library_exists_concat("dl"     dlopen       HAVE_LIBDL)
+check_library_exists_concat("${CMAKE_DL_LIBS}" dlopen HAVE_LIBDL)
 check_library_exists_concat("socket" connect      HAVE_LIBSOCKET)
 check_library_exists("c" gethostbyname "" NOT_NEED_LIBNSL)
 
@@ -860,6 +860,7 @@ check_symbol_exists(strlcat       "${CURL_INCLUDES}" HAVE_STRLCAT)
 check_symbol_exists(getpwuid      "${CURL_INCLUDES}" HAVE_GETPWUID)
 check_symbol_exists(getpwuid_r    "${CURL_INCLUDES}" HAVE_GETPWUID_R)
 check_symbol_exists(geteuid       "${CURL_INCLUDES}" HAVE_GETEUID)
+check_symbol_exists(usleep        "${CURL_INCLUDES}" HAVE_USLEEP)
 check_symbol_exists(utime         "${CURL_INCLUDES}" HAVE_UTIME)
 check_symbol_exists(gmtime_r      "${CURL_INCLUDES}" HAVE_GMTIME_R)
 check_symbol_exists(localtime_r   "${CURL_INCLUDES}" HAVE_LOCALTIME_R)

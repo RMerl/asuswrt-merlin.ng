@@ -819,6 +819,10 @@ SOURCE=..\..\..\..\src\tool_parsecfg.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\src\tool_progress.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\src\tool_setopt.c
 # End Source File
 # Begin Source File
@@ -1000,6 +1004,10 @@ SOURCE=..\..\..\..\src\tool_paramhlp.h
 # Begin Source File
 
 SOURCE=..\..\..\..\src\tool_parsecfg.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\src\tool_progress.h
 # End Source File
 # Begin Source File
 

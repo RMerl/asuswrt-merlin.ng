@@ -2417,8 +2417,6 @@
     <ClCompile Include="..\..\..\..\lib\socks_sspi.c" />
     <ClCompile Include="..\..\..\..\lib\speedcheck.c" />
     <ClCompile Include="..\..\..\..\lib\splay.c" />
-    <ClCompile Include="..\..\..\..\lib\ssh.c" />
-    <ClCompile Include="..\..\..\..\lib\ssh-libssh.c" />
     <ClCompile Include="..\..\..\..\lib\strcase.c" />
     <ClCompile Include="..\..\..\..\lib\strdup.c" />
     <ClCompile Include="..\..\..\..\lib\strerror.c" />
@@ -2540,6 +2538,7 @@
     <ClInclude Include="..\..\..\..\lib\pop3.h" />
     <ClInclude Include="..\..\..\..\lib\progress.h" />
     <ClInclude Include="..\..\..\..\lib\psl.h" />
+    <ClInclude Include="..\..\..\..\lib\quic.h" />
     <ClInclude Include="..\..\..\..\lib\rand.h" />
     <ClInclude Include="..\..\..\..\lib\rtsp.h" />
     <ClInclude Include="..\..\..\..\lib\select.h" />

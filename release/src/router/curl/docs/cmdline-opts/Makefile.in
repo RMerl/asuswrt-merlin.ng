@@ -295,8 +295,12 @@ USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_MESALINK = @USE_MESALINK@
 USE_NGHTTP2 = @USE_NGHTTP2@
+USE_NGHTTP3 = @USE_NGHTTP3@
+USE_NGTCP2 = @USE_NGTCP2@
+USE_NGTCP2_CRYPTO_OPENSSL = @USE_NGTCP2_CRYPTO_OPENSSL@
 USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
+USE_QUICHE = @USE_QUICHE@
 USE_SCHANNEL = @USE_SCHANNEL@
 USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
@@ -428,6 +432,7 @@ DPAGES = \
   http1.0.d					\
   http1.1.d http2.d				\
   http2-prior-knowledge.d			\
+  http3.d                                       \
   ignore-content-length.d			\
   include.d					\
   insecure.d					\
@@ -463,7 +468,10 @@ DPAGES = \
   noproxy.d					\
   ntlm.d ntlm-wb.d				\
   oauth2-bearer.d				\
-  output.d pass.d				\
+  output.d                                      \
+  pass.d                			\
+  parallel.d                                    \
+  parallel-max.d                                \
   path-as-is.d					\
   pinnedpubkey.d				\
   post301.d					\
@@ -517,6 +525,7 @@ DPAGES = \
   retry-delay.d					\
   retry-max-time.d				\
   retry.d					\
+  sasl-authzid.d					\
   sasl-ir.d					\
   service-name.d				\
   show-error.d					\

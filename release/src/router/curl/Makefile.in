@@ -436,8 +436,12 @@ USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_MESALINK = @USE_MESALINK@
 USE_NGHTTP2 = @USE_NGHTTP2@
+USE_NGHTTP3 = @USE_NGHTTP3@
+USE_NGTCP2 = @USE_NGTCP2@
+USE_NGTCP2_CRYPTO_OPENSSL = @USE_NGTCP2_CRYPTO_OPENSSL@
 USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
+USE_QUICHE = @USE_QUICHE@
 USE_SCHANNEL = @USE_SCHANNEL@
 USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
@@ -624,9 +628,20 @@ VC_DIST = projects/README                           \
 WINBUILD_DIST = winbuild/BUILD.WINDOWS.txt winbuild/gen_resp_file.bat \
  winbuild/MakefileBuild.vc winbuild/Makefile.vc
 
+PLAN9_DIST = plan9/include/mkfile \
+ plan9/include/mkfile             \
+ plan9/mkfile.proto               \
+ plan9/mkfile                     \
+ plan9/BUILD.PLAN9.txt            \
+ plan9/lib/mkfile.inc             \
+ plan9/lib/mkfile                 \
+ plan9/src/mkfile.inc             \
+ plan9/src/mkfile
+
 EXTRA_DIST = CHANGES COPYING maketgz Makefile.dist curl-config.in \
  RELEASE-NOTES buildconf libcurl.pc.in MacOSX-Framework \
- scripts/updatemanpages.pl $(CMAKE_DIST) $(VC_DIST) $(WINBUILD_DIST) \
+ scripts/updatemanpages.pl $(CMAKE_DIST) \
+ $(VC_DIST) $(WINBUILD_DIST) $(PLAN9_DIST) \
  lib/libcurl.vers.in buildconf.bat scripts/coverage.sh scripts/completion.pl
 
 CLEANFILES = $(VC6_LIBDSP) $(VC6_SRCDSP) $(VC7_LIBVCPROJ) $(VC7_SRCVCPROJ) \
@@ -656,6 +671,9 @@ LIB_VTLS_HFILES = vtls/openssl.h vtls/vtls.h vtls/gtls.h                \
   vtls/wolfssl.h vtls/schannel.h vtls/sectransp.h vtls/gskit.h          \
   vtls/mbedtls.h vtls/mesalink.h
 
+LIB_VQUIC_CFILES = vquic/ngtcp2.c vquic/quiche.c
+LIB_VQUIC_HFILES = vquic/ngtcp2.h vquic/quiche.h
+LIB_VSSH_CFILES = vssh/libssh2.c vssh/libssh.c
 LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   cookie.c http.c sendf.c ftp.c url.c dict.c if2ip.c speedcheck.c       \
   ldap.c version.c getenv.c escape.c mprintf.c telnet.c netrc.c         \
@@ -665,7 +683,7 @@ LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   http_digest.c md4.c md5.c http_negotiate.c inet_pton.c strtoofft.c    \
   strerror.c amigaos.c hostasyn.c hostip4.c hostip6.c hostsyn.c         \
   inet_ntop.c parsedate.c select.c tftp.c splay.c strdup.c socks.c      \
-  ssh.c ssh-libssh.c curl_addrinfo.c socks_gssapi.c socks_sspi.c        \
+  curl_addrinfo.c socks_gssapi.c socks_sspi.c                           \
   curl_sspi.c slist.c nonblock.c curl_memrchr.c imap.c pop3.c smtp.c    \
   pingpong.c rtsp.c curl_threads.c warnless.c hmac.c curl_rtmp.c        \
   openldap.c curl_gethostname.c gopher.c idn_win32.c                    \
@@ -695,11 +713,15 @@ LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   x509asn1.h http2.h sigpipe.h smb.h curl_endian.h curl_des.h           \
   curl_printf.h system_win32.h rand.h mime.h curl_sha256.h setopt.h     \
   curl_path.h curl_ctype.h curl_range.h psl.h doh.h urlapi-int.h        \
-  curl_get_line.h altsvc.h
+  curl_get_line.h altsvc.h quic.h
 
 LIB_RCFILES = libcurl.rc
-CSOURCES = $(LIB_CFILES) $(LIB_VAUTH_CFILES) $(LIB_VTLS_CFILES)
-HHEADERS = $(LIB_HFILES) $(LIB_VAUTH_HFILES) $(LIB_VTLS_HFILES)
+CSOURCES = $(LIB_CFILES) $(LIB_VAUTH_CFILES) $(LIB_VTLS_CFILES) \
+  $(LIB_VQUIC_CFILES) $(LIB_VSSH_CFILES)
+
+HHEADERS = $(LIB_HFILES) $(LIB_VAUTH_HFILES) $(LIB_VTLS_HFILES) \
+  $(LIB_VQUIC_HFILES)
+
 
 # libcurl has sources that provide functions named curlx_* that aren't part of
 # the official API, but we re-use the code here to avoid duplication.
@@ -748,6 +770,7 @@ CURL_CFILES = \
   tool_panykey.c \
   tool_paramhlp.c \
   tool_parsecfg.c \
+  tool_progress.c \
   tool_strdup.c \
   tool_setopt.c \
   tool_sleep.c \
@@ -789,6 +812,7 @@ CURL_HFILES = \
   tool_panykey.h \
   tool_paramhlp.h \
   tool_parsecfg.h \
+  tool_progress.h \
   tool_sdecls.h \
   tool_setopt.h \
   tool_setup.h \

@@ -1321,6 +1321,9 @@
 				RelativePath="..\..\..\..\src\tool_parsecfg.c">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\tool_progress.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\tool_setopt.c">
 			</File>
 			<File
@@ -1458,6 +1461,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_parsecfg.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\tool_progress.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_sdecls.h">

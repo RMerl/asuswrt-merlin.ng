@@ -43,7 +43,7 @@ void config_init(struct OperationConfig* config)
   config->proto_default = NULL;
   config->tcp_nodelay = TRUE; /* enabled by default */
   config->happy_eyeballs_timeout_ms = CURL_HET_DEFAULT;
-  config->http09_allowed = TRUE;
+  config->http09_allowed = FALSE;
 }
 
 static void free_config_fields(struct OperationConfig *config)
@@ -133,6 +133,7 @@ static void free_config_fields(struct OperationConfig *config)
   Curl_safefree(config->krblevel);
 
   Curl_safefree(config->oauth_bearer);
+  Curl_safefree(config->sasl_authzid);
 
   Curl_safefree(config->unix_socket_path);
   Curl_safefree(config->writeout);

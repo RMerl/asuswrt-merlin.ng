@@ -24,14 +24,12 @@
 
 #include "curl_setup.h"
 
-#if defined(USE_NSS) || defined(USE_OS400CRYPTO) || \
-    (defined(USE_OPENSSL) && defined(OPENSSL_NO_MD4)) || \
-    (defined(USE_MBEDTLS) && !defined(MBEDTLS_MD4_C))
+#if !defined(CURL_DISABLE_CRYPTO_AUTH)
+
+#define MD4_DIGEST_LENGTH 16
 
 void Curl_md4it(unsigned char *output, const unsigned char *input, size_t len);
 
-#endif /* defined(USE_NSS) || defined(USE_OS400CRYPTO) ||
-    (defined(USE_OPENSSL) && defined(OPENSSL_NO_MD4)) ||
-    (defined(USE_MBEDTLS) && !defined(MBEDTLS_MD4_C)) */
+#endif /* !defined(CURL_DISABLE_CRYPTO_AUTH) */
 
 #endif /* HEADER_CURL_MD4_H */

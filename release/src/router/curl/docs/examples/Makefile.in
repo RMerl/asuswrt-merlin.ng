@@ -43,7 +43,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -163,7 +163,9 @@ check_PROGRAMS = 10-at-a-time$(EXEEXT) anyauthput$(EXEEXT) \
 	sslbackend$(EXEEXT) postit2-formadd$(EXEEXT) \
 	multi-formadd$(EXEEXT) shared-connection-cache$(EXEEXT) \
 	sftpuploadresume$(EXEEXT) http2-pushinmemory$(EXEEXT) \
-	parseurl$(EXEEXT) urlapi$(EXEEXT)
+	parseurl$(EXEEXT) urlapi$(EXEEXT) imap-authzid$(EXEEXT) \
+	pop3-authzid$(EXEEXT) smtp-authzid$(EXEEXT) http3$(EXEEXT) \
+	altsvc$(EXEEXT) http3-present$(EXEEXT)
 subdir = docs/examples
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_compile_check_sizeof.m4 \
@@ -202,6 +204,13 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+altsvc_SOURCES = altsvc.c
+altsvc_OBJECTS = altsvc.$(OBJEXT)
+altsvc_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@altsvc_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@altsvc_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 anyauthput_SOURCES = anyauthput.c
 anyauthput_OBJECTS = anyauthput.$(OBJEXT)
 anyauthput_LDADD = $(LDADD)
@@ -368,6 +377,19 @@ http2_upload_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@http2_upload_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+http3_SOURCES = http3.c
+http3_OBJECTS = http3.$(OBJEXT)
+http3_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@http3_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@http3_DEPENDENCIES = $(LIBDIR)/libcurl.la
+http3_present_SOURCES = http3-present.c
+http3_present_OBJECTS = http3-present.$(OBJEXT)
+http3_present_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@http3_present_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@http3_present_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 httpcustomheader_SOURCES = httpcustomheader.c
 httpcustomheader_OBJECTS = httpcustomheader.$(OBJEXT)
 httpcustomheader_LDADD = $(LDADD)
@@ -394,6 +416,13 @@ imap_append_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@imap_append_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@imap_append_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+imap_authzid_SOURCES = imap-authzid.c
+imap_authzid_OBJECTS = imap-authzid.$(OBJEXT)
+imap_authzid_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@imap_authzid_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@imap_authzid_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 imap_copy_SOURCES = imap-copy.c
 imap_copy_OBJECTS = imap-copy.$(OBJEXT)
@@ -541,6 +570,13 @@ persistent_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@persistent_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@persistent_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+pop3_authzid_SOURCES = pop3-authzid.c
+pop3_authzid_OBJECTS = pop3-authzid.$(OBJEXT)
+pop3_authzid_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@pop3_authzid_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@pop3_authzid_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 pop3_dele_SOURCES = pop3-dele.c
 pop3_dele_OBJECTS = pop3-dele.$(OBJEXT)
@@ -715,6 +751,13 @@ simplessl_LDADD = $(LDADD)
 @USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
 @USE_EXPLICIT_LIB_DEPS_TRUE@simplessl_DEPENDENCIES =  \
 @USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
+smtp_authzid_SOURCES = smtp-authzid.c
+smtp_authzid_OBJECTS = smtp-authzid.$(OBJEXT)
+smtp_authzid_LDADD = $(LDADD)
+@USE_EXPLICIT_LIB_DEPS_FALSE@smtp_authzid_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_FALSE@	$(LIBDIR)/libcurl.la
+@USE_EXPLICIT_LIB_DEPS_TRUE@smtp_authzid_DEPENDENCIES =  \
+@USE_EXPLICIT_LIB_DEPS_TRUE@	$(LIBDIR)/libcurl.la
 smtp_expn_SOURCES = smtp-expn.c
 smtp_expn_OBJECTS = smtp-expn.$(OBJEXT)
 smtp_expn_LDADD = $(LDADD)
@@ -801,32 +844,34 @@ DEFAULT_INCLUDES =
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/10-at-a-time.Po \
-	./$(DEPDIR)/anyauthput.Po ./$(DEPDIR)/certinfo.Po \
-	./$(DEPDIR)/chkspeed.Po ./$(DEPDIR)/cookie_interface.Po \
-	./$(DEPDIR)/debug.Po ./$(DEPDIR)/externalsocket.Po \
-	./$(DEPDIR)/fileupload.Po ./$(DEPDIR)/fopen.Po \
-	./$(DEPDIR)/ftp-wildcard.Po ./$(DEPDIR)/ftpget.Po \
-	./$(DEPDIR)/ftpgetinfo.Po ./$(DEPDIR)/ftpgetresp.Po \
-	./$(DEPDIR)/ftpsget.Po ./$(DEPDIR)/ftpupload.Po \
-	./$(DEPDIR)/ftpuploadfrommem.Po ./$(DEPDIR)/ftpuploadresume.Po \
-	./$(DEPDIR)/getinfo.Po ./$(DEPDIR)/getinmemory.Po \
-	./$(DEPDIR)/getredirect.Po ./$(DEPDIR)/http-post.Po \
-	./$(DEPDIR)/http2-download.Po \
+	./$(DEPDIR)/altsvc.Po ./$(DEPDIR)/anyauthput.Po \
+	./$(DEPDIR)/certinfo.Po ./$(DEPDIR)/chkspeed.Po \
+	./$(DEPDIR)/cookie_interface.Po ./$(DEPDIR)/debug.Po \
+	./$(DEPDIR)/externalsocket.Po ./$(DEPDIR)/fileupload.Po \
+	./$(DEPDIR)/fopen.Po ./$(DEPDIR)/ftp-wildcard.Po \
+	./$(DEPDIR)/ftpget.Po ./$(DEPDIR)/ftpgetinfo.Po \
+	./$(DEPDIR)/ftpgetresp.Po ./$(DEPDIR)/ftpsget.Po \
+	./$(DEPDIR)/ftpupload.Po ./$(DEPDIR)/ftpuploadfrommem.Po \
+	./$(DEPDIR)/ftpuploadresume.Po ./$(DEPDIR)/getinfo.Po \
+	./$(DEPDIR)/getinmemory.Po ./$(DEPDIR)/getredirect.Po \
+	./$(DEPDIR)/http-post.Po ./$(DEPDIR)/http2-download.Po \
 	./$(DEPDIR)/http2-pushinmemory.Po \
 	./$(DEPDIR)/http2-serverpush.Po ./$(DEPDIR)/http2-upload.Po \
+	./$(DEPDIR)/http3-present.Po ./$(DEPDIR)/http3.Po \
 	./$(DEPDIR)/httpcustomheader.Po ./$(DEPDIR)/httpput.Po \
 	./$(DEPDIR)/https.Po ./$(DEPDIR)/imap-append.Po \
-	./$(DEPDIR)/imap-copy.Po ./$(DEPDIR)/imap-create.Po \
-	./$(DEPDIR)/imap-delete.Po ./$(DEPDIR)/imap-examine.Po \
-	./$(DEPDIR)/imap-fetch.Po ./$(DEPDIR)/imap-list.Po \
-	./$(DEPDIR)/imap-lsub.Po ./$(DEPDIR)/imap-multi.Po \
-	./$(DEPDIR)/imap-noop.Po ./$(DEPDIR)/imap-search.Po \
-	./$(DEPDIR)/imap-ssl.Po ./$(DEPDIR)/imap-store.Po \
-	./$(DEPDIR)/imap-tls.Po ./$(DEPDIR)/multi-app.Po \
-	./$(DEPDIR)/multi-debugcallback.Po ./$(DEPDIR)/multi-double.Po \
-	./$(DEPDIR)/multi-formadd.Po ./$(DEPDIR)/multi-post.Po \
-	./$(DEPDIR)/multi-single.Po ./$(DEPDIR)/parseurl.Po \
-	./$(DEPDIR)/persistent.Po ./$(DEPDIR)/pop3-dele.Po \
+	./$(DEPDIR)/imap-authzid.Po ./$(DEPDIR)/imap-copy.Po \
+	./$(DEPDIR)/imap-create.Po ./$(DEPDIR)/imap-delete.Po \
+	./$(DEPDIR)/imap-examine.Po ./$(DEPDIR)/imap-fetch.Po \
+	./$(DEPDIR)/imap-list.Po ./$(DEPDIR)/imap-lsub.Po \
+	./$(DEPDIR)/imap-multi.Po ./$(DEPDIR)/imap-noop.Po \
+	./$(DEPDIR)/imap-search.Po ./$(DEPDIR)/imap-ssl.Po \
+	./$(DEPDIR)/imap-store.Po ./$(DEPDIR)/imap-tls.Po \
+	./$(DEPDIR)/multi-app.Po ./$(DEPDIR)/multi-debugcallback.Po \
+	./$(DEPDIR)/multi-double.Po ./$(DEPDIR)/multi-formadd.Po \
+	./$(DEPDIR)/multi-post.Po ./$(DEPDIR)/multi-single.Po \
+	./$(DEPDIR)/parseurl.Po ./$(DEPDIR)/persistent.Po \
+	./$(DEPDIR)/pop3-authzid.Po ./$(DEPDIR)/pop3-dele.Po \
 	./$(DEPDIR)/pop3-list.Po ./$(DEPDIR)/pop3-multi.Po \
 	./$(DEPDIR)/pop3-noop.Po ./$(DEPDIR)/pop3-retr.Po \
 	./$(DEPDIR)/pop3-ssl.Po ./$(DEPDIR)/pop3-stat.Po \
@@ -839,11 +884,12 @@ am__depfiles_remade = ./$(DEPDIR)/10-at-a-time.Po \
 	./$(DEPDIR)/sftpget.Po ./$(DEPDIR)/sftpuploadresume.Po \
 	./$(DEPDIR)/shared-connection-cache.Po ./$(DEPDIR)/simple.Po \
 	./$(DEPDIR)/simplepost.Po ./$(DEPDIR)/simplessl.Po \
-	./$(DEPDIR)/smtp-expn.Po ./$(DEPDIR)/smtp-mail.Po \
-	./$(DEPDIR)/smtp-mime.Po ./$(DEPDIR)/smtp-multi.Po \
-	./$(DEPDIR)/smtp-ssl.Po ./$(DEPDIR)/smtp-tls.Po \
-	./$(DEPDIR)/smtp-vrfy.Po ./$(DEPDIR)/sslbackend.Po \
-	./$(DEPDIR)/url2file.Po ./$(DEPDIR)/urlapi.Po
+	./$(DEPDIR)/smtp-authzid.Po ./$(DEPDIR)/smtp-expn.Po \
+	./$(DEPDIR)/smtp-mail.Po ./$(DEPDIR)/smtp-mime.Po \
+	./$(DEPDIR)/smtp-multi.Po ./$(DEPDIR)/smtp-ssl.Po \
+	./$(DEPDIR)/smtp-tls.Po ./$(DEPDIR)/smtp-vrfy.Po \
+	./$(DEPDIR)/sslbackend.Po ./$(DEPDIR)/url2file.Po \
+	./$(DEPDIR)/urlapi.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -863,46 +909,50 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
+SOURCES = 10-at-a-time.c altsvc.c anyauthput.c certinfo.c chkspeed.c \
 	cookie_interface.c debug.c externalsocket.c fileupload.c \
 	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
 	ftpsget.c ftpupload.c ftpuploadfrommem.c ftpuploadresume.c \
 	getinfo.c getinmemory.c getredirect.c http-post.c \
 	http2-download.c http2-pushinmemory.c http2-serverpush.c \
-	http2-upload.c httpcustomheader.c httpput.c https.c \
-	imap-append.c imap-copy.c imap-create.c imap-delete.c \
+	http2-upload.c http3.c http3-present.c httpcustomheader.c \
+	httpput.c https.c imap-append.c imap-authzid.c imap-copy.c \
+	imap-create.c imap-delete.c imap-examine.c imap-fetch.c \
+	imap-list.c imap-lsub.c imap-multi.c imap-noop.c imap-search.c \
+	imap-ssl.c imap-store.c imap-tls.c multi-app.c \
+	multi-debugcallback.c multi-double.c multi-formadd.c \
+	multi-post.c multi-single.c parseurl.c persistent.c \
+	pop3-authzid.c pop3-dele.c pop3-list.c pop3-multi.c \
+	pop3-noop.c pop3-retr.c pop3-ssl.c pop3-stat.c pop3-tls.c \
+	pop3-top.c pop3-uidl.c post-callback.c postinmemory.c \
+	postit2.c postit2-formadd.c progressfunc.c resolve.c rtsp.c \
+	sendrecv.c sepheaders.c sftpget.c sftpuploadresume.c \
+	shared-connection-cache.c simple.c simplepost.c simplessl.c \
+	smtp-authzid.c smtp-expn.c smtp-mail.c smtp-mime.c \
+	smtp-multi.c smtp-ssl.c smtp-tls.c smtp-vrfy.c sslbackend.c \
+	url2file.c urlapi.c
+DIST_SOURCES = 10-at-a-time.c altsvc.c anyauthput.c certinfo.c \
+	chkspeed.c cookie_interface.c debug.c externalsocket.c \
+	fileupload.c fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c \
+	ftpgetresp.c ftpsget.c ftpupload.c ftpuploadfrommem.c \
+	ftpuploadresume.c getinfo.c getinmemory.c getredirect.c \
+	http-post.c http2-download.c http2-pushinmemory.c \
+	http2-serverpush.c http2-upload.c http3.c http3-present.c \
+	httpcustomheader.c httpput.c https.c imap-append.c \
+	imap-authzid.c imap-copy.c imap-create.c imap-delete.c \
 	imap-examine.c imap-fetch.c imap-list.c imap-lsub.c \
 	imap-multi.c imap-noop.c imap-search.c imap-ssl.c imap-store.c \
 	imap-tls.c multi-app.c multi-debugcallback.c multi-double.c \
 	multi-formadd.c multi-post.c multi-single.c parseurl.c \
-	persistent.c pop3-dele.c pop3-list.c pop3-multi.c pop3-noop.c \
-	pop3-retr.c pop3-ssl.c pop3-stat.c pop3-tls.c pop3-top.c \
-	pop3-uidl.c post-callback.c postinmemory.c postit2.c \
-	postit2-formadd.c progressfunc.c resolve.c rtsp.c sendrecv.c \
-	sepheaders.c sftpget.c sftpuploadresume.c \
-	shared-connection-cache.c simple.c simplepost.c simplessl.c \
-	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c urlapi.c
-DIST_SOURCES = 10-at-a-time.c anyauthput.c certinfo.c chkspeed.c \
-	cookie_interface.c debug.c externalsocket.c fileupload.c \
-	fopen.c ftp-wildcard.c ftpget.c ftpgetinfo.c ftpgetresp.c \
-	ftpsget.c ftpupload.c ftpuploadfrommem.c ftpuploadresume.c \
-	getinfo.c getinmemory.c getredirect.c http-post.c \
-	http2-download.c http2-pushinmemory.c http2-serverpush.c \
-	http2-upload.c httpcustomheader.c httpput.c https.c \
-	imap-append.c imap-copy.c imap-create.c imap-delete.c \
-	imap-examine.c imap-fetch.c imap-list.c imap-lsub.c \
-	imap-multi.c imap-noop.c imap-search.c imap-ssl.c imap-store.c \
-	imap-tls.c multi-app.c multi-debugcallback.c multi-double.c \
-	multi-formadd.c multi-post.c multi-single.c parseurl.c \
-	persistent.c pop3-dele.c pop3-list.c pop3-multi.c pop3-noop.c \
-	pop3-retr.c pop3-ssl.c pop3-stat.c pop3-tls.c pop3-top.c \
-	pop3-uidl.c post-callback.c postinmemory.c postit2.c \
-	postit2-formadd.c progressfunc.c resolve.c rtsp.c sendrecv.c \
-	sepheaders.c sftpget.c sftpuploadresume.c \
-	shared-connection-cache.c simple.c simplepost.c simplessl.c \
-	smtp-expn.c smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c \
-	smtp-tls.c smtp-vrfy.c sslbackend.c url2file.c urlapi.c
+	persistent.c pop3-authzid.c pop3-dele.c pop3-list.c \
+	pop3-multi.c pop3-noop.c pop3-retr.c pop3-ssl.c pop3-stat.c \
+	pop3-tls.c pop3-top.c pop3-uidl.c post-callback.c \
+	postinmemory.c postit2.c postit2-formadd.c progressfunc.c \
+	resolve.c rtsp.c sendrecv.c sepheaders.c sftpget.c \
+	sftpuploadresume.c shared-connection-cache.c simple.c \
+	simplepost.c simplessl.c smtp-authzid.c smtp-expn.c \
+	smtp-mail.c smtp-mime.c smtp-multi.c smtp-ssl.c smtp-tls.c \
+	smtp-vrfy.c sslbackend.c url2file.c urlapi.c
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -1067,8 +1117,12 @@ USE_LIBSSH2 = @USE_LIBSSH2@
 USE_MBEDTLS = @USE_MBEDTLS@
 USE_MESALINK = @USE_MESALINK@
 USE_NGHTTP2 = @USE_NGHTTP2@
+USE_NGHTTP3 = @USE_NGHTTP3@
+USE_NGTCP2 = @USE_NGTCP2@
+USE_NGTCP2_CRYPTO_OPENSSL = @USE_NGTCP2_CRYPTO_OPENSSL@
 USE_NSS = @USE_NSS@
 USE_OPENLDAP = @USE_OPENLDAP@
+USE_QUICHE = @USE_QUICHE@
 USE_SCHANNEL = @USE_SCHANNEL@
 USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
@@ -1214,6 +1268,10 @@ clean-checkPROGRAMS:
 	@rm -f 10-at-a-time$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(10_at_a_time_OBJECTS) $(10_at_a_time_LDADD) $(LIBS)
 
+altsvc$(EXEEXT): $(altsvc_OBJECTS) $(altsvc_DEPENDENCIES) $(EXTRA_altsvc_DEPENDENCIES) 
+	@rm -f altsvc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(altsvc_OBJECTS) $(altsvc_LDADD) $(LIBS)
+
 anyauthput$(EXEEXT): $(anyauthput_OBJECTS) $(anyauthput_DEPENDENCIES) $(EXTRA_anyauthput_DEPENDENCIES) 
 	@rm -f anyauthput$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(anyauthput_OBJECTS) $(anyauthput_LDADD) $(LIBS)
@@ -1310,6 +1368,14 @@ http2-upload$(EXEEXT): $(http2_upload_OBJECTS) $(http2_upload_DEPENDENCIES) $(EX
 	@rm -f http2-upload$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(http2_upload_OBJECTS) $(http2_upload_LDADD) $(LIBS)
 
+http3$(EXEEXT): $(http3_OBJECTS) $(http3_DEPENDENCIES) $(EXTRA_http3_DEPENDENCIES) 
+	@rm -f http3$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(http3_OBJECTS) $(http3_LDADD) $(LIBS)
+
+http3-present$(EXEEXT): $(http3_present_OBJECTS) $(http3_present_DEPENDENCIES) $(EXTRA_http3_present_DEPENDENCIES) 
+	@rm -f http3-present$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(http3_present_OBJECTS) $(http3_present_LDADD) $(LIBS)
+
 httpcustomheader$(EXEEXT): $(httpcustomheader_OBJECTS) $(httpcustomheader_DEPENDENCIES) $(EXTRA_httpcustomheader_DEPENDENCIES) 
 	@rm -f httpcustomheader$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(httpcustomheader_OBJECTS) $(httpcustomheader_LDADD) $(LIBS)
@@ -1325,6 +1391,10 @@ https$(EXEEXT): $(https_OBJECTS) $(https_DEPENDENCIES) $(EXTRA_https_DEPENDENCIE
 imap-append$(EXEEXT): $(imap_append_OBJECTS) $(imap_append_DEPENDENCIES) $(EXTRA_imap_append_DEPENDENCIES) 
 	@rm -f imap-append$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(imap_append_OBJECTS) $(imap_append_LDADD) $(LIBS)
+
+imap-authzid$(EXEEXT): $(imap_authzid_OBJECTS) $(imap_authzid_DEPENDENCIES) $(EXTRA_imap_authzid_DEPENDENCIES) 
+	@rm -f imap-authzid$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(imap_authzid_OBJECTS) $(imap_authzid_LDADD) $(LIBS)
 
 imap-copy$(EXEEXT): $(imap_copy_OBJECTS) $(imap_copy_DEPENDENCIES) $(EXTRA_imap_copy_DEPENDENCIES) 
 	@rm -f imap-copy$(EXEEXT)
@@ -1409,6 +1479,10 @@ parseurl$(EXEEXT): $(parseurl_OBJECTS) $(parseurl_DEPENDENCIES) $(EXTRA_parseurl
 persistent$(EXEEXT): $(persistent_OBJECTS) $(persistent_DEPENDENCIES) $(EXTRA_persistent_DEPENDENCIES) 
 	@rm -f persistent$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(persistent_OBJECTS) $(persistent_LDADD) $(LIBS)
+
+pop3-authzid$(EXEEXT): $(pop3_authzid_OBJECTS) $(pop3_authzid_DEPENDENCIES) $(EXTRA_pop3_authzid_DEPENDENCIES) 
+	@rm -f pop3-authzid$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(pop3_authzid_OBJECTS) $(pop3_authzid_LDADD) $(LIBS)
 
 pop3-dele$(EXEEXT): $(pop3_dele_OBJECTS) $(pop3_dele_DEPENDENCIES) $(EXTRA_pop3_dele_DEPENDENCIES) 
 	@rm -f pop3-dele$(EXEEXT)
@@ -1510,6 +1584,10 @@ simplessl$(EXEEXT): $(simplessl_OBJECTS) $(simplessl_DEPENDENCIES) $(EXTRA_simpl
 	@rm -f simplessl$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(simplessl_OBJECTS) $(simplessl_LDADD) $(LIBS)
 
+smtp-authzid$(EXEEXT): $(smtp_authzid_OBJECTS) $(smtp_authzid_DEPENDENCIES) $(EXTRA_smtp_authzid_DEPENDENCIES) 
+	@rm -f smtp-authzid$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(smtp_authzid_OBJECTS) $(smtp_authzid_LDADD) $(LIBS)
+
 smtp-expn$(EXEEXT): $(smtp_expn_OBJECTS) $(smtp_expn_DEPENDENCIES) $(EXTRA_smtp_expn_DEPENDENCIES) 
 	@rm -f smtp-expn$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(smtp_expn_OBJECTS) $(smtp_expn_LDADD) $(LIBS)
@@ -1557,6 +1635,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/10-at-a-time.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/altsvc.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/anyauthput.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/certinfo.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/chkspeed.Po@am__quote@ # am--include-marker
@@ -1581,10 +1660,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-pushinmemory.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-serverpush.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http2-upload.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http3-present.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/http3.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpcustomheader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/httpput.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/https.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap-append.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap-authzid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap-copy.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap-create.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/imap-delete.Po@am__quote@ # am--include-marker
@@ -1606,6 +1688,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/multi-single.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parseurl.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/persistent.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-authzid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-dele.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-list.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pop3-multi.Po@am__quote@ # am--include-marker
@@ -1631,6 +1714,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simple.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplepost.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplessl.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp-authzid.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp-expn.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp-mail.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/smtp-mime.Po@am__quote@ # am--include-marker
@@ -1805,6 +1889,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
 
 distclean: distclean-am
 		-rm -f ./$(DEPDIR)/10-at-a-time.Po
+	-rm -f ./$(DEPDIR)/altsvc.Po
 	-rm -f ./$(DEPDIR)/anyauthput.Po
 	-rm -f ./$(DEPDIR)/certinfo.Po
 	-rm -f ./$(DEPDIR)/chkspeed.Po
@@ -1829,10 +1914,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/http2-pushinmemory.Po
 	-rm -f ./$(DEPDIR)/http2-serverpush.Po
 	-rm -f ./$(DEPDIR)/http2-upload.Po
+	-rm -f ./$(DEPDIR)/http3-present.Po
+	-rm -f ./$(DEPDIR)/http3.Po
 	-rm -f ./$(DEPDIR)/httpcustomheader.Po
 	-rm -f ./$(DEPDIR)/httpput.Po
 	-rm -f ./$(DEPDIR)/https.Po
 	-rm -f ./$(DEPDIR)/imap-append.Po
+	-rm -f ./$(DEPDIR)/imap-authzid.Po
 	-rm -f ./$(DEPDIR)/imap-copy.Po
 	-rm -f ./$(DEPDIR)/imap-create.Po
 	-rm -f ./$(DEPDIR)/imap-delete.Po
@@ -1854,6 +1942,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/multi-single.Po
 	-rm -f ./$(DEPDIR)/parseurl.Po
 	-rm -f ./$(DEPDIR)/persistent.Po
+	-rm -f ./$(DEPDIR)/pop3-authzid.Po
 	-rm -f ./$(DEPDIR)/pop3-dele.Po
 	-rm -f ./$(DEPDIR)/pop3-list.Po
 	-rm -f ./$(DEPDIR)/pop3-multi.Po
@@ -1879,6 +1968,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/simple.Po
 	-rm -f ./$(DEPDIR)/simplepost.Po
 	-rm -f ./$(DEPDIR)/simplessl.Po
+	-rm -f ./$(DEPDIR)/smtp-authzid.Po
 	-rm -f ./$(DEPDIR)/smtp-expn.Po
 	-rm -f ./$(DEPDIR)/smtp-mail.Po
 	-rm -f ./$(DEPDIR)/smtp-mime.Po
@@ -1935,6 +2025,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 		-rm -f ./$(DEPDIR)/10-at-a-time.Po
+	-rm -f ./$(DEPDIR)/altsvc.Po
 	-rm -f ./$(DEPDIR)/anyauthput.Po
 	-rm -f ./$(DEPDIR)/certinfo.Po
 	-rm -f ./$(DEPDIR)/chkspeed.Po
@@ -1959,10 +2050,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/http2-pushinmemory.Po
 	-rm -f ./$(DEPDIR)/http2-serverpush.Po
 	-rm -f ./$(DEPDIR)/http2-upload.Po
+	-rm -f ./$(DEPDIR)/http3-present.Po
+	-rm -f ./$(DEPDIR)/http3.Po
 	-rm -f ./$(DEPDIR)/httpcustomheader.Po
 	-rm -f ./$(DEPDIR)/httpput.Po
 	-rm -f ./$(DEPDIR)/https.Po
 	-rm -f ./$(DEPDIR)/imap-append.Po
+	-rm -f ./$(DEPDIR)/imap-authzid.Po
 	-rm -f ./$(DEPDIR)/imap-copy.Po
 	-rm -f ./$(DEPDIR)/imap-create.Po
 	-rm -f ./$(DEPDIR)/imap-delete.Po
@@ -1984,6 +2078,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/multi-single.Po
 	-rm -f ./$(DEPDIR)/parseurl.Po
 	-rm -f ./$(DEPDIR)/persistent.Po
+	-rm -f ./$(DEPDIR)/pop3-authzid.Po
 	-rm -f ./$(DEPDIR)/pop3-dele.Po
 	-rm -f ./$(DEPDIR)/pop3-list.Po
 	-rm -f ./$(DEPDIR)/pop3-multi.Po
@@ -2009,6 +2104,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/simple.Po
 	-rm -f ./$(DEPDIR)/simplepost.Po
 	-rm -f ./$(DEPDIR)/simplessl.Po
+	-rm -f ./$(DEPDIR)/smtp-authzid.Po
 	-rm -f ./$(DEPDIR)/smtp-expn.Po
 	-rm -f ./$(DEPDIR)/smtp-mail.Po
 	-rm -f ./$(DEPDIR)/smtp-mime.Po

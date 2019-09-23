@@ -100,16 +100,11 @@ void Curl_http2_init_userset(struct UserDefined *set)
 }
 
 static int http2_perform_getsock(const struct connectdata *conn,
-                                 curl_socket_t *sock, /* points to
-                                                         numsocks
-                                                         number of
-                                                         sockets */
-                                 int numsocks)
+                                 curl_socket_t *sock)
 {
   const struct http_conn *c = &conn->proto.httpc;
   struct SingleRequest *k = &conn->data->req;
   int bitmap = GETSOCK_BLANK;
-  (void)numsocks;
 
   sock[0] = conn->sock[FIRSTSOCKET];
 
@@ -126,11 +121,9 @@ static int http2_perform_getsock(const struct connectdata *conn,
 }
 
 static int http2_getsock(struct connectdata *conn,
-                         curl_socket_t *sock, /* points to numsocks
-                                                 number of sockets */
-                         int numsocks)
+                         curl_socket_t *socks)
 {
-  return http2_perform_getsock(conn, sock, numsocks);
+  return http2_perform_getsock(conn, socks);
 }
 
 /*
@@ -240,7 +233,7 @@ static unsigned int http2_conncheck(struct connectdata *check,
 
   if(checks_to_perform & CONNCHECK_KEEPALIVE) {
     struct curltime now = Curl_now();
-    time_t elapsed = Curl_timediff(now, check->keepalive);
+    timediff_t elapsed = Curl_timediff(now, check->keepalive);
 
     if(elapsed > check->upkeep_interval_ms) {
       /* Perform an HTTP/2 PING */
@@ -1566,6 +1559,11 @@ static ssize_t http2_recv(struct connectdata *conn, int sockindex,
   if(should_close_session(httpc)) {
     H2BUGF(infof(data,
                  "http2_recv: nothing to do in this session\n"));
+    if(conn->bits.close) {
+      /* already marked for closure, return OK and we're done */
+      *err = CURLE_OK;
+      return 0;
+    }
     *err = CURLE_HTTP2;
     return -1;
   }
@@ -1755,6 +1753,9 @@ static ssize_t http2_recv(struct connectdata *conn, int sockindex,
     else if(!stream->closed) {
       drained_transfer(data, httpc);
     }
+    else
+      /* this stream is closed, trigger a another read ASAP to detect that */
+      Curl_expire(data, 0, EXPIRE_RUN_NOW);
 
     return retlen;
   }

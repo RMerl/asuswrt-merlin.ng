@@ -2662,6 +2662,7 @@
     <ClCompile Include="..\..\..\..\src\tool_panykey.c" />
     <ClCompile Include="..\..\..\..\src\tool_paramhlp.c" />
     <ClCompile Include="..\..\..\..\src\tool_parsecfg.c" />
+    <ClCompile Include="..\..\..\..\src\tool_progress.c" />
     <ClCompile Include="..\..\..\..\src\tool_setopt.c" />
     <ClCompile Include="..\..\..\..\src\tool_sleep.c" />
     <ClCompile Include="..\..\..\..\src\tool_strdup.c" />
@@ -2709,6 +2710,7 @@
     <ClInclude Include="..\..\..\..\src\tool_panykey.h" />
     <ClInclude Include="..\..\..\..\src\tool_paramhlp.h" />
     <ClInclude Include="..\..\..\..\src\tool_parsecfg.h" />
+    <ClInclude Include="..\..\..\..\src\tool_progress.h" />
     <ClInclude Include="..\..\..\..\src\tool_sdecls.h" />
     <ClInclude Include="..\..\..\..\src\tool_setopt.h" />
     <ClInclude Include="..\..\..\..\src\tool_setup.h" />

@@ -82,6 +82,7 @@ const NameValue setopt_nv_CURL_HTTP_VERSION[] = {
   NV(CURL_HTTP_VERSION_1_1),
   NV(CURL_HTTP_VERSION_2_0),
   NV(CURL_HTTP_VERSION_2TLS),
+  NV(CURL_HTTP_VERSION_3),
   NVEND,
 };
 
@@ -818,6 +819,16 @@ bool tool_setopt_skip(CURLoption tag)
   switch(tag) {
   case CURLOPT_TFTP_BLKSIZE:
   case CURLOPT_TFTP_NO_OPTIONS:
+    return TRUE;
+  default:
+    break;
+  }
+#endif
+#ifdef CURL_DISABLE_NETRC
+#define USED_TAG
+  switch(tag) {
+  case CURLOPT_NETRC:
+  case CURLOPT_NETRC_FILE:
     return TRUE;
   default:
     break;

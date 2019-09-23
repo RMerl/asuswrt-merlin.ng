@@ -97,6 +97,7 @@ crypto/*/*.S
 
 # Misc auto generated files
 /tools/c_rehash
+/test/3
 /test/evptests.txt
 lib
 Makefile.save

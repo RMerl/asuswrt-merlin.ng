@@ -95,8 +95,7 @@ static CURLcode smtp_done(struct connectdata *conn, CURLcode status,
 static CURLcode smtp_connect(struct connectdata *conn, bool *done);
 static CURLcode smtp_disconnect(struct connectdata *conn, bool dead);
 static CURLcode smtp_multi_statemach(struct connectdata *conn, bool *done);
-static int smtp_getsock(struct connectdata *conn, curl_socket_t *socks,
-                        int numsocks);
+static int smtp_getsock(struct connectdata *conn, curl_socket_t *socks);
 static CURLcode smtp_doing(struct connectdata *conn, bool *dophase_done);
 static CURLcode smtp_setup_connection(struct connectdata *conn);
 static CURLcode smtp_parse_url_options(struct connectdata *conn);
@@ -715,7 +714,7 @@ static CURLcode smtp_state_ehlo_resp(struct connectdata *conn, int smtpcode,
       result = CURLE_REMOTE_ACCESS_DENIED;
     }
   }
-  else {
+  else if(len >= 4) {
     line += 4;
     len -= 4;
 
@@ -785,6 +784,10 @@ static CURLcode smtp_state_ehlo_resp(struct connectdata *conn, int smtpcode,
       else
         result = smtp_perform_authentication(conn);
     }
+  }
+  else {
+    failf(data, "Unexpectedly short EHLO response");
+    result = CURLE_WEIRD_SERVER_REPLY;
   }
 
   return result;
@@ -1114,10 +1117,9 @@ static CURLcode smtp_init(struct connectdata *conn)
 }
 
 /* For the SMTP "protocol connect" and "doing" phases only */
-static int smtp_getsock(struct connectdata *conn, curl_socket_t *socks,
-                        int numsocks)
+static int smtp_getsock(struct connectdata *conn, curl_socket_t *socks)
 {
-  return Curl_pp_getsock(&conn->proto.smtpc.pp, socks, numsocks);
+  return Curl_pp_getsock(&conn->proto.smtpc.pp, socks);
 }
 
 /***********************************************************************

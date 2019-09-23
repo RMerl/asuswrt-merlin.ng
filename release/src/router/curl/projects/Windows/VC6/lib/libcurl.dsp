@@ -1106,14 +1106,6 @@ SOURCE=..\..\..\..\lib\splay.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\..\..\lib\ssh.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\ssh-libssh.c
-# End Source File
-# Begin Source File
-
 SOURCE=..\..\..\..\lib\strcase.c
 # End Source File
 # Begin Source File
@@ -1591,6 +1583,10 @@ SOURCE=..\..\..\..\lib\progress.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\psl.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\quic.h
 # End Source File
 # Begin Source File
 

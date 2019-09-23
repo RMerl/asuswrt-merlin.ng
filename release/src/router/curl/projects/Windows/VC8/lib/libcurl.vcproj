@@ -3993,14 +3993,6 @@
 			>
 			</File>
 			<File
-				RelativePath="..\..\..\..\lib\ssh.c"
-			>
-			</File>
-			<File
-				RelativePath="..\..\..\..\lib\ssh-libssh.c"
-			>
-			</File>
-			<File
 				RelativePath="..\..\..\..\lib\strcase.c"
 			>
 			</File>
@@ -4378,6 +4370,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\psl.h"
+			>
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\quic.h"
 			>
 			</File>
 			<File

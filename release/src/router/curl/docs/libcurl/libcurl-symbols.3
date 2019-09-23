@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH libcurl-symbols 3 "jul 19, 2019" "libcurl 7.41.0" "libcurl symbols"
+.TH libcurl-symbols 3 "sep 11, 2019" "libcurl 7.41.0" "libcurl symbols"
 .SH NAME
 libcurl-symbols \- libcurl symbol version information
 .SH "libcurl symbols"
@@ -35,8 +35,6 @@ The last version that featured the specific symbol. Using the symbol in source
 code will make it no longer compile error-free after that specified version.
 
 This man page is automatically generated from the symbols-in-versions file.
-.IP CURLALTSVC_ALTUSED
-Introduced in 7.64.1
 .IP CURLALTSVC_H1
 Introduced in 7.64.1
 .IP CURLALTSVC_H2
@@ -92,6 +90,8 @@ Introduced in 7.1
 Introduced in 7.18.2
 .IP CURLE_ALREADY_COMPLETE
 Introduced in 7.7.2
+.IP CURLE_AUTH_ERROR
+Introduced in 7.66.0
 .IP CURLE_BAD_CALLING_ORDER
 Introduced in 7.1
 Deprecated since 7.17.0
@@ -596,6 +596,8 @@ Introduced in 7.18.2
 Introduced in 7.4.1
 .IP CURLINFO_RESPONSE_CODE
 Introduced in 7.10.8
+.IP CURLINFO_RETRY_AFTER
+Introduced in 7.66.0
 .IP CURLINFO_RTSP_CLIENT_CSEQ
 Introduced in 7.20.0
 .IP CURLINFO_RTSP_CSEQ_RECV
@@ -1198,6 +1200,8 @@ Introduced in 7.20.0
 Introduced in 7.20.0
 .IP CURLOPT_RTSP_TRANSPORT
 Introduced in 7.20.0
+.IP CURLOPT_SASL_AUTHZID
+Introduced in 7.66.0
 .IP CURLOPT_SASL_IR
 Introduced in 7.31.0
 .IP CURLOPT_SEEKDATA
@@ -1667,6 +1671,8 @@ Introduced in 7.10
 Introduced in 7.11.1
 .IP CURLVERSION_THIRD
 Introduced in 7.12.0
+.IP CURLVERSION_SIXTH
+Introduced in 7.66.0
 .IP CURL_CHUNK_BGN_FUNC_FAIL
 Introduced in 7.21.0
 .IP CURL_CHUNK_BGN_FUNC_OK
@@ -1763,6 +1769,8 @@ Introduced in 7.47.0
 Introduced in 7.33.0
 .IP CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE
 Introduced in 7.49.0
+.IP CURL_HTTP_VERSION_3
+Introduced in 7.66.0
 .IP CURL_HTTP_VERSION_NONE
 Introduced in 7.9.1
 .IP CURL_IPRESOLVE_V4
@@ -1952,6 +1960,8 @@ Introduced in 7.10.6
 Deprecated since 7.38.0
 .IP CURL_VERSION_HTTP2
 Introduced in 7.33.0
+.IP CURL_VERSION_HTTP3
+Introduced in 7.66.0
 .IP CURL_VERSION_HTTPS_PROXY
 Introduced in 7.52.0
 .IP CURL_VERSION_IDN

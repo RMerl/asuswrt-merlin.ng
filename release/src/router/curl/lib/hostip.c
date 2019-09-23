@@ -624,7 +624,7 @@ int Curl_resolv_timeout(struct connectdata *conn,
                         const char *hostname,
                         int port,
                         struct Curl_dns_entry **entry,
-                        time_t timeoutms)
+                        timediff_t timeoutms)
 {
 #ifdef USE_ALARM_TIMEOUT
 #ifdef HAVE_SIGACTION
@@ -1027,19 +1027,17 @@ CURLcode Curl_resolv_check(struct connectdata *conn,
 }
 
 int Curl_resolv_getsock(struct connectdata *conn,
-                        curl_socket_t *socks,
-                        int numsocks)
+                        curl_socket_t *socks)
 {
 #ifdef CURLRES_ASYNCH
   if(conn->data->set.doh)
     /* nothing to wait for during DOH resolve, those handles have their own
        sockets */
     return GETSOCK_BLANK;
-  return Curl_resolver_getsock(conn, socks, numsocks);
+  return Curl_resolver_getsock(conn, socks);
 #else
   (void)conn;
   (void)socks;
-  (void)numsocks;
   return GETSOCK_BLANK;
 #endif
 }

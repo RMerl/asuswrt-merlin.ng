@@ -26,6 +26,7 @@
 #include "sendf.h"
 #include "multiif.h"
 #include "progress.h"
+#include "timeval.h"
 #include "curl_printf.h"
 
 /* check rate limits within this many recent milliseconds, at minimum. */
@@ -168,7 +169,7 @@ void Curl_pgrsResetTransferSizes(struct Curl_easy *data)
 void Curl_pgrsTime(struct Curl_easy *data, timerid timer)
 {
   struct curltime now = Curl_now();
-  time_t *delta = NULL;
+  timediff_t *delta = NULL;
 
   switch(timer) {
   default:
@@ -238,6 +239,8 @@ void Curl_pgrsStartNow(struct Curl_easy *data)
   data->progress.ul_limit_start.tv_usec = 0;
   data->progress.dl_limit_start.tv_sec = 0;
   data->progress.dl_limit_start.tv_usec = 0;
+  data->progress.downloaded = 0;
+  data->progress.uploaded = 0;
   /* clear all bits except HIDE and HEADERS_OUT */
   data->progress.flags &= PGRS_HIDE|PGRS_HEADERS_OUT;
   Curl_ratelimit(data, data->progress.start);
@@ -268,8 +271,8 @@ timediff_t Curl_pgrsLimitWaitTime(curl_off_t cursize,
                                   struct curltime now)
 {
   curl_off_t size = cursize - startsize;
-  time_t minimum;
-  time_t actual;
+  timediff_t minimum;
+  timediff_t actual;
 
   if(!limit || !size)
     return 0;
@@ -282,10 +285,10 @@ timediff_t Curl_pgrsLimitWaitTime(curl_off_t cursize,
     minimum = (time_t) (CURL_OFF_T_C(1000) * size / limit);
   else {
     minimum = (time_t) (size / limit);
-    if(minimum < TIME_T_MAX/1000)
+    if(minimum < TIMEDIFF_T_MAX/1000)
       minimum *= 1000;
     else
-      minimum = TIME_T_MAX;
+      minimum = TIMEDIFF_T_MAX;
   }
 
   /*

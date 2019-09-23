@@ -187,16 +187,8 @@ static CURLcode global_init(long flags, bool memoryfuncs)
 
   (void)Curl_ipv6works();
 
-#if defined(USE_LIBSSH2) && defined(HAVE_LIBSSH2_INIT)
-  if(libssh2_init(0)) {
-    DEBUGF(fprintf(stderr, "Error: libssh2_init failed\n"));
-    return CURLE_FAILED_INIT;
-  }
-#endif
-
-#if defined(USE_LIBSSH)
-  if(ssh_init()) {
-    DEBUGF(fprintf(stderr, "Error: libssh_init failed\n"));
+#if defined(USE_SSH)
+  if(Curl_ssh_init()) {
     return CURLE_FAILED_INIT;
   }
 #endif
@@ -274,13 +266,7 @@ void curl_global_cleanup(void)
 
   Curl_amiga_cleanup();
 
-#if defined(USE_LIBSSH2) && defined(HAVE_LIBSSH2_EXIT)
-  (void)libssh2_exit();
-#endif
-
-#if defined(USE_LIBSSH)
-  (void)ssh_finalize();
-#endif
+  Curl_ssh_cleanup();
 
   init_flags  = 0;
 }
@@ -602,27 +588,11 @@ static CURLcode easy_transfer(struct Curl_multi *multi)
 
   while(!done && !mcode) {
     int still_running = 0;
-    bool gotsocket = FALSE;
 
-    mcode = Curl_multi_wait(multi, NULL, 0, 1000, NULL, &gotsocket);
+    mcode = curl_multi_poll(multi, NULL, 0, 1000, NULL);
 
-    if(!mcode) {
-      if(!gotsocket) {
-        long sleep_ms;
-
-        /* If it returns without any filedescriptor instantly, we need to
-           avoid busy-looping during periods where it has nothing particular
-           to wait for */
-        curl_multi_timeout(multi, &sleep_ms);
-        if(sleep_ms) {
-          if(sleep_ms > 1000)
-            sleep_ms = 1000;
-          Curl_wait_ms((int)sleep_ms);
-        }
-      }
-
+    if(!mcode)
       mcode = curl_multi_perform(multi, &still_running);
-    }
 
     /* only read 'still_running' if curl_multi_perform() return OK */
     if(!mcode && !still_running) {
@@ -942,6 +912,8 @@ struct Curl_easy *curl_easy_duphandle(struct Curl_easy *data)
  */
 void curl_easy_reset(struct Curl_easy *data)
 {
+  long old_buffer_size = data->set.buffer_size;
+
   Curl_free_request_state(data);
 
   /* zero out UserDefined data: */
@@ -965,6 +937,18 @@ void curl_easy_reset(struct Curl_easy *data)
 #if !defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_CRYPTO_AUTH)
   Curl_http_auth_cleanup_digest(data);
 #endif
+
+  /* resize receive buffer */
+  if(old_buffer_size != data->set.buffer_size) {
+    char *newbuff = realloc(data->state.buffer, data->set.buffer_size + 1);
+    if(!newbuff) {
+      DEBUGF(fprintf(stderr, "Error: realloc of buffer failed\n"));
+      /* nothing we can do here except use the old size */
+      data->set.buffer_size = old_buffer_size;
+    }
+    else
+      data->state.buffer = newbuff;
+  }
 }
 
 /*
@@ -1141,6 +1125,35 @@ CURLcode curl_easy_send(struct Curl_easy *data, const void *buffer,
 }
 
 /*
+ * Wrapper to call functions in Curl_conncache_foreach()
+ *
+ * Returns always 0.
+ */
+static int conn_upkeep(struct connectdata *conn,
+                       void *param)
+{
+  /* Param is unused. */
+  (void)param;
+
+  if(conn->handler->connection_check) {
+    /* Do a protocol-specific keepalive check on the connection. */
+    conn->handler->connection_check(conn, CONNCHECK_KEEPALIVE);
+  }
+
+  return 0; /* continue iteration */
+}
+
+static CURLcode upkeep(struct conncache *conn_cache, void *data)
+{
+  /* Loop over every connection and make connection alive. */
+  Curl_conncache_foreach(data,
+                         conn_cache,
+                         data,
+                         conn_upkeep);
+  return CURLE_OK;
+}
+
+/*
  * Performs connection upkeep for the given session handle.
  */
 CURLcode curl_easy_upkeep(struct Curl_easy *data)
@@ -1151,7 +1164,7 @@ CURLcode curl_easy_upkeep(struct Curl_easy *data)
 
   if(data->multi_easy) {
     /* Use the common function to keep connections alive. */
-    return Curl_upkeep(&data->multi_easy->conn_cache, data);
+    return upkeep(&data->multi_easy->conn_cache, data);
   }
   else {
     /* No connections, so just return success */

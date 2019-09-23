@@ -88,8 +88,7 @@
  */
 
 static int http_getsock_do(struct connectdata *conn,
-                           curl_socket_t *socks,
-                           int numsocks);
+                           curl_socket_t *socks);
 static int http_should_fail(struct connectdata *conn);
 
 #ifndef CURL_DISABLE_PROXY
@@ -99,8 +98,7 @@ static CURLcode add_haproxy_protocol_header(struct connectdata *conn);
 #ifdef USE_SSL
 static CURLcode https_connecting(struct connectdata *conn, bool *done);
 static int https_getsock(struct connectdata *conn,
-                         curl_socket_t *socks,
-                         int numsocks);
+                         curl_socket_t *socks);
 #else
 #define https_connecting(x,y) CURLE_COULDNT_CONNECT
 #endif
@@ -171,10 +169,22 @@ static CURLcode http_setup_conn(struct connectdata *conn)
   Curl_mime_initpart(&http->form, conn->data);
   data->req.protop = http;
 
-  if(!CONN_INUSE(conn))
-    /* if not already multi-using, setup connection details */
-    Curl_http2_setup_conn(conn);
-  Curl_http2_setup_req(data);
+  if(data->set.httpversion == CURL_HTTP_VERSION_3) {
+    if(conn->handler->flags & PROTOPT_SSL)
+      /* Only go HTTP/3 directly on HTTPS URLs. It needs a UDP socket and does
+         the QUIC dance. */
+      conn->transport = TRNSPRT_QUIC;
+    else {
+      failf(data, "HTTP/3 requested for non-HTTPS URL");
+      return CURLE_URL_MALFORMAT;
+    }
+  }
+  else {
+    if(!CONN_INUSE(conn))
+      /* if not already multi-using, setup connection details */
+      Curl_http2_setup_conn(conn);
+    Curl_http2_setup_req(data);
+  }
   return CURLE_OK;
 }
 
@@ -1136,10 +1146,14 @@ Curl_send_buffer *Curl_add_buffer_init(void)
  */
 void Curl_add_buffer_free(Curl_send_buffer **inp)
 {
-  Curl_send_buffer *in = *inp;
-  if(in) /* deal with NULL input */
+  Curl_send_buffer *in;
+  if(!inp)
+    return;
+  in = *inp;
+  if(in) { /* deal with NULL input */
     free(in->buffer);
-  free(in);
+    free(in);
+  }
   *inp = NULL;
 }
 
@@ -1497,11 +1511,9 @@ CURLcode Curl_http_connect(struct connectdata *conn, bool *done)
    interface and then we're always _sending_ a request and thus we wait for
    the single socket to become writable only */
 static int http_getsock_do(struct connectdata *conn,
-                           curl_socket_t *socks,
-                           int numsocks)
+                           curl_socket_t *socks)
 {
   /* write mode */
-  (void)numsocks; /* unused, we trust it to be at least 1 */
   socks[0] = conn->sock[FIRSTSOCKET];
   return GETSOCK_WRITESOCK(0);
 }
@@ -1555,6 +1567,13 @@ static CURLcode https_connecting(struct connectdata *conn, bool *done)
   CURLcode result;
   DEBUGASSERT((conn) && (conn->handler->flags & PROTOPT_SSL));
 
+#ifdef ENABLE_QUIC
+  if(conn->transport == TRNSPRT_QUIC) {
+    *done = TRUE;
+    return CURLE_OK;
+  }
+#endif
+
   /* perform SSL initialization for this socket */
   result = Curl_ssl_connect_nonblocking(conn, FIRSTSOCKET, done);
   if(result)
@@ -1564,11 +1583,10 @@ static CURLcode https_connecting(struct connectdata *conn, bool *done)
 }
 
 static int https_getsock(struct connectdata *conn,
-                         curl_socket_t *socks,
-                         int numsocks)
+                         curl_socket_t *socks)
 {
   if(conn->handler->flags & PROTOPT_SSL)
-    return Curl_ssl_getsock(conn, socks, numsocks);
+    return Curl_ssl_getsock(conn, socks);
   return GETSOCK_BLANK;
 }
 #endif /* USE_SSL */
@@ -1650,6 +1668,12 @@ static bool use_http_1_1plus(const struct Curl_easy *data,
 static const char *get_http_string(const struct Curl_easy *data,
                                    const struct connectdata *conn)
 {
+#ifdef ENABLE_QUIC
+  if((data->set.httpversion == CURL_HTTP_VERSION_3) ||
+     (conn->httpversion == 30))
+    return "3";
+#endif
+
 #ifdef USE_NGHTTP2
   if(conn->proto.httpc.h2)
     return "2";
@@ -1670,7 +1694,7 @@ static CURLcode expect100(struct Curl_easy *data,
   data->state.expect100header = FALSE; /* default to false unless it is set
                                           to TRUE below */
   if(use_http_1_1plus(data, conn) &&
-     (conn->httpversion != 20)) {
+     (conn->httpversion < 20)) {
     /* if not doing HTTP 1.0 or version 2, or disabled explicitly, we add an
        Expect: 100-continue to the headers which actually speeds up post
        operations (as there is one packet coming back from the web server) */
@@ -1700,7 +1724,7 @@ enum proxy_use {
    will return an error code if one of the headers is
    not formatted correctly */
 CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
-                                    Curl_send_buffer *buffer,
+                                    Curl_send_buffer **buffer,
                                     struct Curl_easy *handle)
 {
   char *ptr = NULL;
@@ -1726,7 +1750,7 @@ CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
     /* only add correctly formatted trailers */
     ptr = strchr(trailers->data, ':');
     if(ptr && *(ptr + 1) == ' ') {
-      result = Curl_add_bufferf(&buffer, "%s%s", trailers->data,
+      result = Curl_add_bufferf(buffer, "%s%s", trailers->data,
                                 endofline_native);
       if(result)
         return result;
@@ -1735,7 +1759,7 @@ CURLcode Curl_http_compile_trailers(struct curl_slist *trailers,
       infof(handle, "Malformatted trailing header ! Skipping trailer.");
     trailers = trailers->next;
   }
-  result = Curl_add_buffer(&buffer, endofline_network,
+  result = Curl_add_buffer(buffer, endofline_network,
                            strlen(endofline_network));
   return result;
 }
@@ -1851,7 +1875,7 @@ CURLcode Curl_add_custom_headers(struct connectdata *conn,
                      Connection: */
                   checkprefix("Connection:", compare))
             ;
-          else if((conn->httpversion == 20) &&
+          else if((conn->httpversion >= 20) &&
                   checkprefix("Transfer-Encoding:", compare))
             /* HTTP/2 doesn't support chunked requests */
             ;
@@ -1982,55 +2006,57 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   const char *httpstring;
   Curl_send_buffer *req_buffer;
   curl_off_t postsize = 0; /* curl_off_t to handle large file sizes */
+  char *altused = NULL;
 
   /* Always consider the DO phase done after this function call, even if there
      may be parts of the request that is not yet sent, since we can deal with
      the rest of the request in the PERFORM phase. */
   *done = TRUE;
 
-  if(conn->httpversion < 20) { /* unless the connection is re-used and already
-                                  http2 */
-    switch(conn->negnpn) {
-    case CURL_HTTP_VERSION_2:
-      conn->httpversion = 20; /* we know we're on HTTP/2 now */
-
-      result = Curl_http2_switched(conn, NULL, 0);
-      if(result)
-        return result;
-      break;
-    case CURL_HTTP_VERSION_1_1:
-      /* continue with HTTP/1.1 when explicitly requested */
-      break;
-    default:
-      /* Check if user wants to use HTTP/2 with clear TCP*/
-#ifdef USE_NGHTTP2
-      if(conn->data->set.httpversion ==
-         CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE) {
-        if(conn->bits.httpproxy && !conn->bits.tunnel_proxy) {
-          /* We don't support HTTP/2 proxies yet. Also it's debatable whether
-             or not this setting should apply to HTTP/2 proxies. */
-          infof(data, "Ignoring HTTP/2 prior knowledge due to proxy\n");
-          break;
-        }
-
-        DEBUGF(infof(data, "HTTP/2 over clean TCP\n"));
-        conn->httpversion = 20;
+  if(conn->transport != TRNSPRT_QUIC) {
+    if(conn->httpversion < 20) { /* unless the connection is re-used and
+                                    already http2 */
+      switch(conn->negnpn) {
+      case CURL_HTTP_VERSION_2:
+        conn->httpversion = 20; /* we know we're on HTTP/2 now */
 
         result = Curl_http2_switched(conn, NULL, 0);
         if(result)
           return result;
-      }
+        break;
+      case CURL_HTTP_VERSION_1_1:
+        /* continue with HTTP/1.1 when explicitly requested */
+        break;
+      default:
+        /* Check if user wants to use HTTP/2 with clear TCP*/
+#ifdef USE_NGHTTP2
+        if(conn->data->set.httpversion ==
+           CURL_HTTP_VERSION_2_PRIOR_KNOWLEDGE) {
+          if(conn->bits.httpproxy && !conn->bits.tunnel_proxy) {
+            /* We don't support HTTP/2 proxies yet. Also it's debatable
+               whether or not this setting should apply to HTTP/2 proxies. */
+            infof(data, "Ignoring HTTP/2 prior knowledge due to proxy\n");
+            break;
+          }
+
+          DEBUGF(infof(data, "HTTP/2 over clean TCP\n"));
+          conn->httpversion = 20;
+
+          result = Curl_http2_switched(conn, NULL, 0);
+          if(result)
+            return result;
+        }
 #endif
-      break;
+        break;
+      }
+    }
+    else {
+      /* prepare for a http2 request */
+      result = Curl_http2_setup(conn);
+      if(result)
+        return result;
     }
   }
-  else {
-    /* prepare for a http2 request */
-    result = Curl_http2_setup(conn);
-    if(result)
-      return result;
-  }
-
   http = data->req.protop;
   DEBUGASSERT(http);
 
@@ -2226,14 +2252,16 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   else {
     if((conn->handler->protocol & PROTO_FAMILY_HTTP) &&
        (((httpreq == HTTPREQ_POST_MIME || httpreq == HTTPREQ_POST_FORM) &&
-       http->postsize < 0) ||
-       (data->set.upload && data->state.infilesize == -1))) {
+         http->postsize < 0) ||
+        ((data->set.upload || httpreq == HTTPREQ_POST) &&
+         data->state.infilesize == -1))) {
       if(conn->bits.authneg)
         /* don't enable chunked during auth neg */
         ;
       else if(use_http_1_1plus(data, conn)) {
-        /* HTTP, upload, unknown file size and not HTTP 1.0 */
-        data->req.upload_chunky = TRUE;
+        if(conn->httpversion < 20)
+          /* HTTP, upload, unknown file size and not HTTP 1.0 */
+          data->req.upload_chunky = TRUE;
       }
       else {
         failf(data, "Chunky upload is not supported by HTTP 1.0");
@@ -2334,7 +2362,6 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
 
     /* and no fragment part */
     CURLUcode uc;
-    char *url;
     CURLU *h = curl_url_dup(data->state.uh);
     if(!h)
       return CURLE_OUT_OF_MEMORY;
@@ -2365,18 +2392,14 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
         return CURLE_OUT_OF_MEMORY;
       }
     }
-    /* now extract the new version of the URL */
-    uc = curl_url_get(h, CURLUPART_URL, &url, 0);
+    /* Extract the the URL to use in the request. Store in STRING_TEMP_URL for
+       clean-up reasons if the function returns before the free() further
+       down. */
+    uc = curl_url_get(h, CURLUPART_URL, &data->set.str[STRING_TEMP_URL], 0);
     if(uc) {
       curl_url_cleanup(h);
       return CURLE_OUT_OF_MEMORY;
     }
-
-    if(data->change.url_alloc)
-      free(data->change.url);
-
-    data->change.url = url;
-    data->change.url_alloc = TRUE;
 
     curl_url_cleanup(h);
 
@@ -2556,12 +2579,16 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     query = NULL;
   }
 
+#ifndef CURL_DISABLE_PROXY
   /* url */
   if(conn->bits.httpproxy && !conn->bits.tunnel_proxy) {
-    char *url = data->change.url;
+    char *url = data->set.str[STRING_TEMP_URL];
     result = Curl_add_buffer(&req_buffer, url, strlen(url));
+    Curl_safefree(data->set.str[STRING_TEMP_URL]);
   }
-  else if(paste_ftp_userpwd)
+  else
+#endif
+  if(paste_ftp_userpwd)
     result = Curl_add_bufferf(&req_buffer, "ftp://%s:%s@%s",
                               conn->user, conn->passwd,
                               path + sizeof("ftp://") - 1);
@@ -2575,6 +2602,14 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   if(result)
     return result;
 
+#ifdef USE_ALTSVC
+  if(conn->bits.altused && !Curl_checkheaders(conn, "Alt-Used")) {
+    altused = aprintf("Alt-Used: %s:%d\r\n",
+                      conn->conn_to_host.name, conn->conn_to_port);
+    if(!altused)
+      return CURLE_OUT_OF_MEMORY;
+  }
+#endif
   result =
     Curl_add_bufferf(&req_buffer,
                      "%s" /* ftp typecode (;type=x) */
@@ -2589,7 +2624,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
                      "%s" /* accept-encoding */
                      "%s" /* referer */
                      "%s" /* Proxy-Connection */
-                     "%s",/* transfer-encoding */
+                     "%s" /* transfer-encoding */
+                     "%s",/* Alt-Used */
 
                      ftp_typecode,
                      httpstring,
@@ -2615,13 +2651,15 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
                       !conn->bits.tunnel_proxy &&
                       !Curl_checkProxyheaders(conn, "Proxy-Connection"))?
                      "Proxy-Connection: Keep-Alive\r\n":"",
-                     te
+                     te,
+                     altused ? altused : ""
       );
 
   /* clear userpwd and proxyuserpwd to avoid re-using old credentials
    * from re-used connections */
   Curl_safefree(conn->allocptr.userpwd);
   Curl_safefree(conn->allocptr.proxyuserpwd);
+  free(altused);
 
   if(result)
     return result;
@@ -3660,6 +3698,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
          * guarantees on future behaviors since it isn't within the protocol.
          */
         char separator;
+        char twoorthree[2];
         nc = sscanf(HEADER1,
                     " HTTP/%1d.%1d%c%3d",
                     &httpversion_major,
@@ -3667,8 +3706,8 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
                     &separator,
                     &k->httpcode);
 
-        if(nc == 1 && httpversion_major == 2 &&
-           1 == sscanf(HEADER1, " HTTP/2 %d", &k->httpcode)) {
+        if(nc == 1 && httpversion_major >= 2 &&
+           2 == sscanf(HEADER1, " HTTP/%1[23] %d", twoorthree, &k->httpcode)) {
           conn->httpversion = 0;
           nc = 4;
           separator = ' ';
@@ -3706,7 +3745,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
           }
         }
         else {
-          failf(data, "Unsupported HTTP version in response\n");
+          failf(data, "Unsupported HTTP version in response");
           return CURLE_UNSUPPORTED_PROTOCOL;
         }
       }
@@ -3934,6 +3973,19 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
       result = Curl_build_unencoding_stack(conn, k->p + 17, FALSE);
       if(result)
         return result;
+    }
+    else if(checkprefix("Retry-After:", k->p)) {
+      /* Retry-After = HTTP-date / delay-seconds */
+      curl_off_t retry_after = 0; /* zero for unknown or "now" */
+      time_t date = curl_getdate(&k->p[12], NULL);
+      if(-1 == date) {
+        /* not a date, try it as a decimal number */
+        (void)curlx_strtoofft(&k->p[12], NULL, 10, &retry_after);
+      }
+      else
+        /* convert date to number of seconds into the future */
+        retry_after = date - time(NULL);
+      data->info.retry_after = retry_after; /* store it */
     }
     else if(!k->http_bodyless && checkprefix("Content-Range:", k->p)) {
       /* Content-Range: bytes [num]-

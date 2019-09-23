@@ -27,7 +27,7 @@
  */
 
 void Curl_updatesocket(struct Curl_easy *data);
-void Curl_expire(struct Curl_easy *data, time_t milli, expire_id);
+void Curl_expire(struct Curl_easy *data, timediff_t milli, expire_id);
 void Curl_expire_clear(struct Curl_easy *data);
 void Curl_expire_done(struct Curl_easy *data, expire_id id);
 void Curl_update_timer(struct Curl_multi *multi);
@@ -88,12 +88,5 @@ void Curl_multi_closed(struct Curl_easy *data, curl_socket_t s);
 CURLMcode Curl_multi_add_perform(struct Curl_multi *multi,
                                  struct Curl_easy *data,
                                  struct connectdata *conn);
-
-CURLMcode Curl_multi_wait(struct Curl_multi *multi,
-                          struct curl_waitfd extra_fds[],
-                          unsigned int extra_nfds,
-                          int timeout_ms,
-                          int *ret,
-                          bool *gotsocket); /* if any socket was checked */
 
 #endif /* HEADER_CURL_MULTIIF_H */

@@ -54,10 +54,13 @@ static enum alpnid alpn2alpnid(char *name)
     return ALPN_h1;
   if(strcasecompare(name, "h2"))
     return ALPN_h2;
-  if(strcasecompare(name, "h2c"))
-    return ALPN_h2c;
+#if (defined(USE_QUICHE) || defined(USE_NGHTTP2)) && !defined(UNITTESTS)
+  if(strcasecompare(name, "h3-22"))
+    return ALPN_h3;
+#else
   if(strcasecompare(name, "h3"))
     return ALPN_h3;
+#endif
   return ALPN_none; /* unknown, probably rubbish input */
 }
 
@@ -69,10 +72,12 @@ const char *Curl_alpnid2str(enum alpnid id)
     return "h1";
   case ALPN_h2:
     return "h2";
-  case ALPN_h2c:
-    return "h2c";
   case ALPN_h3:
+#if (defined(USE_QUICHE) || defined(USE_NGHTTP2)) && !defined(UNITTESTS)
+    return "h3-22";
+#else
     return "h3";
+#endif
   default:
     return ""; /* bad */
   }
@@ -81,8 +86,8 @@ const char *Curl_alpnid2str(enum alpnid id)
 
 static void altsvc_free(struct altsvc *as)
 {
-  free(as->srchost);
-  free(as->dsthost);
+  free(as->src.host);
+  free(as->dst.host);
   free(as);
 }
 
@@ -97,17 +102,17 @@ static struct altsvc *altsvc_createid(const char *srchost,
   if(!as)
     return NULL;
 
-  as->srchost = strdup(srchost);
-  if(!as->srchost)
+  as->src.host = strdup(srchost);
+  if(!as->src.host)
     goto error;
-  as->dsthost = strdup(dsthost);
-  if(!as->dsthost)
+  as->dst.host = strdup(dsthost);
+  if(!as->dst.host)
     goto error;
 
-  as->srcalpnid = srcalpnid;
-  as->dstalpnid = dstalpnid;
-  as->srcport = curlx_ultous(srcport);
-  as->dstport = curlx_ultous(dstport);
+  as->src.alpnid = srcalpnid;
+  as->dst.alpnid = dstalpnid;
+  as->src.port = curlx_ultous(srcport);
+  as->dst.port = curlx_ultous(dstport);
 
   return as;
   error:
@@ -226,8 +231,8 @@ static CURLcode altsvc_out(struct altsvc *as, FILE *fp)
           "\"%d%02d%02d "
           "%02d:%02d:%02d\" "
           "%u %d\n",
-          Curl_alpnid2str(as->srcalpnid), as->srchost, as->srcport,
-          Curl_alpnid2str(as->dstalpnid), as->dsthost, as->dstport,
+          Curl_alpnid2str(as->src.alpnid), as->src.host, as->src.port,
+          Curl_alpnid2str(as->dst.alpnid), as->dst.host, as->dst.port,
           stamp.tm_year + 1900, stamp.tm_mon + 1, stamp.tm_mday,
           stamp.tm_hour, stamp.tm_min, stamp.tm_sec,
           as->persist, as->prio);
@@ -252,7 +257,7 @@ struct altsvcinfo *Curl_altsvc_init(void)
 #ifdef USE_NGHTTP2
     | CURLALTSVC_H2
 #endif
-#ifdef USE_HTTP3
+#ifdef ENABLE_QUIC
     | CURLALTSVC_H3
 #endif
     ;
@@ -343,7 +348,7 @@ static CURLcode getalnum(const char **ptr, char *alpnbuf, size_t buflen)
   while(*p && ISBLANK(*p))
     p++;
   protop = p;
-  while(*p && ISALNUM(*p))
+  while(*p && !ISBLANK(*p) && (*p != ';') && (*p != '='))
     p++;
   len = p - protop;
 
@@ -365,9 +370,9 @@ static void altsvc_flush(struct altsvcinfo *asi, enum alpnid srcalpnid,
   for(e = asi->list.head; e; e = n) {
     struct altsvc *as = e->ptr;
     n = e->next;
-    if((srcalpnid == as->srcalpnid) &&
-       (srcport == as->srcport) &&
-       strcasecompare(srchost, as->srchost)) {
+    if((srcalpnid == as->src.alpnid) &&
+       (srcport == as->src.port) &&
+       strcasecompare(srchost, as->src.host)) {
       Curl_llist_remove(&asi->list, e, NULL);
       altsvc_free(as);
       asi->num--;
@@ -535,31 +540,31 @@ CURLcode Curl_altsvc_parse(struct Curl_easy *data,
 bool Curl_altsvc_lookup(struct altsvcinfo *asi,
                         enum alpnid srcalpnid, const char *srchost,
                         int srcport,
-                        enum alpnid *dstalpnid, const char **dsthost,
-                        int *dstport)
+                        struct altsvc **dstentry,
+                        const int versions) /* one or more bits */
 {
   struct curl_llist_element *e;
   struct curl_llist_element *n;
   time_t now = time(NULL);
   DEBUGASSERT(asi);
   DEBUGASSERT(srchost);
-  DEBUGASSERT(dsthost);
+  DEBUGASSERT(dstentry);
 
   for(e = asi->list.head; e; e = n) {
     struct altsvc *as = e->ptr;
     n = e->next;
     if(as->expires < now) {
       /* an expired entry, remove */
+      Curl_llist_remove(&asi->list, e, NULL);
       altsvc_free(as);
       continue;
     }
-    if((as->srcalpnid == srcalpnid) &&
-       strcasecompare(as->srchost, srchost) &&
-       as->srcport == srcport) {
+    if((as->src.alpnid == srcalpnid) &&
+       strcasecompare(as->src.host, srchost) &&
+       (as->src.port == srcport) &&
+       (versions & as->dst.alpnid)) {
       /* match */
-      *dstalpnid = as->dstalpnid;
-      *dsthost = as->dsthost;
-      *dstport = as->dstport;
+      *dstentry = as;
       return TRUE;
     }
   }

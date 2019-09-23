@@ -35,8 +35,8 @@ ifeq ($(USE_OPENSSL), y)
 
 CFLAGS	+= -DOPSSL
 ifeq ($(RTCONFIG_OPENSSL11),y)
-CFLAGS  += -I$(TOP)/openssl-1.1.x/include
-LDFLAGS += -L$(TOP)/openssl-1.1.x
+CFLAGS  += -I$(TOP)/openssl-1.1/include
+LDFLAGS += -L$(TOP)/openssl-1.1
 else
 CFLAGS	+= -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl

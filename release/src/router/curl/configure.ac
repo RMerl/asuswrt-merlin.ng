@@ -2633,7 +2633,7 @@ dnl **********************************************************************
 dnl Check for the CA bundle
 dnl **********************************************************************
 
-if test "$check_for_ca_bundle" -gt 0; then
+if test -n "$check_for_ca_bundle"; then
   CURL_CHECK_CA_BUNDLE
 fi
 
@@ -3338,6 +3338,331 @@ if test X"$want_h2" != Xno; then
 fi
 
 dnl **********************************************************************
+dnl Check for ngtcp2 (QUIC)
+dnl **********************************************************************
+
+OPT_TCP2="yes"
+curl_h3_msg="disabled (--with-ngtcp2, --with-quiche)"
+
+if test "x$disable_http" = "xyes"; then
+  # without HTTP, ngtcp2 is no use
+  OPT_TCP2="no"
+fi
+
+AC_ARG_WITH(ngtcp2,
+AC_HELP_STRING([--with-ngtcp2=PATH],[Enable ngtcp2 usage])
+AC_HELP_STRING([--without-ngtcp2],[Disable ngtcp2 usage]),
+  [OPT_TCP2=$withval])
+case "$OPT_TCP2" in
+  no)
+    dnl --without-ngtcp2 option used
+    want_tcp2="no"
+    ;;
+  yes)
+    dnl --with-ngtcp2 option used without path
+    want_tcp2="default"
+    want_tcp2_path=""
+    ;;
+  *)
+    dnl --with-ngtcp2 option used with path
+    want_tcp2="yes"
+    want_tcp2_path="$withval/lib/pkgconfig"
+    ;;
+esac
+
+curl_tcp2_msg="disabled (--with-ngtcp2)"
+if test X"$want_tcp2" != Xno; then
+  dnl backup the pre-ngtcp2 variables
+  CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+  CURL_CHECK_PKGCONFIG(libngtcp2, $want_tcp2_path)
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_TCP2=`CURL_EXPORT_PCDIR([$want_tcp2_path])
+      $PKGCONFIG --libs-only-l libngtcp2`
+    AC_MSG_NOTICE([-l is $LIB_TCP2])
+
+    CPP_TCP2=`CURL_EXPORT_PCDIR([$want_tcp2_path]) dnl
+      $PKGCONFIG --cflags-only-I libngtcp2`
+    AC_MSG_NOTICE([-I is $CPP_TCP2])
+
+    LD_TCP2=`CURL_EXPORT_PCDIR([$want_tcp2_path])
+      $PKGCONFIG --libs-only-L libngtcp2`
+    AC_MSG_NOTICE([-L is $LD_TCP2])
+
+    LDFLAGS="$LDFLAGS $LD_TCP2"
+    CPPFLAGS="$CPPFLAGS $CPP_TCP2"
+    LIBS="$LIB_TCP2 $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_TCP2=`echo $LD_TCP2 | $SED -e 's/-L//'`
+    fi
+    AC_CHECK_LIB(ngtcp2, ngtcp2_conn_client_new,
+      [
+       AC_CHECK_HEADERS(ngtcp2/ngtcp2.h,
+          NGTCP2_ENABLED=1
+          AC_DEFINE(USE_NGTCP2, 1, [if ngtcp2 is in use])
+          AC_SUBST(USE_NGTCP2, [1])
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_TCP2"
+          export CURL_LIBRARY_PATH
+          AC_MSG_NOTICE([Added $DIR_TCP2 to CURL_LIBRARY_PATH])
+       )
+      ],
+        dnl not found, revert back to clean variables
+        LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+    )
+
+  else
+    dnl no ngtcp2 pkg-config found, deal with it
+    if test X"$want_tcp2" != Xdefault; then
+      dnl To avoid link errors, we do not allow --with-ngtcp2 without
+      dnl a pkgconfig file
+      AC_MSG_ERROR([--with-ngtcp2 was specified but could not find ngtcp2 pkg-config file.])
+    fi
+  fi
+
+fi
+
+if test "x$NGTCP2_ENABLED" = "x1"; then
+  dnl backup the pre-ngtcp2_crypto_openssl variables
+  CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+  CURL_CHECK_PKGCONFIG(libngtcp2_crypto_openssl, $want_tcp2_path)
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_NGTCP2_CRYPTO_OPENSSL=`CURL_EXPORT_PCDIR([$want_tcp2_path])
+      $PKGCONFIG --libs-only-l libngtcp2_crypto_openssl`
+    AC_MSG_NOTICE([-l is $LIB_NGTCP2_CRYPTO_OPENSSL])
+
+    CPP_NGTCP2_CRYPTO_OPENSSL=`CURL_EXPORT_PCDIR([$want_tcp2_path]) dnl
+      $PKGCONFIG --cflags-only-I libngtcp2_crypto_openssl`
+    AC_MSG_NOTICE([-I is $CPP_NGTCP2_CRYPTO_OPENSSL])
+
+    LD_NGTCP2_CRYPTO_OPENSSL=`CURL_EXPORT_PCDIR([$want_tcp2_path])
+      $PKGCONFIG --libs-only-L libngtcp2_crypto_openssl`
+    AC_MSG_NOTICE([-L is $LD_NGTCP2_CRYPTO_OPENSSL])
+
+    LDFLAGS="$LDFLAGS $LD_NGTCP2_CRYPTO_OPENSSL"
+    CPPFLAGS="$CPPFLAGS $CPP_NGTCP2_CRYPTO_OPENSSL"
+    LIBS="$LIB_NGTCP2_CRYPTO_OPENSSL $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_NGTCP2_CRYPTO_OPENSSL=`echo $LD_NGTCP2_CRYPTO_OPENSSL | $SED -e 's/-L//'`
+    fi
+    AC_CHECK_LIB(ngtcp2_crypto_openssl, ngtcp2_crypto_ctx_initial,
+      [
+       AC_CHECK_HEADERS(ngtcp2/ngtcp2_crypto.h,
+          NGTCP2_ENABLED=1
+          AC_DEFINE(USE_NGTCP2_CRYPTO_OPENSSL, 1, [if ngtcp2_crypto_openssl is in use])
+          AC_SUBST(USE_NGTCP2_CRYPTO_OPENSSL, [1])
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_NGTCP2_CRYPTO_OPENSSL"
+          export CURL_LIBRARY_PATH
+          AC_MSG_NOTICE([Added $DIR_NGTCP2_CRYPTO_OPENSSL to CURL_LIBRARY_PATH])
+       )
+      ],
+        dnl not found, revert back to clean variables
+        LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+    )
+
+  else
+    dnl no ngtcp2_crypto_openssl pkg-config found, deal with it
+    if test X"$want_tcp2" != Xdefault; then
+      dnl To avoid link errors, we do not allow --with-ngtcp2 without
+      dnl a pkgconfig file
+      AC_MSG_ERROR([--with-ngtcp2 was specified but could not find ngtcp2_crypto_openssl pkg-config file.])
+    fi
+  fi
+fi
+
+dnl **********************************************************************
+dnl Check for nghttp3 (HTTP/3 with ngtcp2)
+dnl **********************************************************************
+
+OPT_NGHTTP3="yes"
+
+if test "x$NGTCP2_ENABLED" = "x"; then
+  # without ngtcp2, nghttp3 is of no use for us
+  OPT_NGHTTP3="no"
+fi
+
+AC_ARG_WITH(nghttp3,
+AC_HELP_STRING([--with-nghttp3=PATH],[Enable nghttp3 usage])
+AC_HELP_STRING([--without-nghttp3],[Disable nghttp3 usage]),
+  [OPT_NGHTTP3=$withval])
+case "$OPT_NGHTTP3" in
+  no)
+    dnl --without-nghttp3 option used
+    want_nghttp3="no"
+    ;;
+  yes)
+    dnl --with-nghttp3 option used without path
+    want_nghttp3="default"
+    want_nghttp3_path=""
+    ;;
+  *)
+    dnl --with-nghttp3 option used with path
+    want_nghttp3="yes"
+    want_nghttp3_path="$withval/lib/pkgconfig"
+    ;;
+esac
+
+curl_http3_msg="disabled (--with-nghttp3)"
+if test X"$want_nghttp3" != Xno; then
+  dnl backup the pre-nghttp3 variables
+  CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+  CURL_CHECK_PKGCONFIG(libnghttp3, $want_nghttp3_path)
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_NGHTTP3=`CURL_EXPORT_PCDIR([$want_nghttp3_path])
+      $PKGCONFIG --libs-only-l libnghttp3`
+    AC_MSG_NOTICE([-l is $LIB_NGHTTP3])
+
+    CPP_NGHTTP3=`CURL_EXPORT_PCDIR([$want_nghttp3_path]) dnl
+      $PKGCONFIG --cflags-only-I libnghttp3`
+    AC_MSG_NOTICE([-I is $CPP_NGHTTP3])
+
+    LD_NGHTTP3=`CURL_EXPORT_PCDIR([$want_nghttp3_path])
+      $PKGCONFIG --libs-only-L libnghttp3`
+    AC_MSG_NOTICE([-L is $LD_NGHTTP3])
+
+    LDFLAGS="$LDFLAGS $LD_NGHTTP3"
+    CPPFLAGS="$CPPFLAGS $CPP_NGHTTP3"
+    LIBS="$LIB_NGHTTP3 $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_NGHTTP3=`echo $LD_NGHTTP3 | $SED -e 's/-L//'`
+    fi
+    AC_CHECK_LIB(nghttp3, nghttp3_conn_client_new,
+      [
+       AC_CHECK_HEADERS(nghttp3/nghttp3.h,
+          curl_h3_msg="enabled (ngtcp2 + nghttp3)"
+          NGHTTP3_ENABLED=1
+          AC_DEFINE(USE_NGHTTP3, 1, [if nghttp3 is in use])
+          AC_SUBST(USE_NGHTTP3, [1])
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_NGHTTP3"
+          export CURL_LIBRARY_PATH
+          AC_MSG_NOTICE([Added $DIR_NGHTTP3 to CURL_LIBRARY_PATH])
+          experimental="$experimental HTTP3"
+       )
+      ],
+        dnl not found, revert back to clean variables
+        LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+    )
+
+  else
+    dnl no nghttp3 pkg-config found, deal with it
+    if test X"$want_nghttp3" != Xdefault; then
+      dnl To avoid link errors, we do not allow --with-nghttp3 without
+      dnl a pkgconfig file
+      AC_MSG_ERROR([--with-nghttp3 was specified but could not find nghttp3 pkg-config file.])
+    fi
+  fi
+
+fi
+
+dnl **********************************************************************
+dnl Check for quiche (QUIC)
+dnl **********************************************************************
+
+OPT_QUICHE="yes"
+
+if test "x$disable_http" = "xyes" -o "x$USE_NGTCP" = "x1"; then
+  # without HTTP or with ngtcp2, quiche is no use
+  OPT_QUICHE="no"
+fi
+
+AC_ARG_WITH(quiche,
+AC_HELP_STRING([--with-quiche=PATH],[Enable quiche usage])
+AC_HELP_STRING([--without-quiche],[Disable quiche usage]),
+  [OPT_QUICHE=$withval])
+case "$OPT_QUICHE" in
+  no)
+    dnl --without-quiche option used
+    want_quiche="no"
+    ;;
+  yes)
+    dnl --with-quiche option used without path
+    want_quiche="default"
+    want_quiche_path=""
+    ;;
+  *)
+    dnl --with-quiche option used with path
+    want_quiche="yes"
+    want_quiche_path="$withval"
+    ;;
+esac
+
+if test X"$want_quiche" != Xno; then
+  dnl backup the pre-quiche variables
+  CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+  CURL_CHECK_PKGCONFIG(quiche, $want_quiche_path)
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_QUICHE=`CURL_EXPORT_PCDIR([$want_quiche_path])
+      $PKGCONFIG --libs-only-l quiche`
+    AC_MSG_NOTICE([-l is $LIB_QUICHE])
+
+    CPP_QUICHE=`CURL_EXPORT_PCDIR([$want_quiche_path]) dnl
+      $PKGCONFIG --cflags-only-I quiche`
+    AC_MSG_NOTICE([-I is $CPP_QUICHE])
+
+    LD_QUICHE=`CURL_EXPORT_PCDIR([$want_quiche_path])
+      $PKGCONFIG --libs-only-L quiche`
+    AC_MSG_NOTICE([-L is $LD_QUICHE])
+
+    LDFLAGS="$LDFLAGS $LD_QUICHE"
+    CPPFLAGS="$CPPFLAGS $CPP_QUICHE"
+    LIBS="$LIB_QUICHE $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_QUICHE=`echo $LD_QUICHE | $SED -e 's/-L//'`
+    fi
+    AC_CHECK_LIB(quiche, quiche_connect,
+      [
+       AC_CHECK_HEADERS(quiche.h,
+          experimental="$experimental HTTP3"
+          AC_MSG_NOTICE([HTTP3 support is experimental])
+          curl_h3_msg="enabled (quiche)"
+          QUICHE_ENABLED=1
+          AC_DEFINE(USE_QUICHE, 1, [if quiche is in use])
+          AC_SUBST(USE_QUICHE, [1])
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_QUICHE"
+          export CURL_LIBRARY_PATH
+          AC_MSG_NOTICE([Added $DIR_QUICHE to CURL_LIBRARY_PATH]),
+       )
+      ],
+        dnl not found, revert back to clean variables
+        LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+    )
+  else
+    dnl no nghttp3 pkg-config found, deal with it
+    if test X"$want_quiche" != Xdefault; then
+      dnl To avoid link errors, we do not allow --with-nghttp3 without
+      dnl a pkgconfig file
+      AC_MSG_ERROR([--with-quiche was specified but could not find quiche pkg-config file.])
+    fi
+  fi
+fi
+
+dnl **********************************************************************
 dnl Check for zsh completion path
 dnl **********************************************************************
 
@@ -3671,6 +3996,7 @@ AC_CHECK_FUNCS([fnmatch \
   setlocale \
   setmode \
   setrlimit \
+  usleep \
   utime \
   utimes
 ],[
@@ -4161,7 +4487,6 @@ AC_HELP_STRING([--disable-alt-svc],[Disable alt-svc support]),
   *) AC_MSG_RESULT(yes)
        curl_altsvc_msg="enabled";
        enable_altsvc="yes"
-       experimental="alt-svc"
        ;;
   esac ],
        AC_MSG_RESULT(no)
@@ -4169,7 +4494,7 @@ AC_HELP_STRING([--disable-alt-svc],[Disable alt-svc support]),
 
 if test "$enable_altsvc" = "yes"; then
   AC_DEFINE(USE_ALTSVC, 1, [to enable alt-svc])
-  experimental="alt-svc"
+  experimental="$experimental alt-svc"
 fi
 
 dnl ************************************************************
@@ -4278,6 +4603,10 @@ fi
 
 if test "x$USE_NGHTTP2" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES HTTP2"
+fi
+
+if test "x$USE_NGTCP2" = "x1" -o "x$USE_QUICHE" = "x1"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES HTTP3"
 fi
 
 if test "x$CURL_WITH_MULTI_SSL" = "x1"; then
@@ -4471,11 +4800,12 @@ AC_MSG_NOTICE([Configured to build curl/libcurl:
   PSL:              ${curl_psl_msg}
   Alt-svc:          ${curl_altsvc_msg}
   HTTP2:            ${curl_h2_msg}
+  HTTP3:            ${curl_h3_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
   Features:         ${SUPPORT_FEATURES}
 ])
 if test -n "$experimental"; then
  cat >&2 << _EOF
-  WARNING: $experimental is enabled but marked EXPERIMENTAL. Use with caution!
+  WARNING: $experimental enabled but marked EXPERIMENTAL. Use with caution!
 _EOF
 fi

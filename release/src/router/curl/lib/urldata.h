@@ -129,6 +129,7 @@ typedef ssize_t (Curl_recv)(struct connectdata *conn, /* connection data */
 #include "smb.h"
 #include "wildcard.h"
 #include "multihandle.h"
+#include "quic.h"
 
 #ifdef HAVE_GSSAPI
 # ifdef HAVE_GSSGNU
@@ -404,6 +405,7 @@ struct ConnectBits {
                          the first time on the first connect function call */
   bit close:1; /* if set, we close the connection after this request */
   bit reuse:1; /* if set, this is a re-used connection */
+  bit altused:1; /* this is an alt-svc "redirect" */
   bit conn_to_host:1; /* if set, this connection has a "connect to host"
                          that overrides the host in the URL */
   bit conn_to_port:1; /* if set, this connection has a "connect to port"
@@ -663,27 +665,23 @@ struct Curl_handler {
   /* Called from the multi interface during the PROTOCONNECT phase, and it
      should then return a proper fd set */
   int (*proto_getsock)(struct connectdata *conn,
-                       curl_socket_t *socks,
-                       int numsocks);
+                       curl_socket_t *socks);
 
   /* Called from the multi interface during the DOING phase, and it should
      then return a proper fd set */
   int (*doing_getsock)(struct connectdata *conn,
-                       curl_socket_t *socks,
-                       int numsocks);
+                       curl_socket_t *socks);
 
   /* Called from the multi interface during the DO_MORE phase, and it should
      then return a proper fd set */
   int (*domore_getsock)(struct connectdata *conn,
-                        curl_socket_t *socks,
-                        int numsocks);
+                        curl_socket_t *socks);
 
   /* Called from the multi interface during the DO_DONE, PERFORM and
      WAITPERFORM phases, and it should then return a proper fd set. Not setting
      this will make libcurl use the generic default one. */
   int (*perform_getsock)(const struct connectdata *conn,
-                         curl_socket_t *socks,
-                         int numsocks);
+                         curl_socket_t *socks);
 
   /* This function *MAY* be set to a protocol-dependent function that is run
    * by the curl_disconnect(), as a step in the disconnection.  If the handler
@@ -782,6 +780,8 @@ struct http_connect_state {
   bit close_connection:1;
 };
 
+struct ldapconninfo;
+
 /*
  * The connectdata struct contains all fields and variables that should be
  * unique for an entire connection.
@@ -831,7 +831,16 @@ struct connectdata {
 
   unsigned int scope_id;  /* Scope id for IPv6 */
 
-  int socktype;  /* SOCK_STREAM or SOCK_DGRAM */
+  enum {
+    TRNSPRT_TCP = 3,
+    TRNSPRT_UDP = 4,
+    TRNSPRT_QUIC = 5
+  } transport;
+
+#ifdef ENABLE_QUIC
+  struct quicsocket hequic[2]; /* two, for happy eyeballs! */
+  struct quicsocket *quic;
+#endif
 
   struct hostname host;
   char *hostname_resolve; /* host name to resolve to address, allocated */
@@ -870,7 +879,8 @@ struct connectdata {
   char *passwd;  /* password string, allocated */
   char *options; /* options string, allocated */
 
-  char *oauth_bearer; /* bearer token for OAuth 2.0, allocated */
+  char *oauth_bearer;     /* bearer token for OAuth 2.0, allocated */
+  char *sasl_authzid;     /* authorisation identity string, allocated */
 
   int httpversion;        /* the HTTP version*10 reported by the server */
   int rtspversion;        /* the RTSP version*10 reported by the server */
@@ -904,8 +914,8 @@ struct connectdata {
   struct curltime connecttime;
   /* The two fields below get set in Curl_connecthost */
   int num_addr; /* number of addresses to try to connect to */
-  time_t timeoutms_per_addr; /* how long time in milliseconds to spend on
-                                trying to connect to each IP address */
+  timediff_t timeoutms_per_addr; /* how long time in milliseconds to spend on
+                                    trying to connect to each IP address */
 
   const struct Curl_handler *handler; /* Connection's protocol handler */
   const struct Curl_handler *given;   /* The protocol first given */
@@ -1010,7 +1020,8 @@ struct connectdata {
     struct smtp_conn smtpc;
     struct rtsp_conn rtspc;
     struct smb_conn smbc;
-    void *generic; /* RTMP and LDAP use this */
+    void *rtmp;
+    struct ldapconninfo *ldapc;
   } proto;
 
   int cselect_bits; /* bitmask of socket events */
@@ -1065,6 +1076,7 @@ struct PureInfo {
   long numconnects; /* how many new connection did libcurl created */
   char *contenttype; /* the content type of the object */
   char *wouldredirect; /* URL this would've been redirected to if asked to */
+  curl_off_t retry_after; /* info from Retry-After: header */
 
   /* PureInfo members 'conn_primary_ip', 'conn_primary_port', 'conn_local_ip'
      and, 'conn_local_port' are copied over from the connectdata struct in
@@ -1084,7 +1096,6 @@ struct PureInfo {
                                  OpenSSL, GnuTLS, Schannel, NSS and GSKit
                                  builds. Asked for with CURLOPT_CERTINFO
                                  / CURLINFO_CERTINFO */
-
   bit timecond:1;  /* set to TRUE if the time condition didn't match, which
                       thus made the document NOT get fetched */
 };
@@ -1103,17 +1114,17 @@ struct Progress {
   int width; /* screen width at download start */
   int flags; /* see progress.h */
 
-  time_t timespent;
+  timediff_t timespent;
 
   curl_off_t dlspeed;
   curl_off_t ulspeed;
 
-  time_t t_nslookup;
-  time_t t_connect;
-  time_t t_appconnect;
-  time_t t_pretransfer;
-  time_t t_starttransfer;
-  time_t t_redirect;
+  timediff_t t_nslookup;
+  timediff_t t_connect;
+  timediff_t t_appconnect;
+  timediff_t t_pretransfer;
+  timediff_t t_starttransfer;
+  timediff_t t_redirect;
 
   struct curltime start;
   struct curltime t_startsingle;
@@ -1221,6 +1232,7 @@ typedef enum {
   EXPIRE_SPEEDCHECK,
   EXPIRE_TIMEOUT,
   EXPIRE_TOOFAST,
+  EXPIRE_QUIC,
   EXPIRE_LAST /* not an actual timer, used as a marker only */
 } expire_id;
 
@@ -1492,6 +1504,10 @@ enum dupstring {
   STRING_DOH,                   /* CURLOPT_DOH_URL */
 #ifdef USE_ALTSVC
   STRING_ALTSVC,                /* CURLOPT_ALTSVC */
+#endif
+  STRING_SASL_AUTHZID,          /* CURLOPT_SASL_AUTHZID */
+#ifndef CURL_DISABLE_PROXY
+  STRING_TEMP_URL,              /* temp URL storage for proxy use */
 #endif
   /* -- end of zero-terminated strings -- */
 

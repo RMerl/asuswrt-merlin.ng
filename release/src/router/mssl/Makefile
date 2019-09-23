@@ -5,8 +5,8 @@ LIBS =
 LDFLAGS	= 
 
 ifeq ($(RTCONFIG_OPENSSL11),y)
-CFLAGS  += -I$(TOP)/openssl-1.1/include
-LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto
+CFLAGS  += -I$(TOP)/openssl-1.1.x/include
+LIBS += -L$(TOP)/openssl-1.1.x -lssl -lcrypto
 else
 CFLAGS	+= -I$(TOP)/openssl/include
 LIBS += -L$(TOP)/openssl -lssl -lcrypto

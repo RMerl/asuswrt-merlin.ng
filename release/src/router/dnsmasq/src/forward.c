@@ -1004,7 +1004,7 @@ void reply_query(int fd, int family, time_t now)
 		  else
 		    status = dnssec_validate_reply(now, header, n, daemon->namebuff, daemon->keyname, &forward->class, 
 						   !option_bool(OPT_DNSSEC_IGN_NS) && (server->flags & SERV_DO_DNSSEC),
-						   NULL, NULL);
+						   NULL, NULL, NULL);
 #ifdef HAVE_DUMPFILE
 		  if (status == STAT_BOGUS)
 		    dump_packet((forward->flags & (FREC_DNSKEY_QUERY | FREC_DS_QUERY)) ? DUMP_SEC_BOGUS : DUMP_BOGUS,
@@ -1601,7 +1601,7 @@ static int tcp_key_recurse(time_t now, int status, struct dns_header *header, si
       else 
 	new_status = dnssec_validate_reply(now, header, n, name, keyname, &class,
 					   !option_bool(OPT_DNSSEC_IGN_NS) && (server->flags & SERV_DO_DNSSEC),
-					   NULL, NULL);
+					   NULL, NULL, NULL);
       
       if (new_status != STAT_NEED_DS && new_status != STAT_NEED_KEY)
 	break;

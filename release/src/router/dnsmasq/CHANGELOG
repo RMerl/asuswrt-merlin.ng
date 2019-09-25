@@ -45,6 +45,11 @@ version 2.81
 
 	Fix compilation against nettle version 3.5 and later.
 
+	Fix spurious DNSSEC validation failures when the auth section
+	of a reply contains unsigned RRs from a signed zone, 
+	with the exception that NSEC and NSEC3 RRs must always be signed.
+        Thanks to Tore Anderson for spotting and diagnosing the bug.
+
 	
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method

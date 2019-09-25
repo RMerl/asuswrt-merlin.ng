@@ -1,7 +1,0 @@
-*.orig
-*~
-*.o
-*.so
-*.a
-*.cat8
-Makefile

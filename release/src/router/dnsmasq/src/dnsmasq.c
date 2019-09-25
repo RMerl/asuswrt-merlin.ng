@@ -57,6 +57,7 @@ int main (int argc, char **argv)
   int need_cap_net_bind_service = 0;
   char *bound_device = NULL;
   int did_bind = 0;
+  struct server *serv;
 #endif 
 #if defined(HAVE_DHCP) || defined(HAVE_DHCP6)
   struct dhcp_context *context;
@@ -125,7 +126,7 @@ int main (int argc, char **argv)
       daemon->workspacename = safe_malloc(MAXDNAME * 2);
       /* one char flag per possible RR in answer section (may get extended). */
       daemon->rr_status_sz = 64;
-      daemon->rr_status = safe_malloc(daemon->rr_status_sz);
+      daemon->rr_status = safe_malloc(sizeof(*daemon->rr_status) * daemon->rr_status_sz);
 
       crypto_init();
     }
@@ -476,12 +477,35 @@ int main (int argc, char **argv)
   /* We keep CAP_NETADMIN (for ARP-injection) and
      CAP_NET_RAW (for icmp) if we're doing dhcp,
      if we have yet to bind ports because of DAD, 
-     or we're doing it dynamically,
-     we need CAP_NET_BIND_SERVICE. */
+     or we're doing it dynamically, we need CAP_NET_BIND_SERVICE. */
   if ((is_dad_listeners() || option_bool(OPT_CLEVERBIND)) &&
       (option_bool(OPT_TFTP) || (daemon->port != 0 && daemon->port <= 1024)))
     need_cap_net_bind_service = 1;
 
+  /* usptream servers which bind to an interface call SO_BINDTODEVICE
+     for each TCP connection, so need CAP_NET_RAW */
+  for (serv = daemon->servers; serv; serv = serv->next)
+    if (serv->interface[0] != 0)
+      need_cap_net_raw = 1;
+
+  /* If we're doing Dbus or UBus, the above can be set dynamically,
+     (as can ports) so always (potentially) needed. */
+#ifdef HAVE_DBUS
+  if (option_bool(OPT_DBUS))
+    {
+      need_cap_net_bind_service = 1;
+      need_cap_net_raw = 1;
+    }
+#endif
+
+#ifdef HAVE_UBUS
+  if (option_bool(OPT_UBUS))
+    {
+      need_cap_net_bind_service = 1;
+      need_cap_net_raw = 1;
+    }
+#endif
+  
   /* determine capability API version here, while we can still
      call safe_malloc */
   int capsize = 1; /* for header version 1 */

@@ -1,1 +1,0 @@
-$(SUBDIR)version.o: version.h

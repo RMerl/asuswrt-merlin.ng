@@ -1,4 +1,0 @@
-while false; do
-    # bash will require at least ":" here...
-done
-echo OK:$?

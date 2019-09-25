@@ -2,10 +2,23 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.14 (xx-xxx-xxxx)
+  - NEW: Implement option to prevent Firefox's automatic usage of DoH.
+         By default, this will only apply if you have DNSPrivacy
+         enabled, or if you have DNSFilter enabled with a global
+         filter, to ensure that Firefox will not bypass either of
+         these.  You can also have this override applied all the
+         time, or completely disable it.
+
   - UPDATED: miniupnpd 20190824
-  - UPDATED: dnsmasq 2.80-67-g5a91334 (themiron)
+  - UPDATED: dnsmasq 2.80-74-gdefd6b1 (themiron)
+  - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
+  - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
   - CHANGED: Made webui SSL certificate generation compliant with
              IOS 13 and MacOS 10.15 new requirements.
+  - CHANGED: Rewrote the faketc script used to inject Codel into
+             Adaptive QoS as a C program for improved performance.
+  - CHANGED: Moved /bin/ip to /sbin/ip on the RT-AC86U and RT-AX88U
+             to match other models.
   - FIXED: Webui wouldn't notify when running dangerously low on
            free nvram (feature was lost at some point in the past)
   - FIXED: Non-working link to YandexDNS on the webui for

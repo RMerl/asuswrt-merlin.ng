@@ -608,7 +608,7 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 #ifdef HAVE_DNSSEC
 	  if (option_bool(OPT_DNSSEC_VALID))
 	    for (i = 0; i < ntohs(header->ancount); i++)
-	      if (daemon->rr_status[i])
+	      if (daemon->rr_status[i] != 0)
 		return 0;
 #endif
 	}
@@ -681,13 +681,16 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 		      if (!extract_name(header, qlen, &p1, name, 1, 0))
 			return 0;
 #ifdef HAVE_DNSSEC
-		      if (option_bool(OPT_DNSSEC_VALID) && daemon->rr_status[j])
+		      if (option_bool(OPT_DNSSEC_VALID) && daemon->rr_status[j] != 0)
 			{
 			  /* validated RR anywhere in CNAME chain, don't cache. */
 			  if (cname_short || aqtype == T_CNAME)
 			    return 0;
 
 			  secflag = F_DNSSECOK;
+			  /* limit TTL based on signature. */
+			  if (daemon->rr_status[j] < cttl)
+			    cttl = daemon->rr_status[j];
 			}
 #endif
 
@@ -768,8 +771,14 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 	      if (aqclass == C_IN && res != 2 && (aqtype == T_CNAME || aqtype == qtype))
 		{
 #ifdef HAVE_DNSSEC
-		  if (option_bool(OPT_DNSSEC_VALID) && daemon->rr_status[j])
+		  if (option_bool(OPT_DNSSEC_VALID) && daemon->rr_status[j] != 0)
+		    {
 		      secflag = F_DNSSECOK;
+
+		      /* limit TTl based on sig. */
+		      if (daemon->rr_status[j] < attl)
+			attl = daemon->rr_status[j];
+		    }
 #endif		  
 		  if (aqtype == T_CNAME)
 		    {

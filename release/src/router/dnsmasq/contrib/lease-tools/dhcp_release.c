@@ -178,7 +178,7 @@ static int is_same_net(struct in_addr a, struct in_addr b, struct in_addr mask)
   return (a.s_addr & mask.s_addr) == (b.s_addr & mask.s_addr);
 }
 
-static struct in_addr find_interface(struct in_addr client, int fd, unsigned int index)
+static struct in_addr find_interface(struct in_addr client, int fd, unsigned int index, int ifrfd, struct ifreq *ifr)
 {
   struct sockaddr_nl addr;
   struct nlmsghdr *h;
@@ -218,7 +218,13 @@ static struct in_addr find_interface(struct in_addr client, int fd, unsigned int
 
       for (h = (struct nlmsghdr *)iov.iov_base; NLMSG_OK(h, (size_t)len); h = NLMSG_NEXT(h, len))
 	if (h->nlmsg_type == NLMSG_DONE)
-	  exit(0);
+          {
+	    /* No match found, return first address as src/dhcp.c code does */
+	    ifr->ifr_addr.sa_family = AF_INET;
+	    if (ioctl(ifrfd, SIOCGIFADDR, ifr) != -1)
+	      return ((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
+	    exit(0);
+          }
 	else if (h->nlmsg_type == RTM_NEWADDR)
           {
             struct ifaddrmsg *ifa = NLMSG_DATA(h);  
@@ -285,7 +291,7 @@ int main(int argc, char **argv)
     }
   
   lease.s_addr = inet_addr(argv[2]);
-  server = find_interface(lease, nl, if_nametoindex(argv[1]));
+  server = find_interface(lease, nl, if_nametoindex(argv[1]), fd, &ifr);
   
   memset(&packet, 0, sizeof(packet));
  

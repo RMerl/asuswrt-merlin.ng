@@ -1,3 +1,0 @@
-# There was a bug where we misinterpreted assignments after 'do':
-for i in 1; do eval b=; done
-echo Done:$?

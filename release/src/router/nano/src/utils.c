@@ -202,7 +202,7 @@ bool is_separate_word(size_t position, size_t length, const char *buf)
 	size_t word_end = position + length;
 
 	/* Get the characters before and after the word, if any. */
-	parse_mbchar(buf + move_mbleft(buf, position), before, NULL);
+	parse_mbchar(buf + step_left(buf, position), before, NULL);
 	parse_mbchar(buf + word_end, after, NULL);
 
 	/* If the word starts at the beginning of the line OR the character before
@@ -246,7 +246,7 @@ const char *strstrwrapper(const char *haystack, const char *needle,
 				/* If this is the last possible match, don't try to advance. */
 				if (last_find == ceiling)
 					break;
-				next_rung = move_mbright(haystack, last_find);
+				next_rung = step_right(haystack, last_find);
 				regmatches[0].rm_so = next_rung;
 				regmatches[0].rm_eo = far_end;
 				if (regexec(&search_regexp, haystack, 1, regmatches,
@@ -285,17 +285,6 @@ const char *strstrwrapper(const char *haystack, const char *needle,
 		return mbrevstrcasestr(haystack, needle, start);
 	else
 		return mbstrcasestr(start, needle);
-}
-
-/* This is a wrapper for the perror() function.  The wrapper temporarily
- * leaves curses mode, calls perror() (which writes to stderr), and then
- * reenters curses mode, updating the screen in the process.  Note that
- * nperror() causes the window to flicker once. */
-void nperror(const char *s)
-{
-	endwin();
-	perror(s);
-	doupdate();
 }
 
 /* This is a wrapper for the malloc() function that properly handles
@@ -442,7 +431,7 @@ void remove_magicline(void)
 	if (openfile->filebot->data[0] == '\0' &&
 				openfile->filebot != openfile->filetop) {
 		openfile->filebot = openfile->filebot->prev;
-		free_lines(openfile->filebot->next);
+		delete_node(openfile->filebot->next);
 		openfile->filebot->next = NULL;
 		openfile->totsize--;
 	}
@@ -450,15 +439,15 @@ void remove_magicline(void)
 #endif
 
 #ifndef NANO_TINY
-/* Set (top, top_x) and (bot, bot_x) to the start and end "coordinates" of
- * the marked region.  If right_side_up isn't NULL, set it to TRUE when the
- * mark is at the top of the marked region, and to FALSE otherwise. */
-void mark_order(const linestruct **top, size_t *top_x,
-		const linestruct **bot, size_t *bot_x, bool *right_side_up)
+/* Return in (top, top_x) and (bot, bot_x) the start and end "coordinates"
+ * of the marked region.  If right_side_up isn't NULL, set it to TRUE when
+ * the mark is at the top of the marked region, and to FALSE otherwise. */
+void get_region(const linestruct **top, size_t *top_x,
+				const linestruct **bot, size_t *bot_x, bool *right_side_up)
 {
-	if ((openfile->current->lineno == openfile->mark->lineno &&
-				openfile->current_x > openfile->mark_x) ||
-				openfile->current->lineno > openfile->mark->lineno) {
+	if (openfile->mark->lineno < openfile->current->lineno ||
+				(openfile->mark == openfile->current &&
+				openfile->mark_x < openfile->current_x)) {
 		*top = openfile->mark;
 		*top_x = openfile->mark_x;
 		*bot = openfile->current;
@@ -486,7 +475,7 @@ void get_range(const linestruct **top, const linestruct **bot)
 	} else {
 		size_t top_x, bot_x;
 
-		mark_order(top, &top_x, bot, &bot_x, NULL);
+		get_region(top, &top_x, bot, &bot_x, NULL);
 
 		if (bot_x == 0 && *bot != *top && !also_the_last)
 			*bot = (*bot)->prev;
@@ -495,22 +484,19 @@ void get_range(const linestruct **top, const linestruct **bot)
 	}
 }
 
-/* Given a line number, return a pointer to the corresponding struct. */
-linestruct *fsfromline(ssize_t lineno)
+/* Return a pointer to the line that has the given line number. */
+linestruct *line_from_number(ssize_t number)
 {
-	linestruct *f = openfile->current;
+	linestruct *line = openfile->current;
 
-	if (lineno <= openfile->current->lineno)
-		while (f->lineno != lineno && f->prev != NULL)
-			f = f->prev;
+	if (line->lineno > number)
+		while (line->lineno != number)
+			line = line->prev;
 	else
-		while (f->lineno != lineno && f->next != NULL)
-			f = f->next;
+		while (line->lineno != number)
+			line = line->next;
 
-	if (f->lineno == lineno)
-		return f;
-	else
-		return NULL;
+	return line;
 }
 #endif /* !NANO_TINY */
 

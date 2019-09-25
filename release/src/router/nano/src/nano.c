@@ -59,11 +59,24 @@ static struct termios oldterm;
 # define tcsetattr(...)
 # define tcgetattr(...)
 #endif
-static struct sigaction act;
-		/* Used to set up all our fun signal handlers. */
 
-static bool input_was_aborted = FALSE;
-		/* Whether reading from standard input was aborted via ^C. */
+static struct sigaction oldaction, newaction;
+		/* Containers for the original and the temporary handler for SIGINT. */
+
+/* The next six variables are used as temporary storage places for information
+ * about the current buffer while it is partitioned during cutting/pasting. */
+static linestruct *filehead;
+		/* What was the top line of the buffer. */
+static linestruct *foreline;
+		/* The line before the first line of the partition. */
+static char *antedata = NULL;
+		/* The text on the first line of the partition before its beginning. */
+static char *postdata = NULL;
+		/* The text on the last line of the partition after its end. */
+static linestruct *hindline;
+		/* The line after the last line of the partition. */
+static linestruct *filetail;
+		/* What was the bottom line of the buffer. */
 
 /* Create a new linestruct node.  Note that we do not set prevnode->next. */
 linestruct *make_new_node(linestruct *prevnode)
@@ -180,8 +193,8 @@ void free_lines(linestruct *src)
 	delete_node(src);
 }
 
-/* Renumber the lines in a buffer, starting with the given line. */
-void renumber(linestruct *line)
+/* Renumber the lines in a buffer, from the given line onwards. */
+void renumber_from(linestruct *line)
 {
 	ssize_t number = (line->prev == NULL) ? 0 : line->prev->lineno;
 
@@ -193,111 +206,97 @@ void renumber(linestruct *line)
 
 /* Partition the current buffer so that it appears to begin at (top, top_x)
  * and appears to end at (bot, bot_x). */
-partition *partition_buffer(linestruct *top, size_t top_x,
-		linestruct *bot, size_t bot_x)
+void partition_buffer(linestruct *top, size_t top_x,
+						linestruct *bot, size_t bot_x)
 {
-	partition *p = nmalloc(sizeof(partition));
-
-	/* If the top and bottom of the partition are different from the top
-	 * and bottom of the buffer, save the latter and then set them
-	 * to top and bot. */
+	/* Save the top and bottom of the buffer when they differ from top and
+	 * bottom of the partition, then shrink the buffer to the partition. */
 	if (top != openfile->filetop) {
-		p->filetop = openfile->filetop;
+		filehead = openfile->filetop;
 		openfile->filetop = top;
 	} else
-		p->filetop = NULL;
+		filehead = NULL;
 	if (bot != openfile->filebot) {
-		p->filebot = openfile->filebot;
+		filetail = openfile->filebot;
 		openfile->filebot = bot;
 	} else
-		p->filebot = NULL;
+		filetail = NULL;
 
 	/* Remember which line is above the top of the partition, detach the
 	 * top of the partition from it, and save the text before top_x. */
-	p->top_prev = top->prev;
+	foreline = top->prev;
 	top->prev = NULL;
-	p->top_data = mallocstrncpy(NULL, top->data, top_x + 1);
-	p->top_data[top_x] = '\0';
+	antedata = mallocstrncpy(NULL, top->data, top_x + 1);
+	antedata[top_x] = '\0';
 
 	/* Remember which line is below the bottom of the partition, detach the
 	 * bottom of the partition from it, and save the text after bot_x. */
-	p->bot_next = bot->next;
+	hindline = bot->next;
 	bot->next = NULL;
-	p->bot_data = mallocstrcpy(NULL, bot->data + bot_x);
+	postdata = mallocstrcpy(NULL, bot->data + bot_x);
 
-	/* Remove all text after bot_x at the bottom of the partition. */
+	/* At the end of the partition, remove all text after bot_x. */
 	bot->data[bot_x] = '\0';
 
-	/* Remove all text before top_x at the top of the partition. */
+	/* At the beginning of the partition, remove all text before top_x. */
 	charmove(top->data, top->data + top_x, strlen(top->data) - top_x + 1);
-
-	/* Return the partition. */
-	return p;
 }
 
-/* Unpartition the current buffer so that it stretches from (filetop, 0)
- * to (filebot, $) again. */
-void unpartition_buffer(partition **p)
+/* Unpartition the current buffer so that it is complete again. */
+void unpartition_buffer()
 {
-	/* Reattach the line above the top of the partition, and restore the
-	 * text before top_x from top_data.  Free top_data when we're done
-	 * with it. */
-	openfile->filetop->prev = (*p)->top_prev;
-	if (openfile->filetop->prev != NULL)
-		openfile->filetop->prev->next = openfile->filetop;
-	openfile->filetop->data = charealloc(openfile->filetop->data,
-				strlen((*p)->top_data) + strlen(openfile->filetop->data) + 1);
-	charmove(openfile->filetop->data + strlen((*p)->top_data),
-				openfile->filetop->data, strlen(openfile->filetop->data) + 1);
-	strncpy(openfile->filetop->data, (*p)->top_data, strlen((*p)->top_data));
-	free((*p)->top_data);
+	/* Reattach the line that was above the top of the partition. */
+	openfile->filetop->prev = foreline;
+	if (foreline != NULL)
+		foreline->next = openfile->filetop;
 
-	/* Reattach the line below the bottom of the partition, and restore
-	 * the text after bot_x from bot_data.  Free bot_data when we're
-	 * done with it. */
-	openfile->filebot->next = (*p)->bot_next;
-	if (openfile->filebot->next != NULL)
-		openfile->filebot->next->prev = openfile->filebot;
+	/* Restore the text that was on the first partition line before its start. */
+	openfile->filetop->data = charealloc(openfile->filetop->data,
+				strlen(antedata) + strlen(openfile->filetop->data) + 1);
+	charmove(openfile->filetop->data + strlen(antedata),
+				openfile->filetop->data, strlen(openfile->filetop->data) + 1);
+	strncpy(openfile->filetop->data, antedata, strlen(antedata));
+	free(antedata);
+	antedata = NULL;
+
+	/* Reattach the line that was below the bottom of the partition. */
+	openfile->filebot->next = hindline;
+	if (hindline != NULL)
+		hindline->prev = openfile->filebot;
+
+	/* Restore the text that was on the last partition line after its end. */
 	openfile->filebot->data = charealloc(openfile->filebot->data,
-				strlen(openfile->filebot->data) + strlen((*p)->bot_data) + 1);
-	strcat(openfile->filebot->data, (*p)->bot_data);
-	free((*p)->bot_data);
+				strlen(openfile->filebot->data) + strlen(postdata) + 1);
+	strcat(openfile->filebot->data, postdata);
+	free(postdata);
+	postdata = NULL;
 
 	/* Restore the top and bottom of the buffer, if they were
 	 * different from the top and bottom of the partition. */
-	if ((*p)->filetop != NULL)
-		openfile->filetop = (*p)->filetop;
-	if ((*p)->filebot != NULL)
-		openfile->filebot = (*p)->filebot;
-
-	/* Uninitialize the partition. */
-	free(*p);
-	*p = NULL;
+	if (filehead != NULL)
+		openfile->filetop = filehead;
+	if (filetail != NULL)
+		openfile->filebot = filetail;
 }
 
-/* Move all the text between (top, top_x) and (bot, bot_x) in the
- * current buffer to a new buffer beginning with file_top and ending
- * with file_bot.  If no text is between (top, top_x) and (bot, bot_x),
- * don't do anything. */
-void extract_buffer(linestruct **file_top, linestruct **file_bot,
-		linestruct *top, size_t top_x, linestruct *bot, size_t bot_x)
+/* Move all text between (top, top_x) and (bot, bot_x) from the current buffer
+ * into the cutbuffer. */
+void extract(linestruct *top, size_t top_x, linestruct *bot, size_t bot_x)
 {
-	linestruct *top_save;
 	bool edittop_inside;
 #ifndef NANO_TINY
 	bool mark_inside = FALSE;
 	bool same_line = FALSE;
-#endif
 
-	/* If (top, top_x)-(bot, bot_x) doesn't cover any text, get out. */
 	if (top == bot && top_x == bot_x)
 		return;
+#endif
 
 	/* Partition the buffer so that it contains only the text from
 	 * (top, top_x) to (bot, bot_x), keep track of whether the top of
 	 * the edit window is inside the partition, and keep track of
 	 * whether the mark begins inside the partition. */
-	filepart = partition_buffer(top, top_x, bot, bot_x);
+	partition_buffer(top, top_x, bot, bot_x);
 	edittop_inside = (openfile->edittop->lineno >= openfile->filetop->lineno &&
 						openfile->edittop->lineno <= openfile->filebot->lineno);
 #ifndef NANO_TINY
@@ -315,41 +314,33 @@ void extract_buffer(linestruct **file_top, linestruct **file_bot,
 	/* Subtract the number of characters in the text from the file size. */
 	openfile->totsize -= get_totsize(top, bot);
 
-	if (*file_top == NULL) {
-		/* If file_top is empty, just move all the text directly into
-		 * it.  This is equivalent to tacking the text in top onto the
-		 * (lack of) text at the end of file_top. */
-		*file_top = openfile->filetop;
-		*file_bot = openfile->filebot;
-
-		/* Renumber, starting with file_top. */
-		renumber(*file_top);
+	/* If the given buffer is empty, just move all the text directly into it;
+	 * otherwise, append the text to what is already there. */
+	if (cutbuffer == NULL) {
+		cutbuffer = openfile->filetop;
+		cutbottom = openfile->filebot;
 	} else {
-		linestruct *file_bot_save = *file_bot;
+		/* Tack the data of the first line of the text onto the data of
+		 * the last line in the given buffer. */
+		cutbottom->data = charealloc(cutbottom->data,
+								strlen(cutbottom->data) +
+								strlen(openfile->filetop->data) + 1);
+		strcat(cutbottom->data, openfile->filetop->data);
 
-		/* Otherwise, tack the text in top onto the text at the end of
-		 * file_bot. */
-		(*file_bot)->data = charealloc((*file_bot)->data,
-				strlen((*file_bot)->data) +
-				strlen(openfile->filetop->data) + 1);
-		strcat((*file_bot)->data, openfile->filetop->data);
-
-		/* Attach the line after top to the line after file_bot.  Then,
-		 * if there's more than one line after top, move file_bot down
-		 * to bot. */
-		(*file_bot)->next = openfile->filetop->next;
-		if ((*file_bot)->next != NULL) {
-			(*file_bot)->next->prev = *file_bot;
-			*file_bot = openfile->filebot;
-		}
-
+		/* Attach the second line of the text (if any) to the last line
+		 * of the buffer, then remove the now superfluous first line. */
+		cutbottom->next = openfile->filetop->next;
 		delete_node(openfile->filetop);
 
-		/* Renumber, starting at the last line of the original buffer. */
-		renumber(file_bot_save);
+		/* If there is a second line, make the reverse attachment too and
+		 * update the buffer pointer to point at the end of the text. */
+		if (cutbottom->next != NULL) {
+			cutbottom->next->prev = cutbottom;
+			cutbottom = openfile->filebot;
+		}
 	}
 
-	/* Since the text has now been saved, remove it from the buffer. */
+	/* Since the text has now been saved, remove it from the file buffer. */
 	openfile->filetop = make_new_node(NULL);
 	openfile->filetop->data = mallocstrcpy(NULL, "");
 	openfile->filebot = openfile->filetop;
@@ -368,11 +359,11 @@ void extract_buffer(linestruct **file_top, linestruct **file_bot,
 		openfile->mark = openfile->current;
 #endif
 
-	top_save = openfile->filetop;
-
 	/* Unpartition the buffer so that it contains all the text
 	 * again, minus the saved text. */
-	unpartition_buffer(&filepart);
+	unpartition_buffer();
+
+	renumber_from(openfile->current);
 
 	/* If the top of the edit window was inside the old partition, put
 	 * it in range of current. */
@@ -381,50 +372,40 @@ void extract_buffer(linestruct **file_top, linestruct **file_bot,
 		refresh_needed = TRUE;
 	}
 
-	/* Renumber, starting with the beginning line of the old partition. */
-	renumber(top_save);
-
 	/* If the text doesn't end with a newline, and it should, add one. */
 	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0')
 		new_magicline();
 }
 
-/* Meld the given buffer into the current file buffer
+/* Meld the buffer that starts at topline into the current file buffer
  * at the current cursor position. */
-void ingraft_buffer(linestruct *somebuffer)
+void ingraft_buffer(linestruct *topline)
 {
-	linestruct *top_save;
 	size_t current_x_save = openfile->current_x;
 	bool edittop_inside;
 #ifndef NANO_TINY
-	bool right_side_up = FALSE, single_line = FALSE;
-#endif
+	bool right_side_up = FALSE;
+	bool same_line = FALSE;
 
-#ifndef NANO_TINY
-	/* Keep track of whether the mark begins inside the partition and
-	 * will need adjustment. */
+	/* Remember whether mark and cursor are on the same line, and their order. */
 	if (openfile->mark) {
-		linestruct *top, *bot;
-		size_t top_x, bot_x;
-
-		mark_order((const linestruct **)&top, &top_x,
-						(const linestruct **)&bot, &bot_x, &right_side_up);
-
-		single_line = (top == bot);
+		same_line = (openfile->mark == openfile->current);
+		right_side_up = (openfile->mark->lineno < openfile->current->lineno ||
+						(same_line && openfile->mark_x < openfile->current_x));
 	}
 #endif
 
 	/* Partition the buffer so that it contains no text, and remember
 	 * whether the current line is at the top of the edit window. */
-	filepart = partition_buffer(openfile->current, openfile->current_x,
-								openfile->current, openfile->current_x);
+	partition_buffer(openfile->current, openfile->current_x,
+						openfile->current, openfile->current_x);
 	edittop_inside = (openfile->edittop == openfile->filetop);
-	free_lines(openfile->filetop);
+	delete_node(openfile->filetop);
 
 	/* Put the top and bottom of the current buffer at the top and
 	 * bottom of the passed buffer. */
-	openfile->filetop = somebuffer;
-	openfile->filebot = openfile->filetop;
+	openfile->filetop = topline;
+	openfile->filebot = topline;
 	while (openfile->filebot->next != NULL)
 		openfile->filebot = openfile->filebot->next;
 
@@ -432,54 +413,36 @@ void ingraft_buffer(linestruct *somebuffer)
 	openfile->current = openfile->filebot;
 	openfile->current_x = strlen(openfile->filebot->data);
 
-	/* Refresh the mark's pointer, and compensate the mark's
-	 * x coordinate for the change in the current line. */
-	if (openfile->filetop == openfile->filebot) {
-#ifndef NANO_TINY
-		if (openfile->mark && single_line) {
-			openfile->mark = openfile->current;
-			if (!right_side_up)
-				openfile->mark_x += openfile->current_x;
-		}
-#endif
-		/* When the pasted stuff contains no newline, adjust the cursor's
-		 * x coordinate for the text that is before the pasted stuff. */
+	/* When the pasted stuff contains no newline, adjust the cursor's
+	 * x coordinate for the text that is before the pasted stuff. */
+	if (openfile->filetop == openfile->filebot)
 		openfile->current_x += current_x_save;
-	}
+
 #ifndef NANO_TINY
-	else if (openfile->mark && single_line) {
-		if (right_side_up)
-			openfile->mark = openfile->filetop;
-		else {
-			openfile->mark = openfile->current;
+	/* When needed, refresh the mark's pointer and compensate the mark's
+	 * x coordinate for the change in the current line. */
+	if (same_line) {
+		if (!right_side_up) {
+			openfile->mark = openfile->filebot;
 			openfile->mark_x += openfile->current_x - current_x_save;
-		}
+		} else
+			openfile->mark = openfile->filetop;
 	}
 #endif
 
-#ifdef DEBUG
-#include <time.h>
-	clock_t start = clock();
-#endif
 	/* Add the number of characters in the copied text to the file size. */
 	openfile->totsize += get_totsize(openfile->filetop, openfile->filebot);
-#ifdef DEBUG
-	statusline(ALERT, "Took: %.2f", (double)(clock() - start) / CLOCKS_PER_SEC);
-#endif
 
 	/* If we pasted onto the first line of the edit window, the corresponding
 	 * record has been freed, so... point at the start of the copied text. */
 	if (edittop_inside)
 		openfile->edittop = openfile->filetop;
 
-	top_save = openfile->filetop;
-
 	/* Unpartition the buffer so that it contains all the text
 	 * again, plus the copied text. */
-	unpartition_buffer(&filepart);
+	unpartition_buffer();
 
-	/* Renumber, starting with the beginning line of the old partition. */
-	renumber(top_save);
+	renumber_from(topline);
 
 	/* If the text doesn't end with a newline, and it should, add one. */
 	if (!ISSET(NO_NEWLINES) && openfile->filebot->data[0] != '\0')
@@ -493,34 +456,6 @@ void copy_from_buffer(linestruct *somebuffer)
 
 	ingraft_buffer(the_copy);
 }
-
-#ifdef ENABLE_MULTIBUFFER
-/* Unlink a node from the rest of the circular list, and delete it. */
-void unlink_opennode(openfilestruct *fileptr)
-{
-	if (fileptr == startfile)
-		startfile = startfile->next;
-
-	fileptr->prev->next = fileptr->next;
-	fileptr->next->prev = fileptr->prev;
-
-	delete_opennode(fileptr);
-}
-
-/* Free all the memory in the given open-file node. */
-void delete_opennode(openfilestruct *fileptr)
-{
-	free(fileptr->filename);
-	free_lines(fileptr->filetop);
-#ifndef NANO_TINY
-	free(fileptr->current_stat);
-	free(fileptr->lock_filename);
-	/* Free the undo stack. */
-	discard_until(NULL, fileptr, TRUE);
-#endif
-	free(fileptr);
-}
-#endif /* ENABLE_MULTIBUFFER */
 
 /* Display a warning about a key disabled in view mode. */
 void print_view_warning(void)
@@ -565,6 +500,10 @@ void finish(void)
 	/* Restore the old terminal settings. */
 	tcsetattr(0, TCSANOW, &oldterm);
 
+#ifdef ENABLE_NANORC
+	display_rcfile_errors();
+#endif
+
 #ifdef ENABLE_HISTORIES
 	/* If the user wants history persistence, write the relevant files. */
 	if (ISSET(HISTORYLOG))
@@ -592,6 +531,10 @@ void die(const char *msg, ...)
 	/* Restore the old terminal settings. */
 	tcsetattr(0, TCSANOW, &oldterm);
 
+#ifdef ENABLE_NANORC
+	display_rcfile_errors();
+#endif
+
 	/* Display the dying message. */
 	va_start(ap, msg);
 	vfprintf(stderr, msg, ap);
@@ -607,13 +550,13 @@ void die(const char *msg, ...)
 		 * then save it.  When in restricted mode, we don't save anything,
 		 * because it would write files not mentioned on the command line. */
 		if (openfile->modified && !ISSET(RESTRICTED)) {
-			if (filepart != NULL)
-				unpartition_buffer(&filepart);
+			if (antedata != NULL)
+				unpartition_buffer();
 
 			emergency_save(openfile->filename, openfile->current_stat);
 		}
 
-		filepart = NULL;
+		antedata = NULL;
 #ifdef ENABLE_MULTIBUFFER
 		openfile = openfile->next;
 #endif
@@ -740,17 +683,7 @@ void mouse_init(void)
 /* Print the usage line for the given option to the screen. */
 void print_opt(const char *shortflag, const char *longflag, const char *desc)
 {
-	printf(" %s\t", shortflag);
-	if (breadth(shortflag) < 8)
-		printf("\t");
-
-	printf("%s\t", longflag);
-	if (breadth(longflag) < 8)
-		printf("\t\t");
-	else if (breadth(longflag) < 16)
-		printf("\t");
-
-	printf("%s\n", _(desc));
+	printf(" %-14s %-23s %s\n", shortflag, longflag, _(desc));
 }
 
 /* Explain how to properly use nano and its command-line options. */
@@ -762,7 +695,8 @@ void usage(void)
 	printf(_("To place the cursor on a specific line of a file, put the line number with\n"
 				"a '+' before the filename.  The column number can be added after a comma.\n"));
 	printf(_("When a filename is '-', nano reads data from standard input.\n\n"));
-	printf(_("Option\t\tGNU long option\t\tMeaning\n"));
+	/* TRANSLATORS: The next three are column headers of the --help output. */
+	printf("%-16s%-26s%s\n", _("Option"), _("Long option"), _("Meaning"));
 #ifndef NANO_TINY
 	/* TRANSLATORS: The next forty or so strings are option descriptions
 	 * for the --help output.  Try to keep them at most 40 characters. */
@@ -1069,7 +1003,7 @@ void do_exit(void)
 		statusbar(_("Cancelled"));
 }
 
-/* Close the current buffer, and terminate nano if it was the last. */
+/* Close the current buffer, or terminate nano if it is the last. */
 void close_and_go(void)
 {
 #ifndef NANO_TINY
@@ -1078,51 +1012,78 @@ void close_and_go(void)
 		delete_lockfile(openfile->lock_filename);
 #endif
 #ifdef ENABLE_MULTIBUFFER
-	/* If there are no more open file buffers, jump off a cliff. */
-	if (!close_buffer())
+	/* If there is another buffer, close this one; otherwise terminate. */
+	if (openfile != openfile->next) {
+#ifdef ENABLE_HISTORIES
+		if (ISSET(POSITIONLOG))
+			update_poshistory(openfile->filename,
+							openfile->current->lineno, xplustabs() + 1);
+#endif
+		switch_to_next_buffer();
+		openfile = openfile->prev;
+		close_buffer();
+		openfile = openfile->next;
+		/* Adjust the count in the top bar. */
+		titlebar(NULL);
+	} else
 #endif
 		finish();
 }
 
-/* Make a note that reading from stdin was concluded with ^C. */
+/* Note that Ctrl+C was pressed during some system call. */
 RETSIGTYPE make_a_note(int signal)
 {
-	input_was_aborted = TRUE;
+	control_C_was_pressed = TRUE;
+}
+
+/* Make ^C interrupt a system call and set a flag. */
+void install_handler_for_Ctrl_C(void)
+{
+	/* Enable the generation of a SIGINT when ^C is pressed. */
+	enable_kb_interrupt();
+
+	/* Set up a signal handler so that pressing ^C will set a flag. */
+	newaction.sa_handler = make_a_note;
+	newaction.sa_flags = 0;
+	sigaction(SIGINT, &newaction, &oldaction);
+}
+
+/* Go back to ignoring ^C. */
+void restore_handler_for_Ctrl_C(void)
+{
+	sigaction(SIGINT, &oldaction, NULL);
+	disable_kb_interrupt();
+}
+
+/* Reconnect standard input to the tty, and store its state. */
+void reconnect_and_store_state(void)
+{
+	int thetty = open("/dev/tty", O_RDONLY);
+
+	if (thetty < 1)
+		die(_("Could not reconnect stdin to keyboard\n"));
+
+	dup2(thetty, STANDARD_INPUT);
+	close(thetty);
+
+	/* If input was not cut short, store the current state of the terminal. */
+	if (!control_C_was_pressed)
+		tcgetattr(0, &oldterm);
 }
 
 /* Read whatever comes from standard input into a new buffer. */
 bool scoop_stdin(void)
 {
-	struct sigaction oldaction, newaction;
-		/* Original and temporary handlers for SIGINT. */
-	bool setup_failed = FALSE;
-		/* Whether setting up the temporary SIGINT handler failed. */
 	FILE *stream;
-	int thetty;
 
 	/* Exit from curses mode and put the terminal into its original state. */
 	endwin();
 	tcsetattr(0, TCSANOW, &oldterm);
 
-	fprintf(stderr, _("Reading from standard input; type ^D or ^D^D to finish.\n"));
-
-#ifndef NANO_TINY
-	/* Enable interpretation of the special control keys so that
-	 * we get SIGINT when Ctrl-C is pressed. */
-	enable_signals();
-#endif
-
-	/* Set things up so that SIGINT will cancel the reading. */
-	if (sigaction(SIGINT, NULL, &newaction) == -1) {
-		setup_failed = TRUE;
-		perror("sigaction");
-	} else {
-		newaction.sa_handler = make_a_note;
-		if (sigaction(SIGINT, &newaction, &oldaction) == -1) {
-			setup_failed = TRUE;
-			perror("sigaction");
-		}
-	}
+	/* When input comes from a terminal, show a helpful message. */
+	if (isatty(STANDARD_INPUT))
+		fprintf(stderr, _("Reading data from keyboard; "
+							"type ^D or ^D^D to finish.\n"));
 
 	/* Open standard input. */
 	stream = fopen("/dev/stdin", "rb");
@@ -1135,29 +1096,18 @@ bool scoop_stdin(void)
 		return FALSE;
 	}
 
+	/* Set up a signal handler so that ^C will stop the reading. */
+	install_handler_for_Ctrl_C();
+
 	/* Read the input into a new buffer. */
-	open_buffer("", TRUE);
+	make_new_buffer();
 	read_file(stream, 0, "stdin", TRUE);
-	openfile->edittop = openfile->filetop;
-	fprintf(stderr, ".\n");
+#ifdef ENABLE_COLOR
+	color_update();
+#endif
 
-	/* Reconnect the tty as the input source. */
-	thetty = open("/dev/tty", O_RDONLY);
-	if (!thetty)
-		die(_("Couldn't reopen stdin from keyboard, sorry\n"));
-	dup2(thetty, 0);
-	close(thetty);
-
-	/* If things went well, store the current state of the terminal. */
-	if (!input_was_aborted)
-		tcgetattr(0, &oldterm);
-
-	/* If it was changed, restore the handler for SIGINT. */
-	if (!setup_failed && sigaction(SIGINT, &oldaction, NULL) == -1)
-		perror("sigaction");
-
-	terminal_init();
-	doupdate();
+	/* Restore the original ^C handler. */
+	restore_handler_for_Ctrl_C();
 
 	if (!ISSET(VIEW_MODE) && openfile->totsize > 0)
 		set_modified();
@@ -1168,44 +1118,45 @@ bool scoop_stdin(void)
 /* Register half a dozen signal handlers. */
 void signal_init(void)
 {
+	struct sigaction deed = {{0}};
+
 	/* Trap SIGINT and SIGQUIT because we want them to do useful things. */
-	memset(&act, 0, sizeof(struct sigaction));
-	act.sa_handler = SIG_IGN;
-	sigaction(SIGINT, &act, NULL);
+	deed.sa_handler = SIG_IGN;
+	sigaction(SIGINT, &deed, NULL);
 #ifdef SIGQUIT
-	sigaction(SIGQUIT, &act, NULL);
+	sigaction(SIGQUIT, &deed, NULL);
 #endif
 
 	/* Trap SIGHUP and SIGTERM because we want to write the file out. */
-	act.sa_handler = handle_hupterm;
+	deed.sa_handler = handle_hupterm;
 #ifdef SIGHUP
-	sigaction(SIGHUP, &act, NULL);
+	sigaction(SIGHUP, &deed, NULL);
 #endif
-	sigaction(SIGTERM, &act, NULL);
+	sigaction(SIGTERM, &deed, NULL);
 
 #ifndef NANO_TINY
 	/* Trap SIGWINCH because we want to handle window resizes. */
-	act.sa_handler = handle_sigwinch;
-	sigaction(SIGWINCH, &act, NULL);
+	deed.sa_handler = handle_sigwinch;
+	sigaction(SIGWINCH, &deed, NULL);
 #endif
 
 	if (ISSET(SUSPEND)) {
 		/* Block all other signals in the suspend and continue handlers.
 		 * If we don't do this, other stuff interrupts them! */
-		sigfillset(&act.sa_mask);
+		sigfillset(&deed.sa_mask);
 #ifdef SIGTSTP
 		/* Trap a normal suspend (^Z) so we can handle it ourselves. */
-		act.sa_handler = do_suspend;
-		sigaction(SIGTSTP, &act, NULL);
+		deed.sa_handler = do_suspend;
+		sigaction(SIGTSTP, &deed, NULL);
 #endif
 #ifdef SIGCONT
-		act.sa_handler = do_continue;
-		sigaction(SIGCONT, &act, NULL);
+		deed.sa_handler = do_continue;
+		sigaction(SIGCONT, &deed, NULL);
 #endif
 	} else {
 #ifdef SIGTSTP
-		act.sa_handler = SIG_IGN;
-		sigaction(SIGTSTP, &act, NULL);
+		deed.sa_handler = SIG_IGN;
+		sigaction(SIGTSTP, &deed, NULL);
 #endif
 	}
 
@@ -1214,10 +1165,10 @@ void signal_init(void)
 		/* Trap SIGSEGV and SIGABRT to save any changed buffers and reset
 		 * the terminal to a usable state.  Reset these handlers to their
 		 * defaults as soon as their signal fires. */
-		act.sa_handler = handle_crash;
-		act.sa_flags |= SA_RESETHAND;
-		sigaction(SIGSEGV, &act, NULL);
-		sigaction(SIGABRT, &act, NULL);
+		deed.sa_handler = handle_crash;
+		deed.sa_flags |= SA_RESETHAND;
+		sigaction(SIGSEGV, &deed, NULL);
+		sigaction(SIGABRT, &deed, NULL);
 	}
 #endif
 }
@@ -1338,10 +1289,8 @@ void regenerate_screen(void)
 	if (result == -1)
 		return;
 
-	/* We could check whether the COLS or LINES changed, and return
-	 * otherwise.  However, COLS and LINES are curses global variables,
-	 * and in some cases curses has already updated them.  But not in
-	 * all cases.  Argh. */
+	/* We could check whether COLS or LINES changed, and return otherwise,
+	 * but it seems curses does not always update these global variables. */
 #ifdef REDEFINING_MACROS_OK
 	COLS = win.ws_col;
 	LINES = win.ws_row;
@@ -1383,18 +1332,18 @@ void do_toggle(int flag)
 	}
 
 	TOGGLE(flag);
+	focusing = FALSE;
 
 	switch (flag) {
+		case NO_HELP:
+			window_init();
+			total_refresh();
+			break;
 #ifdef ENABLE_MOUSE
 		case USE_MOUSE:
 			mouse_init();
 			break;
 #endif
-		case NO_HELP:
-			window_init();
-			focusing = FALSE;
-			total_refresh();
-			break;
 		case SUSPEND:
 			signal_init();
 			break;
@@ -1404,12 +1353,14 @@ void do_toggle(int flag)
 			refresh_needed = TRUE;
 			break;
 		case WHITESPACE_DISPLAY:
-			titlebar(NULL);  /* Fall through. */
-#ifdef ENABLE_COLOR
-		case NO_COLOR_SYNTAX:
-#endif
+			titlebar(NULL);
 			refresh_needed = TRUE;
 			break;
+#ifdef ENABLE_COLOR
+		case NO_COLOR_SYNTAX:
+			refresh_needed = TRUE;
+			break;
+#endif
 	}
 
 	enabled = ISSET(flag);
@@ -1436,9 +1387,8 @@ void disable_extended_io(void)
 #endif
 }
 
-/* Disable interpretation of the special control keys in our terminal
- * settings. */
-void disable_signals(void)
+/* Stop ^C from generating a SIGINT. */
+void disable_kb_interrupt(void)
 {
 #ifdef HAVE_TERMIOS_H
 	struct termios term = {0};
@@ -1449,10 +1399,8 @@ void disable_signals(void)
 #endif
 }
 
-#ifndef NANO_TINY
-/* Enable interpretation of the special control keys in our terminal
- * settings. */
-void enable_signals(void)
+/* Make ^C generate a SIGINT. */
+void enable_kb_interrupt(void)
 {
 #ifdef HAVE_TERMIOS_H
 	struct termios term = {0};
@@ -1462,10 +1410,8 @@ void enable_signals(void)
 	tcsetattr(0, TCSANOW, &term);
 #endif
 }
-#endif
 
-/* Disable interpretation of the flow control characters in our terminal
- * settings. */
+/* Disable the terminal's XON/XOFF flow-control characters. */
 void disable_flow_control(void)
 {
 #ifdef HAVE_TERMIOS_H
@@ -1477,8 +1423,7 @@ void disable_flow_control(void)
 #endif
 }
 
-/* Enable interpretation of the flow control characters in our terminal
- * settings. */
+/* Enable the terminal's XON/XOFF flow-control characters. */
 void enable_flow_control(void)
 {
 #ifdef HAVE_TERMIOS_H
@@ -1519,7 +1464,7 @@ void terminal_init(void)
 		if (ISSET(PRESERVE))
 			enable_flow_control();
 
-		disable_signals();
+		disable_kb_interrupt();
 #ifdef USE_SLANG
 		if (!ISSET(PRESERVE))
 			disable_flow_control();
@@ -1574,7 +1519,7 @@ void confirm_margin(void)
 /* Say that an unbound key was struck, and if possible which one. */
 void unbound_key(int code)
 {
-	if (!is_byte(code))
+	if (code > 0x7F)
 		statusline(ALERT, _("Unbound key"));
 	else if (meta_key) {
 		if (code == '[')
@@ -1661,9 +1606,13 @@ bool wanted_to_move(void (*func)(void))
 /* Return TRUE when the given shortcut is admissible in view mode. */
 bool okay_for_view(const keystruct *shortcut)
 {
-	const funcstruct *func = sctofunc(shortcut);
+	funcstruct *item = allfuncs;
 
-	return (func == NULL || func->viewok);
+	/* Search the function of the given shortcut in the list of functions. */
+	while (item != NULL && item->func != shortcut->func)
+		item = item->next;
+
+	return (item == NULL || item->viewok);
 }
 
 /* Read in a keystroke.  Act on the keystroke if it is a shortcut or a toggle;
@@ -1676,8 +1625,6 @@ void do_input(void)
 		/* The input buffer for actual characters. */
 	static size_t depth = 0;
 		/* The length of the input buffer. */
-	bool retain_cuts = FALSE;
-		/* Whether to conserve the current contents of the cutbuffer. */
 	const keystruct *shortcut;
 
 	/* Read in a keystroke, and show the cursor while waiting. */
@@ -1750,84 +1697,79 @@ void do_input(void)
 		}
 	}
 
-	if (shortcut == NULL)
+	if (shortcut == NULL) {
 		pletion_line = NULL;
-	else {
-		if (ISSET(VIEW_MODE) && !okay_for_view(shortcut)) {
-			print_view_warning();
-			return;
-		}
-
-		/* If the function associated with this shortcut is
-		 * cutting or copying text, remember this. */
-		if (shortcut->func == do_cut_text_void
-#ifndef NANO_TINY
-				|| shortcut->func == do_copy_text
-#endif
-				)
-			retain_cuts = TRUE;
-
-#ifdef ENABLE_WORDCOMPLETION
-		if (shortcut->func != complete_a_word)
-			pletion_line = NULL;
-#endif
-#ifdef ENABLE_NANORC
-		if (shortcut->func == (functionptrtype)implant) {
-			implant(shortcut->expansion);
-			return;
-		}
-#endif
-#ifndef NANO_TINY
-		if (shortcut->func == do_toggle_void) {
-			do_toggle(shortcut->toggle);
-			if (shortcut->toggle != CUT_FROM_CURSOR)
-				retain_cuts = TRUE;
-		} else
-#endif
-		{
-#ifndef NANO_TINY
-			linestruct *was_current = openfile->current;
-			size_t was_x = openfile->current_x;
-
-			/* If Shifted movement occurs, set the mark. */
-			if (shift_held && !openfile->mark) {
-				openfile->mark = openfile->current;
-				openfile->mark_x = openfile->current_x;
-				openfile->kind_of_mark = SOFTMARK;
-			}
-#endif
-			/* Execute the function of the shortcut. */
-			shortcut->func();
-
-#ifndef NANO_TINY
-			/* When the marked region changes without Shift being held,
-			 * discard a soft mark.  And when the marked region covers a
-			 * different set of lines, reset  the "last line too" flag. */
-			if (openfile->mark) {
-				if (!shift_held && openfile->kind_of_mark == SOFTMARK &&
-									(openfile->current != was_current ||
-									openfile->current_x != was_x ||
-									wanted_to_move(shortcut->func))) {
-					openfile->mark = NULL;
-					refresh_needed = TRUE;
-				} else if (openfile->current != was_current)
-					also_the_last = FALSE;
-			}
-#endif
-#ifdef ENABLE_COLOR
-			if (!refresh_needed && !okay_for_view(shortcut))
-				check_the_multis(openfile->current);
-#endif
-			if (!refresh_needed && (shortcut->func == do_delete ||
-									shortcut->func == do_backspace))
-				update_line(openfile->current, openfile->current_x);
-		}
+		keep_cutbuffer = FALSE;
+		return;
 	}
 
-	/* If we aren't cutting or copying text, and the key wasn't a toggle,
-	 * blow away the text in the cutbuffer upon the next cutting action. */
-	if (!retain_cuts)
-		keep_cutbuffer = FALSE;
+	if (ISSET(VIEW_MODE) && !okay_for_view(shortcut)) {
+		print_view_warning();
+		return;
+	}
+
+	/* When not cutting or copying text, drop the cutbuffer the next time. */
+	if (shortcut->func != cut_text) {
+#ifndef NANO_TINY
+		if (shortcut->func != copy_text && shortcut->func != zap_text)
+#endif
+			keep_cutbuffer = FALSE;
+	}
+
+#ifdef ENABLE_WORDCOMPLETION
+	if (shortcut->func != complete_a_word)
+		pletion_line = NULL;
+#endif
+#ifdef ENABLE_NANORC
+	if (shortcut->func == (functionptrtype)implant) {
+		implant(shortcut->expansion);
+		return;
+	}
+#endif
+#ifndef NANO_TINY
+	if (shortcut->func == do_toggle_void) {
+		do_toggle(shortcut->toggle);
+		if (shortcut->toggle == CUT_FROM_CURSOR)
+			keep_cutbuffer = FALSE;
+		return;
+	}
+
+	linestruct *was_current = openfile->current;
+	size_t was_x = openfile->current_x;
+
+	/* If Shifted movement occurs, set the mark. */
+	if (shift_held && !openfile->mark) {
+		openfile->mark = openfile->current;
+		openfile->mark_x = openfile->current_x;
+		openfile->kind_of_mark = SOFTMARK;
+	}
+#endif
+
+	/* Execute the function of the shortcut. */
+	shortcut->func();
+
+#ifndef NANO_TINY
+	/* When the marked region changes without Shift being held,
+	 * discard a soft mark.  And when the marked region covers a
+	 * different set of lines, reset  the "last line too" flag. */
+	if (openfile->mark) {
+		if (!shift_held && openfile->kind_of_mark == SOFTMARK &&
+							(openfile->current != was_current ||
+							openfile->current_x != was_x ||
+							wanted_to_move(shortcut->func))) {
+			openfile->mark = NULL;
+			refresh_needed = TRUE;
+		} else if (openfile->current != was_current)
+			also_the_last = FALSE;
+	}
+#endif
+#ifdef ENABLE_COLOR
+	if (!refresh_needed && !okay_for_view(shortcut))
+		check_the_multis(openfile->current);
+#endif
+	if (!refresh_needed && (shortcut->func == do_delete ||
+							shortcut->func == do_backspace))
+		update_line(openfile->current, openfile->current_x);
 }
 
 /* The user typed output_len multibyte characters.  Add them to the edit
@@ -1836,7 +1778,7 @@ void do_input(void)
 void do_output(char *output, size_t output_len, bool allow_cntrls)
 {
 	char onechar[MAXCHARLEN];
-	int char_len;
+	int charlen;
 	size_t current_len = strlen(openfile->current->data);
 	size_t i = 0;
 #ifndef NANO_TINY
@@ -1855,30 +1797,30 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 			output[i] = '\n';
 
 		/* Get the next multibyte character. */
-		char_len = parse_mbchar(output + i, onechar, NULL);
+		charlen = parse_mbchar(output + i, onechar, NULL);
 
-		i += char_len;
+		i += charlen;
 
 		/* If controls are not allowed, ignore an ASCII control character. */
-		if (!allow_cntrls && is_ascii_cntrl_char(*(output + i - char_len)))
+		if (!allow_cntrls && is_ascii_cntrl_char(*(output + i - charlen)))
 			continue;
 
 		/* Make room for the new character and copy it into the line. */
 		openfile->current->data = charealloc(openfile->current->data,
-										current_len + char_len + 1);
-		charmove(openfile->current->data + openfile->current_x + char_len,
+										current_len + charlen + 1);
+		charmove(openfile->current->data + openfile->current_x + charlen,
 						openfile->current->data + openfile->current_x,
 						current_len - openfile->current_x + 1);
 		strncpy(openfile->current->data + openfile->current_x, onechar,
-						char_len);
-		current_len += char_len;
+						charlen);
+		current_len += charlen;
 		openfile->totsize++;
 		set_modified();
 
 #ifndef NANO_TINY
 		/* Only add a new undo item when the current item is not an ADD or when
 		 * the current typing is not contiguous with the previous typing. */
-		if (openfile->last_action != ADD || openfile->current_undo == NULL ||
+		if (openfile->last_action != ADD ||
 				openfile->current_undo->mark_begin_lineno != openfile->current->lineno ||
 				openfile->current_undo->mark_begin_x != openfile->current_x)
 			add_undo(ADD);
@@ -1886,7 +1828,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 		/* Note that current_x has not yet been incremented. */
 		if (openfile->current == openfile->mark &&
 						openfile->current_x < openfile->mark_x)
-			openfile->mark_x += char_len;
+			openfile->mark_x += charlen;
 
 		/* When the cursor is on the top row and not on the first chunk
 		 * of a line, adding text there might change the preceding chunk
@@ -1898,7 +1840,7 @@ void do_output(char *output, size_t output_len, bool allow_cntrls)
 		}
 #endif
 
-		openfile->current_x += char_len;
+		openfile->current_x += charlen;
 
 #ifndef NANO_TINY
 		update_undo(ADD);
@@ -2373,12 +2315,17 @@ int main(int argc, char **argv)
 #ifdef ENABLE_SPELLER
 		alt_speller = NULL;
 #endif
+
+//#define TIMEIT 12
+#ifdef TIMEIT
+#include <time.h>
+	clock_t start = clock();
+#endif
 		/* Now process the system's and the user's nanorc file, if any. */
 		do_rcfiles();
-
-#ifdef DEBUG
-		fprintf(stderr, "After rebinding keys...\n");
-		print_sclist();
+#ifdef TIMEIT
+		fprintf(stderr, "Took: %.3f\n",
+						 (double)(clock() - start) / CLOCKS_PER_SEC);
 #endif
 
 		/* If the backed-up command-line options have a value, restore them. */
@@ -2495,7 +2442,7 @@ int main(int argc, char **argv)
 	if (brackets == NULL)
 		brackets = mallocstrcpy(NULL, "\"')>]}");
 	if (quotestr == NULL)
-		quotestr = mallocstrcpy(NULL, "^([ \t]*([!#%:;>|}]|/{2}|--))+");
+		quotestr = mallocstrcpy(NULL, "^([ \t]*([!#%:;>|}]|/{2}))+");
 
 	/* Compile the quoting regex, and exit when it's invalid. */
 	quoterc = regcomp(&quotereg, quotestr, NANO_REG_EXTENDED);
@@ -2559,6 +2506,8 @@ int main(int argc, char **argv)
 	if (initscr() == NULL)
 		exit(1);
 
+	started_curses = TRUE;
+
 #ifdef ENABLE_COLOR
 	set_colorpairs();
 #else
@@ -2574,10 +2523,6 @@ int main(int argc, char **argv)
 
 	/* Set up the terminal state. */
 	terminal_init();
-
-#ifdef DEBUG
-	fprintf(stderr, "Main: set up windows\n");
-#endif
 
 	/* Create the three subwindows, based on the current screen dimensions. */
 	window_init();
@@ -2633,17 +2578,40 @@ int main(int argc, char **argv)
 	set_escdelay(50);
 #endif
 
-#ifdef DEBUG
-	fprintf(stderr, "Main: open file\n");
-#endif
-
 	/* Read the files mentioned on the command line into new buffers. */
 	while (optind < argc && (!openfile || read_them_all)) {
 		ssize_t givenline = 0, givencol = 0;
-
+#ifndef NANO_TINY
+		char *searchstring = NULL;
+#endif
 		/* If there's a +LINE[,COLUMN] argument here, eat it up. */
 		if (optind < argc - 1 && argv[optind][0] == '+') {
-			if (!parse_line_column(&argv[optind++][1], &givenline, &givencol))
+			int n = 1;
+
+#ifndef NANO_TINY
+			while (isalpha(argv[optind][n])) {
+				switch (argv[optind][n++]) {
+					case 'c': SET(CASE_SENSITIVE); break;
+					case 'C': UNSET(CASE_SENSITIVE); break;
+					case 'r': SET(USE_REGEXP); break;
+					case 'R': UNSET(USE_REGEXP); break;
+					default:
+						statusline(ALERT, _("Invalid search modifier '%c'"),
+											argv[optind][n - 1]);
+				}
+			}
+
+			if (argv[optind][n] == '/' || argv[optind][n] == '?') {
+				if (argv[optind][n + 1]) {
+					searchstring = mallocstrcpy(NULL, &argv[optind][n + 1]);
+					if (argv[optind][n] == '?')
+						SET(BACKWARDS_SEARCH);
+				} else if (n == 1)
+					statusline(ALERT, _("Empty search string"));
+				optind++;
+			} else
+#endif
+			if (!parse_line_column(&argv[optind++][n], &givenline, &givencol))
 				statusline(ALERT, _("Invalid line or column number"));
 		}
 
@@ -2659,6 +2627,22 @@ int main(int argc, char **argv)
 		/* If a position was given on the command line, go there. */
 		if (givenline != 0 || givencol != 0)
 			do_gotolinecolumn(givenline, givencol, FALSE, FALSE);
+#ifndef NANO_TINY
+		else if (searchstring != NULL) {
+			if (ISSET(USE_REGEXP))
+				regexp_init(searchstring);
+			if (!findnextstr(searchstring, FALSE, JUSTFIND, NULL, TRUE,
+											openfile->filetop, 0))
+				not_found_msg(searchstring);
+			else if (lastmessage == HUSH)
+				wipe_statusbar();
+			if (ISSET(USE_REGEXP))
+				tidy_up_after_search();
+			free(last_search);
+			last_search = searchstring;
+			searchstring = NULL;
+		}
+#endif
 #ifdef ENABLE_HISTORIES
 		else if (ISSET(POSITIONLOG) && openfile->filename[0] != '\0') {
 			ssize_t savedline, savedcol;
@@ -2689,10 +2673,6 @@ int main(int argc, char **argv)
 #ifdef __linux__
 	/* Check again whether we're running on a Linux console. */
 	on_a_vt = (ioctl(0, VT_GETSTATE, &dummy) == 0);
-#endif
-
-#ifdef DEBUG
-	fprintf(stderr, "Main: show title bar, and enter main loop\n");
 #endif
 
 	prepare_for_display();

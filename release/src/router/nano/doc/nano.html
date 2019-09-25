@@ -46,7 +46,7 @@ ul.no-bullet {list-style: none}
 
 
 <span id="Top"></span><span id="SEC_Top"></span>
-<p>This manual documents the GNU <code>nano</code> editor, version 4.2.
+<p>This manual documents the GNU <code>nano</code> editor, version 4.4.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -89,8 +89,8 @@ See <a href="#Pico-Compatibility">Pico Compatibility</a> for more details on how
 Pico differ.
 </p>
 <p>Starting with version 4.0, <code>nano</code> no longer hard-wraps an overlong
-line by default, uses smooth scrolling by default, and by default makes
-use of the line below the title bar.
+line by default.  It further uses smooth scrolling by default, and by
+default includes the line below the title bar into the editing area.
 </p>
 <p>If you want the old, Pico behavior back, you can use the
 following options: <samp>--breaklonglines</samp>,
@@ -113,10 +113,18 @@ following options: <samp>--breaklonglines</samp>,
 section), and to edit several files in a row.  Additionally, the cursor
 can be put on a specific line of a file by adding the line number
 with a plus sign before the filename, and even in a specific column by
-adding it with a comma.  So a more complete command synopsis is:
+adding it with a comma.
+The cursor can also be put on the first or last occurrence of a specific string
+by specifying that string after <code>+/</code> or <code>+?</code> before the filename.
+The string can be made case sensitive and/or caused to be interpreted as a
+regular expression by inserting a <code>c</code> and/or <code>r</code> after the plus sign.
+These search modes can be explicitly disabled by using the uppercase variant
+of those letters: <code>C</code> and/or <code>R</code>.  When the string contains spaces,
+it needs to be enclosed in quotes.
+A more complete command synopsis thus is:
 </p>
 <div class="example">
-<pre class="example"><code>nano [OPTION]&hellip; [[+LINE[,COLUMN]|+,COLUMN] FILE]&hellip;</code>
+<pre class="example"><code>nano [OPTION]&hellip; [[+LINE[,COLUMN]|+[crCR](/|?)STRING] FILE]&hellip;</code>
 </pre></div>
 
 <p>Normally, however, you set your preferred options in a <samp>nanorc</samp>
@@ -204,7 +212,8 @@ mouse support.
 </dd>
 <dt><samp>-L</samp></dt>
 <dt><samp>--nonewlines</samp></dt>
-<dd><p>Don&rsquo;t automatically add a newline when a file does not end with one.
+<dd><p>Don&rsquo;t automatically add a newline when a text does not end with one.
+(This can cause you to save non-POSIX text files.)
 </p>
 </dd>
 <dt><samp>-M</samp></dt>
@@ -234,7 +243,7 @@ and place it at that position again upon reopening such a file.
 <dt><samp>-Q &quot;<var>regex</var>&quot;</samp></dt>
 <dt><samp>--quotestr=&quot;<var>regex</var>&quot;</samp></dt>
 <dd><p>Set the regular expression for matching the quoting part of a line.
-The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//|--))+&quot;</tt>.
+The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+&quot;</tt>.
 (Note that <code>\t</code> stands for a literal Tab character.)
 This makes it possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing source code.
@@ -407,8 +416,8 @@ point to vary along with the width of the screen if the screen is resized.
 The default value is <tt>-8</tt>.
 </p>
 <span id="g_t_002d_002dspeller"></span></dd>
-<dt><samp>-s <var>program</var></samp></dt>
-<dt><samp>--speller=<var>program</var></samp></dt>
+<dt><samp>-s &quot;<var>program</var> [<var>arg</var> &hellip;]&quot;</samp></dt>
+<dt><samp>--speller=&quot;<var>program</var> [<var>arg</var> &hellip;]&quot;</samp></dt>
 <dd><p>Use the given program to do spell checking and correcting.  By default,
 <code>nano</code> uses the command specified in the <code>SPELL</code> environment
 variable.  If <code>SPELL</code> is not set, and <samp>--speller</samp> is
@@ -733,10 +742,8 @@ take an argument are unset by default.  So using the <code>unset</code> command
 is only needed when wanting to override a setting of the system&rsquo;s nanorc
 file in your own nanorc.  Options that take an argument cannot be unset.
 </p>
-<p>Quotes inside string parameters don&rsquo;t have to be escaped with
-backslashes.  The last double quote in the string will be treated as its
-end.  For example, for the <code>brackets</code> option, <tt>&quot;&quot;')&gt;]}&quot;</tt> will match
-<code>&quot;</code>, <code>'</code>, <code>)</code>, <code>&gt;</code>, <code>]</code>, and <code>}</code>.
+<p>Quotes inside the <var>characters</var> parameters below should not be escaped.
+The last double quote on the line will be seen as the closing quote.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Settings" accesskey="1">Settings</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -793,7 +800,7 @@ setting the options <code>titlecolor</code>, <code>statuscolor</code>, <code>key
 <code>functioncolor</code>, <code>numbercolor</code>, and <code>selectedcolor</code>.
 </p>
 </dd>
-<dt><code>set brackets &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set brackets &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the characters treated as closing brackets when justifying
 paragraphs.  This may not include blank characters.  Only closing
 punctuation (see <code>set punct</code>), optionally followed by the specified
@@ -824,6 +831,7 @@ Note that this overrides <samp>quickblank</samp>.
 </dd>
 <dt><code>set errorcolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the status bar when an error message is displayed.
+The default value is <tt>brightwhite,red</tt>.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
@@ -874,7 +882,7 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 <dd><p>Enable vim-style lock-files for when editing files.
 </p>
 </dd>
-<dt><code>set matchbrackets &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set matchbrackets &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
 come before the closing set, and the two sets must be in the same order.
@@ -904,7 +912,8 @@ cursor, set the mark (with a double click), or execute shortcuts.
 </p>
 </dd>
 <dt><code>set nonewlines</code></dt>
-<dd><p>Don&rsquo;t automatically add a newline when a file does not end with one.
+<dd><p>Don&rsquo;t automatically add a newline when a text does not end with one.
+(This can cause you to save non-POSIX text files.)
 </p>
 </dd>
 <dt><code>set nopauses</code></dt>
@@ -938,7 +947,7 @@ The cursor position is remembered for the 200 most-recently edited files.
 <dd><p>Preserve the XON and XOFF keys (<kbd>^Q</kbd> and <kbd>^S</kbd>).
 </p>
 </dd>
-<dt><code>set punct &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set punct &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the characters treated as closing punctuation when justifying
 paragraphs.  This may not include blank characters.  Only the
 specified closing punctuation, optionally followed by closing brackets
@@ -953,7 +962,7 @@ keystroke instead of 25.  Note that <samp>constantshow</samp> overrides this.
 </dd>
 <dt><code>set quotestr &quot;<var>regex</var>&quot;</code></dt>
 <dd><p>Set the regular expression for matching the quoting part of a line.
-The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//|--))+&quot;</tt>.
+The default value is <tt>&quot;^([&nbsp;<!-- /@w -->\t]*([!#%:;&gt;|}]|//))+&quot;</tt>.
 (Note that <code>\t</code> stands for a literal Tab character.)
 This makes it possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing source code.
@@ -973,7 +982,8 @@ system either Backspace acts like Delete or Delete acts like Backspace.
 </p>
 </dd>
 <dt><code>set regexp</code></dt>
-<dd><p>Do extended regular expression searches by default.
+<dd><p>Do regular-expression searches by default.
+Regular expressions in <code>nano</code> are of the extended type (ERE).
 </p>
 </dd>
 <dt><code>set selectedcolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
@@ -1004,7 +1014,7 @@ When needed, use <code>unset jumpyscrolling</code> instead.
 <dd><p>Enable soft line wrapping for easier viewing of very long lines.
 </p>
 </dd>
-<dt><code>set speller &quot;<var>program</var>&quot;</code></dt>
+<dt><code>set speller &quot;<var>program</var> [<var>arg</var> &hellip;]&quot;</code></dt>
 <dd><p>Use the given program to do spell checking and correcting.
 See <a href="#g_t_002d_002dspeller"><samp>--speller</samp></a> for details.
 </p>
@@ -1058,7 +1068,7 @@ This mode allows the user to open also other files for viewing,
 unless <samp>--restricted</samp> is given on the command line.
 </p>
 <span id="Whitespace"></span></dd>
-<dt><code>set whitespace &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set whitespace &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the two characters used to indicate the presence of tabs and
 spaces.  They must be single-column characters.  The default pair
 for a UTF-8 locale is <tt>&quot;»·&quot;</tt>, and for other locales <tt>&quot;&gt;.&quot;</tt>.
@@ -1069,7 +1079,7 @@ for a UTF-8 locale is <tt>&quot;»·&quot;</tt>, and for other locales <tt>&quot
 characters as part of a word.
 </p>
 </dd>
-<dt><code>set wordchars &quot;<var>string</var>&quot;</code></dt>
+<dt><code>set wordchars &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Specify which other characters (besides the normal alphanumeric ones)
 should be considered as parts of words.  This overrides the option
 <code>wordbounds</code>.
@@ -1092,6 +1102,20 @@ powerful enough to fully parse a file.  Nevertheless, regular
 expressions can do a lot and are easy to make, so they are a
 good fit for a small editor like <code>nano</code>.
 </p>
+<p>All regular expressions in <code>nano</code> are POSIX extended regular expressions
+(ERE).  This means that <code>.</code>, <code>?</code>, <code>*</code>, <code>+</code>, <code>^</code>,
+<code>$</code>, and several other characters are special.
+The period <code>.</code> matches any single character,
+<code>?</code> means the preceding item is optional,
+<code>*</code> means the preceding item may be matched zero or more times,
+<code>+</code> means the preceding item must be matched one or more times,
+<code>^</code> matches the beginning of a line, and <code>$</code> the end,
+<code>\&lt;</code> matches the start of a word, and <code>\&gt;</code> the end,
+and <code>\s</code> matches a blank.
+It also means that lookahead and lookbehind are not possible.
+A complete explanation can be found in the manual of GNU grep:
+<code>info grep regular</code>.
+</p>
 <p>A separate syntax can be defined for each kind of file
 via the following commands in a nanorc file:
 </p>
@@ -1109,7 +1133,7 @@ activated by using the <samp>-Y</samp> or <samp>--syntax</samp>
 command-line option followed by the <var>name</var>.
 </p>
 <p>The <code>default</code> syntax is special: it takes no <var>fileregex</var>,
-and applies to files that don&rsquo;t match any syntax&rsquo;s <var>fileregex</var>.
+and applies to files that don&rsquo;t match any syntax&rsquo;s regexes.
 The <code>none</code> syntax is reserved; specifying it on the
 command line is the same as not having a syntax at all.
 </p>
@@ -1146,17 +1170,16 @@ The default value is <tt>&quot;#&quot;</tt>.
 </p>
 </dd>
 <dt><code>color <var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
-<dd><p>Display all pieces of text that match the
-extended regular expression &quot;regex&quot; with foreground color &quot;fgcolor&quot; and
-background color &quot;bgcolor&quot;, at least one of which must be specified.
-Valid names for foreground and background color are:
+<dd><p>Paint all pieces of text that match the extended regular expression &quot;regex&quot;
+with the given foreground and background colors, at least one of which must
+be specified.  Valid color names are:
 <code>white</code>, <code>black</code>, <code>blue</code>, <code>green</code>,
 <code>red</code>, <code>cyan</code>, <code>yellow</code>, <code>magenta</code>, and <code>normal</code>
 &mdash; where <code>normal</code> means the default foreground or background color.
-You may use the prefix <code>bright</code>
-to get a stronger color highlight for the foreground.  If your
-terminal supports transparency, not specifying a &quot;bgcolor&quot; tells <code>nano</code>
-to attempt to use a transparent background.
+You may use the prefix <code>bright</code> for the foreground color to get a
+stronger highlight.
+If your terminal supports transparency, not specifying a &quot;bgcolor&quot;
+tells <code>nano</code> to attempt to use a transparent background.
 </p>
 </dd>
 <dt><code>icolor <var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
@@ -1164,9 +1187,9 @@ to attempt to use a transparent background.
 </p>
 </dd>
 <dt><code>color <var>fgcolor</var>,<var>bgcolor</var> start=&quot;<var>fromrx</var>&quot; end=&quot;<var>torx</var>&quot;</code></dt>
-<dd><p>Display all pieces of text whose start matches extended regular expression
+<dd><p>Paint all pieces of text whose start matches extended regular expression
 &quot;fromrx&quot; and whose end matches extended regular expression &quot;torx&quot; with
-foreground color &quot;fgcolor&quot; and background color &quot;bgcolor&quot;, at least one of
+the given foreground and background colors, at least one of
 which must be specified.  This means that, after an initial instance of
 &quot;fromrx&quot;, all text until the first instance of &quot;torx&quot; will be colored.
 This allows syntax highlighting to span multiple lines.
@@ -1889,31 +1912,31 @@ familiar with compiling programs with autoconf support:
 </p>
 <dl compact="compact">
 <dt><code>--disable-browser</code></dt>
-<dd><p>Disable the mini file browser that can be called with <kbd>^T</kbd> when reading
-or writing files.
+<dd><p>Exclude the mini file browser that can be called with <kbd>^T</kbd> when
+wanting to read or write a file.
 </p>
 </dd>
 <dt><code>--disable-color</code></dt>
-<dd><p>Disable support for the syntax coloring of files.  This also eliminates
-the <samp>-Y</samp> command-line option, which chooses a specific syntax.
+<dd><p>Exclude support for syntax coloring.  This also eliminates the <samp>-Y</samp>
+command-line option, which allows choosing a specific syntax.
 </p>
 </dd>
 <dt><code>--disable-comment</code></dt>
-<dd><p>Disable the single-keystroke comment/uncomment function (<kbd>M-3</kbd>).
+<dd><p>Exclude the single-keystroke comment/uncomment function (<kbd>M-3</kbd>).
 </p>
 </dd>
 <dt><code>--disable-extra</code></dt>
-<dd><p>Disable the Easter egg: a crawl of major contributors.
+<dd><p>Exclude the Easter egg: a crawl of major contributors.
 </p>
 </dd>
 <dt><code>--disable-help</code></dt>
-<dd><p>Disable the help function.  Doing this makes the binary much smaller,
-but makes it difficult for new users to learn more than very basic
+<dd><p>Exclude the help texts (<kbd>^G</kbd>).  This makes the binary much smaller,
+but also makes it difficult for new users to learn more than very basic
 things about using the editor.
 </p>
 </dd>
 <dt><code>--disable-histories</code></dt>
-<dd><p>Disable the code for the handling of the history files: the search and
+<dd><p>Exclude the code for handling the history files: the search and
 replace strings that were used, and the cursor position at which each
 file was closed.  This also eliminates the <samp>-H</samp> and <samp>-P</samp>
 command-line options, which switch on the logging of search/replace
@@ -1921,33 +1944,33 @@ strings and cursor positions.
 </p>
 </dd>
 <dt><code>--disable-justify</code></dt>
-<dd><p>Disable the justify and unjustify functions.
+<dd><p>Exclude the justify functions (<kbd>^J</kbd> and <kbd>M-J</kbd>).
 </p>
 </dd>
 <dt><code>--disable-libmagic</code></dt>
-<dd><p>Disable the use of the library of magic-number tests (for determining
-the file type and thus which syntax to use for colouring &mdash; often the
-tests on filename extension and header line will be enough).
+<dd><p>Exclude the code for using the library of magic-number tests (for determining
+the file type and thus which syntax to use for coloring &mdash; often the regexes
+for filename and header line will be enough).
 </p>
 </dd>
 <dt><code>--disable-linenumbers</code></dt>
-<dd><p>Disable the line-numbering function (<kbd>M-#</kbd>).  This also eliminates the
+<dd><p>Exclude the line-numbering function (<kbd>M-N</kbd>).  This also eliminates the
 <samp>-l</samp> command-line option, which turns line numbering on.
 </p>
 </dd>
 <dt><code>--disable-mouse</code></dt>
-<dd><p>Disable all mouse functionality.  This also eliminates the <samp>-m</samp>
+<dd><p>Exclude all mouse functionality.  This also eliminates the <samp>-m</samp>
 command-line option, which enables the mouse functionality.
 </p>
 </dd>
 <dt><code>--disable-multibuffer</code></dt>
-<dd><p>Disable support for opening multiple files at a time and switching
+<dd><p>Exclude support for opening multiple files at a time and switching
 between them on the fly.  This also eliminates the <samp>-F</samp> command-line
 option, which causes a file to be read into a separate buffer by default.
 </p>
 </dd>
 <dt><code>--disable-nanorc</code></dt>
-<dd><p>Disable support for reading the nanorc files at startup.  With such
+<dd><p>Exclude support for reading the nanorc files at startup.  With such
 support, you can store custom settings in a system-wide and a per-user
 nanorc file rather than having to pass command-line options to get
 the desired behavior.  See <a href="#Nanorc-Files">Nanorc Files</a> for more info.
@@ -1956,26 +1979,27 @@ which inhibits the reading of nanorc files.
 </p>
 </dd>
 <dt><code>--disable-operatingdir</code></dt>
-<dd><p>Disable setting the operating directory.  This also eliminates the <samp>-o</samp>
-command-line option, which sets the operating directory.
+<dd><p>Exclude the code for setting the operating directory.  This also eliminates
+the <samp>-o</samp> command-line option, which sets the operating directory.
 </p>
 </dd>
 <dt><code>--disable-speller</code></dt>
-<dd><p>Disable use of the spell checker.  This also eliminates the <samp>-s</samp>
+<dd><p>Exclude the code for spell checking.  This also eliminates the <samp>-s</samp>
 command-line option, which allows specifying an alternate spell checker.
 </p>
 </dd>
 <dt><code>--disable-tabcomp</code></dt>
-<dd><p>Disable tab completion (when nano asks for a filename or a search string).
+<dd><p>Exclude tab completion (when nano asks for a filename or a search string).
 </p>
 </dd>
 <dt><code>--disable-wordcomp</code></dt>
-<dd><p>Disable word completion (<kbd>^]</kbd>).
+<dd><p>Exclude word completion (<kbd>^]</kbd>).
 </p>
 </dd>
 <dt><code>--disable-wrapping</code></dt>
-<dd><p>Disable all hard-wrapping of overlong lines.  This also eliminates the
-<samp>-w</samp> command-line option, which switches long-line wrapping off.
+<dd><p>Exclude all hard-wrapping of overlong lines.  This also eliminates the
+<samp>-b</samp> and <samp>-w</samp> command-line options, which switch automatic
+long-line wrapping on and off, respectively.
 </p>
 </dd>
 <dt><code>--enable-tiny</code></dt>
@@ -1987,22 +2011,22 @@ specific features can be switched back on &mdash; but a few cannot.
 </p>
 </dd>
 <dt><code>--enable-debug</code></dt>
-<dd><p>Enable support for runtime debug output.  This can get pretty messy, so
+<dd><p>Include some code for runtime debugging output.  This can get pretty messy, so
 chances are you only want this feature when you&rsquo;re working on the nano source.
 </p>
 </dd>
 <dt><code>--disable-nls</code></dt>
-<dd><p>Disables Native Language support.  This will disable the use of any
+<dd><p>Exclude Native Language support.  This will disable the use of any
 available GNU <code>nano</code> translations.
 </p>
 </dd>
 <dt><code>--enable-utf8</code></dt>
-<dd><p>Enable support for reading and writing Unicode files.  This will require
+<dd><p>Include support for reading and writing Unicode files.  This will require
 either a wide version of curses, or a UTF-8-enabled version of Slang.
 </p>
 </dd>
 <dt><code>--disable-utf8</code></dt>
-<dd><p>Disable support for reading and writing Unicode files.  Normally the
+<dd><p>Exclude support for reading and writing Unicode files.  Normally the
 configure script auto-detects whether to enable UTF-8 support or not.
 You can use this or the previous option to override that detection.
 </p>

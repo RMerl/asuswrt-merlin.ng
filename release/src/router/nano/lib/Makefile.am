@@ -2192,6 +2192,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's/@''GNULIB_CHDIR''@/$(GNULIB_CHDIR)/g' \
 	      -e 's/@''GNULIB_CHOWN''@/$(GNULIB_CHOWN)/g' \
 	      -e 's/@''GNULIB_CLOSE''@/$(GNULIB_CLOSE)/g' \
+	      -e 's/@''GNULIB_COPY_FILE_RANGE''@/$(GNULIB_COPY_FILE_RANGE)/g' \
 	      -e 's/@''GNULIB_DUP''@/$(GNULIB_DUP)/g' \
 	      -e 's/@''GNULIB_DUP2''@/$(GNULIB_DUP2)/g' \
 	      -e 's/@''GNULIB_DUP3''@/$(GNULIB_DUP3)/g' \
@@ -2242,6 +2243,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's/@''GNULIB_WRITE''@/$(GNULIB_WRITE)/g' \
 	      < $(srcdir)/unistd.in.h | \
 	  sed -e 's|@''HAVE_CHOWN''@|$(HAVE_CHOWN)|g' \
+	      -e 's|@''HAVE_COPY_FILE_RANGE''@|$(HAVE_COPY_FILE_RANGE)|g' \
 	      -e 's|@''HAVE_DUP2''@|$(HAVE_DUP2)|g' \
 	      -e 's|@''HAVE_DUP3''@|$(HAVE_DUP3)|g' \
 	      -e 's|@''HAVE_EUIDACCESS''@|$(HAVE_EUIDACCESS)|g' \
@@ -2637,6 +2639,42 @@ EXTRA_DIST += wcwidth.c
 EXTRA_libgnu_a_SOURCES += wcwidth.c
 
 ## end   gnulib module wcwidth
+
+## begin gnulib module windows-mutex
+
+
+EXTRA_DIST += windows-initguard.h windows-mutex.c windows-mutex.h
+
+EXTRA_libgnu_a_SOURCES += windows-mutex.c
+
+## end   gnulib module windows-mutex
+
+## begin gnulib module windows-once
+
+
+EXTRA_DIST += windows-once.c windows-once.h
+
+EXTRA_libgnu_a_SOURCES += windows-once.c
+
+## end   gnulib module windows-once
+
+## begin gnulib module windows-recmutex
+
+
+EXTRA_DIST += windows-initguard.h windows-recmutex.c windows-recmutex.h
+
+EXTRA_libgnu_a_SOURCES += windows-recmutex.c
+
+## end   gnulib module windows-recmutex
+
+## begin gnulib module windows-rwlock
+
+
+EXTRA_DIST += windows-initguard.h windows-rwlock.c windows-rwlock.h
+
+EXTRA_libgnu_a_SOURCES += windows-rwlock.c
+
+## end   gnulib module windows-rwlock
 
 ## begin gnulib module xalloc-oversized
 

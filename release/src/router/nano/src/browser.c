@@ -77,8 +77,6 @@ char *do_browser(char *path)
 		present_name = mallocstrcpy(present_name, filelist[selected]);
 	}
 
-	assert(path != NULL && path[strlen(path) - 1] == '/');
-
 	if (dir != NULL) {
 		/* Get the file list, and set longest and width in the process. */
 		read_the_list(path, dir);
@@ -223,11 +221,9 @@ char *do_browser(char *path)
 			selected = filelist_len - 1;
 		} else if (func == goto_dir_void) {
 			/* Ask for the directory to go to. */
-			int i = do_prompt(TRUE, FALSE, MGOTODIR, NULL, NULL,
-						/* TRANSLATORS: This is a prompt. */
-						browser_refresh, _("Go To Directory"));
-
-			if (i < 0) {
+			if (do_prompt(TRUE, FALSE, MGOTODIR, NULL, NULL,
+							/* TRANSLATORS: This is a prompt. */
+							browser_refresh, _("Go To Directory")) < 0) {
 				statusbar(_("Cancelled"));
 				continue;
 			}
@@ -305,13 +301,12 @@ char *do_browser(char *path)
 		} else if (func == (functionptrtype)implant) {
 			implant(first_sc_for(MBROWSER, func)->expansion);
 #endif
-		} else if (func == do_exit) {
-			/* Exit from the file browser. */
-			break;
 #ifndef NANO_TINY
 		} else if (kbinput == KEY_WINCH) {
-			;
+			;  /* Nothing to do. */
 #endif
+		} else if (func == do_exit) {
+			break;
 		} else
 			unbound_key(kbinput);
 
@@ -394,8 +389,6 @@ void read_the_list(const char *path, DIR *dir)
 	const struct dirent *nextdir;
 	size_t i = 0, path_len = strlen(path);
 
-	assert(path != NULL && path[strlen(path) - 1] == '/' && dir != NULL);
-
 	longest = 0;
 
 	/* Find the length of the longest filename in the current folder. */
@@ -444,8 +437,6 @@ void read_the_list(const char *path, DIR *dir)
 	 * first time we scanned and the second.  i is the actual length of
 	 * filelist, so record it. */
 	filelist_len = i;
-
-	assert(filelist != NULL);
 
 	/* Sort the list of names. */
 	qsort(filelist, filelist_len, sizeof(char *), diralphasort);
@@ -533,15 +524,14 @@ void browser_refresh(void)
 				/* The filename (or a fragment of it) in displayable format.
 				 * When a fragment, account for dots plus one space padding. */
 
-		/* If this is the selected item, start its highlighting, and
+		/* If this is the selected item, draw its highlighted bar upfront, and
 		 * remember its location to be able to place the cursor on it. */
 		if (i == selected) {
 			wattron(edit, interface_color_pair[SELECTED_TEXT]);
+			mvwprintw(edit, row, col, "%*s", longest, " ");
 			the_row = row;
 			the_column = col;
 		}
-
-		blank_row(edit, row, col, longest);
 
 		/* If the name is too long, we display something like "...ename". */
 		if (dots)

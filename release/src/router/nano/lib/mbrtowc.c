@@ -34,6 +34,7 @@
 # include "localcharset.h"
 # include "streq.h"
 # include "verify.h"
+# include "glthread/lock.h"
 
 # ifndef FALLTHROUGH
 #  if __GNUC__ < 7
@@ -75,7 +76,7 @@ locale_enc (void)
   return enc_other;
 }
 
-#if GNULIB_WCHAR_SINGLE
+# if GNULIB_WCHAR_SINGLE
 /* When we know that the locale does not change, provide a speedup by
    caching the value of locale_enc.  */
 static int cached_locale_enc = -1;
@@ -86,10 +87,14 @@ locale_enc_cached (void)
     cached_locale_enc = locale_enc ();
   return cached_locale_enc;
 }
-#else
+# else
 /* By default, don't make assumptions, hence no caching.  */
-# define locale_enc_cached locale_enc
-#endif
+#  define locale_enc_cached locale_enc
+# endif
+
+/* This lock protects the internal state of mbtowc against multiple simultaneous
+   calls of mbrtowc.  */
+gl_lock_define_initialized(static, mbtowc_lock)
 
 verify (sizeof (mbstate_t) >= 4);
 
@@ -120,6 +125,8 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
     char buf[4];
     const char *p;
     size_t m;
+    enc_t enc;
+    int res;
 
     switch (nstate)
       {
@@ -152,227 +159,296 @@ mbrtowc (wchar_t *pwc, const char *s, size_t n, mbstate_t *ps)
 
     /* Here m > 0.  */
 
-# if __GLIBC__ || defined __UCLIBC__
-    /* Work around bug <https://sourceware.org/bugzilla/show_bug.cgi?id=9674> */
-    mbtowc (NULL, NULL, 0);
-# endif
-    {
-      int res = mbtowc (pwc, p, m);
+    enc = locale_enc_cached ();
 
-      if (res >= 0)
-        {
-          if (pwc != NULL && ((*pwc == 0) != (res == 0)))
-            abort ();
-          if (nstate >= (res > 0 ? res : 1))
-            abort ();
-          res -= nstate;
-          pstate[0] = 0;
-          return res;
-        }
+    if (enc == enc_utf8) /* UTF-8 */
+      {
+        /* Achieve multi-thread safety by not calling mbtowc() at all.  */
+        /* Cf. unistr/u8-mbtouc.c.  */
+        unsigned char c = (unsigned char) p[0];
 
-      /* mbtowc does not distinguish between invalid and incomplete multibyte
-         sequences.  But mbrtowc needs to make this distinction.
-         There are two possible approaches:
-           - Use iconv() and its return value.
-           - Use built-in knowledge about the possible encodings.
-         Given the low quality of implementation of iconv() on the systems that
-         lack mbrtowc(), we use the second approach.
-         The possible encodings are:
-           - 8-bit encodings,
-           - EUC-JP, EUC-KR, GB2312, EUC-TW, BIG5, GB18030, SJIS,
-           - UTF-8.
-         Use specialized code for each.  */
-      if (m >= 4 || m >= MB_CUR_MAX)
-        goto invalid;
-      /* Here MB_CUR_MAX > 1 and 0 < m < 4.  */
-      switch (locale_enc_cached ())
-        {
-        case enc_utf8: /* UTF-8 */
+        if (c < 0x80)
           {
-            /* Cf. unistr/u8-mblen.c.  */
-            unsigned char c = (unsigned char) p[0];
-
-            if (c >= 0xc2)
+            if (pwc != NULL)
+              *pwc = c;
+            res = (c == 0 ? 0 : 1);
+            goto success;
+          }
+        if (c >= 0xc2)
+          {
+            if (c < 0xe0)
               {
-                if (c < 0xe0)
+                if (m == 1)
+                  goto incomplete;
+                else /* m >= 2 */
                   {
-                    if (m == 1)
-                      goto incomplete;
-                  }
-                else if (c < 0xf0)
-                  {
-                    if (m == 1)
-                      goto incomplete;
-                    if (m == 2)
-                      {
-                        unsigned char c2 = (unsigned char) p[1];
+                    unsigned char c2 = (unsigned char) p[1];
 
-                        if ((c2 ^ 0x80) < 0x40
-                            && (c >= 0xe1 || c2 >= 0xa0)
-                            && (c != 0xed || c2 < 0xa0))
-                          goto incomplete;
+                    if ((c2 ^ 0x80) < 0x40)
+                      {
+                        if (pwc != NULL)
+                          *pwc = ((unsigned int) (c & 0x1f) << 6)
+                                 | (unsigned int) (c2 ^ 0x80);
+                        res = 2;
+                        goto success;
                       }
                   }
-                else if (c <= 0xf4)
+              }
+            else if (c < 0xf0)
+              {
+                if (m == 1)
+                  goto incomplete;
+                else
                   {
-                    if (m == 1)
-                      goto incomplete;
-                    else /* m == 2 || m == 3 */
+                    unsigned char c2 = (unsigned char) p[1];
+
+                    if ((c2 ^ 0x80) < 0x40
+                        && (c >= 0xe1 || c2 >= 0xa0)
+                        && (c != 0xed || c2 < 0xa0))
                       {
-                        unsigned char c2 = (unsigned char) p[1];
-
-                        if ((c2 ^ 0x80) < 0x40
-                            && (c >= 0xf1 || c2 >= 0x90)
-                            && (c < 0xf4 || (c == 0xf4 && c2 < 0x90)))
+                        if (m == 2)
+                          goto incomplete;
+                        else /* m >= 3 */
                           {
-                            if (m == 2)
-                              goto incomplete;
-                            else /* m == 3 */
-                              {
-                                unsigned char c3 = (unsigned char) p[2];
+                            unsigned char c3 = (unsigned char) p[2];
 
-                                if ((c3 ^ 0x80) < 0x40)
-                                  goto incomplete;
+                            if ((c3 ^ 0x80) < 0x40)
+                              {
+                                if (pwc != NULL)
+                                  *pwc = ((unsigned int) (c & 0x0f) << 12)
+                                         | ((unsigned int) (c2 ^ 0x80) << 6)
+                                         | (unsigned int) (c3 ^ 0x80);
+                                res = 3;
+                                goto success;
                               }
                           }
                       }
                   }
               }
-            goto invalid;
-          }
-
-        /* As a reference for this code, you can use the GNU libiconv
-           implementation.  Look for uses of the RET_TOOFEW macro.  */
-
-        case enc_eucjp: /* EUC-JP */
-          {
-            if (m == 1)
+            else if (c <= 0xf4)
               {
-                unsigned char c = (unsigned char) p[0];
-
-                if ((c >= 0xa1 && c < 0xff) || c == 0x8e || c == 0x8f)
+                if (m == 1)
                   goto incomplete;
-              }
-            if (m == 2)
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if (c == 0x8f)
+                else
                   {
                     unsigned char c2 = (unsigned char) p[1];
 
-                    if (c2 >= 0xa1 && c2 < 0xff)
-                      goto incomplete;
-                  }
-              }
-            goto invalid;
-          }
-
-        case enc_94: /* EUC-KR, GB2312, BIG5 */
-          {
-            if (m == 1)
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if (c >= 0xa1 && c < 0xff)
-                  goto incomplete;
-              }
-            goto invalid;
-          }
-
-        case enc_euctw: /* EUC-TW */
-          {
-            if (m == 1)
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if ((c >= 0xa1 && c < 0xff) || c == 0x8e)
-                  goto incomplete;
-              }
-            else /* m == 2 || m == 3 */
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if (c == 0x8e)
-                  goto incomplete;
-              }
-            goto invalid;
-          }
-
-        case enc_gb18030: /* GB18030 */
-          {
-            if (m == 1)
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if ((c >= 0x90 && c <= 0xe3) || (c >= 0xf8 && c <= 0xfe))
-                  goto incomplete;
-              }
-            else /* m == 2 || m == 3 */
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if (c >= 0x90 && c <= 0xe3)
-                  {
-                    unsigned char c2 = (unsigned char) p[1];
-
-                    if (c2 >= 0x30 && c2 <= 0x39)
+                    if ((c2 ^ 0x80) < 0x40
+                        && (c >= 0xf1 || c2 >= 0x90)
+                        && (c < 0xf4 || (c == 0xf4 && c2 < 0x90)))
                       {
                         if (m == 2)
                           goto incomplete;
-                        else /* m == 3 */
+                        else
                           {
                             unsigned char c3 = (unsigned char) p[2];
 
-                            if (c3 >= 0x81 && c3 <= 0xfe)
-                              goto incomplete;
+                            if ((c3 ^ 0x80) < 0x40)
+                              {
+                                if (m == 3)
+                                  goto incomplete;
+                                else /* m >= 4 */
+                                  {
+                                    unsigned char c4 = (unsigned char) p[3];
+
+                                    if ((c4 ^ 0x80) < 0x40)
+                                      {
+                                        if (pwc != NULL)
+                                          *pwc = ((unsigned int) (c & 0x07) << 18)
+                                                 | ((unsigned int) (c2 ^ 0x80) << 12)
+                                                 | ((unsigned int) (c3 ^ 0x80) << 6)
+                                                 | (unsigned int) (c4 ^ 0x80);
+                                        res = 4;
+                                        goto success;
+                                      }
+                                  }
+                              }
                           }
                       }
                   }
               }
-            goto invalid;
           }
-
-        case enc_sjis: /* SJIS */
-          {
-            if (m == 1)
-              {
-                unsigned char c = (unsigned char) p[0];
-
-                if ((c >= 0x81 && c <= 0x9f) || (c >= 0xe0 && c <= 0xea)
-                    || (c >= 0xf0 && c <= 0xf9))
-                  goto incomplete;
-              }
-            goto invalid;
-          }
-
-        default:
-          /* An unknown multibyte encoding.  */
-          goto incomplete;
-        }
-
-     incomplete:
-      {
-        size_t k = nstate;
-        /* Here 0 <= k < m < 4.  */
-        pstate[++k] = s[0];
-        if (k < m)
-          {
-            pstate[++k] = s[1];
-            if (k < m)
-              pstate[++k] = s[2];
-          }
-        if (k != m)
-          abort ();
+        goto invalid;
       }
-      pstate[0] = m;
-      return (size_t)(-2);
+    else
+      {
+        /* The hidden internal state of mbtowc would make this function not
+           multi-thread safe.  Achieve multi-thread safety through a lock.  */
+        gl_lock_lock (mbtowc_lock);
 
-     invalid:
-      errno = EILSEQ;
-      /* The conversion state is undefined, says POSIX.  */
-      return (size_t)(-1);
+        /* Put the hidden internal state of mbtowc into its initial state.
+           This is needed at least with glibc, uClibc, and MSVC CRT.
+           See <https://sourceware.org/bugzilla/show_bug.cgi?id=9674>.  */
+        mbtowc (NULL, NULL, 0);
+
+        res = mbtowc (pwc, p, m);
+
+        gl_lock_unlock (mbtowc_lock);
+
+        if (res >= 0)
+          {
+            if (pwc != NULL && ((*pwc == 0) != (res == 0)))
+              abort ();
+            goto success;
+          }
+
+        /* mbtowc does not distinguish between invalid and incomplete multibyte
+           sequences.  But mbrtowc needs to make this distinction.
+           There are two possible approaches:
+             - Use iconv() and its return value.
+             - Use built-in knowledge about the possible encodings.
+           Given the low quality of implementation of iconv() on the systems
+           that lack mbrtowc(), we use the second approach.
+           The possible encodings are:
+             - 8-bit encodings,
+             - EUC-JP, EUC-KR, GB2312, EUC-TW, BIG5, GB18030, SJIS,
+             - UTF-8 (already handled above).
+           Use specialized code for each.  */
+        if (m >= 4 || m >= MB_CUR_MAX)
+          goto invalid;
+        /* Here MB_CUR_MAX > 1 and 0 < m < 4.  */
+        switch (enc)
+          {
+          /* As a reference for this code, you can use the GNU libiconv
+             implementation.  Look for uses of the RET_TOOFEW macro.  */
+
+          case enc_eucjp: /* EUC-JP */
+            {
+              if (m == 1)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if ((c >= 0xa1 && c < 0xff) || c == 0x8e || c == 0x8f)
+                    goto incomplete;
+                }
+              if (m == 2)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if (c == 0x8f)
+                    {
+                      unsigned char c2 = (unsigned char) p[1];
+
+                      if (c2 >= 0xa1 && c2 < 0xff)
+                        goto incomplete;
+                    }
+                }
+              goto invalid;
+            }
+
+          case enc_94: /* EUC-KR, GB2312, BIG5 */
+            {
+              if (m == 1)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if (c >= 0xa1 && c < 0xff)
+                    goto incomplete;
+                }
+              goto invalid;
+            }
+
+          case enc_euctw: /* EUC-TW */
+            {
+              if (m == 1)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if ((c >= 0xa1 && c < 0xff) || c == 0x8e)
+                    goto incomplete;
+                }
+              else /* m == 2 || m == 3 */
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if (c == 0x8e)
+                    goto incomplete;
+                }
+              goto invalid;
+            }
+
+          case enc_gb18030: /* GB18030 */
+            {
+              if (m == 1)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if ((c >= 0x90 && c <= 0xe3) || (c >= 0xf8 && c <= 0xfe))
+                    goto incomplete;
+                }
+              else /* m == 2 || m == 3 */
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if (c >= 0x90 && c <= 0xe3)
+                    {
+                      unsigned char c2 = (unsigned char) p[1];
+
+                      if (c2 >= 0x30 && c2 <= 0x39)
+                        {
+                          if (m == 2)
+                            goto incomplete;
+                          else /* m == 3 */
+                            {
+                              unsigned char c3 = (unsigned char) p[2];
+
+                              if (c3 >= 0x81 && c3 <= 0xfe)
+                                goto incomplete;
+                            }
+                        }
+                    }
+                }
+              goto invalid;
+            }
+
+          case enc_sjis: /* SJIS */
+            {
+              if (m == 1)
+                {
+                  unsigned char c = (unsigned char) p[0];
+
+                  if ((c >= 0x81 && c <= 0x9f) || (c >= 0xe0 && c <= 0xea)
+                      || (c >= 0xf0 && c <= 0xf9))
+                    goto incomplete;
+                }
+              goto invalid;
+            }
+
+          default:
+            /* An unknown multibyte encoding.  */
+            goto incomplete;
+          }
+      }
+
+   success:
+    /* res >= 0 is the corrected return value of mbtowc (pwc, p, m).  */
+    if (nstate >= (res > 0 ? res : 1))
+      abort ();
+    res -= nstate;
+    pstate[0] = 0;
+    return res;
+
+   incomplete:
+    {
+      size_t k = nstate;
+      /* Here 0 <= k < m < 4.  */
+      pstate[++k] = s[0];
+      if (k < m)
+        {
+          pstate[++k] = s[1];
+          if (k < m)
+            pstate[++k] = s[2];
+        }
+      if (k != m)
+        abort ();
     }
+    pstate[0] = m;
+    return (size_t)(-2);
+
+   invalid:
+    errno = EILSEQ;
+    /* The conversion state is undefined, says POSIX.  */
+    return (size_t)(-1);
   }
 }
 

@@ -15,10 +15,10 @@ Overview
 
     Nano aimed to solve these problems by: 1) being truly free software
     by using the GPL, 2) emulating the functionality of Pico as closely
-    as is reasonable, and 3) include extra functionality by default.
+    as is reasonable, and 3) including extra functionality by default.
 
-    Nowadays, nano wants to be a generally useful editor, with default
-    settings that do not change the file contents automatically.
+    Nowadays, nano wants to be a generally useful editor with sensible
+    defaults (linewise scrolling, no automatic line breaking).
 
     The nano editor is an official GNU package.  For more information on
     GNU and the Free Software Foundation, please see https://www.gnu.org/.

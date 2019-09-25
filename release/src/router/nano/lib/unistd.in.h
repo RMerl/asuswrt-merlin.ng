@@ -52,7 +52,10 @@
 #define _@GUARD_PREFIX@_UNISTD_H
 
 /* NetBSD 5.0 mis-defines NULL.  Also get size_t.  */
-#include <stddef.h>
+/* But avoid namespace pollution on glibc systems.  */
+#ifndef __GLIBC__
+# include <stddef.h>
+#endif
 
 /* mingw doesn't define the SEEK_* or *_FILENO macros in <unistd.h>.  */
 /* MSVC declares 'unlink' in <stdio.h>, not in <unistd.h>.  We must include
@@ -124,15 +127,9 @@
 
 /* MSVC defines off_t in <sys/types.h>.
    May also define off_t to a 64-bit type on native Windows.  */
-#if !@HAVE_UNISTD_H@ || @WINDOWS_64_BIT_OFF_T@
-/* Get off_t.  */
-# include <sys/types.h>
-#endif
-
-#if (@GNULIB_READ@ || @GNULIB_WRITE@ \
-     || @GNULIB_READLINK@ || @GNULIB_READLINKAT@ \
-     || @GNULIB_PREAD@ || @GNULIB_PWRITE@ || defined GNULIB_POSIXCHECK)
-/* Get ssize_t.  */
+/* But avoid namespace pollution on glibc systems.  */
+#ifndef __GLIBC__
+/* Get off_t, ssize_t.  */
 # include <sys/types.h>
 #endif
 
@@ -328,6 +325,24 @@ _GL_CXXALIASWARN (close);
 /* Assume close is always declared.  */
 _GL_WARN_ON_USE (close, "close does not portably work on sockets - "
                  "use gnulib module close for portability");
+#endif
+
+
+#if @GNULIB_COPY_FILE_RANGE@
+# if !@HAVE_COPY_FILE_RANGE@
+_GL_FUNCDECL_SYS (copy_file_range, ssize_t, (int ifd, off_t *ipos,
+                                             int ofd, off_t *opos,
+                                             size_t len, unsigned flags));
+_GL_CXXALIAS_SYS (copy_file_range, ssize_t, (int ifd, off_t *ipos,
+                                             int ofd, off_t *opos,
+                                             size_t len, unsigned flags));
+# endif
+_GL_CXXALIASWARN (copy_file_range);
+#elif defined GNULIB_POSIXCHECK
+/* Assume copy_file_range is always declared.  */
+_GL_WARN_ON_USE (copy_file_range,
+                 "copy_file_range is unportable - "
+                 "use gnulib module copy_file_range for portability");
 #endif
 
 

@@ -325,6 +325,8 @@ am__depfiles_remade = ./$(DEPDIR)/alloca.Po ./$(DEPDIR)/asnprintf.Po \
 	./$(DEPDIR)/utimens.Po ./$(DEPDIR)/vasnprintf.Po \
 	./$(DEPDIR)/vsnprintf.Po ./$(DEPDIR)/wcrtomb.Po \
 	./$(DEPDIR)/wctype-h.Po ./$(DEPDIR)/wcwidth.Po \
+	./$(DEPDIR)/windows-mutex.Po ./$(DEPDIR)/windows-once.Po \
+	./$(DEPDIR)/windows-recmutex.Po ./$(DEPDIR)/windows-rwlock.Po \
 	./$(DEPDIR)/xsize.Po glthread/$(DEPDIR)/lock.Po \
 	glthread/$(DEPDIR)/threadlib.Po \
 	malloc/$(DEPDIR)/scratch_buffer_grow.Po \
@@ -487,6 +489,7 @@ GNULIB_CLOSEDIR = @GNULIB_CLOSEDIR@
 GNULIB_COPYSIGN = @GNULIB_COPYSIGN@
 GNULIB_COPYSIGNF = @GNULIB_COPYSIGNF@
 GNULIB_COPYSIGNL = @GNULIB_COPYSIGNL@
+GNULIB_COPY_FILE_RANGE = @GNULIB_COPY_FILE_RANGE@
 GNULIB_COSF = @GNULIB_COSF@
 GNULIB_COSHF = @GNULIB_COSHF@
 GNULIB_COSL = @GNULIB_COSL@
@@ -854,6 +857,7 @@ HAVE_CHOWN = @HAVE_CHOWN@
 HAVE_CLOSEDIR = @HAVE_CLOSEDIR@
 HAVE_COPYSIGN = @HAVE_COPYSIGN@
 HAVE_COPYSIGNL = @HAVE_COPYSIGNL@
+HAVE_COPY_FILE_RANGE = @HAVE_COPY_FILE_RANGE@
 HAVE_COSF = @HAVE_COSF@
 HAVE_COSHF = @HAVE_COSHF@
 HAVE_COSL = @HAVE_COSL@
@@ -1200,8 +1204,6 @@ LIBICONV = @LIBICONV@
 LIBINTL = @LIBINTL@
 LIBMULTITHREAD = @LIBMULTITHREAD@
 LIBOBJS = @LIBOBJS@
-LIBPTH = @LIBPTH@
-LIBPTH_PREFIX = @LIBPTH_PREFIX@
 LIBS = @LIBS@
 LIBTHREAD = @LIBTHREAD@
 LIBUNISTRING_UNITYPES_H = @LIBUNISTRING_UNITYPES_H@
@@ -1219,7 +1221,6 @@ LTLIBICONV = @LTLIBICONV@
 LTLIBINTL = @LTLIBINTL@
 LTLIBMULTITHREAD = @LTLIBMULTITHREAD@
 LTLIBOBJS = @LTLIBOBJS@
-LTLIBPTH = @LTLIBPTH@
 LTLIBTHREAD = @LTLIBTHREAD@
 MAKEINFO = @MAKEINFO@
 MKDIR_P = @MKDIR_P@
@@ -1670,7 +1671,10 @@ EXTRA_DIST = alloca.c alloca.in.h btowc.c closedir.c dirent-private.h \
 	asnprintf.c float+.h printf-args.c printf-args.h \
 	printf-parse.c printf-parse.h vasnprintf.c vasnprintf.h \
 	verify.h vsnprintf.c wchar.in.h wcrtomb.c wctype.in.h \
-	wcwidth.c xalloc-oversized.h
+	wcwidth.c windows-initguard.h windows-mutex.c windows-mutex.h \
+	windows-once.c windows-once.h windows-initguard.h \
+	windows-recmutex.c windows-recmutex.h windows-initguard.h \
+	windows-rwlock.c windows-rwlock.h xalloc-oversized.h
 BUILT_SOURCES = $(ALLOCA_H) ctype.h dirent.h $(ERRNO_H) fcntl.h \
 	$(FLOAT_H) $(FNMATCH_H) $(GETOPT_H) $(GETOPT_CDEFS_H) \
 	$(GLOB_H) langinfo.h $(LIMITS_H) locale.h math.h signal.h \
@@ -1723,7 +1727,8 @@ EXTRA_libgnu_a_SOURCES = alloca.c btowc.c closedir.c dirfd.c float.c \
 	signbitl.c sigprocmask.c snprintf.c stat-w32.c stat.c \
 	strcasecmp.c strncasecmp.c strcasestr.c strnlen.c utime.c \
 	asnprintf.c printf-args.c printf-parse.c vasnprintf.c \
-	vsnprintf.c wcrtomb.c wcwidth.c
+	vsnprintf.c wcrtomb.c wcwidth.c windows-mutex.c windows-once.c \
+	windows-recmutex.c windows-rwlock.c
 
 # Use this preprocessor expression to decide whether #include_next works.
 # Do not rely on a 'configure'-time test for this, since the expression
@@ -1924,6 +1929,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wcrtomb.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wctype-h.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/wcwidth.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/windows-mutex.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/windows-once.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/windows-recmutex.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/windows-rwlock.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xsize.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@glthread/$(DEPDIR)/lock.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@glthread/$(DEPDIR)/threadlib.Po@am__quote@ # am--include-marker
@@ -2247,6 +2256,10 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/wcrtomb.Po
 	-rm -f ./$(DEPDIR)/wctype-h.Po
 	-rm -f ./$(DEPDIR)/wcwidth.Po
+	-rm -f ./$(DEPDIR)/windows-mutex.Po
+	-rm -f ./$(DEPDIR)/windows-once.Po
+	-rm -f ./$(DEPDIR)/windows-recmutex.Po
+	-rm -f ./$(DEPDIR)/windows-rwlock.Po
 	-rm -f ./$(DEPDIR)/xsize.Po
 	-rm -f glthread/$(DEPDIR)/lock.Po
 	-rm -f glthread/$(DEPDIR)/threadlib.Po
@@ -2381,6 +2394,10 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/wcrtomb.Po
 	-rm -f ./$(DEPDIR)/wctype-h.Po
 	-rm -f ./$(DEPDIR)/wcwidth.Po
+	-rm -f ./$(DEPDIR)/windows-mutex.Po
+	-rm -f ./$(DEPDIR)/windows-once.Po
+	-rm -f ./$(DEPDIR)/windows-recmutex.Po
+	-rm -f ./$(DEPDIR)/windows-rwlock.Po
 	-rm -f ./$(DEPDIR)/xsize.Po
 	-rm -f glthread/$(DEPDIR)/lock.Po
 	-rm -f glthread/$(DEPDIR)/threadlib.Po
@@ -3630,6 +3647,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's/@''GNULIB_CHDIR''@/$(GNULIB_CHDIR)/g' \
 	      -e 's/@''GNULIB_CHOWN''@/$(GNULIB_CHOWN)/g' \
 	      -e 's/@''GNULIB_CLOSE''@/$(GNULIB_CLOSE)/g' \
+	      -e 's/@''GNULIB_COPY_FILE_RANGE''@/$(GNULIB_COPY_FILE_RANGE)/g' \
 	      -e 's/@''GNULIB_DUP''@/$(GNULIB_DUP)/g' \
 	      -e 's/@''GNULIB_DUP2''@/$(GNULIB_DUP2)/g' \
 	      -e 's/@''GNULIB_DUP3''@/$(GNULIB_DUP3)/g' \
@@ -3680,6 +3698,7 @@ unistd.h: unistd.in.h $(top_builddir)/config.status $(CXXDEFS_H) $(ARG_NONNULL_H
 	      -e 's/@''GNULIB_WRITE''@/$(GNULIB_WRITE)/g' \
 	      < $(srcdir)/unistd.in.h | \
 	  sed -e 's|@''HAVE_CHOWN''@|$(HAVE_CHOWN)|g' \
+	      -e 's|@''HAVE_COPY_FILE_RANGE''@|$(HAVE_COPY_FILE_RANGE)|g' \
 	      -e 's|@''HAVE_DUP2''@|$(HAVE_DUP2)|g' \
 	      -e 's|@''HAVE_DUP3''@|$(HAVE_DUP3)|g' \
 	      -e 's|@''HAVE_EUIDACCESS''@|$(HAVE_EUIDACCESS)|g' \

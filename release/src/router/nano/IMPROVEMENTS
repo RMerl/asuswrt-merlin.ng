@@ -2,6 +2,9 @@ Improvements in GNU nano
 ========================
 
 Since 4.0:
+  - The ability to perform a search at startup with +/string or +?string.
+  - Comment characters are copied when automatic hard-wrapping occurs.
+  - The ability to both read from and write to a FIFO.
   - Automatic hard-wrapping is no longer the default.
   - Addition of --guidestripe to draw a helpful vertical bar.
   - Meta-Up and Meta-Down scroll the screen linewise.

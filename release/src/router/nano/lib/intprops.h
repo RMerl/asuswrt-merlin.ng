@@ -111,8 +111,8 @@
    Subtract 1 for the sign bit if T is signed, and then add 1 more for
    a minus sign if needed.
 
-   Because _GL_SIGNED_TYPE_OR_EXPR sometimes returns 0 when its argument is
-   signed, this macro may overestimate the true bound by one byte when
+   Because _GL_SIGNED_TYPE_OR_EXPR sometimes returns 1 when its argument is
+   unsigned, this macro may overestimate the true bound by one byte when
    applied to unsigned types of size 2, 4, 16, ... bytes.  */
 #define INT_STRLEN_BOUND(t)                                     \
   (INT_BITS_STRLEN_BOUND (TYPE_WIDTH (t) - _GL_SIGNED_TYPE_OR_EXPR (t)) \
@@ -281,7 +281,9 @@
 
    The INT_<op>_OVERFLOW macros return 1 if the corresponding C operators
    might not yield numerically correct answers due to arithmetic overflow.
-   The INT_<op>_WRAPV macros also store the low-order bits of the answer.
+   The INT_<op>_WRAPV macros compute the low-order bits of the sum,
+   difference, and product of two C integers, and return 1 if these
+   low-order bits are not numerically correct.
    These macros work correctly on all known practical hosts, and do not rely
    on undefined behavior due to signed arithmetic overflow.
 
@@ -309,9 +311,11 @@
    arguments should not have side effects.
 
    The WRAPV macros are not constant expressions.  They support only
-   +, binary -, and *.  The result type must be signed.
+   +, binary -, and *.  Because the WRAPV macros convert the result,
+   they report overflow in different circumstances than the OVERFLOW
+   macros do.
 
-   These macros are tuned for their last argument being a constant.
+   These macros are tuned for their last input argument being a constant.
 
    Return 1 if the integer expressions A * B, A - B, -A, A * B, A / B,
    A % B, and A << B would overflow, respectively.  */
@@ -348,11 +352,21 @@
 /* Store the low-order bits of A + B, A - B, A * B, respectively, into *R.
    Return 1 if the result overflows.  See above for restrictions.  */
 #define INT_ADD_WRAPV(a, b, r) \
-  _GL_INT_OP_WRAPV (a, b, r, +, __builtin_add_overflow, INT_ADD_OVERFLOW)
+  _GL_INT_OP_WRAPV (a, b, r, +, __builtin_add_overflow, \
+                    _GL_INT_ADD_RANGE_OVERFLOW)
 #define INT_SUBTRACT_WRAPV(a, b, r) \
-  _GL_INT_OP_WRAPV (a, b, r, -, __builtin_sub_overflow, INT_SUBTRACT_OVERFLOW)
+  _GL_INT_OP_WRAPV (a, b, r, -, __builtin_sub_overflow, \
+                    _GL_INT_SUBTRACT_RANGE_OVERFLOW)
 #define INT_MULTIPLY_WRAPV(a, b, r) \
-  _GL_INT_OP_WRAPV (a, b, r, *, __builtin_mul_overflow, INT_MULTIPLY_OVERFLOW)
+   _GL_INT_OP_WRAPV (a, b, r, *, _GL_BUILTIN_MUL_OVERFLOW, \
+                     _GL_INT_MULTIPLY_RANGE_OVERFLOW)
+
+/* Like __builtin_mul_overflow, but work around GCC bug 91450.  */
+#define _GL_BUILTIN_MUL_OVERFLOW(a, b, r) \
+  ((!_GL_SIGNED_TYPE_OR_EXPR (*(r)) && EXPR_SIGNED (a) && EXPR_SIGNED (b) \
+    && _GL_INT_MULTIPLY_RANGE_OVERFLOW (a, b, 0, (__typeof__ (*(r))) -1)) \
+   ? ((void) __builtin_mul_overflow (a, b, r), 1) \
+   : __builtin_mul_overflow (a, b, r))
 
 /* Nonzero if this compiler has GCC bug 68193 or Clang bug 25390.  See:
    https://gcc.gnu.org/bugzilla/show_bug.cgi?id=68193
@@ -379,41 +393,91 @@
      signed char: \
        _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
                         signed char, SCHAR_MIN, SCHAR_MAX), \
+     unsigned char: \
+       _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
+                        unsigned char, 0, UCHAR_MAX), \
      short int: \
        _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
                         short int, SHRT_MIN, SHRT_MAX), \
+     unsigned short int: \
+       _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
+                        unsigned short int, 0, USHRT_MAX), \
      int: \
        _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
                         int, INT_MIN, INT_MAX), \
+     unsigned int: \
+       _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
+                        unsigned int, 0, UINT_MAX), \
      long int: \
        _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
                         long int, LONG_MIN, LONG_MAX), \
+     unsigned long int: \
+       _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
+                        unsigned long int, 0, ULONG_MAX), \
      long long int: \
        _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int, \
-                        long long int, LLONG_MIN, LLONG_MAX)))
+                        long long int, LLONG_MIN, LLONG_MAX), \
+     unsigned long long int: \
+       _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int, \
+                        unsigned long long int, 0, ULLONG_MAX)))
 #else
+/* Store the low-order bits of A <op> B into *R, where OP specifies
+   the operation and OVERFLOW the overflow predicate.  If *R is
+   signed, its type is ST with bounds SMIN..SMAX; otherwise its type
+   is UT with bounds U..UMAX.  ST and UT are narrower than int.
+   Return 1 if the result overflows.  See above for restrictions.  */
+# if _GL_HAVE___TYPEOF__
+#  define _GL_INT_OP_WRAPV_SMALLISH(a,b,r,op,overflow,st,smin,smax,ut,umax) \
+    (TYPE_SIGNED (__typeof__ (*(r))) \
+     ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, st, smin, smax) \
+     : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, ut, 0, umax))
+# else
+#  define _GL_INT_OP_WRAPV_SMALLISH(a,b,r,op,overflow,st,smin,smax,ut,umax) \
+    (overflow (a, b, smin, smax) \
+     ? (overflow (a, b, 0, umax) \
+        ? (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a,b,op,unsigned,st), 1) \
+        : (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a,b,op,unsigned,st)) < 0) \
+     : (overflow (a, b, 0, umax) \
+        ? (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a,b,op,unsigned,st)) >= 0 \
+        : (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a,b,op,unsigned,st), 0)))
+# endif
+
 # define _GL_INT_OP_WRAPV(a, b, r, op, builtin, overflow) \
    (sizeof *(r) == sizeof (signed char) \
-    ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
-                       signed char, SCHAR_MIN, SCHAR_MAX) \
+    ? _GL_INT_OP_WRAPV_SMALLISH (a, b, r, op, overflow, \
+                                 signed char, SCHAR_MIN, SCHAR_MAX, \
+                                 unsigned char, UCHAR_MAX) \
     : sizeof *(r) == sizeof (short int) \
-    ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
-                       short int, SHRT_MIN, SHRT_MAX) \
+    ? _GL_INT_OP_WRAPV_SMALLISH (a, b, r, op, overflow, \
+                                 short int, SHRT_MIN, SHRT_MAX, \
+                                 unsigned short int, USHRT_MAX) \
     : sizeof *(r) == sizeof (int) \
-    ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
-                       int, INT_MIN, INT_MAX) \
+    ? (EXPR_SIGNED (*(r)) \
+       ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
+                          int, INT_MIN, INT_MAX) \
+       : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned int, \
+                          unsigned int, 0, UINT_MAX)) \
     : _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow))
 # ifdef LLONG_MAX
 #  define _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow) \
     (sizeof *(r) == sizeof (long int) \
-     ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
-                        long int, LONG_MIN, LONG_MAX) \
-     : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int, \
-                        long long int, LLONG_MIN, LLONG_MAX))
+     ? (EXPR_SIGNED (*(r)) \
+        ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
+                           long int, LONG_MIN, LONG_MAX) \
+        : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
+                           unsigned long int, 0, ULONG_MAX)) \
+     : (EXPR_SIGNED (*(r)) \
+        ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int, \
+                           long long int, LLONG_MIN, LLONG_MAX) \
+        : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long long int, \
+                           unsigned long long int, 0, ULLONG_MAX)))
 # else
 #  define _GL_INT_OP_WRAPV_LONGISH(a, b, r, op, overflow) \
-    _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
-                     long int, LONG_MIN, LONG_MAX)
+    (EXPR_SIGNED (*(r)) \
+     ? _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
+                        long int, LONG_MIN, LONG_MAX) \
+     : _GL_INT_OP_CALC (a, b, r, op, overflow, unsigned long int, \
+                        unsigned long int, 0, ULONG_MAX))
 # endif
 #endif
 
@@ -422,13 +486,7 @@
    overflow problems.  *R's type is T, with extrema TMIN and TMAX.
    T must be a signed integer type.  Return 1 if the result overflows.  */
 #define _GL_INT_OP_CALC(a, b, r, op, overflow, ut, t, tmin, tmax) \
-  (sizeof ((a) op (b)) < sizeof (t) \
-   ? _GL_INT_OP_CALC1 ((t) (a), (t) (b), r, op, overflow, ut, t, tmin, tmax) \
-   : _GL_INT_OP_CALC1 (a, b, r, op, overflow, ut, t, tmin, tmax))
-#define _GL_INT_OP_CALC1(a, b, r, op, overflow, ut, t, tmin, tmax) \
-  ((overflow (a, b) \
-    || (EXPR_SIGNED ((a) op (b)) && ((a) op (b)) < (tmin)) \
-    || (tmax) < ((a) op (b))) \
+  (overflow (a, b, tmin, tmax) \
    ? (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 1) \
    : (*(r) = _GL_INT_OP_WRAPV_VIA_UNSIGNED (a, b, op, ut, t), 0))
 
@@ -451,5 +509,58 @@
 
 #define _GL_INT_OP_WRAPV_VIA_UNSIGNED(a, b, op, ut, t) \
   ((t) ((ut) (a) op (ut) (b)))
+
+/* Return true if the numeric values A + B, A - B, A * B fall outside
+   the range TMIN..TMAX.  Arguments should be integer expressions
+   without side effects.  TMIN should be signed and nonpositive.
+   TMAX should be positive, and should be signed unless TMIN is zero.  */
+#define _GL_INT_ADD_RANGE_OVERFLOW(a, b, tmin, tmax) \
+  ((b) < 0 \
+   ? (((tmin) \
+       ? ((EXPR_SIGNED (_GL_INT_CONVERT (a, (tmin) - (b))) || (b) < (tmin)) \
+          && (a) < (tmin) - (b)) \
+       : (a) <= -1 - (b)) \
+      || ((EXPR_SIGNED (a) ? 0 <= (a) : (tmax) < (a)) && (tmax) < (a) + (b))) \
+   : (a) < 0 \
+   ? (((tmin) \
+       ? ((EXPR_SIGNED (_GL_INT_CONVERT (b, (tmin) - (a))) || (a) < (tmin)) \
+          && (b) < (tmin) - (a)) \
+       : (b) <= -1 - (a)) \
+      || ((EXPR_SIGNED (_GL_INT_CONVERT (a, b)) || (tmax) < (b)) \
+          && (tmax) < (a) + (b))) \
+   : (tmax) < (b) || (tmax) - (b) < (a))
+#define _GL_INT_SUBTRACT_RANGE_OVERFLOW(a, b, tmin, tmax) \
+  (((a) < 0) == ((b) < 0) \
+   ? ((a) < (b) \
+      ? !(tmin) || -1 - (tmin) < (b) - (a) - 1 \
+      : (tmax) < (a) - (b)) \
+   : (a) < 0 \
+   ? ((!EXPR_SIGNED (_GL_INT_CONVERT ((a) - (tmin), b)) && (a) - (tmin) < 0) \
+      || (a) - (tmin) < (b)) \
+   : ((! (EXPR_SIGNED (_GL_INT_CONVERT (tmax, b)) \
+          && EXPR_SIGNED (_GL_INT_CONVERT ((tmax) + (b), a))) \
+       && (tmax) <= -1 - (b)) \
+      || (tmax) + (b) < (a)))
+#define _GL_INT_MULTIPLY_RANGE_OVERFLOW(a, b, tmin, tmax) \
+  ((b) < 0 \
+   ? ((a) < 0 \
+      ? (EXPR_SIGNED (_GL_INT_CONVERT (tmax, b)) \
+         ? (a) < (tmax) / (b) \
+         : ((INT_NEGATE_OVERFLOW (b) \
+             ? _GL_INT_CONVERT (b, tmax) >> (TYPE_WIDTH (b) - 1) \
+             : (tmax) / -(b)) \
+            <= -1 - (a))) \
+      : INT_NEGATE_OVERFLOW (_GL_INT_CONVERT (b, tmin)) && (b) == -1 \
+      ? (EXPR_SIGNED (a) \
+         ? 0 < (a) + (tmin) \
+         : 0 < (a) && -1 - (tmin) < (a) - 1) \
+      : (tmin) / (b) < (a)) \
+   : (b) == 0 \
+   ? 0 \
+   : ((a) < 0 \
+      ? (INT_NEGATE_OVERFLOW (_GL_INT_CONVERT (a, tmin)) && (a) == -1 \
+         ? (EXPR_SIGNED (b) ? 0 < (b) + (tmin) : -1 - (tmin) < (b) - 1) \
+         : (tmin) / (a) < (b)) \
+      : (tmax) / (b) < (a)))
 
 #endif /* _GL_INTPROPS_H */

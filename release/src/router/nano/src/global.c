@@ -31,10 +31,8 @@ volatile sig_atomic_t the_window_resized = FALSE;
 		/* Set to TRUE by the handler whenever a SIGWINCH occurs. */
 #endif
 
-#ifdef __linux__
-bool on_a_vt;
-		/* Whether we're running on a Linux VT or on something else. */
-#endif
+bool on_a_vt = FALSE;
+		/* Whether we're running on a Linux console (a VT). */
 
 bool meta_key;
 		/* Whether the current keystroke is a Meta key. */
@@ -45,6 +43,11 @@ bool focusing = TRUE;
 
 bool as_an_at = TRUE;
 		/* Whether a 0x0A byte should be shown as a ^@ instead of a ^J. */
+
+bool control_C_was_pressed = FALSE;
+		/* Whether Ctrl+C was pressed (when a keyboard interrupt is enabled). */
+
+bool started_curses = FALSE;
 
 bool suppress_cursorpos = FALSE;
 		/* Should we skip constant position display for current keystroke? */
@@ -65,6 +68,9 @@ bool more_than_one = FALSE;
 bool also_the_last = FALSE;
 		/* Whether indenting/commenting should include the last line of
 		 * the marked region. */
+bool is_shorter;
+		/* Whether a row's text is narrower than the screen's width. */
+
 int didfind = 0;
 		/* Whether the last search found something. */
 
@@ -123,8 +129,6 @@ linestruct *cutbottom = NULL;
 bool keep_cutbuffer = FALSE;
 		/* Whether to add to the cutbuffer instead of clearing it first. */
 
-partition *filepart = NULL;
-		/* The "partition" where we store a portion of the current file. */
 openfilestruct *openfile = NULL;
 		/* The list of all open file buffers. */
 #ifdef ENABLE_MULTIBUFFER
@@ -378,10 +382,6 @@ void add_to_funcs(void (*func)(void), int menus, const char *desc, const char *h
 	f->help = help;
 	f->blank_after = blank_after;
 #endif
-
-#ifdef DEBUG
-	fprintf(stderr, "Added func %ld (%s) for menus %x\n", (long)func, f->desc, menus);
-#endif
 }
 
 /* Add a key combo to the shortcut list. */
@@ -413,10 +413,6 @@ void add_to_sclist(int menus, const char *scstring, const int keycode,
 	assign_keyinfo(s, scstring, keycode);
 
 	tailsc = s;
-
-#ifdef DEBUG
-	fprintf(stderr, "Setting keycode to %d for shortcut \"%s\" in menus %x\n", s->keycode, scstring, s->menus);
-#endif
 }
 
 /* Return the first shortcut in the list of shortcuts that
@@ -429,9 +425,6 @@ const keystruct *first_sc_for(int menu, void (*func)(void))
 		if ((s->menus & menu) && s->func == func)
 			return s;
 
-#ifdef DEBUG
-	fprintf(stderr, "Whoops, returning null given func %ld in menu %x\n", (long)func, menu);
-#endif
 	return NULL;
 }
 
@@ -505,22 +498,6 @@ int keycode_from_string(const char *keystring)
 	else
 		return -1;
 }
-
-#ifdef DEBUG
-void print_sclist(void)
-{
-	keystruct *s;
-	const funcstruct *f;
-
-	for (s = sclist; s != NULL; s = s->next) {
-		f = sctofunc(s);
-		if (f)
-			fprintf(stderr, "Shortcut \"%s\", function: %s, menus %x\n", s->keystr, f->desc, f->menus);
-		else
-			fprintf(stderr, "Hmm, didn't find a func for \"%s\"\n", s->keystr);
-	}
-}
-#endif
 
 /* These two tags are used elsewhere too, so they are global. */
 /* TRANSLATORS: Try to keep the next two strings at most 10 characters. */
@@ -722,23 +699,20 @@ void shortcut_init(void)
 		N_("Write Out"), WITHORSANS(writeout_gist), TOGETHER, NOVIEW);
 
 #ifdef ENABLE_JUSTIFY
-	if (!ISSET(RESTRICTED)) {
-#else
-	/* If we can't replace Insert with Justify, show Insert anyway, to
-	 * keep the help items nicely paired also in restricted mode.  */
-	if (TRUE) {
+	/* In restricted mode, replace Insert with Justify, when possible;
+	 * otherwise, show Insert anyway, to keep the help items paired. */
+	if (!ISSET(RESTRICTED))
 #endif
 		add_to_funcs(do_insertfile_void, MMAIN,
 				N_("Read File"), WITHORSANS(readfile_gist), BLANKAFTER,
 				/* We allow inserting files in view mode if multibuffer mode
-				 * is switched on, so that we can view multiple files. */
+				 * is available, so that the user can view multiple files. */
 				CAN_OPEN_OTHER_BUFFER);
-	} else {
 #ifdef ENABLE_JUSTIFY
+	else
 		add_to_funcs(do_justify_void, MMAIN,
 				N_("Justify"), WITHORSANS(justify_gist), BLANKAFTER, NOVIEW);
 #endif
-	}
 
 #ifdef ENABLE_HELP
 	/* The description ("x") and blank_after (0) are irrelevant,
@@ -761,10 +735,10 @@ void shortcut_init(void)
 		N_("Refresh"), WITHORSANS(browserrefresh_gist), BLANKAFTER, VIEW);
 #endif
 
-	add_to_funcs(do_cut_text_void, MMAIN,
+	add_to_funcs(cut_text, MMAIN,
 		N_("Cut Text"), WITHORSANS(cut_gist), TOGETHER, NOVIEW);
 
-	add_to_funcs(do_uncut_text, MMAIN,
+	add_to_funcs(paste_text, MMAIN,
 		N_("Paste Text"), WITHORSANS(uncut_gist), BLANKAFTER, NOVIEW);
 
 	if (!ISSET(RESTRICTED)) {
@@ -797,7 +771,7 @@ void shortcut_init(void)
 
 	add_to_funcs(do_mark, MMAIN,
 		N_("Mark Text"), WITHORSANS(mark_gist), TOGETHER, VIEW);
-	add_to_funcs(do_copy_text, MMAIN,
+	add_to_funcs(copy_text, MMAIN,
 		N_("Copy Text"), WITHORSANS(copy_gist), BLANKAFTER, NOVIEW);
 #endif
 
@@ -931,6 +905,7 @@ void shortcut_init(void)
 #endif
 
 	add_to_funcs(do_tab, MMAIN,
+		/* TRANSLATORS: The next four strings are names of keyboard keys. */
 		N_("Tab"), WITHORSANS(tab_gist), TOGETHER, NOVIEW);
 	add_to_funcs(do_enter, MMAIN,
 		N_("Enter"), WITHORSANS(enter_gist), BLANKAFTER, NOVIEW);
@@ -952,7 +927,7 @@ void shortcut_init(void)
 		N_("Chop Left"), WITHORSANS(chopwordleft_gist), TOGETHER, NOVIEW);
 	add_to_funcs(chop_next_word, MMAIN,
 		N_("Chop Right"), WITHORSANS(chopwordright_gist), TOGETHER, NOVIEW);
-	add_to_funcs(do_cut_till_eof, MMAIN,
+	add_to_funcs(cut_till_eof, MMAIN,
 		N_("CutTillEnd"), WITHORSANS(cuttilleof_gist), BLANKAFTER, NOVIEW);
 #endif
 
@@ -1114,8 +1089,8 @@ void shortcut_init(void)
 	add_to_sclist(MMAIN|MHELP|MBROWSER, "^W", 0, do_search_forward, 0);
 	add_to_sclist(MMAIN, "^\\", 0, do_replace, 0);
 	add_to_sclist(MMAIN, "M-R", 0, do_replace, 0);
-	add_to_sclist(MMOST, "^K", 0, do_cut_text_void, 0);
-	add_to_sclist(MMOST, "^U", 0, do_uncut_text, 0);
+	add_to_sclist(MMOST, "^K", 0, cut_text, 0);
+	add_to_sclist(MMOST, "^U", 0, paste_text, 0);
 #ifdef ENABLE_JUSTIFY
 	add_to_sclist(MMAIN, "^J", 0, do_justify_void, 0);
 #endif
@@ -1146,8 +1121,8 @@ void shortcut_init(void)
 	add_to_sclist(MMAIN, "M-A", 0, do_mark, 0);
 	add_to_sclist(MMAIN, "^6", 0, do_mark, 0);
 	add_to_sclist(MMAIN, "^^", 0, do_mark, 0);
-	add_to_sclist(MMAIN, "M-6", 0, do_copy_text, 0);
-	add_to_sclist(MMAIN, "M-^", 0, do_copy_text, 0);
+	add_to_sclist(MMAIN, "M-6", 0, copy_text, 0);
+	add_to_sclist(MMAIN, "M-^", 0, copy_text, 0);
 	add_to_sclist(MMAIN, "M-}", 0, do_indent, 0);
 	add_to_sclist(MMAIN, "Tab", TAB_CODE, do_indent, 0);
 	add_to_sclist(MMAIN, "M-{", 0, do_unindent, 0);
@@ -1174,11 +1149,11 @@ void shortcut_init(void)
 		add_to_sclist(MMOST|MHELP|MBROWSER, "\xE2\x96\xb6", KEY_RIGHT, do_right, 0);
 		add_to_sclist(MSOME, "^\xE2\x97\x80", CONTROL_LEFT, do_prev_word_void, 0);
 		add_to_sclist(MSOME, "^\xE2\x96\xb6", CONTROL_RIGHT, do_next_word_void, 0);
-#ifndef NANO_TINY
-#ifdef ENABLE_MULTIBUFFER
-		add_to_sclist(MMAIN, "M-\xE2\x97\x80", ALT_LEFT, switch_to_prev_buffer, 0);
-		add_to_sclist(MMAIN, "M-\xE2\x96\xb6", ALT_RIGHT, switch_to_next_buffer, 0);
-#endif
+#if !defined(NANO_TINY) && defined(ENABLE_MULTIBUFFER)
+		if (!on_a_vt) {
+			add_to_sclist(MMAIN, "M-\xE2\x97\x80", ALT_LEFT, switch_to_prev_buffer, 0);
+			add_to_sclist(MMAIN, "M-\xE2\x96\xb6", ALT_RIGHT, switch_to_next_buffer, 0);
+		}
 #endif
 	} else
 #endif
@@ -1187,6 +1162,12 @@ void shortcut_init(void)
 		add_to_sclist(MMOST|MHELP|MBROWSER, "Right", KEY_RIGHT, do_right, 0);
 		add_to_sclist(MSOME, "^Left", CONTROL_LEFT, do_prev_word_void, 0);
 		add_to_sclist(MSOME, "^Right", CONTROL_RIGHT, do_next_word_void, 0);
+#ifdef ENABLE_MULTIBUFFER
+		if (!on_a_vt) {
+			add_to_sclist(MMAIN, "M-Left", ALT_LEFT, switch_to_prev_buffer, 0);
+			add_to_sclist(MMAIN, "M-Right", ALT_RIGHT, switch_to_next_buffer, 0);
+		}
+#endif
 	}
 #ifdef NANO_TINY
 	add_to_sclist(MMAIN, "M-B", 0, do_prev_word_void, 0);
@@ -1224,10 +1205,16 @@ void shortcut_init(void)
 	add_to_sclist(MMAIN, "M-)", 0, do_para_end_void, 0);
 	add_to_sclist(MMAIN, "M-0", 0, do_para_end_void, 0);
 #endif
-#if !defined(NANO_TINY) && defined(ENABLE_UTF8)
+#ifndef NANO_TINY
+#ifdef ENABLE_UTF8
 	if (using_utf8()) {
 		add_to_sclist(MMAIN|MHELP, "M-\xE2\x96\xb2", ALT_UP, do_scroll_up, 0);
 		add_to_sclist(MMAIN|MHELP, "M-\xE2\x96\xbc", ALT_DOWN, do_scroll_down, 0);
+	} else
+#endif
+	{
+		add_to_sclist(MMAIN|MHELP, "M-Up", ALT_UP, do_scroll_up, 0);
+		add_to_sclist(MMAIN|MHELP, "M-Down", ALT_DOWN, do_scroll_down, 0);
 	}
 #endif
 #if !defined(NANO_TINY) || defined(ENABLE_HELP)
@@ -1244,7 +1231,7 @@ void shortcut_init(void)
 #endif
 	add_to_sclist(MMOST, "M-V", 0, do_verbatim_input, 0);
 #ifndef NANO_TINY
-	add_to_sclist(MMAIN, "M-T", 0, do_cut_till_eof, 0);
+	add_to_sclist(MMAIN, "M-T", 0, cut_till_eof, 0);
 	add_to_sclist(MMAIN, "M-D", 0, do_wordlinechar_count, 0);
 #endif
 #ifdef ENABLE_JUSTIFY
@@ -1383,26 +1370,12 @@ void shortcut_init(void)
 	add_to_sclist(MMAIN|MHELP|MBROWSER, "F6", 0, do_search_forward, 0);
 	add_to_sclist(MMAIN|MHELP|MBROWSER|MLINTER, "F7", 0, do_page_up, 0);
 	add_to_sclist(MMAIN|MHELP|MBROWSER|MLINTER, "F8", 0, do_page_down, 0);
-	add_to_sclist(MMOST, "F9", 0, do_cut_text_void, 0);
-	add_to_sclist(MMOST, "F10", 0, do_uncut_text, 0);
+	add_to_sclist(MMOST, "F9", 0, cut_text, 0);
+	add_to_sclist(MMOST, "F10", 0, paste_text, 0);
 	add_to_sclist(MMAIN, "F11", 0, do_cursorpos_void, 0);
 #ifdef ENABLE_SPELLER
 	add_to_sclist(MMAIN, "F12", 0, do_spell, 0);
 #endif
-
-#ifdef DEBUG
-	print_sclist();
-#endif
-}
-
-const funcstruct *sctofunc(const keystruct *s)
-{
-	funcstruct *f = allfuncs;
-
-	while (f != NULL && f->func != s->func)
-		f = f->next;
-
-	return f;
 }
 
 #ifndef NANO_TINY
@@ -1483,14 +1456,14 @@ keystruct *strtosc(const char *input)
 	else if (!strcasecmp(input, "replace"))
 		s->func = do_replace;
 	else if (!strcasecmp(input, "cut"))
-		s->func = do_cut_text_void;
+		s->func = cut_text;
 	else if (!strcasecmp(input, "paste"))
-		s->func = do_uncut_text;
+		s->func = paste_text;
 #ifndef NANO_TINY
 	else if (!strcasecmp(input, "cutrestoffile"))
-		s->func = do_cut_till_eof;
+		s->func = cut_till_eof;
 	else if (!strcasecmp(input, "copy"))
-		s->func = do_copy_text;
+		s->func = copy_text;
 	else if (!strcasecmp(input, "zap"))
 		s->func = zap_text;
 	else if (!strcasecmp(input, "mark"))

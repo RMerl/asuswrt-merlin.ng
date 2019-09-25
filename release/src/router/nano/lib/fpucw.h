@@ -70,12 +70,12 @@ typedef unsigned short fpucw_t; /* glibc calls this fpu_control_t */
 # define FPU_PC_DOUBLE 0x200    /* glibc calls this _FPU_DOUBLE */
 # define FPU_PC_EXTENDED 0x300  /* glibc calls this _FPU_EXTENDED */
 
-# define GET_FPUCW() \
+# define GET_FPUCW() __extension__ \
   ({ fpucw_t _cw;                                               \
      __asm__ __volatile__ ("fnstcw %0" : "=m" (*&_cw));         \
      _cw;                                                       \
    })
-# define SET_FPUCW(word) \
+# define SET_FPUCW(word) __extension__ \
   (void)({ fpucw_t _ncw = (word);                               \
            __asm__ __volatile__ ("fldcw %0" : : "m" (*&_ncw));  \
          })

@@ -1,5 +1,5 @@
-<!-- Creator     : groff version 1.22.3 -->
-<!-- CreationDate: Wed Apr 24 10:58:45 2019 -->
+<!-- Creator     : groff version 1.22.4 -->
+<!-- CreationDate: Sun Aug 25 10:41:26 2019 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -47,8 +47,9 @@ GNU nano&rsquo;s configuration file</p>
 
 <p style="margin-left:11%; margin-top: 1em">Starting with
 version 4.0, <b>nano</b> no longer hard-wraps an overlong
-line by default, uses smooth scrolling by default, and by
-default makes use of the line below the title bar.</p>
+line by default. It further uses smooth scrolling by
+default, and by default includes the line below the title
+bar into the editing area.</p>
 
 <p style="margin-left:11%; margin-top: 1em">If you want the
 old, Pico behavior back, you can use <b>set
@@ -94,15 +95,10 @@ needed when wanting to override a setting of the
 system&rsquo;s <i>nanorc</i> file in your own <i>nanorc</i>.
 Options that take an argument cannot be unset.</p>
 
-<p style="margin-left:11%; margin-top: 1em">Below, the
-<i>string</i> parameters need to be enclosed in double
-quotes. Quotes inside these string parameters don&rsquo;t
-have to be escaped with backslashes. The last double quote
-in the string will be treated as its end. For example, for
-the <b>brackets</b> option,
-&quot;<b>&quot;&rsquo;)&gt;]}</b>&quot; will match
-<b>&quot;</b>, <b>&rsquo;</b>, <b>)</b>, <b>&gt;</b>,
-<b>]</b>, and <b>}</b>.</p>
+<p style="margin-left:11%; margin-top: 1em">Quotes inside
+the <i>characters</i> parameters below should not be
+escaped. The last double quote on the line will be seen as
+the closing quote.</p>
 
 <p style="margin-left:11%; margin-top: 1em">The supported
 commands and arguments are: <b><br>
@@ -157,8 +153,8 @@ overridden by setting the options <b>titlecolor</b>,
 <b>statuscolor</b>, <b>keycolor</b>, <b>functioncolor</b>,
 <b>numbercolor</b>, and <b>selectedcolor</b>.</p>
 
-<p style="margin-left:11%;"><b>set brackets</b>
-<i>string</i></p>
+<p style="margin-left:11%;"><b>set brackets
+&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Set the characters treated as
 closing brackets when justifying paragraphs. This may not
@@ -198,8 +194,9 @@ title bar, leaving it entirely blank.</p>
 <i>fgcolor</i>,<i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Use this color combination for
-the status bar when an error message is displayed. See
-<b>set titlecolor</b> for valid color names.</p>
+the status bar when an error message is displayed. The
+default value is <b>brightwhite,red</b>. See <b>set
+titlecolor</b> for valid color names.</p>
 
 <p style="margin-left:11%;"><b>set fill</b>
 <i>number</i></p>
@@ -210,7 +207,7 @@ of columns. If the value is 0 or less, wrapping will occur
 at the width of the screen minus <i>number</i> columns,
 allowing the wrap point to vary along with the width of the
 screen if the screen is resized. The default value is
-&minus;8.</p>
+<b>&minus;8</b>.</p>
 
 <p style="margin-left:11%;"><b>set functioncolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -257,8 +254,8 @@ left of the text area.</p>
 <p style="margin-left:15%;">Enable vim-style lock-files for
 when editing files.</p>
 
-<p style="margin-left:11%;"><b>set matchbrackets</b>
-<i>string</i></p>
+<p style="margin-left:11%;"><b>set matchbrackets
+&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Set the opening and closing
 brackets that can be found by bracket searches. This may not
@@ -300,7 +297,8 @@ help lines at the bottom of the screen.</p>
 <p style="margin-left:11%;"><b>set nonewlines</b></p>
 
 <p style="margin-left:15%;">Don&rsquo;t automatically add a
-newline when a file does not end with one.</p>
+newline when a text does not end with one. (This can cause
+you to save non-POSIX text files.)</p>
 
 <p style="margin-left:11%;"><b>set nopauses</b></p>
 
@@ -341,8 +339,8 @@ remembered for the 200 most-recently edited files.</p>
 <p style="margin-left:15%;">Preserve the XON and XOFF keys
 (^Q and ^S).</p>
 
-<p style="margin-left:11%;"><b>set punct</b>
-<i>string</i></p>
+<p style="margin-left:11%;"><b>set punct
+&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Set the characters treated as
 closing punctuation when justifying paragraphs. This may not
@@ -357,16 +355,16 @@ punctuation, optionally followed by closing brackets (see
 status-bar messages will disappear after 1 keystroke instead
 of 25. The option <b>constantshow</b> overrides this.</p>
 
-<p style="margin-left:11%;"><b>set quotestr</b>
-<i>regex</i></p>
+<p style="margin-left:11%;"><b>set quotestr
+&quot;</b><i>regex</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Set the regular expression for
 matching the quoting part of a line. The default value is
-&quot;<b>^([&nbsp;\t]*([!#%:;&gt;|}]|//|&minus;&minus;))+</b>&quot;.
-(Note that <b>\t</b> stands for an actual Tab character.)
-This makes it possible to rejustify blocks of quoted text
-when composing email, and to rewrap blocks of line comments
-when writing source code.</p>
+&quot;<b>^([&nbsp;\t]*([!#%:;&gt;|}]|//))+</b>&quot;. (Note
+that <b>\t</b> stands for an actual Tab character.) This
+makes it possible to rejustify blocks of quoted text when
+composing email, and to rewrap blocks of line comments when
+writing source code.</p>
 
 <p style="margin-left:11%;"><b>set rawsequences</b></p>
 
@@ -386,8 +384,9 @@ Backspace.</p>
 
 <p style="margin-left:11%;"><b>set regexp</b></p>
 
-<p style="margin-left:15%;">Do extended regular expression
-searches by default.</p>
+<p style="margin-left:15%;">Do regular-expression searches
+by default. Regular expressions in <b>nano</b> are of the
+extended type (ERE).</p>
 
 <p style="margin-left:11%;"><b>set selectedcolor</b>
 <i>fgcolor</i>,<i>bgcolor</i></p>
@@ -422,8 +421,8 @@ jumpyscrolling</b> instead.</p>
 <p style="margin-left:15%;">Enable soft line wrapping for
 easier viewing of very long lines.</p>
 
-<p style="margin-left:11%;"><b>set speller</b>
-<i>program</i></p>
+<p style="margin-left:11%;"><b>set speller
+&quot;</b><i>program</i> [<i>arg</i>...]<b>&quot;</b></p>
 
 <p style="margin-left:15%;">Use the given <i>program</i> to
 do spell checking and correcting, instead of the built-in
@@ -498,8 +497,8 @@ read-only mode. This mode allows the user to open also other
 files for viewing, unless <b>&minus;&minus;restricted</b> is
 given on the command line.</p>
 
-<p style="margin-left:11%;"><b>set whitespace</b>
-<i>string</i></p>
+<p style="margin-left:11%;"><b>set whitespace
+&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Set the two characters used to
 indicate the presence of tabs and spaces. They must be
@@ -513,8 +512,8 @@ locales &quot;<b>&gt;.</b>&quot;.</p>
 differently by treating punctuation characters as parts of
 words.</p>
 
-<p style="margin-left:11%;"><b>set wordchars</b>
-<i>string</i></p>
+<p style="margin-left:11%;"><b>set wordchars
+&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:15%;">Specify which other characters
 (besides the normal alphanumeric ones) should be considered
@@ -539,6 +538,21 @@ inherently imperfect, because regular expressions are not
 powerful enough to fully parse a file. Nevertheless, regular
 expressions can do a lot and are easy to make, so they are a
 good fit for a small editor like <b>nano</b>.</p>
+
+<p style="margin-left:11%; margin-top: 1em">All regular
+expressions in <b>nano</b> are POSIX extended regular
+expressions. This means that <b>.</b>, <b>?</b>, <b>*</b>,
+<b>+</b>, <b>^</b>, <b>$</b>, and several other characters
+are special. The period <b>.</b> matches any single
+character, <b>?</b> means the preceding item is optional,
+<b>*</b> means the preceding item may be matched zero or
+more times, <b>+</b> means the preceding item must be
+matched one or more times, <b>^</b> matches the beginning of
+a line, and <b>$</b> the end, <b>\&lt;</b> matches the start
+of a word, and <b>\&gt;</b> the end, and <b>\s</b> matches a
+blank. It also means that lookahead and lookbehind are not
+possible. A complete explanation can be found in the manual
+page of GNU grep: <b>man grep</b>.</p>
 
 <p style="margin-left:11%; margin-top: 1em">For each kind
 of file a separate syntax can be defined via the following
@@ -611,17 +625,16 @@ value is &quot;<b>#</b>&quot;.</p>
 <i>fgcolor</i><b>,</b><i>bgcolor</i>
 <b>&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
-<p style="margin-left:22%;">Display all pieces of text that
-match the extended regular expression <i>regex</i> with
-foreground color <i>fgcolor</i> and background color
-<i>bgcolor</i>, at least one of which must be specified.
-Valid names for foreground and background colors are:
+<p style="margin-left:22%;">Paint all pieces of text that
+match the extended regular expression <i>regex</i> with the
+given foreground and background colors, at least one of
+which must be specified. Valid color names are:
 <b>white</b>, <b>black</b>, <b>blue</b>, <b>green</b>,
 <b>red</b>, <b>cyan</b>, <b>yellow</b>, <b>magenta</b>, and
 <b>normal</b> -- where <b>normal</b> means the default
 foreground or background color. You may use the prefix
-<b>bright</b> to get a stronger color highlight for the
-foreground. If your terminal supports transparency, not
+<b>bright</b> for the foreground color to get a stronger
+highlight. If your terminal supports transparency, not
 specifying a <i>bgcolor</i> tells <b>nano</b> to attempt to
 use a transparent background.</p>
 
@@ -637,14 +650,13 @@ matching is case insensitive.</p>
 <b>start=&quot;</b><i>fromrx</i><b>&quot;
 end=&quot;</b><i>torx</i><b>&quot;</b></p>
 
-<p style="margin-left:22%;">Display all pieces of text
-whose start matches extended regular expression
-<i>fromrx</i> and whose end matches extended regular
-expression <i>torx</i> with foreground color <i>fgcolor</i>
-and background color <i>bgcolor</i>, at least one of which
-must be specified. This means that, after an initial
-instance of <i>fromrx</i>, all text until the first instance
-of <i>torx</i> will be colored. This allows syntax
+<p style="margin-left:22%;">Paint all pieces of text whose
+start matches extended regular expression <i>fromrx</i> and
+whose end matches extended regular expression <i>torx</i>
+with the given foreground and background colors, at least
+one of which must be specified. This means that, after an
+initial instance of <i>fromrx</i>, all text until the first
+instance of <i>torx</i> will be colored. This allows syntax
 highlighting to span multiple lines.</p>
 
 <p style="margin-left:11%;"><b>icolor</b>

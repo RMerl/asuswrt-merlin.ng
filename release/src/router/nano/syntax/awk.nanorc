@@ -6,7 +6,7 @@ magic "awk script"
 comment "#"
 
 # Records.
-icolor brightred "\$[0-9A-Z_!@#$*?-]+"
+color brightred "\$[0-9A-Za-z_!@#$*?-]+"
 # Awk-set variables.
 color red "\<(ARGC|ARGIND|ARGV|BINMODE|CONVFMT|ENVIRON|ERRNO|FIELDWIDTHS)\>"
 color red "\<(FILENAME|FNR|FS|IGNORECASE|LINT|NF|NR|OFMT|OFS|ORS)\>"

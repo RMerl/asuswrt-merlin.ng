@@ -747,15 +747,15 @@ function validForm(){
 	}
 
 	if(document.form.sshd_enable.value != 0){
-		if (!validator.range(document.form.sshd_port_x, 1, 65535))
+		if (!validator.range(document.form.sshd_port, 1, 65535))
 			return false;
-		else if(isPortConflict(document.form.sshd_port_x.value)){
-			alert(isPortConflict(document.form.sshd_port_x.value));
-			document.form.sshd_port_x.focus();
+		else if(isPortConflict(document.form.sshd_port.value)){
+			alert(isPortConflict(document.form.sshd_port.value));
+			document.form.sshd_port.focus();
 			return false;
 		}
 		else{
-			document.form.sshd_port.value = document.form.sshd_port_x.value;
+//			document.form.sshd_port.value = document.form.sshd_port_x.value;
 			document.form.sshd_port.disabled = false;
 		}
 	}
@@ -1743,8 +1743,8 @@ function pullPingTargetList(obj){
 }
 
 function reset_portconflict_hint(){
-	if($("#sshd_port_x").hasClass("highlight"))
-		$("#sshd_port_x").removeClass("highlight");
+	if($("#sshd_port").hasClass("highlight"))
+		$("#sshd_port").removeClass("highlight");
 	if($("#https_lanport_input").hasClass("highlight"))
 		$("#https_lanport_input").removeClass("highlight");
 	$("#port_conflict_sshdport").hide();
@@ -2188,7 +2188,7 @@ function reset_portconflict_hint(){
 				<tr id="sshd_port_tr">
 					<th><#Port_SSH#></th>
 					<td>
-						<input type="text" class="input_6_table" maxlength="5" id="sshd_port_x" name="sshd_port_x" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port_x"); %>' onkeydown="reset_portconflict_hint();">
+						<input type="text" class="input_6_table" maxlength="5" id="sshd_port" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port"); %>' onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
 						<div style="color: #FFCC00;">* <#SSH_Port_Suggestion#></div>
 					</td>

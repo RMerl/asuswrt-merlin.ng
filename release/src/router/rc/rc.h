@@ -775,6 +775,7 @@ extern void hnd_cfe_check();
 #ifdef RTCONFIG_RGBLED
 extern int setRogRGBLedTest(int RGB);
 #endif
+extern void hnd_set_hwstp(void);
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -1258,6 +1259,9 @@ extern void led_table_ctrl(int on_off);
 #endif
 extern void timecheck(void);
 
+// check_watchdog.c
+extern int check_watchdog_main(int argc, char *argv[]);
+
 // usbled.c
 extern int usbled_main(int argc, char *argv[]);
 
@@ -1694,9 +1698,11 @@ extern void stop_rtl_watchdog(void);
 extern void start_rtl_watchdog(void);
 #endif
 extern void stop_watchdog(void);
+extern void stop_check_watchdog(void);
 extern void stop_watchdog02(void);
 extern int restart_dualwan(void);
 extern int start_watchdog(void);
+extern int start_check_watchdog(void);
 extern int start_watchdog02(void);
 #ifdef SW_DEVLED
 extern int start_sw_devled(void);
@@ -2439,5 +2445,17 @@ typedef struct probe_PCIE_param_s {
 	int bPCIE_down;
 } probe_PCIE_param_t;
 #endif /* RTAX88U */
+
+#ifdef RTCONFIG_ASUSCTRL
+/* asusctrl */
+extern void asus_ctrl_enband5grp();
+extern int asus_ctrl_en(int cid);
+extern int asus_ctrl_ignore();
+#ifdef RTCONFIG_BCMARM
+extern int asus_ctrl_write(char *asusctrl);
+#else
+static inline int asus_ctrl_write(char *asusctrl) { return 0; }
+#endif
+#endif
 
 #endif	/* __RC_H__ */

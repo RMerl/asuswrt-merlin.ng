@@ -188,6 +188,8 @@ enum {
 	SUBFT_HE_FEATURES_5G1,
 	/* sub feature for ACS include DFS */
 	SUBFT_ACS_INCLUDE_DFS,
+	/* sub feature for connection diagmostic */
+	SUBFT_CONNECTION_DIAGMOSTIC,
 };
 
 struct subfeature_mapping_s subfeature_mapping_list[] = {
@@ -311,6 +313,8 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	/* sub feature for ACS include DFS */
 	{ "acs_dfs", SUBFT_ACS_INCLUDE_DFS, FT_WIRELESS },
 #endif	
+	/* connection diagnostic */
+	{ "connection_diagnostic", SUBFT_CONNECTION_DIAGMOSTIC, FT_MISC},
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -662,6 +666,9 @@ struct param_mapping_s param_mapping_list[] = {
 	/* ACS include DFS channels */
 	{ "acs_dfs", FT_WIRELESS, SUBFT_ACS_INCLUDE_DFS },
 #endif	
+	/* connection diagnostic */
+	{ "enable_diag", 	FT_MISC,	SUBFT_CONNECTION_DIAGMOSTIC },
+	{ "diag_interval", 	FT_MISC,	SUBFT_CONNECTION_DIAGMOSTIC },
 	/* END */
 	{ NULL, 0, 0 }
 };

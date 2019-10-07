@@ -10819,7 +10819,11 @@ static void sysinit(void)
 #ifdef RTCONFIG_ATEUSB3_FORCE
 	post_syspara(); // adjust nvram variable after restore_defaults
 #endif
-
+#ifdef RTCONFIG_ASUSCTRL
+#ifdef RTCONFIG_BCMARM
+	init_asusctrl();
+#endif
+#endif
 #ifdef RTCONFIG_BCM_7114
 #ifdef RTCONFIG_GMAC3
 	chk_gmac3_excludes();

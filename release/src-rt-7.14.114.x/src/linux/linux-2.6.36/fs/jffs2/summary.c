@@ -692,7 +692,7 @@ static int jffs2_sum_write_data(struct jffs2_sb_info *c, struct jffs2_eraseblock
 		/* don't try to write out summary for this jeb */
 		jffs2_sum_disable_collecting(c->summary);
 
-		JFFS2_WARNING("Not enough space for summary, padsize = %d\n",
+		JFFS2_DEBUG("Not enough space for summary, padsize = %d\n",
 			      padsize);
 		/* Non-fatal */
 		return 0;

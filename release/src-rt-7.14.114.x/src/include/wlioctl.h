@@ -1140,6 +1140,8 @@ typedef struct {
 	uint32			rx_pkts_retried;	/* # rx with retry bit set */
 	uint32			tx_rate_fallback;	/* lowest fallback TX rate */
 	wl_rateset_args_t	rateset_adv;	/* rateset along with mcs index bitmap */
+
+	uint32			wnm_cap;	/* wnm capabilities */
 } sta_info_t;
 
 #define WL_OLD_STAINFO_SIZE	OFFSETOF(sta_info_t, tx_tot_pkts)

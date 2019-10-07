@@ -7314,6 +7314,8 @@ void set_acs_ifnames()
 	}
 
 	nvram_set("acs_ifnames", acs_ifnames);
+	nvram_set("acs_band1", "0");
+	nvram_set("acs_band3", "0");
 
 	if ((num_of_wl_if() == 3 && !(nvram_get_hex("wl2_band5grp") & WL_5G_BAND_4))
 #ifdef RTCONFIG_TCODE

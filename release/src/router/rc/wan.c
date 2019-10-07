@@ -3756,35 +3756,50 @@ int autodet_plc_main(int argc, char *argv[]){
 #endif
 
 int autodet_main(int argc, char *argv[]){
-	int i;
 	int unit;
-	char prefix[]="wanXXXXXX_", tmp[100];
+	char wired_link_nvram[16];
 	char prefix2[]="autodetXXXXXX_", tmp2[100];
+	int status;
+#ifdef RTCONFIG_ALPINE
+	int i;
+#endif
 #if 0
 	char hwaddr_x[32];
 #endif
-	int status;
+
+	if(nvram_get_int("autodet_proceeding"))
+		return 0;
 
 	nvram_set("autodet_proceeding", "1");//Cherry Cho added for httpd checking in 2016/4/22.
-	f_write_string("/tmp/detect_wrong.log", "", 0, 0);
-	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 
-#ifdef RTCONFIG_DUALWAN
-		if (!eth_wantype(unit))
-#else
-    		if(get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_LAN && get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_WAN2)
-#endif
+	f_write_string("/tmp/detect_wrong.log", "", 0, 0);
+
+	for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
+		if(!eth_wantype(unit))
 			continue;
 
-		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		link_wan_nvname(unit, wired_link_nvram, sizeof(wired_link_nvram));
 		if(unit == WAN_UNIT_FIRST)
 			snprintf(prefix2, sizeof(prefix2), "autodet_");
 		else
 			snprintf(prefix2, sizeof(prefix2), "autodet%d_", unit);
 
+		//if(!get_wanports_status(unit))
+		if(!nvram_get_int(wired_link_nvram))
+		{
+			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_NOLINK);
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_OK);
+			continue;
+		}
+
+		if(nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE
+				|| nvram_get_int(strcat_r(prefix2, "auxstate", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE)
+			continue;
+
 		nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_INITIALIZING);
 		nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_INITIALIZING);
 
+#if 0
 		// it shouldnot happen, because it is only called in default mode
 		if(!nvram_match(strcat_r(prefix, "proto", tmp), "dhcp")){
 			status = discover_all(unit);
@@ -3799,12 +3814,6 @@ int autodet_main(int argc, char *argv[]){
 			continue;
 		}
 
-		// TODO: need every unit of WAN to do the autodet?
-		if(!get_wanports_status(unit)){
-			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_NOLINK);
-			continue;
-		}
-
 		if(get_wan_state(unit) == WAN_STATE_CONNECTED){
 			i = nvram_get_int(strcat_r(prefix, "lease", tmp));
 
@@ -3816,26 +3825,38 @@ int autodet_main(int argc, char *argv[]){
 			//	continue;
 			//}
 		}
+#endif
 
 		status = discover_all(unit);
 
-		// check for pppoe status only,
 		if(get_wan_state(unit) == WAN_STATE_CONNECTED){
 			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_OK);
-			if(status == 2)
+			if(status < 0)
+				nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_FAIL);
+			else if(status == 2)
 				nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_WITHPPPOE);
-			continue;
+			else
+				nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_OK);
+		}
+		else if(status < 0){
+			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_FAIL);
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_FAIL);
 		}
 		else if(status == 2){
 			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_WITHPPPOE);
-			continue;
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_OK);
 		}
+#if 0
 		else if(is_ip_conflict(unit)){
 			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_OK);
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_OK);
 			continue;
 		}
-
-		nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_CHECKING);
+#endif
+		else{
+			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_OK);
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_OK);
+		}
 
 // remove the Auto MAC clone from the decision on 2018/4/11.
 #if 0
@@ -3906,6 +3927,7 @@ int autodet_main(int argc, char *argv[]){
 			nvram_set_int(strcat_r(prefix, "_state", tmp), AUTODET_STATE_FINISHED_OK);
 	}
 #endif
+
 	nvram_set("autodet_proceeding", "0");//Cherry Cho added for httpd checking in 2016/4/22.
 
 	return 0;

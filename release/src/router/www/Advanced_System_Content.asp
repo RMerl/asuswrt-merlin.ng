@@ -82,6 +82,10 @@
 	*color:#000;
 	border:0px;
 }
+.highlight{
+	background: #78535b;
+    border: 1px solid #f06767;
+}
 </style>
 <script>
 time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs since boot....
@@ -537,6 +541,9 @@ function applyRule(){
 		else
 			document.form.dns_probe.value = "0";
 
+		if(document.form.https_lanport.value != '<% nvram_get("https_lanport"); %>')
+			alert('<#Change_HttpsLanport_Hint#>');
+
 		showLoading();
 
 		var action_script_tmp = "restart_time;restart_leds;";
@@ -739,9 +746,26 @@ function validForm(){
 		return false;
 	}
 
+	if(document.form.sshd_enable.value != 0){
+		if (!validator.range(document.form.sshd_port_x, 1, 65535))
+			return false;
+		else if(isPortConflict(document.form.sshd_port_x.value)){
+			alert(isPortConflict(document.form.sshd_port_x.value));
+			document.form.sshd_port_x.focus();
+			return false;
+		}
+		else{
+			document.form.sshd_port.value = document.form.sshd_port_x.value;
+			document.form.sshd_port.disabled = false;
+		}
+	}
+	else{
+		document.form.sshd_port.disabled = true;
+	}
+
 	if (!validator.range(document.form.http_lanport, 1, 65535))
-		return false;
-	if (HTTPS_support && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
+		/*return false;*/ document.form.http_lanport = 80;
+	if (HTTPS_support && !validator.range(document.form.https_lanport, 1025, 65535) && !tmo_support)
 		return false;
 
 	if (document.form.misc_http_x[0].checked) {
@@ -753,14 +777,6 @@ function validForm(){
 	else{
 		document.form.misc_httpport_x.value = '<% nvram_get("misc_httpport_x"); %>';
 		document.form.misc_httpsport_x.value = '<% nvram_get("misc_httpsport_x"); %>';
-	}	
-
-	if(document.form.sshd_enable.value != 0){
-		if (!validator.range(document.form.sshd_port, 1, 65535))
-			return false;
-	}
-	else{
-		document.form.sshd_port.disabled = true;
 	}
 
 	if(!validator.rangeAllowZero(document.form.shell_timeout_x, 10, 999, orig_shell_timeout_x))
@@ -775,6 +791,7 @@ function validForm(){
 			isPortConflict(document.form.misc_httpport_x.value)){
 		alert(isPortConflict(document.form.misc_httpport_x.value));
 		document.form.misc_httpport_x.focus();
+		document.form.misc_httpport_x.select();
 		return false;
 	}
 */
@@ -782,17 +799,20 @@ function validForm(){
 			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
 		alert(isPortConflict(document.form.misc_httpsport_x.value));
 		document.form.misc_httpsport_x.focus();
+		document.form.misc_httpport_x.select();
 		return false;
 	}
 	else if(isPortConflict(document.form.https_lanport.value) && HTTPS_support && !tmo_support){
 		alert(isPortConflict(document.form.https_lanport.value));
 		document.form.https_lanport.focus();
+		document.form.misc_httpport_x.select();
 		return false;
 	}
 /*
 	else if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value && HTTPS_support){
 		alert("<#https_port_conflict#>");
 		document.form.misc_httpsport_x.focus();
+		document.form.misc_httpport_x.select();
 		return false;
 	}
 */
@@ -1722,6 +1742,15 @@ function pullPingTargetList(obj){
 		hidePingTargetList();
 }
 
+function reset_portconflict_hint(){
+	if($("#sshd_port_x").hasClass("highlight"))
+		$("#sshd_port_x").removeClass("highlight");
+	if($("#https_lanport_input").hasClass("highlight"))
+		$("#https_lanport_input").removeClass("highlight");
+	$("#port_conflict_sshdport").hide();
+	$("#port_conflict_httpslanport").hide();
+}
+
 </script>
 </head>
 
@@ -1760,6 +1789,7 @@ function pullPingTargetList(obj){
 <input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
+<input type="hidden" name="sshd_port" value="<% nvram_get("sshd_port"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -2158,7 +2188,9 @@ function pullPingTargetList(obj){
 				<tr id="sshd_port_tr">
 					<th><#Port_SSH#></th>
 					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 1, 65535);" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
+						<input type="text" class="input_6_table" maxlength="5" id="sshd_port_x" name="sshd_port_x" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port_x"); %>' onkeydown="reset_portconflict_hint();">
+						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
+						<div style="color: #FFCC00;">* <#SSH_Port_Suggestion#></div>
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">
@@ -2224,8 +2256,10 @@ function pullPingTargetList(obj){
 				<tr id="https_lanport">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
-						<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off">
-						<span id="https_access_page"></span>
+						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
+						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
+						<div id="https_access_page" style="color: #FFCC00;"></div>
+						<div style="color: #FFCC00;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
                                 <tr id="https_crt_gen" style="display:none;">
@@ -2344,7 +2378,7 @@ function pullPingTargetList(obj){
 			<div id="http_clientlist_Block"></div>
 			<div class="apply_gen">
 				<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
-			</div>   
+			</div>
 		</td>
 	</tr>
 </tbody>

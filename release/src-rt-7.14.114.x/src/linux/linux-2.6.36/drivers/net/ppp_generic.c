@@ -972,8 +972,9 @@ ppp_start_xmit(struct sk_buff *skb, struct net_device *dev)
 
 	/* Put the 2-byte PPP protocol number on the front,
 	   making sure there is room for the address and control fields. */
-	if (skb_cow_head(skb, PPP_HDRLEN))
+	if (skb_cow_head(skb, PPP_HDRLEN)) {
 		goto outf;
+	}
 
 	pp = skb_push(skb, 2);
 	proto = npindex_to_proto[npi];

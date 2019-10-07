@@ -107,7 +107,16 @@ release/src/router/tmctl
 release/src/router/tmctl_lib
 release/src/router/toad/*.c
 release/src/router/toad/*.h
-release/src/router/tr069
+release/src/router/tr069/build
+release/src/router/tr069/conf
+release/src/router/tr069/doc
+release/src/router/tr069/include
+release/src/router/tr069/interface
+release/src/router/tr069/Makefile.ASUSWRT
+release/src/router/tr069/Makefile.DSL_ASUSWRT
+release/src/router/tr069/source
+release/src/router/tr069/test
+release/src/router/tr069/war
 release/src/router/u2ec/*.c
 release/src/router/u2ec/*.h
 release/src/router/urlfilterd

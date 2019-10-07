@@ -1196,6 +1196,7 @@ unsigned long long get_wan_flow(int wan_unit){
 int chk_proto(int wan_unit){
 	int wan_sbstate = nvram_get_int(nvram_sbstate[wan_unit]);
 	char prefix_wan[8], nvram_name[16], wan_proto[16];
+	pid_t pid;
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 	char buff[128];
 #ifdef RTCONFIG_USB_MODEM
@@ -1319,9 +1320,18 @@ int chk_proto(int wan_unit){
 
 			return DISCONN;
 		}
+
+		return CONNED;
 	}
-	else
 #endif // RTCONFIG_USB_MODEM
+
+	// PPPoE detect
+	if(isFirstUse){
+		char *autodet_argv[] = {"autodet", NULL};
+
+		_eval(autodet_argv, NULL, 0, &pid);
+	}
+
 	if(!strcmp(wan_proto, "dhcp")
 			|| !strcmp(wan_proto, "static")){
 #ifdef RTCONFIG_TRAFFIC_LIMITER

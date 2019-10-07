@@ -109,6 +109,10 @@ br_brc_add(unsigned char *ea, struct net_device *rxdev, struct sk_buff *skb)
 	printk("%s: Adding brc entry\n", __FUNCTION__);
 #endif
 
+	if (PKTSKIPCT(NULL, skb)) {
+		brc_entry.action |= CTF_ACTION_SUSPEND;
+	}
+
 	/* Add the bridge cache entry */
 	ctf_brc_add(kcih, &brc_entry);
 

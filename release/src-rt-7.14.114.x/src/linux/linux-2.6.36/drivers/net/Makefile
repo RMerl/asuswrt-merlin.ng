@@ -286,6 +286,7 @@ obj-$(CONFIG_HND) += hnd/
 obj-$(CONFIG_BCM_CTF) += ctf/
 obj-$(CONFIG_DHDAP) += dhd/
 obj-$(CONFIG_DHDAP) += dhd24/
+obj-$(CONFIG_MFGFW) += dhdtest/
 obj-$(CONFIG_DPSTA) += dpsta/
 ifneq ($(CONFIG_LACP),)
 obj-$(CONFIG_LACP) += lacp/

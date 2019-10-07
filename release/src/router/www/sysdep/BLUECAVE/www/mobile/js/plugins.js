@@ -982,12 +982,12 @@ function startLiveUpdate(){
 			setTimeout(function(){
 				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag"], true);
 
+				if(fwInfo.webs_state_flag == "1" || fwInfo.webs_state_flag == "2"){
+					systemVariable.isNewFw = fwInfo.webs_state_flag;
+					systemVariable.newFwVersion = fwInfo.webs_state_info;
+				}
 				if(fwInfo.webs_state_update == "0" || fwInfo.webs_state_update == ""){
 					setTimeout(arguments.callee, 1000);
-				}
-				else if(fwInfo.webs_state_info_am !== ""){
-					systemVariable.isNewFw = fwInfo.webs_state_flag;
-					systemVariable.newFwVersion = fwInfo.webs_state_info_am;
 				}
 			}, 1000);
 		});

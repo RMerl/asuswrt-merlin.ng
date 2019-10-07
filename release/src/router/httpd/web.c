@@ -432,8 +432,8 @@ extern char cloud_file[256];
 #define CFG_JSON_FILE           "/jffs/cfg.json"
 #define CFG_SERVER_PID		"/var/run/cfg_server.pid"
 int cfg_changed = 0;
-static void save_changed_param(json_object *cfg_root, char *param);
-static int check_cfg_changed(json_object *root);
+void save_changed_param(json_object *cfg_root, char *param);
+int check_cfg_changed(json_object *root);
 static int is_wireless_client(char *mac);
 static int is_cfg_client_by_unique_mac(P_CM_CLIENT_TABLE p_client_tbl, char *mac);
 static int is_cfg_client_by_sta_mac(P_CM_CLIENT_TABLE p_client_tbl, char *staMac);
@@ -494,14 +494,12 @@ static void insert_hook_func(webs_t wp, char *fname, char *param)
 char *
 rfctime(const time_t *timep)
 {
-	static char s[201];
+	static char s[200];
 	struct tm tm;
 
-	//it suppose to be convert after applying
-	//time_zone_x_mapping();
 	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
-	memcpy(&tm, localtime(timep), sizeof(struct tm));
-	strftime(s, 200, "%a, %d %b %Y %H:%M:%S %z", &tm);
+	localtime_r(timep, &tm);
+	strftime(s, sizeof(s), "%a, %d %b %Y %H:%M:%S %z", &tm);
 	return s;
 }
 
@@ -2252,8 +2250,7 @@ static void do_html_post_and_get(char *url, FILE *stream, int len, char *boundar
 	query = url;
 	strsep(&query, "?");
 
-	HTTPD_DBG("post_buf = %s", post_buf);
-	HTTPD_DBG("query = %s", query);
+	HTTPD_DBG("post_buf = %s, query = %s\n", post_buf, query);
 
 	if (query && strlen(query) > 0){
 		if (strlen(post_buf) > 0)
@@ -15440,9 +15437,8 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 
 	authorization_t = websGetVar(wp, "login_authorization","");
 
-#ifdef RTCONFIG_UIDEBUG
-	HTTPD_DBG("authorization_t = %s", authorization_t);
-#endif
+	HTTPD_DBG("authorization_t = %s\n", authorization_t);
+
 	/* Decode it. */
 	l = b64_decode( &(authorization_t[0]), (unsigned char*) authinfo, sizeof(authinfo) );
 	authinfo[l] = '\0';
@@ -15528,7 +15524,7 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	//if (!authpass_fail && nvram_match("http_username", authinfo) && nvram_match("http_passwd", authpass))
 	if (!authpass_fail && nvram_match("http_username", authinfo) && compare_passwd_in_shadow(authinfo, authpass))
 	{
-		HTTPD_DBG("authpass!");
+		HTTPD_DBG("authpass!\n");
 		if (fromapp_flag == FROM_BROWSER){
 			if(!cur_login_ip_type)
 			{
@@ -15545,9 +15541,9 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 
 		generate_token(asus_token, sizeof(asus_token));
 		add_asus_token(asus_token);
-#ifdef RTCONFIG_UIDEBUG
-		HTTPD_DBG("asus_token = %s", asus_token);
-#endif
+
+		HTTPD_DBG("asus_token = %s\n", asus_token);
+
 		websWrite(wp,"Set-Cookie: asus_token=%s; HttpOnly;\r\n",asus_token);
 		websWrite(wp,"Connection: close\r\n" );
 		websWrite(wp,"\r\n" );
@@ -15621,7 +15617,7 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 #if defined(RTCONFIG_RGBLED) && defined(GTAC2900)
 		send_aura_event("LoginFail");
 #endif
-		HTTPD_DBG("authfail: login_error_status = %d", login_error_status);
+		HTTPD_DBG("authfail: login_error_status = %d\n", login_error_status);
 		if(fromapp_flag != 0){
 			if(login_error_status == LOGINLOCK)
 				websWrite(wp, "{\n\"error_status\":\"%d\",\"remaining_lock_time\":\"%ld\"\n}\n", login_error_status, LOCKTIME - login_dt);
@@ -16764,6 +16760,7 @@ struct mime_handler mime_handlers[] = {
 	{ "feedback_mail.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_feedback_mail_cgi, do_auth },
 	{ "dfb_log.cgi", "application/force-download", NULL, do_html_post_and_get, do_dfb_log_file, do_auth },
 	{ "clean_offline_clientlist.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_clean_offline_clientlist_cgi, do_auth },
+	{ "set_fw_path.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_fw_path_cgi, do_auth },
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -22045,7 +22042,7 @@ static int ej_show_info_between_nodes(int eid, webs_t wp, int argc, char **argv)
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
-static void save_changed_param(json_object *cfg_root, char *param)
+void save_changed_param(json_object *cfg_root, char *param)
 {
 	if (nvram_match("x_Setting", "1") && pids("cfg_server")){
 		json_object *tmp = NULL;
@@ -22064,7 +22061,7 @@ static void save_changed_param(json_object *cfg_root, char *param)
 	}
 } 
 
-static int check_cfg_changed(json_object *root)
+int check_cfg_changed(json_object *root)
 {
 	json_object *paramObj = NULL;
 	struct param_mapping_s *pParam = &param_mapping_list[0];
@@ -25148,6 +25145,26 @@ struct AiMesh_whitelist AiMesh_whitelists[] = {
 	{ NULL, NULL }
 };
 #endif
+
+struct log_pass_url_list log_pass_handlers[] = {
+	{ "**.gz", NULL },
+	{ "**.tgz", NULL },
+	{ "**.zip", NULL },
+	{ "**.ipk", NULL },
+	{ "**.css", NULL },
+	{ "**.png", NULL },
+	{ "**.gif", NULL },
+	{ "**.jpg", NULL },
+	{ "**.svg", NULL },
+	{ "**.swf", NULL  },
+	{ "**.htc", NULL  },
+	{ "fonts/*.ttf", NULL },
+	{ "fonts/*.otf", NULL },
+	{ "fonts/*.woff", NULL },
+	{ "**.js", NULL },
+	{ "**.xml", NULL },
+	{ NULL, NULL }
+};
 
 void write_encoded_crt(char *name, char *value){
 	int len, i, j;

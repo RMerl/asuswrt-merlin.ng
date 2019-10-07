@@ -696,6 +696,9 @@ fwder_affinity(fwder_dir_t dir, int fwder_unit, int irq)
 	}
 
 	FWDER_ASSERT((cpu_core < NR_CPUS));
+        if(cpu_core < 0) {
+                cpu_core = (irq==169?1:0);
+        }
 
 	FWDER_TRACE(("%s irq_set_affinity irq<%d> cpu_core<%d>\n",
 	             __FUNCTION__, irq, cpu_core));

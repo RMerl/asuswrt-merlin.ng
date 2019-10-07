@@ -222,8 +222,6 @@ int main(int argc, char *argv[])
 	char unique_share_name[PATH_MAX];
 	int st_samba_mode = nvram_get_int("st_samba_mode");
 #if defined(RTCONFIG_SAMBA36X)
-	char st_samba_proto[8];
-	int samba_proto = 1;
 	spnego = 1;
 #endif
 
@@ -258,10 +256,7 @@ int main(int argc, char *argv[])
 
 #if defined(RTCONFIG_SAMBA36X)
 #if 0
-	snprintf(st_samba_proto, sizeof(st_samba_proto), "%s", nvram_safe_get("st_samba_proto"));
-	samba_proto = atoi(st_samba_proto);
-	if(*st_samba_proto && samba_proto >= 2)
-		fprintf(fp, "max protocol = SMB%s\n", st_samba_proto); /* enable SMB1 & SMB2 simultaneously, rewrite when GUI is ready!! */
+	fprintf(fp, "max protocol = SMB2\n"); /* enable SMB1 & SMB2 simultaneously, rewrite when GUI is ready!! */
 	fprintf(fp, "passdb backend = smbpasswd\n");
 #endif //0
 //#endif
@@ -297,21 +292,10 @@ int main(int argc, char *argv[])
 	else if(st_samba_mode == 1 || st_samba_mode == 3){
 //#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
 #if defined(RTCONFIG_SAMBA36X)
-		if(*st_samba_proto && samba_proto >= 2){
-			fprintf(fp, "auth methods = guest\n");
-			fprintf(fp, "guest account = %s\n", nvram_get("http_username")? : "admin");
-			fprintf(fp, "map to guest = Bad Password\n");
-			fprintf(fp, "guest ok = yes\n");
-		}
-		else{
-			fprintf(fp, "security = SHARE\n");
-			fprintf(fp, "guest only = yes\n");
-		}
-//#elif defined(RTCONFIG_SAMBA36X)
-//		fprintf(fp, "auth methods = guest\n");
-//		fprintf(fp, "guest account = %s\n", nvram_get("http_username")? : "admin");
-//		fprintf(fp, "map to guest = Bad Password\n");
-//		fprintf(fp, "guest ok = yes\n");
+		fprintf(fp, "auth methods = guest\n");
+		fprintf(fp, "guest account = %s\n", nvram_get("http_username")? : "admin");
+		fprintf(fp, "map to guest = Bad Password\n");
+		fprintf(fp, "guest ok = yes\n");
 #else
 		fprintf(fp, "security = SHARE\n");
 		fprintf(fp, "guest only = yes\n");
@@ -398,9 +382,7 @@ int main(int argc, char *argv[])
 
 #ifdef RTCONFIG_RECVFILE
 	if(!nvram_get_int("stop_samba_recv")
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-			&& (!(*st_samba_proto) || samba_proto == 1)
-#elif defined(RTCONFIG_SAMBA36X)
+#if defined(RTCONFIG_SAMBA36X)
 			&& 0
 #endif
 			)
@@ -411,26 +393,26 @@ int main(int argc, char *argv[])
 	fprintf(fp, "map hidden = no\n");
 	fprintf(fp, "map read only = no\n");
 	fprintf(fp, "map system = no\n");
+#ifdef RTCONFIG_SAMBA36X
 	fprintf(fp, "store dos attributes = no\n");
+#else
+	fprintf(fp, "store dos attributes = yes\n");
+#endif
 	fprintf(fp, "dos filemode = yes\n");
 	fprintf(fp, "oplocks = yes\n");
 	fprintf(fp, "level2 oplocks = yes\n");
 	fprintf(fp, "kernel oplocks = no\n");
 
 #if 0	// Conflicts with openvpn clients
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-	if(!(*st_samba_proto) || samba_proto == 1)
-#endif
-	{
-		fprintf(fp, "[ipc$]\n");
-
+#if !defined(RTCONFIG_SAMBA36X)
+	fprintf(fp, "[ipc$]\n");
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD) || defined(RTCONFIG_OPENVPN)
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet);
+	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet);
 #else
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+	fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #endif
-		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
-	}
+	fprintf(fp, "hosts deny = 0.0.0.0/0\n");
+#endif
 #endif	// if 0
 
 	if (nvram_get_int("smbd_wins"))

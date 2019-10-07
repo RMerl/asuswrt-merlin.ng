@@ -3327,14 +3327,24 @@ function set_variable(_variable, _val){
 }
 
 function isPortConflict(_val){
-	if(_val == '<% nvram_get("http_lanport"); %>')
-		return "<#portConflictHint#>: HTTP LAN port.";
-	else if(_val == '<% nvram_get("dm_http_port"); %>')
-		return "<#portConflictHint#>: <#DM_title#>.";
-	else if(_val == '<% nvram_get("webdav_http_port"); %>')
-		return "<#portConflictHint#>: Cloud Disk.";
-	else if(_val == '<% nvram_get("webdav_https_port"); %>')
-		return "<#portConflictHint#>: Cloud Disk.";
+	var str = "(" + _val + ") <#portConflictHint#>: ";
+
+	if(_val == '<% nvram_get("http_lanport"); %>'){
+		str = str + "HTTP LAN port.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("dm_http_port"); %>'){
+		str = str + "<#DM_title#>.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("webdav_http_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("webdav_https_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
 	else
 		return false;
 }

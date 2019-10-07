@@ -189,6 +189,10 @@ ip_conntrack_ipct_delete_one_dir(struct nf_conn *ct, enum ip_conntrack_dir dir)
 	return (0);
 }
 
+#ifdef CONFIG_IP_NF_CTFNAT
+extern int ctfnat_act;
+#endif
+
 void
 ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
                       struct nf_conn *ct, enum ip_conntrack_info ci,
@@ -218,9 +222,14 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 	/* We only add cache entires for non-helper connections and at
 	 * pre or post routing hooks.
 	 */
+
 	help = nfct_help(ct);
 	if ((help && help->helper) || (ct->ctf_flags & CTF_FLAGS_EXCLUDED) ||
-	    ((hooknum != NF_INET_PRE_ROUTING) && (hooknum != NF_INET_POST_ROUTING)))
+	    ((hooknum != NF_INET_PRE_ROUTING) && (hooknum != NF_INET_POST_ROUTING))
+#ifdef CONFIG_IP_NF_CTFNAT
+		|| ctfnat_act > 0
+#endif
+		)
 		return;
 
 	iph = ip_hdr(skb);
@@ -351,11 +360,11 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 
 	ipc_entry.next = NULL;
 
+/* CS5006664 */
 //#if defined(CTF_PPPOE) || defined(CTF_PPTP) || defined(CTF_L2TP)
-#if 0	// CS5006664
-	if ((skb_dst(skb)->dev->flags & IFF_POINTOPOINT) && (skb->dev->flags & IFF_POINTOPOINT))
-		return;
-#endif /* CTF_PPPOE || CTF_PPTP || CTF_L2TP */
+//	if ((skb_dst(skb)->dev->flags & IFF_POINTOPOINT) && (skb->dev->flags & IFF_POINTOPOINT))
+//		return;
+//#endif /* CTF_PPPOE || CTF_PPTP || CTF_L2TP */
 
 	/* For vlan interfaces fill the vlan id and the tag/untag actions */
 	if (skb_dst(skb)->dev->priv_flags & IFF_802_1Q_VLAN) {

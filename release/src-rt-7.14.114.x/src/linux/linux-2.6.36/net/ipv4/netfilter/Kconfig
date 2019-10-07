@@ -526,4 +526,9 @@ config IP_NF_MATCH_ACCOUNT
       
     To compile it as a module, choose M here.  If unsure, say N.
 
+config IP_NF_CTFNAT
+        tristate  'ctfnat'
+        depends on NF_CONNTRACK
+        default n
+
 endmenu

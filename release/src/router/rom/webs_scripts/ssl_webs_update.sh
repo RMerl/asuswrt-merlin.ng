@@ -6,6 +6,7 @@ wget_options="-q -t 2 -T $wget_timeout"
 
 dl_path_MR="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/MR"
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
+dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
 dl_path_info="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless"
 dl_path_file="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 
@@ -25,7 +26,10 @@ IS_FUPGRADE=`nvram get rc_support|grep -i fupgrade`
 # current firmware information
 current_firm=`nvram get firmver`
 current_firm=`echo $current_firm | sed s/'\.'//g;`
-current_firm_1st_bit=${current_firm:0:1}
+current_firm_1st_bit=${current_firm:0:1}	#To see v7 fw as general v3 fw, we replace 7.x.x.x with 3.x.x.x
+if [ "$current_firm_1st_bit" == "7" ]; then
+	current_firm=`echo $current_firm |sed s/7/3/1;`
+fi
 current_buildno=`nvram get buildno`
 current_extendno=`nvram get extendno`
 current_extendno=`echo $current_extendno | sed s/-g.*//;`
@@ -50,6 +54,9 @@ fi
 if [ "$formr" == "1" ]; then	#MRFLAG could be other values to be add
 	echo "---- update MR1 for all ${dl_path_MR}1/wlan_update_mrflag1.zip ----" > /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_MR}1/wlan_update_mrflag1.zip -O /tmp/wlan_update.txt
+elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+		echo "---- update SQ beta_user ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip ----" > /tmp/webs_upgrade.log
+		wget $wget_options ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip -O /tmp/wlan_update.txt
 elif [ "$forsq" == "1" ]; then
 	if [ "$model_31" == "1" ]; then
 		echo "---- update SQ for model_31 ${dl_path_SQ}/wlan_update_31.zip ----" > /tmp/webs_upgrade.log
@@ -259,6 +266,16 @@ if [ "$formr" == "1" ]; then
 		wget $wget_options ${dl_path_MR}1/$releasenote_file0_US -O $releasenote_path0
 		if [ "$?" != "0" ]; then
 			echo "---- download SQ US MR1 release note for all ${dl_path_MR}1/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
+		fi
+	fi
+elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+	echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
+	wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file0 -O $releasenote_path0
+	if [ "$?" != "0" ]; then
+		echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
+		wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US -O $releasenote_path0
+		if [ "$?" != "0" ]; then
+			echo "---- download SQ US beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
 		fi
 	fi
 elif [ "$forsq" == "1" ]; then

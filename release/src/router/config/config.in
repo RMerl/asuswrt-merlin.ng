@@ -2002,6 +2002,10 @@ config RTCONFIG_IPERF3
 	bool "Iperf3"
 	default n
 
+config RTCONFIG_ASUSCTRL
+	bool "asusctrl support"
+	default n
+
 choice
 	prompt "SSL library"
 	default RTCONFIG_OPENSSL10

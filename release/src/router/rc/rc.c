@@ -409,6 +409,10 @@ static int rctest_main(int argc, char *argv[])
 			if (on) start_watchdog();
 			else stop_watchdog();
 		}
+		else if (strcmp(argv[1], "check_watchdog") == 0) {
+			if (on) start_check_watchdog();
+			else stop_check_watchdog();
+		}
 #ifdef RTAC87U
 		else if (strcmp(argv[1], "watchdog02") == 0) {
 			if (on) start_watchdog02();
@@ -582,6 +586,11 @@ static int rctest_main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[1], "fa_dump") == 0) {
 			_dprintf("(%d) done.\n", get_fa_dump());
+		}
+#endif
+#ifdef RTCONFIG_ASUSCTRL
+		else if (strcmp(argv[1], "asusctrl") == 0) {
+			printf("ignore=%d, en=%d, flag=(0x%x)\n", asus_ctrl_ignore(), asus_ctrl_en(atoi(argv[2])), nvram_get_hex("asusctrl_flags"));
 		}
 #endif
 		else {
@@ -1069,6 +1078,7 @@ static const applets_t applets[] = {
 	{ "fixdmgfw",			fixdmgfw_main			},
 #endif
 	{ "watchdog",			watchdog_main			},
+	{ "check_watchdog",		check_watchdog_main		},
 #ifdef RTCONFIG_CONNTRACK
 	{ "pctime",                     pctime_main                     },
 #endif

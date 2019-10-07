@@ -1495,18 +1495,7 @@ static inline int get_radio_band(int band)
 }
 
 #ifdef RTCONFIG_DUALWAN
-static inline int eth_wantype(int unit)
-{
-	int type = get_dualwan_by_unit(unit);
-
-	if (type == WANS_DUALWAN_IF_WAN ||
-	    type == WANS_DUALWAN_IF_LAN ||
-	    type == WANS_DUALWAN_IF_WAN2 ||
-	    type == WANS_DUALWAN_IF_SFPP)
-		return 1;
-
-	return 0;
-}
+static inline int eth_wantype(int unit);
 
 static inline int dualwan_unit__usbif(int unit)
 {
@@ -1553,7 +1542,44 @@ static inline int get_primaryif_dualwan_unit(void)
 {
 	return wan_primary_ifunit();
 }
+
+static inline int get_wans_dualwan(void) {
+#ifdef RTCONFIG_USB_MODEM
+	return WANSCAP_WAN | WANSCAP_USB;
+#else
+	return WANSCAP_WAN;
+#endif
+}
+
+static inline int get_dualwan_by_unit(int unit) {
+#ifdef RTCONFIG_MULTICAST_IPTV
+	if(unit == WAN_UNIT_IPTV)
+		return WAN_UNIT_IPTV;
+	if(unit == WAN_UNIT_VOIP)
+		return WAN_UNIT_VOIP;
+#endif
+#ifdef RTCONFIG_USB_MODEM
+	return (unit == WAN_UNIT_FIRST) ? WANS_DUALWAN_IF_WAN : WANS_DUALWAN_IF_USB;
+#else
+	return (unit == WAN_UNIT_FIRST) ? WANS_DUALWAN_IF_WAN : WANS_DUALWAN_IF_NONE;
+#endif
+}
+
+static inline int get_nr_wan_unit(void) { return 1; }
 #endif // RTCONFIG_DUALWAN
+
+static inline int eth_wantype(int unit)
+{
+	int type = get_dualwan_by_unit(unit);
+
+	if (type == WANS_DUALWAN_IF_WAN ||
+	    type == WANS_DUALWAN_IF_LAN ||
+	    type == WANS_DUALWAN_IF_WAN2 ||
+	    type == WANS_DUALWAN_IF_SFPP)
+		return 1;
+
+	return 0;
+}
 
 #ifdef CONFIG_BCMWL5
 static inline int guest_wlif(char *ifname)
@@ -2259,29 +2285,8 @@ extern char *get_usb_xhci_port(int port);
 #endif
 #ifdef RTCONFIG_DUALWAN
 extern int get_nr_wan_unit(void);
-#else
-static inline int get_wans_dualwan(void) {
-#ifdef RTCONFIG_USB_MODEM
-	return WANSCAP_WAN | WANSCAP_USB;
-#else
-	return WANSCAP_WAN;
-#endif
-}
-static inline int get_dualwan_by_unit(int unit) {
-#ifdef RTCONFIG_MULTICAST_IPTV
-	if(unit == WAN_UNIT_IPTV)
-		return WAN_UNIT_IPTV;
-	if(unit == WAN_UNIT_VOIP)
-		return WAN_UNIT_VOIP;
-#endif
-#ifdef RTCONFIG_USB_MODEM
-	return (unit == WAN_UNIT_FIRST) ? WANS_DUALWAN_IF_WAN : WANS_DUALWAN_IF_USB;
-#else
-	return (unit == WAN_UNIT_FIRST) ? WANS_DUALWAN_IF_WAN : WANS_DUALWAN_IF_NONE;
-#endif
-}
-static inline int get_nr_wan_unit(void) { return 1; }
-#endif
+#endif // RTCONFIG_DUALWAN
+
 static inline int iptv_enabled(void)
 {
 	int stb_x;

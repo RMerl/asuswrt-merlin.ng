@@ -445,7 +445,7 @@ function updateClientList(e){
 <input type="hidden" name="next_page" value="device-map/clients.asp">
 </form>
 
-<table width="320px" border="0" cellpadding="0" cellspacing="0">
+<table border="0" cellpadding="0" cellspacing="0" style="width:100%">
 	<tr>
 		<td>		
 			<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">

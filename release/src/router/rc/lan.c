@@ -1327,6 +1327,10 @@ void start_lan(void)
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
+#ifdef HND_ROUTER
+		hnd_set_hwstp();
+#endif
+
 		set_iface_ps(lan_ifname, 3);
 
 #ifdef RTCONFIG_IPV6

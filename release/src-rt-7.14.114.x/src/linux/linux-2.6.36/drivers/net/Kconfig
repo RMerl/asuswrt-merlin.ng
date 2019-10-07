@@ -27,6 +27,10 @@ if NETDEVICES
 
 source "drivers/net/hnd/Kconfig"
 
+config MFGFW
+	bool "dhdtest"
+	default n
+
 config IFB
 	tristate "Intermediate Functional Block support"
 	depends on NET_CLS_ACT

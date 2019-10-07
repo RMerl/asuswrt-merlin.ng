@@ -371,9 +371,6 @@ void add_usb_modem_modules(void)
 	modprobe("rndis_host");
 	modprobe("cdc_ncm");
 	modprobe("cdc_wdm");
-#if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
-	modprobe("huawei_cdc_ncm"); // depend on cdc_ncm, cdc_wdm.
-#endif
 	if(nvram_get_int("usb_qmi"))
 		modprobe("qmi_wwan");
 	modprobe("cdc_mbim");
@@ -392,9 +389,6 @@ void remove_usb_modem_modules(void)
 #if !defined(RTCONFIG_INTERNAL_GOBI) || defined(RTCONFIG_USB_MULTIMODEM)
 	modprobe_r("cdc_mbim");
 	modprobe_r("qmi_wwan");
-#if LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,1,0)
-	modprobe_r("huawei_cdc_ncm");
-#endif
 	modprobe_r("cdc_wdm");
 	modprobe_r("cdc_ncm");
 	modprobe_r("rndis_host");
@@ -3202,9 +3196,6 @@ start_samba(void)
 #endif
 #endif
 	char smbd_cmd[32];
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-	char st_samba_proto[8];
-#endif
 
 	if (getpid() != 1) {
 		notify_rc_after_wait("start_samba");
@@ -3255,15 +3246,10 @@ start_samba(void)
 	system("/sbin/write_smb_conf");
 
 	/* write smbpasswd  */
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-	snprintf(st_samba_proto, sizeof(st_samba_proto), "%s", nvram_safe_get("st_samba_proto"));
-
-	if(atoi(st_samba_proto) >= 2)
-		// use samba-3.6.x_opwrt to replace from samba-3.6.x
-		//system("echo -e \"\n\n\" |/usr/sbin/smbpasswd -s -a nobody");
-		system("/usr/sbin/smbpasswd nobody \"\"");
-	else
-		system("/usr/bin/smbpasswd nobody \"\"");
+#if defined(RTCONFIG_SAMBA36X)
+	// use samba-3.6.x_opwrt to replace from samba-3.6.x
+	//system("echo -e \"\n\n\" |/usr/sbin/smbpasswd -s -a nobody");
+	system("/usr/sbin/smbpasswd nobody \"\"");
 #else
 	system("smbpasswd nobody \"\"");
 #endif
@@ -3295,13 +3281,10 @@ start_samba(void)
 		memset(suit_passwd, 0, 64);
 		str_escape_quotes(suit_passwd, char_passwd, 64);
 
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-		if(atoi(st_samba_proto) >= 2)
-			// use samba-3.6.x_opwrt to replace from samba-3.6.x
-			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
-			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
-		else
-			snprintf(cmd, sizeof(cmd), "/usr/bin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+#if defined(RTCONFIG_SAMBA36X)
+		// use samba-3.6.x_opwrt to replace from samba-3.6.x
+		//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+		snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 		snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
@@ -3342,13 +3325,10 @@ start_samba(void)
 			memset(suit_passwd, 0, 64);
 			str_escape_quotes(suit_passwd, char_passwd, 64);
 
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-			if(atoi(st_samba_proto) >= 2)
-				// use samba-3.6.x_opwrt to replace from samba-3.6.x
-				//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
-				snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
-			else
-				snprintf(cmd, sizeof(cmd), "/usr/bin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+#if defined(RTCONFIG_SAMBA36X)
+			// use samba-3.6.x_opwrt to replace from samba-3.6.x
+			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 			snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
@@ -3362,15 +3342,9 @@ start_samba(void)
 		free(nv);
 #endif
 
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-	if(atoi(st_samba_proto) >= 2){
-		xstart("/usr/sbin/nmbd", "-D", "-s", "/etc/smb.conf");
-		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/sbin");
-	}
-	else{
-		xstart("/usr/bin/nmbd", "-D", "-s", "/etc/smb.conf");
-		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/bin");
-	}
+#if defined(RTCONFIG_SAMBA36X)
+	xstart("/usr/sbin/nmbd", "-D", "-s", "/etc/smb.conf");
+	snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/sbin");
 #else
 	xstart("nmbd", "-D", "-s", "/etc/smb.conf");
 

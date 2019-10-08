@@ -113,14 +113,11 @@
 #define N_(string) gettext_noop(string)
 		/* Mark a string that will be sent to gettext() later. */
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <dirent.h>
 #include <regex.h>
 #include <signal.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <sys/stat.h>
 
 /* If we aren't using an ncurses with mouse support, exclude any
  * mouse routines, as they are useless then. */
@@ -146,6 +143,8 @@
 #define USE_THE_DEFAULT -1
 #define BAD_COLOR -2
 #endif
+
+#define STANDARD_INPUT  0
 
 /* Enumeration types. */
 typedef enum {
@@ -188,21 +187,14 @@ typedef struct colortype {
 		/* This syntax's foreground color. */
 	short bg;
 		/* This syntax's background color. */
-	int pairnum;
-		/* The color pair number used for this foreground color and
-		 * background color. */
+	short pairnum;
+		/* The pair number for this foreground/background color combination. */
 	int attributes;
 		/* Pair number and brightness composed into ready-to-use attributes. */
-	int rex_flags;
-		/* The regex compilation flags (with or without REG_ICASE). */
-	char *start_regex;
-		/* The start (or all) of the regex string. */
 	regex_t *start;
-		/* The compiled start (or all) of the regex string. */
-	char *end_regex;
-		/* The end (if any) of the regex string. */
+		/* The compiled regular expression for 'start=', or the only one. */
 	regex_t *end;
-		/* The compiled end (if any) of the regex string. */
+		/* The compiled regular expression for 'end=', if any. */
 	struct colortype *next;
 		/* Next set of colors. */
 	int id;
@@ -216,9 +208,26 @@ typedef struct regexlisttype {
 		/* The next regex. */
 } regexlisttype;
 
+typedef struct augmentstruct {
+	char *filename;
+		/* The file where the syntax is extended. */
+	ssize_t lineno;
+		/* The number of the line of the extendsyntax command. */
+	char *data;
+		/* The text of the line. */
+	struct augmentstruct *next;
+		/* Next node. */
+} augmentstruct;
+
 typedef struct syntaxtype {
 	char *name;
 		/* The name of this syntax. */
+	char *filename;
+		/* File where the syntax is defined, or NULL if not an included file. */
+	size_t lineno;
+		/* The line number where the 'syntax' command was found. */
+	struct augmentstruct *augmentations;
+		/* List of extendsyntax commands to apply when loaded. */
 	regexlisttype *extensions;
 		/* The list of extensions that this syntax applies to. */
 	regexlisttype *headers;
@@ -285,24 +294,6 @@ typedef struct linestruct {
 #endif
 } linestruct;
 
-typedef struct partition {
-	linestruct *filetop;
-		/* The top line of this portion of the file. */
-	linestruct *top_prev;
-		/* The line before the top line of this portion of the file. */
-	char *top_data;
-		/* The text before the beginning of the top line of this portion
-		 * of the file. */
-	linestruct *filebot;
-		/* The bottom line of this portion of the file. */
-	linestruct *bot_next;
-		/* The line after the bottom line of this portion of the
-		 * file. */
-	char *bot_data;
-		/* The text after the end of the bottom line of this portion of
-		 * the file. */
-} partition;
-
 #ifndef NANO_TINY
 typedef struct undo_group {
 	ssize_t top_line;
@@ -330,12 +321,8 @@ typedef struct undo {
 		/* Some flag data we need. */
 	undo_group *grouping;
 		/* Undo info specific to groups of lines. */
-
-	/* Cut-specific stuff we need. */
 	linestruct *cutbuffer;
 		/* Copy of the cutbuffer. */
-	linestruct *cutbottom;
-		/* Copy of cutbottom. */
 	ssize_t mark_begin_lineno;
 		/* Mostly the line number of the current line; sometimes something else. */
 	size_t mark_begin_x;

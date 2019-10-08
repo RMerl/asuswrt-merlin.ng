@@ -76,9 +76,15 @@ ctype_codeset (void)
     memmove (buf + 2, codeset, codesetlen + 1);
   else
     sprintf (buf + 2, "%u", GetACP ());
-  codeset = memcpy (buf, "CP", 2);
-# endif
+  /* For a locale name such as "French_France.65001", in Windows 10,
+     setlocale now returns "French_France.utf8" instead.  */
+  if (strcmp (buf + 2, "65001") == 0 || strcmp (buf + 2, "utf8") == 0)
+    return "UTF-8";
+  else
+    return memcpy (buf, "CP", 2);
+# else
   return codeset;
+#endif
 }
 #endif
 

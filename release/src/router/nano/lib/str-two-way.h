@@ -18,7 +18,7 @@
 
 /* Before including this file, you need to include <config.h> and
    <string.h>, and define:
-     RESULT_TYPE             A macro that expands to the return type.
+     RETURN_TYPE             A macro that expands to the return type.
      AVAILABLE(h, h_l, j, n_l)
                              A macro that returns nonzero if there are
                              at least N_L bytes left starting at H[J].

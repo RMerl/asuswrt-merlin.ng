@@ -4,6 +4,6 @@ syntax mgp "\.mgp$"
 header "^%include.*"
 comment "#"
 
-icolor green "^%[a-z].*"
+color green "^%[A-Za-z].*"
 color cyan "(^|[[:space:]])(#|%%).*"
 color ,green "[[:space:]]+$"

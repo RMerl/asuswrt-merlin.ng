@@ -22,9 +22,6 @@
 #include "proto.h"
 
 #include <string.h>
-#ifdef DEBUG
-#include <time.h>
-#endif
 
 static bool came_full_circle = FALSE;
 		/* Have we reached the starting line again while searching? */
@@ -96,15 +93,16 @@ void search_init(bool replacing, bool keep_the_answer)
 	while (TRUE) {
 		functionptrtype func;
 		/* Ask the user what to search for (or replace). */
-		int i = do_prompt(FALSE, FALSE,
+		int response = do_prompt(FALSE, FALSE,
 					inhelp ? MFINDINHELP : (replacing ? MREPLACE : MWHEREIS),
-					answer, &search_history,
+					answer, &search_history, edit_refresh,
 					/* TRANSLATORS: This is the main search prompt. */
-					edit_refresh, "%s%s%s%s%s%s", _("Search"),
-					/* TRANSLATORS: The next four modify the search prompt. */
+					"%s%s%s%s%s%s", _("Search"),
+					/* TRANSLATORS: The next five modify the search prompt. */
 					ISSET(CASE_SENSITIVE) ? _(" [Case Sensitive]") : "",
 					ISSET(USE_REGEXP) ? _(" [Regexp]") : "",
-					ISSET(BACKWARDS_SEARCH) ? _(" [Backwards]") : "", replacing ?
+					ISSET(BACKWARDS_SEARCH) ? _(" [Backwards]") : "",
+					replacing ?
 #ifndef NANO_TINY
 					openfile->mark ? _(" (to replace) in selection") :
 #endif
@@ -112,15 +110,13 @@ void search_init(bool replacing, bool keep_the_answer)
 
 		/* If the search was cancelled, or we have a blank answer and
 		 * nothing was searched for yet during this session, get out. */
-		if (i == -1 || (i == -2 && *last_search == '\0')) {
+		if (response == -1 || (response == -2 && *last_search == '\0')) {
 			statusbar(_("Cancelled"));
-			tidy_up_after_search();
-			free(thedefault);
-			return;
+			break;
 		}
 
 		/* If Enter was pressed, prepare to do a replace or a search. */
-		if (i == 0 || i == -2) {
+		if (response == 0 || response == -2) {
 			/* If an actual answer was typed, remember it. */
 			if (*answer != '\0') {
 				last_search = mallocstrcpy(last_search, answer);
@@ -139,38 +135,35 @@ void search_init(bool replacing, bool keep_the_answer)
 					go_looking();
 			}
 
-			tidy_up_after_search();
-			free(thedefault);
-			return;
+			break;
 		}
 
-		func = func_from_key(&i);
+		func = func_from_key(&response);
 
 		/* If we're here, one of the five toggles was pressed, or
 		 * a shortcut was executed. */
-		if (func == case_sens_void) {
+		if (func == case_sens_void)
 			TOGGLE(CASE_SENSITIVE);
-		} else if (func == backwards_void) {
+		else if (func == backwards_void)
 			TOGGLE(BACKWARDS_SEARCH);
-		} else if (func == regexp_void) {
+		else if (func == regexp_void)
 			TOGGLE(USE_REGEXP);
-		} else if (func == flip_replace) {
+		else if (func == flip_replace) {
 			if (ISSET(VIEW_MODE)) {
 				print_view_warning();
-				tidy_up_after_search();
-				free(thedefault);
-				return;
-			}
-			replacing = !replacing;
-		} else {
-			if (func == flip_goto)
-				do_gotolinecolumn(openfile->current->lineno,
-							openfile->placewewant + 1, TRUE, TRUE);
-			tidy_up_after_search();
-			free(thedefault);
-			return;
-		}
+				napms(600);
+			} else
+				replacing = !replacing;
+		} else if (func == flip_goto) {
+			do_gotolinecolumn(openfile->current->lineno,
+								openfile->placewewant + 1, TRUE, TRUE);
+			break;
+		} else
+			break;
 	}
+
+	tidy_up_after_search();
+	free(thedefault);
 }
 
 /* Look for needle, starting at (current, current_x).  begin is the line
@@ -230,10 +223,10 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 		if (skipone) {
 			skipone = FALSE;
 			if (ISSET(BACKWARDS_SEARCH) && from != line->data) {
-				from = line->data + move_mbleft(line->data, from - line->data);
+				from = line->data + step_left(line->data, from - line->data);
 				found = strstrwrapper(line->data, needle, from);
 			} else if (!ISSET(BACKWARDS_SEARCH) && *from != '\0') {
-				from += move_mbright(from, 0);
+				from += char_length(from);
 				found = strstrwrapper(line->data, needle, from);
 			}
 		} else
@@ -248,7 +241,7 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 			 * if it's not, continue looking in the rest of the line. */
 			if (whole_word_only && !is_separate_word(found - line->data,
 												found_len, line->data)) {
-				from = found + move_mbright(found, 0);
+				from = found + char_length(found);
 				continue;
 			}
 #endif
@@ -366,6 +359,8 @@ void do_research(void)
 	/* Use the search-menu key bindings, to allow cancelling. */
 	currmenu = MWHEREIS;
 
+	wipe_statusbar();
+
 	go_looking();
 
 	tidy_up_after_search();
@@ -402,7 +397,10 @@ void go_looking(void)
 {
 	linestruct *was_current = openfile->current;
 	size_t was_current_x = openfile->current_x;
-#ifdef DEBUG
+
+//#define TIMEIT 12
+#ifdef TIMEIT
+#include <time.h>
 	clock_t start = clock();
 #endif
 
@@ -419,7 +417,7 @@ void go_looking(void)
 	else if (didfind == 0)
 		not_found_msg(last_search);
 
-#ifdef DEBUG
+#ifdef TIMEIT
 	statusline(HUSH, "Took: %.2f", (double)(clock() - start) / CLOCKS_PER_SEC);
 #endif
 
@@ -472,21 +470,20 @@ int replace_regexp(char *string, bool create)
 /* Return a copy of the current line with one needle replaced. */
 char *replace_line(const char *needle)
 {
-	char *copy;
+	size_t new_size = strlen(openfile->current->data) + 1;
 	size_t match_len;
-	size_t new_line_size = strlen(openfile->current->data) + 1;
+	char *copy;
 
 	/* First adjust the size of the new line for the change. */
 	if (ISSET(USE_REGEXP)) {
 		match_len = regmatches[0].rm_eo - regmatches[0].rm_so;
-		new_line_size += replace_regexp(NULL, FALSE) - match_len;
+		new_size += replace_regexp(NULL, FALSE) - match_len;
 	} else {
 		match_len = strlen(needle);
-		new_line_size += strlen(answer) - match_len;
+		new_size += strlen(answer) - match_len;
 	}
 
-	/* Create the buffer. */
-	copy = charalloc(new_line_size);
+	copy = charalloc(new_size);
 
 	/* Copy the head of the original line. */
 	strncpy(copy, openfile->current->data, openfile->current_x);
@@ -496,8 +493,6 @@ char *replace_line(const char *needle)
 		replace_regexp(copy + openfile->current_x, TRUE);
 	else
 		strcpy(copy + openfile->current_x, answer);
-
-	assert(openfile->current_x + match_len <= strlen(openfile->current->data));
 
 	/* Copy the tail of the original line. */
 	strcat(copy, openfile->current->data + openfile->current_x + match_len);
@@ -529,8 +524,8 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 
 	/* If the mark is on, frame the region, and turn the mark off. */
 	if (openfile->mark) {
-		mark_order((const linestruct **)&top, &top_x,
-						(const linestruct **)&bot, &bot_x, &right_side_up);
+		get_region((const linestruct **)&top, &top_x,
+					(const linestruct **)&bot, &bot_x, &right_side_up);
 		openfile->mark = NULL;
 		modus = INREGION;
 
@@ -704,22 +699,22 @@ void ask_for_replacement(void)
 	linestruct *edittop_save, *begin;
 	size_t firstcolumn_save, begin_x;
 	ssize_t numreplaced;
-	int i = do_prompt(FALSE, FALSE, MREPLACEWITH, NULL, &replace_history,
-				/* TRANSLATORS: This is a prompt. */
-				edit_refresh, _("Replace with"));
+	int response = do_prompt(FALSE, FALSE, MREPLACEWITH, NULL,
+						/* TRANSLATORS: This is a prompt. */
+						&replace_history, edit_refresh, _("Replace with"));
 
 #ifdef ENABLE_HISTORIES
 	/* If the replace string is not "", add it to the replace history list. */
-	if (i == 0)
+	if (response == 0)
 		update_history(&replace_history, answer);
 #endif
 
 	/* When cancelled, or when a function was run, get out. */
-	if (i == -1 || i > 0) {
-		if (i == -1)
-			statusbar(_("Cancelled"));
+	if (response == -1) {
+		statusbar(_("Cancelled"));
 		return;
-	}
+	} else if (response > 0)
+		return;
 
 	/* Save where we are. */
 	edittop_save = openfile->edittop;
@@ -762,18 +757,18 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 {
 	if (interactive) {
 		/* Ask for the line and column. */
-		int i = do_prompt(FALSE, FALSE, MGOTOLINE,
-				use_answer ? answer : NULL, NULL,
-				/* TRANSLATORS: This is a prompt. */
-				edit_refresh, _("Enter line number, column number"));
+		int response = do_prompt(FALSE, FALSE, MGOTOLINE,
+						use_answer ? answer : NULL, NULL, edit_refresh,
+						/* TRANSLATORS: This is a prompt. */
+						_("Enter line number, column number"));
 
 		/* If the user cancelled or gave a blank answer, get out. */
-		if (i < 0) {
+		if (response < 0) {
 			statusbar(_("Cancelled"));
 			return;
 		}
 
-		if (func_from_key(&i) == flip_goto) {
+		if (func_from_key(&response) == flip_goto) {
 			UNSET(BACKWARDS_SEARCH);
 			/* Retain what the user typed so far and switch to searching. */
 			search_init(FALSE, TRUE);
@@ -781,7 +776,7 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 		}
 
 		/* If a function was executed, we're done here. */
-		if (i > 0)
+		if (response > 0)
 			return;
 
 		/* Try to extract one or two numbers from the user's response. */
@@ -858,36 +853,36 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 void do_gotolinecolumn_void(void)
 {
 	do_gotolinecolumn(openfile->current->lineno,
-		openfile->placewewant + 1, FALSE, TRUE);
+						openfile->placewewant + 1, FALSE, TRUE);
 }
 
 #ifndef NANO_TINY
 /* Search, starting from the current position, for any of the two characters
- * in bracket_set.  If reverse is TRUE, search backwards, otherwise forwards.
+ * in bracket_pair.  If reverse is TRUE, search backwards, otherwise forwards.
  * Return TRUE when one of the brackets was found, and FALSE otherwise. */
-bool find_bracket_match(bool reverse, const char *bracket_set)
+bool find_a_bracket(bool reverse, const char *bracket_pair)
 {
 	linestruct *line = openfile->current;
-	const char *pointer = line->data + openfile->current_x;
-	const char *found = NULL;
+	const char *pointer, *found;
 
 	/* Step away from the current bracket, either backwards or forwards. */
 	if (reverse) {
-		if (--pointer < line->data) {
+		if (openfile->current_x == 0) {
 			line = line->prev;
 			if (line == NULL)
 				return FALSE;
 			pointer = line->data + strlen(line->data);
-		}
+		} else
+			pointer = line->data + step_left(line->data, openfile->current_x);
 	} else
-		++pointer;
+		pointer = line->data + step_right(line->data, openfile->current_x);
 
 	/* Now seek for any of the two brackets, either backwards or forwards. */
 	while (TRUE) {
 		if (reverse)
-			found = mbrevstrpbrk(line->data, bracket_set, pointer);
+			found = mbrevstrpbrk(line->data, bracket_pair, pointer);
 		else
-			found = mbstrpbrk(pointer, bracket_set);
+			found = mbstrpbrk(pointer, bracket_pair);
 
 		if (found)
 			break;
@@ -928,7 +923,7 @@ void do_find_bracket(void)
 		/* The location in matchbrackets of the complementing bracket. */
 	int wanted_ch_len;
 		/* The length of wanted_ch in bytes. */
-	char bracket_set[MAXCHARLEN * 2 + 1];
+	char bracket_pair[MAXCHARLEN * 2 + 1];
 		/* The pair of characters in ch and wanted_ch. */
 	size_t halfway = 0;
 		/* The index in matchbrackets where the closing brackets start. */
@@ -948,7 +943,7 @@ void do_find_bracket(void)
 
 	/* Find the halfway point in matchbrackets, where the closing ones start. */
 	for (size_t i = 0; i < charcount; i++)
-		halfway += parse_mbchar(matchbrackets + halfway, NULL, NULL);
+		halfway += char_length(matchbrackets + halfway);
 
 	/* When on a closing bracket, we have to search backwards for a matching
 	 * opening bracket; otherwise, forward for a matching closing bracket. */
@@ -959,41 +954,36 @@ void do_find_bracket(void)
 	wanted_ch = ch;
 	while (charcount-- > 0) {
 		if (reverse)
-			wanted_ch = matchbrackets + move_mbleft(matchbrackets,
-								wanted_ch - matchbrackets);
+			wanted_ch = matchbrackets + step_left(matchbrackets,
+													wanted_ch - matchbrackets);
 		else
-			wanted_ch += move_mbright(wanted_ch, 0);
+			wanted_ch += char_length(wanted_ch);
 	}
 
-	ch_len = parse_mbchar(ch, NULL, NULL);
-	wanted_ch_len = parse_mbchar(wanted_ch, NULL, NULL);
+	ch_len = char_length(ch);
+	wanted_ch_len = char_length(wanted_ch);
 
-	/* Fill bracket_set in with the values of ch and wanted_ch. */
-	strncpy(bracket_set, ch, ch_len);
-	strncpy(bracket_set + ch_len, wanted_ch, wanted_ch_len);
-	bracket_set[ch_len + wanted_ch_len] = '\0';
+	/* Copy the two complementary brackets into a single string. */
+	strncpy(bracket_pair, ch, ch_len);
+	strncpy(bracket_pair + ch_len, wanted_ch, wanted_ch_len);
+	bracket_pair[ch_len + wanted_ch_len] = '\0';
 
-	while (TRUE) {
-		if (find_bracket_match(reverse, bracket_set)) {
-			/* If we found an identical bracket, increment balance.  If we
-			 * found a complementary bracket, decrement it. */
-			balance += (strncmp(openfile->current->data + openfile->current_x,
-								ch, ch_len) == 0) ? 1 : -1;
+	while (find_a_bracket(reverse, bracket_pair)) {
+		/* Increment/decrement balance for an identical/other bracket. */
+		balance += (strncmp(openfile->current->data + openfile->current_x,
+							ch, ch_len) == 0) ? 1 : -1;
 
-			/* If balance is zero, we've found a matching bracket.  Update
-			 * the screen and get out. */
-			if (balance == 0) {
-				edit_redraw(was_current, FLOWING);
-				break;
-			}
-		} else {
-			/* We didn't find either an opening or closing bracket.
-			 * Indicate this, restore where we were, and get out. */
-			statusbar(_("No matching bracket"));
-			openfile->current = was_current;
-			openfile->current_x = was_current_x;
-			break;
+		/* When balance reached zero, we've found the complementary bracket. */
+		if (balance == 0) {
+			edit_redraw(was_current, FLOWING);
+			return;
 		}
 	}
+
+	statusbar(_("No matching bracket"));
+
+	/* Restore the cursor position. */
+	openfile->current = was_current;
+	openfile->current_x = was_current_x;
 }
 #endif /* !NANO_TINY */

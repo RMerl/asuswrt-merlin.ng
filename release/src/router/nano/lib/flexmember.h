@@ -33,11 +33,26 @@
 # define FLEXALIGNOF(type) _Alignof (type)
 #endif
 
-/* Upper bound on the size of a struct of type TYPE with a flexible
-   array member named MEMBER that is followed by N bytes of other data.
-   This is not simply sizeof (TYPE) + N, since it may require
-   alignment on unusually picky C11 platforms, and
-   FLEXIBLE_ARRAY_MEMBER may be 1 on pre-C11 platforms.
+/* Yield a properly aligned upper bound on the size of a struct of
+   type TYPE with a flexible array member named MEMBER that is
+   followed by N bytes of other data.  The result is suitable as an
+   argument to malloc.  For example:
+
+     struct s { int n; char d[FLEXIBLE_ARRAY_MEMBER]; };
+     struct s *p = malloc (FLEXSIZEOF (struct s, d, n * sizeof (char)));
+
+   FLEXSIZEOF (TYPE, MEMBER, N) is not simply (sizeof (TYPE) + N),
+   since FLEXIBLE_ARRAY_MEMBER may be 1 on pre-C11 platforms.  Nor is
+   it simply (offsetof (TYPE, MEMBER) + N), as that might yield a size
+   that causes malloc to yield a pointer that is not properly aligned
+   for TYPE; for example, if sizeof (int) == alignof (int) == 4,
+   malloc (offsetof (struct s, d) + 3 * sizeof (char)) is equivalent
+   to malloc (7) and might yield a pointer that is not a multiple of 4
+   (which means the pointer is not properly aligned for struct s),
+   whereas malloc (FLEXSIZEOF (struct s, d, 3 * sizeof (char))) is
+   equivalent to malloc (8) and must yield a pointer that is a
+   multiple of 4.
+
    Yield a value less than N if and only if arithmetic overflow occurs.  */
 
 #define FLEXSIZEOF(type, member, n) \

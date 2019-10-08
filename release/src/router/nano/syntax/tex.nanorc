@@ -5,6 +5,6 @@ magic "(La)?TeX document"
 linter chktex -v0 -q -I
 comment "%"
 
-icolor green "\\.|\\[A-Z]*"
+color green "\\.|\\[A-Za-z]*"
 color magenta "[{}]"
 color blue "(^|[^\])%.*"

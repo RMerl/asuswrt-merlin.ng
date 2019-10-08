@@ -1,3 +1,18 @@
+2019.08.25 - GNU nano 4.4 "Hagelslag"
+• At startup, the cursor can be put on the first or last occurrence
+  of a string by preceding the filename with +/string or +?string.
+• When automatic hard-wrapping occurs (--breaklonglines), any leading
+  quoting characters will be automatically copied to the new line.
+• M-6 works again also when the cursor is at end of buffer.
+
+2019.06.18 - GNU nano 4.3 "Musa Kart"
+• The ability to read from and write to a FIFO has been regained.
+• Startup time is reduced by fully parsing a syntax only when needed.
+• Asking for help (^G) when using --operatingdir does not crash.
+• The reading of a huge or slow file can be stopped with ^C.
+• Cut, zap, and copy operations are undone separately when intermixed.
+• M-D reports the correct number of lines (zero for an empty buffer).
+
 2019.04.24 - GNU nano 4.2 "Tax the rich, pay the teachers"
 • The integrated spell checker does not crash when 'spell' is missing.
 • Option --breaklonglines works also when --ignorercfiles is used.
@@ -607,7 +622,7 @@
              like this what could POSSIBLY go WRONG?  Hahaha.
              Enjoy and if you find new bugs, as always please
              use Savannah's bug tracker.
-             http://savannah.gnu.org/bugs/?func=additem&group=nano
+             https://savannah.gnu.org/bugs/?func=additem&group=nano
 
 2010.01.17 - GNU nano 2.2.2 is released for you, you, you.  This
              release includes fixes for: crashes when writing
@@ -692,7 +707,7 @@
              editor, via the -$ or --softwrap command-line flags,
              or via "set softwrap" in your .nanorc.  As always,
              please report any bugs to the nano Savannah project page
-             (http://savannah.gnu.org/bugs/?func=additem&group=nano)
+             (https://savannah.gnu.org/bugs/?func=additem&group=nano)
              Remember: data loss happens, back up your files.
 
 2009.07.28 - GNU nano 2.1.10 "Ellie" is released.  This version includes
@@ -720,45 +735,41 @@
              birthday lenny!
 
 2009.02.07 - GNU nano 2.1.8 "unsafe at any speed" is released.  This
-             release include some long overdue performance
-             improvements in syntax color highlighting, the ability
-             to abort running searches (useful mainly when
-             editing very large files) and the ability to use nano
-             like a pager for viewing standard input (i.e. "nano -").
-             Additionally, there are gentoo syntax highlighting
-             updates and fixes for issues with reading files
-             in a directory with strange parent directory permissions.
-             The key bindings code was also substantially changed
-             in order to be more ISO-C compatible.  Be sure to use
-             the Savannah page not only for bug reports but for any
+             release includes some long overdue performance improvements
+             in syntax color highlighting, the ability to abort running
+             searches (useful mainly when editing very large files) and
+             the ability to use nano like a pager for viewing standard
+             input (i.e. "nano -").  Additionally, there are gentoo
+             syntax highlighting updates and fixes for issues with
+             reading files in a directory with strange parent directory
+             permissions.  The key-bindings code was also substantially
+             changed in order to be more ISO-C compatible.  Be sure to
+             use the Savannah page not only for bug reports but for any
              features you would like to see before the next stable
              series is released.  Have fun with it!
 
 2008.11.10 - GNU nano 2.1.7 "Effingham" is ready to make good on those
              campaign promises of lower bug rates and 50% more pie.
-             This release includes a new check for external
-             modifications when saving a file, some code and
-             documentation cleanups, and more bug fixes for
-             the new undo code (but we continue to welcome
-             your bug reports via the Savannah bug page at
-             http://savannah.gnu.org/bugs/?func=additem&group=nano).
+             This release includes a new check for external modifications
+             when saving a file, some code and documentation cleanups,
+             and more bug fixes for the new undo code (but we continue
+             to welcome your bug reports via the Savannah bug page at
+             https://savannah.gnu.org/bugs/?func=additem&group=nano).
              Come get some.
 
 2008.10.03 - GNU nano 2.1.6 was for new features before it was against
-             them.  This release includes more undo capability,
-             several new syntax highlighting configurations including
-             Objective C, OCaml, and Fortran, and a new capability
-             to activate highlighting based on the 1st line of the
-             file being edited.  Also, the new default configure
-             options now include color syntax highlighting, .nanorc
-             support, multibuffer and extras.  These items can still
-             be disabled and are not enabled with --enable-tiny.  Bug
-             fixes include better signal handling under Cygwin, and
-             that's about it.  Again please remember to
-             submit bug reports via Savannah at
-             http://savannah.gnu.org/bugs/?func=additem&group=nano
-             as undo functions certainly need more testing.
-             Bon appetit.
+             them.  This release includes more undo capability, several
+             new syntax highlighting configurations including Objective
+             C, OCaml, and Fortran, and a new capability to activate
+             highlighting based on the 1st line of the file being
+             edited.  Also, the new default configure options now
+             include color syntax highlighting, .nanorc support,
+             multibuffer and extras.  These items can still be disabled
+             and are not enabled with --enable-tiny.  Bug fixes include
+             better signal handling under Cygwin, and that's about it.
+             Again please remember to submit bug reports via Savannah at
+             https://savannah.gnu.org/bugs/?func=additem&group=nano as
+             undo functions certainly need more testing.  Bon appetit.
 
 2008.08.30 - GNU nano 2.1.5 is ready to lead on day one.  This release
              contains a better fix for incorrectly reported successful
@@ -781,15 +792,15 @@
              are likely to run out of space; see Savannah bug #24000.
              Have fun with it!
 
-2008.08.04 - GNU nano 2.1.3 "least stable version ever" is released.  This
-             release includes new (and experimental) undo and redo
-             functionality for most text operations.  The default
-             key bindings are Meta-U for undo and Meta-E for redo, but
-             these can be remapped using the new 2.1 keybinding code.
-             Also included are some fixes for configuring using wide
-             curses, crashing when invoking the help menu with
-             certain locales, and not saving the search history when
-             compiled with configure options.
+2008.08.04 - GNU nano 2.1.3 "least stable version ever" is released.
+             This release includes new (and experimental) undo and redo
+             functionality for most text operations.  The default key
+             bindings are Meta-U for undo and Meta-E for redo, but these
+             can be remapped using the new 2.1 keybinding code.  Also
+             included are some fixes for configuring using wide curses,
+             crashing when invoking the help menu with certain locales,
+             and not saving the search history when compiled with
+             configure options.
 
 2008.04.24 - GNU nano 2.1.2 "New York City" is released.  This release
              contains fixes for binding bad keys, some

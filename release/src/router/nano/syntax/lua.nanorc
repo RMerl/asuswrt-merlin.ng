@@ -44,7 +44,7 @@ color brightmagenta "\<(false|nil|true)\>"
 
 # Decimal and hexadecimal numbers
 color red "\<[0-9]+(\.[0-9]*)?([Ee][+-]?[0-9]+)?\>"
-icolor red "\<0x[0-9a-f]+(\.[0-9a-f]*)?(p[+-]?[0-9]+)?\>"
+color red "\<0x[0-9A-Fa-f]+(\.[0-9A-Fa-f]*)?([Pp][+-]?[0-9]+)?\>"
 
 # Brackets
 color brightmagenta "\(|\)|\[|\]|\{|\}"

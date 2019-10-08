@@ -196,6 +196,10 @@ function wl_chanspec_list_change(){
 						}
 					}
 
+					if(is_RU_sku){
+						_wl_channel = ["36/160"];
+					}
+
 					wl_channel_list_5g = _wl_channel;	
 				}
 				else if(bw_cap == "3"){	// 80 MHz
@@ -215,6 +219,13 @@ function wl_chanspec_list_change(){
 									_wl_channel.push(_cur_channel+"/80");
 								}
 							}
+						}
+					}
+
+					if(is_RU_sku){
+						_wl_channel = ["36/80", "52/80", "132/80"];
+						if(band5g2_support){
+							_wl_channel = ["36/80", "52/80"];
 						}
 					}
 
@@ -245,6 +256,13 @@ function wl_chanspec_list_change(){
 									}
 								}
 							}	
+						}
+					}
+
+					if(is_RU_sku){
+						_wl_channel = ["36l", "44l", "52l", "60l", "132l", "140l"];
+						if(band5g2_support){
+							_wl_channel = ["36l", "44l", "52l", "60l"];
 						}
 					}
 
@@ -432,6 +450,10 @@ function wl_chanspec_list_change(){
 					}
 				}
 
+				if(is_RU_sku){
+					_wl_channel = ['0'];
+				}
+
 				wl_channel_list_5g_2 = _wl_channel;	
 			}
 			else if(bw_cap == "3"){	// 80 MHz
@@ -452,6 +474,10 @@ function wl_chanspec_list_change(){
 							}
 						}
 					}
+				}
+
+				if(is_RU_sku){
+					_wl_channel = ["132/80"];
 				}
 				
 				wl_channel_list_5g_2 = _wl_channel;								
@@ -482,6 +508,10 @@ function wl_chanspec_list_change(){
 							}
 						}
 					}
+				}
+
+				if(is_RU_sku){
+					_wl_channel = ["132l", "140l"];
 				}
 				
 				wl_channel_list_5g_2 = _wl_channel;	
@@ -515,12 +545,65 @@ function wl_chanspec_list_change(){
 	/* Reconstruct channel array from new chanspecs */
 	document.form.wl_channel.length = chanspecs.length;
 	if(band == 1 || band == 2){
+		var _bw = document.form.wl_bw.value;
+		var _array_160 = ['0', '50'];
+		var _array_80 = ['0', '42', '58', '138'];
+		var _array_40 = ['0', '38', '46', '54', '62', '134', '142'];
+		if(is_RU_sku){
+			if(band == 2){
+				if(_bw == '3'){
+					chanspecs = ["0", "132/80"];
+					_array_80 = ['0', '138'];
+				}
+				else if(_bw == '2'){
+					chanspecs = ["0", "132l", "140l"];
+					_array_40 = ['0', '134', '142'];
+				}
+				else if(_bw == '5'){
+					chanspecs = ['0'];
+					_array_160 = ['0'];
+				}
+			}
+			else{
+				if(_bw == '3'){
+					if(band5g2_support){
+						chanspecs = ["0", "36/80", "52/80"];
+						_array_80 = ['0', '42', '58'];
+					}
+				}
+				else if(_bw == '2'){
+					chanspecs = ['0', '36l', '44l', '52l', '60l', '132l', '140l'];
+					_array_40 = ['0', '38', '46', '54', '62', '134', '142'];
+					if(band5g2_support){
+						chanspecs = ['0', '36l', '44l', '52l', '60l'];
+						_array_40 = ['0', '38', '46', '54', '62'];
+					}
+				}
+			}
+		}
+
 		for (var i in chanspecs){
 			if (chanspecs[i] == 0){
 				document.form.wl_channel[i] = new Option("<#Auto#>", chanspecs[i]);
 			}
 			else{
-				document.form.wl_channel[i] = new Option(chanspecs[i].toString().replace("/160", "").replace("/80", "").replace("u", "").replace("l", ""), chanspecs[i]);
+				if(is_RU_sku){
+					if(_bw == '3'){
+						document.form.wl_channel[i] = new Option(_array_80[i], chanspecs[i]);
+					}
+					else if(_bw == '2'){
+						document.form.wl_channel[i] = new Option(_array_40[i], chanspecs[i]);
+					}
+					else if(_bw == '5'){
+						document.form.wl_channel[i] = new Option(_array_160[i], chanspecs[i]);
+					}
+					else{
+						document.form.wl_channel[i] = new Option(chanspecs[i].toString().replace("/160", "").replace("/80", "").replace("u", "").replace("l", ""), chanspecs[i]);
+					}
+				}
+				else{
+					document.form.wl_channel[i] = new Option(chanspecs[i].toString().replace("/160", "").replace("/80", "").replace("u", "").replace("l", ""), chanspecs[i]);
+				}
 			}
 
 			document.form.wl_channel[i].value = chanspecs[i];

@@ -742,9 +742,21 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 	}
 
 	for(follow_pc = enabled_list; follow_pc != NULL; follow_pc = follow_pc->next){
-		const char *chk_mac = iptables_chk_mac;
+		//const char *chk_mac = iptables_chk_mac;
+		const char *chk_type;
+		char follow_addr[18] = {0};
+#ifdef RTCONFIG_AMAS
+		_dprintf("config_pause_block_string\n");
+		if (strlen(follow_pc->mac) && amas_lib_device_ip_query(follow_pc->mac, follow_addr)) {
+			chk_type = iptables_chk_ip;
+		} else
+#endif
+		{
+			chk_type = iptables_chk_mac;
+			snprintf(follow_addr, sizeof(follow_addr), "%s", follow_pc->mac);
+		}
 		if(!follow_pc->mac[0])
-			chk_mac = "";
+			chk_type = "";
 
 //_dprintf("[PC] mac=%s\n", follow_pc->mac);
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -753,9 +765,9 @@ void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *l
 		// MAC address in list and not in time period -> DROP.
 		if(!temp){
 #ifdef BLOCKLOCAL
-			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+			fprintf(fp, "-A INPUT -i %s %s %s -j DROP\n", lan_if, chk_type, follow_addr);
 #endif
-			fprintf(fp, "-A FORWARD -i %s %s %s -j DROP\n", lan_if, chk_mac, follow_pc->mac);
+			fprintf(fp, "-A FORWARD -i %s %s %s -j DROP\n", lan_if, chk_type, follow_addr);
 		}
 	}
 

@@ -35,7 +35,7 @@ define(function(){
 				] 
 			},
 			{
-				menuName: "Dash Board",
+				menuName: "<#AiProtection_title_Dashboard_title#>",
 				index: "menu_Dashboard",
 				tab: [
 					{url: "GameDashboard.asp", tabName: "__HIDE__"},
@@ -60,10 +60,10 @@ define(function(){
 				] 
 			},
 			{
-				menuName: "Game Acceleration",
+				menuName: "<#Game_acceleration#>",
 				index: "menu_GameBoost",
 				tab: [
-					{url: "GameBoost.asp", tabName: "Game Acceleration"},
+					{url: "GameBoost.asp", tabName: "<#Game_acceleration#>"},
 					{url: "QoS_EZQoS.asp", tabName: "<#menu5_3_2#>"},
 					//{url: "AdaptiveQoS_WebHistory.asp", tabName: "<#Adaptive_History#>"},
 					//{url: "Main_Spectrum_Content.asp", tabName: "<#Spectrum_title#>"},
@@ -479,7 +479,7 @@ define(function(){
 					retArray.push("YandexDNS.asp");
 				}
 
-				if(!feedback_support) {		
+				if(!frs_feedback_support) {		
 					retArray.push("Advanced_Feedback.asp");
 				}
 

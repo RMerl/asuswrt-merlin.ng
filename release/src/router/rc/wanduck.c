@@ -423,6 +423,9 @@ void get_related_nvram(){
 
 	boot_end = nvram_get_int("success_start_service");
 
+#if defined(RTCONFIG_FW_JUMP)
+	isFirstUse = 0;
+#else
 #if defined(RTAC58U)
 	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
 		isFirstUse = 0;
@@ -432,6 +435,7 @@ void get_related_nvram(){
 		isFirstUse = 0;
 	else
 		isFirstUse = 1;
+#endif
 
 	nat_redirect_enable = nvram_get_int("nat_redirect_enable");
 

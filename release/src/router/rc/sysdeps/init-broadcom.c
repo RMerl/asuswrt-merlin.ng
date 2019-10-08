@@ -4244,7 +4244,11 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 			&& nvram_match("mumimo_enable", "1")
 #endif
 		)
+#ifdef RTCONFIG_HND_ROUTER_AX
+			nvram_set(strcat_r(prefix, "mu_features", tmp), "1");
+#else
 			nvram_set(strcat_r(prefix, "mu_features", tmp), "0x8000");
+#endif
 		else
 			nvram_set(strcat_r(prefix, "mu_features", tmp), "0");
 #endif

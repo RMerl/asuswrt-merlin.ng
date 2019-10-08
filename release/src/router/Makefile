@@ -831,6 +831,7 @@ obj-y += hostapd-2.6
 obj-y += libfapi-0.1
 obj-y += taskset
 else
+obj-y += libbcmcrypto
 obj-y += utils$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += emf$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += igs$(BCMEX)$(EX7)
@@ -868,9 +869,6 @@ obj-$(RTCONFIG_BCMASPMD) += aspmd
 obj-$(RTCONFIG_WBD) += json-c wbd
 obj-$(RTCONFIG_WLCLMLOAD) += clmb
 
-ifneq ($(RTCONFIG_REALTEK),y)
-obj-y += libbcmcrypto
-endif
 #obj-y += cyassl
 obj-$(RTCONFIG_HTTPS) += mssl
 obj-$(RTCONFIG_TFTP) += tftp
@@ -1163,6 +1161,7 @@ obj-$(RTCONFIG_EAPOL) += wpa_supplicant
 obj-$(RTCONFIG_HTTPS) += openssl
 obj-$(RTCONFIG_HTTPS) += wget
 obj-$(RTCONFIG_HTTPS) += zlib
+obj-$(RTCONFIG_HTTPS) += curl-7.21.7
 obj-$(RTCONFIG_SSH) += dropbear
 obj-$(RTCONFIG_WTFAST) += wtfast
 #obj-$(RTCONFIG_ZEBRA) += zebra
@@ -1246,9 +1245,10 @@ obj-$(RTCONFIG_LLDP) += openlldp
 obj-n += lsof
 obj-$(RTCONFIG_IPERF) += iperf
 
-obj-$(RTCONFIG_PUSH_EMAIL) += openssl
+obj-$(RTCONFIG_FRS_FEEDBACK) += openssl
 obj-$(RTCONFIG_PUSH_EMAIL) += email-3.1.3
-ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+obj-$(RTCONFIG_FRS_FEEDBACK) += curl-7.21.7
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 obj-$(RTCONFIG_DBLOG) += dblog
 endif
 
@@ -2429,7 +2429,7 @@ infosvr-install:
 
 #libdisk: shared nvram$(BCMEX)$(EX7)
 
-httpd: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_PUSH_EMAIL),push_log) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG))
+httpd: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG))
 	@$(SEP)
 	@-rm -f httpd/prebuild/*.o || true
 	@-cp -f httpd/prebuild/$(BUILD_NAME)/* httpd/prebuild/
@@ -2445,7 +2445,7 @@ endif
 httpd-install:
 	$(MAKE) -C httpd INSTALLDIR=$(INSTALLDIR)/httpd install
 
-httpd_uam: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_PUSH_EMAIL),push_log) $(if $(RTCONFIG_FBWIFI),fb_wifi)
+httpd_uam: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_FBWIFI),fb_wifi)
 	@$(SEP)
 	@$(MAKE) -C httpd_uam
 
@@ -2806,9 +2806,7 @@ wb: json-c openssl libxml2 curl-7.21.7
 wb-install:
 	$(MAKE) -C wb INSTALLDIR=$(INSTALLDIR)/wb install
 
-push_log: wb
-
-rc: shared nvram$(BCMEX)$(EX7) libbcmcrypto libdisk $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c
+rc: shared nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_FBWIFI),fb_wifi) $(if $(RTCONFIG_QTN),libqcsapi_client) $(if $(CONFIG_LIBBCM),libbcm) $(if $(RTCONFIG_BWDPI),bwdpi_source) $(if $(RTCONFIG_USB_SMS_MODEM),smspdu) $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(RTCONFIG_OPENVPN),libvpn) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG) $(if $(RTCONFIG_AMAS), amas-utils) $(if $(RTCONFIG_LANTIQ),hostapd-2.6)) json-c curl-7.21.7
 	@$(SEP)
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
@@ -4632,7 +4630,7 @@ ifneq ($(MEDIA_SERVER_STATIC),y)
 	install -D zlib/libz.so.1 $(INSTALLDIR)/zlib/usr/lib/
 	$(STRIP) $(INSTALLDIR)/zlib/usr/lib/libz.so.1
 endif
-ifeq ($(or $(RTCONFIG_USB_BECEEM),$(RTCONFIG_MEDIA_SERVER),$(RTCONFIG_CLOUDSYNC),$(RTCONFIG_PUSH_EMAIL)),y)
+ifeq ($(or $(RTCONFIG_USB_BECEEM),$(RTCONFIG_MEDIA_SERVER),$(RTCONFIG_CLOUDSYNC),$(RTCONFIG_FRS_FEEDBACK)),y)
 	install -d $(INSTALLDIR)/zlib/usr/lib
 	install -D zlib/libz.so.1 $(INSTALLDIR)/zlib/usr/lib/
 	$(STRIP) $(INSTALLDIR)/zlib/usr/lib/libz.so.1
@@ -5300,7 +5298,7 @@ openlldp-clean:
 	@rm -f openlldp/Makefile
 
 
-nas$(BCMEX)$(EX7): nvram$(BCMEX)$(EX7)
+nas$(BCMEX)$(EX7): nvram$(BCMEX)$(EX7) libbcmcrypto
 
 wlconf$(BCMEX)$(EX7): nvram$(BCMEX)$(EX7)
 

@@ -72,7 +72,7 @@ fatal(const char *message, ...)
 	fputs("\n",fp);
 	fclose(fp);
 
-	system("nvram set fb_state=2");
+	system("nvram set PM_state=2");
 
 #ifdef RTCONFIG_NOTIFICATION_CENTER
 	extern int report_f;

@@ -642,10 +642,11 @@ function validForm(){
 		}
 		else{		//Bandwidth Limiter
 			if(document.form.PC_devicename.value != ""){
-				alert("You must press add icon to add a new rule first.");	//untranslated
+				alert("<#JS_add_rule#>");
 				return false;
 			}
 
+			document.form.qos_bw_rulelist.disabled = false;
 			document.form.qos_bw_rulelist.value = qos_bw_rulelist;
 		}
 	}
@@ -714,7 +715,6 @@ function change_qos_type(value){
 			document.getElementById('qos_sched_tr').style.display = "";
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
-		document.form.qos_bw_rulelist.disabled = true;
 		if(document.form.qos_type_orig.value == 0 && document.form.qos_enable_orig.value != 0){
 			document.form.action_script.value = "restart_qos;restart_firewall";
 		}
@@ -734,7 +734,6 @@ function change_qos_type(value){
 			document.getElementById('qos_sched_tr').style.display = "";
 			change_scheduler(document.form.qos_sched.value);
 		}
-		document.form.qos_bw_rulelist.disabled = true;
 		if(document.getElementById("auto").checked){
 			show_up_down(0);
 		}
@@ -762,7 +761,6 @@ function change_qos_type(value){
 			document.getElementById('qos_sched_tr').style.display = "";
 			document.getElementById('qos_overhead_tr').style.display = "";
 		}
-		document.form.qos_bw_rulelist.disabled = false;
 		if(document.form.qos_type_orig.value == 2 && document.form.qos_enable_orig.value != 0)
 			document.form.action_script.value = "restart_qos;restart_firewall";
 		else{
@@ -1471,7 +1469,7 @@ function change_scheduler(value){
 			<input type="hidden" name="qos_obw1" value="<% nvram_get("qos_obw1"); %>" disabled>
 			<input type="hidden" name="qos_ibw1" value="<% nvram_get("qos_ibw1"); %>" disabled>
 			<input type="hidden" name="bwdpi_app_rulelist" value="<% nvram_get("bwdpi_app_rulelist"); %>" disabled>
-			<input type="hidden" name="qos_bw_rulelist" value="">
+			<input type="hidden" name="qos_bw_rulelist" value="" disabled>
 			<input type="hidden" name="qos_atm" id="qos_atm">
 			<input type="hidden" name="qos_sched" id="qos_sched" value="<% nvram_get("qos_sched"); %>">
 
@@ -1562,8 +1560,8 @@ function change_scheduler(value){
 																document.getElementById('qos_type_tr').style.display = "";
 																if(bwdpi_support){
 																	document.getElementById('qos_enable_hint').style.display = "";
-																	change_qos_type(document.form.qos_type_orig.value);
 																}
+																change_qos_type(document.form.qos_type_orig.value);
 															 },
 															 function() {
 																document.form.qos_enable.value = 0;

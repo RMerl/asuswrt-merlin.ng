@@ -2532,7 +2532,12 @@ wan_up(const char *pwan_ifname)
 			}
 		}
 
-		update_resolvconf();
+#if defined(RTCONFIG_VPNC) || (RTCONFIG_VPN_FUSION)
+		if (is_vpnc_connected() == 0)
+#endif
+		{
+			update_resolvconf();
+		}
 
 		/* start multicast router on DHCP+VPN physical interface */
 		if (wan_unit == wan_primary_ifunit())

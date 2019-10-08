@@ -723,7 +723,7 @@ function changeRSSI(_switch){
 		document.getElementById("rssiDbm").style.display = "";
 		var default_value = "-70";
 		if(amesh_support && wl_unit_value == "0")
-			default_value = "-55";
+			default_value = "-70";
 		if(wl_user_rssi_onload == 0)
 			document.form.wl_user_rssi.value = default_value;
 		else

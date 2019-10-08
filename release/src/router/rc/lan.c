@@ -4333,7 +4333,7 @@ lan_up(char *lan_ifname)
 			nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 		nvram_set("last_lan_ipaddr", nvram_safe_get("lan_ipaddr"));
 		nvram_set("last_lan_netmask", nvram_safe_get("lan_netmask"));
-		stop_samba();
+		stop_samba(0);
 		start_samba();
 	}
 #endif

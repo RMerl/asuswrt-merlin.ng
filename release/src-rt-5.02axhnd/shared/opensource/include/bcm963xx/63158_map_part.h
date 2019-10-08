@@ -5688,7 +5688,7 @@ typedef struct ProcessMonitorRegs {
     #define SWITCH_REG_SSER_EXTFB_DET   (1<<6)
 
 #define SWITCH_REG_SINGLE_SERDES_CNTRL (&ETHSW_REG->single_serdes_ctrl)
-#define SWITCH_REG_SERDES_IQQD       (1<<0)
+#define SWITCH_REG_SERDES_IDDQ       (1<<0)
 #define SWITCH_REG_SERDES_PWRDWN     (1<<1)
 #define SWITCH_REG_SERDES_RESETPLL   (1<<3)
 #define SWITCH_REG_SERDES_RESETMDIO  (1<<4)

@@ -42,7 +42,7 @@ function initial(){
 		document.getElementById("game_boost_enable").checked = false;
 	}
 
-	if(CNSku){
+	if(uu_support){
 		$('#last_line').show();
 		$('#uu_field').show();
 	}
@@ -161,38 +161,38 @@ function uuRegister(mac){
 					<div class="border1-modelProduct"></div>
 					<div class="flexbox  title-container">
 						<div class="title-symbol"></div>
-						<div class="title-content">TRIPLE-LEVEL GAME ACCELERATION</div>
+						<div class="title-content"><#Game_Boost_acceleration#></div>
 					</div>
-					<div class="description-container">Accelerate game traffic every step of the way - from device to game server, ensuring the best connections and performance.</div>
+					<div class="description-container"><#Game_Boost_acceleration_desc#></div>
 					<div class="flexbox flex-j-center border1-LV-container">
 						<div class="flexbox flex-a-center triLv-container">
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">1</div>
 								</div>
 							</div>
-							<div class="triLv-desc">Gaming Port Prioritization</div>
+							<div class="triLv-desc"><#Game_Port_Prio#></div>
 						</div>
 
 						<div class="flexbox flex-a-center triLv-container">
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">2</div>
 								</div>
 							</div>
-							<div class="triLv-desc">Game Packet Prioritization</div>
+							<div class="triLv-desc"><#Game_Packet_Prio#></div>
 						</div>
 
 						<div class="flexbox flex-a-center triLv-container">
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">3</div>
 								</div>
 							</div>
-							<div class="triLv-desc">Game Server Acceleration</div>
+							<div class="triLv-desc"><#Game_Server_acceleration#></div>
 						</div>
 					</div>
 				</div>
@@ -206,10 +206,10 @@ function uuRegister(mac){
 						<div class="flexbox border2-title">
 							<div class="flexbox title-container border2-title-container">
 								<div class="title-symbol"></div>
-								<div class="title-content border2-title-desc">Gaming Port Prioritization</div>
+								<div class="title-content border2-title-desc"><#Game_Port_Prio#></div>
 							</div>
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">1</div>
 								</div>
@@ -220,9 +220,9 @@ function uuRegister(mac){
 							<div class="content-divide-line"></div>
 							<div class="flex-as-start content-desc-container">
 								<div class="flexbox flex-a-center">
-									<div class="content-desc-title">Game Devices</div>
+									<div class="content-desc-title"><#Game_devices#></div>
 								</div>
-								<div class="content-desc">Dedicated gaming port prioritizes network traffic to connected devices.</div>
+								<div class="content-desc"><#Game_devices_desc#></div>
 							</div>
 							<div class="content-divide-line"></div>
 						</div>
@@ -238,7 +238,7 @@ function uuRegister(mac){
 										<a href="https://www.asus.com/support/FAQ/1036877" target="_blank">FAQ</a>
 									</div>
 								</div>
-								<div class="content-desc">GameFirst V comes with ROG motherboards, laptops, and desktops to optimize network traffic of PC online gaming. By simply clicking ROG First in GameFirst V, routers can automatically recognize ROG devices and enable Level 2 acceleration.</div>
+								<div class="content-desc"><#Game_First_desc#></div>
 							</div>
 							<div class="content-divide-line"></div>
 							<div class="content-action-container" onclick="redirectSite(siteInfo[0]);">
@@ -253,10 +253,10 @@ function uuRegister(mac){
 						<div class="flexbox border2-title">
 							<div class="flexbox title-container border2-title-container">
 								<div class="title-symbol"></div>
-								<div class="title-content border2-title-desc">Game Packet Prioritization</div>
+								<div class="title-content border2-title-desc"><#Game_Packet_Prio#></div>
 							</div>
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">2</div>
 								</div>
@@ -269,17 +269,17 @@ function uuRegister(mac){
 							<div class="content-divide-line"></div>
 							<div class="flex-as-start content-desc-container">
 								<div class="flexbox flex-a-center">
-									<div class="content-desc-title">Game Boost</div>
+									<div class="content-desc-title"><#Game_Boost#></div>
 									<div class="content-divide-line-sm"></div>
 									<div class="content-detail">
 										<a id="faq" href="" target="_blank">FAQ</a>
 									</div>
 								</div>
-								<div class="content-desc">Game Boost activates gaming mode with Adaptive QoS. All gaming traffic passing through ROG routers can be prioritized to ensure ultimate gameplay performance.</div>
+								<div class="content-desc"><#Game_Boost_desc1#></div>
 							</div>
 							<div class="content-divide-line"></div>
 							<div class="content-action-container">
-								<div class="gameBoost-enable-desc">Enable Game Boost</div>
+								<div class="gameBoost-enable-desc"><#BoostKey_enable#></div>
 								<div class="switch-button-container gameBoost-enable-offset" >
 									<label for="game_boost_enable">
 										<input type="checkbox" id="game_boost_enable" class="switch-button" onchange="sign_eula();">
@@ -301,10 +301,10 @@ function uuRegister(mac){
 						<div class="flexbox border2-title">
 							<div class="flexbox title-container border2-title-container">
 								<div class="title-symbol"></div>
-								<div class="title-content border2-title-desc">Game Server Acceleration</div>
+								<div class="title-content border2-title-desc"><#Game_Server_acceleration#></div>
 							</div>
 							<div>
-								<div class="triLv-level">Level</div>
+								<div class="triLv-level"><#AiProtection_level_th#></div>
 								<div class="flexbox flex-a-center flex-j-center triLv-border">
 									<div class="triLv-step">3</div>
 								</div>
@@ -315,13 +315,13 @@ function uuRegister(mac){
 							<div class="content-divide-line"></div>
 							<div class="flex-as-start content-desc-container">
 								<div class="flexbox flex-a-center">
-									<div class="content-desc-title">wtfast&reg;</div>
+									<div class="content-desc-title">WTFast&reg;</div>
 									<div class="content-divide-line-sm"></div>
 									<div class="content-detail">
 										<a href="https://www.wtfast.com/routers" target="_blank">FAQ</a>
 									</div>
 								</div>
-								<div class="content-desc">wtfast connects your home network to game servers by the shortest route with the lowest ping time and latency.</div>
+								<div class="content-desc"><#Game_WTFast_desc#></div>
 							</div>
 							<div class="content-divide-line"></div>
 							<div class="content-action-container" onclick="redirectSite(siteInfo[1]);">

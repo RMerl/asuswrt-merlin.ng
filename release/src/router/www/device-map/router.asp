@@ -141,6 +141,7 @@ $(function () {
 <% wl_get_parameter(); %>
 var flag = '<% get_parameter("flag"); %>';
 var wl_unit = '<% nvram_get("wl_unit"); %>';
+var serial_number = httpApi.nvramGet(["serial_no"]).serial_no;
 
 if(parent.yadns_support){
 	var yadns_enable = '<% nvram_get("yadns_enable_x"); %>';
@@ -213,6 +214,14 @@ function initial(){
 			document.getElementById("t0").style.display = "";
 		}
 	}
+
+	if(lyra_hide_support)
+		document.getElementById("pincode").style.display = "none";
+
+	if(serial_number!=""){
+		document.getElementById("serialno").style.display = "";
+	}
+
 	if(parent.sw_mode == 2){
 		if(parent.wlc_express != 0){
 			if(parent.wlc_express == 1){
@@ -624,6 +633,7 @@ function show_LAN_info(v){
 	}
 
 	showtext(document.getElementById("PINCode"), '<% nvram_get("secret_code"); %>');
+	showtext(document.getElementById("SerialNumber"), serial_number);
 	showtext(document.getElementById("MAC"), '<% get_lan_hwaddr(); %>');
 	showtext(document.getElementById("MAC_wl2"), '<% nvram_get("wl0_hwaddr"); %>');
 	if(document.form.wl_unit.value == '1')
@@ -1200,6 +1210,13 @@ function checkWLReady(){
       				<div style="margin-top:5px; *margin-top:-10px;" class="line_horizontal"></div>
     			</td>
   		</tr>
+		<tr id="serialno" style="display:none;">
+				<td style="padding:5px 10px 0px 10px;">
+					<p class="formfonttitle_nwm"><#Serial_Number#></p>
+					<p class="tab_info_bg" style="padding-left:10px; margin-top:3px; *margin-top:-5px; margin-right:10px;line-height:20px;" id="SerialNumber"></p>
+					<div style="margin-top:5px; *margin-top:-10px;" class="line_horizontal"></div>
+				</td>
+		</tr>
   		<tr id="yadns_status" style="display:none;">
     			<td style="padding:5px 10px 0px 10px;">
     				<p class="formfonttitle_nwm" ><#YandexDNS#></p>

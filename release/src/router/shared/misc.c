@@ -212,7 +212,9 @@ int stricmp(char const *a, char const *b, int len)
 		int d = tolower(*a) - tolower(*b);
 		if (d != 0 || !*a)
 			return d;
-    	}	
+    	}
+
+	return 0;
 }
 
 #ifdef HND_ROUTER
@@ -4288,13 +4290,26 @@ int is_amaslib_enabled()
 
 int get_chance_to_control(void)
 {
-	time_t now_t, login_ts, app_login_ts;
+	time_t now_t, login_ts;
+	int timeout_threshold;
+
+#ifdef RTCONFIG_FW_JUMP
+	timeout_threshold = 300;
+#else
+	timeout_threshold = 1800;
+#endif
 
 	now_t = uptime();
 	login_ts = atol(nvram_safe_get("login_timestamp"));
-	app_login_ts = atol(nvram_safe_get("app_login_timestamp"));
-	if(((unsigned long)(login_ts) == 0 || (unsigned long)(now_t-login_ts) > 1800 || nvram_match("login_ip", ""))
-	&& ((unsigned long)(app_login_ts) == 0 || (unsigned long)(now_t-app_login_ts) > 1800 )) //check httpd from browser not in use
+#ifndef RTCONFIG_FW_JUMP
+	time_t app_login_ts = atol(nvram_safe_get("app_login_timestamp"));
+#endif
+
+	if(((unsigned long)(login_ts) == 0 || (unsigned long)(now_t-login_ts) > timeout_threshold || nvram_match("login_ip", ""))
+#ifndef RTCONFIG_FW_JUMP
+			&& ((unsigned long)(app_login_ts) == 0 || (unsigned long)(now_t-app_login_ts) > 1800 )
+#endif
+			) //check httpd from browser not in use
 	{
 		return 1;
 	}else

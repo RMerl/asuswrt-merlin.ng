@@ -206,6 +206,10 @@ extern int ssl_stream_fd;
 #include <mastiff.h>
 #endif
 
+#if defined(RTCONFIG_AMAS)
+#include <stdbool.h>
+#endif
+
 #include <iboxcom.h>
 
 extern int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv);
@@ -336,6 +340,7 @@ typedef uint32_t __u32; //2008.08 magic
 #define sys_download_ap(file) eval("nvram", "save_ap", file);
 #define sys_download_rp_2g(file) eval("nvram", "save_rp_2g", file);
 #define sys_download_rp_5g(file) eval("nvram", "save_rp_5g", file);
+#define sys_download_fb(file) eval("nvram", "fb_save", file);
 #if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300)
 #define sys_download_rp_5g2(file) eval("nvram", "save_rp_5g2", file);
 #endif
@@ -1647,9 +1652,9 @@ websWriteCh(webs_t wp, char *ch, int count)
    return (ret);
 }
 
-#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_HND_ROUTER_AX)
 int skip_log(char *message)
 {
+	if(strstr(message, "net_ratelimit") != NULL) return 1;
 #ifdef RTCONFIG_LANTIQ
 	if(strstr(message, "drvhlpr") != NULL) return 1;
 	if(strstr(message, "mtlk") != NULL) return 1;
@@ -1663,7 +1668,7 @@ int skip_log(char *message)
 #endif
 	return 0;
 }
-#endif
+
 
 static int dump_file(webs_t wp, char *filename)
 {
@@ -1685,10 +1690,8 @@ static int dump_file(webs_t wp, char *filename)
 	{
 	    int len;
 	    len = strlen(buf); // fgets() would fill the '\0' at the last character in buffer.
-#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_HND_ROUTER_AX)
 		if(skip_log(buf) == 0)
-#endif
-	    ret += websWriteData(wp, buf, len);
+			ret += websWriteData(wp, buf, len);
 	}
 
 	fclose(fp);
@@ -2846,7 +2849,7 @@ static int is_passwd_default(){
 }
 
 
-static int validate_apply(webs_t wp, json_object *root) {
+int validate_apply(webs_t wp, json_object *root) {
 	struct nvram_tuple *t;
 	char *value;
 	char name[64];
@@ -7172,6 +7175,7 @@ static int get_multifilter_info(struct json_object *json_object_ptr) {
 	struct json_object *statusArray = NULL, *timeArray = NULL, *multifilter_attr = NULL, *ruleIdxArray = NULL;
 	int arraylen = 0, idx = 0, internetState = 0;
 	char internetMode[8];
+	int ruleStatus = 0;
 
 	if (nvram_get_int("MULTIFILTER_ALL")) {
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -7233,30 +7237,32 @@ finish:
 				multifilter_attr = json_object_new_object();
 				memset(internetMode, 0, 8);
 				sprintf(internetMode, "allow");
+				ruleStatus = 0;
+				internetState = 1;
+
 				if(statusArray != NULL && json_object_array_get_idx(statusArray, idx) != NULL) {
-					if(json_object_get_int(json_object_array_get_idx(statusArray, idx))) {
+					ruleStatus = json_object_get_int(json_object_array_get_idx(statusArray, idx));
+					if(ruleStatus == 1)
+						sprintf(internetMode, "time");
+					else if(ruleStatus == 2)
 						sprintf(internetMode, "block");
-					}
 				}
+
 				json_object_object_add(multifilter_attr, "internetMode", json_object_new_string(internetMode));
 
-				internetState = 0;
-				if(!strcmp(internetMode, "block")) {
+				if(ruleStatus == 1) {
 					if(timeArray != NULL && json_object_array_get_idx(timeArray, idx) != NULL) {
-						if(!strcmp(json_object_get_string(json_object_array_get_idx(timeArray, idx)), "<")) {
+						if(!strcmp(json_object_get_string(json_object_array_get_idx(timeArray, idx)), "<"))
 							internetState = 0;
-						}
 						else {
-							sprintf(internetMode, "time");
-							json_object_object_add(multifilter_attr, "internetMode", json_object_new_string(internetMode));
 							timeList = (char *) json_object_get_string(json_object_array_get_idx(timeArray, idx));
 							internetState = check_internetState(timeList);
 						}
 					}
 				}
-				else {
-					internetState = 1;
-				}
+				else if(ruleStatus == 2)
+					internetState = 0;
+
 				json_object_object_add(multifilter_attr, "internetState", json_object_new_int(internetState));
 
 				json_object_object_add(json_object_ptr, json_object_get_string(json_object_array_get_idx(ruleIdxArray, idx)), multifilter_attr);
@@ -13126,8 +13132,20 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 	 */
 
 	char *mode_flag = safe_get_cgi_json("mode", root);
+	char *ddns_flag = safe_get_cgi_json("path", root);
+	char *remove_passwd = safe_get_cgi_json("remove_passwd", root);
+	int ddns_opt = 0, rm_passwd_opt = 0;
 
-	mode_flag = websGetVar(wp, "mode", "");
+	if(isValidEnableOption(remove_passwd, 1))
+		rm_passwd_opt = atoi(remove_passwd);
+	else
+		HTTPD_DBG("invalid remove_passwd option\n");
+
+	if(isValidEnableOption(ddns_flag, 1))
+		ddns_opt = atoi(ddns_flag);
+	else
+		HTTPD_DBG("invalid ddns_flag option\n");
+
 	model_name = get_model();
 
 	if(model_name == MODEL_RTN56U){
@@ -13145,9 +13163,7 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 	ddns_mac = mac_buf_str;
 #endif
 
-	char *ddns_flag = safe_get_cgi_json("path", root);
-
-	if(strcmp(ddns_flag, "0") == 0){
+	if(ddns_opt == 0){
 		snprintf(ddns_hostname_tmp, sizeof(ddns_hostname_tmp), "%s", nvram_safe_get("ddns_hostname_x"));
 		nvram_set("ddns_transfer", "");
 		nvram_set("ddns_hostname_x", "");
@@ -13159,7 +13175,10 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 	nvram_unset("asus_device_list");
 	nvram_commit();
 
-	if(mode_flag == NULL || !strcmp(mode_flag, "Router")){
+	if(rm_passwd_opt == 1){
+		sys_download_fb("/tmp/settings");
+	}
+	else if(!strcmp(mode_flag, "Router")){
 		sys_download("/tmp/settings");
 	}
 	else if(!strcmp(mode_flag, "AP")){
@@ -13180,7 +13199,7 @@ prf_file(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, cha
 		sys_download("/tmp/settings");
 	}
 
-	if(strcmp(ddns_flag, "0") == 0){
+	if(ddns_opt == 0){
 		nvram_set("ddns_hostname_x", ddns_hostname_tmp);
 		nvram_commit();
 	}
@@ -13575,9 +13594,21 @@ do_diag_log_file(char *url, FILE *stream)
 static void
 deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_t *url, char_t *path, char_t *query)
 {
+	int ret=200;
+	struct json_object *root=NULL;
 	char *mac = NULL;
 	char mac_str[13];
-	mac = websGetVar(wp, "delete_offline_client","");
+
+	do_json_decode(&root);
+
+	mac = safe_get_cgi_json("delete_offline_client", root);
+
+	if(!isValidMacAddress(mac)){
+		HTTPD_DBG("invalid mac\n");
+		ret = 4001;
+		goto FINISH;
+	}
+
 	int i, shm_client_info_id;
 	void *shared_client_info=(void *) 0;
 	P_CLIENT_DETAIL_INFO_TABLE p_client_info_tab;
@@ -13607,14 +13638,16 @@ deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_
 	if (shm_client_info_id == -1){
 		fprintf(stderr,"shmget failed\n");
 		file_unlock(lock);
-		return;
+		ret = 4002;
+		goto FINISH;
 	}
 
 	shared_client_info = shmat(shm_client_info_id,(void *) 0,0);
 	if (shared_client_info == (void *)-1){
 		fprintf(stderr,"shmat failed\n");
 		file_unlock(lock);
-		return;
+		ret = 4002;
+		goto FINISH;
 	}
 
 	p_client_info_tab = (P_CLIENT_DETAIL_INFO_TABLE)shared_client_info;
@@ -13623,7 +13656,12 @@ deleteOfflineClient(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg, char_
 	file_unlock(lock);
 
 	doSystem("killall -%d networkmap", SIGUSR2);
+
+FINISH:
+	json_object_put(root);
+	websWrite(wp, "{\"statusCode\":\"%d\"}", ret);
 }
+
 static void
 do_deleteOfflineClient_cgi(char *url, FILE *stream)
 {
@@ -16283,6 +16321,13 @@ FINISH:
 	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
 }
 
+static void
+do_clean_offline_clientlist_cgi(char *url, FILE *stream)
+{
+	unlink(NMP_CL_JSON_FILE);
+}
+
+
 //2008.08 magic{
 struct mime_handler mime_handlers[] = {
 	{ "Main_Login.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
@@ -16475,6 +16520,7 @@ struct mime_handler mime_handlers[] = {
 	{ "cleanlog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_cleanlog_cgi, do_auth },
 	{ "update_wlanlog.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_update_wlanlog_cgi, do_auth },
 	{ "rog_first_qos.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_rog_first_qos_cgi, do_auth },
+	{ "clean_offline_clientlist.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_clean_offline_clientlist_cgi, do_auth },
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -24871,19 +24917,38 @@ struct useful_redirect_list useful_redirect_lists[] = {
 	{ NULL, NULL }
 };
 
-#ifdef RTCONFIG_AMAS
-struct AiMesh_whitelist AiMesh_whitelists[] = {
-	{"AiMesh_Node_FirmwareUpgrade.asp", NULL},
-	{"upgrade.cgi", NULL},
-	{"Updating.asp", NULL},
-	{"UpdateError_reboot.asp", NULL},
-	{"UpdateError.asp", NULL},
-	{"message.htm", NULL},
-	{"error_page.htm", NULL},
-	{"Main_Login.asp", NULL},
-	{ NULL, NULL }
-};
+struct www_whitelist www_whitelists[] = {
+	{"Manual_FirmwareUpgrade.asp", WHITELIST_FW_JUMP},
+	{"Main_Password.asp", WHITELIST_FW_JUMP},
+	{"AiMesh_Node_FirmwareUpgrade.asp", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"upgrade.cgi", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"Updating.asp", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"UpdateError_reboot.asp", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"UpdateError.asp", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"message.htm", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"error_page.htm", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"Main_Login.asp", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"*.js", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"js/*", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"require/modules/*", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"switcherplugin/*", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"start_apply.htm", WHITELIST_AMAS|WHITELIST_FW_JUMP},
+	{"appGet.cgi", WHITELIST_AMAS},
+	{"APP_Installation.asp", WHITELIST_AMAS},
+	{"update_appstate.asp", WHITELIST_AMAS},
+	{"update_applist.asp", WHITELIST_AMAS},
+	{"Advanced_TimeMachine.asp", WHITELIST_AMAS},
+	{"mediaserver.asp", WHITELIST_AMAS},
+	{"Advanced_AiDisk_samba.asp", WHITELIST_AMAS},
+	{"Advanced_AiDisk_ftp.asp", WHITELIST_AMAS},
+	{"aidisk/*", WHITELIST_AMAS},
+#ifdef RTCONFIG_IPERF3
+	{"set_iperf3_svr.cgi", WHITELIST_AMAS},
+	{"set_iperf3_cli.cgi", WHITELIST_AMAS},
+	{"get_iperf3_state.cgi", WHITELIST_AMAS},
 #endif
+	{ NULL, 0 }
+};
 
 void write_encoded_crt(char *name, char *value){
 	int len, i, j;

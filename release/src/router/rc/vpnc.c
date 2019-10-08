@@ -743,3 +743,11 @@ vpnc_authfail_main(int argc, char **argv)
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
 }
+
+int is_vpnc_connected()
+{
+	if (nvram_get_int("vpnc_state_t") == WAN_STATE_CONNECTED)
+		return 1;
+	else
+		return 0;
+}

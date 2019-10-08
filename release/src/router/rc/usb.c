@@ -237,16 +237,18 @@ fill_smbpasswd_input_file(const char *passwd)
 
 void add_usb_host_module(void)
 {
-#if defined(HND_ROUTER)
-	tweak_usb_affinity(1);
-#endif
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
 	char *u3_param = "u3intf=0";
 #endif
 #endif
+
+#ifndef RTCONFIG_HND_ROUTER
 	char param[32];
 	int i;
+#else
+	tweak_usb_affinity(1);
+#endif
 
 #ifdef RTAC68U
 	if (!hw_usb_cap())
@@ -257,6 +259,13 @@ void add_usb_host_module(void)
 	modprobe(USBCOMMON_MOD);
 #endif
 	modprobe(USBCORE_MOD);
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if(nvram_get_int("usb_usb3") == 1)
+		eval("insmod", "bcm_usb", "usb3_enable=1");
+	else
+		eval("insmod", "bcm_usb", "usb3_enable=0");
+#endif
 
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
@@ -278,9 +287,13 @@ void add_usb_host_module(void)
 	modprobe(USB30_MOD);
 #else
 	if (nvram_get_int("usb_usb3") == 1) {
-		modprobe(USB30_MOD);
-#ifdef HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe("xhci-plat-hcd");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("xhci-pci");
+#endif
+#else
+		modprobe(USB30_MOD);
 #endif
 	}
 #endif
@@ -291,13 +304,17 @@ void add_usb_host_module(void)
 #if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
 		modprobe(USB20_MOD);
 #else
+#ifdef RTCONFIG_HND_ROUTER
+		modprobe("ehci-platform");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("ehci-pci");
+#endif
+#else
 		i = nvram_get_int("usb_irq_thresh");
 		if ((i < 0) || (i > 6))
 			i = 0;
 		sprintf(param, "log2_irq_thresh=%d", i);
 		modprobe(USB20_MOD, param);
-#ifdef HND_ROUTER
-		modprobe("ehci-platform");
 #endif
 #endif
 	}
@@ -308,9 +325,13 @@ void add_usb_host_module(void)
 		modprobe(USBUHCI_MOD);
 	}
 	if (nvram_get_int("usb_ohci") == 1) {
-		modprobe(USBOHCI_MOD);
-#ifdef HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe("ohci-platform");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("ohci-pci");
+#endif
+#else
+		modprobe(USBOHCI_MOD);
 #endif
 	}
 #endif
@@ -329,9 +350,8 @@ void add_usb_host_module(void)
 #endif
 #endif
 
-#ifdef HND_ROUTER
+#if defined(RTCONFIG_HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
 	if(!nvram_get_int("usb_usb3")){
-		modprobe(USB30_MOD);
 		modprobe("xhci-plat-hcd");
 	}
 
@@ -699,7 +719,7 @@ void start_usb(int orig)
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
 			modprobe(USBSTORAGE_MOD);
-#if defined(RTCONFIG_HND_ROUTER_AX)
+#ifdef RTCONFIG_HND_ROUTER_AX
 			modprobe(UAS_MOD);
 #endif
 
@@ -797,7 +817,7 @@ void start_usb(int orig)
 			system("/usr/bin/btchk.sh &"); /* workaround script */
 #endif
 #endif	/* RTCONFIG_BT_CONN */
-#ifdef HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe("btusbdrv");
 #endif
 	}
@@ -902,7 +922,7 @@ void remove_usb_storage_module(void)
 	modprobe_r("nls_cp950");
 #endif
 #endif
-#if defined(RTCONFIG_HND_ROUTER_AX)
+#ifdef RTCONFIG_HND_ROUTER_AX
 	modprobe_r(UAS_MOD);
 #endif
 	modprobe_r(USBSTORAGE_MOD);
@@ -925,7 +945,7 @@ void remove_usb_led_module(void)
 
 void remove_usb_host_module(void)
 {
-#ifndef HND_ROUTER
+#ifndef RTCONFIG_HND_ROUTER
 	modprobe_r(USBOHCI_MOD);
 	modprobe_r(USBUHCI_MOD);
 	modprobe_r(USB20_MOD);
@@ -940,7 +960,7 @@ void remove_usb_host_module(void)
 #endif
 	modprobe_r(USB30_MOD);
 #endif
-#else  // HND_ROUTER
+#else  // RTCONFIG_HND_ROUTER
 	tweak_usb_affinity(0);
 #endif
 
@@ -1077,7 +1097,7 @@ void stop_usb(int f_force)
 
 	remove_usb_led_module();
 
-#ifndef HND_ROUTER
+#ifndef RTCONFIG_HND_ROUTER
 	if (disabled || nvram_get_int("usb_ohci") != 1 || f_force) modprobe_r(USBOHCI_MOD);
 	if (disabled || nvram_get_int("usb_uhci") != 1 || f_force) modprobe_r(USBUHCI_MOD);
 	if (disabled || nvram_get_int("usb_usb2") != 1 || f_force) modprobe_r(USB20_MOD);
@@ -1112,7 +1132,7 @@ void stop_usb(int f_force)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
 #endif	/* RTCONFIG_BT_CONN */
-#if defined(RTCONFIG_USB_XHCI) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_USB_XHCI) && !defined(RTCONFIG_HND_ROUTER)
 #if defined(RTCONFIG_SOC_IPQ8064)
 		modprobe_r("dwc3-ipq");
 		modprobe_r("udc-core");
@@ -1136,7 +1156,7 @@ void stop_usb(int f_force)
 #ifdef RTCONFIG_SOC_IPQ40XX
 	if(disabled)remove_dakota_usb_modules();
 #endif
-#endif // HND_ROUTER
+#endif // RTCONFIG_HND_ROUTER
 }
 
 #ifdef RTCONFIG_ERPTEST
@@ -1155,7 +1175,7 @@ void restart_usb(int stopit)
 #ifdef RTCONFIG_USB_PRINTER
 void start_usblpsrv(void)
 {
-#if !(defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG))
+#if !(defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_HNDMFG))
 	if (nvram_get_int("asus_mfg"))
 #endif
 	return;
@@ -1699,14 +1719,14 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 	nvram_set("dsltmp_diag_log_path", "");
 #endif
 
-#ifdef RTCONFIG_PUSH_EMAIL
+#ifdef RTCONFIG_FRS_FEEDBACK
 #ifdef RTCONFIG_DBLOG
 	if(nvram_match("dblog_enable", "1")) {
 		eval("dblogcmd", "exit"); // to stop dblog daemon
 	}
 	nvram_set("dblog_usb_path", "");
-	#endif /* RTCONFIG_DBLOG */
-#endif /* RTCONFIG_PUSH_EMAIL */
+#endif /* RTCONFIG_DBLOG */
+#endif /* RTCONFIG_FRS_FEEDBACK */
 
 	if(!g_reboot && nvram_match("apps_mounted_path", mnt->mnt_dir))
 		stop_app();
@@ -1735,10 +1755,9 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 		 * kill all NAS applications so they are not keeping the device busy -
 		 * unless it's an unmount request from the Web GUI.
 		 */
-		if ((count == 0) && ((flags & EFH_USER) == 0)){
-//_dprintf("restart_nas_services(%d): test 1.\n", getpid());
-			restart_nas_services(1, 0);
-		}
+		if ((count == 0) && ((flags & EFH_USER) == 0))
+			restart_nas_services(1, 0, 1);
+
 		/* If we could not unmount the driver ten times,
 		 * it is likely caused by downloadmaster/mediaserver/asus_lighttpd.
 		 * Remove them again per ten retry.
@@ -2065,7 +2084,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 		}
 #endif
 
-#ifdef RTCONFIG_PUSH_EMAIL
+#ifdef RTCONFIG_FRS_FEEDBACK
 #ifdef RTCONFIG_DBLOG
 		if(ret == MOUNT_VAL_RW) {
 			if(nvram_match("dblog_usb_path", "")) {
@@ -2077,7 +2096,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 			}
 		}
 #endif /* RTCONFIG_DBLOG */
-#endif /* RTCONFIG_PUSH_EMAIL */
+#endif /* RTCONFIG_FRS_FEEDBACK */
 
 		// check the permission files.
 		if(ret == MOUNT_VAL_RW)
@@ -2264,8 +2283,7 @@ void hotplug_usb_storage_device(int host_no, int action_add, uint flags)
 			 * or hotplug_usb() already did.
 			 */
 			if (exec_for_host(host_no, 0x00, flags, mount_partition)) {
-//_dprintf("restart_nas_services(%d): test 2.\n", getpid());
-				restart_nas_services(1, 1); // restart all NAS applications
+				restart_nas_services(1, 1, 0); // restart all NAS applications
 			}
 		}
 	}
@@ -2278,8 +2296,7 @@ void hotplug_usb_storage_device(int host_no, int action_add, uint flags)
 			/* Restart NAS applications (they could be killed by umount_mountpoint),
 			 * or just re-read the configuration.
 			 */
-//_dprintf("restart_nas_services(%d): test 3.\n", getpid());
-			restart_nas_services(1, 1);
+			restart_nas_services(1, 1, 0);
 		}
 	}
 }
@@ -2289,8 +2306,7 @@ void hotplug_usb_storage_device(int host_no, int action_add, uint flags)
 void remove_storage_main(int shutdn)
 {
 	if (shutdn){
-//_dprintf("restart_nas_services(%d): test 4.\n", getpid());
-		restart_nas_services(1, 0);
+		restart_nas_services(1, 0, 0);
 	}
 	/* Unmount all partitions */
 	exec_for_host(-1, 0x02, shutdn ? EFH_SHUTDN : 0, umount_partition);
@@ -2509,7 +2525,7 @@ void hotplug_usb(void)
 				TRACE_PT(" mount to dev: %s\n", devname);
 				if (mount_partition(devname, host, NULL, device, EFH_HP_ADD)) {
 _dprintf("restart_nas_services(%d): test 5.\n", getpid());
-					//restart_nas_services(1, 1); // restart all NAS applications
+					//restart_nas_services(1, 1, 0); // restart all NAS applications
 					notify_rc_and_wait("restart_nasapps");
 				}
 				TRACE_PT(" end of mount\n");
@@ -2529,7 +2545,7 @@ _dprintf("restart_nas_services(%d): test 5.\n", getpid());
 					nvram_unset(nv_name);
 			} else {
 _dprintf("restart_nas_services(%d): test 6.\n", getpid());
-				//restart_nas_services(1, 1);
+				//restart_nas_services(1, 1, 0);
 				notify_rc_after_wait("restart_nasapps");
 			}
 		}
@@ -2760,9 +2776,9 @@ start_ftpd(void)
 		logmessage("FTP server", "daemon is started");
 }
 
-void stop_ftpd(void)
+void stop_ftpd(int force)
 {
-	if (getpid() != 1) {
+	if(!force && getpid() != 1){
 		notify_rc_after_wait("stop_ftpd");
 		return;
 	}
@@ -2839,9 +2855,9 @@ void start_tftpd(void)
 		logmessage("TFTP-HPA server", "daemon is started on %s", tftpdir);
 }
 
-void stop_tftpd(void)
+void stop_tftpd(int force)
 {
-	if (getpid() != 1) {
+	if(!force && getpid() != 1){
 		notify_rc_after_wait("stop_tftpd");
 		return;
 	}
@@ -3052,7 +3068,7 @@ static void kill_samba(int sig)
 	}
 }
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 void enable_gro(int interval)
 {
 	char *argv[3] = {"echo", "", NULL};
@@ -3136,6 +3152,9 @@ char *cpu_list = nvram_get("usb_user_core");
 #endif
 #endif
 	char smbd_cmd[32];
+#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
+	char st_samba_proto[8];
+#endif
 
 	if (getpid() != 1) {
 		notify_rc_after_wait("start_samba");
@@ -3155,7 +3174,7 @@ char *cpu_list = nvram_get("usb_user_core");
 		return;
 	}
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
 	enable_gro(2);
 #else
@@ -3172,7 +3191,7 @@ char *cpu_list = nvram_get("usb_user_core");
 #endif
 #endif
 
-#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_HND_ROUTER)
 	tweak_smp_affinity(1);
 #endif
 
@@ -3186,8 +3205,15 @@ char *cpu_list = nvram_get("usb_user_core");
 	system("/sbin/write_smb_conf");
 
 	/* write smbpasswd  */
-#ifdef RTCONFIG_SAMBA36X
-	system("echo -e \"\n\n\" |smbpasswd -s -a nobody");
+#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
+	snprintf(st_samba_proto, sizeof(st_samba_proto), "%s", nvram_safe_get("st_samba_proto"));
+
+	if(atoi(st_samba_proto) >= 2)
+		// use samba-3.6.x_opwrt to replace from samba-3.6.x
+		//system("echo -e \"\n\n\" |/usr/sbin/smbpasswd -s -a nobody");
+		system("/usr/sbin/smbpasswd nobody \"\"");
+	else
+		system("/usr/bin/smbpasswd nobody \"\"");
 #else
 	system("smbpasswd nobody \"\"");
 #endif
@@ -3219,8 +3245,13 @@ char *cpu_list = nvram_get("usb_user_core");
 		memset(suit_passwd, 0, 64);
 		str_escape_quotes(suit_passwd, char_passwd, 64);
 
-#ifdef RTCONFIG_SAMBA36X
-		snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
+		if(atoi(st_samba_proto) >= 2)
+			// use samba-3.6.x_opwrt to replace from samba-3.6.x
+			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+		else
+			snprintf(cmd, sizeof(cmd), "/usr/bin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 		snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
@@ -3261,7 +3292,7 @@ char *cpu_list = nvram_get("usb_user_core");
 			memset(suit_passwd, 0, 64);
 			str_escape_quotes(suit_passwd, char_passwd, 64);
 #ifdef RTCONFIG_SAMBA36X
-			snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+				snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 			snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
@@ -3275,6 +3306,16 @@ char *cpu_list = nvram_get("usb_user_core");
 		free(nv);
 #endif
 
+#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
+	if(atoi(st_samba_proto) >= 2){
+		xstart("/usr/sbin/nmbd", "-D", "-s", "/etc/smb.conf");
+		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/sbin");
+	}
+	else{
+		xstart("/usr/bin/nmbd", "-D", "-s", "/etc/smb.conf");
+		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/bin");
+	}
+#else
 	xstart("nmbd", "-D", "-s", "/etc/smb.conf");
 
 #if defined(RTCONFIG_TFAT) || defined(RTCONFIG_TUXERA_NTFS) || defined(RTCONFIG_TUXERA_HFS)
@@ -3284,6 +3325,7 @@ char *cpu_list = nvram_get("usb_user_core");
 		snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/sbin");
 #else
 	snprintf(smbd_cmd, sizeof(smbd_cmd), "%s/smbd", "/usr/sbin");
+#endif
 #endif
 
 #if defined(SMP)
@@ -3320,9 +3362,9 @@ char *cpu_list = nvram_get("usb_user_core");
 	return;
 }
 
-void stop_samba(void)
+void stop_samba(int force)
 {
-	if (getpid() != 1) {
+	if(!force && getpid() != 1){
 		notify_rc_after_wait("stop_samba");
 		return;
 	}
@@ -3337,7 +3379,7 @@ void stop_samba(void)
 
 	logmessage("Samba Server", "smb daemon is stopped");
 
-#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_HND_ROUTER)
 	tweak_smp_affinity(0);
 #endif
 
@@ -3347,7 +3389,7 @@ void stop_samba(void)
 #endif
 #endif
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 	enable_gro(0);
 #endif
 }
@@ -3465,7 +3507,7 @@ void start_dms(void)
 		return;
 #endif
 
-#if !(defined(HND_ROUTER) && defined(RTCONFIG_HNDMFG))
+#if !(defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_HNDMFG))
 	if (!sd_partition_num() && !nvram_match("usb_debug", "1"))
 #endif
 		return;
@@ -3792,9 +3834,9 @@ start_mt_daapd()
 }
 
 void
-stop_mt_daapd()
+stop_mt_daapd(int force)
 {
-	if(getpid()!=1) {
+	if(!force && getpid() != 1){
 		notify_rc("stop_mt_daapd");
 		return;
 	}
@@ -4458,17 +4500,17 @@ void stop_nas_services(int force)
 
 #ifdef RTCONFIG_MEDIA_SERVER
 	force_stop_dms();
-	stop_mt_daapd();
+	stop_mt_daapd(force);
 #endif
 #ifdef RTCONFIG_FTP
-	stop_ftpd();
+	stop_ftpd(force);
 #endif
 #if defined(RTCONFIG_TFTP_SERVER)
-	stop_tftpd();
+	stop_tftpd(force);
 #endif
 
 #ifdef RTCONFIG_SAMBASRV
-	stop_samba();
+	stop_samba(force);
 #endif
 #ifdef RTCONFIG_NFS
 	stop_nfsd();
@@ -4477,22 +4519,21 @@ void stop_nas_services(int force)
 	//stop_webdav();
 #endif
 #ifdef RTCONFIG_TIMEMACHINE
-	stop_timemachine();
+	stop_timemachine(force);
 #endif
 }
 
-void restart_nas_services(int stop, int start)
+void restart_nas_services(int stop, int start, int force)
 {
 	int fd = file_lock("usbnas");
 
 	/* restart all NAS applications */
 	if (stop)
-		stop_nas_services(0);
+		stop_nas_services(force);
 	if (start)
-		start_nas_services(0);
+		start_nas_services(force);
 	file_unlock(fd);
 }
-
 
 void restart_sambaftp(int stop, int start)
 {
@@ -4506,13 +4547,13 @@ void restart_sambaftp(int stop, int start)
 	/* restart all NAS applications */
 	if (stop) {
 #ifdef RTCONFIG_SAMBASRV
-		stop_samba();
+		stop_samba(0);
 #endif
 #ifdef RTCONFIG_NFS
 		stop_nfsd();
 #endif
 #ifdef RTCONFIG_FTP
-		stop_ftpd();
+		stop_ftpd(0);
 #endif
 #ifdef RTCONFIG_WEBDAV
 		stop_webdav();
@@ -4710,7 +4751,7 @@ int ejusb_main(int argc, char *argv[])
 
 	if (restart_nasapps) {
 		_dprintf("restart_nas_services(%d): test 7.\n", getpid());
-		//restart_nas_services(1, 1);
+		//restart_nas_services(1, 1, 0);
 		notify_rc_after_wait("restart_nasapps");
 	} else {
 		_dprintf("restart_nas_services(%d) is skipped: test 7.\n", getpid());

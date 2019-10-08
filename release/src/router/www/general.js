@@ -854,7 +854,36 @@ function insertExtChannelOption_5g(){
 				}
 			}
 
-				if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2"){ //not Legacy mode and BW != 20MHz
+			if(is_RU_sku){
+				var RU_band4 = (function(){
+					for(i=0;i<wl_channel_list_5g.length;i++){
+						if(wl_channel_list_5g[i] >= '149'){
+							return true;
+						}
+					}
+
+					return false;
+				})();
+				if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
+					if(document.form.wl_bw.value == 3){    // 80 MHz
+						if(RU_band4){
+							wl_channel_list_5g = ['42', '58', '138', '155'];
+						}
+						else{
+							wl_channel_list_5g = ['42', '58', '138'];
+						}	
+					}
+					else if(document.form.wl_bw.value == 2){    // 40 MHz
+						if(RU_band4){
+							wl_channel_list_5g = ['38', '46', '54', '62', '134', '142', '151', '159'];
+						}
+						else{
+							wl_channel_list_5g = ['38', '46', '54', '62', '134', '142'];
+						}
+					}			
+				}
+			}
+			else if(document.form.wl_bw.value != "0" && document.form.wl_nmode_x.value != "2"){ //not Legacy mode and BW != 20MHz
 					// for V40, if not all 2 continuous channels exist, remove them.
 					if(document.form.wl_bw.value == "2" && (Rawifi_support || Qcawifi_support || Rtkwifi_support)){
 						wl_channel_list_5g = filter_5g_channel_by_bw(wl_channel_list_5g, 40);
@@ -1230,15 +1259,48 @@ function insertExtChannelOption_5g(){
         var ch_v = new Array();
         for(var i=0; i<channels.length; i++){
         	ch_v[i] = channels[i];
-        }
-        if(ch_v[0] == "0")
-        	channels[0] = "<#Auto#>";
+		}
+		
+        if(ch_v[0] == "0"){
+			channels[0] = "<#Auto#>";
+		}
+		
+		if(is_RU_sku){
+			var RU_band4 = (function(){
+				for(i=0;i<wl_channel_list_5g.length;i++){
+					if(wl_channel_list_5g[i] >= '149'){
+						return true;
+					}
+				}
+
+				return false;
+			})();
+			if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
+				if(document.form.wl_bw.value == 3){    // 80 MHz
+					if(RU_band4){
+						ch_v = ['0', '36', '52', '132', '149'];
+					}
+					else{
+						ch_v = ['0', '36', '52', '132'];
+					}
+				}
+				else if(document.form.wl_bw.value == 2){    // 40 MHz
+					if(RU_band4){
+						ch_v = ['0', '36', '44', '52', '60', '132', '140', '149', '157'];
+					}
+					else{
+						ch_v = ['0', '36', '44', '52', '60', '132', '140'];
+					}
+				}			
+			}
+		}
+		
         add_options_x2(document.form.wl_channel, channels, ch_v, orig);
-				var x = document.form.wl_nctrlsb;
-				//x.remove(x.selectedIndex);
-				free_options(x);
-				add_option(x, "<#Auto#>", "lower");
-				x.selectedIndex = 0;
+		var x = document.form.wl_nctrlsb;
+		//x.remove(x.selectedIndex);
+		free_options(x);
+		add_option(x, "<#Auto#>", "lower");
+		x.selectedIndex = 0;
 }
 
 function insertExtChannelOption_2g(){

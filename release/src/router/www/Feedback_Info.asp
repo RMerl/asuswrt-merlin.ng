@@ -260,7 +260,7 @@ function get_split_feedback(seg){
 	<#feedback_fail3#> :
 	<br>
 	<ul>
-		<li id="dbg_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">debug file</span></li>
+		<li id="dbg_dsl_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
 		<li id="dbg_dsl_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
 		<li id="dbg_dsl_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
 		<li id="dbg_dsl_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>
@@ -277,7 +277,7 @@ function get_split_feedback(seg){
 	<#feedback_fail3#> :
 	<br>
 	<ul>
-		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">debug file</span></li>
+		<li id="dbg_rt_file" style="display:none;"><span onClick="get_split_feedback(1);" style="text-decoration: underline; color:#FFCC00; cursor:pointer;"><#feedback_debug_file#></span></li>
 		<li id="dbg_rt_seg_a" style="display:none;"><span onClick="get_split_feedback('a');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_a</span></li>
 		<li id="dbg_rt_seg_b" style="display:none;"><span onClick="get_split_feedback('b');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_b</span></li>
 		<li id="dbg_rt_seg_c" style="display:none;"><span onClick="get_split_feedback('c');" style="text-decoration: underline; color:#FFCC00; cursor:pointer;">get_split_feedback_c</span></li>

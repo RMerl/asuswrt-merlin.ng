@@ -908,6 +908,14 @@ var isWANChanged = function(){
 		if(qisPostData.wan_dnsenable_x != systemVariable.wanDnsenable) isChanged = true;
 	}
 
+	if(qisPostData.hasOwnProperty("wan_pppoe_username")){
+		if(qisPostData.wan_pppoe_username != systemVariable.originPppAccount.username) isChanged = true;
+	}
+
+	if(qisPostData.hasOwnProperty("wan_pppoe_passwd")){
+		if(qisPostData.wan_pppoe_passwd != systemVariable.originPppAccount.password) isChanged = true;
+	}
+
 	return isChanged;
 };
 

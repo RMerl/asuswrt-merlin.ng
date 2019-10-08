@@ -1,6 +1,10 @@
 
 mainmenu "Router Configuration"
 
+config RTCONFIG_FW_JUMP
+	bool "build the jumped firmware"
+	default n
+
 config RTCONFIG_REALTEK
 	bool "Realtek SoC support"
 	default n
@@ -412,8 +416,12 @@ config RTCONFIG_NEW_USER_LOW_RSSI
 	bool "User specified accepted min rssi"
 	default n
 
-+config RTCONFIG_WATCH_WLREINIT
+config RTCONFIG_WATCH_WLREINIT
 	bool "reboot when wlreinit cannot save wl"
+	default n
+
+config RTCONFIG_FRS_FEEDBACK
+	bool "Feedback features Support"
 	default n
 
 config RTCONFIG_PUSH_EMAIL

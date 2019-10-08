@@ -55,6 +55,10 @@ nvram show |grep g3state
 echo ">"
 nvram show |grep g3err
 
+echo ">"
+echo "FW upgrade nvram:>"
+nvram show |grep ^webs_state
+
 for modem_unit in 0 1; do
 	if [ "$modem_unit" -eq "0" ]; then
 		prefix=usb_modem_

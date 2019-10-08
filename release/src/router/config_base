@@ -2,6 +2,7 @@
 # The baseline configuration for Tomato USB.
 # All other build configurations are derived from this.
 #
+# RTCONFIG_FW_JUMP is not set
 RTCONFIG_OPTIMIZE_SHARED_LIBS=y
 RTCONFIG_L2TP=y
 RTCONFIG_PPTP=y
@@ -102,6 +103,7 @@ RTCONFIG_DDNS=y
 # RTCONFIG_USER_LOW_RSSI is not set
 # RTCONFIG_NEW_USER_LOW_RSSI is not set
 # RTCONFIG_WATCH_WLREINIT is not set
+# RTCONFIG_FRS_FEEDBACK is not set
 # RTCONFIG_PUSH_EMAIL is not set
 # RTCONFIG_RSYSLOGD is not set
 # RTCONFIG_DBLOG is not set

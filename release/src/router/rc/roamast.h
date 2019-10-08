@@ -23,6 +23,8 @@
 #define RAST_EVENT_INTERVAL_MAX 5	/* maximum additional time for next event trigger */
 #define RAST_EVENT_FREEZE 10		/* event of specific will be freezed once event is triggered over this number */
 #define RAST_OBVS_RSSI_DELTA 3		/* condition of rssi for obvious moving */
+#define RAST_DFT_WEAK_RSSI_DIFF 10	/* rssi delta allow to roam the station which stamon result is not better than trigger criteria */
+#define RAST_DFT_RSSI_VIDEO_CALL -80	/* rssi thresold to change idle rate weighting scheme */
 #define WL_NBAND_2G 2
 #define WL_NBAND_5G 1
 #endif
@@ -83,47 +85,55 @@
 
 #define RAST_DEBUG "/tmp/RAST_DEBUG"
 
+#define LOG_TITLE_ROAM "roamast"
+static char title_roam[128];
+char lan_hwaddr[18];
+
 #ifdef RTCONFIG_LIBASUSLOG
 #define AMAS_DBG_LOG	"roamast.log"
 #define RAST_INFO(fmt, arg...) \
-	do {    \
+	do { \
 		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 		if(rast_syslog || f_exists(RAST_DEBUG)) \
 			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
+		if(rast_force_syslog) \
+			logmessage(title_roam, fmt, ##arg); \
 	} while (0)
 #define RAST_DBG(fmt, arg...) \
-	do {    \
+	do { \
 		if(rast_dbg || f_exists(RAST_DEBUG)) \
+			_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
+		if(rast_syslog || f_exists(RAST_DEBUG)) \
+			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
+		if(rast_force_syslog) \
+			logmessage(title_roam, fmt, ##arg); \
+	} while (0)
+#define RAST_SYSLOG(fmt, arg...) \
+	do { \
 		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 		if(rast_syslog || f_exists(RAST_DEBUG)) \
 			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
+		logmessage(title_roam, fmt, ##arg); \
 	} while (0)
-#define RAST_SYSLOG(fmt, arg...) \
-        do {    \
-                _dprintf("RAST %lu: "fmt, uptime(), ##arg); \
-                logmessage("roamast", ""fmt, ##arg); \
-		if(rast_syslog || f_exists(RAST_DEBUG)) \
-			asusdebuglog(LOG_INFO, AMAS_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, fmt, ##arg); \
-        } while (0)
 #else
 #define RAST_INFO(fmt, arg...) \
-	do {    \
+	do { \
 		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 		if(rast_syslog || f_exists(RAST_DEBUG)) \
-		logmessage("RAST","[%s] "fmt, nvram_get("lan_hwaddr"), ##arg); \
+			logmessage(title_roam, fmt, ##arg); \
 	} while (0)
 #define RAST_DBG(fmt, arg...) \
-	do {    \
+	do { \
 		if(rast_dbg || f_exists(RAST_DEBUG)) \
-		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
+			_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
 		if(rast_syslog || f_exists(RAST_DEBUG)) \
-		logmessage("RAST", "[%s] "fmt, nvram_get("lan_hwaddr"), ##arg); \
+			logmessage(title_roam, fmt, ##arg); \
 	} while (0)
 #define RAST_SYSLOG(fmt, arg...) \
-        do {    \
-                _dprintf("RAST %lu: "fmt, uptime(), ##arg); \
-                logmessage("roamast", ""fmt, ##arg); \
-        } while (0)
+	do { \
+		_dprintf("RAST %lu: "fmt, uptime(), ##arg); \
+		logmessage(title_roam, fmt, ##arg); \
+	} while (0)
 #endif
 
 #ifdef RTCONFIG_CONNDIAG
@@ -210,6 +220,8 @@ typedef struct rast_sta_info {
 #ifndef RTCONFIG_BCMARM
 	uint32 prepkts;
 #endif
+	uint64 rx_tot_bytes;
+	uint64 rx_bytes;
 #endif
 
 #ifdef RTCONFIG_ADV_RAST
@@ -225,8 +237,8 @@ typedef struct rast_sta_info {
 #if defined(RTCONFIG_LANTIQ)
 	unsigned long last_txrx_bytes;
 #endif
-	int32 tx_rate;
-	int32 rx_rate;
+	uint32 tx_rate;
+	uint32 rx_rate;
 }rast_sta_info_t;
 
 
@@ -270,12 +282,14 @@ typedef enum {
 
 typedef struct rast_adv_conf {
 	uint32 aclist_timeout;
+	uint8 weak_rssi_diff;
 } rast_adv_conf_t;
 #endif
 
 rast_bss_info_t bssinfo[MAX_IF_NUM];
 int rast_dbg;
 int rast_syslog;
+int rast_force_syslog;
 
 #ifdef RTCONFIG_ADV_RAST
 rast_adv_conf_t adv_conf;

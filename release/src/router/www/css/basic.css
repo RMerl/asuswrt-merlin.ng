@@ -39,7 +39,7 @@
 .border-container{
     width: 769px; 
     position: relative;
-    margin-bottom: 20px;
+    margin: 10px auto 20px auto;
     border: 1px solid #5C0C0B;
     border-top-left-radius: 18px;
     border-top-right-radius: 8px;
@@ -49,7 +49,7 @@
 }
 .border-corner{
     width: 26px; 
-    height:40px;
+    height: 40px;
     position: absolute;
     background-image: url('../images/gameprofile/card-frame-corner.svg');
 }
@@ -84,10 +84,9 @@
 }
 .title-content{
     width: 100%;
-    font-family: ROG;
-    font-size: 36px;
-    margin: -20px 0 0 18px;
-    padding-bottom: 8px;
+    font-size: 24px;
+    margin: 0 0 0 18px;
+    padding-bottom: 4px;
     border-bottom: 1px solid #5C0C0B;
 }
 /* End Title */
@@ -96,7 +95,7 @@
     font-size: 14px;
     font-family: Xolonium;
     color:#DFDFDF;
-    margin: 12px 20px 0 68px;
+    margin: 12px 20px 12px 68px;
 }
 /* End Description */
 /* Control Feild */

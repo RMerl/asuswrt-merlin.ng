@@ -421,8 +421,6 @@ add_option (char *p[], int line, int unit)
 
 		if(p[2])
 			nvram_pf_set(prefix, "port", p[2]);
-		else
-			nvram_pf_set(prefix, "port", "1194");
 		if(p[3])
 		{
 			if(!strncmp(p[3], "tcp", 3))
@@ -445,6 +443,19 @@ add_option (char *p[], int line, int unit)
 			nvram_pf_set(prefix, "comp", p[1]);
 		else
 			nvram_pf_set(prefix, "comp", "adaptive");
+	}
+	else if (streq (p[0], "compress"))
+	{
+		if (p[1]) {
+			if (streq (p[1], "lzo"))
+				nvram_pf_set(prefix, "comp", "yes");
+			else if (streq (p[1], "lz4"))
+				nvram_pf_set(prefix, "comp", "lz4");
+			else if (streq (p[1], "lz4-v2"))
+				nvram_pf_set(prefix, "comp", "lz4-v2");
+		} else {
+			nvram_pf_set(prefix, "comp", "no");
+		}
 	}
 	else if (streq (p[0], "cipher") && p[1])
 	{
@@ -481,6 +492,17 @@ add_option (char *p[], int line, int unit)
 		else
 		{
 			return VPN_UPLOAD_NEED_CERT;
+		}
+	}
+	else if (streq (p[0], "extra-certs") && p[1])
+	{
+		if (streq (p[1], INLINE_FILE_TAG) && p[2] && strstr(p[2], PEM_START_TAG))
+		{
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA_EXTRA, p[2], NULL);
+		}
+		else
+		{
+			return VPN_UPLOAD_NEED_EXTRA;
 		}
 	}
 	else if  (streq (p[0], "key") && p[1])
@@ -540,17 +562,6 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
-	else if (streq (p[0], "extra-certs") && p[1])
-	{
-		if (streq (p[1], INLINE_FILE_TAG) && p[2] && strstr(p[2], PEM_START_TAG))
-		{
-			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA_EXTRA, p[2], NULL);
-		}
-		else
-		{
-			return VPN_UPLOAD_NEED_EXTRA;
-		}
-	}
 	else if (streq (p[0], "auth-user-pass"))
 	{
 		nvram_pf_set(prefix, "userauth", "1");
@@ -558,6 +569,16 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "tls-remote") && p[1])
 	{
 		nvram_pf_set(prefix, "tlsremote", "1");
+		nvram_pf_set(prefix, "cn", p[1]);
+	}
+	else if (streq (p[0], "verify-x509-name") && p[1] && p[2])
+	{
+		if (streq(p[2], "name"))
+			nvram_pf_set(prefix, "tlsremote", "1");
+		else if (streq(p[2], "name-prefix"))
+			nvram_pf_set(prefix, "tlsremote", "2");
+		else if (streq(p[2], "subject"))
+			nvram_pf_set(prefix, "tlsremote", "3");
 		nvram_pf_set(prefix, "cn", p[1]);
 	}
 	else if (streq (p[0], "key-direction") && p[1])
@@ -585,19 +606,6 @@ add_option (char *p[], int line, int unit)
 		else
 		{
 			return VPN_UPLOAD_NEED_CRL;
-		}
-	}
-	else if (streq (p[0], "compress"))
-	{
-		if (p[1]) {
-			if (streq (p[1], "lzo"))
-				nvram_pf_set(prefix, "comp", "yes");
-			else if (streq (p[1], "lz4"))
-				nvram_pf_set(prefix, "comp", "lz4");
-			else if (streq (p[1], "lz4-v2"))
-				nvram_pf_set(prefix, "comp", "lz4-v2");
-		} else {
-			nvram_pf_set(prefix, "comp", "no");
 		}
 	}
 	else if (streq (p[0], "ncp-ciphers") && p[1])
@@ -683,7 +691,8 @@ read_config_file (const char *file, int unit)
 }
 
 
-void parse_openvpn_status(int unit){
+void parse_openvpn_status(int unit)
+{
 	FILE *fpi, *fpo;
 	char buf[512];
 	char *token;

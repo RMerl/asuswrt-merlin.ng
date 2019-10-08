@@ -1556,19 +1556,39 @@ function popAMeshClientListEditTable(event) {
 	$popupBgHtml.find("#aimesh_node_location_input").blur(
 		function() {
 			var validAiMeshLocation = function() {
-				var location = $popupBgHtml.find("#aimesh_node_location_input").val();
-				if(location.length == 0){
+				var location = $.trim($popupBgHtml.find("#aimesh_node_location_input").val());
+				$popupBgHtml.find("#aimesh_node_location_input").val(location);
+				var show_valid_hint = function(_hint){
 					$popupBgHtml.find("#aimesh_node_location_hint").css("display", "block");
-					$popupBgHtml.find("#aimesh_node_location_hint").html("<#File_Pop_content_alert_desc1#>");
+					$popupBgHtml.find("#aimesh_node_location_hint").html(_hint);
 					$popupBgHtml.find("#aimesh_node_location_input").focus();
 					$popupBgHtml.find("#aimesh_node_location_input").select();
+				};
+				if(location.length == 0){
+					show_valid_hint("<#JS_fieldblank#>");
 					return false;
 				}
-				else if(!parent.validator.haveFullWidthChar($popupBgHtml.find("#aimesh_node_location_input")[0])) {
-					$popupBgHtml.find("#aimesh_node_location_hint").css("display", "block");
-					$popupBgHtml.find("#aimesh_node_location_hint").html("<#JS_validchar#>");
-					$popupBgHtml.find("#aimesh_node_location_input").focus();
-					$popupBgHtml.find("#aimesh_node_location_input").select();
+
+				var block_chars_array = ["\""];
+				var block_chars_hint = "";
+				for(var i = 0; i < block_chars_array.length; i++) {
+					if(location.indexOf(block_chars_array[i]) >= 0)
+						block_chars_hint = block_chars_array[i] + " <#JS_invalid_chars#>";
+				}
+				if(block_chars_hint != "") {
+					show_valid_hint(block_chars_hint);
+					return false;
+				}
+
+				if(utf8_ssid_support){
+					var len = parent.validator.lengthInUtf8(location);
+					if(len > 32){
+						show_valid_hint("The field cannot be greater than 32 characters.");/* untranslated */
+						return false;
+					}
+				}
+				else if(!parent.validator.haveFullWidthChar($obj[0])) {
+					show_valid_hint("<#JS_validchar#>");
 					return false;
 				}
 				$popupBgHtml.find("#aimesh_node_location_hint").css("display", "none");

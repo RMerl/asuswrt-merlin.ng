@@ -52,7 +52,7 @@
     top: 135px;
 }
 .border1-LV-container{
-    margin-top: 220px;
+    margin-top: 200px;
 }
 .triLv-container{
     margin: 0 12px 0 32px;
@@ -63,6 +63,7 @@
     -webkit-text-fill-color: transparent;
 }
 .triLv-level{
+    width: 48px;
     font-size: 16px;
     text-align: center;
     margin-bottom: 4px;
@@ -79,9 +80,9 @@
     margin-top: -34px;
 }
 .triLv-desc{
-    width:138px;
+    width: 148px;
     font-size: 18px;
-    margin: 12px 0 0 12px;
+    margin: 12px 0 0 6px;
 }
 
 .card-boder{
@@ -99,7 +100,7 @@
     margin: 18px 24px 10px 0 !important;
 }
 .border2-title-desc{
-    font-size: 28px !important;
+    font-size: 24px !important;
     margin: -12px 0 0 18px !important;
 }
 .content-image-container{

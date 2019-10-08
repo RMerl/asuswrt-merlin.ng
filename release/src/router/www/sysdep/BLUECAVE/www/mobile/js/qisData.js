@@ -224,6 +224,10 @@ var modemObj = {
 
 var systemVariable = {
 	"originWanType": "", /* ToDo: Secondary WAN support */
+	"originPppAccount":{
+		"username": "",
+		"password": ""
+	},
 	"originWansExtwan": "",
 	"originWansDualwan": "",
 	"manualWanSetup": false,

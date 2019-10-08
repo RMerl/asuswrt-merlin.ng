@@ -603,7 +603,7 @@ apply.submitQIS = function(){
 }
 
 apply.update = function(){
-	httpApi.nvramSet({"action_mode": "apply", "rc_service":"start_webs_upgrade"}, goTo.Upgrading);
+	httpApi.nvramSet({"action_mode": "apply", "rc_service":"stop_upgrade;start_webs_upgrade"}, goTo.Upgrading);
 };
 
 apply.amasNode = function(){

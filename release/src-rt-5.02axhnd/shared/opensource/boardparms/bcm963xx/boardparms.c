@@ -7644,6 +7644,90 @@ static bp_elem_t g_bcm94908ax11000[] = {
   {bp_last}
 };
 
+static bp_elem_t g_bcm94908ax11000_54991[] = {
+  {bp_cpBoardId,               .u.cp = "94908AX11000X"},
+  {bp_ulCompatChipId,          .u.ul = 0x4908},
+  {bp_ulInterfaceEnable,       .u.ul = BP_PINMUX_FNTYPE_EMMC},
+  {bp_usGpioLedBlPowerOn,      .u.us = BP_GPIO_17_AL},
+//  {bp_usGpioUart2Cts,	       .u.us = BP_GPIO_10_AH},
+//  {bp_usGpioUart2Rts,	       .u.us = BP_GPIO_11_AH},
+//  {bp_usGpioUart2Sdin,       .u.us = BP_GPIO_12_AH}, // uart2 is /dev/ttyH0
+//  {bp_usGpioUart2Sdout,      .u.us = BP_GPIO_13_AH}, // uart2 is /dev/ttyH0
+  {bp_usGpioI2cSda,            .u.us = BP_GPIO_18_AH}, /* i2c for sgmii optical module */
+  {bp_usGpioI2cScl,            .u.us = BP_GPIO_19_AH},
+
+  {bp_usButtonIdx,             .u.us = 0},
+#if defined(_CFE_)
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_0 },
+  {  bp_usGpio_Intr,           .u.us = BP_GPIO_4_AL},
+  {    bp_usButtonAction,      .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_PRESS  },
+#else
+#ifdef BRCM_BTN_ACTION
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_0 | BP_EXT_INTR_TYPE_IRQ_LOW_LEVEL},
+#else
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_0 },
+#endif
+  {  bp_usGpio_Intr,           .u.us = BP_GPIO_4_AL},
+#ifdef BRCM_BTN_ACTION
+  {  bp_usButtonAction,        .u.us = BP_BTN_ACTION_PRINT | BP_BTN_TRIG_PRESS },
+  {      bp_ulButtonActionParm,  .u.ptr = (void*)"Button 1 Press -- Hold for 6s to do restore to default" },
+  {    bp_usButtonAction,      .u.us = BP_BTN_ACTION_RESTORE_DEFAULTS | BP_BTN_TRIG_HOLD | BP_BTN_TRIG_6S },
+  {  bp_usCfeResetToDefaultBtnIdx, .u.us = 1 },
+#endif
+#endif
+  {bp_usButtonIdx,             .u.us = 1},
+  {  bp_usButtonExtIntr,       .u.us = BP_EXT_INTR_1 },
+  {  bp_usGpio_Intr,           .u.us = BP_GPIO_29_AL},
+#ifdef BRCM_BTN_ACTION
+  {    bp_usButtonAction,      .u.us = BP_BTN_ACTION_SES | BP_BTN_TRIG_PRESS  },
+#endif
+#if defined(_CFE_)
+  {bp_usExtIntrResetToDefault, .u.us = BP_EXT_INTR_2},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_4_AL},
+  {bp_usExtIntrSesBtnWireless, .u.us = BP_EXT_INTR_3},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_29_AL},
+#endif
+  {bp_usButtonIdx,             .u.us = 2},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_27_AL},
+  {bp_usButtonIdx,             .u.us = 3},
+  {bp_usGpio_Intr,             .u.us = BP_GPIO_31_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_25_AH},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_10_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_19_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_20_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_21_AL},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_26_AH},
+  {bp_usGpioLedReserved,       .u.us = BP_GPIO_15_AL},
+  {bp_usGphyBaseAddress,       .u.us = BCM94908_PHY_BASE},  // use phy addressses on SF2 with base address 0x8
+  {bp_usMiiMdc,                .u.us = BP_GPIO_48_AH},
+  {bp_usMiiMdio,               .u.us = BP_GPIO_49_AH},
+  {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY}, // Runner
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+  {bp_ucPhyAddress,            .u.uc = 0x1e},
+  {bp_ulPortMap,               .u.ul = 0x9},
+  {bp_ulPhyId0,                .u.ul = GMII_DIRECT | EXTSW_CONNECTED},
+  {bp_ulPortFlags,             .u.ul = PORT_FLAG_MGMT }, // Managment port is on switch
+  {bp_ulPhyId3,                .u.ul = BP_PHY_ID_NOT_SPECIFIED},
+  {bp_ulCrossbar,              .u.ul = 10},
+  {bp_ulCrossbarPhyId,         .u.ul = (BCM94908_PHY_BASE + 0x04) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_usLinkLed,               .u.us = BP_SERIAL_GPIO_21_AH},
+  {bp_ucPhyType1,              .u.uc = BP_ENET_EXTERNAL_SWITCH},
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP}, // Accessing SF2 as MMapped external switch
+  {bp_ulPortMap,               .u.ul = 0x8f},
+  {bp_ulPhyId0,                .u.ul = (BCM94908_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId1,                .u.ul = (BCM94908_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId2,                .u.ul = (BCM94908_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId3,                .u.ul = (BCM94908_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId7,                .u.ul = BP_PHY_ID_NOT_SPECIFIED},
+  {bp_ulCrossbar,              .u.ul = 9},
+  {bp_ulCrossbarPhyId,         .u.ul = 6 |  PHY_INTEGRATED_VALID | MAC_IF_SERDES | PHY_EXTERNAL},
+  {bp_ulCrossbarPhyId,         .u.ul = 0x1f | PHY_EXTERNAL | PHY_TYPE_CL45GPHY},
+  {bp_ulPortFlags,             .u.ul = PORT_FLAG_SWAP_PAIR},
+  {bp_usGpioPhyReset,          .u.ul = BP_GPIO_22_AL},
+  {bp_ulMemoryConfig,          .u.ul = BP_DDR_SPEED_800_11_11_11 | BP_DDR_TOTAL_SIZE_1024MB| BP_DDR_DEVICE_WIDTH_16 | BP_DDR_TOTAL_WIDTH_32BIT | BP_DDR_SSC_CONFIG_1},
+  {bp_last}
+};
+
 static bp_elem_t g_bcm94908ax11000_w25[] = {
   {bp_cpBoardId,               .u.cp = "94908AX11000W25"},
   {bp_ulCompatChipId,          .u.ul = 0x4908},
@@ -8364,7 +8448,7 @@ static bp_elem_t g_bcm94906ref2[] = {
 };
 #endif
 bp_elem_t * g_BoardParms[] = {
-  g_bcm94908sv, g_bcm94908dvt, g_bcm94908dvt_sfpwan, g_bcm94908ref, g_bcm94908ax88u, g_bcm94908ax11000, g_bcm94908ax11000_w25, g_bcm94908ax11000_8lan, g_bcm94908ref_extphy, g_bcm94908ref_moca, /*g_bcm94908ref_plc,*/ g_bcm94906ax92u, g_bcm94906ref, g_bcm94906ref_fake, g_bcm94908ref_wan2p5g, /*g_bcm962118ref, g_bcm962116ref, g_bcm949408eap_extphy, g_bcm94908tbrhx, g_bcm94908tbrhx_extphy, g_bcm94908tbrhx_wan2p5g, g_bcm94906ref2,*/ 0
+  g_bcm94908sv, g_bcm94908dvt, g_bcm94908dvt_sfpwan, g_bcm94908ref, g_bcm94908ax88u, g_bcm94908ax11000, g_bcm94908ax11000_54991, g_bcm94908ax11000_w25, g_bcm94908ax11000_8lan, g_bcm94908ref_extphy, g_bcm94908ref_moca, /*g_bcm94908ref_plc,*/ g_bcm94906ax92u, g_bcm94906ref, g_bcm94906ref_fake, g_bcm94908ref_wan2p5g, /*g_bcm962118ref, g_bcm962116ref, g_bcm949408eap_extphy, g_bcm94908tbrhx, g_bcm94908tbrhx_extphy, g_bcm94908tbrhx_wan2p5g, g_bcm94906ref2,*/ 0
 };
 #endif
 

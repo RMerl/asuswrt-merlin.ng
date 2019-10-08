@@ -33,10 +33,14 @@
 
 				// setup systemVariables
 				setTimeout(function(){
-					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta"]);
+					var initNvram = httpApi.nvramGet(["wan0_proto", "wan0_pppoe_username", "wan0_pppoe_passwd", "wan0_dnsenable_x", "sw_mode", "wlc_psta", "wl_ifnames", "wl_version", "productid", "rc_support", "x_Setting", "preferred_lang", "territory_code", "reboot_time", "lan_ipaddr", "wlc_dpsta"]);
 
 					systemVariable.historyPage = [];
 					systemVariable.originWanType = initNvram.wan0_proto;
+					if(systemVariable.originWanType == "pppoe" || systemVariable.originWanType == "pptp" || systemVariable.originWanType == "l2tp"){
+						systemVariable.originPppAccount.username = initNvram.wan0_pppoe_username;
+						systemVariable.originPppAccount.password = initNvram.wan0_pppoe_passwd;
+					}
 					systemVariable.wanDnsenable = initNvram.wan0_dnsenable_x;
 					systemVariable.originOpMode = (function(){
 						if(initNvram.sw_mode == "2" && (initNvram.wlc_psta == "0" || initNvram.wlc_psta == "") && (initNvram.wlc_dpsta == "0" || initNvram.wlc_dpsta == "")) return "RP";
@@ -162,9 +166,9 @@
 		
 				<div class="tos tosSupport">
 					<input id="tosCheckbox" type="checkbox" />
-					<span id="tosTitle">By using ASUS AiProtection, you agree to the</span>
+					<span id="tosTitle"><#TM_eula_confirm#>&nbsp;</span>
 					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>, 
-					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> and 
+					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> & 
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
 				</div>
 			</div>

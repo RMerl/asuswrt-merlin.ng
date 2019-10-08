@@ -1284,7 +1284,7 @@ vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int t
 		nv = nvp = strdup(nvram_safe_get("vpnc_dev_policy_list_tmp"));
 
 	cnt = 0;
-	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt <= list_size) {
+	while (nv && (b = strsep(&nvp, "<")) != NULL && cnt < list_size) {
 #ifdef USE_IPTABLE_ROUTE_TARGE		
 		if (vstrsep(b, ">", &active, &mac, &dst_ip, &vpnc_idx) < 3)
 			continue;
@@ -2332,3 +2332,24 @@ int clean_vpnc_setting_value(const int vpnc_idx)
 	return 0;
 }
 
+int is_vpnc_connected()
+{
+	int i;
+	char vpnc_state[16];
+	int ret = 0;
+
+	vpnc_init();
+
+	for(i = 0; i < vpnc_profile_num; ++i)
+	{
+		if( vpnc_profile[i].active &&
+		   (vpnc_profile[i].protocol == VPNC_PROTO_PPTP || vpnc_profile[i].protocol == VPNC_PROTO_L2TP)
+		) {
+			snprintf(vpnc_state, sizeof(vpnc_state), "vpnc%d_state_t", vpnc_profile[i].vpnc_idx);
+			if (nvram_get_int(vpnc_state) == WAN_STATE_CONNECTED)
+				ret = 1;
+		}
+	}
+
+	return (ret);
+}

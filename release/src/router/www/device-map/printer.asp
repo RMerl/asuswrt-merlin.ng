@@ -103,7 +103,7 @@ function cleanTask(){
 	<li>
 		<a id="faq1" href="" target="_blank" style="text-decoration:underline;"><#asus_ez_print_share#> FAQ</a>
 		<br>
-		<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-weight:bolder;color:#FC0">Download Now!</a>
+		<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-weight:bolder;color:#FC0"><#Download_now#></a>
 	</li>
 	<li>
 		<a id="faq2" href="" target="_blank" style="text-decoration:underline;"><#LPR_print_share#> FAQ (Windows)</a>

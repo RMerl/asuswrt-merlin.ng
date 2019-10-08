@@ -58,23 +58,23 @@
 /************************************/
 /* Defaults _you_ may want to tweak */
 /************************************/
-                                                                                                                                               
+
 /* the period of time the client is allowed to use that address */
 #define LEASE_TIME              (60*60*24*10) /* 10 days of seconds */
-                                                                                                                                               
+
 /* where to find the DHCP server configuration file */
 #define DHCPD_CONF_FILE         "/etc/udhcpd.conf"
-                                                                                                                                               
+
 /*****************************************************************/
 /* Do not modify below here unless you know what you are doing!! */
 /*****************************************************************/
-                                                                                                                                               
+
 /* DHCP protocol -- see RFC 2131 */
 #define SERVER_PORT             67
 #define CLIENT_PORT             68
-                                                                                                                                               
+
 #define DHCP_MAGIC              0x63825363
-                                                                                                                                               
+
 /* DHCP option codes (partial list) */
 #define DHCP_PADDING            0x00
 #define DHCP_SUBNET             0x01
@@ -108,13 +108,13 @@
 #define DHCP_T2                 0x3b
 #define DHCP_VENDOR             0x3c
 #define DHCP_CLIENT_ID          0x3d
-                                                                                                                                               
+
 #define DHCP_END                0xFF
-                                                                                                                                               
-                                                                                                                                               
+
+
 #define BOOTREQUEST             1
 #define BOOTREPLY               2
-                                                                                                                                               
+
 #define ETH_10MB                1
 #define ETH_10MB_LEN            6
 #define DHCPDISCOVER            1
@@ -125,13 +125,13 @@
 #define DHCPNAK                 6
 #define DHCPRELEASE             7
 #define DHCPINFORM              8
-                                                                                                                                               
+
 #define BROADCAST_FLAG          0x8000
-                                                                                                                                               
+
 #define OPTION_FIELD            0
 #define FILE_FIELD              1
 #define SNAME_FIELD             2
-                                                                                                                                               
+
 /* miscellaneous defines */
 #define MAC_BCAST_ADDR          (unsigned char *) "\xff\xff\xff\xff\xff\xff"
 #define OPT_CODE 0
@@ -185,7 +185,7 @@ struct dhcpMessage {
         u_int32_t cookie;
         u_int8_t options[OPTIONS_SIZE]; /* 312 - cookie */
 };
-                                                                                                                                               
+
 struct udp_dhcp_packet {
         struct iphdr ip;
         struct udphdr udp;
@@ -193,7 +193,7 @@ struct udp_dhcp_packet {
 };
 
 #define TYPE_MASK       0x0F
-                                                                                                                                               
+
 enum {
         OPTION_IP=1,
         OPTION_IP_PAIR,
@@ -205,16 +205,16 @@ enum {
         OPTION_U32,
         OPTION_S32
 };
-                                                                                                                                               
+
 #define OPTION_REQ      0x10 /* have the client request this option */
 #define OPTION_LIST     0x20 /* There can be a list of 1 or more of these */
-                                                                                                                                               
+
 struct dhcp_option {
         char name[10];
         char flags;
         unsigned char code;
 };
-                                                                                                                                               
+
 //static int state;
 //static unsigned long requested_ip; /* = 0 */
 //static unsigned long server_addr;
@@ -222,7 +222,7 @@ struct dhcp_option {
 //static int packet_num; /* = 0 */
 //static int cfd;
 //static int signal_pipe[2];
-                                                                                                                                               
+
 #define LISTEN_NONE 0
 #define LISTEN_KERNEL 1
 #define LISTEN_RAW 2
@@ -285,7 +285,7 @@ unsigned char *get_option(struct dhcpMessage *packet, int code);
 int get_packet(struct dhcpMessage *packet, int fd);
 int get_raw_packet(struct dhcpMessage *payload, int fd);
 int end_option(unsigned char *optionptr);
-                                                                                                                                               
+
 int add_option_string(unsigned char *optionptr, unsigned char *string);
 
 int add_simple_option(unsigned char *optionptr, unsigned char code, u_int32_t data);
@@ -310,34 +310,33 @@ unsigned long random_xid(void);
 char DEFAULT_IF[16];
 #define BPF_BUFFER_IS_EMPTY 1
 #define BPF_BUFFER_HAS_DATA 0
-                                                                                                                                               
+
 typedef unsigned short UINT16_t;
-                                                                                                                                               
 typedef unsigned int UINT32_t;
-                                                                                                                                               
+
 /* Ethernet frame types according to RFC 2516 */
 #define ETH_PPPOE_DISCOVERY 0x8863
 #define ETH_PPPOE_SESSION   0x8864
-                                                                                                                                               
+
 /* But some brain-dead peers disobey the RFC, so frame types are variables */
-                                                                                                                                               
+
 static UINT16_t Eth_PPPOE_Discovery = ETH_PPPOE_DISCOVERY;
 static UINT16_t Eth_PPPOE_Session   = ETH_PPPOE_SESSION;
-                                                                                                                                               
+
 /* PPPoE codes */
 #define CODE_PADI           0x09
 #define CODE_PADO           0x07
 #define CODE_PADR           0x19
 #define CODE_PADS           0x65
 #define CODE_PADT           0xA7
-                                                                                                                                               
+
 /* Extensions from draft-carrel-info-pppoe-ext-00 */
 /* I do NOT like PADM or PADN, but they are here for completeness */
 #define CODE_PADM           0xD3
 #define CODE_PADN           0xD4
-                                                                                                                                               
+
 #define CODE_SESS           0x00
-                                                                                                                                               
+
 /* PPPoE Tags */
 #define TAG_END_OF_LIST        0x0000
 #define TAG_SERVICE_NAME       0x0101
@@ -349,7 +348,7 @@ static UINT16_t Eth_PPPOE_Session   = ETH_PPPOE_SESSION;
 #define TAG_SERVICE_NAME_ERROR 0x0201
 #define TAG_AC_SYSTEM_ERROR    0x0202
 #define TAG_GENERIC_ERROR      0x0203
-                                                                                                                                               
+
 /* Extensions from draft-carrel-info-pppoe-ext-00 */
 /* I do NOT like these tags one little bit */
 #define TAG_HURL               0x111
@@ -361,27 +360,27 @@ static UINT16_t Eth_PPPOE_Session   = ETH_PPPOE_SESSION;
 #define STATE_SENT_PADR     2
 #define STATE_SESSION       3
 #define STATE_TERMINATED    4
-                                                                                                                                               
+
 /* How many PADI/PADS attempts? */
 #define MAX_PADI_ATTEMPTS 3
-                                                                                                                                               
+
 /* Initial timeout for PADO/PADS */
 #define PADI_TIMEOUT 5
 /* States for scanning PPP frames */
 #define STATE_WAITFOR_FRAME_ADDR 0
 #define STATE_DROP_PROTO         1
 #define STATE_BUILDING_PACKET    2
-                                                                                                                                               
+
 /* Special PPP frame characters */
 #define FRAME_ESC    0x7D
 #define FRAME_FLAG   0x7E
 #define FRAME_ADDR   0xFF
 #define FRAME_CTRL   0x03
 #define FRAME_ENC    0x20
-                                                                                                                                               
+
 #define IPV4ALEN     4
 #define SMALLBUF   256
-                                                                                                                                               
+
 /* A PPPoE Packet, including Ethernet headers */
 typedef struct PPPoEPacketStruct {
     struct ethhdr ethHdr;       /* Ethernet header */
@@ -397,41 +396,43 @@ typedef struct PPPoEPacketStruct {
     unsigned int length:16;     /* Payload length */
     unsigned char payload[ETH_DATA_LEN]; /* A bit of room to spare */
 } PPPoEPacket;
-                                                                                                                                               
+
 /* Header size of a PPPoE packet */
 #define PPPOE_OVERHEAD 6  /* type, code, session, length */
 #define HDR_SIZE (sizeof(struct ethhdr) + PPPOE_OVERHEAD)
 #define MAX_PPPOE_PAYLOAD (ETH_DATA_LEN - PPPOE_OVERHEAD)
 #define MAX_PPPOE_MTU (MAX_PPPOE_PAYLOAD - 2)
-                                                                                                                                               
+
 /* PPPoE Tag */
-                                                                                                                                               
+
 typedef struct PPPoETagStruct {
     unsigned int type:16;       /* tag type */
     unsigned int length:16;     /* Length of payload */
     unsigned char payload[ETH_DATA_LEN]; /* A LOT of room to spare */
 } PPPoETag;
-                                                                                                                                               
+
 /* Header size of a PPPoE tag */
 #define TAG_HDR_SIZE 4
-                                                                                                                                               
+
 /* Chunk to read from stdin */
 #define READ_CHUNK 4096
-                                                                                                                                               
+
 /* Function passed to parsePacket */
 typedef void ParseFunc(UINT16_t type,
                        UINT16_t len,
                        unsigned char *data,
                        void *extra);
-                                                                                                                                               
+
 #define PPPINITFCS16    0xffff  /* Initial FCS value */
-                                                                                                                                               
+
 /* Keep track of the state of a connection -- collect everything in
    one spot */
-                                                                                                                                               
+
+#define DISCOVER_MAX_PPPOE  10
+
 typedef struct PPPoEConnectionStruct {
     int discoveryState;         /* Where we are in discovery */
-    int discoverySocket;        /* Raw socket for discovery frames */
+    int discoverySocket[DISCOVER_MAX_PPPOE];        /* Raw socket for discovery frames */
     int sessionSocket;          /* Raw socket for session frames */
     unsigned char myEth[ETH_ALEN]; /* My MAC address */
     unsigned char peerEth[ETH_ALEN]; /* Peer's MAC address */
@@ -458,7 +459,7 @@ struct PacketCriteria {
     int seenACName;
     int seenServiceName;
 };
-                                                                                                                                               
+
 #define CHECK_ROOM(cursor, start, len) \
 do {\
     if (((cursor)-(start))+(len) > MAX_PPPOE_PAYLOAD) { \
@@ -466,20 +467,20 @@ do {\
         return; \
     } \
 } while(0)
-                                                                                                                                               
+
 /* True if Ethernet address is broadcast or multicast */
 #define NOT_UNICAST(e) ((e[0] & 0x01) != 0)
 #define BROADCAST(e) ((e[0] & e[1] & e[2] & e[3] & e[4] & e[5]) == 0xFF)
 #define NOT_BROADCAST(e) ((e[0] & e[1] & e[2] & e[3] & e[4] & e[5]) != 0xFF)
-                                                                                                                                               
+
 static char const RCSID[] =
 "$Id: dp.h,v 1.1.1.1 2008/07/21 09:20:37 james26_jang Exp $";
-                                                                                                                                               
-                                                                                                                                               
+
+
 char *strDup(char const *str);
 
 #define SET_STRING(var, val) do { if (var) free(var); var = strDup(val); } while(0);
-                                                                                                                                               
+
 int
 openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr);
 

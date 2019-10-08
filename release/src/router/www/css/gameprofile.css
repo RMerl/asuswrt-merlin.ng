@@ -288,6 +288,21 @@
 .game-p-wwe2k17{
     background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/wwe2k17.jpg'), url('../images/gameprofile/default-game.png');
 }
+.game-p-superMarioOdyssey{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/superMarioOdyssey.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-rocketLeague{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/rocketLeague.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-pokemonPikachu{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/pokemonPikachu.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-marioKart8Deluxe{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/marioKart8Deluxe.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-monsterHunterWorld{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/monsterHunterWorld.jpg'), url('../images/gameprofile/default-game.png');
+}
 .new-g-p-t-field{
     height: 70px;
     background-color: rgba(30,28,28,0.8);

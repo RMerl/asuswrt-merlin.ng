@@ -575,7 +575,7 @@ function applyRule(){
 	if(document.form.wrs_enable.value == "1") {
 		var apps_filter_row = "";
 		if(document.form.PC_devicename.value != ""){
-			alert("You must press add icon to add a new rule first.");
+			alert("<#JS_add_rule#>");
 			return false;
 		}
 

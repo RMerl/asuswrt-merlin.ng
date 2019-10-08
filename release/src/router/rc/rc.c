@@ -259,9 +259,9 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
-#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_PUSH_EMAIL)
-	else if (strcmp(argv[1], "sendmail")==0) {
-		start_DSLsendmail();
+#if defined(RTCONFIG_FRS_FEEDBACK)
+	else if (strcmp(argv[1], "sendfeedback")==0) {
+		start_sendfeedback();
 	}
 #endif
 #ifdef RTCONFIG_BCM_7114
@@ -891,11 +891,11 @@ static const applets_t applets[] = {
 	{ "bwdpi_wred_alive",		bwdpi_wred_alive_main		},
 	{ "bwdpi_db_10",		bwdpi_db_10_main		},
 	{ "rsasign_sig_check",		rsasign_sig_check_main		},
+	{ "hour_monitor",		hour_monitor_main		},
 #endif
 #ifdef RTCONFIG_AMAS
 	{ "amas_lib",		        amas_lib_main			},
 #endif
-	{ "hour_monitor",		hour_monitor_main		},
 #ifdef RTCONFIG_USB_MODEM
 #ifdef RTCONFIG_INTERNAL_GOBI
 	{ "lteled",			lteled_main			},

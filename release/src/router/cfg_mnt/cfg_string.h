@@ -67,4 +67,6 @@
 #define CFG_STR_DUAL_BAND_CAP		"db_cap"
 #define CFG_STR_IS_RE	"is_re"
 #define CFG_STR_TRIBAND_RE	"triband_re"
+#define CFG_STR_WLC_LLDP_COST_STAT  "lldp_wlc_cost_stat"
+#define CFG_STR_ETH_LLDP_COST_STAT  "lldp_eth_cost_stat"
 #endif /* __CFG_STRING_H__ */

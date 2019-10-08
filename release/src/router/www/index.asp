@@ -110,6 +110,7 @@ var custom_usericon_del = "";
 var firstTimeOpenBlock = false;
 var ipBindingFlag = false;
 var timeSchedulingFlag = false;
+var blockInternetFlag = false;
 
 if(location.pathname == "/"){
 	if('<% nvram_get("x_Setting"); %>' == '0'){
@@ -1018,21 +1019,6 @@ function check_dualwan(flag){
 }
 
 function validForm(){
-	var time_scheduling_array = new Array();
-	//initial time_scheduling
-	var time_scheduling_enable = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_ENABLE"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<").split('>');
-	var time_scheduling_mac = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MAC"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<").split('>');
-	var time_scheduling_daytime = decodeURIComponent('<% nvram_char_to_ascii("", "MULTIFILTER_MACFILTER_DAYTIME"); %>').replace(/&#62/g, ">").replace(/&#60/g, "<").split('>');
-	
-	for(var schedulingIdx = 0; schedulingIdx < time_scheduling_mac.length; schedulingIdx += 1) {
-		if(time_scheduling_mac[schedulingIdx] != "") {
-			var scheduling_array = new Array();
-			scheduling_array[0] =  time_scheduling_enable[schedulingIdx];
-			scheduling_array[1] = time_scheduling_daytime[schedulingIdx];
-			time_scheduling_array[time_scheduling_mac[schedulingIdx]] = scheduling_array;
-		}
-	}
-
 	var validateIpRange = function(ip_obj){
 		var retFlag = 1
 		var ip_num = inet_network(ip_obj.value);
@@ -1071,54 +1057,7 @@ function validForm(){
 		
 		return retFlag;
 	}
-
-	if(validateIpRange(document.getElementById("ipaddr_field")) == true ){		
-		if(ipBindingFlag) {	// only ipLockIcon is lock then update dhcp_staticlist						
-			document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-				if(element.indexOf(document.getElementById("macaddr_field").value) != -1){
-					var tmpArray = document.list_form.dhcp_staticlist.value.split("<")
-					tmpArray[index] = document.getElementById("macaddr_field").value;
-					tmpArray[index] += ">";
-					tmpArray[index] += document.getElementById("ipaddr_field").value;
-					tmpArray[index] += ">";
-					tmpArray[index] += document.getElementById("hostname_field").value;
-					document.list_form.dhcp_staticlist.value = tmpArray.join("<");
-				}
-			});
-		}
-		//if time sheduling enable, retain the existing settings
-		if(timeSchedulingFlag) {
-			delFromBlockMacList(document.getElementById("macaddr_field").value);
-			if(document.list_form.MULTIFILTER_MAC.value.indexOf(document.getElementById("macaddr_field").value) == -1){
-				if(document.list_form.MULTIFILTER_MAC.value == "") {
-					document.list_form.MULTIFILTER_ENABLE.value += "1";
-					document.list_form.MULTIFILTER_MAC.value += document.getElementById("macaddr_field").value;
-					document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-					if(time_scheduling_array[document.getElementById("macaddr_field").value] != undefined) {
-						document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += time_scheduling_array[document.getElementById("macaddr_field").value][1];
-					}
-					else {
-						document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
-					}
-				}
-				else {
-					document.list_form.MULTIFILTER_ENABLE.value += ">";
-					document.list_form.MULTIFILTER_ENABLE.value += "1";
-					document.list_form.MULTIFILTER_MAC.value += ">";
-					document.list_form.MULTIFILTER_MAC.value += document.getElementById("macaddr_field").value;
-					document.list_form.MULTIFILTER_DEVICENAME.value += ">";
-					document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-					if(time_scheduling_array[document.getElementById("macaddr_field").value] != undefined) {
-						document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += ">" + time_scheduling_array[document.getElementById("macaddr_field").value][1];
-					}
-					else {
-						document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
-					}
-				}
-			}
-		}
-	}
-	else		
+	if(validateIpRange(document.getElementById("ipaddr_field")) == 0)
 		return false;
 
 	showtext(document.getElementById("alert_msg1"), "");
@@ -1126,22 +1065,34 @@ function validForm(){
 	document.getElementById('client_name').value = document.getElementById('client_name').value.trim();
 	if(document.getElementById('client_name').value.length == 0){
 		alert("<#File_Pop_content_alert_desc1#>");
-		document.getElementById("client_name").style.display = "";
 		document.getElementById('client_name').focus();
 		document.getElementById('client_name').select();
+		document.getElementById('client_name').value = "";
 		return false;
 	}
 	else if(document.getElementById('client_name').value.indexOf(">") != -1 || document.getElementById('client_name').value.indexOf("<") != -1){
 		alert("<#JS_validstr2#> '<', '>'");
 		document.getElementById('client_name').focus();
 		document.getElementById('client_name').select();
-		document.getElementById('client_name').value = "";		
+		document.getElementById('client_name').value = "";
 		return false;
+	}
+
+	if(utf8_ssid_support){
+		var len = validator.lengthInUtf8(document.getElementById('client_name').value);
+		if(len > 32){
+			alert("Username cannot be greater than 32 characters.");/* untranslated */
+			document.getElementById('client_name').focus();
+			document.getElementById('client_name').select();
+			document.getElementById('client_name').value = "";
+			return false;
+		}
 	}
 	else if(!validator.haveFullWidthChar(document.getElementById('client_name'))) {
 		alert('<#JS_validchar#>');
 		document.getElementById('client_name').focus();
 		document.getElementById('client_name').select();
+		document.getElementById('client_name').value = "";
 		return false;
 	}
 
@@ -1165,9 +1116,10 @@ function edit_confirm(){
 				clientTypeNum = "0";
 			}
 		}
+		var clientMac = document.getElementById('macaddr_field').value.toUpperCase();
 		originalCustomListArray = custom_name.split('<');
 		onEditClient[0] = document.getElementById('client_name').value.trim();
-		onEditClient[1] = document.getElementById('macaddr_field').value;
+		onEditClient[1] = clientMac;
 		onEditClient[2] = 0;
 		onEditClient[3] = clientTypeNum;
 		onEditClient[4] = "";
@@ -1175,7 +1127,7 @@ function edit_confirm(){
 
 		for(var i=0; i<originalCustomListArray.length; i++){
 			if(originalCustomListArray[i].split('>')[1] != undefined) {
-				if(originalCustomListArray[i].split('>')[1].toUpperCase() == onEditClient[1].toUpperCase()){
+				if(originalCustomListArray[i].split('>')[1].toUpperCase() == clientMac){
 					onEditClient[4] = originalCustomListArray[i].split('>')[4]; // set back callback for ROG device
 					onEditClient[5] = originalCustomListArray[i].split('>')[5]; // set back keeparp for ROG device
 					var app_group_tag = originalCustomListArray[i].split('>')[6]; // for app group tag
@@ -1192,6 +1144,44 @@ function edit_confirm(){
 		document.list_form.custom_clientlist.value = custom_name;
 
 		// static IP list
+		if(ipBindingFlag) {
+			if(document.list_form.dhcp_staticlist.value.indexOf(clientMac) == -1){//new
+				document.list_form.dhcp_staticlist.value += "<";
+				document.list_form.dhcp_staticlist.value += clientMac;
+				document.list_form.dhcp_staticlist.value += ">";
+				document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
+				document.list_form.dhcp_staticlist.value += ">";
+				document.list_form.dhcp_staticlist.value += "";//ddns
+			}
+			else{//update
+				var dhcp_staticlist_temp = "";
+				document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
+					if(element != ""){
+						if(element.indexOf(clientMac) != -1){
+							var client_array = element.split(">");
+							var mac = client_array[0];
+							if(mac == clientMac){
+								var ip = document.getElementById("ipaddr_field").value;
+								var dns = (client_array[2] == undefined) ? "" : client_array[2];
+								dhcp_staticlist_temp += "<" + mac + ">" + ip + ">" + dns;
+							}
+						}
+						else
+							dhcp_staticlist_temp += "<" + element;
+					}
+				});
+				document.list_form.dhcp_staticlist.value = dhcp_staticlist_temp;
+			}
+		}
+		else{
+			document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
+				if(element.indexOf(document.getElementById('macaddr_field').value.toUpperCase()) != -1){
+					var tmpArray = document.list_form.dhcp_staticlist.value.split("<")
+					tmpArray.splice(index, 1);
+					document.list_form.dhcp_staticlist.value = tmpArray.join("<");
+				}
+			})
+		}
 		if(document.list_form.dhcp_staticlist.value == dhcp_staticlist_orig || sw_mode != "1"){
 			document.list_form.action_script.value = "saveNvram";
 			document.list_form.action_wait.value = "1";
@@ -1209,18 +1199,23 @@ function edit_confirm(){
 			document.list_form.dhcp_static_x.disabled = false;
 		}
 
+		if(sw_mode == "1" && !clientList[document.getElementById("macaddr_field").value].amesh_isRe)
+			addToBlockMacList(document.getElementById("macaddr_field").value);
+
 		//  block Mac list
-		if((document.list_form.MULTIFILTER_MAC.value == MULTIFILTER_MAC_orig && document.list_form.MULTIFILTER_ENABLE.value == MULTIFILTER_ENABLE_orig && 
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value == MULTIFILTER_MACFILTER_DAYTIME_orig) || sw_mode != "1"){
+		var turnOnTimeScheduling = false;
+		if(document.list_form.MULTIFILTER_ALL.value == "0" && (timeSchedulingFlag || blockInternetFlag))
+			turnOnTimeScheduling = true;
+
+		if((document.list_form.MULTIFILTER_MAC.value == MULTIFILTER_MAC_orig && 
+			document.list_form.MULTIFILTER_ENABLE.value == MULTIFILTER_ENABLE_orig) && 
+			!turnOnTimeScheduling ||
+			sw_mode != "1"){
 			document.list_form.MULTIFILTER_ALL.disabled = true;
 			document.list_form.MULTIFILTER_ENABLE.disabled = true;
 			document.list_form.MULTIFILTER_MAC.disabled = true;
 			document.list_form.MULTIFILTER_DEVICENAME.disabled = true;
 			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = true;
-			MULTIFILTER_ENABLE_orig = document.list_form.MULTIFILTER_ENABLE.value;
-			MULTIFILTER_MAC_orig = document.list_form.MULTIFILTER_MAC.value;
-			MULTIFILTER_DEVICENAME_orig = document.list_form.MULTIFILTER_DEVICENAME.value;
-			MULTIFILTER_MACFILTER_DAYTIME_orig = document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value;
 		}
 		else {
 			document.list_form.flag.value = "";
@@ -1230,13 +1225,8 @@ function edit_confirm(){
 			}
 			else {
 				document.list_form.action_script.value = "restart_firewall";
-				if(timeSchedulingFlag) {
-					document.list_form.action_wait.value = "1";
-					document.list_form.flag.value = "background";
-				}
-				else {
-					document.list_form.action_wait.value = "5";
-				}
+				document.list_form.action_wait.value = "1";
+				document.list_form.flag.value = "background";
 			}
 			
 			document.list_form.MULTIFILTER_ALL.disabled = false;
@@ -1246,6 +1236,10 @@ function edit_confirm(){
 			document.list_form.MULTIFILTER_DEVICENAME.disabled = false;
 			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.disabled = false;
 		}
+		MULTIFILTER_ENABLE_orig = document.list_form.MULTIFILTER_ENABLE.value;
+		MULTIFILTER_MAC_orig = document.list_form.MULTIFILTER_MAC.value;
+		MULTIFILTER_DEVICENAME_orig = document.list_form.MULTIFILTER_DEVICENAME.value;
+		MULTIFILTER_MACFILTER_DAYTIME_orig = document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value;
 
 		// handle user image
 		document.list_form.custom_usericon.disabled = true;
@@ -1566,8 +1560,6 @@ function popupEditBlock(clientObj){
 					$('#radio_IPBinding_enable').click();
 					ipBindingFlag = true;
 				}				
-				delFromList(document.getElementById("macaddr_field").value);
-				addToList(document.getElementById("macaddr_field").value);	
 			}
 		}
 		document.getElementById('macaddr_field').value = clientObj.mac;
@@ -1607,12 +1599,9 @@ function popupEditBlock(clientObj){
 									}
 								}
 							}
-							delFromList(document.getElementById("macaddr_field").value);
-							addToList(document.getElementById("macaddr_field").value);
 							ipBindingFlag = true;
 						},
 						function(){
-							delFromList(document.getElementById("macaddr_field").value);
 							document.getElementById("ipaddr_field").value = document.getElementById("ipaddr_field_orig").value;
 							ipBindingFlag = false;
 						}
@@ -1632,13 +1621,13 @@ function popupEditBlock(clientObj){
 									}
 								}
 							}
-							delFromBlockMacList(document.getElementById("macaddr_field").value);
-							addToBlockMacList(document.getElementById("macaddr_field").value);
 							setRadioIPBinding(0, "timeScheduling", mac);
 							timeSchedulingFlag = false;
+							blockInternetFlag = true;
 						},
 						function(){
-							delFromBlockMacList(document.getElementById("macaddr_field").value);
+							timeSchedulingFlag = false;
+							blockInternetFlag = false;
 						}
 					);
 					break;
@@ -1656,14 +1645,13 @@ function popupEditBlock(clientObj){
 									}
 								}
 							}
-							delFromBlockMacList(document.getElementById("macaddr_field").value);
-							addToBlockMacList(document.getElementById("macaddr_field").value);
 							setRadioIPBinding(0, "blockInternet", mac);
 							timeSchedulingFlag = true;
+							blockInternetFlag = false;
 						},
 						function(){
-							delFromBlockMacList(document.getElementById("macaddr_field").value);
 							timeSchedulingFlag = false;
+							blockInternetFlag = false;
 						}
 					);
 					break;
@@ -1684,17 +1672,20 @@ function popupEditBlock(clientObj){
 				setRadioIPBinding(0, "blockInternet", clientObj.mac);
 				setRadioIPBinding(0, "timeScheduling", clientObj.mac);
 				timeSchedulingFlag = false;
+				blockInternetFlag = false;
 				break;
 			case "block" :
 				setRadioIPBinding(1, "blockInternet", clientObj.mac);
 				setRadioIPBinding(0, "timeScheduling", clientObj.mac);
 				timeSchedulingFlag = false;
+				blockInternetFlag = true;
 				break;
 			case "time" :
 				setRadioIPBinding(0, "blockInternet", clientObj.mac);
 				setRadioIPBinding(1, "timeScheduling", clientObj.mac);
 				document.getElementById("internetTimeScheduling").style.display = "";
 				timeSchedulingFlag = true;
+				blockInternetFlag = false;
 				break;
 		}
 
@@ -1801,66 +1792,44 @@ function check_usb3(){
 }
 
 function addToBlockMacList(macAddr){
-	if(document.list_form.MULTIFILTER_MAC.value.indexOf(macAddr) == -1){
-		if(document.list_form.MULTIFILTER_MAC.value == "") {
-			document.list_form.MULTIFILTER_ENABLE.value += "1";
-			document.list_form.MULTIFILTER_MAC.value += macAddr;
-			document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
-		}
-		else {
-			document.list_form.MULTIFILTER_ENABLE.value += ">";
-			document.list_form.MULTIFILTER_ENABLE.value += "1";
-			document.list_form.MULTIFILTER_MAC.value += ">";
-			document.list_form.MULTIFILTER_MAC.value += macAddr;
-			document.list_form.MULTIFILTER_DEVICENAME.value += ">";
-			document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
+	if(document.list_form.MULTIFILTER_MAC.value.indexOf(macAddr) == -1){//new rule
+		if(timeSchedulingFlag || blockInternetFlag) {
+			if(document.list_form.MULTIFILTER_MAC.value == "") {
+				if(timeSchedulingFlag)
+					document.list_form.MULTIFILTER_ENABLE.value += "1";
+				else if(blockInternetFlag)
+					document.list_form.MULTIFILTER_ENABLE.value += "2";
+				document.list_form.MULTIFILTER_MAC.value += macAddr;
+				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "<";
+			}
+			else {
+				document.list_form.MULTIFILTER_ENABLE.value += ">";
+				if(timeSchedulingFlag)
+					document.list_form.MULTIFILTER_ENABLE.value += "1";
+				else if(blockInternetFlag)
+					document.list_form.MULTIFILTER_ENABLE.value += "2";
+				document.list_form.MULTIFILTER_MAC.value += ">";
+				document.list_form.MULTIFILTER_MAC.value += macAddr;
+				document.list_form.MULTIFILTER_DEVICENAME.value += ">";
+				document.list_form.MULTIFILTER_DEVICENAME.value += document.getElementById("client_name").value.trim();
+				document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value += "><";
+			}
 		}
 	}
-}
-
-function delFromBlockMacList(macAddr){
-	document.list_form.MULTIFILTER_MAC.value.split(">").forEach(function(element, index){
-		if(element.indexOf(macAddr) != -1){
-			var tmpArray = document.list_form.MULTIFILTER_ENABLE.value.split(">");
-			tmpArray.splice(index, 1);
-			document.list_form.MULTIFILTER_ENABLE.value = tmpArray.join(">");
-
-			tmpArray = document.list_form.MULTIFILTER_MAC.value.split(">");
-			tmpArray.splice(index, 1);
-			document.list_form.MULTIFILTER_MAC.value = tmpArray.join(">");
-
-			tmpArray = document.list_form.MULTIFILTER_DEVICENAME.value.split(">");
-			tmpArray.splice(index, 1);
-			document.list_form.MULTIFILTER_DEVICENAME.value = tmpArray.join(">");
-
-			tmpArray = document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value.split(">");
-			tmpArray.splice(index, 1);
-			document.list_form.MULTIFILTER_MACFILTER_DAYTIME.value = tmpArray.join(">");
-		}
-	})
-}
-
-function addToList(macAddr){
-	if(document.list_form.dhcp_staticlist.value.indexOf(macAddr) == -1){
-		document.list_form.dhcp_staticlist.value += "<";
-		document.list_form.dhcp_staticlist.value += macAddr;
-		document.list_form.dhcp_staticlist.value += ">";
-		document.list_form.dhcp_staticlist.value += document.getElementById("ipaddr_field").value;
-		document.list_form.dhcp_staticlist.value += ">";
-		document.list_form.dhcp_staticlist.value += document.getElementById("hostname_field").value;
+	else {//exist rule
+		document.list_form.MULTIFILTER_MAC.value.split(">").forEach(function(element, index){
+			if(element.indexOf(macAddr) != -1){
+				var tmpArray = document.list_form.MULTIFILTER_ENABLE.value.split(">");
+				tmpArray[index] = 0;
+				if(timeSchedulingFlag)
+					tmpArray[index] = 1;
+				else if(blockInternetFlag)
+					tmpArray[index] = 2;
+				document.list_form.MULTIFILTER_ENABLE.value = tmpArray.join(">");
+			}
+		})
 	}
-}
-
-function delFromList(macAddr){
-	document.list_form.dhcp_staticlist.value.split("<").forEach(function(element, index){
-		if(element.indexOf(macAddr) != -1){
-			var tmpArray = document.list_form.dhcp_staticlist.value.split("<")
-			tmpArray.splice(index, 1);
-			document.list_form.dhcp_staticlist.value = tmpArray.join("<");
-		}
-	})
 }
 
 function showClientIconList() {
@@ -2143,7 +2112,7 @@ function notice_apply(){
 	<input type="hidden" name="dhcp_static_x" value='<% nvram_get("dhcp_static_x"); %>' disabled>
 	<input type="hidden" name="custom_usericon" value="">
 	<input type="hidden" name="custom_usericon_del" value="" disabled>
-	<input type="hidden" name="MULTIFILTER_ALL" value="" disabled>
+	<input type="hidden" name="MULTIFILTER_ALL" value='<% nvram_get("MULTIFILTER_ALL"); %>' disabled>
 	<input type="hidden" name="MULTIFILTER_ENABLE" value="" disabled>
 	<input type="hidden" name="MULTIFILTER_MAC" value="" disabled>
 	<input type="hidden" name="MULTIFILTER_DEVICENAME" value="" disabled>

@@ -64,6 +64,8 @@ typedef struct natnl_wl_ioctl {
 #define NVRAM_WEBDAV_HTTPS_PORT "webdav_https_port"
 #define NVRAM_WEB_HTTP_PORT "http_lanport"
 #define NVRAM_WEB_HTTPS_PORT "https_lanport"
+#define NVRAM_SSHD_ENABLE "sshd_enable"
+#define NVRAM_SSHD_PORT "sshd_port"
 #ifdef __cplusplus
 }
 #endif

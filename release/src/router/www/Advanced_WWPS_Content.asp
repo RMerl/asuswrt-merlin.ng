@@ -778,6 +778,8 @@ function checkWLReady(){
 										if(	document.form.wl0_auth_mode_x.value == "shared" ||	document.form.wl1_auth_mode_x.value == "shared"
 										||	document.form.wl0_auth_mode_x.value == "psk"	||	document.form.wl0_auth_mode_x.value == "wpa"
 										||	document.form.wl1_auth_mode_x.value == "psk"	||	document.form.wl1_auth_mode_x.value == "wpa"
+										||	document.form.wl0_auth_mode_x.value == "wpa2"    ||	document.form.wl0_auth_mode_x.value == "wpa2"
+										||	document.form.wl1_auth_mode_x.value == "wpawpa2"    ||	document.form.wl1_auth_mode_x.value == "wpawpa2"
 										||	document.form.wl0_auth_mode_x.value == "open" && (document.form.wl0_wep_x.value == "1" || document.form.wl0_wep_x.value == "2")
 										||	document.form.wl1_auth_mode_x.value == "open" && (document.form.wl1_wep_x.value == "1" || document.form.wl1_wep_x.value == "2")){
 											alert("<#note_auth_wpa_WPS#>");
@@ -788,7 +790,8 @@ function checkWLReady(){
 									else{		//Broadcom, Ralink normal case
 										if(document.form.wps_band.value == 0){
 											if(	document.form.wl0_auth_mode_x.value == "shared"
-											||	document.form.wl0_auth_mode_x.value == "psk"	||	document.form.wl0_auth_mode_x.value == "wpa"
+											||	document.form.wl0_auth_mode_x.value == "psk"
+											||	document.form.wl0_auth_mode_x.value == "wpa" ||	document.form.wl0_auth_mode_x.value == "wpa2" || document.form.wl0_auth_mode_x.value == "wpawpa2"
 											||	document.form.wl0_auth_mode_x.value == "open" && (document.form.wl0_wep_x.value == "1" || document.form.wl0_wep_x.value == "2")){
 												alert(band_string + " : <#note_auth_wpa_WPS#>");
 												$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
@@ -803,7 +806,8 @@ function checkWLReady(){
 										}
 										else if(document.form.wps_band.value == 1){			//5G
 											if(	document.form.wl1_auth_mode_x.value == "shared"
-											||	document.form.wl1_auth_mode_x.value == "psk"	||	document.form.wl1_auth_mode_x.value == "wpa"
+											||	document.form.wl1_auth_mode_x.value == "psk"
+											||	document.form.wl1_auth_mode_x.value == "wpa" ||	document.form.wl1_auth_mode_x.value == "wpa2" || document.form.wl1_auth_mode_x.value == "wpawpa2"
 											||	document.form.wl1_auth_mode_x.value == "open" && (document.form.wl1_wep_x.value == "1" || document.form.wl1_wep_x.value == "2")){
 												alert(band_string + " : <#note_auth_wpa_WPS#>");
 												$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
@@ -819,7 +823,8 @@ function checkWLReady(){
 										}
 										else if(document.form.wps_band.value == 2){		//5G-2
 											if(	document.form.wl2_auth_mode_x.value == "shared"
-											||	document.form.wl2_auth_mode_x.value == "psk"	||	document.form.wl2_auth_mode_x.value == "wpa"
+											||	document.form.wl2_auth_mode_x.value == "psk"
+											||	document.form.wl2_auth_mode_x.value == "wpa" ||	document.form.wl2_auth_mode_x.value == "wpa2" || document.form.wl2_auth_mode_x.value == "wpawpa2"
 											||	document.form.wl2_auth_mode_x.value == "open" && (document.form.wl2_wep_x.value == "1" || document.form.wl2_wep_x.value == "2")){
 												alert(band_string + " : <#note_auth_wpa_WPS#>");
 												$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});

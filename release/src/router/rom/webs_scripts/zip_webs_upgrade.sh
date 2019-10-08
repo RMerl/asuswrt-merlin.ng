@@ -1,5 +1,7 @@
 #!/bin/sh
 
+IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+
 wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
 wget_options="-q -t 2 -T $wget_timeout"
@@ -15,14 +17,18 @@ force_free_ram(){
 	wlconf eth2 down
 	rmmod wl_high
 	rmmod wl
-	echo 3 > /proc/sys/vm/drop_caches
+	if [ -z "$IS_BCMHND" ]; then
+		echo 3 > /proc/sys/vm/drop_caches
+	fi
 	sleep 3
 	echo "---- end of force_free_ram ----" >> /tmp/webs_upgrade.log
 }
 
 # get firmware zip file
 forsq=`nvram get apps_sq`
-echo 3 > /proc/sys/vm/drop_caches
+if [ -z "$IS_BCMHND" ]; then
+	echo 3 > /proc/sys/vm/drop_caches
+fi
 if [ "$forsq" == "1" ]; then
 	echo "---- upgrade sq ----" >> /tmp/webs_upgrade.log
 	wget $wget_options http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$firmware_file -O /tmp/linux.zip
@@ -33,7 +39,9 @@ fi
 if [ "$?" != "0" ]; then	#download failure
 	nvram set webs_state_error=1
 else
-	echo 3 > /proc/sys/vm/drop_caches
+	if [ -z "$IS_BCMHND" ]; then
+		echo 3 > /proc/sys/vm/drop_caches
+	fi
 	s1=`ls -l /tmp/linux.zip | awk '{print $5}'`	#fw size
 	s2=`df /tmp | grep /tmp | awk '{print $4*1024}'`		# /tmp free space
 	echo "---- s1= ----" >> /tmp/webs_upgrade.log
@@ -70,7 +78,9 @@ else
 			else
 				nvram set webs_state_upgrade=2
 				sleep 10
-				echo 3 > /proc/sys/vm/drop_caches
+				if [ -z "$IS_BCMHND" ]; then
+					echo 3 > /proc/sys/vm/drop_caches
+				fi
 				rm /tmp/linux.zip
 				mv /tmp/mytmpfs/*.trx /tmp/linux.trx
 				echo "---- /mytmpfs OK ----" >> /tmp/webs_upgrade.log

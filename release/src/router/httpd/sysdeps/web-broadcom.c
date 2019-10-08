@@ -1086,7 +1086,7 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 	char ssidbuf[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
 	wl_bss_info_107_t *old_bi;
-	wl_bss_info_v109_1_t *new_bi = (wl_bss_info_v109_1_t *) &bi;
+	wl_bss_info_v109_1_t *new_bi = (wl_bss_info_v109_1_t *)bi;
 #ifndef RTCONFIG_QTN
 	int mcs_idx = 0;
 #endif

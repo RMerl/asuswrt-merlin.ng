@@ -77,14 +77,16 @@ function restoreRule(_flag){
 
 function saveSetting(mode){
 	var flag = 0;
+	var remove_passwd = 0;
 	if(ddns_enable == 1 && ddns_server != "WWW.ASUS.COM"){
 		flag = 1;
 	}
 	else{	//ASUS DDNS
 		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
 	}
+	remove_passwd = document.getElementById("remove_passwd").checked ? 1 : 0;
 
-	location.href='Settings_'+productid+'.CFG?path=' + flag;
+	location.href='Settings_'+productid+'.CFG?path=' + flag+'&remove_passwd='+remove_passwd;
 }
 
 function uploadSetting(){
@@ -292,10 +294,6 @@ function selectSetting() {
 														</div>
 													</div>
 												</td>
-											</tr>
-											<tr id="transfer_ddns_field" style="display:none">
-												<th align="right" style="border-top:none;height:10px;padding:0px">
-												<td colspan = "4" style="border:none;padding:0px;padding-left:14px"><span><input id="transfer_ddns" type="checkbox">Transfer ASUS DDNS name</span></td>
 											</tr>
 											<tr>
 												<th align="right">

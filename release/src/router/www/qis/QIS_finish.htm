@@ -243,7 +243,7 @@ function doLiveUpdate(_do){
 		document.getElementById("newFWDetected").style.display = "none";
 		document.getElementById("progressBar").style.display = "";
 		document.start_update.action_mode.value="apply";
-		document.start_update.action_script.value="start_webs_upgrade";
+		document.start_update.action_script.value="stop_upgrade;start_webs_upgrade";
 		document.start_update.action_wait.value="300";
 		document.start_update.submit();
 	}

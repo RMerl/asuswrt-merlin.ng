@@ -1,5 +1,7 @@
 #!/bin/sh
 
+IS_BCMHND=`nvram get rc_support|grep -i bcmhnd`
+
 wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
 wget_options="-q -t 2 -T $wget_timeout"
@@ -23,7 +25,9 @@ fi
 # get signature zip file
 forsq=`nvram get apps_sq`
 #urlpath=`nvram get sig_state_url`
-echo 3 > /proc/sys/vm/drop_caches
+if [ -z "$IS_BCMHND" ]; then
+	echo 3 > /proc/sys/vm/drop_caches
+fi
 if [ "$update_url" != "" ]; then
 	echo "---- wget fw /tmp/update_url ----" > /tmp/sig_upgrade.log
 	wget $wget_options ${update_url}/$sig_file -O /tmp/rule.trf

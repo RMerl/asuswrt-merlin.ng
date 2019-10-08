@@ -10,7 +10,7 @@ endif
 
 # Install directories
 INSTALL_DIR=$(INSTALLDIR)/lib/
-CFLAGS += -I.. -I../shared -I../push_log
+CFLAGS += -I.. -I../shared
 CFLAGS += -I$(TOOLCHAIN_DIR)/include/ -I$(BUILD_DIR)/staging_dir/include/ -I$(BUILD_DIR)/../../include/
 CFLAGS += -I$(TOP)/fapi_wlan_common-1.0.0.1/include -I$(TOP)/libhelper-1.4.0.2/include -DPACKAGE_ID=\"fapi_wlan_common\" -DLOGGING_ID="fapi_wlan_common"
 # LDFLAGS += -L$(TOP)/fapi_wlan_common-1.0.0.1 -lfapiwlancommon -L$(TOP)/libhelper-1.4.0.2 -lhelper

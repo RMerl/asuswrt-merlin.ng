@@ -51,16 +51,11 @@ function initial(){
 		regen_5G_mode(document.form.wl_nmode_x, wl_unit)		
 	}
 
-	if(band5g_11ax_support || support_site_modelid == "GX-AC5400"){
-
+	if(he_frame_support){
 		if(based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')){
 			$("#he_mode_field").show();
 		}
 
-		if(support_site_modelid == "GX-AC5400"){
-			$("#he_mode_text").html("<#WLANConfig11b_HE_Frame_Mode_itemname#>".replace('802.11ax ', ''));
-			$("#he_mode_faq").html('<#WLANConfig11b_HE_Frame_Mode_faq#>'.replace('802.11ax ', ''));
-		}
 		$("#he_mode_faq_link")  //for string tag: WLANConfig11b_HE_Frame_Mode_faq
             .attr('target', '_blank')
             .attr('style', 'color:#FC0;text-decoration:underline;')
@@ -191,10 +186,11 @@ function initial(){
 			$('#acs_ch13_checkbox').show();					
 		}
 	}
-
+	
+	var smart_connect_flag_t = '';
 	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){	//get select before and control setting
 		var flag = '<% get_parameter("flag"); %>';
-		var smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
+		smart_connect_flag_t = (flag=='')?document.form.smart_connect_x.value:flag;
 
 		document.getElementById("smartcon_enable_field").style.display = "";
 		if(wl_info.band2g_support && wl_info.band5g_support && wl_info.band5g_2_support)
@@ -247,7 +243,7 @@ function initial(){
 	}
 
 	/* Smart Connect, separate wireless settings*/
-	if(smart_connect_flag_t == '0'){
+	if(smart_connect_flag_t == '0' || smart_connect_flag_t == ''){
 		$('#band_separate').hide();
 	}
 	else if(smart_connect_flag_t == '1'){
@@ -316,7 +312,7 @@ function change_wl_nmode(o){
 			inputCtrl(document.form.wl_gmode_check, 1);
 	}
 
-	if(band5g_11ax_support || support_site_modelid == "GX-AC5400"){
+	if(he_frame_support){
 		if(o.value == '0' || o.value == '8'){
 			if (based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')) {
 				$("#he_mode_field").show();
@@ -1780,6 +1776,8 @@ function separateBWHandler(unit, bw){
 
 function separateChannelHandler(unit, channel){
 	var channel_2g = JSON.parse('<% channel_list_2g(); %>');
+	var channel_5g_1 = JSON.parse('<% channel_list_5g(); %>');
+	var channel_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
 	var curCtrlChannel = channel;
 	var extend_channel = new Array;
 	var extend_channel_value = new Array;
@@ -1828,7 +1826,12 @@ function separateChannelHandler(unit, channel){
 	}
 	else if (unit == '1') {
 		if (curCtrlChannel == '0') {
-			$('#band1_acsDFS').show();
+			if(channel_5g_1.indexOf('56') != -1 || channel_5g_1.indexOf('100') != -1){
+				$('#band1_acsDFS').show();
+			}
+			else{
+				$('#band1_acsDFS').hide();
+			}
 		}
 		else {
 			$('#band1_acsDFS').hide();
@@ -1836,7 +1839,12 @@ function separateChannelHandler(unit, channel){
 	}
 	else if (unit == '2') {
 		if (curCtrlChannel == '0') {
-			$('#band2_acsDFS').show();
+			if(channel_5g_2.indexOf('100') != -1){
+				$('#band2_acsDFS').show();
+			}
+			else{
+				$('#band2_acsDFS').hide();
+			}
 		}
 		else {
 			$('#band2_acsDFS').hide();

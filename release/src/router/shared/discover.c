@@ -51,7 +51,6 @@
 /***********************************************************************/
 // ppp
 
-
 char *
 strDup(char const *str)
 {
@@ -68,86 +67,82 @@ strDup(char const *str)
 int
 openInterface(char const *ifname, UINT16_t type, unsigned char *hwaddr)
 {
-    int optval=1;
-    int fd;
-    struct ifreq ifr;
-    int domain, stype;
-
+	int optval=1;
+	int fd;
+	struct ifreq ifr;
+	int domain, stype;
     struct sockaddr sa;
 
-    memset(&sa, 0, sizeof(sa));
+	memset(&sa, 0, sizeof(sa));
 
-    domain = PF_INET;
-    stype = SOCK_PACKET;
+	domain = PF_INET;
+	stype = SOCK_PACKET;
 
-    if ((fd = socket(domain, stype, htons(type))) < 0) {
-	/* Give a more helpful message for the common error case */
-	if (errno == EPERM) {
-	    fprintf(stderr, "Cannot create raw socket -- pppoe must be run as root.\n");
+	if ((fd = socket(domain, stype, htons(type))) < 0) {
+		/* Give a more helpful message for the common error case */
+		if (errno == EPERM) {
+			fprintf(stderr, "Cannot create raw socket -- pppoe must be run as root.\n");
+			return -1;
+		}
+		perror("socket");
 		return -1;
 	}
-	perror("socket");
-	return -1;
-    }
-	// test
-	//fprintf(stderr, "openInterface: socket [%d]\n", fd);
 
-    if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval)) < 0) {
-	perror("setsockopt");
-	close(fd);
-	return -1;
-    }
-
-    memset(&ifr, 0, sizeof(ifr));
-
-    /* Fill in hardware address */
-    if (hwaddr) {
-	strcpy(ifr.ifr_name, ifname);
-	if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
-	    perror("SIOCGIFHWADDR");
-
-	memcpy(hwaddr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
-	if (NOT_UNICAST(hwaddr)) {
-	    char buffer[256];
-	    sprintf(buffer, "Interface %.16s has broadcast/multicast MAC address??", ifname);
-	    //rp_fatal(buffer);
-	    fprintf(stderr, buffer);
-	    return -1;
+	if (setsockopt(fd, SOL_SOCKET, SO_BROADCAST, &optval, sizeof(optval)) < 0) {
+		perror("setsockopt");
+		close(fd);
+		return -1;
 	}
-    }
 
-    /* Sanity check on MTU */
-    strcpy(sa.sa_data, ifname);
+	memset(&ifr, 0, sizeof(ifr));
 
-    /* Bind to device */
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
-    if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) == -1)	{
-	perror("SO_BINDTODEVICE");
-	close(fd);
-	return -1;
-    }
+	/* Fill in hardware address */
+	if (hwaddr) {
+		strcpy(ifr.ifr_name, ifname);
+		if (ioctl(fd, SIOCGIFHWADDR, &ifr) < 0)
+			perror("SIOCGIFHWADDR");
 
-    /* get ifr.ifr_ifindex */
-    strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
-    if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) {
-	perror("SIOCGIFINDEX");
-	close(fd);
-	return -1;
-    }
+		memcpy(hwaddr, ifr.ifr_hwaddr.sa_data, ETH_ALEN);
+		if (NOT_UNICAST(hwaddr)) {
+			char buffer[256];
 
-    /* Bind to device */
-    /* only SO_BINDTODEVICE may also receive PADO (PPPoE Active Discovery Offer) frame from the other interface */
-    {
-    if (bind(fd, (struct sockaddr *) &sa, sizeof(sa)) < 0)
-    {
-	perror("openInterface() bind ");
-	close(fd);
-	return -1;
-    }
-    }
+			sprintf(buffer, "Interface %.16s has broadcast/multicast MAC address??", ifname);
+			//rp_fatal(buffer);
+			fprintf(stderr, buffer);
+			return -1;
+		}
+	}
 
-    return fd;
+	/* Sanity check on MTU */
+	strcpy(sa.sa_data, ifname);
+
+	/* Bind to device */
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+	if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) == -1) {
+		perror("SO_BINDTODEVICE");
+		close(fd);
+		return -1;
+	}
+
+	/* get ifr.ifr_ifindex */
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
+	if (ioctl(fd, SIOCGIFINDEX, &ifr) < 0) {
+		perror("SIOCGIFINDEX");
+		close(fd);
+		return -1;
+	}
+
+	/* Bind to device */
+	/* only SO_BINDTODEVICE may also receive PADO (PPPoE Active Discovery Offer) frame from the other interface */
+	if (bind(fd, (struct sockaddr *) &sa, sizeof(sa)) < 0) {
+		perror("openInterface() bind ");
+		close(fd);
+		return -1;
+	}
+
+	return fd;
 }
+
 void
 dumpHex(FILE *fp, unsigned char const *buf, int len)
 {
@@ -293,78 +288,113 @@ packetIsForMe(PPPoEConnection *conn, PPPoEPacket *packet)
 int
 sendPacket(PPPoEConnection *conn, int sock, PPPoEPacket *pkt, int size)
 {
-    struct sockaddr sa;
+	struct sockaddr sa;
 
-    if (!conn) {
-	fprintf(stderr, "relay and server not supported on Linux 2.0 kernels\n");
-	return -1;
-    }
-    strcpy(sa.sa_data, conn->ifName);
-    if (sendto(sock, pkt, size, 0, &sa, sizeof(sa)) < 0) {
-	perror("sendPacket sendto");
-	return -1;
-    }
-    return 0;
+	if (!conn) {
+		fprintf(stderr, "relay and server not supported on Linux 2.0 kernels\n");
+		return -1;
+	}
+	strcpy(sa.sa_data, conn->ifName);
+	if (sendto(sock, pkt, size, 0, &sa, sizeof(sa)) < 0) {
+		perror("sendPacket sendto");
+		return -1;
+	}
+	return 0;
 }
 
 int
 receivePacket(int sock, PPPoEPacket *pkt, int *size)
 {
-    if ((*size = recv(sock, pkt, sizeof(PPPoEPacket), 0)) < 0) {
-	perror("receivePacket recv");
-	return -1;
-    }
-    return 0;
+	if ((*size = recv(sock, pkt, sizeof(PPPoEPacket), 0)) < 0) {
+		perror("receivePacket recv");
+		return -1;
+	}
+	return 0;
+}
+
+int get_try_loop(){
+	int num = nvram_get_int("dc_num_try");
+
+	if(num > 0)
+		return num;
+	else
+		return 1;
+}
+
+int get_dc_num_pppoe(){
+	int num = nvram_get_int("dc_num_pppoe");
+
+	if(num > 0 && num <= DISCOVER_MAX_PPPOE)
+		return num;
+	else
+		return 3;
+}
+
+int get_dc_waitsec(){
+	int num = nvram_get_int("dc_waitsec");
+
+	if(num > 0)
+		return num;
+	else
+		return 1;
 }
 
 void
 sendPADI(PPPoEConnection *conn)
 {
-    PPPoEPacket packet;
-    unsigned char *cursor = packet.payload;
-    PPPoETag *svc = (PPPoETag *) (&packet.payload);
-    UINT16_t namelen = 0;
-    UINT16_t plen;
-    if (conn->serviceName) {
-	namelen = (UINT16_t) strlen(conn->serviceName);
-    }
-    plen = TAG_HDR_SIZE + namelen;
-    CHECK_ROOM(cursor, packet.payload, plen);
+	PPPoEPacket packet;
+	unsigned char *cursor = packet.payload;
+	PPPoETag *svc = (PPPoETag *) (&packet.payload);
+	UINT16_t namelen = 0;
+	UINT16_t plen;
+	int n;
 
-    /* Set destination to Ethernet broadcast address */
-    memset(packet.ethHdr.h_dest, 0xFF, ETH_ALEN);
-    memcpy(packet.ethHdr.h_source, conn->myEth, ETH_ALEN);
+	if (conn->serviceName) {
+		namelen = (UINT16_t) strlen(conn->serviceName);
+	}
+	plen = TAG_HDR_SIZE + namelen;
+	CHECK_ROOM(cursor, packet.payload, plen);
 
-    packet.ethHdr.h_proto = htons(Eth_PPPOE_Discovery);
-    packet.ver = 1;
-    packet.type = 1;
-    packet.code = CODE_PADI;
-    packet.session = 0;
+	/* Set destination to Ethernet broadcast address */
+	memset(packet.ethHdr.h_dest, 0xFF, ETH_ALEN);
+	memcpy(packet.ethHdr.h_source, conn->myEth, ETH_ALEN);
 
-    svc->type = TAG_SERVICE_NAME;
-    svc->length = htons(namelen);
-    CHECK_ROOM(cursor, packet.payload, namelen+TAG_HDR_SIZE);
+	packet.ethHdr.h_proto = htons(Eth_PPPOE_Discovery);
+	packet.ver = 1;
+	packet.type = 1;
+	packet.code = CODE_PADI;
+	packet.session = 0;
 
-    if (conn->serviceName) {
-	memcpy(svc->payload, conn->serviceName, strlen(conn->serviceName));
-    }
-    cursor += namelen + TAG_HDR_SIZE;
+	svc->type = TAG_SERVICE_NAME;
+	svc->length = htons(namelen);
+	CHECK_ROOM(cursor, packet.payload, namelen+TAG_HDR_SIZE);
 
-    /* If we're using Host-Uniq, copy it over */
-    if (conn->useHostUniq) {
-	PPPoETag hostUniq;
-	pid_t pid = getpid();
-	hostUniq.type = htons(TAG_HOST_UNIQ);
-	hostUniq.length = htons(sizeof(pid));
-	memcpy(hostUniq.payload, &pid, sizeof(pid));
-	CHECK_ROOM(cursor, packet.payload, sizeof(pid) + TAG_HDR_SIZE);
-	memcpy(cursor, &hostUniq, sizeof(pid) + TAG_HDR_SIZE);
-	cursor += sizeof(pid) + TAG_HDR_SIZE;
-	plen += sizeof(pid) + TAG_HDR_SIZE;
-    }
+	if (conn->serviceName) {
+		memcpy(svc->payload, conn->serviceName, strlen(conn->serviceName));
+	}
+	cursor += namelen + TAG_HDR_SIZE;
 
-    packet.length = htons(plen);
-    sendPacket(conn, conn->discoverySocket, &packet, (int) (plen + HDR_SIZE));
+	/* If we're using Host-Uniq, copy it over */
+	if (conn->useHostUniq) {
+		PPPoETag hostUniq;
+		pid_t pid = getpid();
+
+		hostUniq.type = htons(TAG_HOST_UNIQ);
+		hostUniq.length = htons(sizeof(pid));
+		memcpy(hostUniq.payload, &pid, sizeof(pid));
+		CHECK_ROOM(cursor, packet.payload, sizeof(pid) + TAG_HDR_SIZE);
+		memcpy(cursor, &hostUniq, sizeof(pid) + TAG_HDR_SIZE);
+		cursor += sizeof(pid) + TAG_HDR_SIZE;
+		plen += sizeof(pid) + TAG_HDR_SIZE;
+	}
+
+	packet.length = htons(plen);
+
+	int NUM_PPPOE = get_dc_num_pppoe();
+	for(n = 0; n < NUM_PPPOE; ++n){
+		if(conn->discoverySocket[n] != -1)
+			sendPacket(conn, conn->discoverySocket[n], &packet, (int) (plen + HDR_SIZE));
+	}
 }
 
 /***********************************************************************/
@@ -972,14 +1002,6 @@ static void change_mode(int new_mode)
 	listen_mode = new_mode;
 }
 
-void closeall(int fd1, int fd2) {
-
-	// test	
-	//fprintf(stderr, "close [%d][%d]\n", fd1, fd2);
-	close(fd1);
-	close(fd2);
-}
-
 #ifdef RTCONFIG_DETWAN
 /* get_proto_via_br(int insert)
  * break protocol frame to receive frames
@@ -1003,6 +1025,7 @@ void get_proto_via_br(int insert)
 
 #define DISCOVER_DHCP	1
 #define DISCOVER_PPPOE	2
+
 int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det, int *got_inf)
 {
 	struct inf  {
@@ -1015,6 +1038,8 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 	int retval;
 	int ret = -1;
 	int idx;
+	int NUM_PPPOE = get_dc_num_pppoe(), n;
+	int try_loop = get_try_loop(), try;
 
 	struct timeval tv;
 	int max_fd = -1;
@@ -1032,15 +1057,15 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 
 	unlink(DETECT_LOG);	//remove old log to reduce file size in memory of tmpfs
 
-#if defined(RTCONFIG_TCPDUMP) && defined(RTCONFIG_SOC_IPQ40XX) && defined(RTCONFIG_PSISTLOG)
-	if(num == 1)
+#ifdef RTCONFIG_TCPDUMP
+	if(num == 1 && nvram_get_int("enable_tcpdump"))
 	{
 		pid_t pid;
 		char *tcpdump_argv[] = { "/usr/sbin/tcpdump", "-i", current_wan_ifnames[0], "-nnXw", "/jffs/discover.pcap", NULL};
 		_eval(tcpdump_argv, NULL, 0, &pid);
 		sleep(1);
 	}
-#endif	/* RTCONFIG_TCPDUMP && RTCONFIG_SOC_IPQ40XX && RTCONFIG_PSISTLOG */
+#endif
 
 	wan_ifNames[0] = '\0';
 	p = wan_ifNames;
@@ -1067,8 +1092,8 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 	for(idx = 0; idx < num; idx++) {
 		/* Initialize connection info */
 		memset(&pInf[idx].conn, 0, sizeof(pInf[idx].conn));
-		pInf[idx].conn.discoverySocket = -1;
-		pInf[idx].conn.sessionSocket = -1;
+		for(n = 0; n < NUM_PPPOE; ++n)
+			pInf[idx].conn.discoverySocket[n] = -1;
 		pInf[idx].conn.useHostUniq = 1;
 
 		/* Pick a default interface name */
@@ -1086,7 +1111,6 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 		pInf[idx].client_config.ifindex = 0;
 		memset(client_config.arp, 0, 6);
 
-		pInf[idx].conn.discoverySocket = -1;
 		pInf[idx].cfd = -1;
 	}
 
@@ -1097,9 +1121,10 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 		}
 
 		// ppp
-		if ((pInf[idx].conn.discoverySocket = openInterface(pInf[idx].conn.ifName, Eth_PPPOE_Discovery, pInf[idx].conn.myEth)) < 0) {
-			fprintf(stderr, "open interface fail [%d]\n", pInf[idx].conn.discoverySocket);
-			goto leave;
+		for(n = 0; n < NUM_PPPOE; ++n){
+			if ((pInf[idx].conn.discoverySocket[n] = openInterface(pInf[idx].conn.ifName, Eth_PPPOE_Discovery, pInf[idx].conn.myEth)) < 0) {
+				fprintf(stderr, "open interface fail [%d][%d]\n", pInf[idx].conn.discoverySocket[n], n+1);
+			}
 		}
 
 #ifdef DHCP_DETECT
@@ -1116,24 +1141,26 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 			}
 		}
 #endif // DHCP_DETECT
-
-
-		{ // send discover frame
-#ifdef DHCP_DETECT
-			if(dhcp_det) {
-				send_dhcp_discover(xid, pInf[idx].client_config.ifindex, pInf[idx].client_config.arp); /* broadcast */
-			}
-#endif // DHCP_DETECT
-			sendPADI(&pInf[idx].conn);
-		}
 	}
 
-	tv.tv_sec = 3;
+    *got_inf = -1;
+	for(try = 0; try < try_loop; ++try)
+	{
+eprintf("------------ try %d ---\n", try+1);
+
+	for(idx = 0; idx < num; idx++){ // send discover frame
+#ifdef DHCP_DETECT
+		if(dhcp_det)
+			send_dhcp_discover(xid, pInf[idx].client_config.ifindex, pInf[idx].client_config.arp); /* broadcast */
+#endif // DHCP_DETECT
+		sendPADI(&pInf[idx].conn);
+	}
+
+	tv.tv_sec = get_dc_waitsec();
 	tv.tv_usec = 0;
 #ifdef DHCP_DETECT
 	int count = 0;
 #endif
-	*got_inf = -1;
 	for (;;) {
 
 		FD_ZERO(&rfds);
@@ -1142,20 +1169,25 @@ int discover_interfaces(int num, const char **current_wan_ifnames, int dhcp_det,
 #ifdef DHCP_DETECT
 			if(dhcp_det) {
 				FD_SET(pInf[idx].cfd, &rfds);	// DHCP
+				if(pInf[idx].cfd > max_fd)
+					max_fd = pInf[idx].cfd;
 			}
-			if(pInf[idx].cfd > max_fd)
-				max_fd = pInf[idx].cfd;
 #endif // DHCP_DETECT
-			FD_SET(pInf[idx].conn.discoverySocket, &rfds);  // ppp
-			if(pInf[idx].conn.discoverySocket > max_fd)
-				max_fd = pInf[idx].conn.discoverySocket;
+
+			for(n = 0; n < NUM_PPPOE; ++n){
+				if(pInf[idx].conn.discoverySocket[n] != -1){
+					FD_SET(pInf[idx].conn.discoverySocket[n], &rfds);  // ppp
+					if(pInf[idx].conn.discoverySocket[n] > max_fd)
+						max_fd = pInf[idx].conn.discoverySocket[n];
+				}
+			}
 		}
 
 		retval = select(max_fd + 1, &rfds, NULL, NULL, &tv);
+eprintf("--- %s(%s): tv(%lu.%06lu) retval(%d) ---\n", __func__, wan_ifNames, tv.tv_sec, tv.tv_usec, retval);
 
 
 		if (retval == -1) {
-eprintf("--- %s(%s): error on select! ---\n", __func__, wan_ifNames);
 			fprintf(stderr, "error on select\n");
 
 			if (errno == EINTR)	/* a signal was caught */
@@ -1191,12 +1223,10 @@ eprintf("--- %s(%s): unknown errno: %x ---\n", __func__, wan_ifNames, errno);
 			}
 		}
 		else if (retval < 0) {
-eprintf("--- %s(%s): this should not happen! ---\n", __func__, wan_ifNames);
 			fprintf(stderr, "this should not happen\n");
 			break;
 		}
 		else if (retval == 0) {
-eprintf("--- %s(%s): retval == 0. ---\n", __func__, wan_ifNames);
 			//fprintf(stderr, "timeout occur when discover dhcp or pppoe\n");
 			break;
 		}
@@ -1209,76 +1239,80 @@ eprintf("--- %s(%s): retval == 0. ---\n", __func__, wan_ifNames);
 				got_DHCP = 1;
 			}
 #endif // DHCP_DETECT
-			if (FD_ISSET(pInf[idx].conn.discoverySocket, &rfds)) {
-				got_PPP = 1;
+			for(n = 0; n < NUM_PPPOE; ++n){
+				if(pInf[idx].conn.discoverySocket[n] != -1 && FD_ISSET(pInf[idx].conn.discoverySocket[n], &rfds)){
+					got_PPP = n+1;
+					break;
+				}
 			}
 eprintf("--- %s(%s): got_DHCP=%d, got_PPP=%d. ---\n", __func__, pInf[idx].conn.ifName, got_DHCP, got_PPP);
 #ifdef DHCP_DETECT
-		if (dhcp_det && retval > 0 && listen_mode != LISTEN_NONE && got_DHCP == 1) {
-			unsigned char *message;
-			int len;
-			struct dhcpMessage packet;
+			if (dhcp_det && retval > 0 && listen_mode != LISTEN_NONE && got_DHCP == 1) {
+				unsigned char *message;
+				int len;
+				struct dhcpMessage packet;
 
 eprintf("--- %s(%s): discovery DHCP! ---\n", __func__, pInf[idx].conn.ifName);
-			/* a packet is ready, read it */
-			if (listen_mode == LISTEN_KERNEL)
-				len = get_packet(&packet, pInf[idx].cfd);
-			else
-				len = get_raw_packet(&packet, pInf[idx].cfd);
+				/* a packet is ready, read it */
+				if (listen_mode == LISTEN_KERNEL)
+					len = get_packet(&packet, pInf[idx].cfd);
+				else
+					len = get_raw_packet(&packet, pInf[idx].cfd);
 
 //dump("dhcp", (unsigned char *)&packet, len);
-			if (len == -1 && errno != EINTR) {
-				goto leave;
-			}
-
-			if ((len < 0) || (packet.xid != xid) || ((message = get_option(&packet, DHCP_MESSAGE_TYPE)) == NULL)) {
-				++count;
-eprintf("--- %s(%s): Got the wrong %d packet when detecting DHCP! ---\n", __func__, pInf[idx].conn.ifName, count);
-			}
-			/* Must be a DHCPOFFER to one of our xid's */
-			//if (*message == DHCPOFFER)
-			else if (*message == DHCPOFFER)
-			{
-eprintf("--- %s(%s): Got the DHCP OFFER ! ---\n", __func__, pInf[idx].conn.ifName);
-				*got_inf = idx;
-				pInf[idx].state |= DISCOVER_DHCP;
-				if(pInf[idx].state & DISCOVER_PPPOE) {
-					ret = 3;
+				if (len == -1 && errno != EINTR) {
 					goto leave;
 				}
-			}
-			else
-				got_DHCP = -1;
+
+				if ((len < 0) || (packet.xid != xid) || ((message = get_option(&packet, DHCP_MESSAGE_TYPE)) == NULL)) {
+					++count;
+eprintf("--- %s(%s): Got the wrong %d packet when detecting DHCP! ---\n", __func__, pInf[idx].conn.ifName, count);
+				}
+				/* Must be a DHCPOFFER to one of our xid's */
+				//if (*message == DHCPOFFER)
+				else if (*message == DHCPOFFER)
+				{
+eprintf("--- %s(%s): Got the DHCP OFFER ! ---\n", __func__, pInf[idx].conn.ifName);
+					*got_inf = idx;
+					pInf[idx].state |= DISCOVER_DHCP;
+					if(pInf[idx].state & DISCOVER_PPPOE) {
+						ret = 3;
+						goto leave;
+					}
+				}
+				else
+					got_DHCP = -1;
 eprintf("--- %s(%s): end to analyse the DHCP's packet! ---\n", __func__, pInf[idx].conn.ifName);
-		}
+			}
 #endif // DHCP_DETECT
 
-		if (retval > 0 && listen_mode != LISTEN_NONE && got_PPP == 1)
-		{
-			PPPoEPacket ppp_packet;
-			int ppp_len;
+			if (retval > 0 && listen_mode != LISTEN_NONE && got_PPP)
+			{
+				PPPoEPacket ppp_packet;
+				int ppp_len;
 eprintf("--- %s(%s): discovery PPPoE! ---\n", __func__, pInf[idx].conn.ifName);
-			memset(&ppp_packet, 0, sizeof(ppp_packet));
-			receivePacket(pInf[idx].conn.discoverySocket, &ppp_packet, &ppp_len);
+				memset(&ppp_packet, 0, sizeof(ppp_packet));
+				receivePacket(pInf[idx].conn.discoverySocket[got_PPP-1], &ppp_packet, &ppp_len);
 //dump("PPPoE", (unsigned char *)&ppp_packet, ppp_len);
-			if (ppp_len > 0 && ppp_packet.code == CODE_PADO) {
+				if (ppp_len > 0 && ppp_packet.code == CODE_PADO) {
 eprintf("--- %s(%s): Got the PPPoE ! ---\n", __func__, pInf[idx].conn.ifName);
-				*got_inf = idx;
-				pInf[idx].state |= DISCOVER_PPPOE;
-				if(pInf[idx].state & DISCOVER_DHCP) {
-					ret = 3;
-					goto leave;
+					*got_inf = idx;
+					pInf[idx].state |= DISCOVER_PPPOE;
+					if(pInf[idx].state & DISCOVER_DHCP) {
+						ret = 3;
+						goto leave;
+					}
+					if(!dhcp_det) {
+						ret = 2;
+						goto leave;
+					}
 				}
-				if(!dhcp_det) {
-					ret = 2;
-					goto leave;
-				}
-			}
-			else
-				got_PPP = -1;
+				else
+					got_PPP = 0;
 eprintf("--- %s(%s): end to analyse the PPPoE's packet! ---\n", __func__, pInf[idx].conn.ifName);
-		}
+			}
 eprintf("--- %s(%s): Go to next detect loop. ---\n", __func__, pInf[idx].conn.ifName);
+		}
 	}
 	}
 
@@ -1286,7 +1320,11 @@ leave:
 	get_proto_via_br(0);
 
 	for(idx = 0; idx < num; idx++) {
-		closeall(pInf[idx].cfd, pInf[idx].conn.discoverySocket);
+		close(pInf[idx].cfd);
+		for(n = 0; n < NUM_PPPOE; ++n){
+			if(pInf[idx].conn.discoverySocket[n] != -1)
+				close(pInf[idx].conn.discoverySocket[n]);
+		}
 	}
 	if(ret < 0) {
 		for(idx = 0; idx < num; idx++) {
@@ -1300,15 +1338,15 @@ leave:
 			ret = 0;	// No protocol is found
 	}
 eprintf("--- %s(%s): finish ret(%d) got_inf(%d). ---\n", __func__, wan_ifNames, ret, *got_inf);
-	for(idx = 0; idx < num; idx++)
-	{
+	for(idx = 0; idx < num; idx++) {
 		free(pInf[idx].conn.ifName);
 	}
 	free(pInf);
 
 #ifdef RTCONFIG_TCPDUMP
-	eval("killall", "tcpdump");
-#endif	/* RTCONFIG_TCPDUMP */
+	if(nvram_get_int("enable_tcpdump"))
+		eval("killall", "tcpdump");
+#endif
 
 	return ret;
 }

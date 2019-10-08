@@ -112,7 +112,11 @@ EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SER
 #else
 #EXSTRING=
 #endif
+#ifneq ($(FW_JUMP),)
+#export EXTENDNO := $(FW_JUMP)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
+#else
 #export EXTENDNO := $(shell expr $(EXTENDNO1) + $(RC_EXT_NO))-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
+#endif
 #endif
 
 ifeq ($(EXTENDNO),)
@@ -251,6 +255,9 @@ endif
 
 # If platform specific software packages exist, PLATFORM_ROUTER should be defined in platform.mak
 export PLATFORM_ROUTER
+
+export FW_JUMP_TARGET := FW_JUMP=y APP="none" AUTODICT=n NO_SAMBA=y NO_FTP=y WTFAST=n USBEXTRAS=n DISK_MONITOR=n MEDIASRV=n PRINTER=n WEBDAV=n SMARTSYNCBASE=n CLOUDCHECK=n TIMEMACHINE=n MDNS=n BWDPI=n EMAIL=n ALEXA=n IFTTT=n NATNL_AICLOUD=n NATNL_AIHOME=n CONNDIAG=n OPENVPN=n
+
 
 define bluecave_mkimage_extra_checks
 $(if $(CONFIG_UBOOT_CONFIG_LTQ_IMAGE_EXTRA_CHECKS), \
@@ -1419,6 +1426,12 @@ define RouterOptions
 	if [ "$(HW_DUALWAN)" = "y" ]; then \
 		sed -i "/RTCONFIG_HW_DUALWAN/d" $(1); \
 		echo "RTCONFIG_HW_DUALWAN=y" >>$(1); \
+	fi; \
+	if [ "$(FRS_FEEDBACK)" = "y" ]; then \
+		sed -i "/RTCONFIG_FRS_FEEDBACK/d" $(1); \
+		echo "RTCONFIG_FRS_FEEDBACK=y" >>$(1); \
+		sed -i "/RTCONFIG_HTTPS/d" $(1); \
+		echo "RTCONFIG_HTTPS=y" >>$(1); \
 	fi; \
 	if [ "$(EMAIL)" = "y" ]; then \
 		sed -i "/RTCONFIG_PUSH_EMAIL/d" $(1); \
@@ -2712,11 +2725,9 @@ define RouterOptions
 		echo "RTCONFIG_MASTER_DET=y" >>$(1); \
 		sed -i "/RTCONFIG_ADV_RAST/d" $(1); \
 		echo "RTCONFIG_ADV_RAST=y" >>$(1); \
-		if [ "$(BTM_11V)" = "y" ]; then \
-			if [ "$(INFO_EXAP)" = "y" ]; then \
-				sed -i "/RTCONFIG_CONN_EVENT_TO_EX_AP/d" $(1); \
-				echo "RTCONFIG_CONN_EVENT_TO_EX_AP=y" >>$(1); \
-			fi; \
+		if [ "$(INFO_EXAP)" = "y" ]; then \
+			sed -i "/RTCONFIG_CONN_EVENT_TO_EX_AP/d" $(1); \
+			echo "RTCONFIG_CONN_EVENT_TO_EX_AP=y" >>$(1); \
 		fi; \
 		if [ "$(LANTIQ)" = "y" ]; then \
 			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \
@@ -2820,6 +2831,10 @@ define RouterOptions
 	if [ "$(UUPLUGIN)" = "y" ]; then \
 		sed -i "/RTCONFIG_UUPLUGIN/d" $(1); \
 		echo "RTCONFIG_UUPLUGIN=y" >>$(1); \
+	fi; \
+	if [ -n "$(FW_JUMP)" ]; then \
+		sed -i "/RTCONFIG_FW_JUMP/d" $(1); \
+		echo "RTCONFIG_FW_JUMP=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))
@@ -4328,6 +4343,12 @@ define save_src_config
 		echo "export $${var}" >> .config ; \
 		export $${var} ; \
 	done ;
+	@if [ -n "$(FW_JUMP)" ] ; then \
+		for var in $(FW_JUMP_TARGET) ; do \
+			echo "export $${var}" >> .config ; \
+			export $${var} ; \
+		done ; \
+	fi ;
 	@chmod 666 .config;
 
 	@echo "";

@@ -174,6 +174,7 @@ var ipsec_profile_client_5_ext = decodeURIComponent('<% nvram_char_to_ascii("","
 var all_profile_subnet_list = "";
 var control_profile_flag = true;
 var serverList_maxNum = 0;
+var openvpnc_max = 5;
 
 function parseNvramToArray(_oriNvram, _arrayLength) {
 	var parseArray = [];
@@ -224,14 +225,17 @@ function initial(){
 		var dhcp_staticlist_row = decodeURIComponent(dhcp_staticlist_tmp).split("<");
 		for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
 			var dhcp_staticlist_col = dhcp_staticlist_row[i].split('>');
-			dhcp_staticlist_array[dhcp_staticlist_col[1]] = dhcp_staticlist_col[0].toUpperCase();
+			var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(), "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2]};
+			dhcp_staticlist_array[dhcp_staticlist_col[1]] = item_para;
 		}
 	}
 	for(var i = 0; i < vpnc_dev_policy_list_array.length; i += 1) {
 		var vpnc_dev_policy_ipaddr = vpnc_dev_policy_list_array[i][0];
-		var dhcp_staticlist_mac = dhcp_staticlist_array[vpnc_dev_policy_ipaddr];
+		var dhcp_staticlist_mac = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].mac;
+		var dhcp_staticlist_dns = dhcp_staticlist_array[vpnc_dev_policy_ipaddr].dns;
 		if(dhcp_staticlist_mac != undefined) {
 			vpnc_dev_policy_list_array[i].splice(0, 0, dhcp_staticlist_mac);
+			vpnc_dev_policy_list_array[i].splice(2, 0, dhcp_staticlist_dns);
 		}
 		else {
 			vpnc_dev_policy_list_array.splice(i, 1);
@@ -314,15 +318,19 @@ function gen_exception_list_table() {
 		header: [ 
 			{
 				"title" : "<#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)",
-				"width" : "30%"
+				"width" : "25%"
 			},
 			{
 				"title" : "<#IPConnection_ExternalIPAddress_itemname#>",
 				"width" : "20%"
 			},
 			{
+				"title" : "<#LANHostConfig_x_LDNSServer1_itemname#>",
+				"width" : "20%"
+			},
+			{
 				"title" : "<#VPN_Fusion_Connection_Name#>",
-				"width" : "30%"
+				"width" : "15%"
 			},
 			{
 				"title" : "<#CTL_Activate#>",
@@ -342,6 +350,13 @@ function gen_exception_list_table() {
 					"title" : "<#IPConnection_ExternalIPAddress_itemname#>",
 					"maxlength" : "15",
 					"validator" : "ipAddressDHCP"
+				},
+				{
+					"editMode" : "text",
+					"title" : "<#LANHostConfig_x_LDNSServer1_itemname#> (Optional)",
+					"maxlength" : "15",
+					"validator" : "ipAddress",
+					"valueMust" : false
 				},
 				{
 					"editMode" : "select",
@@ -364,6 +379,9 @@ function gen_exception_list_table() {
 					"editMode" : "macShowClientName",
 				},
 				{
+					"editMode" : "pureText",
+				},
+				{
 					"editMode" : "select",
 					"option" : {"<#Internet#>" : "0"},
 					"before_edit_callBackFun" : edit_exception_list_confirm
@@ -384,12 +402,17 @@ function gen_exception_list_table() {
 			var optionText = vpnc_clientlist_array[idx][0];
 			var optionValue = vpnc_clientlist_array[idx][6];
 
-			tableStruct.createPanel.inputs[2].option[optionText] = optionValue;
-			tableStruct.clickRawEditPanel.inputs[2].option[optionText] = optionValue;
+			tableStruct.createPanel.inputs[3].option[optionText] = optionValue;
+			tableStruct.clickRawEditPanel.inputs[3].option[optionText] = optionValue;
 		}
 	}
 
 	tableApi.genTableAPI(tableStruct);
+	var exception_list_length = $(".tableApi_table").find("[row_td_idx=2] > .static-text").length;
+	for(var i = 0; i < exception_list_length; i += 1) {
+		if($(".tableApi_table").find("[row_td_idx=2] > .static-text").eq(i).html() == "")
+			$(".tableApi_table").find("[row_td_idx=2] > .static-text").eq(i).html("<#Setting_factorydefault_value#>");
+	}
 }
 
 var add_profile_flag = false;
@@ -443,31 +466,7 @@ function cancel_add_rule(){
 }
 
 function addRow_Group(upper, flag, idx){
-	document.openvpnManualForm.vpn_crt_client1_ca.disabled = true;
-	document.openvpnManualForm.vpn_crt_client1_crt.disabled = true;
-	document.openvpnManualForm.vpn_crt_client1_key.disabled = true;
-	document.openvpnManualForm.vpn_crt_client1_static.disabled = true;
-	document.openvpnManualForm.vpn_crt_client1_crl.disabled = true;
-	document.openvpnManualForm.vpn_crt_client2_ca.disabled = true;
-	document.openvpnManualForm.vpn_crt_client2_crt.disabled = true;
-	document.openvpnManualForm.vpn_crt_client2_key.disabled = true;
-	document.openvpnManualForm.vpn_crt_client2_static.disabled = true;
-	document.openvpnManualForm.vpn_crt_client2_crl.disabled = true;
-	document.openvpnManualForm.vpn_crt_client3_ca.disabled = true;
-	document.openvpnManualForm.vpn_crt_client3_crt.disabled = true;
-	document.openvpnManualForm.vpn_crt_client3_key.disabled = true;
-	document.openvpnManualForm.vpn_crt_client3_static.disabled = true;
-	document.openvpnManualForm.vpn_crt_client3_crl.disabled = true;
-	document.openvpnManualForm.vpn_crt_client4_ca.disabled = true;
-	document.openvpnManualForm.vpn_crt_client4_crt.disabled = true;
-	document.openvpnManualForm.vpn_crt_client4_key.disabled = true;
-	document.openvpnManualForm.vpn_crt_client4_static.disabled = true;
-	document.openvpnManualForm.vpn_crt_client4_crl.disabled = true;
-	document.openvpnManualForm.vpn_crt_client5_ca.disabled = true;
-	document.openvpnManualForm.vpn_crt_client5_crt.disabled = true;
-	document.openvpnManualForm.vpn_crt_client5_key.disabled = true;
-	document.openvpnManualForm.vpn_crt_client5_static.disabled = true;
-	document.openvpnManualForm.vpn_crt_client5_crl.disabled = true;
+	disableOpenVpnManualformItem();
 	idx = parseInt(idx);
 
 	if(flag == 'PPTP' || flag == 'L2TP') {
@@ -767,7 +766,7 @@ function tabclickhandler(_type){
 		$("#tr_" + _type + "_limit_hint").css("display", "none");
 		$("#openvpnc_setting_" + _type + "").find("input,button,textarea,select").attr("disabled", false);
 	}
-	if (openvpn_arrayLength == 5 && openvpnd_support && add_profile_flag)
+	if (openvpn_arrayLength == openvpnc_max && openvpnd_support && add_profile_flag)
 		set_limit_hint("openvpn", openvpn_arrayLength, "OpenVPN");
 	else
 		reset_limit_hint("openvpn");
@@ -780,7 +779,7 @@ function tabclickhandler(_type){
 
 function update_unit_option(){
 	var vpnc_openvpn_unit_array = [];
-	for(var i = 1; i <= 5; i += 1) {
+	for(var i = 1; i <= openvpnc_max; i += 1) {
 		vpnc_openvpn_unit_array["unit_" + i] = i;
 	}
 	for(var i = 0; i < vpnc_clientlist_array.length; i += 1) {
@@ -1267,7 +1266,7 @@ function del_Row(rowdata) {
 	var exist_exception_list_flag = false;
 	for(var idx_policy in vpnc_dev_policy_list_array){
 		if (vpnc_dev_policy_list_array.hasOwnProperty(idx_policy)) {
-			if(vpnc_dev_policy_list_array[idx_policy][2] == delete_connect_type) {
+			if(vpnc_dev_policy_list_array[idx_policy][3] == delete_connect_type) {
 				exist_exception_list_flag = true;
 				break;
 			}
@@ -1297,7 +1296,7 @@ function del_Row(rowdata) {
 	vpnc_dev_policy_list_array = [];
 	for(var i in vpnc_dev_policy_list_array_temp){
 		if (vpnc_dev_policy_list_array_temp.hasOwnProperty(i)) {
-			if(vpnc_dev_policy_list_array_temp[i][2] != delete_connect_type)
+			if(vpnc_dev_policy_list_array_temp[i][3] != delete_connect_type)
 				vpnc_dev_policy_list_array.push(vpnc_dev_policy_list_array_temp[i]);
 		}
 	}
@@ -1453,7 +1452,22 @@ function cancel_Key_panel(){
 	document.getElementById("manualFiled_panel").style.display = "none";
 }
 
+function disableOpenVpnManualformItem(){
+	for(var i = 1; i <= openvpnc_max; i += 1){
+		if(document.openvpnManualForm["vpn_crt_client" + i + "_ca"] != undefined)
+			document.openvpnManualForm["vpn_crt_client" + i + "_ca"].disabled = true;
+		if(document.openvpnManualForm["vpn_crt_client" + i + "_crt"] != undefined)
+			document.openvpnManualForm["vpn_crt_client" + i + "_crt"].disabled = true;
+		if(document.openvpnManualForm["vpn_crt_client" + i + "_key"] != undefined)
+			document.openvpnManualForm["vpn_crt_client" + i + "_key"].disabled = true;
+		if(document.openvpnManualForm["vpn_crt_client" + i + "_static"] != undefined)
+			document.openvpnManualForm["vpn_crt_client" + i + "_static"].disabled = true;
+		if(document.openvpnManualForm["vpn_crt_client" + i + "_crl"] != undefined)
+			document.openvpnManualForm["vpn_crt_client" + i + "_crl"].disabled = true;
+	}
+}
 function saveManual(unit){
+	disableOpenVpnManualformItem();
 	switch (unit) {
 		case "1" :
 			document.openvpnManualForm.vpn_crt_client1_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
@@ -2576,14 +2590,15 @@ function parseArrayToStr_vpnc_dev_policy_list(_array) {
 	var vpnc_dev_policy_list = "";
 	for(var i = 0; i < _array.length; i += 1) {
 		if(_array[i].length != 0) {
-			if(_array[i].length == 4) {
+			if(_array[i].length == 5) {
 				if(i != 0)
 					vpnc_dev_policy_list += "<";
 
 				var temp_mac = _array[i][0];
 				var temp_ipaddr = _array[i][1];
-				var temp_vpnc_idx = _array[i][2];
-				var temp_active = _array[i][3];
+				var temp_dns = _array[i][2];
+				var temp_vpnc_idx = _array[i][3];
+				var temp_active = _array[i][4];
 				var temp_destination_ip = "";
 				vpnc_dev_policy_list += temp_active + ">" + temp_ipaddr + ">" + temp_destination_ip + ">" + temp_vpnc_idx;
 			}
@@ -2597,10 +2612,11 @@ function parseArrayToStr_dhcp_staticlist() {
 		if(vpnc_dev_policy_list_array[i].length != 0) {
 			dhcp_staticlist += "<";
 
-			if(vpnc_dev_policy_list_array[i].length == 4) {
+			if(vpnc_dev_policy_list_array[i].length == 5) {
 				var temp_mac = vpnc_dev_policy_list_array[i][0];
 				var temp_ip = vpnc_dev_policy_list_array[i][1];
-				dhcp_staticlist += temp_mac + ">" + temp_ip;
+				var temp_dns = vpnc_dev_policy_list_array[i][2];
+				dhcp_staticlist += temp_mac + ">" + temp_ip + ">" + temp_dns;
 			}
 		}
 	}
@@ -2774,7 +2790,7 @@ function applyExceptionList() {
 }
 function edit_exception_list_confirm(_parArray) {
 	var activate_status = "0";
-	activate_status = _parArray[3];
+	activate_status = _parArray[4];
 	if(activate_status == "1") {
 		alert("<#VPN_Fusion_Deactivate_Editor_Alert#>");
 		return false;
@@ -2786,7 +2802,7 @@ function del_exception_list_confirm(_parArray) {
 	var activate_status = "0";
 	var ipAddr = "";
 	ipAddr = _parArray[1];
-	activate_status = _parArray[3];
+	activate_status = _parArray[4];
 	if(activate_status == "1") {
 		alert("<#VPN_Fusion_Deactivate_Delete_Alert#>");
 		return false;
@@ -2797,7 +2813,8 @@ function del_exception_list_confirm(_parArray) {
 		var dhcp_staticlist_row = dhcp_staticlist_array.split('&#60');
 		for(var i = 1; i < dhcp_staticlist_row.length; i += 1) {
 			var dhcp_staticlist_col = dhcp_staticlist_row[i].split('&#62');
-			manually_dhcp_list_array_ori[dhcp_staticlist_col[1]] = dhcp_staticlist_col[0].toUpperCase();
+			var item_para = {"mac" : dhcp_staticlist_col[0].toUpperCase(), "dns" : (dhcp_staticlist_col[2] == undefined) ? "" : dhcp_staticlist_col[2]};
+			manually_dhcp_list_array_ori[dhcp_staticlist_col[1]] = item_para;
 		}
 		if(manually_dhcp_list_array_ori[ipAddr] != undefined) {
 			if(!confirm("<#VPN_Fusion_Exception_Policy_And_IP_Binding_Delete_Alert#>"))

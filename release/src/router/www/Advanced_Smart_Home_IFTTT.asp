@@ -122,10 +122,10 @@ var realip_state = "";
 
 var StatusList = {
 	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
-	"SvrFail": "Server connection failed",
+	"SvrFail": "<#Alexa_Server_Failed#>",
 	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
-	"Success": "IFTTT account is registered"
+	"Success": "<#IFTTT_Registered#>"
 }
 
 var AccLinkStatus = {

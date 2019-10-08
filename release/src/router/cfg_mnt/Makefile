@@ -19,6 +19,7 @@ LDFLAGS += -L$(TOP)/amas-utils -lamas-utils
 ifeq ($(RTCONFIG_AVBLCHAN),y)
 CFLAGS += -DAVBLCHAN
 endif
+CFLAGS += -DFREE_MEMORY_DOWNLOAD
 endif
 
 ifeq ($(HND_ROUTER),y)

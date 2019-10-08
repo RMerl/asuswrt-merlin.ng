@@ -3085,7 +3085,7 @@ miniupnpd: $(IPTABLES) e2fsprogs miniupnpd/config.h
 	    IPTABLESPATH=$(TOP)/$(IPTABLES) \
 	    EXTRACFLAGS="-Os $(EXTRACFLAGS) -idirafter$(KERNEL_HEADER_DIR) $(if $(or $(RTCONFIG_AURASYNC), $(RTCONFIG_GEFORCENOW)), -I$(TOP)/shared) -ffunction-sections -fdata-sections -I$(TOP)/e2fsprogs/lib" \
 	    LDFLAGS="$(EXTRALDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections -L$(IPTC_LIBDIR) -L$(TOP)/e2fsprogs/lib" \
-	    LDLIBS="-Wl,--as-needed $(if $(or $(RTCONFIG_AURASYNC), $(RTCONFIG_GEFORCENOW)),-L$(TOP)/shared -lshared -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram,) $(IPTC_LIBS) -luuid $(if  $(RTCONFIG_HND_ROUTER),-L$(TOP)/wlcsm$(EXHND) -lwlcsm,)"
+	    LDLIBS="-Wl,--as-needed $(if $(or $(RTCONFIG_AURASYNC), $(RTCONFIG_GEFORCENOW)),-L$(TOP)/shared -lshared -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram,) $(IPTC_LIBS) -luuid $(if  $(RTCONFIG_HND_ROUTER),-L$(TOP)/wlcsm -lwlcsm,)"
 miniupnpd-clean:
 	-@$(MAKE) -C miniupnpd -f Makefile.merlin clean
 	-@rm miniupnpd/config.h

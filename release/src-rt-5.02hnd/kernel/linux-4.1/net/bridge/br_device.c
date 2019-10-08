@@ -292,6 +292,7 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 		br_deliver(dst->dst, skb);
 #endif
 	else {
+		PKTCLRDEVQXMIT(skb);
 		skb_reset_mac_header(skb);
 		skb_pull(skb, ETH_HLEN);
 		br_flood_deliver(br, skb, true);

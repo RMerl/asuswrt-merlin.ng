@@ -48,8 +48,8 @@
  */
 
 #define _GNU_SOURCE
-#include <sys/types.h>
 #include <sys/sysmacros.h>
+#include <sys/types.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>

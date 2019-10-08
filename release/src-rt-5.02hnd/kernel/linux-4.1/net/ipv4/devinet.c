@@ -2384,3 +2384,24 @@ void __init devinet_init(void)
 		      inet_netconf_dump_devconf, NULL);
 }
 
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+int notifier_match_inetaddr_dev(void *nl, void *v, char *dev_name_prefix, int prefix_size)
+{
+	struct in_ifaddr *ifa;
+
+	if (nl != &inetaddr_chain.head)
+		return 0;
+
+	ifa = (struct in_ifaddr *)v;
+	if (ifa && ifa->ifa_dev && ifa->ifa_dev->dev) {
+		//printk("%s: dev name %s\n", __FUNCTION__, ifa->ifa_dev->dev->name);
+		if (!strncmp(ifa->ifa_dev->dev->name, dev_name_prefix, prefix_size)) {
+			//printk("%s: dev name %s matched\n",  __FUNCTION__, ifa->ifa_dev->dev->name);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(notifier_match_inetaddr_dev);
+#endif

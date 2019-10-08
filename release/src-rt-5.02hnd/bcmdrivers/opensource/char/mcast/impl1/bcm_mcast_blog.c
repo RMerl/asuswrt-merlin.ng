@@ -382,6 +382,12 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
                 rep = list_first_entry(&mld_fdb->rep_list,
                                        t_mld_rep_entry,
                                        list);
+#if 1 //cathy debug
+                printk("%s:%d mld_fdb->rep_list %p next %p prev %p \n",
+                    __FUNCTION__, __LINE__, &mld_fdb->rep_list, mld_fdb->rep_list.next, mld_fdb->rep_list.prev);
+                printk("%s:%d rep->list %p\n",
+                    __FUNCTION__, __LINE__, &rep->list);
+#endif
                 memcpy(ruleAction.macAddr, rep->repMac, ETH_ALEN);
                 blog_rule_add_action(rule_p, &ruleAction);
             }

@@ -779,7 +779,18 @@ static void getAllocBoardParam(void)
 
     if ((NVRAM.allocs.alloc_rdp.param1_size > MAX_RDP_PARAM1_SIZE) ||
                 (NVRAM.allocs.alloc_rdp.param2_size > MAX_RDP_PARAM2_SIZE)) {
-            setDefaultAllocBoardParamNVRAM();
+#ifdef DEFAULT_NVRAM_RDP_PARAM1
+		NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM1);
+#else
+		NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, 0);
+#endif
+
+#ifdef DEFAULT_NVRAM_RDP_PARAM2
+		NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM2);
+#else
+		NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, 0);
+#endif
+		NVRAM_UPDATE(NULL);
     }
     else if(NVRAM.alloc_dhd.dhd_size[0] == 255 && NVRAM.alloc_dhd.dhd_size[1] == 255 &&
         NVRAM.alloc_dhd.dhd_size[2] == 255) {

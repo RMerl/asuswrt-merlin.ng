@@ -1518,7 +1518,7 @@ static struct sk_buff *tcp_shift_skb_data(struct sock *sk, struct sk_buff *skb,
 	if (tcp_skb_shift(prev, skb, next_pcount, len)) {
 		pcount += next_pcount;
 		tcp_shifted_skb(sk, prev, skb, state, next_pcount, len, mss, 0);
- 	}
+	}
 
 out:
 	state->fack_count += pcount;

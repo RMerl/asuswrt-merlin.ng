@@ -8250,3 +8250,25 @@ EXPORT_SYMBOL(bcm_vlan_handle_frame_hook);
 #if defined(CONFIG_BCM_KF_TMS) && defined(CONFIG_BCM_TMS_MODULE)
 EXPORT_SYMBOL(bcm_3ah_loopback_mode_check_hook);
 #endif
+
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+int notifier_match_netdev(void *nl, void *v, char *dev_name_prefix, int prefix_size)
+{
+	struct netdev_notifier_info *info;
+
+	if (nl != &netdev_chain.head)
+		return 0;
+
+	info = (struct netdev_notifier_info *)v;
+	if (info && info->dev) {
+		//printk("%s: dev name %s\n", __FUNCTION__, info->dev->name);
+		if (!strncmp(info->dev->name, dev_name_prefix, prefix_size)) {
+			//printk("%s: dev name %s matched\n",  __FUNCTION__, info->dev->name);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(notifier_match_netdev);
+#endif

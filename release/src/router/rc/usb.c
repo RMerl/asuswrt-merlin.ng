@@ -3204,16 +3204,11 @@ char *cpu_list = nvram_get("usb_user_core");
 	/* write samba configure file*/
 	system("/sbin/write_smb_conf");
 
-	/* write smbpasswd  */
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-	snprintf(st_samba_proto, sizeof(st_samba_proto), "%s", nvram_safe_get("st_samba_proto"));
-
-	if(atoi(st_samba_proto) >= 2)
-		// use samba-3.6.x_opwrt to replace from samba-3.6.x
-		//system("echo -e \"\n\n\" |/usr/sbin/smbpasswd -s -a nobody");
-		system("/usr/sbin/smbpasswd nobody \"\"");
-	else
-		system("/usr/bin/smbpasswd nobody \"\"");
+        /* write smbpasswd  */
+#if defined(RTCONFIG_SAMBA36X)
+	// use samba-3.6.x_opwrt to replace from samba-3.6.x
+	//system("echo -e \"\n\n\" |/usr/sbin/smbpasswd -s -a nobody");
+	system("/usr/sbin/smbpasswd nobody \"\"");
 #else
 	system("smbpasswd nobody \"\"");
 #endif

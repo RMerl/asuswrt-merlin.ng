@@ -28,7 +28,7 @@ $(function () {
 	}
 });
 
-var vpnc_dev_policy_list_array = []
+var vpnc_dev_policy_list_array = [];
 var vpnc_dev_policy_list_array_ori = [];
 
 var dhcp_staticlist_array = '<% nvram_get("dhcp_staticlist"); %>';

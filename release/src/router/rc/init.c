@@ -9343,7 +9343,7 @@ NO_USB_CAP:
 #endif // RTCONFIG_USB
 
 #ifdef RTCONFIG_FRS_FEEDBACK
-	add_rc_support("frs_feedback");
+//	add_rc_support("frs_feedback");
 #ifdef RTCONFIG_DBLOG
 	add_rc_support("dblog");
 #endif /* RTCONFIG_DBLOG */

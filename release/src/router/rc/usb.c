@@ -3240,13 +3240,10 @@ char *cpu_list = nvram_get("usb_user_core");
 		memset(suit_passwd, 0, 64);
 		str_escape_quotes(suit_passwd, char_passwd, 64);
 
-#if defined(RTCONFIG_SAMBA3) && defined(RTCONFIG_SAMBA36X)
-		if(atoi(st_samba_proto) >= 2)
-			// use samba-3.6.x_opwrt to replace from samba-3.6.x
-			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
-			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
-		else
-			snprintf(cmd, sizeof(cmd), "/usr/bin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+#if defined(RTCONFIG_SAMBA36X)
+		// use samba-3.6.x_opwrt to replace from samba-3.6.x
+		//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+		snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 		snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif
@@ -3287,7 +3284,9 @@ char *cpu_list = nvram_get("usb_user_core");
 			memset(suit_passwd, 0, 64);
 			str_escape_quotes(suit_passwd, char_passwd, 64);
 #ifdef RTCONFIG_SAMBA36X
-				snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
+			// use samba-3.6.x_opwrt to replace from samba-3.6.x
+			//snprintf(cmd, sizeof(cmd), "echo -e \"%s\n%s\n\"  |/usr/sbin/smbpasswd -s -a \"%s\"", suit_passwd, suit_passwd, suit_user);
+			snprintf(cmd, sizeof(cmd), "/usr/sbin/smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #else
 			snprintf(cmd, sizeof(cmd), "smbpasswd \"%s\" \"%s\"", suit_user, suit_passwd);
 #endif

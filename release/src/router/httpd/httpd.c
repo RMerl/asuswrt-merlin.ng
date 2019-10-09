@@ -895,55 +895,38 @@ handle_request(void)
 		}
 #ifdef TRANSLATE_ON_FLY
 		else if ( strncasecmp( cur, "Accept-Language:", 16) == 0 ) {
-			if(change_preferred_lang(0)){
-				char *p;
+			if (change_preferred_lang(0)) {
 				struct language_table *pLang;
-				char lang_buf[256];
-				memset(lang_buf, 0, sizeof(lang_buf));
-				alang = &cur[16];
-				strncpy(lang_buf, alang, sizeof(lang_buf)-1);
-				p = lang_buf;
-				while (p != NULL && (p - lang_buf) < sizeof(lang_buf))
+				char lang_buf[256], *p, *saveptr;
+
+				alang = cur + 16;
+				strlcpy(lang_buf, alang, sizeof(lang_buf));
+
+				p = lang_buf, strsep(&p, "\r\n");
+				for (p = strtok_r(lang_buf, " ,;", &saveptr); p; p = strtok_r(NULL, " ,;", &saveptr))
 				{
-					p = strtok (p, "\r\n ,;");
-					if (p == NULL)  break;
-					//2008.11 magic{
-					int i, len=strlen(p);
-
-					for (i=0;i<len;++i)
-						if (isupper(p[i])) {
-							p[i]=tolower(p[i]);
-						}
-
-					//2008.11 magic}
-					for (pLang = language_tables; pLang->Lang != NULL; ++pLang)
+					for (pLang = language_tables; pLang->Lang != NULL; pLang++)
 					{
-						if (strcasecmp(p, pLang->Lang)==0)
+						if (strcasecmp(p, pLang->Lang) == 0)
 						{
 							char dictname[32];
 							_dprintf("handle_request: pLang->Lang = %s\n", pLang->Lang);
 							if (!check_lang_support(pLang->Target_Lang))
 								break;
 
-							snprintf(dictname,sizeof(dictname),"%s.dict", pLang->Target_Lang);
-							if(!check_if_file_exist(dictname))
-							{
+							snprintf(dictname, sizeof(dictname), "%s.dict", pLang->Target_Lang);
+							if (!check_if_file_exist(dictname))
 								break;
-							}
 
-							snprintf(Accept_Language,sizeof(Accept_Language),"%s",pLang->Target_Lang);
+							snprintf(Accept_Language, sizeof(Accept_Language), "%s", pLang->Target_Lang);
 							break;
 						}
 					}
 
-					if (Accept_Language[0] != 0) {
+					if (*Accept_Language) {
+						nvram_set("preferred_lang", Accept_Language);
 						break;
 					}
-					p+=strlen(p)+1;
-				}
-
-				if (Accept_Language[0] != 0) {
-					nvram_set("preferred_lang", Accept_Language);
 				}
 
 				change_preferred_lang(1);
@@ -1939,8 +1922,6 @@ int main(int argc, char **argv)
 	do_ssl = 0; // default
 	char log_filename[128] = {0};
 
-	get_index_page(indexpage, sizeof(indexpage));
-
 #if defined(RTCONFIG_UIDEBUG)
 	eval("touch", HTTPD_DEBUG);
 #endif
@@ -2031,6 +2012,9 @@ int main(int argc, char **argv)
 	FD_ZERO(&active_rfds);
 	TAILQ_INIT(&pool.head);
 	pool.count = 0;
+
+	/* handler global variable */
+	get_index_page(indexpage, sizeof(indexpage));
 
 	/* Loop forever handling requests */
 	for (;;) {

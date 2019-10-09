@@ -1924,9 +1924,13 @@ int main(int argc, char **argv)
 	do_ssl = 0; // default
 	char log_filename[128] = {0};
 
-#if defined(RTCONFIG_UIDEBUG)
-	eval("touch", HTTPD_DEBUG);
-#endif
+	/* set initial TZ to avoid mem leaks
+	 * it suppose to be convert after applying
+	 * time_zone_x_mapping(); */
+	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
+
+	if (nvram_get_int("HTTPD_DBG") > 0)
+		eval("touch", HTTPD_DEBUG);
 
 #if defined(RTCONFIG_SW_HW_AUTH)
 	//if(!httpd_sw_hw_check()) return 0;
@@ -1983,25 +1987,26 @@ int main(int argc, char **argv)
 	for (i = 0; i < ARRAY_SIZE(listen_fd); i++)
 		listen_fd[i] = -1;
 #ifdef RTCONFIG_AIHOME_TUNNEL
-	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT){
+	if (nvram_get_int("http_enable") == 1 && http_port == SERVER_PORT) {
 		//httpd listen lo 80 port for tunnel but unused ifname in https only
-	}else
+	} else
 #endif
-	if ((listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 2){
+	if ((listen_fd[0] = initialize_listen_socket(&usa, http_ifname)) < 0){
 		fprintf(stderr, "can't bind to %s address\n", http_ifname ? : "any");
-		exit(errno);
+		return errno;
 	}
 	if ((http_ifname && strcmp(http_ifname, "lo") != 0) &&
-	    (listen_fd[1] = initialize_listen_socket(&usa, "lo")) < 2) {
+	    (listen_fd[1] = initialize_listen_socket(&usa, "lo")) < 0) {
 		fprintf(stderr, "can't bind to %s address\n", "loopback");
 		/* allow fail if previous bind to interface was ok */
-		/* exit(errno); */
+		/* return errno; */
 	}
 
 	FILE *pid_fp;
-	if (http_port==SERVER_PORT)
+	if (http_port == SERVER_PORT)
 		strcpy(pidfile, "/var/run/httpd.pid");
-	else sprintf(pidfile, "/var/run/httpd-%d.pid", http_port);
+	else
+		sprintf(pidfile, "/var/run/httpd-%d.pid", http_port);
 
 	if (!(pid_fp = fopen(pidfile, "w"))) {
 		perror(pidfile);
@@ -2110,11 +2115,7 @@ int main(int argc, char **argv)
 				}
 
 				http_login_cache(&item->usa);
-#if defined(RTCONFIG_UIDEBUG)
-				struct in_addr req_ip;
-				req_ip.s_addr = login_ip_tmp;
-				HTTPD_DBG("Log ip address: %s", inet_ntoa(req_ip));
-#endif
+
 				handle_request();
 				fflush(conn_fp);
 #ifdef RTCONFIG_HTTPS

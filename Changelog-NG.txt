@@ -8,21 +8,33 @@ Asuswrt-Merlin 384/NG Changelog
          filter, to ensure that Firefox will not bypass either of
          these.  You can also have this override applied all the
          time, or completely disable it.
+  - UPDATED: RT-AX88U to GPL 384_6436.
+  - UPDATED: RT-AC68U, RT-AC88U, RT-AC3100 to GPL 384_81116.
+  - UPDATED: RT-AC86U to GPL 384_81116 + binary blobs from 384_81049
+
+  - NOTE: There is currently no builds available for the RT-AC87U,
+          RT-AC3200 or RT-AC5300 due to lack of updated compatible
+          components from Asus.
 
   - UPDATED: miniupnpd 20190824
   - UPDATED: dnsmasq 2.80-74-gdefd6b1 (themiron)
   - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
   - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
+  - UPDATED: Curl 7.66.0
+  - UPDATED: nano 4.4
+  - UPDATED: OUI database to 2018-08-17 version
   - CHANGED: Made webui SSL certificate generation compliant with
              IOS 13 and MacOS 10.15 new requirements.
   - CHANGED: Rewrote the faketc script used to inject Codel into
              Adaptive QoS as a C program for improved performance.
-  - CHANGED: Moved /bin/ip to /sbin/ip on the RT-AC86U and RT-AX88U
-             to match other models.
+  - CHANGED: Moved /usr/bin/ip to /usr/sbin/ip on the RT-AC86U and
+             RT-AX88U to match other models.
   - FIXED: Webui wouldn't notify when running dangerously low on
            free nvram (feature was lost at some point in the past)
   - FIXED: Non-working link to YandexDNS on the webui for
            Russian models.
+  - FIXED: Backported various httpd fixes to RT-AX88 from other
+           models.
 
 
 384.13_1 (12-Aug-2019)

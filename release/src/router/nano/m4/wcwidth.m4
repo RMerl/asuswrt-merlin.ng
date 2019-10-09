@@ -1,4 +1,4 @@
-# wcwidth.m4 serial 28
+# wcwidth.m4 serial 29
 dnl Copyright (C) 2006-2019 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -54,6 +54,8 @@ AC_DEFUN([gl_FUNC_WCWIDTH],
     dnl On OSF/1 5.1, wcwidth(0x200B) (ZERO WIDTH SPACE) returns 1.
     dnl On OpenBSD 5.8, wcwidth(0xFF1A) (FULLWIDTH COLON) returns 0.
     dnl This leads to bugs in 'ls' (coreutils).
+    dnl On Solaris 11.4, wcwidth(0x2202) (PARTIAL DIFFERENTIAL) returns 2,
+    dnl even in Western locales.
     AC_CACHE_CHECK([whether wcwidth works reasonably in UTF-8 locales],
       [gl_cv_func_wcwidth_works],
       [
@@ -80,7 +82,7 @@ int wcwidth (int);
 int main ()
 {
   int result = 0;
-  if (setlocale (LC_ALL, "fr_FR.UTF-8") != NULL)
+  if (setlocale (LC_ALL, "en_US.UTF-8") != NULL)
     {
       if (wcwidth (0x0301) > 0)
         result |= 1;
@@ -90,6 +92,8 @@ int main ()
         result |= 4;
       if (wcwidth (0xFF1A) == 0)
         result |= 8;
+      if (wcwidth (0x2202) > 1)
+        result |= 16;
     }
   return result;
 }]])],

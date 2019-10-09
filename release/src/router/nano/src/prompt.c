@@ -150,8 +150,8 @@ int do_statusbar_input(bool *finished)
 		else if (ISSET(RESTRICTED) && currmenu == MWRITEFILE &&
 								openfile->filename[0] != '\0' &&
 								(shortcut->func == do_verbatim_input ||
-								shortcut->func == do_cut_text_void ||
-								shortcut->func == do_uncut_text ||
+								shortcut->func == cut_text ||
+								shortcut->func == paste_text ||
 								shortcut->func == do_delete ||
 								shortcut->func == do_backspace))
 			;
@@ -161,13 +161,13 @@ int do_statusbar_input(bool *finished)
 #endif
 		else if (shortcut->func == do_verbatim_input)
 			do_statusbar_verbatim_input();
-		else if (shortcut->func == do_cut_text_void)
+		else if (shortcut->func == cut_text)
 			do_statusbar_cut_text();
 		else if (shortcut->func == do_delete)
 			do_statusbar_delete();
 		else if (shortcut->func == do_backspace)
 			do_statusbar_backspace();
-		else if (shortcut->func == do_uncut_text) {
+		else if (shortcut->func == paste_text) {
 			if (cutbuffer != NULL)
 				do_statusbar_uncut_text();
 		} else {
@@ -190,7 +190,7 @@ void do_statusbar_output(int *the_input, size_t input_len,
 {
 	char *output = charalloc(input_len + 1);
 	char onechar[MAXCHARLEN];
-	size_t char_len, i, j = 0;
+	size_t charlen, i, j = 0;
 
 	/* Copy the typed stuff so it can be treated. */
 	for (i = 0; i < input_len; i++)
@@ -203,21 +203,21 @@ void do_statusbar_output(int *the_input, size_t input_len,
 			output[j] = '\n';
 
 		/* Interpret the next multibyte character. */
-		char_len = parse_mbchar(output + j, onechar, NULL);
+		charlen = parse_mbchar(output + j, onechar, NULL);
 
-		j += char_len;
+		j += charlen;
 
 		/* When filtering, skip any ASCII control character. */
-		if (filtering && is_ascii_cntrl_char(*(output + j - char_len)))
+		if (filtering && is_ascii_cntrl_char(*(output + j - charlen)))
 			continue;
 
 		/* Insert the typed character into the existing answer string. */
-		answer = charealloc(answer, strlen(answer) + char_len + 1);
-		charmove(answer + typing_x + char_len, answer + typing_x,
+		answer = charealloc(answer, strlen(answer) + charlen + 1);
+		charmove(answer + typing_x + charlen, answer + typing_x,
 								strlen(answer) - typing_x + 1);
-		strncpy(answer + typing_x, onechar, char_len);
+		strncpy(answer + typing_x, onechar, charlen);
 
-		typing_x += char_len;
+		typing_x += charlen;
 	}
 
 	free(output);
@@ -239,24 +239,24 @@ void do_statusbar_end(void)
 void do_statusbar_left(void)
 {
 	if (typing_x > 0)
-		typing_x = move_mbleft(answer, typing_x);
+		typing_x = step_left(answer, typing_x);
 }
 
 /* Move right one character. */
 void do_statusbar_right(void)
 {
 	if (answer[typing_x] != '\0')
-		typing_x = move_mbright(answer, typing_x);
+		typing_x = step_right(answer, typing_x);
 }
 
 /* Delete one character. */
 void do_statusbar_delete(void)
 {
 	if (answer[typing_x] != '\0') {
-		int char_len = parse_mbchar(answer + typing_x, NULL, NULL);
+		int charlen = char_length(answer + typing_x);
 
-		charmove(answer + typing_x, answer + typing_x + char_len,
-						strlen(answer) - typing_x - char_len + 1);
+		charmove(answer + typing_x, answer + typing_x + charlen,
+						strlen(answer) - typing_x - charlen + 1);
 	}
 }
 
@@ -264,7 +264,7 @@ void do_statusbar_delete(void)
 void do_statusbar_backspace(void)
 {
 	if (typing_x > 0) {
-		typing_x = move_mbleft(answer, typing_x);
+		typing_x = step_left(answer, typing_x);
 		do_statusbar_delete();
 	}
 }
@@ -288,7 +288,7 @@ void do_statusbar_next_word(void)
 	/* Move forward until we reach either the end or the start of a word,
 	 * depending on whether the AFTER_ENDS flag is set or not. */
 	while (answer[typing_x] != '\0') {
-		typing_x = move_mbright(answer, typing_x);
+		typing_x = step_right(answer, typing_x);
 
 		if (ISSET(AFTER_ENDS)) {
 			/* If this is a word character, continue; else it's a separator,
@@ -315,7 +315,7 @@ void do_statusbar_prev_word(void)
 
 	/* Move backward until we pass over the start of a word. */
 	while (typing_x != 0) {
-		typing_x = move_mbleft(answer, typing_x);
+		typing_x = step_left(answer, typing_x);
 
 		if (is_word_mbchar(answer + typing_x, FALSE))
 			seen_a_word = TRUE;
@@ -328,7 +328,7 @@ void do_statusbar_prev_word(void)
 
 	if (step_forward)
 		/* Move one character forward again to sit on the start of the word. */
-		typing_x = move_mbright(answer, typing_x);
+		typing_x = step_right(answer, typing_x);
 }
 #endif /* !NANO_TINY */
 
@@ -394,7 +394,7 @@ void draw_the_promptbar(void)
 
 	/* Color the promptbar over its full width. */
 	wattron(bottomwin, interface_color_pair[TITLE_BAR]);
-	blank_statusbar();
+	mvwprintw(bottomwin, 0, 0, "%*s", COLS, " ");
 
 	mvwaddstr(bottomwin, 0, 0, prompt);
 	waddch(bottomwin, ':');
@@ -695,9 +695,9 @@ int do_yesno_prompt(bool all, const char *msg)
 			post_one_key(cancelshortcut->keystr, _("Cancel"), width);
 		}
 
-		/* Color the statusbar over its full width and display the question. */
+		/* Color the promptbar over its full width and display the question. */
 		wattron(bottomwin, interface_color_pair[TITLE_BAR]);
-		blank_statusbar();
+		mvwprintw(bottomwin, 0, 0, "%*s", COLS, " ");
 		mvwaddnstr(bottomwin, 0, 0, msg, actual_x(msg, COLS - 1));
 		wattroff(bottomwin, interface_color_pair[TITLE_BAR]);
 		wnoutrefresh(bottomwin);
@@ -738,6 +738,12 @@ int do_yesno_prompt(bool all, const char *msg)
 			choice = 2;
 		else if (func_from_key(&kbinput) == do_cancel)
 			choice = -1;
+		/* Interpret ^N and ^Q as "No", to allow exiting in anger. */
+		else if (kbinput == '\x0E' || kbinput == '\x11')
+			choice = 0;
+		/* And interpret ^Y as "Yes". */
+		else if (kbinput == '\x19')
+			choice = 1;
 #ifdef ENABLE_MOUSE
 		else if (kbinput == KEY_MOUSE) {
 			int mouse_x, mouse_y;

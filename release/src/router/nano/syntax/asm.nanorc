@@ -8,7 +8,7 @@ color red "\<[A-Z_]{2,}\>"
 color brightgreen "\.(data|subsection|text)"
 color green "\.(align|file|globl|global|hidden|section|size|type|weak)"
 color brightyellow "\.(ascii|asciz|byte|double|float|hword|int|long|short|single|struct|word)"
-icolor brightred "^[[:space:]]*[.0-9A-Z_]*:"
+color brightred "^[[:space:]]*[.0-9A-Za-z_]*:"
 color brightcyan "^[[:space:]]*#[[:space:]]*(define|undef|include|ifn?def|endif|elif|else|if|warning|error)"
 
 # Strings.

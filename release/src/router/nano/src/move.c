@@ -278,7 +278,7 @@ void do_prev_word(bool allow_punct)
 		}
 
 		/* Step back one character. */
-		openfile->current_x = move_mbleft(openfile->current->data,
+		openfile->current_x = step_left(openfile->current->data,
 												openfile->current_x);
 
 		if (is_word_mbchar(openfile->current->data + openfile->current_x,
@@ -296,7 +296,7 @@ void do_prev_word(bool allow_punct)
 
 	if (step_forward)
 		/* Move one character forward again to sit on the start of the word. */
-		openfile->current_x = move_mbright(openfile->current->data,
+		openfile->current_x = step_right(openfile->current->data,
 												openfile->current_x);
 }
 
@@ -324,7 +324,7 @@ bool do_next_word(bool after_ends, bool allow_punct)
 			seen_space = TRUE;
 		} else {
 			/* Step forward one character. */
-			openfile->current_x = move_mbright(openfile->current->data,
+			openfile->current_x = step_right(openfile->current->data,
 												openfile->current_x);
 		}
 
@@ -554,12 +554,12 @@ void do_scroll_down(void)
 	if (openfile->current_y == 0)
 		do_down();
 
-	if (openfile->edittop->next != NULL
+	if (editwinrows > 1 && (openfile->edittop->next != NULL
 #ifndef NANO_TINY
 				|| chunk_for(openfile->firstcolumn, openfile->edittop) <
 					number_of_chunks_in(openfile->edittop)
 #endif
-										)
+										))
 		edit_scroll(FORWARD);
 }
 #endif
@@ -570,7 +570,7 @@ void do_left(void)
 	linestruct *was_current = openfile->current;
 
 	if (openfile->current_x > 0)
-		openfile->current_x = move_mbleft(openfile->current->data,
+		openfile->current_x = step_left(openfile->current->data,
 												openfile->current_x);
 	else if (openfile->current != openfile->filetop) {
 		openfile->current = openfile->current->prev;
@@ -586,7 +586,7 @@ void do_right(void)
 	linestruct *was_current = openfile->current;
 
 	if (openfile->current->data[openfile->current_x] != '\0')
-		openfile->current_x = move_mbright(openfile->current->data,
+		openfile->current_x = step_right(openfile->current->data,
 												openfile->current_x);
 	else if (openfile->current != openfile->filebot) {
 		openfile->current = openfile->current->next;

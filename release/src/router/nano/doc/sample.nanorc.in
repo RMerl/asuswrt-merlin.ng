@@ -8,10 +8,8 @@
 ## For the options that take parameters, the default value is given.
 ## Other options are unset by default.
 ##
-## Quotes inside string parameters don't have to be escaped with
-## backslashes.  The last double quote in the string will be treated as
-## its end.  For example, for the "brackets" option, ""')>]}" will match
-## ", ', ), >, ], and }.
+## Inside string parameters, quotes should not be escaped.  The last
+## double quote on the line will be seen as the closing quote.
 
 ## Make the 'nextword' function (Ctrl+Right) stop at word ends
 ## instead of at beginnings.
@@ -127,7 +125,7 @@
 
 ## The regular expression that matches quoting characters in email
 ## or line-comment introducers in source code.  The default is:
-# set quotestr "^([ 	]*([!#%:;>|}]|//|--))+"
+# set quotestr "^([ 	]*([!#%:;>|}]|//))+"
 
 ## Try to work around a mismatching terminfo terminal description.
 # set rawsequences
@@ -135,7 +133,8 @@
 ## Fix Backspace/Delete confusion problem.
 # set rebinddelete
 
-## Do extended regular expression searches by default.
+## Do regular-expression searches by default.
+## Regular expressions are of the extended type (ERE).
 # set regexp
 
 ## Put the cursor on the highlighted item in the file browser, and show
@@ -239,14 +238,14 @@
 ## yellow, magenta, cyan.  For foreground colors, you may use the
 ## prefix "bright" to get a stronger highlight.
 ##
+## All regexes (regular expressions) are of the extended type (ERE).
+##
 ## To use multi-line regexes, use the start="regex" end="regex"
 ## [start="regex" end="regex"...] format.
 ##
 ## If your system supports transparency, not specifying a background
 ## color will use a transparent color.  If you don't want this, be sure
 ## to set the background color to black or white.
-##
-## All regexes should be extended regular expressions.
 ##
 ## If you wish, you may put your syntax definitions in separate files.
 ## You can make use of such files as follows:

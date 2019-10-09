@@ -2379,7 +2379,7 @@ _GL_WARN_REAL_FLOATING_DECL (isnan);
     sizeof (x) == sizeof (double) ? __builtin_signbit (x) : \
     __builtin_signbitf (x))
 # endif
-# if @REPLACE_SIGNBIT@
+# if @REPLACE_SIGNBIT@ && !GNULIB_defined_signbit
 #  undef signbit
 _GL_EXTERN_C int gl_signbitf (float arg);
 _GL_EXTERN_C int gl_signbitd (double arg);
@@ -2422,6 +2422,7 @@ _GL_EXTERN_C int gl_signbitl (long double arg);
    (sizeof (x) == sizeof (long double) ? gl_signbitl (x) : \
     sizeof (x) == sizeof (double) ? gl_signbitd (x) : \
     gl_signbitf (x))
+#  define GNULIB_defined_signbit 1
 # endif
 # ifdef __cplusplus
 #  if defined signbit || defined GNULIB_NAMESPACE

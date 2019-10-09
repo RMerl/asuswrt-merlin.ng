@@ -7,7 +7,7 @@ linter pyflakes
 comment "#"
 
 # Function definitions.
-icolor brightblue "def [0-9A-Z_]+"
+color brightblue "def [0-9A-Za-z_]+"
 # Keywords.
 color brightcyan "\<(and|as|assert|async|await|break|class|continue)\>"
 color brightcyan "\<(def|del|elif|else|except|finally|for|from)\>"
@@ -22,14 +22,15 @@ color brightcyan "\<(exec|print)([[:blank:]]|$)"
 # Special values.
 color brightmagenta "\<(False|None|True)\>"
 
-# Single-quoted strings.
-color brightgreen "'([^'\]|\\.)+'"
-color brightgreen ""([^"\]|\\.)+""
+# Mono-quoted strings.
+color brightgreen "'([^'\]|\\.)*'|'''"
+color brightgreen ""([^"\]|\\.)*"|""""
+color normal "'''|""""
 # Comments.
 color brightred "(^|[[:blank:]])#.*"
 # Triple-quoted strings.
 color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
-color brightgreen start="\"\"\"([^"),]|$)" end="(^|[^(\])\"\"\""
+color brightgreen    start=""""([^"),]|$)" end="(^|[^(\])""""
 
 # Reminders.
 color brightwhite,yellow "(FIXME|TODO|XXX)"

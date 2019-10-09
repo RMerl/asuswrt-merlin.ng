@@ -1,6 +1,6 @@
 ## Here is an example for C/C++.
 
-syntax c "\.([ch](pp|xx)?|C|cc|c\+\+|H|hh|ii?)$"
+syntax c "\.([ch](pp|xx)?|C|cc|c\+\+|cu|H|hh|ii?)$"
 magic "^(C|C\+\+) (source|program)"
 comment "//"
 
@@ -10,7 +10,7 @@ color brightred "\<[A-Z_][0-9A-Z_]+\>"
 color brightmagenta "^[[:space:]]*[A-Z_a-z]+:[[:space:]]*$"
 
 color green "\<(float|double|bool|char|int|short|long|sizeof|enum|void|auto|static|const|struct|union|typedef|extern|(un)?signed|inline)\>"
-color green "\<([[:lower:]]+|(u_?)?int(8|16|32|64|ptr))_t\>"
+color green "\<([[:lower:]][[:lower:]_]*|(u_?)?int(8|16|32|64))_t\>"
 color green "\<(class|namespace|template|public|protected|private|typename|this|friend|virtual|override|using|mutable|volatile|register|explicit)\>"
 color brightyellow "\<(for|if|while|do|else|case|default|switch)\>"
 color brightyellow "\<(try|throw|catch|operator|new|delete)\>"

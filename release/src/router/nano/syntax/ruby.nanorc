@@ -12,7 +12,7 @@ color yellow "\<(next|nil|not|or|redo|rescue|retry|return|self|super|then|true|u
 # Constants.
 color brightblue "(\$|@|@@)?\<[A-Z]+[0-9A-Z_a-z]*"
 # Ruby "symbols".
-icolor magenta "([ 	]|^):[0-9A-Z_]+\>"
+color magenta "([ 	]|^):[0-9A-Za-z_]+\>"
 # Some unique things we want to stand out.
 color brightyellow "\<(__FILE__|__LINE__)\>"
 # Regular expressions.

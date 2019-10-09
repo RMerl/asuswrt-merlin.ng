@@ -14,7 +14,9 @@ David Lawrence Ramsey <pooka109@gmail.com>
 	* Former stable series maintainer.  Multiple buffer support,
 	  operating dir (-o) option, bug fixes for display routines,
 	  wrapping code, spelling fixes, constantshow mode, parts of
-	  UTF-8 support, softwrap overhaul, and various other fixes.
+	  UTF-8 support, softwrap overhaul, undoable (un)indentations,
+	  undoable justifications, justifiable regions, and numerous
+	  other fixes.
 
 Jordi Mallach <jordi@gnu.org>
 	* Debian package maintainer, fellow bug squasher.
@@ -67,3 +69,6 @@ Rishabh Dave <rishabhddave@gmail.com>
 
 Marco Diego Aurélio Mesquita <marcodiegomesquita@gmail.com>
 	* Filtering text through an external command.
+
+Brand Huntsman <alpha@qzx.com>
+	* The delayed parsing of syntax files.

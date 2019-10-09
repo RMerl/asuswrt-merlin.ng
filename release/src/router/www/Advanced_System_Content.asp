@@ -765,7 +765,7 @@ function validForm(){
 
 	if (!validator.range(document.form.http_lanport, 1, 65535))
 		/*return false;*/ document.form.http_lanport = 80;
-	if (HTTPS_support && !validator.range(document.form.https_lanport, 1025, 65535) && !tmo_support)
+	if (HTTPS_support && !validator.range(document.form.https_lanport, 1, 65535) && !tmo_support)
 		return false;
 
 	if (document.form.misc_http_x[0].checked) {
@@ -2189,7 +2189,7 @@ function reset_portconflict_hint(){
 					<td>
 						<input type="text" class="input_6_table" maxlength="5" id="sshd_port" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port"); %>' onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
-						<div style="color: #FFCC00;">* <#SSH_Port_Suggestion#></div>
+						<div style="color: #FFCC00;">* Using a different port than the default port 22 is recommended to avoid port scan attacks.</div>
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">
@@ -2258,7 +2258,7 @@ function reset_portconflict_hint(){
 						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
 						<div id="https_access_page" style="color: #FFCC00;"></div>
-						<div style="color: #FFCC00;">* <#HttpsLanport_Hint#></div>
+						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
                                 <tr id="https_crt_gen" style="display:none;">

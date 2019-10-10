@@ -72,7 +72,7 @@ var backup_mac = "";
 var backup_ip = "";
 var backup_dns = "";
 var backup_name = "";
-var sortCol, sortMethod;
+var sortfield, sortdir;
 var sorted_array = Array();
 
 function initial(){
@@ -115,8 +115,11 @@ function initial(){
 	if (((sortfield = cookie.get('dhcp_sortcol')) != null) && ((sortdir = cookie.get('dhcp_sortmet')) != null)) {
 		sortfield = parseInt(sortfield);
 		sortdir = parseInt(sortdir) * -1;
-		sortlist(sortfield);
+	} else {
+		sortfield = 1;
+		sortdir = -1;
 	}
+	sortlist(sortfield);
 	
 	setTimeout("showdhcp_staticlist();", 100);
 	setTimeout("showDropdownClientList('setClientIP', 'mac>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 1000);
@@ -652,8 +655,6 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 }
 
 
-var sortdir = -1;
-var sortfield = 1;
 function sortlist(field){
 	document.getElementById('col' + sortfield).style.boxShadow = "";
 

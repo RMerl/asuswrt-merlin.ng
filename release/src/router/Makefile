@@ -2546,6 +2546,37 @@ cyassl-clean:
 cyassl-install:
 	@true
 
+#OPENSSL_CIPHERS:=no-dh no-idea no-rc2 no-rc5 no-aes no-aes192 no-cast no-des no-modes no-tls1 no-tlsext
+#      no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
+#      no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
+#      no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
+#      no-zlib no-engine no-engines no-sse2 no-perlasm \
+#      no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
+OPENSSL_CIPHERS := no-ssl2 no-gost no-heartbeats no-err no-unit-test
+ifeq ($(RTCONFIG_OPENVPN),y)
+OPENSSL_CIPHERS += enable-rc5
+endif
+
+ifeq ($(HND_ROUTER),y)
+INSTALLSUBDIR =
+else
+INSTALLSUBDIR = /openssl
+endif
+
+openssl/Makefile:
+	cd openssl && \
+	./Configure $(HOSTCONFIG) -O2 -DOPENSSL_NO_BUF_FREELISTS --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
+	-ffunction-sections -fdata-sections -Wl,--gc-sections \
+	shared $(OPENSSL_CIPHERS) no-ssl2 no-err
+#	no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
+#	no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
+#	no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
+#	no-zlib no-engine no-engines no-sse2 no-perlasm \
+#	no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
+
+	-@$(MAKE) -C openssl depend clean
+	@touch $@
+
 ifeq ($(HND_ROUTER),y)
 fsbuild:
 	-mkdir -p $(BCM_FSBUILD_DIR)/public/lib
@@ -2564,53 +2595,55 @@ fsbuild:
 	#-mkdir -p $(INSTALL_DIR)/opt
 	-mkdir -p $(INSTALL_DIR)/sbin
 	-mkdir -p $(INSTALL_DIR)/usr
+	-mkdir -p $(INSTALL_DIR)/usr/lib
+	-mkdir -p $(INSTALL_DIR)/usr/sbin
 	-mkdir -p $(INSTALL_DIR)/var
-	-mkdir -p $(INSTALL_DIR)/mnt
+	-mkdir -p $(INSTALL_DIR)/tmp/mnt
+	-rm -rf $(INSTALL_DIR)/mnt
+	-cd $(INSTALL_DIR) && ln -sf tmp/mnt mnt
 	-mkdir -p $(INSTALL_DIR)/tmp/etc
 	-mkdir -p $(INSTALL_DIR)/www
 	#-cp $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libgcc_s* $(INSTALL_DIR)/lib/public
 	#-cd $(INSTALL_DIR)/lib/public && rm -f libgcc_s.so && ln -sf libgcc_s.so.1 libgcc_s.so
 endif
 
-#OPENSSL_CIPHERS:=no-dh no-idea no-rc2 no-rc5 no-aes no-aes192 no-cast no-des no-modes no-tls1 no-tlsext
-#      no-sha0 no-smime no-camellia no-krb5 no-rmd160 no-ripemd \
-#      no-seed no-capieng no-cms no-gms no-gmp no-rfc3779 \
-#      no-ec no-ecdh no-ecdsa no-err no-hw no-jpake no-threads \
-#      no-zlib no-engine no-engines no-sse2 no-perlasm \
-#      no-dtls1 no-store no-psk no-md2 no-mdc2 no-ts
-OPENSSL_CIPHERS := no-ssl2 no-gost no-heartbeats no-err no-unit-test
-ifeq ($(RTCONFIG_OPENVPN),y)
-OPENSSL_CIPHERS += enable-rc5
-endif
 
-ifeq ($(HND_ROUTER),y)
-INSTALLSUBDIR =
-else
-INSTALLSUBDIR = /openssl
-endif
-
-# Hardcoded to 1.0 until Asus makes the switch to 1.1  -rm
-openssl: openssl-1.0/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
+openssl: openssl/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
 	@$(SEP)
-	[ "$(notdir $(realpath $@))" = "openssl-1.0" ] || (rm -f $@ && ln -s openssl-1.0 $@)
-	$(MAKE) openssl-1.0
+	$(MAKE) -C openssl && $(MAKE) $@-stage
 
 openssl-clean:
-	@$(MAKE) openssl-1.0-clean
-	rm -f openssl
+	[ ! -f openssl/Makefile ] || $(MAKE) -C openssl clean
+	@rm -f openssl/Makefile
+
+ifeq ($(HND_ROUTER),y)
+INSTALLSUBDIR=
+else
+INSTALLSUBDIR=/openssl
+endif
 
 openssl-install:
-ifneq ($(wildcard openssl-1.0/Makefile),)
-	@$(MAKE) openssl-1.0-install
+	[ ! -f openssl/Makefile ] || install -D openssl/libcrypto.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
+	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.0.0
+	[ ! -f openssl/Makefile ] || cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.0.0 libcrypto.so
+
+	[ ! -f openssl/Makefile ] || install -D openssl/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	[ ! -f openssl/Makefile ] || chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+
+ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
+	[ ! -f openssl/Makefile ] || install -D openssl/libssl.so.1.0.0 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
+	[ ! -f openssl/Makefile ] || $(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.0.0
+	[ ! -f openssl/Makefile ] || cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.0.0 libssl.so
+endif
 ifeq ($(HND_ROUTER),y)
-	mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
-	cp -u openssl-1.0/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
+	[ ! -f openssl/Makefile ] || mkdir -p $(BCM_FSBUILD_DIR)/public/include/openssl
+	[ ! -f openssl/Makefile ] || cp -u openssl/include/openssl/* $(BCM_FSBUILD_DIR)/public/include/openssl
 endif
-	install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
-endif
+	[ ! -f openssl/Makefile ] || install -D -m 0500 httpd/gencert.sh $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/gencert.sh
 
 openssl-stage:
-	@$(MAKE) openssl-1.0-stage
+	$(MAKE) -C openssl install_sw INSTALL_PREFIX=$(STAGEDIR)
 
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \

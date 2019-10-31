@@ -2228,7 +2228,7 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         }
         if (options->pull_filter_list)
         {
-            msg(M_USAGE, "--pull-filter cannot be used with --mode server");
+            msg(M_WARN, "--pull-filter ignored for --mode server");
         }
         if (!(proto_is_udp(ce->proto) || ce->proto == PROTO_TCP_SERVER))
         {
@@ -2830,6 +2830,24 @@ options_postprocess_mutate_ce(struct options *o, struct connection_entry *ce)
 #else
         msg(M_USAGE, "--mssfix must specify a parameter");
 #endif
+    }
+
+    /* our socks code is not fully IPv6 enabled yet (TCP works, UDP not)
+     * so fall back to IPv4-only (trac #1221)
+     */
+    if (ce->socks_proxy_server && proto_is_udp(ce->proto) && ce->af != AF_INET)
+    {
+        if (ce->af == AF_INET6)
+        {
+            msg(M_INFO, "WARNING: '--proto udp6' is not compatible with "
+                "'--socks-proxy' today.  Forcing IPv4 mode." );
+        }
+        else
+        {
+            msg(M_INFO, "NOTICE: dual-stack mode for '--proto udp' does not "
+                "work correctly with '--socks-proxy' today.  Forcing IPv4." );
+        }
+        ce->af = AF_INET;
     }
 
     /*

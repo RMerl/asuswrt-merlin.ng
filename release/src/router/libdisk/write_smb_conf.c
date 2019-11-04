@@ -428,8 +428,6 @@ int main(int argc, char *argv[])
 #if defined(RTCONFIG_SAMBA36X)
 	fprintf(fp, "enable core files = no\n");
 	fprintf(fp, "deadtime = 30\n");
-//	fprintf(fp, "local master = yes\n");
-//	fprintf(fp, "preferred master = yes\n");
 	fprintf(fp, "load printers = no\n");
 	fprintf(fp, "printable = no\n");
 
@@ -445,10 +443,6 @@ int main(int argc, char *argv[])
 	fprintf(fp, "min receivefile size = 16384\n");
 	fprintf(fp, "passdb backend = smbpasswd\n");
 	fprintf(fp, "smb passwd file = /etc/samba/smbpasswd\n");
-
-	/* CVE-2016-2118 */
-	// fprintf(fp, "server signing = mandatory\n");	/* heavy impact on the file server performance */
-	// fprintf(fp, "ntlm auth = no\n");
 #endif
 
 	disks_info = read_disk_data();

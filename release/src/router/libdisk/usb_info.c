@@ -2372,7 +2372,7 @@ char *get_gobi_portpath(){
 #ifdef RT4GAC68U
 	//return "3"; old layout. there is the USB 2.0 port.
 	return "2";
-#elif defined(RT4GAC55U)
+#else // 4G-AC55U, 4G-AC53U
 	return "2";
 #endif
 

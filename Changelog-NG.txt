@@ -9,6 +9,7 @@ Asuswrt-Merlin 384/NG Changelog
          these.  You can also have this override applied all the
          time, or completely disable it.
   - NEW: Added "split" busybox applet.
+  - NEW: Added IPv6 support to Network Analysis webui
   - UPDATED: RT-AX88U to GPL 384_6436.
   - UPDATED: RT-AC68U, RT-AC88U, RT-AC3100 to GPL 384_81116.
   - UPDATED: RT-AC86U to GPL 384_81116 + binary blobs from 384_81049
@@ -23,6 +24,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
   - UPDATED: Curl 7.66.0
   - UPDATED: nano 4.4
+  - UPDATED: OpenVPN 2.4.8
   - UPDATED: OUI database to 2018-08-17 version
   - UPDATED: CA root certificates to October 9th 2019
   - CHANGED: Made webui SSL certificate generation compliant with

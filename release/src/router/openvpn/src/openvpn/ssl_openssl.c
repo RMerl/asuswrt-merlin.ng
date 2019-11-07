@@ -71,12 +71,13 @@ int mydata_index; /* GLOBAL */
 void
 tls_init_lib(void)
 {
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
     SSL_library_init();
 #ifndef ENABLE_SMALL
     SSL_load_error_strings();
 #endif
     OpenSSL_add_all_algorithms();
-
+#endif
     mydata_index = SSL_get_ex_new_index(0, "struct session *", NULL, NULL, NULL);
     ASSERT(mydata_index >= 0);
 }
@@ -84,9 +85,11 @@ tls_init_lib(void)
 void
 tls_free_lib(void)
 {
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
     EVP_cleanup();
 #ifndef ENABLE_SMALL
     ERR_free_strings();
+#endif
 #endif
 }
 
@@ -206,7 +209,7 @@ info_callback(INFO_CALLBACK_SSL_CONST SSL *s, int where, int ret)
 int
 tls_version_max(void)
 {
-#if defined(TLS1_3_VERSION)
+#if defined(TLS1_3_VERSION) && !defined(OPENSSL_NO_TLS1_3)
     return TLS_VER_1_3;
 #elif defined(TLS1_2_VERSION) || defined(SSL_OP_NO_TLSv1_2)
     return TLS_VER_1_2;
@@ -233,7 +236,7 @@ openssl_tls_version(int ver)
     {
         return TLS1_2_VERSION;
     }
-#if defined(TLS1_3_VERSION)
+#if defined(TLS1_3_VERSION) && !defined(OPENSSL_NO_TLS1_3)
     else if (ver == TLS_VER_1_3)
     {
         return TLS1_3_VERSION;
@@ -459,8 +462,8 @@ tls_ctx_restrict_ciphers_tls13(struct tls_root_ctx *ctx, const char *ciphers)
         return;
     }
 
-#if (OPENSSL_VERSION_NUMBER < 0x1010100fL)
-        crypto_msg(M_WARN, "Not compiled with OpenSSL 1.1.1 or higher. "
+#if (OPENSSL_VERSION_NUMBER < 0x1010100fL) || !defined(TLS1_3_VERSION) || defined(OPENSSL_NO_TLS1_3)
+        crypto_msg(M_WARN, "Not compiled with OpenSSL 1.1.1 or higher, or without TLS 1.3 support. "
                        "Ignoring TLS 1.3 only tls-ciphersuites '%s' setting.",
                         ciphers);
 #else
@@ -534,7 +537,7 @@ tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
         goto cleanup; /* Nothing to check if there is no certificate */
     }
 
-    ret = X509_cmp_time(X509_get_notBefore(cert), NULL);
+    ret = X509_cmp_time(X509_get0_notBefore(cert), NULL);
     if (ret == 0)
     {
         msg(D_TLS_DEBUG_MED, "Failed to read certificate notBefore field.");
@@ -544,7 +547,7 @@ tls_ctx_check_cert_time(const struct tls_root_ctx *ctx)
         msg(M_WARN, "WARNING: Your certificate is not yet valid!");
     }
 
-    ret = X509_cmp_time(X509_get_notAfter(cert), NULL);
+    ret = X509_cmp_time(X509_get0_notAfter(cert), NULL);
     if (ret == 0)
     {
         msg(D_TLS_DEBUG_MED, "Failed to read certificate notAfter field.");
@@ -626,10 +629,13 @@ tls_ctx_load_ecdh_params(struct tls_root_ctx *ctx, const char *curve_name
     else
     {
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
+#if (OPENSSL_VERSION_NUMBER < 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER))
+
         /* OpenSSL 1.0.2 and newer can automatically handle ECDH parameter
          * loading */
         SSL_CTX_set_ecdh_auto(ctx->ctx, 1);
         return;
+#endif
 #else
         /* For older OpenSSL we have to extract the curve from key on our own */
         EC_KEY *eckey = NULL;
@@ -1846,7 +1852,7 @@ show_available_tls_ciphers_list(const char *cipher_list,
         crypto_msg(M_FATAL, "Cannot create SSL_CTX object");
     }
 
-#if (OPENSSL_VERSION_NUMBER >= 0x1010100fL)
+#if (OPENSSL_VERSION_NUMBER >= 0x1010100fL) && defined(TLS1_3_VERSION) && !defined(OPENSSL_NO_TLS1_3)
     if (tls13)
     {
         SSL_CTX_set_min_proto_version(tls_ctx.ctx, TLS1_3_VERSION);

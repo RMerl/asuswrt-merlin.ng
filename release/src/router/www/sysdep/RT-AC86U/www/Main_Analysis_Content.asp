@@ -133,6 +133,7 @@ function controlClickEvent(_$this) {
 	targetData[thisTarget].isDoing = true;
 	netoolApi.start({
 		"type": $("#cmdMethod").val(),
+		"ver": ( $("#cmdMethod").val() !=  5 ? document.form.protover.value : ""),
 		"target": thisTarget
 	});
 }
@@ -306,18 +307,22 @@ function hideCNT(_val){
 	if(_val == "3"){
 		document.getElementById("pingCNT_tr").style.display = "";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
+		document.getElementById("protover_span").style.display = "";
 	}
 	else if(_val == "4"){
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_tr#>";
+		document.getElementById("protover_span").style.display = "";
 	}
 	else if(_val == "1"){
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_Ping#>";
+		document.getElementById("protover_span").style.display = "";
 	}
 	else{
 		document.getElementById("pingCNT_tr").style.display = "none";
 		document.getElementById("cmdDesc").innerHTML = "<#NetworkTools_nslookup#>";
+		document.getElementById("protover_span").style.display = "none";
 	}
 
 	if(_val == 1){
@@ -448,7 +453,11 @@ validator.targetDomainName = function($o){
 													<option value="4">Traceroute</option>
 													<option value="5">Nslookup</option>
  												</select>
-											</td>										
+												<span  style="padding-left:20px;" id="protover_span">
+													<input type="radio" id="protover" name="protover" class="input" value="v4" checked>IPv4
+													<input type="radio" id="protover" name="protover" class="input" value="v6">IPv6
+												</span>
+											</td>
 										</tr>
 										<tr>
 											<th width="20%"><#NetworkTools_target#></th>
@@ -480,9 +489,9 @@ validator.targetDomainName = function($o){
 													var targetObj = {
 														"type": $("#cmdMethod").val(), 
 														"target": $("#destIP").val(),
-														"pcnt": $("#pingCNT").val()
+														"pcnt": $("#pingCNT").val(),
+														"ver": ( $("#cmdMethod").val() !=  5 ? document.form.protover.value : "")
 													}
-
 													if($("#cmdMethod").val() == 1){
 														netoolApi.reset(targetObj);
 														netoolApi.start(targetObj);

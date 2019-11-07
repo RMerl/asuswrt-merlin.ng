@@ -828,7 +828,7 @@ int bcm_mcast_mld_add(struct net_device *from_dev,
    hlist_add_head(&mc_fdb->hlist, head);
 
 #if defined(CONFIG_BLOG)
-#if 1 //cathy debug
+#if 0 //cathy debug
    printk("%s:%d mc_fdb->rep_list %p next %p prev %p rep_entry->list %p next %p prev %p\n",
       __FUNCTION__, __LINE__, &mc_fdb->rep_list, mc_fdb->rep_list.next, mc_fdb->rep_list.prev,
       &rep_entry->list, rep_entry->list.next, rep_entry->list.prev);

@@ -423,7 +423,7 @@ struct dhcp_config *config_find_by_address6(struct dhcp_config *configs, struct 
 }
 
 struct dhcp_context *address6_allocate(struct dhcp_context *context,  unsigned char *clid, int clid_len, int temp_addr,
-				       int iaid, int serial, struct dhcp_netid *netids, int plain_range, struct in6_addr *ans)   
+				       unsigned int iaid, int serial, struct dhcp_netid *netids, int plain_range, struct in6_addr *ans)
 {
   /* Find a free address: exclude anything in use and anything allocated to
      a particular hwaddr/clientid/hostname in our configuration.

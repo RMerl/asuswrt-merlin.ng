@@ -874,7 +874,11 @@ void reply_query(int fd, int family, time_t now)
 		  fd = forward->rfd4->fd;
 		}
 	    }
-	
+
+#ifdef HAVE_DUMPFILE
+	  dump_packet(DUMP_SEC_QUERY, (void *)header, (size_t)plen, NULL, &start->addr);
+#endif
+
 	  while (retry_send(sendto(fd, (char *)header, plen, 0,
 				   &start->addr.sa,
 				   sa_len(&start->addr))));
@@ -946,12 +950,12 @@ void reply_query(int fd, int family, time_t now)
   /* We tried resending to this server with a smaller maximum size and got an answer.
      Make that permanent. To avoid reduxing the packet size for a single dropped packet,
      only do this when we get a truncated answer, or one larger than the safe size. */
-  if (server && server->edns_pktsz > SAFE_PKTSZ && (forward->flags & FREC_TEST_PKTSZ) && 
+  if (forward->sentto->edns_pktsz > SAFE_PKTSZ && (forward->flags & FREC_TEST_PKTSZ) && 
       ((header->hb3 & HB3_TC) || n >= SAFE_PKTSZ))
     {
-      server->edns_pktsz = SAFE_PKTSZ;
-      server->pktsz_reduced = now;
-      prettyprint_addr(&server->addr, daemon->addrbuff);
+      forward->sentto->edns_pktsz = SAFE_PKTSZ;
+      forward->sentto->pktsz_reduced = now;
+      prettyprint_addr(&forward->sentto->addr, daemon->addrbuff);
       my_syslog(LOG_DEBUG, _("reducing DNS packet size for nameserver %s to %d"), daemon->addrbuff, SAFE_PKTSZ);
     }
 
@@ -973,7 +977,7 @@ void reply_query(int fd, int family, time_t now)
 	no_cache_dnssec = 1;
       
 #ifdef HAVE_DNSSEC
-      if (server && (server->flags & SERV_DO_DNSSEC) && 
+      if ((forward->sentto->flags & SERV_DO_DNSSEC) && 
 	  option_bool(OPT_DNSSEC_VALID) && !(forward->flags & FREC_CHECKING_DISABLED))
 	{
 	  int status = 0;
@@ -1003,7 +1007,7 @@ void reply_query(int fd, int family, time_t now)
 		    status = dnssec_validate_ds(now, header, n, daemon->namebuff, daemon->keyname, forward->class);
 		  else
 		    status = dnssec_validate_reply(now, header, n, daemon->namebuff, daemon->keyname, &forward->class, 
-						   !option_bool(OPT_DNSSEC_IGN_NS) && (server->flags & SERV_DO_DNSSEC),
+						   !option_bool(OPT_DNSSEC_IGN_NS) && (forward->sentto->flags & SERV_DO_DNSSEC),
 						   NULL, NULL, NULL);
 #ifdef HAVE_DUMPFILE
 		  if (status == STAT_BOGUS)
@@ -1047,7 +1051,8 @@ void reply_query(int fd, int family, time_t now)
 			 servers for domains are involved. */		      
 		      if (search_servers(now, NULL, F_DNSSECOK, daemon->keyname, &type, &domain, NULL) == 0)
 			{
-			  struct server *start = server, *new_server = NULL;
+			  struct server *start, *new_server = NULL;
+			  start = server = forward->sentto;
 			  
 			  while (1)
 			    {
@@ -1201,6 +1206,7 @@ void reply_query(int fd, int family, time_t now)
 	      bogusanswer = 1;
 	    }
 	}
+
 #endif
 
       /* restore CD bit to the value in the query */

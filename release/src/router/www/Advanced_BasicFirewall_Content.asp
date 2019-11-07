@@ -172,13 +172,6 @@ function validForm(){
 		return false;
 	}
 
-	if(document.form.ipv6_fw_lipaddr_x_0.value==""){
-		alert("<#JS_fieldblank#>");
-		document.form.ipv6_fw_lipaddr_x_0.focus();
-		document.form.ipv6_fw_lipaddr_x_0.select();		
-		return false;
-	}
-
 	if(document.form.ipv6_fw_port_x_0.value==""){
 		alert("<#JS_fieldblank#>");
 		document.form.ipv6_fw_port_x_0.focus();
@@ -187,7 +180,7 @@ function validForm(){
 	}
 
 	if(!validate_multi_range(document.form.ipv6_fw_port_x_0, 1, 65535)
-		|| !ipv6_valid(document.form.ipv6_fw_lipaddr_x_0, 0)
+		|| (document.form.ipv6_fw_lipaddr_x_0.value != "" && !ipv6_valid(document.form.ipv6_fw_lipaddr_x_0, 0))
 		|| (document.form.ipv6_fw_ripaddr_x_0.value != "" && !ipv6_valid(document.form.ipv6_fw_ripaddr_x_0, 1))) {
 		return false;
 	}
@@ -503,7 +496,7 @@ function ipv6_valid(obj, cidr){
 									<div class="formfontdesc" style="font-size:14px;font-weight:bold;margin-top:10px;"><#menu5_5_6#></div>
 									<div>
 										<div class="formfontdesc"><#FirewallIPv6_itemdesc1#></div>
-										<div class="formfontdesc"><#FirewallIPv6_itemdesc2#></div>
+										<div class="formfontdesc">"You can leave the IP fields empty to allow traffic from/to any remote host. A subnet can also be specified. (2001::1111:2222:3333/64 for example)"</div>
 									</div>
 
 									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">

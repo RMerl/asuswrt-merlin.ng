@@ -16,10 +16,10 @@ Asuswrt-Merlin 384/NG Changelog
 
   - NOTE: There is currently no builds available for the RT-AC87U,
           RT-AC3200 or RT-AC5300 due to lack of updated compatible
-          components from Asus.
+          components from Asus for this release.
 
   - UPDATED: miniupnpd 20190824
-  - UPDATED: dnsmasq 2.80-74-gdefd6b1 (themiron)
+  - UPDATED: dnsmasq 2.80-93-g6ebdc95 (themiron)
   - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
   - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
   - UPDATED: Curl 7.66.0
@@ -907,7 +907,7 @@ Asuswrt-Merlin 384/NG Changelog
 
    Also note that the primary download site was changed to
    Sourceforge, due to numerous issues with Mediafire.  Onedrive
-   will be the oficial mirror to the SF.net download site.
+   will be the official mirror to the SF.net download site.
 
    - NEW: Moved to Asus382 codebase.  Some of the most important
           changes between Asus380 and Asus382:

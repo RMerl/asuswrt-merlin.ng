@@ -603,9 +603,12 @@ Return a CAA DNS record, as specified in RFC6844.
 .TP
 .B --cname=<cname>,[<cname>,]<target>[,<TTL>]
 Return a CNAME record which indicates that <cname> is really
-<target>. There is a significant limitation on the target; it must be a
-DNS record which is known to dnsmasq and NOT a DNS record which comes from
-an upstream server. The cname must be unique, but it
+<target>. There are significant limitations on the target; it must be a
+DNS name which is known to dnsmasq from /etc/hosts (or additional
+hosts files), from DHCP, from \fB--interface-name\fP or from another
+.B --cname.
+If the target does not satisfy this
+criteria, the whole cname is ignored. The cname must be unique, but it
 is permissible to have more than one cname pointing to the same target. Indeed
 it's possible to declare multiple cnames to a target in a single line, like so:
 .B --cname=cname1,cname2,target
@@ -674,7 +677,7 @@ given for \fB--add-subnet\fP applies to \fB--add-mac\fP too. An alternative enco
 MAC, as base64, is enabled by adding the "base64" parameter and a human-readable encoding of hex-and-colons is enabled by added the "text" parameter.
 .TP
 .B --add-cpe-id=<string>
-Add an arbitrary identifying string to DNS queries which are
+Add an arbitrary identifying string to o DNS queries which are
 forwarded upstream.
 .TP 
 .B --add-subnet[[=[<IPv4 address>/]<IPv4 prefix length>][,[<IPv6 address>/]<IPv6 prefix length>]]
@@ -1401,12 +1404,6 @@ addresses allocated sequentially, starting from the lowest available
 address, and setting this flag enables this mode. Note that in the
 sequential mode, clients which allow a lease to expire are much more
 likely to move IP address; for this reason it should not be generally used.
-.TP
-.B --dhcp-ignore-clid
-Dnsmasq is reading 'client identifier' (RFC 2131) option sent by clients
-(if available) to identify clients. This allow to serve same IP address
-for a host using several interfaces. Use this option to disable 'client identifier'
-reading, i.e. to always identify a host using the MAC address.
 .TP
 .B --pxe-service=[tag:<tag>,]<CSA>,<menu text>[,<basename>|<bootservicetype>][,<server address>|<server_name>]
 Most uses of PXE boot-ROMS simply allow the PXE

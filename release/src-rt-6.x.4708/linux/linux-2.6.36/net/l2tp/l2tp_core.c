@@ -369,6 +369,7 @@ static void l2tp_recv_dequeue(struct l2tp_session *session)
 	 * expect to send up next, dequeue it and any other
 	 * in-sequence packets behind it.
 	 */
+start:
 	spin_lock_bh(&session->reorder_q.lock);
 	skb_queue_walk_safe(&session->reorder_q, skb, tmp) {
 		if (time_after(jiffies, L2TP_SKB_CB(skb)->expires)) {
@@ -380,6 +381,7 @@ static void l2tp_recv_dequeue(struct l2tp_session *session)
 			       session->name, L2TP_SKB_CB(skb)->ns,
 			       L2TP_SKB_CB(skb)->length, session->nr,
 			       skb_queue_len(&session->reorder_q));
+			session->reorder_skip = 1;
 			__skb_unlink(skb, &session->reorder_q);
 			kfree_skb(skb);
 			if (session->deref)
@@ -388,6 +390,14 @@ static void l2tp_recv_dequeue(struct l2tp_session *session)
 		}
 
 		if (L2TP_SKB_CB(skb)->has_seq) {
+			if (session->reorder_skip) {
+				PRINTK(session->debug, L2TP_MSG_SEQ, KERN_DEBUG,
+				       "%s: advancing nr to next pkt: %u -> %u",
+				       session->name, session->nr,
+				       L2TP_SKB_CB(skb)->ns);
+				session->reorder_skip = 0;
+				session->nr = L2TP_SKB_CB(skb)->ns;
+			}
 			if (L2TP_SKB_CB(skb)->ns != session->nr) {
 				PRINTK(session->debug, L2TP_MSG_SEQ, KERN_DEBUG,
 				       "%s: holding oos pkt %u len %d, "
@@ -405,7 +415,7 @@ static void l2tp_recv_dequeue(struct l2tp_session *session)
 		 */
 		spin_unlock_bh(&session->reorder_q.lock);
 		l2tp_recv_dequeue_skb(session, skb);
-		spin_lock_bh(&session->reorder_q.lock);
+		goto start;
 	}
 
 out:
@@ -727,9 +737,6 @@ int l2tp_udp_recv_core(struct l2tp_tunnel *tunnel, struct sk_buff *skb,
 		goto error;
 	}
 
-	/* Point to L2TP header */
-	optr = ptr = skb->data;
-
 	/* Trace packet contents, if enabled */
 	if (tunnel->debug & L2TP_MSG_DATA) {
 		length = min(32u, skb->len);
@@ -740,11 +747,14 @@ int l2tp_udp_recv_core(struct l2tp_tunnel *tunnel, struct sk_buff *skb,
 
 		offset = 0;
 		do {
-			printk(" %02X", ptr[offset]);
+			printk(" %02X", skb->data[offset]);
 		} while (++offset < length);
 
 		printk("\n");
 	}
+
+	/* Point to L2TP header */
+	optr = ptr = skb->data;
 
 	/* Get L2TP header flags */
 	hdrflags = ntohs(*(__be16 *) ptr);
@@ -1017,8 +1027,10 @@ int l2tp_xmit_skb(struct l2tp_session *session, struct sk_buff *skb, int hdr_len
 	headroom = NET_SKB_PAD + sizeof(struct iphdr) +
 		uhlen + hdr_len;
 	old_headroom = skb_headroom(skb);
-	if (skb_cow_head(skb, headroom))
+	if (skb_cow_head(skb, headroom)) {
+		dev_kfree_skb(skb);
 		goto abort;
+	}
 
 	new_headroom = skb_headroom(skb);
 	skb_orphan(skb);
@@ -1033,9 +1045,15 @@ int l2tp_xmit_skb(struct l2tp_session *session, struct sk_buff *skb, int hdr_len
 			      IPSKB_REROUTED);
 	nf_reset(skb);
 
+	bh_lock_sock(sk);
+	if (sock_owned_by_user(sk)) {
+		dev_kfree_skb(skb);
+		goto out_unlock;
+	}
+
 	/* Get routing info from the tunnel socket */
 	skb_dst_drop(skb);
-	skb_dst_set(skb, dst_clone(__sk_dst_get(sk)));
+	skb_dst_set(skb, sk_dst_check(sk, 0));
 
 	switch (tunnel->encap) {
 	case L2TP_ENCAPTYPE_UDP:
@@ -1079,6 +1097,8 @@ int l2tp_xmit_skb(struct l2tp_session *session, struct sk_buff *skb, int hdr_len
 	l2tp_skb_set_owner_w(skb, sk);
 
 	l2tp_xmit_core(session, skb, data_len);
+out_unlock:
+	bh_unlock_sock(sk);
 
 abort:
 	return 0;
@@ -1215,12 +1235,10 @@ void l2tp_tunnel_free(struct l2tp_tunnel *tunnel)
 	/* Remove from tunnel list */
 	spin_lock_bh(&pn->l2tp_tunnel_list_lock);
 	list_del_rcu(&tunnel->list);
+	kfree_rcu(tunnel, rcu);
 	spin_unlock_bh(&pn->l2tp_tunnel_list_lock);
-	synchronize_rcu();
 
 	atomic_dec(&l2tp_tunnel_count);
-	kfree(tunnel);
-
 #if defined(CTFPOOL) && defined(CTF_L2TP)
 	osl_ctfpool_direction(0);
 #endif
@@ -1401,20 +1419,20 @@ int l2tp_tunnel_create(struct net *net, int fd, int version, u32 tunnel_id, u32 
 	tunnel->old_sk_destruct = sk->sk_destruct;
 	sk->sk_destruct = &l2tp_tunnel_destruct;
 	tunnel->sock = sk;
+	tunnel->fd = fd;
 	sk->sk_allocation = GFP_ATOMIC;
 
 	/* Add tunnel to our list */
 	INIT_LIST_HEAD(&tunnel->list);
-	spin_lock_bh(&pn->l2tp_tunnel_list_lock);
-	list_add_rcu(&tunnel->list, &pn->l2tp_tunnel_list);
-	spin_unlock_bh(&pn->l2tp_tunnel_list_lock);
-	synchronize_rcu();
 	atomic_inc(&l2tp_tunnel_count);
 
 	/* Bump the reference count. The tunnel context is deleted
-	 * only when this drops to zero.
+	 * only when this drops to zero. Must be done before list insertion
 	 */
 	l2tp_tunnel_inc_refcount(tunnel);
+	spin_lock_bh(&pn->l2tp_tunnel_list_lock);
+	list_add_rcu(&tunnel->list, &pn->l2tp_tunnel_list);
+	spin_unlock_bh(&pn->l2tp_tunnel_list_lock);
 
 #if defined(CTFPOOL) && defined(CTF_L2TP)
 	osl_ctfpool_direction(1);
@@ -1550,7 +1568,7 @@ struct l2tp_session *l2tp_session_create(int priv_size, struct l2tp_tunnel *tunn
 
 		session->session_id = session_id;
 		session->peer_session_id = peer_session_id;
-		session->nr = 1;
+		session->nr = 0;
 
 		sprintf(&session->name[0], "sess %u/%u",
 			tunnel->tunnel_id, session->session_id);
@@ -1611,7 +1629,6 @@ struct l2tp_session *l2tp_session_create(int priv_size, struct l2tp_tunnel *tunn
 			hlist_add_head_rcu(&session->global_hlist,
 					   l2tp_session_id_hash_2(pn, session_id));
 			spin_unlock_bh(&pn->l2tp_session_hlist_lock);
-			synchronize_rcu();
 		}
 
 		/* Ignore management session in session count value */

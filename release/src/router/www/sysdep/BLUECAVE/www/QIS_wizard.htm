@@ -62,6 +62,7 @@
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
+					systemVariable.linkLnternet = httpApi.isConnected();
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;

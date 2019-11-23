@@ -5990,6 +5990,7 @@ add_samba_rules(void)
 }
 #endif
 #endif
+
 //int start_firewall(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip)
 int start_firewall(int wanunit, int lanunit)
 {
@@ -6005,7 +6006,6 @@ int start_firewall(int wanunit, int lanunit)
 	char wanx_if[IFNAMSIZ+1], wanx_ip[32], wan_proto[16];
 	char prefix[] = "wanXXXXXXXXXX_", tmp[100];
 	int lock;
-	int restart_upnp = 0;
 
 	if (!is_routing_enabled())
 		return -1;
@@ -6017,11 +6017,6 @@ int start_firewall(int wanunit, int lanunit)
 	}
 
 	lock = file_lock("firewall");
-
-	if (pidof("miniupnpd") != -1) {
-		stop_upnp();
-		restart_upnp = 1;
-	}
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wanunit);
 
@@ -6379,16 +6374,16 @@ int start_firewall(int wanunit, int lanunit)
 	run_le_fw_script();
 #endif
 
-leave:
-	if (restart_upnp) start_upnp();
+	/* Assuming wan interface doesn't change */
+	reload_upnp();
 
+leave:
 	file_unlock(lock);
 
 	run_custom_script("firewall-start", 0, wan_if, NULL);
 
 	return 0;
 }
-
 
 void enable_ip_forward(void)
 {

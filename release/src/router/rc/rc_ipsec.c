@@ -1411,6 +1411,7 @@ void rc_ipsec_topology_set()
 	            ipsec_conf_phase2_set(fp, i, prof_count);
         	}
 			else	{
+				fprintf(fp,"  ike=%s-%s-%s\n", encryp[ENCRYPTION_TYPE_AES256], hash[HASH_TYPE_SHA1], dh_group[DH_GROUP_2]);
 				fprintf(fp,"  dpdtimeout=30s\n");	
 			}
 			if(DPD_CLEAR == prof[prof_count][i].dead_peer_detection)

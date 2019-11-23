@@ -25,6 +25,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <net/ethernet.h>
 #ifdef LINUX26
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1821,20 +1822,8 @@ restore_defaults(void)
 		}
 #endif
 
-		if (restore_defaults || !nvram_get(t->name)) {
-#if 0
-			// add special default value handle here
-			if (!strcmp(t->name, "computer_name") ||
-				!strcmp(t->name, "dms_friendly_name") ||
-				!strcmp(t->name, "daapd_friendly_name"))
-				nvram_set(t->name, get_productid());
-			else if (strcmp(t->name, "ct_max")==0) {
-				// handled in init_nvram already
-			}
-			else
-#endif
+		if (restore_defaults || !nvram_get(t->name))
 			nvram_set(t->name, t->value);
-		}
 	}
 
 	wl_defaults();
@@ -8966,9 +8955,6 @@ int init_nvram(void)
 	add_rc_support("dnspriv");
 #endif
 
-#ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
-	add_rc_support("dualwan");
-
 #ifdef RTCONFIG_DSL
 	set_wanscap_support("dsl");
 #elif defined(RTCONFIG_NO_WANPORT)
@@ -8976,6 +8962,9 @@ int init_nvram(void)
 #else
 	set_wanscap_support("wan");
 #endif
+
+#ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
+	add_rc_support("dualwan");
 
 #ifdef RTCONFIG_WANPORT2
 #if defined(GTAXY16000) || defined(RTAX89U)
@@ -9573,20 +9562,32 @@ NO_USB_CAP:
 
 int init_nvram2(void)
 {
-	char *macp = NULL;
-	unsigned char mac_binary[6];
-	char friendly_name[32];
+	unsigned char ea[ETHER_ADDR_LEN];
+	char hostname[32];
+	char ver[64];
 	int i;
 	char varname[20];
-	char ver[64] = {0};
 
 	if (nvram_match("x_Setting", "0")) {
 		snprintf(ver, sizeof(ver), "%s.%s_%s", nvram_safe_get("firmver"), nvram_safe_get("buildno"), nvram_safe_get("extendno"));
 		nvram_set("innerver", ver);
 	}
 
-	macp = get_2g_hwaddr();
-	ether_atoe(macp, mac_binary);
+	/* set default lan_hostname */
+	if (restore_defaults_g || !nvram_invmatch("lan_hostname", "")) {
+		ether_atoe(get_2g_hwaddr(), ea);
+#ifdef RTAC1200GP
+		snprintf(hostname, sizeof(hostname), "%s-%02X%02X", "RT-AC1200G", ea[4], ea[5]);
+#else
+		snprintf(hostname, sizeof(hostname), "%s-%02X%02X", get_productid(), ea[4], ea[5]);
+#endif
+		if (!restore_defaults_g && !nvram_invmatch("computer_name", "")) {
+			/* migrate from computer_name on fw upgrade */
+			strlcpy(hostname, nvram_safe_get("computer_name"), sizeof(hostname));
+		}
+		nvram_set("lan_hostname", hostname);
+		nvram_commit();
+	}
 
 #if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	int model = get_model();
@@ -9608,12 +9609,6 @@ int init_nvram2(void)
 		_dprintf("############################ unknown model(init.c:9292) #################################\n");
 		break;
 	}
-#endif
-
-#ifdef RTAC1200GP
-	sprintf(friendly_name, "%s-%02X%02X", "RT-AC1200G", mac_binary[4], mac_binary[5]);
-#else
-	sprintf(friendly_name, "%s-%02X%02X", get_productid(), mac_binary[4], mac_binary[5]);
 #endif
 
 #ifdef RTCONFIG_OPENVPN
@@ -9639,14 +9634,6 @@ int init_nvram2(void)
 	nvram_unset("webs_state_info_am");
 	nvram_set("webs_state_flag","0");
 
-	if (restore_defaults_g)
-	{
-		nvram_set("computer_name", friendly_name);
-		nvram_set("dms_friendly_name", friendly_name);
-		nvram_set("daapd_friendly_name", friendly_name);
-
-		nvram_commit();
-	}
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 	if (sw_mode() == SW_MODE_REPEATER) {
 		if (nvram_get_int("wlc_express") == 0) {
@@ -10604,8 +10591,6 @@ static void sysinit(void)
 
 	init_syspara();// for system dependent part (befor first get_model())
 
-	set_hostname();
-
 #ifdef RTCONFIG_RALINK
 	model = get_model();
 	// avoid the process like fsck to devour the memory.
@@ -10809,6 +10794,9 @@ static void sysinit(void)
 	init_nvram();  // for system indepent part after getting model
 	restore_defaults(); // restore default if necessary
 	init_nvram2();
+
+	/* set hostname after nvram init */
+	set_hostname();
 
 #if defined (RTCONFIG_WLMODULE_MT7615E_AP)
 #if !defined(RTCONFIG_CONCURRENTREPEATER)

@@ -11,7 +11,7 @@
 * This program may be distributed according to the terms of the GNU
 * General Public License, version 2 or (at your option) any later version.
 *
-* $Id: eventpriv.h 3323 2011-09-21 18:45:48Z lly.dev $
+* $Id$
 *
 * LIC: GPL
 *

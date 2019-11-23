@@ -15,6 +15,8 @@
  * MA 02111-1307 USA
  */
 
+#define _GNU_SOURCE
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -36,7 +38,7 @@
 #endif
 
 #define SAMBA_CONF "/etc/smb.conf"
-//#define SAMBA_CONF "/etc/test.conf"
+#define SAMBA_LOG "/var/log/samba.log"
 
 /* @return:
  * 	If mount_point is equal to one of partition of all disks case-insensitivity, return true.
@@ -63,65 +65,6 @@ static int check_mount_point_icase(const disk_info_t *d_info, const partition_in
 	}
 
 	return v;
-}
-
-int
-is_invalid_char_for_hostname(char c)
-{
-	int ret = 0;
-
-	if(c < 0x20)
-		ret = 1;
-	else if(c >= 0x21 && c <= 0x2c)
-		ret = 1;
-	else if(c >= 0x2e && c <= 0x2f)
-		ret = 1;
-	else if(c >= 0x3a && c <= 0x40)
-		ret = 1;
-#if 0
-	else if(c >= 0x5b && c <= 0x60)
-		ret = 1;
-#else	/* allow '_' */
-	else if(c >= 0x5b && c <= 0x5e)
-		ret = 1;
-	else if(c == 0x60)
-		ret = 1;
-#endif
-	else if(c >= 0x7b)
-		ret = 1;
-#if 0
-	printf("%c (0x%02x) is %svalid for hostname\n", c, c, (ret == 0) ? "  " : "in");
-#endif
-	return ret;
-}
-
-int
-is_valid_hostname(const char *name)
-{
-	int ret = 1, len, i;
-
-	if(!name)
-		return 0;
-
-	len = strlen(name);
-	if(len == 0)
-	{
-		ret = 0;
-		goto ENDERR;
-	}
-
-	for(i = 0; i < len ; i++)
-		if(is_invalid_char_for_hostname(name[i]))
-		{
-			ret = 0;
-			break;
-		}
-
-ENDERR:
-#if 0
-	printf("%s is %svalid for hostname\n", name, (ret == 1) ? "  " : "in");
-#endif
-	return ret;
 }
 
 /* For NETBIOS name,
@@ -225,34 +168,33 @@ int main(int argc, char *argv[])
 	spnego = 1;
 #endif
 
-	unlink("/var/log.samba");
-
-	if((fp=fopen(SAMBA_CONF, "r"))){
-		fclose(fp);
+	if (access(SAMBA_CONF, F_OK) == 0)
 		unlink(SAMBA_CONF);
-	}
-
-	if((fp = fopen(SAMBA_CONF, "w")) == NULL)
+	if ((fp = fopen(SAMBA_CONF, "w")) == NULL)
 		goto confpage;
 
-	fprintf(fp, "[global]\n");
-	if(nvram_safe_get("st_samba_workgroup"))
-		fprintf(fp, "workgroup = %s\n", nvram_safe_get("st_samba_workgroup"));
-#if 0
-	if(nvram_safe_get("computer_name")){
-		fprintf(fp, "netbios name = %s\n", nvram_safe_get("computer_name"));
-		fprintf(fp, "server string = %s\n", nvram_safe_get("computer_name"));
-	}
-#else
-	snprintf(p_computer_name, sizeof(p_computer_name), "%s", nvram_safe_get("computer_name"));
-	if(strlen(p_computer_name) <= 0 || !is_valid_netbios_name(p_computer_name))
-		snprintf(p_computer_name, sizeof(p_computer_name), "%s", get_productid());
+	unlink(SAMBA_LOG);
 
-	if(strlen(p_computer_name) > 0){
-		fprintf(fp, "netbios name = %s\n", p_computer_name);
-		fprintf(fp, "server string = %s\n", p_computer_name);
+	fprintf(fp, "[global]\n");
+
+	strlcpy(p_computer_name, nvram_safe_get("computer_name"), sizeof(p_computer_name));
+	if (*p_computer_name == '\0' || !is_valid_netbios_name(p_computer_name)) {
+		strlcpy(p_computer_name, get_lan_hostname(), sizeof(p_computer_name));
+		toUpperCase(p_computer_name);
 	}
-#endif
+	if (*p_computer_name) {
+		fprintf(fp, "netbios name = %s\n", p_computer_name);
+		fprintf(fp, "server string = %s\n", get_productid());
+	}
+
+	strlcpy(p_computer_name, nvram_safe_get("st_samba_workgroup"), sizeof(p_computer_name));
+	if (*p_computer_name == '\0' || !is_valid_netbios_name(p_computer_name)) {
+		strlcpy(p_computer_name, nvram_safe_get("lan_domain"), sizeof(p_computer_name));
+		*strchrnul(p_computer_name, '.') = '\0';
+		toUpperCase(p_computer_name);
+	}
+	if (*p_computer_name)
+		fprintf(fp, "workgroup = %s\n", p_computer_name);
 
 #if defined(RTCONFIG_SAMBA36X)
 #if 0
@@ -276,7 +218,7 @@ int main(int argc, char *argv[])
 	fprintf(fp, "load printers = no\n");	//Andy Chiu, 2017/1/20. Add for Samba printcap issue.
 	fprintf(fp, "printing = bsd\n");
 	fprintf(fp, "printcap name = /dev/null\n");
-	fprintf(fp, "log file = /var/log.samba\n");
+	fprintf(fp, "log file = %s\n", SAMBA_LOG);
 	fprintf(fp, "log level = 0\n");
 	fprintf(fp, "max log size = 5\n");
 

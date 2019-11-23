@@ -52,8 +52,9 @@ if [ "$productid" == "BLUECAVE" ]; then
 fi
 
 get_productid=`echo $productid | sed s/+/plus/;`    #replace 'plus' to '+' for one time
+get_odmpid=`nvram get odmpid`
 odmpid_support=`nvram get webs_state_odm`
-if [ "$odmpid_support" == "1" ]; then
+if [ "$odmpid_support" == "1" ] || [ "$odmpid_support" == "$get_odmpid" ]; then
 	get_productid=`nvram get odmpid`
 fi
 

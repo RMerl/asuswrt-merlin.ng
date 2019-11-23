@@ -36,6 +36,7 @@ static int port;
 static int handle_secret_option(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
 static int handle_hostname_option(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
 static int handle_peername_option(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
+static int handle_ifname_option(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
 static int set_lac_handler(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
 static int handle_lac_option(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
 static int set_lns_handler(EventSelector *es, l2tp_opt_descriptor *desc, char const *value);
@@ -49,6 +50,7 @@ static l2tp_opt_descriptor peer_opts[] = {
     { "secret",            OPT_TYPE_CALLFUNC, (void *) handle_secret_option},
     { "hostname",          OPT_TYPE_CALLFUNC, (void *) handle_hostname_option},
     { "peername",          OPT_TYPE_CALLFUNC, (void *) handle_peername_option},
+    { "ifname",            OPT_TYPE_CALLFUNC, (void *) handle_ifname_option},
     { "port",              OPT_TYPE_PORT,     &port },
     { "lac-handler",       OPT_TYPE_CALLFUNC, (void *) set_lac_handler},
     { "lac-opts",          OPT_TYPE_CALLFUNC, (void *) handle_lac_option},
@@ -60,9 +62,6 @@ static l2tp_opt_descriptor peer_opts[] = {
     { "holdoff",           OPT_TYPE_INT,      &prototype.holdoff},
     { "maxfail",           OPT_TYPE_INT,      &prototype.maxfail},
     { "strict-ip-check",   OPT_TYPE_BOOL,     &prototype.validate_peer_ip},
-#ifdef RTCONFIG_VPNC
-    { "vpnc",              OPT_TYPE_BOOL,     &vpnc},
-#endif
     { NULL,                OPT_TYPE_BOOL,     NULL }
 };
 
@@ -157,6 +156,28 @@ handle_peername_option(EventSelector *es,
     strncpy(prototype.peername, value, MAX_HOSTNAME);
     prototype.peername[MAX_HOSTNAME-1] = 0;
     prototype.peername_len = strlen(prototype.peername);
+    return 0;
+}
+
+/**********************************************************************
+* %FUNCTION: handle_ifname_option
+* %ARGUMENTS:
+*  es -- event selector
+*  desc -- descriptor
+*  value -- the interface name
+* %RETURNS:
+*  0
+* %DESCRIPTION:
+*  Copies ifname to prototype
+***********************************************************************/
+static int
+handle_ifname_option(EventSelector *es,
+		     l2tp_opt_descriptor *desc,
+		     char const *value)
+{
+    strncpy(prototype.ifname, value, IFNAMSIZ);
+    prototype.ifname[IFNAMSIZ-1] = 0;
+    prototype.ifname_len = strlen(prototype.ifname);
     return 0;
 }
 
@@ -275,6 +296,8 @@ peer_process_option(EventSelector *es,
 	peer->hostname_len = prototype.hostname_len;
 	memcpy(&peer->peername,&prototype.peername, sizeof(prototype.peername));
 	peer->peername_len = prototype.peername_len;
+	memcpy(&peer->ifname,&prototype.ifname, sizeof(prototype.ifname));
+	peer->ifname_len = prototype.ifname_len;
 	memcpy(&peer->secret, &prototype.secret, MAX_SECRET_LEN);
 	peer->secret_len = prototype.secret_len;
 	peer->lns_ops = prototype.lns_ops;

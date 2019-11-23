@@ -172,6 +172,26 @@ extern int wan_phyid;
 extern int jffs2_fail;
 #endif
 
+#if defined(RTCONFIG_AMAS)
+static inline int is_cap(){
+#ifdef RTCONFIG_MASTER_DET
+	if (nvram_match("cfg_master", "1") && (is_router_mode() || access_point_mode()))
+#else
+	if (is_router_mode())
+#endif
+		return 1;
+
+	return 0;
+}
+
+static inline char *node_str(){
+	if(is_cap())
+		return "C";
+
+	return "R";
+}
+#endif
+
 #ifdef RTCONFIG_BCMARM
 #ifndef LINUX_KERNEL_VERSION
 #define LINUX_KERNEL_VERSION LINUX_VERSION_CODE
@@ -663,6 +683,7 @@ extern int is_ure(int unit);
 /* The below macros handle endian mis-matches between wl utility and wl driver. */
 extern bool g_swap;
 #define htod32(i) (g_swap?bcmswap32(i):(uint32)(i))
+#define dtoh64(i) (g_swap?bcmswap64(i):(uint64)(i))
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #define dtoh16(i) (g_swap?bcmswap16(i):(uint16)(i))
 #define dtohchanspec(i) (g_swap?dtoh16(i):i)
@@ -1524,9 +1545,6 @@ extern int update_wan_leds(int wan_unit, int link_wan_unit);
 int LanWanLedCtrl(void);
 #endif
 extern int wanduck_main(int argc, char *argv[]);
-#ifdef RTCONFIG_CONNDIAG
-extern int conn_diag_main(int argc, char *argv[]);
-#endif
 
 // tcpcheck.c
 extern int setupsocket(int sock);
@@ -1686,10 +1704,15 @@ extern void update_macfilter_relist();
 
 extern int start_nat_rules(void);
 extern int stop_nat_rules(void);
-extern void stop_syslogd(void);
-extern void stop_klogd(void);
 extern int start_syslogd(void);
+extern void stop_syslogd(void);
+#ifdef RTCONFIG_RSYSLOGD
+static inline void reload_syslogd(void) {};
+#else
+extern void reload_syslogd(void);
 extern int start_klogd(void);
+extern void stop_klogd(void);
+#endif
 extern int start_logger(void);
 extern void start_dfs(void);
 extern void handle_notifications(void);
@@ -1993,6 +2016,8 @@ extern void stop_cfgsync(void);
 extern int start_cfgsync(void);
 extern void send_event_to_cfgmnt(int event_id);
 #ifdef RTCONFIG_CONNDIAG
+extern int conn_diag_main(int argc, char *argv[]);
+extern int diag_data_main(int argc, char *argv[]);
 extern void stop_conn_diag(void);
 extern void start_conn_diag(void);
 #endif
@@ -2074,6 +2099,10 @@ extern int get_anomaly_main(char *cmd);
 extern int get_app_patrol_main();
 extern void web_history_save();
 extern void AiProtectionMonitor_mail_log();
+extern int get_fw_mesh_user(void **output, unsigned int *buf_used_len);
+extern int get_fw_mesh_extender(void **output, unsigned int *buf_used_len);
+extern int mesh_set_user(char *macstr, char *ipstr, uint8_t action);
+extern int mesh_set_extender(char *macstr, uint8_t action);
 #endif
 
 /* amas_lib.c */
@@ -2255,6 +2284,9 @@ enum LED_STATUS
 #ifdef RTCONFIG_TUNNEL
 extern void start_mastiff();
 extern void stop_mastiff();
+extern void start_aae_sip_conn(int sdk_init);
+extern void stop_aae_sip_conn(int sdk_deinit);
+extern void stop_aae_gently();
 #endif
 #ifdef RTCONFIG_HAPDEVENT
 extern int start_hapdevent(void);
@@ -2457,5 +2489,15 @@ extern int asus_ctrl_write(char *asusctrl);
 static inline int asus_ctrl_write(char *asusctrl) { return 0; }
 #endif
 #endif
+
+#ifdef RTCONFIG_BCMARM
+typedef struct WiFi_temperature_s {
+	double t2g;
+	double t5g;
+	double t5g2;
+} WiFi_temperature_t;
+double get_cpu_temp();
+int get_wifi_temps(WiFi_temperature_t *wt);
+#endif /* RTCONFIG_BCMARM */
 
 #endif	/* __RC_H__ */

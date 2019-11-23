@@ -208,6 +208,11 @@ extern int ssl_stream_fd;
 
 #include <iboxcom.h>
 
+#ifdef RTCONFIG_CONNDIAG
+#include <conn_diag-sql.h>
+#endif
+
+
 extern int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv);
 #ifndef RTCONFIG_QTN
@@ -497,7 +502,9 @@ rfctime(const time_t *timep)
 	static char s[200];
 	struct tm tm;
 
-	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
+	if(setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1)==0)
+		tzset();
+
 	localtime_r(timep, &tm);
 	strftime(s, sizeof(s), "%a, %d %b %Y %H:%M:%S %z", &tm);
 	return s;
@@ -6731,7 +6738,7 @@ static int ipv4_route_table(webs_t wp)
 #endif
 		}
 
-		ret += websWrite(wp, "%-16s", dest.s_addr == INADDR_ANY ? "default" : inet_ntoa(dest));
+		ret += websWrite(wp, "%-16s", (dest.s_addr || mask.s_addr) ? inet_ntoa(dest) : "default");
 		ret += websWrite(wp, "%-16s", gateway.s_addr == INADDR_ANY ? "*" : inet_ntoa(gateway));
 		ret += websWrite(wp, "%-16s%-9s%-6d %-3d%7d %-4s %s\n",
 				 inet_ntoa(mask), sflags, metric, ref, use, dev ? : "", ifname);
@@ -7863,23 +7870,19 @@ static int is_re_node(char *client_mac, int check_path) {
 	int i;
 	int ret = 0;
 	int shm_client_tbl_id;
-	int lock;
 	P_CM_CLIENT_TABLE p_client_tbl;
 	void *shared_client_info=(void *) 0;
 	unsigned char mac_buf[6] = {0};
 
-	lock = file_lock(CFG_FILE_LOCK);
 	shm_client_tbl_id = shmget((key_t)KEY_SHM_CFG, sizeof(CM_CLIENT_TABLE), 0666|IPC_CREAT);
 	if (shm_client_tbl_id == -1){
 		fprintf(stderr, "shmget failed\n");
-		file_unlock(lock);
 		return 0;
 	}
 
 	shared_client_info = shmat(shm_client_tbl_id,(void *) 0,0);
 	if (shared_client_info == (void *)-1){
 		fprintf(stderr, "shmat failed\n");
-		file_unlock(lock);
 		return 0;
 	}
 
@@ -7898,15 +7901,12 @@ static int is_re_node(char *client_mac, int check_path) {
 
 	shmdt(shared_client_info);
 
-	file_unlock(lock);
-
 	return ret;
 }
 
 static int get_amas_client_mac(json_object *allClientList, char *ip, char *mac, int macBufSize) {
 	int i;
 	int shm_client_tbl_id;
-	int lock;
 	P_CM_CLIENT_TABLE p_client_tbl;
 	void *shared_client_info=(void *) 0;
 	unsigned char mac_buf[6] = {0};
@@ -7941,18 +7941,15 @@ static int get_amas_client_mac(json_object *allClientList, char *ip, char *mac, 
 
 	/* check sta2g and sta5g, replace real mac for RE if client is RE */
 	if (strlen(mac)) {
-		lock = file_lock(CFG_FILE_LOCK);
 		shm_client_tbl_id = shmget((key_t)KEY_SHM_CFG, sizeof(CM_CLIENT_TABLE), 0666|IPC_CREAT);
 		if (shm_client_tbl_id == -1){
 			fprintf(stderr, "shmget failed\n");
-			file_unlock(lock);
 			return 0;
 		}
 
 		shared_client_info = shmat(shm_client_tbl_id,(void *) 0,0);
 		if (shared_client_info == (void *)-1){
 			fprintf(stderr, "shmat failed\n");
-			file_unlock(lock);
 			return 0;
 		}
 
@@ -7975,7 +7972,6 @@ static int get_amas_client_mac(json_object *allClientList, char *ip, char *mac, 
 		}
 
 		shmdt(shared_client_info);
-		file_unlock(lock);
 	}
 
 	return strlen(mac);
@@ -8015,7 +8011,6 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 	struct json_object *amasList = NULL, *amasReClientList = NULL, *amasReClientDetailList = NULL, *amasWiredClientList = NULL;
 	struct json_object *allClientList = NULL;
 	int amasList_status = 0, amasReClientList_status = 0, amasReClientDetailList_status = 0, amasWiredClientList_status = 0;
-	char clientMac[18] = {0};
 	struct json_object *amasPAP_attr_get = NULL;
 #endif
 
@@ -8132,12 +8127,9 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 
 			if(is_amas_support()) {
 				/* replace client mac if needed */
-				memset(clientMac, 0, sizeof(clientMac));
-				snprintf(clientMac, sizeof(clientMac), "%s", mac_buf);
-				if (allClientList && get_amas_client_mac(allClientList, ipaddr, clientMac, sizeof(clientMac))) {
-					memset(mac_buf, 0, sizeof(mac_buf));
-					snprintf(mac_buf, sizeof(mac_buf), "%s", clientMac);
-				}
+				if (allClientList)
+					get_amas_client_mac(allClientList, ipaddr, mac_buf, sizeof(mac_buf));
+
 				if (is_re_node(mac_buf, 1))
 					continue;
 			}
@@ -21969,6 +21961,17 @@ char *convert_nodenum_to_str(int node, char *str, int len){
 	return str;
 }
 
+static char *get_node_band(int idx, char *buf, int buflen){
+	if(idx > 1)
+		snprintf(buf, buflen, "5G%d", idx);
+	else if(idx == 1)
+		snprintf(buf, buflen, "5G");
+	else
+		snprintf(buf, buflen, "2G");
+
+	return buf;
+}
+
 static int ej_show_info_between_nodes(int eid, webs_t wp, int argc, char **argv){
 	int re_num = 0;
 	int i, j;
@@ -22002,10 +22005,7 @@ static int ej_show_info_between_nodes(int eid, webs_t wp, int argc, char **argv)
 	shmdt(shared_client_info);
 	file_unlock(lock);
 
-	if(nvram_get_int("chksta_band") == WL_NBAND_2G)
-		snprintf(band, sizeof(band), "2G");
-	else
-		snprintf(band, sizeof(band), "5G");
+	get_node_band(nvram_get_int("chksta_band"), band, sizeof(band));
 
 	// read cap's RSSI
 	for(i = 0; i <= re_num; ++i){ // row
@@ -24490,6 +24490,58 @@ static int ej_get_sw_mode(int eid, webs_t wp, int argc, char **argv) {
 	return 0;
 }
 
+#ifdef RTCONFIG_CONNDIAG
+static int ej_get_diag_db(int eid, webs_t wp, int argc, char **argv) {
+	int rows = 0;
+	int cols = 0;
+	char **result = NULL;
+	int ret = -1;
+	int r = 0, c = 0, i;
+	//char event_name[16];
+
+	ret = get_json_on_day(0, NULL, NULL, NULL, &rows, &cols, &result);
+	if(ret == SQLITE_OK){
+#if 0
+		snprintf(event_name, sizeof(event_name), "All");
+
+		websWrite(wp, "**************************************************\n");
+		websWrite(wp, "%s events, rows=%d, cols=%d:\n", event_name, rows, cols);
+		websWrite(wp, "**************************************************\n");
+		for(i = 0; i < cols; ++i){
+			if(i != 0)
+				websWrite(wp, "|");
+			websWrite(wp, "%s", result[i]);
+		}
+		websWrite(wp, "\n");
+#else
+		i = cols;
+#endif
+
+		for(r = 0; r < rows; ++r){
+			if(r != 0)
+				websWrite(wp, ", ");
+
+			//websWrite(wp, "--------------------------------------------------\n");
+			for(c = 0; c < cols; ++c, ++i){
+				if(c != 0)
+					//websWrite(wp, "|");
+					websWrite(wp, ", ");
+				websWrite(wp, "%s", result[i]);
+			}
+
+			//websWrite(wp, "\n");
+		}
+		//websWrite(wp, "**************************************************\n");
+		sqlite3_free_table(result);
+	}
+	else
+		//websWrite(wp, "Wrong!\n");
+		websWrite(wp, "{}");
+
+	return 0;
+}
+#endif
+
 struct ej_handler ej_handlers[] = {
 	{ "nvram_get", ej_nvram_get},
 	{ "nvram_default_get", ej_nvram_default_get},
@@ -24902,6 +24954,9 @@ struct ej_handler ej_handlers[] = {
 	{ "generate_trans_id", ej_generate_trans_id},
 #endif
 	{ "get_sw_mode", ej_get_sw_mode},
+#ifdef RTCONFIG_CONNDIAG
+	{ "get_diag_db", ej_get_diag_db},
+#endif
 	{ "get_iptvSettings", ej_get_iptvSettings },
 #ifdef RTCONFIG_DNSPRIVACY
 	{ "get_dnsprivacy_presets", ej_get_dnsprivacy_presets },

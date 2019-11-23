@@ -140,9 +140,6 @@ ipup_main(int argc, char **argv)
 
 	wan_up(wan_ifname);
 
-	nvram_set(strcat_r(prefix, "auth_ok", tmp), "1");
-	nvram_commit();
-
 	_dprintf("%s:: done\n", __FUNCTION__);
 	return 0;
 }

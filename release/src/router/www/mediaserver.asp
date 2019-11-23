@@ -142,8 +142,6 @@ function initial(){
 	
 	daapd_display();
 	dlna_path_display();
-	do_get_friendly_name("daapd");
-	do_get_friendly_name("dms");
 	check_dms_status();
 	
 	if(noiTunes_support){		
@@ -259,14 +257,7 @@ function applyRule(){
 function validForm(){
 
 if(document.form.daapd_enable.value == 1){	
-	if(document.form.daapd_friendly_name.value.length == 0){
-		showtext(document.getElementById("alert_msg1"), "<#JS_fieldblank#>");
-		document.form.daapd_friendly_name.focus();
-		document.form.daapd_friendly_name.select();
-		return false;
-	}
-	else{
-		
+	if(document.form.daapd_friendly_name.value.length > 0){
 		var alert_str1 = validator.hostName(document.form.daapd_friendly_name);
 		if(alert_str1 != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str1);
@@ -283,14 +274,7 @@ if(document.form.daapd_enable.value == 1){
 }
 
 if(document.form.dms_enable.value == 1){
-	if(document.form.dms_friendly_name.value.length == 0){
-		showtext(document.getElementById("alert_msg2"), "<#JS_fieldblank#>");
-		document.form.dms_friendly_name.focus();
-		document.form.dms_friendly_name.select();
-		return false;
-	}
-	else{
-		
+	if(document.form.dms_friendly_name.value.length > 0){
 		var alert_str2 = validator.hostName(document.form.dms_friendly_name);
 		if(alert_str2 != ""){
 			showtext(document.getElementById("alert_msg2"), alert_str2);
@@ -729,31 +713,6 @@ function show_dlna_path(){
 	document.getElementById("dlna_path_Block").innerHTML = code;	
 }
 
-function do_get_friendly_name(v){
-if(v == "daapd"){
-	var friendly_name_daapd	= "";
-	if("<% nvram_get("daapd_friendly_name"); %>" != "")
-		friendly_name_daapd = "<% nvram_get("daapd_friendly_name"); %>";
-	else if("<% nvram_get("odmpid"); %>" != "")
-		friendly_name_daapd = "<% nvram_get("odmpid"); %>";
-	else
-		friendly_name_daapd = "<% nvram_get("productid"); %>";
-	
-	document.form.daapd_friendly_name.value = friendly_name_daapd;
-}	
-else if(v == "dms"){	
-	var friendly_name_dms	= "";
-	if("<% nvram_get("dms_friendly_name"); %>" != "")
-		friendly_name_dms = "<% nvram_get("dms_friendly_name"); %>";
-	else if("<% nvram_get("odmpid"); %>" != "")	
-		friendly_name_dms = "<% nvram_get("odmpid"); %>";
-	else	
-		friendly_name_dms = "<% nvram_get("productid"); %>";
-	
-	document.form.dms_friendly_name.value = friendly_name_dms;
-}	
-}
-
 function set_dms_dir(obj){
 	if(obj.value == 1){	//manual path
 		document.getElementById("dlna_path_div").style.display = "";
@@ -887,7 +846,6 @@ function set_dms_dir(obj){
 										 function() {
 											document.form.daapd_friendly_name.parentNode.parentNode.parentNode.style.display = "none";
 											document.form.daapd_enable.value = 0;
-											do_get_friendly_name("daapd");
 										 }
 									);
 							</script>
@@ -896,7 +854,7 @@ function set_dms_dir(obj){
        	<tr>
        		<th><#iTunesServer_itemname#></th>
 					<td>
-						<div><input name="daapd_friendly_name" type="text" style="margin-left:15px;" class="input_15_table" maxlength="32" value="" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg1" style="color:#FC0;margin-left:10px;"></div></div>
+						<div><input name="daapd_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("daapd_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg1" style="color:#FC0;margin-left:10px;"></div></div>
 					</td>
       	</tr>
       	</table> 
@@ -928,7 +886,6 @@ function set_dms_dir(obj){
 											document.getElementById("dmsStatus").parentNode.parentNode.style.display = "none";
 											document.getElementById("dlna_path_div").style.display = "none";
 											document.form.dms_enable.value = 0;
-											do_get_friendly_name("dms");
 										 }
 									);
 							</script>
@@ -938,7 +895,7 @@ function set_dms_dir(obj){
        	<tr>
        		<th><#DLNA_itemname#></th>
 					<td>
-						<div><input name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_15_table" maxlength="32" value="" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:#FC0;margin-left:10px;"></div></div>
+						<div><input name="dms_friendly_name" type="text" style="margin-left:15px;" class="input_32_table" maxlength="32" placeholder="<% nvram_get("lan_hostname"); %>" value="<% nvram_get("dms_friendly_name"); %>" autocorrect="off" autocapitalize="off"><br/><div id="alert_msg2" style="color:#FC0;margin-left:10px;"></div></div>
 					</td>
       	</tr>
    			<tr>

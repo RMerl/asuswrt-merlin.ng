@@ -65,9 +65,6 @@ function initial(){
 	showPermissionTitle();
 	if("<% nvram_get("ddns_enable_x"); %>" == 1)
 		document.getElementById("machine_name").innerHTML = "<% nvram_get("ddns_hostname_x"); %>";
-	else
-		document.getElementById("machine_name").innerHTML = "<#Web_Title2#>";
-		
 
 	// show mask
 	if(get_manage_type(PROTOCOL)){
@@ -960,7 +957,7 @@ function switchUserType(flag){
 			  		<table width="480"  border="0" cellspacing="0" cellpadding="0" class="FileStatusTitle">
 		  	    		<tr>
 		    	  			<td width="290" height="20" align="left">
-				    			<div id="machine_name" class="machineName"></div>
+				    			<div id="machine_name" class="machineName"><#Web_Title2#></div>
 				    		</td>
 				  		<td>
 				    			<div id="permissionTitle"></div>

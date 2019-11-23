@@ -711,12 +711,12 @@ int get_usb_port_host(const char *usb_port)
 #endif
 #endif // RTCONFIG_USB
 
-#if defined(RTCONFIG_DUALWAN)
 void set_wanscap_support(char *feature)
 {
 	nvram_set("wans_cap", feature);
 }
 
+#if defined(RTCONFIG_DUALWAN)
 void add_wanscap_support(char *feature)
 {
 	char features[128];

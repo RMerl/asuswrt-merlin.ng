@@ -5174,7 +5174,7 @@ get_scan_escan(char *scan_buf, uint buf_len)
 }
 
 static char *
-wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
+wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tmp)
 {
 	int ret, retry_times = 0;
 	wl_escan_params_t *params = NULL;
@@ -5263,11 +5263,9 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-#ifndef RTCONFIG_BCM7
-		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
+		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
-#endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
 			wl_iovar_setint(ifname, "acs_update", -1);
@@ -5282,7 +5280,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 #endif
 
 static char *
-wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
+wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tmp)
 {
 	int ret, retry_times = 0;
 	wl_scan_params_t *params;
@@ -5340,11 +5338,9 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
-		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
+		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
-#endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
 			wl_iovar_setint(ifname, "acs_update", -1);
@@ -5381,6 +5377,8 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int retval = 0, ctl_ch;
 	char chanbuf[CHANSPEC_STR_LEN];
 	chanspec_t chspec_cur = 0, chanspec = 0;
+	chanspec_t chspec_tmp = 0;
+	int ctl_ch_tmp;
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
 	chanspec_t chspec_tar = 0;
 	char buf_sm[WLC_IOCTL_SMLEN];
@@ -5399,21 +5397,34 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	ctl_ch = wl_control_channel(unit);
 	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") &&
 		!nvram_match(strcat_r(prefix, "mode", tmp), "psta")) {
-		if ((ctl_ch > 48) && (ctl_ch < 149)) {
+		if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
+			dbg("get current chanpsec failed\n");
+			return 0;
+		}
+
+		if (((ctl_ch > 48) && (ctl_ch < 149))
+#ifdef RTCONFIG_BW160M
+			|| ((ctl_ch <= 48) && CHSPEC_IS160(chspec_cur))
+#endif
+		) {
 			if (!with_non_dfs_chspec(name)) {
 				dbg("%s scan rejected under DFS mode\n", name);
-				return 0;
-			} else if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
-				dbg("get current chanpsec failed\n");
 				return 0;
 			} else {
 				dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
 
-				chanspec = ((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) ? select_chspec_with_band_bw(name, 4, 0, chspec_cur) : select_chspec_with_band_bw(name, 1, 0, chspec_cur));
-				dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-				wl_iovar_setint(name, "chanspec", chanspec);
-				wl_iovar_setint(name, "acs_update", -1);
-				chanspec = chspec_cur;
+				chspec_tmp = (((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) && (ctl_ch < 100)) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
+				if (!chspec_tmp && (nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4))
+					chspec_tmp = select_chspec_with_band_bw(name, 4, 3, chspec_cur);
+
+				if (chspec_tmp != 0) {
+					dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_tmp, chanbuf), chspec_tmp);
+					wl_iovar_setint(name, "chanspec", chspec_tmp);
+					wl_iovar_setint(name, "acs_update", -1);
+
+					chanspec = chspec_cur;
+					ctl_ch_tmp = wf_chspec_ctlchan(chspec_tmp);
+				}
 			}
 		}
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
@@ -5443,13 +5454,13 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 #ifdef __CONFIG_DHDAP__
 	if (is_dhd && !nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
-		if (wl_get_scan_results_escan(name, chanspec, ctl_ch) == NULL) {
+		if (wl_get_scan_results_escan(name, chanspec, ctl_ch, ctl_ch_tmp) == NULL) {
 			return 0;
 		}
 	}
 	else
 #endif
-	if (wl_get_scan_results(name, chanspec, ctl_ch) == NULL) {
+	if (wl_get_scan_results(name, chanspec, ctl_ch, ctl_ch_tmp) == NULL) {
 		return 0;
 	}
 

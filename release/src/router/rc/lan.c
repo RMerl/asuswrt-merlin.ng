@@ -1127,6 +1127,10 @@ void start_lan(void)
 #endif
 
 	update_lan_state(LAN_STATE_INITIALIZING, 0);
+
+	/* set hostname on lan (re)start */
+	set_hostname();
+
 	if (sw_mode() == SW_MODE_REPEATER
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 		|| psr_mode() || mediabridge_mode()
@@ -3556,6 +3560,9 @@ lan_up(char *lan_ifname)
 
 		refresh_ntpc();
 	}
+
+	/* Kick syslog to re-resolve remote server */
+	reload_syslogd();
 
 	/* Scan new subnetwork */
 	stop_networkmap();

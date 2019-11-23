@@ -392,8 +392,9 @@ enum conndiagEvent {
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
-#define RAST_IPC_SOCKET_PATH		"/etc/rast_ipc_socket"
-#define CONNDIAG_IPC_SOCKET_PATH	"/etc/conndiag_ipc_socket"
+#define RAST_IPC_SOCKET_PATH		"/var/run/rast_ipc_socket"
+#define RAST_INTERNAL_IPC_SOCKET_PATH	"/var/run/rast_internal_ipc_socket"
+#define CONNDIAG_IPC_SOCKET_PATH	"/var/run/conndiag_ipc_socket"
 #define RAST_PREFIX     "RAST"
 #define CHKSTA_PREFIX   "CHKSTA"
 /* key name of json from rast */
@@ -414,6 +415,8 @@ enum conndiagEvent {
 #define RAST_RATE       "RATE"
 #define RAST_TXRATE     "TXRATE"
 #define RAST_RXRATE     "RXRATE"
+#define RAST_TXNRATE    "TXNRATE"
+#define RAST_RXNRATE    "RXNRATE"
 #define RAST_DATA       "DATA"
 #define RAST_MODE       "MODE"
 #define RAST_SERVED_AP_BSSID	"SERVED_AP_BSSID"
@@ -2091,6 +2094,7 @@ static inline int is_aqr_phy_exist(void)
 
 /* misc.c */
 extern char *get_productid(void);
+extern char *get_lan_hostname(void);
 extern void logmessage_normal(char *logheader, char *fmt, ...);
 extern char *get_logfile_path(void);
 extern char *get_syslog_fname(unsigned int idx);
@@ -2237,6 +2241,8 @@ extern int isValidMacAddr_and_isNotMulticast(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 extern int stricmp(char const *a, char const *b, int len);
 extern int isValid_digit_string(const char *string);
+extern int is_valid_hostname(const char *name);
+extern int is_valid_domainname(const char *name);
 
 /* scripts.c */
 extern void run_custom_script(char *name, int timeout, char *arg1, char *arg2);
@@ -2927,7 +2933,7 @@ typedef struct __amaslib_notification__t_
 } AMASLIB_EVENT_T;
 
 #define AMASLIB_PID_PATH           "/var/run/amas_lib.pid"
-#define AMASLIB_SOCKET_PATH        "/etc/amas_lib_socket"
+#define AMASLIB_SOCKET_PATH        "/var/run/amas_lib_socket"
 #define MAX_AMASLIB_SOCKET_CLIENT  5
 
 /* DEBUG DEFINE */

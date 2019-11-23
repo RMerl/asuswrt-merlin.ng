@@ -83,10 +83,8 @@ extern int _eval(char *const argv[], const char *path, int timeout, pid_t *ppid)
  */
 #define CPU0	"0"
 #define CPU1	"1"
-#if defined(GTAC5300)
 #define CPU2	"2"
 #define CPU3	"3"
-#endif
 
 extern int _cpu_eval(int *ppid, char *cmds[]);
 

@@ -58,13 +58,15 @@ function initial(){
 	var wl_maclist_x_row = wl_maclist_x_array.split('&#60');
 	var clientName = "New device";
 	for(var i = 1; i < wl_maclist_x_row.length; i += 1) {
-		if(clientList[wl_maclist_x_row[i]]) {
-			clientName = (clientList[wl_maclist_x_row[i]].nickName == "") ? clientList[wl_maclist_x_row[i]].name : clientList[wl_maclist_x_row[i]].nickName;
+		var _index = wl_maclist_x_row[i].toUpperCase();
+		if(clientList[_index]) {
+			clientName = (clientList[_index].nickName == "") ? clientList[_index].name : clientList[_index].nickName;
 		}
 		else {
 			clientName = "New device";
 		}
-		manually_maclist_list_array[wl_maclist_x_row[i]] = clientName;
+
+		manually_maclist_list_array[_index] = clientName;
 	}
 
 	if((sw_mode == 2 || sw_mode == 4) && document.form.wl_unit.value == '<% nvram_get("wlc_band"); %>' && !concurrep_support){
@@ -158,7 +160,6 @@ function deleteRow(r, delMac){
 	var i = r.parentNode.parentNode.rowIndex;
 	delete manually_maclist_list_array[delMac];
 	document.getElementById('wl_maclist_x_table').deleteRow(i);
-
 	if(Object.keys(manually_maclist_list_array).length == 0)
 		show_wl_maclist_x();
 }
@@ -216,6 +217,7 @@ function applyRule(){
 	var tmp_value = "";
 
 	Object.keys(manually_maclist_list_array).forEach(function(key) {
+		key = key.toUpperCase();
 		tmp_value += "<" + key;
 	});
 

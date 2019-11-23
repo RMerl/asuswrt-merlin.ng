@@ -2055,6 +2055,8 @@ define RouterOptions
 	sed -i "/RTCONFIG_ROG_UI/d" $(1); \
 	if [ "$(ROG_UI)" = "y" ]; then \
 		echo "RTCONFIG_ROG_UI=y" >>$(1); \
+		sed -i "/RTCONFIG_OPEN_NAT/d" $(1); \
+		echo "RTCONFIG_OPEN_NAT=y" >>$(1); \
 	else \
 		echo "# RTCONFIG_ROG_UI is not set" >>$(1); \
 	fi; \

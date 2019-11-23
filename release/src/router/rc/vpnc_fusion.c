@@ -148,9 +148,14 @@ int change_default_wan()
 	//get default_wan
 	default_wan_new = nvram_get_int("vpnc_default_wan_tmp");
 
+#ifdef RTCONFIG_TUNNEL
+	stop_aae_sip_conn(1);
+#endif
+
 	set_default_routing_table(VPNC_ROUTE_ADD, default_wan_new);
 	
 	nvram_set_int("vpnc_default_wan", default_wan_new);
+
 	return 0;
 }
 
@@ -1802,7 +1807,6 @@ start_vpnc_by_unit(const int unit)
 		if (VPNC_PROTO_PPTP == prof->protocol) {
 			fprintf(fp, "plugin pptp.so\n");
 			fprintf(fp, "pptp_server '%s'\n", prof->basic.server);
-			fprintf(fp, "vpnc 1\n");
 			/* see KB Q189595 -- historyless & mtu */
 			if (nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "pptp") || nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "l2tp"))
 				fprintf(fp, "nomppe-stateful mtu 1300\n");
@@ -1911,7 +1915,6 @@ start_vpnc_by_unit(const int unit)
 				"section peer\n"
 				"port 1701\n"
 				"peername %s\n"
-				"vpnc 1\n"
 				"hostname %s\n"
 				"lac-handler sync-pppd\n"
 				"persist yes\n"
@@ -1978,6 +1981,11 @@ stop_vpnc_by_unit(const int unit)
 		return -1;
 
 	prof = vpnc_profile + unit;
+
+#ifdef RTCONFIG_TUNNEL
+	if (nvram_get_int("vpnc_default_wan") == prof->vpnc_idx)
+		stop_aae_sip_conn(1);
+#endif
 
 	snprintf(pidfile, sizeof(pidfile), "/var/run/ppp-vpn%d.pid", prof->vpnc_idx);
 
@@ -2267,7 +2275,7 @@ int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id)
 
 	if(VPNC_ROUTE_ADD == cmd && table_id > 0)
 		eval("ip", "rule", "add", "from", "all", "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
-	
+
 	return 0;
 }
 

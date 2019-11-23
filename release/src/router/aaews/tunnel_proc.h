@@ -117,7 +117,7 @@ typedef void (*TNL_CB)(struct natnl_tnl_event* tnl_event);
 
 
 #ifdef TNL_CALLBACK_ENABLE
-int InitPeer(
+extern int InitPeer(
 		SET_ACCOUNT_CFG		fp_set_account,
 		SET_DEVICE_INFO_CFG fp_set_device_info,
 		SET_LOG_CFG			fp_set_log,
@@ -132,7 +132,7 @@ int InitPeer(
 		int					enable_ws
 	  );
 #else
-int InitPeer(
+extern int InitPeer(
 		SET_ACCOUNT_CFG		fp_set_account,
 		SET_DEVICE_INFO_CFG fp_set_device_info,
 		SET_LOG_CFG			fp_set_log,
@@ -147,6 +147,8 @@ int InitPeer(
 
 #endif
 
-int DeletePeer();
+extern int DeletePeer();
+extern int nat_sdk_deinit();
+extern int nat_sdk_init(int *ue, int do_update_profile);
 
 #endif

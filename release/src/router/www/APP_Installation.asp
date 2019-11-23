@@ -705,6 +705,9 @@ function show_apps(){
 	stoppullstate = 1;
 	cookie.set("hwaddr", '<% nvram_get("lan_hwaddr"); %>', 1000);
 	cookie.set("apps_last", "", 1000);
+	//re-turn FormTitle height
+	if($("#FormTitle > table").height() > $("#FormTitle").height())
+		$("#FormTitle").height($("#FormTitle > table").height());
 }
 
 /* 

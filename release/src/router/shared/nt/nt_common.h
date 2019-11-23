@@ -15,14 +15,14 @@
 
 /* SOCKET SERVER DEFINE SETTING 
 ---------------------------------*/
-#define NOTIFY_CENTER_SOCKET_PATH               "/etc/notify_center_socket"
-#define NOTIFY_MAIL_SERVICE_SOCKET_PATH         "/etc/notify_mail_socket"
+#define NOTIFY_CENTER_SOCKET_PATH               "/var/run/notify_center_socket"
+#define NOTIFY_MAIL_SERVICE_SOCKET_PATH         "/var/run/notify_mail_socket"
 
 #define MAX_NOTIFY_SOCKET_CLIENT    5
 
-#define NOTIFY_CENTER_PID_PATH                  "/tmp/Notification_Center.pid"
-#define NOTIFY_CENTER_MONITOR_PID_PATH          "/tmp/Notification_Center_Monitor.pid"
-#define NOTIFY_ACTION_MAIL_PID_PATH             "/tmp/Notification_Center_ActMail.pid"
+#define NOTIFY_CENTER_PID_PATH                  "/var/run/Notification_Center.pid"
+#define NOTIFY_CENTER_MONITOR_PID_PATH          "/var/run/Notification_Center_Monitor.pid"
+#define NOTIFY_ACTION_MAIL_PID_PATH             "/var/run/Notification_Center_ActMail.pid"
 
 #define NOTIFY_CENTER_LOG_FILE                  "/tmp/NTC.log"
 #define NOTIFY_CENTER_MONITOR_LOG_FILE          "/tmp/NTM.log"

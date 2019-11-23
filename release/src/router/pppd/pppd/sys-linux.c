@@ -78,6 +78,7 @@
 #include <sys/stat.h>
 #include <sys/utsname.h>
 #include <sys/sysmacros.h>
+#include <sys/syscall.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -3002,13 +3003,13 @@ ether_to_eui64(eui64_t *p_eui64)
 int
 get_time(struct timeval *tv)
 {
-#ifdef CLOCK_MONOTONIC
     static int monotonic = -1;
-    struct timespec ts;
-    int ret;
 
     if (monotonic) {
-	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+#if defined(__NR_clock_gettime) && defined(CLOCK_MONOTONIC)
+	struct timespec ts;
+	int ret = syscall(__NR_clock_gettime, CLOCK_MONOTONIC, &ts);
+
 	if (tv && ret == 0) {
 	    tv->tv_sec = ts.tv_sec;
 	    tv->tv_usec = ts.tv_nsec / 1000;
@@ -3018,10 +3019,11 @@ get_time(struct timeval *tv)
 	    monotonic = (ret == 0);
 	if (monotonic)
 	    return ret;
-
+#else
+	monotonic = 0;
+#endif
 	warn("Couldn't use monotonic clock source: %m");
     }
-#endif
 
     return gettimeofday(tv, NULL);
 }

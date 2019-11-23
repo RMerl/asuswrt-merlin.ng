@@ -196,6 +196,18 @@ function hasBlank(objArray){
 	if($(".hint").length > 0) return true;
 }
 
+function rangeCheck(objArray, min, max, reserveHints){//1: reserve previous hints
+	if(reserveHints != 1)
+		$(".hint").remove();
+
+	$.each(objArray, function(idx, $obj){
+		if($obj.val().length > 0 && (isNaN($obj.val()) || $obj.val() < min || $obj.val() > max)){
+			$obj.showTextHint('<#JS_validrange#> ' + min + ' <#JS_validrange_to#> ' + max + '.');
+		}
+	})
+	if($(".hint").length > 0) return true;
+}
+
 function hadPlugged(deviceType){
 	var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
 	return (usbDeviceList.join().search(deviceType) != -1)
@@ -839,8 +851,19 @@ var isPage = function(page){
 }
 
 var isSupport = function(_ptn){
-	var ui_support = httpApi.hookGet("get_ui_support");
+	var ui_support = JSON.parse(JSON.stringify(httpApi.hookGet("get_ui_support")));
 	var matchingResult = false;
+	var odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
+
+	if(ui_support["triband"] && ui_support["concurrep"] && (isSwMode("RP") || isSwMode("MB"))){
+		/* setup as dualband models, will copy wlc1 to wlc2 in apply.submitQIS */
+		ui_support["SMARTREP"] = 1;
+		ui_support["triband"] = 0;
+		ui_support["dualband"] = 1;
+	}
+	else{
+		ui_support = httpApi.hookGet("get_ui_support");
+	}
 
 	switch(_ptn){
 		case "ForceBWDPI":
@@ -857,6 +880,12 @@ var isSupport = function(_ptn){
 			break;
 		case "SMARTCONNECT":
 			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
+			break;
+		case "MB_mode_concurrep":
+			if(isSwMode("MB") && isSupport("concurrep") && odmpid != "RP-AC1900")
+				matchingResult = true;
+			else
+				matchingResult = false;
 			break;
 		default:
 			matchingResult = ((ui_support[_ptn] == 1) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
@@ -972,9 +1001,16 @@ function addNewScript(scriptName){
 	document.getElementsByTagName("head")[0].appendChild(script);
 }
 
+function startDetectLinkInternet(){
+	systemVariable.linkInternet = httpApi.isConnected();
+
+	if(!systemVariable.linkInternet){
+		setTimeout(arguments.callee, 1000);
+	}
+}
+
 function startLiveUpdate(){
-	var linkLnternet = httpApi.isConnected();
-	if(!linkLnternet){
+	if(!systemVariable.linkInternet){
 		setTimeout(arguments.callee, 1000);
 	}
 	else{
@@ -1062,8 +1098,16 @@ transformWLCObj = function(){
 	Object.keys(qisPostData).forEach(function(key){
 		qisPostData[key.replace("wlc" + wlcUnit, "wlc")] = qisPostData[key];
 	});
+
 	postDataModel.remove(wlcMultiObj["wlc" + wlcUnit]);
 };
+copyWLCObj_wlc1ToWlc2 = function(){
+	var wlcPostData = wlcMultiObj.wlc2;
+	$.each(wlcPostData, function(item){wlcPostData[item] = qisPostData[item.replace("2", "1")];});
+	qisPostData.wlc2_band = 2;
+	postDataModel.insert(wlcPostData);
+};
+
 transformWLToGuest = function(){
 	var transformWLIdx = function(_wlcUnit){
 		Object.keys(qisPostData).forEach(function(key){

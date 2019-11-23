@@ -10,13 +10,13 @@
 * This program may be distributed according to the terms of the GNU
 * General Public License, version 2 or (at your option) any later version.
 *
-* $Id: event.h 3323 2011-09-21 18:45:48Z lly.dev $
+* $Id$
 *
 * LIC: GPL
 *
 ***********************************************************************/
 
-#define DEBUG_EVENT
+#undef DEBUG_EVENT
 
 #ifndef INCLUDE_EVENT_H
 #define INCLUDE_EVENT_H 1

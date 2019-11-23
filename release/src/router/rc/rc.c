@@ -1166,6 +1166,7 @@ static const applets_t applets[] = {
 	{ "wanduck",			wanduck_main			},
 #ifdef RTCONFIG_CONNDIAG
 	{ "conn_diag",			conn_diag_main			},
+	{ "diag_data",			diag_data_main			},
 #endif
 #if defined(CONFIG_BCMWL5) && !defined(HND_ROUTER) && defined(RTCONFIG_DUALWAN)
 	{ "dualwan",			dualwan_control			},

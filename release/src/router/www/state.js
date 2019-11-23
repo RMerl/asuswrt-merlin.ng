@@ -245,6 +245,7 @@ var htmlEnDeCode = (function() {
 
 var sw_mode = '<% nvram_get("sw_mode"); %>';
 var wlc_band = '<% nvram_get("wlc_band"); %>';
+var wlc_triBand = '<% nvram_get("wlc_triBand"); %>';
 /*Media Bridge mode
 Broadcom: sw_mode = 3 & wlc_psta = 1, sw_mode = 3 & wlc_psta = 3
 MTK/QCA: sw_mode = 2 & wlc_psta = 1
@@ -1720,7 +1721,7 @@ function show_top_status(){
 		ssid_status_5g_2 = "";
 
 	if(sw_mode == 4){
-		if('<% nvram_get("wlc_band"); %>' == '0'){
+		if(wlc_band == '0'){
 			document.getElementById("elliptic_ssid_2g").style.display = "none";
 			document.getElementById("elliptic_ssid_5g").style.marginLeft = "";
 		}
@@ -1757,9 +1758,9 @@ function show_top_status(){
 					document.getElementById('elliptic_ssid_5g_2').style.display = "none";
 			}
 		}	
-		else if('<% nvram_get("wlc_band"); %>' == '0')
+		else if(wlc_band == '0')
 			ssid_status_2g =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl0.1_ssid"); %>'));
-		else if('<% nvram_get("wlc_band"); %>' == '2'){
+		else if(wlc_band == '2'){
 			if(wl_info.band5g_2_support){
 				ssid_status_5g_2 =  htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("WLANConfig11b", "wl2.1_ssid"); %>'));
 			}
@@ -2422,6 +2423,8 @@ function refreshStatus(xhr){
 	if(concurrent_pap){
 		_wlc0_state = wanStatus[27].firstChild.nodeValue;
 		_wlc1_state = wanStatus[28].firstChild.nodeValue;
+		if(isSupport("triband"))
+			_wlc2_state = wanStatus[33].firstChild.nodeValue;
 	}
 	rssi_2g = wanStatus[29].firstChild.nodeValue.replace("rssi_2g=", "");
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
@@ -2822,46 +2825,36 @@ function refreshStatus(xhr){
 			}
 
 			if(concurrent_pap){
+				// connected or not
 				if (_wlc0_state == "wlc0_state=2") {
 					document.getElementById('speed_info_primary').style.display = "";
 					document.getElementById('rssi_info_primary').style.display = "";
+					document.getElementById('primary_line').className = "primary_wan_connected";				
 				} else {
 					document.getElementById('speed_info_primary').style.display = "none";
 					document.getElementById('rssi_info_primary').style.display = "none";
+					document.getElementById('primary_line').className = "primary_wan_disconnected";					
 				}
-
-				if (_wlc1_state == "wlc1_state=2") {
+				if (_wlc1_state == "wlc1_state=2" || _wlc2_state == "wlc2_state=2") {
 					document.getElementById('speed_info_secondary').style.display = "";
 					document.getElementById('rssi_info_secondary').style.display = "";
+					document.getElementById('secondary_line').className = "secondary_wan_connected";
 				} else {
 					document.getElementById('speed_info_secondary').style.display = "none";
 					document.getElementById('rssi_info_secondary').style.display = "none";
+					document.getElementById('secondary_line').className = "secondary_wan_disconnected";
 				}
 
+				// text html
 				document.getElementById('speed_info_primary').innerHTML = "Link Rate: " + data_rate_info_2g;
-				if (!Rawifi_support && !Qcawifi_support && wlifnames.length == 3 && dpsta_band == 2)
+				document.getElementById('rssi_info_primary').innerHTML = "RSSI: " + rssi_2g;
+				if (dpsta_band == 2 || wlc_triBand == 2){
 					document.getElementById('speed_info_secondary').innerHTML = "Link Rate: " + data_rate_info_5g_2;
-				else
+					document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g_2;
+				}
+				else{
 					document.getElementById('speed_info_secondary').innerHTML = "Link Rate: " + data_rate_info_5g;
-				if (!Rawifi_support && !Qcawifi_support) {
-					document.getElementById('rssi_info_primary').innerHTML = "RSSI: " + rssi_2g;
-					if (wlifnames.length == 3 && dpsta_band == 2)
-						document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g_2;
-					else
-						document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g;
-				}
-				if(_wlc0_state == "wlc0_state=2"){
-					document.getElementById('primary_line').className = "primary_wan_connected";				
-				}
-				else{
-					document.getElementById('primary_line').className = "primary_wan_disconnected";					
-				}
-				
-				if(_wlc1_state == "wlc1_state=2"){
-					document.getElementById('secondary_line').className = "secondary_wan_connected";
-				}
-				else{
-					document.getElementById('secondary_line').className = "secondary_wan_disconnected";
+					document.getElementById('rssi_info_secondary').innerHTML = "RSSI: " + rssi_5g;
 				}
 			}
 			else{
@@ -3326,7 +3319,7 @@ function set_variable(_variable, _val){
 	document.form.appendChild(NewInput);
 }
 
-function isPortConflict(_val){
+function isPortConflict(_val, service){
 	var str = "(" + _val + ") <#portConflictHint#>: ";
 
 	if(_val == '<% nvram_get("http_lanport"); %>'){
@@ -3343,6 +3336,14 @@ function isPortConflict(_val){
 	}
 	else if(_val == '<% nvram_get("webdav_https_port"); %>'){
 		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(service != "ssh" && _val == '<% nvram_get("sshd_port"); %>'){
+		str = str + "SSH.";
+		return str;
+	}
+	else if(service != "openvpn" && _val == '<% nvram_get("vpn_server_port"); %>'){
+		str = str + "OpenVPN.";
 		return str;
 	}
 	else

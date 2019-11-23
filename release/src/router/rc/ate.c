@@ -380,42 +380,17 @@ pincheck(const char *a)
 
 int isValidSN(const char *sn)
 {
-	int i;
-	unsigned char *c;
+	int i = 0;
+	unsigned char *c = (unsigned char *) sn;
 
 	if (strlen(sn) != SERIAL_NUMBER_LENGTH)
 		return 0;
 
-	c = (unsigned char *)sn;
-	/* [1]year: C~Z (2012=C, 2013=D, ...) */
-	if (*c < 0x43 || *c > 0x5A)
-		return 0;
-	c++;
-	/* [2]month: 1~9 & ABC */
-	if (!((*c > 0x30 && *c < 0x3A) || *c == 0x41 || *c == 0x42 || *c == 0x43))
-		return 0;
-	c++;
-	/* [3]WLAN & ADSL: I(aye) */
-	if (*c != 0x49)
-		return 0;
-	c++;
-	/* [4]Channel: AEJ0(zero) (A:11ch, E:13ch, J:14ch, 0:no ch) */
-	if (*c != 0x41 && *c != 0x45 && *c != 0x4A && *c != 0x30)
-		return 0;
-	c++;
-	/* [5]factory: 0~9 & A~Z, except I(aye) & O(oh) */
-	if (!((*c > 0x2F && *c < 0x3A) || (*c > 0x40 && *c < 0x5B)) || *c == 0x49 || *c == 0x4F)
-		return 0;
-	c++;
-	/* [6]model: 0~9 & A~Z */
-	if (!((*c > 0x2F && *c < 0x3A) || (*c > 0x40 && *c < 0x5B)))
-		return 0;
-	c++;
-	/* [7~12]serial: 0~9 */
-	i = 7;
-	while (i < 13) {
-		if (*c < 0x30 || *c > 0x39)
+	while (i < SERIAL_NUMBER_LENGTH) {
+		/*  0~9 & A~Z */
+		if (!((*c > 0x2F && *c < 0x3A) || (*c > 0x40 && *c < 0x5B)))
 			return 0;
+
 		c++;
 		i++;
 	}

@@ -286,7 +286,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
    t_igmp_grp_entry *igmp_fdb = NULL;
 #endif
 #if defined(CONFIG_BR_MLD_SNOOP)
-   t_igmp_grp_entry *mld_fdb = NULL;
+   t_mld_grp_entry *mld_fdb = NULL;
 #endif
 #if (defined(CONFIG_BCM_WLAN) || defined(CONFIG_BCM_WLAN_MODULE))
    int phyType;
@@ -310,7 +310,7 @@ static void bcm_mcast_blog_process_lan(blogRule_t         *rule_p,
 #if defined(CONFIG_BR_MLD_SNOOP)
        if (BCM_MCAST_PROTO_IPV6 == proto )
        {
-           mld_fdb = (t_igmp_grp_entry *)mc_fdb;
+           mld_fdb = (t_mld_grp_entry *)mc_fdb;
            dev_p = mld_fdb->dst_dev;
            break;
        }

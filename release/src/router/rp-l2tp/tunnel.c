@@ -79,10 +79,6 @@ static char *state_names[] = {
     "received-stop-ccn", "sent-stop-ccn"
 };
 
-#ifdef RTCONFIG_VPNC
-int vpnc = 0;
-#endif
-
 #define VENDOR_STR "Roaring Penguin Software Inc."
 
 /* Comparison of serial numbers according to RFC 1982 */
@@ -94,8 +90,7 @@ int vpnc = 0;
 
 /* Route manipulation */
 #define sin_addr(s) (((struct sockaddr_in *)(s))->sin_addr)
-#define route_msg l2tp_set_errmsg
-static int route_add(const struct in_addr inetaddr, struct rtentry *rt);
+static int route_add(const struct in_addr inetaddr, const char *ifname, struct rtentry *rt);
 static int route_del(struct rtentry *rt);
 
 /**********************************************************************
@@ -529,6 +524,7 @@ tunnel_establish(l2tp_peer *peer, EventSelector *es)
     l2tp_tunnel *tunnel;
     struct sockaddr_in peer_addr = peer->addr;
     struct hostent *he;
+    struct rtentry rt;
 
     /* check peer_addr and resolv it based on the peername if needed */
     if (peer_addr.sin_addr.s_addr == INADDR_ANY) {
@@ -553,20 +549,37 @@ tunnel_establish(l2tp_peer *peer, EventSelector *es)
 	}
 	memcpy(&peer_addr.sin_addr, he->h_addr, sizeof(peer_addr.sin_addr));
     }
+
+    memset(&rt, 0, sizeof(rt));
+    if (route_add(peer_addr.sin_addr, peer->ifname, &rt) < 0 &&
+	errno != EEXIST)
+    {
+	l2tp_set_errmsg("tunnel_establish: failed to add host route");
+	if (peer->persist && (peer->maxfail == 0 || peer->fail++ < peer->maxfail)) 
+	{
+	    struct timeval t;
+
+	    t.tv_sec = peer->holdoff;
+	    t.tv_usec = 0;
+	    Event_AddTimerHandler(es, t, l2tp_tunnel_reestablish, peer);
+	}
+	return NULL;
+    }
     
     tunnel = tunnel_new(es);
-    if (!tunnel) return NULL;
+    if (!tunnel) {
+	route_del(&rt);
+	return NULL;
+    }
 
     tunnel->peer = peer;
     tunnel->peer_addr = peer_addr;
     tunnel->call_ops = tunnel->peer->lac_ops;
+    tunnel->rt = rt;
 
     DBG(l2tp_db(DBG_TUNNEL, "tunnel_establish(%s) -> %s (%s)\n",
 	    l2tp_debug_tunnel_to_str(tunnel),
 	    inet_ntoa(peer_addr.sin_addr), peer->peername));
-
-    memset(&tunnel->rt, 0, sizeof(tunnel->rt));
-    route_add(tunnel->peer_addr.sin_addr, &tunnel->rt);
 
     hash_insert(&tunnels_by_peer_address, tunnel);
     tunnel_send_SCCRQ(tunnel);
@@ -2035,17 +2048,22 @@ l2tp_tunnel_next_session(l2tp_tunnel *tunnel, void **cursor)
 
 /* Route manipulation */
 static int
-route_ctrl(int ctrl, struct rtentry *rt)
+route_ctrl(int ctrl, void *arg)
 {
-	int s;
+	int fd, ret, err;
 
 	/* Open a raw socket to the kernel */
-	if ((s = socket(AF_INET, SOCK_DGRAM, 0)) < 0 || ioctl(s, ctrl, rt) < 0)
-		route_msg("%s: %s", __FUNCTION__, strerror(errno));
-	else errno = 0;
+	fd = socket(AF_INET, SOCK_DGRAM, 0);
+	if (fd < 0)
+		return -1;
 
-	close(s);
-	return errno;
+	ret = ioctl(fd, ctrl, arg);
+	err = errno;
+
+	close(fd);
+
+	errno = err;
+	return ret;
 }
 
 static int
@@ -2060,33 +2078,28 @@ route_del(struct rtentry *rt)
 }
 
 static int
-route_add(const struct in_addr inetaddr, struct rtentry *rt)
+route_add(const struct in_addr inetaddr, const char *ifname, struct rtentry *rt)
 {
-	char buf[256], dev[64], rdev[64];
+	struct ifreq ifr;
+	char buf[256], dev[64];
 	u_int32_t dest, mask, gateway, flags, bestmask = 0;
-	int metric;
+	int ret, metric, err;
 
 	FILE *f = fopen("/proc/net/route", "r");
-	if (f == NULL) {
-		route_msg("%s: /proc/net/route: %s", strerror(errno), __FUNCTION__);
+	if (f == NULL)
 		return -1;
-	}
 
-	rt->rt_gateway.sa_family = 0;
+	memset(&ifr, 0, sizeof(ifr));
 
 	while (fgets(buf, sizeof(buf), f))
 	{
 		if (sscanf(buf, "%63s %x %x %x %*s %*s %d %x", dev, &dest,
-			&gateway, &flags, &metric, &mask) != 6)
+			   &gateway, &flags, &metric, &mask) != 6)
 			continue;
 		if ((flags & RTF_UP) == (RTF_UP) && (inetaddr.s_addr & mask) == dest &&
-#ifdef RTCONFIG_VPNC
-		    (dest || strncmp(dev, "ppp", 3) || vpnc) /* avoid default via pppX to avoid on-demand loops*/)
-#else
-		    (dest || strncmp(dev, "ppp", 3)) /* avoid default via pppX to avoid on-demand loops*/)		
-#endif
+		    (dest || (!ifname || strcmp(dev, ifname) == 0)))
 		{
-			if ((mask | bestmask) == bestmask && rt->rt_gateway.sa_family)
+			if ((mask | bestmask) == bestmask && *ifr.ifr_name)
 				continue;
 			bestmask = mask;
 
@@ -2094,7 +2107,8 @@ route_add(const struct in_addr inetaddr, struct rtentry *rt)
 			rt->rt_gateway.sa_family = AF_INET;
 			rt->rt_flags = flags;
 			rt->rt_metric = metric;
-			strncpy(rdev, dev, sizeof(rdev));
+			strncpy(ifr.ifr_name, dev, IFNAMSIZ);
+			ifr.ifr_name[IFNAMSIZ - 1] = '\0';
 
 			if (mask == INADDR_BROADCAST)
 				break;
@@ -2104,9 +2118,9 @@ route_add(const struct in_addr inetaddr, struct rtentry *rt)
 	fclose(f);
 
 	/* check for no route */
-	if (rt->rt_gateway.sa_family != AF_INET) 
+	if (*ifr.ifr_name == '\0')
 	{
-		/* route_msg("%s: no route to host", __FUNCTION__); */
+		errno = EHOSTUNREACH;
 		return -1;
 	}
 
@@ -2114,7 +2128,7 @@ route_add(const struct in_addr inetaddr, struct rtentry *rt)
 	 * add if missing based on the existing routes */
 	if (rt->rt_flags & RTF_HOST)
 	{
-		/* route_msg("%s: not adding existing route", __FUNCTION__); */
+		errno = EEXIST;
 		return -1;
 	}
 
@@ -2128,18 +2142,33 @@ route_add(const struct in_addr inetaddr, struct rtentry *rt)
 	rt->rt_flags |= RTF_UP | RTF_HOST;
 
 	rt->rt_metric++;
-	rt->rt_dev = strdup(rdev);
+	rt->rt_dev = strdup(ifr.ifr_name);
 
 	if (!rt->rt_dev)
 	{
-		/* route_msg("%s: no memory", __FUNCTION__); */
+		errno = ENOMEM;
 		return -1;
 	}
 
-	if (!route_ctrl(SIOCADDRT, rt))
+	ret = route_ctrl(SIOCADDRT, rt);
+	err = errno;
+	if (ret < 0 && (errno == ENETUNREACH || errno == ESRCH) &&
+	    sin_addr(&rt->rt_gateway).s_addr &&
+	    route_ctrl(SIOCGIFFLAGS, &ifr) == 0 && (ifr.ifr_flags & IFF_POINTOPOINT))
+	{
+		/* Try to add direct route if gateway is not directly reachable.
+		 * Should be safe over point-to-point interfaces */
+		sin_addr(&rt->rt_gateway).s_addr = INADDR_ANY;
+		rt->rt_flags &= ~RTF_GATEWAY;
+		ret = route_ctrl(SIOCADDRT, rt);
+		err = errno;
+	}
+
+	if (ret == 0)
 		return 0;
 
 	free(rt->rt_dev), rt->rt_dev = NULL;
 
+	errno = err;
 	return -1;
 }

@@ -2458,7 +2458,7 @@ void init_wl(void)
 	}
 #endif
 	check_wl_country();
-#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 	wl_disband5grp();
 #endif
 	set_wltxpower();
@@ -2596,7 +2596,7 @@ void init_wl_compact(void)
 		(model == MODEL_RTN12HP_B1) ||
 		(model == MODEL_RTN18U) ||
 		(model == MODEL_RTN66U)) {
-#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(DSL_AC68U)
 		wl_disband5grp();
 #endif
 		set_wltxpower();
@@ -7217,22 +7217,23 @@ void dump_exclchans(unsigned int *excs, char *des) {
 	_dprintf("\n");
 }
 
-int init_exclbase(int unit)
+int reset_exclbase(int unit)
 {
+	nvram_set("wl0_acs_excl_chans_base", nvram_safe_get("wl0_acs_excl_chans"));
+	nvram_set("wl1_acs_excl_chans_base", nvram_safe_get("wl1_acs_excl_chans"));
+	if(unit == 3)
+		nvram_set("wl2_acs_excl_chans_base", nvram_safe_get("wl2_acs_excl_chans"));
+
+	_dprintf("\nset exclchans base:\n0:[%s]\n1:[%s]\n2:[%s]\n", nvram_safe_get("wl0_acs_excl_chans_base"), nvram_safe_get("wl1_acs_excl_chans_base"), nvram_safe_get("wl2_acs_excl_chans_base"));
+
 	if(!nvram_get_int("excbase")) {
 		nvram_set("excbase", "1");
-		nvram_set("wl0_acs_excl_chans_base", nvram_safe_get("wl0_acs_excl_chans"));
-		nvram_set("wl1_acs_excl_chans_base", nvram_safe_get("wl1_acs_excl_chans"));
-		if(unit == 3)
-			nvram_set("wl2_acs_excl_chans_base", nvram_safe_get("wl2_acs_excl_chans"));
-
-		_dprintf("\nset exclchans base:\n0:[%s]\n1:[%s]\n2:[%s]\n", nvram_safe_get("wl0_acs_excl_chans_base"), nvram_safe_get("wl1_acs_excl_chans_base"), nvram_safe_get("wl2_acs_excl_chans_base"));
 		nvram_set("wl0_acs_excl_chans_cfg", "");
 		nvram_set("wl1_acs_excl_chans_cfg", "");
 		nvram_set("wl2_acs_excl_chans_cfg", "");
-		return 0;
+		return 1;
 	}
-	return 1;
+	return 0;
 }
 #endif
 
@@ -7381,8 +7382,8 @@ void set_acs_ifnames()
 
 #ifdef RTCONFIG_AVBLCHAN
 	int excinit = 0;
-	excinit = init_exclbase(unit);
-	if(excinit)
+	excinit = reset_exclbase(unit);
+	if(!excinit)
 		add_cfgexcl_2_acsexcl(cfg_excl_chans);
 #endif
 

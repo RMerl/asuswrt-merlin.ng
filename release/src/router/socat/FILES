@@ -1,0 +1,82 @@
+
+The socat distribution contains the following files:
+
+* README: an introduction to socat
+
+* FILES: a navigator through the socat distribution (this file)
+
+* EXAMPLES: a collection of simple examples how to use socat.
+
+* COPYING: what you and others are allowed to do with socat.
+
+* PORTING: instructions and tips if you want to try socat on a new platform.
+
+* BUGREPORTS: instructions what to do with problems and contributions.
+
+* SECURITY: tips if you want to use socat in a security relevant environment.
+
+* DEVELOPMENT: infos for programmers
+
+* VERSION: the version of the socat distribution, for inclusion during
+compilation
+
+* CHANGES: what happened since first public release
+
+* socat.1: man page of socat
+* socat.html: html version of man page
+* xio.help: reference manual of the address definitions (xioopen function)
+
+* daemon.sh: example shell script for running socat as TCP relay daemon
+* ftp.sh: example shell based ftp client, using socat for transport
+* mail.sh: example shell based smtp client, for execution by socat
+
+* gatherinfo.sh: shell script for gathering info about platform and socat
+implementation
+
+* server.pem: a self signed test cerificate, for self test only
+
+
+The source code system:
+
+* configure: the autoconf generated configurator script
+
+* Makefile.in: the Makefile source input to configure
+
+* config.h.in: the config.h source input to configure
+
+* Config/config.<platform>.h: sample config.h for platform.
+* Config/Makefile.<platform>: sample Makefile for platform.
+Copy the appropriate files to ./config.h and ./Makefile if configure fails
+
+* socat.c: the main C source, including option parsing, general control, and
+the data shuffler
+
+* xio-*.c, xio-*.h: the source of the different address type implementations
+with all their modes and options
+
+* xio*.c, xio*.h: the source of the xio API and xio utilities
+
+* filan.c, filan.h: file descriptor analyzer function
+
+* dalan.c, dalan.h: data language, a most primitive subset of what should
+become a language for describing/generating all kinds of binary data.
+
+* error.c, error.h: the logging subsystem
+
+* sycls.c, sycls.h: explicit system call and C library trace functions
+* sslcls.c, sslcls.h: explicit openssl call trace functions
+
+* xioconfig.h: ensures some dependencies between configure WITH defines; to be
+included immediately after config.h
+
+* sysutils.c, sysutils.h: some more general system (socket, IP) related
+functions, e.g. converting socket addresses to human readable form
+
+* utils.c, utils.h: useful additions to C library; currently memdup, binary
+search, and setenv.
+
+* mytypes.h: some types and macros I miss in C89
+
+* test.sh: an incomplete attempt to automate tests of socat
+
+* compat.h: ensure some features that might be missing on some platforms

@@ -754,11 +754,9 @@ obj-$(RTCONFIG_TRAFFIC_LIMITER) += sqlite
 obj-$(RTCONFIG_TRAFFIC_LIMITER) += traffic_limiter
 
 obj-$(RTCONFIG_LETSENCRYPT) += openssl
-obj-$(RTCONFIG_LETSENCRYPT) += acme-client-portable
-ifneq ($(RTCONFIG_WEBDAV),y)
-obj-$(RTCONFIG_LETSENCRYPT) += lighttpd-le
-endif
+obj-$(RTCONFIG_LETSENCRYPT) += acme.sh
 obj-$(RTCONFIG_LETSENCRYPT) += libletsencrypt
+obj-$(RTCONFIG_LETSENCRYPT) += socat
 
 #obj-$(RTCONFIG_SYSSTATE) += sysstate
 obj-y += sysstate
@@ -4116,6 +4114,25 @@ protect_srv-install: protect_srv
 protect_srv-clean:
 	-$(MAKE) -C protect_srv clean
 	@rm -f protect_srv/stamp-h1
+
+socat/Makefile:
+	cd socat && \
+	$(CONFIGURE) --prefix=/usr \
+	CFLAGS="-I$(STAGEDIR)/usr/include" \
+	LDFLAGS="-L$(STAGEDIR)/usr/lib -ldl"
+	touch $@
+
+socat: socat/Makefile
+	$(MAKE) -C $@
+
+socat-clean:
+	[ ! -f socat/Makefile ] || $(MAKE) -C socat distclean
+	@rm -f socat/Makefile
+
+socat-install:
+	install -d $(INSTALLDIR)/socat/usr/sbin/
+	install -D socat/socat $(INSTALLDIR)/socat/usr/sbin/socat
+	$(STRIP) $(INSTALLDIR)/socat/usr/sbin/socat
 
 #	$(STRIP) $(INSTALLDIR)/tr/sbin/*
 
@@ -7736,38 +7753,6 @@ phddns-install:
 phddns-clean:
 	@[ ! -f phddns/Makefile ] || $(MAKE) -C phddns clean
 	@rm -f phddns/stamp-h1
-
-acme-client-portable:
-	$(MAKE) -C acme-client-portable
-
-acme-client-portable-install: acme-client-portable
-	install -D acme-client-portable/acme-client $(INSTALLDIR)/acme-client-portable/usr/sbin/acme-client
-	$(STRIP) $(INSTALLDIR)/acme-client-portable/usr/sbin/acme-client
-
-lighttpd-le/stamp-h1:
-	cd lighttpd-le && ./autogen.sh && \
-	$(CONFIGURE) \
-	--prefix=/usr/local \
-	--without-pcre \
-	--with-openssl=$(TOP)/openssl \
-	--without-zlib \
-	--without-bzip2
-	@touch $@
-
-lighttpd-le: lighttpd-le/stamp-h1
-	$(MAKE) -C lighttpd-le
-
-lighttpd-le-clean:
-	-@$(MAKE) -C lighttpd-le clean
-	@rm -f lighttpd-le/stamp-h1
-
-lighttpd-le-install: lighttpd-le
-	install -D lighttpd-le/src/lighttpd $(INSTALLDIR)/lighttpd-le/usr/sbin/lighttpd
-	install -D lighttpd-le/src/.libs/mod_dirlisting.so $(INSTALLDIR)/lighttpd-le/usr/local/lib/mod_dirlisting.so
-	install -D lighttpd-le/src/.libs/mod_staticfile.so $(INSTALLDIR)/lighttpd-le/usr/local/lib/mod_staticfile.so
-	install -D lighttpd-le/src/.libs/mod_indexfile.so $(INSTALLDIR)/lighttpd-le/usr/local/lib/mod_indexfile.so
-	$(STRIP) $(INSTALLDIR)/lighttpd-le/usr/sbin/lighttpd
-	$(STRIP) $(INSTALLDIR)/lighttpd-le/usr/local/lib/mod_*.so
 
 quicksec-7.0:
 	@$(SEP)

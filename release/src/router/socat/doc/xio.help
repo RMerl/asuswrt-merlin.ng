@@ -1,0 +1,4976 @@
+# source: xio.help
+# Copyright Gerhard Rieger and contributors (see file CHANGES)
+
+Operating systems:
+
+The options and features described in this document have been implemented (but
+not always tested) on the operating systems listed below, unless otherwise
+noted:
+
+SuSE 10.1 Linux on x86
+Solaris 8 on Sparc with gcc
+FreeBSD 6.1 on x86
+HP-UX B 11.11 on PA-RISC with gcc
+
+===============================================================================
+
+The following sections describe the syntax and semantics of the socat command
+line stream arguments.
+
+Usually a socat stream argument defines a one- or bidirectional stream. There
+are two principal forms:
+* a single stream. Depending on use of the -u or -U options and implicit
+semantics of the stream, such an argument may be resolved to a one- or
+twodirectional stream.
+* two onedirectional streams, separated by '!!'. An argument of this form
+always specifies a twodirectional stream. The first single stream is only used
+for reading data, and the second is only used for writing data.
+
+
+The general structure of a single stream is:
+keyword[:required-parameters][,options]
+
+The options part starts with the first ',' of the argument. The required
+parameters are separated by ':' from their predecessor. The last required
+parameter is terminated by the end of the argument or by the first ',' that
+iitroduces the first option. The options are separated with ','. The last
+option is terminated by end-of-string or by '!!'.
+
+The are some abbreviations defined that allow to drop the keyword. In these
+cases the argument syntax is:
+required-parameter[:required-parameters][,options]
+The implemented abbreviations are:
+short form	canonical form
+number		FD:number	# decimal number
+path		GOPEN:path	# must must contain at least one '/' and must not contain ':' or ',' and must not start with a decimal digit
+
+===============================================================================
+
+
+Addresses:
+
+Every address specification starts with a keyword or an abbreviation. These
+keywords are case insensitive.
+Note: because the option group ANY applies for all addresses, it is not
+mentioned explicitely below.
+
+
+Bidirectional only addresses:
+-----------------------------
+
+PIPE
+FIFO
+ECHO
+
+Opens an unnamed pipe (fifo) where outbound traffic is sent to and inbound
+traffic is read from. The special semantics of pipes results in an echo like
+behaviour.
+Option groups: FD, FIFO (no specific FIFO options are defined yet)
+
+
+Onedirectional only addresses:
+------------------------------
+
+Currently all addresses may be used bidirectional.
+Note: for regular files, behaviour when being used bidirectionally is
+undefined.
+
+
+One- and bidirectional addresses:
+---------------------------------
+
+STDIO
+-  ("minus")
+
+Uses stdin (FD 0) for inbound traffic and/or stdout (FD 1) for outbound traffic
+on this address.
+Option groups: FD; others dependent on actual types of stdin and stdout (FIFO,
+CHR, BLK, REG, and/or SOCKET).
+
+
+STDIN
+
+Uses stdin for traffic. This might fail for outbound traffic.
+Option groups: FD; dependent on actual type of stdin (FIFO, CHR, BLK, REG, or
+SOCKET).
+
+
+STDOUT
+
+Uses stdout for traffic. This might fail for inbound traffic.
+Option groups: FD; dependent on actual type of stdout (FIFO, CHR, BLK, REG, or
+SOCKET).
+
+
+STDERR
+
+Uses stdout for traffic. This might fail for inbound traffic.
+Option group: FD; dependent on actual types of sterr (FIFO, CHR, BLK, REG, or
+SOCKET).
+
+
+FD:num
+num
+
+Uses the already existing file descriptor <num> for traffic.
+Option groups: FD; dependent on actual types of file descriptor (FIFO, CHR,
+BLK, REG, or SOCKET).
+
+
+READLINE
+
+Uses the GNU readline function and history capabilies (best known from bash).
+It always works on stdin and stdout; if stdio is not a tty, readline does not
+seem to work correctly.
+Because readline is blocking during line editing, it does not fit well into
+socats I/O philosophy. 
+socat integrates readline by waiting in the select call as usual; when stdin
+reports available data, socat invokes readline(). readline blocks until the
+user presses ENTER or EOF. Data on socats other stream is not handling in this
+time.
+socat controls the ECHO flag of the stdin tty (off during select(), on for
+readline()).
+When using socat with readline as front end to a service like telnet, POP3 or
+an other authenticated service, please note that the password is entered as
+ordinary data, thus appears on the screen!
+Option groups: FD, READLINE, TERMIOS
+Useful options: history-file
+
+
+OPEN:path
+
+Applies an open() system call to the given path. If the path does not exist a
+file is created only if the option create is used; if a file, pipe, or device
+with this name already exists it is opened. Open for reading and/or writing
+depends on the rw parameter of the xioopen call, or on usage in a socat
+argument. If no perm option is used, xioopen uses 600 (which might be modified
+by umask then). 
+Applying this function to files conforms to the semantics as described by the
+open(2) man page.
+Opening device files, like /dev/ttyS*, might block until the device gets active
+(until some peer is connected)
+With existing named pipes (fifos) please note the usual semantics:
+Opening the pipe in read/write mode results in an echo service;
+Opening the pipe in read mode blocks until a writer opens the pipe (close
+by writer gives EOF for the reader); with option nonblock the open call does
+not block.
+Opening the pipe in write mode blocks until a reader opens the pipe (close
+by reader gives "broken pipe" error on next write); with option nonblock the
+open call terminates with error "no such device or address" in absence of a
+reader. 
+Opening a named UNIX stream socket with or without a listening peer might
+succeed depending on the operating system, but 
+the resulting file descriptor erronously reports available data immediately,
+and the following read() or write() call always fails with "invalid
+argument". Even worse, while such a filesystem entry is identified as socket by
+"file" command and by fstat(), getsockopt() after open() gives error "Socket operation on non-socket".
+Use GOPEN for reasonable behaviour!
+Option groups: FD, OPEN, NAMED, and specific for data object type (FILE, FIFO,
+CHRDEV+TERMIOS, BLKDEV, or SOCKET).
+
+
+GOPEN:path
+path
+
+"Generic open". Tries to open the given path in a smarter way. If the path
+exists and is a socket, it is connected to; if connecting fails,
+socat assumes a datagram socket and later uses sendto() calls for data
+transfer.
+If the path exists and is not a socket, it is opened:
+in RDONLY environment for reading from position 0,
+in WRONLY environment for appending (O_APPEND),
+in RDWR env. for reading and/or writing starting from position 0.
+If the path does not exist:
+in RDONLY environment this is an error
+in WRONLY environment the file is created (O_CREAT)
+in RDWR env. for reading and/or writing starting from position 0.
+However, these flags may be overriden by user supplied options
+(e.g., "append=0")
+Option groups: FD, NAMED, and specific for data object type (FILE, FIFO,
+CHRDEV+TERMIOS, BLKDEV, or SOCKET).
+
+
+CREATE:path
+CREAT:path
+
+Opens the named file with creat(). With UNIX semantics, this address is just a
+variation of the OPEN address, see there for more details.
+Note: The creat() system call does not create a completely new file, but
+inherits some properties of the old file if it exists, e.g. permissions. Use
+option "unlink-early" to remove the old entry before.
+Option groups: FD, NAMED, FILE
+Useful options: unlink-late
+
+
+PIPE:path
+FIFO:path
+
+Creates and opens a pipe if path does not exist; opens path if it already
+exists. 
+Option groups: FD, NAMED, FIFO
+Note: this address uses the mknod(2) system call to create the named pipe. On
+FreeBSD, this call requires root privilege
+
+
+EXEC:cmdline
+
+Forks off a child process after establishing a bidirectional communication
+channel (with socketpair, pipes, or pty). The child then starts "cmdline" with
+execvp().
+Note: spaces and shell meta characters in cmdline must be quoted if socat is
+invoked from the command line.
+Option groups: FD, FORK, EXEC, SOCKET, SOCK_UNIX, FIFO, TERMIOS
+Useful options: path, fdin, fdout, chroot, su, pty, stderr
+Note: on AIX, search permissions on /dev/pts/ are required to use option pty.
+
+
+SYSTEM:cmdline
+
+Forks off a child process after establishing a bidirectional communication
+channel (with socketpair, pipes, or pty). The child then starts "cmdline" with
+system().
+Note: spaces and shell meta characters in cmdline must be quoted if socat is
+invoked from the command line.
+Option groups: FD, FORK, EXEC, SOCKET, SOCK_UNIX, FIFO, TERMIOS
+Useful options: path, fdin, fdout, chroot, su, pty, stderr
+Note: there are slightly different semantics with options pty or pipes, because
+they do not communicate an EOF condition to the shell process. Therefore, the
+shell process and its child do not terminate due to EOF, but are explicitly
+killed during close of the socat file handle. Consider using
+exec:'/bin/sh -c command',pty...
+
+
+UNIX:path
+LOCAL:path
+
+Connects to a UNIX domain socket.
+Option groups: FD, SOCKET, SOCK_UNIX
+NOTE: you need rw permissions to connect to a local socket. My Linux answers
+with "connection refused" to insufficient permissions, not existing 
+socket, not a socket, or just a socket entry without a listening process.
+NOTE: this address does not implement option group NAMED because its connect
+call succeeds only if there is already someone listening, but at this point the
+NAMED group actions no longer affect this socket, only the fs entry.
+
+
+UNIX-listen:path
+UNIX-l:path
+
+Create a listening UNIX domain socket. With the fork option, for each accepted
+connection a new process is forked off, and more connections are accepted on
+the parent socket. Without fork, only the first connection is accepted.
+Option groups: FD, NAMED, SOCKET, SOCK_UNIX, LISTEN, CHILD
+
+
+IP:host:protocol
+IP4:host:protocol
+
+Open a raw socket with IP4 protocol. This mode sends packets to and accepts
+them only from host. protocol is a number from 0 to 255, with 1 meaning ICMP,
+6..TCP,  17..UDP, 255..raw IP; 0 might be unsupported by the local IP stack,
+resulting in an error. 
+Requires root privilege.
+Note: my Linux 2.4.10 kernel seems to drop payloads smaller than 8
+bytes on their way from the network to the application.
+Option groups: FD, SOCKET, SOCK_IP
+
+
+TCP:host:port
+TCP4:host:port
+INET:host:port
+
+Create a TCP/IP4 client socket and connect to the given host/port combination.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP
+Useful options: crlf, bind, tos, mtudiscover, mss, nodelay, 
+
+
+TCP-l:port
+TCP-listen:port
+TCP4-l:port
+TCP4-listen:port
+INET-l:port
+INET-listen:port
+
+Create a TCP/IP4 server socket and wait for an incoming connection. With the
+fork option, for each accepted connection a new process is forked off, and more
+connections are accepted on the parent socket. Without fork, only the first
+connection is accepted.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP, LISTEN, RANGE, CHILD
+Useful options: fork, crlf, bind, backlog, mtu, tcpwrap
+
+
+UDP:host:port
+UDP-CONNECT:host:port
+
+   Connects to port on host using UDP/IP version 4 or 6
+   depending on address specification, name resolution, or option pf.
+   Please note that,
+   due to UDP protocol properties, no real connection is established; data has
+   to be sent for `connecting' to the server, and no end-of-file condition can
+   be transported.
+Option groups: FD, SOCKET, SOCK_IP4, SOCK_IP6, IP_UDP
+Useful options: ttl
+
+UDP4:host:port
+UDP4-CONNECT:host:port
+
+Like UDP-CONNECT, but only supports IPv4 protocol.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_UDP
+
+
+UDP-listen:port
+UDP-l:port
+
+Emulates a UDP server in the same way as netcat: Create a UDP/IP4 socket and
+bind to the given port. Then wait for the first packet, get its sender address
+(without consuming its data), connect() to this address, and leave xioopen().
+Afterwards, our socket only communicates with this peer.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_UDP, RANGE
+Note: with fork option, child processes might hang forever because UDP cannot
+transport EOF conditions.
+
+
+#UDP-dgram:port
+#UDP-d:port
+#
+#Create and use a pure datagram oriented UDP socket.
+#The following restrictions apply:
+#* range option does not work
+#* de facto this is a read-only endpoint: sending data to 0.0.0.0 might fail.
+
+
+TCP6:host:port
+INET6:host:port
+
+Create a TCP/IP6 client socket and connect to the given host/port combination.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP
+Note: Address syntax parsing is awkward, since the IPv6 address word separator
+is ':' which is used as port separator too.
+An FTP listen entry looks in netstat ":::21"!
+
+
+TCP6-l:port
+TCP6-listen:port
+INET6-l:port
+INET6-listen:port
+
+Create a TCP server socket and wait for an incoming connection. With the fork
+option, for each accepted connection a new process is forked off, and more
+connections are accepted on the parent socket. Without fork, only the first
+connection is accepted.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP, LISTEN, RANGE, CHILD
+
+
+SOCKS4:sockd:host:port
+SOCKS:sockd:host:port
+
+Use a socks server, socks protocol version 4, to build a TCP (IPv4) connection.
+Sockd is the name or address of the socks server, host and port specify the
+destination address. Use option socksport if the socks server does not listen
+on port 1080. 
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP, IP_SOCKS
+Useful options: sp, socksport, socksuser
+Note: If you do not specify option socksuser, xioopen tries to derive it from
+environment: LOGNAME or USER, and might therefore undisclose your identity.
+
+
+SOCKS4a:sockd:host:port
+
+Like SOCKS4, but use the socks version 4a extension for destination name
+resolution on the socks server.
+Option groups: FD, SOCKET, SOCK_IP, IPAPP, IP_TCP, IP_SOCKS
+
+
+PTY
+
+Creates a pseudo terminal (pty) and uses its master side. Another process may
+open the pty´s slave side using it like a serial line or terminal.
+Option groups: FD,NAMED,PTY,TERMIOS
+Useful options: link, openpty, mode, user, group
+
+
+OPENSSL-CONNECT:host:port
+OPENSSL:host:port
+
+Tries to establish a SSL connection to port on host using TCP/IPv4.
+Note: this is currently only an experimental integration of openssl!
+(it does not provide any trust between the peers because is does not check
+certificates!)
+Option groups: FD,SOCKET,SOCK_IP4,IP_TCP,OPENSSL,RETRY
+Useful options: cipher, method, verify, cafile, capath, certificate, bind, sourceport, retry
+
+
+OPENSSL-LISTEN:port
+
+Listens on tcp4 port. When a connection is accepted, this address behaves as
+SSL server.
+Option groups: FD,SOCKET,SOCK_IP4,TCP,LISTEN,CHILD,RANGE,OPENSSL,RETRY
+Usefule options: cipher, method, verify, cafile, capath, certificate, retry
+
+
+PROXY:proxy:host:port
+PROXY-CONNECT:proxy:host:port
+
+Connects to an HTTP proxy server on port 8080 using TCP/IPv4, and sends a
+CONNECT request for host:port. If the proxy grants access and succeeds to
+connect to the target, data transfer between socat and the target can
+start. Note that the traffic need not be HTTP but can be an arbitrary
+protocol.
+Option groups: FD,SOCKET,IP4,TCP,HTTP
+Useful options: proxyport, ignorecr, proxyauth, crnl, bind, mss, sourceport
+
+===============================================================================
+
+Option Groups:
+
+Each option is member of one option group. Address definitions specify which
+option groups they support. This allows to reject unapplyable options in an
+early stage of address processing. 
+
+Address groups are identified by single bit positions. Option definitions
+specify to which group the option belongs (some options are member or more than
+one group). Addresses use a bit pattern to specify which option groups they
+support.
+
+Currently the following option groups are defined:
+
+GROUP_FD: All addresses that result in one or more file descriptors. These
+options are typically applied with fcntl() or some special calls like fchown()
+or fchmod(). There is no documented restriction to apply these functions to any
+file descriptor; but they are not always meaningful, and sometimes lead to OS
+exceptions. 
+
+GROUP_APPL: All addresses. The options do not need file descriptors, because
+they manipulate the data streams at application level (ignoreeof, line
+terminator conversion).
+
+GROUP_PROCESS: For options that change process related attributes, like user id
+(setuid). 
+
+GROUP_FIFO: Options for pipes. Currently not used.
+
+GROUP_CHR: Options for character devices. Currently not used.
+
+GROUP_BLK: Options for block devices. Currently not used.
+
+GROUP_REG, GROUP_FILE: Options for regular files. Currently not used.
+
+GROUP_SOCKET: Options for arbitrary type sockets, e.g. so-sndbuf, so-linger.
+
+GROUP_NAMED: Options for file system entries, e.g. user-early, unlink.
+
+GROUP_OPEN: Options that are applied with the open() system call.
+
+GROUP_EXEC: Options for program or script execution, e.g. path.
+
+GROUP_FORK: Options for communication with children processes, e.g. fdin, pty.
+
+GROUP_LISTEN: Options for listening sockets. Only backlog.
+
+GROUP_DEVICE: not used
+
+GROUP_CHILD: Options for addresses that may fork off independent child
+processes. Currently only option fork.
+
+GROUP_RETRY: Options for failure handling. Currently not used.
+
+GROUP_TERMIOS: Options for terminal settings, e.g. echo, b38400, raw.
+
+GROUP_READLINE: Options for readline (GNU line editing and history).
+
+GROUP_RANGE: Options for checking peer address. Currently only range.
+
+GROUP_SOCK_UNIX: Options for UNIX domain sockets. Currently not used.
+
+GROUP_SOCK_IP4: Options for IP4 sockets. Currently not used.
+
+GROUP_SOCK_IP6: Options for IP6 sockets. Currently not used.
+
+GROUP_SOCK_IP: Options for IP sockets, e.g. mtu, ip-options, ttl.
+
+GROUP_IP_UDP: Options for UDP sockets. Currently not used.
+
+GROUP_IP_TCP: Options for TCP sockets, e.g. maxseg, nodelay.
+
+GROUP_IPAPP: Options for UDP and TCP sockets. Currently only sourceport.
+
+GROUP_IP_SOCKS4: Options for SOCKS client connections, e.g. socksuser.
+
+GROUP_PROCESS: Options for process wide attributes, e.g. su, chroot.
+
+GROUP_APPL: Options handled by application. Currently not used.
+
+GROUP_PTY: Options for pseudo terminals. Used with addresses PTY, EXEC, and
+SYSTEM.
+
+GROUP_OPENSSL: Options for the OPENSSL address.
+
+There are "combined" group definitions too:
+#define GROUP_ANY       (GROUP_PROCESS|GROUP_APPL)
+#define GROUP_ALL       0xffffffff
+
+===============================================================================
+
+Address Options
+
+Address options are identified by a case insensitive keyword. If the options
+needs a parameter value, the option syntax is always:
+OPTION=VALUE
+Currently there do not exist options that take more than one argument;
+sometimes, two values are combined to form one argument value, e.g. IP4 address
+and port:
+192.168.0.1:80
+
+Note:
+"Type" describes the type of data that may or must be given to the option and
+that is passed to the system. There are some options with boolean semantics
+(on/off or yes/no), but their values are passed to the system with an int 
+parameter. This situation is indicated as "Logical type: bool" and "Physical
+type: int". In this case xioopen passes the physical value to the system,
+giving the user one more hacking playground.
+
+
+Option: append
+
+Type: BOOL
+Option group: FD
+Phase: LATE
+Platforms: all (UNIX98)
+
+Sets the O_APPEND flag via a fcntl() call and F_SETFL; with OPEN type
+addresses, this flag is applied with the open() call. All data written is
+appended to the actual file end, even if other processes have written to or
+truncated the file in the meantime. 
+
+
+Option: async
+
+Type: BOOL
+Option group: FD
+Phase: LATE
+Platforms: FreeBSD, Linux, SunOS
+
+Sets the O_ASYNC (or FASYNC) flag via a fcntl() call and F_SETFL; with FILE
+addresses, this flag is applied with the open() call. Consult your kernel
+documentation for effects of this flag. 
+NOTE: socat does not handle the SIGIO signal.
+
+
+Option: cloexec
+
+Type: BOOL
+Option group: FD
+Phase: LATE
+Platforms: all
+
+Sets the FD_CLOEXEC (close-on-exec) flag on the file descriptor via a
+fcntl()call with F_SETFD. Use with caution, because xioopen() makes use of this
+flag to archieve what we consider the most reasonable behaviour; using this
+option overrides xioopen's setting!
+
+
+Option: flock-ex
+Aliases: flock, lock
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Applies the flock(fd, LOCK_EX) call to the file descriptor(s). This locks a file
+exclusively (but only for processes also using flock() on this file - otherwise, they seem to have unrestricted access).
+If the file is already locked with flock, our flock call blocks until the other
+processes lock is released.
+Note: the "lock" option name alias applies to this option only
+ if the fcntl locking mechanism is not available on a platform.
+
+
+Option: flock-ex-nb
+Aliases: flock-nb
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Applies the flock(fd, LOCK_EX|LOCK_NB) call to the file descriptor(s). This locks a file
+exclusively (but only for processes also using flock() on this file -
+otherwise, they seem to have unrestricted access). 
+If the file is already locked with flock, our flock call returns the error
+"Resource temporarily unavailable".
+
+
+Option: flock-sh
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Applies a shared advisory lock to the file using the flock(fd, LOCK_SH) call. 
+This prevents processes from locking the file exclusively.
+If the file has already an exclusive lock, our flock call blocks until the
+other processes lock is released. 
+
+
+Option: flock-sh-nb
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Applies a shared advisory lock to the file using the flock(fd, LOCK_SH|LOCK_NB) call. 
+This prevents processes from locking the file exclusively.
+If the file has already an exclusive lock, our flock call returns with error
+"Resource temporarily unavailable".
+
+
+Option: f-setlk-rd
+Aliases: setlk-rd
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: all
+
+Locks the complete file with fcntl(fd, F_SETLK, {F_RDLCK}) (complete means from its
+start to its maximal length). This locks the file exclusively (but only if the
+other processes accessing this file also use f-setlk or f-setlkw - otherwise,
+they seem to have unrestricted access). If the file is already locked with
+f-setlk or f-setlkw, the fcntl call blocks until release by the other process.
+
+
+Option: f-setlk-wr
+Aliases: f-setlk, setlk-wr, setlk
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: all
+
+Locks the complete file with fcntl(fd, F_SETLK, {F_WRLCK}) (complete means from its
+start to its maximal length). This locks the file exclusively (but only if the
+other processes accessing this file also use f-setlk or f-setlkw - otherwise,
+they seem to have unrestricted access). If the file is already locked with
+f-setlk or f-setlkw, the fcntl call blocks until release by the other process.
+
+
+Option: f-setlkw-rd
+Aliases: setlkw-rd
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: all
+
+Locks the complete file with fcntl(fd, F_SETLKW, {F_RDLCK}) (complete means from its
+start to its maximal length). This locks the file exclusively (but only if the
+other processes accessing this file also use f-setlk or f-setlkw - otherwise,
+they seem to have unrestricted access). If the file is already locked with
+f-setlk or f-setlkw, fcntl returns with EAGAIN.
+
+
+Option: f-setlkw-wr
+Aliases: setlkw-wr, f-setlkw, setlkw, lockw, lock
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: all
+
+Locks the complete file with fcntl(fd, F_SETLKW, {F_WRLCK}) (complete means from its
+start to its maximal length). This locks the file exclusively (but only if the
+other processes accessing this file also use f-setlk or f-setlkw - otherwise,
+they seem to have unrestricted access). If the file is already locked with
+f-setlk or f-setlkw, fcntl returns with EAGAIN.
+
+
+Option: fork
+
+Type: BOOL
+Option group: CHILD
+Phase: PASTACCEPT
+Platforms: all
+
+Without fork (or fork=0), the listening process accepts exactly one
+connections, and terminates afterwards. With fork set, it forks off a new socat
+child process for each incoming connection.
+It is very important to understand what socat does with this fork option:
+The parent process remains in a loop of accept() and fork() calls until
+terminated from outside. The child process leaves this loop and goes on with
+the socat processing. If the fork occurs in the first address argument, the
+child process continues with parsing and activating the second address
+argument. This will in most cases be what you want or expect.
+If the fork call occurs in socats second address argument, all children will
+inherit and share the already activated first address.
+
+
+Option: group=value
+Aliases: gid=value
+
+Type: GIDT  or  unsigned int
+Option group: NAMED
+Type: GIDT
+Platforms: all
+
+Takes one argument, a UNIX group name or a numeric group id. The first
+character of value is a digit for group ids.
+With NAMED addresses this option is applied via a chown() call, with a 
+fchown() call otherwise.
+If groupname is a name it must be a valid groupname from /etc/group and is
+converted to a group id with a getgrnam(3) call.
+On most modern operating systems, the owner of the process must be member of
+the group being set; only root may set any group, even numbers without group
+name.
+A Linux 2.2.10 kernel SIGSEGVs the process in the fchown() call when this
+option is used with a socket or pipe. Is fixed with Linux 2.4.
+LINUXBUG TESTCASE:
+SH1: socat -D - unix-l:/tmp/socket,unlink-early
+SH2: socat -d -d -d -d -D gopen:/tmp/socket,group=floppy -
+
+
+Option: group-late=value
+
+Type: GIDT  or  string
+Option group: FD
+Type: GIDT
+Platforms: all
+
+Takes one argument, a UNIX group name or a numeric group id. The first
+character of value is a digit for group ids.
+This option is applied via a fchown(2) call.
+If groupname is a name it must be a valid groupname from /etc/group and is
+converted to a group id with a getgrnam(3) call.
+On most modern operating systems, the owner of the process must be member of
+the group being set; only root may set any group, even numberic group ids
+without group name.
+
+
+Option: o-nonblock
+Aliases: nonblock
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: all (UNIX98)
+
+Sets the O_NONBLOCK flag of a file descriptor via a fcntl(2) call and F_SETFL;
+with OPEN type addresses, this flag is applied with the open() call.
+It does not change the behaviour of socat's data transfer loop because socat
+uses select() which blocks nevertheless.
+Currently is has only two documented uses:
+1) With address TCP, the connect() call
+does not block; instead, it continues through the open step. The channel is
+passed to the select() call. If something is written to the channel before it
+is connected, this is an error. If connection fails, a read condition occurs
+and read() returns the error.
+2) Opening a named pipe does not block with this option.
+
+
+Option: o-ndelay
+Aliases: ndelay
+
+Type: BOOL
+Option group: FD
+Phase: LATE
+Platforms: HP-UX, SunOS (UNIX98)
+
+Under Solaris it sets the O_NDELAY of the file descriptor via a fcntl(2) call
+and F_SETFL; with OPEN type addresses, this flag is applied with the open()
+call.
+With all other operating systems, this is just another name for the nonblock option.
+
+
+Option: o-noatime
+Aliases: noatime
+
+Type: BOOL
+Option group: FD
+Phase: FD
+Platforms: Linux
+
+Sets the O_NOATIME flag of a file descriptor via a fcntl(2) call and F_SETFL;
+with OPEN type addresses, this flag is applied with the open() call.
+It prevents the access time from being updated during read operations.
+
+
+Option: perm=value
+Aliases: mode=value
+
+Type: MODET (mode_t)
+Option group: NAMED
+Phase: FD
+Platforms: all
+
+This option changes the mode (permissions) of an addresses inode. xioopen
+tries to apply this option already during open phase. If the address does not
+have a open phase or if the option cannot be applied there, the value is
+applied directly on the file descriptor afterwards.
+It is up to you to (1) have the permission to change the permissions, and (2)
+not to set permissions that prevent you from performing your transactions :-)
+NOTE: At least with some Linux 2.2, setting permissions on an existing file or
+device with fchmod() does not change the permissions of its inode on disk. See
+perm-early which uses chmod() instead.
+NOTE: At least with some Linux 2.2, restricting mode on file descriptors does
+not restrict this file descriptors data transfer capabilities.
+
+
+Option: perm-late=value
+
+Type: MODET (mode_t)
+Option group: FD
+Phase: LATE
+Platforms: all
+
+This option changes the mode (permissions) of a file descriptor with fchmod()
+in the last phase of address processing.
+
+
+Option: seek-set=offset
+Aliases: lseek=offset, seek=offset
+
+Type: OFF32 or OFF64
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given absolute offset, using lseek() (or lseek64() if
+available) with SEEK_SET.
+
+
+Option: seek-cur=offset
+
+Type: OFF32 or OFF64
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given offset from the current position,
+using lseek() (or lseek64() if available) with SEEK_SET. 
+
+
+Option: seek-end=offset
+
+Type: OFF32 or OFF64
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given offset from the file end,
+using lseek() (or lseek64() if available) with SEEK_END.
+
+
+Option: lseek32-set=offset
+Aliases: lseek32=offset
+
+Type: OFF32
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given absolute offset using lseek() with SEEK_SET.
+This call might fail for non
+random access data objects like character devices or sockets.
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: lseek32-cur=offset
+
+Type: OFF32 (instead of off_t)
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given offset from the current position using lseek()
+with SEEK_CUR. This call
+might fail for non random access data objects like character devices.
+On Linux, the seek() call fails on pipes, sockets and ttys but works on files
+and /dev/null 
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: lseek32-end=offset
+
+Type: OFF32
+Option group: BLK
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Positions the file at the given offset from the file end using lseek() with
+SEEK_END. This call might fail
+for non random access data objects like character devices.
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: lseek64-set=offset
+Aliases: lseek64=offset
+
+Type: OFF64
+Option group: BLK
+Phase: LATE
+Platforms: all
+
+Positions the file at the given absolute offset using lseek64() with SEEK_SET.
+This call might fail for non
+random access data objects like character devices or sockets.
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: lseek64-cur=offset
+
+Type: OFF64
+Option group: BLK
+Phase: LATE
+Platforms: all
+
+Positions the file at the given offset from the current position using
+lseek64() with SEEK_CUR. This call
+might fail for non random access data objects like character devices.
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: lseek64-end=offset
+
+Type: OFF64
+Option group: BLK
+Phase: LATE
+Platforms: all
+
+Positions the file at the given offset from the file end using lseek64() with
+SEEK_END. This call might fail
+for non random access data objects like character devices.
+NOTE: this option seems to be useless on files with O_APPEND set.
+
+
+Option: chroot=path
+
+Type: STRING
+Option group: PROCESS
+Phase: LATE
+Platforms: all
+
+Invokes the chroot() system call with the given path after the address
+resolution, so the path names of the address must be specified with absolute 
+pathes. 
+Note: when you combine chroot with substuser, with substuser applied within the
+chroot environment, usually the etc/passwd and etc/group files in the chroot
+environment are used for group set etc.
+See appendix "generating a sandbox"
+
+
+Option: chroot-early=path
+
+Type: STRING
+Option group: PROCESS
+Phase: EARLY
+Platforms: all
+
+Invokes the chroot() system call with the given path before the address is
+resolved, this means before file opening in OPEN, GOPEN and before program
+execution in EXEC and SYSTEM, so their pathes must be specified related to
+their chroot directory.
+See appendix "generating a sandbox"
+
+
+Option: setgid=group
+
+Type: GIDT  (gid_t  or  string)
+Option group: PROCESS
+Phase: LATE2
+Platforms: all
+
+Invokes setgid() with the group id. For EXEC and SYSTEM this call is performed
+for the child process after the fork and therefore does not affect the socat
+process directly. For LISTEN group addresses with fork option, this call is
+performed only on the child processes. For all other addresses, it is performed
+in the late phase of address processing, so it does not affect the address
+where it is used, but for the next address (if any), and for the data loop.
+Note: setgid() does not remove any groups from the current process group set.
+
+
+Option: setuid=user
+
+Type: UIDT  (uid_t  or  string)
+Option group: PROCESS
+Phase: LATE2
+Platforms: all
+
+Invokes setuid() with the user id. For EXEC and SYSTEM this call is performed
+for the child process after the fork and therefore does not affect the socat
+process directly. For LISTEN group addresses with fork option, this call is
+performed only on the child processes. For all other addresses, it is performed
+in the late phase of address processing, so it does not affect the address
+where it is used, but the next address (if any), and the data loop.
+Note: setuid() is invoked AFTER setgid(), if both are applied.
+Note: setuid() does not influence the processes group set; in most cases, you
+want to prefer substuser option.
+
+
+Option: substuser=user
+Aliases: su=user
+
+Type: UIDT  (uid_t  or  string)
+Option group: PROCESS
+Phase: LATE2
+Platforms: all
+
+Tries to switch the process to the given user and its group set.
+To make sure that the groups are set correctly for the new process owner, the
+system calls initgroups(), setgid(), and setuid() are invoked with the
+appropriate arguments.
+On sane operating system, this option requires root privileges.
+Note: this option sets the user and group ids of the process, but does not
+change the environment; therefore, all variables including $USER, $HOME,
+$LOGNAME, $SHELL etc. are inherited from the old users environment.
+Note: starting a SETUID program after applying substuser or setuid gives the
+process the SETUID owner, which might give root privileges again.
+
+
+Option: substuser-delayed=user
+Aliases: su-d=user
+
+Type: UIDT  (unsigned int  or  string)
+Option group: PROCESS
+Phase: INIT
+Platforms: all
+
+Like substuser, but reads the user and group information in an early phase of
+address processing, but applies the appropriate system calls in a late
+phase. This allows to use user information from the host in a chroot
+environment, without exposing this data within the sandbox.
+
+
+Option: o-trunc
+Aliases: trunc
+
+Type: BOOL
+Option group: OPEN
+Phase: LATE
+Platforms: all
+
+Sets the O_TRUNC flag of the open() call, thus truncating the file to zero
+length.
+#! block devices?
+
+
+Option: ftruncate=value
+Aliases: truncate=value
+
+Type: OFF32 or OFF64
+Option group: REG
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Invokes the ftruncate() (or ftruncate64() if available) call for the file descriptor with the given value,
+thus reducing the length of the file to the given length.
+On Linux, ftruncate() fails on sockets and devices but works on regular files
+and pipes.
+#! block devices?
+Note: AIX docu says: for regular files only
+
+
+Option: ftruncate32=value
+
+Type: OFF32
+Option group: REG
+Phase: LATE
+Platforms: HP-UX, Linux, SunOS
+
+Invokes the ftruncate() call (even if ftruncate64() is available) call for the file descriptor with the given value,
+thus reducing the length of the file to the given length.
+
+
+Option: ftruncate64=value
+
+Type: OFF64
+Option group: REG
+Phase: LATE
+Platforms: all
+
+Invokes the ftruncate64() call if available, for the file descriptor with the given value,
+thus reducing the length of the file to the given length.
+
+
+Option: o-binary
+Aliases: binary, bin
+
+Type: BOOL
+Option group: FD
+Phase: OPEN
+Platforms: none; Cygwin
+
+Sets the O_BINARY flag with open() or fcntl() to avoid implicit line terminator conversions.
+
+
+Option: o-text
+Aliases: text
+
+Type: BOOL
+Option group: FD
+Phase: OPEN
+Platforms: none; Cygwin
+
+Sets the O_TEXT flag with open() or fcntl() to force implicit line terminator conversions.
+
+
+Option: o-noinherit
+Aliases: noinherit
+
+Type: BOOL
+Option group: FD
+Phase: OPEN
+Platforms: none; Cygwin
+
+Sets the O_NOINHERIT flag with open() or fcntl() to not keep this file open in a spawned process.
+
+
+Option: cool-write
+Aliases: coolwrite
+
+Type: BOOL
+Option group: FD
+Phase: INIT
+Platforms: all
+
+   Takes it easy when write fails with EPIPE or ECONNRESET and logs the message
+   with notice level instead of error.
+   This prevents the log file from being filled with useless error messages
+   when socat is used as a high volume server or proxy where clients often
+   abort the connection.
+   This option is experimental.
+
+
+Option: end-close
+Aliases: close
+
+Type: CONST
+Option group: FD
+Phase: INIT
+Platforms: all
+
+   Changes the (address dependent) method to close a connection to just close
+   the file descriptors. This is useful when the connection is to be reused by
+   or shared with other processes.
+   Normally, socket connections will be ended with shutdown(2) which
+   terminates the socket even if it is shared by multiple processes. 
+   close(2) "unlinks" the socket from the process but keeps it active as
+   long as there are still links from other processes.
+   Similarly, when an address of type EXEC or SYSTEM is ended, socat usually
+   will explicitely kill the sub process. With this option, it will just close
+   the file descriptors.
+
+
+Option: user=value
+Aliases: owner=value, uid=value
+
+Type: UIDT  (unsigned int  or  string)
+Option group: NAMED
+Phase: FD
+Platforms: all
+
+Takes one argument, a UNIX user name or a numeric user id. The first
+character of value is a digit for user ids.
+For NAMED addresses, if the file already exists, this option is applied via a
+chown() call, with fchown() for all other cases.
+If username is a name it must be a valid username from /etc/passwd and is
+converted to a user id with a getpwnam() call.
+On sane operating systems, the owner of the process must be root to change
+the owner of a file descriptor; root may even apply undefined (unnamed) user
+ids.
+My Linux 2.2 kernel SIGSEGVs the process in the fchown() call when this
+option is used with a (UNIX, unconnected or connected) socket or pipe. Linux
+2.4.0 handles this call correctly.
+TESTCASE: ./socat -d -d -d -d - tcp:loopback:21,user=root
+
+
+Option: user-late=value
+Aliases: uid-l=value
+
+Type: UIDT  (unsigned int  or  string)
+Option group: FD
+Phase: LATE
+Platforms: all
+
+Takes one argument, a UNIX user name or a numeric user id. The first
+character of value is a digit for user ids.
+This option is applied via a fchown() call just before xioopen_single()
+terminates. 
+If username is a name it must be a valid username from /etc/passwd and is
+converted to a user id with a getpwnam() call.
+On sane operating systems, the owner of the process must be root to change
+the owner of a file descriptor; root may even apply undefined (unnamed) user
+ids.
+My Linux 2.2 kernel SIGSEGVs the process in the fchown() call when this
+option is used with a socket or pipe.
+
+
+===============================================================================
+OPEN group options
+Options of this group may be used with all addresses that support OPEN group
+options.
+
+
+Option: o-rdonly
+Aliases: rdonly
+
+Type: BOOL  (inherent - no value)
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Use O_RDONLY with the open() call instead of the position dependend default. 
+Take care not to block later write operations.
+
+
+Option: o-wronly
+Aliases: wronly
+
+Type: BOOL  (inherent - no value)
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Use O_WRONLY with the open() call instead of the position dependend default. 
+Take care not to block later write operations.
+
+
+Option: o-rdwr
+Aliases: rdwr
+
+Type: BOOL  (inherent - no value)
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Use O_RDWR with the open() call instead of the position dependend default. 
+
+
+Option: o-create
+Aliases: create, creat
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Sets the O_CREAT flag of the open() call. This means that it is not an error if
+the file does not exist.
+
+
+Option: o-defer
+Aliases: defer
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: none
+
+Sets the O_DEFER flag of the open() call. This means that write data is stored
+in paging space until an fsync() call.
+
+
+Option: o-delay
+Aliases: delay
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: none
+
+Sets the O_DELAY flag of the open() call. This lets open block until the share
+conditions are fulfilled (see nshare, rshare)
+
+
+Option: o-direct
+Aliases: direct
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: FreeBSD, HP-UX, Linux
+
+Sets the O_DIRECT flag of the open() call.
+
+
+Option: o-directory
+Aliases: directory
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: Linux
+
+Sets the O_DIRECTORY flag of the open() call. This lets open fail if the given
+path is not a directory. This does not seem to be useful with socat.
+
+
+Option: o-dsync
+Aliases: dsync
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: HP-UX, Linux, SunOS (UNIX98)
+
+Sets the O_DSYNC flag with the open() call. This lets write() calls wait until
+modification metainfo is physically written to media.
+
+
+Option: o-excl
+Aliases: excl
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Sets the O_EXCL flag of the open() call.
+
+
+Option: o-largefile
+Aliases: largefile
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: HP-UX, Linux, SunOS
+
+Sets the O_LARGEFILE flag of the open() flag.
+
+
+Option: o-noctty
+Aliases: noctty
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: all
+
+Sets the O_NOCTTY flag of the open() call, so the opened device does not become
+the controlling tty of the process.
+
+
+Option: o-nofollow
+Aliases: nofollow
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: FreeBSD, Linux
+
+Sets the O_NOFOLLOW flag of the open() call. This means that the last component
+of the open path must no be a symlink.
+
+
+Option: o-sync
+Aliases: sync
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: all (UNIX98)
+
+Sets the O_SYNC flag with the open() call. This lets write() calls wait until
+data is physically written to media.
+
+
+Option: o-rshare
+Aliases: rshare
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: none
+
+Sets the O_RSHARE flag of the open() call. This means that the file must not be
+opened for writing by other processes ("read sharing").
+
+
+Option: o-nshare
+Aliases: nshare
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: none
+
+Sets the O_NSHARE flag of the open() call. This means that the file must not be
+shared with other processes ("no sharing").
+
+
+Option: o-rsync
+Aliases: rsync
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: HP-UX, Linux, SunOS (UNIX98)
+
+Sets the O_RSYNC flag with the open() call. This lets write() calls wait until
+read metainfo is physically written to media.
+
+
+Option: o-priv
+Aliases: priv
+
+Type: BOOL
+Option group: OPEN
+Phase: OPEN
+Platforms: none (Solaris)
+
+Sets the O_PRIV flag with the open() call.
+
+===============================================================================
+NAMED group options
+This group is valid for all addresses that refer to a file system entry like
+file, device, named pipe, or named UNIX domain socket.
+
+
+Option: unlink-early
+Aliases: new
+
+Type: BOOL
+Option group: NAMED
+Phase: EARLY
+Platforms: all
+
+This options tries to remove the filesystem entry given in the address before
+starting any other processing (even before user-early, perm-early, or
+group-early). unlink() is called; note that this call, in contrast to rm(1),
+removes entries regardless of their permissions. Instead, ownership or root
+privileges and write permissions in the directory are required and sufficient.
+
+
+Option: unlink
+
+Type: BOOL
+Option group: NAMED
+Phase: PREOPEN
+Platforms: all
+
+This options tries to remove the filesystem entry given in the address before
+it is tried to open, but past user-early, perm-early, or group-early).
+unlink() is called; note that this call, in contrast to rm(1), removes entries
+regardless of their permissions. Instead, ownership or root privileges and
+write permissions in the directory are required and sufficient.
+
+
+Option: unlink-late
+
+Type: BOOL
+Option group: NAMED
+Phase: PASTOPEN
+Platforms: all
+
+This option tries to remove the filesystem entry after it has been opened. 
+Options can still be applied to the file descriptor, and
+the node or files data can be used, but it can no longer be accessed by other
+processes (except by tricks?), and after closing the stream the data or node is
+completely removed.
+unlink() is called; note that this call, in contrast to rm(1), removes entries
+regardless of their permissions. Instead, ownership or root privileges and
+write permissions in the directory are required and sufficient.
+
+
+Option: perm-early=value
+
+Type: MODET  (mode_t)
+Option group: NAMED
+Phase: PREOPEN
+Platforms: all
+
+This option changes the mode (permissions) of an already existing filesystem
+entry with chmod() before the file is opened or after the UNIX domain socket is
+bound, but before it listens/connects.
+
+
+Option: user-early=value
+Aliases: uid-e=value
+
+Type: UIDT (unsigned int  or  string)
+Option group: NAMED
+Phase: PREOPEN
+Platforms: all
+
+Takes one argument, a UNIX user name or a numeric user id. The first
+character of value is a digit for user ids.
+This option is applied via a chown() call before the file system entry is
+opened or after the UNIX domain socket is bound, but before it starts to
+listen/connect.
+If username is a name it must be a valid username from /etc/passwd and is
+converted to a user id with a getpwnam() call.
+On sane operating systems, the owner of the process must be root to change
+the owner of a file descriptor; root may even apply undefined (unnamed) user
+ids.
+
+
+Option: group-early=value
+Aliases: gid-e=value
+
+Type: GIDT (unsigned int  or  string)
+Option group: NAMED
+Phase: PREOPEN
+Platforms: all
+
+Takes one argument, a UNIX group name or a numeric group id. The first
+character of value is a digit for group ids.
+This option is applied via a chown() call before the file system entry is
+opened or after the UNIX domain socket is bound, but before it
+listens/connects.
+If groupname is a name it must be a valid groupname from /etc/group and is
+converted to a group id with a getgrnam() call.
+On most modern operating systems, the owner of the process must be member of
+the group being set; only root may set any group, even numbers without group
+name.
+
+
+Option: umask=value
+
+Type: MODET
+Option group: NAMED
+Phase: EARLY
+Platforms: all
+
+Sets the umask before opening a file or creating a UNIX domain socket. This is
+especially useful for these sockets, because there interface does not provide a
+mode argument.
+
+
+Option: unlink-close
+
+Type: BOOL
+Option group: NAMED
+Phase: LATE
+Platforms: all
+
+Remove the addresses file system entry when closing the address.
+For named pipes, listening unix domain sockets, and the symbolic links of pty
+addresses, the default is 1; for created files, opened files, generic opened
+files, and client unix domain sockets the default is 0.
+
+
+===============================================================================
+FORK and EXEC options
+
+Option: path=string
+
+Type: STRING
+Option group: EXEC
+Phase: PREEXEC
+Platforms: all
+
+Changes the PATH environment variable in the child process before the exec() or
+system() call.
+
+
+Option: nofork
+
+Type: BOOL
+Option group: FORK
+Phase: BIGEN
+Platforms: all
+
+Does not fork a subprocess for executing the program, instead calls execvp()
+directly from the actual socat instance. This avoids the overhead of another process
+between the program and the communication peer, but introduces lots of
+restrictions:
+ * this option can only be applied to the second socat() address.
+ * the first socat address cannot be OPENSSL or READLINE
+ * socat options -b, -t, -D, -l, -v, -x, -t become useless
+ * for both addresses, options ignoreeof, cr and crnl become useless
+ * for the second address (the one with option nofork), options 
+   append, async, cloexec, flock, user, group, mode, nonblock,
+   perm-late, setlk, and setpgid cannot be applied, and should be used on the
+   first address instead.
+
+
+Option: pipes
+
+Type: BOOL
+Option group: FORK
+Phase: BIGEN
+Platforms: all
+
+For communication between the exec() or system() subprocess with socat, use two
+unnamed pipes instead of creating a socket pair.
+
+
+Option: pty
+
+Type: BOOL
+Option group: FORK
+Phase: BIGEN
+Platforms: all
+
+For communication between the exec() or system() subprocess with socat, use a
+pseudo terminal instead of a socket pair. The executed program gets the slave
+side, and socat the controlling side of the pseudo terminal. 
+This is especially useful if you want to use, e.g., chat with socat (see
+EXAMPLES). Plus, ptys do not buffer I/O.
+Note: implementation of pseudo terminals are differing between platforms, so
+extra porting struggles might be required for porting this feature.
+
+
+Option: fdin=num
+
+Type: USHORT
+Option group: FORK
+Phase: PASTBIGEN
+Platforms: all
+
+After forking the child process, assign the stream where the child
+receives data from socat, to file descriptor num instead of stdin.
+
+
+Option: fdout=num
+
+Type: USHORT
+Option group: FORK
+Phase: PASTBIGEN
+Platforms: all
+
+After forking the child process, assign the stream where the child
+writes data to socat, to file descriptor num instead of stdout.
+
+
+Option: stderr
+
+Type: BOOL
+Option group: FORK
+Phase: PASTFORK
+Platforms: all
+
+Normally, the stderr filedescriptor of the forked program is a clone of socat's
+stderr fd. If this option is used, the programs stderr filedescriptor is a copy
+of the "normal" data output of the program, i.e. of its stdout or fdout.
+
+
+Option: setsid
+Aliases: sid
+
+Type: BOOL
+Option group: PROCESS
+Phase: LATE
+Platforms: all
+
+Invokes setsid() to make the forked off subprocess the leader of a new
+session. This also generates a new process group with this process as leader.
+This is useful, e.g., when exec'ing ssh to get the password prompt into the I/O
+channel (see EXAMPLES)
+
+
+Option: setpgid
+Aliases: pgid
+
+Type: INT
+Option group: FORK
+Phase: LATE
+Platforms: all
+
+Invokes setpgid(0, val) from the child process.
+
+
+Option: tiocsctty
+Aliases: ctty
+
+Type: BOOL
+Option group: TERMIOS
+Phase: LATE2
+Platforms: all
+
+Applies only in combination with the pty option or its variants. Tries to make
+the pty the controlling terminal. May require option setsid to work correctly.
+
+
+Option: dash
+Aliases: login
+
+Type: BOOL
+Option group: EXEC
+Phase: PREEXEC
+Platforms: all
+
+Prefixes argv[0] for the execvp() call with '-', thus making a shell behave as
+login shell.
+
+
+Option: sighup
+
+Type: CONST
+Option group: PARENT
+Phase: LATE
+Platforms: all
+
+   Has socat pass an eventual SIGHUP signal to the sub process.
+   If no address has this option, socat terminates on SIGHUP.
+
+
+Option: sigint
+
+Type: CONST
+Option group: PARENT
+Phase: LATE
+Platforms: all
+
+   Has socat pass an eventual SIGINT signal to the sub process.
+   If no address has this option, socat terminates on SIGINT.
+
+
+Option: sigquit
+
+Type: CONST
+Option group: PARENT
+Phase: LATE
+Platforms: all
+
+   Has socat pass an eventual SIGQUIT signal to the sub process.
+   If no address has this option, socat dumps core and terminates on SIGQUIT.
+
+
+===============================================================================
+PTY options
+These options may be used with addresses that create a pseudo terminal (pty).
+In particular, these are addresses EXEC, SYSTEM, and PTY.
+
+
+Option: openpty
+
+Type: BOOL
+Option group: PTY
+Phase: BIGEN
+Platforms: FreeBSD, Linux
+
+Like pty, but only use the openpty mechanism, not any other way for pty
+generation. 
+
+
+Option: ptmx
+
+Type: BOOL
+Option group: PTY
+Phase: BIGEN
+Platforms: HP-UX, Linux, SunOS
+
+Like pty, but only use the /dev/ptmx (/dev/ptc on AIX) mechanism, not any other
+way for pty generation. 
+
+
+Option: symbolic-link=filename
+
+Type: FILENAME
+Option group: PTY
+Phase: LATE
+Platforms: all
+
+Generates a symbolic link that points to the actual pseudo terminal (pty). This
+might help to solve the problem that ptys are generated with more or less
+unpredictable names, making it difficult to directly access the socat generated
+pty automatically. With this option, the user can specify a "fix" point in the
+file hierarchy that helps him to access the actual pty.
+
+
+Option: pty-wait-slave
+Aliases: wait-slave, waitslave
+
+Type: BOOL
+Option group: PTY
+Phase: EARLY
+Platforms: all
+
+   Blocks the open phase until a process opens the slave side of the pty.
+   Usually, socat continues after generating the pty with opening the next
+   address or with entering the transfer engine. With the wait-slave option,
+   socat waits until some process opens the slave side of the pty before
+   continuing. 
+   This option only works if the operating system provides the tt(poll())
+   system call. And it depends on an undocumented behaviour of pty's, so it
+   does not work on all operating systems. It has successfully been tested on
+   Linux, FreeBSD, NetBSD, and on Tru64 with openpty. 
+
+
+Option: pty-interval
+
+Type: TIMESPEC
+Option group: PTY
+Phase: EARLY
+Platforms: all
+
+   When the wait-slave option is set, socat periodically checks the HUP
+   condition using poll() to find if the pty's slave side has been
+   opened. The default 
+   polling interval is 1s. Use the pty-interval option to change this value.
+
+
+===============================================================================
+SOCKET options
+These are options that may be applied to all socket type addresses: UNIX
+(LOCAL) domain sockets (even with EXEC type addresses if not pipes), IP, and
+IPv6.
+
+
+Option: so-debug
+Aliases: debug
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_DEBUG socket option. Requires root.
+
+
+Option: so-acceptconn
+Aliases: acceptconn
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Tries to set the SO_ACCEPTCONN socket option. Read-only!
+
+
+Option: so-broadcast
+Aliases: broadcast
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_BROADCAST socket option.
+
+
+Option: so-reuseaddr
+Aliases: reuseaddr
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_REUSEADDR socket option. Allows to bind to a port even if this
+port is already used for a connection.
+
+
+Option: so-keepalive
+Aliases: keepalive
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: FD
+Platforms: all (UNIX98)
+
+Sets the SO_KEEPALIVE socket option.
+
+
+Option: so-linger=value
+Aliases: linger=value
+
+Type: LINGER
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Activates the SO_LINGER option and sets a value (seconds) for it.
+This lets shutdown() or close() block until data transfers have finished or the
+given value timed out.
+Note: on some systems, the type for setsockopt() is struct { int; int; }
+In this case, xioopen() sets {1,value}.
+
+
+Option: so-oobinline
+Aliases: oobinline
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_OOBINLINE socket option.
+
+
+Option: so-sndbuf=value
+Aliases: sndbuf=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_SNDBUF option of the socket to the given value. This option is
+applied after the socket() (or socketpair()) call.
+NOTE: The kernel might change the effective value:
+My Linux 2.2 with TCP doubles the value, but uses at least 2048.
+
+
+Option: so-sndbuf-late=value
+Aliases: sndbuf-late=value
+
+Type: INT
+Option group: SOCKET
+Phase: LATE
+Platforms: all (UNIX98)
+
+Sets the SO_SNDBUF option of the socket to the given value. This option is
+applied after the connect() or accept() (or socketpair) call.
+NOTE: The kernel might change the effective value:
+My Linux 2.2 with TCP doubles the value, but uses at least 2048, and a
+maximum of 131070 (system limit?).
+
+
+Option: so-rcvbuf=value
+Aliases: rcvbuf=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_RCVBUF option of the socket to the given value. This option is
+applied after the socket() call.
+NOTE: The kernel might change the effective value:
+My Linux 2.2 with TCP connect doubles the value, but uses at least 256 and
+at most 131070.
+My Linux 2.2 with TCP listen doubles the value but uses at least 11772.
+NOTE: For applying the SO_RCVBUF options after the connect() or accept() calls
+see rcvbuf-late.
+
+
+Option: so-rcvbuf-late=value
+Aliases: rcvbuf-late=value
+
+Type: INT
+Option group: SOCKET
+Phase: LATE
+Platforms: all (UNIX98)
+
+Sets the SO_RCVBUF option of the socket to the given value. This option is
+applied after the connect() or listen() call.
+NOTE: The kernel might change the effective value:
+My Linux 2.2 with TCP doubles the value, but uses at least 256 and maximal
+131070.
+NOTE: sequence of this call may be relevant for the effecting value (AIX
+4.3.3). For applying the SO_RCVBUF option immediately after the socket() call
+see rcvbuf.
+
+
+Option: so-error
+Aliases: error
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Tries to set the SO_ERROR socket option which is a read-only option.
+On my Linux 2.2 it gives "protocol not available".
+
+
+Option: so-type=value
+Aliases: type=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all
+
+Set the sockettype argument of the socket() or socketpair() call. This
+overrides the per 
+protocol default (e.g., TCP: SOCK_STREAM). Most values might 
+not be supported by a given protocol.
+The following combinations are known to work at least under one OS:
+TCP     SOCK_STREAM (system default)
+UDP     SOCK_DGRAM (system default)
+IP      SOCK_RAW (socat default)
+UNIX    SOCK_STREAM (system default)
+UNIX    SOCK_DGRAM
+
+
+Option: so-dontroute
+Aliases: dontroute
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_DONTROUTE socket option.
+
+
+Option: so-rcvlowat=value
+Aliases: rcvlowat=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_RCVLOWAT socket option. Cannot be changed in Linux (always
+gives "protocol not available").
+
+
+Option: so-rcvtimeo=value
+Aliases: rcvtimeo=value
+
+Provided type: double
+Physical type: TIMEVAL (long[2])
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_RCVTIMOE socket option. Cannot be changed in Linux (always
+gives "protocol not available").
+
+
+Option: so-sndlowat=value
+Aliases: sndlowat=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_SNDLOWAT socket option. Cannot be changed in Linux (always
+gives "protocol not available").
+
+
+Option: so-sndtimeo=value
+Aliases: sndtimeo=value
+
+Provided type: double
+Physical type: TIMEVAL (long[2])
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all (UNIX98)
+
+Sets the SO_SNDTIMEO socket option. Cannot be changed in Linux (always
+gives "protocol not available").
+
+
+Option: so-audit
+Aliases: audit
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_AUDIT socket option.
+
+
+Option: so-attach-filter
+Aliases: attach-filter, attachfilter
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Linux docu recommends to use libpcap for this feature.
+"protocol not available", need kernel CONFIG_FILTER!
+
+
+Option: so-detach-filter
+Aliases: detach-filter, detachfilter
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+See Linux "man 7 socket".
+"protocol not available", need kernel CONFIG_FILTER!
+
+
+Option: so-bindtodevice=string
+Aliases: bindtodevice, interface, if
+
+Type: NAME
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Binds the socket to a net interface, e.g. lo0 or eth0 (interface names depend
+on operating system). Might require root privilege.
+
+
+Option: so-bsdcompat
+Aliases: bsdcompat
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_BSDCOMPAT socket option. See Linux "man 7 socket".
+
+
+Option: so-cksumrecv
+Aliases: cksumrecv
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_CKSUMRECV socket option.
+
+
+Option: so-kernaccept
+Aliases: kernaccept
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_KERNACCEPT socket option.
+
+
+Option: so-no-check
+Aliases: no-check, nocheck
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the SO_NO_CHECK socket option." Intentionally undocumented" under
+Linux (see "man 7 socket"), don't know what it does....
+
+
+Option: so-noreuseaddr
+Aliases: noreuseaddr
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_NOREUSEADDR socket option.
+
+
+Option: passcred
+Aliases: so-passcred
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the SO_PASSCRED option of a socket.
+
+
+Option: so-peercred
+Aliases: peercred
+
+Type: INT3 or int[3]?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Enables receiving of credentials. Read only.
+Not really implemented yet.
+Nevertheless, Gives "Protocol not available".
+
+
+Option: so-priority=value
+Aliases: priority=value
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the protocol defined priority for all packets to be sent on this socket.
+Docu says it requires root privileges. Normal user may set 0..6 for UNIX domain
+and TCP client sockets on Linux 2.2. root may send any int value.
+
+
+Option: so-reuseport
+Aliases: reuseport
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: FreeBSD, HP-UX
+
+Sets the SO_REUSEPORT socket option.
+
+
+Option: so-security-authentication
+Aliases: security-authentication, securityauthentication
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the SO_SECURITY_AUTHENTICATION socket option. Gives "protocol not
+available" error.
+In Linux 2.2.16 source, only exists in asm-*/socket.h
+
+
+Option: so-security-encryption-network
+Aliases: security-encryption-network, securityencryptionnetwork
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the SO_SECURITY_ENCRYPTION_NETWORK option of the socket. Gives "protocol
+not available" error.
+In Linux 2.2.16 source, only exists in asm-*/socket.h
+
+
+Option: so-security-encryption-transport
+Aliases: security-encryption-transport, securityencryptiontransport
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the SO_SECURITY_ENCRYPTION_TRANSPORT option of the socket. Gives "protocol
+not available" error.
+In Linux 2.2.16 source, only exists in asm-*/socket.h
+
+
+Option: so-use-ifbufs
+Aliases: use-ifbufs, useifbufs
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the SO_USE_IFBUFS socket option.
+
+
+Option: so-useloopback
+Aliases: useloopback
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: FreeBSD, HP-UX, SunOS
+
+Sets the SO_USELOOPBACK socket option.
+
+
+Option: so-dgram-errind
+Aliases: dgram-errind, dgramerrind
+
+Logical type: bool?
+Physical type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: SunOS
+
+Sets the SO_DGRAM_ERRIND flag. 
+
+
+Option: so-dontlinger
+Aliases: dontlinger
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: SunOS
+
+Sets the SO_DONTLINGER socket option.
+
+
+Option: so-prototype
+Aliases: prototype
+
+Type: INT?
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: HP-UX, SunOS
+
+Sets the SO_PROTOTYPE socket option.
+
+
+Option: type
+
+Type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all
+
+Sets the type of the socket, usually as argument to the socket() or
+socketpair() call, to <type>. Under Linux, 1 means stream oriented socket, 2
+means datagram socket, and 3 means raw socket.  
+
+
+Option: protocol-family
+Aliases: pf
+
+Type: STRING
+Option group: SOCKET
+Phase: PRESOCKET
+Platforms: all
+
+Forces the use of the specified IP version. <string> can be something like
+"ip4" or "ip6".
+
+
+Option: fiosetown
+
+Logical type: bool
+Physical type: INT
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: FreeBSD, Linux
+
+Sets the FIOSETOWN ioctl (in "man 7 socket" called FIOCSETOWN).
+
+
+#Option: ciocspgrp
+#
+#Allowed in addresses: SOCKET
+#Logical type: bool
+#Physical type: int
+#
+#Sets the CIOCSPGRP ioctl.
+
+
+#Option: addr=value
+#
+#Allowed in addresses: SOCKET
+#Type: socket-address
+#
+#For client socket, sets the local (bind) address. Not yet implemented.
+
+
+Option: bind=socketaddress
+
+Type: STRING
+Option group: SOCKET
+Phase: BIND
+Platforms: all
+
+Gives the address to be used in the bind(2) system call. The format of the
+socketaddress depends on the socket type (see below). For "client" sockets this
+option inserts a bind(2) call between socket(2) and connect(2) calls. For
+"server" sockets this option is ignored! For datagram sockets behaviour of this
+option is currently unspecified.
+Note: for client sockets in the UNIX domain this option is not useful: with the
+same address as connect it will conflict with the bind call of the server
+socket; another address for bind is ignored (with Linux 2.2).
+For TCP sockets these formats are currently implemented:
+HOSTNAME
+HOSTNAME:PORT
+IPADDR
+IPADDR:PORT
+:PORT
+.PORT
+
+
+Option: connect-timeout=seconds
+
+Type: TIMEVAL
+Option group: SOCKET
+Phase: PASTSOCKET
+Platforms: all
+
+Abort the connection attempt after the given time with error status.
+
+#
+Option: backlog=value
+
+Type: INT
+Option group: LISTEN
+Phase: LISTEN
+Platforms: all
+
+Sets the value to be used with the listen(2) system call. The default is 5.
+It does not seem to work for Linux 2.2; Linux seems to allow much more
+established connections, but then they stay even after server process
+shutdown...
+
+
+Option: range=address:mask, range=address/bits
+
+Type: STRING
+Option group: RANGE
+Phase: ACCEPT
+Platforms: all
+Implementation status: only for INET (IP4) addresses
+
+Defines a subnet where clients may connect from. If other clients connect the
+accepted connection is shut down immediately after examination of the client
+address. If this option is not used, the default is 0.0.0.0:0.0.0.0, allowing
+arbitrary client addresses. bits is the number of high order bits that must
+match between the range value and the clients address.
+
+
+Option: tcpwrap, tcpwrap=name
+
+Type: STRING_NULL
+Option group: RANGE
+Phase: ACCEPT
+Platforms: (depends on libwrap installation)
+
+Uses the rules introduced by Wietse Venema's libwrap (tcpd) library to check
+if the client is allowed to connect. The configuration files are
+/etc/hosts.allow and /etc/hosts.deny. See "man 5 hosts_access" for 
+more information. <name> is passed to the wrapper functions as daemon
+process name. If omitted, the basename of socats invokation (argv[0]) is
+passed. 
+If both tcpwrap and and range options are applied to an address, both
+conditions must be fulfilled to allow the connection.
+
+
+Option: hosts-allow, tcpwrap-hosts-allow-table
+
+Type: FILENAME
+Option group: RANGE
+Phase: ACCEPT
+Platforms: (depends on libwrap installation)
+
+Takes the specified file instead of /etc/hosts.allow.
+
+
+Option: hosts-deny, tcpwrap-hosts-deny-table
+
+Type: FILENAME
+Option group: RANGE
+Phase: ACCEPT
+Platforms: (depends on libwrap installation)
+
+Takes the specified file instead of /etc/hosts.deny.
+
+
+Option: tcpwrap-etc, tcpwrap-dir
+
+Type: FILENAME
+Option group: RANGE
+Phase: ACCEPT
+Platforms: (depends on libwrap installation)
+
+   Looks for hosts.allow and hosts.deny in the specified directory. Is
+   overriden by options hosts-allow and hosts-deny.
+
+
+-------------------------------------------------------------------------------
+IP options
+
+
+Option: ip-options=values
+Aliases: ipoptions
+
+Type: BIN
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+Sets the IP_OPTIONS values of the IP socket. For example, to send packets to
+destination D.D.D.D via a router G.G.G.G you have to specify G.G.G.G as the
+"normal" destination, and D.D.D.D in the source route:
+TCP:G.G.G.G:25,ip-options=x890704dddddddd
+Note that the destination will see G.G.G.G as sender of the packets, and
+therefore might not return the answers correctly.
+See RFC791 for detailed specification of IP option fields.
+Examples:
+x01 ... nop
+x8307040a000001 ... loose source route
+x890b040a000001c0c1c2c3 ... strict source route
+Note: with source routes, you should not specifiy destination address and
+hops as defined in RFC791 (first hop as IP header destination address,
+further hops and final destination in source route) because the (Linux?) kernel changes
+them to a more intuitive form (final destination as destination in IP header,
+gateways in source route). So, in destination address give the final
+destination, and in the source route the gateways!
+Note: this option may be mulitply applied per socket but the (Linux?) kernel
+pads each setting with 0' to align the options end to 4 octets. So you should
+better pad the options data with nops (01) yourself.
+
+
+Option: ip-pktinfo
+Aliases: ippktinfo, pktinfo
+
+Type: INT (should be struct in_pktinfo)
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+Status: Not completely implemented (ancillary messages are not supported by
+socat/xio)
+
+Pass an IP_PKTINFO ancillary message.
+
+
+Option: ip-recvtos
+Aliases: iprecvtos, recvtos
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+Status: Not completely implemented (ancillary messages are not supported by
+socat/xio)
+
+Set the IP_RECVTOS socket option which enables IP_TOS ancillary message
+passing.
+
+
+Option: ip-recvttl
+Aliases: iprecvttl, recvttl
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+Implementation status: No results.
+
+Set the IP_RECVTTL socket option. 
+
+
+Option: ip-recvopts
+Aliases: iprecvopts, recvopts
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+Implementation status: No results.
+
+Set the IP_RECVOPTS socket option. 
+
+
+Option: ip-retopts
+Aliases: ipretopts, retopts
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+Implementation status: No results.
+
+Set the IP_RETOPTS socket option. 
+
+
+Option: ip-tos=value
+Aliases: iptos=value, tos=value
+
+Logical type: byte
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+Sets the TOS (type of service) flags for the outgoing IP headers of the
+socket. My Linux 2.2 does not allow to set values other than 0 (probably
+needs some optional kernel features).
+
+
+Option: ip-ttl=value
+Aliases: ipttl=value, ttl=value
+
+Logical type: byte
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+Sets the TTL (time to live) field for the outgoing IP headers of the socket.
+0 does not seem to be useful and gives "invalid argument" error in Linux.
+This option can be used to implement a "poor mans traceroute" in conjunction
+with tcpdump.
+
+
+Option: ip-hdrincl
+Aliases: iphdrincl, hdrincl
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+Set the IP_HDRINCL socket option. User will supply IP header before user
+data. For raw IP sockets only. Not tested.
+
+
+Option: ip-recverr
+Aliases: iprecverr, recverr
+
+Type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Set the IP_RECVERR socket option. 
+Implementation status: No results.
+
+
+Option: ip-mtu-discover=value
+Aliases: ipmtudiscover=value, mtudiscover=value
+
+Type: INT (0..2)
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the IP_MTU_DISCOVER flag of the IP socket. In Linux there are three values
+defined: 0..dont(never), 1..want(per route), 2..do(always)
+
+
+Option: ip-mtu
+Aliases: ipmtu, mtu
+
+Type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the MTU (maximal transfer unit) of the socket. In Linux this is a
+read-only parameter and results in a "protocol not available" error.
+
+
+Option: ip-freebind
+Aliases: ipfreebind, freebind
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: none
+
+Allows the socket to locally bind to any address, even those that are
+not covered by an interface address, alias address or a local subnet. Even
+broadcast and multicast addresses are possible.
+Note: this option has been found on Linux 2.4 in <linux/in.h>. This file might
+not be included per default, because it creates errors.
+To make this option available, "make" socat with the CCOPT environment
+variable set to "-DIP_FREEBIND=15"
+
+
+Option: ip-router-alert=value
+Aliases: iprouteralert, routeralert
+
+Type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the IP_ROUTER_ALERT socket option. Only works with raw sockets.
+"Invalid argument"
+
+
+Option: ip-add-membership=multicast-address:interface-address
+        ip-add-membership=multicast-address:interface-name
+	ip-add-membership=multicast-address:interface-index
+	ip-add-membership=multicast-address:interface-address:interface-name
+	ip-add-membership=multicast-address:interface-address:interface-index
+Aliases: add-membership
+	 ip-membership
+
+Type: IP_MREQN
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+   Makes the socket member of the specified multicast group. This is currently
+   only implemented for IPv4. The option takes the IP address of the multicast
+   group and info about the desired network interface. The most common syntax
+   is the first one, while the others are only available on systems that
+   provide tt(struct mreqn) (Linux).nl()
+   The indices of active network interfaces can be shown using the utility
+   procan().
+
+
+Option: ip-drop-membership
+
+Not implemented.
+
+
+#! Option: ipv6-join-group
+
+
+Option: ip-multicast-ttl=byte
+Aliases: ipmulticastttl, multicastttl
+
+Type: BYTE
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+   Sets the TTL used for outgoing multicast traffic. Default is 1.
+
+
+Option: ip-multicast-loop
+Aliases: ipmulticastloop, multicastloop
+
+Logical type: bool
+Physical type: INT
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+   Specifies if outgoing multicast traffic should loop back to the interface.
+
+
+Option: ip-multicast-if=hostname
+Aliases: multicast-if
+
+Type: IP4NAME
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: all
+
+   Specifies hostname or address of the network interface to be used for
+   multicast traffic.
+
+
+Option: ip-pktoptions
+Aliases: ippktoptions, pktoptions, pktopts
+
+Type: INT?
+Option group: SOCK_IP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Set the IP_PKTOPTIONS socket option. No docu found.
+Implementation status: "Protocol not available".
+
+
+Option: res-debug
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the debug resolver option to all queries of this XIO address.
+
+
+Option: res-aaonly
+Aliases: aaonly
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the aaonly resolver option to all queries of this XIO address.
+
+
+Option: res-usevc
+Aliases: usevc
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the usevc resolver option to all queries of this XIO address.
+
+
+Option: res-primary
+Aliases: primary
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the primary resolver option to all queries of this XIO address.
+
+
+Option: res-igntc
+Aliases: igntc
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the igntc resolver option to all queries of this XIO address.
+
+
+Option: res-recurse
+Aliases: recurse
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the recurse resolver option to all queries of this XIO address.
+
+
+Option: res-defnames
+Aliases: defnames
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the defnames resolver option to all queries of this XIO address.
+
+
+Option: res-stayopen
+Aliases: stayopen
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the stayopen resolver option to all queries of this XIO address.
+
+
+Option: res-dnsrch
+Aliases: dnsrch
+
+Type: BOOL
+Option group: SOCK_IP
+Phase: INIT
+Platforms: all
+
+Apply the dnsrch resolver option to all queries of this XIO address.
+
+
+-------------------------------------------------------------------------------
+IP6 options
+
+
+Option: ipv6-v6only=value
+Alias: ipv6only, v6only
+
+Type: BOOL
+Option group: SOCK_IP6
+Phase: PASTSOCKET
+Platforms: FreeBSD, Linux
+
+Apply the IPV6_V6ONLY socket option to the file descriptor. This controls if
+the socket listens only on the IPv6 protocol or also on IPv4.
+
+
+-------------------------------------------------------------------------------
+IPAPP (TCP and UDP) options
+
+
+Option: sourceport=value
+Alias: sp=value
+
+Type: 2BYTE
+Option group: IPAPP (IP_TCP and IP_UDP)
+Phase: LATE
+Platforms: all
+
+For outgoing (client) TCP and UDP connections, it sets the source port (local port, client side port) of
+the socket connection. For server type addresses, requires the client to use
+this sourceport, otherwise socat immediately shuts down the connection. 
+On UNIX class operating systems root privilege are required to set a source
+port  between 1 and 1023 incl. 0 gives a "random" port number >= 1024, which is
+the default.
+
+
+Option: lowport
+
+Type: BOOL
+Option group: IPAPP (IP_TCP and IP_UDP)
+Phase: LATE
+Platforms: all
+
+For outgoing (client) TCP and UDP connections, it sets the source
+to an unused random port between 640 and 1023 incl. On UN*X type operating
+systems, this requires root privilege, and thus guaranties the peer to be
+root authorized.
+With TCP or UDP listen addresses, socat immediately shuts down the
+connection if the client does not use a sourceport <= 1023.
+This mechanism can provide limited authorization under some circumstances.
+
+-------------------------------------------------------------------------------
+TCP options
+
+
+Option: tcp-nodelay
+Aliases: nodelay
+
+Logical type: bool
+Physical type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: all
+
+Sets the TCP_NODELAY flag of the TCP socket. This turns off Nagles algorithm.
+
+
+Option: tcp-maxseg
+Aliases: maxseg, mss
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: all
+
+Limits the MAXSEG (MSS) value of the TCP socket. This option is applied before
+the connect or listen call, so it is transferred in the SYN packet to the peer
+socket.
+Linux client: 0 gives "invalid argument", higher values are used in SYN
+negotiation, but effective MSS is n-12, at least 8.
+On AIX, this is a read-only option.
+
+
+Option: tcp-maxseg-late
+Aliases: maxseg-late, mss-late
+
+Type: INT
+Option group: IP_TCP
+Phase: CONNECTED
+Platforms: all
+
+Limits the MAXSEG (MSS) value of the TCP socket. This option is applied past
+the connect or accept call, so it is not transferred as MSS to the peer socket.
+Observation with Linux 2.2: does not influence the size of packets generated
+by the local socket.
+
+
+Option: tcp-cork
+Aliases: cork
+
+Logical type: bool
+Physical type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_CORK option.
+
+
+Option: tcp-stdurg
+Aliases: stdurg
+
+Logical type: bool
+Physical type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Applies the TCP_STDURG option with setsockopt. This enables RFC 1122 compliant
+urgent point handling.
+
+
+Option: tcp-rfc1323
+Aliases: rfc1323
+
+Logical type: bool
+Physical type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Applies the TCP_RFC1323 option with setsockopt. This enables RFC1323 TCP
+enhancements (window scale, timestamp).
+
+
+Option: tcp-keepidle
+Aliases: keepidle
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_KEEPIDLE value of the socket with setsockopt(). Starts keepalive
+after this period (in seconds?)
+
+
+Option: tcp-keepintvl
+Aliases: keepintvl
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_KEEPINTVL value of the socket with setsockopt(). Interval between
+keepalives (in seconds?)
+
+
+Option: tcp-keepcnt
+Aliases: keepcnt
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_KEEPCNT value of the socket with setsockopt(). Number of
+keepalives before death.
+
+
+Option: tcp-syncnt
+Aliases: syncnt
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_SYNCNT value of the socket with setsockopt(). Number of SYN
+retransmits. 
+
+
+Option: tcp-linger2
+Aliases: linger2
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_LINGER2 value of the socket with setsockopt(). Life time of
+orphaned FIN-WAIT-2 state.
+
+
+Option: tcp-defer-accept
+Aliases: defer-accept
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_DEFER_ACCEPT value of the socket with setsockopt(). accept() of
+the listener will only return when data arrived at the new connection. The
+value is converted to seconds by some algorithm.
+
+
+Option: tcp-window-clamp
+Aliases: window-clamp
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_WINDOW_CLAMP value of the socket with setsockopt(). "Bound advertised
+window".
+
+
+Option: tcp-info
+Aliases: info
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: FreeBSD, Linux
+
+Sets the TCP_INFO value of the socket with setsockopt(). Is a read only option,
+so it always generates an error.
+
+
+Option: tcp-quickack
+Aliases: quickack
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: Linux
+
+Sets the TCP_QUICKACK option with setsockopt().
+
+
+Option: tcp-md5sig
+Aliases: md5sig
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Enables generation of MD5 digests on the packets.
+
+
+Option: tcp-noopt
+Aliases: noopt
+
+Type: INT
+Option: group: IP_TCP
+Phase: PASTSOCKET
+Platforms: FreeBSD
+
+Disables use of TCP options.
+
+
+Option: tcp-nopush
+Aliases: nopush
+
+Type: INT
+Option: group: IP_TCP
+Phase: PASTSOCKET
+Platforms: FreeBSD
+
+Sets the TCP_NOPUSH option.
+
+
+Option: tcp-sack-disable
+Aliases: sack-disable
+
+Type: INT
+Option: group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Disables use the selective acknowledge feature.
+
+
+Option: tcp-signature-enable
+Aliases: signature-enable
+
+Type: INT
+Option: group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Enables generation of MD5 digests on the packets.
+
+
+Option: tcp-abort-threshold
+Aliases: abort-threshold
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: HP-UX, SunOS
+
+Sets the time to wait for an answer of the peer on an established connection.
+
+
+Option: tcp-conn-abort-threshold
+Aliases: conn-abort-threshold
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: HP-UX, SunOS
+
+Sets the time to wait for an answer of the server during the initial connect.
+
+
+Option: tcp-keepinit
+Aliases: keepinit
+
+Type: INT
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Sets the time to wait for an answer of the server during connect() before
+giving up. Value in half seconds, default is 150 (75s).
+
+
+Option: tcp-paws
+Aliases: paws
+
+Type: BOOL
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Enables the "protect against wrapped sequence numbers" feature.
+
+
+Option: tcp-sackena
+Aliases: sackena
+
+Type: BOOL
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Enables selective acknowledge.
+
+
+Option: tcp-tsoptena
+Aliases: tsoptena
+
+Type: BOOL
+Option group: IP_TCP
+Phase: PASTSOCKET
+Platforms: none
+
+Enables the time stamp option that allows RTT recalculation on existing
+connections.
+
+
+===============================================================================
+SOCKS options
+
+
+Option: socksport
+
+Type: STRING
+Option group: IP_SOCKS4
+Phase: LATE
+Platforms: all
+
+Overrides the default socks server port 1080
+
+
+Option: socksuser
+
+Type: NAME
+Option group: IP_SOCKS4
+Phase: LATE
+Platforms: all
+
+Overrides the system derived socks user name ($USER or $LOGNAME or "anonymous")
+
+
+===============================================================================
+HTTP options
+
+
+Option: proxyport
+
+Type: STRING
+Option group: HTTP
+Phase: LATE
+Platforms: all
+
+Overrides the default HTTP proxy port 8080.
+
+
+Option: ignorecr
+
+Type: BOOL
+Option group: HTTP
+Phase: LATE
+Platforms: all
+
+The HTTP protocol requires the use of CR+NL as line terminator. When a proxy
+server violates this standard, socat might not understand its answer. 
+This option directs socat to interprete NL as line terminator and
+to ignore CR in the answer. Nevertheless, socat sends CR+NL to the proxy.
+
+
+Option: proxyauth
+
+Type: STRING
+Option group: HTTP
+Phase: LATE
+Platforms: all
+
+Provide "basic" authentication to the proxy server. The argument to the option
+must be the username followed by ':' followed by the password. This string is
+used with a "Proxy-Authorize: Base" header in base64 encoded form.
+
+
+Option: resolve
+
+Type: BOOL
+Option group: HTTP
+Phase: LATE
+Platforms: all
+
+Per default, socat sends to the proxy a CONNECT request containing the target
+hostname. With this option, socat resolves the hostname locally and sends the
+IP address.
+
+
+===============================================================================
+TERMIOS options
+
+These options are applied with tcsetattr calls with a struct termios.
+Attention: Applying these options to stdin/stdout when they refer to your
+terminal might directly effect your terminal!
+See Linux:"man 3 termios" and Linux:"man 2 stty"
+
+-------------------------------------------------------------------------------
+TERMIOS combined modes
+
+
+Option: raw
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Is equivalent to 
+ignbrk=0,brkint=0,ignpar=0,parmrk=0,inpck=0,istrip=0,inlcr=0,igncr=0,icrnl=0,ixon=0,ixoff=0,iuclc=0,ixany=0,imaxbel=0,opost=0,isig=0,icanon=0,xcase=0,vmin=1,vtime=0
+
+
+Option: sane
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Is equivalent to
+cread,ignbrk=0,brkint,inlcr=0,igncr=0,icrnl,ixoff=0,iuclc=0,-ixany=0,imaxbel,opost,olcuc=0,ocrnl=0,onlcr,onocr=0,onlret=0,ofill=0,ofdel=0,nl0,cr0,tab0,bs0,vt0,ff0,isig,icanon,iexten,echo,echoe,echok,echonl=0,noflsh=0,xcase=0,tostop=0,echoprt=0,echoctl,echoke
+
+-------------------------------------------------------------------------------
+TERMIOS input mode flags
+
+
+Option: ignbrk
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IGNBRK flag of the terminal driver.
+
+
+Option: brkint
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the BRKINT flag of the terminal driver.
+
+
+Option: ignpar
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IGNPAR flag of the terminal driver.
+
+
+Option: parmrk
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the PARMRK flag of the terminal driver.
+
+
+Option: inpck
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the INPCK flag of the terminal driver. Enables input parity checking.
+
+
+Option: istrip
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ISTRIP flag of the terminal driver. Strips off the eighth bit.
+
+
+Option: inlcr
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the INLCR flag of the terminal driver. Translates NL to CR on input.
+
+
+Option: igncr
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IGNCR flag of the terminal driver. Ignores CR character on input.
+
+
+Option: icrnl
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ICRNL flag of the terminal driver. Translates CR to NL on input. This
+option is ignored when IGNCR is set.
+
+
+Option: iuclc
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the IUCLC flag of the terminal driver. Changes characters in input from
+uppercase to lowercase.
+
+
+Option: ixon
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IXON flag of the terminal driver. Enables XON/XOFF flow control on
+output (?).
+
+
+Option: ixany
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IXANY flag of the terminal driver. Enables any character to restart
+output.
+
+
+Option: ixoff
+Aliases: tandem
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IXOFF flag of the terminal driver. Enables XON/XOFF flow control on
+input.
+
+
+Option: imaxbel
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IMAXBEL flag of the terminal driver. Rings the bell when the input
+queue is full.
+
+-------------------------------------------------------------------------------
+TERMIOS output mode flags
+
+
+Option: opost
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the OPOST flag of the terminal driver.
+
+
+Option: olcuc
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the OLCUC flag of the terminal driver.
+
+
+Option: onlcr
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ONLCR flag of the terminal driver.
+
+
+Option: ocrnl
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the OCRNL flag of the terminal driver.
+
+
+Option: onocr
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ONOCR flag of the terminal driver.
+
+
+Option: onlret
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ONLRET flag of the terminal driver.
+
+
+Option: ofill
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the OFILL flag of the terminal driver.
+
+
+Option: ofdel
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the OFDEL flag of the terminal driver.
+
+
+Option: nldly
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the NLDLY flag of the terminal driver. 0 sets the value to NL0, and 1 to
+NL1. See nl0, nl1.
+
+
+Option: nl0
+
+Type: CONST (const bool, always sets 0)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field NLDLY to the value NL0.
+
+
+Option: nl1
+
+Type: CONST (const bool, always sets 1)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field NLDLY to the value NL1.
+
+
+Option: crdly=value
+
+Type: UINT (0..3)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field CRDLY to the given value.
+See cr0, cr1, cr2, cr3.
+
+
+Option: cr0
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the CRDLY field to the value CR0.
+See crdly.
+
+
+Option: cr1
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the CRDLY field to the value CR1.
+See crdly.
+
+
+Option: cr2
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the CRDLY field to the value CR2.
+See crdly.
+
+
+Option: cr3
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the CRDLY field to the value CR3.
+See crdly.
+
+
+Option: tab0
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the horizontal tab delay mask to TAB0.
+See tabdly.
+
+
+Option: tab1
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the horizontal tab delay mask to TAB1.
+See tabdly.
+
+
+Option: tab2
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the horizontal tab delay mask to TAB2.
+See tabdly.
+
+
+Option: tab3
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the horizontal tab delay mask to TAB3.
+See tabdly.
+
+
+Option: tabdly=value
+
+Type: UINT (0..3)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field TABDLY to the given value.
+See tab0, tab1, tab2, and tab3.
+
+
+Option: xtabs
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the horizontal tab delay mask to XTABS.
+
+
+Option: bs0
+
+Type: CONST (0)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field BSDLY to the value BS0
+
+
+Option: bs1
+
+Type: CONST (1)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field BSDLY to the value BS1
+
+
+Option: bsdly
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the BSDLY flag of the terminal driver. 0 sets the value to BS0, and 1 to
+BS1. See bs0, bs1.
+
+
+Option: vt0
+
+Type: CONST (0)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field VTDLY to the value VT0
+
+
+Option: vt1
+
+Type: CONST (1)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field VTDLY to the value VT1
+
+
+Option: vtdly
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the VTDLY flag of the terminal driver. 0 sets the value to VT0, and 1 to
+VT1. See vt0, vt1.
+
+
+Option: ff0
+
+Type: CONST (0)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field FFDLY to the value FF0
+See ffdly.
+
+
+Option: ff1
+
+Type: CONST (1)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the field FFDLY to the value FF1
+See ffdly.
+
+
+Option: ffdly
+
+Type: BOOL (0..1)
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the FFDLY flag of the terminal driver. 0 sets the value to FF0, and 1 to
+FF1. See ff0, ff1.
+
+
+
+-------------------------------------------------------------------------------
+TERMIOS control mode flags
+
+
+Option: cs5
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the field CSIZE to the value CS5
+
+
+Option: cs6
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the field CSIZE to the value CS6
+
+
+Option: cs7
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the field CSIZE to the value CS7
+
+
+Option: cs8
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the field CSIZE to the value CS8
+
+
+Option: csize
+
+Type: UINT (0..3)
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the field CSIZE. 0..CS5, 1..CS6, 2..CS7, 3..CS8
+
+
+Option: cstopb
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the flag CSTOPB.
+
+
+Option: cread
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the value of the CREAD flag.
+
+
+Option: parenb
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the PARENB flag of the terminal driver.
+
+
+Option: parodd
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the PARODD flag of the terminal driver.
+
+
+Option: hupcl
+Aliases: hup
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the HUPCL flag of the terminal driver.
+
+
+Option: clocal
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the CLOCAL flag of the terminal driver.
+
+
+Option: crtscts
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, Linux, SunOS
+
+Sets the CRTSCTS flag of the terminal driver.
+
+
+Option: b0        (HP-UX, Linux, SunOS)
+Option: b50       (HP-UX, Linux, SunOS)
+Option: b75       (HP-UX, Linux, SunOS)
+Option: b110      (HP-UX, Linux, SunOS)
+Option: b134      (HP-UX, Linux, SunOS)
+Option: b150      (HP-UX, Linux, SunOS)
+Option: b200      (HP-UX, Linux, SunOS)
+Option: b300      (HP-UX, Linux, SunOS)
+Option: b600      (HP-UX, Linux, SunOS)
+Option: b900      (HP-UX)
+Option: b1200     (HP-UX, Linux, SunOS)
+Option: b1800     (HP-UX, Linux, SunOS)
+Option: b2400     (HP-UX, Linux, SunOS)
+Option: b3600     (HP-UX)
+Option: b4800     (HP-UX, Linux, SunOS)
+Option: b7200     (HP-UX)
+Option: b9600     (HP-UX, Linux, SunOS)
+Option: b19200    (HP-UX, Linux, SunOS)
+Option: b38400    (HP-UX, Linux, SunOS)
+Option: b57600    (HP-UX, Linux, SunOS)
+Option: b115200   (HP-UX, Linux, SunOS)
+Option: b230400   (HP-UX, Linux, SunOS)
+Option: b460800   (HP-UX, Linux, SunOS)
+Option: b500000   (Linux)
+Option: b576000   (Linux)
+Option: b921600   (Linux)
+Option: b1000000  (Linux)
+Option: b1152000  (Linux)
+Option: b1500000  (Linux)
+Option: b2000000  (Linux)
+Option: b2500000  (Linux)
+Option: b3000000  (Linux)
+Option: b3500000  (Linux)
+Option: b4000000  (Linux)
+
+Type: CONST
+Option group: TERMIOS
+Phase: FD
+
+Sets the baud rate to the implied value. b0 "hangs up" the connection.
+
+
+Option: ispeed
+
+Type: UINT
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Sets the input baud rate to the specified value. This works on systems where
+struct termios has a special c_ispeed field.
+
+
+Option: ospeed
+
+Type: UINT
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, Linux
+
+Sets the input baud rate to the specified value. This works on systems where
+struct termios has a special c_ospeed field.
+
+
+
+
+-------------------------------------------------------------------------------
+TERMIOS local mode flags
+
+
+Option: isig
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ISIG flag of the terminal driver.
+
+
+Option: icanon
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ICANON flag of the terminal driver.
+
+
+Option: xcase
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: HP-UX, Linux, SunOS
+
+Sets the XCASE flag of the terminal driver.
+
+
+Option: echo
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHO flag of the terminal driver.
+
+
+Option: echoe
+Aliases: crterase
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHOE flag of the terminal driver.
+
+
+Option: echok
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHOK flag of the terminal driver.
+
+
+Option: echonl
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHONL flag of the terminal driver.
+
+
+Option: echoctl
+Aliases: ctlecho
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHOCTL flag of the terminal driver.
+
+
+Option: echoprt
+Aliases: prterase
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHOPRT flag of the terminal driver.
+
+
+Option: echoke
+Aliases: crtkill
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the ECHOKE flag of the terminal driver.
+
+
+Option: flusho
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the FLUSHO flag of the terminal driver.
+
+
+Option: noflsh
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the NOFLSH flag of the terminal driver.
+
+
+Option: tostop
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the TOSTOP flag of the terminal driver.
+
+
+Option: pendin
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the PENDIN flag of the terminal driver.
+
+
+Option: iexten
+
+Type: BOOL
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+
+Sets the IEXTEN flag of the terminal driver.
+
+
+-------------------------------------------------------------------------------
+TERMIOS options for functional characters
+
+Option: vintr=value
+Aliases: intr=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VINTR character that interrupts the current process.
+On UNIX systems the preset value usually is 3 (^C).
+
+
+Option: vquit=value
+Aliases: quit=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VQUIT character that quits the current process. 
+On my Linux 2.2 system the preset value is 0x1c (^\).
+
+
+Option: verase=value
+Aliases: erase=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VERASE character that erases the last character.
+On many UNIX systems the preset value is 0x7f.
+
+
+Option: vkill=value
+Aliases: kill=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VKILL character that kills (erases) the current line.
+On my Linux 2.2 system systems the preset value is 0x15 (^U).
+
+
+Option: veof=value
+Aliases: eof=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VEOF character that kills indicate end of file.
+On most UNIX systems the preset value is 0x04 (^D).
+
+
+Option: vtime=value
+Aliases: time=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: not tested
+
+Sets the value of VTIME. See "man 1 stty" / time.
+On my Linux 2.2 system the preset value is 0.
+
+
+Option: vmin=value
+Aliases: min=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: not tested
+
+Sets the value of VMIN. See "man 1 stty" / time.
+On my Linux 2.2 system the preset value is 1.
+
+
+Option: vswtc=value
+Aliases: swtc=value, swtch=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: Linux
+Status: not tested
+
+Sets the value of VSWTC. "Switches to a different shell layer".
+On my Linux 2.2 system the preset value is 0.
+
+
+Option: vstart=value
+Aliases: start=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VSTART character that resumes data flow after a stop.
+Usually the preset value is 0x11 (^Q).
+
+
+Option: vstop=value
+Aliases: stop=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VSTOP character that stops output.
+Usually the preset value is 0x13 (^S)
+
+
+Option: vsusp=value
+Aliases: susp=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VSUSP character that suspends the current foreground
+process and reactivates the shell.
+Usually the preset value is 0x1a (^Z)
+
+
+Option: vdsusp=value
+Aliases: dsusp=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, HP-UX, SunOS
+Status: tested
+
+Sets the value for the VDSUSP character that suspends the current foreground
+process and reactivates the shell.
+
+
+Option: veol=value
+Aliases: eol=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested with awkward results
+
+Sets the value for the VEOL character that should indicate end of line.
+Not clear what differentiates it from the return key; xterm window put "xterm"
+into the input buffer.
+On my Linux 2.2 system the preset value is 0 (disabled)
+
+
+Option: vreprint=value
+Aliases: reprint=value, rprnt=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, Linux, SunOS
+Status: not tested
+
+Sets the value for the VREPRINT character that should reprint the current line.
+On my Linux 2.2 system the preset value is 0x12 (^R). Nevertheless, bash
+enters backward search mode.
+
+
+Option: vdiscard=value
+Aliases: discard=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: FreeBSD, Linux, SunOS
+Status: not tested
+
+Sets the value for the VDISCARD character.
+On my Linux 2.2 system the preset value is 0x0f (^O)
+
+
+Option: vwerase=value
+Aliases: werase=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VWERASE character that erases the last word.
+On my Linux 2.2 system the preset value is 0x17 (^W)
+
+
+Option: vlnext=value
+Aliases: lnext=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: tested
+
+Sets the value for the VLNEXT character that lets the next input character raw
+(not interpreted).
+On my Linux 2.2 system the preset value is 0x16 (^V)
+
+
+Option: veol2=value
+Aliases: eol2=value
+
+Type: BYTE
+Option group: TERMIOS
+Phase: FD
+Platforms: all
+Status: not tested
+
+Sets the value for the VEOL2 character.
+On my Linux 2.2 system the preset value is 0 (disabled).
+
+
+===============================================================================
+READLINE options
+
+Option: history-file=filename
+Aliases: history=filename
+
+Type: STRING
+Option group: READLINE
+Phase: LATE
+Platforms: (depends on libreadline installation)
+
+Without this option, the readline address uses only a per process history
+list. With this option, socat tries to read history lines during initialization
+from the given file, and on termination writes the old and new lines to the
+file.
+NOTE: currently, no mechanism is implemented for limiting the length of the
+history file.
+NOTE: filename must be a valid relativ or absolute path; "~" is not supported!
+
+
+Option: noprompt
+
+Type: BOOL
+Option group: READLINE
+Phase: LATE
+Platforms: all
+
+Since version 1.3.3, socat per default tries to determine a prompt - 
+that is then passed to the readline call - by remembering the last
+incomplete line of the output. With this option, socat does not pass a
+prompt to the readline call, so it might set the cursor to the first column
+of the terminal. 
+
+
+Option: noecho
+
+Type: STRING
+Option group: READLINE
+Phase: LATE
+Platforms: all
+
+Specifies a regular pattern for a prompt that prevents the following input
+line from being displayed on the screen and from being added to the history.
+The prompt is defined as the text that was output to the readline address 
+after the lastest newline character and before an input character was
+typed. The pattern is a regular expression, e.g.
+"^[Pp]assword:.*$" or "([Uu]ser:|[Pp]assword:)". See regex(7) for details.
+
+
+Option: prompt
+
+Type: STRING
+Option group: READLINE
+Phase: LATE
+Platforms: all
+
+Passes the string as prompt to the readline function. readline prints this
+prompt when stepping through the history. If this string matches a constant
+prompt issued by an interactive program on the other socat address,
+consistent look and feel can be archieved.
+
+===============================================================================
+OPENSSL options
+
+Option: openssl-cipherlist=string
+Aliases: cipherlist=string, ciphers=string, cipher=string
+
+Type: STRING
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Selects the list of ciphers that may be used for the connection.
+See the man page ciphers(1), section CIPHER LIST FORMAT, for
+detailed information about syntax, values, and default of the cipherlist
+string.
+Several cipher strings may be given, separated by ':'.
+Some simple cipher strings:
+	3DES	Uses a cipher suite with triple DES.
+	MD5	Uses a cipher suite with MD5.
+	aNULL	Uses a cipher suite without authentication.
+	NULL	Does not use encryption.
+	HIGH	Uses a cipher suite with "high" encryption.
+Note that the peer must support the selected property, or the negotiation
+will fail.
+
+
+Option: openssl-method=string
+Aliases: method=string
+
+Type: STRING
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Sets the protocol version to be used. Valid strings (not case sensitive) are:  
+	SSLv2	Select SSL protocol version 2.
+	SSLv3	Select SSL protocol version 3.
+	SSLv23	Select SSL protocol version 2 or 3. This is the default when
+ this option is not provided.
+	TLSv1	Select TLS protocol version 1.
+
+
+Option: openssl-verify=bool
+Aliases: verify=bool
+
+Type: BOOL
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+   Controls check of the peer's certificate. Default is 1 (true). Disabling
+   verify might open your socket for everyone! 
+
+
+Option: openssl-certificate=file
+Aliases: cert=file
+
+Type: FILENAME
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Specifies the file with the certificate. The certificate must be
+in OpenSSL format (*.pem). With openssl-listen, this option is strongly
+recommended: except with cipher aNULL, "no shared ciphers" error might
+occur when no certificate is given.
+
+
+Option: openssl-key=file
+Aliases: key
+
+Type: FILENAME
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Specifies the file with the private key. The private key may be in this
+file or in the file given with the ref(cert) option. The party that has
+to proof that it is the owner of a certificate needs the private key.
+
+
+Option: openssl-cafile=file
+Aliases: cafile
+
+Type: FILENAME
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Specifies the file with the trusted (root) authority certificates. The file
+must be in PEM format and should contain one or more certificates. 
+
+
+Option: openssl-capath=directory
+Aliases: capath
+
+Type: FILENAME
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Specify the directory with the trusted (root) certificates. The directory
+must contain certificates in PEM format and their hashes (see OpenSSL
+documentation) 
+
+
+Option: openssl-egd=file
+Aliases: egd
+
+Type: FILENAME
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+On some systems, openssl requires an explicit source of random data. Specify
+the socket name where an entropy gathering daemon like egd provides random
+data, e.g. /dev/egd-pool.
+
+
+Option: openssl-pseudo
+Aliases: pseudo
+
+Type: BOOL
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+On systems where openssl cannot find an entropy source and where no entropy
+gathering daemon can be utilized, this option activates a mechanism for
+providing pseudo entropy. This is archieved by taking the current time in
+microseconds for feeding the libc pseudo random number generator with an
+initial value. openssl is then feeded with output from random calls.
+NOTE:This mechanism is not sufficient for generation of secure keys!
+
+
+Option: openssl-fips
+Aliases: fips
+
+Type: BOOL
+Option group: BOOL
+Phase: SPEC
+Platforms: (depends on OpenSSL installation and FIPS implementation)
+
+Enables FIPS mode if compiled in. For info about the FIPS encryption
+implementation standard see http://oss-institute.org/fips-faq.html.
+This mode might require that the involved certificates are generated with a
+FIPS enabled version of openssl. Setting or clearing this option on one
+socat address affects all OpenSSL addresses of this process.
+
+
+Option: openssl-compress
+Aliases: compress
+
+Type: STRING
+Option group: OPENSSL
+Phase: SPEC
+Platforms: (depends on openssl installation)
+
+Enable or disable the use of compression for a connection. Setting this to
+"none" disables compression, setting it to "auto" lets OpenSSL choose the best
+available algorithm supported by both parties. The default is to not touch any
+compression-related settings.
+NOTE: Requires OpenSSL 0.9.8 or higher.
+NOTE: Disabling compression with OpenSSL 0.9.8 affects all new connections in
+the same process.
+
+
+===============================================================================
+Application specific address options
+
+
+Option: ignoreeof
+Aliases: ignoreof
+
+Type: BOOL
+Option group: APPL
+Phase: LATE
+Platforms: all
+
+This option has to be supported by the application. For socat it means that an
+EOF condition on this data source does not trigger termination procedures, but 
+instead the read/write loop waits for one second and then tries to read more
+input data. This behaviour emulates "tail -f" and might not be useful for all
+kinds of input devices, but regular files and /dev/null are good candidates. 
+Termination of socat then can only occur by EOF condition of the other input
+device, an error, or by external events.
+
+
+Option: cr
+
+Type: CONST
+Option group: APPL
+Phase: LATE
+Platforms: all
+
+The appropriate data endpoint uses CR ('\r', 0x0d) as line terminator
+character. Convert data to and from this stream appropriately.
+This is useful for, e.g., modems.
+
+
+Option: crnl
+Aliases: crlf
+
+Type: CONST
+Option group: APPL
+Phase: LATE
+Platforms: all
+
+The appropriate data endpoint uses CR+LF ("\r\n", 0x0d0a ) as line terminator
+string. Convert data to and from this stream appropriately.
+This is useful for, e.g., TCP protocols like SMTP and FTP.
+
+
+Option: readbytes=num
+Aliases: bytes
+
+Type: SIZE_T
+Option group: APPL
+Phase: LATE
+Platforms: all
+
+socat reads only so many bytes from this address (the address provides
+only so many bytes for transfer and pretends to be at EOF afterwards).
+
+
+Option: lockfile=filename
+
+Type: FILENAME
+Option group: APPL
+Phase: INIT
+Platforms: all
+
+If lockfile exists, exits with error. If lockfile does not exist, creates it
+and continues; removes lockfile on exit.
+
+
+Option: waitlock=filename
+
+Type: FILENAME
+Option group: APPL
+Phase: INIT
+Platforms: all
+
+If lockfile exists, waits until it disappears. When lockfile does not exist,
+creates it and continues; removes lockfile on exit.
+
+===============================================================================
+RETRY options
+
+Option: retry=<num>
+
+Type: UINT
+Option group: RETRY
+Phase: INIT
+Platforms: all
+
+Number of retries before the connection or listen attempt is aborted. 
+Default is 0, which means just one attempt. 
+
+
+Option: interval=<double>
+
+Type: TIMESPEC
+Option group: RETRY
+Phase: INIT
+Platforms: all
+
+Time between consecutive attempts (seconds). Default is 1 second.
+
+
+Option: forever
+
+Type: BOOL
+Option group: RETRY
+Phase: INIT
+Platforms: all
+
+Performs an unlimited number of retry attempts.
+
+===============================================================================
+EXT2 options
+
+Option: ext2-secrm=<bool>
+Aliases: secrm=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the secrm file attribute on the file.
+
+
+Option: ext2-unrm=<bool>
+Aliases: unrm=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the unrm file attribute on the file.
+
+
+Option: ext2-compr=<bool>
+Aliases: compr=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the compr file attribute on the file.
+
+
+Option: ext2-sync=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: all
+
+Sets the sync file attribute on the file.
+
+
+Option: ext2-immutable=<bool>
+Aliases: immutable=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the immutable file attribute on the file.
+
+
+Option: ext2-append=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: all
+
+Sets the append file attribute on the file.
+
+
+Option: ext2-nodump=<bool>
+Aliases: nodump=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the nodump file attribute on the file.
+
+
+Option: ext2-noatime=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the noatime file attribute on the file.
+
+
+Option: ext2-journal-data=<bool>
+Aliases: journal-data=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the journal-data file attribute on the file.
+
+
+Option: ext2-notail=<bool>
+Aliases: notail=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: none
+
+Sets the notail file attribute on the file.
+
+
+Option: ext2-dirsync=<bool>
+Aliases: dirsync=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the dirsync file attribute on the file.
+
+
+Option: ext2-topdir=<bool>
+Aliases: topdir=<bool>
+
+Type: BOOL
+Option group: REG
+Phase: FD
+Platforms: Linux
+
+Sets the topdir file attribute on the file.
+
+
+===============================================================================
+
+Appendix: generating a sandbox (chroot environment)
+
+While it is possible to generate a sandbox almost anywhere in the file system,
+I recommend to use a file system that has been mounted with restrictions,
+especially nosuid and maybe nodev, or even ro.
+
+You may mount a dedicated file system for the sandbox, so it gets a little
+harder for the guests to determine for sure if they are within a sandbox when
+using "ls -id /"
+
+The following desribes typical steps for generating a sandbox. Depending on
+your operating system, application, and security requirements, your mileage may
+vary. With the below steps, you will be able to run some check programs to play
+around with the sandbox. 
+
+I Installation
+1) Create a sandbox group - but give it and all following "sandbox" ids a more
+cryptic name!
+2) Create a sandbox user, only in sandbox group. If this user must never login,
+give it a useless shell like /bin/false
+3) Check the sandbox home directory (e.g. /home/sandbox) and save and remove
+all .profile, public_html/ etc.
+4) Optionally mount a new file system over the new home directory
+5) Generate subdirectories bin, lib, etc, usr, usr/bin, usr/lib.
+Set their permissions and ownership equal to the original directories (or use
+only root.root)
+6) Generate subdirectory home/sandbox (or similarly; like sandbox home)
+7) Generate etc/passwd with users sandbox and root, but do not store original
+password hashes there!
+8) Generate etc/group with only groups sandbox and root (or system on AIX)
+9) Copy test programs and utilities to bin, e.g. su, id, ls, mount, strace (but
+without SUID/SGID)
+10) Copy the required shared libraries and the shared library loader to their
+directories. 
+On Linux, e.g. /lib/ld-linux.so.2, /lib/libnss_compat.so.2
+Note: it is often difficult to find out what shared libraries are (still) not
+installed in the sandbox. The programs invoked in the sandbox typically do not
+give useful error messages. If chroot's exec call gives an error like "no such
+file or directory", and you do not know if it even found the program itself,
+then remove the test programs execute permission; the error message should
+change to "execute permission denied" or so. Redo the execute permissions and
+look for the shared libraries...
+List required libraries of a program:
+Linux: ldd <program>
+AIX:   xdb <program>
+       map
+
+11) For testing purposes, install id, ls, su, mount, strace, and maybe sh in
+the sandbox. Test it.
+
+II Customization
+12) Copy your applications, configuration files, and data to the appropriate
+directories within the sandbox.
+Test function of the application in the sandbox, and add missing files and
+libraries. If an application program gets killed immediately after start, it
+might miss a shared library.
+
+III Cleanup, check
+13) Implement your own tricks how to improve security of the sandbox
+14) Remove test programs like bin/sh, id, ls, mount, strace
+
+
+===============================================================================
+socket types, modes and their security features:
+IP.v4.TCP.connect
+IP.v4.TCP.listen	range	tcpwrap	srcport	lowport
+IP.v4.UDP.connect
+IP.v4.UDP.listen	range	tcpwrap	srcport	lowport
+IP.v4.UDP.sendto
+IP.v4.UDP.recvfrom	range	tcpwrap	srcport	lowport
+IP.v4.UDP.recv		range	tcpwrap	srcport	lowport
+IP.v4.raw.sendto
+IP.v4.raw.recvfrom	range	tcpwrap
+IP.v4.raw.recv		range	tcpwrap
+IP.v6.TCP.connect
+IP.v6.TCP.listen	range	tcpwrap	srcport	lowport
+IP.v6.UDP.connect
+IP.v6.UDP.listen	range	tcpwrap	srcport	lowport
+IP.v6.UDP.sendto
+IP.v6.UDP.recvfrom	range	tcpwrap	srcport	lowport
+IP.v6.UDP.recv		range	tcpwrap	srcport	lowport
+IP.v6.raw.sendto
+IP.v6.raw.recvfrom	range	tcpwrap
+IP.v6.raw.recv		srcport	lowport
+UNIX.stream.connect
+UNIX.stream.listen
+UNIX.dgram.sendto
+UNIX.dgram.recvfrom
+UNIX.dgram.recv
+OPENSSL.connect
+OPENSSL.TCP4.listen	range	tcpwrap	srcport	lowport
+OPENSSL.TCP6.listen	range	tcpwrap	srcport	lowport
+
+===============================================================================
+Missing features and Caveats:
+
+. no support for SIGIO mechanism
+. no support for socket ancillary messages
+. Probably many ioctls not implemented due to missing documentation
+. only limited implementation of raw sockets and interfaces,
+. no support for high level sockets beyond UNIX, INET, and INET6 domains

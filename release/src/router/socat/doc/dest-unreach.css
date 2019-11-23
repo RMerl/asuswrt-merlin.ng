@@ -1,0 +1,9 @@
+table {
+	empty-cells:show;
+}
+.frame { border-style:solid; border-width:4px; border-color:black; }
+.shell { font-family:Courier;
+      padding:2px; padding-left:6px; padding-right:6px;
+      border-style:solid; border-width:1px; border-color:gray;
+      color:lightgreen;  background-color:black;
+}

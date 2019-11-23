@@ -1,0 +1,97 @@
+
+Q: What is the clue of socat?
+
+A: socat probably doesn't have any clue. It is more an attempt to smoothly
+integrate similar I/O features that are usually handled differently under
+UNIX.
+
+
+Q: What does the prefix XIO mean?
+
+A: XIO means "extended input/output". It is a library/API that provides a
+common way for handling files, sockets and other forms of I/O. Its advantage is
+that the application may reduce its I/O to open / read+write / close calls,
+while the user controls all I/O details (and even basic process properties) by
+packing options into the filename string. This is the basic part of socat.
+
+
+Q: Is there a Windows port of socat available?
+
+A: Try with Cygwin from http://www.cygwin.com/, or upgrade to Linux.
+
+
+Q: I succeeded to configure and make socat, but ./test.sh says something
+like:
+./test.sh: No such file or directory
+
+A: You need a bash shell, and its location must be correctly specified in the
+first line of test.sh, e.g. /usr/local/bin/bash instead of /bin/bash.
+
+
+Q: configure disables readline / openssl / libwrap support because it does not
+find an include file / the library. How can I tell configure where these files
+are?
+
+A: For include locations, use the environment variable CPPFLAGS, for library
+locations use LIBS, e.g.:
+   export CPPFLAGS="-I/home/user/ssl/include"
+   export LIBS="-L/home/user/ssl/lib"
+On some systems (SunOS), you might also need to set LD_LIBRARY_PATH:
+   export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/user/ssl/lib"
+Then try again:
+   make distclean; ./configure; make
+
+
+Q: I succeeded to make socat, but the test.sh script fails for many tests.
+Is my socat build corrupt?
+
+A: Probably your socat program is ok; the tests have been developed on Linux
+2.4, and there they usually succeed.
+But the following OS differences result in errors on non Linux systems:
+ * Linux allows to bind a socket to any address of range 127.0.0.0/8, not
+   only 127.0.0.1. Some tests are built on this feature, but they might fail on
+   other systems. 
+ * Your OS might have no IP6 implementation
+ * MacOS X has some difficulties, e.g. distinguishing sockets and pipes.
+ * the OpenSSL tests require OpenSSL support by socat, must have openssl in
+   $PATH, and "openssl s_server ..." needs enough entropy to generate a key.
+
+
+Q: When I specify a dual address (two partial addresses linked with "!!") on
+the command line, I get some message "event not found", and my shell history
+has the line truncated. Not even protecting the '!'s with '\' helps.
+
+A: '!' is appearently used by your shell as history expansion character. Say
+"set +H" and add this line to your (bash) profile.
+
+
+Q: On Solaris, socat was built successfully, but when started, it gets killed
+with something like "ld.so.1: ./socat: fatal: libreadline.so.4: open failed: no
+such file or directory"
+
+A: The configure script finds your libreadline, but the runtime loader
+doesn't. Add the directory where the library resides to your LD_LIBRARY_PATH
+variable, e.g.: 
+   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/sfw/lib/
+   make distclean; ./configure; make
+
+
+Q: On Solaris, socat was built successfully, but when started, an assertion
+fails: "xioinitialize.c:25: failed assertion `3 << opt_crdly.arg3 == CRDLY'
+
+A: Probably, in a second attempt you set the correct LD_LIBARY_PATH for socat,
+but it had not been set during the ./configure run, or you did not "make clean"
+before running configure. Try it again:
+   make distclean; ./configure; make
+
+
+Q: A socat process, run in background from an interactive shell, is always
+stopped with all its child processes after about 5 minutes. killall -9 socat is
+required to clean the system and allow socat to be started again.
+
+A: The terminal (window) might have the TOSTOP flag set and one of the socat
+processes wants to write to the terminal. Clear this flag in your shell:
+   stty -tostop
+and start socat again.
+Thanks to Philippe Teuwen for reporting this situation.
+

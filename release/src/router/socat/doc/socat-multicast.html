@@ -1,0 +1,392 @@
+<!-- source: doc/socat-multicast.html -->
+<html><head>
+<title>IP Multicasting with Socat</title>
+<link rel="stylesheet" type="text/css" href="dest-unreach.css">
+</head>
+
+<body>
+
+<h1>IP Multicasting with Socat</h1>
+
+<h2>Introduction</h2>
+<p>
+Multicasting (and broadcasting which is also discussed in this article)
+provides a means to direct a single packet to more than one host. Special
+addresses are defined for this purpose and are handled specially by network
+adapters, networking hardware, and IP stacks.
+</p>
+<p>
+IPv4 specifications provide broadcasting and multicasting; IPv6 provides
+multicasting but replaces broadcasting by special multicast modes. UNIX domain
+sockets do not know broadcasting or multicasting.
+</p>
+<p>
+The following examples use UDP/IPv4 only. However, they can easily be
+adapted for raw IPv4 sockets. IPv6 multicasting has not yet been successfully
+used with socat; please contact the author if you have positive experiences or
+ideas that go beyond <tt>IPV6_ADD_MEMBERSHIP</tt>. 
+</p>
+<p>
+All multicast examples presented in this document use multicast address
+224.1.0.1; it can be replaced by any valid IPv4 multicast address (except 
+<a href="#ALLSYSTEMS">all-systems</a>).
+</p>
+<p>
+We assume a local network with address 192.168.10.0 and mask 255.255.255.0; an
+eventual "client" has 192.168.10.1, example "server" and example peer have
+192.168.10.2 in all examples. Change these addresses and mask to your own
+requirements.
+</p>
+<p>
+All the following examples work bidirectionally except when otherwise noticed. 
+For "clients" we just use <tt>STDIO</tt>, and for "servers" we use <tt>EXEC:hostname</tt> which
+ingores its input but shows us which host the reply comes from. Replace these
+socat addresses with what is appropriate for your needs (e.g. shell script
+invocations). Port 6666 can be replaced with any other port (but for ports &lt;
+1024 root privilege might be required).
+</p>
+<p>
+Different kinds of broadcast addresses exist: 255.255.255.255 is local network
+only; for the IPv4 network 192.168.10.0/24 the "official" broadcast address
+is 192.168.10.255; the network address 192.168.10.0 is also interpreted as
+broadcast by some hosts. The two latter forms are routed by gateways. In the
+following examples we only use broadcast address 192.168.10.255.
+</p>
+
+<h2>Example 1: Multicast client and servers</h2>
+
+<p>This example builds something like a "supervisor" or "client" that
+communicates with a set of "servers". The supervisor may send packets to the
+multicast address, and the servers may send response packets. Note that the
+servers would also respond to other clients' requests.</p>
+
+<p>Multicast server:</p>
+
+<span class="frame"><span class="shell">
+socat UDP4-RECVFROM:6666,ip-add-membership=224.1.0.1:192.168.10.2,fork EXEC:hostname
+</span></span>
+<p>
+This command receives multicast packets addressed to 224.1.0.1 and forks a
+child process for each. The child processes may each send one or more reply
+packets back to the particular sender. 192.168.10.2 means the address of the
+interface where multicasts should be received.
+Run this command on a number of hosts, and they will all respond in
+parallel.</p>
+
+<p>Multicast client:</p>
+
+<span class="frame"><span class="shell">
+socat STDIO UDP4-DATAGRAM:224.1.0.1:6666,range=192.168.10.0/24
+</span></span>
+<p>
+This process transfers data from stdin to the multicast address, and transfers 
+packets received from the local network to stdout. It does not matter in which
+direction the first data is passed.
+A packet from the network is accepted by the IP stack for our socket if:
+<ul>
+<li>it is an incoming UDP/IPv4 packet</li>
+<li>its target port matches the local port assigned to the socket (random)</li>
+<li>its target address matches one of the hosts local addresses or the any-host
+multicast address</li>
+</ul>
+Of these packets, socat handles only those matching the following criteria:
+<ul>
+<li>the source address is within the given range</li>
+<li>the source port is 6666</li>
+</ul>
+</p>
+
+
+<h2>Example 2: Broadcast client and servers</h2>
+
+<p>Broadcast server:</p>
+
+<span class="frame"><span class="shell">
+socat UDP4-RECVFROM:6666,broadcast,fork EXEC:hostname
+</span></span>
+<p>
+This command receives packets addressed to a local broadcast address and forks
+a child process for each. The child processes may each send one or more reply
+packets back to the particular sender. 
+Run this command on a number of hosts, and they will all respond in
+parallel.</p>
+
+<p>Broadcast client:</p>
+
+<span class="frame"><span class="shell">
+socat STDIO UDP4-DATAGRAM:192.168.10.255:6666,broadcast,range=192.168.10.0/24
+</span></span>
+<p>
+This process transfers data from stdin to the broadcast address, and transfers 
+packets received from the local network to stdout. It does not matter in which
+direction the first data is passed.
+A packet from the network is accepted by the IP stack for our socket if:
+<ul>
+<li>it is an incoming UDP/IPv4 packet</li>
+<li>its target port matches the local port assigned to the socket (6666)</li>
+<li>its target address matches one of the hosts local addresses or the any-host
+multicast address, or a local broadcast address</li>
+</ul>
+Of these packets, socat handles only those matching the following criteria:
+<ul>
+<li>the source address is within the given range</li>
+<li>the source port is 6666</li>
+</ul>
+</p>
+<p>The <tt>broadcast</tt> option is only required for sending or receiving
+local broadcasts.</p>
+
+<h2>Example 3: Multicast peers</h2>
+
+<p>It is possible to combine multicast sender and receiver in one socat
+address. This allows to start processes on different hosts on the local network
+that will communicate symmetrically, so each process can send messages that are
+received by all the other ones.</p>
+
+<span class="frame"><span class="shell">
+socat STDIO UDP4-DATAGRAM:224.1.0.1:6666,bind=:6666,range=192.168.10.0/24,ip-add-membership=224.1.0.1:192.168.10.2
+</span></span>
+<p>
+This command is valid for host 192.168.10.2; adapt this address to the
+particular interface addresses of the hosts.
+</p>
+<p>
+Starting this process opens a socket on port 6666 that will receive packets
+directed to multicast address 224.1.0.1. Only packets with matching source
+address and source port 6666 will be handled though. When this process sends
+data to the network the packets will be addressed to 224.1.0.1:6666 and have a
+source address of 192.168.10.2:6666, matching the accept criteria of the peers
+on the local network.
+</p>
+
+<p>Note: this command receives the packets it just has sent; add option
+<tt>ip-multicast-loop=0</tt> if this in undesired.</p>
+
+<h2>Example 4: Broadcast peers</h2>
+
+<p>Just as with multicast, it is possible to combine broadcast sender and
+receiver in one socat address.</p>
+
+<span class="frame"><span class="shell">
+socat STDIO UDP4-DATAGRAM:255.255.255.255:6666,bind=:6666,range=192.168.10.0/24,broadcast
+</span></span>
+<p>
+Starting this process opens a socket on port 6666 that will receive packets
+directed to a local broadcast addresses. Only packets with matching source
+address and source port 6666 will be handled though. When this process sends
+data to the network the packets will be addressed to 255.255.255.255:6666 and
+have a source address of 192.168.10.2:6666, matching the accept criteria of
+the peers on the local network.
+</p>
+
+<p>Note: this command receives the packets it just has sent; there does not
+seem to exist a simple way to prevent this.</p>
+
+
+<h2>Troubleshooting</h2>
+
+<p>
+If you do not get an error message during operation, but the packets do not
+reach the target processes, use <tt>tcpdump</tt> to see if the packets have the
+correct source and destination addresses and ports, and if they leave and enter
+the hosts as expected.
+</p>
+<p>
+The following subsections discuss some typical sources of trouble.
+</p>
+
+<h3>IP filters</h3>
+<p>
+If you do not succeed in receiving multicast or broadcast packets, check if
+iptables are activated on the receiving or sending host. They might be
+configured to disallow this traffic. 
+</p>
+
+<h3>Do not bind()</h3>
+<p>
+When using multicast communications, you should not bind the sockets to a
+specific IP address. It seems that the (Linux) IP stack compares the
+destination address with the bind address, not taking care of the multicast
+property of the incoming packet.
+</p>
+
+<h3>Routing</h3>
+<p>
+When you receive an error like:</p>
+<table border="1" bgcolor="#e08080"><tr><td><tt>... E sendto(3, 0x80c2e44, 4,
+0, AF=2 224.1.0.1:6666, 16): Network is unreachable</tt></td></tr></table>
+<p>you have a routing problem. The (Linux) IP stack seems to handle multicast
+addresses just like unicast addresses when determining their route (interface
+  and gateway), i.e. the routing table needs an entry that somehow matches the
+  target address. </p>
+<p>
+For the same reason, multicast packets will probably leave your host on the
+interface with the default route if it is specified.</p>
+<p>
+Set a multicast/broadcast route with the following command (Linux):</p>
+<span class="frame"><span class="shell">
+route add -net 224.0.0.0/3 gw 192.168.10.2
+</span></span>
+
+<a name="ALLSYSTEMS"></a>
+<h3>ALL-SYSTEMS multicast address</h3>
+<p>
+<tt>224.0.0.1</tt> is the all-systems multicast address: all
+datagram sockets appear to be automatically member of this group on all
+interfaces. This membership cannot be dropped on Linux (you need iptables to
+filter packets).
+</p>
+
+
+<h2>(In)Security</h2>
+
+<p>When you use the above examples you should understand that all datagram
+sockets without exception accept all packets that are directly addressed to
+them;
+the multi- and broadcast receiving features are just extensions to this
+functionality. socat currently has no means to handle incoming packets
+differently whether they are addressed to unicast, multicast, or broadcast
+addresses. However, for EXEC'd scripts socat can provide this info in
+environment variables.
+</p>
+
+<p>Authentication or encryption are not available.</p>
+
+<p>It is very easy to fake the source address of UDP (or raw IP) packets. You
+should understand whether your network is protected from address spoofing
+attacks.</p>
+
+<p>Broadcast and multicast traffic can trivially be received by <em>any</em>
+host on the local network.</p>
+
+
+<h2>History</h2>
+
+Starting with version 1.5.0, socat provides a set of address types that
+allow various operations on datagram oriented sockets:
+<dl>
+<dt>SENDTO</dt><dd>send packets to a remote socket and receive packet from this
+remote socket only</dd>
+<dt>RECV</dt><dd>receive all packets that arrive on the local socket, but do
+not reply</dd>
+<dt>RECVFROM</dt><dd>receive all packets that arrive on the local socket, and
+reply using child processes</dd>
+</dl>
+
+<p>
+These modes already enable several different client/server oriented operations.
+Moreover, the SENDTO addresses can send to multicast and broadcast addresses
+(the latter requires the <tt>broadcast</tt> option though). RECV and RECVFROM
+also would accept packets addressed to a local broadcast address (with option
+<tt>broadcast</tt>) or the all-systems multicast address.
+</p>
+
+<p>
+These address types had, however, two major caveats: 
+<ul>
+<li>Missing control of multicast group membership in the RECV and RECVFROM
+addresses</li>
+<li>The SENDTO address would never accept a reply to a broadcast or multicast
+addressed packet because the source address of incoming replies would not match
+the target address of the sent packet.
+</ul>
+</p>
+
+<h3>New Features in socat 1.6.0</h3>
+
+<p>
+socat version 1.6.0 addresses these problems and provides a new more generic
+datagram address type (*-DATAGRAM) and the new address option IP-ADD-MEMBERSHIP.
+</p>
+
+<p>
+Please note that the new features could not be successfully tested on IPv6;
+these sections thus apply to IPv4 only.
+</p>
+
+<h3>New Features in socat 1.7.0</h3>
+
+<p>
+socat version 1.7.0 helps to find more information about incoming packets in
+environment variables that can be used in scripts or programs invoked by
+socat. The option <tt>ip-pktinfo</tt> (on non-BSD systems) 
+or <tt>ip-recvdstaddr</tt> (on BSD systems) is required to get basic
+information about incoming packets.
+</p>
+
+<p>
+Example: Start a receiver of the following form (tried on Linux):
+</p>
+
+<span class="frame"><span class="shell">
+socat -u UDP-RECVFROM:8888,reuseaddr,ip-add-membership=224.1.0.1:192.168.10.2,ip-pktinfo,fork SYSTEM:export
+</span></span>
+
+<p>
+Then send a multicast packet from the client:
+</p>
+
+<span class="frame"><span class="shell">
+echo |socat -u STDIO UDP-DATAGRAM:224.1.0.1:8888
+</span></span>
+
+<p>
+On the server the following text should appear (only interesting lines shown):
+</p>
+
+<pre>
+export SOCAT_IP_DSTADDR="224.1.0.1"
+export SOCAT_IP_IF="eth0"
+export SOCAT_IP_LOCADDR="192.168.10.2"
+export SOCAT_PEERADDR="192.168.10.1"
+export SOCAT_PEERPORT="41159"
+</pre>
+
+<p>
+<tt>SOCAT_IP_IF</tt> shows the interface where the packet entered the server;
+<tt>SOCAT_IP_LOCADDR</tt> shows the IP address of this interface;
+<tt>SOCAT_IP_DSTADDR</tt> shows the target address of the packet;
+<tt>SOCAT_PEERADDR</tt> and <tt>SOCAT_PEERPORT</tt> are the client socket
+values.
+</p>
+
+<h2>More info about socat datagrams</h2>
+
+<h3>Links regarding this tutorial</h3>
+<a href="socat.html#ADDRESS_UDP4_DATAGRAM">address UDP4-DATAGRAM</a><br>
+<a href="socat.html#ADDRESS_UDP4_RECVFROM">address UDP4-RECVFROM</a><br>
+<a href="socat.html#OPTION_RANGE">option range</a><br>
+<a href="socat.html#OPTION_SO_BROADCAST">option broadcast</a><br>
+<a href="socat.html#OPTION_IP_ADD_MEMBERSHIP">option ip-add-membership</a><br>
+<a href="socat.html#OPTION_FORK">option fork</a><br>
+<a href="socat.html#OPTION_BIND">option bind</a><br>
+
+<h3>Other datagram addresses</h3>
+<a href="socat.html#ADDRESS_UDP4_RECV">address UDP4-RECV</a>: pure datagram receiver<br>
+<a href="socat.html#ADDRESS_UDP4_SENDTO">address UDP4-SENDTO</a>: communicate
+with one peer address<br>
+<a href="socat.html#ADDRESS_UDP4_LISTEN">address UDP4-LISTEN</a>: pseudo stream server<br>
+<a href="socat.html#ADDRESS_UDP4_CONNECT">address UDP4-CONNECT</a>: pseudo stream client<br>
+
+<h3>Related socat option groups</h3>
+<a href="socat.html#GROUP_IP">IP options</a><br>
+<a href="socat.html#GROUP_SOCKET">socket options</a><br>
+<a href="socat.html#GROUP_FD">file descriptor options</a><br>
+<a href="socat.html#GROUP_RANGE">range options</a><br>
+<a href="socat.html#GROUP_CHILD">child process options</a><br>
+
+
+<h2>References</h2>
+<a href="http://www.dest-unreach.org/socat">socat home page</a><br>
+<a href="socat.html">socat man page</a><br>
+<a href="http://en.wikipedia.org/wiki/Multicast">multicasting on Wikipedia</a><br>
+<a href="http://en.wikipedia.org/wiki/Broadcast_address">broadcasting on Wikipedia</a><br>
+
+<p>
+<small>This document was last modified in May 2009.</small><br>
+<small>Copyright: Gerhard Rieger 2007-2009</small><br>
+<small>License: <a href="http://www.fsf.org/licensing/licenses/fdl.html">GNU Free Documentation License (FDL)</a></small>
+</p>
+
+</body>
+</html>

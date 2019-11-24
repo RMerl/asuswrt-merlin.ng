@@ -6098,15 +6098,19 @@ int start_firewall(int wanunit, int lanunit)
 	if (get_ipv6_service() != IPV6_DISABLED) {
 		if (!f_exists("/proc/sys/net/netfilter/nf_conntrack_frag6_timeout"))
 			modprobe("nf_conntrack_ipv6");
+#ifndef HND_ROUTER
 		modprobe("ip6t_REJECT");
 		modprobe("ip6t_ROUTE");
 		modprobe("ip6t_LOG");
+#endif
 		modprobe("xt_length");
 	} else {
 		modprobe_r("xt_length");
+#ifndef HND_ROUTER
 		modprobe_r("ip6t_LOG");
 		modprobe_r("ip6t_ROUTE");
 		modprobe_r("ip6t_REJECT");
+#endif
 		modprobe_r("nf_conntrack_ipv6");
 	}
 #endif

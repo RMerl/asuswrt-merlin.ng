@@ -698,8 +698,8 @@ void start_usb(int orig)
 
 #ifdef LINUX26
 		if ((i = nvram_get_int("led_usb_gpio")) != 255) {
-			modprobe("ledtrig-usbdev");
-			modprobe("leds-usb");
+//			modprobe("ledtrig-usbdev");
+//			modprobe("leds-usb");
 			sprintf(param, "%d", i);
 			f_write_string("/sys/class/leds/usb-led/gpio_pin", param, 0, 0);
 			f_write_string("/sys/class/leds/usb-led/device_name", "1-1", 0, 0);
@@ -938,8 +938,8 @@ void remove_usb_storage_module(void)
 void remove_usb_led_module(void)
 {
 #ifdef LINUX26
-	modprobe_r("leds-usb");
-	modprobe_r("ledtrig-usbdev");
+//	modprobe_r("leds-usb");
+//	modprobe_r("ledtrig-usbdev");
 #endif
 }
 

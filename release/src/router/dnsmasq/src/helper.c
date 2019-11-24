@@ -66,8 +66,7 @@ struct script_data
 #endif
   struct in6_addr addr6;
 #ifdef HAVE_DHCP6
-  int vendorclass_count;
-  unsigned int iaid;
+  int iaid, vendorclass_count;
 #endif
   unsigned char hwaddr[DHCP_CHADDR_MAX];
   char interface[IF_NAMESIZE];

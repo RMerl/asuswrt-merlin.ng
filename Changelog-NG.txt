@@ -10,16 +10,21 @@ Asuswrt-Merlin 384/NG Changelog
          time, or completely disable it.
   - NEW: Added "split" busybox applet.
   - NEW: Added IPv6 support to Network Analysis webui
-  - UPDATED: RT-AX88U to GPL 384_6436.
-  - UPDATED: RT-AC68U, RT-AC88U, RT-AC3100 to GPL 384_81116.
-  - UPDATED: RT-AC86U to GPL 384_81116 + binary blobs from 384_81049
+  - NOTE: You might need to reconfigure your device hostname on the
+          LAN -> LAN IP page due to a GPL-level change (exclusing
+          the RT-AX88U)
+  - UPDATED: RT-AX88U to GPL 384_6436 (with Let's Encrypt fixes
+             backported from 384_81351)
+  - UPDATED: RT-AC68U, RT-AC86U to GPL 384_81351
+  - UPDATED: RT-AC88U, RT-AC3100 to GPL 384_81351 and binary
+             blobs from 384_81116
 
   - NOTE: There is currently no builds available for the RT-AC87U,
           RT-AC3200 or RT-AC5300 due to lack of updated compatible
           components from Asus for this release.
 
   - UPDATED: miniupnpd 20190824
-  - UPDATED: dnsmasq 2.80-93-g6ebdc95 (themiron)
+  - UPDATED: dnsmasq 2.80-74-gdefd6b1 (themiron)
   - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
   - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
   - UPDATED: Curl 7.66.0
@@ -47,6 +52,12 @@ Asuswrt-Merlin 384/NG Changelog
            firewall (would prevent using ::/0 for instance).
   - FIXED: EUI64 support missing while in Load Balancing or
            using Multicast IPTV.
+  - FIXED: Asus DDNS failing to update due to an expired
+           certificate on Asus's server (inadyn will now
+           ignore that certificate error for Asus DDNS).
+  - FIXED: Let's Encrypt support would sometime fail when using
+           Asus DDNS (fixed DNS publishing of validation record)
+           (in addition to general failure fixed by GPL 81351)
 
 
 384.13_1 (12-Aug-2019)

@@ -167,7 +167,6 @@ struct myoption {
 #define LOPT_NAME_MATCH    355
 #define LOPT_CAA           356
 #define LOPT_SHARED_NET    357
-#define LOPT_IGNORE_CLID   358
  
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -340,7 +339,6 @@ static const struct myoption opts[] =
     { "dhcp-rapid-commit", 0, 0, LOPT_RAPID_COMMIT },
     { "dumpfile", 1, 0, LOPT_DUMPFILE },
     { "dumpmask", 1, 0, LOPT_DUMPMASK },
-    { "dhcp-ignore-clid", 0, 0,  LOPT_IGNORE_CLID },
     { NULL, 0, 0, 0 }
   };
 
@@ -483,7 +481,6 @@ static struct {
   { LOPT_CPE_ID, ARG_ONE, "<text>", gettext_noop("Add client identification to forwarded DNS queries."), NULL },
   { LOPT_DNSSEC, OPT_DNSSEC_PROXY, NULL, gettext_noop("Proxy DNSSEC validation results from upstream nameservers."), NULL },
   { LOPT_INCR_ADDR, OPT_CONSEC_ADDR, NULL, gettext_noop("Attempt to allocate sequential IP addresses to DHCP clients."), NULL },
-  { LOPT_IGNORE_CLID, OPT_IGNORE_CLID, NULL, gettext_noop("Ignore client identifier option sent by DHCP clients."), NULL },
   { LOPT_CONNTRACK, OPT_CONNTRACK, NULL, gettext_noop("Copy connection-track mark from queries to upstream connections."), NULL },
   { LOPT_FQDN, OPT_FQDN_UPDATE, NULL, gettext_noop("Allow DHCP clients to do their own DDNS updates."), NULL },
   { LOPT_RA, OPT_RA, NULL, gettext_noop("Send router-advertisements for interfaces doing DHCPv6"), NULL },
@@ -4323,7 +4320,6 @@ err:
 	new = opt_malloc(sizeof(struct host_record));
 	memset(new, 0, sizeof(struct host_record));
 	new->ttl = -1;
-	new->flags = 0;
 
 	while (arg)
 	  {
@@ -4336,15 +4332,9 @@ err:
 	    if (*dig == 0)
 	      new->ttl = atoi(arg);
 	    else if (inet_pton(AF_INET, arg, &addr.addr4))
-	      {
-		new->addr = addr.addr4;
-		new->flags |= HR_4;
-	      }
+	      new->addr = addr.addr4;
 	    else if (inet_pton(AF_INET6, arg, &addr.addr6))
-	      {
-		new->addr6 = addr.addr6;
-		new->flags |= HR_6;
-	      }
+	      new->addr6 = addr.addr6;
 	    else
 	      {
 		int nomem;
@@ -5092,7 +5082,7 @@ void read_opts(int argc, char **argv, char *compile_opts)
 #define NOLOOP 1
 #define TESTLOOP 2      
 
-      /* Fill in TTL for CNAMES now we have local_ttl.
+      /* Fill in TTL for CNAMES noe we have local_ttl.
 	 Also prepare to do loop detection. */
       for (cn = daemon->cnames; cn; cn = cn->next)
 	{

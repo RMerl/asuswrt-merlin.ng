@@ -50,13 +50,6 @@ version 2.81
 	with the exception that NSEC and NSEC3 RRs must always be signed.
         Thanks to Tore Anderson for spotting and diagnosing the bug.
 
-	Add --dhcp-ignore-clid. This disables reading of DHCP client
-	identifier option (option 61), so clients are only identified by
-	MAC addresses.
-
-	Fix a bug which stopped --dhcp-name-match from working when a hostname
-	is supplied in --dhcp-host. Thanks to James Feeney for spotting this.
-
 	
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method

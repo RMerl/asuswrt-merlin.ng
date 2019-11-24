@@ -21,11 +21,11 @@
 
 struct state {
   unsigned char *clid;
-  int clid_len, ia_type, interface, hostname_auth, lease_allocate;
+  int clid_len, iaid, ia_type, interface, hostname_auth, lease_allocate;
   char *client_hostname, *hostname, *domain, *send_domain;
   struct dhcp_context *context;
   struct in6_addr *link_address, *fallback, *ll_addr, *ula_addr;
-  unsigned int xid, fqdn_flags, iaid;
+  unsigned int xid, fqdn_flags;
   char *iface_name;
   void *packet_options, *end;
   struct dhcp_netid *tags, *context_tags;
@@ -510,64 +510,65 @@ static int dhcp6_no_relay(struct state *state, int msg_type, void *inbuff, size_
 	 }
     }	 
   
-  if (state->clid &&
-      (config = find_config(daemon->dhcp_conf, state->context, state->clid, state->clid_len, state->mac, state->mac_len, state->mac_type, NULL)) &&
-      have_config(config, CONFIG_NAME))
+  if (state->clid)
     {
-      state->hostname = config->hostname;
-      state->domain = config->domain;
-      state->hostname_auth = 1;
-    }
-  else if (state->client_hostname)
-    {
-      state->domain = strip_hostname(state->client_hostname);
-            
-      if (strlen(state->client_hostname) != 0)
+      config = find_config(daemon->dhcp_conf, state->context, state->clid, state->clid_len, state->mac, state->mac_len, state->mac_type, NULL);
+      
+      if (have_config(config, CONFIG_NAME))
 	{
-	  state->hostname = state->client_hostname;
+	  state->hostname = config->hostname;
+	  state->domain = config->domain;
+	  state->hostname_auth = 1;
+	}
+      else if (state->client_hostname)
+	{
+	  struct dhcp_match_name *m;
+	  size_t nl;
+
+	  state->domain = strip_hostname(state->client_hostname);
+	  nl = strlen(state->client_hostname);
 	  
-	  if (!config)
+	  if (strlen(state->client_hostname) != 0)
 	    {
-	      /* Search again now we have a hostname. 
-		 Only accept configs without CLID here, (it won't match)
-		 to avoid impersonation by name. */
-	      struct dhcp_config *new = find_config(daemon->dhcp_conf, state->context, NULL, 0, NULL, 0, 0, state->hostname);
-	      if (new && !have_config(new, CONFIG_CLID) && !new->hwaddr)
-		config = new;
+	      state->hostname = state->client_hostname;
+	      
+	      if (!config)
+		{
+		  /* Search again now we have a hostname. 
+		     Only accept configs without CLID here, (it won't match)
+		     to avoid impersonation by name. */
+		  struct dhcp_config *new = find_config(daemon->dhcp_conf, state->context, NULL, 0, NULL, 0, 0, state->hostname);
+		  if (new && !have_config(new, CONFIG_CLID) && !new->hwaddr)
+		    config = new;
+		}
+	      
+	      for (m = daemon->dhcp_name_match; m; m = m->next)
+		{
+		  size_t ml = strlen(m->name);
+		  char save = 0;
+		  
+		  if (nl < ml)
+		    continue;
+		  if (nl > ml)
+		    {
+		      save = state->client_hostname[ml];
+		      state->client_hostname[ml] = 0;
+		    }
+		  
+		  if (hostname_isequal(state->client_hostname, m->name) &&
+		      (save == 0 || m->wildcard))
+		    {
+		      m->netid->next = state->tags;
+		      state->tags = m->netid;
+		    }
+		  
+		  if (save != 0)
+		    state->client_hostname[ml] = save;
+		}
 	    }
 	}
     }
-      
-  if (state->hostname)
-    {
-      struct dhcp_match_name *m;
-      size_t nl = strlen(state->hostname);
-      
-      for (m = daemon->dhcp_name_match; m; m = m->next)
-	{
-	  size_t ml = strlen(m->name);
-	  char save = 0;
-	  
-	  if (nl < ml)
-	    continue;
-	  if (nl > ml)
-	    {
-	      save = state->hostname[ml];
-	      state->hostname[ml] = 0;
-	    }
-	  
-	  if (hostname_isequal(state->hostname, m->name) &&
-	      (save == 0 || m->wildcard))
-	    {
-	      m->netid->next = state->tags;
-	      state->tags = m->netid;
-	    }
-	  
-	  if (save != 0)
-	    state->hostname[ml] = save;
-	}
-    }
-    
+
   if (config)
     {
       struct dhcp_netid_list *list;

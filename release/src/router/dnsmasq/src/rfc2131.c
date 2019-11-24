@@ -234,7 +234,7 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 	subnet_addr = option_addr(opt);
       
       /* If there is no client identifier option, use the hardware address */
-      if (!option_bool(OPT_IGNORE_CLID) && (opt = option_find(mess, sz, OPTION_CLIENT_ID, 1)))
+      if ((opt = option_find(mess, sz, OPTION_CLIENT_ID, 1)))
 	{
 	  clid_len = option_len(opt);
 	  clid = option_ptr(opt, 0);
@@ -740,9 +740,12 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
     }
   else if (client_hostname)
     {
+      struct dhcp_match_name *m;
+      size_t nl;
+
       domain = strip_hostname(client_hostname);
       
-      if (strlen(client_hostname) != 0)
+      if ((nl = strlen(client_hostname)) != 0)
 	{
 	  hostname = client_hostname;
 	  
@@ -763,36 +766,30 @@ size_t dhcp_reply(struct dhcp_context *context, char *iface_name, int int_index,
 		  netid = &known_id;
 		}
 	    }
-	}
-    }
 
-  if (hostname)
-    {
-      struct dhcp_match_name *m;
-      size_t nl = strlen(hostname);
-      
-      for (m = daemon->dhcp_name_match; m; m = m->next)
-	{
-	  size_t ml = strlen(m->name);
-	  char save = 0;
-	  
-	  if (nl < ml)
-	    continue;
-	  if (nl > ml)
+	  for (m = daemon->dhcp_name_match; m; m = m->next)
 	    {
-	      save = hostname[ml];
-	      hostname[ml] = 0;
+	      size_t ml = strlen(m->name);
+	      char save = 0;
+	      
+	      if (nl < ml)
+		continue;
+	      if (nl > ml)
+		{
+		  save = client_hostname[ml];
+		  client_hostname[ml] = 0;
+		}
+	      
+	      if (hostname_isequal(client_hostname, m->name) &&
+		  (save == 0 || m->wildcard))
+		{
+		  m->netid->next = netid;
+		  netid = m->netid;
 	    }
-	  
-	  if (hostname_isequal(hostname, m->name) &&
-	      (save == 0 || m->wildcard))
-	    {
-	      m->netid->next = netid;
-	      netid = m->netid;
+	      
+	      if (save != 0)
+		client_hostname[ml] = save;
 	    }
-	  
-	  if (save != 0)
-	    hostname[ml] = save;
 	}
     }
   

@@ -1085,7 +1085,6 @@ void start_lan(void)
 	char *lan_ifname;
 	struct ifreq ifr;
 	char *lan_ifnames, *ifname, *p;
-	char *hostname;
 	int sfd;
 	uint32 ip;
 	char eabuf[32];
@@ -2002,13 +2001,11 @@ gmac3_no_swbr:
 			&& !(dpsta_mode() && nvram_get_int("re_mode") == 0)
 #endif
 	) {
-		hostname = nvram_safe_get("computer_name");
-
 		char *dhcp_argv[] = { "udhcpc",
 					"-i", "br0",
 					"-p", "/var/run/udhcpc_lan.pid",
 					"-s", "/tmp/udhcpc_lan",
-					(*hostname != 0 ? "-H" : NULL), (*hostname != 0 ? hostname : NULL),
+					"-H", get_lan_hostname(),
 					NULL };
 		pid_t pid;
 

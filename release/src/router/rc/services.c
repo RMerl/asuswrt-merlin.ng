@@ -3584,6 +3584,9 @@ start_ddns(void)
 			                 "-e", "/sbin/ddns_updated",
 					"--exec-nochg", "/sbin/ddns_updated",
 			                 "-l", loglevel,
+#ifdef RTCONFIG_LETSENCRYPT
+			                 (asus_ddns == 1 ? "-1" : NULL),
+#endif
 			                 NULL };
 
 			_eval(argv, NULL, 0, &pid);

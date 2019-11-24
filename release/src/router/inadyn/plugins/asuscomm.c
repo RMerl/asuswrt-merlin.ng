@@ -205,6 +205,7 @@ static int request_reg(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 				}
 			}
 			snprintf(acme_arg, sizeof(acme_arg),"acme_challenge=1&txtdata=%s&", buf);
+			logit(LOG_DEBUG, "Acme challenge published to DNS: %s", acme_arg);
 		}
 	}
 #endif
@@ -311,7 +312,7 @@ static int response_update(http_trans_t *trans, ddns_info_t *info, ddns_alias_t 
 #endif
 			return RC_DDNS_RSP_NOTOK;
 		case 230:
-			logit(LOG_WARNING, "New domaine update success, old domain '%s'", domain);
+			logit(LOG_WARNING, "New domain update success, old domain '%s'", domain);
 #ifdef ASUSWRT
 			nvram_set ("ddns_old_name", domain);
 #endif

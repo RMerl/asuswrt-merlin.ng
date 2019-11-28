@@ -16,7 +16,9 @@ LIB_OBJS= \
 	base64.o \
 	bitfield.o \
 	common.o \
+	crc32.o \
 	ip_addr.o \
+	json.o \
 	radiotap.o \
 	trace.o \
 	uuid.o \

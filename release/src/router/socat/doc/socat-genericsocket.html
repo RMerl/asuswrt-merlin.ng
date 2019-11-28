@@ -1,0 +1,327 @@
+<html><head>
+<title>Generic sockets with Socat</title>
+<link rel="stylesheet" type="text/css" href="dest-unreach.css">
+</head>
+
+<body>
+
+<h1>Generic sockets with Socat</h1>
+
+<h2>Introduction</h2>
+<p>Beginning with version 1.7.0 socat provides means to freely control 
+  important aspects of socket handling. This allows to experiment with socket
+  types and protocols that are not explicitely implemented in socat.
+</p>
+
+<p>The related socat features fall into three major categories:<p>
+
+<ul>
+  <li>address options for changing socket parameters while using common 
+    socket types:
+    <tt>pf (protocol-family), so-type (socktype), so-prototype (protocol)</tt>
+  </li>
+  <li>address options for setting arbitrary socket options:
+    <tt>setsockopt-int, setsockopt-string, setsockopt-bin</tt></li>
+  <li>address types for passing almost arbitrary parameters and address data to
+    the standard system calls:
+    <tt>socket-connect, socket-listen, socket-sendto, socket-recv,
+      socket-recvfrom, socket-datagram</tt></li>
+</ul>
+
+<p>In practice this gives you two possibilities:</p>
+
+<p>If you want to cope with sockets staying within the usual domains ( =
+  protocol families = address families) which are IPv4, IPv6, UNIX/local, and
+  raw interface for socat 1.7.0, it is sufficient to learn about a couple of
+  <a href="#GENERIC_OPTIONS">address options</a> that allow to change default
+  parameters, and to apply generic socket options.</p> 
+
+<p>For other address families socat provides <a 
+href="#GENERIC_ADDRESSES">generic socket addresses</a>. 
+</p>
+
+
+<a name="GENERIC_OPTIONS"></a>
+<h2>Generic socket options</h2>
+
+<h3>Example 1: DCCP communication</h3>
+
+<p>A relatively new communication protocol has been introduced in the Internet
+  community for which no socat address type has been implemented up to version
+  1.7.0
+  (see <a href="http://www.ietf.org/html.charters/dccp-charter.html">IETF's
+  Datagram Congestion Control Protocol</a>
+  and <a href="http://www.linuxfoundation.org/en/Net:DCCP#python_support">Linux
+  foundation Net:DCCP</a> for more info). Taken that the
+  operating system implements DCCP, it is possible to use this protocol
+  with socat while just employing standard socket addresses and some options.
+</p>
+
+<p>A simple server that accepts a DCCP connection, passes the arriving data to a
+  subprocess for converting upper case to lower case characters, and then
+  returns it to the client: 
+</p>
+
+<span class="frame"><span class="shell">
+socat TCP4-LISTEN:4096,reuseaddr,type=6,prototype=33 exec:'tr A-Z a-z',pty,raw,echo=0
+</span></span>
+
+<p>A simple client that sends some upper case characters to the server via DCCP
+  and prints what the server returns:
+</p>
+
+<span class="frame"><span class="shell">
+echo ABCD |socat - TCP4-CONNECT:localhost:4096,type=6,prototype=33
+</span></span>
+
+<p>We choose the TCP4 addresses as base because it best matches the DCCP
+  requirements:
+  <ol>
+    <li>DCCP is (here) based on IPv4</li>
+    <li>DCCP is stream oriented and uses <tt>connect()</tt> and <tt>listen();
+	accept()</tt> calls</li>
+    <li>DCCP protocol uses ports</li>
+  </ol>
+</p>
+
+<p>Option <tt><a href="socat.html#OPTION_SO_TYPE">type</a>=6</tt> changes TCP's
+  <tt>SOCK_STREAM</tt> parameter to <tt>SOCK_DCCP</tt>, and <tt>
+    <a href="socat.html#OPTION_SO_PROTOTYPE">prototype</a>=33</tt> replaces the
+  default <tt>IPPROTO_TCP</tt> with <tt>IPPROTO_DCCP</tt>.
+</p>
+
+<p>DCCP has an important parameter, the service code. It provides another
+  multiplexing layer beyond the protocol ports. The Linux implementation of DCCP
+  allows to set this parameter with code like <tt>setsocktopt(fd, SOL_DCCP,
+  DCCP_SOCKOPT_SERVICE, {1}, sizeof(int))</tt>. The equivalent generic socat
+  option is: <tt><a href="socat.html#OPTION_SETSOCKOPT_INT">setsockopt-int</a>=269:2:1</tt> for service code 1.
+  If the service codes on server and client do not match the <tt>connect()</tt>
+  operation fails with error:<p>
+
+<table border="1" bgcolor="e08080"><tr><td><tt>... E connect(3, AF=2 127.0.0.1:4096, 16): Invalid request code</tt></td></tr></table>
+
+<p>Please note that this examples works with IPv6 as well, you just need to
+  replace the TCP4 words with TCP6, and the IPv4 socket address with an
+  appropriate IPv6 socket address, e.g. <tt>[::1]</tt>!
+</p>
+
+<a name="GENERIC_ADDRESSES"></a>
+<h2>Generic socket addresses</h2>
+
+<p>socat's generic socket addresses are a more comprehensive mechanism that
+  allows to deal with protocol families whose socket addresses are not supported
+  by socat - no semantical parsing, no structured assignment to the struct
+  components are available. Instead, the socket address records for binding and
+  connecting/sending are specified in unstructured hexadecimal form. The
+  following example demonstrates this by performing simple data transfer over
+  raw AppleTalk protocol.
+</p>
+
+<p>Note: I do not have any knowledge about AppleTalk. I just managed to
+  configure my Linux host to tolerate the creation of a receiving and a sending 
+  socket. Don't blame me nor ask me for support if it does not work for you.
+</p>
+
+<a name="EXAMPLE_APPLETALK"></a>
+<h3>Enabling AppleTalk protocol</h3>
+
+<p>Install the <tt>netatalk</tt> package. Check that <tt>/etc/netatalk/atalkd.conf</tt>
+  has an entry like <tt>eth0 -phase 2 -net 0-65534 -addr 65280.243</tt>. The
+  last part is an arbitrary (?) host address, some of the following values must
+  fit it. Make sure the <tt>atalkd</tt> daemon is running. Run the AppleTalk
+  ping command:
+</p>
+
+<span class="frame"><span class="shell">
+aecho 65280.243
+</span></span>
+
+<p>If you get an error like:
+</p>
+
+<table border="1" bgcolor="#e08080"><tr><td><tt>Device or resource busy</tt></td></tr></table>
+
+<p>then try to restart <tt>atalkd</tt>:</p>
+
+<span class="frame"><span class="shell">
+/etc/init.d/atalkd restart
+</span></span>
+
+<p>When <tt>aecho</tt> works like <tt>ping</tt> you are ready for the next step.
+</p>  
+  
+<h3>Example 2: AppleTalk datagram communication</h3>
+
+<p>We start a socat process with a receiver and echo service:
+</p>
+
+<span class="frame"><span class="shell">
+socat SOCKET-RECVFROM:5:2:0:x40x00x0000x00x00x0000000000000000 PIPE
+</span></span>
+
+<p>Then, in another shell on the same host, we start a client socket process
+  that sends data to the server and gets the answer:
+</p>
+
+<span class="frame"><span class="shell">
+echo ABCD |socat - SOCKET-DATAGRAM:5:2:0:x40x00xff00xf3x00x0000000000000000 
+</span></span>
+
+<p>The client process should print the data.
+</p>
+
+<p>How did this work? The generic socat address has just used the system call
+  parameters that were provided on command line, without knowing anything about
+  AppleTalk sockets and protocol. The values 5, 2, and 0 are directly used for
+  the <tt>socket()</tt> call: they specify the domain (<tt>PF_APPLETALK=5</tt>),
+  socket type (<tt>SOCK_DGRAM=2</tt>), and no protocol (0) - values for Linux.
+  The long hex strings define the socket addresses. They can only be constructed
+  with knowledge of the underlying structure. In
+  <tt>/usr/include/linux/atalk.h</tt> we find the following declarations:
+</p>
+
+<pre>
+struct atalk_addr {
+        __be16  s_net;
+        __u8    s_node;
+};
+
+struct sockaddr_at {
+        sa_family_t       sat_family;
+        __u8              sat_port;
+        struct atalk_addr sat_addr;
+        char              sat_zero[8];
+</pre>
+
+<p>After rolling out <tt>atalk_addr</tt> and considering implicit padding by the
+ C programming language we get the following byte map:
+</p>
+
+<table border="1">
+<tr><th>component</th><th>offset</th><th>length</th><th>value</th><th>meaning</th></tr>
+<tr><td>sat_family</td><td>0</td><td>2</td><td>x0005</td><td>address family</td></tr>
+<tr><td>sat_port</td><td>2</td><td>1</td><td>x40</td><td>port</td></tr>
+<tr><td>-</td><td>3</td><td>1</td><td>x00</td><td>padding</td></tr>
+<tr><td>sat_addr.s_net</td><td>4</td><td>2</td><td>xff00</td><td>network address</td></tr>
+<tr><td>sat_addr.s_node</td><td>6</td><td>1</td><td>xf3</td><td>node address</td></tr>
+<tr><td>-</td><td>7</td><td>1</td><td>x00</td><td>padding</td></tr>
+<tr><td>sat_zero</td><td>8</td><td>8</td><td>x0000000000000000</td><td>padding</td></tr>
+</table>
+
+<p>Note that hexadecimal ff00 is the same as decimal 65280, and hexadecimal xf3
+  is the same as decimal 243 - these are the numbers specified in
+  <tt>atalkd.conf</tt>.
+</p>
+  
+<p>The address family component must be omitted from the socket address because
+  it is added by socat implicitely. The resulting hexadecimal representation of
+  the target socket address is therefore:
+</p>
+<tt>x40x00xff00xf3x00x0000000000000000</tt>
+
+<p>The receiver just has to specify the port, so its bind address data is:
+</p>
+<tt>x40x00x0000x00x00x0000000000000000</tt>
+
+<h2>Parameters for well known socket types</h2>
+
+<p>Finding the correct parameters and socket addresses is not always trivial.
+  Therefore this section provides tables with the parameters of common socket
+  types. Some of these types are directly implemented by socat (and other
+  programs). Establishing interoperability between a directly implemented
+  socket and a generic socket might be your first step before entering unknown
+  ground.</p>
+  
+<h3>Socket parameters</h3>
+
+<h4>Table: parameter names for "well known" sockets:</h4>
+
+<table border=1>
+<tr><th>name</th><th>domain</th><th>socktype</th><th>protocol</th><th> </th><th>level</th><th>remark</th></tr>
+<tr><td>UDP4</td><td>PF_INET</td><td>SOCK_DGRAM</td><td>IPPROTO_UDP</td><td> </td><td>SOL_UDP</td><td></td></tr>
+<tr><td>UDP6</td><td>PF_INET6</td><td>SOCK_DGRAM</td><td>IPPROTO_UDP</td><td> </td><td>SOL_UDP</td><td></td></tr>
+<tr><td>raw IPv4</td><td>PF_INET</td><td>SOCK_RAW</td><td>IPPROTO_RAW</td><td> </td><td>SOL_IP</td><td></td></tr>
+<tr><td>raw IPv6</td><td>PF_INET6</td><td>SOCK_RAW</td><td>IPPROTO_RAW</td><td> </td><td>SOL_IPV6</td><td></td></tr>
+<tr><td>UNIX</td><td>PF_LOCAL</td><td>SOCK_DGRAM</td><td>0</td><td> </td><td>SOL_SOCKET</td><td> </td></tr>
+<tr><td>PACKET</td><td>PF_PACKET</td><td>SOCK_RAW</td><td>768</td><td></td><td>SOL_PACKET</td><td>tcpdump (include layer 2 header)</td></tr>
+<tr><td>PACKET</td><td>PF_PACKET</td><td>SOCK_DGRAM</td><td>768</td><td></td><td>SOL_PACKET</td><td>no level 2 header</td></tr>
+<tr><td>SCTP4</td><td>PF_INET</td><td>SOCK_SEQPACKET</td><td>IPPROTO_SCTP</td><td> </td><td>SOL_SCTP</td><td> </td></tr>
+</table>
+
+<h4>Table: parameter values:</h4>
+
+<table border=1>
+<tr><th>name</th><th>Linux</th><th>FreeBSD</th><th>NetBSD</th><th>OpenBSD</th><th>Solaris</th><th>AIX</th><th>Cygwin</th><th>Mac OS X</th><th>HP-UX</th></tr>
+<tr><td>PF_LOCAL</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>PF_INET</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><td>PF_APPLETALK</td><td>5</td><td>16</td><td>16</td><td>16</td><td>16</td><td>16</td><td>16</td><td>16</td><td>16</td></tr>
+<tr><td>PF_INET6</td><td>10</td><td>28</td><td>24</td><td>24</td><td>26</td><td>24</td><td>-</td><td>30</td><td>22</td></tr>
+<tr><td>PF_PACKET</td><td>17</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>SOCK_STREAM</td><td>1</td><td>1</td><td>1</td><td>1</td><td>2</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>SOCK_DGRAM</td><td>2</td><td>2</td><td>2</td><td>2</td><td>1</td><td>2</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><td>SOCK_RAW</td><td>3</td><td>3</td><td>3</td><td>3</td><td>4</td><td>3</td><td>3</td><td>3</td><td>3</td></tr>
+<tr><td>SOCK_SEQPACKET</td><td>5</td><td>5</td><td>5</td><td>5</td><td>6</td><td>5</td><td>5</td><td>5</td><td>5</td></tr>
+<tr><td>SOCK_DCCP</td><td>(6)</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>SOCK_PACKET</td><td>10</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>IPPROTO_IP</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>IPPROTO_TCP</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td></tr>
+<tr><td>IPPROTO_UDP</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td><td>17</td></tr>
+<tr><td>IPPROTO_DCCP</td><td>33</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>IPPROTO_SCTP</td><td>132</td><td>132</td><td>-</td><td>-</td><td>132</td><td>132</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>IPPROTO_RAW</td><td>255</td><td>255</td><td>255</td><td>255</td><td>255</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>SOL_SOCKET</td><td>1</td><td>65535</td><td>65535</td><td>65535</td><td>65535</td><td>65535</td><td>65535</td><td>65535</td><td>65535</td></tr>
+<tr><td>SOL_IP</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>SOL_TCP</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td><td>6</td></tr>
+<tr><td>SOL_UDP</td><td>17</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>17</td><td>-</td><td>-</td></tr>
+<tr><td>SOL_IPV6</td><td>41</td><td>41</td><td>41</td><td>41</td><td>41</td><td>41</td><td>-</td><td>41</td><td>41</td></tr>
+<tr><td>SOL_PACKET</td><td>263</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+<tr><td>SOL_DCCP</td><td>269</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+</table>
+
+
+<h3>Socket address specifications</h3>
+
+<p>These hexadecimal data define socket addresses for local and remote sockets,
+and for bind and range options. The basis is the <tt>struct sockaddr_*</tt> for
+the respective address family that should be declared in the C include files.
+Please keep in mind that their first two bytes (<tt>sa_family</tt> and - on BSD
+- <tt>sa_len</tt>) are implicitely prepended by socat.</p>
+
+<h4>Linux on 32bit Intel:</h4>
+
+<table border=1>
+<tr><th>name</th><th>socket address type (without leading address family)</th><th>binary specification</th></tr>
+<tr><td>IPv4</td><td>2 bytes port, 4 bytes IPv4 addr, 8 bytes 0</td><td>x0016
+x7f000001 x0000000000000000</td></tr>
+<tr><td>IPv6</td><td>2 bytes port, 4 bytes flowinfo, 16 bytes IPv6 addr, 4 bytes scope-id</td><td>x0016 x00000000 x0102030405060708090a0b0c0d0e0f x00000000</td></tr>
+<tr><td>UNIX</td><td>variable length path name, 0 terminated</td><td>x2f746d702f736f636b00</td></tr>
+<tr><td>PACKET</td><td>2 bytes protocol (0x0003), interface index as int in host byte order, 8 bytes 0</td><td>x0003 x02000000 x0000000000000000</td></tr>
+</table>
+
+<p>For AppleTalk see above <a href="#EXAMPLE_APPLETALK">example</a>.</p>
+
+<h4>Solaris on 32bit Intel:</h4>
+
+<table border=1>
+<tr><th>name</th><th>socket address type (without leading address family)</th><th>binary specification</th></tr>
+<tr><td>IPv6</td><td>2 bytes port, 4 bytes flowinfo, 16 bytes IPv6 addr, 4
+    bytes scope-id, 4 bytes src-id</td><td>x0016 x00000000 x0102030405060708090a0b0c0d0e0f x00000000 x00000000</td></tr>
+</table>
+
+<h3>Forever - play on...</h3>
+
+<p>Eager to experiment with exotic socket types? Run nmap's protocol scan and
+see what is available on your system:
+</p>
+
+<span class="frame"><span class="shell">
+nmap -sO localhost
+</span></span>
+
+<p>
+<small>Copyright: Gerhard Rieger 2008</small><br>
+<small>License: <a href="http://www.fsf.org/licensing/licenses/fdl.html">GNU Free Documentation License (FDL)</a></small>
+</p>
+
+</body>
+</html>

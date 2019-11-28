@@ -26,6 +26,8 @@
 <script>
 
 var wans_dualwan = '<% nvram_get("wans_dualwan"); %>';
+var wans_lanport = '<% nvram_get("wans_lanport"); %>';
+var wans_extwan = '<% nvram_get("wans_extwan"); %>';
 var nowWAN = '<% get_parameter("flag"); %>';
 var original_switch_wantag = '<% nvram_get("switch_wantag"); %>';
 var original_switch_stb_x = '<% nvram_get("switch_stb_x"); %>';
@@ -245,10 +247,20 @@ function genWANSoption(){
         if(wans_dualwan_NAME == "LAN" && 
           (productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R")) 
         	wans_dualwan_NAME = "Ethernet WAN";
-		else if(wans_dualwan_NAME == "LAN")
-        	wans_dualwan_NAME = "Ethernet LAN";		
+		else if(wans_dualwan_NAME == "LAN"){
+			if(productid == "GT-AX11000" && wans_lanport == "5"){
+				if(wans_extwan == "0")
+					wans_dualwan_NAME = "2.5G WAN";
+				else
+					wans_dualwan_NAME = "WAN";
+			}
+			else
+				wans_dualwan_NAME = "Ethernet LAN";
+		}
+		else if(wans_dualwan_NAME == "WAN" && productid == "GT-AX11000" && wans_extwan == "1")
+			wans_dualwan_NAME = "2.5G WAN";
 		else if(wans_dualwan_NAME == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
-			wans_dualwan_NAME = "<#Mobile_title#>";                       
+			wans_dualwan_NAME = "<#Mobile_title#>";
 		document.form.wan_unit.options[i] = new Option(wans_dualwan_NAME, i);
 	}	
 	

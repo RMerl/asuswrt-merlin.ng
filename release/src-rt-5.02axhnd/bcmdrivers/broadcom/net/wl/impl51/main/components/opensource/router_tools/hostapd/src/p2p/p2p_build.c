@@ -679,6 +679,11 @@ static int p2p_add_wps_string(struct wpabuf *buf, enum wps_attribute attr,
 	wpabuf_put_be16(buf, attr);
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zeor-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		if (wpabuf_tailroom(buf) < 3)
 			return -1;
 		wpabuf_put_be16(buf, 1);
@@ -761,7 +766,7 @@ int p2p_build_wps_ie(struct p2p_data *p2p, struct wpabuf *buf, int pw_id,
 		wpabuf_put_be16(buf, p2p->cfg->config_methods);
 	}
 
-	if (wps_build_wfa_ext(buf, 0, NULL, 0) < 0)
+	if (wps_build_wfa_ext(buf, 0, NULL, 0, 0) < 0)
 		return -1;
 
 	if (all_attr && p2p->cfg->num_sec_dev_types) {

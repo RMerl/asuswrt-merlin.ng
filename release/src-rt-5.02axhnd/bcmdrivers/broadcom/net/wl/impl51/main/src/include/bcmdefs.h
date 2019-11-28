@@ -1,7 +1,7 @@
 /*
  * Misc system wide definitions
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdefs.h 767388 2018-09-10 01:53:16Z $
+ * $Id: bcmdefs.h 774845 2019-05-08 16:56:28Z $
  */
 
 #ifndef	_bcmdefs_h_
@@ -40,6 +40,35 @@
 #else
 #define UNUSED_VAR
 #endif // endif
+
+/* Macros to allow Coverity modeling contructs in source code */
+#if defined(__COVERITY__)
+
+/* Coverity Doc:
+ * Indicates to the TAINTED_SCALAR checker and the INTEGER_OVERFLOW checker
+ * that a function taints its argument
+ */
+#define COV_TAINTED_DATA_ARG(arg)  __coverity_tainted_data_argument__(arg)
+
+/* Coverity Doc:
+ * Indicates to the TAINTED_SCALAR checker and the INTEGER_OVERFLOW checker
+ * that a function is a tainted data sink for an argument.
+ */
+#define COV_TAINTED_DATA_SINK(arg) __coverity_tainted_data_sink__(arg)
+
+/* Coverity Doc:
+ * Models a function that cannot take a negative number as an argument. Used in
+ * conjunction with other models to indicate that negative arguments are invalid.
+ */
+#define COV_NEG_SINK(arg)          __coverity_negative_sink__(arg)
+
+#else
+
+#define COV_TAINTED_DATA_ARG(arg)  do { } while (0)
+#define COV_TAINTED_DATA_SINK(arg) do { } while (0)
+#define COV_NEG_SINK(arg)          do { } while (0)
+
+#endif /* __COVERITY__ */
 
 /* GNU GCC 4.6+ supports selectively turning off a warning.
  * Define these diagnostic macros to help suppress cast-qual warning
@@ -301,6 +330,10 @@ extern bool bcm_postattach_part_reclaimed;
 #endif // endif
 
 /* Allows size optimization for single-chip image */
+/* XXX These macros are NOT meant to encourage writing chip-specific code.
+ * Use them only when it is appropriate for example in PMU PLL/CHIP/SWREG
+ * controls and in chip-specific workarounds.
+ */
 #ifdef BCMCHIPID
 #define CHIPID(chip)	(BCMCHIPID)
 #else
@@ -379,6 +412,18 @@ typedef union dma64addr {
 		uint32 high_addr;
 	};
 } dma64addr_t;
+
+/* XXX:
+ * ret_buf_t, shaddr_t, bcm_addr64_t, haddr64_t, etc are all dma64addr_t
+ *
+ * Do not include a uint64_t, or perform platform specific swab64 operations.
+ *
+ * If 8B alignment of dma64addr_t fields in structure is required, use explicit
+ * padding.
+ *
+ * Each of the 32bit low and high addresses are individually accessed in
+ * descriptor programming, 32bit register programming, etc.
+ */
 
 #define PHYSADDR64HI(_pa) ((_pa).hiaddr)
 #define PHYSADDR64HISET(_pa, _val) \
@@ -476,6 +521,11 @@ typedef struct {
  * don't go over the network, so room for the full WL header above would
  * be a waste.).
 */
+/*
+ * XXX: set the numbers to be MAX of all the devices, to avoid problems with ROM builds
+ * USB BCMDONGLEHDRSZ and BCMDONGLEPADSZ is 0
+ * SDIO BCMDONGLEHDRSZ 12 and BCMDONGLEPADSZ 16
+*/
 #define BCMDONGLEHDRSZ 12
 #define BCMDONGLEPADSZ 16
 
@@ -529,7 +579,7 @@ typedef struct {
  * An example of a test a field for non-zero
  * BCM_TBF(val, NAME)               ((val) & NAME##_MASK)
  *
- * if (BCM_MBF(my_u32, HWA_COMMON_HWA2HWCAP_SWPKT_ADDR32_CAP)) {
+ * if (BCM_TBIT(my_u32, HWA_COMMON_HWA2HWCAP_SWPKT_ADDR32_CAP)) {
  *    printf("SWPKT_ADDR32 capability is set in my_u32\n");
  * }
  *
@@ -542,6 +592,8 @@ typedef struct {
 #define BCM_GBIT(val, NAME)         (((val) & NAME##_MASK) >> NAME##_SHIFT)
 #define BCM_CBIT(val, NAME)         ((val) & ~NAME##_MASK)
 #define BCM_SBIT(NAME)              (1 << NAME##_SHIFT)
+#define BCM_TBF(val, NAME)          ((val) & NAME##_MASK)
+#define BCM_TBIT(val, NAME)         ((val) & NAME##_MASK)
 #endif /* BCM_BIT_MANIP_MACROS */
 
 #ifndef NBU32
@@ -681,12 +733,6 @@ extern uint32 gFWID;
 #define RSVD_FIELD          _RSVD_STR(__LINE__)
 #endif /* RSVD_FIELD */
 
-/* Need 202 bytes of headroom for TXOFF, 22 bytes for amsdu path */
-/* TXOFF + amsdu headroom */
-#ifndef FRAG_HEADROOM
-#define FRAG_HEADROOM	224
-#endif // endif
-
 #if defined(DONGLEBUILD) && !defined(__COVERITY__)
 #define MODULE_DETACH(var, detach_func)\
 	do { \
@@ -725,5 +771,12 @@ extern uint32 gFWID;
 #else
 	#define ROMCONST
 #endif // endif
+
+/* Helper for named objects */
+#ifdef HND_OBJECT_ID
+#define OBJECT_ID(obj)	(#obj)
+#else
+#define OBJECT_ID(obj)	NULL
+#endif /* HND_OBJECT_ID */
 
 #endif /* _bcmdefs_h_ */

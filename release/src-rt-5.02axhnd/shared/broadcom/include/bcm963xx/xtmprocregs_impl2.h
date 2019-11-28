@@ -605,9 +605,14 @@
 #define RB_RECLAIM_WR_ADDR_MASK             0xffff0000
 #define RB_RECLAIM_WR_ADDR_SHIFT            16
 
+#define RXBOND_CLK_DIVIDER                  200  /* 200Mhz */
+
 /* Definitions for ulRxBondCellFull, ulRxBondTimeout */
+#define RXBOND_CELL_FULL_LIST_MAX           0x860
+#define RXBOND_MAX_TIMEOUT_PER_WRCHN        0xff
 #define RXBOND_CELL_FULL_WR_CHAN_SHIFT      16
 #define RXBOND_TIMEOUT_WR_CHAN_SHIFT        8
+#define RXBOND_DEF_TIMEOUT_PER_WRCHN        0x40
 
 /* Definitions for ulSstMpPriArb. */
 #define SST_MP_ARB_ALG_PLVLN_MASK           0x000000ff

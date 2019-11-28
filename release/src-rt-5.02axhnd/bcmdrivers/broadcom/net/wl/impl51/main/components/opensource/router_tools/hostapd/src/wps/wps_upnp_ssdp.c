@@ -863,7 +863,11 @@ int ssdp_open_multicast_sock(u32 ip_addr, const char *forced_ifname)
  */
 int ssdp_open_multicast(struct upnp_wps_device_sm *sm)
 {
+#ifndef CONFIG_DRIVER_BRCM
 	sm->multicast_sd = ssdp_open_multicast_sock(sm->ip_addr, NULL);
+#else
+	sm->multicast_sd = sm->ssdp_sd;
+#endif /* CONFIG_DRIVER_BRCM */
 	if (sm->multicast_sd < 0)
 		return -1;
 	return 0;

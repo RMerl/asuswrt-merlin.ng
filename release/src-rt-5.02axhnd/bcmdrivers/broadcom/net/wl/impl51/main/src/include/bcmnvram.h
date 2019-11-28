@@ -1,7 +1,7 @@
 /*
  * NVRAM variable manipulation
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmnvram.h 762695 2018-05-15 19:16:36Z $
+ * $Id: bcmnvram.h 776561 2019-07-02 10:30:11Z $
  */
 
 #ifndef _bcmnvram_h_
@@ -45,6 +45,13 @@ struct nvram_tuple {
 	unsigned short acc_level;
 	unsigned short enc;
 	struct nvram_tuple *next;
+};
+
+struct nvram_quadruple {
+	char *name;
+	char *value;
+	uint32 flags;
+	struct nvram_quadruple *next;
 };
 
 /*

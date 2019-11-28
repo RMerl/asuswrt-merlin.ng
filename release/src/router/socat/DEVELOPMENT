@@ -1,0 +1,222 @@
+
+This file should help you to add new address types and address options to
+socat. 
+
+NOTE:
+socat will in future releases be split into a library "libxio" containing all
+the address stuff, useful also for many other purposes, and the socat main()
+and data shuffler. If you intend to perform major changes to the xio part and
+to publish them, please contact me before!
+
+
+ADDING A NEW ADDRESS TYPE:
+
+* Create new files xio-newaddr.c and xio-newaddr.h
+
+* Create a new record of struct addrdesc in xio-newaddr.c, with declaration in xio-newaddr.h.
+
+* Make a new entry to addressnames[] in xioopen.c with the addresses main name
+and maybe with alias names. Keep this array ASCII sorted, without uppercase
+chars.
+
+* config.h.in: #undef WITH_NEWADDR
+
+* configure.in: Copy the disable part of, e.g., WITH_SOCKS4 and adapt it to
+NEWADDR
+
+* In socat.c, add to socat_version
+
+* Write a function xioopen_newaddr() in xio-newaddr.c, declaration in
+xio-newaddr.h
+Do not forget the following option processing calls:
+All groups: _xio_openlate()
+Group FD: applyopts_cloexec()
+Group NAMED: applyopts_file() for phases PREOPEN, OPEN, and FD
+
+* Describe a tested example in file EXAMPLES, and maybe in the socat manpage
+source.
+
+* Try to define a test for this address type in test.sh
+
+* Update file CHANGES
+
+
+ADDING A NEW ADDRESS OPTION:
+
+xioopen.c:
+
+* If this option depends on a #define that is probably not available on all
+platforms, make all new code for this option dependent on the existence of this
+C header define:
+#ifdef PREFIX_NEWOPTION
+...
+#endif
+
+* Add an OPT_NEWOPTION to enum e_optcode in xioopts.h, preferably keeping
+alphabetic order
+
+* Add a struct optdesc opt_newoption record in xio-newaddr.c and its
+declaration in xio-newaddr.h. The complete structure definition must be in one
+line without breaks for automatic docu extraction.
+Build the record from the following components:
+. A canonical default name (e.g. "newoption")
+. A short, preferable name (e.g. "newopt") or NULL
+. OPT_NEWOPTION (from enum e_optcode, see above)
+. A group membership that restricts appliance of the new option to matching
+address types (e.g., one of GROUP_ANY, GROUP_IP_TCP, GROUP_EXEC)
+. A phase specification that positions this option within address processing.
+Note that the function code can override this value.
+. A representation type for option arguments (e.g., TYPE_INT, TYPE_STRING etc.;
+use TYPE_BOOL if this option just triggers an action)
+. A function or action definition for applying this option. If it does not use
+one of the standard functions (open(), ioctl(), setsockopt()...), then use
+OFUNC_SPEC (specific). 
+
+* For the canonical name and all its aliases and abbreviations, add entries to
+the array optionnames in xioopts.c. KEEP STRICT ALPHABETIC (ASCII) ORDER!
+The entries must be embedded in an IF_... macro of their group for conditional
+compiling.
+
+* For options using some predefined action (see OFUNC above), this might be
+enough - test the option and document it in xio.help!
+For OFUNC_SPEC, it might suffice to add another "case" to the OFUNC_SPEC branch
+in applyopts() in xioopts.c. If you need more special handling, you should try
+to understand the address specific functions and add your code there.
+
+* If you use system or low level C library calls or library calls that might
+hang or induce problems, please invoke them with capitalized name; if no such
+name is defined, add an appropriate debug function to sycls.c, and a header
+entry and a wrapper "define" to sycls.h
+
+* Update file CHANGES
+
+
+INFO ABOUT ADDRESS PHASES:
+
+Each option entry has a field specifying a default phase for its application.
+Of course, the code that analyses and applies an address may override this
+default phase. 
+
+Depending on the type of address there are several major phase sequences:
+
+
+OPEN addresses:
+
+PH_INIT		retrieving info from original state
+PH_EARLY	before any other processing
+PH_PREOPEN	before file creation/opening (not UNIX sockets)
+PH_OPEN		during file creation/opening (not UNIX sockets)
+PH_PASTOPEN	past file creation/opening (not UNIX sockets)
+PH_FD		soon after FD creation or identification
+PH_LATE		FD is ready, before start of data loop
+PH_LATE2	FD is ready, dropping privileges
+
+
+SOCKET addresses:
+
+PH_INIT		retrieving info from original state
+PH_EARLY	before any other processing
+PH_PRESOCKET	before socket call
+PH_SOCKET	for socket call
+PH_PASTSOCKET	after socket call
+PH_FD		soon after FD creation or identification
+PH_PREBIND	before socket bind()
+PH_BIND		during socket bind()
+PH_PASTBIND	past socket bind()
+PH_PRECONNECT	before connect()
+PH_CONNECT	during connect()
+PH_PASTCONNECT	after connect()
+PH_CONNECTED	phase common with listen
+PH_LATE		FD is ready, before start of data loop
+PH_LATE2	FD is ready, dropping privileges
+
+
+SOCKET with LISTEN and ACCEPT:
+
+PH_INIT		retrieving info from original state
+PH_EARLY	before any other processing
+PH_PRESOCKET	before socket call
+PH_SOCKET	for socket call
+PH_PREBIND	before socket bind()
+PH_BIND		during socket bind()
+PH_PASTBIND	past socket bind()
+PH_PRELISTEN	before listen()
+PH_LISTEN	during listen()
+PH_PASTLISTEN	after listen()
+PH_PREACCEPT	before accept()
+PH_ACCEPT	during accept()
+PH_PASTACCEPT	after accept()
+# and the following on the new FD:
+PH_FD		soon after FD creation or identification
+PH_PASTSOCKET	after socket call
+PH_CONNECTED	phase common with connect
+PH_PREFORK	before forking
+PH_FORK		during fork()
+PH_PASTFORK	after fork()
+PH_LATE		FD is ready, before start of data loop
+PH_LATE2	FD is ready, dropping privileges
+
+
+FD addresses:
+
+PH_INIT		retrieving info from original state
+PH_EARLY	before any other processing
+PH_FD		soon after FD identification
+PH_LATE		FD is ready, before start of data loop
+PH_LATE2	FD is ready, dropping privileges
+
+
+EXEC addresses:
+
+PH_INIT		retrieving info from original state
+PH_EARLY	before any other processing
+PH_PREBIGEN	before socketpair() pipe() openpty()
+PH_BIGEN	during socketpair() pipe() openpty()
+PH_PASTBIGEN	past socketpair() pipe() openpty()
+PH_PASTSOCKET	for socketpair()
+PH_FD		soon after FD creation or identification
+PH_PREFORK	before forking
+PH_FORK		during fork()
+PH_PASTFORK	after fork()
+PH_LATE		FD is ready, before start of data loop
+PH_LATE2	FD is ready, dropping privileges
+PH_PREEXEC	before exec() or system()
+PH_EXEC		during exec() or system()
+
+
+There are lots of semantic relations between group, phase, and func fields of
+an option.
+
+
+There exists something like an overall phase sequence:
+PH_INIT						# su-d.1
+PH_EARLY					# chroot-early
+PH_PREOPEN,	PH_OPEN,	PH_PASTOPEN	# (chroot before/after?)
+PH_PRESOCKET,	PH_SOCKET,	PH_PASTSOCKET	# (su after (root for raw)?)
+PH_PREBIGEN,	PH_BIGEN,	PH_PASTBIGEN	# (chroot before/after (/dev..)?)
+PH_FD
+PH_PREBIND,	PH_BIND,	PH_PASTBIND	# (su after(before?))
+PH_PRELISTEN,	PH_LISTEN,	PH_PASTLISTEN
+PH_PRECONNECT,	PH_CONNECT,	PH_PASTCONNECT	# (chroot before/after (AF_UNIX)?)
+PH_PREACCEPT,	PH_ACCEPT,	PH_PASTACCEPT
+PH_CONNECTED
+PH_PREFORK,	PH_FORK,	PH_PASTFORK	# (all before/after?)
+PH_LATE						# chroot
+PH_LATE2					# su, su-d.2
+PH_PREEXEC,	PH_EXEC				# (all before)
+
+===============================================================================
+// Up to 1.7.2.4 socat used non async signal safe system and library calls in signal handlers, mostly for logging purposes. This problem was fixed in release 1.7.3.0 with the following concepts:
+
+Signal handlers set on entry and unset on return the diag_in_handler global variable. The logging system, when this variable is set, queues the text message together with errno and exit info in a UNIX datagram socket. When invoked with unset diag_in_handler it first checks if there are messages in that queue and prints them first.
+
+A async signal safe but minimal version of vsnprintf, named vsnprintf_r, was written so no value arguments need to be queued.
+
+Because strerror is not async signal safe a new function snprinterr was written that replaces the (glibc compatible) %m format with strerror output. The original errno is passed in the message queue, snprinterr is called when dequeuing messages outside of signal handler.
+
+// List of signal handlers in socat
+socat.c:socat_signal (generic, just logs and maybe exits)
+xioshutdown.c:signal_kill_pid (SIGALRM, kill child process)
+xiosigchld.c:childdied (SIGCHLD: get info, log; possibly close channel)
+xiosignal.c:socatsignalpass: cascades signal to channel child processes; w/ options sighup,sigint,sigquit
+xio-socket.c:xiosigaction_hasread: SIGUSR1,SIGCHLD, tells parent that datagram has been consumed

@@ -143,7 +143,7 @@
  *
  * +----------------------------------------------------------------------------
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -160,7 +160,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndfwd.h 767339 2018-09-06 06:49:57Z $
+ * $Id: hndfwd.h 767336 2018-09-06 06:20:33Z $
  *
  * vim: set ts=4 noet sw=4 tw=80:
  * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
@@ -311,6 +311,44 @@ void wofa_dump(struct bcmstrbuf *b, struct wofa * wofa);
 /** Nvram radio to CPU mapping specification for up to FWDER_MAX_RADIO radios */
 #define FWDER_CPUMAP_NVAR      "fwd_cpumap"
 #define FWDER_CPUMAP_NVAR2     "fwd_radio_cpumap"
+
+/** Notation for FWDER_CPUMAP_NVAR, with sample representative configurations.
+ *
+ * fwd_cpumap: mode:channel:band#:irq#:cpucore#
+ *    mode    : 'd'=dongle, 'n'=nic, 'x'=unknown
+ *    channel : 'u'=upper, 'l'=lower, 'x'=don't care
+ *    irq     : 0=unknown/auto
+ *
+ * Note: PCIe2 is reserved for USB3.0 (IRQ #175)
+ *
+ * Config #1: "d:l:5:163:0 d:x:2:163:0 d:u:5:169:1"
+ *    - pcie/1/3 : PCIe0 (5G Lower)  eth1 CPU Core #0 [assign fwder_unit = 0]
+ *    - pcie/1/4 : PCIe0 (2.4G Any)  eth2 CPU Core #0 [assign fwder_unit = 2]
+ *    - pcie/2/1 : PCIe1 (5G Upper)  eth3 CPU Core #1 [assign fwder_unit = 1]
+ * Config #2: "d:u:5:163:0 d:x:2:169:1 d:l:5:169:1"
+ *    - pcie/1/1 : PCIe0 (5G Upper)  eth1 CPU Core #0 [assign fwder_unit = 0]
+ *    - pcie/2/3 : PCIe1 (2.4G Any)  eth2 CPU Core #1 [assign fwder_unit = 1]
+ *    - pcie/2/4 : PCIe1 (5G Lower)  eth3 CPU Core #1 [assign fwder_unit = 3]
+ * Config #3: "d:x:2:163:0 d:l:5:163:0 d:u:5:169:1"
+ *    - pcie/1/3 : PCIe0 (2.4G Any)  eth1 CPU Core #0 [assign fwder_unit = 0]
+ *    - pcie/1/4 : PCIe0 (5G Lower)  eth2 CPU Core #0 [assign fwder_unit = 2]
+ *    - pcie/2/1 : PCIe1 (5G Upper)  eth3 CPU Core #1 [assign fwder_unit = 1]
+ * Config #4: "d:u:5:163:0 d:l:5:169:1 d:x:2:169:1"
+ *    - pcie/1/1 : PCIe0 (5G Upper)  eth1 CPU Core #0 [assign fwder_unit = 0]
+ *    - pcie/2/3 : PCIe1 (5G Lower)  eth2 CPU Core #1 [assign fwder_unit = 1]
+ *    - pcie/2/4 : PCIe1 (2.4G Any)  eth3 CPU Core #1 [assign fwder_unit = 3]
+ *
+ * Depending upon the number of radios and their IRQ mapping, one (or more)
+ * Fwder units may not be used. The Radio mapping per Fwder is as follows:
+ * - Config 1 and 3: Fwd#0 hosts Radios[0, 2] and Fwd#1 hosts Radio [1]
+ * - Config 2 and 4: Fwd#0 hosts Radio [0]    and Fwd#1 hosts Radios[1, 3]
+ *
+ * The above mapping also ensures that two 5G radios are not hosted on the same
+ * CPU core, allowing the max performance in a 2 CPU core SMP system.
+ *
+ * BCM4709acdcrh: uses config #1
+ * XXX R8000    : uses config #2
+ */
 
 /* Default Radio CPU Map for ATLAS BCM4709acdcrh (Config #1) */
 #define FWDER_CPUMAP_DEFAULT    "x:l:5:0:0 x:x:2:0:1 x:u:5:0:1"

@@ -2,6 +2,9 @@ include ../common.mak
 
 include $(SRCBASE)/.config
 
+model = $(subst -,,$(subst +,P,$(BUILD_NAME)))
+modelstr = $(shell echo $(model) | tr '[:upper:]' '[:lower:]')
+
 all:
 
 install: all
@@ -9,7 +12,11 @@ install: all
 ifneq ($(HND_ROUTER),y)
 	install lld2d $(INSTALLDIR)/usr/sbin
 else
+ifeq ($(HND_ROUTER_AX_675X),y)
+	install lld2d.6755axhnd $(INSTALLDIR)/usr/sbin/lld2d
+else
 	install lld2d.hnd $(INSTALLDIR)/usr/sbin/lld2d
+endif
 endif
 ifeq ($(BUILD_NAME),RT-AC3200)
 	install icon.rtac3200.ico $(INSTALLDIR)/usr/sbin/icon.ico
@@ -20,7 +27,7 @@ else ifeq ($(BUILD_NAME),RT-AC56U)
 else ifeq ($(BUILD_NAME),RT-AC87U)
 	install icon.rtac87u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac87u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
-else ifeq ($(BUILD_NAME),RT-AC68U))
+else ifeq ($(BUILD_NAME),RT-AC68U)
 	mkdir -p $(INSTALLDIR)/usr/sbin/lltd
 	install icon.rtac68u.ico $(INSTALLDIR)/usr/sbin/lltd/icon.ico
 	install icon.large.rtac68u.ico $(INSTALLDIR)/usr/sbin/lltd/icon.large.ico
@@ -58,6 +65,15 @@ else ifeq ($(BUILD_NAME), GT-AX11000)
 else ifeq ($(BUILD_NAME), RT-AX92U)
 	install icon.rtax92u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax92u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AX95Q)
+	install icon.rtax95q.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax95q.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AX58U)
+	install icon.rtax58u.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax58u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AX56U)
+	install icon.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME),RT-AC1200G)
 	install icon.rtac1200g.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac1200g.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
@@ -68,14 +84,14 @@ else ifeq ($(BUILD_NAME),DSL-AC68U)
 	install icon.rtac68u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac68u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
-	install icon.ico $(INSTALLDIR)/usr/sbin
-	install icon.large.ico $(INSTALLDIR)/usr/sbin
+	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 endif
 ifneq ($(RTCONFIG_BCMARM),y)
 	install lld2d.conf $(INSTALLDIR)/usr/sbin
 else
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/lld2d.conf lld2d.conf
-ifeq ($(BUILD_NAME),RT-AC68U))
+ifeq ($(BUILD_NAME),RT-AC68U)
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/icon.ico icon.ico
 	cd $(INSTALLDIR)/usr/sbin && ln -sf /tmp/icon.large.ico icon.large.ico
 endif

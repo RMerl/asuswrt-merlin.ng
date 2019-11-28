@@ -7,13 +7,13 @@
 #include <fcntl.h>
 #include <bcmnvram.h>
 #include <wlutils.h>
+#include <ctype.h>
 #include "utils.h"
 #include "shutils.h"
 #include "shared.h"
+#include "amas_path.h"
 
-#include <json.h>
-
-
+#if 0
 int is_wlsta_exist(int unit, int vidx)
 {
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
@@ -129,3 +129,61 @@ void set_deauth_sta(int bssidx, int vifidx, char *mac_addr)
 
 #endif
 }
+#endif
+
+int cal_space(char *s1)
+{
+
+  printf("s1 = %s\n", s1);
+
+  int space = 0;
+
+    if(space == 0 && isspace(*s1)) {
+        printf("config format is incorrect.\n");
+        return 0;
+    }
+
+    while (*s1)
+    {
+       if (isspace(*s1))
+       {
+           space++;
+       }
+       s1++;
+    }
+    s1--;
+    if(isspace(*s1)) {
+        printf("config format is incorrect.\n");
+        return 0;
+    }
+
+    printf("parameter count = %d\n", space+1);
+   return space + 1;
+}
+
+
+int get_wl_count()
+{
+	char wif[256]={0}, *next = NULL;
+	int SUMband = 0;
+
+	//Get number of bands and set initial status for wlc.
+	foreach(wif, nvram_safe_get("sta_ifnames"), next) {
+		SUMband++;
+	}
+
+	return SUMband;
+}
+
+int get_eth_count()
+{
+	char eif[256]={0}, *next = NULL;
+	int SUMeth = 0;
+	//Get number of bands and set initial status for wlc.
+	foreach(eif, nvram_safe_get("eth_ifnames"), next) {
+		SUMeth++;
+	}
+
+	return SUMeth;
+}
+

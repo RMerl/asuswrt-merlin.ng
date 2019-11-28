@@ -105,6 +105,12 @@ struct json_tokener
  */
 const char *json_tokener_error_desc(enum json_tokener_error jerr);
 
+/**
+ * @b XXX do not use json_tokener_errors directly.
+ * After v0.10 this will be removed.
+ *
+ * See json_tokener_error_desc() instead.
+ */
 extern const char* json_tokener_errors[];
 
 /**
@@ -130,6 +136,69 @@ extern struct json_object* json_tokener_parse_verbose(const char *str, enum json
  */
 extern void json_tokener_set_flags(struct json_tokener *tok, int flags);
 
+/**
+ * Parse a string and return a non-NULL json_object if a valid JSON value
+ * is found.  The string does not need to be a JSON object or array;
+ * it can also be a string, number or boolean value.
+ *
+ * A partial JSON string can be parsed.  If the parsing is incomplete,
+ * NULL will be returned and json_tokener_get_error() will be return
+ * json_tokener_continue.
+ * json_tokener_parse_ex() can then be called with additional bytes in str
+ * to continue the parsing.
+ *
+ * If json_tokener_parse_ex() returns NULL and the error anything other than
+ * json_tokener_continue, a fatal error has occurred and parsing must be
+ * halted.  Then tok object must not be re-used until json_tokener_reset() is
+ * called.
+ *
+ * When a valid JSON value is parsed, a non-NULL json_object will be
+ * returned.  Also, json_tokener_get_error() will return json_tokener_success.
+ * Be sure to check the type with json_object_is_type() or
+ * json_object_get_type() before using the object.
+ *
+ * @b XXX this shouldn't use internal fields:
+ * Trailing characters after the parsed value do not automatically cause an
+ * error.  It is up to the caller to decide whether to treat this as an
+ * error or to handle the additional characters, perhaps by parsing another
+ * json value starting from that point.
+ *
+ * Extra characters can be detected by comparing the tok->char_offset against
+ * the length of the last len parameter passed in.
+ *
+ * The tokener does \b not maintain an internal buffer so the caller is
+ * responsible for calling json_tokener_parse_ex with an appropriate str
+ * parameter starting with the extra characters.
+ *
+ * Example:
+ * @code
+json_object *jobj = NULL;
+const char *mystring = NULL;
+int stringlen = 0;
+enum json_tokener_error jerr;
+do {
+	mystring = ...  // get JSON string, e.g. read from file, etc...
+	stringlen = strlen(mystring);
+	jobj = json_tokener_parse_ex(tok, mystring, stringlen);
+} while ((jerr = json_tokener_get_error(tok)) == json_tokener_continue);
+if (jerr != json_tokener_success)
+{
+	fprintf(stderr, "Error: %s\n", json_tokener_error_desc(jerr));
+	// Handle errors, as appropriate for your application.
+}
+if (tok->char_offset < stringlen) // XXX shouldn't access internal fields
+{
+	// Handle extra characters after parsed object as desired.
+	// e.g. issue an error, parse another object from that point, etc...
+}
+// Success, use jobj here.
+
+@endcode
+ *
+ * @param tok a json_tokener previously allocated with json_tokener_new()
+ * @param str an string with any valid JSON expression, or portion of.  This does not need to be null terminated.
+ * @param len the length of str
+ */
 extern struct json_object* json_tokener_parse_ex(struct json_tokener *tok,
 						 const char *str, int len);
 

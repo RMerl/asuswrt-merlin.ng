@@ -49,12 +49,13 @@ written consent.
 #define GMAC_ERROR              (-1)
 #define GMAC_SUCCESS            0
 
-extern int gmac_set_active( void );
-extern void gmac_link_status_changed(int ethcore, int link_status, int speed, int duplex);
-extern void gmac_hw_stats( struct net_device_stats *stats );
-extern int gmac_dump_mib( int type );
-extern void gmac_reset_mib( void );
-extern int gmac_init( void );
-extern void MoCA_eth_init( void );
+volatile EnetCoreMib* gmac_mib_regs(int ethcore);
+int gmac_set_active( void );
+void gmac_link_status_changed(int ethcore, int link_status, int speed, int duplex);
+void gmac_hw_stats( int port,  struct rtnl_link_stats64 *stats);
+void gmac_reset_mib( int ethcore );
+void gmac_dump_mib( int ethcore, int type);
+int gmac_init( void );
+void MoCA_eth_init( void );
 #endif /* _BCM_GMAC_H_ */
 

@@ -3,7 +3,7 @@
  * API for 32 bit calculation.
  * API for combined 32 bit/64 bit calculation is exported by math64.h.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

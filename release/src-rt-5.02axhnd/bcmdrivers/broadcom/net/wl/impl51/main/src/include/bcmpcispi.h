@@ -1,7 +1,7 @@
 /*
  * Broadcom PCI-SPI Host Controller Register Definitions
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +29,35 @@
 #define	_XSTR(line)	_PADLINE(line)
 #define	PAD		_XSTR(__LINE__)
 #endif	/* PAD */
+
+/*
++---------------------------------------------------------------------------+
+| XXX                                                                       |
+|                     7     6     5     4     3     2     1       0         |
+| 0x0000  SPI_CTRL    SPIE  SPE   0     MSTR  CPOL  CPHA  SPR1    SPR0      |
+| 0x0004  SPI_STAT    SPIF  WCOL  ST1   ST0   WFFUL WFEMP RFFUL   RFEMP     |
+| 0x0008  SPI_DATA    Bits 31:0, data to send out on MOSI                   |
+| 0x000C  SPI_EXT     ICNT1 ICNT0 BSWAP *HSMODE           ESPR1   ESPR0     |
+| 0x0020  GPIO_OE     0=input, 1=output                   PWR_OE  CS_OE     |
+| 0x0024  GPIO_DATA   CARD:1=missing, 0=present     CARD  PWR_DAT CS_DAT    |
+| 0x0040  INT_EDGE    0=level, 1=edge                     DEV_E   SPI_E     |
+| 0x0044  INT_POL     1=active high, 0=active low         DEV_P   SPI_P     |
+| 0x0048  INTMASK                                         DEV     SPI       |
+| 0x004C  INTSTATUS                                       DEV     SPI       |
+| 0x0060  HEXDISP     Reset value: 0x14e443f5.  In hexdisp mode, value      |
+|                     shows on the Raggedstone1 4-digit 7-segment display.  |
+| 0x0064  CURRENT_MA  Low 16 bits indicate card current consumption in mA   |
+| 0x006C  DISP_SEL    Display mode (0=hexdisp, 1=current)         DSP       |
+| 0x00C0  PLL_CTL     bit31=ext_clk, remainder unused.                      |
+| 0x00C4  PLL_STAT                            LOCK                          |
+| 0x00C8  CLK_FREQ                                                          |
+| 0x00CC  CLK_CNT                                                           |
+|                                                                           |
+| *Notes: HSMODE is not implemented, never set this bit!                    |
+| BSWAP is available in rev >= 8                                            |
+|                                                                           |
++---------------------------------------------------------------------------+
+*/
 
 typedef volatile struct {
 	uint32 spih_ctrl;		/* 0x00 SPI Control Register */

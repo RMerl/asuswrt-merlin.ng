@@ -225,10 +225,10 @@ void iqos_bind(iqos_common_hook_t iqos_add_keymask,
 
 
 #if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
-#define IQOS_LOCK_IRQSAVE()		spin_lock_irqsave(&iqos_lock_g, flags)
-#define IQOS_UNLOCK_IRQRESTORE()	spin_unlock_irqrestore(&iqos_lock_g, flags)
-#define IQOS_LOCK_BH()			spin_lock_bh(&iqos_lock_g)
-#define IQOS_UNLOCK_BH()		spin_unlock_bh(&iqos_lock_g)
+#define IQOS_LOCK_IRQSAVE()         spin_lock_irqsave( &iqos_cong_lock_g, flags )
+#define IQOS_UNLOCK_IRQRESTORE()    spin_unlock_irqrestore( &iqos_cong_lock_g, flags )
+#define IQOS_LOCK_BH()              spin_lock_bh( &iqos_lock_g )
+#define IQOS_UNLOCK_BH()            spin_unlock_bh( &iqos_lock_g )
 #else
 #define IQOS_LOCK_IRQSAVE()		local_irq_save(flags)
 #define IQOS_UNLOCK_IRQRESTORE()	local_irq_restore(flags)

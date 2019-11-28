@@ -25,6 +25,49 @@
  * Mark C. Brown (mbrown@hp.com), and Sagun Shakya <Sagun.Shakya@Sun.COM>.
  */
 
+/*
+ * Packet capture routine for DLPI under SunOS 5, HP-UX 9/10/11, and AIX.
+ *
+ * Notes:
+ *
+ *    - The DLIOCRAW ioctl() is specific to SunOS.
+ *
+ *    - There is a bug in bufmod(7) such that setting the snapshot
+ *      length results in data being left of the front of the packet.
+ *
+ *    - It might be desirable to use pfmod(7) to filter packets in the
+ *      kernel when possible.
+ *
+ *    - An older version of the HP-UX DLPI Programmer's Guide, which
+ *      I think was advertised as the 10.20 version, used to be available
+ *      at
+ *
+ *            http://docs.hp.com/hpux/onlinedocs/B2355-90093/B2355-90093.html
+ *
+ *      but is no longer available; it can still be found at
+ *
+ *            http://h21007.www2.hp.com/dspp/files/unprotected/Drivers/Docs/Refs/B2355-90093.pdf
+ *
+ *      in PDF form.
+ *
+ *    - The HP-UX 10.x, 11.0, and 11i v1.6 version of the HP-UX DLPI
+ *      Programmer's Guide, which I think was once advertised as the
+ *      11.00 version is available at
+ *
+ *            http://docs.hp.com/en/B2355-90139/index.html
+ *
+ *    - The HP-UX 11i v2 version of the HP-UX DLPI Programmer's Guide
+ *      is available at
+ *
+ *            http://docs.hp.com/en/B2355-90871/index.html
+ *
+ *    - All of the HP documents describe raw-mode services, which are
+ *      what we use if DL_HP_RAWDLS is defined.  XXX - we use __hpux
+ *      in some places to test for HP-UX, but use DL_HP_RAWDLS in
+ *      other places; do we support any versions of HP-UX without
+ *      DL_HP_RAWDLS?
+ */
+
 #ifndef lint
 static const char rcsid[] _U_ =
     "@(#) $Header: /tcpdump/master/libpcap/pcap-dlpi.c,v 1.116.2.11 2008-04-14 20:41:51 guy Exp $ (LBL)";
@@ -164,6 +207,11 @@ pcap_read_dlpi(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 				p->break_loop = 0;
 				return (-2);
 			}
+			/*
+			 * XXX - check for the DLPI primitive, which
+			 * would be DL_HP_RAWDATA_IND on HP-UX
+			 * if we're in raw mode?
+			 */
 			if (getmsg(p->fd, &ctl, &data, &flags) < 0) {
 				/* Don't choke when we get ptraced */
 				switch (errno) {
@@ -221,6 +269,26 @@ pcap_inject_dlpi(pcap_t *p, const void *buf, size_t size)
 	 */
 	ret = size;
 #else /* no raw mode */
+	/*
+	 * XXX - this is a pain, because you might have to extract
+	 * the address from the packet and use it in a DL_UNITDATA_REQ
+	 * request.  That would be dependent on the link-layer type.
+	 *
+	 * I also don't know what SAP you'd have to bind the descriptor
+	 * to, or whether you'd need separate "receive" and "send" FDs,
+	 * nor do I know whether you'd need different bindings for
+	 * D/I/X Ethernet and 802.3, or for {FDDI,Token Ring} plus
+	 * 802.2 and {FDDI,Token Ring} plus 802.2 plus SNAP.
+	 *
+	 * So, for now, we just return a "you can't send" indication,
+	 * and leave it up to somebody with a DLPI-based system lacking
+	 * both DLIOCRAW and DL_HP_RAWDLS to supply code to implement
+	 * packet transmission on that system.  If they do, they should
+	 * send it to us - but should not send us code that assumes
+	 * Ethernet; if the code doesn't work on non-Ethernet interfaces,
+	 * it should check "p->linktype" and reject the send request if
+	 * it's anything other than DLT_EN10MB.
+	 */
 	strlcpy(p->errbuf, "send: Not supported on this version of this OS",
 	    PCAP_ERRBUF_SIZE);
 	ret = -1;
@@ -298,6 +366,17 @@ pcap_activate_dlpi(pcap_t *p)
 	}
 	*cp = '\0';
 
+	/*
+	 * Use "/dev/dlpi" as the device.
+	 *
+	 * XXX - HP's DLPI Programmer's Guide for HP-UX 11.00 says that
+	 * the "dl_mjr_num" field is for the "major number of interface
+	 * driver"; that's the major of "/dev/dlpi" on the system on
+	 * which I tried this, but there may be DLPI devices that
+	 * use a different driver, in which case we may need to
+	 * search "/dev" for the appropriate device with that major
+	 * device number, rather than hardwiring "/dev/dlpi".
+	 */
 	cp = "/dev/dlpi";
 	if ((p->fd = open(cp, O_RDWR)) < 0) {
 		if (errno == EPERM || errno == EACCES)
@@ -308,6 +387,17 @@ pcap_activate_dlpi(pcap_t *p)
 	}
 
 #ifdef DL_HP_RAWDLS
+	/*
+	 * XXX - HP-UX 10.20 and 11.xx don't appear to support sending and
+	 * receiving packets on the same descriptor - you need separate
+	 * descriptors for sending and receiving, bound to different SAPs.
+	 *
+	 * If the open fails, we just leave -1 in "p->send_fd" and reject
+	 * attempts to send packets, just as if, in pcap-bpf.c, we fail
+	 * to open the BPF device for reading and writing, we just try
+	 * to open it for reading only and, if that succeeds, just let
+	 * the send attempts fail.
+	 */
 	p->send_fd = open(cp, O_RDWR);
 #endif // endif
 
@@ -474,6 +564,11 @@ pcap_activate_dlpi(pcap_t *p)
 	if (dl_dohpuxbind(p->fd, p->errbuf) < 0)
 		goto bad;
 	if (p->send_fd >= 0) {
+		/*
+		** XXX - if this fails, just close send_fd and
+		** set it to -1, so that you can't send but can
+		** still receive?
+		*/
 		if (dl_dohpuxbind(p->send_fd, p->errbuf) < 0)
 			goto bad;
 	}
@@ -558,11 +653,21 @@ pcap_activate_dlpi(pcap_t *p)
 	** code together.
 	*/
 	if (p->send_fd >= 0) {
+		/*
+		** XXX - if this fails, just close send_fd and
+		** set it to -1, so that you can't send but can
+		** still receive?
+		*/
 		if (dl_dohpuxbind(p->send_fd, p->errbuf) < 0)
 			goto bad;
 	}
 #endif // endif
 
+	/*
+	** Determine link type
+	** XXX - get SAP length and address length as well, for use
+	** when sending packets.
+	*/
 	if (dlinforeq(p->fd, p->errbuf) < 0 ||
 	    dlinfoack(p->fd, (char *)buf, p->errbuf) < 0)
 		goto bad;
@@ -721,6 +826,13 @@ dl_dohpuxbind(int fd, char *ebuf)
 	int uerror;
 	bpf_u_int32 buf[MAXDLBUF];
 
+	/*
+	 * XXX - we start at 22 because we used to use only 22, but
+	 * that was just because that was the value used in some
+	 * sample code from HP.  With what value *should* we start?
+	 * Does it matter, given that we're enabling SAP promiscuity
+	 * on the input FD?
+	 */
 	hpsap = 22;
 	for (;;) {
 		if (dlbindreq(fd, hpsap, ebuf) < 0)
@@ -764,7 +876,8 @@ pcap_platform_finddevs(pcap_if_t **alldevsp, char *errbuf)
 	int fd;
 	union {
 		u_int nunits;
-		char pad[516];
+		char pad[516];	/* XXX - must be at least 513; is 516
+				   in "atmgetunits" */
 	} buf;
 	char baname[2+1+1];
 	u_int i;

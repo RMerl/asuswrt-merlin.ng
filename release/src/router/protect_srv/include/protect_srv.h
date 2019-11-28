@@ -29,14 +29,13 @@
 typedef enum {
 	PROTECTION_SERVICE_SSH=0,
 	PROTECTION_SERVICE_TELNET
-} PTCSRV_TYPE_T;
+} PTCSRV_SVC_TYPE_T;
 
 typedef enum {
 	UNSTATUS=-1,
 	RPT_FAIL=0,
 	RPT_SUCCESS
 } RPT_STATE_T;
-
 
 /* NOTIFY PROTECTION STATE REPORT STRUCTURE
 ---------------------------------*/
@@ -48,5 +47,41 @@ typedef struct __ptcsrv_state_report__t_
 	char       msg[256];           /* Info */
 
 } PTCSRV_STATE_REPORT_T;
+
+typedef enum {
+	PTCSRV_S_RPT=0,
+	PTCSRV_G_WAN_STAT,
+	PTCSRV_G_LAN_STAT,
+	PTCSRV_G_WAN_RECORD,
+	PTCSRV_G_LAN_RECORD,
+
+} PTCSRV_DATA_TYPE_T;
+
+typedef struct __ptcsrv_sock_data_t_
+{
+	int        d_type;             /* Data type */
+	union {
+	PTCSRV_STATE_REPORT_T report;  /* State report */
+	PTCSRV_SVC_TYPE_T s_type;      /* Service type */
+	};
+
+} PTCSRV_SOCK_DATA_T;
+
+typedef struct __ptcsrv_stat_data_t_
+{
+	int        lock_rule_cnt;      /* current rule count */
+	int        lock_rule_peak;     /* peak rule count */
+	int        record_cnt;         /* current ip record count */
+
+} PTCSRV_STAT_DATA_T;
+
+typedef struct __ptcsrv_login_record_t_ {
+	char       addr[16];           /* Record address */
+	size_t     fail_cnt;           /* Retry counter */
+	long       fail_time;          /* latest failed time of this address */
+	long       lock_time;          /* start time of locking this address */
+	int        locked;             /* status of locking rule */
+	int        lock_it;            /* the address should to be locked */
+} PTCSRV_LOGIN_RECORD_T;
 
 #endif

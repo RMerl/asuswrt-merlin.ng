@@ -70,7 +70,7 @@
 #         compiler:		$LTCC
 #         compiler flags:		$LTCFLAGS
 #         linker:		$LD (gnu? $with_gnu_ld)
-#         $progname:	(GNU libtool) 2.4.2
+#         $progname:	(GNU libtool) 2.4.2 Debian-2.4.2-1ubuntu1
 #         automake:	$automake_version
 #         autoconf:	$autoconf_version
 #
@@ -80,7 +80,7 @@
 
 PROGRAM=libtool
 PACKAGE=libtool
-VERSION=2.4.2
+VERSION="2.4.2 Debian-2.4.2-1ubuntu1"
 TIMESTAMP=""
 package_revision=1.3337
 
@@ -125,12 +125,15 @@ export LANGUAGE LC_ALL
 
 $lt_unset CDPATH
 
+
 # Work around backward compatibility issue on IRIX 6.5. On IRIX 6.4+, sh
 # is ksh but when the shell is invoked as "sh" and the current value of
 # the _XPG environment variable is not equal to 1 (one), the special
 # positional parameter $0, within a function call, is the name of the
 # function.
 progpath="$0"
+
+
 
 : ${CP="cp -f"}
 test "${ECHO+set}" = set || ECHO=${as_echo-'printf %s\n'}
@@ -170,11 +173,13 @@ func_dirname ()
     fi
 } # func_dirname may be replaced by extended shell implementation
 
+
 # func_basename file
 func_basename ()
 {
     func_basename_result=`$ECHO "${1}" | $SED "$basename"`
 } # func_basename may be replaced by extended shell implementation
+
 
 # func_dirname_and_basename file append nondir_replacement
 # perform func_basename and func_dirname in a single function
@@ -200,6 +205,7 @@ func_dirname_and_basename ()
     func_basename_result=`$ECHO "${1}" | $SED -e "$basename"`
 } # func_dirname_and_basename may be replaced by extended shell implementation
 
+
 # func_stripname prefix suffix name
 # strip PREFIX and SUFFIX off of NAME.
 # PREFIX and SUFFIX must not contain globbing or regex special
@@ -213,6 +219,7 @@ func_stripname ()
       *)  func_stripname_result=`$ECHO "${3}" | $SED "s%^${1}%%; s%${2}\$%%"`;;
     esac
 } # func_stripname may be replaced by extended shell implementation
+
 
 # These SED scripts presuppose an absolute path with a trailing slash.
 pathcar='s,^/\([^/]*\).*$,\1,'
@@ -489,12 +496,14 @@ func_fatal_help ()
 }
 help="Try \`$progname --help' for more information."  ## default
 
+
 # func_grep expression filename
 # Check whether EXPRESSION matches any line of FILENAME, without output.
 func_grep ()
 {
     $GREP "$1" "$2" >/dev/null 2>&1
 }
+
 
 # func_mkdir_p directory-path
 # Make sure the entire path to DIRECTORY-PATH is available.
@@ -540,6 +549,7 @@ func_mkdir_p ()
     fi
 }
 
+
 # func_mktempdir [string]
 # Make a temporary directory that won't clash with other running
 # libtool processes, and avoids race conditions if possible.  If
@@ -574,6 +584,7 @@ func_mktempdir ()
     $ECHO "$my_tmpdir"
 }
 
+
 # func_quote_for_eval arg
 # Aesthetically quote ARG to be evaled later.
 # This function returns two values: FUNC_QUOTE_FOR_EVAL_RESULT
@@ -603,6 +614,7 @@ func_quote_for_eval ()
     esac
 }
 
+
 # func_quote_for_expand arg
 # Aesthetically quote ARG to be evaled later; same as above,
 # but do not quote variable references.
@@ -629,6 +641,7 @@ func_quote_for_expand ()
     func_quote_for_expand_result="$my_arg"
 }
 
+
 # func_show_eval cmd [fail_exp]
 # Unless opt_silent is true, then output CMD.  Then, if opt_dryrun is
 # not true, evaluate CMD.  If the evaluation of CMD fails, and FAIL_EXP
@@ -651,6 +664,7 @@ func_show_eval ()
       fi
     fi
 }
+
 
 # func_show_eval_locale cmd [fail_exp]
 # Unless opt_silent is true, then output CMD.  Then, if opt_dryrun is
@@ -693,6 +707,7 @@ func_tr_sh ()
     ;;
   esac
 }
+
 
 # func_version
 # Echo version message to standard output and exit.
@@ -777,6 +792,7 @@ func_missing_arg ()
     exit_cmd=exit
 }
 
+
 # func_split_short_opt shortopt
 # Set func_split_short_opt_name and func_split_short_opt_arg shell
 # variables after splitting SHORTOPT after the 2nd character.
@@ -788,6 +804,7 @@ func_split_short_opt ()
     func_split_short_opt_name=`$ECHO "$1" | $SED "$my_sed_short_opt"`
     func_split_short_opt_arg=`$ECHO "$1" | $SED "$my_sed_short_rest"`
 } # func_split_short_opt may be replaced by extended shell implementation
+
 
 # func_split_long_opt longopt
 # Set func_split_long_opt_name and func_split_long_opt_arg shell
@@ -802,6 +819,10 @@ func_split_long_opt ()
 } # func_split_long_opt may be replaced by extended shell implementation
 
 exit_cmd=:
+
+
+
+
 
 magic="%%%MAGIC variable%%%"
 magic_exe="%%%MAGIC EXE variable%%%"
@@ -835,11 +856,13 @@ func_append_quoted ()
     eval "${1}=\$${1}\\ \$func_quote_for_eval_result"
 } # func_append_quoted may be replaced by extended shell implementation
 
+
 # func_arith arithmetic-term...
 func_arith ()
 {
     func_arith_result=`expr "${@}"`
 } # func_arith may be replaced by extended shell implementation
+
 
 # func_len string
 # STRING may not start with a hyphen.
@@ -848,17 +871,20 @@ func_len ()
     func_len_result=`expr "${1}" : ".*" 2>/dev/null || echo $max_cmd_len`
 } # func_len may be replaced by extended shell implementation
 
+
 # func_lo2o object
 func_lo2o ()
 {
     func_lo2o_result=`$ECHO "${1}" | $SED "$lo2o"`
 } # func_lo2o may be replaced by extended shell implementation
 
+
 # func_xform libobj-or-source
 func_xform ()
 {
     func_xform_result=`$ECHO "${1}" | $SED 's/\.[^.]*$/.lo/'`
 } # func_xform may be replaced by extended shell implementation
+
 
 # func_fatal_configuration arg...
 # Echo program name prefixed message to standard error, followed by
@@ -869,6 +895,7 @@ func_fatal_configuration ()
     func_error "See the $PACKAGE documentation for more information."
     func_fatal_error "Fatal configuration error."
 }
+
 
 # func_config
 # Display the configuration for all the tags in this script.
@@ -983,6 +1010,7 @@ _LT_EOF
   fi
 }
 
+
 # Shorthand for --mode=foo, only valid as the first argument
 case $1 in
 clean|clea|cle|cl)
@@ -1008,6 +1036,8 @@ uninstall|uninstal|uninsta|uninst|unins|unin|uni|un|u)
   ;;
 esac
 
+
+
 # Option defaults:
 opt_debug=:
 opt_dry_run=false
@@ -1022,6 +1052,7 @@ opt_warning=:
 opt_verbose=:
 opt_silent=false
 opt_verbose=false
+
 
 # Parse options once, thoroughly.  This comes as soon as possible in the
 # script to make things like `--version' happen as quickly as we can.
@@ -1181,9 +1212,13 @@ func_enable_tag "$optarg"
     help="Try \`$progname --help --mode=$opt_mode' for more information."
   }
 
+
   # Bail if the options were screwed
   $exit_cmd $EXIT_FAILURE
 }
+
+
+
 
 ## ----------- ##
 ##    Main.    ##
@@ -1266,6 +1301,7 @@ func_ltwrapper_p ()
     func_ltwrapper_script_p "$1" || func_ltwrapper_executable_p "$1"
 }
 
+
 # func_execute_cmds commands fail_cmd
 # Execute tilde-delimited COMMANDS.
 # If FAIL_CMD is given, eval that upon failure.
@@ -1282,6 +1318,7 @@ func_execute_cmds ()
     IFS=$save_ifs
 }
 
+
 # func_source file
 # Source FILE, adding directory component if necessary.
 # Note that it is not necessary on cygwin/mingw to append a dot to
@@ -1296,6 +1333,7 @@ func_source ()
     *)		. "./$1" ;;
     esac
 }
+
 
 # func_resolve_sysroot PATH
 # Replace a leading = in PATH with a sysroot.  Store the result into
@@ -1389,6 +1427,8 @@ func_infer_tag ()
     fi
 }
 
+
+
 # func_write_libtool_object output_name pic_name nonpic_name
 # Create a libtool object file (analogous to a ".la" file),
 # but don't create it if we're doing a dry run.
@@ -1426,6 +1466,7 @@ EOF
     }
 }
 
+
 ##################################################
 # FILE NAME AND PATH CONVERSION HELPER FUNCTIONS #
 ##################################################
@@ -1459,6 +1500,7 @@ func_convert_core_file_wine_to_w32 ()
   fi
 }
 # end: func_convert_core_file_wine_to_w32
+
 
 # func_convert_core_path_wine_to_w32 ARG
 # Helper function used by path conversion functions when $build is *nix, and
@@ -1494,6 +1536,7 @@ func_convert_core_path_wine_to_w32 ()
 }
 # end: func_convert_core_path_wine_to_w32
 
+
 # func_cygpath ARGS...
 # Wrapper around calling the cygpath program via LT_CYGPATH. This is used when
 # when (1) $build is *nix and Cygwin is hosted via a wine environment; or (2)
@@ -1525,6 +1568,7 @@ func_cygpath ()
 }
 #end: func_cygpath
 
+
 # func_convert_core_msys_to_w32 ARG
 # Convert file name or path ARG from MSYS format to w32 format.  Return
 # result in func_convert_core_msys_to_w32_result.
@@ -1536,6 +1580,7 @@ func_convert_core_msys_to_w32 ()
     $SED -e 's/[ ]*$//' -e "$lt_sed_naive_backslashify"`
 }
 #end: func_convert_core_msys_to_w32
+
 
 # func_convert_file_check ARG1 ARG2
 # Verify that ARG1 (a file name in $build format) was converted to $host
@@ -1553,6 +1598,7 @@ func_convert_file_check ()
   fi
 }
 # end func_convert_file_check
+
 
 # func_convert_path_check FROM_PATHSEP TO_PATHSEP FROM_PATH TO_PATH
 # Verify that FROM_PATH (a path in $build format) was converted to $host
@@ -1578,6 +1624,7 @@ func_convert_path_check ()
 }
 # end func_convert_path_check
 
+
 # func_convert_path_front_back_pathsep FRONTPAT BACKPAT REPL ORIG
 # Modifies func_to_host_path_result by prepending REPL if ORIG matches FRONTPAT
 # and appending REPL if ORIG matches BACKPAT.
@@ -1595,6 +1642,7 @@ func_convert_path_front_back_pathsep ()
 }
 # end func_convert_path_front_back_pathsep
 
+
 ##################################################
 # $build to $host FILE NAME CONVERSION FUNCTIONS #
 ##################################################
@@ -1602,6 +1650,7 @@ func_convert_path_front_back_pathsep ()
 #
 # In each case, ARG is the path to be converted from $build to $host format.
 # Result will be available in $func_to_host_file_result.
+
 
 # func_to_host_file ARG
 # Converts the file name ARG from $build format to $host format. Return result
@@ -1612,6 +1661,7 @@ func_to_host_file ()
   $to_host_file_cmd "$1"
 }
 # end func_to_host_file
+
 
 # func_to_tool_file ARG LAZY
 # converts the file name ARG from $build format to toolchain format. Return
@@ -1632,6 +1682,7 @@ func_to_tool_file ()
 }
 # end func_to_tool_file
 
+
 # func_convert_file_noop ARG
 # Copy ARG to func_to_host_file_result.
 func_convert_file_noop ()
@@ -1639,6 +1690,7 @@ func_convert_file_noop ()
   func_to_host_file_result="$1"
 }
 # end func_convert_file_noop
+
 
 # func_convert_file_msys_to_w32 ARG
 # Convert file name ARG from (mingw) MSYS to (mingw) w32 format; automatic
@@ -1656,6 +1708,7 @@ func_convert_file_msys_to_w32 ()
 }
 # end func_convert_file_msys_to_w32
 
+
 # func_convert_file_cygwin_to_w32 ARG
 # Convert file name ARG from Cygwin to w32 format.  Returns result in
 # func_to_host_file_result.
@@ -1672,6 +1725,7 @@ func_convert_file_cygwin_to_w32 ()
 }
 # end func_convert_file_cygwin_to_w32
 
+
 # func_convert_file_nix_to_w32 ARG
 # Convert file name ARG from *nix to w32 format.  Requires a wine environment
 # and a working winepath. Returns result in func_to_host_file_result.
@@ -1686,6 +1740,7 @@ func_convert_file_nix_to_w32 ()
   func_convert_file_check "$1" "$func_to_host_file_result"
 }
 # end func_convert_file_nix_to_w32
+
 
 # func_convert_file_msys_to_cygwin ARG
 # Convert file name ARG from MSYS to Cygwin format.  Requires LT_CYGPATH set.
@@ -1702,6 +1757,7 @@ func_convert_file_msys_to_cygwin ()
   func_convert_file_check "$1" "$func_to_host_file_result"
 }
 # end func_convert_file_msys_to_cygwin
+
 
 # func_convert_file_nix_to_cygwin ARG
 # Convert file name ARG from *nix to Cygwin format.  Requires Cygwin installed
@@ -1720,6 +1776,7 @@ func_convert_file_nix_to_cygwin ()
   func_convert_file_check "$1" "$func_to_host_file_result"
 }
 # end func_convert_file_nix_to_cygwin
+
 
 #############################################
 # $build to $host PATH CONVERSION FUNCTIONS #
@@ -1741,6 +1798,7 @@ func_convert_file_nix_to_cygwin ()
 # the two new functions must follow this pattern, or func_init_to_host_path_cmd
 # will break.
 
+
 # func_init_to_host_path_cmd
 # Ensures that function "pointer" variable $to_host_path_cmd is set to the
 # appropriate value, based on the value of $to_host_file_cmd.
@@ -1754,6 +1812,7 @@ func_init_to_host_path_cmd ()
   fi
 }
 
+
 # func_to_host_path ARG
 # Converts the path ARG from $build format to $host format. Return result
 # in func_to_host_path_result.
@@ -1765,6 +1824,7 @@ func_to_host_path ()
 }
 # end func_to_host_path
 
+
 # func_convert_path_noop ARG
 # Copy ARG to func_to_host_path_result.
 func_convert_path_noop ()
@@ -1772,6 +1832,7 @@ func_convert_path_noop ()
   func_to_host_path_result="$1"
 }
 # end func_convert_path_noop
+
 
 # func_convert_path_msys_to_w32 ARG
 # Convert path ARG from (mingw) MSYS to (mingw) w32 format; automatic
@@ -1796,6 +1857,7 @@ func_convert_path_msys_to_w32 ()
 }
 # end func_convert_path_msys_to_w32
 
+
 # func_convert_path_cygwin_to_w32 ARG
 # Convert path ARG from Cygwin to w32 format.  Returns result in
 # func_to_host_file_result.
@@ -1814,6 +1876,7 @@ func_convert_path_cygwin_to_w32 ()
   fi
 }
 # end func_convert_path_cygwin_to_w32
+
 
 # func_convert_path_nix_to_w32 ARG
 # Convert path ARG from *nix to w32 format.  Requires a wine environment and
@@ -1835,6 +1898,7 @@ func_convert_path_nix_to_w32 ()
 }
 # end func_convert_path_nix_to_w32
 
+
 # func_convert_path_msys_to_cygwin ARG
 # Convert path ARG from MSYS to Cygwin format.  Requires LT_CYGPATH set.
 # Returns result in func_to_host_file_result.
@@ -1855,6 +1919,7 @@ func_convert_path_msys_to_cygwin ()
   fi
 }
 # end func_convert_path_msys_to_cygwin
+
 
 # func_convert_path_nix_to_cygwin ARG
 # Convert path ARG from *nix to Cygwin format.  Requires Cygwin installed in a
@@ -1879,6 +1944,7 @@ func_convert_path_nix_to_cygwin ()
   fi
 }
 # end func_convert_path_nix_to_cygwin
+
 
 # func_mode_compile arg...
 func_mode_compile ()
@@ -2446,6 +2512,7 @@ if $opt_help; then
   exit $?
 fi
 
+
 # func_mode_execute arg...
 func_mode_execute ()
 {
@@ -2578,6 +2645,7 @@ func_mode_execute ()
 
 test "$opt_mode" = execute && func_mode_execute ${1+"$@"}
 
+
 # func_mode_finish arg...
 func_mode_finish ()
 {
@@ -2695,6 +2763,7 @@ func_mode_finish ()
 }
 
 test "$opt_mode" = finish && func_mode_finish ${1+"$@"}
+
 
 # func_mode_install arg...
 func_mode_install ()
@@ -3160,6 +3229,7 @@ func_mode_install ()
 
 test "$opt_mode" = install && func_mode_install ${1+"$@"}
 
+
 # func_generate_dlsyms outputname originator pic_p
 # Extract symbols from dlprefiles and create ${outputname}S.o with
 # a dlpreopen symbol table.
@@ -3198,11 +3268,11 @@ func_generate_dlsyms ()
 
 #ifdef __cplusplus
 extern \"C\" {
-#endif // endif
+#endif
 
 #if defined(__GNUC__) && (((__GNUC__ == 4) && (__GNUC_MINOR__ >= 4)) || (__GNUC__ > 4))
 #pragma GCC diagnostic ignored \"-Wstrict-prototypes\"
-#endif // endif
+#endif
 
 /* Keep this code in sync between libtool.m4, ltmain, lt_system.h, and tests.  */
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(_WIN32_WCE)
@@ -3214,7 +3284,7 @@ extern \"C\" {
 # define LT_DLSYM_CONST
 #else
 # define LT_DLSYM_CONST const
-#endif // endif
+#endif
 
 /* External symbol declarations for the compiler. */\
 "
@@ -3385,7 +3455,7 @@ lt_${my_prefix}_LTX_preloaded_symbols[] =
 static const void *lt_preloaded_setup() {
   return lt_${my_prefix}_LTX_preloaded_symbols;
 }
-#endif // endif
+#endif
 
 #ifdef __cplusplus
 }
@@ -3638,6 +3708,7 @@ func_cygming_dll_for_implib_fallback ()
   fi
 }
 
+
 # func_extract_an_archive dir oldlib
 func_extract_an_archive ()
 {
@@ -3662,6 +3733,7 @@ func_extract_an_archive ()
       func_fatal_error "object name conflicts in archive: $f_ex_an_ar_dir/$f_ex_an_ar_oldlib"
     fi
 }
+
 
 # func_extract_archives gentop oldlib ...
 func_extract_archives ()
@@ -3745,6 +3817,7 @@ func_extract_archives ()
 
     func_extract_archives_result="$my_oldobjs"
 }
+
 
 # func_emit_wrapper [arg=no]
 #
@@ -4057,6 +4130,7 @@ fi\
 "
 }
 
+
 # func_emit_cwrapperexe_src
 # emit the source code for a wrapper executable on stdout
 # Must ONLY be called from within func_mode_link because
@@ -4078,7 +4152,7 @@ EOF
 	    cat <<"EOF"
 #ifdef _MSC_VER
 # define _CRT_SECURE_NO_DEPRECATE 1
-#endif // endif
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #ifdef _MSC_VER
@@ -4091,7 +4165,7 @@ EOF
 # ifdef __CYGWIN__
 #  include <io.h>
 # endif
-#endif // endif
+#endif
 #include <malloc.h>
 #include <stdarg.h>
 #include <assert.h>
@@ -4113,7 +4187,7 @@ int putenv (char *);
 int setenv (const char *, const char *, int);
 # endif
 /* #elif defined (other platforms) ... */
-#endif // endif
+#endif
 
 /* portability defines, excluding path handling macros */
 #if defined(_MSC_VER)
@@ -4137,7 +4211,7 @@ int setenv (const char *, const char *, int);
 # define HAVE_SETENV
 # define FOPEN_WB "wb"
 /* #elif defined (other platforms) ... */
-#endif // endif
+#endif
 
 #if defined(PATH_MAX)
 # define LT_PATHMAX PATH_MAX
@@ -4145,22 +4219,23 @@ int setenv (const char *, const char *, int);
 # define LT_PATHMAX MAXPATHLEN
 #else
 # define LT_PATHMAX 1024
-#endif // endif
+#endif
 
 #ifndef S_IXOTH
 # define S_IXOTH 0
-#endif // endif
+#endif
 #ifndef S_IXGRP
 # define S_IXGRP 0
-#endif // endif
+#endif
 
 /* path handling portability macros */
 #ifndef DIR_SEPARATOR
 # define DIR_SEPARATOR '/'
 # define PATH_SEPARATOR ':'
-#endif // endif
+#endif
 
-#if defined(_WIN32) || defined(__MSDOS__) || defined(__DJGPP__) || defined(__OS2__)
+#if defined (_WIN32) || defined (__MSDOS__) || defined (__DJGPP__) || \
+  defined (__OS2__)
 # define HAVE_DOS_BASED_FILE_SYSTEM
 # define FOPEN_WB "wb"
 # ifndef DIR_SEPARATOR_2
@@ -4169,7 +4244,7 @@ int setenv (const char *, const char *, int);
 # ifndef PATH_SEPARATOR_2
 #  define PATH_SEPARATOR_2 ';'
 # endif
-#endif // endif
+#endif
 
 #ifndef DIR_SEPARATOR_2
 # define IS_DIR_SEPARATOR(ch) ((ch) == DIR_SEPARATOR)
@@ -4186,10 +4261,10 @@ int setenv (const char *, const char *, int);
 
 #ifndef FOPEN_WB
 # define FOPEN_WB "w"
-#endif // endif
+#endif
 #ifndef _O_BINARY
 # define _O_BINARY 0
-#endif // endif
+#endif
 
 #define XMALLOC(type, num)      ((type *) xmalloc ((num) * sizeof(type)))
 #define XFREE(stale) do { \
@@ -4200,7 +4275,7 @@ int setenv (const char *, const char *, int);
 static int lt_debug = 1;
 #else
 static int lt_debug = 0;
-#endif // endif
+#endif
 
 const char *program_name = "libtool-wrapper"; /* in case xstrdup fails */
 
@@ -4262,6 +4337,7 @@ EOF
 const char * TARGET_PROGRAM_NAME = "$outputname"; /* hopefully, no .exe */
 EOF
 	    fi
+
 
 	    cat <<"EOF"
 
@@ -4493,11 +4569,11 @@ base_name (const char *name)
 {
   const char *base;
 
-#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   /* Skip over the disk name in MSDOS pathnames. */
   if (isalpha ((unsigned char) name[0]) && name[1] == ':')
     name += 2;
-#endif // endif
+#endif
 
   for (base = name; *name; name++)
     if (IS_DIR_SEPARATOR (*name))
@@ -4562,7 +4638,7 @@ find_executable (const char *wrapper)
     return NULL;
 
   /* Absolute path? */
-#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
   if (isalpha ((unsigned char) wrapper[0]) && wrapper[1] == ':')
     {
       concat_name = xstrdup (wrapper);
@@ -4572,7 +4648,7 @@ find_executable (const char *wrapper)
     }
   else
     {
-#endif // endif
+#endif
       if (IS_DIR_SEPARATOR (wrapper[0]))
 	{
 	  concat_name = xstrdup (wrapper);
@@ -4580,9 +4656,9 @@ find_executable (const char *wrapper)
 	    return concat_name;
 	  XFREE (concat_name);
 	}
-#if defined(HAVE_DOS_BASED_FILE_SYSTEM)
+#if defined (HAVE_DOS_BASED_FILE_SYSTEM)
     }
-#endif // endif
+#endif
 
   for (p = wrapper; *p; p++)
     if (*p == '/')
@@ -4705,7 +4781,7 @@ chase_symlinks (const char *pathspec)
 		"could not follow symlinks for %s", pathspec);
     }
   return xstrdup (tmp_pathspec);
-#endif // endif
+#endif
 }
 
 char *
@@ -4794,7 +4870,7 @@ lt_setenv (const char *name, const char *value)
       {
         XFREE (str);
       }
-#endif // endif
+#endif
   }
 }
 
@@ -6048,7 +6124,10 @@ func_mode_link ()
 	case $pass in
 	dlopen) libs="$dlfiles" ;;
 	dlpreopen) libs="$dlprefiles" ;;
-	link) libs="$deplibs %DEPLIBS% $dependency_libs" ;;
+	link)
+	  libs="$deplibs %DEPLIBS%"
+	  test "X$link_all_deplibs" != Xno && libs="$libs $dependency_libs"
+	  ;;
 	esac
       fi
       if test "$linkmode,$pass" = "lib,dlpreopen"; then
@@ -6336,6 +6415,7 @@ func_mode_link ()
 	shouldnotlink=no
 	avoidtemprpath=
 
+
 	# Read the .la file
 	func_source "$lib"
 
@@ -6367,21 +6447,22 @@ func_mode_link ()
 	    # It is a libtool convenience library, so add in its objects.
 	    func_append convenience " $ladir/$objdir/$old_library"
 	    func_append old_convenience " $ladir/$objdir/$old_library"
+	    tmp_libs=
+	    for deplib in $dependency_libs; do
+	      deplibs="$deplib $deplibs"
+	      if $opt_preserve_dup_deps ; then
+		case "$tmp_libs " in
+		*" $deplib "*) func_append specialdeplibs " $deplib" ;;
+		esac
+	      fi
+	      func_append tmp_libs " $deplib"
+	    done
 	  elif test "$linkmode" != prog && test "$linkmode" != lib; then
 	    func_fatal_error "\`$lib' is not a convenience library"
 	  fi
-	  tmp_libs=
-	  for deplib in $dependency_libs; do
-	    deplibs="$deplib $deplibs"
-	    if $opt_preserve_dup_deps ; then
-	      case "$tmp_libs " in
-	      *" $deplib "*) func_append specialdeplibs " $deplib" ;;
-	      esac
-	    fi
-	    func_append tmp_libs " $deplib"
-	  done
 	  continue
 	fi # $pass = conv
+
 
 	# Get the name of the library we link against.
 	linklib=
@@ -6519,6 +6600,7 @@ func_mode_link ()
 	  fi
 	  continue
 	fi
+
 
 	if test "$linkmode" = prog && test "$pass" != link; then
 	  func_append newlib_search_path " $ladir"
@@ -7269,6 +7351,9 @@ func_mode_link ()
 	    age="$number_minor"
 	    revision="$number_minor"
 	    lt_irix_increment=no
+	    ;;
+	  *)
+	    func_fatal_configuration "$modename: unknown library version type \`$version_type'"
 	    ;;
 	  esac
 	  ;;
@@ -8652,6 +8737,7 @@ EOF
 	;;
       esac
 
+
       # move library search paths that coincide with paths to not yet
       # installed libraries to the beginning of the library search list
       new_libs=
@@ -8678,6 +8764,7 @@ EOF
 	esac
       done
       compile_deplibs="$new_libs"
+
 
       func_append compile_command " $compile_deplibs"
       func_append finalize_command " $finalize_deplibs"
@@ -9356,6 +9443,7 @@ relink_command=\"$relink_command\""
 { test "$opt_mode" = link || test "$opt_mode" = relink; } &&
     func_mode_link ${1+"$@"}
 
+
 # func_mode_uninstall arg...
 func_mode_uninstall ()
 {
@@ -9544,6 +9632,7 @@ fi
 
 exit $exit_status
 
+
 # The TAGs below are defined such that we never get into a situation
 # in which we disable both kinds of libraries.  Given conflicting
 # choices, we go for a static library, that is the most portable,
@@ -9569,3 +9658,4 @@ build_old_libs=`case $build_libtool_libs in yes) echo no;; *) echo yes;; esac`
 # sh-indentation:2
 # End:
 # vi:sw=2
+

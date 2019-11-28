@@ -81,6 +81,12 @@ static const char rcsid[] _U_ =
 #define u_int32 bpf_u_int32
 
 #ifndef LBL_ALIGN
+/*
+ * XXX - IA-64?  If not, this probably won't work on Win64 IA-64
+ * systems, unless LBL_ALIGN is defined elsewhere for them.
+ * XXX - SuperH?  If not, this probably won't work on WinCE SuperH
+ * systems, unless LBL_ALIGN is defined elsewhere for them.
+ */
 #if defined(sparc) || defined(__sparc__) || defined(mips) || defined(ibm032) || \
 	defined(__alpha) || defined(__hpux) || defined(__arm__)
 #define LBL_ALIGN

@@ -1420,6 +1420,37 @@ errout:
 	return err;
 }
 
+/**
+ * Change link
+ * @arg sk		netlink socket.
+ * @arg orig		original link to be changed
+ * @arg changes		link containing the changes to be made
+ * @arg flags		additional netlink message flags
+ *
+ * Builds a \c RTM_NEWLINK netlink message requesting the change of
+ * a network link. If -EOPNOTSUPP is returned by the kernel, the
+ * message type will be changed to \c RTM_SETLINK and the message is
+ * resent to work around older kernel versions.
+ *
+ * The link to be changed is looked up based on the interface index
+ * supplied in the \p orig link. Optionaly the link name is used but
+ * only if no interface index is provided, otherwise providing an
+ * link name will result in the link name being changed.
+ *
+ * If no matching link exists, the function will return
+ * -NLE_OBJ_NOTFOUND.
+ *
+ * After sending, the function will wait for the ACK or an eventual
+ * error message to be received and will therefore block until the
+ * operation has been completed.
+ *
+ * @copydoc auto_ack_warning
+ *
+ * @note The link name can only be changed if the link has been put
+ *       in opertional down state. (~IF_UP)
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_link_change(struct nl_sock *sk, struct rtnl_link *orig,
 		     struct rtnl_link *changes, int flags)
 {

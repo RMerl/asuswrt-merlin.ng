@@ -137,7 +137,9 @@ _L__\name:
 .macro	ARM_FUNC_START name
 	.text
 	.align 0
+#if !defined(RTAX95Q)
 	.arm
+#endif
 #ifdef __APPLE__
 	ENTRY($0)
 #else

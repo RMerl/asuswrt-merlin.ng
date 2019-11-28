@@ -5,9 +5,20 @@ include ../../.config
 INCLUDE += -I. -I.. -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -I$(TOP)/shared -I../../shared -I../../nas${BCMEX}$(EX7) -I../../nas${BCMEX}$(EX7)/nas_fbt
 INCLUDE += -I$(SRCBASE)/shared/bcmwifi/include -I$(SRCBASE)/../components/bcmcrypto/include -I$(TOP_PLATFORM)/nas${BCMEX}$(EX7)/nas -I$(TOP_PLATFORM)/eapd${BCMEX}$(EX7)/
 
+ifneq ($(CMWIFI),)
+INCLUDE += -I$(SRCBASE)/shared/bcmwifi/include
+endif
+
 CFLAGS += $(INCLUDE)
 CFLAGS += $(WLAN_ComponentIncPathA)
 CFLAGS += -DEAPD_WKSP_AUTO_CONFIG
+
+ifneq ($(CMWIFI),)
+ifneq ($(BUILD_PASSPOINT_R2),)
+CFLAGS += -DNAS_GTK_PER_STA
+endif
+endif
+
 #CFLAGS += -DNAS_GTK_PER_STA
 CFLAGS += -Wall -DEAPDDUMP
 
@@ -20,8 +31,14 @@ endif
 # trunk uses bcmcrypto component
 CFLAGS += -DBCMCRYPTO_COMPONENT
 
+ifneq ($(CMWIFI),)
+CFLAGS += -DBCM_NETXL
+ifneq ($(DSLCPE_WLCSM_EXT),)
+LDFLAGS+=-lwlcsm
+endif
+endif
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(INSTALLDIR)/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
-LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -lpthread
 LDFLAGS += $(EXTRA_LDFLAGS)
 
 vpath %.c $(TOP_PLATFORM)/eapd${BCMEX}$(EX7) $(TOP)/shared
@@ -29,17 +46,19 @@ vpath %.c $(TOP_PLATFORM)/eapd${BCMEX}$(EX7) $(TOP)/shared
 OBJS = eapd.o eapd_linux.o
 OBJS += nas_eap.o wps_eap.o
 
+#ifdef BCM_CUSTOM_EVENT
+ifeq ($(CONFIG_BCM_CUSTOM_EVENT),y)
+OBJS +=  custom_eventd_eap.o
+CFLAGS += -DBCM_CUSTOM_EVENT
+endif
+#endif // endif
+
 #ifdef BCM_DCS
 ifeq ($(RTCONFIG_BCMDCS),y)
 OBJS += dcs_eap.o
 CFLAGS += -DBCM_DCS
 endif
 #endif // endif
-
-ifeq ($(CONFIG_AIRIQ),y)
-OBJS +=  airiq_eap.o lte_u_eap.o
-CFLAGS += -DWL_AIR_IQ
-endif
 
 #ifdef BCM_MEVENT
 ifeq ($(CONFIG_BCM_MEVENT),y)
@@ -76,6 +95,11 @@ CFLAGS += -DBCM_EVENTD
 endif
 #endif // endif
 
+ifneq ($(BCM_ECBD),)
+OBJS += ecbd_eap.o
+CFLAGS += -DBCM_ECBD
+endif
+
 #ifdef BCM_ASPMD
 ifneq (2_6,$(LINUX_VERSION))
 ifeq ($(CONFIG_BCMASPMD),y)
@@ -95,6 +119,12 @@ endif
 ifeq ($(CONFIG_BCM_CEVENT),y)
 OBJS += cevent_eap.o
 CFLAGS += -DBCM_CEVENT
+endif
+#endif // endif
+
+#ifdef BCM_WBD
+ifeq ($(CONFIG_WBD),y)
+OBJS += wbd_eap.o
 endif
 #endif // endif
 

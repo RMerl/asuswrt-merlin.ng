@@ -104,6 +104,11 @@ struct p2p_go_neg_results {
 	unsigned int vht_center_freq2;
 
 	/**
+	 * he - Indicates if IEEE 802.11ax HE is enabled
+	 */
+	int he;
+
+	/**
 	 * ssid - SSID of the group
 	 */
 	u8 ssid[SSID_MAX_LEN];
@@ -658,6 +663,8 @@ struct p2p_config {
 	 * @buf: Frame body (starting from Category field)
 	 * @len: Length of buf in octets
 	 * @wait_time: How many msec to wait for a response frame
+	 * @scheduled: Return value indicating whether the transmissions was
+	 *	scheduled to happen once the radio is available
 	 * Returns: 0 on success, -1 on failure
 	 *
 	 * The Action frame may not be transmitted immediately and the status
@@ -668,7 +675,7 @@ struct p2p_config {
 	 */
 	int (*send_action)(void *ctx, unsigned int freq, const u8 *dst,
 			   const u8 *src, const u8 *bssid, const u8 *buf,
-			   size_t len, unsigned int wait_time);
+			   size_t len, unsigned int wait_time, int *scheduled);
 
 	/**
 	 * send_action_done - Notify that Action frame sequence was completed
@@ -1275,6 +1282,27 @@ int p2p_listen(struct p2p_data *p2p, unsigned int timeout);
  */
 void p2p_stop_listen(struct p2p_data *p2p);
 
+/**
+ * p2p_connect - Start P2P group formation (GO negotiation)
+ * @p2p: P2P module context from p2p_init()
+ * @peer_addr: MAC address of the peer P2P client
+ * @wps_method: WPS method to be used in provisioning
+ * @go_intent: Local GO intent value (1..15)
+ * @own_interface_addr: Intended interface address to use with the group
+ * @force_freq: The only allowed channel frequency in MHz or 0
+ * @persistent_group: Whether to create a persistent group (0 = no, 1 =
+ * persistent group without persistent reconnect, 2 = persistent group with
+ * persistent reconnect)
+ * @force_ssid: Forced SSID for the group if we become GO or %NULL to generate
+ *	a new SSID
+ * @force_ssid_len: Length of $force_ssid buffer
+ * @pd_before_go_neg: Whether to send Provision Discovery prior to GO
+ *	Negotiation as an interoperability workaround when initiating group
+ *	formation
+ * @pref_freq: Preferred operating frequency in MHz or 0 (this is only used if
+ *	force_freq == 0)
+ * Returns: 0 on success, -1 on failure
+ */
 int p2p_connect(struct p2p_data *p2p, const u8 *peer_addr,
 		enum p2p_wps_method wps_method,
 		int go_intent, const u8 *own_interface_addr,
@@ -1976,6 +2004,8 @@ void p2p_set_managed_oper(struct p2p_data *p2p, int enabled);
  * @p2p: P2P config
  * @op_class: Selected operating class
  * @op_channel: Selected social channel
+ * @avoid_list: Channel ranges to try to avoid or %NULL
+ * @disallow_list: Channel ranges to discard or %NULL
  * Returns: 0 on success, -1 on failure
  *
  * This function is used before p2p_init is called. A random social channel
@@ -1983,7 +2013,9 @@ void p2p_set_managed_oper(struct p2p_data *p2p, int enabled);
  * returned on success.
  */
 int p2p_config_get_random_social(struct p2p_config *p2p, u8 *op_class,
-				 u8 *op_channel);
+				 u8 *op_channel,
+				 struct wpa_freq_range_list *avoid_list,
+				 struct wpa_freq_range_list *disallow_list);
 
 int p2p_set_listen_channel(struct p2p_data *p2p, u8 reg_class, u8 channel,
 			   u8 forced);
@@ -2237,6 +2269,7 @@ int p2p_set_wfd_ie_prov_disc_req(struct p2p_data *p2p, struct wpabuf *ie);
 int p2p_set_wfd_ie_prov_disc_resp(struct p2p_data *p2p, struct wpabuf *ie);
 int p2p_set_wfd_ie_go_neg(struct p2p_data *p2p, struct wpabuf *ie);
 int p2p_set_wfd_dev_info(struct p2p_data *p2p, const struct wpabuf *elem);
+int p2p_set_wfd_r2_dev_info(struct p2p_data *p2p, const struct wpabuf *elem);
 int p2p_set_wfd_assoc_bssid(struct p2p_data *p2p, const struct wpabuf *elem);
 int p2p_set_wfd_coupled_sink_info(struct p2p_data *p2p,
 				  const struct wpabuf *elem);
@@ -2344,6 +2377,8 @@ void p2p_expire_peers(struct p2p_data *p2p);
 void p2p_set_own_pref_freq_list(struct p2p_data *p2p,
 				const unsigned int *pref_freq_list,
 				unsigned int size);
+void p2p_set_override_pref_op_chan(struct p2p_data *p2p, u8 op_class,
+				   u8 chan);
 
 /**
  * p2p_group_get_common_freqs - Get the group common frequencies

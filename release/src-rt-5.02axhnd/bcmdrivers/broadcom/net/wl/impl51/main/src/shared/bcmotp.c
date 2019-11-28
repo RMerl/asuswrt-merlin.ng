@@ -1,7 +1,7 @@
 /*
  * OTP support.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.c 765989 2018-07-23 04:12:12Z $
+ * $Id: bcmotp.c 777343 2019-07-29 12:58:01Z $
  */
 
 #include <bcm_cfg.h>
@@ -62,6 +62,12 @@
 #define OTPTYPE_IPX(ccrev)	((ccrev) == 21 || (ccrev) >= 23)
 #define OTPPROWMASK(ccrev)	((ccrev >= 49) ? OTPP_ROW_MASK9 : OTPP_ROW_MASK)
 
+/* XXX debug/trace
+ * ?? To enable ERR by default
+ * warning: in the dongles, the printf could be very costly and slow,
+ *   in BMAC dongle, print big msg can even lead to BMAC rpc timeout
+ *
+ */
 #define OTP_ERR_VAL	0x0001
 #define OTP_MSG_VAL	0x0002
 #define OTP_DBG_VAL	0x0004
@@ -319,8 +325,9 @@ otp_initregs(si_t *sih, volatile void *coreregs, otpregs_t *otpregs)
 #define OTP_LOCK_RD_LOC_OFF	128	/* Redundnancy Region lock bit */
 #define OTP_LOCK_GU_LOC_OFF	129	/* General User Region lock bit */
 
-/* OTP Size */
-#define OTP_SZ_FU_2520          ((ROUNDUP(2520, 16))/8)
+/* OTP Fuse Size */
+#define OTP_SZ_FU_592		((ROUNDUP(592, 16))/8)
+#define OTP_SZ_FU_2576          ((ROUNDUP(2576, 16))/8)
 #define OTP_SZ_FU_1808          ((ROUNDUP(1808, 16))/8)
 #define OTP_SZ_FU_1296          ((ROUNDUP(1296, 16))/8)
 #define OTP_SZ_FU_1048          ((ROUNDUP(1048, 16))/8)
@@ -344,14 +351,6 @@ otp_initregs(si_t *sih, volatile void *coreregs, otpregs_t *otpregs)
 /* OTP BT shared region (pre-allocated) */
 #define OTP_BT_BASE_4350	(4384/OTPWSIZE)
 #define OTP_BT_END_4350		(5408/OTPWSIZE)
-#define OTP_BT_BASE_4335	(4528/OTPWSIZE)
-#define	OTP_BT_END_4335		(5552/OTPWSIZE)
-#define OTP_BT_BASE_4345	(4496/OTPWSIZE)
-#define OTP_BT_END_4345		(5520/OTPWSIZE)
-#define OTP_BT_BASE_4349	(9744/OTPWSIZE)
-#define OTP_BT_END_4349		(11792/OTPWSIZE)
-#define OTP_BT_BASE_43430	(3056/OTPWSIZE)
-#define OTP_BT_END_43430	(4080/OTPWSIZE)
 #define OTP_BT_BASE_4347	(7712/OTPWSIZE)
 #define OTP_BT_END_4347		(11808/OTPWSIZE)
 #define OTP_BT_BASE_4364	(11216/OTPWSIZE)
@@ -363,11 +362,15 @@ otp_initregs(si_t *sih, volatile void *coreregs, otpregs_t *otpregs)
 #define AVS_BITS_LEN	32
 
 /* OTP size read from OTPLayout Register 0x1c */
-#define OTPSZ_28NM_5	5
+#define OTPSZ_28NM_5		5	/* Size 192x32: 6144 bits */
 #define OTPSZ_28NM_5_ROWS	192
 #define OTPSZ_28NM_5_COLS	32
 
-#define OTPSZ_28NM_15		0xF
+#define OTPSZ_28NM_11		0xB	/* Size 384x32: 12288 bits */
+#define OTPSZ_28NM_11_ROWS	384
+#define OTPSZ_28NM_11_COLS	32
+
+#define OTPSZ_28NM_15		0xF	/* Size 512x32: 16384 bits */
 #define OTPSZ_28NM_15_ROWS	512
 #define OTPSZ_28NM_15_COLS	32
 
@@ -381,7 +384,7 @@ otp_initregs(si_t *sih, volatile void *coreregs, otpregs_t *otpregs)
 /* OTP PCIE HW Header Size */
 #define OTP_PCIE_HWHDR_SZ_CONV		128
 #define OTP_PCIE_HWHDR_SZ_COREREV19	208
-#define OTP_PCIE_HWHDR_SZ_COREREV26	224	/* 43684A0 PCIE HW Header Size */
+#define OTP_PCIE_HWHDR_SZ_COREREV26	224	/* 43684/6710 PCIE HW Header Size */
 
 /* OTP unification */
 #if defined(USBSDIOUNIFIEDOTP)
@@ -596,44 +599,19 @@ BCMSROMCISDUMPATTACHFN(ipxotp_bt_region_get)(otpinfo_t *oi, uint16 *start, uint1
 {
 	*start = *end = 0;
 	switch (CHIPID(oi->sih->chip)) {
-	case BCM4349_CHIP_GRPID:
-		*start = OTP_BT_BASE_4349;
-		*end = OTP_BT_END_4349;
-		break;
 	CASE_BCM43602_CHIP:	/* 43602 does not contain a BT core, only GCI/SECI interface. */
 		break;
+	case BCM4363_CHIP_ID:
 	case BCM4365_CHIP_ID:
 	case BCM4366_CHIP_ID:
-	case BCM7271_CHIP_ID:
 	case BCM43664_CHIP_ID:
 	case BCM43666_CHIP_ID:
 	CASE_BCM43684_CHIP:
+	CASE_BCM6710_CHIP:
 		break; /* these (router) chips do not use the BT coex interface */
-	case BCM4345_CHIP_ID:
-		*start = OTP_BT_BASE_4345;
-		*end = OTP_BT_END_4345;
-		break;
-	case BCM43018_CHIP_ID:
-	case BCM43430_CHIP_ID:
-		*start = OTP_BT_BASE_43430;
-		*end = OTP_BT_END_43430;
-		break;
-	case BCM4350_CHIP_ID:
-	case BCM4354_CHIP_ID:
-	case BCM43556_CHIP_ID:
-	case BCM43558_CHIP_ID:
-	case BCM43566_CHIP_ID:
-	case BCM43568_CHIP_ID:
-	case BCM43569_CHIP_ID:
 	case BCM43570_CHIP_ID:
-	case BCM4358_CHIP_ID:
 		*start = OTP_BT_BASE_4350;
 		*end = OTP_BT_END_4350;
-		break;
-	case BCM4364_CHIP_ID:
-	case BCM4373_CHIP_ID:
-		*start = OTP_BT_BASE_4364;
-		*end = OTP_BT_END_4364;
 		break;
 	case BCM4347_CHIP_GRPID:
 		*start = OTP_BT_BASE_4347;
@@ -683,30 +661,16 @@ BCMSROMCISDUMPATTACHFN(ipxotp_max_rgnsz)(otpinfo_t *oi)
 	si_setcoreidx(sih, idx);
 
 	switch (CHIPID(sih->chip)) {
-	case BCM43236_CHIP_ID:	case BCM43235_CHIP_ID:	case BCM43238_CHIP_ID:
-	case BCM43234_CHIP_ID:
-		oi->fusebits = OTP_SZ_FU_324;
-		break;
-	case BCM43131_CHIP_ID:
 	case BCM43217_CHIP_ID:
 	case BCM43428_CHIP_ID:
 		oi->fusebits = OTP_SZ_FU_72;
 		break;
-	case BCM4335_CHIP_ID:
-		oi->fusebits = OTP_SZ_FU_576;
-		break;
-	case BCM4345_CHIP_ID:
-		oi->fusebits = OTP_SZ_FU_608;
-		break;
-	case BCM4349_CHIP_GRPID:
-		oi->fusebits = OTP_SZ_FU_468;
-		break;
 	case BCM43602_CHIP_ID:
 		oi->fusebits = OTP_SZ_FU_972;
 		break;
+	case BCM4363_CHIP_ID:
 	case BCM4365_CHIP_ID:
 	case BCM4366_CHIP_ID:
-	case BCM7271_CHIP_ID:
 	case BCM43664_CHIP_ID:
 	case BCM43666_CHIP_ID:
 		if (CHIPREV(sih->chiprev) >= 4) {
@@ -717,17 +681,12 @@ BCMSROMCISDUMPATTACHFN(ipxotp_max_rgnsz)(otpinfo_t *oi)
 		}
 		break;
 	CASE_BCM43684_CHIP:
-		oi->fusebits = OTP_SZ_FU_2520;
+		oi->fusebits = OTP_SZ_FU_2576;
 		break;
-	case BCM4350_CHIP_ID:
-	case BCM4354_CHIP_ID:
-	case BCM43556_CHIP_ID:
-	case BCM43558_CHIP_ID:
-	case BCM43566_CHIP_ID:
-	case BCM43568_CHIP_ID:
-	case BCM43569_CHIP_ID:
+	CASE_BCM6710_CHIP:
+		oi->fusebits = OTP_SZ_FU_592;
+		break;
 	case BCM43570_CHIP_ID:
-	case BCM4358_CHIP_ID:
 		oi->fusebits = OTP_SZ_FU_720;
 		break;
 	case BCM4360_CHIP_ID:
@@ -736,10 +695,6 @@ BCMSROMCISDUMPATTACHFN(ipxotp_max_rgnsz)(otpinfo_t *oi)
 	case BCM4347_CHIP_GRPID:
 	case BCM4369_CHIP_GRPID:
 		oi->fusebits = OTP_SZ_FU_1080;
-		break;
-	case BCM4364_CHIP_ID:
-	case BCM4373_CHIP_ID:
-		oi->fusebits = OTP_SZ_FU_1044;
 		break;
 	default:
 		if (oi->fusebits == 0)
@@ -843,6 +798,10 @@ BCMSROMCISDUMPATTACHFN(ipxotp_otpsize_set_28nm)(otpinfo_t *oi, uint otpsz)
 		oi->rows = OTPSZ_28NM_5_ROWS;
 		oi->cols = OTPSZ_28NM_5_COLS;
 		break;
+	case OTPSZ_28NM_11:	/* 384x32: 12288 bits */
+		oi->rows = OTPSZ_28NM_11_ROWS;
+		oi->cols = OTPSZ_28NM_11_COLS;
+		break;
 	case OTPSZ_28NM_15:	/* 512x32: 16384 bits */
 		oi->rows = OTPSZ_28NM_15_ROWS;
 		oi->cols = OTPSZ_28NM_15_COLS;
@@ -864,11 +823,6 @@ BCMNMIATTACHFN(ipxotp_uotp_usbmanfid_offset)(otpinfo_t *oi)
 	OTP_DBG(("%s: chip=0x%x\n", __FUNCTION__, CHIPID(oi->sih->chip)));
 	switch (CHIPID(oi->sih->chip)) {
 		/* Add cases for supporting chips */
-		case BCM4335_CHIP_ID:
-		case BCM4345_CHIP_ID:
-			oi->usbmanfid_offset = USB_MANIFID_OFFSET_4335;
-			oi->buotp = TRUE;
-			break;
 		default:
 			OTP_ERR(("chip=0x%x does not support Unified OTP.\n",
 				CHIPID(oi->sih->chip)));
@@ -933,20 +887,16 @@ BCMSROMCISDUMPATTACHFN(_ipxotp_init)(otpinfo_t *oi, otpregs_t *otpregs)
 	/* Read OTP lock bits and subregion programmed indication bits */
 	oi->status = R_REG(oi->osh, otpregs->otpstatus);
 
-	if ((CHIPID(oi->sih->chip) == BCM43236_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM43235_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM43234_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM43238_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM4360_CHIP_ID) ||
+	/* XXX WAR for PR 65487: OTP status is not updated before power-cycle, so we need
+	 * to read the subregion programmed bit from OTP directly
+	 */
+	if ((CHIPID(oi->sih->chip) == BCM4360_CHIP_ID) ||
 		(CHIPID(oi->sih->chip) == BCM43460_CHIP_ID) ||
 		(CHIPID(oi->sih->chip) == BCM43526_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM4345_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM43430_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM43018_CHIP_ID) ||
 		(CHIPID(oi->sih->chip) == BCM43602_CHIP_ID) ||
 		(CHIPID(oi->sih->chip) == BCM4365_CHIP_ID) ||
-		(CHIPID(oi->sih->chip) == BCM7271_CHIP_ID) ||
 		BCM43684_CHIP(oi->sih->chip) ||
+		BCM6710_CHIP(oi->sih->chip) ||
 		(CHIPID(oi->sih->chip) == BCM4366_CHIP_ID) ||
 		BCM43602_CHIP(oi->sih->chip) ||
 		BCM4365_CHIP(oi->sih->chip) ||
@@ -968,16 +918,13 @@ BCMSROMCISDUMPATTACHFN(_ipxotp_init)(otpinfo_t *oi, otpregs_t *otpregs)
 	if ((oi->status & (OTPS_GUP_HW | OTPS_GUP_SW)) == (OTPS_GUP_HW | OTPS_GUP_SW)) {
 		switch (CHIPID(oi->sih->chip)) {
 			/* Add cases for supporting chips */
-			case BCM4335_CHIP_ID:
-			case BCM4345_CHIP_ID:
+			case BCM4363_CHIP_ID:
 			case BCM4365_CHIP_ID:
 			case BCM4366_CHIP_ID:
-			case BCM7271_CHIP_ID:
 			case BCM43664_CHIP_ID:
 			case BCM43666_CHIP_ID:
-			case BCM43430_CHIP_ID:
-			case BCM43018_CHIP_ID:
 			CASE_BCM43684_CHIP:
+			CASE_BCM6710_CHIP:
 				oi->buotp = TRUE;
 				break;
 			default:
@@ -989,11 +936,6 @@ BCMSROMCISDUMPATTACHFN(_ipxotp_init)(otpinfo_t *oi, otpregs_t *otpregs)
 
 	/* if AVS is part of s/w region, update how many bits are used for AVS */
 	switch (CHIPID(oi->sih->chip)) {
-		case BCM4349_CHIP_GRPID:
-		case BCM4364_CHIP_ID:
-		case BCM4373_CHIP_ID:
-			oi->avsbitslen = AVS_BITS_LEN;
-			break;
 		default:
 			oi->avsbitslen = 0;
 			break;
@@ -1089,6 +1031,9 @@ BCMSROMCISDUMPATTACHFN(ipxotp_init)(si_t *sih)
 	}
 
 	/* Retrieve OTP region info */
+	/* XXX: Change to use the "fast" access method in chips that support it.
+	 *	see nicpci.c and siutils.c for guidance.
+	 */
 	idx = si_coreidx(sih);
 	if (AOB_ENAB(sih)) {
 		regs = si_setcore(sih, GCI_CORE_ID, 0);
@@ -1099,11 +1044,16 @@ BCMSROMCISDUMPATTACHFN(ipxotp_init)(si_t *sih)
 	otp_initregs(sih, regs, &otpregs);
 
 	oi = get_otpinfo();
-	if (CCREV(sih->ccrev) >= 49)
+
+	if (BCM6710_CHIP(oi->sih->chip) && CHIPREV(sih->chiprev) == 0) {
+		otpsz = OTPSZ_28NM_11;
+	} else if (CCREV(sih->ccrev) >= 49) {
 		otpsz = (R_REG(oi->osh, otpregs.otplayout) & OTPL_ROW_SIZE_MASK)
 		    >> OTPL_ROW_SIZE_SHIFT;
-	else
+	} else {
 		otpsz = (sih->cccaps & CC_CAP_OTPSIZE) >> CC_CAP_OTPSIZE_SHIFT;
+	}
+
 	if (otpsz == 0) {
 		OTP_ERR(("%s: No OTP\n", __FUNCTION__));
 		oi = NULL;
@@ -2112,7 +2062,6 @@ static int
 BCMNMIATTACHFN(ipxotp_check_otp_pmu_res)(otpinfo_t *oi)
 {
 	switch (CHIPID(oi->sih->chip)) {
-		case BCM43131_CHIP_ID:
 		case BCM43217_CHIP_ID:
 			/* OTP PMU resource not available, hence use global rde index */
 			return OTP_GLOBAL_RDE_IDX;
@@ -2417,14 +2366,8 @@ BCMNMIATTACHFN(ipxotp_write_region)(void *oh, int region, uint16 *data, uint wle
 #if (!defined(_CFE_) && !defined(_CFEZ_)) || defined(CFG_WL)
 				(flags & CISH_FLAG_PCIECIS) ||
 #endif /* (!_CFE_ && !_CFEZ_) || CFG_WL */
-				CHIPID(oi->sih->chip) == BCM4335_CHIP_ID ||
-				BCM4349_CHIP(oi->sih->chip) ||
-				((CHIPID(oi->sih->chip) == BCM4345_CHIP_ID) &&
-				CST4345_CHIPMODE_SDIOD(oi->sih->chipst)) ||
 				((BCM4350_CHIP(oi->sih->chip)) &&
 				CST4350_CHIPMODE_SDIOD(oi->sih->chipst)) ||
-				(CHIPID(oi->sih->chip) == BCM43018_CHIP_ID) ||
-				(CHIPID(oi->sih->chip) == BCM43430_CHIP_ID) ||
 				((BCM4347_CHIP(oi->sih->chip)) &&
 				CST4347_CHIPMODE_SDIOD(oi->sih->chipst)) ||
 				0)
@@ -2592,6 +2535,15 @@ exit:
 	return rc;
 }
 
+/**
+ * Appends the caller supplied CIS tuple(s) to OTP. This function is able to deal with both
+ * unprogrammed and (partially) programmed OTP.
+ *
+ * XXX Write (append) OTP CIS
+ * For blank OTP, add 0x2 0x1 0xff 0xff 0x00 0xff 0x00 at the end of region then write
+ * For rewrite, append the content
+ * http://hwnbu-twiki.broadcom.com/bin/view/Mwgroup/BootLoader4322usb#Ending_pattern_is_not_reliabl
+ */
 static int
 BCMNMIATTACHFN(_ipxotp_cis_append_region)(si_t *sih, int region, char *vars, int count)
 {
@@ -2650,6 +2602,9 @@ BCMNMIATTACHFN(_ipxotp_cis_append_region)(si_t *sih, int region, char *vars, int
 					if (cis[i] != 0)
 						break;
 
+				/* PR 115832: OTP programmed but no tuples
+				 *  Minus 2 accounts for terminator of 0xff or 0xffff
+				 */
 				if (i >= (int)((sz*2) - 2))
 					i = 0;
 			} else {
@@ -4443,9 +4398,13 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 	}
 #endif /* BCMHNDOTP */
 
-	if (ISSIM_ENAB(sih) && BCM43684_CHIP(sih->chip)) {
+	if (EMBEDDED_2x2AX_CORE(sih->chip)) {
+		sih->otpflag = ((CHIPC_REG(sih, chipstatus, 0, 0) & 0x8) ? 1: 0);
+	}
+
+	if (ISSIM_ENAB(sih) && (BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip))) {
 		/* Skip srom read in Veloce to save time */
-		OTP_ERR(("skip otp_init in 43684 veloce development\n"));
+		OTP_ERR(("skip otp_init in 43684/6710 veloce development\n"));
 		oi->fn = NULL;
 	}
 
@@ -4469,7 +4428,7 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 	/* 43684 specific OTP info */
 	if (BCM43684_CHIP(sih->chip))
 		oi->sih->otpflag = otp_read_bit(ret, OTP_BIT_500);
-#endif // endif
+#endif /* !BCMDONGLEHOST */
 
 	return ret;
 }

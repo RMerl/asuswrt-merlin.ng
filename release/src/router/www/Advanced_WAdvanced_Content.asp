@@ -302,7 +302,7 @@ function initial(){
 			based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "DSL-AC68U" || based_modelid == "4G-AC68U" ||
 			based_modelid == "RT-AC87U" || based_modelid == "EA-AC87" ||
 			based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U")
 		{
 			if(no_vht_support){
 				inputCtrl(document.form.wl_txbf, 0);
@@ -324,7 +324,7 @@ function initial(){
 			inputCtrl(document.form.traffic_5g, 1);
 
 		if(	based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"){
 			if(document.form.wl_nmode_x.value == "0" || document.form.wl_nmode_x.value == "8"){		// wireless mode: Auto , N/AC mixed
 				inputCtrl(document.form.wl_turbo_qam, 1);
 			}
@@ -337,7 +337,7 @@ function initial(){
 			}
 			
 			$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
-			if(based_modelid == "RT-AX92U" && wl_unit_value == '1'){
+			if((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56U") && wl_unit_value == '1'){
 				var desc = ["Up to MCS 9 (802.11ac)"];
 				var value = ["1"];
 			}
@@ -379,7 +379,7 @@ function initial(){
 			based_modelid == "RT-AC87U" ||
 			based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "DSL-AC68U" || based_modelid == "4G-AC68U" ||
 			based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U")
 		{
 			if(based_modelid == "RT-N18U" && bootLoader_ver < 2000)
 				inputCtrl(document.form.wl_turbo_qam, 0);
@@ -392,9 +392,9 @@ function initial(){
 				}
 				
 				if(	based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
-					based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
+					based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"){
 					$("#turbo_qam_title").html("<#WLANConfig11b_x_ModulationScheme#>");
-					if(based_modelid == "RT-AX92U"){
+					if(based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56U"){
 						var desc = ["Up to MCS 7 (802.11n)", "Up to MCS 9 (TurboQAM/256-QAM)"];
 						var value = ["0", "1"];
 					}
@@ -509,7 +509,7 @@ function initial(){
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			document.form.wl_mumimo.disabled = true;
 		}
-		else if (based_modelid == 'RT-AX92U' && (wl_unit_value == '0' || wl_unit_value == '1')){
+		else if ((based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AX56U') && (wl_unit_value == '0' || wl_unit_value == '1')){
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			document.form.wl_mumimo.disabled = true;
 		}	
@@ -521,7 +521,7 @@ function initial(){
 		based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "DSL-AC68U" || based_modelid == "4G-AC68U" ||
 		based_modelid == "RT-AC87U" || based_modelid == "RT-AC3200" ||
 		based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "RT-AC5300" ||
-		based_modelid == "GT-AC5300" || based_modelid == "RT-AC1200G" || based_modelid == "RT-AC1200G+" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
+		based_modelid == "GT-AC5300" || based_modelid == "RT-AC1200G" || based_modelid == "RT-AC1200G+" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"){
 		
 		inputCtrl(document.form.wl_atf, 1);
 		if(based_modelid == "RT-AC87U" && wl_unit_value == '1')	
@@ -609,6 +609,30 @@ function initial(){
 			document.getElementById("wl_MU_MIMO_field").style.display = "";
 			document.form.wl_mumimo.disabled = false;
 			document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
+		}
+	}
+
+	if(ofdma_support && wl_unit_value != '0'){
+		var wl_11ax = '<% nvram_get("wl_11ax"); %>';
+		if(document.form.wl_nmode_x.value == '0' || document.form.wl_nmode_x.value == '8'){
+			if (based_modelid != 'RT-AX92U' || (wl_unit_value != '0' && wl_unit_value != '1')) {
+				$('#ofdma_field').show();
+				if(wl_11ax == '0'){
+					document.form.wl_ofdma.value = 0;
+					document.getElementsByName('wl_ofdma')[0].style.backgroundColor = "#4C4C4C";
+					document.form.wl_ofdma.disabled = true;
+					$('#ofdma_hint').show();
+				}
+			}
+		}
+		else if(document.form.wl_nmode_x.value == '9'){
+			$('#ofdma_field').show();
+			if(wl_11ax == '0'){
+				document.form.wl_ofdma.value = 0;
+				document.getElementsByName('wl_ofdma')[0].style.backgroundColor = "#4C4C4C";
+				document.form.wl_ofdma.disabled = true;
+				$('#ofdma_hint').show();
+			}
 		}
 	}
 }
@@ -748,7 +772,7 @@ function applyRule(){
 		}
 		
 		if(	based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U"){
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"){
 			document.form.action_wait.value = "10";
 		}
 		else if(sdk_7){
@@ -801,6 +825,7 @@ function applyRule(){
 			if(!AiMesh_confirm_msg("Wireless_Radio",radio_value))
 				return;
 		}
+
 		showLoading();
 		document.form.submit();
 	}
@@ -1443,6 +1468,16 @@ function checkWLReady(){
 	    }
   	});
 }
+
+function setOFDMA(){
+	// 2.4 GHz does not support so far
+	//document.form.wl0_ofdma.disabled = false;
+	document.form.wl1_ofdma.disabled = false;
+	if(band5g2_support){
+		document.form.wl2_ofdma.disabled = false;
+	}
+}
+
 </script>
 </head>
 
@@ -1792,7 +1827,20 @@ function checkWLReady(){
 								</select>
 							</div>
 						</td>
-					</tr>					
+					</tr>
+					<tr id="ofdma_field" style="display:none">
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="">OFDMA</a></th>
+						<td>
+							<div style="display:table-cell;vertical-align:middle">
+								<select name="wl_ofdma" class="input_option">
+									<option value="0" <% nvram_match("wl_ofdma", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+									<option value="1" <% nvram_match("wl_ofdma", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+								</select>
+								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:#FC0;text-decoration:underline;">802.11ax / Wi-Fi 6 mode</a></span>
+							</div>
+						</td>
+					</tr>
+			
 					<tr id="wl_txbf_field">
 						<th><a id="wl_txbf_desc" class="hintstyle" href="javascript:void(0);" onClick="openHint(3,24);"><#WLANConfig11b_x_ExpBeam#></a></th>
 						<td>

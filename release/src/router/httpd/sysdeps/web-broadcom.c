@@ -173,15 +173,6 @@ static bool g_swap = FALSE;
 
 #define CHANIMSTR(a, b, c, d) ((a) ? ((b) ? c : d) : "")
 
-/* 802.11i/WPA RSN IE parsing utilities */
-typedef struct {
-	uint16 version;
-	wpa_suite_mcast_t *mcast;
-	wpa_suite_ucast_t *ucast;
-	wpa_suite_auth_key_mgmt_t *akm;
-	uint8 *capabilities;
-} rsn_parse_info_t;
-
 struct apinfo apinfos[MAX_NUMBER_OF_APINFO];
 char buf[WLC_IOCTL_MAXLEN];
 static char scan_result[WLC_SCAN_RESULT_BUF_LEN];
@@ -1086,7 +1077,7 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 	char ssidbuf[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
 	wl_bss_info_107_t *old_bi;
-	wl_bss_info_v109_1_t *new_bi = (wl_bss_info_v109_1_t *)bi;
+	wl_bss_info_v109_1_t *new_bi = (wl_bss_info_v109_1_t *) bi;
 #ifndef RTCONFIG_QTN
 	int mcs_idx = 0;
 #endif
@@ -1622,7 +1613,7 @@ wl_sta_info_nss(void *buf, int unit)
 		have_rateset_adv = TRUE;
 #endif
 #if (WL_STA_VER >= 7)
-	} else if (sta->ver == 7) {
+	} else if (sta->ver >= 7) {
 		sta_v7 = (sta_info_v7_t *)buf;
 		rateset_adv = (wl_rateset_args_u_t *)&sta_v7->rateset_adv;
 		have_rateset_adv = TRUE;
@@ -1650,7 +1641,7 @@ wl_sta_info_nss(void *buf, int unit)
 #if (WL_STA_VER >= 7)
 		uint16 *rs_he_mcs = NULL;
 
-		if (sta->ver == 7) {
+		if (sta->ver >= 7) {
 			rs_mcs = rateset_adv->rsv2.mcs;
 			rs_vht_mcs = rateset_adv->rsv2.vht_mcs;
 			rs_he_mcs = rateset_adv->rsv2.he_mcs;
@@ -3440,802 +3431,6 @@ ej_wps_info_2g(int eid, webs_t wp, int argc, char_t **argv)
 	return wl_wps_info(eid, wp, argc, argv, 0);
 }
 
-#if 0
-static int wpa_key_mgmt_to_bitfield(const unsigned char *s)
-{
-	if (memcmp(s, WPA_AUTH_KEY_MGMT_UNSPEC_802_1X, WPA_SELECTOR_LEN) == 0)
-		return WPA_KEY_MGMT_IEEE8021X_;
-	if (memcmp(s, WPA_AUTH_KEY_MGMT_PSK_OVER_802_1X, WPA_SELECTOR_LEN) ==
-	    0)
-		return WPA_KEY_MGMT_PSK_;
-	if (memcmp(s, WPA_AUTH_KEY_MGMT_NONE, WPA_SELECTOR_LEN) == 0)
-		return WPA_KEY_MGMT_WPA_NONE_;
-	return 0;
-}
-
-static int rsn_key_mgmt_to_bitfield(const unsigned char *s)
-{
-	if (memcmp(s, RSN_AUTH_KEY_MGMT_UNSPEC_802_1X, RSN_SELECTOR_LEN) == 0)
-		return WPA_KEY_MGMT_IEEE8021X2_;
-	if (memcmp(s, RSN_AUTH_KEY_MGMT_PSK_OVER_802_1X, RSN_SELECTOR_LEN) ==
-	    0)
-		return WPA_KEY_MGMT_PSK2_;
-	return 0;
-}
-
-static int wpa_selector_to_bitfield(const unsigned char *s)
-{
-	if (memcmp(s, WPA_CIPHER_SUITE_NONE, WPA_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_NONE_;
-	if (memcmp(s, WPA_CIPHER_SUITE_WEP40, WPA_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_WEP40_;
-	if (memcmp(s, WPA_CIPHER_SUITE_TKIP, WPA_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_TKIP_;
-	if (memcmp(s, WPA_CIPHER_SUITE_CCMP, WPA_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_CCMP_;
-	if (memcmp(s, WPA_CIPHER_SUITE_WEP104, WPA_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_WEP104_;
-	return 0;
-}
-
-static int rsn_selector_to_bitfield(const unsigned char *s)
-{
-	if (memcmp(s, RSN_CIPHER_SUITE_NONE, RSN_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_NONE_;
-	if (memcmp(s, RSN_CIPHER_SUITE_WEP40, RSN_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_WEP40_;
-	if (memcmp(s, RSN_CIPHER_SUITE_TKIP, RSN_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_TKIP_;
-	if (memcmp(s, RSN_CIPHER_SUITE_CCMP, RSN_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_CCMP_;
-	if (memcmp(s, RSN_CIPHER_SUITE_WEP104, RSN_SELECTOR_LEN) == 0)
-		return WPA_CIPHER_WEP104_;
-	return 0;
-}
-
-static int wpa_parse_wpa_ie_wpa(const unsigned char *wpa_ie, size_t wpa_ie_len,
-				struct wpa_ie_data *data)
-{
-	const struct wpa_ie_hdr *hdr;
-	const unsigned char *pos;
-	int left;
-	int i, count;
-
-	data->proto = WPA_PROTO_WPA_;
-	data->pairwise_cipher = WPA_CIPHER_TKIP_;
-	data->group_cipher = WPA_CIPHER_TKIP_;
-	data->key_mgmt = WPA_KEY_MGMT_IEEE8021X_;
-	data->capabilities = 0;
-	data->pmkid = NULL;
-	data->num_pmkid = 0;
-
-	if (wpa_ie_len == 0) {
-		/* No WPA IE - fail silently */
-		return -1;
-	}
-
-	if (wpa_ie_len < sizeof(struct wpa_ie_hdr)) {
-//		fprintf(stderr, "ie len too short %lu", (unsigned long) wpa_ie_len);
-		return -1;
-	}
-
-	hdr = (const struct wpa_ie_hdr *) wpa_ie;
-
-	if (hdr->elem_id != DOT11_MNG_WPA_ID ||
-	    hdr->len != wpa_ie_len - 2 ||
-	    memcmp(&hdr->oui, WPA_OUI_TYPE_ARR, WPA_SELECTOR_LEN) != 0 ||
-	    WPA_GET_LE16(hdr->version) != WPA_VERSION_) {
-//		fprintf(stderr, "malformed ie or unknown version");
-		return -1;
-	}
-
-	pos = (const unsigned char *) (hdr + 1);
-	left = wpa_ie_len - sizeof(*hdr);
-
-	if (left >= WPA_SELECTOR_LEN) {
-		data->group_cipher = wpa_selector_to_bitfield(pos);
-		pos += WPA_SELECTOR_LEN;
-		left -= WPA_SELECTOR_LEN;
-	} else if (left > 0) {
-//		fprintf(stderr, "ie length mismatch, %u too much", left);
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->pairwise_cipher = 0;
-		count = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-		if (count == 0 || left < count * WPA_SELECTOR_LEN) {
-//			fprintf(stderr, "ie count botch (pairwise), "
-//				   "count %u left %u", count, left);
-			return -1;
-		}
-		for (i = 0; i < count; i++) {
-			data->pairwise_cipher |= wpa_selector_to_bitfield(pos);
-			pos += WPA_SELECTOR_LEN;
-			left -= WPA_SELECTOR_LEN;
-		}
-	} else if (left == 1) {
-//		fprintf(stderr, "ie too short (for key mgmt)");
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->key_mgmt = 0;
-		count = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-		if (count == 0 || left < count * WPA_SELECTOR_LEN) {
-//			fprintf(stderr, "ie count botch (key mgmt), "
-//				   "count %u left %u", count, left);
-			return -1;
-		}
-		for (i = 0; i < count; i++) {
-			data->key_mgmt |= wpa_key_mgmt_to_bitfield(pos);
-			pos += WPA_SELECTOR_LEN;
-			left -= WPA_SELECTOR_LEN;
-		}
-	} else if (left == 1) {
-//		fprintf(stderr, "ie too short (for capabilities)");
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->capabilities = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-	}
-
-	if (left > 0) {
-//		fprintf(stderr, "ie has %u trailing bytes", left);
-		return -1;
-	}
-
-	return 0;
-}
-
-static int wpa_parse_wpa_ie_rsn(const unsigned char *rsn_ie, size_t rsn_ie_len,
-				struct wpa_ie_data *data)
-{
-	const struct rsn_ie_hdr *hdr;
-	const unsigned char *pos;
-	int left;
-	int i, count;
-
-	data->proto = WPA_PROTO_RSN_;
-	data->pairwise_cipher = WPA_CIPHER_CCMP_;
-	data->group_cipher = WPA_CIPHER_CCMP_;
-	data->key_mgmt = WPA_KEY_MGMT_IEEE8021X2_;
-	data->capabilities = 0;
-	data->pmkid = NULL;
-	data->num_pmkid = 0;
-
-	if (rsn_ie_len == 0) {
-		/* No RSN IE - fail silently */
-		return -1;
-	}
-
-	if (rsn_ie_len < sizeof(struct rsn_ie_hdr)) {
-//		fprintf(stderr, "ie len too short %lu", (unsigned long) rsn_ie_len);
-		return -1;
-	}
-
-	hdr = (const struct rsn_ie_hdr *) rsn_ie;
-
-	if (hdr->elem_id != DOT11_MNG_RSN_ID ||
-	    hdr->len != rsn_ie_len - 2 ||
-	    WPA_GET_LE16(hdr->version) != RSN_VERSION_) {
-//		fprintf(stderr, "malformed ie or unknown version");
-		return -1;
-	}
-
-	pos = (const unsigned char *) (hdr + 1);
-	left = rsn_ie_len - sizeof(*hdr);
-
-	if (left >= RSN_SELECTOR_LEN) {
-		data->group_cipher = rsn_selector_to_bitfield(pos);
-		pos += RSN_SELECTOR_LEN;
-		left -= RSN_SELECTOR_LEN;
-	} else if (left > 0) {
-//		fprintf(stderr, "ie length mismatch, %u too much", left);
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->pairwise_cipher = 0;
-		count = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-		if (count == 0 || left < count * RSN_SELECTOR_LEN) {
-//			fprintf(stderr, "ie count botch (pairwise), "
-//				   "count %u left %u", count, left);
-			return -1;
-		}
-		for (i = 0; i < count; i++) {
-			data->pairwise_cipher |= rsn_selector_to_bitfield(pos);
-			pos += RSN_SELECTOR_LEN;
-			left -= RSN_SELECTOR_LEN;
-		}
-	} else if (left == 1) {
-//		fprintf(stderr, "ie too short (for key mgmt)");
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->key_mgmt = 0;
-		count = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-		if (count == 0 || left < count * RSN_SELECTOR_LEN) {
-//			fprintf(stderr, "ie count botch (key mgmt), "
-//				   "count %u left %u", count, left);
-			return -1;
-		}
-		for (i = 0; i < count; i++) {
-			data->key_mgmt |= rsn_key_mgmt_to_bitfield(pos);
-			pos += RSN_SELECTOR_LEN;
-			left -= RSN_SELECTOR_LEN;
-		}
-	} else if (left == 1) {
-//		fprintf(stderr, "ie too short (for capabilities)");
-		return -1;
-	}
-
-	if (left >= 2) {
-		data->capabilities = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-	}
-
-	if (left >= 2) {
-		data->num_pmkid = WPA_GET_LE16(pos);
-		pos += 2;
-		left -= 2;
-		if (left < data->num_pmkid * PMKID_LEN) {
-//			fprintf(stderr, "PMKID underflow "
-//				   "(num_pmkid=%d left=%d)", data->num_pmkid, left);
-			data->num_pmkid = 0;
-		} else {
-			data->pmkid = pos;
-			pos += data->num_pmkid * PMKID_LEN;
-			left -= data->num_pmkid * PMKID_LEN;
-		}
-	}
-
-	if (left > 0) {
-//		fprintf(stderr, "ie has %u trailing bytes - ignored", left);
-	}
-
-	return 0;
-}
-
-int wpa_parse_wpa_ie(const unsigned char *wpa_ie, size_t wpa_ie_len,
-		     struct wpa_ie_data *data)
-{
-	if (wpa_ie_len >= 1 && wpa_ie[0] == DOT11_MNG_RSN_ID)
-		return wpa_parse_wpa_ie_rsn(wpa_ie, wpa_ie_len, data);
-	else
-		return wpa_parse_wpa_ie_wpa(wpa_ie, wpa_ie_len, data);
-}
-
-static const char * wpa_cipher_txt(int cipher)
-{
-	switch (cipher) {
-	case WPA_CIPHER_NONE_:
-		return "NONE";
-	case WPA_CIPHER_WEP40_:
-		return "WEP-40";
-	case WPA_CIPHER_WEP104_:
-		return "WEP-104";
-	case WPA_CIPHER_TKIP_:
-		return "TKIP";
-	case WPA_CIPHER_CCMP_:
-//		return "CCMP";
-		return "AES";
-	case (WPA_CIPHER_TKIP_|WPA_CIPHER_CCMP_):
-		return "TKIP+AES";
-	default:
-		return "Unknown";
-	}
-}
-
-static const char * wpa_key_mgmt_txt(int key_mgmt, int proto)
-{
-	switch (key_mgmt) {
-	case WPA_KEY_MGMT_IEEE8021X_:
-/*
-		return proto == WPA_PROTO_RSN_ ?
-			"WPA2/IEEE 802.1X/EAP" : "WPA/IEEE 802.1X/EAP";
-*/
-		return "WPA-Enterprise";
-	case WPA_KEY_MGMT_IEEE8021X2_:
-		return "WPA2-Enterprise";
-	case WPA_KEY_MGMT_PSK_:
-/*
-		return proto == WPA_PROTO_RSN_ ?
-			"WPA2-PSK" : "WPA-PSK";
-*/
-		return "WPA-Personal";
-	case WPA_KEY_MGMT_PSK2_:
-		return "WPA2-Personal";
-	case WPA_KEY_MGMT_NONE_:
-		return "NONE";
-	case WPA_KEY_MGMT_IEEE8021X_NO_WPA_:
-//		return "IEEE 802.1X (no WPA)";
-		return "IEEE 802.1X";
-	default:
-		return "Unknown";
-	}
-}
-
-int
-ej_SiteSurvey(int eid, webs_t wp, int argc, char_t **argv)
-{
-	int ret, i, k, left, ht_extcha;
-	int retval = 0, ap_count = 0, idx_same = -1, count = 0;
-	unsigned char rate;
-	unsigned char bssid[6];
-	unsigned char bssid_null[6] = { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
-	char macstr[18];
-	char ure_mac[18];
-	char ssid_str[256];
-	wl_scan_results_t *result;
-	wl_bss_info_t *info;
-	wl_bss_info_107_t *old_info;
-	struct bss_ie_hdr *ie;
-	NDIS_802_11_NETWORK_TYPE NetWorkType;
-	struct maclist *authorized = NULL;
-	int mac_list_size;
-	int wl_authorized = 0;
-	wl_scan_params_t *params;
-	int params_size = WL_SCAN_PARAMS_FIXED_SIZE + NUMCHANS * sizeof(uint16);
-	int org_scan_time = 20, scan_time = 40;
-	int unit;
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
-
-#ifdef RTN12
-	if (nvram_invmatch("sw_mode_ex", "2"))
-	{
-		retval += websWrite(wp, "[");
-		retval += websWrite(wp, "];");
-		return retval;
-	}
-#endif
-
-	if (wl_ioctl(WIF, WLC_GET_INSTANCE, &unit, sizeof(unit)))
-		return NULL;
-
-	params = (wl_scan_params_t*)malloc(params_size);
-	if (params == NULL)
-		return retval;
-
-	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-
-	memset(params, 0, params_size);
-	params->bss_type = DOT11_BSSTYPE_INFRASTRUCTURE;
-	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
-	params->scan_type = (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") && !nvram_match(strcat_r(prefix, "mode", tmp), "psta")) ? WL_SCANFLAGS_PASSIVE : 0;
-	params->nprobes = -1;
-	params->active_time = -1;
-	params->passive_time = -1;
-	params->home_time = -1;
-	params->channel_num = 0;
-
-	/* extend scan channel time to get more AP probe resp */
-	wl_ioctl(WIF, WLC_GET_SCAN_CHANNEL_TIME, &org_scan_time, sizeof(org_scan_time));
-	if (org_scan_time < scan_time)
-		wl_ioctl(WIF, WLC_SET_SCAN_CHANNEL_TIME, &scan_time, sizeof(scan_time));
-
-	while ((ret = wl_ioctl(WIF, WLC_SCAN, params, params_size)) < 0 && count++ < 2)
-	{
-		fprintf(stderr, "set scan command failed, retry %d\n", count);
-		sleep(1);
-	}
-
-	free(params);
-
-	/* restore original scan channel time */
-	wl_ioctl(WIF, WLC_SET_SCAN_CHANNEL_TIME, &org_scan_time, sizeof(org_scan_time));
-
-	nvram_set("ap_selecting", "1");
-	fprintf(stderr, "Please wait (web hook) ");
-	fprintf(stderr, ".");
-	sleep(1);
-	fprintf(stderr, ".\n\n");
-	sleep(1);
-	nvram_set("ap_selecting", "0");
-
-	if (ret == 0)
-	{
-		count = 0;
-
-		result = (wl_scan_results_t *)scan_result;
-		result->buflen = htod32(WLC_SCAN_RESULT_BUF_LEN);
-
-		while ((ret = wl_ioctl(WIF, WLC_SCAN_RESULTS, result, WLC_SCAN_RESULT_BUF_LEN)) < 0 && count++ < 2)
-		{
-			fprintf(stderr, "set scan results command failed, retry %d\n", count);
-			sleep(1);
-		}
-
-		if (ret == 0)
-		{
-			info = &(result->bss_info[0]);
-
-			/* Convert version 107 to 109 */
-			if (dtoh32(info->version) == LEGACY_WL_BSS_INFO_VERSION) {
-				old_info = (wl_bss_info_107_t *)info;
-				info->chanspec = CH20MHZ_CHSPEC(old_info->channel);
-				info->ie_length = old_info->ie_length;
-				info->ie_offset = sizeof(wl_bss_info_107_t);
-			}
-
-			for (i = 0; i < result->count; i++)
-			{
-				if (info->SSID_len > 32/* || info->SSID_len == 0*/)
-					goto next_info;
-#if 0
-				SSID_valid = 1;
-				for (j = 0; j < info->SSID_len; j++)
-				{
-					if (info->SSID[j] < 32 || info->SSID[j] > 126)
-					{
-						SSID_valid = 0;
-						break;
-					}
-				}
-				if (!SSID_valid)
-					goto next_info;
-#endif
-				ether_etoa((const unsigned char *) &info->BSSID, macstr);
-
-				idx_same = -1;
-				for (k = 0; k < ap_count; k++)	// deal with old version of Broadcom Multiple SSID (share the same BSSID)
-				{
-					if (strcmp(apinfos[k].BSSID, macstr) == 0 && strcmp(apinfos[k].SSID, (char *)info->SSID) == 0)
-					{
-						idx_same = k;
-						break;
-					}
-				}
-
-				if (idx_same != -1)
-				{
-					if (info->RSSI >= -50)
-						apinfos[idx_same].RSSI_Quality = 100;
-					else if (info->RSSI >= -80)	// between -50 ~ -80dbm
-						apinfos[idx_same].RSSI_Quality = (int)(24 + ((info->RSSI + 80) * 26)/10);
-					else if (info->RSSI >= -90)	// between -80 ~ -90dbm
-						apinfos[idx_same].RSSI_Quality = (int)(((info->RSSI + 90) * 26)/10);
-					else					// < -84 dbm
-						apinfos[idx_same].RSSI_Quality = 0;
-				}
-				else
-				{
-					strcpy(apinfos[ap_count].BSSID, macstr);
-//					strcpy(apinfos[ap_count].SSID, info->SSID);
-					memset(apinfos[ap_count].SSID, 0x0, 33);
-					memcpy(apinfos[ap_count].SSID, info->SSID, info->SSID_len);
-					apinfos[ap_count].channel = (uint8)(info->chanspec & WL_CHANSPEC_CHAN_MASK);
-					apinfos[ap_count].ctl_ch = info->ctl_ch;
-
-					if (info->RSSI >= -50)
-						apinfos[ap_count].RSSI_Quality = 100;
-					else if (info->RSSI >= -80)	// between -50 ~ -80dbm
-						apinfos[ap_count].RSSI_Quality = (int)(24 + ((info->RSSI + 80) * 26)/10);
-					else if (info->RSSI >= -90)	// between -80 ~ -90dbm
-						apinfos[ap_count].RSSI_Quality = (int)(((info->RSSI + 90) * 26)/10);
-					else					// < -84 dbm
-						apinfos[ap_count].RSSI_Quality = 0;
-
-					if (info->capability & DOT11_CAP_PRIVACY)
-						apinfos[ap_count].wep = 1;
-					else
-						apinfos[ap_count].wep = 0;
-					apinfos[ap_count].wpa = 0;
-
-/*
-					unsigned char *RATESET = &info->rateset;
-					for (k = 0; k < 18; k++)
-						fprintf(stderr, "%02x ", (unsigned char)RATESET[k]);
-					fprintf(stderr, "\n");
-*/
-
-					NetWorkType = Ndis802_11DS;
-					if ((uint8)(info->chanspec & WL_CHANSPEC_CHAN_MASK) <= 14)
-					{
-						for (k = 0; k < info->rateset.count; k++)
-						{
-							rate = info->rateset.rates[k] & 0x7f;	// Mask out basic rate set bit
-							if ((rate == 2) || (rate == 4) || (rate == 11) || (rate == 22))
-								continue;
-							else
-							{
-								NetWorkType = Ndis802_11OFDM24;
-								break;
-							}
-						}
-					}
-					else
-						NetWorkType = Ndis802_11OFDM5;
-
-					if (info->n_cap)
-					{
-						if (NetWorkType == Ndis802_11OFDM5)
-						{
-#ifdef RTCONFIG_BCMWL6
-							if (info->vht_cap)
-								NetWorkType = Ndis802_11OFDM5_VHT;
-							else
-#endif
-								NetWorkType = Ndis802_11OFDM5_N;
-						}
-						else
-							NetWorkType = Ndis802_11OFDM24_N;
-					}
-
-					apinfos[ap_count].NetworkType = NetWorkType;
-
-					ap_count++;
-
-					if (ap_count >= MAX_NUMBER_OF_APINFO)
-						break;
-				}
-
-				ie = (struct bss_ie_hdr *) ((unsigned char *) info + info->ie_offset);
-				for (left = info->ie_length; left > 0; // look for RSN IE first
-					left -= (ie->len + 2), ie = (struct bss_ie_hdr *) ((unsigned char *) ie + 2 + ie->len))
-				{
-					if (ie->elem_id != DOT11_MNG_RSN_ID)
-						continue;
-
-					if (wpa_parse_wpa_ie(&ie->elem_id, ie->len + 2, &apinfos[ap_count - 1].wid) == 0)
-					{
-						apinfos[ap_count-1].wpa = 1;
-						goto next_info;
-					}
-				}
-
-				ie = (struct bss_ie_hdr *) ((unsigned char *) info + info->ie_offset);
-				for (left = info->ie_length; left > 0; // then look for WPA IE
-					left -= (ie->len + 2), ie = (struct bss_ie_hdr *) ((unsigned char *) ie + 2 + ie->len))
-				{
-					if (ie->elem_id != DOT11_MNG_WPA_ID)
-						continue;
-
-					if (wpa_parse_wpa_ie(&ie->elem_id, ie->len + 2, &apinfos[ap_count-1].wid) == 0)
-					{
-						apinfos[ap_count-1].wpa = 1;
-						break;
-					}
-				}
-
-next_info:
-				info = (wl_bss_info_t *) ((unsigned char *) info + info->length);
-			}
-		}
-	}
-
-	if (ap_count == 0)
-	{
-		fprintf(stderr, "No AP found!\n");
-	}
-	else
-	{
-		fprintf(stderr, "%-4s%-3s%-33s%-18s%-9s%-16s%-9s%8s%3s%3s\n",
-				"idx", "CH", "SSID", "BSSID", "Enc", "Auth", "Siganl(%)", "W-Mode", "CC", "EC");
-		for (k = 0; k < ap_count; k++)
-		{
-			fprintf(stderr, "%2d. ", k + 1);
-			fprintf(stderr, "%2d ", apinfos[k].ctl_ch);
-			fprintf(stderr, "%-33s", apinfos[k].SSID);
-			fprintf(stderr, "%-18s", apinfos[k].BSSID);
-
-			if (apinfos[k].wpa == 1)
-				fprintf(stderr, "%-9s%-16s", wpa_cipher_txt(apinfos[k].wid.pairwise_cipher), wpa_key_mgmt_txt(apinfos[k].wid.key_mgmt, apinfos[k].wid.proto));
-			else if (apinfos[k].wep == 1)
-				fprintf(stderr, "WEP      Unknown         ");
-			else
-				fprintf(stderr, "NONE     Open System     ");
-			fprintf(stderr, "%9d ", apinfos[k].RSSI_Quality);
-
-			if (apinfos[k].NetworkType == Ndis802_11FH || apinfos[k].NetworkType == Ndis802_11DS)
-				fprintf(stderr, "%-7s", "11b");
-			else if (apinfos[k].NetworkType == Ndis802_11OFDM5)
-				fprintf(stderr, "%-7s", "11a");
-			else if (apinfos[k].NetworkType == Ndis802_11OFDM5_N)
-				fprintf(stderr, "%-7s", "11a/n");
-#ifdef RTCONFIG_BCMWL6
-			else if (apinfos[k].NetworkType == Ndis802_11OFDM5_VHT)
-				fprintf(stderr, "%-7s", "11ac");
-#endif
-			else if (apinfos[k].NetworkType == Ndis802_11OFDM24)
-				fprintf(stderr, "%-7s", "11b/g");
-			else if (apinfos[k].NetworkType == Ndis802_11OFDM24_N)
-				fprintf(stderr, "%-7s", "11b/g/n");
-			else
-				fprintf(stderr, "%-7s", "unknown");
-
-			fprintf(stderr, "%3d", apinfos[k].ctl_ch);
-
-			if (	(
-#ifdef RTCONFIG_BCMWL6
-				(apinfos[k].NetworkType == Ndis802_11OFDM5_VHT) ||
-#endif
-				(apinfos[k].NetworkType == Ndis802_11OFDM5_N) || (apinfos[k].NetworkType == Ndis802_11OFDM24_N)) &&
-				(apinfos[k].channel != apinfos[k].ctl_ch))
-			{
-				if (apinfos[k].ctl_ch < apinfos[k].channel)
-					ht_extcha = 1;
-				else
-					ht_extcha = 0;
-
-				fprintf(stderr, "%3d", ht_extcha);
-			}
-
-			fprintf(stderr, "\n");
-		}
-	}
-
-	ret = wl_ioctl(WIF, WLC_GET_BSSID, bssid, sizeof(bssid));
-	memset(ure_mac, 0x0, 18);
-	if (!ret && memcmp(bssid, bssid_null, ETHER_ADDR_LEN))
-		ether_etoa((const unsigned char *) &bssid, ure_mac);
-
-	if (strstr(nvram_safe_get("wl0_akm"), "psk"))
-	{
-		mac_list_size = sizeof(authorized->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
-		authorized = malloc(mac_list_size);
-
-		if (!authorized) goto ap_list;
-
-		memset(authorized, 0, mac_list_size);
-
-		// query wl for authorized sta list
-		strcpy((char*)authorized, "autho_sta_list");
-		if (!wl_ioctl(WIF, WLC_GET_VAR, authorized, mac_list_size))
-		{
-			if (authorized->count > 0) wl_authorized = 1;
-		}
-
-		if (authorized) free(authorized);
-	}
-ap_list:
-	retval += websWrite(wp, "[");
-	if (ap_count > 0)
-	for (i = 0; i < ap_count; i++)
-	{
-		retval += websWrite(wp, "[");
-
-		if (strlen(apinfos[i].SSID) == 0)
-			retval += websWrite(wp, "\"\", ");
-		else
-		{
-			memset(ssid_str, 0, sizeof(ssid_str));
-			char_to_ascii(ssid_str, apinfos[i].SSID);
-			retval += websWrite(wp, "\"%s\", ", ssid_str);
-		}
-
-		retval += websWrite(wp, "\"%d\", ", apinfos[i].ctl_ch);
-
-		if (apinfos[i].wpa == 1)
-		{
-			if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_IEEE8021X_)
-				retval += websWrite(wp, "\"%s\", ", "WPA");
-			else if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_IEEE8021X2_)
-				retval += websWrite(wp, "\"%s\", ", "WPA2");
-			else if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_PSK_)
-				retval += websWrite(wp, "\"%s\", ", "WPA-PSK");
-			else if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_PSK2_)
-				retval += websWrite(wp, "\"%s\", ", "WPA2-PSK");
-			else if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_NONE_)
-				retval += websWrite(wp, "\"%s\", ", "NONE");
-			else if (apinfos[i].wid.key_mgmt == WPA_KEY_MGMT_IEEE8021X_NO_WPA_)
-				retval += websWrite(wp, "\"%s\", ", "IEEE 802.1X");
-			else
-				retval += websWrite(wp, "\"%s\", ", "Unknown");
-		}
-		else if (apinfos[i].wep == 1)
-			retval += websWrite(wp, "\"%s\", ", "Unknown");
-		else
-			retval += websWrite(wp, "\"%s\", ", "Open System");
-
-		if (apinfos[i].wpa == 1)
-		{
-			if (apinfos[i].wid.pairwise_cipher == WPA_CIPHER_NONE_)
-				retval += websWrite(wp, "\"%s\", ", "NONE");
-			else if (apinfos[i].wid.pairwise_cipher == WPA_CIPHER_WEP40_)
-				retval += websWrite(wp, "\"%s\", ", "WEP");
-			else if (apinfos[i].wid.pairwise_cipher == WPA_CIPHER_WEP104_)
-				retval += websWrite(wp, "\"%s\", ", "WEP");
-			else if (apinfos[i].wid.pairwise_cipher == WPA_CIPHER_TKIP_)
-				retval += websWrite(wp, "\"%s\", ", "TKIP");
-			else if (apinfos[i].wid.pairwise_cipher == WPA_CIPHER_CCMP_)
-				retval += websWrite(wp, "\"%s\", ", "AES");
-			else if (apinfos[i].wid.pairwise_cipher == (WPA_CIPHER_TKIP_|WPA_CIPHER_CCMP_))
-				retval += websWrite(wp, "\"%s\", ", "TKIP+AES");
-			else
-				retval += websWrite(wp, "\"%s\", ", "Unknown");
-		}
-		else if (apinfos[i].wep == 1)
-			retval += websWrite(wp, "\"%s\", ", "WEP");
-		else
-			retval += websWrite(wp, "\"%s\", ", "NONE");
-
-		retval += websWrite(wp, "\"%d\", ", apinfos[i].RSSI_Quality);
-		retval += websWrite(wp, "\"%s\", ", apinfos[i].BSSID);
-		retval += websWrite(wp, "\"%s\", ", "In");
-
-		if (apinfos[i].NetworkType == Ndis802_11FH || apinfos[i].NetworkType == Ndis802_11DS)
-			retval += websWrite(wp, "\"%s\", ", "b");
-		else if (apinfos[i].NetworkType == Ndis802_11OFDM5)
-			retval += websWrite(wp, "\"%s\", ", "a");
-		else if (apinfos[i].NetworkType == Ndis802_11OFDM5_N)
-			retval += websWrite(wp, "\"%s\", ", "an");
-#ifdef RTCONFIG_BCMWL6
-		else if (apinfos[i].NetworkType == Ndis802_11OFDM5_VHT)
-			retval += websWrite(wp, "\"%s\", ", "ac");
-#endif
-		else if (apinfos[i].NetworkType == Ndis802_11OFDM24)
-			retval += websWrite(wp, "\"%s\", ", "bg");
-		else if (apinfos[i].NetworkType == Ndis802_11OFDM24_N)
-			retval += websWrite(wp, "\"%s\", ", "bgn");
-		else
-			retval += websWrite(wp, "\"%s\", ", "");
-
-		if (nvram_invmatch("wl0_ssid", "") && strcmp(nvram_safe_get("wl0_ssid"), apinfos[i].SSID))
-		{
-			if (strcmp(apinfos[i].SSID, ""))
-				retval += websWrite(wp, "\"%s\"", "0");				// none
-			else if (!strcmp(ure_mac, apinfos[i].BSSID))
-			{									// hidden AP (null SSID)
-				if (strstr(nvram_safe_get("wl0_akm"), "psk"))
-				{
-					if (wl_authorized)
-						retval += websWrite(wp, "\"%s\"", "4");		// in profile, connected
-					else
-						retval += websWrite(wp, "\"%s\"", "5");		// in profile, connecting
-				}
-				else
-					retval += websWrite(wp, "\"%s\"", "4");			// in profile, connected
-			}
-			else									// hidden AP (null SSID)
-				retval += websWrite(wp, "\"%s\"", "0");				// none
-		}
-		else if (nvram_invmatch("wl0_ssid", "") && !strcmp(nvram_safe_get("wl0_ssid"), apinfos[i].SSID))
-		{
-			if (!strlen(ure_mac))
-				retval += websWrite(wp, "\"%s\"", "1");				// in profile, disconnected
-			else if (!strcmp(ure_mac, apinfos[i].BSSID))
-			{
-				if (strstr(nvram_safe_get("wl0_akm"), "psk"))
-				{
-					if (wl_authorized)
-						retval += websWrite(wp, "\"%s\"", "2");		// in profile, connected
-					else
-						retval += websWrite(wp, "\"%s\"", "3");		// in profile, connecting
-				}
-				else
-					retval += websWrite(wp, "\"%s\"", "2");			// in profile, connected
-			}
-			else
-				retval += websWrite(wp, "\"%s\"", "0");				// impossible...
-		}
-		else
-			retval += websWrite(wp, "\"%s\"", "0");					// wl0_ssid == ""
-
-		if (i == ap_count - 1)
-			retval += websWrite(wp, "]\n");
-		else
-			retval += websWrite(wp, "],\n");
-	}
-	retval += websWrite(wp, "];");
-
-	return retval;
-}
-#endif
-
 int
 ej_urelease(int eid, webs_t wp, int argc, char_t **argv)
 {
@@ -5279,7 +4474,7 @@ get_scan_escan(char *scan_buf, uint buf_len)
 }
 
 static char *
-wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
+wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tmp)
 {
 	int ret, retry_times = 0;
 	wl_escan_params_t *params = NULL;
@@ -5368,11 +4563,9 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-#ifndef RTCONFIG_BCM7
-		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
+		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
-#endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
 			wl_iovar_setint(ifname, "acs_update", -1);
@@ -5387,7 +4580,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch)
 #endif
 
 static char *
-wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
+wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tmp)
 {
 	int ret, retry_times = 0;
 	wl_scan_params_t *params;
@@ -5445,11 +4638,9 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch)
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-#if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
-		if ((ctl_ch > 64) && wl_cap(unit, "bgdfs"))
+		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
-#endif
 		{
 			wl_iovar_setint(ifname, "chanspec", chanspec);
 			wl_iovar_setint(ifname, "acs_update", -1);
@@ -5486,6 +4677,8 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	int retval = 0, ctl_ch;
 	char chanbuf[CHANSPEC_STR_LEN];
 	chanspec_t chspec_cur = 0, chanspec = 0;
+	chanspec_t chspec_tmp = 0;
+	int ctl_ch_tmp = 0;
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
 	chanspec_t chspec_tar = 0;
 	char buf_sm[WLC_IOCTL_SMLEN];
@@ -5504,26 +4697,52 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	ctl_ch = wl_control_channel(unit);
 	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "h") &&
 		!nvram_match(strcat_r(prefix, "mode", tmp), "psta")) {
-		if ((ctl_ch > 48) && (ctl_ch < 149)) {
-			if (!with_non_dfs_chspec(name)) {
-				dbg("%s scan rejected under DFS mode\n", name);
-				return 0;
-			} else if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
-				dbg("get current chanpsec failed\n");
-				return 0;
-			} else {
-				dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
+		if (wl_iovar_get(name, "chanspec", &chspec_cur, sizeof(chanspec_t)) < 0) {
+			dbg("get current chanpsec failed\n");
+			return 0;
+		}
 
-#ifdef RTCONFIG_HND_ROUTER_AX
-				chanspec = ((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
-#else
-				chanspec = ((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) ? select_chspec_with_band_bw(name, 4, 0, chspec_cur) : select_chspec_with_band_bw(name, 1, 0, chspec_cur));
+		if (((ctl_ch > 48) && (ctl_ch < 149))
+#ifdef RTCONFIG_BW160M
+			|| ((ctl_ch <= 48) && CHSPEC_IS160(chspec_cur))
 #endif
-				dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-				wl_iovar_setint(name, "chanspec", chanspec);
-				wl_iovar_setint(name, "acs_update", -1);
+		) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+			char buf[WLC_IOCTL_MAXLEN];
+			wl_dfs_status_t *dfs_status;
 
-				chanspec = chspec_cur;
+			memset(buf, 0, sizeof(buf));
+			strcpy(buf, "dfs_status");
+			wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf));
+
+			dfs_status = (wl_dfs_status_t *) buf;
+			dfs_status->state = dtoh32(dfs_status->state);
+
+			if (dfs_status->state != WL_DFS_CACSTATE_IDLE && dfs_status->state != WL_DFS_CACSTATE_ISM)
+#endif
+			{
+				if (!with_non_dfs_chspec(name))
+				{
+					dbg("%s scan rejected under DFS mode\n", name);
+					return 0;
+				}
+				else
+				{
+					dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
+
+					chspec_tmp = (((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) && (ctl_ch < 100)) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
+					if (!chspec_tmp && (nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4))
+						chspec_tmp = select_chspec_with_band_bw(name, 4, 3, chspec_cur);
+
+					if (chspec_tmp != 0) {
+						dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_tmp, chanbuf), chspec_tmp);
+						wl_iovar_setint(name, "chanspec", chspec_tmp);
+						wl_iovar_setint(name, "acs_update", -1);
+
+						chanspec = chspec_cur;
+						ctl_ch_tmp = wf_chspec_ctlchan(chspec_tmp);
+					}
+				}
 			}
 		}
 #if defined(RTCONFIG_DHDAP) && !defined(RTCONFIG_BCM7)
@@ -5553,13 +4772,13 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 #ifdef __CONFIG_DHDAP__
 	if (is_dhd && !nvram_match(strcat_r(prefix, "mode", tmp), "wds")) {
-		if (wl_get_scan_results_escan(name, chanspec, ctl_ch) == NULL) {
+		if (wl_get_scan_results_escan(name, chanspec, ctl_ch, ctl_ch_tmp) == NULL) {
 			return 0;
 		}
 	}
 	else
 #endif
-	if (wl_get_scan_results(name, chanspec, ctl_ch) == NULL) {
+	if (wl_get_scan_results(name, chanspec, ctl_ch, ctl_ch_tmp) == NULL) {
 		return 0;
 	}
 
@@ -6241,7 +5460,7 @@ sta_list:
 			ipv6listptr = ipv6list;
 			foundipv6 = 0;
 			while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
-				if (upper_strcmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
+				if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
 					ret += websWrite(wp, "\"%s\",", ipentry);
 					foundipv6 = 1;
 					break;
@@ -6408,7 +5627,7 @@ sta_list:
 					ipv6listptr = ipv6list;
 					foundipv6 = 0;
 					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
-						if (upper_strcmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
+						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
 							ret += websWrite(wp, "\"%s\",", ipentry);
 							foundipv6 = 1;
 							break;

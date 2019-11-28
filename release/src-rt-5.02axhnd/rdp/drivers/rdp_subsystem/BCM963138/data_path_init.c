@@ -46,6 +46,7 @@
 #include "lib_types.h"
 #endif
 #include "data_path_init.h"
+#include "rdpa_dhd_helper_basic.h"
 #include "rdpa_types.h"
 #include "rdpa_config.h"
 #include "rdp_drv_bpm.h"
@@ -67,6 +68,7 @@ void f_initialize_bbh_of_dsl_port(void);
 #endif
 
 static  S_DPI_CFG   DpiBasicConfig = {WAN_TYPE_NONE,1536,0,0,0,0};
+uint8_t * g_backup_queues_mem_virt_addr = 0;
 
 #if defined(__KERNEL__) && !defined(FIRMWARE_INIT)
 struct device *rdp_dummy_dev = NULL;
@@ -97,7 +99,7 @@ struct device *rdp_dummy_dev = NULL;
  * *************************************************************************/
 
 #define DEFAULT_RUNNER_FREQ             800
-#define RDD_CPU_TX_ABS_FIFO_SIZE		5120
+#define RDD_CPU_TX_ABS_FIFO_SIZE        LILAC_RDD_CPU_TX_SKB_LIMIT_MAX
 
 /* multicast header size */
 #define BBH_MULTICAST_HEADER_SIZE_FOR_LAN_PORT 32
@@ -1453,7 +1455,24 @@ static int rdp_bpm_cfg_params_get(S_DPI_CFG *pCfg, rdp_bpm_cfg_params *p_bpm_cfg
 
     if (((pCfg->runner_tm_base_addr + (pCfg->runner_tm_size << 20)) == pCfg->runner_mc_base_addr) &&
         ((pCfg->runner_tm_base_addr_phys + (pCfg->runner_tm_size << 20)) == pCfg->runner_mc_base_addr_phys))
+    {
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+        /* Take the DHD Backup Queue memory from the beginning of TM block */
+        g_backup_queues_mem_virt_addr = (uint8_t*)pCfg->runner_tm_base_addr;
+        pCfg->runner_tm_size -= (RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE >> 20);
+        pCfg->runner_tm_base_addr += RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE;
+        pCfg->runner_tm_base_addr_phys += RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE;
+#endif        
         tm_mc_can_merge = 1;
+    } 
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+    else 
+    {
+        /* Take the DHD Backup Queue memory from the end of TM block */
+        g_backup_queues_mem_virt_addr = (uint8_t*)(pCfg->runner_tm_base_addr + ((pCfg->runner_tm_size << 20) - RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE));
+        pCfg->runner_tm_size -= (RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE >> 20);
+    }
+#endif        
 
     if (((pCfg->runner_mc_base_addr + (pCfg->runner_mc_size << 20)) == pCfg->runner_tm_base_addr) &&
         ((pCfg->runner_mc_base_addr_phys + (pCfg->runner_mc_size << 20)) == pCfg->runner_tm_base_addr_phys))
@@ -1538,6 +1557,9 @@ static int rdp_bpm_cfg_params_get(S_DPI_CFG *pCfg, rdp_bpm_cfg_params *p_bpm_cfg
     /* print some warrning messages when there are some significant amounts of wasted reserved memory */
     if (wasted_size >= 5)
         __print("WARNING!RDP reserved memories are wasting %dMB of memory, please adjust your reserved memory size\n", wasted_size);
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+    __print(" RDP DHD Backup Queue Memory (from TM reserved) = %uMB\n", (RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE >> 20));
+#endif
 
     return 0;
 
@@ -1545,6 +1567,9 @@ bpm_cfg_params_error:
 
     __print("\nRDP memory reservation required at least %uMB TM memory (%uMB for table + %uMB for buffer) "
             "and %uMB MC memory\n",
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+            (RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE >> 20) +
+#endif
             ((ROUND_UP_MB(RDP_DDR_DATA_STRUCTURES_SIZE) + ROUND_UP_MB(VAL_2_5K * bpm_buf_size)) >> 20),
             (ROUND_UP_MB(RDP_DDR_DATA_STRUCTURES_SIZE) >> 20),
             (ROUND_UP_MB(VAL_2_5K * bpm_buf_size) >> 20),

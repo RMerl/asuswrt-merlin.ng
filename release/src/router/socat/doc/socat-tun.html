@@ -1,0 +1,169 @@
+<!-- source: doc/socat-tun.html -->
+<html><head>
+<title>Building TUN based virtual networks with socat</title>
+<link rel="stylesheet" type="text/css" href="dest-unreach.css">
+</head>
+
+<body>
+
+<h1>Building TUN based virtual networks with socat</h1>
+
+<h2>Introduction</h2>
+<p>
+Some operating systems allow the generation of virtual network interfaces that
+do not connect to a wire but to a process that simulates the network. Often
+these devices are called TUN or TAP.
+</p>
+<p>
+socat provides an address type that creates a TUN device on Linux; the other
+socat address can be any type; it transfers the "wire" data as desired.
+</p>
+<p>
+This document shows how a simple virtual network can be created between
+two hosts that may be far (many network hops) apart. On both hosts a socat
+instance is started that connects to the other host using TCP and creates a TUN
+device. See <a href="socat-openssltunnel.html">socat-openssltunnel.html</a> for
+a guide on securing the connection using SSL.
+</p>
+<p>
+The following IP addresses are used in the example; replace them in the
+following commands with the requirements of your situation:</p>
+<table border="1">
+<tr><th>host</th><th>address</th><th>mask</th></tr>
+<tr><td>physical "server" address</td><td>1.2.3.4</td><td>n/a</td></tr>
+<tr><td>physical "client" address</td><td>n/a</td><td>n/a</td></tr>
+<tr><td>TUN on "server"</td><td>192.168.255.1</td><td>255.255.255.0</td></tr>
+<tr><td>TUN on "client"</td><td>192.168.255.2</td><td>255.255.255.0</td></tr>
+</table>
+<p>The TCP connection uses port 11443.</p>
+
+<p>On "default" Linux installations, creating TUN/TAP devices might require
+root privilege.</p>
+
+<!-- discussion -->
+<h2>Generate TUN devices with socat</h2>
+<p>In this section two instances of socat are used to generate TUN devices on
+different hosts and connect the "wire" sides, providing a simple virtual
+network. 
+</p>
+<p>
+We distinguish server and client only with respect to the connection between
+the two socat instances; the TUN interfaces both have the same quality.
+</p>
+
+<h3>TUN Server</h3>
+
+<span class="frame"><span class="shell">socat -d -d TCP-LISTEN:11443,reuseaddr TUN:192.168.255.1/24,up</span></span>
+<p>After starting this command, socat will wait for a connection and then
+create a TUN pseudo network device with address 192.168.255.1; the bit number
+specifies the mask of the network that is pretended to be connected on this
+interface.</p>
+
+<h3>TUN Client</h3>
+<span class="frame"><span class="shell">socat TCP:1.2.3.4:11443 TUN:192.168.255.2/24,up</span></span>
+<p>This command should establish a connection to the server and create the TUN
+device on the client.</p>
+
+<h3>Seeing it work</h3>
+
+<p>
+After successful connection both TUN interfaces should be active and transfer
+date between each other using the TCP connection. Try this by pinging
+192.168.255.1 from the client and 192.168.255.2 from the server.
+</p>
+
+<h3>TCP/IP version 6</h3>
+
+<p>IPv6 as transport should work just like any TCP/IPv6 connection.</p>
+
+<p>Creation of an IPv6 virtual interface is not directly possible, but you can
+generate an IPv4 interface as described above, and add IPv6 addresses using
+the <tt>ifconfig</tt> command.
+
+<h2>Troubleshooting</h2>
+
+<h3>Test TUN integration</h3>
+<p>
+If you get error messages like this:</p>
+<table border="1" bgcolor="#e08080"><tr><td><tt>... E unknown device/address "tun"</tt></td></tr></table>
+<p>your socat executable probably does not provide TUN/TAP support. Potential
+reasons: you are not on Linux or are using an older version of socat.
+</p>
+
+<h3>Missing kernel support</h3>
+<p>An error message like:</p>
+<table border="1" bgcolor="#e08080"><tr><td><tt>... E open("/dev/net/tun", 02, 0666): No such file or directory</tt></td></tr></table>
+<p>indicates that your kernel either needs to load the tun module or does not
+  have TUN/TAP support compiled in. Try to load the module:</p>
+<span class="frame"><span class="shell">modprobe tun</span></span>
+<p>and check
+ for /dev/net/tun. If that does not succeed you need to
+ rebuild your kernel with the appropriate configuration (probably under
+<b>Device driver / Network device support / Network device / Universal TUN/TAP</b>).
+</p>
+
+<h3>TUN cloning device permissions</h3>
+<p>An error message like:</p>
+<table border="1" bgcolor="#e08080"><tr><td><tt>... E open("/dev/net/tun", 02, 0666): Permission denied</tt></td></tr></table>
+<p>indicates that you do not have permission to read or write the TUN cloning
+device. Check its permission and ownership.</p>
+
+<h3>Interface down</h3>
+<p>If no error occurs but the pings do not work check if the network devices
+have been created:</p>
+<span class="frame"><span class="shell">ifconfig tun0</span></span>
+<p>The output should look like:</p>
+<pre>
+tun0      Link encap:UNSPEC  HWaddr 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00  
+          inet addr:192.168.255.1  P-t-P:192.168.255.1  Mask:255.255.255.0
+          UP POINTOPOINT RUNNING NOARP MULTICAST  MTU:1500  Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:500 
+          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)
+</pre>
+<p>Check the "UP" keyword; you forget the "up" option in the socat command if
+ it is missing.<p>
+<p>Check if the correct IP address and network mask are displayed.</p>
+
+<h3>Routing</h3>
+<p></p>
+<span class="frame"><span class="shell">netstat -an |fgrep 192.168.255</span></span>
+<p>The output should look like:</p>
+<pre>
+192.168.255.0   0.0.0.0         255.255.255.0   U         0 0          0 tun0
+</pre>
+
+<h3>Other problems</h3>
+<p>Another reason for failure might be iptables.</p>
+<p>Run socat with options <tt>-d -d -d</tt>, this will show every data transfer
+between the two processes. Each ping probe should cause a forth and a back
+transfer.<p>
+
+<h2>History</h2>
+<p>
+Linux TUN/TAP support was added to socat in version 1.6.0.</p>
+
+<p>This document was last modified in February 2010.</p>
+
+<h2>More info about socat TUN/TAP support</h2>
+
+<h3>Links regarding this tutorial</h3>
+<a href="socat.html#ADDRESS_TUN">socat address tun</a><br>
+
+<h3>socat options for TUN/TAP addresses</h3>
+<a href="socat.html#GROUP_TUN">TUN/TAP options</a><br>
+
+<h2>References</h2>
+<a href="http://www.dest-unreach.org/socat">socat home page</a><br>
+<a href="socat.html">socat man page</a><br>
+<a href="http://openvpn.net/">OpenVPN home page</a><br>
+<a href="http://en.wikipedia.org/wiki/TUN/TAP">TUN/TAP on Wikipedia</a><br>
+
+<p>
+<small>Copyright: Gerhard Rieger 2007-2010</small><br>
+<small>License: <a href="http://www.fsf.org/licensing/licenses/fdl.html">GNU Free Documentation License (FDL)</a></small>
+</p>
+
+</body>
+</html>

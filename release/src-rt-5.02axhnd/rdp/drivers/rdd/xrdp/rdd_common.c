@@ -142,19 +142,19 @@ void rdd_drop_precedence_cfg(rdpa_traffic_dir dir, uint16_t eligibility_vector)
 rx_def_flow_context_t *g_rx_flow_context_ptr;
 
 
-static void __rdd_rx_flow_cfg(uint32_t flow_index, rdd_flow_dest destination, rdd_rdd_vport vport, uint32_t counter_id)
+static void __rdd_rx_flow_entry_set(uint32_t flow_index, rdd_flow_dest destination, rdd_rdd_vport vport, uint32_t counter_id)
 {
     RDD_RX_FLOW_ENTRY_FLOW_DEST_WRITE_G(destination, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
     RDD_RX_FLOW_ENTRY_VIRTUAL_PORT_WRITE_G(vport, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
     RDD_RX_FLOW_ENTRY_CNTR_ID_WRITE_G(counter_id, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
 }
 
-void rdd_rx_flow_cfg(uint32_t flow_index, rdd_flow_dest destination, rdd_rdd_vport vport, uint32_t counter_id)
+void rdd_rx_flow_entry_set(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *entry_ptr)
 {
     static uint8_t first_time = 1;
 
     RDD_BTRACE("flow_index = %d, destination = %d, vport = %d, counter_id = %d, first_time %d\n", flow_index,
-        destination, vport, counter_id, first_time);
+        entry_ptr->flow_dest, entry_ptr->virtual_port, entry_ptr->cntr_id, first_time);
 
     if (first_time)
     {
@@ -162,9 +162,9 @@ void rdd_rx_flow_cfg(uint32_t flow_index, rdd_flow_dest destination, rdd_rdd_vpo
 
         first_time = 0;
         for (i = 0; i < RX_FLOW_CONTEXTS_NUMBER; i++)
-            __rdd_rx_flow_cfg(i, FLOW_DEST_ETH_ID, PROJ_DEFS_RDD_VPORT_LAST, RX_FLOW_CNTR_GROUP_INVLID_CNTR);
+            __rdd_rx_flow_entry_set(i, FLOW_DEST_ETH_ID, PROJ_DEFS_RDD_VPORT_LAST, RX_FLOW_CNTR_GROUP_INVLID_CNTR);
     }
-    __rdd_rx_flow_cfg(flow_index, destination, vport, counter_id);
+    __rdd_rx_flow_entry_set(flow_index, entry_ptr->flow_dest, entry_ptr->virtual_port, entry_ptr->cntr_id);
 }
 
 #ifndef _CFE_
@@ -202,9 +202,9 @@ uint32_t rdd_rx_flow_cntr_id_get(uint32_t flow_index)
     return cntr_id;
 }
 
-uint32_t rdd_rx_flow_params_get(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *entry_ptr)
+uint32_t rdd_rx_flow_entry_get(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *entry_ptr)
 {
-    uint32_t cntr_id, vport;
+    uint32_t cntr_id, vport, flow_dest, flow_exc;
 
     RDD_BTRACE("flow_index = %d, entry_ptr %p \n", flow_index, entry_ptr);
 
@@ -215,8 +215,13 @@ uint32_t rdd_rx_flow_params_get(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *entr
 
     RDD_RX_FLOW_ENTRY_CNTR_ID_READ_G(cntr_id, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
     RDD_RX_FLOW_ENTRY_VIRTUAL_PORT_READ_G(vport, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
+    RDD_RX_FLOW_ENTRY_FLOW_DEST_READ_G(flow_dest, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
+    RDD_RX_FLOW_ENTRY_EXCEPTION_READ_G(flow_exc, RDD_RX_FLOW_TABLE_ADDRESS_ARR, flow_index);
+
     entry_ptr->cntr_id = cntr_id;
     entry_ptr->virtual_port = vport;
+    entry_ptr->flow_dest = flow_dest;
+    entry_ptr->exception = flow_exc;
     return BDMF_ERR_OK;
 }
 
@@ -338,12 +343,29 @@ void rdd_loopback_queue_set(rdd_rdd_vport vport, uint32_t queue_id)
     GROUP_MWRITE_8(RDD_LOOPBACK_QUEUE_TABLE_ADDRESS_ARR, vport, queue_id);
 }
 
+void rdd_loopback_wan_flow_set(uint32_t flow)
+{
+    RDD_BTRACE("wan_flow = %d\n", flow);
+#if !defined(BCM63158)
+    GROUP_MWRITE_8(RDD_LOOPBACK_WAN_FLOW_TABLE_ADDRESS_ARR, 0, flow);
+#endif    
+}
+
 void rdd_ingress_qos_drop_miss_ratio_set(uint32_t drop_miss_ratio)
 {
     RDD_BTRACE("drop_miss_ratio = %d\n", drop_miss_ratio);
 
 #if !defined(BCM63158)
     GROUP_MWRITE_8(RDD_INGRESS_QOS_DONT_DROP_RATIO_ADDRESS_ARR, 0, drop_miss_ratio);
+#endif
+}
+
+void rdd_ingress_qos_wan_untagged_priority_set(bdmf_boolean wan_untagged_priority)
+{
+    RDD_BTRACE("wan_untagged_priority = %d\n", wan_untagged_priority);
+
+#if !defined(BCM63158)
+    GROUP_MWRITE_8(RDD_INGRESS_QOS_WAN_UNTAGGED_PRIORITY_ADDRESS_ARR, 0, wan_untagged_priority);
 #endif
 }
 
@@ -503,8 +525,12 @@ void rdd_fpm_pool_number_mapping_cfg(uint16_t fpm_base_token_size)
 {
     uint8_t i;
     uint8_t exp_fpm_base;
+    
+#if !defined(BCM63158)
+    uint8_t headers_per_fpm;
+#endif
 
-    // exponent of fpm_base_token_size { 2K, 1K, 512, 256 }
+    /* exponent of fpm_base_token_size { 2K, 1K, 512, 256 } */
     if (fpm_base_token_size == 2048)
         exp_fpm_base = 11;
     else
@@ -549,7 +575,40 @@ void rdd_fpm_pool_number_mapping_cfg(uint16_t fpm_base_token_size)
         RDD_FPM_POOL_NUMBER_POOL_NUMBER_WRITE_G(8, RDD_DHD_FPM_POOL_NUMBER_MAPPING_TABLE_ADDRESS_ARR, i);
 #endif
 
+#if !defined(BCM63158)
+    /*
+        This is a mapping function from number of flooding replications to FPM pool number 
+        according to configured fpm_base_token_size. The pool number is calculated using the
+        configured fpm base token size - usually 512 bytes, the replication header size and the pool
+        indication indexing (0:8 1:4 2:2 3:1 FPMs).
+    */
+    
+    /* How many headers are in an FPM */
+    headers_per_fpm = fpm_base_token_size / RDD_MCAST_FPM_HEADER_SLOT_HEADER_MAX_SIZE_NUMBER;
+
+    /* Since FW holds replications_number = (replication number - 1) we set the thresholds accordingly.
+       We assume table was initialized with zeros (8 FPMs) */
+    for (i = 0; i < RDD_FLOODING_HEADER_FPM_POOL_NUMBER_MAPPING_TABLE_SIZE; i++)
+    {
+        if (i < headers_per_fpm)
+            RDD_FPM_POOL_NUMBER_POOL_NUMBER_WRITE_G(3, RDD_FLOODING_HEADER_FPM_POOL_NUMBER_MAPPING_TABLE_ADDRESS_ARR, i);
+        else if (i < 2 * headers_per_fpm)
+            RDD_FPM_POOL_NUMBER_POOL_NUMBER_WRITE_G(2, RDD_FLOODING_HEADER_FPM_POOL_NUMBER_MAPPING_TABLE_ADDRESS_ARR, i);
+        else if (i < 4 * headers_per_fpm)
+            RDD_FPM_POOL_NUMBER_POOL_NUMBER_WRITE_G(1, RDD_FLOODING_HEADER_FPM_POOL_NUMBER_MAPPING_TABLE_ADDRESS_ARR, i);
+        else if (i < 8 * headers_per_fpm)
+            RDD_FPM_POOL_NUMBER_POOL_NUMBER_WRITE_G(0, RDD_FLOODING_HEADER_FPM_POOL_NUMBER_MAPPING_TABLE_ADDRESS_ARR, i);
+    }
+#endif
 }
+
+#if !defined(BCM63158)
+void rdd_max_pkt_len_table_init(void)
+{
+    /* index 0 in the table is used by invalid pathstat_idx and dummy flows (natc_miss bypass) */
+    RDD_BYTES_2_BITS_WRITE_G(DUMMY_MAX_PKT_LEN,RDD_MAX_PKT_LEN_TABLE_ADDRESS_ARR,0);
+}
+#endif
 
 void rdd_rate_limit_overhead_cfg(uint8_t  xi_rate_limit_overhead)
 {

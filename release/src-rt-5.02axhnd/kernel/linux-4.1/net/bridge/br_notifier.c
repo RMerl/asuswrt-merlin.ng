@@ -13,9 +13,14 @@
 #if defined(CONFIG_BCM_KF_BRIDGE_PORT_ISOLATION)
 static RAW_NOTIFIER_HEAD(bridge_event_chain);
 
-void br_dev_notify_if_change(char *brName)
+void br_dev_notify_if_change(struct net_device *br_dev, struct net_device *dev, int isadd)
 {
-	raw_notifier_call_chain(&bridge_event_chain, BREVT_IF_CHANGED, brName);
+    struct bridge_notifier_info info;
+
+    info.br_dev = br_dev;
+    info.dev    = dev;
+    info.isadd  = isadd;
+	raw_notifier_call_chain(&bridge_event_chain, BREVT_IF_CHANGED, &info);
 }
 
 /* NOTE -- IMPORTANT : Caller MUST take the RCU_READ_LOCK */

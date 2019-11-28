@@ -11,6 +11,8 @@
 #undef HAVE_ERRNO_H
 #include <winsock2.h>
 
+/* the following is a workaround a problem for 'inline' keyword in said
+   header when compiled with Borland C++ 6 */
 #if defined(__BORLANDC__) && !defined(__cplusplus)
 #define inline __inline
 #define _inline __inline

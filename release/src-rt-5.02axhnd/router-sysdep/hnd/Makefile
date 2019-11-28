@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom HND Layer
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -29,6 +29,9 @@ WLSRC_BASE     := $(src)/$(SRCBASE_OFFSET)
 WLSHARED       := wlconfig_lx_shared
 WLCFGDIR       := $(WLSRC_BASE)/wl/config
 COMMON_SHARED_DIR := ../../../../../shared/impl1
+COMPONENTSBASE_OFFSET := ../../../components
+COMPONENTSBASE := $(src)/$(COMPONENTSBASE_OFFSET)
+SRCBASE_ROUTER := $(COMPONENTSBASE)/router
 
 ifneq ($(BUILD_HND_MFG),)
 export BUILD_MFG := 1
@@ -64,6 +67,8 @@ ifneq ($(wildcard $(src)/$(HND_DIR)),)
     EXTRA_CFLAGS += -I$(SRCBASE_SHARED)/include
     EXTRA_CFLAGS += -I$(SRCBASE)/include         -I$(SRCBASE)/common/include
     EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/char/wlcsm_ext/impl1/include
+    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/$(BRCM_BOARD)
+    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/include/$(BRCM_BOARD)
     # BCA build identifier
     EXTRA_CFLAGS += $(WLFLAGS) -DBCMDRIVER
     hnd-objs += $(subst $(src)/,,$(HND_OBJS))
@@ -81,13 +86,17 @@ endif
     endif
 
     ifneq ($(strip $(CONFIG_BCM_WIFI_FORWARDING_DRV)),)
+        WLWFD := 1
+    endif
+    ifneq ($(strip $(CONFIG_BCM_ARCHER_WLAN)),)
+        # Archer WLAN (implements WiFi Forwarding Driver)
+        WLWFD := 1
+        EXTRA_CFLAGS += -DBCM_AWL
+    endif
+
+    ifeq ($(strip $(WLWFD)), 1)
         EXTRA_CFLAGS += -DBCM_WFD
-        ifneq ($(strip $(BCM_PKTFWD)),)
-            EXTRA_CFLAGS += -DPKTC -DPKTC_TBL -DBCM_PKTFWD
-            HND_OBJS += $(src)/$(SRCBASE_OFFSET)/../../../shared/impl1/bcm_pktfwd.o
-        else
-            EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
-        endif
+        EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
         EXTRA_CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
     endif
 
@@ -108,10 +117,15 @@ endif
         EXTRA_CFLAGS += -DCONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
     endif
 
+    ## XXX Bulk DMA not supported by CM ; no member named 'dma_index' in struct sk_buff
     ifeq ($(CMWIFI),)
         EXTRA_CFLAGS += -DBULK_PKTLIST
     endif
     EXTRA_CFLAGS += -DSTS_FIFO_RXEN
+
+	ifeq ($(CONFIG_BCM_HND_EAP), y)
+		EXTRA_CFLAGS += -DBCM_SKB_FREE_OFFLOAD
+	endif
 
     hnd-objs += $(subst $(src)/,,$(HND_OBJS))
 
@@ -126,6 +140,7 @@ endif
 include $(SRCBASE)/.config
 MODEL = $(subst -,,$(BUILD_NAME))
 EXTRA_CFLAGS += -D$(MODEL)
+-include $(SRCBASE_ROUTER)/hnd/Makefile.shared
 
 obj-$(CONFIG_BCM_WLAN) := hnd.o
 

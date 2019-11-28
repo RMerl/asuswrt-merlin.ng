@@ -3,7 +3,7 @@
  * Contents are wifi-specific, used by any kernel or app-level
  * software that might want wifi things as it grows.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_app_utils.c 667243 2016-10-26 11:37:48Z $
+ * $Id: bcm_app_utils.c 774680 2019-05-02 12:46:25Z $
  */
 
 #include <typedefs.h>
@@ -39,10 +39,6 @@
 #endif // endif
 #endif /* BCMDRIVER */
 #include <bcmwifi_channels.h>
-
-#if defined(WIN32) && (defined(BCMDLL) || defined(WLMDLL))
-#include <bcmstdlib.h>	/* For wl/exe/GNUmakefile.brcm_wlu and GNUmakefile.wlm_dll */
-#endif // endif
 
 #include <bcmutils.h>
 #include <wlioctl.h>
@@ -883,6 +879,9 @@ wl_copy_macstat_upto_ver10(uint16 cntver, uint32 *dst, uint32 *src)
 	return BCME_OK;
 }
 
+/* XXX: Refer to the following twiki for macstat conversion from old to new
+ * http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/MacStatistics#counters_names_printed_out
+ */
 static int
 wl_copy_macstat_ver11(uint32 *dst, uint32 *src)
 {

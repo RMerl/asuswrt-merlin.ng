@@ -312,7 +312,7 @@ PJ_DECL(pj_status_t) pj_register_strerror(pj_status_t start_code,
  * @param msg	The error test.
  */
 #ifndef PJ_BUILD_ERR
-#   define PJ_BUILD_ERR(code,msg) { code, msg " (" #code ")" }
+#   define PJ_BUILD_ERR(code,msg) { code, msg }
 #endif
 
 

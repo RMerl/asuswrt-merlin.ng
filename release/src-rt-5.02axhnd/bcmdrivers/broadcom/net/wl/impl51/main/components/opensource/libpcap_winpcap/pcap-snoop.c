@@ -98,6 +98,11 @@ again:
 	sh = (struct snoopheader *)p->buffer;
 	datalen = sh->snoop_packetlen;
 
+	/*
+	 * XXX - Sigh, snoop_packetlen is a 16 bit quantity.  If we
+	 * got a short length, but read a full sized snoop pakcet,
+	 * assume we overflowed and add back the 64K...
+	 */
 	if (cc == (p->snapshot + sizeof(struct snoopheader)) &&
 	    (datalen < p->snapshot))
 		datalen += (64 * 1024);
@@ -105,6 +110,12 @@ again:
 	caplen = (datalen < p->snapshot) ? datalen : p->snapshot;
 	cp = (u_char *)(sh + 1) + p->offset;
 
+	/*
+	 * XXX unfortunately snoop loopback isn't exactly like
+	 * BSD's.  The address family is encoded in the first 2
+	 * bytes rather than the first 4 bytes!  Luckily the last
+	 * two snoop loopback bytes are zeroed.
+	 */
 	if (p->linktype == DLT_NULL && *((short *)(cp + 2)) == 0) {
 		u_int *uip = (u_int *)cp;
 		*uip >>= 16;
@@ -129,6 +140,10 @@ pcap_inject_snoop(pcap_t *p, const void *buf, size_t size)
 {
 	int ret;
 
+	/*
+	 * XXX - libnet overwrites the source address with what I
+	 * presume is the interface's address; is that required?
+	 */
 	ret = write(p->fd, buf, size);
 	if (ret == -1) {
 		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "send: %s",
@@ -152,6 +167,19 @@ pcap_stats_snoop(pcap_t *p, struct pcap_stat *ps)
 		return (-1);
 	}
 
+	/*
+	 * "ifdrops" are those dropped by the network interface
+	 * due to resource shortages or hardware errors.
+	 *
+	 * "sbdrops" are those dropped due to socket buffer limits.
+	 *
+	 * As filter is done in userland, "sbdrops" counts packets
+	 * regardless of whether they would've passed the filter.
+	 *
+	 * XXX - does this count *all* Snoop or Drain sockets,
+	 * rather than just this socket?  If not, why does it have
+	 * both Snoop and Drain statistics?
+	 */
 	p->md.stat.ps_drop =
 	    rs->rs_snoop.ss_ifdrops + rs->rs_snoop.ss_sbdrops +
 	    rs->rs_drain.ds_ifdrops + rs->rs_drain.ds_sbdrops;
@@ -202,6 +230,9 @@ pcap_activate_snoop(pcap_t *p)
 	else
 		v = 64 * 1024;	/* default to 64K buffer size */
 	(void)setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&v, sizeof(v));
+	/*
+	 * XXX hack - map device name to link layer type
+	 */
 	if (strncmp("et", p->opt.source, 2) == 0 ||	/* Challenge 10 Mbit */
 	    strncmp("ec", p->opt.source, 2) == 0 ||	/* Indigo/Indy 10 Mbit,
 							   O2 10/100 */
@@ -218,6 +249,26 @@ pcap_activate_snoop(pcap_t *p)
 		p->linktype = DLT_EN10MB;
 		p->offset = RAW_HDRPAD(sizeof(struct ether_header));
 		ll_hdrlen = sizeof(struct ether_header);
+		/*
+		 * This is (presumably) a real Ethernet capture; give it a
+		 * link-layer-type list with DLT_EN10MB and DLT_DOCSIS, so
+		 * that an application can let you choose it, in case you're
+		 * capturing DOCSIS traffic that a Cisco Cable Modem
+		 * Termination System is putting out onto an Ethernet (it
+		 * doesn't put an Ethernet header onto the wire, it puts raw
+		 * DOCSIS frames out on the wire inside the low-level
+		 * Ethernet framing).
+		 *
+		 * XXX - are there any sorts of "fake Ethernet" that have
+		 * Ethernet link-layer headers but that *shouldn't offer
+		 * DLT_DOCSIS as a Cisco CMTS won't put traffic onto it
+		 * or get traffic bridged onto it?  "el" is for ATM LANE
+		 * Ethernet devices, so that might be the case for them;
+		 * the same applies for "qaa" classical IP devices.  If
+		 * "fa" devices are for FORE SPANS, that'd apply to them
+		 * as well; what are "cip" devices - some other ATM
+		 * Classical IP devices?
+		 */
 		p->dlt_list = (u_int *) malloc(sizeof(u_int) * 2);
 		/*
 		 * If that fails, just leave the list empty.
@@ -260,12 +311,32 @@ pcap_activate_snoop(pcap_t *p)
 	}
 
 #ifdef SIOCGIFMTU
+	/*
+	 * XXX - IRIX appears to give you an error if you try to set the
+	 * capture length to be greater than the MTU, so let's try to get
+	 * the MTU first and, if that succeeds, trim the snap length
+	 * to be no greater than the MTU.
+	 */
 	(void)strncpy(ifr.ifr_name, p->opt.source, sizeof(ifr.ifr_name));
 	if (ioctl(fd, SIOCGIFMTU, (char *)&ifr) < 0) {
 		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "SIOCGIFMTU: %s",
 		    pcap_strerror(errno));
 		goto bad;
 	}
+	/*
+	 * OK, we got it.
+	 *
+	 * XXX - some versions of IRIX 6.5 define "ifr_mtu" and have an
+	 * "ifru_metric" member of the "ifr_ifru" union in an "ifreq"
+	 * structure, others don't.
+	 *
+	 * I've no idea what's going on, so, if "ifr_mtu" isn't defined,
+	 * we define it as "ifr_metric", as using that field appears to
+	 * work on the versions that lack "ifr_mtu" (and, on those that
+	 * don't lack it, "ifru_metric" and "ifru_mtu" are both "int"
+	 * members of the "ifr_ifru" union, which suggests that they
+	 * may be interchangeable in this case).
+	 */
 #ifndef ifr_mtu
 #define ifr_mtu	ifr_metric
 #endif // endif

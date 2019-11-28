@@ -62,6 +62,9 @@
 #define SHN_LIB         nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/" : "/tmp/bwdpi/libshn_pctrl.so"
 #define DPI_CERT        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/ntdasus2014.cert" : "/tmp/bwdpi/ntdasus2014.cert"
 #define DCD_EULA        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/dcd.conf" : "/tmp/bwdpi/dcd.conf"
+#define KEYENC          nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/key.enc" : "/tmp/bwdpi/key.enc"
+#define MODELENC        nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/model.enc" : "/tmp/bwdpi/model.enc"
+#define SHNPEM          nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/shn.pem" : "/tmp/bwdpi/shn.pem"
 
 // kernel module
 #define TDTS            nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/tdts.ko" : "/usr/bwdpi/tdts.ko"

@@ -107,6 +107,21 @@ struct __attribute__ ((packed)) fpm_tok_op {
 #define FPM_NUM_HISTORY_ENTRIES \
 	(FPM_HISTORY_MEM_SIZE / sizeof(struct fpm_tok_op))
 
+#define FPM_ISR_TIMER_PERIOD	1000	/* msec */
+#define FPM_DEV_IRQ_MASK	FPM_POOL_FULL_MASK | \
+				FPM_FREE_TOKEN_NO_VALID_MASK |\
+				FPM_FREE_TOKEN_INDEX_OUT_OF_RANGE_MASK | \
+				FPM_MULTI_TOKEN_NO_VALID_MASK | \
+				FPM_MULTI_TOKEN_INDEX_OUT_OF_RANGE_MASK | \
+				FPM_POOL_DIS_FREE_MULTI_MASK | \
+				FPM_MEMORY_CORRUPT_MASK | \
+				FPM_XON_MASK | \
+				FPM_XOFF_MASK | \
+				FPM_ILLEGAL_ADDRESS_ACCESS_MASK | \
+				FPM_ILLEGAL_ALLOC_REQUEST_MASK | \
+				FPM_EXPIRED_TOKEN_DET_MASK | \
+				FPM_EXPIRED_TOKEN_RECOV_MASK
+
 /* Device struct */
 struct fpmdev {
 	struct platform_device *pdev;
@@ -134,6 +149,7 @@ struct fpmdev {
 #endif
 #endif
 
+	struct timer_list isr_timer;
 	/* FIXME!! Wen! check to see the following workarond is needed for 4908? */
 #if 0
 	/* tokens preallocated to work around FPM HW bug in chips < 3390B0 */

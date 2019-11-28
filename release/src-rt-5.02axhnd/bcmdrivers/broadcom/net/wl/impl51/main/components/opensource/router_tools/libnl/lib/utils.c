@@ -1096,6 +1096,25 @@ void dump_from_ops(struct nl_object *obj, struct nl_dump_params *params)
 		obj->ce_ops->oo_dump[type](obj, params);
 }
 
+/**
+ * Check for library capabilities
+ *
+ * @arg	capability	capability identifier
+ *
+ * Check whether the loaded libnl library supports a certain capability.
+ * This is useful so that applications can workaround known issues of
+ * libnl that are fixed in newer library versions, without
+ * having a hard dependency on the new version. It is also useful, for
+ * capabilities that cannot easily be detected using autoconf tests.
+ * The capabilities are integer constants with name NL_CAPABILITY_*.
+ *
+ * As this function is intended to detect capabilities at runtime,
+ * you might not want to depend during compile time on the NL_CAPABILITY_*
+ * names. Instead you can use their numeric values which are guaranteed not to
+ * change meaning.
+ *
+ * @return non zero if libnl supports a certain capability, 0 otherwise.
+ **/
 int nl_has_capability (int capability)
 {
 	static const uint8_t caps[ ( NL_CAPABILITY_MAX + 7 ) / 8  ] = {

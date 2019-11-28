@@ -83,4 +83,4 @@
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
 #undef inline
-#endif // endif
+#endif

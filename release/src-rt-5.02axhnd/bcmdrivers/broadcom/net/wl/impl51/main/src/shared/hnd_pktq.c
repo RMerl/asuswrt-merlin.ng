@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.c 758228 2018-04-18 05:58:00Z $
+ * $Id: hnd_pktq.c 770841 2019-01-07 19:07:38Z $
  */
 
 #include <typedefs.h>
@@ -37,10 +37,11 @@
  * hi_prec is always >= the number of the highest non-empty precedence
  */
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_penq(struct pktq *pq, int prec, void *p)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -74,13 +75,11 @@ pktq_penq(struct pktq *pq, int prec, void *p)
 	return p;
 }
 
-/*
- * osl simple, non-priority packet queue
- */
+/** osl simple, non-priority packet queue */
 void * BCMFASTPATH
 spktq_enq(struct spktq *spq, void *p)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&spq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -107,10 +106,11 @@ spktq_enq(struct spktq *spq, void *p)
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_penq_head(struct pktq *pq, int prec, void *p)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -143,10 +143,11 @@ pktq_penq_head(struct pktq *pq, int prec, void *p)
 	return p;
 }
 
+/** @param spktq : single priority packet queue */
 void * BCMFASTPATH
 spktq_enq_head(struct spktq *spq, void *p)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&spq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -172,10 +173,11 @@ spktq_enq_head(struct spktq *spq, void *p)
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_pdeq(struct pktq *pq, int prec)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 	void *p;
 
 	/* protect shared resource */
@@ -210,10 +212,11 @@ done:
 	return p;
 }
 
+/** @param spktq : single priority packet queue */
 void * BCMFASTPATH
 spktq_deq(struct spktq *spq)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p;
 
 	/* protect shared resource */
@@ -244,10 +247,11 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_pdeq_tail(struct pktq *pq, int prec)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p, *prev;
 
 	/* protect shared resource */
@@ -285,10 +289,11 @@ done:
 	return p;
 }
 
+/** @param spktq : single priority packet queue */
 void * BCMFASTPATH
 spktq_deq_tail(struct spktq *spq)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p, *prev;
 
 	/* protect shared resource */
@@ -322,6 +327,7 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void *
 pktq_peek_tail(struct pktq *pq, int *prec_out)
 {
@@ -352,14 +358,17 @@ done:
 	return p;
 }
 
-/*
+/**
  * Append spktq 'list' to the tail of pktq 'pq'
+ *
+ * @param pq    Multi-priority packet queue
+ * @param list  Single priority packet queue
  */
 void BCMFASTPATH
 pktq_append(struct pktq *pq, int prec, struct spktq *list)
 {
-	struct pktq_prec *q;
-	struct pktq_prec *list_q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
+	struct pktq_prec *list_q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -407,12 +416,13 @@ done:
 
 /*
  * Append spktq 'list' to the tail of spktq 'spq'
+ * @param spq : single priority packet queue
  */
 void BCMFASTPATH
 spktq_append(struct spktq *spq, struct spktq *list)
 {
-	struct pktq_prec *q;
-	struct pktq_prec *list_q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
+	struct pktq_prec *list_q;			/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&spq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -452,14 +462,16 @@ done:
 		return;
 }
 
-/*
+/**
  * Prepend spktq 'list' to the head of pktq 'pq'
+ * @param pq     Multi-priority packet queue
+ * @param list   Single priority packet queue
  */
 void BCMFASTPATH
 pktq_prepend(struct pktq *pq, int prec, struct spktq *list)
 {
-	struct pktq_prec *q;
-	struct pktq_prec *list_q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
+	struct pktq_prec *list_q;		/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -513,12 +525,14 @@ done:
 
 /*
  * Prepend spktq 'list' to the head of spktq 'spq'
+ * @param spq   Single priority packet queue
+ * @param list  Single priority packet queue
  */
 void BCMFASTPATH
 spktq_prepend(struct spktq *spq, struct spktq *list)
 {
-	struct pktq_prec *q;
-	struct pktq_prec *list_q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
+	struct pktq_prec *list_q;		/**< single precedence packet queue */
 
 	/* protect shared resource */
 	if (HND_PKTQ_MUTEX_ACQUIRE(&spq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
@@ -564,10 +578,11 @@ done:
 		return;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_pdeq_prev(struct pktq *pq, int prec, void *prev_p)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 	void *p = NULL;
 
 	/* protect shared resource */
@@ -602,10 +617,11 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_pdeq_with_fn(struct pktq *pq, int prec, ifpkt_cb_t fn, int arg)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 	void *p, *prev = NULL;
 
 	/* protect shared resource */
@@ -656,11 +672,12 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 bool BCMFASTPATH
 pktq_pdel(struct pktq *pq, void *pktbuf, int prec)
 {
 	bool ret = FALSE;
-	struct pktq_prec *q;
+	struct pktq_prec *q;			/**< single precedence packet queue */
 	void *p = NULL;
 
 	/* protect shared resource */
@@ -707,6 +724,7 @@ done:
 	return ret;
 }
 
+/** @param pq   Multi-priority packet queue */
 bool
 pktq_init(struct pktq *pq, int num_prec, int max_pkts)
 {
@@ -730,6 +748,7 @@ pktq_init(struct pktq *pq, int num_prec, int max_pkts)
 	return TRUE;
 }
 
+/** @param spq : single priority packet queue */
 bool
 spktq_init(struct spktq *spq, int max_pkts)
 {
@@ -743,6 +762,7 @@ spktq_init(struct spktq *spq, int max_pkts)
 	return TRUE;
 }
 
+/** @param spq : single priority packet queue */
 bool
 spktq_init_list(struct spktq *spq, uint max_pkts, void *head, void *tail, uint16 n_pkts)
 {
@@ -761,6 +781,7 @@ spktq_init_list(struct spktq *spq, uint max_pkts, void *head, void *tail, uint16
 	return TRUE;
 }
 
+/** @param pq   Multi-priority packet queue */
 bool
 pktq_deinit(struct pktq *pq)
 {
@@ -771,6 +792,7 @@ pktq_deinit(struct pktq *pq)
 	return TRUE;
 }
 
+/** @param spq : single priority packet queue */
 bool
 spktq_deinit(struct spktq *spq)
 {
@@ -781,6 +803,7 @@ spktq_deinit(struct spktq *spq)
 	return TRUE;
 }
 
+/** @param pq   Multi-priority packet queue */
 void
 pktq_set_max_plen(struct pktq *pq, int prec, int max_pkts)
 {
@@ -798,10 +821,11 @@ pktq_set_max_plen(struct pktq *pq, int prec, int max_pkts)
 		return;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_deq(struct pktq *pq, int *prec_out)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p = NULL;
 	int prec;
 
@@ -844,10 +868,11 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void * BCMFASTPATH
 pktq_deq_tail(struct pktq *pq, int *prec_out)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p = NULL, *prev;
 	int prec;
 
@@ -897,6 +922,7 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void *
 pktq_peek(struct pktq *pq, int *prec_out)
 {
@@ -926,6 +952,7 @@ done:
 	return p;
 }
 
+/** @param spq : single priority packet queue */
 void *
 spktq_peek(struct spktq *spq)
 {
@@ -948,6 +975,7 @@ done:
 	return p;
 }
 
+/** @param pq   Multi-priority packet queue */
 void
 pktq_pflush(osl_t *osh, struct pktq *pq, int prec, bool dir)
 {
@@ -963,6 +991,7 @@ pktq_pflush(osl_t *osh, struct pktq *pq, int prec, bool dir)
 	}
 }
 
+/** @param spq : single priority packet queue */
 void
 spktq_flush(osl_t *osh, struct spktq *spq, bool dir)
 {
@@ -978,6 +1007,7 @@ spktq_flush(osl_t *osh, struct spktq *spq, bool dir)
 	}
 }
 
+/** @param pq   Multi-priority packet queue */
 void
 pktq_flush(osl_t *osh, struct pktq *pq, bool dir)
 {
@@ -1007,7 +1037,11 @@ pktq_flush(osl_t *osh, struct pktq *pq, bool dir)
 	}
 }
 
-/* Return sum of lengths of a specific set of precedences */
+/**
+ * Return sum of lengths of a specific set of precedences
+ *
+ * @param pq   Multi-priority packet queue
+ */
 int
 pktq_mlen(struct pktq *pq, uint prec_bmp)
 {
@@ -1030,11 +1064,15 @@ pktq_mlen(struct pktq *pq, uint prec_bmp)
 	return len;
 }
 
-/* Priority peek from a specific set of precedences */
+/**
+ * Priority peek from a specific set of precedences
+ *
+ * @param pq   Multi-priority packet queue
+ */
 void * BCMFASTPATH
 pktq_mpeek(struct pktq *pq, uint prec_bmp, int *prec_out)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p = NULL;
 	int prec;
 
@@ -1067,11 +1105,16 @@ done:
 
 	return p;
 }
-/* Priority dequeue from a specific set of precedences */
+
+/**
+ * Priority dequeue from a specific set of precedences
+ *
+ * @param pq   Multi-priority packet queue
+ */
 void * BCMFASTPATH
 pktq_mdeq(struct pktq *pq, uint prec_bmp, int *prec_out)
 {
-	struct pktq_prec *q;
+	struct pktq_prec *q;				/**< single precedence packet queue */
 	void *p = NULL;
 	int prec;
 
@@ -1119,6 +1162,7 @@ done:
 }
 
 #ifdef HND_PKTQ_THREAD_SAFE
+/** @param pq   Multi-priority packet queue */
 int
 pktqprec_avail_pkts(struct pktq *pq, int prec)
 {
@@ -1139,6 +1183,7 @@ pktqprec_avail_pkts(struct pktq *pq, int prec)
 	return ret;
 }
 
+/** @param pq   Multi-priority packet queue */
 bool
 pktqprec_full(struct pktq *pq, int prec)
 {
@@ -1159,6 +1204,7 @@ pktqprec_full(struct pktq *pq, int prec)
 	return ret;
 }
 
+/** @param pq   Multi-priority packet queue */
 int
 pktq_avail(struct pktq *pq)
 {
@@ -1177,6 +1223,7 @@ pktq_avail(struct pktq *pq)
 	return ret;
 }
 
+/** @param spq : single priority packet queue */
 int
 spktq_avail(struct spktq *spq)
 {
@@ -1195,6 +1242,7 @@ spktq_avail(struct spktq *spq)
 	return ret;
 }
 
+/** @param pq   Multi-priority packet queue */
 bool
 pktq_full(struct pktq *pq)
 {
@@ -1213,6 +1261,7 @@ pktq_full(struct pktq *pq)
 	return ret;
 }
 
+/** @param spq : single priority packet queue */
 bool
 spktq_full(struct spktq *spq)
 {

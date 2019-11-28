@@ -1,7 +1,7 @@
 /*
  * Private header file for Linux OS Independent Layer
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl_priv.h 764931 2018-06-11 08:31:48Z $
+ * $Id: linux_osl_priv.h 769228 2018-11-06 21:19:55Z $
  */
 
 #ifndef _LINUX_OSL_PRIV_H_
@@ -147,6 +147,10 @@ struct osl_info {
 	uint bustype;
 	osl_cmn_t *cmn; /* Common OSL related data shred between two OSH's */
 
+	/* for host drivers, a bus handle is needed when reading from and/or writing to dongle
+	 * registeres, however ai/si utilities only passes osh handle to R_REG and W_REG. as
+	 * a work around, save the bus handle here
+	 */
 	void *bus_handle;
 #if defined(DSLCPE_DELAY)
 	shared_osl_t *oshsh;		/* osh shared */

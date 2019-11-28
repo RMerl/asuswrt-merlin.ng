@@ -967,7 +967,12 @@ extern void br_stp_notify_state_port(const struct net_bridge_port *p);
 extern void br_stp_notify_state_bridge(const struct net_bridge *br);
 #endif
 #if defined(CONFIG_BCM_KF_BRIDGE_PORT_ISOLATION)
-extern void br_dev_notify_if_change(char *brName);
+struct bridge_notifier_info {
+    struct net_device *br_dev;
+	struct net_device *dev;
+    int isadd;
+};
+extern void br_dev_notify_if_change(struct net_device *br_dev, struct net_device *dev, int isadd);
 #endif
 
 #endif

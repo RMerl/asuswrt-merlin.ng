@@ -479,6 +479,14 @@ struct nl_cache *nl_object_get_cache(struct nl_object *obj)
 	return obj->ce_cache;
 }
 
+/**
+ * Return the object's type
+ * @arg obj		object
+ *
+ * FIXME: link to list of object types
+ *
+ * @return Name of the object type
+ */
 const char *nl_object_get_type(const struct nl_object *obj)
 {
 	if (!obj->ce_ops)

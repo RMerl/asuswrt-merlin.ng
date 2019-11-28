@@ -1,7 +1,7 @@
 /*
  * Broadcom EAP dispatcher (EAPD) module include file
  *
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -42,7 +42,7 @@
  * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
- * $Id: eapd.h 766559 2018-08-07 06:36:16Z $
+ * $Id: eapd.h 771558 2019-01-31 08:30:04Z $
  */
 
 #ifndef _EAPD_H_
@@ -80,7 +80,7 @@ extern bool eapd_ceventd_enable;
 
 #define EAPD_WKSP_MIN_CMD_LINE_ARGS		16
 #define EAPD_WKSP_MAX_CMD_LINE_ARGS		128
-#define EAPD_WKSP_MAX_NO_BRIDGE			256
+#define EAPD_WKSP_MAX_NO_BRIDGE			8
 #define EAPD_WKSP_MAX_NO_BRCM			58
 #define EAPD_WKSP_MAX_NO_IFNAMES		66
 
@@ -131,7 +131,7 @@ typedef struct eapd_app {
 	eapd_cb_t	*cb; /* for each interface which running application */
 } eapd_app_t, eapd_wps_t, eapd_nas_t, eapd_wai_t, eapd_dcs_t, eapd_mevent_t, eapd_bsd_t,
 eapd_ssd_t, eapd_eventd_t, eapd_drsdbd_t, eapd_aspm_t, eapd_visdcoll_t, eapd_cevent_t, eapd_wlevent_t,
-eapd_lte_u_t, eapd_airiq_t, eapd_wlceventd_t;
+eapd_wlceventd_t, eapd_wbd_t, eapd_evt_t, eapd_ecbd_t;
 
 typedef struct eapd_wksp {
 	uchar			packet[EAPD_WKSP_RECV_DATA_MAX_LEN];
@@ -143,16 +143,17 @@ typedef struct eapd_wksp {
 	eapd_nas_t		nas;
 	eapd_wai_t		wai;
 	eapd_dcs_t		dcs;
-	eapd_lte_u_t		lte_u;
-	eapd_airiq_t		airiq;
 	eapd_mevent_t		mevent;
 	eapd_bsd_t		bsd;
 	eapd_drsdbd_t		drsdbd;
 	eapd_ssd_t		ssd;
 	eapd_eventd_t		eventd;
+	eapd_ecbd_t		ecbd;
 	eapd_aspm_t		aspm;
 	eapd_visdcoll_t		visdcoll;
 	eapd_cevent_t		cevent;
+	eapd_wbd_t		wbd;
+	eapd_evt_t		evt;
 	eapd_wlevent_t          wlevent;
 	eapd_wlceventd_t	wlceventd;
 	int			flags;
@@ -191,9 +192,10 @@ typedef enum {
 	EAPD_APP_EVENTD,
 	EAPD_APP_ASPM,
 	EAPD_APP_VISDCOLL,
+	EAPD_APP_WBD,
 	EAPD_APP_CEVENT,
-	EAPD_APP_LTE_U,
-	EAPD_APP_AIRIQ,
+	EAPD_APP_EVT,
+	EAPD_APP_ECBD,
 	EAPD_APP_WLEVENT,
 	EAPD_APP_WLCEVENTD
 } eapd_app_mode_t;
@@ -218,10 +220,9 @@ typedef enum {
 #define EAPD_CAP_VISDCOLL 0x400
 #define EAPD_CAP_CEVENT	0x800
 #define EAPD_CAP_EVENTD	0x1000
-#define EAPD_CAP_WLEVENT 0x2000
-#define EAPD_CAP_LTE_U	0x4000
-#define EAPD_CAP_AIRIQ	0x8000
-
+#define EAPD_CAP_ECBD   0x2000
+#define EAPD_CAP_WBD	0x10000
+#define EAPD_CAP_WLEVENT 0x20000
 /* Apps */
 int wps_app_init(eapd_wksp_t *nwksp);
 int wps_app_deinit(eapd_wksp_t *nwksp);
@@ -269,28 +270,6 @@ int dcs_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
 void dcs_app_recv_handler(eapd_wksp_t *nwksp, eapd_cb_t *from,
 	uint8 *pData, int *pLen);
 #endif /* BCM_DCS */
-#ifdef WL_AIR_IQ
-/* Air-IQ */
-int airiq_app_init(eapd_wksp_t *nwksp);
-int airiq_app_deinit(eapd_wksp_t *nwksp);
-int airiq_app_sendup(eapd_wksp_t *nwksp, uint8 *pData, int pLen, char *fromlan);
-void airiq_app_set_eventmask(eapd_app_t *app);
-int airiq_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
-void airiq_app_recv_handler(eapd_wksp_t *nwksp, eapd_cb_t *from,
-	uint8 *pData, int *pLen);
-/* LTE-U */
-int lte_u_app_init(eapd_wksp_t *nwksp);
-int lte_u_app_deinit(eapd_wksp_t *nwksp);
-int lte_u_app_sendup(eapd_wksp_t *nwksp, uint8 *pData, int pLen, char *fromlan);
-void lte_u_app_set_eventmask(eapd_app_t *app);
-int lte_u_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
-void lte_u_app_recv_handler(eapd_wksp_t *nwksp, eapd_cb_t *from,
-	uint8 *pData, int *pLen);
-#if EAPD_WKSP_AUTO_CONFIG
-int airiq_app_enabled(char *name);
-int lte_u_app_enabled(char *name);
-#endif /* EAPD_WKSP_AUTO_CONFIG */
-#endif /* WL_AIR_IQ */
 
 #ifdef BCM_MEVENT
 int mevent_app_init(eapd_wksp_t *nwksp);
@@ -412,6 +391,42 @@ int cevent_to_app(eapd_wksp_t *nwksp, bcm_event_t* be, uint16 be_length, char *f
 void cevent_copy_eapol_and_forward(eapd_wksp_t *nwksp, char *ifname,
 		const eapol_header_t *eapol, const eap_header_t *eap, uint32 app);
 #endif /* BCM_CEVENT */
+
+#ifdef BCM_WBD
+int wbd_app_init(eapd_wksp_t *nwksp);
+int wbd_app_deinit(eapd_wksp_t *nwksp);
+int wbd_app_sendup(eapd_wksp_t *nwksp, uint8 *pData, int pLen, char *fromlan, int bss);
+#if EAPD_WKSP_AUTO_CONFIG
+int wbd_app_enabled(char *name);
+#endif // endif
+void wbd_app_set_eventmask(eapd_app_t *app);
+int wbd_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
+void wbd_app_recv_handler(eapd_wksp_t *nwksp, char *wlifname, eapd_cb_t *from,
+	uint8 *pData, int *pLen, struct ether_addr *ap_ea);
+#endif /* BCM_WBD */
+
+#ifdef BCM_CUSTOM_EVENT
+int evt_app_init(eapd_wksp_t *nwksp);
+int evt_app_deinit(eapd_wksp_t *nwksp);
+int evt_app_monitor_sendup(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
+void evt_app_set_eventmask(eapd_app_t *app);
+int evt_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
+void evt_app_recv_handler(eapd_wksp_t *nwksp, char *wlifname, eapd_cb_t *from,
+	uint8 *pData, int *pLen, struct ether_addr *ap_ea);
+#endif /* BCM_CUSTOM_EVENT */
+
+#ifdef BCM_ECBD
+int ecbd_app_init(eapd_wksp_t *nwksp);
+int ecbd_app_deinit(eapd_wksp_t *nwksp);
+int ecbd_app_sendup(eapd_wksp_t *nwksp, uint8 *pData, int pLen, char *fromlan);
+#if EAPD_WKSP_AUTO_CONFIG
+int ecbd_app_enabled(char *name);
+#endif // endif
+void ecbd_app_set_eventmask(eapd_app_t *app);
+int ecbd_app_handle_event(eapd_wksp_t *nwksp, uint8 *pData, int Len, char *from);
+void ecbd_app_recv_handler(eapd_wksp_t *nwksp, eapd_cb_t *from,
+	uint8 *pData, int *pLen);
+#endif /* BCM_ECBD */
 
 #ifdef BCM_WLCEVENTD
 int wlceventd_app_init(eapd_wksp_t *nwksp);

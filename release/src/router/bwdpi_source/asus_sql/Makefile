@@ -9,7 +9,8 @@ CFLAGS += -I$(TOP)/bwdpi_source/asus_include
 
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared
 LDFLAGS += -L$(TOP)/bwdpi_source/asus -lbwdpi
-LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
+LDFLAGS += -L$(LIBDIR) -lm -L$(TOP)/sqlite/.libs -lsqlite3
+
 
 ifeq ($(RTCONFIG_QTN),y)
 CFLAGS += -I$(TOP)/libqcsapi_client
@@ -20,7 +21,11 @@ endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
-LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil$(EXHND) -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util$(EXHND) -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl$(EXHND) -lbcm_boardctl
+ifeq ($(HND_ROUTER_AX_675X),y)
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/gen_util -lgen_util -L$(TOP_PLATFORM)/sys_util -lsys_util -L$(TOP_PLATFORM)/bcm_util -lbcm_util -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
+else
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/bcm_util -lbcm_crc -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
+endif
 endif
 ifeq ($(HND_ROUTER_AX),y)
 CFLAGS += -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/math/include
@@ -38,6 +43,42 @@ CFLAGS += -I$(TOP)/openssl/include/openssl
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
+endif
+
+# add rule for ProgControl3 new mechanism
+ifeq ($(RTCONFIG_SOC_IPQ8064),y)
+else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
+	# ipq806x
+else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
+	# ipq807x
+else ifeq ($(RTCONFIG_QCA956X),y)
+	# qca956x
+else ifeq ($(RTCONFIG_RALINK),y)
+	# mtk
+else ifeq ($(RTCONFIG_LANTIQ),y)
+	# lantiq
+else ifeq ($(RTCONFIG_BCMARM),y)
+ifeq ($(RTCONFIG_BCM7),y)
+	# bcm7
+else ifeq ($(HND_ROUTER),y)
+ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+CFLAGS += -DPGCONTROL3
+else
+	# ax-hnd
+endif # RTCONFIG_HND_ROUTER_AX_675X
+else
+	# hnd
+endif # HND_ROUTER_AX
+else ifeq ($(RTCONFIG_BCM_7114),y)
+	# bcm7114
+else
+ifeq ($(RTCONFIG_BCMSMP),y)
+	# bcm6_smp
+else
+	# bcm6_up
+endif
+endif
 endif
 
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain

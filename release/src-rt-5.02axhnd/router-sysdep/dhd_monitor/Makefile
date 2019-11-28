@@ -1,7 +1,7 @@
 #
 # Router dhd_monitor Makefile
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -29,7 +29,7 @@ CFLAGS += -I$(TOP)/busybox-1.x
 endif
 
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
-LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram -lpthread
 LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
 

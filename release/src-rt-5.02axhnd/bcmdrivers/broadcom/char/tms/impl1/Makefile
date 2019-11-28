@@ -24,7 +24,6 @@ endif
 
 obj-$(CONFIG_BCM_TMS) += nciTMSkmod.o
 
-ifneq ($(PREBUILT_EXTRAMOD),1)
 ifeq ($(strip $(HAVESRC)),)
 nciTMSkmod-objs += nciTMSkmod_dep.o
 else
@@ -35,10 +34,6 @@ nciTMSkmod-objs	:=	ethPackage.o eth2App.o eth2Drv.o ethOAM.o ethMUX.o ethTStamp.
 					3ahEVT.o 3ahVAR.o 3ahMIB.o nciLINUX.o nciTimer.o nciPool.o nciVFifo.o	\
 					nciVer.o nciTINT.o nciCRC.o nciMEM.o nciContext.o nciBrd.o nciDebug.o	\
 					tmsXlateKrnl.o linuxeth1AG.o linuxeth3AH.o board.o tmsLINUXkmod.o
-endif
-
-else
-nciTMSkmod-objs := nciTMSkmod_preb.o
 endif
 
 #This Makefile structure requires that it will be called with -j1

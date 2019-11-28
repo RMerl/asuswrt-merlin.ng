@@ -4,7 +4,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1257,6 +1257,11 @@ typedef struct ts_host_timestamping_config {
  * devices may also avail of HWA compatible messaging (dongle firmware changes)
  * to reduce the PCIe traffic.
  *
+ */
+
+/* XXX: Platforms with Runner offload, will ONLY support CWI32/CWI formats.
+ * Bitfield listing in Little Endian form is for guiding Runner Offload port.
+ * SW DHD and Dongle firmware must use SHIFT/MASK instead of bitfield access.
  */
 
 #ifndef HWA_AGGR_MAX

@@ -2,7 +2,7 @@
  * Misc utility routines for accessing the SOC Interconnects
  * of Broadcom HNBU chips.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: siutils.h 765716 2018-07-13 08:52:36Z $
+ * $Id: siutils.h 774070 2019-04-09 08:16:27Z $
  */
 
 #ifndef	_siutils_h_
@@ -93,6 +93,7 @@ struct si_pub {
 #ifdef BCM_BACKPLANE_TIMEOUT
 	si_axi_error_info_t * err_info;
 #endif /* BCM_BACKPLANE_TIMEOUT */
+	char    *nvram_fname;  /** file name without path, e.g. 'nvram.txt' */
 };
 
 /* for HIGH_ONLY driver, the si_t must be writable to allow states sync from BMAC to HIGH driver
@@ -435,7 +436,7 @@ extern int si_devpath_pcie(si_t *sih, char *path, int size);
 /* Read variable with prepending the devpath to the name */
 extern char *si_getdevpathvar(si_t *sih, const char *name);
 extern int si_getdevpathintvar(si_t *sih, const char *name);
-extern char *si_coded_devpathvar(si_t *sih, char *varname, int var_len, const char *name);
+extern char *si_compact_devpathvar(si_t *sih, char *varname, int var_len, const char *name);
 
 extern uint8 si_pcieclkreq(si_t *sih, uint32 mask, uint32 val);
 extern uint32 si_pcielcreg(si_t *sih, uint32 mask, uint32 val);
@@ -474,8 +475,8 @@ extern bool si_taclear(si_t *sih, bool details);
 extern void si_view(si_t *sih, bool verbose);
 extern void si_viewall(si_t *sih, bool verbose);
 #endif /* BCMDBG */
-#if defined(BCMDBG) || defined(BCMDBG_PHYDUMP) || defined(WLTEST)
 struct bcmstrbuf;
+#if defined(BCMDBG) || defined(BCMDBG_PHYDUMP) || defined(WLTEST)
 extern int si_dump_pcieinfo(si_t *sih, struct bcmstrbuf *b);
 extern void si_dump_pmuregs(si_t *sih, struct bcmstrbuf *b);
 extern int si_dump_pcieregs(si_t *sih, struct bcmstrbuf *b);
@@ -549,8 +550,6 @@ extern void si_ercx_init(si_t *sih, uint32 ltecx_mux, uint32 ltecx_padnum,
 extern void si_gci_seci_init(si_t *sih);
 extern void si_wci2_init(si_t *sih, uint8 baudrate, uint32 ltecx_mux, uint32 ltecx_padnum,
 	uint32 ltecx_fnsel, uint32 ltecx_gcigpio, uint32 xtalfreq);
-
-extern bool si_btcx_wci2_init(si_t *sih);
 
 extern void si_gci_set_functionsel(si_t *sih, uint32 pin, uint8 fnsel);
 extern uint32 si_gci_get_functionsel(si_t *sih, uint32 pin);

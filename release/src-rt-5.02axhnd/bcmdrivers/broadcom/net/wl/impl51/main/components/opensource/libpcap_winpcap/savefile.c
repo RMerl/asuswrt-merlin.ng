@@ -1223,6 +1223,23 @@ pcap_fopen_offline(FILE *fp, char *errbuf)
 		swap_hdr(&hdr);
 	}
 	if (magic == KUZNETZOV_TCPDUMP_MAGIC) {
+		/*
+		 * XXX - the patch that's in some versions of libpcap
+		 * changes the packet header but not the magic number,
+		 * and some other versions with this magic number have
+		 * some extra debugging information in the packet header;
+		 * we'd have to use some hacks^H^H^H^H^Hheuristics to
+		 * detect those variants.
+		 *
+		 * Ethereal does that, but it does so by trying to read
+		 * the first two packets of the file with each of the
+		 * record header formats.  That currently means it seeks
+		 * backwards and retries the reads, which doesn't work
+		 * on pipes.  We want to be able to read from a pipe, so
+		 * that strategy won't work; we'd have to buffer some
+		 * data ourselves and read from that buffer in order to
+		 * make that work.
+		 */
 		p->sf.hdrsize = sizeof(struct pcap_sf_patched_pkthdr);
 	} else
 		p->sf.hdrsize = sizeof(struct pcap_sf_pkthdr);
@@ -1648,6 +1665,13 @@ pcap_setup_dump(pcap_t *p, int linktype, FILE *f, const char *fname)
 {
 
 #if defined(WIN32) || defined(MSDOS)
+	/*
+	 * If we're writing to the standard output, put it in binary
+	 * mode, as savefiles are binary files.
+	 *
+	 * Otherwise, we turn off buffering.
+	 * XXX - why?  And why not on the standard output?
+	 */
 	if (f == stdout)
 		SET_BINMODE(f);
 	else

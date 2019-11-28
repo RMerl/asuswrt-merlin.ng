@@ -14,7 +14,7 @@
 # It's available to be included by makefiles like WLAN_Common.mk,
 # or by brand makefiles, or sourced by build scripts.
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -31,7 +31,7 @@
 #
 # <<Broadcom-WL-IPTag/Open:>>
 #
-# $Id: WLAN.usf 740991 2018-01-15 17:09:28Z $
+# $Id: WLAN.usf 774681 2019-05-02 13:20:56Z $
 #
 
 # Current list of components. This list is used in makefiles
@@ -40,7 +40,7 @@
 # a single line without continuation characters. You may also
 # want to add new components to the cstyle filelist.
 
-WLAN_COMPONENT_PATHS=components/accel components/apf components/avs components/awd components/bcmcrypto components/btlog components/clm-api components/hml components/math components/msch components/nan components/ndis components/phy components/proto components/router/bcmdrv components/shim components/wlioctl components/mesh src/dongle src/rte src/shared/bcmwifi src/wl/ate src/wl/chctx src/wl/dump src/wl/encode src/wl/gas src/wl/iocv src/wl/keymgmt src/wl/lwip src/wl/mbo_oce src/wl/natoe src/wl/olpc src/wl/ppr src/wl/proxd src/wl/randmac src/wl/rel_mcast src/wl/airiq
+WLAN_COMPONENT_PATHS=components/accel components/apf components/avs components/awd components/bcmcrypto components/clm-api components/math components/msch components/nan components/phy components/proto components/router/bcmdrv components/shim components/wlioctl src/dongle src/rte src/shared/bcmwifi src/wl/ate src/wl/chctx src/wl/dump src/wl/encode src/wl/gas src/wl/iocv src/wl/keymgmt src/wl/lwip src/wl/mbo_oce src/wl/natoe src/wl/olpc src/wl/ppr src/wl/proxd src/wl/randmac src/wl/rel_mcast src/wl/airiq
 
 # This is a staging area for generated content that needs to be shared
 # between build and packaging steps. E.g when CLM data files

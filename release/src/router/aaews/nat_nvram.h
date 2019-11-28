@@ -30,6 +30,7 @@
 #define NV_DBG 1
 int nvram_is_aae_enable();
 int nvram_set_aae_status(const char* api, const int curl_status, const char* aae_status);
+int nvram_set_server_status(const char* server, const int status, const char* status_text);
 int nvram_set_aae_sip_connected(const char* aae_sip_connected);
 int nvram_get_aae_pwd(char** aae_pwd);
 int nvram_get_aae_username(char** aae_username);

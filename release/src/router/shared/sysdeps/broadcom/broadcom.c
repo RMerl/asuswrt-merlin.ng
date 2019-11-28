@@ -537,3 +537,52 @@ int wl_cap(int unit, char *cap_check)
 
 	return 0;
 }
+
+#ifdef RTCONFIG_GEFORCENOW
+int wl_set_wifiscan(char *ifname, int val)
+{
+	char buf[48] = {0};
+	snprintf(buf, sizeof(buf), "wl -i %s scansuppress %d", ifname, val);
+	system(buf);
+
+	return 0;
+}
+
+int wl_set_mcsindex(char *ifname, int *is_auto, int *idx, char *idx_type, int *stream)
+{
+	char buf[128] = {0};
+	char *rate = NULL;
+
+	if (!strcmp(ifname, nvram_safe_get("wl0_ifname"))) {
+		rate = "2g_rate";
+	}
+	else {
+		rate = "5g_rate";
+	}
+
+	if (*is_auto) {
+		snprintf(buf, sizeof(buf), "wl -i %s %s auto", ifname, rate);
+	}
+	else {
+		if (!strcmp(idx_type, "vht")) {
+			if (*idx > 9) *idx = 9;
+			if (*idx < 1) *idx = 1;
+			snprintf(buf, sizeof(buf), "wl -i %s %s -v %d -s %d", ifname, rate, *idx, *stream);
+		}
+		else if (!strcmp(idx_type, "ht")) {
+			if (*idx > 23) *idx = 23;
+			if (*idx < 1) *idx = 1;
+			/* HT can't work with stream parameter */
+			*stream = 0;
+			snprintf(buf, sizeof(buf), "wl -i %s %s -h %d", ifname, rate, *idx);
+		}
+		else {
+			NVGFN_DBG("(%s) illegal format!\n", ifname);
+		}
+	}
+	system(buf);
+	NVGFN_DBG("(%s) buf=%s\n", ifname, buf);
+
+	return 0;
+}
+#endif

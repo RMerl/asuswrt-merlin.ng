@@ -205,8 +205,14 @@ function translate_auth(flag){
 		return "WPA-Personal";
 	else if(flag == "psk2")
  		return "WPA2-Personal";
+	else if(flag == "sae"){
+		return "WPA3-Personal";
+	}	
 	else if(flag == "pskpsk2")
 		return "WPA-Auto-Personal";
+	else if(flag == "psk2sae"){
+		return "WPA2/WPA3-Personal";	
+	}
 	else if(flag == "wpa")
 		return "WPA-Enterprise";
 	else if(flag == "wpa2")
@@ -330,10 +336,10 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
 					if(!lyra_hide_support)
 						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ translate_auth(gn_array[i][2]) +'</td></tr>';
-					
+
 					if(gn_array[i][2].indexOf("wpa") >= 0 || gn_array[i][2].indexOf("radius") >= 0)
 							show_str = "";
-					else if(gn_array[i][2].indexOf("psk") >= 0)
+					else if(gn_array[i][2].indexOf("psk") >= 0 || gn_array[i][2].indexOf("sae") >= 0)
 							show_str = gn_array[i][4];
 					else if(gn_array[i][2] == "open" && gn_array[i][5] == "0")
 							show_str = "None";
@@ -562,6 +568,12 @@ function applyRule(){
 
 		dis_qos_enable(document.form.wl_unit.value + "." + document.form.wl_subunit.value, document.form, "bw_enabled");
 
+		if(amesh_support && amesh_wgn_support){
+			$("input[name='wl_ap_isolate']").attr("disabled", false);
+			var wl_ap_isolate = ($("select[name='wl_lanaccess']").val() == "off") ? 1 : 0;
+			$("input[name='wl_ap_isolate']").val(wl_ap_isolate);
+		}
+
 		var _unit_subunit = "wl" + document.form.wl_unit.value + "." + document.form.wl_subunit.value;
 		if(captive_portal_used_wl_array[_unit_subunit] != undefined) {
 			document.form.wl_key.disabled = true;
@@ -610,7 +622,7 @@ function validForm(){
 	if(document.form.wl_wep_x.value != "0")
 		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
 			return false;	
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "sae" || auth_mode == "pskpsk2" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.form.wl_wpa_psk, document.form.wl_unit.value))
 				return false;
@@ -893,6 +905,19 @@ function change_guest_unit(_unit, _subunit){
 		document.getElementById("psk_title").innerHTML = "<#Network_key#>";
 		inputCtrl(document.form.wl_macmode, 0);
 		inputCtrl(document.form.wl_lanaccess, 1);
+	}
+
+	if(amesh_support && amesh_wgn_support){
+		$("#aimesh_sync_field").show();
+		$("#aimesh_sync_field select[name='wl_sync_node']").attr("disabled", false);
+		if(gn_array[idx][23] == undefined || gn_array[idx][23] == "")
+			$("#aimesh_sync_field select[name='wl_sync_node']").val("0");
+		else
+			$("#aimesh_sync_field select[name='wl_sync_node']").val(decodeURIComponent(gn_array[idx][23]));
+	}
+	else{
+		$("#aimesh_sync_field").hide();
+		$("#aimesh_sync_field select[name='wl_sync_node']").attr("disabled", true);
 	}
 }
 
@@ -1301,6 +1326,7 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 <input type="hidden" name="wl_gmode_protection" value="<% nvram_get("wl_gmode_protection"); %>" disabled>
 <input type="hidden" name="wl_mode_x" value="<% nvram_get("wl_mode_x"); %>" disabled>
 <input type="hidden" name="wl_maclist_x" value="<% nvram_get("wl_maclist_x"); %>">
+<input type="hidden" name="wl_ap_isolate" value="<% nvram_get("wl_ap_isolate"); %>" disabled>
 <select name="wl_subunit" class="input_option" onChange="change_wl_unit();" style="display:none"></select>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -1457,7 +1483,9 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 										<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 										<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
 										<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
+										<option value="sae"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA3-Personal</option>
 										<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
+										<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
 									</select>
 									<br>
 									<span id="wl_nmode_x_hint" style="display:none;"><#WLANConfig11n_automode_limition_hint#></span>
@@ -1561,6 +1589,15 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 									<select name="wl_lanaccess" class="input_option">
 										<option value="on" <% nvram_match("wl_lanaccess", "on","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 										<option value="off" <% nvram_match("wl_lanaccess", "off","selected"); %>><#btn_disable#></option>
+									</select>
+								</td>
+							</tr>
+							<tr id="aimesh_sync_field" class="captive_portal_control_class">
+								<th>Sync to AiMesh Node</th><!-- untranslated -->
+								<td>
+									<select name="wl_sync_node" class="input_option">
+										<option class="content_input_fd" value="0" <% nvram_match("wl_sync_node", "0","selected"); %>>Router only</option><!-- untranslated -->
+										<option class="content_input_fd" value="1" <% nvram_match("wl_sync_node", "1","selected"); %>><#All#></option>
 									</select>
 								</td>
 							</tr>

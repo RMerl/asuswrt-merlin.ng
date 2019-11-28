@@ -77,14 +77,18 @@ config RTCONFIG_HND_ROUTER_AX
 	bool "Bcm hnd 11ax bsp"
 	default n
 
+config RTCONFIG_HND_ROUTER_AX_675X
+	bool "Bcm hnd 11ax (675x) bsp"
+	default n
+
 config RTCONFIG_HND_WL
 	bool "BCM wl NIC mode support"
 	depends on RTCONFIG_HND_ROUTER_AX
 	default n
 
-config RTCONFIG_HNDMFG
-	bool "HND MFG mode"
-	depends on RTCONFIG_HND_ROUTER
+config RTCONFIG_BCM_MFG
+	bool "BCM MFG mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
 	default n
 
 config RTCONFIG_DFS_US
@@ -398,6 +402,10 @@ config RTCONFIG_VDSL
 
 config RTCONFIG_SYSSTATE
 	bool "Support additional debug logs"
+	default n
+
+config RTCONFIG_AHS
+	bool "Auto Healing System"
 	default n
 
 config RTCONFIG_DUALWAN
@@ -1736,6 +1744,11 @@ config RTCONFIG_CFGSYNC
 	bool "Sync config"
 	default n
 
+config RTCONFIG_CFGSYNC_LOCSYNC
+	bool "Sync location code config"
+	depends RTCONFIG_CFGSYNC
+	default n
+
 config RTCONFIG_LP5523
 	bool "Have LP5523 LED controller"
 	default n
@@ -1809,6 +1822,14 @@ config RTCONFIG_RGBLED
 	bool "RGB LED control"
 	default n
 
+config RTCONFIG_BCM_CLED
+	bool "BCM CLED LED control"
+	default n
+
+config RTCONFIG_SINGLE_LED
+	bool "model which has only one LED"
+	default n
+
 config RTCONFIG_AURASYNC
 	bool "AURASYNC support"
 	default n
@@ -1832,6 +1853,11 @@ config RTCONFIG_DBG_BLUECAVE_OBD
 config RTCONFIG_AMAS
 	bool "AMAS architecture."
 	default n
+
+config RTCONFIG_AMAS_WGN
+	bool "AMAS guest network."
+	depends on RTCONFIG_AMAS
+        default n		
 
 config RTCONFIG_AMASDB
 	bool "AMAS DB-sta collection."
@@ -1908,8 +1934,12 @@ config RTCONFIG_CONNDIAG
 	bool "enable conn_diag in AiMesh"
 	default n
 
-config RTCONFIG_GAME_PROFILE
-	bool "enable Game Profile"
+config RTCONFIG_BRCM_HOSTAPD
+	bool "BRCM HOSTAPD support"
+	default n
+
+config RTCONFIG_FRS_LIVE_UPDATE
+	bool "RTCONFIG_FRS_LIVE_UPDATE support"
 	default n
 
 config RTCONFIG_NTPD
@@ -1918,5 +1948,25 @@ config RTCONFIG_NTPD
 
 config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
+	default n
+
+config RTCONFIG_IPERF3
+	bool "Iperf3"
+	default n
+
+config RTCONFIG_BROOP
+	bool "broop"
+	default n
+
+config RTCONFIG_ASUSCTRL
+	bool "asusctrl support"
+	default n
+
+config RTCONFIG_GEFORCENOW
+	bool "GeForceNow QoS feature (includes UPnP QoS)"
+	default n
+
+config RTCONFIG_OPEN_NAT
+	bool "OPEN NAT support"
 	default n
 

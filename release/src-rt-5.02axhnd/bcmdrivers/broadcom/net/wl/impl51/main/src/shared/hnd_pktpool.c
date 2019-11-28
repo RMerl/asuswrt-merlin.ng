@@ -1,7 +1,7 @@
 /*
  * HND generic packet pool operation primitives
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktpool.c 764915 2018-06-11 00:49:41Z $
+ * $Id: hnd_pktpool.c 771187 2019-01-17 18:59:07Z $
  */
 
 #include <typedefs.h>
@@ -634,9 +634,6 @@ pktpool_enqchain_tail(pktpool_t *pktp, void *head, void *tail, int cnt)
 #if defined(HNDLBUFCOMPACT)
 #error "BCM_DHDHDR is exclusive of HNDLBUFCOMPACT."
 #endif // endif
-#if !defined(PKTC_DONGLE) || !defined(DUALPKTAMSDU)
-#error "BCM_DHDHDR needs both PKTC_DONGLE and DUALPKTAMSDU defined."
-#endif // endif
 #if !defined(WLFC_CONTROL_TO_HOST_DISABLED)
 #error "BCM_DHDHDR is exclusive of WLFC_CONTROL_TO_HOST_DISABLED."
 #endif // endif
@@ -660,7 +657,6 @@ lfrag_buf_pool_t *d11_lfrag_buf_pool = NULL;
 #define LFBUFSETHOMEPOOL(buf, p)	(((lfrag_buf_t *)(buf))->lfbufp = (p))
 #define D3LFBUF_ETHERHDRSZ	(14)
 #define D3LFBUF_SZ		(D3LFBUF_ETHERHDRSZ)
-#define D11LFBUF_HEADROOM	(224)
 
 static void *
 lfbufpool_deq(lfrag_buf_pool_t *lfbufp)
@@ -893,7 +889,7 @@ lfbufpool_swap_d11_buf(osl_t *osh, void *p)
 	PKTSETBUFALLOC(osh, p);
 
 	/* pull for headroom */
-	PKTPULL(osh, p, D11LFBUF_HEADROOM - extra_push);
+	PKTPULL(osh, p, (PKTFRAGSZ - D3LFBUF_ETHERHDRSZ - extra_push));
 	PKTSETLEN(osh, p, len);
 
 	/* copy all d3buf data to d11buf */

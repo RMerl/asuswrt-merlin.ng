@@ -1,7 +1,7 @@
 /*
  * Wireless network adapter utilities
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl.c 736070 2017-12-13 12:45:04Z $
+ * $Id: wl.c 768316 2018-10-10 05:49:16Z $
  */
 #include <typedefs.h>
 #include <string.h>
@@ -38,7 +38,7 @@
 #include <bcmiov.h>
 
 #ifndef MAX_WLAN_ADAPTER
-#define MAX_WLAN_ADAPTER	4
+#define MAX_WLAN_ADAPTER	16
 #endif	/* MAX_WLAN_ADAPTER */
 
 typedef struct {
@@ -76,8 +76,8 @@ wl_endian_probe(char *name)
 	}
 
 	if (idx >= MAX_WLAN_ADAPTER) {
-		fprintf(stderr, "Error: WLAN adapter index out of range in %s at line %d\n",
-			__FUNCTION__, __LINE__);
+		fprintf(stderr, "Error: WLAN adapter %s index out of range in %s at line %d\n",
+			name, __FUNCTION__, __LINE__);
 		goto end;
 	} else if (endian_stat[idx] != 0) {
 		gg_swap = endian_stat[idx] > 0 ? TRUE : FALSE;

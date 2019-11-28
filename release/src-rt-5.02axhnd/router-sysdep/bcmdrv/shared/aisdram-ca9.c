@@ -1,7 +1,7 @@
 /*
  * DDR23 Denali contoller & DDRPHY init routines.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1369,6 +1369,9 @@ embedded_nv:
 		val = R_REG(osh, &ddr->control[87]);
 		if (sdram_config & 0x80)
 			val |= (1 << 8);
+		/* FIXME: we will enable clearing the reduce mode bit
+		 * once confirmed with the board design team.
+		 */
 		W_REG(osh, &ddr->control[87], val);
 
 		val = R_REG(osh, &ddr->control[82]);

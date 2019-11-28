@@ -258,6 +258,17 @@ function submitForm(o, s){
 		document.form.switch_stb_x.value = "0";
 	}
 
+	if(document.form.switch_wantag.value == "manual"){
+		if(document.form.switch_wan1tagid.value == "" && document.form.switch_wan2tagid.value == "")
+			document.form.switch_stb_x.value = "0";
+		else if(document.form.switch_wan1tagid.value == "" && document.form.switch_wan2tagid.value != "")
+			document.form.switch_stb_x.value = "3";
+		else if(document.form.switch_wan1tagid.value != "" && document.form.switch_wan2tagid.value == "")
+			document.form.switch_stb_x.value = "4";
+		else
+			document.form.switch_stb_x.value = "6";
+	}
+
 	update_QKForm();
 	if(now_flag == "auto_way"){
 		simple_showLoading();

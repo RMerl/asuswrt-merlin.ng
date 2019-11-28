@@ -69,4 +69,35 @@
 #define CFG_STR_TRIBAND_RE	"triband_re"
 #define CFG_STR_WLC_LLDP_COST_STAT  "lldp_wlc_cost_stat"
 #define CFG_STR_ETH_LLDP_COST_STAT  "lldp_eth_cost_stat"
+#if defined(RTCONFIG_AMAS_WGN)
+#define CFG_STR_SYNC_NODE_X_Y		"cfg_wl%d.%d_sync_node"
+#define CFG_STR_SYNC_NODE_2G_G1		"cfg_wl0.1_sync_node"
+#define CFG_STR_SYNC_NODE_2G_G2		"cfg_wl0.2_sync_node"
+#define CFG_STR_SYNC_NODE_2G_G3		"cfg_wl0.3_sync_node"
+#define CFG_STR_SYNC_NODE_5G_G1		"cfg_wl1.1_sync_node"
+#define CFG_STR_SYNC_NODE_5G_G2		"cfg_wl1.2_sync_node"
+#define CFG_STR_SYNC_NODE_5G_G3		"cfg_wl1.3_sync_node"
+#define CFG_STR_SYNC_NODE_5G1_G1	"cfg_wl2.1_sync_node"
+#define CFG_STR_SYNC_NODE_5G1_G2	"cfg_wl2.2_sync_node"
+#define CFG_STR_SYNC_NODE_5G1_G3	"cfg_wl2.3_sync_node"
+
+#define CFG_STR_BSS_ONOFF_X_Y		"cfg_wl%d.%d_bss_enabled"
+#define CFG_STR_BSS_ONOFF_2G_G1		"cfg_wl0.1_bss_enabled"
+#define CFG_STR_BSS_ONOFF_2G_G2		"cfg_wl0.2_bss_enabled"
+#define CFG_STR_BSS_ONOFF_2G_G3		"cfg_wl0.3_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G_G1		"cfg_wl1.1_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G_G2		"cfg_wl1.2_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G_G3		"cfg_wl1.3_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G1_G1	"cfg_wl2.1_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G1_G2	"cfg_wl2.2_bss_enabled"
+#define CFG_STR_BSS_ONOFF_5G1_G3	"cfg_wl2.3_bss_enabled"
+
+#define CFG_STR_GUEST_IFNAMES_2G	"cfg_guest_ifnames_2g"
+#define CFG_STR_GUEST_IFNAMES_5G	"cfg_guest_ifnames_5g"
+#define CFG_STR_GUEST_IFNAMES_5GH	"cfg_guest_ifnames_5gh"
+
+#define CFG_STR_GUEST_VLANS_2G		"cfg_guest_vlans_2g"
+#define CFG_STR_GUEST_VLANS_5G		"cfg_guest_vlans_5g"
+#define CFG_STR_GUEST_VLANS_5GH		"cfg_guest_vlans_5gh"
+#endif	/* RTCONFIG_AMAS_WGN */
 #endif /* __CFG_STRING_H__ */

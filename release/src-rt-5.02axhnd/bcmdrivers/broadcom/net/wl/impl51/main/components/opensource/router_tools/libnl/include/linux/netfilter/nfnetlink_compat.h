@@ -27,6 +27,9 @@ struct nfattr {
 				 * bit to indicate whether the payload is nested */
 };
 
+/* FIXME: Apart from NFNL_NFA_NESTED shamelessly copy and pasted from
+ * rtnetlink.h, it's time to put this in a generic file */
+
 #define NFNL_NFA_NEST	0x8000
 #define NFA_TYPE(attr) 	((attr)->nfa_type & 0x7fff)
 

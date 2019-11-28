@@ -53,7 +53,11 @@ ifeq ($(strip $(BCA_CPEROUTER)),)
 LIBS += -lwlctl -lnvram -lpthread -lm  -lwlbcmshared
 else
 LIBS += -lnvram -lpthread -lm -lshared -L$(INSTALL_DIR)/usr/lib
-CFLAGS+= -DDSLCPE_WLCONF_CMD
+CFLAGS+= -DDSLCPE_WLCONF_CMD -DBCA_CPEROUTER
+ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
+CFLAGS += -DCONFIG_HOSTAPD  
+LIBS += -lbcmcrypto -lnv2hapdcfg -L$(INSTALL_DIR)/usr/lib
+endif
 endif
 
 ifeq ($(CONFIG_AIRIQ),y)
@@ -125,7 +129,7 @@ ALLOWED_INCLUDE_PATHS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)  \
 LIBS += -lwlcsm -lwlcsm_dm 
 
 ifeq ($(CONFIG_WBD),y)
-CFLAGS += -DBCM_WBD
+CFLAGS += -DBCM_WBD -DMULTIAP
 endif
 
 ifeq ($(CONFIG_BCM_APPEVENTD),y)

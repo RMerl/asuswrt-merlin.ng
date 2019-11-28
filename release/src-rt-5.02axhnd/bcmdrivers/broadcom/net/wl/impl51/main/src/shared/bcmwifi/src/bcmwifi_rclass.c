@@ -1,6 +1,6 @@
 /*
  * Common interface to channel definitions.
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_rclass.c 765291 2018-06-27 18:49:12Z $
+ * $Id: bcmwifi_rclass.c 765288 2018-06-27 14:35:39Z $
  */
 
 #include <typedefs.h>

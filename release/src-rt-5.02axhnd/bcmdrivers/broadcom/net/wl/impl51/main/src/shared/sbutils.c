@@ -2,7 +2,7 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -53,6 +53,10 @@ static volatile void *_sb_setcoreidx(si_info_t *sii, uint coreidx);
 #define	SONICS_2_2	(SBIDL_RV_2_2 >> SBIDL_RV_SHIFT)
 #define	SONICS_2_3	(SBIDL_RV_2_3 >> SBIDL_RV_SHIFT)
 
+/*
+ * Macros to read/write sbconfig registers. On the PCMCIA
+ * we need to treat them differently from other registers. See PR 3864.
+ */
 #define	R_SBREG(sii, sbr)	sb_read_sbreg((sii), (sbr))
 #define	W_SBREG(sii, sbr, v)	sb_write_sbreg((sii), (sbr), (v))
 #define	AND_SBREG(sii, sbr, v)	W_SBREG((sii), (sbr), (R_SBREG((sii), (sbr)) & (v)))
@@ -108,6 +112,12 @@ sb_write_sbreg(si_info_t *sii, volatile uint32 *sbr, uint32 v)
 		sbr = (volatile uint32 *)((uintptr)sbr & ~(1 << 11)); /* mask out bit 11 */
 	}
 
+	/*
+	 * WAR for PR18509, PR3864 and PR17322
+	 * The config registers are always written as 32-bits. If write 16 bits,
+	 * the other 16 bits are random, which needs to be controlled to avoid side-effect.
+	 * This is required only for PCMCIA bus.
+	 */
 	if (BUSTYPE(sii->pub.bustype) == PCMCIA_BUS) {
 #ifdef IL_BIGENDIAN
 		dummy = R_REG(sii->osh, sbr);
@@ -1028,6 +1038,11 @@ sb_core_disable(si_t *sih, uint32 bits)
 	if (R_SBREG(sii, &sb->sbtmstatehigh) & SBTMH_BUSY)
 		SI_ERROR(("%s: target state still busy\n", __FUNCTION__));
 
+	/*
+	 * If core is initiator, set the Reject bit and allow Busy to clear.
+	 * sonicsrev < 2.3 chips don't have the Reject and Busy bits (nops).
+	 * Don't assert - dma engine might be stuck (PR4871).
+	 */
 	if (R_SBREG(sii, &sb->sbidlow) & SBIDL_INIT) {
 		OR_SBREG(sii, &sb->sbimstate, SBIM_RJ);
 		dummy = R_SBREG(sii, &sb->sbimstate);

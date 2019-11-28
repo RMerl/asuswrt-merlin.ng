@@ -35,7 +35,9 @@ written consent.
 #include "opticaldet.h"
 
 
+#if defined(CONFIG_BCM_PON_WAN_TYPE_AUTO_DETECT)
 extern int try_wan_type_sensing(void);
+#endif
 
 
 #ifdef CONFIG_BCM96838

@@ -94,13 +94,14 @@ ifeq ($(RTCONFIG_AMAS),y)
 COMMON_OBJS += chmgmt.o
 endif
 COMMON_OBJS += encrypt.o cfg_crc.o cfg_udp.o cfg_dencrypt.o cfg_common.o cfg_ipc.o cfg_wevent.o cfg_upgrade.o cfg_clientlist.o cfg_sched.o cfg_slavelist.o
+COMMON_OBJS += cfg_capability.o
 ifeq ($(RTCONFIG_DWB),y)
 COMMON_OBJS += cfg_dwb.o
 endif
 COMMON_OBJS += cfg_chanspec.o
 COMMON_OBJS += cfg_parammgnt.o
 SERVER_OBJS += $(COMMON_OBJS) cfg_eventnotify.o cfg_mnt.o
-CLIENT_OBJS += $(COMMON_OBJS) cfg_capability.o cfg_client.o
+CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
 
 ifeq ($(RTCONFIG_WIFI_SON),y)
@@ -134,7 +135,13 @@ endif
 #CFLAGS += -DNOTIFY_RE_JOIN_EVENT
 #endif
 
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 MAP-AC2200 RT-AC92U RT-AX92U GT-AX11000))
+ifeq ($(RTCONFIG_TCODE),y)
+ifeq ($(RTCONFIG_CFGSYNC_LOCSYNC),y)
+COMMON_OBJS += cfg_loclist.o
+endif
+endif
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 MAP-AC2200 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q))
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 

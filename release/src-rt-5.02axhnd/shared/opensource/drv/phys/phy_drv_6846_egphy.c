@@ -90,6 +90,48 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
         goto Exit;
     }
 
+    for (j = 0; j < MAX_LEDS_PER_PORT; j++)
+    {
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t val = 0;
+
+        if (led_mux == led_activity)
+        {
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0x18;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
+            {
+                val = 0x108;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
+            {
+                val = 0x108;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_1G)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_100)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_10)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
+            {
+                val = 0x118;
+            }
+
+            if( val > led_shd1c_09)
+                led_shd1c_09 = val;
+        }
+    }
+
     for (j = 0; j < MAX_LEDS_PER_PORT_51F1; j++)
     {
         uint16_t led_sel = 0;
@@ -102,37 +144,35 @@ static int _phy_leds_init_51F1(phy_dev_t *phy_dev)
             if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
             {
                 val = 0x3;
-                led_shd1c_09 = 0x18;
+                if (led_shd1c_09 == 0x118)
+                {
+                    val = 0xa;
+                    led_core_exp_04 |= 0x500;
+                }
             }
             else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
             {
                 val = 0x1;
-                led_shd1c_09 = 0x108;
             }
             else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
             {
                 val = 0x0;
-                led_shd1c_09 = 0x108;
             }
             else if (led_mux == BP_NET_LED_SPEED_1G)
             {
                 val = 0x3;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == BP_NET_LED_SPEED_100)
             {
                 val = 0x1;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == BP_NET_LED_SPEED_10)
             {
                 val = 0x0;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
             {
                 val = 0xa;
-                led_shd1c_09 = 0x118;
                 led_core_exp_04 |= (0x504);
             }
             else 
@@ -201,6 +241,48 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
 
     for (j = 0; j < MAX_LEDS_PER_PORT; j++)
     {
+        uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
+        uint32_t val = 0;
+
+        if (led_mux == led_activity)
+        {
+            if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
+            {
+                val = 0x18;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
+            {
+                val = 0x108;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
+            {
+                val = 0x108;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_1G)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_100)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == BP_NET_LED_SPEED_10)
+            {
+                val = 0x118;
+            }
+            else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
+            {
+                val = 0x118;
+            }
+
+            if( val > led_shd1c_09)
+                led_shd1c_09 = val;
+        }
+    }
+
+    for (j = 0; j < MAX_LEDS_PER_PORT; j++)
+    {
         uint16_t led_sel = 0;
         uint32_t led_mux = led_info.ledInfo[phy_dev->addr-1].SpeedLed[j] & BP_NET_LED_SPEED_MASK;
         uint32_t led_activity = led_info.ledInfo[phy_dev->addr-1].ActivityLed[j] & BP_NET_LED_SPEED_MASK;
@@ -211,37 +293,35 @@ static int _phy_leds_init_51E1(phy_dev_t *phy_dev)
             if (led_mux == BP_NET_LED_SPEED_ALL || led_mux == BP_NET_LED_SPEED_GBE)
             {
                 val = 0x3;
-                led_shd1c_09 = 0x18;
+                if (led_shd1c_09 == 0x118)
+                {
+                    val = 0xa;
+                    led_core_exp_04 |= 0x500;
+                }
             }
             else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_100))
             {
                 val = 0x1;
-                led_shd1c_09 = 0x108;
             }
             else if (led_mux == (BP_NET_LED_SPEED_1G | BP_NET_LED_SPEED_10))
             {
                 val = 0x0;
-                led_shd1c_09 = 0x108;
             }
             else if (led_mux == BP_NET_LED_SPEED_1G)
             {
                 val = 0x3;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == BP_NET_LED_SPEED_100)
             {
                 val = 0x1;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == BP_NET_LED_SPEED_10)
             {
                 val = 0x0;
-                led_shd1c_09 = 0x118;
             }
             else if (led_mux == (BP_NET_LED_SPEED_100 | BP_NET_LED_SPEED_10))
             {
                 val = 0xa;
-                led_shd1c_09 = 0x118;
                 led_core_exp_04 |= 0x504;
             }
             else 

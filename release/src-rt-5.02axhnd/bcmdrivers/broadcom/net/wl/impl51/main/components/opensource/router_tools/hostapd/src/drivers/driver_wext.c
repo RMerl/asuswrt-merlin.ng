@@ -283,15 +283,6 @@ wpa_driver_wext_event_wireless_custom(void *ctx, char *custom)
 	done:
 		os_free(resp_ies);
 		os_free(req_ies);
-#ifdef CONFIG_PEERKEY
-	} else if (os_strncmp(custom, "STKSTART.request=", 17) == 0) {
-		if (hwaddr_aton(custom + 17, data.stkstart.peer)) {
-			wpa_printf(MSG_DEBUG, "WEXT: unrecognized "
-				   "STKSTART.request '%s'", custom + 17);
-			return;
-		}
-		wpa_supplicant_event(ctx, EVENT_STKSTART, &data);
-#endif /* CONFIG_PEERKEY */
 	}
 }
 
@@ -352,12 +343,11 @@ static int wpa_driver_wext_event_wireless_assocreqie(
 	wpa_hexdump(MSG_DEBUG, "AssocReq IE wireless event", (const u8 *) ev,
 		    len);
 	os_free(drv->assoc_req_ies);
-	drv->assoc_req_ies = os_malloc(len);
+	drv->assoc_req_ies = os_memdup(ev, len);
 	if (drv->assoc_req_ies == NULL) {
 		drv->assoc_req_ies_len = 0;
 		return -1;
 	}
-	os_memcpy(drv->assoc_req_ies, ev, len);
 	drv->assoc_req_ies_len = len;
 
 	return 0;
@@ -372,12 +362,11 @@ static int wpa_driver_wext_event_wireless_assocrespie(
 	wpa_hexdump(MSG_DEBUG, "AssocResp IE wireless event", (const u8 *) ev,
 		    len);
 	os_free(drv->assoc_resp_ies);
-	drv->assoc_resp_ies = os_malloc(len);
+	drv->assoc_resp_ies = os_memdup(ev, len);
 	if (drv->assoc_resp_ies == NULL) {
 		drv->assoc_resp_ies_len = 0;
 		return -1;
 	}
-	os_memcpy(drv->assoc_resp_ies, ev, len);
 	drv->assoc_resp_ies_len = len;
 
 	return 0;
@@ -855,14 +844,16 @@ static int wext_hostap_ifname(struct wpa_driver_wext_data *drv,
 			      const char *ifname)
 {
 	char buf[200], *res;
-	int type;
+	int type, ret;
 	FILE *f;
 
 	if (strcmp(ifname, ".") == 0 || strcmp(ifname, "..") == 0)
 		return -1;
 
-	snprintf(buf, sizeof(buf), "/sys/class/net/%s/device/net/%s/type",
-		 drv->ifname, ifname);
+	ret = snprintf(buf, sizeof(buf), "/sys/class/net/%s/device/net/%s/type",
+		       drv->ifname, ifname);
+	if (os_snprintf_error(sizeof(buf), ret))
+		return -1;
 
 	f = fopen(buf, "r");
 	if (!f)
@@ -907,7 +898,7 @@ static int wext_add_hostap(struct wpa_driver_wext_data *drv)
 
 static void wext_check_hostap(struct wpa_driver_wext_data *drv)
 {
-	char buf[200], *pos;
+	char path[200], buf[200], *pos;
 	ssize_t res;
 
 	/*
@@ -922,9 +913,9 @@ static void wext_check_hostap(struct wpa_driver_wext_data *drv)
 	 */
 
 	/* First, try to see if driver information is available from sysfs */
-	snprintf(buf, sizeof(buf), "/sys/class/net/%s/device/driver",
+	snprintf(path, sizeof(path), "/sys/class/net/%s/device/driver",
 		 drv->ifname);
-	res = readlink(buf, buf, sizeof(buf) - 1);
+	res = readlink(path, buf, sizeof(buf) - 1);
 	if (res > 0) {
 		buf[res] = '\0';
 		pos = strrchr(buf, '/');
@@ -1014,6 +1005,7 @@ void wpa_driver_wext_deinit(void *priv)
 	wpa_driver_wext_set_auth_param(drv, IW_AUTH_WPA_ENABLED, 0);
 
 	eloop_cancel_timeout(wpa_driver_wext_scan_timeout, drv, drv->ctx);
+	eloop_cancel_timeout(wpa_driver_wext_send_rfkill, drv, drv->ctx);
 
 	/*
 	 * Clear possibly configured driver parameters in order to make it
@@ -1611,7 +1603,8 @@ static int wpa_driver_wext_get_range(void *priv)
 		if (range->enc_capa & IW_ENC_CAPA_CIPHER_CCMP)
 			drv->capa.enc |= WPA_DRIVER_CAPA_ENC_CCMP;
 		if (range->enc_capa & IW_ENC_CAPA_4WAY_HANDSHAKE)
-			drv->capa.flags |= WPA_DRIVER_FLAGS_4WAY_HANDSHAKE;
+			drv->capa.flags |= WPA_DRIVER_FLAGS_4WAY_HANDSHAKE_PSK |
+				WPA_DRIVER_FLAGS_4WAY_HANDSHAKE_8021X;
 		drv->capa.auth = WPA_DRIVER_AUTH_OPEN |
 			WPA_DRIVER_AUTH_SHARED |
 			WPA_DRIVER_AUTH_LEAP;
@@ -1641,7 +1634,7 @@ static int wpa_driver_wext_set_psk(struct wpa_driver_wext_data *drv,
 
 	wpa_printf(MSG_DEBUG, "%s", __FUNCTION__);
 
-	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_4WAY_HANDSHAKE))
+	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_4WAY_HANDSHAKE_8021X))
 		return 0;
 
 	if (!psk)
@@ -2291,18 +2284,20 @@ static int wpa_driver_wext_pmksa(struct wpa_driver_wext_data *drv,
 	return ret;
 }
 
-static int wpa_driver_wext_add_pmkid(void *priv, const u8 *bssid,
-				     const u8 *pmkid)
+static int wpa_driver_wext_add_pmkid(void *priv,
+				     struct wpa_pmkid_params *params)
 {
 	struct wpa_driver_wext_data *drv = priv;
-	return wpa_driver_wext_pmksa(drv, IW_PMKSA_ADD, bssid, pmkid);
+	return wpa_driver_wext_pmksa(drv, IW_PMKSA_ADD, params->bssid,
+				     params->pmkid);
 }
 
-static int wpa_driver_wext_remove_pmkid(void *priv, const u8 *bssid,
-		 			const u8 *pmkid)
+static int wpa_driver_wext_remove_pmkid(void *priv,
+					struct wpa_pmkid_params *params)
 {
 	struct wpa_driver_wext_data *drv = priv;
-	return wpa_driver_wext_pmksa(drv, IW_PMKSA_REMOVE, bssid, pmkid);
+	return wpa_driver_wext_pmksa(drv, IW_PMKSA_REMOVE, params->bssid,
+				     params->pmkid);
 }
 
 static int wpa_driver_wext_flush_pmkid(void *priv)
@@ -2367,8 +2362,8 @@ static int wpa_driver_wext_signal_poll(void *priv, struct wpa_signal_info *si)
 	struct iwreq iwr;
 
 	os_memset(si, 0, sizeof(*si));
-	si->current_signal = -9999;
-	si->current_noise = 9999;
+	si->current_signal = -WPA_INVALID_NOISE;
+	si->current_noise = WPA_INVALID_NOISE;
 	si->chanwidth = CHAN_WIDTH_UNKNOWN;
 
 	os_memset(&iwr, 0, sizeof(iwr));

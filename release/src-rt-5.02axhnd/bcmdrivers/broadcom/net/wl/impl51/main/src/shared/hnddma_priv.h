@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_priv.h 765082 2018-06-18 10:33:15Z $
+ * $Id: hnddma_priv.h 774125 2019-04-11 04:15:49Z $
  */
 
 #ifndef _HNDDMA_PRIV_H_
@@ -102,7 +102,7 @@
 #endif // endif
 
 /* SplitRX Feature for D11 <TCM,DDR> split pkt reception in Full Dongle Mode */
-#if (!defined(__mips__) && !defined(BCM47XX_CA9) && defined(DONGLEBUILD))
+#if !defined(__mips__) && !defined(BCM47XX_CA9) && defined(DONGLEBUILD)
 #define D11_SPLIT_RX_FD
 #endif /* !__mips__ && !BCM47XX_CA9 && DONGLEBUILD */
 
@@ -292,7 +292,9 @@ typedef struct dma_info {
 	 * an aatachfn, because there are cases where this gets called run time for some compiles
 	*/
 	bool		dmapad_required;
-	bool		d11rx_war;
+	bool		d11rx_war;	/* JIRA:CRWLDOT11M-1776; Rx DMA buffer cannot exceed
+					 * 492 bytes
+					 */
 	uint8		rxwaitforcomplt;
 	uint32		d64_rs1_ad_mask; /* rx active descriptor pointer mask */
 #ifdef BCM_SECURE_DMA
@@ -304,9 +306,6 @@ typedef struct dma_info {
 	uint32          trans_coherent; /* coherent per transaction */
 	void		*ctx;		/* context for dma users */
 	setup_context_t	fn;		/* callback function for dma users */
-#ifdef BCM43684A0_COHERENT_WAR
-	bool		hwa_rx_coherent_war;
-#endif // endif
 	dma_pktlist_t dma_pkt_list;
 	dma_pktlist_t dma_rx_pkt_list;
 	uint32		bulk_descr_tx_start_txout;	/* txout before bulk dma start;

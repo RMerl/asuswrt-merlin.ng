@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -79,6 +79,11 @@
 #define IGSC_STATS_INCR(igsc, member)           (((igsc)->stats.member)++)
 #define IGSC_STATS_DECR(igsc, member)           (((igsc)->stats.member)--)
 
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+#define IGSC_STATS_IPV6_INCR(igsc, member)           (((igsc)->stats_ipv6.member)++)
+#define IGSC_STATS_IPV6_DECR(igsc, member)           (((igsc)->stats_ipv6.member)--)
+#endif // endif
+
 /*
  * IGMP Snooping Layer data
  */
@@ -97,6 +102,13 @@ typedef struct igsc_info
 	clist_head_t     rtlist_head;           /* Router port list head */
 	osl_lock_t       rtlist_lock;           /* Lock for router port list */
 	igs_stats_t      stats;                 /* Multicast frames statistics */
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+	clist_head_t     mgrp_sdb_ipv6[IGSDB_HASHT_SIZE];
+	osl_lock_t       sdb_lock_ipv6;              /* Lock for IGSDB access */
+	igs_stats_t      stats_ipv6;                 /* Multicast frames statistics */
+	int8             inst_id[16];                /* IGSC instance identifier */
+#endif // endif
+
 } igsc_info_t;
 
 #define IGSC_INFO(s) ((igsc_info_t *)((char *)(s)-(unsigned long)(&((igsc_info_t *)0)->snooper)))
@@ -146,5 +158,9 @@ typedef struct igmpv3_group {
 } igmpv3_group_t;
 
 #define IGMPV3_SRC_ADDR_LEN	4
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+void *igsc_init_ipv6(igsc_info_t *igs_info, osl_t *osh);
+void igsc_exit_ipv6(igsc_info_t *igsc_info);
+#endif // endif
 
 #endif /* _IGSC_H_ */

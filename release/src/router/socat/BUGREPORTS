@@ -1,0 +1,18 @@
+
+* If you have found a bug, i.e. socat SIGSEGV'ed, terminated abnormally without
+error message, did not comply to the documentation, or behaves different from 
+your expectations, please send the following infos to socat@dest-unreach.org, 
+as available:
+. output of "make info" in socat.out (you may remove the hostname in the first
+line to keep your privacy)
+. config.log
+. run your example with "socat -d -d -d -d -D ..." options, and include the log
+output
+. describe what you've done, and why you think socat did wrong
+
+* If you fixed a bug: 
+Please do as described in the above paragraph, and include the modified files
+(or a patch file)
+
+* If you have contributions, problems etc: send available info and a
+description to the above address.

@@ -1,7 +1,7 @@
 /*
  * BCM47XX Denali based memory controller initialization
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -1075,6 +1075,16 @@ LEAF(ai_amemcinit)
 
 #ifndef CFG_QUICKTURN
 
+        /*
+         * Recalibrate dn/pd PVT compensation
+         *
+         *   Issue:  The calibration may not finish when
+         *           sample_done bit has been set.
+         *
+         *   Workaround: Assume it's not finished until we get the same result
+         *               continuously for 3 times.
+         *
+         */
         li      t2, 0x10000000
         li      t3, 0
         li      t5, 0

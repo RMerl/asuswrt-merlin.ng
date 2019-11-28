@@ -149,14 +149,14 @@ function tab_reset(v){
 			document.getElementById("t3").style.display = "none";
 		}		
 	}else if(v == 1){	//Smart Connect
-		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U") {
+		if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q") {
 			if(isSupport("triband") && dwb_info.mode) {
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 			}
 			else
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";
@@ -192,9 +192,9 @@ function applyRule(){
 <input type="hidden" name="wl_subunit" value="-1">
 <input type="hidden" name="wl_bw_160" value='<% nvram_get("wl_bw_160"); %>'>
 <input type="hidden" name="acs_dfs" value='<% nvram_get("acs_dfs"); %>'>
-<input type="hidden" name="wl0_he_features" value='<% nvram_get("wl0_he_features"); %>'>
-<input type="hidden" name="wl1_he_features" value='<% nvram_get("wl1_he_features"); %>'>
-<input type="hidden" name="wl2_he_features" value='<% nvram_get("wl2_he_features"); %>'>
+<input type="hidden" name="wl0_11ax" value='<% nvram_get("wl0_11ax"); %>'>
+<input type="hidden" name="wl1_11ax" value='<% nvram_get("wl1_11ax"); %>'>
+<input type="hidden" name="wl2_11ax" value='<% nvram_get("wl2_11ax"); %>'>
 <table border="0" cellpadding="0" cellspacing="0" id="rt_table">
 <tr>
 	<td>		
@@ -247,19 +247,19 @@ function applyRule(){
 									<div align="center" class="left" style="width:94px; float:right; cursor:pointer;" id="he_enable"></div>
 									<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
 										<script type="text/javascript">
-											var _flag = ('<% nvram_get("wl0_he_features"); %>' == 3) ? true : false;
+											var _flag = ('<% nvram_get("wl0_11ax"); %>' == 1) ? true : false;
 											$('#he_enable').iphoneSwitch(_flag,
 												function(){
-													document.form.wl0_he_features.value = "3";
-													document.form.wl1_he_features.value = "3";
-													document.form.wl2_he_features.value = "3";
+													document.form.wl0_11ax.value = "1";
+													document.form.wl1_11ax.value = "1";
+													document.form.wl2_11ax.value = "1";
 												},
 												function(){
 													document.form.wl_bw_160.value = 0;
 													document.form.acs_dfs.value = 0;
-													document.form.wl0_he_features.value = "0";
-													document.form.wl1_he_features.value = "0";
-													document.form.wl2_he_features.value = "0";
+													document.form.wl0_11ax.value = "0";
+													document.form.wl1_11ax.value = "0";
+													document.form.wl2_11ax.value = "0";
 												}
 											);
 										</script>

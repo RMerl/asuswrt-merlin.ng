@@ -291,6 +291,11 @@ CFLAGS += -I$(TOP)/libqcsapi_client_10g
 LIBS += -L$(TOP)/libqcsapi_client_10g -lqcsapi_client
 endif
 
+ifeq ($(RTCONFIG_CONNDIAG),y)
+CFLAGS += -I$(TOP)/rc
+LIBS += -L$(TOP)/rc -lconn_diag
+endif
+
 CFLAGS += -I$(TOP)/libpasswd
 LIBS += -L$(TOP)/libpasswd -lpasswd
 

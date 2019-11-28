@@ -1,7 +1,7 @@
 /*
  * bcmiov.c
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -462,6 +462,9 @@ bcm_iov_unpack_sub_cmd(void *ctx, const uint8 *buf, uint16 cmd_id, uint16 cmd_le
 	p_cmd = bc_ctx->p_cmd;
 	ASSERT(p_cmd != NULL);
 
+	/*
+	 * range error if input buffer extends past the commands - XXX ignore
+	 */
 	if (bc_ctx->ncmds >= p_cmd->count) {
 		err = BCME_RANGE;
 		goto done;

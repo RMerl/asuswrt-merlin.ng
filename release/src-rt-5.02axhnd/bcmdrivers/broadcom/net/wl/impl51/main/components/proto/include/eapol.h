@@ -5,7 +5,7 @@
  * IEEE Std 802.1X-2001
  * IEEE 802.1X RADIUS Usage Guidelines
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -157,6 +157,9 @@ typedef BWL_PRE_PACKED_STRUCT struct {
 #define WPA_KEY_ENCRYPTED_DATA	0x1000
 
 /* Key Data encapsulation */
+/* FIXME: this is really just a vendor-specific info element.  should define
+ * this in 802.11.h
+ */
 typedef BWL_PRE_PACKED_STRUCT struct {
 	uint8 type;
 	uint8 length;

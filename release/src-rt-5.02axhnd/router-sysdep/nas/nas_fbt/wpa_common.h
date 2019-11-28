@@ -6,7 +6,7 @@
  * See README for more details.
  *
  *
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -48,7 +48,7 @@
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
  *
- * $Id: wpa_common.h 701315 2017-05-24 13:08:15Z $
+ * $Id: wpa_common.h 769827 2018-11-28 05:18:16Z $
  */
 
 #ifndef WPA_COMMON_H
@@ -325,7 +325,7 @@ struct wpa_ie_data {
 	int pairwise_cipher;
 	int group_cipher;
 	int key_mgmt;
-	int capabilities;
+	uint16 capabilities;
 	size_t num_pmkid;
 	const uint8 *pmkid;
 	int mgmt_group_cipher;
@@ -357,8 +357,10 @@ struct wpa_ft_ies {
 	size_t ric_len;
 };
 
-int wpa_ft_parse_ies(wpa_t *wpa, const uint8 *ies, size_t ies_len, struct wpa_ft_ies *parse);
-int wpa_ft_validate_ies(wpa_t *wpa, const uint8 *ies, size_t ies_len, struct wpa_ft_ies *parse);
+int wpa_ft_parse_ies(wpa_t *wpa, const uint8 *ies, size_t ies_len,
+		struct wpa_ft_ies *parse, struct wpa_ie_data *rsnie_data);
+int wpa_ft_validate_ies(wpa_t *wpa, const uint8 *ies, size_t ies_len,
+		struct wpa_ft_ies *parse, struct wpa_ie_data *rsnie_data);
 int rsn_cipher_put_suites(uint8 *pos, int ciphers);
 
 #endif /* WPA_COMMON_H */

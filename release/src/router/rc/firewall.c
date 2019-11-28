@@ -1582,7 +1582,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	fprintf(fp,
 		":DNSFILTER - [0:0]\n");
 #endif
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 	fprintf(fp,
 		":GAME_VSERVER - [0:0]\n");
 #endif
@@ -1637,7 +1637,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 	/* VSERVER chain */
 	if (inet_addr_(wan_ip)) {
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 		fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wan_ip);
 #endif
 		fprintf(fp, "-A PREROUTING -d %s -j VSERVER\n", wan_ip);
@@ -1647,7 +1647,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #ifdef RTCONFIG_MULTIWAN_CFG
 		wanx_rules = 1;
 #endif
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 		fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wan_ip);
 #endif
 		fprintf(fp, "-A PREROUTING -d %s -j VSERVER\n", wanx_ip);
@@ -1709,7 +1709,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #endif
 	// Port forwarding or Virtual Server
 	write_port_forwarding(fp, "vts_rulelist", lan_ip, lan_if);
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 	write_port_forwarding(fp, "game_vts_rulelist", lan_ip, lan_if);
 #endif
 
@@ -1957,7 +1957,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 				":LOCALSRV - [0:0]\n"
 				":PUPNP - [0:0]\n"
 				":VUPNP - [0:0]\n");
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 			fprintf(fp,
 				":GAME_VSERVER - [0:0]\n");
 #endif
@@ -1996,7 +1996,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 
 		/* VSERVER chain */
 		if(inet_addr_(wan_ip)) {
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 			fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wan_ip);
 #endif
 			fprintf(fp, "-A PREROUTING -d %s -j VSERVER\n", wan_ip);
@@ -2004,7 +2004,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 
 		// wanx_if != wan_if means DHCP+PPP exist?
 		if (dualwan_unit__nonusbif(unit) && strcmp(wan_if, wanx_if) && inet_addr_(wanx_ip)) {
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 			fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wanx_ip);
 #endif
 			fprintf(fp, "-A PREROUTING -d %s -j VSERVER\n", wanx_ip);
@@ -2043,7 +2043,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 				":LOCALSRV - [0:0]\n"
 				":PUPNP - [0:0]\n"
 				":VUPNP - [0:0]\n");
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 		fprintf(fp,
 				":GAME_VSERVER - [0:0]\n");
 #endif
@@ -2100,7 +2100,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #endif
 	// Port forwarding or Virtual Server
 	write_port_forwarding(fp, "vts_rulelist", lan_ip, lan_if);
-#ifdef SUPPORT_GAME_PROFILE
+#ifdef RTCONFIG_OPEN_NAT
 	write_port_forwarding(fp, "game_vts_rulelist", lan_ip, lan_if);
 #endif
 
@@ -2596,6 +2596,11 @@ start_default_filter(int lanunit)
 	/* Write input rule for vlan */
 	vlan_subnet_filter_input(fp);
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_input(fp);
+#endif	
+
 	if (nvram_match("enable_acc_restriction", "1"))
 	{
 		int  https_port = 0;
@@ -3526,7 +3531,9 @@ TRACE_PT("writing Parental Control\n");
 		/* Write input rule for vlan */
 		vlan_subnet_filter_input(fp);
 #endif
-
+#ifdef RTCONFIG_AMAS_WGN
+		wgn_filter_input(fp);
+#endif
 		fprintf(fp, "-A INPUT -j %s\n", logdrop);
 	}
 
@@ -3609,7 +3616,9 @@ TRACE_PT("writing Parental Control\n");
 	/* Write forward rule for deny lan */
 	vlan_subnet_deny_forward(fp);
 #endif
-
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_forward(fp);
+#endif
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER) {
 		fprintf(fp, "-A FORWARD -o %s ! -i %s -j %s\n", wan_if, "br+", "other2wan");
@@ -4658,6 +4667,9 @@ TRACE_PT("writing Parental Control\n");
 		/* Write input rule for vlan */
 		vlan_subnet_filter_input(fp);
 #endif
+#ifdef RTCONFIG_AMAS_WGN
+		wgn_filter_input(fp);
+#endif
 		fprintf(fp, "-A INPUT -j %s\n", logdrop);
 	}
 
@@ -4750,6 +4762,10 @@ TRACE_PT("writing Parental Control\n");
 	/* Write forward rule for vlan */
 	vlan_subnet_filter_forward(fp, wan_if);
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_forward(fp);
+#endif	
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
 
@@ -5961,6 +5977,7 @@ add_samba_rules(void)
 }
 #endif
 #endif
+
 //int start_firewall(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip)
 int start_firewall(int wanunit, int lanunit)
 {
@@ -5976,22 +5993,17 @@ int start_firewall(int wanunit, int lanunit)
 	char wanx_if[IFNAMSIZ+1], wanx_ip[32], wan_proto[16];
 	char prefix[] = "wanXXXXXXXXXX_", tmp[100];
 	int lock;
-	int restart_upnp = 0;
-
-	if (getpid() != 1) {
-		notify_rc("start_firewall");
-		return 0;
-	}
 
 	if (!is_routing_enabled())
 		return -1;
 
-	if (pidof("miniupnpd") != -1) {
-		stop_upnp();
-		restart_upnp = 1;
+	if (getpid() != 1 && getuid() != 0) {
+		notify_rc("start_firewall");
+		return 0;
 	}
 
 	lock = file_lock("firewall");
+
 	snprintf(prefix, sizeof(prefix), "wan%d_", wanunit);
 
 	//(void)wan_ifname(wanunit, wan_if);
@@ -6021,54 +6033,32 @@ int start_firewall(int wanunit, int lanunit)
 
 	/* Mcast needs rp filter to be turned off only for non default iface */
 	if (nvram_get_int("mr_enable_x") || nvram_get_int("udpxy_enable_x")) {
-#ifdef RTCONFIG_DSL /* Paul add 2012/9/21 for DSL model, rp_filter should be disabled for br1. */
+		char wan_prefix[sizeof("wanXXXXXXXXXX_")];
+		char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+
+		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
+		mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
+
+#ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_DUALWAN
-		if ( get_dualwan_primary() == WANS_DUALWAN_IF_DSL
-			&& nvram_get_int("dslx_config_num") > 1) {
-				mcast_ifname = "br1";
-		}
-		else {
-			char wan_prefix[] = "wanXXXXXXXXXX_";
-			char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
-			snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-			mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
-			if (wan_ifname && strcmp(wan_ifname, mcast_ifname) == 0)
-				mcast_ifname = NULL;
-		}
+		if (get_dualwan_primary() == WANS_DUALWAN_IF_DSL && nvram_get_int("dslx_config_num") > 1)
+			mcast_ifname = "br1";
 #else
 		mcast_ifname = "br1";
 #endif
-#else
-		char wan_prefix[] = "wanXXXXXXXXXX_";
-		char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
-		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-		mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
+#elif defined(RTCONFIG_MULTICAST_IPTV)
+		if (nvram_get_int("switch_stb_x") > 6) {
+			if (nvram_match("switch_wantag", "maxis_fiber_sp_iptv") ||
+			    nvram_match("switch_wantag", "maxis_fiber_iptv") ||
+			    nvram_match("switch_wantag", "movistar"))
+				mcast_ifname = nvram_safe_get("iptv_ifname");
+		}
+#endif
+		/* Don't turn off rp_filter for default interface */
 		if (wan_ifname && strcmp(wan_ifname, mcast_ifname) == 0)
 			mcast_ifname = NULL;
-#endif
 	} else
 		mcast_ifname = NULL;
-
-#ifdef RTCONFIG_MULTICAST_IPTV
-	if (nvram_get_int("switch_stb_x") > 6) {
-		if (nvram_match("switch_wantag", "maxis_fiber_sp_iptv") ||
-		    nvram_match("switch_wantag", "maxis_fiber_iptv")) {
-#ifndef HND_ROUTER
-			mcast_ifname = nvram_safe_get("iptv_wan_ifnames"); /* bug here, boyau */
-#else
-#endif
-		}
-		else if (nvram_match("switch_wantag", "movistar")) {
-#if defined(HND_ROUTER)
-			mcast_ifname = "eth0.v1";
-#elif defined(BLUECAVE)
-			mcast_ifname = "eth1.2";
-#else
-			mcast_ifname = "vlan2"; /* and here */
-#endif
-		}
-	}
-#endif
 
 	/* Block obviously spoofed IP addresses */
 	if ((dir = opendir("/proc/sys/net/ipv4/conf")) != NULL) {
@@ -6351,7 +6341,8 @@ int start_firewall(int wanunit, int lanunit)
 	run_le_fw_script();
 #endif
 
-	if (restart_upnp) start_upnp();
+	/* Assuming wan interface doesn't change */
+	reload_upnp();
 
 leave:
 	file_unlock(lock);
@@ -6360,7 +6351,6 @@ leave:
 
 	return 0;
 }
-
 
 void enable_ip_forward(void)
 {

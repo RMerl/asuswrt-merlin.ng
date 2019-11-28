@@ -149,7 +149,7 @@ typedef signed long long int64_aligned __attribute__((aligned(8)));
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define BCM_IOC_PTR(ptr_t, ptr) union { ptr_t ptr; uint64_aligned ptr##64; }
-#define BCM_IOC_PTR_ZERO_EXT(ptr) ((ptr##64) = (uint64_aligned)(uint32_t)(ptr##64))
+#define BCM_IOC_PTR_ZERO_EXT(ptr) if (is_compat_task()) ((ptr##64) = (uint64_aligned)(uint32_t)(ptr##64))
 #else
 #define BCM_IOC_PTR(ptr_t, ptr) ptr_t ptr;
 #define BCM_IOC_PTR_ZERO_EXT(ptr)

@@ -226,7 +226,7 @@ END(board_stsc)
     * mem_size(void)
     *
     *  Calculates the size of the on-board SDRAM memory using a simple
-    *  aliasing check up to a maximum of 128 MB.
+    *  aliasing check up to a maximum of 256 MB.
     *
     *  Input parameters:
     *       none
@@ -237,17 +237,17 @@ END(board_stsc)
 FUNC(mem_size)
 	mov	ip, lr		/* preserve link reg */
 
-	mov	r3, #0x40000000
+	mov	r3, #0x00000000
 	ldr	r2, =0xaa55beef
 	mov	r1, #0
 	str	r1, [r3, #0x70]
 	mov	r0, #0x100000	/* Initial check offset */
-	mov	r5, #0x8000000	/* Loop up to this offset (128 MB) */
+	mov	r5, #0x10000000	/* Loop up to this offset (256 MB) */
 1:
-	mov	r4, #0x40000000
+	mov	r4, #0x00000000
 	add	r4, r4, r0
 	str	r2, [r4, #0x70]
-	ldr	r1, [r4, #0x70]	/* Read back to ensure completion */
+	dsb
 	ldr	r1, [r3, #0x70]
 	cmp	r1, r2
 	beq	2f

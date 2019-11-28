@@ -550,7 +550,9 @@ static inline int rdpa_gpon_gem_enable_get(bdmf_object_handle mo_, bdmf_object_h
 {
     bdmf_number _nn_;
     int _rc_;
-    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_gem_enable, (bdmf_index)ai_, &_nn_);
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_gem_enable, gem_index, &_nn_);
     *gem_enable_ = (bdmf_boolean)_nn_;
     return _rc_;
 }
@@ -567,7 +569,9 @@ static inline int rdpa_gpon_gem_enable_get(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_gpon_gem_enable_set(bdmf_object_handle mo_, bdmf_object_handle ai_, bdmf_boolean gem_enable_)
 {
-    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_gem_enable, (bdmf_index)ai_, gem_enable_);
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_gem_enable, gem_index, gem_enable_);
 }
 
 
@@ -581,7 +585,13 @@ static inline int rdpa_gpon_gem_enable_set(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_gpon_gem_enable_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_enable, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number gem_index;
+    rdpa_gem_index_get(*ai_, &gem_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_enable, (bdmf_index *)&gem_index);
+    if (!_rc_)
+        rdpa_gem_get(gem_index, ai_);
+    return _rc_;
 }
 
 
@@ -596,7 +606,9 @@ static inline int rdpa_gpon_gem_enable_get_next(bdmf_object_handle mo_, bdmf_obj
  */
 static inline int rdpa_gpon_gem_ds_cfg_get(bdmf_object_handle mo_, bdmf_object_handle ai_, rdpa_gpon_gem_ds_cfg_t * gem_ds_cfg_)
 {
-    return bdmf_attrelem_get_as_buf(mo_, rdpa_gpon_attr_gem_ds_cfg, (bdmf_index)ai_, gem_ds_cfg_, sizeof(*gem_ds_cfg_));
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    return bdmf_attrelem_get_as_buf(mo_, rdpa_gpon_attr_gem_ds_cfg, gem_index, gem_ds_cfg_, sizeof(*gem_ds_cfg_));
 }
 
 
@@ -611,7 +623,9 @@ static inline int rdpa_gpon_gem_ds_cfg_get(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_gpon_gem_ds_cfg_set(bdmf_object_handle mo_, bdmf_object_handle ai_, const rdpa_gpon_gem_ds_cfg_t * gem_ds_cfg_)
 {
-    return bdmf_attrelem_set_as_buf(mo_, rdpa_gpon_attr_gem_ds_cfg, (bdmf_index)ai_, gem_ds_cfg_, sizeof(*gem_ds_cfg_));
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    return bdmf_attrelem_set_as_buf(mo_, rdpa_gpon_attr_gem_ds_cfg, gem_index, gem_ds_cfg_, sizeof(*gem_ds_cfg_));
 }
 
 
@@ -625,7 +639,13 @@ static inline int rdpa_gpon_gem_ds_cfg_set(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_gpon_gem_ds_cfg_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_ds_cfg, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number gem_index;
+    rdpa_gem_index_get(*ai_, &gem_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_ds_cfg, (bdmf_index *)&gem_index);
+    if (!_rc_)
+        rdpa_gem_get(gem_index, ai_);
+    return _rc_;
 }
 
 
@@ -642,7 +662,9 @@ static inline int rdpa_gpon_gem_encryption_get(bdmf_object_handle mo_, bdmf_obje
 {
     bdmf_number _nn_;
     int _rc_;
-    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_gem_encryption, (bdmf_index)ai_, &_nn_);
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_gem_encryption, gem_index, &_nn_);
     *gem_encryption_ = (bdmf_boolean)_nn_;
     return _rc_;
 }
@@ -659,7 +681,9 @@ static inline int rdpa_gpon_gem_encryption_get(bdmf_object_handle mo_, bdmf_obje
  */
 static inline int rdpa_gpon_gem_encryption_set(bdmf_object_handle mo_, bdmf_object_handle ai_, bdmf_boolean gem_encryption_)
 {
-    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_gem_encryption, (bdmf_index)ai_, gem_encryption_);
+    bdmf_number gem_index;
+    rdpa_gem_index_get(ai_, &gem_index);
+    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_gem_encryption, gem_index, gem_encryption_);
 }
 
 
@@ -673,7 +697,13 @@ static inline int rdpa_gpon_gem_encryption_set(bdmf_object_handle mo_, bdmf_obje
  */
 static inline int rdpa_gpon_gem_encryption_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_encryption, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number gem_index;
+    rdpa_gem_index_get(*ai_, &gem_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_gem_encryption, (bdmf_index *)&gem_index);
+    if (!_rc_)
+        rdpa_gem_get(gem_index, ai_);
+    return _rc_;
 }
 
 
@@ -690,7 +720,9 @@ static inline int rdpa_gpon_tcont_alloc_id_get(bdmf_object_handle mo_, bdmf_obje
 {
     bdmf_number _nn_;
     int _rc_;
-    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_tcont_alloc_id, (bdmf_index)ai_, &_nn_);
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(ai_, &tcont_index);
+    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_tcont_alloc_id, tcont_index, &_nn_);
     *tcont_alloc_id_ = (bdmf_number)_nn_;
     return _rc_;
 }
@@ -707,7 +739,9 @@ static inline int rdpa_gpon_tcont_alloc_id_get(bdmf_object_handle mo_, bdmf_obje
  */
 static inline int rdpa_gpon_tcont_alloc_id_set(bdmf_object_handle mo_, bdmf_object_handle ai_, bdmf_number tcont_alloc_id_)
 {
-    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_tcont_alloc_id, (bdmf_index)ai_, tcont_alloc_id_);
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(ai_, &tcont_index);
+    return bdmf_attrelem_set_as_num(mo_, rdpa_gpon_attr_tcont_alloc_id, tcont_index, tcont_alloc_id_);
 }
 
 
@@ -721,7 +755,9 @@ static inline int rdpa_gpon_tcont_alloc_id_set(bdmf_object_handle mo_, bdmf_obje
  */
 static inline int rdpa_gpon_tcont_alloc_id_delete(bdmf_object_handle mo_, bdmf_object_handle ai_)
 {
-    return bdmf_attrelem_delete(mo_, rdpa_gpon_attr_tcont_alloc_id, (bdmf_index)ai_);
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(ai_, &tcont_index);
+    return bdmf_attrelem_delete(mo_, rdpa_gpon_attr_tcont_alloc_id, tcont_index);
 }
 
 
@@ -735,7 +771,13 @@ static inline int rdpa_gpon_tcont_alloc_id_delete(bdmf_object_handle mo_, bdmf_o
  */
 static inline int rdpa_gpon_tcont_alloc_id_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_alloc_id, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(*ai_, &tcont_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_alloc_id, (bdmf_index *)&tcont_index);
+    if (!_rc_)
+        rdpa_tcont_get(tcont_index, ai_);
+    return _rc_;
 }
 
 
@@ -752,7 +794,9 @@ static inline int rdpa_gpon_tcont_assign_ploam_flag_get(bdmf_object_handle mo_, 
 {
     bdmf_number _nn_;
     int _rc_;
-    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_tcont_assign_ploam_flag, (bdmf_index)ai_, &_nn_);
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(ai_, &tcont_index);
+    _rc_ = bdmf_attrelem_get_as_num(mo_, rdpa_gpon_attr_tcont_assign_ploam_flag, tcont_index, &_nn_);
     *tcont_assign_ploam_flag_ = (bdmf_boolean)_nn_;
     return _rc_;
 }
@@ -768,7 +812,13 @@ static inline int rdpa_gpon_tcont_assign_ploam_flag_get(bdmf_object_handle mo_, 
  */
 static inline int rdpa_gpon_tcont_assign_ploam_flag_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_assign_ploam_flag, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(*ai_, &tcont_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_assign_ploam_flag, (bdmf_index *)&tcont_index);
+    if (!_rc_)
+        rdpa_tcont_get(tcont_index, ai_);
+    return _rc_;
 }
 
 
@@ -783,7 +833,9 @@ static inline int rdpa_gpon_tcont_assign_ploam_flag_get_next(bdmf_object_handle 
  */
 static inline int rdpa_gpon_tcont_stat_get(bdmf_object_handle mo_, bdmf_object_handle ai_, rdpa_tcont_stat_t * tcont_stat_)
 {
-    return bdmf_attrelem_get_as_buf(mo_, rdpa_gpon_attr_tcont_stat, (bdmf_index)ai_, tcont_stat_, sizeof(*tcont_stat_));
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(ai_, &tcont_index);
+    return bdmf_attrelem_get_as_buf(mo_, rdpa_gpon_attr_tcont_stat, tcont_index, tcont_stat_, sizeof(*tcont_stat_));
 }
 
 
@@ -797,7 +849,13 @@ static inline int rdpa_gpon_tcont_stat_get(bdmf_object_handle mo_, bdmf_object_h
  */
 static inline int rdpa_gpon_tcont_stat_get_next(bdmf_object_handle mo_, bdmf_object_handle * ai_)
 {
-    return bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_stat, (bdmf_index *)ai_);
+    int _rc_;
+    bdmf_number tcont_index;
+    rdpa_tcont_index_get(*ai_, &tcont_index);
+    _rc_ = bdmf_attrelem_get_next(mo_, rdpa_gpon_attr_tcont_stat, (bdmf_index *)&tcont_index);
+    if (!_rc_)
+        rdpa_tcont_get(tcont_index, ai_);
+    return _rc_;
 }
 
 

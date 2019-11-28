@@ -1,7 +1,7 @@
 /*
- * Broadcom 802.11abg Networking Device Driver Configuration file
+ * Broadcom 802.11 Networking Device Driver Configuration file
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wltunable_lx_router.h 759049 2018-04-23 19:12:47Z $
+ * $Id: wltunable_lx_router.h 773990 2019-04-04 22:53:51Z $
  *
  * wl driver tunables
  */
@@ -26,23 +26,35 @@
 #define D11CONF		0x40000000	/* D11 Core Rev
 					 * 30 (43217).
 					 */
-#define D11CONF2	0x01010400	/* D11 Core Rev > 31, Rev 42(4360b0),
-					 * 48(43570a2), 56(47189)
+#ifdef __CONFIG_DHDAP__
+/* no support for legacy dongles in NIC mode */
+#define D11CONF2	0x00010400	/* D11 Core Rev > 31, Rev 42(4360b0),
+					 * 48(43570a2)
 					 */
-#define D11CONF3	0x00000002	/* D11 Core Rev > 63, 65(4365c0)
+#define D11CONF3	0x0		/* D11 Core Rev > 63 */
+#define ACCONF		0x00020002	/* AC-Phy Rev 1(4360b0), 17(43570a2) */
+#define ACCONF2		0x00088000	/* AC-Phy Rev > 31, 47(43684b0) */
+#else /* __CONFIG_DHDAP__ */
+#define D11CONF2	0x00030400	/* D11 Core Rev > 31, Rev 42(4360b0),
+					 * 48(43570a2), 49 (43602a3)
 					 */
-#define D11CONF5	0x00000003	/* D11 Core Rev > 127, Rev 128(43684a0),
-					 * 129(43684b0)
-					 */
-
-#define ACCONF		0x01020002	/* AC-Phy Rev
-					 * 1(4360b0), 17(43570a2), 24(47189)
+#define D11CONF3	0x00000002	/* D11 Core Rev > 63, 65(4365c0) */
+#define ACCONF		0x00060002	/* AC-Phy Rev 1(4360b0), 17(43570a2),
+					 * 18 (43602a3)
 					 */
 #define ACCONF2		0x00008002	/* AC-Phy Rev > 31, Rev 33(4365c0),
-					 * 47(43684a0/b0)
+					 * 47(43684b0)
 					 */
+#endif /* __CONFIG_DHDAP__ */
+
+#define D11CONF4	0x0
+#define D11CONF5	0x0000000a	/* D11 Core Rev > 127, 129(43684b0),
+					 * 131(6710a0)
+					 */
+
+#define ACCONF5		0x00000002	/* AC-Phy Rev > 127, Rev 129(6710a0) */
 #define NCONF		0x00020000	/* Rev 17(43217) */
-#define LCN20CONF	0x00000001	/* 43430a0, keep compile going */
+#define LCN20CONF	0x0
 
 #define NRXBUFPOST	56	/* # rx buffers posted */
 #define RXBND		24	/* max # rx frames to process */
@@ -62,6 +74,11 @@
 #define NRXD_LARGE_AC3X3	2048	/* RX descriptor ring */
 #define NRXBUFPOST_AC3X3	500	/* # rx buffers posted */
 #define RXBND_AC3X3		36	/* max # rx frames to process */
+
+#define STSBUF_MP_N_OBJ 2048
+#define NRXD_STS 2048
+#define NRXBUFPOST_STS 1024
+
 #ifdef __ARM_ARCH_7A__
 #if defined(BCM_GMAC3)
 #define CTFPOOLSZ_AC3X3		1536	/* max buffers in ctfpool */
@@ -95,7 +112,7 @@
 #define MRRS_AC2		1024	/* Max read request size */
 /* AC2 settings */
 
-#define AMPDU_PKTQ_LEN		1536
+#define AMPDU_PKTQ_LEN		8192
 #define AMPDU_PKTQ_FAVORED_LEN  4096
 
 #define WLRXEXTHDROOM -1        /* to reserve extra headroom in DMA Rx buffer */

@@ -147,7 +147,6 @@ static inline char * find_field(const char *buf, const char sep, int num, char *
 	return NULL;
 }
 
-#define skip_space(p)	{if(p != NULL){ while(isspace(*p)) p++;}}
 #define cut_space(p)	{if(p != NULL){ int idx = strlen(p) -1; while(idx > 0 && isspace(p[idx])) p[idx--] = '\0';}}
 
 // system("chat -t 1 -e '' 'AT+CPIN?' OK >> /dev/ttyACM0 < /dev/ttyACM0 2>/tmp/at_cpin; grep OK /tmp/at_cpin -q && v=PASS || v=FAIL; echo $v");

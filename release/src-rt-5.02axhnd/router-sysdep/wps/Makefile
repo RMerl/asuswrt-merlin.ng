@@ -1,7 +1,7 @@
 #
 # Broadcom Linux Router WPS Makefile
 #
-# Copyright 2018 Broadcom
+# Copyright 2019 Broadcom
 #
 # This program is the proprietary software of Broadcom and/or
 # its licensors, and may only be used, duplicated, modified or distributed
@@ -44,7 +44,7 @@
 #
 # <<Broadcom-WL-IPTag/Proprietary:>>
 #
-# $Id: Makefile 754815 2018-03-29 07:04:46Z $
+# $Id: Makefile 772949 2019-03-07 23:04:06Z $
 #
 
 REBUILD = $(shell if [ -f "prebuilt/wps_monitor" ]; then echo 0; else echo 1; fi)
@@ -63,7 +63,7 @@ ifeq ($(CONFIG_STBAP),y)
 CONFIG_WL_USE_APSTA=y
 else
 # linux kernel config
-include $(LINUXDIR)/.config
+-include $(LINUXDIR)/.config
 endif
 
 ifneq ($(BCA_HNDROUTER),)
@@ -157,7 +157,7 @@ endif
 
 LDFLAGS += $(EXTRA_LDFLAGS)
 
-WPSM_LIBS = -lnvram -lshared -lbcmcrypto -lm
+WPSM_LIBS = -lnvram -lshared -lbcmcrypto -lm -lpthread
 ifeq ($(WPS_HWPB), 1)
 ifeq ($(CONFIG_LIBBCMSTB),y)
 WPSM_LIBS += -lbcmstb
@@ -191,7 +191,11 @@ export LIBPATH += -L$(TOP_PLATFORM)/wps$(BCMEX)$(EX7)/prebuilt
 #ifeq ($(WPS_UPNP_DEVICE),1)
 # Always use LIBUPNP
 export LIBPATH += -L$(TOP_PLATFORM)/libupnp$(BCMEX)$(EX7) -L$(INSTALLDIR)/libupnp/usr/lib
+ifneq ($(CMWIFI),)
+WPSM_LIBS += -lwlupnp
+else
 WPSM_LIBS += -lupnp
+endif
 CFLAGS += -I$(TOP_PLATFORM)/libupnp$(BCMEX)$(EX7)/include -I$(WPSSRC)/brcm_apps/upnp/WFADevice
 #endif
 

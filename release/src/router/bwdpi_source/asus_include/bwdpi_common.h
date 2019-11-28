@@ -155,3 +155,5 @@ extern void tm_eula_check();
 
 //dpi_support.c
 extern int dump_dpi_support(int index);
+extern void setup_dpi_support_bitmap();
+extern int model_protection();

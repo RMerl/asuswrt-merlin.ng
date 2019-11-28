@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * Low resolution timer interface linux specific implementation.
  *
- * $Id: linux_timer.c 738255 2017-12-27 22:36:47Z $
+ * $Id: linux_timer.c 774063 2019-04-09 06:11:02Z $
  */
 
 /*
@@ -51,6 +51,7 @@
 #include <inttypes.h>
 
 #include <typedefs.h>
+#include <pthread.h>
 
 /* define TIMER_PROFILE to enable code which guages how accurate the timer functions are.
  * For each expiring timer the code will print the expected time interval and the actual time
@@ -75,7 +76,7 @@ nanosleep( ) - suspend the current task until the time interval elapses (POSIX)
 #define US_PER_MS  1000		/* 1000us per ms */
 #define UCLOCKS_PER_SEC 1000000 /* Clock ticks per second */
 
-typedef void (*event_callback_t)(timer_t, int);
+typedef void (*event_callback_t)(timer_t, unsigned int);
 
 #ifdef BCMQT
 uint htclkratio = 50;
@@ -136,7 +137,9 @@ struct event {
 
 void timer_cancel(timer_t timerid);
 
+static void event_callback_handler();
 static void alarm_handler(int i);
+static void *thread_alarm_handler(void *params);
 static void check_event_queue();
 static void print_event_queue();
 static void check_timer();
@@ -152,6 +155,14 @@ static struct event *event_freelist;
 static uint g_granularity;
 static int g_maxevents = 0;
 
+static pthread_t thread_sigalarm;
+static int thread_running=0;
+static volatile int sigalarm=0;
+static int prev_sigalarm=0;
+static volatile int timer_module_enable_callbacks=0;
+static pthread_mutex_t timer_thread_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t timer_module_enable_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 uclock_t uclock()
 {
 	struct timeval tv;
@@ -160,10 +171,46 @@ uclock_t uclock()
 	return ((tv.tv_sec * US_PER_SEC) + tv.tv_usec);
 }
 
+static void alarm_handler(int i)
+{
+    /*Notify the handling thread that timer expired.*/
+    sigalarm++;
+    return;
+}
+
+static void *thread_alarm_handler(void *params)
+{
+	sigset_t set;
+	sigfillset(&set);
+	pthread_sigmask(SIG_SETMASK, &set, NULL);
+	/* allow SIGALRM signal */
+	sigemptyset(&set);
+	sigaddset(&set, SIGALRM);
+	pthread_sigmask(SIG_UNBLOCK, &set, NULL);
+	while (1) {
+		sigfillset(&set);
+		sigdelset(&set, SIGALRM);
+		/* suspend thread and wait for SIGALRM(timer to expire) */
+		sigsuspend(&set);
+		if (++prev_sigalarm != sigalarm)  {
+			TIMERDBG("Lost or delayed signal handling count = %d\n", prev_sigalarm);
+			prev_sigalarm = sigalarm;
+		}
+		/* bcm_timer_module_enable can block callback handler by acquiring mutext */
+		pthread_mutex_lock(&timer_module_enable_mutex);
+		pthread_mutex_unlock(&timer_module_enable_mutex);
+		if (timer_module_enable_callbacks) {
+			event_callback_handler();
+		}
+	}
+	return NULL;
+}
+
 void init_event_queue(int n)
 {
 	int i;
 	struct itimerval tv;
+	sigset_t set;
 
 	g_maxevents = n;
 	event_freelist = (struct event *) malloc(n * sizeof(struct event));
@@ -187,6 +234,18 @@ void init_event_queue(int n)
 
 	g_granularity = tv.it_interval.tv_usec;
 	signal(SIGALRM, alarm_handler);
+
+	/* start signal handling thread to avoid lockup issues with executing */
+	/* non-reentrant code from inside signal handler */
+	if (!thread_running) {
+		/* disable SIGALRM handler for all threads of this process */
+		sigemptyset(&set);
+		sigaddset(&set, SIGALRM);
+		pthread_sigmask(SIG_BLOCK, &set, NULL);
+		/* start alarm handler thread */
+		pthread_create(&thread_sigalarm, NULL, thread_alarm_handler, NULL);
+		thread_running=1;
+	}
 }
 
 int clock_gettime(
@@ -265,7 +324,7 @@ int timer_delete(
 int timer_connect
 (
 	timer_t     timerid, /* timer ID */
-	void (*routine)(timer_t, int), /* user routine */
+	void (*routine)(timer_t, unsigned int), /* user routine */
 	uintptr_t         arg      /* user argument */
 )
 {
@@ -278,20 +337,14 @@ int timer_connect
 	return 0;
 }
 
-/*
- * Please Call this function only from the call back functions of the alarm_handler.
- * This is just a hack
- */
 int timer_change_settime
 (
 	timer_t                   timerid, /* timer ID */
 	const struct itimerspec * value   /* time to be set */
 )
 {
-	struct event *event = (struct event *) timerid;
-
-	TIMESPEC_TO_TIMEVAL(&event->it_interval, &value->it_interval);
-	TIMESPEC_TO_TIMEVAL(&event->it_value, &value->it_value);
+	timer_cancel(timerid); /* removes the timer from the event queue cleanly */
+	timer_settime(timerid, 0, value, NULL); /* replaces with the new value */
 
 	return 1;
 }
@@ -491,7 +544,7 @@ static void print_event_queue()
 /* The top element of the event queue must have expired. */
 /* Remove that element, run its function, and reset the timer. */
 /* if there is no interval, recycle the event structure. */
-static void alarm_handler(int i)
+static void event_callback_handler()
 {
 	struct event *event, **ppevent;
 	struct itimerval itimer;
@@ -505,7 +558,7 @@ static void alarm_handler(int i)
 	block_timer();
 
 	/* Loop through the event queue and remove the first event plus any */
-	/* subsequent events that will expire very soon thereafter (within 'small_interval'}. */
+	/* subsequent events that will expire very soon thereafter (within 'small_interval'). */
 	/* */
 	if (!event_queue) {
 		unblock_timer();
@@ -527,8 +580,11 @@ static void alarm_handler(int i)
 		         ((end-event->start)/((uclock_t)UCLOCKS_PER_SEC/1000)));
 #endif // endif
 
-		/* call the event callback function */
-		(*(event->func))((timer_t) event, (int)event->arg);
+		unblock_timer();
+		/* call the event callback function, unblock timer first */
+		(*(event->func))((timer_t) event, (uintptr_t)event->arg);
+		/* acquire the lock again */
+		block_timer();
 
 		/* If the event has been cancelled, do NOT put it back on the queue. */
 		if (!(event->flags & TFLAG_CANCELLED)) {
@@ -550,6 +606,9 @@ static void alarm_handler(int i)
 				/* current delta of each event on the queue. */
 				ppevent = &event_queue;
 				while (*ppevent) {
+					if (event == *ppevent) {
+						break;
+					}
 					if (timercmp(&(event->it_value), &((*ppevent)->it_value),
 						     /* CSTYLED */
 						     <)) {
@@ -572,8 +631,10 @@ static void alarm_handler(int i)
 
 				/* we have found our proper place in the queue, */
 				/* link our new event into the pending event queue. */
-				event->next = *ppevent;
-				*ppevent = event;
+				if (event != *ppevent) {
+					event->next = *ppevent;
+					*ppevent = event;
+				}
 			} else {
 				/* there is no interval, so recycle the event structure.
 				 * timer_delete((timer_t) event);
@@ -606,28 +667,14 @@ static void alarm_handler(int i)
 	unblock_timer();
 }
 
-static int block_count = 0;
-
 void block_timer()
 {
-	sigset_t set;
-
-	if (block_count++ == 0) {
-		sigemptyset(&set);
-		sigaddset(&set, SIGALRM);
-		sigprocmask(SIG_BLOCK, &set, NULL);
-	}
+	pthread_mutex_lock(&timer_thread_mutex);
 }
 
 void unblock_timer()
 {
-	sigset_t set;
-
-	if (--block_count == 0) {
-		sigemptyset(&set);
-		sigaddset(&set, SIGALRM);
-		sigprocmask(SIG_UNBLOCK, &set, NULL);
-	}
+	pthread_mutex_unlock(&timer_thread_mutex);
 }
 
 void timer_cancel_all()
@@ -636,6 +683,7 @@ void timer_cancel_all()
 	struct event *event;
 	struct event **ppevent;
 
+	block_timer();
 	setitimer(ITIMER_REAL, &timeroff, NULL);
 
 	ppevent = &event_queue;
@@ -644,6 +692,7 @@ void timer_cancel_all()
 		*ppevent = event->next;
 		event->next = NULL;
 	}
+	unblock_timer();
 }
 
 void timer_cancel(timer_t timerid)
@@ -676,14 +725,11 @@ void timer_cancel(timer_t timerid)
 			if (event == event_queue && event->next != NULL) {
 				timerclear(&itimer.it_value);
 				getitimer(ITIMER_REAL, &itimer);
-
-				/* subtract the time that has already passed while waiting for this
-				 * timer...
-				 */
-				timersub(&(event->it_value), &(itimer.it_value),
-				         &(event->it_value));
-
-				/* and add any remainder to the next timer in the list */
+				/* add any remainder to the next timer in the list */
+				timeradd(&(event->next->it_value), &(itimer.it_value),
+				         &(event->next->it_value));
+			} else if (event->next != NULL) {
+				/* add cancelled time to the next timer in the list */
 				timeradd(&(event->next->it_value), &(event->it_value),
 				         &(event->next->it_value));
 			}
@@ -761,10 +807,24 @@ int bcm_timer_module_cleanup(bcm_timer_module_id module_id)
 /* Enable/Disable timer module */
 int bcm_timer_module_enable(bcm_timer_module_id module_id, int enable)
 {
-	if (enable)
-		unblock_timer();
-	else
-		block_timer();
+	if (enable) {
+		/*
+		 * trylock protects against multiple calls to enable
+		 * and enabling without call to disable first
+		 */
+		pthread_mutex_trylock(&timer_module_enable_mutex);
+		pthread_mutex_unlock(&timer_module_enable_mutex);
+		timer_module_enable_callbacks = 1;
+	}
+	else {
+		/* trylock protects against multiple calls to disable */
+		if (timer_module_enable_callbacks) {
+			pthread_mutex_lock(&timer_module_enable_mutex);
+		} else  {
+			pthread_mutex_trylock(&timer_module_enable_mutex);
+		}
+		timer_module_enable_callbacks = 0;
+	}
 	return 0;
 }
 

@@ -49,7 +49,7 @@ extern "C" {
 #define  BCM_XTM_API_VERSION(a,b) (((a) << 16) + (b))
 
 #define  BCM_XTM_API_MAJ_VERSION        2
-#define  BCM_XTM_API_MIN_VERSION        5
+#define  BCM_XTM_API_MIN_VERSION        6
 
 /***************************************************************************
  * Constant Definitions
@@ -388,13 +388,37 @@ typedef struct XtmInterfaceCfg
     UINT16 usIfSupportedTrafficTypes; /* read only */
     UINT16 usIfTrafficType;           /* read only */
     UINT32 ulAtmInterfaceConfVccs;    /* read only */
-#if defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
     UINT32 ulPortShaping;             /* Port Shaping enable/disable */
     UINT32 ulMinBitRate;              /* Port Shaping */
     UINT32 ulShapeRate;               /* Port Shaping */
     UINT16 usMbs;                     /* Port Shaping */
 #endif
 } XTM_INTERFACE_CFG, *PXTM_INTERFACE_CFG;
+
+/* XTM_THRESHOLD contains the fields needed to config the link mode
+ * thresholds.
+ */
+typedef struct XtmThreshold
+{
+    /* Set flags to indicate which parameters are being configured */
+    struct _sParams {
+#define XTM_THRESHOLD_PARM_SET  1   /* Set a parameter */
+#define XTM_THRESHOLD_PARM_GET  2   /* Print existing parameter value to console */
+
+        UINT32  adslParam;      /* Indicates threshold for ADSL */
+        UINT32  vdslParam;      /* Indicates threshold for VDSL */
+        UINT32  vdslRtxParam;   /* Indicates threshold for VDSL GINP */
+        UINT32  gfastParam;     /* Indicates threshold for GFAST */
+    } sParams;
+
+    /* The actual parameters to operate */
+    UINT32        adslThreshold;
+    UINT32        vdslThreshold;
+    UINT32        vdslRtxThreshold;
+    UINT32        gfastThreshold;
+} XTM_THRESHOLD_PARMS, *PXTM_THRESHOLD_PARMS;
+
 
 /* XTM_TRAFFIC_DESCR_PARM_ENTRY contains the fields needed to create a Traffic
  * Descriptor Table parameter entry.
@@ -547,6 +571,7 @@ typedef struct XtmBondInfo {
 BCMXTM_STATUS BcmXtm_Initialize( PXTM_INITIALIZATION_PARMS pInitParms );
 BCMXTM_STATUS BcmXtm_Uninitialize( void );
 BCMXTM_STATUS BcmXtm_Configure( PXTM_CONFIGURATION_PARMS pConfigParms );
+BCMXTM_STATUS BcmXtm_ManageThreshold( PXTM_THRESHOLD_PARMS pThresholdParms );
 BCMXTM_STATUS BcmXtm_GetTrafficDescrTable( PXTM_TRAFFIC_DESCR_PARM_ENTRY
     pTrafficDescTable, UINT32 *pulTrafficDescrTableSize );
 BCMXTM_STATUS BcmXtm_SetTrafficDescrTable( PXTM_TRAFFIC_DESCR_PARM_ENTRY
@@ -578,7 +603,7 @@ BCMXTM_STATUS BcmXtm_GetErrorStatistics( PXTM_ERROR_STATS pStatistics );
 
 #define XTM_SUPPORT_DSL_SRA
 
-#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158)
+#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM963158) || defined(CONFIG_BCM963178)
 #define XTM_USE_DSL_SYSCTL    /* needed for XTM traffic/mode sensing functionality */
 
 /* Support for non bonding connection on port 1*/
@@ -597,7 +622,45 @@ BCMXTM_STATUS BcmXtm_GetErrorStatistics( PXTM_ERROR_STATS pStatistics );
 
 #define XTM_PTM_BOND_HEADER_LEN             (XTMRT_PTM_BOND_MAX_FRAG_PER_PKT*XTMRT_PTM_BOND_FRAG_HDR_SIZE)
 
-#define XTMCFG_QUEUE_DROP_THRESHOLD         2880 /* 3072-192 */
+/* Defaults per mode. Mode here implies the type of DSL modes that have impact
+** in the */
+
+#define XTM_LINK_MODE_UNKNOWN                 0x0
+#define XTM_LINK_MODE_ADSL                    0x1
+#define XTM_LINK_MODE_VDSL                    0x2
+#define XTM_LINK_MODE_VDSL_RTX                0x4
+#define XTM_LINK_MODE_GFAST                   0x8
+
+#define XTM_UNKNOWN_MODE_QUEUE_DROP_THRESHOLD   0    /* Unknown Mode               */
+#define XTM_XDSL_MODE_MIN_THRESHOLD            32    /* Min Threshold              */
+#define XTM_XDSL_MODE_MAX_THRESHOLD         32768    /* Max Threshold              */
+#define XTM_ADSL_QUEUE_DROP_THRESHOLD          64    /* ADSL ATM,PTM, PTM_BONDED   */
+#define XTM_VDSL_QUEUE_DROP_THRESHOLD         128    /* VDSL PTM, PTM_BONDED       */
+#define XTM_VDSL_RTX_QUEUE_DROP_THRESHOLD     512    /* VDSL PTM, PTM_BONDED, ReTx */
+#define XTM_GFAST_QUEUE_DROP_THRESHOLD       1024    /* GFAST PTM, PTM_BONDED      */
+
+#define XTMCFG_QUEUE_DROP_THRESHOLD          XTM_VDSL_RTX_QUEUE_DROP_THRESHOLD /* For Non RDP/XRDP platforms. For RDP/XRDP platforms, the above feature of
+                                                                                  varying thresholds based on mode is active */
+/* in ms */
+
+/*
+In rtx mode (G.inp and G.fast) you don't have fixed delay between the lines, so maxBondlingDelay from DSL MIB is useless. 
+Any line can fall behind when rtx start. Unfortunately rtx maxDelay is not reported by the PHY so we'll have to go with max delay allowed by the standard which for 
+  G.inp   is 64ms   (but per SJC team, with SRA the delay will be twice as much so  128ms)
+  G.fast     16ms
+ 
+To give extra margin let's use
+  G.inp       160ms   0x16E 
+  G.fast       48ms    0x6E
+ 
+and that's for both lines.
+*/
+
+#define XTM_UNKNOWN_MODE_BONDING_DELAY          0    /* Unknown Mode */
+#define XTM_ADSL_MODE_BONDING_DELAY            10    /* ADSL ATM_BONDED, PTM_BONDED */
+#define XTM_VDSL_MODE_BONDING_DELAY            16    /* PTM_BONDED */
+#define XTM_VDSL_RTX_BONDING_DELAY             160   /* PTM_BONDED, ReTx */
+#define XTM_GFAST_BONDING_DELAY                48    /* GFAST PTM_BONDED */
 
 #if defined(__cplusplus)
 }

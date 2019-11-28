@@ -5,11 +5,12 @@ if (wl_unit == '1')
 else		
 	country = '<% nvram_get("wl0_country_code"); %>';
 
+
 var bw_160_support = false;
 
 if ((band5g_11ax_support && (wl_unit == 1 || wl_unit == 2)) 
 || (based_modelid == 'GT-AC2900' && wl_unit == 1)) {
-	if (based_modelid == "RT-AX92U" && wl_unit == 1) {
+	if ((based_modelid == "RT-AX92U"|| based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56U") && wl_unit == 1) {
 		bw_160_support = false;
 	}
 	else if(based_modelid == 'GT-AC2900' && country == 'JP'){
@@ -28,6 +29,38 @@ var wl1 = {
 }
 
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
+if(band2g_support){
+	wl_info['0'] = new Object;
+	wl_info['0'].dfs_support = false;
+	wl_info.bw_160_support = false;
+}
+
+if(band5g_support){
+	wl_info['1'] = new Object;
+	wl_info['1'].dfs_support = (function(){
+		if(_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1){
+			return true;
+		}
+
+		return false;
+	})();
+	wl_info['1'].bw_160_support = (function(){
+		if(based_modelid == 'RT-AX92U'|| based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AX56U'){
+			return false;
+		}
+		else if(based_modelid == 'GT-AC2900'){
+			return (country == 'JP') ? false : true;
+		}
+		else if(based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000'){		// special case, added temporary
+			 return (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1) ? true : false;
+		}
+		else if(band5g_11ax_support){
+			return true;
+		}
+
+		return false;
+	})();
+}
 
 for(i=0;i<_chanspecs_5g.length;i++){
 	if(_chanspecs_5g[i].indexOf("/80") != -1){
@@ -66,6 +99,19 @@ if(wl_info.band5g_2_support){
 	}
 
 	var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
+	wl_info['2'] = new Object;
+	wl_info['2'].dfs_support = (function(){
+		if(_chanspecs_5g_2.indexOf('100') != -1){
+			return true
+		}
+
+		return false;
+	})();
+	wl_info['2'].bw_160_support = (function(){
+		return band5g_11ax_support ? true : false;
+	})();
+
+
 	for(i=0;i<_chanspecs_5g_2.length;i++){
 		if(_chanspecs_5g_2[i].indexOf("/80") != -1){
 			wl2.channel_80m.push(_chanspecs_5g_2[i]);
@@ -728,8 +774,15 @@ function change_channel(obj){
 					}
 				}
 				else{
-					document.getElementById('dfs_checkbox').style.display = "";
-					document.form.acs_dfs.disabled = false;
+					if(wl_info[wl_unit].dfs_support){
+						document.getElementById('dfs_checkbox').style.display = "";
+						document.form.acs_dfs.disabled = false;
+					}
+					else{
+						document.getElementById('dfs_checkbox').style.display = "none";
+						document.form.acs_dfs.disabled = true;
+					}
+					
 				}
 			}	
 			else{

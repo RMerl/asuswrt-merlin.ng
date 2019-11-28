@@ -165,8 +165,14 @@ netdev_tx_t br_dev_xmit(struct sk_buff *skb, struct net_device *dev)
 			(BLOG_GET_PHYTYPE(dst->dst->dev->path.hw_port_type) == BLOG_WLANPHY) && 
 			wl_pktc_req_hook(PKTC_TBL_GET_TX_MODE, 0, 0, 0))
 		{
-			struct net_device *dst_dev_p = dst->dst->dev;
-			unsigned long chainIdx = wl_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)&(dst->addr.addr[0]), (unsigned long)dst_dev_p, 0);
+			struct net_device *root_dst_dev_p = dst->dst->dev;
+			unsigned long chainIdx;
+
+			/* Get the root destination device */
+			while (!netdev_path_is_root(root_dst_dev_p)) {
+				  root_dst_dev_p = netdev_path_next_dev(root_dst_dev_p);
+			}
+			chainIdx = wl_pktc_req_hook(PKTC_TBL_UPDATE, (unsigned long)&(dst->addr.addr[0]), (unsigned long)root_dst_dev_p, 0);
 			if (chainIdx != PKTC_INVALID_CHAIN_IDX)
 			{
 				// Update chainIdx in blog

@@ -65,6 +65,9 @@ enum
 typedef struct
 {
 	uint32_t rule_id;	//!< key
+#if defined(PGCONTROL3)
+	uint16_t cat_id;	//!< ips category id
+#endif
 	uint64_t time;		//!< Record event begin time, timestamp. Ex. get_second()
 	uint32_t hit_cnt;	//!< event hit count
 	uint8_t role;		//!< 0 is unknown, 1 is attacker, 2 is victim

@@ -1493,201 +1493,6 @@ typedef struct
 	uint32_t	profile_ptr           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	rs_status_offset      	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	rs_group_status_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	status_offset         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved0             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	tail_ptr              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	head_ptr              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_packet_counter 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ingress_packet_counter	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	profile_ptr           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	packet_threshold      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved0             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	status_offset         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rs_group_status_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rs_status_offset      	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS;
-
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_HEAD_PTR_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)), r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_HEAD_PTR_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)), v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_HEAD_PTR_READ(r, p)                               MREAD_16((uint8_t *)p, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_HEAD_PTR_WRITE(v, p)                              MWRITE_16((uint8_t *)p, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TAIL_PTR_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 2, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TAIL_PTR_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 2, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TAIL_PTR_READ(r, p)                               MREAD_16((uint8_t *)p + 2, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TAIL_PTR_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 2, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_INGRESS_PACKET_COUNTER_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 4, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_INGRESS_PACKET_COUNTER_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 4, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_INGRESS_PACKET_COUNTER_READ(r, p)                 MREAD_16((uint8_t *)p + 4, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_INGRESS_PACKET_COUNTER_WRITE(v, p)                MWRITE_16((uint8_t *)p + 4, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_EGRESS_PACKET_COUNTER_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 6, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_EGRESS_PACKET_COUNTER_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 6, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_EGRESS_PACKET_COUNTER_READ(r, p)                  MREAD_16((uint8_t *)p + 6, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_EGRESS_PACKET_COUNTER_WRITE(v, p)                 MWRITE_16((uint8_t *)p + 6, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PACKET_THRESHOLD_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 8, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PACKET_THRESHOLD_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 8, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PACKET_THRESHOLD_READ(r, p)                       MREAD_16((uint8_t *)p + 8, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PACKET_THRESHOLD_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 8, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PROFILE_PTR_READ_G(r, g, addr, idx)               GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 10, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PROFILE_PTR_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 10, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PROFILE_PTR_READ(r, p)                            MREAD_16((uint8_t *)p + 10, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_PROFILE_PTR_WRITE(v, p)                           MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_STATUS_OFFSET_READ_G(r, g, addr, idx)          GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 12, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_STATUS_OFFSET_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 12, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_STATUS_OFFSET_READ(r, p)                       MREAD_8((uint8_t *)p + 12, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_STATUS_OFFSET_WRITE(v, p)                      MWRITE_8((uint8_t *)p + 12, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_GROUP_STATUS_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 13, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_GROUP_STATUS_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 13, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_GROUP_STATUS_OFFSET_READ(r, p)                 MREAD_8((uint8_t *)p + 13, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_RS_GROUP_STATUS_OFFSET_WRITE(v, p)                MWRITE_8((uint8_t *)p + 13, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_STATUS_OFFSET_READ_G(r, g, addr, idx)             GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 14, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_STATUS_OFFSET_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS)) + 14, v)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_STATUS_OFFSET_READ(r, p)                          MREAD_8((uint8_t *)p + 14, r)
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_STATUS_OFFSET_WRITE(v, p)                         MWRITE_8((uint8_t *)p + 14, v)
-#if defined WL4908
-
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_SIZE     128
-typedef struct
-{
-	RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_DTS	entry[ RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_DTS;
-
-#define RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_PTR()	( RDD_ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + ETH_TX_RS_QUEUE_DESCRIPTOR_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	eth_mac_pointer 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_queue_pointer	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	tx_queue_pointer	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	eth_mac_pointer 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS;
-
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)), r)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)), v)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_READ(r, p)                  MREAD_16((uint8_t *)p, r)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_WRITE(v, p)                 MWRITE_16((uint8_t *)p, v)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)) + 2, r)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)) + 2, v)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
-#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
-#if defined WL4908
-
-#define RDD_ETH_TX_QUEUES_POINTERS_TABLE_SIZE     72
-typedef struct
-{
-	RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS	entry[ RDD_ETH_TX_QUEUES_POINTERS_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_QUEUES_POINTERS_TABLE_DTS;
-
-#define RDD_ETH_TX_QUEUES_POINTERS_TABLE_PTR()	( RDD_ETH_TX_QUEUES_POINTERS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + ETH_TX_QUEUES_POINTERS_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	cpu_trap  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	drop      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	parameter 	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	parameter 	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	drop      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	cpu_trap  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS;
-
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_READ_G(r, g, addr, idx)     GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 7, 1, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_WRITE_G(v, g, addr, idx)    GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 7, 1, v)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_READ(r, p)                  FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_WRITE(v, p)                 FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 6, 1, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 6, 1, v)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 6, 1, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 6, 1, v)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 0, 6, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 0, 6, v)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 0, 6, r)
-#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 0, 6, v)
-#if defined WL4908
-
-#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE     2
-#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE2    16
-typedef struct
-{
-	RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS	entry[ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE ][ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE2 ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_DTS;
-
-#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_PTR()	( RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_INGRESS_FILTERS_PARAMETER_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	allocated_budget	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	current_budget  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	current_budget  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	allocated_budget	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS;
-
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)), r)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)), v)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_READ_G(r, g, addr, idx)      GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)) + 1, r)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)) + 1, v)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_READ(r, p)                   MREAD_8((uint8_t *)p + 1, r)
-#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_WRITE(v, p)                  MWRITE_8((uint8_t *)p + 1, v)
-#if defined WL4908
-
-#define RDD_RATE_LIMITER_REMAINDER_TABLE_SIZE     32
-typedef struct
-{
-	RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS	entry[ RDD_RATE_LIMITER_REMAINDER_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_REMAINDER_TABLE_DTS;
-
-#define RDD_RATE_LIMITER_REMAINDER_TABLE_PTR()	( RDD_RATE_LIMITER_REMAINDER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + RATE_LIMITER_REMAINDER_TABLE_ADDRESS )
-
-#endif
-#define RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER	32
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER];
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SBPM_REPLY_ENTRY_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	head_ptr              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tail_ptr              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ingress_packet_counter	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_packet_counter 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	packet_threshold      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	profile_ptr           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rs_status_offset      	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rs_group_status_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	queue_mask            	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	index                 	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
@@ -2072,6 +1877,157 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	cpu_trap  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	drop      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	parameter 	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	parameter 	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	drop      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	cpu_trap  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS;
+
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_READ_G(r, g, addr, idx)     GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 7, 1, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_WRITE_G(v, g, addr, idx)    GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 7, 1, v)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_READ(r, p)                  FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_CPU_TRAP_WRITE(v, p)                 FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 6, 1, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 6, 1, v)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 6, 1, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DROP_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 6, 1, v)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 0, 6, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS)), 0, 6, v)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 0, 6, r)
+#define RDD_INGRESS_FILTERS_PARAMETER_ENTRY_PARAMETER_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 0, 6, v)
+#if defined WL4908
+
+#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE     2
+#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE2    16
+typedef struct
+{
+	RDD_INGRESS_FILTERS_PARAMETER_ENTRY_DTS	entry[ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE ][ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_SIZE2 ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_DTS;
+
+#define RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_PTR()	( RDD_DS_INGRESS_FILTERS_PARAMETER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_INGRESS_FILTERS_PARAMETER_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	allocated_budget	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	current_budget  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	current_budget  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	allocated_budget	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS;
+
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)), r)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)), v)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_ALLOCATED_BUDGET_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_READ_G(r, g, addr, idx)      GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)) + 1, r)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS)) + 1, v)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_READ(r, p)                   MREAD_8((uint8_t *)p + 1, r)
+#define RDD_RATE_LIMITER_REMAINDER_ENTRY_CURRENT_BUDGET_WRITE(v, p)                  MWRITE_8((uint8_t *)p + 1, v)
+#if defined WL4908
+
+#define RDD_RATE_LIMITER_REMAINDER_TABLE_SIZE     32
+typedef struct
+{
+	RDD_RATE_LIMITER_REMAINDER_ENTRY_DTS	entry[ RDD_RATE_LIMITER_REMAINDER_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_REMAINDER_TABLE_DTS;
+
+#define RDD_RATE_LIMITER_REMAINDER_TABLE_PTR()	( RDD_RATE_LIMITER_REMAINDER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + RATE_LIMITER_REMAINDER_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	offset    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	value     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	mask      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hits      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	offset    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	value     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	mask      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hits      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_WAN_UDP_FILTER_ENTRY_DTS;
+
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)), r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)), v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_READ(r, p)                 MREAD_32((uint8_t *)p, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_WRITE(v, p)                MWRITE_32((uint8_t *)p, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 4, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 4, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_READ(r, p)                  MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 8, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 8, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_READ(r, p)                   MREAD_32((uint8_t *)p + 8, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 12, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 12, v)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_READ(r, p)                   MREAD_32((uint8_t *)p + 12, r)
+#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 12, v)
+#if defined WL4908
+
+#define RDD_DS_WAN_UDP_FILTER_TABLE_SIZE     32
+typedef struct
+{
+	RDD_DS_WAN_UDP_FILTER_ENTRY_DTS	entry[ RDD_DS_WAN_UDP_FILTER_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_WAN_UDP_FILTER_TABLE_DTS;
+
+#define RDD_DS_WAN_UDP_FILTER_TABLE_PTR()	( RDD_DS_WAN_UDP_FILTER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_WAN_UDP_FILTER_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	eth_mac_pointer 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_queue_pointer	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	tx_queue_pointer	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	eth_mac_pointer 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS;
+
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)), r)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)), v)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_READ(r, p)                  MREAD_16((uint8_t *)p, r)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_ETH_MAC_POINTER_WRITE(v, p)                 MWRITE_16((uint8_t *)p, v)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)) + 2, r)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS)) + 2, v)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
+#define RDD_ETH_TX_QUEUE_POINTERS_ENTRY_TX_QUEUE_POINTER_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
+#if defined WL4908
+
+#define RDD_ETH_TX_QUEUES_POINTERS_TABLE_SIZE     72
+typedef struct
+{
+	RDD_ETH_TX_QUEUE_POINTERS_ENTRY_DTS	entry[ RDD_ETH_TX_QUEUES_POINTERS_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_QUEUES_POINTERS_TABLE_DTS;
+
+#define RDD_ETH_TX_QUEUES_POINTERS_TABLE_PTR()	( RDD_ETH_TX_QUEUES_POINTERS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + ETH_TX_QUEUES_POINTERS_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
 	uint32_t	reserved_0  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	dst_mac     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	dst_mac_lsw 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -2160,365 +2116,44 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TAB
 #define RDD_DS_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE_PTR()	( RDD_DS_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_INGRESS_CLASSIFICATION_KEY_PRIMITIVE_TABLE_ADDRESS )
 
 #endif
+#define RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER	32
 
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	offset    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	value     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	mask      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	hits      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_fw_only[RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER];
 #else
-	uint32_t	offset    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	value     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	mask      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	hits      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_fw_only[RDD_SBPM_REPLY_ENTRY_RESERVED_FW_ONLY_NUMBER];
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_WAN_UDP_FILTER_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SBPM_REPLY_ENTRY_DTS;
 
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)), r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)), v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_READ(r, p)                 MREAD_32((uint8_t *)p, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_OFFSET_WRITE(v, p)                MWRITE_32((uint8_t *)p, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 4, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 4, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_READ(r, p)                  MREAD_32((uint8_t *)p + 4, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_VALUE_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 8, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 8, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_READ(r, p)                   MREAD_32((uint8_t *)p + 8, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_MASK_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 12, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DS_WAN_UDP_FILTER_ENTRY_DTS)) + 12, v)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_READ(r, p)                   MREAD_32((uint8_t *)p + 12, r)
-#define RDD_DS_WAN_UDP_FILTER_ENTRY_HITS_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 12, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	u8        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	u8        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS;
+
+#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS)), r)
+#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS)), v)
+#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
 #if defined WL4908
 
-#define RDD_DS_WAN_UDP_FILTER_TABLE_SIZE     32
+#define RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE     8
+#define RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE2    64
 typedef struct
 {
-	RDD_DS_WAN_UDP_FILTER_ENTRY_DTS	entry[ RDD_DS_WAN_UDP_FILTER_TABLE_SIZE ];
+	RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS	entry[ RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE ][ RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE2 ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_WAN_UDP_FILTER_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_MCAST_PORT_HEADER_BUFFER_DTS;
 
-#define RDD_DS_WAN_UDP_FILTER_TABLE_PTR()	( RDD_DS_WAN_UDP_FILTER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_WAN_UDP_FILTER_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ONE_BYTE_DTS;
-
-#if defined WL4908
-
-#define RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_DTS;
-
-#define RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_PTR()	( RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FOUR_BYTES_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE     16
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS;
-
-#define RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_PTR()	( RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE     16
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS;
-
-#define RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_PTR()	( RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	msg_type        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	common_hdr_flags	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	epoch           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	request_id      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	status          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dma_done_mark   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	epoch           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	common_hdr_flags	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	msg_type        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	request_id      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	status          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dma_done_mark   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS;
-
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_READ_G(r, g, addr, idx)            GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)), r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)), v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_READ( wv )                       FIELD_GET( wv, 24, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                   FIELD_SET( v, 24, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_READ(r, p)                         MREAD_8((uint8_t *)p, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_WRITE(v, p)                        MWRITE_8((uint8_t *)p, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_READ( wv )                       FIELD_GET( wv, 24, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                   FIELD_SET( v, 24, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_READ_G(r, g, addr, idx)               GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 1, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 1, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_READ( wv )                          FIELD_GET( wv, 16, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                      FIELD_SET( v, 16, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_READ(r, p)                            MREAD_8((uint8_t *)p + 1, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_WRITE(v, p)                           MWRITE_8((uint8_t *)p + 1, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_READ( wv )                          FIELD_GET( wv, 16, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                      FIELD_SET( v, 16, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 2, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 2, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )               FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )           FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_READ(r, p)                 MREAD_8((uint8_t *)p + 2, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE(v, p)                MWRITE_8((uint8_t *)p + 2, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )               FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )           FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_READ_G(r, g, addr, idx)               GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 3, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 3, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_READ( wv )                          FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                      FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_READ(r, p)                            MREAD_8((uint8_t *)p + 3, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_WRITE(v, p)                           MWRITE_8((uint8_t *)p + 3, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_READ( wv )                          FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                      FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 4, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 4, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_READ(r, p)                       MREAD_32((uint8_t *)p + 4, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 8, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 8, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_READ(r, p)                           MREAD_16((uint8_t *)p + 8, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 8, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 10, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 10, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                   FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )               FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_READ(r, p)                     MREAD_16((uint8_t *)p + 10, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_WRITE(v, p)                    MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                   FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )               FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_READ_G(r, g, addr, idx)       GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 12, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 12, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_READ(r, p)                    MREAD_32((uint8_t *)p + 12, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_WRITE(v, p)                   MWRITE_32((uint8_t *)p + 12, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS;
-
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)), r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)), v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                 FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )             FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_READ(r, p)                   MREAD_32((uint8_t *)p, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_WRITE(v, p)                  MWRITE_32((uint8_t *)p, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                 FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )             FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 4, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 4, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_READ(r, p)                 MREAD_16((uint8_t *)p + 4, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_WRITE(v, p)                MWRITE_16((uint8_t *)p + 4, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_READ_G(r, g, addr, idx)           GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 6, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_WRITE_G(v, g, addr, idx)          GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 6, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                      FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                  FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_READ(r, p)                        MREAD_8((uint8_t *)p + 6, r)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_WRITE(v, p)                       MWRITE_8((uint8_t *)p + 6, v)
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                      FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                  FIELD_SET( v, 8, 8, wv )
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	command_list_length_64 	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	key_extend             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	is_multicast           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	protocol               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved               	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tcp_pure_ack           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tos                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	protocol               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	is_multicast           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	key_extend             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	command_list_length_64 	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tos                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tcp_pure_ack           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved               	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	src_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dst_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS;
-
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_READ_G(r, g, addr, idx)                      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 7, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_WRITE_G(v, g, addr, idx)                     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 7, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_READ(r, p)                                   FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_WRITE(v, p)                                  FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_READ_G(r, g, addr, idx)              GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 0, 15, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_WRITE_G(v, g, addr, idx)             GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 0, 15, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_READ(r, p)                           FIELD_MREAD_16((uint8_t *)p, 0, 15, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_WRITE(v, p)                          FIELD_MWRITE_16((uint8_t *)p, 0, 15, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 5, 3, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 5, 3, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 2, 5, 3, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 2, 5, 3, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_READ_G(r, g, addr, idx)     GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 1, 4, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_WRITE_G(v, g, addr, idx)    GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 1, 4, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_READ(r, p)                  FIELD_MREAD_8((uint8_t *)p + 2, 1, 4, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_WRITE(v, p)                 FIELD_MWRITE_8((uint8_t *)p + 2, 1, 4, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 0, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 0, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 2, 0, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 2, 0, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_READ_G(r, g, addr, idx)               GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 7, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_WRITE_G(v, g, addr, idx)              GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 7, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_READ(r, p)                            FIELD_MREAD_8((uint8_t *)p + 3, 7, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_WRITE(v, p)                           FIELD_MWRITE_8((uint8_t *)p + 3, 7, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_READ_G(r, g, addr, idx)                   GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 0, 7, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 0, 7, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 3, 0, 7, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 3, 0, 7, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_READ_G(r, g, addr, idx)               GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 6, 0, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_WRITE_G(v, g, addr, idx)              GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 6, 0, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_READ(r, p)                            FIELD_MREAD_8((uint8_t *)p + 6, 0, 1, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_WRITE(v, p)                           FIELD_MWRITE_8((uint8_t *)p + 6, 0, 1, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_READ_G(r, g, addr, idx)                        GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 7, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_WRITE_G(v, g, addr, idx)                       GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 7, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_READ(r, p)                                     MREAD_8((uint8_t *)p + 7, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_WRITE(v, p)                                    MWRITE_8((uint8_t *)p + 7, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_READ_G(r, g, addr, idx)                GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 8, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 8, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_READ(r, p)                             MREAD_32((uint8_t *)p + 8, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_WRITE(v, p)                            MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_READ_G(r, g, addr, idx)                GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 12, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 12, v)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_READ(r, p)                             MREAD_32((uint8_t *)p + 12, r)
-#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_WRITE(v, p)                            MWRITE_32((uint8_t *)p + 12, v)
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	current_budget      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	budget_limit_exp    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	budget_limit        	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	allocated_budget_exp	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	allocated_budget    	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	current_budget      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	allocated_budget    	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	allocated_budget_exp	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	budget_limit        	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	budget_limit_exp    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_ENTRY_DTS;
-
-#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)), r)
-#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)), v)
-#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_READ(r, p)                       MREAD_32((uint8_t *)p, r)
-#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_WRITE(v, p)                      MWRITE_32((uint8_t *)p, v)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 7, 1, r)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 7, 1, v)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_READ(r, p)                     FIELD_MREAD_8((uint8_t *)p + 4, 7, 1, r)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_WRITE(v, p)                    FIELD_MWRITE_8((uint8_t *)p + 4, 7, 1, v)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_READ_G(r, g, addr, idx)            GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 0, 15, r)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_WRITE_G(v, g, addr, idx)           GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 0, 15, v)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_READ(r, p)                         FIELD_MREAD_16((uint8_t *)p + 4, 0, 15, r)
-#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_WRITE(v, p)                        FIELD_MWRITE_16((uint8_t *)p + 4, 0, 15, v)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 7, 1, r)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 7, 1, v)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 6, 7, 1, r)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 6, 7, 1, v)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 0, 15, r)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 0, 15, v)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_READ(r, p)                     FIELD_MREAD_16((uint8_t *)p + 6, 0, 15, r)
-#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_WRITE(v, p)                    FIELD_MWRITE_16((uint8_t *)p + 6, 0, 15, v)
-#if defined WL4908
-
-#define RDD_DS_RATE_LIMITER_TABLE_SIZE     32
-typedef struct
-{
-	RDD_RATE_LIMITER_ENTRY_DTS	entry[ RDD_DS_RATE_LIMITER_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_RATE_LIMITER_TABLE_DTS;
-
-#define RDD_DS_RATE_LIMITER_TABLE_PTR()	( RDD_DS_RATE_LIMITER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_RATE_LIMITER_TABLE_ADDRESS )
+#define RDD_FC_MCAST_PORT_HEADER_BUFFER_PTR()	( RDD_FC_MCAST_PORT_HEADER_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + FC_MCAST_PORT_HEADER_BUFFER_ADDRESS )
 
 #endif
 
@@ -2876,32 +2511,28 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_MESSAGE_DESCRIPTOR_DTS;
 #define RDD_CPU_TX_MESSAGE_DESCRIPTOR_MESSAGE_TYPE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_MESSAGE_DESCRIPTOR_DTS)) + 7, 0, 4, v)
 #define RDD_CPU_TX_MESSAGE_DESCRIPTOR_MESSAGE_TYPE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 7, 0, 4, r)
 #define RDD_CPU_TX_MESSAGE_DESCRIPTOR_MESSAGE_TYPE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 7, 0, 4, v)
+#define RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER	16
 
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	u8        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_fw_only[RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
 #else
-	uint8_t	u8        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_fw_only[RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_DTS;
 
-#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS)), r)
-#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS)), v)
-#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_FC_MCAST_PORT_HEADER_ENTRY_U8_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
 #if defined WL4908
 
-#define RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE     8
-#define RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE2    64
+#define RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_SIZE     8
 typedef struct
 {
-	RDD_FC_MCAST_PORT_HEADER_ENTRY_DTS	entry[ RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE ][ RDD_FC_MCAST_PORT_HEADER_BUFFER_SIZE2 ];
+	RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_DTS	entry[ RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_MCAST_PORT_HEADER_BUFFER_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_DTS;
 
-#define RDD_FC_MCAST_PORT_HEADER_BUFFER_PTR()	( RDD_FC_MCAST_PORT_HEADER_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + FC_MCAST_PORT_HEADER_BUFFER_ADDRESS )
+#define RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_PTR()	( RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_ADDRESS )
 
 #endif
 #if defined WL4908
@@ -2987,28 +2618,320 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DOWNSTREAM_LAN_ENQUEUE_SQ_PD_DTS;
 #define RDD_DOWNSTREAM_LAN_ENQUEUE_SQ_PD_PTR()	( RDD_DOWNSTREAM_LAN_ENQUEUE_SQ_PD_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DOWNSTREAM_LAN_ENQUEUE_SQ_PD_ADDRESS )
 
 #endif
-#define RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER	16
 
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-	uint32_t	reserved_fw_only[RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ONE_BYTE_DTS;
 
 #if defined WL4908
 
-#define RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_SIZE     8
+#define RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_SIZE     64
 typedef struct
 {
-	RDD_CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY_DTS	entry[ RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_SIZE ];
+	RDD_ONE_BYTE_DTS	entry[ RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_DTS;
 
-#define RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_PTR()	( RDD_DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CONNECTION_CONTEXT_MULTICAST_BUFFER_ADDRESS )
+#define RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_PTR()	( RDD_DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DOWNSTREAM_LAN_ENQUEUE_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FOUR_BYTES_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE     16
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS;
+
+#define RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_PTR()	( RDD_DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_FAST_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE     16
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS;
+
+#define RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_PTR()	( RDD_DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_CPU_TX_DESCRIPTOR_ABS_DATA_PTR_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	msg_type        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	common_hdr_flags	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	epoch           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	request_id      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	status          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dma_done_mark   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	epoch           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	common_hdr_flags	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id           	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	msg_type        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	request_id      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	status          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dma_done_mark   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS;
+
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_READ_G(r, g, addr, idx)            GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)), r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)), v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_READ( wv )                       FIELD_GET( wv, 24, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                   FIELD_SET( v, 24, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_READ(r, p)                         MREAD_8((uint8_t *)p, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_WRITE(v, p)                        MWRITE_8((uint8_t *)p, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_READ( wv )                       FIELD_GET( wv, 24, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                   FIELD_SET( v, 24, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_READ_G(r, g, addr, idx)               GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 1, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 1, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_READ( wv )                          FIELD_GET( wv, 16, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                      FIELD_SET( v, 16, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_READ(r, p)                            MREAD_8((uint8_t *)p + 1, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_WRITE(v, p)                           MWRITE_8((uint8_t *)p + 1, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_READ( wv )                          FIELD_GET( wv, 16, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                      FIELD_SET( v, 16, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 2, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 2, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )               FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )           FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_READ(r, p)                 MREAD_8((uint8_t *)p + 2, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE(v, p)                MWRITE_8((uint8_t *)p + 2, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )               FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )           FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_READ_G(r, g, addr, idx)               GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 3, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 3, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_READ( wv )                          FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                      FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_READ(r, p)                            MREAD_8((uint8_t *)p + 3, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_WRITE(v, p)                           MWRITE_8((uint8_t *)p + 3, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_READ( wv )                          FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                      FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 4, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 4, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_READ(r, p)                       MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 8, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 8, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_READ(r, p)                           MREAD_16((uint8_t *)p + 8, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 8, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_STATUS_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 10, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 10, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                   FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )               FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_READ(r, p)                     MREAD_16((uint8_t *)p + 10, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_WRITE(v, p)                    MWRITE_16((uint8_t *)p + 10, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_READ( wv )                   FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_FLOW_RING_ID_L_WRITE( v, wv )               FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_READ_G(r, g, addr, idx)       GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 12, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_DTS)) + 12, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_READ(r, p)                    MREAD_32((uint8_t *)p + 12, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_WRITE(v, p)                   MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_DMA_DONE_MARK_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS;
+
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)), r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)), v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                 FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )             FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_READ(r, p)                   MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_WRITE(v, p)                  MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                 FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )             FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 4, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 4, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_READ(r, p)                 MREAD_16((uint8_t *)p + 4, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_WRITE(v, p)                MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_READ_G(r, g, addr, idx)           GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 6, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_WRITE_G(v, g, addr, idx)          GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_DTS)) + 6, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                      FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                  FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_READ(r, p)                        MREAD_8((uint8_t *)p + 6, r)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_WRITE(v, p)                       MWRITE_8((uint8_t *)p + 6, v)
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                      FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_COMPLETE_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                  FIELD_SET( v, 8, 8, wv )
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	command_list_length_64 	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	key_extend             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	is_multicast           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	protocol               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved               	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tcp_pure_ack           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tos                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	protocol               	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	is_multicast           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	key_extend             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	command_list_length_64 	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bucket_overflow_counter	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	context_index          	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	valid                  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tos                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tcp_pure_ack           	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved               	:23	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dst_mac_crc            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS;
+
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_READ_G(r, g, addr, idx)                      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 7, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_WRITE_G(v, g, addr, idx)                     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 7, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_READ(r, p)                                   FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_VALID_WRITE(v, p)                                  FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_READ_G(r, g, addr, idx)              GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 0, 15, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_WRITE_G(v, g, addr, idx)             GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)), 0, 15, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_READ(r, p)                           FIELD_MREAD_16((uint8_t *)p, 0, 15, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_CONTEXT_INDEX_WRITE(v, p)                          FIELD_MWRITE_16((uint8_t *)p, 0, 15, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 5, 3, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 5, 3, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 2, 5, 3, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_BUCKET_OVERFLOW_COUNTER_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 2, 5, 3, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_READ_G(r, g, addr, idx)     GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 1, 4, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_WRITE_G(v, g, addr, idx)    GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 1, 4, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_READ(r, p)                  FIELD_MREAD_8((uint8_t *)p + 2, 1, 4, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_COMMAND_LIST_LENGTH_64_WRITE(v, p)                 FIELD_MWRITE_8((uint8_t *)p + 2, 1, 4, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 0, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 2, 0, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 2, 0, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_KEY_EXTEND_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 2, 0, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_READ_G(r, g, addr, idx)               GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 7, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_WRITE_G(v, g, addr, idx)              GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 7, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_READ(r, p)                            FIELD_MREAD_8((uint8_t *)p + 3, 7, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_IS_MULTICAST_WRITE(v, p)                           FIELD_MWRITE_8((uint8_t *)p + 3, 7, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_READ_G(r, g, addr, idx)                   GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 0, 7, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 3, 0, 7, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 3, 0, 7, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_PROTOCOL_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 3, 0, 7, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_READ_G(r, g, addr, idx)               GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 6, 0, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_WRITE_G(v, g, addr, idx)              GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 6, 0, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_READ(r, p)                            FIELD_MREAD_8((uint8_t *)p + 6, 0, 1, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TCP_PURE_ACK_WRITE(v, p)                           FIELD_MWRITE_8((uint8_t *)p + 6, 0, 1, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_READ_G(r, g, addr, idx)                        GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 7, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_WRITE_G(v, g, addr, idx)                       GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 7, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_READ(r, p)                                     MREAD_8((uint8_t *)p + 7, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_TOS_WRITE(v, p)                                    MWRITE_8((uint8_t *)p + 7, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_READ_G(r, g, addr, idx)                GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 8, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 8, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_READ(r, p)                             MREAD_32((uint8_t *)p + 8, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_SRC_MAC_CRC_WRITE(v, p)                            MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_READ_G(r, g, addr, idx)                GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 12, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_L2_UCAST_CONNECTION_ENTRY_DTS)) + 12, v)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_READ(r, p)                             MREAD_32((uint8_t *)p + 12, r)
+#define RDD_FC_L2_UCAST_CONNECTION_ENTRY_DST_MAC_CRC_WRITE(v, p)                            MWRITE_32((uint8_t *)p + 12, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	current_budget      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	budget_limit_exp    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	budget_limit        	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	allocated_budget_exp	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	allocated_budget    	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	current_budget      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	allocated_budget    	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	allocated_budget_exp	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	budget_limit        	:15	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	budget_limit_exp    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_LIMITER_ENTRY_DTS;
+
+#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)), r)
+#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)), v)
+#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_READ(r, p)                       MREAD_32((uint8_t *)p, r)
+#define RDD_RATE_LIMITER_ENTRY_CURRENT_BUDGET_WRITE(v, p)                      MWRITE_32((uint8_t *)p, v)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 7, 1, r)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 7, 1, v)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_READ(r, p)                     FIELD_MREAD_8((uint8_t *)p + 4, 7, 1, r)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_EXP_WRITE(v, p)                    FIELD_MWRITE_8((uint8_t *)p + 4, 7, 1, v)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_READ_G(r, g, addr, idx)            GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 0, 15, r)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_WRITE_G(v, g, addr, idx)           GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 4, 0, 15, v)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_READ(r, p)                         FIELD_MREAD_16((uint8_t *)p + 4, 0, 15, r)
+#define RDD_RATE_LIMITER_ENTRY_BUDGET_LIMIT_WRITE(v, p)                        FIELD_MWRITE_16((uint8_t *)p + 4, 0, 15, v)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 7, 1, r)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 7, 1, v)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 6, 7, 1, r)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_EXP_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 6, 7, 1, v)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 0, 15, r)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_LIMITER_ENTRY_DTS)) + 6, 0, 15, v)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_READ(r, p)                     FIELD_MREAD_16((uint8_t *)p + 6, 0, 15, r)
+#define RDD_RATE_LIMITER_ENTRY_ALLOCATED_BUDGET_WRITE(v, p)                    FIELD_MWRITE_16((uint8_t *)p + 6, 0, 15, v)
+#if defined WL4908
+
+#define RDD_DS_RATE_LIMITER_TABLE_SIZE     32
+typedef struct
+{
+	RDD_RATE_LIMITER_ENTRY_DTS	entry[ RDD_DS_RATE_LIMITER_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_RATE_LIMITER_TABLE_DTS;
+
+#define RDD_DS_RATE_LIMITER_TABLE_PTR()	( RDD_DS_RATE_LIMITER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_RATE_LIMITER_TABLE_ADDRESS )
 
 #endif
 #if defined WL4908
@@ -3220,6 +3143,348 @@ typedef struct
 #endif
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FLOW_HEADER_BUFFER_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	msg_type             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	common_hdr_flags     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	epoch                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	request_id           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_0         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_1         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_2         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_3         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	seg_cnt              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	metadata_buf_addr_low	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	metadata_buf_addr_hi 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_hi     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	meta_buf_len         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	epoch                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	common_hdr_flags     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	msg_type             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	request_id           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_0         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_1         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_2         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	seg_cnt              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_3         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	metadata_buf_addr_low	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	metadata_buf_addr_hi 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_hi     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	meta_buf_len         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_DESCRIPTOR_DTS;
+
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_READ_G(r, g, addr, idx)                 GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)), r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)), v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_READ( wv )                            FIELD_GET( wv, 24, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                        FIELD_SET( v, 24, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_READ(r, p)                              MREAD_8((uint8_t *)p, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_WRITE(v, p)                             MWRITE_8((uint8_t *)p, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_READ( wv )                            FIELD_GET( wv, 24, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                        FIELD_SET( v, 24, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 1, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 1, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_READ( wv )                               FIELD_GET( wv, 16, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                           FIELD_SET( v, 16, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_READ(r, p)                                 MREAD_8((uint8_t *)p + 1, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 1, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_READ( wv )                               FIELD_GET( wv, 16, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                           FIELD_SET( v, 16, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_READ_G(r, g, addr, idx)         GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 2, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 2, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )                    FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )                FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_READ(r, p)                      MREAD_8((uint8_t *)p + 2, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE(v, p)                     MWRITE_8((uint8_t *)p + 2, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )                    FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )                FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 3, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 3, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_READ( wv )                               FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                           FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_READ(r, p)                                 MREAD_8((uint8_t *)p + 3, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 3, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_READ( wv )                               FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                           FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_READ_G(r, g, addr, idx)               GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 4, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 4, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_READ( wv )                          FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                      FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_READ(r, p)                            MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_WRITE(v, p)                           MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_READ( wv )                          FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                      FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 8, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 8, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_READ(r, p)                          MREAD_32((uint8_t *)p + 8, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_READ(r, p)                          MREAD_32((uint8_t *)p + 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 16, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 16, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_READ(r, p)                          MREAD_32((uint8_t *)p + 16, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 16, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_READ_G(r, g, addr, idx)             GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 20, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 20, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_READ(r, p)                          MREAD_16((uint8_t *)p + 20, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_WRITE(v, p)                         MWRITE_16((uint8_t *)p + 20, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 22, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 22, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_READ( wv )                               FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                           FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_READ(r, p)                                 MREAD_8((uint8_t *)p + 22, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 22, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_READ( wv )                               FIELD_GET( wv, 8, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                           FIELD_SET( v, 8, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_READ_G(r, g, addr, idx)                  GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 23, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 23, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_READ(r, p)                               MREAD_8((uint8_t *)p + 23, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_WRITE(v, p)                              MWRITE_8((uint8_t *)p + 23, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 24, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 24, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_READ(r, p)                 MREAD_32((uint8_t *)p + 24, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_WRITE(v, p)                MWRITE_32((uint8_t *)p + 24, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 28, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 28, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_READ(r, p)                  MREAD_32((uint8_t *)p + 28, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 28, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 32, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 32, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_READ(r, p)                     MREAD_32((uint8_t *)p + 32, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 32, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_READ_G(r, g, addr, idx)         GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 36, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 36, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_READ( wv )                    FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_WRITE( v, wv )                FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_READ(r, p)                      MREAD_32((uint8_t *)p + 36, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_WRITE(v, p)                     MWRITE_32((uint8_t *)p + 36, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_READ( wv )                    FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_WRITE( v, wv )                FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_READ_G(r, g, addr, idx)             GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 40, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 40, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_READ(r, p)                          MREAD_16((uint8_t *)p + 40, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_WRITE(v, p)                         MWRITE_16((uint8_t *)p + 40, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_READ_G(r, g, addr, idx)                 GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 42, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 42, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_READ( wv )                            FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_WRITE( v, wv )                        FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_READ(r, p)                              MREAD_16((uint8_t *)p + 42, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_WRITE(v, p)                             MWRITE_16((uint8_t *)p + 42, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_READ( wv )                            FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_WRITE( v, wv )                        FIELD_SET( v, 0, 16, wv )
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	prio              	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id             	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags             	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	copy              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_0      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_1      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_2      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_3      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flowid_override   	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	info              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	copy              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags             	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	if_id             	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	prio              	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_addr_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_0      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_1      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_2      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	info              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flowid_override   	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_eth_hdr_3      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS;
+
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_READ_G(r, g, addr, idx)            GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)), r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)), v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_READ(r, p)                         MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_WRITE(v, p)                        MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 5, 3, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 5, 3, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_READ( wv )                             FIELD_GET( wv, 29, 3 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_WRITE( v, wv )                         FIELD_SET( v, 29, 3, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 4, 5, 3, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 4, 5, 3, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_READ( wv )                             FIELD_GET( wv, 29, 3 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_WRITE( v, wv )                         FIELD_SET( v, 29, 3, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 0, 5, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 0, 5, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                            FIELD_GET( wv, 24, 5 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                        FIELD_SET( v, 24, 5, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 4, 0, 5, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 4, 0, 5, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                            FIELD_GET( wv, 24, 5 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                        FIELD_SET( v, 24, 5, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 1, 7, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 1, 7, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_READ( wv )                            FIELD_GET( wv, 17, 7 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_WRITE( v, wv )                        FIELD_SET( v, 17, 7, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 5, 1, 7, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 5, 1, 7, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_READ( wv )                            FIELD_GET( wv, 17, 7 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_WRITE( v, wv )                        FIELD_SET( v, 17, 7, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 0, 1, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 0, 1, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_READ( wv )                             FIELD_GET( wv, 16, 1 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_WRITE( v, wv )                         FIELD_SET( v, 16, 1, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 5, 0, 1, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 5, 0, 1, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_READ( wv )                             FIELD_GET( wv, 16, 1 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_WRITE( v, wv )                         FIELD_SET( v, 16, 1, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 6, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 6, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_READ(r, p)                           MREAD_16((uint8_t *)p + 6, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 6, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 8, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 8, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_READ(r, p)                  MREAD_32((uint8_t *)p + 8, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_READ(r, p)                 MREAD_32((uint8_t *)p + 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_WRITE(v, p)                MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 16, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 16, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_READ(r, p)                       MREAD_32((uint8_t *)p + 16, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 16, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 20, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 20, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_READ(r, p)                       MREAD_32((uint8_t *)p + 20, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 20, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 24, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 24, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_READ(r, p)                       MREAD_32((uint8_t *)p + 24, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 24, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 28, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 28, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_READ( wv )                     FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_WRITE( v, wv )                 FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_READ(r, p)                       MREAD_16((uint8_t *)p + 28, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 28, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_READ( wv )                     FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_WRITE( v, wv )                 FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 30, 4, 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 30, 4, 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_READ( wv )                  FIELD_GET( wv, 4, 12 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_WRITE( v, wv )              FIELD_SET( v, 4, 12, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_READ(r, p)                    FIELD_MREAD_16((uint8_t *)p + 30, 4, 12, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_WRITE(v, p)                   FIELD_MWRITE_16((uint8_t *)p + 30, 4, 12, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_READ( wv )                  FIELD_GET( wv, 4, 12 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_WRITE( v, wv )              FIELD_SET( v, 4, 12, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 31, 0, 4, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 31, 0, 4, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_READ( wv )                             FIELD_GET( wv, 0, 4 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_WRITE( v, wv )                         FIELD_SET( v, 0, 4, wv )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 31, 0, 4, r)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 31, 0, 4, v)
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_READ( wv )                             FIELD_GET( wv, 0, 4 )
+#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_WRITE( v, wv )                         FIELD_SET( v, 0, 4, wv )
+#define RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER	16
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only[RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+#else
+	uint32_t	reserved_fw_only[RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_DTS;
 
 #define RDD_PROFILING_BUFFER_PICO_RUNNER_RESERVED_FW_ONLY_NUMBER	64
 
@@ -3631,17 +3896,17 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_SQ_ENQUEUE_QUEUE_DTS;
 #define RDD_DS_SQ_ENQUEUE_QUEUE_PTR()	( RDD_DS_SQ_ENQUEUE_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_SQ_ENQUEUE_QUEUE_ADDRESS )
 
 #endif
-#define RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER	16
+#define RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER	16
 
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+	uint32_t	reserved_fw_only[RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER];
 #else
-	uint32_t	reserved_fw_only[RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_RESERVED_FW_ONLY_NUMBER];
+	uint32_t	reserved_fw_only[RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER];
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_MESSAGE_DATA_BUFFER_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MULTICAST_HEADER_BUFFER_DTS;
 
 #if defined WL4908
 
@@ -3653,6 +3918,92 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_RX_FAST_PD_INGRESS_QUEUE_DTS;
 
 #define RDD_CPU_RX_FAST_PD_INGRESS_QUEUE_PTR()	( RDD_CPU_RX_FAST_PD_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + CPU_RX_FAST_PD_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_INGRESS_QUEUE_ENTRY_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_DTS;
+
+#define RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_PTR()	( RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_RX_PICO_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ENTRY_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_SIZE     8
+typedef struct
+{
+	RDD_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ENTRY_DTS	entry[ RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_DTS;
+
+#define RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_PTR()	( RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_SIZE     8
+typedef struct
+{
+	RDD_BYTES_4_DTS	entry[ RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS;
+
+#define RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_PTR()	( RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_ADDRESS )
+
+#endif
+#define RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_NUMBER	32
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	dhd_l2_buffer_data[RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_NUMBER];
+#else
+	uint8_t	dhd_l2_buffer_data[RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_L2_HEADER_BUFFER_ENTRY_DTS;
+
+#define RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_READ_G(r, g, addr, idx, i) GROUP_MREAD_I_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_L2_HEADER_BUFFER_ENTRY_DTS)), i, r)
+#define RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_WRITE_G(v, g, addr, idx, i)GROUP_MWRITE_I_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_L2_HEADER_BUFFER_ENTRY_DTS)), i, v)
+#define RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_READ(r, p, i)              MREAD_I_8((uint8_t *)p, i, r)
+#define RDD_DHD_L2_HEADER_BUFFER_ENTRY_DHD_L2_BUFFER_DATA_WRITE(v, p, i)             MWRITE_I_8((uint8_t *)p, i, v)
+#if defined WL4908
+
+#define RDD_DS_DHD_TX_POST_HEADER_SCRATCH_SIZE     4
+typedef struct
+{
+	RDD_DHD_L2_HEADER_BUFFER_ENTRY_DTS	entry[ RDD_DS_DHD_TX_POST_HEADER_SCRATCH_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_TX_POST_HEADER_SCRATCH_DTS;
+
+#define RDD_DS_DHD_TX_POST_HEADER_SCRATCH_PTR()	( RDD_DS_DHD_TX_POST_HEADER_SCRATCH_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_TX_POST_HEADER_SCRATCH_ADDRESS )
 
 #endif
 #define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_ENTRY_RESERVED_FW_ONLY_NUMBER	16
@@ -3679,76 +4030,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_DTS;
 #define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_PTR()	( RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + EMAC_SKB_ENQUEUED_INDEXES_FIFO_ADDRESS )
 
 #endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ENTRY_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_SIZE     8
-typedef struct
-{
-	RDD_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ENTRY_DTS	entry[ RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_DTS;
-
-#define RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_PTR()	( RDD_DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_RUNNER_GLOBAL_REGISTERS_INIT_ADDRESS )
-
-#endif
-#define RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER	16
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_MULTICAST_HEADER_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MULTICAST_HEADER_BUFFER_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_INGRESS_QUEUE_ENTRY_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_DTS;
-
-#define RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_PTR()	( RDD_DS_CPU_RX_PICO_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_RX_PICO_INGRESS_QUEUE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_SIZE     8
-typedef struct
-{
-	RDD_BYTES_4_DTS	entry[ RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS;
-
-#define RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_PTR()	( RDD_DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_ADDRESS )
-
-#endif
 #if defined WL4908
 
 #define RDD_DS_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_SIZE     8
@@ -3759,6 +4040,81 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS;
 
 #define RDD_DS_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_PTR()	( RDD_DS_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_MCAST_RX_SBPM_TO_FPM_COPY_FPM_ALLOC_RESULT_TABLE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_SIZE     8
+typedef struct
+{
+	RDD_BYTES_4_DTS	entry[ RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_DTS;
+
+#define RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_PTR()	( RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_NULL_BUFFER_SIZE     3
+typedef struct
+{
+	RDD_EIGHT_BYTES_DTS	entry[ RDD_DS_NULL_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_NULL_BUFFER_DTS;
+
+#define RDD_DS_NULL_BUFFER_PTR()	( RDD_DS_NULL_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_NULL_BUFFER_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_PICO_MALLOC_RESULT_TABLE_SIZE     2
+typedef struct
+{
+	RDD_BYTES_4_DTS	entry[ RDD_DS_PICO_MALLOC_RESULT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_MALLOC_RESULT_TABLE_DTS;
+
+#define RDD_DS_PICO_MALLOC_RESULT_TABLE_PTR()	( RDD_DS_PICO_MALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_MALLOC_RESULT_TABLE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_DTS;
+
+#define RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_PTR()	( RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DOWNSTREAM_MULTICAST_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	primitive_address	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	primitive_address	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS;
+
+#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS)), r)
+#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS)), v)
+#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_READ(r, p)                 MREAD_16((uint8_t *)p, r)
+#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_WRITE(v, p)                MWRITE_16((uint8_t *)p, v)
+#if defined WL4908
+
+#define RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_SIZE     32
+typedef struct
+{
+	RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS	entry[ RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_DTS;
+
+#define RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_PTR()	( RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_GPE_COMMAND_PRIMITIVE_TABLE_ADDRESS )
 
 #endif
 
@@ -4108,93 +4464,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_GSO_CONTEXT_ENTRY_DTS;
 #define RDD_GSO_CONTEXT_ENTRY_DEBUG_0_WRITE_G(v, g, addr, idx)                          GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_GSO_CONTEXT_ENTRY_DTS)) + 128, v)
 #define RDD_GSO_CONTEXT_ENTRY_DEBUG_0_READ(r, p)                                        MREAD_32((uint8_t *)p + 128, r)
 #define RDD_GSO_CONTEXT_ENTRY_DEBUG_0_WRITE(v, p)                                       MWRITE_32((uint8_t *)p + 128, v)
-#if defined WL4908
-
-#define RDD_DS_PICO_MALLOC_RESULT_TABLE_SIZE     2
-typedef struct
-{
-	RDD_BYTES_4_DTS	entry[ RDD_DS_PICO_MALLOC_RESULT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PICO_MALLOC_RESULT_TABLE_DTS;
-
-#define RDD_DS_PICO_MALLOC_RESULT_TABLE_PTR()	( RDD_DS_PICO_MALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_MALLOC_RESULT_TABLE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE     8
-typedef struct
-{
-	RDD_TWO_BYTES_DTS	entry[ RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS;
-
-#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_PTR()	( RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_SIZE     8
-typedef struct
-{
-	RDD_BYTES_4_DTS	entry[ RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_DTS;
-
-#define RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_PTR()	( RDD_DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_TX_FPM_ALLOC_RESULT_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	primitive_address	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	primitive_address	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS;
-
-#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS)), r)
-#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS)), v)
-#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_READ(r, p)                 MREAD_16((uint8_t *)p, r)
-#define RDD_GPE_COMMAND_PRIMITIVE_ENTRY_PRIMITIVE_ADDRESS_WRITE(v, p)                MWRITE_16((uint8_t *)p, v)
-#if defined WL4908
-
-#define RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_SIZE     32
-typedef struct
-{
-	RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS	entry[ RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_DTS;
-
-#define RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_PTR()	( RDD_DS_GPE_COMMAND_PRIMITIVE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_GPE_COMMAND_PRIMITIVE_TABLE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_DTS;
-
-#define RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_PTR()	( RDD_DOWNSTREAM_MULTICAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DOWNSTREAM_MULTICAST_INGRESS_QUEUE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_NULL_BUFFER_SIZE     3
-typedef struct
-{
-	RDD_EIGHT_BYTES_DTS	entry[ RDD_DS_NULL_BUFFER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_NULL_BUFFER_DTS;
-
-#define RDD_DS_NULL_BUFFER_PTR()	( RDD_DS_NULL_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_NULL_BUFFER_ADDRESS )
-
-#endif
 
 typedef struct
 {
@@ -4237,6 +4506,18 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_TIMER_CONTROL_DESCRIPTOR_DTS;
 #define RDD_TIMER_CONTROL_DESCRIPTOR_NUMBER_OF_ACTIVE_TASKS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_TIMER_CONTROL_DESCRIPTOR_DTS)), v)
 #define RDD_TIMER_CONTROL_DESCRIPTOR_NUMBER_OF_ACTIVE_TASKS_READ(r, p)                 MREAD_16((uint8_t *)p, r)
 #define RDD_TIMER_CONTROL_DESCRIPTOR_NUMBER_OF_ACTIVE_TASKS_WRITE(v, p)                MWRITE_16((uint8_t *)p, v)
+#if defined WL4908
+
+#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE     8
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS;
+
+#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_PTR()	( RDD_EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + EMAC_SKB_ENQUEUED_INDEXES_FREE_PTR_ADDRESS )
+
+#endif
 
 typedef struct
 {
@@ -4328,395 +4609,6 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_COMPLETE_RING_BUFFER_DTS;
 
 #define RDD_DHD_COMPLETE_RING_BUFFER_PTR()	( RDD_DHD_COMPLETE_RING_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DHD_COMPLETE_RING_BUFFER_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_ROUTER_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_ROUTER_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_ROUTER_INGRESS_QUEUE_DTS;
-
-#define RDD_DS_ROUTER_INGRESS_QUEUE_PTR()	( RDD_DS_ROUTER_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_ROUTER_INGRESS_QUEUE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	msg_type             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	common_hdr_flags     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	epoch                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	request_id           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_0         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_1         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_2         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_3         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	seg_cnt              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	metadata_buf_addr_low	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	metadata_buf_addr_hi 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_hi     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	meta_buf_len         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_len             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	epoch                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	common_hdr_flags     	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	msg_type             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	request_id           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_0         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_1         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_2         	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	seg_cnt              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_3         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	metadata_buf_addr_low	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	metadata_buf_addr_hi 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_hi     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_len             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	meta_buf_len         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_DESCRIPTOR_DTS;
-
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_READ_G(r, g, addr, idx)                 GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)), r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)), v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_READ( wv )                            FIELD_GET( wv, 24, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                        FIELD_SET( v, 24, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_READ(r, p)                              MREAD_8((uint8_t *)p, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_WRITE(v, p)                             MWRITE_8((uint8_t *)p, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_READ( wv )                            FIELD_GET( wv, 24, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_MSG_TYPE_L_WRITE( v, wv )                        FIELD_SET( v, 24, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 1, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 1, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_READ( wv )                               FIELD_GET( wv, 16, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                           FIELD_SET( v, 16, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_READ(r, p)                                 MREAD_8((uint8_t *)p + 1, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 1, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_READ( wv )                               FIELD_GET( wv, 16, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_IF_ID_L_WRITE( v, wv )                           FIELD_SET( v, 16, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_READ_G(r, g, addr, idx)         GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 2, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 2, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )                    FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )                FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_READ(r, p)                      MREAD_8((uint8_t *)p + 2, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_WRITE(v, p)                     MWRITE_8((uint8_t *)p + 2, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_READ( wv )                    FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_COMMON_HDR_FLAGS_L_WRITE( v, wv )                FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 3, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 3, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_READ( wv )                               FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                           FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_READ(r, p)                                 MREAD_8((uint8_t *)p + 3, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 3, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_READ( wv )                               FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_EPOCH_L_WRITE( v, wv )                           FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_READ_G(r, g, addr, idx)               GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 4, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 4, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_READ( wv )                          FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                      FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_READ(r, p)                            MREAD_32((uint8_t *)p + 4, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_WRITE(v, p)                           MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_READ( wv )                          FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_REQUEST_ID_L_WRITE( v, wv )                      FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 8, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 8, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_READ(r, p)                          MREAD_32((uint8_t *)p + 8, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_0_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_READ(r, p)                          MREAD_32((uint8_t *)p + 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_1_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_READ_G(r, g, addr, idx)             GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 16, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 16, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_READ(r, p)                          MREAD_32((uint8_t *)p + 16, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_WRITE(v, p)                         MWRITE_32((uint8_t *)p + 16, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_READ( wv )                        FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_2_L_WRITE( v, wv )                    FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_READ_G(r, g, addr, idx)             GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 20, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 20, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_READ(r, p)                          MREAD_16((uint8_t *)p + 20, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_WRITE(v, p)                         MWRITE_16((uint8_t *)p + 20, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_TX_ETH_HDR_3_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 22, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 22, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_READ( wv )                               FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                           FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_READ(r, p)                                 MREAD_8((uint8_t *)p + 22, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 22, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_READ( wv )                               FIELD_GET( wv, 8, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                           FIELD_SET( v, 8, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_READ_G(r, g, addr, idx)                  GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 23, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 23, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_READ(r, p)                               MREAD_8((uint8_t *)p + 23, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_WRITE(v, p)                              MWRITE_8((uint8_t *)p + 23, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_SEG_CNT_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 24, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 24, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_READ(r, p)                 MREAD_32((uint8_t *)p + 24, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_WRITE(v, p)                MWRITE_32((uint8_t *)p + 24, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_LOW_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 28, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 28, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_READ(r, p)                  MREAD_32((uint8_t *)p + 28, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 28, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_METADATA_BUF_ADDR_HI_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 32, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 32, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_READ(r, p)                     MREAD_32((uint8_t *)p + 32, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 32, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_READ_G(r, g, addr, idx)         GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 36, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 36, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_READ( wv )                    FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_WRITE( v, wv )                FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_READ(r, p)                      MREAD_32((uint8_t *)p + 36, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_WRITE(v, p)                     MWRITE_32((uint8_t *)p + 36, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_READ( wv )                    FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_BUF_ADDR_HI_L_WRITE( v, wv )                FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_READ_G(r, g, addr, idx)             GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 40, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 40, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_READ(r, p)                          MREAD_16((uint8_t *)p + 40, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_WRITE(v, p)                         MWRITE_16((uint8_t *)p + 40, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_READ( wv )                        FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_META_BUF_LEN_L_WRITE( v, wv )                    FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_READ_G(r, g, addr, idx)                 GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 42, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_DTS)) + 42, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_READ( wv )                            FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_WRITE( v, wv )                        FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_READ(r, p)                              MREAD_16((uint8_t *)p + 42, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_WRITE(v, p)                             MWRITE_16((uint8_t *)p + 42, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_READ( wv )                            FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_DATA_LEN_L_WRITE( v, wv )                        FIELD_SET( v, 0, 16, wv )
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	prio              	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id             	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags             	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	copy              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_0      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_1      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_2      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_3      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flowid_override   	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	info              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	copy              	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags             	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	if_id             	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	prio              	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_addr_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_0      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_1      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_2      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	info              	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flowid_override   	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_eth_hdr_3      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS;
-
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_READ_G(r, g, addr, idx)            GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)), r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)), v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_READ(r, p)                         MREAD_32((uint8_t *)p, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_WRITE(v, p)                        MWRITE_32((uint8_t *)p, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 5, 3, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 5, 3, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_READ( wv )                             FIELD_GET( wv, 29, 3 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_WRITE( v, wv )                         FIELD_SET( v, 29, 3, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 4, 5, 3, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 4, 5, 3, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_READ( wv )                             FIELD_GET( wv, 29, 3 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_PRIO_L_WRITE( v, wv )                         FIELD_SET( v, 29, 3, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 0, 5, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 4, 0, 5, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                            FIELD_GET( wv, 24, 5 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                        FIELD_SET( v, 24, 5, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 4, 0, 5, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 4, 0, 5, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_READ( wv )                            FIELD_GET( wv, 24, 5 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_IF_ID_L_WRITE( v, wv )                        FIELD_SET( v, 24, 5, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 1, 7, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 1, 7, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_READ( wv )                            FIELD_GET( wv, 17, 7 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_WRITE( v, wv )                        FIELD_SET( v, 17, 7, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p + 5, 1, 7, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p + 5, 1, 7, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_READ( wv )                            FIELD_GET( wv, 17, 7 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLAGS_L_WRITE( v, wv )                        FIELD_SET( v, 17, 7, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 0, 1, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 5, 0, 1, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_READ( wv )                             FIELD_GET( wv, 16, 1 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_WRITE( v, wv )                         FIELD_SET( v, 16, 1, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 5, 0, 1, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 5, 0, 1, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_READ( wv )                             FIELD_GET( wv, 16, 1 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_COPY_L_WRITE( v, wv )                         FIELD_SET( v, 16, 1, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 6, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 6, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_READ(r, p)                           MREAD_16((uint8_t *)p + 6, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 6, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 8, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 8, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_READ(r, p)                  MREAD_32((uint8_t *)p + 8, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_READ(r, p)                 MREAD_32((uint8_t *)p + 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_WRITE(v, p)                MWRITE_32((uint8_t *)p + 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DATA_BUF_ADDR_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 16, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 16, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_READ(r, p)                       MREAD_32((uint8_t *)p + 16, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 16, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_0_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 20, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 20, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_READ(r, p)                       MREAD_32((uint8_t *)p + 20, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 20, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_1_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 24, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 24, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_READ(r, p)                       MREAD_32((uint8_t *)p + 24, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 24, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_READ( wv )                     FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_2_L_WRITE( v, wv )                 FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 28, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 28, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_READ( wv )                     FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_WRITE( v, wv )                 FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_READ(r, p)                       MREAD_16((uint8_t *)p + 28, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 28, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_READ( wv )                     FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_TX_ETH_HDR_3_L_WRITE( v, wv )                 FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 30, 4, 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 30, 4, 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_READ( wv )                  FIELD_GET( wv, 4, 12 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_WRITE( v, wv )              FIELD_SET( v, 4, 12, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_READ(r, p)                    FIELD_MREAD_16((uint8_t *)p + 30, 4, 12, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_WRITE(v, p)                   FIELD_MWRITE_16((uint8_t *)p + 30, 4, 12, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_READ( wv )                  FIELD_GET( wv, 4, 12 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_FLOWID_OVERRIDE_L_WRITE( v, wv )              FIELD_SET( v, 4, 12, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_READ_G(r, g, addr, idx)                  GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 31, 0, 4, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_WRITE_G(v, g, addr, idx)                 GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_DESCRIPTOR_CWI32_DTS)) + 31, 0, 4, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_READ( wv )                             FIELD_GET( wv, 0, 4 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_WRITE( v, wv )                         FIELD_SET( v, 0, 4, wv )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_READ(r, p)                               FIELD_MREAD_8((uint8_t *)p + 31, 0, 4, r)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_WRITE(v, p)                              FIELD_MWRITE_8((uint8_t *)p + 31, 0, 4, v)
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_READ( wv )                             FIELD_GET( wv, 0, 4 )
-#define RDD_DHD_TX_POST_DESCRIPTOR_CWI32_INFO_L_WRITE( v, wv )                         FIELD_SET( v, 0, 4, wv )
-#define RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER	4
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BUFFER_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_DTS;
-
-#define RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_PTR()	( RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_RX_FAST_INGRESS_QUEUE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DEBUG_BUFFER_ENTRY_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_DEBUG_BUFFER_SIZE     32
-typedef struct
-{
-	RDD_DEBUG_BUFFER_ENTRY_DTS	entry[ RDD_DS_DEBUG_BUFFER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DEBUG_BUFFER_DTS;
-
-#define RDD_DS_DEBUG_BUFFER_PTR()	( RDD_DS_DEBUG_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DEBUG_BUFFER_ADDRESS )
 
 #endif
 
@@ -4973,6 +4865,100 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_DTS
 #endif
 #if defined WL4908
 
+#define RDD_DS_ROUTER_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_ROUTER_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_ROUTER_INGRESS_QUEUE_DTS;
+
+#define RDD_DS_ROUTER_INGRESS_QUEUE_PTR()	( RDD_DS_ROUTER_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_ROUTER_INGRESS_QUEUE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_DATA_POINTER_DUMMY_TARGET_SIZE     5
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_DATA_POINTER_DUMMY_TARGET_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DATA_POINTER_DUMMY_TARGET_DTS;
+
+#define RDD_DS_DATA_POINTER_DUMMY_TARGET_PTR()	( RDD_DS_DATA_POINTER_DUMMY_TARGET_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DATA_POINTER_DUMMY_TARGET_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE     4
+typedef struct
+{
+	RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS;
+
+#define RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_PTR()	( RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_SIZE     8
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_DTS;
+
+#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_PTR()	( RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_DTS;
+
+#define RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_PTR()	( RDD_DS_CPU_RX_FAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_CPU_RX_FAST_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DEBUG_BUFFER_ENTRY_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_DEBUG_BUFFER_SIZE     32
+typedef struct
+{
+	RDD_DEBUG_BUFFER_ENTRY_DTS	entry[ RDD_DS_DEBUG_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DEBUG_BUFFER_DTS;
+
+#define RDD_DS_DEBUG_BUFFER_PTR()	( RDD_DS_DEBUG_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DEBUG_BUFFER_ADDRESS )
+
+#endif
+#if defined WL4908
+
 #define RDD_DS_FW_MAC_ADDRS_SIZE     16
 typedef struct
 {
@@ -4983,6 +4969,755 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_FW_MAC_ADDRS_DTS;
 #define RDD_DS_FW_MAC_ADDRS_PTR()	( RDD_DS_FW_MAC_ADDRS_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_FW_MAC_ADDRS_ADDRESS )
 
 #endif
+#if defined WL4908
+
+#define RDD_DS_DHD_FLOW_RING_DROP_COUNTER_SIZE     5
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_DHD_FLOW_RING_DROP_COUNTER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_FLOW_RING_DROP_COUNTER_DTS;
+
+#define RDD_DS_DHD_FLOW_RING_DROP_COUNTER_PTR()	( RDD_DS_DHD_FLOW_RING_DROP_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_FLOW_RING_DROP_COUNTER_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_IPTV_COUNTERS_BUFFER_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	dhd_context_ptr 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_host_buf_ptr	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_l2_buf      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ret_addr        	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	dhd_host_buf_ptr	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_context_ptr 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ret_addr        	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_l2_buf      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS;
+
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)), r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)), v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_READ(r, p)                  MREAD_16((uint8_t *)p, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_WRITE(v, p)                 MWRITE_16((uint8_t *)p, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 2, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 2, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 4, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 4, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_READ(r, p)                       MREAD_16((uint8_t *)p + 4, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_READ_G(r, g, addr, idx)            GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 6, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 6, v)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_READ(r, p)                         MREAD_16((uint8_t *)p + 6, r)
+#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_WRITE(v, p)                        MWRITE_16((uint8_t *)p + 6, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	ownership 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	reserved  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	skb_index 	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	skb_index 	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	reserved  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	ownership 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS;
+
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 7, 1, r)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 7, 1, v)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 0, 14, r)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 0, 14, v)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p, 0, 14, r)
+#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p, 0, 14, v)
+
+#define RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE     8
+typedef struct
+{
+	RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS	entry[ RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS;
+
+#define RDD_DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
+
+#define RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER	4
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only[RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER];
+#else
+	uint32_t	reserved_fw_only[RDD_HASH_BUFFER_RESERVED_FW_ONLY_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BUFFER_DTS;
+
+#if defined WL4908
+
+#define RDD_DS_DHD_TX_POST_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_DHD_TX_POST_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_TX_POST_INGRESS_QUEUE_DTS;
+
+#define RDD_DS_DHD_TX_POST_INGRESS_QUEUE_PTR()	( RDD_DS_DHD_TX_POST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_TX_POST_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	mtu_minus_40                      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_padding_max_size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_padding_cpu_max_size           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	drop_precedence_eligibility_vector	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_1               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_2               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_3               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	timer_scheduler_period            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	active_policers_vector            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	policers_period                   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_rate_shaper_timer              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_rate_controller_timer          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_rate_limit_sustain_budget_limit	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hash_based_forwarding_port_count  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	inter_lan_scheduling_mode         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	broadcom_switch_port              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	mirroring_port                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_connection_miss_action         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_pci_flow_cache_enable          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	global_ingress_config             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	pci_ls_dp_eligibility_vector      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_ingress_policers_mode          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	debug_mode                        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	us_padding_max_size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	mtu_minus_40                      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	drop_precedence_eligibility_vector	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_padding_cpu_max_size           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_2               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_1               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	timer_scheduler_period            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	egress_ether_type_3               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	policers_period                   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	active_policers_vector            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_rate_controller_timer          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_rate_shaper_timer              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	broadcom_switch_port              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	inter_lan_scheduling_mode         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	hash_based_forwarding_port_count  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_rate_limit_sustain_budget_limit	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	global_ingress_config             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	us_pci_flow_cache_enable          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_connection_miss_action         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	mirroring_port                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	debug_mode                        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_ingress_policers_mode          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	pci_ls_dp_eligibility_vector      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SYSTEM_CONFIGURATION_DTS;
+
+#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_READ_G(r, g, addr, idx)                          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)), r)
+#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_WRITE_G(v, g, addr, idx)                         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)), v)
+#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_READ(r, p)                                       MREAD_16((uint8_t *)p, r)
+#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_WRITE(v, p)                                      MWRITE_16((uint8_t *)p, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 2, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 2, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_READ(r, p)                                MREAD_16((uint8_t *)p + 2, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 2, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_READ_G(r, g, addr, idx)               GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 4, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 4, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_READ(r, p)                            MREAD_16((uint8_t *)p + 4, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_WRITE(v, p)                           MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 6, r)
+#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 6, v)
+#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_READ(r, p)                 MREAD_16((uint8_t *)p + 6, r)
+#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_WRITE(v, p)                MWRITE_16((uint8_t *)p + 6, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 8, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 8, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_READ(r, p)                                MREAD_16((uint8_t *)p + 8, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 8, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 10, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 10, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_READ(r, p)                                MREAD_16((uint8_t *)p + 10, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 10, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 12, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 12, v)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_READ(r, p)                                MREAD_16((uint8_t *)p + 12, r)
+#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 12, v)
+#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_READ_G(r, g, addr, idx)                GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 14, r)
+#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 14, v)
+#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_READ(r, p)                             MREAD_16((uint8_t *)p + 14, r)
+#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_WRITE(v, p)                            MWRITE_16((uint8_t *)p + 14, v)
+#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_READ_G(r, g, addr, idx)                GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 16, r)
+#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 16, v)
+#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_READ(r, p)                             MREAD_16((uint8_t *)p + 16, r)
+#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_WRITE(v, p)                            MWRITE_16((uint8_t *)p + 16, v)
+#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_READ_G(r, g, addr, idx)                       GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 18, r)
+#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_WRITE_G(v, g, addr, idx)                      GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 18, v)
+#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_READ(r, p)                                    MREAD_16((uint8_t *)p + 18, r)
+#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_WRITE(v, p)                                   MWRITE_16((uint8_t *)p + 18, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 20, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 20, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_READ(r, p)                               MREAD_16((uint8_t *)p + 20, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 20, v)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 22, r)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 22, v)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_READ(r, p)                           MREAD_16((uint8_t *)p + 22, r)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 22, v)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 24, r)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 24, v)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_READ(r, p)                 MREAD_8((uint8_t *)p + 24, r)
+#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_WRITE(v, p)                MWRITE_8((uint8_t *)p + 24, v)
+#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_READ_G(r, g, addr, idx)      GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 25, r)
+#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 25, v)
+#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_READ(r, p)                   MREAD_8((uint8_t *)p + 25, r)
+#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_WRITE(v, p)                  MWRITE_8((uint8_t *)p + 25, v)
+#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_READ_G(r, g, addr, idx)             GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 26, r)
+#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 26, v)
+#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_READ(r, p)                          MREAD_8((uint8_t *)p + 26, r)
+#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_WRITE(v, p)                         MWRITE_8((uint8_t *)p + 26, v)
+#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_READ_G(r, g, addr, idx)                  GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 27, r)
+#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 27, v)
+#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_READ(r, p)                               MREAD_8((uint8_t *)p + 27, r)
+#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_WRITE(v, p)                              MWRITE_8((uint8_t *)p + 27, v)
+#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_READ_G(r, g, addr, idx)                        GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 28, r)
+#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_WRITE_G(v, g, addr, idx)                       GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 28, v)
+#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_READ(r, p)                                     MREAD_8((uint8_t *)p + 28, r)
+#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_WRITE(v, p)                                    MWRITE_8((uint8_t *)p + 28, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_READ_G(r, g, addr, idx)             GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 29, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 29, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_READ(r, p)                          MREAD_8((uint8_t *)p + 29, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_WRITE(v, p)                         MWRITE_8((uint8_t *)p + 29, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 30, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 30, v)
+#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_READ(r, p)                           MREAD_8((uint8_t *)p + 30, r)
+#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 30, v)
+#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_READ_G(r, g, addr, idx)                 GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 31, r)
+#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 31, v)
+#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_READ(r, p)                              MREAD_8((uint8_t *)p + 31, r)
+#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_WRITE(v, p)                             MWRITE_8((uint8_t *)p + 31, v)
+#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 32, r)
+#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 32, v)
+#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_READ(r, p)                       MREAD_16((uint8_t *)p + 32, r)
+#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 32, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 34, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 34, v)
+#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_READ(r, p)                           MREAD_8((uint8_t *)p + 34, r)
+#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 34, v)
+#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_READ_G(r, g, addr, idx)                            GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 35, r)
+#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_WRITE_G(v, g, addr, idx)                           GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 35, v)
+#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_READ(r, p)                                         MREAD_8((uint8_t *)p + 35, r)
+#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_WRITE(v, p)                                        MWRITE_8((uint8_t *)p + 35, v)
+#if defined WL4908
+
+#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_SIZE     8
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_DTS;
+
+#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_PTR()	( RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_WLAN_MCAST_INGRESS_QUEUE_SIZE     64
+typedef struct
+{
+	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_WLAN_MCAST_INGRESS_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_INGRESS_QUEUE_DTS;
+
+#define RDD_WLAN_MCAST_INGRESS_QUEUE_PTR()	( RDD_WLAN_MCAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + WLAN_MCAST_INGRESS_QUEUE_ADDRESS )
+
+#endif
+
+#define RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE     8
+typedef struct
+{
+	RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS	entry[ RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS;
+
+#define RDD_DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	physical_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	physical_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS;
+
+#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS)), r)
+#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS)), v)
+#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#if defined WL4908
+
+#define RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE     16
+typedef struct
+{
+	RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS	entry[ RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_DTS;
+
+#define RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_PTR()	( RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_GSO_TX_DHD_L2_BUFFER_SIZE     22
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_GSO_TX_DHD_L2_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GSO_TX_DHD_L2_BUFFER_DTS;
+
+#define RDD_GSO_TX_DHD_L2_BUFFER_PTR()	( RDD_GSO_TX_DHD_L2_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + GSO_TX_DHD_L2_BUFFER_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR_DTS;
+
+#if defined WL4908
+
+#define RDD_CPU_TX_DHD_L2_BUFFER_SIZE     22
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DHD_L2_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_L2_BUFFER_DTS;
+
+#define RDD_CPU_TX_DHD_L2_BUFFER_PTR()	( RDD_CPU_TX_DHD_L2_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + CPU_TX_DHD_L2_BUFFER_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD_DTS;
+
+#if defined WL4908
+
+#define RDD_ETH_TX_SCRATCH_SIZE     16
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_ETH_TX_SCRATCH_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_SCRATCH_DTS;
+
+#define RDD_ETH_TX_SCRATCH_PTR()	( RDD_ETH_TX_SCRATCH_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + ETH_TX_SCRATCH_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_SIZE     5
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_DTS;
+
+#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_PTR()	( RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_ADDRESS )
+
+#endif
+#if defined WL4908
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	status_vector	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	status_vector	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS;
+
+#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS)), r)
+#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS)), v)
+#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#endif
+#define RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER	4
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only[RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER];
+#else
+	uint32_t	reserved_fw_only[RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SIXTEEN_BYTES_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_ptr	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_len	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	l2_buffer   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_ssid   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1   	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	spd_svc_flag	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	eth_tx_queue	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_ptr	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	l2_buffer   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_buf_len	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	eth_tx_queue	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	spd_svc_flag	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1   	:7	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_ssid   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS;
+
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)), r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)), v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_READ(r, p)                   MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_WRITE(v, p)                  MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 4, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 4, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_READ(r, p)                 MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_WRITE(v, p)                MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 8, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 8, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_READ(r, p)                 MREAD_16((uint8_t *)p + 8, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_WRITE(v, p)                MWRITE_16((uint8_t *)p + 8, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_READ_G(r, g, addr, idx)       GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 10, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 10, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_READ(r, p)                    MREAD_16((uint8_t *)p + 10, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_WRITE(v, p)                   MWRITE_16((uint8_t *)p + 10, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 6, 2, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 6, 2, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 12, 6, 2, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 12, 6, 2, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 2, 4, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 2, 4, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 12, 2, 4, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 12, 2, 4, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 0, 10, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 0, 10, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p + 12, 0, 10, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p + 12, 0, 10, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_SPD_SVC_FLAG_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 14, 0, 1, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_SPD_SVC_FLAG_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 14, 0, 1, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_SPD_SVC_FLAG_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 14, 0, 1, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_SPD_SVC_FLAG_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 14, 0, 1, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 15, 0, 3, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 15, 0, 3, v)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 15, 0, 3, r)
+#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 15, 0, 3, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	egress_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	egress_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS;
+
+#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS)), r)
+#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS)), v)
+#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#if defined WL4908
+
+#define RDD_HASH_BASED_FORWARDING_PORT_TABLE_SIZE     4
+typedef struct
+{
+	RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS	entry[ RDD_HASH_BASED_FORWARDING_PORT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BASED_FORWARDING_PORT_TABLE_DTS;
+
+#define RDD_HASH_BASED_FORWARDING_PORT_TABLE_PTR()	( RDD_HASH_BASED_FORWARDING_PORT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + HASH_BASED_FORWARDING_PORT_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ANY_SRC_PORT_FLOW_COUNTER_DTS;
+
+#if defined WL4908
+
+#define RDD_GSO_TX_DHD_HOST_BUF_PTR_SIZE     4
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_GSO_TX_DHD_HOST_BUF_PTR_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GSO_TX_DHD_HOST_BUF_PTR_DTS;
+
+#define RDD_GSO_TX_DHD_HOST_BUF_PTR_PTR()	( RDD_GSO_TX_DHD_HOST_BUF_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + GSO_TX_DHD_HOST_BUF_PTR_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WAN_PHYSICAL_PORT_DTS;
+
+#if defined WL4908
+
+#define RDD_CPU_TX_DHD_HOST_BUF_PTR_SIZE     4
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DHD_HOST_BUF_PTR_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_HOST_BUF_PTR_DTS;
+
+#define RDD_CPU_TX_DHD_HOST_BUF_PTR_PTR()	( RDD_CPU_TX_DHD_HOST_BUF_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + CPU_TX_DHD_HOST_BUF_PTR_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_CONGESTION_STATE_ENTRY_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BYTES_2_DTS;
+
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	dummy_store	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	dummy_store	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DUMMY_STORE_ENTRY_DTS;
+
+#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DUMMY_STORE_ENTRY_DTS)), r)
+#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DUMMY_STORE_ENTRY_DTS)), v)
+#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#if defined WL4908
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	emac_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	emac_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS;
+
+#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS)), r)
+#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS)), v)
+#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	reserved         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	fc_tcp_ack_mflows	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	fc_accel_mode    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	fc_accel_mode    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	fc_tcp_ack_mflows	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	reserved         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_GLOBAL_CFG_ENTRY_DTS;
+
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 1, 1, r)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 1, 1, v)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 1, 1, r)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 1, 1, v)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 0, 1, r)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 0, 1, v)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_READ(r, p)                     FIELD_MREAD_8((uint8_t *)p, 0, 1, r)
+#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_WRITE(v, p)                    FIELD_MWRITE_8((uint8_t *)p, 0, 1, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	reserved0       	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave3	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave2	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave1	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave0	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	available_slave0	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave1	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave2	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	available_slave3	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint8_t	reserved0       	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS;
+
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 3, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 3, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 3, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 3, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 2, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 2, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 2, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 2, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 1, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 1, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 1, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 1, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 0, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 0, 1, v)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 0, 1, r)
+#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 0, 1, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BYTE_1_DTS;
+
 
 typedef struct
 {
@@ -5144,782 +5879,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIP
 #define RDD_CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIPTOR_GUARANTEED_FREE_COUNT_DELTA_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p + 4, 0, 15, v)
 #define RDD_CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIPTOR_GUARANTEED_FREE_COUNT_DELTA_L_READ( wv )               FIELD_GET( wv, 16, 15 )
 #define RDD_CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIPTOR_GUARANTEED_FREE_COUNT_DELTA_L_WRITE( v, wv )           FIELD_SET( v, 16, 15, wv )
-#if defined WL4908
-
-#define RDD_DS_DHD_TX_POST_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_DS_DHD_TX_POST_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_TX_POST_INGRESS_QUEUE_DTS;
-
-#define RDD_DS_DHD_TX_POST_INGRESS_QUEUE_PTR()	( RDD_DS_DHD_TX_POST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_TX_POST_INGRESS_QUEUE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_DATA_POINTER_DUMMY_TARGET_SIZE     5
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_DATA_POINTER_DUMMY_TARGET_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DATA_POINTER_DUMMY_TARGET_DTS;
-
-#define RDD_DS_DATA_POINTER_DUMMY_TARGET_PTR()	( RDD_DS_DATA_POINTER_DUMMY_TARGET_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DATA_POINTER_DUMMY_TARGET_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE     4
-typedef struct
-{
-	RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS;
-
-#define RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_PTR()	( RDD_DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_TASK_REORDER_FIFO_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_IPTV_COUNTERS_BUFFER_DTS;
-
-#if defined WL4908
-
-#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_SIZE     8
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_DTS;
-
-#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_PTR()	( RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_WLAN_MCAST_INGRESS_QUEUE_SIZE     64
-typedef struct
-{
-	RDD_INGRESS_QUEUE_ENTRY_DTS	entry[ RDD_WLAN_MCAST_INGRESS_QUEUE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_INGRESS_QUEUE_DTS;
-
-#define RDD_WLAN_MCAST_INGRESS_QUEUE_PTR()	( RDD_WLAN_MCAST_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + WLAN_MCAST_INGRESS_QUEUE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DS_DHD_FLOW_RING_DROP_COUNTER_SIZE     5
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_DS_DHD_FLOW_RING_DROP_COUNTER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_FLOW_RING_DROP_COUNTER_DTS;
-
-#define RDD_DS_DHD_FLOW_RING_DROP_COUNTER_PTR()	( RDD_DS_DHD_FLOW_RING_DROP_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_FLOW_RING_DROP_COUNTER_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	dhd_context_ptr 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_host_buf_ptr	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_l2_buf      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ret_addr        	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	dhd_host_buf_ptr	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_context_ptr 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ret_addr        	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	dhd_l2_buf      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS;
-
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)), r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)), v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_READ(r, p)                  MREAD_16((uint8_t *)p, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_CONTEXT_PTR_WRITE(v, p)                 MWRITE_16((uint8_t *)p, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 2, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 2, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_HOST_BUF_PTR_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 4, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 4, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_READ(r, p)                       MREAD_16((uint8_t *)p + 4, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DHD_L2_BUF_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 4, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_READ_G(r, g, addr, idx)            GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 6, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_DTS)) + 6, v)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_READ(r, p)                         MREAD_16((uint8_t *)p + 6, r)
-#define RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY_RET_ADDR_WRITE(v, p)                        MWRITE_16((uint8_t *)p + 6, v)
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	ownership 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	reserved  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	skb_index 	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	skb_index 	:14	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	reserved  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	ownership 	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS;
-
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 7, 1, r)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 7, 1, v)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_OWNERSHIP_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 0, 14, r)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS)), 0, 14, v)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p, 0, 14, r)
-#define RDD_FREE_SKB_INDEXES_FIFO_ENTRY_SKB_INDEX_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p, 0, 14, v)
-
-#define RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE     8
-typedef struct
-{
-	RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS	entry[ RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS;
-
-#define RDD_DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
-
-#if defined WL4908
-
-#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_SIZE     8
-typedef struct
-{
-	RDD_TWO_BYTES_DTS	entry[ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_DTS;
-
-#define RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_PTR()	( RDD_DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	mtu_minus_40                      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_padding_max_size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_padding_cpu_max_size           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	drop_precedence_eligibility_vector	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_1               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_2               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_3               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	timer_scheduler_period            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	active_policers_vector            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	policers_period                   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_rate_shaper_timer              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_rate_controller_timer          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_rate_limit_sustain_budget_limit	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	hash_based_forwarding_port_count  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	inter_lan_scheduling_mode         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	broadcom_switch_port              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	mirroring_port                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_connection_miss_action         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_pci_flow_cache_enable          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	global_ingress_config             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	pci_ls_dp_eligibility_vector      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_ingress_policers_mode          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	debug_mode                        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	us_padding_max_size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	mtu_minus_40                      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	drop_precedence_eligibility_vector	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_padding_cpu_max_size           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_2               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_1               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	timer_scheduler_period            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	egress_ether_type_3               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	policers_period                   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	active_policers_vector            	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_rate_controller_timer          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_rate_shaper_timer              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	broadcom_switch_port              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	inter_lan_scheduling_mode         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	hash_based_forwarding_port_count  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_rate_limit_sustain_budget_limit	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	global_ingress_config             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	us_pci_flow_cache_enable          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_connection_miss_action         	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	mirroring_port                    	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	debug_mode                        	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_ingress_policers_mode          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	pci_ls_dp_eligibility_vector      	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SYSTEM_CONFIGURATION_DTS;
-
-#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_READ_G(r, g, addr, idx)                          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)), r)
-#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_WRITE_G(v, g, addr, idx)                         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)), v)
-#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_READ(r, p)                                       MREAD_16((uint8_t *)p, r)
-#define RDD_SYSTEM_CONFIGURATION_MTU_MINUS_40_WRITE(v, p)                                      MWRITE_16((uint8_t *)p, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 2, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 2, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_READ(r, p)                                MREAD_16((uint8_t *)p + 2, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_MAX_SIZE_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 2, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_READ_G(r, g, addr, idx)               GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 4, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 4, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_READ(r, p)                            MREAD_16((uint8_t *)p + 4, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PADDING_CPU_MAX_SIZE_WRITE(v, p)                           MWRITE_16((uint8_t *)p + 4, v)
-#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 6, r)
-#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 6, v)
-#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_READ(r, p)                 MREAD_16((uint8_t *)p + 6, r)
-#define RDD_SYSTEM_CONFIGURATION_DROP_PRECEDENCE_ELIGIBILITY_VECTOR_WRITE(v, p)                MWRITE_16((uint8_t *)p + 6, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 8, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 8, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_READ(r, p)                                MREAD_16((uint8_t *)p + 8, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_1_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 8, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 10, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 10, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_READ(r, p)                                MREAD_16((uint8_t *)p + 10, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_2_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 12, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 12, v)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_READ(r, p)                                MREAD_16((uint8_t *)p + 12, r)
-#define RDD_SYSTEM_CONFIGURATION_EGRESS_ETHER_TYPE_3_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 12, v)
-#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_READ_G(r, g, addr, idx)                GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 14, r)
-#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 14, v)
-#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_READ(r, p)                             MREAD_16((uint8_t *)p + 14, r)
-#define RDD_SYSTEM_CONFIGURATION_TIMER_SCHEDULER_PERIOD_WRITE(v, p)                            MWRITE_16((uint8_t *)p + 14, v)
-#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_READ_G(r, g, addr, idx)                GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 16, r)
-#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_WRITE_G(v, g, addr, idx)               GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 16, v)
-#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_READ(r, p)                             MREAD_16((uint8_t *)p + 16, r)
-#define RDD_SYSTEM_CONFIGURATION_ACTIVE_POLICERS_VECTOR_WRITE(v, p)                            MWRITE_16((uint8_t *)p + 16, v)
-#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_READ_G(r, g, addr, idx)                       GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 18, r)
-#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_WRITE_G(v, g, addr, idx)                      GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 18, v)
-#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_READ(r, p)                                    MREAD_16((uint8_t *)p + 18, r)
-#define RDD_SYSTEM_CONFIGURATION_POLICERS_PERIOD_WRITE(v, p)                                   MWRITE_16((uint8_t *)p + 18, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 20, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 20, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_READ(r, p)                               MREAD_16((uint8_t *)p + 20, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_RATE_SHAPER_TIMER_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 20, v)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 22, r)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 22, v)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_READ(r, p)                           MREAD_16((uint8_t *)p + 22, r)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_CONTROLLER_TIMER_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 22, v)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 24, r)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 24, v)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_READ(r, p)                 MREAD_8((uint8_t *)p + 24, r)
-#define RDD_SYSTEM_CONFIGURATION_US_RATE_LIMIT_SUSTAIN_BUDGET_LIMIT_WRITE(v, p)                MWRITE_8((uint8_t *)p + 24, v)
-#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_READ_G(r, g, addr, idx)      GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 25, r)
-#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 25, v)
-#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_READ(r, p)                   MREAD_8((uint8_t *)p + 25, r)
-#define RDD_SYSTEM_CONFIGURATION_HASH_BASED_FORWARDING_PORT_COUNT_WRITE(v, p)                  MWRITE_8((uint8_t *)p + 25, v)
-#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_READ_G(r, g, addr, idx)             GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 26, r)
-#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 26, v)
-#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_READ(r, p)                          MREAD_8((uint8_t *)p + 26, r)
-#define RDD_SYSTEM_CONFIGURATION_INTER_LAN_SCHEDULING_MODE_WRITE(v, p)                         MWRITE_8((uint8_t *)p + 26, v)
-#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_READ_G(r, g, addr, idx)                  GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 27, r)
-#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 27, v)
-#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_READ(r, p)                               MREAD_8((uint8_t *)p + 27, r)
-#define RDD_SYSTEM_CONFIGURATION_BROADCOM_SWITCH_PORT_WRITE(v, p)                              MWRITE_8((uint8_t *)p + 27, v)
-#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_READ_G(r, g, addr, idx)                        GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 28, r)
-#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_WRITE_G(v, g, addr, idx)                       GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 28, v)
-#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_READ(r, p)                                     MREAD_8((uint8_t *)p + 28, r)
-#define RDD_SYSTEM_CONFIGURATION_MIRRORING_PORT_WRITE(v, p)                                    MWRITE_8((uint8_t *)p + 28, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_READ_G(r, g, addr, idx)             GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 29, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_WRITE_G(v, g, addr, idx)            GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 29, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_READ(r, p)                          MREAD_8((uint8_t *)p + 29, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_CONNECTION_MISS_ACTION_WRITE(v, p)                         MWRITE_8((uint8_t *)p + 29, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 30, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 30, v)
-#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_READ(r, p)                           MREAD_8((uint8_t *)p + 30, r)
-#define RDD_SYSTEM_CONFIGURATION_US_PCI_FLOW_CACHE_ENABLE_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 30, v)
-#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_READ_G(r, g, addr, idx)                 GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 31, r)
-#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 31, v)
-#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_READ(r, p)                              MREAD_8((uint8_t *)p + 31, r)
-#define RDD_SYSTEM_CONFIGURATION_GLOBAL_INGRESS_CONFIG_WRITE(v, p)                             MWRITE_8((uint8_t *)p + 31, v)
-#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_READ_G(r, g, addr, idx)          GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 32, r)
-#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 32, v)
-#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_READ(r, p)                       MREAD_16((uint8_t *)p + 32, r)
-#define RDD_SYSTEM_CONFIGURATION_PCI_LS_DP_ELIGIBILITY_VECTOR_WRITE(v, p)                      MWRITE_16((uint8_t *)p + 32, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 34, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 34, v)
-#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_READ(r, p)                           MREAD_8((uint8_t *)p + 34, r)
-#define RDD_SYSTEM_CONFIGURATION_DS_INGRESS_POLICERS_MODE_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 34, v)
-#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_READ_G(r, g, addr, idx)                            GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 35, r)
-#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_WRITE_G(v, g, addr, idx)                           GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SYSTEM_CONFIGURATION_DTS)) + 35, v)
-#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_READ(r, p)                                         MREAD_8((uint8_t *)p + 35, r)
-#define RDD_SYSTEM_CONFIGURATION_DEBUG_MODE_WRITE(v, p)                                        MWRITE_8((uint8_t *)p + 35, v)
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	reserved_fw_only	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FIREWALL_IPV6_R16_BUFFER_ENTRY_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	physical_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	physical_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS;
-
-#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS)), r)
-#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS)), v)
-#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_BROADCOM_SWITCH_PORT_MAPPING_PHYSICAL_PORT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#if defined WL4908
-
-#define RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE     16
-typedef struct
-{
-	RDD_BROADCOM_SWITCH_PORT_MAPPING_DTS	entry[ RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_DTS;
-
-#define RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_PTR()	( RDD_DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_ADDRESS )
-
-#endif
-
-#define RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE     8
-typedef struct
-{
-	RDD_FREE_SKB_INDEXES_FIFO_ENTRY_DTS	entry[ RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS;
-
-#define RDD_DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
-
-#if defined WL4908
-
-#define RDD_ETH_TX_SCRATCH_SIZE     16
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_ETH_TX_SCRATCH_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_SCRATCH_DTS;
-
-#define RDD_ETH_TX_SCRATCH_PTR()	( RDD_ETH_TX_SCRATCH_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + ETH_TX_SCRATCH_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_GSO_TX_DHD_L2_BUFFER_SIZE     22
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_GSO_TX_DHD_L2_BUFFER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GSO_TX_DHD_L2_BUFFER_DTS;
-
-#define RDD_GSO_TX_DHD_L2_BUFFER_PTR()	( RDD_GSO_TX_DHD_L2_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + GSO_TX_DHD_L2_BUFFER_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_PICO_INGRESS_QUEUE_PTR_DTS;
-
-#if defined WL4908
-
-#define RDD_CPU_TX_DHD_L2_BUFFER_SIZE     22
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DHD_L2_BUFFER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_L2_BUFFER_DTS;
-
-#define RDD_CPU_TX_DHD_L2_BUFFER_PTR()	( RDD_CPU_TX_DHD_L2_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + CPU_TX_DHD_L2_BUFFER_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FREE_PACKET_DESCRIPTORS_POOL_THRESHOLD_DTS;
-
-#define RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER	4
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_SIXTEEN_BYTES_RESERVED_FW_ONLY_NUMBER];
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SIXTEEN_BYTES_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_ptr	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_len	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	l2_buffer   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	wifi_ssid   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1   	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	eth_tx_queue	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	request_id  	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_ptr	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	l2_buffer   	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	data_buf_len	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	eth_tx_queue	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1   	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	wifi_ssid   	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS;
-
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)), r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)), v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_READ(r, p)                   MREAD_32((uint8_t *)p, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_REQUEST_ID_WRITE(v, p)                  MWRITE_32((uint8_t *)p, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 4, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 4, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_READ(r, p)                 MREAD_32((uint8_t *)p + 4, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_PTR_WRITE(v, p)                MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 8, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 8, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_READ(r, p)                 MREAD_16((uint8_t *)p + 8, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_DATA_BUF_LEN_WRITE(v, p)                MWRITE_16((uint8_t *)p + 8, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_READ_G(r, g, addr, idx)       GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 10, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 10, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_READ(r, p)                    MREAD_16((uint8_t *)p + 10, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_L2_BUFFER_WRITE(v, p)                   MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 6, 2, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 6, 2, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 12, 6, 2, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_RADIO_IDX_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 12, 6, 2, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 2, 4, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 2, 4, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 12, 2, 4, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_WIFI_SSID_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 12, 2, 4, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 0, 10, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 12, 0, 10, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p + 12, 0, 10, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_FLOW_RING_ID_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p + 12, 0, 10, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 15, 0, 3, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_CONTEXT_ENTRY_DTS)) + 15, 0, 3, v)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p + 15, 0, 3, r)
-#define RDD_DHD_TX_POST_CONTEXT_ENTRY_ETH_TX_QUEUE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p + 15, 0, 3, v)
-#if defined WL4908
-
-#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_SIZE     5
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_DTS;
-
-#define RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_PTR()	( RDD_EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + EMAC_SKB_ENQUEUED_INDEXES_FIFO_COUNTERS_ADDRESS )
-
-#endif
-#if defined WL4908
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	status_vector	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	status_vector	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS;
-
-#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS)), r)
-#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_EMACS_STATUS_ENTRY_DTS)), v)
-#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_ETH_TX_EMACS_STATUS_ENTRY_STATUS_VECTOR_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_RX_PICO_INGRESS_QUEUE_PTR_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	egress_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	egress_port	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS;
-
-#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS)), r)
-#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS)), v)
-#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_HASH_BASED_FORWARDING_PORT_ENTRY_EGRESS_PORT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#if defined WL4908
-
-#define RDD_HASH_BASED_FORWARDING_PORT_TABLE_SIZE     4
-typedef struct
-{
-	RDD_HASH_BASED_FORWARDING_PORT_ENTRY_DTS	entry[ RDD_HASH_BASED_FORWARDING_PORT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_HASH_BASED_FORWARDING_PORT_TABLE_DTS;
-
-#define RDD_HASH_BASED_FORWARDING_PORT_TABLE_PTR()	( RDD_HASH_BASED_FORWARDING_PORT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + HASH_BASED_FORWARDING_PORT_TABLE_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BPM_DDR_BUFFER_HEADROOM_SIZE_2_BYTE_RESOLUTION_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_RX_FAST_INGRESS_QUEUE_PTR_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_IH_BUFFER_PTR_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ANY_SRC_PORT_FLOW_COUNTER_DTS;
-
-#if defined WL4908
-
-#define RDD_GSO_TX_DHD_HOST_BUF_PTR_SIZE     4
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_GSO_TX_DHD_HOST_BUF_PTR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GSO_TX_DHD_HOST_BUF_PTR_DTS;
-
-#define RDD_GSO_TX_DHD_HOST_BUF_PTR_PTR()	( RDD_GSO_TX_DHD_HOST_BUF_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + GSO_TX_DHD_HOST_BUF_PTR_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_CPU_TX_DHD_HOST_BUF_PTR_SIZE     4
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DHD_HOST_BUF_PTR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_HOST_BUF_PTR_DTS;
-
-#define RDD_CPU_TX_DHD_HOST_BUF_PTR_PTR()	( RDD_CPU_TX_DHD_HOST_BUF_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + CPU_TX_DHD_HOST_BUF_PTR_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WAN_PHYSICAL_PORT_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_CONGESTION_STATE_ENTRY_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	reserved_fw_only	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BYTES_2_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	dummy_store	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	dummy_store	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DUMMY_STORE_ENTRY_DTS;
-
-#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DUMMY_STORE_ENTRY_DTS)), r)
-#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DUMMY_STORE_ENTRY_DTS)), v)
-#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_DUMMY_STORE_ENTRY_DUMMY_STORE_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#if defined WL4908
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	emac_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	emac_offset	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS;
-
-#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS)), r)
-#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_DTS)), v)
-#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY_EMAC_OFFSET_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	fc_tcp_ack_mflows	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	fc_accel_mode    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	fc_accel_mode    	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	fc_tcp_ack_mflows	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	reserved         	:6	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_GLOBAL_CFG_ENTRY_DTS;
-
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 1, 1, r)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 1, 1, v)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 1, 1, r)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_TCP_ACK_MFLOWS_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 1, 1, v)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_READ_G(r, g, addr, idx)        GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 0, 1, r)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_WRITE_G(v, g, addr, idx)       GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_FC_GLOBAL_CFG_ENTRY_DTS)), 0, 1, v)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_READ(r, p)                     FIELD_MREAD_8((uint8_t *)p, 0, 1, r)
-#define RDD_FC_GLOBAL_CFG_ENTRY_FC_ACCEL_MODE_WRITE(v, p)                    FIELD_MWRITE_8((uint8_t *)p, 0, 1, v)
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved0       	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave3	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave2	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave1	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave0	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	available_slave0	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave1	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave2	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	available_slave3	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint8_t	reserved0       	:4	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS;
-
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 3, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 3, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 3, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE3_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 3, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 2, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 2, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 2, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE2_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 2, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 1, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 1, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 1, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE1_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 1, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 0, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_DTS)), 0, 1, v)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 0, 1, r)
-#define RDD_PARALLEL_PROCESSING_SLAVE_VECTOR_AVAILABLE_SLAVE0_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 0, 1, v)
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	reserved_fw_only	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_BYTE_1_DTS;
-
 #if defined WL4908
 
 #define RDD_EMAC_ABSOLUTE_TX_BBH_COUNTER_SIZE     10
@@ -7569,14 +7528,26 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_CPU_RX_FAST_INGRESS_QUEUE_DTS;
 #endif
 #if defined WL4908
 
-#define RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_SIZE     32
+#define RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_SIZE     3
 typedef struct
 {
-	RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS	entry[ RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_SIZE ];
+	RDD_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS	entry[ RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS;
 
-#define RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_PTR()	( RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_GPE_COMMAND_PRIMITIVE_TABLE_ADDRESS )
+#define RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_PTR()	( RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_RUNNER_FLOW_HEADER_DESCRIPTOR_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_US_PICO_MALLOC_RESULT_TABLE_SIZE     2
+typedef struct
+{
+	RDD_BYTES_4_DTS	entry[ RDD_US_PICO_MALLOC_RESULT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PICO_MALLOC_RESULT_TABLE_DTS;
+
+#define RDD_US_PICO_MALLOC_RESULT_TABLE_PTR()	( RDD_US_PICO_MALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PICO_MALLOC_RESULT_TABLE_ADDRESS )
 
 #endif
 #if defined WL4908
@@ -7644,39 +7615,44 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_OVERALL_RATE_LIMITER_WAN_CHANNEL_PTR_TAB
 #endif
 #if defined WL4908
 
-#define RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_SIZE     3
+#define RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_SIZE     32
 typedef struct
 {
-	RDD_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS	entry[ RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_SIZE ];
+	RDD_GPE_COMMAND_PRIMITIVE_ENTRY_DTS	entry[ RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_DTS;
 
-#define RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_PTR()	( RDD_US_RUNNER_FLOW_HEADER_DESCRIPTOR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_RUNNER_FLOW_HEADER_DESCRIPTOR_ADDRESS )
+#define RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_PTR()	( RDD_US_GPE_COMMAND_PRIMITIVE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_GPE_COMMAND_PRIMITIVE_TABLE_ADDRESS )
 
 #endif
 #if defined WL4908
 
-#define RDD_US_PICO_MALLOC_RESULT_TABLE_SIZE     2
 typedef struct
 {
-	RDD_BYTES_4_DTS	entry[ RDD_US_PICO_MALLOC_RESULT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PICO_MALLOC_RESULT_TABLE_DTS;
-
-#define RDD_US_PICO_MALLOC_RESULT_TABLE_PTR()	( RDD_US_PICO_MALLOC_RESULT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PICO_MALLOC_RESULT_TABLE_ADDRESS )
-
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	guaranteed_free_count    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	non_guaranteed_free_count	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	guaranteed_threshold     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	non_guaranteed_free_count	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	guaranteed_free_count    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	guaranteed_threshold     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
-#if defined WL4908
-
-#define RDD_RUNNER_FWTRACE_PICOB_PARAM_SIZE     2
-typedef struct
-{
-	RDD_EIGHT_BYTES_DTS	entry[ RDD_RUNNER_FWTRACE_PICOB_PARAM_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FWTRACE_PICOB_PARAM_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS;
 
-#define RDD_RUNNER_FWTRACE_PICOB_PARAM_PTR()	( RDD_RUNNER_FWTRACE_PICOB_PARAM_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + RUNNER_FWTRACE_PICOB_PARAM_ADDRESS )
-
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)), r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)), v)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_READ(r, p)                     MREAD_16((uint8_t *)p, r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_WRITE(v, p)                    MWRITE_16((uint8_t *)p, v)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 2, r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 2, v)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_READ_G(r, g, addr, idx)         GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 4, r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 4, v)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_READ(r, p)                      MREAD_16((uint8_t *)p + 4, r)
+#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_WRITE(v, p)                     MWRITE_16((uint8_t *)p + 4, v)
 #endif
 
 typedef struct
@@ -7903,32 +7879,39 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CSO_CONTEXT_ENTRY_DTS;
 #define RDD_CSO_CONTEXT_ENTRY_SAVED_R16_WRITE(v, p)                                MWRITE_32((uint8_t *)p + 80, v)
 #if defined WL4908
 
+#define RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_SIZE     40
 typedef struct
 {
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	guaranteed_free_count    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	non_guaranteed_free_count	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	guaranteed_threshold     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	non_guaranteed_free_count	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	guaranteed_free_count    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	guaranteed_threshold     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
+	RDD_GPON_ABSOLUTE_TX_COUNTER_DTS	entry[ RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_DTS;
 
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)), r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)), v)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_READ(r, p)                     MREAD_16((uint8_t *)p, r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_FREE_COUNT_WRITE(v, p)                    MWRITE_16((uint8_t *)p, v)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 2, r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 2, v)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_NON_GUARANTEED_FREE_COUNT_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_READ_G(r, g, addr, idx)         GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 4, r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_DTS)) + 4, v)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_READ(r, p)                      MREAD_16((uint8_t *)p + 4, r)
-#define RDD_US_FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY_GUARANTEED_THRESHOLD_WRITE(v, p)                     MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_PTR()	( RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_RUNNER_FWTRACE_PICOB_PARAM_SIZE     2
+typedef struct
+{
+	RDD_EIGHT_BYTES_DTS	entry[ RDD_RUNNER_FWTRACE_PICOB_PARAM_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FWTRACE_PICOB_PARAM_DTS;
+
+#define RDD_RUNNER_FWTRACE_PICOB_PARAM_PTR()	( RDD_RUNNER_FWTRACE_PICOB_PARAM_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + RUNNER_FWTRACE_PICOB_PARAM_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_US_DHD_FLOW_RING_DROP_COUNTER_SIZE     5
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_US_DHD_FLOW_RING_DROP_COUNTER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_DHD_FLOW_RING_DROP_COUNTER_DTS;
+
+#define RDD_US_DHD_FLOW_RING_DROP_COUNTER_PTR()	( RDD_US_DHD_FLOW_RING_DROP_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_DHD_FLOW_RING_DROP_COUNTER_ADDRESS )
+
 #endif
 #if defined WL4908
 
@@ -7940,18 +7923,6 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DATA_POINTER_DUMMY_TARGET_DTS;
 
 #define RDD_DATA_POINTER_DUMMY_TARGET_PTR()	( RDD_DATA_POINTER_DUMMY_TARGET_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + DATA_POINTER_DUMMY_TARGET_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_SIZE     40
-typedef struct
-{
-	RDD_GPON_ABSOLUTE_TX_COUNTER_DTS	entry[ RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_DTS;
-
-#define RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_PTR()	( RDD_GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + GPON_ABSOLUTE_TX_FIRMWARE_COUNTER_ADDRESS )
 
 #endif
 #define RDD_US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_FAST_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
@@ -7970,32 +7941,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_
 #endif
 #if defined WL4908
 
-#define RDD_US_DHD_FLOW_RING_DROP_COUNTER_SIZE     5
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_US_DHD_FLOW_RING_DROP_COUNTER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_DHD_FLOW_RING_DROP_COUNTER_DTS;
-
-#define RDD_US_DHD_FLOW_RING_DROP_COUNTER_PTR()	( RDD_US_DHD_FLOW_RING_DROP_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_DHD_FLOW_RING_DROP_COUNTER_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_SIZE     4
-typedef struct
-{
-	RDD_PARALLEL_PROCESSING_ENTRY_DTS	entry[ RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_DTS;
-
-#define RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR()	( RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_ADDRESS )
-
-#endif
-#define RDD_US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
-
-#if defined WL4908
-
 #define RDD_US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_SIZE     16
 typedef struct
 {
@@ -8006,6 +7951,8 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE
 #define RDD_US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_PTR()	( RDD_US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_BRIDGE_PORT_TO_LOOKUP_PORT_MAPPING_TABLE_ADDRESS )
 
 #endif
+#define RDD_US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_PTR()	( RDD_US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PICO_FREE_SKB_INDEXES_FIFO_LOCAL_TABLE_ADDRESS )
+
 
 typedef struct
 {
@@ -8060,14 +8007,14 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TAB
 #endif
 #if defined WL4908
 
-#define RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE     4
+#define RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_SIZE     4
 typedef struct
 {
-	RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS	entry[ RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE ];
+	RDD_PARALLEL_PROCESSING_ENTRY_DTS	entry[ RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_DTS;
 
-#define RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_PTR()	( RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_ADDRESS )
+#define RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR()	( RDD_US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PARALLEL_PROCESSING_IH_BUFFER_VECTOR_ADDRESS )
 
 #endif
 #if defined WL4908
@@ -8096,6 +8043,18 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DHD_LAYER2_HEADER_BUFFER_DTS;
 #endif
 #if defined WL4908
 
+#define RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE     4
+typedef struct
+{
+	RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY_DTS	entry[ RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS;
+
+#define RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_PTR()	( RDD_US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PARALLEL_PROCESSING_TASK_REORDER_FIFO_ADDRESS )
+
+#endif
+#if defined WL4908
+
 #define RDD_US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_SIZE     8
 typedef struct
 {
@@ -8106,6 +8065,31 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_
 #define RDD_US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_PTR()	( RDD_US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE_ADDRESS )
 
 #endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	exponent  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	exponent  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS;
+
+#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS)), r)
+#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS)), v)
+#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+
+#define RDD_RATE_CONTROLLER_EXPONENT_TABLE_SIZE     4
+typedef struct
+{
+	RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS	entry[ RDD_RATE_CONTROLLER_EXPONENT_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_CONTROLLER_EXPONENT_TABLE_DTS;
+
+#define RDD_US_RATE_CONTROLLER_EXPONENT_TABLE_PTR()	( RDD_US_RATE_CONTROLLER_EXPONENT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_RATE_CONTROLLER_EXPONENT_TABLE_ADDRESS )
+
 
 typedef struct
 {
@@ -8131,31 +8115,6 @@ typedef struct
 #endif
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_LOCAL_SWITCHING_LAN_ENQUEUE_INGRESS_QUEUE_PTR_DTS;
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	exponent  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	exponent  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS;
-
-#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS)), r)
-#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS)), v)
-#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_RATE_CONTROLLER_EXPONENT_ENTRY_EXPONENT_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-
-#define RDD_RATE_CONTROLLER_EXPONENT_TABLE_SIZE     4
-typedef struct
-{
-	RDD_RATE_CONTROLLER_EXPONENT_ENTRY_DTS	entry[ RDD_RATE_CONTROLLER_EXPONENT_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_CONTROLLER_EXPONENT_TABLE_DTS;
-
-#define RDD_US_RATE_CONTROLLER_EXPONENT_TABLE_PTR()	( RDD_US_RATE_CONTROLLER_EXPONENT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_1_OFFSET ) + US_RATE_CONTROLLER_EXPONENT_TABLE_ADDRESS )
 
 
 typedef struct
@@ -8682,53 +8641,177 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_BPM_REPLY_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	flow_ring_base_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_base_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bq_next_idx_or_cpu_tx_frid	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+/* fields union = bq_next_idx_or_cpu_tx_frid, size = 32 bits
+	uint32_t	next_idx          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	valid             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1         	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx         	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id      	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+ end fields union*/
+	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_egress_params_u	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+/* fields union = wifi_egress_params_u, size = 32 bits
+	uint32_t	wifi_egress_params	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	priority          	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_ssid         	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved3         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	spd_svc_flag      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_bridge_port   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	l4_protocol       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+ end fields union*/
+	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-	uint32_t	flow_ring_base_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_base_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bq_next_idx_or_cpu_tx_frid	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+/* fields union = bq_next_idx_or_cpu_tx_frid, size = 32 bits
+	uint32_t	next_idx          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved0         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	valid             	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1         	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	radio_idx         	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_id      	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved2         	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+ end fields union*/
+	uint32_t	request_id        	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_egress_params_u	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+/* fields union = wifi_egress_params_u, size = 32 bits
+	uint32_t	wifi_egress_params	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	priority          	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	wifi_ssid         	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved3         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	spd_svc_flag      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	src_bridge_port   	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	l4_protocol       	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	data_len          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+ end fields union*/
+	uint32_t	data_buf_addr_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_BACKUP_ENTRY_DTS;
 
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)), r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)), v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_READ(r, p)                  MREAD_32((uint8_t *)p, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_WRITE(v, p)                 MWRITE_32((uint8_t *)p, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 4, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 4, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_READ(r, p)                 MREAD_32((uint8_t *)p + 4, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_WRITE(v, p)                MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_READ( wv )               FIELD_GET( wv, 0, 32 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_READ_G(r, g, addr, idx)                   GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 8, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_WRITE_G(v, g, addr, idx)                  GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 8, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_READ( wv )                              FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_WRITE( v, wv )                          FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_READ(r, p)                                MREAD_16((uint8_t *)p + 8, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 8, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_READ( wv )                              FIELD_GET( wv, 16, 16 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_WRITE( v, wv )                          FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 10, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 10, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_READ(r, p)                               MREAD_16((uint8_t *)p + 10, r)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_READ_G(r, g, addr, idx)GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), r)
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_WRITE_G(v, g, addr, idx)GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), v)
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_L_READ( wv )       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_L_WRITE( v, wv )   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_READ(r, p)         MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_WRITE(v, p)        MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_L_READ( wv )       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_BQ_NEXT_IDX_OR_CPU_TX_FRID_L_WRITE( v, wv )   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), r)
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), v)
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_READ(r, p)                           MREAD_16((uint8_t *)p, r)
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_WRITE(v, p)                          MWRITE_16((uint8_t *)p, v)
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_L_READ( wv )                         FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_ENTRY_NEXT_IDX_L_WRITE( v, wv )                     FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_ENTRY_VALID_READ_G(r, g, addr, idx)                 GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 7, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_VALID_WRITE_G(v, g, addr, idx)                GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 7, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_VALID_L_READ( wv )                            FIELD_GET( wv, 31, 1 )
+#define RDD_DHD_BACKUP_ENTRY_VALID_L_WRITE( v, wv )                        FIELD_SET( v, 31, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_VALID_READ(r, p)                              FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_VALID_WRITE(v, p)                             FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_VALID_L_READ( wv )                            FIELD_GET( wv, 31, 1 )
+#define RDD_DHD_BACKUP_ENTRY_VALID_L_WRITE( v, wv )                        FIELD_SET( v, 31, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_READ_G(r, g, addr, idx)             GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 2, 2, r)
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_WRITE_G(v, g, addr, idx)            GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 2, 2, v)
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_L_READ( wv )                        FIELD_GET( wv, 26, 2 )
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_L_WRITE( v, wv )                    FIELD_SET( v, 26, 2, wv )
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_READ(r, p)                          FIELD_MREAD_8((uint8_t *)p, 2, 2, r)
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_WRITE(v, p)                         FIELD_MWRITE_8((uint8_t *)p, 2, 2, v)
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_L_READ( wv )                        FIELD_GET( wv, 26, 2 )
+#define RDD_DHD_BACKUP_ENTRY_RADIO_IDX_L_WRITE( v, wv )                    FIELD_SET( v, 26, 2, wv )
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_READ_G(r, g, addr, idx)          GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 0, 10, r)
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_WRITE_G(v, g, addr, idx)         GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)), 0, 10, v)
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_L_READ( wv )                     FIELD_GET( wv, 16, 10 )
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )                 FIELD_SET( v, 16, 10, wv )
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_READ(r, p)                       FIELD_MREAD_16((uint8_t *)p, 0, 10, r)
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_WRITE(v, p)                      FIELD_MWRITE_16((uint8_t *)p, 0, 10, v)
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_L_READ( wv )                     FIELD_GET( wv, 16, 10 )
+#define RDD_DHD_BACKUP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )                 FIELD_SET( v, 16, 10, wv )
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_READ_G(r, g, addr, idx)            GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 4, r)
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 4, v)
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_READ(r, p)                         MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_WRITE(v, p)                        MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_L_READ( wv )                       FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_REQUEST_ID_L_WRITE( v, wv )                   FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_READ_G(r, g, addr, idx)  GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_WRITE_G(v, g, addr, idx) GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_L_READ( wv )             FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_L_WRITE( v, wv )         FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_READ(r, p)               MREAD_32((uint8_t *)p + 8, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_WRITE(v, p)              MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_L_READ( wv )             FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_U_L_WRITE( v, wv )         FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_READ(r, p)                 MREAD_32((uint8_t *)p + 8, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_WRITE(v, p)                MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_L_READ( wv )               FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_EGRESS_PARAMS_L_WRITE( v, wv )           FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_READ_G(r, g, addr, idx)              GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, 5, 3, r)
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_WRITE_G(v, g, addr, idx)             GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, 5, 3, v)
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_L_READ( wv )                         FIELD_GET( wv, 29, 3 )
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_L_WRITE( v, wv )                     FIELD_SET( v, 29, 3, wv )
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_READ(r, p)                           FIELD_MREAD_8((uint8_t *)p + 8, 5, 3, r)
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_WRITE(v, p)                          FIELD_MWRITE_8((uint8_t *)p + 8, 5, 3, v)
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_L_READ( wv )                         FIELD_GET( wv, 29, 3 )
+#define RDD_DHD_BACKUP_ENTRY_PRIORITY_L_WRITE( v, wv )                     FIELD_SET( v, 29, 3, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_READ_G(r, g, addr, idx)             GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, 0, 5, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_WRITE_G(v, g, addr, idx)            GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 8, 0, 5, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_L_READ( wv )                        FIELD_GET( wv, 24, 5 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_L_WRITE( v, wv )                    FIELD_SET( v, 24, 5, wv )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_READ(r, p)                          FIELD_MREAD_8((uint8_t *)p + 8, 0, 5, r)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_WRITE(v, p)                         FIELD_MWRITE_8((uint8_t *)p + 8, 0, 5, v)
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_L_READ( wv )                        FIELD_GET( wv, 24, 5 )
+#define RDD_DHD_BACKUP_ENTRY_WIFI_SSID_L_WRITE( v, wv )                    FIELD_SET( v, 24, 5, wv )
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_READ_G(r, g, addr, idx)          GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 6, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_WRITE_G(v, g, addr, idx)         GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 6, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_L_READ( wv )                     FIELD_GET( wv, 22, 1 )
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_L_WRITE( v, wv )                 FIELD_SET( v, 22, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_READ(r, p)                       FIELD_MREAD_8((uint8_t *)p + 9, 6, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_WRITE(v, p)                      FIELD_MWRITE_8((uint8_t *)p + 9, 6, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_L_READ( wv )                     FIELD_GET( wv, 22, 1 )
+#define RDD_DHD_BACKUP_ENTRY_SPD_SVC_FLAG_L_WRITE( v, wv )                 FIELD_SET( v, 22, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 1, 5, r)
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 1, 5, v)
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_L_READ( wv )                  FIELD_GET( wv, 17, 5 )
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_L_WRITE( v, wv )              FIELD_SET( v, 17, 5, wv )
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p + 9, 1, 5, r)
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p + 9, 1, 5, v)
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_L_READ( wv )                  FIELD_GET( wv, 17, 5 )
+#define RDD_DHD_BACKUP_ENTRY_SRC_BRIDGE_PORT_L_WRITE( v, wv )              FIELD_SET( v, 17, 5, wv )
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_READ_G(r, g, addr, idx)           GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 0, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_WRITE_G(v, g, addr, idx)          GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 9, 0, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_L_READ( wv )                      FIELD_GET( wv, 16, 1 )
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_L_WRITE( v, wv )                  FIELD_SET( v, 16, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_READ(r, p)                        FIELD_MREAD_8((uint8_t *)p + 9, 0, 1, r)
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_WRITE(v, p)                       FIELD_MWRITE_8((uint8_t *)p + 9, 0, 1, v)
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_L_READ( wv )                      FIELD_GET( wv, 16, 1 )
+#define RDD_DHD_BACKUP_ENTRY_L4_PROTOCOL_L_WRITE( v, wv )                  FIELD_SET( v, 16, 1, wv )
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 10, r)
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 10, v)
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_READ(r, p)                           MREAD_16((uint8_t *)p + 10, r)
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 10, v)
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_ENTRY_DATA_LEN_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_READ_G(r, g, addr, idx)     GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 12, r)
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_ENTRY_DTS)) + 12, v)
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_READ(r, p)                  MREAD_32((uint8_t *)p + 12, r)
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_WRITE(v, p)                 MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_L_READ( wv )                FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_BACKUP_ENTRY_DATA_BUF_ADDR_LOW_L_WRITE( v, wv )            FIELD_SET( v, 0, 32, wv )
 
 typedef struct
 {
@@ -9077,33 +9160,86 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_SSID_MAC_ADDRESS_TABLE_DTS;
 #define RDD_WLAN_MCAST_SSID_MAC_ADDRESS_TABLE_PTR()	( RDD_WLAN_MCAST_SSID_MAC_ADDRESS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + WLAN_MCAST_SSID_MAC_ADDRESS_TABLE_ADDRESS )
 
 #endif
-#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_RESERVED2_NUMBER	12
+#if defined WL4908
+
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_SIZE     8
+typedef struct
+{
+	RDD_DHD_BACKUP_ENTRY_DTS	entry[ RDD_CPU_TX_POST_REQUEST_QUEUE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_POST_REQUEST_QUEUE_DTS;
+
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_PTR()	( RDD_CPU_TX_POST_REQUEST_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + CPU_TX_POST_REQUEST_QUEUE_ADDRESS )
+
+#endif
 
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	ds_dhd_doorbell_post                                                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_dhd_doorbell_complete                                             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_rd_fr_r2d_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_wr_fr_r2d_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_rd_fr_d2r_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_wr_fr_d2r_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_complete_packet_counter                                           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_format                                                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	idma_active                                                          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1                                                            	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	packets   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bytes     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	packets   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	bytes     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS;
+
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)), r)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)), v)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_READ(r, p)                 MREAD_32((uint8_t *)p, r)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_WRITE(v, p)                MWRITE_32((uint8_t *)p, v)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)) + 4, r)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)) + 4, v)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_READ(r, p)                   MREAD_32((uint8_t *)p + 4, r)
+#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 4, v)
+#if defined WL4908
+
+#define RDD_WLAN_MCAST_SSID_STATS_TABLE_SIZE     48
+typedef struct
+{
+	RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS	entry[ RDD_WLAN_MCAST_SSID_STATS_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_SSID_STATS_TABLE_DTS;
+
+#define RDD_WLAN_MCAST_SSID_STATS_TABLE_PTR()	( RDD_WLAN_MCAST_SSID_STATS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + WLAN_MCAST_SSID_STATS_TABLE_ADDRESS )
+
+#endif
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_RESERVED2_NUMBER	8
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	ds_dhd_doorbell_post                                                	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_dhd_doorbell_complete                                            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_rd_fr_r2d_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_wr_fr_r2d_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_rd_fr_d2r_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_wr_fr_d2r_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_complete_packet_counter                                          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_format                                                    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	idma_active                                                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1                                                           	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_max_count                                                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	cur_frg_id                                                          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_timeout                                                  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_timeout_cntr                                             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint8_t	reserved2[RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_RESERVED2_NUMBER];
 #else
-	uint32_t	ds_dhd_doorbell_post                                                 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_dhd_doorbell_complete                                             	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_wr_fr_r2d_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	ds_rd_fr_r2d_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_wr_fr_d2r_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_rd_fr_d2r_indexes                                                 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved1                                                            	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	idma_active                                                          	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flow_ring_format                                                     	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	tx_complete_packet_counter                                           	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_dhd_doorbell_post                                                	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_dhd_doorbell_complete                                            	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_wr_fr_r2d_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ds_rd_fr_r2d_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_wr_fr_d2r_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_rd_fr_d2r_indexes                                                	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved1                                                           	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	idma_active                                                         	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_format                                                    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	tx_complete_packet_counter                                          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_timeout_cntr                                             	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_timeout                                                  	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	cur_frg_id                                                          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	coalescing_max_count                                                	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint8_t	reserved2[RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_RESERVED2_NUMBER];
 #endif
 }
@@ -9145,6 +9281,22 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS;
 #define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_IDMA_ACTIVE_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 18, 4, 1, v)
 #define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_IDMA_ACTIVE_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 18, 4, 1, r)
 #define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_IDMA_ACTIVE_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 18, 4, 1, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_MAX_COUNT_READ_G(r, g, addr, idx)          GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 20, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_MAX_COUNT_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 20, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_MAX_COUNT_READ(r, p)                       MREAD_8((uint8_t *)p + 20, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_MAX_COUNT_WRITE(v, p)                      MWRITE_8((uint8_t *)p + 20, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_CUR_FRG_ID_READ_G(r, g, addr, idx)                    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 21, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_CUR_FRG_ID_WRITE_G(v, g, addr, idx)                   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 21, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_CUR_FRG_ID_READ(r, p)                                 MREAD_8((uint8_t *)p + 21, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_CUR_FRG_ID_WRITE(v, p)                                MWRITE_8((uint8_t *)p + 21, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_READ_G(r, g, addr, idx)            GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 22, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_WRITE_G(v, g, addr, idx)           GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 22, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_READ(r, p)                         MREAD_8((uint8_t *)p + 22, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_WRITE(v, p)                        MWRITE_8((uint8_t *)p + 22, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_CNTR_READ_G(r, g, addr, idx)       GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 23, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_CNTR_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_DTS)) + 23, v)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_CNTR_READ(r, p)                    MREAD_8((uint8_t *)p + 23, r)
+#define RDD_DHD_RADIO_INSTANCE_COMMON_A_ENTRY_COALESCING_TIMEOUT_CNTR_WRITE(v, p)                   MWRITE_8((uint8_t *)p + 23, v)
 #if defined WL4908
 
 #define RDD_DHD_RADIO_INSTANCE_COMMON_A_DATA_SIZE     3
@@ -9161,112 +9313,53 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_RADIO_INSTANCE_COMMON_A_DATA_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	sustain_scheduling_mode  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_scheduling_mode     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overall_rate_limiter_mode	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved                 	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_ffi_offset          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	sustain_ffi_offset       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	service_queues_status    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rate_limiter_status      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	sustain_vector           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_vector              	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	invalid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	reserved    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
-	uint32_t	sustain_ffi_offset       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_ffi_offset          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	reserved                 	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	overall_rate_limiter_mode	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_scheduling_mode     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	sustain_scheduling_mode  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	service_queues_status    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	rate_limiter_status      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	sustain_vector           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	peak_vector              	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	reserved    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint16_t	invalid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SERVICE_QUEUES_CFG_ENTRY_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS;
 
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_READ_G(r, g, addr, idx)      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 7, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 7, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_READ(r, p)                   FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_WRITE(v, p)                  FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 6, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 6, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 6, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 6, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 5, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 5, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 5, 1, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 5, 1, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 2, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 2, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_READ(r, p)                           MREAD_8((uint8_t *)p + 2, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 2, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_READ_G(r, g, addr, idx)           GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 3, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_WRITE_G(v, g, addr, idx)          GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 3, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_READ(r, p)                        MREAD_8((uint8_t *)p + 3, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_WRITE(v, p)                       MWRITE_8((uint8_t *)p + 3, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 4, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 4, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_READ(r, p)                     MREAD_32((uint8_t *)p + 4, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 4, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 8, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 8, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_READ(r, p)                       MREAD_32((uint8_t *)p + 8, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 8, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_READ_G(r, g, addr, idx)               GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 12, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 12, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_READ(r, p)                            MREAD_32((uint8_t *)p + 12, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_WRITE(v, p)                           MWRITE_32((uint8_t *)p + 12, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_READ_G(r, g, addr, idx)                  GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 16, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 16, v)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_READ(r, p)                               MREAD_32((uint8_t *)p + 16, r)
-#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_WRITE(v, p)                              MWRITE_32((uint8_t *)p + 16, v)
-#define RDD_DS_RATE_CONTROLLER_EXPONENT_TABLE_PTR()	( RDD_DS_RATE_CONTROLLER_EXPONENT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_RATE_CONTROLLER_EXPONENT_TABLE_ADDRESS )
-
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	packets   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bytes     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint32_t	packets   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	bytes     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS;
-
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_READ_G(r, g, addr, idx)    GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)), r)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)), v)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_READ(r, p)                 MREAD_32((uint8_t *)p, r)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_PACKETS_WRITE(v, p)                MWRITE_32((uint8_t *)p, v)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_READ_G(r, g, addr, idx)      GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)) + 4, r)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS)) + 4, v)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_READ(r, p)                   MREAD_32((uint8_t *)p + 4, r)
-#define RDD_WLAN_MCAST_SSID_STATS_ENTRY_BYTES_WRITE(v, p)                  MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 7, 1, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 7, 1, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_READ( wv )                    FIELD_GET( wv, 15, 1 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_WRITE( v, wv )                FIELD_SET( v, 15, 1, wv )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_READ( wv )                    FIELD_GET( wv, 15, 1 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_WRITE( v, wv )                FIELD_SET( v, 15, 1, wv )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 2, 2, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 2, 2, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 10, 2 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 10, 2, wv )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p, 2, 2, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p, 2, 2, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 10, 2 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 10, 2, wv )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 0, 10, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 0, 10, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 0, 10 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 0, 10, wv )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p, 0, 10, r)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p, 0, 10, v)
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 0, 10 )
+#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 0, 10, wv )
 #if defined WL4908
 
-#define RDD_WLAN_MCAST_SSID_STATS_TABLE_SIZE     48
+#define RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE     16
 typedef struct
 {
-	RDD_WLAN_MCAST_SSID_STATS_ENTRY_DTS	entry[ RDD_WLAN_MCAST_SSID_STATS_TABLE_SIZE ];
+	RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS	entry[ RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_WLAN_MCAST_SSID_STATS_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS;
 
-#define RDD_WLAN_MCAST_SSID_STATS_TABLE_PTR()	( RDD_WLAN_MCAST_SSID_STATS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + WLAN_MCAST_SSID_STATS_TABLE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_SIZE     128
-typedef struct
-{
-	RDD_ONE_BYTE_DTS	entry[ RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_DTS;
-
-#define RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_PTR()	( RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + RATE_SHAPERS_STATUS_DESCRIPTOR_ADDRESS )
+#define RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_PTR()	( RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_DHD_FLOW_RING_CACHE_LKP_TABLE_ADDRESS )
 
 #endif
 
@@ -9350,6 +9443,18 @@ typedef struct
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_PM_COUNTERS_DTS;
 
+#if defined WL4908
+
+#define RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_SIZE     128
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_DTS;
+
+#define RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_PTR()	( RDD_RATE_SHAPERS_STATUS_DESCRIPTOR_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + RATE_SHAPERS_STATUS_DESCRIPTOR_ADDRESS )
+
+#endif
 
 typedef struct
 {
@@ -9393,45 +9498,6 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_INTERRUPT_COALESCING_CONFIG_TABLE_DTS;
 
 #define RDD_INTERRUPT_COALESCING_CONFIG_TABLE_PTR()	( RDD_INTERRUPT_COALESCING_CONFIG_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + INTERRUPT_COALESCING_CONFIG_TABLE_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_MAC_CONTEXT_TABLE_CAM_SIZE     32
-typedef struct
-{
-	RDD_MAC_CONTEXT_ENTRY_DTS	entry[ RDD_MAC_CONTEXT_TABLE_CAM_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_CONTEXT_TABLE_CAM_DTS;
-
-#define RDD_MAC_CONTEXT_TABLE_CAM_PTR()	( RDD_MAC_CONTEXT_TABLE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_CONTEXT_TABLE_CAM_ADDRESS )
-
-#endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint8_t	extension_entry	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint8_t	extension_entry	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_ENTRY_DTS;
-
-#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_MAC_EXTENSION_ENTRY_DTS)), r)
-#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_MAC_EXTENSION_ENTRY_DTS)), v)
-#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_READ(r, p)                 MREAD_8((uint8_t *)p, r)
-#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
-#if defined WL4908
-
-#define RDD_MAC_EXTENSION_TABLE_SIZE     64
-typedef struct
-{
-	RDD_MAC_EXTENSION_ENTRY_DTS	entry[ RDD_MAC_EXTENSION_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_TABLE_DTS;
-
-#define RDD_MAC_EXTENSION_TABLE_PTR()	( RDD_MAC_EXTENSION_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_EXTENSION_TABLE_ADDRESS )
 
 #endif
 
@@ -9516,117 +9582,40 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_CONNECTION_BUFFER_TABLE_DTS;
 #define RDD_DS_CONNECTION_BUFFER_TABLE_PTR()	( RDD_DS_CONNECTION_BUFFER_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_CONNECTION_BUFFER_TABLE_ADDRESS )
 
 #endif
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint16_t	invalid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	reserved    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#else
-	uint16_t	flow_ring_id	:10	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	radio_idx   	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	reserved    	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint16_t	invalid     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS;
-
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 7, 1, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 7, 1, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_READ( wv )                    FIELD_GET( wv, 15, 1 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_WRITE( v, wv )                FIELD_SET( v, 15, 1, wv )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_READ( wv )                    FIELD_GET( wv, 15, 1 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_INVALID_L_WRITE( v, wv )                FIELD_SET( v, 15, 1, wv )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_READ_G(r, g, addr, idx)       GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 2, 2, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_WRITE_G(v, g, addr, idx)      GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 2, 2, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 10, 2 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 10, 2, wv )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_READ(r, p)                    FIELD_MREAD_8((uint8_t *)p, 2, 2, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_WRITE(v, p)                   FIELD_MWRITE_8((uint8_t *)p, 2, 2, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_READ( wv )                  FIELD_GET( wv, 10, 2 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_RADIO_IDX_L_WRITE( v, wv )              FIELD_SET( v, 10, 2, wv )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 0, 10, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS)), 0, 10, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 0, 10 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 0, 10, wv )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_READ(r, p)                 FIELD_MREAD_16((uint8_t *)p, 0, 10, r)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_WRITE(v, p)                FIELD_MWRITE_16((uint8_t *)p, 0, 10, v)
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_READ( wv )               FIELD_GET( wv, 0, 10 )
-#define RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_FLOW_RING_ID_L_WRITE( v, wv )           FIELD_SET( v, 0, 10, wv )
 #if defined WL4908
 
-#define RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE     16
+#define RDD_MAC_CONTEXT_TABLE_CAM_SIZE     32
 typedef struct
 {
-	RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS	entry[ RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE ];
+	RDD_MAC_CONTEXT_ENTRY_DTS	entry[ RDD_MAC_CONTEXT_TABLE_CAM_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_CONTEXT_TABLE_CAM_DTS;
 
-#define RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_PTR()	( RDD_DS_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_DHD_FLOW_RING_CACHE_LKP_TABLE_ADDRESS )
+#define RDD_MAC_CONTEXT_TABLE_CAM_PTR()	( RDD_MAC_CONTEXT_TABLE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_CONTEXT_TABLE_CAM_ADDRESS )
 
 #endif
 #if defined WL4908
 
-#define RDD_MAC_EXTENSION_TABLE_CAM_SIZE     32
+#define RDD_DHD_DOORBELL_WRITE_VALUES_SIZE     16
 typedef struct
 {
-	RDD_MAC_EXTENSION_ENTRY_DTS	entry[ RDD_MAC_EXTENSION_TABLE_CAM_SIZE ];
+	RDD_FOUR_BYTES_DTS	entry[ RDD_DHD_DOORBELL_WRITE_VALUES_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_TABLE_CAM_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_DOORBELL_WRITE_VALUES_DTS;
 
-#define RDD_MAC_EXTENSION_TABLE_CAM_PTR()	( RDD_MAC_EXTENSION_TABLE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_EXTENSION_TABLE_CAM_ADDRESS )
+#define RDD_DHD_DOORBELL_WRITE_VALUES_PTR()	( RDD_DHD_DOORBELL_WRITE_VALUES_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_DOORBELL_WRITE_VALUES_ADDRESS )
 
 #endif
 #if defined WL4908
 
-#define RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_SIZE     16
+#define RDD_DS_DHD_BACKUP_INDEX_CACHE_SIZE     32
 typedef struct
 {
-	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_SIZE ];
+	RDD_TWO_BYTES_DTS	entry[ RDD_DS_DHD_BACKUP_INDEX_CACHE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_BACKUP_INDEX_CACHE_DTS;
 
-#define RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_PTR()	( RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_ADDRESS )
-
-#endif
-#define RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER	8
-
-typedef struct
-{
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER];
-#endif
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PM_COUNTERS_BUFFER_DTS;
-
-#if defined WL4908
-
-#define RDD_DHD_TX_POST_BUFFERS_THRESHOLD_SIZE     2
-typedef struct
-{
-	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_TX_POST_BUFFERS_THRESHOLD_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_BUFFERS_THRESHOLD_DTS;
-
-#define RDD_DHD_TX_POST_BUFFERS_THRESHOLD_PTR()	( RDD_DHD_TX_POST_BUFFERS_THRESHOLD_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_TX_POST_BUFFERS_THRESHOLD_ADDRESS )
-
-#endif
-#if defined WL4908
-
-#define RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_SIZE     2
-typedef struct
-{
-	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_DTS;
-
-#define RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_PTR()	( RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_TX_POST_BUFFERS_IN_USE_COUNTER_ADDRESS )
+#define RDD_DS_DHD_BACKUP_INDEX_CACHE_PTR()	( RDD_DS_DHD_BACKUP_INDEX_CACHE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_DHD_BACKUP_INDEX_CACHE_ADDRESS )
 
 #endif
 
@@ -9729,6 +9718,33 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_RING_DESCRIPTORS_TABLE_DTS;
 typedef struct
 {
 #ifndef FIRMWARE_LITTLE_ENDIAN
+	uint8_t	extension_entry	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint8_t	extension_entry	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_ENTRY_DTS;
+
+#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_READ_G(r, g, addr, idx)    GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_MAC_EXTENSION_ENTRY_DTS)), r)
+#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_MAC_EXTENSION_ENTRY_DTS)), v)
+#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_READ(r, p)                 MREAD_8((uint8_t *)p, r)
+#define RDD_MAC_EXTENSION_ENTRY_EXTENSION_ENTRY_WRITE(v, p)                MWRITE_8((uint8_t *)p, v)
+#if defined WL4908
+
+#define RDD_MAC_EXTENSION_TABLE_SIZE     64
+typedef struct
+{
+	RDD_MAC_EXTENSION_ENTRY_DTS	entry[ RDD_MAC_EXTENSION_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_TABLE_DTS;
+
+#define RDD_MAC_EXTENSION_TABLE_PTR()	( RDD_MAC_EXTENSION_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_EXTENSION_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
 	uint32_t	flow_id                 	:12	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	is_chksum_verified      	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	source_bridge_port      	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -9820,6 +9836,275 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_RING_PACKET_DESCRIPTORS_CACHE_DTS;
 
 #define RDD_DS_RING_PACKET_DESCRIPTORS_CACHE_PTR()	( RDD_DS_RING_PACKET_DESCRIPTORS_CACHE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_RING_PACKET_DESCRIPTORS_CACHE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	flow_ring_base_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_base_high   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	size                  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_for_lock_flag	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ssid                  	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags                 	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_first_index    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_last_index     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_num_entries    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	phy_size              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	flow_ring_base_low    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flow_ring_base_high   	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags                 	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ssid                  	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved_for_lock_flag	:3	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	size                  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_last_index     	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_first_index    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	phy_size              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_num_entries    	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS;
+
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)), r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)), v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_READ(r, p)                     MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_WRITE(v, p)                    MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_READ( wv )                   FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_LOW_L_WRITE( v, wv )               FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_READ_G(r, g, addr, idx)       GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 4, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_WRITE_G(v, g, addr, idx)      GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 4, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_READ(r, p)                    MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_WRITE(v, p)                   MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_READ( wv )                  FIELD_GET( wv, 0, 32 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLOW_RING_BASE_HIGH_L_WRITE( v, wv )              FIELD_SET( v, 0, 32, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_READ_G(r, g, addr, idx)                      GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 8, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_WRITE_G(v, g, addr, idx)                     GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 8, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_READ( wv )                                 FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_WRITE( v, wv )                             FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_READ(r, p)                                   MREAD_16((uint8_t *)p + 8, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_WRITE(v, p)                                  MWRITE_16((uint8_t *)p + 8, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_READ( wv )                                 FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SIZE_L_WRITE( v, wv )                             FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_READ_G(r, g, addr, idx)                      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 10, 0, 5, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_WRITE_G(v, g, addr, idx)                     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 10, 0, 5, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_L_READ( wv )                                 FIELD_GET( wv, 8, 5 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_L_WRITE( v, wv )                             FIELD_SET( v, 8, 5, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_READ(r, p)                                   FIELD_MREAD_8((uint8_t *)p + 10, 0, 5, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_WRITE(v, p)                                  FIELD_MWRITE_8((uint8_t *)p + 10, 0, 5, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_L_READ( wv )                                 FIELD_GET( wv, 8, 5 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_SSID_L_WRITE( v, wv )                             FIELD_SET( v, 8, 5, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_READ_G(r, g, addr, idx)                     GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 11, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_WRITE_G(v, g, addr, idx)                    GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 11, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_READ( wv )                                FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                            FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_READ(r, p)                                  MREAD_8((uint8_t *)p + 11, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_WRITE(v, p)                                 MWRITE_8((uint8_t *)p + 11, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_READ( wv )                                FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_FLAGS_L_WRITE( v, wv )                            FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 12, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 12, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_L_READ( wv )                   FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_L_WRITE( v, wv )               FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_READ(r, p)                     MREAD_16((uint8_t *)p + 12, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_WRITE(v, p)                    MWRITE_16((uint8_t *)p + 12, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_L_READ( wv )                   FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_FIRST_INDEX_L_WRITE( v, wv )               FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_READ_G(r, g, addr, idx)         GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 14, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 14, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_L_READ( wv )                    FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_L_WRITE( v, wv )                FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_READ(r, p)                      MREAD_16((uint8_t *)p + 14, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_WRITE(v, p)                     MWRITE_16((uint8_t *)p + 14, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_L_READ( wv )                    FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_LAST_INDEX_L_WRITE( v, wv )                FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_READ_G(r, g, addr, idx)        GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 16, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 16, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_L_READ( wv )                   FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_L_WRITE( v, wv )               FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_READ(r, p)                     MREAD_16((uint8_t *)p + 16, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_WRITE(v, p)                    MWRITE_16((uint8_t *)p + 16, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_L_READ( wv )                   FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_BACKUP_NUM_ENTRIES_L_WRITE( v, wv )               FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 18, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_DTS)) + 18, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_READ(r, p)                               MREAD_16((uint8_t *)p + 18, r)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 18, v)
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_TX_POST_FLOW_RING_MGMT_DESCRIPTOR_PHY_SIZE_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
+#if defined WL4908
+
+#define RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_SIZE     16
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_DTS;
+
+#define RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_PTR()	( RDD_DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_FLOW_RING_SHADOW_WR_PTR_TABLE_ADDRESS )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	sustain_scheduling_mode  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_scheduling_mode     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	overall_rate_limiter_mode	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved                 	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_ffi_offset          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	sustain_ffi_offset       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	service_queues_status    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	rate_limiter_status      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	sustain_vector           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_vector              	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	sustain_ffi_offset       	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_ffi_offset          	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved                 	:13	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	overall_rate_limiter_mode	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_scheduling_mode     	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	sustain_scheduling_mode  	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	service_queues_status    	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	rate_limiter_status      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	sustain_vector           	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	peak_vector              	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_SERVICE_QUEUES_CFG_ENTRY_DTS;
+
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_READ_G(r, g, addr, idx)      GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 7, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)     GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 7, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_READ(r, p)                   FIELD_MREAD_8((uint8_t *)p, 7, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_SCHEDULING_MODE_WRITE(v, p)                  FIELD_MWRITE_8((uint8_t *)p, 7, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_READ_G(r, g, addr, idx)         GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 6, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_WRITE_G(v, g, addr, idx)        GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 6, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_READ(r, p)                      FIELD_MREAD_8((uint8_t *)p, 6, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_SCHEDULING_MODE_WRITE(v, p)                     FIELD_MWRITE_8((uint8_t *)p, 6, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_READ_G(r, g, addr, idx)    GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 5, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_WRITE_G(v, g, addr, idx)   GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)), 5, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_READ(r, p)                 FIELD_MREAD_8((uint8_t *)p, 5, 1, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_OVERALL_RATE_LIMITER_MODE_WRITE(v, p)                FIELD_MWRITE_8((uint8_t *)p, 5, 1, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_READ_G(r, g, addr, idx)              GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 2, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 2, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_READ(r, p)                           MREAD_8((uint8_t *)p + 2, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_FFI_OFFSET_WRITE(v, p)                          MWRITE_8((uint8_t *)p + 2, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_READ_G(r, g, addr, idx)           GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 3, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_WRITE_G(v, g, addr, idx)          GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 3, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_READ(r, p)                        MREAD_8((uint8_t *)p + 3, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_FFI_OFFSET_WRITE(v, p)                       MWRITE_8((uint8_t *)p + 3, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_READ_G(r, g, addr, idx)        GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 4, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_WRITE_G(v, g, addr, idx)       GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 4, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_READ(r, p)                     MREAD_32((uint8_t *)p + 4, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SERVICE_QUEUES_STATUS_WRITE(v, p)                    MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 8, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 8, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_READ(r, p)                       MREAD_32((uint8_t *)p + 8, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_RATE_LIMITER_STATUS_WRITE(v, p)                      MWRITE_32((uint8_t *)p + 8, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_READ_G(r, g, addr, idx)               GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 12, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_WRITE_G(v, g, addr, idx)              GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 12, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_READ(r, p)                            MREAD_32((uint8_t *)p + 12, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_SUSTAIN_VECTOR_WRITE(v, p)                           MWRITE_32((uint8_t *)p + 12, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_READ_G(r, g, addr, idx)                  GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 16, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_SERVICE_QUEUES_CFG_ENTRY_DTS)) + 16, v)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_READ(r, p)                               MREAD_32((uint8_t *)p + 16, r)
+#define RDD_SERVICE_QUEUES_CFG_ENTRY_PEAK_VECTOR_WRITE(v, p)                              MWRITE_32((uint8_t *)p + 16, v)
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	read_idx  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	write_idx 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	write_idx 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	read_idx  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_DTS;
+
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_DTS)), r)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_DTS)), v)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_L_READ( wv )                FIELD_GET( wv, 16, 16 )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_L_WRITE( v, wv )            FIELD_SET( v, 16, 16, wv )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_READ(r, p)                  MREAD_16((uint8_t *)p, r)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_WRITE(v, p)                 MWRITE_16((uint8_t *)p, v)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_L_READ( wv )                FIELD_GET( wv, 16, 16 )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_READ_IDX_L_WRITE( v, wv )            FIELD_SET( v, 16, 16, wv )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_DTS)) + 2, r)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_DTS)) + 2, v)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_L_READ( wv )               FIELD_GET( wv, 0, 16 )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_L_WRITE( v, wv )           FIELD_SET( v, 0, 16, wv )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_READ(r, p)                 MREAD_16((uint8_t *)p + 2, r)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_WRITE(v, p)                MWRITE_16((uint8_t *)p + 2, v)
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_L_READ( wv )               FIELD_GET( wv, 0, 16 )
+#define RDD_CPU_TX_POST_REQUEST_QUEUE_IDX_ENTRY_WRITE_IDX_L_WRITE( v, wv )           FIELD_SET( v, 0, 16, wv )
+#if defined WL4908
+
+#define RDD_MAC_EXTENSION_TABLE_CAM_SIZE     32
+typedef struct
+{
+	RDD_MAC_EXTENSION_ENTRY_DTS	entry[ RDD_MAC_EXTENSION_TABLE_CAM_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_MAC_EXTENSION_TABLE_CAM_DTS;
+
+#define RDD_MAC_EXTENSION_TABLE_CAM_PTR()	( RDD_MAC_EXTENSION_TABLE_CAM_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + MAC_EXTENSION_TABLE_CAM_ADDRESS )
+
+#endif
+#define RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER	8
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only[RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER];
+#else
+	uint32_t	reserved_fw_only[RDD_PM_COUNTERS_BUFFER_RESERVED_FW_ONLY_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_PM_COUNTERS_BUFFER_DTS;
+
+#if defined WL4908
+
+#define RDD_TX_CPL_DHD_DMA_SCRATCH_SIZE     3
+typedef struct
+{
+	RDD_FOUR_BYTES_DTS	entry[ RDD_TX_CPL_DHD_DMA_SCRATCH_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_TX_CPL_DHD_DMA_SCRATCH_DTS;
+
+#define RDD_TX_CPL_DHD_DMA_SCRATCH_PTR()	( RDD_TX_CPL_DHD_DMA_SCRATCH_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + TX_CPL_DHD_DMA_SCRATCH_ADDRESS )
+
+#endif
+#define RDD_DS_RATE_CONTROLLER_EXPONENT_TABLE_PTR()	( RDD_DS_RATE_CONTROLLER_EXPONENT_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DS_RATE_CONTROLLER_EXPONENT_TABLE_ADDRESS )
+
+#if defined WL4908
+
+#define RDD_DHD_TX_POST_BUFFERS_THRESHOLD_SIZE     2
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_TX_POST_BUFFERS_THRESHOLD_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_BUFFERS_THRESHOLD_DTS;
+
+#define RDD_DHD_TX_POST_BUFFERS_THRESHOLD_PTR()	( RDD_DHD_TX_POST_BUFFERS_THRESHOLD_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_TX_POST_BUFFERS_THRESHOLD_ADDRESS )
+
+#endif
+#if defined WL4908
+
+#define RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_SIZE     2
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_DTS;
+
+#define RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_PTR()	( RDD_DHD_TX_POST_BUFFERS_IN_USE_COUNTER_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_0_OFFSET ) + DHD_TX_POST_BUFFERS_IN_USE_COUNTER_ADDRESS )
 
 #endif
 #if defined WL4908
@@ -10366,40 +10651,65 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_IPV6_HOST_ADDRESS_CRC_TABLE_DTS;
 #define RDD_IPV6_HOST_ADDRESS_CRC_TABLE_PTR()	( RDD_IPV6_HOST_ADDRESS_CRC_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + IPV6_HOST_ADDRESS_CRC_TABLE_ADDRESS - 0x8000 )
 
 #endif
-#if defined WL4908
 
-#define RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE     40
 typedef struct
 {
-	RDD_TWO_BYTES_DTS	entry[ RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS;
-
-#define RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_PTR()	( RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_ADDRESS - 0x8000 )
-
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	backup_first_index	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_last_index 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_num_entries	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	phy_size          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	backup_last_index 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_first_index	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	phy_size          	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	backup_num_entries	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS;
+
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)), r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)), v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_READ(r, p)                 MREAD_16((uint8_t *)p, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_WRITE(v, p)                MWRITE_16((uint8_t *)p, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_FIRST_INDEX_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 2, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 2, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_L_READ( wv )                FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_L_WRITE( v, wv )            FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_READ(r, p)                  MREAD_16((uint8_t *)p + 2, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_WRITE(v, p)                 MWRITE_16((uint8_t *)p + 2, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_L_READ( wv )                FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_LAST_INDEX_L_WRITE( v, wv )            FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 4, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 4, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_READ(r, p)                 MREAD_16((uint8_t *)p + 4, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_WRITE(v, p)                MWRITE_16((uint8_t *)p + 4, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_L_READ( wv )               FIELD_GET( wv, 16, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_BACKUP_NUM_ENTRIES_L_WRITE( v, wv )           FIELD_SET( v, 16, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_READ_G(r, g, addr, idx)              GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 6, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_WRITE_G(v, g, addr, idx)             GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS)) + 6, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_READ(r, p)                           MREAD_16((uint8_t *)p + 6, r)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_WRITE(v, p)                          MWRITE_16((uint8_t *)p + 6, v)
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_L_READ( wv )                         FIELD_GET( wv, 0, 16 )
+#define RDD_DHD_BACKUP_INFO_CACHE_ENTRY_PHY_SIZE_L_WRITE( v, wv )                     FIELD_SET( v, 0, 16, wv )
 #if defined WL4908
 
-#define RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_SIZE     2
+#define RDD_DHD_BACKUP_INFO_CACHE_TABLE_SIZE     16
 typedef struct
 {
-	RDD_EIGHT_BYTES_DTS	entry[ RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_SIZE ];
+	RDD_DHD_BACKUP_INFO_CACHE_ENTRY_DTS	entry[ RDD_DHD_BACKUP_INFO_CACHE_TABLE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_BACKUP_INFO_CACHE_TABLE_DTS;
 
-#define RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_PTR()	( RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + RUNNER_FWTRACE_MAINB_CURR_OFFSET_ADDRESS - 0x8000 )
-
-#endif
-#if defined WL4908
-
-#define RDD_IPV4_HOST_ADDRESS_TABLE_SIZE     8
-typedef struct
-{
-	RDD_FOUR_BYTES_DTS	entry[ RDD_IPV4_HOST_ADDRESS_TABLE_SIZE ];
-}
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_IPV4_HOST_ADDRESS_TABLE_DTS;
-
-#define RDD_IPV4_HOST_ADDRESS_TABLE_PTR()	( RDD_IPV4_HOST_ADDRESS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + IPV4_HOST_ADDRESS_TABLE_ADDRESS - 0x8000 )
+#define RDD_DHD_BACKUP_INFO_CACHE_TABLE_PTR()	( RDD_DHD_BACKUP_INFO_CACHE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + DHD_BACKUP_INFO_CACHE_TABLE_ADDRESS - 0x8000 )
 
 #endif
 
@@ -10509,18 +10819,18 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_RING_PACKET_DESCRIPTORS_CACHE_DTS;
 #define RDD_US_RING_PACKET_DESCRIPTORS_CACHE_PTR()	( RDD_US_RING_PACKET_DESCRIPTORS_CACHE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_RING_PACKET_DESCRIPTORS_CACHE_ADDRESS - 0x8000 )
 
 #endif
-#define RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER	4
+#if defined WL4908
 
+#define RDD_IPV4_HOST_ADDRESS_TABLE_SIZE     8
 typedef struct
 {
-#ifndef FIRMWARE_LITTLE_ENDIAN
-	uint32_t	reserved_fw_only[RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER];
-#else
-	uint32_t	reserved_fw_only[RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER];
-#endif
+	RDD_FOUR_BYTES_DTS	entry[ RDD_IPV4_HOST_ADDRESS_TABLE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_IPV4_HOST_ADDRESS_TABLE_DTS;
 
+#define RDD_IPV4_HOST_ADDRESS_TABLE_PTR()	( RDD_IPV4_HOST_ADDRESS_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + IPV4_HOST_ADDRESS_TABLE_ADDRESS - 0x8000 )
+
+#endif
 
 typedef struct
 {
@@ -10528,13 +10838,19 @@ typedef struct
 	uint32_t	flow_ring_base_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	flow_ring_base_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	lock               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ssid               	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	rd_idx             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	wr_idx             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 #else
 	uint32_t	flow_ring_base_low 	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	flow_ring_base_high	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
-	uint32_t	flags              	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	flags              	:8	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	ssid               	:5	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	reserved           	:2	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	lock               	:1	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	size               	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	wr_idx             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
 	uint32_t	rd_idx             	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
@@ -10566,14 +10882,30 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS;
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SIZE_WRITE(v, p)                               MWRITE_16((uint8_t *)p + 8, v)
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SIZE_L_READ( wv )                              FIELD_GET( wv, 16, 16 )
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SIZE_L_WRITE( v, wv )                          FIELD_SET( v, 16, 16, wv )
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_READ_G(r, g, addr, idx)                  GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, r)
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, v)
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_READ(r, p)                               MREAD_16((uint8_t *)p + 10, r)
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_WRITE(v, p)                              MWRITE_16((uint8_t *)p + 10, v)
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 16 )
-#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 16, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_READ_G(r, g, addr, idx)                   GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, 7, 1, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, 7, 1, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_L_READ( wv )                              FIELD_GET( wv, 15, 1 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_L_WRITE( v, wv )                          FIELD_SET( v, 15, 1, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 10, 7, 1, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 10, 7, 1, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_L_READ( wv )                              FIELD_GET( wv, 15, 1 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_LOCK_L_WRITE( v, wv )                          FIELD_SET( v, 15, 1, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_READ_G(r, g, addr, idx)                   GROUP_FIELD_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, 0, 5, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_WRITE_G(v, g, addr, idx)                  GROUP_FIELD_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 10, 0, 5, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_L_READ( wv )                              FIELD_GET( wv, 8, 5 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_L_WRITE( v, wv )                          FIELD_SET( v, 8, 5, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_READ(r, p)                                FIELD_MREAD_8((uint8_t *)p + 10, 0, 5, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_WRITE(v, p)                               FIELD_MWRITE_8((uint8_t *)p + 10, 0, 5, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_L_READ( wv )                              FIELD_GET( wv, 8, 5 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_SSID_L_WRITE( v, wv )                          FIELD_SET( v, 8, 5, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_READ_G(r, g, addr, idx)                  GROUP_MREAD_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 11, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_WRITE_G(v, g, addr, idx)                 GROUP_MWRITE_8(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 11, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_READ(r, p)                               MREAD_8((uint8_t *)p + 11, r)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_WRITE(v, p)                              MWRITE_8((uint8_t *)p + 11, v)
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_READ( wv )                             FIELD_GET( wv, 0, 8 )
+#define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_FLAGS_L_WRITE( v, wv )                         FIELD_SET( v, 0, 8, wv )
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_RD_IDX_READ_G(r, g, addr, idx)                 GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 12, r)
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_RD_IDX_WRITE_G(v, g, addr, idx)                GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_DTS)) + 12, v)
 #define RDD_DHD_FLOW_RING_CACHE_CTX_ENTRY_RD_IDX_L_READ( wv )                            FIELD_GET( wv, 16, 16 )
@@ -10650,14 +10982,14 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_FC_FLOW_IP_ADDRESSES_TABLE_DTS;
 #endif
 #if defined WL4908
 
-#define RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_SIZE     4
+#define RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_SIZE     2
 typedef struct
 {
-	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_SIZE ];
+	RDD_EIGHT_BYTES_DTS	entry[ RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_DTS;
 
-#define RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_PTR()	( RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_ADDRESS - 0x8000 )
+#define RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_PTR()	( RDD_RUNNER_FWTRACE_MAINB_CURR_OFFSET_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + RUNNER_FWTRACE_MAINB_CURR_OFFSET_ADDRESS - 0x8000 )
 
 #endif
 #define RDD_US_RATE_CONTROLLER_DESCRIPTOR_TX_QUEUE_ADDR_NUMBER	8
@@ -10966,6 +11298,42 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DUMMY_RATE_CONTROLLER_DESCRIPTOR_DTS;
 
 #if defined WL4908
 
+#define RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE     40
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS;
+
+#define RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_PTR()	( RDD_GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + GPON_SKB_ENQUEUED_INDEXES_FREE_PTR_ADDRESS - 0x8000 )
+
+#endif
+#define RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER	4
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	reserved_fw_only[RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER];
+#else
+	uint32_t	reserved_fw_only[RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_RESERVED_FW_ONLY_NUMBER];
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DUMMY_WAN_TX_QUEUE_DESCRIPTOR_DTS;
+
+#if defined WL4908
+
+#define RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE     16
+typedef struct
+{
+	RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS	entry[ RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS;
+
+#define RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_PTR()	( RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_DHD_FLOW_RING_CACHE_LKP_TABLE_ADDRESS - 0x8000 )
+
+#endif
+#if defined WL4908
+
 #define RDD_GPON_SKB_ENQUEUED_INDEXES_PUT_PTR_SIZE     40
 typedef struct
 {
@@ -10976,8 +11344,6 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_GPON_SKB_ENQUEUED_INDEXES_PUT_PTR_DTS;
 #define RDD_GPON_SKB_ENQUEUED_INDEXES_PUT_PTR_PTR()	( RDD_GPON_SKB_ENQUEUED_INDEXES_PUT_PTR_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + GPON_SKB_ENQUEUED_INDEXES_PUT_PTR_ADDRESS - 0x8000 )
 
 #endif
-#define RDD_US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_PTR()	( RDD_US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_ADDRESS - 0x8000 )
-
 #if defined WL4908
 
 #define RDD_MAIN_B_DEBUG_TRACE_SIZE     512
@@ -11002,6 +11368,8 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_PICO_B_DEBUG_TRACE_DTS;
 #define RDD_PICO_B_DEBUG_TRACE_PTR()	( RDD_PICO_B_DEBUG_TRACE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + PICO_B_DEBUG_TRACE_ADDRESS - 0x8000 )
 
 #endif
+#define RDD_US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_PTR()	( RDD_US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_CPU_REASON_TO_CPU_RX_QUEUE_TABLE_ADDRESS - 0x8000 )
+
 #define RDD_PACKET_SRAM_TO_DDR_COPY_BUFFER_RESERVED_FW_ONLY_NUMBER	32
 
 typedef struct
@@ -11040,16 +11408,73 @@ __PACKING_ATTRIBUTE_STRUCT_END__ RDD_RUNNER_FWTRACE_PICOB_BASE_DTS;
 #endif
 #if defined WL4908
 
-#define RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE     16
+#define RDD_US_DHD_BACKUP_INDEX_CACHE_SIZE     32
 typedef struct
 {
-	RDD_DHD_FLOW_RING_CACHE_LKP_ENTRY_DTS	entry[ RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_SIZE ];
+	RDD_TWO_BYTES_DTS	entry[ RDD_US_DHD_BACKUP_INDEX_CACHE_SIZE ];
 }
-__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS;
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_US_DHD_BACKUP_INDEX_CACHE_DTS;
 
-#define RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_PTR()	( RDD_US_DHD_FLOW_RING_CACHE_LKP_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_DHD_FLOW_RING_CACHE_LKP_TABLE_ADDRESS - 0x8000 )
+#define RDD_US_DHD_BACKUP_INDEX_CACHE_PTR()	( RDD_US_DHD_BACKUP_INDEX_CACHE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + US_DHD_BACKUP_INDEX_CACHE_ADDRESS - 0x8000 )
 
 #endif
+#if defined WL4908
+
+#define RDD_DHD_DOORBELL_COUNTERS_SIZE     48
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_DHD_DOORBELL_COUNTERS_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_DOORBELL_COUNTERS_DTS;
+
+#define RDD_DHD_DOORBELL_COUNTERS_PTR()	( RDD_DHD_DOORBELL_COUNTERS_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + DHD_DOORBELL_COUNTERS_ADDRESS - 0x8000 )
+
+#endif
+
+typedef struct
+{
+#ifndef FIRMWARE_LITTLE_ENDIAN
+	uint32_t	dhd_backup_queues_ddr_ptr      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_stack_ddr_ptr     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_total_entry_count 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_used_entry_count  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_cache_a_cur_offset	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_cache_b_cur_offset	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#else
+	uint32_t	dhd_backup_queues_ddr_ptr      	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_stack_ddr_ptr     	:32	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_used_entry_count  	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_total_entry_count 	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_cache_b_cur_offset	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+	uint32_t	dhd_bq_index_cache_a_cur_offset	:16	__PACKING_ATTRIBUTE_FIELD_LEVEL__;
+#endif
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS;
+
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BACKUP_QUEUES_DDR_PTR_READ_G(r, g, addr, idx)          GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)), r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BACKUP_QUEUES_DDR_PTR_WRITE_G(v, g, addr, idx)         GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)), v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BACKUP_QUEUES_DDR_PTR_READ(r, p)                       MREAD_32((uint8_t *)p, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BACKUP_QUEUES_DDR_PTR_WRITE(v, p)                      MWRITE_32((uint8_t *)p, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_STACK_DDR_PTR_READ_G(r, g, addr, idx)         GROUP_MREAD_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 4, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_STACK_DDR_PTR_WRITE_G(v, g, addr, idx)        GROUP_MWRITE_32(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 4, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_STACK_DDR_PTR_READ(r, p)                      MREAD_32((uint8_t *)p + 4, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_STACK_DDR_PTR_WRITE(v, p)                     MWRITE_32((uint8_t *)p + 4, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_TOTAL_ENTRY_COUNT_READ_G(r, g, addr, idx)     GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 8, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_TOTAL_ENTRY_COUNT_WRITE_G(v, g, addr, idx)    GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 8, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_TOTAL_ENTRY_COUNT_READ(r, p)                  MREAD_16((uint8_t *)p + 8, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_TOTAL_ENTRY_COUNT_WRITE(v, p)                 MWRITE_16((uint8_t *)p + 8, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_USED_ENTRY_COUNT_READ_G(r, g, addr, idx)      GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 10, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_USED_ENTRY_COUNT_WRITE_G(v, g, addr, idx)     GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 10, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_USED_ENTRY_COUNT_READ(r, p)                   MREAD_16((uint8_t *)p + 10, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_USED_ENTRY_COUNT_WRITE(v, p)                  MWRITE_16((uint8_t *)p + 10, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_A_CUR_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 12, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_A_CUR_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 12, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_A_CUR_OFFSET_READ(r, p)                 MREAD_16((uint8_t *)p + 12, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_A_CUR_OFFSET_WRITE(v, p)                MWRITE_16((uint8_t *)p + 12, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_B_CUR_OFFSET_READ_G(r, g, addr, idx)    GROUP_MREAD_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 14, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_B_CUR_OFFSET_WRITE_G(v, g, addr, idx)   GROUP_MWRITE_16(g, (uint8_t *)(addr + idx*sizeof(RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DTS)) + 14, v)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_B_CUR_OFFSET_READ(r, p)                 MREAD_16((uint8_t *)p + 14, r)
+#define RDD_DHD_BACKUP_QUEUE_MANAGEMENT_INFO_ENTRY_DHD_BQ_INDEX_CACHE_B_CUR_OFFSET_WRITE(v, p)                MWRITE_16((uint8_t *)p + 14, v)
 #if defined WL4908
 
 #define RDD_WAN_ENQUEUE_INGRESS_QUEUE_SIZE     64
@@ -11060,6 +11485,18 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_WAN_ENQUEUE_INGRESS_QUEUE_DTS;
 
 #define RDD_WAN_ENQUEUE_INGRESS_QUEUE_PTR()	( RDD_WAN_ENQUEUE_INGRESS_QUEUE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + WAN_ENQUEUE_INGRESS_QUEUE_ADDRESS - 0x8000 )
+
+#endif
+#if defined WL4908
+
+#define RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_SIZE     4
+typedef struct
+{
+	RDD_ONE_BYTE_DTS	entry[ RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_DTS;
+
+#define RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_PTR()	( RDD_CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_DTS * )(DEVICE_ADDRESS( RUNNER_COMMON_1_OFFSET ) + CPU_TX_DESCRIPTOR_QUEUE_TAIL_TABLE_ADDRESS - 0x8000 )
 
 #endif
 /* DDR */
@@ -12402,6 +12839,16 @@ typedef struct
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_D2R_WR_ARR_DDR_BUFFER_DTS;
 
 #endif
+#if defined WL4908
+
+#define RDD_DHD_BACKUP_QUEUES_BUFFER_SIZE     524288
+typedef struct
+{
+	RDD_TWO_BYTES_DTS	entry[ RDD_DHD_BACKUP_QUEUES_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_BACKUP_QUEUES_BUFFER_DTS;
+
+#endif
 #define RDD_WLAN_MCAST_DHD_LIST_ENTRY_ARRAY_DHD_STATION_NUMBER	64
 
 typedef struct
@@ -12875,6 +13322,18 @@ typedef union
 	RDD_DHD_TX_POST_DESCRIPTOR_DTS       dhd_tx_post_descriptor;
 }
 __PACKING_ATTRIBUTE_STRUCT_END__ RDD_DHD_TX_POST_FLOW_RING_BUFFER_UNION_DTS;
+
+#endif
+#if defined WL4908
+
+#define RDD_DS_DHD_TX_POST_FLOW_RING_BUFFER_SIZE     4
+typedef struct
+{
+	RDD_DHD_TX_POST_FLOW_RING_BUFFER_UNION_DTS	entry[ RDD_DS_DHD_TX_POST_FLOW_RING_BUFFER_SIZE ];
+}
+__PACKING_ATTRIBUTE_STRUCT_END__ RDD_DS_DHD_TX_POST_FLOW_RING_BUFFER_DTS;
+
+#define RDD_DS_DHD_TX_POST_FLOW_RING_BUFFER_PTR()	( RDD_DS_DHD_TX_POST_FLOW_RING_BUFFER_DTS * )(DEVICE_ADDRESS( RUNNER_PRIVATE_0_OFFSET ) + DS_DHD_TX_POST_FLOW_RING_BUFFER_ADDRESS )
 
 #endif
 #if defined WL4908

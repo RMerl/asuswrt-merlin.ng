@@ -52,6 +52,22 @@
 #include <cfg_onboarding.h>
 #endif
 
+#ifdef RTCONFIG_BRCM_HOSTAPD
+#include <wps_ui.h>
+#include <wlif_utils.h>
+#define HAPD_DIR	"/var/run/hostapd"
+#define HAPD_CMD_BUF	256
+#define WPA_CLI_APP	"wpa_cli-2.7"
+static int wps_config_command;
+static void hapd_wps_cleanup();
+static inline bool
+hapd_disabled()
+{
+	return nvram_match("hapd_enable", "0") ? TRUE : FALSE;
+}
+#define	HAPD_DISABLED() hapd_disabled()
+#endif	/* RTCONFIG_BRCM_HOSTAPD */
+
 static int
 set_wps_env(char *uibuf)
 {
@@ -114,6 +130,10 @@ start_wps_method(void)
 	char *wps_sta_pin;
 	char buf[256] = "SET ";
 	int len = 4;
+	char ifname[NVRAM_MAX_PARAM_LEN];
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	char word[256], *next;
+#endif
 
 	if (getpid()!=1) {
 		notify_rc("start_wps_method");
@@ -135,6 +155,7 @@ start_wps_method(void)
 		snprintf(prefix, sizeof(prefix), "wl%d.1_", wps_band);
 	else
 		snprintf(prefix, sizeof(prefix), "wl%d_", wps_band);
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "ifname", tmp)), sizeof(ifname));
 	wps_sta_pin = nvram_safe_get("wps_sta_pin");
 
 #ifdef RTCONFIG_QTN
@@ -167,44 +188,92 @@ start_wps_method(void)
 	}
 #endif
 
-	if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0))
-		len += sprintf(buf + len, "wps_method=\"%d\" ", WPS_UI_METHOD_PIN);
-	else
-		len += sprintf(buf + len, "wps_method=\"%d\" ", WPS_UI_METHOD_PBC);
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if (!HAPD_DISABLED()) {
+		char cmd[HAPD_CMD_BUF] = {0};
+		char sta_mac[32] = {0};
 
-	if (nvram_match("wps_version2", "enabled") && strlen(nvram_safe_get("wps_autho_sta_mac")))
-		len += sprintf(buf + len, "wps_autho_sta_mac=\"%s\" ", nvram_safe_get("wps_autho_sta_mac"));
+		if (is_router_mode() && !nvram_get_int("w_Setting") && !strcmp(wps_sta_pin, "00000000")) {
+			// Register for wps success notification so that once wps succeeds
+			// in any single interface it can be stopped on other interfaces
+			kill_pidfile_s("/var/run/wps_pbcd.pid", SIGUSR1);
 
-	if (strlen(wps_sta_pin))
-		len += sprintf(buf + len, "wps_sta_pin=\"%s\" ", wps_sta_pin);
-	else
-		len += sprintf(buf + len, "wps_sta_pin=\"00000000\" ");
+			foreach (word, nvram_safe_get("wl_ifnames"), next) {
+				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
+					" %s -i %s wps_pbc", HAPD_DIR, word);
 
-	len += sprintf(buf + len, "wps_action=\"%d\" ", WPS_UI_ACT_ADDENROLLEE);
+				if (cmd[0] != '\0') {
+					if (system(cmd) == 0) {
+						wps_config_command = WPS_UI_CMD_START;
+						wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
+					} else {
+						dbg("Err : %s failed to execute %s \n",
+							__FUNCTION__, cmd);
+					}
+				}
+			}
+		} else {
+			if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0)) {
+				char *ptr = sta_mac[0] != '\0' ? sta_mac : "";
+				snprintf(cmd, sizeof(cmd),
+					"hostapd_cli -p %s -i %s wps_pin any %s %s",
+					HAPD_DIR, ifname, wps_sta_pin, ptr);
+			} else {
+				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
+					" %s -i %s wps_pbc", HAPD_DIR, ifname);
+			}
+			if (cmd[0] != '\0') {
+				if (system(cmd) == 0) {
+					wps_config_command = WPS_UI_CMD_START;
+					wl_wlif_update_wps_ui(WLIF_WPS_UI_FINDING_PBC_STA);
+				} else {
+					dbg("Err : %s failed to execute %s \n",
+						__FUNCTION__, cmd);
+				}
+			}
+		}
+	} else
+#endif	/* RTCONFIG_BRCM_HOSTAPD */
+	{
+		if (strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && (wl_wpsPincheck(wps_sta_pin) == 0))
+			len += sprintf(buf + len, "wps_method=\"%d\" ", WPS_UI_METHOD_PIN);
+		else
+			len += sprintf(buf + len, "wps_method=\"%d\" ", WPS_UI_METHOD_PBC);
 
-	len += sprintf(buf + len, "wps_config_command=\"%d\" ", WPS_UI_CMD_START);
+		if (nvram_match("wps_version2", "enabled") && strlen(nvram_safe_get("wps_autho_sta_mac")))
+			len += sprintf(buf + len, "wps_autho_sta_mac=\"%s\" ", nvram_safe_get("wps_autho_sta_mac"));
 
-	nvram_set("wps_proc_status", "0");
-	nvram_set("wps_proc_status_x", "0");
+		if (strlen(wps_sta_pin))
+			len += sprintf(buf + len, "wps_sta_pin=\"%s\" ", wps_sta_pin);
+		else
+			len += sprintf(buf + len, "wps_sta_pin=\"00000000\" ");
 
-	len += sprintf(buf + len, "wps_pbc_method=\"%d\" ", WPS_UI_PBC_SW);
-	len += sprintf(buf + len, "wps_ifname=\"%s\" ", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+		len += sprintf(buf + len, "wps_action=\"%d\" ", WPS_UI_ACT_ADDENROLLEE);
 
-	dbG("wps env buffer: %s\n", buf);
+		len += sprintf(buf + len, "wps_config_command=\"%d\" ", WPS_UI_CMD_START);
+
+		nvram_set("wps_proc_status", "0");
+		nvram_set("wps_proc_status_x", "0");
+
+		len += sprintf(buf + len, "wps_pbc_method=\"%d\" ", WPS_UI_PBC_SW);
+		len += sprintf(buf + len, "wps_ifname=\"%s\" ", ifname);
+
+		dbG("wps env buffer: %s\n", buf);
 
 #if 0
-	nvram_unset("wps_sta_devname");
-	nvram_unset("wps_sta_mac");
-	nvram_unset("wps_pinfail");
-	nvram_unset("wps_pinfail_mac");
-	nvram_unset("wps_pinfail_name");
-	nvram_unset("wps_pinfail_state");
+		nvram_unset("wps_sta_devname");
+		nvram_unset("wps_sta_mac");
+		nvram_unset("wps_pinfail");
+		nvram_unset("wps_pinfail_mac");
+		nvram_unset("wps_pinfail_name");
+		nvram_unset("wps_pinfail_state");
 #endif
-	nvram_unset("wps_band");
+		nvram_unset("wps_band");
 
-	nvram_set("wps_env_buf", buf);
-	nvram_set_int("wps_restart_war", 1);
-	set_wps_env(buf);
+		nvram_set("wps_env_buf", buf);
+		nvram_set_int("wps_restart_war", 1);
+		set_wps_env(buf);
+	}
 
 	sprintf(tmp, "%lu", uptime());
 	nvram_set("wps_uptime", tmp);
@@ -217,6 +286,9 @@ stop_wps_method(void)
 {
 	char buf[256] = "SET ";
 	int len = 4;
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	char word[256], *next;
+#endif
 
 	if (getpid()!=1) {
 		notify_rc("stop_wps_method");
@@ -229,12 +301,67 @@ stop_wps_method(void)
 		dbG("rpc_qcsapi_wps_cancel %s error, return: %d\n", WIFINAME, retval);
 #endif
 
-	len += sprintf(buf + len, "wps_config_command=%d ", WPS_UI_CMD_STOP);
-	len += sprintf(buf + len, "wps_action=%d ", WPS_UI_ACT_NONE);
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if (!HAPD_DISABLED()) {
+		char prefix[]="wlXXXXXX_", tmp[128];
+		char *mode;
+		char cmd[HAPD_CMD_BUF] = {0};
+		char ifname[NVRAM_MAX_PARAM_LEN];
+		int unit;
 
-	set_wps_env(buf);
+		if (is_router_mode()) {
+			foreach (word, nvram_safe_get("wl_ifnames"), next) {
+				if (wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit)))
+					continue;
 
-	nvram_set_int("wps_uptime", 0);
+				snprintf(prefix, sizeof(prefix), "wl%d", unit);
+	                        mode = nvram_safe_get(strcat_r(prefix, "_mode", tmp));
+
+				if (!strcmp(mode, "ap")) {
+					/* Execute wps_cancel cli cmd and reset the wps state variables to 0 */
+					snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
+						" %s -i %s wps_cancel", HAPD_DIR, word);
+				} else {
+					snprintf(cmd, sizeof(cmd), "%s -p "
+						"/var/run/%s_wpa_supplicant -i %s wps_cancel",
+						WPA_CLI_APP, prefix, word);
+				}
+
+				if (system(cmd) == 0) {
+					wps_config_command = WPS_UI_CMD_NONE;
+					wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
+				}
+			}
+		} else {
+			snprintf(prefix, sizeof(prefix), "wl%d", nvram_get_int("wps_band_x"));
+			mode = nvram_safe_get(strcat_r(prefix, "_mode", tmp));
+			wl_ifname(nvram_get_int("wps_band_x"), 0, ifname);
+
+			if (!strcmp(mode, "ap")) {
+				/* Execute wps_cancel cli cmd and reset the wps state variables to 0 */
+				snprintf(cmd, sizeof(cmd), "hostapd_cli -p"
+					" %s -i %s wps_cancel", HAPD_DIR, ifname);
+			} else {
+				snprintf(cmd, sizeof(cmd), "%s -p "
+					"/var/run/%s_wpa_supplicant -i %s wps_cancel",
+					WPA_CLI_APP, prefix, ifname);
+			}
+
+			if (system(cmd) == 0) {
+				wps_config_command = WPS_UI_CMD_NONE;
+				wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
+			}
+		}
+	} else
+#endif
+	{
+		len += sprintf(buf + len, "wps_config_command=%d ", WPS_UI_CMD_STOP);
+		len += sprintf(buf + len, "wps_action=%d ", WPS_UI_ACT_NONE);
+
+		set_wps_env(buf);
+
+		nvram_set_int("wps_uptime", 0);
+	}
 
 	return 0;
 }
@@ -261,23 +388,55 @@ int start_wps_enr(void)
 	int wps_method = WPS_UI_METHOD_PBC;
 	int wps_config_command = WPS_UI_CMD_START;
 	int len = 4;
+	char ifname[NVRAM_MAX_PARAM_LEN];
 
-	snprintf(prefix, sizeof(prefix), "wl%d_", nvram_get_int("wps_band_x"));
+	snprintf(prefix, sizeof(prefix), "wl%d", nvram_get_int("wps_band_x"));
+	strlcpy(ifname, nvram_safe_get(strcat_r(prefix, "_ifname", tmp)), sizeof(ifname));
 
-	sprintf(tmp, "%d", wps_action);
-	nvram_set("wps_action", tmp);
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if (!HAPD_DISABLED()) {
+		int wps_method = WPS_UI_METHOD_PBC;
+		char cmd[HAPD_CMD_BUF] = {0};
 
-	len += sprintf(buf + len, "wps_action=\"%d\" ", wps_action);
-	len += sprintf(buf + len, "wps_pbc_method=\"%d\" ", WPS_UI_PBC_SW);
-	len += sprintf(buf + len, "wps_method=\"%d\" ", wps_method);
+		switch (wps_method){
+			case WPS_UI_METHOD_PBC:
+			snprintf(cmd, sizeof(cmd), "%s -p "
+				"/var/run/%s_wpa_supplicant -i %s wps_pbc",
+				WPA_CLI_APP, prefix, ifname);
+			break;
 
-	nvram_set("wps_proc_status", "0");
+			case WPS_UI_METHOD_PIN:
+			snprintf(cmd, sizeof(cmd), "%s -p "
+				"/var/run/%s_wpa_supplicant -i %s wps_pin any %s",
+				WPA_CLI_APP, prefix, ifname, nvram_safe_get("wps_device_pin"));
+			break;
+		}
 
-	len += sprintf(buf + len, "wps_config_command=\"%d\" ", wps_config_command);
-	len += sprintf(buf + len, "wps_ifname=\"%s\" ", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+		if (system(cmd) == 0) {
+			wps_config_command = WPS_UI_CMD_START;
+			wl_wlif_update_wps_ui(WLIF_WPS_UI_FIND_PBC_AP);
+		} else {
+			dbg("Err : %s failed to execute %s \n",
+				__FUNCTION__, cmd);
+		}
+	} else
+#endif	/* RTCONFIG_BRCM_HOSTAPD */
+	{
+		sprintf(tmp, "%d", wps_action);
+		nvram_set("wps_action", tmp);
 
-	nvram_set("wps_env_buf", buf);
-	set_wps_env(buf);
+		len += sprintf(buf + len, "wps_action=\"%d\" ", wps_action);
+		len += sprintf(buf + len, "wps_pbc_method=\"%d\" ", WPS_UI_PBC_SW);
+		len += sprintf(buf + len, "wps_method=\"%d\" ", wps_method);
+
+		nvram_set("wps_proc_status", "0");
+
+		len += sprintf(buf + len, "wps_config_command=\"%d\" ", wps_config_command);
+		len += sprintf(buf + len, "wps_ifname=\"%s\" ", ifname);
+
+		nvram_set("wps_env_buf", buf);
+		set_wps_env(buf);
+	}
 
 	sprintf(tmp, "%lu", uptime());
 	nvram_set("wps_uptime", tmp);

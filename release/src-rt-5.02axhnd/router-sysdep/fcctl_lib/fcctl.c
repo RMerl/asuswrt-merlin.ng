@@ -197,6 +197,10 @@ int fcCtlConfig(int option, int arg1)
             break;
 #endif
 
+        case FCACHE_CONFIG_OPT_SW_DEFER:
+            ret = fcDevIoctl( FCACHE_IOCTL_SW_DEFER, -1, arg1 );
+            break;
+
         case FCACHE_CONFIG_OPT_MCAST:
             ret = fcDevIoctl( FCACHE_IOCTL_MCAST, -1, arg1 );
             break;

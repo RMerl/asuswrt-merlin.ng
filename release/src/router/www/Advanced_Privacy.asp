@@ -54,7 +54,7 @@ function initial(){
 
 	url = "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html"
 	$("#tm_eula_url").attr("href",url);
-	url = "https://success.trendmicro.com/data-collection-disclosure";
+	url = "https://esupport.trendmicro.com/en-us/home/pages/technical-support/1120473.aspx";
 	$("#tm_disclosure_url").attr("href",url);
 
 	if(eula_status.ASUS_EULA == "1"){

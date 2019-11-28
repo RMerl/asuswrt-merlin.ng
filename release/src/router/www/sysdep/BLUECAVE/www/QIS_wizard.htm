@@ -62,6 +62,7 @@
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
+					systemVariable.linkLnternet = httpApi.isConnected();
 
 					if(isSupport("2p5G_LWAN"))
 						systemVariable.originWansExtwan = httpApi.nvramGet(["wans_extwan"]).wans_extwan;
@@ -174,6 +175,53 @@
 			</div>
 		</div>
 		
+		<!-- Prelink description -->
+		<div id="prelink_desc" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Setup_node#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">
+						<div>
+							<div class="descSteps"><#Step_1#></div>
+							<div style="font-weight: normal;" id="setupNode_step1_desc"><#Setup_node_desc_step1#></div>
+						</div>
+						<div style="margin-top: 20px;">
+							<div class="descSteps"><#Step_2#></div>
+							<div style="font-weight: normal;"><#Setup_node_desc_step2#></div>
+						</div>
+						<div style="text-align: center;">
+							<div><img width="504" src="/images/product_location.png"></div>
+						</div>
+					</div>
+
+					<div>
+						<!-- Action Button -->
+						<div class="footer_desktop" style="margin-top:0px;">
+							<div class="desktop_abortBtn" onclick="abort.prelink()"><#CTL_prev#></div>
+							<div class="desktop_applyBtn" onclick="apply.prelink()"><#CTL_next#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%" onclick='abort.prelink()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="apply.prelink()">
+										<div class="mobile_applyBtn"><#CTL_next#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
 		<!-- Advanced Setting -->
 		<div id="advanced_setting" data-role="page" class="qisBackground">
 			<div class="headerBar"></div>

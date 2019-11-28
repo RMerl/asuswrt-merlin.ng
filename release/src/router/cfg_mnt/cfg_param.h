@@ -40,7 +40,7 @@ struct feature_mapping_s feature_mapping_list[] = {
 	{ "time",		FT_TIME,			"restart_time" },
 	{ "misc",		FT_MISC,			NULL },
 	{ "logger",	FT_LOGGER,		"restart_logger" },
-	{ "feedback",	FT_FEEDBACK,	"restart_sendfeedback" },
+	{ "feedback",   FT_FEEDBACK,    "restart_sendfeedback" },
 	{ "diagnostic",	FT_DIAGNOSTIC,	"restart_dblog" },
 	{ "backhalctrl", 	FT_BACKHAULCTRL,	"restart_amas_bhctrl"},
 	{ "central_led",	FT_CENTRAL_LED,	"reset_led" },
@@ -186,6 +186,30 @@ enum {
 	SUBFT_HE_FEATURES_5G1,
 	/* sub feature for ACS include DFS */
 	SUBFT_ACS_INCLUDE_DFS,
+#if defined(RTCONFIG_AMAS_WGN)
+	SUBFT_VLAN_RULELIST,
+#endif	/* RTCONFIG_AMAS_WGN */
+	SUBFT_GUEST_MISC_2G_G1, 
+	SUBFT_GUEST_MISC_2G_G2,
+	SUBFT_GUEST_MISC_2G_G3, 
+	SUBFT_GUEST_MISC_5G_G1, 
+	SUBFT_GUEST_MISC_5G_G2,
+	SUBFT_GUEST_MISC_5G_G3, 
+	SUBFT_GUEST_MISC_5G1_G1, 
+	SUBFT_GUEST_MISC_5G1_G2,
+	SUBFT_GUEST_MISC_5G1_G3, 
+	/* sub feature for connection diagmostic */
+	SUBFT_CONNECTION_DIAGMOSTIC,
+
+	/* sub feature for 802.11ax/Wi-Fi 6 mode */
+	SUBFT_11_AX_2G,
+	SUBFT_11_AX_5G,
+	SUBFT_11_AX_5G1,
+
+	/* sub feature for OFDMA */
+	SUBFT_OFDMA_2G,
+	SUBFT_OFDMA_5G,
+	SUBFT_OFDMA_5G1
 };
 
 struct subfeature_mapping_s subfeature_mapping_list[] = {
@@ -294,6 +318,18 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd",		SUBFT_SPCMD,	FT_SPCMD },
 #endif
+#if defined(RTCONFIG_AMAS_WGN)
+	{ "vlan_rulelist", SUBFT_VLAN_RULELIST, FT_WIRELESS },
+#endif	/* RTCONFIG_AMAS_WGN */		
+	{ "guest_misc_2g_g1", SUBFT_GUEST_MISC_2G_G1, FT_WIRELESS },
+	{ "guest_misc_2g_g2", SUBFT_GUEST_MISC_2G_G2, FT_WIRELESS },
+	{ "guest_misc_2g_g3", SUBFT_GUEST_MISC_2G_G3, FT_WIRELESS },
+	{ "guest_misc_5g_g1", SUBFT_GUEST_MISC_5G_G1, FT_WIRELESS },
+	{ "guest_misc_5g_g2", SUBFT_GUEST_MISC_5G_G2, FT_WIRELESS },
+	{ "guest_misc_5g_g3", SUBFT_GUEST_MISC_5G_G3, FT_WIRELESS },
+	{ "guest_misc_5g1_g1", SUBFT_GUEST_MISC_5G1_G1, FT_WIRELESS },
+	{ "guest_misc_5g2_g2", SUBFT_GUEST_MISC_5G1_G2, FT_WIRELESS },
+	{ "guest_misc_5g3_g3", SUBFT_GUEST_MISC_5G1_G3, FT_WIRELESS },
 #if defined(RTCONFIG_BW160M)
 	/* sub feature for bandwidth 160 support */	
 	{ "bw_160_2g", SUBFT_BW_160_2G, FT_WIRELESS },
@@ -307,7 +343,17 @@ struct subfeature_mapping_s subfeature_mapping_list[] = {
 	{ "he_features_5g1", SUBFT_HE_FEATURES_5G1, FT_WIRELESS },
 	/* sub feature for ACS include DFS */
 	{ "acs_dfs", SUBFT_ACS_INCLUDE_DFS, FT_WIRELESS },
+	/* 802.11ax/Wi-Fi 6 mode */
+	{ "11ax_2g", SUBFT_11_AX_2G, FT_WIRELESS },
+	{ "11ax_5g", SUBFT_11_AX_5G, FT_WIRELESS },
+	{ "11ax_5g1", SUBFT_11_AX_5G1, FT_WIRELESS },
+	/* ofdma */
+	{ "ofdma_2g", SUBFT_OFDMA_2G, FT_WIRELESS },
+	{ "ofdma_5g", SUBFT_OFDMA_5G, FT_WIRELESS },
+	{ "ofdma_5g1", SUBFT_OFDMA_5G1, FT_WIRELESS },
 #endif	
+	/* connection diagnostic */
+	{ "connection_diagnostic", SUBFT_CONNECTION_DIAGMOSTIC, FT_MISC},
 	/* END */
 	{ NULL, 0, 0}
 };
@@ -401,22 +447,22 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
 	{ "wl0.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
-	{ "wl0.1_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
-	{ "wl0.1_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_2G_G1},
+	{ "wl0.1_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G1},
+	{ "wl0.1_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G1},
 	{ "wl1.1_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
 	{ "wl1.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
-	{ "wl1.1_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
-	{ "wl1.1_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G_G1},
+	{ "wl1.1_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G_G1},
+	{ "wl1.1_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G1},
 	{ "wl2.1_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
 	{ "wl2.1_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-	{ "wl2.1_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
-	{ "wl2.1_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G1_G1},
+	{ "wl2.1_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G1_G1},
+	{ "wl2.1_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G1_G1},
 	{ "wl0.1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G1},
 	{ "wl0.1_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G1},
 	{ "wl1.1_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G1},
@@ -428,22 +474,22 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
 	{ "wl0.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
-	{ "wl0.2_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
-	{ "wl0.2_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_2G_G2},
+	{ "wl0.2_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G2},
+	{ "wl0.2_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G2},
 	{ "wl1.2_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
 	{ "wl1.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
-	{ "wl1.2_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
-	{ "wl1.2_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G_G2},
+	{ "wl1.2_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G_G2},
+	{ "wl1.2_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G2},
 	{ "wl2.2_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
 	{ "wl2.2_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
-	{ "wl2.2_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
-	{ "wl2.2_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G1_G2},
+	{ "wl2.2_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G1_G2},
+	{ "wl2.2_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G1_G2},
 	{ "wl0.2_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G2},
 	{ "wl0.2_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G2},
 	{ "wl1.2_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G2},
@@ -455,22 +501,22 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl0.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
 	{ "wl0.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
-	{ "wl0.3_expire",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
-	{ "wl0.3_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_2G_G3},
+	{ "wl0.3_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_2G_G3},
+	{ "wl0.3_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_2G_G3},
 	{ "wl1.3_ssid", 	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
 	{ "wl1.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
-	{ "wl1.3_expire",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
-	{ "wl1.3_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G_G3},
+	{ "wl1.3_expire",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G3},
+	{ "wl1.3_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G_G3},
 	{ "wl2.3_ssid",		FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_wpa_psk",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_auth_mode_x",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_crypto",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
 	{ "wl2.3_bss_enabled",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-	{ "wl2.3_expire",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
-	{ "wl2.3_lanaccess",	FT_WIRELESS,		SUBFT_BASIC_5G1_G3},
+	{ "wl2.3_expire",	FT_WIRELESS,		SUBFT_GUEST_MISC_5G1_G3},
+	{ "wl2.3_lanaccess",	FT_WIRELESS,	SUBFT_GUEST_MISC_5G1_G3},
 	{ "wl0.3_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_2G_G3},
 	{ "wl0.3_maclist_x",	FT_WIRELESS,		SUBFT_MACFILTER_2G_G3},
 	{ "wl1.3_macmode", 	FT_WIRELESS,		SUBFT_MACFILTER_5G_G3},
@@ -643,6 +689,18 @@ struct param_mapping_s param_mapping_list[] = {
 #ifdef RTCONFIG_WIFI_SON
 	{ "spcmd", 		FT_SPCMD,		SUBFT_SPCMD},
 #endif
+#if defined(RTCONFIG_AMAS_WGN)
+	{ "vlan_rulelist", FT_WIRELESS, SUBFT_VLAN_RULELIST },
+	{ "wl0.1_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_2G_G1 },
+	{ "wl0.2_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_2G_G2 },
+	{ "wl0.3_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_2G_G3 },
+	{ "wl1.1_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G_G1 },
+	{ "wl1.2_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G_G2 },
+	{ "wl1.3_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G_G3 },
+	{ "wl2.1_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G1_G1 },
+	{ "wl2.2_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G1_G2 },
+	{ "wl2.3_sync_node", FT_WIRELESS, SUBFT_GUEST_MISC_5G1_G3 },
+#endif	/* RTCONFIG_AMAS_WGN */
 #if defined(RTCONFIG_BW160M)
 	/* Bandwidth 160 support */
 	{ "wl0_bw_160", FT_WIRELESS, SUBFT_BW_160_2G },
@@ -655,7 +713,18 @@ struct param_mapping_s param_mapping_list[] = {
 	{ "wl2_he_features", FT_WIRELESS, SUBFT_HE_FEATURES_5G1 },
 	/* ACS include DFS channels */
 	{ "acs_dfs", FT_WIRELESS, SUBFT_ACS_INCLUDE_DFS },
+	/* 802.11ax/Wi-Fi 6 mode */
+	{ "wl0_11ax", FT_WIRELESS, SUBFT_11_AX_2G },
+	{ "wl1_11ax", FT_WIRELESS, SUBFT_11_AX_5G },
+	{ "wl2_11ax", FT_WIRELESS, SUBFT_11_AX_5G1 },
+	/* ofdma */
+	{ "wl0_ofdma", FT_WIRELESS, SUBFT_OFDMA_2G },
+	{ "wl1_ofdma", FT_WIRELESS, SUBFT_OFDMA_5G },
+	{ "wl2_ofdma", FT_WIRELESS, SUBFT_OFDMA_5G1 },
 #endif	
+	/* connection diagnostic */
+	{ "enable_diag", 	FT_MISC,	SUBFT_CONNECTION_DIAGMOSTIC },
+	{ "diag_interval", 	FT_MISC,	SUBFT_CONNECTION_DIAGMOSTIC },
 	/* END */
 	{ NULL, 0, 0 }
 };

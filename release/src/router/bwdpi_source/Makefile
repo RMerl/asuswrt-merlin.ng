@@ -6,6 +6,10 @@ ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp include/tdts/sysdeps/ipq806x-tmcfg.h include/tdts/tmcfg.h -f                     # ipq806x
 	@cp include/udb/sysdeps/ipq806x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq806x
 	@cp bin/ipq806x/* bin/ -rf                                                           # ipq806x
+else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
+	@cp include/tdts/sysdeps/ipq807x-tmcfg.h include/tdts/tmcfg.h -f                     # ipq807x
+	@cp include/udb/sysdeps/ipq807x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq807x
+	@cp bin/ipq807x/* bin/ -rf                                                           # ipq807x
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp include/tdts/sysdeps/dakota-tmcfg.h include/tdts/tmcfg.h -f                      # dakota
 	@cp include/udb/sysdeps/dakota-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # dakota
@@ -33,14 +37,20 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp bin/bcm7/* bin/ -rf                                                              # bcm7
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+	@cp include/tdts/sysdeps/bcm675x-tmcfg.h include/tdts/tmcfg.h -f                     # bcm675x
+	@cp include/udb/sysdeps/bcm675x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm675x
+	@cp bin/bcm675x/* bin/ -rf                                                           # bcm675x
+else
 	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
 	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
 	@cp bin/axhnd/* bin/ -rf                                                             # ax-hnd
+endif # RTCONFIG_HND_ROUTER_AX_675X
 else
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
 	@cp bin/hnd/* bin/ -rf                                                               # hnd
-endif
+endif # HND_ROUTER_AX
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -62,6 +72,9 @@ pre_build:
 ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp include/tdts/sysdeps/ipq806x-tmcfg.h include/tdts/tmcfg.h -f                     # ipq806x
 	@cp include/udb/sysdeps/ipq806x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq806x
+else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
+	@cp include/tdts/sysdeps/ipq807x-tmcfg.h include/tdts/tmcfg.h -f                     # ipq807x
+	@cp include/udb/sysdeps/ipq807x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # ipq807x
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp include/tdts/sysdeps/dakota-tmcfg.h include/tdts/tmcfg.h -f                      # dakota
 	@cp include/udb/sysdeps/dakota-tmcfg_udb.h include/udb/tmcfg_udb.h -f                # dakota
@@ -83,12 +96,17 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp include/udb/sysdeps/bcm7-tmcfg_udb.h include/udb/tmcfg_udb.h -f                  # bcm7
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+	@cp include/tdts/sysdeps/bcm675x-tmcfg.h include/tdts/tmcfg.h -f                     # bcm675x
+	@cp include/udb/sysdeps/bcm675x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm675x
+else
 	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
 	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
+endif # RTCONFIG_HND_ROUTER_AX_675X
 else
 	@cp include/tdts/sysdeps/hnd-tmcfg.h include/tdts/tmcfg.h -f                         # hnd
 	@cp include/udb/sysdeps/hnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                   # hnd
-endif
+endif # HND_ROUTER_AX
 else ifeq ($(RTCONFIG_BCM_7114),y)
 	@cp include/tdts/sysdeps/bcm7114-tmcfg.h include/tdts/tmcfg.h -f                     # bcm7114
 	@cp include/udb/sysdeps/bcm7114-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm7114
@@ -127,10 +145,14 @@ install: all
 	@cp -f bin/rule.trf RC_INDEP
 	@cp -f bin/tdts_rule_agent RC_INDEP
 	-@cp -f bin/tcd RC_INDEP
+	-@cp -f bin/*enc RC_INDEP
+	-@cp -f bin/*pem RC_INDEP
 	@rm -f RC_INDEP/*.sh
 	@rm -f RC_INDEP/*.conf
 ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp -f modules/ipq806x/* RC_INDEP/
+else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
+	@cp -f modules/ipq807x/* RC_INDEP/
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp -f modules/dakota/* RC_INDEP/
 else ifeq ($(RTCONFIG_QCA956X),y)
@@ -148,7 +170,11 @@ ifeq ($(RTCONFIG_BCM7),y)
 	@cp -f modules/bcm7/* RC_INDEP/
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+	@cp -f modules/bcm675x/* RC_INDEP/
+else
 	@cp -f modules/axhnd/* RC_INDEP/
+endif # RTCONFIG_HND_ROUTER_AX_675X
 else
 	@cp -f modules/hnd/* RC_INDEP/
 endif
@@ -163,13 +189,15 @@ else
 endif
 endif
 endif
-ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX)),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.ko $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.trf $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.cert $(INSTALLDIR)/usr/bwdpi/
+	-@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.enc $(INSTALLDIR)/usr/bwdpi/             # enc / pem / libshn_pctrl.so needs in the same folder
+	-@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.pem $(INSTALLDIR)/usr/bwdpi/             # enc / pem / libshn_pctrl.so needs in the same folder
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred $(INSTALLDIR)/usr/sbin/wred
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred_set_conf $(INSTALLDIR)/usr/sbin/wred_set_conf
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred_set_wbl $(INSTALLDIR)/usr/sbin/wred_set_wbl
@@ -187,13 +215,15 @@ install:
 	# [INSTALL] prebuild into RC_INDEP
 	-@mkdir RC_INDEP
 	-@cp -f prebuild$(BCMEX)$(EX7)$(EXHND)/* RC_INDEP/
-ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX)),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.ko $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.trf $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.cert $(INSTALLDIR)/usr/bwdpi/
+	-@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.enc $(INSTALLDIR)/usr/bwdpi/             # enc / pem / libshn_pctrl.so needs in the same folder
+	-@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.pem $(INSTALLDIR)/usr/bwdpi/             # enc / pem / libshn_pctrl.so needs in the same folder
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred $(INSTALLDIR)/usr/sbin/wred
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred_set_conf $(INSTALLDIR)/usr/sbin/wred_set_conf
 	@install -D $(TOP)/bwdpi_source/RC_INDEP/wred_set_wbl $(INSTALLDIR)/usr/sbin/wred_set_wbl

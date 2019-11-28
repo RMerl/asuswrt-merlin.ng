@@ -349,6 +349,15 @@ int pmc_dsl_mipscore_enable(int flag, int core)
 
 
 #if defined(_BCM963138_) || defined(CONFIG_BCM963138)
+        int val;
+
+        val = 0xa040001;
+        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(rosc_thresh_h), val);
+        val = 0x300;
+        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(rosc_thresh_s), val);
+        val = 0x6400;
+        WriteBPCMRegister(AFEPLL_PMB_ADDR_VDSL3_CORE, BPCMRegOffset(pwd_accum_control), val);
+
 	/* 63138 B0 has two PHY MIPS core, the misc_ctrl for second core is next to the first one,
 	   the Bits_vdsl_mips definition is same in both control and control2 structure so we can
 	   just share the same misc_ctrl variable */

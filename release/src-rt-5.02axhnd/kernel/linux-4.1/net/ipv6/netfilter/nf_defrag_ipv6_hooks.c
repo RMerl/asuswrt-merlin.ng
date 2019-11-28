@@ -60,11 +60,11 @@ static unsigned int ipv6_defrag(const struct nf_hook_ops *ops,
 
 #if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
 	/*
-	 * MAPT_FORWARD_MODE1 indicates Fragment extension header inserted
+	 * MAP_FORWARD_MODE1 indicates Fragment extension header inserted
 	 * for translated MAP-T IPv6 packet in MAP-T driver.
 	 * Netfilter should not defragment in this case.
 	 */
-	if (skb->mapt_forward != MAPT_FORWARD_MODE1)
+	if (skb->map_forward != MAP_FORWARD_MODE1)
 	{
 #endif
 #if IS_ENABLED(CONFIG_NF_CONNTRACK)

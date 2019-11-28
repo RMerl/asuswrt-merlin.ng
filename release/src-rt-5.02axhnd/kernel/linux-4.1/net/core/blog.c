@@ -47,7 +47,6 @@ written consent.
 #if defined(CONFIG_BCM_KF_SKB_DEFINES)
 #include <linux/bcm_skb_defines.h>
 #endif
-#include <linux/iqos.h>
 #include <linux/notifier.h>
 #include <net/netevent.h>
 #if defined(CONFIG_XFRM) 
@@ -217,17 +216,19 @@ int blog_support_get_accel_mode(void)
  */
 void blog_support_accel_mode(int accel_mode)
 {
+#if !defined(CONFIG_BRIDGE_NETFILTER)
     if (blog_accel_mode_set_fn)
         blog_accel_mode_set_fn( accel_mode );
 
     blog_support_accel_mode_g = accel_mode;
+#endif
 }
 
 /*TCP ACK Multi-Flow */
 blog_tcp_ack_mflows_set_t blog_tcp_ack_mflows_set_fn = NULL;
 
 #if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
-int blog_support_tcp_ack_mflows_g = 1;
+int blog_support_tcp_ack_mflows_g = 0; /* disable it, default is 1 */
 #else
 int blog_support_tcp_ack_mflows_g = 0;
 #endif
@@ -298,7 +299,7 @@ void blog_support_gre(int config)
         blog_gre_tunnel_accelerated_g = BLOG_GRE_DISABLE;  
 }
 
-int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto);
+int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p);
 int blog_xmit_chk_gre(struct sk_buff *skb_p, uint32_t h_proto); 
 
 /*
@@ -532,29 +533,29 @@ const char * strIpctDir[] = {   /* in reference to enum ip_conntrack_dir */
     BLOG_DECL(DIR_UNKN)
 };
 
+#if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
 const char * strIpctStatus[] =  /* in reference to enum ip_conntrack_status */
 {
-    BLOG_DECL(EXPECTED)
-    BLOG_DECL(SEEN_REPLY)
-    BLOG_DECL(ASSURED)
-    BLOG_DECL(CONFIRMED)
-    BLOG_DECL(SRC_NAT)
-    BLOG_DECL(DST_NAT)
-    BLOG_DECL(SEQ_ADJUST)
-    BLOG_DECL(SRC_NAT_DONE)
-    BLOG_DECL(DST_NAT_DONE)
-    BLOG_DECL(DYING)
-    BLOG_DECL(FIXED_TIMEOUT)
-    BLOG_DECL(TEMPLATE)
-    BLOG_DECL(UNTRACKED)
-    BLOG_DECL(BLOG)
-    BLOG_DECL(HELPER)
-    BLOG_DECL(UNUSED0)
-    BLOG_DECL(UNUSED1)
-    BLOG_DECL(UNUSED2)
-    BLOG_DECL(UNUSED3)
-    BLOG_DECL(IQOS)
+    BLOG_ARY_INIT(IPS_EXPECTED_BIT)
+    BLOG_ARY_INIT(IPS_SEEN_REPLY_BIT)
+    BLOG_ARY_INIT(IPS_ASSURED_BIT)
+    BLOG_ARY_INIT(IPS_CONFIRMED_BIT)
+    BLOG_ARY_INIT(IPS_SRC_NAT_BIT)
+    BLOG_ARY_INIT(IPS_DST_NAT_BIT)
+    BLOG_ARY_INIT(IPS_SEQ_ADJUST_BIT)
+    BLOG_ARY_INIT(IPS_SRC_NAT_DONE_BIT)
+    BLOG_ARY_INIT(IPS_DST_NAT_DONE_BIT)
+    BLOG_ARY_INIT(IPS_DYING_BIT)
+    BLOG_ARY_INIT(IPS_FIXED_TIMEOUT_BIT)
+    BLOG_ARY_INIT(IPS_TEMPLATE_BIT)
+    BLOG_ARY_INIT(IPS_UNTRACKED_BIT)
+    BLOG_ARY_INIT(IPS_HELPER_BIT)
+#if defined(CONFIG_BCM_KF_NETFILTER)
+    BLOG_ARY_INIT(IPS_IQOS_BIT)
+#endif
+    BLOG_ARY_INIT(IPS_BLOG_BIT)
 };
+#endif
 
 const char * strBlogTos[] =
 {
@@ -608,6 +609,7 @@ const char *str_blog_skip_reason[blog_skip_reason_max] =
     BLOG_ARY_INIT(blog_skip_reason_bond)
     BLOG_ARY_INIT(blog_skip_reason_map_tcp)
     BLOG_ARY_INIT(blog_skip_reason_blog)
+    BLOG_ARY_INIT(blog_skip_reason_l2_local_termination)
 };
 
 const char *str_blog_free_reason[blog_free_reason_max] =
@@ -885,7 +887,7 @@ uint32_t blog_extend( uint32_t num )
     list_p = (Blog_t *) kmalloc( num * sizeof(Blog_t), GFP_ATOMIC);
     if ( list_p == BLOG_NULL )
     {
-        blog_ctx_p->blog_fails++;
+        blog_ctx_p->blog_mem_fails++;
 #if defined(CC_BLOG_SUPPORT_DEBUG)
         blog_cnt_fails++;
 #endif
@@ -978,6 +980,7 @@ Blog_t * blog_get( void )
         if ( (blog_extends >= BLOG_EXTEND_MAX_ENGG)/* Try extending free pool */
           || (blog_extend( BLOG_EXTEND_SIZE_ENGG ) != BLOG_EXTEND_SIZE_ENGG))
         {
+            blog_ctx_p->blog_extend_fails++;
             blog_print( "WARNING: free list exhausted" );
         }
 #else
@@ -1334,7 +1337,7 @@ void blog_copy(struct blog_t * new_p, const struct blog_t * prev_p)
  */
 int blog_iq( const struct sk_buff * skb_p )
 {
-    int prio = IQOS_PRIO_LOW;
+    int prio = BLOG_IQ_PRIO_LOW;
 
     blog_print( "skb<%p> [<%p>]",
                 skb_p, __builtin_return_address(0) );
@@ -1343,7 +1346,7 @@ int blog_iq( const struct sk_buff * skb_p )
     {
         Blog_t *blog_p = skb_p->blog_p;
 
-    if (blog_p)
+        if (blog_p)
             prio = blog_p->iq_prio;
     }
     return prio;
@@ -1434,10 +1437,10 @@ static void blog_tcpack_prio( Blog_t * blog_p )
 
     if(!blog_support_tcp_ack_mflows_g)
     {
-#ifdef CATHY_PPTP_DL_ACC
-        /* don't set tx queue for the tcp ack when tcp_ack_mflows is disabled */
-        blog_p->ack_done = 1;
-        return;
+#if 1 /* tcp ack mflows patch */
+	/* don't set tx queue for the tcp ack when tcp_ack_mflows is disabled */
+	blog_p->ack_done = 1;
+	return;
 #endif
         /* keep backward compatibilty incase creating a 
          * seperate flow for pure acks is disabled
@@ -1455,7 +1458,8 @@ static void blog_tcpack_prio( Blog_t * blog_p )
                 {
                     unsigned long newMark = SKBMARK_SET_Q(blog_p->mark, BLOG_TCPACK_XTM_PRIO );
                     uint8_t newChannel = (*blog_xtm_get_tx_chan_fn)( blog_p->tx_dev_p, 
-                                                                     blog_p->tx.info.channel, newMark );
+                                                                     blog_p->tx.info.channel, 
+                                                                     newMark, 1);
                     if (newChannel != blog_p->tx.info.channel)
                     {
                         blog_p->tx.info.channel = newChannel;
@@ -2340,6 +2344,7 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
     BlogAction_t action = PKT_NORM;
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE) || defined(CONFIG_ACCEL_PPTP)   
     int gre_rcv_version;
+    uint16_t flags;
 #endif   
 
     if ( blog_pa_hook_g != (BlogPaHook_t)NULL )
@@ -2367,10 +2372,10 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
                 rfc2684HdrLength[blogHash.l1_tuple.phyLen],
                 blogHash.match );   
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE) || defined(CONFIG_ACCEL_PPTP)
-    gre_rcv_version = blog_rcv_chk_gre (fkb_p, encap);     
+    gre_rcv_version = blog_rcv_chk_gre (fkb_p, encap, &flags);     
 #endif           
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE)
-    if (blog_gre_tunnel_accelerated() && gre_rcv_version == PPTP_GRE_VER_0)
+    if (blog_gre_tunnel_accelerated() && gre_rcv_version == PPTP_GRE_VER_0 && flags)
     {
         int gre_status;
         void *tunl_p = NULL;
@@ -2419,13 +2424,8 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
 	if (blog_gre_tunnel_accelerated() && gre_rcv_version == PPTP_GRE_VER_1)
 	{
 		int pptp_status;
-#ifdef CATHY_PPTP_DL_ACC
-        uint32_t rcv_pktSeq, rcv_pktAck = 0;
-        pptp_status = blog_pptp_rcv( fkb_p, encap, &rcv_pktSeq , &rcv_pktAck );
-#else
         uint32_t rcv_pktSeq;
         pptp_status = blog_pptp_rcv( fkb_p, encap, &rcv_pktSeq );
-#endif
         switch (pptp_status)
         {
             case BLOG_PPTP_ENCRYPTED:
@@ -2437,10 +2437,6 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
             case BLOG_PPTP_RCV_NOT_PPTP:
             case BLOG_PPTP_RCV_NO_SEQNO:
             case BLOG_PPTP_RCV_IN_SEQ:
-#ifdef CATHY_PPTP_DL_ACC
-                if (rcv_pktAck)
-                        blogHash.grerx_ackIe = 1;
-#endif
             	break;
 
             case BLOG_PPTP_RCV_NO_TUNNEL:
@@ -2459,10 +2455,6 @@ BlogAction_t _blog_finit( struct fkbuff * fkb_p, void * dev_p,
 
             case BLOG_PPTP_RCV_OOS_GT:
                 blog_print( "RX PPTP out-of-seq GT pkt seqno <%u>", rcv_pktSeq );
-#ifdef CATHY_PPTP_DL_ACC
-                if (rcv_pktAck)
-                        blogHash.grerx_ackIe = 1;
-#endif
                 break;
 
             default:
@@ -2748,7 +2740,7 @@ int blog_iq_prio( struct sk_buff * skb_p, void * dev_p,
 {
     struct fkbuff * fkb_p;
     BlogAction_t action = PKT_NORM;
-    int iq_prio = 1;
+    int iq_prio = BLOG_IQ_PRIO_HIGH;
     uint32_t dummy;
     void *dummy_dev_p = &dummy;
 
@@ -3044,12 +3036,12 @@ skip:   /* Discontinue further logging by dis-associating Blog_t object */
  *------------------------------------------------------------------------------
  * Function     : blog_nfct_dump
  * Description  : Dump the nf_conn context
- *  dev_p       : Pointer to a net_device object
+ *  ct          : Pointer to a nf_conn object
  * CAUTION      : nf_conn is not held !!!
  *------------------------------------------------------------------------------
  */
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
-void blog_nfct_dump( struct sk_buff * skb_p, struct nf_conn * ct, uint32_t dir )
+void blog_nfct_dump( struct nf_conn * ct, uint32_t dir )
 {
 #if defined(BLOG_NF_CONNTRACK)
     struct nf_conn_help *help_p;
@@ -3068,11 +3060,10 @@ void blog_nfct_dump( struct sk_buff * skb_p, struct nf_conn * ct, uint32_t dir )
 #endif
 
     help_p = nfct_help(ct);
-    printk("\tNFCT: ct<0x%p>, info<%x> master<0x%p>\n"
+    printk("\tNFCT: ct<0x%p>, master<0x%p>\n"
            "\t\tF_NAT<%p> keys[0x%08x 0x%08x] dir<%s>\n"
            "\t\thelp<0x%p> helper<%s>\n",
             ct, 
-            (int)skb_p->nfctinfo, 
             ct->master,
             nat_p, 
             ct->blog_key[IP_CT_DIR_ORIGINAL], 
@@ -3206,6 +3197,7 @@ void blog_l2_dump( BlogHeader_t * bHdr_p )
 void blog_virdev_dump( Blog_t * blog_p )
 {
     int i;
+    int dev_dir;
 
     printk( "    VirtDev: ");
 
@@ -3215,8 +3207,9 @@ void blog_virdev_dump( Blog_t * blog_p )
 
         if ( dev_p == (void *)NULL ) continue;
 
+        dev_dir = DEV_DIR(dev_p);
         dev_p = DEVP_DETACH_DIR( dev_p );
-        printk("<%p: %s> ", dev_p, dev_p ? dev_p->name : " ");
+        printk("<%p: %s: %d: %d> ", dev_p, dev_p ? dev_p->name : " ", dev_dir, dev_p->mtu);
     }
 
     printk("\n");
@@ -3315,7 +3308,7 @@ void blog_dump( Blog_t * blog_p )
             rfc2684HdrLength[blog_p->key.l1_tuple.phyLen],
             blog_p->key.l1_tuple.phy,
             strBlogPhy[blog_p->key.l1_tuple.phyType], blog_p->key.match,
-            blog_p->hash, blog_p->key.protocol, blog_p->wl, 
+            blog_p->hash, blog_p->key.protocol, blog_p->wl,
             blog_p->priority, (uint32_t)blog_p->mark, blog_p->minMtu, 
             blog_p->tuple_offset,
             ntohs(blog_p->eth_type), blog_p->vtag_num, 
@@ -3361,11 +3354,11 @@ void blog_dump( Blog_t * blog_p )
 
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
     if ( blog_p->ct_p[BLOG_CT_PLD] )
-        blog_nfct_dump( blog_p->skb_p, blog_p->ct_p[BLOG_CT_PLD], 
+        blog_nfct_dump( blog_p->ct_p[BLOG_CT_PLD], 
                         blog_p->nf_dir_pld );
 
     if ( blog_p->ct_p[BLOG_CT_DEL] )
-        blog_nfct_dump( blog_p->skb_p, blog_p->ct_p[BLOG_CT_DEL], 
+        blog_nfct_dump( blog_p->ct_p[BLOG_CT_DEL], 
                         blog_p->nf_dir_del );
 #endif
 
@@ -3871,7 +3864,7 @@ _blog_parse_l2hdr_eth_type:
     {
         case htons(BLOG_ETH_P_PPP_SES):
             BLOG_PARSE( PPPOE, BLOG_PPPOE_HDR_LEN, *((uint16_t*)hdr_p+3) );
-            break;
+            goto _blog_parse_l2_ppp_ip;
 
         case htons(BLOG_PPP_IPV6):
         case htons(BLOG_ETH_P_IPV6):
@@ -3886,11 +3879,27 @@ _blog_parse_l2hdr_eth_type:
             goto done;
     } /* switch ( h_proto ) */
 
+_blog_parse_l2_ppp_ip:
+    {
+        switch ( h_proto )
+        {
+            case htons(BLOG_PPP_IPV6):
+            case htons(BLOG_PPP_IPV4):
+                ip_p = (BlogIpv4Hdr_t *)hdr_p;
+                goto done;
+
+            default :
+                blog_print( "ABORT UNKNOWN Rx h_proto 0x%04x", 
+                    (uint16_t) ntohs(h_proto) );
+                goto done;
+        } /* switch ( h_proto ) */
+    }
+
 done:
     return ip_p;
 }
 
-int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto) 
+int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p) 
 {
 	BlogIpv4Hdr_t* ip_p;
 	char * hdr_p;
@@ -3926,7 +3935,8 @@ int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto)
             hdr_p = (char *)ip_p;
             hdr_p += (ver == 4)? BLOG_IPV4_HDR_LEN : BLOG_IPV6_HDR_LEN;
             grehdr_p = (uint16_t*)hdr_p;
-            gre_flags.u16 = ntohs(*(uint16_t*)grehdr_p);
+            *gflags_p = gre_flags.u16 = ntohs(*(uint16_t*)grehdr_p);
+
             if ( gre_flags.ver)
             {
                 return PPTP_GRE_VER_1;           	
@@ -3937,6 +3947,8 @@ int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto)
             }		
         }
     }    
+
+    *gflags_p = 0;
 	return PPTP_GRE_NONE;
 }
 
@@ -4139,22 +4151,14 @@ void blog_gre_xmit(struct sk_buff *skb_p, uint32_t h_proto)
 
 #if defined(CONFIG_ACCEL_PPTP) 
 
-#ifdef CATHY_PPTP_DL_ACC
-int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, uint32_t *rcv_pktSeq, uint32_t *rcv_pktAck)
-#else
 int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, uint32_t *rcv_pktSeq) 
-#endif
 {
 	BlogIpv4Hdr_t* ip_p;
 	char * hdr_p;
     uint16_t *grehdr_p;
     BlogGreIeFlagsVer_t gre_flags = {.u16 = 0 };
 	uint16_t call_id = 0;
-#ifdef CATHY_PPTP_DL_ACC
-	uint32_t saddr;
-#else
 	uint32_t saddr, rcv_pktAck = 0;
-#endif
 	
     int ret = BLOG_PPTP_RCV_NOT_PPTP;
 
@@ -4194,25 +4198,15 @@ int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, uint32_t *rcv_pktSeq)
 
             	blog_print( "\nincoming pptp pkt's seq = %d, callid= %d\n", *rcv_pktSeq , call_id);
             	if(gre_flags.ackIe) /* the pkt is PPTP with ack number */
-                {
-#ifdef CATHY_PPTP_DL_ACC
-                        *rcv_pktAck = ntohl(*(uint32_t*) (grehdr_p + 6));
-                        blog_print( "rcv_pktAck = %d \n", *rcv_pktAck );
-#else	
-                        rcv_pktAck = ntohl(*(uint32_t*) (grehdr_p + 6));
-                        blog_print( "rcv_pktAck = %d \n", rcv_pktAck );
-#endif
+                {	
+                	rcv_pktAck = ntohl(*(uint32_t*) (grehdr_p + 6));
+                	blog_print( "rcv_pktAck = %d \n", rcv_pktAck );
                 }
                 
-#ifdef CATHY_PPTP_DL_ACC
-                if (blog_pptp_rcv_check_fn != NULL)
-                   ret = blog_pptp_rcv_check_fn(call_id, rcv_pktSeq,
-                                             *rcv_pktAck, saddr );
-#else
             	if (blog_pptp_rcv_check_fn != NULL)
             	   ret = blog_pptp_rcv_check_fn(call_id, rcv_pktSeq, 
             	                             rcv_pktAck, saddr );
-#endif
+            	
             }
         }
     }
@@ -4400,16 +4394,20 @@ void blog_get_stats(void)
     }
 
     printk("blog_info stats:\n");
-    printk("blog_total = %u\n", blog_ctx_p->blog_total);
-    printk("blog_avail = %u\n", blog_ctx_p->blog_avail);
-    printk("blog_fails = %u\n", blog_ctx_p->blog_fails);
-    printk("blog_get   = %u\n", blog_ctx_p->info_stats.blog_get);
-    printk("blog_put   = %u\n", blog_ctx_p->info_stats.blog_put);
-    printk("blog_skip  = %u\n", blog_ctx_p->info_stats.blog_skip);
-    printk("blog_free  = %u\n", blog_ctx_p->info_stats.blog_free);
-    printk("blog_xfer  = %u\n", blog_ctx_p->info_stats.blog_xfer);
-    printk("blog_clone = %u\n", blog_ctx_p->info_stats.blog_clone);
-    printk("blog_copy  = %u\n", blog_ctx_p->info_stats.blog_copy);
+    printk("blog_total = %u blog_avail = %u blog_mem_fails = %u\n", 
+            blog_ctx_p->blog_total, blog_ctx_p->blog_avail, 
+            blog_ctx_p->blog_mem_fails);
+    printk("blog_extends = %u blog_extend_fails = %u\n", 
+            blog_ctx_p->blog_extends, blog_ctx_p->blog_extend_fails);
+    printk("blog_extend_max_engg = %u blog_extend_size_engg = %u\n",
+            (unsigned int)BLOG_EXTEND_MAX_ENGG, (unsigned int)BLOG_EXTEND_SIZE_ENGG);
+    printk("blog_get  = %u blog_put = %u\n", 
+            blog_ctx_p->info_stats.blog_get, blog_ctx_p->info_stats.blog_put);
+    printk("blog_xfer = %u blog_clone = %u blog_copy = %u\n", 
+            blog_ctx_p->info_stats.blog_xfer, blog_ctx_p->info_stats.blog_clone,
+            blog_ctx_p->info_stats.blog_copy);
+    printk("blog_skip = %u blog_free = %u\n", 
+            blog_ctx_p->info_stats.blog_skip, blog_ctx_p->info_stats.blog_free);
 
     printk("\nblog_skip stats:\n");
     for (skip_reason = blog_skip_reason_unknown; 
@@ -4633,7 +4631,7 @@ void     blog_clone( struct sk_buff * skb_p, const struct blog_t * prev_p )
 void     blog_copy(struct blog_t * new_p, const struct blog_t * prev_p)
          { return; }
 
-int blog_iq( const struct sk_buff * skb_p ) { return IQOS_PRIO_LOW; }
+int blog_iq( const struct sk_buff * skb_p ) { return BLOG_IQ_PRIO_LOW; }
 int blog_fc_enabled(void) { return 0; };
 
 void     blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
@@ -4702,13 +4700,8 @@ void blog_gre_xmit(struct sk_buff *skb_p, uint32_t h_proto) { return; }
 #endif
 
 #if defined(CONFIG_ACCEL_PPTP) 
-#ifdef CATHY_PPTP_DL_ACC
-int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto,
-                    uint32_t *rcv_pktSeq, uint32_t *rcv_pktAck) { return 1; }
-#else
 int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, 
                     uint32_t *rcv_pktSeq) { return 1; }
-#endif
 void blog_pptp_xmit( struct sk_buff *skb_p, uint32_t h_proto ) { return; }
 #endif
 

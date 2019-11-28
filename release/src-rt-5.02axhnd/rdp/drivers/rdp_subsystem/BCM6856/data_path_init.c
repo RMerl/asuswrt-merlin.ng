@@ -279,6 +279,7 @@ bbh_id_e g_dma_to_bbh_tx_x[NUM_OF_DMA][NUM_OF_PERIPHERALS_PER_DMA] = {
           {BBH_ID_0, BBH_ID_1,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL ,BBH_ID_NULL},
           {BBH_ID_PON,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL,BBH_ID_NULL} };
 
+uint32_t g_extra_dqm_tokens = 0;
 
 /* array desription:
       - this array describe the buffers weight accroding to g_dma_to_bbh_X array.
@@ -604,6 +605,11 @@ static void ubus_bridge_init(void)
     ag_drv_ubus_mstr_hyst_ctrl_set(UBUS_MSTR_ID_1, UBUS_MSTR_CMD_SPCAE, UBUS_MSTR_DATA_SPCAE);
 }
 
+uint32_t fpm_get_dqm_extra_fpm_tokens(void)
+{
+    return g_extra_dqm_tokens;
+}
+
 static int fpm_init(void)
 {
     bdmf_error_t rc;
@@ -614,7 +620,9 @@ static int fpm_init(void)
 
     drv_fpm_init(p_dpi_cfg->rdp_ddr_pkt_base_virt, p_dpi_cfg->fpm_buf_size);
 
-    rc = ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD, FPM_XOFF_THRESHOLD);
+    g_extra_dqm_tokens = FPM_EXTRA_TOKENS_FOR_DQM;
+
+    rc = ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD + g_extra_dqm_tokens, FPM_XOFF_THRESHOLD + g_extra_dqm_tokens);
     rc = rc ? rc : ag_drv_fpm_init_mem_set(1);
 
     /* polling until reset is finished */

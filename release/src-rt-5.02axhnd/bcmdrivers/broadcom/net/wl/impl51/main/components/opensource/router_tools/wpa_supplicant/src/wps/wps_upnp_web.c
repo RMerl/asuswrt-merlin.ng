@@ -943,6 +943,25 @@ bad:
 	wpabuf_free(reply);
 }
 
+/* Given that we have received a header w/ SUBSCRIBE, act upon it
+ *
+ * Format of SUBSCRIBE (case-insensitive):
+ *
+ * First line must be:
+ *      SUBSCRIBE /wps_event HTTP/1.1
+ *
+ * Our response (if no error) which includes only required lines is:
+ * HTTP/1.1 200 OK
+ * Server: xx, UPnP/1.0, xx
+ * SID: uuid:xxxxxxxxx
+ * Timeout: Second-<n>
+ * Content-Length: 0
+ * Date: xxxx
+ *
+ * Header lines must end with \r\n
+ * Per RFC 2616, content-length: is not required but connection:close
+ * would appear to be required (given that we will be closing it!).
+ */
 static void web_connection_parse_subscribe(struct upnp_wps_device_sm *sm,
 					   struct http_request *req,
 					   const char *filename)

@@ -1,0 +1,192 @@
+<!-- $Revision: 1.1 $ $Date: 2007/03/06 20:54:43 $ -->
+<html><head>
+<title>Securing Traffic Between two Socat Instances Using SSL</title>
+<link rel="stylesheet" type="text/css" href="dest-unreach.css">
+</head>
+
+<body>
+
+<h1>Securing Traffic Between two Socat Instances Using SSL</h1>
+
+<h2>Introduction</h2>
+<p>
+When you want to connect two socat processes running on different machines and
+feel that you need to protect the connection against unauthorized access,
+sniffing, data manipulation etc., you might want to encrypt the communications.
+</p>
+<p>
+For this purpose socat integrates the OpenSSL library and provides SSL client
+and server features. 
+</p>
+<p>
+SSL is a complex protocol that provides much more features than required for
+protecting a single connection; in this document we present only a simple
+scenario that provides just the basic security requirements.
+</p>
+
+<!-- discussion -->
+<h2>Configuring OpenSSL in socat</h2>
+<p>
+This section shows how the SSL addresses can be configured in socat.
+In this docu we only use self signed certificates for the sake of simplicity. 
+</p>
+<p>We assume that the server host is called <tt>server.domain.org</tt> and the
+server process uses port 4433. To keep it simple, we use a very simple server
+funtionality that just echos data (<tt>echo</tt>), and <tt>stdio</tt> on the
+client.</p>
+<h3>Generate a server certificate</h3>
+
+<p>Perform the following steps on a trusted host where OpenSSL is
+installed. It might as well be the client or server host themselves.</p>
+<p>Prepare a basename for the files related to the server certificate:</p>
+<span class="frame"><span class="shell">FILENAME=server</span></span>
+
+<p>Generate a public/private key pair:</p>
+<span class="frame"><span class="shell">openssl genrsa -out $FILENAME.key 1024</span></span>
+
+<p>Generate a self signed certificate:</p>
+<span class="frame"><span class="shell">
+openssl req -new -key $FILENAME.key -x509 -days 3653 -out $FILENAME.crt</span></span>
+<p>You will be prompted for your country code, name etc.; you may quit all prompts
+with the enter key.</p>
+<p>Generate the PEM file by just appending the key and certificate files:<p>
+<span class="frame"><span class="shell">cat $FILENAME.key $FILENAME.crt &gt;$FILENAME.pem</span></span>
+
+<p>The files that contain the private key should be kept secret, thus adapt
+their permissions:<p>
+<span class="frame"><span class="shell">chmod 600 $FILENAME.key $FILENAME.pem</span></span>
+
+<p>Now bring the file <tt>server.pem</tt> to the SSL server, e.g. to directory
+<tt>$HOME/etc/</tt>, using a secure channel like USB memory stick or SSH. Keep
+tight permissions on the file even on the target host, and remove all other
+instances of <tt>server.key</tt> and <tt>server.pem</tt>.
+</p>
+<p>Copy the trust certificate server.crt to the SSL client host, e.g. to directory
+<tt>$HOME/etc/</tt>; a secure channel is not required here, and the permissions
+are not critical.
+</p>
+
+<h3>Generate a client certificate</h3>
+<p>First prepare a different basename for the files related to the client certificate:</p>
+<span class="frame"><span class="shell">FILENAME=client</span></span>
+
+<p>Repeat the procedure for certificate generation described above.
+Copy <tt>client.pem</tt> to the SSL client, and <tt>client.crt</tt> to the
+server.</p>
+
+<h3>OpenSSL Server</h3>
+
+<p>Instead of using a tcp-listen (tcp-l) address, we use openssl-listen (ssl-l)
+for the server, <tt>cert=...</tt> tells the program to the file containing its
+ceritificate and private key, and <tt>cafile=...</tt> points to the file
+containing the certificate of the peer; we trust clients only if they can proof
+that they have the related private key (OpenSSL handles this for us):<p>
+<span class="frame"><span class="shell">socat openssl-listen:4433,reuseaddr,cert=$HOME/etc/server.pem,cafile=$HOME/etc/client.crt echo</span></span>
+<p>After starting this command, socat should be listening on port 4433, but
+will require client authentication.</p>
+
+<h3>OpenSSL Client</h3>
+<p>Substitute your <tt>tcp-connect</tt> or <tt>tcp</tt> address keyword with
+<tt>openssl-connect</tt> or just <tt>ssl</tt> and here too add the
+<tt>cert</tt> and <tt>cafile</tt> options:<p>
+<span class="frame"><span class="shell">socat stdio openssl-connect:server.domain.org:4433,cert=$HOME/etc/client.pem,cafile=$HOME/etc/server.crt</span></span>
+<p>This command should establish a secured connection to the server
+process.</p>
+
+<h3>TCP/IP version 6</h3>
+
+<p>If the communication is to go over IPv6, the above described commands have
+to be adapted; <tt>ip6name.domain.org</tt> is assumed to resolve to the IPv6
+address of the server:</p>
+<p>Server:</p>
+<span class="frame"><span class="shell">socat
+openssl-listen:4433,<b style="color:yellow">pf=ip6</b>,reuseaddr,cert=$HOME/etc/server.pem,cafile=$HOME/etc/client.crt echo</span></span>
+
+<p>Client:</p>
+<span class="frame"><span class="shell">socat stdio openssl-connect:<b style="color:yellow">ip6name</b>.domain.org:4433,cert=$HOME/etc/client.pem,cafile=$HOME/etc/server.crt</span></span>
+
+<h2>Troubleshooting</h2>
+
+<h3>Test OpenSSL Integration</h3>
+<p>
+If you get error messages like this:</p>
+<table border="1" bgcolor="#e08080"><tr><td><tt>... E unknown device/address "openssl-listen"</tt></td></tr></table>
+<p>your socat executable probably does not have the OpenSSL library linked in. 
+Check socat's compile time configuration with the following command:</p>
+<span class="frame"><span class="shell">socat -V |grep SSL</span></span>
+<p>Positive output: 
+<tt>#define WITH_OPENSSL 1</tt><br>
+Negative output: 
+<tt>#undef WITH_OPENSSL</tt><br>
+</p>
+<p>
+In the latter case, make sure you have OpenSSL and its development package
+(include files) installed, and check the run of the configure script.
+</p>
+
+
+<h2>History</h2>
+<p>
+A first OpenSSL client was implemented in socat 1.2.0; it did not support
+client certificates and could not verify server certificates. It was rather
+considered as a tool for probing typical SSL secured Internet services.
+</p>
+<p>
+From version 1.4.0 on, socat provided experimental support for SSL client and
+SSL server, implemented using the OpenSSL libraries. Only TCP/IPv4 transport
+was supported. With both SSL client and server, trust certificates for checking
+the peers authentication, and certificates for authentication could be
+specified. This allowed for non interactive secure connection establishing.
+The features were considered experimental; like most Internet sites, socat
+server did not require the client to present a certificate per default, but the
+client required a server certificate.
+
+</p>
+<p>
+DSA certificate support is implemented since version 1.4.2.
+</p>
+<p>
+Socat version 1.5.0 extended SSL to TCP/IPv6 transports.
+</p>
+<p>
+With socat version 1.6.0, the SSL server per default requires the client to
+present a trusted certificate. socat's OpenSSL implementation still does not
+check the contents of a certificate like host name or host address.
+</p>
+
+<p>This document was last modified in March 2007.</p>
+
+<h2>More info about socat OpenSSL</h2>
+
+<h3>Links regarding this tutorial</h3>
+<a href="socat.html#ADDRESS_OPENSSL_CONNECT">address openssl-connect</a><br>
+<a href="socat.html#ADDRESS_OPENSSL_LISTEN">address openssl-listen</a><br>
+<a href="socat.html#OPTION_OPENSSL_CERTIFICATE">option cert</a><br>
+<a href="socat.html#OPTION_OPENSSL_CAFILE">option cafile</a><br>
+
+<h3>More socat options for OpenSSL addresses</h3>
+<a href="socat.html#GROUP_OPENSSL">OpenSSL options</a><br>
+<a href="socat.html#GROUP_TCP">TCP options</a><br>
+<a href="socat.html#GROUP_IP">IP options</a><br>
+<a href="socat.html#GROUP_SOCKET">socket options</a><br>
+<a href="socat.html#GROUP_FD">file descriptor options</a><br>
+<a href="socat.html#GROUP_RETRY">retry options</a><br>
+<p>For openssl-listen only:</p>
+<a href="socat.html#GROUP_LISTEN">listen options</a><br>
+<a href="socat.html#GROUP_CHILD">child options</a><br>
+<a href="socat.html#GROUP_RANGE">range options</a><br>
+
+<h2>References</h2>
+<a href="http://www.dest-unreach.org/socat">socat home page</a><br>
+<a href="socat.html">socat man page</a><br>
+<a href="http://www.openssl.org/">OpenSSL home page</a><br>
+<a href="http://www.stunnel.org/">stunnel home page</a><br>
+<a href="http://en.wikipedia.org/wiki/Secure_Sockets_Layer">secure sockets layer on Wikipedia</a><br>
+
+<p>
+<small>Copyright: Gerhard Rieger 2007</small><br>
+<small>License: <a href="http://www.fsf.org/licensing/licenses/fdl.html">GNU Free Documentation License (FDL)</a></small>
+</p>
+
+</body>
+</html>

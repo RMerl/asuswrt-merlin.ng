@@ -1069,7 +1069,7 @@ static void emmc_do_parts( emmcflashdev_t *softc )
 
                 if( lobound +  probe->flash_part_spec[idx].fp_size > hibound )
                 {
-                    printf("!!! Not creating partition %d, Offset %d + Size %d > hibound %d", 
+                    printf("!!! Not creating partition %d, Offset %lu + Size %lu > hibound %lu", 
                         idx, lobound, probe->flash_part_spec[idx].fp_size, hibound);
                     continue;
                 }
@@ -2370,7 +2370,7 @@ int emmc_Initialize( emmcdev_t *emmcdev )
     printf("------------------------------\n");
     printf(" Start : emmc_Initialize( ) \n");
 #endif
-
+    
 #if defined(_BCM963158_)
     if(UtilGetChipRev() == 0xA0)
     {

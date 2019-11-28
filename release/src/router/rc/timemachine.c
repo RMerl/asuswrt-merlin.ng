@@ -51,12 +51,9 @@ int generate_afp_config(char *mpname)
 {
 	FILE *fp;
 	char afp_config[80];
-	char et0macaddr[18];
 	int ret = 0;
 
 	sprintf(afp_config, "%s/%s", AFP_CONFIG_PATH, AFP_CONFIG_FN);
-
-	strcpy(et0macaddr, get_lan_hwaddr());
 
 	/* Generate afp configuration file */
 	if (!(fp = fopen(afp_config, "w"))) {
@@ -71,8 +68,8 @@ int generate_afp_config(char *mpname)
 	fprintf(fp, "vol dbpath = %s/%s\n", mpname, CNID_DIR_NAME);
 	//fprintf(fp, "server quantum = 32000\n");
 	fprintf(fp, "sleep time = 1\n");
-	fprintf(fp, "hostname = %s-%c%c%c%c.local\n", nvram_safe_get("model"),et0macaddr[12],et0macaddr[13],et0macaddr[15],et0macaddr[16]);
-	fprintf(fp, "signature = %s-%c%c%c%c.local\n",nvram_safe_get("model"),et0macaddr[12],et0macaddr[13],et0macaddr[15],et0macaddr[16]);
+	fprintf(fp, "hostname = %s.local\n", get_lan_hostname());
+	fprintf(fp, "signature = %s\n", get_lan_hostname());
 	if (nvram_match("tm_debug", "1")){
 		fprintf(fp, "log file = %s/netatalk.log\n", mpname);
 		//fprintf(fp, "log file = /var/log/netatalk.log\n");

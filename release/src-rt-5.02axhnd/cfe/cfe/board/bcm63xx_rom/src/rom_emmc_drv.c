@@ -1471,12 +1471,16 @@ int emmc_load_secure_image(char* image, int secCfeRamSize, unsigned char** entry
     Booter1Args* sec_args = cfe_sec_get_bootrom_args();
     if (!sec_args)
         die();
+
     /* If secure boot, compressed, encrypted CFE RAM
        is authenticated within internal memory*/
-
     pucDest = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
 
+    /* For these chips we are going to authenticate CFE RAM in DDR, so we already copied it there when it was first retrieved from emmc */ 
+#if !defined(_BCM94908_) && !defined(_BCM96858_) && !defined(_BCM963158_) && !defined(_BCM96856_) && !defined(_BCM96846_) && !defined(_BCM947622_)
+    /* Copy encypted compressed CFE RAM to internal memory for authentication */
     memcpy(pucDest, image, secCfeRamSize);
+#endif    
     
     /* Authenticate the CFE RAM bootloader */
     board_setleds(0x42544c3f); /* BTL? */
@@ -1559,9 +1563,6 @@ void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int 
     unsigned char *pucEntry;
     unsigned char *pucDest = NULL;
 
-#if DEBUG_EMMC_BOOT    
-    xprintf("rom_emmc: load address %p, bsec %d, img_idx %d, romp %ul\n", pucEntry, boot_secure, image_num, rom_param);
-#endif    
 
 #if defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM963158_) || \
         ((INC_BTRM_BOOT==1) && defined(_BCM963138_)) || defined(_BCM96856_)
@@ -1578,6 +1579,10 @@ void emmc_run_image( char * loaded_image, int image_size, int boot_secure , int 
        /* Copy over loaded image to actual load address */
        memcpy(pucDest, loaded_image, image_size);
     }
+
+#if DEBUG_EMMC_BOOT    
+    xprintf("rom_emmc: load address %p, bsec %d, img_idx %d, romp %ul\n", pucEntry, boot_secure, image_num, rom_param);
+#endif    
 
     if( pucEntry )
     {
@@ -1843,6 +1848,12 @@ int rom_emmc_boot(unsigned char * dma_addr, unsigned long rom_param, cfe_rom_med
         /* 3.1-Get hashblock if needed */
 #ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
         rom_emmc_get_hashblock( &bootImg, &imageNum, media_params);
+#endif
+
+#if defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM963158_) || defined(_BCM96856_) || defined(_BCM96846_) || defined(_BCM947622_)
+	/* For these chips we authenticate secure cferam in DDR (instead of SRAM), so copy it directly there in the first place */
+	if(media_params->boot_secure)
+	    temp_data_buffer = (unsigned char *)BTRM_INT_MEM_ENCR_COMP_CFE_RAM_ADDR;
 #endif
 
         /* 4-Load cferam into temporary memory */

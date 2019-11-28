@@ -64,6 +64,7 @@
  */
 
 #include "bcm_vlan.h"
+#include "bcmctl_syslogdefs.h"
 
 /* Defines the supported funtionality */
 #define VLANCTL_LOG_COLOR_SUPPORTED
@@ -169,19 +170,28 @@ typedef struct {
 #define VLANCTL_LOG_FUNC() VLANCTL_LOG_DEBUG(" ")
 
 #define VLANCTL_LOG_DEBUG(fmt, arg...)                                     \
+{ \
     VLANCTL_LOGCODE( if(vlanCtl_logLevelIsEnabled(VLANCTL_LOG_LEVEL_DEBUG)) \
                          printf(CLRg "[DBG " "%s" "] %-10s: " fmt CLRnl, \
-                             VLANCTL_LOG_NAME, __FUNCTION__, ##arg); )
+                             VLANCTL_LOG_NAME, __FUNCTION__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(vlanCtl, LOG_DEBUG, fmt, ##arg); \
+}
 
 #define VLANCTL_LOG_INFO(fmt, arg...)                                      \
+{ \
     VLANCTL_LOGCODE( if(vlanCtl_logLevelIsEnabled(VLANCTL_LOG_LEVEL_INFO)) \
                          printf(CLRm "[INF " "%s" "] %-10s: " fmt CLRnl, \
-                                VLANCTL_LOG_NAME, __FUNCTION__, ##arg); )
+                                VLANCTL_LOG_NAME, __FUNCTION__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(vlanCtl, LOG_INFO, fmt, ##arg); \
+}
 
 #define VLANCTL_LOG_NOTICE(fmt, arg...)                                    \
+{ \
     VLANCTL_LOGCODE( if(vlanCtl_logLevelIsEnabled(VLANCTL_LOG_LEVEL_NOTICE)) \
                          printf(CLRb "[NTC " "%s" "] %-10s: " fmt CLRnl, \
-                                VLANCTL_LOG_NAME, __FUNCTION__, ##arg); )
+                                VLANCTL_LOG_NAME, __FUNCTION__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(vlanCtl, LOG_NOTICE, fmt, ##arg); \
+}
 
 
 /**
@@ -189,9 +199,12 @@ typedef struct {
  **/
 
 #define VLANCTL_LOG_ERROR(fmt, arg...)                                     \
+{ \
     VLANCTL_ERRORCODE( if(vlanCtl_logLevelIsEnabled(VLANCTL_LOG_LEVEL_ERROR)) \
                            printf(CLRerr "[ERROR " "%s" "] %-10s, %d: " fmt CLRnl, \
-                                  VLANCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg); )
+                                  VLANCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(vlanCtl, LOG_ERR, fmt, ##arg); \
+}
 
 
 /**
@@ -210,6 +223,14 @@ void vlanCtl_cleanup(void);
 int vlanCtl_setLogLevel(vlanCtl_logLevel_t logLevel);
 vlanCtl_logLevel_t vlanCtl_getLogLevel(void);
 int vlanCtl_logLevelIsEnabled(vlanCtl_logLevel_t logLevel);
+
+#if defined(BCMCTL_SYSLOG_SUPPORTED)
+DECLARE_setSyslogLevel(vlanCtl);
+DECLARE_getSyslogLevel(vlanCtl);
+DECALRE_isSyslogLevelEnabled(vlanCtl);
+DECLARE_setSyslogMode(vlanCtl);
+DECLARE_isSyslogEnabled(vlanCtl);
+#endif /* BCMCTL_SYSLOG_SUPPORTED */
 
 int vlanCtl_createVlanInterface(const char *realDevName, unsigned int vlanDevId,
                                 int isRouted, int isMulticast);

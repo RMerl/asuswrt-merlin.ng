@@ -34,4 +34,6 @@ int	curl_io(const char*	web_path,
 		void*		pWriteData
 	);
 */
+
+char *curl_get_status_string(int status);
 #endif

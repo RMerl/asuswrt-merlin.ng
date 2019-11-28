@@ -172,6 +172,7 @@ typedef struct
 uint32_t data_path_init_fiber(int wan_bbh);
 uint32_t data_path_init_gbe(rdpa_emac wan_emac);
 int set_ug_thresholds(uint8_t ug_idx, uint32_t fpm_max_thr, uint32_t reserved_packet_buffer);
+uint32_t fpm_get_dqm_extra_fpm_tokens(void);
 
 #ifdef __cplusplus 
 }

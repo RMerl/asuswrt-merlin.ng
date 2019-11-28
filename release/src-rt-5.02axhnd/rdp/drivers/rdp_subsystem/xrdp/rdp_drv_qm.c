@@ -58,6 +58,7 @@
 #include "rdp_drv_dqm.h"
 #include "rdd_ghost_reporting.h"
 #include "rdd_data_structures_auto.h"
+#include "data_path_init.h"
 
 extern dpi_params_t *p_dpi_cfg;
 
@@ -155,6 +156,12 @@ bdmf_error_t drv_qm_system_init(dpi_params_t *p_dpi_cfg)
 
     return BDMF_ERR_OK;
 }
+
+int drv_qm_get_max_dynamic_queue_number(void)
+{
+    return QM_QUEUE_MAX_DYNAMIC_QUANTITY;
+}
+EXPORT_SYMBOL(drv_qm_get_max_dynamic_queue_number);
 
 int drv_qm_get_us_epon_start(void)
 {
@@ -256,6 +263,7 @@ bdmf_error_t drv_qm_init(const qm_init_cfg *init_cfg)
     uint32_t i;
     bdmf_boolean fpm_pool_bp_enable, fpm_congestion_bp_enable;
     uint8_t fpm_prefetch_pending_req_limit, buff_size;
+    qm_fpm_pool_thr fpm_pool_thr = {};
 
     if (qm_initialized)
         return BDMF_ERR_ALREADY;
@@ -349,10 +357,25 @@ bdmf_error_t drv_qm_init(const qm_init_cfg *init_cfg)
         QM_ERR_RETURN(err, "ag_drv_qm_drop_counters_ctrl_set()\n");
     }
 
+    fpm_pool_thr.higher_thr = 2;
+    fpm_pool_thr.lower_thr = 2;
+
+    err = ag_drv_qm_fpm_pool_thr_set(0, &fpm_pool_thr);
+    QM_ERR_RETURN(err, "ag_drv_qm_fpm_pool_thr_set()\n");
+    err = ag_drv_qm_fpm_pool_thr_set(1, &fpm_pool_thr);
+    QM_ERR_RETURN(err, "ag_drv_qm_fpm_pool_thr_set()\n");
+    err = ag_drv_qm_fpm_pool_thr_set(2, &fpm_pool_thr);
+    QM_ERR_RETURN(err, "ag_drv_qm_fpm_pool_thr_set()\n");
+    err = ag_drv_qm_fpm_pool_thr_set(3, &fpm_pool_thr);
+    QM_ERR_RETURN(err, "ag_drv_qm_fpm_pool_thr_set()\n");
+
     err = ag_drv_qm_fpm_base_addr_set(init_cfg->fpm_base);
     QM_ERR_RETURN(err, "ag_drv_qm_fpm_base_addr_set()\n");
 
     err =  ag_drv_qm_fpm_ctrl_get(&fpm_pool_bp_enable, &fpm_congestion_bp_enable, &buff_size, &fpm_prefetch_pending_req_limit);
+    
+    /* pool backpressure enable */
+    fpm_pool_bp_enable = 1;
     QM_ERR_RETURN(err, "ag_drv_qm_fpm_ctrl_get()\n");
     err = ag_drv_qm_fpm_ctrl_set(fpm_pool_bp_enable, fpm_congestion_bp_enable, init_cfg->fpm_buf_size, fpm_prefetch_pending_req_limit);
     QM_ERR_RETURN(err, "ag_drv_qm_fpm_ctrl_set()\n");
@@ -692,26 +715,27 @@ bdmf_error_t set_fpm_budget(int resource_num, int add, uint32_t reserved_packet_
     }
     else /* Default configuration will apply */
     {
-        fpm_thr[FPM_DS_UG] = DS_FPM_UG_DEFAULT;
-        fpm_thr[FPM_US_UG] = US_FPM_UG_DEFAULT;
-        fpm_thr[FPM_WLAN_UG] = WLAN_FPM_UG_DEFAULT;
+        fpm_thr[FPM_DS_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * DS_FPM_UG_DEFAULT_PERCENTAGE;
+        fpm_thr[FPM_US_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * US_FPM_UG_DEFAULT_PERCENTAGE;
+        fpm_thr[FPM_WLAN_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * WLAN_FPM_UG_DEFAULT_PERCENTAGE;
+
 #if defined(CONFIG_DHD_RUNNER) && !defined(_CFE_)
         /* in case WLAN default configuration will apply */
         if (num_of_wlan_radios)
         {
             if (xepon_port_on)
             {
-                fpm_thr[FPM_DS_UG] = DS_FPM_UG_XEPON;
-                fpm_thr[FPM_US_UG] = US_FPM_UG_XEPON;
-                BUG_ON(WLAN_FPM_UG_XEPON < dhd_rx_post_fpm);
-                fpm_thr[FPM_WLAN_UG] = WLAN_FPM_UG_XEPON - dhd_rx_post_fpm;
+                fpm_thr[FPM_DS_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * DS_FPM_UG_XEPON_PERCENTAGE;
+                fpm_thr[FPM_US_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * US_FPM_UG_XEPON_PERCENTAGE;
+                BUG_ON((((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * WLAN_FPM_UG_XEPON_PERCENTAGE) < dhd_rx_post_fpm);
+                fpm_thr[FPM_WLAN_UG] = (((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * WLAN_FPM_UG_XEPON_PERCENTAGE) - dhd_rx_post_fpm;
             }
             else
             {
-                fpm_thr[FPM_DS_UG] = DS_FPM_UG_NO_XEPON;
-                fpm_thr[FPM_US_UG] = US_FPM_UG_NO_XEPON;
-                BUG_ON(WLAN_FPM_UG_NO_XEPON < dhd_rx_post_fpm);
-                fpm_thr[FPM_WLAN_UG] = WLAN_FPM_UG_NO_XEPON - dhd_rx_post_fpm;
+                fpm_thr[FPM_DS_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * DS_FPM_UG_NO_XEPON_PERCENTAGE;
+                fpm_thr[FPM_US_UG] = ((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * US_FPM_UG_NO_XEPON_PERCENTAGE;
+                BUG_ON((((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * WLAN_FPM_UG_NO_XEPON_PERCENTAGE) < dhd_rx_post_fpm);
+                fpm_thr[FPM_WLAN_UG] = (((TOTAL_DYNAMIC_FPM - fpm_get_dqm_extra_fpm_tokens())/100) * WLAN_FPM_UG_NO_XEPON_PERCENTAGE) - dhd_rx_post_fpm;
             }
         }
 #endif

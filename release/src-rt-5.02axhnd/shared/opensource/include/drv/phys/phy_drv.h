@@ -134,6 +134,9 @@ typedef struct phy_dev_s
 #ifdef EXT_BCM53134
     uint16_t resetGpio;
 #endif
+#ifdef EXT_BCM84880
+    int led_mode;
+#endif
     
     /* For cascaded PHY */
     void *sw_port;
@@ -583,16 +586,10 @@ static inline int cascade_phy_dev_speed_set(phy_dev_t *phy_dev, phy_speed_t spee
         phy_dev_t *cascade;
         for (cascade = cascade_phy_get_first(phy_dev); cascade; cascade = cascade_phy_get_next(cascade))
         {
-            cascade->link = (speed > 0) ? 1:0;
-            cascade->speed = speed;
-            cascade->duplex = duplex;
             rc |= phy_dev_speed_set(cascade, speed, duplex);
         }
         return rc;
     }
-    phy_dev->link = (speed > 0) ? 1:0;
-    phy_dev->speed = speed;
-    phy_dev->duplex = duplex;
     return phy_dev_speed_set(phy_dev, speed, duplex);
 }
 

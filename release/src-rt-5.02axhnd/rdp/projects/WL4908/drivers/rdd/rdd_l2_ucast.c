@@ -55,7 +55,6 @@ enum {
 /* Offsets must correspond to current rdd_data_structures_auto.h number_of_ports and port_mask offsets. */
 #define RDD_FC_NATC_MCAST_FLOW_CONTEXT_ENTRY_NUM_PORTS_PORT_MASK_WRITE( v, p ) FIELD_MWRITE_16((uint8_t *)p + 8, 0, 12, v )
 
-#define RDD_FC_MCAST_CONNECTION2_NEXT_INVALID   (RDD_FC_MCAST_CONNECTION2_TABLE_SIZE-1)
 
 /******************************************************************************/
 /*                                                                            */
@@ -72,7 +71,6 @@ extern uint32_t  g_free_flow_entries_number;
 extern uint32_t  g_free_flow_entries_head;
 extern uint32_t  *g_free_flow_entries;
 
-extern bdmf_fastlock int_lock;
 extern bdmf_fastlock int_lock_irq;
 
 extern volatile uint32_t result_regs_addr[NAT_CACHE_SEARCH_ENGINES_NUM];
@@ -518,7 +516,7 @@ int rdd_l2_connection_entry_add ( rdd_l2_flow_t  *add_connection,
     nat_cache_entry_index = (hash_index + tries) & (RDD_NAT_CACHE_TABLE_SIZE - 1);
 
     nat_cache_lkp_entry_ptr = (RDD_NAT_CACHE_L2_LKP_ENTRY_DTS *) &( nat_cache_table_ptr->entry[ nat_cache_entry_index ] );
-    memset( nat_cache_lkp_entry_ptr, 0, sizeof(RDD_CONNECTION_ENTRY_DTS) );
+    memset( nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_L2_LKP_ENTRY_DTS) );
 
     if( add_connection->context_entry.fc_ucast_flow_context_entry.multicast_flag == 0 )
     {
@@ -678,6 +676,7 @@ int rdd_l2_connection_entry_delete ( bdmf_index  flow_entry_index )
     uint8_t                      connection_entry_protocol;
     uint8_t                      connection_entry_lookup_port;
     uint16_t                     any_src_port_flow_counter;
+    uint32_t                     connection_direction;
     RDD_ANY_SRC_PORT_FLOW_COUNTER_DTS *any_src_port_flow_counter_ptr;
 
     if ((g_free_flow_entries[flow_entry_index] & RDD_FLOW_ENTRY_VALID) == RDD_FLOW_ENTRY_VALID)
@@ -700,6 +699,7 @@ int rdd_l2_connection_entry_delete ( bdmf_index  flow_entry_index )
     context_cont_entry_ptr = &( context_cont_table_ptr->entry[ entry_index ] );
 
     RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_TABLE_INDEX_READ ( context_entry_connection_table_index, context_cont_entry_ptr );
+    RDD_CONTEXT_CONTINUATION_ENTRY_CONNECTION_DIRECTION_READ ( connection_direction, context_cont_entry_ptr );
 
     /* NAT cache workaround: the context table is wrap around at 64K while the key table is continuous */
     if (entry_index < RDD_NAT_CACHE_EXTENSION_TABLE_SIZE) {
@@ -733,21 +733,27 @@ int rdd_l2_connection_entry_delete ( bdmf_index  flow_entry_index )
             MWRITE_16 ( any_src_port_flow_counter_ptr, any_src_port_flow_counter );
         }
 
+        /* Remove flow context from DDR */
         memcpy(&nat_cache_lookup_entry, nat_cache_lkp_entry_ptr, sizeof(RDD_NAT_CACHE_L2_LKP_ENTRY_DTS));
 
         memset(nat_cache_lkp_entry_ptr, 0, sizeof(RDD_NAT_CACHE_L2_LKP_ENTRY_DTS));
 
-        f_rdd_free_context_entry ( entry_index );
-
 #if !defined(FIRMWARE_INIT)
-        /* look for the entry in the NAT cache internal memory if its there delete it */
-        rc = rdd_nat_cache_submit_command(natc_lookup, (uint32_t *)&nat_cache_lookup_entry, NULL, NULL);
+        wmb();
 
-        if (rc == BDMF_ERR_OK)
-            rc = rdd_nat_cache_submit_command(natc_del, (uint32_t *)&nat_cache_lookup_entry, NULL, NULL);
-        else
-            rc = BDMF_ERR_OK;
+        /* Delete the entry in the NAT cache internal memory */
+        rdd_nat_cache_submit_command(natc_del, (uint32_t *)&nat_cache_lookup_entry, NULL, NULL);
 #endif
+
+        /* Delete continuation flow cache index from cam_lkp tbl */
+        f_rdd_cpu_tx_send_message( LILAC_RDD_CPU_TX_MESSAGE_INVALIDATE_CONTEXT_INDEX_CACHE_ENTRY,
+                           (connection_direction == rdpa_dir_ds) ?
+                           FAST_RUNNER_A : FAST_RUNNER_B,
+                           (connection_direction == rdpa_dir_ds) ?
+                           RUNNER_PRIVATE_0_OFFSET : RUNNER_PRIVATE_1_OFFSET,
+                           context_entry_connection_table_index, 0, 0, BL_LILAC_RDD_WAIT );
+
+        f_rdd_free_context_entry ( entry_index );
 
         if (rc == BDMF_ERR_OK)
         {
@@ -1148,6 +1154,7 @@ int rdd_l2_context_entry_modify ( rdd_fc_context_t *context_entry,
                                   bdmf_index       flow_entry_index )
 {
     uint32_t entry_index;
+    unsigned long flags;
 
     if ((g_free_flow_entries[flow_entry_index] & RDD_FLOW_ENTRY_VALID) == RDD_FLOW_ENTRY_VALID)
     {
@@ -1163,10 +1170,10 @@ int rdd_l2_context_entry_modify ( rdd_fc_context_t *context_entry,
         return BDMF_ERR_PARM;
     }
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
     context_entry->fc_mcast_flow_context_entry.valid = 1;
     f_rdd_l2_context_entry_write ( context_entry, entry_index, 0 );
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
 
     return BDMF_ERR_OK;
 }

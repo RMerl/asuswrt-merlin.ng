@@ -498,60 +498,61 @@ function applyRule(){
 		else
 			document.form.wl0_auth_mode_x.value = "open";
 
-		if(band5g_support){
-			inputCtrl(document.form.wl1_ssid,1);
-			inputCtrl(document.form.wl1_crypto,1);
-			inputCtrl(document.form.wl1_wpa_psk,1);
-			inputCtrl(document.form.wl1_auth_mode_x,1);
-			if(!validator.stringSSID(document.form.wl1_ssid)){   //validate 5G SSID
-				document.form.wl1_ssid.focus();
-				return false;
-			}
-			
-			if(document.form.wl1_wpa_psk.value != ""){
-				if(is_KR_sku){
-					if(!validator.psk_KR(document.form.wl1_wpa_psk))           //validate 2.4G WPA2 key
-						return false;
+		if(document.form.smart_connect_x.value != "1"){
+			if(band5g_support){
+				inputCtrl(document.form.wl1_ssid,1);
+				inputCtrl(document.form.wl1_crypto,1);
+				inputCtrl(document.form.wl1_wpa_psk,1);
+				inputCtrl(document.form.wl1_auth_mode_x,1);
+				if(!validator.stringSSID(document.form.wl1_ssid)){ //validate 5G SSID
+					document.form.wl1_ssid.focus();
+					return false;
 				}
-				else{
-					if(!validator.psk(document.form.wl1_wpa_psk))	//validate 5G WPA2 key
-						return false;
-				}
-			
-				document.form.wl1_auth_mode_x.value = "psk2";
-				document.form.wl1_crypto.value = "aes";
-			}
-			else
-				document.form.wl1_auth_mode_x.value = "open";
-		}
 
-		if(wl_info.band5g_2_support){
-			inputCtrl(document.form.wl2_ssid,1);
-			inputCtrl(document.form.wl2_crypto,1);
-			inputCtrl(document.form.wl2_wpa_psk,1);
-			inputCtrl(document.form.wl2_auth_mode_x,1);
-			if(!validator.stringSSID(document.form.wl2_ssid)){   //validate 5G-2 SSID
-				document.form.wl2_ssid.focus();
-				return false;
-			}
-			
-			if(document.form.wl2_wpa_psk.value != ""){
-				if(is_KR_sku){
-					if(!validator.psk_KR(document.form.wl2_wpa_psk))           //validate 2.4G WPA2 key
-						return false;
-				}
-				else{
-					if(!validator.psk(document.form.wl2_wpa_psk))	//validate 5G-2 WPA2 key
-						return false;
-				}			
+				if(document.form.wl1_wpa_psk.value != ""){
+					if(is_KR_sku){
+						if(!validator.psk_KR(document.form.wl1_wpa_psk)) //validate 2.4G WPA2 key
+							return false;
+					}
+					else{
+						if(!validator.psk(document.form.wl1_wpa_psk)) //validate 5G WPA2 key
+							return false;
+					}
 
-				document.form.wl1_auth_mode_x.value = "psk2";
-				document.form.wl1_crypto.value = "aes";
+					document.form.wl1_auth_mode_x.value = "psk2";
+					document.form.wl1_crypto.value = "aes";
+				}
+				else
+					document.form.wl1_auth_mode_x.value = "open";
 			}
-			else
-				document.form.wl1_auth_mode_x.value = "open";
+
+			if(wl_info.band5g_2_support){
+				inputCtrl(document.form.wl2_ssid,1);
+				inputCtrl(document.form.wl2_crypto,1);
+				inputCtrl(document.form.wl2_wpa_psk,1);
+				inputCtrl(document.form.wl2_auth_mode_x,1);
+				if(!validator.stringSSID(document.form.wl2_ssid)){ //validate 5G-2 SSID
+					document.form.wl2_ssid.focus();
+					return false;
+				}
+
+				if(document.form.wl2_wpa_psk.value != ""){
+					if(is_KR_sku){
+						if(!validator.psk_KR(document.form.wl2_wpa_psk)) //validate 2.4G WPA2 key
+							return false;
+					}
+					else{
+						if(!validator.psk(document.form.wl2_wpa_psk)) //validate 5G-2 WPA2 key
+							return false;
+					}
+
+					document.form.wl1_auth_mode_x.value = "psk2";
+					document.form.wl1_crypto.value = "aes";
+				}
+				else
+					document.form.wl1_auth_mode_x.value = "open";
+			}
 		}
-			
 	}
 
 	showLoading();	

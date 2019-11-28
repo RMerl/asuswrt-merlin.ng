@@ -73,6 +73,7 @@ typedef struct
    int                       ctrl_client[BCM_MCAST_MAX_CLIENTS];
    struct hlist_head         if_hlist;
    struct notifier_block     netdev_notifier;
+   struct notifier_block     bridge_notifier;
    struct raw_notifier_head  mcast_snooping_chain;
    int                       mcastPriQueue;
 #if defined(CONFIG_BLOG)

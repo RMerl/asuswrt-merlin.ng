@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) BME module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -41,11 +41,8 @@ typedef enum bme_channel_e {
 	BME_CHANNEL_1 = 1  /** DMA channel 3, with rx/tx status accelerator for 63178/47622 */
 } bme_channel_t;
 
-#ifndef BME_INFO_T
-#define BME_INFO_T
 struct bme_info_s;
 typedef struct bme_info_s bme_info_t;
-#endif /* BME_INFO_T */
 
 /**
  * bme_attach initializes the BME part of the DMA channels. This function is to be called at
@@ -57,25 +54,15 @@ typedef struct bme_info_s bme_info_t;
  *
  * @param[in]	channel
  *   Enum, of either BME_CHANNEL_0, or BME_CHANNEL_1. BME_CHANNEL_0 maps to DMA channel 2, while
- *   BME_CHANNEL_1 maps to DMA channel 3. For at least rev 130, BME_CHANNEL_1 has tx/phyrx status
+ *   BME_CHANNEL_1 maps to DMA channel 3. Start from d11 rev 130, BME_CHANNEL_1 has tx/phyrx status
  *   offload support.
- *
- * @param[in]	n_buf_txs    Number of txstatus elements in one BME circular buffer.
- *
- * @param[in]	sizeof_txs   Non-zero if 'channel' has tx/phyrx status offload support.
- *
- * @param[in]	n_buf_phyrxsts    Number of txstatus elements in one BME circular buffer.
- *
- * @param[in]	sizeof_phyrxsts   Non-zero if 'channel' has tx/phyrx status offload support.
  *
  * @returns
  *   bme_info_t * (bme_info): which is either pointer to an opaque structure which caller should
  *   pass on to every bme function or a NULL pointer in case of an error.: BCME_OK for success,
  *   otherwise failed to get stats.
  */
-extern bme_info_t *bme_attach(si_t *sih, bme_channel_t channel,
-                              int n_buf_txs, int sizeof_txs,
-                              int n_buf_phyrxsts, int sizeof_phyrxsts);
+extern bme_info_t *bme_attach(si_t *sih, bme_channel_t channel);
 
 /**
 * With bme_detach the BME module can be de-initialized. Should only be called during attach
@@ -89,26 +76,6 @@ extern bme_info_t *bme_attach(si_t *sih, bme_channel_t channel,
 *   <none>
 */
 extern void bme_detach(bme_info_t *bme_info);
-
-/**
- * (Re)initializes the BME hardware and software. Enables interrupts. Usually called on a 'wl up'.
- *
- * Prerequisite: firmware has progressed passed the BCMATTACH phase
- *
- * @returns
- *   <none>
- */
-extern void bme_init(bme_info_t *bme_info);
-
-/**
- * Disables interrupts. Usually called on a 'wl down'.
- *
- * Prerequisite: firmware has progressed passed the BCMATTACH phase
- *
- * @returns
- *   <none>
- */
-extern void bme_deinit(bme_info_t *bme_info);
 
 /**
 * bme_config; The BME can transfer data from a 64 bit source address to a 64 bit destination
@@ -229,34 +196,5 @@ extern bool bme_completed(bme_info_t *bme_info);
 *   <none>.
 */
 extern void bme_sync(bme_info_t *bme_info);
-
-#ifdef BME_OFFLOADS_TXSTS
-
-/**
- * For chips that support tx/phyrx status offloading only. Returns a pointer to one txstatus in the
- * circular buffer that was written by the d11 core but not yet consumed by software.
- *
- * param[in] caller_buf   Caller allocated buffer, large enough to contain one phyrx or tx status.
- */
-extern void * bme_get_txstatus(bme_info_t *bme_info, void *caller_buf);
-
-/**
- * Read and optionally clear m2m intstatus register.
- * This routine should be called with interrupts off
- *
- * @param[in] in_isr
- * @Return:  0xFFFFFFFF if DEVICEREMOVED, 0 if the interrupt is not for us, or we are in some
- *           special case, device interrupt status bits otherwise.
- */
-extern uint32 bme_m2m_intstatus(bme_info_t *bme_info, bool in_isr);
-
-/** Enable or disable BME txstatus interrupts */
-extern void bme_set_txs_intmask(bme_info_t *bme_info, bool enable);
-
-#ifdef BCMQT
-extern bool bme_is_m2m_irq(bme_info_t *bme_info);
-#endif /* BCMQT */
-
-#endif /* BME_OFFLOADS_TXSTS */
 
 #endif /* _HNDBME_H_ */

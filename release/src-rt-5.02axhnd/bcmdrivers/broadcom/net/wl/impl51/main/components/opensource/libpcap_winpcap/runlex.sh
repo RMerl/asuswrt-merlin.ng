@@ -134,7 +134,6 @@ then
 	# component of the "-o" flag argument and using that as the
 	# place to put the output.  This gets in the way of building
 	# in a directory different from the source directory.  Try
-	# to work around this.
 	#
 	# Is the outfile where we think it is?
 	#
@@ -203,7 +202,6 @@ fi
 #
 # This works around some other Flex suckage, wherein it doesn't declare
 # the lex routine before defining it, causing compiler warnings.
-# XXX - newer versions of Flex support --header-file=, to generate the
 # appropriate header file.  With those versions, we should use that option.
 #
 

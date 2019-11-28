@@ -38,7 +38,7 @@
 
 .loading_bar > div{
 	margin-left:5px;
-	background-color:black;
+	background-color: #333333;
 	border-radius:15px;
 	padding:2px;
 }
@@ -340,9 +340,9 @@ function tab_reset(v){
 			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
 		}
 		else {
-			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
+			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q")
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
+			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U")
 				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 
 			document.getElementById("t1").style.display = "none";

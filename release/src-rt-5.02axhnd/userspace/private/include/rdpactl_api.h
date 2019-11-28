@@ -391,8 +391,8 @@ int rdpaCtl_PktBasedQosGet(int dir, int type, BOOL *enable);
 
 int rdpaCtl_PktBasedQosSet(int dir, int type, BOOL enable);
 
-int rdpaCtl_get_svc_q_mode(BOOL *enable);
-int rdpaCtl_set_svc_q_mode(BOOL enable);
+int rdpaCtl_get_svc_q_mode(int *enable);
+int rdpaCtl_set_svc_q_mode(int enable);
 
 #endif /* _RDPACTL_API_H_ */
 

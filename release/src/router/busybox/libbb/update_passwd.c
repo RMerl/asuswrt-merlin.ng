@@ -169,6 +169,7 @@ int FAST_FUNC update_passwd(const char *filename,
 		if (!line) /* EOF/error */
 			break;
 
+#if ENABLE_FEATURE_ADDUSER_TO_GROUP || ENABLE_FEATURE_DEL_USER_FROM_GROUP
 		if (!name && member) {
 			/* Delete member from all groups */
 			/* line is "GROUP:PASSWD:[member1[,member2]...]" */
@@ -198,6 +199,7 @@ int FAST_FUNC update_passwd(const char *filename,
 			fprintf(new_fp, "%s\n", line);
 			goto next;
 		}
+#endif
 
 		cp = is_prefixed_with(line, name_colon);
 		if (!cp) {

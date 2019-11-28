@@ -110,24 +110,24 @@ typedef struct
 
 /** Port statistics */
 typedef struct {
-   uint32_t rx_valid_pkt;               /**< Valid Received packets */
-   uint32_t rx_crc_error_pkt;           /**< Received packets with CRC error */
-   uint32_t rx_discard_1;               /**< RX discard 1 */
-   uint32_t rx_discard_2;               /**< RX discard 2  */    
-   uint32_t bbh_drop_1;                 /**< BBH drop 1  */    
-   uint32_t bbh_drop_2;                 /**< BBH drop 2 */    
-   uint32_t bbh_drop_3;                 /**< BBH drop 3 */
-   uint32_t rx_discard_max_length;      /**< Packets discarded due to size bigger than MTU  */    
-   uint32_t rx_discard_min_length;      /**< Packets discarded due to size smaller than 64  */    
-   uint32_t tx_valid_pkt;               /**< Valid transmitted packets */
-   uint32_t tx_discard;                 /**< TX discarded packets (TX FIFO full) */
-   uint32_t discard_pkt;                /**< Dropped filtered Packets */
-   uint32_t rx_valid_bytes;             /**< FTTdp only: Received valid bytes */
-   uint32_t rx_multicast_pkt;           /**< FTTdp only: Received multicast Packets */    
-   uint32_t rx_broadcast_pkt;           /**< FTTdp only: Received broadcast Packets */    
-   uint32_t tx_valid_bytes;             /**< FTTdp only: Sent valid bytes */
-   uint32_t tx_multicast_pkt;           /**< FTTdp only: Sent multicast Packets */    
-   uint32_t tx_broadcast_pkt;           /**< FTTdp only: Sent broadcast Packets */
+    uint32_t rx_valid_pkt;               /**< Valid Received packets */
+    uint32_t rx_crc_error_pkt;           /**< Received packets with CRC error */
+    uint32_t rx_discard_1;               /**< RX discard 1 */
+    uint32_t rx_discard_2;               /**< RX discard 2  */    
+    uint32_t bbh_drop_1;                 /**< BBH drop 1  */    
+    uint32_t bbh_drop_2;                 /**< BBH drop 2 */    
+    uint32_t bbh_drop_3;                 /**< BBH drop 3 */
+    uint32_t rx_discard_max_length;      /**< Packets discarded due to size bigger than MTU  */    
+    uint32_t rx_discard_min_length;      /**< Packets discarded due to size smaller than 64  */    
+    uint32_t tx_valid_pkt;               /**< Valid transmitted packets */
+    uint32_t tx_discard;                 /**< TX discarded packets (TX FIFO full) */
+    uint32_t discard_pkt;                /**< Dropped filtered Packets */
+    uint32_t rx_valid_bytes;             /**< FTTdp only: Received valid bytes */
+    uint32_t rx_multicast_pkt;           /**< FTTdp only: Received multicast Packets */    
+    uint32_t rx_broadcast_pkt;           /**< FTTdp only: Received broadcast Packets */    
+    uint32_t tx_valid_bytes;             /**< FTTdp only: Sent valid bytes */
+    uint32_t tx_multicast_pkt;           /**< FTTdp only: Sent multicast Packets */    
+    uint32_t tx_broadcast_pkt;           /**< FTTdp only: Sent broadcast Packets */
 } rdpa_port_stat_t;
 
 typedef struct {
@@ -139,6 +139,24 @@ typedef struct {
     uint32_t bbh_rx_ploam_no_sdma_cd_drop; /**< Drop due to no SDMA/CD for PLOAM messages */
     uint32_t bbh_rx_ploam_disp_cong_drop; /**< Drop due to dispatcher congestion error for PLOAM */
 } rdpa_port_debug_stat_t;
+
+/** Port statistics per packet size*/
+typedef struct {
+    uint32_t rx_pkts_64_octets;           /**< Valid Recieved packets up to 64 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_65to127_octets;      /**< Valid Recieved packets from 65 to 127 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_128to255_octets;     /**< Valid Recieved packets from 128 to 255 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_256to511_octets;     /**< Valid Recieved packets from 256 to 511 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_512to1023_octets;    /**< Valid Recieved packets from 512 to 1023 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_1024to1522_octets;   /**< Valid Recieved packets from 1024 to 1522 octets. \XRDP_LIMITED */
+    uint32_t rx_pkts_1523tomtu_octets;    /**< Valid Recieved packets from 1523 to MTU octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_64_octets;           /**< Valid Transmitted packets up to 64 octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_65to127_octets;      /**< Valid Transmitted packets from 65 to 127 octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_128to255_octets;     /**< Valid Transmitted packets from 128 to 255 octets. \XRDP_LIMITED */ 
+    uint32_t tx_pkts_256to511_octets;     /**< Valid Transmitted packets from 256 to 511 octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_512to1023_octets;    /**< Valid Transmitted packets from 512 to 1023 octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_1024to1518_octets;   /**< Valid Transmitted packets from 1024 to 1518 octets. \XRDP_LIMITED */
+    uint32_t tx_pkts_1519tomtu_octets;    /**< Valid Transmitted packets from 1519 to MTU octets. \XRDP_LIMITED */
+} rdpa_port_pkt_size_stat_t;
 
 typedef uint32_t rdpa_ingress_rate_limit_traffic; /**< Mask of \ref rdpa_rl_traffic_fields ingress rate limit traffic types */
 

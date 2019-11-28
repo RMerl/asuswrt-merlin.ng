@@ -48,6 +48,11 @@
 
 #include "rdd.h"
 #include "rdd_iptv_processing.h"
+#ifdef G9991
+#include "XRDP_AG.h"
+
+extern uintptr_t xrdp_virt2phys(const ru_block_rec *ru_block, uint8_t addr_idx);
+#endif
 
 void rdd_iptv_processing_cfg(RDD_HW_IPTV_CONFIGURATION_DTS *iptv_hw_config)
 {
@@ -56,5 +61,8 @@ void rdd_iptv_processing_cfg(RDD_HW_IPTV_CONFIGURATION_DTS *iptv_hw_config)
     RDD_HW_IPTV_CONFIGURATION_FPM_BASE_TOKEN_SIZE_WRITE_G(iptv_hw_config->fpm_base_token_size, RDD_IPTV_CONFIGURATION_TABLE_ADDRESS_ARR, 0);
     RDD_HW_IPTV_CONFIGURATION_HN_SIZE0_WRITE_G(iptv_hw_config->hn_size0, RDD_IPTV_CONFIGURATION_TABLE_ADDRESS_ARR, 0);
     RDD_HW_IPTV_CONFIGURATION_HN_SIZE1_WRITE_G(iptv_hw_config->hn_size1, RDD_IPTV_CONFIGURATION_TABLE_ADDRESS_ARR, 0);
+#ifdef G9991
+    RDD_HW_IPTV_CONFIGURATION_FPM_POOL1_STAT2_ADDR_WRITE_G(xrdp_virt2phys(&RU_BLK(FPM), 0) + RU_REG_OFFSET(FPM, POOL1_STAT2), RDD_IPTV_CONFIGURATION_TABLE_ADDRESS_ARR, 0);
+#endif
 }
 

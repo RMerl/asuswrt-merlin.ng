@@ -45,3 +45,17 @@
 .custom_ol li li:before{
 	content: "-";
 }
+
+#tm_eula_content{
+	overflow-y: auto;
+	font-size: 14px;
+	padding: 18px 42px;
+}
+.control-field{
+	margin: 18px 0;
+	display: flex;
+	justify-content: space-around;
+}
+.eula-content-padding{
+	margin-top: 18px;
+}

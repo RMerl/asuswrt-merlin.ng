@@ -3,7 +3,7 @@
  * Contains PCIe related functions that are shared between different driver models (e.g. firmware
  * builds, DHD builds, BMAC builds), in order to avoid code duplication.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: pcie_core.c 756372 2018-04-09 03:21:52Z $
+ * $Id: pcie_core.c 767804 2018-09-26 09:54:00Z $
  */
 
 #include <bcm_cfg.h>
@@ -42,6 +42,15 @@
 
 #ifdef BCMDRIVER
 
+/**
+ * XXX: WAR for CRWLPCIEGEN2-163, needed for all the chips at this point.
+ * The PCIe core contains a 'snoop bus', that allows the logic in the PCIe core to read and write
+ * to the PCIe configuration registers. When chip backplane reset hits, e.g. on driver unload, the
+ * pcie snoop out will reset to default values and may get out of sync with pcie config registers.
+ * This is causing failures because the LTR enable bit on the snoop bus gets out of sync. Also on
+ * the snoop bus are the device power state, MSI info, L1subenable which may potentially cause
+ * problems.
+ */
 void pcie_watchdog_reset(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs)
 {
 	uint32 val, i, lsc;
@@ -66,9 +75,10 @@ void pcie_watchdog_reset(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs)
 	W_REG(osh, &sbpcieregs->configdata, val);
 
 	si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, watchdog), ~0, 4);
-	OSL_DELAY(100000);
 #ifdef BCMQT
-	OSL_DELAY(200000);
+	OSL_DELAY(1000000);
+#else
+	OSL_DELAY(100000);
 #endif /* BCMQT */
 
 	W_REG(osh, &sbpcieregs->configaddr, PCIECFGREG_LINK_STATUS_CTRL);
@@ -109,7 +119,7 @@ void  pcie_serdes_iddqdisable(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs)
 	si_setcoreidx(sih, origidx);
 }
 
-void  pcie_coherent_accenable(osl_t *osh, si_t *sih)
+void pcie_coherent_accenable(osl_t *osh, si_t *sih)
 {
 	sbpcieregs_t *pcie = NULL;
 	uint32 val;
@@ -121,6 +131,20 @@ void  pcie_coherent_accenable(osl_t *osh, si_t *sih)
 		val = R_REG(osh, &pcie->configdata);
 		val |= (PCIE_BAR1COHERENTACCEN | PCIE_BAR2COHERENTACCEN);
 		W_REG(osh, &pcie->configdata, val);
+	}
+
+	si_setcoreidx(sih, origidx);
+}
+
+void pcie_getdevctl(osl_t *osh, si_t *sih, uint32 *devctl)
+{
+	sbpcieregs_t *pcie = NULL;
+	uint32 origidx = si_coreidx(sih);
+
+	*devctl = 0;
+	if ((pcie = si_setcore(sih, PCIE2_CORE_ID, 0)) != NULL) {
+		W_REG(osh, &pcie->configaddr, PCIECFGREG_DEVCONTROL);
+		*devctl = R_REG(osh, &pcie->configdata);
 	}
 
 	si_setcoreidx(sih, origidx);

@@ -221,6 +221,14 @@ static const struct led_btn_table_s {
 	{ "led_sig1_gpio",		&led_gpio_table[LED_SIG1] },
 	{ "led_sig2_gpio",		&led_gpio_table[LED_SIG2] },
 #endif		
+#if defined(RTAX95Q)
+	{ "bt_rst_gpio",	&led_gpio_table[BT_RESET] },
+	{ "bt_disable_gpio",	&led_gpio_table[BT_DISABLE] },
+	{ "led_rgb1_red_gpio",	&led_gpio_table[LED_RGB1_RED] },
+	{ "led_rgb1_green_gpio",	&led_gpio_table[LED_RGB1_GREEN] },
+	{ "led_rgb1_blue_gpio",	&led_gpio_table[LED_RGB1_BLUE] },
+#endif
+
 	{ NULL, NULL },
 };
 
@@ -884,8 +892,6 @@ int get_port_status(int unit)
 #ifdef RTCONFIG_EXT_BCM53134
 	switch(get_model()) {
 		case MODEL_GTAC5300:
-		case MODEL_RTAX88U:
-		case MODEL_GTAX11000:
 			extra_p0 = S_53134;
 			break;
 	}
@@ -893,7 +899,11 @@ int get_port_status(int unit)
 
 	for(i = 0; i < 9; ++i){
 		if(mask & 1<<i) {
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+			ret |= hnd_get_phy_status(i);
+#else
 			ret |= hnd_get_phy_status(i, extra_p0, regv, pmdv);
+#endif
 		}
 	}
 	return ret;
@@ -915,6 +925,19 @@ int wanport_status(int wan_unit)
 #endif	
 	return get_phy_status(wan_unit);
 #else // Broadcom
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+	int i = 0;
+	char word[100], *next;
+
+	foreach(word, nvram_safe_get("wanports"), next) {
+		if (i == wan_unit)
+			return hnd_get_phy_status(atoi(word));
+
+		i++;
+	}
+
+	return 0;
+#else
 	char word[100], *next;
 	int mask;
 	char wan_ports[16];
@@ -995,6 +1018,9 @@ int wanport_status(int wan_unit)
 #ifdef RTCONFIG_EXT_BCM53134
 	switch(get_model()) {
 		case MODEL_GTAC5300:
+		case MODEL_RTAX88U:
+		case MODEL_RTAX95Q:
+		case MODEL_GTAX11000:
 			extra_p0 = S_53134;
 			break;
 	}
@@ -1009,6 +1035,7 @@ int wanport_status(int wan_unit)
 #else
 	return get_phy_status(mask);
 #endif // HND_ROUTER
+#endif	/* RTCONFIG_HND_ROUTER_AX_675X */
 #endif
 }
 

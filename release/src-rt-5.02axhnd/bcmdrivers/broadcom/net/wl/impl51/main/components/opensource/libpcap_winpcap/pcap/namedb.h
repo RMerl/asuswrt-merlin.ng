@@ -40,6 +40,13 @@
 extern "C" {
 #endif // endif
 
+/*
+ * As returned by the pcap_next_etherent()
+ * XXX this stuff doesn't belong in this interface, but this
+ * library already must do name to address translation, so
+ * on systems that don't have support for /etc/ethers, we
+ * export these hooks since they'll
+ */
 struct pcap_etherent {
 	u_char addr[6];
 	char name[122];

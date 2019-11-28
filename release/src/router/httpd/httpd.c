@@ -1209,7 +1209,7 @@ handle_request(void)
 #endif
 #ifdef RTCONFIG_AMAS
 				//RD can do firmware upgrade, if re_upgrade set to 1.
-				else if(!fromapp && nvram_match("re_mode", "1") && nvram_get_int("re_upgrade") == 0 && !check_www_whitelist(file, WHITELIST_AMAS)){
+				else if(!fromapp && nvram_match("re_mode", "1") && nvram_get_int("re_upgrade") == 0 && !check_AiMesh_whitelist(file)){
 					snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; url=message.htm\">\r\n");
 					send_page( 200, "OK", (char*) 0, inviteCode, 0);
 					return;

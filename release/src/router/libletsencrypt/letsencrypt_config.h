@@ -1,11 +1,11 @@
 #ifndef _LETSENCRYPT_CONFIG_H
 #define _LETSENCRYPT_CONFIG_H
 
-#define LE_ACME_CERT_HOME	"/jffs/.le"
-#define LE_ACME_ACC_KEY	"account.key"
-#define LE_ACME_DOMAIN_KEY	"domain.key"
-#define LE_ACME_DOMAIN_CERT	"cert.pem"
-#define LE_ACME_DOMAIN_FULLCHAIN	"fullchain.pem"
+#define LE_ACME_CERT_HOME        "/jffs/.le"
+#define LE_ACME_ACC_KEY          "account.key"
+#define LE_ACME_ACC_CONF         "account.conf"
+#define LE_ACME_DOMAIN_KEY       "domain.key"
+#define LE_ACME_DOMAIN_FULLCHAIN "fullchain.pem"
 
 //certificate
 typedef enum {
@@ -55,7 +55,8 @@ typedef enum {
 
 typedef struct {
 	int enable;
-	le_acme_auth_t authtype; 
+	le_acme_auth_t authtype;
+	u_int16_t port;
 	int force;
 	int staging;
 	int debug;

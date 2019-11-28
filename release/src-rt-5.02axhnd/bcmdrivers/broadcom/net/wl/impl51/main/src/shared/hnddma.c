@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma.c 764877 2018-06-07 12:00:51Z $
+ * $Id: hnddma.c 774125 2019-04-11 04:15:49Z $
  */
 
 /**
@@ -64,11 +64,6 @@ static void _dma_ddtable_init(dma_info_t *di, uint direction, dmaaddr_t pa);
 static uint8 dma_align_sizetobits(uint size);
 static void *dma_ringalloc(osl_t *osh, uint32 boundary, uint size, uint16 *alignbits, uint* alloced,
 	dmaaddr_t *descpa, osldma_t **dmah);
-#ifdef BCM43684A0_COHERENT_WAR
-static void *dma_so_ringalloc(osl_t *osh, uint32 boundary, uint size, uint16 *alignbits,
-	uint* alloced, dmaaddr_t *descpa, osldma_t **dmah);
-#endif // endif
-
 static bool _dma32_addrext(osl_t *osh, dma32regs_t *dma32regs);
 
 /* Prototypes for 64-bit routines */
@@ -217,11 +212,6 @@ BCMATTACHFN_DMA_ATTACH(dma_attach_ext)(dma_common_t *dmac, osl_t *osh, const cha
 		di->flushreq	 = dmac->flushreq[qnum / 32];
 	}
 #endif /* BCM_DMA_INDIRECT */
-
-#ifdef BCM43684A0_COHERENT_WAR
-	/* HWA WAR */
-	di->hwa_rx_coherent_war = (flags & BCM_DMA_RX_HWA_COHERENT_WAR) ? TRUE : FALSE;
-#endif // endif
 
 	di->msg_level = msg_level ? msg_level : &dma_msg_level;
 
@@ -696,17 +686,9 @@ dma_detach(hnddma_t *dmah)
 	if (di->txd64)
 		DMA_FREE_CONSISTENT(di->osh, ((int8 *)(uintptr)di->txd64 - di->txdalign),
 		                    di->txdalloc, (di->txdpaorig), di->tx_dmah);
-	if (di->rxd64) {
-#ifdef BCM43684A0_COHERENT_WAR
-		if (di->hwa_rx_coherent_war) {
-		DMA_FREE_CONSISTENT_SO(di->osh, ((int8 *)(uintptr)di->rxd64 - di->rxdalign),
-			di->rxdalloc, (di->rxdpaorig), di->rx_dmah);
-		DMA_ERROR(("%s: _dma_detach: DMA_FREE_CONSISTENT_SO(rxd) successful\n", di->name));
-		} else
-#endif // endif
-			DMA_FREE_CONSISTENT(di->osh, ((int8 *)(uintptr)di->rxd64 - di->rxdalign),
-			                    di->rxdalloc, (di->rxdpaorig), di->rx_dmah);
-	}
+	if (di->rxd64)
+		DMA_FREE_CONSISTENT(di->osh, ((int8 *)(uintptr)di->rxd64 - di->rxdalign),
+		                    di->rxdalloc, (di->rxdpaorig), di->rx_dmah);
 
 	/* free packet pointer vectors */
 	if (di->txp)
@@ -1015,6 +997,13 @@ dma_peeknexttxp(hnddma_t *dmah)
 	di->xs0cd = end;
 
 #ifdef BULK_PKTLIST
+	/* Routine does not appear to be used anywhere.
+	 * XXX If is is used the caller has to reclaim this packet
+	 * and terminate the PKTLINK before freeing the packet,
+	 * the packet free code ASSERTS on a non NULL link.
+	 * The packet cannot be terminated here as it had not been reclaimed
+	 * and will break the pending DMA packet chain.
+	 */
 	if (DMA_BULK_PATH(di)) {
 		return (di->dma_pkt_list.head_pkt);
 	} else
@@ -1344,31 +1333,6 @@ uint8 BCMATTACHFN_DMA_ATTACH(dma_align_sizetobits)(uint size)
 	return (bitpos);
 }
 
-#ifdef BCM43684A0_COHERENT_WAR
-static void *
-BCMATTACHFN_DMA_ATTACH(dma_so_ringalloc)(osl_t *osh, uint32 boundary, uint size, uint16 *alignbits,
-	uint* alloced, dmaaddr_t *descpa, osldma_t **dmah)
-{
-	void * va;
-	uint32 desc_strtaddr;
-	uint32 alignbytes = 1 << *alignbits;
-
-	if ((va = DMA_ALLOC_CONSISTENT_SO(osh, size, *alignbits, alloced,
-			descpa, (void **)dmah)) == NULL)
-		return NULL;
-
-	desc_strtaddr = (uint32)ROUNDUP((uint)PHYSADDRLO(*descpa), alignbytes);
-	if (((desc_strtaddr + size - 1) & boundary) !=
-	    (desc_strtaddr & boundary)) {
-		*alignbits = dma_align_sizetobits(size);
-		DMA_FREE_CONSISTENT_SO(osh, va,
-		                    size, *descpa, *dmah);
-		va = DMA_ALLOC_CONSISTENT_SO(osh, size, *alignbits, alloced, descpa, (void **)dmah);
-	}
-	return va;
-}
-#endif /* BCM43684A0_COHERENT_WAR */
-
 /**
  * Allocates one rx or tx descriptor ring. Does not allocate buffers.
  * This function ensures that the DMA descriptor ring will not get allocated
@@ -1510,8 +1474,8 @@ dma_dumprx(hnddma_t *dmah, struct bcmstrbuf *b, bool dumpring)
 {
 	dma_info_t *di = DI_INFO(dmah);
 
-	uint32 rcvptr, rcvs0;
-	uint16 rxin, rxout;
+	uint32 rcvptr, rcvs0, rcvs1;
+	uint16 curr_descr, active_descr, last_descr;
 
 	if (di->nrxd == 0)
 		return;
@@ -1531,18 +1495,24 @@ dma_dumprx(hnddma_t *dmah, struct bcmstrbuf *b, bool dumpring)
 
 	rcvptr = R_REG(di->osh, &di->d64rxregs->ptr);
 	rcvs0 = R_REG(di->osh, &di->d64rxregs->status0);
-	rxout = (uint16)B2I(((rcvptr & D64_RS0_CD_MASK) - di->rcvptrbase) &
+	rcvs1 = R_REG(di->osh, &di->d64rxregs->status1);
+	last_descr = (uint16)B2I(((rcvptr & D64_RS0_CD_MASK) - di->rcvptrbase) &
 		D64_RS0_CD_MASK, dma64dd_t);
-	rxin = (uint16)B2I(((rcvs0 & D64_RS0_CD_MASK) - di->rcvptrbase) &
+	curr_descr = (uint16)B2I(((rcvs0 & D64_RS0_CD_MASK) - di->rcvptrbase) &
+		D64_RS0_CD_MASK, dma64dd_t);
+	active_descr = (uint16)B2I(((rcvs1 & D64_RS0_CD_MASK) - di->rcvptrbase) &
 		D64_RS0_CD_MASK, dma64dd_t);
 
 	bcm_bprintf(b, "rcvcontrol 0x%x rcvaddrlow 0x%x rcvaddrhigh 0x%x rcvptr "
-		       "0x%x rcvstatus0 0x%x rcvstatus1 0x%x rxfilled %d\n",
+		       "0x%x rcvstatus0 0x%x rcvstatus1 0x%x rxfilled %d\n"
+		       "currdescr %d activedescr %d lastdescr %d\n",
 		       R_REG(di->osh, &di->d64rxregs->control),
 		       R_REG(di->osh, &di->d64rxregs->addrlow),
 		       R_REG(di->osh, &di->d64rxregs->addrhigh),
 		       rcvptr, rcvs0, R_REG(di->osh, &di->d64rxregs->status1),
-		       (rxout == rxin) ? 0 : (di->nrxd - NRXDACTIVE(rxout, rxin)));
+		       ((last_descr == curr_descr) ? 0 :
+		       (di->nrxd - NRXDACTIVE(last_descr, curr_descr))),
+		       curr_descr, active_descr, last_descr);
 
 	if (di->rxd64 && dumpring) {
 		if (DMA_CTRL_IS_HWA_RX(di))
@@ -1961,20 +1931,6 @@ BCMATTACHFN_DMA_ATTACH(dma64_alloc)(dma_info_t *di, uint direction)
 		di->txdalloc = alloced;
 		ASSERT(ISALIGNED(PHYSADDRLO(di->txdpa), align));
 	} else {
-#ifdef BCM43684A0_COHERENT_WAR
-		if (di->hwa_rx_coherent_war) {
-		if ((va = dma_so_ringalloc(di->osh,
-			(di->d64_rs0_cd_mask == 0x1fff) ? D64RINGBOUNDARY : D64RINGBOUNDARY_LARGE,
-			size, &align_bits, &alloced,
-			&di->rxdpaorig, &di->rx_dmah)) == NULL) {
-			DMA_ERROR(("%s: dma64_alloc: DMA_ALLOC_CONSISTENT_SO(nrxd) failed\n",
-			           di->name));
-			return FALSE;
-		}
-		DMA_ERROR(("%s: dma64_alloc: DMA_ALLOC_CONSISTENT_SO(nrxd) successful\n",
-			di->name));
-		} else
-#endif /* BCM43684A0_COHERENT_WAR */
 		if ((va = dma_ringalloc(di->osh,
 			(di->d64_rs0_cd_mask == 0x1fff) ? D64RINGBOUNDARY : D64RINGBOUNDARY_LARGE,
 			size, &align_bits, &alloced,
@@ -2183,7 +2139,11 @@ dma_txunframed(hnddma_t *dmah, void *buf, uint len, bool commit)
 	uint16 txout;
 	uint32 flags = 0;
 	dmaaddr_t pa; /* phys addr */
-
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 	txout = di->txout;
 
 	/* if using indirect DMA access, then configure IndQSel */
@@ -2199,8 +2159,14 @@ dma_txunframed(hnddma_t *dmah, void *buf, uint len, bool commit)
 		return 0;
 
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	paddr = SECURE_DMA_MAP(di->osh, buf, len, DMA_TX, NULL, NULL,
+		&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+	ULONGTOPHYSADDR(paddr, pa);
+#else
 	pa = SECURE_DMA_MAP(di->osh, buf, len, DMA_TX, NULL, NULL,
 		&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+#endif /* BCMDMA64OSL */
 #else
 	pa = DMA_MAP(di->osh, buf, len, DMA_TX, NULL, &di->txp_dmah[txout]);
 #endif /* BCM_SECURE_DMA */
@@ -2732,7 +2698,6 @@ dma_param_set(hnddma_t *dmah, uint16 paramid, uint16 paramval)
 	case HNDDMA_NRXBUFSZ:
 		di->rxbufsize = paramval;
 		break;
-
 	default:
 		DMA_ERROR(("%s: _dma_param_set: invalid paramid %d\n", di->name, paramid));
 		ASSERT(0);

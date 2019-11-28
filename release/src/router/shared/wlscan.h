@@ -21,6 +21,20 @@
 #define WPA_PROTO_WPA_ BIT(0)
 #define WPA_PROTO_RSN_ BIT(1)
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+#define _WPA_CIPHER_NONE_ BIT(0)
+#define _WPA_CIPHER_WEP_40_ BIT(1)
+#define _WPA_CIPHER_WEP_104_ BIT(2)
+#define _WPA_CIPHER_TKIP_ BIT(3)
+#define _WPA_CIPHER_AES_CCM_ BIT(4)
+
+#define _RSN_AKM_UNSPECIFIED_ BIT(0)
+#define _RSN_AKM_PSK_ BIT(1)
+#define _RSN_AKM_SHA256_1X_ BIT(2)
+#define _RSN_AKM_SHA256_PSK_ BIT(3)
+#define _RSN_AKM_SAE_PSK_ BIT(4)
+#endif
+
 #define PMKID_LEN 16
 
 #define NUMCHANS 64
@@ -134,6 +148,17 @@ extern struct bss_ie_hdr bss_ie;
 
 #define MAX_NUMBER_OF_APINFO	128
 
+#ifdef CONFIG_BCMWL5
+/* 802.11i/WPA RSN IE parsing utilities */
+typedef struct {
+	uint16 version;
+	wpa_suite_mcast_t *mcast;
+	wpa_suite_ucast_t *ucast;
+	wpa_suite_auth_key_mgmt_t *akm;
+	uint8 *capabilities;
+} rsn_parse_info_t;
+#endif
+
 struct apinfo
 {
 	char BSSID[18];
@@ -145,6 +170,9 @@ struct apinfo
 	int wep;
 	int wpa;
 	struct wpa_ie_data wid;
+#ifdef RTCONFIG_HND_ROUTER_AX
+	rsn_parse_info_t rsn_info;
+#endif
 	int status;
 	int NetworkType;
 #ifdef RTCONFIG_AMAS

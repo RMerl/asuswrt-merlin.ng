@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Broadcom
+# Copyright 2019 Broadcom
 #
 # This program is the proprietary software of Broadcom and/or
 # its licensors, and may only be used, duplicated, modified or distributed
@@ -40,7 +40,7 @@
 # OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
 # NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
 #
-# $Id: emf.mk 692019 2017-03-24 19:24:28Z $
+# $Id: emf.mk 768736 2018-10-23 21:53:02Z $
 #
 
 CROSS_COMPILE = mipsel-linux-

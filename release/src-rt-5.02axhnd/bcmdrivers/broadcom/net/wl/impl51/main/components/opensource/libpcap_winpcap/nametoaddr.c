@@ -44,12 +44,19 @@ static const char rcsid[] _U_ =
 #include <netinet/in.h>
 #endif /* WIN32 */
 
+/*
+ * XXX - why was this included even on UNIX?
+ */
 #ifdef __MINGW32__
 #include "IP6_misc.h"
 #endif // endif
 
 #ifndef WIN32
 #ifdef HAVE_ETHER_HOSTTON
+/*
+ * XXX - do we need any of this if <netinet/if_ether.h> doesn't declare
+ * ether_hostton()?
+ */
 #ifdef HAVE_NETINET_IF_ETHER_H
 struct mbuf;		/* Squelch compiler warnings on some platforms for */
 struct rtentry;		/* declarations in <net/if.h> */
@@ -390,6 +397,18 @@ __pcap_atodn(const char *s, bpf_u_int32 *addr)
 	return(32);
 }
 
+/*
+ * Convert 's', which can have the one of the forms:
+ *
+ *	"xx:xx:xx:xx:xx:xx"
+ *	"xx.xx.xx.xx.xx.xx"
+ *	"xx-xx-xx-xx-xx-xx"
+ *	"xxxx.xxxx.xxxx"
+ *	"xxxxxxxxxxxx"
+ *
+ * (or various mixes of ':', '.', and '-') into a new
+ * ethernet address.  Assumes 's' is well formed.
+ */
 u_char *
 pcap_ether_aton(const char *s)
 {

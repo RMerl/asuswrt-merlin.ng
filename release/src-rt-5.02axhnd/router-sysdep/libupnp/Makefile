@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Broadcom
+# Copyright 2019 Broadcom
 #
 # This program is the proprietary software of Broadcom and/or
 # its licensors, and may only be used, duplicated, modified or distributed
@@ -43,7 +43,7 @@
 #
 # <<Broadcom-WL-IPTag/Proprietary:>>
 #
-# $Id: Makefile 764864 2018-06-07 04:28:21Z $
+# $Id: Makefile 772949 2019-03-07 23:04:06Z $
 #
 
 include $(TOP)/common.mak
@@ -61,7 +61,6 @@ INCLUDES += -I$(SRCBASE)/../components/bcmcrypto/include
 CFLAGS += ${INCLUDES}
 
 CFLAGS += -Wall -Wunused -g -s -Werror -fPIC
-
 
 LDFLAGS = -L$(TOP)/libbcmcrypto -lbcmcrypto
 

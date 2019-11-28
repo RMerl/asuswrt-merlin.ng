@@ -1621,6 +1621,150 @@ static inline int rdpa_port_is_empty_get(bdmf_object_handle mo_, bdmf_boolean *i
 	return pa.ret;
 }
 
+
+/** Get port/mac attribute.
+ *
+ * Get PORT MAC address .
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[out]  mac_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_mac_get(bdmf_object_handle mo_, bdmf_mac_t * mac_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.ptr = (bdmf_ptr)(unsigned long)mac_;
+	pa.cmd = RDPA_PORT_MAC_GET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_PORT_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
+
+/** Set port/mac attribute.
+ *
+ * Set PORT MAC address .
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in]   mac_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_mac_set(bdmf_object_handle mo_, const bdmf_mac_t * mac_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.ptr = (bdmf_ptr)(unsigned long)mac_;
+	pa.cmd = RDPA_PORT_MAC_SET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_PORT_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
+
+/** Get port/pkt_size_stat_en attribute.
+ *
+ * Get Enable debug statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[out]  pkt_size_stat_en_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_pkt_size_stat_en_get(bdmf_object_handle mo_, bdmf_boolean *pkt_size_stat_en_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.ptr = (bdmf_ptr)(unsigned long)pkt_size_stat_en_;
+	pa.cmd = RDPA_PORT_PKT_SIZE_STAT_EN_GET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_PORT_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
+
+/** Set port/pkt_size_stat_en attribute.
+ *
+ * Set Enable debug statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in]   pkt_size_stat_en_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_pkt_size_stat_en_set(bdmf_object_handle mo_, bdmf_boolean pkt_size_stat_en_)
+{
+	rdpa_ioctl_cmd_t pa = {0};
+	int fd, ret;
+
+	pa.mo = mo_;
+	pa.parm = (uint64_t)(long)pkt_size_stat_en_;
+	pa.cmd = RDPA_PORT_PKT_SIZE_STAT_EN_SET;
+
+	fd = open(RDPA_USR_DEV_NAME, O_RDWR);
+	if (fd < 0)
+	{
+		rdpa_usr_error("%s: %s\n", RDPA_USR_DEV_NAME, strerror(errno));
+		return -EINVAL;
+	}
+	ret = ioctl(fd, RDPA_PORT_IOCTL, &pa);
+	if (ret)
+	{
+		rdpa_usr_error("ioctl failed, ret=%d\n", ret);
+		close(fd);
+		return ret;
+	}
+
+	close(fd);
+	return pa.ret;
+}
+
 /** @} end of port Doxygen group */
 
 

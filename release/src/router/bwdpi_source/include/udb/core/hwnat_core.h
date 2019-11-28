@@ -62,6 +62,5 @@ int udb_core_okay_to_accel_v4(accel_conn_t *accel_conn);
 int udb_core_okay_to_accel_v6(accel_conn_t *accel_conn);
 void udb_core_register_ecm_cb(ecm_cb_t *ecm_cb_ptr);
 void cte_recycle_timer_handler(unsigned long unused);
-void udb_core_set_cte_timeout(unsigned int time);
 
 #endif /* __HWNAT_CORE_H__ */

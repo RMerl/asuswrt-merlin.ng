@@ -145,6 +145,7 @@ extern void BcmHalSetIrqAffinity(unsigned int irq, struct cpumask *mask);
 #endif
 #endif
 int ext_irq_connect(int irq, void* param, FN_HANDLER isr);
+void ext_irq_disconnect(int irq, void* param);
 void ext_irq_enable(int irq, int enable);
 extern void dump_intr_regs(void);
 

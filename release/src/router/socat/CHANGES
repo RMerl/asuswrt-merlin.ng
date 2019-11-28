@@ -1,0 +1,1637 @@
+
+####################### V 1.7.3.2:
+
+corrections:
+	SIGSEGV and other signals could lead to a 100% CPU loop
+
+	Failing name resolution could lead to SIGSEGV
+	Thanks to Max for reporting this issue.
+
+	Include <stddef.h> for ptrdiff_t
+	Thanks to Jeroen Roovers for reporting this issue.
+
+	Building with --disable-sycls failed due to missing sslcls.h defines
+
+	Socat hung when configured with --disable-sycls.
+
+	Some minor corrections with includes etc.
+
+	Option so-reuseport did not work. Thanks to Some Raghavendra Prabhu
+	for sending a patch.
+
+	Programs invoked with EXEC, nofork, and -u or -U had stdin and stdout
+	incorrectly assigned
+	Test: EXEC_NOFORK_UNIDIR
+	Thanks to David Reiss for reporting this problem.
+
+	Socat exited with status 0 even when a program invoked with SYSTEM or
+	EXEC failed.
+	Tests: SYSTEM_RC EXEC_RC
+	Issue reported by Felix Winkelmann.
+
+	AddressSanitizer reported a few buffer overflows (false positives).
+	Nevertheless fixed Socat source.
+	Issue reported by Hanno Böck.
+
+	Socat did not use option ipv6-join-group.
+	Test: USE_IPV6_JOIN_GROUP
+	Thanks to Linux Lüssing for sending a patch.
+
+	UDP-LISTEN did not honor the max-children option.
+	Test: UDP4MAXCHILDREN UDP6MAXCHILDREN
+	Thanks to Leander Berwers for reporting this issue.
+
+	Options so-rcvtimeo and so-sndtimeo do not work with poll()/select()
+	and therefore were useless.
+	Thanks to Steve Borenstein for reporting this issue.
+
+	Option dhparam was documented as dhparams. Added the alias name
+	dhparams to fix this.
+	Thanks to Alexander Neumann for sending a patch.
+
+	Options shut-down and shut-close did not work.
+	Thanks to Stefan Schimanski for providing a patch.
+
+	There was a bug in printing readline log message caused by a misleading
+	indentation.
+	Thanks to Paul Wouters for reporting.
+
+	The internal vsnprintf_r function looped or crashed on size parameter
+	with hexadecimal output.
+
+	Ignore exit code of child process when it was killed by master due to
+	EOF
+
+	Corrected byte order on read of IPV6_TCLASS value from ancillary
+	message
+
+	Fixed type of the bool element in options. This had bug caused failures
+	e.g. of ignoreeof on big-endian systems when bool was not based on int.
+
+	On systems with predefined bool type whose size differs from int some
+	IPv6 and TCP options (per setsockopt()) failed.
+
+	Length of integral data in ancillary messages varies (TOS: 1 byte,
+	TTL: 4 bytes), the old implementation failed for TTL on big-endian
+	hosts.
+
+	Fixed an issue in options processing: TUN and DNS flags had failed on
+	big-endian systems and the NO- forms had probable never worked.
+
+porting:
+	Type conflict between int and sig_atomic_t between declaration and
+	definition of diag_immediate_type and diag_immediate_exit broke
+	compilation on FreeBSD 10.1 with clang. Thanks to Emanuel Haupt for
+	reporting this bug.
+
+	Socat failed to compile on platforms with OpenSSL without
+	DTLSv1_client_method or DTLSv1_server_method.
+	Thanks to Simon Matter for sending a patch.
+
+	NuttX OS headers do not provide struct ip, thus socat did not compile.
+	Made struct ip subject to configure.
+	Thanks to SP for reporting this issue.
+
+	Socat failed to compile with OpenSSL version 1.0.2d where
+	SSLv3_server_method and SSLv3_client_method are no longer defined.
+	Thanks to Mischa ter Smitten for reporting this issue and providing
+	a patch.
+
+	configure checked for OpenSSL EC_KEY assuming it is a define but it
+	is a type, thus OpenSSL ECDHE ciphers failed even on Linux.
+	Thanks to Andrey Arapov for reporting this bug.
+
+	Changes to make socat compile with OpenSSL 1.1. 
+	Thanks to Sebastian Andrzej Siewior e.a. from the Debian team for
+	providing the base patch.
+	Debian Bug#828550
+
+	Make Socat compatible with BoringSSL.
+	Thanks to Matt Braithwaite for providing a patch.
+
+	OpenSSL: Use RAND_status to determine PRNG state
+	Thanks to Adam Langley for providing a patch
+
+	AIX-7 uses an extended O_ACCMODE that does not fit socat's internal
+	requirements. Thanks to Garrick Trowsdale for providing a patch
+
+	LibreSSL support: check for OPENSSL_NO_COMP
+	Thanks to Bernard Spil for providing a patch
+
+testing:
+	socks4echo.sh and socks4a-echo.sh hung with new bash with read -n
+
+	test.sh: stderr; option -v (verbose); FDOUT_ERROR description
+
+	improved proxy.sh - it now also takes hostnames
+
+	A few corrections in test.sh
+
+	DTLS1 test hangs on some distributions. Test is now only performed
+	with OpenSSL 1.0.2 or higher.
+
+	More corrections to test.sh that reveal a mistake with IPV6_TCLASS
+
+docu:
+	Corrected source of socat man page to correctly show man references
+	like socket(2); removed obseolete entries from See Also
+
+	Docu and some comments mentioned addresses SSL-LISTEN and SSL-CONNECT
+	that do not exist (OPENSSL-LISTEN, SSL-L; and OPENNSSL-CONNECT, SSL
+	are correct).
+	Thanks to Zhigang Wang for reporting this issue.
+
+	Fixed a couple of English spelling and grammar mistakes.
+	Thanks to Jakub Wild for sending the patches.
+
+	NOEXPAND() was not resolved 2 times.
+
+	More minor docu corrections
+
+legal:
+	Added contributors to copyright notices. Suggested by Matt Braithwaite.
+
+####################### V 1.7.3.1:
+
+security:
+	Socat security advisory 8
+	A stack overflow in vulnerability was found that can be triggered when
+	command line arguments (complete address specifications, host names,
+	file names) are longer than 512 bytes.
+	Successful exploitation might allow an attacker to execute arbitrary
+	code with the privileges of the socat process.
+	This vulnerability can only be exploited when an attacker is able to
+	inject data into socat's command line.
+	A vulnerable scenario would be a CGI script that reads data from clients
+	and uses (parts of) this data as hostname for a Socat invocation.
+	Test: NESTEDOVFL
+	Credits to Takumi Akiyama for finding and reporting this issue.
+
+	Socat security advisory 7
+	MSVR-1499
+	In the OpenSSL address implementation the hard coded 1024 bit DH p
+	parameter was not prime. The effective cryptographic strength of a key
+	exchange using these parameters was weaker than the one one could get by
+	using a prime p. Moreover, since there is no indication of how these
+	parameters were chosen, the existence of a trapdoor that makes possible
+	for an eavesdropper to recover the shared secret from a key exchange
+	that uses them cannot be ruled out.
+	Futhermore, 1024bit is not considered sufficiently secure.
+	Fix: generated a new 2048bit prime.
+	Thanks to Santiago Zanella-Beguelin and Microsoft Vulnerability
+	Research (MSVR) for finding and reporting this issue.
+
+####################### V 1.7.3.0:
+
+security:
+	Socat security advisory 6
+	CVE-2015-1379: Possible DoS with fork
+	Fixed problems with signal handling caused by use of not async signal
+	safe functions in signal handlers that could freeze socat, allowing
+	denial of service attacks.
+	Many changes in signal handling and the diagnostic messages system were
+	applied to make the code async signal safe but still provide detailled
+	logging from signal handlers:
+	Coded function vsnprintf_r() as async signal safe incomplete substitute
+	of libc vsnprintf()
+	Coded function snprinterr() to replace %m in strings with a system error
+	message
+	Instead of gettimeofday() use clock_gettime() when available
+	Pass Diagnostic messages from signal handler per unix socket to the main
+	program flow
+	Use sigaction() instead of signal() for better control
+	Turn off nested signal handler invocations
+	Thanks to Peter Lobsinger for reporting and explaining this issue.
+
+	Red Hat issue 1019975: add TLS host name checks
+	OpenSSL client checks if the server certificates names in
+	extensions/subjectAltName/DNS or in subject/commonName match the name
+	used to connect or the value of the openssl-commonname option.
+	Test: OPENSSL_CN_CLIENT_SECURITY
+
+	OpenSSL server checks if the client certificates names in
+	extensions/subjectAltNames/DNS or subject/commonName match the value of
+	the openssl-commonname option when it is used.
+	Test: OPENSSL_CN_SERVER_SECURITY
+
+	Red Hat issue 1019964: socat now uses the system certificate store with
+	OPENSSL when neither options cafile nor capath are used
+
+	Red Hat issue 1019972: needs to specify OpenSSL cipher suites
+	Default cipherlist is now "HIGH:-NULL:-PSK:-aNULL" instead of empty to
+	prevent downgrade attacks
+
+new features:
+	OpenSSL addresses set couple of environment variables from values in
+	peer certificate, e.g.: 
+	SOCAT_OPENSSL_X509_SUBJECT, SOCAT_OPENSSL_X509_ISSUER,
+	SOCAT_OPENSSL_X509_COMMONNAME, 
+	SOCAT_OPENSSL_X509V3_SUBJECTALTNAME_DNS
+	Tests: ENV_OPENSSL_{CLIENT,SERVER}_X509_*
+
+	Added support for methods TLSv1, TLSv1.1, TLSv1.2, and DTLS1
+	Tests: OPENSSL_METHOD_*
+
+	Enabled OpenSSL server side use of ECDHE ciphers. Feature suggested
+	by Andrey Arapov.
+
+	Added a new option termios-rawer for ptys.
+	Thanks to Christian Vogelgsang for pointing me to this requirement
+
+corrections:
+	Bind with ABSTRACT commands used non-abstract namespace (Linux).
+	Test: ABSTRACT_BIND
+	Thanks to Denis Shatov for reporting this bug.
+
+	Fixed return value of nestlex()
+
+	Option ignoreeof on the right address hung.
+	Test: IGNOREEOF_REV
+	Thanks to Franz Fasching for reporting this bug.
+
+	Address SYSTEM, when terminating, shut down its parent addresses,
+	e.g. an SSL connection which the parent assumed to still be active.
+	Test: SYSTEM_SHUTDOWN
+
+	Passive (listening or receiving) addresses with empty port field bound
+	to a random port instead of terminating with error.
+	Test: TCP4_NOPORT
+
+	configure with some combination of disable options produced config
+	files that failed to compile due to missing IPPROTO_TCP.
+	Thanks to Thierry Fournier for report and patch.
+
+	fixed a few minor bugs with OpenSSL in configure and with messages
+
+	Socat did not work in FIPS mode because 1024 instead of 512 bit DH prime
+	is required. Thanks to Zhigang Wang for reporting and sending a patch.
+
+	Christophe Leroy provided a patch that fixes memory leaks reported by
+	valgrind
+
+	Help for filan -L was bad, is now corrected to:
+	"follow symbolic links instead of showing their properties"
+
+	Address options fdin and fdout were silently ignored when not applicable
+	due to -u or -U option. Now these combinations are caught as errors.
+	Test: FDOUT_ERROR
+	Issue reported by Hendrik.
+
+	Added option termios-cfmakeraw that calls cfmakeraw() and is preferred
+	over option raw which is now obsolote. On SysV systems this call is
+	simulated by appropriate setting.
+	Thanks to Youfu Zhang for reporting issue with option raw.
+
+porting:
+	Socat included <sys/poll.h> instead of POSIX <poll.h>
+	Thanks to John Spencer for reporting this issue.
+
+	Version 1.7.2.4 changed the check for gcc in configure.ac; this
+	broke cross compiling. The particular check gets reverted.
+	Thanks to Ross Burton and Danomi Manchego for reporting this issue.
+
+	Debian Bug#764251: Set the build timestamp to a deterministic time:
+	support external BUILD_DATE env var to allow to build reproducable
+	binaries
+
+	Joachim Fenkes provided an new adapted spec file.
+
+	Type bool and macros Min and Max are defined by socat which led to
+	compile errors when they were already provided by build framework.
+	Thanks to Liyu Liu for providing a patch.
+
+	David Arnstein contributed a patch for NetBSD 5.1 including stdbool.h
+	support and appropriate files in Config/
+
+	Lauri Tirkkonen contributed a patch regarding netinet/if_ether.h
+	on Illumos
+
+	Changes for Openindiana: define _XPG4_2, __EXTENSIONS__,
+	_POSIX_PTHREAD_SEMANTICS; and minor changes
+
+	Red Hat issue 1182005: socat 1.7.2.4 build failure missing
+	linux/errqueue.h
+	Socat failed to compile on on PPC due to new requirements for
+	including <linux/errqueue.h> and a weakness in the conditional code.
+	Thanks to Michel Normand for reporting this issue.
+
+doc:
+	In the man page the PTY example was badly formatted. Thanks to
+	J.F.Sebastian for sending a patch.
+
+	Added missing CVE ids to security issues in CHANGES
+
+testing:
+	Do not distribute testcert.conf with socat source but generate it
+	(and new testcert6.conf) during test.sh run.
+
+####################### V 1.7.2.4:
+
+corrections:
+	LISTEN based addresses applied some address options, e.g. so-keepalive,
+	to the listening file descriptor instead of the connected file
+	descriptor
+	Thanks to Ulises Alonso for reporting this bug
+
+	make failed after configure with non gcc compiler due to missing
+	include. Thanks to Horacio Mijail for reporting this problem
+
+	configure checked for --disable-rawsocket but printed
+	--disable-genericsocket in the help text. Thanks to Ben Gardiner for
+	reporting and patching this bug
+
+	In xioshutdown() a wrong branch was chosen after RECVFROM type addresses.
+	Probably no impact.
+	Thanks to David Binderman for reporting this issue.
+
+	procan could not cleanly format ulimit values longer than 16 decimal
+	digits. Thanks to Frank Dana for providing a patch that increases field
+	width to 24 digits.
+
+	OPENSSL-CONNECT with bind option failed on some systems, eg.FreeBSD, with
+	"Invalid argument"
+	Thanks to Emile den Tex for reporting this bug.
+
+	Changed some variable definitions to make gcc -O2 aliasing checker happy
+	Thanks to Ilya Gordeev for reporting these warnings
+
+	On big endian platforms with type long >32bit the range option applied a
+	bad base address. Thanks to hejia hejia for reporting and fixing this bug.
+
+	Red Hat issue 1022070: missing length check in xiolog_ancillary_socket()
+
+	Red Hat issue 1022063: out-of-range shifts on net mask bits
+
+	Red Hat issue 1022062: strcpy misuse in xiosetsockaddrenv_ip4()
+
+	Red Hat issue 1022048: strncpy hardening: corrected suspicious strncpy()
+	uses
+
+	Red Hat issue 1021958: fixed a bug with faulty buffer/data length
+	calculation in xio-ascii.c:_xiodump()
+
+	Red Hat issue 1021972: fixed a missing NUL termination in return string
+	of sysutils.c:sockaddr_info() for the AF_UNIX case
+
+	fixed some typos and minor issues, including:
+	Red Hat issue 1021967: formatting error in manual page
+
+	UNIX-LISTEN with fork option did not remove the socket file system entry
+	when exiting. Other file system based passive address types had similar
+	issues or failed to apply options umask, user e.a.
+	Thanks to Lorenzo Monti for pointing me to this issue
+
+porting:
+	Red Hat issue 1020203: configure checks fail with some compilers.
+	Use case: clang
+
+	Performed changes for Fedora release 19
+
+	Adapted, improved test.sh script
+
+	Red Hat issue 1021429: getgroupent fails with large number of groups;
+	use getgrouplist() when available instead of sequence of calls to
+	getgrent()
+
+	Red Hat issue 1021948: snprintf API change;
+	Implemented xio_snprintf() function as wrapper that tries to emulate C99
+	behaviour on old glibc systems, and adapted all affected calls
+	appropriately
+
+	Mike Frysinger provided a patch that supports long long for time_t,
+	socklen_t and a few other libc types.
+
+	Artem Mygaiev extended Cedril Priscals Android build script with pty code
+
+	The check for fips.h required stddef.h
+	Thanks to Matt Hilt for reporting this issue and sending a patch
+
+	Check for linux/errqueue.h failed on some systems due to lack of
+	linux/types.h inclusion. Thanks to Michael Vastola for sending a patch.
+
+	autoconf now prefers configure.ac over configure.in
+	Thanks to Michael Vastola for sending a patch.
+
+	type of struct cmsghdr.cmsg is system dependend, determine it with
+	configure; some more print format corrections
+
+docu:
+	libwrap always logs to syslog
+
+	added actual text version of GPLv2
+
+####################### V 1.7.2.3:
+
+security:
+	Socat security advisory 5
+	CVE-2014-0019: socats PROXY-CONNECT address was vulnerable to a buffer
+	overflow with data from command line (see socat-secadv5.txt)
+	Credits to Florian Weimer of the Red Hat Product Security Team
+
+####################### V 1.7.2.2:
+
+security:
+	Socat security advisory 4
+	CVE-2013-3571:
+	after refusing a client connection due to bad source address or source
+	port socat shutdown() the socket but did not close() it, resulting in
+	a file descriptor leak in the listening process, visible with lsof and
+	possibly resulting in EMFILE Too many open files. This issue could be
+	misused for a denial of service attack.
+	Full credits to Catalin Mitrofan for finding and reporting this issue.
+
+####################### V 1.7.2.1:
+
+security:
+	Socat security advisory 3
+	CVE-2012-0219:
+	fixed a possible heap buffer overflow in the readline address. This bug
+	could be exploited when all of the following conditions were met:
+	1) one of the addresses is READLINE without the noprompt and without the
+	prompt options.
+	2) the other (almost arbitrary address) reads malicious data (which is
+	then transferred by socat to READLINE).
+	Workaround: when using the READLINE address apply option prompt or
+	noprompt.
+	Full credits to Johan Thillemann for finding and reporting this issue.
+
+####################### V 1.7.2.0:
+
+corrections:
+	when UNIX-LISTEN was applied to an existing file it failed as expected
+	but removed the file. Thanks to Bjoern Bosselmann for reporting this
+	problem
+
+	fixed a bug where socat might crash when connecting to a unix domain
+	socket using address GOPEN. Thanks to Martin Forssen for bug report and
+	patch.
+
+	UDP-LISTEN would alway set SO_REUSEADDR even without fork option and
+	when user set it to 0. Thanks to Michal Svoboda for reporting this bug.
+
+	UNIX-CONNECT did not support half-close. Thanks to Greg Hughes who
+	pointed me to that bug
+
+	TCP-CONNECT with option nonblock reported successful connect even when
+	it was still pending
+
+	address option ioctl-intp failed with "unimplemented type 26". Thanks
+	to Jeremy W. Sherman for reporting and fixing that bug
+
+	socat option -x did not print packet direction, timestamp etc; thanks
+	to Anthony Sharobaiko for sending a patch
+
+	address PTY does not take any parameters but did not report an error
+	when some were given
+
+	Marcus Meissner provided a patch that fixes invalid output and possible
+	process crash when socat prints info about an unnamed unix domain
+	socket
+
+	Michal Soltys reported the following problem and provided an initial
+	patch: when socat was interrupted, e.g. by SIGSTOP, and resumed during
+	data transfer only parts of the data might have been written.
+
+	Option o-nonblock in combination with large transfer block sizes
+	may result in partial writes and/or EAGAIN errors that were not handled
+	properly but resulted in data loss or process termination.
+
+	Fixed a bug that could freeze socat when during assembly of a log
+	message a signal was handled that also printed a log message. socat
+	development had been aware that localtime() is not thread safe but had
+	only expected broken messages, not corrupted stack (glibc 2.11.1,
+	Ubuntu 10.4)
+
+	an internal store for child pids was susceptible to pid reuse which
+	could lead to sporadic data loss when both fork option and exec address
+	were used. Thanks to Tetsuya Sodo for reporting this problem and
+	sending a patch
+
+	OpenSSL server failed with "no shared cipher" when using cipher aNULL.
+	Fixed by providing temporary DH parameters. Thanks to Philip Rowlands
+	for drawing my attention to this issue.
+
+	UDP-LISTEN slept 1s after accepting a connection. This is not required.
+	Thanks to Peter Valdemar Morch for reporting this issue
+
+	fixed a bug that could lead to error or socat crash after a client
+	connection with option retry had been established
+
+	fixed configure.in bug on net/if.h check that caused IF_NAMESIZE to be
+	undefined
+
+	improved dev_t print format definition
+
+porting:
+	Cedril Priscal ported socat to Android (using Googles cross compiler).
+	The port includes the socat_buildscript_for_android.sh script
+
+	added check for component ipi_spec_dst in struct in_pktinfo so
+	compilation does not fail on Cygwin (thanks to Peter Wagemans for
+	reporting this problem)
+
+	build failed on RHEL6 due to presence of fips.h; configure now checks
+	for fipsld too. Thanks to Andreas Gruenbacher for reporting this
+	problem
+
+	check for netinet6/in6.h only when IPv6 is available and enabled
+
+	don't fail to compile when the following defines are missing:
+	IPV6_PKTINFO IPV6_RTHDR IPV6_DSTOPTS IPV6_HOPOPTS IPV6_HOPLIMIT
+	Thanks to Jerry Jacobs for reporting this problem (Mac OS X Lion 10.7)
+
+	check if define __APPLE_USE_RFC_2292 helps to enable IPV6_* (MacOSX
+	Lion 7.1); thanks to Jerry Jacobs to reporting this problem and
+	proposing a solution
+
+	fixed compiler warnings on Mac OS X 64bit. Thanks to Guy Harris for
+	providing the patch.
+
+	corrections for OpenEmbedded, especially termios SHIFT values and
+	ISPEED/OSPEED. Thanks to John Faith for providing the patch
+
+	minor corrections to docu and test.sh resulting from local compilation
+	on Openmoko SHR
+
+	fixed sa_family_t compile error on DragonFly. Thanks to Tony Young for
+	reporting this issue and sending a patch.
+
+	Ubuntu Oneiric: OpenSSL no longer provides SSLv2 functions; libutil.sh
+	is now bsd/libutil.h; compiler warns on vars that is only written to
+
+new features: 
+	added option max-children that limits the number of concurrent child
+	processes. Thanks to Sam Liddicott for providing the patch.
+
+	Till Maas added support for tun/tap addresses without IP address
+ 
+	added an option openssl-compress that allows to disable the compression
+	feature of newer OpenSSL versions. Thanks to Michael Hanselmann for
+	providing this contribution (sponsored by Google Inc.)
+
+docu:
+	minor corrections in docu (thanks to Paggas)
+
+	client process -> child process
+
+####################### V 1.7.1.3:
+
+security:
+	Socat security advisory 2
+	CVE-2010-2799:
+	fixed a stack overflow vulnerability that occurred when command
+	line arguments (whole addresses, host names, file names) were longer
+	than 512 bytes.
+	Note that this could only be exploited when an attacker was able to
+	inject data into socat's command line.
+	Full credits to Felix GrÃ¶bert, Google Security Team, for finding and
+	reporting this issue
+
+####################### V 1.7.1.2:
+
+corrections:
+	user-late and group-late, when applied to a pty, affected the system
+	device /dev/ptmx instead of the pty (thanks to Matthew Cloke for
+	pointing me to this bug)
+
+	socats openssl addresses failed with "nonblocking operation did not
+	complete" when the peer performed a renegotiation. Thanks to Benjamin
+	Delpy for reporting this bug.
+
+	info message during socks connect showed bad port number on little
+	endian systems due to wrong byte order (thanks to Peter M. Galbavy for
+	bug report and patch)
+
+	Debian bug 531078: socat execs children with SIGCHLD ignored; corrected
+	to default. Thanks to Martin Dorey for reporting this bug.
+
+porting:
+	building socat on systems that predefined the CFLAGS environment to
+	contain -Wall failed (esp.RedHat). Thanks to Paul Wouters for reporting
+	this problem and to Simon Matter for providing the patch
+
+	support for Solaris 8 and Sun Studio support (thanks to Sebastian
+	Kayser for providing the patches)
+
+	on some 64bit systems a compiler warning "cast from pointer to integer
+	of different size" was issued on some option definitions
+
+	added struct sockaddr_ll to union sockaddr_union to avoid "strict
+	aliasing" warnings (problem reported by Paul Wouters)
+
+docu:
+	minor corrections in docu
+
+####################### V 1.7.1.1:
+
+corrections:
+	corrected the "fixed possible SIGSEGV" fix because SIGSEGV still might
+	occur under those conditions. Thanks to Toni Mattila for first
+	reporting this problem.
+
+	ftruncate64 cut its argument to 32 bits on systems with 32 bit long type
+
+	socat crashed on systems without setenv() (esp. SunOS up to Solaris 9);
+	thanks to Todd Stansell for reporting this bug
+
+	with unidirectional EXEC and SYSTEM a close() operation was performed
+	on a random number which could result in hanging e.a.
+
+	fixed a compile problem caused by size_t/socklen_t mismatch on 64bit
+	systems
+
+	docu mentioned option so-bindtodev but correct name is so-bindtodevice. 
+	Thanks to Jim Zimmerman for reporting.
+
+docu changes:
+	added environment variables example to doc/socat-multicast.html
+
+####################### V 1.7.1.0:
+
+new features:
+	address options shut-none, shut-down, and shut-close allow to control
+	socat's half close behaviour
+
+	with address option shut-null socat sends an empty packet to the peer
+	to indicate EOF
+
+	option null-eof changes the behaviour of sockets that receive an empty
+	packet to see EOF instead of ignoring it
+
+	introduced option names substuser-early and su-e, currently equivalent
+	to option substuser (thanks to Mike Perry for providing the patch)
+
+corrections:
+	fixed some typos and improved some comments
+
+####################### V 1.7.0.1:
+
+corrections:
+	fixed possible SIGSEGV in listening addresses when a new connection was
+	reset by peer before the socket addresses could be retrieved. Thanks to
+	Mike Perry for sending a patch.
+
+	fixed a bug, introduced with version 1.7.0.0, that let client
+	connections with option connect-timeout fail when the connections
+	succeeded. Thanks to Bruno De Fraine for reporting this bug.
+
+	option end-close "did not apply" to addresses PTY, SOCKET-CONNECT,
+	and most UNIX-* and ABSTRACT-*
+
+	half close of EXEC and SYSTEM addresses did not work for pipes and
+	sometimes socketpair
+
+	help displayed for some option a wrong type
+
+	under some circumstances shutdown was called multiple times for the
+	same fd
+
+####################### V 1.7.0.0:
+
+new features:
+	new address types SCTP-CONNECT and SCTP-LISTEN implement SCTP stream
+	mode for IPv4 and IPv6; new address options sctp-maxseg and
+	sctp-nodelay (suggested by David A. Madore; thanks to Jonathan Brannan
+	for providing an initial patch)
+
+	new address "INTERFACE" for transparent network interface handling
+	(suggested by Stuart Nicholson)
+
+	added generic socket addresses: SOCKET-CONNECT, SOCKET-LISTEN,
+	SOCKET-SENDTO, SOCKET-RECVFROM, SOCKET-RECV, SOCKET-DATAGRAM allow
+	protocol independent socket handling; all parameters are explicitely
+	specified as numbers or hex data
+
+	added address options ioctl-void, ioctl-int, ioctl-intp, ioctl-string,
+	ioctl-bin for generic ioctl() calls.
+
+	added address options setsockopt-int, setsockopt-bin, and
+	setsockopt-string for generic setsockopt() calls
+
+	option so-type now only affects the socket() and socketpair() calls,
+	not the name resolution. so-type and so-prototype can now be applied to
+	all socket based addresses.
+
+	new address option "escape" allows to break a socat instance even when
+	raw terminal mode prevents ^C etc. (feature suggested by Guido Trotter)
+
+	socat sets environment variables SOCAT_VERSION, SOCAT_PID, SOCAT_PPID
+	for use in executed scripts
+
+	socat sets environment variables SOCAT_SOCKADDR, SOCAT_SOCKPORT,
+	SOCAT_PEERADDR, SOCAT_PEERPORT in LISTEN type addresses (feature
+	suggested by Ed Sawicki)
+
+	socat receives all ancillary messages with each received packet on
+	datagram related addresses. The messages are logged in raw form with
+	debug level, and broken down with info level. note: each type of
+	ancillary message must be enabled by appropriate address options. 
+
+	socat provides the contents of ancillary messages received on RECVFROM
+	addresses in appropriate environment variables:
+	SOCAT_TIMESTAMP, SOCAT_IP_DSTADDR, SOCAT_IP_IF, SOCAT_IP_LOCADDR,
+	SOCAT_IP_OPTIONS, SOCAT_IP_TOS, SOCAT_IP_TTL, SOCAT_IPV6_DSTADDR,
+	SOCAT_IPV6_HOPLIMIT, SOCAT_IPV6_TCLASS
+
+	the following address options were added to enable ancillary messages:
+	so-timestamp, ip-pktinfo (not BSD), ip-recvdstaddr (BSD), ip-recverr,
+	ip-recvif (BSD), ip-recvopts, ip-recvtos, ip-recvttl, ipv6-recvdstopts,
+	ipv6-recverr, ipv6-recvhoplimit, ipv6-recvhopopts, ipv6-recvpathmtu,
+	ipv6-recvpktinfo, ipv6-recvrthdr, ipv6-recvtclass
+
+	new address options ipv6-tclass and ipv6-unicast-hops set the related
+	socket options.
+
+	STREAMS (UNIX System V STREAMS) can be configured with the new address
+	options i-pop-all and i-push (thanks to Michal Rysavy for providing a
+	patch)
+
+corrections:
+	some raw IP and UNIX datagram modes failed on BSD systems
+
+	when UDP-LISTEN continued to listen after packet dropped by, e.g.,
+	range option, the old listen socket would not be closed but a new one
+	created. open sockets could accumulate.
+
+	there was a bug in ip*-recv with bind option: it did not bind, and
+	with the first received packet an error occurred:
+	socket_init(): unknown address family 0
+	test: RAWIP4RECVBIND
+
+	RECVFROM addresses with FORK option hung after processing the first
+	packet. test: UDP4RECVFROM_FORK
+
+	corrected a few mistakes that caused compiler warnings on 64bit hosts
+	(thanks to Jonathan Brannan e.a. for providing a patch)
+
+	EXEC and SYSTEM with stderr injected socat messages into the data
+	stream. test: EXECSTDERRLOG
+
+	when the EXEC address got a string with consecutive spaces it created
+	additional empty arguments (thanks to Olivier Hervieu for reporting
+	this bug). test: EXECSPACES
+
+	in ignoreeof polling mode socat also blocked data transfer in the other
+	direction during the 1s wait intervalls (thanks to Jorgen Cederlof for
+	reporting this bug)
+
+	corrected alphabetical order of options (proxy-auth)
+
+	some minor corrections
+
+	improved test.sh script: more stable timing, corrections for BSD
+
+	replaced the select() calls by poll() to cleanly fix the problems with
+	many file descriptors already open
+
+	socat option -lf did not log to file but to stderr
+
+	socat did not compile on Solaris when configured without termios
+	feature (thanks to Pavan Gadi for reporting this bug)
+
+porting:
+	socat compiles and runs on AIX with gcc (thanks to Andi Mather for his
+	help)
+
+	socat compiles and runs on Cygwin (thanks to Jan Just Keijser for his
+	help)
+
+	socat compiles and runs on HP-UX with gcc (thanks to Michal Rysavy for
+	his help)
+
+	socat compiles and runs on MacOS X (thanks to Camillo Lugaresi for his
+	help)
+
+further changes:
+	filan -s prefixes output with FD number if more than one FD
+
+	Makefile now supports datarootdir (thanks to Camillo Lugaresi for
+	providing the patch)
+
+	cleanup in xio-unix.c
+
+####################### V 1.6.0.1:
+
+new features:
+	new make target "gitclean"
+
+	docu source doc/socat.yo released
+
+corrections:
+	exec:...,pty did not kill child process under some circumstances; fixed
+	by correcting typo in xio-progcall.c (thanks to Ralph Forsythe for
+	reporting this problem) 
+
+	service name resolution failed due to byte order mistake
+	(thanks to James Sainsbury for reporting this problem)
+
+	socat would hang when invoked with many file descriptors already opened
+	fix: replaced FOPEN_MAX with FD_SETSIZE
+	thanks to Daniel Lucq for reporting this problem.
+
+	fixed bugs where sub processes would become zombies because the master
+	process did not catch SIGCHLD. this affected addresses UDP-LISTEN,
+	UDP-CONNECT, TCP-CONNECT, OPENSSL, PROXY, UNIX-CONNECT, UNIX-CLIENT,
+	ABSTRACT-CONNECT, ABSTRACT-CLIENT, SOCKSA, SOCKS4A
+	(thanks to Fernanda G Weiden for reporting this problem)
+
+	fixed a bug where sub processes would become zombies because the master
+	process caught SIGCHLD but did not wait(). this affected addresses
+	UDP-RECVFROM, IP-RECVFROM, UNIX-RECVFROM, ABSTRACT-RECVFROM
+	(thanks to Evan Borgstrom for reporting this problem)
+
+	corrected option handling with STDIO; usecase: cool-write
+
+	configure --disable-pty  also disabled option waitlock
+
+	fixed small bugs on systems with struct ip_mreq without struct ip_mreqn
+	(thanks to Roland Illig for sending a patch)
+
+	corrected name of option intervall to interval (old form still valid
+	for us German speaking guys)
+
+	corrected some print statements and variable names
+
+	make uninstall  did not uninstall procan
+
+	fixed lots of weaknesses in test.sh
+
+	corrected some bugs and typos in doc/socat.yo, EXAMPLES, C comments
+
+further changes:
+	procan -c prints C defines important for socat
+
+	added test OPENSSLEOF for OpenSSL half close
+
+####################### V 1.6.0.0:
+
+new features:
+	new addresses IP-DATAGRAM and UDP-DATAGRAM allow versatile broadcast
+	and multicast modes 
+
+	new option ip-add-membership for control of multicast group membership
+
+	new address TUN for generation of Linux TUN/TAP pseudo network
+	interfaces (suggested by Mat Caughron); associated options tun-device,
+	tun-name, tun-type; iff-up, iff-promisc, iff-noarp, iff-no-pi etc.
+
+	new addresses ABSTRACT-CONNECT, ABSTRACT-LISTEN, ABSTRACT-SENDTO,
+	ABSTRACT-RECV, and ABSTRACT-RECVFROM for abstract UNIX domain addresses
+	on Linux (requested by Zeeshan Ali); option unix-tightsocklen controls
+	socklen parameter on system calls.
+
+	option end-close for control of connection closing allows FD sharing
+	by sub processes
+
+	range option supports form address:mask with IPv4
+
+	changed behaviour of OPENSSL-LISTEN to require and verify client
+	certificate per default
+
+	options f-setlkw-rd, f-setlkw-wr, f-setlk-rd, f-setlk-wr allow finer
+	grained locking on regular files
+
+	uninstall target in Makefile (lack reported by Zeeshan Ali)
+
+corrections:
+	fixed bug where only first tcpwrap option was applied; fixed bug where
+	tcpwrap IPv6 check always failed (thanks to Rudolf Cejka for reporting
+	and fixing this bug) 
+
+	filan (and socat -D) could hang when a socket was involved
+
+	corrected PTYs on HP-UX (and maybe others) using STREAMS (inspired by
+	Roberto Mackun)
+
+	correct bind with udp6-listen (thanks to Jan Horak for reporting this
+	bug)
+
+	corrected filan.c peekbuff[0] which did not compile with Sun Studio Pro
+	(thanks to Leo Zhadanovsky for reporting this problem)
+
+	corrected problem with read data buffered in OpenSSL layer (thanks to
+	Jon Nelson for reporting this bug)
+
+	corrected problem with option readbytes when input stream stayed idle
+	after so many bytes
+
+	fixed a bug where a datagram receiver with option fork could fork two
+	sub processes per packet
+
+further changes:
+	moved documentation to new doc/ subdir
+
+	new documents (kind of mini tutorials) are provided in doc/
+
+####################### V 1.5.0.0:
+
+new features:
+	new datagram modes for udp, rawip, unix domain sockets
+
+	socat option -T specifies inactivity timeout
+
+	rewrote lexical analysis to allow nested socat calls
+
+	addresses tcp, udp, tcp-l, udp-l, and rawip now support IPv4 and IPv6
+
+	socat options -4, -6 and environment variables SOCAT_DEFAULT_LISTEN_IP,
+	SOCAT_PREFERRED_RESOLVE_IP for control of protocol selection
+
+	addresses ssl, ssl-l, socks, proxy now support IPv4 and IPv6
+
+	option protocol-family (pf), esp. for openssl-listen
+
+	range option supports IPv6 - syntax: range=[::1/128]
+
+	option ipv6-v6only (ipv6only)
+
+	new tcp-wrappers options allow-table, deny-table, tcpwrap-etc
+
+	FIPS version of OpenSSL can be integrated - initial patch provided by
+	David Acker. See README.FIPS
+
+	support for resolver options res-debug, aaonly, usevc, primary, igntc,
+	recurse, defnames, stayopen, dnsrch
+
+	options for file attributes on advanced filesystems (ext2, ext3,
+	reiser): secrm, unrm, compr, ext2-sync, immutable, ext2-append, nodump,
+	ext2-noatime, journal-data etc.
+
+	option cool-write controls severeness of write failure (EPIPE,
+	ECONNRESET)
+
+	option o-noatime
+
+	socat option -lh for hostname in log output
+
+	traffic dumping provides packet headers
+
+	configure.in became part of distribution
+
+	socats unpack directory now has full version, e.g. socat-1.5.0.0/
+
+	corrected docu of option verify
+
+corrections:
+	fixed tcpwrappers integration - initial fix provided by Rudolf Cejka
+
+	exec with pipes,stderr produced error
+
+	setuid-early was ignored with many address types
+
+	some minor corrections
+
+####################### V 1.4.3.1:
+
+corrections:
+	PROBLEM: UNIX socket listen accepted only one (or a few) connections.
+	FIX: do not remove listening UNIX socket in child process
+
+	PROBLEM: SIGSEGV when TCP part of SSL connect failed
+	FIX: check ssl pointer before calling SSL_shutdown
+
+	In debug mode, show connect client port even when connect fails
+
+####################### V 1.4.3.0:
+
+new features:
+	socat options -L, -W for application level locking
+
+	options "lockfile", "waitlock" for address level locking
+	(Stefan Luethje)
+
+	option "readbytes" limits read length (Adam Osuchowski)
+
+	option "retry" for unix-connect, unix-listen, tcp6-listen (Dale Dude)
+
+	pty symlink, unix listen socket, and named pipe are per default removed
+	after use; option unlink-close overrides this new behaviour and also
+	controls removal of other socat generated files (Stefan Luethje)
+
+corrections:
+	option "retry" did not work with tcp-listen
+
+	EPIPE condition could result in a 100% CPU loop
+
+further changes:
+	support systems without SHUT_RD etc.
+	handle more size_t types
+	try to find makedepend options with gcc 3 (richard/OpenMacNews)
+
+####################### V 1.4.2.0:
+
+new features:
+	option "connect-timeout" limits wait time for connect operations
+	(requested by Giulio Orsero)
+
+	option "dhparam" for explicit Diffie-Hellman parameter file
+
+corrections:
+	support for OpenSSL DSA certificates (Miika Komu)
+
+	create install directories before copying files (Miika Komu)
+
+	when exiting on signal, return status 128+signum instead of 1
+
+	on EPIPE and ECONNRESET, only issue a warning (Santiago Garcia
+	Mantinan)
+
+	-lu could cause a core dump on long messages
+
+further changes:
+	modifications to simplify using socats features in applications
+
+####################### V 1.4.1.0:
+
+new features:
+	option "wait-slave" blocks open of pty master side until a client
+	connects, "pty-intervall" controls polling
+
+	option -h as synonym to -? for help (contributed by Christian
+	Lademann)
+
+	filan prints formatted time stamps and rdev (disable with -r)
+
+	redirect filan's output, so stdout is not affected (contributed by
+	Luigi Iotti) 
+
+	filan option -L to follow symbolic links
+
+	filan shows termios control characters
+
+corrections:
+	proxy address no longer performs unsolicited retries
+
+	filan -f no longer needs read permission to analyze a file (but still
+	needs access permission to directory, of course)
+
+porting:
+	Option dsusp
+	FreeBSD options noopt, nopush, md5sig
+	OpenBSD options sack-disable, signature-enable
+	HP-UX, Solaris options abort-threshold, conn-abort-threshold
+	HP-UX options b900, b3600, b7200
+	Tru64/OSF1 options keepinit, paws, sackena, tsoptena
+
+further corrections:
+	address pty now uses ptmx as default if openpty is also available
+
+####################### V 1.4.0.3:
+
+security:
+	Socat security advisory 1
+	CVE-2004-1484:
+	fix to a syslog() based format string vulnerability that can lead to
+	remote code execution. See advisory socat-adv-1.txt
+
+####################### V 1.4.0.2:
+
+corrections:
+	exec'd write-only addresses get a chance to flush before being killed
+
+	error handler: print notice on error-exit
+
+	filan printed wrong file type information
+
+####################### V 1.4.0.1:
+
+corrections:
+	socks4a constructed invalid header. Problem found, reported, and fixed
+	by Thomas Themel, by Peter Palfrader, and by rik
+
+	with nofork, don't forget to apply some process related options
+	(chroot, setsid, setpgid, ...)
+
+####################### V 1.4.0.0:
+
+new features:
+	simple openssl server (ssl-l), experimental openssl trust
+
+	new options "cafile", "capath", "key", "cert", "egd", and "pseudo" for
+	openssl
+
+	new options "retry", "forever", and "intervall"
+
+	option "fork" for address TCP improves `gender changer´
+
+	options "sigint", "sigquit", and "sighup" control passing of signals to
+	sub process (thanks to David Shea who contributed to this issue)
+
+	readline takes respect to the prompt issued by the peer address
+
+	options "prompt" and "noprompt" allow to override readline's new
+	default behaviour
+
+	readline supports invisible password with option "noecho"
+
+	socat option -lp allows to set hostname in log output
+
+	socat option -lu turns on microsecond resolution in log output
+
+
+corrections:
+	before reading available data, check if writing on other channel is
+	possible
+
+	tcp6, udp6: support hostname specification (not only IP address), and
+	map IP4 names to IP6 addresses
+
+	openssl client checks server certificate per default
+
+	support unidirectional communication with exec/system subprocess
+
+	try to restore original terminal settings when terminating
+
+	test.sh uses tmp dir /tmp/$USER/$$ instead of /tmp/$$ 
+
+	socks4 failed on platforms where long does not have 32 bits
+	(thanks to Peter Palfrader and Thomas Seyrat)
+
+	hstrerror substitute wrote wrong messages (HP-UX, Solaris)
+
+	proxy error message was truncated when answer contained multiple spaces
+
+
+porting:
+	compiles with AIX xlc, HP-UX cc, Tru64 cc (but might not link)
+
+####################### V 1.3.2.2:
+
+corrections:
+	PROXY CONNECT failed when the status reply from the proxy server
+	contained more than one consecutive spaces. Problem reported by
+	Alexandre Bezroutchko
+
+	do not SIGSEGV when proxy address fails to resolve server name
+
+	udp-listen failed on systems where AF_INET != SOCK_DGRAM (e.g. SunOS).
+	Problem reported by Christoph Schittel
+
+	test.sh only tests available features
+
+	added missing IP and TCP options in filan analyzer
+
+	do not apply stdio address options to both directions when in 
+	unidirectional mode
+
+	on systems lacking /dev/*random and egd, provide (weak) entropy from
+	libc random()
+
+
+porting:
+	changes for HP-UX (VREPRINT, h_NETDB_INTERNAL)
+
+	compiles on True64, FreeBSD (again), NetBSD, OpenBSD
+
+	support for  long long  as  st_ino type (Cygwin 1.5)
+
+	compile on systems where pty can not be featured
+
+####################### V 1.3.2.1:
+
+corrections:
+	"final" solution for the ENOCHLD problem
+
+	corrected "make strip"
+
+	default gcc debug/opt is "-O" again
+
+	check for /proc at runtime, even if configure found it
+
+	src.rpm accidently supported SuSE instead of RedHat
+
+####################### V 1.3.2.0:
+
+new features:
+	option "nofork" connects an exec'd script or program directly
+	to the file descriptors of the other address, circumventing the socat
+	transfer engine
+
+	support for files >2GB, using ftruncate64(), lseek64(), stat64()
+
+	filan has new "simple" output style (filan -s)
+
+
+porting:
+	options "binary" and "text" for controlling line termination on Cygwin
+	file system access (hint from Yang Wu-Zhou)
+
+	fix by Yang Wu-Zhou for the Cygwin "No Children" problem
+
+	improved support for OSR: _SVID3; no IS_SOCK, no F_GETOWN (thanks to
+	John DuBois)
+
+	minor corrections to avoid warnings with gcc 3
+
+
+further corrections and minor improvements:
+	configure script is generated with autoconf 2.57 (no longer 2.52)
+
+	configure passes CFLAGS to Makefile
+
+	option -??? for complete list of address options and their short forms
+
+	program name in syslog messages is derived from argv[0]
+
+	SIGHUP now prints notice instead of error
+
+	EIO during read of pty now gives Notice instead of Error, and
+	triggers EOF
+
+	use of hstrerror() for printing resolver error messages
+
+	setgrent() got required endgrent()
+
+####################### V 1.3.1.0:
+
+new features:
+	integration of Wietse Venema's tcpwrapper library (libwrap)
+
+	with "proxy" address, option "resolve" controls if hostname or IP
+	address is sent in request
+
+	option "lowport" establishes limited authorization for TCP and UDP
+	connections 
+
+	improvement of .spec file for RPM creation (thanks to Gerd v. Egidy)
+	An accompanying change in the numbering scheme results in an 
+	incompatibility with earlier socat RPMs!
+
+
+solved problems and bugs:
+	PROBLEM: socat daemon terminated when the address of a connecting
+	client did not match range option value instead of continue listening
+	SOLVED: in this case, print warning instead of error to keep daemon
+	active 
+
+	PROBLEM: tcp-listen with fork sometimes left excessive number of zombie
+	processes
+	SOLVED: dont assume that each exiting child process generates SIGCHLD
+
+	when converting CRNL to CR, socat converted to NL
+
+
+further corrections:
+	configure script now disables features that depend on missing files
+	making it more robust in "unsupported" environments
+
+	server.pem permissions corrected to 600
+
+	"make install" now does not strip; use "make strip; make install"
+	if you like strip (suggested by Peter Bray)
+
+####################### V 1.3.0.1:
+
+solved problems and bugs:
+	PROBLEM: OPENSSL did not apply tcp, ip, and socket options
+	SOLVED: OPENSSL now correctly handles the options list
+
+	PROBLEM: CRNL to NL and CRNL to CR conversions failed when CRNL crossed
+	block boundary
+	SOLVED: these conversions now simply strip all CR's or NL's from input
+	stream 
+
+
+porting:
+	SunOS ptys now work on x86, too (thanks to Peter Bray)
+
+	configure looks for freeware libs in /pkgs/lib/ (thanks to Peter Bray)
+
+
+further corrections:
+	added WITH_PROXY value to -V output
+
+	added compile dependencies of WITH_PTY and WITH_PROXY
+
+	-?? did not print option group of proxy options
+
+	corrected syntax for bind option in docu
+
+	corrected an issue with stdio in unidirectional mode
+
+	options socksport and proxyport support service names
+
+	ftp.sh script supports proxy address
+
+	man page no longer installed with execute permissions (thanks to Peter
+	Bray) 
+
+	fixed a malloc call bug that could cause SIGSEGV or false "out of
+	memory" errors on EXEC and SYSTEM, depending on program name length and
+	libc.
+
+####################### V 1.3.0.0:
+
+new features:
+	proxy connect with optional proxy authentication
+
+	combined hex and text dump mode, credits to Gregory Margo
+
+	address pty applies options user, group, and perm to device
+
+
+solved problems and bugs:
+	PROBLEM: option reuseport was not applied (BSD, AIX)
+	SOLVED:	option reuseport now in phase PASTSOCKET instead of PREBIND,
+		credits to Jean-Baptiste Marchand
+
+	PROBLEM: ignoreeof with stdio was ignored
+	SOLVED: ignoreeof now works correctly with address stdio
+
+	PROBLEM: ftp.sh did not use user supplied password
+	SOLVED: ftp.sh now correctly passes password from command line
+
+	PROBLEM: server.pem had expired
+	SOLVED: new server.pem valid for ten years
+
+	PROBLEM: socks notice printed wrong port on some platforms
+	SOLVED: socks now uses correct byte-order for port number in notice
+
+
+further corrections:
+	option name o_trunc corrected to o-trunc
+
+	combined use of -u and -U is now detected and prevented
+
+	made message system a little more robust against format string attacks
+
+
+####################### V 1.2.0.0:
+
+new features:
+	address pty for putting socat behind a new pseudo terminal that may
+	fake a serial line, modem etc.
+
+	experimental openssl integration
+	(it does not provide any trust between the peers because is does not
+	 check certificates!)
+
+	options flock-ex, flock-ex-nb, flock-sh, flock-sh-nb to control all
+	locking mechanism provided by flock()
+
+	options setsid and setpgid now available with all address types
+
+	option ctty (controlling terminal) now available for all TERMIOS
+	addresses 
+
+	option truncate (a hybrid of open(.., O_TRUNC) and ftruncate()) is
+	replaced by options o-trunc and ftruncate=offset
+
+	option sourceport now available with TCP and UDP listen addresses to
+	restrict incoming client connections
+
+	unidirectional mode right-to-left (-U)
+
+
+solved problems and bugs:
+	PROBLEM: addresses without required parameters but an option containing
+		a '/' were incorrectly interpreted as implicit GOPEN address
+	SOLVED: if an address does not have ':' separator but contains '/',
+		check if the slash is before the first ',' before assuming
+		implicit GOPEN.
+
+
+porting:
+	ptys under SunOS work now due to use of stream options
+
+
+further corrections:
+	with -d -d -d -d -D, don't print debug info during file analysis
+
+
+####################### V 1.1.0.1:
+
+new features:
+	.spec file for RPM generation
+
+
+solved problems and bugs:
+	PROBLEM: GOPEN on socket did not apply option unlink-late
+	SOLUTION: GOPEN for socket now applies group NAMED, phase PASTOPEN
+		options 
+
+	PROBLEM: with unidirectional mode, an unnecessary close timeout was
+		applied
+	SOLUTION: in unidirectional mode, terminate without wait time
+
+	PROBLEM: using GOPEN on a unix domain socket failed for datagram
+		sockets
+	SOLUTION: when connect() fails with EPROTOTYPE, use a datagram socket
+
+
+further corrections:
+
+	open() flag options had names starting with "o_", now corrected to "o-"
+
+	in docu, *-listen addresses were called *_listen
+
+	address unix now called unix-connect because it does not handle unix
+	datagram sockets
+
+	in test.sh, apply global command line options with all tests
+
+
+####################### V 1.1.0.0:
+
+new features:
+	regular man page and html doc - thanks to kromJx for prototype
+
+	new address type "readline", utilizing GNU readline and history libs
+
+	address option "history-file" for readline
+
+	new option "dash" to "exec" address that allows to start login shells
+
+	syslog facility can be set per command line option
+
+	new address option "tcp-quickack", found in Linux 2.4
+
+	option -g prevents option group checking
+
+	filan and procan can print usage
+
+	procan prints rlimit infos
+
+
+solved problems and bugs:
+	PROBLEM: raw IP socket SIGSEGV'ed when it had been shut down.
+	SOLVED: set eof flag of channel on shutdown.
+
+	PROBLEM: if channel 2 uses a single non-socket FD in bidirectional mode
+		and has data available while channel 1 reaches EOF, the data is
+		lost. 
+	SOLVED: during one loop run, first handle all data transfers and
+		_afterwards_ handle EOF. 
+
+	PROBLEM: despite to option NONBLOCK, the connect() call blocked
+	SOLVED: option NONBLOCK is now applied in phase FD instead of LATE
+
+	PROBLEM: UNLINK options issued error when file did not exist,
+		terminating socat
+	SOLVED: failure of unlink() is only warning if errno==ENOENT
+
+	PROBLEM: TCP6-LISTEN required numeric port specification
+	SOLVED: now uses common TCP service resolver
+
+	PROBLEM: with PIPE, wrong FDs were shown for data transfer loop
+	SOLVED: retrieval of FDs now pays respect to PIPE pecularities
+
+	PROBLEM: using address EXEC against an address with IGNOREEOF, socat
+		never terminated
+	SOLVED: corrected EOF handling of sigchld
+
+
+porting:
+	MacOS and old AIX versions now have pty
+
+	flock() now available on Linux (configure check was wrong)
+
+	named pipe were generated using mknod(), which requires root under BSD
+	now they are generated using mkfifo
+
+
+further corrections:
+	lots of address options that were "forgotten" at runtime are now
+	available 
+
+	option BINDTODEVICE now also called SO-BINDTODEVICE, IF
+
+	"make install" now installs binaries with ownership 0:0
+
+
+####################### V 1.0.4.2:
+
+solved problems and bugs:
+	PROBLEM: EOF of one stream caused close of other stream, giving it no
+	chance to go down regularly
+	SOLVED: EOF of one stream now causes shutdown of write part of other
+	stream
+
+	PROBLEM: sending mail via socks address to qmail showed that crlf
+	option does not work
+	SOLVED: socks address applies PH_LATE options
+
+	PROBLEM: in debug mode, no info about socat and platform was issued
+	SOLVED: print socat version and uname output in debug mode
+
+	PROBLEM: invoking socat with -t and no following parameters caused
+	SIGSEGV
+	SOLVED: -t and -b now check next argv entry
+
+	PROBLEM: when opening of logfile (-lf) failed, no error was reported
+	and no further messages were printed
+	SOLVED: check result of fopen and print error message if it failed
+
+new features:
+	address type UDP-LISTEN now supports option fork: it internally applies
+	socket option SO_REUSEADDR so a new UDP socket can bind to port after
+	`accepting´ a connection (child processes might live forever though)
+	(suggestion from Damjan Lango)
+
+
+####################### V 1.0.4.1:
+
+solved problems and bugs:
+	PROB: assert in libc caused an endless recursion
+	SOLVED: no longer catch SIGABRT
+
+	PROB: socat printed wrong verbose prefix for "right to left" packets
+	SOLVED: new parameter for xiotransfer() passes correct prefix
+
+new features:
+	in debug mode, socat prints its command line arguments
+	in verbose mode, escape special characters and replace unprintables
+		with '.'. Patch from Adrian Thurston.
+
+
+####################### V 1.0.4.0:
+
+solved problems and bugs:
+	Debug output for lstat and fstat said "stat"
+
+further corrections:
+	FreeBSD now includes libutil.h
+
+new features:
+	option setsid with exec/pty
+	option setpgid with exec/pty
+	option ctty with exec/pty
+	TCP V6 connect test
+	gettimeofday in sycls.c (no use yet)
+
+porting:
+	before Gethostbyname, invoke inet_aton for MacOSX
+
+
+####################### V 1.0.3.0:
+
+solved problems and bugs:
+
+	PROB: test 9 of test.sh (echo via file) failed on some platforms,
+	socat exited without error message
+	SOLVED: _xioopen_named_early(): preset statbuf.st_mode with 0
+
+	PROB: test 17 hung forever
+	REASON: child death before select loop did not result in EOF
+	SOLVED: check of existence of children before starting select loop
+
+	PROB: test 17 failed
+	REASON: child dead triggered EOF before last data was read
+	SOLVED: after child death, read last data before setting EOF
+
+	PROB: filan showed that exec processes incorrectly had fd3 open
+	REASON: inherited open fd3 from main process
+	SOLVED: set CLOEXEC flag on pty fd in main process
+
+	PROB: help printed "undef" instead of group "FORK"
+	SOLVED: added "FORK" to group name array
+
+	PROB: fatal messages did not include severity classifier
+	SOLVED: added "F" to severity classifier array 
+
+	PROB: IP6 addresses where printed incorrectly
+	SOLVED: removed type casts to unsigned short *
+
+further corrections:
+	socat catches illegal -l modes
+	corrected error message on setsockopt(linger)
+	option tabdly is of type uint
+	correction for UDP over IP6
+	more cpp conditionals, esp. for IP6 situations
+	better handling of group NAMED options with listening UNIX sockets
+	applyopts2 now includes last given phase
+	corrected option group handling for most address types
+	introduce dropping of unappliable options (dropopts, dropopts2)
+	gopen now accepts socket and unix-socket options
+	exec and system now accept all socket and termios options
+	child process for exec and system addresses with option pty
+	improved descriptions and options for EXAMPLES
+	printf format for file mode changed to "0%03o" with length spec.
+	added va_end() in branch of msg()
+	changed phase of lock options from PASTOPEN to FD
+	support up to four early dying processes
+
+structural changes:
+	xiosysincludes now includes sysincludes.h for non xio files
+
+new features:
+	option umask
+	CHANGES file
+	TYPE_DOUBLE, u_double
+	OFUNC_OFFSET
+	added getsid(), setsid(), send() to sycls
+	procan prints sid (session id)
+	mail.sh gets -f (from) option
+	new EXAMPLEs for file creation
+	gatherinfo.sh now tells about failures
+	test.sh can check for much more address/option combinations
+
+porting:
+	ispeed, ospeed for termios on FreeBSD
+	getpgid() conditional for MacOS 10
+	added ranlib in Makefile.in for MacOS 10
+	disable pty option if no pty mechanism is available (MacOS 10)
+	now compiles and runs on MacOS 10 (still some tests fail)
+	setgroups() conditional for cygwin
+	sighandler_t defined conditionally
+	use gcc option -D_GNU_SOURCE

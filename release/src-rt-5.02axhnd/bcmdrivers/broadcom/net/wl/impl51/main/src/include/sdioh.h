@@ -2,7 +2,7 @@
  * SDIO Host Controller Spec header file
  * Register map and definitions for the Standard Host Controller
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -25,6 +25,20 @@
 #ifndef	_SDIOH_H
 #define	_SDIOH_H
 
+/* XXX
+ * Standard SD Host Control Register Map.
+ *
+ * Reference definitions from:
+ *  SD Specification, Part A2: SD Host Controller Standard Specification
+ *  Version 1.00
+ *  February, 2004
+ *  http://www.sdcard.org
+ *
+ *  One set for each SDIO slot on the controller board.
+ *  In PCI, each set is mapped into a BAR.  Since PCI only
+ *  has six BARS, spec compliant PCI SDIO host controllers are
+ *  limited to 6 slots.
+ */
 #define SD_SysAddr			0x000
 #define SD_BlockSize			0x004
 #define SD_BlockCount 			0x006

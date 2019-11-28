@@ -44,11 +44,11 @@
 
 #include <dhd_flowring.h>
 
-#if defined(DSLCPE) && defined(PKTC_TBL)
+#if defined(PKTC_TBL)
 #include <wl_pktc.h>
 #endif
 
-int
+INLINE BCMFASTPATH int
 dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 {
 	BlogAction_t blog_ret;
@@ -68,7 +68,7 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 	DHD_PERIM_LOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
 	if (PKT_DONE == blog_ret) {
 		/* Doesnot need go to IP stack */
-#ifdef DSLCPE
+#if defined(DSLCPE) || defined(PKTC_TBL)
 		dhdp->rx_fcache_cnt++;
 #endif
 
@@ -88,13 +88,13 @@ dhd_handle_blog_sinit(struct dhd_pub *dhdp, int ifidx, struct sk_buff *skb)
 	}
 #endif /* BCM_DHD_RUNNER */
 
-#ifdef DSLCPE
+#if defined(DSLCPE) || defined(PKTC_TBL)
 	dhdp->rx_linux_cnt++;
 #endif
 	return !PKT_DONE;
 }
 
-int
+INLINE BCMFASTPATH int
 dhd_handle_blog_emit(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 		void *pktbuf, int b_wmf_unicast)
 {
@@ -158,7 +158,7 @@ int fdb_check_expired_dhd(unsigned char *addr)
 	DHD_INFO(("%s: check addr [%02x:%02x:%02x:%02x:%02x:%02x]\n", __FUNCTION__,
 		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]));
 
-#if defined(DSLCPE) && defined(PKTC_TBL)
+#if defined(PKTC_TBL)
 {
 	wl_pktc_tbl_t *pt;
 	
@@ -305,7 +305,7 @@ dhd_handle_blog_disconnect_event(struct dhd_pub *dhdp, wl_event_msg_t *event)
 	 */
 	DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
 
-#if defined(DSLCPE) && defined(PKTC_TBL)
+#if defined(PKTC_TBL)
 	/* destroy pktc entry */
 	dhd_pktc_del((unsigned long)(event->addr.octet));
 #endif

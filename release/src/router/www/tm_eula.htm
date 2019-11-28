@@ -1,24 +1,35 @@
-﻿
-	<div style="background:#232E32;height:40px;border-top-left-radius: 4px;border-top-right-radius: 4px;">
-		<div style="font: 16px bolder monospace;padding: 12px 0 0 10px;"><#lyra_TrendMicro_agreement#></div>
+﻿	<div class="border-corner border-corner-top-left"></div>
+	<div class="border-corner border-corner-bottom-left"></div>
+	<div class="flexbox title-container">
+		<div class="title-symbol"></div>
+		<div class="title-content"><#lyra_TrendMicro_agreement#></div>
 	</div>
-	<div id="tm_eula_content" style="background:#293438;border-top:1px solid #3B474B;border-bottom: 1px solid #3B474B;overflow-y: auto;font-size:14px;padding:15px 12px 0 12px;">
+	<div id="tm_eula_content">
 	  <div><#TM_eula_desc1#></div>
-		<div style="margin: 18px 0;"><#TM_eula_desc2#></div>
-		<div style="margin-top: -10px;"><#TM_privacy_policy#></div>
-		<div style="margin-top: 5px;"><#TM_data_collection#></div>
-		<div style="margin: 18px 0;"><#TM_eula_desc3#></div>
+		<div class="eula-content-padding"><#TM_eula_desc2#></div>
+		<div class="eula-content-padding"><#TM_privacy_policy#></div>
+		<div><#TM_data_collection#></div>
+		<div class="eula-content-padding"><#TM_eula_desc3#></div>
 	</div>
-	<div style="text-align: center;background:#232E32;height:60px;border-bottom-left-radius: 4px;border-bottom-right-radius: 4px;">
-		<input id="cancelBtn" class="button_gen" type="button" style="margin-top:15px;" value="<#CTL_Disagree#>">
-		<input id="applyBtn" class="button_gen" type="button" value="<#CTL_Agree#>">
+
+	<div class="divide-line"></div>
+	<div class="control-field">
+		<div id="cancelBtn" class="button-container button-container-sm">
+			<div class="button-icon icon-cancel"></div>
+			<div class="button-text"><#CTL_Disagree#></div>
+		</div>
+
+		<div id="applyBtn" class="button-container button-container-sm">
+			<div class="button-icon button-icon-check"></div>
+			<div class="button-text"><#CTL_Agree#></div>
+		</div>
 	</div>
 
 	<script>
 		$("#tm_eula_content").html($("#tm_eula_content").html().replace(/\\'/g, "'"))
 		$("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/");
 		$("#tm_eula_url").attr("href", "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html");
-		$("#tm_disclosure_url").attr("href", "https://success.trendmicro.com/data-collection-disclosure");
+		$("#tm_disclosure_url").attr("href", "https://esupport.trendmicro.com/en-us/home/pages/technical-support/1120473.aspx");
 
 		httpApi.nvramGetAsync({
 			data: ["preferred_lang"],

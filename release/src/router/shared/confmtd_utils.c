@@ -350,7 +350,7 @@ fail:
 
 	return ret;
 }
-
+#if 0
 /* To pass required information to restart the service in case
  * it is in a bad state or killed. Service restart is handled by
  * debug_monitor service. Arguments to be passed are process id,
@@ -390,4 +390,4 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 	}
 	fclose(fp);
 }
-
+#endif

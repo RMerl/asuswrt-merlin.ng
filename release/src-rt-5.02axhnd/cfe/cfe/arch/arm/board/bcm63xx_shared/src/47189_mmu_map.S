@@ -71,33 +71,71 @@ FUNC(board_mmu_map_scn)
 	mov	r9,lr
 		
 	MMU_INIT_TABLE(L1TABLE_PA, L1TABLE_SIZE)
-	/* 0x1C0E, normal memory cached */
-	/* setup maximum 1GB for cfe rom alias test.For cfe ram, set the mmu memory size based on mem detection result */
-	/* DDR memory 0x0000-0000 to 0x4000-0000 */
-#if defined(CFG_RAMAPP)
 
-#if !defined(IKOS_NO_DDRINIT)
-	/* For 47189: Hardcode the memory size for now (128MB) 0x0000-0000 to 0x0800-0000*/
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x00000000, 128, (SECTION_OUTER_WBWA_INNER_WBWA|SECTION_AP|DESC_DOMAIN(0)), 0x00000000)
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, 128, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x00000000)
+	/* get actual memsize in mega bytes */
+	ldr	r0, =MEM_SIZE_REG
+	ldr	r5, [r0]		/* memory size in Mbytes */
+#if defined(CFG_RAMAPP)	
+	cmp	r5, #0
+	bne	1f
+	mov	r5, #128		/* set default size 128MB for old version cferom */
+	str	r5, [r0]
+1:
+	mov	r10, r5
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x00000000, r5, SECTION_ATTR_CACHED_MEM, 0x00000000)
+	mov	r5, r10
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, r5, SECTION_ATTR_NONCACHED_MEM, 0x00000000)
 #else
-	/* 0x1C0E, map normal memory uncached */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x0)
-	/* For 47189, this is 0x4000-0000 to 0x4800-0000 -> 0x0000-0000 to 0x0800-0000 - IK: IKOS is posmorterm; setting size to 128 */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, 128, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x00000000)
-#endif
-
-#else
-	/* cfe rom maps DDR as uncached because we need to alias test when init the ddr */ 
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x00000000, 1024, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x00000000)
-	/* 47189 Serial Flash 0x1cxx-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x1c000000, 0x10, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x1c000000)
+	/* Chip support maximum 512MB DDR. But CFE rom only map 256MB to avoid conflict with SPI and NAND window. DDR test is done
+	   before MMU is enabled */
+	cmp	r5, #256
+	blt	1f
+	mov	r5, #256
+1:	
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x00000000, r5, SECTION_ATTR_NONCACHED_MEM, 0x00000000)
+	/* 47189 Serial Flash 0x1cxx-xxxx. Map as executable for xip. Update after xip is done */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x1c000000, 0x10, SECTION_ATTR_DEVICE_EXEC, 0x1c000000)
+	/* 47189 NAND Flash 0x30xx-xxxx. Map as executable for xip. Update after xip is done */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x30000000, 0x10, SECTION_ATTR_DEVICE_EXEC, 0x30000000)
 #endif	
 
 	/* 47189 memory mapped registers 0x18xx-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x18000000, 0x10, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x18000000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x18000000, 0x10, SECTION_ATTR_DEVICE, 0x18000000)
 	
 	MMU_SET_TTBR(L1TABLE_PA)
 	mov	lr,r9
 	mov	pc,lr
 END(board_mmu_map_scn)
+
+/* *********************************************************************
+    *  mmu_update_scn(uint* addr)
+    *  
+    *  Update MMU table for entries that does not need XIP support.
+    *  A board mmu callback
+    *	
+    *  Input parameters: 
+    *  	  none 
+    *  	   
+    *  Return value:
+    *  	   nothing
+    *
+    *  Registers used:
+    *  	   r0 - r11
+    ********************************************************************* */	
+
+FUNC(board_mmu_update_scn)
+	
+	mov	r11, lr
+#if !defined(CFG_RAMAPP)
+	/* 47189 Serial Flash 0x1cxx-xxxx. NX to avoid any speculative fetch  */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x1c000000, 0x10, SECTION_ATTR_DEVICE, 0x1c000000)
+	/* delete NAND entry. Nand driver is used after XIP */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x30000000, 0x10, SECTION_ATTR_INVALID, 0x30000000)
+
+	bl	armv7_l1cache_inval_i
+	bl	armv7_l1cache_flush_d
+	bl	mmu_invalidate_tlb
+#endif
+	mov	lr,r11
+	mov	pc,lr
+END(board_mmu_update_scn)

@@ -347,6 +347,8 @@ rr_weight_t g_dma_rr_weight[BBH_ID_NUM][2] = {
          { {DMA0_RR_WEIGHT_RX_BBH_ID_PON_VALUE, DMA0_RR_WEIGHT_TX_BBH_ID_PON_VALUE},
            {SDMA0_RR_WEIGHT_RX_BBH_ID_PON_VALUE, SDMA0_RR_WEIGHT_TX_BBH_ID_PON_VALUE} } };
 
+uint32_t g_extra_dqm_tokens = 0;
+
 static uint8_t calculate_buffers_offset(uint8_t profile_id, uint8_t dma_num, uint8_t periphreal_num)
 {
     uint8_t j, offset = 0;
@@ -601,6 +603,10 @@ static void ubus_bridge_init(void)
     ag_drv_ubus_mstr_hyst_ctrl_set(UBUS_MSTR_ID_1, UBUS_MSTR_CMD_SPCAE, UBUS_MSTR_DATA_SPCAE);
 }
 
+uint32_t fpm_get_dqm_extra_fpm_tokens(void)
+{
+    return g_extra_dqm_tokens;
+}
 static int fpm_init(void)
 {
     bdmf_error_t rc;
@@ -609,6 +615,8 @@ static int fpm_init(void)
     fpm_pool2_intr_msk interrupt_mask = FPM_INTERRUPT_MASK;
     uint16_t timeout = 0;
     fpm_pool_cfg pool_cfg = {};
+
+    g_extra_dqm_tokens = FPM_EXTRA_TOKENS_FOR_DQM;
 
     /* pool configurations */ 
     switch (p_dpi_cfg->fpm_buf_size) {
@@ -627,7 +635,7 @@ static int fpm_init(void)
 
     drv_fpm_init(p_dpi_cfg->rdp_ddr_pkt_base_virt, p_dpi_cfg->fpm_buf_size);
 
-    rc = rc ? rc : ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD, FPM_XOFF_THRESHOLD);
+    rc = ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD + g_extra_dqm_tokens, FPM_XOFF_THRESHOLD + g_extra_dqm_tokens);
     rc = rc ? rc : ag_drv_fpm_init_mem_set(1);
 
     /* polling until reset is finished */

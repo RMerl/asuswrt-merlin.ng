@@ -94,8 +94,8 @@ extern "C" {
 #define EMMC_NUM_IMGS               2   // Max 2 images supported
 #define EMMC_NUM_MDATA              2   // Max 2 metadata copies supported
 #define EMMC_NUM_MISC               4   // Max 4 misc partitions supported
-#define EMMC_FLASH_MAX_PARTITIONS   18  // Max 18 logical partition per physical partitions
-#define EMMC_MAX_DATA_PARTS         EMMC_FLASH_MAX_PARTITIONS  
+#define EMMC_FLASH_MAX_LOGICAL_PARTS   128 // Max 128 logical partition per physical partitions(GPT based limit)
+#define EMMC_MAX_DATA_PARTS         EMMC_FLASH_MAX_LOGICAL_PARTS  
 #define EMMC_MAX_PART_NAME          30  // Maximum partition name is 30 length 
 
 /* Default block sizes: Note that eMMC devices can

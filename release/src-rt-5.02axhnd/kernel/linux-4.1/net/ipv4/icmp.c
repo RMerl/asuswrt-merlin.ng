@@ -532,7 +532,7 @@ relookup_failed:
 
 #if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
 /*
- * This function is only used by MAP-T feature.
+ * This function is only used by MAP-T (or MAP-E) feature.
  * If LAN IPv4 packet with DF flag set and translated IPv6 packet
  * exceeds mtu, this function is used to send fragment needed ICMP
  */

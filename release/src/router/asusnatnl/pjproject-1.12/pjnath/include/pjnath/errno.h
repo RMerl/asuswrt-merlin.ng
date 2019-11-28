@@ -46,7 +46,7 @@
  ***********************************************************/
 
 /**
- * Map STUN error code (300-699) into pj_status_t error space.
+ * Map STUN error code (330-699) into pj_status_t error space.
  */
 #define PJ_STATUS_FROM_STUN_CODE(code)	(PJNATH_ERRNO_START+code)
 
@@ -230,6 +230,18 @@
  * Invalid or unsupported TURN transport.
  */
 #define PJNATH_ETCPINTP	    (PJNATH_ERRNO_START+320) /* 370320 */
+
+/**
+ * @hideinitializer
+ * server  Invalid TURN or server not configured.
+ */
+#define PJNATH_ETURNINSERVER	    (PJNATH_ERRNO_START+321) /* 370321 */
+
+/**
+ * @hideinitializer
+ * TRUN allocation has timed out
+ */
+#define PJNATH_ETURNTIMEDOUT	    (PJNATH_ERRNO_START+322)  /* 370322 */
 
 
 

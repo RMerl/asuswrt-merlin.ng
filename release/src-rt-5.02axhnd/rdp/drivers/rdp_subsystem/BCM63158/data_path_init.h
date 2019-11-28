@@ -87,17 +87,17 @@ extern "C" {
 
 #define TOTAL_FPM_TOKENS                    (64*1024)
 
-#define DS_FPM_UG_DEFAULT                   (20*1024)
-#define US_FPM_UG_DEFAULT                   (40*1024)
-#define WLAN_FPM_UG_DEFAULT                 (0*1024)
+#define DS_FPM_UG_DEFAULT_PERCENTAGE        (34)
+#define US_FPM_UG_DEFAULT_PERCENTAGE        (66)
+#define WLAN_FPM_UG_DEFAULT_PERCENTAGE      (0)
 
-#define DS_FPM_UG_NO_XEPON                  (8*1024)
-#define US_FPM_UG_NO_XEPON                  (24*1024)
-#define WLAN_FPM_UG_NO_XEPON                (30*1024)
+#define DS_FPM_UG_NO_XEPON_PERCENTAGE       (13)
+#define US_FPM_UG_NO_XEPON_PERCENTAGE       (39)
+#define WLAN_FPM_UG_NO_XEPON_PERCENTAGE     (48)
 
-#define DS_FPM_UG_XEPON                     (8*1024)
-#define US_FPM_UG_XEPON                     (38*1024)
-#define WLAN_FPM_UG_XEPON                   (16*1024)
+#define DS_FPM_UG_XEPON_PERCENTAGE          (13)
+#define US_FPM_UG_XEPON_PERCENTAGE          (61)
+#define WLAN_FPM_UG_XEPON_PERCENTAGE        (26)
 
 /* default value for BBH-RX */
 #define SOP_OFFSET 18
@@ -188,6 +188,7 @@ typedef struct
 uint32_t data_path_init_fiber(int wan_bbh);
 uint32_t data_path_init_gbe(rdpa_emac wan_emac);
 uint32_t data_path_init_dsl(int wan_bbh);
+uint32_t fpm_get_dqm_extra_fpm_tokens(void);
 
 #ifdef __cplusplus
 }

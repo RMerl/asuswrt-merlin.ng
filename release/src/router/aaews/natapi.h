@@ -28,13 +28,19 @@ typedef int (*NAT_READ_IM_MSG) (char **msg_buf);
 
 typedef int (*NAT_WRITE_IM_RESP) (char *resp_msg);
 
-int init_natnl_api(NAT_INIT3* nat_int3, 
-	NAT_DEINIT* nat_deinit, 
-	NAT_MAKECALL* nat_makecall, 
-	NAT_HANG_UP* nat_hangup, 
-	NAT_POOL_DUMP* nat_dump, 
-	NAT_DETECT* nat_detect, 
-	NAT_VERSION* nat_version, 
-	NAT_READ_IM_MSG* nat_read_im_msg, 
-	NAT_WRITE_IM_RESP* nat_write_im_resp);
+typedef int (*NAT_REG_DEVICE) (void);
+
+typedef int (*NAT_UNREG_DEVICE) (void);
+
+int init_natnl_api(NAT_INIT3* nat_init3, 
+    NAT_DEINIT* nat_deinit, 
+    NAT_MAKECALL* nat_makecall, 
+    NAT_HANG_UP* nat_hangup, 
+    NAT_POOL_DUMP* nat_dump , 
+    NAT_DETECT* nat_detect, 
+    NAT_VERSION* nat_version, 
+    NAT_READ_IM_MSG* nat_read_im_msg, 
+    NAT_WRITE_IM_RESP* nat_write_im_resp, 
+    NAT_REG_DEVICE* nat_reg_device, 
+    NAT_UNREG_DEVICE* nat_unreg_device );
 #endif

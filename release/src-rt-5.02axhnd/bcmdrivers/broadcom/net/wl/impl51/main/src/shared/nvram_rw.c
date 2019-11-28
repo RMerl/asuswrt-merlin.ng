@@ -1,7 +1,7 @@
 /*
  * NVRAM variable manipulation (direct mapped flash)
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -508,6 +508,10 @@ BCMINITFN(_nvram_free)(struct nvram_tuple *t)
 		      strlen(t->value) + 1);
 }
 
+/*
+ * XXX: not marking as RECLAIMTEXT allows this fucntion to be fc-sectioned out when not referenced
+ * Corrupt NVRAM by writing invalid MAGIC if nvram_corrupt is true.
+ */
 int
 BCMINITFN(nvram_commit_internal)(bool nvram_corrupt)
 {

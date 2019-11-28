@@ -3,7 +3,7 @@
  * This header file housing the define and function prototype use by
  * both the wl driver, tools & Apps.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_radiotap.h 755184 2018-04-02 12:35:13Z $
+ * $Id: bcmwifi_radiotap.h 770749 2019-01-02 06:03:35Z $
  */
 
 #ifndef _BCMWIFI_RADIOTAP_H_
@@ -245,6 +245,10 @@ BWL_PRE_PACKED_STRUCT struct wl_radiotap_legacy {
 	uint8 vend_oui[3];
 	uint8 vend_sns;
 	uint16 vend_skip_len;
+	/* XXX although noht_vht is always included, one could optimize by
+	 * allowing for variable length data when other BCM specific fields
+	 * are added with appropriate indiciation in it_present_ext
+	*/
 	wl_radiotap_nonht_vht_t nonht_vht;
 } BWL_POST_PACKED_STRUCT;
 
@@ -293,7 +297,7 @@ BWL_PRE_PACKED_STRUCT struct wl_radiotap_vht {
 	uint8 antenna;		/* IEEE80211_RADIOTAP_ANTENNA */
 	uint8 pad2;
 	uint16 pad3;
-	uint32 ampdu_ref_num;		/* A-MPDU ID */
+	uint32 ampdu_ref_num;	/* A-MPDU ID */
 	uint16 ampdu_flags;		/* A-MPDU flags */
 	uint8 ampdu_delim_crc;	/* Delimiter CRC if present in flags */
 	uint8 ampdu_reserved;
@@ -320,6 +324,11 @@ BWL_PRE_PACKED_STRUCT struct wl_radiotap_he {
 	uint8 noise;                    /* IEEE80211_RADIOTAP_DBM_ANTNOISE */
 	uint8 antenna;                  /* IEEE80211_RADIOTAP_ANTENNA */
 	uint8 pad2;
+	uint16 pad3;
+	uint32 ampdu_ref_num;		/* A-MPDU ID */
+	uint16 ampdu_flags;		/* A-MPDU flags */
+	uint8 ampdu_delim_crc;	/* Delimiter CRC if present in flags */
+	uint8 ampdu_reserved;
 	uint16 data1;                   /* radiotap HE fields */
 	uint16 data2;
 	uint16 data3;
@@ -365,6 +374,7 @@ typedef struct wl_radiotap_he wl_radiotap_he_t;
 	(1 << IEEE80211_RADIOTAP_DBM_ANTSIGNAL) |	\
 	(1 << IEEE80211_RADIOTAP_DBM_ANTNOISE) |	\
 	(1 << IEEE80211_RADIOTAP_ANTENNA) |		\
+	(1 << IEEE80211_RADIOTAP_AMPDU) |		\
 	(1 << IEEE80211_RADIOTAP_HE))
 /* include/linux/if_arp.h
  *	#define ARPHRD_IEEE80211_PRISM 802 IEEE 802.11 + Prism2 header

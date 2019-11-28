@@ -141,6 +141,15 @@
 
 /* Try to avoid including windows.h */
 #if defined(__MINGW32__) && defined(__cplusplus)
+/*
+ * FIXME: The pthreadGCE.dll build gets linker unresolved errors
+ * on pthread_key_create() unless windows.h is included here.
+ * It appears to have something to do with an argument type mismatch.
+ * Looking at tsd.o with 'nm' shows this line:
+ * 00000000 T _pthread_key_create__FPP14pthread_key_t_PFPv_v
+ * instead of
+ * 00000000 T _pthread_key_create
+ */
 #define PTW32_INCLUDE_WINDOWS_H
 #endif // endif
 
@@ -162,6 +171,15 @@
 
 /* Try to avoid including windows.h */
 #if defined(__MINGW32__) && defined(__cplusplus)
+/*
+ * FIXME: The pthreadGCE.dll build gets linker unresolved errors
+ * on pthread_key_create() unless windows.h is included here.
+ * It appears to have something to do with an argument type mismatch.
+ * Looking at tsd.o with 'nm' shows this line:
+ * 00000000 T _pthread_key_create__FPP14pthread_key_t_PFPv_v
+ * instead of
+ * 00000000 T _pthread_key_create
+ */
 #define PTW32_INCLUDE_WINDOWS_H
 #endif // endif
 

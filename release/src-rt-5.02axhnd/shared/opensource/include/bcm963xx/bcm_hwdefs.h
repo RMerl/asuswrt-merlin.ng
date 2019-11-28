@@ -302,7 +302,11 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 #define MAX_RDP_PARAM1_SIZE MAX_TM_SIZE
 #define MAX_RDP_PARAM2_SIZE MAX_MC_SIZE
 #define MIN_RDP_PARAM2_SIZE 0
+#if defined(_BCM963138_)
+#define DEFAULT_NVRAM_RDP_TMSIZE	21
+#else
 #define DEFAULT_NVRAM_RDP_TMSIZE	20
+#endif    
 #define DEFAULT_NVRAM_RDP_MCSIZE	4
 #define DEFAULT_NVRAM_RDP_PARAM1 DEFAULT_NVRAM_RDP_TMSIZE
 #define DEFAULT_NVRAM_RDP_PARAM2 DEFAULT_NVRAM_RDP_MCSIZE
@@ -313,7 +317,7 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 #define MAX_RDP_PARAM2_SIZE	MAX_FLOW_MEMORY_SIZE
 #define MIN_RDP_PARAM2_SIZE 0
 #define DEFAULT_NVRAM_BUFFER_MEMORY_SIZE	16
-#define DEFAULT_NVRAM_FLOW_MEMORY_SIZE		43
+#define DEFAULT_NVRAM_FLOW_MEMORY_SIZE		44
 #define DEFAULT_NVRAM_RDP_PARAM1	DEFAULT_NVRAM_BUFFER_MEMORY_SIZE
 #define DEFAULT_NVRAM_RDP_PARAM2	DEFAULT_NVRAM_FLOW_MEMORY_SIZE
 #elif defined(_BCM963158_)
@@ -454,12 +458,22 @@ mappaed address is for NAND in the kerSysEarlyFlashInit in board driver bcm63xx_
 #else
 #define BUFFER_MEMORY_DEF_DDR_SIZE  0x1000000
 #endif
+
 #if defined(CONFIG_BCM_RDPA_MCAST)
+#if defined(CONFIG_BCM963138) || defined(_BCM963138_) || defined(CONFIG_BCM963148) || defined(_BCM963148_) || defined(CONFIG_BCM94908) || defined(_BCM94908_)
+// RDP Backup Queues require 1 MB more of reserved memory
+#define FLOW_MEMORY_DEF_DDR_SIZE    0x2c00000
+#else
 #define FLOW_MEMORY_DEF_DDR_SIZE    0x2b00000
+#endif
+#else
+#if defined(CONFIG_BCM963138) || defined(_BCM963138_) || defined(CONFIG_BCM963148) || defined(_BCM963148_) || defined(CONFIG_BCM94908) || defined(_BCM94908_)
+// RDP Backup Queues require 1 MB more of reserved memory
+#define FLOW_MEMORY_DEF_DDR_SIZE    0x0c00000
 #else
 #define FLOW_MEMORY_DEF_DDR_SIZE    0x0b00000
 #endif
-#define PLC_SDRAM_SIZE              0x0200000
+#endif
 
 #if defined(CONFIG_BCM_PON_XRDP) || defined(CONFIG_BCM963158) || defined(_BCM963158_)
 #define PARAM1_BASE_ADDR_STR    FPMPOOL_BASE_ADDR_STR

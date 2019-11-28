@@ -839,7 +839,7 @@ config BCM_DPI_QOS_CPU
 	depends on BCM_DPI
 
 config BCM_MAP
-	tristate "Support for MAP-T"
+	tristate "Support for MAP-T MAP-E"
 
 config BCM_BOARD_IMPL
 	int "Implementation index for Board"
@@ -1255,6 +1255,11 @@ config BCM_WFD_RATE_LIMITER
     bool 'Support rate limiter for Wifi forwarding driver'
     depends on BCM_WIFI_FORWARDING_DRV
     default n
+
+config BCM_WLAN_REMOVE_INTERNAL_DEBUG
+	bool "Build Image without WLAN Internal/Bcmdbg"
+	depends on BCM_WLAN
+	default n
 
 config BCM_NETXL
 	tristate 'Support for NetXL forwarding driver'

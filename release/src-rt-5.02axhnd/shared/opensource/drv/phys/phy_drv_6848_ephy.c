@@ -274,12 +274,28 @@ Error:
 static int _phy_read_status(phy_dev_t *phy_dev)
 {
     int ret;
+    uint16_t val;
 #ifndef _CFE_
     phy_speed_t speed = phy_dev->speed;
 #endif
 
-    if ((ret = brcm_read_status(phy_dev)))
+    phy_dev->link = 0;
+    phy_dev->speed = PHY_SPEED_UNKNOWN;
+    phy_dev->duplex = PHY_DUPLEX_UNKNOWN;
+    phy_dev->pause_rx = 0;
+    phy_dev->pause_tx = 0;
+
+    if ((ret = phy_dev_read(phy_dev, 0x19, &val)))
         goto Exit;
+
+    phy_dev->link = ((val >> 2) & 0x1);
+
+    if (!phy_dev->link)
+        return 0;
+
+    phy_dev->speed = ((val >> 3) & 0x1) ? PHY_SPEED_100 : PHY_SPEED_10; 
+    phy_dev->duplex = ((val >> 0) & 0x1) ? PHY_DUPLEX_FULL : PHY_DUPLEX_HALF;
+    phy_dev->pause_rx = phy_dev->pause_tx = ((val >> 11) & 0x1);
 
 #ifndef _CFE_
     if (phy_dev->link && phy_dev->speed != speed && phy_dev->speed == PHY_SPEED_100)

@@ -27,6 +27,9 @@
 <% get_permissions_of_account(); %>
 <% get_permissions_of_group(); %>
 
+var lan_hostname = "<% nvram_get("lan_hostname"); %>";
+var lan_domain = "<% nvram_get("lan_domain"); %>".split('.')[0];
+
 var PROTOCOL = "cifs";
 
 var NN_status = get_cifs_status();  // Network-Neighborhood
@@ -72,6 +75,8 @@ function initial(){
 	
 	// show the kinds of permission
 	showPermissionTitle();
+	document.getElementById("computer_name").placeholder = lan_hostname.toUpperCase();
+	document.getElementById("st_samba_workgroup").placeholder = lan_domain.toUpperCase();
 	
 	// show mask
 	if(get_manage_type(PROTOCOL)){
@@ -676,14 +681,7 @@ function validForm(){
 		return false;
 	}	
 
-	if(document.form.computer_name.value.length == 0){
-		showtext(document.getElementById("alert_msg1"), "<#JS_fieldblank#>");
-		document.form.computer_name.focus();
-		document.form.computer_name.select();
-		return false;
-	}
-	else{
-		
+	if(document.form.computer_name.value.length > 0){		
 		var alert_str = validator.hostName(document.form.computer_name);
 		if(alert_str != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str);
@@ -698,13 +696,13 @@ function validForm(){
 		document.form.computer_name.value = trim(document.form.computer_name.value);
 	}
 				  
-	if(document.form.st_samba_workgroup.value.length == 0){
+	if(document.form.st_samba_workgroup.value.length == 0 && !lan_domain){
 		alert("<#JS_fieldblank#>");
 		document.form.st_samba_workgroup.focus();
 		document.form.st_samba_workgroup.select();
 		return false;	
 	}
-	else{
+	else if(document.form.st_samba_workgroup.value.length > 0){
 		var workgroup_check = new RegExp('^[a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-\_\.]+$','gi');
   		if(!workgroup_check.test(document.form.st_samba_workgroup.value)){
 			alert("<#JS_validchar#>");               
@@ -852,7 +850,8 @@ function switchUserType(flag){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,2);"><#ShareNode_DeviceName_itemname#></a>
 					</th>
 					<td>
-						<div><input type="text" name="computer_name" id="computer_name" class="input_20_table" maxlength="15" value="<% nvram_get("computer_name"); %>" autocorrect="off" autocapitalize="off"><br/><span id="alert_msg1" style="color:#FC0;"></span></div>
+						<div><input type="text" name="computer_name" id="computer_name" class="input_20_table" maxlength="15" value="<% nvram_get("computer_name"); %>" autocorrect="off" autocapitalize="on"><br/>
+						<span id="alert_msg1" style="color:#FC0;"></span></div>
 					</td>
 				</tr>
 				<tr>
@@ -860,7 +859,7 @@ function switchUserType(flag){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(17,3);"><#ShareNode_WorkGroup_itemname#></a>
 					</th>
 					<td>
-						<input type="text" name="st_samba_workgroup" class="input_20_table" maxlength="16" value="<% nvram_get("st_samba_workgroup"); %>" autocorrect="off" autocapitalize="off">
+						<input type="text" name="st_samba_workgroup" id="st_samba_workgroup" class="input_20_table" maxlength="15" value="<% nvram_get("st_samba_workgroup"); %>" autocorrect="off" autocapitalize="on">
 					</td>
 				</tr>
 				<tr>
@@ -969,7 +968,7 @@ function switchUserType(flag){
 			    <table width="480"  border="0" cellspacing="0" cellpadding="0" class="FileStatusTitle">
 		  	    <tr>
 		    	  		<td width="290" height="20" align="left">
-				    		<div class="machineName"><% nvram_get("computer_name"); %></div>
+				    		<div id="machine_name" class="machineName"><#Web_Title2#></div>
 				    	</td>
 				  <td>
 				    <div id="permissionTitle"></div>

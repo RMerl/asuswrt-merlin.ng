@@ -53,6 +53,9 @@ do
 	(cd ${ROOTFS}/rom/etc/rc3.d; rm -f ${numbase}.symlink; ln -s ../init.d/${namebase}.sh ${numbase})
 done
 
+# Remove unneeded (wlan prebuilt) files
+find $INSTALL_DIR -name "*_saved-*" | xargs rm -fv
+
 # Copy over all files to ROOTFS
 rsync -av --exclude="/lib"  $INSTALL_DIR/* $ROOTFS
 

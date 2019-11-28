@@ -2,7 +2,7 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: aiutils.c 765681 2018-07-12 16:16:58Z $
+ * $Id: aiutils.c 773199 2019-03-14 14:36:42Z $
  */
 #include <bcm_cfg.h>
 #include <typedefs.h>
@@ -145,14 +145,10 @@ axiaddr_to_cpuaddr(si_info_t *sii, uint32 axiaddr)
 {
 	uint32 cpuaddr = axiaddr;
 
-	ASSERT(EMBEDDED_2x2AX_CORE(sii->pub.chip));
+	ASSERT(EMBEDDED_2x2AX_CORE(sii->pub.chip) || BCM6878_CHIP(sii->pub.chip));
 	if (cpuaddr != 0) { /* 0 means 'nothing here' */
 		cpuaddr -= SI_ENUM_BASE_BP_2x2AX; /* == 0x8400_0000 */
-#ifndef BCMQT
 		cpuaddr += sii->pub.enum_base; /* adds physical addr in pseudo PCIe BAR0 register */
-#else
-		cpuaddr += 0xfc000000; /* adds Veloce BAR0 window value (16M window) */
-#endif /* BCMQT */
 	}
 
 	return cpuaddr;
@@ -164,7 +160,7 @@ ai_scan_uniq_cpu_addresses(si_info_t *sii, si_cores_info_t *cores_info, axi_wrap
 {
 	uint32 i;
 
-	ASSERT(EMBEDDED_2x2AX_CORE(sii->pub.chip));
+	ASSERT(EMBEDDED_2x2AX_CORE(sii->pub.chip) || BCM6878_CHIP(sii->pub.chip));
 	sii->oob_router = axiaddr_to_cpuaddr(sii, sii->oob_router);
 	for (i = 0; i < sii->numcores; i++) {
 		cores_info->coresba[i] = axiaddr_to_cpuaddr(sii, cores_info->coresba[i]);
@@ -201,7 +197,7 @@ BCMATTACHFN(ai_scan)(si_t *sih, void *regs, uint devid)
 
 	switch (BUSTYPE(sih->bustype)) {
 	case SI_BUS:
-		if (EMBEDDED_2x2AX_CORE(sih->chip)) {
+		if (EMBEDDED_2x2AX_CORE(sih->chip) || BCM6878_CHIP(sih->chip)) {
 			erombase = axiaddr_to_cpuaddr(sii, erombase);
 		}
 		eromptr = (uint32 *)REG_MAP(erombase, SI_CORE_SIZE);
@@ -234,7 +230,8 @@ BCMATTACHFN(ai_scan)(si_t *sih, void *regs, uint devid)
 
 	SI_VMSG(("ai_scan: regs = 0x%p, erombase = 0x%08x, eromptr = 0x%p, eromlim = 0x%p\n",
 	         OSL_OBFUSCATE_BUF(regs), erombase,
-		OSL_OBFUSCATE_BUF(eromptr), OSL_OBFUSATE_BUF(eromlim)));
+	         OSL_OBFUSCATE_BUF(eromptr), OSL_OBFUSCATE_BUF(eromlim)));
+
 	while (eromptr < eromlim) {
 		uint32 cia, cib, cid, mfg, crev, nmw, nsw, nmp, nsp;
 		uint32 mpd, asd, addrl, addrh, sizel, sizeh;
@@ -455,23 +452,7 @@ BCMATTACHFN(ai_scan)(si_t *sih, void *regs, uint devid)
 				axi_wrapper[sii->axi_num_wrappers].cid = cid;
 				axi_wrapper[sii->axi_num_wrappers].rev = crev;
 				axi_wrapper[sii->axi_num_wrappers].wrapper_type = AI_SLAVE_WRAPPER;
-
-			/* Software WAR as discussed with hardware team, to ensure proper
-			* Slave Wrapper Base address is set for 4364 Chip ID.
-			* Current address is 0x1810c000, Corrected the same to 0x1810e000.
-			* This ensures AXI default slave wrapper is registered along with
-			* other slave wrapper cores and is useful while generating trap info
-			* when write operation is tried on Invalid Core / Wrapper register
-			*/
-
-				if ((CHIPID(sih->chip) == BCM4364_CHIP_ID) &&
-						(cid == DEF_AI_COMP)) {
-					axi_wrapper[sii->axi_num_wrappers].wrapper_addr =
-						0x1810e000;
-				} else {
-					axi_wrapper[sii->axi_num_wrappers].wrapper_addr = addrl;
-				}
-
+				axi_wrapper[sii->axi_num_wrappers].wrapper_addr = addrl;
 				sii->axi_num_wrappers++;
 
 				SI_VMSG(("SLAVE WRAPPER: %d,  mfg:%x, cid:%x,"
@@ -497,7 +478,8 @@ error:
 	return;
 
 done:
-	if (EMBEDDED_2x2AX_CORE(sih->chip)) {
+	if (BCM6878_CHIP(sih->chip) || EMBEDDED_2x2AX_CORE(sih->chip)) {
+		/* These chips run on UBUS */
 		ai_scan_uniq_cpu_addresses(sii, cores_info, axi_wrapper);
 	}
 } /* ai_scan */
@@ -519,7 +501,7 @@ _ai_setcoreidx(si_t *sih, uint coreidx, uint use_wrap2)
 	if (coreidx >= MIN(sii->numcores, SI_MAXCORES))
 		return (NULL);
 
-	addr = cores_info->coresba[coreidx];
+	addr = cores_info->coresba[coreidx]; /* 0 means n/a: no core registers implemented */
 	wrap = cores_info->wrapba[coreidx];
 	wrap2 = cores_info->wrapba2[coreidx];
 
@@ -542,7 +524,7 @@ _ai_setcoreidx(si_t *sih, uint coreidx, uint use_wrap2)
 	switch (BUSTYPE(sih->bustype)) {
 	case SI_BUS:
 		/* map new one */
-		if (!cores_info->regs[coreidx]) {
+		if (!cores_info->regs[coreidx] && (addr != 0)) {
 			cores_info->regs[coreidx] = REG_MAP(addr,
 				AI_SETCOREIDX_MAPSIZE(cores_info->coreid[coreidx]));
 			ASSERT(GOODREGS(cores_info->regs[coreidx]));
@@ -715,11 +697,12 @@ ai_numaddrspaces(si_t *sih)
 	return 2;
 }
 
-/* Return the address of the nth address space in the current core
+/**
+ * Return the physical address of the nth address space in the current core
  * Arguments:
- * sih : Pointer to struct si_t
- * spidx : slave port index
- * baidx : base address index
+ * @param sih    Pointer to struct si_t
+ * @param spidx  Slave port index
+ * @param baidx  Base address index
  */
 uint32
 ai_addrspace(si_t *sih, uint spidx, uint baidx)
@@ -1653,17 +1636,6 @@ ai_ignore_errlog(si_info_t *sii, uint32 lo_addr, uint32 hi_addr, uint32 err_axi_
 		case BCM4350_CHIP_ID:
 			axi_id = BCM4350_BT_AXI_ID;
 			break;
-		case BCM4345_CHIP_ID:
-			axi_id = BCM4345_BT_AXI_ID;
-			break;
-		case BCM4349_CHIP_GRPID:
-			axi_id = BCM4349_BT_AXI_ID;
-			break;
-		case BCM4364_CHIP_ID:
-		case BCM4373_CHIP_ID:
-			axi_id = BCM4364_BT_AXI_ID;
-			break;
-
 		default:
 			return FALSE;
 	}
@@ -2165,6 +2137,14 @@ ai_force_clocks(si_t *sih, uint clock_state)
 }
 
 #ifdef DONGLEBUILD
+/* XXX:
+ * this is not declared as static const, although that is the right thing to do
+ * reason being if declared as static const, compile/link process would that in
+ * read only section...
+ * currently this code/array is used to identify the registers which are dumped
+ * during trap processing
+ * and usually for the trap buffer, .rodata buffer is reused,  so for now just static
+*/
 static uint32 wrapper_offsets_to_dump[] = {
 	OFFSETOF(aidmp_t, ioctrl),
 	OFFSETOF(aidmp_t, iostatus),

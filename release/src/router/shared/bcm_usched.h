@@ -1,7 +1,7 @@
 /*
  * Broadcom micro scheduler library include file
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_usched.h 734839 2017-12-06 13:30:22Z $
+ * $Id: bcm_usched.h 776550 2019-07-02 09:45:39Z $
  */
 
 #ifndef __BCM_USCHED_H__
@@ -120,7 +120,7 @@ BCM_USCHED_STATUS bcm_usched_deinit(bcm_usched_handle *handle);
  *
  * @return		status of the call
  */
-BCM_USCHED_STATUS bcm_usched_add_timer(bcm_usched_handle *handle, unsigned long interval,
+BCM_USCHED_STATUS bcm_usched_add_timer(bcm_usched_handle *handle, unsigned long long interval,
 	short int repeat_flag, bcm_usched_timerscbfn *cbfn, void *arg);
 
 /**

@@ -280,9 +280,8 @@ int klogd_main(int argc UNUSED_PARAM, char **argv)
 				if (*start == '>')
 					start++;
 			}
-
-#if 1 /* ASUS BWDPI */
-			/* Ignore BWDPI debug things */
+#if defined(BWDPI_LOGWAR)
+			/* Ignore annoying BWDPI messages */
 			opt_c = start;
 			while (*opt_c == '[')
 				opt_c++;

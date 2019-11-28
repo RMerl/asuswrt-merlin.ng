@@ -14,7 +14,7 @@ ifeq ($(HND_ROUTER_AX), y)
 CFLAGS  += -I$(SRCBASE)/../components/math/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/../components/wlioctl/include
 endif
 #CFLAGS	+= -g -DDEBUG
-CFLAGS	+= -s -O2
+CFLAGS	+= -s -O2 $(EXTRACFLAGS)
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 LDFLAGS += $(EXTRALDFLAGS)

@@ -137,7 +137,7 @@ int strap_check_spinand(void)
 #elif defined(_BCM96848_)
     return (MISC->miscStrapBus & MISC_STRAP_BUS_BOOT_SPI_NAND);
 
-#elif defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96846_)
+#elif defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_)
     return ((MISC->miscStrapBus&MISC_STRAP_BUS_BOOT_SEL_MASK) == MISC_STRAP_BUS_BOOT_SPI_NAND);
 #elif defined(_BCM96858_)
     {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -112,5 +112,4 @@ extern void igs_osl_timer_update(igs_osl_timer_t *t, uint32 ms, bool periodic);
 extern bool igs_osl_timer_del(igs_osl_timer_t *t);
 extern osl_lock_t OSL_LOCK_CREATE(uint8 *name);
 extern void OSL_LOCK_DESTROY(osl_lock_t lock);
-
 #endif /* _OSL_LINUX_H_ */

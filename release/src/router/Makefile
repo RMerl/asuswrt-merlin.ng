@@ -4220,6 +4220,9 @@ protect_srv-clean:
 socat/stamp-h1:
 	cd socat && \
 	$(CONFIGURE) --prefix=/usr \
+	--disable-socks4 --disable-socks4a --disable-proxy --disable-sctp --disable-termios \
+	--disable-ext2 --disable-tun --disable-abstract-unixsocket --disable-unix \
+	--disable-openssl --disable-libwrap \
 	CFLAGS="-I$(STAGEDIR)/usr/include" \
 	LDFLAGS="-L$(STAGEDIR)/usr/lib -ldl"
 	touch $@

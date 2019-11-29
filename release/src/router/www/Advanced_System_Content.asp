@@ -682,6 +682,22 @@ function validForm(){
 		return false;
 	}
 
+	if(document.form.sshd_enable.value != 0){
+		if (!validator.range(document.form.sshd_port, 1, 65535))
+			return false;
+		else if(myisPortConflict(document.form.sshd_port.value, "ssh")){
+			alert(myisPortConflict(document.form.sshd_port.value, "ssh"));
+			document.form.sshd_port.focus();
+			return false;
+		}
+		else{
+			document.form.sshd_port.disabled = false;
+		}
+	}
+	else{
+		document.form.sshd_port.disabled = true;
+	}
+
 	if(document.form.sshd_enable.value != "0" && document.form.sshd_pass[1].checked && document.form.sshd_authkeys.value == ""){		
 		alert("<#JS_fieldblank#>");
 		document.form.sshd_authkeys.focus();
@@ -704,14 +720,6 @@ function validForm(){
 		document.form.misc_httpsport_x.value = '<% nvram_get("misc_httpsport_x"); %>';
 	}	
 
-	if(document.form.sshd_enable.value != 0){
-		if (!validator.range(document.form.sshd_port, 1, 65535))
-			return false;
-	}
-	else{
-		document.form.sshd_port.disabled = true;
-	}
-
 	if(!validator.rangeAllowZero(document.form.shell_timeout_x, 10, 999, orig_shell_timeout_x))
 		return false;
 
@@ -719,32 +727,36 @@ function validForm(){
 		alert("You must configure at least one SSH authentication method!");
 		return false;
 	}
+/* HTTP WAN access is no longer allowed */
 /*
 	if(!document.form.misc_httpport_x.disabled &&
-			isPortConflict(document.form.misc_httpport_x.value)){
-		alert(isPortConflict(document.form.misc_httpport_x.value));
+			myisPortConflict(document.form.misc_httpport_x.value, "http")){
+		alert(isPortConflict(document.form.misc_httpport_x.value, "http_wan"));
 		document.form.misc_httpport_x.focus();
+		document.form.misc_httpport_x.select();
 		return false;
 	}
 */
-	else if(!document.form.misc_httpsport_x.disabled &&
-			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
-		alert(isPortConflict(document.form.misc_httpsport_x.value));
+	if(!document.form.misc_httpsport_x.disabled &&
+			myisPortConflict(document.form.misc_httpsport_x.value, "https") && HTTPS_support){
+		alert(myisPortConflict(document.form.misc_httpsport_x.value, "https"));
 		document.form.misc_httpsport_x.focus();
+		document.form.misc_httpsport_x.select();
 		return false;
 	}
-	else if(isPortConflict(document.form.https_lanport.value) && HTTPS_support && !tmo_support){
-		alert(isPortConflict(document.form.https_lanport.value));
+	else if(myisPortConflict(document.form.http_lanport.value, "http")){
+		alert(isPortConflict(document.form.http_lanport.value, "http"));
+		document.form.http_lanport.focus();
+		document.form.http_lanport.select();
+		return false;
+	}
+	else if(myisPortConflict(document.form.https_lanport.value, "https") && HTTPS_support){
+		alert(isPortConflict(document.form.https_lanport.value, "https"));
 		document.form.https_lanport.focus();
+		document.form.https_lanport.select();
 		return false;
 	}
-/*
-	else if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value && HTTPS_support){
-		alert("<#https_port_conflict#>");
-		document.form.misc_httpsport_x.focus();
-		return false;
-	}
-*/
+
 	else if(!validator.rangeAllowZero(document.form.http_autologout, 10, 999, '<% nvram_get("http_autologout"); %>'))
 		return false;
 
@@ -1669,6 +1681,47 @@ function pullPingTargetList(obj){
 	}
 	else
 		hidePingTargetList();
+}
+
+function myisPortConflict(_val, service){
+	var str = "(" + _val + ") <#portConflictHint#>: ";
+
+/* Check services on System page - through form */
+	if (service != "ssh" && _val == document.form.sshd_port.value) {
+		str = str + "SSH.";
+		return str;
+	}
+	else if (service != "http" && _val == document.form.http_lanport.value) {
+		str = str + "HTTP LAN port.";
+		return str;
+	}
+	else if (service != "https" && _val == document.form.https_lanport.value) {
+		str = str + "HTTPS LAN port.";
+		return str;
+	}
+/* Check services on other pages - through nvram */
+	else if(_val == '<% nvram_get("dm_http_port"); %>'){
+		str = str + "<#DM_title#>.";
+		return str;
+		}
+	else if(_val == '<% nvram_get("webdav_http_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("webdav_https_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("vpn_server1_port"); %>'){
+		str = str + "OpenVPN Server 1.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("vpn_server2_port"); %>'){
+		str = str + "OpenVPN Server 2.";
+		return str;
+	}
+	else
+		return false;
 }
 
 </script>

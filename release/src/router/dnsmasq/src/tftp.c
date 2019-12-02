@@ -68,9 +68,11 @@ void tftp_request(struct listener *listen, time_t now)
 #if defined(HAVE_LINUX_NETWORK)
     char control[CMSG_SPACE(sizeof(struct in_pktinfo))];
 #elif defined(HAVE_SOLARIS_NETWORK)
-    char control[CMSG_SPACE(sizeof(unsigned int))];
+    char control[CMSG_SPACE(sizeof(struct in_addr)) +
+		 CMSG_SPACE(sizeof(unsigned int))];
 #elif defined(IP_RECVDSTADDR) && defined(IP_RECVIF)
-    char control[CMSG_SPACE(sizeof(struct sockaddr_dl))];
+    char control[CMSG_SPACE(sizeof(struct in_addr)) +
+		 CMSG_SPACE(sizeof(struct sockaddr_dl))];
 #endif
   } control_u; 
 

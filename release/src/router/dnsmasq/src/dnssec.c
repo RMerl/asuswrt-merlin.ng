@@ -679,6 +679,7 @@ int dnssec_validate_by_ds(time_t now, struct dns_header *header, size_t plen, ch
   union all_addr a;
 
   if (ntohs(header->qdcount) != 1 ||
+      RCODE(header) == SERVFAIL || RCODE(header) == REFUSED ||
       !extract_name(header, plen, &p, name, 1, 4))
     return STAT_BOGUS;
 

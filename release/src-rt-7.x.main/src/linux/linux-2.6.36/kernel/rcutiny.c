@@ -170,7 +170,7 @@ static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp)
 		next = list->next;
 		prefetch(next);
 		debug_rcu_head_unqueue(list);
-		list->func(list);
+		__rcu_reclaim(list);
 		list = next;
 	}
 }

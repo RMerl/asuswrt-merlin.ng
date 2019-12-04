@@ -122,6 +122,7 @@ struct l2tp_session {
 						 * categories */
 	int			reorder_timeout; /* configured reorder timeout
 						  * (in jiffies) */
+	int			reorder_skip;	/* set if skip to next nr */
 	int			mtu;
 	int			mru;
 	enum l2tp_pwtype	pwtype;
@@ -157,6 +158,7 @@ struct l2tp_tunnel_cfg {
 
 struct l2tp_tunnel {
 	int			magic;		/* Should be L2TP_TUNNEL_MAGIC */
+	struct rcu_head rcu;
 	rwlock_t		hlist_lock;	/* protect session_hlist */
 	struct hlist_head	session_hlist[L2TP_HASH_SIZE];
 						/* hashed list of sessions,

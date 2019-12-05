@@ -829,7 +829,7 @@ function save_cert_key(){
 			</tr>
 
 			<tr id="cert_details" style="display:none;">
-				<th>#vpn_openvpn_KC_SA#</th>
+				<th><#vpn_openvpn_KC_SA#></th>
 				<td>
 					<div style="display:table-row;white-space: nowrap;">
 						<div style="display:table-cell;white-space: nowrap;"><#Status_Str#> :</div>

@@ -257,7 +257,8 @@ struct event_desc {
 #define OPT_TFTP_APREF_MAC 56
 #define OPT_RAPID_COMMIT   57
 #define OPT_UBUS           58
-#define OPT_LAST           59
+#define OPT_IGNORE_CLID    59
+#define OPT_LAST           60
 
 #define OPTION_BITS (sizeof(unsigned int)*8)
 #define OPTION_SIZE ( (OPT_LAST/OPTION_BITS)+((OPT_LAST%OPTION_BITS)!=0) )
@@ -282,9 +283,10 @@ union all_addr {
   struct {
     union {
       struct crec *cache;
-      struct interface_name *int_name;
+      char *name;
     } target;
-    unsigned int uid; /* 0 if union is interface-name */
+    unsigned int uid;
+    int is_name_ptr;  /* disciminates target union */
   } cname;
   struct {
     struct blockdata *keydata;
@@ -392,9 +394,11 @@ struct auth_zone {
   struct auth_zone *next;
 };
 
+#define HR_6 1
+#define HR_4 2
 
 struct host_record {
-  int ttl;
+  int ttl, flags;
   struct name_list {
     char *name;
     struct name_list *next;
@@ -455,9 +459,6 @@ struct crec {
 #define F_CONFIG    (1u<<13)
 #define F_DS        (1u<<14)
 #define F_DNSSECOK  (1u<<15)
-
-/* below here are only valid as args to log_query: cache
-   entries are limited to 16 bits */
 #define F_UPSTREAM  (1u<<16)
 #define F_RRNAME    (1u<<17)
 #define F_SERVER    (1u<<18)
@@ -476,10 +477,6 @@ struct crec {
 
 #define UID_NONE      0
 /* Values of uid in crecs with F_CONFIG bit set. */
-/* cname to uid SRC_INTERFACE are to interface names,
-   so use UID_NONE for that to eliminate clashes with
-   any other uid */
-#define SRC_INTERFACE UID_NONE
 #define SRC_CONFIG    1
 #define SRC_HOSTS     2
 #define SRC_AH        3
@@ -717,7 +714,7 @@ struct dhcp_lease {
   int new_prefixlen;     /* and its prefix length */
 #ifdef HAVE_DHCP6
   struct in6_addr addr6;
-  int iaid;
+  unsigned int iaid;
   struct slaac_address {
     struct in6_addr addr;
     time_t ping_time;
@@ -1397,14 +1394,15 @@ struct dhcp_lease *lease4_allocate(struct in_addr addr);
 #ifdef HAVE_DHCP6
 struct dhcp_lease *lease6_allocate(struct in6_addr *addrp, int lease_type);
 struct dhcp_lease *lease6_find(unsigned char *clid, int clid_len, 
-			       int lease_type, int iaid, struct in6_addr *addr);
+			       int lease_type, unsigned int iaid, struct in6_addr *addr);
 void lease6_reset(void);
-struct dhcp_lease *lease6_find_by_client(struct dhcp_lease *first, int lease_type, unsigned char *clid, int clid_len, int iaid);
+struct dhcp_lease *lease6_find_by_client(struct dhcp_lease *first, int lease_type,
+					 unsigned char *clid, int clid_len, unsigned int iaid);
 struct dhcp_lease *lease6_find_by_addr(struct in6_addr *net, int prefix, u64 addr);
 u64 lease_find_max_addr6(struct dhcp_context *context);
 void lease_ping_reply(struct in6_addr *sender, unsigned char *packet, char *interface);
 void lease_update_slaac(time_t now);
-void lease_set_iaid(struct dhcp_lease *lease, int iaid);
+void lease_set_iaid(struct dhcp_lease *lease, unsigned int iaid);
 void lease_make_duid(time_t now);
 #endif
 void lease_set_hwaddr(struct dhcp_lease *lease, const unsigned char *hwaddr,
@@ -1522,7 +1520,7 @@ int get_incoming_mark(union mysockaddr *peer_addr, union all_addr *local_addr,
 void dhcp6_init(void);
 void dhcp6_packet(time_t now);
 struct dhcp_context *address6_allocate(struct dhcp_context *context,  unsigned char *clid, int clid_len, int temp_addr,
-				       int iaid, int serial, struct dhcp_netid *netids, int plain_range, struct in6_addr *ans);
+				       unsigned int iaid, int serial, struct dhcp_netid *netids, int plain_range, struct in6_addr *ans);
 int config_valid(struct dhcp_config *config, struct dhcp_context *context, struct in6_addr *addr);
 struct dhcp_context *address6_available(struct dhcp_context *context, 
 					struct in6_addr *taddr,

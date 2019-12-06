@@ -1354,6 +1354,13 @@ Veuillez noter que dans ce mode séquentiel, les clients qui laissent expirer
 leur bail ont beaucoup plus de chance de voir leur adresse IP changer, aussi
 cette option ne devrait pas être utilisée dans un cas général.
 .TP
+.B --dhcp-ignore-clid
+Dnsmasq lit l'option 'client identifier' (RFC 2131) envoyée par les clients
+(si disponible) afin d'identifier les clients. Cela permet de distribuer la
+même adresse IP à un client utilisant plusieurs interfaces. Activer cette option
+désactive la lecture du 'client identifier', afin de toujours identifier un client
+en utilisant l'adresse MAC.
+.TP
 .B --pxe-service=[tag:<label>,]<CSA>,<entrée de menu>[,<nom de fichier>|<type de service de démarrage>][,<adresse de serveur>|<nom de serveur>]
 La plupart des ROMS de démarrage PXE ne permettent au système PXE que la simple
 obtention d'une adresse IP, le téléchargement du fichier spécifié dans

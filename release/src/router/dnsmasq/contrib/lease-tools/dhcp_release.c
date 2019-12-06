@@ -223,7 +223,11 @@ static struct in_addr find_interface(struct in_addr client, int fd, unsigned int
 	    ifr->ifr_addr.sa_family = AF_INET;
 	    if (ioctl(ifrfd, SIOCGIFADDR, ifr) != -1)
 	      return ((struct sockaddr_in *)&ifr->ifr_addr)->sin_addr;
-	    exit(0);
+	    else
+	      {
+		fprintf(stderr, "error: local IPv4 address not found\n");
+		exit(1);
+	      }
           }
 	else if (h->nlmsg_type == RTM_NEWADDR)
           {

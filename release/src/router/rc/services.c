@@ -3560,7 +3560,7 @@ start_ddns(void)
 				fprintf(fp, "wildcard = true\n");
 
 			fprintf(fp, "}\n");
-#if 0
+#if 1
 			if (asus_ddns == 1)
 				fprintf(fp, "secure-ssl = false\n");
 #endif
@@ -3731,7 +3731,7 @@ asusddns_reg_domain(int reg)
 		fprintf(fp, "username = %s\n", get_lan_hwaddr());
 		fprintf(fp, "password = %s\n", nvram_safe_get("secret_code"));
 		fprintf(fp, "}\n");
-#if 0
+#if 1
 		fprintf(fp, "secure-ssl = false\n");
 #endif
 		fclose(fp);
@@ -3810,7 +3810,7 @@ _dprintf("%s: do inadyn to unregister! unit = %d wan_ifname = %s nserver = %s ho
 		fprintf(fp, "username = %s\n", get_lan_hwaddr());
 		fprintf(fp, "password = %s\n", nvram_safe_get("secret_code"));
 		fprintf(fp, "}\n");
-#if 0
+#if 1
 		fprintf(fp, "secure-ssl = false\n");
 #endif
 		fclose(fp);

@@ -71,7 +71,8 @@ static ddns_system_t asus_update = {
 	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
 	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
-	.server_name  = "nwsrv-ns1.asus.com",
+//	.server_name  = "nwsrv-ns1.asus.com",
+	.server_name  = "ns1.asuscomm.com",
 	.server_url   = "/ddns/update.jsp"
 };
 
@@ -85,7 +86,8 @@ static ddns_system_t asus_register = {
 	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
 	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
-	.server_name  = "nwsrv-ns1.asus.com",
+//	.server_name  = "nwsrv-ns1.asus.com",
+	.server_name  = "ns1.asuscomm.com",
 	.server_url   = "/ddns/register.jsp"
 };
 
@@ -99,7 +101,8 @@ static ddns_system_t asus_unregister = {
 	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
 	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
-	.server_name  = "nwsrv-ns1.asus.com",
+//	.server_name  = "nwsrv-ns1.asus.com",
+	.server_name  = "ns1.asuscomm.com",
 	.server_url   = "/ddns/register.jsp"
 };
 

@@ -746,18 +746,19 @@ function validForm(){
 		alert("You must configure at least one SSH authentication method!");
 		return false;
 	}
+/* HTTP WAN access is no longer allowed */
 /*
 	if(!document.form.misc_httpport_x.disabled &&
-			isPortConflict(document.form.misc_httpport_x.value)){
-		alert(isPortConflict(document.form.misc_httpport_x.value));
+			myisPortConflict(document.form.misc_httpport_x.value, "http")){
+		alert(isPortConflict(document.form.misc_httpport_x.value, "http_wan"));
 		document.form.misc_httpport_x.focus();
 		document.form.misc_httpport_x.select();
 		return false;
 	}
 */
-	else if(!document.form.misc_httpsport_x.disabled &&
-			isPortConflict(document.form.misc_httpsport_x.value) && HTTPS_support){
-		alert(isPortConflict(document.form.misc_httpsport_x.value));
+	if(!document.form.misc_httpsport_x.disabled &&
+			myisPortConflict(document.form.misc_httpsport_x.value, "https") && HTTPS_support){
+		alert(myisPortConflict(document.form.misc_httpsport_x.value, "https"));
 		document.form.misc_httpsport_x.focus();
 		document.form.https_lanport.select();
 		return false;
@@ -775,7 +776,7 @@ function validForm(){
 		document.form.misc_httpsport_x.select();
 		return false;
 	}
-*/
+
 	else if(!validator.rangeAllowZero(document.form.http_autologout, 10, 999, '<% nvram_get("http_autologout"); %>'))
 		return false;
 
@@ -1994,7 +1995,7 @@ function reset_portconflict_hint(){
 				<tr>
 					<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,3)"><#LANHostConfig_x_NTPServer_itemname#></a></th>
 					<td>
-						<input type="text" maxlength="31" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="255" class="input_32_table" name="ntp_server0" value="<% nvram_get("ntp_server0"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
 						<a href="javascript:openLink('x_NTPServer1')"  name="x_NTPServer1_link" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_NTPServer1_linkname#></a>
 						<div id="svc_hint_div" style="display:none;">
 							<span style="color:#FFCC00;"><#General_x_SystemTime_syncNTP#></span>
@@ -2005,7 +2006,7 @@ function reset_portconflict_hint(){
 				<tr>
 					<th>Secondary NTP Server</th>
 					<td>
-						<input type="text" maxlength="31" class="input_32_table" name="ntp_server1" value="<% nvram_get("ntp_server1"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
+						<input type="text" maxlength="255" class="input_32_table" name="ntp_server1" value="<% nvram_get("ntp_server1"); %>" onKeyPress="return validator.isString(this, event);" autocorrect="off" autocapitalize="off">
 					</td>
 				</tr>
 				<tr id="network_monitor_tr">

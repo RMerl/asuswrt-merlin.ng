@@ -18,13 +18,15 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: RT-AC68U, RT-AC86U to GPL 384_81351
   - UPDATED: RT-AC88U, RT-AC3100 to GPL 384_81351 and binary
              blobs from 384_81116
+  - UPDATED: RT-AC5300 to GPL 384_81351 and binary blobs from
+             384_81219.
 
-  - NOTE: There is currently no builds available for the RT-AC87U,
-          RT-AC3200 or RT-AC5300 due to lack of updated compatible
-          components from Asus for this release.
+  - NOTE: This release is not available on the RT-AC87U and
+          RT-AC3200 due to the lack of updated compatible
+          components from Asus.
 
   - UPDATED: miniupnpd 20190824
-  - UPDATED: dnsmasq 2.80-74-gdefd6b1 (themiron)
+  - UPDATED: dnsmasq 2.80-95-g1aef66b (themiron)
   - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
   - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
   - UPDATED: Curl 7.66.0
@@ -52,14 +54,15 @@ Asuswrt-Merlin 384/NG Changelog
            firewall (would prevent using ::/0 for instance).
   - FIXED: EUI64 support missing while in Load Balancing or
            using Multicast IPTV.
-  - FIXED: Asus DDNS failing to update due to an expired
-           certificate on Asus's server (inadyn will now
-           ignore that certificate error for Asus DDNS).
+  - FIXED: Asus DDNS failing to update due to an invalid
+           certificate on Asus's server.
   - FIXED: Let's Encrypt support would sometime fail when using
            Asus DDNS (fixed DNS publishing of validation record)
            (in addition to general failure fixed by GPL 81351)
-  - FIXED: IPv6 neighbour solnicitation drop toggle not working
+  - FIXED: IPv6 neighbour solicitation drop toggle not working
            for some models
+  - FIXED: openvpn-event scripts would be executed even if custom
+           scripts were globally disabled
 
 
 384.13_1 (12-Aug-2019)

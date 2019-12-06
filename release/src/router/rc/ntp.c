@@ -40,7 +40,7 @@
 #define SECONDS_TO_WAIT 3
 #define NTP_RETRY_INTERVAL 30
 
-static char server[32];
+static char server[256];
 static int sig_cur = -1;
 static int server_idx = 0;
 

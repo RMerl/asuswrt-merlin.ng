@@ -65,6 +65,39 @@ Asuswrt-Merlin 384/NG Changelog
            scripts were globally disabled
 
 
+384.13_2 (xx-xxx-xxxx)
+  This release is only available for the RT-AC87U and RT-AC3200.
+
+  - NEW: Added "split" busybox applet.
+  - UPDATED: OpenSSL 1.0.2 to 1.0.2t (themiron)
+  - UPDATED: OpenSSL 1.1.1 to 1.1.1d (themiron)
+  - UPDATED: CA root certificates to October 9th 2019
+  - CHANGED: Rewrote the faketc script used to inject Codel into
+             Adaptive QoS as a C program for improved performance.
+  - CHANGED: Made webui SSL certificate generation compliant with
+             IOS 13 and MacOS 10.15 new requirements.
+  - CHANGED: IPv6 firewall now accepts empty values for local IP
+             (which means any local IP).
+  - FIXED: Non-working link to YandexDNS on the webui for
+           Russian models.
+  - FIXED: Webui wouldn't notify when running dangerously low on
+           free nvram (feature was lost at some point in the past)
+  - FIXED: Custom clientlist would be wiped if stopping an
+           OpenVPN server instance.
+  - FIXED: Incorrect detection of EUI64 addresses on the IPv6
+           firewall (would prevent using ::/0 for instance).
+  - FIXED: EUI64 support missing while in Load Balancing or
+           using Multicast IPTV.
+  - FIXED: Asus DDNS failing to update due to an invalid
+           certificate on Asus's server.
+  - FIXED: Let's Encrypt no longer working due to deprecated ACMEv1
+           protocol usage (backport from GPL 81351)
+  - FIXED: Let's Encrypt support would sometime fail when using
+           Asus DDNS (fixed DNS publishing of validation record)
+  - FIXED: IPv6 neighbour solicitation drop toggle not working
+           for some models
+
+
 384.13_1 (12-Aug-2019)
   - FIXED: RT-AC87U failing to boot when configuring in AP mode.
 

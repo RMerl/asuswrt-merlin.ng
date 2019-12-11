@@ -690,21 +690,14 @@ function validForm(){
 	}
 
 	if(document.form.sshd_enable.value != 0){
-		if(document.form.sshd_pass[1].checked && document.form.sshd_authkeys.value == ""){
-			alert("<#JS_fieldblank#>");
-			document.form.sshd_authkeys.focus();
+		if (!validator.range(document.form.sshd_port, 1, 65535))
 			return false;
-		}
-
-		if (!validator.range(document.form.sshd_port_x, 1, 65535))
-			return false;
-		else if(isPortConflict(document.form.sshd_port_x.value)){
-			alert(isPortConflict(document.form.sshd_port_x.value));
-			document.form.sshd_port_x.focus();
+		else if(myisPortConflict(document.form.sshd_port.value, "ssh")){
+			alert(myisPortConflict(document.form.sshd_port.value, "ssh"));
+			document.form.sshd_port.focus();
 			return false;
 		}
 		else{
-			document.form.sshd_port.value = document.form.sshd_port_x.value;
 			document.form.sshd_port.disabled = false;
 		}
 	}
@@ -712,6 +705,11 @@ function validForm(){
 		document.form.sshd_port.disabled = true;
 	}
 
+	if(document.form.sshd_enable.value != "0" && document.form.sshd_pass[1].checked && document.form.sshd_authkeys.value == ""){		
+		alert("<#JS_fieldblank#>");
+		document.form.sshd_authkeys.focus();
+		return false;
+	}
 
 	if (!validator.range(document.form.http_lanport, 1, 65535))
 		return false;
@@ -727,17 +725,7 @@ function validForm(){
 	else{
 		document.form.misc_httpport_x.value = '<% nvram_get("misc_httpport_x"); %>';
 		document.form.misc_httpsport_x.value = '<% nvram_get("misc_httpsport_x"); %>';
-	}
-
-	if(document.form.sshd_port_x.value == document.form.https_lanport.value){
-		alert("<#SSH_HttpsLanPort_Conflict_Hint#>");
-		$("#sshd_port_x").addClass("highlight");
-		$("#port_conflict_sshdport").show();
-		$("#https_lanport_input").addClass("highlight");
-		$("#port_conflict_httpslanport").show();
-		document.form.sshd_port_x.focus();
-		return false;
-	}
+	}	
 
 	if(!validator.rangeAllowZero(document.form.shell_timeout_x, 10, 999, orig_shell_timeout_x))
 		return false;
@@ -760,20 +748,19 @@ function validForm(){
 			myisPortConflict(document.form.misc_httpsport_x.value, "https") && HTTPS_support){
 		alert(myisPortConflict(document.form.misc_httpsport_x.value, "https"));
 		document.form.misc_httpsport_x.focus();
-		document.form.https_lanport.select();
+		document.form.misc_httpsport_x.select();
 		return false;
 	}
-	else if(isPortConflict(document.form.https_lanport.value) && HTTPS_support && !tmo_support){
-		alert(isPortConflict(document.form.https_lanport.value));
+	else if(myisPortConflict(document.form.http_lanport.value, "http")){
+		alert(isPortConflict(document.form.http_lanport.value, "http"));
+		document.form.http_lanport.focus();
+		document.form.http_lanport.select();
+		return false;
+	}
+	else if(myisPortConflict(document.form.https_lanport.value, "https") && HTTPS_support){
+		alert(isPortConflict(document.form.https_lanport.value, "https"));
 		document.form.https_lanport.focus();
 		document.form.https_lanport.select();
-		return false;
-	}
-/*
-	else if(document.form.misc_httpsport_x.value == document.form.misc_httpport_x.value && HTTPS_support){
-		alert("<#https_port_conflict#>");
-		document.form.misc_httpsport_x.focus();
-		document.form.misc_httpsport_x.select();
 		return false;
 	}
 
@@ -1703,6 +1690,47 @@ function pullPingTargetList(obj){
 		hidePingTargetList();
 }
 
+function myisPortConflict(_val, service){
+	var str = "(" + _val + ") <#portConflictHint#>: ";
+
+/* Check services on System page - through form */
+	if (service != "ssh" && _val == document.form.sshd_port.value) {
+		str = str + "SSH.";
+		return str;
+	}
+	else if (service != "http" && _val == document.form.http_lanport.value) {
+		str = str + "HTTP LAN port.";
+		return str;
+	}
+	else if (service != "https" && _val == document.form.https_lanport.value) {
+		str = str + "HTTPS LAN port.";
+		return str;
+	}
+/* Check services on other pages - through nvram */
+	else if(_val == '<% nvram_get("dm_http_port"); %>'){
+		str = str + "<#DM_title#>.";
+		return str;
+		}
+	else if(_val == '<% nvram_get("webdav_http_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("webdav_https_port"); %>'){
+		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("vpn_server1_port"); %>'){
+		str = str + "OpenVPN Server 1.";
+		return str;
+	}
+	else if(_val == '<% nvram_get("vpn_server2_port"); %>'){
+		str = str + "OpenVPN Server 2.";
+		return str;
+	}
+	else
+		return false;
+}
+
 function reset_portconflict_hint(){
 	if($("#sshd_port_x").hasClass("highlight"))
 		$("#sshd_port_x").removeClass("highlight");
@@ -1748,7 +1776,6 @@ function reset_portconflict_hint(){
 <input type="hidden" name="shell_timeout" value="<% nvram_get("shell_timeout"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
-<input type="hidden" name="sshd_port" value="<% nvram_get("sshd_port"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -2223,10 +2250,10 @@ function reset_portconflict_hint(){
 				<tr id="https_lanport">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
-						<input type="text" maxlength="5" class="input_6_table" id="https_lanport_input" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
+						<input type="text" maxlength="5" class="input_6_table" id="https_lanport" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
 						<div id="https_access_page" style="color: #FFCC00;"></div>
-						<div style="color: #FFCC00;">* <#HttpsLanport_Hint#></div>
+						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
                                 <tr id="https_crt_gen" style="display:none;">

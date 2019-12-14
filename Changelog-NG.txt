@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.14 (xx-xxx-xxxx)
+384.14 (14-Dec-2019)
   - NEW: Implement option to prevent Firefox's automatic usage of DoH.
          By default, this will only apply if you have DNSPrivacy
          enabled, or if you have DNSFilter enabled with a global
@@ -20,10 +20,6 @@ Asuswrt-Merlin 384/NG Changelog
              blobs from 384_81116
   - UPDATED: RT-AC5300 to GPL 384_81351 and binary blobs from
              384_81219.
-
-  - NOTE: This release is not available on the RT-AC87U and
-          RT-AC3200 due to the lack of updated compatible
-          components from Asus.
 
   - UPDATED: miniupnpd 20190824
   - UPDATED: dnsmasq 2.80-95-g1aef66b (themiron)
@@ -65,7 +61,7 @@ Asuswrt-Merlin 384/NG Changelog
            scripts were globally disabled
 
 
-384.13_2 (xx-xxx-xxxx)
+384.13_2 (14-Dec-2019)
   This release is only available for the RT-AC87U and RT-AC3200.
 
   - NEW: Added "split" busybox applet.

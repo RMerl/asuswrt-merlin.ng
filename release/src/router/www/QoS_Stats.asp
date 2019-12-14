@@ -470,11 +470,11 @@ function draw_chart(data_array, ctx, pie) {
 		}
 
 		code += '<tr><td style="word-wrap:break-word;padding-left:5px;padding-right:5px;border:1px #2C2E2F solid; border-radius:5px;background-color:'+color[i]+';margin-right:10px;line-height:20px;">' + label + '</td>';
-		code += '<td style="padding-left:5px;">' + value.toFixed(2) + unit + '</td>';
+		code += '<td style="text-align:right;padding-left:5px;">' + value.toFixed(2) + unit + '</td>';
 		rate = comma(data_array[i][2]);
-		code += '<td style="padding-left:20px;">' + rate.replace(/([0-9,])([a-zA-Z])/g, '$1 $2') + '</td>';
+		code += '<td style="text-align:right;padding-left:20px;">' + rate.replace(/([0-9,])([a-zA-Z])/g, '$1 $2') + '</td>';
 		rate = comma(data_array[i][3]);
-		code += '<td style="padding-left:20px;">' + rate.replace(/([0-9,])([a-zA-Z])/g, '$1 $2') + '</td></tr>';
+		code += '<td style="text-align:right;padding-left:20px;">' + rate.replace(/([0-9,])([a-zA-Z])/g, '$1 $2') + '</td></tr>';
 	}
 	code += '</table>';
 

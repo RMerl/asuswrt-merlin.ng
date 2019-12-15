@@ -24,6 +24,7 @@
 
 int debug_L, debug_W, debug_N;
 int ifindex = 0;
+char *ifname = NULL;
 
 static int netlink_recv(struct endpoint *ep);
 
@@ -494,8 +495,12 @@ static bool is_new_addr(struct nlmsghdr *nh)
 	if (nh->nlmsg_type != RTM_NEWADDR)
 		return false;
 
-	if (ifindex && ifam->ifa_index != ifindex)
-		return false;
+	if (ifindex && ifam->ifa_index != ifindex) {
+		char buf[IFNAMSIZ];
+		if (!if_indextoname(ifindex, buf) || strcmp(buf, ifname) != 0)
+			return false;
+		ifindex = ifam->ifa_index;
+	}
 
 	while (RTA_OK(rta, rtasize)) {
 		struct ifa_cacheinfo *cache_info;
@@ -596,7 +601,6 @@ int main(int argc, char **argv)
 	int opt;
 	const char *prog = basename(*argv);
 	unsigned int ipv46 = 0, tcpudp = 0, llmnrwsdd = 0;
-	char *ifname = NULL;
 
 	while ((opt = getopt(argc, argv, "?46LWb:dhltuwi:")) != -1) {
 		switch (opt) {

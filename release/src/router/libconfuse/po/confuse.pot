@@ -6,9 +6,9 @@
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: confuse 3.2\n"
+"Project-Id-Version: confuse 3.2.2\n"
 "Report-Msgid-Bugs-To: https://github.com/martinh/libconfuse/issues\n"
-"POT-Creation-Date: 2017-06-03 22:22+0200\n"
+"POT-Creation-Date: 2018-08-19 10:04+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"

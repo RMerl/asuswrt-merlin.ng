@@ -2,7 +2,7 @@ dnl Process this file with -*- autoconf -*- to produce a configure script.
 
 AC_PREREQ(2.50)
 
-AC_INIT(libConfuse, 3.2, https://github.com/martinh/libconfuse/issues, confuse)
+AC_INIT(libConfuse, 3.2.2, https://github.com/martinh/libconfuse/issues, confuse)
 AC_CONFIG_AUX_DIR(support)
 AM_MAINTAINER_MODE
 AM_INIT_AUTOMAKE([foreign dist-xz])

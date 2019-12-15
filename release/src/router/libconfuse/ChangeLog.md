@@ -4,6 +4,25 @@ Change Log
 All notable changes in libConfuse are documented in this file.
 
 
+[v3.2.2][] - 2018-08-19
+-----------------------
+
+This is a security patch release for CVE-2018-14447.  The vulnerability
+affects all releases since v3.1 when the `CFGF_COMMENTS` functionality
+was first introduced.
+
+### Fixes
+* Issue #109: Out of bounds read in `lexer.l:trim_whitespace()`.
+
+
+[v3.2.1][] - 2017-08-17
+-----------------------
+
+### Fixes
+* Issue #101: Bump ABI major number due to incompatible change in struct
+  when adding option annotation/comments in [v3.1][]: `1.1.0 -> 2.0.0`
+
+
 [v3.2][] - 2017-06-03
 ---------------------
 
@@ -68,7 +87,7 @@ library!
 * Support for handling unknown options.  The idea is to provide future
   proofing of configuration files, i.e. if a new parameter is added, the
   new config file will not fail if loaded in an older version of your
-  program.  See the `CFGF_IGNORE_UNKNOWN` flag in the documenation for
+  program.  See the `CFGF_IGNORE_UNKNOWN` flag in the documentation for
   more information.  Idea and implementation by Frank Hunleth.
 * Add public API for removing sections at runtime, by Peter Rosin.
 * Allow `cfg_opt_getval()` on options that are `CFGF_MULTI` sections,
@@ -341,15 +360,17 @@ v1.2.2 - 2002-11-27
 * updated the manual
 
 
-[UNRELEASED]: https://github.com/martinh/libconfuse/compare/v3.2...HEAD
-[v3.2]: https://github.com/martinh/libconfuse/compare/v3.1...v3.2
-[v3.1]: https://github.com/martinh/libconfuse/compare/v3.0...v3.1
-[v3.0]: https://github.com/martinh/libconfuse/compare/v2.8...v3.0
-[v2.8]: https://github.com/martinh/libconfuse/compare/v2.7...v2.8
-[v2.7]: https://github.com/martinh/libconfuse/compare/v2.6...v2.7
-[v2.6]: https://github.com/martinh/libconfuse/compare/v2.5...v2.6
-[v2.5]: https://github.com/martinh/libconfuse/compare/v2.4...v2.5
-[v2.4]: https://github.com/martinh/libconfuse/compare/v2.3...v2.4
-[v2.3]: https://github.com/martinh/libconfuse/compare/v2.2...v2.3
-[v2.2]: https://github.com/martinh/libconfuse/compare/v2.1...v2.2
-[v2.1]: https://github.com/martinh/libconfuse/compare/v2.0...v2.1
+[UNRELEASED]: https://github.com/martinh/libconfuse/compare/v3.2.2...HEAD
+[v3.2.2]: https://github.com/martinh/libconfuse/compare/v3.2.1...v3.2.2
+[v3.2.1]: https://github.com/martinh/libconfuse/compare/v3.2...v3.2.1
+[v3.2]:   https://github.com/martinh/libconfuse/compare/v3.1...v3.2
+[v3.1]:   https://github.com/martinh/libconfuse/compare/v3.0...v3.1
+[v3.0]:   https://github.com/martinh/libconfuse/compare/v2.8...v3.0
+[v2.8]:   https://github.com/martinh/libconfuse/compare/v2.7...v2.8
+[v2.7]:   https://github.com/martinh/libconfuse/compare/v2.6...v2.7
+[v2.6]:   https://github.com/martinh/libconfuse/compare/v2.5...v2.6
+[v2.5]:   https://github.com/martinh/libconfuse/compare/v2.4...v2.5
+[v2.4]:   https://github.com/martinh/libconfuse/compare/v2.3...v2.4
+[v2.3]:   https://github.com/martinh/libconfuse/compare/v2.2...v2.3
+[v2.2]:   https://github.com/martinh/libconfuse/compare/v2.1...v2.2
+[v2.1]:   https://github.com/martinh/libconfuse/compare/v2.0...v2.1

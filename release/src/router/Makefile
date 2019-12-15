@@ -6927,28 +6927,25 @@ libical-2.0.0-install:
 		ln -sf libicalvcal.so.2.0.0 libicalvcal.so.2
 
 libconfuse/Makefile:
-	cd libconfuse && $(CONFIGURE) \
-		CFLAGS="$(EXTRACFLAGS) -Os -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC" \
-		LDFLAGS="$(LDFLAGS) -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		--prefix=/usr --disable-shared \
-		--without-libiconv-prefix --without-libintl-prefix --disable-examples --disable-nls
+	cd libconfuse && $(CONFIGURE) --prefix=/usr --disable-shared \
+		--disable-examples --disable-nls \
+		--without-libiconv-prefix --without-libintl-prefix \
+		CFLAGS="-Wall -Os -ffunction-sections -fdata-sections -fPIC $(EXTRACFLAGS)" \
+		LDFLAGS="-Wl,--gc-sections $(LDFLAGS)"
 
-libconfuse: libiconv-1.14 libconfuse/Makefile
-	@$(SEP)
-	$(MAKE) -C $@
+libconfuse: libconfuse/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 libconfuse-install:
-	@$(SEP)
 # Do nothing
+	@true
 #	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
 #	cd $(INSTALLDIR)/libconfuse/usr/lib && \
 #		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
 #		ln -sf libconfuse.so.1.1.0 libconfuse.so
 #	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
 
-
 libconfuse-clean:
-	@$(SEP)
 	[ ! -f libconfuse/Makefile ] || $(MAKE) -C libconfuse distclean
 	@rm -f libconfuse/Makefile
 

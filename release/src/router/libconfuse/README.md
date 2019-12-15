@@ -89,6 +89,8 @@ with the source:
 News
 ----
 
+* 2018-08-19: libConfuse version 3.2.2 released (CVE-2018-14447)
+* 2017-08-17: libConfuse version 3.2.1 released (major ABI bump!)
 * 2017-06-03: libConfuse version 3.2 released
 * 2017-05-24: libConfuse version 3.1 released
 * 2016-03-03: libConfuse version 3.0 released

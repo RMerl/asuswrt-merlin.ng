@@ -55,7 +55,6 @@
 #define UUIDLEN	37
 
 static char hostname[HOST_NAME_MAX + 1];
-static char *netbiosname, *workgroup;
 static time_t wsd_instance;
 static char wsd_sequence[UUIDLEN], wsd_endpoint[UUIDLEN];
 
@@ -871,6 +870,8 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 	return rv;
 }
 
+char *netbiosname=NULL, *workgroup=NULL;
+
 static int wsd_send_get_response(int fd,
 				struct endpoint *ep,
 				const _saddr_t *sa,
@@ -1044,7 +1045,6 @@ again:
 	return 200;
 #undef	__FUNCTION__
 }
-
 
 int wsd_init(struct endpoint *ep)
 {

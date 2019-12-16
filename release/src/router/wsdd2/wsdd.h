@@ -48,6 +48,7 @@
 #include <linux/rtnetlink.h>
 
 extern int debug_L, debug_W;
+extern char *netbiosname, *workgroup;
 #define DEBUG(x, y, ...)	\
 	do {	\
 		if (debug_##y >= (x)) {	\

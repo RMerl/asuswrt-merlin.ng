@@ -3,22 +3,12 @@ Asuswrt-Merlin 384/NG Changelog
 
 384.15 (xx-xxx-xxxx)
   - NEW: wan-event script.  The first parameter will be the WAN unit
-         (0 for first WAN, 1 for secondary).  The second parameter will
-         be a value determining the type of event (note that not all
-         types might be supported):
-         0 - initializing
-         1 - connecting
-         2 - connected
-         3 - disconnected
-         4 - stopped
-         5 - disabled
-         6 - stopping
+         (0 for first WAN, 1 for secondary).  The second parameter
+         will be a string describing the type of event (init,
+         connected, etc...).  A wan-event of type "connected" will
+         be identical to when the original wan-start script was
+         being run.
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
-
-  - CHANGED: The wan-start script will now be run at the very end of
-             WAN start (while previously it was run on WAN events of
-             type "connected").  This means the WAN should be fully
-             initialized now when the script is run, including routes.
 
 
 384.14 (14-Dec-2019)

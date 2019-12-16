@@ -683,7 +683,7 @@ void update_wan_state(char *prefix, int state, int reason)
 #endif
 
 	sprintf(tmp,"%d", unit);
-	sprintf(tmp,"%d", state);
+	sprintf(tmp1,"%d", state);
 	run_custom_script("wan-event", 0, tmp, tmp1);
 
 }

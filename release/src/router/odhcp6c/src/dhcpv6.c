@@ -457,22 +457,6 @@ static void dhcpv6_send(enum dhcpv6_msg type, uint8_t trid[3], uint32_t ecs)
 			if (!(opt->flags & OPT_ORO))
 				continue;
 
-/* TODO: warn upstream about DHCPV6_OPT_SOL_MAX_RT for request/renew/rebind */
-#if 0
-			if ((opt->flags & OPT_ORO_SOLICIT) && type != DHCPV6_MSG_SOLICIT)
-				continue;
-#else
-			if (opt->flags & OPT_ORO_SOLICIT) switch (type) {
-				case DHCPV6_MSG_SOLICIT:
-				case DHCPV6_MSG_REQUEST:
-				case DHCPV6_MSG_RENEW:
-				case DHCPV6_MSG_REBIND:
-					break;
-				default:
-					continue;
-			}
-#endif
-
 			if ((opt->flags & OPT_ORO_STATELESS) && type != DHCPV6_MSG_INFO_REQ)
 				continue;
 

@@ -386,7 +386,6 @@ enum odhcp6c_opt_flags {
 	OPT_ORO = 0x80,
 	OPT_ORO_STATEFUL = 0x100,
 	OPT_ORO_STATELESS = 0x200,
-	OPT_ORO_SOLICIT = 0x400
 };
 
 struct odhcp6c_opt {

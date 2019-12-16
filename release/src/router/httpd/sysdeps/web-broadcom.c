@@ -1743,10 +1743,10 @@ int wl_sta_info_phy(void *buf, int unit)
 
 const char *wl_bw_str[WL_BW_MAX] = {
 	"",
-	"20M",
-	"40M",
-	"80M",
-	"160M",
+	"20MHz",
+	"40MHz",
+	"80MHz",
+	"160MHz",
 };
 
 int wl_sta_info_bw(void *buf)

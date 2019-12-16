@@ -174,13 +174,15 @@ void get_smbinfo(struct endpoint *ep)
 	char buf[256];
 	FILE *fp;
 
-	if (!netbiosname)
+	if (!netbiosname) {
 		netbiosname = malloc(HOST_NAME_MAX + 1);
-	if (!workgroup)
-		workgroup = malloc(15);
+		netbiosname[0] = '\0';
+	}
 
-	strcpy(netbiosname, "");
-	strcpy(workgroup, "");
+	if (!workgroup) {
+		workgroup = malloc(15);
+		workgroup[0] = '\0';
+	}
 
         if (!(fp = fopen("/etc/smb.conf","r"))) {
 		ep->_errno = errno;

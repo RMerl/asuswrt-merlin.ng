@@ -624,10 +624,6 @@ void update_wan_state(char *prefix, int state, int reason)
 		snprintf(tmp, sizeof(tmp), "/var/run/ppp-wan%d.status", unit);
 		unlink(tmp);
 	}
-        else if (state == WAN_STATE_CONNECTED) {
-		sprintf(tmp,"%c",prefix[3]);
-		run_custom_script("wan-start", 0, tmp, NULL);
-        }
 
 #if defined(RTCONFIG_WANRED_LED)
 	switch (state) {
@@ -640,6 +636,11 @@ void update_wan_state(char *prefix, int state, int reason)
 		update_wan_leds(unit);
 	}
 #endif
+
+	sprintf(tmp,"%d", unit);
+	sprintf(tmp,"%d", state);
+	run_custom_script("wan-event", 0, tmp, tmp1);
+
 }
 
 #ifdef RTCONFIG_IPV6
@@ -3479,6 +3480,8 @@ start_wan(void)
 		char *stats_argv[] = { "stats", nvram_safe_get("stats_server"), NULL };
 		_eval(stats_argv, NULL, 5, NULL);
 	}
+
+	run_custom_script("wan-start", 0, NULL, NULL);
 }
 
 void

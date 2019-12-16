@@ -683,7 +683,33 @@ void update_wan_state(char *prefix, int state, int reason)
 #endif
 
 	sprintf(tmp,"%d", unit);
-	sprintf(tmp1,"%d", state);
+
+	switch (state) {
+	case WAN_STATE_INITIALIZING:
+		strcpy(tmp1, "init");
+		break;
+	case WAN_STATE_CONNECTING:
+		strcpy(tmp1, "connecting");
+		break;
+	case WAN_STATE_CONNECTED:
+		strcpy(tmp1, "connected");
+		break;
+	case WAN_STATE_DISCONNECTED:
+		strcpy(tmp1, "disconnected");
+		break;
+	case WAN_STATE_STOPPED:
+		strcpy(tmp1, "stopped");
+		break;
+	case WAN_STATE_DISABLED:
+		strcpy(tmp1, "disabled");
+		break;
+	case WAN_STATE_STOPPING:
+		strcpy(tmp1, "stopping");
+		break;
+	default:
+		sprintf(tmp1, "state %d", state);
+	}
+
 	run_custom_script("wan-event", 0, tmp, tmp1);
 
 }

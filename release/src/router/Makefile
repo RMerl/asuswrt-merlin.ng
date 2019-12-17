@@ -5535,6 +5535,8 @@ hostapd-install:
 	install -d $(INSTALLDIR)/hostapd/usr/sbin
 	cp -rf $(HOSTAPD_DIR)/hostapd/hostapd $(INSTALLDIR)/hostapd/usr/sbin
 	cp -rf $(HOSTAPD_DIR)/hostapd/hostapd_cli $(INSTALLDIR)/hostapd/usr/sbin
+	$(STRIP) $(INSTALLDIR)/hostapd/usr/sbin/hostapd
+	$(STRIP) $(INSTALLDIR)/hostapd/usr/sbin/hostapd_cli
 
 hostapd-clean:
 	+$(MAKE) -C $(HOSTAPD_DIR)/hostapd clean
@@ -5551,6 +5553,8 @@ wpa_supplicant-2.7-install:
 	cp -rf $(WPA_SUPPLICANT_DIR)/wpa_supplicant/wpa_supplicant $(INSTALLDIR)/wpa_supplicant-2.7/usr/sbin/wpa_supplicant-2.7
 	cp -rf $(WPA_SUPPLICANT_DIR)/wpa_supplicant/wpa_cli $(INSTALLDIR)/wpa_supplicant-2.7/usr/sbin/wpa_cli-2.7
 	cp -rf $(WPA_SUPPLICANT_DIR)/wpa_supplicant/libwpa_client.so $(INSTALLDIR)/usr/lib
+	$(STRIP)  $(INSTALLDIR)/wpa_supplicant-2.7/usr/sbin/wpa_supplicant-2.7
+	$(STRIP)  $(INSTALLDIR)/wpa_supplicant-2.7/usr/sbin/wpa_cli-2.7
 
 wpa_supplicant-2.7-clean:
 	+$(MAKE) -C $(WPA_SUPPLICANT_DIR)/wpa_supplicant clean
@@ -5562,6 +5566,7 @@ iw: libnl
 iw-install:
 	install -d $(INSTALLDIR)/iw/usr/sbin
 	cp -rf $(IW_DIR)/iw $(INSTALLDIR)/iw/usr/sbin
+	$(STRIP) $(INSTALLDIR)/iw/usr/sbin/iw
 endif
 
 udev:

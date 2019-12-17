@@ -3997,6 +3997,9 @@ lldpd-0.9.8-install: lldpd-0.9.8
 	install -D lldpd-0.9.8/src/client/.libs/lldpcli $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli
 	install -D lldpd-0.9.8/src/daemon/lldpd $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpd
 	install -D lldpd-0.9.8/src/lib/.libs/liblldpctl.so.4.8.0 $(INSTALLDIR)/lldpd-0.9.8/usr/lib/liblldpctl.so.4.8.0
+	$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpcli
+	$(STRIP) $(INSTALLDIR)/lldpd-0.9.8/usr/sbin/lldpd
+
 	cd $(INSTALLDIR)/lldpd-0.9.8/usr/lib && ln -sf liblldpctl.so.4.8.0 liblldpctl.so && ln -sf liblldpctl.so.4.8.0 liblldpctl.so.4
 
 lldpd-0.9.8-clean:

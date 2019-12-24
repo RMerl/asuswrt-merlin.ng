@@ -24,6 +24,7 @@
 
 int debug_L, debug_W, debug_N;
 int ifindex = 0;
+char *ifname = NULL;
 
 static int netlink_recv(struct endpoint *ep);
 
@@ -494,8 +495,12 @@ static bool is_new_addr(struct nlmsghdr *nh)
 	if (nh->nlmsg_type != RTM_NEWADDR)
 		return false;
 
-	if (ifindex && ifam->ifa_index != ifindex)
-		return false;
+	if (ifindex && ifam->ifa_index != ifindex) {
+		char buf[IFNAMSIZ];
+		if (!if_indextoname(ifindex, buf) || strcmp(buf, ifname) != 0)
+			return false;
+		ifindex = ifam->ifa_index;
+	}
 
 	while (RTA_OK(rta, rtasize)) {
 		struct ifa_cacheinfo *cache_info;
@@ -576,7 +581,9 @@ static void help(const char *prog, int ec, const char *fmt, ...)
 		"       -t  TCP only\n"
 		"       -u  UDP only\n"
 		"       -w  WSDD only\n"
-		"       -i \"interface\"  Listening interface (optional)\n"		
+		"       -i \"interface\"  Listening interface (optional)\n"
+		"       -N  set NetbiosName manually\n"
+		"       -G  set Workgroup manually\n"
 		"       -b \"key1:val1,key2:val2,...\"  Boot parameters\n",
 			prog);
 	printBootInfoKeys(stdout, 11);
@@ -596,9 +603,8 @@ int main(int argc, char **argv)
 	int opt;
 	const char *prog = basename(*argv);
 	unsigned int ipv46 = 0, tcpudp = 0, llmnrwsdd = 0;
-	char *ifname = NULL;
 
-	while ((opt = getopt(argc, argv, "?46LWb:dhltuwi:")) != -1) {
+	while ((opt = getopt(argc, argv, "?46LWb:dhltuwi:N:G:")) != -1) {
 		switch (opt) {
 		case 'L':
 			debug_L++;
@@ -615,7 +621,6 @@ int main(int argc, char **argv)
 		case 'd':
 			daemon = true;
 			break;
-		case '?':
 		case 'h':
 			help(prog, EXIT_SUCCESS, NULL);
 			break;
@@ -644,6 +649,19 @@ int main(int argc, char **argv)
 				help(prog, EXIT_FAILURE,
 					"bad interface '%s'\n", optarg);
 			break;
+		case 'N':
+			if (optarg != NULL && strlen(optarg) > 1) {
+				netbiosname = strdup(optarg);
+			}
+			break;
+		case 'G':
+			if (optarg != NULL && strlen(optarg) > 1) {
+				workgroup = strdup(optarg);
+			}
+			break;
+		case '?':
+			if (optopt == 'b' || optopt == 'i' || optopt == 'N' || optopt == 'G')
+				fprintf (stderr, "Option -%c requires an argument.\n", optopt);
 		default:
 			help(prog, EXIT_FAILURE, "bad option '%c'\n", opt);
 		}

@@ -9,6 +9,10 @@ LDFLAGS = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
 endif
+ifeq ($(RTCONFIG_QTN),y)
+CFLAGS += -I$(TOP)/libqcsapi_client
+LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
+endif
 
 PACKAGE=faketc
 OBJS=$(PACKAGE).o

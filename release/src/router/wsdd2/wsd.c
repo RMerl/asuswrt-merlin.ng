@@ -55,7 +55,6 @@
 #define UUIDLEN	37
 
 static char hostname[HOST_NAME_MAX + 1];
-static char *netbiosname, *workgroup;
 static time_t wsd_instance;
 static char wsd_sequence[UUIDLEN], wsd_endpoint[UUIDLEN];
 
@@ -175,13 +174,15 @@ void get_smbinfo(struct endpoint *ep)
 	char buf[256];
 	FILE *fp;
 
-	if (!netbiosname)
+	if (!netbiosname) {
 		netbiosname = malloc(HOST_NAME_MAX + 1);
-	if (!workgroup)
-		workgroup = malloc(15);
+		netbiosname[0] = '\0';
+	}
 
-	strcpy(netbiosname, "");
-	strcpy(workgroup, "");
+	if (!workgroup) {
+		workgroup = malloc(15);
+		workgroup[0] = '\0';
+	}
 
         if (!(fp = fopen("/etc/smb.conf","r"))) {
 		ep->_errno = errno;
@@ -871,6 +872,8 @@ static int send_http_resp_header(int fd, struct endpoint *ep,
 	return rv;
 }
 
+char *netbiosname=NULL, *workgroup=NULL;
+
 static int wsd_send_get_response(int fd,
 				struct endpoint *ep,
 				const _saddr_t *sa,
@@ -1044,7 +1047,6 @@ again:
 	return 200;
 #undef	__FUNCTION__
 }
-
 
 int wsd_init(struct endpoint *ep)
 {

@@ -493,7 +493,7 @@ restart:
         return SSH_ERROR;
 
       nprompts = ssh_userauth_kbdint_getnprompts(sshc->ssh_session);
-      if(nprompts == SSH_ERROR || nprompts != 1)
+      if(nprompts != 1)
         return SSH_ERROR;
 
       rc = ssh_userauth_kbdint_setanswer(sshc->ssh_session, 0, conn->passwd);
@@ -1356,7 +1356,7 @@ static CURLcode myssh_statemach_act(struct connectdata *conn, bool *block)
           break;
         }
       }
-      else if(sshc->readdir_attrs == NULL && sftp_dir_eof(sshc->sftp_dir)) {
+      else if(sftp_dir_eof(sshc->sftp_dir)) {
         state(conn, SSH_SFTP_READDIR_DONE);
         break;
       }
@@ -1999,7 +1999,7 @@ static CURLcode myssh_block_statemach(struct connectdata *conn,
       }
     }
 
-    if(!result && block) {
+    if(block) {
       curl_socket_t fd_read = conn->sock[FIRSTSOCKET];
       /* wait for the socket to become ready */
       (void) Curl_socket_check(fd_read, CURL_SOCKET_BAD,

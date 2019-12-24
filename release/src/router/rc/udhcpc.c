@@ -1375,7 +1375,7 @@ int dhcp6c_wan(int argc, char **argv)
 	else if (strcmp(argv[2], "informed") == 0)
 		return bound6(argv[1], 0);
 	else if (strcmp(argv[2], "ra-updated") == 0)
-		return ra_updated6(argv[2]);
+		return ra_updated6(argv[1]);
 
 	return 0;
 }
@@ -1450,8 +1450,6 @@ start_dhcp6c(void)
 		dhcp6c_argv[index++] = "-r23";	/* dns */
 		dhcp6c_argv[index++] = "-r24";	/* domain */
 	}
-	dhcp6c_argv[index++] = "-r82";	/* sol_max_rt */
-	dhcp6c_argv[index++] = "-r83";	/* inf_max_rt */
 
 	if (nvram_get_int("ipv6_debug"))
 		dhcp6c_argv[index++] = "-v";

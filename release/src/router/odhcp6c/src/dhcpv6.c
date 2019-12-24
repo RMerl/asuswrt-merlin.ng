@@ -1,6 +1,6 @@
 /**
  * Copyright (C) 2012-2014 Steven Barth <steven@midlink.org>
- * Copyright (C) 2017 Hans Dedecker <dedeckeh@gmail.com>
+ * Copyright (C) 2017-2018 Hans Dedecker <dedeckeh@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License v2 as published by
@@ -59,7 +59,7 @@ static bool dhcpv6_response_is_valid(const void *buf, ssize_t len,
 		const uint8_t transaction[3], enum dhcpv6_msg type,
 		const struct in6_addr *daddr);
 
-static int dhcpv6_parse_ia(void *opt, void *end);
+static unsigned int dhcpv6_parse_ia(void *opt, void *end);
 
 static int dhcpv6_calc_refresh_timers(void);
 static void dhcpv6_handle_status_code(_unused const enum dhcpv6_msg orig,
@@ -103,7 +103,6 @@ static int ifindex = -1;
 static int64_t t1 = 0, t2 = 0, t3 = 0;
 
 // IA states
-static int request_prefix = -1;
 static enum odhcp6c_ia_mode na_mode = IA_MODE_NONE, pd_mode = IA_MODE_NONE;
 static bool accept_reconfig = false;
 // Server unicast address
@@ -135,13 +134,14 @@ int init_dhcpv6(const char *ifname, unsigned int options, int sol_timeout)
 	sock = fflags(sock, O_CLOEXEC);
 #endif
 	if (sock < 0)
-		return -1;
+		goto failure;
 
 	// Detect interface
 	struct ifreq ifr;
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
+	memset(&ifr, 0, sizeof(ifr));
+	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name) - 1);
 	if (ioctl(sock, SIOCGIFINDEX, &ifr) < 0)
-		return -1;
+		goto failure;
 
 	ifindex = ifr.ifr_ifindex;
 
@@ -187,13 +187,10 @@ int init_dhcpv6(const char *ifname, unsigned int options, int sol_timeout)
 			htons(DHCPV6_OPT_SIP_SERVER_A),
 			htons(DHCPV6_OPT_DNS_SERVERS),
 			htons(DHCPV6_OPT_DNS_DOMAIN),
-			htons(DHCPV6_OPT_UNICAST),
 			htons(DHCPV6_OPT_SNTP_SERVERS),
 			htons(DHCPV6_OPT_NTP_SERVER),
 			htons(DHCPV6_OPT_AFTR_NAME),
 			htons(DHCPV6_OPT_PD_EXCLUDE),
-			htons(DHCPV6_OPT_SOL_MAX_RT),
-			htons(DHCPV6_OPT_INF_MAX_RT),
 #ifdef EXT_CER_ID
 			htons(DHCPV6_OPT_CER_ID),
 #endif
@@ -203,33 +200,50 @@ int init_dhcpv6(const char *ifname, unsigned int options, int sol_timeout)
 		};
 		odhcp6c_add_state(STATE_ORO, oro, sizeof(oro));
 	}
+	// Required oro
+	uint16_t req_oro[] = {
+		htons(DHCPV6_OPT_INF_MAX_RT),
+		htons(DHCPV6_OPT_SOL_MAX_RT),
+		htons(DHCPV6_OPT_INFO_REFRESH),
+	};
+	odhcp6c_add_state(STATE_ORO, req_oro, sizeof(req_oro));
 
 	// Configure IPv6-options
 	int val = 1;
-	setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val));
-	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val));
-	setsockopt(sock, IPPROTO_IPV6, IPV6_RECVPKTINFO, &val, sizeof(val));
-	setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, ifname, strlen(ifname));
+	if (setsockopt(sock, IPPROTO_IPV6, IPV6_V6ONLY, &val, sizeof(val)) < 0)
+		goto failure;
+
+	if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &val, sizeof(val)) < 0)
+		goto failure;
+
+	if (setsockopt(sock, IPPROTO_IPV6, IPV6_RECVPKTINFO, &val, sizeof(val)) < 0)
+		goto failure;
+
+	if (setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE, ifname, strlen(ifname)) < 0)
+		goto failure;
 
 	struct sockaddr_in6 client_addr = { .sin6_family = AF_INET6,
 		.sin6_port = htons(DHCPV6_CLIENT_PORT), .sin6_flowinfo = 0 };
 
 	if (bind(sock, (struct sockaddr*)&client_addr, sizeof(client_addr)) < 0)
-		return -1;
+		goto failure;
 
 	return 0;
+
+failure:
+	if (sock >= 0)
+		close(sock);
+
+	return -1;
 }
 
 enum {
 	IOV_HDR=0,
+	IOV_HDR_ORO,
 	IOV_ORO,
-	IOV_ORO_REFRESH,
 	IOV_CL_ID,
 	IOV_SRV_ID,
-	IOV_VENDOR_CLASS_HDR,
-	IOV_VENDOR_CLASS,
-	IOV_USER_CLASS_HDR,
-	IOV_USER_CLASS,
+	IOV_OPTS,
 	IOV_RECONF_ACCEPT,
 	IOV_FQDN,
 	IOV_HDR_IA_NA,
@@ -388,9 +402,6 @@ static void dhcpv6_send(enum dhcpv6_msg type, uint8_t trid[3], uint32_t ecs)
 		}
 	}
 
-	if (ia_pd_entries > 0)
-		request_prefix = 1;
-
 	// Build IA_NAs
 	size_t ia_na_entries, ia_na_len = 0;
 	void *ia_na = NULL;
@@ -428,52 +439,62 @@ static void dhcpv6_send(enum dhcpv6_msg type, uint8_t trid[3], uint32_t ecs)
 		uint16_t length;
 	} reconf_accept = {htons(DHCPV6_OPT_RECONF_ACCEPT), 0};
 
-	// Request Information Refresh
-	uint16_t oro_refresh = htons(DHCPV6_OPT_INFO_REFRESH);
+	// Option list
+	size_t opts_len;
+	void *opts = odhcp6c_get_state(STATE_OPTS, &opts_len);
 
-	// Build vendor-class option
-	size_t vendor_class_len, user_class_len;
-	struct dhcpv6_vendorclass *vendor_class = odhcp6c_get_state(STATE_VENDORCLASS, &vendor_class_len);
-	void *user_class = odhcp6c_get_state(STATE_USERCLASS, &user_class_len);
+	// Option Request List
+	size_t oro_entries, oro_len = 0;
+	uint16_t *oro, *s_oro = odhcp6c_get_state(STATE_ORO, &oro_entries);
 
-	struct {
-		uint16_t type;
-		uint16_t length;
-	} vendor_class_hdr = {htons(DHCPV6_OPT_VENDOR_CLASS), htons(vendor_class_len)};
+	oro_entries /= sizeof(*s_oro);
+	oro = alloca(oro_entries * sizeof(*oro));
 
-	struct {
-		uint16_t type;
-		uint16_t length;
-	} user_class_hdr = {htons(DHCPV6_OPT_USER_CLASS), htons(user_class_len)};
+	for (size_t i = 0; i < oro_entries; i++) {
+		struct odhcp6c_opt *opt = odhcp6c_find_opt(htons(s_oro[i]));
+
+		if (opt) {
+			if (!(opt->flags & OPT_ORO))
+				continue;
+
+			if ((opt->flags & OPT_ORO_STATELESS) && type != DHCPV6_MSG_INFO_REQ)
+				continue;
+
+			if ((opt->flags & OPT_ORO_STATEFUL) && type == DHCPV6_MSG_INFO_REQ)
+				continue;
+		}
+
+		oro[oro_len++] = s_oro[i];
+	}
+	oro_len *= sizeof(*oro);
 
 	// Prepare Header
-	size_t oro_len;
-	void *oro = odhcp6c_get_state(STATE_ORO, &oro_len);
 	struct {
 		uint8_t type;
 		uint8_t trid[3];
 		uint16_t elapsed_type;
 		uint16_t elapsed_len;
 		uint16_t elapsed_value;
-		uint16_t oro_type;
-		uint16_t oro_len;
 	} hdr = {
 		type, {trid[0], trid[1], trid[2]},
 		htons(DHCPV6_OPT_ELAPSED), htons(2),
 			htons((ecs > 0xffff) ? 0xffff : ecs),
+	};
+
+	struct {
+		uint16_t oro_type;
+		uint16_t oro_len;
+	} hdr_oro = {
 		htons(DHCPV6_OPT_ORO), htons(oro_len),
 	};
 
 	struct iovec iov[IOV_TOTAL] = {
 		[IOV_HDR] = {&hdr, sizeof(hdr)},
+		[IOV_HDR_ORO] = {&hdr_oro, oro_len ? sizeof(hdr_oro) : 0},
 		[IOV_ORO] = {oro, oro_len},
-		[IOV_ORO_REFRESH] = {&oro_refresh, 0},
 		[IOV_CL_ID] = {cl_id, cl_id_len},
 		[IOV_SRV_ID] = {srv_id, srv_id_len},
-		[IOV_VENDOR_CLASS_HDR] = {&vendor_class_hdr, vendor_class_len ? sizeof(vendor_class_hdr) : 0},
-		[IOV_VENDOR_CLASS] = {vendor_class, vendor_class_len},
-		[IOV_USER_CLASS_HDR] = {&user_class_hdr, user_class_len ? sizeof(user_class_hdr) : 0},
-		[IOV_USER_CLASS] = {user_class, user_class_len},
+		[IOV_OPTS] = { opts, opts_len },
 		[IOV_RECONF_ACCEPT] = {&reconf_accept, sizeof(reconf_accept)},
 		[IOV_FQDN] = {&fqdn, fqdn_len},
 		[IOV_HDR_IA_NA] = {&hdr_ia_na, sizeof(hdr_ia_na)},
@@ -482,12 +503,8 @@ static void dhcpv6_send(enum dhcpv6_msg type, uint8_t trid[3], uint32_t ecs)
 	};
 
 	size_t cnt = IOV_TOTAL;
-	if (type == DHCPV6_MSG_INFO_REQ) {
-		cnt = 9;
-		iov[IOV_ORO_REFRESH].iov_len = sizeof(oro_refresh);
-		hdr.oro_len = htons(oro_len + sizeof(oro_refresh));
-	} else if (!request_prefix)
-		cnt = 13;
+	if (type == DHCPV6_MSG_INFO_REQ)
+		cnt = IOV_HDR_IA_NA;
 
 	// Disable IAs if not used
 	if (type != DHCPV6_MSG_SOLICIT && ia_na_len == 0)
@@ -497,7 +514,8 @@ static void dhcpv6_send(enum dhcpv6_msg type, uint8_t trid[3], uint32_t ecs)
 		iov[IOV_HDR_IA_NA].iov_len = 0;
 
 	if ((type != DHCPV6_MSG_SOLICIT && type != DHCPV6_MSG_REQUEST) ||
-			!(client_options & DHCPV6_ACCEPT_RECONFIGURE))
+			!(client_options & DHCPV6_ACCEPT_RECONFIGURE) ||
+			(type != DHCPV6_MSG_SOLICIT && !accept_reconfig))
 		iov[IOV_RECONF_ACCEPT].iov_len = 0;
 
 	if (!(client_options & DHCPV6_CLIENT_FQDN))
@@ -637,8 +655,10 @@ int dhcpv6_request(enum dhcpv6_msg type)
 			// Set timeout for receiving
 			uint64_t t = round_end - round_start;
 			struct timeval tv = {t / 1000, (t % 1000) * 1000};
-			setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-					&tv, sizeof(tv));
+			if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+					&tv, sizeof(tv)) < 0)
+				syslog(LOG_ERR, "setsockopt SO_RCVTIMEO failed (%s)",
+						strerror(errno));
 
 			// Receive cycle
 			len = recvmsg(sock, &msg, 0);
@@ -851,7 +871,8 @@ static int dhcpv6_handle_advert(enum dhcpv6_msg orig, const int rc,
 
 	dhcpv6_for_each_option(opt, end, otype, olen, odata) {
 		if (orig == DHCPV6_MSG_SOLICIT &&
-				(otype == DHCPV6_OPT_IA_PD || otype == DHCPV6_OPT_IA_NA) &&
+				((otype == DHCPV6_OPT_IA_PD && pd_mode != IA_MODE_NONE) ||
+				 (otype == DHCPV6_OPT_IA_NA && na_mode != IA_MODE_NONE)) &&
 				olen > -4 + sizeof(struct dhcpv6_ia_hdr)) {
 			struct dhcpv6_ia_hdr *ia_hdr = (void*)(&odata[-4]);
 			dhcpv6_parse_ia(ia_hdr, odata + olen + sizeof(*ia_hdr));
@@ -864,7 +885,9 @@ static int dhcpv6_handle_advert(enum dhcpv6_msg orig, const int rc,
 				cand.preference >= 0) {
 			cand.preference = pref = odata[0];
 		} else if (otype == DHCPV6_OPT_UNICAST && olen == sizeof(cand.server_addr)) {
-			cand.server_addr = *(struct in6_addr *)odata;
+			if (!(client_options & DHCPV6_IGNORE_OPT_UNICAST))
+				cand.server_addr = *(struct in6_addr *)odata;
+
 		} else if (otype == DHCPV6_OPT_RECONF_ACCEPT) {
 			cand.wants_reconfigure = true;
 		} else if (otype == DHCPV6_OPT_SOL_MAX_RT && olen == 4) {
@@ -879,7 +902,7 @@ static int dhcpv6_handle_advert(enum dhcpv6_msg orig, const int rc,
 					inf_max_rt <= DHCPV6_INF_MAX_RT_MAX)
 				cand.inf_max_rt = inf_max_rt;
 
-		} else if (otype == DHCPV6_OPT_IA_PD && request_prefix &&
+		} else if (otype == DHCPV6_OPT_IA_PD &&
 					olen >= -4 + sizeof(struct dhcpv6_ia_hdr)) {
 			struct dhcpv6_ia_hdr *h = (struct dhcpv6_ia_hdr*)&odata[-4];
 			uint8_t *oend = odata + olen, *d;
@@ -962,6 +985,7 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 	uint16_t otype, olen;
 	uint32_t refresh = 86400;
 	int ret = 1;
+	unsigned int updated_IAs = 0;
 	bool handled_status_codes[_DHCPV6_Status_Max] = { false, };
 
 	odhcp6c_expire();
@@ -1016,7 +1040,7 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 
 		// Parse and find all matching IAs
 		dhcpv6_for_each_option(opt, end, otype, olen, odata) {
-			bool passthru = true;
+			struct odhcp6c_opt *dopt = odhcp6c_find_opt(otype);
 
 			if ((otype == DHCPV6_OPT_IA_PD || otype == DHCPV6_OPT_IA_NA)
 					&& olen > -4 + sizeof(struct dhcpv6_ia_hdr)) {
@@ -1058,18 +1082,18 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 				if (code != DHCPV6_Success)
 					continue;
 
-				dhcpv6_parse_ia(ia_hdr, odata + olen);
-				passthru = false;
+				updated_IAs += dhcpv6_parse_ia(ia_hdr, odata + olen);
 			} else if (otype == DHCPV6_OPT_UNICAST && olen == sizeof(server_addr)) {
-				server_addr = *(struct in6_addr *)odata;
-				passthru = false;
-			} else if (otype == DHCPV6_OPT_STATUS && olen >= 2) {
+				if (!(client_options & DHCPV6_IGNORE_OPT_UNICAST))
+					server_addr = *(struct in6_addr *)odata;
+
+			}
+			else if (otype == DHCPV6_OPT_STATUS && olen >= 2) {
 				uint8_t *mdata = (olen > 2) ? &odata[2] : NULL;
 				uint16_t mlen = (olen > 2) ? olen - 2 : 0;
 				uint16_t code = ((int)odata[0]) << 8 | ((int)odata[1]);
 
 				dhcpv6_handle_status_code(orig, code, mdata, mlen, &ret);
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_DNS_SERVERS) {
 				if (olen % 16 == 0)
 					odhcp6c_add_state(STATE_DNS, odata, olen);
@@ -1099,7 +1123,6 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 				odhcp6c_add_state(STATE_SIP_FQDN, odata, olen);
 			else if (otype == DHCPV6_OPT_INFO_REFRESH && olen >= 4) {
 				refresh = ntohl_unaligned(odata);
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_AUTH) {
 				if (olen == -4 + sizeof(struct dhcpv6_auth_reconfigure)) {
 					struct dhcpv6_auth_reconfigure *r = (void*)&odata[-4];
@@ -1107,25 +1130,21 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 							r->reconf_type == 1)
 						memcpy(reconf_key, r->key, sizeof(r->key));
 				}
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_AFTR_NAME && olen > 3) {
 				size_t cur_len;
 				odhcp6c_get_state(STATE_AFTR_NAME, &cur_len);
 				if (cur_len == 0)
 					odhcp6c_add_state(STATE_AFTR_NAME, odata, olen);
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_SOL_MAX_RT && olen == 4) {
 				uint32_t sol_max_rt = ntohl_unaligned(odata);
 				if (sol_max_rt >= DHCPV6_SOL_MAX_RT_MIN &&
 						sol_max_rt <= DHCPV6_SOL_MAX_RT_MAX)
 					dhcpv6_retx[DHCPV6_MSG_SOLICIT].max_timeo = sol_max_rt;
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_INF_MAX_RT && olen == 4) {
 				uint32_t inf_max_rt = ntohl_unaligned(odata);
 				if (inf_max_rt >= DHCPV6_INF_MAX_RT_MIN &&
 						inf_max_rt <= DHCPV6_INF_MAX_RT_MAX)
 					dhcpv6_retx[DHCPV6_MSG_INFO_REQ].max_timeo = inf_max_rt;
-				passthru = false;
 	#ifdef EXT_CER_ID
 			} else if (otype == DHCPV6_OPT_CER_ID && olen == -4 +
 					sizeof(struct dhcpv6_cer_id)) {
@@ -1133,32 +1152,20 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 				struct in6_addr any = IN6ADDR_ANY_INIT;
 				if (memcmp(&cer_id->addr, &any, sizeof(any)))
 					odhcp6c_add_state(STATE_CER, &cer_id->addr, sizeof(any));
-				passthru = false;
 	#endif
 			} else if (otype == DHCPV6_OPT_S46_CONT_MAPT) {
 				odhcp6c_add_state(STATE_S46_MAPT, odata, olen);
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_S46_CONT_MAPE) {
 				size_t mape_len;
 				odhcp6c_get_state(STATE_S46_MAPE, &mape_len);
 				if (mape_len == 0)
 					odhcp6c_add_state(STATE_S46_MAPE, odata, olen);
-				passthru = false;
 			} else if (otype == DHCPV6_OPT_S46_CONT_LW) {
 				odhcp6c_add_state(STATE_S46_LW, odata, olen);
-				passthru = false;
-			} else if (otype == DHCPV6_OPT_CLIENTID ||
-					otype == DHCPV6_OPT_SERVERID ||
-					otype == DHCPV6_OPT_IA_TA ||
-					otype == DHCPV6_OPT_PREF ||
-					otype == DHCPV6_OPT_UNICAST ||
-					otype == DHCPV6_OPT_FQDN ||
-					otype == DHCPV6_OPT_RECONF_ACCEPT)
-				passthru = false;
-			else
+			} else
 				odhcp6c_add_state(STATE_CUSTOM_OPTS, &odata[-4], olen + 4);
 
-			if (passthru)
+			if (!dopt || !(dopt->flags & OPT_NO_PASSTHRU))
 				odhcp6c_add_state(STATE_PASSTHRU, &odata[-4], olen + 4);
 		}
 	}
@@ -1177,14 +1184,46 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 				odhcp6c_clear_state(STATE_SERVER_ADDR);
 				odhcp6c_add_state(STATE_SERVER_ADDR, &from->sin6_addr, 16);
 			} else if (orig == DHCPV6_MSG_RENEW) {
+/* TODO: partially revert upstream commit "dhcpv6: always trigger script update in case of IA updates"
+ * https://git.openwrt.org/?p=project/odhcp6c.git;a=commit;h=473f248e2db6c6c39e7aecf78f888e44f36ff5c4
+ * this would then cause a loop where clients issue a RENEW and REBIND every ~1s, overwhelming DHCPv6 servers.
+ * refer https://github.com/AlsoBearPerson/odhcp6c/commit/250f56a73e7a1b5e1e90f53982e8915065947450 */
+#if 0
+				// Send further renews if T1 is not set and
+				// no updated IAs
+				if (!t1) {
+					if (!updated_IAs)
+						ret = -1;
+					else if ((t2 - t1) > 1)
+						// Grace period of 1 second
+						t1 = 1;
+				}
+#else
 				// Send further renews if T1 is not set
 				if (!t1)
 					ret = -1;
+#endif
 
 			} else if (orig == DHCPV6_MSG_REBIND) {
+/* TODO: partially revert upstream commit "dhcpv6: always trigger script update in case of IA updates"
+ * https://git.openwrt.org/?p=project/odhcp6c.git;a=commit;h=473f248e2db6c6c39e7aecf78f888e44f36ff5c4
+ * this would then cause a loop where clients issue a RENEW and REBIND every ~1s, overwhelming DHCPv6 servers.
+ * refer https://github.com/AlsoBearPerson/odhcp6c/commit/250f56a73e7a1b5e1e90f53982e8915065947450 */
+#if 0
+				// Send further rebinds if T1 and T2 is not set and
+				// no updated IAs
+				if (!t1 && !t2) {
+					if (!updated_IAs)
+						ret = -1;
+					else if ((t3 - t2) > 1)
+						// Grace period of 1 second
+						t2 = 1;
+				}
+#else
 				// Send further rebinds if T1 and T2 is not set
 				if (!t1 && !t2)
 					ret = -1;
+#endif
 
 				odhcp6c_clear_state(STATE_SERVER_ADDR);
 				odhcp6c_add_state(STATE_SERVER_ADDR, &from->sin6_addr, 16);
@@ -1209,10 +1248,10 @@ static int dhcpv6_handle_reply(enum dhcpv6_msg orig, _unused const int rc,
 	return ret;
 }
 
-static int dhcpv6_parse_ia(void *opt, void *end)
+static unsigned int dhcpv6_parse_ia(void *opt, void *end)
 {
 	struct dhcpv6_ia_hdr *ia_hdr = (struct dhcpv6_ia_hdr *)opt;
-	int parsed_ia = 0;
+	unsigned int updated_IAs = 0;
 	uint32_t t1, t2;
 	uint16_t otype, olen;
 	uint8_t *odata;
@@ -1288,8 +1327,8 @@ static int dhcpv6_parse_ia(void *opt, void *end)
 			}
 
 			if (ok) {
-				odhcp6c_update_entry(STATE_IA_PD, &entry, 0, 0);
-				parsed_ia++;
+				if (odhcp6c_update_entry(STATE_IA_PD, &entry, 0, 0))
+					updated_IAs++;
 			}
 
 			entry.priority = 0;
@@ -1313,11 +1352,11 @@ static int dhcpv6_parse_ia(void *opt, void *end)
 			entry.length = 128;
 			entry.target = addr->addr;
 
-			odhcp6c_update_entry(STATE_IA_NA, &entry, 0, 0);
-			parsed_ia++;
+			if (odhcp6c_update_entry(STATE_IA_NA, &entry, 0, 0))
+				updated_IAs++;
 		}
 	}
-	return parsed_ia;
+	return updated_IAs;
 }
 
 static int dhcpv6_calc_refresh_timers(void)
@@ -1534,7 +1573,7 @@ int dhcpv6_promote_server_cand(void)
 	if (cand->ia_pd_len) {
 		odhcp6c_add_state(STATE_IA_PD, cand->ia_pd, cand->ia_pd_len);
 		free(cand->ia_pd);
-		if (request_prefix)
+		if (pd_mode != IA_MODE_NONE)
 			ret = DHCPV6_STATEFUL;
 	}
 

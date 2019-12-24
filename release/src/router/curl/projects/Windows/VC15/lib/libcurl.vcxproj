@@ -2440,6 +2440,7 @@
     <ClCompile Include="..\..\..\..\lib\slist.c" />
     <ClCompile Include="..\..\..\..\lib\smb.c" />
     <ClCompile Include="..\..\..\..\lib\smtp.c" />
+    <ClCompile Include="..\..\..\..\lib\socketpair.c" />
     <ClCompile Include="..\..\..\..\lib\socks.c" />
     <ClCompile Include="..\..\..\..\lib\socks_gssapi.c" />
     <ClCompile Include="..\..\..\..\lib\socks_sspi.c" />
@@ -2579,6 +2580,7 @@
     <ClInclude Include="..\..\..\..\lib\smb.h" />
     <ClInclude Include="..\..\..\..\lib\smtp.h" />
     <ClInclude Include="..\..\..\..\lib\sockaddr.h" />
+    <ClInclude Include="..\..\..\..\lib\socketpair.h" />
     <ClInclude Include="..\..\..\..\lib\socks.h" />
     <ClInclude Include="..\..\..\..\lib\speedcheck.h" />
     <ClInclude Include="..\..\..\..\lib\splay.h" />

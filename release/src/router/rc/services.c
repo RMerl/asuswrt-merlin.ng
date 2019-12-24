@@ -5053,6 +5053,25 @@ void start_upnp(void)
 		return;
 
 	unit = wan_primary_ifunit();
+#ifdef RTCONFIG_DUALWAN
+	if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_NONE || !is_wan_connect(unit)) {
+		int i;
+		for (i = WAN_UNIT_FIRST; i < WAN_UNIT_MAX; i++) {
+			if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_NONE || !is_wan_connect(i))
+				continue;
+			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+			if (nvram_match(strcat_r(prefix, "proto", tmp), "static")) {
+				snprintf(tmp, sizeof(tmp), i ? "link_wan%d" : "link_wan", i);
+				if (!nvram_get_int(tmp))
+					continue;
+			}
+			if (nvram_get_int(strcat_r(prefix, "upnp_enable", tmp))) {
+				unit = i;
+				break;
+			}
+		}
+	}
+#endif
 	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 	upnp_mnp_enable = nvram_get_int("upnp_mnp");
 

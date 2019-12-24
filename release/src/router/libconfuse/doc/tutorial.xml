@@ -383,7 +383,7 @@ typedef int (*cfg_validate_callback_t)(cfg_t *cfg, cfg_opt_t *opt);
         <para>
             A value parsing callback is another kind of callback function
             available in libConfuse. This function is used to map a string into
-            some other other value. One example is to extend a boolean option
+            some other value. One example is to extend a boolean option
             to accept the values "yes", "no" and "ask" (or perhaps "true",
             "false" and "maybe"). Those values should be mapped to the integers
             1, 2 and 3.

@@ -33,7 +33,7 @@ int md4_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
 	return 0;
 }
 
-void des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
+int des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
 {
 	u8 pkey[8], next, tmp;
 	int i;
@@ -51,6 +51,7 @@ void des_encrypt(const u8 *clear, const u8 *key, u8 *cypher)
 	des_setup(pkey, 8, 0, &skey);
 	des_ecb_encrypt(clear, cypher, &skey);
 	des_done(&skey);
+	return 0;
 }
 
 int md5_vector(size_t num_elem, const u8 *addr[], const size_t *len, u8 *mac)
@@ -90,10 +91,10 @@ void * aes_encrypt_init(const u8 *key, size_t len)
 	return skey;
 }
 
-void aes_encrypt(void *ctx, const u8 *plain, u8 *crypt)
+int aes_encrypt(void *ctx, const u8 *plain, u8 *crypt)
 {
 	symmetric_key *skey = ctx;
-	aes_ecb_encrypt(plain, crypt, skey);
+	return aes_ecb_encrypt(plain, crypt, skey) == CRYPT_OK ? 0 : -1;
 }
 
 void aes_encrypt_deinit(void *ctx)
@@ -116,10 +117,10 @@ void * aes_decrypt_init(const u8 *key, size_t len)
 	return skey;
 }
 
-void aes_decrypt(void *ctx, const u8 *crypt, u8 *plain)
+int aes_decrypt(void *ctx, const u8 *crypt, u8 *plain)
 {
 	symmetric_key *skey = ctx;
-	aes_ecb_encrypt(plain, (u8 *) crypt, skey);
+	return aes_ecb_encrypt(plain, (u8 *) crypt, skey) == CRYPT_OK ? 0 : -1;
 }
 
 void aes_decrypt_deinit(void *ctx)
@@ -263,6 +264,9 @@ int crypto_hash_finish(struct crypto_hash *ctx, u8 *mac, size_t *len)
 	}
 
 	os_free(ctx);
+
+	if (TEST_FAIL())
+		return -1;
 
 	return ret;
 }
@@ -661,6 +665,42 @@ void crypto_global_deinit(void)
 }
 
 #ifdef CONFIG_MODEXP
+
+int crypto_dh_init(u8 generator, const u8 *prime, size_t prime_len, u8 *privkey,
+		   u8 *pubkey)
+{
+	size_t pubkey_len, pad;
+
+	if (os_get_random(privkey, prime_len) < 0)
+		return -1;
+	if (os_memcmp(privkey, prime, prime_len) > 0) {
+		/* Make sure private value is smaller than prime */
+		privkey[0] = 0;
+	}
+
+	pubkey_len = prime_len;
+	if (crypto_mod_exp(&generator, 1, privkey, prime_len, prime, prime_len,
+			   pubkey, &pubkey_len) < 0)
+		return -1;
+	if (pubkey_len < prime_len) {
+		pad = prime_len - pubkey_len;
+		os_memmove(pubkey + pad, pubkey, pubkey_len);
+		os_memset(pubkey, 0, pad);
+	}
+
+	return 0;
+}
+
+int crypto_dh_derive_secret(u8 generator, const u8 *prime, size_t prime_len,
+			    const u8 *order, size_t order_len,
+			    const u8 *privkey, size_t privkey_len,
+			    const u8 *pubkey, size_t pubkey_len,
+			    u8 *secret, size_t *len)
+{
+	/* TODO: check pubkey */
+	return crypto_mod_exp(pubkey, pubkey_len, privkey, privkey_len,
+			      prime, prime_len, secret, len);
+}
 
 int crypto_mod_exp(const u8 *base, size_t base_len,
 		   const u8 *power, size_t power_len,

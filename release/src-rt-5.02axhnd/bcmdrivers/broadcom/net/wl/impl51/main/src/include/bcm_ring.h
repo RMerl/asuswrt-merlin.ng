@@ -6,7 +6,7 @@
  *
  * NOTE: A ring of size N, may only hold N-1 elements.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_ring.h 730714 2017-11-08 07:28:15Z $
+ * $Id: bcm_ring.h 774845 2019-05-08 16:56:28Z $
  */
 #ifndef __bcm_ring_included__
 #define __bcm_ring_included__
@@ -95,7 +95,7 @@
  * private L1 data cache.
  * +----------------------------------------------------------------------------
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -109,7 +109,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcm_ring.h 730714 2017-11-08 07:28:15Z $
+ * $Id: bcm_ring.h 774845 2019-05-08 16:56:28Z $
  *
  * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
  * vim: set ts=4 noet sw=4 tw=80:
@@ -282,10 +282,10 @@ bcm_ring_is_full(bcm_ring_t *ring, const int ring_size)
  * +----------------------------------------------------------------------------
  */
 static INLINE void
-bcm_ring_prod_done(bcm_ring_t *ring, int write)
+bcm_ring_prod_done(bcm_ring_t *ring, int write_index)
 {
 	RING_ASSERT(BCM_RING_IS_VALID(ring));
-	ring->write = write;
+	ring->write = write_index;
 }
 
 /**
@@ -339,10 +339,10 @@ bcm_ring_prod(bcm_ring_t *ring, const int ring_size)
  * @read: index upto which elements have been consumed.
  */
 static INLINE void
-bcm_ring_cons_done(bcm_ring_t *ring, int read)
+bcm_ring_cons_done(bcm_ring_t *ring, int read_index)
 {
 	RING_ASSERT(BCM_RING_IS_VALID(ring));
-	ring->read = read;
+	ring->read = read_index;
 }
 
 /**

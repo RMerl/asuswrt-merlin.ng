@@ -1,7 +1,7 @@
 /*
  * Fundamental constants relating to IP Protocol
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmip.h 594480 2015-10-22 03:14:33Z $
+ * $Id: bcmip.h 775535 2019-06-03 17:13:24Z $
  */
 
 #ifndef _bcmip_h_
@@ -239,4 +239,16 @@ ipv6_exthdr_len(uint8 *h, uint8 *proto)
 								((uint32)addr & 0x0000ff00) >> 8, \
 								((uint32)addr & 0x000000ff)
 
+#if defined(BCM_NBUFF_WLMCAST_IPV6) && !defined(__KERNEL__)
+#include <arpa/inet.h>
+static char g_ipaddr_str[INET6_ADDRSTRLEN];
+static inline char *ipaddr_str(int type, void *ptr)  {
+	if (type == AF_INET) {
+		uint32 addr = htonl(*(uint32 *)ptr);
+		inet_ntop(AF_INET, &addr, g_ipaddr_str, INET_ADDRSTRLEN);
+	} else
+		inet_ntop(AF_INET6, ptr, g_ipaddr_str, INET6_ADDRSTRLEN);
+	return g_ipaddr_str;
+}
+#endif /*  defined BCM_NBUFF_WLMCAST_IPV6 && ! __KERNEL__ */
 #endif	/* _bcmip_h_ */

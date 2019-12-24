@@ -1,7 +1,7 @@
 /*
  * Include file private to the SOC Interconnect support files.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -259,6 +259,9 @@ extern int sb_numaddrspaces(si_t *sih);
 
 extern uint32 sb_set_initiator_to(si_t *sih, uint32 to, uint idx);
 
+/* XXX Mogrifier hack alert- BCMINTERNAL should not be the last in the following
+ * if defined string
+ */
 extern bool sb_taclear(si_t *sih, bool details);
 
 #ifdef BCMDBG

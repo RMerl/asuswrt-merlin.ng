@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.c 765200 2018-06-22 11:30:40Z $
+ * $Id: linux_osl.c 773416 2019-03-20 08:18:08Z $
  */
 
 #define LINUX_PORT
@@ -48,6 +48,7 @@
 #include <linux/delay.h>
 #include <linux/vmalloc.h>
 #include <pcicfg.h>
+#include <pcie_core.h>
 
 #ifdef BCM_SECURE_DMA
 #include <linux/module.h>
@@ -87,6 +88,10 @@ extern spinlock_t l2x0_reg_lock;
 #define PCI_CFG_RETRY		10
 
 #define DUMPBUFSZ 1024
+
+#if defined(BCA_HNDROUTER)
+#include <board.h>
+#endif // endif
 
 #ifdef BCM_SECURE_DMA
 static void * osl_sec_dma_ioremap(osl_t *osh, struct page *page, size_t size,
@@ -232,6 +237,7 @@ osl_error(int bcmerror)
 	/* Array bounds covered by ASSERT in osl_attach */
 	return linuxbcmerrormap[-bcmerror];
 }
+
 #ifdef SHARED_OSL_CMN
 osl_t *
 osl_attach(void *pdev, uint bustype, bool pkttag, void **osl_cmn)
@@ -261,6 +267,17 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 
 	bzero(osh, sizeof(osl_t));
 
+	/*
+	 * RSDB chips will have one osh per wlc. So, two wlc's of RSDB will lead to two osh. Memory
+	 * allocator for each wlc make use of separate osh(osl_t) to keep track of the number of
+	 * bytes allocated and freed. In some scenarios there is the possibility of memory allocated
+	 * for one wlc to get moved to another wlc. For example: moving bsscfg from one wlc to other
+	 * wlc or moving the scan results from one wlc to other in case of parallel scanning.
+	 * Because of movement of memory from one wlc to other, memory allocator(osh) in each wlc
+	 * will not be able to keep track of the exact number of bytes allocated and freed for that
+	 * wlc. So, we need to have a common osl structure which will be shared between both wlc's.
+	 * XXX RB:19131
+	 */
 	if (osl_cmn == NULL || *osl_cmn == NULL) {
 		if (!(osh->cmn = kmalloc(sizeof(osl_cmn_t), flags))) {
 			kfree(osh);
@@ -291,7 +308,6 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	osh->bustype = bustype;
 	osh->magic = OS_HANDLE_MAGIC;
 #ifdef BCM_SECURE_DMA
-
 	if ((secdma_addr != 0) && (secdma_size != 0)) {
 		printk("linux_osl.c: Buffer info passed via module params, using it.\n");
 		if (secdma_found == 0) {
@@ -353,7 +369,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	if (global_cma > 0) {
 		cma_page = dma_alloc_from_contiguous(&pcidev->dev,
-			(CMA_DMA_DESC_MEMBLOCK >> PAGE_SHIFT), PAGE_SIZE);
+			(CMA_DMA_DESC_MEMBLOCK >> PAGE_SHIFT), 0);
 		if (!cma_page) {
 			printk("linux_osl.c: osl_attach - dma_alloc_from_contiguous() allocation "
 				"failed with no memory \n");
@@ -372,8 +388,8 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	if (osh->contig_base_alloc_coherent_va == NULL) {
 		if (osh->cmn)
 			kfree(osh->cmn);
-	    kfree(osh);
-	    return NULL;
+		kfree(osh);
+		return NULL;
 	}
 	osh->contig_base_coherent_va = osh->contig_base_alloc_coherent_va;
 	osh->contig_base_alloc_coherent = osh->contig_base_alloc;
@@ -382,7 +398,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	if (global_cma > 0) {
 		cma_page = dma_alloc_from_contiguous(&pcidev->dev,
-			(CMA_DMA_DATA_MEMBLOCK >> PAGE_SHIFT), PAGE_SIZE);
+			(CMA_DMA_DATA_MEMBLOCK >> PAGE_SHIFT), 0);
 		if (!cma_page) {
 			printk("linux_osl.c: osl_attach - dma_alloc_from_contiguous() allocation "
 				"failed with no memory \n");
@@ -418,7 +434,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	if (global_cma > 0) {
 		cma_page = dma_alloc_from_contiguous(&pcidev->dev,
-			(CMA_DMA_RXCTRL_MEMBLOCK >> PAGE_SHIFT), PAGE_SIZE);
+			(CMA_DMA_RXCTRL_MEMBLOCK >> PAGE_SHIFT), 0);
 		if (!cma_page) {
 			printk("linux_osl.c: osl_attach - dma_alloc_from_contiguous() allocation "
 				"failed with no memory \n");
@@ -450,7 +466,7 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	if (global_cma > 0) {
 		cma_page = dma_alloc_from_contiguous(&pcidev->dev,
-			(CMA_DMA_RXBUF_POST_MEMBLOCK >> PAGE_SHIFT), PAGE_SIZE);
+			(CMA_DMA_RXBUF_POST_MEMBLOCK >> PAGE_SHIFT), 0);
 		if (!cma_page) {
 			printk("linux_osl.c: osl_attach - dma_alloc_from_contiguous() allocation "
 				"failed with no memory \n");
@@ -508,8 +524,13 @@ osl_attach(void *pdev, uint bustype, bool pkttag)
 	osh->ctrace_num = 0;
 #endif /* BCMDBG_CTRACE */
 
+#ifdef BCM_SKB_FREE_OFFLOAD
+	/* Enable SKB_FREE_OFFLOAD to another core */
+	OSH_PUB(osh).skb_free_offload = 1;
+#endif /* BCM_SKB_FREE_OFFLOAD */
+
 	return osh;
-}
+} /* osl_attach */
 
 void osl_set_bus_handle(osl_t *osh, void *bus_handle)
 {
@@ -534,7 +555,6 @@ void osl_set_bpt_cb(osl_t *osh, void *bpt_cb, void *bpt_ctx)
 void
 osl_detach(osl_t *osh)
 {
-
 #ifdef BCM_SECURE_DMA
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
 	struct pci_dev * pcidev;
@@ -596,10 +616,10 @@ osl_detach(osl_t *osh)
 	ASSERT(osh->magic == OS_HANDLE_MAGIC);
 	atomic_sub(1, &osh->cmn->refcount);
 	if (atomic_read(&osh->cmn->refcount) == 0) {
-			kfree(osh->cmn);
+		kfree(osh->cmn);
 	}
 	kfree(osh);
-}
+} /* osl_detach */
 
 /* APIs to set/get specific quirks in OSL layer */
 void BCMFASTPATH
@@ -662,7 +682,7 @@ osl_prefetch(const void *ptr)
 inline int BCMFASTPATH
 osl_arch_is_coherent(void)
 {
-#ifdef BCM47XX_CA9
+#if defined(BCM47XX_CA9) || defined(OSL_CACHE_COHERENT)
 	return arch_is_coherent();
 #else
 	return 0;
@@ -779,6 +799,9 @@ osl_pci_write_config(osl_t *osh, uint offset, uint size, uint val)
 
 	do {
 		pci_write_config_dword(osh->pdev, offset, val);
+		/* PR15065: PCI_BAR0_WIN is believed to be the only pci cfg write that can occur
+		 * when dma activity is possible
+		 */
 		if (offset != PCI_BAR0_WIN)
 			break;
 		if (osl_pci_read_config(osh, offset, size) == val)
@@ -838,6 +861,47 @@ osl_pcie_bus(osl_t *osh)
 	return ((struct pci_dev *)osh->pdev)->bus->number;
 }
 
+void
+osl_pcie_mps_limit(osl_t *osh, uint devctl_offset, uint mps)
+{
+	struct pci_dev *dev, *parent;
+	uint val;
+	uint dev_mps, dev_mrr, mpss;
+
+	ASSERT(osh && (osh->magic == OS_HANDLE_MAGIC) && osh->pdev && (mps >= 128));
+
+	dev = (struct pci_dev *)(osh->pdev);
+	pci_read_config_dword(dev, devctl_offset, &val);
+	dev_mps = 128 << ((val & PCIE_CAP_DEVCTRL_MPS_MASK) >> PCIE_CAP_DEVCTRL_MPS_SHIFT);
+	dev_mrr = 128 << ((val & PCIE_CAP_DEVCTRL_MRRS_MASK) >> PCIE_CAP_DEVCTRL_MRRS_SHIFT);
+	printk("%s: MPS %u MRR %u devctl 0x%x\n", __FUNCTION__, dev_mps, dev_mrr, val);
+
+	if (dev_mps <= mps)
+		return;
+
+	parent = dev->bus->self;
+	ASSERT(parent);
+	if (parent->bus->self) {
+		printk("%s: Stop configuring MPS because PCIE parent is bridge not RC!\n",
+			__FUNCTION__);
+		return;
+	}
+
+	mpss = mps >> 8;
+	ASSERT(mpss <= PCIE_CAP_DEVCTRL_MPS_4096B);
+
+	printk("%s: override PCIE device MPS from %u to %u\n", __FUNCTION__, dev_mps, mps);
+	val &= ~PCIE_CAP_DEVCTRL_MPS_MASK;
+	val |= (mpss << PCIE_CAP_DEVCTRL_MPS_SHIFT);
+	pci_write_config_dword(dev, devctl_offset, val);
+
+	printk("%s: override PCIE RC MPS to %u\n", __FUNCTION__, mps);
+	pci_read_config_dword(parent, devctl_offset, &val);
+	val &= ~PCIE_CAP_DEVCTRL_MPS_MASK;
+	val |= (mpss << PCIE_CAP_DEVCTRL_MPS_SHIFT);
+	pci_write_config_dword(parent, devctl_offset, val);
+} /* osl_pcie_mps_limit */
+
 /* return the pci device pointed by osh->pdev */
 struct pci_dev *
 osl_pci_device(osl_t *osh)
@@ -850,7 +914,7 @@ osl_pci_device(osl_t *osh)
 static void
 osl_pcmcia_attr(osl_t *osh, uint offset, char *buf, int size, bool write)
 {
-}
+} /* osl_pcmcia_attr */
 
 void
 osl_pcmcia_read_attr(osl_t *osh, uint offset, void *buf, int size)
@@ -873,6 +937,7 @@ osl_malloc(osl_t *osh, uint size)
 	/* only ASSERT if osh is defined */
 	if (osh)
 		ASSERT(osh->magic == OS_HANDLE_MAGIC);
+
 #ifdef CONFIG_DHD_USE_STATIC_BUF
 	if (bcm_static_buf)
 	{
@@ -942,7 +1007,15 @@ osl_mfree(osl_t *osh, void *addr, uint size)
 {
 #ifdef CONFIG_DHD_USE_STATIC_BUF
 	unsigned long flags;
+#endif /* CONFIG_DHD_USE_STATIC_BUF */
 
+	if (addr == NULL) {
+		/* the 'de facto' implementation of free() ignores NULL pointers */
+		printk("%s NULL\n", __FUNCTION__);
+		return;
+	}
+
+#ifdef CONFIG_DHD_USE_STATIC_BUF
 	if (bcm_static_buf)
 	{
 		if ((addr > (void *)bcm_static_buf) && ((unsigned char *)addr
@@ -972,7 +1045,7 @@ osl_mfree(osl_t *osh, void *addr, uint size)
 		atomic_sub(size, &osh->cmn->malloced);
 	}
 	kfree(addr);
-}
+} /* osl_mfree */
 
 void *
 osl_vmalloc(osl_t *osh, uint size)
@@ -1124,7 +1197,7 @@ osl_dma_free_consistent(osl_t *osh, void *va, uint size, dmaaddr_t pa)
 #else
 	osl_sec_dma_free_consistent(osh, va, size, pa);
 #endif /* BCM_SECURE_DMA */
-}
+} /* osl_dma_free_consistent */
 
 void *
 osl_virt_to_phys(void *va)
@@ -1140,6 +1213,33 @@ osl_dma_flush(osl_t *osh, void *va, uint size, int direction, void *p, hnddma_se
 	return;
 }
 #endif /* LINUX_VERSION_CODE >= 2.6.36 */
+
+void BCMFASTPATH
+osl_dma_sync(osl_t *osh, dmaaddr_t pa, uint size, int direction)
+{
+#if (defined(__ARM_ARCH_7A__) && !defined(DHD_USE_COHERENT_MEM_FOR_RING)) || \
+	defined(STB_SOC_WIFI)
+#else
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+
+	PHYSADDRTOULONG(pa, paddr);
+
+	if (direction == DMA_TX) { /* to device */
+		dma_sync_single_for_device(OSH_NULL, paddr, size, DMA_TX);
+	} else if (direction == DMA_RX) { /* from device */
+		dma_sync_single_for_cpu(OSH_NULL, paddr, size, DMA_RX);
+	}
+#else
+	if (direction == DMA_TX) { /* to device */
+		dma_sync_single_for_device(OSH_NULL, pa, size, DMA_TX);
+	} else if (direction == DMA_RX) { /* from device */
+		dma_sync_single_for_cpu(OSH_NULL, pa, size, DMA_RX);
+	}
+#endif /* BCMDMA64OSL */
+#endif /* (__ARM_ARCH_7A__ && !DHD_USE_COHERENT_MEM_FOR_RING) || STB_SOC_WIFI */
+	return;
+}
 
 dmaaddr_t BCMFASTPATH
 osl_dma_map(osl_t *osh, void *va, uint size, int direction, void *p, hnddma_seg_map_t *dmah)
@@ -1209,7 +1309,7 @@ no_cache_ops:
 	}
 #endif /* BCM47XX_CA9 && BCMDMASGLISTOSL */
 
-#if defined(BCM47XX_CA9)
+#if defined(BCM47XX_CA9) || defined(OSL_CACHE_COHERENT)
 	if (osl_is_flag_set(osh, OSL_ACP_COHERENCE)) {
 		uint pa = virt_to_phys(va);
 		if (pa < ACP_WIN_LIMIT)
@@ -1253,7 +1353,7 @@ no_cache_ops:
 	}
 
 	return ret_addr;
-}
+} /* osl_dma_map */
 
 void BCMFASTPATH
 osl_dma_unmap(osl_t *osh, dmaaddr_t pa, uint size, int direction)
@@ -1265,7 +1365,7 @@ osl_dma_unmap(osl_t *osh, dmaaddr_t pa, uint size, int direction)
 
 	ASSERT((osh && (osh->magic == OS_HANDLE_MAGIC)));
 
-#if defined(BCM47XX_CA9)
+#if defined(BCM47XX_CA9) || defined(OSL_CACHE_COHERENT)
 	if (osl_is_flag_set(osh, OSL_ACP_COHERENCE) && (pa < ACP_WIN_LIMIT))
 		return;
 #endif /* BCM47XX_CA9 */
@@ -1294,7 +1394,7 @@ osl_dma_unmap(osl_t *osh, dmaaddr_t pa, uint size, int direction)
 #endif /* STB_SOC_WIFI */
 
 #endif /* BCMDMA64OSL */
-}
+} /* osl_dma_unmap */
 
 /* OSL function for CPU relax */
 inline void BCMFASTPATH
@@ -1339,12 +1439,20 @@ osl_sleep(uint ms)
 uint64
 osl_sysuptime_us(void)
 {
-	struct timeval tv;
 	uint64 usec;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
+	struct timeval tv;
 
 	do_gettimeofday(&tv);
+
 	/* tv_usec content is fraction of a second */
 	usec = (uint64)tv.tv_sec * 1000000ul + tv.tv_usec;
+#else
+	struct timespec64 ts64;
+
+	ktime_get_real_ts64(&ts64);
+	usec = ktime_to_ns(timespec64_to_ktime(ts64)) / 1000;
+#endif // endif
 	return usec;
 }
 
@@ -1404,7 +1512,8 @@ osl_long_delay(osl_t *osh, uint usec, bool yield)
 			ASSERT(osh->oshsh->long_delay >= 0);
 		}
 	}
-}
+} /* osl_long_delay */
+
 #endif /* DSLCPE_DELAY */
 
 /*
@@ -1793,7 +1902,7 @@ inline void osl_pcie_rreg(osl_t *osh, ulong addr, volatile void *v, uint size)
 
 	if (pci_access && acp_war_enab)
 		spin_unlock_irqrestore(&l2x0_reg_lock, flags);
-}
+} /* osl_pcie_rreg */
 #endif /* BCM47XX_CA9 || (STB && __arm__) */
 
 #if defined(BCM_BACKPLANE_TIMEOUT)
@@ -1845,7 +1954,7 @@ inline void osl_bpt_rreg(osl_t *osh, ulong addr, volatile void *v, uint size)
 		osh->bpt_cb((void *)osh->sih, (void *)addr);
 		in_si_clear = FALSE;
 	}
-}
+} /* osl_bpt_rreg */
 #endif /* BCM_BACKPLANE_TIMEOUT */
 
 #ifdef BCM_SECURE_DMA
@@ -1885,7 +1994,7 @@ osl_sec_dma_ioremap(osl_t *osh, struct page *page, size_t size, bool iscache, bo
 
 	kfree(map);
 	return (void *)addr;
-}
+} /* osl_sec_dma_ioremap */
 
 static void
 osl_sec_dma_iounmap(osl_t *osh, void *contig_base_va, size_t size)
@@ -1930,7 +2039,7 @@ osl_sec_dma_init_elem_mem_block(osl_t *osh, size_t mbsize, int max, sec_mem_elem
 		ret = BCME_ERROR;
 	}
 	return ret;
-}
+} /* osl_sec_dma_init_elem_mem_block */
 
 static void
 osl_sec_dma_deinit_elem_mem_block(osl_t *osh, size_t mbsize, int max, void *sec_list_base)
@@ -2014,7 +2123,7 @@ osl_sec_dma_alloc_mem_elem(osl_t *osh, void *va, uint size, int direction,
 	}
 
 	return sec_mem_elem;
-}
+} /* osl_sec_dma_alloc_mem_elem */
 
 static void BCMFASTPATH
 osl_sec_dma_free_mem_elem(osl_t *osh, sec_mem_elem_t *sec_mem_elem)
@@ -2138,11 +2247,22 @@ osl_sec_dma_buffs_is_avail(osl_t *osh)
 	return (osh->sec_list_txbuf) ? TRUE : FALSE;
 }
 
+bool
+osl_sec_dma_rx_buffs_is_avail(osl_t *osh)
+{
+	return (osh->sec_list_rxbuf) ? TRUE : FALSE;
+}
+
+bool
+osl_sec_dma_rxctl_buffs_is_avail(osl_t *osh)
+{
+	return (osh->sec_list_rxbufctl) ? TRUE : FALSE;
+}
+
 dma_addr_t BCMFASTPATH
 osl_sec_dma_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *dmah, void *ptr_cma_info, uint offset, uint buftype)
 {
-
 	sec_mem_elem_t *sec_mem_elem;
 	struct page *pa_cma_page;
 	void *pa_cma_kmap_va = NULL;
@@ -2241,7 +2361,7 @@ osl_sec_dma_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	sec_mem_elem->dma_handle = dma_handle;
 	/* kunmap_atomic(pa_cma_kmap_va-loffset); */
 	return dma_handle;
-}
+} /* osl_sec_dma_map */
 
 dma_addr_t BCMFASTPATH
 osl_sec_dma_dd_map(osl_t *osh, void *va, uint size, int direction, void *p, hnddma_seg_map_t *map)
@@ -2340,7 +2460,7 @@ void *p, hnddma_seg_map_t *map,	void *ptr_cma_info, uint offset)
 	}
 
 	osl_sec_dma_free_mem_elem(osh, sec_mem_elem);
-}
+} /* osl_sec_dma_unmap */
 
 void
 osl_sec_dma_unmap_all(osl_t *osh, void *ptr_cma_info)
@@ -2382,7 +2502,6 @@ osl_sec_dma_init_consistent(osl_t *osh)
 static void *
 osl_sec_dma_alloc_consistent(osl_t *osh, uint size, uint16 align_bits, dmaaddr_t *pap)
 {
-
 	void *temp_va = NULL;
 	dma_addr_t temp_pa = 0;
 	dma_addr_t dma_handle = 0;
@@ -2432,7 +2551,7 @@ osl_sec_dma_alloc_consistent(osl_t *osh, uint size, uint16 align_bits, dmaaddr_t
 	*pap = dma_handle;
 #endif // endif
 	return temp_va;
-}
+} /* osl_sec_dma_alloc_consistent */
 
 static void
 osl_sec_dma_free_consistent(osl_t *osh, void *va, uint size, dmaaddr_t pa)
@@ -2465,6 +2584,58 @@ osl_sec_dma_free_consistent(osl_t *osh, void *va, uint size, dmaaddr_t pa)
 			va, paddr, size);
 	dma_unmap_page(&pdev->dev, paddr, size, DMA_BIDIRECTIONAL);
 #endif // endif
-}
+} /* osl_sec_dma_free_consistent */
 
 #endif /* BCM_SECURE_DMA */
+
+#if defined(BCA_HNDROUTER)
+
+static void
+_bsp_get_cfe_mac(unsigned int instance_id, char *mac)
+{
+	unsigned long ulId = MAC_ADDRESS_WLAN + (unsigned long)instance_id;
+	kerSysGetMacAddress(mac, ulId);
+}
+
+/* used for NIC */
+void
+osl_adjust_mac(unsigned int instance_id, char *mac)
+{
+	int i = 0;
+	char macaddrbuf[ETH_ALEN] = {0};
+	const char macaddr0[] = "00:00:00:00:00:00";
+	const char macaddr1[] = "FF:FF:FF:FF:FF:FF";
+	if (strncasecmp(mac, macaddr0, 18) == 0 ||
+			strncasecmp(mac, macaddr1, 18) == 0) {
+		_bsp_get_cfe_mac(instance_id, macaddrbuf);
+		for (i = 0; i < (ETH_ALEN-1); i++)
+			sprintf(mac+i*3, "%2.2X:", macaddrbuf[i]);
+		sprintf(mac + i*3, "%2.2X", macaddrbuf[i]);
+	}
+}
+
+/* when matching certain parten macaddr= in memblock, replace it with mac from BSP
+ * MAC address pool, used for DHD
+ */
+int
+osl_nvram_vars_adjust_mac(unsigned int instance_id, char *memblock, uint* len)
+{
+	char *locbufp = memblock;
+	char macaddrbuf[8] = "macaddr=";
+	int i;
+	for (i = 0; i < (*len); i++, locbufp++) {
+		if (*locbufp == '\0')
+			break;
+		if (strncasecmp(locbufp, macaddrbuf, 8) == 0) {
+			osl_adjust_mac(instance_id, locbufp+8);
+			break;
+		}
+		while (*locbufp != '\0') {
+			i++;
+			locbufp++;
+		}
+	}
+	return  BCME_OK;
+}
+
+#endif /* BCA_HNDROUTER */

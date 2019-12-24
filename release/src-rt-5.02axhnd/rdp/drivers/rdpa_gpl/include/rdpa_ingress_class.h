@@ -90,6 +90,9 @@ typedef enum
 
     /** Send packet copy to CPU */
     rdpa_ic_action_cpu_mirroring = (1 << rdpa_ic_act_cpu_mirroring), /**< cpu mirroring bitmask*/
+
+    /** TTL action */
+    rdpa_ic_action_ttl = (1 << rdpa_ic_act_ttl), /**< ttl action bitmask*/
 }
 rdpa_ic_action_vector_t;
 

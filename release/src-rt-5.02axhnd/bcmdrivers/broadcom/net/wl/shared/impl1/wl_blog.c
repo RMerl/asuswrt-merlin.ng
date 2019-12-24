@@ -70,7 +70,7 @@ struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s)
 	return xlated_s;
 }
 
-#if defined(BCM_WFD) && !( defined(CONFIG_BCM_FAP) || defined(CONFIG_BCM_FAP_MODULE)) && !(defined(CONFIG_BCM_PKTRUNNER) || defined(CONFIG_BCM_PKTRUNNER_MODULE))
+#if defined(BCM_WFD) && defined(CONFIG_BCM_FC_BASED_WFD)
 typedef int (*FC_WFD_ENQUEUE_HOOK)(void * nbuff_p,const Blog_t * const blog_p); /* Xmit with blog */
 extern FC_WFD_ENQUEUE_HOOK fc_wfd_enqueue_cb;
 static int wl_fc_wfd_enqueue(void * nbuff_p,const Blog_t * const blog_p)
@@ -111,15 +111,18 @@ int wl_handle_blog_emit(struct wl_info *wl, struct wl_if *wlif, struct sk_buff *
 #endif
 
 #if defined(BCM_WFD)
-        if (!ETHER_ISMULTI(eh->ether_dhost))
-        {
-            skb->blog_p->wfd.nic_ucast.is_wfd = 1;
-#if defined(BCM_WFD) && !( defined(CONFIG_BCM_FAP) || defined(CONFIG_BCM_FAP_MODULE)) && !(defined(CONFIG_BCM_PKTRUNNER) || defined(CONFIG_BCM_PKTRUNNER_MODULE))
-            skb->blog_p->dev_xmit_blog = wl_fc_wfd_enqueue;
+		if (!ETHER_ISMULTI(eh->ether_dhost))
+		{
+			skb->blog_p->wfd.nic_ucast.is_wfd = 1;
+#if defined(BCM_WFD) && defined(CONFIG_BCM_FC_BASED_WFD)
+			if(skb->blog_p->wfd.nic_ucast.is_chain)
+			{
+				skb->blog_p->dev_xmit_blog = wl_fc_wfd_enqueue;
+			}
 #else
-            skb->blog_p->dev_xmit_blog = NULL;
+			skb->blog_p->dev_xmit_blog = NULL;
 #endif
-        }
+		}
 #endif
 
 		blog_emit(skb, dev, TYPE_ETH, 0, BLOG_WLANPHY);
@@ -200,6 +203,7 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 				e->event.addr.octet[0], e->event.addr.octet[1],
 				e->event.addr.octet[2], e->event.addr.octet[3],
 				e->event.addr.octet[4], e->event.addr.octet[5]));
+			wl_pktc_req(PKTC_TBL_UPDATE, (unsigned long)e->event.addr.octet, (unsigned long)dev, 0);
 			wl_pktc_req(PKTC_TBL_SET_STA_ASSOC, (unsigned long)e->event.addr.octet, 1, e->event.event_type);
 #endif /* PKTC_TBL */
 			break;

@@ -1,7 +1,7 @@
 /*
  * Broadcom USB remote download definitions
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -212,6 +212,10 @@ typedef void (*exec_fn_t)(void *sih);
 #define TRX_OFFSETS_JUMPTO_IDX	1	/* RAM address for jumpto after download */
 #define TRX_OFFSETS_NVM_LEN_IDX	2	/* Length of appended NVRAM data */
 #ifdef BCMTRXV2
+/* XXX The NVRAM region part of trx will be digitally signed in SDR image,
+ * so is the need for new cfg region which could pass parameters
+ * which dones not need to be digitally signed
+ */
 #define TRX_OFFSETS_DSG_LEN_IDX	3	/* Length of digital signature for the first image */
 #define TRX_OFFSETS_CFG_LEN_IDX	4	/* Length of config region, which is not digitally signed */
 #endif /* BCMTRXV2 */

@@ -30,6 +30,7 @@
 #define _CFE_GPT_H
 
 
+#include <emmc_base_defs.h>
 /*********************************************************************
  *  Constants
  ********************************************************************* */
@@ -193,7 +194,7 @@
 /***************************************************************************
  *GPT INFORMATION TO IMPLEMENT
  ***************************************************************************/
-#define CFE_MAX_GPT_PARTITIONS			128					/* For GPT partition */
+#define CFE_MAX_GPT_PARTITIONS			EMMC_FLASH_MAX_LOGICAL_PARTS		/* For GPT partition */
 #define CFE_GPT_MAX_PART_NAME			(GPT_PART_PARITIONNAME_LENGTH/2)	/* For GPT partition */
 #define CFE_GPT_TABLE_SIZE			32768	/* 32KB, CFE partition size for GPT Partition entries + GPT HDRS + extra bytes(PMBR) */
 #define CFE_GPT_PRIMRY_SIZE			CFE_GPT_TABLE_SIZE	/* Actual size : 34LBA=34*512=17KB, CFE partition size for primary GPT table */

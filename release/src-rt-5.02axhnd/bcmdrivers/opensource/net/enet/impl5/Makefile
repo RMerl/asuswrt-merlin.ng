@@ -138,7 +138,7 @@ EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/opensource/net/xtmrt/impl$(CONFIG_BCM_XTMRT
 endif
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/char/fap/impl$(CONFIG_BCM_FAP_IMPL)
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/char/fap/impl$(CONFIG_BCM_FAP_IMPL)/4ke
-EXTRA_CFLAGS += -I$(KERNEL_DIR)/net/core
+EXTRA_CFLAGS += -I$(KERNEL_DIR)/net/core -I$(KERNEL_DIR)/net/bridge
 
 ifneq ($(strip $(CONFIG_BCM_WLAN)),)
 EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)/include

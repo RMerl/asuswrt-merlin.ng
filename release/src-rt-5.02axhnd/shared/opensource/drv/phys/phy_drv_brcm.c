@@ -124,6 +124,11 @@ int brcm_read_status(phy_dev_t *phy_dev)
         phy_dev->speed = PHY_SPEED_1000;
         phy_dev->duplex = PHY_DUPLEX_FULL;
     }
+    else
+    {
+        phy_dev->link = 0;
+        return 0;
+    }
 
     phy_dev->pause_rx = ((val >> 1) & 0x1);
     phy_dev->pause_tx = ((val >> 0) & 0x1);

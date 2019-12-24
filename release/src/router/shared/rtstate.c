@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <bcmnvram.h>
 #include <bcmdevs.h>
 #include <shutils.h>
@@ -1198,3 +1199,46 @@ char *get_userdns_r(const char *prefix, char *buf, size_t buflen)
 	}
 	return buf;
 }
+
+#ifdef RTCONFIG_BROOP
+
+int broop_state = 0;
+
+int detect_broop() {
+
+	int fd, ret = 0;
+	char buf[2], *reset = "0";
+
+	switch (broop_state) {
+	case BROOP_IDLE:
+		if ((fd = open("/proc/broop", O_WRONLY|O_NONBLOCK)) <= 0) {
+			_dprintf("cannot open broop!\n");
+			return 0;
+		}
+		write(fd, reset, 1);
+		close(fd);
+		broop_state = BROOP_DETECT;
+               
+		break;
+	case BROOP_DETECT:
+		if ((fd = open("/proc/broop", O_RDONLY|O_NONBLOCK)) <= 0) {
+			_dprintf("cannot open broop!\n");
+			return 0;
+		}
+
+		read(fd, buf, sizeof(buf));
+		close(fd);
+		ret = atoi(buf);
+		if (ret == 1)
+			broop_state = BROOP_IDLE;               
+
+		break;
+	default:
+		_dprintf("Illegal broop state.\n");
+		break;
+	}
+
+	return ret;
+}
+
+#endif

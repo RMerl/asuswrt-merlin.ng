@@ -1,9 +1,9 @@
 /*
 * <:copyright-BRCM:2007:proprietary:standard
-* 
-*    Copyright (c) 2007 Broadcom 
+*
+*    Copyright (c) 2007 Broadcom
 *    All Rights Reserved
-* 
+*
 *  This program is the proprietary software of Broadcom and/or its
 *  licensors, and may only be used, duplicated, modified or distributed pursuant
 *  to the terms and conditions of a separate, written license agreement executed
@@ -14,15 +14,15 @@
 *  property rights therein.  IF YOU HAVE NO AUTHORIZED LICENSE, THEN YOU HAVE
 *  NO RIGHT TO USE THIS SOFTWARE IN ANY WAY, AND SHOULD IMMEDIATELY NOTIFY
 *  BROADCOM AND DISCONTINUE ALL USE OF THE SOFTWARE.
-* 
+*
 *  Except as expressly set forth in the Authorized License,
-* 
+*
 *  1. This program, including its structure, sequence and organization,
 *     constitutes the valuable trade secrets of Broadcom, and you shall use
 *     all reasonable efforts to protect the confidentiality thereof, and to
 *     use this information only in connection with your use of Broadcom
 *     integrated circuit products.
-* 
+*
 *  2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
 *     AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES, REPRESENTATIONS OR
 *     WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
@@ -32,7 +32,7 @@
 *     COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR CORRESPONDENCE
 *     TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING OUT OF USE OR
 *     PERFORMANCE OF THE SOFTWARE.
-* 
+*
 *  3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BROADCOM OR
 *     ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL, SPECIAL,
 *     INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR IN ANY
@@ -43,7 +43,7 @@
 *     SHALL APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY
 *     LIMITED REMEDY.
 * :>
- 
+
 */
 
 #ifndef _GPONCTL_API_H_
@@ -52,15 +52,36 @@
 #include "bcm_ploam_api.h"
 #include "bcm_omci_api.h"
 #include "bcm_gpon_api_common.h"
+#include "bcmctl_syslogdefs.h"
 
 #define GPONCTL_LOG_NAME "gponctl"
 
-#define GPONCTL_LOG_ERROR(fmt, arg...)                                     \
+#if defined(CC_GPONCTL_DEBUG)
+#define GPONCTL_DEBUGCODE(code)    code
+#else
+#define GPONCTL_DEBUGCODE(code)
+#endif /* CC_GPONCTL_DEBUG */
+
+#define GPONCTL_LOG_ERROR(fmt, arg...) \
+{ \
     printf("[ERROR " "%s" "] %-10s, %d: " fmt "\n", \
-                                  GPONCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg);
-#define GPONCTL_LOG_INFO(fmt, arg...)                                     \
+           GPONCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg); \
+    BCMCTL_SYSLOGCODE(gponCtl, LOG_ERR, fmt, arg); \
+}
+
+#define GPONCTL_LOG_INFO(fmt, arg...) \
+{ \
     printf("[INFO " "%s" "] %-10s, %d: " fmt "\n", \
-                                  GPONCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg);
+           GPONCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg); \
+    BCMCTL_SYSLOGCODE(gponCtl, LOG_INFO, fmt, arg); \
+}
+
+#define GPONCTL_LOG_DEBUG(fmt, arg...) \
+{ \
+    GPONCTL_DEBUGCODE(printf("[DEBUG " "%s" "] %-10s, %d: " fmt "\n", \
+           GPONCTL_LOG_NAME, __FUNCTION__, __LINE__, ##arg); )\
+    BCMCTL_SYSLOGCODE(gponCtl, LOG_DEBUG, fmt, arg); \
+}
 
 /* Return status values. */
 typedef enum GPON_CTL_Status
@@ -98,7 +119,6 @@ int gponCtl_getAlarmStatus(BCM_Ploam_AlarmStatusInfo *info);
 int gponCtl_maskAlarm(BCM_Ploam_MaskAlarmInfo *mask);
 int gponCtl_setSFSDThreshold(BCM_Ploam_SFSDthresholdInfo *threshold);
 int gponCtl_getSFSDThreshold(BCM_Ploam_SFSDthresholdInfo *threshold);
-
 
 /****************************************
  ** gponCtl State Control Commands API **
@@ -154,12 +174,11 @@ int gponCtl_setMcastEncryptionKeys(BCM_Ploam_McastEncryptionKeysInfo *info);
 int gponCtl_setSerialPasswd(BCM_Ploam_SerialPasswdInfo *info);
 int gponCtl_getSerialPasswd(BCM_Ploam_SerialPasswdInfo *info);
 int gponCtl_getPloamDriverVersion(BCM_Gpon_DriverVersionInfo *info);
+
 /****************************************
  ** gponCtl Test Functions API **
  ****************************************/
 int gponCtl_generatePrbsSequence(BCM_Ploam_GenPrbsInfo *info);
-
-
 
 /*******************************
  ** gponCtl OMCI Commands API **
@@ -169,5 +188,18 @@ int gponCtl_getOmciDriverVersion(BCM_Gpon_DriverVersionInfo *info);
 int gponCtl_getEncryptStateUpdate(BCM_PloamGemEncryptUpd *info);
 int gponCtl_getKeyEncryptionKey(BCM_Ploam_Kek *info);
 int gponCtl_setOmciCtrlMasterSessionKey(BCM_PLoam_OmciCtrlMsk *info);
+
+/*******************************
+ ** gponCtl Logging API **
+ *******************************/
+#if defined(BCMCTL_SYSLOG_SUPPORTED)
+DECLARE_setSyslogLevel(gponCtl);
+DECLARE_getSyslogLevel(gponCtl);
+DECALRE_isSyslogLevelEnabled(gponCtl);
+DECLARE_setSyslogMode(gponCtl);
+DECLARE_isSyslogEnabled(gponCtl);
+#endif /* BCMCTL_SYSLOG_SUPPORTED */
+
+
 #endif /* _GPONCTL_API_H_ */
 

@@ -87,9 +87,11 @@ typedef struct
 typedef struct
 {
     uint32_t mdio_clause:1;
-    uint32_t unused1:12;
+    uint32_t unused1:3;
+    uint32_t mdio_clk_divider:8;
+    uint32_t unused2:1;
     uint32_t free_run_clk_enable:1;
-    uint32_t unused2:18;
+    uint32_t unused3:18;
 } mdio_cfg_reg_t;
 #pragma pack(pop)
 #else
@@ -109,9 +111,11 @@ typedef struct
 #pragma pack(push, 1)
 typedef struct
 {
-    uint32_t unused2:18;
+    uint32_t unused3:18;
     uint32_t free_run_clk_enable:1;
-    uint32_t unused1:12;
+    uint32_t unused2:1;
+    uint32_t mdio_clk_divider:8;
+    uint32_t unused1:3;
     uint32_t mdio_clause:1;
 } mdio_cfg_reg_t;
 #pragma pack(pop)
@@ -153,6 +157,7 @@ static void mdio_cfg_clause_mode(uint32_t *p, mdio_clause_t mdio_clause)
     READ_32(p, cfg);
 #if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856)
     cfg.free_run_clk_enable = 1;
+    cfg.mdio_clk_divider = 12;
 #endif
     cfg.mdio_clause = mdio_clause;
     WRITE_32(p, cfg);

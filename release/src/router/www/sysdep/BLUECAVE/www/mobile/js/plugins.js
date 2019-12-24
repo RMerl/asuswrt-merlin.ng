@@ -234,6 +234,18 @@ function hasBlank(objArray){
 	if($(".hint").length > 0) return true;
 }
 
+function rangeCheck(objArray, min, max, reserveHints){//1: reserve previous hints
+	if(reserveHints != 1)
+		$(".hint").remove();
+
+	$.each(objArray, function(idx, $obj){
+		if($obj.val().length > 0 && (isNaN($obj.val()) || $obj.val() < min || $obj.val() > max)){
+			$obj.showTextHint('<#JS_validrange#> ' + min + ' <#JS_validrange_to#> ' + max + '.');
+		}
+	})
+	if($(".hint").length > 0) return true;
+}
+
 function hadPlugged(deviceType){
 	var usbDeviceList = httpApi.hookGet("show_usb_path") || [];
 	return (usbDeviceList.join().search(deviceType) != -1)
@@ -701,6 +713,11 @@ function setupWLCNvram(apProfileID) {
 			qisPostData["wlc" + unit + "_crypto"] = "aes";
 			qisPostData["wlc" + unit + "_wep"] = "0";
 		}
+		else if(authentication == "WPA3-Personal" && encryption == "AES"){
+			qisPostData["wlc" + unit + "_auth_mode"] = "sae";
+			qisPostData["wlc" + unit + "_crypto"] = "aes";
+			qisPostData["wlc" + unit + "_wep"] = "0";
+		}
 		else if(authentication == "WPA-WPA2-Enterprise"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "wpawpa2";
 			if(encryption == "AES")
@@ -807,7 +824,7 @@ var getRestartService = function(){
 	if(
 		qisPostData.hasOwnProperty("wl0_ssid") || 
 		qisPostData.hasOwnProperty("wl0.1_ssid") || 
-		qisPostData.hasOwnProperty("wl0_he_features") || 
+		qisPostData.hasOwnProperty("wl0_11ax") || 
 		systemVariable.isDefault || 
 		isSmartConnectChanged()
 	){
@@ -872,11 +889,16 @@ var postDataModel = {
 	"insert": function(obj){
 		if(obj){
 			var queryArray = [];
-			Object.keys(obj).forEach(function(key){
-				if(obj[key] === "")
+			Object.keys(obj).every(function(key){
+				if(qisPostData.hasOwnProperty(key)){
+					return false;
+				}
+				else if(obj[key] === "")
 					queryArray.push(key);
 				else
 					qisPostData[key] = obj[key];
+
+				return true;
 			});
 
 			var retData = httpApi.nvramGet(queryArray);
@@ -938,8 +960,21 @@ var isPage = function(page){
 }
 
 var isSupport = function(_ptn){
-	var ui_support = httpApi.hookGet("get_ui_support");
+	var ui_support = JSON.parse(JSON.stringify(httpApi.hookGet("get_ui_support")));
+	var modelInfo = httpApi.nvramGet(["productid"]);
+	var based_modelid = modelInfo.productid;
 	var matchingResult = false;
+	var odmpid = httpApi.nvramGet(["odmpid"]).odmpid;
+
+	if(ui_support["triband"] && ui_support["concurrep"] && (isSwMode("RP") || isSwMode("MB"))){
+		/* setup as dualband models, will copy wlc1 to wlc2 in apply.submitQIS */
+		ui_support["SMARTREP"] = 1;
+		ui_support["triband"] = 0;
+		ui_support["dualband"] = 1;
+	}
+	else{
+		ui_support = httpApi.hookGet("get_ui_support");
+	}
 
 	switch(_ptn){
 		case "ForceBWDPI":
@@ -956,6 +991,15 @@ var isSupport = function(_ptn){
 			break;
 		case "SMARTCONNECT":
 			matchingResult = (ui_support["smart_connect"] == 1 || ui_support["bandstr"] == 1) ? true : false;
+			break;
+		case "WPA3Support":
+			matchingResult = (based_modelid == 'RT-AX88U' || based_modelid == 'RT-AX92U'  || based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AX58U' || based_modelid == "TUF-AX3000" || based_modelid == 'RT-AX56U' || based_modelid == 'GT-AX11000') ? true : false;
+			break;
+		case "MB_mode_concurrep":
+			if(isSwMode("MB") && isSupport("concurrep") && odmpid != "RP-AC1900")
+				matchingResult = true;
+			else
+				matchingResult = false;
 			break;
 		default:
 			matchingResult = ((ui_support[_ptn] == 1) || (systemVariable.productid.search(_ptn) !== -1)) ? true : false;
@@ -1071,9 +1115,16 @@ function addNewScript(scriptName){
 	document.getElementsByTagName("head")[0].appendChild(script);
 }
 
+function startDetectLinkInternet(){
+	systemVariable.linkInternet = httpApi.isConnected();
+
+	if(!systemVariable.linkInternet){
+		setTimeout(arguments.callee, 1000);
+	}
+}
+
 function startLiveUpdate(){
-	var linkLnternet = httpApi.isConnected();
-	if(!linkLnternet){
+	if(!systemVariable.linkInternet){
 		setTimeout(arguments.callee, 1000);
 	}
 	else{
@@ -1081,13 +1132,12 @@ function startLiveUpdate(){
 			setTimeout(function(){
 				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag"], true);
 
-				if(fwInfo.webs_state_update == "0" || fwInfo.webs_state_update == ""){
-					setTimeout(arguments.callee, 1000);
-				}
-				else if(fwInfo.webs_state_info_am !== ""){
+				if(fwInfo.webs_state_flag == "1" || fwInfo.webs_state_flag == "2"){
 					systemVariable.isNewFw = fwInfo.webs_state_flag;
 					systemVariable.newFwVersion = fwInfo.webs_state_info_am;
 				}
+
+				setTimeout(arguments.callee, 1000);
 			}, 1000);
 		});
 	}
@@ -1161,8 +1211,16 @@ transformWLCObj = function(){
 	Object.keys(qisPostData).forEach(function(key){
 		qisPostData[key.replace("wlc" + wlcUnit, "wlc")] = qisPostData[key];
 	});
+
 	postDataModel.remove(wlcMultiObj["wlc" + wlcUnit]);
 };
+copyWLCObj_wlc1ToWlc2 = function(){
+	var wlcPostData = wlcMultiObj.wlc2;
+	$.each(wlcPostData, function(item){wlcPostData[item] = qisPostData[item.replace("2", "1")];});
+	qisPostData.wlc2_band = 2;
+	postDataModel.insert(wlcPostData);
+};
+
 transformWLToGuest = function(){
 	var transformWLIdx = function(_wlcUnit){
 		Object.keys(qisPostData).forEach(function(key){

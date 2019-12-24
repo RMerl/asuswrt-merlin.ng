@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  * timer expires or in the task context from which the timer
  * was created, depending on the implementation.
  *
- * $Id: bcmtimer.h 738255 2017-12-27 22:36:47Z $
+ * $Id: bcmtimer.h 774063 2019-04-09 06:11:02Z $
  */
 #ifndef __bcmtimer_h__
 #define __bcmtimer_h__
@@ -35,7 +35,7 @@ typedef unsigned int bcm_timer_module_id;
 typedef unsigned int bcm_timer_id;
 
 /* timer callback */
-typedef void (*bcm_timer_cb)(bcm_timer_id id, int data);
+typedef void (*bcm_timer_cb)(bcm_timer_id id, unsigned int data);
 
 /* OS-independant interfaces, applications should call these functions only */
 int bcm_timer_module_init(int timer_entries, bcm_timer_module_id *module_id);

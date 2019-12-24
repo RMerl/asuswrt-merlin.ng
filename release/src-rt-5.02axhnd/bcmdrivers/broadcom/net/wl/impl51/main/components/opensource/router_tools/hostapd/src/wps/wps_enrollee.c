@@ -100,6 +100,7 @@ static struct wpabuf * wps_build_m1(struct wps_data *wps)
 {
 	struct wpabuf *msg;
 	u16 config_methods;
+	u8 multi_ap_backhaul_sta = 0;
 
 	if (random_get_bytes(wps->nonce_e, WPS_NONCE_LEN) < 0)
 		return NULL;
@@ -115,10 +116,22 @@ static struct wpabuf * wps_build_m1(struct wps_data *wps)
 	if (wps->wps->ap && !wps->pbc_in_m1 &&
 	    (wps->dev_password_len != 0 ||
 	     (config_methods & WPS_CONFIG_DISPLAY))) {
+		/*
+		 * These are the methods that the AP supports as an Enrollee
+		 * for adding external Registrars, so remove PushButton.
+		 *
+		 * As a workaround for Windows 7 mechanism for probing WPS
+		 * capabilities from M1, leave PushButton option if no PIN
+		 * method is available or if WPS configuration enables PBC
+		 * workaround.
+		 */
 		config_methods &= ~WPS_CONFIG_PUSHBUTTON;
 		config_methods &= ~(WPS_CONFIG_VIRT_PUSHBUTTON |
 				    WPS_CONFIG_PHY_PUSHBUTTON);
 	}
+
+	if (wps->multi_ap_backhaul_sta)
+		multi_ap_backhaul_sta = MULTI_AP_BACKHAUL_STA;
 
 	if (wps_build_version(msg) ||
 	    wps_build_msg_type(msg, WPS_M1) ||
@@ -138,7 +151,7 @@ static struct wpabuf * wps_build_m1(struct wps_data *wps)
 	    wps_build_dev_password_id(msg, wps->dev_pw_id) ||
 	    wps_build_config_error(msg, WPS_CFG_NO_ERROR) ||
 	    wps_build_os_version(&wps->wps->dev, msg) ||
-	    wps_build_wfa_ext(msg, 0, NULL, 0) ||
+	    wps_build_wfa_ext(msg, 0, NULL, 0, multi_ap_backhaul_sta) ||
 	    wps_build_vendor_ext_m1(&wps->wps->dev, msg)) {
 		wpabuf_free(msg);
 		return NULL;
@@ -175,7 +188,7 @@ static struct wpabuf * wps_build_m3(struct wps_data *wps)
 	    wps_build_msg_type(msg, WPS_M3) ||
 	    wps_build_registrar_nonce(wps, msg) ||
 	    wps_build_e_hash(wps, msg) ||
-	    wps_build_wfa_ext(msg, 0, NULL, 0) ||
+	    wps_build_wfa_ext(msg, 0, NULL, 0, 0) ||
 	    wps_build_authenticator(wps, msg)) {
 		wpabuf_free(msg);
 		return NULL;
@@ -207,7 +220,7 @@ static struct wpabuf * wps_build_m5(struct wps_data *wps)
 	    wps_build_e_snonce1(wps, plain) ||
 	    wps_build_key_wrap_auth(wps, plain) ||
 	    wps_build_encr_settings(wps, msg, plain) ||
-	    wps_build_wfa_ext(msg, 0, NULL, 0) ||
+	    wps_build_wfa_ext(msg, 0, NULL, 0, 0) ||
 	    wps_build_authenticator(wps, msg)) {
 		wpabuf_clear_free(plain);
 		wpabuf_free(msg);
@@ -232,6 +245,11 @@ static int wps_build_cred_auth_type(struct wps_data *wps, struct wpabuf *msg)
 {
 	u16 auth_type = wps->wps->ap_auth_type;
 
+	/*
+	 * Work around issues with Windows 7 WPS implementation not liking
+	 * multiple Authentication Type bits in M7 AP Settings attribute by
+	 * showing only the most secure option from current configuration.
+	 */
 	if (auth_type & WPS_AUTH_WPA2PSK)
 		auth_type = WPS_AUTH_WPA2PSK;
 	else if (auth_type & WPS_AUTH_WPAPSK)
@@ -250,6 +268,11 @@ static int wps_build_cred_encr_type(struct wps_data *wps, struct wpabuf *msg)
 {
 	u16 encr_type = wps->wps->ap_encr_type;
 
+	/*
+	 * Work around issues with Windows 7 WPS implementation not liking
+	 * multiple Encryption Type bits in M7 AP Settings attribute by
+	 * showing only the most secure option from current configuration.
+	 */
 	if (wps->wps->ap_auth_type & (WPS_AUTH_WPA2PSK | WPS_AUTH_WPAPSK)) {
 		if (encr_type & WPS_ENCR_AES)
 			encr_type = WPS_ENCR_AES;
@@ -360,7 +383,7 @@ static struct wpabuf * wps_build_m7(struct wps_data *wps)
 	    (wps->wps->ap && wps_build_ap_settings(wps, plain)) ||
 	    wps_build_key_wrap_auth(wps, plain) ||
 	    wps_build_encr_settings(wps, msg, plain) ||
-	    wps_build_wfa_ext(msg, 0, NULL, 0) ||
+	    wps_build_wfa_ext(msg, 0, NULL, 0, 0) ||
 	    wps_build_authenticator(wps, msg)) {
 		wpabuf_clear_free(plain);
 		wpabuf_free(msg);
@@ -396,7 +419,7 @@ static struct wpabuf * wps_build_wsc_done(struct wps_data *wps)
 	    wps_build_msg_type(msg, WPS_WSC_DONE) ||
 	    wps_build_enrollee_nonce(wps, msg) ||
 	    wps_build_registrar_nonce(wps, msg) ||
-	    wps_build_wfa_ext(msg, 0, NULL, 0)) {
+	    wps_build_wfa_ext(msg, 0, NULL, 0, 0)) {
 		wpabuf_free(msg);
 		return NULL;
 	}

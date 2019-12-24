@@ -3373,7 +3373,8 @@ ppp_rcv_decomp_run(struct ppp_channel *chan)
 	if (!ppp)
 		return 0;
 
-	//pr_info("%s: flags 0x%x xstate 0x%x rstate 0x%x\n", __FUNCTION__, ppp->flags, ppp->xstate, ppp->rstate);
+	/*pr_info("%s: flags 0x%x xstate 0x%x rstate 0x%x\n",
+		__FUNCTION__, ppp->flags, ppp->xstate, ppp->rstate);*/
 
 	if (ppp->rstate & SC_DECOMP_RUN)
 		return 1;

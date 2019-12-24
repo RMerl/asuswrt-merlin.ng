@@ -1878,6 +1878,10 @@ stop_wan_if(int unit)
 		stop_igmpproxy();
 	}
 
+#ifdef RTCONFIG_OPENVPN
+	stop_ovpn_eas();
+#endif
+
 #ifdef RTCONFIG_VPNC
 	/* Stop VPN client */
 	stop_vpnc();
@@ -2043,9 +2047,6 @@ int update_resolvconf(void)
 #ifdef RTCONFIG_OPENVPN
         int dnsmode;
 #endif
-#ifdef RTCONFIG_DUALWAN
-	int primary_unit = wan_primary_ifunit();
-#endif
 
 	lock = file_lock("resolv");
 
@@ -2070,11 +2071,10 @@ int update_resolvconf(void)
 			char wan_xdns_buf[sizeof("255.255.255.255 ")*2], wan_xdomain_buf[256];
 
 #ifdef RTCONFIG_DUALWAN
-			if (unit != primary_unit && nvram_invmatch("wans_mode", "lb"))
+			/* skip disconnected WANs in LB mode */
+			if (nvram_match("wans_mode", "lb") && !is_phy_connect(unit))
 				continue;
 #endif
-			if (!is_phy_connect(unit))
-				continue;
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
@@ -2098,7 +2098,7 @@ int update_resolvconf(void)
 #endif
 #ifdef RTCONFIG_DUALWAN
 				/* Skip not fully connected WANs in LB mode */
-				if (unit != primary_unit && nvram_match("wans_mode", "lb") && !*wan_dns)
+				if (nvram_match("wans_mode", "lb") && !*wan_dns)
 					break;
 #endif
 				foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
@@ -2806,40 +2806,40 @@ wan_up(const char *pwan_ifname)
 		// if Adaptive QoS or AiProtection is enabled
 		int count = 0;
 		int val = 0;
-		while (count < 3) {
+		while (count < 5) {
 			sleep(1);
 			val = found_default_route(0);
+			usleep(400*1000);
 			count++;
-			if ((val == 1) || (count == 3)) break;
+			if ((val == 1) || (count == 5)) break;
 		}
 
 		BWDPI_DBG("found_default_route result: %d\n", val);
 
 		if (val) {
 			// if restart_wan_if, remove dpi engine related
-			if ((f_exists(DEVNODE) || f_exists("/dev/idpfw")) && changed == 0)
+			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
 			{
 				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
 				stop_dpi_engine_service(0);
 			}
-			else if ((f_exists(DEVNODE) || f_exists("/dev/idpfw")) && changed == 1)
+			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
 			{
 				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
 				stop_dpi_engine_service(1);
 			}
 			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
-			set_codel_patch();
 			start_dpi_engine_service();
 			start_firewall(wan_unit, 0);
 		}
 
-		if(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1){
+		if(IS_NON_AQOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
 	}
 	else{
-		if(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1){
+		if(IS_NON_AQOS()){
 			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
 			start_iQos();
 		}
@@ -2936,6 +2936,12 @@ wan_up(const char *pwan_ifname)
 		start_ovpn_eas();
 	}
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_check_subnet_conflict();
+	wgn_check_avalible_brif();
+#endif		
+
 
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
@@ -3553,9 +3559,6 @@ stop_wan(void)
 	fc_fini();
 #endif
 
-#ifdef RTCONFIG_OPENVPN
-	stop_ovpn_eas();
-#endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
 	if (nvram_get_int("pptpd_enable"))
 		stop_pptpd();

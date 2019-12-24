@@ -252,6 +252,19 @@ scan_proc_net_dev(pcap_if_t **devlistp, int fd, char *errbuf)
 }
 #endif /* HAVE_PROC_NET_DEV */
 
+/*
+ * Get a list of all interfaces that are up and that we can open.
+ * Returns -1 on error, 0 otherwise.
+ * The list, as returned through "alldevsp", may be null if no interfaces
+ * were up and could be opened.
+ *
+ * This is the implementation used on platforms that have SIOCGIFCONF but
+ * don't have any other mechanism for getting a list of interfaces.
+ *
+ * XXX - or platforms that have other, better mechanisms but for which
+ * we don't yet have code to use that mechanism; I think there's a better
+ * way on Linux, for example.
+ */
 int
 pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf)
 {
@@ -319,15 +332,41 @@ pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf)
 	ifend = (struct ifreq *)(buf + ifc.ifc_len);
 
 	for (; ifrp < ifend; ifrp = ifnext) {
+		/*
+		 * XXX - what if this isn't an IPv4 address?  Can
+		 * we still get the netmask, etc. with ioctls on
+		 * an IPv4 socket?
+		 *
+		 * The answer is probably platform-dependent, and
+		 * if the answer is "no" on more than one platform,
+		 * the way you work around it is probably platform-
+		 * dependent as well.
+		 */
 		n = SA_LEN(&ifrp->ifr_addr) + sizeof(ifrp->ifr_name);
 		if (n < sizeof(*ifrp))
 			ifnext = ifrp + 1;
 		else
 			ifnext = (struct ifreq *)((char *)ifrp + n);
 
+		/*
+		 * XXX - The 32-bit compatibility layer for Linux on IA-64
+		 * is slightly broken. It correctly converts the structures
+		 * to and from kernel land from 64 bit to 32 bit but
+		 * doesn't update ifc.ifc_len, leaving it larger than the
+		 * amount really used. This means we read off the end
+		 * of the buffer and encounter an interface with an
+		 * "empty" name. Since this is highly unlikely to ever
+		 * occur in a valid case we can just finish looking for
+		 * interfaces if we see an empty name.
+		 */
 		if (!(*ifrp->ifr_name))
 			break;
 
+		/*
+		 * Skip entries that begin with "dummy".
+		 * XXX - what are these?  Is this Linux-specific?
+		 * Are there platforms on which we shouldn't do this?
+		 */
 		if (strncmp(ifrp->ifr_name, "dummy", 5) == 0)
 			continue;
 

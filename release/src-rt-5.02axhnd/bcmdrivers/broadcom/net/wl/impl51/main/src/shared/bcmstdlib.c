@@ -1,7 +1,7 @@
 /*
  * stdlib support routines for self-contained images.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmstdlib.c 692135 2017-03-26 17:19:39Z $
+ * $Id: bcmstdlib.c 774680 2019-05-02 12:46:25Z $
  */
 
 /*
@@ -28,28 +28,15 @@
  */
 
 /*
- * Define BCMSTDLIB_WIN32_APP if this is a Win32 Application compile
- */
-#if defined(_WIN32) && !defined(NDIS) && !defined(EFI)
-#define BCMSTDLIB_WIN32_APP 1
-#endif /* _WIN32 && !NDIS */
-
-/*
  * Define BCMSTDLIB_SNPRINTF_ONLY if we only want snprintf & vsnprintf implementations
  */
-#if (defined(_WIN32) && !defined(EFI)) || defined(_CFE_)
+#if defined(_CFE_)
 #define BCMSTDLIB_SNPRINTF_ONLY 1
-#endif /* _WIN32 || !EFI || _CFE_ */
+#endif /* _CFE_ */
 
 #include <typedefs.h>
-#ifdef BCMSTDLIB_WIN32_APP
-/* for size_t definition */
-#include <stddef.h>
-#endif // endif
 #include <stdarg.h>
-#ifndef BCMSTDLIB_WIN32_APP
 #include <bcmutils.h>
-#endif // endif
 #include <bcmstdlib.h>
 
 #ifdef HND_PRINTF_THREAD_SAFE
@@ -127,47 +114,13 @@ printf_unlock(void)
 #define printf_unlock()
 #endif	/* HND_PRINTF_THREAD_SAFE */
 
-#ifdef BCMSTDLIB_WIN32_APP
-
-/* for a WIN32 application, use _vsnprintf as basis of vsnprintf/snprintf to
- * support full set of format specifications.
- */
-
-int
-vsnprintf(char *buf, size_t bufsize, const char *fmt, va_list ap)
-{
-	int r;
-
-	r = _vsnprintf(buf, bufsize, fmt, ap);
-
-	if (r < 0 && bufsize > 0)
-		buf[bufsize - 1] = '\0';
-
-	return r;
-}
-
-int
-snprintf(char *buf, size_t bufsize, const char *fmt, ...)
-{
-	va_list	ap;
-	int	r;
-
-	va_start(ap, fmt);
-	r = vsnprintf(buf, bufsize, fmt, ap);
-	va_end(ap);
-
-	return r;
-}
-
-#else /* BCMSTDLIB_WIN32_APP */
-
 #if !defined(BCMROMOFFLOAD_EXCLUDE_STDLIB_FUNCS)
 
 static const char hex_upper[17] = "0123456789ABCDEF";
 static const char hex_lower[17] = "0123456789abcdef";
 
 static int
-__atox(char *buf, char * end, unsigned int num, unsigned int radix, int width,
+__atox(char *buf, char * end, unsigned int num, unsigned int radix, int width, char fill,
        const char *digits)
 {
 	char buffer[16];
@@ -186,7 +139,7 @@ __atox(char *buf, char * end, unsigned int num, unsigned int radix, int width,
 	if (width && (width > retval)) {
 		width = width - retval;
 		while (width) {
-			*op++ = '0';
+			*op++ = fill;
 			retval++;
 			width--;
 		}
@@ -199,6 +152,10 @@ __atox(char *buf, char * end, unsigned int num, unsigned int radix, int width,
 		buf++;
 	}
 
+	while ((width + retval) < 0 && (buf <= end)) {
+		*buf++ = fill;
+		retval++;
+	}
 	return retval;
 }
 
@@ -214,6 +171,8 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 	int width;
 	int width2 = 0;
 	int hashash = 0;
+	int leftjustify = 0;
+	char fill = ' ';
 
 	optr = buf;
 	end = buf + size - 1;
@@ -225,6 +184,10 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 	}
 
 	while (*iptr) {
+		if (optr > end) {
+			break;
+		}
+
 		if (*iptr != '%') {
 			if (optr <= end)
 				*optr = *iptr;
@@ -239,7 +202,12 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 			hashash = 1;
 			iptr++;
 		}
-		if (*iptr == '-' || *iptr == '0') {
+		if (*iptr == '-') {
+			leftjustify = 1;
+			iptr++;
+		}
+		if (*iptr == '0') {
+			fill = '0';
 			iptr++;
 		}
 
@@ -271,7 +239,7 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 			tmpptr = va_arg(ap, const char *);
 			if (!tmpptr)
 				tmpptr = "(null)";
-			if ((width == 0) & (width2 == 0)) {
+			if ((width == 0) && (width2 == 0)) {
 				while (*tmpptr) {
 					if (optr <= end)
 						*optr = *tmpptr;
@@ -280,18 +248,40 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 				}
 				break;
 			}
-			while (width && *tmpptr) {
-				if (optr <= end)
-					*optr = *tmpptr;
-				++optr;
-				++tmpptr;
-				width--;
-			}
-			while (width) {
-				if (optr <= end)
-					*optr = ' ';
-				++optr;
-				width--;
+			if (leftjustify) {
+				while (*tmpptr) {
+					if (optr <= end)
+						*optr = *tmpptr;
+					++optr;
+					++tmpptr;
+					width--;
+				}
+				while (width > 0) {
+					if (optr <= end)
+						*optr = ' ';
+					++optr;
+					width--;
+				}
+			} else {
+				const char *rightjustify = tmpptr;
+				while (*rightjustify) { rightjustify++; }
+				width2 = rightjustify - tmpptr;
+
+				while (width > width2) {
+					if (optr <= end) {
+						*optr = ' ';
+					}
+					++optr;
+					width--;
+				}
+				while (*tmpptr && width) {
+					if (optr <= end) {
+						*optr = *tmpptr;
+					}
+					++optr;
+					++tmpptr;
+				}
+				width2 = 0;
 			}
 			break;
 		case 'd':
@@ -303,11 +293,13 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 				++optr;
 				i = -i;
 			}
-			optr += __atox(optr, end, i, 10, width, hex_upper);
+			optr += __atox(optr, end, i, 10, leftjustify ? -width : width,
+				leftjustify ? ' ' : fill, hex_upper);
 			break;
 		case 'u':
 			x = va_arg(ap, unsigned int);
-			optr += __atox(optr, end, x, 10, width, hex_upper);
+			optr += __atox(optr, end, x, 10, leftjustify ? -width : width,
+				leftjustify ? ' ' : fill, hex_upper);
 			break;
 		case 'X':
 		case 'x':
@@ -316,13 +308,13 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 				*optr++ = *iptr;
 			}
 			x = va_arg(ap, unsigned int);
-			optr += __atox(optr, end, x, 16, width,
-			               (*iptr == 'X') ? hex_upper : hex_lower);
+			optr += __atox(optr, end, x, 16, leftjustify ? -width : width,
+				leftjustify ? ' ' : fill, (*iptr == 'X') ? hex_upper : hex_lower);
 			break;
 		case 'p':
 		case 'P':
 			x = va_arg(ap, unsigned int);
-			optr += __atox(optr, end, x, 16, 8,
+			optr += __atox(optr, end, x, 16, 8, '0',
 			               (*iptr == 'P') ? hex_upper : hex_lower);
 			break;
 		case 'c':
@@ -338,6 +330,8 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 			optr++;
 			break;
 		}
+		fill = ' ';
+		leftjustify = 0;
 		iptr++;
 	}
 
@@ -363,8 +357,6 @@ snprintf(char *buf, size_t bufsize, const char *fmt, ...)
 	return r;
 }
 #endif	/* !BCMROMOFFLOAD_EXCLUDE_STDLIB_FUNCS */
-
-#endif /* BCMSTDLIB_WIN32_APP */
 
 #ifndef BCMSTDLIB_SNPRINTF_ONLY
 int
@@ -897,6 +889,7 @@ static void *g_printf_sendup_output_ctx = NULL;
 
 #ifdef DONGLEBUILD
 static bool _rodata_overwritten = FALSE;
+static bool _timestamp_suppress = FALSE;
 
 /* Ensure this string is not const. */
 ROMCONST char warn_str[] = "RO region is overwritten. printf not allowed. called from %p\n";
@@ -915,6 +908,11 @@ void
 printf_set_rodata_invalid(void)
 {
 	_rodata_overwritten = TRUE;
+}
+void
+printf_suppress_timestamp(bool suppress)
+{
+	_timestamp_suppress = suppress;
 }
 #endif /* DONGLEBUILD */
 
@@ -942,7 +940,7 @@ printf(const char *fmt, ...)
 		return count;
 	}
 
-	if (last_nl) {
+	if (last_nl && !_timestamp_suppress) {
 		/* add the dongle ref time */
 		uint32 dongle_time_ms = hnd_get_reftime_ms();
 		count = sprintf(buffer, time_str, dongle_time_ms / 1000, dongle_time_ms % 1000);
@@ -956,6 +954,10 @@ printf(const char *fmt, ...)
 	for (i = 0; i < count; i++) {
 		putc(buffer[i]);
 
+		/* XXX EFI environment requires CR\LF in a printf, etc.
+		 * so unless the string has \r\n, it will not execute CR
+		 * So force it!
+		 */
 #ifdef EFI
 		if (buffer[i] == '\n')
 			putc('\r');
@@ -978,7 +980,7 @@ printf(const char *fmt, ...)
 }
 #endif /* printf */
 
-#if !defined(_WIN32) && !defined(_CFE_) && !defined(EFI)
+#if !defined(_CFE_) && !defined(EFI)
 int
 fputs(const char *s, FILE *stream /* UNUSED */)
 {
@@ -1020,7 +1022,7 @@ rand(void)
 	seed = t;
 	return t;
 }
-#endif /* !_WIN32 && !_CFE_ && !EFI */
+#endif /* !_CFE_ && !EFI */
 
 #if defined(EFI) && !defined(EFI_WINBLD)
 int
@@ -1044,7 +1046,6 @@ putchar(int c)
 #endif /* EFI && !EFI_WINBLD */
 #endif /* BCMSTDLIB_SNPRINTF_ONLY */
 
-#if !defined(_WIN32) || defined(EFI)
 size_t
 strnlen(const char *s, size_t maxlen)
 {
@@ -1057,4 +1058,3 @@ strnlen(const char *s, size_t maxlen)
 
 	return s - b;
 }
-#endif /* !_WIN32 || EFI */

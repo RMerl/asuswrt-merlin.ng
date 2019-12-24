@@ -32,6 +32,10 @@ int hostapd_wps_ap_pin_set(struct hostapd_data *hapd, const char *pin,
 void hostapd_wps_update_ie(struct hostapd_data *hapd);
 int hostapd_wps_config_ap(struct hostapd_data *hapd, const char *ssid,
 			  const char *auth, const char *encr, const char *key);
+#ifdef CONFIG_DRIVER_BRCM_MAP
+int hostapd_wps_config_map_bh(struct hostapd_data *hapd, const char *ssid,
+			  const char *auth, const char *encr, const char *key);
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
 int hostapd_wps_nfc_tag_read(struct hostapd_data *hapd,
 			     const struct wpabuf *data);
 struct wpabuf * hostapd_wps_nfc_config_token(struct hostapd_data *hapd,

@@ -2,7 +2,7 @@
  * Cevent daemon header
  *
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  * <<Broadcom-WL-IPTag/Open:>>
  *
  *
- * $Id: ceventd.h 751732 2018-03-13 14:25:12Z $
+ * $Id: ceventd.h 777386 2019-07-31 06:15:54Z $
  */
 
 #ifndef __CEVENTD_H__
@@ -84,6 +84,7 @@ typedef struct {
 	uint8 pkt_cli_rsp[CA_CLI_RSP_LEN];	/* buffer for cli socket to send response */
 
 	int pid;		/* current process id */
+	int pid_fd;		/* FD to lock for this process ID */
 	uint32 flags;		/* see CA_WKSP_FLAG_* defines for possible flag values */
 	char interface[IFNAMSIZ+1];		/* LAN interface name */
 	uint32	log_type;	/* see CA_LOG_TYPE_* */
@@ -143,6 +144,9 @@ ca_out_file_init(ca_wksp_t *cwksp);
 
 extern int
 ca_out_file_reinit(ca_wksp_t *cwksp);
+
+extern int
+ca_out_file_flush(ca_wksp_t *cwksp);
 
 extern int
 ca_cli_init(ca_wksp_t *cwksp);

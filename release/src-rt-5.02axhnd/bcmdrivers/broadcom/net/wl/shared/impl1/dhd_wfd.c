@@ -57,7 +57,7 @@ static ulong tx_flowring_mismatch_drop_wfd[FWDER_MAX_RADIO] = {0};
 #endif /* BCM_DHD_RUNNER */
 extern const uint8 prio2ac[8];
 #if defined(BCM_BLOG)
-#if defined(BCM_WFD) && !( defined(CONFIG_BCM_FAP) || defined(CONFIG_BCM_FAP_MODULE)) && !(defined(CONFIG_BCM_PKTRUNNER) || defined(CONFIG_BCM_PKTRUNNER_MODULE))
+#if defined(BCM_WFD) && defined(CONFIG_BCM_FC_BASED_WFD)
 typedef int (*FC_WFD_ENQUEUE_HOOK)(void * nbuff_p,const Blog_t * const blog_p); /* Xmit with blog */
 extern FC_WFD_ENQUEUE_HOOK fc_wfd_enqueue_cb;
 
@@ -65,7 +65,7 @@ static int dhd_fc_wfd_enqueue(void * nbuff_p,const Blog_t * const blog_p)
 {
     if(fc_wfd_enqueue_cb)
         return (fc_wfd_enqueue_cb)(nbuff_p,blog_p);
-         
+
     return 0;
 }
 #endif
@@ -136,7 +136,7 @@ dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
                 blog_p->wfd.dhd_ucast.priority = prio;
                 blog_p->wfd.dhd_ucast.ssid = ifidx;
                 blog_p->wfd.dhd_ucast.wfd_prio = blog_p->iq_prio;
-#if defined(BCM_WFD) && !( defined(CONFIG_BCM_FAP) || defined(CONFIG_BCM_FAP_MODULE)) && !(defined(CONFIG_BCM_PKTRUNNER) || defined(CONFIG_BCM_PKTRUNNER_MODULE))
+#if defined(BCM_WFD) && defined(CONFIG_BCM_FC_BASED_WFD)
                 blog_p->dev_xmit_blog = dhd_fc_wfd_enqueue;
 #else
                 blog_p->dev_xmit_blog = NULL;
@@ -189,7 +189,7 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
         ifidx = fkb_p->wl.ucast.dhd.ssid;
 
 #if (defined(DSLCPE) && defined(BCM_NBUFF)) || defined(BCM_NBUFF_WLMCAST)
-        if ((fkb_p->len > (WLAN_MAX_MTU_PAYLOAD_SIZE+BCM_MAX_MTU_EXTRA_SIZE)) || PKTATTACHTAG(dhdp->osh, pNBuf))
+        if (PKTATTACHTAG(dhdp->osh, pNBuf))
         {
             PKTFREE(dhdp->osh, pNBuf, FALSE);
             dhdp->tx_dropped++;
@@ -201,8 +201,13 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
 
         flowid = fkb_p->wl.ucast.dhd.flowring_idx;
 
+#if defined(BCM_WFD) && defined(CONFIG_BCM_FC_BASED_WFD)
+        /* clear this packet as coming from fc base wfd should flush depend on dirty_p */
+        DHD_PKT_CLR_WFD_BUF(pNBuf);
+#else
         /* tag this packet as coming from wfd */
         DHD_PKT_SET_WFD_BUF(pNBuf);
+#endif
 
         /* Save the flowid and the dataoff in the skb's pkttag */
         DHD_PKT_SET_FLOWID(pNBuf, flowid);
@@ -215,8 +220,8 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
             ret = BCME_NOTREADY;
         } else {
 #if defined(BCM_DHD_RUNNER)
-             struct ether_header *eh;
-            
+            struct ether_header *eh;
+
             /* At present we do not have any mechanism to flush runner/wfd
              * rings when a STA disassociates. So runner can still feed some
              * packets with an old flowid when that STA has left and flowid
@@ -225,17 +230,17 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
              */
             eh = (struct ether_header *)PKTDATA(dhdp->osh, pNBuf);
             if ((DHD_IF_ROLE_AP(dhdp, ifidx) &&
-                     dhd_eacmp(eh->ether_dhost, flow_ring_node->flow_info.da)) ||
-                     (dhdp->flow_prio_map[(PKTPRIO(pNBuf))] != flow_ring_node->flow_info.tid)) {
+                    dhd_eacmp(eh->ether_dhost, flow_ring_node->flow_info.da)) ||
+                    (dhdp->flow_prio_map[(PKTPRIO(pNBuf))] != flow_ring_node->flow_info.tid)) {
                 DHD_INFO(("dhd%d: dhd_wfd_forward: Wrong flow dst mac "MACF""
-                        "ring mac "MACF" status %d active %d\n",
-                        dhdp->unit, ETHERP_TO_MACF(eh->ether_dhost),
-                        ETHERP_TO_MACF(flow_ring_node->flow_info.da),
-                        flow_ring_node->status, flow_ring_node->active));
-            
+                          "ring mac "MACF" status %d active %d\n",
+                          dhdp->unit, ETHERP_TO_MACF(eh->ether_dhost),
+                          ETHERP_TO_MACF(flow_ring_node->flow_info.da),
+                          flow_ring_node->status, flow_ring_node->active));
+
                 tx_flowring_mismatch_drop_wfd[dhdp->unit]++;
                 ret = BCME_ERROR;
-            } else 
+            } else
 #endif /* BCM_DHD_RUNNER */
                 ret = dhd_bus_txqueue_enqueue(dhdp->bus, pNBuf, flowid);
         }
@@ -298,10 +303,6 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev
     wmf = dhd_wmf_conf(dhdp, ifidx);
 #endif
 #if (defined(DSLCPE) && defined(BCM_NBUFF))|| defined(BCM_NBUFF_WLMCAST)
-    if (((FkBuff_t *)fkb)->len > (WLAN_MAX_MTU_PAYLOAD_SIZE+BCM_MAX_MTU_EXTRA_SIZE)) {
-        DHD_ERROR(("%s : oversize packets!!\n", __FUNCTION__));
-        goto free_drop;
-    }
 
     if (PKTATTACHTAG(dhdp->osh,  pNBuf)) {
         DHD_ERROR(("%s : pcie is still in suspend state!!\n", __FUNCTION__));

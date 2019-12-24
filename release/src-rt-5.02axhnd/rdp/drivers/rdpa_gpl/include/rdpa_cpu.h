@@ -92,15 +92,19 @@ void rdpa_cpu_int_clear(rdpa_cpu_port port, int queue);
  */
 
 /** CPU meter SR validation constants */
-#define RDPA_CPU_METER_MIN_SR       100         /**< Min CPU meter SR value in pps */
+
 
 #ifdef XRDP
 #define RDPA_CPU_METER_MAX_SR       500000     /**< Max CPU meter SR value in pps */
+#define RDPA_CPU_METER_MIN_SR       10         /**< Min CPU meter SR value in pps */
+#define RDPA_CPU_METER_SR_QUANTA    10         /**< CPU meter SR must be a multiple of quanta */
 #else
 #define RDPA_CPU_METER_MAX_SR       40000       /**< Max CPU meter SR value in pps */
+#define RDPA_CPU_METER_MIN_SR       100         /**< Min CPU meter SR value in pps */
+#define RDPA_CPU_METER_SR_QUANTA    100         /**< CPU meter SR must be a multiple of quanta */
 #endif
 
-#define RDPA_CPU_METER_SR_QUANTA    100         /**< CPU meter SR must be a multiple of quanta */
+
 
 /** Reason index. Underlying type of cpu_reason_index aggregate */
 typedef struct

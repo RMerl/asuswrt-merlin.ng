@@ -425,7 +425,6 @@ else
 		],[
 		    #
 		    # We don't have the header - give up.
-		    # XXX - we could also fall back on some other
 		    # mechanism, but, for now, this'll catch this
 		    # problem so that we can at least try to figure
 		    # out something to do on systems with "getifaddrs()"
@@ -478,7 +477,6 @@ else
 		*)
 			#
 			# Assume we just have SIOCGIFCONF.
-			# (XXX - on at least later Linux kernels, there's
 			# another mechanism, and we should be using that
 			# instead.)
 			#

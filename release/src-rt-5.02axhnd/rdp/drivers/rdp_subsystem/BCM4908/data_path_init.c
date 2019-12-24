@@ -39,6 +39,7 @@
 #include "data_path_init.h"
 #include "rdpa_types.h"
 #include "rdpa_config.h"
+#include "rdpa_dhd_helper_basic.h"
 #include "rdd_ih_defs.h"
 #include "bdmf_interface.h"
 #include "rdp_drv_bbh.h"
@@ -67,6 +68,8 @@
 
 static int bbh_ddr_buffer_size_kb = DRV_BBH_DDR_BUFFER_SIZE_2_KB;
 static int fpm_pool_size_max = 16;
+
+uint8_t * g_backup_queues_mem_virt_addr = 0;
 
 #define DRV_BBH_DDR_BPM_MESSAGE_FORMAT DRV_BBH_DDR_BPM_MESSAGE_FORMAT_15_BIT_BN_WIDTH
 #define DRV_SPARE_BN_MESSAGE_FORMAT DRV_SPARE_BN_MESSAGE_FORMAT_15_bit_BN_WIDTH
@@ -1518,11 +1521,8 @@ static int check_reserved_memory(void)
 
     /* TODO! implement this
      * based on build flag to see if RDP_DDR_MC_HEADER_SIZE needs to be included */
-#ifdef CONFIG_BCM_RDPA_MCAST
-    sz_mb_required = (RDP_DDR_DATA_STRUCTURES_SIZE + RDP_DDR_MC_HEADER_SIZE) >> 20;
-#else
-    sz_mb_required = (RDP_DDR_DATA_STRUCTURES_SIZE) >> 20;
-#endif
+    sz_mb_required = (RDP_DDR_DATA_STRUCTURES_SIZE + RDP_DDR_MC_HEADER_SIZE + RDPA_DHD_BACKUP_QUEUE_RESERVED_SIZE) >> 20;
+
     if (p_dpi_cfg->runner_ddr_fm_size < sz_mb_required) {
         printk("You need %dMB flow memory, but only have reserved %dMB\n",
                sz_mb_required, p_dpi_cfg->runner_ddr_fm_size);
@@ -1555,6 +1555,13 @@ int data_path_init(data_path_init_params *dpi_params)
         printk(_BBh_ "FAILED TO INITIALIZE RDP DUE TO RESERVE MEMORY NOT ENOUGH\n" _BBnl_);
         return -1;
     }
+#endif
+
+#ifdef RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+    /* If reserved memory is okay, then set the global base address for backup queues */
+    g_backup_queues_mem_virt_addr = (uint8_t*)p_dpi_cfg->rdp_ddr_fm_base + RDP_DDR_DATA_STRUCTURES_SIZE + RDP_DDR_MC_HEADER_SIZE;
+#else
+    g_backup_queues_mem_virt_addr = 0;
 #endif
 
     init_rdp_virtual_mem();

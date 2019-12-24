@@ -88,9 +88,12 @@ uint32_t iqos_enable_g = 0;	/* Enable Ingress QoS feature */
 uint32_t iqos_cpu_cong_g = 0;
 uint32_t iqos_debug_g = 0;
 
+#if defined(CONFIG_SMP) || defined(CONFIG_PREEMPT)
 DEFINE_SPINLOCK(iqos_lock_g);
 EXPORT_SYMBOL(iqos_lock_g);
-
+DEFINE_SPINLOCK(iqos_cong_lock_g);
+EXPORT_SYMBOL(iqos_cong_lock_g);
+#endif
 
 /*
  *------------------------------------------------------------------------------
@@ -322,12 +325,12 @@ int iqos_key_param_field_set(iqos_param_t *param, uint32_t field,
 		param->data.ingress_device = *val_ptr;
 		break;
 	case IQOS_FIELD_SRC_MAC:
-		if (val_size != ETH_HLEN)
+		if (val_size != ETH_ALEN)
 			return -EINVAL;
 		memcpy(param->data.src_mac, val_ptr, val_size);
 		break;
 	case IQOS_FIELD_DST_MAC:
-		if (val_size != ETH_HLEN)
+		if (val_size != ETH_ALEN)
 			return -EINVAL;
 		memcpy(param->data.dst_mac, val_ptr, val_size);
 		break;
@@ -397,10 +400,6 @@ int iqos_key_param_field_set(iqos_param_t *param, uint32_t field,
 		break;
 	case IQOS_FIELD_DSCP:
 		if (val_size != 1)
-			return -EINVAL;
-
-		/* someone has set the IQOS to do IPv6 */
-		if (param->data.is_ipv6 == 1)
 			return -EINVAL;
 
 		param->data.dscp = *((uint8_t *)val_ptr);

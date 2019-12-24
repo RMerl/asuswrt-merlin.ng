@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_pkt.h 765948 2018-07-20 05:22:34Z $
+ * $Id: linux_pkt.h 774125 2019-04-11 04:15:49Z $
  */
 
 #ifndef _linux_pkt_h_
@@ -41,14 +41,16 @@
 /* Because the non BINOSL implemenation of the PKT OSL routines are macros (for
  * performance reasons),  we need the Linux headers.
  */
+/* XXX REVISIT  Is there a more specific header file we should be including for the
+ * struct/definitions we need? johnvb
+ */
 #include <linuxver.h>
 
 #if defined(BCM_NBUFF_PKT)
 
 #include <nbuff_pkt.h>
 
-#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE)) && \
-	!defined(__ARM_ARCH_7A__)
+#if (defined(CONFIG_BCM_BPM) || defined(CONFIG_BCM_BPM_MODULE))
 #include <bpm.h>
 #endif // endif
 
@@ -746,6 +748,10 @@ extern void *osl_pktdup_cpy(osl_t *osh, void *skb);
 extern void *osl_pkt_frmnative(osl_t *osh, void *skb);
 #endif /* BCMDBG_CTRACE */
 extern struct sk_buff *osl_pkt_tonative(osl_t *osh, void *pkt);
+
+#ifdef BCM_SKB_FREE_OFFLOAD
+extern void dev_kfree_skb_thread_bulk(struct sk_buff *skb);
+#endif /* BCM_SKB_FREE_OFFLOAD */
 
 #else	/* BINOSL */
 

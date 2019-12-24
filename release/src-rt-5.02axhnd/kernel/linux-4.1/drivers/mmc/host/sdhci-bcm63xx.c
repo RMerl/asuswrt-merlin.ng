@@ -47,11 +47,21 @@
    
 #define SDHCI_BCM63XX_FORCE_LOW_PERFORMANCE 0
 #define SDHCI_BCM63XX_FAKE_TRIGGER_NATIVE_CD 0
+#if defined(CONFIG_BCM96858)
+#define SDHCI_BCM63XX_FORCE_PIO_MODE 1
+#else
+#define SDHCI_BCM63XX_FORCE_PIO_MODE 0
+#endif
+
 
 static unsigned short ext_intr;
 static struct sdhci_pltfm_data sdhci_bcm63xx_pdata = {
 	/* Quirks and ops defined here will be passed to sdhci_host structure */
 	.quirks = 0
+#if SDHCI_BCM63XX_FORCE_PIO_MODE
+        | SDHCI_QUIRK_BROKEN_ADMA
+        | SDHCI_QUIRK_BROKEN_DMA
+#endif
 #if SDHCI_BCM63XX_FORCE_LOW_PERFORMANCE	
 		| SDHCI_QUIRK_FORCE_1_BIT_DATA
 		| SDHCI_QUIRK_BROKEN_ADMA

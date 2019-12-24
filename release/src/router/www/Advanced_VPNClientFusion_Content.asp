@@ -1039,6 +1039,7 @@ function connect_Row(rowdata) {
 	var $connectActionRow = $(rowdata.parentNode.parentNode);
 	var vpnc_idx = $connectActionRow.attr('id');
 
+	document.form.ctf_nonat_force.disabled = true;
 	if(flag == "disconnect") { //Disconnect the connected rule 
 		$connectActionRow.addClass("deactivate_text");
 		$activateItem.addClass("deactivate_icon");
@@ -1053,29 +1054,32 @@ function connect_Row(rowdata) {
 			return;
 		}
 		if(isSupport("sdk7114")) {
-			var wan_proto = httpApi.nvramGet(["wan_proto"], true).wan_proto;
+			var pppoe_flag = false;
+			var wanMax = isSupport("wanMax");
+			for(var i = 0; i < wanMax; i += 1) {
+				var wan_proto = httpApi.nvramGet(["wan" + i + "_proto"], true)["wan" + i + "_proto"];
+				if(wan_proto == "pppoe") {
+					pppoe_flag = true;
+					break;
+				}
+			}
 			var ctf_disable = httpApi.nvramGet(["ctf_disable"], true).ctf_disable;
-			if(wan_proto == "pppoe" && ctf_disable == "0") {
+			if(pppoe_flag && ctf_disable == "0") {
 				var vpncoppp = httpApi.nvramGet(["vpncoppp"], true).vpncoppp;
 				if(vpncoppp == "" || vpncoppp == "0") {
-					if(confirm("When you use the PPPoE WAN connected, Router will reboot automatically for NAT Acceleration. Are you sure you want to continue?")) {
-						httpApi.nvramSet({
-							"ctf_nonat_force" : "1",
-							"action_mode": "apply"
-						}, function() {
-							document.form.action_script.value = "reboot";
-							document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
-							showLoading(parseInt(document.form.action_wait.value));
-						});
+					if(confirm("<#vpnc_pppoe_dis_nat_confirm#>")) {
+						document.form.ctf_nonat_force.disabled = false;
+						document.form.ctf_nonat_force.value = "1";
+						document.form.flag.value = "";
+						document.form.action_script.value = "reboot";
+						document.form.action_wait.value = httpApi.hookGet("get_default_reboot_time");
 					}
 					else
 						return false;
 				}
 				else if(vpncoppp == "1") {
-					httpApi.nvramSet({
-						"ctf_nonat_force" : "1",
-						"action_mode": "apply"
-					});
+					document.form.ctf_nonat_force.disabled = false;
+					document.form.ctf_nonat_force.value = "1";
 				}
 			}
 		}
@@ -2847,6 +2851,7 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="vpn_client_unit" value="1">
 <input type="hidden" name="vpnc_pptp_options_x_list" value="<% nvram_get("vpnc_pptp_options_x_list"); %>">
 <input type="hidden" name="vpnc_unit" value="<% nvram_get("vpnc_unit"); %>">
+<input type="hidden" name="ctf_nonat_force" value="<% nvram_get("ctf_nonat_force"); %>" disabled>
 <div id="openvpnc_setting"  class="contentM_qis pop_div_bg" style="box-shadow: 1px 5px 10px #000;">
 	<table class="QISform_wireless" border=0 align="center" cellpadding="5" cellspacing="0">
 		<tr style="height:32px;">

@@ -302,6 +302,31 @@ static void phy_pair_swap_set(phy_dev_t *phy_dev)
     phy_bus_c45_write32(phy_dev, 0x1e4005, v16); //command reg
 }
 
+#ifdef EXT_BCM84880
+static void phy_led_mode_set(phy_dev_t *phy_dev)
+{
+#define PHY_CMD_READY_MAX  5000
+    uint16_t v16;
+    uint16_t uTimeOut = 0;
+	if (phy_dev->led_mode)
+        return;
+    /* enable pair swapping a->d, b->c, c->b, d->a */
+    do {
+        phy_bus_c45_read32(phy_dev, 0x1e4037, &v16); //status reg
+        uTimeOut++;
+    } while (v16 != 0x0004 && v16 != 0x0008 && uTimeOut < PHY_CMD_READY_MAX);
+    if(uTimeOut == PHY_CMD_READY_MAX)
+        printk("uTimeOut for status = %d\n", uTimeOut);
+    v16 = 0x0000; // firmware control mode
+    phy_bus_c45_write32(phy_dev, 0x1e4039, v16); //data reg 2
+    v16 = 0x8022; //CMD_SET_LED_MODE
+    phy_bus_c45_write32(phy_dev, 0x1e4005, v16); //command reg
+
+    printk("set led mode - firmware control\n");
+
+}
+#endif
+
 static int sf2_cl45phy_read_status(phy_dev_t *phy_dev);
 static int ethsw_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex);
 static int ethsw_cl45phy_get_config_speed(phy_dev_t *phy_dev, phy_speed_t *speed, phy_duplex_t *duplex);
@@ -366,7 +391,9 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
 
     phy_pair_swap_set(phy_dev);
     phy_dev_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
-
+#ifdef EXT_BCM84880
+    phy_led_mode_set(phy_dev);
+#endif
     if (IsPhyBlackfin(phy_dev))
         phy_blackfin_deisolate(phy_dev);
     else

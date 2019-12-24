@@ -2320,7 +2320,7 @@ out:
 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
 }
 
-#define PROCESS_CONSOLE_UNLOCK_TIMEOUT (100)	/* msec */
+#define PROCESS_CONSOLE_UNLOCK_TIMEOUT (10)	/* msec */
 
 #ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
 static unsigned long process_console_unlock_timeout = PROCESS_CONSOLE_UNLOCK_TIMEOUT;

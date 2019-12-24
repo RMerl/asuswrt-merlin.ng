@@ -135,7 +135,9 @@ extern "C" {
 #define MSR_DDSR                0x02 /* DSR changed */
 #define MSR_DCTS                0x01 /* CTS changed */
 
-#define MEMC_GLB_GCFG_DRAM_SIZE1_MASK	           0xf
+/* temporarily use SPI Flash data register to pass down the memsize 
+   from cferom to cfe ram */
+#define MEM_SIZE_REG            0x18000048
 
 #ifdef __cplusplus
 }

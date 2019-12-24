@@ -385,7 +385,7 @@ define(function(){
 					retArray.push("YandexDNS.asp");
 				}
 
-				if(!frs_feedback_support) {		
+				if(!feedback_support) {		
 					retArray.push("Advanced_Feedback.asp");
 				}
 

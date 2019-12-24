@@ -191,7 +191,7 @@ function getWebHistory(mac, page){
 		url: '/getWebHistory.asp' + client,
 		dataType: 'script',
 		error: function(xhr){
-			setTimeout("getWebHistory();", 1000);
+			setTimeout("getWebHistory(mac, page);", 1000);
 		},
 		success: function(response){
 			history_array = array_temp;
@@ -298,7 +298,7 @@ function cal_panel_block(obj){
 }
 function updateWebHistory() {
 	setTimeout(function() {
-		getWebHistory(document.form.clientList.value);
+		getWebHistory(document.form.clientList.value, '1');
 	}, 200);
 }
 </script>
@@ -373,7 +373,7 @@ function updateWebHistory() {
 										</div>
 										<div class="apply_gen">
 											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >
-											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value)" type="button" value="<#CTL_refresh#>">
+											<input class="button_gen" onClick="getWebHistory(document.form.clientList.value, '1')" type="button" value="<#CTL_refresh#>">
 										</div>
 									</div>
 								</td>

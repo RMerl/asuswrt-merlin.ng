@@ -106,6 +106,8 @@
 
 /* From ddr_core.h */
 #define	DDRC_CONTROL00 0x000
+#define	DDRC_CONTROL25 0x064
+#define	DDRC_CONTROL26 0x068
 #define	DDRC_CONTROL60 0x0f0
 #define	DDRC_CONTROL65 0x104
 
@@ -128,6 +130,41 @@
 
 /*From bcmnvram.h */
 #define NVRAM_MAGIC                 0x48534C46    /* 'FLSH' */
+
+/*for cms NVRAM ulMemoryConfig offset 0x580+732*/
+#define CMS_NVRAM_MEM_CFG_OFFSET 0x85c
+
+/* from cms boardparams.h */
+/*ulMemoryConfig*/
+/*ddr device width, shift 5*/
+#define CMS_DDR_DEVICE_WIDTH_16 1
+#define CMS_DDR_DEVICE_WIDTH_32 2
+/*ddr total device width, shift 18*/  
+#define CMS_DDR_TOTAL_WIDTH_32BIT 1
+/*enable half tREF,shift 20*/
+#define CMS_DDR_HALF_TREF    0x100000   /*1 <<20*/
+#define ENABLE_HALF_TREF     0x10000000
+/*tRFC,shift 21*/
+#define CMS_DDR_TRFC_MASK    0xe00000
+#define CMS_DDR_TRFC_90NS    0x200000   /*1<<21*/
+#define CMS_DDR_TRFC_110NS   0x400000   /*2<<21*/
+#define CMS_DDR_TRFC_160NS   0x600000   /*3<<21*/
+#define CMS_DDR_TRFC_260NS   0x800000   /*4<<21*/
+#define CMS_DDR_TRFC_350NS   0xa00000   /*5<<21*/
+
+/*caculate tRFC ,if want to set tRFC=160ns 
+47189 is 533MHZ 
+1/533M=1.87ns 
+160/1.87=86=0x56   
+register value is 0x56
+*/
+
+#define TRFC_90NS   0x310000            /*90ns 0x31 << 16*/
+#define TRFC_110NS  0x3b0000            /*110ns 0x3b << 16*/
+#define TRFC_160NS  0x560000            /*160ns 0x56 << 16*/
+#define TRFC_260NS  0x8c0000            /*260ns 0x8c << 16*/
+#define TRFC_350NS  0xbc0000            /*350ns 0xbc << 16*/
+
 
 /*  *********************************************************************
     *  ddr_init
@@ -382,29 +419,108 @@ chk_bootdev_53573:			@ to determine embedded nvram address
 	/* Try embedded NVRAM at 4KB and 1KB as last resorts */
 embedded_nv_53573:
 	SETLEDS('N','A','N','D')
-	ldr	r3,=NVRAM_MAGIC
-	add	r4,r8,#0x1000
-	ldr	r5,[r4]
-	cmp	r5,r3
-	beq	read_config_53573
-
-	add	r4,r8,#0x400
-	ldr	r5,[r4]
-	cmp	r5,r3
-	beq	read_config_53573
-
 no_sdram_params_53573:
-	SETLEDS('N','C','F','G')
+	/*No nvram, check CMS NVRAM*/
+	SETLEDS('C','H','C','N')
+	ldr	r3,=CMS_NVRAM_MEM_CFG_OFFSET
+	add	r4,r8,r3
+	ldr	r5,[r4]
+	cmp	r5,#0xffffffff
+	bne	cms_has_memcfg
+	SETLEDS('D','R','N','S')/* sdram configuration not set*/
+	mov	r4,#0
+	b	cms_nv_default_sdram
+cms_has_memcfg:	
+	/*save r5 to r4,this should be useless if only 16bit and 32 bit is supported*/
+	mov	r4,r5
+	ldr	r3,=CMS_DDR_DEVICE_WIDTH_32
+	lsl	r3,r3,#5
+	and	r5,r5,r3
+	cmp	r5,#0
+	bne	cms_nv_32bit_sdram
+	/*save r5 to r4,this should be useless if only 16bit and 32 bit is supported*/
+	ldr	r3,=CMS_DDR_DEVICE_WIDTH_16
+	lsl	r3,r3,#5
+	mov	r5,r4
+	and	r5,r5,r3
+	cmp	r5,#0
+	bne	cms_nv_16b_check_total_width
 	/* No nvram, pick up some defaults */
+	SETLEDS('D','R','D','F')
+cms_nv_default_sdram:	
+	SETLEDS('D','R','1','6')
 	ldr	r6,=0x1c7		@ setup sdram_config to 0x1c7
+	b	cms_nv_16bit_sdram
+cms_nv_16b_check_total_width: /*16bit ddr, check total size*/
+	SETLEDS('C','H','T','S')
+	ldr	r3,=CMS_DDR_TOTAL_WIDTH_32BIT
+	lsl	r3,r3,#18    
+	mov	r5,r4
+	and	r5,r5,r3
+	cmp	r5,#0
+	beq	cms_nv_default_sdram
+
+cms_nv_32bit_sdram:
+	SETLEDS('D','R','3','2')
+	ldr	r6,=0x147		@ setup sdram_config to 0x147 32-bit-width
+
+cms_nv_16bit_sdram:
+	ldr	r3,=CMS_DDR_HALF_TREF
+	and	r5,r4,r3
+	cmp	r5,r3
+	bne	cms_check_trfc_set
+	SETLEDS('D','H','R','F')
+	ldr	r3,=ENABLE_HALF_TREF
+	add	r6,r3
+
+cms_check_trfc_set:
+	ldr	r3,=CMS_DDR_TRFC_MASK
+	and	r5,r4,r3
+	ldr	r3,=CMS_DDR_TRFC_90NS
+	cmp	r5,r3
+	bne	cms_check_trfc_110ns
+	SETLEDS('R','F','9','0')
+	ldr	r3,=TRFC_90NS
+	add	r6,r3
+	b	cms_check_trfc_end
+cms_check_trfc_110ns:
+	ldr	r3,=CMS_DDR_TRFC_110NS
+	cmp	r5,r3
+	bne	cms_check_trfc_160ns
+	SETLEDS('R','1','1','0')
+	ldr	r3,=TRFC_110NS
+	add	r6,r3
+	b	cms_check_trfc_end
+cms_check_trfc_160ns:
+	ldr	r3,=CMS_DDR_TRFC_160NS
+	cmp	r5,r3
+	bne	cms_check_trfc_260ns
+	SETLEDS('R','1','6','0')
+	ldr	r3,=TRFC_160NS
+	add	r6,r3
+	b	cms_check_trfc_end
+cms_check_trfc_260ns:
+	ldr	r3,=CMS_DDR_TRFC_260NS
+	cmp	r5,r3
+	bne	cms_check_trfc_350ns
+	SETLEDS('R','2','6','0')
+	ldr	r3,=TRFC_260NS
+	add	r6,r3
+	b	cms_check_trfc_end
+cms_check_trfc_350ns:
+	ldr	r3,=CMS_DDR_TRFC_350NS
+	cmp	r5,r3
+	bne	set_default_trfc_160ns
+	SETLEDS('R','3','5','0')
+	ldr	r3,=TRFC_350NS
+	add	r6,r3
+	b	cms_check_trfc_end
+set_default_trfc_160ns:
+	SETLEDS('R','1','6','0')
+	ldr	r3,=TRFC_160NS
+	add	r6,r3
+cms_check_trfc_end:
 	ldr	r5,=0x0
-
-	b	get_ddr_clock_53573
-read_config_53573:
-	SETLEDS('R','C','F','G')
-	ldr	r6,[r4,#12]		@ Pick up sdram_config & sdram_refresh
-	ldr	r5,[r4,#16]		@ Pick up sdram_ncdl
-
 get_ddr_clock_53573:
 	SETLEDS('G','C','L','K')
 	ldr	r0,=DDRC00_START
@@ -694,6 +810,28 @@ set_col_53573:
 	str	r1,[r9,#DDRC_CONTROL60]
 
 set_tref_53573:
+	ldr	r2,=0x10000000
+	and	r2,r6,r2
+	cmp	r2,#0
+	beq	set_trfc_53573
+	ldr	r1,[r9,#DDRC_CONTROL26]		@ half tref cycle
+	ldr	r3,=0x3fff
+	and	r2,r1,r3
+	bic	r1,r1,r3
+	lsr	r2,r2,#1
+	sub	r3,r2,#3
+	add	r1,r1,r3
+	str	r1,[r9,#DDRC_CONTROL26]
+set_trfc_53573:
+	ldr	r2,=0x3ff0000
+	and	r2,r6,r2
+	cmp	r2,#0
+	beq	start_ddr_53573
+	ldr	r1,[r9,#DDRC_CONTROL25]
+	ldr	r3,=0x3ff0000
+	bic	r1,r1,r3
+	add	r1,r1,r2
+	str	r1,[r9,#DDRC_CONTROL25]		@ add counts to trfc
 
 start_ddr_53573:
 	ldr	r1,[r9,#DDRC_CONTROL00]
@@ -761,7 +899,7 @@ ddr_init_tab_53573:
 	.word	57,	0x01000200
 	.word	58,	0x02000040
 	.word	59,	0x00000040
-	.word	60,	0x01030000
+	.word	60,	0x01000000
 	.word	61,	0x01ffff0a
 	.word	62,	0x01010101
 	.word	63,	0x03010101
@@ -1430,7 +1568,7 @@ ddr3_533_init_tab_53573:
 	.word	29,	0x000a000d
 	.word	32,	0x00400200
 	.word	35,	0x05060600
-	.word	48,	0x00080046
+	.word	48,	0x00080044
 	.word	78,	0x05000000
 	.word	109,	0x02002058
 	.word	111,	0x20580200

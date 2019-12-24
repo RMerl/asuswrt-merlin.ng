@@ -99,7 +99,7 @@ static int wpa_supplicant_ctrl_iface_attach(struct dl_list *ctrl_dst,
 					    struct sockaddr_storage *from,
 					    socklen_t fromlen, int global)
 {
-	return ctrl_iface_attach(ctrl_dst, from, fromlen);
+	return ctrl_iface_attach(ctrl_dst, from, fromlen, NULL);
 }
 
 static int wpa_supplicant_ctrl_iface_detach(struct dl_list *ctrl_dst,
@@ -192,6 +192,14 @@ static void wpa_supplicant_ctrl_iface_receive(int sock, void *eloop_ctx,
 				"ctrl_iface sendto failed: %d - %s",
 				_errno, strerror(_errno));
 			if (_errno == ENOBUFS || _errno == EAGAIN) {
+				/*
+				 * The socket send buffer could be full. This
+				 * may happen if client programs are not
+				 * receiving their pending messages. Close and
+				 * reopen the socket as a workaround to avoid
+				 * getting stuck being unable to send any new
+				 * responses.
+				 */
 				sock = wpas_ctrl_iface_reinit(wpa_s, priv);
 				if (sock < 0) {
 					wpa_dbg(wpa_s, MSG_DEBUG, "Failed to reinitialize ctrl_iface socket");
@@ -546,8 +554,8 @@ static int wpas_ctrl_iface_open_sock(struct wpa_supplicant *wpa_s,
 		}
 	}
 
-	if (gid_set && chown(dir, -1, gid) < 0) {
-		wpa_printf(MSG_ERROR, "chown[ctrl_interface=%s,gid=%d]: %s",
+	if (gid_set && lchown(dir, -1, gid) < 0) {
+		wpa_printf(MSG_ERROR, "lchown[ctrl_interface=%s,gid=%d]: %s",
 			   dir, (int) gid, strerror(errno));
 		goto fail;
 	}
@@ -614,8 +622,8 @@ static int wpas_ctrl_iface_open_sock(struct wpa_supplicant *wpa_s,
 		}
 	}
 
-	if (gid_set && chown(fname, -1, gid) < 0) {
-		wpa_printf(MSG_ERROR, "chown[ctrl_interface=%s,gid=%d]: %s",
+	if (gid_set && lchown(fname, -1, gid) < 0) {
+		wpa_printf(MSG_ERROR, "lchown[ctrl_interface=%s,gid=%d]: %s",
 			   fname, (int) gid, strerror(errno));
 		goto fail;
 	}
@@ -929,6 +937,13 @@ static void wpa_supplicant_ctrl_iface_send(struct wpa_supplicant *wpa_s,
 		}
 
 		if (_errno == ENOBUFS || _errno == EAGAIN) {
+			/*
+			 * The socket send buffer could be full. This may happen
+			 * if client programs are not receiving their pending
+			 * messages. Close and reopen the socket as a workaround
+			 * to avoid getting stuck being unable to send any new
+			 * responses.
+			 */
 			if (priv)
 				sock = wpas_ctrl_iface_reinit(wpa_s, priv);
 			else if (gp)
@@ -1197,9 +1212,9 @@ static int wpas_global_ctrl_iface_open_sock(struct wpa_global *global,
 			wpa_printf(MSG_DEBUG, "ctrl_interface_group=%d",
 				   (int) gid);
 		}
-		if (chown(ctrl, -1, gid) < 0) {
+		if (lchown(ctrl, -1, gid) < 0) {
 			wpa_printf(MSG_ERROR,
-				   "chown[global_ctrl_interface=%s,gid=%d]: %s",
+				   "lchown[global_ctrl_interface=%s,gid=%d]: %s",
 				   ctrl, (int) gid, strerror(errno));
 			goto fail;
 		}

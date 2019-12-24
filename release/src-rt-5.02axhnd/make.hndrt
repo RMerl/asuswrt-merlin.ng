@@ -1011,6 +1011,9 @@ buildimage: $(DTBS) libcreduction gen_credits
 else
 buildimage: dynamic_cfe kernelbuild $(DTBS) libcreduction gen_credits linux_tools
 endif
+ifneq ($(strip $(BCA_HNDROUTER)),)
+	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP) bcm_headers_install
+endif
 ifneq ($(strip $(BRCM_PERMIT_STDCPP)),)
 	@if ls $(PROFILE_DIR)/fs.install/lib/libstdc* 2> /dev/null ; then  \
 		echo -e "libstdc++ must be replaced with STLPORT";         \
@@ -1421,7 +1424,7 @@ inner_kernel_clean: sanity_check
 	rm -f $(KERNEL_DIR)/.pre_kernelbuild
 	rm -f $(KERNEL_DIR)/rdp_flags.txt
 ifeq ($(strip $(BCA_HNDROUTER)),)
-	find bcmdrivers/broadcom/net/wl -name build -type d -prune -exec rm -rf {} \; 2> /dev/null 
+	-find bcmdrivers/broadcom/net/wl/impl$(BCM_WLIMPL) -name build -type d -prune -exec rm -rf {} \; 2> /dev/null 
 endif
 ifneq ($(strip $(BUILD_LINUX_PERF)),)
 	-$(MAKE) -C $(KERNEL_DIR)/tools/perf clean

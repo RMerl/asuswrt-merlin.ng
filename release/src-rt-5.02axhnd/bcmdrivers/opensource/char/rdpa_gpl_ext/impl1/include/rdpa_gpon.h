@@ -429,7 +429,6 @@ typedef enum
 
 
 void _ploam_isr_callback(void);
-void _pmd_gpon_isr_wrapper(void);
 
 /** GEM flow DS configuration.
  * Underlying type for rdpa_gpon_gem_ds_cfg_t aggregate

@@ -2,7 +2,7 @@
  * Basic types and constants relating to 802.11ah standard.
  * This is a portion of 802.11ah definition. The rest are in 802.11.h.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ah.h 767714 2018-09-24 15:51:10Z $
+ * $Id: 802.11ah.h 776906 2019-07-12 13:37:28Z $
  */
 
 #ifndef _802_11ah_h_
@@ -29,7 +29,7 @@
 /* This marks the start of a packed structure section. */
 #include <packed_section_start.h>
 
-/* S1G Action IDs, table 9-470 */
+/* S1G Action IDs, table 9-493 */
 #define S1G_ACTION_TWT_SETUP		6
 #define S1G_ACTION_TWT_TEARDOWN		7
 #define S1G_ACTION_TWT_INFO		11
@@ -57,29 +57,37 @@ BWL_PRE_PACKED_STRUCT struct twt_ie_top {
 
 typedef struct twt_ie_top twt_ie_top_t;
 
-/* Control field (figure 8-557ax) 8 bits */
+/* Control field (figure 9-679) 8 bits */
 #define TWT_CTRL_NDP_PAGING_IND		(1 << 0)	/* NDP Paging Indication */
 #define TWT_CTRL_RESP_PM_MODE		(1 << 1)	/* Respondor PM Mode */
-#define TWT_CTRL_NEGOTIATION_MASK	0x06		/* Negotiatio Mask */
-#define TWT_CTRL_NEGOTIATION_SHIFT	2		/* Negotiatio Shift (bit 2-3) */
+#define TWT_CTRL_NEGOTIATION_MASK	0x0c		/* Negotiation Mask */
+#define TWT_CTRL_NEGOTIATION_SHIFT	2		/* Negotiation Shift (bit 2-3) */
+#define TWT_CTRL_INFORMATION_DIS	(1 << 4)	/* TWT Information Frame Disabled */
 
-/* Control Negotiation Type subfield (table 9-262j1) */
-#define TWT_CTRL_NEGO_INDV_REQ_RSP	1		/* Negotiation 1 Individual Req/Rsp */
-#define TWT_CTRL_NEGO_INDV_SCHED	2		/* Negotiation 2 Individual Scheduled */
-#define TWT_CTRL_NEGO_BCAST_BEACON	3		/* Negotiation 3 Bcast Beacon */
-#define TWT_CTRL_NEGO_BCAST_MGMT	4		/* Negotiation 4 Bcast MGMT frames */
+/* Control Negotiation Type subfield (table 9-298a) */
+#define TWT_CTRL_NEGO_INDV_REQ_RSP	0		/* Negotiation 0 Individual Req/Rsp */
+#define TWT_CTRL_NEGO_INDV_SCHED	1		/* Negotiation 1 Individual Scheduled */
+#define TWT_CTRL_NEGO_BCAST_BEACON	2		/* Negotiation 2 Bcast Beacon */
+#define TWT_CTRL_NEGO_BCAST_MGMT	3		/* Negotiation 3 Bcast MGMT frames */
 
 /* Individual TWT parameter Set - figure 9-589av2 */
-#define TWT_INDV_REQUEST_TYPE_SZ	2		/* 2 Octets Request Type */
+/* The individual TWT parameter set is of dynamic, however the for 11ax supported version is the
+ * only supported version. So that is the one being defined here. This means no support for
+ * grouping, which also make Targe Wake Time field of len 8, and no NDP paging
+ */
 #define TWT_INDV_TARGET_WAKE_TIME_SZ	8		/* (Optional) 8 Octets Target Wake Time */
-/* Then follows a TWT Group Assignment with size 0, 3 or 9, no defines for that */
-BWL_PRE_PACKED_STRUCT struct twt_ie_indv_part {
+
+BWL_PRE_PACKED_STRUCT struct twt_ie_indv {
+	uint16 request_type;			/* Request Type */
+	uint8 twt[TWT_INDV_TARGET_WAKE_TIME_SZ]; /* Target Wake Time */
 	uint8 wake_duration;			/* Nominal Minimum TWT Wake Duration */
-	uint16 wake_intv_man;			/* TWT Wake Interval Mantissa */
+	uint16 wake_interval_mantissa;		/* TWT Wake Interval Mantissa */
 	uint8 channel;				/* TWT Channel */
 } BWL_POST_PACKED_STRUCT;
 
-/* Broadcast TWT parameter Set - figure 9-589av2 */
+typedef struct twt_ie_indv twt_ie_indv_t;
+
+/* Broadcast TWT parameter Set - figure 9-679b */
 BWL_PRE_PACKED_STRUCT struct twt_ie_bcast {
 	uint16 request_type;			/* Request Type */
 	uint16 twt;				/* Target Wake Time */
@@ -186,15 +194,21 @@ typedef uint32 twt_ndp_paging_t;
 						 * in the APDI field of the NDP Paging frame
 						 */
 
-/* TWT Teardown Flow field */
-#define TWT_TEARDOWN_FLOW_ID_MASK	0x07
+/* TWT Teardown - TWT Flow field format (figure 9-939(a)) 8 bits */
+#define TWT_TEARDOWN_ID_BCAST_MASK	0x1f
+#define TWT_TEARDOWN_ID_INDV_MASK	0x7
+#define TWT_TEARDOWN_ID_SHIFT		0
+#define TWT_TEARDOWN_NEGO_TYPE_MASK	0x60
+#define TWT_TEARDOWN_NEGO_TYPE_SHIFT	5
+#define TWT_TEARDOWN_ALL_TWT		0x80
 
 /* TWT Information field byte 0 */
 #define TWT_INFO_FLOW_ID_MASK		0x07
 #define TWT_INFO_RESP_REQ		0x08
 #define TWT_INFO_NEXT_TWT_REQ		0x10
 #define TWT_INFO_NEXT_TWT_SIZE_MASK	0x60
-#define TWT_INFO_NEXT_TWT_SIZE_SHIFT	0x5
+#define TWT_INFO_NEXT_TWT_SIZE_SHIFT	5
+#define TWT_INFO_ALL_TWT		0x80
 
 /* This marks the end of a packed structure section. */
 #include <packed_section_end.h>

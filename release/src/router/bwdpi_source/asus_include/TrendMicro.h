@@ -36,6 +36,7 @@ extern int get_udb_conf(char **output);
 extern int get_wrs_url(void);
 extern int get_app_patrol(void);
 extern int get_fw_app_bw_clear(app_bw_ioctl_entry_t **output, uint32_t *used_len);
-extern int get_fw_mesh_user(void **output, unsigned int buf_used_len);
+extern int get_fw_mesh_user(void **output, unsigned int *buf_used_len);
+extern int get_fw_mesh_extender(void **output, unsigned int *buf_used_len);
 extern int mesh_set_user(char *macstr, char *ipstr, uint8_t action);
 extern int mesh_set_extender(char *macstr, uint8_t action);

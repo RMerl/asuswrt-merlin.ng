@@ -346,7 +346,6 @@ void lp55xx_leds_proc(int col_mode, int beh_mode)
 		default:
 			nvram_set_int("lp55xx_lp5523_col", col_mode);
 			nvram_set_int("lp55xx_lp5523_beh", beh_mode_tmp);
-			nvram_commit();
 			break;
 	}
 

@@ -39,14 +39,24 @@
 
 #define  DHD_FKBPOOL_MAX_SIZE (1600)
 #define  DHD_FKBPOOL_DEFAULT_SIZE (1280)
-#define  DHD_FKB_TXBUFSZ 2048
+#define  DHD_FKB_DATA_MAXLEN (2048)
+#define DHD_FKB_MAXLEN (BCM_DCACHE_ALIGN(BCM_FKB_INPLACE   + \
+                             BCM_PKT_HEADROOM        + \
+                             DHD_FKB_DATA_MAXLEN + \
+                             BCM_SKB_TAILROOM)       + \
+                             BCM_SKB_SHAREDINFO)
+
+#if BCM_MAX_PKT_LEN > DHD_FKB_DATA_MAXLEN
+#define DHD_FKB_TXBUFSZ  DHD_FKB_MAXLEN 
+#else
+#define DHD_FKB_TXBUFSZ  BCM_PKTBUF_SIZE
+#endif
 
 typedef struct dhd_fkb_pool_entry {
     char fkb[DHD_FKB_TXBUFSZ];
-    void *list;
 } DHD_FKB_POOL_ENTRY;
 
-#define  DHD_FKBPOOL_ENTRY_SIZE	((uint)(DHD_FKB_TXBUFSZ))
+#define  DHD_FKBPOOL_ENTRY_SIZE	(sizeof(DHD_FKB_POOL_ENTRY))
 
 #ifdef WLCSM_DEBUG
 FkBuff_t * dhd_fkb_pool_clone2unicast(osl_t *osh,FkBuff_t *fkb_p,void *mac,const char *file,int line);

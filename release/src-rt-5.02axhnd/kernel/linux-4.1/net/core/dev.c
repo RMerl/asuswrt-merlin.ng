@@ -2538,6 +2538,49 @@ update_list:
 	return 0;
 }
 
+static ssize_t skb_free_thread_proc_rd_func(struct file *filep, char __user *page, size_t count, loff_t *offset)
+{
+	int len = 0;
+
+	if( *offset != 0)
+		return 0;
+
+	len += sprintf(page, "skb_completion_queue_cnt %d \n", skb_completion_queue_cnt);
+
+	*offset = len;
+
+	return len;
+
+} /* skb_free_thread_proc_rd_func */
+
+static const struct file_operations skb_free_thread_stats_fops = {
+       .owner  = THIS_MODULE,
+       .read   = skb_free_thread_proc_rd_func,
+};
+
+static struct proc_dir_entry *skb_free_thread_proc_directory, *skb_free_thread_proc_file_conf;
+
+static int skb_free_thread_proc_init(void)
+{
+    skb_free_thread_proc_directory = proc_mkdir("skb_free_thread", NULL) ;
+
+    if (!skb_free_thread_proc_directory) goto fail_dir ;
+
+    if ((skb_free_thread_proc_file_conf = proc_create("skb_free_thread/stats", 0644, NULL, &skb_free_thread_stats_fops)) == NULL) {
+        goto fail_entry;
+    }
+
+    return (0) ;
+
+fail_entry:
+    printk("%s %s: Failed to create proc entry in skb_free_thread\n", __FILE__, __FUNCTION__);
+    remove_proc_entry("skb_free_thread" ,NULL); /* remove already registered directory */
+
+fail_dir:
+    printk("%s %s: Failed to create directory skb_free_thread\n", __FILE__, __FUNCTION__) ;
+    return (-EIO) ;
+} /* skb_free_thread_proc_init */
+
 #ifndef SZ_32M
 #define SZ_32M		0x02000000
 #endif
@@ -2577,6 +2620,13 @@ struct task_struct *create_skb_free_task(void)
 		return NULL;
 	}
 
+	/* Initialize the proc interface for debugging information */
+    if (skb_free_thread_proc_init()!=0)
+    {
+        printk("\n%s %s: skb_free_thread_proc_init() failed\n", __FILE__, __FUNCTION__) ;
+        return NULL;
+    }
+
 	param.sched_priority = BCM_RTPRIO_DATA_CONTROL;
 	sched_setscheduler(tsk, SCHED_RR, &param);
 	wake_up_process(tsk);
@@ -2606,6 +2656,38 @@ void dev_kfree_skb_thread(struct sk_buff *skb)
 	}
 }
 EXPORT_SYMBOL(dev_kfree_skb_thread);
+
+/* bulk queue the skb so it can be freed in thread context
+ * note: this thread is not binded to any cpu,and we rely on scheduler to
+ * run it on cpu with less load
+ */
+void dev_kfree_skb_thread_bulk(struct sk_buff *skb)
+{
+	unsigned long flags;
+	struct sk_buff *skbfreelistend;
+	unsigned int skbcnt = 1;
+
+	/* locate last skb of the supplied skb list */
+	skbfreelistend = skb;
+	while (skbfreelistend->next != NULL) {
+		skbfreelistend = skbfreelistend->next;
+		/* +1 for first skb already done during init */
+		skbcnt++;
+	}
+
+	if (atomic_dec_and_test(&skb->users)) {
+		spin_lock_irqsave(&skbfree_lock, flags);
+		skbfreelistend->next = skb_completion_queue;
+		skb_completion_queue = skb;
+		skb_completion_queue_cnt += skbcnt;
+		spin_unlock_irqrestore(&skbfree_lock, flags);
+
+		if ((skb_free_task->state != TASK_RUNNING) &&
+				(skb_completion_queue_cnt >= skb_free_start_budget))
+			wake_up_process(skb_free_task);
+	}
+}
+EXPORT_SYMBOL(dev_kfree_skb_thread_bulk);
 
 #include <linux/gbpm.h>
 /* NOTE: gbpm_fap_evt_hook_g is not part of gbpm_g */

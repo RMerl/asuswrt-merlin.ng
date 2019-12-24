@@ -1166,35 +1166,29 @@ padding-top:1px;
 
 #bwdpi_status{
 	cursor: pointer;
+	height: 20px;
+	width: 21px;
 }
 
 .bwdpistatus_game{
-	height:20px;
-	width:22px;
 	background-image:url(images/New_ui/QoS_quick/game_icon.svg);
 	background-repeat:no-repeat;
 	background-position:0px 2px;
 }
 
 .bwdpistatus_media{
-	height:20px;
-	width:21px;
 	background-image:url(images/New_ui/QoS_quick/media_icon.svg);
 	background-repeat:no-repeat;
 	background-position:0px 2px;
 }
 
 .bwdpistatus_web{
-	height:20px;
-	width:22px;
 	background-image:url(images/New_ui/QoS_quick/web_icon.svg);
 	background-repeat:no-repeat;
 	background-position:2px 0px;
 }
 
 .bwdpistatus_customize{
-	height:21px;
-	width:23px;
 	background-image:url(images/New_ui/QoS_quick/customize_icon.svg);
 	background-repeat:no-repeat;
 	background-position:2px 2px;
@@ -2090,13 +2084,14 @@ padding-top:1px;
 	background: #475A5F;
 }
 .eula_panel_container{
-	margin-left: 25%;
 	display: none;
 	position: absolute;
 	width: 50%;
 	z-index: 10000;
 	border: 3px solid #4D5C63;
-	border-radius: 4px;
+	border-radius: 8px;
+	background-color: #232E32;
+	text-align: left;
 }
 
 #bottom_border{

@@ -158,6 +158,50 @@ typedef struct BootLookUp {
 
 #define BOOTLUT ((volatile BootLookUp * const) BOOTLUT_BASE)
 
+
+typedef struct MEMCAccCtrl {
+    uint32 UBUSIF0_PERMCTL;     /* 0x00 */
+    uint32 UBUSIF1_PERMCTL;     /* 0x04 */
+    uint32 SRAM_REMAP_PERMCTL;  /* 0x08 */
+    uint32 AXIWIF_PERMCTL;      /* 0x0c */
+    uint32 CHNCFG_PERMCTL;      /* 0x10 */
+    uint32 MCCAP_PERMCTL;       /* 0x14 */
+    uint32 SCRAM_PERMCTL;       /* 0x18 */
+    uint32 RNG_PERMCTL;         /* 0x1c */
+    uint32 RNGCHK_PERMCTL;      /* 0x20 */
+}MEMCAccCtrl;
+
+#define MEMC_ACC_CTRL ((volatile MEMCAccCtrl * const) (MEMC_BASE + 0xf00))
+
+typedef struct ScramblerRange {
+   uint32 start_addr_low;
+#define SCRAMBLER_ADDR_LOW_SHIFT    (3)
+#define SCRAMBLER_ADDR_UPP_SHIFT    (35)
+#define SCRAMBLER_ADDR_LOW_MASK     (0xFFFFFFFF)
+#define SCRAMBLER_ADDR_UPP_MASK     (0x0000001F)
+   uint32 start_addr_upper;
+   uint32 end_addr_low;
+   uint32 end_addr_upper;
+}ScramblerRange;
+
+typedef struct ScramblerCtrl {
+#define SCRAMBLER_REG_LOCK                (0x1<<3)
+#define SCRAMBLER_KEY_LOCK                (0x1<<1)
+#define SCRAMBLER_ENABLE                  (0x1<<0)
+    uint32 secure_mode_ctrl;           /* 0x00 */
+    ScramblerRange range[4];           /* 0x04 - 0x43 */
+#define SCRAMBLER_KEY_STATUS_ENABLED      (0x1<<3)
+#define SCRAMBLER_KEY_STATUS_GENERATED    (0x1<<2)
+#define SCRAMBLER_KEY_STATUS_RNG1_RCVD    (0x1<<1)
+#define SCRAMBLER_KEY_STATUS_RNG0_RCVD    (0x1<<0)
+    uint32 key_status;                /* 0x44 */
+    uint32 manual_keys_trigger;       /* 0x48 */
+    uint32 reserved;                  /* 0x4c */
+    uint32 seed[4];                   /* 0x50 - 0x5f */
+} MEMCScramblerCtrl;
+
+#define MEMC_SCRAM_CTRL ((volatile MEMCScramblerCtrl * const) (MEMC_BASE + 0x1500))
+
 #endif
 
 #ifdef __cplusplus

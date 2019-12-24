@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -33,6 +33,10 @@ ROUTERBASE_OFFSET := ../hnd_shared/../router
 TARGET := wl
 WLCONF_H := wlconf.h
 WLCONF_O := wlconf.o
+
+ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
+export CONFIG_BCM_HOSTAPD=y
+endif
 
 ifeq ($(CONFIG_BUZZZ_FUNC),y)
 subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
@@ -75,6 +79,8 @@ VLIST          += $(VLIST_BASE)
 # Subdir names use lowercase versions of the variant suffixes
 #wlsubdirs := $(addprefix wl_,$(foreach v,$(VLIST),$(shell echo "$(v)/" | tr A-Z a-z)))
 wlsubdirs := $(addprefix wl_,$(foreach v,$(VLIST),$(shell echo "$(v)" | tr A-Z a-z)))
+
+-include $(src)/$(ROUTERBASE_OFFSET)/hnd/Makefile.shared
 
 $(info "wlsubdirs: $(wlsubdirs)")
 

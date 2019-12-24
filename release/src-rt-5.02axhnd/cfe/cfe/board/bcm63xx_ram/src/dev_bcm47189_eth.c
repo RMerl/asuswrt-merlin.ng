@@ -545,7 +545,7 @@ static int internal_open(bcmenet_softc *softc)
          */
         /* Check only GMAC0 for now */
         if (EnetInfo[0].sw.phyconn[0] == PHY_CONN_TYPE_EXT_SW
-            || EnetInfo[0].sw.phyconn[0] == PHY_CONN_TYPE_EXT_PHY ||
+            || EnetInfo[0].sw.phyconn[softc->dmaPort] == PHY_CONN_TYPE_EXT_PHY ||
             (EnetInfo[1].ucPhyType == BP_ENET_EXTERNAL_SWITCH && 
              (EnetInfo[0].sw.phy_id[softc->dmaPort] & EXTSW_CONNECTED))) {
             if (ether_gphy_reset(softc) == -1) {

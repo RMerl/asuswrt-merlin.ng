@@ -1,7 +1,7 @@
 /*
  * Broadcom micro scheduler library definitions
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_usched.c 765036 2018-06-14 10:27:06Z $
+ * $Id: bcm_usched.c 776550 2019-07-02 09:45:39Z $
  */
 
 #include <stdio.h>
@@ -644,7 +644,7 @@ bcm_usched_deinit(bcm_usched_handle *handle)
 
 /* create the new timer */
 BCM_USCHED_STATUS
-bcm_usched_add_timer(bcm_usched_handle *hdl, unsigned long interval, short int repeat_flag,
+bcm_usched_add_timer(bcm_usched_handle *hdl, unsigned long long interval, short int repeat_flag,
 	bcm_usched_timerscbfn *cbfn, void *arg)
 {
 	usched_timers_t *new = NULL;
@@ -794,7 +794,8 @@ bcm_usched_remove_fd_schedule(bcm_usched_handle *handle, int fd)
 		item_p = dll_next_p(item_p)) {
 		usched_fds_t *tmp = (usched_fds_t*)item_p;
 
-		if (tmp->fd == fd) {
+		/* check if the FD is same and also check only if the remove_flag is not set */
+		if ((tmp->fd == fd) && !(tmp->remove_flag)) {
 			tmp->remove_flag = 1;
 			USCHED_DEBUG("Setting remove flag for FD[%d]\n", tmp->fd);
 			return BCM_USCHEDE_OK;

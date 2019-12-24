@@ -677,6 +677,9 @@ void setup_ct_timeout(int connflag)
 			v[1] = read_ct_timeout("icmp", NULL);
 
 			snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		if(strcmp(buf, "0 0") != 0)
+#endif
 			nvram_set("ct_timeout", buf);
 		}
 	}
@@ -707,6 +710,9 @@ void setup_conntrack(void)
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_tcp_timeout"));
 	if (sscanf(p, "%u%u%u%u%u%u%u%u%u%u",
 		&v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], &v[8], &v[9]) == 10) {	// lightly verify
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		fprintf(stderr, "ct_tcp_timeout:[%s]\n", p);
+#endif
 		write_tcp_timeout("established", v[1]);
 		write_tcp_timeout("syn_sent", v[2]);
 		write_tcp_timeout("syn_recv", v[3]);
@@ -727,13 +733,19 @@ void setup_conntrack(void)
 		v[8] = read_tcp_timeout("last_ack");
 		snprintf(buf, sizeof(buf), "0 %u %u %u %u %u %u %u %u 0",
 			v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
-		nvram_set("ct_tcp_timeout", buf);
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		if(strcmp(buf, "0 0 0 0 0 0 0 0 0 0") != 0)
+#endif
+			nvram_set("ct_tcp_timeout", buf);
 	}
 
 	setup_udp_timeout(FALSE);
 
 	snprintf(p, sizeof(p), "%s", nvram_safe_get("ct_timeout"));
 	if (sscanf(p, "%u%u", &v[0], &v[1]) == 2) {
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		fprintf(stderr, "ct_timeout:[%s]\n", p);
+#endif
 //		write_ct_timeout("generic", NULL, v[0]);
 		write_ct_timeout("icmp", NULL, v[1]);
 	}
@@ -741,6 +753,9 @@ void setup_conntrack(void)
 		v[0] = read_ct_timeout("generic", NULL);
 		v[1] = read_ct_timeout("icmp", NULL);
 		snprintf(buf, sizeof(buf), "%u %u", v[0], v[1]);
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		if(strcmp(buf, "0 0") != 0)
+#endif
 		nvram_set("ct_timeout", buf);
 	}
 
@@ -830,6 +845,7 @@ void setup_conntrack(void)
 		ct_modprobe_r("pptp");
 		ct_modprobe_r("proto_gre");
 	}
+
 }
 
 void setup_pt_conntrack(void)
@@ -1394,80 +1410,6 @@ setup_timezone(void)
 	}
 
 	settimeofday(tvp, &tz);
-}
-
-int
-is_invalid_char_for_hostname(char c)
-{
-	int ret = 0;
-
-	if (c <= 0x2c)				/* SPACE !"#$%&'()*+, */
-		ret = 1;
-	else if (c >= 0x2e && c <= 0x2f)	/* ./ */
-		ret = 1;
-	else if (c >= 0x3a && c <= 0x40)	/* :;<=>?@ */
-		ret = 1;
-#if 0
-	else if (c >= 0x5b && c <= 0x60)	/* [\]^_ */
-		ret = 1;
-#else	/* allow '_' */
-	else if (c >= 0x5b && c <= 0x5e)	/* [\]^ */
-		ret = 1;
-	else if (c == 0x60)			/* ` */
-		ret = 1;
-#endif
-	else if (c >= 0x7b)			/* {|}~ DEL */
-		ret = 1;
-#if 0
-	printf("%c (0x%02x) is %svalid for hostname\n", c, c, (ret == 0) ? "  " : "in");
-#endif
-	return ret;
-}
-
-int
-is_valid_hostname(const char *name)
-{
-	int len, i;
-
-	if (!name)
-		return 0;
-
-	len = strlen(name);
-	for (i = 0; i < len ; i++) {
-		if (is_invalid_char_for_hostname(name[i])) {
-			len = 0;
-			break;
-		}
-	}
-#if 0
-	printf("%s is %svalid for hostname\n", name, len ? "" : "in");
-#endif
-	return len;
-}
-
-int
-is_valid_domainname(const char *name)
-{
-	int len, i;
-	unsigned char c;
-
-	if (!name)
-		return 0;
-
-	len = strlen(name);
-	for (i = 0; i < len; i++) {
-		c = name[i];
-		if (((c | 0x20) < 'a' || (c | 0x20) > 'z') &&
-		    ((c < '0' || c > '9')) &&
-		    (c != '.' && c != '-' && c != '_')) {
-			len = 0;
-			break;
-		}
-	}
-#if 0
-	printf("%s is %svalid for domainname\n", name, len ? "" : "in");
-#endif
-	return len;
 }
 
 int get_meminfo_item(const char *name)

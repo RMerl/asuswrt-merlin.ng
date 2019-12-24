@@ -290,6 +290,9 @@ pcap_dispatch(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 	return p->read_op(p, cnt, callback, user);
 }
 
+/*
+ * XXX - is this necessary?
+ */
 int
 pcap_read(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 {
@@ -323,6 +326,10 @@ pcap_loop(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 			 */
 			n = pcap_offline_read(p, cnt, callback, user);
 		} else {
+			/*
+			 * XXX keep reading until we get something
+			 * (or an error occurs)
+			 */
 			do {
 				n = p->read_op(p, cnt, callback, user);
 			} while (n == 0);
@@ -1107,6 +1114,17 @@ pcap_setmintocopy_dead(pcap_t *p, int size)
 #endif // endif
 
 /*
+ * On some platforms, we need to clean up promiscuous or monitor mode
+ * when we close a device - and we want that to happen even if the
+ * application just exits without explicitl closing devices.
+ * On those platforms, we need to register a "close all the pcaps"
+ * routine to be called when we exit, and need to maintain a list of
+ * pcaps that need to be closed to clean up modes.
+ *
+ * XXX - not thread-safe.
+ */
+
+/*
  * List of pcaps on which we've done something that needs to be
  * cleaned up.
  * If there are any such pcaps, we arrange to call "pcap_close_all()"
@@ -1233,6 +1251,12 @@ pcap_open_dead(int linktype, int snaplen)
 	return p;
 }
 
+/*
+ * API compatible with WinPcap's "send a packet" routine - returns -1
+ * on error, 0 otherwise.
+ *
+ * XXX - what if we get a short write?
+ */
 int
 pcap_sendpacket(pcap_t *p, const u_char *buf, int size)
 {
@@ -1297,6 +1321,11 @@ static const char pcap_version_string[] = "libpcap version 1.0 branch 1_0_rel0b 
 #endif // endif
 
 #ifdef WIN32
+/*
+ * XXX - it'd be nice if we could somehow generate the WinPcap and libpcap
+ * version numbers when building WinPcap.  (It'd be nice to do so for
+ * the packet.dll version number as well.)
+ */
 static const char wpcap_version_string[] = "4.1.3";
 static const char pcap_version_string_fmt[] =
     "WinPcap version %s, based on %s";

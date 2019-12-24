@@ -143,10 +143,8 @@ function initial(){
 
 	if(amesh_support && (isSwMode("rt") || isSwMode("ap"))) {
 		$(".aimesh_manual_fw_update_hint").css("display", "block");
-		var get_cfg_clientlist_ori = [<% get_cfg_clientlist(); %>];
 		var have_node = false;
-		var get_cfg_clientlist = [];
-		get_cfg_clientlist = get_cfg_clientlist_ori[0];
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 		$("#fw_version_tr").empty();
 		var html = "";
 		html += "<tr id='update_div' style='display:none;'>";
@@ -224,7 +222,7 @@ function initial(){
 				html += "<th>";
 				html += model_name + " ( " + labelMac + " )";
 				html += "<br>";
-				html += "<#AiMesh_NodeLocation#> : " + alias;
+				html += "<#AiMesh_NodeLocation#> : " + htmlEnDeCode.htmlEncode(alias);
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "'>";
 				if (check_is_merlin_fw(fwver))

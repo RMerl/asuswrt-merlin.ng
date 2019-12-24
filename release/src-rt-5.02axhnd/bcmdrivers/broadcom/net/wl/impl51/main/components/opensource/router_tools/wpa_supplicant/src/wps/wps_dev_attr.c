@@ -20,6 +20,11 @@ int wps_build_manufacturer(struct wps_device_data *dev, struct wpabuf *msg)
 	len = dev->manufacturer ? os_strlen(dev->manufacturer) : 0;
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zero-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		wpabuf_put_be16(msg, 1);
 		wpabuf_put_u8(msg, ' ');
 		return 0;
@@ -38,6 +43,11 @@ int wps_build_model_name(struct wps_device_data *dev, struct wpabuf *msg)
 	len = dev->model_name ? os_strlen(dev->model_name) : 0;
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zero-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		wpabuf_put_be16(msg, 1);
 		wpabuf_put_u8(msg, ' ');
 		return 0;
@@ -56,6 +66,11 @@ int wps_build_model_number(struct wps_device_data *dev, struct wpabuf *msg)
 	len = dev->model_number ? os_strlen(dev->model_number) : 0;
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zero-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		wpabuf_put_be16(msg, 1);
 		wpabuf_put_u8(msg, ' ');
 		return 0;
@@ -74,6 +89,11 @@ int wps_build_serial_number(struct wps_device_data *dev, struct wpabuf *msg)
 	len = dev->serial_number ? os_strlen(dev->serial_number) : 0;
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zero-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		wpabuf_put_be16(msg, 1);
 		wpabuf_put_u8(msg, ' ');
 		return 0;
@@ -135,6 +155,11 @@ int wps_build_dev_name(struct wps_device_data *dev, struct wpabuf *msg)
 	len = dev->device_name ? os_strlen(dev->device_name) : 0;
 #ifndef CONFIG_WPS_STRICT
 	if (len == 0) {
+		/*
+		 * Some deployed WPS implementations fail to parse zero-length
+		 * attributes. As a workaround, send a space character if the
+		 * device attribute string is empty.
+		 */
 		wpabuf_put_be16(msg, 1);
 		wpabuf_put_u8(msg, ' ');
 		return 0;
@@ -341,6 +366,13 @@ int wps_process_os_version(struct wps_device_data *dev, const u8 *ver)
 	wpa_printf(MSG_DEBUG, "WPS: OS Version %08x", dev->os_version);
 
 	return 0;
+}
+
+void wps_process_vendor_ext_m1(struct wps_device_data *dev, const u8 ext)
+{
+	dev->multi_ap_ext = ext;
+	wpa_printf(MSG_DEBUG, "WPS: Multi-AP extension value %02x",
+		   dev->multi_ap_ext);
 }
 
 int wps_process_rf_bands(struct wps_device_data *dev, const u8 *bands)

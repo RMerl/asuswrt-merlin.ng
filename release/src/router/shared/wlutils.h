@@ -1,7 +1,7 @@
 /*
  * Broadcom wireless network adapter utility functions
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -118,6 +118,13 @@ extern int wl_iovar_set(char *ifname, char *iovar, void *param, int paramlen);
 extern int wl_iovar_get(char *ifname, char *iovar, void *bufptr, int buflen);
 extern int wl_iovar_setint(char *ifname, char *iovar, int val);
 extern int wl_iovar_getint(char *ifname, char *iovar, int *val);
+
+#ifdef __CONFIG_DHDAP__
+extern int dhd_iovar_setbuf(char *ifname, char *iovar, void *param, int paramlen,
+		void *bufptr, int buflen);
+extern int dhd_iovar_set(char *ifname, char *iovar, void *param, int paramlen);
+extern int dhd_iovar_setint(char *ifname, char *iovar, int val);
+#endif /* __CONFIG_DHDAP__ */
 
 /*
  * Set/Get named variable indexed by BSS Configuration

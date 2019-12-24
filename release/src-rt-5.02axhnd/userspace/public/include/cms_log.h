@@ -40,7 +40,7 @@ extern "C" {
 #include "cms_eid.h"
 
 /*!\file cms_log.h
- * \brief Public header file for Broadcom DSL CPE Management System Logging API.
+ * \brief Public header file for Broadcom CPE Management System Logging API.
  * Applications which need to call Logging API functions must
  * include this file.
  *

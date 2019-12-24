@@ -13,6 +13,9 @@ CFLAGS += -DCONFIG_TLS_INTERNAL_CLIENT
 CFLAGS += -DCONFIG_TLS_INTERNAL_SERVER
 #CFLAGS += -DALL_DH_GROUPS
 CFLAGS += -DCONFIG_SHA256
+CFLAGS += -DCONFIG_SHA384
+CFLAGS += -DCONFIG_HMAC_SHA384_KDF
+CFLAGS += -DCONFIG_INTERNAL_SHA384
 
 LIB_OBJS= \
 	aes-cbc.o \
@@ -47,6 +50,8 @@ LIB_OBJS= \
 	sha256-prf.o \
 	sha256-tlsprf.o \
 	sha256-internal.o \
+	sha384.o \
+	sha384-prf.o \
 	sha384-internal.o \
 	sha512-internal.o
 
@@ -56,7 +61,9 @@ LIB_OBJS += crypto_internal-modexp.o
 LIB_OBJS += crypto_internal-rsa.o
 LIB_OBJS += tls_internal.o
 LIB_OBJS += fips_prf_internal.o
+ifndef TEST_FUZZ
 LIB_OBJS += random.o
+endif
 
 libcrypto.a: $(LIB_OBJS)
 	$(AR) crT $@ $?

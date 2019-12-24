@@ -53,8 +53,18 @@ endif # RTCONFIG_BCM_7114
 endif # RTCONFIG_BCM7
 
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+ifeq ($(HND_ROUTER_AX_675X),y)
+ifneq ($(BCM_CHIP),)
+SRCFILE = broadcom_arm_ax_$(BCM_CHIP)
+endif
+else
 SRCFILE = broadcom_arm_ax
+endif
+ifeq ($(HND_ROUTER_AX_675X),y)
+DSTDIR = $(INSTALLDIR)/lib/modules/$(LINUX_KERNEL)/kernel/fs
+else
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.51/kernel/fs
+endif
 else ifeq ($(RTCONFIG_HND_ROUTER),y)
 SRCFILE = broadcom_arm_hnd
 DSTDIR = $(INSTALLDIR)/lib/modules/4.1.27/kernel/fs

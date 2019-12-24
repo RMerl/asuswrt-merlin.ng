@@ -88,7 +88,6 @@ if test ! -f "$as_myself"; then
   { (exit 1); exit 1; }
 fi
 
-# Work around bugs in pre-3.0 UWIN ksh.
 for as_var in ENV MAIL MAILPATH
 do ($as_unset $as_var) >/dev/null 2>&1 && $as_unset $as_var
 done
@@ -1063,7 +1062,6 @@ Try \`$0 --help' for more information." >&2
     export $ac_envvar ;;
 
   *)
-    # FIXME: should be removed in autoconf 3.0.
     echo "$as_me: WARNING: you should use --build, --host, --target" >&2
     expr "x$ac_option" : ".*[^-._$as_cr_alnum]" >/dev/null &&
       echo "$as_me: WARNING: invalid host type: $ac_option" >&2
@@ -1096,12 +1094,10 @@ done
 
 # There might be people who depend on the old broken behavior: `$host'
 # used to hold the argument of --host etc.
-# FIXME: To remove some day.
 build=$build_alias
 host=$host_alias
 target=$target_alias
 
-# FIXME: To remove some day.
 if test "x$host_alias" != x; then
   if test "x$build_alias" = x; then
     cross_compiling=maybe
@@ -2360,7 +2356,6 @@ ac_exeext=$ac_cv_exeext
 # the compiler is broken, or we cross compile.
 { echo "$as_me:$LINENO: checking whether the C compiler works" >&5
 echo $ECHO_N "checking whether the C compiler works... $ECHO_C" >&6; }
-# FIXME: These cross compiler hacks should be removed for Autoconf 3.0
 # If not cross compiling, check that we can run a simple program.
 if test "$cross_compiling" != yes; then
   if { ac_try='./$ac_file'
@@ -3919,7 +3914,6 @@ _ACEOF
 esac
 rm -f conftest*
 
-# We used to try defining _XOPEN_SOURCE=500 too, to work around a bug
 # in glibc 2.1.3, but that breaks too many other things.
 # If you want fseeko and ftello with glibc, upgrade to a fixed glibc.
 if test $ac_cv_sys_largefile_source != unknown; then
@@ -7250,7 +7244,6 @@ else
 
 		    #
 		    # We don't have the header - give up.
-		    # XXX - we could also fall back on some other
 		    # mechanism, but, for now, this'll catch this
 		    # problem so that we can at least try to figure
 		    # out something to do on systems with "getifaddrs()"
@@ -7489,7 +7482,6 @@ echo "${ECHO_T}$ac_cv_lbl_have_siocglifconf" >&6; }
 		*)
 			#
 			# Assume we just have SIOCGIFCONF.
-			# (XXX - on at least later Linux kernels, there's
 			# another mechanism, and we should be using that
 			# instead.)
 			#
@@ -9096,7 +9088,6 @@ else
 	#
 	#	the CPU, I infer (from the old
 	#
-	# XXX: should also check that they don't do weird things (like on arm)
 	#
 	#	comment) doesn't fault on unaligned accesses, but doesn't
 	#	do a normal unaligned fetch, either (e.g., presumably, ARM);
@@ -9472,7 +9463,6 @@ cat >confcache <<\_ACEOF
 _ACEOF
 
 # The following way of writing the cache mishandles newlines in values,
-# but we know of no workaround that is simple, portable, and efficient.
 # So, we kill variables containing newlines.
 # Ultrix sh set writes to stderr and can't be redirected directly,
 # and sets the high bit in the cache file unless we assign to the vars.
@@ -9650,7 +9640,6 @@ if test ! -f "$as_myself"; then
   { (exit 1); exit 1; }
 fi
 
-# Work around bugs in pre-3.0 UWIN ksh.
 for as_var in ENV MAIL MAILPATH
 do ($as_unset $as_var) >/dev/null 2>&1 && $as_unset $as_var
 done
@@ -10386,7 +10375,6 @@ _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF
 # If the template does not know about datarootdir, expand it.
-# FIXME: This hack should be removed a few years after 2.60.
 ac_datarootdir_hack=; ac_datarootdir_seen=
 
 case `sed -n '/datarootdir/ {
@@ -10417,7 +10405,6 @@ _ACEOF
 
 # Neutralize VPATH when `$srcdir' = `.'.
 # Shell code in configure.ac might set extrasub.
-# FIXME: do we really want to maintain this feature?
 cat >>$CONFIG_STATUS <<_ACEOF
   sed "$ac_vpsub
 $extrasub

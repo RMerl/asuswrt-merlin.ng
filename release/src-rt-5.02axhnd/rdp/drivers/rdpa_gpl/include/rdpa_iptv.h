@@ -116,6 +116,7 @@ typedef struct
 typedef struct
 {
     uint32_t rx_valid_pkt; /**< Valid Received IPTV packets */
+    uint32_t rx_valid_bytes; /**< Valid Received IPTV bytes */
     uint32_t rx_crc_error_pkt; /**< Received packets with CRC error */
     uint32_t discard_pkt; /**< IPTV Discard Packets */
     uint32_t iptv_lkp_miss_drop;           /**< Drop due to IPTV Hash lookup miss (DA \ DIP) */
@@ -125,7 +126,10 @@ typedef struct
     uint32_t iptv_first_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - first replication */
     uint32_t iptv_exception_drop;               /**< Drop due to IPTV exception */
     uint32_t iptv_other_repl_disp_nack_drop;    /**< Drop due to unavilable dispatcher buffer - other replication */
-    uint32_t discard_bytes;                     /**< IPTV total discard packets length in bytes*/
+    uint32_t discard_bytes;                     /**< IPTV total discard packets length in bytes */
+#if defined XRDP && defined G9991
+    uint32_t iptv_congestion_drop;              /**< IPTV congestion drops */
+#endif
 } rdpa_iptv_stat_t;
 
 typedef struct {

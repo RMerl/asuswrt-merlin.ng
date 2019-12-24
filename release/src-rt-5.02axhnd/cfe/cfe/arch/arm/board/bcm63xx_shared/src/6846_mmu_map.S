@@ -61,9 +61,6 @@ FUNC(board_mmu_map_scn)
 	mov	r9, lr
 
 	MMU_INIT_TABLE(L1TABLE_PA, L1TABLE_SIZE)
-	/* 0x1C0E, normal memory cached */
-	/* setup maximum 1GB for cfe rom alias test.For cfe ram, set the mmu memory size based on mem detection result */
-	/* DDR memory 0x0000-0000 to 0x4000-0000 */
 #if defined(CFG_RAMAPP)	
 #if !defined(IKOS_NO_DDRINIT)
 	/* read ddr memory size in MEMC */
@@ -74,41 +71,39 @@ FUNC(board_mmu_map_scn)
 	lsl	r5, r5, r2
 	mov	r10, r5
 
-	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, r5, (SECTION_OUTER_WBWA_INNER_WBWA|SECTION_AP|DESC_DOMAIN(0)), 0x0)
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, r5, SECTION_ATTR_CACHED_MEM, 0x0)
 	/* virtual address 0x4000-0000 to 0x8000-0000 -> 0x0000-0000 to 0x4000-0000 physcial uncached*/
 	mov	r5, r10
-	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, r5, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x0)
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, r5, SECTION_ATTR_NONCACHED_MEM, 0x0)
 #else
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x0)
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, 1024, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x0)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, SECTION_ATTR_CACHED_MEM, 0x0)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, 1024, SECTION_ATTR_NONCACHED_MEM, 0x0)
 #endif
 	/* entry for XRDP at 0x82000000 -  0x82e60000 */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x82000000, 16, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x82000000) //SECTION_OUTER_SO_INNER_SO
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x82000000, 16, SECTION_ATTR_DEVICE, 0x82000000) //SECTION_OUTER_SO_INNER_SO
 #else
-	/* cfe rom maps DDR as uncached because we need to alias test when init the ddr */ 
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0x0)
+	/* cfe rom DDR must be mapped as non-executable device to prevent speculative data and instruction fetch */	
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, SECTION_ATTR_DEVICE, 0x0)
 	/* entry for PSRAM at 0x826x-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x82600000, 1, (SECTION_OUTER_WBWA_INNER_WBWA|SECTION_AP|DESC_DOMAIN(0)), 0x82600000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x82600000, 1, SECTION_ATTR_CACHED_MEM, 0x82600000)
 	/* entry for XIP NOR flash at 0xffdx-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffd00000, 1, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0xffd00000)
-	/* entry for XIP NAND flash at 0xffex-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffe00000, 1, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0xffe00000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffd00000, 1, SECTION_ATTR_DEVICE_EXEC, 0xffd00000)
 #endif	
 	/* entry for MEMC SRAM at 0x7ffx-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x7ff00000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x7ff00000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x7ff00000, 1, SECTION_ATTR_DEVICE, 0x7ff00000)
 	/* entry for MEMC at 0x801x-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x80100000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x80100000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x80100000, 1, SECTION_ATTR_DEVICE, 0x80100000)
 	/* entry for BIU at 0x810x-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x81000000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x81000000)	
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x81000000, 1, SECTION_ATTR_DEVICE, 0x81000000)	
 	/* entry for UBUS4 at 0x830x-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x83000000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0x83000000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x83000000, 1, SECTION_ATTR_DEVICE, 0x83000000)
 	/* entry for PERIPH at 0xff8x-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xff800000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0xff800000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xff800000, 1, SECTION_ATTR_DEVICE, 0xff800000)
 	/* entry for PMC at 0xffbx-xxxx */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffb00000, 1, (SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0)), 0xffb00000)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffb00000, 1, SECTION_ATTR_DEVICE, 0xffb00000)
 	
-	/* STD SRAM MEM Mapped */
-	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xfff00000, 1, (SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0)), 0xfff00000)
+	/* BootLUT mapping */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xfff00000, 1, SECTION_ATTR_DEVICE, 0xfff00000)
 
 	MMU_SET_TTBR(L1TABLE_PA)
 
@@ -116,3 +111,32 @@ FUNC(board_mmu_map_scn)
 	mov	pc,lr
 END(board_mmu_map_scn)
 
+/* *********************************************************************
+    *  mmu_update_scn(uint* addr)
+    *  
+    *  Update MMU table for entries that does not need XIP support.
+    *  A board mmu callback
+    *	
+    *  Input parameters: 
+    *  	  none 
+    *  	   
+    *  Return value:
+    *  	   nothing
+    *
+    *  Registers used:
+    *  	   nothing
+    ********************************************************************* */
+
+FUNC(board_mmu_update_scn)
+	mov	r11, lr
+#if !defined(CFG_RAMAPP)
+	/* SPI NOR direct window. Add NX to avoid any speculative fetch  */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0xffd00000, 0x1, SECTION_ATTR_DEVICE, 0xffd00000)
+
+	bl	armv7_l1cache_inval_i
+	bl	armv7_l1cache_flush_d
+	bl	mmu_invalidate_tlb
+#endif
+	mov	lr,r11
+	mov	pc,lr
+END(board_mmu_update_scn)

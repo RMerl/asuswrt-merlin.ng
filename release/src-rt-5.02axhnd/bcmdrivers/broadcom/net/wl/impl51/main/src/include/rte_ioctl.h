@@ -1,7 +1,7 @@
 /*
  * HND Run Time Environment ioctl.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: rte_ioctl.h 756939 2018-04-11 03:49:08Z $
+ * $Id: rte_ioctl.h 775419 2019-05-29 19:55:17Z $
  */
 
 #ifndef _rte_ioctl_h_
@@ -68,7 +68,8 @@ enum hnd_ioctl_cmd {
 	BUS_SET_MONITOR_MODE = 12,
 	BUS_FLOW_FLUSH_PEND = 13,
 	BUS_SBTOPCIE_ACCESS_START = 14,
-	BUS_SBTOPCIE_ACCESS_STOP = 15
+	BUS_SBTOPCIE_ACCESS_STOP = 15,
+	BUS_TAF_SCHEDULER_CONFIG = 16
 };
 
 #define SDPCMDEV_SET_MAXTXPKTGLOM	1
@@ -90,6 +91,10 @@ typedef struct memuse_info {
 	uint32 inuse_total;	/* Heap in-use + Heap overhead memory  */
 	uint32 free_lwm;        /* Least free size since reclaim */
 	uint32 mf_count;        /* Malloc failure count */
+
+	uint32 max_flowring_alloc; /* max mem allocated for any flowring */
+	uint32 max_bsscfg_alloc; /* max mem allocated for any bsscfg */
+	uint32 max_scb_alloc; /* max mem allocated for any scb */
 } memuse_info_t;
 
 /* For D11 DMA loopback test */
@@ -101,9 +106,10 @@ typedef struct d11_dmalpbk_args {
 /* ioctl buffer passed b/w WL & PCIEDEV driver to setup SB2PCIE access to host */
 typedef struct sbtopcie_info {
 	uint32	len;		/* Max length bytes to be accessed */
-	uint32	low_addr;	/* 32 bit host physical address stored in dongle */
+	uint64	haddr64;	/* 64 bit host physical address stored in dongle */
 	uint32*	remap_addr;	/* Ptr to remapped address */
-	uint32*	base_bkp;	/* ptr to base register backup */
+	uint32*	base_lo;	/* ptr to base register backup */
+	uint32*	base_hi;	/* ptr to base register backup */
 } sbtopcie_info_t;
 
 #endif /* _rte_ioctl_h_ */

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -114,9 +114,11 @@ typedef struct emfc_snooper
 
 	/* Function called when interface is deleted */
 	int32	(*emf_ifp_del_fn)(struct emfc_snooper *snooper, void *ifp);
+
 #ifdef BCM_NBUFF_WLMCAST
-	 int32  (*remove_sta_fn)(struct emfc_snooper *snooper, void *sta, uint32 src_ip);
+	int32  (*remove_sta_fn)(struct emfc_snooper *snooper, void *sta, uint32 src_ip);
 #endif // endif
+
 } emfc_snooper_t;
 
 /*
@@ -154,13 +156,24 @@ typedef struct emfc_wrapper
 struct emfc_info;
 
 #ifdef BCM_NBUFF_WLMCAST
-extern uint32 emfc_remove_sta(struct emfc_info *emfc, void *sdu, uint32 src_ip);
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+extern uint32 emfc_ipv6_input(struct emfc_info *emfc, void *sdu, void *ifp,
+            uint8 *iph, bool rt_port);
+extern int32 emfc_mfdb_membership_status_change(struct emfc_info *emfc,
+		uint32 mgrp_ip, void *ifp, int is_valid);
+extern int32 emfc_mfdb_ipv6_membership_del(struct emfc_info *emfc, void *mgrp_ip, void *ifp);
+extern int32 emfc_mfdb_ipv6_membership_status_change(struct emfc_info *emfc,
+		void *mgrp_ip, void *ifp, int is_valid);
+extern int32 emfc_mfdb_ipv6_membership_add(struct emfc_info *emfc, void *mgrp_ip, void *ifp);
+extern int32 emfc_mfdb_ipv6_membership_dev_del(void *dev, void *grp, void *ifp);
+#endif // endif
+
 typedef struct {
 	void * p1;
 	void * p2;
 } wmf_emf_pointers;
 #define WL_AC_COUNT     4   /* Sync with wireless 802.11 AC_COUNT */
-#endif // endif
+#endif /* BCM_NBUFF_WLMCAST */
 
 /*
  * Description: This function is called from the OS specific module init

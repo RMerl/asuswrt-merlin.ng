@@ -82,10 +82,8 @@ extern int _eval(char *const argv[], const char *path, int timeout, pid_t *ppid)
  */
 #define CPU0	"0"
 #define CPU1	"1"
-#if defined(GTAC5300) || defined(GTAX11000) || defined(RTAX88U)
 #define CPU2	"2"
 #define CPU3	"3"
-#endif
 
 extern int _cpu_eval(int *ppid, char *cmds[]);
 
@@ -199,6 +197,9 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 })
 
 /* Copy each token in wordlist delimited by space into word */
+/* CMWIFI */
+#ifndef foreach
+#define _FOREACH_MACRO_
 #define foreach(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, " ")], \
 				strncpy(word, next, sizeof(word)), \
@@ -211,6 +212,7 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
 				next = strchr(next, ' '))
+#endif // endif
 
 /* Copy each token in wordlist delimited by ascii_44 into word */
 #define foreach_44(word, wordlist, next) \
@@ -300,8 +302,6 @@ do {                                                            \
 //#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
 extern void dbg(const char * format, ...);
 #define dbG(fmt, args...) dbg("%s(0x%04x): " fmt , __FUNCTION__ , __LINE__, ## args)
-extern void cprintf(const char *format, ...);
-
 
 /*
  * Parse the unit and subunit from an interface string such as wlXX or wlXX.YY
@@ -385,6 +385,9 @@ extern int remove_from_list(const char *name, char *list, int listsize);
 extern int add_to_list(const char *name, char *list, int listsize);
 
 extern char *find_in_list(const char *haystack, const char *needle);
+
+extern char *find_next_in_list(const char *haystack, const char *needle,
+        char *nextstr, int nextstrlen);
 
 extern char *remove_dups(char *inlist, int inlist_size);
 

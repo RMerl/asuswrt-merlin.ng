@@ -56,7 +56,6 @@
 #include <linux/netfilter.h>
 #include <bcmdpi.h>
 
-#define DPICTL_TUPLE_LENGTH         46
 #define DPICTL_URL_LENGTH           64
 
 #define DPICTL_UPDATE_DB            0x8000
@@ -110,7 +109,6 @@ struct dc_appinst {
 };
 
 struct dc_flow_info {
-   char               tuple[DPICTL_TUPLE_LENGTH];
    uint64_t           pkts;
    uint64_t           bytes;
 

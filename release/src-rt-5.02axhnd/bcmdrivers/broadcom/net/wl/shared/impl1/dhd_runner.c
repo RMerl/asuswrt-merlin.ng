@@ -349,8 +349,8 @@ const char *dhd_flowring_policy_id_str[] = {"global", "intfidx", "clients",
 	"aclist", "maclist", "dot11ac" };
 
 #define DHD_RNR_TXPOST_MAX_ITEM              2048
-/* Default physical flow ring size when runner backup queues are enabled */
-#define DHD_RNR_TXPOST_PHY_RING_SIZE         512
+/* Default physical flow ring size when runner backup queues are enabled - per access category*/
+const uint16 dhd_flowring_phy_ring_size_defaults[] = { 512, 1024, 512, 512, 512 };
 
 #define DHD_RNR_TXPOST_AC_BK_MAX_ITEM        (DHD_RNR_TXPOST_MAX_ITEM / 2)
 #define DHD_RNR_TXPOST_AC_BE_MAX_ITEM        (DHD_RNR_TXPOST_MAX_ITEM)
@@ -3639,12 +3639,10 @@ bkupq:
 
 #if defined(RNR_DHD_HLPR_BKUPQUEUE)
 	{
+        /* If nvram profile set dhd?_rnr_flowring_physize, then that overrides the defaults */
+        /* Exit from this section with phy_ring_size set to 0 means use the defaults */
 	    int size;
-
-	    phy_ring_size = DHD_RNR_TXPOST_PHY_RING_SIZE;
-
 	    length = dhd_runner_key_get(radio_idx, DHD_RNR_KEY_PHY_RING_SIZE, buff, sizeof(buff));
-
 	    if (length != 0) {
 
 	        sscanf(buff, "%d", &size);
@@ -3652,14 +3650,6 @@ bkupq:
 	            /* valid physical ring size setting in nvram */
 	            /* Enable backup queues */
 	            dhd_hlp->rnr_en_feat.bkupq = 1;
-
-	            /* cap the size to profile's least size */
-	            for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
-	                if (profile->items[ac] >= size)
-	                    continue;
-	                size = profile->items[ac];
-	                RLOG("%s: Adjust phy_ring_size to %d\r\n", __FUNCTION__, size);
-	            }
 	            phy_ring_size = size;
 	        } else {
 	            dhd_hlp->rnr_en_feat.bkupq = 0;
@@ -3669,7 +3659,19 @@ bkupq:
 #endif /* RNR_DHD_HLPR_BKUPQUEUE */
 
 	for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
-	    flowmgr->phy_items[ac] = DHD_RNR_BKUPQ(dhd_hlp) ? phy_ring_size : profile->items[ac];
+		if (DHD_RNR_BKUPQ(dhd_hlp)) {
+            int local_ring_phy_size = phy_ring_size ? phy_ring_size : dhd_flowring_phy_ring_size_defaults[ac];
+            if (local_ring_phy_size <= profile->items[ac]) {
+                flowmgr->phy_items[ac] = local_ring_phy_size;
+            }
+            else {
+                flowmgr->phy_items[ac] = profile->items[ac];
+                RLOG("%s: Adjust phy_ring_size for %s to %d\r\n", __FUNCTION__, dhd_wme_ac_str[ac], profile->items[ac]);
+            }
+		}
+		else {
+			flowmgr->phy_items[ac] = profile->items[ac];
+		}
 	}
 
 	RLOG("%s: N+M profile = %1d %02d:%04d/%04d %02d:%04d/%04d"

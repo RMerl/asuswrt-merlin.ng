@@ -27,6 +27,7 @@
 #define _GNU_SOURCE
 
 #include <arpa/inet.h>
+#include <errno.h>
 #if defined(DEBUG) && defined(DMALLOC)
 #include <dmalloc.h>
 #endif
@@ -34,15 +35,20 @@
 
 /* DEBUG DEFINE */
 #define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#define HTTPD_DEBUG_FILE                "/jffs/HTTPD_DEBUG.log"
+#else
+#define HTTPD_DEBUG_FILE                  "/tmp/HTTPD_DEBUG.log"
+#endif
 
 /* DEBUG FUNCTION */
-
-#define HTTPD_DBG(fmt,args...) \
-        if(f_exists(HTTPD_DEBUG) > 0) { \
-                char info[1024]; \
-                snprintf(info, sizeof(info), "echo \"[HTTPD][%s:(%d)]"fmt"\" >> /tmp/HTTPD_DEBUG.log", __FUNCTION__, __LINE__, ##args); \
-                system(info); \
-        }
+extern void Debug2File(const char *path, const char *fmt, ...);
+#define HTTPD_DBG(fmt, args...) ({ \
+	int save_errno = errno; \
+	if (f_exists(HTTPD_DEBUG) > 0 || nvram_get_int("HTTPD_DBG") > 0) \
+		Debug2File(HTTPD_DEBUG_FILE, "[%s:(%d)]: "fmt, __FUNCTION__, __LINE__, ##args); \
+	errno = save_errno; \
+})
 
 /* Basic authorization userid and passwd limit */
 #define AUTH_MAX 64
@@ -67,6 +73,13 @@ struct mime_handler {
 
 extern struct mime_handler mime_handlers[];
 
+struct log_pass_url_list {
+        char *pattern;
+        char *mime_type;
+};
+
+extern struct log_pass_url_list log_pass_handlers[];
+
 struct useful_redirect_list {
 	char *pattern;
 	char *mime_type;
@@ -74,12 +87,13 @@ struct useful_redirect_list {
 
 extern struct useful_redirect_list useful_redirect_lists[];
 
-struct www_whitelist {
+#ifdef RTCONFIG_AMAS
+struct AiMesh_whitelist {
 	char *pattern;
-	int flag;
- };
-
-extern struct www_whitelist www_whitelists[];
+	char *mime_type;
+};
+extern struct AiMesh_whitelist AiMesh_whitelists[];
+#endif
 
 struct stb_port {
         char *value;
@@ -122,7 +136,7 @@ struct iptv_profile {
 };
 
 #ifdef RTCONFIG_ODMPID
-struct REPLACE_ODMPID_S {
+struct REPLACE_PRODUCTID_S {
         char *org_name;
         char *replace_name;
 };
@@ -133,9 +147,6 @@ struct REPLACE_ODMPID_S {
 #define MIME_EXCEPTION_NORESETTIME	1<<2
 #define MIME_EXCEPTION_MAINPAGE 	1<<3
 #define CHECK_REFERER	1
-
-#define WHITELIST_AMAS       1<<0
-#define WHITELIST_FW_JUMP     1<<1
 
 #define SERVER_NAME "httpd/2.0"
 #define SERVER_PORT 80
@@ -384,7 +395,9 @@ extern int check_xss_blacklist(char* para, int check_www);
 extern int check_cmd_whitelist(char* para);
 extern int useful_redirect_page(char *next_page);
 extern char* reverse_str( char *str );
-extern int check_www_whitelist(char *page, int flag);
+#ifdef RTCONFIG_AMAS
+extern int check_AiMesh_whitelist(char *page);
+#endif
 #ifdef RTCONFIG_DNSPRIVACY
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
@@ -460,7 +473,8 @@ extern int change_location(char *lang);
 #endif
 extern void update_wlan_log(int sig);
 extern void system_cmd_test(char *system_cmd, char *SystemCmd, int len);
+extern int is_amas_support(void);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
-extern int is_amas_support(void);
+extern void do_set_fw_path_cgi(char *url, FILE *stream);
 #endif /* _httpd_h_ */

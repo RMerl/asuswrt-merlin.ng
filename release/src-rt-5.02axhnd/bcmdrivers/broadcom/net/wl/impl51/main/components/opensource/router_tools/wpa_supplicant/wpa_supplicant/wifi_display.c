@@ -81,6 +81,7 @@ static int wifi_display_update_wfd_ie(struct wpa_global *global)
 		p2p_set_wfd_ie_prov_disc_resp(global->p2p, NULL);
 		p2p_set_wfd_ie_go_neg(global->p2p, NULL);
 		p2p_set_wfd_dev_info(global->p2p, NULL);
+		p2p_set_wfd_r2_dev_info(global->p2p, NULL);
 		p2p_set_wfd_assoc_bssid(global->p2p, NULL);
 		p2p_set_wfd_coupled_sink_info(global->p2p, NULL);
 		return 0;
@@ -88,6 +89,8 @@ static int wifi_display_update_wfd_ie(struct wpa_global *global)
 
 	p2p_set_wfd_dev_info(global->p2p,
 			     global->wfd_subelem[WFD_SUBELEM_DEVICE_INFO]);
+	p2p_set_wfd_r2_dev_info(
+		global->p2p, global->wfd_subelem[WFD_SUBELEM_R2_DEVICE_INFO]);
 	p2p_set_wfd_assoc_bssid(
 		global->p2p,
 		global->wfd_subelem[WFD_SUBELEM_ASSOCIATED_BSSID]);
@@ -128,6 +131,11 @@ static int wifi_display_update_wfd_ie(struct wpa_global *global)
 	if (global->wfd_subelem[WFD_SUBELEM_DEVICE_INFO])
 		len += wpabuf_len(global->wfd_subelem[
 					  WFD_SUBELEM_DEVICE_INFO]);
+
+	if (global->wfd_subelem[WFD_SUBELEM_R2_DEVICE_INFO])
+		len += wpabuf_len(global->wfd_subelem[
+					  WFD_SUBELEM_R2_DEVICE_INFO]);
+
 	if (global->wfd_subelem[WFD_SUBELEM_ASSOCIATED_BSSID])
 		len += wpabuf_len(global->wfd_subelem[
 					  WFD_SUBELEM_ASSOCIATED_BSSID]);
@@ -146,6 +154,11 @@ static int wifi_display_update_wfd_ie(struct wpa_global *global)
 	if (global->wfd_subelem[WFD_SUBELEM_DEVICE_INFO])
 		wpabuf_put_buf(buf,
 			       global->wfd_subelem[WFD_SUBELEM_DEVICE_INFO]);
+
+	if (global->wfd_subelem[WFD_SUBELEM_R2_DEVICE_INFO])
+		wpabuf_put_buf(buf,
+			       global->wfd_subelem[WFD_SUBELEM_R2_DEVICE_INFO]);
+
 	if (global->wfd_subelem[WFD_SUBELEM_ASSOCIATED_BSSID])
 		wpabuf_put_buf(buf, global->wfd_subelem[
 				       WFD_SUBELEM_ASSOCIATED_BSSID]);

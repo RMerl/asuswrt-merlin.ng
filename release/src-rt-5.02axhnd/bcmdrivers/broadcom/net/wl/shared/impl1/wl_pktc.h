@@ -109,6 +109,7 @@ struct pktc_stats {
 	uint32		tx_slowpath_fkb;        /* tx fkb via tx slow path */
 	uint32		rx_slowpath_skb;        /* tx skb via rx slow path */
 	uint8		total_stas;	/* total associated STAs */
+	uint32		n_references;  /* used to kfree() this object */
 };
 typedef struct pktc_stats c_stats_t;
 
@@ -274,10 +275,10 @@ extern bool wl_pkt_drop_on_wmark(osl_t *osh, bool is_pktc);
 
 #if defined(BCM_ROUTER_DHD)
 #if defined(PKTC_TBL)
-extern unsigned long dhd_pktc_req(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);
+extern BCMFASTPATH unsigned long dhd_pktc_req(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);
 extern wl_pktc_tbl_t *dhd_pktc_attach(void *dhdp);
 extern void dhd_pktc_dump(void *dhdp, void *buf);
-extern int32 dhd_rxchainhandler(void *dhdp, struct sk_buff *skb);
+extern BCMFASTPATH int32 dhd_rxchainhandler(void *dhdp, struct sk_buff *skb);
 extern unsigned long (*dhd_pktc_req_hook)(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);
 extern void dhd_pktc_del(unsigned long addr);
 extern void (*dhd_pktc_del_hook)(unsigned long addr);

@@ -1,7 +1,7 @@
 /*
  * Misc useful os-independent macros and functions.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.h 767430 2018-09-11 10:09:52Z $
+ * $Id: bcmutils.h 776274 2019-06-24 10:52:42Z $
  */
 
 #ifndef	_bcmutils_h_
@@ -84,12 +84,12 @@ extern const unsigned char bcm_ctype[];
 * Use bcm_binit() to initialize before use
 */
 
-struct bcmstrbuf {
+typedef struct bcmstrbuf {
 	char *buf;	/* pointer to current position in origbuf */
 	unsigned int size;	/* current (residual) size in bytes */
 	char *origbuf;	/* unmodified pointer to orignal buffer */
 	unsigned int origsize;	/* unmodified orignal buffer size in bytes */
-};
+} bcmstrbuf_t;
 
 #define BCMSTRBUF_LEN(b)	(b->size)
 #define BCMSTRBUF_BUF(b)	(b->buf)
@@ -149,6 +149,7 @@ extern uint pktcopy(osl_t *osh, void *p, uint offset, int len, uchar *buf);
 extern uint pktfrombuf(osl_t *osh, void *p, uint offset, int len, uchar *buf);
 extern uint pkttotlen(osl_t *osh, void *p);
 extern void *pktlast(osl_t *osh, void *p);
+extern void* pktchain_deq_tail(osl_t *osh, void *p);
 extern uint pktsegcnt(osl_t *osh, void *p);
 extern uint8 *pktdataoffset(osl_t *osh, void *p,  uint offset);
 extern void *pktoffset(osl_t *osh, void *p,  uint offset);
@@ -327,6 +328,8 @@ extern ulong wchar2ascii(char *abuf, ushort *wbuf, ushort wbuflen, ulong abuflen
 char* bcmstrtok(char **string, const char *delimiters, char *tokdelim);
 int bcmstricmp(const char *s1, const char *s2);
 int bcmstrnicmp(const char* s1, const char* s2, int cnt);
+extern size_t bcm_sh_strrspn(const char *s, const char *accept);
+extern int bcm_get_ifname_unit(const char* ifname, int *unit, int *subunit);
 
 /* Base type definitions */
 #define IOVT_VOID	0	/* no value (implictly set only) */
@@ -742,32 +745,27 @@ DECLARE_MAP_API(8, 2, 3, 3U, 0x00FF) /* setbit8() and getbit8() */
 
 /* use for direct output of MAC address in printf etc */
 #define MACF				"%02x:%02x:%02x:%02x:%02x:%02x"
-#define ETHERP_TO_MACF(ea)	((struct ether_addr *) (ea))->octet[0], \
-							((struct ether_addr *) (ea))->octet[1], \
-							((struct ether_addr *) (ea))->octet[2], \
-							((struct ether_addr *) (ea))->octet[3], \
-							((struct ether_addr *) (ea))->octet[4], \
-							((struct ether_addr *) (ea))->octet[5]
+#define ETHERP_TO_MACF(ea)		((struct ether_addr *) (ea))->octet[0], \
+					((struct ether_addr *) (ea))->octet[1], \
+					((struct ether_addr *) (ea))->octet[2], \
+					((struct ether_addr *) (ea))->octet[3], \
+					((struct ether_addr *) (ea))->octet[4], \
+					((struct ether_addr *) (ea))->octet[5]
+#define CONST_ETHERP_TO_MACF(ea)	((const struct ether_addr *) (ea))->octet[0], \
+					((const struct ether_addr *) (ea))->octet[1], \
+					((const struct ether_addr *) (ea))->octet[2], \
+					((const struct ether_addr *) (ea))->octet[3], \
+					((const struct ether_addr *) (ea))->octet[4], \
+					((const struct ether_addr *) (ea))->octet[5]
+#define ETHER_TO_MACF(ea)		(ea).octet[0], \
+					(ea).octet[1], \
+					(ea).octet[2], \
+					(ea).octet[3], \
+					(ea).octet[4], \
+					(ea).octet[5]
 
-#define CONST_ETHERP_TO_MACF(ea) ((const struct ether_addr *) (ea))->octet[0], \
-						 ((const struct ether_addr *) (ea))->octet[1], \
-						 ((const struct ether_addr *) (ea))->octet[2], \
-						 ((const struct ether_addr *) (ea))->octet[3], \
-						 ((const struct ether_addr *) (ea))->octet[4], \
-						 ((const struct ether_addr *) (ea))->octet[5]
-#define ETHER_TO_MACF(ea) (ea).octet[0], \
-							(ea).octet[1], \
-							(ea).octet[2], \
-							(ea).octet[3], \
-							(ea).octet[4], \
-							(ea).octet[5]
-#if !defined(SIMPLE_MAC_PRINT)
-#define MACDBG "%02x:%02x:%02x:%02x:%02x:%02x"
-#define MAC2STRDBG(ea) (ea)[0], (ea)[1], (ea)[2], (ea)[3], (ea)[4], (ea)[5]
-#else
-#define MACDBG				"%02x:%02x:%02x"
-#define MAC2STRDBG(ea) (ea)[0], (ea)[4], (ea)[5]
-#endif /* SIMPLE_MAC_PRINT */
+#define MACDBG				MACF
+#define MAC2STRDBG(ea)			CONST_ETHERP_TO_MACF(ea)
 
 /* bcm_format_flags() bit description structure */
 typedef struct bcm_bit_desc {
@@ -848,6 +846,10 @@ extern char *bcm_brev_str(uint32 brev, char *buf);
 extern void printbig(char *buf);
 extern void prhex(const char *msg, const uchar *buf, uint len);
 
+/* move buffer/buflen up to the given tlv, or set to NULL/0 on error */
+extern void bcm_tlv_buffer_advance_to(const bcm_tlv_t *elt, const uint8 **buffer, uint *buflen);
+/* move buffer/buflen past the given tlv, or set to NULL/0 on error */
+extern void bcm_tlv_buffer_advance_past(const bcm_tlv_t *elt, const uint8 **buffer, uint *buflen);
 /* bcmerror */
 extern const char *bcmerrorstr(int bcmerror);
 
@@ -1174,6 +1176,9 @@ uint16 bcm_ip_cksum(uint8 *buf, uint32 len, uint32 sum);
 })
 #endif /* _envelope_of */
 
+/* XXX: conflict in struct dll and struct dll_t in:
+ * BCA SDK linux/brcm_dll.h and bcmdrivers/opensource/include/bcm963xx/pktHdr.h
+ */
 typedef struct dll dll_t;
 struct dll {
 	dll_t * next_p;
@@ -1298,6 +1303,31 @@ typedef struct _counter_tbl_t {
 	uint32 cnt[CNTR_TBL_MAX];		/* Counting entries to increase at desired places */
 	bool enabled;				/* Whether to enable printing log */
 } counter_tbl_t;
+
+/*	XXX: How to use
+	Eg.: In dhd_linux.c
+	cnt[0]: How many times dhd_start_xmit() was called in every 1sec.
+	cnt[1]: How many bytes were requested to be sent in every 1sec.
+
+++	static counter_tbl_t xmit_tbl = {"xmit", 0, 1000, 2, {0,}, 1};
+
+	int
+	dhd_start_xmit(struct sk_buff *skb, struct net_device *net)
+	{
+		..........
+++		counter_printlog(&xmit_tbl);
+++		xmit_tbl.cnt[0]++;
+
+		ifp = dhd->iflist[ifidx];
+		datalen  = PKTLEN(dhdp->osh, skb);
+
+++		xmit_tbl.cnt[1] += datalen;
+		............
+
+		ret = dhd_sendpkt(&dhd->pub, ifidx, pktbuf);
+		...........
+	}
+*/
 
 void counter_printlog(counter_tbl_t *ctr_tbl);
 #endif /* DEBUG_COUNTER */

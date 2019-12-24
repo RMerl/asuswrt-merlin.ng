@@ -1,7 +1,7 @@
 /*
  * BCM53XXX ARM/Cortext A9 boot code for standalone apps.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -4917,6 +4917,11 @@ ca7_cpu_boost_900MHz:
 	and	r2,r2,r1
 	cmp	r2,r1
 	bne	1b
+
+	/* FIXME.  53573B0 can't clear load_en when boot up to 900:300:150,
+	 * otherwise it will hang when change CPU:CCI ratio.  need to bypass
+	 * "clear_load_en" codes below for 53573B0.
+	 */
 
 	ldr	r0,=SI_ENUM_BASE_DEFAULT
 	ldr	r1,[r0]

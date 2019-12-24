@@ -627,6 +627,11 @@ static void ubus_bridge_init(void)
     // TBD verify ag_drv_ubus_mstr_hyst_ctrl_set(0, 2, 2);  ubus_mstr_id, cmd_space, data_space
 }
 
+uint32_t fpm_get_dqm_extra_fpm_tokens(void)
+{
+    return 0;
+}
+
 static int fpm_init(void)
 {
     bdmf_error_t rc = BDMF_ERR_OK;

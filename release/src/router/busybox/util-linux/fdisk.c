@@ -2882,6 +2882,8 @@ list_devs_in_proc_partititons(void)
 		if (sscanf(line, " %u %u %u %[^\n ]",
 				&ma, &mi, &sz, ptname) != 4)
 			continue;
+		if (!strncmp(ptname, "mtdblock", 8))
+			continue;
 
 		sprintf(devname, "/dev/%s", ptname);
 		if (is_whole_disk(devname))

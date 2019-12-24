@@ -26,7 +26,10 @@ IS_FUPGRADE=`nvram get rc_support|grep -i fupgrade`
 # current firmware information
 current_firm=`nvram get firmver`
 current_firm=`echo $current_firm | sed s/'\.'//g;`
-current_firm_1st_bit=${current_firm:0:1}
+current_firm_1st_bit=${current_firm:0:1}	#To see v7 fw as general v3 fw, we replace 7.x.x.x with 3.x.x.x
+if [ "$current_firm_1st_bit" == "7" ]; then
+	current_firm=`echo $current_firm |sed s/7/3/1;`
+fi
 current_buildno=`nvram get buildno`
 current_extendno=`nvram get extendno`
 current_extendno=`echo $current_extendno | sed s/-g.*//;`
@@ -44,7 +47,7 @@ model_31="0"
 model_30="0"
 if [ "$model" == "RT-N18U#" ]; then
 	model_31="1"
-elif [ "$model" == "RT-AX92U#" ] || [ "$model" == "RT-N11P_B1#" ]; then
+elif [ "$model" == "RT-N11P_B1#" ]; then
 	model_30="1"	#Use another info after middle firmware
 fi
 

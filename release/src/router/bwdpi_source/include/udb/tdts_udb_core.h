@@ -88,9 +88,10 @@
 #error "TMCFG_E_CORE_APPID is not enabled!"
 #endif
 
-#if !TMCFG_E_CORE_DEVID
-#error "TMCFG_E_CORE_DEVID is not enabled!"
-#endif
+
+//#if !TMCFG_E_CORE_DEVID
+//#error "TMCFG_E_CORE_DEVID is not enabled!"
+//#endif
 
 #if !TMCFG_E_CORE_DNS_DECODE
 #warning "TMCFG_E_CORE_DNS_DECODE is not enabled!"

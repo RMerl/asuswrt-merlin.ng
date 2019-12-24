@@ -1433,6 +1433,7 @@ static int turn_ioq_temp_thread(void *arg)
 		// if TURN allocation isn't success in some period, then regarded as timeout.
 		if (curr_tv >= max_waiting_time) {
 			PJ_LOG(4, ("ice_strans.c", "turn_ioq_temp_thread turn allocation timeout. timeout=%d", max_waiting_time));
+			ice_st->turn_last_status = PJNATH_ESTUNTIMEDOUT;
 			break;
 		}
 	} while (1);
@@ -1491,6 +1492,7 @@ PJ_DEF(pj_status_t) pj_ice_strans_init_ice(pj_ice_strans *ice_st,
 	}
 
 	if (!ice_st->wait_turn_alloc_ok_cnt) {
+		ice_st->turn_last_status = PJNATH_ETURNINSERVER;
 		return pj_ice_strans_init_ice2(ice_st, role, local_ufrag, local_passwd);
 	} else { // create a temporary thread to poll ioqueue for turn allocation complete callback.
 		pj_thread_t *turn_thread;

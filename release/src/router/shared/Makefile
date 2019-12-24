@@ -130,6 +130,12 @@ OBJS += bwdpi_utils.o
 OBJS += bwdpi_utils.o
 OBJS += mac_name_tbl.o
 OBJS += stun.o
+ifeq ($(RTCONFIG_AHS),y)
+OBJS += $(if $(wildcard notify_ahs.c),notify_ahs.o,prebuild/notify_ahs.o)
+endif
+ifeq ($(RTCONFIG_AMAS_WGN),y)
+OBJS += amas_wgn_shared.o
+endif
 OBJS += scripts.o
 ifeq ($(RTCONFIG_RGBLED),y)
 OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
@@ -308,11 +314,14 @@ ifeq ($(RTCONFIG_DWB),y)
 ifeq ($(RTCONFIG_BCMBSD),y)
 CFLAGS += -DSMART_CONNECT
 endif
-OBJS += $(if $(wildcard sysdeps/amas/amas_dwb.c),sysdeps/amas/amas_dwb.o,prebuild/amas_dwb.o)
+OBJS += $(if $(wildcard sysdeps/amas/amas_dwb.c),amas_dwb.o,prebuild/amas_dwb.o)
 endif
+OBJS += amas_utils.o
+OBJS += $(if $(wildcard amas_utils.c),amas_utils.o,prebuild/amas_utils.o)
 ifeq ($(RTCONFIG_AMASDB),y)
 CFLAGS += -DAMASDB
 endif
+vpath %.c sysdeps/amas
 endif
 
 vpath %.c sysdeps $(SRCBASE)/shared/ $(WLAN_ComponentSrcDirs)
@@ -351,6 +360,14 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 OBJS += sw_auth.o hw_auth.o
 CFLAGS  += -I$(TOP)/sw-hw-auth
 vpath %.c $(TOP)/sw-hw-auth
+endif
+
+ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
+OBJS += common_utils.o
+endif
+
+ifeq ($(RTCONFIG_GEFORCENOW), y)
+OBJS += nvgfn.o
 endif
 
 all: libshared.so libshared.a

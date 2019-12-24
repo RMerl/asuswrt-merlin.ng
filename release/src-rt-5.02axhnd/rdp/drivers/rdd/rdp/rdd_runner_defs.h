@@ -350,6 +350,17 @@
  *to at least this minimum guaranteed pool size value.*/
 #define DS_FREE_PACKET_DESCRIPTOR_POOL_MIN_GUARANTEED_POOL_SIZE  64
 
+/* US queues with a filling level less than this threshold can allocate Packet Descriptor using the guaranteed PD Pool budget */
+#define US_FREE_PACKET_DESCRIPTOR_POOL_GUARANTEED_QUEUE_THRESHOLD 72
+
+/* The guaranteed PD Pool budget is sized in function of the number of configured US queues. To avoid unexpected behavior in
+ * corner cases, e.g. a transient condition when all US queues are unconfigured, the guaranteed PD Pool budget is clamped
+ * to at least this minimum guaranteed pool size value.
+ * Let's say a typical configuration of - 8 queues in US. Each queue with 72 PDs guaranteed. (8*72 = 576 PDS)
+ * NG PDs -> 3072-576 = 2496 PDs.
+ */
+#define US_FREE_PACKET_DESCRIPTOR_POOL_MIN_GUARANTEED_POOL_SIZE  (US_FREE_PACKET_DESCRIPTOR_POOL_GUARANTEED_QUEUE_THRESHOLD*8)
+
 #define BBH_PERIPHERAL_DSL_TX                                   32
 
 #define RDD_DDR_PACKET_PAYLOAD_OFFSET                          18

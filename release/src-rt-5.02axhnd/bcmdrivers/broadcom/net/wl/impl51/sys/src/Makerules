@@ -2,7 +2,7 @@
 #  Top level Makerules
 #  it uses Makerules.env for build env vars and optional branding.inc
 #
-#  Copyright (C) 2018, Broadcom. All Rights Reserved.
+#  Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 #  Permission to use, copy, modify, and/or distribute this software for any
 #  purpose with or without fee is hereby granted, provided that the above
@@ -19,12 +19,14 @@
 #
 #  <<Broadcom-WL-IPTag/Open:>>
 #
-# $Id: Makerules 762695 2018-05-15 19:16:36Z $
+# $Id: Makerules 771269 2019-01-21 07:25:16Z $
 
+# XXX WARNING
 # This is the TOP level makefile rules, which is used by many makefiles.
 # Please be cautious on changes, especially compatibilities.
 #   e.g. new gcc compile option should be protected with version check
 #        or "check_gcc" trick
+# XXX
 
 # first rule (default)
 .PHONY: all
@@ -126,6 +128,9 @@ ifeq ($(TARGETOS), unix)
 	ifeq ($(TARGETENV), linuxarm)
 		TARGET_PREFIX := armeb-linux-
 	else
+	ifeq ($(TARGETENV), linuxarm64)
+		TARGET_PREFIX = aarch64-linux-gnu-
+	else
 	ifeq ($(TARGETENV), linuxarm_le)
 		TARGET_PREFIX ?= arm-linux-
 		ifneq ($(LINUXDIR),)
@@ -178,6 +183,7 @@ $(warning : LINUXDIR is not set!)
 	endif
 	endif
 	endif
+	endif
 
 	ifeq ($(APPLY_PREFIX),true)
 		CC := $(TARGET_PREFIX)gcc
@@ -197,6 +203,9 @@ $(warning : LINUXDIR is not set!)
 		GLDFLAGS ?= -static
 	endif
 	ifeq ($(TARGETENV), android)
+		GLDFLAGS := -static
+	endif
+	ifeq ($(TARGETENV), linuxarm64)
 		GLDFLAGS := -static
 	endif
 	ifeq ($(TARGETENV), android_ndk_r6b)

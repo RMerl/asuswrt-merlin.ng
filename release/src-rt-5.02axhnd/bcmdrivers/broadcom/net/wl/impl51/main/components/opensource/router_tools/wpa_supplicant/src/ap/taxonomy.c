@@ -21,6 +21,7 @@
 #include "common/wpa_ctrl.h"
 #include "hostapd.h"
 #include "sta_info.h"
+#include "taxonomy.h"
 
 /* Copy a string with no funny schtuff allowed; only alphanumerics. */
 static void no_mischief_strncpy(char *dst, const char *src, size_t n)

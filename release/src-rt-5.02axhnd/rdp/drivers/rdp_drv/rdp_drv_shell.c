@@ -637,7 +637,7 @@ static int rdp_drv_shell_print_counters_mapping(bdmf_session_handle session, con
 
     for (i = 0; i < RDD_RX_FLOW_TABLE_SIZE; i++)
     {
-        rc = rdd_rx_flow_params_get(i, &rx_flow_entry);
+        rc = rdd_rx_flow_entry_get(i, &rx_flow_entry);
         if (rc)
             continue;
         if (rx_flow_entry.cntr_id != RX_FLOW_CNTR_GROUP_INVLID_CNTR)

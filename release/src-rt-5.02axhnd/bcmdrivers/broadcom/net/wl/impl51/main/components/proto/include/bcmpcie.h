@@ -3,7 +3,7 @@
  * Software-specific definitions shared between device and host side
  * Explains the shared area between host and dongle
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmpcie.h 760343 2018-05-01 22:10:14Z $
+ * $Id: bcmpcie.h 777863 2019-08-13 22:19:53Z $
  */
 
 #ifndef	_bcmpcie_h_
@@ -105,7 +105,36 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 #define BCMPCIE_MAX_TX_FLOWS	40
 #endif /* ! BCMPCIE_MAX_TX_FLOWS */
 
+/*
+ * XXX
+ *
+ * PCIE IPC Revision(Version) History:
+ *
+ * BISON packages (DHD363, 7.35 and 10.10) use legacy PCIE IPC revision 5.
+ * KUDU packages: Firmware and DHD use "BCA revision space [0x80 .. 0xFF]"
+ *
+ * BCA Revisions set the msbit in the 8bit revision to seperate the revision
+ * space from WCC revisions. First BCA revision will begin at 0x81.
+ *
+ * In BCA revisions, structures such as pciedev_shared_t and ring_info_t are
+ * extended and feature flags and capabilities are not compatible with WCC
+ * revisions 6 and 7, and under "Work In Progress" scrubbing.
+ *
+ * All BCA PCIE IPC structures, flags, etc will use a
+ * prefix "pcie_ipc_" or "PCIE_IPC_" for clear identification of objects that
+ * may be accessed by host DHD or dongle firmware.
+ *
+ * DHD from KUDU must interwork with firmware from 7.35 and 10.10 that are
+ * retained at legacy PCIE IPC revision 0x05. Legacy revision 0x05 is outside
+ * the BCA revision space, and uses legacy structure and flags definitions.
+ */
+
 #ifdef PCIE_IPC_KUDU_WIP
+/* XXX:
+ * Firmware features from rev 6 and rev7 are not compatible with DHD. These
+ * features will be scrubbed and possibly obsoleted if not required.
+ * Currently compiled out in firmware using PCIE_IPC_KUDU_WIP.
+ */
 #error "PCIE IPC rev6 and rev7 are not compatible with KUDU-DHD"
 #endif /* PCIE_IPC_KUDU_WIP */
 
@@ -133,6 +162,10 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 #if (PCIE_IPC_REVISION > PCIE_IPC_REV_MASK)
 #error "Invalid PCIE_IPC_REVISION"
 #endif // endif
+
+/* XXX:
+ * Flags must be always reserved in KUDU main, before using them in release.
+ */
 
 /** pcie_ipc::flags listing begin, use prefix "PCIE_IPC_FLAGS_" */
 #define PCIE_IPC_FLAGS_REVISION_MASK    0x000000FF /* Dongle IPC revision     */
@@ -573,6 +606,12 @@ typedef struct pcie_ipc
 #define CHECK_NOWRITE_SPACE(r, w, d) \
 	(((r) == (w) + 1) || (((r) == 0) && ((w) == ((d) - 1))))
 
+#define IS_RING_SPACE_EMPTY(r, w, d) \
+	((r) == (w))
+
+#define IS_RING_SPACE_FULL(r, w, d) \
+	(WRITE_SPACE_AVAIL((r), (w), (d)) == 0)
+
 /*
  * In TCM, the RD and WR indices are saved in individual RD and WR index arrays
  * for the H2D and D2H rings. pcie_rw_index_t is used to reference each RD or
@@ -590,6 +629,10 @@ typedef struct pcie_ipc
  * dongle DMAing of indices. Legacy -DPCIE_DMA_INDEX implies 32bit inidices.
  *
  * Dongle will advertize the size of a WR or RD DMA index to DHD.
+ */
+/* XXX Use of 32bit indices instead of 16bit, doubles the memory in hardware
+ * accelerators (2KBytes instead of 1KBytes for 512 rings), unnecessarily.
+ * Internal memory in HW accelerators is extremely scarce.
  */
 #if defined(BCMPCIE_IFRM) && !defined(BCMPCIE_IFRM_DISABLED)
 typedef uint16 pcie_rw_index_t; /* 16bit WR and RD indices */

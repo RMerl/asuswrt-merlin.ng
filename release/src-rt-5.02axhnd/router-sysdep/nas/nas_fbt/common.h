@@ -6,7 +6,7 @@
  * All Rights Reserved.
  *
  *
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -48,7 +48,7 @@
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
  *
- * $Id: common.h 701315 2017-05-24 13:08:15Z $
+ * $Id: common.h 768527 2018-10-17 06:26:56Z $
  */
 
 #ifndef COMMON_H
@@ -206,6 +206,7 @@ typedef struct fbt {
 	struct ft_remote_r1kh *r1kh_list;
 	int pmk_r1_push;
 	int ft_over_ds;
+	bool ft_psk_generate_local;
 	unsigned char pmk_r1name[WPA_PMK_NAME_LEN];
 	struct wpa_ft_pmk_cache *ft_pmk_cache;
 	char fbt_aps[WLC_IOCTL_MEDLEN];

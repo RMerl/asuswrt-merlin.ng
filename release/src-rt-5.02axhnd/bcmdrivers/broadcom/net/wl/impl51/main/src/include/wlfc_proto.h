@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlfc_proto.h 754155 2018-03-26 07:53:39Z $
+ * $Id: wlfc_proto.h 777121 2019-07-19 16:20:33Z $
  *
  */
 
@@ -140,16 +140,26 @@ typedef enum {
 /* free the data stored to be used for suppressed packets in future */
 #define WLFC_CTL_VALUE_LEN_SUPR			7	/** tid, MAC */
 
-/* The high bits of ratespec report in timestamp are used for various status */
-#define WLFC_TSFLAGS_RX_RETRY		(1 << 31)
-#define WLFC_TSFLAGS_PM_ENABLED		(1 << 30)
-#define WLFC_TSFLAGS_MASK		(WLFC_TSFLAGS_RX_RETRY | WLFC_TSFLAGS_PM_ENABLED)
-
 /* enough space to host all 4 ACs, bc/mc and atim fifo credit */
 #define WLFC_CTL_VALUE_LEN_FIFO_CREDITBACK	6
 
 #define WLFC_CTL_VALUE_LEN_REQUEST_CREDIT	3	/* credit, MAC-handle, prec_bitmap */
 #define WLFC_CTL_VALUE_LEN_REQUEST_PACKET	3	/* credit, MAC-handle, prec_bitmap */
+
+/* XXX:
+	WLFC packet identifier: b[31:0] (WLFC_CTL_TYPE_PKTTAG)
+
+	Generation	: b[31]		=> generation number for this packet [host->fw]
+	                           OR, current generation number [fw->host]
+	Flags		: b[30:27]	=> command, status flags
+	FIFO-AC		: b[26:24]	=> AC-FIFO id
+
+	h-slot		: b[23:8]	=> hanger-slot
+	freerun		: b[7:0]	=> A free running counter?
+
+	As far as the firmware is concerned, host generated b[23:0] should be just
+	reflected back on txstatus.
+*/
 
 #define WLFC_PKTFLAG_PKTFROMHOST	0x01
 #define WLFC_PKTFLAG_PKT_REQUESTED	0x02
@@ -219,14 +229,13 @@ typedef enum {
 #define WL_TXSTATUS_GET_FREERUNCTR(x)		((x)& WL_TXSTATUS_FREERUNCTR_MASK)
 
 /* AMSDU part of d11 seq number */
-#define WL_SEQ_AMSDU_MASK             0x1 /* allow 1 bit */
-#define WL_SEQ_AMSDU_SHIFT            14
+#define WL_SEQ_AMSDU_MASK		0x1 /* allow 1 bit */
+#define WL_SEQ_AMSDU_SHIFT		14
 #define WL_SEQ_SET_AMSDU(x, val)      ((x) = \
 	((x) & ~(WL_SEQ_AMSDU_MASK << WL_SEQ_AMSDU_SHIFT)) | \
 	(((val) & WL_SEQ_AMSDU_MASK) << WL_SEQ_AMSDU_SHIFT)) /**< sets a single AMSDU bit */
 /** returns TRUE if ring item is AMSDU (seq = d11 seq nr) */
-#define WL_SEQ_IS_AMSDU(x)   (((x) >> WL_SEQ_AMSDU_SHIFT) & \
-	WL_SEQ_AMSDU_MASK)
+#define WL_SEQ_IS_AMSDU(x)   (((x) >> WL_SEQ_AMSDU_SHIFT) & WL_SEQ_AMSDU_MASK)
 
 /* indicates last_suppr_seq is valid */
 #define WL_SEQ_VALIDSUPPR_MASK		0x1 /* allow 1 bit */
@@ -237,22 +246,15 @@ typedef enum {
 #define WL_SEQ_GET_VALIDSUPPR(x)	(((x) >> WL_SEQ_VALIDSUPPR_SHIFT) & \
 	WL_SEQ_VALIDSUPPR_MASK)
 
-#define WL_SEQ_FROMFW_MASK		0x1 /* allow 1 bit */
-#define WL_SEQ_FROMFW_SHIFT		13
-#define WL_SEQ_SET_FROMFW(x, val)	((x) = \
-	((x) & ~(WL_SEQ_FROMFW_MASK << WL_SEQ_FROMFW_SHIFT)) | \
-	(((val) & WL_SEQ_FROMFW_MASK) << WL_SEQ_FROMFW_SHIFT))
+#define WL_SEQ_FROMWL_MASK		0x1 /* allow 1 bit */
+#define WL_SEQ_FROMWL_SHIFT		13
 
-#define WL_SEQ_GET_FROMFW(x)    (((x) >> WL_SEQ_FROMFW_SHIFT) & \
-	WL_SEQ_FROMFW_MASK)
 /** Set when firmware assigns D11 sequence number to packet */
-#define SET_WL_HAS_ASSIGNED_SEQ(x)	WL_SEQ_SET_FROMFW((x), 1)
-
-#define __SET_WL_HAS_ASSIGNED_SEQ(x)	\
-	((x) |= (WL_SEQ_FROMFW_MASK << WL_SEQ_FROMFW_SHIFT))
+#define SET_WL_HAS_ASSIGNED_SEQ(x)	((x) |= (WL_SEQ_FROMWL_MASK << WL_SEQ_FROMWL_SHIFT))
+#define RESET_WL_HAS_ASSIGNED_SEQ(x)	((x) &= ~(WL_SEQ_FROMWL_MASK << WL_SEQ_FROMWL_SHIFT))
 
 /** returns TRUE if packet has been assigned a d11 seq number by the WL firmware layer */
-#define GET_WL_HAS_ASSIGNED_SEQ(x)	(((x) >> WL_SEQ_FROMFW_SHIFT) & WL_SEQ_FROMFW_MASK)
+#define GET_WL_HAS_ASSIGNED_SEQ(x)	(((x) >> WL_SEQ_FROMWL_SHIFT) & WL_SEQ_FROMWL_MASK)
 
 /**
  * Proptxstatus related.
@@ -264,25 +266,10 @@ typedef enum {
  */
 #define WL_SEQ_FROMDRV_MASK		0x1 /* allow 1 bit */
 #define WL_SEQ_FROMDRV_SHIFT		12
-#define WL_SEQ_SET_FROMDRV(x, val)      ((x) = \
-	((x) & ~(WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT)) | \
-	(((val) & WL_SEQ_FROMDRV_MASK) << WL_SEQ_FROMDRV_SHIFT))
-#define WL_SEQ_GET_FROMDRV(x)   (((x) >> WL_SEQ_FROMDRV_SHIFT) & \
-	WL_SEQ_FROMDRV_MASK)
+#define SET_DRV_HAS_ASSIGNED_SEQ(x)	((x) |= (WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT))
+#define RESET_DRV_HAS_ASSIGNED_SEQ(x)	((x) &= ~(WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT))
 
-/**
- * Proptxstatus, host or fw PCIe layer requests WL layer to reuse d11 seq no. Bit is reset by WL
- * subsystem when it reuses the seq number.
- */
-#define WL_SEQ_SET_REUSE(x, val)	((x) = \
-	((x) & ~(WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT)) | \
-	(((val) & WL_SEQ_FROMDRV_MASK) << WL_SEQ_FROMDRV_SHIFT))
-#define SET_WL_TO_REUSE_SEQ(x)   WL_SEQ_SET_REUSE((x), 1)
-#define RESET_WL_TO_REUSE_SEQ(x) WL_SEQ_SET_REUSE((x), 0)
-
-/** Proptxstatus, related to reuse of d11 seq numbers when retransmitting */
-#define IS_WL_TO_REUSE_SEQ(x)	(((x) >> WL_SEQ_FROMDRV_SHIFT) & \
-	WL_SEQ_FROMDRV_MASK)
+#define GET_DRV_HAS_ASSIGNED_SEQ(x)	(((x) >> WL_SEQ_FROMDRV_SHIFT) & WL_SEQ_FROMDRV_MASK)
 
 #define WL_SEQ_NUM_MASK			0xfff /* allow 12 bit */
 #define WL_SEQ_NUM_SHIFT		0
@@ -300,7 +287,7 @@ typedef enum {
 
 /* 32 STA should be enough??, 6 bits; Must be power of 2 */
 #define WLFC_MAC_DESC_TABLE_SIZE	32
-#define WLFC_MAX_IFNUM				16
+#define WLFC_MAX_IFNUM			16
 #define WLFC_MAC_DESC_ID_INVALID	0xff
 
 /* b[7:5] -reuse guard, b[4:0] -value */
@@ -407,9 +394,6 @@ typedef enum {
 #define FLOW_RING_CREATE	1
 #define FLOW_RING_DELETE	2
 #define FLOW_RING_FLUSH		3
-#define FLOW_RING_OPEN		4
-#define FLOW_RING_CLOSED	5
-#define FLOW_RING_FLUSHED	6
 #define FLOW_RING_TIM_SET	7
 #define FLOW_RING_TIM_RESET	8
 #define FLOW_RING_FLUSH_TXFIFO	9

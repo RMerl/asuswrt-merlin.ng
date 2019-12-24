@@ -894,7 +894,7 @@ static int tcp_packet(struct nf_conn *ct,
 			}
 #else /* ! (CONFIG_BCM_KF_BLOG && CONFIG_BLOG) */
 				return -NF_REPEAT;
-#endif
+#endif /* ! (CONFIG_BCM_KF_BLOG && CONFIG_BLOG) */
 			return NF_DROP;
 		}
 		/* Fall through */

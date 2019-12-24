@@ -1,7 +1,7 @@
 #
 # Broadcom Linux Router WL firmware Makefile
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -31,9 +31,9 @@ ifneq ($(CONFIG_STBAP),y)
 #ifneq ($(CONFIG_AIRIQ),)
 #PCIEFD_TARGETS_LIST            += 4363c0
 #endif
+endif # CONFIG_STBAP
 #PCIEFD_TARGETS_LIST		+= 43602a1
 #PCIEFD_TARGETS_LIST		+= 43602a3
-endif # CONFIG_STBAP
 
 #ifeq ($(CONFIG_DHDAP_RAM_BUILD),y)
 #        PCIEFD_TARGETS_LIST	+= 4366c0_ram
@@ -46,6 +46,7 @@ ifeq ($(CONFIG_STBAP),y)
 STBTARGET := "-stb-hdmaaddr64"
 endif # CONFIG_STBAP
 
+# obj-pciefd expands to e.g. '43684b0-obj 4363c0-obj 43602a3-obj 4366c0-obj'
 obj-pciefd			:= $(patsubst %,%-obj,$(PCIEFD_TARGETS_LIST))
 clean-pciefd			:= $(patsubst %,%-clean,$(PCIEFD_TARGETS_LIST))
 version-pciefd			:= $(patsubst %,%-version,$(PCIEFD_TARGETS_LIST))
@@ -62,10 +63,21 @@ FW_43684b0_MAKE_PATH		:= $(FW_43684b0_SRCBASE)/dongle/make/wl
 FW_43684b0_BUILD_PATH		:= $(FW_43684b0_SRCBASE)/../build/dongle/$(FW_43684b0_BUILD_PREFIX)
 FW_43684b0_OS_PATH		:= $(FW_43684b0_SRCBASE)/../components/threadx
 
-ifeq ($(WLTEST),1)
-    FW_43684b0_TARGET		:= config_pcie_fdap_mfgtest
+fw_options :=
+ifeq ($(CONFIG_STBAP),y)
+	fw_options := $(fw_options)_stb
 else
-        FW_43684b0_TARGET	:= config_pcie_fdap_release
+	ifeq ($(CONFIG_AIRIQ),y)
+		ifneq ($(WLTEST),1)
+			fw_options := $(fw_options)_airiq
+		endif # WLTEST
+	endif # CONFIG_AIRIQ
+endif # CONFIG_STBAP
+
+ifeq ($(WLTEST),1)
+	FW_43684b0_TARGET	?= config_pcie_fdap_mfgtest$(fw_options)
+else
+	FW_43684b0_TARGET	?= config_pcie_fdap_release$(fw_options)
 endif
 
 # ---------------------
@@ -95,7 +107,11 @@ FW_43602a3_OS_PATH		:= $(FW_43602a3_SRCBASE)/hndrte
 ifeq ($(WLTEST),1)
     FW_43602a3_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-ringer-dmaindex16-assoc_lt-fbt
 else
+ifneq ($(CONFIG_STBAP),y)
         FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-dhdhdr-assoc_lt-fbt
+else
+        FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-assoc_lt-fbt
+endif # CONFIG_STBAP
 endif
 
 # ---------------------
@@ -152,8 +168,19 @@ endif
 
 # target specific override to remove all CFLAGS that are inherited from router Make
 $(obj-pciefd): CFLAGS=
+
+# obj-pciefd expands to e.g. '43684b0-obj 4363c0-obj 43602a3-obj 4366c0-obj'.
+# The below rule is executed for each of these targets, so e.g. for '43684b0-obj'.
+# On each invocation of this rule, it builds one dongle firmware image and
+# copies it into a DHD directory. This rule does *not* build the DHD itself.
 $(obj-pciefd):
+	@# R_CHIP expands to e.g. '43684b0'
+	@# FW_$(R_CHIP)_OS_PATH expands to e.g. '.../43684/components/threadx'
+	@#
 	$(eval R_CHIP := $(patsubst %-obj,%,$@))
+	@# The following snippet will generate a file named '.tcchked' in the respective firmware build directory using the phony target tcchk as in
+	@#   'make ... -C .../43684/src/dongle/make/wl 43684b0-ram/config_pcie_fdap_internal/tcchk'
+	@#
 	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ] && [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
 	if [ ! -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/.tcchked ]; then \
 		if [ "$(findstring threadx,$(FW_$(R_CHIP)_OS_PATH))" = "threadx" ]; then \
@@ -164,6 +191,15 @@ $(obj-pciefd):
 		fi \
 	fi \
 	fi
+
+	@# FW_$(R_CHIP)_SRCBASE expands to e.g. '.../43684/src'
+	@# FW_$(R_CHIP)_TARGET expands to e.g. 'config_pcie_fdap_internal'
+	@# PCIEFD_IMAGE_DIR expands to e.g. '.../sys/src/dongle/bin'
+	@# PCIEFD_EMBED_HEADER expands to e.g. '.../sys/src/shared/rtecdc_router.h'
+	@# SRCBASE_DHD expands to e.g. '.../sys/src'
+	@# FW_$(R_CHIP)_BUILD_PATH expands to e.g. '.../43684/build/dongle/43684b0-ram'
+
+	@# The following snippet builds the firmware for a single chip
 	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
 	if [ -d $(FW_$(R_CHIP)_OS_PATH) ] && [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/.tcchked ]; then \
 		if [ -d $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt ]; then \
@@ -210,11 +246,18 @@ $(obj-pciefd):
 .PHONY: $(clean-pciefd)
 
 $(clean-pciefd): CFLAGS=
+
+# $(clean-pciefd) expands to e.g. '43684b0-clean 4363c0-clean 43602a3-clean 4366c0-clean'
 $(clean-pciefd):
 	$(eval R_CHIP := $(patsubst %-clean,%,$@))
+	@# FW_$(R_CHIP)_MAKE_PATH expands to e.g. '.../43684/src/dongle/make/wl'
+	@# FW_$(R_CHIP)_BUILD_PREFIX expands to e.g. '43684b0-ram'
+	@# FW_$(R_CHIP)_TARGET expands to e.g. 'config_pcie_fdap_internal'
+	@# below snippet executes e.g. 'make ... -C 43684/src/dongle/make/wl 43684b0-ram/config_pcie_fdap_internal/clean'
 	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
 		if [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
 			$(MAKE) CROSS_COMPILE=arm-none-eabi -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET)/clean; \
+			$(MAKE) -C $(FW_$(R_CHIP)_SRCBASE)/include ; \
 		fi \
 	fi
 
@@ -231,16 +274,27 @@ $(version-pciefd):
 
 pciefd-cleangen:
 	@if [ -d $(FW_$(lastword $(PCIEFD_TARGETS_LIST))_SRCBASE)/wl/sys ]; then \
-		$(RM) -rf  $(PCIEFD_IMAGE_DIR) && \
-		$(RM) -f  $(PCIEFD_EMBED_HEADER) $(PCIEFD_EMBED_HEADER).tmp.* && \
-		cp $(PCIEFD_EMBED_HEADER_TEMPLATE) $(PCIEFD_EMBED_HEADER); \
+		$(RM) -rf  $(PCIEFD_IMAGE_DIR)/*.bin; \
 	fi
 
+ifeq ($(ALREADY_HAVE_RTECDC),)
 pciefd: pciefd-cleangen $(obj-pciefd)
-	@for i in $(wildcard $(PCIEFD_EMBED_HEADER).tmp.*) ; do \
-		cat $${i} >> $(PCIEFD_EMBED_HEADER); \
-		$(RM) -f $${i}; \
-        done
+	@# PCIEFD_EMBED_HEADER expands to '.../dhd/src/shared/rtecdc_router.h'
+	@#for i in $(wildcard $(PCIEFD_EMBED_HEADER).tmp.*) ; do \
+	#	cat $${i} >> $(PCIEFD_EMBED_HEADER); \
+	#	$(RM) -f $${i}; \
+        #done
+	@$(RM) $(PCIEFD_EMBED_HEADER)
+	@$(RM) $(PCIEFD_EMBED_HEADER).tmp.*
+	@cp $(PCIEFD_EMBED_HEADER_TEMPLATE) $(PCIEFD_EMBED_HEADER)
+	@echo "#include <rtecdc_$(FW_$(R_CHIP)_CHIPID).h>" >> $(PCIEFD_EMBED_HEADER)
+	@echo "#define DLIMAGE_$(FW_$(R_CHIP)_CHIPID)" >> $(PCIEFD_EMBED_HEADER)
+else
+pciefd:
+	@echo "Copy $(ALREADY_HAVE_RTECDC) to $(PCIEFD_IMAGE_DIR)"
+	@rm -rf $(PCIEFD_IMAGE_DIR)/*.bin
+	cp -rp $(ALREADY_HAVE_RTECDC) $(PCIEFD_IMAGE_DIR)
+endif
 
 pciefd-clean: pciefd-cleangen $(clean-pciefd)
 

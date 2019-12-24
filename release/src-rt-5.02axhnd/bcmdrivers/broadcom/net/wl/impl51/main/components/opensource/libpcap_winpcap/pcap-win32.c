@@ -282,6 +282,9 @@ pcap_read_win32_npf(pcap_t *p, int cnt, pcap_handler callback, u_char *user)
 		}
 #endif	/* HAVE_REMOTE */
 
+		/*
+		 * XXX A bpf_hdr matches a pcap_pkthdr.
+		 */
 		(*callback)(user, (struct pcap_pkthdr*)bp, bp + hdrlen);
 		bp += BPF_WORDALIGN(caplen + hdrlen);
 		if (++n >= cnt && cnt > 0) {
@@ -871,6 +874,11 @@ static int
 pcap_setfilter_win32_npf(pcap_t *p, struct bpf_program *fp)
 {
 	if(PacketSetBpf(p->adapter,fp)==FALSE){
+		/*
+		 * Kernel filter not installed.
+		 * XXX - fall back on userland filtering, as is done
+		 * on other platforms?
+		 */
 		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "Driver error: cannot set bpf filter: %s", pcap_win32strerror());
 		return (-1);
 	}
@@ -913,6 +921,11 @@ pcap_setfilter_win32_dag(pcap_t *p, struct bpf_program *fp) {
 static int
 pcap_getnonblock_win32(pcap_t *p, char *errbuf)
 {
+	/*
+	 * XXX - if there were a PacketGetReadTimeout() call, we
+	 * would use it, and return 1 if the timeout is -1
+	 * and 0 otherwise.
+	 */
 	return (p->nonblock);
 }
 

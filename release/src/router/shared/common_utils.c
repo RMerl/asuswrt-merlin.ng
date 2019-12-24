@@ -239,9 +239,9 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 	int i;
 	dir = opendir("/tmp/dm");
 	if (!dir) {
-		printf("dm directory may not exist\n");
+		printf("dm directory may not exist (%s). Creating it\n", strerror(errno));
 		if (mkdir("/tmp/dm", 0777)) {
-			printf("Unable to create dm directory\n");
+			printf("Unable to create dm directory. %s\n", strerror(errno));
 			return;
 		}
 	} else {
@@ -250,7 +250,7 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 	snprintf(buf, sizeof(buf), "/tmp/dm/%d", pid);
 	fp = fopen(buf, "w");
 	if (!fp) {
-		printf("Unable to open file %s\n", argv[0]);
+		printf("Unable to open file %s. %s\n", buf, strerror(errno));
 	} else {
 		if (dependent_services) {
 			fprintf(fp, "%s\n", dependent_services);
@@ -260,6 +260,6 @@ dm_register_app_restart_info(int pid, int argc, char **argv,
 		for (i = 0; i < argc; i++) {
 			fprintf(fp, "%s ", argv[i]);
 		}
+		fclose(fp);
 	}
-	fclose(fp);
 }

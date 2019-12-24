@@ -77,7 +77,9 @@ struct	ipasfrag {
 	u_char	ip_v:4,
 		ip_hl:4;
 #endif // endif
-	u_char	ipf_mff;
+	u_char	ipf_mff;		/* XXX overlays ip_tos: use low bit
+					 * to avoid destroying tos;
+					 * copied from (ip_off&IP_MF) */
 	short	ip_len;
 	u_short	ip_id;
 	short	ip_off;

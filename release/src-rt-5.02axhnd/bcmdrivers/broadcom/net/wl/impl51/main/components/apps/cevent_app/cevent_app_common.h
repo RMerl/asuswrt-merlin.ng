@@ -2,7 +2,7 @@
  * Cevent app common header
  *
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -59,7 +59,7 @@
 
 #define CA_CLI_RSP_LEN		4096	/* cevent cli socket response limit */
 #define CA_CLI_SERVER_HOST_STR	"127.0.0.1"
-#define CA_CLI_SERVER_PORT	5597	/* ensure unique on the system */
+#define CA_CLI_SERVER_PORT	CEVENT_CLI_SERVER_UDP_PORT /* reserved in shared/security_ipc.h */
 #define CA_CLI_SERVER_PORT_STR	xstr(CA_CLI_SERVER_PORT)
 #define CA_CLI_SOCKET_BACKLOG	6	/* max queue depth of pending connections */
 
@@ -107,6 +107,7 @@ typedef enum {
 	CA_ACT_PAUSE		= 4,
 	CA_ACT_RESUME		= 5,
 	CA_ACT_END		= 6,
+	CA_ACT_FLUSH		= 7,
 	CA_ACT_LAST
 } ca_act_t;
 

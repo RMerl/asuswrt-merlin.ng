@@ -78,6 +78,8 @@ endif
 
 LIBS += $(shell $(PKG_CONFIG) --libs $(NLLIBNAME))
 CFLAGS += $(shell $(PKG_CONFIG) --cflags $(NLLIBNAME))
+CFLAGS += -I$(BASEDIR)/components/opensource/router_tools/libnl/include
+LDFLAGS += -L$(BASEDIR)/components/opensource/router_tools/libnl/install/lib
 endif # NO_PKG_CONFIG
 
 ifeq ($(V),1)

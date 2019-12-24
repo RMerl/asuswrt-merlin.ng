@@ -988,6 +988,22 @@ static void on_ice_complete(pjmedia_transport *tp,
 			pjsua_var[tp->inst_id].calls[id].med_orig == tp /*||
 			pjmedia_transport_dtls_get_member(pjsua_var[tp->inst_id].calls[id].med_orig) == tp*/) // No need to checker deeper. To avoid crash.
 	{
+			if (pjsua_var[tp->inst_id].calls[id].med_tp) {
+				if (!pjsua_var[tp->inst_id].calls[id].med_tp->stun_last_status &&
+					tp->stun_last_status)
+					pjsua_var[tp->inst_id].calls[id].med_tp->stun_last_status = tp->stun_last_status;
+				if (!pjsua_var[tp->inst_id].calls[id].med_tp->turn_last_status &&
+					tp->turn_last_status)
+					pjsua_var[tp->inst_id].calls[id].med_tp->turn_last_status = tp->turn_last_status;
+			}
+			if (pjsua_var[tp->inst_id].calls[id].med_orig) {
+				if (!pjsua_var[tp->inst_id].calls[id].med_orig->stun_last_status &&
+					tp->stun_last_status)
+					pjsua_var[tp->inst_id].calls[id].med_orig->stun_last_status = tp->stun_last_status;
+				if (!pjsua_var[tp->inst_id].calls[id].med_orig->turn_last_status &&
+					tp->turn_last_status)
+					pjsua_var[tp->inst_id].calls[id].med_orig->turn_last_status = tp->turn_last_status;
+			}
 	    found = PJ_TRUE;
 	    break;
 	}
@@ -1383,10 +1399,12 @@ static pj_status_t create_ice_media_transports2(pjsua_inst_id inst_id,
 	pj_ice_strans_cfg ice_cfg;
 	pj_status_t status;
 	pj_turn_tp_type turn_conn_type = pjsua_var[inst_id].media_cfg.turn_conn_type;
+	pj_status_t stun_status = 0;
 
 	/* Make sure STUN server resolution has completed */
 	status = resolve_stun_server(inst_id, PJ_TRUE);
 	if (status != PJ_SUCCESS) {
+	stun_status = status;
 	pjsua_perror(THIS_FILE, "Error resolving STUN server", status);
 	//return status; //DEAN. Ignore stun failed situation to meet UDP packet blocked environment.
 	turn_conn_type = PJ_TURN_TP_TCP;  // change turn transport type to TCP
@@ -1540,6 +1558,12 @@ static pj_status_t create_ice_media_transports2(pjsua_inst_id inst_id,
 				status);
 			goto on_error;
 		}
+
+		// Prepare stun and turn status.
+		if (pjsua_var[inst_id].ua_cfg.stun_srv_cnt)
+			pjsua_var[inst_id].calls[idx].med_tp->stun_last_status = stun_status;
+		else
+			pjsua_var[inst_id].calls[idx].med_tp->stun_last_status = PJNATH_ESTUNINSERVER;
 
 		/* Wait until transport is initialized, or time out */
 		PJSUA_UNLOCK(inst_id);

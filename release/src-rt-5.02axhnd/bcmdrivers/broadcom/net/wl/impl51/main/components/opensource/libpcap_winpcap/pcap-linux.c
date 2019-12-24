@@ -129,6 +129,31 @@ static const char rcsid[] _U_ =
 #include <pcap-remote.h>
 #endif // endif
 
+/*
+ * If PF_PACKET is defined, we can use {SOCK_RAW,SOCK_DGRAM}/PF_PACKET
+ * sockets rather than SOCK_PACKET sockets.
+ *
+ * To use them, we include <linux/if_packet.h> rather than
+ * <netpacket/packet.h>; we do so because
+ *
+ *	some Linux distributions (e.g., Slackware 4.0) have 2.2 or
+ *	later kernels and libc5, and don't provide a <netpacket/packet.h>
+ *	file;
+ *
+ *	not all versions of glibc2 have a <netpacket/packet.h> file
+ *	that defines stuff needed for some of the 2.4-or-later-kernel
+ *	features, so if the system has a 2.4 or later kernel, we
+ *	still can't use those features.
+ *
+ * We're already including a number of other <linux/XXX.h> headers, and
+ * this code is Linux-specific (no other OS has PF_PACKET sockets as
+ * a raw packet capture mechanism), so it's not as if you gain any
+ * useful portability by using <netpacket/packet.h>
+ *
+ * XXX - should we just include <linux/if_packet.h> even if PF_PACKET
+ * isn't defined?  It only defines one data structure in 2.0.x, so
+ * it shouldn't cause any problems.
+ */
 #ifdef PF_PACKET
 # include <linux/if_packet.h>
 
@@ -439,6 +464,15 @@ static void	pcap_cleanup_linux( pcap_t *handle )
 		 * pcap_t.
 		 */
 		if (handle->md.must_clear & MUST_CLEAR_PROMISC) {
+			/*
+			 * We put the interface into promiscuous mode;
+			 * take it out of promiscuous mode.
+			 *
+			 * XXX - if somebody else wants it in promiscuous
+			 * mode, this code cannot know that, so it'll take
+			 * it out of promiscuous mode.  That's not fixable
+			 * in 2.0[.x] kernels.
+			 */
 			memset(&ifr, 0, sizeof(ifr));
 			strncpy(ifr.ifr_name, handle->md.device,
 			    sizeof(ifr.ifr_name));
@@ -469,6 +503,14 @@ static void	pcap_cleanup_linux( pcap_t *handle )
 
 #ifdef IW_MODE_MONITOR
 		if (handle->md.must_clear & MUST_CLEAR_RFMON) {
+			/*
+			 * We put the interface into rfmon mode;
+			 * take it out of rfmon mode.
+			 *
+			 * XXX - if somebody else wants it in rfmon
+			 * mode, this code cannot know that, so it'll take
+			 * it out of rfmon mode.
+			 */
 			strncpy(ireq.ifr_ifrn.ifrn_name, handle->md.device,
 			    sizeof ireq.ifr_ifrn.ifrn_name);
 			ireq.ifr_ifrn.ifrn_name[sizeof ireq.ifr_ifrn.ifrn_name - 1]
@@ -500,6 +542,14 @@ static void	pcap_cleanup_linux( pcap_t *handle )
 	pcap_cleanup_live_common(handle);
 }
 
+/*
+ *  Get a handle for a live capture from the given device. You can
+ *  pass NULL as device to get all packages (without link level
+ *  information of course). If you pass 1 as promisc the interface
+ *  will be set to promiscous mode (XXX: I think this usage should
+ *  be deprecated and functions be added to select that later allow
+ *  modification of that values -- Torsten).
+ */
 static int
 pcap_activate_linux(pcap_t *handle)
 {
@@ -901,6 +951,38 @@ pcap_read_packet(pcap_t *handle, pcap_handler callback, u_char *userdata)
 #endif /* defined(HAVE_PACKET_AUXDATA) && defined(HAVE_LINUX_TPACKET_AUXDATA_TP_VLAN_TCI) */
 #endif /* HAVE_PF_PACKET_SOCKETS */
 
+	/*
+	 * XXX: According to the kernel source we should get the real
+	 * packet len if calling recvfrom with MSG_TRUNC set. It does
+	 * not seem to work here :(, but it is supported by this code
+	 * anyway.
+	 * To be honest the code RELIES on that feature so this is really
+	 * broken with 2.2.x kernels.
+	 * I spend a day to figure out what's going on and I found out
+	 * that the following is happening:
+	 *
+	 * The packet comes from a random interface and the packet_rcv
+	 * hook is called with a clone of the packet. That code inserts
+	 * the packet into the receive queue of the packet socket.
+	 * If a filter is attached to that socket that filter is run
+	 * first - and there lies the problem. The default filter always
+	 * cuts the packet at the snaplen:
+	 *
+	 * # tcpdump -d
+	 * (000) ret      #68
+	 *
+	 * So the packet filter cuts down the packet. The recvfrom call
+	 * says "hey, it's only 68 bytes, it fits into the buffer" with
+	 * the result that we don't get the real packet length. This
+	 * is valid at least until kernel 2.2.17pre6.
+	 *
+	 * We currently handle this by making a copy of the filter
+	 * program, fixing all "ret" instructions with non-zero
+	 * operands to have an operand of 65535 so that the filter
+	 * doesn't truncate the packet, and supplying that modified
+	 * filter to the kernel.
+	 */
+
 	caplen = packet_len;
 	if (caplen > handle->snapshot)
 		caplen = handle->snapshot;
@@ -925,6 +1007,49 @@ pcap_read_packet(pcap_t *handle, pcap_handler callback, u_char *userdata)
 	pcap_header.caplen	= caplen;
 	pcap_header.len		= packet_len;
 
+	/*
+	 * Count the packet.
+	 *
+	 * Arguably, we should count them before we check the filter,
+	 * as on many other platforms "ps_recv" counts packets
+	 * handed to the filter rather than packets that passed
+	 * the filter, but if filtering is done in the kernel, we
+	 * can't get a count of packets that passed the filter,
+	 * and that would mean the meaning of "ps_recv" wouldn't
+	 * be the same on all Linux systems.
+	 *
+	 * XXX - it's not the same on all systems in any case;
+	 * ideally, we should have a "get the statistics" call
+	 * that supplies more counts and indicates which of them
+	 * it supplies, so that we supply a count of packets
+	 * handed to the filter only on platforms where that
+	 * information is available.
+	 *
+	 * We count them here even if we can get the packet count
+	 * from the kernel, as we can only determine at run time
+	 * whether we'll be able to get it from the kernel (if
+	 * HAVE_TPACKET_STATS isn't defined, we can't get it from
+	 * the kernel, but if it is defined, the library might
+	 * have been built with a 2.4 or later kernel, but we
+	 * might be running on a 2.2[.x] kernel without Alexey
+	 * Kuznetzov's turbopacket patches, and thus the kernel
+	 * might not be able to supply those statistics).  We
+	 * could, I guess, try, when opening the socket, to get
+	 * the statistics, and if we can not increment the count
+	 * here, but it's not clear that always incrementing
+	 * the count is more expensive than always testing a flag
+	 * in memory.
+	 *
+	 * We keep the count in "md.packets_read", and use that for
+	 * "ps_recv" if we can't get the statistics from the kernel.
+	 * We do that because, if we *can* get the statistics from
+	 * the kernel, we use "md.stat.ps_recv" and "md.stat.ps_drop"
+	 * as running counts, as reading the statistics from the
+	 * kernel resets the kernel statistics, and if we directly
+	 * increment "md.stat.ps_recv" here, that means it will
+	 * count packets *twice* on systems where we can get kernel
+	 * statistics - once here, and once in pcap_stats_linux().
+	 */
 	handle->md.packets_read++;
 
 	/* Call the user supplied callback function */
@@ -952,6 +1077,13 @@ pcap_inject_linux(pcap_t *handle, const void *buf, size_t size)
 		}
 
 		if (handle->md.cooked) {
+			/*
+			 * We don't support sending on the "any" device.
+			 *
+			 * XXX - how do you send on a bound cooked-mode
+			 * socket?
+			 * Is a "sendto()" required there?
+			 */
 			strlcpy(handle->errbuf,
 			    "Sending packets isn't supported in cooked mode",
 			    PCAP_ERRBUF_SIZE);
@@ -1337,6 +1469,23 @@ static void map_arphrd_to_dlt(pcap_t *handle, int arptype, int cooked_ok)
 	switch (arptype) {
 
 	case ARPHRD_ETHER:
+		/*
+		 * This is (presumably) a real Ethernet capture; give it a
+		 * link-layer-type list with DLT_EN10MB and DLT_DOCSIS, so
+		 * that an application can let you choose it, in case you're
+		 * capturing DOCSIS traffic that a Cisco Cable Modem
+		 * Termination System is putting out onto an Ethernet (it
+		 * doesn't put an Ethernet header onto the wire, it puts raw
+		 * DOCSIS frames out on the wire inside the low-level
+		 * Ethernet framing).
+		 *
+		 * XXX - are there any sorts of "fake Ethernet" that have
+		 * ARPHRD_ETHER but that *shouldn't offer DLT_DOCSIS as
+		 * a Cisco CMTS won't put traffic onto it or get traffic
+		 * bridged onto it?  ISDN is handled in "activate_new()",
+		 * as we fall back on cooked mode there; are there any
+		 * others?
+		 */
 		handle->dlt_list = (u_int *) malloc(sizeof(u_int) * 2);
 		/*
 		 * If that fails, just leave the list empty.
@@ -1481,6 +1630,22 @@ static void map_arphrd_to_dlt(pcap_t *handle, int arptype, int cooked_ok)
 		if (cooked_ok)
 			handle->linktype = DLT_LINUX_SLL;
 		else {
+			/*
+			 * XXX - handle ISDN types here?  We can't fall
+			 * back on cooked sockets, so we'd have to
+			 * figure out from the device name what type of
+			 * link-layer encapsulation it's using, and map
+			 * that to an appropriate DLT_ value, meaning
+			 * we'd map "isdnN" devices to DLT_RAW (they
+			 * supply raw IP packets with no link-layer
+			 * header) and "isdY" devices to a new DLT_I4L_IP
+			 * type that has only an Ethernet packet type as
+			 * a link-layer header.
+			 *
+			 * But sometimes we seem to get random crap
+			 * in the link-layer header when capturing on
+			 * ISDN devices....
+			 */
 			handle->linktype = DLT_RAW;
 		}
 		break;
@@ -1512,6 +1677,10 @@ static void map_arphrd_to_dlt(pcap_t *handle, int arptype, int cooked_ok)
 #define ARPHRD_DLCI 15
 #endif // endif
 	case ARPHRD_DLCI:
+		/*
+		 * XXX - should some of those be mapped to DLT_LINUX_SLL
+		 * instead?  Should we just map all of them to DLT_LINUX_SLL?
+		 */
 		handle->linktype = DLT_RAW;
 		break;
 
@@ -1624,6 +1793,17 @@ activate_new(pcap_t *handle)
 	/* It seems the kernel supports the new interface. */
 	handle->md.sock_packet = 0;
 
+	/*
+	 * Get the interface index of the loopback device.
+	 * If the attempt fails, don't fail, just set the
+	 * "md.lo_ifindex" to -1.
+	 *
+	 * XXX - can there be more than one device that loops
+	 * packets back, i.e. devices other than "lo"?  If so,
+	 * we'd need to find them all, and have an array of
+	 * indices for them, and check all of them in
+	 * "pcap_read_packet()".
+	 */
 	handle->md.lo_ifindex = iface_get_id(sock_fd, "lo", handle->errbuf);
 
 	/*
@@ -1757,6 +1937,15 @@ activate_new(pcap_t *handle)
 		handle->md.cooked = 1;
 		handle->linktype = DLT_LINUX_SLL;
 
+		/*
+		 * We're not bound to a device.
+		 * XXX - true?  Or true only if we're using
+		 * the "any" device?
+		 * For now, we're using this as an indication
+		 * that we can't transmit; stop doing that only
+		 * if we figure out how to transmit in cooked
+		 * mode.
+		 */
 		handle->md.ifindex = -1;
 	}
 
@@ -2424,6 +2613,15 @@ has_wext(int sock_fd, const char *device, char *ebuf)
 	return 0;
 }
 
+/*
+ * Per me si va ne la citta dolente,
+ * Per me si va ne l'etterno dolore,
+ *	...
+ * Lasciate ogne speranza, voi ch'intrate.
+ *
+ * XXX - airmon-ng does special stuff with the Orinoco driver and the
+ * wlan-ng driver.
+ */
 typedef enum {
 	MONITOR_WEXT,
 	MONITOR_HOSTAP,
@@ -2448,6 +2646,64 @@ static int
 enter_rfmon_mode_wext(pcap_t *handle, int sock_fd, const char *device)
 {
 #ifdef IW_MODE_MONITOR
+	/*
+	 * XXX - at least some adapters require non-Wireless Extensions
+	 * mechanisms to turn monitor mode on.
+	 *
+	 * Atheros cards might require that a separate "monitor virtual access
+	 * point" be created, with later versions of the madwifi driver.
+	 * airmon-ng does "wlanconfig ath create wlandev {if} wlanmode
+	 * monitor -bssid", which apparently spits out a line "athN"
+	 * where "athN" is the monitor mode device.  To leave monitor
+	 * mode, it destroys the monitor mode device.
+	 *
+	 * Some Intel Centrino adapters might require private ioctls to get
+	 * radio headers; the ipw2200 and ipw3945 drivers allow you to
+	 * configure a separate "rtapN" interface to capture in monitor
+	 * mode without preventing the adapter from operating normally.
+	 * (airmon-ng doesn't appear to use that, though.)
+	 *
+	 * It would be Truly Wonderful if mac80211 and nl80211 cleaned this
+	 * up, and if all drivers were converted to mac80211 drivers.
+	 *
+	 * If interface {if} is a mac80211 driver, the file
+	 * /sys/class/net/{if}/phy80211 is a symlink to
+	 * /sys/class/ieee80211/{phydev}, for some {phydev}.
+	 *
+	 * On Fedora 9, with a 2.6.26.3-29 kernel, my Zydas stick, at
+	 * least, has a "wmaster0" device and a "wlan0" device; the
+	 * latter is the one with the IP address.  Both show up in
+	 * "tcpdump -D" output.  Capturing on the wmaster0 device
+	 * captures with 802.11 headers.
+	 *
+	 * airmon-ng searches through /sys/class/net for devices named
+	 * monN, starting with mon0; as soon as one *doesn't* exist,
+	 * it chooses that as the monitor device name.  If the "iw"
+	 * command exists, it does "iw dev {if} interface add {monif}
+	 * type monitor", where {monif} is the monitor device.  It
+	 * then (sigh) sleeps .1 second, and then configures the
+	 * device up.  Otherwise, if /sys/class/ieee80211/{phydev}/add_iface
+	 * is a file, it writes {mondev}, without a newline, to that file,
+	 * and again (sigh) sleeps .1 second, and then iwconfig's that
+	 * device into monitor mode and configures it up.  Otherwise,
+	 * you can't do monitor mode.
+	 *
+	 * All these devices are "glued" together by having the
+	 * /sys/class/net/{device}/phy80211 links pointing to the same
+	 * place, so, given a wmaster, wlan, or mon device, you can
+	 * find the other devices by looking for devices with
+	 * the same phy80211 link.
+	 *
+	 * To turn monitor mode off, delete the monitor interface,
+	 * either with "iw dev {monif} interface del" or by sending
+	 * {monif}, with no NL, down /sys/class/ieee80211/{phydev}/remove_iface
+	 *
+	 * Note: if you try to create a monitor device named "monN", and
+	 * there's already a "monN" device, it fails, as least with
+	 * the netlink interface (which is what iw uses), with a return
+	 * value of -ENFILE.  (Return values are negative errnos.)  We
+	 * could probably use that to find an unused device.
+	 */
 	int err;
 	struct iwreq ireq;
 	struct iw_priv_args *priv;
@@ -2667,6 +2923,10 @@ enter_rfmon_mode_wext(pcap_t *handle, int sock_fd, const char *device)
 	free(priv);
 
 	/*
+	 * XXX - ipw3945?  islism?
+	 */
+
+	/*
 	 * Get the old mode.
 	 */
 	strncpy(ireq.ifr_ifrn.ifrn_name, device,
@@ -2767,6 +3027,12 @@ enter_rfmon_mode_wext(pcap_t *handle, int sock_fd, const char *device)
 		 */
 		return PCAP_ERROR_RFMON_NOTSUP;
 	}
+
+	/*
+	 * XXX - airmon-ng does "iwconfig {if} key off" after setting
+	 * monitor mode and setting the channel, and then does
+	 * "iwconfig up".
+	 */
 
 	/*
 	 * Now select the appropriate radio header.
@@ -3240,6 +3506,19 @@ fix_program(pcap_t *handle, struct sock_fprog *fcode)
 			 * of the accumulator?
 			 */
 			if (BPF_MODE(p->code) == BPF_K) {
+				/*
+				 * Yes - if the value to be returned,
+				 * i.e. the snapshot length, is anything
+				 * other than 0, make it 65535, so that
+				 * the packet is truncated by "recvfrom()",
+				 * not by the filter.
+				 *
+				 * XXX - there's nothing we can easily do
+				 * if it's getting the value from the
+				 * accumulator; we'd have to insert
+				 * code to force non-zero values to be
+				 * 65535.
+				 */
 				if (p->k != 0)
 					p->k = 65535;
 			}
@@ -3402,6 +3681,11 @@ set_kernel_filter(pcap_t *handle, struct sock_fprog *fcode)
 		 */
 		save_errno = errno;
 
+		/*
+		 * XXX - if this fails, we're really screwed;
+		 * we have the total filter on the socket,
+		 * and it won't come off.  What do we do then?
+		 */
 		reset_kernel_filter(handle);
 
 		errno = save_errno;

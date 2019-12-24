@@ -16,7 +16,6 @@
 #include "dbus_common.h"
 #include "dbus_common_i.h"
 #include "dbus_new.h"
-#include "dbus_old.h"
 #include "../wpa_supplicant_i.h"
 
 #ifndef SIGPOLL
@@ -283,6 +282,13 @@ static int wpas_dbus_init_common_finish(struct wpas_dbus_priv *priv)
 	/* Tell dbus about our mainloop integration functions */
 	integrate_with_eloop(priv);
 
+	/*
+	 * Dispatch initial DBus messages that may have come in since the bus
+	 * name was claimed above. Happens when clients are quick to notice the
+	 * service.
+	 *
+	 * FIXME: is there a better solution to this problem?
+	 */
 	eloop_register_timeout(0, 50, dispatch_initial_dbus_messages,
 			       priv->con, NULL);
 
@@ -322,9 +328,6 @@ struct wpas_dbus_priv * wpas_dbus_init(struct wpa_global *global)
 #ifdef CONFIG_CTRL_IFACE_DBUS_NEW
 	    wpas_dbus_ctrl_iface_init(priv) < 0 ||
 #endif /* CONFIG_CTRL_IFACE_DBUS_NEW */
-#ifdef CONFIG_CTRL_IFACE_DBUS
-	    wpa_supplicant_dbus_ctrl_iface_init(priv) < 0 ||
-#endif /* CONFIG_CTRL_IFACE_DBUS */
 	    wpas_dbus_init_common_finish(priv) < 0) {
 		wpas_dbus_deinit(priv);
 		return NULL;
@@ -341,10 +344,6 @@ void wpas_dbus_deinit(struct wpas_dbus_priv *priv)
 #ifdef CONFIG_CTRL_IFACE_DBUS_NEW
 	wpas_dbus_ctrl_iface_deinit(priv);
 #endif /* CONFIG_CTRL_IFACE_DBUS_NEW */
-
-#ifdef CONFIG_CTRL_IFACE_DBUS
-	/* TODO: is any deinit needed? */
-#endif /* CONFIG_CTRL_IFACE_DBUS */
 
 	wpas_dbus_deinit_common(priv);
 }

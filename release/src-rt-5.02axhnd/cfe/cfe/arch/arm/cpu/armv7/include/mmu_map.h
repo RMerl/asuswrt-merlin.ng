@@ -58,7 +58,7 @@
 #else 
 #define armv7_mmu_map board_mmu_map_scn
 #endif
-
+#define armv7_mmu_update board_mmu_update_scn
 
 #define L1TABLE_SIZE	(4096*4) 
 #define L2TABLE_SIZE	(256*4)
@@ -166,6 +166,57 @@
 #define TABLE_PAGE_NS_DOM0_UNPRIV	\
 	TABLE_PAGE_ATTR(0x0,0x1,0x0)
 #endif /*__PAGE_MAP__*/
+
+/*  MMU and TT (Translation Tables) definitions 
+
+   WBWA == Write-Back, Write-Allocate
+   WBNWA == Write-Back, No Write-Allocate
+   WTNWA == Write-Through, No Write-Allocate
+   NC == Non-Cacheable
+   SO == Strongly-Ordered
+   SD == Sharable-Device
+   NSD == Non-Sharable-Device
+*/
+  
+#define DESC_DOMAIN(x)          ((x << 5) & 0x000001E0)
+
+// section descriptor definitions
+#define SECTION_AP              0xc00
+#define SECTION_XN              0x10
+#define SECTION_PXN             0x1
+#if defined(_BCM963138_)
+/* A9 does not support PXN */
+#define SECTION_XN_ALL          (SECTION_XN)
+#else
+#define SECTION_XN_ALL          (SECTION_XN|SECTION_PXN)
+#endif
+#define SECTION_SHAREABLE       (1 << 16)
+#define SECTION_SUPER_DESC      (1 << 18)
+#define SECTION_DESC_NS         (1 << 19) 
+// TEX[2] = 1
+#define SECTION_OUTER_NC_INNER_WBWA         0x00004006
+#define SECTION_OUTER_WBNWA_INNER_WBWA      0x00007006
+#define SECTION_OUTER_WTNWA_INNER_WBWA      0x00006006
+#define SECTION_OUTER_WBWA_INNER_NC         0x00005002
+// TEX[2] = 0, OUTER & INNER are same all the time
+#define SECTION_OUTER_WBWA_INNER_WBWA       0x0000100E
+#define SECTION_OUTER_NSD_INNER_NSD         0x00002002
+#define SECTION_OUTER_NC_INNER_NC           0x00001002
+#define SECTION_OUTER_WTNWA_INNER_WTNWA     0x0000000A
+#define SECTION_OUTER_WBNWA_INNER_WBNWA     0x0000000E
+#define SECTION_OUTER_SO_INNER_SO           0x00000002
+#define SECTION_OUTER_SD_INNER_SD           0x00000006
+
+// definition for common section attribute 
+#define SECTION_ATTR_INVALID       0x0  
+#define SECTION_ATTR_CACHED_MEM    \
+	(SECTION_OUTER_WBWA_INNER_WBWA|SECTION_AP|DESC_DOMAIN(0))
+#define SECTION_ATTR_NONCACHED_MEM \
+	(SECTION_OUTER_NC_INNER_NC|SECTION_AP|DESC_DOMAIN(0))
+#define SECTION_ATTR_DEVICE        \
+	(SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|SECTION_XN_ALL|DESC_DOMAIN(0))
+#define SECTION_ATTR_DEVICE_EXEC   \
+	(SECTION_OUTER_NSD_INNER_NSD|SECTION_AP|DESC_DOMAIN(0))
 
 #endif /*__ASSEMBLER__*/
 

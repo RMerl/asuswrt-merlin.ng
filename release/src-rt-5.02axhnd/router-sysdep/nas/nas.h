@@ -1,7 +1,7 @@
 /*
  * NAS definitions
  *
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -42,7 +42,7 @@
  * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
- * $Id: nas.h 764254 2018-05-24 10:59:55Z $
+ * $Id: nas.h 771158 2019-01-16 09:15:26Z $
  */
 
 #ifndef _nas_h_
@@ -191,6 +191,7 @@ typedef struct nas {
 	char ssid[DOT11_MAX_SSID_LEN+1];	/* SSID */
 	nas_mode_t mode;			/* 0:Radius, 1:WPA, 2:WPA-PSK */
 	uint32 wsec;				/* crypto algorithm config, same as wl driver */
+	uint32 mfp;				/* mfp */
 	struct ether_addr ea;			/* LAN Ethernet address */
 	wpa_t *wpa;				/* WPA struct (NULL if wpa not in use) */
 	int wan;				/* RADIUS interface handle */

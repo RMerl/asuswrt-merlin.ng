@@ -1,7 +1,7 @@
 /*
  * WPS environment variables
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wps_ui.h 525052 2015-01-08 20:18:35Z $
+ * $Id: wps_ui.h 768362 2018-10-11 06:45:41Z $
  */
 
 #ifndef __WPS_UI_H__
@@ -74,35 +74,36 @@
 
 /* For WPS module save in nvram and share with others, like GUI */
 typedef enum {
-	WPS_UI_INIT = 0,
-	WPS_UI_ASSOCIATED,
-	WPS_UI_OK,
-	WPS_UI_MSG_ERR,
-	WPS_UI_TIMEOUT,
-	WPS_UI_SENDM2,
-	WPS_UI_SENDM7,
-	WPS_UI_MSGDONE,
-	WPS_UI_PBCOVERLAP,
-	WPS_UI_FIND_PBC_AP,
-	WPS_UI_FIND_SEL_AP,
-	WPS_UI_ASSOCIATING,
-	WPS_UI_NFC_WR_CFG,
-	WPS_UI_NFC_WR_PW,
-	WPS_UI_NFC_WR_CPLT,
-	WPS_UI_NFC_RD_CFG,
-	WPS_UI_NFC_RD_PW,
-	WPS_UI_NFC_RD_CPLT,
-	WPS_UI_NFC_HO_S,
-	WPS_UI_NFC_HO_R,
-	WPS_UI_NFC_HO_NDEF,
-	WPS_UI_NFC_HO_CPLT,
-	WPS_UI_NFC_OP_ERROR,
-	WPS_UI_NFC_OP_STOP,
-	WPS_UI_NFC_OP_TO,
-	WPS_UI_NFC_FM,
-	WPS_UI_NFC_FM_CPLT,
-	WPS_UI_NFC_HO_DPI_MISMATCH,
-	WPS_UI_NFC_HO_PKH_MISMATCH
+	WPS_UI_INIT			= 0,	/* Idle and ready to be initiated */
+	WPS_UI_ASSOCIATED		= 1,	/* Any request event was detected, example PBC */
+	WPS_UI_OK			= 2,	/* WPS procedure (M1 ~ M8) was successfully done */
+	WPS_UI_MSG_ERR			= 3,	/* Any error during WPS procedure */
+	WPS_UI_TIMEOUT			= 4,	/* WPS procedure was incomplete within timeout */
+	WPS_UI_SENDM2			= 5,	/* Send M2 msg */
+	WPS_UI_SENDM7			= 6,	/* Send M7 msg */
+	WPS_UI_MSGDONE			= 7,	/* WPS DONE msg was processed completely */
+	WPS_UI_PBCOVERLAP		= 8,	/* PBC overlap detected */
+	WPS_UI_FIND_PBC_AP		= 9,	/* Found AP with selregistar true in PBC method */
+	WPS_UI_FIND_SEL_AP		= 10,	/* WPS sta associate to AP after finding PBC AP */
+	WPS_UI_ASSOCIATING		= 11,	/* Found AP with selregistar true in PIN method */
+	WPS_UI_NFC_WR_CFG		= 12,
+	WPS_UI_NFC_WR_PW		= 13,
+	WPS_UI_NFC_WR_CPLT		= 14,
+	WPS_UI_NFC_RD_CFG		= 15,
+	WPS_UI_NFC_RD_PW		= 16,
+	WPS_UI_NFC_RD_CPLT		= 17,
+	WPS_UI_NFC_HO_S			= 18,
+	WPS_UI_NFC_HO_R			= 19,
+	WPS_UI_NFC_HO_NDEF		= 20,
+	WPS_UI_NFC_HO_CPLT		= 21,
+	WPS_UI_NFC_OP_ERROR		= 22,
+	WPS_UI_NFC_OP_STOP		= 23,
+	WPS_UI_NFC_OP_TO		= 24,
+	WPS_UI_NFC_FM			= 25,
+	WPS_UI_NFC_FM_CPLT		= 26,
+	WPS_UI_NFC_HO_DPI_MISMATCH	= 27,
+	WPS_UI_NFC_HO_PKH_MISMATCH	= 28,
+	WPS_UI_MAP_TIMEOUT		= 29	/* Multiap timeout occured in WPS sta */
 } WPS_UI_SCSTATE;
 
 typedef enum {
@@ -130,4 +131,7 @@ void wps_ui_wer_override_active(bool active);
 void wps_ui_nfc_open_session();
 #endif // endif
 
+#if defined(MULTIAP)
+void wps_ui_map_try_pbc();
+#endif	/* MULTIAP */
 #endif	/* __WPS_UI_H__ */

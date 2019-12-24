@@ -1,7 +1,7 @@
 /*
  * Fundamental constants relating to Neighbor Discovery Protocol
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmipv6.h 518342 2014-12-01 23:21:41Z $
+ * $Id: bcmipv6.h 775535 2019-06-03 17:13:24Z $
  */
 
 #ifndef _bcmipv6_h_
@@ -27,6 +27,7 @@
 #ifndef _TYPEDEFS_H_
 #include <typedefs.h>
 #endif // endif
+#include <ethernet.h>
 
 /* This marks the start of a packed structure section. */
 #include <packed_section_start.h>
@@ -77,7 +78,32 @@
 
 /* IPV6 address */
 BWL_PRE_PACKED_STRUCT struct ipv6_addr {
+	union {
 		uint8		addr[16];
+		union {
+			uint8           u6_addr8[16];
+			uint16          u6_addr16[8];
+			uint32          u6_addr32[4];
+		} in6_u;
+	};
+} BWL_POST_PACKED_STRUCT;
+
+BWL_PRE_PACKED_STRUCT struct ipv6_hdr {
+#ifdef IL_BIGENDIAN
+    uint8                   version:4,
+                            priority:4;
+#else
+    uint8                   priority:4,
+                            version:4;
+#endif // endif
+    uint8                   flow_lbl[3];
+
+    uint16                  payload_len;
+    uint8                    nexthdr;
+    uint8                    hop_limit;
+
+    struct ipv6_addr        saddr;
+    struct ipv6_addr        daddr;
 } BWL_POST_PACKED_STRUCT;
 
 #ifndef IL_BIGENDIAN
@@ -97,18 +123,6 @@ BWL_PRE_PACKED_STRUCT struct icmp6_hdr {
 				reserved2:24;
 		} BWL_POST_PACKED_STRUCT nd_advt;
 	} BWL_POST_PACKED_STRUCT opt;
-} BWL_POST_PACKED_STRUCT;
-
-/* Ipv6 Header Format */
-BWL_PRE_PACKED_STRUCT struct ipv6_hdr {
-	uint8	priority:4,
-		version:4;
-	uint8	flow_lbl[3];
-	uint16	payload_len;
-	uint8	nexthdr;
-	uint8 	hop_limit;
-	struct	ipv6_addr	saddr;
-	struct	ipv6_addr	daddr;
 } BWL_POST_PACKED_STRUCT;
 
 /* Neighbor Advertisement/Solicitation Packet Structure */
@@ -137,12 +151,12 @@ BWL_PRE_PACKED_STRUCT struct ipv6_frag {
 /* This marks the end of a packed structure section. */
 #include <packed_section_end.h>
 
-static const struct ipv6_addr all_node_ipv6_maddr = {
+static const struct ipv6_addr all_node_ipv6_maddr = {{
 									{ 0xff, 0x2, 0, 0,
 									0, 0, 0, 0,
 									0, 0, 0, 0,
 									0, 0, 0, 1
-									}};
+									}}};
 
 #define IPV6_ISMULTI(a) (a[0] == 0xff)
 
@@ -155,5 +169,51 @@ static const struct ipv6_addr all_node_ipv6_maddr = {
 	ether[4] = ipv6[14]; \
 	ether[5] = ipv6[15]; \
 }
+
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+
+#define BCM_IN6_ARE_ADDR_EQUAL(a, b)                                  \
+	((((__const uint32_t *) (a))[0] == ((__const uint32_t *) (b))[0]) && \
+	 (((__const uint32_t *) (a))[1] == ((__const uint32_t *) (b))[1]) && \
+	 (((__const uint32_t *) (a))[2] == ((__const uint32_t *) (b))[2]) && \
+	 (((__const uint32_t *) (a))[3] == ((__const uint32_t *) (b))[3]))
+
+#define BCM_IN6_ASSIGN_ADDR(a, b)                                  \
+	do {                                                          \
+		((uint32_t *) (a))[0] = ((__const uint32_t *) (b))[0];    \
+		((uint32_t *) (a))[1] = ((__const uint32_t *) (b))[1];    \
+		((uint32_t *) (a))[2] = ((__const uint32_t *) (b))[2];    \
+		((uint32_t *) (a))[3] = ((__const uint32_t *) (b))[3];    \
+	} while (0)
+
+#define IPV6_ADDR_MULTICAST     0x0002U
+
+#define BCM_IN6_IS_ADDR_MULTICAST(a) (((__const uint8_t *) (a))[0] == 0xff)
+#define BCM_IN6_MULTICAST(x)   (BCM_IN6_IS_ADDR_MULTICAST(x))
+#define BCM_IN6_IS_ADDR_MC_NODELOCAL(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0x1))
+
+#define BCM_IN6_IS_ADDR_MC_LINKLOCAL(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0x2))
+
+#define BCM_IN6_IS_ADDR_MC_SITELOCAL(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0x5))
+
+#define BCM_IN6_IS_ADDR_MC_ORGLOCAL(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0x8))
+
+#define BCM_IN6_IS_ADDR_MC_GLOBAL(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0xe))
+
+#define BCM_IN6_IS_ADDR_MC_SCOPE0(a) \
+	(BCM_IN6_IS_ADDR_MULTICAST(a) && ((((__const uint8_t *) (a))[1] & 0xf) == 0x0))
+
+#define ipv6_is_same(a, b) (!(\
+			(((a).s6_addr32[0])^((b).s6_addr32[0])) ||\
+			(((a).s6_addr32[1])^((b).s6_addr32[1])) ||\
+			(((a).s6_addr32[2])^((b).s6_addr32[2])) ||\
+			(((a).s6_addr32[3])^((b).s6_addr32[3]))))
+
+#endif  /* defined(BCM_NBUFF_WLMCAST_IPV6) */
 
 #endif	/* !defined(_bcmipv6_h_) */

@@ -106,7 +106,7 @@ WLLIBS += nvram bcmwlshared bshared $(WLLIB_APPS)
 ROUTER_SHARED_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/router/shared
 BCMCRYPTO_DIR = $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/bcmcrypto
 
-WLANAPP_DIRS = acsd epittcp lltd libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
+WLANAPP_DIRS = acsd epittcp libupnp wps ses wapi ias hspot_ap bsd ssd toad eventd aspmd appeventd utils dhd_monitor
 endif
 
 #WLANAPP_DIRS += wlmngr2 
@@ -373,24 +373,6 @@ ifneq ($(PREBUILT_BCMBIN),1)
 else
 	-cp -f $(TOP_PLATFORM)/wlan/util/$(PRBM_DIR)/nvramUpdate util/
 	$(MAKE) -C $@ install
-endif
-#
-#lltd, a soft link directory
-#
-ifneq ($(strip $(BUILD_LLTD)),)
-lltd:
-	rm -f $@; \
-	if [ -e $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/$@ ]; then \
-	   ln -s $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/$@ $@ ; \
-	elif [ -e $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/router/$@ ]; then \
-	   ln -s $(BRCMDRIVERS_DIR)/broadcom/net/wl/bcm9$(BRCM_CHIP)$(WL_SRC_BASE)/router/$@ $@ ; \
-	fi; \
-	if [ -e $(@)/Makefile.dslcpe ]; then \
-	$(MAKE) -C $@ $(BUILD_LLTD) -f Makefile.dslcpe install ;\
-	fi
-else
-lltd:
-	@echo "skipping $@ (not configured)"
 endif
 
 ifeq ($(CONFIG_MIPS),y)
@@ -670,6 +652,13 @@ WLROUTER_WWW := $(HNDAPPS_DIR)/www/broadcom
 else
 WLROUTER_WWW := $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/impl$(IMPL)$(WL_SRC_BASE)/router/www/broadcom
 endif
+
+mogrified_www := $(wildcard $(WLROUTER_WWW)/.mogrify)
+ifneq ($(strip $(mogrified_www)),)
+WLROUTER_WWW := $(WLROUTER_WWW)/.mogrify
+endif
+
+
 WLROUTER_PAGES := $(wildcard $(WLROUTER_WWW)/*.asp)
 WLROUTER_PAGES += $(wildcard $(WLROUTER_WWW)/*.js)
 WLROUTER_PAGES += $(wildcard $(WLROUTER_WWW)/*.css)

@@ -170,7 +170,7 @@ typedef enum
    CMS_MSG_TR69_GETRPCMETHODS_DIAG              = 0x10000791, /**< request tr69c send out a GetRpcMethods */
    CMS_MSG_DSL_LOOP_DIAG_COMPLETE               = 0x10000792, /**< dsl loop diagnostic completes */
    CMS_MSG_DSL_SELT_DIAG_COMPLETE               = 0x10000793, /**< dsl SELT diagnostic completes */
-   CMS_MSG_SPDSVC_DIAG_COMPLETE                 = 0x10000794, /** <speed service test completes */
+   CMS_MSG_SPDSVC_DIAG_EVENT                    = 0x10000794, /** <speed service test event */
    CMS_MSG_DIAG_RESERVED_END                    = 0x100007BF,
 
    CMS_MSG_INTERNAL_NOOP                        = 0x100007C0, /**< used internally by CMS MSG sub-system.  Apps which get this should just ignore it and free it. */
@@ -522,7 +522,8 @@ typedef struct
    UBOOL8 dnsAssigned;     /**< Have we been assigned dns server addresses ? */
    UBOOL8 domainNameAssigned;     /**< Have we been assigned dns server addresses ? */
    UBOOL8 aftrAssigned;     /**< Have we been assigned aftr name ? */
-   UBOOL8 maptAssigned;     /**< Have we been assigned aftr name ? */
+   UBOOL8 mapeAssigned;     /**< Have we been assigned mape config ? */
+   UBOOL8 maptAssigned;     /**< Have we been assigned mapt config ? */
    char sitePrefix[BUFLEN_48];   /**< New site prefix, if prefixAssigned==TRUE */
    UINT32 prefixPltime;
    UINT32 prefixVltime;
@@ -543,7 +544,7 @@ typedef struct
    UINT32 cwmpRetryMinimumWaitInterval; /**< dhcp server may provide this */
    UINT32 cwmpRetryIntervalMultiplier; /**< dhcp server may provide this */
    char aftr[CMS_AFTR_NAME_LENGTH];      /**< dhcp server may provide this */
-   char brIPv6Prefix[CMS_IPADDR_LENGTH];
+   char brIPv6Prefix[CMS_IPADDR_LENGTH]; /**< border relay address or prefix */
    char ruleIPv4Prefix[CMS_IPADDR_LENGTH];
    char ruleIPv6Prefix[CMS_IPADDR_LENGTH];
    UINT32 eaLen;

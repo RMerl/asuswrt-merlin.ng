@@ -72,7 +72,6 @@ uint32_t  g_free_flow_entries_number;
 uint32_t  g_free_flow_entries_head;
 uint32_t  *g_free_flow_entries;
 
-extern bdmf_fastlock int_lock;
 extern bdmf_fastlock int_lock_irq;
 
 volatile uint32_t result_regs_addr[NAT_CACHE_SEARCH_ENGINES_NUM];
@@ -1663,11 +1662,8 @@ int rdd_context_entry_modify ( rdd_fc_context_t *context_entry,
                                bdmf_index       flow_entry_index )
 {
     uint32_t entry_index;
-    unsigned long flags;
+    unsigned long                flags;
 
-#if 1 /* debug code to see if this function executes during the test */
-    printk("=====> %s: function entry\n", __FUNCTION__);
-#endif
     if ((g_free_flow_entries[flow_entry_index] & RDD_FLOW_ENTRY_VALID) == RDD_FLOW_ENTRY_VALID)
     {
         entry_index = g_free_flow_entries[flow_entry_index] & ~RDD_FLOW_ENTRY_VALID;
@@ -1682,10 +1678,10 @@ int rdd_context_entry_modify ( rdd_fc_context_t *context_entry,
         return BDMF_ERR_PARM;
     }
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
     context_entry->fc_mcast_flow_context_entry.valid = 1;
     f_rdd_context_entry_write ( context_entry, entry_index, 0 );
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
 
 #if !defined(FIRMWARE_INIT)
     f_rdd_nat_cache_entry_flush (context_entry, flow_entry_index);
@@ -2308,6 +2304,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     uint16_t                  vlan_head_index;
     uint32_t                  ssm=0;
     RDD_NAT_CACHE_TABLE_DTS  *nat_cache_table_ptr = (RDD_NAT_CACHE_TABLE_DTS *)NatCacheTableBase;
+    unsigned long             flags;
 
     __debug_mcast("\n%s, %u: ============================================================ \n", __FUNCTION__, __LINE__); 
     __debug_mcast("%s, %u: Input Params: protocol=%u, num_vlan_tag=%u \n", __FUNCTION__, __LINE__, 
@@ -2338,7 +2335,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
         return BDMF_ERR_PARM;
     }
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
 
     ipv6_src_ip_crc = 0;
     ipv6_dst_ip_crc = 0;
@@ -2396,7 +2393,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
     {
         __debug_mcast("%s, %u: search failed\n", __FUNCTION__, __LINE__); 
-        bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NOENT;
     }
 
@@ -2408,7 +2405,7 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
     if ( connection2_entry_index == RDD_FC_MCAST_CONNECTION2_NEXT_INVALID )
     {
         __debug_mcast("%s, %u: end of list: connection2_entry_index=%u\n", __FUNCTION__, __LINE__, connection2_entry_index); 
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NOENT;
     }
 
@@ -2420,14 +2417,14 @@ int rdd_fc_mcast_connection_entry_search ( rdd_ip_flow_t  *get_connection,
 
     if (g_free_flow_entries[flow_entry_index] != (RDD_FLOW_ENTRY_VALID | context_entry_index)) {
         __debug_mcast("%s, %u: context_entry_index does not match with flow_entry_index\n", __func__, __LINE__);
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NOENT;
     }
 
     *entry_index = flow_entry_index;
 
     __debug_mcast("%s, %u: search successful: flow_entry_index=%u\n", __FUNCTION__, __LINE__, *entry_index); 
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
     return BDMF_ERR_OK;
 }
 
@@ -2864,6 +2861,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     uint32_t                     nat_cache_lkp_entry_exists = 0;
     rdpa_mcast_flow_key_t        *mcast_lookup_entry = (rdpa_mcast_flow_key_t *) add_connection->lookup_entry;
     uint32_t                     ssm=0;
+    unsigned long             flags;
 
     __debug_mcast("\n%s, %u: ============================================================ \n", __FUNCTION__, __LINE__); 
     __debug_mcast("%s, %u: Input Params: protocol=%u, num_vlan_tag=%u \n", __FUNCTION__, __LINE__, 
@@ -2894,7 +2892,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         return BDMF_ERR_PARM;
     }
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
 
     ipv6_src_ip_crc = 0;
     ipv6_dst_ip_crc = 0;
@@ -2962,7 +2960,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
         {
             __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
-            bdmf_fastlock_unlock ( &int_lock );
+            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
             return BDMF_ERR_IGNORE;
         }
         __debug_mcast("%s, %u: allocated NEW connection entry\n", __FUNCTION__, __LINE__);
@@ -2975,11 +2973,12 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     }
 
     rdd_fc_mcast_connection2_entry_alloc ( &connection2_entry_index );
-    if ( connection2_entry_index == RDD_FC_MCAST_CONNECTION2_TABLE_SIZE )
+    if ( connection2_entry_index >= RDD_FC_MCAST_CONNECTION2_TABLE_SIZE - 1 )
     {
         /* no free entry in mcast vlan table */
+        /* Reserve the last entry index */
         __debug_mcast("%s, %u: Error!!!: out of space in mcast vlan table\n", __FUNCTION__, __LINE__);
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NORES;
     }
 
@@ -3007,7 +3006,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
         if ( tries == RDD_NAT_CACHE_LOOKUP_DEPTH_SIZE )
         {
             __debug_mcast("%s, %u: Error!!!: all possible entries for the connection are used up\n", __FUNCTION__, __LINE__);
-            bdmf_fastlock_unlock ( &int_lock );
+            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
             return BDMF_ERR_NORES;
         }
         __debug_mcast("%s, %u: allocated NEW connection entry\n", __FUNCTION__, __LINE__);
@@ -3032,7 +3031,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     bdmf_error = f_rdd_context_entry_add ( &add_connection->context_entry, rdpa_dir_ds, nat_cache_entry_index, &flow_entry_index );
     if (bdmf_error != BDMF_ERR_OK)
     {
-        bdmf_fastlock_unlock (&int_lock);
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NORES;
     }
 
@@ -3093,7 +3092,7 @@ int rdd_fc_mcast_connection_entry_add ( rdd_ip_flow_t  *add_connection )
     rdd_mcast_flow_dump(&add_connection->context_entry);
 #endif
 
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
     return bdmf_error;
 }
 
@@ -3207,6 +3206,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     uint16_t                     connection2_entry_index;
     uint16_t                     vlan_head_index, new_vlan_head_index;
     int                          bdmf_error;
+    unsigned long                flags;
 
     __debug_mcast("\n%s, %u: ============================================================ \n", __func__, __LINE__); 
     __debug_mcast("%s, %u: Input Params: flow_entry_index=%u\n", __func__, __LINE__, flow_entry_index);
@@ -3229,7 +3229,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     __debug_mcast("%s:%d: found context_entry_index = %u\n", __func__, __LINE__, context_entry_index);
     nat_cache_entry_index = context_entry_index;
 
-    bdmf_fastlock_lock ( &int_lock );
+    bdmf_fastlock_lock_irq ( &int_lock_irq, flags );
 
     context_cont_entry_ptr = &( context_cont_table_ptr->entry[ context_entry_index ] );
 
@@ -3244,7 +3244,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     {
         __debug_mcast("%s, %u: entry not valid=%u\n", __FUNCTION__, __LINE__, nat_cache_lkp_entry_valid);
 
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NOENT;
     }
 
@@ -3254,7 +3254,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     if ( ( bdmf_error != BDMF_ERR_OK ) || ( connection2_entry_index == RDD_FC_MCAST_CONNECTION2_NEXT_INVALID ) )
     {
         __debug_mcast("%s, %u: Error!!!: bdmf_error=%d connection2_entry_index=%u\n", __FUNCTION__, __LINE__, bdmf_error, connection2_entry_index);
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_NOENT;
     }
 
@@ -3268,7 +3268,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
         if ( bdmf_error != BDMF_ERR_OK )
         {
             __debug_mcast("%s, %u: Error!!!: bdmf_error=%d\n", __FUNCTION__, __LINE__, bdmf_error);
-            bdmf_fastlock_unlock ( &int_lock );
+            bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
             return BDMF_ERR_INTERNAL;
         }
 
@@ -3290,7 +3290,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     else
     {
         __debug_mcast("%s, %u: Error!!!: delete failed. context entry mistmatch\n", __FUNCTION__, __LINE__);
-        bdmf_fastlock_unlock ( &int_lock );
+        bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
         return BDMF_ERR_INTERNAL;
     }
 
@@ -3299,7 +3299,7 @@ int rdd_fc_mcast_connection_entry_delete ( bdmf_index flow_entry_index )
     g_free_flow_entries[flow_entry_index] = 0;
     g_free_flow_entries_number++;
 
-    bdmf_fastlock_unlock ( &int_lock );
+    bdmf_fastlock_unlock_irq ( &int_lock_irq, flags );
     return BDMF_ERR_OK;
 }
 

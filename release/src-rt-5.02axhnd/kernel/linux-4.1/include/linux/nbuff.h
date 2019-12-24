@@ -1261,6 +1261,7 @@ static inline FkBuff_t * _fkb_init(uint8_t * pBuf, uint32_t headroom,
     fkb_p->len  = len;
     fkb_p->ptr  = (void*)NULL;   /* resets dirty_p, blog_p */
     fkb_p->mark = 0;
+    fkb_p->priority = 0;
     
     fkb_set_ref( fkb_p, 1 );
 

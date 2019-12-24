@@ -1199,6 +1199,12 @@ xmlSwitchInputEncodingInt(xmlParserCtxtPtr ctxt, xmlParserInputPtr input,
                  */
                 nbchars = xmlCharEncInput(input->buf);
             } else {
+                /*
+                 * convert just enough to get
+                 * '<?xml version="1.0" encoding="xxx"?>'
+                 * parsed with the autodetected encoding
+                 * into the parser reading buffer.
+                 */
                 nbchars = xmlCharEncFirstLineInput(input->buf, len);
             }
             if (nbchars < 0) {

@@ -62,6 +62,7 @@ wl_pktc_tbl_t *dhd_pktc_attach(void *p)
 }
 
 /* for packet chaining */
+INLINE BCMFASTPATH 
 unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long param1, unsigned long param2 )
 {
 	int i;
@@ -79,7 +80,7 @@ unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long para
 	case PKTC_TBL_GET_BY_IDX:
 		/* param0 is pktc chain table index */
 		if (param0 >= CHAIN_ENTRY_NUM) {
-			printk("chain idx is out of range! (%ld)\n", param0);
+			printk("%s: chain idx is out of range! (%ld, 0x%lx)\n", __FUNCTION__, param0, param0);
 			return 0;
 		}
 		if (!(pktc_tbl[param0].in_use) || !(pktc_tbl[param0].wl_handle)) {
@@ -161,11 +162,13 @@ void dhd_pktc_del(unsigned long addr)
 	dhd_pktc_req(PKTC_TBL_DELETE, addr, 0, 0);
 }
 
+INLINE BCMFASTPATH 
 uint8 pktc_tbl_hash(uint8 *da)
 {
 	return (hndcrc8((uint8 *)da, 6, CRC8_INIT_VALUE) % (CHAIN_ENTRY_NUM/2));
 }
 
+INLINE BCMFASTPATH 
 uint8 pktc_tbl_hash2(uint8 *da)
 {
 	return ((hndcrc8((uint8 *)da, 6, CRC8_INIT_VALUE) % (CHAIN_ENTRY_NUM/2)) + (CHAIN_ENTRY_NUM/2));
@@ -277,6 +280,7 @@ add_secondary_exist:
 	return (unsigned long)pt2;
 }
 
+INLINE BCMFASTPATH 
 unsigned long pktc_tbl_lookup_fn(wl_pktc_tbl_t *tbl, uint8_t *da)
 {
 	uint16_t pktc_tbl_hash_idx = 0;
@@ -297,6 +301,7 @@ unsigned long pktc_tbl_lookup_fn(wl_pktc_tbl_t *tbl, uint8_t *da)
 }
 
 /* this is for receive path */
+INLINE BCMFASTPATH 
 int32 dhd_rxchainhandler(void *p, struct sk_buff *skb)
 {
 	dhd_pub_t *dhdp;
@@ -308,6 +313,13 @@ int32 dhd_rxchainhandler(void *p, struct sk_buff *skb)
 		struct ether_header *eh = (struct ether_header *)PKTDATA(dhdp->osh, skb);
 		pt = (wl_pktc_tbl_t *)dhd_pktc_req(PKTC_TBL_GET_BY_DA, (unsigned long)(eh->ether_dhost), 0, 0);
 		if (pt && pt->tx_dev != NULL) {
+
+#if defined(CONFIG_BCM_FC_BASED_WFD)
+			if(pt->tx_dev->priv_flags & (IFF_BCM_WLANDEV) )
+			{ /* wlX not support handle CHAIN XMIT yet ..*/
+  			     return (BCME_ERROR);
+			}
+#endif            
 			if (pt->tx_dev->netdev_ops == NULL)
 				return (BCME_ERROR);
 			dev_xmit = (unsigned long)(pt->tx_dev->netdev_ops->ndo_start_xmit);
@@ -343,8 +355,10 @@ dhd_pktc_dump(void *p, void *buf)
 	bcm_bprintf(strbuf, "\npktc: %s    pktcbnd: %d\n", dhdp->pktc ? "enabled" : "disabled", dhdp->pktcbnd);
 	bcm_bprintf(strbuf, "rx_enet_cnt %lu rx_fcache_cnt %lu rx_linux_cnt %lu\n",
 		dhdp->rx_enet_cnt, dhdp->rx_fcache_cnt, dhdp->rx_linux_cnt);
+#ifdef DSLCPE
 	bcm_bprintf(strbuf, "forward_cnt %lu mcast_forward_cnt %lu\n",
 		dhdp->forward_cnt, dhdp->mcast_forward_cnt);
+#endif
 	bcm_bprintf(strbuf, "cur_pktccnt %lu max_pktccnt %lu\n",
 		dhdp->cur_pktccnt, dhdp->max_pktccnt);
 

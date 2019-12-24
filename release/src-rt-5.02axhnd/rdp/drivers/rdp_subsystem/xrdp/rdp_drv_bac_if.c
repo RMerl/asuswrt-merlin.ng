@@ -48,12 +48,18 @@
 #include "xrdp_drv_drivers_common_ag.h"
 #include "xrdp_drv_bac_if_ag.h"
 
-#if defined(BCM6858) || defined(BCM6856)
+#if defined(BCM6858)
 #define BACIF_ID_TCAM_0 0
 #define BACIF_ID_TCAM_1 1
 #define BACIF_ID_HASH 2
 #define BACIF_ID_CNPL 3
 #define BACIF_ID_NATC 4
+#elif defined(BCM6856)
+#define BACIF_ID_TCAM_0 0
+#define BACIF_ID_TCAM_1 4
+#define BACIF_ID_HASH 1
+#define BACIF_ID_CNPL 2
+#define BACIF_ID_NATC 3
 #else
 #define BACIF_ID_TCAM 0
 #define BACIF_ID_HASH 1

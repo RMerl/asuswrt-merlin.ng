@@ -1,7 +1,7 @@
 /*
  * SROM format definition.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsrom_fmt.h 765231 2018-06-25 16:12:30Z $
+ * $Id: bcmsrom_fmt.h 774359 2019-04-22 17:25:33Z $
  */
 
 #ifndef	_bcmsrom_fmt_h_
@@ -44,6 +44,11 @@
 
 /* PCI fields */
 #define PCI_F0DEVID		48
+
+/* SROM Rev 2: 1 Kilobit map for 11a/b/g devices.
+ * SROM Rev 3: Upward compatible modification for lpphy and PCIe
+ * hardware workaround.
+ */
 
 #define	SROM_WORDS		64
 #define SROM_SIGN_MINWORDS 128
@@ -1033,6 +1038,13 @@
 
 #define SROM18_PDOFFSET80IN160M5GCORE3		686
 #define SROM18_PDOFFSET80IN160M5GCORE3_1	687
+#define SROM18_FACT_FIELD_0			688
+#define SROM18_FACT_FIELD_1			689
+#define SROM18_FACT_FIELD_2			690
+#define SROM18_COEX_GPIOCTRL_0			691
+#define SROM18_COEX_GPIOCTRL_1			692
+#define SROM18_COEX_GPIOCTRL_2			693
+#define SROM18_COEX_GPIOCTRL_3			694
 
 #define SROM18_2G20CCK_PA			(638 - SROM18_PATH0)
 #define SROM18_2G20CCK_PA_W0			SROM18_2G20CCK_PA
@@ -1076,6 +1088,8 @@
  * offset with (112 - 64).
  */
 #define SROM18_PCIE_INC		(SROM18_PCIE_WORDS - SROM13_PCIE_WORDS)
+/* 2G20CCK and BW160 PA offset between antenna(path), ex. pa5g160c0w0a1 - pa5g160c0w0a0 = 20 */
+#define SROM18_PA_OFFSET_ANT    20
 
 typedef struct {
 	uint8 tssipos;		/* TSSI positive slope, 1: positive, 0: negative */

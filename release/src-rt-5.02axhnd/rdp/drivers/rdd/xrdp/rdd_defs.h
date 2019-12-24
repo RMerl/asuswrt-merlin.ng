@@ -219,9 +219,9 @@ typedef struct
     uint8_t l2_hdr_size;
     uint8_t l2_hdr_number_of_tags;
     uint8_t l2_header[RDD_FLOW_CACHE_L2_HEADER_BYTE_SIZE];
-
     uint8_t drop_eligibility;              /* drop_eligibility bit 0: 0=non drop eligible class high, 1=drop eligible low, bit 1: enabler */
 
+    uint16_t max_pkt_len;                  /* Rx max packet length according to egress MTU */
     uint8_t is_tcpspdtest;                 /* is_tcpspdtest */
 
     uint32_t pathstat_idx;                 /* index path for statistics */
@@ -374,9 +374,15 @@ static inline rdd_rl_float_t rdd_rate_limiter_get_floating_point_rep(uint32_t fi
     return floating_point;
 }
 
+static inline uint32_t rdd_period_to_low_pps_limit(uint32_t period)
+{
+    return (1000000 / period);
+}
+
 static inline uint32_t rdd_rate_to_alloc_unit(uint32_t rate, uint32_t period)
 {
-    return ((rate + ((1000000 / period) / 2)) / (1000000 / period));
+    uint32_t low_pps_limit = rdd_period_to_low_pps_limit(period);
+    return ((rate + (low_pps_limit / 2)) / low_pps_limit);
 }
 
 typedef struct
@@ -429,6 +435,7 @@ typedef struct
     bdmf_boolean qos_rule_wan_flow_overrun; /**< enable overrun wan flow value by qos rule   */
     bdmf_boolean include_mcast;      /**< include mcast flow flag  */
     bdmf_boolean loopback;           /**< enable loopback on flow  */
+    bdmf_boolean ttl;           /**< enable ttl action */
     bdmf_boolean service_queue_mode; /**< enable service queue  */
     uint8_t service_queue;           /**< service queue ID  */
     union {
@@ -453,6 +460,20 @@ typedef struct
 #define ds_eth13_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan13 - rdpa_if_lan0]
 #define ds_eth14_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan14 - rdpa_if_lan0]
 #define ds_eth15_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan15 - rdpa_if_lan0]
+#define ds_eth16_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan16 - rdpa_if_lan0]
+#define ds_eth17_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan17 - rdpa_if_lan0]
+#define ds_eth18_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan18 - rdpa_if_lan0]
+#define ds_eth19_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan19 - rdpa_if_lan0]
+#define ds_eth20_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan20 - rdpa_if_lan0]
+#define ds_eth21_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan21 - rdpa_if_lan0]
+#define ds_eth22_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan22 - rdpa_if_lan0]
+#define ds_eth23_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan23 - rdpa_if_lan0]
+#define ds_eth24_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan24 - rdpa_if_lan0]
+#define ds_eth25_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan25 - rdpa_if_lan0]
+#define ds_eth26_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan26 - rdpa_if_lan0]
+#define ds_eth27_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan27 - rdpa_if_lan0]
+#define ds_eth28_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan28 - rdpa_if_lan0]
+#define ds_eth29_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_lan29 - rdpa_if_lan0]
 #define ds_wlan0_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_wlan0 - rdpa_if_lan0]
 #define ds_wlan1_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_wlan1 - rdpa_if_lan0]
 #define ds_wlan2_vlan_cmd vlan_command_id.ds_vlan_command[rdpa_if_wlan2 - rdpa_if_lan0]

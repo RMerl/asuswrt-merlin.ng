@@ -109,9 +109,10 @@ extern "C"
 #define QM_NUM_REPORTED_QUEUES  128
 
 /* UG max default thresholds */
-#define DS_FPM_UG_DEFAULT                   (20*1024)
-#define US_FPM_UG_DEFAULT                   (40*1024)
-#define WLAN_FPM_UG_DEFAULT                 (0*1024)
+#define DS_FPM_UG_DEFAULT_PERCENTAGE        (34)
+#define US_FPM_UG_DEFAULT_PERCENTAGE        (66)
+#define WLAN_FPM_UG_DEFAULT_PERCENTAGE      (0)
+
 
 /*DSL DEFS*/
 #define BBH_TX_DSL_PD_FIFO_SIZE_0_7 15

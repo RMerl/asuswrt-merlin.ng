@@ -740,7 +740,15 @@ static uint64_t enable_emmc_logicalpartition_from_gpt( cfe_gpt_probe_t * fgptpro
     uint8_t     i;
     uint64_t    fp_size=0;
 
-    emmc_delete_cfe_devs(attr, femmcprobe); 
+    emmc_delete_cfe_devs(attr, femmcprobe);
+
+    /* Sanity Check */
+    if( fgptprobe->num_parts > EMMC_MAX_DATA_PARTS )
+    {
+        printf("Cant create %d logical partitions! Max paritition count = %d\n", fgptprobe->num_parts, EMMC_MAX_DATA_PARTS );
+        printf("Will restrict CFE visible partition count to %d to allow recovery\n", EMMC_MAX_DATA_PARTS );
+	fgptprobe->num_parts = EMMC_MAX_DATA_PARTS;
+    }
     
     for( i=0; i < fgptprobe->num_parts; i++ )
     {
@@ -1624,37 +1632,31 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
 
 int emmc_dump_gpt_dataPhysPart(void)
 {
-    uint64_t bootfs_size, rootfs_size, data_size, misc1_size, misc2_size, misc3_size, misc4_size;
+    uint64_t bootfs_sizeKb, rootfs_sizeKb, data_sizeKb, misc1_sizeKb, misc2_sizeKb, misc3_sizeKb, misc4_sizeKb;
 
-    bootfs_size = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1));
-    rootfs_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
-    data_size   = emmc_get_part_size(EMMC_CFE_PNAME_DATA     );
-    misc1_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(1)  );
-    misc2_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(2)  );
-    misc3_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(3)  );
-    misc4_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(4)  );
+    bootfs_sizeKb = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1))/1024;
+    rootfs_sizeKb = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1))/1024;
+    data_sizeKb   = emmc_get_part_size(EMMC_CFE_PNAME_DATA     )/1024;
+    misc1_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(1)  )/1024;
+    misc2_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(2)  )/1024;
+    misc3_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(3)  )/1024;
+    misc4_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(4)  )/1024;
     
     printf("emmc format command for current partition configuration:\n");
     printf("emmcfmtgpt bootfsKB rootfsKB dataKB misc1KB misc2KB misc3KB misc4KB\n");
-    printf("emmcfmtgpt %d %d %d %d %d %d %d\n",
-                                                bootfs_size/1024, 
-    						rootfs_size/1024, 
-    						data_size/1024, 
-						misc1_size/1024,
-						misc2_size/1024, 
-						misc3_size/1024, 
-						misc4_size/1024);
+    printf("emmcfmtgpt %llu %llu %llu %llu %llu %llu %llu\n", bootfs_sizeKb, rootfs_sizeKb, 
+        data_sizeKb, misc1_sizeKb, misc2_sizeKb, misc3_sizeKb, misc4_sizeKb);
     return 0;
 }
 
-int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_sizekb,
-                    int misc1_sizekb, int misc2_sizekb, int misc3_sizekb, int misc4_sizekb) 
+int emmc_format_gpt_dataPhysPart(unsigned int bootfs_sizekb, unsigned int rootfs_sizekb, unsigned int data_sizekb,
+                    unsigned int misc1_sizekb, unsigned int misc2_sizekb, unsigned int misc3_sizekb, unsigned int misc4_sizekb) 
 {
     int                 res = 0;
     emmcflash_probe_t   *femmcprobe = NULL;
+    emmcflash_logicalpart_spec_t * newPart = NULL;
     int emmcPhysPartAttr = EMMC_PART_DATA;
     uint8_t num_parts    = 0;
-    emmcflash_logicalpart_spec_t newPart [EMMC_MAX_DATA_PARTS];
     uint8_t             j;
 
     cfe_gpt_probe_t * pemmcdatagptprobe = (cfe_gpt_probe_t *)KMALLOC( sizeof(cfe_gpt_probe_t), 0 );
@@ -1673,86 +1675,99 @@ int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_
 
     //--------------------------------------------
     // [Step 2-1] Define new partitions
+    newPart = (emmcflash_logicalpart_spec_t*)KMALLOC( sizeof(emmcflash_logicalpart_spec_t)*EMMC_MAX_DATA_PARTS, 0 ); 
+
+    if (!newPart) {
+        printf("Failed to allocate memory for new partitions!\n"); 
+        return -1;
+    }
     
     /* clear partition table */
     memset(newPart, 0, sizeof(newPart));
 
     /* Add primary  gpt hdr partition */
-    newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
     strcpy(newPart[num_parts].fp_name, PRIMARY_GPT_HDR_PART_NAME);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
 
     /* Add NVRAM partition */
-    newPart[num_parts].fp_size = EMMC_DFLT_NVRAM_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)EMMC_DFLT_NVRAM_SIZE;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_NVRAM);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
 
     /* Add bootfs, rootfs and metadata partitions */
     for(j=0; j<EMMC_NUM_IMGS; j++ )
     {
-        newPart[num_parts].fp_size = bootfs_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)bootfs_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_BOOTFS(1):EMMC_PNAME_STR_BOOTFS(2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = rootfs_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)rootfs_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_ROOTFS(1):EMMC_PNAME_STR_ROOTFS(2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+        newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_MDATA(1,1):EMMC_PNAME_STR_MDATA(2,1)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+        newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_MDATA(1,2):EMMC_PNAME_STR_MDATA(2,2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     /* Add data partition */
-    newPart[num_parts].fp_size = data_sizekb * 1024;
+    newPart[num_parts].fp_size = (uint64_t)data_sizekb * 1024;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_DATA);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     
     /* Add misc partitions */
     if( misc1_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc1_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc1_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(1));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc2_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc2_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc2_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(2));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc3_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc3_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc3_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(3));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc4_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc4_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc4_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(4));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     /* Add unallocated  partition */
-    newPart[num_parts].fp_size = PARTITION_SIZE_FILL_FLASH;
+    newPart[num_parts].fp_size = (uint64_t)PARTITION_SIZE_FILL_FLASH;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_UNALLOC);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     
     /* Add backup gpt hdr partition */
-    newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
     strcpy(newPart[num_parts].fp_name, BACKUP_GPT_HDR_PART_NAME);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
-    
+
+    /* Sanity Check */
+    if( num_parts > EMMC_MAX_DATA_PARTS )
+    {
+        printf("\n\n !!! eMMC GPT re-partitioning Failed, too many new partitions %d > %d!!! \n\n", num_parts, EMMC_MAX_DATA_PARTS);
+        res = CFE_ERR;
+    }
+
     /* Create CFE logical partitions */
-    if( enable_emmc_logicalpartition( newPart, femmcprobe, emmcPhysPartAttr, num_parts ) )
+    if( (res != CFE_ERR) && enable_emmc_logicalpartition( newPart, femmcprobe, emmcPhysPartAttr, num_parts ) )
     {
         /* Create GPT partitions */
         res = enable_emmc_gpt( pemmcdatagptprobe, femmcprobe, EMMC_PART_DATA, num_parts, 1);
@@ -1765,7 +1780,8 @@ int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_
     {
         printf("eMMC Logical CFE re-partitioning failed!");
     }
-        
+
+    KFREE(newPart);
     KFREE(pemmcdatagptprobe);
     KFREE(femmcprobe);
     

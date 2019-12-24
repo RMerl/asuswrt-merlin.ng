@@ -534,12 +534,12 @@ static int _phy_pair_swap_set(phy_dev_t *phy_dev, int enable)
 
     _phy_phyid_get(phy_dev, &phyid);
     if ((phyid & ID1_MASK) == ID1_5499X) {
-	enable = 1;
-	phy_dev->swap_pair = 1;
-	printk("### PHY: 5499X series, enable pair swap! ###\n");
+       enable = 1;
+       phy_dev->swap_pair = 1;
+       phy_dev->led_mode = 0;
+       printk("### PHY: 5499X series, enable pair swap! ###\n");
     }
 #endif
-
 
     if (enable)
         data = 0x1b;

@@ -83,8 +83,8 @@
 <div class='footerPadding'></div>
 
 <script>
-	var wl0_he_features_orig = httpApi.nvramGet(["wl0_he_features"]).wl0_he_features;
-	var enableAx = (wl0_he_features_orig == "3") ? true : false;
+	var wl0_11ax_orig = httpApi.nvramGet(["wl0_11ax"]).wl0_11ax;
+	var enableAx = (wl0_11ax_orig != "0") ? true : false;
 
 	$("#Intel_dl_link")	//for string tag: QIS_ax_Ready_note_Intel
 		.attr('target', '_blank')
@@ -104,13 +104,9 @@
 	apply.axMode = function(){
 		postDataModel.insert(axModeObj);
 		if(!$("#axMode_checkbox").is(":checked")){
-			qisPostData.wl0_he_features = 0;
-			qisPostData.wl1_he_features = 0;
-			qisPostData.wl2_he_features = 0;
-		}
-
-		if(wl0_he_features_orig == qisPostData.wl0_he_features){
-			postDataModel.remove(axModeObj);
+			qisPostData.wl0_11ax = 0;
+			qisPostData.wl1_11ax = 0;
+			qisPostData.wl2_11ax = 0;
 		}
 
 		if(isSupport("boostkey")){

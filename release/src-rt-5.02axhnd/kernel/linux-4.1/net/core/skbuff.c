@@ -291,8 +291,8 @@ void skb_headerinit(unsigned int headroom, unsigned int datalen,
 	// skb->vlan_count = 0; memset in _skb_headerreset
 #endif
 #if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
-	// skb->mapt_id = 0; memset in _skb_headerreset
-	// skb->mapt_offset = 0; memset in skb_headerreset
+	// skb->map_id = 0; memset in _skb_headerreset
+	// skb->map_offset = 0; memset in skb_headerreset
 #endif
 	skb->fc_ctxt = 0;
 	skb->recycle_hook = recycle_hook;

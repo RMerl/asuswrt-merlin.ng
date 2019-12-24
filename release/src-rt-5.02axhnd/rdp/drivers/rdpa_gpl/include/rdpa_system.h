@@ -44,7 +44,7 @@
  */
 /** RDPA sw version struct */
 
-#define RDPA_FW_VER_LEN 40 /**< Length of firmware version string */
+#define RDPA_FW_VER_LEN 128 /**< Length of firmware version string */
 typedef struct
 {
     uint8_t rdpa_version_major; /**< Major */

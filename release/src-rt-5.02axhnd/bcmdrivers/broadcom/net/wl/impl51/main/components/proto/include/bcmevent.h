@@ -3,7 +3,7 @@
  *
  * Dependencies: bcmeth.h
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.h 767704 2018-09-24 11:19:21Z $
+ * $Id: bcmevent.h 775307 2019-05-27 12:18:31Z $
  *
  */
 
@@ -346,6 +346,12 @@ typedef union bcm_event_msg_u {
 #define WLC_E_IBSS_COALESCE		110	/* IBSS Coalescing */
 #define WLC_E_AIBSS_TXFAIL		110	/* TXFAIL event for AIBSS, re using event 110 */
 #define WLC_E_BSS_LOAD			114	/* Inform host of beacon bss load */
+						/* XXX - WLC_E_AWDL_RADIO_OFF is no longer used
+						 * and is being reclaimed for WLC_E_BSS_LOAD.
+						 * WLC_E_AWDL_RADIO_OFF references still exist
+						 * in the code so the old #define cannot be
+						 * deleted yet.
+						 */
 #define WLC_E_MIMO_PWR_SAVE		115	/* Inform host MIMO PWR SAVE learning events */
 #define WLC_E_LEAKY_AP_STATS	116 /* Inform host leaky Ap stats events */
 #define WLC_E_ALLOW_CREDIT_BORROW 117	/* Allow or disallow wlfc credit borrowing in DHD */
@@ -402,7 +408,7 @@ typedef union bcm_event_msg_u {
 #define WLC_E_AP_CHAN_CHANGE		170	/* AP channe change event propagate to use */
 #define WLC_E_PSTA_CREATE_IND		171	/* Indication for PSTA creation */
 /* Customer extended EVENTs */
-#define WLC_E_DFS_HIT			172	/* Found radar on channel */
+#define WLC_E_DFS_HIT			182	/* Found radar on channel */
 #define WLC_E_FRAME_FIRST_RX		173	/* RX pkt from STA */
 #define WLC_E_BCN_STUCK			174	/* Beacon Stuck */
 #define WLC_E_PROBSUP_IND		175	/* WL_EAP_BANDSTEER:
@@ -415,13 +421,31 @@ typedef union bcm_event_msg_u {
 
 #define WLC_E_CEVENT			180	/* connectivity event logging */
 #define WLC_E_HWA_EVENT			181	/* HWA event */
-#define WLC_E_AIRIQ_EVENT		182	/* AIRIQ driver event */
+#define WLC_E_AIRIQ_EVENT		172	/* AIRIQ driver event */
 #define WLC_E_TXFAIL_TRFTHOLD		183	/* Indication of MAC tx failures */
 
 #define WLC_E_CAC_STATE_CHANGE		184     /* Indication of CAC Status change */
 #define WLC_E_REQ_BW_CHANGE		185	/* Event to request for BW change */
+#define WLC_E_ASSOC_REASSOC_IND_EXT	186	/* 802.11 Extended (Re)ASSOC indication with whole
+						 * frame even including MAC header
+						 */
+#define WLC_E_WNM_ERR			187	/* BSSTRANS error response */
 
-#define WLC_E_LAST			186
+#define WLC_E_ASSOC_FAIL		188	/* Assoc fail */
+#define WLC_E_REASSOC_FAIL		189	/* Reassoc Fail */
+#define WLC_E_AUTH_FAIL			190	/* Auth Fail */
+#define WLC_E_BSSTRANS_REQ		191     /* BSS Transition Request received */
+#define WLC_E_BSSTRANS_QUERY		192     /* BSS Transition Query received */
+#define WLC_E_START_AUTH		193	/* Event to initiate External Auth */
+#define WLC_E_OMN_MASTER		194	/* OMN Master change event */
+#define WLC_E_MBO_CAPABILITY_STATUS	195	/* per bss mbo capability, association request
+						 * handling capability etc
+						 */
+#define WLC_E_WNM_NOTIFICATION_REQ	196	/* WNM notification request payload from STA */
+#define WLC_E_WNM_BSSTRANS_QUERY	197	/* BTM query payload from STA */
+#define WLC_E_GAS_RQST_ANQP_QUERY	198	/* GAS ANQP query from unassociated STA */
+
+#define WLC_E_LAST			199
 
 /* define an API for getting the string name of an event */
 extern const char *bcmevent_get_name(uint event_type);
@@ -435,6 +459,11 @@ extern int is_wlc_event_frame(void *pktdata, uint pktlen, uint16 exp_usr_subtype
 /* conversion between host and network order for events */
 void wl_event_to_host_order(wl_event_msg_t * evt);
 void wl_event_to_network_order(wl_event_msg_t * evt);
+
+/* xxx:
+ * Please do not insert/delete events in the middle causing renumbering.
+ * It is a problem for host-device compatibility, especially with ROMmed chips.
+ */
 
 /* Event status codes */
 #define WLC_E_STATUS_SUCCESS		0	/* operation was successful */
@@ -1209,6 +1238,18 @@ typedef struct  wlc_traffic_thresh_event {
 	uint16 type;
 	uint16 count;
 } wlc_traffic_thresh_event_t;
+
+/* used with WLC_E_OMN_MASTER */
+#define WLC_E_OMNM_VER			1
+
+typedef struct {
+	uint16 ver;		/* see WLC_E_OMNM_VER above */
+	uint16 len;		/* for forward compatibility to add optional elements at end */
+	uint16 type;		/* unused */
+	uint16 flags;		/* unused */
+	uint16 mod;		/* see wl_omnm_mod_t in wlioctl.h */
+	uint16 lock_life;	/* master lock expires after these many seconds */
+} wl_event_omnm_t;
 
 /* event data passed in WLC_E_MACDBG ratelinkmem update */
 #define WLC_E_MACDBG_RLM_VERSION	1

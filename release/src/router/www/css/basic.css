@@ -9,7 +9,7 @@
          url(../fonts/xolonium.regular.otf) format("opentype");
 }
 *{
-    box-sizing: border-box;
+    /*box-sizing: border-box;*/
 }
 .flexbox{
     display: flex;
@@ -39,8 +39,8 @@
 .border-container{
     width: 769px; 
     position: relative;
-    margin: 10px auto 20px auto;
-    border: 1px solid #5C0C0B;
+    margin-bottom: 20px;
+    border: 1px solid #475A5F;
     border-top-left-radius: 18px;
     border-top-right-radius: 8px;
     border-bottom-left-radius: 18px;
@@ -70,7 +70,7 @@
     top: 0;
     bottom: 0;
     left: 3px;
-    background-color: #5C0C0B;
+    background-color: #475A5F;
 }
 
 /* Title */
@@ -80,14 +80,14 @@
 .title-symbol{
     width: 9px;
     transform: skew(24deg);
-    background-color: #E64100;
+    background-color: #576D73;
 }
 .title-content{
     width: 100%;
     font-size: 24px;
     margin: 0 0 0 18px;
     padding-bottom: 4px;
-    border-bottom: 1px solid #5C0C0B;
+    border-bottom: 1px solid #475A5F;
 }
 /* End Title */
 /* Description */
@@ -132,12 +132,12 @@
 /* Button*/
 .button-container:hover, .button-container:active,
 .icon-button-container:hover, .icon-button-container:active{
-    border: 2px solid #E64100;
+    border: 2px solid #576D73;
     background-color: #000000;
 }
 .button-container{
     display: table;
-    border: 2px solid #842500;
+    border: 2px solid #444;
     border-radius: 24px;
     padding: 12px 24px;
     background-color: #141618;
@@ -170,7 +170,7 @@
 .divide-line{
     height:1px;
     margin: 18px 24px 18px 36px;
-    background-color: #5C0C0B;
+    background-color: #475A5F;
 }
 /* checkbox */
 input[type="checkbox"]{

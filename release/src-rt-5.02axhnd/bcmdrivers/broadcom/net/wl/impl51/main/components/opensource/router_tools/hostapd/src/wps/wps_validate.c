@@ -400,6 +400,25 @@ static int wps_validate_request_to_enroll(const u8 *request_to_enroll,
 	return 0;
 }
 
+#ifdef CONFIG_DRIVER_BRCM_MAP
+static int wps_validate_map_ext_attr(const u8 *map_ext_attr, int mandatory)
+{
+	if (map_ext_attr == NULL) {
+		if (mandatory) {
+			wpa_printf(MSG_INFO, "WPS-STRICT: multiap extension attribute missing");
+			return -1;
+		}
+		return 0;
+	}
+	if (*map_ext_attr != WPS_MAP_BH_STA) {
+		wpa_printf(MSG_INFO, "WPS-STRICT: Invalid multiap extension "
+			   "attribute value 0x%x", *map_ext_attr);
+		return -1;
+	}
+	return 0;
+}
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
+
 static int wps_validate_req_dev_type(const u8 *req_dev_type[], size_t num,
 				     int mandatory)
 {
@@ -998,7 +1017,7 @@ static int wps_validate_cred(const u8 *cred, size_t len)
 	return 0;
 }
 
-static int wps_validate_credential(const u8 *cred[], size_t len[], size_t num,
+static int wps_validate_credential(const u8 *cred[], u16 len[], size_t num,
 				   int mandatory)
 {
 	size_t i;
@@ -1259,7 +1278,11 @@ int wps_validate_m1(const struct wpabuf *tlvs)
 	    wps_validate_config_error(attr.config_error, 1) ||
 	    wps_validate_os_version(attr.os_version, 1) ||
 	    wps_validate_version2(attr.version2, wps2) ||
-	    wps_validate_request_to_enroll(attr.request_to_enroll, 0)) {
+	    wps_validate_request_to_enroll(attr.request_to_enroll, 0) ||
+#ifdef CONFIG_DRIVER_BRCM_MAP
+	    wps_validate_map_ext_attr(attr.map_ext_attr, 0) ||
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
+	    0) {
 		wpa_printf(MSG_INFO, "WPS-STRICT: Invalid M1");
 #ifdef WPS_STRICT_WPS2
 		if (wps2)

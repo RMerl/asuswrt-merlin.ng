@@ -203,7 +203,7 @@
 #define BBH_TX_EMAC_PD_FIFO_SIZE_MDU_MODE_ENABLED  4
 
 #define PSRAM_HEADROOM_SIZE   40
-#define RDD_CPU_TX_ABS_FIFO_SIZE	 5120
+#define RDD_CPU_TX_ABS_FIFO_SIZE        LILAC_RDD_CPU_TX_SKB_LIMIT_MAX
 
 #define BB_COLOR(clr_code)
 #define _BBh_   BB_COLOR("\e[0;36;44m")     /* Highlight color */

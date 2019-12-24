@@ -423,11 +423,7 @@ int _cpu_eval(int *ppid, char *cmds[])
 #if defined (SMP) || defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
         cpucmd[ncmds++]="taskset";
         cpucmd[ncmds++]="-c";
-        if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1)
-#if defined(GTAC5300) || defined(GTAX11000) || defined(RTAX88U)
-			|| !strcmp(cmds[n], CPU2) || !strcmp(cmds[n], CPU3)
-#endif
-			)
+	if(!strcmp(cmds[n], CPU0) || !strcmp(cmds[n], CPU1) || !strcmp(cmds[n], CPU2) || !strcmp(cmds[n], CPU3))
                 cpucmd[ncmds++]=cmds[n++];
 	else
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
@@ -436,11 +432,7 @@ int _cpu_eval(int *ppid, char *cmds[])
                 cpucmd[ncmds++]=CPU0;
 #endif
 #else
-	if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1)
-#if defined(GTAC5300) || defined(GTAX11000) || defined(RTAX88U)
-			&& strcmp(cmds[n], CPU2) && strcmp(cmds[n], CPU3)
-#endif
-			)
+	if(strcmp(cmds[n], CPU0) && strcmp(cmds[n], CPU1) && strcmp(cmds[n], CPU2) && strcmp(cmds[n], CPU3))
                  cpucmd[ncmds++]=cmds[n++];
 	else
                  n++;
@@ -1152,14 +1144,12 @@ find_in_list(const char *haystack, const char *needle)
 int
 remove_from_list(const char *name, char *list, int listsize)
 {
-//	int listlen = 0;
 	int namelen = 0;
 	char *occurrence = list;
 
 	if (!list || !name || (listsize <= 0))
 		return EINVAL;
 
-//	listlen = strlen(list);
 	namelen = strlen(name);
 
 	occurrence = find_in_list(occurrence, name);
@@ -1177,8 +1167,9 @@ remove_from_list(const char *name, char *list, int listsize)
 	}
 	else if (occurrence[namelen] == ' ')
 	{
-		strncpy(occurrence, &occurrence[namelen+1 /* space */],
-		        strlen(&occurrence[namelen+1 /* space */]) +1 /* terminate */);
+		/* Using memmove because of possible overlapping source and destination buffers */
+		memmove(occurrence, &occurrence[namelen+1 /* space */],
+			strlen(&occurrence[namelen+1 /* space */]) +1 /* terminate */);
 	}
 
 	return 0;
@@ -1202,6 +1193,7 @@ add_to_list(const char *name, char *list, int listsize)
 {
 	int listlen = 0;
 	int namelen = 0;
+	int newlen = 0;
 
 	if (!list || !name || (listsize <= 0))
 		return EINVAL;
@@ -1213,7 +1205,12 @@ add_to_list(const char *name, char *list, int listsize)
 	if (find_in_list(list, name))
 		return 0;
 
-	if (listsize <= listlen + namelen + 1 /* space */ + 1 /* NULL */)
+	newlen = listlen + namelen + 1 /* NULL */;
+	/* only add a space if the list isn't empty */
+	if (list[0] != 0)
+		newlen += 1; /* space */
+
+	if (listsize < newlen)
 		return EMSGSIZE;
 
 	/* add a space if the list isn't empty and it doesn't already have space */
@@ -2286,8 +2283,8 @@ int arpcache(char *tgmac, char *tgip)
 	char ipAddr[ARP_BUFFER_LEN], hwAddr[ARP_BUFFER_LEN], device[ARP_BUFFER_LEN];
 	while (fscanf(arpCache, ARP_LINE_FORMAT, ipAddr, hwAddr, device) == 3)
 	{
-		if(!stricmp(tgmac, hwAddr, IPLEN-1)) {
-			strncpy(tgip, ipAddr, IPLEN);
+		if(strncasecmp(tgmac, hwAddr, IPLEN-1) == 0) {
+			strlcpy(tgip, ipAddr, IPLEN);
 			break;
 		}
 	}
@@ -2296,3 +2293,60 @@ int arpcache(char *tgmac, char *tgip)
 	return 0;
 }
 
+/* In the space-separated/null-terminated list(haystack), try to
+ * locate the string "needle" and get the next string from it
+ * if required, do a circular search as well
+ * if "needle" is NULL, get the first string in the list
+ */
+char *
+find_next_in_list(const char *haystack, const char *needle, char *nextstr, int nextstrlen)
+{
+        const char *ptr = haystack;
+        int needle_len = 0;
+        int haystack_len = 0;
+        int len = 0;
+
+        if (!haystack || !needle || !nextstr || !*haystack)
+                return NULL;
+
+        if (!*needle) {
+                goto found_next;
+        }
+
+        needle_len = strlen(needle);
+        haystack_len = strlen(haystack);
+
+        while (*ptr != 0 && ptr < &haystack[haystack_len])
+        {
+                /* consume leading spaces */
+                ptr += strspn(ptr, " ");
+
+                /* what's the length of the next word */
+                len = strcspn(ptr, " ");
+
+                if ((needle_len == len) && (!strncmp(needle, ptr, len))) {
+
+                        ptr += len;
+
+                        if (!(*ptr != 0 && ptr < &haystack[haystack_len])) {
+                                ptr = haystack;
+                        } else {
+                                /* consume leading spaces */
+                                ptr += strspn(ptr, " ");
+                        }
+
+found_next:
+                        /* what's the length of the next word */
+                        len = strcspn(ptr, " ");
+
+                        /* copy next value in nextstr */
+                        memset(nextstr, 0, nextstrlen);
+                        strncpy(nextstr, ptr, len);
+
+                        return (char*) ptr;
+                }
+
+                ptr += len;
+        }
+        return NULL;
+}

@@ -234,20 +234,6 @@ void BcmPwrMngtSetDRAMSelfRefresh(unsigned int enable)
    printk("DDR Self Refresh pwrsaving is %s\n", enable?"enabled":"disabled");
    self_refresh_enabled = enable;
 
-#if defined(CONFIG_BCM_DDR_SELF_REFRESH_PWRSAVE) && defined(CONFIG_USB) && defined(USBH_OHCI_MEM_REQ_DIS)
-#if defined (CONFIG_BCM963268)
-   if (0xD0 == (PERF->RevID & REV_ID_MASK)) {
-#endif
-      if (enable) {
-         // Configure USB port to not access DDR if unused, to save power
-         USBH->USBSimControl |= USBH_OHCI_MEM_REQ_DIS;
-      } else {
-         USBH->USBSimControl &= ~USBH_OHCI_MEM_REQ_DIS;
-      }
-#if defined (CONFIG_BCM963268)
-   }
-#endif
-#endif
 }
 EXPORT_SYMBOL(BcmPwrMngtSetDRAMSelfRefresh);
 

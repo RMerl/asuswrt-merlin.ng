@@ -2,7 +2,7 @@
 #
 # WlGetDriverCfg.sh <WiFi interface name> <Band: 2|5> <Driver mode: nic|dhd>
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -142,6 +142,8 @@ echo -n msglevel=; echo $(wl -i $ifname msglevel)
 echo -n vhtmode=; echo $(wl -i $ifname vhtmode)
 echo -n vht_features=; echo $(wl -i $ifname vht_features)
 echo -n mu_features=; echo $(wl -i $ifname mu_features)
+echo -n mu_policy=; echo $(wl -i $ifname mu_policy)
+echo -n muinfo=; echo $(wl -i $ifname muinfo)
 echo -n wet_enab=; echo $(wl -i $ifname wet_enab)
 echo -n nar=; echo $(wl -i $ifname nar)
 echo -n nar_handle_ampdu=; echo $(wl -i $ifname nar_handle_ampdu)
@@ -214,9 +216,13 @@ echo -n vndr_ie=; echo $(wl -i $ifname vndr_ie)
 echo -n wdstimeout=; echo $(wl -i $ifname wdstimeout)
 echo -n wet_tunnel=; echo $(wl -i $ifname wet_tunnel)
 echo -n wme=; echo $(wl -i $ifname wme)
-echo -n wme_ac_ap=; echo $(wl -i $ifname wme_ac_ap)
+IFS_ORIG=$IFS
+IFS=
+echo -n wme_ac_ap=; echo "$(wl -i $ifname wme_ac_ap)"
 echo -n wme_ac ap=; echo $(wl -i $ifname wme_ac ap)
 echo -n wme_ac_sta=; echo $(wl -i $ifname wme_ac_sta)
+echo -n wme_ac sta=; echo "$(wl -i $ifname wme_ac sta)"
+IFS=$IFS_ORIG
 echo -n wme_apsd=; echo $(wl -i $ifname wme_apsd)
 echo -n wme_bss_disable=; echo $(wl -i $ifname wme_bss_disable)
 echo -n wme_dp=; echo $(wl -i $ifname wme_dp)
@@ -328,6 +334,10 @@ echo -n mrate=; echo $(wl -i $ifname mrate)
 echo -n curppr=; echo $(wl -i $ifname curppr)
 echo -n suprates=; echo $(wl -i $ifname suprates)
 echo -n rrm=; echo $(wl -i $ifname rrm)
+echo -n msched=; echo $(wl -i $ifname msched)
+echo -n msched rucfg=; echo $(wl -i $ifname msched rucfg)
+echo -n msched maxn=; echo $(wl -i $ifname msched maxn)
+echo -n umsched=; echo $(wl -i $ifname umsched)
 
 echo ""
 echo ""
@@ -427,6 +437,7 @@ echo -n wmf_ucast_igmp=; echo $(dhd -i $ifname wmf_ucast_igmp)
 echo -n wmf_ucast_upnp=; echo $(dhd -i $ifname wmf_ucast_upnp)
 echo -n wowl_wakeind=; echo $(dhd -i $ifname wowl_wakeind)
 echo -n op_mode=; echo $(dhd -i $ifname op_mode)
+echo -n pciecfgreg offset 0xb4=; echo $(dhd -i $ifname pciecfgreg 0xb4)
 fi
 
 echo ""

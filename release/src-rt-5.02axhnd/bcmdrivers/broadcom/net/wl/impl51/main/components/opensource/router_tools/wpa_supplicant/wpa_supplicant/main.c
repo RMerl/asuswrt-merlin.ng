@@ -27,9 +27,9 @@ static void usage(void)
 	       "s"
 #endif /* CONFIG_DEBUG_SYSLOG */
 	       "t"
-#ifdef CONFIG_DBUS
+#ifdef CONFIG_CTRL_IFACE_DBUS_NEW
 	       "u"
-#endif /* CONFIG_DBUS */
+#endif /* CONFIG_CTRL_IFACE_DBUS_NEW */
 	       "vW] [-P<pid file>] "
 	       "[-g<global ctrl>] \\\n"
 	       "        [-G<group>] \\\n"
@@ -97,9 +97,9 @@ static void usage(void)
 	       "  -T = record to Linux tracing in addition to logging\n"
 	       "       (records all messages regardless of debug verbosity)\n"
 #endif /* CONFIG_DEBUG_LINUX_TRACING */
-#ifdef CONFIG_DBUS
+#ifdef CONFIG_CTRL_IFACE_DBUS_NEW
 	       "  -u = enable DBus control interface\n"
-#endif /* CONFIG_DBUS */
+#endif /* CONFIG_CTRL_IFACE_DBUS_NEW */
 	       "  -v = show version\n"
 	       "  -W = wait for a control interface monitor before starting\n");
 
@@ -127,6 +127,11 @@ static void wpa_supplicant_fd_workaround(int start)
 #ifdef __linux__
 	static int fd[3] = { -1, -1, -1 };
 	int i;
+	/* When started from pcmcia-cs scripts, wpa_supplicant might start with
+	 * fd 0, 1, and 2 closed. This will cause some issues because many
+	 * places in wpa_supplicant are still printing out to stdout. As a
+	 * workaround, make sure that fd's 0, 1, and 2 are not used for other
+	 * sockets. */
 	if (start) {
 		for (i = 0; i < 3; i++) {
 			fd[i] = open("/dev/null", O_RDWR);
@@ -285,11 +290,11 @@ int main(int argc, char *argv[])
 		case 't':
 			params.wpa_debug_timestamp++;
 			break;
-#ifdef CONFIG_DBUS
+#ifdef CONFIG_CTRL_IFACE_DBUS_NEW
 		case 'u':
 			params.dbus_ctrl_interface = 1;
 			break;
-#endif /* CONFIG_DBUS */
+#endif /* CONFIG_CTRL_IFACE_DBUS_NEW */
 		case 'v':
 			printf("%s\n", wpa_supplicant_version);
 			exitcode = 0;

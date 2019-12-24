@@ -519,6 +519,14 @@ int rtnl_htb_set_cbuffer(struct rtnl_class *class, uint32_t cbuffer)
 	return 0;
 }
 
+/**
+ * Return quantum of HTB class
+ * @arg class		htb class object
+ *
+ * See XXX[quantum def]
+ *
+ * @return Quantum or 0 if unspecified.
+ */
 uint32_t rtnl_htb_get_quantum(struct rtnl_class *class)
 {
 	struct rtnl_htb_class *htb;
@@ -530,6 +538,15 @@ uint32_t rtnl_htb_get_quantum(struct rtnl_class *class)
 	return 0;
 }
 
+/**
+ * Set quantum of HTB class (overwrites value calculated based on r2q)
+ * @arg class		htb class object
+ * @arg quantum		new quantum in number of bytes
+ *
+ * See XXX[quantum def]
+ *
+ * @return 0 on success or a negative error code.
+ */
 int rtnl_htb_set_quantum(struct rtnl_class *class, uint32_t quantum)
 {
 	struct rtnl_htb_class *htb;

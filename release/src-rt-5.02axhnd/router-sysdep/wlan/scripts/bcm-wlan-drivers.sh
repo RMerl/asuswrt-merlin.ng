@@ -11,7 +11,6 @@
 # check existance of driver in the system before loading
 
 trap "" 3
-
 #The following will be populated by buildFS during the make process:
 KERNELVER=_set_by_buildFS_
 HNDROUTER=_set_by_buildFS_
@@ -22,6 +21,90 @@ if [ ! -z $PROD_FW_PATH ]; then
 else
     MFG_FW_PATH="/etc/wlan/dhd/mfg"
 fi
+
+# PCIe Wireless Card Status - bad card detection
+pwlcs_preload()
+{
+
+  # Check if PWLCS is enabled or not
+  # 0/not present - Disabled
+  # N             - Enabled for N cards (N is generally 2 or 3)
+  # Also need to compile DHD with DSLCPE_PWLCS flag
+  MAXPWLCS=`nvram get pwlcsmaxcrd`
+  if [ "$MAXPWLCS" == "" ];  then
+    MAXPWLCS=0
+  fi
+
+  if [ $MAXPWLCS != 0 ];  then
+    echo "PWLCS:: DHD pre-load processing ..."
+    needcommit=0
+    card=0
+    panic_on_oops=`cat /proc/sys/kernel/panic_on_oops`
+
+    #disable panic_on_oops to stop auto rebooting on dhd fail
+    echo 0 > /proc/sys/kernel/panic_on_oops
+
+    # Initialize card status to GOOD, if not present
+    while [ $card -lt $MAXPWLCS ]
+    do
+      status=`nvram get pwlcspcie$card`
+      if [ "$status" == "" ];  then
+        echo "PWLCS:: PCIe[$card] status intializing to GOOD"
+        nvram set pwlcspcie$card="GOOD"
+        needcommit=1
+      fi
+      echo "PWLCS:: PCIe[$card] pre-load status = $status"
+      card=$(($card+1))
+    done
+
+    # Commit changes if needed
+    if [ $needcommit == 1 ];  then
+      nvram commit
+	  sync
+    fi
+  fi
+}
+
+pwlcs_postload()
+{
+
+  if [ $MAXPWLCS != 0 ];  then
+    echo "PWLCS:: DHD post-load processing ..."
+    needcommit=0
+    card=0
+
+    # Get the updated card status changed by DHD
+    while [ $card -lt $MAXPWLCS ]
+    do
+      status=`nvram get pwlcspcie$card`
+      echo "PWLCS:: PCIe[$card] post-load status = $status"
+
+      # Save and commit driver changes to the nvram
+      nvram set pwlcspcie$card="$status"
+      nvram commit
+	  sync
+
+      #restore the panic_on_oops for the rest of the system
+      echo $panic_on_oops > /proc/sys/kernel/panic_on_oops
+
+      # Check if card is a bad card
+      case "$status" in
+        *BOOT*) 
+          ifexists=`cat /proc/net/dev |grep wl$card`
+          set -- $ifexists
+          if [ "$1" == "" ];  then 
+            echo "==============================================================================="
+            echo "Detected bad WLAN card on PCIe$card, rebooting system"
+            echo "==============================================================================="
+            # Trigger magic Sys Request reboot for fast reboot
+            echo b > /proc/sysrq-trigger
+          fi 
+        ;; 
+      esac
+      card=$(($card+1))
+    done
+  fi
+}
 
 # to get instance base mixed with dhd and wl
 get_instance_base()
@@ -83,6 +166,10 @@ load_modules()
 
         echo "loading WLAN kernel modules ... $modules_list"
 
+        if [ -f /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko ]; then
+            insmod /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko
+        fi
+
         for module in $modules_list
         do
             case "$module" in
@@ -102,13 +189,19 @@ load_modules()
                     ;;
             esac
 
-            if [ "$module" == "dhd" ] || [ "$module" == "wl" ]; then
+            if [ "$module" == "dhd" ] || [ "$module" == "wl" ] || [ "$module" == "wl_mfgtest" ]; then
                 instance_base=`get_instance_base`
                 module_params=$module_params" "$instance_base
             fi
 
             if [ -e /lib/modules/$KERNELVER/extra/$module.ko ]; then
-                insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params
+                if [ "$module" == "dhd" ]; then
+                    pwlcs_preload
+                    insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params
+                    pwlcs_postload
+                else
+                    insmod /lib/modules/$KERNELVER/extra/$module.ko $module_params
+                fi
             fi
         done
 }

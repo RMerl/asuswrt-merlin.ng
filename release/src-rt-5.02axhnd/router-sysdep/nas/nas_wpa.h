@@ -1,7 +1,7 @@
 /*
  * WPA definitions
  *
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -42,7 +42,7 @@
  * OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
  * NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
  *
- * $Id: nas_wpa.h 767470 2018-09-12 08:29:20Z $
+ * $Id: nas_wpa.h 769827 2018-11-28 05:18:16Z $
  */
 
 #ifndef _wpa_h_
@@ -81,7 +81,7 @@
 
 /* WPA2 timeout initial values */
 #define WPA2_DEFAULT_RETRY_MSECS  990
-#define WPA2_DEFAULT_RETRY_SECS   2 /* more tolerate peer late resp*/
+#define WPA2_DEFAULT_RETRY_SECS   2 /* more tolerate peer late resp */
 
 typedef uint8 wpaie_buf_t[MAX_WPA_IE];
 
@@ -170,6 +170,8 @@ struct wpa;
 struct nas;
 
 #ifdef MFP
+#define MFP_IGTK_REQUIRED(wpa, sta)     (((wpa)->cap[0] & RSN_CAP_MFPC) && \
+					((sta)->cap[0] & RSN_CAP_MFPC))
 /* Integrity group key info */
 typedef struct wsec_igtk_info {
 	uint16 id;			/* key id */
@@ -351,4 +353,7 @@ extern void wpa_new_gtk(wpa_t *wpa);
 extern void wpa_incr_gkc(wpa_t *wpa);
 extern void wpa_init_gtk(wpa_t *wpa, nas_sta_t *sta);
 extern void wpa_plumb_gtk(wpa_t *wpa, int primary);
+#ifdef MFP
+extern void wpa_gen_igtk(wpa_t *wpa);
+#endif /* MFP */
 #endif /* _wpa_h_ */

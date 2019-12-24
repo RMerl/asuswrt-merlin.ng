@@ -1,9 +1,9 @@
  /*
- * Copyright 2017, ASUSTeK Inc.
+ * Copyright 2019, ASUSTeK Inc.
  * All Rights Reserved.
  *
  * THIS SOFTWARE IS OFFERED "AS IS", AND ASUS GRANTS NO WARRANTIES OF ANY
- * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
+ * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. ASUS
  * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
  * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
  *
@@ -13,11 +13,12 @@
 	feature implement:
 	1. traditaional qos
 	2. bandwdith limiter (also for guest network)
-	3. facebook wifi
+	3. facebook wifi     (already EOL in the end of2017)
+	4. GeForceNow qos
 
 	NOTE:
 	qos mark bit 8~31 : TrendMicro adaptive qos usage, so ASUS only can use bit 0~7 for different applications
-	ex. Traditional qos / bandwidth limiter / Facebook wifi
+	ex. Traditional qos / bandwidth limiter / Facebook wifi / GeForceNow QoS
 */
 
 #include <sys/mount.h>
@@ -464,6 +465,9 @@ static int add_qos_rules(char *pcWANIF)
 		case MODEL_RTAX88U:
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
+		case MODEL_RTAX95Q:
+		case MODEL_RTAX58U:
+		case MODEL_RTAX56U:
 		case MODEL_RTAC1200G:
 		case MODEL_RTAC1200GP:
 #if defined(RTCONFIG_LANTIQ)
@@ -1279,6 +1283,11 @@ static int start_tqos(void)
 void stop_iQos(void)
 {
 	eval((char *)qosfn, "stop");
+
+#ifdef RTCONFIG_GEFORCENOW
+	nvgfn_kernel_setting(0);
+	nvgfn_mcs_isauto(0);
+#endif
 }
 
 static int add_bandwidth_limiter_rules(char *pcWANIF)
@@ -1606,7 +1615,11 @@ static int start_bandwidth_limiter(void)
 					"\tTCA%d%d=\"tc class add dev $GUEST%d%d\"\n"
 					"\tTFA%d%d=\"tc filter add dev $GUEST%d%d\"\n" // 5
 					"\n"
+#if defined(RTCONFIG_SOC_IPQ8074)
+					"\t$TQA%d%d root handle %d: htb default %d\n"
+#else
 					"\t$TQA%d%d root handle %d: htb\n"
+#endif
 					"\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n" // 7
 					"\n"
 					"\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n"
@@ -1621,7 +1634,11 @@ static int start_bandwidth_limiter(void)
 					, i, j, i, j
 					, i, j, i, j
 					, i, j, i, j // 5
+#if defined(RTCONFIG_SOC_IPQ8074)
+					, i, j, guest, guest_mark
+#else
 					, i, j, guest
+#endif
 					, i, j, guest, guest, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)) //7
 					, i, j, guest, guest, guest_mark, nvram_safe_get(strcat_r(wlv, "_bw_dl", tmp)), guest_mark
 					, i, j, guest, guest_mark, guest_mark, qsched
@@ -1706,19 +1723,258 @@ static int start_bandwidth_limiter(void)
 	return 0;
 }
 
+#ifdef RTCONFIG_GEFORCENOW
+static int nvfgn_GetQoSChannelPort(char *str)
+{
+	int ret = 0;
+	char *buf = NULL, *g = NULL, *p = NULL;
+	char *type = NULL, *proto = NULL, *port = NULL;
+
+	g = buf = strdup(nvram_safe_get("nvgfn_ch_rulelist"));
+	while (g) {
+		if ((p = strsep(&g, "<")) == NULL) break;
+		if ((vstrsep(p, ">", &type, &proto, &port)) != 3) continue;
+		if (!strcmp(str, type)) {
+			ret = atoi(port);
+			break;
+		}
+	}
+	if (buf) free(buf);
+	return ret;
+}
+
+static int start_GeForce_QoS(void)
+{
+	FILE *f = NULL;
+	unsigned int ibw = 0, obw = 0;
+	unsigned int ibw_re = 0, obw_re = 0;
+
+	_dprintf("[GeForce] start GeForceNow QoS ...\n");
+	ibw = strtoul(nvram_safe_get("qos_ibw"), NULL, 10);
+	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
+	ibw_re = strtoul(nvram_safe_get("nvgfn_ibw_r"), NULL, 10);
+	obw_re = strtoul(nvram_safe_get("nvgfn_obw_r"), NULL, 10);
+
+	/* If this value doesn't exist or 0 or empty, will give 1Gbps as default value */
+	if (ibw == 0) ibw = 1024000;
+	if (obw == 0) obw = 1024000;
+	if (ibw_re == 0) ibw_re = 1024000;
+	if (obw_re == 0) obw_re = 1024000;
+
+	/* If this value exist and it is less then 1Mbps, will force into 1Mbps */
+	if (ibw < 1024 && ibw != 0) ibw = 1024;
+	if (obw < 1024 && obw != 0) obw = 1024;
+	if (ibw_re < 1024 && ibw_re != 0) ibw_re = 1024;
+	if (obw_re < 1024 && obw_re != 0) obw_re = 1024;
+
+	if ((f = fopen(qosfn, "w")) == NULL) return -2;
+	fprintf(f,
+		"#!/bin/sh\n"
+		"WAN=%s\n"
+		"LAN=%s\n"
+		"\n"
+		"TQAU=\"tc qdisc add dev $WAN\"\n"
+		"TCAU=\"tc class add dev $WAN\"\n"
+		"TFAU=\"tc filter add dev $WAN\"\n"
+		"SFQ=\"sfq perturb 10\"\n"
+		"TQA=\"tc qdisc add dev $LAN\"\n"
+		"TCA=\"tc class add dev $LAN\"\n"
+		"TFA=\"tc filter add dev $LAN\"\n"
+		"\n"
+		, get_wan_ifname(wan_primary_ifunit())
+		, nvram_safe_get("lan_ifname")
+	);
+
+	fprintf(f,
+		"start()\n"
+		"{\n"
+		"echo \"root ...\"\n"
+		"$TQA root handle 1: htb default 50\n"
+		"$TCA parent 1: classid 1:1 htb rate %ukbit\n"
+		"\n"
+		"$TQAU root handle 2: htb default 50\n"
+		"$TCAU parent 2: classid 2:1 htb rate %ukbit\n"
+		"\n"
+		"echo \"download ...\"\n"
+		"# 1:10\n"
+		"$TCA parent 1:1 classid 1:10 htb rate %ukbit ceil %ukbit prio 1\n"
+		"$TQA parent 1:10 handle 10: $SFQ\n"
+		"$TFA parent 1: prio 1 protocol ip handle 10 fw flowid 1:10\n"
+		"\n"
+		"# 1:20\n"
+		"$TCA parent 1:1 classid 1:20 htb rate %fkbit ceil %ukbit prio 2\n"
+		"$TQA parent 1:20 handle 20: $SFQ\n"
+		"$TFA parent 1: prio 2 protocol ip handle 20 fw flowid 1:20\n"
+		"\n"
+		"# 1:30\n"
+		"$TCA parent 1:1 classid 1:30 htb rate %fkbit ceil %ukbit prio 3\n"
+		"$TQA parent 1:30 handle 30: $SFQ\n"
+		"$TFA parent 1: prio 3 protocol ip handle 30 fw flowid 1:30\n"
+		"\n"
+		"# 1:40\n"
+		"$TCA parent 1:1 classid 1:40 htb rate %fkbit ceil %ukbit prio 4\n"
+		"$TQA parent 1:40 handle 40: $SFQ\n"
+		"$TFA parent 1: prio 4 protocol ip handle 40 fw flowid 1:40\n"
+		"\n"
+		"# 1:50\n"
+		"$TCA parent 1:1 classid 1:50 htb rate %fkbit ceil %ukbit prio 5\n"
+		"$TQA parent 1:50 handle 50: $SFQ\n"
+		"$TFA parent 1: prio 5 protocol ip handle 50 fw flowid 1:50\n"
+		"\n"
+		, ibw             // 1:
+		, obw             // 2:
+		, ibw_re,   ibw   // 1:10
+		, 0.20*ibw, ibw   // 1:20
+		, 0.15*ibw, ibw   // 1:30
+		, 0.10*ibw, ibw   // 1:40
+		, 0.05*ibw, ibw   // 1:50
+	);
+
+	/* fixed ports */
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("audio"));
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("mic"));
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("vedio"));
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol 17 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("control"));
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match ip protocol  6 0xff match ip dport %d 0xffff flowid 1:10\n", nvfgn_GetQoSChannelPort("control"));
+
+	/* DSCP / TOS */
+	fprintf(f, "$TFA parent 1: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xE0 0xff flowid 1:10\n");
+	fprintf(f, "$TFA parent 1: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xC0 0xff flowid 1:10\n");
+	fprintf(f, "$TFA parent 1: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xB8 0xff flowid 1:10\n");
+	fprintf(f, "$TFA parent 1: prio 12 protocol ip u32 match ip protocol 17 0xff match ip tos 0xA0 0xff flowid 1:20\n");
+	fprintf(f, "$TFA parent 1: prio 12 protocol ip u32 match ip protocol 17 0xff match ip tos 0x80 0xff flowid 1:20\n");
+	fprintf(f, "$TFA parent 1: prio 13 protocol ip u32 match ip protocol 17 0xff match ip tos 0x60 0xff flowid 1:30\n");
+	fprintf(f, "$TFA parent 1: prio 13 protocol ip u32 match ip protocol 17 0xff match ip tos 0x00 0xff flowid 1:30\n");
+	fprintf(f, "$TFA parent 1: prio 14 protocol ip u32 match ip protocol 17 0xff match ip tos 0x40 0xff flowid 1:40\n");
+	fprintf(f, "$TFA parent 1: prio 14 protocol ip u32 match ip protocol 17 0xff match ip tos 0x20 0xff flowid 1:40\n");
+
+	fprintf(f,
+		"\n"
+		"echo \"upload ...\"\n"
+		"# 2:10\n"
+		"$TCAU parent 2:1 classid 2:10 htb rate %ukbit ceil %ukbit prio 1\n"
+		"$TQAU parent 2:10 handle 10: $SFQ\n"
+		"$TFAU parent 2: prio 1 protocol ip handle 10 fw flowid 2:10\n"
+		"\n"
+		"# 2:20\n"
+		"$TCAU parent 2:1 classid 2:20 htb rate %fkbit ceil %ukbit prio 2\n"
+		"$TQAU parent 2:20 handle 20: $SFQ\n"
+		"$TFAU parent 2: prio 2 protocol ip handle 20 fw flowid 2:20\n"
+		"\n"
+		"# 2:30\n"
+		"$TCAU parent 2:1 classid 2:30 htb rate %fkbit ceil %ukbit prio 3\n"
+		"$TQAU parent 2:30 handle 30: $SFQ\n"
+		"$TFAU parent 2: prio 3 protocol ip handle 30 fw flowid 2:30\n"
+		"\n"
+		"# 2:40\n"
+		"$TCAU parent 2:1 classid 2:40 htb rate %fkbit ceil %ukbit prio 4\n"
+		"$TQAU parent 2:40 handle 40: $SFQ\n"
+		"$TFAU parent 2: prio 4 protocol ip handle 40 fw flowid 2:40\n"
+		"\n"
+		"# 2:50\n"
+		"$TCAU parent 2:1 classid 2:50 htb rate %fkbit ceil %ukbit prio 5\n"
+		"$TQAU parent 2:50 handle 50: $SFQ\n"
+		"$TFAU parent 2: prio 5 protocol ip handle 50 fw flowid 2:50\n"
+		"\n"
+		, obw_re  , obw   // 2:10
+		, 0.20*obw, obw   // 2:20
+		, 0.15*obw, obw   // 2:30
+		, 0.10*obw, obw   // 2:40
+		, 0.05*obw, obw   // 2:50
+	);
+
+	/* fixed ports */
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("audio"));
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("mic"));
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("vedio"));
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol 17 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("control"));
+	fprintf(f, "$TFAU parent 2: prio 10 protocol ip u32 match ip protocol  6 0xff match ip sport %d 0xffff flowid 2:10\n", nvfgn_GetQoSChannelPort("control"));
+
+	/* DSCP / TOS */
+	fprintf(f, "$TFAU parent 2: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xE0 0xff flowid 2:10\n");
+	fprintf(f, "$TFAU parent 2: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xC0 0xff flowid 2:10\n");
+	fprintf(f, "$TFAU parent 2: prio 11 protocol ip u32 match ip protocol 17 0xff match ip tos 0xB8 0xff flowid 2:10\n");
+	fprintf(f, "$TFAU parent 2: prio 12 protocol ip u32 match ip protocol 17 0xff match ip tos 0xA0 0xff flowid 2:20\n");
+	fprintf(f, "$TFAU parent 2: prio 12 protocol ip u32 match ip protocol 17 0xff match ip tos 0x80 0xff flowid 2:20\n");
+	fprintf(f, "$TFAU parent 2: prio 13 protocol ip u32 match ip protocol 17 0xff match ip tos 0x60 0xff flowid 2:30\n");
+	fprintf(f, "$TFAU parent 2: prio 13 protocol ip u32 match ip protocol 17 0xff match ip tos 0x00 0xff flowid 2:30\n");
+	fprintf(f, "$TFAU parent 2: prio 14 protocol ip u32 match ip protocol 17 0xff match ip tos 0x40 0xff flowid 2:40\n");
+	fprintf(f, "$TFAU parent 2: prio 14 protocol ip u32 match ip protocol 17 0xff match ip tos 0x20 0xff flowid 2:40\n");
+	fprintf(f, "}\n"); // start() end
+
+	fprintf(f,
+		"\n"
+		"stop()\n"
+		"{\n"
+		"echo \"stop ...\"\n"
+		"tc qdisc del dev $WAN root 2>/dev/null\n"
+		"tc qdisc del dev $WAN ingress 2>/dev/null\n"
+		"tc qdisc del dev $LAN root 2>/dev/null\n"
+		"tc qdisc del dev $LAN ingress 2>/dev/null\n"
+		"}\n"
+		"\n"
+		"up()\n"
+		"{\n"
+		"echo \"upload ...\"\n"
+		"tc qdisc ls dev $WAN\n"
+		"tc class ls dev $WAN\n"
+		"tc filter ls dev $WAN\n"
+		"}\n"
+		"\n"
+		"down()\n"
+		"{\n"
+		"echo \"down ...\"\n"
+		"tc qdisc ls dev $LAN\n"
+		"tc class ls dev $LAN\n"
+		"tc filter ls dev $LAN\n"
+		"}\n"
+		"\n"
+		"if [ $# != 1 ]; then\n"
+		"echo \"Usage: $0 start/stop/restart/up/down\"\n"
+		"else\n"
+		"if [ $1 = \"start\" ]; then\n"
+		"start\n"
+		"elif [ $1 = \"stop\" ]; then\n"
+		"stop\n"
+		"elif [ $1 = \"restart\" ]; then\n"
+		"stop\n"
+		"start\n"
+		"elif [ $1 = \"up\" ]; then\n"
+		"up\n"
+		"elif [ $1 = \"down\" ]; then\n"
+		"down\n"
+		"fi\n"
+		"fi\n"
+	);
+
+	fclose(f);
+	chmod(qosfn, 0700);
+	eval((char *)qosfn, "restart");
+	QOSDBG("[GeForce] Execute GeForceNow QoS Done.\n");
+
+	nvgfn_kernel_setting(1);
+
+	return 0;
+}
+#endif
+
+
 int add_iQosRules(char *pcWANIF)
 {
 	int status = 0;
 
-	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 1)
+	if (IS_AQOS()) {
 		set_codel_patch();
+	}
 
 	if (pcWANIF == NULL || nvram_get_int("qos_enable") != 1 || nvram_get_int("qos_type") == 1) return -1;
 	
-	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0)
+	if (IS_TQOS()) {
 		status = add_qos_rules(pcWANIF);
-	else if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 2)
+	}
+	else if (IS_BW_QOS()) {
 		status = add_bandwidth_limiter_rules(pcWANIF);
+	}
 	
 	if (status < 0) _dprintf("[%s] status = %d\n", __FUNCTION__, status);
 
@@ -1730,10 +1986,17 @@ int start_iQos(void)
 	int status = 0;
 	if (nvram_get_int("qos_enable") != 1 || nvram_get_int("qos_type") == 1) return -1;
 
-	if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0)
+	if (IS_TQOS()) {
 		status = start_tqos();
-	else if (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 2)
+	}
+	else if (IS_BW_QOS()) {
 		status = start_bandwidth_limiter();
+	}
+#ifdef RTCONFIG_GEFORCENOW
+	else if (IS_GFN_QOS()) {
+		status = start_GeForce_QoS();
+	}
+#endif
 
 	if (status < 0) _dprintf("[%s] status = %d\n", __FUNCTION__, status);
 

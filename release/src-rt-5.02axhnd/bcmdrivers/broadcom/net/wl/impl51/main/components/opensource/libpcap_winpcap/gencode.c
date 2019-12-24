@@ -35,6 +35,9 @@ static const char rcsid[] _U_ =
 #include <sys/socket.h>
 #endif /* WIN32 */
 
+/*
+ * XXX - why was this included even on UNIX?
+ */
 #ifdef __MINGW32__
 #include "IP6_misc.h"
 #endif // endif
@@ -151,6 +154,14 @@ enum e_offrel {
 	OR_TRAN_IPV6	/* relative to the transport-layer header, with IPv6 network layer */
 };
 
+/*
+ * We divy out chunks of memory rather than call malloc each time so
+ * we don't have to worry about leaking memory.  It's probably
+ * not a big deal if all this memory was wasted but if this ever
+ * goes into a library that would probably not be a good idea.
+ *
+ * XXX - this *is* in a library....
+ */
 #define NCHUNKS 16
 #define CHUNK0SIZE 1024
 struct chunk {
@@ -553,6 +564,25 @@ finish_parse(p)
 {
 	struct block *ppi_dlt_check;
 
+	/*
+	 * Insert before the statements of the first (root) block any
+	 * statements needed to load the lengths of any variable-length
+	 * headers into registers.
+	 *
+	 * XXX - a fancier strategy would be to insert those before the
+	 * statements of all blocks that use those lengths and that
+	 * have no predecessors that use them, so that we only compute
+	 * the lengths if we need them.  There might be even better
+	 * approaches than that.
+	 *
+	 * However, those strategies would be more complicated, and
+	 * as we don't generate code to compute a length if the
+	 * program has no tests that use the length, and as most
+	 * tests will probably use those lengths, we would just
+	 * postpone computing the lengths so that it's not done
+	 * for tests that fail early, and it's not clear that's
+	 * worth the effort.
+	 */
 	insert_compute_vloffsets(p->head);
 
 	/*
@@ -1012,6 +1042,14 @@ init_linktype(p)
 		return;
 
 	case DLT_FDDI:
+		/*
+		 * FDDI doesn't really have a link-level type field.
+		 * We set "off_linktype" to the offset of the LLC header.
+		 *
+		 * To check for Ethernet types, we assume that SSAP = SNAP
+		 * is being used and pick out the encapsulated Ethernet type.
+		 * XXX - should we generate code to check for SNAP?
+		 */
 		off_linktype = 13;
 #ifdef PCAP_FDDIPAD
 		off_linktype += pcap_fddipad;
@@ -1025,6 +1063,29 @@ init_linktype(p)
 		return;
 
 	case DLT_IEEE802:
+		/*
+		 * Token Ring doesn't really have a link-level type field.
+		 * We set "off_linktype" to the offset of the LLC header.
+		 *
+		 * To check for Ethernet types, we assume that SSAP = SNAP
+		 * is being used and pick out the encapsulated Ethernet type.
+		 * XXX - should we generate code to check for SNAP?
+		 *
+		 * XXX - the header is actually variable-length.
+		 * Some various Linux patched versions gave 38
+		 * as "off_linktype" and 40 as "off_nl"; however,
+		 * if a token ring packet has *no* routing
+		 * information, i.e. is not source-routed, the correct
+		 * values are 20 and 22, as they are in the vanilla code.
+		 *
+		 * A packet is source-routed iff the uppermost bit
+		 * of the first byte of the source address, at an
+		 * offset of 8, has the uppermost bit set.  If the
+		 * packet is source-routed, the total number of bytes
+		 * of routing information is 2 plus bits 0x1F00 of
+		 * the 16-bit value at an offset of 14 (shifted right
+		 * 8 - figure out which byte that is).
+		 */
 		off_linktype = 14;
 		off_macpl = 14;		/* Token Ring MAC header length */
 		off_nl = 8;		/* 802.2+SNAP */
@@ -1035,6 +1096,23 @@ init_linktype(p)
 	case DLT_PRISM_HEADER:
 	case DLT_IEEE802_11_RADIO_AVS:
 	case DLT_IEEE802_11_RADIO:
+		/*
+		 * 802.11 doesn't really have a link-level type field.
+		 * We set "off_linktype" to the offset of the LLC header.
+		 *
+		 * To check for Ethernet types, we assume that SSAP = SNAP
+		 * is being used and pick out the encapsulated Ethernet type.
+		 * XXX - should we generate code to check for SNAP?
+		 *
+		 * We also handle variable-length radio headers here.
+		 * The Prism header is in theory variable-length, but in
+		 * practice it's always 144 bytes long.  However, some
+		 * drivers on Linux use ARPHRD_IEEE80211_PRISM, but
+		 * sometimes or always supply an AVS header, so we
+		 * have to check whether the radio header is a Prism
+		 * header or an AVS header, so, in practice, it's
+		 * variable-length.
+		 */
 		off_linktype = 24;
 		off_macpl = 0;		/* link-layer header is variable-length */
 		off_macpl_is_variable = 1;
@@ -1061,6 +1139,17 @@ init_linktype(p)
 
 	case DLT_ATM_RFC1483:
 	case DLT_ATM_CLIP:	/* Linux ATM defines this */
+		/*
+		 * assume routed, non-ISO PDUs
+		 * (i.e., LLC = 0xAA-AA-03, OUT = 0x00-00-00)
+		 *
+		 * XXX - what about ISO PDUs, e.g. CLNP, ISIS, ESIS,
+		 * or PPP with the PPP NLPID (e.g., PPPoA)?  The
+		 * latter would presumably be treated the way PPPoE
+		 * should be, so you can do "pppoe and udp port 2049"
+		 * or "pppoa and tcp port 80" and have it check for
+		 * PPPo{A,E} and a PPP protocol of IP and....
+		 */
 		off_linktype = 0;
 		off_macpl = 0;		/* packet begins with LLC header */
 		off_nl = 8;		/* 802.2+SNAP */
@@ -1111,6 +1200,16 @@ init_linktype(p)
 		return;
 
 	case DLT_IP_OVER_FC:
+		/*
+		 * RFC 2625 IP-over-Fibre-Channel doesn't really have a
+		 * link-level type field.  We set "off_linktype" to the
+		 * offset of the LLC header.
+		 *
+		 * To check for Ethernet types, we assume that SSAP = SNAP
+		 * is being used and pick out the encapsulated Ethernet type.
+		 * XXX - should we generate code to check for SNAP? RFC
+		 * 2625 says SNAP should be used.
+		 */
 		off_linktype = 16;
 		off_macpl = 16;
 		off_nl = 8;		/* 802.2+SNAP */
@@ -1118,12 +1217,21 @@ init_linktype(p)
 		return;
 
 	case DLT_FRELAY:
+		/*
+		 * XXX - we should set this to handle SNAP-encapsulated
+		 * frames (NLPID of 0x80).
+		 */
 		off_linktype = -1;
 		off_macpl = 0;
 		off_nl = 0;
 		off_nl_nosnap = 0;	/* no 802.2 LLC */
 		return;
 
+                /*
+                 * the only BPF-interesting FRF.16 frames are non-control frames;
+                 * Frame Relay has a variable length link-layer
+                 * so lets start with offset 4 for now and increments later on (FIXME);
+                 */
 	case DLT_MFR:
 		off_linktype = -1;
 		off_macpl = 0;
@@ -1722,6 +1830,18 @@ gen_ether_linktype(proto)
 	case LLCSAP_ISONS:
 	case LLCSAP_IP:
 	case LLCSAP_NETBEUI:
+		/*
+		 * OSI protocols and NetBEUI always use 802.2 encapsulation,
+		 * so we check the DSAP and SSAP.
+		 *
+		 * LLCSAP_IP checks for IP-over-802.2, rather
+		 * than IP-over-Ethernet or IP-over-SNAP.
+		 *
+		 * XXX - should we check both the DSAP and the
+		 * SSAP, like this, or should we check just the
+		 * DSAP, as we do for other types <= ETHERMTU
+		 * (i.e., other SAP values)?
+		 */
 		b0 = gen_cmp_gt(OR_LINK, off_linktype, BPF_H, ETHERMTU);
 		gen_not(b0);
 		b1 = gen_cmp(OR_MACPL, 0, BPF_H, (bpf_int32)
@@ -1730,6 +1850,33 @@ gen_ether_linktype(proto)
 		return b1;
 
 	case LLCSAP_IPX:
+		/*
+		 * Check for;
+		 *
+		 *	Ethernet_II frames, which are Ethernet
+		 *	frames with a frame type of ETHERTYPE_IPX;
+		 *
+		 *	Ethernet_802.3 frames, which are 802.3
+		 *	frames (i.e., the type/length field is
+		 *	a length field, <= ETHERMTU, rather than
+		 *	a type field) with the first two bytes
+		 *	after the Ethernet/802.3 header being
+		 *	0xFFFF;
+		 *
+		 *	Ethernet_802.2 frames, which are 802.3
+		 *	frames with an 802.2 LLC header and
+		 *	with the IPX LSAP as the DSAP in the LLC
+		 *	header;
+		 *
+		 *	Ethernet_SNAP frames, which are 802.3
+		 *	frames with an LLC header and a SNAP
+		 *	header and with an OUI of 0x000000
+		 *	(encapsulated Ethernet) and a protocol
+		 *	ID of ETHERTYPE_IPX in the SNAP header.
+		 *
+		 * XXX - should we generate the same code both
+		 * for tests for LLCSAP_IPX and for ETHERTYPE_IPX?
+		 */
 
 		/*
 		 * This generates code to check both for the
@@ -1864,6 +2011,18 @@ gen_linux_sll_linktype(proto)
 	case LLCSAP_ISONS:
 	case LLCSAP_IP:
 	case LLCSAP_NETBEUI:
+		/*
+		 * OSI protocols and NetBEUI always use 802.2 encapsulation,
+		 * so we check the DSAP and SSAP.
+		 *
+		 * LLCSAP_IP checks for IP-over-802.2, rather
+		 * than IP-over-Ethernet or IP-over-SNAP.
+		 *
+		 * XXX - should we check both the DSAP and the
+		 * SSAP, like this, or should we check just the
+		 * DSAP, as we do for other types <= ETHERMTU
+		 * (i.e., other SAP values)?
+		 */
 		b0 = gen_cmp(OR_LINK, off_linktype, BPF_H, LINUX_SLL_P_802_2);
 		b1 = gen_cmp(OR_MACPL, 0, BPF_H, (bpf_int32)
 			     ((proto << 8) | proto));
@@ -2005,6 +2164,25 @@ gen_load_prism_llprefixlen()
 	 */
 	no_optimize = 1;
 
+	/*
+	 * Generate code to load the length of the radio header into
+	 * the register assigned to hold that length, if one has been
+	 * assigned.  (If one hasn't been assigned, no code we've
+	 * generated uses that prefix, so we don't need to generate any
+	 * code to load it.)
+	 *
+	 * Some Linux drivers use ARPHRD_IEEE80211_PRISM but sometimes
+	 * or always use the AVS header rather than the Prism header.
+	 * We load a 4-byte big-endian value at the beginning of the
+	 * raw packet data, and see whether, when masked with 0xFFFFF000,
+	 * it's equal to 0x80211000.  If so, that indicates that it's
+	 * an AVS header (the masked-out bits are the version number).
+	 * Otherwise, it's a Prism header.
+	 *
+	 * XXX - the Prism header is also, in theory, variable-length,
+	 * but no known software generates headers that aren't 144
+	 * bytes long.
+	 */
 	if (reg_off_ll != -1) {
 		/*
 		 * Load the cookie.
@@ -2862,11 +3040,17 @@ gen_linktype(proto)
 		break;
 
 	case DLT_FDDI:
+		/*
+		 * XXX - check for asynchronous frames, as per RFC 1103.
+		 */
 		return gen_llc_linktype(proto);
 		/*NOTREACHED*/
 		break;
 
 	case DLT_IEEE802:
+		/*
+		 * XXX - check for LLC PDUs, as per IEEE 802.5.
+		 */
 		return gen_llc_linktype(proto);
 		/*NOTREACHED*/
 		break;
@@ -2923,6 +3107,13 @@ gen_linktype(proto)
 	case DLT_SLIP:
 	case DLT_SLIP_BSDOS:
 	case DLT_RAW:
+		/*
+		 * These types don't provide any type field; packets
+		 * are always IPv4 or IPv6.
+		 *
+		 * XXX - for IPv4, check for a version number of 4, and,
+		 * for IPv6, check for a version number of 6?
+		 */
 		switch (proto) {
 
 		case ETHERTYPE_IP:
@@ -2961,6 +3152,10 @@ gen_linktype(proto)
 		switch (proto) {
 
 		case ETHERTYPE_IP:
+			/*
+			 * Also check for Van Jacobson-compressed IP.
+			 * XXX - do this for other forms of PPP?
+			 */
 			b0 = gen_cmp(OR_LINK, off_linktype, BPF_H, PPP_IP);
 			b1 = gen_cmp(OR_LINK, off_linktype, BPF_H, PPP_VJC);
 			gen_or(b0, b1);
@@ -2979,6 +3174,28 @@ gen_linktype(proto)
 	case DLT_NULL:
 	case DLT_LOOP:
 	case DLT_ENC:
+		/*
+		 * For DLT_NULL, the link-layer header is a 32-bit
+		 * word containing an AF_ value in *host* byte order,
+		 * and for DLT_ENC, the link-layer header begins
+		 * with a 32-bit work containing an AF_ value in
+		 * host byte order.
+		 *
+		 * In addition, if we're reading a saved capture file,
+		 * the host byte order in the capture may not be the
+		 * same as the host byte order on this machine.
+		 *
+		 * For DLT_LOOP, the link-layer header is a 32-bit
+		 * word containing an AF_ value in *network* byte order.
+		 *
+		 * XXX - AF_ values may, unfortunately, be platform-
+		 * dependent; for example, FreeBSD's AF_INET6 is 24
+		 * whilst NetBSD's and OpenBSD's is 26.
+		 *
+		 * This means that, when reading a capture file, just
+		 * checking for our AF_INET6 value won't work if the
+		 * capture file came from another OS.
+		 */
 		switch (proto) {
 
 		case ETHERTYPE_IP:
@@ -2992,6 +3209,11 @@ gen_linktype(proto)
 #endif // endif
 
 		default:
+			/*
+			 * Not a type on which we support filtering.
+			 * XXX - support those that have AF_ values
+			 * #defined on this platform, at least?
+			 */
 			return gen_false();
 		}
 
@@ -3037,6 +3259,10 @@ gen_linktype(proto)
 
 	case DLT_ARCNET:
 	case DLT_ARCNET_LINUX:
+		/*
+		 * XXX should we check for first fragment if the protocol
+		 * uses PHDS?
+		 */
 		switch (proto) {
 
 		default:
@@ -3086,6 +3312,10 @@ gen_linktype(proto)
 		break;
 
 	case DLT_FRELAY:
+		/*
+		 * XXX - assumes a 2-byte Frame Relay header with
+		 * DLCI and flags.  What if the address is longer?
+		 */
 		switch (proto) {
 
 		case ETHERTYPE_IP:
@@ -3148,6 +3378,13 @@ gen_linktype(proto)
         case DLT_JUNIPER_VP:
         case DLT_JUNIPER_ST:
         case DLT_JUNIPER_ISM:
+		/* just lets verify the magic number for now -
+		 * on ATM we may have up to 6 different encapsulations on the wire
+		 * and need a lot of heuristics to figure out that the payload
+		 * might be;
+		 *
+		 * FIXME encapsulation specific BPF_ filters
+		 */
 		return gen_mcmp(OR_LINK, 0, BPF_W, 0x4d474300, 0xffffff00); /* compare the magic number */
 
 	case DLT_LINUX_IRDA:
@@ -3264,22 +3501,48 @@ static struct block *
 gen_llc_linktype(proto)
 	int proto;
 {
+	/*
+	 * XXX - handle token-ring variable-length header.
+	 */
 	switch (proto) {
 
 	case LLCSAP_IP:
 	case LLCSAP_ISONS:
 	case LLCSAP_NETBEUI:
+		/*
+		 * XXX - should we check both the DSAP and the
+		 * SSAP, like this, or should we check just the
+		 * DSAP, as we do for other types <= ETHERMTU
+		 * (i.e., other SAP values)?
+		 */
 		return gen_cmp(OR_MACPL, 0, BPF_H, (bpf_u_int32)
 			     ((proto << 8) | proto));
 
 	case LLCSAP_IPX:
+		/*
+		 * XXX - are there ever SNAP frames for IPX on
+		 * non-Ethernet 802.x networks?
+		 */
 		return gen_cmp(OR_MACPL, 0, BPF_B,
 		    (bpf_int32)LLCSAP_IPX);
 
 	case ETHERTYPE_ATALK:
+		/*
+		 * 802.2-encapsulated ETHERTYPE_ATALK packets are
+		 * SNAP packets with an organization code of
+		 * 0x080007 (Apple, for Appletalk) and a protocol
+		 * type of ETHERTYPE_ATALK (Appletalk).
+		 *
+		 * XXX - check for an organization code of
+		 * encapsulated Ethernet as well?
+		 */
 		return gen_snap(0x080007, ETHERTYPE_ATALK);
 
 	default:
+		/*
+		 * XXX - we don't have to check for IPX 802.3
+		 * here, but should we check for the IPX Ethertype?
+		 */
 		if (proto <= ETHERMTU) {
 			/*
 			 * This is an LLC SAP value, so check
@@ -3287,6 +3550,25 @@ gen_llc_linktype(proto)
 			 */
 			return gen_cmp(OR_MACPL, 0, BPF_B, (bpf_int32)proto);
 		} else {
+			/*
+			 * This is an Ethernet type; we assume that it's
+			 * unlikely that it'll appear in the right place
+			 * at random, and therefore check only the
+			 * location that would hold the Ethernet type
+			 * in a SNAP frame with an organization code of
+			 * 0x000000 (encapsulated Ethernet).
+			 *
+			 * XXX - if we were to check for the SNAP DSAP and
+			 * LSAP, as per XXX, and were also to check for an
+			 * organization code of 0x000000 (encapsulated
+			 * Ethernet), we'd do
+			 *
+			 *	return gen_snap(0x000000, proto);
+			 *
+			 * here; for now, we don't, as per the above.
+			 * I don't know whether it's worth the extra CPU
+			 * time to do the right check or not.
+			 */
 			return gen_cmp(OR_MACPL, 6, BPF_H, (bpf_int32)proto);
 		}
 	}
@@ -3783,6 +4065,9 @@ gen_wlanhostop(eaddr, dir)
 		gen_and(b1, b0);
 		return b0;
 
+	/*
+	 * XXX - add RA, TA, and BSSID keywords?
+	 */
 	case Q_ADDR1:
 		return (gen_bcmp(OR_LINK, 4, 6, eaddr));
 
@@ -4592,6 +4877,15 @@ gen_ipfrag()
 	return b;
 }
 
+/*
+ * Generate a comparison to a port value in the transport-layer header
+ * at the specified offset from the beginning of that header.
+ *
+ * XXX - this handles a variable-length prefix preceding the link-layer
+ * header, such as the radiotap or AVS radio prefix, but doesn't handle
+ * variable-length link-layer headers (such as Token Ring or 802.11
+ * headers).
+ */
 static struct block *
 gen_portatom(off, v)
 	int off;
@@ -5421,6 +5715,24 @@ gen_proto(v, proto, dir)
 		switch (linktype) {
 
 		case DLT_FRELAY:
+			/*
+			 * Frame Relay packets typically have an OSI
+			 * NLPID at the beginning; "gen_linktype(LLCSAP_ISONS)"
+			 * generates code to check for all the OSI
+			 * NLPIDs, so calling it and then adding a check
+			 * for the particular NLPID for which we're
+			 * looking is bogus, as we can just check for
+			 * the NLPID.
+			 *
+			 * What we check for is the NLPID and a frame
+			 * control field value of UI, i.e. 0x03 followed
+			 * by the NLPID.
+			 *
+			 * XXX - assumes a 2-byte Frame Relay header with
+			 * DLCI and flags.  What if the address is longer?
+			 *
+			 * XXX - what about SNAP-encapsulated frames?
+			 */
 			return gen_cmp(OR_LINK, 2, BPF_H, (0x03<<8) | v);
 			/*NOTREACHED*/
 			break;
@@ -6241,6 +6553,17 @@ gen_load(proto, inst, size)
 		break;
 
 	case Q_LINK:
+		/*
+		 * The offset is relative to the beginning of
+		 * the link-layer header.
+		 *
+		 * XXX - what about ATM LANE?  Should the index be
+		 * relative to the beginning of the AAL5 frame, so
+		 * that 0 refers to the beginning of the LE Control
+		 * field, or relative to the beginning of the LAN
+		 * frame, so that 0 refers, for Ethernet LANE, to
+		 * the beginning of the destination address?
+		 */
 		s = gen_llprefixlen();
 
 		/*
@@ -6284,6 +6607,12 @@ gen_load(proto, inst, size)
 #ifdef INET6
 	case Q_IPV6:
 #endif // endif
+		/*
+		 * The offset is relative to the beginning of
+		 * the network-layer header.
+		 * XXX - are there any cases where we want
+		 * off_nl_nosnap?
+		 */
 		s = gen_off_macpl();
 
 		/*
@@ -6337,6 +6666,20 @@ gen_load(proto, inst, size)
 	case Q_IGRP:
 	case Q_PIM:
 	case Q_VRRP:
+		/*
+		 * The offset is relative to the beginning of
+		 * the transport-layer header.
+		 *
+		 * Load the X register with the length of the IPv4 header
+		 * (plus the offset of the link-layer header, if it's
+		 * a variable-length header), in bytes.
+		 *
+		 * XXX - are there any cases where we want
+		 * off_nl_nosnap?
+		 * XXX - we should, if we're built with
+		 * IPv6 support, generate code to load either
+		 * IPv4, IPv6, or both, as appropriate.
+		 */
 		s = gen_loadx_iphdrlen();
 
 		/*
@@ -6604,6 +6947,16 @@ gen_less(n)
 	return b;
 }
 
+/*
+ * This is for "byte {idx} {op} {val}"; "idx" is treated as relative to
+ * the beginning of the link-layer header.
+ * XXX - that means you can't test values in the radiotap header, but
+ * as that header is difficult if not impossible to parse generally
+ * without a loop, that might not be a severe problem.  A new keyword
+ * "radio" could be added for that, although what you'd really want
+ * would be a way of testing particular radio header values, which
+ * would generate code appropriate to the radio header in question.
+ */
 struct block *
 gen_byteop(op, idx, val)
 	int op, idx, val;
@@ -6752,6 +7105,11 @@ gen_multicast(proto)
 			/* ether[0] & 1 != 0 */
 			return gen_mac_multicast(0);
 		case DLT_FDDI:
+			/*
+			 * XXX TEST THIS: MIGHT NOT PORT PROPERLY XXX
+			 *
+			 * XXX - was that referring to bit-order issues?
+			 */
 			/* fddi[1] & 1 != 0 */
 			return gen_mac_multicast(1);
 		case DLT_IEEE802:
@@ -6948,6 +7306,16 @@ gen_inbound(dir)
 			 */
 			b0 = gen_cmp(OR_LINK, 0, BPF_H, LINUX_SLL_OUTGOING);
 		} else {
+			/*
+			 * Match packets sent to this machine.
+			 * (No broadcast or multicast packets, or
+			 * packets sent to some other machine and
+			 * received promiscuously.)
+			 *
+			 * XXX - packets sent to other machines probably
+			 * shouldn't be matched, but what about broadcast
+			 * or multicast packets we received?
+			 */
 			b0 = gen_cmp(OR_LINK, 0, BPF_H, LINUX_SLL_HOST);
 		}
 		break;
@@ -7285,6 +7653,37 @@ gen_vlan(vlan_num)
 	if (label_stack_depth > 0)
 		bpf_error("no VLAN match after MPLS");
 
+	/*
+	 * Check for a VLAN packet, and then change the offsets to point
+	 * to the type and data fields within the VLAN packet.  Just
+	 * increment the offsets, so that we can support a hierarchy, e.g.
+	 * "vlan 300 && vlan 200" to capture VLAN 200 encapsulated within
+	 * VLAN 100.
+	 *
+	 * XXX - this is a bit of a kludge.  If we were to split the
+	 * compiler into a parser that parses an expression and
+	 * generates an expression tree, and a code generator that
+	 * takes an expression tree (which could come from our
+	 * parser or from some other parser) and generates BPF code,
+	 * we could perhaps make the offsets parameters of routines
+	 * and, in the handler for an "AND" node, pass to subnodes
+	 * other than the VLAN node the adjusted offsets.
+	 *
+	 * This would mean that "vlan" would, instead of changing the
+	 * behavior of *all* tests after it, change only the behavior
+	 * of tests ANDed with it.  That would change the documented
+	 * semantics of "vlan", which might break some expressions.
+	 * However, it would mean that "(vlan and ip) or ip" would check
+	 * both for VLAN-encapsulated IP and IP-over-Ethernet, rather than
+	 * checking only for VLAN-encapsulated IP, so that could still
+	 * be considered worth doing; it wouldn't break expressions
+	 * that are of the form "vlan and ..." or "vlan N and ...",
+	 * which I suspect are the most common expressions involving
+	 * "vlan".  "vlan or ..." doesn't necessarily do what the user
+	 * would really want, now, as all the "or ..." tests would
+	 * be done assuming a VLAN, even though the "or" could be viewed
+	 * as meaning "or, if this isn't a VLAN packet...".
+	 */
 	orig_nl = off_nl;
 
 	switch (linktype) {
@@ -7324,6 +7723,15 @@ gen_mpls(label_num)
 {
 	struct	block	*b0,*b1;
 
+	/*
+	 * Change the offsets to point to the type and data fields within
+	 * the MPLS packet.  Just increment the offsets, so that we
+	 * can support a hierarchy, e.g. "mpls 100000 && mpls 1024" to
+	 * capture packets with an outer label of 100000 and an inner
+	 * label of 1024.
+	 *
+	 * XXX - this is a bit of a kludge.  See comments in gen_vlan().
+	 */
         orig_nl = off_nl;
 
         if (label_stack_depth > 0) {
@@ -7346,6 +7754,10 @@ gen_mpls(label_num)
             case DLT_PPP:
                     b0 = gen_linktype(PPP_MPLS_UCAST);
                     break;
+
+                    /* FIXME add other DLT_s ...
+                     * for Frame-Relay/and ATM this may get messy due to SNAP headers
+                     * leave it for now */
 
             default:
                     bpf_error("no MPLS support for data link type %d",
@@ -7391,6 +7803,35 @@ gen_pppoes()
 	 */
 	b0 = gen_linktype((bpf_int32)ETHERTYPE_PPPOES);
 
+	/*
+	 * Change the offsets to point to the type and data fields within
+	 * the PPP packet, and note that this is PPPoE rather than
+	 * raw PPP.
+	 *
+	 * XXX - this is a bit of a kludge.  If we were to split the
+	 * compiler into a parser that parses an expression and
+	 * generates an expression tree, and a code generator that
+	 * takes an expression tree (which could come from our
+	 * parser or from some other parser) and generates BPF code,
+	 * we could perhaps make the offsets parameters of routines
+	 * and, in the handler for an "AND" node, pass to subnodes
+	 * other than the PPPoE node the adjusted offsets.
+	 *
+	 * This would mean that "pppoes" would, instead of changing the
+	 * behavior of *all* tests after it, change only the behavior
+	 * of tests ANDed with it.  That would change the documented
+	 * semantics of "pppoes", which might break some expressions.
+	 * However, it would mean that "(pppoes and ip) or ip" would check
+	 * both for VLAN-encapsulated IP and IP-over-Ethernet, rather than
+	 * checking only for VLAN-encapsulated IP, so that could still
+	 * be considered worth doing; it wouldn't break expressions
+	 * that are of the form "pppoes and ..." which I suspect are the
+	 * most common expressions involving "pppoes".  "pppoes or ..."
+	 * doesn't necessarily do what the user would really want, now,
+	 * as all the "or ..." tests would be done assuming PPPoE, even
+	 * though the "or" could be viewed as meaning "or, if this isn't
+	 * a PPPoE packet...".
+	 */
 	orig_linktype = off_linktype;	/* save original values */
 	orig_nl = off_nl;
 	is_pppoes = 1;

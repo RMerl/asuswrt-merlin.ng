@@ -524,12 +524,12 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 							code += "</div>";
 							code += "<div class='horizontal_line'></div>";
 							code += "<div style='position:relative;'>";
-								code += "<div class='amesh_router_info_text location' title='" + alias + "'>";
+								code += "<div class='amesh_router_info_text location' title='" + htmlEnDeCode.htmlEncode(alias) + "'>";
 								var location = alias;
 								if(alias.length > 22) {
 									location = alias.substring(0, 20) + "..";
 								}
-								code += "<span class='amesh_node_content'>" + location + "</span>";
+								code += "<span class='amesh_node_content'>" + htmlEnDeCode.htmlEncode(location) + "</span>";
 								code += "</div>";
 								code += "<div class='amesh_router_info_text'><#Full_Clients#>: ";
 								var re_client_num = 0;
@@ -1480,7 +1480,7 @@ function popAMeshClientListEditTable(event) {
 		}
 	}
 	var title_name = node_info.model_name + " in " +  alias;
-	$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+	$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 
 	if(checkCloudIconExist[node_info.model_name])
 		$popupBgHtml.find(".amesh_router_image_web").css('background-image', 'url(' + checkCloudIconExist[node_info.model_name] + ')');
@@ -1549,7 +1549,7 @@ function popAMeshClientListEditTable(event) {
 			var data = new Object();
 			data.cfg_alias = $popupBgHtml.find("#aimesh_node_location_input").val();
 			var title_name = node_info.model_name + " in " +  $popupBgHtml.find("#aimesh_node_location_input").val();
-			$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+			$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 			set_AiMesh_node_config(data, node_info.mac)
 		}
 	);
@@ -1602,8 +1602,8 @@ function popAMeshClientListEditTable(event) {
 					$popupBgHtml.find("#aimesh_node_location_select").val("");
 				var data = new Object();
 				data.cfg_alias = $popupBgHtml.find("#aimesh_node_location_input").val();
-				var title_name = "AiMesh node in " + $popupBgHtml.find("#aimesh_node_location_input").val();
-				$popupBgHtml.find("#aimesh_node_title_name").html(title_name);
+				var title_name = node_info.model_name + " in " +  $popupBgHtml.find("#aimesh_node_location_input").val();
+				$popupBgHtml.find("#aimesh_node_title_name").html(htmlEnDeCode.htmlEncode(title_name));
 				set_AiMesh_node_config(data, node_info.mac);
 			}
 		}

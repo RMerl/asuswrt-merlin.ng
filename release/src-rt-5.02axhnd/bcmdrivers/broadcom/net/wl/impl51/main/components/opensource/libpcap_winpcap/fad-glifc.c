@@ -177,6 +177,11 @@ pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf)
 		else
 			fd = fd4;
 
+		/*
+		 * Skip entries that begin with "dummy".
+		 * XXX - what are these?  Is this Linux-specific?
+		 * Are there platforms on which we shouldn't do this?
+		 */
 		if (strncmp(ifrp->lifr_name, "dummy", 5) == 0)
 			continue;
 

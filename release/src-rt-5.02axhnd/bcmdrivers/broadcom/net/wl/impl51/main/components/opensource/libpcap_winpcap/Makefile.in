@@ -328,7 +328,6 @@ libpcap.a: $(OBJ)
 shared: libpcap.$(DYEXT)
 
 #
-# XXX - this works with GNU ld, but won't necessarily work with native
 # ld on, for example, various SVR4-flavored platforms, or Digital UNIX.
 #
 libpcap.so: $(OBJ)
@@ -338,7 +337,6 @@ libpcap.so: $(OBJ)
 #
 # The following rule succeeds, but the result is untested.
 #
-# XXX - OS X installs the library as "libpcap.A.dylib", with that as the
 # install_name, and sets the current version to 1 as well.  VERSION
 # might contain a not-purely-numeric version number, but
 # -current_version requires a purely numeric version, so this won't

@@ -74,17 +74,30 @@
 
 
 #include "bcmtypes.h"
+#include "bcmctl_syslogdefs.h"
 
 
 /*#define CC_TMCTL_DEBUG 1 */
 
 #if defined(CC_TMCTL_DEBUG)
-#define tmctl_debug(fmt, arg...) printf("%s.%u: " fmt "\n", __FUNCTION__, __LINE__, ##arg)
+#define TMCTL_DEBUGCODE(code)    code
 #else
-#define tmctl_debug(fmt, arg...)
-#endif
+#define TMCTL_DEBUGCODE(code)
+#endif /* CC_TMCTL_DEBUG */
 
-#define tmctl_error(fmt, arg...) printf("ERROR[%s.%u]: " fmt "\n", __FUNCTION__, __LINE__, ##arg)
+#define TMCTL_ERRCODE(code)    code
+
+#define tmctl_debug(fmt, arg...) \
+{ \
+    TMCTL_DEBUGCODE(printf("%s.%u: " fmt "\n", __FUNCTION__, __LINE__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(tmctl, LOG_DEBUG, fmt, ##arg); \
+}
+
+#define tmctl_error(fmt, arg...) \
+{ \
+    TMCTL_ERRCODE(printf("ERROR[%s.%u]: " fmt "\n", __FUNCTION__, __LINE__, ##arg); ) \
+    BCMCTL_SYSLOGCODE(tmctl, LOG_ERR, fmt, ##arg); \
+}
 
 #if defined(BCM_PON_RDP)
 #define TMCTL_DEF_ETH_Q_SZ_US     (256)
@@ -894,5 +907,14 @@ tmctl_ret_e tmctl_setQueueShaper(tmctl_devType_e devType,
  * ----------------------------------------------------------------------------
  */
 int tmctl_getDefQSize(tmctl_devType_e devType, tmctl_dir_e dir);
+
+#if defined(BCMCTL_SYSLOG_SUPPORTED)
+DECLARE_setSyslogLevel(tmctl);
+DECLARE_getSyslogLevel(tmctl);
+DECALRE_isSyslogLevelEnabled(tmctl);
+DECLARE_setSyslogMode(tmctl);
+DECLARE_isSyslogEnabled(tmctl);
+#endif /* BCMCTL_SYSLOG_SUPPORTED */
+
 
 #endif /* _TMCTL_API_H_ */

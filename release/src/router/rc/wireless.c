@@ -67,7 +67,15 @@ start_nas(void)
 	stop_nas();
 
 	if (!restore_defaults_g)
+	{
+#ifdef RTCONFIG_BRCM_HOSTAPD
+		if (!nvram_match("hapd_enable", "0")) {
+			start_hapd_wpasupp();
+			return 0;
+		} else
+#endif
 		return _eval(nas_argv, NULL, 0, &pid);
+	}
 
 	return 0;
 }
@@ -75,6 +83,12 @@ start_nas(void)
 void
 stop_nas(void)
 {
+#ifdef RTCONFIG_BRCM_HOSTAPD
+        if (!nvram_match("hapd_enable", "0")) {
+		stop_hapd_wpasupp();
+        } else
+#endif
+
 	killall_tk("nas");
 }
 #ifdef REMOVE

@@ -241,6 +241,42 @@ static int
 pcap_stats_pf(pcap_t *p, struct pcap_stat *ps)
 {
 
+	/*
+	 * If packet filtering is being done in the kernel:
+	 *
+	 *	"ps_recv" counts only packets that passed the filter.
+	 *	This does not include packets dropped because we
+	 *	ran out of buffer space.  (XXX - perhaps it should,
+	 *	by adding "ps_drop" to "ps_recv", for compatibility
+	 *	with some other platforms.  On the other hand, on
+	 *	some platforms "ps_recv" counts only packets that
+	 *	passed the filter, and on others it counts packets
+	 *	that didn't pass the filter....)
+	 *
+	 *	"ps_drop" counts packets that passed the kernel filter
+	 *	(if any) but were dropped because the input queue was
+	 *	full.
+	 *
+	 *	"ps_ifdrop" counts packets dropped by the network
+	 *	inteface (regardless of whether they would have passed
+	 *	the input filter, of course).
+	 *
+	 * If packet filtering is not being done in the kernel:
+	 *
+	 *	"ps_recv" counts only packets that passed the filter.
+	 *
+	 *	"ps_drop" counts packets that were dropped because the
+	 *	input queue was full, regardless of whether they passed
+	 *	the userland filter.
+	 *
+	 *	"ps_ifdrop" counts packets dropped by the network
+	 *	inteface (regardless of whether they would have passed
+	 *	the input filter, of course).
+	 *
+	 * These statistics don't include packets not yet read from
+	 * the kernel by libpcap, but they may include packets not
+	 * yet read from libpcap by the application.
+	 */
 	ps->ps_recv = p->md.TotAccepted;
 	ps->ps_drop = p->md.TotDrops;
 	ps->ps_ifdrop = p->md.TotMissed - p->md.OrigMissed;
@@ -263,6 +299,25 @@ pcap_activate_pf(pcap_t *p)
 	struct enfilter Filter;
 	struct endevp devparams;
 
+	/*
+	 * Initially try a read/write open (to allow the inject
+	 * method to work).  If that fails due to permission
+	 * issues, fall back to read-only.  This allows a
+	 * non-root user to be granted specific access to pcap
+	 * capabilities via file permissions.
+	 *
+	 * XXX - we should have an API that has a flag that
+	 * controls whether to open read-only or read-write,
+	 * so that denial of permission to send (or inability
+	 * to send, if sending packets isn't supported on
+	 * the device in question) can be indicated at open
+	 * time.
+	 *
+	 * XXX - we assume here that "pfopen()" does not, in fact, modify
+	 * its argument, even though it takes a "char *" rather than a
+	 * "const char *" as its first argument.  That appears to be
+	 * the case, at least on Digital UNIX 4.0.
+	 */
 	p->fd = pfopen(p->opt.source, O_RDWR);
 	if (p->fd == -1 && errno == EACCES)
 		p->fd = pfopen(p->opt.source, O_RDONLY);
@@ -362,6 +417,20 @@ your system may not be properly configured; see the packetfilter(4) man page\n",
 #endif // endif
 
 	default:
+		/*
+		 * XXX - what about ENDT_IEEE802?  The pfilt.h header
+		 * file calls this "IEEE 802 networks (non-Ethernet)",
+		 * but that doesn't specify a specific link layer type;
+		 * it could be 802.4, or 802.5 (except that 802.5 is
+		 * ENDT_TRN), or 802.6, or 802.11, or....  That's why
+		 * DLT_IEEE802 was hijacked to mean Token Ring in various
+		 * BSDs, and why we went along with that hijacking.
+		 *
+		 * XXX - what about ENDT_HDLC and ENDT_NULL?
+		 * Presumably, as ENDT_OTHER is just "Miscellaneous
+		 * framing", there's not much we can do, as that
+		 * doesn't specify a particular type of header.
+		 */
 		snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
 		    "unknown data-link type %u", devparams.end_dev_type);
 		goto bad;
@@ -477,6 +546,19 @@ pcap_setfilter_pf(pcap_t *p, struct bpf_program *fp)
 				return (-1);
 			}
 
+			/*
+			 * OK, that succeeded.  We're doing filtering in
+			 * the kernel.  (We assume we don't have a
+			 * userland filter installed - that'd require
+			 * a previous version check to have failed but
+			 * this one to succeed.)
+			 *
+			 * XXX - this message should be supplied to the
+			 * application as a warning of some sort,
+			 * except that if it's a GUI application, it's
+			 * not clear that it should be displayed in
+			 * a window to annoy the user.
+			 */
 			fprintf(stderr, "tcpdump: Using kernel BPF filter\n");
 			p->md.use_bpf = 1;
 
@@ -492,6 +574,13 @@ pcap_setfilter_pf(pcap_t *p, struct bpf_program *fp)
 			return (0);
 		}
 
+		/*
+		 * We can't use the kernel's BPF interpreter; don't give
+		 * up, just log a message and be inefficient.
+		 *
+		 * XXX - this should really be supplied to the application
+		 * as a warning of some sort.
+		 */
 		fprintf(stderr,
 	    "tcpdump: Requires BPF language %d.%d or higher; kernel is %d.%d\n",
 		    BPF_MAJOR_VERSION, BPF_MINOR_VERSION,
@@ -504,6 +593,10 @@ pcap_setfilter_pf(pcap_t *p, struct bpf_program *fp)
 	if (install_bpf_program(p, fp) < 0)
 		return (-1);
 
+	/*
+	 * XXX - this message should be supplied by the application as
+	 * a warning of some sort.
+	 */
 	fprintf(stderr, "tcpdump: Filtering in user process\n");
 	p->md.use_bpf = 0;
 	return (0);

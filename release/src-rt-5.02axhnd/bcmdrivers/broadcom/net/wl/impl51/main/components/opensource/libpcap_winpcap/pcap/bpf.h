@@ -40,6 +40,17 @@
  * @(#) $Header: /tcpdump/master/libpcap/pcap/bpf.h,v 1.19.2.8 2008-09-22 20:16:01 guy Exp $ (LBL)
  */
 
+/*
+ * This is libpcap's cut-down version of bpf.h; it includes only
+ * the stuff needed for the code generator and the userland BPF
+ * interpreter, and the libpcap APIs for setting filters, etc..
+ *
+ * "pcap-bpf.c" will include the native OS version, as it deals with
+ * the OS's BPF implementation.
+ *
+ * XXX - should this all just be moved to "pcap.h"?
+ */
+
 #ifndef BPF_MAJOR_VERSION
 
 #ifdef __cplusplus
@@ -126,6 +137,15 @@ struct bpf_version {
 #define DLT_PPP		9	/* Point-to-point Protocol */
 #define DLT_FDDI	10	/* FDDI */
 
+/*
+ * These are types that are different on some platforms, and that
+ * have been defined by <net/bpf.h> for ages.  We use #ifdefs to
+ * detect the BSDs that define them differently from the traditional
+ * libpcap <net/bpf.h>
+ *
+ * XXX - DLT_ATM_RFC1483 is 13 in BSD/OS, and DLT_RAW is 14 in BSD/OS,
+ * but I don't know what the right #define is for BSD/OS.
+ */
 #define DLT_ATM_RFC1483	11	/* LLC-encapsulated ATM */
 
 #ifdef __OpenBSD__
@@ -272,6 +292,12 @@ struct bpf_version {
  */
 #define DLT_IPFILTER	116
 
+/*
+ * OpenBSD DLT_PFLOG; DLT_PFLOG is 17 in OpenBSD, but that's DLT_LANE8023
+ * in SuSE 6.3, so we can't use 17 for it in capture-file headers.
+ *
+ * XXX: is there a conflict with DLT_PFSYNC 18 as well?
+ */
 #ifdef __OpenBSD__
 #define DLT_OLD_PFLOG	17
 #define DLT_PFSYNC	18

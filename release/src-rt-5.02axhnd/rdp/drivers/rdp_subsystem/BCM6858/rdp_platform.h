@@ -61,7 +61,7 @@ extern "C"
 #define DSPTCHR_CONG_PARAM_EGRESS_GLOBAL  300
 #define DSPTCHR_RESERVED_PRIORITY_BUFF_NUM 100
 
-#define DSPTCHR_COMMON_MAX_LIMIT_PER_VIQ             550
+#define DSPTCHR_COMMON_MAX_LIMIT_PER_VIQ             1023
 #define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_NORMAL_VIQ  8
 #define DSPTCHR_GUARANTEED_MAX_LIMIT_PER_EXCLUS_VIQ  16
 
@@ -119,21 +119,22 @@ extern "C"
 
 /* UG max default thresholds */
 #ifndef G9991
-#define DS_FPM_UG_DEFAULT                   (20*1024)
-#define US_FPM_UG_DEFAULT                   (40*1024)
+#define DS_FPM_UG_DEFAULT_PERCENTAGE        (34)
+#define US_FPM_UG_DEFAULT_PERCENTAGE        (66)
 #else
-#define DS_FPM_UG_DEFAULT                   (36*1024)
-#define US_FPM_UG_DEFAULT                   (24*1024)
+#define DS_FPM_UG_DEFAULT_PERCENTAGE        (60)
+#define US_FPM_UG_DEFAULT_PERCENTAGE        (40)
 #endif
-#define WLAN_FPM_UG_DEFAULT                 (0*1024)
+#define WLAN_FPM_UG_DEFAULT_PERCENTAGE      (0)
 
-#define DS_FPM_UG_NO_XEPON                  (8*1024)
-#define US_FPM_UG_NO_XEPON                  (24*1024)
-#define WLAN_FPM_UG_NO_XEPON                (30*1024)
+#define DS_FPM_UG_NO_XEPON_PERCENTAGE       (13)
+#define US_FPM_UG_NO_XEPON_PERCENTAGE       (39)
+#define WLAN_FPM_UG_NO_XEPON_PERCENTAGE     (48)
 
-#define DS_FPM_UG_XEPON                     (8*1024)
-#define US_FPM_UG_XEPON                     (38*1024)
-#define WLAN_FPM_UG_XEPON                   (16*1024)
+#define DS_FPM_UG_XEPON_PERCENTAGE          (13)
+#define US_FPM_UG_XEPON_PERCENTAGE          (61)
+#define WLAN_FPM_UG_XEPON_PERCENTAGE        (26)
+
 
 /*XGPON DEFS*/
 /* size of each one of FIFOs 0-7 - value is size + 1*/

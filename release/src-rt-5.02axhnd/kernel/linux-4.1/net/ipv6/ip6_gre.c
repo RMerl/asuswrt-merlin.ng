@@ -1527,6 +1527,9 @@ static void ip6gre_tap_setup(struct net_device *dev)
 	dev->destructor = ip6gre_dev_free;
 
 	dev->features |= NETIF_F_NETNS_LOCAL;
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	dev->blog_stats_flags |= BLOG_DEV_STAT_FLAG_INCLUDE_ALL;
+#endif
 }
 
 static int ip6gre_newlink(struct net *src_net, struct net_device *dev,

@@ -1015,6 +1015,9 @@ TcSetMode(pcap_t *p, int mode)
 static int
 TcSetBuff(pcap_t *p, int dim)
 {
+	/*
+	 * XXX turbocap has an internal way of managing buffers. And at the moment it's not configurable
+	 */
 	return 0;
 }
 

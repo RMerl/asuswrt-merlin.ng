@@ -1,7 +1,7 @@
 /*
  * OTP support.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.h 765716 2018-07-13 08:52:36Z $
+ * $Id: bcmotp.h 765714 2018-07-13 08:30:53Z $
  */
 
 #ifndef	_bcmotp_h_

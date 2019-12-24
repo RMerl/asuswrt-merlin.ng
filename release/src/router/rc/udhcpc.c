@@ -642,12 +642,16 @@ leasefail(void)
 int
 udhcpc_wan(int argc, char **argv)
 {
-	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
 
-	run_custom_script("dhcpc-event", 0, argv[1], NULL);
+	if (argv[1])
+		run_custom_script("dhcpc-event", 0, argv[1], NULL);
 
-	if (!argv[1])
+	if(argv[1] && !strstr(argv[1], "leasefail"))
+		_dprintf("%s:: %s\n", __func__, argv[1]);
+	if (!argv[1]){
+		_dprintf("%s::\n", __func__);
 		return EINVAL;
+	}
 	else if (strstr(argv[1], "deconfig"))
 		return deconfig(0);
 	else if (strstr(argv[1], "bound"))

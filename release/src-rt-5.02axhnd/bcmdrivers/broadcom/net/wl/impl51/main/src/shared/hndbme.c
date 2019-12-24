@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) BME module.
  * This supports chips with revs >= 128.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -31,14 +31,19 @@
  * through registers.
  */
 
+/**
+ * XXX For more information, see:
+ * Confluence:[BME%2C+the+non-descriptor+based+DMA+engine]
+ */
+
 #include <osl.h>
 #include <siutils.h>
 #include <hndbme.h>
 #include <sbhnddma.h>
 #include <bcmutils.h>
 #include <hndsoc.h>
-#include <m2mdma_core.h> 	/* for m2md_regs_t */
-#include <bcmdevs.h> 		/* for e.g. EMBEDDED_2x2AX_CORE */
+#include <m2mdma_core.h>	/* for m2md_regs_t */
+
 #define SIZE_64BIT_PTRS				8
 
 #define	PCI64ADDR_HIGH				0x80000000	/* address[63] */
@@ -47,10 +52,6 @@
 #define DMA_OFFSET_BME_BASE_CHANNEL2_RCV	0x2A0
 #define DMA_OFFSET_BME_BASE_CHANNEL3_XMT	0x2C0
 #define DMA_OFFSET_BME_BASE_CHANNEL3_RCV	0x2E0
-
-/** 63178/47622 introduced an enhancement: acceleration for phyrx/tx status processing */
-#define M2M_OFFSET_BME_TXSTS_REGS		0x800
-#define M2M_OFFSET_BME_PHYRXSTS_REGS		0x900
 
 #define BME_CONFIG_FLAG_SRC_PCIE_ADDREXT	(1 << 31)
 #define BME_CONFIG_FLAG_DEST_PCIE_ADDREXT	(1 << 30)
@@ -64,6 +65,8 @@
 #define BMEREG_CONTROL_BURSTLEN_SHIFT		18
 #define BMEREG_CONTROL_BURSTLEN_MASK		0x7
 
+#define BMEREG_RCVCONTROL_WCPD_SHIFT		(1 << 28)
+
 #define BMEREG_XMTPTR_BUFFCOUNT_MASK		0x1FFF
 #define BMEREG_XMTPTR_ADDREXT			(1 << 13)
 #define BMEREG_XMTPTR_COHERENT			(1 << 14)
@@ -71,19 +74,6 @@
 
 #define BMEREG_RCVPTR_ADDREXT			(1 << 13)
 #define BMEREG_RCVPTR_COHERENT			(1 << 14)
-
-#define M2M_INTCONTROL_TXS_WRIND_UPD_MASK	(1<<30)
-#define M2M_INTCONTROL_PHYRXS_WRIND_UPD_MASK	(1<<31)
-
-#define M2M_INTCONTROL_MASK \
-	(M2M_INTCONTROL_TXS_WRIND_UPD_MASK)
-
-#define M2M_INTCTL_TXS (1<<30)
-
-/** txstatus memory inside the d11 core. Physical address from the BME's perspective. */
-#define D11_TXSTS_MEM_BASE 0x848d8000
-/** phyrxtatus memory inside the d11 core. Physical address from the BME's perspective. */
-#define D11_PHYRXSTS_MEM_BASE 0x848d9000
 
 #if defined(__ARM_ARCH_7A__)
 #define datasynchronizationbarrier() __asm__ __volatile__ ("dsb")
@@ -102,17 +92,6 @@
 if (BUSTYPE(_sih_->bustype) == PCI_BUS)			\
 	si_restore_core(_sih_, _coreid_, _intr_val_);
 
-/** 63178 / 47622 support tx/phyrx status offloading in BME channel #1 */
-struct bme_circ_buf_s {
-	uint8	*va;        /**< virtual start address of ring buffer */
-	volatile m2md_bme_status_regs_t *regs; /**< virtual address of txs or phyrxsts registers */
-	dmaaddr_t pa;       /**< physical start address of ring buffer */
-	uint	element_sz; /**< size of one circular buffer element in [bytes] */
-	uint	n_elements;
-	uint	buf_sz;     /**< size of the circular buffer in [bytes] */
-	uint    rd_idx;     /**< software updates read index */
-};
-
 struct bme_info_s {
 	si_t			*sih;
 	void			*osh;		    /**< os handle */
@@ -122,61 +101,12 @@ struct bme_info_s {
 	uint32			hi_src;
 	uint32			hi_dest;
 	uint32			flags;
-	uint32		        m2m_intmask;        /**< cause reducing reg rds is more efficient */
 	bme_channel_t		channel;
 	bool			config_written;
-	struct bme_circ_buf_s   txsts;              /**< txstatus offload support */
-	struct bme_circ_buf_s   phyrxsts;           /**< phy rx status offload support */
 };
 
-#if defined(BME_OFFLOADS_PHYRXSTS) || defined(BME_OFFLOADS_TXSTS)
-
-/** 63178 / 47622 support tx/phyrx status offloading in BME channel #1 */
-/*
- * Initializes one tx or one phyrx status offload channel.
- *
- * @param[in]      sih            Silicon backplane handle
- * @param[in]      regs           Volatile pointer to circular buffer registers
- * @param[inout]   p              Variables associated to one circular BME buffer
- * @param[in]      n_buf_els      Number of elements in one circular buffer
- * @param[in]      element_sz     Size in [bytes] of one circular buffer element
- *
- * @return         TRUE if call succeeded
- */
-static bool
-bme_attach_status_channel(si_t *sih, volatile char *regs, struct bme_circ_buf_s *p,
-                          int n_buf_els, int element_sz)
-{
-	p->regs = (volatile m2md_bme_status_regs_t *)(regs);
-	p->element_sz = element_sz;
-	p->n_elements = n_buf_els;
-	p->buf_sz = element_sz * n_buf_els;
-	p->va = MALLOCZ(si_osh(sih), p->buf_sz);
-	if (p->va == NULL) {
-		return FALSE;
-	}
-	p->pa = DMA_MAP(si_osh(sih), p->va, p->buf_sz, DMA_RX, NULL, NULL);
-
-	return TRUE;
-}
-
-/*
- * @param[inout]   p              Variables associated to one circular BME buffer
- */
-static void
-bme_detach_status_channel(osl_t *osh, struct bme_circ_buf_s *p)
-{
-	if (p->va != NULL) {
-		DMA_UNMAP(osh, p->pa, p->buf_sz, DMA_RX, NULL, NULL);
-		MFREE(osh, p->va, p->buf_sz);
-	}
-}
-
-#endif /* BME_OFFLOADS_PHYRXSTS || BME_OFFLOADS_TXSTS */
-
 bme_info_t *
-BCMATTACHFN(bme_attach)(si_t *sih, bme_channel_t channel,
-                        int n_buf_txs, int sizeof_txs, int n_buf_phyrxsts, int sizeof_phyrxsts)
+BCMATTACHFN(bme_attach)(si_t *sih, bme_channel_t channel)
 {
 	bme_info_t *bme_info;
 	uint saved_core_idx;
@@ -214,35 +144,7 @@ BCMATTACHFN(bme_attach)(si_t *sih, bme_channel_t channel,
 
 	si_restore_core(sih, saved_core_idx, intr_val);
 
-	if (EMBEDDED_2x2AX_CORE(sih->chip) && channel == BME_CHANNEL_1) {
-#ifdef BME_OFFLOADS_TXSTS
-		if (sizeof_txs != 0) {
-			if (bme_attach_status_channel(sih, base + M2M_OFFSET_BME_TXSTS_REGS,
-			                              &bme_info->txsts,
-			                              n_buf_txs, sizeof_txs) == FALSE) {
-				goto fail;
-			}
-		}
-#endif /* BME_OFFLOADS_TXSTS */
-#ifdef BME_OFFLOADS_PHYRXSTS
-		if (sizeof_phyrxsts != 0) {
-			if (bme_attach_status_channel(sih, base + M2M_OFFSET_BME_PHYRXSTS_REGS,
-			                              &bme_info->phyrxsts,
-			                              n_buf_phyrxsts, sizeof_phyrxsts) == FALSE) {
-				goto fail;
-			}
-		}
-#endif /* BME_OFFLOADS_PHYRXSTS */
-	}
-
 	return bme_info;
-
-#if defined(BME_OFFLOADS_PHYRXSTS) || defined(BME_OFFLOADS_TXSTS)
-fail:
-	bme_detach(bme_info);
-
-	return NULL;
-#endif /* BME_OFFLOADS_TXSTS || BME_OFFLOADS_TXSTS */
 } /* bme_attach */
 
 void
@@ -250,7 +152,9 @@ BCMATTACHFN(bme_detach)(bme_info_t *bme_info)
 {
 	uint saved_core_idx;
 	uint intr_val;
+	struct bme_circ_buf_s *p;
 
+	BCM_REFERENCE(p);
 	BME_SWITCHCORE(bme_info->sih, &saved_core_idx, &intr_val);
 
 	AND_REG(bme_info->osh, &bme_info->xmt->control, ~BMEREG_CONTROL_EN);
@@ -258,101 +162,7 @@ BCMATTACHFN(bme_detach)(bme_info_t *bme_info)
 
 	BME_RESTORECORE(bme_info->sih, saved_core_idx, intr_val);
 
-#if defined(BME_OFFLOADS_PHYRXSTS) || defined(BME_OFFLOADS_TXSTS)
-	bme_detach_status_channel(bme_info->osh, &bme_info->txsts);
-	bme_detach_status_channel(bme_info->osh, &bme_info->phyrxsts);
-#endif /* BME_OFFLOADS_PHYRXSTS || BME_OFFLOADS_TXSTS */
-
 	MFREE(bme_info->osh, (void *)bme_info, sizeof(*bme_info));
-}
-
-#if defined(BME_OFFLOADS_PHYRXSTS) || defined(BME_OFFLOADS_TXSTS)
-/**
- * (Re)initializes a specific BME tx/phyrx status offload channel. Usually called on a 'wl up'.
- * @param[in] d11_src_addr   Backplane address pointing to a d11 core internal memory
- */
-static void
-bme_init_offload_ch(osl_t *osh, struct bme_circ_buf_s *p, uint32 d11_src_addr)
-{
-	W_REG(osh, &p->regs->sa_base_l, d11_src_addr);      // source address
-	W_REG(osh, &p->regs->sa_base_h, 0);
-	W_REG(osh, &p->regs->da_base_l, PHYSADDRLO(p->pa)); // destination address
-	W_REG(osh, &p->regs->da_base_h, PHYSADDRHI(p->ba));
-	W_REG(osh, &p->regs->size, p->n_elements);
-	p->rd_idx = 0;
-	W_REG(osh, &p->regs->rd_idx, p->rd_idx);
-	/* source is is AXI backplane (so 'not PCIe'), destination is coherent 63178 ARM mem */
-	W_REG(osh, &p->regs->dma_template,
-	      BME_DMATMPL_COHERENT_BITMASK | BME_DMATMPL_NOTPCIESP_BITMASK);
-	OR_REG(osh, &p->regs->cfg, BME_STS_CFG_MOD_ENBL_MASK);
-}
-#endif /* BME_OFFLOADS_PHYRXSTS | BME_OFFLOADS_TXSTS */
-
-/**
- * (Re)initializes the BME hardware and software. Enables interrupts. Usually called on a 'wl up'.
- *
- * Prerequisite: firmware has progressed passed the BCMATTACH phase
- *
- * @param bme_info     Handle related to one of the BME dma channels in the M2M core.
- */
-void
-bme_init(bme_info_t *bme_info)
-{
-	uint saved_core_idx;
-	uint intr_val;
-
-	BME_SWITCHCORE(bme_info->sih, &saved_core_idx, &intr_val);
-#ifdef BME_OFFLOADS_TXSTS
-	if (bme_info->txsts.regs != NULL) { /* channel supports phyrx/tx status offloading */
-		bme_init_offload_ch(bme_info->osh, &bme_info->txsts, D11_TXSTS_MEM_BASE);
-		OR_REG(bme_info->osh, &bme_info->m2m_regs->intcontrol, M2M_INTCONTROL_MASK);
-	}
-#endif /* BME_OFFLOADS_TXSTS */
-#ifdef BME_OFFLOADS_PHYRXSTS
-	if (bme_info->phyrxsts.regs != NULL) {
-		bme_init_offload_ch(bme_info->osh, &bme_info->phyrxsts,
-		                    D11_PHYRXSTS_MEM_BASE);
-	}
-#endif /* BME_OFFLOADS_PHYRXSTS */
-	BME_RESTORECORE(bme_info->sih, saved_core_idx, intr_val);
-}
-
-#if defined(BME_OFFLOADS_PHYRXSTS) || defined(BME_OFFLOADS_TXSTS)
-/**
- * Disables a specific BME channel. Usually called on a 'wl down'.
- */
-static void
-bme_deinit_offload_ch(osl_t *osh, struct bme_circ_buf_s *p)
-{
-	AND_REG(osh, &p->regs->cfg, ~BME_STS_CFG_MOD_ENBL_MASK);
-}
-#endif /* BME_OFFLOADS_PHYRXSTS || BME_OFFLOADS_TXSTS */
-
-/**
- * Disables interrupts. Usually called on a 'wl down'.
- *
- * Prerequisite: firmware has progressed passed the BCMATTACH phase
- */
-void
-bme_deinit(bme_info_t *bme_info)
-{
-
-	uint saved_core_idx;
-	uint intr_val;
-
-	BME_SWITCHCORE(bme_info->sih, &saved_core_idx, &intr_val);
-#ifdef BME_OFFLOADS_TXSTS
-	if (bme_info->txsts.regs != NULL) { /* channel supports phyrx/tx status offloading */
-		AND_REG(bme_info->osh, &bme_info->m2m_regs->intcontrol, ~M2M_INTCONTROL_MASK);
-		bme_deinit_offload_ch(bme_info->osh, &bme_info->txsts);
-	}
-#endif /* BME_OFFLOADS_TXSTS */
-#ifdef BME_OFFLOADS_PHYRXSTS
-	if (bme_info->phyrxsts.regs != NULL) {
-		bme_deinit_offload_ch(bme_info->osh, &bme_info->phyrxsts);
-	}
-#endif /* BME_OFFLOADS_PHYRXSTS */
-	BME_RESTORECORE(bme_info->sih, saved_core_idx, intr_val);
 }
 
 void
@@ -559,107 +369,27 @@ bme_sync(bme_info_t *bme_info)
 	uint intr_val;
 
 	BME_SWITCHCORE(bme_info->sih, &saved_core_idx, &intr_val);
-
+#if (defined(BCA_CPEROUTER) || defined(BCA_HNDROUTER)) && (defined(CONFIG_BCM963178) || \
+	defined(CONFIG_BCM947622))
+	uint i;
+	while (R_REG(bme_info->osh, &bme_info->xmt->ptr) & BMEREG_XMTPTR_START_BUSY) {
+		if (++i == 10000) {
+			printf("bme_sync failed? DMA register dump:");
+			for (i = 0; i < 12; i++) {
+				printf("%08x\n", ((uint32*)(&bme_info->xmt))[i]);
+			}
+			printf("M2M register dump:");
+			for (i = 0; i < 12; i++) {
+				printf("%08x\n", ((uint32*)(&bme_info->m2m_regs))[i]);
+			}
+			i = 10000;
+		}
+	}
+#else
 	while (R_REG(bme_info->osh, &bme_info->xmt->ptr) & BMEREG_XMTPTR_START_BUSY) {
 		;
 	}
+#endif /* (BCA_CPEROUTER || BCA_HNDROUTER) && (CONFIG_BCM963178 || CONFIG_BCM947622) */
 
 	BME_RESTORECORE(bme_info->sih, saved_core_idx, intr_val);
 }
-
-#ifdef BME_OFFLOADS_TXSTS
-/**
- * Returns a pointer to one txstatus in the circular buffer that was written by the d11 core but
- * not yet consumed by software.
- *
- * @param[in] caller_buf   Caller allocated buffer, large enough to contain phyrx or tx status
- * @return                 Pointer to caller_buf if succeeded
- */
-void * BCMFASTPATH
-bme_get_txstatus(bme_info_t *bme_info, void *caller_buf)
-{
-	uint saved_core_idx;
-	uint intr_val;
-	uint wr_idx;            /**< hardware updates write index */
-	void *ret = NULL;       /**< return value */
-	struct bme_circ_buf_s *pc = &bme_info->txsts; /**< tx status circular buffer info */
-
-	ASSERT(pc->regs != NULL); /* BME channel does not support txs/phyrx status offloading */
-	BME_SWITCHCORE(bme_info->sih, &saved_core_idx, &intr_val);
-
-	wr_idx = R_REG(bme_info->osh, &pc->regs->wr_idx); /* register is updated by hardware */
-	if (wr_idx != pc->rd_idx) {
-		memcpy(caller_buf, pc->va + pc->rd_idx * pc->element_sz, pc->element_sz);
-		ret = caller_buf;
-		if (++pc->rd_idx == pc->n_elements) {
-			pc->rd_idx = 0;
-		}
-		/* inform hw that it may advance */
-		W_REG(bme_info->osh, &pc->regs->rd_idx, pc->rd_idx);
-	}
-
-	BME_RESTORECORE(bme_info->sih, saved_core_idx, intr_val);
-
-	return ret;
-} /* bme_get_txstatus */
-
-/**
- * Read and optionally clear m2m intstatus register.
- * This routine must not be preempted by other WLAN code.
- *
- * @param[in] in_isr
- * @Return:  0xFFFFFFFF if DEVICEREMOVED, 0 if the interrupt is not for us, or we are in some
- *           special case, device interrupt status bits otherwise.
- */
-uint32 BCMFASTPATH
-bme_m2m_intstatus(bme_info_t *bme_info, bool in_isr)
-{
-	volatile m2md_regs_t *regs = bme_info->m2m_regs;
-	uint32 active_irqs;
-
-#ifdef LINUX_VERSION_CODE
-	ASSERT((in_irq() && irqs_disabled()) || in_softirq());
-#endif /* LINUX_VERSION_CODE */
-
-	active_irqs = R_REG(bme_info->osh, &regs->intstatus);
-
-	if (in_isr) {
-		active_irqs &= bme_info->m2m_intmask;
-		if (active_irqs == 0) /* it is not for us */
-			return 0;
-
-		if (active_irqs == 0xffffffff) {
-			return 0xffffffff;
-		}
-
-		// de-assert interrupt so isr will not be re-invoked, dpc will be scheduled
-		bme_set_txs_intmask(bme_info, FALSE);
-	} else { /* called from DPC */
-		/* clears irqs */
-		W_REG(bme_info->osh, &regs->intstatus, active_irqs);
-	}
-
-	return active_irqs;
-} /* bme_m2m_intstatus */
-
-void BCMFASTPATH
-bme_set_txs_intmask(bme_info_t *bme_info, bool enable)
-{
-	volatile m2md_regs_t *regs = bme_info->m2m_regs;
-
-	bme_info->m2m_intmask = enable ? M2M_INTCTL_TXS : 0;
-	W_REG(bme_info->osh, &regs->intcontrol, bme_info->m2m_intmask);
-}
-
-#ifdef BCMQT
-bool BCMFASTPATH
-bme_is_m2m_irq(bme_info_t *bme_info)
-{
-	volatile m2md_regs_t *regs = bme_info->m2m_regs;
-	uint32 intstatus = R_REG(bme_info->osh, &regs->intstatus);
-
-	return ((bme_info->m2m_intmask & intstatus) != 0);
-}
-#endif /* BCMQT */
-
-#endif /* BME_OFFLOADS_TXSTS */

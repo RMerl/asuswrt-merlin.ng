@@ -595,7 +595,7 @@ void __nf_ct_time_update(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 		 */
 		if(newtime < HZ)
 			newtime = HZ;
-	
+		
 		/*TODO remove this prev_timeout */
 		ct->prev_timeout.expires = ct->timeout.expires;
 		mod_timer_pending(&ct->timeout, jiffies + newtime);
@@ -1346,7 +1346,7 @@ __nf_conntrack_alloc(struct net *net, u16 zone,
 				ct->iq_prio = IQOS_PRIO_LOW;
 		}
 	} else {
-		ct->iq_prio = blog_iq(skb);
+		ct->iq_prio = (blog_iq(skb) == BLOG_IQ_PRIO_HIGH) ? IQOS_PRIO_HIGH : IQOS_PRIO_LOW;
 	}
 	ct->prev_timeout.expires = jiffies;
 

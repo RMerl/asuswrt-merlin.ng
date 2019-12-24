@@ -33,6 +33,8 @@
 #include <linux/ioctl.h>
 #include "laser.h"
 #include "bcmtypes.h"
+#include "wan_types.h"
+
 
 #define PMD_TEMP2APD_FILE_PATH    "/data/pmd_temp2apd"
 #define PMD_CALIBRATION_FILE_PATH "/data/pmd_calibration" /*keeps the pmd calibration values */
@@ -43,6 +45,11 @@
 #define PMD_DEV_CLASS   "laser_dev"
 #define PMD_BUF_MAX_SIZE 300
 #define PMD_CAL_MESSAGE_MAX_LEN 100
+
+#define PMD_OPERATION_SUCCESS            ( 0)
+#define ERR_CAL_PARAM_VALUE_INVALID      (-1)
+#define ERR_CAL_PARAM_INDEX_OUT_OF_RANGE (-2)
+#define ERR_CAL_PARAM_CANNOT_OPEN_DEVICE (-3)
 
 typedef enum {
     pmd_reg_map,
@@ -67,15 +74,16 @@ typedef struct
 } pmd_cal_msg_str;
 
 /* IOctl */
-#define PMD_IOCTL_SET_PARAMS     _IOW(LASER_IOC_MAGIC, 11, pmd_params)
-#define PMD_IOCTL_GET_PARAMS     _IOR(LASER_IOC_MAGIC, 12, pmd_params)
-#define PMD_IOCTL_CAL_FILE_WRITE _IOW(LASER_IOC_MAGIC, 13, pmd_params)
-#define PMD_IOCTL_CAL_FILE_READ  _IOR(LASER_IOC_MAGIC, 14, pmd_params)
-#define PMD_IOCTL_MSG_WRITE      _IOW(LASER_IOC_MAGIC, 15, pmd_params)
-#define PMD_IOCTL_MSG_READ       _IOR(LASER_IOC_MAGIC, 16, pmd_params)
-#define PMD_IOCTL_RSSI_CAL       _IOR(LASER_IOC_MAGIC, 17, pmd_params)
-#define PMD_IOCTL_TEMP2APD_WRITE _IOR(LASER_IOC_MAGIC, 18, pmd_params)
-#define PMD_IOCTL_DUMP_DATA      _IOR(LASER_IOC_MAGIC, 19, pmd_params)
+#define PMD_IOCTL_SET_PARAMS                    _IOW(LASER_IOC_MAGIC, 11, pmd_params)
+#define PMD_IOCTL_GET_PARAMS                    _IOR(LASER_IOC_MAGIC, 12, pmd_params)
+#define PMD_IOCTL_CAL_FILE_WRITE                _IOW(LASER_IOC_MAGIC, 13, pmd_params)
+#define PMD_IOCTL_CAL_FILE_READ                 _IOR(LASER_IOC_MAGIC, 14, pmd_params)
+#define PMD_IOCTL_MSG_WRITE                     _IOW(LASER_IOC_MAGIC, 15, pmd_params)
+#define PMD_IOCTL_MSG_READ                      _IOR(LASER_IOC_MAGIC, 16, pmd_params)
+#define PMD_IOCTL_RSSI_CAL                      _IOR(LASER_IOC_MAGIC, 17, pmd_params)
+#define PMD_IOCTL_TEMP2APD_WRITE                _IOR(LASER_IOC_MAGIC, 18, pmd_params)
+#define PMD_IOCTL_DUMP_DATA                     _IOR(LASER_IOC_MAGIC, 19, pmd_params)
+#define PMD_IOCTL_RESET_INTO_CALIBRATION_MODE   _IOR(LASER_IOC_MAGIC, 20, pmd_params)
 
 
 #define PMD_ESTIMATED_OP_GET_MSG       8   /* hmid_estimated_op_get */
@@ -100,6 +108,11 @@ typedef struct
 #define PMD_GPON_STATE_OPERATION_O5             4
 #define PMD_GPON_STATE_POPUP_O6                 5
 #define PMD_GPON_STATE_EMERGENCY_STOP_O7        6
+
+#define PMD_CALIBRATION_UNCALIBRATED    0x0    
+#define PMD_CALIBRATION_RX_DONE         0x1
+#define PMD_CALIBRATION_TX_DONE         0x2
+#define PMD_CALIBRATION_RXTX_DONE       0x3   
 
 typedef enum
 {
@@ -137,24 +150,18 @@ typedef enum
     pmd_temp_offset             = 31,
     pmd_bias_delta_i            = 32,
     pmd_slope_efficiency        = 33,
+    pmd_temp_table              = 34,
+    pmd_adf_los_thresholds      = 35,
+    pmd_adf_los_leaky_bucket    = 36,
+    pmd_compensation            = 37,
 
     pmd_num_of_cal_param,
+
+    pmd_host_sw_control         = 60, /* backdoor */
+    pmd_statistics_collection   = 61, /* backdoor */
 }pmd_calibration_param;
 
-/* board type */
-typedef enum
-{
-    pmd_epon_1_1_board,
-    pmd_epon_2_1_board,
-    pmd_gpon_2_1_board,
-    pmd_gbe_1_1_board,
-    pmd_xgpon1_10_2_board,
-    pmd_epon_10_1_board,
-    pmd_auto_detect, /* gpon, epon auto detect */
-}pmd_boards;
-
-extern pmd_boards pmd_board_type;
-extern uint16_t cal_index;
+extern PMD_WAN_TYPES pmd_wan_type;
 
 typedef struct
 {
@@ -167,11 +174,10 @@ typedef int (*pmd_statistic_first_burst_callback)(uint16_t *bias, uint16_t *mod)
 typedef int (*pmd_math_first_burst_model_callback)(uint16_t *bias, uint16_t *mod);
 typedef void (*pon_set_pmd_fb_done_callback)(uint8_t state);
 
-int pmd_dev_isr_callback(uint32_t *pmd_ints);
 int pmd_dev_poll_epon_alarm(void);
 void pmd_dev_change_tracking_state(uint32_t old_state, uint32_t new_state);
-void pmd_dev_assign_gpon_callback(pmd_gpon_isr_callback gpon_isr);
 void pmd_dev_enable_prbs_or_misc_mode(uint16_t enable, uint8_t prbs_mode);
 void pmd_dev_assign_pon_stack_callback(pon_set_pmd_fb_done_callback _pon_set_pmd_fb_done);
+int pmd_dev_reconfigure_wan_type(PMD_WAN_TYPES new_pmd_wan_type);
 
 #endif /* ! _PMD_H_ */

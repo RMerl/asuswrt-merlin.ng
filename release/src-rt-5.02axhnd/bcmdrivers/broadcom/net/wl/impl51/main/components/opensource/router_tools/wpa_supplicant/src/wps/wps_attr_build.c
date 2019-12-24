@@ -59,7 +59,8 @@ int wps_build_public_key(struct wps_data *wps, struct wpabuf *msg)
 		}
 		wps->dh_privkey = wpabuf_dup(wps->wps->ap_nfc_dh_privkey);
 		pubkey = wpabuf_dup(wps->wps->ap_nfc_dh_pubkey);
-		wps->dh_ctx = dh5_init_fixed(wps->dh_privkey, pubkey);
+		if (wps->dh_privkey && pubkey)
+			wps->dh_ctx = dh5_init_fixed(wps->dh_privkey, pubkey);
 #endif /* CONFIG_WPS_NFC */
 	} else {
 		wpa_printf(MSG_DEBUG, "WPS: Generate new DH keys");
@@ -192,8 +193,60 @@ int wps_build_version(struct wpabuf *msg)
 	return 0;
 }
 
-int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
+#ifdef CONFIG_DRIVER_BRCM_MAP
+int wps_build_map_wfa_ext(struct wpabuf *msg, int req_to_enroll, int map_bh_sta,
 		      const u8 *auth_macs, size_t auth_macs_count)
+{
+	u8 *len;
+
+	if (wpabuf_tailroom(msg) <
+	    7 + 3 + (req_to_enroll ? 3 : 0) + (map_bh_sta ? 3 : 0) +
+	    (auth_macs ? 2 + auth_macs_count * ETH_ALEN : 0))
+		return -1;
+	wpabuf_put_be16(msg, ATTR_VENDOR_EXT);
+	len = wpabuf_put(msg, 2); /* to be filled */
+	wpabuf_put_be24(msg, WPS_VENDOR_ID_WFA);
+
+	wpa_printf(MSG_DEBUG, "WPS:  * Version2 (0x%x)", WPS_VERSION);
+	wpabuf_put_u8(msg, WFA_ELEM_VERSION2);
+	wpabuf_put_u8(msg, 1);
+	wpabuf_put_u8(msg, WPS_VERSION);
+
+	if (req_to_enroll) {
+		wpa_printf(MSG_DEBUG, "WPS:  * Request to Enroll (1)");
+		wpabuf_put_u8(msg, WFA_ELEM_REQUEST_TO_ENROLL);
+		wpabuf_put_u8(msg, 1);
+		wpabuf_put_u8(msg, 1);
+	}
+
+	if (map_bh_sta) {
+		wpa_printf(MSG_DEBUG, "WPS:  * Multiap backhaul sta (1)");
+		wpabuf_put_u8(msg, WFA_ELEM_MULTI_AP);
+		wpabuf_put_u8(msg, 1);
+		wpabuf_put_u8(msg, WPS_MAP_BH_STA);
+	}
+
+	if (auth_macs && auth_macs_count) {
+		size_t i;
+		wpa_printf(MSG_DEBUG, "WPS:  * AuthorizedMACs (count=%d)",
+			   (int) auth_macs_count);
+		wpabuf_put_u8(msg, WFA_ELEM_AUTHORIZEDMACS);
+		wpabuf_put_u8(msg, auth_macs_count * ETH_ALEN);
+		wpabuf_put_data(msg, auth_macs, auth_macs_count * ETH_ALEN);
+		for (i = 0; i < auth_macs_count; i++)
+			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR,
+				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+	}
+
+	WPA_PUT_BE16(len, (u8 *) wpabuf_put(msg, 0) - len - 2);
+
+	return 0;
+}
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
+
+int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
+		      const u8 *auth_macs, size_t auth_macs_count,
+		      u8 multi_ap_subelem)
 {
 	u8 *len;
 
@@ -232,6 +285,14 @@ int wps_build_wfa_ext(struct wpabuf *msg, int req_to_enroll,
 		for (i = 0; i < auth_macs_count; i++)
 			wpa_printf(MSG_DEBUG, "WPS:    AuthorizedMAC: " MACSTR,
 				   MAC2STR(&auth_macs[i * ETH_ALEN]));
+	}
+
+	if (multi_ap_subelem) {
+		wpa_printf(MSG_DEBUG, "WPS:  * Multi-AP (0x%x)",
+			   multi_ap_subelem);
+		wpabuf_put_u8(msg, WFA_ELEM_MULTI_AP);
+		wpabuf_put_u8(msg, 1); /* length */
+		wpabuf_put_u8(msg, multi_ap_subelem);
 	}
 
 	WPA_PUT_BE16(len, (u8 *) wpabuf_put(msg, 0) - len - 2);

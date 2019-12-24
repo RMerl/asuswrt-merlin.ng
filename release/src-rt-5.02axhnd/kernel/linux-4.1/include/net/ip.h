@@ -482,7 +482,7 @@ enum ip_defrag_users {
 	IP_DEFRAG_AF_PACKET,
 	IP_DEFRAG_MACVLAN,
 #if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
-	IP_DEFRAG_MAPT,
+	IP_DEFRAG_MAP,
 #endif
 };
 

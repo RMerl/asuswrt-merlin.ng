@@ -208,6 +208,11 @@ pcap_inject_snit(pcap_t *p, const void *buf, size_t size)
 {
 	struct strbuf ctl, data;
 
+	/*
+	 * XXX - can we just do
+	 *
+	ret = write(pd->f, buf, size);
+	 */
 	ctl.len = sizeof(*sa);
 	ctl.buf = (char *)sa;
 	data.buf = buf;
@@ -278,6 +283,20 @@ pcap_activate_snit(pcap_t *p)
 		 */
 		p->snapshot = 96;
 
+	/*
+	 * Initially try a read/write open (to allow the inject
+	 * method to work).  If that fails due to permission
+	 * issues, fall back to read-only.  This allows a
+	 * non-root user to be granted specific access to pcap
+	 * capabilities via file permissions.
+	 *
+	 * XXX - we should have an API that has a flag that
+	 * controls whether to open read-only or read-write,
+	 * so that denial of permission to send (or inability
+	 * to send, if sending packets isn't supported on
+	 * the device in question) can be indicated at open
+	 * time.
+	 */
 	p->fd = fd = open(dev, O_RDWR);
 	if (fd < 0 && errno == EACCES)
 		p->fd = fd = open(dev, O_RDONLY);

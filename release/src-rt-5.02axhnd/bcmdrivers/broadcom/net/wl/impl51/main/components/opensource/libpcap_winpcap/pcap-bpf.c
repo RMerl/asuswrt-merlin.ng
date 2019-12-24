@@ -497,11 +497,28 @@ bpf_open(pcap_t *p)
 	 */
 	do {
 		(void)snprintf(device, sizeof(device), "/dev/bpf%d", n++);
+		/*
+		 * Initially try a read/write open (to allow the inject
+		 * method to work).  If that fails due to permission
+		 * issues, fall back to read-only.  This allows a
+		 * non-root user to be granted specific access to pcap
+		 * capabilities via file permissions.
+		 *
+		 * XXX - we should have an API that has a flag that
+		 * controls whether to open read-only or read-write,
+		 * so that denial of permission to send (or inability
+		 * to send, if sending packets isn't supported on
+		 * the device in question) can be indicated at open
+		 * time.
+		 */
 		fd = open(device, O_RDWR);
 		if (fd == -1 && errno == EACCES)
 			fd = open(device, O_RDONLY);
 	} while (fd < 0 && errno == EBUSY);
 
+	/*
+	 * XXX better message for all minors used
+	 */
 	if (fd < 0) {
 		if (errno == EACCES)
 			fd = PCAP_ERROR_PERM_DENIED;
@@ -1188,6 +1205,14 @@ pcap_cleanup_bpf(pcap_t *p)
 		 */
 #ifdef HAVE_BSD_IEEE80211
 		if (p->md.must_clear & MUST_CLEAR_RFMON) {
+			/*
+			 * We put the interface into rfmon mode;
+			 * take it out of rfmon mode.
+			 *
+			 * XXX - if somebody else wants it in rfmon
+			 * mode, this code cannot know that, so it'll take
+			 * it out of rfmon mode.
+			 */
 			sock = socket(AF_INET, SOCK_DGRAM, 0);
 			if (sock == -1) {
 				fprintf(stderr,
@@ -1873,6 +1898,15 @@ pcap_activate_bpf(pcap_t *p)
 	p->linktype = v;
 
 #if defined(BIOCGHDRCMPLT) && defined(BIOCSHDRCMPLT)
+	/*
+	 * Do a BIOCSHDRCMPLT, if defined, to turn that flag on, so
+	 * the link-layer source address isn't forcibly overwritten.
+	 * (Should we ignore errors?  Should we do this only if
+	 * we're open for writing?)
+	 *
+	 * XXX - I seem to remember some packet-sending bug in some
+	 * BSDs - check CVS log for "bpf.c"?
+	 */
 	if (ioctl(fd, BIOCSHDRCMPLT, &spoof_eth_src) == -1) {
 		(void)snprintf(p->errbuf, PCAP_ERRBUF_SIZE,
 		    "BIOCSHDRCMPLT: %s", pcap_strerror(errno));
@@ -1886,6 +1920,11 @@ pcap_activate_bpf(pcap_t *p)
 #else
 	if (p->md.timeout) {
 #endif // endif
+		/*
+		 * XXX - is this seconds/nanoseconds in AIX?
+		 * (Treating it as such doesn't fix the timeout
+		 * problem described below.)
+		 */
 		struct timeval to;
 		to.tv_sec = p->md.timeout / 1000;
 		to.tv_usec = (p->md.timeout * 1000) % 1000000;
@@ -2013,6 +2052,42 @@ pcap_activate_bpf(pcap_t *p)
 		goto bad;
 	}
 
+	/*
+	 * On most BPF platforms, either you can do a "select()" or
+	 * "poll()" on a BPF file descriptor and it works correctly,
+	 * or you can do it and it will return "readable" if the
+	 * hold buffer is full but not if the timeout expires *and*
+	 * a non-blocking read will, if the hold buffer is empty
+	 * but the store buffer isn't empty, rotate the buffers
+	 * and return what packets are available.
+	 *
+	 * In the latter case, the fact that a non-blocking read
+	 * will give you the available packets means you can work
+	 * around the failure of "select()" and "poll()" to wake up
+	 * and return "readable" when the timeout expires by using
+	 * the timeout as the "select()" or "poll()" timeout, putting
+	 * the BPF descriptor into non-blocking mode, and read from
+	 * it regardless of whether "select()" reports it as readable
+	 * or not.
+	 *
+	 * However, in FreeBSD 4.3 and 4.4, "select()" and "poll()"
+	 * won't wake up and return "readable" if the timer expires
+	 * and non-blocking reads return EWOULDBLOCK if the hold
+	 * buffer is empty, even if the store buffer is non-empty.
+	 *
+	 * This means the workaround in question won't work.
+	 *
+	 * Therefore, on FreeBSD 4.3 and 4.4, we set "p->selectable_fd"
+	 * to -1, which means "sorry, you can't use 'select()' or 'poll()'
+	 * here".  On all other BPF platforms, we set it to the FD for
+	 * the BPF device; in NetBSD, OpenBSD, and Darwin, a non-blocking
+	 * read will, if the hold buffer is empty and the store buffer
+	 * isn't empty, rotate the buffers and return what packets are
+	 * there (and in sufficiently recent versions of OpenBSD
+	 * "select()" and "poll()" should work correctly).
+	 *
+	 * XXX - what about AIX?
+	 */
 	p->selectable_fd = p->fd;	/* assume select() works until we know otherwise */
 	if (have_osinfo) {
 		/*
@@ -2384,12 +2459,31 @@ pcap_setfilter_bpf(pcap_t *p, struct bpf_program *fp)
 		return (0);
 	}
 
+	/*
+	 * We failed.
+	 *
+	 * If it failed with EINVAL, that's probably because the program
+	 * is invalid or too big.  Validate it ourselves; if we like it
+	 * (we currently allow backward branches, to support protochain),
+	 * run it in userland.  (There's no notion of "too big" for
+	 * userland.)
+	 *
+	 * Otherwise, just give up.
+	 * XXX - if the copy of the program into the kernel failed,
+	 * we will get EINVAL rather than, say, EFAULT on at least
+	 * some kernels.
+	 */
 	if (errno != EINVAL) {
 		snprintf(p->errbuf, PCAP_ERRBUF_SIZE, "BIOCSETF: %s",
 		    pcap_strerror(errno));
 		return (-1);
 	}
 
+	/*
+	 * install_bpf_program() validates the program.
+	 *
+	 * XXX - what if we already have a filter in the kernel?
+	 */
 	if (install_bpf_program(p, fp) < 0)
 		return (-1);
 	p->md.use_bpf = 0;	/* filtering in userland */

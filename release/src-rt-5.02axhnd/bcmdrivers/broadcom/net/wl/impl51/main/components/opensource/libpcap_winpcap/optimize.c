@@ -483,6 +483,9 @@ compute_local_ud(b)
 		}
 	}
 	if (BPF_CLASS(b->s.code) == BPF_JMP) {
+		/*
+		 * XXX - what about RET?
+		 */
 		atom = atomuse(&b->s);
 		if (atom >= 0) {
 			if (atom == AX_ATOM) {
@@ -791,6 +794,34 @@ opt_peep(b)
 			if (ild == 0 || BPF_CLASS(ild->s.code) != BPF_LD ||
 			    BPF_MODE(ild->s.code) != BPF_IND)
 				continue;
+			/*
+			 * We want to turn this sequence:
+			 *
+			 * (004) ldi     #0x2		{s}
+			 * (005) ldxms   [14]		{next}  -- optional
+			 * (006) addx			{add}
+			 * (007) tax			{tax}
+			 * (008) ild     [x+0]		{ild}
+			 *
+			 * into this sequence:
+			 *
+			 * (004) nop
+			 * (005) ldxms   [14]
+			 * (006) nop
+			 * (007) nop
+			 * (008) ild     [x+2]
+			 *
+			 * XXX We need to check that X is not
+			 * subsequently used, because we want to change
+			 * what'll be in it after this sequence.
+			 *
+			 * We know we can eliminate the accumulator
+			 * modifications earlier in the sequence since
+			 * it is defined by the last stmt of this sequence
+			 * (i.e., the last statement of the sequence loads
+			 * a value into the accumulator, so we can eliminate
+			 * earlier operations on the accumulator).
+			 */
 			ild->s.k += s->s.k;
 			s->s.code = NOP;
 			add->s.code = NOP;
@@ -1053,6 +1084,13 @@ opt_stmt(s, val, alter)
 			}
 			break;
 		}
+		/*
+		 * Check if we're doing something to an accumulator
+		 * that is 0, and simplify.  This may not seem like
+		 * much of a simplification but it could open up further
+		 * optimizations.
+		 * XXX We could also check for mul by 1, etc.
+		 */
 		if (alter && vmap[val[A_ATOM]].is_const
 		    && vmap[val[A_ATOM]].const_val == 0) {
 			if (op == BPF_ADD || op == BPF_OR) {
@@ -1207,6 +1245,29 @@ opt_blk(b, do_stmts)
 	for (s = b->stmts; s; s = s->next)
 		opt_stmt(&s->s, b->val, do_stmts);
 
+	/*
+	 * This is a special case: if we don't use anything from this
+	 * block, and we load the accumulator or index register with a
+	 * value that is already there, or if this block is a return,
+	 * eliminate all the statements.
+	 *
+	 * XXX - what if it does a store?
+	 *
+	 * XXX - why does it matter whether we use anything from this
+	 * block?  If the accumulator or index register doesn't change
+	 * its value, isn't that OK even if we use that value?
+	 *
+	 * XXX - if we load the accumulator with a different value,
+	 * and the block ends with a conditional branch, we obviously
+	 * can't eliminate it, as the branch depends on that value.
+	 * For the index register, the conditional branch only depends
+	 * on the index register value if the test is against the index
+	 * register value rather than a constant; if nothing uses the
+	 * value we put into the index register, and we're not testing
+	 * against the index register's value, and there aren't any
+	 * other problems that would keep us from eliminating this
+	 * block, can we eliminate it?
+	 */
 	if (do_stmts &&
 	    ((b->out_use == 0 && aval != 0 && b->val[A_ATOM] == aval &&
 	      xval != 0 && b->val[X_ATOM] == xval) ||
@@ -1326,6 +1387,13 @@ opt_j(ep)
 			ep->succ = JT(ep->succ);
 		}
 	}
+	/*
+	 * For each edge dominator that matches the successor of this
+	 * edge, promote the edge successor to the its grandchild.
+	 *
+	 * XXX We violate the set abstraction here in favor a reasonably
+	 * efficient loop.
+	 */
  top:
 	for (i = 0; i < edgewords; ++i) {
 		register bpf_u_int32 x = ep->edom[i];
@@ -1367,6 +1435,10 @@ or_pullup(b)
 	if (ep == 0)
 		return;
 
+	/*
+	 * Make sure each predecessor loads the same value.
+	 * XXX why?
+	 */
 	val = ep->pred->val[A_ATOM];
 	for (ep = ep->next; ep != 0; ep = ep->next)
 		if (val != ep->pred->val[A_ATOM])
@@ -1408,6 +1480,9 @@ or_pullup(b)
 		if ((*samep)->val[A_ATOM] == val)
 			break;
 
+		/* XXX Need to check that there are no data dependencies
+		   between dp0 and dp1.  Currently, the code generator
+		   will not produce such dependencies. */
 		samep = &JF(*samep);
 	}
 #ifdef notdef
@@ -1496,6 +1571,9 @@ and_pullup(b)
 		if ((*samep)->val[A_ATOM] == val)
 			break;
 
+		/* XXX Need to check that there are no data dependencies
+		   between diffp and samep.  Currently, the code generator
+		   will not produce such dependencies. */
 		samep = &JT(*samep);
 	}
 #ifdef notdef

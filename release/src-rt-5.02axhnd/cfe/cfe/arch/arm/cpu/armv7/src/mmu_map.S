@@ -78,8 +78,8 @@ FUNC(mmu_init_table)
 END(mmu_init_table)
 
 FUNC(mmu_set_ttbr)
-        // Set the access control to all-supervisor
-        ldr     r1, =0xffffffff
+        // Set the access control to client so AP is checked with tlb entry	
+        ldr     r1, =0x55555555
         mcr     p15, 0, r1, c3, c0, 0 // Write Domain Access Control Register
 
         // Set Translation Table base address. r0 must be preserved
@@ -89,6 +89,14 @@ FUNC(mmu_set_ttbr)
 	mov	pc,lr
 END(mmu_set_ttbr)
 
+FUNC(mmu_invalidate_tlb)
+	mov	r0,#0
+	mcr	p15,0,r0,c8,c7,0		/* Invalidate TLB */
+	isb
+	dsb
+	mov	pc,lr
+END(mmu_invalidate_tlb)
+	
 #if defined(BTRM_USE_PAGEMAP)
 
 /*

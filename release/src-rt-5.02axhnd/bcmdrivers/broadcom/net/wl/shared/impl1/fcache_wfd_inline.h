@@ -68,7 +68,6 @@ FC based WFD with Defer mode (FC_WFD_LAZY_DEFER) :
 #include <linux/nbuff.h>
 #include <linux/bcm_realtime.h>
 #include <linux/blog.h>
-#include <linux/iqos.h>
 
 
 #define FC_WFD //indicate wfd_dev.c now we working on fcache based wfd.
@@ -77,7 +76,7 @@ FC based WFD with Defer mode (FC_WFD_LAZY_DEFER) :
 #undef FC_WFD_DEBUG
 #define FC_WFD_LAZY_DEFER
 
-#define FC_WFD_MAX_QUEUE_LEN (512)
+#define FC_WFD_MAX_QUEUE_LEN (1024)
 #define WFD_WLAN_QUEUE_MAX_SIZE (FC_WFD_MAX_QUEUE_LEN)
 
 typedef struct
@@ -179,7 +178,7 @@ static inline pNBuff_t WFD_NBuff_DeQueue(pWFD_NBuff_Queue queue)
         pkt = queue->buflist[queue->head];
 
 #ifdef FC_WFD_DEBUG
-        queue->buflist[queue->head] = (pNBuff_t)(0xDEADBEFF);
+        queue->buflist[queue->head] = (pNBuff_t)(0xDEADBEEF);
 #endif
         queue->head = WFD_NBuff_Queue_Ptr_Next(queue,queue->head);
         return pkt ;
@@ -372,48 +371,54 @@ static int fcache_wfd_enqueue(pNBuff_t pNBuff, const Blog_t * const blog_p)
     }
 
     /* Map wfd_prio (iq_prio) to queue id */
-    qid = (Get_wfd_prio(blog_p) == IQOS_PRIO_HIGH) ? (WFD_NUM_QUEUES_PER_WFD_INST-1) : 0 ;
+    qid = (Get_wfd_prio(blog_p) == BLOG_IQ_PRIO_HIGH) ? (WFD_NUM_QUEUES_PER_WFD_INST-1) : 0 ;
 
     wfd_p = &wfd_objects[wfdIdx];
     queue=(&fc_wfd_queue[wfd_get_minQIdx(wfd_p->wfd_idx)+ qid ]) ;
 
-    if(WFD_NBuff_Queue_Full(queue))
-    {
-        nbuff_free((pNBuff_t) pNBuff); //Drop packet ...
-        gs_count_no_buffers[wfdIdx]++;
-
-#ifdef FC_WFD_DEBUG
-        if(net_ratelimit()) 
-            printk("#### %s:%d #### FC WFD enqueue Drop packet ... qidx:%d len:%d\n",__FUNCTION__,__LINE__,queue->qidx,WFD_NBuff_Queue_Size(queue));
-#endif
-        return 1; // PKT_DONE ...
-    }
-
     /* backup information what we need from blog to fkb */
-    fkb_p = PNBUFF_2_FKBUFF(pNBuff);
+    fkb_p = (IS_SKBUFF_PTR(pNBuff) ? 
+              ((FkBuff_t *)&((PNBUFF_2_SKBUFF(pNBuff))->fkbInSkb)) : PNBUFF_2_FKBUFF(pNBuff));
 
-    if(blog_p->wfd.nic_ucast.is_chain)
-    {/* SKB */
-        //fkb_p->wl.ucast.nic.is_ucast = 1;
-        fkb_p->wl.ucast.nic.wl_chainidx = blog_p->wfd.nic_ucast.chain_idx;
-        //prio will get from skb->mark that will be handle in nbuff_xlate()
-        //fkb_p->wl.ucast.nic.wl_prio = blog_p->wfd.nic_ucast.wfd_prio;
+    if(wfd_p->eFwdHookType == (WFD_WL_FWD_HOOKTYPE_SKB))
+    {/* Will xmit with SKB later */
+        if(IS_FKBUFF_PTR(pNBuff))
+        {/* Copy info from BLOG to FKB */
+            fkb_p->wl.ucast.nic.wl_chainidx = blog_p->wfd.nic_ucast.chain_idx;
+        }else if(IS_SKBUFF_PTR(pNBuff)) 
+        {/* Copy info to SKB directly */
+            struct sk_buff *skb_p;
+            skb_p = PNBUFF_2_SKBUFF(pNBuff);
+            skb_p->wl.ucast.nic.wl_chainidx = blog_p->wfd.nic_ucast.chain_idx;
+        }
     }else
-    {/* FKB */
+    {/* Will xmit with FKB later */
         fkb_p->wl.ucast.dhd.is_ucast     = 1;
         fkb_p->wl.ucast.dhd.wl_prio      = blog_p->wfd.dhd_ucast.priority;
         fkb_p->wl.ucast.dhd.flowring_idx = blog_p->wfd.dhd_ucast.flowring_idx;
         fkb_p->wl.ucast.dhd.ssid         = blog_p->wfd.dhd_ucast.ssid;
-//#ifdef FC_WFD_DEBUG
-#if 0
+#ifdef FC_WFD_DEBUG
         if(net_ratelimit()) 
             printk("#### %s:%d #### flowring_idx:%d ssid:0x%08X\n",__FUNCTION__,__LINE__,fkb_p->wl.ucast.dhd.flowring_idx,fkb_p->wl.ucast.dhd.ssid);
 #endif
     }
 
     /* enqueue packet to fc_wfd_queue */
-    WFD_NBuff_EnQueue(queue,pNBuff);
+    if(WFD_NBuff_EnQueue(queue,pNBuff))
+    {
     wfd_p->count_rx_queue_packets++;
+    }else
+    {
+        nbuff_free((pNBuff_t) pNBuff); //Drop packet ...
+        gs_count_no_buffers[queue->qidx]++;
+#ifdef FC_WFD_DEBUG
+        if(net_ratelimit()) 
+            printk("#### %s:%d #### FC WFD enqueue Drop packet after check Full !!... qidx:%d len:%d\n",__FUNCTION__,__LINE__,queue->qidx,WFD_NBuff_Queue_Size(queue));
+#endif
+        return 1; // PKT_DONE ...
+
+    }
+
 
 #if defined(FC_WFD_LAZY_DEFER)
     if(!WFD_NBuff_Defer_Queue((queue->qidx)))
@@ -475,7 +480,14 @@ int wfd_accelerator_init(void)
 
     init_waitqueue_head(&fc_wfd_defer_thread_wqh);
     fc_wfd_defer_thread = kthread_create(WFD_NBuff_Defer_Monitor, NULL, "fc_wfd_defer");
-    wake_up_process(fc_wfd_defer_thread);
+
+     if(fc_wfd_defer_thread)
+    {
+        struct sched_param param;
+        param.sched_priority = 5;
+        sched_setscheduler(fc_wfd_defer_thread, SCHED_RR, &param);
+        wake_up_process(fc_wfd_defer_thread);
+    }
 #endif
 
     fc_wfd_enqueue_cb = fcache_wfd_enqueue;
@@ -518,6 +530,8 @@ wfd_bulk_fkb_get(unsigned long qid, unsigned long budget, void *priv, void **rx_
 {
     unsigned int rx_pktcnt = 0;
     pNBuff_t pNBuff = NULL;
+    FkBuff_t *fkb_p = NULL;
+    struct sk_buff *skb_p = NULL ;  
     pWFD_NBuff_Queue queue  = NULL ;
     wfd_object_t *wfd_p = (wfd_object_t *)priv;
 
@@ -533,7 +547,24 @@ wfd_bulk_fkb_get(unsigned long qid, unsigned long budget, void *priv, void **rx_
             break; //nothing in queue ...
         }
 
-        rx_pkts[rx_pktcnt] = (void *)PNBUFF_2_FKBUFF(pNBuff);
+        if( IS_SKBUFF_PTR(pNBuff) )
+        {  /* Convert SKB to FKB */
+            skb_p = PNBUFF_2_SKBUFF(pNBuff);
+            /* CAUTION: Tag that the fkbuff is from sk_buff */
+            fkb_p = (FkBuff_t *) &skb_p->fkbInSkb;
+
+            /* No vaild dirty_p (dirty_p field overlap with fkb_p->flags )in fkb any more ,flush whole pkt .. */
+            cache_flush_len( fkb_p->data, fkb_p->len);
+
+            fkb_p->flags = _set_in_skb_tag_(0); /* clear and set in_skb tag */
+            FKB_CLEAR_LEN_WORD_FLAGS(fkb_p->len_word); /*clears bits 31-24 of skb->len */            
+            fkb_set_ref(fkb_p, 1);
+        }else
+        {/* FKB */
+            fkb_p = PNBUFF_2_FKBUFF(pNBuff);
+        }
+
+        rx_pkts[rx_pktcnt] = (void *)fkb_p;
 
         budget--;
         rx_pktcnt++;
@@ -600,19 +631,28 @@ wfd_bulk_skb_get(unsigned long qid, unsigned long budget, void *priv, void **rx_
             break; //nothing in queue ...
         }
 
-        /* Convert FKB to SKB */
-        skb_p = nbuff_xlate((pNBuff_t )pNBuff);
+        if(IS_FKBUFF_PTR(pNBuff))
+        {/* Convert FKB to SKB */
+            skb_p = nbuff_xlate((pNBuff_t )pNBuff);
 
-        if (likely(skb_p))
-        {
-            fkb_p = PNBUFF_2_FKBUFF(pNBuff);
-            skb_p->wl.ucast.nic.wl_chainidx = fkb_p->wl.ucast.nic.wl_chainidx ;
+            if (likely(skb_p))
+            {
+                fkb_p = PNBUFF_2_FKBUFF(pNBuff);
+                skb_p->wl.ucast.nic.wl_chainidx = (fkb_p->wl.ucast.nic.wl_chainidx);
+            }else
+            {
+               // No skb buf 
+                nbuff_free((pNBuff_t) pNBuff);
+                gs_count_no_skbs[(queue->qidx)]++;
+                continue;
+            }
         }else
-        {
-           // No skb buf 
-            nbuff_free((pNBuff_t) pNBuff);
-            continue;
+        {/* SKB */
+            skb_p = PNBUFF_2_SKBUFF(pNBuff);
         }
+
+        //Clear cb for make sure PKTTAG is empty
+        bzero(skb_p->cb,sizeof(skb_p->cb));
 
         rx_pkts[rx_pktcnt] = (void *)skb_p;
 

@@ -160,15 +160,29 @@ static void setLed (PLED_CTRL pLed, unsigned short led_state, unsigned short led
     spin_lock_irqsave(&bcm_gpio_spinlock, flags);
 
 #if defined(CONFIG_BCM963268) 
-    /* Enable LED controller to drive this GPIO */
-    if (!(led_gpio & BP_GPIO_SERIAL))
-        GPIO->LEDCtrl |= GPIO_NUM_TO_MASK(led_gpio);
+    if (led_gpio & BP_LED_USE_GPIO) {
+        /* This Led is a GPIO, set/unset led directly */
+        /* Take over high GPIOs from WLAN block */
+        if ((led_gpio & BP_GPIO_NUM_MASK) > 35)
+            GPIO->GPIOCtrl |= GPIO_NUM_TO_MASK(led_gpio - 32);
+        /* set led to output */
+        GPIO->GPIODir |= GPIO_NUM_TO_MASK(led_gpio);
+        /* set value */
+        if( gpio_state )
+            GPIO->GPIOio |= GPIO_NUM_TO_MASK(led_gpio);
+        else
+            GPIO->GPIOio &= ~GPIO_NUM_TO_MASK(led_gpio);
+    } else {
+        /* Enable LED controller to drive this GPIO */
+        if (!(led_gpio & BP_GPIO_SERIAL))
+            GPIO->LEDCtrl |= GPIO_NUM_TO_MASK(led_gpio);
 
-    LED->ledMode &= ~(LED_MODE_MASK << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
-    if( gpio_state )
-        LED->ledMode |= (LED_MODE_OFF << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
-    else
-        LED->ledMode |= (LED_MODE_ON << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
+        LED->ledMode &= ~(LED_MODE_MASK << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
+        if( gpio_state )
+            LED->ledMode |= (LED_MODE_OFF << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
+        else
+            LED->ledMode |= (LED_MODE_ON << GPIO_NUM_TO_LED_MODE_SHIFT(led_gpio));
+    }
 #elif defined(CONFIG_BCM96838)
     if ( (led_gpio&BP_LED_PIN) || (led_gpio&BP_GPIO_SERIAL) )
     {

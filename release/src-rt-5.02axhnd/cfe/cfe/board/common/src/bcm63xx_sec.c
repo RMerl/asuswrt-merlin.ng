@@ -248,7 +248,11 @@ cfe_sec_err_t cfe_sec_init(void)
                 case SEC_STATE_GEN3_MFG:
                 case SEC_STATE_GEN3_FLD:
 #endif
+#ifdef CFG_RAMAPP
+                        CFE_RAM_ROM_PARMS_AUTH_PARM_GETM(&_obj.sec_args.authArgs);
+#else
                         memcpy((void *)&_obj.sec_args, (void *)BTRM_INT_MEM_CREDENTIALS_ADDR, sizeof(Booter1Args));
+#endif
                         break;
                 default:
                         goto err;

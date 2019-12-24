@@ -14,6 +14,10 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -1018,7 +1022,7 @@ int get_permission(const char *const account,
 	snprintf(target, (len+1), "*%s=", (f != NULL)?f:"");
 	target[len] = 0;
 
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	free(target);
 	if (follow_info == NULL) {
 		if (account == NULL)
@@ -1133,7 +1137,7 @@ retry_get_permission:
 	snprintf(target, (len+1), "*%s=", (f != NULL)?f:"");
 	target[len] = 0;
 	
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	free(target);
 	if (follow_info == NULL) {
 		if(account == NULL)
@@ -1253,7 +1257,7 @@ int set_permission(const char *const account,
 	target[len] = 0;
 
 	// 5. judge if the target is in the var file.
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	if (follow_info == NULL) {
 		if (account == NULL)
 			usb_dbg("No right about \"%s\" with the share mode.\n",
@@ -1429,7 +1433,7 @@ extern int set_permission(const char *const account,
 	target[len] = 0;
 	
 	// 5. judge if the target is in the var file.
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	if (follow_info == NULL) {
 		if(account == NULL)
 			usb_dbg("No right about \"%s\" with the share mode.\n", (folder == NULL?"Pool":folder));
@@ -1583,7 +1587,7 @@ int add_folder_at_var_file(const char *const account,
 		free(var_file);
 		free(target);
 		return -1;
-	} else if (upper_strstr(var_info, target) != NULL) {
+	} else if (strcasestr(var_info, target) != NULL) {
 		free(var_file);
 		free(target);
 		free(var_info);
@@ -1792,7 +1796,7 @@ int del_folder_at_var_file(const char *const account,
 		return -1;
 	}
 
-	follow_info = upper_strstr(var_info, target);
+	follow_info = strcasestr(var_info, target);
 	free(target);
 	if (follow_info == NULL) {
 		free(var_file);
@@ -1986,7 +1990,7 @@ int mod_folder_at_var_file(const char *const account,
 		return -1;
 	}
 
-	if ((follow_info = upper_strstr(var_info, target)) == NULL) {
+	if ((follow_info = strcasestr(var_info, target)) == NULL) {
 		usb_dbg("%s: No \"%s\" in \"%s\"..\n", __FUNCTION__, folder,
 			var_file);
 		free(var_file);
@@ -2161,7 +2165,7 @@ extern int test_if_exist_share(const char *const mount_path, const char *const f
 	
 	result = 0;
 	for(i = 0; i < sh_num; ++i)
-		if(!upper_strcmp(folder, folder_list[i])){
+		if(strcasecmp(folder, folder_list[i]) == 0){
 			result = 1;
 			break;
 		}

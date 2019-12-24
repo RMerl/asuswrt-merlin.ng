@@ -32,6 +32,7 @@ written consent.
 #include <linux/spinlock.h>
 #include <linux/module.h>
 #include <linux/namei.h>
+#include "br_private.h"
 
 #include "bcm_mcast_priv.h"
 
@@ -479,6 +480,8 @@ static void bcm_mcast_if_handle_lower_up(struct net_device *dev)
          bcm_mcast_if_add_lower_port_to_if(dev, pif);
       }
       spin_unlock_bh(&pif->config_lock);
+
+      bcm_mcast_netlink_send_query_trigger(dev->ifindex);
    }   
    rcu_read_unlock();           
 }
@@ -581,6 +584,23 @@ static int bcm_mcast_if_netdev_notifier(struct notifier_block *this, unsigned lo
    }
 
    return NOTIFY_DONE;
+}
+
+static int bridge_notifier(struct notifier_block *nb, unsigned long event, void *info)
+{
+    struct bridge_notifier_info *info_p = info; 
+    switch (event)
+    {
+        case BREVT_IF_CHANGED:
+            if (info_p->isadd) 
+            {
+                /* handle lower ports added to bridge - add LAN ports to list
+                   Remove from bridge is handled by NETDEV_DOWN notification */
+                bcm_mcast_if_handle_lower_up(info_p->dev);
+            }
+            break;
+    }
+    return NOTIFY_DONE;
 }
 
 static int bcm_mcast_if_discover( void )
@@ -739,6 +759,10 @@ void bcm_mcast_if_deinit( void )
    {
        unregister_netdevice_notifier( &mcast_ctrl->netdev_notifier );
    }
+   if ( mcast_ctrl->bridge_notifier.notifier_call == bridge_notifier )
+   {
+       unregister_bridge_notifier(&mcast_ctrl->bridge_notifier);
+   }
    bcm_mcast_if_delete(0);
 }
 
@@ -750,6 +774,9 @@ __init int bcm_mcast_if_init( void )
    
    mcast_ctrl->netdev_notifier.notifier_call = bcm_mcast_if_netdev_notifier,
    register_netdevice_notifier( &mcast_ctrl->netdev_notifier );
+
+   mcast_ctrl->bridge_notifier.notifier_call = bridge_notifier,
+   register_bridge_notifier( &mcast_ctrl->bridge_notifier );
 
 #if defined(CONFIG_BR_IGMP_SNOOP)
    mcast_ctrl->ipv4_file_io.owner = THIS_MODULE;

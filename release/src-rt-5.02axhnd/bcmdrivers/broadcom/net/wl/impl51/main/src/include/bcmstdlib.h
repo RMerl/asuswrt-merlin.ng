@@ -1,6 +1,6 @@
 /*
  * prototypes for functions defined in bcmstdlib.c
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  *
  * <<Broadcom-WL-IPTag/Open:>>
- * $Id: bcmstdlib.h 692135 2017-03-26 17:19:39Z $:
+ * $Id: bcmstdlib.h 774649 2019-05-01 13:45:54Z $:
  */
 
 /*
@@ -53,7 +53,7 @@
  */
 #define PRINTF_BUFLEN	256
 
-#if !defined(_WIN32) && !defined(_CFE_) && !defined(EFI)
+#if !defined(_CFE_) && !defined(EFI)
 
 typedef int FILE;
 #define stdout ((FILE *)1)
@@ -68,6 +68,12 @@ extern void putc(int c);
 #endif // endif
 /* extern int putc(int c, FILE *stream); */
 #define putchar(c) putc(c)
+/* XXX
+ * When included by RTE posix stubs, "puts()" unfortunately caused
+ * a shadow variable warning in one of the ThreadX files...mask out
+ * the puts in such path using this #ifdef hack.
+ * Use #include <bcmstdlib.h> directly where it needs to call puts().
+ */
 #if !defined(_STDLIB_H_) && !defined(_STRING_H_) && !defined(_STDIO_H_)
 extern int fputs(const char *s, FILE *stream);
 extern int puts(const char *s);
@@ -89,9 +95,9 @@ extern char *strcpy(char *dest, const char *src);
 #define strcpy(dest, src)	use_strncpy_instead(dest, src)
 #endif // endif
 #define strcat(dest, src)	use_strncat_instead(dest, src)
-#endif /* !_WIN32 && !_CFE_ && !EFI */
+#endif /* !_CFE_ && !EFI */
 
-#if (!defined(_WIN32) && !defined(_CFE_)) || (defined(EFI) && defined(EFI_WINBLD))
+#if !defined(_CFE_) || (defined(EFI) && defined(EFI_WINBLD))
 /* string functions */
 extern int printf(const char *fmt, ...)
 	__attribute__ ((format (__printf__, 1, 2)));
@@ -127,15 +133,11 @@ extern void *memset(void *dest, int c, size_t n);
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern int memcmp(const void *s1, const void *s2, size_t n);
 
-#endif /* !_WIN32 && !_CFE_ && !EFI */
+#endif /* !_CFE_ && !EFI */
 #endif   /* BWL_INTERNAL_STDLIB_SUPPORT */
 
-#if !defined(_WIN32) || defined(EFI)
 extern int snprintf(char *str, size_t n, char const *fmt, ...)
 	__attribute__ ((format (__printf__, 3, 4)));
-#else
-extern int snprintf(char *str, size_t n, char const *fmt, ...);
-#endif // endif
 
 extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
 
@@ -143,12 +145,10 @@ extern int vsnprintf(char *buf, size_t size, const char *fmt, va_list ap);
 typedef int (*printf_sendup_output_fn_t)(void *ctx, char *buf, int len);
 void printf_set_sendup_output_fn(printf_sendup_output_fn_t fn, void *ctx);
 
-#if !defined(_WIN32) || defined(EFI)
-size_t
-strnlen(const char *s, size_t maxlen);
-#endif /* !_WIN32 || EFI */
+size_t strnlen(const char *s, size_t maxlen);
 
 #ifdef DONGLEBUILD
 void printf_set_rodata_invalid(void);
+void printf_suppress_timestamp(bool suppress);
 #endif /* DONGLEBUILD */
 #endif /* _BCMSTDLIB_H */

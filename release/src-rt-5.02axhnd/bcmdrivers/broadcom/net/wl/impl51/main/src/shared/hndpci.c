@@ -1,7 +1,7 @@
 /*
  * Low-Level PCI and SI support for BCM47xx
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -874,6 +874,9 @@ BCMATTACHFN(hndpci_init_pci)(si_t *sih, uint coreunit)
 		}
 
 		/* Enable PCI bridge BAR0 memory & master access */
+		/* XXX: Old comment said enable prefetch & burst, but that's not
+		 * what the code did/does. Do we have to enable PF & burst?
+		 */
 		val = PCI_CMD_MASTER | PCI_CMD_MEMORY;
 		hndpci_write_config(sih, bus, pci_hbslot, 0, PCI_CFG_CMD, &val, sizeof(val));
 
@@ -889,6 +892,13 @@ BCMATTACHFN(hndpci_init_pci)(si_t *sih, uint coreunit)
 	return ret;
 }
 
+/**
+ * PR38069: Called after completing fixing up the devices on ext bus.
+ * The parkid parameter is the value to set the pci core parkid.  A value of
+ * PCI_PARK_NVRAM will allow the NVRAM to determine the value of parkid, if
+ * NVRAM not present than use default which is PCI_PARK_LAST.  If an invalid
+ * value is specified for park either by caller or NVRAM than use default option.
+ */
 void
 hndpci_arb_park(si_t *sih, uint parkid)
 {

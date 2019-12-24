@@ -184,3 +184,22 @@ bdmf_error_t drv_cnpl_policer_set(policer_cfg_t* policer_cfg)
     return rc;
 }
 
+bdmf_error_t drv_cnpl_policer_clr(policer_cfg_t* policer_cfg)
+{
+    int rc = BDMF_ERR_OK;
+    cnpl_policer_cfg policer_group_cfg;
+    uint32_t policer_group, policer_param_offset;
+    cnpl_dual_policer_param_cfg_t cnpl_policer_param = {};
+
+    if(policer_cfg->is_dual)
+        policer_group = CNPL_GROUP_DUAL_BUCKET_INDEX;
+    else
+        policer_group = CNPL_GROUP_ONE_INDEX;
+    rc = ag_drv_cnpl_policer_cfg_get(policer_group, &policer_group_cfg);
+    if (rc)
+        return BDMF_ERR_INVALID_OP;
+
+    policer_param_offset = (policer_group_cfg.pa_ba  <<3)+ (policer_cfg->index * (policer_group_cfg.pl_double + 1) * POLICER_PARAM_BUCKET_SIZE);
+    MWRITE_BLK_8((uint32_t *)DEVICE_ADDRESS(RU_BLK(CNPL).addr[0] + policer_param_offset), &cnpl_policer_param, ((policer_group_cfg.pl_double + 1) * POLICER_PARAM_BUCKET_SIZE));
+    return rc;
+}

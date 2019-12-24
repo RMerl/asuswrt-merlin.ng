@@ -56,9 +56,9 @@ OBJS := aes.o aeskeywrap.o rijndael-alg-fst.o dh.o bn.o sha1.o passhash.o prf.o 
 # For customer backwords compatibility, for now we keep CONFIG_WSCCMD here and can be removed when
 # all customers migrate to new SDK (no CONFIG_WSCCMD in configration files).
 #ifneq ($(RTCONFIG_WPS)$(CONFIG_WPS)$(CONFIG_WSCCMD)$(CONFIG_MFP),)
-OBJS += sha256.o hmac_sha256.o
 #endif
 endif
+OBJS += sha256.o hmac_sha256.o
 
 # Find all ELF binaries (including extra libraries)
 BINARIES := $(shell find $(TARGETDIR) -path $(TARGETDIR)/lib -prune -o -type f -print | file -f - | grep ELF | cut -d':' -f1)

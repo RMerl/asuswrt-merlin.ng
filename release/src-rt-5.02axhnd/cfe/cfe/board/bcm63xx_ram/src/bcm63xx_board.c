@@ -796,15 +796,15 @@ static void getAllocBoardParam(void)
                 (NVRAM.allocs.alloc_rdp.param2_size == 0xff) ||
                 ((NVRAM.allocs.alloc_rdp.param2_size&0x7f) > MAX_RDP_PARAM2_SIZE)) {
 #ifdef DEFAULT_NVRAM_RDP_PARAM1
-			NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM1);
+        NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM1);
 #else
-			NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, 0);
+        NVRAM_SET(allocs.alloc_rdp.param1_size, unsigned char, 0);
 #endif
 
 #ifdef DEFAULT_NVRAM_RDP_PARAM2
-			NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM2);
+        NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, DEFAULT_NVRAM_RDP_PARAM2);
 #else
-			NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, 0);
+        NVRAM_SET(allocs.alloc_rdp.param2_size, unsigned char, 0);
 #endif
 			NVRAM_UPDATE(NULL);
     }
@@ -916,7 +916,7 @@ static int getVoiceSupportStatus(NVRAM_DATA *pNvramData)
             gVoiceBoardParam[PARAM_IDX_DECT_SUPPORT].enabled = FALSE;
         }
 #if defined(OTP_GET_USER_BIT) && defined(OTP_DECT_DISABLE)
-       if( OTP_GET_USER_BIT(OTP_DECT_DISABLE))
+       if( OTP_GET_USER_BIT(OTP_DECT_DISABLE) && (NVRAM.ulBoardStuffOption & DECT_SUPPORT_MASK))
        {
           NVRAM_SET(ulBoardStuffOption,unsigned int, (NVRAM.ulBoardStuffOption & ~DECT_SUPPORT_MASK));
           NVRAM_UPDATE(NULL);
@@ -1329,7 +1329,7 @@ int setBoardParam(void)
     }
 
     changed =  processPrompt(gBoardParam, gNumBoardParams);
-#if defined(_BCM963138_) || defined(_BCM963148_) || defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96846_)
+#if defined(_BCM963138_) || defined(_BCM963148_) || defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM947189_)
     /* make sure we verify memcfg with current select board */
     i = atoi(gBoardParam[PARAM_IDX_BOARD_NAME].parameter);
     BpSetBoardId(BpGetBoardIdNameByIndex( i ));

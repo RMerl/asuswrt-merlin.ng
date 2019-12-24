@@ -41,6 +41,12 @@
 #define MAX_PIN_LEN		64
 #define MAX_IP_ADDR_LEN		128 	//32
 
+typedef struct _AAE_STATUS
+{
+	int status;
+	char *status_text;
+} aae_status_t;
+
 typedef struct _GetServiceArea
 {
 	char 	status[MAX_STATUS_LEN];
@@ -338,4 +344,7 @@ int send_ifttt_notification_req(
 	const char *msg,
 	IftttNotification *pIftttnotification
 );
+
+char *get_curl_status_string(int error);
+char *get_aae_status_string(int error);
 #endif

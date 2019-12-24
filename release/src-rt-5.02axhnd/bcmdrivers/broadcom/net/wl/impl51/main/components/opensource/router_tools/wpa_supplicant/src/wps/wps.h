@@ -100,6 +100,7 @@ struct wps_device_data {
 	struct wpabuf *vendor_ext[MAX_WPS_VENDOR_EXTENSIONS];
 
 	int p2p;
+	u8 multi_ap_ext;
 };
 
 /**
@@ -175,12 +176,24 @@ struct wps_config {
 	 */
 	const u8 *p2p_dev_addr;
 
+	/**
+	 * pbc_in_m1 - Do not remove PushButton config method in M1 (AP)
+	 *
+	 * This can be used to enable a workaround to allow Windows 7 to use
+	 * PBC with the AP.
+	 */
 	int pbc_in_m1;
 
 	/**
 	 * peer_pubkey_hash - Peer public key hash or %NULL if not known
 	 */
 	const u8 *peer_pubkey_hash;
+
+	/**
+	 * multi_ap_backhaul_sta - Whether this is a Multi-AP backhaul STA
+	 * enrollee
+	 */
+	int multi_ap_backhaul_sta;
 };
 
 struct wps_data * wps_init(const struct wps_config *cfg);
@@ -388,6 +401,37 @@ struct wps_registrar_config {
 	 * PSK is set for a network.
 	 */
 	int force_per_enrollee_psk;
+
+	/**
+	 * multi_ap_backhaul_ssid - SSID to supply to a Multi-AP backhaul
+	 * enrollee
+	 *
+	 * This SSID is used by the Registrar to fill in information for
+	 * Credentials when the enrollee advertises it is a Multi-AP backhaul
+	 * STA.
+	 */
+	const u8 *multi_ap_backhaul_ssid;
+
+	/**
+	 * multi_ap_backhaul_ssid_len - Length of multi_ap_backhaul_ssid in
+	 * octets
+	 */
+	size_t multi_ap_backhaul_ssid_len;
+
+	/**
+	 * multi_ap_backhaul_network_key - The Network Key (PSK) for the
+	 * Multi-AP backhaul enrollee.
+	 *
+	 * This key can be either the ASCII passphrase (8..63 characters) or the
+	 * 32-octet PSK (64 hex characters).
+	 */
+	const u8 *multi_ap_backhaul_network_key;
+
+	/**
+	 * multi_ap_backhaul_network_key_len - Length of
+	 * multi_ap_backhaul_network_key in octets
+	 */
+	size_t multi_ap_backhaul_network_key_len;
 };
 
 /**
@@ -791,6 +835,9 @@ struct wps_context {
 	struct wpabuf *ap_nfc_dh_pubkey;
 	struct wpabuf *ap_nfc_dh_privkey;
 	struct wpabuf *ap_nfc_dev_pw;
+#ifdef CONFIG_DRIVER_BRCM_MAP
+	int map_bh_sta;
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
 };
 
 struct wps_registrar *

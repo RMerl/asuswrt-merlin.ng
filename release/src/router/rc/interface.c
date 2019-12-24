@@ -368,11 +368,11 @@ static int route_manip(int cmd, char *name, int metric, char *dst, char *gateway
 
 	/* Fill in rtentry */
 	memset(&rt, 0, sizeof(rt));
-	if (dst && *dst)
+	if (dst)
 		inet_aton(dst, &sin_addr(&rt.rt_dst));
-	if (gateway && *gateway)
+	if (gateway)
 		inet_aton(gateway, &sin_addr(&rt.rt_gateway));
-	if (genmask && *genmask)
+	if (genmask)
 		inet_aton(genmask, &sin_addr(&rt.rt_genmask));
 	rt.rt_metric = metric;
 	rt.rt_flags = RTF_UP;
@@ -669,7 +669,7 @@ int start_vlan(void)
 		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
 		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
 		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual"))) {
-		char *wan_base_if = "eth0";
+		char *wan_base_if = (get_model() == MODEL_RTAX58U) ? "eth4" : "eth0";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}

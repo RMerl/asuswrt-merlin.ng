@@ -508,6 +508,14 @@ int32 wl_rxchainhandler(wl_info_t *wl, struct sk_buff *skb)
 		}
 		tx_dev = pt->tx_dev;
 		
+#if defined(CONFIG_BCM_FC_BASED_WFD)
+		if(pt->tx_dev->priv_flags & (IFF_BCM_WLANDEV))
+		{ /* not support handle CHAIN XMIT yet .. let fcache handle it*/
+			spin_unlock_bh(&pktctbl_lock);
+			goto exit;
+		}
+#endif		
+
 		dev_xmit = (unsigned long)(tx_dev->netdev_ops->ndo_start_xmit);
 		if (!dev_xmit) {
 			spin_unlock_bh(&pktctbl_lock);
@@ -539,13 +547,16 @@ wl_pktc_tbl_t *wl_pktc_attach(struct wl_info *wl, struct wl_if *wlif)
 
 	pt = (wl_pktc_tbl_t *)wl_pktc_req(PKTC_TBL_GET_START_ADDRESS, 0, 0, 0);
 
-	pt->g_stats = (struct pktc_stats *) MALLOC(wl->osh, sizeof(struct pktc_stats));
 	if (!pt->g_stats) {
-		WL_ERROR(("wl%d: %s: malloc of pktc_tbl->g_stats failed\n",
-			(wl->pub) ? wl->pub->unit:wlif->subunit, __FUNCTION__));
-		return NULL;
+		pt->g_stats = (struct pktc_stats *) kmalloc(sizeof(struct pktc_stats), GFP_KERNEL);
+		if (!pt->g_stats) {
+			WL_ERROR(("wl%d: %s: malloc of pktc_tbl->g_stats failed\n",
+				(wl->pub) ? wl->pub->unit:wlif->subunit, __FUNCTION__));
+			return NULL;
+		}
+		bzero(pt->g_stats, sizeof(struct pktc_stats));
 	}
-	bzero(pt->g_stats, sizeof(struct pktc_stats));
+	pt->g_stats->n_references++;
 
 #ifdef DSLCPE
 	osl_set_wlunit(wl->osh, wl->unit);
@@ -562,9 +573,15 @@ wl_pktc_tbl_t *wl_pktc_attach(struct wl_info *wl, struct wl_if *wlif)
 
 void wl_pktc_detach(struct wl_info *wl)
 {
-	if (wl->pub->pktc_tbl->g_stats)
-		MFREE(wl->osh, wl->pub->pktc_tbl->g_stats, sizeof(struct pktc_stats));
-		
+	wl_pktc_tbl_t *pt = wl->pub->pktc_tbl;
+
+	if (pt->g_stats != NULL) {
+		if (--(pt->g_stats->n_references) == 0) {
+			kfree(pt->g_stats);
+			pt->g_stats = NULL;
+		}
+	}
+
 	fdb_check_expired_wl_hook = NULL;
 }
 
@@ -621,7 +638,10 @@ int wl_check_fdb_expired(unsigned char *addr)
 		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]));
 
 	pt = (wl_pktc_tbl_t *)wl_pktc_req(PKTC_TBL_GET_BY_DA, (unsigned long)addr, 0, 0);
-	if (pt && pt->sta_assoc && pt->hits) {
+	/* PSTA interface has zero hits as DA is the PC mac behind PSTA. 
+	   Return not expired to avoid flushing bridge fdb to cause dip. 
+	*/
+	if (pt && (pt->hits || pt->sta_assoc)) {
 		pt->hits = 0;
 		return 0; /* packet is going through, not expired */
 	}
@@ -666,6 +686,19 @@ void wl_pktc_clear_entry(wl_pktc_tbl_t *pt)
 		bzero(&pt->ea, sizeof(struct _mac_address));
 		bzero(&pt->chain[0], sizeof(pt->chain));
 	}
+}
+
+/* traverse the entire pktc table to get the number of associated stations */
+int wl_pktc_get_sta_num(void)
+{
+	int i, sta_cnt = 0;
+
+	for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
+		if ((g_pktc_tbl[i].in_use) && (g_pktc_tbl[i].sta_assoc)) {
+			sta_cnt ++;
+		}
+	}
+	return sta_cnt;
 }
 
 /* for packet chaining */
@@ -755,9 +788,18 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		/* param0 is addr, param1 is dev, param2 is wl handle if any */
 		pt = (wl_pktc_tbl_t *)PKTC_TBL_FN_UPDATE(g_pktc_tbl, (uint8_t *)param0,
 			(struct net_device *)param1, (pktc_handle_t *)param2);
+
 		if ((pt == NULL) || (pt->idx >= CHAIN_ENTRY_NUM))
 			return PKTC_INVALID_CHAIN_IDX;
 
+#if defined(CONFIG_BCM_FC_BASED_WFD)
+		/* For CONFIG_BCM_FC_BASED_WFD , TXCHAIN will go through FCACHE, so it's ok for enable CHAIN for wl to wl ... */
+		if (pt->tx_dev == NULL) {
+			/* remove this chain entry */
+			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
+			return PKTC_INVALID_CHAIN_IDX;
+		}
+#else
 		/* if wl_handle is NULL and device is IFF_BCM_WLANDEV, which means pkt is going to dhd drv,
 		 * we should not create the chain entry for it, hence pkt won't be chained and sent
 		 * to tx_dev directly but fcache. Same as wds.
@@ -768,6 +810,10 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 			return PKTC_INVALID_CHAIN_IDX;
 		}
+#endif
+
+		/* update associated station numbers */
+		g_pktc_tbl[0].g_stats->total_stas = wl_pktc_get_sta_num();
 
 #if defined(BCM_WFD)
 {
@@ -786,6 +832,8 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 
 	case PKTC_TBL_DELETE:
 		PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
+		/* update associated station numbers */
+		g_pktc_tbl[0].g_stats->total_stas = wl_pktc_get_sta_num();
 		return 0;
 
 	case PKTC_TBL_DELETE_WLAN_HANDLE:
@@ -812,10 +860,8 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		if (pt != NULL) {
 			pt->sta_assoc = param1;
 		}
-		if (param2 == WLC_E_ASSOC_IND)
-			g_pktc_tbl[0].g_stats->total_stas ++;
-		else if (param2 == WLC_E_DISASSOC_IND)
-			g_pktc_tbl[0].g_stats->total_stas --;
+		/* update associated station numbers */
+		g_pktc_tbl[0].g_stats->total_stas = wl_pktc_get_sta_num();
 		return 0;
 
 	default:

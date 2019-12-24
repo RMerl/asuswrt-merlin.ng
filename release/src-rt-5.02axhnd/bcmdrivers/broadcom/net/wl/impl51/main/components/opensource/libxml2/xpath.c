@@ -8495,6 +8495,11 @@ xmlXPathIdFunction(xmlXPathParserContextPtr ctxt, int nargs) {
 	int i;
 
 	ret = xmlXPathNodeSetCreate(NULL);
+        /*
+         * FIXME -- in an out-of-memory condition this will behave badly.
+         * The solution is not clear -- we already popped an item from
+         * ctxt, so the object is in a corrupt state.
+         */
 
 	if (obj->nodesetval != NULL) {
 	    for (i = 0; i < obj->nodesetval->nodeNr; i++) {
@@ -9460,6 +9465,14 @@ xmlXPathSumFunction(xmlXPathParserContextPtr ctxt, int nargs) {
     xmlXPathReleaseObject(ctxt->context, cur);
 }
 
+/*
+ * To assure working code on multiple platforms, we want to only depend
+ * upon the characteristic truncation of converting a floating point value
+ * to an integer.  Unfortunately, because of the different storage sizes
+ * of our internal floating point value (double) and integer (int), we
+ * can't directly convert (see bug 301162).  This macro is a messy
+ * 'workaround'
+ */
 #define XTRUNC(f, v)            \
     f = fmod((v), INT_MAX);     \
     f = (v) - (f) + (double)((int)(f));
@@ -9922,6 +9935,10 @@ xmlXPathStringEvalNumber(const xmlChar *str) {
     }
 
 #ifdef __GNUC__
+    /*
+     * tmp/temp is a workaround against a gcc compiler bug
+     * http://veillard.com/gcc.bug
+     */
     ret = 0;
     while ((*cur >= '0') && (*cur <= '9')) {
 	ret = ret * 10;
@@ -10008,6 +10025,10 @@ xmlXPathCompNumber(xmlXPathParserContextPtr ctxt)
         XP_ERROR(XPATH_NUMBER_ERROR);
     }
 #ifdef __GNUC__
+    /*
+     * tmp/temp is a workaround against a gcc compiler bug
+     * http://veillard.com/gcc.bug
+     */
     ret = 0;
     while ((CUR >= '0') && (CUR <= '9')) {
 	ret = ret * 10;

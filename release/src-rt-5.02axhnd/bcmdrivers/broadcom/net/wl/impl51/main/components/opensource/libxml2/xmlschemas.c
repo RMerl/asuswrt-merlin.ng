@@ -2580,6 +2580,9 @@ xmlSchemaFacetErr(xmlSchemaAbstractCtxtPtr actxt,
 
 	    char len[25], actLen[25];
 
+	    /* FIXME, TODO: What is the max expected string length of the
+	    * this value?
+	    */
 	    if (nodeType == XML_ATTRIBUTE_NODE)
 		msg = xmlStrcat(msg, BAD_CAST "The value '%s' has a length of '%s'; ");
 	    else
@@ -13010,6 +13013,10 @@ xmlSchemaResolveElementReferences(xmlSchemaElementPtr elemDecl,
     if (elemDecl->substGroup != NULL) {
 	xmlSchemaElementPtr substHead;
 
+	/*
+	* FIXME TODO: Do we need a new field in _xmlSchemaElement for
+	* substitutionGroup?
+	*/
 	substHead = xmlSchemaGetElem(ctxt->schema, elemDecl->substGroup,
 	    elemDecl->substGroupNs);
 	if (substHead == NULL) {
@@ -25482,6 +25489,9 @@ xmlSchemaValidatorPopElem(xmlSchemaValidCtxtPtr vctxt)
     if ((inode->typeDef->contentType == XML_SCHEMA_CONTENT_MIXED) ||
 	(inode->typeDef->contentType == XML_SCHEMA_CONTENT_ELEMENTS)) {
 
+	/*
+	* Workaround for "anyType".
+	*/
 	if (inode->typeDef->builtInType == XML_SCHEMAS_ANYTYPE)
 	    goto character_content;
 
@@ -25935,6 +25945,11 @@ xmlSchemaValidateChildElem(xmlSchemaValidCtxtPtr vctxt)
     ptype = pielem->typeDef;
 
     if (ptype->builtInType == XML_SCHEMAS_ANYTYPE) {
+	/*
+	* Workaround for "anyType": we have currently no content model
+	* assigned for "anyType", so handle it explicitely.
+	* "anyType" has an unbounded, lax "any" wildcard.
+	*/
 	vctxt->inode->decl = xmlSchemaGetElem(vctxt->schema,
 	    vctxt->inode->localName,
 	    vctxt->inode->nsName);
@@ -26916,6 +26931,14 @@ xmlSchemaNewValidCtxt(xmlSchemaPtr schema)
     return (ret);
 }
 
+/**
+ * xmlSchemaValidateSetFilename:
+ * @vctxt: the schema validation context
+ * @filename: the file name
+ *
+ * Workaround to provide file error reporting information when this is
+ * not provided by current APIs
+ */
 void
 xmlSchemaValidateSetFilename(xmlSchemaValidCtxtPtr vctxt, const char *filename) {
     if (vctxt == NULL)

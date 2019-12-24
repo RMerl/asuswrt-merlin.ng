@@ -90,14 +90,15 @@ typedef struct mapfrag_t {
 
 	u32 idx;
 	u32 ipid;
+	u32 isdefrag4;
 	struct in6_addr v6addr;
 	__be32 v4addr;
 	struct timeval timer;
 } __attribute__ ((packed)) MapFrag_t;
 
 extern u32 mapfrag_lookup( const struct in6_addr *v6addr, u32 ipid );
-extern void mapfrag_get( u32 idx, __be32 * v4addr, struct timeval *timer );
-extern void mapfrag_set( u32 idx, __be32 v4addr );
+extern void mapfrag_get( u32 idx, u32 *isdefrag4, __be32 * v4addr, struct timeval *timer );
+extern void mapfrag_set( u32 idx, u32 isdefrag4, __be32 v4addr );
 extern void mapfrag_delete( u32 ipid );
 extern int init_mapfrag_list( time_t timeout );
 

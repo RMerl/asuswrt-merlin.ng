@@ -112,111 +112,6 @@ extern char *get_line_from_buffer(const char *buf, char *line, const int line_si
 	return line;
 }
 
-extern char *get_upper_str(const char *const str, char **target){
-	int len, i;
-	char *ptr;
-
-	len = strlen(str);
-	*target = (char *)malloc(sizeof(char)*(len+1));
-	if(*target == NULL){
-		_dprintf("No memory \"*target\".\n");
-		return NULL;
-	}
-	ptr = *target;
-	for(i = 0; i < len; ++i)
-		ptr[i] = toupper(str[i]);
-	ptr[len] = 0;
-
-	return ptr;
-}
-
-extern int upper_strcmp(const char *const str1, const char *const str2){
-	char *upper_str1, *upper_str2;
-	int ret;
-
-	if(str1 == NULL || str2 == NULL)
-		return -1;
-
-	if(get_upper_str(str1, &upper_str1) == NULL)
-		return -1;
-
-	if(get_upper_str(str2, &upper_str2) == NULL){
-		free(upper_str1);
-		return -1;
-	}
-
-	ret = strcmp(upper_str1, upper_str2);
-	free(upper_str1);
-	free(upper_str2);
-
-	return ret;
-}
-
-extern int upper_strncmp(const char *const str1, const char *const str2, int count){
-	char *upper_str1, *upper_str2;
-	int ret;
-
-	if(str1 == NULL || str2 == NULL)
-		return -1;
-
-	if(get_upper_str(str1, &upper_str1) == NULL)
-		return -1;
-
-	if(get_upper_str(str2, &upper_str2) == NULL){
-		free(upper_str1);
-		return -1;
-	}
-
-	ret = strncmp(upper_str1, upper_str2, count);
-	free(upper_str1);
-	free(upper_str2);
-
-	return ret;
-}
-
-extern char *upper_strstr(const char *const str, const char *const target){
-	char *upper_str, *upper_target;
-	char *ret;
-	int len;
-
-	if(str == NULL || target == NULL)
-		return NULL;
-
-	if(get_upper_str(str, &upper_str) == NULL)
-		return NULL;
-
-	if(get_upper_str(target, &upper_target) == NULL){
-		free(upper_str);
-		return NULL;
-	}
-
-	ret = strstr(upper_str, upper_target);
-	if(ret == NULL){
-		free(upper_str);
-		free(upper_target);
-		return NULL;
-	}
-
-	if((len = upper_str-ret) < 0)
-		len = ret-upper_str;
-
-	free(upper_str);
-	free(upper_target);
-
-	return (char *)(str+len);
-}
-
-int stricmp(char const *a, char const *b, int len)
-{
-	for (;len--; a++, b++) {
-		int d = tolower(*a) - tolower(*b);
-		if (d != 0 || !*a)
-			return d;
-    	}
-
-	return 0;
-}
-
 #ifdef HND_ROUTER
 // defined (__GLIBC__) && !defined(__UCLIBC__)
 size_t strlcpy(char *dst, const char *src, size_t size)
@@ -2444,13 +2339,24 @@ void bcmvlan_models(int model, char *vlan)
 
 char *get_productid(void)
 {
-	char *productid = nvram_safe_get("productid");
 #ifdef RTCONFIG_ODMPID
-	char *odmpid = nvram_safe_get("odmpid");
-	if (*odmpid)
-		productid = odmpid;
+	char *productid = nvram_safe_get("odmpid");
+
+	if (*productid)
+		return productid;
 #endif
-	return productid;
+
+	return nvram_safe_get("productid");
+}
+
+char *get_lan_hostname(void)
+{
+	char *hostname = nvram_safe_get("lan_hostname");
+
+	if (*hostname && is_valid_hostname(hostname))
+		return hostname;
+
+	return get_productid();
 }
 
 long backup_rx = 0;
@@ -2987,6 +2893,32 @@ END:
 	}
 
 	return 0;
+}
+#endif
+
+#ifdef CONFIG_BCMWL5
+int is_ure(int unit)
+{
+	if (sw_mode() == SW_MODE_REPEATER) {
+		if (nvram_get_int("wlc_band") == unit)
+			return 1;
+	}
+
+	return 0;
+}
+
+int is_ap(int unit)
+{
+	if (unit < 0) return 0;
+
+	if (is_ure(unit) ||
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		is_psta(unit) || is_psr(unit)
+#endif
+	)
+		return 0;
+
+	return 1;
 }
 #endif
 
@@ -4199,6 +4131,107 @@ int isValidEnableOption(const char *option, int range) {
 		return 1;
 	else
 		return 0;
+}
+
+/*
+ * Validate a string is digit
+ * @string:	pointer to  a string.
+ */
+int isValid_digit_string(const char *string) {
+
+	if (!string || !*string)
+		return 0;
+
+	while (*string)
+	{
+		if (!isdigit(*string))
+			return 0;
+		else
+			++string;
+	}
+	return 1;
+}
+
+/*
+ * Validate a char is not valid for a host hame
+ * @name:	pointer to  a string.
+ */
+static int is_invalid_char_for_hostname(int c)
+{
+	int ret = 0;
+
+	if (c < 0x20)
+		ret = 1;
+#if 0
+	else if (c >= 0x21 && c <= 0x2c)	/* !"#$%&'()*+, */
+		ret = 1;
+#else	/* allow '+' */
+	else if (c >= 0x21 && c <= 0x2a)	/* !"#$%&'()* */
+		ret = 1;
+	else if (c == 0x2c)			/* , */
+		ret = 1;
+#endif
+	else if (c >= 0x2e && c <= 0x2f)	/* ./ */
+		ret = 1;
+	else if (c >= 0x3a && c <= 0x40)	/* :;<=>?@ */
+		ret = 1;
+#if 0
+	else if (c >= 0x5b && c <= 0x60)	/* [\]^_ */
+		ret = 1;
+#else	/* allow '_' */
+	else if (c >= 0x5b && c <= 0x5e)	/* [\]^ */
+		ret = 1;
+	else if (c == 0x60)			/* ` */
+		ret = 1;
+#endif
+	else if (c >= 0x7b)			/* {|}~ DEL */
+		ret = 1;
+#if 0
+	printf("%c (0x%02x) is %svalid for hostname\n", c, c, (ret == 0) ? "  " : "in");
+#endif
+	return ret;
+}
+
+/*
+ * Validate a string is valid host name
+ * @name:	pointer to  a string.
+ */
+int is_valid_hostname(const char *name)
+{
+	const char *p;
+	int c;
+
+	if (!name)
+		return 0;
+
+	for (p = name; (c = *p); p++) {
+		if (is_invalid_char_for_hostname(c))
+			return 0;
+	}
+
+	return p - name;
+}
+
+/*
+ * Validate a string is valid domain name
+ * @name:	pointer to  a string.
+ */
+int is_valid_domainname(const char *name)
+{
+	const char *p;
+	int c;
+
+	if (!name)
+		return 0;
+
+	for (p = name; (c = *p); p++) {
+		if (((c | 0x20) < 'a' || (c | 0x20) > 'z') &&
+		    ((c < '0' || c > '9')) &&
+		    (c != '.' && c != '-' && c != '_'))
+			return 0;
+	}
+
+	return p - name;
 }
 
 #if defined(RTCONFIG_AMAS)

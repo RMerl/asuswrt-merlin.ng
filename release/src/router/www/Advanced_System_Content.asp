@@ -82,6 +82,10 @@
 	*color:#000;
 	border:0px;
 }
+.highlight{
+	background: #78535b;
+    border: 1px solid #f06767;
+}
 </style>
 <script>
 time_day = uptimeStr.substring(5,7);//Mon, 01 Aug 2011 16:25:44 +0800(1467 secs since boot....
@@ -494,6 +498,9 @@ function applyRule(){
 			document.form.dns_probe.value = "1";
 		else
 			document.form.dns_probe.value = "0";
+
+		if(document.form.https_lanport.value != '<% nvram_get("https_lanport"); %>')
+			alert('<#Change_HttpsLanport_Hint#>');
 
 		showLoading();
 
@@ -1724,6 +1731,15 @@ function myisPortConflict(_val, service){
 		return false;
 }
 
+function reset_portconflict_hint(){
+	if($("#sshd_port_x").hasClass("highlight"))
+		$("#sshd_port_x").removeClass("highlight");
+	if($("#https_lanport_input").hasClass("highlight"))
+		$("#https_lanport_input").removeClass("highlight");
+	$("#port_conflict_sshdport").hide();
+	$("#port_conflict_httpslanport").hide();
+}
+
 </script>
 </head>
 
@@ -1902,7 +1918,7 @@ function myisPortConflict(_val, service){
 							 || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" 
 							 || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" 
 							 || based_modelid == "RT-N65U" || based_modelid == "BRT-AC828" 
-							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" 
+							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"
 							 || based_modelid == "GT-AC5300"  || based_modelid == "GT-AX11000" || based_modelid == "GX-AX6000" || based_modelid == "GX-AC5400"
 							){
 								$("#reduce_usb3_tr").show();
@@ -2173,7 +2189,9 @@ function myisPortConflict(_val, service){
 				<tr id="sshd_port_tr">
 					<th><#Port_SSH#></th>
 					<td>
-						<input type="text" class="input_6_table" maxlength="5" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 1, 65535);" value='<% nvram_get("sshd_port"); %>' autocorrect="off" autocapitalize="off">
+						<input type="text" class="input_6_table" maxlength="5" id="sshd_port" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port"); %>' onkeydown="reset_portconflict_hint();">
+						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
+						<div style="color: #FFCC00;">* Using a different port than the default port 22 is recommended to avoid port scan attacks.</div>
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">
@@ -2232,8 +2250,10 @@ function myisPortConflict(_val, service){
 				<tr id="https_lanport">
 					<th><#System_HTTPS_LAN_Port#></th>
 					<td>
-						<input type="text" maxlength="5" class="input_6_table" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off">
-						<span id="https_access_page"></span>
+						<input type="text" maxlength="5" class="input_6_table" id="https_lanport" name="https_lanport" value="<% nvram_get("https_lanport"); %>" onKeyPress="return validator.isNumber(this,event);" onBlur="change_url(this.value, 'https_lan');" autocorrect="off" autocapitalize="off" onkeydown="reset_portconflict_hint();">
+						<span id="port_conflict_httpslanport" style="color: #e68282; display: none;">Port Conflict</span>
+						<div id="https_access_page" style="color: #FFCC00;"></div>
+						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
                                 <tr id="https_crt_gen" style="display:none;">
@@ -2352,7 +2372,7 @@ function myisPortConflict(_val, service){
 			<div id="http_clientlist_Block"></div>
 			<div class="apply_gen">
 				<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
-			</div>   
+			</div>
 		</td>
 	</tr>
 </tbody>

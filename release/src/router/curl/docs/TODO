@@ -18,6 +18,7 @@
 
  1. libcurl
  1.1 TFO support on Windows
+ 1.2 Consult %APPDATA% also for .netrc
  1.3 struct lifreq
  1.5 get rid of PATH_MAX
  1.7 Support HTTP/2 for HTTP(S) proxies
@@ -122,6 +123,7 @@
 
  17. SSH protocols
  17.1 Multiplexing
+ 17.2 Handle growing SFTP files
  17.3 Support better than MD5 hostkey hash
  17.4 Support CURLOPT_PREQUOTE
 
@@ -180,6 +182,12 @@
  this was once started but never finished.
 
  See https://github.com/curl/curl/pull/3378
+
+1.2 Consult %APPDATA% also for .netrc
+
+ %APPDATA%\.netrc is not considered when running on Windows. Shouldn't it?
+
+ See https://github.com/curl/curl/issues/4016
 
 1.3 struct lifreq
 
@@ -791,6 +799,16 @@ that doesn't exist on the server, just like --ftp-create-dirs.
 
  To fix this, libcurl would have to detect an existing connection and "attach"
  the new transfer to the existing one.
+
+17.2 Handle growing SFTP files
+
+ The SFTP code in libcurl checks the file size *before* a transfer starts and
+ then proceeds to transfer exactly that amount of data. If the remote file
+ grows while the tranfer is in progress libcurl won't notice and will not
+ adapt. The OpenSSH SFTP command line tool does and libcurl could also just
+ attempt to download more to see if there is more to get...
+
+ https://github.com/curl/curl/issues/4344
 
 17.3 Support better than MD5 hostkey hash
 

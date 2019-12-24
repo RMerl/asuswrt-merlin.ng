@@ -628,6 +628,9 @@
 /* Define to 1 if you have the `SSLv2_client_method' function. */
 #undef HAVE_SSLV2_CLIENT_METHOD
 
+/* Define to 1 if you have the `SSL_get_esni_status' function. */
+#undef HAVE_SSL_GET_ESNI_STATUS
+
 /* Define to 1 if you have the <ssl.h> header file. */
 #undef HAVE_SSL_H
 
@@ -951,6 +954,9 @@
 
 /* Define to enable c-ares support */
 #undef USE_ARES
+
+/* if ESNI support is available */
+#undef USE_ESNI
 
 /* if GnuTLS is enabled */
 #undef USE_GNUTLS

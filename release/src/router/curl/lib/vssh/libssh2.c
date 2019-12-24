@@ -2811,7 +2811,7 @@ static CURLcode ssh_block_statemach(struct connectdata *conn,
     }
 
 #ifdef HAVE_LIBSSH2_SESSION_BLOCK_DIRECTION
-    if(!result && block) {
+    if(block) {
       int dir = libssh2_session_block_directions(sshc->ssh_session);
       curl_socket_t sock = conn->sock[FIRSTSOCKET];
       curl_socket_t fd_read = CURL_SOCKET_BAD;
@@ -2822,7 +2822,7 @@ static CURLcode ssh_block_statemach(struct connectdata *conn,
         fd_write = sock;
       /* wait for the socket to become ready */
       (void)Curl_socket_check(fd_read, CURL_SOCKET_BAD, fd_write,
-                              left>1000?1000:left); /* ignore result */
+                              left>1000?1000:(time_t)left);
     }
 #endif
 

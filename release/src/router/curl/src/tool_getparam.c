@@ -243,7 +243,7 @@ static const struct LongShort aliases[]= {
   {"El", "tlspassword",              ARG_STRING},
   {"Em", "tlsauthtype",              ARG_STRING},
   {"En", "ssl-allow-beast",          ARG_BOOL},
-  {"Eo", "login-options",            ARG_STRING},
+  /* Eo */
   {"Ep", "pinnedpubkey",             ARG_STRING},
   {"EP", "proxy-pinnedpubkey",       ARG_STRING},
   {"Eq", "cert-status",              ARG_BOOL},
@@ -322,6 +322,7 @@ static const struct LongShort aliases[]= {
   {"Z",  "parallel",                 ARG_BOOL},
   {"Zb", "parallel-max",             ARG_STRING},
   {"#",  "progress-bar",             ARG_BOOL},
+  {"#m", "progress-meter",           ARG_BOOL},
   {":",  "next",                     ARG_NONE},
 };
 
@@ -1172,11 +1173,16 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         break;
       }
       break;
-    case '#': /* --progress-bar */
-      if(toggle)
-        global->progressmode = CURL_PROGRESS_BAR;
-      else
-        global->progressmode = CURL_PROGRESS_STATS;
+    case '#':
+      switch(subletter) {
+      case 'm': /* --progress-meter */
+        global->noprogress = !toggle;
+        break;
+      default:  /* --progress-bar */
+        global->progressmode =
+          toggle ? CURL_PROGRESS_BAR : CURL_PROGRESS_STATS;
+        break;
+      }
       break;
     case ':': /* --next */
       return PARAM_NEXT_OPERATION;
@@ -1567,10 +1573,6 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       case 'n': /* no empty SSL fragments, --ssl-allow-beast */
         if(curlinfo->features & CURL_VERSION_SSL)
           config->ssl_allow_beast = toggle;
-        break;
-
-      case 'o': /* --login-options */
-        GetStr(&config->login_options, nextarg);
         break;
 
       case 'p': /* Pinned public key DER file */

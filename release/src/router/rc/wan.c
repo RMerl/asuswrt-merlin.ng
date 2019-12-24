@@ -712,6 +712,12 @@ void update_wan_state(char *prefix, int state, int reason)
 
 	run_custom_script("wan-event", 0, tmp, tmp1);
 
+	/* For backward/legacy compatibility */
+	if (state == WAN_STATE_CONNECTED) {
+		sprintf(tmp,"%c",prefix[3]);
+		run_custom_script("wan-start", 0, tmp, NULL);
+	}
+
 }
 
 #ifdef RTCONFIG_IPV6
@@ -3506,8 +3512,6 @@ start_wan(void)
 		char *stats_argv[] = { "stats", nvram_safe_get("stats_server"), NULL };
 		_eval(stats_argv, NULL, 5, NULL);
 	}
-
-	run_custom_script("wan-start", 0, NULL, NULL);
 }
 
 void

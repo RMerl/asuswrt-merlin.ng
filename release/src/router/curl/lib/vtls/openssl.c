@@ -44,6 +44,7 @@
 #include "strcase.h"
 #include "hostcheck.h"
 #include "multiif.h"
+#include "strerror.h"
 #include "curl_printf.h"
 #include <openssl/ssl.h>
 #include <openssl/rand.h>
@@ -2165,8 +2166,13 @@ set_ssl_version_min_max(SSL_CTX *ctx, struct connectdata *conn)
   long curl_ssl_version_max;
 
   /* convert cURL min SSL version option to OpenSSL constant */
+#if defined(OPENSSL_IS_BORINGSSL) || defined(LIBRESSL_VERSION_NUMBER)
+  uint16_t ossl_ssl_version_min = 0;
+  uint16_t ossl_ssl_version_max = 0;
+#else
   long ossl_ssl_version_min = 0;
   long ossl_ssl_version_max = 0;
+#endif
   switch(curl_ssl_version_min) {
     case CURL_SSLVERSION_TLSv1: /* TLS 1.x */
     case CURL_SSLVERSION_TLSv1_0:
@@ -2186,10 +2192,10 @@ set_ssl_version_min_max(SSL_CTX *ctx, struct connectdata *conn)
   }
 
   /* CURL_SSLVERSION_DEFAULT means that no option was selected.
-    We don't want to pass 0 to SSL_CTX_set_min_proto_version as
-    it would enable all versions down to the lowest supported by
-    the library.
-    So we skip this, and stay with the OS default
+     We don't want to pass 0 to SSL_CTX_set_min_proto_version as
+     it would enable all versions down to the lowest supported by
+     the library.
+     So we skip this, and stay with the OS default
   */
   if(curl_ssl_version_min != CURL_SSLVERSION_DEFAULT) {
     if(!SSL_CTX_set_min_proto_version(ctx, ossl_ssl_version_min)) {
@@ -3649,7 +3655,7 @@ static CURLcode ossl_connect_common(struct connectdata *conn,
   struct Curl_easy *data = conn->data;
   struct ssl_connect_data *connssl = &conn->ssl[sockindex];
   curl_socket_t sockfd = conn->sock[sockindex];
-  time_t timeout_ms;
+  timediff_t timeout_ms;
   int what;
 
   /* check if the connection has already been established */
@@ -3696,7 +3702,7 @@ static CURLcode ossl_connect_common(struct connectdata *conn,
         connssl->connecting_state?sockfd:CURL_SOCKET_BAD;
 
       what = Curl_socket_check(readfd, CURL_SOCKET_BAD, writefd,
-                               nonblocking?0:timeout_ms);
+                               nonblocking?0:(time_t)timeout_ms);
       if(what < 0) {
         /* fatal error */
         failf(data, "select/poll on SSL socket, errno: %d", SOCKERRNO);
@@ -3820,8 +3826,8 @@ static ssize_t ossl_send(struct connectdata *conn,
       *curlcode = CURLE_AGAIN;
       return -1;
     case SSL_ERROR_SYSCALL:
-      failf(conn->data, "SSL_write() returned SYSCALL, errno = %d",
-            SOCKERRNO);
+      Curl_strerror(SOCKERRNO, error_buffer, sizeof(error_buffer));
+      failf(conn->data, OSSL_PACKAGE " SSL_write: %s", error_buffer);
       *curlcode = CURLE_SEND_ERROR;
       return -1;
     case SSL_ERROR_SSL:
@@ -3878,12 +3884,20 @@ static ssize_t ossl_recv(struct connectdata *conn, /* connection data */
       break;
     case SSL_ERROR_ZERO_RETURN: /* no more data */
       /* close_notify alert */
-      connclose(conn, "TLS close_notify");
+      if(num == FIRSTSOCKET)
+        /* mark the connection for close if it is indeed the control
+           connection */
+        connclose(conn, "TLS close_notify");
       break;
     case SSL_ERROR_WANT_READ:
     case SSL_ERROR_WANT_WRITE:
       /* there's data pending, re-invoke SSL_read() */
       *curlcode = CURLE_AGAIN;
+      return -1;
+    case SSL_ERROR_SYSCALL:
+      Curl_strerror(SOCKERRNO, error_buffer, sizeof(error_buffer));
+      failf(conn->data, OSSL_PACKAGE " SSL_read: %s", error_buffer);
+      *curlcode = CURLE_RECV_ERROR;
       return -1;
     default:
       /* openssl/ssl.h for SSL_ERROR_SYSCALL says "look at error stack/return

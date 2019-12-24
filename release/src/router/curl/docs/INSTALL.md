@@ -7,6 +7,18 @@ document does not describe how to install curl or libcurl using such a binary
 package. This document describes how to compile, build and install curl and
 libcurl from source code.
 
+## Building using vcpkg
+
+You can download and install curl and libcurl using the [vcpkg](https://github.com/Microsoft/vcpkg/) dependency manager:
+
+    git clone https://github.com/Microsoft/vcpkg.git
+    cd vcpkg
+    ./bootstrap-vcpkg.sh
+    ./vcpkg integrate install
+    vcpkg install curl[tool]
+
+The curl port in vcpkg is kept up to date by Microsoft team members and community contributors. If the version is out of date, please [create an issue or pull request](https://github.com/Microsoft/vcpkg) on the vcpkg repository.
+
 ## Building from git
 
 If you get your code off a git repository instead of a release tarball, see
@@ -56,12 +68,12 @@ you have pkg-config installed, set the pkg-config path first, like this:
 
 Without pkg-config installed, use this:
 
-   ./configure --with-ssl=/opt/OpenSSL
+    ./configure --with-ssl=/opt/OpenSSL
 
 If you insist on forcing a build without SSL support, even though you may
 have OpenSSL installed in your system, you can run configure like this:
 
-   ./configure --without-ssl
+    ./configure --without-ssl
 
 If you have OpenSSL installed, but with the libraries in one place and the
 header files somewhere else, you have to set the `LDFLAGS` and `CPPFLAGS`

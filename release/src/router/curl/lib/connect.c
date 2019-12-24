@@ -665,7 +665,7 @@ bool Curl_addr2string(struct sockaddr *sa, curl_socklen_t salen,
 #endif
 #if defined(HAVE_SYS_UN_H) && defined(AF_UNIX)
     case AF_UNIX:
-      if(salen > sizeof(sa_family_t)) {
+      if(salen > (curl_socklen_t)sizeof(sa_family_t)) {
         su = (struct sockaddr_un*)sa;
         msnprintf(addr, MAX_IPADR_LEN, "%s", su->sun_path);
       }
@@ -976,6 +976,14 @@ CURLcode Curl_is_connected(struct connectdata *conn,
     failf(data, "Failed to connect to %s port %ld: %s",
           hostname, conn->port,
           Curl_strerror(error, buffer, sizeof(buffer)));
+
+#ifdef WSAETIMEDOUT
+    if(WSAETIMEDOUT == data->state.os_errno)
+      result = CURLE_OPERATION_TIMEDOUT;
+#elif defined(ETIMEDOUT)
+    if(ETIMEDOUT == data->state.os_errno)
+      result = CURLE_OPERATION_TIMEDOUT;
+#endif
   }
 
   return result;
@@ -1507,6 +1515,11 @@ CURLcode Curl_socket(struct connectdata *conn,
   if(*sockfd == CURL_SOCKET_BAD)
     /* no socket, no connection */
     return CURLE_COULDNT_CONNECT;
+
+  if(conn->transport == TRNSPRT_QUIC) {
+    /* QUIC sockets need to be nonblocking */
+    (void)curlx_nonblock(*sockfd, TRUE);
+  }
 
 #if defined(ENABLE_IPV6) && defined(HAVE_SOCKADDR_IN6_SIN6_SCOPE_ID)
   if(conn->scope_id && (addr->family == AF_INET6)) {

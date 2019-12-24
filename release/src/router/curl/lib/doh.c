@@ -74,17 +74,26 @@ static const char *doh_strerror(DOHcode code)
 #define UNITTEST static
 #endif
 
+/* @unittest 1655
+ */
 UNITTEST DOHcode doh_encode(const char *host,
                             DNStype dnstype,
                             unsigned char *dnsp, /* buffer */
                             size_t len,  /* buffer size */
                             size_t *olen) /* output length */
 {
-  size_t hostlen = strlen(host);
+  const size_t hostlen = strlen(host);
   unsigned char *orig = dnsp;
   const char *hostp = host;
 
-  if(len < (12 + hostlen + 4))
+  /* The expected output length does not depend on the number of dots within
+   * the host name. It will always be two more than the length of the host
+   * name, one for the size and one trailing null. In case there are dots,
+   * each dot adds one size but removes the need to store the dot, net zero.
+   */
+  const size_t expected_len = 12 + ( 1 + hostlen + 1) + 4;
+
+  if(len < expected_len)
     return DOH_TOO_SMALL_BUFFER;
 
   *dnsp++ = 0; /* 16 bit id */
@@ -126,12 +135,18 @@ UNITTEST DOHcode doh_encode(const char *host,
     }
   } while(1);
 
-  *dnsp++ = '\0'; /* upper 8 bit TYPE */
-  *dnsp++ = (unsigned char)dnstype;
+  /* There are assigned TYPE codes beyond 255: use range [1..65535]  */
+  *dnsp++ = (unsigned char)(255 & (dnstype>>8)); /* upper 8 bit TYPE */
+  *dnsp++ = (unsigned char)(255 & dnstype);      /* lower 8 bit TYPE */
+
   *dnsp++ = '\0'; /* upper 8 bit CLASS */
   *dnsp++ = DNS_CLASS_IN; /* IN - "the Internet" */
 
   *olen = dnsp - orig;
+
+  /* verify that our assumption of length is valid, since
+   * this has lead to buffer overflows in this function */
+  DEBUGASSERT(*olen == expected_len);
   return DOH_OK;
 }
 
@@ -225,7 +240,10 @@ static CURLcode dohprobe(struct Curl_easy *data,
   }
 
   timeout_ms = Curl_timeleft(data, NULL, TRUE);
-
+  if(timeout_ms <= 0) {
+    result = CURLE_OPERATION_TIMEDOUT;
+    goto error;
+  }
   /* Curl_open() is the internal version of curl_easy_init() */
   result = Curl_open(&doh);
   if(!result) {
@@ -246,6 +264,9 @@ static CURLcode dohprobe(struct Curl_easy *data,
 #ifndef CURLDEBUG
     /* enforce HTTPS if not debug */
     ERROR_CHECK_SETOPT(CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+#else
+    /* in debug mode, also allow http */
+    ERROR_CHECK_SETOPT(CURLOPT_PROTOCOLS, CURLPROTO_HTTP|CURLPROTO_HTTPS);
 #endif
     ERROR_CHECK_SETOPT(CURLOPT_TIMEOUT_MS, (long)timeout_ms);
     if(data->set.verbose)
@@ -325,7 +346,7 @@ static CURLcode dohprobe(struct Curl_easy *data,
 
   error:
   free(nurl);
-  Curl_close(doh);
+  Curl_close(&doh);
   return result;
 }
 
@@ -381,10 +402,8 @@ Curl_addrinfo *Curl_doh(struct connectdata *conn,
   error:
   curl_slist_free_all(data->req.doh.headers);
   data->req.doh.headers = NULL;
-  curl_easy_cleanup(data->req.doh.probe[0].easy);
-  data->req.doh.probe[0].easy = NULL;
-  curl_easy_cleanup(data->req.doh.probe[1].easy);
-  data->req.doh.probe[1].easy = NULL;
+  Curl_close(&data->req.doh.probe[0].easy);
+  Curl_close(&data->req.doh.probe[1].easy);
   return NULL;
 }
 
@@ -419,8 +438,14 @@ static unsigned short get16bit(unsigned char *doh, int index)
 
 static unsigned int get32bit(unsigned char *doh, int index)
 {
-  return (doh[index] << 24) | (doh[index + 1] << 16) |
-    (doh[index + 2] << 8) | doh[index + 3];
+   /* make clang and gcc optimize this to bswap by incrementing
+      the pointer first. */
+   doh += index;
+
+   /* avoid undefined behaviour by casting to unsigned before shifting
+      24 bits, possibly into the sign bit. codegen is same, but
+      ub sanitizer won't be upset */
+  return ( (unsigned)doh[0] << 24) | (doh[1] << 16) |(doh[2] << 8) | doh[3];
 }
 
 static DOHcode store_a(unsigned char *doh, int index, struct dohentry *d)
@@ -898,17 +923,16 @@ CURLcode Curl_doh_is_resolved(struct connectdata *conn,
     struct dohentry de;
     /* remove DOH handles from multi handle and close them */
     curl_multi_remove_handle(data->multi, data->req.doh.probe[0].easy);
-    Curl_close(data->req.doh.probe[0].easy);
+    Curl_close(&data->req.doh.probe[0].easy);
     curl_multi_remove_handle(data->multi, data->req.doh.probe[1].easy);
-    Curl_close(data->req.doh.probe[1].easy);
-
+    Curl_close(&data->req.doh.probe[1].easy);
     /* parse the responses, create the struct and return it! */
     init_dohentry(&de);
     rc = doh_decode(data->req.doh.probe[0].serverdoh.memory,
                     data->req.doh.probe[0].serverdoh.size,
                     data->req.doh.probe[0].dnstype,
                     &de);
-    free(data->req.doh.probe[0].serverdoh.memory);
+    Curl_safefree(data->req.doh.probe[0].serverdoh.memory);
     if(rc) {
       infof(data, "DOH: %s type %s for %s\n", doh_strerror(rc),
             type2name(data->req.doh.probe[0].dnstype),
@@ -918,7 +942,7 @@ CURLcode Curl_doh_is_resolved(struct connectdata *conn,
                      data->req.doh.probe[1].serverdoh.size,
                      data->req.doh.probe[1].dnstype,
                      &de);
-    free(data->req.doh.probe[1].serverdoh.memory);
+    Curl_safefree(data->req.doh.probe[1].serverdoh.memory);
     if(rc2) {
       infof(data, "DOH: %s type %s for %s\n", doh_strerror(rc2),
             type2name(data->req.doh.probe[1].dnstype),

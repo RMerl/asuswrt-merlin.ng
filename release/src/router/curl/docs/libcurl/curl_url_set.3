@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_url_set 3 "May 03, 2019" "libcurl 7.66.0" "libcurl Manual"
+.TH curl_url_set 3 "September 25, 2019" "libcurl 7.67.0" "libcurl Manual"
 
 .SH NAME
 curl_url_set - set a URL part
@@ -61,8 +61,9 @@ Scheme cannot be URL decoded on set.
 .IP CURLUPART_PASSWORD
 .IP CURLUPART_OPTIONS
 .IP CURLUPART_HOST
-The host name can use IDNA. The string must then be encoded as your locale
-says or UTF-8 (when winidn is used).
+The host name. If it is IDNA the string must then be encoded as your locale
+says or UTF-8 (when WinIDN is used). If it is a bracketed IPv6 numeric address
+it may contain a zone id (or you can use CURLUPART_ZONEID).
 .IP CURLUPART_ZONEID
 If the host name is a numeric IPv6 address, this field can also be set.
 .IP CURLUPART_PORT
@@ -112,6 +113,12 @@ instead "guesses" which scheme that was intended based on the host name.  If
 the outermost sub-domain name matches DICT, FTP, IMAP, LDAP, POP3 or SMTP then
 that scheme will be used, otherwise it picks HTTP. Conflicts with the
 \fICURLU_DEFAULT_SCHEME\fP option which takes precedence if both are set.
+.IP CURLU_NO_AUTHORITY
+If set, skips authority checks. The RFC allows individual schemes to omit the
+host part (normally the only mandatory part of the authority), but libcurl
+cannot know whether this is permitted for custom schemes. Specifying the flag
+permits empty authority sections, similar to how file scheme is handled.
+
 .SH RETURN VALUE
 Returns a CURLUcode error value, which is CURLUE_OK (0) if everything went
 fine.

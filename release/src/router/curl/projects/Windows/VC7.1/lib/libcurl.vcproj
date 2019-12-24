@@ -1523,6 +1523,9 @@
 				RelativePath="..\..\..\..\lib\smtp.c">
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\socketpair.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\socks.c">
 			</File>
 			<File
@@ -1861,6 +1864,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\sockaddr.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\socketpair.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\socks.h">

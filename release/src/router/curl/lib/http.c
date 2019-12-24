@@ -450,9 +450,6 @@ static CURLcode http_perhapsrewind(struct connectdata *conn)
     /* figure out how much data we are expected to send */
     switch(data->set.httpreq) {
     case HTTPREQ_POST:
-      if(data->state.infilesize != -1)
-        expectsend = data->state.infilesize;
-      break;
     case HTTPREQ_PUT:
       if(data->state.infilesize != -1)
         expectsend = data->state.infilesize;
@@ -2679,7 +2676,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
     struct Cookie *co = NULL; /* no cookies from start */
     int count = 0;
 
-    if(data->cookies) {
+    if(data->cookies && data->state.cookie_engine) {
       Curl_share_lock(data, CURL_LOCK_DATA_COOKIE, CURL_LOCK_ACCESS_SINGLE);
       co = Curl_cookie_getlist(data->cookies,
                                conn->allocptr.cookiehost?
@@ -3044,8 +3041,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
       failf(data, "Failed sending HTTP request");
     else
       /* HTTP GET/HEAD download: */
-      Curl_setup_transfer(data, FIRSTSOCKET, -1, TRUE,
-                          http->postdata?FIRSTSOCKET:-1);
+      Curl_setup_transfer(data, FIRSTSOCKET, -1, TRUE, -1);
   }
   if(result)
     return result;
@@ -4017,7 +4013,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
         data->state.resume_from = 0; /* get everything */
     }
 #if !defined(CURL_DISABLE_COOKIES)
-    else if(data->cookies &&
+    else if(data->cookies && data->state.cookie_engine &&
             checkprefix("Set-Cookie:", k->p)) {
       Curl_share_lock(data, CURL_LOCK_DATA_COOKIE,
                       CURL_LOCK_ACCESS_SINGLE);
@@ -4058,7 +4054,7 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
       if(result)
         return result;
     }
-  #ifdef USE_SPNEGO
+#ifdef USE_SPNEGO
     else if(checkprefix("Persistent-Auth", k->p)) {
       struct negotiatedata *negdata = &conn->negotiate;
       struct auth *authp = &data->state.authhost;
@@ -4066,14 +4062,15 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
         char *persistentauth = Curl_copy_header_value(k->p);
         if(!persistentauth)
           return CURLE_OUT_OF_MEMORY;
-        negdata->noauthpersist = checkprefix("false", persistentauth);
+        negdata->noauthpersist = checkprefix("false", persistentauth)?
+          TRUE:FALSE;
         negdata->havenoauthpersist = TRUE;
         infof(data, "Negotiate: noauthpersist -> %d, header part: %s",
           negdata->noauthpersist, persistentauth);
         free(persistentauth);
       }
     }
-  #endif
+#endif
     else if((k->httpcode >= 300 && k->httpcode < 400) &&
             checkprefix("Location:", k->p) &&
             !data->req.location) {

@@ -7,8 +7,10 @@ Asuswrt-Merlin 384/NG Changelog
          will be a string describing the type of event (init,
          connected, etc...).  A wan-event of type "connected" will
          be identical to when the original wan-start script was
-         being run.
+         being run (wan-start should be considered deprecated
+         and will be removed in a future release)
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
+  - UPDATED: curl to 7.67.0.
 
 
 384.14 (14-Dec-2019)

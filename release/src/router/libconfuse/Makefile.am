@@ -92,7 +92,7 @@ release-hook:
 
 ## Target to run when building a release
 ## distcheck <-- does not work atm., wrong search path for source/header files
-release: release-hook dist dist-zip md5-dist
+release: release-hook distcheck dist-zip md5-dist
 	@echo
 	@echo "Resulting release files:"
 	@echo "================================================================="

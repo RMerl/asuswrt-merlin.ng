@@ -263,6 +263,8 @@ static const struct helptxt helptext[] = {
    "Disable TCP keepalive on the connection"},
   {"    --no-npn",
    "Disable the NPN TLS extension"},
+  {"    --no-progress-meter",
+   "Do not show the progress meter"},
   {"    --no-sessionid",
    "Disable SSL session-ID reusing"},
   {"    --noproxy <no-proxy-list>",
@@ -540,6 +542,7 @@ static const struct feat feats[] = {
   {"MultiSSL",       CURL_VERSION_MULTI_SSL},
   {"PSL",            CURL_VERSION_PSL},
   {"alt-svc",        CURL_VERSION_ALTSVC},
+  {"ESNI",           CURL_VERSION_ESNI},
 };
 
 void tool_help(void)

@@ -1086,6 +1086,10 @@ SOURCE=..\..\..\..\lib\smtp.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\socketpair.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\socks.c
 # End Source File
 # Begin Source File
@@ -1635,6 +1639,10 @@ SOURCE=..\..\..\..\lib\smtp.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\sockaddr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\lib\socketpair.h
 # End Source File
 # Begin Source File
 

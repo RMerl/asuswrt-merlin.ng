@@ -1,5 +1,6 @@
 /**
  * Copyright (C) 2012-2014 Steven Barth <steven@midlink.org>
+ * Copyright (C) 2018 Hans Dedecker <dedeckeh@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License v2 as published by
@@ -23,6 +24,15 @@ struct icmpv6_opt {
 	uint8_t type;
 	uint8_t len;
 	uint8_t data[6];
+};
+
+struct icmpv6_opt_route_info {
+	uint8_t type;
+	uint8_t len;
+	uint8_t prefix_len;
+	uint8_t flags;
+	uint32_t lifetime;
+	uint8_t prefix[];
 };
 
 #define ND_OPT_ROUTE_INFORMATION 24

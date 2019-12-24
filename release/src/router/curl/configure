@@ -1127,6 +1127,7 @@ enable_symbol_hiding
 enable_hidden_symbols
 enable_ares
 enable_rt
+enable_esni
 enable_code_coverage
 enable_dependency_tracking
 enable_largefile
@@ -1176,7 +1177,6 @@ with_random
 enable_openssl_auto_load_config
 with_gnutls
 with_mbedtls
-with_cyassl
 with_wolfssl
 with_mesalink
 with_nss
@@ -1877,6 +1877,8 @@ Optional Features:
   --enable-ares[=PATH]    Enable c-ares for DNS lookups
   --disable-ares          Disable c-ares for DNS lookups
   --disable-rt            disable dependency on -lrt
+  --enable-esni           Enable ESNI support
+  --disable-esni          Disable ESNI support
   --enable-code-coverage  Provide code coverage
   --enable-dependency-tracking
                           do not reject slow dependency extractors
@@ -2026,9 +2028,6 @@ Optional Packages:
   --with-mbedtls=PATH     where to look for mbedTLS, PATH points to the
                           installation root
   --without-mbedtls       disable mbedTLS detection
-  --with-cyassl=PATH      where to look for CyaSSL, PATH points to the
-                          installation root (default: system lib default)
-  --without-cyassl        disable CyaSSL detection
   --with-wolfssl=PATH     where to look for WolfSSL, PATH points to the
                           installation root (default: system lib default)
   --without-wolfssl       disable WolfSSL detection
@@ -3327,6 +3326,37 @@ $as_echo "(assumed no)" >&6; }
             dontwant_rt="no"
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
+      ;;
+  esac
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable ESNI support" >&5
+$as_echo_n "checking whether to enable ESNI support... " >&6; }
+  OPT_ESNI="default"
+  # Check whether --enable-esni was given.
+if test "${enable_esni+set}" = set; then :
+  enableval=$enable_esni; OPT_ESNI=$enableval
+fi
+
+  case "$OPT_ESNI" in
+    no)
+            want_esni="no"
+      curl_esni_msg="no      (--enable-esni)"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      ;;
+    default)
+            want_esni="no"
+      curl_esni_msg="no      (--enable-esni)"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      ;;
+    *)
+            want_esni="yes"
+      curl_esni_msg="enabled (--disable-esni)"
+      experimental="esni"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
       ;;
   esac
 
@@ -21815,10 +21845,6 @@ fi
 fi
 
 
-if test "$ipv6" = "yes"; then
-  curl_ipv6_msg="enabled"
-fi
-
 # Check if struct sockaddr_in6 have sin6_scope_id member
 if test "$ipv6" = yes; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if struct sockaddr_in6 has sin6_scope_id member" >&5
@@ -24453,12 +24479,6 @@ OPT_WOLFSSL=no
 _cppflags=$CPPFLAGS
 _ldflags=$LDFLAGS
 
-# Check whether --with-cyassl was given.
-if test "${with_cyassl+set}" = set; then :
-  withval=$with_cyassl; OPT_WOLFSSL=$withval
-fi
-
-
 
 # Check whether --with-wolfssl was given.
 if test "${with_wolfssl+set}" = set; then :
@@ -24475,150 +24495,25 @@ if test -z "$ssl_backends" -o "x$OPT_WOLFSSL" != xno; then
       OPT_WOLFSSL=""
     fi
 
-
-    cyassllibname=cyassl
-
-    if test -z "$OPT_WOLFSSL" ; then
-
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CyaSSL_Init in -lcyassl" >&5
-$as_echo_n "checking for CyaSSL_Init in -lcyassl... " >&6; }
-if ${ac_cv_lib_cyassl_CyaSSL_Init+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcyassl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-#ifdef __cplusplus
-extern "C"
-#endif
-char CyaSSL_Init ();
-int main (void)
-{
-return CyaSSL_Init ();
- ;
- return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_cyassl_CyaSSL_Init=yes
-else
-  ac_cv_lib_cyassl_CyaSSL_Init=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cyassl_CyaSSL_Init" >&5
-$as_echo "$ac_cv_lib_cyassl_CyaSSL_Init" >&6; }
-if test "x$ac_cv_lib_cyassl_CyaSSL_Init" = xyes; then :
-
-
-$as_echo "#define USE_WOLFSSL 1" >>confdefs.h
-
-         USE_WOLFSSL=1
-
-         WOLFSSL_ENABLED=1
-         USE_WOLFSSL="yes"
-         ssl_msg="CyaSSL"
-	 test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-
-fi
-
-    fi
-
     addld=""
     addlib=""
     addcflags=""
-    cyassllib=""
 
     if test "x$USE_WOLFSSL" != "xyes"; then
-            addld=-L$OPT_WOLFSSL/lib$libsuff
+      addld=-L$OPT_WOLFSSL/lib$libsuff
       addcflags=-I$OPT_WOLFSSL/include
-      cyassllib=$OPT_WOLFSSL/lib$libsuff
+      wolfssllibpath=$OPT_WOLFSSL/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
       if test "$addcflags" != "-I/usr/include"; then
          CPPFLAGS="$CPPFLAGS $addcflags"
       fi
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CyaSSL_Init in -lcyassl" >&5
-$as_echo_n "checking for CyaSSL_Init in -lcyassl... " >&6; }
-if ${ac_cv_lib_cyassl_CyaSSL_Init+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcyassl  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-
-#ifdef __cplusplus
-extern "C"
-#endif
-char CyaSSL_Init ();
-int main (void)
-{
-return CyaSSL_Init ();
- ;
- return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_cyassl_CyaSSL_Init=yes
-else
-  ac_cv_lib_cyassl_CyaSSL_Init=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_cyassl_CyaSSL_Init" >&5
-$as_echo "$ac_cv_lib_cyassl_CyaSSL_Init" >&6; }
-if test "x$ac_cv_lib_cyassl_CyaSSL_Init" = xyes; then :
-
-
-$as_echo "#define USE_WOLFSSL 1" >>confdefs.h
-
-       USE_WOLFSSL=1
-
-       WOLFSSL_ENABLED=1
-       USE_WOLFSSL="yes"
-       ssl_msg="CyaSSL"
-       test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-
-else
-
-         CPPFLAGS=$_cppflags
-         LDFLAGS=$_ldflags
-         cyassllib=""
-
-fi
-
-    fi
-
-    addld=""
-    addlib=""
-    addcflags=""
-
-    if test "x$USE_WOLFSSL" != "xyes"; then
-            addld=-L$OPT_WOLFSSL/lib$libsuff
-      addcflags=-I$OPT_WOLFSSL/include
-      cyassllib=$OPT_WOLFSSL/lib$libsuff
-
-      LDFLAGS="$LDFLAGS $addld"
-      if test "$addcflags" != "-I/usr/include"; then
-         CPPFLAGS="$CPPFLAGS $addcflags"
-      fi
-
-      cyassllibname=wolfssl
       my_ac_save_LIBS="$LIBS"
-      LIBS="-l$cyassllibname -lm $LIBS"
+      LIBS="-lwolfssl -lm $LIBS"
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for CyaSSL_Init in -lwolfssl" >&5
-$as_echo_n "checking for CyaSSL_Init in -lwolfssl... " >&6; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wolfSSL_Init in -lwolfssl" >&5
+$as_echo_n "checking for wolfSSL_Init in -lwolfssl... " >&6; }
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -24627,12 +24522,12 @@ $as_echo_n "checking for CyaSSL_Init in -lwolfssl... " >&6; }
    They are set up properly later if it is detected.  */
 #undef SIZEOF_LONG
 #undef SIZEOF_LONG_LONG
-#include <cyassl/ssl.h>
+#include <wolfssl/ssl.h>
 
 int main (void)
 {
 
-	  return CyaSSL_Init();
+	  return wolfSSL_Init();
 
  ;
  return 0;
@@ -24651,7 +24546,7 @@ $as_echo "#define USE_WOLFSSL 1" >>confdefs.h
          WOLFSSL_ENABLED=1
          USE_WOLFSSL="yes"
          ssl_msg="WolfSSL"
-	 test cyassl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
+	 test wolfssl != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
 
 else
 
@@ -24659,7 +24554,7 @@ else
 $as_echo "no" >&6; }
          CPPFLAGS=$_cppflags
          LDFLAGS=$_ldflags
-         cyassllib=""
+         wolfssllibpath=""
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
@@ -24668,8 +24563,8 @@ rm -f core conftest.err conftest.$ac_objext \
     fi
 
     if test "x$USE_WOLFSSL" = "xyes"; then
-      { $as_echo "$as_me:${as_lineno-$LINENO}: detected $cyassllibname" >&5
-$as_echo "$as_me: detected $cyassllibname" >&6;}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: detected wolfSSL" >&5
+$as_echo "$as_me: detected wolfSSL" >&6;}
       check_for_ca_bundle=1
 
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking size of long long" >&5
@@ -24712,7 +24607,7 @@ _ACEOF
 
 
 
-      LIBS="-l$cyassllibname -lm $LIBS"
+      LIBS="-lwolfssl -lm $LIBS"
 
                   for ac_func in wolfSSLv3_client_method \
                      wolfSSL_get_peer_certificate \
@@ -24729,12 +24624,12 @@ fi
 done
 
 
-      if test -n "$cyassllib"; then
+      if test -n "$wolfssllibpath"; then
                                         if test "x$cross_compiling" != "xyes"; then
-          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$cyassllib"
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$wolfssllibpath"
           export CURL_LIBRARY_PATH
-          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $cyassllib to CURL_LIBRARY_PATH" >&5
-$as_echo "$as_me: Added $cyassllib to CURL_LIBRARY_PATH" >&6;}
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $wolfssllibpath to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $wolfssllibpath to CURL_LIBRARY_PATH" >&6;}
         fi
       fi
 
@@ -41449,6 +41344,7 @@ $as_echo "#define ENABLE_IPV6 1" >>confdefs.h
 
     IPV6_ENABLED=1
 
+    curl_ipv6_msg="enabled"
   fi
 fi
 
@@ -42621,6 +42517,41 @@ $as_echo "#define USE_ALTSVC 1" >>confdefs.h
   experimental="$experimental alt-svc"
 fi
 
+if test "x$want_esni" != "xno"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether ESNI support is available" >&5
+$as_echo_n "checking whether ESNI support is available... " >&6; }
+
+    ESNI_ENABLED=0
+  ESNI_SUPPORT=''
+
+      if test "x$OPENSSL_ENABLED" == "x1"; then
+    for ac_func in SSL_get_esni_status
+do :
+  ac_fn_c_check_func "$LINENO" "SSL_get_esni_status" "ac_cv_func_SSL_get_esni_status"
+if test "x$ac_cv_func_SSL_get_esni_status" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SSL_GET_ESNI_STATUS 1
+_ACEOF
+ ESNI_SUPPORT="ESNI support available (OpenSSL with SSL_get_esni_status)"
+      ESNI_ENABLED=1
+fi
+done
+
+
+    fi
+
+    if test "x$ESNI_ENABLED" == "x1"; then
+
+$as_echo "#define USE_ESNI 1" >>confdefs.h
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ESNI_SUPPORT" >&5
+$as_echo "$ESNI_SUPPORT" >&6; }
+    experimental="$experimental ESNI"
+  else
+    as_fn_error $? "--enable-esni ignored: No ESNI support found" "$LINENO" 5
+  fi
+fi
+
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether hiding of library internal symbols will actually happen" >&5
 $as_echo_n "checking whether hiding of library internal symbols will actually happen... " >&6; }
@@ -42761,6 +42692,10 @@ fi
 if test "x$OPENSSL_ENABLED" = "x1" -o "x$GNUTLS_ENABLED" = "x1" \
     -o "x$NSS_ENABLED" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES HTTPS-proxy"
+fi
+
+if test "x$ESNI_ENABLED" = "x1"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES ESNI"
 fi
 
 
@@ -45734,6 +45669,7 @@ done
   Alt-svc:          ${curl_altsvc_msg}
   HTTP2:            ${curl_h2_msg}
   HTTP3:            ${curl_h3_msg}
+  ESNI:             ${curl_esni_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
   Features:         ${SUPPORT_FEATURES}
 " >&5
@@ -45776,6 +45712,7 @@ $as_echo "$as_me: Configured to build curl/libcurl:
   Alt-svc:          ${curl_altsvc_msg}
   HTTP2:            ${curl_h2_msg}
   HTTP3:            ${curl_h3_msg}
+  ESNI:             ${curl_esni_msg}
   Protocols:        ${SUPPORT_PROTOCOLS}
   Features:         ${SUPPORT_FEATURES}
 " >&6;}

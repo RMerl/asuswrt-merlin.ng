@@ -54,8 +54,8 @@ static enum alpnid alpn2alpnid(char *name)
     return ALPN_h1;
   if(strcasecompare(name, "h2"))
     return ALPN_h2;
-#if (defined(USE_QUICHE) || defined(USE_NGHTTP2)) && !defined(UNITTESTS)
-  if(strcasecompare(name, "h3-22"))
+#if (defined(USE_QUICHE) || defined(USE_NGTCP2)) && !defined(UNITTESTS)
+  if(strcasecompare(name, "h3-23"))
     return ALPN_h3;
 #else
   if(strcasecompare(name, "h3"))
@@ -73,8 +73,8 @@ const char *Curl_alpnid2str(enum alpnid id)
   case ALPN_h2:
     return "h2";
   case ALPN_h3:
-#if (defined(USE_QUICHE) || defined(USE_NGHTTP2)) && !defined(UNITTESTS)
-    return "h3-22";
+#if (defined(USE_QUICHE) || defined(USE_NGTCP2)) && !defined(UNITTESTS)
+    return "h3-23";
 #else
     return "h3";
 #endif
@@ -442,6 +442,7 @@ CURLcode Curl_altsvc_parse(struct Curl_easy *data,
       char option[32];
       unsigned long num;
       char *end_ptr;
+      bool quoted = FALSE;
       semip++; /* pass the semicolon */
       result = getalnum(&semip, option, sizeof(option));
       if(result)
@@ -451,12 +452,21 @@ CURLcode Curl_altsvc_parse(struct Curl_easy *data,
       if(*semip != '=')
         continue;
       semip++;
+      while(*semip && ISBLANK(*semip))
+        semip++;
+      if(*semip == '\"') {
+        /* quoted value */
+        semip++;
+        quoted = TRUE;
+      }
       num = strtoul(semip, &end_ptr, 10);
-      if(num < ULONG_MAX) {
+      if((end_ptr != semip) && num && (num < ULONG_MAX)) {
         if(strcasecompare("ma", option))
           maxage = num;
         else if(strcasecompare("persist", option) && (num == 1))
           persist = TRUE;
+        if(quoted && (*end_ptr == '\"'))
+          end_ptr++;
       }
       semip = end_ptr;
     }

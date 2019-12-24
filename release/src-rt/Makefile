@@ -465,7 +465,7 @@ else
 endif
 	@echo '#endif' >> router/shared/version.h
 endif
-	@echo '$(BUILD_NAME) $(SERIALNO)-$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
+	@echo '$(BUILD_NAME) $(SERIALNO)_$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
 	@echo 'EXTENDNO=$(EXTENDNO)$(BUILDREV)' > router/extendno.conf
 
 rt_ver_ntools:

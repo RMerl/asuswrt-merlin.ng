@@ -229,7 +229,7 @@ am__objects_1 = libcurl_la-file.lo libcurl_la-timeval.lo \
 	libcurl_la-curl_path.lo libcurl_la-curl_ctype.lo \
 	libcurl_la-curl_range.lo libcurl_la-psl.lo libcurl_la-doh.lo \
 	libcurl_la-urlapi.lo libcurl_la-curl_get_line.lo \
-	libcurl_la-altsvc.lo
+	libcurl_la-altsvc.lo libcurl_la-socketpair.lo
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_2 = vauth/libcurl_la-vauth.lo \
 	vauth/libcurl_la-cleartext.lo vauth/libcurl_la-cram.lo \
@@ -315,7 +315,8 @@ am__objects_9 = libcurlu_la-file.lo libcurlu_la-timeval.lo \
 	libcurlu_la-setopt.lo libcurlu_la-curl_path.lo \
 	libcurlu_la-curl_ctype.lo libcurlu_la-curl_range.lo \
 	libcurlu_la-psl.lo libcurlu_la-doh.lo libcurlu_la-urlapi.lo \
-	libcurlu_la-curl_get_line.lo libcurlu_la-altsvc.lo
+	libcurlu_la-curl_get_line.lo libcurlu_la-altsvc.lo \
+	libcurlu_la-socketpair.lo
 am__objects_10 = vauth/libcurlu_la-vauth.lo \
 	vauth/libcurlu_la-cleartext.lo vauth/libcurlu_la-cram.lo \
 	vauth/libcurlu_la-digest.lo vauth/libcurlu_la-digest_sspi.lo \
@@ -444,6 +445,7 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	./$(DEPDIR)/libcurl_la-share.Plo \
 	./$(DEPDIR)/libcurl_la-slist.Plo \
 	./$(DEPDIR)/libcurl_la-smb.Plo ./$(DEPDIR)/libcurl_la-smtp.Plo \
+	./$(DEPDIR)/libcurl_la-socketpair.Plo \
 	./$(DEPDIR)/libcurl_la-socks.Plo \
 	./$(DEPDIR)/libcurl_la-socks_gssapi.Plo \
 	./$(DEPDIR)/libcurl_la-socks_sspi.Plo \
@@ -554,6 +556,7 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	./$(DEPDIR)/libcurlu_la-slist.Plo \
 	./$(DEPDIR)/libcurlu_la-smb.Plo \
 	./$(DEPDIR)/libcurlu_la-smtp.Plo \
+	./$(DEPDIR)/libcurlu_la-socketpair.Plo \
 	./$(DEPDIR)/libcurlu_la-socks.Plo \
 	./$(DEPDIR)/libcurlu_la-socks_gssapi.Plo \
 	./$(DEPDIR)/libcurlu_la-socks_sspi.Plo \
@@ -1000,7 +1003,7 @@ LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   curl_multibyte.c hostcheck.c conncache.c dotdot.c                     \
   x509asn1.c http2.c smb.c curl_endian.c curl_des.c system_win32.c      \
   mime.c sha256.c setopt.c curl_path.c curl_ctype.c curl_range.c psl.c  \
-  doh.c urlapi.c curl_get_line.c altsvc.c
+  doh.c urlapi.c curl_get_line.c altsvc.c socketpair.c
 
 LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   formdata.h cookie.h http.h sendf.h ftp.h url.h dict.h if2ip.h         \
@@ -1021,7 +1024,7 @@ LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   x509asn1.h http2.h sigpipe.h smb.h curl_endian.h curl_des.h           \
   curl_printf.h system_win32.h rand.h mime.h curl_sha256.h setopt.h     \
   curl_path.h curl_ctype.h curl_range.h psl.h doh.h urlapi-int.h        \
-  curl_get_line.h altsvc.h quic.h
+  curl_get_line.h altsvc.h quic.h socketpair.h
 
 LIB_RCFILES = libcurl.rc
 CSOURCES = $(LIB_CFILES) $(LIB_VAUTH_CFILES) $(LIB_VTLS_CFILES) \
@@ -1390,6 +1393,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-slist.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-smb.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-smtp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-socketpair.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-socks.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-socks_gssapi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-socks_sspi.Plo@am__quote@ # am--include-marker
@@ -1500,6 +1504,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-slist.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-smb.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-smtp.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-socketpair.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-socks.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-socks_gssapi.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-socks_sspi.Plo@am__quote@ # am--include-marker
@@ -2379,6 +2384,13 @@ libcurl_la-altsvc.lo: altsvc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='altsvc.c' object='libcurl_la-altsvc.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o libcurl_la-altsvc.lo `test -f 'altsvc.c' || echo '$(srcdir)/'`altsvc.c
+
+libcurl_la-socketpair.lo: socketpair.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT libcurl_la-socketpair.lo -MD -MP -MF $(DEPDIR)/libcurl_la-socketpair.Tpo -c -o libcurl_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurl_la-socketpair.Tpo $(DEPDIR)/libcurl_la-socketpair.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socketpair.c' object='libcurl_la-socketpair.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o libcurl_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
 
 vauth/libcurl_la-vauth.lo: vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vauth/libcurl_la-vauth.lo -MD -MP -MF vauth/$(DEPDIR)/libcurl_la-vauth.Tpo -c -o vauth/libcurl_la-vauth.lo `test -f 'vauth/vauth.c' || echo '$(srcdir)/'`vauth/vauth.c
@@ -3353,6 +3365,13 @@ libcurlu_la-altsvc.lo: altsvc.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o libcurlu_la-altsvc.lo `test -f 'altsvc.c' || echo '$(srcdir)/'`altsvc.c
 
+libcurlu_la-socketpair.lo: socketpair.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT libcurlu_la-socketpair.lo -MD -MP -MF $(DEPDIR)/libcurlu_la-socketpair.Tpo -c -o libcurlu_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurlu_la-socketpair.Tpo $(DEPDIR)/libcurlu_la-socketpair.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='socketpair.c' object='libcurlu_la-socketpair.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o libcurlu_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
+
 vauth/libcurlu_la-vauth.lo: vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vauth/libcurlu_la-vauth.lo -MD -MP -MF vauth/$(DEPDIR)/libcurlu_la-vauth.Tpo -c -o vauth/libcurlu_la-vauth.lo `test -f 'vauth/vauth.c' || echo '$(srcdir)/'`vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vauth/$(DEPDIR)/libcurlu_la-vauth.Tpo vauth/$(DEPDIR)/libcurlu_la-vauth.Plo
@@ -3792,6 +3811,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libcurl_la-slist.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-smb.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-smtp.Plo
+	-rm -f ./$(DEPDIR)/libcurl_la-socketpair.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks_gssapi.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks_sspi.Plo
@@ -3902,6 +3922,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libcurlu_la-slist.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-smb.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-smtp.Plo
+	-rm -f ./$(DEPDIR)/libcurlu_la-socketpair.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks_gssapi.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks_sspi.Plo
@@ -4115,6 +4136,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libcurl_la-slist.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-smb.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-smtp.Plo
+	-rm -f ./$(DEPDIR)/libcurl_la-socketpair.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks_gssapi.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-socks_sspi.Plo
@@ -4225,6 +4247,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libcurlu_la-slist.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-smb.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-smtp.Plo
+	-rm -f ./$(DEPDIR)/libcurlu_la-socketpair.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks_gssapi.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-socks_sspi.Plo

@@ -3501,6 +3501,12 @@ start_wan(void)
 				_dprintf("%s: start_wan_if(%d)!\n", __FUNCTION__, unit);
 				start_wan_if(unit);
 			}
+#ifdef RTCONFIG_HND_ROUTER
+			else if(!strcmp(wans_mode, "fo") || !strcmp(wans_mode, "fb")){
+				_dprintf("%s: stop_wan_if(%d) for IFUP only!\n", __func__, unit);
+				stop_wan_if(unit);
+			}
+#endif
 		}
 	}
 #else // RTCONFIG_DUALWAN
@@ -4088,12 +4094,6 @@ void detwan_apply_wan(const char *wan_ifname, unsigned int wan_mask, unsigned in
 					eval("ifconfig", ifname, "up");
 				}
 			}
-#ifdef RTCONFIG_HND_ROUTER
-			else if(!strcmp(wans_mode, "fo") || !strcmp(wans_mode, "fb")){
-				_dprintf("%s: stop_wan_if(%d) for IFUP only!\n", __func__, unit);
-				stop_wan_if(unit);
-			}
-#endif
 		}
 	}
 

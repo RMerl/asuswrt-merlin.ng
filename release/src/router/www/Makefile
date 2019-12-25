@@ -784,3 +784,8 @@ endif
 ifneq ($(RTCONFIG_APP_FILEFLEX), y)
 	rm -rf $(INSTALLDIR)/www/fileflex.asp
 endif
+	ln -sf user/user1.asp $(INSTALLDIR)/www/user1.asp
+	ln -sf user/user2.asp $(INSTALLDIR)/www/user2.asp
+	ln -sf user/user3.asp $(INSTALLDIR)/www/user3.asp
+	ln -sf user/user4.asp $(INSTALLDIR)/www/user4.asp
+	ln -sf user/user5.asp $(INSTALLDIR)/www/user5.asp

@@ -35,3 +35,21 @@ pc_delete() {
 	PATTERN=$(_quote "$1")
 	sed -i "/$PATTERN/d" $2
 }
+
+# This function will return the first available custom webui page, allowing you
+# to use it within your script.  "none" is returned if all 5 pages are already
+# in use.
+
+get_webui_page() {
+	for i in 1 2 3 4 5
+	do
+		page=/www/ext/user$i.asp
+		if [ ! -f $page ]
+		then
+			echo user$i.asp
+			return
+		fi
+	done
+	echo "none"
+}
+

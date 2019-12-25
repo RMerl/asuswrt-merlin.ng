@@ -1330,10 +1330,8 @@ void start_lan(void)
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
-#if 0		// Kludge, requires 81116 blobs
 #ifdef HND_ROUTER
 		hnd_set_hwstp();
-#endif
 #endif
 
 		set_iface_ps(lan_ifname, 3);

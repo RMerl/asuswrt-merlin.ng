@@ -11,7 +11,6 @@
 #include "utils.h"
 #include "shutils.h"
 #include "shared.h"
-//#include "amas_path.h"
 
 #if 0
 int is_wlsta_exist(int unit, int vidx)

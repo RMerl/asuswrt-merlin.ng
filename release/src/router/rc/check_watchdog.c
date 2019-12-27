@@ -34,15 +34,21 @@ static void check_watchdog_exit(int sig)
 	exit(0);
 }
 
-extern int g_upgrade;
 void check_watchdog()
 {
 	int ret;
 	struct stat sb;
 	time_t now;
 	static unsigned long ts_check = 0;
+	char reboot[sizeof("255")];
+	char upgrade[sizeof("255")];
 
-	if (g_reboot || g_upgrade)
+	memset(reboot, 0, sizeof("255"));
+	memset(upgrade, 0, sizeof("255"));
+	f_read_string("/tmp/reboot", reboot, sizeof(reboot));
+	f_read_string("/tmp/upgrade", upgrade, sizeof(upgrade));
+
+	if (atoi(reboot) || atoi(upgrade))
 		return;
 
 	if (ate_factory_mode())

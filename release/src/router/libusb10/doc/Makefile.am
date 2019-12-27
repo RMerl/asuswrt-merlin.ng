@@ -5,6 +5,5 @@ docs: doxygen.cfg
 
 docs-upload: docs
 	ln -s html api-1.0
-	rsync -av api-1.0/ dsd_,libusb@web.sourceforge.net:htdocs/api-1.0/
+	scp -r api-1.0 pbatard@web.sourceforge.net:/home/project-web/libusb/htdocs
 	rm -f api-1.0
-

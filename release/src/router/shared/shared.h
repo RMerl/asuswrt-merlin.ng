@@ -52,6 +52,10 @@
 #include <ftw.h>
 #include "network_utility.h"
 
+#ifdef RTCONFIG_AHS
+#include "notify_ahs.h"
+#endif /* RTCONFIG_AHS */
+
 #if defined(RTCONFIG_PTHSAFE_POPEN)
 #define	popen	PS_popen
 #define	pclose	PS_pclose

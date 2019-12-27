@@ -1,6 +1,20 @@
 This file lists notable changes in each release. For the full history of all
 changes, see ChangeLog.
 
+2015-10-??: libusb-compat-0.1.6 release
+ * Add library destructor to handle cleanup of libusb.
+ * Prevent libusb-1.0 symbol clash by dlopening libusb-1.0.
+ * Updates for MINGW compilation.
+
+2013-05-20: libusb-compat-0.1.5 release
+ * Update autoconf/automake files to fix warnings.
+ * Use an atexit function to call libusb_exit().
+
+2012-04-24: libusb-compat-0.1.4 release
+ * Change usb_*_write() prototypes to use const for read-only parameters
+ * Fix #42 usb_detach_kernel_driver_np() error mapping
+ * Prefer libtoolize over glibtoolize in autogen.sh
+
 2009-07-09: libusb-compat-0.1.3 release
  * Fix cross-compiling
  * Improved error code compatibility

@@ -403,6 +403,10 @@ config RTCONFIG_SYSSTATE
 	bool "Support additional debug logs"
 	default n
 
+config RTCONFIG_AHS
+	bool "Auto Healing System"
+	default n
+
 config RTCONFIG_DUALWAN
 	bool "Dual WAN Support"
 	default n

@@ -2879,9 +2879,15 @@ NEITHER_WDS_OR_PSTA:
 #endif
 
 #elif defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2) || !defined(RTCONFIG_QCN550X)
 		/* All models use eth0/eth1 as LAN or WAN. */
 		if (!strncmp(interface, "eth0", 4) || !strncmp(interface, "eth1", 4))
 			return;
+#else
+		/* RT-AC59U family */
+		if (!strncmp(interface, "eth0", 4))
+			return;
+#endif
 #if defined(RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2) || defined(RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2)
 		/* BRT-AC828 SR1~SR3: eth2/eth3 are WAN1/WAN2.
 		 * BRT-AC828 SR4+   : eth2/eth3 are LAN2/WAN2.
@@ -2889,14 +2895,15 @@ NEITHER_WDS_OR_PSTA:
 		if (!strncmp(interface, "eth2", 4) || !strncmp(interface, "eth3", 4))
 			return;
 #endif
+
 #elif defined(RTCONFIG_REALTEK)
 		TRACE_PT("do nothing in hotplug net\n");
+#elif defined(RTCONFIG_LANTIQ)
+		TRACE_PT("do nothing in hotplug net\n");
 #else
-#ifndef RTCONFIG_LANTIQ
 		// for all models, ethernet's physical interface.
 		if(!strcmp(interface, "eth0"))
 			return;
-#endif
 #endif
 
 		// Not wired ethernet.

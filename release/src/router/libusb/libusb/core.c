@@ -1,7 +1,9 @@
+/* -*- Mode: C; c-basic-offset:8 ; indent-tabs-mode:t -*- */
 /*
  * Core functions for libusb-compat-0.1
  * Copyright (C) 2008 Daniel Drake <dsd@gentoo.org>
  * Copyright (c) 2000-2003 Johannes Erdfelt <johannes@erdfelt.com>
+ * Copyright (c) 2014-2016 Nathan Hjelm <hjelmn@cs.unm.edu>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -28,6 +30,19 @@
 
 #include "usb.h"
 #include "usbi.h"
+
+/* this is a workaround since some legacy apps have borrowed libusb's
+ * namespace. */
+#ifdef LIBUSB_1_0_SONAME
+#include "libusb-dload.h"
+#else
+#define dl_libusb_get_string_descriptor libusb_get_string_descriptor
+#define dl_libusb_get_descriptor libusb_get_descriptor
+#endif
+
+#ifndef ENODATA
+#define ENODATA EIO
+#endif
 
 static libusb_context *ctx = NULL;
 static int usb_debug = 0;
@@ -58,6 +73,24 @@ enum usbi_log_level {
 API_EXPORTED struct usb_bus *usb_busses = NULL;
 
 #define compat_err(e) -(errno=libusb_to_errno(e))
+
+#ifdef LIBUSB_1_0_SONAME
+static void __attribute__ ((constructor)) _usb_init (void)
+{
+	libusb_dl_init ();
+}
+#endif
+
+static void __attribute__ ((destructor)) _usb_exit (void)
+{
+	if (ctx) {
+		libusb_exit (ctx);
+		ctx = NULL;
+	}
+#ifdef LIBUSB_1_0_SONAME
+	libusb_dl_exit ();
+#endif
+}
 
 static int libusb_to_errno(int result)
 {
@@ -659,6 +692,10 @@ API_EXPORTED usb_dev_handle *usb_open(struct usb_device *dev)
 
 	r = libusb_open((libusb_device *) dev->dev, &udev->handle);
 	if (r < 0) {
+		if (r == LIBUSB_ERROR_ACCESS) {
+			usbi_info("Device open failed due to a permission denied error.");
+			usbi_info("libusb requires write access to USB device nodes.");
+		}
 		usbi_err("could not open device, error %d", r);
 		free(udev);
 		errno = libusb_to_errno(r);
@@ -773,31 +810,7 @@ API_EXPORTED int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes,
 	return usb_bulk_io(dev, ep, bytes, size, timeout);
 }
 
-API_EXPORTED int usb_bulk_write_sp(usb_dev_handle *dev, int ep, char *bytes, int size,
-	int timeout, int *actual_length, int max_rw)
-{
-	if (ep & USB_ENDPOINT_IN) {
-		/* libusb-0.1 on BSD strangely fix up a write request to endpoint
-		 * 0x81 to be to endpoint 0x01. do the same thing here, but
-		 * warn about this silly behaviour. */
-		usbi_warn("endpoint %x has excessive IN direction bit, fixing");
-		ep &= ~USB_ENDPOINT_IN;
-	}
-
-	int r;
-	usbi_dbg("endpoint %x size %d timeout %d", ep, size, timeout);
-	r = libusb_bulk_transfer(dev->handle, ep & 0xff, bytes, size,
-		actual_length, timeout);
-	
-	/* if we timed out but did transfer some data, report as successful short
-	 * read. FIXME: is this how libusb-0.1 works? */
-	if (r == 0 || (r == LIBUSB_ERROR_TIMEOUT && actual_length > 0))
-		return actual_length;
-
-	return compat_err(r);
-}
-
-API_EXPORTED int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes,
+API_EXPORTED int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes,
 	int size, int timeout)
 {
 	if (ep & USB_ENDPOINT_IN) {
@@ -808,8 +821,44 @@ API_EXPORTED int usb_bulk_write(usb_dev_handle *dev, int ep, char *bytes,
 		ep &= ~USB_ENDPOINT_IN;
 	}
 
-	return usb_bulk_io(dev, ep, bytes, size, timeout);
+#ifdef ASUS_U2EC
+	/* U2EC uses 32767 as a magic number for no timeout */
+	if (timeout == 32767)
+		timeout = 0;
+#endif
+
+	return usb_bulk_io(dev, ep, (char *)bytes, size, timeout);
 }
+
+#ifdef ASUS_U2EC
+API_EXPORTED int usb_bulk_write_sp(usb_dev_handle *dev, int ep, const char *bytes,
+	int size, int timeout, int *actual_length, int max_rw)
+{
+	if (ep & USB_ENDPOINT_IN) {
+		/* libusb-0.1 on BSD strangely fix up a write request to endpoint
+		 * 0x81 to be to endpoint 0x01. do the same thing here, but
+		 * warn about this silly behaviour. */
+		usbi_warn("endpoint %x has excessive IN direction bit, fixing");
+		ep &= ~USB_ENDPOINT_IN;
+	}
+
+	/* U2EC uses 32767 as a magic number for no timeout */
+	if (timeout == 32767)
+		timeout = 0;
+
+	int r;
+	usbi_dbg("endpoint %x size %d timeout %d", ep, size, timeout);
+	r = libusb_bulk_transfer(dev->handle, ep & 0xff, (char *)bytes, size,
+		actual_length, timeout);
+	
+	/* if we timed out but did transfer some data, report as successful short
+	 * read. FIXME: is this how libusb-0.1 works? */
+	if (r == 0 || (r == LIBUSB_ERROR_TIMEOUT && *actual_length > 0))
+		return *actual_length;
+
+	return compat_err(r);
+}
+#endif
 
 static int usb_interrupt_io(usb_dev_handle *dev, int ep, char *bytes,
 	int size, int timeout)
@@ -841,7 +890,7 @@ API_EXPORTED int usb_interrupt_read(usb_dev_handle *dev, int ep, char *bytes,
 	return usb_interrupt_io(dev, ep, bytes, size, timeout);
 }
 
-API_EXPORTED int usb_interrupt_write(usb_dev_handle *dev, int ep, char *bytes,
+API_EXPORTED int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes,
 	int size, int timeout)
 {
 	if (ep & USB_ENDPOINT_IN) {
@@ -852,7 +901,7 @@ API_EXPORTED int usb_interrupt_write(usb_dev_handle *dev, int ep, char *bytes,
 		ep &= ~USB_ENDPOINT_IN;
 	}
 
-	return usb_interrupt_io(dev, ep, bytes, size, timeout);
+	return usb_interrupt_io(dev, ep, (char *)bytes, size, timeout);
 }
 
 API_EXPORTED int usb_control_msg(usb_dev_handle *dev, int bmRequestType,
@@ -876,7 +925,7 @@ API_EXPORTED int usb_get_string(usb_dev_handle *dev, int desc_index, int langid,
 	char *buf, size_t buflen)
 {
 	int r;
-	r = libusb_get_string_descriptor(dev->handle, desc_index & 0xff,
+	r = dl_libusb_get_string_descriptor(dev->handle, desc_index & 0xff,
 		langid & 0xffff, buf, (int) buflen);
 	if (r >= 0)
 		return r;
@@ -898,7 +947,7 @@ API_EXPORTED int usb_get_descriptor(usb_dev_handle *dev, unsigned char type,
 	unsigned char desc_index, void *buf, int size)
 {
 	int r;
-	r = libusb_get_descriptor(dev->handle, type, desc_index, buf, size);
+	r = dl_libusb_get_descriptor(dev->handle, type, desc_index, buf, size);
 	if (r >= 0)
 		return r;
 	return compat_err(r);
@@ -936,6 +985,22 @@ API_EXPORTED int usb_get_driver_np(usb_dev_handle *dev, int interface,
 
 API_EXPORTED int usb_detach_kernel_driver_np(usb_dev_handle *dev, int interface)
 {
-	return compat_err(libusb_detach_kernel_driver(dev->handle, interface));
+	int r = compat_err(libusb_detach_kernel_driver(dev->handle, interface));
+	switch (r) {
+	case LIBUSB_SUCCESS:
+		return 0;
+	case LIBUSB_ERROR_NOT_FOUND:
+		return -ENODATA;
+	case LIBUSB_ERROR_INVALID_PARAM:
+		return -EINVAL;
+	case LIBUSB_ERROR_NO_DEVICE:
+		return -ENODEV;
+	case LIBUSB_ERROR_OTHER:
+		return -errno;
+	/* default can be reached only in non-Linux implementations,
+	 * mostly with LIBUSB_ERROR_NOT_SUPPORTED. */
+	default:
+		return -ENOSYS;
+	}
 }
 

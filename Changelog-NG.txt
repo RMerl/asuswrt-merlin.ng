@@ -9,6 +9,12 @@ Asuswrt-Merlin 384/NG Changelog
          be identical to when the original wan-start script was
          being run (wan-start should be considered deprecated
          and will be removed in a future release)
+  - NEW: Added five mount points within /www to allow script
+         developers to easily add their own pages to the webui.
+         See the documentation for a fully working example that
+         will add your custom page as well as your own tab on
+         the webui.
+  - UPDATED: Merged with GPL 385-10002 (from RT-AC68U)
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
   - UPDATED: curl to 7.67.0.
 

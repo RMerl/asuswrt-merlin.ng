@@ -51,8 +51,10 @@ void check_watchdog()
 	if (atoi(reboot) || atoi(upgrade))
 		return;
 
+#if 0
 	if (ate_factory_mode())
 		return;
+#endif
 
 	ret = stat("/tmp/watchdog_heartbeat", &sb);
 	time(&now);

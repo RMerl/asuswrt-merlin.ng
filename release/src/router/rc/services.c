@@ -2747,7 +2747,9 @@ int start_wlceventd(void)
 	if (factory_debug())
 #endif
 #else
+#if 0
 	if (IS_ATE_FACTORY_MODE())
+#endif
 #endif
 	return ret;
 
@@ -2816,7 +2818,9 @@ int start_wlc_nt(void)
 	if (factory_debug())
 #endif
 #else
+#if 0
 	if (IS_ATE_FACTORY_MODE())
+#endif
 #endif
 	return ret;
 
@@ -9282,8 +9286,10 @@ int start_wanduck(void)
 		return 0;
 #endif
 
+#if 0
 	if(ate_factory_mode())
 		return 0;
+#endif
 
 	if(!strcmp(nvram_safe_get("wanduck_down"), "1"))
 		return 0;

@@ -812,6 +812,9 @@ int do_dns_detect(int wan_unit)
 	int timeout, size, ret, pipefd[2];
 	int debug = nvram_get_int("dns_probe_debug");
 
+	if (!nvram_get_int("dns_probe"))
+		return -1;
+
 #if defined(RTCONFIG_IPV6) && defined(RTCONFIG_USB_MODEM)
 	if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2)
 		return 1;

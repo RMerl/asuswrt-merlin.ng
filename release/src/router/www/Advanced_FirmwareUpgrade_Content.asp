@@ -226,7 +226,7 @@ function initial(){
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "'>";
 				if (check_is_merlin_fw(fwver))
-					html += "<div id='current_version'><#ADSL_FW_item1#> : " + fwver.replace("3.0.0.4.", "") + "</div>";
+					html += "<div id='current_version'><#ADSL_FW_item1#> : " + fwver.replace("3.0.0.4.", "").replace("_0","") + "</div>";
 				else
 					html += "<div id='current_version'><#ADSL_FW_item1#> : " + fwver + "</div>";
 				html += "<div id='manual_firmware_update'>";
@@ -1074,7 +1074,7 @@ function update_AiMesh_fw() {
 					var online = get_cfg_clientlist[idx].online;
 					var mac_id = mac.replace(/:/g, "");
 					if (check_is_merlin_fw(fwver))
-						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver.replace("3.0.0.4.","") + "");
+						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver.replace("3.0.0.4.","").replace("_0","") + "");
 					else
 						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : " + fwver + "");
 					$("#amas_" + mac_id + "").children("#manual_firmware_update").empty();

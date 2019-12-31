@@ -64,6 +64,8 @@
 #include <search.h>
 #endif
 
+#include <json.h>
+
 int
 ej_get_leases_array(int eid, webs_t wp, int argc, char_t **argv)
 {
@@ -1211,3 +1213,54 @@ void _fix_TM_ipv6(char* str) {
 		strcat(str,"00");
 }
 #endif
+
+
+int ej_get_custom_settings(int eid, webs_t wp, int argc, char **argv_) {
+
+	struct json_object *settings_obj;
+	int ret = 0;
+	char line[3040];
+	char name[30];
+	char value[3000];
+	FILE *fp;
+
+	fp = fopen("/jffs/custom_settings.txt", "r");
+	if (fp == NULL) {
+		ret += websWrite(wp," new Object()");
+		return 0;
+	}
+
+	settings_obj = json_object_new_object();
+	while (fgets(line, sizeof(line), fp)) {
+		if (sscanf(line,"%29s%*[ ]%2999s%*[ \n]",name, value) == 2) {
+			json_object_object_add(settings_obj, name, json_object_new_string(value));
+		}
+	}
+	fclose(fp);
+
+	ret += websWrite(wp, "%s", json_object_to_json_string(settings_obj));
+
+	json_object_put(settings_obj);
+	return ret;
+}
+
+
+void write_custom_settings(char *jstring) {
+	char line[3040];
+	FILE *fp;
+	struct json_object *settings_obj;
+
+	settings_obj = json_tokener_parse(jstring);
+	if (!settings_obj) return;
+
+	fp = fopen("/jffs/custom_settings.txt", "w");
+	if (!fp) return;
+
+	json_object_object_foreach(settings_obj, key, val) {
+		snprintf(line, sizeof(line), "%s %s\n", key, json_object_get_string(val));
+		fwrite(line, 1, strlen(line), fp);
+	}
+	fclose(fp);
+
+	json_object_put(settings_obj);
+}

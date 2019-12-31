@@ -44,3 +44,5 @@ void _fix_TM_ipv6(char* str);
 #endif
 
 int ej_connlist_array(int eid, webs_t wp, int argc, char **argv);
+extern int ej_get_custom_settings(int eid, webs_t wp, int argc, char **argv_);
+extern void write_custom_settings(char *jstring);

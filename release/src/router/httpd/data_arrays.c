@@ -1224,7 +1224,7 @@ int ej_get_custom_settings(int eid, webs_t wp, int argc, char **argv_) {
 	char value[3000];
 	FILE *fp;
 
-	fp = fopen("/jffs/custom_settings.txt", "r");
+	fp = fopen("/jffs/addons/custom_settings.txt", "r");
 	if (fp == NULL) {
 		ret += websWrite(wp," new Object()");
 		return 0;
@@ -1253,7 +1253,7 @@ void write_custom_settings(char *jstring) {
 	settings_obj = json_tokener_parse(jstring);
 	if (!settings_obj) return;
 
-	fp = fopen("/jffs/custom_settings.txt", "w");
+	fp = fopen("/jffs/addons/custom_settings.txt", "w");
 	if (!fp) return;
 
 	json_object_object_foreach(settings_obj, key, val) {

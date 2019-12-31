@@ -3141,6 +3141,11 @@ static int validate_apply(webs_t wp, json_object *root) {
 				 nvram_modified = 1;
 			}
 #endif
+			else if(!strcmp(name, "amng_custom")) {
+				write_custom_settings(value);
+				_dprintf("set amng_custom to %s\n", value);
+				nvram_modified = 1;
+			}
 
 #ifdef RTCONFIG_DISK_MONITOR
 			else if(!strncmp(name, "diskmon_", 8)) {
@@ -23398,6 +23403,7 @@ struct ej_handler ej_handlers[] = {
 	{ "get_route_array", ej_get_route_array},
 	{ "get_tcclass_array", ej_tcclass_dump_array},
 	{ "get_connlist_array", ej_connlist_array},
+	{ "get_custom_settings", ej_get_custom_settings},
 #ifdef RTCONFIG_BCMWL6
 	{ "get_wl_status", ej_wl_status_2g_array},
 #endif

@@ -9238,10 +9238,9 @@ int start_wanduck(void)
 		return 0;
 #endif
 
-#if 0
 	if(ate_factory_mode())
-		return 0;
-#endif
+		logmessage("wanduck", "WARNING - router is in manufacturing mode, and can behave unexpectedly (did you mess with your bootloader?)");
+		//return 0;
 
 	if(!strcmp(nvram_safe_get("wanduck_down"), "1"))
 		return 0;

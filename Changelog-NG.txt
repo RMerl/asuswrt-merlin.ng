@@ -1,6 +1,17 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.14_2 (xx-xxx-xxxx)
+  - FIXED: stubby was linked with OpenSSL 1.0 instead of 1.1
+  - FIXED: some routers were reporting the Internet connection being
+           disconnected.  If you were affected and you had flashed
+           a customized bootloader, then please reflash your original
+           bootloader, as your modded bootloader is invalid, and other
+           potential issues may appear over time.
+  - FIXED: Random traffic spikes logged in Traffic Monitor (regression
+           from 384_81351)
+
+
 384.14 (14-Dec-2019)
   - NEW: Implement option to prevent Firefox's automatic usage of DoH.
          By default, this will only apply if you have DNSPrivacy

@@ -1,7 +1,8 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.14_2 (xx-xxx-xxxx)
+384.14_2 (1-1-2020)
+  - FIXED: Missing cifs kernel module
   - FIXED: stubby was linked with OpenSSL 1.0 instead of 1.1
   - FIXED: some routers were reporting the Internet connection being
            disconnected.  If you were affected and you had flashed

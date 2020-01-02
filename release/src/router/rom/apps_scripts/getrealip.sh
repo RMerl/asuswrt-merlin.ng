@@ -1,7 +1,7 @@
 #!/bin/sh
 # use STUN to find the external IP.
 
-servers="default stun.l.google.com:19302 stun.iptel.org stun.stunprotocol.org stun.xten.com"
+servers="stun.l.google.com:19302 stun.stunprotocol.org"
 prefixes="wan0_ wan1_"
 
 which ministun >/dev/null || exit 1

@@ -343,6 +343,10 @@ void update_nvram_status(int event)
 	char *p = NULL;
 
 	prctl(PR_GET_NAME, name);	//e.g. vpnserverX or vpnclientX
+
+	if(strstr(name, "server"))
+		return;
+
 	p = name + 3;
 
 	switch(event) {

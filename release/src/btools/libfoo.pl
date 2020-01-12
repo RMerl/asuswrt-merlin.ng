@@ -489,6 +489,7 @@ sub genSO
 	my @u = usersOf($name);
 	if ((scalar(@used) == 0) && (scalar(@u) > 0)) {
 		print "$name: WARNING: Library symbol is not used by anything, but linked by (@u). so keep it ...\n";
+		$cmd .= " ". $arc;
 	}
 	elsif (scalar(@used) == 0) {
 		print "$name: WARNING: Library is not used by anything, deleting...\n";
@@ -496,7 +497,9 @@ sub genSO
 #		<>;
 		return 0;
 	}
+	else {
 	$cmd .= " -u " . join(" -u ", @used) . " ". $arc;
+	}
 
 	print LOG "Command: $cmd\n";
 	print LOG "Used: ", join(",", @used), "\n";

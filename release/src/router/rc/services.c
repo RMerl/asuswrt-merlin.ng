@@ -1206,6 +1206,9 @@ void start_dnsmasq(void)
 			    lan_hostname, nvram_safe_get("lan_domain"),
 			    lan_hostname);
 
+		/* mdns fallback */
+		fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
+
 		/* default names */
 		fprintf(fp, "%s %s\n", lan_ipaddr, DUT_DOMAIN_NAME);
 		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME1);
@@ -1240,6 +1243,9 @@ void start_dnsmasq(void)
 				fprintf(fp, "%s %s.%s %s\n", value,
 					    lan_hostname, nvram_safe_get("lan_domain"),
 					    lan_hostname);
+
+				/* mdns fallback */
+				fprintf(fp, "%s %s.local\n", value, lan_hostname);
  			}
 		}
 #endif
@@ -4354,8 +4360,34 @@ mcpd_conf(void)
 	else
 		fprintf(fp, "igmp-mcast-interfaces %s\n", proxy_ifname);
 
+#ifdef RTCONFIG_IPV6
+	fprintf(fp, "#\n");
+	fprintf(fp, "#Begin MLD configuration\n");
+	fprintf(fp, "#\n");
+
+	fprintf(fp, "mld-default-version %d\n", 2);
+	fprintf(fp, "mld-query-interval %d\n", 125);
+	fprintf(fp, "mld-query-response-interval %d\n", 10);
+	fprintf(fp, "mld-last-member-query-interval %d\n", 10);
+	fprintf(fp, "mld-robustness-value %d\n", 2);
+	fprintf(fp, "mld-max-groups %d\n", 10);
+	fprintf(fp, "mld-max-sources %d\n", 10);
+	fprintf(fp, "mld-max-members %d\n", 10);
+	fprintf(fp, "mld-fast-leave %d\n", 1);
+	fprintf(fp, "mld-admission-required %d\n", 0);
+	fprintf(fp, "mld-admission-bridging-filter %d\n", 0);
+	fprintf(fp, "mld-proxy-enable %d\n", 1);
+	fprintf(fp, "mld-snooping-enable %d\n", 1);
+	fprintf(fp, "mld-proxy-interfaces %s\n", proxy_ifname);
+	fprintf(fp, "mld-snooping-interfaces %s\n", "br0");
+	fprintf(fp, "mld-mcast-interfaces %s\n", proxy_ifname);
+	fprintf(fp, "#\n");
+	fprintf(fp, "#End MLD configuration\n");
+	fprintf(fp, "#\n");
+#endif
+
 	/* Mcast configuration */
-	fprintf(fp, "\n##### MCAST configuration #####\n");
+	fprintf(fp, "##### MCAST configuration #####\n");
 	fprintf(fp, "igmp-mcast-snoop-exceptions "
 		"239.255.255.250/255.255.255.255 "
 		"224.0.255.135/255.255.255.255\n");

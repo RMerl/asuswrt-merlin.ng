@@ -71,7 +71,7 @@ start_pppd(int unit)
 	FILE *fp;
 	char options[80];
 	char *pppd_argv[] = { "/usr/sbin/pppd", "file", options, NULL};
-	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
+	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char buf[256];	/* although maximum length of pppoe_username/pppoe_passwd is 64. pppd accepts up to 256 characters. */
 	mode_t mask;
 	int ret = 0;
@@ -272,7 +272,6 @@ start_pppd(int unit)
 
 	/* shut down previous instance if any */
 	stop_pppd(unit);
-	nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), "");
 
 	if (nvram_match(strcat_r(prefix, "proto", tmp), "l2tp"))
 	{
@@ -335,6 +334,7 @@ void
 stop_pppd(int unit)
 {
 	char pidfile[sizeof("/var/run/ppp-wanXXXXXXXXXX.pid")];
+	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 
 	snprintf(pidfile, sizeof(pidfile), "/var/run/ppp-wan%d.pid", unit);
 	if (kill_pidfile_s(pidfile, SIGHUP) == 0 &&
@@ -342,12 +342,15 @@ stop_pppd(int unit)
 		usleep(1000*1000);
 		kill_pidfile_tk(pidfile);
 	}
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+	nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), "");
 }
 
 int
 start_demand_ppp(int unit, int wait)
 {
-	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
+	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *ping_argv[] = { "ping", "-c1", "203.69.138.19", NULL };
 	char *value;
 	pid_t pid;

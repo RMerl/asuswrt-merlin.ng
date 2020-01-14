@@ -8472,6 +8472,8 @@ int init_nvram(void)
 	add_rc_support("dnsfilter");
 #endif
 
+	add_rc_support("am_addons");
+
 #ifdef RTCONFIG_NTPD
 	add_rc_support("ntpd");
 #endif

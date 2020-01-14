@@ -19,9 +19,12 @@ Asuswrt-Merlin 384/NG Changelog
          (first draft of the documentation, need to be reorganized)
          https://github.com/RMerl/asuswrt-merlin/wiki/Addons-API
 
-  - UPDATED: Merged with GPL 385-10002 (from RT-AC68U)
+  - UPDATED: Backported some fixes from 384_81981, mostly related
+             to WAN, port bonding and mdns.
+  - UPDATED: Merged with GPL 385_10002 (from RT-AC68U)
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
   - UPDATED: curl to 7.67.0.
+  - UPDATED: openssl-1.0 to 1.0.2u
 
 
 384.14_2 (1-1-2020)

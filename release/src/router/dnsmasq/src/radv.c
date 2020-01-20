@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -288,7 +288,10 @@ static void send_ra_alias(time_t now, int iface, char *iface_name, struct in6_ad
       context->netid.next = &context->netid;
     }
 
-  if (!iface_enumerate(AF_INET6, &parm, add_prefixes))
+  /* If no link-local address then we can't advertise since source address of
+     advertisement must be link local address: RFC 4861 para 6.1.2. */
+  if (!iface_enumerate(AF_INET6, &parm, add_prefixes) ||
+      parm.link_pref_time == 0)
     return;
 
   /* Find smallest preferred time within address classes,

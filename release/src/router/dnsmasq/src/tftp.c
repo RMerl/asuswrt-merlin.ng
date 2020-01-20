@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #ifdef HAVE_TFTP
 
+static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len);
 static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix);
 static void free_transfer(struct tftp_transfer *transfer);
 static ssize_t tftp_err(int err, char *packet, char *message, char *file);
@@ -50,7 +51,7 @@ void tftp_request(struct listener *listen, time_t now)
   struct ifreq ifr;
   int is_err = 1, if_index = 0, mtu = 0;
   struct iname *tmp;
-  struct tftp_transfer *transfer;
+  struct tftp_transfer *transfer = NULL, **up;
   int port = daemon->start_tftp_port; /* may be zero to use ephemeral port */
 #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
   int mtuflag = IP_PMTUDISC_DONT;
@@ -239,6 +240,39 @@ void tftp_request(struct listener *listen, time_t now)
   if (mtu == 0)
     mtu = daemon->tftp_mtu;
 
+  /* data transfer via server listening socket */
+  if (option_bool(OPT_SINGLE_PORT))
+    {
+      int tftp_cnt;
+
+      for (tftp_cnt = 0, transfer = daemon->tftp_trans, up = &daemon->tftp_trans; transfer; up = &transfer->next, transfer = transfer->next)
+	{
+	  tftp_cnt++;
+
+	  if (sockaddr_isequal(&peer, &transfer->peer))
+	    {
+	      if (ntohs(*((unsigned short *)packet)) == OP_RRQ)
+		{
+		  /* Handle repeated RRQ or abandoned transfer from same host and port 
+		     by unlinking and reusing the struct transfer. */
+		  *up = transfer->next;
+		  break;
+		}
+	      else
+		{
+		  handle_tftp(now, transfer, len);
+		  return;
+		}
+	    }
+	}
+      
+      /* Enforce simultaneous transfer limit. In non-single-port mode
+	 this is doene by not listening on the server socket when
+	 too many transfers are in progress. */
+      if (!transfer && tftp_cnt >= daemon->tftp_max)
+	return;
+    }
+  
   if (name)
     {
       /* check for per-interface prefix */ 
@@ -264,16 +298,21 @@ void tftp_request(struct listener *listen, time_t now)
 #endif
     }
 
-  if (!(transfer = whine_malloc(sizeof(struct tftp_transfer))))
+  /* May reuse struct transfer from abandoned transfer in single port mode. */
+  if (!transfer && !(transfer = whine_malloc(sizeof(struct tftp_transfer))))
     return;
   
-  if ((transfer->sockfd = socket(listen->family, SOCK_DGRAM, 0)) == -1)
+  if (option_bool(OPT_SINGLE_PORT))
+    transfer->sockfd = listen->tftpfd;
+  else if ((transfer->sockfd = socket(listen->family, SOCK_DGRAM, 0)) == -1)
     {
       free(transfer);
       return;
     }
   
   transfer->peer = peer;
+  transfer->source = addra;
+  transfer->if_index = if_index;
   transfer->timeout = now + 2;
   transfer->backoff = 1;
   transfer->block = 1;
@@ -286,7 +325,7 @@ void tftp_request(struct listener *listen, time_t now)
   prettyprint_addr(&peer, daemon->addrbuff);
   
   /* if we have a nailed-down range, iterate until we find a free one. */
-  while (1)
+  while (!option_bool(OPT_SINGLE_PORT))
     {
       if (bind(transfer->sockfd, &addr.sa, sa_len(&addr)) == -1 ||
 #if defined(IP_MTU_DISCOVER) && defined(IP_PMTUDISC_DONT)
@@ -315,7 +354,7 @@ void tftp_request(struct listener *listen, time_t now)
   
   p = packet + 2;
   end = packet + len;
-
+  
   if (ntohs(*((unsigned short *)packet)) != OP_RRQ ||
       !(filename = next(&p, end)) ||
       !(mode = next(&p, end)) ||
@@ -439,9 +478,8 @@ void tftp_request(struct listener *listen, time_t now)
 	    is_err = 0;
 	}
     }
-  
-  while (sendto(transfer->sockfd, packet, len, 0, 
-		(struct sockaddr *)&peer, sa_len(&peer)) == -1 && errno == EINTR);
+
+  send_from(transfer->sockfd, !option_bool(OPT_SINGLE_PORT), packet, len, &peer, &addra, if_index);
   
   if (is_err)
     free_transfer(transfer);
@@ -538,63 +576,28 @@ static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix)
 void check_tftp_listeners(time_t now)
 {
   struct tftp_transfer *transfer, *tmp, **up;
-  ssize_t len;
   
-  struct ack {
-    unsigned short op, block;
-  } *mess = (struct ack *)daemon->packet;
-  
-  /* Check for activity on any existing transfers */
-  for (transfer = daemon->tftp_trans, up = &daemon->tftp_trans; transfer; transfer = tmp)
-    {
-      tmp = transfer->next;
-      
-      prettyprint_addr(&transfer->peer, daemon->addrbuff);
-     
+  /* In single port mode, all packets come via port 69 and tftp_request() */
+  if (!option_bool(OPT_SINGLE_PORT))
+    for (transfer = daemon->tftp_trans; transfer; transfer = transfer->next)
       if (poll_check(transfer->sockfd, POLLIN))
 	{
 	  /* we overwrote the buffer... */
 	  daemon->srv_save = NULL;
-	  
-	  if ((len = recv(transfer->sockfd, daemon->packet, daemon->packet_buff_sz, 0)) >= (ssize_t)sizeof(struct ack))
-	    {
-	      if (ntohs(mess->op) == OP_ACK && ntohs(mess->block) == (unsigned short)transfer->block) 
-		{
-		  /* Got ack, ensure we take the (re)transmit path */
-		  transfer->timeout = now;
-		  transfer->backoff = 0;
-		  if (transfer->block++ != 0)
-		    transfer->offset += transfer->blocksize - transfer->expansion;
-		}
-	      else if (ntohs(mess->op) == OP_ERR)
-		{
-		  char *p = daemon->packet + sizeof(struct ack);
-		  char *end = daemon->packet + len;
-		  char *err = next(&p, end);
-		  
-		  /* Sanitise error message */
-		  if (!err)
-		    err = "";
-		  else
-		    sanitise(err);
-		  
-		  my_syslog(MS_TFTP | LOG_ERR, _("error %d %s received from %s"),
-			    (int)ntohs(mess->block), err, 
-			    daemon->addrbuff);	
-		  
-		  /* Got err, ensure we take abort */
-		  transfer->timeout = now;
-		  transfer->backoff = 100;
-		}
-	    }
+	  handle_tftp(now, transfer, recv(transfer->sockfd, daemon->packet, daemon->packet_buff_sz, 0));
 	}
+
+  for (transfer = daemon->tftp_trans, up = &daemon->tftp_trans; transfer; transfer = tmp)
+    {
+      tmp = transfer->next;
       
       if (difftime(now, transfer->timeout) >= 0.0)
 	{
 	  int endcon = 0;
+	  ssize_t len;
 
 	  /* timeout, retransmit */
-	  transfer->timeout += 1 + (1<<transfer->backoff);
+	  transfer->timeout += 1 + (1<<(transfer->backoff/2));
 	  	  
 	  /* we overwrote the buffer... */
 	  daemon->srv_save = NULL;
@@ -604,22 +607,24 @@ void check_tftp_listeners(time_t now)
 	      len = tftp_err_oops(daemon->packet, transfer->file->filename);
 	      endcon = 1;
 	    }
-	  /* don't complain about timeout when we're awaiting the last
-	     ACK, some clients never send it */
-	  else if (++transfer->backoff > 7 && len != 0)
+	  else if (++transfer->backoff > 7)
 	    {
-	      endcon = 1;
+	      /* don't complain about timeout when we're awaiting the last
+		 ACK, some clients never send it */
+	      if (len == transfer->blocksize + 4)
+		endcon = 1;
 	      len = 0;
 	    }
 
 	  if (len != 0)
-	    while(sendto(transfer->sockfd, daemon->packet, len, 0, 
-			 (struct sockaddr *)&transfer->peer, sa_len(&transfer->peer)) == -1 && errno == EINTR);
-	  
+	    send_from(transfer->sockfd, !option_bool(OPT_SINGLE_PORT), daemon->packet, len,
+		      &transfer->peer, &transfer->source, transfer->if_index);
+	  	  
 	  if (endcon || len == 0)
 	    {
 	      strcpy(daemon->namebuff, transfer->file->filename);
 	      sanitise(daemon->namebuff);
+	      prettyprint_addr(&transfer->peer, daemon->addrbuff);
 	      my_syslog(MS_TFTP | LOG_INFO, endcon ? _("failed sending %s to %s") : _("sent %s to %s"), daemon->namebuff, daemon->addrbuff);
 	      /* unlink */
 	      *up = tmp;
@@ -638,15 +643,60 @@ void check_tftp_listeners(time_t now)
       up = &transfer->next;
     }    
 }
+	  
+/* packet in daemon->packet as this is called. */
+static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len)
+{
+  struct ack {
+    unsigned short op, block;
+  } *mess = (struct ack *)daemon->packet;
+  
+  if (len >= (ssize_t)sizeof(struct ack))
+    {
+      if (ntohs(mess->op) == OP_ACK && ntohs(mess->block) == (unsigned short)transfer->block) 
+	{
+	  /* Got ack, ensure we take the (re)transmit path */
+	  transfer->timeout = now;
+	  transfer->backoff = 0;
+	  if (transfer->block++ != 0)
+	    transfer->offset += transfer->blocksize - transfer->expansion;
+	}
+      else if (ntohs(mess->op) == OP_ERR)
+	{
+	  char *p = daemon->packet + sizeof(struct ack);
+	  char *end = daemon->packet + len;
+	  char *err = next(&p, end);
+	  
+	  prettyprint_addr(&transfer->peer, daemon->addrbuff);
+	  
+	  /* Sanitise error message */
+	  if (!err)
+	    err = "";
+	  else
+	    sanitise(err);
+	  
+	  my_syslog(MS_TFTP | LOG_ERR, _("error %d %s received from %s"),
+		    (int)ntohs(mess->block), err, 
+		    daemon->addrbuff);	
+	  
+	  /* Got err, ensure we take abort */
+	  transfer->timeout = now;
+	  transfer->backoff = 100;
+	}
+    }
+}
 
 static void free_transfer(struct tftp_transfer *transfer)
 {
-  close(transfer->sockfd);
+  if (!option_bool(OPT_SINGLE_PORT))
+    close(transfer->sockfd);
+
   if (transfer->file && (--transfer->file->refcount) == 0)
     {
       close(transfer->file->fd);
       free(transfer->file);
     }
+  
   free(transfer);
 }
 

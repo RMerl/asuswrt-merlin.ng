@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -135,7 +135,14 @@ void dhcp6_packet(time_t now)
   if (!indextoname(daemon->dhcp6fd, if_index, ifr.ifr_name))
     return;
 
-  if ((port = relay_reply6(&from, sz, ifr.ifr_name)) == 0)
+  if ((port = relay_reply6(&from, sz, ifr.ifr_name)) != 0)
+    {
+      from.sin6_port = htons(port);
+      while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base, 
+			       save_counter(-1), 0, (struct sockaddr *)&from, 
+			       sizeof(from))));
+    }
+  else
     {
       struct dhcp_bridge *bridge, *alias;
 
@@ -233,20 +240,22 @@ void dhcp6_packet(time_t now)
       port = dhcp6_reply(parm.current, if_index, ifr.ifr_name, &parm.fallback, 
 			 &parm.ll_addr, &parm.ula_addr, sz, &from.sin6_addr, now);
       
+      /* The port in the source address of the original request should
+	 be correct, but at least once client sends from the server port,
+	 so we explicitly send to the client port to a client, and the
+	 server port to a relay. */
+      if (port != 0)
+	{
+	  from.sin6_port = htons(port);
+	  while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base, 
+				   save_counter(-1), 0, (struct sockaddr *)&from, 
+				   sizeof(from))));
+	}
+
+      /* These need to be called _after_ we send DHCPv6 packet, since lease_update_file()
+	 may trigger sending an RA packet, which overwrites our buffer. */
       lease_update_file(now);
       lease_update_dns(0);
-    }
-			  
-  /* The port in the source address of the original request should
-     be correct, but at least once client sends from the server port,
-     so we explicitly send to the client port to a client, and the
-     server port to a relay. */
-  if (port != 0)
-    {
-      from.sin6_port = htons(port);
-      while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base, 
-			       save_counter(0), 0, (struct sockaddr *)&from, 
-			       sizeof(from))));
     }
 }
 

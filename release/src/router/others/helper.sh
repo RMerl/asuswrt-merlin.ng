@@ -53,3 +53,25 @@ get_webui_page() {
 	echo "none"
 }
 
+
+_am_settings_path=/jffs/addons/custom_settings.txt
+
+# This function will return the value associated to a specific variable.
+# Example: VERSION=$(am_settings_get addon_version)
+am_settings_get () {
+	if [ ! -f $_am_settings_path ]; then
+		touch $_am_settings_path
+	fi
+	grep -E "^$1 " $_am_settings_path | cut -f2- -d ' '
+}
+
+# This function will set a variable to the desired value.
+# Example:  am_settings_set addon_title Cool Addon 1.0
+
+am_settings_set () {
+	if [ ! -f $_am_settings_path ]; then
+		touch $_am_settings_path
+	fi
+	sed -i "\\~^$1 ~d" $_am_settings_path
+	echo "$@" >> $_am_settings_path
+}

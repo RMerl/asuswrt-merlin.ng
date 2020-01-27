@@ -1,4 +1,4 @@
-/* crypto-openssl.c is Copyright (c) 2019 Vladislav Grishenko <themiron@mail.ru>
+/* crypto-openssl.c is Copyright (c) 2019-2020 Vladislav Grishenko
                    and Copyright (c) 2012-2018 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify

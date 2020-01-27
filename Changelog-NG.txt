@@ -16,8 +16,13 @@ Asuswrt-Merlin 384/NG Changelog
          settings, which can be interacted with through your
          custom web page.  See the Wiki for more information:
 
-         (first draft of the documentation, need to be reorganized)
          https://github.com/RMerl/asuswrt-merlin/wiki/Addons-API
+
+  - NEW: amtm (Asuswrt-Merlin Terminal Menu) by thelonelycoder has
+         been added to the firmware.  Running "amtm" over SSH will
+         give you a menu allowing you to select and install various
+         addons, such as Diversion (ad blocker) or SKynet (an
+         advanced firewall extension).
 
   - UPDATED: Backported some fixes from 384_81981, mostly related
              to WAN, port bonding and mdns.
@@ -25,6 +30,30 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
   - UPDATED: curl to 7.67.0.
   - UPDATED: openssl-1.0 to 1.0.2u
+  - UPDATED: dnsmasq to 2.80-114-ge40d8be (themiron)
+  - CHANGED: Replaced entware-setup.sh script with link to amtm, as
+             using the amtm Entware installer is now the supported
+             method.
+
+
+384.14_3 (xx-xx-xxxx) (RT-AC87U and RT-AC3200)
+  - NEW: wan-event script.  The first parameter will be the WAN unit
+         (0 for first WAN, 1 for secondary).  The second parameter
+         will be a string describing the type of event (init,
+         connected, etc...).  A wan-event of type "connected" will
+         be identical to when the original wan-start script was
+         being run (wan-start should be considered deprecated
+         and will be removed in a future release)
+  - NEW: Implemented an official API for addon developers to
+         better integrate with the router.  This includes up
+         to ten different pages that can be added anywhere within
+         the webui, and a dedicated storage repository for your
+         settings, which can be interacted with through your
+         custom web page.  See the Wiki for more information:
+
+         (first draft of the documentation, need to be reorganized)
+         https://github.com/RMerl/asuswrt-merlin/wiki/Addons-API
+  - UPDATED: curl to 7.67.0.
 
 
 384.14_2 (1-1-2020)

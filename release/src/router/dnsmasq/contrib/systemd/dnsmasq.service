@@ -1,5 +1,8 @@
 [Unit]
 Description=dnsmasq - A lightweight DHCP and caching DNS server
+After=network.target
+Before=network-online.target nss-lookup.target
+Wants=nss-lookup.target
 
 [Service]
 Type=dbus

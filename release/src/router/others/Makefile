@@ -36,13 +36,12 @@ ifeq ($(RTCONFIG_OPENVPN),y)
 	install -m 0700 -D vpnrouting.sh $(INSTALLDIR)/usr/sbin
 endif
 
-# Entware setup script
-	install -m 0700 entware-setup.sh $(INSTALLDIR)/usr/sbin
-
 # Postconf helper script
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin
 
-
+# amtm script + legacy Entware installer link
+	install -m 0700 amtm $(INSTALLDIR)/usr/sbin
+	ln -sf /usr/sbin/amtm $(INSTALLDIR)/usr/sbin/entware-setup.sh
 
 ifeq ($(RTN14U)$(RTAC52U)$(RTAC51U)$(RTN11P)$(RTN300)$(RTN54U)$(RTAC1200HP)$(RTN56UB1)$(RTN56UB2)$(RTAC54U)$(RTAC1200)$(RTAC1200V2)$(RTAC1200GA1)$(RTAC1200GU)$(RTN11PB1)$(RTAC85U)$(RTAC85P)$(RPAC87)$(RTN800HP)$(RTACRH26),y)
 # for read/write Ralink PHY registers

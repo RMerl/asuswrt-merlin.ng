@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2018 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2020 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -129,9 +129,6 @@ struct myoption {
 #define LOPT_AUTHPEER      318
 #define LOPT_IPSET         319
 #define LOPT_SYNTH         320
-#ifdef OPTION6_PREFIX_CLASS 
-#define LOPT_PREF_CLSS     321
-#endif
 #define LOPT_RELAY         323
 #define LOPT_RA_PARAM      324
 #define LOPT_ADD_SBNET     325
@@ -168,6 +165,7 @@ struct myoption {
 #define LOPT_CAA           356
 #define LOPT_SHARED_NET    357
 #define LOPT_IGNORE_CLID   358
+#define LOPT_SINGLE_PORT   359
  
 #ifdef HAVE_GETOPT_LONG
 static const struct option opts[] =  
@@ -258,6 +256,7 @@ static const struct myoption opts[] =
     { "tftp-max", 1, 0, LOPT_TFTP_MAX },
     { "tftp-mtu", 1, 0, LOPT_TFTP_MTU },
     { "tftp-lowercase", 0, 0, LOPT_TFTP_LC },
+    { "tftp-single-port", 0, 0, LOPT_SINGLE_PORT },
     { "ptr-record", 1, 0, LOPT_PTR },
     { "naptr-record", 1, 0, LOPT_NAPTR },
     { "bridge-interface", 1, 0 , LOPT_BRIDGE },
@@ -325,9 +324,6 @@ static const struct myoption opts[] =
     { "dnssec-check-unsigned", 2, 0, LOPT_DNSSEC_CHECK },
     { "dnssec-no-timecheck", 0, 0, LOPT_DNSSEC_TIME },
     { "dnssec-timestamp", 1, 0, LOPT_DNSSEC_STAMP },
-#ifdef OPTION6_PREFIX_CLASS 
-    { "dhcp-prefix-class", 1, 0, LOPT_PREF_CLSS },
-#endif
     { "dhcp-relay", 1, 0, LOPT_RELAY },
     { "ra-param", 1, 0, LOPT_RA_PARAM },
     { "quiet-dhcp", 0, 0, LOPT_QUIET_DHCP },
@@ -458,6 +454,7 @@ static struct {
   { LOPT_NOBLOCK, OPT_TFTP_NOBLOCK, NULL, gettext_noop("Disable the TFTP blocksize extension."), NULL },
   { LOPT_TFTP_LC, OPT_TFTP_LC, NULL, gettext_noop("Convert TFTP filenames to lowercase"), NULL },
   { LOPT_TFTPPORTS, ARG_ONE, "<start>,<end>", gettext_noop("Ephemeral port range for use by TFTP transfers."), NULL },
+  { LOPT_SINGLE_PORT, OPT_SINGLE_PORT, NULL, gettext_noop("Use only one port for TFTP server."), NULL },
   { LOPT_LOG_OPTS, OPT_LOG_OPTS, NULL, gettext_noop("Extra logging for DHCP."), NULL },
   { LOPT_MAX_LOGS, ARG_ONE, "[=<integer>]", gettext_noop("Enable async. logging; optionally set queue length."), NULL },
   { LOPT_REBIND, OPT_NO_REBIND, NULL, gettext_noop("Stop DNS rebinding. Filter private IP ranges when resolving."), NULL },
@@ -506,9 +503,6 @@ static struct {
   { LOPT_DNSSEC_CHECK, ARG_DUP, NULL, gettext_noop("Ensure answers without DNSSEC are in unsigned zones."), NULL },
   { LOPT_DNSSEC_TIME, OPT_DNSSEC_TIME, NULL, gettext_noop("Don't check DNSSEC signature timestamps until first cache-reload"), NULL },
   { LOPT_DNSSEC_STAMP, ARG_ONE, "<path>", gettext_noop("Timestamp file to verify system clock for DNSSEC"), NULL },
-#ifdef OPTION6_PREFIX_CLASS 
-  { LOPT_PREF_CLSS, ARG_DUP, "set:tag,<class>", gettext_noop("Specify DHCPv6 prefix class"), NULL },
-#endif
   { LOPT_RA_PARAM, ARG_DUP, "<iface>,[mtu:<value>|<interface>|off,][<prio>,]<intval>[,<lifetime>]", gettext_noop("Set MTU, priority, resend-interval and router-lifetime"), NULL },
   { LOPT_QUIET_DHCP, OPT_QUIET_DHCP, NULL, gettext_noop("Do not log routine DHCP."), NULL },
   { LOPT_QUIET_DHCP6, OPT_QUIET_DHCP6, NULL, gettext_noop("Do not log routine DHCPv6."), NULL },
@@ -1469,7 +1463,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 		}
       
 	      /* RFC 3361, enc byte is zero for names */
-	      if (new->opt == OPTION_SIP_SERVER)
+	      if (new->opt == OPTION_SIP_SERVER && m)
 		m[0] = 0;
 	      new->len = (int) len + header_size;
 	      new->val = m;
@@ -1671,9 +1665,9 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	struct dirent *ent;
 	char *directory, *path;
 	struct list {
-	  char *suffix;
+	  char *name;
 	  struct list *next;
-	} *ignore_suffix = NULL, *match_suffix = NULL, *li;
+	} *ignore_suffix = NULL, *match_suffix = NULL, *files = NULL, *li;
 	
 	comma = split(arg);
 	if (!(directory = opt_string_alloc(arg)))
@@ -1695,7 +1689,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 			li->next = match_suffix;
 			match_suffix = li;
 			/* Have to copy: buffer is overwritten */
-			li->suffix = opt_string_alloc(arg+1);
+			li->name = opt_string_alloc(arg+1);
 		      }
 		  }
 		else
@@ -1703,7 +1697,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		    li->next = ignore_suffix;
 		    ignore_suffix = li;
 		    /* Have to copy: buffer is overwritten */
-		    li->suffix = opt_string_alloc(arg);
+		    li->name = opt_string_alloc(arg);
 		  }
 	      }
 	  }
@@ -1728,9 +1722,9 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		for (li = match_suffix; li; li = li->next)
 		  {
 		    /* check for required suffices */
-		    size_t ls = strlen(li->suffix);
+		    size_t ls = strlen(li->name);
 		    if (len > ls &&
-			strcmp(li->suffix, &ent->d_name[len - ls]) == 0)
+			strcmp(li->name, &ent->d_name[len - ls]) == 0)
 		      break;
 		  }
 		if (!li)
@@ -1740,9 +1734,9 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    for (li = ignore_suffix; li; li = li->next)
 	      {
 		/* check for proscribed suffices */
-		size_t ls = strlen(li->suffix);
+		size_t ls = strlen(li->name);
 		if (len > ls &&
-		    strcmp(li->suffix, &ent->d_name[len - ls]) == 0)
+		    strcmp(li->name, &ent->d_name[len - ls]) == 0)
 		  break;
 	      }
 	    if (li)
@@ -1759,24 +1753,43 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    
 	    /* only reg files allowed. */
 	    if (S_ISREG(buf.st_mode))
-	      one_file(path, 0);
-	    
-	    free(path);
+	      {
+		/* sort files into order. */
+		struct list **up, *new = opt_malloc(sizeof(struct list));
+		new->name = path;
+		
+		for (up = &files, li = files; li; up = &li->next, li = li->next)
+		  if (strcmp(li->name, path) >=0)
+		    break;
+
+		new->next = li;
+		*up = new;
+	      }
+
 	  }
-     
+
+	for (li = files; li; li = li->next)
+	  one_file(li->name, 0);
+      	
 	closedir(dir_stream);
 	free(directory);
 	for(; ignore_suffix; ignore_suffix = li)
 	  {
 	    li = ignore_suffix->next;
-	    free(ignore_suffix->suffix);
+	    free(ignore_suffix->name);
 	    free(ignore_suffix);
 	  }
 	for(; match_suffix; match_suffix = li)
 	  {
 	    li = match_suffix->next;
-	    free(match_suffix->suffix);
+	    free(match_suffix->name);
 	    free(match_suffix);
+	  }
+	for(; files; files = li)
+	  {
+	    li = files->next;
+	    free(files->name);
+	    free(files);
 	  }
 	break;
       }
@@ -3703,24 +3716,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	  }
       }
       break;
-
-#ifdef OPTION6_PREFIX_CLASS 
-    case LOPT_PREF_CLSS: /* --dhcp-prefix-class */
-      {
-	struct prefix_class *new = opt_malloc(sizeof(struct prefix_class));
-	
-	if (!(comma = split(arg)) ||
-	    !atoi_check16(comma, &new->class))
-	  ret_err_free(gen_err, new);
-	
-	new->tag.net = opt_string_alloc(set_prefix(arg));
-	new->next = daemon->prefix_classes;
-	daemon->prefix_classes = new;
-	
-	break;
-      }
-#endif
-			      
 
     case 'U':           /* --dhcp-vendorclass */
     case 'j':           /* --dhcp-userclass */

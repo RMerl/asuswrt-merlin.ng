@@ -515,7 +515,7 @@ address of 0.0.0.0 and its IPv6 equivalent of :: so
 \fB--address=/example.com/#\fP will return NULL addresses for example.com and
 its subdomains. This is partly syntactic sugar for \fB--address=/example.com/0.0.0.0\fP
 and \fB--address=/example.com/::\fP but is also more efficient than including both
-as seperate configuration lines. Note that NULL addresses normally work in the same way as localhost, so beware that clients looking up these names are likely to end up talking to themselves.
+as separate configuration lines. Note that NULL addresses normally work in the same way as localhost, so beware that clients looking up these names are likely to end up talking to themselves.
 .TP
 .B --ipset=/<domain>[/<domain>...]/<ipset>[,<ipset>...]
 Places the resolved IP addresses of queries for one or more domains in
@@ -748,7 +748,7 @@ fast.
 
 Versions of dnsmasq prior to 2.80 defaulted to not checking unsigned replies, and used 
 .B --dnssec-check-unsigned
-to switch this on. Such configurations will continue to work as before, but those which used the default of no checking will need to be altered to explicitly select no checking. The new default is because switching off checking for unsigned replies is inherently dangerous. Not only does it open the possiblity of forged replies, but it allows everything to appear to be working even when the upstream namesevers do not support DNSSEC, and in this case no DNSSEC validation at all is occuring.
+to switch this on. Such configurations will continue to work as before, but those which used the default of no checking will need to be altered to explicitly select no checking. The new default is because switching off checking for unsigned replies is inherently dangerous. Not only does it open the possiblity of forged replies, but it allows everything to appear to be working even when the upstream namesevers do not support DNSSEC, and in this case no DNSSEC validation at all is occurring.
 .TP
 .B --dnssec-no-timecheck
 DNSSEC signatures are only valid for specified time windows, and should be rejected outside those windows. This generates an
@@ -771,9 +771,12 @@ over system restarts. The timestamp file is created after dnsmasq has dropped ro
 unprivileged user that dnsmasq runs as.
 .TP
 .B --proxy-dnssec
-Copy the DNSSEC Authenticated Data bit from upstream servers to downstream clients and cache it.  This is an 
+Copy the DNSSEC Authenticated Data bit from upstream servers to downstream clients.  This is an 
 alternative to having dnsmasq validate DNSSEC, but it depends on the security of the network between 
-dnsmasq and the upstream servers, and the trustworthiness of the upstream servers.
+dnsmasq and the upstream servers, and the trustworthiness of the upstream servers. Note that caching the
+Authenticated Data bit correctly in all cases is not technically possible. If the AD bit is to be relied upon
+when using this option, then the cache should be disabled using --cache-size=0. In most cases, enabling DNSSEC validation
+within dnsmasq is a better option. See --dnssec for details.
 .TP
 .B --dnssec-debug
 Set debugging mode for the DNSSEC validation, set the Checking Disabled bit on upstream queries, 
@@ -1943,7 +1946,12 @@ specifies a range of ports for use by TFTP transfers. This can be
 useful when TFTP has to traverse a firewall. The start of the range
 cannot be lower than 1025 unless dnsmasq is running as root. The number
 of concurrent TFTP connections is limited by the size of the port range. 
-.TP  
+.TP
+.B --tftp-single-port
+Run in a mode where the TFTP server uses ONLY the well-known port (69) for its end
+of the TFTP transfer. This allows TFTP to work when there in NAT is the path between client and server. Note that
+this is not strictly compliant with the RFCs specifying the TFTP protocol: use at your own risk.
+.TP
 .B \-C, --conf-file=<file>
 Specify a configuration file. The presence of this option stops dnsmasq from reading the default configuration
 file (normally /etc/dnsmasq.conf). Multiple files may be specified by repeating the option
@@ -1959,7 +1967,7 @@ which have that extension are loaded. So
 .B --conf-dir=/path/to/dir,*.conf
 loads all files with the suffix .conf in /path/to/dir. This flag may be given on the command
 line or in a configuration file. If giving it on the command line, be sure to
-escape * characters.
+escape * characters. Files are loaded in alphabetical order of filename.
 .TP
 .B --servers-file=<file>
 A special case of 

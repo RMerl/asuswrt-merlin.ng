@@ -59,7 +59,7 @@ c_e(){ [ ! -f /opt/bin/opkg ] && show_amtm " $1 requires the Entware repository\
 c_nl(){ [ -n "$(tail -c2 "$1")" ] && echo >> "$1";}
 c_j_s(){ if [ ! -f "$1" ]; then echo "#!/bin/sh" >"$1"; echo >>"$1"; elif [ -f "$1" ] && ! head -1 "$1" | grep -qE "^#!/bin/sh"; then c_nl "$1"; echo >>"$1"; sed -i '1s~^~#!/bin/sh\n~' "$1";fi; d_t_u "$1"; c_nl "$1"; [ ! -x "$1" ] && chmod 0755 "$1";}
 c_d(){ p_e_l;while true;do printf " Continue? [1=Yes e=Exit] ";read -r continue;case "$continue" in 1)echo;break;;[Ee])am=;show_amtm menu;break;;*)printf "\\n input is not an option\\n\\n";;esac done;}
-c_url(){ /usr/sbin/curl -fsNL --retry 3 "$@";}
+c_url(){ /usr/sbin/curl -fsNL --retry 2 --connect-timeout 3 -m 8 "$@";}
 d_t_u(){ dos2unix < $1 | cmp -s - $1;[ "$?" = 1 ] && dos2unix $1;}
 p_e_t(){ printf "\\n Press Enter to $1 ";read -r;echo;}
 p_r_l(){ echo "${R}_____________________________________________${NC}";}
@@ -247,9 +247,9 @@ update_amtm(){
 		urlNOK=
 	fi
 	if [ -z "$urlNOK" ]; then
-		amtmRemotever="$(curl -fsNL --retry 3 "$amtmURL/amtm.mod" | grep "^version=" | sed -e 's/version=//')"
+		amtmRemotever="$(c_url "$amtmURL/amtm.mod" | grep "^version=" | sed -e 's/version=//')"
 		localmd5="$(md5sum "${add}"/a_fw/amtm.mod | awk '{print $1}')"
-		remotemd5="$(curl -fsNL --retry 3 "$amtmURL/amtm.mod" | md5sum | awk '{print $1}')"
+		remotemd5="$(c_url "$amtmURL/amtm.mod" | md5sum | awk '{print $1}')"
 
 		if [ "$su" = 1 ]; then
 			if [ "$version" != "$amtmRemotever" ]; then

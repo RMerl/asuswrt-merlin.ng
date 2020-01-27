@@ -28,6 +28,7 @@ Asuswrt-Merlin 384/NG Changelog
 
   - UPDATED: curl to 7.67.0.
   - UPDATED: OpenVPN to 2.4.8.
+  - UPDATED: dnsmasq to 2.80-114-ge40d8be (themiron)
   - CHANGED: Replaced entware-setup.sh script with link to amtm, as
              using the amtm Entware installer is now the supported
              method.

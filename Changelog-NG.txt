@@ -18,10 +18,19 @@ Asuswrt-Merlin 384/NG Changelog
          settings, which can be interacted with through your
          custom web page.  See the Wiki for more information:
 
-         (first draft of the documentation, need to be reorganized)
          https://github.com/RMerl/asuswrt-merlin/wiki/Addons-API
+
+  - NEW: amtm (Asuswrt-Merlin Terminal Menu) by thelonelycoder has
+         been added to the firmware.  Running "amtm" over SSH will
+         give you a menu allowing you to select and install various
+         addons, such as Diversion (ad blocker) or SKynet (an
+         advanced firewall extension).
+
   - UPDATED: curl to 7.67.0.
   - UPDATED: OpenVPN to 2.4.8.
+  - CHANGED: Replaced entware-setup.sh script with link to amtm, as
+             using the amtm Entware installer is now the supported
+             method.
 
 
 384.13_2 (14-Dec-2019)

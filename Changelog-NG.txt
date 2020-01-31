@@ -31,7 +31,7 @@ Asuswrt-Merlin 384/NG Changelog
 
   - UPDATED: Backported some fixes from 384_81981, mostly related
              to WAN, port bonding and mdns.
-  - UPDATED: Merged GPK 384_7756 for RT-AX88U, which adds OFDMA and
+  - UPDATED: Merged GPL 384_7756 for RT-AX88U, which adds OFDMA and
              WPA3 support to that model.
   - UPDATED: Merged with GPL 385_10002 for other models (from RT-AC68U)
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)

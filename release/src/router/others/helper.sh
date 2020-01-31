@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Asuswrt-Merlin helper functions
-# For use with Postconf scripts (and others)
+# For use with Postconf or addon scripts
 
 _quote() {
 	printf "%s\n" "$1" | sed 's/[]\/$*.^&[]/\\&/g'
@@ -36,21 +36,23 @@ pc_delete() {
 	sed -i "/$PATTERN/d" $2
 }
 
-# This function will return the first available custom webui page, allowing you
-# to use it within your script.  "none" is returned if all 5 pages are already
-# in use.
-
-get_webui_page() {
-	for i in 1 2 3 4 5 6 7 8 9 10
-	do
-		page=/www/ext/user$i.asp
-		if [ ! -f $page ]
-		then
-			echo user$i.asp
+# This function is used to find either the first available mount point for a
+# new custom webui page, or return the mount point currently used if your page
+# is already mounted on the webui.
+#
+# This will take the full path to the new page as argument.
+# On return, the am_webui_page variable with will contain either the filename
+# of the first available mount point, the filename your page is already using,
+# or "none" if there are no available mount points.
+am_get_webui_page() {
+	for i in 1 2 3 4 5 6 7 8 9 10; do
+		page="/www/user/user$i.asp"
+		if [ ! -f "$page" ] || [ "$(md5sum < "$1")" = "$(md5sum < "$page")" ]; then
+			am_webui_page="user$i.asp"
 			return
 		fi
 	done
-	echo "none"
+	am_webui_page="none"
 }
 
 
@@ -58,7 +60,7 @@ _am_settings_path=/jffs/addons/custom_settings.txt
 
 # This function will return the value associated to a specific variable.
 # Example: VERSION=$(am_settings_get addon_version)
-am_settings_get () {
+am_settings_get() {
 	if [ ! -f $_am_settings_path ]; then
 		touch $_am_settings_path
 	fi
@@ -67,8 +69,7 @@ am_settings_get () {
 
 # This function will set a variable to the desired value.
 # Example:  am_settings_set addon_title Cool Addon 1.0
-
-am_settings_set () {
+am_settings_set() {
 	if [ ! -f $_am_settings_path ]; then
 		touch $_am_settings_path
 	fi

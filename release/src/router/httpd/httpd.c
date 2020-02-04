@@ -1342,10 +1342,10 @@ handle_request(void)
 			}
 			if(nvram_match("x_Setting", "0") && (strcmp(url, "QIS_default.cgi")==0 || strcmp(url, "page_default.cgi")==0 || !strcmp(websGetVar(file, "x_Setting", ""), "1"))){
 				if(!fromapp) set_referer_host();
-				send_token_headers( 200, "Ok", handler->extra_header, handler->mime_type, fromapp);
+				send_token_headers( 200, "OK", handler->extra_header, handler->mime_type, fromapp);
 
 			}else if(strncmp(url, "login.cgi", strlen(url))!=0){
-				send_headers( 200, "Ok", handler->extra_header, handler->mime_type, fromapp);
+				send_headers( 200, "OK", handler->extra_header, handler->mime_type, fromapp);
 			}
 			if (strcasecmp(method, "head") != 0 && handler->output) {
 				handler->output(file, conn_fp);

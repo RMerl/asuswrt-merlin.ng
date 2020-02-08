@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.13_3 (xx-xx-xxxx)
+384.13_4 (8-Feb-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
 
   - NEW: wan-event script.  The first parameter will be the WAN unit
@@ -17,7 +17,7 @@ Asuswrt-Merlin 384/NG Changelog
          the webui, and a dedicated storage repository for your
          settings, which can be interacted with through your
          custom web page or through a shell script.
-      .  See the Wiki for more information:
+         See the Wiki for more information:
 
          https://github.com/RMerl/asuswrt-merlin/wiki/Addons-API
 
@@ -28,6 +28,8 @@ Asuswrt-Merlin 384/NG Changelog
          advanced firewall extension).  The plugins for amtm are
          still maintained by its original author (thelonelycoder).
 
+        https://github.com/RMerl/asuswrt-merlin/wiki/AMTM
+
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
   - UPDATED: openssl-1.0 to 1.0.2u
   - UPDATED: curl to 7.67.0.
@@ -36,6 +38,7 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Replaced entware-setup.sh script with link to amtm, as
              using the amtm Entware installer is now the supported
              method.
+  - CHANGED: Improved connection handling in httpd (themiron)
   - FIXED: Some of the newest DNSFilter servers weren't properly set
            up with IPv6 (dave14305)
 

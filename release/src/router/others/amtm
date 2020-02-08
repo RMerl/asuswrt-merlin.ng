@@ -10,7 +10,7 @@
 
 add=/jffs/addons/amtm
 amtmURL=https://fwupdate.asuswrt-merlin.net/amtm_fw
-amtmRev=0
+amtmRev=1
 
 a_m(){ [ -z "$am" ] && am=$1 || am="$am\\n$1";}
 c_nl(){ [ -n "$(tail -c2 "$1")" ] && echo >> "$1";}
@@ -46,6 +46,8 @@ g_m(){
 	[ "$1" = amtm.mod ] && set -- "$1" "$2" "${add}/a_fw"
 	[ "$3" ] || set -- "$1" "$2" "${add}"
 	if [ "$2" = new ]; then
+		[ -z "$dlLoc" ] && a_m "\\n Getting from $(echo $amtmURL | awk -F[/:] '{print $4}')"
+		dlLoc=1
 		c_url "$amtmURL/$1" -o "$3/${1}.new"
 		if [ -s "$3/${1}.new" ]; then
 			if grep -wq '^#bof' "$3/${1}.new" && grep -wq '^#eof' "$3/${1}.new"; then
@@ -156,13 +158,13 @@ init_amtm(){
 	fi
 	mv /jffs/amtm-* "${add}" 2> /dev/null;mv /jffs/.amtm_* "${add}" 2> /dev/null
 	c_t
+	if [ -f "/jffs/configs/profile.add" ]; then
+		sed -i '/alias amtm=/d' /jffs/configs/profile.add >/dev/null
+		r_w_e /jffs/configs/profile.add
+		unalias amtm 2> /dev/null
+	fi
 	if [ -f /jffs/scripts/amtm ] || [ -f /opt/bin/amtm ]; then
-		rm -f /jffs/scripts/amtm;rm -f /opt/bin/amtm
-		if [ -f "/jffs/configs/profile.add" ]; then
-			sed -i '/alias amtm=/d' /jffs/configs/profile.add >/dev/null
-			r_w_e /jffs/configs/profile.add
-			unalias amtm 2> /dev/null
-		fi
+		rm -f /jffs/scripts/amtm /opt/bin/amtm
 		a_m " amtm migrated to integrated firmware version"
 	else
 		a_m " Initializing amtm for first run"

@@ -1,6 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.16 (xx-xx-xxxx)
+  - UPDATED: Tor to 0.3.5.9.
+  - UPDATED: curl to 7.68.0.
+  - UPDATED: nano to 4.8.
+
+
 384.15 (8-Feb-2020)
   The RT-AC87U and RT-AC3200 are not supported by this release, see
   the 384.13_4 release released separately for these two models.

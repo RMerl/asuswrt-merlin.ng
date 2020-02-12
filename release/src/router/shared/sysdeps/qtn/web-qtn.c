@@ -2823,7 +2823,7 @@ ej_wl_status_qtn_array(int eid, webs_t wp, int argc, char_t **argv, const char *
 			retval += websWrite(wp, "\"\",");	// NSS (not supported by QTN)
 			retval += websWrite(wp, "\"\",");	// PHY (not supported by QTN)
 			retval += websWrite(wp, "\"\",");	// BW (not supported by QTN)
-			retval += websWrite(wp, "\"A%s%s\",", !nvram_match("wl1_auth_mode_x", "open") ? "U" : "", (guest ? "G" : ""));
+			retval += websWrite(wp, "\"A%s%s\",", !nvram_match("wl1_auth_mode_x", "open") ? "U" : "", (guest ? "1" : ""));
 			retval += websWrite(wp, "],");
 		}
 	}

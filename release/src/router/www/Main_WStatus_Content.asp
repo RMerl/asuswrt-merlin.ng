@@ -111,9 +111,10 @@ function redraw(){
 
 
 function display_clients(clientsarray, obj) {
-	var code, i, client, overlib_str;
-	var mac, ipaddr, hostname;
+	var code, i, ii, client, overlib_str;
+	var mac, ipaddr, hostname, flags;
 	var nmapentry;
+	var guestheader = 0;
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
 	code += '<thead><tr>';
@@ -132,6 +133,17 @@ function display_clients(clientsarray, obj) {
 	if (clientsarray.length > 1) {
 		for (i = 0; i < clientsarray.length-1; ++i) {
 			client = clientsarray[i];
+
+			// Need Guest header?
+			flags = client[11];
+			for (ii = 1; ii < 5; ii++) {
+				if ((flags.indexOf(ii) > 0) && (guestheader < ii)) {
+					guestheader = ii;
+					code += '<tr><th colspan="6" style="color:#FFCC00;">Guest Network ' + guestheader +' clients:</th></tr>';
+					flags = client[11].replace(ii,"");
+					ii = 5;
+				}
+			}
 			code += '<tr>';
 
 			// Mac
@@ -187,7 +199,7 @@ function display_clients(clientsarray, obj) {
 			} else {
 				code += '</td>';
 			}
-			code += '<td style="vertical-align:top;">' + client[11] + '</td>';	// Flags
+			code += '<td style="vertical-align:top;">' + flags + '</td>';	// Flags
 			code += '</tr>';
 		}
 	} else {
@@ -347,8 +359,8 @@ function hide_details_window(){
 									<br><br>
 									<div id="wifi52headerblock"></div>
 									<div id="wifi52block"></div>
-									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">M</span>=MU Beamforming, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated, <span class="wifiheader">G</span>=Guest</div>
-									<div id="flags_div">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated, <span class="wifiheader">G</span>=Guest</div>
+									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">M</span>=MU Beamforming, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
+									<div id="flags_div">Flags: <span class="wifiheader">P</span>=Powersave Mode, <span class="wifiheader">S</span>=Short GI, <span class="wifiheader">T</span>=STBC, <span class="wifiheader">A</span>=Associated, <span class="wifiheader">U</span>=Authenticated</div>
 									<br>
 									<div class="apply_gen">
 										<input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen" >

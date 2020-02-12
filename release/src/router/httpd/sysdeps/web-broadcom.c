@@ -5538,7 +5538,7 @@ sta_list:
 				(sta->flags & WL_STA_PS) ? "P" : "_");
 #endif
 		}
-		ret += websWrite(wp, "%s%s_\"],",
+		ret += websWrite(wp, "%s%s\"],",
 			(sta->flags & WL_STA_ASSOC) ? "A" : "_",
 			(sta->flags & WL_STA_AUTHO) ? "U" : "_");
 	}
@@ -5707,9 +5707,10 @@ sta_list:
 				}
 
 // Auth/Ass (and Guest) flags
-				ret += websWrite(wp, "%s%sG\"],",
+				ret += websWrite(wp, "%s%s%d\"],",
 					(sta->flags & WL_STA_ASSOC) ? "A" : "_",
-					(sta->flags & WL_STA_AUTHO) ? "U" : "_");
+					(sta->flags & WL_STA_AUTHO) ? "U" : "_",
+					i);
 			}
 		}
 	}

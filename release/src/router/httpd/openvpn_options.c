@@ -498,7 +498,7 @@ add_option (char *p[], int line, int unit)
 	{
 		if (streq (p[1], INLINE_FILE_TAG) && p[2] && strstr(p[2], PEM_START_TAG))
 		{
-			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA_EXTRA, p[2], NULL);
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA, p[2], NULL);
 		}
 		else
 		{

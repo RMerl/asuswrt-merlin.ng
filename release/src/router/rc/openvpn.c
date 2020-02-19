@@ -305,7 +305,7 @@ void start_ovpn_client(int clientNum)
 		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CRL))
 			fprintf(fp, "crl-verify crl.pem\n");
 
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CA_EXTRA))
+		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_EXTRA))
 			fprintf(fp, "extra-certs extra.pem\n");
 	}
 	else if ( cryptMode == SECRET )
@@ -380,12 +380,12 @@ void start_ovpn_client(int clientNum)
 			fclose(fp);
 		}
 
-		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CA_EXTRA))
+		if (ovpn_key_exists(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_EXTRA))
 		{
 			sprintf(buffer, "/etc/openvpn/client%d/extra.pem", clientNum);
 			fp = fopen(buffer, "w");
 			chmod(buffer, S_IRUSR|S_IWUSR);
-			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_CA_EXTRA, buffer2, sizeof(buffer2)));
+			fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_CLIENT, clientNum, OVPN_CLIENT_EXTRA, buffer2, sizeof(buffer2)));
 			fclose(fp);
 		}
 	}
@@ -1016,7 +1016,7 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp, "key server.key\n");
 		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CRL))
 			fprintf(fp, "crl-verify crl.pem\n");
-		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_EXTRA))
+		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_EXTRA))
 			fprintf(fp, "extra-certs extra.pem\n");
 	}
 	else if ( cryptMode == SECRET )
@@ -1149,12 +1149,12 @@ void start_ovpn_server(int serverNum)
 				fclose(fp);
 			}
 
-			if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_EXTRA))
+			if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_EXTRA))
 			{
 				sprintf(buffer, "/etc/openvpn/server%d/extra.pem", serverNum);
 				fp = fopen(buffer, "w");
 				chmod(buffer, S_IRUSR|S_IWUSR);
-				fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_EXTRA, buffer2, sizeof(buffer2)));
+				fprintf(fp, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_EXTRA, buffer2, sizeof(buffer2)));
 				fclose(fp);
 			}
 
@@ -1167,9 +1167,9 @@ void start_ovpn_server(int serverNum)
 			fprintf(fp_client, "\n");	// Append newline if missing
 		fprintf(fp_client, "</ca>\n");
 
-		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_EXTRA)) {
+		if (ovpn_key_exists(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_EXTRA)) {
 			fprintf(fp_client, "<extra-certs>\n");
-			fprintf(fp_client, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_CA_EXTRA, buffer2, sizeof(buffer2)));
+			fprintf(fp_client, "%s", get_ovpn_key(OVPN_TYPE_SERVER, serverNum, OVPN_SERVER_EXTRA, buffer2, sizeof(buffer2)));
 			len = strlen(buffer2);
 			if ((len) && (buffer2[len-1] != '\n'))
 				fprintf(fp_client, "\n");       // Append newline if missing

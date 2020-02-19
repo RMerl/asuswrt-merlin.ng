@@ -2288,7 +2288,7 @@ ej_vpn_crt_server(int eid, webs_t wp, int argc, char **argv) {
 		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_STATIC, idx);
 
 		//vpn_crt_server_extra
-		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_CA_EXTRA, idx);
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_SERVER, OVPN_SERVER_EXTRA, idx);
 
 	}
 	return 0;
@@ -2315,7 +2315,7 @@ ej_vpn_crt_client(int eid, webs_t wp, int argc, char **argv) {
 		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CRL, idx);
 
 		//vpn_crt_client_extra
-		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_CA_EXTRA, idx);
+		_get_vpn_crt_value(eid, wp, OVPN_TYPE_CLIENT, OVPN_CLIENT_EXTRA, idx);
 
 	}
 	return 0;
@@ -2787,7 +2787,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 					key_type = OVPN_SERVER_DH;
 				}
 				else if(!strcmp(name+15, "extra")) {
-					key_type = OVPN_SERVER_CA_EXTRA;
+					key_type = OVPN_SERVER_EXTRA;
 				}
 				else {
 					continue;
@@ -2839,7 +2839,7 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 					key_type = OVPN_CLIENT_CRL;
 				}
 				else if(!strcmp(name+15, "extra")) {
-					key_type = OVPN_CLIENT_CA_EXTRA;
+					key_type = OVPN_CLIENT_EXTRA;
 				}
 				else {
 					continue;
@@ -3227,7 +3227,7 @@ int validate_apply(webs_t wp, json_object *root) {
 					key_type = OVPN_SERVER_DH;
 				}
 				else if(!strcmp(name+15, "extra")) {
-					key_type = OVPN_SERVER_CA_EXTRA;
+					key_type = OVPN_SERVER_EXTRA;
 				}
 				else {
 					_dprintf("unknown key type %s\n", name);
@@ -3265,7 +3265,7 @@ int validate_apply(webs_t wp, json_object *root) {
 					key_type = OVPN_CLIENT_CRL;
 				}
 				else if(!strcmp(name+15, "extra")) {
-					key_type = OVPN_CLIENT_CA_EXTRA;
+					key_type = OVPN_CLIENT_EXTRA;
 				}
 				else {
 					_dprintf("unknown key type %s\n", name);
@@ -12765,7 +12765,7 @@ do_vpnupload_cgi(char *url, FILE *stream)
 			set_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_CRL, NULL, VPN_CLIENT_UPLOAD);
 		}
 		else if(!strcmp(filetype, "extra")) {
-			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_CA_EXTRA, NULL, VPN_CLIENT_UPLOAD);
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA, NULL, VPN_CLIENT_UPLOAD);
 			state = nvram_get_int("vpn_upload_state");
 			nvram_set_int("vpn_upload_state", state & (~VPN_UPLOAD_NEED_EXTRA));
 		}

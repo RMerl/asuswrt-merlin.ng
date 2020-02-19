@@ -61,11 +61,12 @@ typedef enum ovpn_key {
 	OVPN_SERVER_CRL,
 	OVPN_SERVER_CLIENT_CERT,
 	OVPN_SERVER_CLIENT_KEY,
-	OVPN_CLIENT_CA_EXTRA,
-	OVPN_SERVER_CA_EXTRA,
+	OVPN_CLIENT_EXTRA,
+	OVPN_SERVER_EXTRA,
 }ovpn_key_t;
 
 typedef enum ovpn_status{
+	OVPN_STS_ERROR = -1,
 	OVPN_STS_STOP = 0,
 	OVPN_STS_INIT,
 	OVPN_STS_RUNNING,
@@ -87,6 +88,16 @@ enum {
 	OVPN_DNSMODE_EXCLUSIVE
 };
 
+typedef enum ovpn_errno{
+	OVPN_ERRNO_NONE = 0,
+	OVPN_ERRNO_IP,
+	OVPN_ERRNO_ROUTE,
+	OVPN_ERRNO_SSL = 4,
+	OVPN_ERRNO_DH,
+	OVPN_ERRNO_AUTH,
+	OVPN_ERRNO_CONF,
+}ovpn_errno_t;
+
 #define OVPN_ACCNT_MAX	15
 
 
@@ -95,14 +106,16 @@ extern int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *b
 extern char *get_ovpn_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, size_t buf_len);
 extern char *get_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, size_t len);
 extern char *get_parsed_crt(const char *name, char *buf, size_t buf_len);
-extern void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type);
+extern void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, ovpn_errno_t err_no);
+extern ovpn_status_t get_ovpn_status(ovpn_type_t type, int unit);
+extern ovpn_errno_t get_ovpn_errno(ovpn_type_t type, int unit);
 extern void reset_ovpn_setting(ovpn_type_t type, int unit, int full);
 extern int ovpn_key_exists(ovpn_type_t type, int unit, ovpn_key_t key_type);
 extern int ovpn_crt_is_empty(const char *name);
 extern char *get_ovpn_custom(ovpn_type_t type, int unit, char* buffer, int bufferlen);
 extern int set_ovpn_custom(ovpn_type_t type, int unit, char* buffer);
 extern int get_max_dnsmode(void);
-extern void write_ovpn_dns(FILE* dnsmasq_conf);
+extern void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf);
 extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
 extern char *get_ovpn_remote_address(char *buf, int len);
 extern void update_ovpn_profie_remote(void);

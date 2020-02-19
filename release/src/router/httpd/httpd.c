@@ -298,26 +298,32 @@ static int check_if_inviteCode(const char *dirpath){
 	return 1;
 }
 #endif
+
 void sethost(char *host)
 {
-	char *cp;
+	size_t len;
 
-	if(!host) return;
+	host_name[0] = '\0';
 
-	memset(host_name, 0, sizeof(host_name));
-	strlcpy(host_name, host, sizeof(host_name));
+	if (!host || host[0] == '\0')
+		return;
 
-	cp = host_name;
-	for ( cp = cp + 7; *cp && *cp != '\r' && *cp != '\n'; cp++ );
-	*cp = '\0';
+	while (*host == '.') host++;
+
+	len = strcspn(host, "\r\n");
+	while (len > 0 && host[len - 1] == '.')
+		len--;
+	if (len > sizeof(host_name) - 1)
+		return;
+
+	strlcpy(host_name, host, len + 1);
+	if (host_name[0] && !is_valid_domainname(host_name))
+		host_name[0] = '\0';
 }
 
 char *gethost(void)
 {
-	if(strlen(host_name)) {
-		return host_name;
-	}
-	else return(nvram_safe_get("lan_ipaddr"));
+	return host_name[0] ? host_name : nvram_safe_get("lan_ipaddr");
 }
 
 #include <sys/sysinfo.h>
@@ -861,7 +867,7 @@ handle_request(void)
 
 	/* Initialize the request variables. */
 	authorization = boundary = cookies = referer = useragent = NULL;
-	host_name[0] = 0;
+	host_name[0] = '\0';
 	bzero( line, sizeof line );
 
 	/* Parse the first line of the request. */

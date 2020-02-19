@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Nama Pengguna atau Alamat E-mel
 LANHostConfig_x_DDNSWildcard_itemdesc=Semasa mendayakan, nama domain dengan kad bebas diarahkan semula ke alamat IP anda.
 LANHostConfig_x_DDNSWildcard_itemname=Mendayakan kad bebas
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt merupakan satu perkhidmatan untuk menyediakan sijil yang disahkan oleh domain secara percuma dan akan melaksanakan pengesahan domain sebelum mengeluarkan sijil untuk domain anda. Sijil yang dikeluarkan oleh Let's Encrypt adalah sah selama 90 hari. Sebelum sijil anda tamat tempoh, penghala ASUS anda akan memperbaharu sijil tersebut secara automatik selepas berjaya mengesahkan domain. Sila pastikan penghala anda menyambung ke Internet melalui port 80 untuk pengesahan domain dan pembaharuan sijil.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Ini adalah alamat IP bagi get laluan lalai untuk Pusat Akses
 LANHostConfig_x_LDNSServer1_itemdesc=Medan ini menunjukkan alamat IP bagi DNS untuk memberikan k lien permintaan Alamat IP tersebut daripada Pelayan DHCP. Anda boleh membiarkannya kosong, kemudian, permintaan DNS akan diproses oleh ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Pelayan DNS

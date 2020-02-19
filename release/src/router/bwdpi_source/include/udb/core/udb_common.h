@@ -213,6 +213,7 @@ typedef struct tdts_udb_param
 	int		(*async_send)(void *, tdts_res_t);
 	int		(*send_wrs_query_to_user)(usr_msg_hdr_t *, uint8_t *);
 	int		(*send_redir_page)(void *, redir_param_t *, tdts_net_device_t *);
+	struct	list_head send_list;
 
 #if TMCFG_E_UDB_CORE_SHN_QUERY
 	int		(*shnagent_cb)(usr_msg_hdr_t *, uint8_t *);

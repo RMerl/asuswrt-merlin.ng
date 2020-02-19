@@ -40,10 +40,12 @@ endif
 	CFLAGS = -DSUPPORT_LPRng
 	CFLAGS += -I. -I$(TOP)/shared
 	CFLAGS += -I$(TOP)/kernel_header/include -I$(SRCBASE)/include
+#	CFLAGS += -I$(TOP)/libusb/libusb
+	CFLAGS += -I$(TOP)/libusb-0.1.12
 	LDFLAGS = -lpthread -ldl
 #	LDFLAGS += -L$(TOP)/libusb10/libusb/.libs -lusb-1.0
 #	LDFLAGS += -L$(TOP)/libusb/libusb/.libs -lusb
-#	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -lusb
+	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -l:libusb.a
 	LDFLAGS += -L$(TOP)/shared -lshared
 	LDFLAGS += -L$(TOP)/nvram${BCMEX}$(EX7) -lnvram
 #endif
@@ -73,20 +75,16 @@ CFLAGS += $(DEBFLAGS)
 
 
 ifneq ($(wildcard ./prebuild$(BCMEX)$(EXHND)),)
-all:
+$(PROG):
 	cp prebuild$(BCMEX)$(EXHND)/$(PROG) .
-
-$(PROG): 
 else
-all: $(PROG)
-	$(STRIP) $(PROG)
-
-$(PROG): $(OBJS) $(TOP)/libusb-0.1.12/.libs/libusb.a
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $@
+$(PROG): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 endif
 
 install: $(PROG)
 	install -D $(PROG) $(INSTALLDIR)/usr/sbin/$(PROG)
+	$(STRIP) $(INSTALLDIR)/usr/sbin/$(PROG)
 
 clean:
 	rm -f $(PROG) *.o *~

@@ -306,6 +306,49 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		}
 		break;
 #endif
+#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+	case MODEL_RTAX86U:
+	case MODEL_RTAX68U:
+		{
+			static enum led_id white_led[] = {
+					LED_POWER, LED_WAN_NORMAL,
+#ifdef RTCONFIG_LAN4WAN_LED
+					LED_LAN1, LED_LAN2, LED_LAN3, LED_LAN4,
+#elif RTCONFIG_LANWAN_LED
+					LED_LAN,
+#endif
+					//LED_WPS,
+					LED_ID_MAX
+					};
+			static enum led_id red_led[] = {
+					LED_WAN,
+#ifdef RTCONFIG_EXTPHY_BCM84880
+					LED_EXTPHY,
+#endif
+					LED_ID_MAX
+					};
+			all_led[LED_COLOR_WHITE] = white_led;
+			all_led[LED_COLOR_RED] = red_led;
+
+			if(color == LED_COLOR_WHITE) {
+				eval("wl", "-i", "eth6", "ledbh", "7", "1"); // wl 2.4G
+				eval("wl", "-i", "eth7", "ledbh", "15", "1"); // wl 5G
+#ifdef RTCONFIG_EXTPHY_BCM84880
+				eval("ethctl", "phy", "ext", "0x1e", "0x07FFF0", "0x0011");	// 2.5G LED (1000M/100M)
+				eval("ethctl", "phy", "ext", "0x1e", "0x1a832", "0x21");        // 2.5G LED (2500M)
+				eval("ethctl", "phy", "ext", "0x1e", "0x1a83b", "0xa490");
+#endif
+			}
+			else {
+				eval("wl", "-i", "eth6", "ledbh", "7", "0"); // wl 2.4G
+				eval("wl", "-i", "eth7", "ledbh", "15", "0"); // wl 5G
+#ifdef RTCONFIG_EXTPHY_BCM84880
+				eval("ethctl", "phy", "ext", "0x1e", "0x07FFF0", "0x0009");
+#endif
+			}
+		}
+		break;
+#endif
 #if defined(MAPAC1750)
 	case MODEL_MAPAC1750:
 		{
@@ -351,6 +394,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 	puts("1");
 	return 0;
 }
+
 int isValidMacAddr(const char* mac)
 {
 	int sec_byte;
@@ -2475,9 +2519,15 @@ int ate_dev_status(void)
 #endif
 
 
-#if defined(GTAX11000) && defined(RTCONFIG_EXTPHY_BCM84880)
+#if defined(RTCONFIG_EXTPHY_BCM84880)
 	/* Get extend 2.5G phy bcm84880 status */
-	if(ethctl_get_link_status("eth5") == -1 || ethctl_phy_op("ext", 0x1e, 0x1E4037, 0, 0) == -1)
+	if(
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+			!hnd_get_phy_status("eth5")
+#else
+			ethctl_get_link_status("eth5") == -1
+#endif
+			|| ethctl_phy_op("ext", 0x1e, 0x1E4037, 0, 0) == -1)
 		result = 'X';
 	else
 		result = 'O';

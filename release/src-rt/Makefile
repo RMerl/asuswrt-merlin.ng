@@ -61,12 +61,22 @@ endif
 
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
 ifeq ($(HND_ROUTER),y)
+export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
 ifeq ($(HND_ROUTER_AX_675X),y)
-export BCM_CHIP := $(CUR_CHIP_PROFILE)
+export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
+export BCM_WLIMPL
+ifeq ($(BRCM_CHIP),4908)
+export HND_ROUTER_AX_6710 := y
+export BRCM_CHIP
+export BCM_CHIP := $(BRCM_CHIP)
 else
+export BCM_CHIP := $(CUR_CHIP_PROFILE)
+endif
+else
+export PROFILE ?= 94908HND
 export BCM_CHIP := 4908
 endif
-export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
 export SRCBASE := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1\/bcmdrivers\/broadcom\/net\/wl\/bcm9$(BCM_CHIP)\/main\/src/')
 export SRC_ROOT := $(HND_SRC)/../src
 export BUSYBOX := busybox
@@ -177,11 +187,6 @@ include ./platform.mak
 -include ./dsl.mak
 
 ifeq ($(HND_ROUTER),y)
-ifeq ($(HND_ROUTER_AX_675X),y)
-export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
-else
-export PROFILE ?= 94908HND
-endif
 export BUILD_NAME ?= $(shell echo $(MAKECMDGOALS) | tr a-z A-Z)
 ifeq ($(HND_ROUTER_AX_675X),y)
 include ./build/Makefile
@@ -219,7 +224,9 @@ else
 MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
 export MODEL
+ifneq ($(BRCM_CHIP),4908)
 export CFLAGS += -D$(MODEL)
+endif
 export $(MODEL):=y
 endif
 
@@ -1157,7 +1164,7 @@ define RouterOptions
 	if [ "$(CONNTRACK)" = "y" ]; then \
 		sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
 		echo "RTCONFIG_CONNTRACK=y" >>$(1); \
-        fi; \
+	fi; \
 	if [ "$(PARENTAL2)" = "y" -o "$(PARENTAL)" = "y" ]; then \
 		sed -i "/RTCONFIG_PARENTALCTRL/d" $(1); \
 		echo "RTCONFIG_PARENTALCTRL=y" >>$(1); \
@@ -1165,6 +1172,10 @@ define RouterOptions
 			sed -i "/RTCONFIG_CONNTRACK/d" $(1); \
 			echo "RTCONFIG_CONNTRACK=y" >>$(1); \
 		fi; \
+	fi; \
+	if [ "$(INTERNETCTRL)" = "y" ]; then \
+		sed -i "/RTCONFIG_INTERNETCTRL/d" $(1); \
+		echo "RTCONFIG_INTERNETCTRL=y" >>$(1); \
 	fi; \
 	if [ "$(YANDEXDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_YANDEXDNS/d" $(1); \
@@ -1261,10 +1272,6 @@ define RouterOptions
 	if [ "$(ODMPID)" = "y" ]; then \
 		sed -i "/RTCONFIG_ODMPID/d" $(1); \
 		echo "RTCONFIG_ODMPID=y" >>$(1); \
-	fi; \
-	if [ "$(NONASUS)" = "y" ]; then \
-		sed -i "/RTCONFIG_NONASUS/d" $(1); \
-		echo "RTCONFIG_NONASUS=y" >>$(1); \
 	fi; \
 	if [ "$(MDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_MDNS/d" $(1); \
@@ -2259,6 +2266,12 @@ define RouterOptions
 	else \
 		echo "# RTCONFIG_HND_ROUTER_AX_675X is not set" >>$(1); \
 	fi; \
+	sed -i "/RTCONFIG_HND_ROUTER_AX_6710/d" $(1); \
+	if [ "$(HND_ROUTER_AX_6710)" = "y" ]; then \
+		echo "RTCONFIG_HND_ROUTER_AX_6710=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_HND_ROUTER_AX_6710 is not set" >>$(1); \
+	fi; \
 	if [ "$(HND_ROUTER_F1)" = "y" ]; then \
 		sed -i "/RTCONFIG_WBD/d" $(1); \
 		echo "RTCONFIG_WBD=y" >>$(1); \
@@ -2352,8 +2365,6 @@ define RouterOptions
 	fi; \
 	fi; \
 	if [ "$(EXT_PHY)" = "BCM84880" ]; then \
-		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
-		echo "# RTCONFIG_EXTPHY_BCM84880 is not set" >>$(1); \
 		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
 		echo "RTCONFIG_EXTPHY_BCM84880=y" >>$(1); \
 	fi; \
@@ -2817,6 +2828,11 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_AVBLCHAN is not set" >>$(1); \
 		fi; \
+		if [ "$(AMAS_ADTBW)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_ADTBW=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMAS_ADTBW is not set" >>$(1); \
+		fi; \
 	fi; \
 	sed -i "/RTCONFIG_WATCH_WLREINIT/d" $(1); \
 	if [ "$(WATCH_REINIT)" = "y" ]; then \
@@ -2926,6 +2942,16 @@ define RouterOptions
 	if [ -n "$(BROOP)" ]; then \
 		sed -i "/RTCONFIG_BROOP/d" $(1); \
 		echo "RTCONFIG_BROOP=y" >>$(1); \
+	fi; \
+	if [ "$(GN_WBL)" = "y" ]; then \
+		sed -i "/RTCONFIG_GN_WBL\>/d" $(1); \
+		echo "RTCONFIG_GN_WBL=y" >>$(1); \
+	fi; \
+	if [ "$(AMAZON_WSS)" = "y" ]; then \
+		sed -i "/RTCONFIG_AMAZON_WSS\>/d" $(1); \
+		echo "RTCONFIG_AMAZON_WSS=y" >>$(1); \
+		sed -i "/RTCONFIG_GN_WBL\>/d" $(1); \
+		echo "RTCONFIG_GN_WBL=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))

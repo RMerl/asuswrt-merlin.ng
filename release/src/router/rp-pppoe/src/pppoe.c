@@ -41,6 +41,7 @@ static char const RCSID[] =
 #endif
 
 #include <time.h>
+#include <sys/syscall.h>
 
 #ifdef HAVE_SYS_UIO_H
 #include <sys/uio.h>
@@ -90,13 +91,13 @@ PPPoEConnection *Connection = NULL; /* Must be global -- used
 int
 get_time(struct timeval *tv)
 {
-#ifdef CLOCK_MONOTONIC
     static int monotonic = -1;
-    struct timespec ts;
-    int ret;
 
     if (monotonic) {
-	ret = clock_gettime(CLOCK_MONOTONIC, &ts);
+#if defined(__NR_clock_gettime) && defined(CLOCK_MONOTONIC)
+	struct timespec ts;
+	int ret = syscall(__NR_clock_gettime, CLOCK_MONOTONIC, &ts);
+
 	if (tv && ret == 0) {
 	    tv->tv_sec = ts.tv_sec;
 	    tv->tv_usec = ts.tv_nsec / 1000;
@@ -106,12 +107,13 @@ get_time(struct timeval *tv)
 	    monotonic = (ret == 0);
 	if (monotonic)
 	    return ret;
-
+#else
+	monotonic = 0;
+#endif
 	syslog(LOG_WARNING,
 	    "Couldn't use monotonic clock source: %s",
 	    strerror(errno));
     }
-#endif
 
     return gettimeofday(tv, NULL);
 }

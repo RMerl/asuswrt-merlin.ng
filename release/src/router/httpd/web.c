@@ -1454,6 +1454,108 @@ ej_get_all_basic_clientlist(int eid, webs_t wp, int argc, char_t **argv)
 	return ret;
 }
 
+#ifdef RTCONFIG_INTERNETCTRL
+static time_t get_ic_local_timestamp(char *timestamp)
+{
+	char *ptr=NULL;
+	time_t ts=0;
+	ts = (time_t)strtol(timestamp+2, &ptr, 10);
+	struct tm *plocal_tm = localtime(&ts);
+	return mktime(plocal_tm);
+}
+
+/* info: mac, ip, name, isonline, networkAccess(ICFILTER), starttime(ICFILTER), endtime(ICFILTER) */
+static int ej_get_clientlist_reportstate(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int ret = 0, networkAccess=0;
+	int mac_idx=0, daytime_idx=0;
+	time_t starttime=0, endtime=0;
+	struct json_object *clients = NULL, *macArray=NULL, *client_obj=NULL, *allclient_obj=NULL;
+	struct json_object *ip = NULL, *name = NULL, *type = NULL, *isOnline = NULL;
+	char *stime_t=NULL;
+	char icfilter_mac[512]={0}, icfilter_macfilter_daytime[512]={0};
+	char icfilter_mac_tmp[512]={0}, *icfilter_mac_next=NULL;
+	char icfilter_daytime_tmp[512]={0}, *icfilter_daytime_next=NULL;
+	char starttime_buf[16]={0}, endtime_buf[16]={0};
+
+	time_t now = time(NULL);
+
+	macArray = json_object_new_array();
+	allclient_obj = json_object_new_object();
+
+	strlcpy(icfilter_mac, nvram_safe_get("ICFILTER_MAC"), sizeof(icfilter_mac));
+	strlcpy(icfilter_macfilter_daytime, nvram_safe_get("ICFILTER_MACFILTER_DAYTIME"), sizeof(icfilter_macfilter_daytime));
+
+	if(pids("networkmap")){
+			clients = json_object_new_object();
+			get_client_detail_info(clients, macArray, SHMKEY_LAN);
+	}
+
+	if(clients) {
+		json_object_object_foreach(clients, key, val){
+			client_obj = json_object_new_object();
+			mac_idx = 0;
+			if(json_object_object_get_ex(val, "ip", &ip))
+				json_object_object_add(client_obj, "ip", ip);
+
+			if(json_object_object_get_ex(val, "name", &name))
+				json_object_object_add(client_obj, "deviceName", name);
+
+			if(json_object_object_get_ex(val, "type", &type))
+				json_object_object_add(client_obj, "deviceType", type);
+
+			if(json_object_object_get_ex(val, "isOnline", &isOnline))
+				json_object_object_add(client_obj, "Connectivity", isOnline);
+
+			if (strstr(icfilter_mac, key)!=NULL){
+				foreach_62(icfilter_mac_tmp, icfilter_mac, icfilter_mac_next){
+					mac_idx++;
+					if(!strcmp(icfilter_mac_tmp, key)){
+						daytime_idx = 0;
+						foreach_62(icfilter_daytime_tmp, icfilter_macfilter_daytime, icfilter_daytime_next){
+							daytime_idx++;
+							if(mac_idx == daytime_idx){
+								stime_t = strtok(icfilter_daytime_tmp, "<");
+								starttime = get_ic_local_timestamp(stime_t);
+								snprintf(starttime_buf, sizeof(starttime_buf), "%ld", starttime);
+								json_object_object_add(client_obj, "starttime", json_object_new_string(starttime_buf));
+								if(stime_t != NULL){
+									stime_t = strtok(NULL, "<");
+									if(stime_t != NULL){
+										endtime = get_ic_local_timestamp(stime_t);
+										snprintf(endtime_buf, sizeof(endtime_buf), "%ld", endtime);
+										json_object_object_add(client_obj, "endtime", json_object_new_string(endtime_buf));
+									}else
+										endtime = 0;
+								}
+								if(icfilter_daytime_tmp[1] == '0'){
+									json_object_object_add(client_obj, "networkAccess", json_object_new_string("0"));
+									networkAccess = (now > starttime && (endtime == 0 || now < endtime))?0:1;
+								}
+								else{
+									json_object_object_add(client_obj, "networkAccess", json_object_new_string("1"));
+									networkAccess = (now > starttime && (endtime == 0 || now < endtime))?1:0;
+								}
+								json_object_object_add(client_obj, "networkAccess_now", json_object_new_string(networkAccess?"1":"0"));
+							}
+						}
+						break;
+					}
+				}
+			}
+			json_object_object_add(allclient_obj, key, client_obj);
+		}
+	}
+	ret = websWrite(wp, "%s", json_object_to_json_string(allclient_obj));
+
+	if(clients)
+		json_object_put(clients);
+	if(allclient_obj)
+		json_object_put(allclient_obj);
+	return ret;
+}
+#endif
+
 static int get_basic_clientlist_info(webs_t wp, int opt)
 {
 	int ret = 0, client_name_status = 0, wl_count = 0, wire_count = 0;
@@ -6667,7 +6769,7 @@ static int ipv4_route_table(webs_t wp)
 #endif
 		}
 
-		ret += websWrite(wp, "%-16s", dest.s_addr == INADDR_ANY ? "default" : inet_ntoa(dest));
+		ret += websWrite(wp, "%-16s", (dest.s_addr || mask.s_addr) ? inet_ntoa(dest) : "default");
 		ret += websWrite(wp, "%-16s", gateway.s_addr == INADDR_ANY ? "*" : inet_ntoa(gateway));
 		ret += websWrite(wp, "%-16s%-9s%-6d %-3d%7d %-4s %s\n",
 				 inet_ntoa(mask), sflags, metric, ref, use, dev ? : "", ifname);
@@ -7169,6 +7271,12 @@ static int check_internetState(char *timeList) {
 				}
 				else if(week_start < system_week && week_end >= system_week) {
 					if(hour_end > system_hour) {
+						state = 1;
+						break;
+					}
+				}
+				else if(week_start == 0 && week_end == 0 && system_week == 7) {//for sunday
+					if(hour_start <= system_hour && hour_end > system_hour) {
 						state = 1;
 						break;
 					}
@@ -12633,6 +12741,11 @@ do_vpnupload_cgi(char *url, FILE *stream)
 			state = nvram_get_int("vpn_upload_state");
 			nvram_set_int("vpn_upload_state", state & (~VPN_UPLOAD_NEED_CERT));
 		}
+		else if(!strcmp(filetype, "extra")) {
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_EXTRA, NULL, VPN_CLIENT_UPLOAD);
+			state = nvram_get_int("vpn_upload_state");
+			nvram_set_int("vpn_upload_state", state & (~VPN_UPLOAD_NEED_EXTRA));
+		}
 		else if(!strcmp(filetype, "key")) {
 			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_KEY, NULL, VPN_CLIENT_UPLOAD);
 			state = nvram_get_int("vpn_upload_state");
@@ -12684,7 +12797,8 @@ do_server_ovpn_file(char *url, FILE *stream)
 			"dh",
 			"key",
 			"crl",
-			"extra",
+			"extra"
+			"static",
 			NULL
 		};
 		unit = nvram_get_int("vpn_server_unit");
@@ -12807,6 +12921,7 @@ do_upload_server_ovpn_cert_cgi(char *url, FILE *stream)
 					"key",
 					"crl",
 					"extra",
+					"static",
 					NULL
 				};
 				snprintf(cmd, sizeof(cmd), "tar -xzf %s -C %s", OPENVPN_UPLOAD_FILE, OPENVPN_UPLOAD_FLODER);
@@ -15183,6 +15298,94 @@ do_set_TM_EULA_cgi(char *url, FILE *stream)
 	}
 	json_object_put(root);
 }
+ 
+#if defined(RTCONFIG_BWDPI)
+static void
+do_wrs_wbl_cgi(char *url, FILE *stream)
+{
+	struct json_object *root = NULL;
+	struct json_object *resp = json_object_new_object();
+	struct json_object *data = json_object_new_array();
+	do_json_decode(&root);
+
+	char *action = safe_get_cgi_json("action", root);
+	char *type = safe_get_cgi_json("type", root);
+	char *mac = safe_get_cgi_json("mac", root);
+	char *url_t = safe_get_cgi_json("url_type", root);
+	char *url_s = safe_get_cgi_json("url", root);
+
+	char path[256] = {0};
+	char buf[8] = {0};
+	char tmp[256] = {0};
+	char tmp2[256] = {0};
+	int len = sizeof(path);
+	int bflag = atoi(type);
+	int status = 0;
+
+	char *head = NULL;
+	char *end = NULL;
+	FILE *fp = NULL;
+
+	_dprintf("[%s(%d)] %s, %d, %s, %s, %s\n", __FUNCTION__, __LINE__, action, bflag, mac, url_t, url_s);
+
+	if (action == NULL) {
+		strlcpy(buf, "0", sizeof(buf));
+		goto END;
+	}
+
+	if (url_t == NULL) {
+		url_t = "url";
+	}
+
+	if (mac == NULL) {
+		mac = "";
+	}
+
+
+	if (!strcmp(action, "add") && url_s != NULL) {
+		if (check_xss_blacklist(url_s, 0)) {
+			goto END;
+		}
+		status = WRS_WBL_WRITE_LIST(bflag, mac, url_t, url_s);
+		if (status) notify_rc("restart_wrs_wbl");
+	}
+	else if (!strcmp(action, "del") && url_s != NULL) {
+		if (check_xss_blacklist(url_s, 0)) {
+			goto END;
+		}
+		status = WRS_WBL_DEL_LIST(bflag, mac, url_t, url_s);
+		if (status) notify_rc("restart_wrs_wbl");
+	}
+	else if (!strcmp(action, "get")) {
+		status = WRS_WBL_GET_PATH(bflag, mac, path, len);
+		if (status == 1) {
+			if ((fp = fopen(path, "r")) != NULL) {
+				while (fgets(tmp2, sizeof(tmp2), fp) != NULL) {
+					head = strchr(tmp2, ' ')+1;
+					end = strchr(tmp2, 0xa)+1;
+					snprintf(tmp, end-head, "%s", head);
+					json_object_array_add(data, json_object_new_string(tmp));
+				}
+			}
+		}
+		else {
+			json_object_array_add(data, json_object_new_string(tmp));
+		}
+	}
+
+	/* item : success */
+	memset(buf, 0, sizeof(buf));
+	snprintf(buf, sizeof(buf), "%d", status);
+
+END:
+	json_object_object_add(resp, "success", json_object_new_string(buf));
+	json_object_object_add(resp, "data", data);
+	websWrite(stream, "%s\n", json_object_to_json_string(resp));
+	if (root) json_object_put(root);
+	if (resp) json_object_put(resp);
+	return;
+}
+#endif
 
 #define RFC1123FMT "%a, %d %b %Y %H:%M:%S GMT"
 static int
@@ -16324,6 +16527,180 @@ do_clean_offline_clientlist_cgi(char *url, FILE *stream)
 	unlink(NMP_CL_JSON_FILE);
 }
 
+#if defined(RTCONFIG_AMAZON_WSS)
+static void
+do_amazon_wss_cgi(char *url, FILE *stream)
+{
+	int ret=200;
+	struct json_object *root=NULL;
+	char *wss_enable=NULL, *do_rc=NULL;
+
+	do_json_decode(&root);
+
+	wss_enable = safe_get_cgi_json("wss_enable", root);
+	do_rc = safe_get_cgi_json("do_rc", root);
+
+	if(!isValidEnableOption(wss_enable, 1)){
+		HTTPD_DBG("invalid enabled option\n");
+		ret = 4001;
+		goto FINISH;
+	}
+
+	if(!isValidEnableOption(do_rc, 1)){
+		HTTPD_DBG("invalid enabled option\n");
+		ret = 4002;
+		goto FINISH;
+	}
+
+	if(num_of_mssid_support(0) < 2){
+		HTTPD_DBG("mssid is not support\n");
+		ret = 4003;
+		goto FINISH;
+	}
+
+	amazon_wss_enable(wss_enable, do_rc);
+
+FINISH:
+	if(root)
+		json_object_put(root);
+	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
+}
+#endif
+
+#ifdef RTCONFIG_INTERNETCTRL
+/* check timestamp */
+static int
+isValidtimestamp(char *timestamp)
+{
+	time_t ts;
+	char *ptr=NULL;
+
+	ts = (time_t)strtol(timestamp, &ptr, 10);
+	if((0 < ts && ts < 2145888000L) && (ptr && !strcasecmp(ptr, "Z")))
+		return 1;
+	else
+		return 0;
+}
+
+static void
+do_internet_ctrl_cgi(char *url, FILE *stream) {
+
+	struct json_object *ci_obj=NULL;
+	char icfilter_mac_tmp[512]={0}, *icfilter_mac_next=NULL;
+	char icfilter_daytime_tmp[512]={0}, *icfilter_daytime_next=NULL;
+	char icfilter_mac[512]={0}, icfilter_macfilter_daytime[512]={0};
+	char icfilter_mac_buf[512]={0}, icfilter_daytime_buf[512]={0}, daytime_rule[32]={0}, daytime_rule_tmp[32]={0};
+	int i=0, ret=200, rule_num=0, mac_idx=0, daytime_idx=0;
+	unsigned int schedule_start_tmp=0;
+
+	do_json_decode(&ci_obj);
+
+	char *device_mac = get_cgi_json("device_mac", ci_obj);
+	char *networkAccess = get_cgi_json("networkAccess", ci_obj);
+	char *schedule_start = safe_get_cgi_json("schedule_start", ci_obj);
+	char *schedule_end = safe_get_cgi_json("schedule_end", ci_obj);
+	char *schedule_duration = safe_get_cgi_json("schedule_duration", ci_obj);
+
+	strlcpy(icfilter_mac, nvram_safe_get("ICFILTER_MAC"), sizeof(icfilter_mac));
+	strlcpy(icfilter_macfilter_daytime, nvram_safe_get("ICFILTER_MACFILTER_DAYTIME"), sizeof(icfilter_macfilter_daytime));
+
+	if(!isValidMacAddress(device_mac)){
+		HTTPD_DBG("invalid mac\n");
+		ret = 4002;
+		goto FINISH;
+	}
+
+	if(!isValidEnableOption(networkAccess, 1)){
+		HTTPD_DBG("invalid enabled option\n");
+		ret = 4003;
+		goto FINISH;
+	}
+
+	foreach_62(icfilter_mac_tmp, icfilter_mac, icfilter_mac_next)
+		rule_num++;
+
+	//generate daytime rule
+	if(strlen(schedule_start)){
+		if(isValidtimestamp(schedule_start))
+			snprintf(daytime_rule, sizeof(daytime_rule), "T%s%s", networkAccess, schedule_start);
+		else{
+			ret = 4006;
+			goto FINISH;
+		}
+	}
+
+	if(strlen(schedule_end)){
+		if(isValidtimestamp(schedule_end)){
+			snprintf(daytime_rule_tmp, sizeof(daytime_rule), "<T%d%s", atoi(networkAccess)?0:1, schedule_end);
+			strlcat(daytime_rule, daytime_rule_tmp, sizeof(daytime_rule));
+		}else{
+			ret = 4006;
+			goto FINISH;
+		}
+
+	}else if(strlen(schedule_duration)){
+		for (i=0 ; schedule_duration[i] != '\0'; i++){
+			if (i>10080 && !isdigit(schedule_duration[i])){
+				HTTPD_DBG("invalid schedule_duration\n");
+				ret = 4006;
+				goto FINISH;
+			}
+		}
+		if(atoi(schedule_duration) != 0)
+		{
+			if (sscanf(schedule_start, "%uZ", &schedule_start_tmp) != 1){
+				HTTPD_DBG("invalid schedule_start\n");
+				ret = 4006;
+				goto FINISH;
+			}else{
+				snprintf(daytime_rule_tmp, sizeof(daytime_rule_tmp), "<T%d%uZ", atoi(networkAccess)?0:1, schedule_start_tmp+atoi(schedule_duration)*60);
+				strlcat(daytime_rule, daytime_rule_tmp, sizeof(daytime_rule));
+			}
+		}
+	}
+
+	if (strstr(icfilter_mac, device_mac)==NULL)	//add new device rule
+	{
+		if(rule_num > 16){	//over rule limit to 16
+			HTTPD_DBG("over rule limit\n");
+			ret = 4000;
+			goto FINISH;
+		}else{
+			snprintf(icfilter_mac_buf, sizeof(icfilter_mac_buf), "%s%s%s", icfilter_mac, (rule_num>0)?">":"", device_mac);
+			snprintf(icfilter_daytime_buf, sizeof(icfilter_daytime_buf), "%s%s%s", icfilter_macfilter_daytime, (rule_num>0)?">":"", daytime_rule);
+			nvram_set("ICFILTER_MAC", icfilter_mac_buf);
+			nvram_set("ICFILTER_MACFILTER_DAYTIME", icfilter_daytime_buf);
+		}
+	}else{	//device mac already exist in ICFILTER_MAC
+		foreach_62(icfilter_mac_tmp, icfilter_mac, icfilter_mac_next)
+		{
+			mac_idx++;
+			if(!strcmp(icfilter_mac_tmp, device_mac)){
+				foreach_62(icfilter_daytime_tmp, icfilter_macfilter_daytime, icfilter_daytime_next){
+					daytime_idx++;
+					if(mac_idx == daytime_idx){
+						if(daytime_idx > 1)
+							strlcat(icfilter_daytime_buf, ">", sizeof(icfilter_daytime_buf));
+						strlcat(icfilter_daytime_buf, daytime_rule, sizeof(icfilter_daytime_buf));
+					}
+					else{
+						if(daytime_idx > 1)
+							strlcat(icfilter_daytime_buf, ">", sizeof(icfilter_daytime_buf));
+						strlcat(icfilter_daytime_buf, icfilter_daytime_tmp, sizeof(icfilter_daytime_buf));
+					}
+				}
+				break;
+			}
+		}
+		nvram_set("ICFILTER_MACFILTER_DAYTIME", icfilter_daytime_buf);
+	}
+	notify_rc("restart_firewall");
+FINISH:
+	websWrite(stream, "{\"statusCode\":\"%d\"}", ret);
+	if(ci_obj)
+		json_object_put(ci_obj);
+}
+#endif
 
 //2008.08 magic{
 struct mime_handler mime_handlers[] = {
@@ -16430,6 +16807,9 @@ struct mime_handler mime_handlers[] = {
 	{ "upload.cgi*", "text/html", no_cache_IE7, do_upload_post, do_upload_cgi, do_auth },
 	{ "set_ASUS_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_ASUS_EULA_cgi, do_auth },
 	{ "set_TM_EULA.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_set_TM_EULA_cgi, do_auth },
+#if defined(RTCONFIG_BWDPI)
+	{ "wrs_wbl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_wrs_wbl_cgi, do_auth },
+#endif
 	{ "unreg_ASUSDDNS.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_unreg_ASUSDDNS_cgi, do_auth },
 #ifdef RTCONFIG_HTTPS
 	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
@@ -16521,6 +16901,12 @@ struct mime_handler mime_handlers[] = {
 	{ "feedback_mail.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_feedback_mail_cgi, do_auth },
 	{ "dfb_log.cgi", "application/force-download", NULL, do_html_post_and_get, do_dfb_log_file, do_auth },
 	{ "set_fw_path.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_set_fw_path_cgi, do_auth },
+#if defined(RTCONFIG_AMAZON_WSS)
+	{ "amazon_wss.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_amazon_wss_cgi, do_auth },
+#endif
+#ifdef RTCONFIG_INTERNETCTRL
+	{ "internet_ctrl.cgi*", "text/html", no_cache_IE7, do_html_post_and_get, do_internet_ctrl_cgi, do_auth },
+#endif
 	{ NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -24441,6 +24827,9 @@ struct ej_handler ej_handlers[] = {
 	{ "get_basic_clientlist_count", ej_get_basic_clientlist_count},
 	{ "get_all_basic_clientlist", ej_get_all_basic_clientlist},
 	{ "get_wol_clientlist", ej_get_wol_clientlist},
+#ifdef RTCONFIG_INTERNETCTRL
+	{ "get_clientlist_reportstate", ej_get_clientlist_reportstate},
+#endif
 //2008.08 magic{
 	{ "update_variables", ej_update_variables},
 #ifdef RTCONFIG_ROG

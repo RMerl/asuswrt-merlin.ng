@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Kullanıcı Adı veya E-posta Adresi
 LANHostConfig_x_DDNSWildcard_itemdesc=Etkinleştirildiğinde, joker karakterli etki alanı adı IP adresinize yönlendirilir.
 LANHostConfig_x_DDNSWildcard_itemname=Joker karakteri etkinleştirilsin mi
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt, alan adı onaylı ücretsiz sertifika sağlamak için bir hizmettir ve alan adlarınız için sertifika yayınlamadan önce alan adı doğrulaması gerçekleştirir. Let's Encrypt tarafından verilen sertifikalar 90 gün boyunca geçerlidir. Sertifikanızın süresi dolmadan önce, ASUS yönlendiriciniz, alan adını başarıyla doğruladıktan sonra bu sertifikaları otomatik olarak yenileyecektir. Yönlendiricinizin alan geçerliliği ve sertifika yenilemesi için lütfen 80 numaralı bağlantı noktası üzerinden internete bağlandığından emin olun.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Bu, Erişim Noktasının varsayılan ağ geçidi IP adresidir
 LANHostConfig_x_LDNSServer1_itemdesc=Bu alanda, DHCP Sunucusunda IP adresi isteyen istemcilere sağlanan DNS IP adresi gösterilir. Boş bırakabilirsiniz, DNS isteğine ZVMODELVZ tarafından işlem yapılır.
 LANHostConfig_x_LDNSServer1_itemname=DNS Sunucusu

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Aug 12 01:51:33 2019
+ * Date: Mon Nov 18 11:33:49 2019
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_384_6802/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -212,7 +212,7 @@
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
 #define TMCFG_E_REL_PKG_REV_VER 1
-#define TMCFG_E_REL_PKG_LOCAL_VER "e8fa91db"
+#define TMCFG_E_REL_PKG_LOCAL_VER "e8fa91de"
 
 /*
  * Accompany applications or modules
@@ -221,7 +221,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX95Q_GPL_384_6802/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_384_6802/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_384_6802/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

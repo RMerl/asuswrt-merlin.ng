@@ -345,18 +345,29 @@ static pj_status_t create_ctx( struct tls_listener *lis, SSL_CTX **p_ctx)
 	method = PJSIP_SSL_DEFAULT_METHOD;
 
     switch (method) {
+    case PJSIP_SSL_DEFAULT_METHOD:
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+	ssl_method = (SSL_METHOD*)TLS_method();
+	break;
+#endif
     case PJSIP_SSLV23_METHOD:
 	ssl_method = SSLv23_method();
 	break;
+#ifndef OPENSSL_NO_TLS1_METHOD
     case PJSIP_TLSV1_METHOD:
 	ssl_method = TLSv1_method();
 	break;
-    case PJSIP_SSLV2_METHOD:
-	ssl_method = SSLv2_method();
-	break;
+#endif
+#ifndef OPENSSL_NO_SSL3_METHOD
     case PJSIP_SSLV3_METHOD:
 	ssl_method = SSLv3_method();
 	break;
+#endif
+#if !defined(OPENSSL_NO_SSL2) || OPENSSL_VERSION_NUMBER < 0x10100000L
+    case PJSIP_SSLV2_METHOD:
+	ssl_method = SSLv2_method();
+	break;
+#endif
     default:
 	ssl_report_error(lis_name, 4, PJSIP_TLS_EINVMETHOD,
 			 "Error creating SSL context");

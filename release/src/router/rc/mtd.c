@@ -94,6 +94,18 @@ static int mtd_open(const char *mtdname, mtd_info_t *mi)
 	return -1;
 }
 
+/* int _unlock_erase(const char *mtdname, int erase)
+ *
+ * mtdname: name of mtd partition want to do
+ * erase  : 0      to Unlock
+ *          others to Erase
+ *
+ * return:
+ * 	 1: timeout
+ * 	 0: success
+ * 	-1: fail
+ */
+
 static int _unlock_erase(const char *mtdname, int erase)
 {
 	int mf;
@@ -101,7 +113,9 @@ static int _unlock_erase(const char *mtdname, int erase)
 	erase_info_t ei;
 	int r, ret, skipbb;
 
-	if (!wait_action_idle(5)) return 0;
+	if (!wait_action_idle(10)){
+		return 1;	//timeout
+	}
 	set_action(ACT_ERASE_NVRAM);
 
 	r = 0;
@@ -181,7 +195,9 @@ static int _unlock_erase(const char *mtdname, int erase)
 	else printf("\nError %sing MTD\n", erase ? "eras" : "unlock");
 
 	sleep(1);
-	return r;
+	if (r)
+		return 0;	//success
+	return -1;		//erase fail
 }
 
 int mtd_unlock(const char *mtdname)
@@ -409,7 +425,7 @@ int mtd_write_main(int argc, char *argv[])
 		if(strcmp(iname,"/tmp/linux.trx")==0)
 		{
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock2") == 0){
+			if(mtd_erase("/dev/mtdblock2")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/linux.trx",0,"/dev/mtdblock2",0x0,msg_buf)<0)
@@ -423,7 +439,7 @@ int mtd_write_main(int argc, char *argv[])
 		//	_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_ASUS_DUAL_IMAGE_ENABLE
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock4") == 0){
+			if(mtd_erase("/dev/mtdblock4")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/linux.trx",0,"/dev/mtdblock4",0x0,msg_buf)<0)
@@ -440,7 +456,7 @@ int mtd_write_main(int argc, char *argv[])
 		{
 			//_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock3") == 0){
+			if(mtd_erase("/dev/mtdblock3")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/root.trx",0,"/dev/mtdblock3",0,msg_buf)<0)
@@ -454,7 +470,7 @@ int mtd_write_main(int argc, char *argv[])
 			//_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_ASUS_DUAL_IMAGE_ENABLE
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock5") == 0){
+			if(mtd_erase("/dev/mtdblock5")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/root.trx",0,"/dev/mtdblock5",0,msg_buf)<0)

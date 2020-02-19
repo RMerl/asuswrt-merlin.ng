@@ -321,7 +321,11 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* bandwidth 160MHz support */
 #ifdef BCM_BSD
 	{ "wl1_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#if defined(RTAX95Q)
+	{ "wl2_bw_160", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#else
 	{ "wl2_bw_160", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif	/* RTAX95Q */
 #endif
 #endif
 #endif
@@ -856,7 +860,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "acs_ch13", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "acs_dfs", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* enable DFS channels for acsd by default */
 #if defined(RTCONFIG_BCMARM)
-#ifndef RTCONFIG_WIFILOGO
+#if !defined(RTCONFIG_WIFILOGO) && !defined(RTCONFIG_HND_ROUTER_AX)
 	{ "wl_atf", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Airtime Fairness */
 #else
 	{ "wl_atf", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -923,7 +927,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "stop_gmac3", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
-	{ "wl_bw_switch_160", "2", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* bw_switch_160 default enabled */
+	{ "wl_bw_switch_160", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* bw_switch_160 default enabled */
 #endif
 	/* acsd setting */
 #ifndef  HND_ROUTER
@@ -1215,7 +1219,7 @@ struct nvram_tuple router_defaults[] = {
 #endif
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX
-	{ "wl_11ax", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* 11ax support */
+	{ "wl_11ax", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* 11ax support */
 	{ "wl_ofdma", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		/* 11ax OFDMA support */
 	{ "wl0_ofdma", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #ifdef RTAX92U
@@ -1223,12 +1227,13 @@ struct nvram_tuple router_defaults[] = {
 	{ "wl1_11ax", "0", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* 11ax support */
 	{ "wl2_11ax", "1", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* 11ax support */
 #else
-	{ "wl0_he_features", "0", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
-	{ "wl1_he_features", "0", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
-	{ "wl2_he_features", "0", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
+	{ "wl0_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
+	{ "wl1_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
+	{ "wl2_he_features", "3", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      /* HE features */
 #endif
 	{ "wl_rx_amsdu_in_ampdu_ovr", "-1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 }, /* override amsdu in ampdu */
-	{ "wl_mbo_enable", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "wl_mbo_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "wl_twt", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM9) || defined(HND_ROUTER)
 	{ "wl_obss_dyn_bw", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* Dynamic BWSW disable defaults */
@@ -1562,6 +1567,7 @@ struct nvram_tuple router_defaults[] = {
 #else
 	{ "dns_probe_content", "131.107.255.255 112.4.20.71", CKN_STR1024, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	/* resolve target addr or wildcard */
 #endif
+	{ "dns_probe_content_skip", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dns_delay_round", "2", CKN_STR6, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 
 #ifdef RTCONFIG_DNSPRIVACY
@@ -2753,7 +2759,7 @@ struct nvram_tuple router_defaults[] = {
 
 	{ "vpn_server_if", "tun", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_proto", "udp", CKN_STR16, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "vpn_server_port", "1194", CKN_STR5, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "vpn_server_port", "", CKN_STR5, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_firewall", "auto", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_crypt", "tls", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "vpn_server_comp", "-1", CKN_STR8, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -4253,7 +4259,8 @@ struct nvram_tuple router_state_defaults[] = {
 	{ "le_state_t", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "le_sbstate_t", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "le_auxstate_t", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-	{ "le_rc_notify", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "le_rc_notify", "1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "le_restart_httpd", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 
 	{ "ddns_cache", "", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -4281,6 +4288,11 @@ const defaults_t if_generic[] = {
 #else
 	{ "wan_ifname", "eth1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "wan_ifnames", "eth1", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
+#ifdef RTCONFIG_GN_WBL
+	{ "wl_gn_wbl_enable" , "0", CKN_STR1  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "wl_gn_wbl_type"   , "1", CKN_STR1  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "wl_gn_wbl_rule"   , "",  CKN_STR512  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
@@ -4607,7 +4619,7 @@ struct nvram_tuple bcm4360ac_defaults[] = {
 	{ "2:ledbh10", "7", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };
-#elif defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAX88U) || defined(RTAC86U) || defined(AC2900) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q)
+#elif defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAX88U) || defined(RTAC86U) || defined(AC2900) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
 struct nvram_tuple bcm4360ac_defaults[] = {
 	{ 0, 0, 0, 0, 0, 0, 0 }
 };

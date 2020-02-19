@@ -25,7 +25,6 @@ static char const RCSID[] =
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/resource.h>
-#include <linux/if.h>
 #include <linux/if_ether.h>
 #include <linux/if_pppol2tp.h>
 #include <linux/if_pppox.h>

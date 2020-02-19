@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=사용자 이름 또는 이메일 주소
 LANHostConfig_x_DDNSWildcard_itemdesc=사용할 경우, 와일드 카드를 사용한 도메인 이름이 당신의 IP 어드레스로 리다이렉트 됩니다.
 LANHostConfig_x_DDNSWildcard_itemname=와일드 카드 사용
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt는 도메인 검증에 의한 인증을 무료로 제공하는 서비스로서 도메인에 대한 인증을 발행하기 전에 도메인을 검증합니다. Let's Encrypt에서 발행하는 인증서는 90일 동안 유효합니다. 인증서가 만료되기 전에 ASUS 라우터에서 도메인을 성공적으로 검증한 후 인증서를 자동으로 갱신합니다. 도메인을 검증하고 인증서를 갱신하려면 라우터가 포트 80을 통해 인터넷에 연결되어 있어야 합니다.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=이것은 AP 의 기본 게이트웨이 IP 어드레스 입니다.
 LANHostConfig_x_LDNSServer1_itemdesc=이 필드는 DNS 의 IP 어드레스를 클라이언트에 제공하여 DHCP 서버로부터 IP 어드레스를 요청할 것인지 나타냅니다. 공란으로 남겨둘 경우, ZVMODELVZ가 DNS 요청을 하게 됩니다.
 LANHostConfig_x_LDNSServer1_itemname=DNS 서버

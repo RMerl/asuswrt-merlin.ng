@@ -8,14 +8,7 @@
 
 int ovpn_up_main(int argc, char **argv)
 {
-	int unit;
-
-	if(argc < 2)
-		return -1;
-
-	unit = atoi(argv[1]);
-
-//	ovpn_up_handler(unit);
+//	ovpn_up_handler();
 
 	update_resolvconf();
 
@@ -24,16 +17,18 @@ int ovpn_up_main(int argc, char **argv)
 
 int ovpn_down_main(int argc, char **argv)
 {
-	int unit;
-
-	if(argc < 2)
-		return -1;
-
-	unit = atoi(argv[1]);
-
-//	ovpn_down_handler(unit);
+//	ovpn_down_handler();
 
 	update_resolvconf();
 
 	return 0;
 }
+
+
+int ovpn_route_up_main(int argc, char **argv)
+{
+//	ovpn_route_up_handler();
+
+	return 0;
+}
+

@@ -992,7 +992,7 @@ AC_ARG_ENABLE(ssl,
 		AC_SUBST(libcrypto_present)
 		AC_CHECK_HEADER(openssl/ssl.h,[openssl_h_present=1])
 		AC_CHECK_LIB(crypto,ERR_load_BIO_strings,[libcrypto_present=1 && LIBS="$LIBS -lcrypto"])
-		AC_CHECK_LIB(ssl,SSL_library_init,[libssl_present=1 && LIBS="$LIBS -lssl"])
+		AC_CHECK_LIB(ssl,SSL_new,[libssl_present=1 && LIBS="$LIBS -lssl"])
 		if test "x$openssl_h_present" = "x1" -a "x$libssl_present" = "x1" -a "x$libcrypto_present" = "x1"; then
 	        	AC_MSG_RESULT([OpenSSL library found, SSL support enabled])
 			# PJSIP_HAS_TLS_TRANSPORT setting follows PJ_HAS_SSL_SOCK

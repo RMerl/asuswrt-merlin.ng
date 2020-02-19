@@ -151,7 +151,7 @@ int callmgr_main(int argc, char **argv, char **envp)
     }
 
     /* Set high priority for echo packets */
-    if (setpriority(PRIO_PROCESS, 0, -20) < 0)
+    if (setpriority(PRIO_PROCESS, 0, -12) < 0)
 	warn("Could not set high priority: %m");
 
     /* re-open stderr as /dev/null to release it */

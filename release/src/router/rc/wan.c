@@ -1890,7 +1890,7 @@ stop_wan_if(int unit)
 	/* Stop l2tp */
 	if (strcmp(wan_proto, "l2tp") == 0) {
 		kill_pidfile_tk("/var/run/l2tpd.pid");
-		usleep(1000*10000);
+		usleep(1000*1000);
 	}
 
 	/* Stop pppd */
@@ -1905,6 +1905,16 @@ stop_wan_if(int unit)
 	/* Stop pre-authenticator */
 	stop_auth(unit, 0);
 
+#if 1
+	/* Clean WAN interface */
+	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	if (*wan_ifname && *wan_ifname != '/') {
+#ifdef RTCONFIG_IPV6
+		disable_ipv6(wan_ifname);
+#endif
+		ifconfig(wan_ifname, IFUP, "0.0.0.0", NULL);
+	}
+#else
 	/* Bring down WAN interfaces */
 	// Does it have to?
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
@@ -1927,6 +1937,7 @@ stop_wan_if(int unit)
 #endif
 		}
 	}
+#endif
 
 #ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_DUALWAN
@@ -2133,7 +2144,7 @@ int update_resolvconf(void)
 
 /* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
 #ifdef RTCONFIG_OPENVPN
-	write_ovpn_dns(fp_servers);
+	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 
 #ifdef RTCONFIG_YANDEXDNS

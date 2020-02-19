@@ -7,12 +7,6 @@
 # $Id: wl_generic.mk,v 1.10 2011-01-21 22:12:09 $
 #
 
-ifneq ($(wildcard ../../bcmdrivers/broadcom/net/wl/bcm94908/main/src/router/dpsta),)
-    DPSTASRC := $(SRCBASE_OFFSET)/router/dpsta
-else
-    DPSTASRC := $(SRCBASE_OFFSET)/../components/router/dpsta
-endif
-
 WLSRC_BASE := $(src)/$(SRCBASE_OFFSET)
 
 ifeq ($(PREBUILT_EXTRAMOD),1)
@@ -52,7 +46,7 @@ ifeq ($(REBUILD_WL_MODULE),1)
 
     # define OS flag to pick up wl osl file from wl.mk
     WLLX=1
-    ifdef CONFIG_DPSTA
+    ifdef RTCONFIG_DPSTA
         DPSTA=1
     endif
     ifdef CONFIG_CR4_OFFLOAD
@@ -97,8 +91,15 @@ endif
          EXTRA_CFLAGS += -finline-limit=2048
     endif
     
+    ifdef RTCONFIG_DPSTA
     # include path for dpsta.h
+ifneq ($(wildcard ../../bcmdrivers/broadcom/net/wl/bcm94908/main/src/router/dpsta),)
+    DPSTASRC := $(SRCBASE_OFFSET)/router/dpsta
+else
+    DPSTASRC := $(SRCBASE_OFFSET)/../components/router/dpsta
+endif
     EXTRA_CFLAGS += -I$(src)/$(DPSTASRC)
+    endif
 
     # Build the phy source files iff -DPHY_HAL is present.
     ifneq ($(findstring PHY_HAL,$(WLFLAGS)),)

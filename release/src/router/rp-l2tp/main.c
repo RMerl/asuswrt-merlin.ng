@@ -204,7 +204,7 @@ main(int argc, char *argv[])
     Priority = getpriority(PRIO_PROCESS, 0);
     if (Priority < 0 && errno != 0)
 	Priority = 0;
-    if (setpriority(PRIO_PROCESS, 0, -20) < 0)
+    if (setpriority(PRIO_PROCESS, 0, -12) < 0)
 	l2tp_set_errmsg("Could not set high priority");
 
     while(1) {

@@ -359,6 +359,7 @@ extern void set_cgi(char *name, char *value);
 
 /* httpd.c */
 extern int json_support;
+extern int amas_support;
 extern void start_ssl(void);
 extern char *gethost(void);
 extern void http_logout(unsigned int ip, char *cookies, int fromapp_flag);
@@ -477,4 +478,7 @@ extern int is_amas_support(void);
 extern void do_feedback_mail_cgi(char *url, FILE *stream);
 extern void do_dfb_log_file(char *url, FILE *stream);
 extern void do_set_fw_path_cgi(char *url, FILE *stream);
+#if defined(RTCONFIG_AMAZON_WSS)
+extern void amazon_wss_enable(char *wss_enable, char *do_rc);
+#endif
 #endif /* _httpd_h_ */

@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Uživatelské jméno nebo e-mailová adres
 LANHostConfig_x_DDNSWildcard_itemdesc=Pokud je povoleno, je doména s wildcard přesměrována na vaši IP adresu.
 LANHostConfig_x_DDNSWildcard_itemname=Povolit wildcard
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt je služba, která poskytuje bezplatný certifikát ověřený doménou a provede ověření domény před vystavením certifikátů pro vaše domény. Certifikáty vystavené službou Let's Encrypt jsou platné 90 dní. Předtím, než vyprší platnost vašeho certifikátu, váš směrovač ASUS automaticky obnoví takové certifikáty po úspěšném ověření domény. Zajistěte, aby se váš směrovač pro ověření domény a obnovení certifikátu připojil k internetu prostřednictvím portu 80.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Toto je IP adresa původní brány pro přístupový bod
 LANHostConfig_x_LDNSServer1_itemdesc=Toto pole ukazuje IP adresu DNS pro klienty, kteří vyžadují IP adresu ze serveru DHCP. Pokud zanecháte pole prázdné, budou požadavky DNS zpracovány prostřednictvím ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=IP adresa serveru DNS

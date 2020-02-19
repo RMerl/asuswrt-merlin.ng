@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Brukernavn eller e-postadresse
 LANHostConfig_x_DDNSWildcard_itemdesc=Når dette er aktivert, vil domenenavnet med gåsetegn bli videresendt til IP-adressen.
 LANHostConfig_x_DDNSWildcard_itemname=Aktiver gåsetegn
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt er en tjeneste for å gi gratis domene-validerte sertifikater som utfører domenevalidering før utsteding av sertifikater for domenene dine. Sertifikater utstedt av Let's Encrypt er gyldige i 90 dager. Før sertifikatet utløper vil ASUS-ruteren automatisk fornye slike sertifikater såfremt domenet kan valideres. Sørg for at ruteren kobler til Internett via port 80 for domenevalidering og fornyelse av sertifikat.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Dette er IP-adressen til standard gateway for tilgangspunktet
 LANHostConfig_x_LDNSServer1_itemdesc=Dette feltet indikerer IP-adressen til DNS for å gi til klienter som forespør IP-adresser fra DHCP-serveren. Du kan la det stå tomt, og DNS-forespørselen behandles av ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=DNS-server

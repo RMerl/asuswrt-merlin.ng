@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Username or E-mail Address (Käyttäjänim
 LANHostConfig_x_DDNSWildcard_itemdesc=Kun yleismerkki on käytössä, toimialuenimi, jossa on yleismerkki, ohjataan IP-osoitteeseesi.
 LANHostConfig_x_DDNSWildcard_itemname=Otetaanko yleismerkki käyttöön
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt on palvelu, joka tarjoaa ilmaisia toimialue-varmennettuja varmenteita ja suorittaa toimialueen varmennuksen ennen varmenteiden myöntämistä toimialueillesi. Let's Encryptin myöntämät varmenteet ovat voimassa 90 päivää. Ennen kuin varmenteesi vanhenee, ASUS-reititin uudistaa tällaiset varmenteet automaattisesti onnistuneen toimialueen varmennuksen jälkeen. Varmista, että reititin muodostaa yhteyden internetiin portin 80 kautta toimialueen varmentamista ja varmenteen uudistamista varten.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Tämä on oletusyhdyskäytävän IP-osoite tukiasemaa varten
 LANHostConfig_x_LDNSServer1_itemdesc=Tämä kenttä ilmaisee DNS-palvelimen IP-osoitteen, joka toimitetaan asiakkaille, jotka pyysivät DHCP-palvelimelta IP-osoitetta. Voit jättää sen tyhjäksi, jolloin ZVMODELVZ-reititin käsittelee DNS-pyynnön.
 LANHostConfig_x_LDNSServer1_itemname=DNS Server (DNS-palvelin)

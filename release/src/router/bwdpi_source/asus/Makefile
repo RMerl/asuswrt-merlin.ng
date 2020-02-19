@@ -101,6 +101,7 @@ LD2 += $(LDFLAGS) $(EXTRALD)
 # ASUSWRT
 OBJS += iqos.o wrs.o stat.o dpi.o wrs_app.o data_collect.o watchdog_check.o
 OBJS += dpi_support.o  # dpi_support feature to enhance security
+OBJS += wrs_wbl.o      # wrs - white and black list
 
 # TrendMicro
 OBJS += conf_app.o ioc_anomaly.o ioc_common.o ioc_qos.o ioc_vp.o ioc_wbl.o ioc_wrs.o ioc_mesh.o

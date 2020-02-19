@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Nome do usuário ou E-mail
 LANHostConfig_x_DDNSWildcard_itemdesc=Quando ativado o nome de domínio com wildcard é direcionado para o seu endereço IP.
 LANHostConfig_x_DDNSWildcard_itemname=Ativar wildcard
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt é um serviço para fornecer certificado validado de domínio livre e irá executar a validação de domínio antes de emitir certificados para os seus domínios. Os certificados emitidos pelo Let's Encrypt são válidos por 90 dias. Antes de seu certificado expirar, seu roteador ASUS renovará automaticamente esses certificados depois de validar com sucesso o domínio. Verifique se o seu roteador se conecta à internet via porta 80 para validação de domínio e de renovação de certificado.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Este é o endereço IP dp gateway padrão para o Ponto de Acesso.
 LANHostConfig_x_LDNSServer1_itemdesc=Este campo indica o endereço IP de DNS fornecido aos clientes que solicitaram o endereço IP do servidor DHCP. Você pode deixá-lo em branco e o pedido de DNS será processado por ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Servidor DNS

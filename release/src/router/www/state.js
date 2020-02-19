@@ -581,6 +581,7 @@ var dblog_support = isSupport("dblog");
 var wan_bonding_support = isSupport("wanbonding");
 var geforceNow_support = isSupport("nvgfn");
 
+var amazon_wss_support = isSupport("amazon_wss");
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
 
@@ -613,11 +614,6 @@ var gn_array_2g = <% wl_get_guestnetwork("0"); %>;
 var gn_array_5g = <% wl_get_guestnetwork("1"); %>;
 var gn_array_5g_2 = <% wl_get_guestnetwork("2"); %>;
 var gn_array_60g = <% wl_get_guestnetwork("3"); %>;
-if(lyra_hide_support){
-	gn_array_2g.splice(1, gn_array_2g.length-1);
-	gn_array_5g = [];
-	gn_array_5g_2 = [];
-}
 
 //notification value
 var notice_pw_is_default = '<% check_pw(); %>';
@@ -688,6 +684,7 @@ var realip_ip = "";
 var external_ip = 0;
 
 var link_internet = '<% nvram_get("link_internet"); %>';
+var le_restart_httpd_chk = "";
 
 if(lyra_hide_support){
 	var Android_app_link = "https://play.google.com/store/apps/details?id=com.asus.hive";
@@ -2244,13 +2241,14 @@ function hadPlugged(deviceType){
 
 //Update current system status
 var AUTOLOGOUT_MAX_MINUTE = parseInt('<% nvram_get("http_autologout"); %>') * 20;
+var error_num = 5;
 function updateStatus(){
 	if(stopFlag == 1) return false;
 	if(AUTOLOGOUT_MAX_MINUTE == 1) location = "Logout.asp"; // 0:disable auto logout, 1:trigger auto logout. 
 
 	require(['/require/modules/makeRequest.js'], function(makeRequest){
 		if(AUTOLOGOUT_MAX_MINUTE != 0) AUTOLOGOUT_MAX_MINUTE--;
-		makeRequest.start('/ajax_status.xml', refreshStatus, function(){stopFlag = 1;});
+		makeRequest.start('/ajax_status.xml', refreshStatus, function(){ if(error_num > 0){ error_num--; updateStatus(); }	else stopFlag = 1; });
 	});
 }
 
@@ -2376,6 +2374,7 @@ function refreshStatus(xhr){
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
 	link_internet = wanStatus[32].firstChild.nodeValue.replace("link_internet=", "");
+	le_restart_httpd = wanStatus[34].firstChild.nodeValue.replace("le_restart_httpd=", "");
 
 	var vpnStatus = devicemapXML[0].getElementsByTagName("vpn");
 	vpnc_proto = vpnStatus[0].firstChild.nodeValue.replace("vpnc_proto=", "");
@@ -3182,7 +3181,12 @@ function refreshStatus(xhr){
 		setTimeout(function(){notification.updateNTDB_Status();}, 10000);
 	else
 		notification.updateNTDB_Status()
-	
+
+	if(letsencrypt_support && le_restart_httpd == "1" && le_restart_httpd_chk == ""){
+		alert("<#LANHostConfig_x_DDNSLetsEncrypt_ReloginHint#>");
+		le_restart_httpd_chk = le_restart_httpd;
+	}
+
 	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1){
 		return 0;
 	}
@@ -3302,7 +3306,7 @@ function set_variable(_variable, _val){
 	document.form.appendChild(NewInput);
 }
 
-function isPortConflict(_val){
+function isPortConflict(_val, service){
 	var str = "(" + _val + ") <#portConflictHint#>: ";
 
 	if(_val == '<% nvram_get("http_lanport"); %>'){
@@ -3319,6 +3323,14 @@ function isPortConflict(_val){
 	}
 	else if(_val == '<% nvram_get("webdav_https_port"); %>'){
 		str = str + "Cloud Disk.";
+		return str;
+	}
+	else if(service != "ssh" && _val == '<% nvram_get("sshd_port"); %>'){
+		str = str + "SSH.";
+		return str;
+	}
+	else if(service != "openvpn" && _val == '<% nvram_get("vpn_server_port"); %>'){
+		str = str + "OpenVPN.";
 		return str;
 	}
 	else

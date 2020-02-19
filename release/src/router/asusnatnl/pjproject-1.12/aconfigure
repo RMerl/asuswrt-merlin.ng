@@ -12556,9 +12556,9 @@ if test $ac_cv_lib_crypto_ERR_load_BIO_strings = yes; then
   libcrypto_present=1 && LIBS="$LIBS -lcrypto"
 fi
 
-		{ echo "$as_me:$LINENO: checking for SSL_library_init in -lssl" >&5
-echo $ECHO_N "checking for SSL_library_init in -lssl... $ECHO_C" >&6; }
-if test "${ac_cv_lib_ssl_SSL_library_init+set}" = set; then
+		{ echo "$as_me:$LINENO: checking for SSL_new in -lssl" >&5
+echo $ECHO_N "checking for SSL_new in -lssl... $ECHO_C" >&6; }
+if test "${ac_cv_lib_ssl_SSL_new+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -12576,11 +12576,11 @@ cat >>conftest.$ac_ext <<_ACEOF
 #ifdef __cplusplus
 extern "C"
 #endif
-char SSL_library_init ();
+char SSL_new ();
 int
 main ()
 {
-return SSL_library_init ();
+return SSL_new ();
   ;
   return 0;
 }
@@ -12603,21 +12603,21 @@ eval "echo \"\$as_me:$LINENO: $ac_try_echo\"") >&5
 	 test ! -s conftest.err
        } && test -s conftest$ac_exeext &&
        $as_test_x conftest$ac_exeext; then
-  ac_cv_lib_ssl_SSL_library_init=yes
+  ac_cv_lib_ssl_SSL_new=yes
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
 
-	ac_cv_lib_ssl_SSL_library_init=no
+	ac_cv_lib_ssl_SSL_new=no
 fi
 
 rm -f core conftest.err conftest.$ac_objext conftest_ipa8_conftest.oo \
       conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ echo "$as_me:$LINENO: result: $ac_cv_lib_ssl_SSL_library_init" >&5
-echo "${ECHO_T}$ac_cv_lib_ssl_SSL_library_init" >&6; }
-if test $ac_cv_lib_ssl_SSL_library_init = yes; then
+{ echo "$as_me:$LINENO: result: $ac_cv_lib_ssl_SSL_new" >&5
+echo "${ECHO_T}$ac_cv_lib_ssl_SSL_new" >&6; }
+if test $ac_cv_lib_ssl_SSL_new = yes; then
   libssl_present=1 && LIBS="$LIBS -lssl"
 fi
 

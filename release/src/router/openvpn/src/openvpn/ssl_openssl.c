@@ -578,7 +578,7 @@ tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file,
     {
         if (!(bio = BIO_new_mem_buf((char *)dh_file_inline, -1)))
         {
-            crypto_msg(M_FATAL | M_SSL_DH, "Cannot open memory BIO for inline DH parameters");
+            crypto_msg(M_FATAL, "Cannot open memory BIO for inline DH parameters");
         }
     }
     else
@@ -586,7 +586,7 @@ tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file,
         /* Get Diffie Hellman Parameters */
         if (!(bio = BIO_new_file(dh_file, "r")))
         {
-            crypto_msg(M_FATAL | M_SSL_DH, "Cannot open %s for DH parameters", dh_file);
+            crypto_msg(M_FATAL, "Cannot open %s for DH parameters", dh_file);
         }
     }
 
@@ -595,11 +595,11 @@ tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file,
 
     if (!dh)
     {
-        crypto_msg(M_FATAL | M_SSL_DH, "Cannot load DH parameters from %s", dh_file);
+        crypto_msg(M_FATAL, "Cannot load DH parameters from %s", dh_file);
     }
     if (!SSL_CTX_set_tmp_dh(ctx->ctx, dh))
     {
-        crypto_msg(M_FATAL | M_SSL_DH, "SSL_CTX_set_tmp_dh");
+        crypto_msg(M_FATAL, "SSL_CTX_set_tmp_dh");
     }
 
     msg(D_TLS_DEBUG_LOW, "Diffie-Hellman initialized with %d bit key",

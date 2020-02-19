@@ -111,9 +111,9 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 {
 	int state_changed = 0;
 	char LED_BEHAVIOR_WRITE[BCM_CLED_MODE_END][20] =
-			{"0x0003e000", "0x0003e018", "0x0003e002", ""};
+			{"0x0003e000", "0x0003d000", "0x0003e018", "0x0003e002", ""};
 	char LED_BEHAVIOR_READ[BCM_CLED_MODE_END][20] =
-			{"3e000\n", "3e018\n", "3e002\n", ""};
+			{"3e000\n", "3d000\n", "3e018\n", "3e002\n", ""};
 
 	bcm_cled_rgb_led_s led1 =
 		{ {"/proc/bcm_cled/led14/config0", "/proc/bcm_cled/led15/config0", "/proc/bcm_cled/led16/config0"},
@@ -1058,7 +1058,20 @@ int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long lo
 	return ret_val;
 }
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+uint32_t hnd_get_phy_status(char *ifname)
+{
+	char tmp[100], buf[32];
+
+	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
+
+	f_read_string(tmp, buf, sizeof(buf));
+	if(!strncmp(buf, "up", 2))
+		return 1;
+	else
+		return 0;
+}
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 uint32_t hnd_get_phy_status(int port)
 {
 	char ifname[16], tmp[100], buf[32];
@@ -1094,7 +1107,17 @@ uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int 
 }
 #endif
 
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+uint32_t hnd_get_phy_speed(char *ifname)
+{
+	char tmp[100], buf[32];
+
+	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/speed", ifname);
+
+	f_read_string(tmp, buf, sizeof(buf));
+	return strtoul(buf, NULL, 10);
+}
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 uint32_t hnd_get_phy_speed(int port)
 {
 	char ifname[16], tmp[100], buf[32];

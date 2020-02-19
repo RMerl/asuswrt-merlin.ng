@@ -307,6 +307,12 @@ function initial(){
 	}
 	controlHideSSIDHint();
 	controlAXOnlyHint();
+
+	if(band5g_11ax_support){
+		if(based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')){
+			$("#twt_field").show();
+		}
+	}
 }
 
 function change_wl_nmode(o){
@@ -2186,6 +2192,19 @@ function handleMFP(){
 						<select name="wl_mbo_enable" class="input_option" onChange="handleMFP();">
 							<option value="1" <% nvram_match("wl_mbo_enable", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 							<option value="0" <% nvram_match("wl_mbo_enable", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+						</select>
+					</div>
+				</td>
+			</tr>
+			<tr id="twt_field" style="display:none">
+				<th>
+					<a class="hintstyle" href="javascript:void(0);" onClick="">Target Wake Time</a>
+				</th>
+				<td>
+					<div style="width:465px;display:flex;align-items: center;">
+						<select name="wl_twt" class="input_option" onChange="handleMFP();">
+							<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 						</select>
 					</div>
 				</td>

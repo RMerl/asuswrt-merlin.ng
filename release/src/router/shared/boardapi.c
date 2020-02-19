@@ -104,6 +104,9 @@ static const struct led_btn_table_s {
 #ifdef HND_ROUTER
 	{ "led_wan_normal_gpio",&led_gpio_table[LED_WAN_NORMAL] },
 #endif
+#ifdef RTCONFIG_EXTPHY_BCM84880
+	{ "led_extphy_gpio",&led_gpio_table[LED_EXTPHY] },
+#endif
 #if defined(RTCONFIG_WANPORT2)
 	{ "led_wan2_gpio",	&led_gpio_table[LED_WAN2] },
 #endif
@@ -280,6 +283,9 @@ int init_gpio(void)
 #endif
 #ifdef HND_ROUTER
 		, "led_wan_normal_gpio"
+#endif
+#ifdef RTCONFIG_EXTPHY_BCM84880
+		, "led_extphy_gpio"
 #endif
 #if defined(RTCONFIG_PWRRED_LED)
 		, "led_pwr_red_gpio"
@@ -876,7 +882,6 @@ int get_port_status(int unit)
 	return get_phy_status(unit);
 #else
 	int mask = 0;
-	mask |= (0x0001<<unit);
 
 #ifdef HND_ROUTER
 	int i, ret = 0, extra_p0 = 0;
@@ -897,6 +902,15 @@ int get_port_status(int unit)
 	}
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+	char word[100], *next;
+
+	foreach(word, nvram_safe_get("wan_ifnames"), next)
+		ret |= hnd_get_phy_status(word);
+
+	foreach(word, nvram_safe_get("lan_ifnames"), next)
+		ret |= hnd_get_phy_status(word);
+#else
 	for(i = 0; i < 9; ++i){
 		if(mask & 1<<i) {
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
@@ -906,8 +920,11 @@ int get_port_status(int unit)
 #endif
 		}
 	}
+#endif
 	return ret;
 #else
+	mask |= (0x0001<<unit);
+
 	return get_phy_status(mask);
 #endif
 #endif
@@ -925,7 +942,9 @@ int wanport_status(int wan_unit)
 #endif	
 	return get_phy_status(wan_unit);
 #else // Broadcom
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+	return hnd_get_phy_status(get_wanx_ifname(wan_unit));
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 	int i = 0;
 	char word[100], *next;
 

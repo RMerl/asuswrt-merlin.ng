@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=用户名称或 E-mail帐号
 LANHostConfig_x_DDNSWildcard_itemdesc=本栏可决定含有通配符的网域名称是否可改成 IP 地址。
 LANHostConfig_x_DDNSWildcard_itemname=启用通配符（wildcard）
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt 服务可为您提供免费的域验证证书，并在为域签发证书前进行域验证。由 Let's Encrypt 签发的证书有效期为 90 天。在您的证书过期前，华硕路由器将会在成功验证域后自动更新这些证书。请确认您的路由器通过端口 80 连接网络以验证域和更新证书。
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=此为无线网络桥接器所使用的默认网关的 IP 地址
 LANHostConfig_x_LDNSServer1_itemdesc=DHCP 使用的 DNS 的网络位置。
 LANHostConfig_x_LDNSServer1_itemname=DNS 服务器

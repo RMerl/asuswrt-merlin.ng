@@ -833,6 +833,58 @@ var httpApi ={
 		return status;
 	},
 
+	"amazon_wss": {
+		"if_support": function(_wl_unit, _wl_subunit){
+			var support_if = ["0.2"];
+			return (support_if.indexOf("" + _wl_unit + "." + _wl_subunit + "") != -1) ? true : false;
+		},
+
+		"getStatue": function(_wl_unit, _wl_subunit){
+			var value = "0";
+			if(httpApi.amazon_wss.if_support(_wl_unit, _wl_subunit))
+				value = httpApi.nvramGet(["wl" + _wl_unit + "." + _wl_subunit + "_gn_wbl_enable"], true)["wl" + _wl_unit + "." + _wl_subunit + "_gn_wbl_enable"];
+			if(value == "")
+				value = "0";
+			return value;
+		},
+
+		"getProfile": function(){
+			return {
+				"Hide SSID": "Yes",
+				"Network Name SSID": "simple_setup",	
+				"Oauth mode": "Open System",	
+				"Bandwidth Setting": "D: 80 kbps, U: 80 kbps",	
+				"Access Intranet": "Disable"
+			}
+		},
+
+		"set": function(postData, parmData){
+			var asyncDefault = true;
+			var _wl_unit = "", _wl_subunit = "";
+			if(parmData != undefined){
+				if(parmData.async != undefined)
+					asyncDefault = parmData.async;
+				if(parmData.wl_unit != undefined && parmData.wl_subunit != undefined){
+					_wl_unit = parmData.wl_unit;
+					_wl_subunit = parmData.wl_subunit;
+				}
+			}
+
+			if(httpApi.amazon_wss.if_support(_wl_unit, _wl_subunit)){
+				$.ajax({
+					url: '/amazon_wss.cgi',
+					dataType: 'json',
+					data: postData,
+					async: asyncDefault,
+					error: function(){},
+					success: function(response){
+						if(parmData.callBack) parmData.callBack.call(response);
+					}
+				});
+			}
+		}
+	},
+
 	"ftp_port_conflict_check" : {
 		usb_ftp : {
 			enabled : function(){
@@ -902,5 +954,26 @@ var httpApi ={
 		conflict : function(){
 			return (httpApi.ftp_port_conflict_check.usb_ftp.enabled() && httpApi.ftp_port_conflict_check.port_forwarding.enabled()) ? true : false;
 		}
+	},
+
+	"isItSafe_trend": function(queryStr){
+		var $form = $("<form>", {
+			action: "https://global.sitesafety.trendmicro.com/result.php",
+			method: "post",
+			target: "_blank"
+		});
+
+		$form
+			.append($("<input>", {
+				type: "hidden",
+				name: "urlname",
+				value: queryStr
+			}))
+			.append($("<input>", {
+				type: "hidden",
+				name: "getinfo",
+				value: "Check Now"
+			}))			
+			.appendTo("body").submit().remove();
 	}
 }

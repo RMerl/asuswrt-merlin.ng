@@ -243,12 +243,12 @@ function change_wan_unit(obj){
 function genWANSoption(){
 	for(i=0; i<wans_dualwan.split(" ").length; i++){
 		var wans_dualwan_NAME = wans_dualwan.split(" ")[i].toUpperCase();
-        //MODELDEP: DSL-N55U, DSL-N55U-B, DSL-AC68U, DSL-AC68R
-        if(wans_dualwan_NAME == "LAN" && 
-          (productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R")) 
-        	wans_dualwan_NAME = "Ethernet WAN";
+		//MODELDEP: DSL-N55U, DSL-N55U-B, DSL-AC68U, DSL-AC68R
+		if(wans_dualwan_NAME == "LAN" &&
+				(productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R"))
+			wans_dualwan_NAME = "Ethernet WAN";
 		else if(wans_dualwan_NAME == "LAN"){
-			if(productid == "GT-AX11000" && wans_lanport == "5"){
+			if((productid == "GT-AX11000" || productid == "RT-AX86U") && wans_lanport == "5"){
 				if(wans_extwan == "0")
 					wans_dualwan_NAME = "2.5G WAN";
 				else
@@ -257,13 +257,13 @@ function genWANSoption(){
 			else
 				wans_dualwan_NAME = "Ethernet LAN";
 		}
-		else if(wans_dualwan_NAME == "WAN" && productid == "GT-AX11000" && wans_extwan == "1")
+		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U") && wans_extwan == "1")
 			wans_dualwan_NAME = "2.5G WAN";
 		else if(wans_dualwan_NAME == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 			wans_dualwan_NAME = "<#Mobile_title#>";
 		document.form.wan_unit.options[i] = new Option(wans_dualwan_NAME, i);
-	}	
-	
+	}
+
 	document.form.wan_unit.selectedIndex = '<% nvram_get("wan_unit"); %>';
 	if(wans_dualwan.search(" ") < 0 || wans_dualwan.split(" ")[1] == 'none' || !dualWAN_support)
 		document.getElementById("WANscap").style.display = "none";

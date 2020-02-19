@@ -9,6 +9,9 @@
 #include <bcmdevs.h>
 #include <shutils.h>
 #include <shared.h>
+#ifdef RTCONFIG_BROOP
+#include <linux/netlink.h>
+#endif
 
 
 /* keyword for rc_support 	*/
@@ -1099,6 +1102,10 @@ char *get_default_ssid(int unit, int subunit)
 			sprintf((char *)ssidbase, "Spirit_%02X", mac_binary[5]);
 		else
 #endif
+#ifdef RTAX58U
+		if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+			sprintf((char *)ssidbase, "Stuff-Fibre_%02X", mac_binary[5]);
+#endif
 #ifdef RTAC68U
 		if (is_dpsta_repeater())
 			sprintf((char *)ssidbase, "%s_RP_%02X", SSID_PREFIX, mac_binary[5]);
@@ -1204,33 +1211,109 @@ char *get_userdns_r(const char *prefix, char *buf, size_t buflen)
 
 int broop_state = 0;
 
-int detect_broop() {
+#define NETLINK_BROOP	22
+#define MAX_PAYLOAD	16
+
+typedef struct broop_state {
+	char ctrl;
+	int val;
+} broop_st;
+
+enum {
+        GET,
+        SET
+};
+
+/* brif can be NULL for any bridge */
+int is_bridged(const char *brif, const char *ifname)
+{
+	char path[PATH_MAX];
+
+	if (!ifname)
+		return 0;
+
+	if (brif)
+		snprintf(path, sizeof(path), "/sys/class/net/%s/brif/%s", brif, ifname);
+	else
+		snprintf(path, sizeof(path), "/sys/class/net/%s/brport/bridge", ifname);
+
+	return f_exists(path);
+}
+
+int netlink_broop(char ctrl, int val)
+{
+	struct sockaddr_nl src_addr, dest_addr;
+	struct nlmsghdr *nlh = NULL;
+	struct iovec iov;
+	int sock_fd;
+	struct msghdr msg;
+	broop_st bst;
+	int brs;
+	
+	sock_fd = socket(PF_NETLINK, SOCK_RAW, NETLINK_BROOP);
+	if(sock_fd < 0) {
+		printf("invalid sockfd\n");
+		return 1;
+	}
+	memset(&src_addr, 0, sizeof(src_addr));
+	src_addr.nl_family = AF_NETLINK;
+	src_addr.nl_pid = getpid(); 
+	src_addr.nl_groups = 0;  /* not in mcast groups */
+	bind(sock_fd, (struct sockaddr*)&src_addr,sizeof(src_addr));
+
+	memset(&dest_addr, 0, sizeof(dest_addr));
+	dest_addr.nl_family = AF_NETLINK;
+	dest_addr.nl_pid = 0;   /* For Linux Kernel */
+	dest_addr.nl_groups = 0; /* unicast */
+
+	nlh=(struct nlmsghdr *)malloc(NLMSG_SPACE(MAX_PAYLOAD));
+	nlh->nlmsg_len = NLMSG_SPACE(MAX_PAYLOAD);
+	nlh->nlmsg_pid = getpid(); 
+	nlh->nlmsg_flags = 0;
+
+	bst.ctrl = ctrl;
+	bst.val = val;
+	memcpy(NLMSG_DATA(nlh), &bst, sizeof(broop_st));
+
+	iov.iov_base = (void *)nlh;
+	iov.iov_len = nlh->nlmsg_len;
+	memset(&msg, 0, sizeof(msg));
+	msg.msg_name = (void *)&dest_addr;
+	msg.msg_namelen = sizeof(dest_addr);
+	msg.msg_iov = &iov;
+	msg.msg_iovlen = 1;
+
+	if(sendmsg(sock_fd, &msg, 0) < 0)
+		perror("sendmsg error");
+	else
+		printf("sendmsg ok\n");
+	
+ 	if(recvmsg(sock_fd, &msg, 0) < 0) {
+		perror("recvmsg fail:");
+		goto end;
+	}
+ 	
+	memcpy(&brs, NLMSG_DATA(msg.msg_iov->iov_base), 4);
+end:
+	close(sock_fd);
+	return brs;
+}
+
+int detect_broop() 
+{
 
 	int fd, ret = 0;
-	char buf[2], *reset = "0";
 
 	switch (broop_state) {
 	case BROOP_IDLE:
-		if ((fd = open("/proc/broop", O_WRONLY|O_NONBLOCK)) <= 0) {
-			_dprintf("cannot open broop!\n");
-			return 0;
-		}
-		write(fd, reset, 1);
-		close(fd);
+		netlink_broop(SET, 0);
 		broop_state = BROOP_DETECT;
-               
+		
 		break;
 	case BROOP_DETECT:
-		if ((fd = open("/proc/broop", O_RDONLY|O_NONBLOCK)) <= 0) {
-			_dprintf("cannot open broop!\n");
-			return 0;
-		}
-
-		read(fd, buf, sizeof(buf));
-		close(fd);
-		ret = atoi(buf);
+		ret = netlink_broop(GET, 0);
 		if (ret == 1)
-			broop_state = BROOP_IDLE;               
+			broop_state = BROOP_IDLE;		
 
 		break;
 	default:

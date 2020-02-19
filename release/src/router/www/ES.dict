@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Nombre de usuario o dirección de correo e
 LANHostConfig_x_DDNSWildcard_itemdesc=Si se habilitan, el nombre de dominio con comodín se redireccionará a su dirección IP.
 LANHostConfig_x_DDNSWildcard_itemname=Desea habilitar los comodines
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt es un servicio para proporcionar certificados validados por dominio gratuitos y realizar validación de dominio antes de emitir certificados para sus dominios. Los certificados que emite Let's Encrypt son válidos durante 90 días. Antes de que el certificado expire, el router de ASUS renovará automáticamente dicho certificado después de validar correctamente el dominio. Asegúrese de que el router se conecta a Internet a través del puerto 80 para la validación del dominio y la renovación del certificado.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Esta es la dirección IP de la puerta de enlace predeterminada para el punto de acceso.
 LANHostConfig_x_LDNSServer1_itemdesc=Este campo indica la dirección IP de DNS que se va a proporcionar a los clientes que solicitan la dirección IP del servidor DHCP. Puede dejarlo en blanco, en cuyo caso ZVMODELVZ procesará la solicitud de DNS.
 LANHostConfig_x_LDNSServer1_itemname=Servidor DNS

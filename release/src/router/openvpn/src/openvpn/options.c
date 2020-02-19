@@ -2491,12 +2491,12 @@ options_postprocess_verify_ce(const struct options *options, const struct connec
         msg(M_USAGE, "specify only one of --tls-server, --tls-client, or --secret");
     }
 
-//    if (options->ssl_flags & (SSLF_CLIENT_CERT_NOT_REQUIRED|SSLF_CLIENT_CERT_OPTIONAL))
-//    {
-//        msg(M_WARN, "WARNING: POTENTIALLY DANGEROUS OPTION "
-//            "--verify-client-cert none|optional (or --client-cert-not-required) "
-//            "may accept clients which do not present a certificate");
-//    }
+    if (options->ssl_flags & (SSLF_CLIENT_CERT_NOT_REQUIRED|SSLF_CLIENT_CERT_OPTIONAL))
+    {
+        msg(M_WARN, "WARNING: POTENTIALLY DANGEROUS OPTION "
+            "--verify-client-cert none|optional (or --client-cert-not-required) "
+            "may accept clients which do not present a certificate");
+    }
 
     if (options->key_method == 1)
     {
@@ -6366,6 +6366,9 @@ add_option(struct options *options,
         remap_redirect_gateway_flags(options);
 #endif
         options->routes->flags |= RG_ENABLE;
+#ifdef ASUSWRT
+        setenv_unsigned(es, "routes_flags", options->routes->flags);
+#endif
     }
     else if (streq(p[0], "remote-random-hostname") && !p[1])
     {

@@ -5,21 +5,26 @@ if (wl_unit == '1')
 else		
 	country = '<% nvram_get("wl0_country_code"); %>';
 
+var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
+var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
+var bw_160_support = (function(){
+	if(wl_unit == '1'){
+		for(i=0;i<_chanspecs_5g.length;i++){
+			if(_chanspecs_5g[i].indexOf('/160') != -1){
+				return true;
+			}
+		}
+	}
+	else if (wl_unit == '2'){
+		for(i=0;i<_chanspecs_5g_2.length;i++){
+			if(_chanspecs_5g_2[i].indexOf('/160') != -1){
+				return true;
+			}
+		}
+	}
 
-var bw_160_support = false;
-
-if ((band5g_11ax_support && (wl_unit == 1 || wl_unit == 2)) 
-|| (based_modelid == 'GT-AC2900' && wl_unit == 1)) {
-	if ((based_modelid == "RT-AX92U"|| based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56U") && wl_unit == 1) {
-		bw_160_support = false;
-	}
-	else if(based_modelid == 'GT-AC2900' && country == 'JP'){
-		bw_160_support = false;
-	}
-	else {
-		bw_160_support = true;
-	}
-}	
+	return false;
+})();
 
 var wl1 = {
 	"channel_20m": [],
@@ -28,7 +33,6 @@ var wl1 = {
 	"channel_160m": []
 }
 
-var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
 if(band2g_support){
 	wl_info['0'] = new Object;
 	wl_info['0'].dfs_support = false;
@@ -98,7 +102,6 @@ if(wl_info.band5g_2_support){
 		"channel_160m": []
 	}
 
-	var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
 	wl_info['2'] = new Object;
 	wl_info['2'].dfs_support = (function(){
 		if(_chanspecs_5g_2.indexOf('100') != -1){
@@ -127,6 +130,8 @@ if(wl_info.band5g_2_support){
 		}
 	}	
 }
+
+
 
 var mesh_5g = JSON.parse('<% get_wl_channel_list_5g(); %>');
 var mesh_5g2 = JSON.parse('<% get_wl_channel_list_5g_2(); %>');

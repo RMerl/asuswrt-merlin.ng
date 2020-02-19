@@ -181,6 +181,10 @@
 #define IS_GFN_QOS()            (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 3)   // GeForce NOW QoS (Nvidia)
 #define IS_NON_AQOS()           (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)   // non A.QoS = others QoS (T.QoS / bandwidth monitor ... etc.)
 
+/* Guest network */
+#define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
+#define INITIAL_MARKNUM    30   /*30 ~ X  for LAN . */
+
 #ifdef RTCONFIG_INTERNAL_GOBI
 #define DEF_SECOND_WANIF	"usb"
 #elif defined(RTCONFIG_WANPORT2) && !defined(RTAD7200)
@@ -813,6 +817,12 @@ enum {
 	MODEL_RTAX95Q,
 	MODEL_RTAX58U,
 	MODEL_RTAX56U,
+	MODEL_SHAC1300,
+	MODEL_RPAC92,
+	MODEL_ZENWIFICD6R,
+	MODEL_ZENWIFICD6N,
+	MODEL_RTAX86U,
+	MODEL_RTAX68U,
 	MODEL_MAX
 };
 
@@ -1001,6 +1011,9 @@ enum led_id {
 #endif
 #ifdef HND_ROUTER
 	LED_WAN_NORMAL,
+#endif
+#ifdef RTCONFIG_EXTPHY_BCM84880
+	LED_EXTPHY,
 #endif
 	LED_2G,
 	LED_5G,
@@ -1590,6 +1603,8 @@ extern int get_maxassoc(char *ifname);
 extern int wl_add_ie(int unit, uint32 pktflag, int ielen, uchar *oui, uchar *data);
 extern void wl_del_ie_with_oui(int unit, uchar *oui);
 extern void wait_connection_finished(int band);
+extern int add_interface_for_acsd(int unit);
+extern int need_to_start_acsd();
 #endif
 #if defined(RTCONFIG_LANTIQ)
 extern int get_wl_sta_list(void);
@@ -1741,7 +1756,10 @@ extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
 #ifdef HND_ROUTER
-#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+extern uint32_t hnd_get_phy_status(char *ifname);
+extern uint32_t hnd_get_phy_speed(char *ifname);
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 #else
@@ -2647,6 +2665,8 @@ extern int wl_set_wifiscan(char *ifname, int val);
 extern int wl_set_mcsindex(char *ifname, int *is_auto, int *idx, char *idx_type, int *stream);
 #endif
 
+extern int amazon_wss_ap_isolate_support(char *prefix);
+
 #if defined(RTCONFIG_BCM_CLED)
 enum {
 	BCM_CLED_RED = 0,
@@ -2658,6 +2678,7 @@ enum {
 };
 enum {
 	BCM_CLED_STEADY_NOBLINK = 0,
+	BCM_CLED_STEADY_NOBLINK_DIM,
 	BCM_CLED_STEADY_BLINK,
 	BCM_CLED_PULSATING,
 	BCM_CLED_MODE_END

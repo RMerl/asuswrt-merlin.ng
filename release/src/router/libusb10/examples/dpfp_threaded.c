@@ -1,6 +1,7 @@
 /*
  * libusb example program to manipulate U.are.U 4000B fingerprint scanner.
- * Copyright (C) 2007 Daniel Drake <dsd@gentoo.org>
+ * Copyright © 2007 Daniel Drake <dsd@gentoo.org>
+ * Copyright © 2016 Nathan Hjelm <hjelmn@mac.com>
  *
  * Basic image capture program only, does not consider the powerup quirks or
  * the fact that image encryption may be enabled. Not expected to work
@@ -23,12 +24,14 @@
 
 #include <errno.h>
 #include <pthread.h>
+#include <semaphore.h>
 #include <signal.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
-#include <libusb/libusb.h>
+#include "libusb.h"
 
 #define EP_INTR			(1 | LIBUSB_ENDPOINT_IN)
 #define EP_DATA			(2 | LIBUSB_ENDPOINT_IN)
@@ -36,6 +39,7 @@
 #define CTRL_OUT		(LIBUSB_REQUEST_TYPE_VENDOR | LIBUSB_ENDPOINT_OUT)
 #define USB_RQ			0x04
 #define INTR_LENGTH		64
+#define SEM_NAME                "/org.libusb.example.dpfp_threaded"
 
 enum {
 	MODE_INIT = 0x00,
@@ -64,22 +68,23 @@ static unsigned char irqbuf[INTR_LENGTH];
 static struct libusb_transfer *img_transfer = NULL;
 static struct libusb_transfer *irq_transfer = NULL;
 static int img_idx = 0;
-static int do_exit = 0;
+static volatile sig_atomic_t do_exit = 0;
 
 static pthread_t poll_thread;
-static pthread_cond_t exit_cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t exit_cond_lock = PTHREAD_MUTEX_INITIALIZER;
+static sem_t *exit_sem;
 
-static void request_exit(int code)
+static void request_exit(sig_atomic_t code)
 {
 	do_exit = code;
-	pthread_cond_signal(&exit_cond);
+	sem_post(exit_sem);
 }
 
 static void *poll_thread_main(void *arg)
 {
 	int r = 0;
 	printf("poll thread running\n");
+
+	(void)arg;
 
 	while (!do_exit) {
 		struct timeval tv = { 1, 0 };
@@ -91,7 +96,7 @@ static void *poll_thread_main(void *arg)
 	}
 
 	printf("poll thread shutting down\n");
-	pthread_exit(NULL);
+	return NULL;
 }
 
 static int find_dpfp_device(void)
@@ -178,7 +183,7 @@ static int set_mode(unsigned char data)
 	return 0;
 }
 
-static void cb_mode_changed(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_mode_changed(struct libusb_transfer *transfer)
 {
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		fprintf(stderr, "mode change transfer not completed!\n");
@@ -193,12 +198,12 @@ static void cb_mode_changed(struct libusb_transfer *transfer)
 
 static int set_mode_async(unsigned char data)
 {
-	unsigned char *buf = malloc(LIBUSB_CONTROL_SETUP_SIZE + 1);
+	unsigned char *buf = (unsigned char*) malloc(LIBUSB_CONTROL_SETUP_SIZE + 1);
 	struct libusb_transfer *transfer;
 
 	if (!buf)
 		return -ENOMEM;
-	
+
 	transfer = libusb_alloc_transfer(0);
 	if (!transfer) {
 		free(buf);
@@ -237,7 +242,7 @@ static int do_sync_intr(unsigned char *data)
 }
 
 static int sync_intr(unsigned char type)
-{	
+{
 	int r;
 	unsigned char data[INTR_LENGTH];
 
@@ -255,13 +260,13 @@ static int save_to_file(unsigned char *data)
 	FILE *fd;
 	char filename[64];
 
-	sprintf(filename, "finger%d.pgm", img_idx++);
+	snprintf(filename, sizeof(filename), "finger%d.pgm", img_idx++);
 	fd = fopen(filename, "w");
 	if (!fd)
 		return -1;
 
 	fputs("P5 384 289 255 ", fd);
-	fwrite(data + 64, 1, 384*289, fd);
+	(void) fwrite(data + 64, 1, 384*289, fd);
 	fclose(fd);
 	printf("saved image to %s\n", filename);
 	return 0;
@@ -305,7 +310,7 @@ static int next_state(void)
 	return 0;
 }
 
-static void cb_irq(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_irq(struct libusb_transfer *transfer)
 {
 	unsigned char irqtype = transfer->buffer[0];
 
@@ -343,7 +348,7 @@ static void cb_irq(struct libusb_transfer *transfer)
 		request_exit(2);
 }
 
-static void cb_img(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_img(struct libusb_transfer *transfer)
 {
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		fprintf(stderr, "img transfer status %d?\n", transfer->status);
@@ -423,7 +428,7 @@ static int alloc_transfers(void)
 	img_transfer = libusb_alloc_transfer(0);
 	if (!img_transfer)
 		return -ENOMEM;
-	
+
 	irq_transfer = libusb_alloc_transfer(0);
 	if (!irq_transfer)
 		return -ENOMEM;
@@ -438,6 +443,8 @@ static int alloc_transfers(void)
 
 static void sighandler(int signum)
 {
+	(void)signum;
+
 	request_exit(1);
 }
 
@@ -445,6 +452,15 @@ int main(void)
 {
 	struct sigaction sigact;
 	int r = 1;
+
+	exit_sem = sem_open (SEM_NAME, O_CREAT, 0);
+	if (!exit_sem) {
+		fprintf(stderr, "failed to initialise semaphore error %d", errno);
+		exit(1);
+	}
+
+	/* only using this semaphore in this process so go ahead and unlink it now */
+	sem_unlink (SEM_NAME);
 
 	r = libusb_init(NULL);
 	if (r < 0) {
@@ -500,11 +516,8 @@ int main(void)
 		goto out_deinit;
 	}
 
-	while (!do_exit) {
-		pthread_mutex_lock(&exit_cond_lock);
-		pthread_cond_wait(&exit_cond, &exit_cond_lock);
-		pthread_mutex_unlock(&exit_cond_lock);
-	}
+	while (!do_exit)
+		sem_wait(exit_sem);
 
 	printf("shutting down...\n");
 	pthread_join(poll_thread, NULL);
@@ -542,4 +555,3 @@ out:
 	libusb_exit(NULL);
 	return r >= 0 ? r : -r;
 }
-

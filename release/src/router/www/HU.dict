@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Felhasználónév vagy e-mail cím
 LANHostConfig_x_DDNSWildcard_itemdesc=Ha engedélyezett, a helyettesítő karaktert tartalmazó tartománynév átirányításra kerül az Ön IP-címére.
 LANHostConfig_x_DDNSWildcard_itemname=Helyettesítő karakter engedélyezése
 LANHostConfig_x_DDNSLetsEncrypt_desc=A Let's Encrypt egy olyan szolgáltatás, amely ingyenes domén-érvényesített tanúsítványt nyújt és elvégzi a domének jóváhagyását mielőtt kiadná a tanúsítványokat a doménjeire. A Let's Encrypt által kiadott tanúsítványok 90 napig érvényesek. Mielőtt a tanúsítvány lejárna, az ASUS router automatikusan megújjítja ezeket a tanúsítványokat, miután jóváhagyja a doméneket. Kérjük győződjön meg, hogy a router a 80-as porton keresztül csatlakozik az internethez a domén és tanúsítvány érvényesítés végett.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Ez a hozzáférési pont alapértelmezett átjárójának IP-címe
 LANHostConfig_x_LDNSServer1_itemdesc=Ez a mező field azon DNS IP-címét jelöli, amely az IP-címet kérő kliensek számára ad címet a DHCP szerverről. Üresen is hagyhatja, és a DNS-kérést a ZVMODELVZ dolgozza fel.
 LANHostConfig_x_LDNSServer1_itemname=DNS szerver

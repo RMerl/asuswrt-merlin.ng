@@ -12,7 +12,7 @@
 ***********************************************************************/
 
 static char const RCSID[] =
-"$Id: event_tcp.c 3323 2011-09-21 18:45:48Z lly.dev $";
+"$Id$";
 
 #include "event_tcp.h"
 #include <unistd.h>
@@ -283,12 +283,8 @@ handle_writeable(EventSelector *es,
     /* Timed out? */
     if (flags & EVENT_FLAG_TIMEOUT) {
 	errno = ETIMEDOUT;
-	if (state->f) {
-	    (state->f)(es, state->socket, state->buf, done, EVENT_TCP_FLAG_TIMEOUT,
-		       state->data);
-	} else {
-	    close(fd);
-	}
+	(state->f)(es, state->socket, state->buf, done, EVENT_TCP_FLAG_TIMEOUT,
+		   state->data);
 	free_state(state);
 	return;
     }

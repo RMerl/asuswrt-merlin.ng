@@ -29,12 +29,19 @@ endif
 include mak/iperf3.mak
 
 ifeq ($(HND_ROUTER),y)
+export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/' | sed 's|router||g')
 ifeq ($(HND_ROUTER_AX_675X),y)
+export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
+export BCM_WLIMPL
+ifeq ($(BRCM_CHIP),4908)
+export BCM_CHIP := $(BRCM_CHIP)
+else
 export BCM_CHIP := $(CUR_CHIP_PROFILE)
+endif
 else
 export BCM_CHIP := 4908
-endif
-export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/' | sed 's|router||g')
+endif # HND_ROUTER_AX_675X
 export SRCBASE := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/' | sed 's|router|bcmdrivers\/broadcom\/net\/wl\/bcm9$(BCM_CHIP)\/main\/src/|g')
 PREBUILT_BCMBIN=$(shell if [ ! -f "$(HND_SRC)/upb.mak" -o "$(PRBM)" = "1" ]; then echo 1; else echo 0; fi)
 export PREBUILT_BCMBIN
@@ -43,7 +50,9 @@ include $(SRCBASE)/.config
 ifeq ($(BCM_FSBUILD_DIR),)
 include $(HND_SRC)/make.common
 endif
+ifneq ($(HND_ROUTER_AX_675X),y)
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE).$(BUILD_NAME)
+endif
 BUILD_DIR:=$(HND_SRC)
 export ALLSRCBASE= $(BUILD_DIR)/bcmdrivers/broadcom/net/wl/bcm9$(BRCM_CHIP)
 export WLSRCBASE= $(ALLSRCBASE)/main/src
@@ -898,7 +907,9 @@ obj-y += utils$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += emf$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += igs$(BCMEX)$(EX7)
 obj-y += wlconf$(BCMEX)$(EX7)
+ifneq ($(RTCONFIG_BRCM_HOSTAPD),y)
 obj-y += nas$(BCMEX)$(EX7)
+endif
 obj-$(RTCONFIG_HSPOT) += hspot_ap$(BCMEX)$(EX7)
 obj-y += eapd$(BCMEX)$(EX7)/linux
 obj-$(RTCONFIG_WPS) += wps$(BCMEX)$(EX7)
@@ -906,7 +917,9 @@ obj-$(RTCONFIG_WLEXE) += wlexe
 obj-$(CONFIG_LIBBCM) += libbcm
 obj-$(CONFIG_LIBUPNP) += libupnp$(BCMEX)$(EX7)
 ifeq ($(RTCONFIG_BCMWL6),y)
+ifneq ($(HND_ROUTER_AX),y)
 obj-y += acsd$(BCMEX)$(EX7)
+endif
 endif
 obj-$(RTCONFIG_BCMARM) += wl$(BCMEX)$(EX7)
 ifneq ($(HND_ROUTER),y)
@@ -992,12 +1005,10 @@ obj-y += scsi-idle
 endif
 obj-y += libusb10
 obj-y += libusb
-obj-y += libusb-0.1.12
-ifeq ($(RTCONFIG_USB),y)
 ifneq ($(RTCONFIG_8M_SFP),y)
 obj-y += hub-ctrl
 endif
-endif
+obj-$(RTCONFIG_USB_PRINTER) += libusb-0.1.12
 obj-$(RTCONFIG_USB_PRINTER) += u2ec
 obj-$(RTCONFIG_USB_PRINTER) += LPRng
 
@@ -1241,6 +1252,7 @@ obj-$(RTCONFIG_WTFAST) += wtfast
 obj-$(RTCONFIG_QUAGGA) += quagga
 #obj-$(RTCONFIG_IPP2P) += ipp2p
 obj-$(RTCONFIG_LZO) += lzo
+obj-$(RTCONFIG_OPENVPN) += lz4
 obj-$(RTCONFIG_OPENVPN) += openpam
 obj-$(RTCONFIG_OPENVPN) += openvpn
 
@@ -3097,7 +3109,8 @@ endif
 dnsmasq:  $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl-1.1,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
 	@$(SEP)
 	$(MAKE) -C dnsmasq \
-	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE -DNO_ID -DNO_AUTH -DNO_INOTIFY -DNO_DUMPFILE -DNO_GMP \
+	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE -DEDNS_PKTSZ=1280 \
+		-DNO_ID -DNO_AUTH -DNO_INOTIFY -DNO_DUMPFILE -DNO_GMP \
 		$(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6) \
 		$(if $(RTCONFIG_USB_EXTRAS)||$(RTCONFIG_TR069),,-DNO_SCRIPT) \
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP) \
@@ -3487,36 +3500,37 @@ libupnp-1.3.1/Makefile: libupnp-1.3.1/Makefile.in
 		$(CONFIGURE) --prefix=/usr --disable-dependency-tracking \
 	)
 
-libusb10/stamp-h1:
-	cd libusb10 && CFLAGS="-Os -Wall $(EXTRACFLAGS)" LIBS="-lpthread -ldl -lc $(EXTRALDFLAGS)" \
-	$(CONFIGURE) --enable-shared --prefix=/usr ac_cv_lib_rt_clock_gettime=no
-	-@$(MAKE) -C libusb10 clean
-	touch $@
+libusb10/Makefile:
+	cd libusb10 && \
+	$(CONFIGURE) --enable-shared --prefix=/usr --disable-udev \
+		CFLAGS="-Os -Wall -DASUS_U2EC $(EXTRACFLAGS)" \
+		LIBS="-lpthread -ldl -lc $(EXTRALDFLAGS)" \
+		ac_cv_lib_rt_clock_gettime=no
 
-libusb10: libusb10/stamp-h1
+libusb10: libusb10/Makefile
 	$(MAKE) -C $@
 
 libusb10-install: libusb10
-	install -D libusb10/libusb/.libs/libusb-1.0.so.0.0.0 $(INSTALLDIR)/libusb10/usr/lib/libusb-1.0.so.0
+	install -D libusb10/libusb/.libs/libusb-1.0.so.0.2.0 $(INSTALLDIR)/libusb10/usr/lib/libusb-1.0.so.0
 	$(STRIP) $(INSTALLDIR)/libusb10/usr/lib/*.so.*
 	cd $(INSTALLDIR)/libusb10/usr/lib && \
-		ln -sf libusb-1.0.so.0 libusb-1.0.so.0.0.0 && \
+		ln -sf libusb-1.0.so.0 libusb-1.0.so.0.2.0 && \
 		ln -sf libusb-1.0.so.0 libusb-1.0.so
 
 libusb10-clean:
-	-@$(MAKE) -C libusb10 clean
-	@rm -f libusb10/stamp-h1
+	[ ! -f libusb10/Makefile ] || $(MAKE) -C libusb10 distclean
+	@rm -f libusb10/Makefile
 
-libusb/stamp-h1:
-	cd libusb && CFLAGS="-Wall -Os $(EXTRACFLAGS)" LIBS="-lpthread -ldl -lc $(EXTRALDFLAGS)" \
-	$(CONFIGURE) --prefix=/usr \
+libusb/Makefile:
+	cd libusb && \
+	$(CONFIGURE) --enable-shared --prefix=/usr \
+		CFLAGS="-Os -Wall -DASUS_U2EC $(EXTRACFLAGS)" \
+		LIBS="-lpthread -ldl -lc $(EXTRALDFLAGS)" \
 		LIBUSB_1_0_CFLAGS="-I$(TOP)/libusb10/libusb" \
 		LIBUSB_1_0_LIBS="-L$(TOP)/libusb10/libusb/.libs -lusb-1.0 \
 		-Wl,-R/lib:/usr/lib:/opt/usr/lib:/usr/local/share"
-	-@$(MAKE) -C libusb clean
-	touch $@
 
-libusb: libusb10 libusb/stamp-h1
+libusb: libusb10 libusb/Makefile
 	$(MAKE) -C $@
 
 libusb-install: libusb
@@ -3527,8 +3541,8 @@ libusb-install: libusb
 		ln -sf libusb-0.1.so.4 libusb.so
 
 libusb-clean:
-	-@$(MAKE) -C libusb clean
-	@rm -f libusb/stamp-h1
+	[ ! -f libusb/Makefile ] || $(MAKE) -C libusb distclean
+	@rm -f libusb/Makefile
 
 usb-modeswitch-1.2.3: libusb
 	$(MAKE) -C $@ CC=$(CC) CFLAGS="-Os $(EXTRACFLAGS) -I$(TOP)/libusb/libusb" LIBS="\
@@ -3924,7 +3938,7 @@ rp-pppoe-install: rp-pppoe
 	$(STRIP) $(INSTALLDIR)/rp-pppoe/usr/sbin/pppoe-relay
 
 rp-l2tp/stamp-h1: kernel_header
-	cd rp-l2tp && CFLAGS="-O2 -Wall $(EXTRACFLAGS) -idirafter $(KDIR)/include $(if $(RTCONFIG_VPNC), -DRTCONFIG_VPNC,)" \
+	cd rp-l2tp && CFLAGS="-O2 -Wall $(EXTRACFLAGS) -idirafter $(KDIR)/include" \
 	$(CONFIGURE) --prefix=/usr --sysconfdir=/tmp
 	touch $@
 
@@ -3969,7 +3983,7 @@ else
 accel-pptp/stamp-h1: kernel_header $(LINUX_INC_DIR)/include/linux/version.h
 endif
 endif
-	cd accel-pptp && CFLAGS="-g -O2 $(EXTRACFLAGS) -idirafter $(KDIR)/include $(if $(RTCONFIG_VPNC), -DRTCONFIG_VPNC,)" \
+	cd accel-pptp && CFLAGS="-g -O2 $(EXTRACFLAGS) -idirafter $(KDIR)/include" \
 	$(CONFIGURE) --prefix=/usr --build=i686-linux KDIR=$(KDIR) PPPDIR=$(TOP)/pppd 
 	touch $@
 
@@ -3991,7 +4005,7 @@ pppd/stamp-h1: kernel_header
 pppd: pppd/stamp-h1
 	@$(SEP)
 	@$(MAKE) -C pppd MFLAGS='$(if $(RTCONFIG_IPV6),HAVE_INET6=y,) \
-	EXTRACFLAGS="$(EXTRACFLAGS) -idirafter $(KDIR)/include $(if $(RTCONFIG_VPNC),-DRTCONFIG_VPNC,)"'
+	EXTRACFLAGS="$(EXTRACFLAGS) -idirafter $(KDIR)/include"'
 
 pppd-clean:
 	-@$(MAKE) -C pppd clean
@@ -4217,7 +4231,7 @@ protect_srv-clean:
 	-$(MAKE) -C protect_srv clean
 	@rm -f protect_srv/stamp-h1
 
-socat/stamp-h1:
+socat/Makefile:
 	cd socat && \
 	$(CONFIGURE) --prefix=/usr \
 	--disable-socks4 --disable-socks4a --disable-proxy --disable-sctp --disable-termios \
@@ -4227,12 +4241,13 @@ socat/stamp-h1:
 	LDFLAGS="-L$(STAGEDIR)/usr/lib -ldl"
 	touch $@
 
-socat: socat/stamp-h1
+socat: socat/Makefile
 	$(MAKE) -C $@
 
 socat-clean:
-	-$(MAKE) -C socat clean
-	@rm -f socat/stamp-h1
+	[ ! -f socat/Makefile ] || $(MAKE) -C socat distclean
+	@rm -f socat/Makefile
+
 socat-install:
 	install -d $(INSTALLDIR)/socat/usr/sbin/
 	install -D socat/socat $(INSTALLDIR)/socat/usr/sbin/socat
@@ -5400,6 +5415,18 @@ lzo-install:
 	$(STRIP) $(INSTALLDIR)/lzo/usr/lib/liblzo2.so.2
 	cd $(INSTALLDIR)/lzo/usr/lib && ln -sf liblzo2.so.2 liblzo2.so
 
+lz4:
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+lz4-stage:
+	$(MAKE) -C lz4 install DESTDIR=$(STAGEDIR) PREFIX=/usr LIBDIR=/usr/lib
+
+lz4-install:
+	install -D lz4/lib/liblz4.so.1.8.3 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.8.3
+	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.8.3
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so.1
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so
+
 openpam: openpam/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
 
@@ -5424,16 +5451,29 @@ openvpn: shared $(OPENSSLDIR) lzo openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 openvpn/Makefile:
-	( cd openvpn ; ./autogen.sh && OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
-		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl" \
-		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections $(if $(RTCONFIG_BCMARM),-I$(SRCBASE)/shared/bcmwifi/include)" \
-		LDFLAGS="$(EXTRALDFLAGS) -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -L$(TOP)/zlib -lz -lpthread -ldl -L$(TOP)/lzo/src/.libs -L$(TOP)/openpam/lib/libpam/.libs -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		CPPFLAGS="-I$(TOP)/lzo/include -I$(TOP)/$(OPENSSLDIR)/include  -I$(TOP)/openpam/include -I$(TOP)/shared -I$(SRCBASE)/include" \
+	( cd openvpn ; ./autogen.sh ; \
+		OPENSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
+		OPENSSL_LIBS="-L$(TOP)/$(OPENSSLDIR)/ -lcrypto -lssl" \
+		LIBPAM_CFLAGS="-I$(TOP)/openpam/include" \
+		LIBPAM_LIBS="-L$(TOP)/openpam/lib/libpam/.libs -lpam" \
+		LZO_CFLAGS="-I$(TOP)/lzo/include" \
+		LZO_LIBS="-L$(TOP)/lzo/src/.libs -llzo2" \
+		LZ4_CFLAGS="-I$(TOP)/lz4/lib" \
+		LZ4_LIBS="-L$(TOP)/lz4/lib -llz4" \
+		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections \
+			-DASUSWRT" \
+		LDFLAGS="$(EXTRALDFLAGS) -ffunction-sections -fdata-sections \
+			-Wl,--gc-sections \
+			-lpthread -ldl \
+			-L$(TOP)/zlib -lz" \
 		IPROUTE="/usr/sbin/ip" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
-			--disable-debug --enable-management --enable-plugin-auth-pam --enable-iproute2 \
+			--disable-debug --enable-management --disable-small \
+			--disable-selinux --disable-socks --enable-password-save \
+			--enable-plugin-auth-pam \
 			ac_cv_lib_resolv_gethostbyname=no \
-	)
+        )
+#IPROUTE="/usr/sbin/ip" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
 
 openvpn-clean:
 	[ ! -f openvpn/Makefile ] || $(MAKE) -C openvpn clean
@@ -5447,9 +5487,9 @@ openvpn-install:
 		install -D openvpn/src/plugins/auth-pam/.libs/openvpn-plugin-auth-pam.so $(INSTALLDIR)/openvpn/usr/lib/openvpn-plugin-auth-pam.so ; \
 		$(STRIP) -s $(INSTALLDIR)/openvpn/usr/lib/openvpn-plugin-auth-pam.so ; \
 		mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa ; \
-		install openvpn/easy-rsa/2.0/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa ; \
+		install easy-rsa/2.0/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa ; \
 #		install -D openvpn/dh2048.pem $(INSTALLDIR)/openvpn/rom/dh2048.pem ; \
-	fi
+fi
 
 sdparm-1.02: sdparm-1.02/Makefile
 	$(MAKE) -C $@

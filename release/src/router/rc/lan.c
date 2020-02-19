@@ -82,6 +82,9 @@ typedef u_int8_t u8;
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_event.h>
 #endif
+#ifdef RTCONFIG_AMAS_ADTBW
+#include <amas_adtbw.h>
+#endif
 
 const int ifup_vap =
 #if defined(RTCONFIG_QCA)
@@ -1935,6 +1938,16 @@ void start_lan(void)
 #endif
 #endif
 
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+	// BCM6710 needs to execute the below cmd once to light on the LED
+	eval("wl", "-i", "eth6", "gpioout", "0x80", "0x00");
+	eval("wl", "-i", "eth6", "ledbh", "7", "7"); // twinkle the wl 2.4G LED
+#ifdef RTAX68U
+	eval("wl", "-i", "eth7", "gpioout", "0x80", "0x00");
+	eval("wl", "-i", "eth7", "ledbh", "7", "7"); // twinkle the wl 5G LED
+#endif
+#endif
+
 #ifdef CONFIG_BCMWL5
 	init_wl_compact();
 	wlconf_pre();
@@ -2463,7 +2476,7 @@ void start_lan(void)
 #endif
 #ifdef RTCONFIG_EXTPHY_BCM84880
 						if(nvram_match("x_Setting", "0") && !strcmp(ifname, "eth5"))
-						{}
+							;
 						else
 #endif
 							eval("brctl", "addif", lan_ifname, ifname);
@@ -5576,6 +5589,11 @@ void lanaccess_wl(void)
 	int subunit;
 #endif
 
+#ifdef RTCONFIG_GN_WBL
+	/* this rule will flush ebtables broute table, so it must be the first function */
+	add_GN_WBL_EBTbrouteRule();
+#endif
+
 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 	strlcpy(lan_hwaddr, get_lan_hwaddr(), sizeof(lan_hwaddr));
 #if defined(RTCONFIG_AMAS_WGN)
@@ -5751,6 +5769,9 @@ void restart_wireless(void)
 #ifdef RTCONFIG_AMAS
 	stop_obd();
 #endif
+#ifdef RTCONFIG_AMAS_ADTBW
+	stop_amas_adtbw();
+#endif
 #ifdef RTCONFIG_PROXYSTA
 	stop_psta_monitor();
 #endif
@@ -5883,6 +5904,9 @@ void restart_wireless(void)
 	start_obd();
 #endif
 #endif
+#ifdef RTCONFIG_AMAS_ADTBW
+	start_amas_adtbw();
+#endif
 #ifdef RTCONFIG_AMAS
 	start_amas_wlcconnect();
 	start_amas_bhctrl();
@@ -5895,9 +5919,13 @@ void restart_wireless(void)
 
 #ifdef CONFIG_BCMWL5
 	/* for MultiSSID */
-	if(nvram_get_int("qos_enable") == 1) {
+	if (IS_TQOS()) {
 		del_EbtablesRules(); // flush ebtables nat table
 		add_EbtablesRules();
+	}
+	else if (IS_BW_QOS()) {
+		del_EbtablesRules(); // flush ebtables nat table
+		add_Ebtables_bw_rule();
 	}
 #endif
 
@@ -6101,6 +6129,9 @@ void stop_wl_bcm(void)
 #ifdef RTCONFIG_HSPOT
 	stop_hspotap();
 #endif
+#endif
+#ifdef RTCONFIG_AMAS_ADTBW
+	stop_amas_adtbw();
 #endif
 #if defined(RTCONFIG_WLCEVENTD) && defined(CONFIG_BCMWL5)
 	stop_wlceventd();

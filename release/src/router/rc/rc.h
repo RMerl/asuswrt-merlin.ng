@@ -65,6 +65,10 @@
 #include "pc.h"
 #endif
 
+#ifdef RTCONFIG_INTERNETCTRL
+#include "ic.h"
+#endif
+
 #ifdef RTCONFIG_AMAS
 #include <amas_lib.h>
 #endif
@@ -656,6 +660,9 @@ extern void bsd_defaults(void);
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 extern void update_cfe_675x();
 #endif
+#if defined(RTAX58U) || defined(TUFAX3000)
+extern void update_cfe_ax58u();
+#endif
 #ifdef RTCONFIG_BCM_MFG
 extern void brcm_mfg_init();
 extern void brcm_mfg_services();
@@ -969,6 +976,11 @@ extern void config_blocking_redirect(FILE *fp);
 extern int pc_tmp_main(int argc, char *argv[]);
 #endif
 
+/* ic.c */
+#ifdef RTCONFIG_INTERNETCTRL
+extern int ic_main(int argc, char *argv[]);
+#endif
+
 // ppp.c
 extern int ipup_main(int argc, char **argv);
 extern int ipdown_main(int argc, char **argv);
@@ -1041,6 +1053,7 @@ extern int add_iQosRules(char *pcWANIF);
 extern void del_EbtablesRules(void);
 extern void add_EbtablesRules(void);
 #endif
+extern void add_Ebtables_bw_rule(void);
 extern void ForceDisableWLan_bw(void);
 extern int check_wl_guest_bw_enable();
 
@@ -1923,6 +1936,7 @@ extern void extract_data(char *path, FILE *fp);
 extern int merge_log(char *path, int len);
 extern void stop_dpi_engine_service(int forced);
 extern void start_dpi_engine_service();
+extern void start_wrs_wbl_service();
 extern void setup_wrs_conf();
 extern void auto_sig_check();
 extern void sqlite_db_check();
@@ -2173,7 +2187,7 @@ extern char *cfe_nvram_safe_get_raw(const char *name);
 extern int cfe_nvram_set(const char *name);
 extern int refresh_cfe_nvram();
 extern int factory_debug();
-#if !(defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM))
+#ifdef RTCONFIG_BCMARM
 extern char *ATE_BRCM_PREFIX(void);
 extern int ATE_BRCM_SET(const char *name, const char *value);
 extern int ATE_BRCM_UNSET(const char *name);
@@ -2290,6 +2304,12 @@ extern void stop_adtbw();
 extern void start_adtbw();
 #endif
 
+#ifdef RTCONFIG_AMAS_ADTBW
+extern int amas_adtbw_main(int argc, char **argv);
+extern void stop_amas_adtbw();
+extern void start_amas_adtbw();
+#endif
+
 // natnl_api.c
 #ifdef RTCONFIG_TUNNEL
 extern void start_aae();
@@ -2369,5 +2389,14 @@ typedef struct WiFi_temperature_s {
 double get_cpu_temp();
 int get_wifi_temps(WiFi_temperature_t *wt);
 #endif /* RTCONFIG_BCMARM */
+
+#ifdef RTCONFIG_GN_WBL
+extern void add_GN_WBL_EBTbrouteRule();
+extern void add_GN_WBL_ChainRule(FILE *fp);
+extern void add_GN_WBL_ForwardRule(FILE *fp);
+#ifdef RTCONFIG_LANTIQ
+extern void GN_WBL_restart();
+#endif
+#endif
 
 #endif	/* __RC_H__ */

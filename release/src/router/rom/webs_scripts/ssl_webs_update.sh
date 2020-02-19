@@ -47,7 +47,7 @@ model_31="0"
 model_30="0"
 if [ "$model" == "RT-N18U#" ]; then
 	model_31="1"
-elif [ "$model" == "RT-N11P_B1#" ]; then
+elif [ "$model" == "RT-AX92U#" ] || [ "$model" == "RT-N11P_B1#" ]; then
 	model_30="1"	#Use another info after middle firmware
 fi
 

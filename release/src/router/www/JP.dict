@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=ユーザー名またはEメールアド�
 LANHostConfig_x_DDNSWildcard_itemdesc=有効にすると、ワイルドカードを含むドメイン名はユーザーの IP アドレスにリダイレクトされます。
 LANHostConfig_x_DDNSWildcard_itemname=ワイルドカードを有効にする
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let’s Encrypt はSSL/TLS証明書を無料で提供しているサービスになります。ご自身のドメイン証明書を発行する前のドメイン認証としてお使い頂けます。 Let’s Encrypt で発行された証明書の有効期限は90日間です。証明書の取得後は、ASUS ルーターで自動的に更新を行います。ご自身のルーターでドメイン認証、インターネットの80 番ポート経由で証明書の更新がされたことをご確認ください。
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=これはアクセスポイント用のデフォルトゲートウェイの IP アドレスです。
 LANHostConfig_x_LDNSServer1_itemdesc=このフィールドは、DNS の IP アドレスを指し、 DHCP サーバーから IP アドレスを要求するクライアントに提供されます。空欄にしても問題ありませんが、DNS リクエストは ZVMODELVZ により実行されます。
 LANHostConfig_x_LDNSServer1_itemname=DNS サーバー

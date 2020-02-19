@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <path id="rt_focus-b" d="M12.6666667,0 L16,3.55555556 L16,14 C16,15.1045695 15.1045695,16 14,16 L2,16 C0.8954305,16 1.3527075e-16,15.1045695 0,14 L0,2 C-1.3527075e-16,0.8954305 0.8954305,2.02906125e-16 2,0 L12.6666667,0 Z M8,8 C6.34314575,8 5,9.34314575 5,11 C5,12.6568542 6.34314575,14 8,14 C9.65685425,14 11,12.6568542 11,11 C11,9.34314575 9.65685425,8 8,8 Z M9,2 L4,2 C2.8954305,2 2,2.8954305 2,4 C2,5.1045695 2.8954305,6 4,6 L4,6 L9,6 C10.1045695,6 11,5.1045695 11,4 C11,2.8954305 10.1045695,2 9,2 L9,2 Z"/>
+    <filter id="rt_focus-a" width="181.2%" height="181.2%" x="-40.6%" y="-34.4%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="2"/>
+      <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+      <feOffset dx="1" dy="1" in="SourceAlpha" result="shadowOffsetOuter2"/>
+      <feGaussianBlur in="shadowOffsetOuter2" result="shadowBlurOuter2" stdDeviation="1"/>
+      <feColorMatrix in="shadowBlurOuter2" result="shadowMatrixOuter2" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.08 0"/>
+      <feMerge>
+        <feMergeNode in="shadowMatrixOuter1"/>
+        <feMergeNode in="shadowMatrixOuter2"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(4 4)">
+    <use fill="#000" filter="url(#rt_focus-a)" xlink:href="#rt_focus-b"/>
+    <use fill="#53ADFF" xlink:href="#rt_focus-b"/>
+  </g>
+</svg>

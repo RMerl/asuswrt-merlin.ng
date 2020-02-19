@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=ชื่อผู้ใช้หรือ
 LANHostConfig_x_DDNSWildcard_itemdesc=เมื่อเปิดทำงาน ชื่อโดเมนที่มีอักขระตัวแทนจะถูกเปลี่ยนเส้นทางไปยัง IP แอดเดรสของคุณ
 LANHostConfig_x_DDNSWildcard_itemname=เปิดทำงานอักขระตัวแทน
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt เป็นบริการออกใบรับรองที่ตรวจสอบความถูกต้องของโดเมนฟรี และจะทำการตรวจสอบความถูกต้องของโดเมนก่อนที่จะออกใบรับรองสำหรับโดเมนของคุณ ใบรับรองที่ออกโดย Let's Encrypt มีอายุการใช้งาน 90 วัน ก่อนที่ใบรับรองของคุณจะหมดอายุ เราเตอร์ ASUS ของคุณจะต่ออายุใบรับรองดังกล่าวโดยอัตโนมัติหลังจากตรวจสอบความถูกต้องของโดเมนแล้ว โปรดตรวจสอบให้แน่ใจว่าเราเตอร์ของคุณเชื่อมต่อกับอินเทอร์เน็ตผ่านทางพอร์ต 80 สำหรับการตรวจสอบความถูกต้องของโดเมนและการต่ออายุใบรับรอง
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=นี่คือ IP แอดเดรสของเกตเวย์เริ่มต้นสำหรับแอคเซสพอยต์
 LANHostConfig_x_LDNSServer1_itemdesc=ฟิลด์นี้ระบุถึง IP แอดเดรสของ DNS ที่ให้กับไคลเอ็นต์ที่ขอ IP แอดเดรสจาก DHCP เซิร์ฟเวอร์ คุณสามารถปล่อยให้ว่างไว้ได้, จากนั้นคำขอ DNS จะถูกประมวลผลโดย ZVMODELVZ
 LANHostConfig_x_LDNSServer1_itemname=DNS เซิร์ฟเวอร์

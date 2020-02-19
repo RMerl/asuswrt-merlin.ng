@@ -3102,6 +3102,10 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 #ifdef RTCONFIG_DNSFILTER
 	    ":DNSFILTER_DOT - [0:0]\n"
 #endif
+#ifdef RTCONFIG_INTERNETCTRL
+	    ":ICAccept - [0:0]\n"
+	    ":ICDrop - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 	    ":PControls - [0:0]\n"
 #endif
@@ -3117,6 +3121,9 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	fprintf(fp, ":%sWAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
 	fprintf(fp, ":%sLAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
 #endif
+#ifdef RTCONFIG_GN_WBL
+	add_GN_WBL_ChainRule(fp);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -3125,6 +3132,10 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		    ":FORWARD %s [0:0]\n"
 		    ":OUTPUT ACCEPT [0:0]\n"
 		    ":UPNP - [0:0]\n"
+#ifdef RTCONFIG_INTERNETCTRL
+		    ":ICAccept - [0:0]\n"
+		    ":ICDrop - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":PControls - [0:0]\n"
 #endif
@@ -3176,6 +3187,28 @@ filter_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 				wan_iface, logdrop);
 		}
 	}
+#endif
+
+#ifdef RTCONFIG_INTERNETCTRL
+	ic_s *ic_list = NULL;
+	int ic_count;
+
+	get_all_ic_list(&ic_list);
+	ic_count = count_ic_rules(ic_list);
+
+	if(/*nvram_get_int("MULTIFILTER_ALL") != 0 && */ic_count > 0){
+TRACE_PT("writing Internet Control\n");
+		config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
+		}
+#endif
+
+		//strcpy(macaccept, "AControls");
+	}
+	free_ic_list(&ic_list);
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL
@@ -3673,6 +3706,10 @@ TRACE_PT("writing Parental Control\n");
 #endif
 	}
 
+#ifdef RTCONFIG_GN_WBL
+	add_GN_WBL_ForwardRule(fp);
+#endif
+
 	/* Accept the redirect, might be seen as INVALID, packets */
 	fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", lan_if, lan_if, logaccept);
 #ifdef RTCONFIG_IPV6
@@ -3887,6 +3924,18 @@ TRACE_PT("writing Parental Control\n");
 		fprintf(fp_ipv6, "-A %s -i %s -o %s -j %s\n", chain, lan_if, wan6face, dtype);
 #endif
 	}
+
+#ifdef RTCONFIG_INTERNETCTRL
+	// MAC address in list and in time period -> ACCEPT.
+	fprintf(fp, "-A ICAccept -j %s\n", logaccept);
+	fprintf(fp, "-A ICDrop -j %s\n", logdrop);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		fprintf(fp_ipv6, "-A ICAccept -j %s\n", logaccept);
+		fprintf(fp_ipv6, "-A ICDrop -j %s\n", logdrop);
+	}
+#endif
+#endif
 
 #ifdef RTCONFIG_PARENTALCTRL
 	// MAC address in list and in time period -> ACCEPT.
@@ -4248,6 +4297,10 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	   ":DNSFILTER_DOT - [0:0]\n"
 #endif
 	   ":other2wan - [0:0]\n"
+#ifdef RTCONFIG_INTERNETCTRL
+	    ":ICAccept - [0:0]\n"
+	    ":ICDrop - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 	    ":PControls - [0:0]\n"
 #endif
@@ -4262,6 +4315,9 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 	fprintf(fp, ":%sWAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
 	fprintf(fp, ":%sLAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
 #endif
+#ifdef RTCONFIG_GN_WBL
+	add_GN_WBL_ChainRule(fp);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -4269,6 +4325,10 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 		    ":INPUT ACCEPT [0:0]\n"
 		    ":FORWARD %s [0:0]\n"
 		    ":OUTPUT ACCEPT [0:0]\n"
+#ifdef RTCONFIG_INTERNETCTRL
+			":ICAccept - [0:0]\n"
+			":ICDrop - [0:0]\n"
+#endif
 #ifdef RTCONFIG_PARENTALCTRL
 		    ":PControls - [0:0]\n"
 #endif
@@ -4315,6 +4375,28 @@ filter_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)
 				wan_iface, logdrop);
 		}
 	}
+#endif
+
+#ifdef RTCONFIG_INTERNETCTRL
+	ic_s *ic_list = NULL;
+	int ic_count;
+
+	get_all_ic_list(&ic_list);
+	ic_count = count_ic_rules(ic_list);
+
+	if(/*nvram_get_int("MULTIFILTER_ALL") != 0 && */ic_count > 0){
+TRACE_PT("writing Internet Control\n");
+		config_ic_rule_string(ic_list, fp, logaccept, logdrop, 1);
+
+#ifdef RTCONFIG_IPV6
+		if (ipv6_enabled()){
+			config_ic_rule_string(ic_list, fp_ipv6, logaccept, logdrop, 1);
+		}
+#endif
+
+		//strcpy(macaccept, "AControls");
+	}
+	free_pc_list(&ic_list);
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL
@@ -4807,6 +4889,10 @@ TRACE_PT("writing Parental Control\n");
 #endif
 	}
 
+#ifdef RTCONFIG_GN_WBL
+	add_GN_WBL_ForwardRule(fp);
+#endif
+
 	/* Accept the redirect, might be seen as INVALID, packets */
 	fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", lan_if, lan_if, logaccept);
 #ifdef RTCONFIG_IPV6
@@ -5059,6 +5145,18 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp_ipv6, "-A %s -i %s -o %s -j %s\n", chain, lan_if, wan6face, dtype);
 #endif
 	}
+
+#ifdef RTCONFIG_INTERNETCTRL
+	// MAC address in list and in time period -> ACCEPT.
+	fprintf(fp, "-A ICAccept -j %s\n", logaccept);
+	fprintf(fp, "-A ICDrop -j %s\n", logdrop);
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		fprintf(fp_ipv6, "-A ICAccept -j %s\n", logaccept);
+		fprintf(fp_ipv6, "-A ICDrop -j %s\n", logdrop);
+	}
+#endif
+#endif
 
 #ifdef RTCONFIG_PARENTALCTRL
 	// MAC address in list and in time period -> ACCEPT.
@@ -5451,7 +5549,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	}
 #endif
 
-#if defined(RTAC58U) || defined(RTAC88U)
+#if defined(RTAC58U) || defined(RTAC88U) || defined(RTAX58U)
 	if (nvram_match("switch_wantag", "stuff_fibre")) {
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--dport", "53", "-j", "CLASSIFY", "--set-class", "0:3");
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-d", "27.111.14.67", "-j", "CLASSIFY", "--set-class", "0:3");

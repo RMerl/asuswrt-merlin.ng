@@ -10,7 +10,7 @@ MAINTAINERCLEANFILES = \
 AM_CFLAGS = \
 	-I$(top_srcdir)/include \
 	$(PLUGIN_AUTH_PAM_CFLAGS) \
-	$(OPENSSL_CRYPTO_CFLAGS)
+	$(OPTIONAL_CRYPTO_CFLAGS)
 
 if ENABLE_PLUGIN_AUTH_PAM
 plugin_LTLIBRARIES = openvpn-plugin-auth-pam.la

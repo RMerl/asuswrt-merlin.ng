@@ -118,6 +118,8 @@ start_pppd(int unit)
 			nvram_invmatch(strcat_r(prefix, "heartbeat_x", tmp), "") ?
 			nvram_safe_get(strcat_r(prefix, "heartbeat_x", tmp)) :
 			nvram_safe_get(strcat_r(prefix, "gateway_x", tmp)));
+		fprintf(fp, "pptp_ifname %s\n",
+			nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
 		/* see KB Q189595 -- historyless & mtu */
 		fprintf(fp, "nomppe-stateful mtu 1400\n");
 		if (nvram_match(strcat_r(prefix, "pptp_options_x", tmp), "-mppc")) {
@@ -288,6 +290,7 @@ start_pppd(int unit)
 			"section peer\n"
 			"port 1701\n"
 			"peername %s\n"
+			"ifname %s\n"
 			"hostname %s\n"
 			"lac-handler sync-pppd\n"
 			"persist yes\n"
@@ -299,6 +302,7 @@ start_pppd(int unit)
 			nvram_invmatch(strcat_r(prefix, "heartbeat_x", tmp), "") ?
 				nvram_safe_get(strcat_r(prefix, "heartbeat_x", tmp)) :
 				nvram_safe_get(strcat_r(prefix, "gateway_x", tmp)),
+			nvram_safe_get(strcat_r(prefix, "ifname", tmp)),
 			nvram_invmatch(strcat_r(prefix, "hostname", tmp), "") ?
 				nvram_safe_get(strcat_r(prefix, "hostname", tmp)) : "localhost",
 			nvram_get_int(strcat_r(prefix, "pppoe_maxfail", tmp))  ? : 32767,

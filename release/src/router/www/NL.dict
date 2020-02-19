@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Gebruikersnaam of e-mailadres
 LANHostConfig_x_DDNSWildcard_itemdesc=Indien ingeschakeld, wordt de domeinnaam met jokerteken omgeleid naar uw IP-adres.
 LANHostConfig_x_DDNSWildcard_itemname=Jokerteken inschakelen
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt is een service om gratis een domeingevalideerd certificaat te leveren. De domeinvalidatie wordt uitgevoerd voordat certificaten voor uw domeinen worden verstrekt. Certificaten die worden verstrekt door Let's Encrypt zijn 90 dagen geldig. Voordat uw certificaat vervalt, zal uw ASUS-router automatisch dergelijke certificaten verlengen nadat het valideren van het domein is gelukt. Controleer of uw router verbinding maakt met internet via poort 80 voor domeinvalidatie en verlenging van het certificaat.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Dit is het IP-adres van de standaard gateway voor het toegangspunt
 LANHostConfig_x_LDNSServer1_itemdesc=Dit veld geeft het IP-adres van DNS aan om clients dat aanvraag-IP-adres van de DHCP-server te leveren. U kunt dit leeg laten omdat de DNS-aanvraag door ZVMODELVZ zal worden verwerkt.
 LANHostConfig_x_LDNSServer1_itemname=DNS-server

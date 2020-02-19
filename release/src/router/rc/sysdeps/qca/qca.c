@@ -1181,6 +1181,17 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	else
 		fprintf(fp2,"iwpriv %s ap_bridge %d\n",wif,nvram_get_int("wl1_ap_isolate")?0:1);
 
+#ifdef AMAZON_WSS
+	if (amazon_wss_ap_isolate_support(prefix))
+	{
+		/* ap isolate */
+		fprintf(fp2, "iwpriv %s ap_bridge %d\n", wif, nvram_pf_get_int(prefix, "ap_isolate") ? 0 : 1);
+
+		/* only QCA need to enable arping isolate when amazon_wss is enabled*/
+		fprintf(fp2, "echo %d > /sys/devices/virtual/net/%s/brport/isolate_mode\n", nvram_pf_get_int(prefix, "ap_isolate"), wif);
+	}
+#endif
+
 	//AuthMode
 	memset(tmpstr, 0x0, sizeof(tmpstr));
 	str = nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp));

@@ -175,7 +175,6 @@ void format_mount_2nd_jffs2(void)
 	int size;
 	int part;
 	const char *p;
-	int model;
 
 	if (!wait_action_idle(10)) return;
 
@@ -192,7 +191,6 @@ void format_mount_2nd_jffs2(void)
 
 	modprobe(JFFS_NAME);
 	sprintf(s, MTD_BLKDEV(%d), part);
-	model = get_model();
 	if (mount(s, SECOND_JFFS2_PATH, JFFS_NAME, MS_NOATIME, "") != 0) {
 		if (mtd_erase(JFFS2_MTD_NAME)){
 			error("formatting");

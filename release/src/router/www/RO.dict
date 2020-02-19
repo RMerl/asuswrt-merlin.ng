@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Nume utilizator sau adresă e-mail
 LANHostConfig_x_DDNSWildcard_itemdesc=Când este activată această opţiune, numele de domeniu cu caracter wildcard este redirecţionat către adresa dvs. IP.
 LANHostConfig_x_DDNSWildcard_itemname=Activare caracter wildcard
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt este un serviciu care furnizează un certificat validat de domeniu gratuit și va efectua validarea domeniului înainte de a emite certificate pentru domeniile dvs. Certificatele eliberate de Let's Encrypt sunt valabile timp de 90 de zile. Înainte de expirarea certificatului, router-ul ASUS va reînnoi automat aceste certificate după validarea cu succes a domeniului. Asigurați-vă că router-ul se conectează la internet prin portul 80 pentru validarea domeniului și reînnoirea certificatului.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Aceasta este adresa IP a gateway-ului implicit pentru punctul de acces
 LANHostConfig_x_LDNSServer1_itemdesc=Acest câmp indică adresa IP din DNS care va fi furnizată clienţilor care solicită o adresă IP de la serverul DHCP. Puteţi lăsa câmpul necompletat, iar solicitarea către DNS va fi procesată de către dispozitivul ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Server DNS

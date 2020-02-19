@@ -1,6 +1,6 @@
 /*
  * libusb example program to manipulate U.are.U 4000B fingerprint scanner.
- * Copyright (C) 2007 Daniel Drake <dsd@gentoo.org>
+ * Copyright © 2007 Daniel Drake <dsd@gentoo.org>
  *
  * Basic image capture program only, does not consider the powerup quirks or
  * the fact that image encryption may be enabled. Not expected to work
@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <libusb/libusb.h>
+#include "libusb.h"
 
 #define EP_INTR			(1 | LIBUSB_ENDPOINT_IN)
 #define EP_DATA			(2 | LIBUSB_ENDPOINT_IN)
@@ -149,7 +149,7 @@ static int set_mode(unsigned char data)
 	return 0;
 }
 
-static void cb_mode_changed(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_mode_changed(struct libusb_transfer *transfer)
 {
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		fprintf(stderr, "mode change transfer not completed!\n");
@@ -164,12 +164,12 @@ static void cb_mode_changed(struct libusb_transfer *transfer)
 
 static int set_mode_async(unsigned char data)
 {
-	unsigned char *buf = malloc(LIBUSB_CONTROL_SETUP_SIZE + 1);
+	unsigned char *buf = (unsigned char*) malloc(LIBUSB_CONTROL_SETUP_SIZE + 1);
 	struct libusb_transfer *transfer;
 
 	if (!buf)
 		return -ENOMEM;
-	
+
 	transfer = libusb_alloc_transfer(0);
 	if (!transfer) {
 		free(buf);
@@ -208,7 +208,7 @@ static int do_sync_intr(unsigned char *data)
 }
 
 static int sync_intr(unsigned char type)
-{	
+{
 	int r;
 	unsigned char data[INTR_LENGTH];
 
@@ -226,13 +226,13 @@ static int save_to_file(unsigned char *data)
 	FILE *fd;
 	char filename[64];
 
-	sprintf(filename, "finger%d.pgm", img_idx++);
+	snprintf(filename, sizeof(filename), "finger%d.pgm", img_idx++);
 	fd = fopen(filename, "w");
 	if (!fd)
 		return -1;
 
 	fputs("P5 384 289 255 ", fd);
-	fwrite(data + 64, 1, 384*289, fd);
+	(void) fwrite(data + 64, 1, 384*289, fd);
 	fclose(fd);
 	printf("saved image to %s\n", filename);
 	return 0;
@@ -276,7 +276,7 @@ static int next_state(void)
 	return 0;
 }
 
-static void cb_irq(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_irq(struct libusb_transfer *transfer)
 {
 	unsigned char irqtype = transfer->buffer[0];
 
@@ -315,7 +315,7 @@ static void cb_irq(struct libusb_transfer *transfer)
 		do_exit = 2;
 }
 
-static void cb_img(struct libusb_transfer *transfer)
+static void LIBUSB_CALL cb_img(struct libusb_transfer *transfer)
 {
 	if (transfer->status != LIBUSB_TRANSFER_COMPLETED) {
 		fprintf(stderr, "img transfer status %d?\n", transfer->status);
@@ -396,7 +396,7 @@ static int alloc_transfers(void)
 	img_transfer = libusb_alloc_transfer(0);
 	if (!img_transfer)
 		return -ENOMEM;
-	
+
 	irq_transfer = libusb_alloc_transfer(0);
 	if (!irq_transfer)
 		return -ENOMEM;
@@ -411,13 +411,15 @@ static int alloc_transfers(void)
 
 static void sighandler(int signum)
 {
-	do_exit = 1;	
+	(void)signum;
+
+	do_exit = 1;
 }
 
 int main(void)
 {
 	struct sigaction sigact;
-	int r = 1;
+	int r;
 
 	r = libusb_init(NULL);
 	if (r < 0) {
@@ -470,7 +472,7 @@ int main(void)
 	}
 
 	printf("shutting down...\n");
-	
+
 	if (irq_transfer) {
 		r = libusb_cancel_transfer(irq_transfer);
 		if (r < 0)
@@ -482,11 +484,11 @@ int main(void)
 		if (r < 0)
 			goto out_deinit;
 	}
-	
+
 	while (irq_transfer || img_transfer)
 		if (libusb_handle_events(NULL) < 0)
 			break;
-	
+
 	if (do_exit == 1)
 		r = 0;
 	else
@@ -504,4 +506,3 @@ out:
 	libusb_exit(NULL);
 	return r >= 0 ? r : -r;
 }
-

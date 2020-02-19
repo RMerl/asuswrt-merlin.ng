@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Uporabniško ime ali e-poštni naslov
 LANHostConfig_x_DDNSWildcard_itemdesc=Če je ta možnost omogočena, je ime domene z nadomestnimi znaki preusmerjeno na vaš naslov IP.
 LANHostConfig_x_DDNSWildcard_itemname=Omogoči nadomestne znake
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt (Šifriranje) je storitev za zagotavljanje brezplačnega potrdila, ki je potrjeno za domeno, in bo pred izdajo potrdil za domene izvedla preverjanje veljavnosti domene. Potrdila, izdana s storitvijo Let's Encrypt (Šifriranje), so veljavna 90 dni. Preden vaš potrdilo poteče, bo usmerjevalnik ASUS samodejno podaljšal taka potrdila po uspešnem preverjanju veljavnosti domene. Prosimo, poskrbite, da se usmerjevalnik poveže z internetom prek vrat 80 za preverjanje veljavnosti domene in obnovitev potrdil.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=To je naslov IP privzetega prehoda za dostopno točko.
 LANHostConfig_x_LDNSServer1_itemdesc=V tem polju je naveden naslov IP sistema DNS za zagotavljanje naslova IP odjemalcem, ki ga zahtevajo, iz strežnika DHCP. Če polje pustite prazno, bo zahtevo sistema DNS obdelal usmerjevalnik ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=DNS strežnik

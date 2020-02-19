@@ -423,11 +423,13 @@ void get_related_nvram(){
 
 	boot_end = nvram_get_int("success_start_service");
 
+	snprintf(tcode, sizeof(tcode), "%s", nvram_safe_get("territory_code"));
+
 #if defined(RTCONFIG_FW_JUMP)
 	isFirstUse = 0;
 #else
-#if defined(RTAC58U)
-	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+#if defined(RTAC58U) || defined(RTAX58U)
+	if (!strncmp(tcode, "CX", 2))
 		isFirstUse = 0;
 	else
 #endif
@@ -996,13 +998,8 @@ int detect_internet(int wan_unit)
 #ifdef RTCONFIG_DUALWAN
 			strcmp(dualwan_mode, "lb") &&
 #endif
-			!found_default_route(wan_unit)){
+			!found_default_route(wan_unit))
 		link_internet = DISCONN;
-
-		// fix the missed gateway sometimes.
-		if(is_wan_connect(wan_unit))
-			add_multi_routes();
-	}
 #ifdef DETECT_INTERNET_MORE
 	else if(!get_packets_of_net_dev(wan_ifname, &rx_packets, &tx_packets) || rx_packets <= RX_THRESHOLD)
 		link_internet = DISCONN;

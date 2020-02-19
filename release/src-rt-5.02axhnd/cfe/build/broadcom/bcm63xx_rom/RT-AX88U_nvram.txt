@@ -396,7 +396,7 @@ devpath1=pcie/0/1/
 1:pa2g20ccka1=0x2a31,0xbaea,0xfd05,0x1db5
 1:pa2g20ccka2=0x2c07,0xb2dd,0xfffe,0x2304
 1:pa2g20ccka3=0x2ae0,0xb604,0x0000,0x2727
-
+ 
 1:pa2ga0=0x2a4a,0xb1ec,0x0000,0x208c
 1:pa2ga1=0x2831,0xbaea,0xfd05,0x1db5
 1:pa2ga2=0x2a07,0xb2dd,0xfffe,0x2304
@@ -429,20 +429,20 @@ devpath1=pcie/0/1/
 1:mcs9poexp=0
 1:mcs10poexp=0
 1:mcs11poexp=0
-1:mcsbw202gpo=0x64200000
-1:mcsbw402gpo=0x64200000
-1:mcs1024qam2gpo=0xa8a8
+1:mcsbw202gpo=0x87642000
+1:mcsbw402gpo=0x87642000
+1:mcs1024qam2gpo=0xcab9
 
 # 2.4G Power detector offsets
 # Power detector offsets. These parameters are used to offset the measured RF power.
 # Units are 1/4 dB.
-1:pdoffsetcck=0
+1:pdoffsetcck=0x0
 1:pdoffset2g40ma0=0
 1:pdoffset2g40ma1=0
 1:pdoffset2g40ma2=0
 1:pdoffset2g40mvalid=0
 1:pdoffsetcck20m=0x739C
-1:pdoffset20in40m2g=0
+1:pdoffset20in40m2g=0x0
 1:pdoffset20in40m2gcore3=0x7000
 
 ### 2.4GHz RX Gain Parameteters
@@ -490,6 +490,7 @@ devpath1=pcie/0/1/
 1:swctrlmap4_RXByp2g_fem7to4=0			
 1:swctrlmap4_misc2g_fem7to4=0			
 
+	
 ########################################################
 # Rx gain and RSSI parameters
 #1:rssicorrnorm_c0=
@@ -586,10 +587,10 @@ devpath2=pcie/1/1/
 
 
 ##PD offset: 5G subband, A2 (bits 10:14), A1 (bits 5:9), A0 (bits 0:4) (1/4 dB steps per antenna)
-2:pdoffset20in40m5gb0=0x6779
-2:pdoffset20in40m5gb1=0x6B5B
+2:pdoffset20in40m5gb0=0x6779 
+2:pdoffset20in40m5gb1=0x6B5B  
 2:pdoffset20in40m5gb2=0x675A
-2:pdoffset20in40m5gb3=0x6378
+2:pdoffset20in40m5gb3=0x6378  
 2:pdoffset20in40m5gb4=0x6B5A
 2:pdoffset20in80m5gb0=0x6F99
 2:pdoffset20in80m5gb1=0x777D
@@ -602,6 +603,7 @@ devpath2=pcie/1/1/
 2:pdoffset40in80m5gb3=0xC43
 2:pdoffset40in80m5gb4=0xC62
 
+
 ## 20in40 MHz PD offset: band2 (bits 10:14), band1 (bits 5:9), band0 (bits 0:4)
 ## 20in40 MHz PD offset: reserved (bits 10:15), band4 (bits 5:9), band3 (bits 0:4)
 2:pdoffset20in40m5gcore3=0x6F39
@@ -611,30 +613,18 @@ devpath2=pcie/1/1/
 2:pdoffset40in80m5gcore3=0x461
 2:pdoffset40in80m5gcore3_1=0x81
 
+
 ## 160MHz PD offset: channel0 (50O), channel1(82O), channel2(114O), channel3(163O)
 ## A2 (bits 10:14), A1 (bits 5:9), A0 (bits 0:4) (1/4 dB steps per antenna)
-2:pdoffset20in160m5gb0=0
-2:pdoffset20in160m5gb1=0
-2:pdoffset20in160m5gb2=0
-2:pdoffset20in160m5gb3=0
-2:pdoffset40in160m5gb0=0
-2:pdoffset40in160m5gb1=0
-2:pdoffset40in160m5gb2=0
-2:pdoffset40in160m5gb3=0
-2:pdoffset80in160m5gb0=0
-2:pdoffset80in160m5gb1=0
-2:pdoffset80in160m5gb2=0
-2:pdoffset80in160m5gb3=0
-
 2:pdoffset20in160m5gc0=0x6B38
 2:pdoffset20in160m5gc1=0
 2:pdoffset20in160m5gc2=0x5F39
 2:pdoffset20in160m5gc3=0
-2:pdoffset40in160m5gc0=0x400
+2:pdoffset40in160m5gc0=0x400 
 2:pdoffset40in160m5gc1=0
 2:pdoffset40in160m5gc2=0
 2:pdoffset40in160m5gc3=0
-2:pdoffset80in160m5gc0=0x3E2
+2:pdoffset80in160m5gc0=0x3E2 
 2:pdoffset80in160m5gc1=0
 2:pdoffset80in160m5gc2=0x781F
 2:pdoffset80in160m5gc3=0
@@ -649,43 +639,45 @@ devpath2=pcie/1/1/
 2:pdoffset80in160m5gcore3_1=0x1E
 
 
+
+
 2:subband5gver=0x5
 
 
 ##Power Per rate parameters 
 ## 5G Poewr offsets: 11ag/11n/11ac mcs0/1/2, 3-7, 11ac mcs8, 11ac mcs9. LSB nib: m0/1/2, MSB nib: c9
-2:mcsbw205glpo=0x86420000
-2:mcsbw405glpo=0x86420000
-2:mcsbw805glpo=0x86420000
-2:mcsbw1605glpo=0xCA864200
-2:mcsbw205gmpo=0x86420000
-2:mcsbw405gmpo=0x86420000
-2:mcsbw805gmpo=0x86420000
-2:mcsbw1605gmpo=0xCA864200
-2:mcsbw205ghpo=0x86420000
-2:mcsbw405ghpo=0x86420000
-2:mcsbw805ghpo=0x86420000
-2:mcsbw1605ghpo=0xCA864200
-2:mcsbw205gx1po=0x86420000
-2:mcsbw405gx1po=0x86420000
-2:mcsbw805gx1po=0x86420000
-2:mcsbw1605gx1po=0xCA864200
-2:mcsbw205gx2po=0x86420000
-2:mcsbw405gx2po=0x86420000
-2:mcsbw805gx2po=0x86420000
-2:mcsbw1605gx2po=0xCA864200
+2:mcsbw205glpo=0xCA864200
+2:mcsbw405glpo=0xCA864200
+2:mcsbw805glpo=0xCA864200
+2:mcsbw1605glpo=0x0ECA8642
+2:mcsbw205gmpo=0xCA864200
+2:mcsbw405gmpo=0xCA864200
+2:mcsbw805gmpo=0xCA864200
+2:mcsbw1605gmpo=0x0ECA8642
+2:mcsbw205ghpo=0xCA864200
+2:mcsbw405ghpo=0xCA864200
+2:mcsbw805ghpo=0xCA864200
+2:mcsbw1605ghpo=0x0ECA8642
+2:mcsbw205gx1po=0xCA864200
+2:mcsbw405gx1po=0xCA864200
+2:mcsbw805gx1po=0xCA864200
+2:mcsbw1605gx1po=0x0ECA8642
+2:mcsbw205gx2po=0xCA864200
+2:mcsbw405gx2po=0xCA864200
+2:mcsbw805gx2po=0xCA864200
+2:mcsbw1605gx2po=0x0ECA8642
 
 ## mcs11/mcs10 PPR: 160MHz/80MHz/40MHz/20MHz
-2:mcs1024qam5glpo=0x0ECACACA
-2:mcs1024qam5gmpo=0x0ECACACA
-2:mcs1024qam5ghpo=0x0ECACACA
-2:mcs1024qam5gx1po=0x0ECACACA
-2:mcs1024qam5gx2po=0x0ECACACA
+2:mcs1024qam5glpo=0x21EDEDED
+2:mcs1024qam5gmpo=0x21EDEDED
+2:mcs1024qam5ghpo=0x21EDEDED
+2:mcs1024qam5gx1po=0x21EDEDED
+2:mcs1024qam5gx2po=0x21EDEDED
 
 ## PPR Bit Expansion
 2:mcs8poexp=0x00000000
-2:mcs9poexp=0x00000000
-2:mcs10poexp=0x00000000
+2:mcs9poexp=0x3E000000
+2:mcs10poexp=0x3E000000
 2:mcs11poexp=0x3E000000
 
 2:mcslr5glpo=0x0000
@@ -843,13 +835,13 @@ devpath2=pcie/1/1/
 2:rpcal5gb4core3=0
 
 
-2:swctrlmap4_cfg=0x1
-
+2:swctrlmap4_cfg=0x1			
+			
 2:swctrlmap4_TX5g_fem3to0=0x3333	
 2:swctrlmap4_RX5g_fem3to0=0x4444	
 2:swctrlmap4_RXByp5g_fem3to0=0x6666
 2:swctrlmap4_misc5g_fem3to0= 0			
-
+			
 2:swctrlmap4_TX5g_fem7to4=0			
 2:swctrlmap4_RX5g_fem7to4=0			
 2:swctrlmap4_RXByp5g_fem7to4=0			

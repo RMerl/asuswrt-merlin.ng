@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Nome utente o indirizzo e-mail
 LANHostConfig_x_DDNSWildcard_itemdesc=Quando questa funzione è abilitata, il nome di dominio con caratteri jolly è reindirizzato all’indirizzo IP.
 LANHostConfig_x_DDNSWildcard_itemname=Abilita wildcard
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt è un servizio che fornisce certificati gratis di validazione del dominio, inoltre esegue la validazione del dominio prima di emettere i certificati per il tuo dominio. I certificati emessi da Let's Encrypt sono validi per 90 giorni. Prima della scadenza del certificato il router lo rinnova automaticamente dopo aver validato il dominio con successo. Assicurati che il router possa connettersi alla porta 80 per la validazione del dominio e il rinnovo del certificato.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Questo è l’indirizzo IP del gateway predefinito dell’Access Point
 LANHostConfig_x_LDNSServer1_itemdesc=Questo campo indica l’indirizzo IP del server DNS da fornire ai client che richiedono l’indirizzo IP al server DHCP. È possibile lasciare il campo vuoto, quindi la richiesta DNS sarà elaborata da ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Server DNS:

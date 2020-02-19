@@ -403,4 +403,10 @@ extern int get_wantype_by_modemunit(int modem_unit);
 
 extern char *get_userdns_r(const char *prefix, char *buf, size_t buflen);
 
+#ifdef RTCONFIG_BROOP
+int is_bridged(const char *brif, const char *ifname);
+int netlink_broop(char ctrl, int val);
+int detect_broop();
+#endif
+
 #endif	/* !__RTSTATE_H__ */

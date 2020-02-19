@@ -58,8 +58,6 @@ static const char *mangle_fn_ipv6 = "/tmp/mangle_rules_ipv6";
 
 int etable_flag = 0;
 int manual_return = 0;
-#define GUEST_INIT_MARKNUM 10 /*10 ~ 30 for Guest Network. */
-#define INITIAL_MARKNUM    30 /*30 ~ X  for LAN . */
 
 /*
 	ip / mac / ip-range status
@@ -1290,13 +1288,49 @@ void stop_iQos(void)
 #endif
 }
 
+void add_Ebtables_bw_rule()
+{
+	int  guest_mark = GUEST_INIT_MARKNUM;
+	char wl[128], wlv[128], tmp[128], *next, *next2;
+	char prefix[32];
+	char mssid_mark[4];
+	char wl_ifname[IFNAMSIZ];
+	char *wl_if = wl_ifname;
+	int  i = 0;
+	int  j = 1;
+
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+
+			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) &&
+			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
+				get_wlxy_ifname(i, j, wl_if);
+				if(get_model()==MODEL_RTAC87U && (i == 1)) {
+					if(j == 1) wl_if = "vlan4000";
+					if(j == 2) wl_if = "vlan4001";
+					if(j == 3) wl_if = "vlan4002";
+				}
+
+				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
+				eval("ebtables", "-t", "nat", "-A", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				eval("ebtables", "-t", "nat", "-A", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				guest_mark++;
+			} //bss_enabled
+			j++;
+		}
+		i++;
+		j = 1;
+	}
+}
+
 static int add_bandwidth_limiter_rules(char *pcWANIF)
 {
 	FILE *fn = NULL;
 	char *buf, *g, *p;
 	char *enable, *addr, *dlc, *upc, *prio;
 	char lan_addr[32];
-	char addr_new[40], wl_ifname[IFNAMSIZ];
+	char addr_new[40];
 	int addr_type;
 	char *action = NULL;
 
@@ -1412,36 +1446,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	QOSDBG("[BWLIT] Create iptables rules done.\n");
 
 	/* Setup guest network's ebtables rules */
-	int  guest_mark = GUEST_INIT_MARKNUM;
-	char wl[128], wlv[128], tmp[128], *next, *next2;
-	char prefix[32];
-	char mssid_mark[4];
-	char *wl_if = wl_ifname;
-	int  i = 0;
-	int  j = 1;
-	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
-		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
-
-			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
-			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
-				
-				get_wlxy_ifname(i, j, wl_if);
-				if(get_model()==MODEL_RTAC87U && (i == 1)) {
-					if(j == 1) wl_if = "vlan4000";
-					if(j == 2) wl_if = "vlan4001";
-					if(j == 3) wl_if = "vlan4002";
-				}
-
-				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
-				eval("ebtables", "-t", "nat", "-A", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-				eval("ebtables", "-t", "nat", "-A", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-				guest_mark++;
-			} //bss_enabled
-			j++;
-		}
-		i++; j = 1;
-	}
+	add_Ebtables_bw_rule();
 
 	QOSDBG("[BWLIT_GUEST] Create ebtables rules done.\n");
 	return 0;

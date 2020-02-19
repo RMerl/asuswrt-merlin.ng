@@ -1,3 +1,6 @@
+ifneq (,$(findstring -DROUTER=1, $(OS_CFALGS)))
+-include ../../../../../.config
+endif
 include ../../../build.mak
 include ../../../build/common.mak
 
@@ -60,8 +63,13 @@ export CC_OUT CC AR RANLIB HOST_MV HOST_RM HOST_RMDIR HOST_MKDIR OBJEXT LD LDOUT
 # $(TARGET) is defined in os-$(OS_NAME).mak file in current directory.
 #
 TARGETS := libumem
+CFG_TARGET := $(if $(RTCONFIG_QCA),fix-config)
 
-all: $(TARGETS)
+all: $(CFG_TARGET) $(TARGETS)
+
+fix-config:
+	[ ! -e $(TOOLS)/include/unistd.h ] || [ ! -n "`grep \"extern int issetugid(void);\" $(TOOLS)/include/unistd.h`" ] || \
+		sed -ie "s,/[*] #undef HAVE_ISSETUGID [*]/,#define HAVE_ISSETUGID 1," ../../umem/umem_config.h
 
 doc:
 	cd .. && doxygen docs/doxygen.cfg

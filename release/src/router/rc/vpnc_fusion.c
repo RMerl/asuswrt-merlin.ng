@@ -721,18 +721,20 @@ void vpnc_ovpn_set_dns(int ovpn_unit)
 	char buf[128];
 	char addr[16];
 	FILE *fp = NULL;
+	char path[128] = {0};
 
 	snprintf(nvname, sizeof(nvname), "vpnc%d_dns", _find_vpnc_idx_by_ovpn_unit(ovpn_unit));
+	snprintf(path, sizeof(path), "/etc/openvpn/client%d/resolv.dnsmasq", ovpn_unit);
 
-	fp = fopen("/etc/openvpn/resolv.conf", "r");
+	fp = fopen(path, "r");
 	if (!fp) {
-		//_dprintf("read /etc/openvpn/resolv.conf fail\n");
+		_dprintf("[%s] no %s file\n", __FUNCTION__, path);
 		return;
 	}
 	while(fgets(buf, sizeof(buf), fp) != NULL)
 	{
-		//nameserver xxx.xxx.xxx.xxx
-		if(sscanf (buf,"nameserver %15s", addr) != 1)
+		//e.g. server=1.1.1.1
+		if(sscanf (buf,"server=%15s", addr) != 1)
 		{
 			_dprintf("\n=====\nunknown %s\n=====\n", buf);
 			continue;
@@ -811,6 +813,8 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 	
 	unit = atoi(argv[1]);
 
+	ovpn_up_handler();
+
 	// load vpnc profile list	
 	vpnc_init();
 
@@ -826,7 +830,6 @@ int vpnc_ovpn_up_main(int argc, char **argv)
 			nvram_set(strlcat_r(prefix, "gateway", tmp, sizeof(tmp)), vpn_gateway);
 		nvram_set(strlcat_r(prefix, "dns", tmp, sizeof(tmp)), "");	//clean dns
 
-		ovpn_up_handler(unit);
 		vpnc_ovpn_set_dns(unit);
 		update_resolvconf();
 
@@ -906,6 +909,8 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 
 	unit = atoi(argv[1]);
 
+	ovpn_down_handler();
+
 	// load vpnc profile list	
 	vpnc_init();
 
@@ -918,7 +923,6 @@ int vpnc_ovpn_down_main(int argc, char **argv)
 		vpnc_down(ifname);
 
 		/* Add dns servers to resolv.conf */
-		ovpn_down_handler(unit);
 		update_resolvconf();
 
 #ifdef USE_MULTIPATH_ROUTE_TABLE	
@@ -1818,7 +1822,6 @@ start_vpnc_by_unit(const int unit)
 		if (VPNC_PROTO_PPTP == prof->protocol) {
 			fprintf(fp, "plugin pptp.so\n");
 			fprintf(fp, "pptp_server '%s'\n", prof->basic.server);
-			fprintf(fp, "vpnc 1\n");
 			/* see KB Q189595 -- historyless & mtu */
 			if (nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "pptp") || nvram_match(strlcat_r(wan_prefix, "proto", tmp, sizeof(tmp)), "l2tp"))
 				fprintf(fp, "nomppe-stateful mtu 1300\n");
@@ -1927,7 +1930,6 @@ start_vpnc_by_unit(const int unit)
 				"section peer\n"
 				"port 1701\n"
 				"peername %s\n"
-				"vpnc 1\n"
 				"hostname %s\n"
 				"lac-handler sync-pppd\n"
 				"persist yes\n"

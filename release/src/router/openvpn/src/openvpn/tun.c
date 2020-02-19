@@ -38,12 +38,6 @@
 #include "syshead.h"
 
 #include "tun.h"
-#ifndef TUNSETOWNER
-#define TUNSETOWNER     _IOW('T', 204, int)
-#endif
-#ifndef TUNSETGROUP
-#define TUNSETGROUP     _IOW('T', 206, int)
-#endif
 #include "fdmisc.h"
 #include "common.h"
 #include "misc.h"
@@ -909,13 +903,6 @@ do_ifconfig(struct tuntap *tt,
          */
         ifconfig_local = print_in_addr_t(tt->local, 0, &gc);
         ifconfig_remote_netmask = print_in_addr_t(tt->remote_netmask, 0, &gc);
-
-        //Sam.B  2013/10/31
-        if(current_addr(htonl(tt->local))) {
-            msg (M_WARN, "ifconfig addr '%s' conflicted", ifconfig_local);
-            update_nvram_status(ADDR_CONFLICTED);
-        }
-        //Sam.E  2013/10/31
 
         if (tt->did_ifconfig_ipv6_setup)
         {
@@ -2081,6 +2068,10 @@ open_tun(const char *dev, const char *dev_type, const char *dev_node, struct tun
 #endif /* !PENDANTIC */
 
 #ifdef ENABLE_FEATURE_TUN_PERSIST
+
+#ifndef TUNSETGROUP
+#define TUNSETGROUP     _IOW('T', 206, int)
+#endif
 
 void
 tuncfg(const char *dev, const char *dev_type, const char *dev_node, int persist_mode, const char *username, const char *groupname, const struct tuntap_options *options)

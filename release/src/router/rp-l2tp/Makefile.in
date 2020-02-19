@@ -48,7 +48,7 @@ l2tpd: libl2tp.a libevent/libevent.a
 
 libevent/libevent.a:
 	test -d libevent || ln -s ../libevent .
-	$(MAKE) -C libevent
+	$(MAKE) -C libevent DEFINES="$(DEFINES)"
 
 %.o: %.c
 	@CC@ -c -o $@ $(CFLAGS) $<

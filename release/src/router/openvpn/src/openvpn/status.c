@@ -331,115 +331,41 @@ status_read(struct status_output *so, struct buffer *buf)
     return ret;
 }
 
-//Sam.B,	2013/10.31
-void update_nvram_status(int flag)
+#ifdef ASUSWRT
+#define ST_ERROR                -1
+#define ERRNO_SSL                4
+#define ERRNO_AUTH               6
+#define ST_RUNNING		2
+void update_nvram_status(int event)
 {
-	int pid = getpid();
-	char buf[32] = {0};
+	char cmd[128] = {0};
 	char name[16] = {0};
 	char *p = NULL;
-	int vpnerrno = 0;
 
-	psname(pid, name, 16);	//vpnserverX or vpnclientX
+	prctl(PR_GET_NAME, name);	//e.g. vpnserverX or vpnclientX
 	p = name + 3;
 
-	switch(flag) {
-	case EXIT_GOOD:
-		sprintf(buf, "vpn_%s_errno", p);
-		vpnerrno = nvram_get_int(buf);
-		if(vpnerrno & ERRNO_IP || vpnerrno & ERRNO_ROUTE) {
-			sprintf(buf, "vpn_%s_state", p);
-			nvram_set_int(buf, ST_ERROR);
-		}
-		else {
-			sprintf(buf, "vpn_%s_state", p);
-			nvram_set_int(buf, ST_EXIT);
-		}
+	switch(event) {
+	case EVENT_AUTH_FAILED:
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_AUTH);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
+		system(cmd);
 		break;
-	case EXIT_ERROR:
-		sprintf(buf, "vpn_%s_state", p);
-		nvram_set_int(buf, ST_ERROR);
+	case EVENT_TLS_ERROR:
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_SSL);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
+		system(cmd);
 		break;
-	case ADDR_CONFLICTED:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, nvram_get_int(buf) | ERRNO_IP);
+	case 0:
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, 0);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_RUNNING);
+		system(cmd);
 		break;
-	case ROUTE_CONFLICTED:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, nvram_get_int(buf) | ERRNO_ROUTE);
-		break;
-	case RUNNING:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, 0);
-		sprintf(buf, "vpn_%s_state", p);
-		nvram_set_int(buf, ST_RUNNING);
-		break;
-	case SSLPARAM_ERROR:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, ERRNO_SSL);
-		break;
-	case SSLPARAM_DH_ERROR:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, ERRNO_DH);
-		break;
-	case RCV_AUTH_FAILED_ERROR:
-		sprintf(buf, "vpn_%s_errno", p);
-		nvram_set_int(buf, ERRNO_AUTH);
+	default:
 		break;
 	}
 }
-
-int current_addr(in_addr_t addr)
-{
-	FILE *fp = fopen("/proc/net/route", "r");
-	in_addr_t dest;
-	char buf[256];
-	int i;
-
-	if(fp) {
-		while(fgets(buf, sizeof(buf), fp)) {
-			if(!strncmp(buf, "Iface", 5))
-				continue;
-
-			i = sscanf(buf, "%*s %x", &dest);
-			if (i != 1)
-				break;
-
-			if(dest == addr) {
-				fclose(fp);
-				return 1;
-			}
-		}
-		fclose(fp);
-	}
-	return 0;
-}
-
-int current_route(in_addr_t network, in_addr_t netmask)
-{
-	FILE *fp = fopen("/proc/net/route", "r");
-	in_addr_t dest, mask;
-	char buf[256];
-	int i;
-
-	if(fp) {
-		while(fgets(buf, sizeof(buf), fp)) {
-			if(!strncmp(buf, "Iface", 5))
-				continue;
-
-			i = sscanf(buf, "%*s %x %*s %*s %*s %*s %*s %x",
-					&dest, &mask);
-			if (i != 2)
-				break;
-
-			if(dest == network && mask == netmask) {
-				fclose(fp);
-				return 1;
-			}
-		}
-		fclose(fp);
-	}
-	return 0;
-}
-
-//Sam.E	2013/10/31
+#endif

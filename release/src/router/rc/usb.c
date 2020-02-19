@@ -288,6 +288,7 @@ void add_usb_host_module(void)
 #else
 	if (nvram_get_int("usb_usb3") == 1) {
 #ifdef RTCONFIG_HND_ROUTER
+		modprobe(USB30_MOD);
 		modprobe("xhci-plat-hcd");
 #ifdef RTCONFIG_HND_ROUTER_AX
 		modprobe("xhci-pci");
@@ -305,6 +306,7 @@ void add_usb_host_module(void)
 		modprobe(USB20_MOD);
 #else
 #ifdef RTCONFIG_HND_ROUTER
+		modprobe(USB20_MOD);
 		modprobe("ehci-platform");
 #ifdef RTCONFIG_HND_ROUTER_AX
 		modprobe("ehci-pci");
@@ -326,6 +328,7 @@ void add_usb_host_module(void)
 	}
 	if (nvram_get_int("usb_ohci") == 1) {
 #ifdef RTCONFIG_HND_ROUTER
+		modprobe(USBOHCI_MOD);
 		modprobe("ohci-platform");
 #ifdef RTCONFIG_HND_ROUTER_AX
 		modprobe("ohci-pci");

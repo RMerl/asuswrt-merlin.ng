@@ -287,11 +287,14 @@ OBJS += init-broadcom.o wps-broadcom.o broadcom.o ate-broadcom.o
 ifeq ($(RTCONFIG_AMAS),y)
 OBJS += obd-broadcom.o
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U RT-AX58U TUF-AX3000))
 OBJS += cfe.o
 endif
 ifeq ($(RTCONFIG_ADTBW),y)
 OBJS += adtbw-broadcom.o
+endif
+ifeq ($(RTCONFIG_AMAS_ADTBW),y)
+OBJS += amas-adtbw-broadcom.o
 endif
 ifeq ($(RTCONFIG_DSL),y)
 OBJS += init-broadcom-dsl.o
@@ -405,6 +408,10 @@ ifeq ($(RTCONFIG_PARENTALCTRL),y)
 OBJS += pc.o
 OBJS += pc_block.o
 OBJS += pc_tmp.o
+endif
+
+ifeq ($(RTCONFIG_INTERNETCTRL),y)
+OBJS += ic.o
 endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
@@ -678,6 +685,10 @@ ifneq ($(RTCONFIG_RALINK)$(RTCONFIG_QCA)$(RTCONFIG_REALTEK),y)
 OBJS += erp_monitor.o
 endif
 
+ifeq ($(RTCONFIG_GN_WBL),y)
+OBJS += gn_wbl.o
+endif
+
 ifeq ($(RCONFIG_SW_HW_AUTH), y)
 CLFAGS += -I(TOP)/sw-hw-auth
 endif
@@ -691,6 +702,9 @@ OBJS += amas_wlcconnect.o
 OBJS += amas_bhctrl.o
 endif
 OBJS += amas_lanctrl.o
+ifeq ($(RTCONFIG_AMAS_ADTBW),y)
+OBJS += amas_adtbw.o
+endif
 endif
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
 LDFLAGS += -L$(TOP)/libasuslog -lasuslog
@@ -1019,6 +1033,9 @@ ifeq ($(RTCONFIG_PARENTALCTRL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pc_block
 	@cd $(INSTALLDIR)/sbin && ln -sf rc pc_tmp
 endif
+ifeq ($(RTCONFIG_INTERNETCTRL),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ic
+endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wlcscan
 ifeq ($(RTCONFIG_WIRELESSREPEATER),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wlcconnect
@@ -1122,6 +1139,9 @@ ifeq ($(RTCONFIG_AMAS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_wlcconnect
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_bhctrl
 	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_lanctrl
+ifeq ($(RTCONFIG_AMAS_ADTBW),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc amas_adtbw
+endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
 ifeq ($(HND_ROUTER_AX),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rmd
@@ -1262,6 +1282,19 @@ adtbw-broadcom.o:
 	@-cp -f ./prebuild/adtbw-broadcom.o .
 endif
 endif
+
+ifeq ($(RTCONFIG_AMAS_ADTBW),y)
+ifneq ($(wildcard ./prebuild/amas_adtbw.o),)
+amas_adtbw.o:
+	@-cp -f ./prebuild/amas_adtbw.o .
+endif
+
+ifneq ($(wildcard ./prebuild/amas-adtbw-broadcom.o),)
+amas-adtbw-broadcom.o:
+	@-cp -f ./prebuild/amas-adtbw-broadcom.o .
+endif
+endif
+
 ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
 ifneq ($(wildcard ./prebuild/psta_monitor.o),)
 psta_monitor.o:

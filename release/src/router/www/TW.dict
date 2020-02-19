@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=用戶名稱或 E-mail 帳號
 LANHostConfig_x_DDNSWildcard_itemdesc=本欄可決定含有萬用字元的網域名稱是否可改成 IP 位址。
 LANHostConfig_x_DDNSWildcard_itemname=啟用萬用字元（wildcard）
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt 服務可為您提供免費的網域驗證憑證，並在為網域簽發憑證前進行網域驗證。由 Let's Encrypt 簽發的憑證有效期為 90 天。在您的憑證過期前，華碩路由器將會在成功驗證網域後自動更新這些憑證。請確認您的路由器透過端口 80 連線網路以驗證網域和更新憑證。
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=Let's Encrypt憑證已取得，請重新登入網頁。
 LANHostConfig_x_Gateway_itemdesc=此為無線網路橋接器所使用的預設閘道器的 IP 位址
 LANHostConfig_x_LDNSServer1_itemdesc=DHCP 使用的 DNS 的網路位置。
 LANHostConfig_x_LDNSServer1_itemname=DNS 伺服器

@@ -955,6 +955,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_ADTBW
 	{ "adtbw",			adtbw_main		},
 #endif
+#ifdef RTCONFIG_AMAS_ADTBW
+	{ "amas_adtbw",			amas_adtbw_main              },
+#endif	
 	{NULL, NULL}
 };
 
@@ -1736,6 +1739,12 @@ int main(int argc, char **argv)
 	}
 	else if (!strcmp(base, "pc_tmp")) {
 		pc_tmp_main(argc, argv);
+		return 0;
+	}
+#endif
+#ifdef RTCONFIG_INTERNETCTRL
+	else if (!strcmp(base, "ic")) {
+		ic_main(argc, argv);
 		return 0;
 	}
 #endif

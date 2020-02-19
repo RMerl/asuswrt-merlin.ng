@@ -29,13 +29,22 @@ Known quirks/differences from libusb-0.1:
  5. Error codes returned on certain events may not exactly match the error
     codes returned by libusb-0.1. Patches accepted to bring us closer to the
     behaviour of libusb-0.1 on Linux.
+ 6. The internal structure of usb_dev_handle is different from libusb-0.1. Of
+    course, since this is a purely internal structure, that shouldn't cause
+    any problems. In reality, some libusb-0.1 users make assumptions about what
+    is inside (bad programming practice) and those assumptions are no longer
+    true, resulting in broken software.
 
 libusb homepage:
-http://libusb.sourceforge.net
+http://libusb.info/
 
 Use the mailing list for questions, comments, etc:
-https://sourceforge.net/mailarchive/forum.php?forum_name=libusb-devel
+http://mailing-list.libusb.info
 
-- Daniel Drake <dsd@gentoo.org>
-(use the mailing list rather than mailing developers directly)
+- Hans de Goede <hdegoede@redhat.com>
+- Xiaofan Chen <xiaofanc@gmail.com>
+- Ludovic Rousseau <ludovic.rousseau@gmail.com>
+- Nathan Hjelm <hjelmn@cs.unm.edu>
+- Chris Dickens <christopher.a.dickens@gmail.com>
 
+(Please use the mailing list rather than mailing developers directly)

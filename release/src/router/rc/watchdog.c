@@ -420,6 +420,8 @@ int init_toggle(void)
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX56U:
+		case MODEL_RTAX86U:
+		case MODEL_RTAX68U:
 			nvram_set("btn_ez_radiotoggle", "1");
 			return BTN_WIFI_TOG;
 #endif
@@ -3271,6 +3273,8 @@ void btn_check(void)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
 #elif defined(RTAX58U) || defined(TUFAX3000)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
+#elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+				eval("wl", "-i", "eth6", "ledbh", "7", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RTCONFIG_BCM_7114) || defined(RTAC86U) || defined(AC2900)
@@ -3292,6 +3296,8 @@ void btn_check(void)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX58U) || defined(TUFAX3000)
 				eval("wl", "-i", "eth6", "ledbh", "10", "7");
+#elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #elif defined(RTAC86U) || defined(AC2900)
@@ -3678,7 +3684,7 @@ void btn_check(void)
 			wps_led_control(LED_ON);
 #if defined(RTCONFIG_BCM_CLED) && defined(RTCONFIG_SINGLE_LED)
 			nvram_set("bcm_cled_in_wps", "1");
-			bcm_cled_ctrl(BCM_CLED_GREEN, BCM_CLED_PULSATING);
+			bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
 #endif
 		}
 		else
@@ -4364,7 +4370,7 @@ void fake_etlan_led(void)
 #endif
 
 	phystatus = GetPhyStatus(0);
-#if defined(GTAX11000) && defined(RTCONFIG_EXTPHY_BCM84880)
+#if defined(RTCONFIG_EXTPHY_BCM84880)
 	if (	(nvram_get_int("wans_extwan") && !(phystatus & 0x3e)) || // configure 2.5G port as WAN, need to consider 1G WAN connectivity
 		(!nvram_get_int("wans_extwan") && !(phystatus & 0x1e)))  // configure 2.5G port as LAN, ignore 2.5G port
 #else
@@ -6381,19 +6387,30 @@ int single_led_status(void)
 	int wan_state_t;
 	int is_re_mode = nvram_get_int("re_mode");
 	int is_cfg_alive = nvram_get_int("cfg_alive");
+	const int wait_time_for_brightness_dim = 5;
+	static int wait_for_brightness_dim = 0;
+	int ready_for_brightness_dim = 0;
+	static struct timeval tv_start, tv_end;
 
 	wan_state_t = nvram_get_int("wan0_state_t");
 
 	if(nvram_get_int("cfg_obstatus") == 4 /* OB_LOCKED */ ){
-		bcm_cled_ctrl(BCM_CLED_GREEN, BCM_CLED_PULSATING);
+		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
 		return 1;
 	}
 
 	if(nvram_get_int("re_mode") == 1 &&
 		nvram_match("cfg_group", "")){
-		bcm_cled_ctrl(BCM_CLED_GREEN, BCM_CLED_PULSATING);
+		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
 		return 1;
 	}
+
+#ifdef RTCONFIG_AMAS_ADTBW
+	if(nvram_get_int("amas_adtbw_led")) {
+	    bcm_cled_ctrl(BCM_CLED_GREEN, BCM_CLED_STEADY_NOBLINK);
+	    return 1;
+	}
+#endif
 
 	if(nvram_get_int("bcm_cled_in_wps") == 1) return 0;
 	if(nvram_get_int("bcm_cled_in_reset") == 1) return 0;
@@ -6408,17 +6425,83 @@ int single_led_status(void)
 		return 1;
 	}
 
+	if(wait_for_brightness_dim == 0 ||
+		nvram_get_int("wlready") == 0){
+		gettimeofday(&tv_start, NULL);
+		wait_for_brightness_dim = 1;
+		ready_for_brightness_dim = 0;
+	}else{
+		gettimeofday(&tv_end, NULL);
+		if((tv_end.tv_sec - tv_start.tv_sec) > wait_time_for_brightness_dim){
+			ready_for_brightness_dim = 1;
+		}
+	}
+
+
 	if(is_re_mode == 1){
 		if(is_cfg_alive == 1){
-			bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+			if(ready_for_brightness_dim == 1){
+				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
+			}else{
+				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+			}
 		}else{
 			bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
 		}
 		return 1;
 	}
+
+	if (sw_mode() == SW_MODE_AP){
+		if(nvram_get_int("wlc_psta") == 0){
+			/* AP mode */
+#if 0
+			/* LED spec. 20191120 */
+			if(nvram_get_int("wan0_auxstate_t") == 0){
+				if(ready_for_brightness_dim == 1){
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
+				}else{
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+				}
+			}else{
+				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
+			}
+#else
+			/* LED spec. 20191126 */
+			bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+#endif
+		}else if(nvram_get_int("wlc_psta") == 1){
+			/* media bridge */
+			if(nvram_get_int("wlc_mode") == 1){
+				if(ready_for_brightness_dim == 1){
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
+				}else{
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+				}
+			}else{
+				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
+			}
+		}else if(nvram_get_int("wlc_psta") == 2){
+			/* repeater */
+			if(nvram_get_int("wlc_mode") == 1){
+				if(ready_for_brightness_dim == 1){
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
+				}else{
+					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+				}
+			}else{
+				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
+			}
+		}
+		return 1;
+	}
+
 	if(link_internet == 2){
 		if(wan_state_t == WAN_STATE_CONNECTED){
-			bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+			if(ready_for_brightness_dim == 1){
+				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
+			}else{
+				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
+			}
 		}else{
 			bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
 		}
@@ -6803,7 +6886,8 @@ void wlcnt_chk()
 		if(val - pre_val > wlshoot) {
 			printf("\nWL go insanity! calm down it\n");
 #ifndef RTCONFIG_AHS
-			reboot(RB_AUTOBOOT);
+			logmessage("watchdog", "detect wl reinit count %d", val - pre_val);
+			system("reboot&");
 #else
 			/* export specific string to syslog for ahsd recover action*/
 			logmessage("watchdog", "wl reinit count %d", val - pre_val);
@@ -7704,6 +7788,9 @@ wdp:
 	web_history_save();		// libbwdpi.so
 	AiProtectionMonitor_mail_log();	// libbwdpi.so
 	tm_eula_check();		// libbwdpi.so
+#endif
+#if defined(RTCONFIG_LANTIQ) && defined(RTCONFIG_GN_WBL)
+	GN_WBL_restart();
 #endif
 
 #ifdef RTCONFIG_NOTIFICATION_CENTER

@@ -2189,6 +2189,7 @@ LANHostConfig_x_DDNSUserName_itemname=Ім'я користувача або ел
 LANHostConfig_x_DDNSWildcard_itemdesc=Коли доменне імя з символом узагальнення доволено, воно перенаправляється на вашу ІР-адресу.
 LANHostConfig_x_DDNSWildcard_itemname=Активувати символ узагальнення?
 LANHostConfig_x_DDNSLetsEncrypt_desc=Let's Encrypt (Зашифруймо!) - це послуга, що надає безкоштовний сертифікат, схвалений доменом, і виконуватиме схвалення доменом перед користування сертифікатами для ваших доменів. Видані Let's Encrypt сертифікати придатні протягом 90 днів. Перш ніж закінчиться строк дії сертифікату, маршрутизатор ASUS автоматично поновить такий сертифікат після успішного схвалення домену. Переконайтеся, що маршрутизатор підключається до інтернету через порт 80 для схвалення домену і поновлення сертифікату.
+LANHostConfig_x_DDNSLetsEncrypt_ReloginHint=You’ve gotten a Let’s Encrypt certificate. Please log in to this website again.
 LANHostConfig_x_Gateway_itemdesc=Це - ІР-адреса основного шлюзу  для точки доступу
 LANHostConfig_x_LDNSServer1_itemdesc=Це поле позначає ІР-адресу DNS, щоб надати її клієнтам, які подають запит щодо ІР-адреси з сервера DHCP. Якщо лишити поле порожнім, запит DNS буде оброблено ZVMODELVZ.
 LANHostConfig_x_LDNSServer1_itemname=Сервер DNS:

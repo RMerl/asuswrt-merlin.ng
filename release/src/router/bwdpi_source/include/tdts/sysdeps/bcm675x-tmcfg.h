@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Wed Jul 31 15:19:21 2019
+ * Date: Tue Oct 22 18:06:38 2019
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_384_6802/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX95Q_GPL_386_24350/release/src-rt-5.02axhnd.675x/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -239,7 +239,7 @@
  * Kernel
  */
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
-#define TMCFG_APP_K_TDTS_NFFW 0 // n
+#define TMCFG_APP_K_TDTS_NFFW 1 // y
 #define TMCFG_APP_K_TDTS_NFFW_INTERNAL 0 // n
 #define TMCFG_APP_K_TEMPLATE 0 // n
 

@@ -1920,6 +1920,7 @@ function reset_portconflict_hint(){
 							 || based_modelid == "RT-N65U" || based_modelid == "BRT-AC828" 
 							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"
 							 || based_modelid == "GT-AC5300"  || based_modelid == "GT-AX11000" || based_modelid == "GX-AX6000" || based_modelid == "GX-AC5400"
+							 || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U"
 							){
 								$("#reduce_usb3_tr").show();
 							}

@@ -181,10 +181,7 @@ static int _unlock_erase(const char *mtdname, int erase)
 	else printf("\nError %sing MTD\n", erase ? "eras" : "unlock");
 
 	sleep(1);
-
-	if (r)
-		return 0;	//success
-	return -1;		//erase fail
+	return r;
 }
 
 int mtd_unlock(const char *mtdname)

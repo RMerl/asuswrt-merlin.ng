@@ -1,6 +1,20 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.16 (xx-xx-xxxx)
+  - UPDATED: Tor to 0.3.5.9.
+  - UPDATED: curl to 7.68.0.
+  - UPDATED: nano to 4.8.
+  - UPDATED: dnsmasq to 2.80-148-g3ce803d-openssl (themiron)
+  - CHANGED: Wireless Log page will now regroup Guest Network
+             clients together and identify which guest instance
+             they are connected to.
+  - FIXED: DNS server was unreachable when connecting to an OpenVPN
+           server with Advertise DNS enabled, due to firewall rules.
+  - FIXED: Router Security Assessment would fail to recognize WPA3
+           as being secure.
+
+
 384.15 (8-Feb-2020)
   The RT-AC87U and RT-AC3200 are not supported by this release, see
   the 384.13_4 release released separately for these two models.
@@ -35,7 +49,8 @@ Asuswrt-Merlin 384/NG Changelog
              to WAN, port bonding and mdns.
   - UPDATED: Merged GPL 384_7756 for RT-AX88U, which adds OFDMA and
              WPA3 support to that model.
-  - UPDATED: Merged with GPL 385_10002 for other models (from RT-AC68U)
+  - UPDATED: Merged with GPL 385_10002 for other models (from
+             RT-AC68U)
   - UPDATED: odhcp6c to 1.1-97-ge199804 (themiron)
   - UPDATED: curl to 7.67.0.
   - UPDATED: openssl-1.0 to 1.0.2u

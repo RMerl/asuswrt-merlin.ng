@@ -5,11 +5,14 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Tor to 0.3.5.9.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
+  - UPDATED: dnsmasq to 2.80-148-g3ce803d-openssl (themiron)
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
              they are connected to.
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
+  - FIXED: Router Security Assessment would fail to recognize WPA3
+           as being secure.
 
 
 384.15 (8-Feb-2020)

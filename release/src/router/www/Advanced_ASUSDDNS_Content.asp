@@ -227,9 +227,14 @@ function ddns_load_body(){
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
 	showhide("ddns_ipcheck_tr", 1);
-	showhide("ddns_status_tr", 1);
 
         change_ddns_setting(document.form.ddns_server_x.value);
+
+        if(letsencrypt_support){
+            show_cert_settings(1);
+            change_cert_method(orig_le_enable);
+            show_cert_details();
+        }
 
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 		    if(ddns_updated_t == "1"){
@@ -249,23 +254,19 @@ function ddns_load_body(){
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
 	showhide("ddns_ipcheck_tr", 0);
-	showhide("ddns_status_tr", 0);
     }
 
-	if(letsencrypt_support){
-		show_cert_settings(1);
-		change_cert_method(orig_le_enable);
-		show_cert_details();
-	}
-   
     hideLoading();
 
 	if(ddns_enable_x == "1")
 	{
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-		if(ddnsHint != "")
-			document.getElementById('ddns_status').innerHTML = '<span style="color:#FFCC00;">' + ddnsHint + '</span>';
+		if(ddnsHint != ""){
+//			alert(ddnsHint);
+			document.getElementById("ddns_result").innerHTML = ddnsHint;
+			document.getElementById('ddns_result_tr').style.display = "";
+		}
 		if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
 			showhide("wan_ip_hide2", 0);
 			if(ddns_server_x == "WWW.ASUS.COM"){
@@ -273,13 +274,6 @@ function ddns_load_body(){
 			}
 		}
 	}
-
-    if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
-        showhide("wan_ip_hide2", 0);
-        if(ddns_server_x == "WWW.ASUS.COM"){
-            showhide("wan_ip_hide3", 1);
-        }
-    }
 }
 
 function get_cert_info(){
@@ -681,11 +675,9 @@ function save_cert_key(){
 				<input type="radio" value="0" name="ddns_enable_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')" <% nvram_match("ddns_enable_x", "0", "checked"); %>><#checkbox_No#>
 				</td>
 			</tr>
-			<tr id="ddns_status_tr">
-				<th>DDNS status</th>
-				<td id="ddns_status">
-					Ok
-				</td>
+			<tr id="ddns_result_tr" style="display:none;">
+				<th>DDNS Registration Result</th>
+				<td id="ddns_result"></td>
 			</tr>
 			<tr>
 				<th id="ddns_wan_unit_th"><#wan_interface#></th>

@@ -3198,14 +3198,14 @@ void hotplug_net(void)
 	char lan_ifname[16];
 	char *interface, *action;
 	bool psta_if, dyn_if, add_event, remove_event;
-	int unit = WAN_UNIT_NONE;
-	char tmp[100], prefix[32];
 #ifdef RTCONFIG_USB_MODEM
 	char device_path[128], usb_path[PATH_MAX], usb_node[32], port_path[8];
 	char nvram_name[32];
 	char word[PATH_MAX], *next;
 	char modem_type[8];
+	int unit = WAN_UNIT_NONE;
 	int modem_unit;
+	char tmp[100], prefix[32];
 	char tmp2[100], prefix2[32];
 	unsigned int vid, pid;
 	char buf[32];
@@ -3383,10 +3383,13 @@ void hotplug_net(void)
 NEITHER_WDS_OR_PSTA:
 	/* PPP interface removed */
 	if (strncmp(interface, "ppp", 3) == 0 && remove_event) {
+		_dprintf("hotplug net: remove net %s.\n", interface);
+		/* do not clear interface too early
 		while ((unit = ppp_ifunit(interface)) >= 0) {
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 			nvram_set(strcat_r(prefix, "pppoe_ifname", tmp), "");
 		}
+		*/
 	}
 #ifdef RTCONFIG_USB_MODEM
 	// Android phone, RNDIS interface, NCM, qmi_wwan.

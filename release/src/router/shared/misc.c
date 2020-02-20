@@ -2504,7 +2504,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, uns
 				*rx2 = backup_rx;
 				*tx2 = backup_tx;				
 				/* Cherry Cho modified for RT-AC3200 Bug#202 in 2014/11/4. */	
-				unit = get_wan_unit("eth0");
+				unit = get_wan_unit(WAN_IF_ETH);
 
 #ifdef RTCONFIG_DUALWAN			
 				if ( (unit == wan_primary_ifunit()) || ( !strstr(nvram_safe_get("wans_dualwan"), "none") && nvram_match("wans_mode", "lb")) )
@@ -2542,7 +2542,7 @@ unsigned int netdev_calc(char *ifname, char *ifname_desc, unsigned long *rx, uns
 			get_realtek_wan_bytecount(tx, rx);			
 #endif//end sherry}
 #if !defined(RTCONFIG_BCM5301X_TRAFFIC_MONITOR) && !defined(HND_ROUTER)
-			if(strlen(modelvlan) && !strcmp(ifname, "eth0"))
+			if(strlen(modelvlan) && !strcmp(ifname, WAN_IF_ETH))
 			{
 				backup_rx = *rx;
 				backup_tx = *tx;

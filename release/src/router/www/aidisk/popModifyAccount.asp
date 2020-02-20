@@ -54,7 +54,7 @@ function validForm(){
 			return false;
 	}
 	else{				
-			var alert_str = validator.hostName(document.getElementById("new_account"));
+			var alert_str = validator.account_name(document.getElementById("new_account"));
 			if(alert_str != ""){
 				alert(alert_str);
 				document.getElementById("new_account").focus();

@@ -44,7 +44,7 @@ static void amas_adtbw_led_ctrl(void)
 	/* Warm Up stage. persist led solid green at least [AMAS_ADTBW_DFT_TIMEOUT_WARM_UP] seconds */
 	if(adtbw_state.first_re_assoc && now > adtbw_state.time_first_re_assoc) {
 	    gap = now - adtbw_state.time_first_re_assoc;
-	    if(gap <= AMAS_ADTBW_DFT_TIMEOUT_WARM_UP && (!conduct_bgdfs || !nvram_get_int("amas_adtbw_bw160"))) {
+	    if(gap <= AMAS_ADTBW_DFT_TIMEOUT_WARM_UP && !conduct_bgdfs && !nvram_get_int("amas_adtbw_bw160")) {
 		adtbw_state.led_state = LED_WARM_UP;
 	    }
 	}
@@ -64,7 +64,6 @@ static void amas_adtbw_led_ctrl(void)
 		adtbw_state.led_state = LED_BW160;
 	    }
 	}
-
 
 	if(adtbw_state.led_state != LED_NO_ACTION){
 	    nvram_set("amas_adtbw_led", "1");
@@ -246,6 +245,9 @@ int amas_adtbw_main(int argc, char *argv[])
 		fclose(fp);
 	}
 
+	amas_adtbw_dbg = nvram_get_int("amas_adtbw_dbg");
+	amas_adtbw_syslog = nvram_get_int("amas_adtbw_syslog");
+
 	/* retrieve configuration */
 	amas_adtbw_get_config();
 	amas_adtbw_init_state();
@@ -254,8 +256,6 @@ int amas_adtbw_main(int argc, char *argv[])
 		amas_adtbw_exit(0);
 
 	dbG("amas_adtbw start...\n");
-
-	amas_adtbw_dbg = nvram_get_int("amas_adtbw_dbg");
 
         /* set the signal handler */
 	sigemptyset(&sigs_to_catch);

@@ -1040,7 +1040,7 @@ int detect_internet(int wan_unit)
 		link_internet = CONNED;
 
 	/* Set no DNS state even if connected for WEB UI */
-	if(link_internet == DISCONN || !dns_ret){
+	if(isFirstUse || link_internet == DISCONN || !dns_ret){
 		if(nvram_get_int("web_redirect") & WEBREDIRECT_FLAG_NOINTERNET)
 			set_link_internet(wan_unit, 1);
 		else{
@@ -1427,7 +1427,6 @@ int if_wan_phyconnected(int wan_unit){
 #ifdef RTCONFIG_WIRELESSREPEATER
 	int link_ap = 0;
 #endif
-	int link_internet = -1;
 	char tmp[100], prefix[32];
 	char wan_proto[16];
 #ifdef RTCONFIG_USB_MODEM
@@ -1782,10 +1781,12 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
 			if(link_wan[wan_unit]){
+_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
 				nvram_set_int(wired_link_nvram, CONNED);
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
 			}
 			else{
+_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, DISCONN);
 				nvram_set_int(wired_link_nvram, DISCONN);
 
 				record_wan_state_nvram(wan_unit, WAN_STATE_DISCONNECTED, -1, WAN_AUXSTATE_NOPHY);
@@ -1834,8 +1835,6 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			nvram_set_int("link_ap", link_ap);
 	}
 #endif
-
-	link_internet = nvram_get_int("link_internet");
 
 	if(sw_mode == SW_MODE_ROUTER){
 		// this means D2C because of reconnecting the WAN port.
@@ -1892,14 +1891,12 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			}
 		}
 		else if(!link_wan[wan_unit]){
-			if(link_internet != 1 && wan_unit == wan_primary_ifunit()
+			if(wan_unit == wan_primary_ifunit()
 #ifdef RTCONFIG_DUALWAN
 					&& strcmp(dualwan_mode, "lb")
 #endif
-					){
+					)
 				set_link_internet(wan_unit, 1);
-				link_internet = 1;
-			}
 
 			if((nvram_get_int("web_redirect")&WEBREDIRECT_FLAG_NOLINK)){
 				disconn_case[wan_unit] = CASE_DISWAN;
@@ -1924,7 +1921,6 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 		if(!link_wan[wan_unit]){
 			// ?: type error?
 			nvram_set_int("link_internet", 1);
-			link_internet = 1;
 
 			record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
 
@@ -1934,10 +1930,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			}
 		}
 #else
-		if(link_internet != 2){
-			set_link_internet(wan_unit, 2);
-			link_internet = 2;
-		}
+		set_link_internet(wan_unit, 2);
 
 #ifdef RTCONFIG_DHCP_OVERRIDE
 		if (nvram_match("dnsqmode", "2")) {
@@ -1951,12 +1944,9 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 #endif
 	}
 #ifdef RTCONFIG_WIRELESSREPEATER
-	else{ // sw_mode == SW_MODE_REPEATER, SW_MODE_HOTSPOT.
+	else{ // sw_mode == SW_MODE_REPEATER, SW_MODE_MediaBridge...etc
 		if(!link_ap){
-			if(link_internet != 1){
-				set_link_internet(wan_unit, 1);
-				link_internet = 1;
-			}
+			set_link_internet(wan_unit, 1);
 
 			if(sw_mode == SW_MODE_HOTSPOT)
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NOPHY);
@@ -1964,27 +1954,14 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			disconn_case[wan_unit] = CASE_AP_DISCONN;
 			return DISCONN;
 		}
-#ifdef RTCONFIG_REALTEK
-/* [MUST]: Need to disscuss to add new mode for Media Bridge */
-		else if(repeater_mode() || mediabridge_mode())
-#else
-		else if(sw_mode == SW_MODE_REPEATER)
-#endif
+		else
 		{
 			if(nvram_match("lan_proto", "dhcp") && nvram_get_int("lan_state_t") != LAN_STATE_CONNECTED){
-				if(link_internet != 1){
-					set_link_internet(wan_unit, 1);
-					link_internet = 1;
-				}
-
+				set_link_internet(wan_unit, 1);
 				return DISCONN;
 			}
 			else{
-				if(link_internet != 2){
-					set_link_internet(wan_unit, 2);
-					link_internet = 2;
-				}
-
+				set_link_internet(wan_unit, 2);
 				return CONNED;
 			}
 		}
@@ -2041,7 +2018,7 @@ int if_wan_connected(int wan_unit){
 
 	if(chk_proto(wan_unit) != CONNED) {
 #ifdef RTCONFIG_WIFI_SON
-		if ((nvram_get_int("link_internet") == 2) && (nvram_match("x_Setting", "1"))) {
+		if ((nvram_get_int("link_internet") == 2) && !isFirstUse) {
 			logmessage("WAN Connection", "WAN stopped...");
 			set_link_internet(wan_unit, 1);
 		}
@@ -2859,6 +2836,7 @@ int wanduck_main(int argc, char *argv[]){
 	int nready, maxi, sockfd;
 	int wan_unit, wan_sbstate;
 	char prefix_wan[8];
+	char wired_link_nvram[16];
 #if defined(RTCONFIG_WIRELESSREPEATER) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_CONCURRENTREPEATER)
 	char domain_mapping[64];
 #endif
@@ -2975,6 +2953,10 @@ int wanduck_main(int argc, char *argv[]){
 		strcat_r(prefix_wan, "auxstate_t", nvram_auxstate[wan_unit]);
 
 		set_disconn_count(wan_unit, S_IDLE);
+
+		link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
+		nvram_set_int(wired_link_nvram, link_wan[wan_unit]);
+
 #ifdef RTCONFIG_USB_MODEM
 		nvram_set_int(strcat_r(prefix_wan, "is_usb_modem_ready", tmp2), link_wan[wan_unit]);
 #endif

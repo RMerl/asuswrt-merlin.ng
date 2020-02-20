@@ -184,7 +184,7 @@ static int wifi_sw_old = -1;
 #endif
 #if defined(RTCONFIG_TURBO_BTN)
 static int g_boost_status[BOOST_MODE_MAX] = { 0 };
-#elif defined(RTCONFIG_LED_BTN)
+#elif defined(RTCONFIG_LED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 #if defined(RTCONFIG_QCA)
 static int LED_status_old = 0;
 static int LED_status = 0;
@@ -352,7 +352,7 @@ void led_control_normal(void)
 	LED_switch_count = nvram_get_int("LED_switch_count");
 #endif
 
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	if (inhibit_led_on()) return;
 #endif
 
@@ -3154,9 +3154,13 @@ void btn_check(void)
 	handle_turbo_button();
 	handle_led_onoff_button();
 
-#ifdef RTCONFIG_LED_BTN
+#if (defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)) && !defined(RTCONFIG_QCA)
 	LED_status_old = LED_status;
+#ifndef RTCONFIG_WIFI_TOG_BTN
+	LED_status = button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1");
+#else
 	LED_status = button_pressed(BTN_LED);
+#endif
 
 #if defined(RTAC68U) || defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #if defined(RTAC68U)
@@ -3271,7 +3275,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX95Q)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
-#elif defined(RTAX58U) || defined(TUFAX3000)
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
 				eval("wl", "-i", "eth6", "ledbh", "7", "7");
@@ -3294,8 +3298,8 @@ void btn_check(void)
 				eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX95Q)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
-#elif defined(RTAX58U) || defined(TUFAX3000)
-				eval("wl", "-i", "eth6", "ledbh", "10", "7");
+#elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+				eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
 #elif defined(RTAX56U)
@@ -3409,6 +3413,9 @@ void btn_check(void)
 		    !wps_band_ssid_broadcast_off(get_radio_band(0)) &&
 #ifndef RTCONFIG_WIFI_TOG_BTN
 		    nvram_match("btn_ez_radiotoggle", "0") &&
+#ifndef RTCONFIG_QCA
+		    nvram_match("btn_ez_mode", "0") &&
+#endif
 #endif
 #ifdef RTCONFIG_WPS_ALLLED_BTN
 		    nvram_match("btn_ez_mode", "0") &&
@@ -3524,8 +3531,14 @@ void btn_check(void)
 			if (button_pressed(BTN_WPS) &&
 			    !no_need_to_start_wps() &&
 			    !wps_band_radio_off(get_radio_band(0)) &&
-			    !wps_band_ssid_broadcast_off(get_radio_band(0)))
-			{
+			    !wps_band_ssid_broadcast_off(get_radio_band(0))
+#ifndef RTCONFIG_WIFI_TOG_BTN
+			    && nvram_match("btn_ez_radiotoggle", "0")
+#ifndef RTCONFIG_QCA
+			    && nvram_match("btn_ez_mode", "0")
+#endif
+#endif
+			) {
 				/* Whenever it is pushed steady, again... */
 				if (++btn_count_setup_second > WPS_WAIT_COUNT)
 				{
@@ -4341,7 +4354,7 @@ aggled_control(int mode)
 #endif
 
 static int lstatus = 0;
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 static int allstatus = 0;
 #endif
 
@@ -4359,7 +4372,7 @@ void fake_etlan_led(void)
 	static int status_old;
 	int phystatus = 0;
 
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	if (nvram_match("AllLED", "0")) {
 		if (allstatus)
 			led_control(LED_LAN, LED_OFF);
@@ -4664,7 +4677,7 @@ int confirm_led()
 }
 
 #ifdef SW_DEVLED
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 static int swled_alloff_counts = 0;
 static int swled_alloff_x = 0;
 #endif
@@ -4858,7 +4871,7 @@ void led_check(int sig)
 		kill_pidfile_s("/var/run/sw_devled.pid", SIGUSR2);
 #endif
 
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	int all_led;
 	int turnoff_counts = swled_alloff_counts?:3;
 
@@ -4974,7 +4987,7 @@ void led_check(int sig)
 }
 #endif
 
-#if defined (RTCONFIG_LED_BTN) || defined (RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 void led_table_ctrl(int on_off)
 {
 	int i;
@@ -6380,136 +6393,6 @@ static void link_pap_status()
 }
 #endif
 
-#if defined(RTCONFIG_BCM_CLED) && defined(RTCONFIG_SINGLE_LED)
-int single_led_status(void)
-{
-	int link_internet = nvram_get_int("link_internet");
-	int wan_state_t;
-	int is_re_mode = nvram_get_int("re_mode");
-	int is_cfg_alive = nvram_get_int("cfg_alive");
-	const int wait_time_for_brightness_dim = 5;
-	static int wait_for_brightness_dim = 0;
-	int ready_for_brightness_dim = 0;
-	static struct timeval tv_start, tv_end;
-
-	wan_state_t = nvram_get_int("wan0_state_t");
-
-	if(nvram_get_int("cfg_obstatus") == 4 /* OB_LOCKED */ ){
-		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
-		return 1;
-	}
-
-	if(nvram_get_int("re_mode") == 1 &&
-		nvram_match("cfg_group", "")){
-		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
-		return 1;
-	}
-
-#ifdef RTCONFIG_AMAS_ADTBW
-	if(nvram_get_int("amas_adtbw_led")) {
-	    bcm_cled_ctrl(BCM_CLED_GREEN, BCM_CLED_STEADY_NOBLINK);
-	    return 1;
-	}
-#endif
-
-	if(nvram_get_int("bcm_cled_in_wps") == 1) return 0;
-	if(nvram_get_int("bcm_cled_in_reset") == 1) return 0;
-
-	if(nvram_get_int("ble_dut_con") == 1){
-		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_BLINK);
-		return 1;
-	}
-
-	if(nvram_get_int("x_Setting") == 0){
-		bcm_cled_ctrl(BCM_CLED_BLUE, BCM_CLED_STEADY_NOBLINK);
-		return 1;
-	}
-
-	if(wait_for_brightness_dim == 0 ||
-		nvram_get_int("wlready") == 0){
-		gettimeofday(&tv_start, NULL);
-		wait_for_brightness_dim = 1;
-		ready_for_brightness_dim = 0;
-	}else{
-		gettimeofday(&tv_end, NULL);
-		if((tv_end.tv_sec - tv_start.tv_sec) > wait_time_for_brightness_dim){
-			ready_for_brightness_dim = 1;
-		}
-	}
-
-
-	if(is_re_mode == 1){
-		if(is_cfg_alive == 1){
-			if(ready_for_brightness_dim == 1){
-				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
-			}else{
-				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-			}
-		}else{
-			bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-		}
-		return 1;
-	}
-
-	if (sw_mode() == SW_MODE_AP){
-		if(nvram_get_int("wlc_psta") == 0){
-			/* AP mode */
-#if 0
-			/* LED spec. 20191120 */
-			if(nvram_get_int("wan0_auxstate_t") == 0){
-				if(ready_for_brightness_dim == 1){
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
-				}else{
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-				}
-			}else{
-				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-			}
-#else
-			/* LED spec. 20191126 */
-			bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-#endif
-		}else if(nvram_get_int("wlc_psta") == 1){
-			/* media bridge */
-			if(nvram_get_int("wlc_mode") == 1){
-				if(ready_for_brightness_dim == 1){
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
-				}else{
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-				}
-			}else{
-				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-			}
-		}else if(nvram_get_int("wlc_psta") == 2){
-			/* repeater */
-			if(nvram_get_int("wlc_mode") == 1){
-				if(ready_for_brightness_dim == 1){
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
-				}else{
-					bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-				}
-			}else{
-				bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-			}
-		}
-		return 1;
-	}
-
-	if(link_internet == 2){
-		if(wan_state_t == WAN_STATE_CONNECTED){
-			if(ready_for_brightness_dim == 1){
-				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK_DIM);
-			}else{
-				bcm_cled_ctrl(BCM_CLED_WHITE, BCM_CLED_STEADY_NOBLINK);
-			}
-		}else{
-			bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-		}
-	}else{
-		bcm_cled_ctrl(BCM_CLED_RED, BCM_CLED_STEADY_NOBLINK);
-	}
-}
-#endif
 #ifdef RTCONFIG_BT_CONN
 static void bt_turn_off_service()
 {
@@ -7468,10 +7351,11 @@ void watchdog(int sig)
 	btn_check();
 
 	if (nvram_match("asus_mfg", "0")
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 		&& nvram_get_int("AllLED")
 #endif
 	)
+	{
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 #if defined(RTCONFIG_QCA)
 	qca_wps_state_check();
@@ -7482,6 +7366,7 @@ void watchdog(int sig)
 #else
 	service_check();
 #endif
+	}
 
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_WIGIG)
 	wigig_temperatore_check();
@@ -7625,6 +7510,9 @@ void watchdog(int sig)
 		}
 	}
 #endif
+#if defined(RTCONFIG_SINGLE_LED)
+	single_led_status();
+#endif
 #if defined(RTCONFIG_BT_CONN)
 	if (nvram_match("x_Setting", "0"))
 		bt_turn_off_service();
@@ -7659,7 +7547,9 @@ void watchdog(int sig)
 		     (nvram_match("usb_path2_speed", "12") &&
 		      !nvram_match("usb_path2", "printer") && !nvram_match("usb_path2", "modem")))) {
 			_dprintf("force reset usb pwr\n");
+#ifdef RTCONFIG_USB
 			stop_usb_program(1);
+#endif
 			sleep(1);
 			set_pwr_usb(0);
 			sleep(3);
@@ -7983,7 +7873,7 @@ int sw_devled_main(int argc, char *argv[])
 		fclose(fp);
 	}
 
-#if defined (RTCONFIG_LED_BTN) || defined (RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	swled_alloff_counts = nvram_get_int("offc");
 #endif
 

@@ -538,6 +538,11 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+		else if (strcmp(argv[1], "gpio2r") == 0) {
+			printf("%d\n", get_gpio2(atoi(argv[2])));
+		}
+#endif
 #ifndef HND_ROUTER
 		else if (strcmp(argv[1], "gpiod") == 0) {
 			if (argc>=4) gpio_dir(atoi(argv[2]), atoi(argv[3]));
@@ -1810,7 +1815,7 @@ int main(int argc, char **argv)
 	}
 #endif
 	else if (!strcmp(base, "add_multi_routes")) {
-		return add_multi_routes();
+		return add_multi_routes(0);
 	}
 	else if (!strcmp(base, "led_ctrl")) {
 		if (argc != 3)

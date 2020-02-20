@@ -194,50 +194,32 @@ function initial(){
 	if (lanport == '') lanport = '80';
 	change_url(lanport, 'http_lan')
 
-	if(wifi_tog_btn_support || wifi_hw_sw_support || sw_mode == 2 || sw_mode == 4){		// wifi_tog_btn && wifi_hw_sw && hide WPS button behavior under repeater mode
-			if(cfg_wps_btn_support){
-				document.getElementById('turn_WPS').style.display = "";
-				document.form.btn_ez_radiotoggle[1].disabled = true;
-				document.getElementById('turn_WiFi').style.display = "none";
-				document.getElementById('turn_WiFi_str').style.display = "none";
-				document.getElementById('turn_LED').style.display = "";
-				if(document.form.btn_ez_radiotoggle[2].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
-			else{
-				document.form.btn_ez_radiotoggle[0].disabled = true;
-				document.form.btn_ez_radiotoggle[1].disabled = true;
-				document.form.btn_ez_radiotoggle[2].disabled = true;
-				document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
-			}
-	}
-	else{
-			
-			document.getElementById('btn_ez_radiotoggle_tr').style.display = "";
-			if(cfg_wps_btn_support){
-				document.getElementById('turn_WPS').style.display = "";
-				document.getElementById('turn_WiFi').style.display = "";
-				document.getElementById('turn_LED').style.display = "";
-				if(document.form.btn_ez_radiotoggle[1].checked == false && document.form.btn_ez_radiotoggle[2].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
-			else{
-				document.getElementById('turn_WPS').style.display = "";
-				document.getElementById('turn_WiFi').style.display = "";
-				document.getElementById('turn_LED').disabled = true;
-				document.getElementById('turn_LED').style.display = "none";
-				document.getElementById('turn_LED_str').style.display = "none";
-				if(document.form.btn_ez_radiotoggle[1].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
+	var WPSArray = ['WPS'];
+	var ez_mode = httpApi.nvramGet (['btn_ez_mode']).btn_ez_mode;
+	var ez_radiotoggle = httpApi.nvramGet (['btn_ez_radiotoggle']).btn_ez_radiotoggle;
+	if(!wifi_tog_btn_support && !wifi_hw_sw_support && sw_mode != 2 && sw_mode != 4){
+		WPSArray.push('WiFi');
 	}
 
-	/* MODELDEP */
-	if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-		document.form.btn_ez_radiotoggle[0].disabled = true;
-		document.form.btn_ez_radiotoggle[1].disabled = true;
-		document.form.btn_ez_radiotoggle[2].disabled = true;
-		document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
+	if(cfg_wps_btn_support){
+		WPSArray.push('LED');
+	}
+
+	if(WPSArray.length > 1){
+		$('#btn_ez_radiotoggle_tr').show();
+		for(i=0;i<WPSArray.length;i++){
+			$('#btn_ez_' + WPSArray[i]).show();
+		}
+
+		if(ez_radiotoggle == '1' && ez_mode == '0'){	// WiFi
+			document.form.btn_ez_radiotoggle[1].checked = true;
+		}
+		else if(ez_radiotoggle == '0' && ez_mode == '1'){	// LED
+			document.form.btn_ez_radiotoggle[2].checked = true;
+		}
+		else{	// WPS
+			document.form.btn_ez_radiotoggle[0].checked = true;
+		}
 	}
 	
 	if(sw_mode != 1){
@@ -472,19 +454,19 @@ function applyRule(){
 			}
 		}
 		
-		if(document.form.btn_ez_radiotoggle[1].disabled == false && document.form.btn_ez_radiotoggle[1].checked == true){
-				document.form.btn_ez_radiotoggle.value=1;
-				document.form.btn_ez_mode.value=0;
+		if(document.form.btn_ez_radiotoggle[1].checked){	// WiFi
+			document.form.btn_ez_radiotoggle.value = 1;
+			document.form.btn_ez_mode.value = 0;
 		}
-		else if(document.form.btn_ez_radiotoggle[2].disabled == false && document.form.btn_ez_radiotoggle[2].checked == true){
-				document.form.btn_ez_radiotoggle.value=0;
-				document.form.btn_ez_mode.value=1;
+		else if(document.form.btn_ez_radiotoggle[2].checked){	// LED
+			document.form.btn_ez_radiotoggle.value = 0;
+			document.form.btn_ez_mode.value = 1;
 		}
-		else{
-				document.form.btn_ez_radiotoggle.value=0;
-				document.form.btn_ez_mode.value=0;
+		else{	// WPS
+			document.form.btn_ez_radiotoggle.value = 0;
+			document.form.btn_ez_mode.value = 0;
 		}
-		
+
 		if(reboot_schedule_support){
 			updateDateTime();
 		}
@@ -573,7 +555,7 @@ function validForm(){
 		return false;
 	}
 	else{
-		var alert_str = validator.hostName(document.form.http_username);
+		var alert_str = validator.account_name(document.form.http_username);
 
 		if(alert_str != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str);
@@ -1918,7 +1900,7 @@ function reset_portconflict_hint(){
 							 || based_modelid == "4G-AC68U" || based_modelid == "BLUECAVE" 
 							 || based_modelid == "RT-AC88Q" || based_modelid == "RT-AD7200" 
 							 || based_modelid == "RT-N65U" || based_modelid == "BRT-AC828" 
-							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U"
+							 || based_modelid == "RT-AX88U" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U"
 							 || based_modelid == "GT-AC5300"  || based_modelid == "GT-AX11000" || based_modelid == "GX-AX6000" || based_modelid == "GX-AC5400"
 							 || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U"
 							){
@@ -2086,12 +2068,18 @@ function reset_portconflict_hint(){
 					</td>
 				</tr>
 
-				<tr id="btn_ez_radiotoggle_tr">
+				<tr id="btn_ez_radiotoggle_tr" style="display: none;">
 					<th><#WPS_btn_behavior#></th>
 					<td>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" class="input" style="display:none;" value="0"><label for="turn_WPS"><#WPS_btn_actWPS#></label>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" class="input" style="display:none;" value="1" <% nvram_match_x("", "btn_ez_radiotoggle", "1", "checked"); %>><label for="turn_WiFi" id="turn_WiFi_str"><#WPS_btn_toggle#></label>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" style="display:none;" value="0" <% nvram_match_x("", "btn_ez_mode", "1", "checked"); %>><label for="turn_LED" id="turn_LED_str"><#LED_switch#></label>
+						<label for="turn_WPS" id="btn_ez_WPS">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" class="input" value="0"><#WPS_btn_actWPS#>
+						</label>
+						<label for="turn_WiFi" id="btn_ez_WiFi" style="display:none;">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" class="input" value="1"><#WPS_btn_toggle#>
+						</label>
+						<label for="turn_LED" id="btn_ez_LED" style="display:none;">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" value="0"><#LED_switch#>
+						</label>					
 					</td>
 				</tr>
 				<tr>

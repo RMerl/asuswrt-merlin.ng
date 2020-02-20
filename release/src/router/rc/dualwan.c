@@ -28,7 +28,7 @@
 #define LANIF_2G	"eth1"
 #define LANIF_5G	"wifi0"
 
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 #define WANIF_ETH	"eth4"
 #else
 #define WANIF_ETH	"eth0"
@@ -39,7 +39,7 @@
 #ifdef RTCONFIG_USB_MULTIMODEM
 #define WANIF_USB2	"usb2"
 #endif
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 #define WANIF_ETH_USB	"eth4 usb"
 #else
 #define WANIF_ETH_USB	"eth0 usb"

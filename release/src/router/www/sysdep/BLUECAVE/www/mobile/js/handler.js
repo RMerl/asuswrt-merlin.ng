@@ -2511,10 +2511,16 @@ goTo.Update = function(){
 
 	$("#newVersion").val(systemVariable.newFwVersion);
 	$("#desktop_applyBtn_update").html(applyBtn);
-	$("#desktop_abortBtn_update").html(abortBtn);
 	$("#mobile_applyBtn_update").html(applyBtn);
-	$("#mobile_abortBtn_update").html(abortBtn);
-
+	if(systemVariable.forceLevel == 1){
+		$("#desktop_abortBtn_update").remove();
+		$("#mobile_abortBtn_update").remove();
+	}
+	else{
+		$("#desktop_abortBtn_update").html(abortBtn);
+		$("#mobile_abortBtn_update").html(abortBtn);
+	}
+	
 	goTo.loadPage("update_page", false);
 };
 

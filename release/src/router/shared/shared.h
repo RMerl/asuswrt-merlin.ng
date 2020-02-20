@@ -160,6 +160,12 @@
 #define WLREADY			"wlready"
 #endif
 
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+#define WAN_IF_ETH	"eth4"
+#else
+#define WAN_IF_ETH	"eth0"
+#endif
+
 /**
  * skb->mark usage
  * 1.	bit 28~31:	Load-balance rule, IPTABLES_MARK_LB_*
@@ -1541,6 +1547,9 @@ extern int led_control_atomic(int which, int mode);
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
 extern uint32_t set_gpio(uint32_t gpio, uint32_t value);
 extern uint32_t get_gpio(uint32_t gpio);
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+extern uint32_t get_gpio2(uint32_t gpio);
+#endif
 extern int get_switch_model(void);
 #if defined(RTCONFIG_ALPINE) || defined(RTCONFIG_LANTIQ)
 extern uint32_t get_phy_status(int wan_unit);
@@ -2180,7 +2189,7 @@ static inline int turbo_led_control(int onoff)
 static inline int turbo_led_control(__attribute__ ((unused)) int onoff) { return 0; }
 #endif
 
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_TURBO_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 static inline int inhibit_led_on(void) { return !nvram_get_int("AllLED"); }
 #else
 static inline int inhibit_led_on(void) { return 0; }

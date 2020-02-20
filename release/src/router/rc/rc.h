@@ -73,6 +73,24 @@
 #include <amas_lib.h>
 #endif
 
+#ifdef RTCONFIG_EXTPHY_BCM84880
+#if 1
+#define EXTPHY_ADDR 0x1e
+#define EXTPHY_ADDR_STR "0x1e"
+#else // RTL8226
+#define EXTPHY_ADDR 0x01
+#define EXTPHY_ADDR_STR "0x01"
+#endif
+
+#if defined(GTAX11000)
+#define PHY_ID_54991E "3590:5099"
+#elif defined(RTAX86U)
+#define PHY_ID_54991EL "3590:5089"
+#endif
+
+void config_ext_wan_port();
+void get_ext_phy_id();
+#endif
 
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
 
@@ -285,10 +303,6 @@ extern int ate_run_arpstrom(void);
 extern void ate_stress_pkteng(void);
 extern void ate_temperature_record(void);
 extern void wl_driver_mode_update(void);
-#ifdef RTCONFIG_EXTPHY_BCM84880
-void config_ext_wan_port();
-void get_ext_phy_id();
-#endif
 extern void eth_phypower(char *port, int onoff);
 #endif
 #ifdef BLUECAVE
@@ -832,7 +846,7 @@ extern int dpdt_ant_main(int argc, char *argv[]);
 extern int thermal_txpwr_main(int argc, char *argv[]);
 extern void start_wan(void);
 extern void stop_wan(void);
-extern int add_multi_routes(void);
+extern int add_multi_routes(int check_link);
 extern int add_routes(char *prefix, char *var, char *ifname);
 extern int del_routes(char *prefix, char *var, char *ifname);
 extern void start_wan_if(int unit);
@@ -1426,6 +1440,7 @@ extern void subtime(struct timeval *a, struct timeval *b, struct timeval *res);
 extern void setupset(fd_set *theset, int *numfds);
 extern void waitforconnects();
 extern int tcpcheck_main(int argc, char *argv[]);
+extern int tcpcheck_retval(int timeout, char *host_port);
 
 // readmem.c
 #ifdef BUILD_READMEM
@@ -2360,6 +2375,7 @@ typedef struct probe_4366_param_s {
 	int bECode_5G_2;
 	int bECode_fabid;
 } probe_4366_param_t;
+void envram_dump_factory_data();
 #endif /* RTCONFIG_BCM_7114 || HND_ROUTER */
 
 #if defined(RTAX88U)

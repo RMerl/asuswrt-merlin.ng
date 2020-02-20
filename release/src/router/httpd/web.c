@@ -14132,7 +14132,7 @@ static void GetWanStatus(char *state)
 #if defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X)
 			if (!strncmp(prefix, "vlan2", strlen(prefix))) {
 #else
-			if (!strncmp(prefix, "eth0", strlen(prefix))) {
+			if (!strncmp(prefix, WAN_IF_ETH, strlen(prefix))) {
 #endif
 				if (wan_proto == 1)
 					wanstatus = BLE_WAN_STATUS_PORT0_DHCP;
@@ -20355,7 +20355,7 @@ static int ej_netdev(int eid, webs_t wp, int argc, char_t **argv)
 #endif
 				}
 				if(nvram_match("wans_dualwan", "wan none")){
-					if(strcmp(ifname, "eth0")==0){
+					if(strcmp(ifname, WAN_IF_ETH)==0){
 						traffic_wanlan(WAN0DEV, (uint32_t *) &rx, (uint32_t *) &tx);
 					}
 				}

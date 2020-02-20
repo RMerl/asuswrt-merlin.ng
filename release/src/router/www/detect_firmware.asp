@@ -5,6 +5,7 @@ webs_state_info_beta = '<% nvram_get("webs_state_info_beta"); %>';
 webs_state_REQinfo = '<% nvram_get("webs_state_REQinfo"); %>';
 webs_state_flag = '<% nvram_get("webs_state_flag"); %>';
 webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
+webs_state_level = '<% nvram_get("webs_state_level"); %>';
 
 sig_state_flag = '<% nvram_get("sig_state_flag"); %>';
 sig_state_update = '<% nvram_get("sig_state_update"); %>';

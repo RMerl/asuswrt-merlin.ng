@@ -87,7 +87,7 @@ function init(){
 		}
 	}
 
-	setTimeout(show_warning_message, 100);
+	setTimeout(show_warning_message, 1000);
 
 	ASUS_EULA.config(applyRule, refreshpage);
 	if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM"){

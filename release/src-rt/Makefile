@@ -62,10 +62,10 @@ endif
 # declare the init var here. Don't include router's arch related var here due to it will break the multi-arch rules
 ifeq ($(HND_ROUTER),y)
 export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
+export BCM_WLIMPL
 ifeq ($(HND_ROUTER_AX_675X),y)
 export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
-export BCM_WLIMPL
 ifeq ($(BRCM_CHIP),4908)
 export HND_ROUTER_AX_6710 := y
 export BRCM_CHIP
@@ -4001,7 +4001,7 @@ fi; \
 		echo "# CONFIG_RTN53 is not set" >>$(1); \
 	fi; \
 	if [ "$(UUPLUGIN)" = "y" ]; then \
-		if [ "$(BUILD_NAME)" = "RT-AC86U" ] || [ "$(BUILD_NAME)" = "GT-AC2900" ] || [ "$(BUILD_NAME)" = "GT-AC5300" ] || [ "$(BUILD_NAME)" = "RT-AX88U" ] || [ "$(BUILD_NAME)" = "RT-AX92U" ] || [ "$(BUILD_NAME)" = "GT-AX11000" ] || [ "$(BUILD_NAME)" = "RT-AX95Q" ] || [ "$(BUILD_NAME)" = "RT-AX58U" ] || [ "$(BUILD_NAME)" = "RT-AX56U" ]; then \
+		if [ "$(BUILD_NAME)" = "RT-AC86U" ] || [ "$(BUILD_NAME)" = "GT-AC2900" ] || [ "$(BUILD_NAME)" = "GT-AC5300" ] || [ "$(BUILD_NAME)" = "RT-AX88U" ] || [ "$(BUILD_NAME)" = "RT-AX92U" ] || [ "$(BUILD_NAME)" = "GT-AX11000" ]; then \
 			sed -i "/CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN/d" $(1); \
 			echo "CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN=y" >>$(1); \
 		fi; \

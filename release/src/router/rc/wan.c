@@ -158,7 +158,7 @@ void check_wan_nvram(void){
 	if(nvram_match("wan1_proto", "")) nvram_set("wan1_proto", "dhcp");
 }
 #else
-int add_multi_routes(void){
+int add_multi_routes(int check_link){
 	int unit;
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
 	char wan_proto[32];
@@ -167,6 +167,7 @@ int add_multi_routes(void){
 	int debug = nvram_get_int("routes_debug");
 	int lock;
 	lock = file_lock("mt_routes");
+_dprintf("add_multi_routes: running...\n");
 
 	// clean the rules of routing table and re-build them then.
 	system("ip rule flush");
@@ -186,8 +187,10 @@ int add_multi_routes(void){
 		snprintf(wan_multi_gate[unit], sizeof(wan_multi_gate[unit]), "%s", nvram_safe_get(strcat_r(prefix, "gateway", tmp)));
 
 		// when wan_down().
-		if(!is_wan_connect(unit))
+		if(check_link && !is_wan_connect(unit)){
+_dprintf("add_multi_routes: skip because of the result of is_wan_connect(%d)...\n", unit);
 			continue;
+		}
 
 		snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", wan_multi_gate[unit], wan_multi_if[unit]);
 if(debug) printf("test 10. cmd=%s.\n", cmd);
@@ -2706,7 +2709,7 @@ wan_up(const char *pwan_ifname)
 	update_resolvconf();
 
 	/* default route via default gateway */
-	add_multi_routes();
+	add_multi_routes(0);
 
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
 	if(dualwan_unit__usbif(wan_unit)){
@@ -2746,6 +2749,10 @@ wan_up(const char *pwan_ifname)
 	if (!nvram_get_int("ntp_ready"))
 #endif
 		refresh_ntpc();
+
+#ifdef RTCONFIG_VPN_FUSION
+	vpnc_set_internet_policy(1);
+#endif
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (wan_unit != wan_primary_ifunit()
@@ -3044,7 +3051,7 @@ wan_down(char *wan_ifname)
 
 #ifdef RTCONFIG_DUALWAN
 	if(nvram_match("wans_mode", "lb"))
-		add_multi_routes();
+		add_multi_routes(1);
 #endif
 
 #ifdef RTCONFIG_GETREALIP
@@ -3059,6 +3066,10 @@ wan_down(char *wan_ifname)
 #ifdef RTCONFIG_LANTIQ
 	disable_ppa_wan(wan_ifname);
 #endif
+#ifdef RTCONFIG_VPN_FUSION
+	vpnc_set_internet_policy(0);
+#endif
+
 }
 
 int
@@ -3499,7 +3510,6 @@ start_wan(void)
 #endif
 #endif // RTCONFIG_DUALWAN
 
-	sleep(1); // let wanduck's detect not be close with start_wan().
 	nvram_set("wanduck_start_detect", "1");
 
 #ifdef RTCONFIG_MULTICAST_IPTV

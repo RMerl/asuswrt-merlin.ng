@@ -60,7 +60,7 @@
 #define IS_ZERO_MAC(MACADDR)	( (memcmp(MACADDR, "\x00\x00\x00\x00\x00\x00", 6) == 0) )
 #define IS_RE_MODE()  			( (nvram_get_int("re_mode") == 1) )
 #define WGN_WLIFU_MAX_NO_BRIDGE	WLIFU_MAX_NO_BRIDGE
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 #define WGN_ETH_IFNAME			"eth4"
 #else
 #define WGN_ETH_IFNAME			"eth0"

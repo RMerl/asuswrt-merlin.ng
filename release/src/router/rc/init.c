@@ -1652,10 +1652,13 @@ misc_defaults(int restore_defaults)
 	nvram_unset("amesh_found_cap");
 	nvram_unset("amesh_led");
 #ifdef CONFIG_BCMWL5
+#ifdef RTCONFIG_HND_ROUTER_AX
 	nvram_unset("amesh_wps_enr");
-	nvram_unset("obd_allow_scan");
 #endif
+	nvram_unset("obd_allow_scan");
 	nvram_unset("obd_scan_state");
+	nvram_unset("acs_skip_init_acs");
+#endif
 #ifdef RTCONFIG_ADV_RAST
 	nvram_unset("diag_chk_cap");
 	nvram_unset("diag_chk_re1");
@@ -2186,7 +2189,7 @@ char *the_wan_phy()
 		return "vlan2";
 	else
 #endif
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 		return "eth4";
 #else
 		return "eth0";
@@ -7262,7 +7265,7 @@ int init_nvram(void)
 			}
 			if (nvram_get("wans_dualwan")) {
 				set_wan_phy("");
-				char prefix[8], nvram_ports[16];
+				char prefix[8];
 				for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
 					if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_LAN) {
 						if (nvram_match("wans_lanport", "1"))
@@ -7293,11 +7296,6 @@ int init_nvram(void)
 						}
 						else
 							add_wan_phy(the_wan_phy());
-#ifdef RTCONFIG_EXTPHY_BCM84880
-						nvram_set_int(nvram_ports, 4);
-#else
-						nvram_set_int(nvram_ports, 7);
-#endif
 					}
 					else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_USB)
 						add_wan_phy("usb");
@@ -7320,14 +7318,14 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 #ifdef RTCONFIG_EXTPHY_BCM84880
-                add_rc_support("2p5G_LWAN");
+		add_rc_support("2p5G_LWAN");
 #endif
 		add_rc_support("app");
 		add_rc_support("ofdma");
@@ -7665,7 +7663,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
@@ -7824,7 +7822,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
@@ -7839,7 +7837,7 @@ int init_nvram(void)
 		break;
 #endif
 
-#if defined(RTAX58U) || defined(TUFAX3000)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 	case MODEL_RTAX58U:
 		nvram_set("lan_ifname", "br0");
 		if (is_router_mode()) {
@@ -7994,7 +7992,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
@@ -8167,7 +8165,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
@@ -8236,6 +8234,7 @@ int init_nvram(void)
 		nvram_set_int("led_lan3_gpio", 17|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_lan4_gpio", 26|GPIO_ACTIVE_LOW);
 #endif
+
 		nvram_set_int("led_wan_gpio", 27|GPIO_ACTIVE_LOW);
 		nvram_set_int("led_wan_normal_gpio", 21);
 #ifdef RTCONFIG_EXTPHY_BCM84880
@@ -8333,7 +8332,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl"); // broadcom: for jumbo frame only
 		add_rc_support("manual_stb");
 		add_rc_support("11AX");
-//		add_rc_support("pwrctrl");
+		add_rc_support("pwrctrl");
 		add_rc_support("WIFI_LOGO");
 		add_rc_support("nandflash");
 		add_rc_support("smart_connect");
@@ -10323,10 +10322,6 @@ NO_USB_CAP:
 	add_rc_support("no_finiwl");
 #endif
 
-#if defined(RTCONFIG_VPN_FUSION)
-	add_rc_support("vpn_fusion");
-#endif
-
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 	add_rc_support("fupgrade");
 #endif
@@ -10394,6 +10389,10 @@ NO_USB_CAP:
 #ifdef RTCONFIG_AMAZON_WSS
 	add_rc_support("amazon_wss"); // depends on gn_wbl
 #endif
+#endif
+
+#if !defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA)
+	add_rc_support("cfg_wps_btn");
 #endif
 
 	return 0;
@@ -12135,14 +12134,12 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 					eth_phypower(word, 1);
 			}
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
 #ifdef RTCONFIG_EXTPHY_BCM84880
-			if(nvram_get_int("wans_extwan")){
-				// when BCM84880 is as a WAN port, it needs to be power-down & up once
-_dprintf("%s %d turnning off/on EXTPhy's power here\n", __func__, __LINE__);
-				eth_phypower("eth0", 0);
-				sleep(1); // need to sleep between power off/on
-				eth_phypower("eth0", 1);
+#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+			if(nvram_get_int("ext_phy_model") == 0 && nvram_get_int("wans_extwan")){
+				// when BCM84880 is as a WAN port, it needs to be reset once
+_dprintf("%s %d reset EXTPhy here\n", __func__, __LINE__);
+				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x10000", "0x8000");
 			}
 #endif
 #endif

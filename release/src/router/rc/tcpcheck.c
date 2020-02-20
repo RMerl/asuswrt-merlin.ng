@@ -42,6 +42,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
+#include <bcmnvram.h>
 
 #define ERR_SUCCESS 0
 #define ERR_REFUSED 1
@@ -333,6 +334,10 @@ int tcpcheck_main(int argc, char *argv[])
   for (i = 2; i < argc; i++) {
     if (pending == NULL)
       pending = malloc(sizeof(struct connectinfo));
+    if (pending == NULL) {
+      free(cons);
+      exit(ERR_OTHER);
+    }
     if (setuphost(pending, (char *)argv[i])) {
       printf("%s failed.  could not resolve address\n", pending->hostname);
     } else {
@@ -359,3 +364,189 @@ int tcpcheck_main(int argc, char *argv[])
  
   exit(0);
 }
+
+int setfd(struct connectinfo *connection, fd_set *theset, int *numfds)
+{
+	int fds_used = 0;
+
+	if((connection == NULL)||(theset == NULL)||(numfds == NULL))
+	{
+		return -1;
+	}
+
+	*numfds = 0;
+	if((connection->status == 0) && (connection->socket != -1))
+	{
+		FD_SET(connection->socket, theset);
+		fds_used++;
+		if (connection->socket > *numfds)
+		*numfds = connection->socket;
+	}
+
+	if(!fds_used)
+	{
+		return -1;
+	}
+
+	return 0;
+}
+
+int waitforresult(struct connectinfo *connection, int timeout)
+{
+	fd_set writefds, exceptfds;
+	struct timeval timeleft;
+	struct timeval starttime;
+	struct timeval curtime;
+	struct timeval timeoutval;
+	struct timeval timeused;
+	struct sockaddr_in dummysock;
+	int dummyint = sizeof(dummysock);
+	int numfds = 0;
+	int res;
+
+	if((connection == NULL)||(timeout < 0))
+	{
+		fprintf(stderr, "[waitforresult]timeout=%d\n", timeout);
+		fprintf(stderr, "[waitforresult]Invalid parameters!\n");
+		return -1;
+	}
+
+	gettimeofday(&starttime, NULL);
+
+	timeoutval.tv_sec = timeout;
+	timeoutval.tv_usec = 0;
+
+	timeleft = timeoutval;
+
+	while(1)
+	{
+		FD_ZERO(&writefds);
+		FD_ZERO(&exceptfds);
+		res = setfd(connection, &writefds, &numfds);
+		if(res == -1)
+		{
+			fprintf(stderr, "[waitforresult]Failed to set writefds.\n");
+			return -1;
+		}
+
+		res = setfd(connection, &exceptfds, &numfds);
+		if(res == -1)
+		{
+			fprintf(stderr, "[waitforresult]Failed to set exceptfds.\n");
+			return -1;
+		}
+
+		res = select(numfds+1, NULL, &writefds, &exceptfds, &timeleft);
+		if(res == -1)
+		{
+			fprintf(stderr, "[waitforresult]select failed.\n");
+			return -1;
+		}
+
+		if(res == 0)
+		{
+			fprintf(stderr, "[waitforresult]select timed out.\n");
+			return -1;
+		}
+
+		if(FD_ISSET(connection->socket, &exceptfds))
+		{
+			fprintf(stderr, "[%d]%s:%s failed\n", __LINE__, connection->hostname, connection->portname);
+			connection->status = -1;
+		}
+		else if(FD_ISSET(connection->socket, &writefds))
+		{
+			if(getpeername(connection->socket, (struct sockaddr *)&dummysock, (socklen_t *)&dummyint))
+			{
+				fprintf(stderr, "[%d]%s:%s getpeername failed\n", __LINE__, connection->hostname, connection->portname);
+				connection->status = -1;
+			}
+			else
+			{
+				fprintf(stderr, "[%d]%s:%s is alive\n", __LINE__, connection->hostname, connection->portname);
+				connection->status = 1;
+				close(connection->socket);
+				break;
+			}
+		}
+
+		/* now, timeleft = timeoutval - timeused */
+		gettimeofday(&curtime, NULL);
+		subtime(&curtime, &starttime, &timeused);
+		subtime(&timeoutval, &timeused, &timeleft);
+	}
+
+	if(connection->status <= 0)
+	{
+		return -1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+/*______________________________________________________________________________
+** tcpcheck_retval
+**
+** descriptions:
+**	  tcpcheck_main does not return value according to tcpcheck result.
+** parameters:
+**	  timeout: tcpcheck timeout value e.g., [3].
+**	  host_port: target host:port e.g., [www.google.com:443].
+** return:
+**	  Success:	  0
+**	  Otherwise:  -1
+**____________________________________________________________________________
+*/
+int tcpcheck_retval(int timeout, char *host_port)
+{
+	struct connectinfo *connection = NULL;
+	int res;
+
+	if((host_port == NULL)||(timeout < 0))
+	{
+		fprintf(stderr, "[tcpcheck_retval]Invalid parameters!\n");
+		fprintf(stderr, "[tcpcheck_retval]timeout=%d\n", timeout);
+		return -1;
+	}
+
+	if(nvram_invmatch("link_internet", "2"))
+	{
+		return -1;
+	}
+
+	connection = malloc(sizeof(struct connectinfo));
+	if(connection == NULL)
+	{
+		fprintf(stderr, "[tcpcheck_retval][%d]Failed to malloc!\n", __LINE__);
+		return -1;
+	}
+	bzero((char *)connection, sizeof(struct connectinfo));
+
+	if(setuphost(connection, host_port))
+	{
+		fprintf(stderr, "[tcpcheck_retval]Could not resolve address [%s]\n", connection->hostname);
+		free(connection);
+		return -1;
+	}
+
+	res = connect(connection->socket, (struct sockaddr *)(connection->sockaddr), connection->socklen);
+
+	if(res && errno != EINPROGRESS)
+	{
+		fprintf(stderr, "%s:%s failed\n", connection->hostname, connection->portname);
+		free(connection);
+		return -1;
+	}
+
+	/* Okay, we've initiated all of our connection attempts.
+	* Now we just have to wait for them to timeout or complete
+	*/
+	res = waitforresult(connection, timeout);
+	fprintf(stderr, "[tcpcheck_retval]res=%d\n", res);
+
+	free(connection);
+	return res;
+}
+

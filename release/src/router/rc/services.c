@@ -1185,6 +1185,9 @@ void start_dnsmasq(void)
 			    lan_hostname, nvram_safe_get("lan_domain"),
 			    lan_hostname, lan_hostname);
 
+		/* mdns fallback */
+		fprintf(fp, "%s %s.local\n", lan_ipaddr, lan_hostname);
+
 		/* default names */
 		fprintf(fp, "%s %s\n", lan_ipaddr, DUT_DOMAIN_NAME);
 		fprintf(fp, "%s %s\n", lan_ipaddr, OLD_DUT_DOMAIN_NAME1);
@@ -1220,6 +1223,9 @@ void start_dnsmasq(void)
 				fprintf(fp, "%s %s.%s %s\n", value,
 					    lan_hostname, nvram_safe_get("lan_domain"),
 					    lan_hostname);
+
+				/* mdns fallback */
+				fprintf(fp, "%s %s.local\n", value, lan_hostname);
 			}
 		}
 #endif
@@ -5714,7 +5720,6 @@ int generate_alexa_config(void)
 	FILE *fp;
 	char alexa_service_config[80];
 	int ret = 0;
-	char *servername;
 
 	sprintf(alexa_service_config, "%s/%s", AVAHI_SERVICES_PATH, AVAHI_ALEXA_SERVICE_FN);
 
@@ -5724,12 +5729,8 @@ int generate_alexa_config(void)
 		return -1;
 	}
 
-	servername = nvram_safe_get("daapd_friendly_name");
-	if (*servername == '\0' || !is_valid_hostname(servername))
-		servername = get_lan_hostname();
-
 	fprintf(fp, "<service-group>\n");
-	fprintf(fp, "<name replace-wildcards=\"yes\">%s</name>\n", servername);
+	fprintf(fp, "<name replace-wildcards=\"yes\">%%h</name>\n");
 	fprintf(fp, "<service>\n");
 	fprintf(fp, "<type>_alexa._tcp</type>\n");
 	fprintf(fp, "<port>80</port>\n");
@@ -11831,36 +11832,10 @@ check_ddr_done:
 	}
 #endif
 	else if (strcmp(script, "set_wltxpower") == 0) {
-		switch (get_model()) {
-		case MODEL_RTAC66U:
-		case MODEL_RTAC56S:
-		case MODEL_RTAC56U:
-		case MODEL_RTAC3200:
-		case MODEL_RTAC68U:
-		case MODEL_DSLAC68U:
-		case MODEL_RTAC87U:
-		case MODEL_RTN12HP:
-		case MODEL_RTN12HP_B1:
-		case MODEL_APN12HP:
-		case MODEL_RTN66U:
-		case MODEL_RTN18U:
-		case MODEL_RTAC5300:
-		case MODEL_GTAC5300:
-		case MODEL_RTAC3100:
-		case MODEL_RTAC88U:
-		case MODEL_RTAC86U:
-		case MODEL_RTAX88U:
-		case MODEL_GTAX11000:
-		case MODEL_RTAX92U:
-		case MODEL_RTAX95Q:
-		case MODEL_RTAX58U:
-		case MODEL_RTAX56U:
-			set_wltxpower();
-			break;
-		default:
+		if (!nvram_contains_word("rc_support", "pwrctrl"))
 			dbG("\n\tDon't do this!\n\n");
-			break;
-		}
+		else
+			set_wltxpower();
 	}
 #endif
 #ifdef RTCONFIG_FANCTRL

@@ -45,7 +45,7 @@ function validForm(){
 		return false;
 	}
 	else{
-		var alert_str = validator.hostName(document.getElementById("account"));
+		var alert_str = validator.account_name(document.getElementById("account"));
 
 		if(alert_str != ""){
 			alert(alert_str);			

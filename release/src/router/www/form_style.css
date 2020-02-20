@@ -2140,3 +2140,13 @@ padding-top:1px;
 	width: 740px;
 	margin: 1px 0;
 }
+.query_list{
+	display: none;
+	background-color: #576D73;
+	border: 1px solid  #929EA1;
+	list-style: none;
+	width:339px; height:120px; 
+	margin:0 0 0 2px;
+	padding: 6px;position: absolute;
+	overflow-y: auto;
+}

@@ -138,6 +138,7 @@ var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
 var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_level = '<% nvram_get("webs_state_level"); %>';
 var exist_firmver = "<% nvram_get("firmver"); %>";
 var Latest_firmver = "";
 var Latest_firm = "";
@@ -149,6 +150,7 @@ var current_extendno = "";
 var liveUpdateFinish = false;
 var new_FW = false;
 var new_FW_type = 0;
+var forceLevel = 0;
 var retry = 0;
 var isStatic = false;
 var staticIP = false;
@@ -270,6 +272,9 @@ function detect_firmware(){
 			else{
 				if(webs_state_error == 0){
 					new_FW_type = webs_state_flag;
+					if(webs_state_level==1){
+						forceLevel = 1;
+					}
 					if(webs_state_flag==1 || webs_state_flag==2){	// && exist_firmver[0] != 9
 						//new_FW = true;
 					}

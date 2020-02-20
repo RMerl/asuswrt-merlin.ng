@@ -169,7 +169,7 @@ function initial(){
 		update_connect_status();
 
 	//check DUT is belong to private IP.
-	setTimeout("show_warning_message();", 100);
+	setTimeout("show_warning_message();", 1000);
 
 	//set FAQ URL
 	//	https://www.asus.com/support/FAQ/1033576

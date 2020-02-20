@@ -195,8 +195,14 @@ function translate_auth(flag){
 	else if(flag == "sae"){
 		return "WPA3-Personal";
 	}	
-	else if(flag == "pskpsk2")
-		return "WPA-Auto-Personal";
+	else if(flag == "pskpsk2"){
+		if(wpa3_support){
+			return "WPA/WPA2-Personal";
+		}
+		else{
+			return "WPA-Auto-Personal";
+		}
+	}	
 	else if(flag == "psk2sae"){
 		return "WPA2/WPA3-Personal";	
 	}

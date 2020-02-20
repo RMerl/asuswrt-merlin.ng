@@ -196,7 +196,7 @@ function validForm(){
 	}
 	
 	if(document.form.wan_hostname_now.value.length > 0){
-		var alert_str = validator.hostName(document.form.wan_hostname_now);
+		var alert_str = validator.domainName(document.form.wan_hostname_now);
 	
 		if(alert_str != ""){
 			showtext(document.getElementById("alert_msg1"), alert_str);

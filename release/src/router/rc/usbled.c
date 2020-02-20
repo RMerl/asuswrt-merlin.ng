@@ -205,13 +205,13 @@ static void usbled(int sig)
 #endif
 
 	if (nvram_match("asus_mfg", "1")
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 			|| !nvram_get_int("AllLED")
 #endif
 			)
 		no_blink(sig);
 	else if (!usb_busy
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 			&& nvram_get_int("AllLED")
 #endif
 			)
@@ -260,7 +260,7 @@ static void usbled(int sig)
 		}
 	}
 	else
-#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_LED_BTN) || defined(RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	if (nvram_get_int("AllLED"))
 #endif
 	{

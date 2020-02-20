@@ -130,6 +130,19 @@ function initial(){
 	var date = timestamp.toString().substring(0, 10);
 	getIPSChart("mals", date);
 	getIPSDetailData("mals", "all");
+
+	$('#newDomain').on({
+		search: function(e){	
+			var inputValue = e.currentTarget.value;
+			quickAdd(inputValue);
+		},
+		keyup: function(e){
+			var inputValue = e.currentTarget.value;
+			if(e.keyCode != '13'){
+				query(inputValue);
+			}
+		}
+	});
 }
 
 function getEventTime(){
@@ -572,6 +585,8 @@ function addWhitelist(){
 			genWhitelist(whitelist);
 		}
 	});
+
+	$("#newDomain").val('');
 }
 
 function deleteWhitelist(domain){
@@ -660,6 +675,37 @@ var download = function(content, fileName, mimeType) {
 		return true;
 	}
 };
+
+function query(value){
+	var code = '';
+	if(value == ''){
+		$('#query_list').hide();
+	}
+	else{
+		var _array = Object.keys(dataObject);
+		var _obj_list = new Array;
+		for(i=0;i<_array.length;i++){
+			var _name = dataObject[_array[i]].destination[0]
+			if(_name.indexOf(value) != -1 && _obj_list[_name] == undefined){
+				code += '<li onclick="quickAdd(\''+ _name +'\')">'+ _name +'</li>';
+				_obj_list[_name] = '';
+			}
+
+		}
+	}
+
+	if(code != ''){
+		$('#query_list').show();
+	}
+
+	$('#query_list').html(code);
+}
+
+function quickAdd(value){
+	$('#newDomain').val(value);
+	$('#query_list').hide();
+	//genLogTable(value);
+}
 </script>
 </head>
 <body onload="initial();" onunload="unload_body();" class="bg">
@@ -806,7 +852,8 @@ var download = function(content, fileName, mimeType) {
 												<div>
 													<div style="font-size: 14px;padding: 0 0 2px 4px;">Add domain to whitelist</div>
 													<div>
-														<input id="newDomain" style="font-size: 14px;" type="text" maxlength="32" size="22" class="input_32_table" autocomplete="off" autocorrect="off" autocapitalize="off">								
+														<input id="newDomain" style="font-size: 14px;" type="text" maxlength="32" size="22" class="input_32_table" autocomplete="off" autocorrect="off" autocapitalize="off">
+														<ul id="query_list" class="query_list"></ul>						
 													</div>
 													<div id="domainErrMessage" style="color: #FC0;margin: 4px 0 2px 4px;"></div>
 												</div>

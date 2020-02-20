@@ -86,6 +86,7 @@ var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
 var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_level = '<% nvram_get("webs_state_level"); %>';
 var PPPOEFAILREASON = "<#qis_fail_desc9#>";
 var delayTimeout = 500;
 
@@ -440,6 +441,9 @@ function checkIsNewFirmware(){
 		if(parent.new_FW_type==2){
 			document.getElementById("liveUpdate_div_leftbutton").value = "<#CTL_UpgradeNight#>";
 			document.getElementById("liveUpdate_div_rightbutton").value = "<#CTL_UpgradeNow#>";
+			if(parent.forceLevel==1){
+                document.getElementById("liveUpdate_div_leftbutton").style.display = "none";
+            }
 		}
 
 		//force_upgrade_support : rc_support with "fupgrade"

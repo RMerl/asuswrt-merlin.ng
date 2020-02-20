@@ -310,22 +310,6 @@ var validator = {
 		}
 	},
 
-	hostName: function (obj){
-		var re = new RegExp(/^[a-zA-Z0-9][a-zA-Z0-9\-\_]*$/gi);
-		if(re.test(obj.value)){
-			return "";
-		}
-		else if(location.pathname == "/" || location.pathname == "<% abs_index_page(); %>"){
-			return "Client device name only accept alphanumeric characters, under line and dash symbol. The first character cannot be dash \"-\" or under line \"_\".";
-		}
-		else{
-			if(obj.value.length < 2)
-				return "<#JS_short_username#>";
-			else
-				return "<#JS_validhostname#>";
-		}
-	},
-
 	hostNameChar: function(ch){
 		if (ch>=48&&ch<=57) return true;	//0-9
 		if (ch>=97&&ch<=122) return true;	//little EN
@@ -342,8 +326,45 @@ var validator = {
 			return "";
 		}
 		else{
-			return "<#JS_validhostname#>";
+			return "<#JS_valid_FQDN#>";
 		}
+	},
+
+	host_name: function(obj){
+		var re = new RegExp(/^[a-z0-9][a-z0-9-_]+$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+	},
+
+	samba_name: function(obj){
+		var re = new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+	},
+
+	friendly_name: function(obj){
+		var invalid_char = "";
+		for(var i = 0; i < obj.value.length; ++i){
+			if(obj.value.charAt(i) < ' ' || obj.value.charAt(i) > '~')
+				invalid_char = invalid_char+obj.value.charAt(i);
+		}
+
+		if(invalid_char != "")
+			return "<#JS_validstr2#> '"+invalid_char+"' !";
+		else
+			return "";
+	},
+
+	account_name: function(obj){
+		var re = new RegExp(/^[a-z][a-z0-9-]*$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_account_name#> <#JS_valid_account_name_first_char#>";
 	},
 
 	requireWANIP: function(v){

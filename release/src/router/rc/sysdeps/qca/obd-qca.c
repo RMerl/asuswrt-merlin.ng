@@ -17,13 +17,14 @@ int obd_init()
 	return 0;
 }
 
-void obd_final()
+void obd_final(int clean_vsie)
 {
 	nvram_unset("wps_enrollee");
 	nvram_unset("wps_e_success");
 	nvram_unset("wps_success");
 	nvram_commit();
-	obd_clear_all_probe_req_vsie(0);
+	if (clean_vsie)
+		obd_clear_all_probe_req_vsie(0);
 }
 
 void obd_save_para()

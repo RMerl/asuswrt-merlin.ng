@@ -428,7 +428,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX56U" ||
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
@@ -987,45 +987,14 @@ function regen_5G_mode(obj,flag){	//please sync to initial() : //Change wireless
 		}
 		else if(band5g_11ax_support){
 			obj.options[0] = new Option("<#Auto#>", 0);
-			if(based_modelid == "RT-AX92U" && flag == 1){
+			if((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q") && flag == 1){
 				obj.options[1] = new Option("N/AC mixed", 8);
 				obj.options[2] = new Option("Legacy", 2);
-			}
-			else if(based_modelid == "RT-AX95Q" && flag == 1){
-				obj.options[1] = new Option("N/AC mixed", 8);
-				obj.options[2] = new Option("Legacy", 2);
-			}
-			else if((based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000") && flag == 1){
-				obj.options[1] = new Option("N/AC mixed", 8);
-				obj.options[2] = new Option("Legacy", 2);
-			}
-			else if(based_modelid == "RT-AX56U" && flag == 1){
-				obj.options[1] = new Option("N/AC mixed", 8);
-				obj.options[2] = new Option("Legacy", 2);
-			}
-			else if(based_modelid == "RT-AX92U" && flag == 2){
-				obj.options[1] = new Option("AX only", 9);
-				obj.options[2] = new Option("N/AC/AX mixed", 8);
-				obj.options[3] = new Option("Legacy", 2);
-			}
-			else if(based_modelid == "RT-AX95Q" && flag == 2){
-				obj.options[1] = new Option("AX only", 9);
-				obj.options[2] = new Option("N/AC/AX mixed", 8);
-				obj.options[3] = new Option("Legacy", 2);
-			}
-			else if((based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000") && flag == 2){
-				obj.options[1] = new Option("AX only", 9);
-				obj.options[2] = new Option("N/AC/AX mixed", 8);
-				obj.options[3] = new Option("Legacy", 2);
-			}
-			else if(based_modelid == "RT-AX56U" && flag == 2){
-				obj.options[1] = new Option("AX only", 9);
-				obj.options[2] = new Option("N/AC/AX mixed", 8);
-				obj.options[3] = new Option("Legacy", 2);
 			}
 			else{
-				obj.options[1] = new Option("N/AC/AX mixed", 8);
-				obj.options[2] = new Option("Legacy", 2);
+				obj.options[1] = new Option("AX only", 9);
+				obj.options[2] = new Option("N/AC/AX mixed", 8);
+				obj.options[3] = new Option("Legacy", 2);
 			}			
 		}
 		else{
@@ -2202,7 +2171,7 @@ function handleMFP(){
 				</th>
 				<td>
 					<div style="width:465px;display:flex;align-items: center;">
-						<select name="wl_twt" class="input_option" onChange="handleMFP();">
+						<select name="wl_twt" class="input_option">
 							<option value="1" <% nvram_match("wl_twt", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 							<option value="0" <% nvram_match("wl_twt", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 						</select>

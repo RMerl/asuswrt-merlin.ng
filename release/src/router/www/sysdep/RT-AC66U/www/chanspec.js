@@ -55,7 +55,7 @@ if(band5g_support){
 		else if(based_modelid == 'GT-AC2900'){
 			return (country == 'JP') ? false : true;
 		}
-		else if(based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000'){		// special case, added temporary
+		else if(based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000' || based_modelid == "RT-AX82U"){		// special case, added temporary
 			 return (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1) ? true : false;
 		}
 		else if(band5g_11ax_support){

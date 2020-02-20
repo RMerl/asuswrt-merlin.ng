@@ -256,41 +256,46 @@ function applyRule(){
 
 function validForm(){
 
-if(document.form.daapd_enable.value == 1){	
-	if(document.form.daapd_friendly_name.value.length > 0){
-		var alert_str1 = validator.hostName(document.form.daapd_friendly_name);
-		if(alert_str1 != ""){
-			showtext(document.getElementById("alert_msg1"), alert_str1);
-			document.getElementById("alert_msg1").style.display = "";
-			document.form.daapd_friendly_name.focus();
-			document.form.daapd_friendly_name.select();
-			return false;
-		}else{
+	if(document.form.daapd_enable.value == 1){
+		if(document.form.daapd_friendly_name.value.length > 0){
+			var alert_str1 = validator.friendly_name(document.form.daapd_friendly_name);
+			if(alert_str1 != ""){
+				showtext(document.getElementById("alert_msg1"), alert_str1);
+				document.getElementById("alert_msg1").style.display = "";
+				document.form.daapd_friendly_name.focus();
+				document.form.daapd_friendly_name.select();
+				return false;
+			}
+			else
+				document.getElementById("alert_msg1").style.display = "none";
+
+			document.form.daapd_friendly_name.value = trim(document.form.daapd_friendly_name.value);
+		}
+		else
 			document.getElementById("alert_msg1").style.display = "none";
-  	}
+	}
 
-		document.form.daapd_friendly_name.value = trim(document.form.daapd_friendly_name.value);
-	}	
-}
+	if(document.form.dms_enable.value == 1){
+		if(document.form.dms_friendly_name.value.length > 0){
+			var alert_str2 = validator.friendly_name(document.form.dms_friendly_name);
+			if(alert_str2 != ""){
+				showtext(document.getElementById("alert_msg2"), alert_str2);
+				document.getElementById("alert_msg2").style.display = "";
+				document.form.dms_friendly_name.focus();
+				document.form.dms_friendly_name.select();
+				return false;
+			}
+			else{
+				document.getElementById("alert_msg2").style.display = "none";
+			}
 
-if(document.form.dms_enable.value == 1){
-	if(document.form.dms_friendly_name.value.length > 0){
-		var alert_str2 = validator.hostName(document.form.dms_friendly_name);
-		if(alert_str2 != ""){
-			showtext(document.getElementById("alert_msg2"), alert_str2);
-			document.getElementById("alert_msg2").style.display = "";
-			document.form.dms_friendly_name.focus();
-			document.form.dms_friendly_name.select();
-			return false;
-		}else{
+			document.form.dms_friendly_name.value = trim(document.form.dms_friendly_name.value);
+		}
+		else
 			document.getElementById("alert_msg2").style.display = "none";
-  	}
-
-		document.form.dms_friendly_name.value = trim(document.form.dms_friendly_name.value);
 	}	
-}	
-	
-	return true;	
+
+	return true;
 }
 
 function get_disk_tree(){

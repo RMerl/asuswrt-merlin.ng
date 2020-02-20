@@ -478,19 +478,27 @@ static void ERP_BTN_WAKEUP()
 {
 	int active = 0;
 	int model = get_model();
-#ifdef RTCONFIG_LED_BTN
+#if defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)
 	static int led_status_on = 1;
 #endif
 
 	if (erp_status != ERP_STANDBY || erp_count != -1)
 		return;
 
-#ifdef RTCONFIG_LED_BTN
+#if defined(RTCONFIG_LED_BTN) || !defined(RTCONFIG_WIFI_TOG_BTN)
 	if (model != MODEL_RTAC87U) {
 #if defined(RTAX88U) || defined(RTAX92U) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#ifndef RTCONFIG_WIFI_TOG_BTN
+		if (button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1"))
+#else
 		if (button_pressed(BTN_LED))
+#endif
+#else
+#ifndef RTCONFIG_WIFI_TOG_BTN
+		if (!button_pressed(BTN_WPS) && nvram_match("btn_ez_radiotoggle", "0") && nvram_match("btn_ez_mode", "1"))
 #else
 		if (!button_pressed(BTN_LED))
+#endif
 #endif
 		{
 			ERP_DBG("PRESSED LED BUTTON!\n");

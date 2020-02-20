@@ -551,7 +551,7 @@ tunnel_establish(l2tp_peer *peer, EventSelector *es)
     }
 
     memset(&rt, 0, sizeof(rt));
-    if (route_add(peer_addr.sin_addr, peer->ifname, &rt) < 0 &&
+    if (route_add(peer_addr.sin_addr, peer->ifname_len ? peer->ifname : NULL, &rt) < 0 &&
 	errno != EEXIST)
     {
 	l2tp_set_errmsg("tunnel_establish: failed to add host route");

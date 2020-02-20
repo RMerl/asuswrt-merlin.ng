@@ -178,7 +178,7 @@ function initial(){
 	$('#divSwitchMenu').html(gen_switch_menu(vpn_server_array, "OpenVPN"));
 
 	//check DUT is belong to private IP.
-	setTimeout("show_warning_message();", 100);
+	setTimeout("show_warning_message();", 1000);
 
 	//set FAQ URL
 	//	https://www.asus.com/support/FAQ/1004469

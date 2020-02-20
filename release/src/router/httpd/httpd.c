@@ -299,26 +299,35 @@ static int check_if_inviteCode(const char *dirpath){
 }
 #endif
 
-void sethost(char *host)
+void sethost(const char *host)
 {
+	char *p = host_name;
 	size_t len;
 
-	host_name[0] = '\0';
-
-	if (!host || host[0] == '\0')
-		return;
+	if (!host || *host == '\0')
+		goto error;
 
 	while (*host == '.') host++;
 
 	len = strcspn(host, "\r\n");
-	while (len > 0 && host[len - 1] == '.')
+	while (len > 0 && strchr(" \t", host[len - 1]) != NULL)
 		len--;
 	if (len > sizeof(host_name) - 1)
-		return;
+		goto error;
 
-	strlcpy(host_name, host, len + 1);
-	if (host_name[0] && !is_valid_domainname(host_name))
-		host_name[0] = '\0';
+	while (len-- > 0) {
+		int c = *host++;
+		if (((c | 0x20) < 'a' || (c | 0x20) > 'z') &&
+		    ((c < '0' || c > '9')) &&
+		    strchr(".-_:[]", c) == NULL) {
+			p = host_name;
+			break;
+		}
+		*p++ = c;
+	}
+
+error:
+	*p = '\0';
 }
 
 char *gethost(void)

@@ -2,6 +2,8 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.16 (xx-xx-xxxx)
+  - UPDATED: Merged GPL 384_8137 and binary blobs 384_7968
+             for RT-AX88U.
   - UPDATED: Tor to 0.3.5.9.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.

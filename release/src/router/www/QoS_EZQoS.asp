@@ -367,7 +367,7 @@ if(pm_support) {
 function initial(){
 	show_menu();
 	// https://www.asus.com/support/FAQ/1008718/
-	httpApi.faqURL("1008718", function(url){document.getElementById("faq").href=url;});
+	httpApi.faqURL("1010935", function(url){document.getElementById("faq").href=url;});
 
 	if(downsize_4m_support || downsize_8m_support)
 		document.getElementById("guest_image").parentNode.style.display = "none";
@@ -1669,8 +1669,8 @@ function change_scheduler(value){
 																	alert_hint += "Amazon Wi-Fi Simple Setup will be disabled. "/* Untranslated */
 																}
 																if(alert_hint != "")
-	
-																}
+																	alert(alert_hint);
+
 																if(codel_support) {
 																	document.getElementById('qos_sched_tr').style.display = "none";
 																	document.getElementById('qos_overhead_tr').style.display = "none";

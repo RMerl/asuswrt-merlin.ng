@@ -183,7 +183,7 @@ function addRow_Group(upper){
 		document.form.dhcp_staticip_x_0.focus();
 		document.form.dhcp_staticip_x_0.select();
 		return false;
-	}else if ((document.form.dhcp_staticname_x_0.value != "") && (validator.hostName(document.form.dhcp_staticname_x_0) != "")){
+	}else if ((document.form.dhcp_staticname_x_0.value != "") && (validator.host_name(document.form.dhcp_staticname_x_0) != "")){
 		alert("Hostname must only contain alphanumeric characters, underline and dash symbol. The first character cannot be dash \"-\" or underline \"_\".");
 		document.form.dhcp_staticname_x_0.focus();
 		document.form.dhcp_staticname_x_0.select();

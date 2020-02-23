@@ -6949,30 +6949,26 @@ libconfuse: libconfuse/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
 libconfuse-install:
-# Do nothing
 	@true
-#	install -D libconfuse/src/.libs/libconfuse.so.1.1.0 $(INSTALLDIR)/libconfuse/usr/lib/libconfuse.so.1.1.0
-#	cd $(INSTALLDIR)/libconfuse/usr/lib && \
-#		ln -sf libconfuse.so.1.1.0 libconfuse.so.1 &&\
-#		ln -sf libconfuse.so.1.1.0 libconfuse.so
-#	$(STRIP) $(INSTALLDIR)/libconfuse/usr/lib/*.so.*
 
 libconfuse-clean:
 	[ ! -f libconfuse/Makefile ] || $(MAKE) -C libconfuse distclean
 	@rm -f libconfuse/Makefile
 
 inadyn/Makefile:
-	cd inadyn && $(CONFIGURE) \
-		confuse_CFLAGS="-I$(TOP)/libconfuse/src" \
-		confuse_LIBS="-L$(TOP)/libconfuse/src/.libs -lconfuse" \
+	cd inadyn && $(CONFIGURE) --prefix=/usr --sysconfdir=/etc --localstatedir=/var \
+		--enable-openssl \
+		confuse_CFLAGS="-I$(STAGEDIR)/usr/include" \
+		confuse_LIBS="-L$(STAGEDIR)/usr/lib -lconfuse" \
 		OpenSSL_CFLAGS="-I$(TOP)/$(OPENSSLDIR)/include" \
-		OpenSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto" \
-		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections -fPIC -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUS_LE,)" \
-		LDFLAGS="$(LDFLAGS) $(EXTRA_NV_LDFLAGS) -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram -L$(TOP)/shared -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ffunction-sections -fdata-sections -Wl,--gc-sections -pthread" \
-		--prefix="" --enable-openssl
+		OpenSSL_LIBS="-L$(TOP)/$(OPENSSLDIR) -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)" \
+		CFLAGS="-Wall -Os -I$(TOP)/shared -I$(SRCBASE)/include -DASUSWRT $(if $(RTCONFIG_LETSENCRYPT),-DASUSWRT_LE,) \
+			-I$(STAGEDIR)/usr/include  -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		LDFLAGS="-L$(TOP)/nvram$(BCMEX)$(EX7) -L$(TOP)/shared $(EXTRA_NV_LDFLAGS) \
+			 -L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(LDFLAGS) $(EXTRALDFLAGS)" \
+		LIBS="-lnvram -lshared $(if $(RTCONFIG_QTN),-L$(TOP)/libqcsapi_client -lqcsapi_client) -ldl"
 
-inadyn: shared nvram${BCMEX}$(EX7) libconfuse inadyn/Makefile
-	@$(SEP)
+inadyn: shared nvram$(BCMEX)$(EX7) libconfuse inadyn/Makefile
 	$(MAKE) -C $@
 
 inadyn-install:
@@ -6980,7 +6976,6 @@ inadyn-install:
 	$(STRIP) $(INSTALLDIR)/inadyn/usr/sbin/inadyn
 
 inadyn-clean:
-	@$(SEP)
 	[ ! -f inadyn/Makefile ] || $(MAKE) -C inadyn distclean
 	@rm -f inadyn/Makefile
 

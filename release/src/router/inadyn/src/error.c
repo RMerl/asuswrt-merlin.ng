@@ -59,6 +59,7 @@ static const ERROR_NAME global_error_table[] = {
 	{ RC_DDNS_INVALID_OPTION,         "Invalid or missing DDNS option"   },
 	{ RC_DDNS_RSP_NOTOK,              "DDNS server response not OK"      },
 	{ RC_DDNS_RSP_RETRY_LATER,        "DDNS server busy, try later"      },
+	{ RC_DDNS_RSP_AUTH_FAIL,          "Authentication failure"           },
 
 	{ RC_OS_FORK_FAILURE,             "Failed forking off child"         },
 	{ RC_OS_CHANGE_PERSONA_FAILURE,   "Failed dropping privileges"       },

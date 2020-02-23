@@ -36,7 +36,6 @@
 
 #ifdef ASUSWRT
 #include <bcmnvram.h>
-#include "shared.h"
 #endif
 
 int    once = 0;
@@ -436,6 +435,7 @@ int main(int argc, char *argv[])
 		logit(LOG_DEBUG, "config    : %s", config);
 		logit(LOG_DEBUG, "pidfile   : %s", pidfn);
 		logit(LOG_DEBUG, "cache-dir : %s", cache_dir);
+
 		rc = alloc_context(&ctx);
 		if (rc) {
 			logit(LOG_ERR, "Failed allocating memory, cannot check configuration file.");
@@ -524,22 +524,32 @@ leave:
 
 #ifdef ASUSWRT
 	switch (rc) {
-		case RC_OK:
-			nvram_set("ddns_return_code", "200");
-			nvram_set("ddns_return_code_chk", "200");
-			break;
-		case RC_TCP_CONNECT_FAILED:
-		case RC_HTTPS_FAILED_CONNECT:
-			nvram_set ("ddns_return_code", "Time-out");
-			nvram_set ("ddns_return_code_chk", "Time-out");
-			break;
-		case RC_DDNS_RSP_NOTOK:
-			nvram_set("ddns_return_code", "Update failed");
-			nvram_set("ddns_return_code_chk", "Update failed");
-			break;
-		default:
-			nvram_set("ddns_return_code", "Unknown error");
-			nvram_set("ddns_return_code_chk", "Unknown error");
+	case RC_OK:
+		nvram_set("ddns_return_code", "200");
+		nvram_set("ddns_return_code_chk", "200");
+		break;
+	case RC_TCP_CONNECT_FAILED:
+		nvram_set ("ddns_return_code", "Time-out");
+		nvram_set ("ddns_return_code_chk", "Time-out");
+		break;
+	case RC_HTTPS_FAILED_CONNECT:
+	case RC_HTTPS_FAILED_GETTING_CERT:
+		nvram_set ("ddns_return_code", "connect_fail");
+		nvram_set ("ddns_return_code_chk", "connect_fail");
+		break;
+	case RC_DDNS_RSP_NOHOST:
+	case RC_DDNS_RSP_NOTOK:
+		nvram_set("ddns_return_code", "Update failed");
+		nvram_set("ddns_return_code_chk", "Update failed");
+		break;
+	case RC_DDNS_RSP_AUTH_FAIL:
+		nvram_set("ddns_return_code", "auth_fail");
+		nvram_set("ddns_return_code_chk", "auth_fail");
+		break;
+	default:
+		nvram_set("ddns_return_code", "unknown_error");
+		nvram_set("ddns_return_code_chk", "unknown_error");
+		break;
 	}
 #endif
 

@@ -146,6 +146,9 @@ int http_status_valid(int status)
 	if (status == 200)
 		return 0;
 
+	if (status == 401 || status == 403)
+		return RC_DDNS_RSP_AUTH_FAIL;
+
 	if (status >= 500 && status < 600)
 		return RC_DDNS_RSP_RETRY_LATER;
 

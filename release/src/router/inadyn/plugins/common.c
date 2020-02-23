@@ -76,6 +76,9 @@ int common_response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 	if (strstr(body, "dnserr") || strstr(body, "911"))
 		return RC_DDNS_RSP_RETRY_LATER;
 
+	if (strstr(body, "badauth"))
+		return RC_DDNS_RSP_AUTH_FAIL;
+
 	/* Loopia responds "[200 OK] nohost" when no DNS record exists */
 	if (strstr(body, "nohost"))
 		return RC_DDNS_RSP_NOHOST;

@@ -676,7 +676,7 @@ static int update_alias_table(ddns_t *ctx)
 				os_shell_execute(script_exec, alias->address, alias->name);
 		}
 
-		if (RC_DDNS_RSP_NOTOK == rc)
+		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc)
 			remember = rc;
 
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)

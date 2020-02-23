@@ -950,6 +950,12 @@ if (BUILD_TESTING)
   endif()
 endif ()
 
+# Does the compiler accept the "unused" attribute?
+try_compile(HAVE_ATTR_UNUSED
+  ${CMAKE_CURRENT_BINARY_DIR}
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/tests/test_unused_attr.c
+  )
+
 # Substitutions in files.
 configure_file(cmake/include/cmakeconfig.h.in config.h)
 configure_file(src/getdns/getdns.h.in getdns/getdns.h)

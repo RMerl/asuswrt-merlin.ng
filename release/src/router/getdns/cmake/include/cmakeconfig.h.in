@@ -100,6 +100,8 @@
 #cmakedefine HAVE_PTHREAD               1
 #cmakedefine HAVE_WINDOWS_THREADS       1
 
+#cmakedefine HAVE_ATTR_UNUSED   1
+
 #cmakedefine RUNSTATEDIR                "@RUNSTATEDIR@"
 #cmakedefine TRUST_ANCHOR_FILE          "@PATH_TRUST_ANCHOR_FILE@"
 #cmakedefine GETDNS_FN_RESOLVCONF       "@PATH_RESOLVCONF@"

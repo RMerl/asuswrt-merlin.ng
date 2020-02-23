@@ -1357,7 +1357,7 @@ void read_line_cb(void *userarg)
 typedef struct dns_msg {
 	getdns_transaction_t  request_id;
 	getdns_dict          *request;
-	uint32_t              rt;
+	getdns_resolution_t   rt;
 	uint32_t              ad_bit;
 	uint32_t              do_bit;
 	uint32_t              cd_bit;

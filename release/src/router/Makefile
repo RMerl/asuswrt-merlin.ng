@@ -2792,32 +2792,41 @@ libyaml-clean:
 	[ ! -f libyaml/Makefile ] || $(MAKE) -C libyaml distclean
 	@rm -f libyaml/Makefile
 
-getdns/configure:
-	cd getdns && libtoolize -ci && autoreconf -fi
+getdns/build/Makefile:
+	@rm -rf getdns/build && mkdir -p getdns/build
+	cd getdns/build && \
+	$(call CMAKE_CrossOptions, crosscompiled.cmake) && \
+	cmake -DCMAKE_TOOLCHAIN_FILE=crosscompiled.cmake \
+		-DCMAKE_INSTALL_PREFIX:PATH=/usr \
+		-DCMAKE_BUILD_TYPE=MinSizeRel -DCMAKE_SKIP_RPATH=TRUE \
+		-DCMAKE_C_FLAGS_MINSIZEREL="-Os -DNDEBUG -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS_MINSIZEREL="-Wl,--gc-sections $(EXTRALDFLAGS) $(if $(RTCONFIG_OPENSSL11),-lpthread,)" \
+		-DENABLE_STATIC=TRUE -DENABLE_SHARED=FALSE -DENABLE_GOST=FALSE \
+		-DBUILD_GETDNS_QUERY=FALSE \
+		-DBUILD_GETDNS_SERVER_MON=FALSE \
+		-DBUILD_STUBBY=TRUE -DENABLE_STUB_ONLY=TRUE \
+		-DBUILD_TESTING=FALSE \
+		-DOPENSSL_ROOT_DIR=$(TOP)/$(OPENSSLDIR) \
+		-DOPENSSL_INCLUDE_DIR=$(TOP)/$(OPENSSLDIR)/include \
+		-DOPENSSL_CRYPTO_LIBRARY=$(TOP)/$(OPENSSLDIR)/libcrypto.so pthread.so \
+		-DOPENSSL_SSL_LIBRARY=$(TOP)/$(OPENSSLDIR)/libssl.so \
+		-DLIBYAML_DIR=$(TOP)/libyaml \
+		-DLIBYAML_INCLUDE_DIR=$(TOP)/libyaml/include \
+		-DLIBYAML_LIBRARY=$(TOP)/libyaml/src/.libs/libyaml.a\
+		-DUSE_LIBIDN2=FALSE \
+		-DSTRPTIME_WORKS_EXITCODE=0 \
+		..
 
-getdns-configure: getdns/configure
-	cd getdns && \
-	$(CONFIGURE) --prefix=/usr --sysconfdir=/etc --with-piddir=/var/run \
-		--enable-static --disable-shared --disable-gost \
-		--enable-stub-only --without-libidn --without-libidn2 \
-		--without-getdns_query --without-getdns_server_mon --with-stubby \
-		--with-ssl=$(TOP)/$(OPENSSLDIR) \
-		--with-libyaml=$(STAGEDIR)/usr \
-		CFLAGS="-Os -I$(TOP)/$(OPENSSLDIR)/include -I$(STAGEDIR)/usr/include -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
-		LDFLAGS="-L$(TOP)/$(OPENSSLDIR) -L$(STAGEDIR)/usr/lib -Wl,--gc-sections $(EXTRALDFLAGS)" \
-		LIBS="-lcrypto -lssl -lyaml"
-
-getdns: $(OPENSSLDIR) libyaml getdns/Makefile
-	$(MAKE) -C $@
+getdns: $(OPENSSLDIR) libyaml getdns/build/Makefile
+	$(MAKE) -C getdns/build
 
 getdns-install:
 	install -d $(INSTALLDIR)/getdns/usr/sbin
-	install -D getdns/src/stubby $(INSTALLDIR)/getdns/usr/sbin/stubby
+	install -D getdns/build/stubby/stubby $(INSTALLDIR)/getdns/usr/sbin/stubby
 	$(STRIP) $(INSTALLDIR)/getdns/usr/sbin/stubby
 
 getdns-clean:
-	[ ! -f getdns/Makefile ] || $(MAKE) -C getdns distclean
-	@rm -f getdns/Makefile
+	@rm -rf getdns/build
 
 iptables:
 	@$(SEP)

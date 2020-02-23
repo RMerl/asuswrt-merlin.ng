@@ -1,0 +1,183 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#cmakedefine STUBBY_PACKAGE             "@STUBBY_PACKAGE@"
+#cmakedefine STUBBY_PACKAGE_STRING      "@STUBBY_PACKAGE_STRING@"
+
+#cmakedefine STUBBY_ON_WINDOWS  1
+
+#cmakedefine HAVE_ATTR_FORMAT   1
+#cmakedefine HAVE_ATTR_UNUSED   1
+
+#cmakedefine HAVE_GETOPT	1
+
+#cmakedefine STUBBYCONFDIR      "@STUBBYCONFDIR@"
+#cmakedefine RUNSTATEDIR        "@RUNSTATEDIR@"
+
+#ifdef STUBBY_ON_WINDOWS
+# ifndef  _CUSTOM_VSNPRINTF
+#  define _CUSTOM_VSNPRINTF
+// Ensure we have definition of va_list, and that vsnprint is defined
+// before we redefine it.
+#  include <stdarg.h>
+#  include <stdio.h>
+        static inline int _gldns_custom_vsnprintf(
+            char *str, size_t size, const char *format, va_list ap)
+        { int r = vsnprintf(str, size, format, ap)
+        ; return r == -1 ? _vscprintf(format, ap) : r; }
+#  define vsnprintf _gldns_custom_vsnprintf
+# endif
+
+# ifdef _MSC_VER
+#  if _MSC_VER >= 1800
+#   define PRIsz "zu"
+#  else
+#   define PRIsz "Iu"
+#  endif
+#  include <BaseTsd.h>
+   typedef SSIZE_T ssize_t;
+# else
+#  define PRIsz "Iu"
+# endif
+#else
+# define PRIsz "zu"
+#endif
+
+#ifdef HAVE_ATTR_FORMAT
+# define ATTR_FORMAT(archetype, string_index, first_to_check) \
+    __attribute__ ((format (archetype, string_index, first_to_check)))
+#else /* !HAVE_ATTR_FORMAT */
+# define ATTR_FORMAT(archetype, string_index, first_to_check) /* empty */
+#endif /* !HAVE_ATTR_FORMAT */
+
+#if defined(__cplusplus)
+#  define ATTR_UNUSED(x)
+#elif defined(HAVE_ATTR_UNUSED)
+#  define ATTR_UNUSED(x)  x __attribute__((unused))
+#else /* !HAVE_ATTR_UNUSED */
+#  define ATTR_UNUSED(x)  x
+#endif /* !HAVE_ATTR_UNUSED */
+
+#define USE_YAML_CONFIG 1
+
+#define yaml_string_to_json_string        stubby_yaml_string_to_json_string
+
+#define sldns_read_uint16                 stubby_ldns_read_uint16
+#define sldns_read_uint32                 stubby_ldns_read_uint32
+#define sldns_write_uint16                stubby_ldns_write_uint16
+#define sldns_write_uint32                stubby_ldns_write_uint32
+#define sldns_write_uint48                stubby_ldns_write_uint48
+#define sldns_buffer                      stubby_ldns_buffer
+#define sldns_buffer_invariant            stubby_ldns_buffer_invariant
+#define sldns_buffer_invariant            stubby_ldns_buffer_invariant
+#define sldns_buffer_new                  stubby_ldns_buffer_new
+#define sldns_buffer_new_frm_data         stubby_ldns_new_frm_data
+#define sldns_buffer_init_frm_data        stubby_ldns_buffer_init_frm_data
+#define sldns_buffer_init_vfixed_frm_data stubby_ldns_buffer_init_vfixed_frm_data
+#define sldns_buffer_clear                stubby_ldns_buffer_clear
+#define sldns_buffer_flip                 stubby_ldns_buffer_flip
+#define sldns_buffer_rewind               stubby_ldns_buffer_rewind
+#define sldns_buffer_position             stubby_ldns_buffer_position
+#define sldns_buffer_set_position         stubby_ldns_buffer_set_position
+#define sldns_buffer_skip                 stubby_ldns_buffer_skip
+#define sldns_buffer_limit                stubby_ldns_buffer_limit
+#define sldns_buffer_set_limit            stubby_ldns_buffer_set_limit
+#define sldns_buffer_capacity             stubby_ldns_buffer_capacity
+#define sldns_buffer_set_capacity         stubby_ldns_buffer_set_capacity
+#define sldns_buffer_reserve              stubby_ldns_buffer_reserve
+#define sldns_buffer_at                   stubby_ldns_buffer_at
+#define sldns_buffer_begin                stubby_ldns_buffer_begin
+#define sldns_buffer_end                  stubby_ldns_buffer_end
+#define sldns_buffer_current              stubby_ldns_buffer_current
+#define sldns_buffer_remaining_at         stubby_ldns_buffer_remaining_at
+#define sldns_buffer_remaining            stubby_ldns_buffer_remaining
+#define sldns_buffer_available_at         stubby_ldns_buffer_available_at
+#define sldns_buffer_available            stubby_ldns_buffer_available
+#define sldns_buffer_write_at             stubby_ldns_buffer_write_at
+#define sldns_buffer_set_at               stubby_ldns_buffer_set_at
+#define sldns_buffer_write                stubby_ldns_buffer_write
+#define sldns_buffer_write_string_at      stubby_ldns_buffer_write_string_at
+#define sldns_buffer_write_string         stubby_ldns_buffer_write_string
+#define sldns_buffer_write_u8_at          stubby_ldns_buffer_write_u8_at
+#define sldns_buffer_write_u8             stubby_ldns_buffer_write_u8
+#define sldns_buffer_write_u16_at         stubby_ldns_buffer_write_u16_at
+#define sldns_buffer_write_u16            stubby_ldns_buffer_write_u16
+#define sldns_buffer_write_u32_at         stubby_ldns_buffer_write_u32_at
+#define sldns_buffer_write_u48_at         stubby_ldns_buffer_write_u48_at
+#define sldns_buffer_write_u32            stubby_ldns_buffer_write_u32
+#define sldns_buffer_write_u48            stubby_ldns_buffer_write_u48
+#define sldns_buffer_read_at              stubby_ldns_buffer_read_at
+#define sldns_buffer_read                 stubby_ldns_buffer_read
+#define sldns_buffer_read_u8_at           stubby_ldns_buffer_read_u8_at
+#define sldns_buffer_read_u8              stubby_ldns_buffer_read_u8
+#define sldns_buffer_read_u16_at          stubby_ldns_buffer_read_u16_at
+#define sldns_buffer_read_u16             stubby_ldns_buffer_read_u16
+#define sldns_buffer_read_u32_at          stubby_ldns_buffer_read_u32_at
+#define sldns_buffer_read_u32             stubby_ldns_buffer_read_u32
+#define sldns_buffer_status               stubby_ldns_buffer_status
+#define sldns_buffer_status_ok            stubby_ldns_buffer_status_ok
+#define sldns_buffer_printf               stubby_ldns_buffer_printf
+#define sldns_buffer_free                 stubby_ldns_buffer_free
+#define sldns_buffer_export               stubby_ldns_buffer_export
+#define sldns_buffer_copy                 stubby_ldns_buffer_copy
+
+#define gldns_read_uint16                 stubby_ldns_read_uint16
+#define gldns_read_uint32                 stubby_ldns_read_uint32
+#define gldns_write_uint16                stubby_ldns_write_uint16
+#define gldns_write_uint32                stubby_ldns_write_uint32
+#define gldns_write_uint48                stubby_ldns_write_uint48
+#define gldns_buffer                      stubby_ldns_buffer
+#define gldns_buffer_invariant            stubby_ldns_buffer_invariant
+#define gldns_buffer_invariant            stubby_ldns_buffer_invariant
+#define gldns_buffer_new                  stubby_ldns_buffer_new
+#define gldns_buffer_new_frm_data         stubby_ldns_new_frm_data
+#define gldns_buffer_init_frm_data        stubby_ldns_buffer_init_frm_data
+#define gldns_buffer_init_vfixed_frm_data stubby_ldns_buffer_init_vfixed_frm_data
+#define gldns_buffer_clear                stubby_ldns_buffer_clear
+#define gldns_buffer_flip                 stubby_ldns_buffer_flip
+#define gldns_buffer_rewind               stubby_ldns_buffer_rewind
+#define gldns_buffer_position             stubby_ldns_buffer_position
+#define gldns_buffer_set_position         stubby_ldns_buffer_set_position
+#define gldns_buffer_skip                 stubby_ldns_buffer_skip
+#define gldns_buffer_limit                stubby_ldns_buffer_limit
+#define gldns_buffer_set_limit            stubby_ldns_buffer_set_limit
+#define gldns_buffer_capacity             stubby_ldns_buffer_capacity
+#define gldns_buffer_set_capacity         stubby_ldns_buffer_set_capacity
+#define gldns_buffer_reserve              stubby_ldns_buffer_reserve
+#define gldns_buffer_at                   stubby_ldns_buffer_at
+#define gldns_buffer_begin                stubby_ldns_buffer_begin
+#define gldns_buffer_end                  stubby_ldns_buffer_end
+#define gldns_buffer_current              stubby_ldns_buffer_current
+#define gldns_buffer_remaining_at         stubby_ldns_buffer_remaining_at
+#define gldns_buffer_remaining            stubby_ldns_buffer_remaining
+#define gldns_buffer_available_at         stubby_ldns_buffer_available_at
+#define gldns_buffer_available            stubby_ldns_buffer_available
+#define gldns_buffer_write_at             stubby_ldns_buffer_write_at
+#define gldns_buffer_set_at               stubby_ldns_buffer_set_at
+#define gldns_buffer_write                stubby_ldns_buffer_write
+#define gldns_buffer_write_string_at      stubby_ldns_buffer_write_string_at
+#define gldns_buffer_write_string         stubby_ldns_buffer_write_string
+#define gldns_buffer_write_u8_at          stubby_ldns_buffer_write_u8_at
+#define gldns_buffer_write_u8             stubby_ldns_buffer_write_u8
+#define gldns_buffer_write_u16_at         stubby_ldns_buffer_write_u16_at
+#define gldns_buffer_write_u16            stubby_ldns_buffer_write_u16
+#define gldns_buffer_write_u32_at         stubby_ldns_buffer_write_u32_at
+#define gldns_buffer_write_u48_at         stubby_ldns_buffer_write_u48_at
+#define gldns_buffer_write_u32            stubby_ldns_buffer_write_u32
+#define gldns_buffer_write_u48            stubby_ldns_buffer_write_u48
+#define gldns_buffer_read_at              stubby_ldns_buffer_read_at
+#define gldns_buffer_read                 stubby_ldns_buffer_read
+#define gldns_buffer_read_u8_at           stubby_ldns_buffer_read_u8_at
+#define gldns_buffer_read_u8              stubby_ldns_buffer_read_u8
+#define gldns_buffer_read_u16_at          stubby_ldns_buffer_read_u16_at
+#define gldns_buffer_read_u16             stubby_ldns_buffer_read_u16
+#define gldns_buffer_read_u32_at          stubby_ldns_buffer_read_u32_at
+#define gldns_buffer_read_u32             stubby_ldns_buffer_read_u32
+#define gldns_buffer_status               stubby_ldns_buffer_status
+#define gldns_buffer_status_ok            stubby_ldns_buffer_status_ok
+#define gldns_buffer_printf               stubby_ldns_buffer_printf
+#define gldns_buffer_free                 stubby_ldns_buffer_free
+#define gldns_buffer_export               stubby_ldns_buffer_export
+#define gldns_buffer_copy                 stubby_ldns_buffer_copy
+
+#endif /* CONFIG_H */

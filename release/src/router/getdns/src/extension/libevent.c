@@ -33,7 +33,11 @@
 
 #include "config.h"
 #include "types-internal.h"
+#ifndef USE_WINSOCK
 #include <sys/time.h>
+#else
+#include <winsock2.h>
+#endif
 #include "getdns/getdns_ext_libevent.h"
 
 #ifdef HAVE_EVENT2_EVENT_H

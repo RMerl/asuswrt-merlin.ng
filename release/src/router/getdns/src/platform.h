@@ -62,10 +62,10 @@ typedef u_short sa_family_t;
 const char *_getdns_strerror(DWORD errnum);
 #else /* USE_WINSOCK */
 
-#ifdef HAVE_SYS_POLL_H
-# include <sys/poll.h>
-#else
+#ifndef HAVE_SYS_POLL_H
 # include <poll.h>
+#else
+# include <sys/poll.h>
 #endif
 
 #define _getdns_EINTR       (EINTR)

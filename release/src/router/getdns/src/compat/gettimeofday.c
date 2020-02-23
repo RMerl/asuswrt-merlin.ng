@@ -21,8 +21,9 @@
   */
 #include "config.h"
 
-#ifdef GETDNS_ON_WINDOWS
-int gettimeofday(struct timeval* tv, struct timezone* tz)
+#ifndef HAVE_GETTIMEOFDAY
+
+int gettimeofday(struct timeval* tv, void* tz)
 {
 	FILETIME ft;
 	uint64_t now = 0;
@@ -70,4 +71,4 @@ int gettimeofday(struct timeval* tv, struct timezone* tz)
 
 	return 0;
 }
-#endif /* GETDNS_ON_WINDOWS */
+#endif /* HAVE_GETTIMEOFDAY */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Sinodun Internet Technologies Ltd.
+ * Copyright (c) 2017, 2019, Sinodun Internet Technologies Ltd.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,6 +25,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

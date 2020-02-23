@@ -28,6 +28,7 @@
 #include "config.h"
 #include <getdns/getdns.h>
 #include <getdns/getdns_extra.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
@@ -36,12 +37,13 @@
 #include <shlobj.h>
 #else
 #include <pwd.h>
-#include <unistd.h>
 #endif
 #include <signal.h>
 #include <limits.h>
-#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
-#include <syslog.h>
+#ifndef HAVE_GETOPT
+#include "getopt.h"
+#else
+#include <unistd.h>
 #endif
 
 #ifdef HAVE_GETDNS_YAML2DICT
@@ -172,9 +174,6 @@ static getdns_list *listen_list = NULL;
 static size_t listen_count = 0;
 static int run_in_foreground = 1;
 static int dnssec_validation = 0;
-#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
-static int use_syslog = 0;
-#endif
 
 static void stubby_local_log(void *userarg, uint64_t system,
 	getdns_loglevel_type level, const char *fmt, ...);
@@ -350,7 +349,7 @@ static getdns_return_t parse_config_file(const char *fn)
 typedef struct dns_msg {
 	getdns_transaction_t  request_id;
 	getdns_dict          *request;
-	uint32_t              rt;
+	getdns_resolution_t   rt;
 	uint32_t              ad_bit;
 	uint32_t              do_bit;
 	uint32_t              cd_bit;
@@ -742,8 +741,6 @@ static void stubby_log(void *userarg, uint64_t system,
 	tsec = (time_t) tv.tv_sec;
 	gmtime_s(&tm, (const time_t *) &tsec);
 #else
-	if (use_syslog)
-		(void) vsyslog(level, fmt, ap);
 	gettimeofday(&tv, NULL);
 	gmtime_r(&tv.tv_sec, &tm);
 #endif
@@ -815,18 +812,14 @@ main(int argc, char **argv)
 		}
 	}
 
+	stubby_local_log(NULL,GETDNS_LOG_UPSTREAM_STATS, GETDNS_LOG_INFO,
+		       "Stubby version: %s\n", STUBBY_PACKAGE_STRING);
+
 	if ((r = getdns_context_create(&context, 1))) {
 		fprintf(stderr, "Create context failed: %s\n",
 		        _getdns_strerror(r));
 		return r;
 	}
-
-#if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
-	use_syslog = log_connections || !run_in_foreground;
-	if (use_syslog)
-		openlog(STUBBY_PACKAGE, LOG_PID, LOG_DAEMON);
-#endif
-
 	if (log_connections) {
 		(void) getdns_context_set_logfunc(context, NULL,
 	    	GETDNS_LOG_UPSTREAM_STATS, (int)log_level, stubby_log);

@@ -192,7 +192,6 @@
 #include "debug.h"
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 #include <ctype.h>
 #include "getdns/getdns.h"
 #include "context.h"
@@ -399,7 +398,7 @@ static inline void debug_sec_print_rr(const char *msg, _getdns_rr_iter *rr)
 	}
 	(void) gldns_wire2str_rr_scan(
 	    (UNCONST_UINT8_p *) &data, &data_len, &str, &str_len,
-	    (UNCONST_UINT8_p) rr->pkt, rr->pkt_end - rr->pkt);
+	    (UNCONST_UINT8_p) rr->pkt, rr->pkt_end - rr->pkt, NULL);
 	DEBUG_SEC("%s%s", msg, str_spc);
 }
 static inline void debug_sec_print_dname(const char *msg, const uint8_t *label)

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>allow-root</key>
+        <false/>
+        <key>authenticate-user</key>
+        <true/>
+        <key>class</key>
+        <string>user</string>
+        <key>comment</key>
+        <string>Set DNS resolution to/from Stubby. Authenticate as an administrator.</string>
+        <key>group</key>
+        <string>admin</string>
+        <key>session-owner</key>
+        <false/>
+        <key>shared</key>
+        <true/>
+        <key>timeout</key>
+        <integer>600</integer>
+        <key>default-prompt</key>
+        <dict>
+                <key></key>
+        <string>You must authenticate to change DNS lookups to or from Stubby</string>
+        </dict>
+        <key>version</key>
+        <integer>1</integer>
+</dict>
+</plist>

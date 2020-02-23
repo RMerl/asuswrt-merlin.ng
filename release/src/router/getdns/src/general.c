@@ -651,6 +651,8 @@ getdns_general_ns(getdns_context *context, getdns_eventloop *loop,
 				req->is_dns_request = 0;
 				_getdns_call_user_callback
 				    ( req, localnames_response);
+				if (return_netreq_p)
+					*return_netreq_p = NULL;
 				break;
 			}
 #ifdef HAVE_MDNS_SUPPORT

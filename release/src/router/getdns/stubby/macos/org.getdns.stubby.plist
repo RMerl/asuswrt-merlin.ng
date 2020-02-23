@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-/Apple/DTD PLIST 1.0/EN" "http:/www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>org.getdns.stubby</string>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/Applications/StubbyManager.app/Contents/MacOS/stubby</string>
+      <string>-l</string>
+      <string>-C</string>
+      <string>/Applications/StubbyManager.app/Contents/MacOS/stubby.yml</string>
+    </array>
+    <key>UserName</key>
+    <string>root</string>
+    <key>StandardErrorPath</key>
+    <string>/var/log/stubby.log</string>
+    <key>StandardOutPath</key>
+    <string>/var/log/stubby.log</string>
+  </dict>
+</plist>

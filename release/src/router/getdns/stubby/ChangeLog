@@ -1,0 +1,95 @@
+* 2019-12-20: Version 0.3.0-beta.1
+  * Migration of build system to cmake.
+
+* 2019-04-03: Version 0.2.6
+ * Windows: use appropriate system and user configuration directories.
+ * Windows: replace references to C:\Program Files with %PROGRAMFILES%.
+ * Windows: use location of stubby.bat to find stubby.exe and stubby.yml.
+
+* 2019-01-11: Version 0.2.5
+ * Fix builds on Windows.
+ * RFE getdnsapi/getdns#408: Document trust_anchors_backoff_time
+   in stubby.yml.example. Thanks Jonathan Underwood
+ * RFE #148: Document tls_ciphersuites, tls_cipher_list, tls_min_version
+   and tls_max_version in stubby.yml.example. Thanks Jonathan Underwood
+ * RFE #149: Added Google Public DNS to stubby.yml.example.
+   Thanks Bruno Pagani
+
+* 2018-12-21: Version 0.2.4
+ * DNSSEC required with dnssec extension in example config
+ * Removed the yeti servers from stubby.yml.example
+ * Added the Foundation RESTENA servers in stubby.yml.example
+ * Bugfix: only start Stubby when network is up
+   Thanks Bruno Pagani
+
+* 2018-05-11: Version 0.2.3
+ * Bugfix #62 and #106: With systemd setups, make /run/stubby directory
+   writeable for stubby user and include a "appdata_dir" directory
+   in stubby.yml.example.
+   Thanks Paul Wouters, eccgecko and Han Vinke
+ * Update securedns.eu entries in stubby.yml.example
+ * Added Cloudflare servers in stubby.yml.example
+ * Added basic upstart script in contrib/upstart dir. Thanks vapniks
+ * Bugfix #98: EDNS options that are handled internally should not
+   be passed on through downstream.  Thanks Twisteroid Ambassador
+
+* 2018-02-21: Version 0.2.2
+ * Fixes and updates to the stubby.yml.config file. Add separate entries for
+   servers that listen on port 443.
+ * Additional logging of basic config on startup
+ * -V option to show version
+ * Added a man page
+
+* 2017-12-18: Version 0.2.1
+ * Fix use of logging on macos 10.11
+
+* 2017-12-18: Version 0.2.0
+ * Add Powershell scripts for Windows 7 that will update the IPv4 DNS resolvers.
+ * Add Windows scripts to enable a Scheduled task for stubby
+ * Add files to support a separate macOS GUI application to manage stubby
+   https://dnsprivacy.org/wiki/x/CIBn
+ * Add Quad9 details to the configuration file
+ * Bugfix #48: Do not do native DNSSEC validation when cd bit was
+   received (for example from an unbound forwarder), but DNSSEC
+   validation was not enabled in the first place.
+ * Bugfix getdnsapi/getdns#358: Parse config files given with the
+   -C option that have an .yaml extension as YAML not JSON.
+   Thanks Ollivier Robert
+
+* 2017-11-03: Version 0.1.5
+ * Add Windows installer package. Installer available at dnsprivacy.org
+ * Fix to systemd file names (thanks ArchangeGabriel)
+ * Add SPKI for Uncensored DNS (thanks woopstar)
+ * Fix installation of stubby.yml file (thanks ArchangeGabriel)
+ * Fix detection of platform for standalone build
+ * Fix location of pid file installation
+ * Update the stubby.yml file to contain details of all available servers. Only
+   a small subset are enabled by default.
+
+* 2017-10-20: Version 0.1.4
+ *  '-i' option of stubby no longer tries to bind to the listen addresses so
+    it can be run without requiring root privileges. Makes it easier to validate
+    the configuration file syntax. 
+ *  Fix incorrect IP addresses for some servers in the config file. Add note that
+    IPv6 addresses ending in :: are not supported (must use ::0). Also add 
+    example of using a specific port in a listen address.
+ *  Fixes for Windows support
+
+
+* 2017-09-29: Version 0.1.3
+  * Change the default configuration file format to be YAML. A default file 
+    'stubby.yml' will be installed. The JSON dict format is still supported when
+    specifying a custom configuration file on the command line.
+  * Add a -v flag to let users specify the logging level they want to see
+
+* 2017-08-24: Version 0.1.2
+  * revert logging to stderr until we have good separation of logging and error
+    within the code
+
+* 2017-08-23: Version 0.1.1
+  * systemd folder has moved here from the getdns repo
+  * logging can now be controlled at runtime using the '-l' flag
+  * minor fixes from a static analysis
+
+* 2017-07-12: Version 0.1.0
+  * Initial release of stubby after break-out from getdns repository

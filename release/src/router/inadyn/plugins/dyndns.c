@@ -59,8 +59,13 @@ static ddns_system_t dnsomatic = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
+/* unreliable due some global rate-limiting
 	.checkip_name = "myip.dnsomatic.com",
 	.checkip_url  = "/",
+*/
+	.checkip_name = DYNDNS_MY_IP_SERVER,
+	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
+	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
 	.server_name  = "updates.dnsomatic.com",
 	.server_url   = "/nic/update"

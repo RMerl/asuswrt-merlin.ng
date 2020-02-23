@@ -181,7 +181,11 @@ export OLD_SRC=$(HND_SRC)/../src
 export BUILD_MFG := 0
 export BCMEX :=
 export EX7 :=
+ifeq ($(HND_ROUTER_AX_675X),y)
+export EXHND := _arm_6750hnd
+else
 export EXHND := _arm_axhnd
+endif
 export DHD_MONITOR := debug_monitor
 export LIBNL_PLT := arm
 export LIBNL_BUILD := i386-pc-linux-gnu

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+NEWFS_HFS(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+NEWFS_HFS(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+NEWFS_HFS(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> newfs_hfs - create a HFS+ file system</div>
+<div class="section">
+<h1>SYNOPSIS</h1> <b>newfs_hfs</b> [ <i>options</i>] <i>device</i></div>
+<div class="section">
+<h1>DESCRIPTION</h1> <b>newfs_hfs</b> is used to create an HFS+ file system on a device (usually a disk or flash partition) or image. <i>device</i> is the special file corresponding to the device (e.g. <i>/dev/sdXX,</i> <i>/dev/block/mmcblk1p1</i>) or an image file.</div>
+<div class="section">
+<h1>OPTIONS</h1> Below is a summary of all the options that <b>newfs_hfs</b> accepts.<dl>
+<dt>
+<b>-s</b>,</dt>
+<dd>
+Creates a case-sensitive HFS+ file-system. By default a case-insensitive file-system is created.</dd>
+</dl>
+<dl>
+<dt>
+<b>-w</b></dt>
+<dd>
+Adds an HFS wrapper around the HFS+ file system.</dd>
+</dl>
+<dl>
+<dt>
+<b>-U</b> UID</dt>
+<dd>
+Set owner of the file-system root directory.</dd>
+</dl>
+<dl>
+<dt>
+<b>-G</b> GID</dt>
+<dd>
+Set group of the file-system root directory.</dd>
+</dl>
+<dl>
+<dt>
+<b>-M</b> MASK</dt>
+<dd>
+Set permission mask for the file-system root directory.</dd>
+</dl>
+<dl>
+<dt>
+<b>-b</b> SIZE</dt>
+<dd>
+Set the allocation block size (in bytes) to <b>SIZE</b>. The default value is 4096.</dd>
+</dl>
+<dl>
+<dt>
+<b>-v</b> VOLUME-NAME</dt>
+<dd>
+Volume name in ASCII or UTF-8 format.</dd>
+</dl>
+<dl>
+<dt>
+<b>-i</b> FIRST-CNID</dt>
+<dd>
+Sets the first catalog node ID for user files and directories. The default value is 16.</dd>
+</dl>
+<dl>
+<dt>
+<b>-N</b> PARTITION-SIZE</dt>
+<dd>
+Print summary of file-system parameters without actually creating the file- system. This might be useful for verifying the actual parameters before creating the file-system.</dd>
+</dl>
+<dl>
+<dt>
+<b>-J</b> JOURNAL-SIZE</dt>
+<dd>
+Creates a journaled HFS+ volume. The default journal size is 8MB.</dd>
+</dl>
+<dl>
+<dt>
+<b>-c</b> CLUMP-SIZE-LIST</dt>
+<dd>
+Sets the clump and/or initial sizes, in allocation blocks, for meta-data files. It is specified with -c option followed by comma seperated list of the form args=value.<div style="height: 1.00em;">
+&#160;</div>
+Set the attribute file clump size. Set the allocation bitmap file clump size. Set the catalog file clump size. Set the extent overflow file clump size.<div style="height: 1.00em;">
+&#160;</div>
+</dd>
+</dl>
+<dl>
+<dt>
+<b>-n</b> NODE-SIZE-LIST</dt>
+<dd>
+Sets  b-tree node sizes, in bytes, for the various b-tree files. It is specified with the -n option followed by a comma separated list of the form arg=value. Node size must be a power of two and no larger than 32768 bytes. Set the attribute b-tree node size. Set the catalog b-tree node size. Set the extent overflow b-tree node size.<div style="height: 1.00em;">
+&#160;</div>
+</dd>
+</dl>
+</div>
+<div class="section">
+<h1>BUGS</h1> If you find a bug please send an email describing the problem to hfs-support@tuxera.com.</div>
+<div class="section">
+<h1>AVAILABILITY</h1> <b>newfs_hfs</b> is part of the <b>Tuxera HFS+</b> package.</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+December 2013</td>
+<td class="foot-os">
+Tuxera HFS+ 3014.7.28</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

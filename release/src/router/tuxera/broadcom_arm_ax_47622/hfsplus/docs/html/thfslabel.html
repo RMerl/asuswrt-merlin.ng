@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+THFSLABEL(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+THFSLABEL(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+THFSLABEL(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> thfslabel - Display/change the label on an HFS+ file system.</div>
+<div class="section">
+<h1>SYNOPSIS</h1>  <b>thfslabel</b> [<i>options</i>] <i>device </i>[<i>new-label</i>]</div>
+<div class="section">
+<h1>DESCRIPTION</h1>  <b>thfslabel</b> will display or change the file system label on the HFS+ file system located on  <i>device</i>.<div class="spacer">
+</div>
+If the optional argument <i>new-label</i> is not present, <b>thfslabel</b> will simply print the current file system label as a UTF-8 string.<div class="spacer">
+</div>
+If the optional argument <i>new-label</i> is present, then <b>thfslabel</b> will set the file system label to be the string  <i>new-label</i>, given in UTF-8 format.<div style="height: 0.00em;">
+&#160;</div>
+HFS+ file system labels can be at most 255 UTF-16 code units of decomposed Unicode long; if  <i>new-label</i> is longer than 255 UTF-16 code units of decomposed Unicode,  <b>thfslabel</b> will truncate it and print a warning message. Note that the string in  <i>new-label</i> will be decomposed automatically by  <b>thfslabel</b>.</div>
+<div class="section">
+<h1>OPTIONS</h1> Below is a summary of all the options that  <b>thfslabel</b> accepts.<dl>
+<dt>
+<b>--output-mode</b>=[mode]</dt>
+<dd>
+Specify the output mode when printing the volume label. Currently the supported output modes are  <b>raw</b> and <b>composed</b>.<div style="height: 0.00em;">
+&#160;</div>
+Raw mode means that the label is converted from UTF-16 to UTF-8 without any further transformation. This implies that the output will be in decomposed Unicode since this is how strings are stored in HFS+.<div style="height: 0.00em;">
+&#160;</div>
+Composed mode means that the label is converted from the on-disk decomposed form into composed Unicode, which is what most operating systems expect (Mac OS X being the exception).<div style="height: 0.00em;">
+&#160;</div>
+The default behaviour (when this option is not given) is the behaviour of the  <b>composed</b> option.</dd>
+</dl>
+</div>
+<div class="section">
+<h1>BUGS</h1> If you find a bug please send an email describing the problem to hfs-support@tuxera.com.</div>
+<div class="section">
+<h1>AVAILABILITY</h1>  <b>thfslabel</b> is part of the <b>Tuxera HFS+ Utilities</b> package.</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+Dec 2013</td>
+<td class="foot-os">
+Tuxera HFS+ Utilities 3014.8.10</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

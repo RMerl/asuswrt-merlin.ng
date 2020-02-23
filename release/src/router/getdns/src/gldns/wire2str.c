@@ -25,7 +25,9 @@
 #ifdef HAVE_TIME_H
 #include <time.h>
 #endif
+#ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
+#endif
 #include <stdarg.h>
 #include <ctype.h>
 #ifdef HAVE_NETDB_H
@@ -252,13 +254,13 @@ int gldns_wire2str_pkt_buf(uint8_t* d, size_t dlen, char* s, size_t slen)
 int gldns_wire2str_rr_buf(uint8_t* d, size_t dlen, char* s, size_t slen)
 {
 	/* use arguments as temporary variables */
-	return gldns_wire2str_rr_scan(&d, &dlen, &s, &slen, NULL, 0);
+	return gldns_wire2str_rr_scan(&d, &dlen, &s, &slen, NULL, 0, NULL);
 }
 
 int gldns_wire2str_rrquestion_buf(uint8_t* d, size_t dlen, char* s, size_t slen)
 {
 	/* use arguments as temporary variables */
-	return gldns_wire2str_rrquestion_scan(&d, &dlen, &s, &slen, NULL, 0);
+	return gldns_wire2str_rrquestion_scan(&d, &dlen, &s, &slen, NULL, 0, NULL);
 }
 
 int gldns_wire2str_rdata_buf(uint8_t* rdata, size_t rdata_len, char* str,
@@ -266,13 +268,13 @@ int gldns_wire2str_rdata_buf(uint8_t* rdata, size_t rdata_len, char* str,
 {
 	/* use arguments as temporary variables */
 	return gldns_wire2str_rdata_scan(&rdata, &rdata_len, &str, &str_len,
-		rrtype, NULL, 0);
+		rrtype, NULL, 0, NULL);
 }
 
 int gldns_wire2str_rr_unknown_buf(uint8_t* d, size_t dlen, char* s, size_t slen)
 {
 	/* use arguments as temporary variables */
-	return gldns_wire2str_rr_unknown_scan(&d, &dlen, &s, &slen, NULL, 0);
+	return gldns_wire2str_rr_unknown_scan(&d, &dlen, &s, &slen, NULL, 0, NULL);
 }
 
 int gldns_wire2str_rr_comment_buf(uint8_t* rr, size_t rrlen, size_t dname_len,
@@ -310,7 +312,7 @@ int gldns_wire2str_opcode_buf(int opcode, char* s, size_t slen)
 int gldns_wire2str_dname_buf(uint8_t* d, size_t dlen, char* s, size_t slen)
 {
 	/* use arguments as temporary variables */
-	return gldns_wire2str_dname_scan(&d, &dlen, &s, &slen, NULL, 0);
+	return gldns_wire2str_dname_scan(&d, &dlen, &s, &slen, NULL, 0, NULL);
 }
 
 int gldns_str_vprint(char** str, size_t* slen, const char* format, va_list args)
@@ -365,7 +367,7 @@ static int print_remainder_hex(const char* pref, uint8_t** d, size_t* dlen,
 
 int gldns_wire2str_pkt_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen)
 {
-	int w = 0;
+	int w = 0, comprloop = 0;
 	unsigned qdcount, ancount, nscount, arcount, i;
 	uint8_t* pkt = *d;
 	size_t pktlen = *dlen;
@@ -382,25 +384,25 @@ int gldns_wire2str_pkt_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen)
 	w += gldns_str_print(s, slen, ";; QUESTION SECTION:\n");
 	for(i=0; i<qdcount; i++) {
 		w += gldns_wire2str_rrquestion_scan(d, dlen, s, slen,
-			pkt, pktlen);
+			pkt, pktlen, &comprloop);
 		if(!*dlen) break;
 	}
 	w += gldns_str_print(s, slen, "\n");
 	w += gldns_str_print(s, slen, ";; ANSWER SECTION:\n");
 	for(i=0; i<ancount; i++) {
-		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen);
+		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen, &comprloop);
 		if(!*dlen) break;
 	}
 	w += gldns_str_print(s, slen, "\n");
 	w += gldns_str_print(s, slen, ";; AUTHORITY SECTION:\n");
 	for(i=0; i<nscount; i++) {
-		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen);
+		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen, &comprloop);
 		if(!*dlen) break;
 	}
 	w += gldns_str_print(s, slen, "\n");
 	w += gldns_str_print(s, slen, ";; ADDITIONAL SECTION:\n");
 	for(i=0; i<arcount; i++) {
-		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen);
+		w += gldns_wire2str_rr_scan(d, dlen, s, slen, pkt, pktlen, &comprloop);
 		if(!*dlen) break;
 	}
 	/* other fields: WHEN(time), SERVER(IP) not available here. */
@@ -449,7 +451,7 @@ static int gldns_rr_tcttl_scan(uint8_t** d, size_t* dl, char** s, size_t* sl)
 }
 
 int gldns_wire2str_rr_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
-	uint8_t* pkt, size_t pktlen)
+	uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	int w = 0;
 	uint8_t* rr = *d;
@@ -464,7 +466,7 @@ int gldns_wire2str_rr_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 
 	/* try to scan the rdata with pretty-printing, but if that fails, then
 	 * scan the rdata as an unknown RR type */
-	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen);
+	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen, comprloop);
 	w += gldns_str_print(s, slen, "\t");
 	dname_off = rrlen-(*dlen);
 	if(*dlen == 4) {
@@ -508,7 +510,8 @@ int gldns_wire2str_rr_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 		w += print_remainder_hex(";Error partial rdata 0x", d, dlen, s, slen);
 		return w + gldns_str_print(s, slen, "\n");
 	}
-	w += gldns_wire2str_rdata_scan(d, &rdlen, s, slen, rrtype, pkt, pktlen);
+	w += gldns_wire2str_rdata_scan(d, &rdlen, s, slen, rrtype, pkt, pktlen,
+		comprloop);
 	(*dlen) -= (ordlen-rdlen);
 
 	/* default comment */
@@ -519,11 +522,11 @@ int gldns_wire2str_rr_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 }
 
 int gldns_wire2str_rrquestion_scan(uint8_t** d, size_t* dlen, char** s,
-	size_t* slen, uint8_t* pkt, size_t pktlen)
+	size_t* slen, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	int w = 0;
 	uint16_t t, c;
-	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen);
+	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen, comprloop);
 	w += gldns_str_print(s, slen, "\t");
 	if(*dlen < 4) {
 		if(*dlen == 0)
@@ -543,11 +546,11 @@ int gldns_wire2str_rrquestion_scan(uint8_t** d, size_t* dlen, char** s,
 }
 
 int gldns_wire2str_rr_unknown_scan(uint8_t** d, size_t* dlen, char** s,
-	size_t* slen, uint8_t* pkt, size_t pktlen)
+	size_t* slen, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	size_t rdlen, ordlen;
 	int w = 0;
-	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen);
+	w += gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen, comprloop);
 	w += gldns_str_print(s, slen, "\t");
 	w += gldns_rr_tcttl_scan(d, dlen, s, slen);
 	w += gldns_str_print(s, slen, "\t");
@@ -585,6 +588,7 @@ static int rr_comment_dnskey(char** s, size_t* slen, uint8_t* rr,
 	if(rrlen < dname_off + 10) return 0;
 	rdlen = gldns_read_uint16(rr+dname_off+8);
 	if(rrlen < dname_off + 10 + rdlen) return 0;
+	if(rdlen < 2) return 0;
 	rdata = rr + dname_off + 10;
 	flags = (int)gldns_read_uint16(rdata);
 	w += gldns_str_print(s, slen, " ;{");
@@ -698,7 +702,8 @@ int gldns_wire2str_header_scan(uint8_t** d, size_t* dlen, char** s,
 }
 
 int gldns_wire2str_rdata_scan(uint8_t** d, size_t* dlen, char** s,
-	size_t* slen, uint16_t rrtype, uint8_t* pkt, size_t pktlen)
+	size_t* slen, uint16_t rrtype, uint8_t* pkt, size_t pktlen,
+	int* comprloop)
 {
 	/* try to prettyprint, but if that fails, use unknown format */
 	uint8_t* origd = *d;
@@ -724,7 +729,7 @@ int gldns_wire2str_rdata_scan(uint8_t** d, size_t* dlen, char** s,
 		if(r_cnt != 0)
 			w += gldns_str_print(s, slen, " ");
 		n = gldns_wire2str_rdf_scan(d, dlen, s, slen, rdftype,
-			pkt, pktlen);
+			pkt, pktlen, comprloop);
 		if(n == -1) {
 		failed:
 			/* failed, use unknown format */
@@ -775,21 +780,27 @@ static int dname_char_print(char** s, size_t* slen, uint8_t c)
 }
 
 int gldns_wire2str_dname_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
-	uint8_t* pkt, size_t pktlen)
+	uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	int w = 0;
 	/* spool labels onto the string, use compression if its there */
 	uint8_t* pos = *d;
 	unsigned i, counter=0;
-	const unsigned maxcompr = 1000; /* loop detection, max compr ptrs */
+	unsigned maxcompr = 1000; /* loop detection, max compr ptrs */
 	int in_buf = 1;
+	if(comprloop) {
+		if(*comprloop != 0)
+			maxcompr = 30; /* for like ipv6 reverse name, per label */
+		if(*comprloop > 4)
+			maxcompr = 4; /* just don't want to spend time, any more */
+	}
 	if(*dlen == 0) return gldns_str_print(s, slen, "ErrorMissingDname");
 	if(*pos == 0) {
 		(*d)++;
 		(*dlen)--;
 		return gldns_str_print(s, slen, ".");
 	}
-	while(*pos) {
+	while((!pkt || pos < pkt+pktlen) && *pos) {
 		/* read label length */
 		uint8_t labellen = *pos++;
 		if(in_buf) { (*d)++; (*dlen)--; }
@@ -928,14 +939,14 @@ int gldns_wire2str_ttl_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen)
 }
 
 int gldns_wire2str_rdf_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
-	int rdftype, uint8_t* pkt, size_t pktlen)
+	int rdftype, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	if(*dlen == 0) return 0;
 	switch(rdftype) {
 	case GLDNS_RDF_TYPE_NONE:
 		return 0;
 	case GLDNS_RDF_TYPE_DNAME:
-		return gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen);
+		return gldns_wire2str_dname_scan(d, dlen, s, slen, pkt, pktlen, comprloop);
 	case GLDNS_RDF_TYPE_INT8:
 		return gldns_wire2str_int8_scan(d, dlen, s, slen);
 	case GLDNS_RDF_TYPE_INT16:
@@ -987,7 +998,7 @@ int gldns_wire2str_rdf_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 		return gldns_wire2str_atma_scan(d, dlen, s, slen);
 	case GLDNS_RDF_TYPE_IPSECKEY:
 		return gldns_wire2str_ipseckey_scan(d, dlen, s, slen, pkt,
-			pktlen);
+			pktlen, comprloop);
 	case GLDNS_RDF_TYPE_HIP:
 		return gldns_wire2str_hip_scan(d, dlen, s, slen);
 	case GLDNS_RDF_TYPE_INT16_DATA:
@@ -1006,7 +1017,7 @@ int gldns_wire2str_rdf_scan(uint8_t** d, size_t* dlen, char** s, size_t* slen,
 		return gldns_wire2str_long_str_scan(d, dlen, s, slen);
 	case GLDNS_RDF_TYPE_AMTRELAY:
 		return gldns_wire2str_amtrelay_scan(d, dlen, s, slen, pkt,
-			pktlen);
+			pktlen, comprloop);
 	case GLDNS_RDF_TYPE_TSIGERROR:
 		return gldns_wire2str_tsigerror_scan(d, dlen, s, slen);
 	}
@@ -1532,7 +1543,7 @@ int gldns_wire2str_atma_scan(uint8_t** d, size_t* dl, char** s, size_t* sl)
 
 /* internal scan routine that can modify arguments on failure */
 static int gldns_wire2str_ipseckey_scan_internal(uint8_t** d, size_t* dl,
-	char** s, size_t* sl, uint8_t* pkt, size_t pktlen)
+	char** s, size_t* sl, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	/* http://www.ietf.org/internet-drafts/draft-ietf-ipseckey-rr-12.txt*/
 	uint8_t precedence, gateway_type, algorithm;
@@ -1560,7 +1571,7 @@ static int gldns_wire2str_ipseckey_scan_internal(uint8_t** d, size_t* dl,
 		w += gldns_wire2str_aaaa_scan(d, dl, s, sl);
 		break;
 	case 3: /* dname */
-		w += gldns_wire2str_dname_scan(d, dl, s, sl, pkt, pktlen);
+		w += gldns_wire2str_dname_scan(d, dl, s, sl, pkt, pktlen, comprloop);
 		break;
 	default: /* unknown */
 		return -1;
@@ -1574,12 +1585,12 @@ static int gldns_wire2str_ipseckey_scan_internal(uint8_t** d, size_t* dl,
 }
 
 int gldns_wire2str_ipseckey_scan(uint8_t** d, size_t* dl, char** s, size_t* sl,
-	uint8_t* pkt, size_t pktlen)
+	uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	uint8_t* od = *d;
 	char* os = *s;
 	size_t odl = *dl, osl = *sl;
-	int w=gldns_wire2str_ipseckey_scan_internal(d, dl, s, sl, pkt, pktlen);
+	int w=gldns_wire2str_ipseckey_scan_internal(d, dl, s, sl, pkt, pktlen, comprloop);
 	if(w == -1) {
 		*d = od;
 		*s = os;
@@ -1712,7 +1723,7 @@ int gldns_wire2str_long_str_scan(uint8_t** d, size_t* dl, char** s, size_t* sl)
 
 /* internal scan routine that can modify arguments on failure */
 static int gldns_wire2str_amtrelay_scan_internal(uint8_t** d, size_t* dl,
-	char** s, size_t* sl, uint8_t* pkt, size_t pktlen)
+	char** s, size_t* sl, uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	/* https://www.ietf.org/id/draft-ietf-mboned-driad-amt-discovery-01.txt */
 	uint8_t precedence, discovery_optional, relay_type;
@@ -1739,7 +1750,7 @@ static int gldns_wire2str_amtrelay_scan_internal(uint8_t** d, size_t* dl,
 		w += gldns_wire2str_aaaa_scan(d, dl, s, sl);
 		break;
 	case 3: /* dname */
-		w += gldns_wire2str_dname_scan(d, dl, s, sl, pkt, pktlen);
+		w += gldns_wire2str_dname_scan(d, dl, s, sl, pkt, pktlen, comprloop);
 		break;
 	default: /* unknown */
 		return -1;
@@ -1748,12 +1759,12 @@ static int gldns_wire2str_amtrelay_scan_internal(uint8_t** d, size_t* dl,
 }
 
 int gldns_wire2str_amtrelay_scan(uint8_t** d, size_t* dl, char** s, size_t* sl,
-	uint8_t* pkt, size_t pktlen)
+	uint8_t* pkt, size_t pktlen, int* comprloop)
 {
 	uint8_t* od = *d;
 	char* os = *s;
 	size_t odl = *dl, osl = *sl;
-	int w=gldns_wire2str_amtrelay_scan_internal(d, dl, s, sl, pkt, pktlen);
+	int w=gldns_wire2str_amtrelay_scan_internal(d, dl, s, sl, pkt, pktlen, comprloop);
 	if(w == -1) {
 		*d = od;
 		*s = os;
@@ -1966,8 +1977,8 @@ int gldns_wire2str_edns_subnet_print(char** s, size_t* sl, uint8_t* data,
 	return w;
 }
 
-int gldns_wire2str_edns_keepalive_print(char** s, size_t* sl, uint8_t* data,
-	size_t len)
+static int gldns_wire2str_edns_keepalive_print(char** s, size_t* sl,
+	uint8_t* data, size_t len)
 {
 	int w = 0;
 	uint16_t timeout;

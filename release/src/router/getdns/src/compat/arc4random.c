@@ -31,11 +31,11 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
+#ifndef GETDNS_ON_WINDOWS
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/param.h>
 #include <sys/time.h>
-#ifndef GETDNS_ON_WINDOWS
 #include <sys/mman.h>
 #endif
 #if defined(GETDNS_ON_WINDOWS) && !defined(MAP_INHERIT_ZERO)
@@ -212,7 +212,7 @@ _rs_stir(void)
 static inline void
 _rs_stir_if_needed(size_t len)
 {
-#ifndef MAP_INHERIT_ZERO
+#if !defined(GETDNS_ON_WINDOWS)	&& !defined(MAP_INHERIT_ZERO)
 	static pid_t _rs_pid = 0;
 	pid_t pid = getpid();
 

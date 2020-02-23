@@ -36,10 +36,14 @@
 #define _GETDNS_EXTRA_H_
 
 #include <getdns/getdns.h>
-#include <sys/time.h>
-#include <stdio.h>
-#include <time.h>
 #include <stdarg.h>
+#include <stdio.h>
+#if defined(_WIN32)
+/* For struct timeval, see getdns_context_get_num_pending_requests */
+#include <winsock2.h>
+#else
+#include <sys/time.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

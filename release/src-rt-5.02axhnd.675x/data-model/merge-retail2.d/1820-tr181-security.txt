@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr181-security.xml as 
+# the last child of Device. 
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-security.xml Device.
+

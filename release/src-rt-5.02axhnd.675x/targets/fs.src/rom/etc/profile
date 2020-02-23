@@ -1,0 +1,8 @@
+# /etc/profile: system-wide .profile file for the Bourne shells
+
+export PATH=/home/bin:/home/scripts:/bin:/sbin:/usr/bin:/usr/local/jamvm/bin:/opt/scripts:/usr/sbin
+export LD_LIBRARY_PATH=/lib:/lib/gpl:/lib64/gpl:/lib64:/usr/lib:/usr/lib64
+
+
+
+

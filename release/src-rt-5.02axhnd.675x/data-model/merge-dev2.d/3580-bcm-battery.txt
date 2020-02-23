@@ -1,0 +1,9 @@
+#
+# Add the object(s) in cms-dm-bcm-battery.xml above the 
+# object Device.ManagementServer.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-battery.xml Device.ManagementServer.
+

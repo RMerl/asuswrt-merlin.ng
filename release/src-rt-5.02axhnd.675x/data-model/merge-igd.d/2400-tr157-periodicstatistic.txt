@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr143-diagnostics.xml as the
+# last children objects of InternetGatewayDevice.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr157-periodicstatistics.xml InternetGatewayDevice.
+

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Ltd., 2006-2018" >
+
+<mapper name="WLSECMODE." shortObjectName="WLSECMODE" requirements="P" supportLevel="Present"  />
+ <value param="None"  nvram=0 enum="NWIFI_SECURITY_MODE_OPEN"  />
+ <value param="WEP-64"  nvram=1 enum="NWIFI_SECURITY_MODE_WEP_64"  />
+ <value param="WEP-128"  nvram=2 enum="NWIFI_SECURITY_MODE_WEP_128"  />
+ <value param="WPA-Personal"  nvram=3 enum="NWIFI_SECURITY_MODE_WPA_Personal"  />
+ <value param="WPA2-Personal"  nvram=4 enum="NWIFI_SECURITY_MODE_WPA2_Personal"  />
+ <value param="WPA-WPA2-Personal"  nvram=5 enum="NWIFI_SECURITY_MODE_WPA_WPA2_Personal"  />
+ <value param="WPA-Enterprise"  nvram=6 enum="NWIFI_SECURITY_MODE_WPA_Enterprise"  />
+ <value param="WPA2-Enterprise"  nvram=7 enum="NWIFI_SECURITY_MODE_WPA2_Enterprise"  />
+ <value param="WPA-WPA2-Enterprise"  nvram=8 enum="NWIFI_SECURITY_MODE_WPA_WPA2_Enterprise"  />
+
+
+<mapper name="WLBAND." shortObjectName="WLBAND" requirements="P"  />
+  <value param="2.4GHz" nvram=2 enum="BAND_B" />
+  <value param="5GHz"   nvram=1 enum="BAND_A" />
+
+
+<mapper name="WLREGMODE." shortObjectName="WLREGMODE" requirements="P" supportLevel="Present"  />
+  <value param=0    enum="REG_MODE_OFF"   nvram="off"    />
+  <value param=1    enum="REG_MODE_H"     nvram="h"    />
+  <value param=2    enum="REG_MODE_D"     nvram="d"    />
+
+<mapper name="ONOFFAUTO." shortObjectName="ONOFFAUTO" requirements="P" supportLevel="Present"  />
+ <value param="off"   nvram=0  />
+ <value param="on"    nvram=1  />
+ <value param="auto"  nvram=-1 />
+ <value param=0       nvram="off"  />
+ <value param=1       nvram="on"  />
+ <value param=-1      nvram="auto" />
+
+<mapper name="BOOL." shortObjectName="BOOL" requirements="P" supportLevel="Present"  />
+
+<mapper name="BOOLREV." shortObjectName="BOOLREV" requirements="P" supportLevel="Present"  />
+ <value param=0  nvram=1 />
+ <value param=1  nvram=0  />
+
+<mapper name="WLCTRLSB." shortObjectName="WLCTRLSB" requirements="P" supportLevel="Present"  />
+ <value param=-1    nvram="lower" />
+ <value param=0     nvram="lower"/>
+ <value param=1     nvram="upper" />
+ <value param=2     nvram="ll"  />
+ <value param=3     nvram="lu"  />
+ <value param=4     nvram="ul"  />
+ <value param=5     nvram="uu"  />
+ <value param=6     nvram="lll"  />
+ <value param=7     nvram="llu"  />
+ <value param=8     nvram="lul"  />
+ <value param=9     nvram="luu"  />
+ <value param=10    nvram="ull"  />
+ <value param=11    nvram="ulu"  />
+ <value param=12    nvram="uul"  />
+ <value param=13    nvram="uuu"  />
+
+ <vsaInfo>
+ </vsaInfo>
+</xmlMandatorySingleRootNode>

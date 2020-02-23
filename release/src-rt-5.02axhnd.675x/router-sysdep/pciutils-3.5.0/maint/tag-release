@@ -1,0 +1,6 @@
+#!/bin/sh
+if [ -z "$1" -o -n "$2" ] ; then
+	echo >&2 'Usage: tag-release vX.Y.Z'
+	exit 1
+fi
+git tag -u ED70F82D $1

@@ -1,0 +1,299 @@
+/*
+<:copyright-BRCM:2012:DUAL/GPL:standard 
+
+   Copyright (c) 2012 Broadcom 
+   All Rights Reserved
+
+Unless you and Broadcom execute a separate written software license
+agreement governing use of this software, this software is licensed
+to you under the terms of the GNU General Public License version 2
+(the "GPL"), available at http://www.broadcom.com/licenses/GPLv2.php,
+with the following added to such license:
+
+   As a special exception, the copyright holders of this software give
+   you permission to link this software with independent modules, and
+   to copy and distribute the resulting executable under terms of your
+   choice, provided that you also meet, for each linked independent
+   module, the terms and conditions of the license of that module.
+   An independent module is a module which is not derived from this
+   software.  The special exception does not apply to any modifications
+   of the software.
+
+Not withstanding the above, under no circumstances may you combine
+this software in any way with any other Broadcom software provided
+under a license other than the GPL, without Broadcom's express prior
+written consent.
+
+:>
+
+*/                       
+
+#ifndef __6878_INTR_H
+#define __6878_INTR_H
+
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
+/*=====================================================================*/
+/* SPI Table Offset                                                    */
+/*=====================================================================*/
+#define SPI_TABLE_OFFSET               32
+#define SPI_TABLE_OFFSET1              (SPI_TABLE_OFFSET + 32)
+#define SPI_TABLE_OFFSET2              (SPI_TABLE_OFFSET1 + 32)
+#define SPI_TABLE_OFFSET3              (SPI_TABLE_OFFSET2 + 32)
+#define SPI_TABLE_OFFSET4              (SPI_TABLE_OFFSET3 + 32)
+#define SPI_TABLE_OFFSET5              (SPI_TABLE_OFFSET4 + 32)
+
+/*=====================================================================*/
+/* Physical Interrupt IDs                                              */
+/*=====================================================================*/
+    /*  ------------- CHIP_IRQS[31-0] ----------------------------*/
+#define INTERRUPT_A7_AXIERR         (SPI_TABLE_OFFSET + 0)
+#define INTERRUPT_A7_INTERR         (SPI_TABLE_OFFSET + 1)
+#define INTERRUPT_A7_CCIERR         (SPI_TABLE_OFFSET + 4)
+#define INTERRUPT_A7_CCIOVFLOW      (SPI_TABLE_OFFSET + 5)
+#define INTERRUPT_THERM_HIGH        (SPI_TABLE_OFFSET + 6)
+#define INTERRUPT_THERM_LOW         (SPI_TABLE_OFFSET + 7)
+#define INTERRUPT_THERM_SHUTDOWN    (SPI_TABLE_OFFSET + 8)
+#define INTERRUPT_PMU               (SPI_TABLE_OFFSET + 9)  /* 2 interrupts */
+#define INTERRUPT_TIMER0            (SPI_TABLE_OFFSET + 11)
+#define INTERRUPT_TIMER             INTERRUPT_ID_TIMER0
+#define INTERRUPT_TIMER1            (SPI_TABLE_OFFSET + 12)
+#define INTERRUPT_TIMER2            (SPI_TABLE_OFFSET + 13)
+#define INTERRUPT_TIMER3            (SPI_TABLE_OFFSET + 14)
+#define INTERRUPT_TIMER_MAX         INTERRUPT_ID_TIMER3
+#define INTERRUPT_A7_COMMON         (SPI_TABLE_OFFSET + 17)
+#define INTERRUPT_MEMC_SEC          (SPI_TABLE_OFFSET + 18)
+#define INTERRUPT_A7_INT_PENDING    (SPI_TABLE_OFFSET + 19)   
+#define INTERRUPT_PER_SEC_ACC_VIOL  (SPI_TABLE_OFFSET + 20)
+#define INTERRUPT_A7_UBUS_RC        (SPI_TABLE_OFFSET + 21)
+#define INTERRUPT_A7_UBUS_STAT_REG  (SPI_TABLE_OFFSET + 22)
+#define INTERRUPT_PMC_TEMP_WARN     (SPI_TABLE_OFFSET + 28)
+#define INTERRUPT_DG                (SPI_TABLE_OFFSET + 29)
+
+#define INTERRUPT_HS_SPIM           (SPI_TABLE_OFFSET1 + 5)
+#define INTERRUPT_NAND_FLASH        (SPI_TABLE_OFFSET1 + 6)
+#define INTERRUPT_MEMC              (SPI_TABLE_OFFSET1 + 7)
+#define INTERRUPT_UBUS2AXI_WLAN_CCM (SPI_TABLE_OFFSET1 + 12)
+#define INTERRUPT_UBUS2AXI_WLAN_M2M (SPI_TABLE_OFFSET1 + 13)
+#define INTERRUPT_UBUS2AXI_WLAN_D11 (SPI_TABLE_OFFSET1 + 14)
+#define INTERRUPT__WLAN_WDRESET     (SPI_TABLE_OFFSET1 + 15)
+#define INTERRUPT_MAC_QEGPHY_CFG    (SPI_TABLE_OFFSET1 + 18) /* 4 interrupts */
+#define INTERRUPT_MAC_QEGPHY_CFG_ACT (SPI_TABLE_OFFSET1 + 22) /* 4 interrupts */
+#define INTERRUPT_PCIE_0_CPU_INTR   (SPI_TABLE_OFFSET1 + 28)
+#define INTERRUPT_UBUS4_SYS         (SPI_TABLE_OFFSET1 + 31)
+
+#define INTERRUPT_ADDR_HOLE_ACC     (SPI_TABLE_OFFSET2 + 12)
+#define INTERRUPT_I2C               (SPI_TABLE_OFFSET2 + 19)
+#define INTERRUPT_O_RNG             (SPI_TABLE_OFFSET2 + 21)
+#define INTERRUPT_UART0             (SPI_TABLE_OFFSET2 + 28)
+#define INTERRUPT_HS_UART           (SPI_TABLE_OFFSET2 + 29)
+#define INTERRUPT_PL081_DMA         (SPI_TABLE_OFFSET2 + 30)
+
+#define INTERRUPT_WAN_EPON_TOP      (SPI_TABLE_OFFSET3 + 0)
+#define INTERRUPT_WAN_NCO_GPON      (SPI_TABLE_OFFSET3 + 1)
+#define INTERRUPT_WAN_GPON_TX       (SPI_TABLE_OFFSET3 + 2)
+#define INTERRUPT_WAN_GPON_RX       (SPI_TABLE_OFFSET3 + 3)
+#define INTERRUPT_WAN_PMD_PLL1_LOCK (SPI_TABLE_OFFSET3 + 4)
+#define INTERRUPT_WAN_PMD_PLL0_LOCK (SPI_TABLE_OFFSET3 + 5)
+#define INTERRUPT_WAN_PMD_SIGNAL_DETECT_0 (SPI_TABLE_OFFSET3 + 6)
+#define INTERRUPT_WAN_PMD_ENERGY_DETECT_0 (SPI_TABLE_OFFSET3 + 7)
+#define INTERRUPT_WAN_PMD_RX_LOCK_0 (SPI_TABLE_OFFSET3 + 8)
+#define INTERRUPT_PCM_DMA0          (SPI_TABLE_OFFSET3 + 18) /* PCM DMA RX interrupt */
+#define INTERRUPT_PCM_DMA1          (SPI_TABLE_OFFSET3 + 19) /* PCM DMA TX interrupt */
+#define INTERRUPT_PCM               (SPI_TABLE_OFFSET3 + 20) /* 2 interrupts */
+#define INTERRUPT_MDIO_ERR          (SPI_TABLE_OFFSET3 + 22)
+#define INTERRUPT_MDIO_DONE         (SPI_TABLE_OFFSET3 + 23)
+#define INTERRUPT_USBD              (SPI_TABLE_OFFSET3 + 24)
+#define INTERRUPT_USB_OHCI1         (SPI_TABLE_OFFSET3 + 26)
+#define INTERRUPT_USB_EHCI1         (SPI_TABLE_OFFSET3 + 27)
+#define INTERRUPT_USB_OHCI          (SPI_TABLE_OFFSET3 + 28)
+#define INTERRUPT_USB_EHCI          (SPI_TABLE_OFFSET3 + 29)
+#define INTERRUPT_USB_EVENTS        (SPI_TABLE_OFFSET3 + 30)
+#define INTERRUPT_USB_BRIDGE        (SPI_TABLE_OFFSET3 + 31)
+
+#define INTERRUPT_XRDP_QUEUE_0      (SPI_TABLE_OFFSET4 + 0)
+#define INTERRUPT_XRDP_QUEUE_1      (SPI_TABLE_OFFSET4 + 1)
+#define INTERRUPT_XRDP_QUEUE_2      (SPI_TABLE_OFFSET4 + 2)
+#define INTERRUPT_XRDP_QUEUE_3      (SPI_TABLE_OFFSET4 + 3)
+#define INTERRUPT_XRDP_QUEUE_4      (SPI_TABLE_OFFSET4 + 4)
+#define INTERRUPT_XRDP_QUEUE_5      (SPI_TABLE_OFFSET4 + 5)
+#define INTERRUPT_XRDP_QUEUE_6      (SPI_TABLE_OFFSET4 + 6)
+#define INTERRUPT_XRDP_QUEUE_7      (SPI_TABLE_OFFSET4 + 7)
+#define INTERRUPT_XRDP_QUEUE_8      (SPI_TABLE_OFFSET4 + 8)
+#define INTERRUPT_XRDP_QUEUE_9      (SPI_TABLE_OFFSET4 + 9)
+#define INTERRUPT_XRDP_QUEUE_10     (SPI_TABLE_OFFSET4 + 10)
+#define INTERRUPT_XRDP_QUEUE_11     (SPI_TABLE_OFFSET4 + 11)
+#define INTERRUPT_XRDP_QUEUE_12     (SPI_TABLE_OFFSET4 + 12)
+#define INTERRUPT_XRDP_QUEUE_13     (SPI_TABLE_OFFSET4 + 13)
+#define INTERRUPT_XRDP_QUEUE_14     (SPI_TABLE_OFFSET4 + 14)
+#define INTERRUPT_XRDP_QUEUE_15     (SPI_TABLE_OFFSET4 + 15)
+#define INTERRUPT_XRDP_QUEUE_16     (SPI_TABLE_OFFSET4 + 16)
+#define INTERRUPT_XRDP_QUEUE_17     (SPI_TABLE_OFFSET4 + 17)
+#define INTERRUPT_XRDP_QUEUE_18     (SPI_TABLE_OFFSET4 + 18)
+#define INTERRUPT_XRDP_QUEUE_19     (SPI_TABLE_OFFSET4 + 19)
+#define INTERRUPT_XRDP_QUEUE_20     (SPI_TABLE_OFFSET4 + 20)
+#define INTERRUPT_XRDP_QUEUE_21     (SPI_TABLE_OFFSET4 + 21)
+#define INTERRUPT_XRDP_QUEUE_22     (SPI_TABLE_OFFSET4 + 22)
+#define INTERRUPT_XRDP_QUEUE_23     (SPI_TABLE_OFFSET4 + 23)
+#define INTERRUPT_XRDP_QUEUE_24     (SPI_TABLE_OFFSET4 + 24)
+#define INTERRUPT_XRDP_QUEUE_25     (SPI_TABLE_OFFSET4 + 25)
+#define INTERRUPT_XRDP_QUEUE_26     (SPI_TABLE_OFFSET4 + 26)
+#define INTERRUPT_XRDP_QUEUE_27     (SPI_TABLE_OFFSET4 + 27)
+#define INTERRUPT_XRDP_QUEUE_28     (SPI_TABLE_OFFSET4 + 28)
+#define INTERRUPT_XRDP_QUEUE_29     (SPI_TABLE_OFFSET4 + 29)
+#define INTERRUPT_XRDP_QUEUE_30     (SPI_TABLE_OFFSET4 + 30)
+#define INTERRUPT_XRDP_QUEUE_31     (SPI_TABLE_OFFSET4 + 31)
+
+#define INTERRUPT_XRDP_FPM          (SPI_TABLE_OFFSET5 + 0)
+#define INTERRUPT_PER_EXT_0         (SPI_TABLE_OFFSET5 + 17)
+#define INTERRUPT_PER_EXT_1         (SPI_TABLE_OFFSET5 + 18)
+#define INTERRUPT_PER_EXT_2         (SPI_TABLE_OFFSET5 + 19)
+#define INTERRUPT_PER_EXT_3         (SPI_TABLE_OFFSET5 + 20)
+#define INTERRUPT_PER_EXT_4         (SPI_TABLE_OFFSET5 + 21)
+#define INTERRUPT_PER_EXT_5         (SPI_TABLE_OFFSET5 + 22)
+#define INTERRUPT_PER_EXT_6         (SPI_TABLE_OFFSET5 + 23)
+#define INTERRUPT_PER_EXT_7         (SPI_TABLE_OFFSET5 + 24)
+
+#ifndef __ASSEMBLER__
+#define _2MAP(V) (bcm_legacy_irq_map[(V - SPI_TABLE_OFFSET)])
+#define INTERRUPT_ID_TIMER0               _2MAP(INTERRUPT_TIMER0)
+#define INTERRUPT_ID_TIMER                INTERRUPT_ID_TIMER0
+#define INTERRUPT_ID_TIMER1               _2MAP(INTERRUPT_TIMER1)
+#define INTERRUPT_ID_TIMER2               _2MAP(INTERRUPT_TIMER2)
+#define INTERRUPT_ID_TIMER3               _2MAP(INTERRUPT_TIMER3)
+#define INTERRUPT_ID_TIMER_MAX            INTERRUPT_ID_TIMER3
+#define INTERRUPT_ID_DG                   _2MAP(INTERRUPT_DG)
+//#define INTERRUPT_ID_UART                 _2MAP(INTERRUPT_UART0)
+#define INTERRUPT_ID_HS_UART              _2MAP(INTERRUPT_HS_UART)
+#define INTERRUPT_ID_NAND_FLASH           _2MAP(INTERRUPT_NAND_FLASH)
+#define INTERRUPT_ID_EXTERNAL_0           _2MAP(INTERRUPT_PER_EXT_0)
+#define INTERRUPT_ID_EXTERNAL_1           _2MAP(INTERRUPT_PER_EXT_1)
+#define INTERRUPT_ID_EXTERNAL_2           _2MAP(INTERRUPT_PER_EXT_2)
+#define INTERRUPT_ID_EXTERNAL_3           _2MAP(INTERRUPT_PER_EXT_3)
+#define INTERRUPT_ID_EXTERNAL_4           _2MAP(INTERRUPT_PER_EXT_4)
+#define INTERRUPT_ID_EXTERNAL_5           _2MAP(INTERRUPT_PER_EXT_5)
+#define INTERRUPT_ID_EXTERNAL_6           _2MAP(INTERRUPT_PER_EXT_6)
+#define INTERRUPT_ID_EXTERNAL_7           _2MAP(INTERRUPT_PER_EXT_7)
+#define INTERRUPT_ID_EXTERNAL_MAX         INTERRUPT_ID_EXTERNAL_7
+#define INTERRUPT_ID_WLAN_CCM             _2MAP(INTERRUPT_UBUS2AXI_WLAN_CCM)
+#define INTERRUPT_ID_WLAN0_D11MAC         _2MAP(INTERRUPT_UBUS2AXI_WLAN_D11)
+#define INTERRUPT_ID_USB_OHCI             _2MAP(INTERRUPT_USB_OHCI)
+#define INTERRUPT_ID_USB_EHCI             _2MAP(INTERRUPT_USB_EHCI)
+#define INTERRUPT_ID_USB_OHCI1            _2MAP(INTERRUPT_USB_OHCI1)
+#define INTERRUPT_ID_USB_EHCI1            _2MAP(INTERRUPT_USB_EHCI1)
+#define INTERRUPT_ID_WAN_GPON_RX          _2MAP(INTERRUPT_WAN_GPON_RX)
+#define INTERRUPT_ID_WAN_GPON_TX          _2MAP(INTERRUPT_WAN_GPON_TX)
+#define INTERRUPT_ID_XRDP_QUEUE_0          _2MAP(INTERRUPT_XRDP_QUEUE_0)
+#define INTERRUPT_ID_XRDP_QUEUE_1            _2MAP(INTERRUPT_XRDP_QUEUE_1)
+#define INTERRUPT_ID_XRDP_QUEUE_2            _2MAP(INTERRUPT_XRDP_QUEUE_2)
+#define INTERRUPT_ID_XRDP_QUEUE_3            _2MAP(INTERRUPT_XRDP_QUEUE_3)
+#define INTERRUPT_ID_XRDP_QUEUE_4            _2MAP(INTERRUPT_XRDP_QUEUE_4)
+#define INTERRUPT_ID_XRDP_QUEUE_5            _2MAP(INTERRUPT_XRDP_QUEUE_5)
+#define INTERRUPT_ID_XRDP_QUEUE_6            _2MAP(INTERRUPT_XRDP_QUEUE_6)
+#define INTERRUPT_ID_XRDP_QUEUE_7            _2MAP(INTERRUPT_XRDP_QUEUE_7)
+#define INTERRUPT_ID_XRDP_QUEUE_8            _2MAP(INTERRUPT_XRDP_QUEUE_8)
+#define INTERRUPT_ID_XRDP_QUEUE_9            _2MAP(INTERRUPT_XRDP_QUEUE_9)
+#define INTERRUPT_ID_XRDP_QUEUE_10           _2MAP(INTERRUPT_XRDP_QUEUE_10)
+#define INTERRUPT_ID_XRDP_QUEUE_11           _2MAP(INTERRUPT_XRDP_QUEUE_11)
+#define INTERRUPT_ID_XRDP_QUEUE_12           _2MAP(INTERRUPT_XRDP_QUEUE_12)
+#define INTERRUPT_ID_XRDP_QUEUE_13           _2MAP(INTERRUPT_XRDP_QUEUE_13)
+#define INTERRUPT_ID_XRDP_QUEUE_14           _2MAP(INTERRUPT_XRDP_QUEUE_14)
+#define INTERRUPT_ID_XRDP_QUEUE_15           _2MAP(INTERRUPT_XRDP_QUEUE_15)
+#define INTERRUPT_ID_XRDP_QUEUE_16           _2MAP(INTERRUPT_XRDP_QUEUE_16)
+#define INTERRUPT_ID_XRDP_QUEUE_17           _2MAP(INTERRUPT_XRDP_QUEUE_17)
+#define INTERRUPT_ID_XRDP_QUEUE_18           _2MAP(INTERRUPT_XRDP_QUEUE_18)
+#define INTERRUPT_ID_XRDP_QUEUE_19           _2MAP(INTERRUPT_XRDP_QUEUE_19)
+#define INTERRUPT_ID_XRDP_QUEUE_20           _2MAP(INTERRUPT_XRDP_QUEUE_20)
+#define INTERRUPT_ID_XRDP_QUEUE_21           _2MAP(INTERRUPT_XRDP_QUEUE_21)
+#define INTERRUPT_ID_XRDP_QUEUE_22           _2MAP(INTERRUPT_XRDP_QUEUE_22)
+#define INTERRUPT_ID_XRDP_QUEUE_23           _2MAP(INTERRUPT_XRDP_QUEUE_23)
+#define INTERRUPT_ID_XRDP_QUEUE_24           _2MAP(INTERRUPT_XRDP_QUEUE_24)
+#define INTERRUPT_ID_XRDP_QUEUE_25           _2MAP(INTERRUPT_XRDP_QUEUE_25)
+#define INTERRUPT_ID_XRDP_QUEUE_26           _2MAP(INTERRUPT_XRDP_QUEUE_26)
+#define INTERRUPT_ID_XRDP_QUEUE_27           _2MAP(INTERRUPT_XRDP_QUEUE_27)
+#define INTERRUPT_ID_XRDP_QUEUE_28           _2MAP(INTERRUPT_XRDP_QUEUE_28)
+#define INTERRUPT_ID_XRDP_QUEUE_39           _2MAP(INTERRUPT_XRDP_QUEUE_29)
+#define INTERRUPT_ID_XRDP_QUEUE_30           _2MAP(INTERRUPT_XRDP_QUEUE_30)
+#define INTERRUPT_ID_XRDP_QUEUE_31           _2MAP(INTERRUPT_XRDP_QUEUE_31)
+#define INTERRUPT_ID_XRDP_FPM                _2MAP(INTERRUPT_XRDP_FPM)
+#define INTERRUPT_PCM_DMA_IRQ                _2MAP(INTERRUPT_PCM_DMA0) 
+
+#ifdef __BOARD_DRV_ARMV7__
+unsigned int bcm_phys_irqs_to_map[] =
+{
+    INTERRUPT_TIMER0,
+    INTERRUPT_TIMER1,
+    INTERRUPT_TIMER2,
+    INTERRUPT_TIMER3,
+    INTERRUPT_DG,
+//    INTERRUPT_UART0,
+    INTERRUPT_HS_UART,
+    INTERRUPT_NAND_FLASH,
+    INTERRUPT_PER_EXT_0,
+    INTERRUPT_PER_EXT_1,
+    INTERRUPT_PER_EXT_2,
+    INTERRUPT_PER_EXT_3,
+    INTERRUPT_PER_EXT_4,
+    INTERRUPT_PER_EXT_5,
+    INTERRUPT_PER_EXT_6,
+    INTERRUPT_PER_EXT_7,
+    INTERRUPT_UBUS2AXI_WLAN_CCM,
+    INTERRUPT_UBUS2AXI_WLAN_D11,
+    INTERRUPT_USB_OHCI1,  
+    INTERRUPT_USB_EHCI1,  
+    INTERRUPT_USB_OHCI,   
+    INTERRUPT_USB_EHCI,  
+    INTERRUPT_WAN_GPON_RX,
+    INTERRUPT_WAN_GPON_TX,
+    INTERRUPT_XRDP_QUEUE_0,
+    INTERRUPT_XRDP_QUEUE_1,
+    INTERRUPT_XRDP_QUEUE_2,
+    INTERRUPT_XRDP_QUEUE_3,
+    INTERRUPT_XRDP_QUEUE_4,
+    INTERRUPT_XRDP_QUEUE_5,
+    INTERRUPT_XRDP_QUEUE_6,
+    INTERRUPT_XRDP_QUEUE_7,
+    INTERRUPT_XRDP_QUEUE_8,
+    INTERRUPT_XRDP_QUEUE_9,
+    INTERRUPT_XRDP_QUEUE_10,
+    INTERRUPT_XRDP_QUEUE_11,
+    INTERRUPT_XRDP_QUEUE_12,
+    INTERRUPT_XRDP_QUEUE_13,
+    INTERRUPT_XRDP_QUEUE_14,
+    INTERRUPT_XRDP_QUEUE_15,
+    INTERRUPT_XRDP_QUEUE_16,
+    INTERRUPT_XRDP_QUEUE_17,
+    INTERRUPT_XRDP_QUEUE_18,
+    INTERRUPT_XRDP_QUEUE_19,
+    INTERRUPT_XRDP_QUEUE_20,
+    INTERRUPT_XRDP_QUEUE_21,
+    INTERRUPT_XRDP_QUEUE_22,
+    INTERRUPT_XRDP_QUEUE_23,
+    INTERRUPT_XRDP_QUEUE_24,
+    INTERRUPT_XRDP_QUEUE_25,
+    INTERRUPT_XRDP_QUEUE_26,
+    INTERRUPT_XRDP_QUEUE_27,
+    INTERRUPT_XRDP_QUEUE_28,
+    INTERRUPT_XRDP_QUEUE_29,
+    INTERRUPT_XRDP_QUEUE_30,
+    INTERRUPT_XRDP_QUEUE_31,
+    INTERRUPT_XRDP_FPM,
+    INTERRUPT_PCM_DMA0
+};
+unsigned int bcm_legacy_irq_map[256];
+#else
+extern unsigned int bcm_phys_irqs_to_map[];
+extern unsigned int bcm_legacy_irq_map[];
+#endif
+#endif
+
+#define NUM_EXT_INT    (INTERRUPT_PER_EXT_7-INTERRUPT_PER_EXT_0+1)
+
+#ifdef __cplusplus
+    }
+#endif                    
+
+#endif  /* __BCM6878_H */
+

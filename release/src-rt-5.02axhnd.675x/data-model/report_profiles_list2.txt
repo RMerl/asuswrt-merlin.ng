@@ -1,0 +1,171 @@
+#
+# This file contains a list of PROFILES defined by TR181 and its related TR's.
+# This file is used to generate a report which shows how compliant our
+# data model is relative to the required parameters of a given profile.
+# This file is applicable to the Pure TR181 data model file (cms-data-model-merged2.xml)
+#
+# Lines beginning with # are skipped.  Blank lines are also skipped.
+# All other lines should contain the profile name followed by the number of
+# parameters in the profile.
+
+
+Download:1 11
+DownloadTCP:1 2
+Upload:1 11
+UploadTCP:1 2
+
+UDPEcho:1 11
+UDPEchoPlus:1 1
+
+SupportedDataModel:1 4
+SupportedDataModel:2 1
+
+MemoryStatus:1 2
+ProcessStatus:1 8
+TempStatus:1 11
+TempStatusAdv:1 5
+TempStatusAdv:2 1
+
+AutonXferComplPolicy:1 3
+
+User:1 4
+UPnPDev:1 15
+UPnPDiscBasic:1 7
+UPnPDiscAdv:1 13
+UPnPDiscAdv:2 5
+
+SelfTestDiag:1 2
+NSLookupDiag:1 14
+
+SimpleFirewall:1 3
+AdvancedFirewall:1 43
+
+USBHostsBasic:1 21
+USBHostsAdv:1 11
+
+PeriodicStatsBase:1 14
+PeriodicStatsAdv:1 11
+DownloadAnnounce:1 6
+DownloadQuery:1 3
+
+Baseline:1 30
+Baseline:2 3
+Baseline:3 1
+
+Optical:1 15
+EthernetRMONStats:1 7
+Ghn:1 30
+DNSRelay:1 8
+Routing:1 21
+Routing:2 1
+IPv6Routing:1 28
+
+IPInterface:1 29
+IPInterface:2 4
+IPv6Interface:1 47
+PPPInterface:1 29
+PPPInterface:2 4
+
+VLANTermination:1 23
+EthernetInterface:1 25
+EthernetLink:1 23
+Bridge:1 29
+VLANBridge:1 47
+
+ATMLink:1 32
+PTMLink:1 23
+ADSL:1 59
+ADSL2:1 53
+VDSL2:1 71
+BondedDSL:1 71
+
+HomePlug:1 32
+MoCA:1 26
+
+WiFiRadio:1 30
+WiFiSSID:1 15
+WiFiAccessPoint:1 26
+WiFiEndPoint:1 21
+
+USBInterface:1 25
+USBPort:1 7
+
+NAT:1 15
+
+QoS:1 86
+QoS:2 1
+
+NeighborDiscovery:1 10
+RouterAdvertisement:1 21
+IPv6rd:1 11
+DSLite:1 10 
+DSLite:2 2 
+
+Hosts:1 9
+Hosts:2 6
+GatewayInfo:1 3
+DeviceAssociation:1 5
+UDPConnReq:1 9
+Time:1 6
+
+IPPing:1 12
+TraceRoute:1 14
+ATMLoopback:1 9
+DSLDiagnostics:1 11
+ADSL2Diagnostics:1 26
+VDSL2Diagnostics:1 34
+
+DHCPv4Client:1 20
+DHCPv4Server:1 17
+DHCPv4CondServing:1 5
+DHCPv4Relay:1 12
+DHCPv4ServerClientInfo:1 10
+
+DHCPv6Client:1 20
+DHCPv6ClientServerIdentity:1 5
+DHCPv6Server:1 14
+DHCPv6ServerAdv:1 5
+DHCPv6ServerClientInfo:1 14
+
+Processors:1 1
+VendorLogFiles:1 3
+DUStateChngComplPolicy:1 3
+SM_ExecEnvs:1 12
+SM_DeployAndExecUnits:1 31
+SM_Baseline:1 31
+
+
+
+# The following profiles are defined in TR181, but not supported in CMS
+# so they are not added to the report at all.
+#BridgeFilter:1 28
+#BridgeFilter:2 5
+#BridgeL3L4Filter:1 13
+# CaptivePortal:1 4
+
+# QoSDynamicFlow:1 Profile 
+# QoSStats:1 Profile 
+# Location:1 Profile 
+# BulkDataColl:1 Profile 
+# BulkDataFileTransfer:1 Profile 
+# BulkDataStreaming:1 Profile 
+# IEEE8021xAuthentication:1 Profile 
+# UPA:1 Profile 
+#  UPADiagnostics:1 Profile 
+# HPNA:1 Profile 
+# HPNADiagnostics:1 Profile 
+# HPNAQoS:1 Profile 
+# ETSIM2MSCLBaseline:1 Profile 
+# FaultMgmtSupportedAlarms:1 Profile 
+# FaultMgmtActive:1 Profile 
+# FaultMgmtHistory:1 Profile 
+# FaultMgmtExpedited:1 Profile 
+# FaultMgmtQueued:1 Profile 
+# FAP_GPS:1 Profile 
+# FAP_PerfMgmt:1 Profile 
+# FAP_ApplicationPlatform:1 Profile 
+# DNS_SD:1 Profile 
+# IPsec:1 Profile 
+# IPsecAdv:1 Profile 
+
+

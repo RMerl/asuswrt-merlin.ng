@@ -1,0 +1,45 @@
+# File: bcmdrivers/char/pktcmf/bcm968xx/makefile_sb
+#
+# Sandbox Makefile for the BCM68xx pktcmf module
+#
+
+CFLAGS += -I. -I../../../include/bcm963xx \
+          -I../../../../../shared/broadcom/include/bcm963xx \
+          -I../../../../../shared/opensource/include/bcm963xx \
+          -I../../../../opensource/include/bcm963xx \
+          -I../shared \
+          -I../../../../../kernel/linux/include
+
+CFLAGS += -DSINGLE_CHANNEL_TX
+CFLAGS += -funsigned-char
+CFLAGS += -DNON_LINUX_BUILD
+
+CFLAGS += -D__KERNEL__
+CFLAGS += -DMODULE
+CFLAGS += -DCONFIG_BCM96816
+CFLAGS += -Werror -Wall
+#CFLAGS += -DCONFIG_BCM_PKTCMF
+
+LFLAGS = -nostartfiles
+LFLAGS += -nodefaultlibs
+LFLAGS += -Wl
+LFLAGS += -r
+
+CC       = gcc
+
+OBJS = bcmsw.o ethsw_phy.o
+
+all : bcmsw.O
+
+%.o : %.c *.h
+	$(CC) $(CFLAGS) -c $<
+
+clean: 
+	rm -f core *.ko *.o *.a *.s *.O
+
+bcmsw.O: $(OBJS)
+	$(CC) $(LFLAGS) -o $@ $^
+
+.PHONY: all clean
+
+

@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SyslogCfg." shortObjectName="SyslogCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_Baseline:1" supportLevel="Present" oid="3110" />
+  <description source="TRx">Syslog/klog configuration.</description>
+
+  <parameter name="Status" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Disabled" validValuesArray="enabledDisabledStatusValues" />
+    <description source="TRx">Indicates the status of the syslog.&#10;Enumeration of: &#10;&quot;Disabled&quot; &#10;&quot;Enabled&quot; </description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="Option" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="local buffer" validValuesArray="syslogDestinationValues" />
+    <description source="TRx">Syslog options specifies where log is to be stored.&#10;Enumeration of: &#10;&quot;local buffer&quot; &#10;&quot;local file&quot; &#10;&quot;remote&quot;  &quot;local buffer and remote&quot; &quot;local file and remote&quot;</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="LocalDisplayLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="syslogLevelValues" />
+    <description source="TRx">Indicates the amount of log buffer to be displayed. &#10;Enumeration of: &#10;&quot;emergency&quot; &#10;&quot;alert&quot; &#10;&quot;critical&quot; &#10;&quot;error&quot; &#10;&quot;warning&quot; &#10;&quot;notice&quot;&#10;&quot;informational&quot;&#10;&quot;debug&quot;</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="LocalLogLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Debug" validValuesArray="syslogLevelValues" />
+    <description source="TRx">Indicates the amount of logging to be done locally.  This option only displays if Option is &quot;local buffer&quot;, &quot;local file&quot;, &quot;local buffer and remote&quot; or &quot;local file and remote&quot;&#10;Enumeration of: &#10;&quot;emergency&quot; &#10;&quot;alert&quot; &#10;&quot;critical&quot; &#10;&quot;error&quot; &#10;&quot;warning&quot; &#10;&quot;notice&quot;&#10;&quot;informational&quot;&#10;&quot;debug&quot;</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="RemoteLogLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Debug" validValuesArray="syslogLevelValues" />
+    <description source="TRx">Indicates the amount of logging to be done locally.  This option only displays if Option is &quot;remote&quot;, &quot;local buffer and remote&quot; or &quot;local file and remote&quot;&#10;Enumeration of: &#10;&quot;emergency&quot; &#10;&quot;alert&quot; &#10;&quot;critical&quot; &#10;&quot;error&quot; &#10;&quot;warning&quot; &#10;&quot;notice&quot;&#10;&quot;informational&quot;&#10;&quot;debug&quot;</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="ServerIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0.0.0.0" />
+    <description source="TRx">IP address of remote syslog server.   This only applies if log option is &quot;remote&quot;, &quot;local buffer and remote&quot; or &quot;local file and remote&quot;.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="ServerPortNumber" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="514" minValue="0" maxValue="65535" />
+    <description source="TRx">UDP Port of remote syslog server.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+<validstringarray name="syslogDestinationValues" />
+  <element>local buffer</element>
+  <element>remote</element>
+  <element>local buffer and remote</element>
+  <element>local file</element>
+  <element>local file and remote</element>
+
+<validstringarray name="syslogLevelValues" />
+  <element>Emergency</element>
+  <element>Alert</element>
+  <element>Critical</element>
+  <element>Error</element>
+  <element>Warning</element>
+  <element>Notice</element>
+  <element>Informational</element>
+  <element>Debug</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

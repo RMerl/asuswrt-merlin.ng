@@ -1,0 +1,48 @@
+/*
+ * Broadcom BCM6838 Reference Board DTS
+ */
+
+/dts-v1/;
+
+#include "../bcm_963xx_template.dtsi"
+#include "../bcm_rsvdmem_32.dtsi"
+
+/ {
+	compatible = "brcm,bcm96838";
+	model = "Broadcom BCM96838";
+
+	/* Legacy UBUS base */
+	ubus@14e00000  {
+		compatible = "simple-bus";
+		ranges = <0 0x14e00000 0x3000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		nand@2200 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v5.0";
+			reg = <0x2200 0x180>, <0xf0 0x10>, <0x2600 0x200>;
+			reg-names = "nand", "nand-int-base", "nand-cache";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@2d0 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x2d0 0x10>;
+			timeout-sec = <80>;
+		};
+
+		i2c@0xe00 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0xe00 0x60>;
+		};
+	};
+};

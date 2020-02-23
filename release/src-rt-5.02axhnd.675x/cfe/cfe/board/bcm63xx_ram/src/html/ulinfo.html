@@ -1,0 +1,57 @@
+<html>
+   <head>
+      <meta HTTP-EQUIV='Pragma' CONTENT='no-cache'>
+            <script language="javascript">
+<!-- hide
+var msg = new Array();
+msg[0] = 'New software is being programmed to the flash memory. The Router will reboot upon completion. This process will take about 2 minutes.';
+msg[1] = 'Image uploading failed. The system is out of memory. The Router is rebooting.';
+msg[2] = 'Image uploading failed. No image file was selected.';
+msg[3] = msg[4] = msg[5] = msg[7] = 'Image uploading failed. The selected file contains an illegal image.';
+msg[6] = ' ';
+
+var idxStr = '<%%>';
+
+function getMsgIndex() {
+   var idxNum = parseInt(idxStr);
+   if ( isNaN(idxNum) || idxNum < 0 || idxNum > 7 )
+      idxNum = 7;
+
+   return idxNum;
+}
+
+function reboot() {
+   var loc = 'upload.html';
+
+   var code = 'location.assign("' + loc + '")';
+   eval(code);
+}
+
+function frmLoad() {
+   setTimeout('reboot()', 40000);
+}
+
+function btnBack() {
+   var code = 'location.assign("' + 'upload.html' + '")';
+   eval(code);
+}
+
+// done hiding -->
+</script>
+   </head>
+   <body onLoad='frmLoad()'>
+      <blockquote> <b>Router Software Upgrade</b><br>
+         <br>
+         <script language="javascript">
+<!-- hide
+document.write(msg[getMsgIndex()]);
+// done hiding -->
+</script>
+         <br>
+         <br>
+         <center>
+            <input type='button' onClick='btnBack()' value='Back'>
+         </center>
+      </blockquote>
+   </body>
+</html>

@@ -1,0 +1,9 @@
+#
+# Attach the Device object to InternetGatewayDevice so that other TR181 data
+# model files can add more objects to the InternetGatewayDevice.Device object.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-beginstub.xml InternetGatewayDevice.
+

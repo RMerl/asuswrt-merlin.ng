@@ -1,0 +1,24 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use FindBin qw($Bin);
+use lib "$Bin/../PerlLib/";
+use YAML;
+use Data::Dumper;
+use Getopt::Long;
+
+my $quiet;
+GetOptions( "quiet", \$quiet ) or die(q[
+usage:
+   check_yaml [-q|--quiet] files... 
+]);
+
+while ( my $fn = shift ) {
+    local $/;
+    open( F, "<$fn" ) or die("couldnt open $fn");
+    print "checking $fn:\n"; 
+    my $y = Load(<F>);
+    print "$fn:\n" . Dumper($y) . "\n\n" unless $quiet;
+}
+

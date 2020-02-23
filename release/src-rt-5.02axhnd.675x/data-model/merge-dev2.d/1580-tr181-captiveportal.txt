@@ -1,0 +1,7 @@
+#
+# Add TR181 CaptivePortal object to TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-tr181-captiveportal.xml Device.Routing.

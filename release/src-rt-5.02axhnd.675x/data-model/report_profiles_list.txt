@@ -1,0 +1,72 @@
+#
+# This file contains a list of PROFILES defined by TR98 and its related TR's.
+# This file is used to generate a report which shows how compliant our
+# data model is relative to the required parameters of a given profile.
+# This file is applicable to the TR98 Hybrid data model file (cms-data-model-merged.xml)
+#
+# Lines beginning with # are skipped.  Blank lines are also skipped.
+# All other lines should contain the profile name followed by the number of
+# parameters in the profile.
+
+Baseline:1 143
+Baseline:2 175
+
+EthernetLAN:1 10
+EthernetLAN:2 22
+
+USBLAN:1 12
+USBLAN:2 24
+
+WiFiLAN:1 33
+WiFiLAN:2 49
+WiFiWMM:1 14
+WiFiWPS:1 16
+
+ADSLWAN:1 64
+ADSL2WAN:1 39
+VDSL2WAN:1 57
+
+PTMWAN:1 20
+EthernetWAN:1 10
+POTSWAN:1 7
+
+QoS:1 81
+QoS:2 87
+QoSDynamicFlow:1 23
+QoSDynamicFlow:2 23
+QoSStats:1 17
+
+Bridging:1 38
+Bridging:2 42
+BridgingPortVLAN:1 12
+
+Time:1 8
+Time:2 6
+
+CaptivePortal:1 4
+
+IPPing:1 12
+TraceRoute:1 14
+
+Download:1 11
+DownloadTCP:1 2
+Upload:1 11
+UploadTCP:1 2
+
+UDPEcho:1 11
+UDPEchoPlus:1 1
+
+ATMLoopback:1 8
+DSLDiagnostics:1 11
+ADSL2DSLDiagnostics:1 25
+VDSL2DSLDiagnostics:1 33
+
+DeviceAssociation:1 4
+DeviceAssociation:2 5
+
+UDPConnReq:1 10
+
+DHCPCondServing:1 19
+DHCPOption:1 16
+
+

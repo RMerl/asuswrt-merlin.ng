@@ -1,0 +1,12 @@
+#
+# Add the object in cms-dm-tr64app.xml above the object 
+# InternetGatewayDevice.X_BROADCOM_COM_AppCfg.sshdCfg.
+# (This is probably not the best way to do this since this depends on sshdCfg
+# being there.  Some customers may customize the data model and delete the
+# sshdCfg object.  But I am trying to exercise the perl code for merging
+# data models.)
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-tr64app.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.SshdCfg.

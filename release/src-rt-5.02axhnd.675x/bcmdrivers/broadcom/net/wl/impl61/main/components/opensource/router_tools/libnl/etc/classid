@@ -1,0 +1,45 @@
+###############################################################################
+#
+# ClassID <-> Name Translation Table
+#
+# This file can be used to assign names to classids for easier reference
+# in all libnl tools.
+#
+# Format:
+#   <MAJ:>		<NAME>		# qdisc definition
+#   <MAJ:MIN>		<NAME>		# class deifnition
+#   <NAME:MIN>		<NAME>		# class definition referencing an
+#					  existing qdisc definition.
+#
+# Example:
+#   1:			top		# top -> 1:0
+#   top:1		interactive	# interactive -> 1:1
+#   top:2		www		# www -> 1:2
+#   top:3		bulk		# bulk -> 1:3
+#   2:1			test_class	# test_class -> 2:1
+#
+# Illegal Example:
+#   30:1                classD
+#   classD:2            invalidClass    # classD refers to a class, not a qdisc
+#
+###############################################################################
+
+# <CLASSID>		<NAME>
+
+# Reserved default classids
+0:0			none
+ffff:ffff		root
+ffff:fff1		ingress
+
+#
+# List your classid definitions here:
+#
+
+
+
+###############################################################################
+# List of auto-generated classids
+#
+# DO NOT ADD CLASSID DEFINITIONS BELOW THIS LINE
+#
+# <CLASSID>		<NAME>

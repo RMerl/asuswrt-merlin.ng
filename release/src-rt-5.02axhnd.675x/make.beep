@@ -1,0 +1,57 @@
+###################################
+#    BEEP make package targets    #
+###################################
+
+beepPkg = "all"
+beep:
+	@echo -e "Build BEEP package $(beepPkg)"
+ifeq ($(strip $(beepPkg)), cwmp)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/cwmpctl
+else ifeq ($(strip $(beepPkg)), dad)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dad
+else ifeq ($(strip $(beepPkg)), tr69c)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/tr69c
+else ifeq ($(strip $(beepPkg)), dmactl)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dmactl
+else ifeq ($(strip $(beepPkg)), spTestSuite)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/spTestSuite
+else ifeq ($(strip $(beepPkg)), dsldiagd)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dsldiagd
+else ifeq ($(strip $(beepPkg)), firewalld)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/firewalld
+else ifeq ($(strip $(beepPkg)), iperf)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace public/apps/iperf
+else ifeq ($(strip $(beepPkg)), samba)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace gpl/apps/samba
+else ifeq ($(strip $(beepPkg)), bee)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/pmd
+	cd $(TARGETS_DIR); ./buildFS_BEE;
+else ifeq ($(strip $(beepPkg)), cms)
+	cd $(TARGETS_DIR); ./buildFS_CMS;
+else ifeq ($(strip $(beepPkg)), exampleEE)
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
+else ifeq ($(strip $(beepPkg)), openwrtEE)
+	cd $(TARGETS_DIR); ./buildFS_OPENWRTEE;
+else
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/cwmpctl
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dad
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/tr69c
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dmactl
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/spTestSuite
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/dsldiagd
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/firewalld
+
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace public/apps/iperf
+
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace gpl/apps/samba
+
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/pmd
+	cd $(TARGETS_DIR); ./buildFS_BEE;
+
+	$(MAKE) -j $(ACTUAL_MAX_JOBS) -C userspace private/apps/exampleEE
+	cd $(TARGETS_DIR); ./buildFS_EXAMPLEEE;
+
+	cd $(TARGETS_DIR); ./buildFS_OPENWRTEE;
+endif
+

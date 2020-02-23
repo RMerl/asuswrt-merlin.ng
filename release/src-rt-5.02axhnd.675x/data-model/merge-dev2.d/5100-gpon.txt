@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-gpon.xml as the
+# last children objects of Device.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-gpon.xml Device.
+

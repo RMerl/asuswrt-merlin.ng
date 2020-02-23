@@ -1,0 +1,90 @@
+<PUBLISH>
+--- targets/963138GW/963138GW
++++ targets/963138GW_DESKTOP/963138GW_DESKTOP
+@@ -161,7 +161,9 @@
+ BUILD_DM_HYBRID=y
+ # BUILD_DM_PURE181 is not set
+ # BUILD_DM_DETECT is not set
+-# DESKTOP_LINUX is not set
++DESKTOP_LINUX=y
++# BUILD_DESKTOP_BEEP is not set
++PROFILE_ARCH=i386
+ BUILD_BUSYBOX=dynamic
+ 
+ #
+@@ -272,35 +274,9 @@
+ #
+ # WLAN Selection
+ #
+-BRCM_DRIVER_WIRELESS=m
++# BRCM_DRIVER_WIRELESS is not set
+ BRCM_DRIVER_DHD=m
+ # BUILD_HND_NIC is not set
+-# BRCM_WAPI is not set
+-BRCM_WLALTBLD="default"
+-BUILD_WIFIWAN=
+-# BRCM_WLMEDIA is not set
+-WLBRAND_none=y
+-BRCM_WLBRAND=
+-BCM_WLIMPL=
+-BUILD_WLCTL=dynamic
+-BUILD_DHDCTL=dynamic
+-BUILD_WLHSPOT=y
+-BUILD_WBD=y
+-BUILD_WLVISUALIZATION=y
+-# BUILD_BRCM_AIRIQ is not set
+-BUILD_UNIFIED_WLMNGR=y
+-# BUILD_BRCM_CPEROUTER is not set
+-BUILD_NAS=dynamic
+-WLSETUP_WPS=y
+-# WLSETUP_none is not set
+-BUILD_WPS_BTN=dynamic
+-BUILD_WSC=dynamic
+-# BUILD_BRCM_UNFWLCFG is not set
+-BUILD_NVRAM=dynamic
+-BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT=y
+-# BUILD_BCM_PKTFWD is not set
+-# BUILD_HND_MFG is not set
+ # BRCM_DRIVER_WIRELESS_USBAP is not set
+ 
+ #
+@@ -461,7 +437,7 @@
+ #
+ # Bootloader and Secure Boot Options
+ #
+-BUILD_DYNAMIC_CFE=y
++# BUILD_DYNAMIC_CFE is not set
+ # BUILD_CFE_BOARD_DTB is not set
+ BUILD_CFE_APPEND_BOOT_CMDLINE=""
+ SECURE_BOOT_ARCH=GEN2
+@@ -491,7 +467,7 @@
+ BRCM_CPU_FREQ_TARGET_LOAD=20
+ # BRCM_DDR_SELF_REFRESH_PWRSAVE is not set
+ BUILD_WL_IDLE_PWRSAVE=y
+-BUILD_BMU=y
++# BUILD_BMU is not set
+ BUILD_BMU_2CELL=y
+ # BUILD_BMU_3CELL is not set
+ # BUILD_BMU_0CELL is not set
+@@ -517,10 +493,7 @@
+ # BUILD_LIBXML2 is not set
+ # BUILD_LIBSQLITE is not set
+ # BUILD_LIBCAP is not set
+-BRCM_USER_SSP=y
+-BRCM_SSP_LEVEL_MIN=y
+-# BRCM_SSP_LEVEL_TYP is not set
+-# BRCM_SSP_LEVEL_MAX is not set
++# BRCM_USER_SSP is not set
+ # BUILD_LXC is not set
+ # BUILD_QRCODE is not set
+ # BUILD_BLUETOOTH_LIB is not set
+@@ -577,7 +550,7 @@
+ # BUILD_TR69_AUTONOMOUS_TRANSFER_COMPLETE_RPC is not set
+ # BUILD_STUN is not set
+ # BUILD_PROFILE_SUPPORTED_DATA_MODEL is not set
+-BUILD_XMPP=y
++# BUILD_XMPP is not set
+-BUILD_GDBSERVER=y
++# BUILD_GDBSERVER is not set
++PROFILE_ARCH=i386
+

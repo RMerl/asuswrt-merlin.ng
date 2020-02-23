@@ -1,0 +1,8 @@
+#
+# Add the objects in cms-dm-modswapps.xml as the last children of
+# InternetGatewayDevice.X_BROADCOM_COM_AppCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-modswapps.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.

@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2018" >
+
+<!--this file is duplicated from cms-dm-bcm-baseapps.xml,Tr69cCfg-->
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">This object has child objects which contain defines for individual applications.</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.X_BROADCOM_COM_E2E_Tr69cCfg." shortObjectName="E2E_Tr69cCfgObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" hideObjectFromAcs="true" lockZone="8" oid="53131" />
+  <description source="BROADCOM">This objects contains config parameters for the tr69c app.</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this app.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Where does the CMS log message go.  Enumeration of:&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;</description>
+
+  <parameter name="LoggingSOAP" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_Debug:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/disable showing SOAP messages on serial console</description>
+
+  <parameter name="ConnectionRequestAuthentication" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_Security:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">Enable/disable connection request authentication</description>
+
+
+<vsaInfo>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Security:1" /> 
+<profile name="X_BROADCOM_COM_Upnp:1" /> 
+<profile name="X_BROADCOM_COM_DnsProxy:1" /> 
+<profile name="X_BROADCOM_COM_DECTd:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,131 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.BulkData." shortObjectName="Dev2BulkDataObject" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="P" supportLevel="NotSupported" oid="1760" />
+  <description source="TRx">Bulk Data collection utilizes the IPDR solution to collect data from devices based on a service specification described in {{bibref|TR-232}}. Bulk Data Collection Profiles are measured over a reporting interval (which can be aligned with absolute time) and are made available to the collection server.This object provides bulk data collection capabilities and global collection settings that affect the entire device. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables all collection profiles. If {{false}}, bulk data will not be collected or reported. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">Indicates the status of the Bulk Data Collection mechanism. </description>
+
+  <parameter name="MinReportingInterval" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Minimum reporting interval in seconds that the CPE is capable of supporting. A value of 0 indicates no minimum reporting interval. </description>
+
+  <parameter name="Protocols" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Comma-separated list of strings.  Represents the IPDR Protocols that this device is capable of supporting. Enumeration of: &#10;  * Streaming &#10;  * File &#10;&#10;</description>
+
+  <parameter name="EncodingTypes" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Comma-separated list of strings. Represents the IPDR Encoding Types that this device is capable of supporting. Enumeration of: &#10;  * XML &#10;  * XDR &#10;&#10;</description>
+
+  <parameter name="MaxNumberOfProfiles" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="-1" />
+    <description source="TRx">The maximum number of profiles that can exist at any given time.  Specifically, the maximum number of {{object|Profile.{i}.}} instances that the ACS can create. If the value of this parameter is -1, then it means that the CPE doesn't have a limit to the number of profiles that can exist. </description>
+
+  <parameter name="MaxNumberOfParameterReferences" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="-1" />
+    <description source="TRx">The maximum number of parameters that can be referenced via the bulk data collection mechanism.  Specifically, the maximum number of parameters that can be referenced via {{param|Profile.{i}.Parameter.{i}.Reference}} across all Profile and Parameter instances (including the expansion of partial paths within the Reference parameter). If the value of this parameter is -1, then it means that the CPE doesn't have a limit to the number of parameter that can be referenced via the bulk data collection mechanism. </description>
+
+  <parameter name="ProfileNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Profile table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.BulkData.Profile.{i}." shortObjectName="Dev2BulkDataProfileObject" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">A set of Bulk Data Collection profiles.   Each profile represents a bulk data report, including its own timing configuration, communications configuration, and set of parameters.  This allows the ACS to configure multiple reports to be generated at different times for different sets of data. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this specific bulk data profile. If {{false}}, this profile will not be collected or reported. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.</description>
+
+  <parameter name="Protocol" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="File" validValuesArray="ipdrProtocolValues" />
+    <description source="TRx">The IPDR Protocol being used for this collection profile. </description>
+
+  <parameter name="EncodingType" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="XML" validValuesArray="ipdrEncodingValues" />
+    <description source="TRx">The IPDR Encoding Type being used for this collection profile. </description>
+
+  <parameter name="ReportingInterval" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="86400" minValue="1" />
+    <description source="TRx">The reporting interval in seconds. Each report is generated based on this interval and {{param|TimeReference}}. The CPE MAY reject a request to set {{param}} to less than {{param|#.MinReportingInterval}}.Reporting intervals MUST begin every ReportingInterval seconds. If {{param}} is changed while collection is enabled, the first reporting interval begins immediately.For example, if {{param}} is 86400 (a day) and if {{param|TimeReference}} is set to UTC midnight on some day (in the past, present, or future) then the CPE will generate (and transmit, if the {{param|Protocol}} parameter is set to {{enum|Streaming|#.Protocols}}) its report at midnight every 24 hours. </description>
+
+  <parameter name="TimeReference" type="dateTime" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="TRx">An absolute time reference in UTC to determine when will be transmitted.  Each reporting interval MUST complete at this reference time plus or minus an integer multiple of {{param|ReportingInterval}}, unless unable to due to higher prioritized operations. {{param}} is used only to set the &quot;phase&quot; of the reporting intervals.  The actual value of {{param}} can be arbitrarily far into the past or future.If {{param}} is changed while collection of bulk data is enabled, the first reporting interval begins immediately. The Unknown Time value as defined in {{bibref|TR-106a2}} indicates that no particular time reference is specified. That is, the CPE MAY locally choose the time reference, and is required only to adhere to the specified reporting intervals.If absolute time is not available to the CPE, its reporting interval behavior MUST be the same as if the {{param}} parameter was set to the Unknown Time value. For example, if {{param|ReportingInterval}} is 86400 (a day) and if {{param}} is set to UTC midnight on some day (in the past, present, or future) then the CPE will generate (and transmit, if in a &quot;ITPush&quot; mode) its report at midnight every 24 hours.Note that, if {{param}} is set to a time other than the Unknown Time, the first reporting interval (which has to begin immediately) will almost certainly be shorter than {{param|ReportingInterval}}).  This is why {{param}} is defined in terms of when reporting intervals complete rather than start. </description>
+
+  <parameter name="StreamingHost" type="string" specSource="TR181" profile="Device2_BulkDataStreaming:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">This is the host name or IP Address of the IPDR Collector to be used by the CPE to stream bulk data records if this collection profile is configured for the IPDR Streaming Protocol {{bibref|IPDR-SP}} (the {{param|Protocol}} parameter has a value of {{enum|Streaming|#.Protocols}}). </description>
+
+  <parameter name="StreamingPort" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataStreaming:1" requirements="W" supportLevel="ReadWrite" defaultValue="4737" minValue="0" maxValue="65535" />
+    <description source="TRx">This is the port number of the IPDR Collector to be used by the CPE to stream bulk data records if this collection profile is configured for the IPDR Streaming Protocol {{bibref|IPDR-SP}} (the {{param|Protocol}} parameter has a value of {{enum|Streaming|#.Protocols}}). </description>
+
+  <parameter name="StreamingSessionID" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataStreaming:1" requirements="W" supportLevel="ReadWrite" minValue="48" maxValue="90" />
+    <description source="TRx">This is the unique identification of an IPDR Session to be used when this collection profile is configured for the IPDR Streaming Protocol {{bibref|IPDR-SP}} (the {{param|Protocol}} parameter has a value of {{enum|Streaming|#.Protocols}}). An ACS MUST NOT configure multiple IPDR Streaming Protocol collection profiles with the same {{param}}.  Doing so MUST cause the CPE to fail the SetParameterValues.Within the IPDR Streaming Protocol specification the Session ID has a type of a single 'char', but we are restricting the range even further (ASCII values of '0' - '9' and 'A' - 'Z'. </description>
+
+  <parameter name="FileTransferURL" type="string" specSource="TR181" profile="Device2_BulkDataFileTransfer:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">This is the URL within the CPE that is used by an IPDR Collector to retrieve the IPDRDocs when this collection profile is configured for the IPDR File Transfer Protocol {{bibref|IPDR-FTP}} (the {{param|Protocol}} parameter has a value of {{enum|File|#.Protocols}}). </description>
+
+  <parameter name="FileTransferUsername" type="string" specSource="TR181" profile="Device2_BulkDataFileTransfer:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Username used for authentication of the {{param|FileTransferURL}}. This is the {{param}} that the IPDR Collector uses to access the CPE when this collection profile is configured for the IPDR File Transfer Protocol {{bibref|IPDR-FTP}} (the {{param|Protocol}} parameter has a value of {{enum|File|#.Protocols}}). </description>
+
+  <parameter name="FileTransferPassword" type="string" specSource="TR181" profile="Device2_BulkDataFileTransfer:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" isTr69Password="true" />
+    <description source="TRx">Password used for authentication of the {{param|FileTransferURL}}. This is the {{param}} that the IPDR Collector uses to access the CPE when this collection profile is configured for the IPDR File Transfer Protocol {{bibref|IPDR-FTP}} (the {{param|Protocol}} parameter has a value of {{enum|File|#.Protocols}}). </description>
+
+  <parameter name="ControlFileFormat" type="string" specSource="TR181" profile="Device2_BulkDataFileTransfer:1" requirements="W" supportLevel="ReadWrite" maxLength="128" />
+    <description source="TRx">If this collection profile is configured for the IPDR File Transfer Protocol {{bibref|IPDR-FTP}} (the {{param|Protocol}} parameter has a value of {{enum|File|#.Protocols}}) then the control file names will be of the following format: :&lt;ControlFilePrefix&gt;_&lt;ControlFilePolicy&gt;.&lt;ControlFileSuffix&gt;Where the following rules apply: * ControlFilePrefix MUST NOT contain an underscore '_' or any other character not suitable for a file name.* ControlFilePolicy MUST contain one or more 'N' characters, where the number of 'N' characters denotes the number of digits in the sequence number, including leading zeros as necessary to match the number of 'N' characters.  * ControlFileSuffix is a file extension.For example, BulkData_NNNN.log where &quot;BulkData&quot; would be the prefix, &quot;NNNN&quot; would be the policy, and &quot;log&quot; would be the suffix.  Files adhering to this file format would look like: BulkData_0000.log, BulkData_0001.log, etc. </description>
+
+  <parameter name="ParameterNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Parameter table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.BulkData.Profile.{i}.Parameter.{i}." shortObjectName="Dev2BulkDataProfileParamObject" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">Bulk data parameter table. Each entry in this table represents a parameter (or set of parameters if a partial path is provided) to be collected and reported. </description>
+
+  <parameter name="Reference" type="string" specSource="TR181" profile="Device2_BulkDataColl:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Represents the parameter(s) that are part of this Bulk Data collection profile. In the case where a partial parameter path is specified all sub-objects and contained parameters will be part of the bulk data collected and reported.  If the path name refers to an object then it MUST end with a '.'. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="ipdrEncodingValues" />
+  <element>XML</element>
+  <element>XDR</element>
+
+<validstringarray name="ipdrProtocolValues" />
+  <element>Streaming</element>
+  <element>File</element>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_BulkDataColl:1" /> 
+<profile name="Device2_BulkDataFileTransfer:1" /> 
+<profile name="Device2_BulkDataStreaming:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

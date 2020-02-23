@@ -1,0 +1,1367 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK User Guide, bmd_api</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK User Guide</a></h2>
+    <h2>8.  BMD API
+</h2>
+<p>The BMD (Broadcom Mini-Driver) API is a minimal API built on top of
+the Broadcom CDK (Chip Development Kit.) The API is intended for use
+in small footprint applications including boot loaders and unmanaged
+switch applications.
+<p>All the necessary definitions for programming to the BMD API are
+located in the header file<tt> bmd.h</tt>.
+<p>All BMD API functions return error codes as defined in the CDK header
+file<tt> cdk_error.h</tt>.
+<a name="bmd_api_driver_initialization"></a>
+<h3>8.1.   Driver Initialization</h3>
+<a name="bmd_api_bmd_attach"></a>
+<h4>8.1.1.   <tt>bmd_attach</tt></h4>
+<pre class="code">
+int <tt>bmd_attach</tt>(int unit);
+</pre>
+The <tt>bmd_attach</tt> function attaches a BMD device to a CDK device. There
+is no need to create a BMD device first. The main purpose of the
+attach function is to abstract the chip-specific information in the
+CDK and assign default PHY bus drivers.
+<p><a name="bmd_api_bmd_detach"></a>
+<h4>8.1.2.   <tt>bmd_detach</tt></h4>
+<pre class="code">
+int <tt>bmd_detach</tt>(int unit);
+</pre>
+The <tt>bmd_detach</tt> function detaches a BMD device from a CDK device and
+releases any resources allocated by the BMD device.
+<p><p><a name="bmd_api_unmanaged_mode"></a>
+<h3>8.2.   Unmanaged Mode</h3>
+<a name="bmd_api_bmd_switching_init"></a>
+<h4>8.2.1.   <tt>bmd_switching_init</tt></h4>
+<pre class="code">
+int <tt>bmd_switching_init</tt>(int unit);
+</pre>
+The <tt>bmd_switching_init</tt> function performs all the necessary steps to
+make the device switch packets between the front panel ports. This
+function does not make any assumptions about the current state of the
+switch chip.
+<p><p><a name="bmd_api_chip_initialization"></a>
+<h3>8.3.   Chip Initialization</h3>
+<a name="bmd_api_bmd_reset"></a>
+<h4>8.3.1.   <tt>bmd_reset</tt></h4>
+<pre class="code">
+int <tt>bmd_reset</tt>(int unit);
+</pre>
+The <tt>bmd_reset</tt> function performs a hardware reset of the chip and
+subsequently brings all internal blocks out of reset again. When the
+reset function completes, all registers and memories should be
+accessible via the CDK programming interface.
+<p><a name="bmd_api_bmd_init"></a>
+<h4>8.3.2.   <tt>bmd_init</tt></h4>
+<pre class="code">
+int <tt>bmd_init</tt>(int unit);
+</pre>
+The <tt>bmd_init</tt> function performs basic initialization of the chip,
+including MMU and port/MAC initialization, however no VLANs will be
+created and no spanning tree configuration will be performed, which
+means that the switch will not forward packets between ports at this
+stage.
+<p><p><a name="bmd_api_chip_configuration"></a>
+<h3>8.4.   Chip Configuration</h3>
+<a name="bmd_api_bmd_port_mode_set"></a>
+<h4>8.4.1.   <tt>bmd_port_mode_set</tt></h4>
+<pre class="code">
+int <tt>bmd_port_mode_set</tt>(int unit, int port, <tt>bmd_port_mode_t</tt> mode, <tt>uint32_t</tt> flags);
+</pre>
+The <tt>bmd_port_mode_set</tt> function configures a port to either
+auto-negotiation mode or a forced speed/duplex setting. Possible port
+modes are:
+<br><br><b>Table 4:   BMD Port Modes</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>bmdPortModeDisabled</tt></td><td> Disabled
+</td></tr><tr><td>  <tt>bmdPortModeAuto</tt></td><td> Auto-negotiation
+</td></tr><tr><td>  <tt>bmdPortMode10hd</tt></td><td> 10 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode10fd</tt></td><td> 10 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode100hd</tt></td><td> 100 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode100fd</tt></td><td> 100 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode100FX</tt></td><td> 100 Mbps fiber mode
+</td></tr><tr><td>  <tt>bmdPortMode1000hd</tt></td><td> 1000 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode1000fd</tt></td><td> 1000 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode1000FX</tt></td><td> 1000 Mbps fiber mode
+</td></tr><tr><td>  <tt>bmdPortMode1000TBI</tt></td><td> 1000 Mbps Ten-Bit Interface
+</td></tr><tr><td>  <tt>bmdPortMode2500fd</tt></td><td> 2.5 Gbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode10000fd</tt></td><td> 10 Gbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode12000fd</tt></td><td> 12 Gbps full duplex (HiGig only)
+</td></tr><tr><td>  <tt>bmdPortMode13000fd</tt></td><td> 13 Gbps full duplex (HiGig only)
+</td></tr><tr><td>  <tt>bmdPortMode16000fd</tt></td><td> 16 Gbps full duplex (HiGig only)
+</td></tr></tbody></table><br>The following flags may be set in the flags parameter:
+<br><br><b>Table 5:   BMD Port Mode Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PORT_MODE_F_MAC_LOOPBACK</tt></td><td> Enable MAC loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_PHY_LOOPBACK</tt></td><td> Enable PHY loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_REMOTE_LOOPBACK</tt></td><td> Enable remote loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG</tt></td><td> Use HiGig/HiGig+ encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG2</tt></td><td> Use HiGig2 encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HGLITE</tt></td><td> Use HiGig Lite encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_INTERNAL</tt></td><td> Do not change PHY settings
+</td></tr></tbody></table><br>If no loopback flags are set, loopback will be disabled.
+<p>The <tt>BMD_PORT_MODE_F_INTERNAL</tt> flag is intended for use on ports in
+auto-negotiation mode. Once a link has been established through
+auto-negotiation, the current (negotiated) port mode should be
+retrieved using the <tt>bmd_port_mode_get</tt> function (see below,) and then
+the <tt>bmd_port_mode_set</tt> should be called with the
+<tt>BMD_PORT_MODE_F_INTERNAL</tt> set. This will ensure that the MAC mode
+corresponds to the negotiated PHY mode. A more efficient way of
+accomplishing the same thing is to use the <tt>bmd_port_mode_update</tt> API
+function.
+<p>Remote (line-side) loopback is supported on certain copper PHYs and
+causes packets received by the PHY to be looped back on the wire
+without entering the switch device.
+<p>If no HiGig encapsulation is specified, the port will use standard
+IEEE Ethernet encapsulation.
+<p><a name="bmd_api_bmd_port_mode_get"></a>
+<h4>8.4.2.   <tt>bmd_port_mode_get</tt></h4>
+<pre class="code">
+int <tt>bmd_port_mode_get</tt>(int unit, int port, <tt>bmd_port_mode_t</tt> *mode, <tt>uint32_t</tt> *flags);
+</pre>
+The <tt>bmd_port_mode_set</tt> function will return the current port mode. The
+flags parameter may include one or more of the following flags:
+<br><br><b>Table 6:   BMD Port Mode Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PORT_MODE_F_MAC_LOOPBACK</tt></td><td> MAC loopback is enabled
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_PHY_LOOPBACK</tt></td><td> PHY loopback is enabled
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_REMOTE_LOOPBACK</tt></td><td> Enable remote loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG</tt></td><td> Port uses HiGig/HiGig+ encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG2</tt></td><td> Port uses HiGig2 encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HGLITE</tt></td><td> Port uses HiGig Lite encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_LINK_UP</tt></td><td> PHY link is up
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_AUTONEG</tt></td><td> PHY auto-negotiation is enabled
+</td></tr></tbody></table><br><p><a name="bmd_api_bmd_port_mode_update"></a>
+<h4>8.4.3.   <tt>bmd_port_mode_update</tt></h4>
+<pre class="code">
+int <tt>bmd_port_mode_update</tt>(int unit, int port);
+</pre>
+The <tt>bmd_port_mode_update</tt> function should be called at regular
+intervals (e.g. every 200 msec) to maintain the port mode based on the
+current link status. This will ensure that the MAC configuration
+matches the speed and duplex negotiated by the PHY, and that packet
+are not switched to ports with no active link.
+<p><a name="bmd_api_bmd_vlan_create"></a>
+<h4>8.4.4.   <tt>bmd_vlan_create</tt></h4>
+<p>int <tt>bmd_vlan_create</tt>(int unit, int vlan);
+<p>The <tt>bmd_vlan_create</tt> function creates a VLAN without adding any
+ports. For switch devices supporting VLANs, at least one VLAN must be
+created before packet switching can take place.
+<p><a name="bmd_api_bmd_vlan_port_add"></a>
+<h4>8.4.5.   <tt>bmd_vlan_port_add</tt></h4>
+<pre class="code">
+int <tt>bmd_vlan_port_add</tt>(int unit, int vlan, int port, <tt>uint32_t</tt> flags);
+</pre>
+The <tt>bmd_vlan_port_add</tt> function adds a port to a VLAN. If the
+<tt>BMD_VLAN_PORT_F_UNTAGGED</tt> flag is specified in the flags parameter,
+packet will be sent from this port untagged, otherwise a VLAN tag will
+be added.
+<p><a name="bmd_api_bmd_vlan_port_remove"></a>
+<h4>8.4.6.   <tt>bmd_vlan_port_remove</tt></h4>
+<pre class="code">
+int <tt>bmd_vlan_port_remove</tt>(int unit, int vlan, int port);
+</pre>
+The <tt>bmd_vlan_port_remove</tt> function removes a port from a VLAN.
+<p><a name="bmd_api_bmd_vlan_port_get"></a>
+<h4>8.4.7.   <tt>bmd_vlan_port_get</tt></h4>
+<pre class="code">
+int <tt>bmd_vlan_port_get</tt>(int unit, int vlan, int *plist, int *utlist);
+</pre>
+The <tt>bmd_vlan_port_get</tt> functions returns a zero-terminated list of
+ports belonging to a VLAN together with a list of untagged ports in
+this VLAN. The plist and utlist buffers passed by the called must each
+be able to hold <tt>BMD_CONFIG_MAX_PORTS</tt>+1 elements.
+<p><a name="bmd_api_bmd_vlan_destroy"></a>
+<h4>8.4.8.   <tt>bmd_vlan_destroy</tt></h4>
+<pre class="code">
+int <tt>bmd_vlan_destroy</tt>(int unit, int vlan);
+</pre>
+The <tt>bmd_vlan_port_destroy</tt> function destroys a previously created
+VLAN. All member ports should be removed from the VLAN before it is
+destroyed.
+<p><a name="bmd_api_bmd_port_vlan_set"></a>
+<h4>8.4.9.   <tt>bmd_port_vlan_set</tt></h4>
+<pre class="code">
+int <tt>bmd_port_vlan_set</tt>(int unit, int port, int vlan);
+</pre>
+The <tt>bmd_port_vlan_set</tt> function configures the default VLAN for a
+port. Any untagged packets received on this port will be forwarded to
+the default VLAN.
+<p><a name="bmd_api_bmd_port_vlan_get"></a>
+<h4>8.4.10.   <tt>bmd_port_vlan_get</tt></h4>
+<pre class="code">
+int <tt>bmd_port_vlan_get</tt>(int unit, int port, int *vlan);
+</pre>
+The <tt>bmd_port_vlan_get</tt> function returns the default VLAN for a port.
+<p><a name="bmd_api_bmd_port_stp_set"></a>
+<h4>8.4.11.   <tt>bmd_port_stp_set</tt></h4>
+<pre class="code">
+int <tt>bmd_port_stp_set</tt>(int unit, int port, <tt>bmd_stp_state_t</tt> state);
+</pre>
+The <tt>bmd_port_stp_set</tt> function set the current spanning tree protocol
+state for a port. The state parameter must be one of the following:
+<br><br><b>Table 7:   BMD Spanning Tree States</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>bmdSpanningTreeDisabled</tt></td><td> Port is disabled
+</td></tr><tr><td>  <tt>bmdSpanningTreeBlocking</tt></td><td> Port is in blocking state
+</td></tr><tr><td>  <tt>bmdSpanningTreeListening</tt></td><td> Port is in listening state
+</td></tr><tr><td>  <tt>bmdSpanningTreeLearning</tt></td><td> Port is in learning state
+</td></tr><tr><td>  <tt>bmdSpanningTreeForwarding</tt></td><td> Port is in forwarding stat
+</td></tr></tbody></table><br><p><a name="bmd_api_bmd_port_stp_get"></a>
+<h4>8.4.12.   <tt>bmd_port_stp_get</tt></h4>
+<pre class="code">
+int <tt>bmd_port_stp_get</tt>(int unit, int port, <tt>bmd_stp_state_t</tt> *state);
+</pre>
+The <tt>bmd_port_stp_get</tt> function returns the current spanning tree
+protocol state for a port.
+<p><a name="bmd_api_bmd_port_mac_addr_add"></a>
+<h4>8.4.13.   <tt>bmd_port_mac_addr_add</tt></h4>
+<pre class="code">
+int <tt>bmd_port_mac_addr_add</tt>(int unit, int port, int vlan, const <tt>bmd_mac_addr_t</tt> *<tt>mac_addr</tt>);
+</pre>
+This function is used to add a static MAC address to the L2 address
+table of the switch chip, which will prevent packets destined for this
+port from being flooded to all switch ports in the VLAN.
+<p><a name="bmd_api_bmd_port_mac_addr_remove"></a>
+<h4>8.4.14.   <tt>bmd_port_mac_addr_remove</tt></h4>
+<pre class="code">
+int <tt>bmd_port_mac_addr_remove</tt>(int unit, int port, int vlan, const <tt>bmd_mac_addr_t</tt> *<tt>mac_addr</tt>);
+</pre>
+Remove MAC address previously installed with the <tt>bmd_port_mac_addr_add</tt>
+function.
+<p><p><a name="bmd_api_cpu_packet_interface"></a>
+<h3>8.5.   CPU Packet Interface</h3>
+<p>Packets sent to/from the CPU are defined by the following structure:
+<pre class="code">
+typedef struct <tt>bmd_pkt_s</tt> {
+    int port;
+    <tt>uint8_t</tt> *data;
+    int size;
+    <tt>dma_addr_t</tt> baddr;
+    <tt>uint32_t</tt> flags;
+    void *cookie;
+} <tt>bmd_pkt_t</tt>;
+</pre>
+The data pointer must point to a DMA'able packet buffer containing
+size number of bytes including CRC. The CRC will be recalculated in
+hardware, but the necessary CRC buffer space (4 bytes) is always part
+of the packet data.
+<p>The physical bus address that corresponds to the data pointer must be
+placed in the baddr member of the packet structure.
+<p>Note that for non-coherent cache architectures, it is the
+responsibility of the caller to flush cached packets buffers before
+<tt>bmd_tx</tt> is called, and to invalidate packets buffers after they are
+returned by <tt>bmd_rx_poll</tt>.
+<p>Ethernet MAC addresses are passed to the BMD API functions using the
+following data type:
+<pre class="code">
+typedef struct <tt>bmd_mac_addr_s</tt> {
+    <tt>uint8_t</tt> b[6];
+} <tt>bmd_mac_addr_t</tt>;
+</pre>
+<a name="bmd_api_bmd_tx"></a>
+<h4>8.5.1.   <tt>bmd_tx</tt></h4>
+<pre class="code">
+int <tt>bmd_tx</tt>(int unit, const <tt>bmd_pkt_t</tt> *pkt);
+</pre>
+The <tt>bmd_tx</tt> function transmits a single packet from the CPU to a front
+panel port. The flags member of the packet structure may contain on or
+more of the following flags:
+<br><br><b>Table 8:   BMD Transmit Packet Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PKT_F_UNTAGGED</tt></td><td> Send packet untagged
+</td></tr><tr><td>  <tt>BMD_PKT_F_CRC_REGEN</tt></td><td> Regenerate CRC in hardware
+</td></tr></tbody></table><br>Note that the packet buffer must always contain a 4 byte VLAN tag,
+even when the packet is sent untagged.
+<p><a name="bmd_api_bmd_rx_start"></a>
+<h4>8.5.2.   <tt>bmd_rx_start</tt></h4>
+<pre class="code">
+int <tt>bmd_rx_start</tt>(int unit, <tt>bmd_pkt_t</tt> *pkt);
+</pre>
+Submit a packet buffer to the CPU receive DMA engine. The size member
+of the packet structure should contain the full size of the associated
+data buffer. Note that currently only a single received buffer can be
+submitted.
+<p><a name="bmd_api_bmd_rx_poll"></a>
+<h4>8.5.3.   <tt>bmd_rx_poll</tt></h4>
+<pre class="code">
+int <tt>bmd_rx_poll</tt>(int unit, <tt>bmd_pkt_t</tt> **ppkt);
+</pre>
+The <tt>bmd_rx_poll</tt> function polls the CPU receive DMA engine to see if a
+previously submitted packet buffer has been filled. If so, the packet
+pointer is returned and the size member of the packet will now contain
+the actual number of bytes received including CRC.
+<p>Note that the packet buffer will always contain a 4 byte VLAN tag,
+even if the packet ingressed to the switch untagged.
+<p><a name="bmd_api_bmd_rx_stop"></a>
+<h4>8.5.4.   <tt>bmd_rx_stop</tt></h4>
+<pre class="code">
+int <tt>bmd_rx_stop</tt>(int unit);
+</pre>
+Abort any outstanding packet reception. This essentially moves the
+ownership of packets previously submitted to the CPU receive DMA
+engine back to the driver/application.
+<p><a name="bmd_api_bmd_cpu_mac_addr_add"></a>
+<h4>8.5.5.   <tt>bmd_cpu_mac_addr_add</tt></h4>
+<pre class="code">
+int <tt>bmd_cpu_mac_addr_add</tt>(int unit, int vlan, const <tt>bmd_mac_addr_t</tt> *<tt>mac_addr</tt>);
+</pre>
+This function is used to add the CPU MAC address to the L2 address
+table of the switch chip, which will prevent packets destined for the
+CPU from being flooded to all switch ports in the VLAN. Note that
+different MAC addresses can be installed for different VLANs, which
+may be useful for simple router applications.
+<p><a name="bmd_api_bmd_cpu_mac_addr_remove"></a>
+<h4>8.5.6.   <tt>bmd_cpu_mac_addr_remove</tt></h4>
+<pre class="code">
+int <tt>bmd_cpu_mac_addr_remove</tt>(int unit, int vlan, const <tt>bmd_mac_addr_t</tt> *<tt>mac_addr</tt>);
+</pre>
+Remove CPU MAC address previously installed with the
+<tt>bmd_cpu_mac_addr_add</tt> function.
+<p><p><a name="bmd_api_bmd_statistics_functions"></a>
+<h3>8.6.   Statistics Functions</h3>
+<p>The BMD statistics functions are mainly intended for debugging
+purposes. In general all counters are passed unmodified from hardware
+and no attempts are made to prevent counters from wrapping
+prematurely, i.e. counters may wrap at 32 bits or 36 bits even if the
+BMD counter type is 64 bits wide.
+<p>The statistics interface is based on the following data types:
+<pre class="code">
+typedef struct <tt>bmd_counter_s</tt> {
+    <tt>uint32_t</tt> v[2];
+} <tt>bmd_counter_t</tt>;
+
+typedef enum <tt>bmd_stat_e</tt> {
+    <tt>bmdStatTxPackets</tt>, 
+    <tt>bmdStatTxBytes</tt>, 
+    <tt>bmdStatTxErrors</tt>, 
+    <tt>bmdStatRxPackets</tt>, 
+    <tt>bmdStatRxBytes</tt>, 
+    <tt>bmdStatRxErrors</tt>, 
+    <tt>bmdStatRxDrops</tt>, 
+    <tt>bmdStatCount</tt>
+} <tt>bmd_stat_t</tt>;
+</pre>
+<a name="bmd_api_bmd_stat_get"></a>
+<h4>8.6.1.   <tt>bmd_stat_get</tt></h4>
+<pre class="code">
+int <tt>bmd_stat_get</tt>(int unit, int port, <tt>bmd_stat_t</tt> stat, <tt>bmd_counter_t</tt> *counter);
+</pre>
+Read statistics counter for a switch port.
+<p><a name="bmd_api_bmd_stat_clear"></a>
+<h4>8.6.2.   <tt>bmd_stat_clear</tt></h4>
+<pre class="code">
+int <tt>bmd_stat_clear</tt>(int unit, int port, <tt>bmd_stat_t</tt> stat);
+</pre>
+Clear statistics counter for a switch port. 
+<p><p><a name="bmd_api_bmd_miscellaneous_functions"></a>
+<h3>8.7.   Miscellaneous Functions</h3>
+<p>The BMD API provides a couple of functions that are not directly
+related to the switching operation.
+<a name="bmd_api_bmd_download"></a>
+<h4>8.7.1.   <tt>bmd_download</tt></h4>
+<pre class="code">
+int <tt>bmd_download</tt>(int unit, <tt>bmd_download_t</tt> type, <tt>uint8_t</tt> *data, int size);
+</pre>
+Download device or board specific microcode. Currently the only
+supported download type is <tt>bmdDownloadPortLedController</tt>, which is used
+for downloading code to the LED Controller found in Broadcom XGS
+devices. 
+<p><a name="bmd_api_bmd_test_interrupt_assert"></a>
+<h4>8.7.2.   <tt>bmd_test_interrupt_assert</tt></h4>
+<pre class="code">
+int <tt>bmd_test_interrupt_assert</tt>(int unit);
+</pre>
+The <tt>bmd_test_interrupt_assert</tt> and <tt>bmd_test_interrupt_clear</tt> functions
+can be used to validate the proper functioning of hardware interrupts
+on a new board design. Calling the <tt>bmd_test_interrupt_assert</tt> function
+will program the switch device to generate a hardware interrupt, which
+must be handled by a system-specific interrtupt handler. The interrupt
+handler should call <tt>bmd_test_interrupt_clear</tt> to clear the interrupt
+condition.
+<p><a name="bmd_api_bmd_test_interrupt_clear"></a>
+<h4>8.7.3.   <tt>bmd_test_interrupt_clear</tt></h4>
+<pre class="code">
+int <tt>bmd_test_interrupt_clear</tt>(int unit);
+</pre>
+Please see <tt>bmd_test_interrupt_assert</tt> for s description of how to use
+this API function.
+<p><p><a name="bmd_api_function_reference"></a>
+<h3>8.8.   BMD API Function Reference</h3>
+<p>Below follows a complete list of all BMD API functions.
+<p><hr noshade>
+<h3>APIs for  BMD API Function Reference</h3>
+<a name=bmd_attach></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_attach</tt><br>
+</h2>
+
+<blockquote>
+This function attaches a driver to a CDK unit.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_attach(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_attach</tt> function attaches a BMD device to a CDK device. There
+is no need to create a BMD device first. The main purpose of the
+attach function is to abstract the chip-specific information in the
+CDK and assign default PHY bus drivers.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_detach></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_detach</tt><br>
+</h2>
+
+<blockquote>
+This function detaches a driver from a CDK unit.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_detach(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_detach</tt> function detaches a BMD device from a CDK device and
+releases any resources allocated by the BMD device.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_reset></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_reset</tt><br>
+</h2>
+
+<blockquote>
+This is the reset function.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_reset(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_reset</tt> function performs a hardware reset of the chip and
+subsequently brings all internal blocks out of reset again. When the
+reset function completes, all registers and memories should be
+accessible via the CDK programming interface.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_init></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_init</tt><br>
+</h2>
+
+<blockquote>
+This is the init function.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_init(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_init</tt> function performs basic initialization of the chip,
+including MMU and port/MAC initialization, however no VLANs will be
+created and no spanning tree configuration will be performed, which
+means that the switch will not forward packets between ports at this
+stage.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_mode_set></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_mode_set</tt><br>
+</h2>
+
+<blockquote>
+Sets the port mode.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_mode_set(
+    int unit, 
+    int port, 
+    mode, 
+    uint32_t flags);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mode</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Port mode
+</td></tr>
+<tr><td class="arg" valign="top"><tt>flags</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) One or more BMD_PORT_MODE_F_xxx flags
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_mode_set</tt> function configures a port to either
+auto-negotiation mode or a forced speed/duplex setting. Possible port
+modes are:
+<br><br><b>Table 9:   BMD Port Modes</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>bmdPortModeDisabled</tt></td><td> Disabled
+</td></tr><tr><td>  <tt>bmdPortModeAuto</tt></td><td> Auto-negotiation
+</td></tr><tr><td>  <tt>bmdPortMode10hd</tt></td><td> 10 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode10fd</tt></td><td> 10 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode100hd</tt></td><td> 100 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode100fd</tt></td><td> 100 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode100FX</tt></td><td> 100 Mbps fiber mode
+</td></tr><tr><td>  <tt>bmdPortMode1000hd</tt></td><td> 1000 Mbps half duplex
+</td></tr><tr><td>  <tt>bmdPortMode1000fd</tt></td><td> 1000 Mbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode1000FX</tt></td><td> 1000 Mbps fiber mode
+</td></tr><tr><td>  <tt>bmdPortMode1000TBI</tt></td><td> 1000 Mbps Ten-Bit Interface
+</td></tr><tr><td>  <tt>bmdPortMode2500fd</tt></td><td> 2.5 Gbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode10000fd</tt></td><td> 10 Gbps full duplex
+</td></tr><tr><td>  <tt>bmdPortMode12000fd</tt></td><td> 12 Gbps full duplex (HiGig only)
+</td></tr><tr><td>  <tt>bmdPortMode13000fd</tt></td><td> 13 Gbps full duplex (HiGig only)
+</td></tr><tr><td>  <tt>bmdPortMode16000fd</tt></td><td> 16 Gbps full duplex (HiGig only)
+</td></tr></tbody></table><br>The following flags may be set in the flags parameter:
+<br><br><b>Table 10:   BMD Port Mode Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PORT_MODE_F_MAC_LOOPBACK</tt></td><td> Enable MAC loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_PHY_LOOPBACK</tt></td><td> Enable PHY loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_REMOTE_LOOPBACK</tt></td><td> Enable remote loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG</tt></td><td> Use HiGig/HiGig+ encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG2</tt></td><td> Use HiGig2 encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HGLITE</tt></td><td> Use HiGig Lite encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_INTERNAL</tt></td><td> Do not change PHY settings
+</td></tr></tbody></table><br>If no loopback flags are set, loopback will be disabled.
+<p>The <tt>BMD_PORT_MODE_F_INTERNAL</tt> flag is intended for use on ports in
+auto-negotiation mode. Once a link has been established through
+auto-negotiation, the current (negotiated) port mode should be
+retrieved using the <tt>bmd_port_mode_get</tt> function (see below,) and then
+the <tt>bmd_port_mode_set</tt> should be called with the
+<tt>BMD_PORT_MODE_F_INTERNAL</tt> set. This will ensure that the MAC mode
+corresponds to the negotiated PHY mode. A more efficient way of
+accomplishing the same thing is to use the <tt>bmd_port_mode_update</tt> API
+function.
+<p>Remote (line-side) loopback is supported on certain copper PHYs and
+causes packets received by the PHY to be looped back on the wire
+without entering the switch device.
+<p>If no HiGig encapsulation is specified, the port will use standard
+IEEE Ethernet encapsulation.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_mode_get></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_mode_get</tt><br>
+</h2>
+
+<blockquote>
+Gets the port mode.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_mode_get(
+    int unit, 
+    int port, 
+    *mode, 
+    uint32_t *flags);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mode</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Port mode
+</td></tr>
+<tr><td class="arg" valign="top"><tt>flags</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) One or more BMD_PORT_MODE_F_xxx flags
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_mode_set</tt> function will return the current port mode. The
+flags parameter may include one or more of the following flags:
+<br><br><b>Table 11:   BMD Port Mode Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PORT_MODE_F_MAC_LOOPBACK</tt></td><td> MAC loopback is enabled
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_PHY_LOOPBACK</tt></td><td> PHY loopback is enabled
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_REMOTE_LOOPBACK</tt></td><td> Enable remote loopback
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG</tt></td><td> Port uses HiGig/HiGig+ encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HIGIG2</tt></td><td> Port uses HiGig2 encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_HGLITE</tt></td><td> Port uses HiGig Lite encapsulation
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_LINK_UP</tt></td><td> PHY link is up
+</td></tr><tr><td>  <tt>BMD_PORT_MODE_F_AUTONEG</tt></td><td> PHY auto-negotiation is enabled
+</td></tr></tbody></table><br></blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_mode_update></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_mode_update</tt><br>
+</h2>
+
+<blockquote>
+Updates the port mode based on auto-negotiation result.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_mode_update(
+    int unit, 
+    int port);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_mode_update</tt> function should be called at regular
+intervals (e.g. every 200 msec) to maintain the port mode based on the
+current link status. This will ensure that the MAC configuration
+matches the speed and duplex negotiated by the PHY, and that packet
+are not switched to ports with no active link.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_vlan_create></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_vlan_create</tt><br>
+</h2>
+
+<blockquote>
+Creates a VLAN.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_vlan_create(
+    int unit, 
+    int vlan);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_vlan_create</tt> function creates a VLAN without adding any
+ports. For switch devices supporting VLANs, at least one VLAN must be
+created before packet switching can take place.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_vlan_port_add></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_vlan_port_add</tt><br>
+</h2>
+
+<blockquote>
+Adds a port to a VLAN.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_vlan_port_add(
+    int unit, 
+    int vlan, 
+    int port, 
+    uint32_t flags);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>flags</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) One or more BMD_VLAN_PORT_F_xxx flags
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_vlan_port_add</tt> function adds a port to a VLAN. If the
+<tt>BMD_VLAN_PORT_F_UNTAGGED</tt> flag is specified in the flags parameter,
+packet will be sent from this port untagged, otherwise a VLAN tag will
+be added.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_vlan_port_remove></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_vlan_port_remove</tt><br>
+</h2>
+
+<blockquote>
+Removes a port from a VLAN.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_vlan_port_remove(
+    int unit, 
+    int vlan, 
+    int port);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_vlan_port_remove</tt> function removes a port from a VLAN.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_vlan_port_get></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_vlan_port_get</tt><br>
+</h2>
+
+<blockquote>
+Return lists of ports and untagged ports belonging to VLAN.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_vlan_port_get(
+    int unit, 
+    int vlan, 
+    int *plist, 
+    int *utlist);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>plist</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Array of ports in this VLAN
+</td></tr>
+<tr><td class="arg" valign="top"><tt>utlist</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Array of untagged ports in this VLAN
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_vlan_port_get</tt> functions returns a zero-terminated list of
+ports belonging to a VLAN together with a list of untagged ports in
+this VLAN. The plist and utlist buffers passed by the called must each
+be able to hold <tt>BMD_CONFIG_MAX_PORTS</tt>+1 elements.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_vlan_destroy></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_vlan_destroy</tt><br>
+</h2>
+
+<blockquote>
+Destroys a VLAN.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_vlan_destroy(
+    int unit, 
+    int vlan);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_vlan_port_destroy</tt> function destroys a previously created
+VLAN. All member ports should be removed from the VLAN before it is
+destroyed.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_vlan_set></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_vlan_set</tt><br>
+</h2>
+
+<blockquote>
+Sets the default VLAN for a port.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_vlan_set(
+    int unit, 
+    int port, 
+    vlan);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Default VLAN ID for this port
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_vlan_set</tt> function configures the default VLAN for a
+port. Any untagged packets received on this port will be forwarded to
+the default VLAN.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_vlan_get></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_vlan_get</tt><br>
+</h2>
+
+<blockquote>
+Gets the default VLAN for a port.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_vlan_get(
+    int unit, 
+    int port, 
+    *vlan);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Default VLAN ID for this port
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_vlan_get</tt> function returns the default VLAN for a port.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_stp_set></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_stp_set</tt><br>
+</h2>
+
+<blockquote>
+Sets spanning tree protocol state.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_stp_set(
+    int unit, 
+    int port, 
+    bmd_stp_state_t state);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>state</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Spanning tree state for this port
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_stp_set</tt> function set the current spanning tree protocol
+state for a port. The state parameter must be one of the following:
+<br><br><b>Table 12:   BMD Spanning Tree States</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>bmdSpanningTreeDisabled</tt></td><td> Port is disabled
+</td></tr><tr><td>  <tt>bmdSpanningTreeBlocking</tt></td><td> Port is in blocking state
+</td></tr><tr><td>  <tt>bmdSpanningTreeListening</tt></td><td> Port is in listening state
+</td></tr><tr><td>  <tt>bmdSpanningTreeLearning</tt></td><td> Port is in learning state
+</td></tr><tr><td>  <tt>bmdSpanningTreeForwarding</tt></td><td> Port is in forwarding stat
+</td></tr></tbody></table><br></blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_stp_get></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_stp_get</tt><br>
+</h2>
+
+<blockquote>
+Gets spanning tree protocol state.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_stp_get(
+    int unit, 
+    int port, 
+    bmd_stp_state_t *state);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>state</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Spanning tree state for this port
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_port_stp_get</tt> function returns the current spanning tree
+protocol state for a port.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_switching_init></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_switching_init</tt><br>
+</h2>
+
+<blockquote>
+Initializes and enables switching.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_switching_init(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_switching_init</tt> function performs all the necessary steps to
+make the device switch packets between the front panel ports. This
+function does not make any assumptions about the current state of the
+switch chip.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_mac_addr_add></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_mac_addr_add</tt><br>
+</h2>
+
+<blockquote>
+Configures port MAC address.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_mac_addr_add(
+    int unit, 
+    int port, 
+    int vlan, 
+    const *mac_addr);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mac_addr</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) MAC address associated with this port and VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+This function is used to add a static MAC address to the L2 address
+table of the switch chip, which will prevent packets destined for this
+port from being flooded to all switch ports in the VLAN.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_port_mac_addr_remove></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_port_mac_addr_remove</tt><br>
+</h2>
+
+<blockquote>
+Deletes port MAC address.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_port_mac_addr_remove(
+    int unit, 
+    int port, 
+    int vlan, 
+    const *mac_addr);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mac_addr</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) MAC address associated with this port and VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Remove MAC address previously installed with the <tt>bmd_port_mac_addr_add</tt>
+function.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_cpu_mac_addr_add></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_cpu_mac_addr_add</tt><br>
+</h2>
+
+<blockquote>
+Configures CPU MAC address.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_cpu_mac_addr_add(
+    int unit, 
+    int vlan, 
+    const *mac_addr);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mac_addr</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) MAC address associated with this port and VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+This function is used to add the CPU MAC address to the L2 address
+table of the switch chip, which will prevent packets destined for the
+CPU from being flooded to all switch ports in the VLAN. Note that
+different MAC addresses can be installed for different VLANs, which
+may be useful for simple router applications.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_cpu_mac_addr_remove></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_cpu_mac_addr_remove</tt><br>
+</h2>
+
+<blockquote>
+Deletes CPU MAC address.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_cpu_mac_addr_remove(
+    int unit, 
+    int vlan, 
+    const *mac_addr);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>vlan</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) VLAN ID
+</td></tr>
+<tr><td class="arg" valign="top"><tt>mac_addr</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) MAC address associated with this port and VLAN ID
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Remove CPU MAC address previously installed with the
+<tt>bmd_cpu_mac_addr_add</tt> function.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_tx></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_tx</tt><br>
+</h2>
+
+<blockquote>
+Transmit a packet.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_tx(
+    int unit, 
+    const *pkt);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>pkt</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Packet structure
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_tx</tt> function transmits a single packet from the CPU to a front
+panel port. The flags member of the packet structure may contain on or
+more of the following flags:
+<br><br><b>Table 13:   BMD Transmit Packet Flags</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td>  <tt>BMD_PKT_F_UNTAGGED</tt></td><td> Send packet untagged
+</td></tr><tr><td>  <tt>BMD_PKT_F_CRC_REGEN</tt></td><td> Regenerate CRC in hardware
+</td></tr></tbody></table><br>Note that the packet buffer must always contain a 4 byte VLAN tag,
+even when the packet is sent untagged.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_rx_start></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_rx_start</tt><br>
+</h2>
+
+<blockquote>
+Submit Rx packet to DMA queue.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_rx_start(
+    int unit, 
+    *pkt);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>pkt</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Packet structure
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Submit a packet buffer to the CPU receive DMA engine. The size member
+of the packet structure should contain the full size of the associated
+data buffer. Note that currently only a single received buffer can be
+submitted.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_rx_poll></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_rx_poll</tt><br>
+</h2>
+
+<blockquote>
+Poll for Rx packet complete.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_rx_poll(
+    int unit, 
+    **ppkt);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>ppkt</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Packet structure pointer
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_rx_poll</tt> function polls the CPU receive DMA engine to see if a
+previously submitted packet buffer has been filled. If so, the packet
+pointer is returned and the size member of the packet will now contain
+the actual number of bytes received including CRC.
+<p>Note that the packet buffer will always contain a 4 byte VLAN tag,
+even if the packet ingressed to the switch untagged.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_rx_stop></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_rx_stop</tt><br>
+</h2>
+
+<blockquote>
+Abort Rx DMA.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_rx_stop(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Abort any outstanding packet reception. This essentially moves the
+ownership of packets previously submitted to the CPU receive DMA
+engine back to the driver/application.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_stat_get></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_stat_get</tt><br>
+</h2>
+
+<blockquote>
+Get statistics counter.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_stat_get(
+    int unit, 
+    int port, 
+    bmd_stat_t stat, 
+    bmd_counter_t *counter);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>stat</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Statistics type
+</td></tr>
+<tr><td class="arg" valign="top"><tt>counter</tt></td><td>&nbsp;&nbsp;</td><td>
+ (OUT) Statistics counter value
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Read statistics counter for a switch port.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_stat_clear></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_stat_clear</tt><br>
+</h2>
+
+<blockquote>
+Clear statistics counter.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_stat_clear(
+    int unit, 
+    int port, 
+    bmd_stat_t stat);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>port</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Physical port number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>stat</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Statistics type
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Clear statistics counter for a switch port. 
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_test_interrupt_assert></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_test_interrupt_assert</tt><br>
+</h2>
+
+<blockquote>
+Assert test interrupt.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_test_interrupt_assert(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+The <tt>bmd_test_interrupt_assert</tt> and <tt>bmd_test_interrupt_clear</tt> functions
+can be used to validate the proper functioning of hardware interrupts
+on a new board design. Calling the <tt>bmd_test_interrupt_assert</tt> function
+will program the switch device to generate a hardware interrupt, which
+must be handled by a system-specific interrtupt handler. The interrupt
+handler should call <tt>bmd_test_interrupt_clear</tt> to clear the interrupt
+condition.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_test_interrupt_clear></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_test_interrupt_clear</tt><br>
+</h2>
+
+<blockquote>
+Clear test interrupt.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_test_interrupt_clear(
+    int unit);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Please see <tt>bmd_test_interrupt_assert</tt> for s description of how to use
+this API function.
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+<a name=bmd_download></a>
+<hr noshade>
+<h2 class="api">
+<tt>bmd_download</tt><br>
+</h2>
+
+<blockquote>
+Download code to subdevice.
+</blockquote><h3>SYNOPSIS</h3>
+<blockquote><pre>int 
+bmd_download(
+    int unit, 
+    bmd_download_t type, 
+    uint8_t *data, 
+    int size);
+</pre></blockquote><h3>PARAMETERS</h3>
+<blockquote><table cellpadding=2 summary="parameters"><tr><td class="arg" valign="top"><tt>unit</tt></td><td>&nbsp;&nbsp;</td><td>
+         (IN) BMD unit number
+</td></tr>
+<tr><td class="arg" valign="top"><tt>type</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Download type
+</td></tr>
+<tr><td class="arg" valign="top"><tt>data</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Download data
+</td></tr>
+<tr><td class="arg" valign="top"><tt>size</tt></td><td>&nbsp;&nbsp;</td><td>
+ (IN) Size of download data
+</td></tr>
+</table></blockquote><h3>DESCRIPTION</h3><blockquote>
+Download device or board specific microcode. Currently the only
+supported download type is <tt>bmdDownloadPortLedController</tt>, which is used
+for downloading code to the LED Controller found in Broadcom XGS
+devices. 
+</blockquote><h3>RETURNS</h3><blockquote>
+CDK_E_xxx
+</blockquote>
+
+</table>
+</body>
+</html>

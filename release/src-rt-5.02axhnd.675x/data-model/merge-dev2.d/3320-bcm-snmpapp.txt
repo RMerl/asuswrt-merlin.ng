@@ -1,0 +1,10 @@
+#
+# Add the object in cms-dm-snmpapp.xml after the SskCfg object. 
+# The ordering of these appCfg objects really should not matter.
+# But I will try to keep them exactly the same as the IGD data model anyways.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-snmpapp.xml Device.X_BROADCOM_COM_AppCfg.SskCfg.
+

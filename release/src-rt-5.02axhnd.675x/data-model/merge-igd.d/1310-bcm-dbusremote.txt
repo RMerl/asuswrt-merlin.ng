@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-dbusremote.xml above the 
+# object InternetGatewayDevice.X_BROADCOM_COM_SecDmzHostCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-dbusremote.xml InternetGatewayDevice.X_BROADCOM_COM_SecDmzHostCfg.

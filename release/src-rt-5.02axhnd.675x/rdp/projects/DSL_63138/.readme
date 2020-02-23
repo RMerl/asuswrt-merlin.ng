@@ -1,0 +1,10 @@
+#***********************************************************************
+#  Copyright (c) 2014  Broadcom Corporation
+#  All Rights Reserved
+#***********************************************************************/
+
+This directory is a placeholder for DSL_63138 project. It includes sub-directories for all RDP components required to
+build new project. Each sub-directory contains .readme file with description what should be placed in the
+sub-directory.
+Please refer to PON_6838 project for reference.
+For any question please contact Daniel Pasternak (danielp@broadcom.com) or Sasha Pigovat (sashap@broadcom.com)

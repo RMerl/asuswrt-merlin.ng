@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">This object has child objects which contain defines for individual applications.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_AppCfg.HttpdCfg." shortObjectName="HttpdCfgObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" oid="3150" lockZone="7" />
+  <description source="BROADCOM">This objects contains config parameters for the httpd app.</description>
+
+  <parameter name="NetworkAccess" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="LAN" validValuesArray="NetAccessCfgValues" hideParameterFromAcs="true" />
+    <description source="BROADCOM">THIS PARAMETER IS OBSOLETE AND WILL BE DELETED SOON.&#10;DO NOT USE THIS PARAMETER.&#10;&#10;Which side of the network can access this app.&#10;Enumeration of:&#10;&quot;Disabled&quot;&#10;&quot;LAN&quot;&#10;&quot;WAN&quot;&#10;&quot;LAN or WAN&quot;&#10;&#10;See also PSI: BcmCfm_ACServiceCfg</description>
+
+  <parameter name="LoggingLevel" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Error" validValuesArray="LoggingLevelValues" />
+    <description source="BROADCOM">CMS Logging Level for this app.&#10;Enumeration of:&#10;&quot;Error&quot;&#10;&quot;Notice&quot;&#10;&quot;Debug&quot;&#10;</description>
+
+  <parameter name="LoggingDestination" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Standard Error" validValuesArray="LoggingDestinationValues" />
+    <description source="BROADCOM">Where does the CMS log message go.  Enumeration of:&#10;&quot;Standard Error&quot;&#10;&quot;Syslog&quot;</description>
+
+  <parameter name="QuickSetupEnabled" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_QuickSetup:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">If this parameter is true then quicksetup will be run upon access to WebUI</description>
+
+
+<vsaInfo>
+
+<validstringarray name="LoggingDestinationValues" />
+  <element>Standard Error</element>
+  <element>Syslog</element>
+  <element>Telnet</element>
+
+<validstringarray name="LoggingLevelValues" />
+  <element>Error</element>
+  <element>Notice</element>
+  <element>Debug</element>
+
+<validstringarray name="NetAccessCfgValues" />
+  <element>LAN</element>
+  <element>WAN</element>
+  <element>LAN or WAN</element>
+  <element>Disabled</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_QuickSetup:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

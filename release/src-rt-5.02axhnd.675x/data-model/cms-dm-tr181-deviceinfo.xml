@@ -1,0 +1,412 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo." shortObjectName="Dev2DeviceInfoObject" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present" oid="1002"/>
+  <description source="TRx">This object contains general devices information.</description>
+
+  <parameter name="Manufacturer" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="Broadcom" maxLength="64" />
+    <description source="TRx">The manufacturer of the CPE (human readable string).</description>
+
+  <parameter name="ManufacturerOUI" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="6" minLength="6" />
+    <description source="TRx">Organizationally unique identifier of the device &#10;manufacturer. Represented as a six hexadecimal-&#10;digit value using all upper-case letters and &#10;including any leading zeros. The value MUST be &#10;a valid OUI as defined in [5]. This value MUST remain fixed over the lifetime of the device, including across firmware updates. Any change would indicate that it's a new device and would therefore require a BOOTSTRAP Inform.</description>
+
+  <parameter name="ModelName" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Model name of the CPE (human readable string).</description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">A full description of the CPE device (human readable &#10;string). </description>
+
+  <parameter name="ProductClass" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the class of product for which the serial number applies.  That is, for a given manufacturer, this  parameter is used to identify the product or class of product over which the {{param|SerialNumber}} parameter is unique. This value MUST remain fixed over the lifetime of the device, including across firmware updates. Any change would indicate that it's  a new device and would therefore require a BOOTSTRAP Inform. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the particular device that is unique for the indicated class of &#10;product and manufacturer. This value MUST remain fixed over the lifetime of the &#10;device, including across firmware updates. Any change would indicate that it's a &#10;new device and would therefore require a BOOTSTRAP Inform.</description>
+
+  <parameter name="HardwareVersion" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">A string identifying the particular CPE model and version</description>
+
+  <parameter name="SoftwareVersion" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">A string identifying the software version currently installed in the CPE (i.e. version of the overall CPE firmware). To allow version comparisons, this element SHOULD be in the form of dot-delimited integers, where each successive integer represents a more minor category of variation. For example, ''3.0.21'' where the components mean: ''Major.Minor.Build''.</description>
+
+  <parameter name="AdditionalHardwareVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Comma-separated list (maximum length 64) of strings. Each entry is an additional version.  Represents any additional hardware version information the vendor might wish to supply. </description>
+
+  <parameter name="AdditionalSoftwareVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Comma-separated list (maximum length 64) of strings.  Each entry is an additional version.  Represents any additional software version information the vendor might wish to supply. </description>
+
+  <parameter name="ProvisioningCode" type="string" specSource="TR181" profile="Device2_Baseline:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Identifier of the primary service provider and other provisioning information, which MAY be used by the ACS to determine service provider-specific customization and provisioning parameters.</description>
+
+  <parameter name="UpTime" type="unsignedInt" specSource="TR181" profile="Device2_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Time in seconds since the CPE was last restarted.</description>
+
+  <parameter name="FirstUseDate" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Date and time in UTC that the CPE first both successfully established an IP-layer network connection and acquired an absolute time reference using NTP or equivalent over that network connection.  The CPE MAY reset this date after a factory reset. If NTP or equivalent is not available, this parameter, if present, SHOULD be set to the Unknown Time value. </description>
+
+  <parameter name="VendorConfigFileNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Number of instances of VendorConfigFile.</description>
+
+  <parameter name="SupportedDataModelNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_SupportedDataModel:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the SupportedDataModel table.</description>
+
+  <parameter name="ProcessorNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the VendorConfigFile table.</description>
+
+  <parameter name="VendorLogFileNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the VendorLogFile table.</description>
+
+  <parameter name="LocationNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_Location:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Location table. </description>
+
+  <parameter name="X_BROADCOM_COM_SwBuildTimestamp" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Time that the software was built.</description>
+
+  <parameter name="X_BROADCOM_COM_DslPhyDrvVersion" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_DSL:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">The version string for the DSL PHY and Driver.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_VoiceServiceVersion" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_PSTNEndpoint:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Version string for our internal VoiceService software.</description>
+
+  <parameter name="X_BROADCOM_COM_FlashSize" type="unsignedInt" specSource="Broadcom" profile="Device2_HomePlug:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The size in Kbytes of the flash memory</description>
+    
+  <parameter name="X_BROADCOM_COM_FlashDescription" type="string" specSource="Broadcom" profile="Device2_HomePlug:1" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="BROADCOM">Information about the flash memory (e.g. flash device)</description>
+
+  <parameter hideParameterFromAcs="true" name="X_BROADCOM_COM_E2E_SerialNumber" type="string" specSource="TR181" profile="X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the particular device that is unique for the indicated class of &#10;product and manufacturer. This value MUST remain fixed over the lifetime of the &#10;device, including across firmware updates. Any change would indicate that it's a &#10;new device and would therefore require a BOOTSTRAP Inform.</description>
+
+  <parameter hideParameterFromAcs="true" name="X_BROADCOM_COM_E2E_ProvisioningCode" type="string" specSource="TR181" profile="X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Identifier of the primary service provider and other provisioning information, which MAY be used by the ACS to determine service provider-specific customization and provisioning parameters.</description>
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.VendorConfigFile.{i}." shortObjectName="Dev2DeviceVendorConfigFileObject" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="Present" alwaysWriteToConfigFile="true" />
+  <description source="TRx">Every instance of this object is a Vendor Configuration File, and contains parameters associated with the Vendor  Configuration File. This table of Vendor Configuration Files is for information only and does not allow the ACS to operate on these files in any way.Whenever the CPE successfully downloads a configuration file as a result of the Download RPC with the FileType argument of ''3 Vendor Configuration File'', the CPE MUST update this table. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Name of the vendor configuration file. If the CPE is able to obtain the name of the configuration file from the file itself, then the value of this parameter MUST be set to that name.Otherwise, if the CPE can extract the file name from the URL used to download the configuration file, then the value of this  parameter MUST be set to that name.Otherwise, the value of this parameter MUST be set to the value of the TargetFileName argument of the Download RPC used to download this configuration file. </description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="16" alwaysWriteToConfigFile="true" />
+    <description source="TRx">A string identifying the configuration file version currently used in the CPE. If the CPE is able to obtain the version of the configuration file from the file itself, then the value of this parameter MUST be set to the obtained value.Otherwise, the value of this parameter MUST be {{empty}}. </description>
+
+  <parameter name="Date" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Date and time when the content of the current version of this vendor configuration file was first applied by the CPE. </description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">A description of the vendor configuration file (human-readable string). </description>
+
+  <parameter name="UseForBackupRestore" type="boolean" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="False" alwaysWriteToConfigFile="true" />
+    <description source="TRx">When true, this parameter indicates that this VendorConfigFile instance is used for backup or restoration purposes. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.SupportedDataModel.{i}." shortObjectName="Dev2SupportedDataModelObject" specSource="TR181" profile="Device2_SupportedDataModel:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This table contains details of the device's Current Supported Data Model. The table MUST describe the device's entire Supported Data Model. Therefore, if a device's Supported Data Model changes at run-time, entries will need to be added or removed as appropriate. Each table entry MUST refer to only a single Root Object or Service Object. The device MAY choose to use more than one table entry for a given Root Object or Service Object. Considering that every device has some form of a data model, this table MUST NOT be empty. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-supported-data-model" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for future reference.&#10;&#10;An initial unique value MUST be assigned when the CPE creates an instance of this ExecEnv.</description>
+
+  <parameter name="URL" type="string" specSource="TR181" profile="Device2_SupportedDataModel:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">URL ({{bibref|RFC3986}}) that describes some or all of the device's Current Supported Data Model. The URL MUST reference an XML file which describes the appropriate part of the Supported Data Model. The referenced XML file MUST be compliant with the DT (Device Type) Schema that is described in {{bibref|TR-106a3|Annex B}}, including any additional normative requirements referenced within the Schema. The XML file referenced by this URL MUST NOT change while the CPE is running, and SHOULD NOT change across a CPE reboot. Note that, if the same XML file is to be used for multiple CPE, this strongly suggests that the XML file referenced by this URL should ''never'' change. The URL MAY permit the XML file to be accessed at run-time, in which case, the XML file MAY be located within the CPE. Behavior in the event of an invalid URL, failure to access the referenced XML file, or an invalid XML file, is implementation-dependent.</description>
+
+  <parameter name="UUID" type="UUID" specSource="TR181" profile="Device2_SupportedDataModel:2" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="36" minLength="36" />
+    <description source="TRx">UUID ({{bibref|RFC4122}}) that is the value of the uuid attribute in the DT Instance referenced by {{param|URL}}. </description>
+
+  <parameter name="URN" type="string" specSource="TR181" profile="Device2_SupportedDataModel:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">URN ({{bibref|RFC3986}}) that is the value of the spec attribute in the DM (data model) Instance that defines the Root Object or Service Object referenced by this table entry. For example, if this table entry references a DT Instance that refers to the ''Device:1.3'' Root Object, the value of this parameter would be ''urn:broadband-forum-org:tr-157-1-0-0'', because TR-157 defines ''Device:1.3''. If the DT Instance instead referred to a vendor-specific Root Object, e.g. ''X_EXAMPLE_Device:1.0'' (derived from ''Device:1.3''), the value of this parameter would be something like ''urn:example-com:device-1-0-0''.</description>
+
+  <parameter name="Features" type="string" specSource="TR181" profile="Device2_SupportedDataModel:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  This parameter MUST list exactly the features that are defined using the top-level ''feature'' element in the DT Instance referenced by URL.&#10;&#10;For example, if the DT instance specified the following:&#10;    &lt;feature name=&quot;DNSServer&quot;/&gt; &#10;    &lt;feature name=&quot;Router&quot;/&gt;&#10;    &lt;feature name=&quot;X_MyDeviceFeature&quot;/&gt;&#10;&#10;then the value of this parameter might be ''DNSServer,Router,X_MyDeviceFeature''. The order in which the features are listed is not significant.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.MemoryStatus." shortObjectName="Dev2MemoryStatusObject" specSource="TR181" profile="Device2_MemoryStatus:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Status of the device's volatile physical memory. </description>
+
+  <parameter name="Total" type="unsignedInt" specSource="TR181" profile="Device2_MemoryStatus:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total physical RAM, in kilobytes, installed on the device. </description>
+
+  <parameter name="Free" type="unsignedInt" specSource="TR181" profile="Device2_MemoryStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The free physical RAM, in kilobytes, currently available on the device. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.ProcessStatus." shortObjectName="Dev2ProcessStatusObject" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Status of the processes on the device. </description>
+
+  <parameter name="CPUUsage" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="NotSupported" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">The total amount of the CPU, in percent, rounded up to the nearest whole percent.  In the case that multiple CPU are present, this value represents the average of all CPU. </description>
+
+  <parameter name="ProcessNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of entries in the Proceess table.  Since a Process can come and go very quickly, the CPE SHOULD place a locally specified limit on the frequency at which it will notify the ACS of value changes, as described in {{bibref|TR-069a2|Section 3.2.1}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.ProcessStatus.Process.{i}." shortObjectName="Dev2ProcessStatusEntryObject" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">List of all processes running on the device. </description>
+
+  <parameter name="PID" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Process Identifier. </description>
+
+  <parameter name="Command" type="string" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The name of the command that has caused the process to exist. </description>
+
+  <parameter name="Size" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The size in kilobytes of the memory occupied by the process. </description>
+
+  <parameter name="Priority" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" supportLevel="NotSupported" maxValue="99" />
+    <description source="TRx">The priority of the process where 0 is highest. </description>
+
+  <parameter name="CPUTime" type="unsignedInt" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="NotSupported" />
+    <description source="TRx">The amount of time in milliseconds that the process has spent taking up CPU time since the process was started. </description>
+
+  <parameter name="State" type="string" specSource="TR181" profile="Device2_ProcessStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="Running" validValuesArray="processStateValues" />
+    <description source="TRx">The current state that the process is in. Enumeration of : &#10;* Running&#10;* Sleeping&#10;* Stopped&#10;* Idle (OPTIONAL)&#10;* Uninterruptible (OPTIONAL)&#10;* Zombie (OPTIONAL) </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.TemperatureStatus." shortObjectName="Dev2TempStatusObject" specSource="TR181" profile="Device2_TempStatus:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Status of the temperature of the device. </description>
+
+  <parameter name="TemperatureSensorNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the TemperatureStatus table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.TemperatureStatus.TemperatureSensor.{i}." shortObjectName="Dev2TempSensorObject" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">This object represents information that the device has obtained via sampling an internal temperature sensor. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_TempStatus:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Indicates whether or not the temperature sensor is enabled. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="tempSensorStatusValues" />
+    <description source="TRx">The status of this temperature sensor.  Enumeration of: Disabled (The sensor is not currently sampling the temperature)  Enabled (he sensor is currently sampling the temperature)  Error (The sensor error currently prevents sampling the temperature) </description>
+
+  <parameter name="Reset" type="boolean" specSource="TR181" profile="Device2_TempStatusAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">When set to {{true}}, resets the temperature sensor. </description>
+
+  <parameter name="ResetTime" type="dateTime" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The time at which this temperature sensor was reset. Reset can be caused by:* {{param|Status}} transition from {{enum|Disabled|Status}} to {{enum|Enabled|Status}} * {{param|Reset}} set to {{true}}.* An internal reset of the temperature sensor (including a reboot of the device). The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates that this temperature sensor has never been reset, which can only happen if it has never been enabled. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">Name of this temperature sensor. This text MUST be sufficient to distinguish this temperature sensor from other temperature sensors. </description>
+
+  <parameter name="Value" type="int" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="-274" maxValue="2147483647" />
+    <description source="TRx">This temperature sensor's last good reading in degrees celsius. A value of -274 (which is below absolute zero) indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="LastUpdate" type="dateTime" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The time at which this temperature sensor's last good reading was obtained.  The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="MinValue" type="int" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="-274" maxValue="2147483647" />
+    <description source="TRx">This temperature sensor's lowest value  reading in degrees celsius since last reset. A value of -274 (which is below absolute zero) indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="MinTime" type="dateTime" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The time at which this temperature sensor's lowest value was read.  The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="MaxValue" type="int" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="-274" maxValue="2147483647" />
+    <description source="TRx">This temperature sensor's highest value  reading in degrees celsius since last reset. A value of -274 (which is below absolute zero) indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="MaxTime" type="dateTime" specSource="TR181" profile="Device2_TempStatus:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The time at which this temperature sensor's highest value was read.  The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates a good reading has not been obtained since last reset. </description>
+
+  <parameter name="LowAlarmValue" type="int" specSource="TR181" profile="Device2_TempStatusAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="-274" maxValue="2147483647" />
+    <description source="TRx">This temperature sensor's low alarm value in degrees celsius. A value of -274 (which is below absolute zero) indicates a non configured value. A change to this value will cause {{param|LowAlarmTime}} to be reset. </description>
+
+  <parameter name="LowAlarmTime" type="dateTime" specSource="TR181" profile="Device2_TempStatusAdv:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Initial time at which this temperature sensor's {{param|LowAlarmValue}} was encountered. This value is only set the first time the alarm is seen and not changed until the next reset.The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates that an alarm has not been encountered since the last reset. </description>
+
+  <parameter name="HighAlarmValue" type="int" specSource="TR181" profile="Device2_TempStatusAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="-274" maxValue="2147483647" />
+    <description source="TRx">This temperature sensor's high alarm value in {{units}}. A value of -274 (which is below absolute zero) indicates a non configured value.A change to this value will cause {{param|HighAlarmTime}} to be reset. </description>
+
+  <parameter name="PollingInterval" type="unsignedInt" specSource="TR181" profile="Device2_TempStatusAdv:2" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The interval, measured in seconds, in which the device polls this {{object}}. If the value is 0 then the device selects its own polling interval.If the value is greater than 0 then the device MUST use this value as the polling interval. </description>
+
+  <parameter name="HighAlarmTime" type="dateTime" specSource="TR181" profile="Device2_TempStatusAdv:1" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Initial time at which this temperature sensor's {{param|HighAlarmValue}} was encountered. This value is only set the first time the alarm is seen and not changed until the next reset.The Unknown Time value, as defined in {{bibref|TR-106a2}}, indicates that an alarm has not been encountered since the last reset. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.NetworkProperties." shortObjectName="Dev2NetworkPropObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object defines the parameters that describe how the device handles network traffic. </description>
+
+  <parameter name="MaxTCPWindowSize" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum number of bytes of outstanding data a sender can send on a particular connection prior to an acknowledgment {{bibref|RFC793}}.  Any scaling factor SHOULD be included in this parameter {{bibref|RFC1323}}. </description>
+
+  <parameter name="TCPImplementation" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Tahoe" validValuesArray="tcpImplValues" />
+    <description source="TRx">{{list}} Indicates the TCP congestion control mechanism(s) implemented. {{enum}} Tahoe, Reno, New Reno, and Vegas are defined in {{bibref|RFC2582}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.Processor.{i}." shortObjectName="Dev2ProcessorObject" specSource="TR181" profile="Device2_Processors:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">Each table entry represents a hardware or virtual processor that resides on this device. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-processor" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Architecture" type="string" specSource="TR181" profile="Device2_Processors:1" requirements="R" supportLevel="ReadOnly" defaultValue="mipseb" validValuesArray="processorArchValues" />
+    <description source="TRx">The architecture of the processor on the underlying hardware. {{enum}}  For processor architectures not included in this list, the vendor MAY include vendor-specific values, which MUST use the format defined in {{bibref|TR-106a4|Section 3.3}}. </description>
+
+  <parameter name="X_BROADCOM_COM_Frequency" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Processor frequency in MHz</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.VendorLogFile.{i}." shortObjectName="Dev2VendorLogFileObject" specSource="TR181" profile="Device2_VendorLogFiles:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">Each table entry represents a Vendor Log File.  This table of log files is informational only and does not allow the ACS to operate on these files in any way. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_VendorLogFiles:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Name of the log file. Typically this will be the full file system path, but provided that it is guaranteed to be unique across current and future log files, it MAY be a shorter name derived from the file system path, or be derived via another mechanism. </description>
+
+  <parameter name="MaximumSize" type="unsignedInt" specSource="TR181" profile="Device2_VendorLogFiles:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum size of the log file in bytes.  If the device doesn't know the maximum file size then {{param}} will be 0. </description>
+
+  <parameter name="Persistent" type="boolean" specSource="TR181" profile="Device2_VendorLogFiles:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">When {{true}}, the log file contents are preserved across a device reboot. When {{false}}, the log file contents will be purged when the device is rebooted. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.ProxierInfo." shortObjectName="Dev2ProxierInfoObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Represents the associated CPE Proxier for a Proxied Device that utilizes the Virtual CWMP Device Mechanism {{bibref|TR-069a4|Annex J.1.1}}. </description>
+
+  <parameter name="ManufacturerOUI" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="6" minLength="6" />
+    <description source="TRx">Organizationally unique identifier of the associated CPE Proxier.  Represented as a six hexadecimal-digit value using all upper-case letters and including any leading zeros.  {{pattern}} The value MUST be a valid OUI as defined in {{bibref|OUI}}. </description>
+
+  <parameter name="ProductClass" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="TRx">Identifier of the class of product of the associated CPE Proxier for which the serial number applies. {{empty}} indicates either that the CPE Proxier does not use a product class to differentiate its serial number. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="TRx">Serial number of the associated CPE Proxier. </description>
+
+  <parameter name="ProxyProtocol" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" validValuesArray="proxyProtocolValues" />
+    <description source="TRx">The protocol being used to communicate between the CPE Proxier and this Proxied Device. {{enum}} Vendors can extend the enumerated values with vendor specific extensions, in which case the rules outlined in {{bibref|TR-106a6|3.3}} MUST be adhered to. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DeviceInfo.Location.{i}." shortObjectName="Dev2LocationObject" specSource="TR181" profile="Device2_Location:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">This object contains Location information. </description>
+
+  <parameter name="Source" type="string" specSource="TR181" profile="Device2_Location:1" requirements="R" supportLevel="ReadOnly" defaultValue="External" validValuesArray="locationDataSourceValues" />
+    <description source="TRx">Identifies the source of the location data. </description>
+
+  <parameter name="AcquiredTime" type="dateTime" specSource="TR181" profile="Device2_Location:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time when the location was acquired. </description>
+
+  <parameter name="ExternalSource" type="string" specSource="TR181" profile="Device2_Location:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">URL, MAC address, or other identifier that identifies an &quot;External&quot; source of this location. Meaningful only if {{param|Source}} has a value of {{enum|External|Source}}, otherwise it MUST be {{empty}}.If {{param|ExternalProtocol}} has a value of {{enum|CWMP|ExternalProtocol}},  this is the URL or IP address of the ACS. </description>
+
+  <parameter name="ExternalProtocol" type="string" specSource="TR181" profile="Device2_Location:1" requirements="R" supportLevel="ReadOnly" defaultValue="CWMP" validValuesArray="externalLocationProtocolValues" />
+    <description source="TRx">Protocol used to acquire a location from an &quot;External&quot; source. {{enum}} Meaningful only if {{param|Source}} has a value of {{enum|External|Source}}, otherwise it MUST be {{empty}}. </description>
+
+  <parameter name="DataObject" type="string" specSource="TR181" profile="Device2_Location:1" requirements="W" supportLevel="ReadWrite" maxLength="1200" />
+    <description source="TRx">The currently valid location information. Writable only when {{param|ExternalProtocol}} has a value of {{enum|CWMP|ExternalProtocol}}.If obtained through the local GPS/AGPS then the location information is formatted according to {{bibref|RFC5491}}.  If manually configured then location information will be XML-formatted according to {{bibref|RFC5491}} (geographical information) and {{bibref|RFC5139}} (civic addresses).If obtained by an external source this is the location information as received. If it's an XML document (e.g. CWMP, OMA-DM, UPnP, HELD, MLP) the location information will be represented as-is, otherwise it will be converted to base64.CWMP configured location information will be XML-formatted according to {{bibref|RFC5491}} (geographical information) and {{bibref|RFC5139}} (civic addresses). Only zero or one Location object instance with value {{enum|CWMP|ExternalProtocol}} MUST exist at any given time. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="externalLocationProtocolValues" />
+  <element>CWMP</element>
+  <element>OAM-DM</element>
+  <element>SNMP</element>
+  <element>DHCPv4</element>
+  <element>DHCPv6</element>
+  <element>Other</element>
+
+<validstringarray name="locationDataSourceValues" />
+  <element>GPS</element>
+  <element>AGPS</element>
+  <element>Manual</element>
+  <element>External</element>
+
+<validstringarray name="processStateValues" />
+  <element>Running</element>
+  <element>Sleeping</element>
+  <element>Stopped</element>
+  <element>Idle</element>
+  <element>Uninterruptible</element>
+  <element>Zombie</element>
+
+<validstringarray name="processorArchValues" />
+  <element>arm</element>
+  <element>i386</element>
+  <element>mipseb</element>
+  <element>mipsel</element>
+
+<validstringarray name="proxyProtocolValues" />
+  <element>Z-Wave</element>
+  <element>ZigBee</element>
+  <element>UPnP-DM</element>
+  <element>ETSI-M2M</element>
+
+<validstringarray name="tcpImplValues" />
+  <element>Tahoe</element>
+  <element>Reno</element>
+  <element>New Reno</element>
+  <element>Vegas</element>
+
+<validstringarray name="tempSensorStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Device2_SupportedDataModel:1" /> 
+<profile name="Device2_SupportedDataModel:2" /> 
+<profile name="Device2_HomePlug:1" /> 
+<profile name="Device2_MemoryStatus:1" /> 
+<profile name="Device2_ProcessStatus:1" /> 
+<profile name="Device2_Location:1" /> 
+<profile name="Device2_TempStatus:1" /> 
+<profile name="Device2_TempStatusAdv:1" /> 
+<profile name="Device2_TempStatusAdv:2" /> 
+<profile name="Device2_Processors:1" /> 
+<profile name="Device2_VendorLogFiles:1" /> 
+<profile name="X_BROADCOM_COM_DSL:1" /> 
+<profile name="X_BROADCOM_COM_PSTNEndpoint:1" /> 
+<profile name="X_BROADCOM_COM_MULTIPLE_TR69C_SUPPORT:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

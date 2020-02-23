@@ -1,0 +1,80 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK User Guide, bmd_api_bmd_statistics_functions</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 100%;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK User Guide</a></h2>
+    <h2>8.  Statistics Functions
+</h2>
+<p>The BMD statistics functions are mainly intended for debugging
+purposes. In general all counters are passed unmodified from hardware
+and no attempts are made to prevent counters from wrapping
+prematurely, i.e. counters may wrap at 32 bits or 36 bits even if the
+BMD counter type is 64 bits wide.
+<p>The statistics interface is based on the following data types:
+<pre class="code">
+typedef struct <tt>bmd_counter_s</tt> {
+    <tt>uint32_t</tt> v[2];
+} <tt>bmd_counter_t</tt>;
+
+typedef enum <tt>bmd_stat_e</tt> {
+    bmdStatTxPackets, 
+    bmdStatTxBytes, 
+    bmdStatTxErrors, 
+    bmdStatRxPackets, 
+    bmdStatRxBytes, 
+    bmdStatRxErrors, 
+    bmdStatRxDrops, 
+    bmdStatCount
+} <tt>bmd_stat_t</tt>;
+</pre>
+<br><hr noshade><a name="bmd_api_bmd_stat_get"></a>
+<h3>8.1.   <tt>bmd_stat_get</tt></h3>
+<pre class="code">
+int <tt>bmd_stat_get</tt>(int unit, int port, <tt>bmd_stat_t</tt> stat, <tt>bmd_counter_t</tt> *counter);
+</pre>
+Read statistics counter for a switch port.
+<p><br><hr noshade><a name="bmd_api_bmd_stat_clear"></a>
+<h3>8.2.   <tt>bmd_stat_clear</tt></h3>
+<pre class="code">
+int <tt>bmd_stat_clear</tt>(int unit, int port, <tt>bmd_stat_t</tt> stat);
+</pre>
+Clear statistics counter for a switch port. 
+<p>
+</table>
+</body>
+</html>

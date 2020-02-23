@@ -1,0 +1,147 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2014" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.PeriodicStatistics." shortObjectName="Dev2PeriodicStatObject" specSource="TR157" profile="Device2_PeriodicStatsBase:1" requirements="P" supportLevel="Present" oid="1690" />
+  <description source="TRx">This object configures collection of periodic statistics for the device.&#10;Periodic statistics are measured over a sample interval (which can be aligned with absolute time) and are made available to the ACS as a comma-separated list of the most recent &lt;n&gt; samples.&#10;This object provides a single set of global settings that affect the entire device unless overridden locally.</description>
+
+  <parameter name="MinSampleInterval" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Minimum sample interval in seconds that the CPE is able to support.&#10;A value of 0 indicates no specific minimum sample interval.</description>
+
+  <parameter name="MaxReportSamples" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Maximum number of samples of each statistic that the CPE is able to store and report.&#10;A value of 0 indicates no specific maximum number of samples.</description>
+
+  <parameter name="SampleSetNumberOfEntries" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Number of entries in SampleSet table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.PeriodicStatistics.SampleSet.{i}." shortObjectName="Dev2SampleSetObject" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="DynamicInstances" />
+  <description source="TRx">Periodic statistics sample set table. Each sample set has its own sample interval etc.&#10;At most one entry in this table (regardless of whether or not it is enabled) can exist with a given value for Alias. On creation of a new table entry, the CPE MUST choose an initial value for Alias such that the new entry does not conflict with any existing entries.&#10;At most one enabled entry in this table can exist with a given value for Name.</description>
+
+  <parameter name="Alias" type="string" specSource="TR157" profile="Unspecified" supportLevel="NotSupported" defaultValue="" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.&#10;If the CPE supports the Alias-based Addressing feature as defined in [Section 3.6.1/TR-069a4] and described in [Appendix II/TR-069a4], the following mandatory constraints MUST be enforced:&#10;Its value MUST NOT be empty.&#10;Its value MUST start with a letter.&#10;If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.&#10;The CPE MUST NOT change the parameter value.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables collection of periodic statistics for this sample set.&#10;When collection of periodic statistics is enabled, any stored samples are discarded, and the first sample interval begins immediately.</description>
+
+  <parameter name="Status" type="string" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="SampleSetStatusValues" />
+    <description source="TRx">Indicates availability of Sample statistics. &#10;Enumeration of:&#10;Disabled (Collection is disabled.)&#10;Enabled (Collection is enabled.)&#10;Trigger (Collection is enabled and the ACS SHOULD now fetch the collected data.)&#10;The Trigger value is only used for triggering the ACS to fetch the collected data and can only be used when FetchSamples is in the range [1:ReportSamples].&#10;The transition from Enabled to Trigger to Enabled MUST be instantaneous and so will result in only a single value change for notification purposes.</description>
+
+  <parameter name="Name" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="TRx">The name of this sample set, which uniquely distinguishes each sample set.</description>
+
+  <parameter name="SampleInterval" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadWrite" defaultValue="3600" minValue="1" maxValue="4294967295" />
+    <description source="TRx">The sample interval in seconds. Each statistic is measured over this sample interval.&#10;The CPE MAY reject a request to set SampleInterval to less than .PeriodicStatistics.MinSampleInterval.&#10;Sample intervals MUST begin every SampleInterval seconds, with no delay between samples.&#10;If SampleInterval is changed while collection of periodic statistics is enabled, any stored samples are discarded, and the first sample interval begins immediately.&#10;For example, if ReportSamples is 24 and SampleInterval is 3600 (an hour), the CPE can store up to a day's worth of samples for each statistic.</description>
+
+  <parameter name="ReportSamples" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadWrite" defaultValue="24" minValue="1" maxValue="4294967295" />
+    <description source="TRx">The number of samples that the CPE will store and report for each statistic.&#10;The CPE MUST permit ReportSamples to be set to at least .PeriodicStatistics.MaxReportSamples.&#10;If ReportSamples is changed while collection of periodic statistics is enabled, the CPE will truncate or extend its statistics buffers as appropriate, but statistics collection MUST NOT otherwise be affected.&#10;For example, if ReportSamples is 24 and SampleInterval is 3600 (an hour), the CPE can store up to a day's worth of samples for each statistic.</description>
+
+  <parameter name="TimeReference" type="dateTime" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="NotSupported" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="TRx">An absolute time reference in UTC to determine when sample intervals will complete. Each sample interval MUST complete at this reference time plus or minus an integer multiple of SampleInterval.&#10;TimeReference is used only to set the &quot;phase&quot; of the sample and fetch intervals. The actual value of TimeReference can be arbitrarily far into the past or future.&#10;This time reference also determines when the Status Enabled to Trigger to Enabled transitions that are controlled by FetchSamples will occur. If collection of periodic statistics is enabled and FetchSamples is in the range [1:ReportSamples] then each such Status transition MUST occur at this reference time plus or minus an integer multiple of FetchSamples * SampleInterval (the fetch interval).&#10;If TimeReference is changed while collection of periodic statistics is enabled, any stored samples are discarded, and the first sample interval begins immediately.&#10;The Unknown Time value defined in TR-106a2[2] indicates that no particular time &#10;reference is specified. That is, the CPE MAY locally choose the time reference, and is required only to adhere to the specified sample and fetch intervals.&#10;If absolute time is not available to the CPE, its sample and fetch interval behavior MUST be the same as if the TimeReference parameter was set to the Unknown Time value.&#10;For example, if SampleInterval is 3600 (an hour) and if TimeReference is set to UTC midnight on some day (in the past, present, or future) then sample intervals will complete on each UTC hour (00:00, 01:00, 02:00 etc).&#10;If, in addition, FetchSamples is 24, then the fetch interval is 86400 (a day) and Status&#10;Enabled to Trigger to Enabled transitions will occur every day at UTC midnight.&#10;Note that, if TimeReference is set to a time other than the Unknown Time, the first sample interval (which has to begin immediately) will almost certainly be shorter than SampleInterval). &#10;This is why TimeReference is defined in terms of when sample intervals complete rather than start.</description>
+
+  <parameter name="FetchSamples" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The number of sample intervals to be collected before transitioning Status from Enabled to Trigger to Enabled.&#10;If this SampleSet is enabled and FetchSamples is in the range [1:ReportSamples] then Status MUST transition from Enabled to Trigger to Enabled on completion of every FetchSamples sample intervals. Otherwise, the transition MUST NOT occur.&#10;For example, if ReportSamples is 25 and FetchSamples is 24, then the CPE will store 25 values for each monitored parameter and the above Status transition will occur as the CPE stores each 24th of 25 sample intervals, which means that the ACS could delay for up to two sample intervals before reading the stored values and would still not miss any samples (see also ForceSample).&#10;To disable this trigger mechanism and still collect sampled statistics, FetchSamples can be set to either 0 or a value greater than ReportSamples.</description>
+
+  <parameter name="ForceSample" type="boolean" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">When set to true, forces statistics for the current sample to be calculated and updated in the data model. Setting it to false has no effect. When read, this parameter returns false, regardless of the actual value.&#10;If this is the first time that ForceSample has been set to true during the current sample interval, this MUST cause a new value to be added to each of the periodic statistics commaseparated list parameters, and the ReportEndTime and all SampleSeconds parameters MUST be updated accordingly.&#10;If this is not the first time that ForceSample has been set to true during the current sample interval, then the new values that were added as described in the previous paragraph, and the ReportEndTime and all SampleSeconds parameters, MUST be updated accordingly.&#10;Note that ForceSample just provides a &quot;sneak preview&quot; of the current sample. It does not create a new sample and it does not interfere with the sample interval schedule.&#10;At the end of each sample interval, if ForceSample was set to true during the sample interval then the new values that were added as described above, and the ReportEndTime and all SampleSeconds parameters, will be updated &#10;accordingly. In other words, the partial sample data that was created when ForceSample was set to true will be updated one last time at the end of the sample interval.</description>
+
+  <parameter name="ReportStartTime" type="dateTime" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The absolute time at which the sample interval for the first stored sample (for each statistic) started.</description>
+
+  <parameter name="ReportEndTime" type="dateTime" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The absolute time at which the sample interval for the last stored sample (for each statistic) ended.&#10;If ForceSample has been used to force statistics for the current sample to be calculated and updated in the data model, then ReportEndTime MUST be updated to reflect the actual time over which stored data was collected.</description>
+
+  <parameter name="SampleSeconds" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of unsigned integers. Each entry indicates the number of seconds during which data was collected during the sample interval.&#10;Individual SampleSeconds values can be less than SampleInterval, for several reasons, including:&#10;TimeReference has been set to a time other than the Unknown Time and the current sample interval started part of the way through a scheduled sample interval.&#10;ForceSample has been used to force statistics for the current sample to be calculated and updated in the data model.</description>
+
+  <parameter name="ParameterNumberOfEntries" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Number of entries in Parameter table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.PeriodicStatistics.SampleSet.{i}.Parameter.{i}." shortObjectName="Dev2SampleParameterObject" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="DynamicInstances" />
+  <description source="TRx">Periodic statistics parameter table for this sample set. This table contains entries for parameters whose values are to be sampled.&#10;Note that the comma-separated lists in this object (SampleSeconds, SuspectData and Values) only ever change (a) when first enabled, (b) when ForceSample is set to true (a &quot;sneak preview&quot; of the current sample), or (c) at the end of the sample interval.&#10;At most one enabled entry in this table can exist with a given value for Reference.</description>
+
+  <parameter name="Alias" type="string" specSource="TR157" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference.&#10;If the CPE supports the Alias-based Addressing feature as defined in [Section 3.6.1/TR-069a4] and described in [Appendix II/TR-069a4], the following mandatory constraints MUST be enforced:&#10;&#10;Its value MUST NOT be empty.&#10;Its value MUST start with a letter.&#10;If its instance object is created by the CPE, the initial value MUST start with a &quot;cpe-&quot; prefix.&#10;The CPE MUST NOT change the parameter value.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable or disable this object instance.</description>
+
+  <parameter name="Reference" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the full path name of a parameter. This is the parameter being monitored by the Periodic Statistics mechanism.</description>
+
+  <parameter name="SampleMode" type="string" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="Current" validValuesArray="SampleModeValues" />
+    <description source="TRx">Controls how this parameter's value is sampled. &#10;Enumeration of:&#10;Current (Sampled value is current value)&#10;Change (Sampled value is change in value since start of sample interval)&#10;Parameters of non-numeric types can only support Current. The value of the SampleMode MUST be ignored for such parameters.</description>
+
+  <parameter name="CalculationMode" type="string" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="NotSupported" defaultValue="Latest" validValuesArray="CalculationModeValues" />
+    <description source="TRx">Controls how this parameter's statistic is calculated from the sampled value(s).&#10;Enumeration of:&#10;Latest (Statistic is sampled value at end of sample interval)&#10;Minimum (Statistic is minimum sampled value during sample interval)&#10;Maximum (Statistic is maximum sampled value during sample interval)&#10;Average (Statistic is average (mean) sampled value during sample interval)&#10;Parameters of non-numeric types can only support Latest. The value of the &#10;CalculationMode MUST be ignored for such parameters.&#10;SampleMode MUST be applied before CalculationMode, i.e. the inputs to the &#10;calculation will have already accounted for SampleMode.</description>
+
+  <parameter name="LowThreshold" type="int" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The low threshold value that controls the calculation of Failures.&#10;A value equal to HighThreshold disables the threshold/failure mechanism.&#10;Parameters of non-numeric types cannot support the threshold/failure mechanism. The value of this parameter MUST be ignored for such parameters.</description>
+
+  <parameter name="HighThreshold" type="int" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The high threshold value that controls the calculation of Failures.&#10;A value equal to LowThreshold disables the threshold/failure mechanism.&#10;Parameters of non-numeric types cannot support the threshold/failure mechanism. The value of this parameter MUST be ignored for such &#10;parameters.</description>
+
+  <parameter name="SampleSeconds" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of unsigned integers. Each entry indicates the number of seconds during which data was collected for this parameter during the sample interval.&#10;Individual SampleSeconds values can be less than .PeriodicStatistics.SampleSet.{i}.SampleInterval, for several reasons, including:&#10;Any of the reasons for which .PeriodicStatistics.SampleSet.{i}.SampleSeconds&#10;values might be less than .PeriodicStatistics.SampleSet.{i}.SampleInterval.&#10;The parameter doesn't exist, or was created or deleted during a sample interval.</description>
+
+  <parameter name="SuspectData" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of unsigned integers (range 0 to 1). Each entry is 0 if the sampled value is believed to be valid, or 1 if an event that might affect the validity of the sampled value occurred during the sample interval.&#10;For example, if the parameter value were to be reset during the sample interval then it would be appropriate to set SuspectData to 1.</description>
+
+  <parameter name="Values" type="string" specSource="TR157" profile="Device2_PeriodicStatsBase:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings. Each entry indicates the value of the referenced parameter, as determined by SampleMode, during the sample interval.&#10;The statistics values in this comma-separated lists MUST be in time order, with the oldest one first and the most recent one last.&#10;If the SampleMode parameter is not present, or is inappropriate for the referenced parameter, the statistics values MUST be collected in Current mode.</description>
+
+  <parameter name="Failures" type="unsignedInt" specSource="TR157" profile="Device2_PeriodicStatsAdv:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Counts the number of times (since this object instance was last enabled) that a newlycalculated sample value (accounting for SampleMode) transitioned from the “in range” state to the “out of range” state, or between the “out of range (low)” and “out of range (high)” states. The states are defined as follows:&#10;&quot;in range” : current value is greater than LowThreshold and less than HighThreshold.&#10;&quot;out of range” : current value is less than or equal to LowThreshold, or greater than or equal to HighThreshold.&#10;&quot;out of range (low)” : current value is less than or equal to LowThreshold.&#10;&quot;out of range (high)” : current value is greater than or equal to HighThreshold.&#10;Note that, if LowThreshold and HighThreshold are both the same, the threshold/failure mechanism is disabled, so the value of this parameter will not increment.&#10;This parameter can be incremented at any time during a sample interval, and might be incremented more than once during a single sample interval. For this reason, the CPE SHOULD place a locally specified limit on the frequency at which it will notify the ACS of such changes, as described in TR-069a2[1]Section 3.2.1.&#10;Parameters of non-numeric types cannot support the threshold/failure mechanism. The value of this parameter MUST be ignored for such parameters.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="CalculationModeValues" />
+  <element>Latest</element>
+  <element>Minimum</element>
+  <element>Maximum</element>
+  <element>Average</element>
+
+<validstringarray name="SampleModeValues" />
+  <element>Current</element>
+  <element>Change</element>
+
+<validstringarray name="SampleSetStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Trigger</element>
+
+</vsaInfo>
+
+
+
+
+
+
+
+<profileInfo>
+<profile name="Device2_PeriodicStatsBase:1" /> 
+<profile name="Device2_PeriodicStatsAdv:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+</xmlMandatorySingleRootNode>

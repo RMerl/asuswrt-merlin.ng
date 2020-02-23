@@ -1,0 +1,9 @@
+#
+# Add the object(s) in cms-dm-modswapps.xml as the last children 
+# of Device.X_BROADCOM_COM_AppCfg. 
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-modswapps.xml Device.X_BROADCOM_COM_AppCfg.
+

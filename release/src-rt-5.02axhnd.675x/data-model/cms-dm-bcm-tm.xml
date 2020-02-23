@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2016" >
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.  The Short Object Name must be FakeParentObject.</description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_TM." shortObjectName="BCMTrafficManagementObject" specSource="Broadcom" profile="X_BROADCOM_COM_TM:1" supportLevel="Present" oid="3380" />
+  <description source="BROADCOM">TM Configuration</description>
+
+  <parameter name="Owner" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">TM Owner</description>
+  <parameter name="QidPrioMap" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">QID-priority mapping scheme.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="Baseline:1" />
+<profile name="X_BROADCOM_COM_Baseline:1" />
+<profile name="X_BROADCOM_COM_TM:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_DbusRemoteCfg." shortObjectName="DbusRemoteCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_DBUSREMOTE:1" supportLevel="Present" oid="3288" />
+  <description source="BROADCOM">Dbus Remtoe Configuration.</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_DBUSREMOTE:1" supportLevel="ReadWrite" defaultValue="False" />
+    <description source="Broadcom">Enables or disables Dbus Remote over TCP socket. </description>
+
+  <parameter name="Port" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_DBUSREMOTE:1" supportLevel="ReadWrite" defaultValue="0" minValue="1" maxValue="65535" />
+    <description source="BROADCOM">Set one listen port for Dbus Daemon TCP socket </description>
+
+
+
+
+<vsaInfo>
+</vsaInfo>
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_DBUSREMOTE:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

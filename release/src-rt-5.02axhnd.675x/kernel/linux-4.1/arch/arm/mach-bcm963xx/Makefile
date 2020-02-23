@@ -1,0 +1,36 @@
+ifdef BCM_KF # defined(CONFIG_BCM_KF_ARM_BCM963XX)
+#
+# Board-level BSP
+# Preliminary
+#
+
+ifeq ($(strip $(CONFIG_BCM96846)),)
+obj-$(CONFIG_MACH_BCM963138) += board_963xx.o
+obj-$(CONFIG_MACH_BCM963148) += board_963xx.o
+
+SRCBASE         := $(TOPDIR)
+EXTRA_CFLAGS    += -I$(INC_BRCMBOARDPARMS_PATH)/$(BRCM_BOARD) -I$(SRCBASE)/include -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
+#EXTRA_CFLAGS    += -I$(INC_ADSLDRV_PATH) -DDBG
+EXTRA_CFLAGS    += -I$(INC_ADSLDRV_PATH) 
+EXTRA_CFLAGS += -g
+EXTRA_CFLAGS += $(BRCM_WERROR_CFLAGS)
+
+ifeq ($(strip $(BRCM_PHY_GFASTCOMBO)),y)
+EXTRA_CFLAGS += -DCONFIG_BCM_DSL_GFASTCOMBO
+endif
+
+ifeq "$(ADSL)" "ANNEX_B"
+EXTRA_CFLAGS += -DADSL_ANNEXB
+endif
+
+ifneq ($(strip $(BUILD_SWMDK)),)
+EXTRA_CFLAGS += -DSUPPORT_SWMDK
+endif
+ifneq ($(strip $(CONFIG_MACH_BCM963138)),)
+EXTRA_CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/pmc
+endif
+else
+obj-y += board_6846.o
+endif
+endif # BCM_KF # defined(CONFIG_BCM_KF_ARM_BCM963XX)
+

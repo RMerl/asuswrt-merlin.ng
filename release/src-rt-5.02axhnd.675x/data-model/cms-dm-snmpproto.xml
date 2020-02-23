@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SnmpCfg." shortObjectName="SnmpCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_SNMP:1" supportLevel="Present" hideObjectFromAcs="true" oid="3181" />
+  <description source="TRx">SNMP configuration.</description>
+
+  <parameter name="Status" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Disabled" validValuesArray="enabledDisabledStatusValues" />
+    <description source="TRx">Indicates the status of the SNMP module running on device.&#10;Enumeration of: &#10;&quot;Disabled&quot; &#10;&quot;Enabled&quot; </description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="ROCommunity" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="public" maxLength="32" />
+    <description source="TRx">Read community string.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="RWCommunity" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="private" maxLength="32" />
+    <description source="TRx">Write community string.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="SysName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" maxLength="32" />
+    <description source="TRx">System name.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="SysLocation" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" maxLength="32" />
+    <description source="TRx">System location.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="SysContact" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" maxLength="32" />
+    <description source="TRx">system contact.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="TrapIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Destination where trap is sent to.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+  <parameter name="IPVersion" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="IPv4" maxLength="32" validValuesArray="ipVersionModes" />
+    <description source="TRx">IP version</description>
+    <description source="BROADCOM">PSI name: BcmCfm_SnmpCfg</description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+<validstringarray name="ipVersionModes" />
+  <element>IPv4</element>
+  <element>IPv6</element>
+  <element>IPv4v6</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_SNMP:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

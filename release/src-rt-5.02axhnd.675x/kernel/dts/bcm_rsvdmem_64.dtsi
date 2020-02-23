@@ -1,0 +1,139 @@
+/*
+ * Broadcom reserved memory for 64 bit platforms
+ */
+
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h>
+
+/ {
+	reserved-memory {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+#if defined (CONFIG_BCM_CMA_RSVMEM)
+		dt_reserved_cma: dt_reserved_cma {
+			compatible = "shared-dma-pool";
+			reusable;
+			/* Bootloader will fill in the total size and offset */
+			reg = <0x0 0x0 0x0 0x0>;
+		};
+#else
+
+#if defined (CONFIG_BCM_ADSL)
+		dt_reserved_adsl {
+			reg = <0x0 DRAM_OFFSET_ADSL 0x0 ADSL_SDRAM_IMAGE_SIZE>;
+			no-map;
+		};
+#endif
+
+#if defined (CONFIG_BCM_RDPA)
+		dt_reserved_rdp1 {
+			reg = <0x00000000 DRAM_OFFSET_RDP_PARAM1 0x0 RDP_PARAM1_DDR_SIZE>; /* 32MB */
+#if (CONFIG_BCM_CHIP_NUMBER!=6858) && (CONFIG_BCM_CHIP_NUMBER!=4908) && (CONFIG_BCM_CHIP_NUMBER!=63158)
+			no-map;
+#endif
+		};
+		dt_reserved_rdp2 {
+			reg = <0x00000000 DRAM_OFFSET_RDP_PARAM2 0x0 RDP_PARAM2_DDR_SIZE>; /* 8MB */
+#if (CONFIG_BCM_CHIP_NUMBER!=63158) || !defined(CONFIG_BCM_GLB_COHERENCY)
+			no-map;
+#endif
+		};
+#endif
+
+#if defined (CONFIG_BCM_DHD_RUNNER)
+		dt_reserved_dhd0 {
+			reg = <0x0 0x0 0x0 DHD_PARAM1_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd1 {
+			reg = <0x0 0x0 0x0 DHD_PARAM2_DDR_SIZE>;
+			no-map;
+		};
+		dt_reserved_dhd2 {
+			reg = <0x0 0x0 0x0 DHD_PARAM3_DDR_SIZE>;
+			no-map;
+		};
+#endif
+
+#if defined (CONFIG_OPTEE)
+		dt_reserved_optee {
+			reg = <0x0 0x10000000 0x0 0x01000000>;
+			no-map;
+		};
+
+		dt_reserved_tzioc {
+			reg = <0x0 0x11000000 0x0 0x00800000>;
+		};
+#endif /* CONFIG_OPTEE */
+
+#endif
+	};
+
+#if defined (CONFIG_BCM_CMA_RSVMEM)
+	plat_rsvmem_cached_device {
+		compatible = "brcm,plat-rsvmem";
+		dma-coherent;
+		memory-region = <&dt_reserved_cma>;
+
+#if defined (CONFIG_BCM_RDPA)
+#if (CONFIG_BCM_CHIP_NUMBER==6858) || (CONFIG_BCM_CHIP_NUMBER==4908) || (CONFIG_BCM_CHIP_NUMBER==63158)
+		dt_reserved_rdp1 {
+			rsvd-size = <RDP_PARAM1_DDR_SIZE>;
+		};
+#endif
+#if (CONFIG_BCM_CHIP_NUMBER==63158) && defined(CONFIG_BCM_GLB_COHERENCY)
+		dt_reserved_rdp2 {
+			rsvd-size = <RDP_PARAM2_DDR_SIZE>;
+		};
+#endif
+#endif
+
+#if defined (CONFIG_OPTEE)
+		dt_reserved_tzioc {
+			rsvd-size = <0x00800000>;
+		};
+#endif
+	};
+
+        plat_rsvmem_uncached_device {
+		compatible = "brcm,plat-rsvmem";
+		memory-region = <&dt_reserved_cma>;
+#if defined (CONFIG_BCM_ADSL)
+		dt_reserved_adsl {
+			rsvd-size = <ADSL_SDRAM_IMAGE_SIZE>;
+		};
+#endif
+#if defined (CONFIG_BCM_RDPA)
+#if (CONFIG_BCM_CHIP_NUMBER!=6858) && (CONFIG_BCM_CHIP_NUMBER!=4908) && (CONFIG_BCM_CHIP_NUMBER!=63158)
+		dt_reserved_rdp1 {
+			rsvd-size = <RDP_PARAM1_DDR_SIZE>;
+		};
+#endif
+#if (CONFIG_BCM_CHIP_NUMBER!=63158) || !defined(CONFIG_BCM_GLB_COHERENCY)
+		dt_reserved_rdp2 {
+			rsvd-size = <RDP_PARAM2_DDR_SIZE>;
+		};
+#endif
+#endif
+
+#if defined (CONFIG_BCM_DHD_RUNNER)
+		dt_reserved_dhd0 {
+			rsvd-size = <DHD_PARAM1_DDR_SIZE>;
+		};
+		dt_reserved_dhd1 {
+			rsvd-size = <DHD_PARAM2_DDR_SIZE>;
+		};
+		dt_reserved_dhd2 {
+			rsvd-size = <DHD_PARAM3_DDR_SIZE>;
+		};
+#endif
+
+#if defined (CONFIG_OPTEE)
+		dt_reserved_optee {
+			rsvd-size = <0x01000000>;
+		};
+#endif /* CONFIG_OPTEE */
+	};
+#endif
+};

@@ -31,6 +31,7 @@ extern char *ca_trust_file;
 
 /* Cert validation is enabled by default, user can disable in .conf file */
 extern int secure_ssl;
+extern int broken_rtc;
 
 #ifdef ENABLE_SSL
 int     ssl_init(void);

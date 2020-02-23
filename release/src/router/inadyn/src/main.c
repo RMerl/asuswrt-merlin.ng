@@ -43,6 +43,7 @@ int    ignore_errors = 0;
 int    startup_delay = DDNS_DEFAULT_STARTUP_SLEEP;
 int    allow_ipv6 = 0;
 int    secure_ssl = 1;		/* Strict cert validation by default */
+int    broken_rtc = 0;		/* Validate certificate time by default */
 char  *ca_trust_file = NULL;	/* Custom CA trust file/bundle PEM format */
 int    verify_addr = 1;
 char  *prognm = NULL;

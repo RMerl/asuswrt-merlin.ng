@@ -192,7 +192,7 @@ if (MSVC)
   # So full on warnings are not appropriate.
   add_compile_options(/W2)
 else ()
-  add_compile_options(-Wall -Wextra -Wpedantic)
+  add_compile_options(-Wall -Wextra)
 endif ()
 
 # Windows. Uh-oh.

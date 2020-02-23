@@ -1,0 +1,199 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Services." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}." shortObjectName="StorageServiceObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" oid="800" lockZone="11" />
+  <description source="TRx">The Service Object for a Storage Service device.&#10;</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="TRx">Enables or Disables the entire Storage&#10;mechanism.&#10;		</description>
+
+  <parameter name="PhysicalMediumNumberOfEntries" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of instances of&#10;PhysicalMedium.&#10;</description>
+
+  <parameter name="LogicalVolumeNumberOfEntries" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of instances of LogicalVolume.</description>
+
+  <parameter name="UserAccountNumberOfEntries" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The number of instances of UserAccount.&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.UserAccount.{i}." shortObjectName="UserAccountObject" specSource="TR140" profile="StorageService:1" supportLevel="DynamicInstances" />
+  <description source="TRx"> This object provides information about each user configured on this device, which provides a means for controlling access to the device. The unique key for this object is&#10;Username.&#10;</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this user.</description>
+
+  <parameter name="Username" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">The unique name of the user. Also used for authentication.&#10;</description>
+
+  <parameter name="Password" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">Password used to authenticate the user when connecting to the Storage Service&#10;Device. When read, this parameter returns an empty string, regardless of the actual&#10;value.</description>
+
+  <parameter name="X_BROADCOM_volumeName" type="string" specSource="Custom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="custom">This represnts the volume name on which the home directory for this user is present.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.Capabilites." shortObjectName="CapabilitesObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" />
+  <description source="TRx">The overall capabilities of a Storage Service device. This is a constant read-only object, meaning that only a firmware upgrade will cause these values to be altered</description>
+
+  <parameter name="FTPCapable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device contain an FTP server allowing clients to access the data via an FTP client?</description>
+
+  <parameter name="SFTPCapable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device contain an SSH FTP&#10;server allowing clients to access the&#10;data via an SFTP client?&#10;</description>
+
+  <parameter name="HTTPCapable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device contain an HTTP&#10;server allowing clients to access the&#10;data via an HTTP client?&#10;</description>
+
+  <parameter name="HTTPSCapable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device contain an HTTPS&#10;server allowing clients to access the&#10;data via an HTTPS client?&#10;</description>
+
+  <parameter name="HTTPWritable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device contain an HTTP&#10;server that supports creating files via an&#10;HTTP PUT/POST mechanism that&#10;would allow an HTTP client to upload&#10;files via HTTP? This is also sometimes&#10;referred to as &quot;WebDAV&quot; support.&#10;</description>
+
+  <parameter name="SupportedNetworkProtocols" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of supported&#10;application-level network protocols.&#10;The possible set of supported network&#10;protocols is an enumeration of the&#10;following strings:&#10;&quot;SMB&quot;&#10;&quot;NFS&quot;&#10;&quot;AFP&quot;&#10;</description>
+
+  <parameter name="SupportedFileSystemTypes" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of supported&#10;FileSystems Types. The possible set of&#10;supported file system types is an&#10;enumeration of the following strings:&#10;   &quot;FAT16&quot;&#10;   &quot;FAT32&quot;&#10;   &quot;NTFS&quot;&#10;   &quot;HFS&quot;&#10;   &quot;HFS+&quot;&#10;   &quot;HSFJ&quot;&#10;   &quot;ext2&quot;&#10;   &quot;ext3&quot;&#10;   &quot;XFS&quot;&#10;   &quot;REISER&quot;&#10;</description>
+
+  <parameter name="VolumeEncryptionCapable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Does this device have the ability to&#10;encrypt and decrypt Logical Volumes&#10;as they are stored and retrieved?&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.NetInfo." shortObjectName="NetworkInfoObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" />
+  <description source="TRx">This object provides general LAN network information about this device.&#10;</description>
+
+  <parameter name="HostName" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">Logical name which identifies the&#10;device on the local network. This is the&#10;first segment of a fully qualified domain&#10;name. Combining this parameter, a &quot;.&quot;&#10;and the DomainName parameter will&#10;result in a fully qualified domain name.&#10;</description>
+
+  <parameter name="DomainName" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">Domain name for the device on the&#10;local network. Combining the&#10;HostName, a &quot;.&quot; and this parameter will&#10;result in a fully qualified domain name&#10;(FQDN). For example, if the HostName&#10;contains &quot;myLaptop&quot; and the&#10;DomainName contains &quot;dsl.sp1.com&quot;,&#10;then the FQDN would be&#10;&quot;myLaptop.dsl.sp1.com&quot;.&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.NetworkServer." shortObjectName="NetworkServerObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" />
+  <description source="TRx">This object allows the control of network layer protocols authorization enforcement.&#10;</description>
+
+  <parameter name="AFPEnable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Enables or disables the AFP network&#10;protocol.&#10;</description>
+
+  <parameter name="NFSEnable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Enables or disables the NFS network&#10;protocol.&#10;</description>
+
+  <parameter name="SMBEnable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Enables or disables the SMB network&#10;protocol.&#10;</description>
+
+  <parameter name="NetworkProtocolAuthReq" type="boolean" specSource="TR140" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">If this parameter is set to False then the&#10;device MUST NOT attempt to request&#10;login credentials or authenticate access&#10;from network layer protocols such as&#10;AFP, NFS, and SMB. If this parameter&#10;is set to True then the device MUST&#10;attempt to request login credentials or&#10;authenticate access from network layer&#10;protocols such as AFP, NFS, and SMB&#10;by using the UserAcount instances&#10;found on this device.&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.PhysicalMedium.{i}." shortObjectName="PhysicalMediumObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object provides information about each physical medium connected to&#10;this device.&#10;</description>
+
+  <parameter name="Name" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="TRx">A user-friendly name for this physical&#10;storage medium.&#10;</description>
+
+  <parameter name="ConnectionType" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Enumerated type indicating the&#10;method of connection to this storage&#10;device:&#10;  &quot;USB 1.1&quot;&#10;  &quot;USB 2.0&quot;&#10;  &quot;IEEE1394&quot;&#10;  &quot;IEEE1394b&quot;&#10;  &quot;IDE&quot;&#10;  &quot;EIDE&quot;&#10;  &quot;ATA/33&quot;&#10;  &quot;ATA/66&quot;&#10;  &quot;ATA/100&quot;&#10;  &quot;ATA/133&quot;&#10;  &quot;SATA/150&quot;&#10;  &quot;SATA/300&quot;&#10;  &quot;SCSI-1&quot;&#10;  &quot;Fast SCSI&quot;&#10;  &quot;Fast-Wide SCSI&quot;&#10;  &quot;Ultra SCSI&quot;&#10;  &quot;Ultra Wide SCSI&quot;&#10;  &quot;Ultra2 SCSI&quot;&#10;  &quot;Ultra2 Wide SCSI&quot;&#10;  &quot;Ultra3 SCSI&quot;&#10;  &quot;Ultra-320 SCSI&quot;&#10;  &quot;Ultra-640 SCSI&quot;&#10;  &quot;SSA&quot;&#10;  &quot;SSA-40&quot;&#10;  &quot;Fibre Channel&quot;&#10;</description>
+
+  <parameter name="Removable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="true" />
+    <description source="TRx">Is this physical storage medium&#10;removable? Removable storage&#10;implies that the removal action is part of&#10;normal operations and is expected to&#10;leave the data on the removable&#10;storage intact.&#10;</description>
+
+  <parameter name="Capacity" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The formatted capacity of the physical&#10;storage medium in MB.&#10;</description>
+
+  <parameter name="Status" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Enumerated type indicating the general&#10;activity status of this physical storage&#10;medium:&#10;&quot;Online&quot;&#10;&quot;Standby&quot;&#10;&quot;Offline&quot;&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.LogicalVolume.{i}." shortObjectName="LogicalVolumeObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object provides information about&#10;each logical volume configured on this&#10;device. A logical volume can reside&#10;either on an instance of a single&#10;PhysicalMedium or on an instance of a&#10;single StorageArray instance, but it can&#10;not span multiple instances of either.&#10;The PhysicalReference parameter is&#10;used to define where this&#10;LogicalVolume instance resides. Creating an instance of this object&#10;generates a disabled LogicalVolume&#10;instance. Before this new&#10;LogicalVolume instance can be enabled&#10;(via a SetParameterValues command),&#10;it MUST have the following parameters&#10;configured: Name, PhysicalReference,&#10;and Capacity. The unique key for this&#10;object is the Name parameter, but once&#10;an instance is enabled the following&#10;parameters become immutable for the&#10;life of the instance: Name,&#10;PhysicalReference, and Capacity.&#10;&#10;</description>
+
+  <parameter name="Name" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="TRx">The unique name of the partition for this&#10;logical volume.&#10;Once this instance becomes enabled,&#10;this parameter will be immutable for the&#10;life of the instance. This parameter acts&#10;as the unique identifier for the instance,&#10;thus the device MUST NOT allow&#10;multiple Logical Volume instances to&#10;use the same Name.&#10;</description>
+
+  <parameter name="Status" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The current status of this Logical&#10;Volume. This is an enumeration of the&#10;following status strings:&#10;   &quot;Offline&quot;&#10;   &quot;Online&quot;&#10;   &quot;Error&quot;&#10;The default &quot;Offline&quot; status will exist&#10;until this Logical Volume is enabled.&#10;</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Enables or disables this LogicalVolume&#10;instance.&#10;</description>
+
+  <parameter name="PhysicalReference" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">This is a reference to a Physical&#10;Medium or a Storage Array that&#10;defines where this Logical Volume&#10;resides. The Physical Medium or&#10;Storage Array referenced by this&#10;parameter MUST exist within the same&#10;StorageService instance. Each&#10;reference can be either in the form of&#10;&quot;.PhysicalMedium.{i}&quot;,&#10;&quot;.StorageArray.{i}&quot; or a fully qualified&#10;object name. For example:&#10;.PhysicalMedium.1&#10;This indicates that this Logical Volume&#10;resides on this StorageService enabled&#10;device within Physical Drive instance&#10;#1.&#10;Once this instance becomes enabled,&#10;this parameter will be immutable for the&#10;life of the instance.&#10;An AddObject followed by an enabling&#10;SetParameterValues on the Name,&#10;PhysicalReference, and Capacity will&#10;cause the formatting of this logical&#10;partition and these parameters to&#10;become immutable for the life of this&#10;instance.&#10;</description>
+
+  <parameter name="FileSystem" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">The file system for this LogicalVolume&#10;as it is currently formatted. This&#10;parameter is one of the enumerated&#10;values found in the Capabilities&#10;parameter SupportedFileSystemTypes.&#10;</description>
+
+  <parameter name="Capacity" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The Capacity of the Logical Volume in&#10;MB.&#10;&#10;Once this instance becomes enabled,&#10;this parameter will be immutable for the&#10;life of the instance.&#10;</description>
+
+  <parameter name="UsedSpace" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The Amount of Used Space on the&#10;Logical Volume in MB&#10;</description>
+
+  <parameter name="Encrypted" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Is the Volume Encrypted? The type of&#10;encryption will be handled by the device&#10;internally and is not a matter for remote&#10;management.&#10;</description>
+
+  <parameter name="FolderNumberOfEntries" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of instances of Folder on&#10;this LogicalVolume.&#10;</description>
+
+
+
+
+<object name="InternetGatewayDevice.Services.StorageService.{i}.LogicalVolume.{i}.Folder.{i}." shortObjectName="FolderObject" specSource="TR140" profile="StorageService:1" supportLevel="Present" />
+  <description source="TRx">This object provides information about&#10;each top-level folder configured on this&#10;logical volume. Each top-level folder&#10;allows the configuration of quotas and&#10;access permissions.&#10;Creating an instance of this object&#10;generates a disabled Folder instance.&#10;Before this new Folder instance can be&#10;enabled (via a SetParameterValues&#10;command), it MUST have the Name&#10;parameter configured. Folder instances&#10;are unique per Logical Volume and the&#10;unique key for this object is the Name&#10;parameter, which also means that once&#10;an instance is enabled the Name&#10;parameter becomes immutable for the&#10;life of the instance.&#10;</description>
+
+  <parameter name="Name" type="string" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="" maxLength="64" />
+    <description source="TRx">Setting of this variable will add a new&#10;folder. The full hierarchical pathname&#10;of the folder MUST be specified.&#10;All folders created on the Logical&#10;Volume will appear here, created locally&#10;or via AddObject.&#10;The local directory name will be&#10;formatted as a UNIX-style directory&#10;name, for example:&#10; /home/ftp&#10;The presence of a trailing '/' character&#10;is inconsequential, meaning that&#10;/home/ftp/ is the same as /home/ftp.&#10;Once this instance becomes enabled,&#10;this parameter will be immutable for the&#10;life of the instance. This parameter&#10;acts as the unique identifier for the&#10;instance, thus the device MUST NOT&#10;allow multiple Folder instances within a&#10;LogicalVolume to use the same Name.&#10;</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="false" />
+    <description source="TRx">Entry is enabled or disabled</description>
+
+  <parameter name="UserAccountAccess" type="unsignedInt" specSource="TR140" profile="StorageService:1" supportLevel="ReadOnly" defaultValue="2" minValue="0" maxValue="3" />
+    <description source="TRx">What are the User authentication&#10;requirements of this folder? The&#10;following bitmap is used.&#10; 11 = Authenticated Access required&#10;       for Network protocols&#10;       (NFS/AFP/SMB) and for non&#10;       Network protocols&#10;       (FTP/SFTP/HTTP/HTTPS)&#10;10 = Authenticated Access required&#10;     for Network protocols&#10;     (NFS/AFP/SMB)&#10;01 = Authenticated Access Required&#10;     for non Network protocols&#10;     (FTP/SFTP/HTTP/HTTPS)&#10;00 = No Authentication required&#10;</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="StorageService:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

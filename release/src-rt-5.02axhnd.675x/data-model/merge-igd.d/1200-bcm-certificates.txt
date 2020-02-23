@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-certificates.xml below the 
+# object InternetGatewayDevice.X_BROADCOM_COM_DebugPortMirroringCfg.{i}.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-bcm-certificates.xml InternetGatewayDevice.X_BROADCOM_COM_DebugPortMirroringCfg.{i}.

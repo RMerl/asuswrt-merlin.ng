@@ -1,0 +1,1297 @@
+#!/bin/bash
+
+# Create a data_structures XML file from an existing data_structures XML file
+# based on the memory addresses used by the current source base. The file can
+# be used as input to the Tables Manager Tool to generate new header files.
+#
+# More specifically, the BASE files come from a Lilac or Oren version and
+# the output of this script creates the corresponding BCM63138 XML file.
+# Table Manager is then used to create the BCM63138 "auto" header files.
+
+SCRIPT_DIR=${0%/*}
+LESS_ADDRS_FILE=$SCRIPT_DIR/less_addrs.txt
+MORE_ADDRS_FILE=$SCRIPT_DIR/more_addrs.txt
+CURR_SRC_FILES=$SCRIPT_DIR/../firmware/src/*.uc
+REMOVE_FILE=$SCRIPT_DIR/rdd_runner_defs_bcm63138_removed.h
+BASE_ADDR_FILE_ORIG=$SCRIPT_DIR/rdd_runner_defs_auto_base.h
+BASE_ADDR_FILE=$SCRIPT_DIR/rdd_runner_defs_auto_base_pruned.h
+BASE_DS_XML_FILE=$SCRIPT_DIR/data_structures_base.xml
+NEW_DS_XML_FILE=$SCRIPT_DIR/../firmware/src/data_structures.xml
+
+chmod +w $NEW_DS_XML_FILE
+
+# Create a file with addresses that are not used.
+echo "" > $REMOVE_FILE
+
+grep "_ADDRESS " $BASE_ADDR_FILE_ORIG > $BASE_ADDR_FILE
+
+echo "Creating file of addresses to remove, ${REMOVE_FILE##*/}, from ${BASE_ADDR_FILE##*/}"
+while read line;
+do
+    if [ "${line:0:7}" == "#define" ] ; then
+        name=${line#* }
+        addr=${name##* }
+        name=${name%% *}
+        match=`grep -l "\<$name\>" $CURR_SRC_FILES`
+        if [ "$match" == "" ] && ([ "${name:0:3}" == "US_" ] || [ "${name:0:3}" == "DS_" ]) ; then
+            # Strip the "US_" or "DS_" prefix and grep for a match again.
+            match=`grep -l "\<${name#*_}\>" $CURR_SRC_FILES`
+        fi
+        if ! [ "$match" == "" ] && ! [ "`grep -l "\<$name\>" $LESS_ADDRS_FILE`" == "" ] ; then
+            # Memory address was found but will be removed because it is in a manually
+            # created "exclude addresses" file.
+            match=""
+        fi
+        if [ "$match" == "" ] && ! [ "`grep -l "\<$name\>" $MORE_ADDRS_FILE`" == "" ] ; then
+            # Memory address was not found but will not be removed because it is in a manually
+            # created "include addresses" file.
+            match="match"
+        fi
+        if [ "$match" == "" ] && ([ "${name:0:3}" == "US_" ] || [ "${name:0:3}" == "DS_" ]) &&
+            ! [ "`grep -l "\<${name#*_}\>" $MORE_ADDRS_FILE`" == "" ] ; then
+            # Memory address was not found but will not be removed because it is in a manually
+            # created "include addresses" file.
+            match="match"
+        fi
+        if [ "$match" == "" ] ; then
+            echo "$line" >> $REMOVE_FILE
+        fi
+    fi
+done < $BASE_ADDR_FILE
+
+cp $BASE_DS_XML_FILE $NEW_DS_XML_FILE
+
+# Remove the XML table entry for each table that is not used by the current source base.
+echo "Removing addresses from ${BASE_DS_XML_FILE##*/} and saving to ${NEW_DS_XML_FILE##*/}"
+while read line;
+do
+    if [ "${line:0:7}" == "#define" ] ; then
+        name=${line#* }
+        name=${name%% *}
+        name=${name%%_ADDRESS}
+        sed -e "/table.*\<$name\>/,/\/table/d" $NEW_DS_XML_FILE > $NEW_DS_XML_FILE.tmp && mv $NEW_DS_XML_FILE.tmp $NEW_DS_XML_FILE
+        name=${name#US_}
+        name=${name#DS_}
+        sed -e "/table.*\<$name\>/,/\/table/d" $NEW_DS_XML_FILE > $NEW_DS_XML_FILE.tmp && mv $NEW_DS_XML_FILE.tmp $NEW_DS_XML_FILE
+    fi
+done < $REMOVE_FILE
+
+# Change the Internal Field Separator to something non-space in order to preserve spaces in read command.
+IFS_SAVE=$IFS
+IFS='%'
+
+# Add sections to the data_structures XML file.
+echo "Adding new addresses to ${NEW_DS_XML_FILE##*/}"
+read -d '' -r new_sections <<EOF
+silent g/bucket_overflow_counter/s/"bucket_overflow_counter" size="3" \/>/& \r
+\            <field name="command_list_length_64" size="4" \/>/
+silent g/wan_port_id/s/wan_port_id/wan_port_id_or_fstat/
+silent g/key_extend/s/"key_extend" size="5"/"key_extend" size="1"/
+silent g/^        <entry name="FLOW_CACHE_CONTEXT_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="FC_UCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <field name="flow_hits" size="32"><\/field> \r
+\            <field name="flow_bytes" size="32"><\/field> \r
+\            <field name="multicast_flag" size="1"><\/field> \r
+\            <field name="overflow" size="1"><\/field> \r
+\            <field name="is_routed" size="1"><\/field> \r
+\            <field name="is_l2_accel" size="1"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="mtu" size="11"><\/field> \r
+\            <field name="rx_tos" size="8"><\/field> \r
+\            <field name="reserved2" size="8"><\/field> \r
+\            <field name="is_unicast_wfd_nic" size="1"><\/field> \r
+\            <field name="is_unicast_wfd_any" size="1"><\/field> \r
+\            <field name="priority" size="4"><\/field> \r
+\            <field name="wfd_prio" size="1"><\/field> \r
+\            <field name="wfd_idx" size="2"><\/field> \r
+\            <field name="egress_phy" size="2"><\/field> \r
+\            <field name="ip_addresses_table_index" size="3"><\/field> \r
+\            <field name="reserved3" size="2"><\/field> \r
+\            <field name="link_specific_union" size="16"><\/field> \r
+\            <field name="command_list" size="8" is_array="true" array_num_entries="80"><\/field> \r
+\            <\!-- following fields are not used by firmware --> \r
+\            <field name="valid" size="8"><\/field> \r
+\            <field name="reserved4" size="4"><\/field> \r
+\            <field name="command_list_length_64" size="4"><\/field> \r
+\            <field name="connection_direction" size="1"><\/field> \r
+\            <field name="connection_table_index" size="15"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_L2_UCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <field name="flow_hits" size="32"><\/field> \r
+\            <field name="flow_bytes" size="32"><\/field> \r
+\            <field name="multicast_flag" size="1"><\/field> \r
+\            <field name="overflow" size="1"><\/field> \r
+\            <field name="is_routed" size="1"><\/field> \r
+\            <field name="is_l2_accel" size="1"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="mtu" size="11"><\/field> \r
+\            <field name="rx_tos" size="8"><\/field> \r
+\            <field name="reserved2" size="8"><\/field> \r
+\            <field name="is_unicast_wfd_nic" size="1"><\/field> \r
+\            <field name="is_unicast_wfd_any" size="1"><\/field> \r
+\            <field name="priority" size="4"><\/field> \r
+\            <field name="wfd_prio" size="1"><\/field> \r
+\            <field name="wfd_idx" size="2"><\/field> \r
+\            <field name="egress_phy" size="2"><\/field> \r
+\            <field name="ip_addresses_table_index" size="3"><\/field> \r
+\            <field name="reserved3" size="2"><\/field> \r
+\            <field name="link_specific_union" size="16"><\/field> \r
+\            <field name="command_list" size="8" is_array="true" array_num_entries="80"><\/field> \r
+\            <\!-- following fields are not used by firmware --> \r
+\            <field name="valid" size="8"><\/field> \r
+\            <field name="reserved4" size="4"><\/field> \r
+\            <field name="command_list_length_64" size="4"><\/field> \r
+\            <field name="connection_direction" size="1"><\/field> \r
+\            <field name="connection_table_index" size="15"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_UCAST_FLOW_CONTEXT_ETH_XTM_ENTRY"> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="16"><\/field> \r
+\            <field name="egress_port" size="8"><\/field> \r
+\            <field name="traffic_class" size="3"><\/field> \r
+\            <field name="rate_controller" size="5"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_UCAST_FLOW_CONTEXT_WFD_NIC_ENTRY"> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="24"><\/field> \r
+\            <field name="chain_idx" size="8"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_UCAST_FLOW_CONTEXT_WFD_DHD_ENTRY"> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="18"><\/field> \r
+\            <field name="wifi_ssid" size="4"><\/field> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_UCAST_FLOW_CONTEXT_RNR_DHD_ENTRY"> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="16"><\/field> \r
+\            <field name="radio_idx" size="2"><\/field> \r
+\            <field name="wifi_ssid" size="4"><\/field> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_MCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <field name="flow_hits" size="32"><\/field> \r
+\            <field name="flow_bytes" size="32"><\/field> \r
+\            <field name="multicast_flag" size="1"><\/field> \r
+\            <field name="overflow" size="1"><\/field> \r
+\            <field name="is_routed" size="1"><\/field> \r
+\            <field name="is_tos_mangle" size="1"><\/field> \r
+\            <field name="number_of_ports" size="4"><\/field> \r
+\            <field name="port_mask" size="8"><\/field> \r
+\            <field name="reserved2" size="5"><\/field> \r
+\            <field name="mtu" size="11"><\/field> \r
+\            <field name="rx_tos" size="8"><\/field> \r
+\            <field name="reserved3" size="8"><\/field> \r
+\            <field name="wlan_mcast_clients" size="8"><\/field> \r
+\            <field name="wlan_mcast_index" size="8"><\/field> \r
+\            <field name="mcast_port_header_buffer_ptr" size="32"><\/field> \r
+\            <field name="port_context" size="32" is_array="true" array_num_entries="8"><\/field> \r
+\            <field name="l3_command_list" size="8" is_array="true" array_num_entries="20"><\/field> \r
+\            <\!-- following fields are not used by firmware --> \r
+\            <field name="reserved4" size="8" is_array="true" array_num_entries="24"><\/field> \r
+\            <field name="valid" size="8"><\/field> \r
+\            <field name="reserved5" size="4"><\/field> \r
+\            <field name="command_list_length_64" size="4"><\/field> \r
+\            <field name="connection_direction" size="1"><\/field> \r
+\            <field name="connection_table_index" size="15"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_MCAST_PORT_CONTEXT_ENTRY"> \r
+\            <field name="state" size="1"><\/field> \r
+\            <field name="reserved2" size="10"><\/field> \r
+\            <field name="l2_header_length" size="5"><\/field> \r
+\            <field name="l2_push" size="1"><\/field> \r
+\            <field name="l2_command_list_length" size="7"><\/field> \r
+\            <field name="queue" size="3"><\/field> \r
+\            <field name="l2_offset" size="5"><\/field> \r
+\        <\/entry> \r
+\        <entry name="GSO_CONTEXT_ENTRY"> \r
+\            <field name="rx_bbh_descriptor_0" size="32"><\/field> \r
+\            <field name="rx_bbh_descriptor_1" size="32"><\/field> \r
+\            <field name="tx_bbh_descriptor_0" size="32"><\/field> \r
+\            <field name="tx_bbh_descriptor_1" size="32"><\/field> \r
+\            <field name="rx_packets" size="32"><\/field> \r
+\            <field name="rx_octets" size="32"><\/field> \r
+\            <field name="tx_packets" size="32"><\/field> \r
+\            <field name="tx_octets" size="32"><\/field> \r
+\            <field name="dropped_packets" size="32"><\/field> \r
+\            <field name="dropped_no_bpm_buffer" size="16"><\/field> \r
+\            <field name="dropped_parse_failed" size="16"><\/field> \r
+\            <field name="dropped_linear_length_invalid" size="16"><\/field> \r
+\            <field name="queue_full" size="16"><\/field> \r
+\            <field name="summary" size="32"><\/field> \r
+\            <field name="ip_header_offset" size="8"><\/field> \r
+\            <field name="ip_header_length" size="8"><\/field> \r
+\            <field name="ip_total_length" size="16"><\/field> \r
+\            <field name="ip_id" size="16"><\/field> \r
+\            <field name="ip_fragment_flags_reserved" size="1"><\/field> \r
+\            <field name="ip_fragment_flags_df" size="1"><\/field> \r
+\            <field name="ip_fragment_flags_mf" size="1"><\/field> \r
+\            <field name="ip_fragment_offset" size="13"><\/field> \r
+\            <field name="ip_flags" size="8"><\/field> \r
+\            <field name="ip_protocol" size="8"><\/field> \r
+\            <field name="ipv4_csum" size="16"><\/field> \r
+\            <field name="packet_header_length" size="8"><\/field> \r
+\            <field name="seg_count" size="8"><\/field> \r
+\            <field name="nr_frags" size="8"><\/field> \r
+\            <field name="frag_index" size="8"><\/field> \r
+\            <field name="tcp_udp_header_offset" size="8"><\/field> \r
+\            <field name="tcp_udp_header_length" size="8"><\/field> \r
+\            <field name="tcp_udp_total_length" size="16"><\/field> \r
+\            <field name="tcp_sequence" size="32"><\/field> \r
+\            <field name="tcp_flags" size="8"><\/field> \r
+\            <field name="version" size="8"><\/field> \r
+\            <field name="tcp_udp_csum" size="16"><\/field> \r
+\            <field name="mss" size="16"><\/field> \r
+\            <field name="mss_adjust" size="16"><\/field> \r
+\            <field name="seg_length" size="16"><\/field> \r
+\            <field name="seg_bytes_left" size="16"><\/field> \r
+\            <field name="max_chunk_length" size="8"><\/field> \r
+\            <field name="chunk_bytes_left" size="8"><\/field> \r
+\            <field name="payload_bytes_left" size="16"><\/field> \r
+\            <field name="payload_ptr" size="32"><\/field> \r
+\            <field name="payload_length" size="16"><\/field> \r
+\            <field name="linear_length" size="16"><\/field> \r
+\            <field name="tx_packet_ptr" size="32"><\/field> \r
+\            <field name="tx_packet_length" size="16"><\/field> \r
+\            <field name="udp_first_packet_length" size="16"><\/field> \r
+\            <field name="udp_first_packet_ptr" size="32"><\/field> \r
+\            <field name="udp_first_packet_buffer_number" size="16"><\/field> \r
+\            <field name="bpm_buffer_number" size="16"><\/field> \r
+\            <field name="packet_length" size="16"><\/field> \r
+\            <field name="reserved0" size="16"><\/field> \r
+\            <field name="ipv6_ip_id" size="32"><\/field> \r
+\            <field name="auth_state_3" size="32"><\/field> \r
+\            <field name="debug_0" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="GSO_DESC_ENTRY"> \r
+\            <field name="data" size="32"><\/field> \r
+\            <field name="len" size="16"><\/field> \r
+\            <field name="linear_len" size="16"><\/field> \r
+\            <field name="mss" size="16"><\/field> \r
+\            <field name="reserved0" size="7"><\/field> \r
+\            <field name="is_allocated" size="1"><\/field> \r
+\            <field name="nr_frags" size="8"><\/field> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="frag_data" size="32" is_array="true" array_num_entries="18"><\/field> \r
+\            <field name="frag_len" size="16" is_array="true" array_num_entries="18"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="GSO_BUFFER_ENTRY"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="GSO_PSEUDO_HEADER_BUFFER_ENTRY"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="10"><\/field> \r
+\        <\/entry> \r
+\        <entry name="CSO_CONTEXT_ENTRY"> \r
+\            <field name="summary" size="32"><\/field> \r
+\            <field name="linear_length" size="16"><\/field> \r
+\            <field name="packet_length" size="16"><\/field> \r
+\            <field name="packet_header_length" size="8"><\/field> \r
+\            <field name="ip_protocol" size="8"><\/field> \r
+\            <field name="ip_header_offset" size="8"><\/field> \r
+\            <field name="ip_header_length" size="8"><\/field> \r
+\            <field name="ip_total_length" size="16"><\/field> \r
+\            <field name="ipv4_csum" size="16"><\/field> \r
+\            <field name="tcp_udp_header_offset" size="8"><\/field> \r
+\            <field name="tcp_udp_header_length" size="8"><\/field> \r
+\            <field name="tcp_udp_total_length" size="16"><\/field> \r
+\            <field name="tcp_udp_csum" size="16"><\/field> \r
+\            <field name="max_chunk_length" size="8"><\/field> \r
+\            <field name="chunk_bytes_left" size="8"><\/field> \r
+\            <field name="nr_frags" size="8"><\/field> \r
+\            <field name="frag_index" size="8"><\/field> \r
+\            <field name="frag_len" size="16"><\/field> \r
+\            <field name="frag_data" size="32"><\/field> \r
+\            <field name="good_csum_packets" size="32"><\/field> \r
+\            <field name="no_csum_packets" size="32"><\/field> \r
+\            <field name="bad_ipv4_hdr_csum_packets" size="32"><\/field> \r
+\            <field name="bad_tcp_udp_csum_packets" size="32"><\/field> \r
+\            <field name="fail_code" size="8"><\/field> \r
+\            <field name="dma_sync" size="8"><\/field> \r
+\            <field name="seg_length" size="16"><\/field> \r
+\            <field name="seg_bytes_left" size="16"><\/field> \r
+\            <field name="payload_length" size="16"><\/field> \r
+\            <field name="payload_bytes_left" size="16"><\/field> \r
+\            <field name="payload_ptr" size="32"><\/field> \r
+\            <field name="reserved_0" size="24"><\/field> \r
+\            <field name="ddr_payload_offset" size="8"><\/field> \r
+\            <field name="ddr_src_address" size="32"><\/field> \r
+\            <field name="saved_ih_buffer_number" size="32"><\/field> \r
+\            <field name="saved_csum32_ret_addr" size="32"><\/field> \r
+\            <field name="saved_r16" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="CSO_BUFFER_ENTRY"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="CSO_PSEUDO_HEADER_BUFFER_ENTRY"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="10"><\/field> \r
+\        <\/entry>/
+silent g/^            <entry name="FLOW_CACHE_CONTEXT_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\            <entry name="FC_UCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_UCAST_FLOW_CONTEXT_ETH_XTM_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_UCAST_FLOW_CONTEXT_WFD_NIC_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_UCAST_FLOW_CONTEXT_WFD_DHD_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_UCAST_FLOW_CONTEXT_RNR_DHD_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_L2_UCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_MCAST_FLOW_CONTEXT_ENTRY"> \r
+\            <\/entry>/ 
+silent g/^        <entry name="RUNNER_FLOW_HEADER_BUFFER">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="FC_MCAST_PORT_HEADER_ENTRY"> \r
+\            <field name="u8" size="8"><\/field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="CONNECTION_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="FC_MCAST_CONNECTION_ENTRY"> \r
+\            <field name="valid" size="1"><\/field> \r
+\            <field name="vlan_head_index" size="7"><\/field> \r
+\            <field name="reserved1" size="8"><\/field> \r
+\            <field name="bucket_overflow_counter" size="3"><\/field> \r
+\            <field name="command_list_length_64" size="4"><\/field> \r
+\            <field name="key_extend" size="1"><\/field> \r
+\            <field name="is_multicast" size="1"><\/field> \r
+\            <field name="protocol" size="7"><\/field> \r
+\            <field name="number_of_tags" size="2"><\/field> \r
+\            <field name="reserved2" size="30"><\/field> \r
+\            <field name="src_ip" size="32"><\/field> \r
+\            <field name="dst_ip" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_MCAST_CONNECTION2_ENTRY"> \r
+\            <field name="reserved1" size="4"><\/field> \r
+\            <field name="vid0" size="12"><\/field> \r
+\            <field name="reserved2" size="4"><\/field> \r
+\            <field name="vid1" size="12"><\/field> \r
+\            <field name="valid" size="1"><\/field> \r
+\            <field name="context_index" size="15"><\/field> \r
+\            <field name="reserved4" size="9"><\/field> \r
+\            <field name="next_entry" size="7"><\/field> \r
+\            <field name="ip_sa" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_L2_UCAST_CONNECTION_ENTRY"> \r
+\            <field name="valid" size="1"><\/field> \r
+\            <field name="context_index" size="15"><\/field> \r
+\            <field name="bucket_overflow_counter" size="3"><\/field> \r
+\            <field name="command_list_length_64" size="4"><\/field> \r
+\            <field name="key_extend" size="1"><\/field> \r
+\            <field name="is_multicast" size="1"><\/field> \r
+\            <field name="protocol" size="7"><\/field> \r
+\            <field name="reserved" size="32"><\/field> \r
+\            <field name="src_mac_crc" size="32"><\/field> \r
+\            <field name="dst_mac_crc" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_L2_UCAST_TUPLE_ENTRY"> \r
+\            <field name="reserved_0" size="16"><\/field> \r
+\            <field name="dst_mac" size="16"><\/field> \r
+\            <field name="dst_mac_lsw" size="32"><\/field> \r
+\            <field name="reserved_1" size="32"><\/field> \r
+\            <field name="reserved_2" size="32"><\/field> \r
+\            <field name="vtag0_tpid" size="16"><\/field> \r
+\            <field name="vtag0_tci" size="16"><\/field> \r
+\            <field name="vtag1_tpid" size="16"><\/field> \r
+\            <field name="vtag1_tci" size="16"><\/field> \r
+\            <field name="src_mac" size="32"><\/field> \r
+\            <field name="src_mac_lshw" size="16"><\/field> \r
+\            <field name="eth_type" size="16"><\/field> \r
+\        <\/entry> \r
+\        <entry name="DS_WAN_UDP_FILTER_CONTROL_ENTRY"> \r
+\            <field name="valid_mask" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="DS_WAN_UDP_FILTER_ENTRY"> \r
+\            <field name="offset" size="32"><\/field> \r
+\            <field name="value" size="32"><\/field> \r
+\            <field name="mask" size="32"><\/field> \r
+\            <field name="hits" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="SPDSVC_CONTEXT_ENTRY"> \r
+\            <field name="bbh_descriptor_0" size="32"><\/field> \r
+\            <field name="bbh_descriptor_1" size="32"><\/field> \r
+\            <field name="timer_period" size="16"><\/field> \r
+\            <field name="skb_free_index" size="16"><\/field> \r
+\            <field name="copies_in_transit" size="32"><\/field> \r
+\            <field name="total_copies" size="32"><\/field> \r
+\            <field name="reserved1" size="16"><\/field> \r
+\            <field name="total_length" size="16"><\/field> \r
+\            <field name="tokens" size="16"><\/field> \r
+\            <field name="bucket_size" size="16"><\/field> \r
+\            <field name="bucket" size="32"><\/field> \r
+\            <field name="tx_queue_discards" size="32"><\/field> \r
+\            <field name="tx_queue_writes" size="32"><\/field> \r
+\            <field name="tx_queue_reads" size="32"><\/field> \r
+\            <field name="data_buf_ptr" size="32"><\/field> \r
+\            <field name="eth_header_0" size="32"><\/field> \r
+\            <field name="eth_header_1" size="32"><\/field> \r
+\            <field name="eth_header_2" size="32"><\/field> \r
+\            <field name="eth_header_3" size="16"><\/field> \r
+\            <field name="reserved2" size="16"><\/field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="CPU_RX_DESCRIPTOR">/,/<\/entry>/s/"reserved0" size="1"/"is_chksum_verified" size="1"/
+silent g/^        <entry name="CONNECTION_CONTEXT_BUFFER_ENTRY">/,/<\/entry>/s/array_num_entries="16"/array_num_entries="32"/
+silent g/^        <entry name="CONNECTION_CONTEXT_BUFFER_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="16"><\/field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="US_WAN_FLOW_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="FC_COMMAND_PRIMITIVE_ENTRY"> \r
+\            <field name="primitive_address" size="16"><\/field> \r
+\        <\/entry> \r
+\        <entry name="FC_FLOW_IP_ADDRESSES_ENTRY"> \r
+\            <field name="sa_da_addresses" size="8" is_array="true" array_num_entries="32"><\/field> \r
+\            <field name="reserved0" size="8" is_array="true" array_num_entries="4"><\/field> \r
+\            <field name="reference_count" size="32"><\/field> \r
+\            <field name="reserved1" size="8" is_array="true" array_num_entries="4"><\/field> \r
+\            <field name="is_ipv6_address" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="DSL_PTM_BOND_TX_HDR_ENTRY"> \r
+\            <field name="port_sel"   size="1"><\/field> \r
+\            <field name="reserved0"  size="2"><\/field> \r
+\            <field name="pkt_eop"    size="1"><\/field> \r
+\            <field name="frag_size"  size="12"><\/field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="BBH_RX_DESCRIPTOR">/s/DESCRIPTOR"/& project="OREN"/
+silent g/^        <entry name="BBH_RX_DESCRIPTOR" project="OREN">/,/<\/entry>/t.-1
+/^        <entry name="BBH_RX_DESCRIPTOR" project="OREN">/s/OREN/G9991/
+silent g/^        <entry name="BBH_TX_DESCRIPTOR">/s/DESCRIPTOR"/& project="OREN"/
+silent g/^        <entry name="BBH_TX_DESCRIPTOR" project="OREN">/,/<\/entry>/t.-1
+/^        <entry name="BBH_TX_DESCRIPTOR" project="OREN">/s/OREN/G9991/
+silent g/^        <entry name="BBH_TX_DESCRIPTOR" project="OREN">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="BBH_TX_DESCRIPTOR" project="DSL_63138"> \r
+\            <field name="crc_calc" size="1"><\/field> \r
+\            <field name="wan_port_or_fstat" size="12"><\/field> \r
+\            <field name="source_bridge_port" size="5"><\/field> \r
+\            <field name="packet_length" size="14"><\/field> \r
+\            <field name="absolute_normal" size="1"><\/field> \r
+\            <field name="last_indication" size="1"><\/field> \r
+\            <field name="pti" size="2"><\/field> \r
+\            <field name="_1588" size="1"><\/field> \r
+\            <field name="add_indication" size="1"><\/field> \r
+\            <field name="header_number" size="3"><\/field> \r
+\            <field name="payload_offset" size="7"><\/field> \r
+\            <field name="target_memory" size="1"><\/field> \r
+\            <union_field union_name="packet_location" union_size="15"> \r
+\                <field name="buffer_number" size="15" sub_union="1"><\/field> \r
+\                <field name="reserved0" size="1" sub_union="2"><\/field> \r
+\                <field name="abs_address_index" size="14" sub_union="2"><\/field> \r
+\            <\/union_field> \r
+\        <\/entry> \r
+\        <entry name="BBH_TX_DESCRIPTOR" project="DSL_63148"> \r
+\            <field name="crc_calc" size="1"><\/field> \r
+\            <field name="wan_port_or_fstat" size="12"><\/field> \r
+\            <field name="source_bridge_port" size="5"><\/field> \r
+\            <field name="packet_length" size="14"><\/field> \r
+\            <field name="absolute_normal" size="1"><\/field> \r
+\            <field name="last_indication" size="1"><\/field> \r
+\            <field name="pti" size="2"><\/field> \r
+\            <field name="_1588" size="1"><\/field> \r
+\            <field name="add_indication" size="1"><\/field> \r
+\            <field name="header_number" size="3"><\/field> \r
+\            <field name="payload_offset" size="7"><\/field> \r
+\            <field name="target_memory" size="1"><\/field> \r
+\            <field name="reserved0" size="1"><\/field> \r
+\            <union_field union_name="packet_location" union_size="14"> \r
+\                <field name="buffer_number" size="14" sub_union="1"><\/field> \r
+\                <field name="abs_address_index" size="14" sub_union="2"><\/field> \r
+\            <\/union_field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="BBH_RX_DESCRIPTOR" project="OREN">/,/<\/entry>/s/<\/entry>/& \r
+\         <entry name="BBH_RX_DESCRIPTOR" project="DSL_63138"> \r
+\             <field name="last_sbn" size="10"><\/field> \r
+\             <field name="fstat_cell" size="1"><\/field> \r
+\             <field name="flow_id" size="7"><\/field> \r
+\             <field name="packet_length" size="14"><\/field> \r
+\             <field name="error" size="1"><\/field> \r
+\             <field name="reserved0" size="1"><\/field> \r
+\             <field name="fstat_error" size="1"><\/field> \r
+\             <field name="error_type" size="7"><\/field> \r
+\             <field name="ih_buffer_number" size="6"><\/field> \r
+\             <field name="target_memory" size="1"><\/field> \r
+\             <field name="buffer_number" size="15"><\/field> \r
+\         <\/entry> \r
+\         <entry name="BBH_RX_DESCRIPTOR" project="DSL_63148"> \r
+\             <field name="last_sbn" size="10"><\/field> \r
+\             <field name="fstat_cell" size="1"><\/field> \r
+\             <field name="flow_id" size="7"><\/field> \r
+\             <field name="packet_length" size="14"><\/field> \r
+\             <field name="error" size="1"><\/field> \r
+\             <field name="reserved0" size="1"><\/field> \r
+\             <field name="fstat_error" size="1"><\/field> \r
+\             <field name="error_type" size="7"><\/field> \r
+\             <field name="ih_buffer_number" size="6"><\/field> \r
+\             <field name="target_memory" size="1"><\/field> \r
+\             <field name="reserved1" size="1"><\/field> \r
+\             <field name="buffer_number" size="14"><\/field> \r
+\         <\/entry>/
+silent g/^        <entry name="MULTICAST_HEADER_BUFFER">/,/<\/entry>/s/array_num_entries="8"/array_num_entries="16"/ 
+silent g/^        <entry name="MULTICAST_HEADER_BUFFER">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY"> \r
+\            <field name="reserved_fw_only" size="16"><\/field> \r
+\        <\/entry>/ 
+silent g/^        <entry name="FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY">/s/"FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY"/& project="OREN"/
+silent g/^        <entry name="FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY" project="OREN">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY" project="DSL_63138"> \r
+\            <field name="head_pointer" size="16" \/> \r
+\            <field name="tail_pointer" size="16" \/> \r
+\            <field name="guaranteed_free_count" size="16" \/> \r
+\            <field name="non_guaranteed_free_count" size="16" \/> \r
+\            <field name="guaranteed_threshold" size="16" \/> \r
+\        <\/entry> \r
+\        <entry name="FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR_ENTRY" project="DSL_63148"> \r
+\            <field name="head_pointer" size="16" \/> \r
+\            <field name="tail_pointer" size="16" \/> \r
+\            <field name="guaranteed_free_count" size="16" \/> \r
+\            <field name="non_guaranteed_free_count" size="16" \/> \r
+\            <field name="guaranteed_threshold" size="16" \/> \r
+\        <\/entry>/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="OREN">/,/<\/entry>/t.-1
+/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="OREN">/s/OREN/DSL_63148/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/,/<\/entry>/s/"rate_shaping_mode".*$/& \r
+\            <union_field union_name="union_field1" union_size="7"> \r
+\                <field name="rate_shaper_id" size="7" sub_union="1"><\/field>/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/,/<\/entry>/s/"reserved1" size="4"/& sub_union="2"/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/,/<\/entry>/s/"service_queue" size="3"/& sub_union="2"/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/,/<\/entry>/s/"service_queue".*$/& \r
+\            <\/union_field>/
+silent g/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/,/<\/entry>/t.-1
+/^        <entry name="DS_INGRESS_CLASSIFICATION_CONTEXT_ENTRY"  project="DSL_63148">/s/DSL_63148/DSL_63138/
+silent g/^        <entry name="US_WAN_FLOW_ENTRY">/,/<\/entry>/s/reserved0" size="7" \/>/&\r
+\            <field name="ptm_bonding" size="1" \/>/
+silent g/^        <entry name="US_WAN_FLOW_ENTRY">/,/<\/entry>/s/reserved0" size="7"/reserved0\" size="6"/
+silent g/^        <entry name="ETH_TX_EMACS_STATUS_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="ETH_TX_EMACS_STATUS_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="ETH_TX_EMACS_STATUS_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="ETH_TX_EMACS_STATUS_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="ETH_TX_INTER_LAN_SCHEDULING_OFFSET_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="PARALLEL_PROCESSING_SLAVE_VECTOR" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_SLAVE_VECTOR" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="PARALLEL_PROCESSING_SLAVE_VECTOR" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_SLAVE_VECTOR" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="PARALLEL_PROCESSING_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="PARALLEL_PROCESSING_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="PARALLEL_PROCESSING_IH_BUFFER_PTR" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_IH_BUFFER_PTR" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="PARALLEL_PROCESSING_IH_BUFFER_PTR" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_IH_BUFFER_PTR" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="PARALLEL_PROCESSING_TASK_REORDER_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_TASK_REORDER_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="PARALLEL_PROCESSING_TASK_REORDER_ENTRY" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="PARALLEL_PROCESSING_TASK_REORDER_ENTRY" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <table name="ETH_TX_QUEUES_TABLE">/s/"ETH_TX_QUEUES_TABLE">/& \r
+\            <!-- 9 emacs x 8 queues x 16 bytes --> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="72" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="72" \/>/ 
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="OREN"/,/<\/entry>/s/OREN/DSL_63148/
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="OREN"/,/<\/entry>/t.-1
+/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="OREN"/,/<\/entry>/s/OREN/DSL_63138/
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="DSL_63138" generate_local_macros="true">/,/<\/entry>/s/"command" size="3".*$/& \r
+\            <field name="gso" size="1" \/>/
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="DSL_63138" generate_local_macros="true">/,/<\/entry>/s/"reserved0" size="2"/"reserved0" size="1"/
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="DSL_63148" generate_local_macros="true">/,/<\/entry>/s/"command" size="3".*$/& \r
+\            <field name="gso" size="1" \/>/
+silent g/^        <entry name="CPU_TX_DESCRIPTOR_CORE" project="DSL_63148" generate_local_macros="true">/,/<\/entry>/s/"reserved0" size="2"/"reserved0" size="1"/
+silent g/^        <table name="LAN_INGRESS_FIFO_DESCRIPTOR_TABLE">/,/<\/table>/s/size="5"/size="9"/
+silent g/^        <table name="LAN_INGRESS_FIFO_DESCRIPTOR_TABLE">/,/<\/table>/s/alignment="32"/alignment="64"/
+silent g/^        <table name="DATA_POINTER_DUMMY_TARGET">/,/<\/table>/s/ address_prefix="US"//
+silent g/^        <table name="DATA_POINTER_DUMMY_TARGET">/,/<\/table>/s/ size="1"/ size="2"/
+silent g/^        <entry name="WAN_TX_QUEUE_DESCRIPTOR">/,/<\/entry>/s/^.*reserved.*/            <field name="index" size="8"><\/field> \r
+\            <field name="reserved" size="8"><\/field>/ 
+silent g/^        <entry name="ETH_TX_QUEUE_DESCRIPTOR">/,/<\/entry>/s/^.*rate_limit_override.*/            <field name="index" size="8"><\/field>/ 
+silent g/^        <entry name="CPU_PARAMETERS_BLOCK_ENTRY"/,/<\/entry>/s/name="ring_id" size="2"/name="chain_id" size="8"/
+silent g/^        <entry name="CPU_PARAMETERS_BLOCK_ENTRY"/,/<\/entry>/s/name="wl_metadata" size="14"/name="wifi_queue" size="8"/
+silent g/^        <entry name="CPU_TX_MESSAGE_DESCRIPTOR">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="CPU_TX_DHD_DESCRIPTOR" project="DSL_63138" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="ssid_multicast" size="1"><\/field> \r
+\            <field name="ssid" size="4"><\/field> \r
+\            <field name="radio_idx" size="2" \/> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\            <field name="reserved2" size="14"><\/field> \r
+\         <\/entry> \r
+\        <entry name="CPU_TX_DHD_DESCRIPTOR" project="DSL_63148" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="ssid_multicast" size="1"><\/field> \r
+\            <field name="ssid" size="4"><\/field> \r
+\            <field name="radio_idx" size="2" \/> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\            <field name="reserved2" size="14"><\/field> \r
+\         <\/entry> \r
+\        <entry name="CPU_TX_DHD_DESCRIPTOR" project="OREN" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="ssid_multicast" size="1"><\/field> \r
+\            <field name="ssid" size="4"><\/field> \r
+\            <field name="radio_idx" size="2" \/> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\            <field name="reserved2" size="14"><\/field> \r
+\         <\/entry> \r
+\        <entry name="CPU_TX_DHD_DESCRIPTOR" project="G9991" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32"><\/field> \r
+\            <field name="reserved1" size="1"><\/field> \r
+\            <field name="ssid_multicast" size="1"><\/field> \r
+\            <field name="ssid" size="4"><\/field> \r
+\            <field name="radio_idx" size="2" \/> \r
+\            <field name="flow_ring_id" size="10"><\/field> \r
+\            <field name="reserved2" size="14"><\/field> \r
+\         <\/entry> \r
+\         <entry name="CPU_TX_DHD_MESSAGE_DESCRIPTOR" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32" \/> \r
+\            <field name="dhd_msg_type" size="2" \/> \r
+\            <field name="radio_idx" size="2" \/> \r
+\            <field name="flow_ring_id" size="10" \/> \r
+\            <field name="disabled" size="1" \/> \r
+\            <field name="reserved1" size="1" \/> \r
+\            <field name="reserved2" size="16" \/> \r
+\         <\/entry> \r
+\         <entry name="CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIPTOR" generate_local_macros="true"> \r
+\            <field name="reserved0" size="32" \/> \r
+\            <field name="guaranteed_free_count_incr" size="1" \/> \r
+\            <field name="guaranteed_free_count_delta" size="15" \/> \r
+\            <field name="reserved1" size="16" \/> \r
+\         <\/entry>/
+silent g/^        <entry name="ETH_TX_LOCAL_REGISTERS_ENTRY">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="DS_RATE_SHAPER_DESCRIPTOR"> \r
+\            <field name="current_sustain_budget" size="32"><\/field> \r
+\            <field name="allocated_sustain_budget_exponent" size="1"><\/field> \r
+\            <field name="allocated_sustain_budget" size="15"><\/field> \r
+\            <field name="maximum_budget_exponent" size="1"><\/field> \r
+\            <field name="maximum_budget" size="15"><\/field> \r
+\            <field name="reserved" size="8"><\/field> \r
+\            <field name="scheduling_group_mask" size="8"><\/field> \r
+\            <field name="scheduling_rate_shaper_mask" size="16"><\/field> \r
+\            <field name="emac_descriptor_ptr" size="16"><\/field> \r
+\            <field name="tx_queue_ptr" size="16"><\/field> \r
+\        <\/entry>/
+silent g/^        <entry name="ETH_TX_QUEUE_DESCRIPTOR">/,/<\/entry>/s/reserved0/rs_status_offset/
+silent g/^        <entry name="ETH_TX_QUEUE_DESCRIPTOR">/,/<\/entry>/s/reserved1/rs_group_status_offset/
+silent g/^        <entry name="ETH_TX_MAC_DESCRIPTOR" project="OREN">/,/<\/entry>/s/<\/entry>/& \r
+\        <entry name="ETH_TX_MAC_DESCRIPTOR" project="DSL_63138"> \r
+\            <field name="egress_counter" size="8"><\/field> \r
+\            <field name="loopback_mode" size="8"><\/field> \r
+\            <field name="rate_shaper_max_burst" size="16"><\/field> \r
+\            <field name="ingress_counter" size="8"><\/field> \r
+\            <field name="rate_limiter_id" size="8"><\/field> \r
+\            <field name="tx_task_number" size="8"><\/field> \r
+\            <field name="rate_shapers_groups_vector" size="8"><\/field> \r
+\            <field name="rate_shaper_group6_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group4_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group2_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group0_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group7_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group5_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group3_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group1_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group0_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group1_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group2_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group3_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group4_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group5_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group6_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group7_vector" size="16"><\/field> \r
+\            <field name="emac_mask" size="8"><\/field> \r
+\            <field name="tx_queues_status" size="8"><\/field> \r
+\            <field name="packet_counters_ptr" size="16"><\/field> \r
+\            <field name="gpio_flow_control_vector_ptr" size="16"><\/field> \r
+\            <field name="reserved0" size="16"><\/field> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="32"><\/field> \r
+\            <field name="reserved5" size="32"><\/field> \r
+\            <field name="reserved6" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="ETH_TX_MAC_DESCRIPTOR" project="DSL_63148"> \r
+\            <field name="egress_counter" size="8"><\/field> \r
+\            <field name="loopback_mode" size="8"><\/field> \r
+\            <field name="rate_shaper_max_burst" size="16"><\/field> \r
+\            <field name="ingress_counter" size="8"><\/field> \r
+\            <field name="rate_limiter_id" size="8"><\/field> \r
+\            <field name="tx_task_number" size="8"><\/field> \r
+\            <field name="rate_shapers_groups_vector" size="8"><\/field> \r
+\            <field name="rate_shaper_group6_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group4_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group2_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group0_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group7_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group5_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group3_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group1_status" size="8"><\/field> \r
+\            <field name="rate_shaper_group0_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group1_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group2_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group3_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group4_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group5_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group6_vector" size="16"><\/field> \r
+\            <field name="rate_shaper_group7_vector" size="16"><\/field> \r
+\            <field name="emac_mask" size="8"><\/field> \r
+\            <field name="tx_queues_status" size="8"><\/field> \r
+\            <field name="packet_counters_ptr" size="16"><\/field> \r
+\            <field name="gpio_flow_control_vector_ptr" size="16"><\/field> \r
+\            <field name="reserved0" size="16"><\/field> \r
+\            <field name="reserved1" size="32"><\/field> \r
+\            <field name="reserved2" size="32"><\/field> \r
+\            <field name="reserved3" size="32"><\/field> \r
+\            <field name="reserved4" size="32"><\/field> \r
+\            <field name="reserved5" size="32"><\/field> \r
+\            <field name="reserved6" size="32"><\/field> \r
+\        <\/entry> \r
+\        <entry name="L4_DST_PORT_ENTRY"> \r
+\            <field name="port" size="16"><\/field> \r
+\        <\/entry> \r
+\        <entry name="L4_DST_PORT_CONTEXT"> \r
+\            <field name="is_TCP" size="1"><\/field> \r
+\            <field name="is_static" size="1"><\/field> \r
+\            <field name="refcnt" size="6"><\/field> \r
+\            <field name="reason" size="8"><\/field> \r
+\        <\/entry> \r
+\        <entry name="BPM_PACKET_BUFFER"> \r
+\            <field name="reserved_fw_only" size="32" is_array="true" array_num_entries="512"><\/field> \r
+\        <\/entry>/
+silent g/^        <entry name="MAC_CONTEXT_ENTRY">/s/>/ used="False">/
+silent g/^    <project name="G9991">/,/<\/project>/s/<\/project>/& \r
+\    <project name="DSL_63138"> \r
+\        <project_data_segment name="PRIVATE_A" start_address="0x0" end_address="0xBFFF" generate_pointers="TRUE" device_address="RUNNER_PRIVATE_0_OFFSET" \/> \r
+\        <project_data_segment name="PRIVATE_B" start_address="0x0" end_address="0xBFFF" generate_pointers="TRUE" device_address="RUNNER_PRIVATE_1_OFFSET" \/> \r
+\        <project_data_segment name="COMMON_A" start_address="0x0" end_address="0x7FFF" generate_pointers="TRUE" device_address="RUNNER_COMMON_0_OFFSET" \/> \r
+\        <project_data_segment name="COMMON_B" start_address="0x8000" end_address="0xFFFF" generate_pointers="TRUE" device_address="RUNNER_COMMON_1_OFFSET" \/> \r
+\        <project_data_segment name="DDR" start_address="0x0" end_address="0x13FFFFF" dyn_alloc="False" \/> \r
+\        <project_data_segment name="PSRAM" start_address="0x0" end_address="0xFFFFF" dyn_alloc="False" generate_pointers="TRUE" device_address="PSRAM_BLOCK_OFFSET" \/> \r
+\    <\/project> \r
+\    <project name="DSL_63148"> \r
+\        <project_data_segment name="PRIVATE_A" start_address="0x0" end_address="0xBFFF" generate_pointers="TRUE" device_address="RUNNER_PRIVATE_0_OFFSET" \/> \r
+\        <project_data_segment name="PRIVATE_B" start_address="0x0" end_address="0xBFFF" generate_pointers="TRUE" device_address="RUNNER_PRIVATE_1_OFFSET" \/> \r
+\        <project_data_segment name="COMMON_A" start_address="0x0" end_address="0x7FFF" generate_pointers="TRUE" device_address="RUNNER_COMMON_0_OFFSET" \/> \r
+\        <project_data_segment name="COMMON_B" start_address="0x8000" end_address="0xFFFF" generate_pointers="TRUE" device_address="RUNNER_COMMON_1_OFFSET" \/> \r
+\        <project_data_segment name="DDR" start_address="0x0" end_address="0x13FFFFF" dyn_alloc="False" \/> \r
+\        <project_data_segment name="PSRAM" start_address="0x0" end_address="0xFFFFF" dyn_alloc="False" generate_pointers="TRUE" device_address="PSRAM_BLOCK_OFFSET" \/> \r
+\    <\/project>/ 
+silent g/^        <table name="CONTEXT_TABLE">/s/"CONTEXT_TABLE"/& union_name="CONTEXT_ENTRY_UNION"/
+silent g/^        <table name="RUNNER_FLOW_HEADER_BUFFER">/,/<\/table>/s/<\/table>/& \r
+\        <table name="FC_MCAST_PORT_HEADER_BUFFER"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="8" size2="64" alignment="512" align_type="table" \/> \r
+\            <entry name="FC_MCAST_PORT_HEADER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="FC_MCAST_CONNECTION2_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="128" alignment="2048" align_type="table" \/> \r
+\            <entry name="FC_MCAST_CONNECTION2_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="FC_MCAST_CONNECTION_TABLE_PLUS"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="32" align_type="table" \/> \r
+\            <entry name="FC_MCAST_CONNECTION_ENTRY"> \r
+\            <\/entry> \r
+\            <entry name="FC_MCAST_PORT_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="FC_ACCEL_MODE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table> \r 
+\        <table name="FC_L2_UCAST_CONNECTION_BUFFER"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="32" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" alignment="32" align_type="table" address_prefix="US" \/> \r
+\            <entry name="FC_L2_UCAST_CONNECTION_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="FC_L2_UCAST_TUPLE_BUFFER"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="64" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" alignment="64" align_type="table" address_prefix="US" \/> \r
+\            <entry name="FC_L2_UCAST_TUPLE_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="CPU_TX_PICO_QUEUE" union_name="CPU_TX_PICO_DESCRIPTOR_UNION">/,/<\/table>/s/^.*"CPU_TX_MESSAGE_DESCRIPTOR">/& \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DHD_DESCRIPTOR"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DHD_MESSAGE_DESCRIPTOR"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_UPDATE_PD_POOL_QUOTA_MESSAGE_DESCRIPTOR">/
+silent g/^        <table name="CPU_TX_PICO_QUEUE" union_name="CPU_TX_PICO_DESCRIPTOR_UNION">/,/<\/table>/s/<\/table>/& \r
+\        <table name="FC_COMMAND_PRIMITIVE_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="16" same_address="True" address_prefix="DS" \/> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="16" same_address="True" address_prefix="US" \/> \r
+\            <entry name="FC_COMMAND_PRIMITIVE_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="DS_FREE_PACKET_DESCRIPTORS_POOL" union_name="DS_PACKET_DESCRIPTOR_UNION" >/,/<\/table>/s/size="2048" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="2048" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="2048" \/>/
+silent g/^        <table name="CONNECTION_CONTEXT_BUFFER">/,/<\/table>/s/alignment="512"/alignment="1024"/
+silent g/^        <table name="CONNECTION_CONTEXT_BUFFER">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="8" alignment="1024" align_type="table" address_prefix="DS"\/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="8" alignment="1024" align_type="table" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="8" alignment="1024" align_type="table" address_prefix="DS"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="8" alignment="1024" align_type="table" address_prefix="US" \/>/
+silent g/^        <table name="CONNECTION_CONTEXT_BUFFER">/,/<\/table>/s/<\/table>/& \r
+\        <table name="CONNECTION_CONTEXT_MULTICAST_BUFFER"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="8" alignment="512" align_type="table" address_prefix="DS"\/> \r
+\            <entry name="CONNECTION_CONTEXT_MULTICAST_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="CPU_REASON_TO_CPU_RX_QUEUE_TABLE"/s/size="64"/size="2" size2="64"/
+silent g/^        <table name="CPU_REASON_TO_CPU_RX_QUEUE_TABLE"/,/<\/table>/s/"DS"/"DS" alignment="128" align_type="table"/
+silent g/^        <table name="CPU_REASON_TO_CPU_RX_QUEUE_TABLE"/,/<\/table>/s/<\/table>/& \r
+\        <table name="FC_FLOW_IP_ADDRESSES_TABLE"> \r
+\            <table_properties data_segment_name="COMMON_B" size="4" alignment="256" align_type="table" \/> \r
+\            <entry name="FC_FLOW_IP_ADDRESSES_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="LAN4_INGRESS_FIFO">/,/<\/table>/s/<\/table>/& \r
+\        <table name="LAN5_INGRESS_FIFO"> \r
+\            <table_properties data_segment_name="COMMON_B" size="1" alignment="128" align_type="table" \/> \r
+\            <entry name="LAN_INGRESS_FIFO_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="LAN6_INGRESS_FIFO"> \r
+\            <table_properties data_segment_name="COMMON_B" size="1" alignment="128" align_type="table" \/> \r
+\            <entry name="LAN_INGRESS_FIFO_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="LAN7_INGRESS_FIFO"> \r
+\            <table_properties data_segment_name="COMMON_B" size="1" alignment="128" align_type="table" \/> \r
+\            <entry name="LAN_INGRESS_FIFO_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="WAN_ENQUEUE_INGRESS_QUEUE_PTR"> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" alignment="4" \/> \r
+\            <entry name="WAN_ENQUEUE_INGRESS_QUEUE_PTR_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="ETH_TX_MAC_TABLE">/s/$/& \r
+\            <!-- 9 entries x 64 bytes --> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="9" address="0x9000" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="9" address="0x9000" \/>/ 
+silent g/^        <table name="ETH_TX_QUEUES_POINTERS_TABLE">/s/$/& \r
+\            <!-- 9 entries x 8 queues x 4 byte --> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="72" alignment="512" align_type="table" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="72" alignment="512" align_type="table" \/>/ 
+silent g/^        <table name="ETH_TX_LOCAL_REGISTERS">/s/$/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="9" alignment="256" align_type="table" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="9" alignment="256" align_type="table" \/>/ 
+silent g/^        <table name="FREE_PACKET_DESCRIPTORS_POOL_DESCRIPTOR">/,/<\/table>/s/^.*table_properties.*$/
+\            <table_properties project="OREN" anchor="True" data_segment_name="PRIVATE_A" size="1" address="0xB310" \/> \r
+\            <table_properties project="DSL_63138" anchor="True" data_segment_name="PRIVATE_A" size="1" address="0xB310" \/> \r
+\            <table_properties project="DSL_63148" anchor="True" data_segment_name="PRIVATE_A" size="1" address="0xB310" \/>/
+silent g/^        <table name="EMAC_ABSOLUTE_TX_BBH_COUNTER">/,/<\/table>/s/5 Emacs/9 Emacs/
+silent g/^        <table name="EMAC_ABSOLUTE_TX_BBH_COUNTER">/,/<\/table>/s/size="6"/size="10"/
+silent g/^        <table name="DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR">/,/<\/table>/s/<\/table>/& \r
+\        <table name="DSL_BUFFER_ALIGNMENT"> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="DOWNSTREAM_MULTICAST_LAN_ENQUEUE_INGRESS_QUEUE_PTR">/,/<\/table>/s/<\/table>/& \r
+\        <table name="DSL_PTM_BOND_TX_CONTROL"> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="CPU_RX_RUNNER_B_SCRATCHPAD">/,/<\/table>/s/<\/table>/& \r
+\        <table name="WAN_TX_RUNNER_B_SCRATCHPAD"> \r
+\            <table_properties data_segment_name="COMMON_B" size="1" alignment="256" align_type="table"\/> \r
+\            <entry name="RUNNER_SCRATCHPAD"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="RING_DESCRIPTORS_TABLE">/,/<\/table>/s/<\/table>/& \r
+\        <table name="DSL_PTM_BOND_TX_HDR_TABLE"> \r
+\            <table_properties data_segment_name="COMMON_B" size="8" alignment="16" align_type="table" \/> \r
+\            <entry name="DSL_PTM_BOND_TX_HDR_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="FC_MCAST_RUNNER_A_SCRATCHPAD"> \r
+\            <table_properties data_segment_name="COMMON_A" size="1" alignment="256" align_type="table"\/> \r
+\            <entry name="RUNNER_SCRATCHPAD"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="DS_WAN_UDP_FILTER_CONTROL_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="4" align_type="table"\/> \r
+\            <entry name="DS_WAN_UDP_FILTER_CONTROL_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="DS_WAN_UDP_FILTER_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="32" alignment="512" align_type="table"\/> \r
+\            <entry name="DS_WAN_UDP_FILTER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="CPU_TX_DS_PICO_SEMAPHORE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1"\/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="SPDSVC_CONTEXT_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="64" align_type="table" address_prefix="DS"\/> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" alignment="64" align_type="table" address_prefix="US"\/> \r
+\            <entry name="SPDSVC_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="INTERRUPT_COALESCING_TIMER_PERIOD"> \r
+\            <table_properties data_segment_name="COMMON_A" size="1" \/> \r
+\            <entry name="TWO_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="INTERRUPT_COALESCING_TIMER_ARMED"> \r
+\            <table_properties data_segment_name="COMMON_A" size="1" \/> \r
+\            <entry name="TWO_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_DESC_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="256" address_prefix="DS" \/> \r
+\            <entry name="GSO_DESC_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_CONTEXT_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" alignment="256" address_prefix="DS" \/> \r
+\            <entry name="GSO_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_PICO_QUEUE" union_name="GSO_PICO_DESCRIPTOR_UNION"> \r
+\            <\!-- 64 entries x 8 bytes --> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="64" alignment="1024" align_type="cyclic" \/> \r
+\            <entry name="CPU_TX_DESCRIPTOR"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_CORE"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_BPM"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_ABS"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_DS_FAST"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_US_FAST"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_DS_PICO"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_DESCRIPTOR_DS_PICO_WIFI"> \r
+\            <\/entry> \r
+\            <entry name="CPU_TX_MESSAGE_DESCRIPTOR"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_PICO_QUEUE_PTR"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" \/> \r
+\            <entry name="TWO_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_DESC_PTR"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" \/> \r
+\            <entry name="FOUR_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_HEADER_BUFFER"> \r
+\            <\!-- 1 buffers for each GSO --> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_A" size="1" alignment="256" align_type="table" address="0x6400" address_prefix="DS"\/> \r
+\            <entry name="GSO_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_PSEUDO_HEADER_BUFFER"> \r
+\            <\!-- 1 buffers for each GSO --> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_A" size="1" alignment="128" address="0x6480" address_prefix="DS"\/> \r
+\            <entry name="GSO_PSEUDO_HEADER_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="GSO_CHUNK_BUFFER"> \r
+\            <\!-- 1 buffers for each GSO --> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_A" size="1" alignment="256" align_type="table" address="0x6500" address_prefix="DS"\/> \r
+\            <entry name="GSO_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="CSO_CONTEXT_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" alignment="128" address_prefix="US" \/> \r
+\            <entry name="CSO_CONTEXT_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="CSO_PSEUDO_HEADER_BUFFER"> \r
+\            <!-- 1 buffers for each CSO --> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_B" size="1" alignment="64" address="0x2080" address_prefix="US" \/> \r
+\            <entry name="CSO_PSEUDO_HEADER_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="CSO_CHUNK_BUFFER"> \r
+\            <!-- 1 buffers for each CSO --> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_B" size="1" alignment="128" align_type="table" address="0x2000" address_prefix="US" \/> \r
+\            <entry name="CSO_BUFFER_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="REVERSE_FFI_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="256" alignment="8"\/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="CPU_RX_PD_INGRESS_QUEUE">/,/<\/table>/s/<\/table>/& \r
+\        <table name="CPU_RX_FAST_PD_INGRESS_QUEUE"> \r
+\            <!-- 16 descriptors x 8 bytes --> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="16" alignment="256" align_type="cyclic"  \/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="PARALLEL_PROCESSING_IH_BUFFER_VECTOR">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="4" alignment="4" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="4" alignment="4" align_type="table" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="4" alignment="4" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="4" alignment="4" align_type="table" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_SLAVE_VECTOR">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_IH_BUFFER_VECTOR_PTR">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" alignment="2" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="1" alignment="2" align_type="table" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" alignment="2" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="1" alignment="2" align_type="table" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_TASK_REORDER_FIFO">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="4" alignment="8" align_type="cyclic" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="4" alignment="8" align_type="cyclic" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="4" alignment="8" align_type="cyclic" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="4" alignment="8" align_type="cyclic" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_CAM">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="8" alignment="16" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="8" alignment="16" align_type="table" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="8" alignment="16" align_type="table" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="8" alignment="16" align_type="table" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_CONTEXT_INDEX_CACHE_TABLE">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="8" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="8" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="8" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="8" address_prefix="US" \/>/
+silent g/^        <table name="PARALLEL_PROCESSING_CONTEXT_CACHE_MODE">/,/<\/table>/s/address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/>/
+silent g/^        <table name="ETH_TX_EMACS_STATUS">/,/<\/table>/s/alignment="1" align_type="table" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" alignment="1" align_type="table" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" alignment="1" align_type="table" \/>/
+silent g/^        <table name="INGRESS_RATE_LIMITER_TABLE">/,/<\/table>/s/alignment="128" align_type="table" address_prefix="US" \/>/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="5" alignment="128" align_type="table" address_prefix="US" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="5" alignment="128" align_type="table" address_prefix="US" \/>/
+silent g/^        <table name="INGRESS_CLASSIFICATION_RULE_CFG_DESCRIPTOR">/,/<\/table>/s/<\/table>/& \r
+\        <table name="PACKET_BUFFER_SIZE_ASR_8"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="1" same_address="True" address_prefix="DS" \/>  \r
+\            <table_properties data_segment_name="PRIVATE_B" size="1" same_address="True" address_prefix="US" \/>  \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="WAN_TX_SCRATCH"> \r
+\            <table_properties data_segment_name="PRIVATE_B" size="16" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="ETH_TX_SCRATCH"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="16" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/ 
+silent g/^        <table name="FREE_SKB_INDEXES_DDR_FIFO_TAIL">/,/<\/table>/s/size="1"/size="2"/
+silent g/^        <table name="FREE_SKB_INDEXES_DDR_FIFO_TAIL">/,/<\/table>/s/alignment="4"/alignment="8"/
+silent g/^        <table name="DUMMY_STORE">/s/"DUMMY_STORE">/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" address_prefix="PRIVATE_A" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" address_prefix="PRIVATE_A" \/>/ 
+silent g/^        <table name="ETH_TX_INTER_LAN_SCHEDULING_OFFSET">/s/"ETH_TX_INTER_LAN_SCHEDULING_OFFSET">/& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_A" size="1" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_A" size="1" \/>/ 
+silent g/^        <table name="CPU_REASON_AND_SRC_BRIDGE_PORT_TO_METER_TABLE">/s//& \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="3" size2="6" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="3" size2="6" \/>/
+silent g/^        <table name="EMAC_SKB_ENQUEUED_INDEXES_FIFO">/,/<\/table>/s/<\/table>/& \r
+\        <table name="ONE_BUFFER"> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="1" alignment="8" align_type="table" address_prefix="US"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="1" alignment="8" align_type="table" address_prefix="US"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="MAINA_BASE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="MAINB_BASE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="PICOA_BASE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="PICOB_BASE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="128" alignment="1024" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="MAINA_CURR_OFFSET"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="MAINB_CURR_OFFSET"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="PICOA_CURR_OFFSET"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="PICOB_CURR_OFFSET"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="1" alignment="8" align_type="table" address_prefix="RUNNER_FWTRACE"\/> \r
+\            <entry name="EIGHT_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="ETH0_EEE_MODE_CONFIG_MESSAGE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="PRIVATE_B" size="1" alignment="4" align_type="table" address_prefix="US"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="PRIVATE_B" size="1" alignment="4" align_type="table" address_prefix="US"\/> \r
+\            <entry name="FOUR_BYTES"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="LAN_INGRESS_FIFO_DESCRIPTOR_TABLE">/,/<\/table>/s/<\/table>/& \r
+\        <table name="DS_RATE_SHAPERS_TABLE"> \r
+\            <table_properties data_segment_name="PRIVATE_A" size="128" alignment="2048" align_type="table" \/> \r
+\            <entry name="DS_RATE_SHAPER_DESCRIPTOR"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="RATE_SHAPERS_STATUS_DESCRIPTOR"> \r
+\            <!-- 128 rate shapers x 1 bytes --> \r
+\            <table_properties data_segment_name="COMMON_A" size="128" address="0x3680" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="BUDGET_ALLOCATOR_TABLE" size="8">/s//& \r
+\            <table_properties data_segment_name="PRIVATE_A" alignment="16" align_type="table" address_prefix="DS_RATE_SHAPER" \/>/
+silent g/^        <table name="GPON_ABSOLUTE_TX_FIRMWARE_COUNTER">/,/<\/table>/s/<\/table>/& \r
+\        <table name="ETHWAN_ABSOLUTE_TX_BBH_COUNTER"> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_B" size="1" address="0xA980" \/> \r
+\            <entry name="GPON_ABSOLUTE_TX_COUNTER"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="ETHWAN_ABSOLUTE_TX_FIRMWARE_COUNTER"> \r
+\            <table_properties anchor="True" data_segment_name="PRIVATE_B" size="1" address="0xA988" \/> \r
+\            <entry name="GPON_ABSOLUTE_TX_COUNTER"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="DEBUG_TRACE"> \r
+\            <table_properties project="DSL_63138" anchor="True" data_segment_name="COMMON_A" size="512" alignment="512" align_type="table" address="0x7A00" address_prefix="MAIN_A"\/> \r
+\            <table_properties project="DSL_63138" anchor="True" data_segment_name="COMMON_A" size="512" alignment="512" align_type="table" address="0x7C00" address_prefix="PICO_A"\/> \r
+\            <table_properties project="DSL_63138" anchor="True" data_segment_name="COMMON_B" size="512" alignment="512" align_type="table" address="0xEA00" address_prefix="MAIN_B"\/> \r
+\            <table_properties project="DSL_63138" anchor="True" data_segment_name="COMMON_B" size="512" alignment="512" align_type="table" address="0xEC00" address_prefix="PICO_B"\/> \r
+\            <table_properties project="DSL_63148" anchor="True" data_segment_name="COMMON_A" size="512" alignment="512" align_type="table" address="0x7A00" address_prefix="MAIN_A"\/> \r
+\            <table_properties project="DSL_63148" anchor="True" data_segment_name="COMMON_A" size="512" alignment="512" align_type="table" address="0x7C00" address_prefix="PICO_A"\/> \r
+\            <table_properties project="DSL_63148" anchor="True" data_segment_name="COMMON_B" size="512" alignment="512" align_type="table" address="0xEA00" address_prefix="MAIN_B"\/> \r
+\            <table_properties project="DSL_63148" anchor="True" data_segment_name="COMMON_B" size="512" alignment="512" align_type="table" address="0xEC00" address_prefix="PICO_B"\/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="CONNECTION_TABLE" size="32768">/,/<\/table>/s/<\/table>/& \r
+silent g/^.*External memories data structures.*$/s//& \r
+\        <table name="BPM_PACKET_BUFFERS"> \r
+\            <!-- 7680 packets buffers x 2K bytes --> \r
+\            <table_properties data_segment_name="DDR" size="7680" address="0x0000000" \/> \r
+\            <entry name="BPM_PACKET_BUFFER"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="RUNNER_FLOW_IH_RESPONSE">/,/<\/table>/s/<\/table>/& \r
+\        <table name="RUNNER_FLOW_IH_RESPONSE_MUTEX" > \r
+\            <table_properties project="DEFAULT" data_segment_name="PRIVATE_A" size="1" address_prefix="DS" \/> \r
+\            <table_properties project="DEFAULT" data_segment_name="PRIVATE_B" size="1" address_prefix="US" \/> \r
+\            <entry name="ONE_BYTE"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="L4_DST_PORT_TABLE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="256" alignment="32" address_prefix="DS"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="256" alignment="32" address_prefix="DS"\/> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="256" alignment="32" address_prefix="US"\/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="256" alignment="32" address_prefix="US"\/> \r
+\            <entry name="L4_DST_PORT_ENTRY"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="L4_DST_PORT_CONTEXT_TABLE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_A" size="256" alignment="32" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_A" size="256" alignment="32" \/> \r
+\            <entry name="L4_DST_PORT_CONTEXT"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="IPV4_HOST_ADDRESS_TABLE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="8" alignment="32" align_type="table" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="8" alignment="32" align_type="table" \/> \r
+\            <entry name="FOUR_BYTES"> \r
+\            <\/entry> \r
+\        <\/table> \r
+\        <table name="IPV6_HOST_ADDRESS_CRC_TABLE"> \r
+\            <table_properties project="DSL_63138" data_segment_name="COMMON_B" size="8" alignment="32" align_type="table" \/> \r
+\            <table_properties project="DSL_63148" data_segment_name="COMMON_B" size="8" alignment="32" align_type="table" \/> \r
+\            <entry name="FOUR_BYTES"> \r
+\            <\/entry> \r
+\        <\/table>/
+silent g/^        <table name="INTERRUPT_COALESCING_CONFIG_TABLE">/,/<\/table>/s/size="12"/size="16"/
+silent g/^        <table name="RUNNER_FLOW_HEADER_DESCRIPTOR">/,/<\/table>/s/data_segment_name="PRIVATE_B" size="1" alignment="8"/data_segment_name="PRIVATE_B" size="3" alignment="64"/
+silent g/^        <table name="RUNNER_FLOW_HEADER_BUFFER">/,/<\/table>/s/size="1"/& align_type="table"/
+silent g/^        <table name="RUNNER_FLOW_HEADER_BUFFER">/,/<\/table>/s/"PRIVATE_B" size="1"/"PRIVATE_B" size="3"/
+silent g/^        <table name="CONNECTION_BUFFER_TABLE">/,/<\/table>/s/align_type="table"/& address_prefix="DS"/
+silent g/^        <table name="CONNECTION_BUFFER_TABLE">/+1t.+1
+silent g/^        <table name="CONNECTION_BUFFER_TABLE">/+1s/COMMON_A/COMMON_B/
+silent g/^        <table name="CONNECTION_BUFFER_TABLE">/+1s/DS/US/
+silent g/^        <table name="ETH0_RX_DESCRIPTORS">/,/<\/table>/s/PRIVATE_B/PRIVATE_A/
+silent g/^        <table name="ETH0_RX_DESCRIPTORS">/,/<\/table>/s/0xB000/0x9E00/
+silent g/^    <project name="DEFAULT">/,/<\/project>/d
+silent g/used="NO"/s//used="False"/
+w
+q
+EOF
+
+echo $new_sections > new_sections.txt
+vim -S new_sections.txt $NEW_DS_XML_FILE
+
+IFS=$IFS_SAVE
+
+echo "Removing unused entries"
+entry_names=`sed -n -e "/used=\"False\"/d" -e "s/^.*entry name=\"\([0-9A-Z_]*\)\".*$/\1/p" $NEW_DS_XML_FILE | sort | uniq -u`
+for entry_name in $entry_names
+do
+    remove_entries="${remove_entries}silent g/<entry name=\"$entry_name\"/,/<\/entry>/d\n"
+done
+
+# special cases
+remove_entries="${remove_entries}silent g/<entry name=\"VLAN_COMMAND_INDEX_ENTRY\"/,/<\/entry>/d\n"
+remove_entries="${remove_entries}silent g/<entry name=\"IPTV_CONTEXT_ENTRY\"/,/<\/entry>/d\n"
+remove_entries="${remove_entries}silent g/<entry name=\"IPTV_DDR_CONTEXT_ENTRY\"/,/<\/entry>/d\n"
+
+remove_entries="${remove_entries}w\nq\n"
+
+echo -e $remove_entries > remove_entries.txt
+vim -S remove_entries.txt $NEW_DS_XML_FILE
+
+echo "Done"
+
+

@@ -1,0 +1,10 @@
+#
+# Add the object in cms-dm-bcm-multicastmldsnoop.xml as the first child of LANDevice.{i}.
+# Note that mldsnoopconfig is in a different place than the original TR98 data model, this is
+# intentional to make it work correctly in Hybrid TR98+TR181 mode.
+#
+# See 0000-README.txt for more details
+#
+
+addFirstChildObjToObj cms-dm-bcm-multicastmldsnoop.xml InternetGatewayDevice.LANDevice.{i}.
+

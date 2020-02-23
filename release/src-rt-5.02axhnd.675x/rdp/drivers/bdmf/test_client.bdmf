@@ -1,0 +1,9 @@
+/ transport
+this mipsd
+connect mipsc domain_socket connect 0 /tmp/bdmf_mipsd_cmips.socket
+/ bdmf rem
+connect mipsc
+/ bdmf
+
+
+

@@ -1,0 +1,23 @@
+
+Broadcom Mini Driver Kit (MDK)
+==============================
+
+The Broadcom MDK provides a basic programming interface and a basic
+API for Broadcom network switch devices.
+
+Package Contents
+----------------
+
+The MDK contains the following directories/components:
+
+cdk   - Chip Development Kit
+bmd   - Broadcom Mini Driver API
+phy   - PHY driver Library
+board - Board specific code/drivers
+doc   - Documentation
+
+Please refer to the documentation in the doc directory for a detailed
+description of the MDK components and build instructions for the
+sample applications.
+
+=====================================================================

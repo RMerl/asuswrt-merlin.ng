@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.MAP." shortObjectName="Dev2MapObject" specSource="TR181" profile="Device2_MAPBasic:1" requirements="P" supportLevel="Present" oid="1910" />
+  <description source="TRx">The Mapping of Address and Port (MAP) object {{bibref|RFC7597}} {{bibref|RFC7599}} {{bibref|RFC7598}}. This object applies only to gateway devices that support IPv4 on the LAN side, include a {{object|#.NAT}}, and typically have only IPv6 connectivity on the WAN side.         See the MAP Theory of Operation {{bibref|TR-181i2a8|Appendix XV}} for a description of the working of this MAP data model. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables MAP. </description>
+
+  <parameter name="DomainNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_MAPBasic:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.MAP.Domain.{i}." shortObjectName="Dev2MapDomainObject" specSource="TR181" profile="Device2_MAPBasic:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">MAP domain settings {{bibref|RFC7597}} {{bibref|RFC7599}}.  Each instance models a MAP domain.         MAP supports two transport modes, both of which use NAPT44 (modified to use a restricted port range):* MAP-E ({{param|TransportMode}} = {{enum|Encapsulation|TransportMode}}) uses an IPv4-in-IPv6 tunnel.         * MAP-T ({{param|TransportMode}} = {{enum|Translation|TransportMode}}) uses stateless NAT64.Note: There is an n:1 relationship between a MAP domain and the associated {{param|WANInterface}}, i.e. in theory multiple MAP domains can be associated with a single WAN IP interface (each domain would have its own ''End-user IPv6 prefix'' and ''MAP IPv6 address'').         Note: The {{object}} table includes unique key parameters that are strong references. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables the MAP domain. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The current operational state of the MAP domain.           The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-map" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="TransportMode" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="Translation" validValuesArray="mapModeValues" />
+    <description source="TRx">The transport mode to use.           Corresponds to the {{bibref|RFC7598}} ''S46_CONT_MAPE'' and ''S46_CONT_MAPT'' container options. </description>
+
+  <parameter name="WANInterface" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The IP interface with which this MAP domain is associated.  This will always be a NAT-ted upstream (WAN) interface.           The ''End-user IPv6 prefix'' {{param|IPv6Prefix}} is one of this IP interface's prefixes.The ''MAP IPv6 address'' is derived from the ''End-user IPv6 prefix'' and is one of this IP interface's IP addresses, with an {{param|##.IP.Interface.{i}.IPv6Address.{i}.Origin}} of {{enum|MAP|##.IP.Interface.{i}.IPv6Address.{i}.Origin}}. </description>
+
+  <parameter name="IPv6Prefix" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The MAP domain's ''End-user IPv6 prefix''.  This MUST reference one of {{param|WANInterface}}'s prefixes.           If the ACS configures this prefix directly, the CPE MUST use the ACS-configured prefix.  Otherwise, the CPE MUST select one of {{param|WANInterface}}'s prefixes; the selected prefix will typically have {{param|##.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} =  {{enum|PrefixDelegation|##.IP.Interface.{i}.IPv6Prefix.{i}.Origin}}. </description>
+
+  <parameter name="BRIPv6Prefix" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The MAP Border Relay (BR) address or prefix.           * For MAP-E this is the BR address and therefore MUST be a /128 {{bibref|RFC7597}}. Note this address can be an IPv6 anycast address. This address corresponds to the {{bibref|RFC7598}} ''OPTION_S46_BR'' (Border Relay) option.* For MAP-T this is the BR prefix {{bibref|RFC7599}}. This address prefix corresponds to the {{bibref|RFC7598}} ''OPTION_S46_DMR'' (Default Mapping Rule) option.           Note: There will be a corresponding {{object|.Routing.Router.{i}.IPv4Forwarding}} default rule. </description>
+
+  <parameter name="DSCPMarkPolicy" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="NotSupported" defaultValue="0" minValue="-2" maxValue="63" />
+    <description source="TRx">DSCP with which to mark the outer IP header for traffic that is associated with this MAP domain.           Downstream packets are never re-marked.Automatic DSCP marking behavior is a local matter to the device, possibly influenced by other Broadband Forum standards that it supports.           * A value of -1 indicates copy from the incoming packet.* A value of -2 indicates automatic marking of DSCP. </description>
+
+  <parameter name="PSIDOffset" type="unsignedInt" specSource="TR181" profile="Device2_MAPAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="6" minValue="0" maxValue="15" />
+    <description source="TRx">''Port-set ID'' (PSID) offset in {{units}}.  The number of Port-sets is 2^{{param}}.           Corresponds to the {{bibref|RFC7598}} ''S46_PORTPARAMS'' (Port Parameters) option's ''offset'' field. </description>
+
+  <parameter name="PSIDLength" type="unsignedInt" specSource="TR181" profile="Device2_MAPAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="16" />
+    <description source="TRx">The length in {{units}} of the ''Port-set id'' (PSID) configured in the {{param|PSID}} parameter.           Corresponds to the {{bibref|RFC7598}} ''S46_PORTPARAMS'' (Port Parameters) option's ''PSID-len'' field. </description>
+
+  <parameter name="PSID" type="unsignedInt" specSource="TR181" profile="Device2_MAPAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="TRx">''Port-set ID'' (PSID) to use in preference to the value extracted from the ''Embedded Address'' (EA) bits.           Only the high order {{param|PSIDLength}} bits of the {{param}} value are used, so the parameter is ignored when {{param|PSIDLength}} is zero.Corresponds to the {{bibref|RFC7598}} ''S46_PORTPARAMS'' (Port Parameters) option's ''PSID'' field. </description>
+
+  <parameter name="IncludeSystemPorts" type="boolean" specSource="TR181" profile="Device2_MAPAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Whether to include low-numbered (system) ports in the Port-sets. Normally ports in the range [0:2^(16-{{param|PSIDOffset}})-1] are excluded, e.g. for the default {{param|PSIDOffset}} value of 4, ports [0:4095]are not included in the Port-sets.           This parameter is related to {{bibref|RFC7597}}'s ''N'', which is defined as ''the number of ports (e.g., 1024) excluded from the lower end of the range''.  The parameter is relevant only when {{param|PSIDOffset}} is 0; {{false}} corresponds to ''N=1024'' and {{true}} corresponds to ''N=0''. </description>
+
+  <parameter name="RuleNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_MAPBasic:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.MAP.Domain.{i}.Rule.{i}." shortObjectName="Dev2MapDomainRuleObject" specSource="TR181" profile="Device2_MAPBasic:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">The MAP domain's Mapping Rules {{bibref|RFC7597}}. The rule with the longest match between its {{param|IPv6Prefix}} and the end-user {{param|#.IPv6Prefix}} is the Basic Mapping Rule (BMR). Any of the rules (including the BMR) can be a Forwarding Mapping Rule. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enable or disable this {{object}} instance. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" />
+    <description source="TRx">The status of this {{object}} instance.  {{enum}}           The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="cpe-map" maxLength="64" autoGenerateAlias="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Origin" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="Static" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The mechanism via which the {{object}} was created.           If the CPE supports MAP configuration via both DHCPv6 and CWMP, it is up to the implementation to determine how the two mechanisms will interact. </description>
+
+  <parameter name="IPv6Prefix" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="/0" />
+    <description source="TRx">The ''Rule IPv6 prefix''.           The Rule IPv6 prefix is a leading part of the end-user {{param|#.IPv6Prefix}}, i.e. its length MUST be less than or equal to the length of the end-user ''IPv6Prefix'', and it MUST match the end-user ''IPv6Prefix''.Corresponds to the {{bibref|RFC7598}} ''S46_RULE'' option's ''ipv6-prefix'' field. </description>
+
+  <parameter name="IPv4Prefix" type="string" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="/0" />
+    <description source="TRx">The ''Rule IPv4 prefix''.           Corresponds to the {{bibref|RFC7598}} ''S46_RULE'' option's ''ipv4-prefix'' field. </description>
+
+  <parameter name="EABitsLength" type="unsignedInt" specSource="TR181" profile="Device2_MAPAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="48" />
+    <description source="TRx">The length in {{units}} of the ''Embedded Address (EA) bits'' in the end-user {{param|#.IPv6Prefix}}.           Corresponds to the {{bibref|RFC7598}} ''S46_RULE'' option's ''ea-len'' field. </description>
+
+  <parameter name="IsFMR" type="boolean" specSource="TR181" profile="Device2_MAPBasic:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Indicates whether this rule is a ''Forwarding Mapping Rule'' (FMR), i.e. can be used for forwarding.           Corresponds to the {{bibref|RFC7598}} ''S46_RULE'' option's ''flags'' field's ''F-Flag''. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.MAP.Domain.{i}.Interface." shortObjectName="Dev2MapDomainInterfaceObject" specSource="TR181" profile="Device2_MAPBasic:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">MAP interface (a stackable interface object as described in {{bibref|TR-181i2|Section 4.2}}).  This models the LAN side MAP domain interface. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables the interface.           This parameter is based on ''ifAdminStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the interface (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}}When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface).            When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason.This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The textual name of the interface as assigned by the CPE. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in {{units}} since the interface entered its current operational state. </description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="1024" />
+    <description source="TRx">{{list}} {{reference|an interface object that is stacked immediately below this interface object}}  See {{bibref|TR-181i2|Section 4.2.1}}.           Note: Since this interface object is a MAP domain interface, it is expected that {{param}} will not be used. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.MAP.Domain.{i}.Interface.Stats." shortObjectName="Dev2MapDomainInterfaceStatsObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Throughput statistics for this MAP domain interface.         The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's {{param|#.Status}} parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's {{param|#.Enable}} parameter transitions from {{false}} to {{true}}). Administrative and operational interface status is discussed in {{bibref|TR-181i2|section 4.2.2}}. </description>
+
+  <parameter name="BytesSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors. </description>
+
+  <parameter name="ErrorsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="UnicastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="UnicastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were not addressed to a multicast or broadcast address at this layer. </description>
+
+  <parameter name="DiscardPacketsSent" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="DiscardPacketsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to  prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="MulticastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="MulticastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a multicast address at this layer. </description>
+
+  <parameter name="BroadcastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent.           Note that IPv6 does not define broadcast addresses, so IPv6 packets will never cause this counter to increment. </description>
+
+  <parameter name="BroadcastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a broadcast address at this layer.           Note that IPv6 does not define broadcast addresses, so IPv6 packets will never cause this counter to increment. </description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received via the interface which were discarded because of an unknown or unsupported  protocol. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="mapModeValues" />
+  <element>Translation</element>
+  <element>Encapsulation</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_MAPBasic:1" /> 
+<profile name="Device2_MAPAdv:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

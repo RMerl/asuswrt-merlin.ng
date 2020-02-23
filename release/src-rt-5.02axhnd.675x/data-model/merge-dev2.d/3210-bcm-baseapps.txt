@@ -1,0 +1,9 @@
+#
+# Add the object(s) in cms-dm-bcm-baseapps.xml as the first children 
+# of Device.X_BROADCOM_COM_AppCfg. 
+#
+# See 0000-README.txt for more details
+#
+
+addFirstChildObjToObj cms-dm-bcm-baseapps.xml Device.X_BROADCOM_COM_AppCfg.
+

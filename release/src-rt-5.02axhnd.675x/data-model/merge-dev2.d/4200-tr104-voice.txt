@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr104-voice.xml as the
+# last children objects of Device.Services.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr104-voice-tr181.xml Device.Services.
+

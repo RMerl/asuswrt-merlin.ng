@@ -1,0 +1,155 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_McastCfg." shortObjectName="McastCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="Present" oid="3282" />
+  <description source="BROADCOM">Multicast configuration</description>
+
+  <parameter name="McastPrecedence" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="8" />
+    <description source="BROADCOM">Multicast precedence</description>
+
+  <parameter name="McastMaxGroupsPortList" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Comma delimited pairs of LAN port names and maximum number of groups for the LAN port.</description>
+
+  <parameter name="McastStrictWan" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="8" />
+    <description source="BROADCOM">Enforce that multicast routes are only between bridges and their associated WAN services.</description>
+
+  <parameter name="McastDscpRemarkEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_DCSP_MCAST_REMARK:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Multicast DSCP Remarking Enable</description>
+
+  <parameter name="McastDscpRemarkVal" type="int" specSource="Broadcom" profile="X_BROADCOM_COM_DCSP_MCAST_REMARK:1" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="63" />
+    <description source="BROADCOM">Multicast DSCP Remarking Value</description>
+
+  <parameter name="McastHostControl" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="false"  />
+    <description source="BROADCOM">Multicast Host Control</description>
+
+  <parameter name="McastIgmpSnoopExceptions" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="239.255.255.250/255.255.255.255 224.0.255.135/255.255.255.255" />
+    <description source="BROADCOM">Slash and blank delimited list of ignored addresses and masks.</description>
+
+  <parameter name="McastMldSnoopExceptions" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MCAST:1" supportLevel="ReadWrite" defaultValue="ff05::0001:0003/ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" />
+    <description source="BROADCOM">Slash and blank delimited list of ignored addresses and masks.</description>
+    
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IGMPCfg." shortObjectName="IgmpCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="Present" />
+  <description source="BROADCOM">IGMP proxy and snooping configuration</description>
+
+  <parameter name="IgmpVer" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="3" minValue="1" maxValue="3" />
+    <description source="BROADCOM">IGMP Protocol Version</description>
+
+  <parameter name="IgmpQI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="125" />
+    <description source="BROADCOM">IGMP Query Interval</description>
+
+  <parameter name="IgmpQRI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="10" minValue="0" maxValue="2147483647" />
+    <description source="BROADCOM">IGMP Query Response Interval</description>
+
+  <parameter name="IgmpLMQI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="10" minValue="0" maxValue="2147483647" />
+    <description source="BROADCOM">IGMP Last Member Query Interval</description>
+
+  <parameter name="IgmpRV" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="2" minValue="0" maxValue="2147483647" />
+    <description source="BROADCOM">IGMP - Robustness Value</description>
+
+  <parameter name="IgmpMaxGroups" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="25" />
+    <description source="BROADCOM">IGMP - Maximum number of simultaneous groups supported</description>
+
+  <parameter name="IgmpMaxSources" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">IGMP - Maximum number of multicast data sources</description>
+
+  <parameter name="IgmpMaxMembers" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="25" />
+    <description source="BROADCOM">Maximum number of reporters  for a group</description>
+
+  <parameter name="IgmpFastLeaveEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">IGMP - fast leave enable </description>
+
+  <parameter name="IgmpFloodEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">IGMP - flooding enable </description>
+	
+  <parameter name="IgmpLan2LanMulticastEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">DEPRECATED&#10;IGMP LAN to LAN multicast support</description>
+
+  <parameter name="IgmpJoinImmediate" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">DEPRECATED&#10;IGMP Membership Immediate join for IPTV</description>
+
+  <parameter name="IgmpBridgeIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of bridge interface that have snooping enabled. </description>
+
+  <parameter name="IgmpMcastIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of multicast interfaces which can be IGMP multicast sources.</description>
+
+  <parameter name="IgmpProxyIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_IGMP:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of multicast interfaces that will be proxied for IGMP.</description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_MLDCfg." shortObjectName="MldCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="Present" />
+  <description source="BROADCOM">MLD Proxy/Snooping configuration</description>
+
+  <parameter name="MldVer" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="2" minValue="1" maxValue="2" />
+    <description source="BROADCOM">MLD Protocol Version</description>
+
+  <parameter name="MldQI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="125" />
+    <description source="BROADCOM">MLD Query Interval</description>
+
+  <parameter name="MldQRI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">MLD Query Response Interval</description>
+
+  <parameter name="MldLMQI" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">MLD Last Member Query Interval</description>
+
+  <parameter name="MldRV" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="2" />
+    <description source="BROADCOM">MLD Robustness Value</description>
+
+  <parameter name="MldMaxGroups" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">MLD Maximum number of IPv6 Multicast groups</description>
+
+  <parameter name="MldMaxSources" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">MLD maximum number of multicast data sources</description>
+
+  <parameter name="MldMaxMembers" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="10" />
+    <description source="BROADCOM">MLD Maximum number of multicast clients per group</description>
+
+  <parameter name="MldFastLeaveEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">MLD Fast Leave option enable</description>
+	
+  <parameter name="MldFloodEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">MLD Flooding option enable</description>
+
+  <parameter name="MldLan2LanMulticastEnable" type="boolean" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">DEPRECATED&#10;MLD LAN to LAN Multicast enable</description>
+
+  <parameter name="MldBridgeIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of bridge interface that have snooping enabled. </description>
+
+  <parameter name="MldProxyIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank-delimited list of multicast interfaces that will be proxied for MLD.</description>
+
+  <parameter name="MldMcastIfNames" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_MLD:1" supportLevel="ReadWrite" defaultValue="" maxLength="128" />
+    <description source="BROADCOM">Blank delimited list of multicast interfaces which can be MLD multicast sources..</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_MCAST:1" /> 
+<profile name="X_BROADCOM_COM_IGMP:1" /> 
+<profile name="X_BROADCOM_COM_MLD:1" /> 
+<profile name="X_BROADCOM_COM_DCSP_MCAST_REMARK:1" />
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

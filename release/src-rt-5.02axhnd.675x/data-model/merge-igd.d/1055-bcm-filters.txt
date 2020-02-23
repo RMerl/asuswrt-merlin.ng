@@ -1,0 +1,10 @@
+#
+# Add the objects in cms-dm-bcm-filters.xml as the
+# last children objects of InternetGatewayDevice.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-filters.xml InternetGatewayDevice.DeviceConfig.
+
+

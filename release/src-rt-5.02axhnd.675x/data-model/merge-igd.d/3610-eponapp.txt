@@ -1,0 +1,8 @@
+#
+# Add the object(s) in cms-dm-eponapp.xml as the last child of
+# InternetGatewayDevice.X_BROADCOM_COM_AppCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-eponapp.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.

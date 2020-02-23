@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+use bytes;
+use File::stat;
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+    #if ( defined $_[1] ) {
+        print "$_[0]\n";
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+my @args = @ARGV;
+
+##
+#
+# Redirection CFE_ROM if TK was chosen
+#
+#
+my $CFE_ROM = $ENV{WDIR}.'/'.$ENV{CFE_ROM_BN};
+my $AES_EK = $ENV{FLD_AES_EK};
+my $AES_IV = $ENV{FLD_AES_IV};
+my $SFX     = $ENV{FLD_ENC};
+my $BLR2 = 'secram.000';
+if ( $args[0] eq "mfg" ) {
+    $BLR2 = 'secmfg.000';
+    $AES_EK = $ENV{MFG_AES_EK};
+    $AES_IV  = $ENV{MFG_AES_IV};
+    $SFX     = $ENV{MFG_ENC};
+    if ( $ENV{SECURE_BOOT_TURNKEY} eq "y" ) {
+        $CFE_ROM = $ENV{WDIR}.'/'.$ENV{CFE_ROM_TK_BN};
+    }
+}
+$AES_EK = shell("hexdump -v -e '/1 \"%02X\"' $AES_EK");
+$AES_IV = shell("hexdump -v -e '/1 \"%02X\"' $AES_IV");
+print "--------------------- $CFE_ROM\n";
+#
+# encrypt cferom if chosen so
+#
+if ( $ENV{SECURE_BOOT_ENCRYPT_BTLDRS} eq 'y' ) {
+    #
+    # This can be done elsewhere using HSM or secure server below
+    # is an example for demo mode
+    #
+    #
+    # Encrypt CFEROM for MFG / FLD secure mode
+    #
+    shell(
+        "cat $CFE_ROM|openssl enc -aes-128-cbc -K $AES_EK -iv $AES_IV -out $CFE_ROM$SFX"
+    );
+   if ( $ENV{encrypt} eq '2' ) {
+    # Second stage bootloaders (mfg,fld) with this option will be
+    # 1. Compressed
+    # 2. Encrypted
+    local *cat = sub {
+           local $/;
+           my $data;
+           my $flag = (defined $_[1])? ">":"<";
+           open( C, $flag, $_[0]) or 
+                   die("can't open $_[0] ");
+           if (defined $_[1]) {
+              print C $_[1]  ;
+           } else {
+             $data = <C>;
+           } 
+           close(C);
+           return $data;
+    };
+    my $bytes = cat($ENV{CFE_RAM});
+    print "---- FULLA $ENV{CFE_RAM} --- \n";
+    my $comp_sz = (length $bytes)-12;
+    cat("$ENV{WDIR}/cferam.tmp.$$", substr($bytes, 12, $comp_sz) ); 
+    shell(
+        "$ENV{HOSTTOOLS_DIR}/lzmacmd e $ENV{WDIR}/cferam.tmp.$$ $ENV{WDIR}/$BLR2.lz.$$ -d22 -lp2 -lc1"
+    );
+    my $infl = cat("$ENV{WDIR}/$BLR2.lz.$$"); 
+    substr($bytes, 8, 4) = pack("(I)<",(length $infl));
+    cat("$ENV{WDIR}/$BLR2.lz.$$", substr($bytes, 0, 12) . $infl); 
+    shell(
+        "cat $ENV{WDIR}/$BLR2.lz.$$|openssl enc -aes-128-cbc -K $AES_EK -iv $AES_IV -out $ENV{WDIR}/bootfs/$BLR2"
+    );
+   }
+}

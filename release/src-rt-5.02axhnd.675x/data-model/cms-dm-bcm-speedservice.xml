@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SpeedService." shortObjectName="SpeedServiceObject" specSource="Broadcom" profile="X_BROADCOM_COM_SPDSVC:1" supportLevel="Present" oid="3580"/>
+  <description source="BROADCOM">Object for Speed Service and last testing result </description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="None" validValuesArray="spdsvcStateValues" neverWriteToConfigFile="true" />
+    <description source="TRx">Indicate the availability of diagnostic data.  {{enum}} If the ACS sets the value of this parameter to {{enum|Requested}}, the CPE MUST initiate the corresponding diagnostic test.  When writing, the only allowed value is {{enum|Requested}}.  To ensure the use of the proper test parameters (the writable parameters in this object), the test parameters MUST be set either prior to or at the same time as (in the same SetParameterValues) setting the {{param}} to {{enum|Requested}}.When requested, the CPE SHOULD wait until after completion of the communication session with the ACS before starting the diagnostic. When the test is completed, the value of this parameter MUST be either {{enum|Completed}} (if the test completed successfully), or one of the ''Error'' values listed above.If the value of this parameter is anything other than {{enum|Completed}}, the values of the results parameters for this test are indeterminate. When the diagnostic initiated by the ACS is completed (successfully or not), the CPE MUST establish a new connection to the ACS to allow the ACS to view the results, indicating the Event code ''8 DIAGNOSTICS COMPLETE'' in the Inform message.After the diagnostic is complete, the value of all result parameters (all read-only parameters in this object) MUST be retained by the CPE until either this diagnostic is run again, or the CPE reboots.  After a reboot, if the CPE has not retained the result parameters from the most recent test, it MUST set the value of this parameter to {{enum|None}}.Modifying any of the writable parameters in this object except for this one MUST result in the value of this parameter being set to {{enum|None}}. While the test is in progress, modifying any of the writable parameters in this object except for this one MUST result in the test being terminated and the value of this parameter being set to {{enum|None}}.While the test is in progress, setting this parameter to {{enum|Requested}} (and possibly modifying other writable parameters in this object) MUST result in the test being terminated and then restarted using the current values of the test parameters. </description>
+
+  <parameter name="Mode" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="client_bw" validValuesArray="modeValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicate the mode of a speed test. client_bw is for bandwidth capacity detection. </description>
+
+  <parameter name="Direction" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="bothstream" validValuesArray="directionValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicate the direction of a speed test. upstream, downstream, or both. </description>
+
+  <parameter name="DataPath" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="HW" validValuesArray="dataPathValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicate the selection of HW or SW Packet Generator/Packet Analyzer. </description>
+
+  <parameter name="ServerIpAddr" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0.0.0.0" maxLength="46" neverWriteToConfigFile="true"/>
+    <description source="BROADCOM">Peer IP address which the speedtest is communicating with (dotted decimal format). </description>
+
+  <parameter name="TcpPort" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="50000" minValue="0" maxValue="65535" neverWriteToConfigFile="true"/>
+    <description source="BROADCOM">TCP port used for control </description>
+
+  <parameter name="UdpPort" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">UDP port used for test data, can leave 0 to allow app to decide </description> 
+
+  <parameter name="StepDuration" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1000" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Duration of each step in milliseconds </description>
+
+  <parameter name="PacketLength" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1472" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Test packet length in bytes </description>
+
+  <parameter name="StartingBwKbps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Kilo (1000)) bits per second, only valid in client mode. </description>
+
+  <parameter name="Algorithm" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="Fast" validValuesArray="AlgorithmValues" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only for client_bw mode, algorithm to use to detect bandwidth capacity. </description>
+
+  <parameter name="MaxSteps" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="10" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only for client_bw mode. </description>
+
+  <parameter name="AcceptablePercentageLoss" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only for client_bw mode. Increments of 1 percent </description>
+
+  <parameter name="LatencyTolerancePercentage" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only use when algorithm is Bin or Ramp. A value of -1 indicates that it's optional and not be used. </description>
+
+  <parameter name="MaxLossPercentage" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">The maximum loss percentage can be allowed. Only use when algorithm is Ramp. </description>
+
+  <parameter name="LogBuffer" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" maxLength="16" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Last 512 bytes of the output of speedtest </description>
+
+  <parameter name="GoodPut" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Total rate including overhead and payload in Kbps </description>
+
+  <parameter name="PayloadRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only payload rate in Kbps </description>
+
+  <parameter name="PacketLoss" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Number of packet lost </description>
+
+  <parameter name="AvgLatency" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Average latency in us</description>
+
+  <parameter name="AdjustReceivedRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Ajusted received rate in Kbps </description>
+
+  <parameter name="ReceivedTime" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Time that packets are received in us</description>
+
+  <parameter name="Overhead" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Packet Headers plus IFG and FCS, which are sent in addition to the payload. This is detected by the speed service driver and reported to the app. </description>
+
+  <parameter name="LastRunTime" type="dateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Date and time last result were saved</description>
+
+  <parameter name="ResultHistoryNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Number of entries under ResultHistory. The 5th most recent results will be overwritten with the most recent results. </description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_SpeedService.ResultHistory.{i}." shortObjectName="ResultHistoryObject" specSource="Broadcom" profile="X_BROADCOM_COM_SPDSVC:1" supportLevel="DynamicInstances" pruneWriteToConfigFile="true" />
+  <description source="BROADCOM">Object containing the results of the last 4 attempts </description>
+
+  <parameter name="GoodPut" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Total rate including overhead and payload in Kbps </description>
+
+  <parameter name="PayloadRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Only payload rate in Kbps </description>
+
+  <parameter name="PacketLoss" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Number of packet lost </description>
+
+  <parameter name="AvgLatency" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Average latency in us</description>
+
+  <parameter name="AdjustReceivedRate" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Ajusted received rate in Kbps </description>
+
+  <parameter name="ReceivedTime" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Time that packets are received in us</description>
+
+  <parameter name="Overhead" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Packet Headers plus IFG and FCS, which are sent in addition to the payload. This is detected by the speed service driver and reported to the app. </description>
+
+  <parameter name="RunTime" type="dateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Date and time last result were saved</description>
+
+  <parameter name="Direction" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicate the direction of a speed test. upstream or downstream. </description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="spdsvcStateValues" />
+  <element>None</element>
+  <element>Requested</element>
+  <element>Completed</element>
+  <element>Failed</element>
+  <element>ERROR_REQUEST_ABORTED</element>
+
+<validstringarray name="modeValues" />
+  <element>client_send</element>
+  <element>client_bw</element>
+
+<validstringarray name="directionValues" />
+  <element>upstream</element>
+  <element>downstream</element>
+  <element>bothstream</element>
+
+<validstringarray name="dataPathValues" />
+  <element>HW</element>
+  <element>SW</element>
+
+<validstringarray name="AlgorithmValues" />
+  <element>Fast</element>
+  <element>Bin</element>
+  <element>Ramp</element>
+  <element>RxRate</element>
+
+</vsaInfo>
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_SPDSVC:1" />
+<profile name="Unspecified" />
+</profileInfo>
+
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,399 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6." shortObjectName="Dev2Dhcpv6Object" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="P" supportLevel="Present" oid="1580" />
+  <description source="TRx">The Dynamic Host Configuration Protocol (DHCP) IPv6 object {{bibref|RFC3315}}. This entire object applies to IPv6 only. It contains the {{object|Client}} and {{object|Server}} objects. </description>
+
+  <parameter name="ClientNumberOfEntries" type="unsignedInt" specSource="TR181" profile="X_BROADCOM_COM_IPv6:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Client.{i}." shortObjectName="Dev2Dhcpv6ClientObject" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">This object contains DHCPv6 client settings for an associated ''IP Interface'' indicated by {{param|Interface}}. For enabled table entries, if {{param|Interface}} is not a valid reference to an IPv6-capable interface (that is attached to the IPv6 stack), then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}.Note: The {{object}} table includes a unique key parameter that is a strong reference.  If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}.  However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference}} The IP Interface associated with the {{object}} entry. This will reference an IPv6-capable interface (that is attached to the IPv6 stack), otherwise the table entry will be inoperable. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="IpStatusType" />
+    <description source="TRx">The status of this table entry. {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="DUID" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" maxLength="130" />
+    <description source="TRx">The client's DHCP Unique Identifier (DUID) {{bibref|RFC3315|Section 9}}. {{param}} is set by the CPE. </description>
+
+  <parameter name="RequestAddresses" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="TRx">Enables or disables inclusion of the ''Identity Association (IA) for Non-Temporary Address'' option OPTION_IA_NA(3) {{bibref|RFC3315|Section 22.4}} in Solicit messages. </description>
+
+  <parameter name="RequestPrefixes" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables inclusion of the ''Identity Association (IA) for Prefix Delegation'' option OPTION_IA_PD(25) {{bibref|RFC3633|Section 10}} in Solicit messages. Note that this is only appropriate for an upstream interface on a requesting router, e.g. for an RG WAN interface. </description>
+
+  <parameter name="RapidCommit" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables inclusion of the ''Rapid Commit'' option OPTION_RAPID_COMMIT(14) {{bibref|RFC3315|Section 22.14}} in Solicit messages. </description>
+
+  <parameter name="Renew" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">When set to {{true}}, the {{object}} will renew its DHCPv6-supplied information (i.e. the CPE will do a renew or information request as needed, updating both stateful and stateless parameter values discovered by this Client instance). </description>
+
+  <parameter name="SuggestedT1" type="int" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="NotSupported" minValue="-1" />
+    <description source="TRx">T1 value, in {{units}}, that the client SHOULD use when sending IA options, e.g. OPTION_IA_NA {{bibref|RFC3315|Section 22.4}} and OPTION_IA_PD {{bibref|RFC3633|Section 10}}. A value of -1 indicates that no T1 value is specified. </description>
+
+  <parameter name="SuggestedT2" type="int" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="NotSupported" minValue="-1" />
+    <description source="TRx">T2 value, in {{units}}, that the client SHOULD use when sending IA options, e.g. OPTION_IA_NA {{bibref|RFC3315|Section 22.4}} and OPTION_IA_PD {{bibref|RFC3633|Section 10}}. A value of -1 indicates that no T2 value is specified. </description>
+
+  <parameter name="SupportedOptions" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="NotSupported" />
+    <description source="TRx">{{list}} The options that the client is able to process in server responses.  This list MUST include both top-level and encapsulated options, e.g. if the client is able to process OPTION_IA_NA (3) with an encapsulated OPTION_IAADDR (5), the list would be expected to include both 3 and 5. </description>
+
+  <parameter name="RequestedOptions" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="NotSupported" />
+    <description source="TRx">{{list}} An ordered list of the top-level options (i.e. not encapsulated options) that the client will explicitly request from the server. This parameter is intended only for options that are not necessary for the basic operation of the protocol, and are not modeled elsewhere.  For example, it is appropriate for OPTION_DNS_SERVERS {{bibref|RFC3646}} but is not appropriate for OPTION_SERVERID (which is part of the protocol), OPTION_IA_NA (which is modeled via {{param|RequestAddresses}}) or OPTION_IA_PD (which is modeled via {{param|RequestPrefixes}}).  However, the CPE MUST NOT reject an attempt to set this parameter to a value that includes options that it regards as inappropriate; instead, it MUST accept the requested options and handle them as best it can.Loosely speaking, these are the options that the client will include in OPTION_ORO {{bibref|RFC3315}} but the client is free to decide (in accordance with {{bibref|RFC3315}}) in which messages to request which option, whether also to request additional options, whether not to request inappropriate options, and in which order to request any options that are also in {{param|SupportedOptions}}. </description>
+
+  <parameter name="X_BROADCOM_COM_Pid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+
+  <parameter name="X_BROADCOM_COM_UnnumberedModel" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This parameter indicates whether WAN interface will be assigned global address or not</description>
+
+  <parameter name="ServerNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="SentOptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="ReceivedOptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Client.{i}.Server.{i}." shortObjectName="Dev2Dhcpv6ClientServerObject" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">This is a transitory table that lists the discovered DHCPv6 servers (it does ''not'' model a local DHCP server). Table entries are automatically created to correspond with these servers. However, it is a local matter to the CPE when to delete old table entries. </description>
+
+  <parameter name="SourceAddress" type="string" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The IP address from which the message most recently received from this server was sent. </description>
+
+  <parameter name="DUID" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="ReadOnly" maxLength="130" />
+    <description source="TRx">The server's DHCP Unique Identifier (DUID) {{bibref|RFC3315|Section 9}} as received via OPTION_SERVERID. </description>
+
+  <parameter name="InformationRefreshTime" type="dateTime" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The OPTION_INFORMATION_REFRESH_TIME value {{bibref|RFC4242}} that was most recently received from this server, converted to the ''dateTime'' at which the associated information will expire.  If no such option has been received, the parameter value MUST be the &quot;Unknown Time&quot; {{null}}.  If the information will never expire, the parameter value MUST be infinite time 9999-12-31T23:59:59Z. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Client.{i}.SentOption.{i}." shortObjectName="Dev2Dhcpv6ClientSentOptionObject" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">The top-level options and option values (including any encapsulated options) that the client will send to the server. This table is intended only for options that are not part of the basic operation of the protocol, and whose values are simple, do not often change and are not modeled elsewhere.  For example, it is appropriate for OPTION_USER_CLASS (whose value is a list of user classes) but is not appropriate for OPTION_RECONF_MSG (which is part of the protocol), OPTION_IA_NA (which is modeled via {{param|#.RequestAddresses}}) or OPTION_RAPID_COMMIT (which is modeled via {{param|#.RapidCommit}}). </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Tag" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="65535" />
+    <description source="TRx">Option tag (code) {{bibref|RFC3315|Section 22.1}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" minLength="0" />
+    <description source="TRx">A hexbinary encoded option data {{bibref|RFC3315|Section 22.1}}. Note: The length of the option data is ''option-len'' octets, as specified in {{bibref|RFC3315|Section 22.1}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Client.{i}.ReceivedOption.{i}." shortObjectName="Dev2Dhcpv6ClientReceivedOptionObject" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">This is a transitory table that lists all the options received from all servers. Table entries are automatically created to correspond with received options. However, it is a local matter to the CPE when to delete old table entries. If the same option is received multiple times, whether from one or more servers, it is up to the CPE to decide which entries to include (i.e. whether the same option will be present multiple times). In order to allow for the same option to be present multiple times within the table, this table has no unique key defined. </description>
+
+  <parameter name="Tag" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="65535" />
+    <description source="TRx">Option tag (code) {{bibref|RFC3315|Section 22.1}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6Client:1" requirements="R" supportLevel="ReadOnly" maxLength="65535" minLength="0" />
+    <description source="TRx">A hexbinary encoded option data {{bibref|RFC3315|Section 22.1}}. </description>
+
+  <parameter name="Server" type="string" specSource="TR181" profile="Device2_DHCPv6ClientServerIdentity:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{reference}} This is the server that sent the option to the client. Each {{object}} entry MUST have an associated server. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Client.{i}.X_BROADCOM_COM_RcvOption." shortObjectName="Dev2Dhcp6cRcvOptionObject" specSource="Broadcom" profile="Unspecified" supportLevel="Present" />
+  <description source="BROADCOM">Simplfied version of DHCPv6 received option.</description>
+
+  <parameter name="Address" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Comma separated list of addresses from IANA.</description>
+
+  <parameter name="AddressPlt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Preferred lifetime of the address</description>
+
+  <parameter name="AddressVlt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Valid lifetime of the address</description>
+
+  <parameter name="Prefix" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Comma separated list of prefixes from IAPD.</description>
+
+  <parameter name="PrefixPlt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Prefer lifetime of IAPD</description>
+
+  <parameter name="PrefixVlt" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Valid lifetime of IAPD.</description>
+
+  <parameter name="PrefixOld" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Add support for RFC7084 requirement L-13.</description>
+
+  <parameter name="PrefixVltOld" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Add support for RFC7084 requirement L-13.</description>
+
+  <parameter name="DNSServers" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Comma separated list of name servers.</description>
+
+  <parameter name="DomainName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Domain name</description>
+
+  <parameter name="Aftr" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">Aftr information for DS-Lite</description>
+
+  <parameter name="MapTransportMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+
+  <parameter name="MapBRPrefix" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+
+  <parameter name="MapRuleIPv4Prefix" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+
+  <parameter name="MapRuleIPv6Prefix" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+
+  <parameter name="MapEALen" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+
+  <parameter name="MapPSIDOffset" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+
+  <parameter name="MapPSIDLen" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+
+  <parameter name="MapPSID" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+
+  <parameter name="MapIsFMR" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="false" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server." shortObjectName="Dev2Dhcpv6ServerObject" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">DHCPv6 server configuration. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the DHCPv6 server function. </description>
+
+  <parameter name="PoolNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}." shortObjectName="Dev2Dhcpv6ServerPoolObject" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="PC" supportLevel="DynamicInstances" autoOrder="true" />
+  <description source="TRx">DHCPv6 server pool table. Each instance of this object defines a DHCPv6 server pool. Client requests are associated with pools based on criteria such as source interface, supplied DHCPv6 options, and source address.Overlapping pool ranges MUST be supported. For enabled table entries, if {{param|Interface}} is not a valid reference to an IPv6-capable interface (that is attached to the IPv6 stack) then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="IpStatusType" />
+    <description source="TRx">The status of this entry.  {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Order" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" minValue="1" />
+    <description source="TRx">Position of the {{object}} entry in the order of precedence.  A value of ''1'' indicates the first entry considered (highest precedence).  For each DHCPv6 request, the highest ordered entry that matches the association criteria is applied.  All lower order entries are ignored. When this value is modified, if the value matches that of an existing entry, the {{param}} value for the existing entry and all lower {{param}} entries is incremented (lowered in precedence) to ensure uniqueness of this value. A deletion causes {{param}} values to be compacted. When a value is changed, incrementing occurs before compaction.The value of {{param}} on creation of a {{object}} table entry MUST be one greater than the largest current value (initially assigned the lowest precedence). </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference}} The IP Interface associated with the {{object}} entry. </description>
+
+  <parameter name="DUID" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6ServerAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="130" />
+    <description source="TRx">Pool association criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCPv6 Client Identifier (Option 1) {{bibref|RFC3315|Section 22.2}}.  The option value is binary, so an exact match is REQUIRED.{{empty}} indicates this criterion is not used. Note: DHCPv6 Option 1 (DUID) is sometimes referred to as ''Client Identifier''. </description>
+
+  <parameter name="DUIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{false}}, matching packets are those that match the {{param|DUID}} entry, if specified. If {{true}}, matching packets are those that do not match the {{param|DUID}} entry, if specified. </description>
+
+  <parameter name="VendorClassID" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6ServerAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Pool association criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCPv6 Vendor Class Identifier (Option 16) {{bibref|RFC3315|Section 22.16}}.  The option value is binary, so an exact match is REQUIRED.{{empty}} indicates this criterion is not used. </description>
+
+  <parameter name="VendorClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{false}}, matching packets are those that match the {{param|VendorClassID}} entry, if specified. If {{true}}, matching packets are those that do not match the {{param|VendorClassID}} entry, if specified. </description>
+
+  <parameter name="UserClassID" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6ServerAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" />
+    <description source="TRx">Pool association criterion.  A hexbinary string used to identify one or more LAN devices, value of the DHCPv6 User Class Identifier (Option 15) {{bibref|RFC3315|Section 22.15}}.{{empty}} indicates this criterion is not used. </description>
+
+  <parameter name="UserClassIDExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{false}}, matching packets are those that match the {{param|UserClassID}} entry, if specified. If {{true}}, matching packets are those that do not match the {{param|UserClassID}} entry, if specified. </description>
+
+  <parameter name="SourceAddress" type="string" specSource="TR181" profile="Device2_DHCPv6ServerAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">Pool association criterion. Source address (link-layer address) of DHCPv6 messages sent from the DHCPv6 client.  This criterion is only likely to be useful if this is a link-layer address.{{empty}} indicates this criterion is not used for serving. </description>
+
+  <parameter name="SourceAddressMask" type="string" specSource="TR181" profile="Device2_DHCPv6ServerAdv:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">Bit-mask for the source address, where matching of a packet's source address with the {{param|SourceAddress}} is only to be done for bit positions set to one in the mask.  A mask of {{empty}} indicates all bits of the {{param|SourceAddress}} are to be used. </description>
+
+  <parameter name="SourceAddressExclude" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{false}}, matching packets are those that match the (masked) {{param|SourceAddress}} entry, if specified. If {{true}}, matching packets are those that do not match the (masked) {{param|SourceAddress}} entry, if specified. </description>
+
+  <parameter name="IANAEnable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables IANA offers. </description>
+
+  <parameter name="IANAManualPrefixes" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">{{list}} {{reference}} Manually-configured prefixes from which IA_NA addresses will be assigned.  Each referenced prefix MUST have a  {{param|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} of {{enum|Static|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} or {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}}.  All clients that request IA_NA and match filter criteria on this {{param|Interface}} MUST be offered IA_NA addresses from all of the ''Valid'' ({{param|.IP.Interface.{i}.IPv6Prefix.{i}.ValidLifetime}} is infinite or in the future) /64 prefixes in this list.Prefixes MUST be associated with the interface instance referenced by {{param|Interface}}. </description>
+
+  <parameter name="IANAPrefixes" type="string" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference}} All prefixes from which IA_NA addresses will be assigned. This list can include:* Prefixes from {{param|IANAManualPrefixes}} that are used for IA_NA offers. * Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} = {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} or {{enum|AutoConfigured|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} associated with the interface instance referenced by {{param|Interface}}. </description>
+
+  <parameter name="X_BROADCOM_COM_MinInterfaceID" type="string" specSource="Broadcom" profile="Device2_DHCPv6Server:1" supportLevel="ReadWrite" defaultValue="0:0:0:2" />
+    <description source="BROADCOM">This parameter is for assigning IPv6 address by stateful Dhcpv6 server instead of SLAAC. The value indicate the beginning of the interface ID pool. Zero compression by double-colon is not allowed.</description>
+
+  <parameter name="X_BROADCOM_COM_MaxInterfaceID" type="string" specSource="Broadcom" profile="Device2_DHCPv6Server:1" supportLevel="ReadWrite" defaultValue="0:0:0:254" />
+    <description source="BROADCOM">This parameter is for assigning IPv6 address by stateful Dhcpv6 server instead of SLAAC. The value indicate the end of the interface ID pool. Zero compression by double-colon is not allowed.</description>
+
+  <parameter name="X_BROADCOM_COM_IANALeaseTime" type="int" specSource="Broadcom" profile="Device2_DHCPv6Server:1" supportLevel="ReadWrite" defaultValue="86400" minValue="-1" maxValue="2147483647" />
+    <description source="BROADCOM">Specifies the lease time in seconds of client assigned addresses. &#10;A value of -1 indicates an infinite lease. </description>
+
+  <parameter name="IAPDEnable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables IAPD offers. </description>
+
+  <parameter name="IAPDManualPrefixes" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">{{list}} {{reference}} Manually-configured prefixes from which IA_PD prefixes will be derived.  This list can include:* Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} = {{enum|Static|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} or {{enum|PrefixDelegation|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} associated with upstream interfaces (i.e. interfaces for which the physical layer interface object has ''Upstream'' = {{true}}). * Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} = {{enum|Static|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} or {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} associated with with the interface instance referenced by {{param|Interface}}.All clients that request IA_PD and match filter criteria on this {{param|Interface}} MUST be offered IA_PD prefixes derived from all of the ''Valid'' ({{param|.IP.Interface.{i}.IPv6Prefix.{i}.ValidLifetime}} is infinite or in the future) prefixes in this list. </description>
+
+  <parameter name="IAPDPrefixes" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference}} All prefixes for which IA_PD prefixes will be assigned. This list can include:* Prefixes from {{param|IAPDManualPrefixes}} that are used for IA_PD offers. * Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} = {{enum|PrefixDelegation|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} or {{enum|AutoConfigured|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} associated with upstream interfaces (i.e. interfaces for which the physical layer interface object has ''Upstream'' = {{true}}).* Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} = {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} or {{enum|AutoConfigured|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} associated with the interface instance referenced by {{param|Interface}}. </description>
+
+  <parameter name="IAPDAddLength" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" maxValue="64" />
+    <description source="TRx">The RECOMMENDED minimum number of bits to add to {{param|IAPDManualPrefixes}} or {{param|IAPDPrefixes}} in order to determine the length of prefixes that are offered in an IA_PD.  The device is responsible for ensuring that it does not delegate a prefix longer than /64.  The device can have additional logic that is used (in conjunction with this parameter) to determine the actual length of prefixes offered in an IA_PD. </description>
+
+  <parameter name="ClientNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="OptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}.Client.{i}." shortObjectName="Dev2Dhcpv6ServerPoolClientObject" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">DHCPv6 client table. This table lists details of DHCPv6 clients that matched the filter criteria of this {{object|#}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} Note: There is no guarantee that the {{param}} value on automatically-created {{object}} instances will be retained. This is because automatically-created {{object}} instances can be transitory. </description>
+
+  <parameter name="SourceAddress" type="string" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Source address of the DHCPv6 client. </description>
+
+  <parameter name="Active" type="boolean" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Whether or not the DHCPv6 client is currently present on the LAN.  The method of presence detection is a local matter to  the CPE. The ability to list inactive DHCPv6 clients is OPTIONAL.  If the CPE includes inactive DHCPv6 clients in this table, {{param}} MUST be set to {{false}}  for each inactive DHCPv6 client.  The length of time an inactive DHCPv6 client remains listed in this table is a local matter to the CPE. </description>
+
+  <parameter name="IPv6AddressNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="IPv6PrefixNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="OptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}.Client.{i}.IPv6Address.{i}." shortObjectName="Dev2Dhcpv6ServerPoolClientIpv6AddressObject" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">IPv6 addresses assigned to this client via IA_NA. </description>
+
+  <parameter name="IPAddress" type="string" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">IPv6 address. </description>
+
+  <parameter name="PreferredLifetime" type="dateTime" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time at which this address will cease to be preferred (i.e. will become deprecated), or {{null}} if not known. For an infinite lifetime, the parameter value MUST be 9999-12-31T23:59:59Z. </description>
+
+  <parameter name="ValidLifetime" type="dateTime" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time at which this address will cease to be valid (i.e. will become invalid), or {{null}} if unknown. For an infinite lifetime, the parameter value MUST be 9999-12-31T23:59:59Z. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}.Client.{i}.IPv6Prefix.{i}." shortObjectName="Dev2Dhcpv6ServerPoolClientIpv6PrefixObject" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">IPv6 prefixes delegated to this client via IA_PD. </description>
+
+  <parameter name="Prefix" type="string" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">IPv6 address prefix. </description>
+
+  <parameter name="PreferredLifetime" type="dateTime" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time at which this prefix will cease to be preferred (i.e. will become deprecated), or {{null}} if not known. For an infinite lifetime, the parameter value MUST be 9999-12-31T23:59:59Z. </description>
+
+  <parameter name="ValidLifetime" type="dateTime" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The time at which this prefix will cease to be valid (i.e. will become invalid), or {{null}} if unknown. For an infinite lifetime, the parameter value MUST be 9999-12-31T23:59:59Z. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}.Client.{i}.Option.{i}." shortObjectName="Dev2Dhcpv6ServerPoolClientOptionObject" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">DHCPv6 options supplied by this client, e.g. ''DUID'' (Option 1), ''UserClassID'' (Option 15) or ''VendorClassID'' (option 16). </description>
+
+  <parameter name="Tag" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="65535" />
+    <description source="TRx">Option tag (code) {{bibref|RFC3315|Section 22.1}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6ServerClientInfo:1" requirements="R" supportLevel="ReadOnly" maxLength="65535" minLength="0" />
+    <description source="TRx">A hexbinary encoded option value. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.DHCPv6.Server.Pool.{i}.Option.{i}." shortObjectName="Dev2Dhcpv6ServerPoolOptionObject" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">This object specifies the DHCPv6 options that MUST, if enabled, be offered to clients whose DHCPv6 requests are associated with this pool. If {{param|PassthroughClient}} is specified, and the referenced client has a value for a given option then the {{param|PassthroughClient}} option value will be sent instead of {{param|Value}}. Otherwise, {{param|Value}} will be sent. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Tag" type="unsignedInt" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="65535" />
+    <description source="TRx">Option tag (code) {{bibref|RFC3315|Section 22.1}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Device2_DHCPv6Server:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="65535" minLength="0" />
+    <description source="TRx">A hexbinary encoded option value. </description>
+
+  <parameter name="PassthroughClient" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference}} Indicates whether this {{object}} entry is configured for passthrough. If {{param}} is specified, and the referenced client (since boot) has received a value from an associated upstream DHCPv6 server for the given {{param|Tag}} option, then the referenced client's option value will be sent instead of {{param|Value}}. Otherwise, {{param|Value}} will be sent.{{empty}} indicates that passthrough is not configured for this {{object}} entry. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="IpStatusType" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_IPv6:1" /> 
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Device2_DHCPv6Client:1" /> 
+<profile name="Device2_DHCPv6ClientServerIdentity:1" /> 
+<profile name="Device2_DHCPv6Server:1" /> 
+<profile name="Device2_DHCPv6ServerAdv:1" /> 
+<profile name="Device2_DHCPv6ServerClientInfo:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

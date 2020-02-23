@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-tr181-ipdiag.xml as 
+# the last child of Device.IP.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-ipdiag.xml Device.IP.
+

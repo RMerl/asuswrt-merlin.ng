@@ -1,0 +1,7 @@
+#
+# Insert a stub object for holding the rest of the AppCfg objects.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-appcfgstub.xml InternetGatewayDevice.DeviceConfig.

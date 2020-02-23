@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-fwexception.xml after the TR181 Firewall object.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-bcm-fwexception.xml Device.Firewall.
+

@@ -1,0 +1,470 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905." shortObjectName="Dev2Ieee1905Object" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="P" supportLevel="Present" oid="1780" lockZone="4" />
+  <description source="TRx">This object represents the management functions for the 1905.1 capabilities as defined in [IEEE1905.1].</description>
+
+  <parameter name="Version" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">1905.1 Version Number.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL." shortObjectName="Dev2Ieee1905AlObject" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object represents the management functions for the 1905.1 Abstraction Layer as defined in [sub-clause 4.4 Abstraction Layer/IEEE1905.1].</description>
+
+  <parameter name="IEEE1905Id" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">[MACAddress] 1905.1 AL MAC Address.</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="enabledDisabledStatusValues" />
+    <description source="TRx">The current operational state of the interface (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}} When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface).When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the 1905.1 Abstraction Layer interface entered its current operational state. </description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma-separated list (maximum length 1024) of strings. Each list item MUST be the path name of a row in the AL.Interface table. If the referenced object is deleted, the corresponding item MUST be removed from the list. See [Section 4.2.1/TR-181i2]. </description>
+
+  <parameter name="RegistrarFreqBand" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" mayDenyActiveNotification="true" supportLevel="ReadWrite" maxLength="1024" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object.</description>
+
+  <parameter name="InterfaceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Interface table.</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Device2_IEEE1905Baseline:1" supportLevel="ReadWrite" defaultValue="true" />
+
+  <parameter name="DeviceFriendlyName" type="string" specSource="Custom" profile="Device2_IEEE1905Baseline:1" supportLevel="ReadWrite" defaultValue="" />
+
+  <parameter name="IsRegistrar" type="boolean" specSource="Custom" profile="Device2_IEEE1905Baseline:1" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="APFreqBand24Enable" type="boolean" specSource="Custom" profile="Device2_IEEE1905Baseline:1" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="APFreqBand5Enable" type="boolean" specSource="Custom" profile="Device2_IEEE1905Baseline:1" supportLevel="ReadWrite" defaultValue="false" />
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.Interface.{i}." shortObjectName="Dev2Ieee1905AlIfcObject" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">The 1905.1 interface table (a stackable interface object as described in [sub-clause 5 Abstraction Layer Management/IEEE1905.1]). At most one entry in this table can exist with a given value for InterfaceId. </description>
+
+  <parameter name="InterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of this interface. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the interface (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}} When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface).When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the 1905.1 Abstraction Layer interface entered its current operational state. </description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma-separated list (maximum length 1024) of strings. Each list item MUST be the path name of a row in the AL.Interface table. If the referenced object is deleted, the corresponding item MUST be removed from the list. See [Section 4.2.1/TR-181i2]. </description>
+
+  <parameter name="MediaType" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifMediaTypeValues" />
+    <description source="TRx">Media type of this Interface. Enumeration of: IEEE 802.3u (IEEE 802.3u FastEthernet) IEEE 802.3ab (IEEE 802.3ab GigabitEthernet) IEEE 802.11b (IEEE 802.11b(2.4GHz)) IEEE 802.11g (IEEE 802.11g(2.4GHz)) IEEE 802.11a (IEEE 802.11a (5GHz)) IEEE 802.11n 2.4 (IEEE 802.11n(2.4GHz)) IEEE 802.11n 5.0 (IEEE 802.11n(5GHz)) IEEE802.11ac (IEEE 802.11ac(5GHz)) IEEE 802.11ad (IEEE 802.11ad(60GHz)) IEEE 802.11af (IEEE 802.11af) IEEE 1901 Wavelet (IEEE 1901Wavelet) IEEE 1901 FFT (IEEE 1901 FFT) MoCAv1.1 (MoCAv1.1). </description>
+
+  <parameter name="PowerState" type="string" specSource="TR181" profile="Device2_IEEE1905Power:1" requirements="W" supportLevel="ReadWrite" validValuesArray="ifPowerStateValues" />
+    <description source="TRx">The Power State of this Interface. Enumeration of: On Power_Save Off Unsupported</description>
+
+  <parameter name="LinkNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Link table.</description>
+
+  <parameter name="GenericPhyOUI" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="8" />
+    <description source="TRx">OUI of this interface. </description>
+
+  <parameter name="GenericVariant" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Variant of this interface. </description>
+
+  <parameter name="GenericPhyURL" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly"/>
+    <description source="TRx">URL to Generic Phy XML Description document of the Variant.</description>
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.Interface.{i}.Link.{i}." shortObjectName="Dev2Ieee1905AlIfcLinkObject" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object defines the 1905.1 Link management properties]. At most one entry in this table can exist with the same values for InterfaceId and IEEE1905Id. </description>
+
+  <parameter name="InterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the interface of the Neighbor for this Link. </description>
+
+  <parameter name="IEEE1905Id" type="string" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the 1905.1 AL entity of the Neighbor device on thisLink. </description>
+
+  <parameter name="MediaType" type="string" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifMediaTypeValues" />
+    <description source="TRx">Media type of this Interface. Enumeration of: IEEE 802.3u (IEEE 802.3u FastEthernet) IEEE 802.3ab (IEEE 802.3ab GigabitEthernet) IEEE 802.11b (IEEE 802.11b(2.4GHz)) IEEE 802.11g (IEEE 802.11g(2.4GHz)) IEEE 802.11a (IEEE 802.11a (5GHz)) IEEE 802.11n 2.4 (IEEE 802.11n(2.4GHz)) IEEE 802.11n 5.0 (IEEE 802.11n(5GHz)) IEEE802.11ac (IEEE 802.11ac(5GHz)) IEEE 802.11ad (IEEE 802.11ad(60GHz)) IEEE 802.11af (IEEE 802.11af) IEEE 1901 Wavelet (IEEE 1901Wavelet) IEEE 1901 FFT (IEEE 1901 FFT) MoCAv1.1 (MoCAv1.1). </description>
+
+  <parameter name="GenericPhyOUI" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="8" />
+    <description source="TRx">OUI of this interface. </description>
+
+  <parameter name="GenericVariant" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Variant of this interface. </description>
+
+  <parameter name="GenericPhyURL" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly"/>
+    <description source="TRx">URL to Generic Phy XML Description document of the Variant.</description>
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.Interface.{i}.Link.{i}.Metric." shortObjectName="Dev2Ieee1905AlIfcLinkMetricObject" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object represents the metrics for this Link as defined in [Tables 6-18, 6-20/IEEE1905.1]. </description>
+
+  <parameter name="IEEE802dot1Bridge" type="boolean" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">If true then IEEE 802.1 Bridge(s) were detected between the local interface and the 1905.1 Neighbor. </description>
+
+  <parameter name="PacketErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of lost Packets sent to the Neighbor on this Link during a measurement period. </description>
+
+  <parameter name="PacketErrorsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of lost Packets received from the Neighbor on this Link during a measurement period. </description>
+
+  <parameter name="TransmittedPackets" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of Packets sent to the Neighbor on this Link, in the same measurement period used to estimate PacketErrors. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of Packets received from this Neighbor on this Link, in the same measurement period used to estimate PacketErrors. </description>
+
+  <parameter name="MACThroughputCapacity" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum MAC throughput in Mb/s between this Interface and the Neighbor on thisLink that is estimated at this Interface. </description>
+
+  <parameter name="LinkAvailability" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">The estimated average percent of time that this Link is idle. </description>
+
+  <parameter name="PHYRate" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The Physical Layer (PHY) rate in Mb/s between this Interface and the Neighbor on thisLink that is estimated at this Interface. </description>
+
+  <parameter name="RSSI" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="TRx">The estimated Received Signal Strength Indicator (RSSI) ratio in db between this Interface and the Neighbor on this Link that is estimated at the receive side of this Interface.Note: This parameter is valid only for IEEE 802.11 Neighbors. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.ForwardingTable." shortObjectName="Dev2Ieee1905AlForwardingTableObject" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object represents the rules to forward PDUs between interfaces within the 1905.1 Abstraction Layer. </description>
+
+  <parameter name="ForwardingRuleNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the ForwardingRule table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.ForwardingTable.ForwardingRule.{i}." shortObjectName="Dev2Ieee1905AlForwardingTableForwardingRuleObject" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">The 1905.1 fowarding rule as defined in [subclause 5 Abstraction Layer Management/IEEE1905.1]. </description>
+
+  <parameter name="InterfaceList" type="string" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="2048" />
+    <description source="TRx">Result parameter indicating the list of interfaces to which a frame satisfying the following classification rule should be forwarded. Commaseparated list (maximum length 2048) of strings(maximum length 256). Each list item MUST be the path name of an object, which MUST be a row of an Interface object. If the referenced item is deleted, the corresponding item MUST be removed from the list. </description>
+
+  <parameter name="MACDestinationAddress" type="string" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] Classification criterion. The destination MAC address. An empty string indicates this criterion is not used for classification. </description>
+
+  <parameter name="MACDestinationAddressExclude" type="boolean" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the classification includes only those frames that match theMACDestinationAddress entry, if specified. If true, the classification includes all frames except those that match the MACDestinationAddress entry, if specified. </description>
+
+  <parameter name="MACSourceAddress" type="string" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] Classification criterion. The source MAC address. An empty string indicates this criterion is not used for classification. </description>
+
+  <parameter name="MACSourceAddressExclude" type="boolean" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the classification includes only those frames that match theMACSourceAddress entry, if specified. If true, the classification includes all frames except those that match the MACSourceAddress entry, if specified. </description>
+
+  <parameter name="EtherType" type="int" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="2147483647" />
+    <description source="TRx">Classification criterion. Ether Type Field in a frame. A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="EtherTypeExclude" type="boolean" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the classification includes only those frames that match the EtherType entry, if specified. If true, the classification includes all frames except those that match the EtherTypeentry, if specified. </description>
+
+  <parameter name="Vid" type="int" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="2147483647" />
+    <description source="TRx">Classification criterion. IEEE 802.1Q VLAN ID in a frame. A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="VidExclude" type="boolean" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the classification includes only those frames that match the Vid entry, if specified. If true, the classification includes all frames except those that match the Vid entry, if specified. </description>
+
+  <parameter name="PCP" type="int" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="7" />
+    <description source="TRx">Classification criterion. IEEE 802.1Q Priority Code Point field. A value of -1 indicates this criterion is not used for classification. </description>
+
+  <parameter name="PCPExclude" type="boolean" specSource="TR181" profile="Device2_IEEE1905InterfaceSelection:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If false, the classification includes only those frames that match the PCP entry, if specified. If true, the classification includes all frames except those that match the PCP entry, if specified. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology." shortObjectName="Dev2Ieee1905AlNetworkTopologyObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object represents the 1905.1 Network Topology capabilities of this device.  </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the 1905.1 Network Topology capabilities of device. When set totrue, the device clears and (re)populates the IEEE1905Device and ChangeLog tables. When set to false, the contents of the IEEE1905Device and ChangeLog tables are implementation specific. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" validValuesArray="NetworkTopologyStatusValues" />
+    <description source="TRx">When Enable is set to true, this parameter indicates the transient phase of the discovery of the NetworkTopology. Incomplete (Indicates that the device is populating the topology object during the transient phase) Available (Indicates that the transient phase is over and the device is maintaining and updating the topology object as changes occur) Error_Misconfigured (Indicates that a necessary configuration value is undefined or invalid). </description>
+
+  <parameter name="MaxChangeLogEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="W" supportLevel="ReadWrite" minValue="1" maxValue="4294967295" />
+    <description source="TRx">The maximum number of entries allowed in the ChangeLog table. </description>
+
+  <parameter name="LastChange" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the ChangeLog table. If the referenced object is deleted, the parameter value MUST be set to an empty string. If the ChangeLogis modified the parameter is modified to reflect the last entry added to the ChangeLog. </description>
+
+  <parameter name="IEEE1905DeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the IEEE1905Device table. </description>
+
+  <parameter name="ChangeLogNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the ChangeLog table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.ChangeLog.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyChangeLogObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object represents log entries for changes in the 1905.1 Network Topology. The Change Log is a First In First Out queue where the oldest entries (defined by values of the TimeStamp parameter) are deleted once the log is full.  </description>
+
+  <parameter name="TimeStamp" type="dateTime" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Date and Time at which the entry was added to the ChangeLog table. </description>
+
+  <parameter name="EventType" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" validValuesArray="NetworkTopologyEventTypeValues" />
+    <description source="TRx">Type of event for this entry. Enumeration of: NewNeighbor (Entry represents a discovery of a Neighbor) LostNeighbor (Entry represents the loss of a Neighbor). </description>
+
+  <parameter name="ReporterDeviceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] 1905.1 AL MAC Address of device which reported the change. </description>
+
+  <parameter name="ReporterInterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the interface of the reporting device on which the change has been detected. </description>
+
+  <parameter name="NeighborType" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" validValuesArray="NetworkTopologyNeighborTypeValues" />
+    <description source="TRx">Type of Neighbor for this event. Enumeration of: IEEE1905 Non-IEEE1905 </description>
+
+  <parameter name="NeighborId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the Neighbor of this event. If the value of the EventTypeparameter is NewNeighbor, then the value represents the MAC Address of new Neighbor that joined the network; if the value of the EventType parameter isLostNeighbor, then the value represents the MAC Address of Neighbor that left the network. If value of the NeighborType parameter is IEEE1905, then this value of this parameter is the 1905.1 AL MAC Address of the Neighbor.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" pruneWriteToConfigFile="true" />
+  <description source="TRx">This object represents log entries for changes in the 1905.1 Network Topology. The Change Log is a First In First Out queue where the oldest entries (defined by values of the TimeStamp parameter) are deleted once the log is full.  </description>
+
+  <parameter name="IEEE1905Id" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] 1905.1 AL MAC Address. </description>
+
+  <parameter name="Version" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">1905.1 Version Number.</description>
+
+  <parameter name="FriendlyName" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" mayDenyActiveNotification="true" supportLevel="ReadOnly" maxLength="128" />
+    <description source="TRx">Friendly Name String received in Higher Layer response message</description>
+
+  <parameter name="VendorPropertiesNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the VendorProperties table.</description>
+
+  <parameter name="IPv4AddressesNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the IPv4Addresses table.</description>
+
+  <parameter name="IPv6AddressesNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the IPv6Addresses table.</description>
+
+  <parameter name="InterfaceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Interface table.</description>
+
+  <parameter name="NonIEEE1905NeighborNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the NonIEEE1905Neighboron table. </description>
+
+  <parameter name="IEEE1905NeighborNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the IEEE1905Neighbor table. </description>
+
+  <parameter name="L2NeighborNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the L2Neighbor table. </description>
+
+  <parameter name="BridgingTupleNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the BridgingTuple table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.Interface.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceIfcObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents an instance of an interface for the IEEE1905Device. At most one entry in this table can exist with a given value for InterfaceId. </description>
+
+  <parameter name="InterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of this interface. </description>
+
+  <parameter name="MediaType" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifMediaTypeValues" />
+    <description source="TRx">Media type of this Interface. Enumeration of: IEEE 802.3u (IEEE 802.3u FastEthernet) IEEE 802.3ab (IEEE 802.3ab GigabitEthernet) IEEE 802.11b (IEEE 802.11b(2.4GHz)) IEEE 802.11g (IEEE 802.11g(2.4GHz)) IEEE 802.11a (IEEE 802.11a (5GHz)) IEEE 802.11n 2.4 (IEEE 802.11n(2.4GHz)) IEEE 802.11n 5.0 (IEEE 802.11n(5GHz)) IEEE802.11ac (IEEE 802.11ac(5GHz)) IEEE 802.11ad (IEEE 802.11ad(60GHz)) IEEE 802.11af (IEEE 802.11af) IEEE 1901 Wavelet (IEEE 1901Wavelet) IEEE 1901 FFT (IEEE 1901 FFT) MoCAv1.1 (MoCAv1.1). </description>
+
+  <parameter name="PowerState" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="W" supportLevel="ReadWrite" validValuesArray="ifPowerStateValues" />
+    <description source="TRx">The Power State of this Interface. Enumeration of: On Power_Save Off Unsupported</description>
+
+  <parameter name="GenericPhyOUI" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly" maxLength="8" />
+    <description source="TRx">OUI of this interface. </description>
+
+  <parameter name="GenericVariant" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly"/>
+    <description source="TRx">Variant of this interface. </description>
+
+  <parameter name="GenericPhyURL" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="R" supportLevel="ReadOnly"/>
+    <description source="TRx">URL to Generic Phy XML Description document of the Variant.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.NonIEEE1905Neighbor.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceNonIeee1905NeighborObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents an instance of a Non-IEEE 1905 Neighbor for the IEEE1905Device. At most one entry in this table can exist with the same values for LocalInterface and NeighborInterfaceId. </description>
+
+  <parameter name="LocalInterface" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the IEEE1905Device.{i}.Interface table. If the referenced object is deleted, the parameter value MUST be set to an empty string. </description>
+
+  <parameter name="NeighborInterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the interface for the NonIEEE1905Neighbor. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.L2Neighbor.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceNonL2NeighborObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents an instance of a Non-IEEE1905 Neighbor for the IEEE1905Device. At most one entry in this table can exist with the same values for LocalInterface and NeighborInterfaceId. </description>
+
+  <parameter name="LocalInterface" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the IEEE1905Device.{i}.Interface table. If the referenced object is deleted, the parameter value MUST be set to an empty string. </description>
+
+  <parameter name="NeighborInterfaceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the interface for the NonIEEE1905Neighbor. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.IEEE1905Neighbor.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceIeee1905NeighborObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents an instance of an IEEE1905Neighbor for the IEEE1905Device. At most one entry in this table can exist with the same values for LocalInterface and NeighborDeviceId. </description>
+
+  <parameter name="LocalInterface" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">The value MUST be the path name of a row in the IEEE1905Device.{i}.Interface table. If the referenced object is deleted, the parameter value MUST be set to an empty string. </description>
+
+  <parameter name="NeighborDeviceId" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] MAC Address of the interface for the NonIEEE1905Neighbor. </description>
+
+  <parameter name="MetricNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the Metric table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.IEEE1905Neighbor.{i}.Metric.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceIeee1905NeighborMetricObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents the metrics included in a Link metric response from the IEEE1905Device .</description>
+
+  <parameter name="NeighborMACAddress" type="string" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="17" />
+    <description source="TRx">[MACAddress] The MAC address of an interface in a neighbor 1905 device. </description>
+
+  <parameter name="IEEE802dot1Bridge" type="boolean" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">If true then IEEE 802.1 Bridge(s) were detected between the local interface and the 1905.1 Neighbor. </description>
+
+  <parameter name="PacketErrors" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of lost Packets sent to the Neighbor on this Link during a measurement period. </description>
+
+  <parameter name="PacketErrorsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of lost Packets received from the Neighbor on this Link during a measurement period. </description>
+
+  <parameter name="TransmittedPackets" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of Packets sent to the Neighbor on this Link, in the same measurement period used to estimate PacketErrors. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter32" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">[StatsCounter32] Estimated number of Packets received from this Neighbor on this Link, in the same measurement period used to estimate PacketErrors. </description>
+
+  <parameter name="MACThroughputCapacity" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum MAC throughput in Mb/s between this Interface and the Neighbor on thisLink that is estimated at this Interface. </description>
+
+  <parameter name="LinkAvailability" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="100" />
+    <description source="TRx">The estimated average percent of time that this Link is idle. </description>
+
+  <parameter name="PHYRate" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The Physical Layer (PHY) rate in Mb/s between this Interface and the Neighbor on thisLink that is estimated at this Interface. </description>
+
+  <parameter name="RSSI" type="unsignedInt" specSource="TR181" profile="Device2_IEEE1905LinkMetric:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="255" />
+    <description source="TRx">The estimated Received Signal Strength Indicator (RSSI) ratio in db between this Interface and the Neighbor on this Link that is estimated at the receive side of this Interface.Note: This parameter is valid only for IEEE 802.11 Neighbors. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.NetworkTopology.IEEE1905Device.{i}.BridgingTuple.{i}." shortObjectName="Dev2Ieee1905AlNetworkTopologyIeee1905DeviceBridgingTupleObject" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This object represents an instance of an BridgingTuple for the IEEE1905Device. </description>
+
+  <parameter name="InterfaceList" type="string" specSource="TR181" profile="Device2_IEEE1905NetworkTopology:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="2048" />
+    <description source="TRx">Comma-separated list (maximum length 2048) of strings (maximum length 256). Each list item MUST be the path name of a row in the IEEE1905Device.{i}.Interface table. If the referenced object is deleted, the corresponding item MUST be removed from the list. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IEEE1905.AL.Security." shortObjectName="Dev2Ieee1905AlSecurityObject" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object represents the Security configuration for the 1905.1 Device as defined in [sub-clause 9.2 Security Setup Methods/IEEE1905.1]. </description>
+
+  <parameter name="SetupMethod" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="W" supportLevel="ReadWrite" validValuesArray="Ieee1905SecuritySetupMethodValues" />
+    <description source="TRx">Security setup method for the network. Enumeration of: UCPK (User Configured Passphrase or Key) PBC (Push Button Configuration) </description>
+
+  <parameter name="Password" type="string" specSource="TR181" profile="Device2_IEEE1905Baseline:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">1905.1 common password for generating security keys.  When read, this parameter returns an empty string, regardless of the actual value. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="Ieee1905SecuritySetupMethodValues" />
+  <element>UCPK</element>
+  <element>PBC</element>
+
+<validstringarray name="NetworkTopologyEventTypeValues" />
+  <element>NewNeighbor</element>
+  <element>LostNeighbor</element>
+
+<validstringarray name="NetworkTopologyNeighborTypeValues" />
+  <element>IEEE1905</element>
+  <element>Non-IEEE1905</element>
+
+<validstringarray name="NetworkTopologyStatusValues" />
+  <element>Incomplete</element>
+  <element>Available</element>
+  <element>Error_Misconfigured</element>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+<validstringarray name="ifMediaTypeValues" />
+  <element>IEEE_802.3u</element>
+  <element>IEEE_802.3ab</element>
+  <element>IEEE_802.11b</element>
+  <element>IEEE_802.11g</element>
+  <element>IEEE_802.11a</element>
+  <element>IEEE_802.11n_2.4</element>
+  <element>IEEE_802.11n_5.0</element>
+  <element>IEEE_802.11ac</element>
+  <element>IEEE_802.11ad</element>
+  <element>IEEE_802.11af</element>
+  <element>IEEE_1901_ Wavelet</element>
+  <element>IEEE_1901_FFT</element>
+  <element>MoCAv1.1</element>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="ifPowerStateValues" />
+  <element>On</element>
+  <element>Power_Save</element>
+  <element>Off</element>
+  <element>Unsupported</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_IEEE1905Baseline:1" /> 
+<profile name="Device2_IEEE1905Power:1" /> 
+<profile name="Device2_IEEE1905InterfaceSelection:1" /> 
+<profile name="Device2_IEEE1905LinkMetric:1" /> 
+<profile name="Device2_IEEE1905NetworkTopology:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

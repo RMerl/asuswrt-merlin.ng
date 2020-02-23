@@ -1,0 +1,7 @@
+#****************************************
+#  Copyright (c) 2014  Broadcom
+#  All Rights Reserved
+#***************************************/
+
+This directory contains the list of project specific RDPA objects in make.proj_objs. Some objects (rdpa_ucast,
+rdpa_l2_ucast, rdpa_mcast, rdpa_xtm, rdpa_spdsvc) which are not ported yet, are compiled out.

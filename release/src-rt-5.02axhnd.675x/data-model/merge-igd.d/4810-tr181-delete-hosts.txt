@@ -1,0 +1,13 @@
+#
+# Delete the TR181 Hosts object from the tree.  We only do this in
+# the merge-igd.d directory for the hybrid TR98+181 data model.  In the
+# hybrid data model, we use the Hosts object from the TR98 spec,
+# not the TR181 spec.
+#
+# Note that if the deleted object has children, the children will also be deleted.
+#
+# See 0000-README.txt for more details
+#
+
+deleteObj InternetGatewayDevice.Device.Hosts.
+

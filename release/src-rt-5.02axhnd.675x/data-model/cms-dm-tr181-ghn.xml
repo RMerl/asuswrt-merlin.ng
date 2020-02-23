@@ -1,0 +1,194 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ghn." shortObjectName="Dev2GhnObject" specSource="TR181" profile="Device2_Ghn:1" requirements="P" supportLevel="NotSupported" oid="1220" />
+  <description source="TRx">G.hn object that contains an {{object|Interface}} table for G.hn supported CPE. The ITU-T G.hn specifications {{bibref|G.9960}} and {{bibref|G.9961}} define Physical and MAC Layers for communication between two or more G.hn nodes in the home network over multiple wired media such as power line, phone line and coaxial cable. </description>
+
+  <parameter name="InterfaceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Number of entries in Ghn Interface table</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ghn.Interface.{i}." shortObjectName="Dev2GhnInterfaceObject" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="NotSupported" />
+  <description source="TRx">G.hn interface table (a stackable interface object as described in {{bibref|TR-181i2|Section 4.2}}). Each table entry models the PHY {{bibref|G.9960}} and MAC {{bibref|G.9961}} layers of a G.hn interface. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the interface. This parameter is based on ''ifAdminStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the interface (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}} When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface).When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="W" supportLevel="ReadWrite" maxLength="64" notifySskAliasChanged="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the interface as assigned by the CPE. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in {{units}} since the interface entered its current operational state. </description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">{{list}}  {{reference|an interface object that is stacked immediately below this interface object}}  See {{bibref|TR-181i2|Section 4.2.1}}. Note: Since {{object}} is a layer 1 interface, it is expected that {{param}} will not be used. </description>
+
+  <parameter name="Upstream" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates whether the interface points towards the Internet ({{true}}) or towards End Devices ({{false}}). For example:* For an Internet Gateway Device, {{param}} will be {{true}} for all WAN interfaces and {{false}} for all LAN interfaces. * For a standalone WiFi Access Point that is connected via Ethernet to an Internet Gateway Device, {{param}} will be {{true}} for the Ethernet interface and {{false}} for the WiFi Radio interface.* For an End Device, {{param}} will be {{true}} for all interfaces. </description>
+
+  <parameter name="MACAddress" type="MACAddress" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">The MAC Address of the interface, denoted as node MAC address or REGID in {{bibref|G.9961}}. Note: This is not necessarily the same as the Ethernet header source or destination MAC address, which is associated with the IP interface and is modeled via the {{param|.Ethernet.Link.{i}.MACAddress}} parameter. </description>
+
+  <parameter name="FirmwareVersion" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The firmware version of the interface. </description>
+
+  <parameter name="ConnectionType" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Connection type for which the G.hn protocol is active. </description>
+
+  <parameter name="TargetDomainNames" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="W" supportLevel="ReadWrite" maxLength="1024" />
+    <description source="TRx">{{list}}  Identifies the target domains configured by the user, as described in {{bibref|G.9961|Section 8.6.1}}. When registering or re-registering, the G.hn interface SHOULD try to register to one of these domains in the given order. </description>
+
+  <parameter name="DomainName" type="string" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" maxLength="32" />
+    <description source="TRx">This is the domain name to which the interface is currently registered. {{empty}} indicates that the interface is currently not registered. </description>
+
+  <parameter name="DomainNameIdentifier" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Domain Name Identifier, a shortened version of {{param|DomainName}}, denoted as DNI in {{bibref|G.9961|Section 8.6.11.2.1}}. </description>
+
+  <parameter name="DomainId" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Domain Identifier of the domain to which the interface is registered, denoted as DOD in {{bibref|G.9961}}. </description>
+
+  <parameter name="DeviceId" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The Device Identifier assigned by the Domain Master, denoted as DEVICE_ID in {{bibref|G.9961}}. The value 0 indicates that the device is not currently registered. </description>
+
+  <parameter name="MaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The maximum PHY bit rate supported by this interface (expressed in {{units}}). </description>
+
+  <parameter name="NodeTypeDMCapable" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether this interface has the capability to act as Domain Master in the G.hn domain. </description>
+
+  <parameter name="NodeTypeSCCapable" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether this interface has the capability to act as Security Controller in the G.hn domain. </description>
+
+  <parameter name="NodeTypeDMConfig" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Requests the interface to become the Domain Master in the G.hn domain. This parameter is valid only if {{param|NodeTypeDMCapable}} is {{true}}.Note that, if more than one node is configured to act as Domain Master, G.hn specifies a protocol to ensure only one device actually becomes DM. </description>
+
+  <parameter name="NodeTypeDMStatus" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether the interface is acting as Domain Master ({{true}}) or not ({{false}}). See Note in {{param|NodeTypeDMConfig}} regarding the possibility of more than one node being configured with {{param|NodeTypeDMConfig}} = {{true}}. </description>
+
+  <parameter name="NodeTypeSCStatus" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Indicates whether the interface is acting as Security Controller ({{true}}) or not ({{false}}). </description>
+
+  <parameter name="AssociatedDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">Number of entries in Ghn Associated Device table</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ghn.Interface.{i}.Stats." shortObjectName="Dev2GhnInterfaceStatsObject" specSource="TR181" profile="Device2_Ghn:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's {{param|#.Status}} parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's {{param|#.Enable}} parameter transitions from {{false}} to {{true}}). Administrative and operational interface status is discussed in {{bibref|TR-181i2|section 4.2.2}}. </description>
+
+  <parameter name="BytesSent" type="StatsCounter64" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="StatsCounter64" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="StatsCounter64" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+
+  <parameter name="PacketsReceived" type="StatsCounter64" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors. </description>
+
+  <parameter name="ErrorsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="UnicastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets requested for transmission which were not addressed to a multicast or broadcast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="UnicastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were not addressed to a multicast or broadcast address at this layer. </description>
+
+  <parameter name="DiscardPacketsSent" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="DiscardPacketsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to  prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="MulticastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a multicast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="MulticastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a multicast address at this layer. </description>
+
+  <parameter name="BroadcastPacketsSent" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets that higher-level protocols requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent. </description>
+
+  <parameter name="BroadcastPacketsReceived" type="StatsCounter64" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a broadcast address at this layer. </description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="StatsCounter32" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received via the interface which were discarded because of an unknown or unsupported  protocol. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ghn.Interface.{i}.AssociatedDevice.{i}." shortObjectName="Dev2GhnInterfaceAssociatedDeviceObject" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">This table contains information about other G.hn devices connected to this G.hn interface. </description>
+
+  <parameter name="MACAddress" type="MACAddress" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" maxLength="17" />
+    <description source="TRx">MAC address of remote G.hn device. </description>
+
+  <parameter name="DeviceId" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Device Id (as defined in G.hn) for the remote G.hn device, denoted as DEVICE_ID in  {{bibref|G.9961}}.  Unregistered devices (with Device Id 0) SHOULD not be present in this table. </description>
+
+  <parameter name="TxPhyRate" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The PHY transmit Rate (expressed in {{units}}) to this remote device, denoted as PHY data rate in {{bibref|G.9961}}. </description>
+
+  <parameter name="RxPhyRate" type="unsignedInt" specSource="TR181" profile="Device2_Ghn:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The PHY receive Rate (expressed in {{units}}) from this remote device, denoted as PHY data rate in {{bibref|G.9961}}. </description>
+
+  <parameter name="Active" type="boolean" specSource="TR181" profile="Device2_Ghn:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Whether or not this device is currently present in the G.hn domain. The ability to list inactive nodes is OPTIONAL. If the CPE includes inactive nodes in this table, {{param}} MUST be set to {{false}} for each inactive node. The length of time an inactive node remains listed in this table is a local matter to the CPE. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Ghn:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

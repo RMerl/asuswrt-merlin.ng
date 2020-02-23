@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr181-dslite.xml 
+# above the InternetGatewayDevice.Device.LANConfigSecurity object.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-tr181-dslite.xml InternetGatewayDevice.Device.LANConfigSecurity.
+

@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-snmpproto.xml above the 
+# object Device.X_BROADCOM_COM_SecDmzHostCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-snmpproto.xml Device.X_BROADCOM_COM_SecDmzHostCfg.

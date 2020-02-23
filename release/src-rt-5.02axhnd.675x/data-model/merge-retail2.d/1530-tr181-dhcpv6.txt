@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr181-dhcpv6.xml 
+# below the Device.DHCPv4 object
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr181-dhcpv6.xml Device.DHCPv4.
+

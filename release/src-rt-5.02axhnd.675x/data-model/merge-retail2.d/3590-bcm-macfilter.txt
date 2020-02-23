@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-macfilter.xml after the TR181 Firewall object.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-bcm-macfilter.xml Device.Firewall.
+

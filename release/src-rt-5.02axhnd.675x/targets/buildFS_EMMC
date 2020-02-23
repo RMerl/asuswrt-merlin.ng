@@ -1,0 +1,24 @@
+#!/bin/bash
+
+source $KERNEL_DIR/.config
+
+fs=${1:-$TARGET_BOOTFS}
+build_type=${2:-linux}
+
+rm -f $PROFILE_DIR/filestruct_full_emmc.bin
+if [ "$build_type" = "cfeonly" ]; then
+   # remove kernel image for cfeonly
+   rm -f $fs/vmlinux.lz
+fi	
+$PROFILE_DIR/../buildUBI -u "" -m $PROFILE_DIR/metadata.bin -f $PROFILE_DIR/filestruct_full_emmc.bin -t $fs -y ""
+if [ "$build_type" != "cfeonly" ]; then
+   #### eMMC ext4 
+   FS_SIZE_INC=2
+   FS_SIZE=`du -sh $TARGET_FS | cut -d'M' -f1`
+   FS_SIZE_TARGET=$(( $FS_SIZE*$FS_SIZE_INC ))M
+   rm -f $PROFILE_DIR/rootfs.ext4
+   echo "Starting building ext4 actual-size:${FS_SIZE}M target-size:${FS_SIZE_TARGET}"
+   $HOSTTOOLS_DIR/local_install/make_ext4fs -l $FS_SIZE_TARGET $PROFILE_DIR/rootfs.ext4 $TARGET_FS
+   resize2fs -M $PROFILE_DIR/rootfs.ext4
+   echo "Done building ext4"
+fi

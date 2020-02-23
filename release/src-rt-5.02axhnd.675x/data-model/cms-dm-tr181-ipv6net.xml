@@ -1,0 +1,177 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.NeighborDiscovery." shortObjectName="Dev2NeighborDiscoveryObject" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="P" supportLevel="Present" oid="1470" />
+  <description source="TRx">The Neighbor Discovery Protocol (NDP) object {{bibref|RFC4861}}.  This object applies only to IPv6.  It contains an {{object|InterfaceSetting}} table that defines the NDP configuration for individual IP interfaces. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="TRx">Enables or disables Neighbor Discovery. </description>
+
+  <parameter name="InterfaceSettingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.NeighborDiscovery.InterfaceSetting.{i}." shortObjectName="Dev2NeighborDiscoveryInterfaceSettingObject" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Per-interface Neighbor Discovery Protocol (NDP) configuration {{bibref|RFC4861}}. For enabled table entries, if {{param|Interface}} is not a valid reference to an IPv6-capable interface (that is attached to the IPv6 stack), then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}. Note: The {{object}} table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="IpStatusType" />
+    <description source="TRx">The status of this entry.  {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">This is the IP interface associated with this {{object}} entry. </description>
+
+  <parameter name="RetransTimer" type="unsignedInt" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="1000" />
+    <description source="TRx">Retransmission interval in {{units}}, as defined in {{bibref|RFC4861}}. For auto-configuration purposes, {{param}} specifies the delay between consecutive Neighbor Solicitation transmissions performed during Duplicate Address Detection (DAD) {{bibref|RFC4862|Section 5.4}}, as well as the time a node waits after sending the last Neighbor Solicitation before ending the DAD process. </description>
+
+  <parameter name="RtrSolicitationInterval" type="unsignedInt" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="4" />
+    <description source="TRx">Retransmission interval in {{units}}, as defined in {{bibref|RFC4861}}. For auto-configuration purposes, {{param}} specifies the delay between consecutive Router Solicitation transmissions. </description>
+
+  <parameter name="MaxRtrSolicitations" type="unsignedInt" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="TRx">Maximum Number of Router Solicitation Transmission messages, as defined in {{bibref|RFC4861}}. For auto-configuration purposes {{param}} specifies the Maximum Number of Router Solicitation Transmission messages to help the host to conclude that there are no routers on the link. </description>
+
+  <parameter name="NUDEnable" type="boolean" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="NotSupported" defaultValue="true" />
+    <description source="TRx">Enables or disables Neighbor Unreachability Detection (NUD) {{bibref|RFC4861|Section 7}}. </description>
+
+  <parameter name="RSEnable" type="boolean" specSource="TR181" profile="Device2_NeighborDiscovery:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">Enables or disables Router Solicitation (RS) on {{param|Interface}} {{bibref|RFC4861|Section 4.1}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.RouterAdvertisement." shortObjectName="Dev2RouterAdvertisementObject" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">The Router Advertisement (RA) object {{bibref|RFC4861}}. This object applies only to IPv6. It contains an {{object|InterfaceSetting}} table that defines the RA configuration for individual IP interfaces. Information received via router advertisement messages is automatically propagated to the relevant {{object|.IP.Interface}} sub-objects, e.g. to the {{object|.IP.Interface.{i}.IPv6Address}} and {{object|.IP.Interface.{i}.IPv6Prefix}} tables. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables Router Advertisement. </description>
+
+  <parameter name="InterfaceSettingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.RouterAdvertisement.InterfaceSetting.{i}." shortObjectName="Dev2RouterAdvertisementInterfaceSettingObject" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">Per-interface Router Advertisement (RA) configuration {{bibref|RFC4861}}. Table entries are created for use in sending Router Advertisements.  For enabled table entries, if {{param|Interface}} is not a valid reference to an IPv6-capable interface (that is attached to the IPv6 stack), then the table entry is inoperable and the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}}.Note: The {{object}} table includes a unique key parameter that is a strong reference. If a strongly referenced object is deleted, the CPE will set the referencing parameter to {{empty}}. However, doing so under these circumstances might cause the updated {{object}} row to then violate the table's unique key constraint; if this occurs, the CPE MUST set {{param|Status}} to {{enum|Error_Misconfigured|Status}} and disable the offending {{object}} row. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. Defines the value of the ''IsRouter'' and ''AdvSendAdvertisements'' flags from {{bibref|RFC4861|Section 4.2}} </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="IpStatusType" />
+    <description source="TRx">The status of this entry.  {{enum}} The {{enum|Error_Misconfigured}} value indicates that a necessary configuration value is undefined or invalid.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Interface" type="string" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">This is the IP interface associated with this {{object}} entry. </description>
+
+  <parameter name="ManualPrefixes" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" />
+    <description source="TRx">{{list}} {{reference}} Manually-configured prefixes that will be sent in Router Advertisement messages.  Each referenced prefix MUST have a  {{param|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} of {{enum|Static|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}} or {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.StaticType}}.  Router Advertisement messages MUST include Prefix Information Options {{bibref|RFC4861}} for all ''Valid'' ({{param|.IP.Interface.{i}.IPv6Prefix.{i}.ValidLifetime}} is infinite or in the future) prefixes in this list.Prefixes MUST be associated with the interface instance referenced by {{param|Interface}}. </description>
+
+  <parameter name="Prefixes" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">{{list}} {{reference}} All prefixes that will be included in Router Advertisement (RA) messages sent out this interface. This list can include:* Prefixes from {{param|ManualPrefixes}} that are included in RA messages. * Prefixes with {{param|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} = {{enum|Child|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} or {{enum|AutoConfigured|.IP.Interface.{i}.IPv6Prefix.{i}.Origin}} associated with the interface instance referenced by {{param|Interface}}. </description>
+
+  <parameter name="MaxRtrAdvInterval" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="600" minValue="4" maxValue="1800" />
+    <description source="TRx">The maximum time allowed between sending unsolicited multicast Router Advertisements from the interface, in {{units}} (see {{bibref|RFC4861|Section 4.2}}). </description>
+
+  <parameter name="MinRtrAdvInterval" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="200" minValue="3" maxValue="1350" />
+    <description source="TRx">The minimum time allowed between sending unsolicited multicast Router Advertisements from the interface, in {{units}} (see {{bibref|RFC4861|Section 4.2}}). The value MUST be no greater than 3/4 * {{param|MaxRtrAdvInterval}}.Note: The ''1350'' maximum was derived from the RFC, based on 3/4 times the maximum value of {{param|MaxRtrAdvInterval}}. Similarly, the ''200'' default was derived from the RFC, based on 1/3 times the default value of {{param|MaxRtrAdvInterval}}. </description>
+
+  <parameter name="AdvDefaultLifetime" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="1800" maxValue="65535" />
+    <description source="TRx">The value placed in the &quot;Router Lifetime&quot; field of Router Advertisement messages on this interface, in {{units}} (see {{bibref|RFC4861|Section 4.2}}). The value can be zero or between {{param|MaxRtrAdvInterval}} and 9000 {{units}}, but these limits can be overridden by specific documents that describe how IPv6 operates over different link layers.A value of zero indicates that the router is not to be used as a default router. Note: The ''1800'' default was derived from the RFC, based on 3 times the default value of {{param|MaxRtrAdvInterval}}. </description>
+
+  <parameter name="AdvManagedFlag" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">The value placed in the &quot;Managed address configuration&quot; (M) flag field of Router Advertisement messages on this interafce (see {{bibref|RFC4861|Section 4.2}}, and {{bibref|RFC4862}}). </description>
+
+  <parameter name="AdvOtherConfigFlag" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">The value placed in the &quot;Other configuration&quot; (O) flag field of Router Advertisement messages on this interface (see {{bibref|RFC4861|Section 4.2}}, and {{bibref|RFC4862}}). </description>
+
+  <parameter name="AdvMobileAgentFlag" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="NotSupported" defaultValue="false" />
+    <description source="TRx">The value placed in the &quot;Home agent&quot; (H) flag field of Router Advertisement messages on this interface (see {{bibref|RFC3775|Section 7.1}}). </description>
+
+  <parameter name="AdvPreferredRouterFlag" type="string" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="Medium" />
+    <description source="TRx">The value placed in the &quot;Default Router Preference&quot; (Prf) field of Router Advertisement messages on this interface, as defined in {{bibref|RFC4191|Section 2.2}}. {{enum}} Also see {{bibref|RFC4191|Section 2.1}} which discusses how this flag is encoded on the wire. </description>
+
+  <parameter name="AdvNDProxyFlag" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">The value placed in the &quot;Proxy&quot; (P) flag field of Router Advertisement messages on this interface (see {{bibref|RFC4389|Section 4.1.3.3}}). </description>
+
+  <parameter name="AdvLinkMTU" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The value placed in MTU options of Router Advertisement messages on this interface. A value of zero indicates that no MTU options are included (see {{bibref|RFC4861|Section 4.6.4}}). </description>
+
+  <parameter name="AdvReachableTime" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" maxValue="3600000" />
+    <description source="TRx">The value placed in the &quot;Reachable Time&quot; field of Router Advertisement messages on this interface, in {{units}} (see {{bibref|RFC4861|Section 4.2}}). The value zero means unspecified (by the router). </description>
+
+  <parameter name="AdvRetransTimer" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The value placed in the &quot;Retrans Timer&quot; field of Router Advertisement messages on this interface (see {{bibref|RFC4861|Section 4.2}}). The value zero means unspecified (by the router). </description>
+
+  <parameter name="AdvCurHopLimit" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" maxValue="255" />
+    <description source="TRx">The value placed in the &quot;Cur Hop Limit&quot; field of Router Advertisement messages on this interface (see {{bibref|RFC4861|Section 4.2}}). The value zero means unspecified (by the router).Note: The default can be overridden with the value specified in {{bibref|RFC3232}} that was in effect at the time of implementation. </description>
+
+  <parameter name="OptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.RouterAdvertisement.InterfaceSetting.{i}.Option.{i}." shortObjectName="Dev2RouterAdvertisementInterfaceSettingOptionObject" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="PC" supportLevel="NotSupported" />
+  <description source="TRx">This object specifies the options in a Router Advertisement (RA) message {{bibref|RFC4861|Section 4.6}}. {{object}} entries are created for use in sending Router Advertisements (enabled options MUST be included in RA messages sent). This includes support for sending DNS information in the RA message as described in {{bibref|RFC6106}}. This table is intended only for options that are not modeled elsewhere. For example, it is not appropriate for the MTU option (which is modeled via {{param|#.AdvLinkMTU}}). </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables this {{object}} entry. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Tag" type="unsignedInt" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="65535" />
+    <description source="TRx">Option tag (type) {{bibref|RFC4861|Section 4.6}}. </description>
+
+  <parameter name="Value" type="hexBinary" specSource="TR181" profile="Device2_RouterAdvertisement:1" requirements="W" supportLevel="ReadWrite" maxLength="65535" minLength="0" />
+    <description source="TRx">A hexbinary encoded option value {{bibref|RFC4861|Section 4.6}}. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="IpStatusType" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error_Misconfigured</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_NeighborDiscovery:1" /> 
+<profile name="Device2_RouterAdvertisement:1" /> 
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

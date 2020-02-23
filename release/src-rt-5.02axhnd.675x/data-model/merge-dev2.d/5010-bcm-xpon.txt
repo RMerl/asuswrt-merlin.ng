@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-bcm-xpon.xml as the
+# last children objects of Device.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-bcm-xpon.xml Device.
+

@@ -1,0 +1,42 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+use Getopt::Long;
+use File::Find;
+use File::Temp qw[ tempfile ];
+use File::Basename;
+use Data::Dumper;
+
+# Physical Eraseblock sizeKB => Page sizeB map
+my %nand_peb_to_pg_szmap = (
+	128 => '2048',
+	256 => '4096',
+	512 => '4096',
+	1024 => '8192',
+);
+
+my $nand_pgsz_bytes;
+my $nand_pebsz_kb = shift @ARGV;
+my @peb_sizeskb = keys %nand_peb_to_pg_szmap;
+my $usage = qq[usage: $0 <nand_phys_eraseblock_size_kb>
+-This utility maps nand physical eraseblock sizes to page sizes.
+-supported nand physical eraseblock sizes in kb: @peb_sizeskb
+-returns nand page size in bytes \n];
+
+if ( !$nand_pebsz_kb ) {
+	die($usage);
+}
+
+$nand_pgsz_bytes = $nand_peb_to_pg_szmap{$nand_pebsz_kb};
+
+if( $nand_pgsz_bytes ) {
+	print $nand_pgsz_bytes;
+} else {
+	my @peb_sizeskb = keys %nand_peb_to_pg_szmap;
+	print "-1\n";
+        die("Error!: Invalid PEB size: $nand_pebsz_kb\n $usage");
+}
+
+exit $nand_pgsz_bytes;

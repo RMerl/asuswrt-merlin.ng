@@ -1,0 +1,5 @@
+BEGIN
+  eid         = EID_SWMDK
+  name        = swmdk
+  flags = EIF_MESSAGING_CAPABLE
+END

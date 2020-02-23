@@ -1,0 +1,22 @@
+
+ test -e /rom/etc/rdpa_init.sh && /rom/etc/rdpa_init.sh
+
+# Enable the PKA driver.
+ test -e /sys/devices/platform/bcm_pka/enable && echo 1 > /sys/devices/platform/bcm_pka/enable
+
+exit 0
+		;;
+
+	stop)
+		echo "removing bcm base drivers not implemented yet..."
+		exit 1
+		;;
+
+	*)
+		echo "bcmbasedrivers: unrecognized option $1"
+		exit 1
+		;;
+
+esac
+
+

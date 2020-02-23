@@ -1,0 +1,22 @@
+#!/bin/sh
+
+RESOLV_CONF="/etc/resolv.conf"
+
+NETMASK="netmask $subnet"
+
+ifconfig $interface $ip $NETMASK 
+
+#if [ -n "$router" ]
+#then
+#	for i in $router
+#	do
+#		route add default gw $i dev $interface
+#	done
+#fi
+
+#echo -n > $RESOLV_CONF
+for i in $dns
+do
+	#echo adding dns $i
+#	echo nameserver $i >> $RESOLV_CONF
+done

@@ -1,0 +1,8 @@
+#
+# Add the networking section to the InternetGatewayDevice.Device. tree.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-networking.xml InternetGatewayDevice.Device.
+

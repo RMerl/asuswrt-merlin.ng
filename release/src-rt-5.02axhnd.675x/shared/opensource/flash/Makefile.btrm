@@ -1,0 +1,2 @@
+#This file should excluded in from the release tarball
+BSPOBJS += spinandflash.o

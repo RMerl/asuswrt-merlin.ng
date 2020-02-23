@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_FiltersCfg." shortObjectName="FiltersCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_RDPA:1" supportLevel="Present" oid="3400" />
+  <description source="TRx">RDP ingress filters configuration.</description>
+
+  <parameter name="LocalSwitching" type="boolean" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Global config parameter for RDP ingres filters for local switching mode.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_LocalSwitchingCfg</description>
+
+  <parameter name="PrevCfg" type="boolean" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">flag for marking old filters configuration on current platform.</description>
+    <description source="BROADCOM">PSI name: BcmCfm_PrevCfg</description>
+
+  <parameter name="Ready" type="boolean" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="true" neverWriteToConfigFile="true" />
+    <description source="Broadcom">Indicates whether hardware is ready for config.  On PON platforms, will be set to false by RCL during ActivateObjects.  When hardware is ready, ssk will set this to True.</description>
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_FiltersCfg.IngressFilters.{i}." shortObjectName="IngressFiltersDataObject" specSource="BROADCOM" profile="X_BROADCOM_COM_RDPA:1" requirements="W" supportLevel="DynamicInstances" />
+  <description source="TRx">This object models an ingress filter configuration &#10;on a CPE device. This object must be implemented for CPE that contain an RDP framework.</description>
+ 
+  <parameter name="Type" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="filterTypesValues" />
+    <description source="TRx">Enumeration &#10;of: &#10;&quot;Up&quot; &#10;&quot;filters type&quot;</description>
+    <description source="BROADCOM">Filters type Enumeration&#10;</description>
+
+  <parameter name="Action" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" validValuesArray="actionValues" />
+    <description source="TRx">Enumeration &#10;of: &#10;&quot;Up&quot; &#10;&quot;filter entry action &quot;</description>
+    <description source="BROADCOM">Filter entry action Enumeration&#10;</description>
+
+  <parameter name="Val" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="1" maxValue="16777215" />
+    <description source="TRx">RDPA oui/etype/udef value &#10;decimal notation (e.g., 15..... --> mask = 1111). </description>   
+ 
+  <parameter name="ValId" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="1" maxValue="65535" />
+    <description source="TRx">The filter Oui entry value id &#10;decimal notation. </description>
+
+  <parameter name="Ports" type="hexBinary" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite"
+  defaultValue="0000000000000000000000000000000000000000000000000000000000000000" maxLength="64" />
+    <description source="TRx">RDPA port bit mask &#10;binary notation (e.g., mask = 1000101111.....). </description>  
+
+<vsaInfo>
+
+<validstringarray name="filterTypesValues" />
+  <element>filter_DHCP</element>
+  <element>filter_IGMP</element>
+  <element>filter_MLD</element>
+  <element>filter_ICMPV6</element>
+  <element>filter_ETYPE_UDEF</element>
+  <element>filter_PPPOE_D</element>
+  <element>filter_PPPOE_S</element>
+  <element>filter_ARP</element>
+  <element>filter_802_1X</element>
+  <element>filter_802_1AG_CFM</element>
+  <element>filter_PTP_1588</element>
+  <element>filter_L4_PTP_1588</element>
+  <element>filter_MCAST</element>
+  <element>filter_BCAST</element>
+  <element>filter_MAC_ADDR_OUI</element>
+  <element>filter_HDR_ERR</element>
+  <element>filter_IP_FRAG</element>
+  <element>filter_TPID</element>
+
+<validstringarray name="actionValues" />
+  <element>filter_none</element>
+  <element>filter_forward</element>
+  <element>filter_cpu</element>
+  <element>filter_drop</element>
+
+</vsaInfo>
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_RDPA:1" />
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,560 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules." shortObjectName="SwModulesObject" specSource="TR181" profile="Device2_SM_Baseline:1" supportLevel="Present" oid="1700" lockZone="6" />
+  <description source="TRx">Top level object for dynamically managed software applications.</description>
+  <description source="BROADCOM">REPORT_PROFILE: SM_Baseline:1, SM_ExecEnvs:1, SM_DeployAndExecUnits:1</description>
+
+  <parameter name="ExecEnvNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the ExecEnv table</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1, SM_DeploymentAndExecUnits:1</description>
+
+  <parameter name="DeploymentUnitNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the DeploymentUnit table.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_Baseline:1, SM_DeploymentAndExecUnits:1</description>
+
+  <parameter name="ExecutionUnitNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the ExecutionUnit table.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_Baseline:1, SM_DeploymentAndExecUnits:1</description>
+
+  <parameter name="X_BROADCOM_COM_PreinstallNeeded" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="R" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">This flag can be set by local management system or remote management. When set to true, preinstalled software modules in the firmware need to be processed. If this flag is true and X_BROADCOM_COM_PreinstallAtRuntime is true, preinstall process will take place at runtime. Otherwise, preinstall process will take place after reboot</description>
+
+  <parameter name="X_BROADCOM_COM_PreinstallAtRuntime" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="R" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This flag provides the information whether preinstall package process should happen at runtime or bootup time</description>
+
+  <parameter name="X_BROADCOM_COM_PreinstallOverwrite" type="boolean" specSource="Broadcom" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">This parameter sets the mode that dictates the behavior of how software modules are installed from a firmware.  When this flag is true, the packages in the firmware will overwrite all preinstalled EE(s) and all DUs installed in it whether they were manually installed or preinstalled from firmware update.   When false, if there are existing preinstalled packages, they are not overwritten until the existing packages are removed (configuration reset to default).</description>
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecEnv.{i}." shortObjectName="ExecEnvObject" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">Describe an Execution Environment that is available on the device along with its configurable settings.&#10;At most one entry in this table can exist with a given value for Alias, or with a given value for Name.</description>
+  <description source="BROADCOM">REPORT_PROFILE: SM_Baseline:1, SM_ExecEnvs:1&#10;</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Indicateds whether or not this ExecEnv is enabled.&#10;&#10;Disabling an enabled Execution Environment stops it, while enabling a disabled Execution Environment starts it.&#10;&#10;When an Execution Environment is disabled, Deployment Units installed to that Execution Environment will be unaffected, but any Execution Units currently running on that Execution Environment will automatically transition to Idle.&#10;&#10;If a ChangeDUState is attempted on a DeploymentUnit that is to be applied against a disabled ExecEnv, that ChangeDUState operation fails and the associated DUStateChangeComplete RPC will contain a FaultStruct for that operation.&#10;&#10;If a SetParameterValues is attempted against the ExecutionUnit.{i}.RequestedState for an ExecutionUnit that is associated with a disabled ExecEnv a CWMP Fault will be issued in response.&#10;&#10;Disabling an Execution Environment could place the device in a non-manageable state that would require a manual reboot to alleviate.  For example, if the operating system itself was modeled as an ExecEnv and the ACS disabled it, the CWMP managment agent might be terminated leaving the device unmanageable.&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="ExecEnvStatusValues" />
+    <description source="TRx">Indicates the status of this ExecEnv.  Enumeration of:&#10;Up&#10;Error (OPTIONAL)&#10;Disabled</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="Reset" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Setting this parameter to true causes EE to revert back to the state it was in when it first issued a &quot;1 BOOTSTRAP&quot; inform event.   The following requirement indicate what the MUST happen for the reset to be complete:&#10;&#10;1. Al DUs that were installed after the first &quot;1 BOOTSTRAP&quot; Inform event MUST be removed.&#10;2. All persistent storage, configuration files, and log files that were associated with the removed DUs MUST be removed&#10;3. Any DU that is still installed against the EE MUST be restored to the version present when the first &quot;1 BOOTSTRAP&quot; Inform evnet was issued.&#10;4. Any DU that was present when the last &quot;1 BOOTSTRAP&quot; Inform event was issued, but was subsequently uninstalled and is now not present, MUST be installed with the version that was present when the last &quot;1 BOOTSTRAP&quot; inform event was issued&#10;5. The EE MUST be restored to the version and conifguration present when the first &quot;1 BOOTSTRAP&quot; Inform event was issued&#10;6. The EE MUST be restarted after all other restoration requirements have been met.&#10;&#10;When read, this parameter returns false, regardless of the actual value.&#10;</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">A non-volatitle handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for future reference.&#10;&#10;An initial unique value MUST be assigned when the CPE creates an instance of this ExecEnv.</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">A Name provided by the CPE that adequately distinguishes this ExecEnv from all other ExecEnv instances.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="Type" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates the complete type and specification version of this ExecEnv</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="InitialRunLevel" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="TRx">The run level that this ExecEnv will be in upon startup (whether that is caused by a CPE Boot or the Execution Envionment starting).&#10;&#10;Run levels dictate which Execution Units will be started.  Execution Units will be started if ExecutionUnit.{i}.RunLevel is less than CurrentRunLevel and ExecutionUnit.{i}.AutoStart is true.&#10;&#10;If the value of CurrentRunLevel is -1, then the value of this parameter is irrelevant when read and setting its value has no impact to the Run Level of this ExecEnv.</description>
+
+  <parameter name="RequestedRunLevel" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Provides a mechanism to remotely manipulate the run level of this ExecEnv.&#10;&#10;Run levels dictate which Execution Units will be started if ExecutionUnit.{i}.RunLevel is less than CurrentRunLevel and ExecutionUnit.{i}.AutoStart is true.&#10;&#10;Setting this value when CurrentRunLevel is -1 has no impact to the Run Level of this ExecEnv.&#10;&#10;When read, this parameter retuns -1, regardless of the actual value.</description>
+
+  <parameter name="CurrentRunLevel" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="-1" minValue="-1" maxValue="65535" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The run level that this ExecEnv is currently operating in.&#10;&#10;Upon startup (whether that is caused by a CPE Boot or the Execution Environment starting), Current Run Level will be equal to InitialRunLevel, unless Run Levels are not supported by this ExecEnv in which case CurrentRunLevel will be -1.&#10;&#10;Run level dictate which Execution Units will be started.  Execution United will be started if ExecutionUnit.{i}.RunLevel is less than CurrentRunLevel and ExecutionUnit.{i}.AutoSatrt is true.&#10;&#10;If CurrentRunLevel is -1 then RunLevels are not suported by this ExecEnv and setting InitialRunLevel or RequestedRunLevel will not impact the Run Level of this ExecEnv.</description>
+
+  <parameter name="InitialExecutionUnitRunLevel" type="int" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="-1" minValue="-1" maxValue="65535" />
+    <description source="TRx">Indicates the initial value on creation for {{param|#.ExecutionUnit.{i}.RunLevel}} for all Execution Unit instances associated with this {{object}}.   If the value of {{param|CurrentRunLevel}} is -1, then the value of this parameter is irrelevant when read and setting its value has no impact on the Run Level of any Execution Unit. </description>
+
+  <parameter name="Vendor" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="128" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The vendor that produced this ExecEnv.&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The version of this ExecEnv as specified by the Vendor that implemented this ExecEnv, not the version of the specification.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="ParentExecEnv" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The value MUST be the path name of a row in the ExecEnv table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.   Represents the parent ExecEnv of this ExecEnv.&#10;&#10;If this value is an empty string then this is the Primary Execution Environment.</description>
+
+  <parameter name="AllocatedDiskSpace" type="int" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="-1" minValue="-1" maxValue="2147483647" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The amount of disk space measured in kilobytes allocated to this ExecEnv.  A value of -1 MUST be used for ExecEnv instances where this parameter is not applicable.&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1</description>
+
+  <parameter name="AvailableDiskSpace" type="int" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="-1" minValue="-1" maxValue="2147483647" />
+    <description source="TRx">The amount of disk space measured in kilobytes currently available ito this ExecEnv.  This value changes as the ExecutionUnit instances assocatated with this ExecEnv consumes disk space.  A value of 1 MUST be used for ExecEnv isntances where this parameter is not applicable.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1</description>
+
+  <parameter name="AllocatedMemory" type="int" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="-1" minValue="-1" maxValue="2147483647" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The amount of physical RAM measured in kilobytes allocated to this ExecEnv.   A value of -1 MUST be used for ExecEnv instances where this paremter is not applicable.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1</description>
+
+  <parameter name="AvailableMemory" type="int" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="-1" minValue="-1" maxValue="2147483647" />
+    <description source="TRx">The amount of physcial RAM measured in kilobytes currrently available to this ExecEnv.  This value changes as the Execution Unit instances associated with this ExecEnv are started/stopped and consume the physical RAM.  A value of -1 MUST be used for ExecEnv instances where this parameter is not applicable.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1</description>
+
+  <parameter name="ActiveExecutionUnits" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="NotSupported" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma-separated list of strings.  Eac list item MUST be the path name of a rows in the ExecutionUnit table.  If the referenced object is deleted, the corresponding item MUST be removed from the list  Represents the ExecutionUnit instances currently running on this ExecEnv.  This is a subset of AssociatedExecutionUnits as it only contains ExecutionUnit instances that are currently Active.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_ExecEnvs:1, SM_Baseline:1</description>
+
+  <parameter name="ProcessorRefList" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separted list of strings.  Each list item MUST be the path name of a row in the DeviceInfo.Processor table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the processor that this ExecEnv has available to it.</description>
+
+  <parameter name="X_BROADCOM_COM_MngrEid" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The EID of the app that manages this Execution Environment.</description>
+
+  <parameter name="X_BROADCOM_COM_ContainerName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The container name of this Execution Environment.</description>
+
+  <parameter name="X_BROADCOM_COM_MngrAppName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="32" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The manager application name of this Execution Environment, if this EE is a app_mediaType is 'ee_tarball'.  It is named as app_tarballMngrExecutable in the package information text file.</description>
+
+  <parameter name="X_BROADCOM_COM_IsPreinstall" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="R" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">When this flag is true, this EE has been preinstalled by BEEP framework.</description>
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.DeploymentUnit.{i}." shortObjectName="DUObject" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">this table serves as the Deployment Unit inventory and contains status information about each Deployment Unit.&#10;&#10;A new instance of this table gets created during the installation of a Software Module.&#10;&#10;At most one entry in this table can exist with all the same values for UUID, Version and ExecutionEnvRef, or with a given value for Alias.</description>
+  <description source="BROADCOM">The TR181 spec says this object is Read-only, i.e. multiple instances.  I think we can change it back since only osgid and linmosd will create instances of this object, not tr69c.&#10;REPORT_PROFILE: SM_Baseline:1, SM_DeployAndExecUnits:1</description>
+
+  <parameter name="UUID" type="UUID" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="36" alwaysWriteToConfigFile="true" />
+    <description source="TRx">A universally Unique Identifier chosen by the ACS.  The format of this valued defined by RFC4122 Version 4 (Random)&#10;&#10;This value MUST NOT be altered when the DeploymentUnit is updated.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="DUID" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Deployment Unit Identifier chosen by targed ExecEnv.  The formate of this value is Execution Environment specific.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for furture reference.&#10;&#10;An initial unique value MUST be assigned when the CPE creates an instance of this DeploymentUnit.</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates the Name of this DeploymentUnit, which is choosen by the author of the Deployment Unit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="Uninstalled" validValuesArray="DUStatusValues" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates the status of this DeploymentUnit.  Enumeration of:&#10;Installing (this instance is in the process of being Installed and SHOULD transition to the Installed state)&#10;Installed (this instance has been successfully installed.  The Resolved flag SHOULD also be referenced for dependency resolution)&#10;Updating (this instance is in the process of being updated and SHOULD transition to the Installed state)&#10;Uninstalling (this instance is in the process of being Uninstalled and should be transition to the Uninstalled state)&#10;Uninstalled (this instance has been successfully Uninstalled.  This status will typically not be seen within a DeploymentUnit instance)</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Resolved" type="boolean" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates whether or not this DeploymentUnit has resolved all of its dependencies.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1</description>
+
+  <parameter name="URL" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="1024" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Contains the URL used by the most recent ChangeDUState RPC to either Install or Update this DeploymentUnit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="X_BROADCOM_COM_Username" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Username to be used by the CPE to authenticate with the file server, if authentication is required.</description>
+
+  <parameter name="X_BROADCOM_COM_Password" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" isTr69Password="true" />
+    <description source="BROADCOM">Password to be used by the CPE to authenticate with the file server, if authentication is required.</description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Textual description of this DeploymentUnit.  The format of this value is Execution Environment specific.&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1</description>
+
+  <parameter name="Vendor" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="128" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Vendor of this DeploymentUnit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Version of this DeploymentUnit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="VendorLogList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row in the DeviceInfo.VendorLogFile table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the vendor log files that have come into existence because of this ExecutionUnit.&#10;&#10;When the DeploymentUnit (that caused this ExecutionUnit to come into existence) is uninstalled the vendor log files referenced here SHOLD be removed from the CPE.&#10;&#10;Not all DeploymentUnit instances will actually have a corresponding vendor log file in which case the value of this parameter will be an empty string.</description>
+
+  <parameter name="VendorConfigList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row in the DeviceInfo.VendorConfigFile table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the vendor config files that have come into existence because of this ExecutionUnit.&#10;&#10;When the DeploymentUnit (that caused this ExecutionUnit to come into existence) is uninstalled the vendor config files referenced here SHOULD be removed from the CPE.&#10;&#10;Not all DeploymentUnit instances will actually have a corresponding vendor config file in which case the value of this parameter will be an empty string.</description>
+
+  <parameter name="ExecutionUnitList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a row in the ExecutionUnit table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the ExecutionUnit instances that are associated with this DeploymentUnit instance.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="ExecutionEnvRef" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">This value MUST be the path name of a row in the ExecEnv table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Represents the ExecEnv that this DeploymentUnit is associated with.</description>
+    <description source="BROADCOM">Should be ExecutionEnvRef.  When is a good time to fix?&#10;REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="X_BROADCOM_COM_ExecutionEnvList" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Comma-separated list of strings.  Each list item MUST be the path name of a row in the ExecEnv table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the ExecEnv instances that are associated with this DeploymentUnit instance.</description>
+
+  <parameter name="X_BROADCOM_COM_startTime" type="dateTime" specSource="Broadcom" profile="Unspecified" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="BROADCOM">The date and time the operation on the DU was started in UTC.  If this is unknown, the parameter value is set to the Unknow Time value.</description>
+
+  <parameter name="X_BROADCOM_COM_completeTime" type="dateTime" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="BROADCOM">The date and time the operation on the DU was completed in UTC.  If this is unknown, the parameter value is set to the Unknow Time value.</description>
+
+  <parameter name="X_BROADCOM_COM_bundleId" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="-1" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">This field is only used when this DU is associated with OSGI/Felix.</description>
+
+  <parameter name="X_BROADCOM_COM_IsPreinstall" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="R" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">When this flag is true, this DU has been preinstalled by BEEP framework.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}." shortObjectName="EUObject" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="TRx">This table serves as the Execution Unit inventory and contains both status information about each Execution Unit as well as configurable parameters for each Execution Unit.&#10;&#10;Each DeploymentUnit that is installed can have zero or more Execution Units.&#10;&#10;Once a Deployment Unit is installed, it populates this table with its contained Execution Units.&#10;&#10;When the Deployment Unit (that caused this ExecutionUnit to come into existence) is updated, this instance MAY be removed and new instances MAY come into existence.  While the Deployment Unit (that caused this ExecutionUnit to come into existence) is being updated, all ExecutionUnit instances assocciatedwith the Deployment Unit will be stopped until the update is complete at which time they will be restored to the state that they were in before the update started.&#10;&#10;When the Deployment Unit (that caused this ExecutionUnit to come into existence) is uninstalled, this instance is removed.&#10;&#10;Each ExecutionUnit MAY also contain a set of vendor specific parameters displaying status and maining configuration that reside under the Extensions objection.&#10;&#10;At most one entry in this table can exist with a given value for EUID or with a given value for Alias.&#10; </description>
+  <description source="BROADCOM">The TR181 spec says this object is Read-only, i.e. multiple instances.  I think we can change it back since only osgid and linmosd will create instances of this object, not tr69c.&#10;REPORT_PROFILE: SM_Baseline:1, SM_DeployAndExecUnits:1&#10;</description>
+
+  <parameter name="EUID" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Execution Unit Identifier chosen by the ExecEnv during installation of the associated DeploymentUnit.&#10;&#10;The format of this value is Execution Environment specific, but it MUST be unique across ExecEnv isntances.  Thus, it is recommended that this be a combination of the ExecEnv.{i}.Name and and ExecutionEnvironment local unique value.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1&#10;</description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="" maxLength="64" />
+    <description source="TRx">A non-volatile handle used to reference this instance.  Alias provides a mechanism for an ACS to label this instance for future reference. &#10;&#10;An initial unique value MUST be assigned when the CPE creates an instance of this ExecutionUnit.&#10;</description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The name of this ExecutionUnit as it pertains to its associated DeploymentUnit, which SHOULD be unique accross all ExecutionUnit instances contained within its associated DeploymentUnit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="ExecEnvLabel" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The name of this ExecutionUnit as provided by the ExecEnv, which SHOULD be unique across all ExecutionUnit intances contained within a specif ExecEnv.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="Idle" validValuesArray="EUStatusValues" />
+    <description source="TRx">Indicates the status of this Execution Unit.  Enumeration of:&#10;Idle (this instance is in an Idle state and not running)&#10;Starting (this instance is in the process of Starting and SHOULD transition to the Active state)&#10;Active (this instance is currently running)&#10;Stopping (this instance is in the process of Stopping and SHOULD transition to the Idle state)&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="RequestedState" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="W" supportLevel="ReadWrite" defaultValue="" validValuesArray="EURequestStateValues" neverWriteToConfigFile="true" isTr69Password="true" />
+    <description source="TRx">Indicates the state transition that the ACS is requesting for this ExecutionUnit.   Enumeration of:&#10;Idle (if this ExcutionUnit is currently Starting or Active, the CPE will attempt to Stop the Execution Unit; otherwise this requested state is ignored)&#10;&#10;Active (if this ExecutionUnit is currently in Idle the CPE will attempt to Start the ExcutionUnit.  If this ExecutionUnit is in Stopping the request is rejected and a fault is raised.   Otherwise, this request state is ignored)&#10;&#10;When read, this parameter returns an empty string, regardless of the actual value.&#10;</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="ExecutionFaultCode" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="NoFault" validValuesArray="ExecutionFaultCodeValues" />
+    <description source="TRx">If while running or transitioning between states tis ExecutionUnit identifies a fault this parameter embodies the problem.  The value of NoFault MUST be used when everything is working as intended.  Enumeration of:&#10;NoFault&#10;FailureOnStart&#10;FaiureOnAutoStart&#10;FailureOnStop&#10;FailureWhileActive&#10;DependencyFailure&#10;UnStartable</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="ExecutionFaultMessage" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" />
+    <description source="TRx">If while running or transitioning between states this ExecutionUnit identifies a fault this pareamter provides a more detailed explaination of the problem.&#10;&#10;If ExecutionFaultCode has the value of NoFault then the value of this parameter MUST be an empty string and ignored by ACS.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="AutoStart" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Controls whether or not this ExecutionUnit will automatically start when its ExecEnv is either booted or restarted.&#10;&#10;If TRUE and the RunLevel verification is also met, then this ExecutionUnit will be automatically started by the device after a reboot or restart.&#10;&#10;If false this ExecutionUnit will not be started after a reboot or restart until it is explicitly commanded to do so either by the ACS or another Execution Unit.&#10;</description>
+
+  <parameter name="RunLevel" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="65535" />
+    <description source="TRx">Determines when this ExecutionUnit will be started.&#10;&#10;If AutoStart is true and ExecEnv.{i}.CurrentRunLevel is greater than RunLevel, then this ExecutionUnit will be started.&#10;&#10;If the value of ExecEnv.{i}.CurrentRunLevel is -1, the the associated ExecEnv. doesn't support Run Levels, thus the value of this parameter is irrelvant when read and setting its value has no impact to the Run Level of this ExecutionUnit.</description>
+
+  <parameter name="Vendor" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="128" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Vendor of this ExecutionUnit.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Version" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Version of this ExecutionUnit.  The format of this value is Execution Environment specific.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+  <parameter name="Description" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="256" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Textual description of this ExecutionUnit.  The format of this value is Execution Environment specific.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1</description>
+
+  <parameter name="DiskSpaceInUse" type="int" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="-1" />
+    <description source="TRx">The amount of disk space measured in kilobytes currently being used by this ExecutionUnit.  A valued of -1 MUST be used for ExecutionUnit instances where this parameter is not applicable.</description>
+
+  <parameter name="MemoryInUse" type="int" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="-1" />
+    <description source="TRx">The amount of physical RAM measured in kilobytes currently being used by this ExecutionUnit.  A valued of -1 MUST be used for ExecutionUnit instances where this parameter is not applicable.</description>
+
+  <parameter name="References" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represnts the instances of multi-instanced object that have come into existence because of this ExecutionUnit.&#10;&#10;NOTE: All other objects and parameters (i.e. not multi-instanced objects) that this Execution has caused to come into existence will be discovered via the DeviceInfo.SupportedDataModel.{i}.table.</description>
+
+  <parameter name="AssociatedProcessList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row in the DeviceInfo.ProcessStatus.Process table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the system processes that are active in the system because of this ExecutionUnit.&#10;&#10;If Status is not Active it is expected that this list will be an empty string.  Some ExecutionUnit instances MIGHT NOT have any system processes irrespective of the value of Status.</description>
+
+  <parameter name="VendorLogList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row in the DeviceInfo.VendorLogFile table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the vendor log files that have come into existence because of this ExecutionUnit.&#10;&#10;When the DeploymentUnit (that caused this ExecutionUnit to come into existence) is uninstalled the vendor log files referenced here SHOLD be removed from the CPE.&#10;&#10;Not all ExecutionUnit instances will actually have a corresponding vendor log file in which case the value of this parameter will be an empty string.</description>
+
+  <parameter name="VendorConfigList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">Comma-separated list of strings.  Each list item MUST be the path name of a table row in the DeviceInfo.VendorConfigFile table.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  Represents the vendor config files that have come into existence because of this ExecutionUnit.&#10;&#10;When the DeploymentUnit (that caused this ExecutionUnit to come into existence) is uninstalled the vendor config files referenced here SHOULD be removed from the CPE.&#10;&#10;Not all ExecutionUnit instances will actually have a corresponding vendor config file in which case the value of this parameter will be an empty string.</description>
+
+  <parameter name="SupportedDataModelList" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="NotSupported" defaultValue="" />
+    <description source="TRx">The value MUST be the path name of a table row in the DeviceInfo.SupportedDataModel table.  If the referenced object is deleted, this parameter value MUST be set to an empty string.  Represents the CWMP-DT schema instance that has been introduced to this device because  of existence of this ExecutionUnit.</description>
+
+  <parameter name="ExecutionEnvRef" type="string" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="TRx">This value MUST be the path name of a row in the ExecEnv table.  If the referenced object is deleted, the parameter value MUST be set to an empty string.  Represents the ExecEnv that this ExecutionUnit is associated with.</description>
+    <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1</description>
+
+  <parameter name="X_BROADCOM_COM_bundleId" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="-1" hideParameterFromAcs="true" />
+    <description source="BROADCOM">This field is only used when this EU is associated with OSGI/Felix.</description>
+
+  <parameter name="X_BROADCOM_COM_appDigest" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="160" />
+    <description source="BROADCOM">The digital digest of this app -- ie. binary executable application digest which will be checked againt during the launch.</description>
+
+  <parameter name="X_BROADCOM_COM_ManifestDigest" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="160" />
+    <description source="BROADCOM">The digital digest of this app manifest which will be checked againt during app launch.</description>
+
+  <parameter name="X_BROADCOM_COM_MediaType" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">The media type of this EU -  &quot;executible and tarball&quot; for now and can be expanded if needed.</description>
+
+  <parameter name="X_BROADCOM_COM_Username" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="32" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The unique username of this Execution Unit.</description>
+
+  <parameter name="X_BROADCOM_COM_MngrAppName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="32" hideParameterFromAcs="true" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The manager application name of this Execution Unit, if this a app_mediaType  'tarball'. It is named as app_tarballMngrExecutable in the package information text file.</description>
+
+  <parameter name="X_BROADCOM_COM_IPAddress" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" />
+    <description source="BROADCOM">IP address of EU</description>
+
+  <parameter name="X_BROADCOM_COM_autoStartOrder" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="1" />
+    <description source="BROADCOM">The auto-start order of this EU. After its ExecEnv is either rebooted or restarted, EUs with autoStartOrder 0 will be auto-started first, followed by EUs with autoStartOrder 1, provided that the EU is autoStart enabled and the RunLevel verification is also met.</description>
+
+  <parameter name="X_BROADCOM_COM_autoRelaunch" type="boolean" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Controls whether or not this ExecutionUnit will automatically restart after it exits.&#10;&#10;If TRUE this ExecutionUnit will be restarted by the device unless it was stopped by ACS or other management interface.&#10;&#10;If false this ExecutionUnit will not be restarted after it exits.&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_maxRestarts" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="5" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">The maximum number of tries to restart this ExecutionUnit after it exits.</description>
+
+  <parameter name="X_BROADCOM_COM_restartInterval" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="2000" />
+    <description source="BROADCOM">The device MUST wait for the interval (in milliseconds) specified by this parameter to expire before attempting to restart this ExecutionUnit.</description>
+
+  <parameter name="X_BROADCOM_COM_successfulStartPeriod" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="3000" />
+    <description source="BROADCOM">The device MUST check that the ExecutionUnit remains running after the period (in milliseconds) specified by this parameter.&#10;&#10;If it is, then this should be taken as an indication that the ExecutionUnit is running successfully&#10;&#10;and at this point the device MUST reset the current number of retries to zero.</description>
+
+  <parameter name="X_BROADCOM_COM_restartCount" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The current number of tries for restarting the ExecutionUnit.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions." shortObjectName="ExtensionsObject" specSource="TR181" profile="Device2_SM_Baseline:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object proposes a general location for vendor extensions specific to this Execution Unit, which allows multiple Execution Units to expose parameters without the concern of conflicting parameter names.  These vendor extensions are related to displaying status and maintaining configuration for this Execution Unit.&#10;&#10;It is also possible for the Execution Unit to expose status and configuration parameters within Service objects or as embedded objects and parameters directly within the root data model, in  which case the cobination of References and SupportedDataModelRef will be used to determine their locations.</description>
+  <description source="BROADCOM">REPORT_PROFILE: SM_DeployAndExecUnits:1, SM_Baseline:1</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus." shortObjectName="BusObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This object contains bus name information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the wellknown name of D-Bus application.</description>
+
+  <parameter name="ObjectPathNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus ObjectPath table.</description>
+
+  <parameter name="ServiceStatus" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Down" validValuesArray="EUServiceStatusValues" />
+    <description source="BROADCOM">The D-Bus service status of this Execution Unit. Service status is Up when the wellknown name is acquired. Service status is Down when the wellknown name is lost.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus.ObjectPath.{i}." shortObjectName="BusObjectPathObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains object path information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Path" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the object path of D-Bus application.</description>
+
+  <parameter name="InterfaceNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus Interface table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus.ObjectPath.{i}.Interface.{i}." shortObjectName="BusInterfaceObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains interface information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the interface name of D-Bus application.</description>
+
+  <parameter name="MethodNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus Method table.</description>
+
+  <parameter name="SignalNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus Signal table.</description>
+
+  <parameter name="PropertyNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus Property table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus.ObjectPath.{i}.Interface.{i}.Method.{i}." shortObjectName="BusMethodObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains method information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the method name of D-Bus application.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus.ObjectPath.{i}.Interface.{i}.Signal.{i}." shortObjectName="BusSignalObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains signal information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the signal name of D-Bus application.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Bus.ObjectPath.{i}.Interface.{i}.Property.{i}." shortObjectName="BusPropertyObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains property information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the property name of D-Bus application.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_BusClient." shortObjectName="BusClientObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This object contains bus client application information of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="Name" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the name of D-Bus client application.</description>
+
+  <parameter name="PrivilegeNumberOfEntries" type="unsignedInt" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The number of entries in the Bus Client Privilege table.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_BusClient.Privilege.{i}." shortObjectName="BusClientPrivilegeObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">This object contains client privilege information of execution unit running on BEEP D-Bus framework. The client application represented by this execution unit is allowed to access to services that are configured by this object.</description>
+
+  <parameter name="WellknownName" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the bus wellknown name of D-Bus application.</description>
+
+  <parameter name="ObjectPath" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the object path of D-Bus application.</description>
+
+  <parameter name="Interface" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is the interface of D-Bus application.</description>
+
+  <parameter name="Member" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="255" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value is name of either method, signal, or property of D-Bus application.</description>
+
+  <parameter name="MemberType" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Method" validValuesArray="BusInterfaceMemberTypes" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value specifies type of member. It is either All, Method, Signal, or Property.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.ExecutionUnit.{i}.Extensions.X_BROADCOM_COM_Manifest." shortObjectName="ManifestObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This object contains proprietary information from the manifest of execution unit running on BEEP D-Bus framework.</description>
+
+  <parameter name="User" type="string" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This value indicates whether D-Bus application is run on priviledged or unpriviledged container.</description>
+
+  <parameter name="MaxMemory" type="unsignedLong" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The maximum memory in KBytes that container allocates it for application.</description>
+
+  <parameter name="MaxFlashSize" type="int" specSource="Broadcom" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The maximum flash size in KBytes that container allocates it for application.</description>
+
+  <parameter name="NetworkMode" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="Disconnect" validValuesArray="ContainerNetworkModeValues" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Networking mode for the EU</description>
+
+  <parameter name="InterfaceIdentifier" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Interface identifier is used for lanonly networking mode</description>
+
+  <parameter name="ExposedPorts" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">This parameter specifies those ports requested by the EU service. The format is port/tcp, port/udp, port with the default protocol being tcp if not specified.</description>
+
+  <parameter name="RealtimeRuntime" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue=0 alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">cpu.rt_runtime_us of this EU cgroup.  Applicable to real-time scheduling tasks only.&#10;&#10;This parameter specifies a period of time in microseconds for the longest continuous period in which the tasks in this EU cgroup have access to CPU resources.</description>
+
+  <parameter name="Cpus" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">cpuset.cpus of this EU cgroup.  Specifies the CPUs that tasks in this cgroup are permitted to access.&#10;&#10;A comma-separated list, with dashes ("-") to represent ranges. For example, "0-2,16" represents CPUs 0, 1, 2, and 16.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.SoftwareModules.X_BROADCOM_COM_DmAccess.{i}." shortObjectName="DmAccessObject" specSource="Broadcom" profile="Unspecified" requirements="PC" supportLevel="DynamicInstances" />
+  <description source="BROADCOM">Each instance of this table represents an MDM granular access. </description>
+
+  <parameter name="EUID" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The Execution Unit Identifier of this MDM granular access.</description>
+
+  <parameter name="AccessID" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">The unique identifier for this MDM granular access.</description>
+
+  <parameter name="ProfileList" type="string" specSource="Broadcom" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Comma-separated list of accessible profile names.</description>
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="BusInterfaceMemberTypes" />
+  <element>Method</element>
+  <element>Signal</element>
+  <element>Property</element>
+  <element></element>
+
+<validstringarray name="ContainerNetworkModeValues" />
+  <element>Disconnect</element>
+  <element>Primary</element>
+  <element>Secondary</element>
+  <element>WanOnly</element>
+  <element>LanOnly</element>
+
+<validstringarray name="DUStatusValues" />
+  <element>Installing</element>
+  <element>Installed</element>
+  <element>Updating</element>
+  <element>Uninstalling</element>
+  <element>Uninstalled</element>
+  <element>X_BROADCOM_COM_Downloading</element>
+  <element>X_BROADCOM_COM_DnldFailed</element>
+  <element>X_BROADCOM_COM_DnldBadFormat</element>
+  <element>X_BROADCOM_COM_DnldCorrupted</element>
+  <element>X_BROADCOM_COM_DnldBadSigntr</element>
+
+<validstringarray name="EURequestStateValues" />
+  <element>Idle</element>
+  <element>Active</element>
+  <element></element>
+
+<validstringarray name="EUServiceStatusValues" />
+  <element>NoService</element>
+  <element>Down</element>
+  <element>Up</element>
+
+<validstringarray name="EUStatusValues" />
+  <element>Idle</element>
+  <element>Starting</element>
+  <element>Active</element>
+  <element>Stopping</element>
+
+<validstringarray name="ExecEnvStatusValues" />
+  <element>Up</element>
+  <element>Updating</element>
+  <element>Error</element>
+  <element>Disabled</element>
+  <element>X_BROADCOM_COM_Starting</element>
+  <element>X_BROADCOM_COM_Stopping</element>
+
+<validstringarray name="ExecutionFaultCodeValues" />
+  <element>NoFault</element>
+  <element>FailureOnStart</element>
+  <element>FailureOnAutoStart</element>
+  <element>FailureOnStop</element>
+  <element>FailureWhileActive</element>
+  <element>DependencyFailure</element>
+  <element>UnStartable</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_SM_Baseline:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

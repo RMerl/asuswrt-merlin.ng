@@ -1,0 +1,53 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+
+    #if (defined $_[1]) {
+    print "$_[0]\n";
+
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+print "-- args @ARGV --- \n";
+
+my @args = @ARGV;
+unless (-e $ENV{WDIR}) {shell("mkdir -p $ENV{WDIR}");}
+
+if ( $args[0] eq "sign" ) {
+
+    #Sign kekystore with MFG keyinfo
+    shell(
+        "cat $ENV{WDIR}/keyinf | openssl dgst -sign $ENV{MFG_KEY} -keyform pem -sha256 -sigopt \\
+                  rsa_padding_mode:pss -sigopt rsa_pss_saltlen:-1 -out $ENV{WDIR}/keyinf.sig"
+    );
+} elsif ( $args[0] eq "encrypt" ) {
+
+    #Encrypt FLD keys
+    my $EK = shell("hexdump -v -e '/1 \"%02X\"' $ENV{MFG_AES_EK}"); 
+    my $IV = shell("hexdump -v -e '/1 \"%02X\"' $ENV{MFG_AES_IV}"); 
+    shell(
+        "cat $ENV{TK_FLD_EK}|openssl enc -aes-128-cbc -K $EK \\
+                 -iv $IV -out $ENV{WDIR}/FLD_EK.enc"
+    );
+    shell(
+        "cat $ENV{TK_FLD_IV}|openssl enc -aes-128-cbc -K `hexdump -v -e '/1 \"%02X\"' $ENV{MFG_AES_EK}` \\
+                  -iv `hexdump -v -e '/1 \"%02X\"' $ENV{MFG_AES_IV}` -out $ENV{WDIR}/FLD_IV.enc"
+    );
+}
+

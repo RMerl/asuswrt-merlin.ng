@@ -1,0 +1,150 @@
+/*
+ * CSS styles used in Configure Tab
+ *
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: configure.css 603186 2015-12-01 07:49:11Z $
+ */
+
+#configformdiv{
+	margin-left:20px;
+	margin-right:20px;
+}
+
+.configfrm fieldset{
+	margin:10px;
+	width:95%;
+}
+
+.configfrm legend {
+	font-weight:bold;
+}
+
+.configfrm input,.configfrm label{
+	margin-left:15px;
+	margin-right:15px;
+}
+
+.cmnipt{
+	padding-top:20px;
+	padding-bottom:20px;
+}
+
+#submitbutton{
+	float:right;
+	width:150px;
+}
+
+#fst{
+	border:0;
+	float:left;
+	width:40%
+}
+
+#scnd{
+	border:0;
+	float:right;
+	width:40%;
+}
+
+#smbtn{
+	clear:both;
+}
+
+#startbutton{
+	width:240px;
+}
+
+#startremotedebug{
+	width:270px;
+}
+
+#exportdbbtn{
+	width:270px;
+	margin-left:50px;
+}
+
+.autostartdivclass{
+	margin-left:50px;
+}
+
+.timeselectdiv{
+	height:120px;
+	width:140px;
+	border:5px solid rgb(82,132,147);
+	border-radius:10px;
+	box-shadow:3px 3px 3px #444;
+	padding:1px;
+	background-color:#CDD6DB;
+}
+
+.timeselectclosebtn{
+	height:20px;
+	width:20px;
+	border-radius:10px;
+	font-size:12pt;
+	font-weight:bold;
+	margin-left:85%;
+	color:red;
+}
+
+.timeselectclosebtn:hover{
+	background-color:#B04646;
+	color:white;
+}
+
+.timeselecttbl{
+	width:100%;
+	font-size:16pt;
+	border-collapse:collapse;
+	border-spacing:0px;
+	padding:0;
+}
+
+.timeselecttbl td{
+	vertical-align: center;
+}
+
+.timeselectbtn{
+	height:20px;
+	width:20px;
+	border: none;
+	background: none;
+	border-radius:5px;
+	font-size:18pt;
+	color:blue;
+	text-align:center;
+	padding:0px;
+}
+
+.timeselectbtn:hover{
+	color:white;
+	background: rgb(12,31,51); /* Old browsers */
+	background: -moz-linear-gradient(top,  rgba(12,31,51,1) 28%, rgba(82,132,147,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(28%,rgba(12,31,51,1)), color-stop(100%,rgba(82,132,147,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(12,31,51,1) 28%,rgba(82,132,147,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#0c1f33', endColorstr='#528493',GradientType=0 ); /* IE6-9 */
+}
+
+.warningtxtcolor{
+	color:red;
+	font-style:italic;
+}

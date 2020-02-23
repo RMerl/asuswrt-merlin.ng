@@ -1,0 +1,10 @@
+#
+# Add the object in cms-dm-tr64app.xml after the Tr69cCfg object. 
+# The ordering of these appCfg objects really should not matter.
+# But I will try to keep them exactly the same as the IGD data model.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr64app.xml Device.X_BROADCOM_COM_AppCfg.Tr69cCfg.
+

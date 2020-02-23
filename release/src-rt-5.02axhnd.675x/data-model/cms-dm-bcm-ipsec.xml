@@ -1,0 +1,181 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_IPSecCfg.{i}." shortObjectName="IPSecCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_IpSec:1" supportLevel="DynamicInstances" oid="3210" />
+  <description source="TRx">IPSec Connection Table Configuration</description>
+
+  <parameter name="EntryID" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">IPSec Connection entry ID.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Enable" type="boolean" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="false" />
+
+  <parameter name="ConnName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Connection Name.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="TunMode" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">TunMode</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="IpVer" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">IP Version</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalGwIf" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local GW Interface</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteGWAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote gateway address.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalRangeLo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local range low.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalRangeHi" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local range hi.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalIPMode" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local IP mode.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local IP address.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="LocalMask" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Local IP mask</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteRangeLo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote range low.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteRangeHi" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote range hi.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteIPMode" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote IP mode.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteIPAddress" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote IP address.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="RemoteMask" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Remote netmask.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="KeyExM" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">KeyExM</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="AuthM" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Authentication mode.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="PSK" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">PSK</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="CertificateName" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Certificate name.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="PerfectFSEn" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Perfect FS encryption.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="ManualEncryptionAlgo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Manual encryption algorithm.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="ManualEncryptionKey" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Manual encryption key.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="ManualAuthAlgo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Manual authentication algorithm.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="ManualAthKey" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Manual authentication key.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="SPI" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">SPI</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph1Mode" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph1 Mode</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph1EncryptionAlo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph1 Encryption algorithm.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph1IntegrityAlgo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph1 Integrity algorithm</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph1DHGroup" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph1 DH Group</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph1KeyTime" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph1 Key time</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph2Mode" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph2 Mode</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph2EncryptionAlo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph2 Encryption algorithm.</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph2IntegrityAlgo" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph2 Integrity algorithm</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph2DHGroup" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph2 DH Group</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+  <parameter name="Ph2KeyTime" type="unsignedInt" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Ph2 Key time</description>
+    <description source="BROADCOM">PSI name: CIPSecConnParms</description>
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_IpSec:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

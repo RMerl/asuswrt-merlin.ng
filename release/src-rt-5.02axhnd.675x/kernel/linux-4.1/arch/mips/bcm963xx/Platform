@@ -1,0 +1,8 @@
+#
+# Broadcom BCM963XX boards
+#
+platform-$(CONFIG_MIPS_BCM963XX) += bcm963xx/
+cflags-$(CONFIG_MIPS_BCM963XX) += -I$(srctree)/arch/mips/include/asm/mach-bcm963xx
+cflags-$(CONFIG_MIPS_BCM963XX) += -I$(srctree)/../../bcmdrivers/opensource/include/bcm963xx
+cflags-$(CONFIG_MIPS_BCM963XX) += -I$(srctree)/../../shared/opensource/include/bcm963xx
+load-$(CONFIG_MIPS_BCM963XX) := 0x80010000

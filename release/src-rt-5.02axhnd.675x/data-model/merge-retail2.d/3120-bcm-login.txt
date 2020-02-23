@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-bcm-login.xml above the 
+# object Device.WiFi.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-login.xml Device.WiFi.
+

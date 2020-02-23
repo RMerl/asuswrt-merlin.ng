@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Optical." shortObjectName="DeviceOpticalObject" specSource="TR181" profile="Device2_Optical:1" requirements="P" supportLevel="Present" oid="1110" lockZone="9" />
+  <description source="TRx">This object models optical interface technologies.  It defines an {{object|Interface}} object that models a layer 1 optical interface that is capable of transporting Ethernet packets.  The data model definition is based on parts of {{bibref|G.988}}. </description>
+
+  <parameter name="InterfaceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Number of entries in Optical Interface table</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Optical.Interface.{i}." shortObjectName="OpticalInterfaceObject" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">Optical interface table (a stackable interface object as described in {{bibref|TR-181i2|Section 4.2}}).  This table models physical optical interfaces. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_Optical:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the optical interface. This parameter is based on ''ifAdminStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx">The current operational state of the optical interface (see {{bibref|TR-181i2|Section 4.2.2}}). {{enum}} When {{param|Enable}} is {{false}} then {{param}} SHOULD normally be {{enum|Down}} (or {{enum|NotPresent}} or {{enum|Error}} if there is a fault condition on the interface).When {{param|Enable}} is changed to {{true}} then {{param}} SHOULD change to {{enum|Up}} if and only if the interface is able to transmit and receive network traffic; it SHOULD change to {{enum|Dormant}} if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to {{enum|Up}} if still operable when the expected actions have completed); it SHOULD change to {{enum|LowerLayerDown}} if and only if the interface is prevented from entering the {{enum|Up}} state because one or more of the interfaces beneath it is down; it SHOULD remain in the {{enum|Error}} state if there is an error or other fault condition detected on the interface; it SHOULD remain in the {{enum|NotPresent}} state if the interface has missing (typically hardware) components; it SHOULD change to {{enum|Unknown}} if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from {{bibref|RFC2863}}. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_Optical:1" requirements="W" supportLevel="ReadWrite" maxLength="64" notifySskAliasChanged="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_Optical:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">The textual name of the optical interface as assigned by the CPE. </description>
+    <description source="BROADCOM">Normally, we always write this param to config file.  However, in optical, the name is determined at runtime (could be gpon or ActiveE), so we don't write to config file.</description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The accumulated time in seconds since the optical interface entered its current operational state. </description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">{{list}}  {{reference|an interface object that is stacked immediately below this interface object}}  See {{bibref|TR-181i2|Section 4.2.1}}. Note: Since {{object}} is a layer 1 interface, it is expected that {{param}} will not be used. </description>
+
+  <parameter name="Upstream" type="boolean" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="ReadOnly" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Indicates whether the interface points towards the Internet ({{true}}) or towards End Devices ({{false}}). For example:* For an Internet Gateway Device, {{param}} will be {{true}} for all WAN interfaces and {{false}} for all LAN interfaces. * For a standalone WiFi Access Point that is connected via Ethernet to an Internet Gateway Device, {{param}} will be {{true}} for the Ethernet interface and {{false}} for the WiFi Radio interface.* For an End Device, {{param}} will be {{true}} for all interfaces. </description>
+
+  <parameter name="OpticalSignalLevel" type="int" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="ReadOnly" minValue="-65536" maxValue="65534" />
+    <description source="TRx">Current measurement of total downstream optical signal level. {{datatype|expand}}Valid values are -65.536 dBm (coded as -65536), to 65.534 dBm (coded as 65534) in 0.002 dB increments. This parameter is based on ''Optical signal level'' from {{bibref|G.988|Section 9.2.1}}. </description>
+
+  <parameter name="LowerOpticalThreshold" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="-127000" maxValue="0" />
+    <description source="TRx">Optical level that is used to declare the downstream low received optical power alarm. {{datatype|expand}}Valid values are -127.5 dBm (coded as -127500) to 0 dBm (coded as 0) in 0.5 dB increments.  The value -127500 indicates the device's internal policy. This parameter is based on ''Lower optical threshold'' from {{bibref|G.988|section 9.2.1}}. </description>
+
+  <parameter name="UpperOpticalThreshold" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="-127000" maxValue="0" />
+    <description source="TRx">Optical level that is used to declare the downstream high received optical power alarm. {{datatype|expand}}Valid values are -127.5 dBm (coded as -127500) to 0 dBm (coded as 0) in 0.5 dB increments.  The value -127500 indicates the device's internal policy. This parameter is based on ''Upper optical threshold'' from {{bibref|G.988|section 9.2.1}}. </description>
+
+  <parameter name="TransmitOpticalLevel" type="int" specSource="TR181" profile="Device2_Optical:1" requirements="R" supportLevel="ReadOnly" minValue="-127000" maxValue="0" />
+    <description source="TRx">Current measurement of mean optical launch power. {{datatype|expand}}Valid values are -127.5 dBm (coded as -127500) to 0 dBm (coded as 0) in 0.5 dB increments.  The value -127500 indicates the device's internal policy. This parameter is based on ''Transmit optical level'' from {{bibref|G.988|section 9.2.1}}. </description>
+
+  <parameter name="LowerTransmitPowerThreshold" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="-63500" maxValue="63500" />
+    <description source="TRx">Minimum mean optical launch power that is used to declare the low transmit optical power alarm. {{datatype|expand}}Valid values are -63.5 dBm (coded as -63500) to +63.5 dBm (coded as 63500) in 0.5 dB increments.  The value -63500 indicates the device's internal policy. This parameter is based on ''Lower transmit power threshold'' from {{bibref|G.988|section 9.2.1}}. </description>
+
+  <parameter name="UpperTransmitPowerThreshold" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="-63500" maxValue="63500" />
+    <description source="TRx">Maximum mean optical launch power that is used to declare the high transmit optical power alarm. {{datatype|expand}}Valid values are -63.5 dBm (coded as -63500) to +63.5 dBm (coded as 63500) in 0.5 dB increments.  The value -63500 indicates the device's internal policy. This parameter is based on ''Upper transmit power threshold'' from {{bibref|G.988|section 9.2.1}}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Optical.Interface.{i}.Stats." shortObjectName="OpticalInterfaceStatsObject" specSource="TR181" profile="Device2_Optical:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's {{param|#.Status}} parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's {{param|#.Enable}} parameter transitions from {{false}} to {{true}}). Administrative and operational interface status is discussed in {{bibref|TR-181i2|section 4.2.2}}. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors. </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_Optical:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space. </description>
+
+  <parameter name="X_BROADCOM_COM_MulticastPacketsSent" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of multicast packets sent over the &#10;interface since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_MulticastPacketsReceived" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of multicast packets received over the &#10;interface since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_MulticastBytesSent" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of multicast bytes sent over the interface &#10;since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_MulticastBytesReceived" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of multicast bytes received over the interface &#10;since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_UnicastPacketsSent" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unicast packets sent over the &#10;interface since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_UnicastPacketsReceived" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unticast packets received over the &#10;interface since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_BroadcastPacketsSent" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of broadcast packets sent over the &#10;interface since the CPE was last reset. </description>
+
+  <parameter name="X_BROADCOM_COM_BroadcastPacketsReceived" type="unsignedInt" specSource="BROADCOM" profile="Device2_Optical:1" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of broadcast packets received over the &#10;interface since the CPE was last reset. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Optical:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

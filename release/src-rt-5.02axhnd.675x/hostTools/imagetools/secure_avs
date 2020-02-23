@@ -1,0 +1,8 @@
+#!/bin/bash
+TOP=$PWD/../../
+HOST_PERLARCH=x86_64-linux-thread-multi
+HOSTTOOLS_DIR=$TOP/hostTools
+export PERL5LIB=$HOSTTOOLS_DIR/PerlLib:$HOSTTOOLS_DIR/local_install/Perl/:$HOSTTOOLS_DIR/PerlLib/$HOST_PERLARCH/
+make -C $HOSTTOOLS_DIR/openssl
+#./image.avs --in ${1}.new --out ${2}.1 --sign avs.pem --ek avs_ek --iv avs_iv --ssldir $HOSTTOOLS_DIR//openssl/bin --verify
+./image.avs --in ${1} --out ${2} --sign avs.pem --ek avs_ek --iv avs_iv --ssldir $HOSTTOOLS_DIR//openssl/bin

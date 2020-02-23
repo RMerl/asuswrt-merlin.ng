@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Time." shortObjectName="Dev2TimeObject" specSource="TR181" profile="Device2_Time:1" requirements="P" supportLevel="Present" oid="1045" />
+  <description source="TRx">This object contains parameters relating an NTP or SNTP time client in the CPE. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_Time:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the NTP or SNTP time client. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_Time:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ntpStatusValues" />
+    <description source="TRx">Status of Time support on the CPE.  {{enum}} The {{enum|Unsynchronized}} value indicates that the CPE's absolute time has not yet been set.The {{enum|Synchronized}} value indicates that the CPE has acquired accurate absolute time; its current time is accurate. The {{enum|Error_FailedToSynchronize}} value indicates that the CPE failed to acquire accurate absolute time; its current time is not  accurate.The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="NTPServer1" type="string" specSource="TR181" profile="Device2_Time:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">First NTP timeserver.  Either a host name or IP address. </description>
+
+  <parameter name="NTPServer2" type="string" specSource="TR181" profile="Device2_Time:1" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Second NTP timeserver.  Either a host name or IP address. </description>
+
+  <parameter name="NTPServer3" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Third NTP timeserver.  Either a host name or IP address. </description>
+
+  <parameter name="NTPServer4" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Fourth NTP timeserver.  Either a host name or IP address. </description>
+
+  <parameter name="NTPServer5" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="64" />
+    <description source="TRx">Fifth NTP timeserver.  Either a host name or IP address. </description>
+
+  <parameter name="CurrentLocalTime" type="dateTime" specSource="TR181" profile="Device2_Time:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current date and time in the CPE's local time zone. </description>
+
+  <parameter name="LocalTimeZone" type="string" specSource="TR181" profile="Device2_Time:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">The local time zone definition, encoded according to IEEE 1003.1 (POSIX).  The following is an example value: : EST+5 EDT,M4.1.0/2,M10.5.0/2 </description>
+
+  <parameter name="X_BROADCOM_COM_LocalTimeZoneName" type="string" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="Pacific time, Tijuana" maxLength="64" />
+    <description source="BROADCOM">Name of the local time zone (human readable &#10;string). </description>
+
+  <parameter name="X_BROADCOM_COM_DaylightSavingsUsed" type="boolean" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" defaultValue="False" />
+    <description source="BROADCOM">Whether or not daylight savings time is in use in &#10;the CPE</description>
+
+  <parameter name="X_BROADCOM_COM_DaylightSavingsStart" type="dateTime" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Date and time daylight savings time begins if used &#10;in local standard time. If daylight savings time is &#10;not used, this value is ignored. </description>
+
+  <parameter name="X_BROADCOM_COM_DaylightSavingsEnd" type="dateTime" specSource="BROADCOM" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="BROADCOM">Date and time daylight savings time ends if used &#10;in local daylight time. If daylight savings time is &#10;not used, this value is ignored. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="ntpStatusValues" />
+  <element>Disabled</element>
+  <element>Unsynchronized</element>
+  <element>Synchronized</element>
+  <element>Error_FailedToSynchronized</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Time:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

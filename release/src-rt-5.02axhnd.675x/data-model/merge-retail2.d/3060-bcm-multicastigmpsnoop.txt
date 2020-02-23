@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-multicastigmpsnoop.xml as the first child of Bridging.Bridge.{i}.
+#
+# See 0000-README.txt for more details
+#
+
+addFirstChildObjToObj cms-dm-bcm-multicastigmpsnoop.xml Device.Bridging.Bridge.{i}.
+

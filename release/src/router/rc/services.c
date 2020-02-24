@@ -3451,8 +3451,6 @@ start_ddns(void)
 		service = "default@dyndns.org";
 	else if (strcmp(server, "WWW.DYNDNS.ORG(STATIC)")==0)
 		service = "default@dyndns.org";
-	else if (strcmp(server, "WWW.TZO.COM")==0)
-		service = "default@tzo.com";
 	else if (strcmp(server, "WWW.ZONEEDIT.COM")==0)
 		service = "default@zoneedit.com";
 	else if (strcmp(server, "WWW.JUSTLINUX.COM")==0)

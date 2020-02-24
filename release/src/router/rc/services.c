@@ -3587,6 +3587,7 @@ start_ddns(void)
 			                 "-l", loglevel,
 #ifdef RTCONFIG_LETSENCRYPT
 			                 (asus_ddns == 1 ? "-1" : NULL),
+			                 (asus_ddns == 1 ? "--force" : NULL),
 #endif
 			                 NULL };
 

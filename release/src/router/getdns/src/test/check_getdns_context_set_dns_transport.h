@@ -474,6 +474,7 @@
        TCase *tc_pos = tcase_create("Positive");
        /* TODO: Test which specific lists are supported */
        tcase_add_test(tc_pos, getdns_context_set_dns_transport_stub_5);
+       tcase_set_timeout(tc_pos, 6.0); /* test 6 times out after 5 secs */
        tcase_add_test(tc_pos, getdns_context_set_dns_transport_recursing_6);     
        tcase_add_test(tc_pos, getdns_context_set_dns_transport_recursing_7);
        tcase_add_test(tc_pos, getdns_context_set_dns_transport_recursing_8);

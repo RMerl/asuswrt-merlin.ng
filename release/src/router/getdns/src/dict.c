@@ -83,7 +83,7 @@ static char *_json_ptr_first(const struct mem_funcs *mf,
 static struct getdns_dict_item *
 _find_dict_item(const getdns_dict *dict, const char *jptr)
 {
-	char first_spc[1024], *first;
+	char first_spc[1024] = "", *first;
 	struct getdns_dict_item *d;
 
 	first = _json_ptr_first(&dict->mf, jptr,

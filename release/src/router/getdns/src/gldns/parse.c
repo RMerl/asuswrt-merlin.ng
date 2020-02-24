@@ -13,7 +13,10 @@
 #include "gldns/gbuffer.h"
 
 #include <limits.h>
+#include <stdlib.h>
+#ifdef HAVE_STRINGS_H
 #include <strings.h>
+#endif
 
 gldns_lookup_table gldns_directive_types[] = {
         { GLDNS_DIR_TTL, "$TTL" },
@@ -325,8 +328,14 @@ gldns_bget_token_par(gldns_buffer *b, char *token, const char *delim,
 		if (c == '\n' && p != 0) {
 			/* in parentheses */
 			/* do not write ' ' if we want to skip spaces */
-			if(!(skipw && (strchr(skipw, c)||strchr(skipw, ' '))))
+			if(!(skipw && (strchr(skipw, c)||strchr(skipw, ' ')))) {
+				/* check for space for the space character */
+				if (limit > 0 && (i >= limit || (size_t)(t-token) >= limit)) {
+					*t = '\0';
+					return -1;
+				}
 				*t++ = ' ';
+			}
 			lc = c;
 			continue;
 		}

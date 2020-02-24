@@ -427,7 +427,7 @@
 
 
       EXTRACT_RESPONSE;
-      printf("the resp is %s\n", getdns_pretty_print_dict(response));
+      //printf("the resp is %s\n", getdns_pretty_print_dict(response));
 
 
        assert_noerror(&ex_response);

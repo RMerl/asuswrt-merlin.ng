@@ -1,0 +1,3 @@
+autoreconf -vfi
+./configure CFLAGS="-g -I$HOME/local2/include" LDFLAGS="-L$HOME/local2/lib" --prefix="$HOME/local2"
+make

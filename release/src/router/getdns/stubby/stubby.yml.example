@@ -73,7 +73,11 @@ round_robin_upstreams: 1
 # EDNS0 option for keepalive idle timeout in milliseconds as specified in
 # https://tools.ietf.org/html/rfc7828
 # This keeps idle TLS connections open to avoid the overhead of opening a new
-# connection for every query.
+# connection for every query. Note that if a given server doesn't implement 
+# EDNS0 keepalive and uses an idle timeout shorter than this stubby will backoff
+# from using that server because the server is always closing the connection.
+# This can degrade performance for certain configurations so reducing the
+# idle_timeout to below that of that lowest server value is recommended.
 idle_timeout: 10000
 
 # Control the maximum number of connection failures that will be permitted
@@ -150,8 +154,8 @@ listen_addresses:
 # in milliseconds (which defaults to two and a half seconds).
 # trust_anchors_backoff_time: 2500
 
-# Specify the location of the installed trust anchor file (leave commented out
-# for zero configuration DNSSEC)
+# Specify the location of the installed trust anchor file to override the 
+# default location (see above)
 # dnssec_trust_anchors: "/etc/unbound/getdns-root.key"
 
 
@@ -176,6 +180,13 @@ listen_addresses:
 #       value: Base64 encoded value of the sha256 fingerprint of the public
 #              key
 #   tls_port: Port for TLS (default is 853)
+
+# To always use the DHCP resolvers provided by the local network in Opportunistic
+# mode then
+# 1) In the dns_transport_list after TLS add UDP then TCP
+# 2) Change to tls_authentication: GETDNS_AUTHENTICATION_NONE
+# 3) Remove all the upstream_recursive_servers listed below
+
 upstream_recursive_servers:
 ############################ DEFAULT UPSTREAMS  ################################
 ####### IPv4 addresses ######
@@ -228,6 +239,7 @@ upstream_recursive_servers:
 #  - address_data: 9.9.9.10
 #    tls_auth_name: "dns.quad9.net"
 ## Cloudflare 1.1.1.1 and 1.0.0.1
+## (NOTE: recommend reducing idle_timeout to 9000 if using Coudflare)
 #  - address_data: 1.1.1.1
 #    tls_auth_name: "cloudflare-dns.com"
 #  - address_data: 1.0.0.1
@@ -334,6 +346,12 @@ upstream_recursive_servers:
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
+## Foundation for Applied Privacy 
+#  - address_data: 37.252.185.232
+#    tls_auth_name: "dot1.appliedprivacy.net"
+# ibksturm testserver
+#  - address_data: 178.82.102.190
+#    tls_auth_name: "ibksturm.synology.me"
 ## # OARC. Note: this server currently doesn't support strict mode!
 ##   - address_data: 184.105.193.78
 ##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
@@ -351,6 +369,7 @@ upstream_recursive_servers:
 #  - address_data: 2620:fe::10
 #    tls_auth_name: "dns.quad9.net"
 ## Cloudflare servers
+## (NOTE: recommend reducing idle_timeout to 9000 if using Coudflare)
 #  - address_data: 2606:4700:4700::1111
 #    tls_auth_name: "cloudflare-dns.com"
 #  - address_data: 2606:4700:4700::1001
@@ -451,6 +470,9 @@ upstream_recursive_servers:
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
+## Foundation for Applied Privacy 
+#  - address_data: 2a00:63c1:a:229::3
+#    tls_auth_name: "dot1.appliedprivacy.net"
 ## # OARC. Note: this server currently doesn't support strict mode!
 ##   - address_data: 2620:ff:c000:0:1::64:25
 ##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
@@ -530,3 +552,10 @@ upstream_recursive_servers:
 #    tls_pubkey_pinset:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
+## Foundation for Applied Privacy 
+#  - address_data: 37.252.185.232
+#    tls_port: 443
+#    tls_auth_name: "dot1.appliedprivacy.net"
+#  - address_data: 2a00:63c1:a:229::3
+#    tls_port: 443
+#    tls_auth_name: "dot1.appliedprivacy.net"

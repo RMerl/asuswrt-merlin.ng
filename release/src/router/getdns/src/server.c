@@ -978,6 +978,7 @@ getdns_return_t getdns_context_set_listen_addresses(
 
 	(void) memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family    = AF_UNSPEC;
+	hints.ai_socktype  = SOCK_DGRAM;
 	hints.ai_flags     = AI_NUMERICHOST;
 
 	for (i = 0; !r && i < new_set_count; i++) {

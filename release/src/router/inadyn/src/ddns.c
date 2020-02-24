@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -21,18 +21,19 @@
  * Boston, MA  02110-1301, USA.
  */
 
-#include <arpa/nameser.h>
-#include <net/if.h>
-#include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <ifaddrs.h>
 #include <time.h>
 #include <unistd.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/nameser.h>
+#include <net/if.h>
 
 #include "ddns.h"
 #include "cache.h"
@@ -546,6 +547,9 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 	http_trans_t   trans;
 	http_t        *client = &info->server;
 
+	if (info->system->setup)
+		DO(info->system->setup(ctx, info, alias));
+
 	client->ssl_enabled = info->ssl_enabled;
 	rc = http_init(client, "Sending IP# update to DDNS server");
 	if (rc) {
@@ -656,8 +660,8 @@ static int update_alias_table(ddns_t *ctx)
 
 			if (!alias->update_required) {
 #ifdef ASUSWRT
-				if (script_nochg_exec)
-					os_shell_execute(script_nochg_exec, alias->address, alias->name);
+				if (script_exec && !alias->script_called)
+					goto script_exec;
 #endif
 				continue;
 			}
@@ -672,11 +676,16 @@ static int update_alias_table(ddns_t *ctx)
 			write_cache_file(alias);
 
 			/* Run command or script on successful update. */
-			if (script_exec)
+			if (script_exec) {
+#ifdef ASUSWRT
+			script_exec:
+				alias->script_called = 1;
+#endif
 				os_shell_execute(script_exec, alias->address, alias->name);
+			}
 		}
 
-		if (RC_DDNS_RSP_NOTOK == rc)
+		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc)
 			remember = rc;
 
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)
@@ -902,11 +911,11 @@ int ddns_main_loop(ddns_t *ctx)
 	DO(read_cache_file(ctx));
 	DO(get_encoded_user_passwd());
 
-	if (once == 1)
+	if (once && force)
 		ctx->force_addr_update = 1;
 
 	/* Initialization done, create pidfile to indicate we are ready to communicate */
-	if (once == 0 && pidfile(pidfile_name))
+	if (once == 0 && pidfile_name[0] && pidfile(pidfile_name))
 		logit(LOG_WARNING, "Failed creating pidfile: %s", strerror(errno));
 
 	/* DDNS client main loop */

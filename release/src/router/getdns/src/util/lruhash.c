@@ -40,6 +40,8 @@
  *
  */
 
+#include <stdlib.h>
+
 #include "config.h"
 #include "util/storage/lruhash.h"
 #include "util/fptr_wlist.h"
@@ -458,6 +460,7 @@ lruhash_clear(struct lruhash* table)
 void 
 lruhash_status(struct lruhash* table, const char* id, int extended)
 {
+	(void)id;
 	lock_quick_lock(&table->lock);
 	log_info("%s: %u entries, memory %u / %u",
 		id, (unsigned)table->num, (unsigned)table->space_used,

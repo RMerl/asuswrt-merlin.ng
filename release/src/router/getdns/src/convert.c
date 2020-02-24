@@ -41,9 +41,6 @@
 #endif
 #if defined(HAVE_LIBIDN2)
 #include <idn2.h>
-#elif defined(HAVE_LIBIDN)
-#include <stringprep.h>
-#include <idna.h>
 #endif
 #include "getdns/getdns.h"
 #include "getdns/getdns_extra.h"
@@ -124,32 +121,6 @@ getdns_convert_ulabel_to_alabel(const char *ulabel)
 
 	if (idn2_lookup_u8((uint8_t *)ulabel, &alabel, IDN2_TRANSITIONAL) == IDN2_OK)
 		return (char *)alabel;
-
-#elif defined(HAVE_LIBIDN)
-	char *alabel;
-	char *prepped;
-	char  prepped2[BUFSIZ];
-
-	if (!ulabel) return NULL;
-
-	setlocale(LC_ALL, "");
-	if ((prepped = stringprep_locale_to_utf8(ulabel))) {
-		if(strlen(prepped)+1 > BUFSIZ) {
-			free(prepped);
-			return NULL;
-		}
-		memcpy(prepped2, prepped, strlen(prepped)+1);
-		free(prepped);
-
-		/* convert to utf8 fails, which it can, but continue anyway */
-	} else if (strlen(ulabel)+1 > BUFSIZ)
-		return NULL;
-	else
-		memcpy(prepped2, ulabel, strlen(ulabel)+1);
-
-	if (stringprep(prepped2, BUFSIZ, 0, stringprep_nameprep) == STRINGPREP_OK
-	&&  idna_to_ascii_8z(prepped2, &alabel, 0) == IDNA_SUCCESS)
-		return alabel;
 #else
 	(void)ulabel;
 #endif
@@ -170,16 +141,12 @@ getdns_convert_ulabel_to_alabel(const char *ulabel)
 char *
 getdns_convert_alabel_to_ulabel(const char *alabel)
 {
-#if defined(HAVE_LIBIDN2) || defined(HAVE_LIBIDN)
+#if defined(HAVE_LIBIDN2)
 	char *ulabel;
 
 	if (!alabel) return NULL;
 
-# if defined(HAVE_LIBIDN2)
 	if (idn2_to_unicode_8z8z(alabel, &ulabel, 0) == IDN2_OK)
-# else
-	if (idna_to_unicode_8z8z(alabel, &ulabel, 0) == IDNA_SUCCESS)
-# endif
 		return ulabel;
 #else
 	(void)alabel;
@@ -460,7 +427,7 @@ getdns_rr_dict2str_scan(
 	prev_str_len = *str_len;
 	sz = (size_t)*str_len;
 	sz_needed = gldns_wire2str_rr_scan(
-	    &scan_buf, &scan_sz, str, &sz, NULL, 0);
+	    &scan_buf, &scan_sz, str, &sz, NULL, 0, NULL);
 
 	if (sz_needed > prev_str_len) {
 		*str = prev_str + sz_needed;
@@ -1389,7 +1356,7 @@ static int _jsmn_get_int(const char *js, jsmntok_t *t, uint32_t *value)
 
 static int _jsmn_get_const(const char *js, jsmntok_t *t, uint32_t *value)
 {
-	char value_str[80];
+	char value_str[80] = "";
 	int size = t->end - t->start;
 
 	if (size <= 0 || size >= (int)sizeof(value_str))

@@ -1,3 +1,14 @@
+* 2019-12-20: Version 1.6.0-beta.1
+  * Migration of build system to cmake. Build now works on Ubuntu,
+    Windows 10 and macOS.
+    Some notes on minor differences in the new cmake build:
+      * OpenSSL 1.0.2 or higher is now required
+      * libunbound 1.5.9 is now required
+      * Only libidn2 2.0.0 and later is supported (not libidn)
+      * Windows uses ENABLE_STUB_ONLY=ON as the default
+      * Unit and regression tests work on Linux/macOS
+        (but not Windows yet)
+
 * 2019-04-03: Version 1.5.2
   * PR #424: Two small trust anchor fetcher fixes
     Thanks Maciej S. Szmigiero

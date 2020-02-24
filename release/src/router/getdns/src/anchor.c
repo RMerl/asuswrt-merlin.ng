@@ -33,7 +33,7 @@
 #include "debug.h"
 #include "anchor.h"
 #include <fcntl.h>
-#include <strings.h>
+#include <string.h>
 #include <time.h>
 #include "types-internal.h"
 #include "context.h"
@@ -1228,7 +1228,7 @@ void _getdns_start_fetching_ta(
 {
 	getdns_return_t r;
 	size_t scheduled;
-	char tas_hostname[256];
+	char tas_hostname[256] = "";
 	const char *verify_CA;
 	const char *verify_email;
 

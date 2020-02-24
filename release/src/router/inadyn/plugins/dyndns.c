@@ -3,7 +3,6 @@
  * Supported DDNS providers are:
  *   - DynDNS,
  *   - DNS-O-Matic,
- *   - DynSIP,
  *   - no-ip,
  *   - 3322,
  *   - Hurricane-Electric (HE)
@@ -15,7 +14,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -59,25 +58,15 @@ static ddns_system_t dnsomatic = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
+/* unreliable due some global rate-limiting
 	.checkip_name = "myip.dnsomatic.com",
 	.checkip_url  = "/",
+*/
+	.checkip_name = DDNS_MY_IP_SERVER,
+	.checkip_url  = DDNS_MY_CHECKIP_URL,
+	.checkip_ssl  = DDNS_MY_IP_SSL,
 
 	.server_name  = "updates.dnsomatic.com",
-	.server_url   = "/nic/update"
-};
-
-/* Support for dynsip.org by milkfish, from DD-WRT */
-static ddns_system_t dynsip = {
-	.name         = "default@dynsip.org",
-
-	.request      = (req_fn_t)request,
-	.response     = (rsp_fn_t)response,
-
-	.checkip_name = DYNDNS_MY_IP_SERVER,
-	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
-	.checkip_ssl  = DYNDNS_MY_IP_SSL,
-
-	.server_name  = "dynsip.org",
 	.server_url   = "/nic/update"
 };
 
@@ -96,7 +85,7 @@ static ddns_system_t selfhost = {
 	.server_url   = "/nic/update"
 };
 
-static ddns_system_t noip = {
+static ddns_system_t no_ip = {
 	.name         = "default@no-ip.com",
 
 	.request      = (req_fn_t)request,
@@ -110,14 +99,29 @@ static ddns_system_t noip = {
 	.server_url   = "/nic/update"
 };
 
+static ddns_system_t noip = {
+	.name         = "default@noip.com",
+
+	.request      = (req_fn_t)request,
+	.response     = (rsp_fn_t)response,
+
+	.checkip_name = "ip1.dynupdate.noip.com",
+	.checkip_url  = "/",
+	.checkip_ssl  = DYNDNS_MY_IP_SSL,
+
+	.server_name  = "dynupdate.noip.com",
+	.server_url   = "/nic/update"
+};
+
+/* http://www.pubyun.com/wiki/%E5%B8%AE%E5%8A%A9:api#%E6%8E%A5%E5%8F%A3%E5%9C%B0%E5%9D%80 */
 static ddns_system_t _3322 = {
 	.name         = "dyndns@3322.org",
 
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = "bliao.com",
-	.checkip_url  = "/ip.phtml",
+	.checkip_name = "ip.3322.net",
+	.checkip_url  = "/",
 
 	.server_name  = "members.3322.org",
 	.server_url   = "/dyndns/update"
@@ -245,8 +249,8 @@ PLUGIN_INIT(plugin_init)
 {
 	plugin_register(&dyndns);
 	plugin_register(&dnsomatic);
-	plugin_register(&dynsip);
 	plugin_register(&selfhost);
+	plugin_register(&no_ip);
 	plugin_register(&noip);
 	plugin_register(&_3322);
 	plugin_register(&henet);
@@ -262,8 +266,8 @@ PLUGIN_EXIT(plugin_exit)
 {
 	plugin_unregister(&dyndns);
 	plugin_unregister(&dnsomatic);
-	plugin_unregister(&dynsip);
 	plugin_unregister(&selfhost);
+	plugin_unregister(&no_ip);
 	plugin_unregister(&noip);
 	plugin_unregister(&_3322);
 	plugin_unregister(&henet);

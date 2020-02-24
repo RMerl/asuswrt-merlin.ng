@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -66,6 +66,9 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
 	int   code = -1;
 	char *tmp;
+
+	(void)info;
+	(void)alias;
 
 	DO(http_status_valid(trans->status));
 

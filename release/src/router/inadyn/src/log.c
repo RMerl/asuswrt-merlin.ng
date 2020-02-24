@@ -1,6 +1,6 @@
 /* Custom error logging system
  *
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -32,7 +32,7 @@ static int enabled = 0;
 
 void log_init(char *ident, int log, int bg)
 {
-	int log_opts = LOG_PID | LOG_CONS | LOG_NDELAY;
+	int log_opts = LOG_PID | LOG_NDELAY;
 
 #ifdef LOG_PERROR
 	if (!bg && log < 1)

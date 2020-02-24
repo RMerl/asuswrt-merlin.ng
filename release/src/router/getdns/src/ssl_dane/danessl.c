@@ -6,6 +6,11 @@
 #include <string.h>
 #include <stdint.h>
 
+#ifdef _MSC_VER
+# define strcasecmp _stricmp
+#endif
+
+#include <openssl/ssl.h>
 #include <openssl/opensslv.h>
 #include <openssl/err.h>
 #include <openssl/crypto.h>

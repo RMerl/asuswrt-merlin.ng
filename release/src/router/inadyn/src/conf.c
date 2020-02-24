@@ -1,6 +1,6 @@
 /* libConfuse interface to parse inadyn.conf v2 format
  *
- * Copyright (C) 2014-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -123,6 +123,11 @@ static int validate_hostname(cfg_t *cfg, const char *provider, cfg_opt_t *hostna
 		}
 	}
 
+	if (i >= DDNS_MAX_ALIAS_NUMBER) {
+		cfg_error(cfg, "Too many hostname aliases, MAX %d supported!", DDNS_MAX_ALIAS_NUMBER);
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -224,6 +229,7 @@ static int cfg_getserver(cfg_t *cfg, char *server, ddns_name_t *name)
 	return getserver(str, name);
 }
 
+#if 0
 /* TODO: Move to a separate file */
 #define string_startswith(string, prefix) strncasecmp(string, prefix, strlen(prefix)) == 0
 
@@ -249,7 +255,7 @@ static int parseproxy(const char *proxy, tcp_proxy_type_t *type, ddns_name_t *na
 				*type = PROXY_SOCKS4;
 			else {
 				len = tmp - str;
-				protocol = malloc(len + 1);
+				protocol = malloc(len + 2);
 				strncpy(protocol, str, len);
 				protocol[len + 1] = 0;
 				logit(LOG_ERR, "Unsupported proxy protocol '%s'.", protocol);
@@ -299,6 +305,7 @@ static int cfg_parseproxy(cfg_t *cfg, char *server, tcp_proxy_type_t *type, ddns
 
 	return parseproxy(str, type, name);
 }
+#endif
 
 static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 {
@@ -351,6 +358,11 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 		if (!str)
 			continue;
 
+		if (info->alias_count == DDNS_MAX_ALIAS_NUMBER) {
+			logit(LOG_WARNING, "Too many hostname aliases, skipping %s ...", str);
+			continue;
+		}
+
 		strlcpy(info->alias[pos].name, str, sizeof(info->alias[pos].name));
 		info->alias_count++;
 	}
@@ -371,7 +383,7 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 				continue;
 
 			if (info->server_response_num >= NELEMS(info->server_response)) {
-				logit(LOG_WARNING, "Skipping response '%s', only %d custom responses supported",
+				logit(LOG_WARNING, "Skipping response '%s', only %zu custom responses supported",
 				      str, NELEMS(info->server_response));
 				continue;
 			}
@@ -445,8 +457,9 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 		info->user_agent = user_agent;
 
 	/* A per-proivder optional proxy server:port */
-//	cfg_parseproxy(cfg, "proxy", &info->proxy_type, &info->proxy_name);
-
+#if 0
+	cfg_parseproxy(cfg, "proxy", &info->proxy_type, &info->proxy_name);
+#endif
 	return 0;
 
 error:
@@ -500,6 +513,8 @@ void conf_info_cleanup(void)
 			free(ptr->creds.encoded_password);
 		if (ptr->checkip_cmd)
 			free(ptr->checkip_cmd);
+		if (ptr->data)
+			free(ptr->data);
 		LIST_REMOVE(ptr, link);
 		free(ptr);
 	}
@@ -550,6 +565,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		CFG_BOOL("fake-address",  cfg_false, CFGF_NONE),
 		CFG_BOOL("allow-ipv6",    cfg_false, CFGF_NONE),
 		CFG_BOOL("secure-ssl",    cfg_true, CFGF_NONE),
+		CFG_BOOL("broken-rtc",    cfg_false, CFGF_NONE),
 		CFG_STR ("ca-trust-file", NULL, CFGF_NONE),
 		CFG_STR ("cache-dir",	  NULL, CFGF_DEPRECATED | CFGF_DROP),
 		CFG_INT ("period",	  DDNS_DEFAULT_PERIOD, CFGF_NONE),
@@ -610,6 +626,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		user_agent            = DDNS_USER_AGENT;
 	allow_ipv6                    = cfg_getbool(cfg, "allow-ipv6");
 	secure_ssl                    = cfg_getbool(cfg, "secure-ssl");
+	broken_rtc                    = cfg_getbool(cfg, "broken-rtc");
 	ca_trust_file                 = cfg_getstr(cfg, "ca-trust-file");
 	if (ca_trust_file && !fexist(ca_trust_file)) {
 		logit(LOG_ERR, "Cannot find CA trust file %s", ca_trust_file);

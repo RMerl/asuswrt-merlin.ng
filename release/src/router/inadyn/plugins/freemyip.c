@@ -63,6 +63,9 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 
 static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
+	(void)info;
+	(void)alias;
+
 	DO(http_status_valid(trans->status));
 
 	if (strstr(trans->rsp_body, "OK"))

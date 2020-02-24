@@ -1,6 +1,9 @@
 Internet Automated Dynamic DNS Client
 =====================================
-[![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
+[![License Badge][]][License] [![Travis Status][]][Travis] [![Coverity Status][]][Coverity Scan]
+
+The latest release is always available from GitHub at  
+> https://github.com/troglobit/inadyn/releases
 
 
 Table of Contents
@@ -18,12 +21,12 @@ Table of Contents
 Introduction
 ------------
 
-Inadyn is a small and simple Dynamic DNS, [DDNS][], client with HTTPS
-support.  Commonly available in many GNU/Linux distributions, used in
-off the shelf routers and Internet gateways to automate the task of
-keeping your Internet name in sync with your public¹ IP address.  It can
-also be used in installations with redundant (backup) connections to the
-Internet.
+Inadyn, or In-a-Dyn, is a small and simple Dynamic DNS, [DDNS][], client
+with HTTPS support.  Commonly available in many GNU/Linux distributions,
+used in off the shelf routers and Internet gateways to automate the task
+of keeping your Internet name in sync with your public¹ IP address.  It
+can also be used in installations with redundant (backup) connections to
+the Internet.
 
 Most people are unaware they share a pool of Internet addresses with
 other users of the same Internet Service Provider (ISP).  Protocols like
@@ -49,42 +52,42 @@ Supported Providers
 -------------------
 
 Some of these services are free of charge for non-commercial use, some
-take a small fee, but also provide more domains to choose from.
+take a small fee, but also provide more domains to choose from:
+
+   * <https://freedns.afraid.org>
+   * <https://www.nsupdate.info>
+   * <https://duckdns.org>
+   * <https://freemyip.com>
+   * <https://www.loopia.com>
+   * <https://www.dyndns.org>, <https://dyn.com>
+   * <https://www.noip.com>
+   * <https://www.easydns.com>
+   * <https://www.dnsomatic.com>
+   * <https://dns.he.net>
+   * <https://www.tunnelbroker.net>
+   * <https://www.sitelutions.com>
+   * <https://www.dnsexit.com>, parent of <https://www.zoneedit.com>
+   * <https://www.changeip.com>
+   * <https://www.dhis.org>
+   * <https://www.namecheap.com>
+   * <https://domains.google>
+   * <https://www.ovh.com>
+   * <https://giradns.com>
+   * <https://www.duiadns.net>
+   * <https://ddnss.de>
+   * <https://dynv6.com>
+   * <https://spdyn.de>
+   * <https://www.cloudxns.net>
+   * <https://www.pubyun.com>, formerly <http://www.3322.org>
+   * <https://www.dnspod.cn>
+   * <https://www.dynu.com>
+   * <https://www.selfhost.de>
+   * <https://connect.yandex.ru>
+   * <https://www.cloudflare.com>
 
 DDNS providers not supported natively like <http://twoDNS.de>, can be
 enabled using the generic DDNS plugin.  See below for configuration
 examples.
-
-* <https://freedns.afraid.org>
-* <https://nsupdate.info>
-* <https://duckdns.org>
-* <https://freemyip.com>
-* <https://www.loopia.com>
-* <https://www.dyndns.org>, <https://dyn.com>
-* <https://www.zoneedit.com>
-* <https://www.no-ip.com>
-* <https://www.easydns.com>
-* <https://www.dnsomatic.com>
-* <https://dns.he.net>
-* <https://www.tunnelbroker.net>
-* <https://www.sitelutions.com>
-* <https://www.dnsexit.com>
-* <https://www.changeip.com>
-* <https://www.dhis.org>
-* <https://www.namecheap.com>
-* <https://domains.google>
-* <https://www.ovh.com>
-* <https://www.dtdns.com>
-* <https://giradns.com>
-* <https://www.duiadns.net>
-* <https://ddnss.de>
-* <https://dynv6.com>
-* <https://spdyn.de>
-* <https://www.strato.com>
-* <https://www.cloudxns.net>
-* <https://www.dnspod.cn>
-* <https://www.dynu.com>
-* <https://www.selfhost.de>
 
 In-A-Dyn defaults to HTTPS, but not all providers may support this, so
 try disabling SSL for the update (`ssl = false`) or the checkip phase
@@ -129,12 +132,25 @@ This looks for the default `.conf` file, to check any file, use:
     }
 
     provider dyn {
-	    ssl         = false
+        ssl         = false
         username    = charlie
         password    = snoopy
         hostname    = { peanuts, woodstock }
-		user-agent  = Mozilla/4.0
-	}
+	user-agent  = Mozilla/4.0
+    }
+
+    # Google Domains - notice use of '@' to update root entry
+    provider domains.google.com {
+        hostname = @.mydomain.com
+        username = your_username
+        password = your_password
+    }
+
+    provider duckdns.org {
+        username         = YOUR_TOKEN
+        password         = noPasswordForDuckdns
+        hostname         = YOUR_DOMAIN.duckdns.org
+    }
 
     # With multiple usernames at the same provider, index with :#
     provider no-ip.com:1 {
@@ -186,8 +202,26 @@ This looks for the default `.conf` file, to check any file, use:
          hostname = yourhost.example.com
     }
 
-Notice how this configuration file has two different users of the No-IP
-provider -- this is achieved by appending a `:ID` to the provider name.
+    # Create a unique API token with the following Permissions:
+    #   Zone: Zone - Read
+    #   Zone: DNS - Edit
+    #
+    # If the token is limited to a specific zone (it should be)
+	# it will also need the following permission:
+    #   Account: Account Settings - Read
+	#
+    # For more information, see this Cloudflare Community post:
+	# https://community.cloudflare.com/t/bug-zone-detail-by-name-requires-zone-list-permission/128042
+    #
+    # Note: global API keys are NOT supported for security reasons
+    provider cloudflare.com {
+         username = unused (but currently something must be entered)
+         password = your_api_token
+         hostname = yourhost.example.com
+    }
+
+Notice how the config has three different users of the No-IP provider --
+this is achieved by appending a `:ID` to the provider name.
 
 We also define a custom cache directory, default is to use `/var/cache`.
 In our case `/mnt` is a system specific persistent store for caching
@@ -309,7 +343,8 @@ single `ddns-response = Cool` -- if your provider does give any response
 then use `ddns-response = ""`.
 
 If your DDNS provider does not provide you with a `checkip-server`, you
-can use other free services, like http://ipify.org
+can use other services, like http://ipify.org, which is the default if
+you do not specify one for your custom provider config:
 
     checkip-server = api.ipify.org
 
@@ -344,6 +379,10 @@ Either of these will install all dependencies.
 
 ### Building from Source
 
+First download the latest official In-A-Dyn release from GitHub:
+
+* https://github.com/troglobit/inadyn/releases
+
 In-A-Dyn requires a few libraries to build.  The build system searches
 for them, in their required versions, using the `pkg-config` tool:
 
@@ -355,6 +394,10 @@ Make sure to install the `-dev` or `-devel` package of the distribution
 packages when building Inadyn.  On Debian/Ubuntu (derivatives):
 
     $ sudo apt install gnutls-dev libconfuse-dev
+
+To build you also need a C compiler, the `pkg-config` tool, and make:
+
+    $ sudo apt install build-essential pkg-config
 
 When building with HTTPS (SSL/TLS) support, make sure to also install
 the `ca-certificates` package on your system, otherwise Inadyn will not
@@ -437,9 +480,14 @@ unreleased features, then you need to know a few things about the
   release tarballs
 - `Makefile` is generated by `configure` script
 
-To build from GIT you first need to clone the repository and run the
-`autogen.sh` script.  This requires `automake` and `autoconf` to be
-installed on your system.
+To build from GIT; clone the repository and run the `autogen.sh` script.
+This requires the GNU tools `automake`, `autoconf` and `libtool` to be
+installed on your system.  Released tarballs do not require these tools.
+
+    $ sudo apt install git automake autoconf
+
+Then you can clone the repository and create the `configure` script,
+which is not part of the GIT repo:
 
     git clone https://github.com/troglobit/inadyn.git
     cd inadyn/
@@ -450,6 +498,14 @@ Building from GIT requires, at least, the previously mentioned library
 dependencies.  GIT sources are a moving target and are not recommended
 for production systems, unless you know what you are doing!
 
+
+Building with Docker
+--------------------
+
+A Dockerfile is provided to simplify building and running `inadyn`.
+
+    docker build -t inadyn:latest .
+    docker run --rm -v "$PWD/inadyn.conf:/etc/inadyn.conf" inadyn:latest
 
 Origin & References
 -------------------
@@ -469,6 +525,8 @@ pull requests for bug fixes and proposed extensions at [GitHub][].
 [GnuTLS]:           http://www.gnutls.org/
 [GitHub]:           https://github.com/troglobit/inadyn
 [buildsystem]:      https://airs.com/ian/configure/
+[License]:          https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+[License Badge]:    https://img.shields.io/badge/License-GPL%20v2-blue.svg
 [Travis]:           https://travis-ci.org/troglobit/inadyn
 [Travis Status]:    https://travis-ci.org/troglobit/inadyn.png?branch=master
 [Coverity Scan]:    https://scan.coverity.com/projects/2981

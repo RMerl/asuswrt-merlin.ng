@@ -55,7 +55,6 @@ typedef unsigned short in_port_t;
 
 #include <sys/stat.h>
 #include <string.h>
-#include <strings.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -1113,6 +1112,12 @@ set_os_defaults_windows(getdns_context *context)
     return GETDNS_RETURN_GOOD;
 } /* set_os_defaults_windows */
 
+getdns_return_t
+getdns_context_set_resolvconf(getdns_context *context, const char *resolvconf)
+{
+	return GETDNS_RETURN_NOT_IMPLEMENTED;
+}
+
 #else
 
 getdns_return_t
@@ -1161,7 +1166,7 @@ getdns_context_set_resolvconf(getdns_context *context, const char *resolvconf)
 
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family    = AF_UNSPEC;      /* Allow IPv4 or IPv6 */
-	hints.ai_socktype  = 0;              /* Datagram socket */
+	hints.ai_socktype  = SOCK_DGRAM;     /* Datagram socket */
 	hints.ai_flags     = AI_NUMERICHOST; /* No reverse name lookups */
 	hints.ai_protocol  = 0;              /* Any protocol */
 	hints.ai_canonname = NULL;
@@ -2390,7 +2395,15 @@ getdns_context_set_dns_root_servers(
 {
 #ifdef HAVE_LIBUNBOUND
 #  ifndef HAVE_UB_CTX_SET_STUB
-	char tmpfn[FILENAME_MAX] = P_tmpdir "/getdns-root-dns-servers-XXXXXX";
+	char tmpfn[FILENAME_MAX];
+
+#    ifdef USE_WINSOCK
+	GetTempPathA(FILENAME_MAX, tmpfn);
+	strncat_s(tmpfn, FILENAME_MAX, "/getdns-root-dns-servers-XXXXXX", _TRUNCATE);
+#    else
+	strlcpy(tmpfn, P_tmpdir "/getdns-root-dns-servers-XXXXXX", FILENAME_MAX);
+#    endif
+
 	FILE *fh;
 	int fd;
 	size_t dst_len;
@@ -2736,7 +2749,7 @@ getdns_context_set_upstream_recursive_servers(struct getdns_context *context,
 	}
 	memset(&hints, 0, sizeof(struct addrinfo));
 	hints.ai_family    = AF_UNSPEC;      /* Allow IPv4 or IPv6 */
-	hints.ai_socktype  = 0;              /* Datagram socket */
+	hints.ai_socktype  = SOCK_DGRAM;     /* Datagram socket */
 	hints.ai_flags     = AI_NUMERICHOST; /* No reverse name lookups */
 	hints.ai_protocol  = 0;              /* Any protocol */
 	hints.ai_canonname = NULL;
@@ -3473,7 +3486,7 @@ static getdns_return_t
 ub_setup_recursing(struct ub_ctx *ctx, getdns_context *context)
 {
 	_getdns_rr_iter rr_spc, *rr;
-	char ta_str[8192];
+	char ta_str[8192] = "";
 	int r;
 
 	if ((r = ub_ctx_set_fwd(ctx, NULL))) {

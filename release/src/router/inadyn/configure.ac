@@ -1,7 +1,10 @@
 AC_PREREQ(2.61)
-AC_INIT(In-a-dyn, 2.5, https://github.com/troglobit/inadyn/issues, inadyn, http://troglobit.com/inadyn.html)
+AC_INIT([In-a-dyn], [2.6], [https://github.com/troglobit/inadyn/issues],
+	[inadyn], [https://troglobit.com/projects/inadyn/])
+AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
 AM_SILENT_RULES([yes])
+AM_MAINTAINER_MODE
 
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADER([include/config.h])
@@ -37,6 +40,7 @@ AC_USE_SYSTEM_EXTENSIONS
 
 # Checks for programs.
 AC_PROG_CC
+AC_PROG_CC_C99
 AM_PROG_CC_C_O
 AC_PROG_GCC_TRADITIONAL
 AC_PROG_INSTALL
@@ -90,6 +94,7 @@ AC_CHECK_HEADERS([confuse.h], [],
 # If HTTPS is enabled we check for either OpenSSL/LibreSSL or GnuTLS libs+headers
 if test "x$ac_enable_ssl" = "xyes"; then
    if test "x$ac_enable_openssl" = "xyes"; then
+      ac_enable_gnutls="no"
       PKG_CHECK_MODULES([OpenSSL], [openssl])
       LDFLAGS="$LDFLAGS $OpenSSL_LIBS"
       CPPFLAGS="$CPPFLAGS $OpenSSL_CFLAGS"
@@ -106,6 +111,7 @@ if test "x$ac_enable_ssl" = "xyes"; then
 			])
       AC_DEFINE([CONFIG_OPENSSL], [], [Enable HTTPS support using OpenSSL/LibreSSL library])
    else
+      ac_enable_gnutls="yes"
       PKG_CHECK_MODULES([GnuTLS], [gnutls >= 3.0])
       LDFLAGS="$LDFLAGS $GnuTLS_LIBS"
       CPPFLAGS="$CPPFLAGS $GnuTLS_CFLAGS"
@@ -116,6 +122,9 @@ if test "x$ac_enable_ssl" = "xyes"; then
       AC_DEFINE([CONFIG_GNUTLS], [], [Enable HTTPS support using GnuTLS library])
    fi
    AC_DEFINE([ENABLE_SSL], [], [Enable HTTPS support])
+else
+   ac_enable_gnutls="no"
+   ac_enable_openssl="no"
 fi
 
 
@@ -159,7 +168,7 @@ AM_CONDITIONAL([HAVE_SYSTEMD], [test "x$with_systemd" != "xno"])
 # Expand $sbindir early, into $SBINDIR, for systemd unit file
 # NOTE: This does *not* take prefix/exec_prefix override at "make
 #       install" into account, unfortunately.
-test "x$prefix" = xNONE && prefix=$ac_default_prefix
+test "x$prefix" = xNONE && prefix=
 test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
 SYSCONFDIR=`eval echo $sysconfdir`
 SYSCONFDIR=`eval echo $SYSCONFDIR`
@@ -168,4 +177,42 @@ SBINDIR=`eval echo $sbindir`
 SBINDIR=`eval echo $SBINDIR`
 AC_SUBST(SBINDIR)
 
+# Workaround for as-of-yet unreleased runstatedir support, planned for
+# autoconf 2.70, which some major distros have backported.
+AS_IF([test -z "$runstatedir"], runstatedir="$localstatedir/run")
+AC_SUBST(runstatedir)
+
 AC_OUTPUT
+
+# Expand directories for configuration summary, unexpanded defaults:
+# sysconfdir  => ${prefix}/etc
+# runstatedir => ${localstatedir}/run
+SYSCONFDIR=`eval echo $sysconfdir`
+RUNSTATEDIR=`eval echo $runstatedir`
+RUNSTATEDIR=`eval echo $RUNSTATEDIR`
+CACHEDIR=`eval echo $localstatedir/cache`
+
+cat <<EOF
+
+------------------ Summary ------------------
+ $PACKAGE_NAME version $PACKAGE_VERSION
+  Prefix.........: $prefix
+  Sysconfdir.....: $SYSCONFDIR
+  Runstatedir....: $RUNSTATEDIR
+  Cachedir.......: $CACHEDIR
+  C Compiler.....: $CC $CFLAGS $CPPFLAGS $LDFLAGS $LIBS
+
+ Optional features:
+  HTTPS support..: $ac_enable_ssl
+    GnuTLS.......: $ac_enable_gnutls
+    Open/LibreSSL: $ac_enable_openssl
+  systemd........: $with_systemd
+
+------------- Compiler version --------------
+$($CC --version || true)
+---------------------------------------------
+
+Check the above options and compile with:
+ ${MAKE-make}
+
+EOF

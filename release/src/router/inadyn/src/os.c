@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2003-2004  Narcis Ilisei
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -22,6 +22,11 @@
 
 #include <libgen.h>		/* dirname() */
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <signal.h>
+#include <stdio.h>		/* fopen() et al */
+#include <stdlib.h>		/* atoi() */
+
 #include "log.h"
 #include "cache.h"
 
@@ -58,6 +63,7 @@ int os_shell_execute(char *cmd, char *ip, char *name)
 
 	case -1:
 		rc = RC_OS_FORK_FAILURE;
+		break;
 	default:
 		break;
 	}
@@ -108,6 +114,40 @@ static void unix_signal_handler(int signo)
 	}
 }
 
+/*
+ * Set SIGCHLD to 'ignore', i.e., children are automatically reaped,
+ * as of POSIX.1-2001.  This is fine since we are (currently) not
+ * interested in their exit status.
+ */
+static int os_install_child_handler(void)
+{
+	static int installed = 0;
+	int rc = 0;
+
+	if (!installed) {
+		struct sigaction sa;
+
+		memset(&sa, 0, sizeof(sa));
+#ifdef SA_RESTART
+		sa.sa_flags |= SA_RESTART;
+#endif
+		sa.sa_handler = SIG_IGN;
+
+		rc = (sigemptyset(&sa.sa_mask)        ||
+		      sigaddset(&sa.sa_mask, SIGCHLD) ||
+		      sigaction(SIGCHLD, &sa, NULL));
+
+		installed = 1;
+	}
+
+	if (rc) {
+		logit(LOG_WARNING, "Failed installing signal handler: %s", strerror(errno));
+		return RC_OS_INSTALL_SIGHANDLER_FAILED;
+	}
+
+	return 0;
+}
+
 /**
  * Install signal handler for signals HUP, INT, TERM and USR1
  *
@@ -116,28 +156,35 @@ static void unix_signal_handler(int signo)
  */
 int os_install_signal_handler(void *ctx)
 {
-	int rc = 0;
 	static int installed = 0;
-	struct sigaction sa;
+	int rc = 0;
 
 	if (!installed) {
-		sa.sa_flags   = 0;
+		struct sigaction sa;
+
+		memset(&sa, 0, sizeof(sa));
+#ifdef SA_RESTART
+		sa.sa_flags |= SA_RESTART;
+#endif
 		sa.sa_handler = unix_signal_handler;
 
-		rc = sigemptyset(&sa.sa_mask) ||
-			sigaddset(&sa.sa_mask, SIGHUP)  ||
-			sigaddset(&sa.sa_mask, SIGINT)  ||
-			sigaddset(&sa.sa_mask, SIGTERM) ||
-			sigaddset(&sa.sa_mask, SIGUSR1) ||
-			sigaddset(&sa.sa_mask, SIGUSR2) ||
-			sigaction(SIGHUP, &sa, NULL)    ||
-			sigaction(SIGINT, &sa, NULL)    ||
-			sigaction(SIGUSR1, &sa, NULL)   ||
-			sigaction(SIGUSR2, &sa, NULL)   ||
-			sigaction(SIGTERM, &sa, NULL);
+		rc = (sigemptyset(&sa.sa_mask)        ||
+		      sigaddset(&sa.sa_mask, SIGHUP)  ||
+		      sigaddset(&sa.sa_mask, SIGINT)  ||
+		      sigaddset(&sa.sa_mask, SIGTERM) ||
+		      sigaddset(&sa.sa_mask, SIGUSR1) ||
+		      sigaddset(&sa.sa_mask, SIGUSR2) ||
+		      sigaction(SIGHUP, &sa, NULL)    ||
+		      sigaction(SIGINT, &sa, NULL)    ||
+		      sigaction(SIGUSR1, &sa, NULL)   ||
+		      sigaction(SIGUSR2, &sa, NULL)   ||
+		      sigaction(SIGTERM, &sa, NULL));
 
 		installed = 1;
 	}
+
+	if (script_exec) 
+		os_install_child_handler();
 
 	if (rc) {
 		logit(LOG_WARNING, "Failed installing signal handler: %s", strerror(errno));
@@ -148,13 +195,34 @@ int os_install_signal_handler(void *ctx)
 	return 0;
 }
 
+static int pid_alive(char *pidfn)
+{
+	FILE *fp;
+	int alive = 1;
+
+	fp = fopen(pidfn, "r");
+	if (fp) {
+		char buf[20];
+
+		if (fgets(buf, sizeof(buf), fp)) {
+			pid_t pid = atoi(buf);
+
+			if (kill(pid, 0) && errno == ESRCH)
+				alive = 0;
+		}
+		fclose(fp);
+	}
+
+	return alive;
+}
+
 /*
  * Check file system permissions
  *
- * Create pid and cache file repository, make sure we can write to it.  If
- * we are restarted we cannot otherwise make sure we've not already updated
- * the IP -- and the user will be locked-out of their DDNS server provider
- * for excessive updates.
+ * Try to create PID file directory and cache file repository.  Check if
+ * we are allowed to write to them.  This to ensure we can both signal
+ * ACK to a SIGHUP and to ensure we do not cause op to have their DDNS
+ * provider lock them out for excessive updates.
  */
 int os_check_perms(void)
 {
@@ -162,35 +230,36 @@ int os_check_perms(void)
 	umask(S_IWGRP | S_IWOTH);
 
 	if ((mkpath(cache_dir, 0755) && errno != EEXIST) || access(cache_dir, W_OK)) {
-		logit(LOG_ERR, "No write permission to %s, aborting.", cache_dir);
-		logit(LOG_ERR, "Cannot guarantee DDNS server won't lock you out for excessive updates.");
-		return RC_FILE_IO_ACCESS_ERROR;
-	}
+		logit(LOG_WARNING, "No write permission to %s: %s", cache_dir, strerror(errno));
+		logit(LOG_WARNING, "Cannot guarantee DDNS server won't lock you out for excessive updates.");
+	} else if (chown(cache_dir, uid, gid))
+		logit(LOG_WARNING, "Cannot change owner of cache directory %s to %d:%d, skipping: %s",
+		      cache_dir, uid, gid, strerror(errno));
 
-	if (chown(cache_dir, uid, gid)) {
-		logit(LOG_ERR, "Not allowed to change owner of %s, aborting.", cache_dir);
-		return RC_FILE_IO_ACCESS_ERROR;
-	}
-
-	if (pidfile_name && pidfile_name[0] == '/') {
+	/* Handle --no-pidfile case as well, check for "" */
+	if (pidfile_name && pidfile_name[0]) {
+		char pidfn[strlen(RUNSTATEDIR) + strlen(pidfile_name) + 6];
 		char *pidfile_dir;
 
-		if (!access(pidfile_name, F_OK)) {
-			logit(LOG_ERR, "PID file %s already exists, %s already running?", pidfile_name, prognm);
+		if (pidfile_name[0] != '/')
+			snprintf(pidfn, sizeof(pidfn), "%s/%s.pid", RUNSTATEDIR, pidfile_name);
+		else
+			strlcpy(pidfn, pidfile_name, sizeof(pidfn));
+
+		if (!access(pidfn, F_OK) && pid_alive(pidfn)) {
+			logit(LOG_ERR, "PID file %s already exists, %s already running?",
+			      pidfn, prognm);
 			return RC_PIDFILE_EXISTS_ALREADY;
 		}
 
-		pidfile_dir = dirname(strdupa(pidfile_name));
+		pidfile_dir = dirname(strdupa(pidfn));
 		if (access(pidfile_dir, F_OK)) {
-			if (mkpath(pidfile_dir, 0755) && errno != EEXIST) {
+			if (mkpath(pidfile_dir, 0755) && errno != EEXIST)
 				logit(LOG_ERR, "No write permission to %s, aborting.", pidfile_dir);
-				return RC_FILE_IO_ACCESS_ERROR;
-			}
-
-			if (chown(pidfile_dir, uid, gid)) {
-				logit(LOG_ERR, "Not allowed to change owner of %s, aborting.", pidfile_dir);
-				return RC_FILE_IO_ACCESS_ERROR;
-			}
+			else if (chown(pidfile_dir, uid, gid))
+				logit(LOG_WARNING,
+				      "Cannot change owner of PID file directory %s to %d:%d, skipping: %s",
+				      pidfile_dir, uid, gid, strerror(errno));
 		}
 	}
 

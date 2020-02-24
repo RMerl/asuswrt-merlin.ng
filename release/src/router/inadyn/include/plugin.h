@@ -1,6 +1,6 @@
 /* DDNS Provider Plugin API for Inadyn
  *
- * Copyright (c) 2012-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (c) 2012-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,7 @@
 
 /* Types used for DNS system specific configuration */
 /* Function to prepare DNS system specific server requests */
+typedef int (*setup_fn_t) (void* this, void* info, void* alias);
 typedef int (*req_fn_t) (void *this, void *info, void *alias);
 typedef int (*rsp_fn_t) (void *this, void *info, void *alias);
 
@@ -46,6 +47,7 @@ typedef struct ddns_system {
 
 	const char    *name;
 
+	setup_fn_t     setup;
 	req_fn_t       request;
 	rsp_fn_t       response;
 

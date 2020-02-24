@@ -111,6 +111,9 @@ typedef struct {
 	char           name[SERVER_NAME_LEN];
 	int            update_required;
 	time_t         last_update;
+#ifdef ASUSWRT
+	int            script_called;
+#endif
 } ddns_alias_t;
 
 typedef struct di {
@@ -205,9 +208,6 @@ extern char *use_iface;		/* Command line option */
 extern char *user_agent;
 extern char *script_cmd;
 extern char *script_exec;
-#ifdef ASUSWRT
-extern char *script_nochg_exec;
-#endif
 extern char *pidfile_name;
 extern char *generic_responses[];
 extern uid_t uid;

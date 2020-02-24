@@ -3584,7 +3584,6 @@ start_ddns(void)
 
 			char *argv[] = { "/usr/sbin/inadyn",
 			                 "-e", "/sbin/ddns_updated",
-					"--exec-nochg", "/sbin/ddns_updated",
 			                 "-l", loglevel,
 #ifdef RTCONFIG_LETSENCRYPT
 			                 (asus_ddns == 1 ? "-1" : NULL),

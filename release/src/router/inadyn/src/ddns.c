@@ -660,8 +660,8 @@ static int update_alias_table(ddns_t *ctx)
 
 			if (!alias->update_required) {
 #ifdef ASUSWRT
-				if (script_nochg_exec)
-					os_shell_execute(script_nochg_exec, alias->address, alias->name);
+				if (script_exec && !alias->script_called)
+					goto script_exec;
 #endif
 				continue;
 			}
@@ -676,8 +676,13 @@ static int update_alias_table(ddns_t *ctx)
 			write_cache_file(alias);
 
 			/* Run command or script on successful update. */
-			if (script_exec)
+			if (script_exec) {
+#ifdef ASUSWRT
+			script_exec:
+				alias->script_called = 1;
+#endif
 				os_shell_execute(script_exec, alias->address, alias->name);
+			}
 		}
 
 		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc)

@@ -56,7 +56,6 @@ char  *config = NULL;
 char  *cache_dir = NULL;
 char  *script_cmd = NULL;
 char  *script_exec = NULL;
-char  *script_nochg_exec = NULL;
 char  *pidfile_name = NULL;
 uid_t  uid = 0;
 gid_t  gid = 0;
@@ -284,9 +283,6 @@ static int usage(int code)
 		" -c, --cmd=/path/to/cmd         Script or command to run to check IP\n"
 		" -C, --continue-on-error        Ignore errors from DDNS provider\n"
 		" -e, --exec=/path/to/cmd        Script to run on successful DDNS update\n"
-#ifdef ASUSWRT
-		"     --exec-nochg=/path/to/cmd  Script to run if no update was required\n"
-#endif
 		"     --check-config             Verify syntax of configuration file and exit\n"
 		" -f, --config=FILE              Use FILE name for configuration, default uses\n"
 		"                                ident NAME: %s\n"
@@ -340,9 +336,6 @@ int main(int argc, char *argv[])
 		{ "cmd",               1, 0, 'c' },
 		{ "continue-on-error", 0, 0, 'C' },
 		{ "exec",              1, 0, 'e' },
-#ifdef ASUSWRT
-		{ "exec-nochg",        1, 0, 150 },
-#endif
 		{ "config",            1, 0, 'f' },
 		{ "check-config",      0, 0, 129 },
 		{ "iface",             1, 0, 'i' },
@@ -386,11 +379,6 @@ int main(int argc, char *argv[])
 			script_exec = optarg;
 			break;
 
-		case 150:	/* --exec-nochg=CMD */
-#ifdef ASUSWRT
-			script_nochg_exec = optarg;
-			break;
-#endif
 		case 'f':	/* --config=FILE */
 			config = strdup(optarg);
 			break;

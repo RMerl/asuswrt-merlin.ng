@@ -2808,7 +2808,7 @@ getdns/build/Makefile:
 		-DBUILD_TESTING=FALSE \
 		-DOPENSSL_ROOT_DIR=$(TOP)/$(OPENSSLDIR) \
 		-DOPENSSL_INCLUDE_DIR=$(TOP)/$(OPENSSLDIR)/include \
-		-DOPENSSL_CRYPTO_LIBRARY=$(TOP)/$(OPENSSLDIR)/libcrypto.so pthread.so \
+		-DOPENSSL_CRYPTO_LIBRARY=$(TOP)/$(OPENSSLDIR)/libcrypto.so \
 		-DOPENSSL_SSL_LIBRARY=$(TOP)/$(OPENSSLDIR)/libssl.so \
 		-DLIBYAML_DIR=$(TOP)/libyaml \
 		-DLIBYAML_INCLUDE_DIR=$(TOP)/libyaml/include \

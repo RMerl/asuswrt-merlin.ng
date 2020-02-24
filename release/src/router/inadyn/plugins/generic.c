@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -50,9 +50,9 @@ static ddns_system_t generic = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = DYNDNS_MY_IP_SERVER,
-	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
-	.checkip_ssl  = DYNDNS_MY_IP_SSL,
+	.checkip_name = DDNS_MY_IP_SERVER,
+	.checkip_url  = DDNS_MY_CHECKIP_URL,
+	.checkip_ssl  = DDNS_MY_IP_SSL,
 
 	.server_name  = "",
 	.server_url   = ""
@@ -242,6 +242,9 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
 	char *resp = trans->rsp_body;
 	size_t i;
+
+	(void)info;
+	(void)alias;
 
 	DO(http_status_valid(trans->status));
 

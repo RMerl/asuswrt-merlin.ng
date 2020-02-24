@@ -1,6 +1,6 @@
 /* OpenSSL interface for optional HTTPS functions
  *
- * Copyright (C) 2014-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2014-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -151,8 +151,11 @@ int ssl_open(http_t *client, char *msg)
 		return RC_HTTPS_OUT_OF_MEMORY;
 
 	/* POODLE, only allow TLSv1.x or later */
-	SSL_CTX_set_options(client->ssl_ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
-
+#ifndef OPENSSL_NO_EC
+	SSL_CTX_set_options(client->ssl_ctx, SSL_OP_SINGLE_ECDH_USE | SSL_OP_SINGLE_DH_USE | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+#else
+	SSL_CTX_set_options(client->ssl_ctx, SSL_OP_SINGLE_DH_USE | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
+#endif
 	SSL_CTX_set_verify(client->ssl_ctx, SSL_VERIFY_PEER, verify_callback);
 	SSL_CTX_set_verify_depth(client->ssl_ctx, 150);
 
@@ -217,12 +220,18 @@ int ssl_close(http_t *client)
 
 int ssl_send(http_t *client, const char *buf, int len)
 {
-	int rc;
+	int rc, err = SSL_ERROR_NONE;
 
 	if (!client->ssl_enabled)
 		return tcp_send(&client->tcp, buf, len);
 
-	rc = SSL_write(client->ssl, buf, len);
+	ERR_clear_error();
+	if((rc = SSL_write(client->ssl, buf, len)) <= 0){
+		err = SSL_get_error(client->ssl, rc);
+		if(err == SSL_ERROR_WANT_WRITE){
+			return ssl_send(client, buf, len);
+		}
+	}
 	if (rc <= 0) {
 		ssl_check_error();
 		return RC_HTTPS_SEND_ERROR;
@@ -235,15 +244,20 @@ int ssl_send(http_t *client, const char *buf, int len)
 
 int ssl_recv(http_t *client, char *buf, int buf_len, int *recv_len)
 {
-	int len, rc;
+	int len, rc, err = SSL_ERROR_NONE;
 
 	*recv_len = 0;
 	if (!client->ssl_enabled)
 		return tcp_recv(&client->tcp, buf, buf_len, recv_len);
 
+	ERR_clear_error();
 	/* Read HTTP header */
 	len = rc = SSL_read(client->ssl, buf, buf_len);
 	if (rc <= 0) {
+		err = SSL_get_error(client->ssl, rc);
+		if(err == SSL_ERROR_WANT_READ){
+			return ssl_recv(client, buf, buf_len, recv_len);
+		}
 		ssl_check_error();
 		return RC_HTTPS_RECV_ERROR;
 	}

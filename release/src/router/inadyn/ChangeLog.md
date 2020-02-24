@@ -4,6 +4,49 @@ Change Log
 All notable changes to the project are documented in this file.
 
 
+[v2.6][] - 2020-02-22
+---------------------
+
+**NOTE:** The `-1, --once` mode has changed semantics, it no longer
+    defaults to forced update, for that you now need `--force`
+
+### Changes
+- Add support for Cloudflare, by Simon Pilkington and Jo Rhett
+- Add Yandex PDD (Yandex.Connect) plugin, by Timur Birsh
+- Add Dockerfile for running In-a-Dyn from an Alpine container, by
+  Jean-Ralph Aviles with fixes by Robin Bürkli and Richard Powell
+- Drop support for TZO, acqured by Dyn in 2012 and no longer works
+- Drop support for DtDNS, shut down August 1, 2018
+- Drop support for DynSIP, dropped off the Internet in 2014
+- Drop support for Zerigo, shut down in 2017
+
+### Fixes
+- Fix #222: Simplify `utimensat()` replacement for macOS Sierra
+- Fix #223: Sync up with accepted Homebrew formula, by Jo Rhett
+- Fix #231: Update build requirements and recommendations
+- Fix #233: Fix building with OpenSSL >1.1, by Rosen Penev
+- Fix #235: dynv6, don't signal error on unchanged address
+- Fix #239: Boundary check of MAX supported hostname aliases,
+  bumped max aliases from 20 -> 50 per provider
+- Fix #241: OpenBSD header ordering, tested on OpenBSD 6.1
+- Fix #242: Mention libtool requirement when building from GIT
+- Fix #247: Check if PID is actually running if PID file exists
+- Fix internal buffer size warnings, found by GCC-9 (freeDNS)
+- Fix #256: Document how to use Google Domains plugin
+- Fix #262: Use .com TLD instead of .org for DynDNS, because the latter
+  cannot be resolved in China, by Eric Sauvageau
+- Fix #268: Set SIGCHLD to SIG_IGN to reap children, by Markus Gothe
+- Fixes to socket leaks, memory corrupions, buffer overflows and more,
+  found by Coverity Scan
+- Fix configure script to allow `--prefix=` for install to `/sbin`
+- Fix #274: D.U.I.A. DNS basic authentication, by Markus Gothe
+- Fix #276: Change `--once` behavior, now requires `--force` to update
+- Fix default checkip server for PubYun/3322, bliao.com not working.
+  This patch adds support for the official 3322 checkip server
+- Fix #277: See #235 but also for IPv4 ...
+- Fix #297: api.ipify.org default checkip server for custom providers
+
+
 [v2.5][] - 2018-09-30
 ---------------------
 
@@ -18,7 +61,7 @@ All notable changes to the project are documented in this file.
 - Fix #211: Only show DDNS server response on successful transaction
 - Fix #211: Improved error handling in OpenSSL back-end
 - Fix #214: Add `nochg` to list of good responses for custom providers
-- Fixes by Erich Sauvageau:
+- Fixes by Eric Sauvageau:
   - Fix #216: Add DNS lookup exception for `all.dnsomatic.com`
   - Fix #219: Add DNS lookup exception for `default@tunnelbrooker.net`
 

@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -41,6 +41,14 @@
 #define DYNDNS_MY_CHECKIP_URL	"/"
 #define DYNDNS_MY_IP_SSL        DDNS_CHECKIP_SSL_UNSUPPORTED
 
+/*
+ * 2020-02-18: ipify.org support HTTPS and should be default for new
+ * providers, unless the provider has its own checkip infrastructure.
+ */
+#define DDNS_MY_IP_SERVER       "api.ipify.org"
+#define DDNS_MY_CHECKIP_URL	"/"
+#define DDNS_MY_IP_SSL          DDNS_CHECKIP_SSL_SUPPORTED
+
 /* Some default settings */
 #define DDNS_DEFAULT_STARTUP_SLEEP        0       /* sec */
 #define DDNS_DEFAULT_PERIOD               120     /* sec */
@@ -50,9 +58,9 @@
 #define DDNS_FORCED_UPDATE_PERIOD         (30 * 24 * 3600)        /* 30 days in sec */
 #define DDNS_DEFAULT_CMD_CHECK_PERIOD     1       /* sec */
 #define DDNS_DEFAULT_ITERATIONS           0       /* Forever */
-#define DDNS_HTTP_RESPONSE_BUFFER_SIZE    BUFSIZ  /* 8 kiB */
+#define DDNS_HTTP_RESPONSE_BUFFER_SIZE	  (BUFSIZ < 8192 ? 8192 : BUFSIZ) /* at least 8 Kib */
 #define DDNS_HTTP_REQUEST_BUFFER_SIZE     2500    /* Bytes */
-#define DDNS_MAX_ALIAS_NUMBER             10      /* maximum number of aliases per server that can be maintained */
+#define DDNS_MAX_ALIAS_NUMBER             50      /* maximum number of aliases per server that can be maintained */
 #define DDNS_MAX_SERVER_NUMBER            5       /* maximum number of servers that can be maintained */
 
 /* SSL support status in plugin definition */
@@ -61,8 +69,8 @@
 #define DDNS_CHECKIP_SSL_REQUIRED         3       /* HTTPS required for checkip-server */
 
 /* local configs */
-#define USERNAME_LEN                      50      /* chars */
-#define PASSWORD_LEN                      50      /* chars */
+#define USERNAME_LEN                      128     /* chars */
+#define PASSWORD_LEN                      256     /* chars */
 #define SERVER_NAME_LEN                   256     /* chars */
 #define SERVER_URL_LEN                    256     /* chars */
 #ifdef INET6_ADDRSTRLEN
@@ -137,11 +145,21 @@ typedef struct di {
 	tcp_proxy_type_t proxy_type;
 	ddns_name_t    proxy_name;
 
+	/* Your aliases/names to update */
 	ddns_alias_t   alias[DDNS_MAX_ALIAS_NUMBER];
 	size_t         alias_count;
 
+	/* Use wildcard, *.foo.bar */
 	int            wildcard;
 
+	/*
+	 * Provider specific data, per-conf-entry.  E.g., the Cloudflare
+	 * plugin stores zone_id and hostname_id here.  Set up by the
+	 * plugin setup callback, and is automatically freed by Inadyn.
+	 */
+	void          *data;
+
+	/* Does the provider support SSL? */
 	int            ssl_enabled;
 	int            append_myip; /* For custom setups! */
 } ddns_info_t;
@@ -171,10 +189,11 @@ typedef struct {
 	int            work_buflen;
 
 	char          *request_buf; /* for HTTP requests */
-	int            request_buflen;
+	size_t         request_buflen;
 } ddns_t;
 
 extern int once;
+extern int force;
 extern int ignore_errors;
 extern int startup_delay;
 extern int allow_ipv6;

@@ -13,6 +13,12 @@
 #ifndef GLDNS_SBUFFER_H
 #define GLDNS_SBUFFER_H
 
+#include <stdint.h>
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif

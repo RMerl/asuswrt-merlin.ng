@@ -4,12 +4,12 @@
 .\" groff -man -Tascii foo.1
 .\"
 .\" Copyright 2005, by Shaul Karl.
-.\" Copyright 2010-2017, by Joachim Nilsson.
+.\" Copyright 2010-2020, by Joachim Nilsson.
 .\"
 .\" You may modify and distribute this document for any purpose, as
 .\" long as this copyright notice remains intact.
 .\"
-.Dd June 28, 2017
+.Dd February 20, 2020
 .Dt INADYN 5 SMM
 .Os
 .Sh NAME
@@ -156,14 +156,17 @@ Server to use for periodic IP address changes,
 defaults to
 .Ar 80 .
 .Pp
-.Pa Note:
-This is an optional setting for
+This is an optional setting.  For
 .Cm provider{}
-sections, which always have a default
+sections it defaults to a pre-defined
 .Cm checkip-server
 and
 .Cm checkip-path
-defined.  For custom DDNS setups however it is required.  When set in a
+for the given DDNS provider.  For custom DDNS setups it defaults to
+.Cm "api.ipify.org" ,
+which is a really great and free service that even support HTTPS, see
+.Cm checkip-ssl
+setting, below.  When set in a
 .Cm provider{}
 section it overrides the provider's default
 .Cm checkip-server .
@@ -224,78 +227,79 @@ Either a unique substring matching the provider, or or one of the exact
 matches to the following unique provider names:
 .Pp
 .Bl -tag -width TERM -compact
-.It Cm default@dyndns.org
-Connect to
-.Aq http://www.dyndns.org ,
-this is the default.
 .It Cm default@freedns.afraid.org
 .Aq https://freedns.afraid.org
-.It Cm default@zoneedit.com
-.Aq https://zoneedit.com
-.It Cm default@no-ip.com
-.Aq http://www.no-ip.com
-.It Cm default@easydns.com
-.Aq http://www.easydns.com
-.It Cm default@tzo.com
-.Aq http://www.tzo.com
-.It Cm dyndns@3322.org
-.Aq http://www.3322.org
-.It Cm default@dnsomatic.com
-.Aq https://www.dnsomatic.com
-.It Cm dyndns@he.net
-.Aq http://dns.he.net
-.It Cm default@tunnelbroker.net
-IPv6
-.Aq https://www.tunnelbroker.net
-by Hurricane Electric.
-.It Cm default@dynsip.org
-.Aq http://www.dynsip.org
-.It Cm default@sitelutions.com
-.Aq http://www.sitelutions.com
-.It Cm default@dnsexit.com
-.Aq http://www.dnsexit.com
-.It Cm default@changeip.com
-.Aq http://www.changeip.com
-.It Cm default@zerigo.com
-.Aq http://www.zerigo.com
-.It Cm default@dhis.org
-.Aq http://www.dhis.org
 .It Cm ipv4@nsupdate.info
 .Aq https://nsupdate.info
 .It Cm default@duckdns.org
 .Aq https://duckdns.org
+.It Cm default@freemyip.com
+.Aq https://freemyip.com
 .It Cm default@loopia.com
 .Aq https://www.loopia.com
+.It Cm default@dyndns.org
+Connect to
+.Aq https://www.dyndns.org ,
+i.e.,
+.Aq https://dyn.com
+.It Cm default@noip.com
+.Aq https://www.noip.com
+.It Cm default@no-ip.com
+Handled by
+.Cm default@noip.com
+plugin.
+.It Cm default@easydns.com
+.Aq https://www.easydns.com
+.It Cm default@dnsomatic.com
+.Aq https://www.dnsomatic.com
+.It Cm dyndns@he.net
+.Aq https://dns.he.net
+.It Cm default@tunnelbroker.net
+IPv6
+.Aq https://www.tunnelbroker.net
+by Hurricane Electric.
+.It Cm default@sitelutions.com
+.Aq https://www.sitelutions.com
+.It Cm default@dnsexit.com
+.Aq https://www.dnsexit.com
+.It Cm default@zoneedit.com
+.Aq https://zoneedit.com
+.It Cm default@changeip.com
+.Aq https://www.changeip.com
+.It Cm default@dhis.org
+.Aq https://www.dhis.org
 .It Cm default@domains.google.com
-.Aq https://domains.google.com
+.Aq https://domains.google
 .It Cm default@ovh.com
 .Aq https://www.ovh.com
-.It Cm default@dtdns.com
-.Aq https://www.dtdns.com
 .It Cm default@gira.de
-.Aq http://giradns.com
+.Aq https://giradns.com
 .It Cm default@duiadns.net
 .Aq https://www.duiadns.net
 .It Cm default@ddnss.de
 .Aq https://ddnss.de
 .It Cm default@dynv6.com
-.Aq http://dynv6.com
+.Aq https://dynv6.com
 .It Cm default@ipv4.dynv6.com
-.Aq http://ipv4.dynv6.com
+.Aq https://ipv4.dynv6.com
 .It Cm default@spdyn.de
 .Aq https://spdyn.de
 .It Cm default@strato.com
 .Aq https://www.strato.com
-.It Cm default@freemyip.com
-.Aq https://freemyip.com
 .It Cm default@cloudxns.net
 .Aq https://www.cloudxns.net
+.It Cm dyndns@3322.org
+.Aq https://www.3322.org
 .It Cm default@dnspod.cn
 .Aq https://www.dnspod.cn
 .It Cm default@dynu.com
 .Aq https://www.dynu.com
 .It Cm default@selfhost.de
 .Aq https://www.selfhost.de
+.It Cm default@pdd.yandex.ru
+.Aq https://connect.yandex.ru
+.It Cm default@cloudflare.com
+.Aq https://www.cloudflare.com
 .El
 .It Cm custom some@identifier {}
 Specific to the custom provider section are the following settings:
@@ -389,6 +393,13 @@ provider no-ip.com:2 {
     hostname   = another.no-ip.com
 }
 
+# Google Domains - notice use of '@' to update root entry
+provider domains.google.com {
+    hostname = @.mydomain.com
+    username = your_username
+    password = your_password
+}
+
 # Loopia
 provider loopia.com {
     wildcard   = true
@@ -452,6 +463,24 @@ provider dnspod.cn {
     hostname = yourhost.example.com
 }
 
+# Create a unique API token with the following Permissions:
+#   Zone: Zone - Read
+#   Zone: DNS - Edit
+#
+# If the token is limited to a specific zone (it should be)
+# it will also need the following permission:
+#   Account: Account Settings - Read
+#
+# For more information, see this Cloudflare Community post:
+# https://community.cloudflare.com/t/bug-zone-detail-by-name-requires-zone-list-permission/128042
+#
+# Note: global API keys are NOT supported for security reasons
+provider cloudflare.com {
+     username = unused (but currently something must be entered)
+     password = your_api_token
+     hostname = yourhost.example.com
+}
+
 # Generic example for twoDNS.de
 custom twoDNS.de {
     username       = account4
@@ -467,7 +496,7 @@ custom twoDNS.de {
 .Pp
 As of Inadyn 1.99.14 the generic plugin can also be used with providers
 that require the client's IP in the update request, which for example
-.Aq http://dyn.com
+.Aq https://dyn.com
 requires:
 .Bd -unfilled -offset indent
 # This emulates dyndns.org
@@ -508,7 +537,7 @@ custom dyn.com {
 The
 .Nm inadyn
 home page is
-.Aq http://github.com/troglobit/inadyn
+.Aq https://github.com/troglobit/inadyn
 .Sh AUTHORS
 This manual page was initially written for the
 .Em Debian GNU/Linux

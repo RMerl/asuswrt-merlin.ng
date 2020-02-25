@@ -6,17 +6,12 @@
 #include "config.h"
 #include <string.h>
 
-__attribute__((weak)) void
-__explicit_bzero_hook(void *ATTR_UNUSED(buf), size_t ATTR_UNUSED(len))
-{
-}
-
 void
 explicit_bzero(void *buf, size_t len)
 {
-#ifdef UB_ON_WINDOWS
+#ifdef GETDNS_ON_WINDOWS
 	SecureZeroMemory(buf, len);
-#endif
+#else
 	memset(buf, 0, len);
-	__explicit_bzero_hook(buf, len);
+#endif
 }

@@ -1,7 +1,7 @@
 /* Inadyn is a small and simple dynamic DNS (DDNS) client
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -36,14 +36,15 @@
 
 #ifdef ASUSWRT
 #include <bcmnvram.h>
-#include "shared.h"
 #endif
 
 int    once = 0;
+int    force = 0;		/* Only allowed with 'once' */
 int    ignore_errors = 0;
 int    startup_delay = DDNS_DEFAULT_STARTUP_SLEEP;
 int    allow_ipv6 = 0;
 int    secure_ssl = 1;		/* Strict cert validation by default */
+int    broken_rtc = 0;		/* Validate certificate time by default */
 char  *ca_trust_file = NULL;	/* Custom CA trust file/bundle PEM format */
 int    verify_addr = 1;
 char  *prognm = NULL;
@@ -55,7 +56,6 @@ char  *config = NULL;
 char  *cache_dir = NULL;
 char  *script_cmd = NULL;
 char  *script_exec = NULL;
-char  *script_nochg_exec = NULL;
 char  *pidfile_name = NULL;
 uid_t  uid = 0;
 gid_t  gid = 0;
@@ -162,9 +162,23 @@ static int drop_privs(void)
 
 static void parse_privs(char *user)
 {
-	char *group = strstr(user, ":");
 	struct passwd *pw;
+	char *group;
 
+	if (!user) {
+		pw = getpwuid(geteuid());
+		if (!pw)
+			user = getenv("LOGNAME");
+		else
+			user = pw->pw_name;
+	}
+
+	if (!user) {
+		logit(LOG_INFO, "Cannot figure out username");
+		return;
+	}
+
+	group = strstr(user, ":");
 	if (group)
 		*group++ = 0;
 
@@ -222,7 +236,7 @@ static int compose_paths(void)
 #endif
 
 		if (access(cache_dir, W_OK)) {
-			char *home;
+			char *home, *tmp;
 
 			home = getenv("HOME");
 			if (!home) {
@@ -232,9 +246,13 @@ static int compose_paths(void)
 
 			/* Fallback cache dir: $HOME + "/.cache/" + "inadyn" */
 			len = strlen(home) + strlen(ident) + 10;
-			cache_dir = realloc(cache_dir, len);
-			if (!cache_dir)
+			tmp = realloc(cache_dir, len);
+			if (!tmp){
+				free(cache_dir);
 				goto nomem;
+			} else {
+				cache_dir = tmp;
+			}
 
 			snprintf(cache_dir, len, "%s/.cache/%s", home, ident);
 			if (mkdir(cache_dir, 0755) && EEXIST != errno) {
@@ -253,20 +271,18 @@ static int usage(int code)
 
 	DO(compose_paths());
 	if (pidfile_name[0] != '/')
-		snprintf(pidfn, sizeof(pidfn), "%s/run/%s.pid", LOCALSTATEDIR, pidfile_name);
+		snprintf(pidfn, sizeof(pidfn), "%s/%s.pid", RUNSTATEDIR, pidfile_name);
 	else
 		snprintf(pidfn, sizeof(pidfn), "%s", pidfile_name);
 
 	fprintf(stderr, "Usage:\n %s [1hnsv] [-c CMD] [-e CMD] [-f FILE] [-l LVL] [-p USR:GRP] [-t SEC]\n\n"
-		" -1, --once                     Run once, then exit regardless of status\n"
+		" -1, --once                     Run only once, updates if too old or unknown\n"
+		"     --force                    Force update, even if address has not changed\n"
 		"     --cache-dir=PATH           Persistent cache dir of IP sent to providers.\n"
 		"                                Default use ident NAME: %s/\n"
 		" -c, --cmd=/path/to/cmd         Script or command to run to check IP\n"
 		" -C, --continue-on-error        Ignore errors from DDNS provider\n"
 		" -e, --exec=/path/to/cmd        Script to run on successful DDNS update\n"
-#ifdef ASUSWRT
-		"     --exec-nochg=/path/to/cmd  Script to run if no update was required\n"
-#endif
 		"     --check-config             Verify syntax of configuration file and exit\n"
 		" -f, --config=FILE              Use FILE name for configuration, default uses\n"
 		"                                ident NAME: %s\n"
@@ -277,6 +293,7 @@ static int usage(int code)
 		" -l, --loglevel=LEVEL           Set log level: none, err, info, notice*, debug\n"
 		" -n, --foreground               Run in foreground with logging to stdout/stderr\n"
 		" -p, --drop-privs=USER[:GROUP]  Drop privileges after start to USER:GROUP\n"
+		"     --no-pidfile               Do not create PID file, for use with systemd\n"
 		" -P, --pidfile=FILE             File to store process ID for signaling %s\n"
 		"                                Default uses ident NAME: %s\n"
 		" -s, --syslog                   Log to syslog, default unless --foreground\n"
@@ -314,13 +331,11 @@ int main(int argc, char *argv[])
 	int background = 1;
 	struct option opt[] = {
 		{ "once",              0, 0, '1' },
+		{ "force",             0, 0, '4' },
 		{ "cache-dir",         1, 0, 128 },
 		{ "cmd",               1, 0, 'c' },
 		{ "continue-on-error", 0, 0, 'C' },
 		{ "exec",              1, 0, 'e' },
-#ifdef ASUSWRT
-		{ "exec-nochg",        1, 0, 150 },
-#endif
 		{ "config",            1, 0, 'f' },
 		{ "check-config",      0, 0, 129 },
 		{ "iface",             1, 0, 'i' },
@@ -328,6 +343,7 @@ int main(int argc, char *argv[])
 		{ "loglevel",          1, 0, 'l' },
 		{ "help",              0, 0, 'h' },
 		{ "foreground",        0, 0, 'n' },
+		{ "no-pidfile",        0, 0, 'N' },
 		{ "pidfile",           1, 0, 'P' },
 		{ "drop-privs",        1, 0, 'p' },
 		{ "syslog",            0, 0, 's' },
@@ -337,8 +353,11 @@ int main(int argc, char *argv[])
 	};
 	ddns_t *ctx = NULL;
 
+	/* Set up initial values for uid + gid */
+	parse_privs(NULL);
+
 	prognm = ident = progname(argv[0]);
-	while ((c = getopt_long(argc, argv, "1c:Ce:f:h?i:I:l:np:P:st:v", opt, NULL)) != EOF) {
+	while ((c = getopt_long(argc, argv, "1c:Ce:f:h?i:I:l:nNp:P:st:v", opt, NULL)) != EOF) {
 		switch (c) {
 		case '1':	/* --once */
 			once = 1;
@@ -360,11 +379,6 @@ int main(int argc, char *argv[])
 			script_exec = optarg;
 			break;
 
-		case 150:	/* --exec-nochg=CMD */
-#ifdef ASUSWRT
-			script_nochg_exec = optarg;
-			break;
-#endif
 		case 'f':	/* --config=FILE */
 			config = strdup(optarg);
 			break;
@@ -394,7 +408,12 @@ int main(int argc, char *argv[])
 			use_syslog--;
 			break;
 
+		case 'N':	/* --no-pidfile */
+			optarg = "";
+			/* fallthrough */
 		case 'P':	/* --pidfile=NAME */
+			if (pidfile_name)
+				free(pidfile_name);
 			pidfile_name = strdup(optarg);
 			break;
 
@@ -428,14 +447,17 @@ int main(int argc, char *argv[])
 	if (check_config) {
 		char pidfn[80];
 
-		if (pidfile_name[0] != '/')
-			snprintf(pidfn, sizeof(pidfn), "%s/run/%s.pid", LOCALSTATEDIR, pidfile_name);
+		if (pidfile_name[0] == 0)
+			strlcpy(pidfn, "<none>", sizeof(pidfn));
+		else if (pidfile_name[0] != '/')
+			snprintf(pidfn, sizeof(pidfn), "%s/%s.pid", RUNSTATEDIR, pidfile_name);
 		else
 			snprintf(pidfn, sizeof(pidfn), "%s", pidfile_name);
 
 		logit(LOG_DEBUG, "config    : %s", config);
 		logit(LOG_DEBUG, "pidfile   : %s", pidfn);
 		logit(LOG_DEBUG, "cache-dir : %s", cache_dir);
+
 		rc = alloc_context(&ctx);
 		if (rc) {
 			logit(LOG_ERR, "Failed allocating memory, cannot check configuration file.");
@@ -467,8 +489,12 @@ int main(int argc, char *argv[])
 	log_init(ident, use_syslog < 1 ? 0 : 1, background);
 
 	/* Check permission to write PID and cache files */
-	if (!once)
+	if (!once) {
 		DO(os_check_perms());
+
+		/* Only allowed with --once */
+		force = 0;
+	}
 
 	if (drop_privs()) {
 		logit(LOG_WARNING, "Failed dropping privileges: %s", strerror(errno));
@@ -524,22 +550,32 @@ leave:
 
 #ifdef ASUSWRT
 	switch (rc) {
-		case RC_OK:
-			nvram_set("ddns_return_code", "200");
-			nvram_set("ddns_return_code_chk", "200");
-			break;
-		case RC_TCP_CONNECT_FAILED:
-		case RC_HTTPS_FAILED_CONNECT:
-			nvram_set ("ddns_return_code", "Time-out");
-			nvram_set ("ddns_return_code_chk", "Time-out");
-			break;
-		case RC_DDNS_RSP_NOTOK:
-			nvram_set("ddns_return_code", "Update failed");
-			nvram_set("ddns_return_code_chk", "Update failed");
-			break;
-		default:
-			nvram_set("ddns_return_code", "Unknown error");
-			nvram_set("ddns_return_code_chk", "Unknown error");
+	case RC_OK:
+		nvram_set("ddns_return_code", "200");
+		nvram_set("ddns_return_code_chk", "200");
+		break;
+	case RC_TCP_CONNECT_FAILED:
+		nvram_set ("ddns_return_code", "Time-out");
+		nvram_set ("ddns_return_code_chk", "Time-out");
+		break;
+	case RC_HTTPS_FAILED_CONNECT:
+	case RC_HTTPS_FAILED_GETTING_CERT:
+		nvram_set ("ddns_return_code", "connect_fail");
+		nvram_set ("ddns_return_code_chk", "connect_fail");
+		break;
+	case RC_DDNS_RSP_NOHOST:
+	case RC_DDNS_RSP_NOTOK:
+		nvram_set("ddns_return_code", "Update failed");
+		nvram_set("ddns_return_code_chk", "Update failed");
+		break;
+	case RC_DDNS_RSP_AUTH_FAIL:
+		nvram_set("ddns_return_code", "auth_fail");
+		nvram_set("ddns_return_code_chk", "auth_fail");
+		break;
+	default:
+		nvram_set("ddns_return_code", "unknown_error");
+		nvram_set("ddns_return_code_chk", "unknown_error");
+		break;
 	}
 #endif
 

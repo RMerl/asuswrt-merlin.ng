@@ -1,6 +1,6 @@
 /* Replacement in case utimensat(2) is missing
  *
- * Copyright (C) 2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2017-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,7 +17,6 @@
 
 #include "config.h"
 
-#ifndef HAVE_UTIMENSAT
 #include <errno.h>
 #ifdef HAVE_FCNTL_H
 #include <fcntl.h>
@@ -37,18 +36,12 @@ int utimensat(int dirfd, const char *pathname, const struct timespec ts[2], int 
 	TIMESPEC_TO_TIMEVAL(&tv[0], &ts[0]);
 	TIMESPEC_TO_TIMEVAL(&tv[1], &ts[1]);
 
+#ifdef AT_SYMLINK_NOFOLLOW
 	if ((flags & AT_SYMLINK_NOFOLLOW) == AT_SYMLINK_NOFOLLOW)
 		ret = lutimes(pathname, tv);
 	else
+#endif
 		ret = utimes(pathname, tv);
 
 	return ret;
 }
-#endif /* HAVE_UTIMENSAT */
-
-/**
- * Local Variables:
- *  indent-tabs-mode: t
- *  c-file-style: "linux"
- * End:
- */

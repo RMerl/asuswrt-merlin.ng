@@ -1,7 +1,7 @@
 /* Reads and updates cache files
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -31,10 +31,11 @@
  * once it has read the IP and the modification time.
  */
 
-#include <resolv.h>
-#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include <netinet/in.h>
+#include <resolv.h>
+#include <sys/stat.h>
 
 #include "ddns.h"
 #include "cache.h"
@@ -115,7 +116,8 @@ char *cache_file(char *name, char *buf, size_t len)
 	if (!buf || !name)
 		return NULL;
 
-	snprintf(buf, len, "%s/%s.cache", cache_dir, name);
+	if (snprintf(buf, len, "%s/%s.cache", cache_dir, name) >= (int)len)
+		logit(LOG_WARNING, "Too long name for buffer: '%s/' + '%s' + '.cache'", cache_dir, name);
 
 	return buf;
 }
@@ -129,7 +131,6 @@ char *cache_file(char *name, char *buf, size_t len)
  */
 int read_cache_file(ddns_t *ctx)
 {
-	size_t j;
 	ddns_info_t *info;
 
 	/*
@@ -150,11 +151,12 @@ int read_cache_file(ddns_t *ctx)
 			"default@tunnelbroker.net"
 		};
 		const char *name = info->system->name;
-		int i, nonslookup = 0;
+		size_t i, j;
+		int nonslookup = 0;
 
 		/* Exceptions -- no name to lookup */
 		for (i = 0; i < NELEMS(except); i++) {
-			if (!strncmp(name, except[i], sizeof(name))) {
+			if (!strncmp(name, except[i], strlen(name))) {
 				nonslookup = 1;
 				break;
 			}

@@ -4,12 +4,12 @@
 .\" groff -man -Tascii foo.1
 .\"
 .\" Copyright (C) 2004       Shaul Karl.
-.\" Copyright (C) 2010-2017  Joachim Nilsson.
+.\" Copyright (C) 2010-2020  Joachim Nilsson.
 .\"
 .\" You may modify and distribute this document for any purpose, as
 .\" long as this copyright notice remains intact.
 .\"
-.Dd June 28, 2017
+.Dd February 20, 2020
 .Dt INADYN 8 SMM
 .Os
 .Sh NAME
@@ -18,20 +18,22 @@
 .Sh SYNOPSIS
 .Nm inadyn
 .Op Fl 1, -once
-.Op Fl -cache-dir=PATH
-.Op Fl c, -cmd=/path/to/cmd
+.Op Fl -force
+.Op Fl -cache-dir Ar PATH
+.Op Fl c, -cmd Ar /path/to/cmd
 .Op Fl C, -continue-on-error
-.Op Fl e, -exec=/path/to/cmd
-.Op Fl f, -config=FILE
+.Op Fl e, -exec Ar /path/to/cmd
+.Op Fl f, -config Ar FILE
 .Op Fl h, -help
-.Op Fl i, -iface=IFNAME
-.Op Fl I, -ident=NAME
-.Op Fl l, -loglevel=LEVEL
+.Op Fl i, -iface Ar IFNAME
+.Op Fl I, -ident Ar NAME
+.Op Fl l, -loglevel Ar LEVEL
 .Op Fl n, -foreground
-.Op Fl P, -pidfile=FILE
-.Op Fl p, -drop-privs=USER Ns Op : Ns Ar GROUP
+.Op Fl -no-pidfile
+.Op Fl P, -pidfile Ar FILE
+.Op Fl p, -drop-privs Ar USER Ns Op : Ns Ar GROUP
 .Op Fl s, -syslog
-.Op Fl t, -startup-delay=SEC
+.Op Fl t, -startup-delay Ar SEC
 .Op Fl v, -version
 .Sh DESCRIPTION
 .Nm ,
@@ -54,53 +56,44 @@ known to support SSL updates are listed below with
 .Pp
 .Bl -bullet -compact
 .It
-.Aq http://www.dyndns.org
-a.k.a.
-.Aq http://dyn.com
-.It
 .Aq https://freedns.afraid.org
-.It
-.Aq https://zoneedit.com
-.It
-.Aq http://www.no-ip.com
-.It
-.Aq http://www.easydns.com
-.It
-.Aq http://www.tzo.com
-.It
-.Aq http://www.3322.org
-.It
-.Aq https://www.dnsomatic.com
-.It
-.Aq http://www.tunnelbroker.net
-.It
-.Aq http://dns.he.net
-.It
-.Aq http://www.dynsip.org
-.It
-.Aq http://www.sitelutions.com
-.It
-.Aq http://www.dnsexit.com
-.It
-.Aq http://www.changeip.com
-.It
-.Aq http://www.zerigo.com
-.It
-.Aq http://www.dhis.org
 .It
 .Aq https://nsupdate.info
 .It
 .Aq https://duckdns.org
 .It
+.Aq https://freemyip.com
+.It
 .Aq https://www.loopia.com
+.It
+.Aq http://www.dyndns.org ,
+.Aq http://dyn.com
+.It
+.Aq http://www.noip.com
+.It
+.Aq http://www.easydns.com
+.It
+.Aq http://dns.he.net
+.It
+.Aq http://www.tunnelbroker.net
+.It
+.Aq https://www.dnsomatic.com
+.It
+.Aq http://www.sitelutions.com
+.It
+.Aq http://www.dnsexit.com ,
+parent of
+.Aq https://zoneedit.com
+.It
+.Aq http://www.changeip.com
+.It
+.Aq http://www.dhis.org
 .It
 .Aq https://www.namecheap.com
 .It
-.Aq https://domains.google.com
+.Aq https://domains.google
 .It
 .Aq https://www.ovh.com
-.It
-.Aq https://www.dtdns.com
 .It
 .Aq http://giradns.com
 .It
@@ -114,17 +107,21 @@ a.k.a.
 .It
 .Aq https://spdyn.de
 .It
-.Aq https://www.strato.com
-.It
-.Aq https://freemyip.com
-.It
 .Aq https://www.cloudxns.net
+.It
+.Aq https://www.pubyun.com ,
+formerly
+.Aq http://www.3322.org
 .It
 .Aq https://www.dnspod.cn
 .It
 .Aq https://www.dynu.com
 .It
 .Aq https://www.selfhost.de
+.It
+.Aq https://connect.yandex.ru
+.It
+.Aq https://www.cloudflare.com
 .El
 .Pp
 DDNS providers not listed here, like
@@ -145,8 +142,14 @@ configuration file format.
 .Pp
 .Bl -tag -width Ds
 .It Fl 1, -once
-Force one update and quit
-.It Fl -cache-dir=PATH
+Run only once and quit, updates only if too old or unknown.  Use
+.Fl -force
+to for an update before exiting.
+.It Fl -force
+Force one update.  Only works with
+.Fl 1, -once
+flag, ignored for all other use-cases.
+.It Fl -cache-dir Ar PATH
 Set directory for persistent cache files, defaults to
 .Pa /var/cache/inadyn
 .Pp
@@ -168,9 +171,9 @@ update.
 .Pp
 On an embedded device with no RTC, or no battery backed RTC, it is
 strongly recommended to pair this setting with the
-.Fl -startup-delay=SEC
+.Fl -startup-delay Ar SEC
 command line option.
-.It Fl c, -cmd=/path/to/cmd Op optional args
+.It Fl c, -cmd Ar /path/to/cmd Op optional args
 Full path to command, or script, to run to check for IP address change.
 This is the same as the configuration file option
 .Ar checkip-command
@@ -190,7 +193,7 @@ to not exit on errors from a DDNS provider and instead try again later.
 Please do not use this, it usually indicates that we are sending a
 malformed request, e.g. wrong username, password or DNS alias for the
 given account.  Continuing could possibly lock you out of your account!
-.It Fl e, -exec=/path/to/cmd Op optional args
+.It Fl e, -exec Ar /path/to/cmd Op optional args
 Full path to command, or script, to run after a successful DDNS update.
 The following environment variables are set: INADYN_IP, INADYN_HOSTNAME.
 The first environment variable contains the new IP address, the second
@@ -227,7 +230,7 @@ check-ip servers are slow to respond.
 This option can also be given as a configuration option in
 .Xr inadyn.conf 5 ,
 both serve a purpose, use whichever one works for you.
-.It Fl I, Fl -ident=NAME
+.It Fl I, Fl -ident Ar NAME
 Specify program identity (name) to be used for PID file and syslog
 messages.  Useful with multiple instances of
 .Nm ,
@@ -254,13 +257,25 @@ the terminal, when debugging a config or at initial set up.  Remember to
 also give the
 .Fl s
 option if you still want to redirect log messages to the syslog.
-.It Fl p, -drop-privs=USER Ns Op : Ns Ar GROUP
+.It Fl p, -drop-privs Ar USER Ns Op : Ns Ar GROUP
 Drop root privileges after initial setup to the given user and group.
-.It Fl P, -pidfile=FILE
+.It Fl -no-pidfile
+When running as a daemon, even when running in the foreground with
+.Fl n ,
+.Nm
+creates a PID file so users can easily find the PID of the process to
+send signals to.  See
+.Sx SIGNALS
+for more information on this.  This option tells
+.Nm
+to
+.Sy not
+create a PID file.  Some users prefer this when running under systemd.
+.It Fl P, -pidfile Ar FILE
 Set PID file name and location, defaults to
 .Pa /run/inadyn.pid ,
 derived from
-.Fl -ident=NAME ,
+.Fl -ident Ar NAME ,
 which is strongly recommended to change over this option.  However, some
 users want to keep application runtime files in separate directories,
 usually in combination with
@@ -287,7 +302,7 @@ real time clock to set their clock via NTP at bootup.  This is so that
 the time since the last update can be calculated correctly from the
 .Nm
 cache file and the
-.Cm forced-update=SEC
+.Cm forced-update Ar SEC
 setting honored across reboots, avoiding unnecessary IP address updates.
 .It Fl v, -version
 Show program version and exit.
@@ -326,9 +341,7 @@ to exit gracefully
 .It INT
 Same as TERM
 .It USR1
-Force update now, even if the IP address has not changed.  Works in
-tandem with
-.Fl -fake-address
+Force update now, even if the IP address has not changed
 .It USR2
 Check IP address change now. Useful when a new DHCP/PPPoE lease or new
 gateway is received.  Please note that
@@ -340,7 +353,10 @@ that
 For convenience in sending signals,
 .Nm
 writes its process ID to
-.Pa /var/run/inadyn.pid
+.Pa /var/run/inadyn.pid ,
+unless the
+.Fl -ident Ar NAME
+option is used.
 .Sh FILES
 .Bl -tag -width /var/cache/inadyn/freedns.afraid.org.cache -compact
 .It Pa /etc/inadyn.conf

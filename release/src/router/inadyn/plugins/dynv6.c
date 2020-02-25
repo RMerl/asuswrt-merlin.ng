@@ -1,6 +1,7 @@
 /* Plugin for dynv6.com
  *
  * Copyright (C) 2016  Sven Hoefer <sven@svenhoefer.com>
+ * Copyright (C) 2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -23,7 +24,7 @@
 
 #define DYNV6_UPDATE_IP_REQUEST						\
 	"GET %s?"							\
-	"ipv6=auto&"							\
+	"%s=auto&"							\
 	"hostname=%s&"							\
 	"token=%s"							\
 	" "								\
@@ -34,7 +35,21 @@
 static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
 
-static ddns_system_t plugin = {
+static ddns_system_t plugin4 = {
+	.name         = "default@ipv4.dynv6.com",
+
+	.request      = (req_fn_t)request,
+	.response     = (rsp_fn_t)response,
+
+	.checkip_name = DYNDNS_MY_IP_SERVER,
+	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
+	.checkip_ssl  = DYNDNS_MY_IP_SSL,
+
+	.server_name  = "ipv4.dynv6.com",
+	.server_url   =  "/api/update"
+};
+
+static ddns_system_t plugin6 = {
 	.name         = "default@dynv6.com",
 
 	.request      = (req_fn_t)request,
@@ -50,9 +65,15 @@ static ddns_system_t plugin = {
 
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
+	const char *ver = "ipv6";
+
+	if (strstr(info->system->name, "ipv4"))
+		ver = "ipv4";
+
 	return snprintf(ctx->request_buf, ctx->request_buflen,
 			DYNV6_UPDATE_IP_REQUEST,
 			info->server_url,
+			ver,			/* ipv6=auto, or ipv4=auto */
 			alias->name,
 			info->creds.username,
 			info->server_name.name,
@@ -63,9 +84,12 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
 	char *resp = trans->rsp_body;
 
+	(void)info;
+	(void)alias;
+
 	DO(http_status_valid(trans->status));
 
-	if (strstr(resp, "updated"))
+	if (strstr(resp, "updated") || strstr(resp, "unchanged"))
 		return 0;
 
 	return RC_DDNS_RSP_NOTOK;
@@ -73,12 +97,14 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin4);
+	plugin_register(&plugin6);
 }
 
 PLUGIN_EXIT(plugin_exit)
 {
-	plugin_unregister(&plugin);
+	plugin_unregister(&plugin4);
+	plugin_unregister(&plugin6);
 }
 
 /**

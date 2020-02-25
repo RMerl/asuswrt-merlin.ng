@@ -19,7 +19,7 @@ See [Stubby Homepage](https://dnsprivacy.org/wiki/x/JYAT) for more details
 
 # Dependencies
 
-Stubby uses [getdns](https://getdnsapi.net/) and requires the 1.2 release of getdns or later.
+Stubby uses [getdns](https://getdnsapi.net/) and requires the 1.5.0 release of getdns or later.
 
 It also requires [yaml](http://pyyaml.org/wiki/LibYAML).
 
@@ -43,13 +43,11 @@ Get the code:
 git clone https://github.com/getdnsapi/stubby.git
 ```
 
-Build and install (the paths below assume that getdns and libyaml are installed in a standard location e.g. by Homebrew in /usr/local/)
+Build and install (NOTE: from release 0.3.0 stubby uses cmake)
 ```
 cd stubby
-autoreconf -vfi
-./configure CFLAGS="-I/usr/local/include" LDFLAGS="-L/usr/local/lib"
+cmake .
 make
-sudo make install
 ````
 
 # Configure Stubby
@@ -202,55 +200,11 @@ Instructions for how to update the resolvers manually are provided are also prov
 * If Stubby works for a while but you then see failures from Stubby such as "None of the configured upstreams could be used to send queries on the specified transports" try restarting Stubby.
 * If you are using a DNS Privacy server that does not support concurrent processing of TLS queries, you may experience some issues due to timeouts causing subsequent queries on the same connection to fail.
 
-# Building getdns from Source
+# Building getdns from source
 
 Note that from getdns 1.1.3 stubby is included in the getdns code as a git submodule. Therefore stubby and getdns can be built together by following the
-instructions below but adding the ``--with-stubby`` flag to the `configure` step.
+instructions in the getdns [README](https://github.com/getdnsapi/getdns/blob/develop/README.md) and setting the ``BUILD_STUBBY`` option.
 
-## Dependencies
-
-The most limited install of getdns that will work with Stubby requires only OpenSSL as a dependency (version 1.0.2 or later is required for hostname authentication to be supported). If OpenSSL is installed in a non-standard location on your system use the `--with-ssl` option to `configure` below to specify where it is installed.
-
-### Linux
-
-It may be necessary to install [1.0.2 from source](https://openssl.org/source/openssl-1.0.2h.tar.gz) for most Linux distros.
-
-### OS X
-
-It is recommended to [install OpenSSL using homebrew](http://brewformulas.org/Openssl), in which case use the following in the `configure` line in the build step below:
-
-```sh
---with-ssl=/usr/local/opt/openssl/
-```
-
-## Download the getdns source
-
-Either clone the code:
-
-```sh
-> git clone https://github.com/getdnsapi/getdns.git
-> cd getdns
-> git checkout master
-```
-for the very latest version of getdns or grab a release tarball from this page: [Latest getdns releases](https://getdnsapi.net/releases/)
-
-## Build the code
-
-Note that on Mac OS X you will need the developer tools from Xcode to compile the code. And you may need to use brew to install libtool, autoconf, and automake.
-
-```sh
-> git submodule update --init
-> libtoolize -ci
-> autoreconf -fi
-> mkdir build
-> cd build
-> ../configure --prefix=<install_location> --without-libidn --without-libidn2 
-> make
-> sudo make install
-```
-
-Use the ```--enable-stub-only``` flag with configure IF you want remove the dependency on libunbound for getdns for some reason (Stubby works fine when getdns is built like this but beware this limits the functions of the getdns library as a generic system component and should be used with care).
-
-Logging/debugging
+## Logging/debugging when building from source
 
 > **`--enable-debug-stub`**   If you do want to see _very_ detailed debug information as messages are processed then add the `--enable-debug-stub` option to the `configure` line above (not recommended for use with Stubby)

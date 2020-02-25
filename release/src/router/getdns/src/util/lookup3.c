@@ -49,8 +49,16 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 #include "util/storage/lookup3.h"
 #include <stdio.h>      /* defines printf for tests */
 #include <time.h>       /* defines time_t for timings in the test */
-/*#include <stdint.h>     defines uint32_t etc  (from config.h) */
-#include <sys/param.h>  /* attempt to define endianness */
+
+#if defined(HAVE_TARGET_ENDIANNESS)
+# if defined(TARGET_IS_BIG_ENDIAN)
+#  define HASH_LITTLE_ENDIAN 0
+#  define HASH_BIG_ENDIAN 1
+# else
+#  define HASH_LITTLE_ENDIAN 1
+#  define HASH_BIG_ENDIAN 0
+# endif
+#else
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h> /* attempt to define endianness (solaris) */
 #endif
@@ -64,15 +72,6 @@ on 1 byte), but shoehorning those bytes into integers efficiently is messy.
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__DragonFly__)
 #include <sys/endian.h> /* attempt to define endianness */
 #endif
-
-/* random initial value */
-static uint32_t raninit = (uint32_t)0xdeadbeef;
-
-void
-hash_set_raninit(uint32_t v)
-{
-	raninit = v;
-}
 
 /*
  * My best guess at if you are big-endian or little-endian.  This may
@@ -103,6 +102,16 @@ hash_set_raninit(uint32_t v)
 # define HASH_LITTLE_ENDIAN 0
 # define HASH_BIG_ENDIAN 0
 #endif
+#endif /* defined(TARGET_IS_BIG_ENDIAN) */
+
+/* random initial value */
+static uint32_t raninit = (uint32_t)0xdeadbeef;
+
+void
+hash_set_raninit(uint32_t v)
+{
+	raninit = v;
+}
 
 #define hashsize(n) ((uint32_t)1<<(n))
 #define hashmask(n) (hashsize(n)-1)

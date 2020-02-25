@@ -26,16 +26,18 @@
 	"POST /%s HTTP/1.0\r\n"						\
 	"Host: %s\r\n"							\
 	"User-Agent: %s\r\n"						\
-	"Content-Length: %zd\r\n"					\
+	"Content-Length: %zu\r\n"					\
 	"Content-Type: application/x-www-form-urlencoded\r\n\r\n"	\
 	"%s"
 
+static int setup    (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
 
 static ddns_system_t plugin = {
 	.name         = "default@dnspod.cn",
 
+	.setup        = (setup_fn_t)setup,
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
@@ -47,126 +49,159 @@ static ddns_system_t plugin = {
 	.server_url   = ""
 };
 
-static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
+static int fetch_record_id(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, char *domain, char *prefix)
 {
-	int           i, rc = 0;
-	http_t        client;
-	http_trans_t  trans;
-	char          buffer[256], domain[256], prefix[64];
-	char          *tmp;
-	int           record_id = 0;
-	size_t        paramlen;
+	http_trans_t trans;
+	http_t client;
+	char *tmp;
+	char buffer[256];
+	int record_id = 0;
+	int rc, len;
+
+	(void)alias;
+
+	/* login_token=API_ID,API_TOKEN */
+	len = snprintf(buffer, sizeof(buffer),
+		       "login_token=%s%%2C%s&format=json&domain=%s&length=1&sub_domain=%s",
+		       info->creds.username, info->creds.password, domain, prefix);
+	if (len >= (int)sizeof(buffer))
+		return -RC_BUFFER_OVERFLOW;
+
+	trans.req_len     = snprintf(ctx->request_buf, ctx->request_buflen, DNSPOD_API_REQUEST, "Record.List",
+				     info->server_name.name, info->user_agent, strlen(buffer), buffer);
+	trans.req         = ctx->request_buf;
+	trans.rsp         = ctx->work_buf;
+	trans.max_rsp_len = ctx->work_buflen - 1; /* Save place for a \0 at the end */
+
+	rc = http_construct(&client);
+	if (rc)
+		return -rc;
+
+	http_set_port(&client, info->server_name.port);
+	http_set_remote_name(&client, info->server_name.name);
+	client.ssl_enabled = info->ssl_enabled;
+
+	rc = http_init(&client, "Sending record list query");
+	if (rc)
+		return -rc;
+
+	rc = http_transaction(&client, &trans);
+	logit(LOG_DEBUG, "=> %s", trans.rsp_body);
+	http_exit(&client);
+	http_destruct(&client, 1);
+
+	if (rc || (rc = http_status_valid(trans.status))) {
+		logit(LOG_WARNING, "Failed fetching record ID, rc: %d", rc);
+		return -rc;
+	}
 
 	/*
-	 * API_ID = info->creds.username
-	 * API_TOKEN = info->creds.password
+	 * Example: with added whitespace and line breaks for clarity
+	 *{
+	 *    "status": {"code": "1", "message": "Action completed successful", "created_at": "2017-06-28 14:36:28"},
+	 *    "domain": {
+	 *        "id": "59753949",
+	 *        "name": "example.org",
+	 *        "punycode": "example.org",
+	 *        "grade": "DP_Free",
+	 *        "owner": "example@example.org",
+	 *        "ext_status": "dnserror",
+	 *        "ttl": 600,
+	 *        "min_ttl": 600,
+	 *        "dnspod_ns": ["f1g1ns1.dnspod.net", "f1g1ns2.dnspod.net"],
+	 *        "status": "enable"
+	 *    },
+	 *    "info": {"sub_domains": "3", "record_total": "3"},
+	 *    "records": [{
+	 *        "id": "306419640",
+	 *        "ttl": "600",
+	 *        "value": "1.2.3.4",
+	 *        "enabled": "1",
+	 *        "status": "enabled",
+	 *        "updated_on": "2017-06-28 12:28:01",
+	 *        "name": "@",
+	 *        "line": "\u9ed8\u8ba4",
+	 *        "line_id": "0",
+	 *        "type": "A",
+	 *        "weight": null,
+	 *        "monitor_status": "",
+	 *        "remark": "",
+	 *        "use_aqb": "no",
+	 *        "mx": "0"
+	 *    }]
+	 *}
 	 */
-	do {
-		TRY(http_construct(&client));
+	tmp = strstr(trans.rsp_body, "[{");
+	if (tmp && 1 == sscanf(tmp, "[{\"id\":\"%d\"", &record_id))
+		return record_id;
 
-		http_set_port(&client, info->server_name.port);
-		http_set_remote_name(&client, info->server_name.name);
+	return -RC_DDNS_INVALID_OPTION;
+}
 
-		client.ssl_enabled = info->ssl_enabled;
-		TRY(http_init(&client, "Sending record list query"));
+/*
+ * API_ID = info->creds.username
+ * API_TOKEN = info->creds.password
+ */
+static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
+{
+	char *tmp;
+	char buffer[SERVER_NAME_LEN], domain[SERVER_NAME_LEN], prefix[SERVER_NAME_LEN];
+	int record_id;
+	int len;
 
-		tmp = strchr(alias->name, '.');
-		if (tmp) {
-			if (tmp[1] != 0 && strchr(tmp + 1, '.') != NULL) {
-				strcpy(domain, tmp + 1);
-				strncpy(prefix, alias->name, tmp - alias->name);
-				prefix[tmp - alias->name] = 0;
-			} else {
-				strcpy(domain, alias->name);
-				prefix[0] = '@';
-				prefix[1] = 0;
-			}
-		}
+	strlcpy(buffer, alias->name, sizeof(buffer));
+	tmp = strchr(buffer, '.');
+	if (!tmp)
+		return RC_DDNS_INVALID_OPTION;
 
-		/* login_token=API_ID,API_TOKEN */
-		paramlen = snprintf(buffer, sizeof(buffer),
-				    "login_token=%s%%2C%s&format=json&domain=%s&length=1&sub_domain=%s",
-				    info->creds.username, info->creds.password, domain, prefix);
+	if (tmp[1] != 0 && strchr(tmp + 1, '.') != NULL) {
+		*tmp++ = 0;
+		strlcpy(domain, tmp, sizeof(domain));
+		strlcpy(prefix, buffer, sizeof(prefix));
+	} else {
+		strlcpy(domain, alias->name, sizeof(domain));
+		strlcpy(prefix, "@", sizeof(prefix));
+	}
 
-		trans.req_len     = snprintf(ctx->request_buf, ctx->request_buflen, DNSPOD_API_REQUEST, "Record.List",
-					     info->server_name.name, info->user_agent, paramlen, buffer);
-		trans.req         = ctx->request_buf;
-		trans.rsp         = ctx->work_buf;
-		trans.max_rsp_len = ctx->work_buflen - 1; /* Save place for a \0 at the end */
+	record_id = fetch_record_id(ctx, info, alias, domain, prefix);
+	if (record_id <= 0) {
+		logit(LOG_ERR, "Record '%s' not found in records list!", prefix);
+		if (record_id < 0)
+			return -record_id;
 
-		rc  = http_transaction(&client, &trans);
-		rc |= http_exit(&client);
+		return RC_DDNS_INVALID_OPTION;
+	}
 
-		http_destruct(&client, 1);
+	logit(LOG_DEBUG, "DNSPod Record: '%s' ID: %u", prefix, record_id);
+	len = snprintf(buffer, sizeof(buffer),
+		       "login_token=%s%%2C%s&format=json&domain=%s&record_id=%d&record_line=%s&value=%s",
+		       info->creds.username, info->creds.password,
+		       domain, record_id, "%E9%BB%98%E8%AE%A4", alias->address);
+	if (len >= (int)sizeof(buffer))
+		return RC_BUFFER_OVERFLOW;
 
-		if (rc)
-			break;
+	if (info->data)
+		free(info->data);
+	info->data = strdup(buffer);
 
-		/* TODO: Check & log errors */
-		TRY(http_status_valid(trans.status));
+	return 0;
+}
 
-		/*
-		 * Example: with added whitespace and line breaks for clarity
-		 *{
-		 *    "status": {"code": "1", "message": "Action completed successful", "created_at": "2017-06-28 14:36:28"},
-		 *    "domain": {
-		 *        "id": "59753949",
-		 *        "name": "example.org",
-		 *        "punycode": "example.org",
-		 *        "grade": "DP_Free",
-		 *        "owner": "example@example.org",
-		 *        "ext_status": "dnserror",
-		 *        "ttl": 600,
-		 *        "min_ttl": 600,
-		 *        "dnspod_ns": ["f1g1ns1.dnspod.net", "f1g1ns2.dnspod.net"],
-		 *        "status": "enable"
-		 *    },
-		 *    "info": {"sub_domains": "3", "record_total": "3"},
-		 *    "records": [{
-		 *        "id": "306419640",
-		 *        "ttl": "600",
-		 *        "value": "1.2.3.4",
-		 *        "enabled": "1",
-		 *        "status": "enabled",
-		 *        "updated_on": "2017-06-28 12:28:01",
-		 *        "name": "@",
-		 *        "line": "\u9ed8\u8ba4",
-		 *        "line_id": "0",
-		 *        "type": "A",
-		 *        "weight": null,
-		 *        "monitor_status": "",
-		 *        "remark": "",
-		 *        "use_aqb": "no",
-		 *        "mx": "0"
-		 *    }]
-		 *}
-		 */
-		tmp = strstr(trans.rsp_body, "[{");
-		if (!tmp) {
-			rc = RC_DDNS_INVALID_OPTION;
-			break;
-		}
+static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
+{
+	size_t len;
+	char *post;
 
-		sscanf(tmp, "[{\"id\":\"%u\"", &record_id);
+	(void)alias;
 
-		if (record_id == 0) {
-			logit(LOG_ERR, "Record '%s' not found in records list!", prefix);
-			rc = RC_DDNS_INVALID_OPTION;
-			break;
-		}
-		logit(LOG_DEBUG, "DNSPod Record: '%s' ID: %u", prefix, record_id);
+	if (!info->data)
+		return -RC_INVALID_POINTER;
 
-		paramlen = snprintf(buffer, sizeof(buffer),
-				    "login_token=%s%%2C%s&format=json&domain=%s&record_id=%u&record_line=%s&value=%s",
-				    info->creds.username, info->creds.password,
-				    domain, record_id, "%E9%BB%98%E8%AE%A4", alias->address);
+	post = (char *)info->data;
+	len  = strlen(post);
 
-		return snprintf(ctx->request_buf, ctx->request_buflen,
-				DNSPOD_API_REQUEST, "Record.Ddns",
-				info->server_name.name, info->user_agent, paramlen, buffer);
-	} while (0);
-
-	return -1;
+	return snprintf(ctx->request_buf, ctx->request_buflen, DNSPOD_API_REQUEST, "Record.Ddns",
+			info->server_name.name, info->user_agent, len, post);
 }
 
 /*
@@ -190,6 +225,9 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
 	char *resp = trans->rsp_body;
+
+	(void)info;
+	(void)alias;
 
 	DO(http_status_valid(trans->status));
 

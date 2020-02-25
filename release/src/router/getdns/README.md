@@ -37,10 +37,10 @@ Obtaining and getting started with getdns
 =========================================
 The project home page at [getdnsapi.net](https://getdnsapi.net) provides documentation, binary downloads, and news regarding the getdns API implementation.  This README file captures the goals and direction of the project and the current state of the implementation.
 
-If you are just getting started with the library take a look at the section below that describes building and handling external dependencies for the library. 
+If you are just getting started with the library take a look at the section below that describes building and handling external dependencies for the library.
 
 ### Examples
-Once it is built you should take a look at src/examples to see how the library is used.
+Once it is built you should take a look at `spec/example` to see how the library is used.
 
 
 # Download
@@ -50,7 +50,7 @@ or from [getdnsapi.net](https://getdnsapi.net) and verify the download using
 the checksums (SHA1 or MD5) or using gpg to verify the signature.  Our keys are
 available from the [pgp keyservers](https://keyserver.pgp.com)
 
-* willem@nlnetlabs.nl, key id E5F8F8212F77A498
+* `willem@nlnetlabs.nl`, key id E5F8F8212F77A498
 
 # Releases
 
@@ -59,68 +59,96 @@ approach.  The code is currently under active development.
 
 The following requirements were met as conditions for the present release:
 
-* code compiles cleanly on at least the primary target platforms: OSX, RHEL/CentOS Linux, FreeBSD
+* code compiles cleanly on at least the primary target platforms: OSX, Linux (RHEL/CentOS, Ubuntu), FreeBSD
 * examples must compile and run cleanly
 * there must be clear documentation of supported and unsupported elements of the API
 
-# Building and External Dependencies
+# External Dependencies
 
-If you are installing from packages, you have to install the library and also the library-devel (or -dev) for your package management system to get the the necessary compile time files.  
+If you are installing from packages, you have to install the library and also the library-devel (or -dev) for your package management system to get the the necessary compile time files.
 
-External dependencies are linked outside the getdns API build tree (we rely on configure to find them).  We would like to keep the dependency tree short.  Please refer to section for building on Windows for separate dependency and build instructions for that platform.
+External dependencies are linked outside the getdns API build tree (we rely on CMake to find them).  We would like to keep the dependency tree short, see [Minimising Dependancies](#minimizing-dependancies) for more details.
 
-* [libunbound from NLnet Labs](https://unbound.net/) version 1.4.16 or later.
-* [libidn from the FSF](https://www.gnu.org/software/libidn/) version 1 or 2 (from version 2.0.0 and higher).  (Note that the libidn version means the conversions between A-labels and U-labels may permit conversion of formally invalid labels under IDNA2008.)
-* [libssl and libcrypto from the OpenSSL Project](https://www.openssl.org/) version 0.9.7 or later. (Note: version 1.0.1 or later is required for TLS support, version 1.0.2 or later is required for TLS hostname authentication)
-* Doxygen is used to generate documentation; while this is not technically necessary for the build it makes things a lot more pleasant.
+Required for all builds:
 
-For example, to build on a recent version of Ubuntu, you would need the following packages:
+* [libssl and libcrypto from the OpenSSL Project](https://www.openssl.org/) version 1.0.2 or later. Using OpenSSL 1.1 is recommended due to TSL 1.3 support.
 
-    # apt install build-essential libunbound-dev libidn2-dev libssl-dev libtool m4 autoconf
+Required for all builds that include recursive functionality:
+
+* [libunbound from NLnet Labs](https://unbound.net/) version 1.5.9 or later. (Note: linking to libunbound is not yet supported on Windows, see [Windows 10](#microsoft-windows-10))
+
+Required for all builds that include IDN functionality:
+
+* [libidn2 from the FSF](https://www.gnu.org/software/libidn/) version 2.0.0 and higher.
+
+Required to build the documentation:
+
+* [Doxygen](http://www.doxygen.nl) is used to generate documentation; while this is not technically necessary for the build it makes things a lot more pleasant.
+
+For example, to build on Ubuntu 18.04 or later, you would need the following packages for a full build:
+
+    # apt install build-essential libunbound-dev libidn2-dev libssl-dev cmake
+
+# Building
 
 If you are building from git, you need to do the following before building:
 
-
     # git submodule update --init
 
-    # libtoolize -ci # (use glibtoolize for OS X, libtool is installed as glibtool to avoid name conflict on OS X)
-    # autoreconf -fi
+From release 1.6.0 getdns uses CMake (previous versions used autoconf/libtool). To build from this release and later use:
 
+    # cmake .
+    # make
 
-As well as building the getdns library three other tools may be installed:
+If you are unfamiliar with CMake, see our [CMake Quick Start](https://getdnsapi.net/quick-start/cmake-quick-start/) for how to use CMake options to customise the getdns build.
 
-* getdns_query: a command line test script wrapper for getdns
-* stubby: an experimental DNS Privacy enabled client
+As well as building the getdns library two other tools are installed by default:
+
+* getdns_query: a command line test script wrapper for getdns. This can be used to quickly check the functionality of the library, see (#using-getdnsquery)
 * getdns_server_mon: test DNS server function and capabilities
 
-Note: If you only want to build stubby, then use the `--with-stubby` option when running 'configure'.
+Additionally `Stubby` a DNS Privacy enabled client can also be built and installed by using the `BUILD_STUBBY` option when running `cmake`, see [Stubby](#stubby).
 
 
 ## Minimizing dependencies
 
-* getdns can be configured for stub resolution mode only with the `--enable-stub-only` option to configure.  This removes the dependency on `libunbound`.
-* Currently getdns only offers two helper functions to deal with IDN: `getdns_convert_ulabel_to_alabel` and `getdns_convert_alabel_to_ulabel`.  If you do not need these functions, getdns can be configured to compile without them with the `--without-libidn` and `--without-libidn2` options to configure.
-* When `--enable-stub-only`, `--without-libidn` and `--without-libidn2` options are used, getdns has only one dependency left, which is OpenSSL.
+* getdns can be configured for stub resolution mode only with the `ENABLE_STUB_ONLY` option to `cmake`.  This removes the dependency on `libunbound`.
+* Currently getdns only offers two helper functions to deal with IDN: `getdns_convert_ulabel_to_alabel` and `getdns_convert_alabel_to_ulabel`.  If you do not need these functions, getdns can be configured to compile without them by setting the`USE_LIBIDN2` option to `cmake` to OFF.
+* When `ENABLE_STUB_ONLY` is ON, and `USE_LIBIDN2` is OFF, getdns has only one dependency left, which is OpenSSL.
 
 ## Extensions and Event loop dependencies
 
 The implementation works with a variety of event loops, each built as a separate shared library.  See [this Doxygen page](https://getdnsapi.net/doxygen/group__eventloops.html) and [this man page](https://getdnsapi.net/documentation/manpages/#ASYNCHRONOUS USE) for more details.
 
-* [libevent](http://libevent.org).  Note: the examples *require* this and should work with either libevent 1.x or 2.x.  2.x is preferred.
-* [libuv](https://github.com/joyent/libuv)
+* [libevent](http://libevent.org).  Note: the examples *require* this. libevent 2.x is required.
+* [libuv](https://libuv.org/)
 * [libev](http://software.schmorp.de/pkg/libev.html)
+
+## Using getdns_query
+
+Example test queries using `getdns_query` (pointed at Google Public DNS) and requesting the `call_reporting` extension which provides information on the transport and query time:
+
+   getdns_query -s example.com A @8.8.8.8     +return_call_reporting (UDP)
+   getdns_query -s example.com A @8.8.8.8 -T  +return_call_reporting (TCP)
+   getdns_query -s example.com A @8.8.8.8 -L  +return_call_reporting (TLS without authentication)
+   getdns_query -s getdnsapi.net A +dnssec_return_status +return_call_reporting (DNSSEC)
 
 ## Stubby
 
-* Stubby is an experimental implementation of a DNS Privacy enabled stub resolver than encrypts DNS queries using TLS. It is currently suitable for advanced/technical users - all feedback is welcome! 
+* Stubby is an implementation of a DNS Privacy enabled stub resolver that encrypts DNS queries using TLS. It is currently suitable for advanced/technical users - all feedback is welcome!
 * Details on how to use Stubby can be found in the [Stubby Reference Guide](https://dnsprivacy.org/wiki/x/JYAT).
 * Also see [dnsprivacy.org](https://dnsprivacy.org) for more information on DNS Privacy.
+
+## Experimental support for GnuTLS
+
+A project to allow user selection of either OpenSSL or GnuTLS is currently a work in progress. At present a user may select to use GnuTLS for the majority of the supported functionality, however, OpenSSL is still required for some cryptographic functions.
 
 ## Regression Tests
 
 A suite of regression tests are included with the library, if you make changes or just
 want to sanity check things on your system take a look at src/test.  You will need
 to install [libcheck](https://libcheck.github.io/check/).  The check library is also available from many of the package repositories for the more popular operating systems.
+Note: The tests currently do not run on Windows because of a dependancy on bash.
 
 ## DNSSEC dependencies
 
@@ -130,7 +158,7 @@ The library will try to load the root trust anchor from
 or more `DS` or `DNSKEY` resource records in presentation (i.e. zone file)
 format.  Note that this is different than the format of BIND.keys.
 
-##$ Zero configuration DNSSEC
+## Zero configuration DNSSEC
 
 When the root trust anchor is not installed in the default location and a DNSSEC query is done, getdns will try to use the trust anchors published here: http://data.iana.org/root-anchors/root-anchors.xml .
 It will validate these anchors with the ICANN Certificate Authority certificate following the procedure described in [RFC7958].
@@ -162,8 +190,8 @@ Features of this release
 The goals of this implementation of the getdns API are:
 
 * Provide an open source implementation, in C, of the formally described getdns API by getdns API team at <https://getdnsapi.net/spec.html>
-* Support FreeBSD, OSX, Linux (CentOS/RHEL, Ubuntu) via functional "configure" script
-* Support Windows 8.1 
+* Support FreeBSD, OSX, Linux (CentOS/RHEL, Ubuntu)
+* Support Windows 10
 * Include examples and tests as part of the build
 * Document code using doxygen
 * Leverage github as much as possible for project coordination
@@ -204,69 +232,37 @@ Stub mode does not support:
 
 # Supported Platforms
 
-The primary platforms targeted are Linux and FreeBSD, other platform are supported as we get time.  The names listed here are intended to help ensure that we catch platform specific breakage, not to limit the work that folks are doing.
+The platforms listed here are intended to help ensure that we catch platform specific breakage prior to release.
 
-* RHEL/CentOS 6.4
-* OSX 10.8
-* Ubuntu 16.04
-* Microsoft Windows 8.1
+* Ubuntu 18.04 LTS and newer LTS releases
+* Microsoft Windows 10
+* FreeBSD 11.3 and newer
+* RHEL/CentOS 8
+* OSX 10.14 and 10.15
 
-We intend to add Android and other platforms to future releases as we have time to port it.
 
-
-##  Platform Specific Build Reports
+###  Platform Specific Build Notes
 
 [![Build Status](https://travis-ci.org/getdnsapi/getdns.png?branch=master)](https://travis-ci.org/getdnsapi/getdns)
 
-### FreeBSD
+## FreeBSD
 
 If you're using [FreeBSD](https://www.freebsd.org/), you may install getdns via the [ports tree](https://www.freshports.org/dns/getdns/) by running: `cd /usr/ports/dns/getdns && make install clean`
 
 If you are using FreeBSD 10 getdns can be intalled via 'pkg install getdns'.
 
-### CentOS and RHEL 6.5
+## Ubuntu
 
-We rely on the most excellent package manager fpm to build the linux packages, which
-means that the packaging platform requires ruby 2.1.0.  There are other ways to
-build the packages; this is simply the one we chose to use.
+getdns should also work on Ubuntu 16.04, however if you require IDN functionality you will have to install a recent version of libidn2 via a ppa e.g. from https://launchpad.net/~ondrej/+archive/ubuntu/php
 
-    # cat /etc/redhat-release
-    CentOS release 6.5 (Final)
-    # uname -a
-    Linux host-10-1-1-6 2.6.32-358.el6.x86_64 #1 SMP Fri Feb 22 00:31:26 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
-    # cd getdns-0.2.0rc1
-    # ./configure --prefix=/home/deploy/build
-    # make; make install
-    # cd /home/deploy/build
-    # mv lib lib64
-    # . /usr/local/rvm/config/alias
-    # fpm -x "*.la" -a native -s dir -t rpm -n getdns -v 0.2.0rc1 -d "unbound" -d "libevent" -d "libidn" --prefix /usr --vendor "Verisign Inc., NLnet Labs" --license "BSD New" --url "https://getdnsapi.net" --description "Modern asynchronous API to the DNS" .
+You will also have to build Unbound from source code to provide libunbound at version >= 1.5.9.
 
-### OSX
+## OSX
 
-    # sw_vers
-    ProductName:	Mac OS X
-    ProductVersion:	10.8.5
-    BuildVersion:	12F45
+A self-compiled version of OpenSSL or the version installed via Homebrew is required and the options OPENSSL_ROOT_DIR, OPENSSL_CRYPTO_LIBRARY and OPENSSL_SSL_LIBRARY can be used to specify the location of the libraries.
+Note: If using a self-compiled version, manual configuration of certificates into /usr/local/etc/openssl/certs is required for TLS authentication to work.
 
-    Built using PackageMaker, libevent2.
-
-    # ./configure --with-libevent --prefix=$HOME/getdnsosx/export
-    # make
-    # make install
-
-    edit/fix hardcoded paths in lib/*.la to reference /usr/local
-
-    update getdns.pmdoc to match release info
-
-    build package using PackageMaker
-
-    create dmg
-
-    A self-compiled version of OpenSSL or the version installed via Homebrew is required.
-    Note: If using a self-compiled version, manual configuration of certificates into /usr/local/etc/openssl/certs is required for TLS authentication to work.
-
-#### Homebrew
+### Homebrew
 
 If you're using [Homebrew](http://brew.sh/), you may run `brew install getdns`.  By default, this will only build the core library without any 3rd party event loop support.
 
@@ -274,48 +270,37 @@ To install the [event loop integration libraries](https://getdnsapi.net/doxygen/
 
 Note that in order to compile the examples, the `--with-libevent` switch is required.
 
-Additionally, the OpenSSL library installed by Homebrew is linked against. Note that the Homebrew OpenSSL installation clones the Keychain certificates to the default OpenSSL location so TLS certificate authentication should work out of the box.
+Additionally, getdns is linked against the the OpenSSL library installed by Homebrew. Note that the Homebrew OpenSSL installation clones the Keychain certificates to the default OpenSSL location so TLS certificate authentication should work out of the box.
 
-### Microsoft Windows 8.1
+## Microsoft Windows 10
 
-The build has been tested using the following:
-32 bit only Mingw: [Mingw(3.21.0) and Msys 1.0](http://www.mingw.org/) on Windows 8.1
-32 bit build on a 64 bit Mingw [Download latest from: http://mingw-w64.org/doku.php/download/mingw-builds and http://msys2.github.io/]. IMPORTANT: Install tested ONLY on the  "x86_64" for 64-bit installer of msys2.
+You will need CMake for Windows. Installers can be downloaded from https://cmake.org/download/.
 
-#### Dependencies
-The following dependencies are 
-* openssl-1.0.2j
-* libidn
+Windows versions of the following libraries are available using [the vcpkg package manager](https://docs.microsoft.com/en-us/cpp/build/vcpkg).
 
-Instructions to build openssl-1.0.2j:
-Open the mingw32_shell.bat from msys2 in order to build:
+* OpenSSL
+* libevent
+* libiconv (required for libidn2)
+* libidn2
+* libyaml
+* libuv
 
-If necessary, install the following using pacman:
+Once these are installed, set CMake variables CMAKE_INCLUDE_PATH and CMAKE_LIBRARY_PATH to the vcpkg include and library directories e.g. `../vcpkg/installed/x64-windows/include` and `../vcpkg/installed/x64-windows/lib`.
 
-    pacman -S pkg-config  libtool automake
-    pacman -S autoconf automake-wrapper
+To generate a project suitable for use in Visual Studio, select the appropriate Visual Studio generator in CMake. Once generated, the cmake-gui Open Project button can be used to load the project into Visual Studio.
 
-    tar -xvf openssl-1.0.2j.tar 
-    cd openssl-1.0.2j/
-    ./Configure --prefix=${LOCALDESTDIR} --openssldir=${LOCALDESTDIR}/etc/ssl --libdir=lib shared zlib-dynamic mingw
-    make
-    make install
+### Limitations on Windows
 
-To configure:
-    
-    ./configure --enable-stub-only --with-trust-anchor="c:\\\MinGW\\\msys\\\1.0\\\etc\\\unbound\\\getdns-root.key" --with-ssl=<location of openssl from above> --with-getdns_query
+Full support for Windows is a work in progress. The following limitations will  be addresses in future:
 
- The trust anchor is also installed by unbound on `c:\program Files (X86)\unbound\root.key` and can be referenced from there
- or anywhere else that the user chooses to configure it.
+* At present, no native Windows DLL version of libunbound exists; support for linking against libunbound is not currently available. The default build option for ENABLE_STUB_ONLY_ is ON for Windows.
 
- After configuring, do a `make` and `make install` to build getdns for Windows.
+* The getdns unit tests (built with `make test`) require libcheck which is not currently available for Windows and so cannot be built.
 
- Example test queries:
- 
-    ./getdns_query.exe -s gmadkat.com A @64.6.64.6  +return_call_reporting (UDP)
-    ./getdns_query.exe -s gmadkat.com A @64.6.64.6 -T  +return_call_reporting (TCP)
-    ./getdns_query.exe -s gmadkat.com A -l L @185.49.141.37  +return_call_reporting (TLS without authentication)
-    ./getdns_query.exe -s www.huque.com A +dnssec_return_status +return_call_reporting (DNSSEC)
+* The getdns tpkg test suite is not currently supported on Windows.
+
+* The detection of the location of the `/etc/hosts` file should be optimised - it currently assumes Windows is installed in the default directory on the C: drive
+
 
 Contributors
 ============

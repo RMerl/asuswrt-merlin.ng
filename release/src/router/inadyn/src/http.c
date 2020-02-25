@@ -1,7 +1,7 @@
 /* Interface for HTTP functions
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
- * Copyright (C) 2010-2017  Joachim Nilsson <troglobit@gmail.com>
+ * Copyright (C) 2010-2020  Joachim Nilsson <troglobit@gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -51,7 +51,7 @@ int http_destruct(http_t *client, int num)
 static int local_set_params(http_t *client)
 {
 	int timeout = 0;
-	int port;
+	int port = 0;
 
 	http_get_remote_timeout(client, &timeout);
 	if (timeout == 0)
@@ -145,6 +145,9 @@ int http_status_valid(int status)
 {
 	if (status == 200)
 		return 0;
+
+	if (status == 401 || status == 403)
+		return RC_DDNS_RSP_AUTH_FAIL;
 
 	if (status >= 500 && status < 600)
 		return RC_DDNS_RSP_RETRY_LATER;

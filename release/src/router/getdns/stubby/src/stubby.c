@@ -28,6 +28,7 @@
 #include "config.h"
 #include <getdns/getdns.h>
 #include <getdns/getdns_extra.h>
+#include <stdint.h>
 #include <string.h>
 #include <errno.h>
 #include <limits.h>
@@ -36,10 +37,14 @@
 #include <shlobj.h>
 #else
 #include <pwd.h>
-#include <unistd.h>
 #endif
 #include <signal.h>
 #include <limits.h>
+#ifndef HAVE_GETOPT
+#include "getopt.h"
+#else
+#include <unistd.h>
+#endif
 #if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
 #include <syslog.h>
 #endif
@@ -350,7 +355,7 @@ static getdns_return_t parse_config_file(const char *fn)
 typedef struct dns_msg {
 	getdns_transaction_t  request_id;
 	getdns_dict          *request;
-	uint32_t              rt;
+	getdns_resolution_t   rt;
 	uint32_t              ad_bit;
 	uint32_t              do_bit;
 	uint32_t              cd_bit;
@@ -814,6 +819,9 @@ main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	stubby_local_log(NULL,GETDNS_LOG_UPSTREAM_STATS, GETDNS_LOG_INFO,
+		       "Stubby version: %s\n", STUBBY_PACKAGE_STRING);
 
 	if ((r = getdns_context_create(&context, 1))) {
 		fprintf(stderr, "Create context failed: %s\n",

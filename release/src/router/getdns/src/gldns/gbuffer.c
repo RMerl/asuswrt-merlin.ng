@@ -14,6 +14,7 @@
 #include "config.h"
 #include "gldns/gbuffer.h"
 #include <stdarg.h>
+#include <stdlib.h>
 
 gldns_buffer *
 gldns_buffer_new(size_t capacity)

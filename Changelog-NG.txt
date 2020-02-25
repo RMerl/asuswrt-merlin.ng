@@ -8,6 +8,9 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
   - UPDATED: dnsmasq to 2.80-148-g3ce803d-openssl (themiron)
+  - UPDATED: inadyn to 2.6 (themiron)
+  - UPDATED: getdns to 1.6.0-beta.1 (themiron)
+  - UPDATED: stubby to 0.3.0-beta.1 (themiron)
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
              they are connected to.

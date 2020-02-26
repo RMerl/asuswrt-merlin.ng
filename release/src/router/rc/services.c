@@ -15521,7 +15521,8 @@ void setup_leds()
 		    (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) ||
 		    (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) ||
 		    (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) ||
-		    (model == MODEL_RTAC86U) || (model == MODEL_RTAX88U)) {
+		    (model == MODEL_RTAC86U) || (model == MODEL_RTAX88U) ||
+		    (model == MODEL_RTAX56U) || (model == MODEL_RTAX58U)) {
 			setAllLedOff();
 			if (model == MODEL_RTAC87U)
 				led_control_atomic(LED_5G, LED_OFF);
@@ -15530,7 +15531,9 @@ void setup_leds()
 			led_control_atomic(LED_5G, LED_OFF);
 			led_control_atomic(LED_POWER, LED_OFF);
 			led_control_atomic(LED_SWITCH, LED_OFF);
+#ifndef RTCONFIG_LAN4WAN_LED
 			led_control_atomic(LED_LAN, LED_OFF);
+#endif
 			led_control_atomic(LED_WAN, LED_OFF);
 		}
 #ifdef RTCONFIG_USB

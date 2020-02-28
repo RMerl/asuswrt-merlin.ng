@@ -34,7 +34,12 @@ endif
 else
 export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE_64)ld --host=aarch64-buildroot-linux-gnu 
 endif
+ifeq ($(HND_ROUTER_AX_675X),y)
+export HOSTCONFIG := linux-armv4 -DOPENSSL_NO_HEARTBEATS -DL_ENDIAN no-engine -Os -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_7A_
+else
 export HOSTCONFIG := linux-armv4 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_8A__
+endif
+
 ifeq ($(HND_ROUTER_AX_675X),y)
 ifeq ($(HND_ROUTER_AX_6710),y)
 export HOSTCONFIG_64 := linux-aarch64 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__

@@ -133,31 +133,38 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				int count = 0;
 				char model[64];
 
-				tmp = strstr(buffer, "Processor");
+				char impl[8], arch[8], variant[8], part[10], revision[4];
+				impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
+				strcpy(revision,"0");
 
-				if (tmp)
-					sscanf(tmp, "Processor  :  %[^\n]", model);
-				else {	// BCM490x
-					char impl[8], arch[8], variant[8], part[10];
-					impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
+				tmp = strstr(buffer, "CPU implementer");
+				if (tmp) sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
+				tmp = strstr(buffer, "CPU architecture");
+				if (tmp) sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
+				tmp = strstr(buffer, "CPU variant");
+				if (tmp) sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
+				tmp = strstr(buffer, "CPU part");
+				if (tmp) sscanf(tmp, "CPU part  :  %9[^\n]s", part);
+				tmp = strstr(buffer,"CPU revision");
+				if (tmp) sscanf(tmp, "CPU revision  :  %3[^\n]s", revision);
 
-					tmp = strstr(buffer, "CPU implementer");
-					sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
-					tmp = strstr(buffer, "CPU architecture");
-					sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
-					tmp = strstr(buffer, "CPU variant");
-					sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
-					tmp = strstr(buffer, "CPU part");
-					sscanf(tmp, "CPU part  :  %9[^\n]s", part);
-
-					if (!strcmp(impl, "0x42")
-					    && !strcmp(variant, "0x0")
-					    && !strcmp(part, "0x100")
-					    && !strcmp(arch, "8"))
-						strcpy(model, "Cortex A53 ARMv8");
-					else
-						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
-				}
+				if (!strcmp(impl, "0x42")
+				    && !strcmp(variant, "0x0")
+				    && !strcmp(part, "0x100")
+				    && !strcmp(arch, "8"))
+					sprintf(model, "BCM490x - Cortex A53 ARMv8 revision %s", revision);
+				else if (!strcmp(impl, "0x41")
+				    && !strcmp(variant, "0x0")
+				    && !strcmp(part, "0xc07")
+				    && !strcmp(arch, "7"))
+					sprintf(model, "BCM675x - Cortex A7 ARMv7 revision %s", revision);
+				else if (!strcmp(impl, "0x41")
+				    && !strcmp(variant, "0x3")
+				    && !strcmp(part, "0xc09")
+				    && !strcmp(arch, "7"))
+					sprintf(model, "BCM470x - Cortex A7 ARMv7 revision %s", revision);
+				else
+					sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s, Rev: %s",impl, part, variant, arch, revision);
 
 				count = sysconf(_SC_NPROCESSORS_CONF);
 				if (count > 1) {
@@ -189,12 +196,16 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				free(buffer);
 				sprintf(result, "%d", freq);
 			}
+			else if (get_model() == MODEL_RTAX58U)
+				strcpy(result, "1500");
 			else
 #endif
 			{
-				tmp = nvram_get("clkfreq");
-				if (tmp)
+				tmp = nvram_safe_get("clkfreq");
+				if (*tmp)
 					sscanf(tmp,"%[^,]s", result);
+				else
+					strcpy(result, "???");
 			}
 		} else if(strcmp(type,"memory.total") == 0) {
 			sysinfo(&sys);

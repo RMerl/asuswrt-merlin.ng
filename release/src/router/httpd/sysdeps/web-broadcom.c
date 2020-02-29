@@ -5145,19 +5145,7 @@ wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		else
 			retval += websWrite(wp, "\"<error>\",\"\",\"\",\"\",\"\",\"\",");
 	} else {
-		retval += websWrite(wp, "\"Not associated. Last with ");
-
-		if ((ret = wl_ioctl(name, WLC_GET_SSID, &ssid, sizeof(wlc_ssid_t))) < 0) {
-			retval += websWrite(wp, "<unknown>\",\"\",\"\",\"\",\"\",\"\",");
-			return 0;
-		}
-
-		wl_format_ssid(ssidbuftmp, ssid.SSID, dtoh32(ssid.SSID_len));
-
-		if (str_escape_quotes(ssidbuf, ssidbuftmp, sizeof(ssidbuf)) == 0 )
-			strlcpy(ssidbuf, ssidbuftmp, sizeof(ssidbuf));
-
-		retval += websWrite(wp, "%s\",\"\",\"\",\"\",\"\",\"\",", ssidbuf);
+		retval += websWrite(wp, "\"\",\"\",\"\",\"\",\"\",\"\",");
 	}
 
 	return retval;

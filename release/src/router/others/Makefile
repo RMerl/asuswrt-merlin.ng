@@ -59,7 +59,11 @@ endif
 
 # Temporary fix for missing ld.so.cache
 ifeq ($(HND_ROUTER),y)
-	install ldconfig $(INSTALLDIR)/sbin/ldconfig
+ifeq ($(HND_ROUTER_AX_675X),y)
+	install ldconfig_armv7 $(INSTALLDIR)/sbin/ldconfig
+else
+	install ldconfig_armv8 $(INSTALLDIR)/sbin/ldconfig
+endif
 endif
 
 clean:

@@ -280,8 +280,8 @@ if [ "$BRCM_DRIVER_ISDN" == "m" ] ; then
 fi
 
 
-   if [ -d $ROOTFS/opt/modules ]; then
-     pushd $ROOTFS/opt/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
+   if [ -d $ROOTFS/rom/rom/modules ]; then
+     pushd $ROOTFS/rom/rom/modules && for f in *.ko.save; do mv "$f" "${f%.ko.save}.ko"; done
      popd
    fi
 cd $MOD_DIR
@@ -312,16 +312,16 @@ cp -a lib $TARGETS_DIR/$ROOTFS/.
 
 if [ "$CONFIG_BCM_UBUSCAP" == "y" ]; then
     # copy UBUSCAP control script
-    cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/opt/scripts/ubcap
+    cp -avf $BRCMDRIVERS_DIR/broadcom/char/ubuscap/impl$CONFIG_BCM_UBUSCAP_IMPL/ubcap_$BRCM_CHIP.sh  $TARGETS_DIR/$ROOTFS/rom/rom/scripts/ubcap
 fi    
 
-DMfiles="bin etc lib sbin share tmp usr include doc"
+#DMfiles="bin etc lib sbin share tmp usr include doc"
 
-for f in $DMfiles
-do
-	echo "ln -sf /tmp/opt/$f opt/$f"
-	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
-done
+#for f in $DMfiles
+#do
+#	echo "ln -sf /tmp/opt/$f opt/$f"
+#	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
+#done
 
 if [ "$KSTRIP" != "/bin/touch" ]; then
 # Stripping unneeded module symbols only when strip is "enabled"

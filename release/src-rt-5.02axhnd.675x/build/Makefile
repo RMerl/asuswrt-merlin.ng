@@ -344,9 +344,9 @@ create_install:
 		mkdir -p $(INSTALL_DIR)/lib
 		mkdir -p $(INSTALL_DIR)/etc/snmp
 		mkdir -p $(INSTALL_DIR)/etc/iproute2
-		mkdir -p $(INSTALL_DIR)/opt/bin
-		mkdir -p $(INSTALL_DIR)/opt/modules
-		mkdir -p $(INSTALL_DIR)/opt/scripts
+		mkdir -p $(INSTALL_DIR)/rom/bin
+		mkdir -p $(INSTALL_DIR)/rom/modules
+		mkdir -p $(INSTALL_DIR)/rom/scripts
 
 .PHONY: create_install
 

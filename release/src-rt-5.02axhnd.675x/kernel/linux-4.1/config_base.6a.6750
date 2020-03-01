@@ -2994,9 +2994,120 @@ CONFIG_LOCKD=m
 CONFIG_LOCKD_V4=y
 CONFIG_NFS_COMMON=y
 CONFIG_SUNRPC=m
+CONFIG_EXPORTFS=m
+# CONFIG_NFSD_V3_ACL is not set
+# CONFIG_NFSD_V4 is not set
+# CONFIG_NFS_FSCACHE is not set
+# CONFIG_NFS_SWAP is not set
+# CONFIG_NFS_V3_ACL is not set
+# CONFIG_NFS_V4 is not set
+# CONFIG_SUNRPC_DEBUG is not set
 
 # CIFS
 CONFIG_DNS_RESOLVER=m
 CONFIG_CIFS=m
 CONFIG_CIFS_SMB2=y
 CONFIG_ASSOCIATIVE_ARRAY=y
+# CONFIG_CIFS_DEBUG2 is not set
+# CONFIG_CIFS_DEBUG is not set
+# CONFIG_CIFS_DFS_UPCALL is not set
+# CONFIG_CIFS_FSCACHE is not set
+# CONFIG_CIFS_STATS is not set
+# CONFIG_CIFS_UPCALL is not set
+# CONFIG_CIFS_WEAK_PW_HASH is not set
+# CONFIG_CIFS_XATTR is not set
+
+# New dependencies
+# CONFIG_AFS_FS is not set
+# CONFIG_ASYMMETRIC_KEY_TYPE is not set
+# CONFIG_BIG_KEYS is not set
+# CONFIG_CACHEFILES is not set
+# CONFIG_CEPH_FS is not set
+# CONFIG_CODA_FS is not set
+# CONFIG_ECRYPT_FS is not set
+# CONFIG_ENCRYPTED_KEYS is not set
+# CONFIG_FSCACHE_DEBUG is not set
+# CONFIG_FSCACHE_HISTOGRAM is not set
+# CONFIG_FSCACHE_OBJECT_LIST is not set
+# CONFIG_FSCACHE_STATS is not set
+# CONFIG_HID_A4TECH is not set
+# CONFIG_HID_ACRUX is not set
+# CONFIG_HID_APPLEIR is not set
+# CONFIG_HID_APPLE is not set
+# CONFIG_HID_AUREAL is not set
+# CONFIG_HID_BELKIN is not set
+# CONFIG_HID_BETOP_FF is not set
+# CONFIG_HID_CHERRY is not set
+# CONFIG_HID_CHICONY is not set
+# CONFIG_HID_CYPRESS is not set
+# CONFIG_HID_DRAGONRISE is not set
+# CONFIG_HID_ELECOM is not set
+# CONFIG_HID_ELO is not set
+# CONFIG_HID_EMS_FF is not set
+# CONFIG_HID_EZKEY is not set
+# CONFIG_HID_GREENASIA is not set
+# CONFIG_HID_GT683R is not set
+# CONFIG_HID_GYRATION is not set
+# CONFIG_HID_HOLTEK is not set
+# CONFIG_HID_ICADE is not set
+# CONFIG_HID_KENSINGTON is not set
+# CONFIG_HID_KEYTOUCH is not set
+# CONFIG_HID_KYE is not set
+# CONFIG_HID_LCPOWER is not set
+# CONFIG_HID_LENOVO is not set
+# CONFIG_HID_LOGITECH is not set
+# CONFIG_HID_MAGICMOUSE is not set
+# CONFIG_HID_MICROSOFT is not set
+# CONFIG_HID_MONTEREY is not set
+# CONFIG_HID_MULTITOUCH is not set
+# CONFIG_HID_NTRIG is not set
+# CONFIG_HID_ORTEK is not set
+# CONFIG_HID_PANTHERLORD is not set
+# CONFIG_HID_PENMOUNT is not set
+# CONFIG_HID_PETALYNX is not set
+# CONFIG_HID_PICOLCD is not set
+# CONFIG_HID_PLANTRONICS is not set
+# CONFIG_HID_PRIMAX is not set
+# CONFIG_HID_RMI is not set
+# CONFIG_HID_ROCCAT is not set
+# CONFIG_HID_SAITEK is not set
+# CONFIG_HID_SAMSUNG is not set
+# CONFIG_HID_SENSOR_HUB is not set
+# CONFIG_HID_SMARTJOYPLUS is not set
+# CONFIG_HID_SONY is not set
+# CONFIG_HID_SPEEDLINK is not set
+# CONFIG_HID_STEELSERIES is not set
+# CONFIG_HID_SUNPLUS is not set
+# CONFIG_HID_THINGM is not set
+# CONFIG_HID_THRUSTMASTER is not set
+# CONFIG_HID_TIVO is not set
+# CONFIG_HID_TOPSEED is not set
+# CONFIG_HID_TWINHAN is not set
+# CONFIG_HID_UCLOGIC is not set
+# CONFIG_HID_WACOM is not set
+# CONFIG_HID_WALTOP is not set
+# CONFIG_HID_WIIMOTE is not set
+# CONFIG_HID_XINMO is not set
+# CONFIG_HID_ZEROPLUS is not set
+# CONFIG_HID_ZYDACRON is not set
+# CONFIG_INPUT_EVBUG is not set
+# CONFIG_INPUT_EVDEV is not set
+# CONFIG_INPUT_FF_MEMLESS is not set
+# CONFIG_INPUT_JOYDEV is not set
+# CONFIG_INPUT_JOYSTICK is not set
+# CONFIG_INPUT_KEYBOARD is not set
+# CONFIG_INPUT_MATRIXKMAP is not set
+# CONFIG_INPUT_MISC is not set
+# CONFIG_INPUT_MOUSEDEV is not set
+# CONFIG_INPUT_MOUSE is not set
+# CONFIG_INPUT_POLLDEV is not set
+# CONFIG_INPUT_SPARSEKMAP is not set
+# CONFIG_INPUT_TABLET is not set
+# CONFIG_INPUT_TOUCHSCREEN is not set
+# CONFIG_USB_KBD is not set
+# CONFIG_USB_MOUSE is not set
+# CONFIG_USB_STORAGE_ONETOUCH is not set
+# CONFIG_SENSORS_LIS3_SPI is not set
+# CONFIG_NCP_FS is not set
+# CONFIG_PERSISTENT_KEYRINGS is not set
+# CONFIG_SYSTEM_TRUSTED_KEYRING is not set

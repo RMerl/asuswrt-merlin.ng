@@ -209,7 +209,10 @@ typedef struct getdns_upstream {
 	_getdns_tls_session*     tls_session;
 	getdns_tls_hs_state_t    tls_hs_state;
 	getdns_auth_state_t      tls_auth_state;
-
+	uint64_t                 expires; /* Expire time of waiting netreqs.
+	                                   * This is how long a handshake may
+	                                   * take.
+	                                   */
 	/* TLS settings */
 	char                    *tls_cipher_list;
 	char                    *tls_ciphersuites;

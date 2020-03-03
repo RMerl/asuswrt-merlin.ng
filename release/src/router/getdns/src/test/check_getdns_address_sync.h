@@ -145,7 +145,7 @@
      START_TEST (getdns_address_sync_6)
      {
       /*
-       *  name = "willem.getdnsapi.net"  need to replace this with domain from unbound zone
+       *  name = "d2a8n3.rootcanary.net"  need to replace this with domain from unbound zone
        *  expect: NOERROR/NODATA response:
        *    status = GETDNS_RESPSTATUS_NO_DATA
        *    rcode = 0
@@ -156,7 +156,7 @@
      
        CONTEXT_CREATE(TRUE);
 
-       ASSERT_RC(getdns_address_sync(context, "willem.getdnsapi.net", NULL, &response), 
+       ASSERT_RC(getdns_address_sync(context, "d2a8n3.rootcanary.net", NULL, &response), 
          GETDNS_RETURN_GOOD, "Return code from getdns_address_sync()");
 
        EXTRACT_RESPONSE;

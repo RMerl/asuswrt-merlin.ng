@@ -263,7 +263,8 @@ struct event_desc {
 #define OPT_UBUS           58
 #define OPT_IGNORE_CLID    59
 #define OPT_SINGLE_PORT    60
-#define OPT_LAST           61
+#define OPT_LEASE_RENEW    61
+#define OPT_LAST           62
 
 #define OPTION_BITS (sizeof(unsigned int)*8)
 #define OPTION_SIZE ( (OPT_LAST/OPTION_BITS)+((OPT_LAST%OPTION_BITS)!=0) )
@@ -478,7 +479,7 @@ struct crec {
 #define F_NO_RR     (1u<<25)
 #define F_IPSET     (1u<<26)
 #define F_NOEXTRA   (1u<<27)
-#define F_SERVFAIL  (1u<<28)
+#define F_SERVFAIL  (1u<<28) /* currently unused. */
 #define F_RCODE     (1u<<29)
 #define F_SRV       (1u<<30)
 
@@ -700,6 +701,7 @@ struct frec {
 #define LEASE_NA            32  /* IPv6 no-temporary lease */
 #define LEASE_TA            64  /* IPv6 temporary lease */
 #define LEASE_HAVE_HWADDR  128  /* Have set hwaddress */
+#define LEASE_EXP_CHANGED  256  /* Lease expiry time changed */
 
 struct dhcp_lease {
   int clid_len;          /* length of client identifier */
@@ -1283,7 +1285,7 @@ int memcmp_masked(unsigned char *a, unsigned char *b, int len,
 int expand_buf(struct iovec *iov, size_t size);
 char *print_mac(char *buff, unsigned char *mac, int len);
 int read_write(int fd, unsigned char *packet, int size, int rw);
-
+void close_fds(long max_fd, int spare1, int spare2, int spare3);
 int wildcard_match(const char* wildcard, const char* match);
 int wildcard_matchn(const char* wildcard, const char* match, int num);
 

@@ -83,6 +83,11 @@ version 2.81
 
 	Allow empty server spec in --rev-server, to match --server.
 	
+	Remove DSA signature verification from DNSSEC, as specified in
+	RFC 8624. Thanks to Loganaden Velvindron for the original patch.
+
+	Add --script-on-renewal option.
+
 	
 version 2.80
 	Add support for RFC 4039 DHCP rapid commit. Thanks to Ashram Method

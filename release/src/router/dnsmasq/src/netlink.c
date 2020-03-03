@@ -360,7 +360,9 @@ static void nl_async(struct nlmsghdr *h)
 	 failing. */ 
       struct rtmsg *rtm = NLMSG_DATA(h);
       
-      if (rtm->rtm_type == RTN_UNICAST && rtm->rtm_scope == RT_SCOPE_LINK)
+      if (rtm->rtm_type == RTN_UNICAST && rtm->rtm_scope == RT_SCOPE_LINK &&
+	  (rtm->rtm_table == RT_TABLE_MAIN ||
+	   rtm->rtm_table == RT_TABLE_LOCAL))
 	queue_event(EVENT_NEWROUTE);
     }
   else if (h->nlmsg_type == RTM_NEWADDR || h->nlmsg_type == RTM_DELADDR) 

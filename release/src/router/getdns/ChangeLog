@@ -1,3 +1,16 @@
+* 2020-02-28: Version 1.6.0
+  * Issues #457, #458, #461: New symbols with libnettle >= 3.4.
+    Thanks hanvinke & kometchtech for testing & reporting.
+  * Issue #432: answer_ipv4_address and answer_ipv6_address in reply
+    and response dicts.
+  * Issue #430: Record and guard UDP max payload size with servers.
+  * Issue #407: Run only offline-tests option with:
+    src/test/tpkg/run-offline-only.sh (only with git checkouts).
+  * Issue #175: Include the packet the stub resolver sent to  the
+    upstream the call_reporting dict. Thanks Tom Pusateri
+  * Issue #169: Build eventloop support libraries if event libraries
+    are available. Thanks Tom Pusateri
+
 * 2019-12-20: Version 1.6.0-beta.1
   * Migration of build system to cmake. Build now works on Ubuntu,
     Windows 10 and macOS.

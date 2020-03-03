@@ -925,6 +925,7 @@ upstream_init(getdns_upstream *upstream,
 
 	/* For sharing a socket to this upstream with TCP  */
 	upstream->fd       = -1;
+	upstream->expires  = 0;
 	upstream->tls_obj  = NULL;
 	upstream->tls_session = NULL;
 	upstream->tls_cipher_list = NULL;

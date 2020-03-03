@@ -870,7 +870,7 @@ void lease_set_expires(struct dhcp_lease *lease, unsigned int len, time_t now)
       dns_dirty = 1;
       lease->expires = exp;
 #ifndef HAVE_BROKEN_RTC
-      lease->flags |= LEASE_AUX_CHANGED;
+      lease->flags |= LEASE_AUX_CHANGED | LEASE_EXP_CHANGED;
       file_dirty = 1;
 #endif
     }
@@ -1170,7 +1170,8 @@ int do_script_run(time_t now)
   
   for (lease = leases; lease; lease = lease->next)
     if ((lease->flags & (LEASE_NEW | LEASE_CHANGED)) || 
-	((lease->flags & LEASE_AUX_CHANGED) && option_bool(OPT_LEASE_RO)))
+	((lease->flags & LEASE_AUX_CHANGED) && option_bool(OPT_LEASE_RO)) ||
+	((lease->flags & LEASE_EXP_CHANGED) && option_bool(OPT_LEASE_RENEW)))
       {
 #ifdef HAVE_SCRIPT
 	queue_script((lease->flags & LEASE_NEW) ? ACTION_ADD : ACTION_OLD, lease, 
@@ -1180,7 +1181,7 @@ int do_script_run(time_t now)
 	emit_dbus_signal((lease->flags & LEASE_NEW) ? ACTION_ADD : ACTION_OLD, lease,
 			 lease->fqdn ? lease->fqdn : lease->hostname);
 #endif
-	lease->flags &= ~(LEASE_NEW | LEASE_CHANGED | LEASE_AUX_CHANGED);
+	lease->flags &= ~(LEASE_NEW | LEASE_CHANGED | LEASE_AUX_CHANGED | LEASE_EXP_CHANGED);
 	
 	/* this is used for the "add" call, then junked, since they're not in the database */
 	free(lease->extradata);

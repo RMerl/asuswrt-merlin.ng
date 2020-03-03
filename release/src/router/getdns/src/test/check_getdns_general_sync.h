@@ -152,7 +152,7 @@
      START_TEST (getdns_general_sync_7)
      {
       /*
-       *  name = "google.com"
+       *  name = "nlnetlabs.nl"
        *  request_type = 65279 (maximum unassigned RRTYPE)
        *  expect: NOERROR/NODATA response:
        *    status = GETDNS_RESPSTATUS_NO_NAME
@@ -164,7 +164,7 @@
      
        CONTEXT_CREATE(TRUE);
 
-       ASSERT_RC(getdns_general_sync(context, "google.com", 65279, NULL, &response), 
+       ASSERT_RC(getdns_general_sync(context, "nlnetlabs.nl", 65279, NULL, &response), 
          GETDNS_RETURN_GOOD, "Return code from getdns_general_sync()");
 
        EXTRACT_RESPONSE;
@@ -267,7 +267,7 @@
      START_TEST (getdns_general_sync_11)
      {
       /*
-       *  name = "willem.getdnsapi.net" an unbound zone (as in no MX)
+       *  name = "d2a8n3.rootcanary.net" an unbound zone (as in no MX)
        *  request_type = GETDNS_RRTYPE_MX
        *  expect: NOERROR/NODATA response:
        *    status = GETDNS_RESPSTATUS_NO_NAME
@@ -279,7 +279,7 @@
      
        CONTEXT_CREATE(TRUE);
 
-       ASSERT_RC(getdns_general_sync(context, "willem.getdnsapi.net", GETDNS_RRTYPE_MX, NULL, &response), 
+       ASSERT_RC(getdns_general_sync(context, "d2a8n3.rootcanary.net", GETDNS_RRTYPE_MX, NULL, &response), 
          GETDNS_RETURN_GOOD, "Return code from getdns_general_sync()");
 
        EXTRACT_RESPONSE;

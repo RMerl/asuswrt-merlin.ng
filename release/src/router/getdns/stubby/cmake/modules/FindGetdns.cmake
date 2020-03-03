@@ -55,7 +55,7 @@ if (GETDNS_INCLUDE_DIR AND GETDNS_LIBRARY)
 
   if (NOT GETDNS_VERSION AND GETDNS_INCLUDE_DIR AND EXISTS "${GETDNS_INCLUDE_DIR}/getdns/getdns.h")
     file(STRINGS "${GETDNS_INCLUDE_DIR}/getdns/getdns_extra.h" GETDNS_H REGEX "^#define GETDNS_VERSION")
-    string(REGEX REPLACE "^.*GETDNS_VERSION \"([0-9.]+)\".*$" "\\1" GETDNS_VERSION "${GETDNS_H}")
+    string(REGEX REPLACE "^.*GETDNS_VERSION \"([0-9.]+)[A-Za-z0-9.+-]*\".*$" "\\1" GETDNS_VERSION "${GETDNS_H}")
   endif ()
 endif()
 

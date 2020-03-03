@@ -740,6 +740,47 @@ int read_write(int fd, unsigned char *packet, int size, int rw)
   return 1;
 }
 
+/* close all fds except STDIN, STDOUT and STDERR, spare1, spare2 and spare3 */
+void close_fds(long max_fd, int spare1, int spare2, int spare3) 
+{
+  /* On Linux, use the /proc/ filesystem to find which files
+     are actually open, rather than iterate over the whole space,
+     for efficiency reasons. If this fails we drop back to the dumb code. */
+#ifdef HAVE_LINUX_NETWORK 
+  DIR *d;
+  
+  if ((d = opendir("/proc/self/fd")))
+    {
+      struct dirent *de;
+
+      while ((de = readdir(d)))
+	{
+	  long fd;
+	  char *e = NULL;
+	  
+	  errno = 0;
+	  fd = strtol(de->d_name, &e, 10);
+	  	  
+      	  if (errno != 0 || !e || *e || fd == dirfd(d) ||
+	      fd == STDOUT_FILENO || fd == STDERR_FILENO || fd == STDIN_FILENO ||
+	      fd == spare1 || fd == spare2 || fd == spare3)
+	    continue;
+	  
+	  close(fd);
+	}
+      
+      closedir(d);
+      return;
+  }
+#endif
+
+  /* fallback, dumb code. */
+  for (max_fd--; max_fd >= 0; max_fd--)
+    if (max_fd != STDOUT_FILENO && max_fd != STDERR_FILENO && max_fd != STDIN_FILENO &&
+	max_fd != spare1 && max_fd != spare2 && max_fd != spare3)
+      close(max_fd);
+}
+
 /* Basically match a string value against a wildcard pattern.  */
 int wildcard_match(const char* wildcard, const char* match)
 {

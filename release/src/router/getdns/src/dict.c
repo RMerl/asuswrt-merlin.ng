@@ -1149,7 +1149,9 @@ getdns_pp_dict(gldns_buffer * buf, size_t indent,
 		case t_bindata:
 			if ((strcmp(item->node.key, "address_data") == 0 ||
 			     strcmp(item->node.key, "ipv4_address") == 0 ||
-			     strcmp(item->node.key, "ipv6_address") == 0 ) &&
+			     strcmp(item->node.key, "ipv6_address") == 0 ||
+			     strcmp(item->node.key, "answer_ipv4_address") == 0 ||
+			     strcmp(item->node.key, "answer_ipv6_address") == 0) &&
 			    (item->i.data.bindata->size == 4  ||
 			     item->i.data.bindata->size == 16 )) {
 

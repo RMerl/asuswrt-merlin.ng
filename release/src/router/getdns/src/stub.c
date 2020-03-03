@@ -382,6 +382,10 @@ tcp_connect(getdns_upstream *upstream, getdns_transport_list_t transport)
 	static const int  enable = 1;
 # endif
 #endif
+#if defined(HAVE_DECL_TCP_FASTOPEN_CONNECT) && HAVE_DECL_TCP_FASTOPEN_CONNECT
+	static int tfo_connect = 1;
+	int r = -1;
+#endif
 	int fd = -1;
 
 
@@ -414,15 +418,19 @@ tcp_connect(getdns_upstream *upstream, getdns_transport_list_t transport)
 	   doesn't start till the sendto() lack of connection is often delayed until
 	   then or even the subsequent event depending on the error and platform.*/
 # if  defined(HAVE_DECL_TCP_FASTOPEN_CONNECT) && HAVE_DECL_TCP_FASTOPEN_CONNECT
-	if (setsockopt( fd, IPPROTO_TCP, TCP_FASTOPEN_CONNECT
-	              , (void *)&enable, sizeof(enable)) < 0) {
+	if (tfo_connect && (r = setsockopt( fd, IPPROTO_TCP, TCP_FASTOPEN_CONNECT
+					  , (void *)&enable, sizeof(enable))) < 0) {
 		/* runtime fallback to TCP_FASTOPEN option */
+		if (errno == ENOPROTOOPT)
+			tfo_connect = 0;
 		_getdns_upstream_log(upstream,
 		    GETDNS_LOG_UPSTREAM_STATS, GETDNS_LOG_WARNING,
 		    "%-40s : Upstream   : "
 		    "Could not setup TLS capable TFO connect\n",
 		     upstream->addr_str);
+	}
 #  if defined(HAVE_DECL_TCP_FASTOPEN) && HAVE_DECL_TCP_FASTOPEN
+	if (r < 0) {
 		/* TCP_FASTOPEN works for TCP only (not TLS) */
 		if (transport != GETDNS_TRANSPORT_TCP)
 			; /* This variant of TFO doesn't work with TLS */
@@ -437,8 +445,8 @@ tcp_connect(getdns_upstream *upstream, getdns_transport_list_t transport)
 			    "%-40s : Upstream   : "
 			    "Could not fallback to TCP TFO\n",
 			     upstream->addr_str);
-#  endif/* HAVE_DECL_TCP_FASTOPEN*/
 	}
+#  endif/* HAVE_DECL_TCP_FASTOPEN*/
 	/* On success regular connect is fine, TFO will happen automagically */
 # else	/* HAVE_DECL_TCP_FASTOPEN_CONNECT */
 #  if defined(HAVE_DECL_TCP_FASTOPEN) && HAVE_DECL_TCP_FASTOPEN

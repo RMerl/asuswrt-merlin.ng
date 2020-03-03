@@ -191,7 +191,6 @@ else
 	cp -f webs_scripts/ssl_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
 endif
 ifeq ($(RTCONFIG_CFGSYNC),y)
-	cp -f webs_scripts/ssl_webs_download.sh $(INSTALLDIR)/usr/sbin/webs_download.sh
 	cp -f webs_scripts/ssl_webs_note.sh $(INSTALLDIR)/usr/sbin/webs_note.sh
 endif
 ifeq ($(RTAC68U),y)

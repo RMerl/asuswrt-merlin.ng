@@ -590,7 +590,7 @@ int wl_cap(int unit, char *cap_check)
 {
 	char ifname[NVRAM_MAX_PARAM_LEN];
 	char cap[WLC_IOCTL_SMLEN];
-	char caps[WLC_IOCTL_SMLEN * 2];
+	char caps[WLC_IOCTL_MEDLEN];
 	char *next = NULL;
 
 	wl_ifname(unit, 0, ifname);

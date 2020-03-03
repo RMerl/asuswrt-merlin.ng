@@ -910,6 +910,93 @@ int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value
 	return 0;
 }
 
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start_bit, unsigned int end_bit, unsigned int wait_ms){
+#define MIN_BIT 0
+#define MAX_BIT 15
+	struct ifreq ifr;
+	int skfd, err;
+	int orig_val, val_mask, val_reverse_mask;
+	int bit;
+
+	if((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0){
+		fprintf(stderr, "socket open error\n");
+		return -1;
+	}
+
+	strcpy(ifr.ifr_name, "bcmsw");
+	if(ioctl(skfd, SIOCGIFINDEX, &ifr) < 0 ){
+		fprintf(stderr, "ioctl failed. check if %s exists\n", ifr.ifr_name);
+		close(skfd);
+		return -1;
+	}
+
+	ethctl.phy_addr = EXTPHY_ADDR;
+	ethctl.phy_reg = reg;
+	ethctl.flags = ETHCTL_FLAG_ACCESS_EXT_PHY;
+
+	// Read
+	ethctl.op = ETHGETMIIREG;
+	ifr.ifr_data = (void *)&ethctl;
+	err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
+	if(ethctl.ret_val || err){
+		_dprintf("GET ERROR!!!\n");
+		fprintf(stderr, "command return error!\n");
+		close(skfd);
+		return -1;
+	}
+
+	if(start_bit < MIN_BIT || start_bit > MAX_BIT)
+		start_bit = MIN_BIT;
+
+	if(end_bit < MIN_BIT || end_bit > MAX_BIT)
+		end_bit = MAX_BIT;
+
+	val_mask = 0;
+	for(bit = start_bit; bit <= end_bit; ++bit)
+		val_mask |= 0x1<<bit;
+	//_dprintf("[val_mask] [%u:%u], 0x%04x\n", end_bit, start_bit, val_mask);
+
+	val_reverse_mask = val_mask^0xffff;
+	//_dprintf("[val_reverse_mask] [%u:%u], 0x%04x\n", end_bit, start_bit, val_reverse_mask);
+
+	orig_val = ethctl.val;
+	if(!wr){
+		ethctl.val &= val_mask;
+		ethctl.val >>= start_bit;
+		_dprintf("[GET] 0x%08x [%u:%u] = 0x%04x, full 0x%04x\n", reg, end_bit, start_bit, ethctl.val, orig_val);
+		close(skfd);
+		return ethctl.val;
+	}
+	else
+		_dprintf("[Ori] 0x%08x [%u:%u] = 0x%04x\n", reg, MAX_BIT, MIN_BIT, orig_val);
+
+	// Write
+	ethctl.op = ETHSETMIIREG;
+	ethctl.val = (orig_val&val_reverse_mask) + (val<<start_bit);
+	ifr.ifr_data = (void *)&ethctl;
+	err = ioctl(skfd, SIOCETHCTLOPS, &ifr);
+	if (ethctl.ret_val || err) {
+		_dprintf("SET ERROR!!!\n");
+		fprintf(stderr, "command return error!\n");
+		close(skfd);
+		return -1;
+	}
+
+	_dprintf("[SET] 0x%08x [%u:%u] = 0x%04x, full 0x%04x\n", reg, end_bit, start_bit, val, ethctl.val);
+	close(skfd);
+
+	if(wait_ms > 0){
+		//_dprintf("Sleeping %u mini seconds...\n", wait_ms);
+		usleep(wait_ms*1000);
+	}
+
+	//_dprintf("done\n");
+
+	return ethctl.val;
+}
+#endif
+
 int bcm_reg_read_X(int unit, unsigned int addr, char* data, int len)
 {
     int skfd, err = 0;
@@ -1842,10 +1929,18 @@ int get_bonding_port_status(int port)
 #endif
 
 	/* WAN port */
-	if (hnd_get_phy_status(ports[port], extra_p0, regv, pmdv)==0) {/*Disconnect*/
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+	if (!hnd_get_phy_status(ports[port])) {				/*Disconnect*/
+#else
+	if (!hnd_get_phy_status(ports[port], extra_p0, regv, pmdv)) {	/*Disconnect*/
+#endif
 		port_status = 0;
 	}else{
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		ret = hnd_get_phy_speed(ports[port]);
+#else
 		ret = hnd_get_phy_speed(ports[port], extra_p0, regv2, pmdv2);
+#endif
 		port_status =
 #ifdef RTCONFIG_EXTPHY_BCM84880
                  (ret & 4)? 2500 :

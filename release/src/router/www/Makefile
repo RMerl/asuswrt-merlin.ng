@@ -502,7 +502,6 @@ endif
 
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(MODELS_HAVE_TRAFFIC_ANALYZER)))
 	rm -rf $(INSTALLDIR)/www/TrafficAnalyzer_Statistic.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/TrafficAnalyzer.gif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/cancel.svg
 	rm -rf $(INSTALLDIR)/www/chart.js
 	rm -rf $(INSTALLDIR)/www/datepicker.css

@@ -3042,6 +3042,55 @@ ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 	return ej_wl_rate(eid, wp, argc, argv, 2);
 }
 
+static int ej_wl_cap(int eid, webs_t wp, int argc, char_t **argv, int unit)
+{
+	int retval = 0;
+	char ifname[NVRAM_MAX_PARAM_LEN];
+	char word[256], *next;
+	int unit_max = 0, unit_cur = -1;
+	char caps[WLC_IOCTL_MEDLEN];
+
+	memset(caps, 0, sizeof(caps));
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next)
+		unit_max++;
+
+	if (unit > (unit_max - 1))
+		goto ERROR;
+
+	wl_ifname(unit, 0, ifname);
+
+	wl_ioctl(ifname, WLC_GET_INSTANCE, &unit_cur, sizeof(unit_cur));
+	if (unit != unit_cur)
+		goto ERROR;
+	else if (wl_iovar_get(ifname, "cap", (void *)caps, sizeof(caps))) {
+		dbg("can not get wl cap of %s\n", ifname);
+		goto ERROR;
+	}
+
+ERROR:
+	retval += websWrite(wp, "%s", caps);
+	return retval;
+}
+
+int
+ej_wl_cap_2g(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_cap(eid, wp, argc, argv, 0);
+}
+
+int
+ej_wl_cap_5g(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_cap(eid, wp, argc, argv, 1);
+}
+
+int
+ej_wl_cap_5g_2(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_cap(eid, wp, argc, argv, 2);
+}
+
 static int wps_stop_count = 0;
 
 static void reset_wps_status()
@@ -4563,7 +4612,11 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
+		if (wl_cap(unit, "bgdfs")
+#ifndef RTCONFIG_HND_ROUTER_AX
+			&& (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149)))
+#endif
+		)
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
 		{
@@ -4638,7 +4691,11 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tm
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
+		if (wl_cap(unit, "bgdfs")
+#ifndef RTCONFIG_HND_ROUTER_AX
+			&& (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149)))
+#endif
+		)
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
 		{
@@ -4707,41 +4764,26 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			|| ((ctl_ch <= 48) && CHSPEC_IS160(chspec_cur))
 #endif
 		) {
-#ifdef RTCONFIG_HND_ROUTER_AX
-			char buf[WLC_IOCTL_MAXLEN];
-			wl_dfs_status_t *dfs_status;
-
-			memset(buf, 0, sizeof(buf));
-			strcpy(buf, "dfs_status");
-			wl_ioctl(name, WLC_GET_VAR, buf, sizeof(buf));
-
-			dfs_status = (wl_dfs_status_t *) buf;
-			dfs_status->state = dtoh32(dfs_status->state);
-
-			if (dfs_status->state != WL_DFS_CACSTATE_IDLE && dfs_status->state != WL_DFS_CACSTATE_ISM)
-#endif
+			if (!with_non_dfs_chspec(name))
 			{
-				if (!with_non_dfs_chspec(name))
-				{
-					dbg("%s scan rejected under DFS mode\n", name);
-					return 0;
-				}
-				else
-				{
-					dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
+				dbg("%s scan rejected under DFS mode\n", name);
+				return 0;
+			}
+			else
+			{
+				dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
 
-					chspec_tmp = (((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) && (ctl_ch < 100)) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
-					if (!chspec_tmp && (nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4))
-						chspec_tmp = select_chspec_with_band_bw(name, 4, 3, chspec_cur);
+				chspec_tmp = (((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) && (ctl_ch < 100)) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
+				if (!chspec_tmp && (nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4))
+					chspec_tmp = select_chspec_with_band_bw(name, 4, 3, chspec_cur);
 
-					if (chspec_tmp != 0) {
-						dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_tmp, chanbuf), chspec_tmp);
-						wl_iovar_setint(name, "chanspec", chspec_tmp);
-						wl_iovar_setint(name, "acs_update", -1);
+				if (chspec_tmp != 0) {
+					dbg("switch to chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_tmp, chanbuf), chspec_tmp);
+					wl_iovar_setint(name, "chanspec", chspec_tmp);
+					wl_iovar_setint(name, "acs_update", -1);
 
-						chanspec = chspec_cur;
-						ctl_ch_tmp = wf_chspec_ctlchan(chspec_tmp);
-					}
+					chanspec = chspec_cur;
+					ctl_ch_tmp = wf_chspec_ctlchan(chspec_tmp);
 				}
 			}
 		}
@@ -4764,7 +4806,7 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 				}
 
 				if (status->move_status == (int8) DFS_SCAN_S_INPROGESS)
-					wl_iovar_setint(name, "dfs_ap_move", -2);
+					wl_iovar_setint(name, "dfs_ap_move", -1);
 			}
 		}
 #endif

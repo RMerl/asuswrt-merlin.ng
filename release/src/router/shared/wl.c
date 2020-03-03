@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl.c 768316 2018-10-10 05:49:16Z $
+ * $Id: wl.c 778393 2019-08-30 03:10:52Z $
  */
 #include <typedefs.h>
 #include <string.h>
@@ -538,6 +538,12 @@ wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
 
 	if (strcmp(subcmd, "features") == 0) {
 		v32.id = WL_HE_CMD_FEATURES;
+		v32.len = 4;
+		v32.val = (uint32)val;
+
+		subcmd_len = sizeof(v32.id) + sizeof(v32.len) + v32.len;
+	} else if (strcmp(subcmd, "bssaxmode") == 0) {
+		v32.id = WL_HE_CMD_AXMODE;
 		v32.len = 4;
 		v32.val = (uint32)val;
 

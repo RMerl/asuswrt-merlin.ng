@@ -1628,6 +1628,7 @@ misc_defaults(int restore_defaults)
 	nvram_set("aae_support", "1");
 #define AAE_ENABLE_AIHOME 2
 #define AAE_EANBLE_AICLOUD 4
+	nvram_set("aae_enable", "0");
 #ifdef RTCONFIG_AIHOME_TUNNEL
 	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | AAE_ENABLE_AIHOME));
 #endif
@@ -10571,6 +10572,10 @@ int init_nvram2(void)
 #ifdef RTCONFIG_DWB
 	dwb_init_settings();
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_check_settings();
+#endif	/* RTCONFIG_AMAS_WGN */	
 	nvram_set("label_mac", get_label_mac());
 
 	return 0;

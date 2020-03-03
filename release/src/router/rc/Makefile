@@ -1166,6 +1166,10 @@ ifeq ($(RTAC68U),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc fw_check
 endif
 
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc extphy_bit_op
+endif
+
 clean:
 	rm -f rc *.o .*.depend *.prep libconn_diag.so
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)

@@ -59,6 +59,22 @@
 #include "notify_ahs.h"
 #endif /* RTCONFIG_AHS */
 
+#ifdef RTCONFIG_EXTPHY_BCM84880
+#if 1
+#define EXTPHY_ADDR 0x1e
+#define EXTPHY_ADDR_STR "0x1e"
+#else // RTL8226
+#define EXTPHY_ADDR 0x01
+#define EXTPHY_ADDR_STR "0x01"
+#endif
+
+#if defined(GTAX11000)
+#define PHY_ID_54991E "3590:5099"
+#elif defined(RTAX86U)
+#define PHY_ID_54991EL "3590:5089"
+#endif
+#endif
+
 /* Endian conversion functions. */
 #define __bswap16(x) (uint16_t)	( \
 				(((uint16_t)(x) & 0x00ffu) << 8) | \
@@ -471,6 +487,7 @@ enum {
 	FROM_ASSIA,
 	FROM_IFTTT,
 	FROM_ALEXA,
+	FROM_WebView,
 	FROM_UNKNOWN
 };
 
@@ -1139,7 +1156,7 @@ enum led_id {
 #if defined(RTAC5300) || defined(GTAC5300)
 	RPM_FAN,	/* use to control FAN RPM (Hi/Lo) */
 #endif
-#if defined(RTCONFIG_USB) || defined (RTCONFIG_LED_BTN) || defined (RTCONFIG_WPS_ALLLED_BTN)
+#if defined(RTCONFIG_USB) || defined (RTCONFIG_LED_BTN) || defined (RTCONFIG_WPS_ALLLED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA))
 	PWR_USB,
 #endif
 #if defined(RTAX95Q)
@@ -1777,6 +1794,9 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata);
 extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
 extern int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr);
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+extern int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start_bit, unsigned int end_bit, unsigned int wait_ms);
+#endif
 extern int ethctl_get_link_status(char *ifname);
 #endif
 extern int fw_check(void);
@@ -2667,6 +2687,10 @@ extern int is_amaslib_enabled();
 
 extern int get_index_page(char *page, int size);
 extern int get_chance_to_control(void);
+
+#ifdef RTCONFIG_AMAS_WGN
+extern int get_iptv_and_dualwan_info(int *iptv_vids,int size, unsigned int *wan_deny_list, unsigned int *lan_deny_list);
+#endif	// RTCONFIG_AMAS_WGN
 
 #ifdef RTCONFIG_GEFORCENOW
 extern int wl_set_wifiscan(char *ifname, int val);

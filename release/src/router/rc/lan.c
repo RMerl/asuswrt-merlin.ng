@@ -5461,9 +5461,6 @@ void restart_wl(void)
 	init_wllc();
 #endif
 
-#ifndef RTCONFIG_QCA
-	nvram_set_int("wlready", 1);
-#endif
 	nvram_set("reload_svc_radio", "1");
 #ifndef RTCONFIG_QCA
 	timecheck();
@@ -5918,6 +5915,9 @@ void restart_wireless(void)
 #ifndef CONFIG_BCMWL5
 	restart_wl();
 	lanaccess_wl();
+#endif
+#ifndef RTCONFIG_QCA
+	nvram_set_int("wlready", 1);
 #endif
 
 #ifdef CONFIG_BCMWL5

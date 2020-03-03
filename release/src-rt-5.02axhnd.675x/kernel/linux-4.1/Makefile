@@ -417,6 +417,11 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 
 MODEL = $(subst -,,$(BUILD_NAME))
 KBUILD_CFLAGS += -D$(MODEL)
+ifeq ($(MODEL),$(or RTAX86U,RTAX5700,RTAX68U))
+ifneq ($(strip $(BCA_HNDROUTER)),)
+KBUILD_CFLAGS	+= -DBCA_CPE_BSP_SHARED
+endif
+endif
 
 ifeq ($(BCM_MFG),y)
 KBUILD_CFLAGS	+= -DWLTEST

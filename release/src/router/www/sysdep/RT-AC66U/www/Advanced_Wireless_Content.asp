@@ -801,7 +801,7 @@ function validForm(){
 	if(document.form.wl_wep_x.value != "0")
 		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
 			return false;	
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2" || auth_mode == "sae" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.form.wl_wpa_psk))
 				return false;
@@ -1991,9 +1991,6 @@ function handleMFP(){
 <input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
 <input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
 <input type="hidden" name="wl_bw_160" value='<% nvram_get("wl_bw_160"); %>'>
-<input type="hidden" name="wl0_11ax" value='<% nvram_get("wl0_11ax"); %>'>
-<input type="hidden" name="wl1_11ax" value='<% nvram_get("wl1_11ax"); %>'>
-<input type="hidden" name="wl2_11ax" value='<% nvram_get("wl2_11ax"); %>'>
 <input type="hidden" name="wl0_bw" value='<% nvram_get("wl0_bw"); %>'>
 <input type="hidden" name="wl1_bw" value='<% nvram_get("wl1_bw"); %>'>
 <input type="hidden" name="wl2_bw" value='<% nvram_get("wl2_bw"); %>'>

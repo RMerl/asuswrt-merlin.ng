@@ -1664,6 +1664,7 @@ function changeClientListViewMode() {
 	sorter.wl3_display = true;
 }
 
+var interval_clientlist_listview_update = null;
 function pop_clientlist_listview() {
 	if(document.getElementById("clientlist_viewlist_content") != null) {
 		removeElement(document.getElementById("clientlist_viewlist_content"));
@@ -1698,7 +1699,14 @@ function pop_clientlist_listview() {
 	clientlist_view_hide_flag = false;
 
 	create_clientlist_listview();
-	setTimeout("updateClientListBackground();", 5000);//avoiding no data when open the view list
+	setTimeout(function(){parent.document.networkmapdRefresh.submit();}, 5000);//avoiding no data when open the view list
+	clearInterval(interval_clientlist_listview_update);
+	interval_clientlist_listview_update = setInterval(function(){
+		if(document.getElementById("clientlist_viewlist_content").style.display != "none")
+			parent.document.networkmapdRefresh.submit();
+		else
+			clearInterval(interval_clientlist_listview_update);
+	}, 1000*60*3);
 	setTimeout("sorterClientList();updateClientListView();", 500);
 
 	registerIframeClick("statusframe", hide_clientlist_view_block);
@@ -2256,6 +2264,7 @@ function showHideContent(objnmae, thisObj) {
 	}
 }
 
+var updateClientListView_timer = null;
 function updateClientListView(){
 	$.ajax({
 		url: '/update_clients.asp',
@@ -2271,9 +2280,12 @@ function updateClientListView(){
 					if(parent.show_client_status != undefined)
 						parent.show_client_status(totalClientNum.online);
 				}
-				setTimeout("updateClientListView();", 3000);	
+				clearTimeout(updateClientListView_timer);
+				updateClientListView_timer = setTimeout("updateClientListView();", 3000);
 			}
-		}    
+			else
+				clearTimeout(updateClientListView_timer);
+		}
 	});
 }
 
@@ -2430,20 +2442,6 @@ function saveClientName(index, type, mac) {
 	view_custom_name = originalCustomListArray.join('<');
 	document.view_clientlist_form.custom_clientlist.value = view_custom_name;
 	document.view_clientlist_form.submit();
-}
-
-function updateClientListBackground() {
-	$.ajax({
-		url: '/update_networkmapd.asp',
-		dataType: 'script', 
-		error: function(xhr) {
-			setTimeout("updateClientListBackground();", 1000);
-		},
-		success: function(response) {
-			parent.document.networkmapdRefresh.submit();
-			setTimeout("updateClientListBackground();", 180000);
-		}
-	});
 }
 
 function removeClient(_mac, _controlObj, _controlPanel) {

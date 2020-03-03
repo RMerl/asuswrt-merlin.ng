@@ -74,20 +74,6 @@
 #endif
 
 #ifdef RTCONFIG_EXTPHY_BCM84880
-#if 1
-#define EXTPHY_ADDR 0x1e
-#define EXTPHY_ADDR_STR "0x1e"
-#else // RTL8226
-#define EXTPHY_ADDR 0x01
-#define EXTPHY_ADDR_STR "0x01"
-#endif
-
-#if defined(GTAX11000)
-#define PHY_ID_54991E "3590:5099"
-#elif defined(RTAX86U)
-#define PHY_ID_54991EL "3590:5089"
-#endif
-
 void config_ext_wan_port();
 void get_ext_phy_id();
 #endif

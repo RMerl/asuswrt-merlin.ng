@@ -4,7 +4,6 @@ wget_timeout=`nvram get apps_wget_timeout`
 #wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
 wget_options="-q -t 2 -T $wget_timeout"
 
-dl_path_MR="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/MR"
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
 dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
 dl_path_info="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless"
@@ -35,7 +34,6 @@ current_extendno=`nvram get extendno`
 current_extendno=`echo $current_extendno | sed s/-g.*//;`
 
 # get firmware information
-formr=`nvram get MRFLAG`
 forsq=`nvram get apps_sq`
 model=`nvram get productid`
 model="$model#"
@@ -52,12 +50,7 @@ elif [ "$model" == "RT-AX92U#" ] || [ "$model" == "RT-N11P_B1#" ]; then
 fi
 
 dlinfo=""
-if [ "$formr" == "1" ]; then	#MRFLAG could be other values to be add
-	echo "---- update MR1 for all ${dl_path_MR}1/wlan_update_mrflag1.zip ----" > /tmp/webs_upgrade.log
-	wget $wget_options ${dl_path_MR}1/wlan_update_mrflag1.zip -O /tmp/wlan_update.txt
-	dlinfo="$?"
-	echo "---- [LiveUpdate] wget ctrl: ${dlinfo} ----"
-elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+if [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 		echo "---- update SQ beta_user ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip ----" > /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip -O /tmp/wlan_update.txt
 		dlinfo="$?"
@@ -275,18 +268,7 @@ releasenote_file0=`echo $get_productid`_`nvram get webs_state_info`_"$LANG"_note
 releasenote_file0_US=`echo $get_productid`_`nvram get webs_state_info`_US_note.zip
 releasenote_path0="/tmp/release_note0.txt"
 
-if [ "$formr" == "1" ]; then
-	echo "---- download MR1 release note for all ${dl_path_MR}1/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
-	wget $wget_options ${dl_path_MR}1/$releasenote_file0 -O $releasenote_path0
-	if [ "$?" != "0" ]; then
-		echo "---- download MR1 release note for all ${dl_path_MR}1/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
-		wget $wget_options ${dl_path_MR}1/$releasenote_file0_US -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			echo "---- download SQ US MR1 release note for all ${dl_path_MR}1/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
-			echo "---- download SQ US MR1 release note for all ${dl_path_MR}1/$releasenote_file0_US  [Failed] ----"
-		fi
-	fi
-elif [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
+if [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file0 -O $releasenote_path0
 	if [ "$?" != "0" ]; then

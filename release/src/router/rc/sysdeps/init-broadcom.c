@@ -2155,14 +2155,12 @@ init_switch_misc()
 	switch (get_model()) {
 		case MODEL_RTAX95Q:
 		case MODEL_RTAX56U:
+		case MODEL_RTAX86U:
+		case MODEL_RTAX68U:
 			system("ethswctl -c wan -o enable -i eth0");
 			break;
 		case MODEL_RTAX58U:
 			system("ethswctl -c wan -o enable -i eth4");
-			break;
-		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
-			system("ethswctl -c wan -o enable -i eth0");
 			break;
 	}
 	return;
@@ -2323,6 +2321,8 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_RTAC3100:
 			case MODEL_RTAX95Q:
 			case MODEL_RTAX58U:
+			case MODEL_RTAX86U:
+			case MODEL_RTAX68U:
 #ifdef RTAC3200
 				if (unit < 2)
 					snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", 1 - unit);
@@ -2336,8 +2336,6 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_RTAX88U:
 			case MODEL_GTAX11000:
 			case MODEL_RTAX92U:
-			case MODEL_RTAX86U:
-			case MODEL_RTAX68U:
 					 snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", unit + 1);
 				break;
 			case MODEL_RTAC1200G:
@@ -2465,8 +2463,6 @@ reset_psr_hwaddr()
 		case MODEL_GTAX11000:
 		case MODEL_RTAX88U:
 		case MODEL_RTAX92U:
-		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
 			unit = 1;
 			break;
 		case MODEL_RTAX56U:
@@ -2593,8 +2589,6 @@ void init_wl(void)
 		case MODEL_RTAX88U:
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
-		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
 #ifndef RTAX95Q
 		case MODEL_RTAX95Q:
 #endif
@@ -2732,8 +2726,6 @@ void init_wl_compact(void)
 		case MODEL_RTAX88U:
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
-		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
 #ifndef RTAX95Q
 		case MODEL_RTAX95Q:
 #endif
@@ -2761,13 +2753,13 @@ void init_wl_compact(void)
 		(model == MODEL_RTAX88U) ||
 		(model == MODEL_GTAX11000) ||
 		(model == MODEL_RTAX92U) ||
-		(model == MODEL_RTAX86U) ||
-		(model == MODEL_RTAX68U) ||
 #ifndef RTAX95Q
 		(model == MODEL_RTAX95Q) ||
 #endif
 		(model == MODEL_RTAX58U) ||
 		(model == MODEL_RTAX56U) ||
+		(model == MODEL_RTAX86U) ||
+		(model == MODEL_RTAX68U) ||
 		(model == MODEL_RTN12HP_B1) ||
 		(model == MODEL_RTN18U) ||
 		(model == MODEL_RTN66U)) {
@@ -4442,7 +4434,7 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		else
 		{
 			dbG("set vhtmode 0\n");
-#if defined(RTAX92U) || defined(RTAX95Q)
+#if defined(RTAX92U)
 			nvram_set(strcat_r(prefix, "vht_features", tmp), (unit == 0 || unit == 1) ? "0" : "35");
 #else
 			nvram_set(strcat_r(prefix, "vht_features", tmp), nvram_match(strcat_r(prefix, "nband", tmp2), "2") ? "35": "34");
@@ -7903,8 +7895,6 @@ void set_acs_ifnames()
 	}
 
 	nvram_set("acs_ifnames", acs_ifnames);
-	nvram_set("acs_band1", "0");
-	nvram_set("acs_band3", "0");
 
 	if ((num_of_wl_if() == 3 && !(nvram_get_hex("wl2_band5grp") & WL_5G_BAND_4))
 #ifdef RTCONFIG_TCODE

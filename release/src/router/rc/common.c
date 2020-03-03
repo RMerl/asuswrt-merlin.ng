@@ -1185,8 +1185,8 @@ const zoneinfo_t tz_list[] = {
 	{"UTC4_2",	"America/Caracas"},	// (GMT-04:00) Caracas
         {"UTC4DST_2",	"America/Santiago"},	// (GMT-04:00) Santiago
         {"NST3.30DST",	"Canada/Newfoundland"},	// (GMT-03:30) Newfoundland
-        {"EBST3DST_1",	"America/Araguaina"},	// (GMT-03:00) Brasilia
-        {"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
+        {"EBST3",	"America/Araguaina"},	// (GMT-03:00) Brasilia //EBST3DST_1
+		{"UTC3",	"America/Araguaina"},	// (GMT-03:00) Buenos Aires, Georgetown
         {"EBST3DST_2",	"America/Godthab"},	// (GMT-03:00) Greenland
         {"UTC2",	"Atlantic/South_Georgia"},	// (GMT-02:00) South Georgia
         {"EUT1DST",     "Atlantic/Azores"},	// (GMT-01:00) Azores
@@ -1216,14 +1216,14 @@ const zoneinfo_t tz_list[] = {
         {"UTC-3_1",     "Asia/Kuwait"},		// (GMT+03:00) Kuwait, Riyadh
         {"UTC-3_2",     "Africa/Nairobi"},	// (GMT+03:00) Nairobi
         {"UTC-3_3",     "Europe/Minsk"},	// (GMT+03:00) Minsk
-        {"UTC-3_4",     "Europe/Moscow"},	// (GMT+03:00) Moscow, St. Petersburg
-        {"UTC-3_5",     "Europe/Volgograd"},	// (GMT+03:00) Volgograd
+        {"UTC-3_4",     "Europe/Moscow"},	// (GMT+03:00) Moscow, St. Petersburg        
         {"IST-3",       "Asia/Baghdad"},	// (GMT+03:00) Baghdad
         {"UTC-3_6",     "Asia/Istanbul"},	// (GMT+03:00) Istanbul
         {"UTC-3.30DST", "Asia/Tehran"},		// (GMT+03:00) Tehran        
         {"UTC-4_1",     "Asia/Muscat"},		// (GMT+04:00) Abu Dhabi, Muscat
         {"UTC-4_5",     "Europe/Samara"},	// (GMT+04:00) Izhevsk, Samara
-        {"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
+		{"UTC-4_7",     "Europe/Volgograd"},	// (GMT+03:00) Volgograd	//UTC-3_5
+		{"UTC-4_4",     "Asia/Tbilisi"},	// (GMT+04:00) Tbilisi, Yerevan
         {"UTC-4_6",	"Asia/Baku"},		// (GMT+04:00) Baku
         {"UTC-4.30",    "Asia/Kabul"},		// (GMT+04:30) Kabul
         {"UTC-5",       "Asia/Karachi"},	// (GMT+05:00) Islamabad, Karachi, Tashkent
@@ -1339,7 +1339,13 @@ void time_zone_x_mapping(void)
 	else if (nvram_match("time_zone", "UTC-10_5")){		/*Magadan*/
 		nvram_set("time_zone", "UTC-11_4");
 	}
-
+	else if (nvram_match("time_zone", "EBST3DST_1")){	/*Brasilia*/
+		nvram_set("time_zone", "EBST3");
+		nvram_set("time_zone_dst", "0");
+	}
+	else if (nvram_match("time_zone", "UTC-3_5")){	/*Volgograd*/
+		nvram_set("time_zone", "UTC-4_7");
+	}
 
 	snprintf(tmpstr, sizeof(tmpstr), "%s", nvram_safe_get("time_zone"));
 	/* replace . with : */

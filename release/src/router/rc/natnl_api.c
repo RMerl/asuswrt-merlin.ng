@@ -59,7 +59,7 @@ void start_aae_sip_conn(int sdk_init)
 		killall("aaews", AAEWS_SIG_ACTION);
 		while(time_count < WAIT_TIMEOUT && nvram_invmatch("aae_sip_connected", "1")) {
 			sleep(1);
-			_dprintf("%s: wait sip register...\n", __FUNCTION__);
+			//_dprintf("%s: wait sip register...\n", __FUNCTION__);
 			time_count++;
 		}
 	}
@@ -77,7 +77,7 @@ void stop_aae_sip_conn(int sdk_deinit)
 		killall("aaews", AAEWS_SIG_ACTION);
 		while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 			sleep(1);
-			_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
+			//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
 			time_count++;
 		}
 	}
@@ -92,7 +92,7 @@ void stop_aae_gently()
 		killall("aaews", AAEWS_SIG_ACTION);
 		while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
 			sleep(1);
-			_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
+			//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
 			time_count++;
 		}
 
@@ -100,7 +100,7 @@ void stop_aae_gently()
 		killall("aaews", SIGTERM);
 		while(time_count < WAIT_TIMEOUT && pids("aaews")) {
 			sleep(1);
-			_dprintf("%s: wait aaews end...\n", __FUNCTION__);
+			//_dprintf("%s: wait aaews end...\n", __FUNCTION__);
 			time_count++;
 		}
 	}

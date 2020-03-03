@@ -203,7 +203,7 @@
 
   <parameter name="X_BROADCOM_COM_WlAtf" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="1" />
 
-  <parameter name="X_BROADCOM_COM_WlTaf" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+  <parameter name="X_BROADCOM_COM_WlTaf" type="int" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="-1" />
 
   <parameter name="OperatingFrequencyBand" type="string" specSource="TR181" profile="Device2_WiFiRadio:1" requirements="W" supportLevel="ReadWrite" defaultValue="2.4GHz" validValuesArray="WiFiFrequencyBandValues" />
     <description source="TRx">Indicates the frequency band at which the radio is operating. If the radio supports multiple bands, and {{param}} is changed, then all parameters whose value is not valid for the new frequency band (e.g. {{param|Channel}}) MUST be set to a valid value (according to some CPE vendor-specific behavior).</description>

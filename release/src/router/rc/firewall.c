@@ -2906,7 +2906,7 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 						continue;
 					}
 
-					snprintf(list2, sizeof(list2), "%s|%02d|%s", list, strlen(p), p);
+					snprintf(list2, sizeof(list2), "%s|%02x|%s", list, strlen(p), p);
 					strlcpy(list, list2, sizeof(list));
 				}
 
@@ -2940,7 +2940,7 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 							continue;
 						}
 
-						snprintf(list2, sizeof(list2), "%s|%02d|%s", list, strlen(p), p);
+						snprintf(list2, sizeof(list2), "%s|%02x|%s", list, strlen(p), p);
 						strlcpy(list, list2, sizeof(list));
 					}
 

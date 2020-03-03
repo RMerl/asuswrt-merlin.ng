@@ -436,7 +436,7 @@ function applyRule(){
 			}
 		}
 		
-		var re = new RegExp("^[a-zA-Z][0-9]{10}","gi");
+		var re = new RegExp("^[a-zA-Z][0-9]{9,10}","gi");
 		if(!re.test(document.form.fb_serviceno.value) && document.form.fb_serviceno.value != ""){
 			alert("<#JS_validchar#>");
 			document.form.fb_serviceno.focus();

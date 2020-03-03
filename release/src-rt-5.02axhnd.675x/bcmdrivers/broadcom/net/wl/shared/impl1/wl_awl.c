@@ -442,6 +442,12 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 	if (!skb->dev)
 		return -1;
 
+	if (skb->dev->reg_state != NETREG_REGISTERED) {
+		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
+			skb->dev->reg_state);
+		return -1;
+	}
+
 	skb->protocol = eth_type_trans(skb, skb->dev);
 
 #if defined(BCM_NBUFF_PKT) && defined(CC_BPM_SKB_POOL_BUILD)
@@ -879,7 +885,6 @@ wl_awl_attach(struct wl_info *wl, uint unit)
 	archer_wlan_rx_miss_handler_t a2w_flow_miss_handler = wl_awl_rx_flow_miss_handler_wl_dpc;
 
 	WL_AWL_PTRACE("wl%d_awl: wl 0x%p", unit, wl);
-
 
 	memset(awl, 0, sizeof(wl_awl_t));
 	awl->tx.mode = 1;

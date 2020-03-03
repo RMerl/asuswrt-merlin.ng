@@ -4424,6 +4424,8 @@ stop_acsd(void)
 #ifdef RTCONFIG_HND_ROUTER_AX
 	/* irrespective of NVRAM, try to stop all versions of acsd */
 	killall_tk("acsd2");
+
+	system("rm -rf /tmp/dm");
 #endif
 	killall_tk("acsd");
 }

@@ -290,6 +290,16 @@ var validator = {
 		}
 	},
 
+	integer: function(_val){
+		var obj_value = _val;
+		var re = new RegExp("[^0-9]+","gi");
+
+		if(re.test(obj_value))
+			return false;
+		else
+			return true;
+	},
+
 	hex: function(obj){
 		var obj_value = obj.value
 		var re = new RegExp("[^a-fA-F0-9]+","gi");

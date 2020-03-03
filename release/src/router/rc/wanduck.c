@@ -1040,7 +1040,7 @@ int detect_internet(int wan_unit)
 		link_internet = CONNED;
 
 	/* Set no DNS state even if connected for WEB UI */
-	if(isFirstUse || link_internet == DISCONN || !dns_ret){
+	if(link_internet == DISCONN || !dns_ret){
 		if(nvram_get_int("web_redirect") & WEBREDIRECT_FLAG_NOINTERNET)
 			set_link_internet(wan_unit, 1);
 		else{

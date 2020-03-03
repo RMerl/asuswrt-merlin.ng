@@ -2336,7 +2336,7 @@
 
   <parameter name="SsdEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
 
-  <parameter name="WlTafEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" />
+  <parameter name="WlTafEnable" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="-1" />
 
   <parameter name="WlAtf" type="int" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="1" />
 

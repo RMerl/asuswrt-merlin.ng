@@ -4371,3 +4371,134 @@ int amazon_wss_ap_isolate_support(char *prefix)
 
 	return 0;
 }
+
+#ifdef RTCONFIG_AMAS_WGN
+int get_iptv_and_dualwan_info(int *iptv_vids,int size, unsigned int *wan_deny_list, unsigned int *lan_deny_list)
+{
+	char *wans_dualwan = NULL,*switch_wantag=NULL;
+	int wans_lanport=0,switch_stb_x=0;
+	unsigned int lan_deny_list_tmp=0;
+
+	lan_deny_list_tmp = *lan_deny_list;
+
+	wans_dualwan = nvram_safe_get("wans_dualwan");
+	if( wans_dualwan && strstr(wans_dualwan,"lan") )
+	{
+		wans_lanport = nvram_get_int("wans_lanport");
+		if(wans_lanport >=5 && wans_lanport <= 8){
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (wans_lanport-1) );
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (wans_lanport-1 + 16) );
+		}
+	}
+
+	switch_wantag = strdup(nvram_safe_get("switch_wantag"));
+
+	if(!switch_wantag) {
+		*lan_deny_list = lan_deny_list_tmp;
+		return 0;
+	}
+
+	if( !strcmp(switch_wantag,"none" ) || !strcmp(switch_wantag,"" ) || !strcmp(switch_wantag,"hinet" ) )   
+	{
+		switch_stb_x = nvram_get_int("switch_stb_x");
+
+		if(switch_stb_x == 1) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (1-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (1-1+16));
+		}
+		else if(switch_stb_x == 2) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (2-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (2-1+16));
+		}
+		else if(switch_stb_x == 3) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+		}
+		else if(switch_stb_x == 4) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+		}
+		else if(switch_stb_x == 5) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (1-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (1-1+16));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (2-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (2-1+16));			
+		}
+		else if(switch_stb_x == 6 || switch_stb_x == 8) {
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+			lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+		}
+	} else if ( !strcmp(switch_wantag,"unifi_home" ) ) {
+		iptv_vids[0] = 500;
+		iptv_vids[1] = 600;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+	} else if ( !strcmp(switch_wantag,"unifi_biz" ) ) {
+		iptv_vids[0] = 500;
+	} else if ( !strcmp(switch_wantag,"singtel_mio" ) ) {
+		iptv_vids[0] = 10;
+		iptv_vids[1] = 20;
+		iptv_vids[2] = 30;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+	} else if ( !strcmp(switch_wantag,"singtel_others" ) ) {
+		iptv_vids[0] = 10;
+		iptv_vids[1] = 20;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));//0x00010011
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));		
+	} else if ( !strcmp(switch_wantag,"m1_fiber" ) ) {
+		iptv_vids[0] = 1103;
+		iptv_vids[1] = 1107;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+	} else if ( !strcmp(switch_wantag,"maxis_fiber_sp" ) ) {
+		iptv_vids[0] = 11;
+		iptv_vids[1] = 14;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+	} else if ( !strcmp(switch_wantag,"maxis_fiber" ) ) {
+		iptv_vids[0] = 621;
+		iptv_vids[1] = 821;
+		iptv_vids[2] = 822;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+	} else if ( !strcmp(switch_wantag,"movistar" ) ) {
+		iptv_vids[0] = 2;
+		iptv_vids[1] = 3;
+		iptv_vids[2] = 6;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+	} else if ( !strcmp(switch_wantag,"meo" ) ) {
+		iptv_vids[0] = 12;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+	} else if ( !strcmp(switch_wantag,"manual" ) ) {
+		iptv_vids[0] = nvram_get_int("switch_wan0tagid");
+		iptv_vids[1] = nvram_get_int("switch_wan1tagid");;
+		iptv_vids[2] = nvram_get_int("switch_wan2tagid");;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));		
+	} else if ( !strcmp(switch_wantag,"vodafone" ) ) {
+		iptv_vids[0] = 100;
+		iptv_vids[1] = 105;
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (3-1+16));
+		lan_deny_list_tmp = lan_deny_list_tmp & ~(1 << (4-1+16));
+	}
+	
+	*lan_deny_list = lan_deny_list_tmp;
+	//printf("lan_deny_list_tmp %x wans_lanport %x\n",lan_deny_list_tmp,wans_lanport);
+	free(switch_wantag);
+	return 0;
+}
+#endif	// RTCONFIG_AMAS_WGN
+

@@ -2055,6 +2055,59 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+	else if (!strcmp(base, "extphy_bit_op")) {
+		unsigned int reg, val, start_bit, end_bit, wait_ms;
+		int wr, ret;
+
+		if(argc < 2 || (strcmp(argv[1], "rd") && strcmp(argv[1], "wr")))
+			return 0;
+
+		if(argc < 3)
+			return 0;
+
+		reg = strtol(argv[2], 0, 16);
+
+		if(!strcmp(argv[1], "wr")){
+			wr = 1;
+			start_bit = wait_ms = 0;
+			end_bit = 15;
+
+			if(argc >= 4 && argc <= 7){
+				if(argc >= 4)
+					val = strtol(argv[3], 0, 16);
+				if(argc >= 5)
+					start_bit = strtol(argv[4], 0, 10);
+				if(argc >= 6)
+					end_bit = strtol(argv[5], 0, 10);
+				if(argc == 7)
+					wait_ms = strtol(argv[6], 0, 10);
+			}
+			else
+				return 0;
+		}
+		else{ // !strcmp(argv[1], "rd")
+			wr = 0;
+			val = start_bit = wait_ms = 0;
+			end_bit = 15;
+
+			if(argc >= 3 && argc <= 5){
+				if(argc >= 4)
+					start_bit = strtol(argv[3], 0, 10);
+				if(argc == 5)
+					end_bit = strtol(argv[4], 0, 10);
+			}
+			else
+				return 0;
+		}
+
+		ret = extphy_bit_op(reg, val, wr, start_bit, end_bit, wait_ms);
+
+		//_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
+
+		return 0;
+	}
+#endif
 	printf("Unknown applet: %s\n", base);
 	return 0;
 }

@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlif_utils.c 778090 2019-08-22 08:41:00Z $
+ * $Id: wlif_utils.c 778128 2019-08-23 04:08:44Z $
  */
 
 #include <typedefs.h>
@@ -2151,6 +2151,7 @@ wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname)
 	char cmd[WLIF_MAX_BUF];
 	char mode[WLIF_MIN_BUF] = {0};
 	char nvifname[IFNAMSIZ] = {0};
+	wlif_wps_ui_status_code_id_t status_code;
 	int ret = -1;
 
 	if (!wps_ifname) {
@@ -2180,9 +2181,11 @@ wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname)
 	if (nvram_match(mode, "ap")) {
 		snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s wps_pbc",
 			WLIF_HAPD_DIR, wps_ifname);
+		status_code = WLIF_WPS_UI_FINDING_PBC_STA;
 	} else {
 		snprintf(cmd, sizeof(cmd), "%s -p /var/run/"
 			"%s_wpa_supplicant -i %s wps_pbc", WPA_CLI_APP, nvifname, wps_ifname);
+		status_code = WLIF_WPS_UI_FIND_PBC_AP;
 	}
 
 	if ((ret = system(cmd)) != 0) {
@@ -2190,6 +2193,7 @@ wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname)
 			cmd, wps_ifname, nvram_safe_get(mode));
 	}
 
+	wl_wlif_update_wps_ui(status_code);
 end:
 	return ret;
 }
@@ -2227,7 +2231,7 @@ wl_wlif_wps_stop_session(char *wps_ifname)
 		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
 			cmd, wps_ifname, ret);
 	}
-
+	wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
 end:
 	return ret;
 }

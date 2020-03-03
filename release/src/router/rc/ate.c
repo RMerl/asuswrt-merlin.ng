@@ -196,7 +196,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth7", "ledbh", "15", "1"); // wl 5G
 				eval("wl", "-i", "eth8", "ledbh", "15", "1"); // wl 5G-2
 #ifdef RTCONFIG_EXTPHY_BCM84880
-				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x07FFF0", "0x0011");	// 2.5G LED (1000M/100M)
+				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7FFF0", "0x0011");	// 2.5G LED (1000M/100M)
 				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x21");        // 2.5G LED (2500M)
 				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a83b", "0xa490");
 #endif
@@ -206,7 +206,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth7", "ledbh", "15", "0"); // wl 5G
 				eval("wl", "-i", "eth8", "ledbh", "15", "0"); // wl 5G-2
 #ifdef RTCONFIG_EXTPHY_BCM84880
-				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x07FFF0", "0x0009");
+				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7FFF0", "0x0009");
 #endif
 			}
 		}

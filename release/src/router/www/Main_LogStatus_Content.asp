@@ -74,7 +74,44 @@ function initial(){
 }
 
 function applySettings(){
-	document.config_form.submit();
+	var dot_array = document.config_form.log_ipaddr.value.split(".");	
+	var valid_ipv4 = true;
+	var asIPv4_flag = 0;
+	if(dot_array.length==4){		
+		for(var i=0;i<4;i++){
+			if(validator.integer(dot_array[i])){
+				asIPv4_flag++;
+			}
+		}
+	}
+
+	var alert_str1 = "";
+	if(asIPv4_flag==4){ //All four groups are numbers, see it as IPv4
+		valid_ipv4 = validator.validIPForm(document.config_form.log_ipaddr, 0);
+	}
+	else{
+		if(document.config_form.log_ipaddr.value != ""){
+			alert_str1 = validator.domainName(document.config_form.log_ipaddr);
+		}
+	}
+
+	if(!valid_ipv4){
+		document.getElementById("alert_msg1").style.display = "none";
+		document.config_form.log_ipaddr.focus();
+		document.config_form.log_ipaddr.select();
+		return;
+	}
+	else if(alert_str1!=""){
+		showtext(document.getElementById("alert_msg1"), alert_str1);
+		document.getElementById("alert_msg1").style.display = "";
+		document.config_form.log_ipaddr.focus();
+		document.config_form.log_ipaddr.select();
+		return;
+	}
+	else{
+		document.getElementById("alert_msg1").style.display = "none";
+		document.config_form.submit();
+	}
 }
 
 var height = 0;
@@ -100,7 +137,7 @@ function get_log_data(){
 </script>
 </head>
 
-<body onload="initial();" onunLoad="return unload_body();">
+<body onload="initial();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 
@@ -158,7 +195,7 @@ function get_log_data(){
 												<input type="hidden" name="action_mode" value="apply">
 												<input type="hidden" name="action_script" value="restart_logger">
 												<input type="hidden" name="action_wait" value="5">
-												<input type="text" maxlength="15" class="input_15_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
+												<input type="text" maxlength="64" class="input_15_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
 												<label style="padding-left:15px;">Port:</label><input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 65535);" value='<% nvram_get("log_port"); %>' autocorrect="off" autocapitalize="off">
 											</td>
 										</tr>

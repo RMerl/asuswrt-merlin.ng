@@ -1587,9 +1587,6 @@ pre_select(struct context *c)
     check_tls_errors(c);
     if (c->sig->signal_received)
     {
-#ifdef ASUSWRT
-        update_nvram_status(EVENT_TLS_ERROR);
-#endif
         return;
     }
 

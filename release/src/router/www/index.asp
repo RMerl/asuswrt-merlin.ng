@@ -1978,37 +1978,14 @@ function redirectTimeScheduling() {
 	location.href = "ParentalControl.asp" ;
 }
 function updateClientsCount() {
-	$.ajax({
-		url: '/update_networkmapd.asp',
-		dataType: 'script', 
-		error: function(xhr) {
-			setTimeout("updateClientsCount();", 1000);
-		},
-		success: function(response){
-			//When not click iconClient and not click View Client List need update client count.
-			if(lastName != "iconClient") {
-				if(document.getElementById("clientlist_viewlist_content")) {
-					if(document.getElementById("clientlist_viewlist_content").style.display == "none"){
-						if(fromNetworkmapd_maclist[0].length == '0'){
-							show_client_status(totalClientNum.online);
-						}
-						else{
-							show_client_status(fromNetworkmapd_maclist[0].length);
-						}
-					}	
-				}
-				else{
-					if(fromNetworkmapd_maclist[0].length == '0'){
-						show_client_status(totalClientNum.online);
-					}
-					else{
-						show_client_status(fromNetworkmapd_maclist[0].length);
-					}
-				}
-			}
-			setTimeout("updateClientsCount();", 5000);
-		}
-	});
+	//When not click iconClient and not click View Client List need update client count.
+	var viewlist_obj = document.getElementById("clientlist_viewlist_content");
+	if(lastName != "iconClient" && (viewlist_obj == null || (viewlist_obj && viewlist_obj.style.display == "none"))){
+		originData.fromNetworkmapd[0] = httpApi.hookGet("get_clientlist", true);
+		genClientList();
+		show_client_status(totalClientNum.online);
+	}
+	setTimeout("updateClientsCount();", 5000);
 }
 function setDefaultIcon() {
 	var mac = document.getElementById("macaddr_field").value;

@@ -38,19 +38,6 @@
 	padding-bottom:10px;
 }
 
-.triangle{
-	width:0;
-	height:0;
-	font-size:0;
-	border-style:solid;
-	overflow:hidden;
-	position:absolute;
-	border-width:20px;
-	border-color:transparent #005AB5 #005AB5 transparent;
-	left:372px;
-	bottom:300px;
-}
-
 #top_client_table tr:hover{
 	background-color:#FFF;
 	opacity:0.4;
@@ -60,13 +47,6 @@
 #top_client_table tr{
 	line-height:15px;
 
-}
-
-.icon_play{
-	background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%0A%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%20402.5%20402.5%22%20enable-background%3D%22new%200%200%20402.5%20402.5%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cpath%20fill%3D%22%23FFF%22%20d%3D%22M200.9%2C401C90.7%2C400.6%2C1.2%2C310.9%2C1.5%2C201C1.8%2C90.7%2C92.1%2C0.8%2C201.9%2C1.5C312.2%2C2.2%2C401.5%2C91.9%2C401%2C201.7%0A%09C400.5%2C311.9%2C310.7%2C401.4%2C200.9%2C401z%20M164.7%2C286.6l116.2-67.1c6.5-3.8%2C10.5-10.7%2C10.5-18.2s-4-14.5-10.5-18.2l-116.2-67.1%0A%09c-3.3-1.9-6.9-2.8-10.5-2.8c-3.6%2C0-7.3%2C0.9-10.5%2C2.8c-6.5%2C3.8-10.5%2C10.7-10.5%2C18.2v134.2c0%2C7.5%2C4%2C14.5%2C10.5%2C18.2%0A%09c3.3%2C1.9%2C6.9%2C2.8%2C10.5%2C2.8C157.8%2C289.4%2C161.4%2C288.5%2C164.7%2C286.6z%22%2F%3E%0A%3C%2Fsvg%3E");
-}
-.icon_play_active{
-	background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%0A%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20x%3D%220px%22%20y%3D%220px%22%0A%09%20viewBox%3D%220%200%20402.5%20402.5%22%20enable-background%3D%22new%200%200%20402.5%20402.5%22%20xml%3Aspace%3D%22preserve%22%3E%0A%3Cpath%20fill%3D%22%2369DAFE%22%20d%3D%22M200.9%2C401C90.7%2C400.6%2C1.2%2C310.9%2C1.5%2C201C1.8%2C90.7%2C92.1%2C0.8%2C201.9%2C1.5C312.2%2C2.2%2C401.5%2C91.9%2C401%2C201.7%0A%09C400.5%2C311.9%2C310.7%2C401.4%2C200.9%2C401z%20M164.7%2C286.6l116.2-67.1c6.5-3.8%2C10.5-10.7%2C10.5-18.2s-4-14.5-10.5-18.2l-116.2-67.1%0A%09c-3.3-1.9-6.9-2.8-10.5-2.8c-3.6%2C0-7.3%2C0.9-10.5%2C2.8c-6.5%2C3.8-10.5%2C10.7-10.5%2C18.2v134.2c0%2C7.5%2C4%2C14.5%2C10.5%2C18.2%0A%09c3.3%2C1.9%2C6.9%2C2.8%2C10.5%2C2.8C157.8%2C289.4%2C161.4%2C288.5%2C164.7%2C286.6z%22%2F%3E%0A%3C%2Fsvg%3E%0A");
 }
 .clean_log {
 	float: right;
@@ -96,15 +76,8 @@ function initial(){
 
 	if(document.form.bwdpi_db_enable.value == 1){
 		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_refresh_note#>";
-		document.getElementById('statistic_hint').style.display = "none";
-		document.getElementById("demo_background").style.zIndex = "0";
 	}
 	else{
-		if(document.cookie.search('demo=1') == "-1"){
-			setTimeout("introduce_demo();", 1000);
-			document.cookie = "demo=1";
-		}
-
 		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_note#>";
 	}
 
@@ -137,18 +110,10 @@ function load_time(){
 	$('#datepicker').val(month + "/" + date + "/" + year);
 }
 
-function cancel_demo(){
-	clearTimeout(time_flag);
-	document.getElementById("demo_image").style.background = "";
-	$("#demo_background").fadeOut(100);
-}
-
 var top5_client_array = new Array();
 var top5_app_array = new Array();
 var total_clients_array = new Array();
 var total_apps_array = new Array();
-//var total_client_rx = 0;
-//var total_client_tx = 0;
 var total_apps_rx = 0
 var total_apps_tx = 0
 
@@ -744,7 +709,6 @@ function get_app_used_by_client_data_individual(client, mode, dura, time, date_s
 		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
-			//setTimeout("get_app_data(time);", 1000);
 
 		},
 		success: function(response){
@@ -764,7 +728,6 @@ function get_app_used_by_client_data_individual(client, mode, dura, time, date_s
 					return 	b[1] - a[1];
 				});
 			}
-
 
 			show_all_info(client, "app");
 		}
@@ -823,18 +786,6 @@ function register_event(){
 			document.getElementById('top5_info_block').style.backgroundColor = color[0];
 		}
 	 });
-
-	 /*for play icon*/
-	$("#introduce_demo").hover(
-		function(){
-			$("#play_icon").removeClass("icon_play").addClass("icon_play_active");
-			$(this).css("color", "#69DAFE");
-		},
-		function(){
-			$("#play_icon").removeClass("icon_play_active").addClass("icon_play");
-			$(this).css("color", "#FFF");
-		}
-	);
 }
 
 function convertTime(t){
@@ -874,7 +825,6 @@ function switch_content(obj){
 
 	document.getElementById('router').className = "block_filter";
 	document.getElementById('apps').className = "block_filter";
-	//document.getElementById('details').className = "block_filter";
 	obj.className = "block_filter_pressed";
 
 	var duration = 0;
@@ -1455,10 +1405,7 @@ function cal_panel_block(obj){
 		blockmarginLeft= (winWidth)*0.2 + document.body.scrollLeft;
 	}
 
-	if(obj == "demo_background")
-		document.getElementById(obj).style.marginLeft = (blockmarginLeft + 25)+"px";
-	else
-		document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
+	document.getElementById(obj).style.marginLeft = blockmarginLeft+"px";
 }
 
 function eula_confirm(){
@@ -1511,14 +1458,6 @@ function setHover_css(){
 		}
 	);
 }
-var time_flag;
-function introduce_demo(){
-	document.getElementById("demo_background").style.zIndex = "5";
-	document.getElementById("demo_image").style.background = "url('/images/New_ui/TrafficAnalyzer.gif') no-repeat"
-	$("#demo_background").fadeIn(300);
-	time_flag = setTimeout(function(){cancel_demo();}, "41000");
-
-}
 
 function getClientCurrentName(_mac) {
 	var clientName = _mac;
@@ -1555,8 +1494,6 @@ function updateTrafficAnalyzer() {
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 <input type="hidden" name="bwdpi_db_enable" value="<% nvram_get("bwdpi_db_enable"); %>">
-
-
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -1566,12 +1503,6 @@ function updateTrafficAnalyzer() {
 		</td>
 		<td valign="top">
 			<div id="tabMenu" class="submenuBlock"></div>
-
-			<div id="demo_background" style="background-color:#3E464A; width:760px;height:96%;position:absolute;z-index:5;opacity:0.9;display:none;display:none">
-				<div style="background:url('images/New_ui/cancel.svg');width:40px;height:40px;z-index:12;position:absolute;top:10px;right:20px;cursor:pointer" onclick="cancel_demo();"></div>
-				<div id="demo_image" style="width:750px;height:990px;background-size:88%;margin:10px 0 0 10px"></div>
-			</div>
-
 			<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 				<tr>
 					<td align="left" valign="top">
@@ -1589,7 +1520,6 @@ function updateTrafficAnalyzer() {
 													<div>
 														<table align="right">
 															<tr>
-																<td style="cursor:pointer;" onclick="introduce_demo();" id="introduce_demo"><div id="play_icon" class="icon_play" style="padding:1px;display:table-cell;width:22px;height:22px;"></div><div style="display:table-cell;font-size:16px;text-decoration:underline;padding-left:7px;" ><#Introduce_demo#></div></td>
 																<td >
 																	<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="traffic_analysis_enable"></div>
 																	<script type="text/javascript">

@@ -76,8 +76,9 @@ int start_sshd(void)
 	f_write_string("/root/.ssh/authorized_keys", get_parsed_key("sshd_authkeys", buf), 0, 0700);
 
 	if (check_host_key("rsa", "sshd_hostkey", "/etc/dropbear/dropbear_rsa_host_key") |
-	    check_host_key("dss", "sshd_dsskey",  "/etc/dropbear/dropbear_dss_host_key") |
-	    check_host_key("ecdsa", "sshd_ecdsakey",  "/etc/dropbear/dropbear_ecdsa_host_key"))
+	    check_host_key("dss", "sshd_dsskey", "/etc/dropbear/dropbear_dss_host_key") |
+	    check_host_key("ecdsa", "sshd_ecdsakey", "/etc/dropbear/dropbear_ecdsa_host_key") |
+	    check_host_key("ed25519", "sshd_ed25519key", "/etc/dropbear/dropbear_ed25519_host_key"))
 		logmessage("dropbear", "Generated SSH keys");
 
 	port = buf;

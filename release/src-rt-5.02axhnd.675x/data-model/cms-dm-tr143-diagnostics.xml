@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Capabilities." shortObjectName="CapabilitiesObject" specSource="TR143" profile="Baseline:1" requirements="P" supportLevel="Present" oid="900" />
+  <description source="TRx">The capabilities of the device. This is a constant read-only object, meaning that only a firmware upgrade will cause these values to be altered.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Capabilities.PerformanceDiagnostic." shortObjectName="PerformanceDiagObject" specSource="TR143" profile="Baseline:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">The capabilities of Performance Diagnostics (DowanloadDiagnostics and UploadDagnostics) for the device.</description>
+
+  <parameter name="DownloadTransports" type="string" specSource="TR143" profile="Download:1" requirements="R" supportLevel="ReadOnly" defaultValue="HTTP,FTP" />
+    <description source="TRx">Supported ''DownloadDiagnostics'' transport protocols for a CPE device. </description>
+
+  <parameter name="UploadTransports" type="string" specSource="TR143" profile="Upload:1" requirements="R" supportLevel="ReadOnly" defaultValue="HTTP,FTP" />
+    <description source="TRx">Supported ''UploadDiagnostics'' transport protocols for a CPE device. </description>
+
+
+
+
+<object name="InternetGatewayDevice.DownloadDiagnostics." shortObjectName="DlDiagObject" specSource="TR143" profile="Download:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object defines the diagnostics configuration for a HTTP and FTP DownloadDiagnostics Test. Files received in the DownloadDiagnostics do not require file storages on the CPE device.</description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="TR143" profile="Download:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="None" validValuesArray="diagnosticsStateValues" neverWriteToConfigFile="true" />
+    <description source="TRx">Indicate the availability of diagnostic data.  {{enum}} If the ACS sets the value of this parameter to {{enum|Requested}}, the CPE MUST initiate the corresponding diagnostic test.  When writing, the only allowed value is {{enum|Requested}}.  To ensure the use of the proper test parameters (the writable parameters in this object), the test parameters MUST be set either prior to or at the same time as (in the same SetParameterValues) setting the {{param}} to {{enum|Requested}}.When requested, the CPE SHOULD wait until after completion of the communication session with the ACS before starting the diagnostic. When the test is completed, the value of this parameter MUST be either {{enum|Completed}} (if the test completed successfully), or one of the ''Error'' values listed above.If the value of this parameter is anything other than {{enum|Completed}}, the values of the results parameters for this test are indeterminate. When the diagnostic initiated by the ACS is completed (successfully or not), the CPE MUST establish a new connection to the ACS to allow the ACS to view the results, indicating the Event code ''8 DIAGNOSTICS COMPLETE'' in the Inform message.After the diagnostic is complete, the value of all result parameters (all read-only parameters in this object) MUST be retained by the CPE until either this diagnostic is run again, or the CPE reboots.  After a reboot, if the CPE has not retained the result parameters from the most recent test, it MUST set the value of this parameter to {{enum|None}}.Modifying any of the writable parameters in this object except for this one MUST result in the value of this parameter being set to {{enum|None}}. While the test is in progress, modifying any of the writable parameters in this object except for this one MUST result in the test being terminated and the value of this parameter being set to {{enum|None}}.While the test is in progress, setting this parameter to {{enum|Requested}} (and possibly modifying other writable parameters in this object) MUST result in the test being terminated and then restarted using the current values of the test parameters. </description>
+
+  <parameter name="Interface" type="string" specSource="TR143" profile="Download:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference|the IP-layer interface over which the test is to be performed}} The value of this parameter MUST be either a valid interface or {{empty}}.  An attempt to set this parameter to a different value MUST be rejected as an invalid parameter value.If {{empty}} is specified, the CPE MUST use the default routing interface. </description>
+
+  <parameter name="DownloadURL" type="string" specSource="TR143" profile="Download:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The URL, as defined in {{bibref|RFC3986}}, for the CPE to perform the download on. This parameter MUST be in the form of a valid HTTP {{bibref|RFC2616}} or FTP {{bibref|RFC959}} URL. * When using FTP transport, FTP binary transfer MUST be used.* When using HTTP transport, persistent connections MUST be used and pipelining MUST NOT be used. * When using HTTP transport the HTTP Authentication MUST NOT be used. </description>
+
+  <parameter name="DSCP" type="unsignedInt" specSource="TR143" profile="Download:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="63" />
+    <description source="TRx">The DiffServ code point for marking packets transmitted in the test.  The default value SHOULD be zero. </description>
+
+  <parameter name="EthernetPriority" type="unsignedInt" specSource="TR143" profile="Download:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="7" />
+    <description source="TRx">Ethernet priority code for marking packets transmitted in the test (if applicable).  The default value SHOULD be zero. </description>
+
+  <parameter name="ROMTime" type="dateTime" specSource="TR143" profile="Download:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Request time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the client sends the GET command. * For FTP this is the time at which the client sends the RTRV command. </description>
+
+  <parameter name="BOMTime" type="dateTime" specSource="TR143" profile="Download:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Begin of transmission time in UTC, which MUST be specified to microsecond precision For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the first data packet is received. * For FTP this is the time at which the client receives the first data packet on the data connection. </description>
+
+  <parameter name="EOMTime" type="dateTime" specSource="TR143" profile="Download:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">End of transmission in UTC, which MUST be specified to microsecond precision.  For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the last data packet is received. * For FTP this is the time at which the client receives the last packet on the data connection. </description>
+
+  <parameter name="TestBytesReceived" type="unsignedInt" specSource="TR143" profile="Download:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="TRx">The test traffic received in bytes during the FTP/HTTP transaction including FTP/HTTP headers, between {{param|BOMTime}} and {{param|EOMTime}}, </description>
+
+  <parameter name="TotalBytesReceived" type="unsignedInt" specSource="TR143" profile="Download:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="TRx">The total number of bytes received on the Interface between {{param|BOMTime}} and {{param|EOMTime}}. </description>
+
+  <parameter name="TCPOpenRequestTime" type="dateTime" specSource="TR143" profile="DownloadTCP:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Request time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the TCP socket open (SYN) was sent for the HTTP connection. * For FTP this is the time at which the TCP socket open (SYN) was sent for the data connection.Note: Interval of 1 microsecond SHOULD be supported. </description>
+
+  <parameter name="TCPOpenResponseTime" type="dateTime" specSource="TR143" profile="DownloadTCP:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Response time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the TCP ACK to the socket opening the HTTP connection was received. * For FTP this is the time at which the TCP ACK to the socket opening the data connection was received.Note: Interval of 1 microsecond SHOULD be supported. </description>
+
+  <parameter name="X_BROADCOM_COM_LogLevel" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Baseline:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="BROADCOM">Indicate the message log level when doing diagnostics {ERR:3, NOTICE:5 DEBUG:7}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.UploadDiagnostics." shortObjectName="UlDiagObject" specSource="TR143" profile="Upload:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object defines the diagnostics configuration for a HTTP or FTP UploadDiagnostics test.  Files sent by the UploadDiagnostics do not require file storage on the CPE device, and MAY be an arbitrary stream of bytes. </description>
+
+  <parameter name="DiagnosticsState" type="string" specSource="TR143" profile="Upload:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="None" validValuesArray="diagnosticsStateValues" neverWriteToConfigFile="true" />
+    <description source="TRx">Indicate the availability of diagnostic data.  {{enum}} If the ACS sets the value of this parameter to {{enum|Requested}}, the CPE MUST initiate the corresponding diagnostic test.  When writing, the only allowed value is {{enum|Requested}}.  To ensure the use of the proper test parameters (the writable parameters in this object), the test parameters MUST be set either prior to or at the same time as (in the same SetParameterValues) setting the {{param}} to {{enum|Requested}}.When requested, the CPE SHOULD wait until after completion of the communication session with the ACS before starting the diagnostic. When the test is completed, the value of this parameter MUST be either {{enum|Completed}} (if the test completed successfully), or one of the ''Error'' values listed above.If the value of this parameter is anything other than {{enum|Completed}}, the values of the results parameters for this test are indeterminate. When the diagnostic initiated by the ACS is completed (successfully or not), the CPE MUST establish a new connection to the ACS to allow the ACS to view the results, indicating the Event code ''8 DIAGNOSTICS COMPLETE'' in the Inform message.After the diagnostic is complete, the value of all result parameters (all read-only parameters in this object) MUST be retained by the CPE until either this diagnostic is run again, or the CPE reboots.  After a reboot, if the CPE has not retained the result parameters from the most recent test, it MUST set the value of this parameter to {{enum|None}}. Modifying any of the writable parameters in this object except for this one MUST result in the value of this parameter being set to {{enum|None}}.While the test is in progress, modifying any of the writable parameters in this object except for this one MUST result in the test being terminated and the value of this parameter being set to {{enum|None}}. While the test is in progress, setting this parameter to {{enum|Requested}} (and possibly modifying other writable parameters in this object) MUST result in the test being terminated and then restarted using the current values of the test parameters. </description>
+
+  <parameter name="Interface" type="string" specSource="TR143" profile="Upload:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference|the IP-layer interface over which the test is to be performed}} The value of this parameter MUST be either a valid interface or an empty string.  An attempt to set this parameter to a different value MUST be rejected as an invalid parameter value.If {{empty}} is specified, the CPE MUST use the default routing interface. </description>
+
+  <parameter name="UploadURL" type="string" specSource="TR143" profile="Upload:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">The URL, as defined in {{bibref|RFC3986}}, for the CPE to Upload to. This parameter MUST be in the form of a valid HTTP {{bibref|RFC2616}} or FTP {{bibref|RFC959}} URL. * When using FTP transport, FTP binary transfer MUST be used.* When using HTTP transport, persistent connections MUST be used and pipelining MUST NOT be used. * When using HTTP transport the HTTP Authentication MUST NOT be used. </description>
+
+  <parameter name="DSCP" type="unsignedInt" specSource="TR143" profile="Upload:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="63" />
+    <description source="TRx">DiffServ code point for marking packets transmitted in the test.  The default value SHOULD be zero. </description>
+
+  <parameter name="TestFileLength" type="unsignedInt" specSource="TR143" profile="Upload:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="TRx">The size of the file (in bytes) to be uploaded to the server. The CPE MUST insure the appropriate number of bytes are sent. </description>
+
+  <parameter name="EthernetPriority" type="unsignedInt" specSource="TR143" profile="Upload:1" requirements="W" supportLevel="ReadWrite" defaultValue="0" minValue="0" maxValue="7" />
+    <description source="TRx">Ethernet priority code for marking packets transmitted in the test (if applicable). The default value SHOULD be zero. </description>
+
+  <parameter name="ROMTime" type="dateTime" specSource="TR143" profile="Upload:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Request time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the client sends the PUT command * For FTP this is the time at which the STOR command is sent. </description>
+
+  <parameter name="BOMTime" type="dateTime" specSource="TR143" profile="Upload:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Begin of transmission time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the first data packet is sent. * For FTP this is the time at which the client receives the ready for transfer notification. </description>
+
+  <parameter name="EOMTime" type="dateTime" specSource="TR143" profile="Upload:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">End of transmission in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time when the HTTP successful response code is received. * For FTP this is the time when the client receives a transfer complete. </description>
+
+  <parameter name="TotalBytesSent" type="unsignedInt" specSource="TR143" profile="Upload:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" neverWriteToConfigFile="true" />
+    <description source="TRx">The total number of bytes sent on the Interface between {{param|BOMTime}} and {{param|EOMTime}}. </description>
+
+  <parameter name="TCPOpenRequestTime" type="dateTime" specSource="TR143" profile="UploadTCP:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Request time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the time at which the TCP socket open (SYN) was sent for the HTTP connection. * For FTP this is the time at which the TCP socket open (SYN) was sent for the data connectionNote: Interval of 1 microsecond SHOULD be supported. </description>
+
+  <parameter name="TCPOpenResponseTime" type="dateTime" specSource="TR143" profile="UploadTCP:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" neverWriteToConfigFile="true" />
+    <description source="TRx">Response time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456* For HTTP this is the Time at which the TCP ACK to the socket opening the HTTP connection was received. * For FTP this is  the Time at which the TCP ACK to the socket opening the Data connection was received.Note: Interval of 1 microsecond SHOULD be supported. </description>
+
+  <parameter name="X_BROADCOM_COM_LogLevel" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Baseline:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="BROADCOM">Indicate the message log level when doing diagnostics {ERR:3, NOTICE:5 DEBUG:7}. </description>
+
+
+
+
+<object name="InternetGatewayDevice.UDPEchoConfig." shortObjectName="UDPEchoCfgObject" specSource="TR143" profile="UDPEcho:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object allows the CPE to be configured to perform the UDP Echo Service defined in {{bibref|RFC862}} and UDP Echo Plus Service defined in {{bibref|TR-143|Appendix A.1}}. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR143" profile="UDPEcho:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">MUST be enabled to receive UDP echo. When enabled from a disabled state all related timestamps, statistics and UDP Echo Plus counters are cleared. </description>
+
+  <parameter name="Interface" type="string" specSource="TR143" profile="UDPEcho:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="TRx">{{reference|IP-layer interface over which the CPE MUST listen and receive UDP echo requests on}} The value of this parameter MUST be either a valid interface or {{empty}}.  An attempt to set this parameter to a different value MUST be rejected as an invalid parameter value.If {{empty}} is specified, the CPE MUST listen and receive UDP echo requests on all interfaces. Note: Interfaces behind a NAT MAY require port forwarding rules configured in the Gateway to enable receiving the UDP packets. </description>
+
+  <parameter name="SourceIPAddress" type="IPAddress" specSource="TR143" profile="UDPEcho:1" requirements="W" supportLevel="ReadWrite" defaultValue="" maxLength="45" />
+    <description source="TRx">The Source IP address of the UDP echo packet. The CPE MUST only respond to a UDP echo from this source IP address. </description>
+
+  <parameter name="UDPPort" type="unsignedInt" specSource="TR143" profile="UDPEcho:1" requirements="W" supportLevel="ReadWrite" defaultValue="30006" />
+    <description source="TRx">The UDP port on which the UDP server MUST listen and respond to UDP echo requests. </description>
+
+  <parameter name="EchoPlusEnabled" type="boolean" specSource="TR143" profile="UDPEchoPlus:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{true}} the CPE will perform necessary packet processing for UDP Echo Plus packets. </description>
+
+  <parameter name="EchoPlusSupported" type="boolean" specSource="TR143" profile="UDPEcho:1" requirements="R" supportLevel="ReadOnly" defaultValue="true" />
+    <description source="TRx">{{true}} if UDP Echo Plus is supported. </description>
+
+  <parameter name="PacketsReceived" type="unsignedInt" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Incremented upon each valid UDP echo packet received. </description>
+
+  <parameter name="PacketsResponded" type="unsignedInt" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">Incremented for each UDP echo response sent. </description>
+
+  <parameter name="X_BROADCOM_COM_PacketsRespondedFail" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Baseline:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">Incremented for each UDP echo response failed. </description>
+
+  <parameter name="BytesReceived" type="unsignedInt" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of UDP received bytes including payload and UDP header after the UDPEchoConfig is enabled. </description>
+
+  <parameter name="BytesResponded" type="unsignedInt" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The number of UDP responded bytes, including payload and UDP header sent after the UDPEchoConfig is enabled. </description>
+
+  <parameter name="TimeFirstPacketReceived" type="dateTime" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="TRx">Time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456,The time that the server receives the first UDP echo packet after the UDPEchoConfig is enabled. </description>
+
+  <parameter name="TimeLastPacketReceived" type="dateTime" specSource="TR143" profile="UDPEcho:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0001-01-01T00:00:00Z" />
+    <description source="TRx">Time in UTC, which MUST be specified to microsecond precision. For example: 2008-04-09T15:01:05.123456The time that the server receives the most recent UDP echo packet. </description>
+
+  <parameter name="X_BROADCOM_COM_LogLevel" type="unsignedInt" specSource="Broadcom" profile="X_BROADCOM_COM_Baseline:1" requirements="W" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadWrite" defaultValue="3" />
+    <description source="BROADCOM">Indicate the message log level when doing diagnostics {ERR:3, NOTICE:5 DEBUG:7}. </description>
+
+<vsaInfo>
+
+<validstringarray name="diagnosticsStateValues" />
+  <element>None</element>
+  <element>Requested</element>
+  <element>Complete</element>
+  <element>Error_InitConnectionFailed</element>
+  <element>Error_NoResponse</element>
+  <element>Error_TransferFailed</element>
+  <element>Error_PasswordRequestedFailed</element>
+  <element>Error_LoginFailed</element>
+  <element>Error_NoTransferMode</element>
+  <element>Error_NoPASV</element>
+  <element>Error_NoCWD</element>
+  <element>Error_NoSTOR</element>
+  <element>Error_IncorrectSize</element>
+  <element>Error_Timeout</element>
+  <element>Error_NoTransferComplete</element>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="Download:1" /> 
+<profile name="DownloadTCP:1" /> 
+<profile name="Upload:1" /> 
+<profile name="UploadTCP:1" /> 
+<profile name="UDPEcho:1" /> 
+<profile name="UDPEchoPlus:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

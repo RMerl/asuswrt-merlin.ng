@@ -1,0 +1,157 @@
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI			9
+#define PMU_CORE1_SPI			10
+#define PMU_CORE2_SPI			11
+#define PMU_CORE3_SPI			12
+#define HS_SPIM_SPI			36
+#define SDIO_EMMC_SPI			85
+#define SPU_GMAC_SPI			90
+#define EMMC_DDR_1_8V
+
+#include "../bcm_b53_template.dtsi"
+#include "../bcm_rsvdmem_64.dtsi"
+
+/ {   
+	aliases {
+		spi1 = &hsspi; /* 0 = legacy, 1 = high speed */
+	};
+
+	/* this is actually the PLL but we have no clock framework */
+	hsspi_pll: hsspi-pll {
+		compatible = "fixed-clock";
+		#clock-cells = <0>;
+		clock-frequency = <400000000>;
+	};
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		nand@ff801800 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x0 0x1800 0x0 0x600>, <0x0 0x2000 0x0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@ff800428 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x0 0x428 0x0 0x10>;
+			timeout-sec = <80>;
+		};
+
+		i2c@0xff802100 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x2100 0x0 0x60>;
+			clk_sel = <5>;
+		};
+
+		hsspi: spi@0xff801000 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,bcm6328-hsspi";
+			reg = <0x0 0x1000 0x0 0x600>;
+			clocks = <&hsspi_pll>, <&hsspi_pll>;
+			clock-names = "hsspi", "pll";
+			spi-max-frequency = <100000000>;
+			num-cs = <8>;
+			cs-gpios = <0>, <0>;
+			interrupts = <GIC_SPI HS_SPIM_SPI IRQ_TYPE_LEVEL_HIGH>;
+			status = "okay";
+		 };
+	};
+
+	pdc0: spu-pdc@0x8001c000 {
+		compatible = "brcm,pdc";
+		reg = <0x00000000 0x8001c000 0x00000000 0x448>;
+		interrupts = <GIC_SPI SPU_GMAC_SPI IRQ_TYPE_LEVEL_HIGH>;
+		brcm,num_chan = <1>;
+	};
+
+	spu-crypto@0x8001d000 {
+		compatible = "brcm,spu-crypto";
+		reg = <0x00000000 0x8001d000 0x00000000 0x64>;
+		brcm,num_spu = <1>;
+	};
+	
+	therm0: brcm-therm {
+		compatible = "brcm,therm";
+	};
+
+#if defined(CONFIG_BCM_PCIE_HCD)
+	pcie0: pcie@80040000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80040000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0xC0000000 0 0xC0000000 0 0x10000000>;
+
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;   /* core error log interrupts */
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 59 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <0>;
+	};
+
+	pcie1: pcie@80050000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80050000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0xD0000000 0 0xD0000000 0 0x10000000>;
+
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;   /* core error log interrupts */
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <1>;
+	};
+
+	pcie2: pcie@80060000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80060000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		ranges = <0x02000000 0 0xE0000000 0 0xE0000000 0 0x10000000>;
+
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;   /* core error log interrupts */
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <2>;
+	};
+#endif
+
+};
+
+
+

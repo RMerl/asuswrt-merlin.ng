@@ -1,0 +1,19 @@
+config BCM_COMMON_CLK
+	bool "Broadcom 63xx common clock support"
+	select MFD_SYSCON
+	select COMMON_CLK
+	default n
+	help
+	  Enable common clock framework support for Broadcom 63xx SoCs
+
+config BCM_COMMON_CLK_IMPL
+	int "Implementation index for common clock driver"
+	depends on BCM_COMMON_CLK
+	default 1
+
+config BCM_COMMON_CLK_I2S
+	bool "Broadcom 63xx i2s common clock support"
+	select MFD_SYSCON
+	select COMMON_CLK
+	help
+	  Enable common clock framework support for Broadcom 63xx SoCs

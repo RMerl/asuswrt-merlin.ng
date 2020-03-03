@@ -4389,7 +4389,11 @@ ifeq ($(BUILD_NAME),)
 endif
 ifeq ($(HND_ROUTER),y)
 	@echo BRCM_BOARD_ID=$(BRCM_BOARD_ID)
+ifeq ($(HND_ROUTER_AX_675X),y)
+	@rm -f bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP) && ln -sf impl61 bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)
+else
 	@rm -f bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP) && ln -sf impl51 bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)
+endif
 	@rm -f $(PROFILE_FILE_PUB) && ln -sf $(PROFILE_FILE) $(PROFILE_FILE_PUB)
 	@rm -f $(SRCBASE)/.config && ln -sf $(HND_SRC)/.config $(SRCBASE)/.config
 	@rm -f $(LINUXDIR)/.config

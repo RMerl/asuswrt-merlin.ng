@@ -1,0 +1,72 @@
+# Whitelist for PHY_TWIG_17_100_99, used with KUDU_TWIG_17_10_99
+# 
+# Please add new items at the bottom.
+#
+# **Gain approval from you manager before editing this file.**
+#
+# <<Broadcom-WL-IPTag/Open:>>
+#
+JIRA:BCAWLAN-208804 Module Size reduction - compile out unused radio IDs
+JIRA:BCAWLAN-208669 43217:Load failed:Unable to handle kernel NULL pointer dereference at virtual address 000001a4
+JIRA:BCAWLAN-208987 6750 improve ETSI type 4 radar detection rate on BW80 high channels
+JIRA:BCAWLAN-208743 new interference mode for mclip aci mitigation
+JIRA:BCAWLAN-208745 [63178/47622] Implement mclip aci mitigation for rev51
+JIRA:BCAWLAN-208494 [KUDU] move global variable of iBF to existing structures
+JIRA:BCAWLAN-208875 [43217] Fix Calibration Procedure on KUDU
+JIRA:BCAWLAN-208776 [63178] Updated 5G VCO frequency scheme fixing VCO leakage
+JIRA:BCAWLAN-208047 [63178/47622] increase w1 rssi threshold
+JIRA:BCAWLAN-209057 One more 20709 rev 1 related assert in wlc_phy_get_txgain_tbl_20709
+JIRA:BCAWLAN-208999 68781 A1 radio revision assert
+JIRA:BCAWLAN-209012 43684 disable ed_crs and ed_Crs80u on core3 during 3+1 mode to avoid PSM watchdog fired
+JIRA:BCAWLAN-208798 Driver phy code: wlc_phy_btcx_override_disable(): remove unnecessary GPIO toggle
+JIRA:BCAWLAN-208829 [43684] add ch171m radio tuning table
+JIRA:BCAWLAN-209100 [63178] div2 selected for 5320, 5500MHz for facing vco leakage
+JIRA:BCAWLAN-209091 [6878] RxPER in 2GHz BW40 shows 2dB sensitivity hit on channels 3l, 4l, 5l
+JIRA:BCAWLAN-209029 [47622] Verify OOB interference performance
+JIRA:BCAWLAN-209119 [63178/47622] modify tuning table on lc_ctune, mix_ctune for 63178. 
+JIRA:BCAWLAN-209320 [63178] PLL Config for channels 64 and 100
+JIRA:BCAWLAN-209520 6755 improve FCC type 3/4 radar detection rate on BW20 high channels
+JIRA:BCAWLAN-209310 43684 improve BW20 FCC-5 detection rate on Atlas 2G plus1core
+JIRA:BCAWLAN-208429 [6878] TX throughput in BW40 is not using highest PHY rates
+JIRA:BCAWLAN-208955 [6878] set clip1 and clip2 defer time like 63178
+JIRA:BCAWLAN-208997 [6878] Updated gaintables for 20709 radio and minor changes in AGC for rev 128
+JIRA:BCAWLAN-209054 [6878] Updated preferred reg values
+JIRA:BCAWLAN-209253 [6878] set tia_dcdac_scale to 7 for rev 128 which set LSB current to 62.5nA
+JIRA:BCAWLAN-209329 [6878] set lna1_bypass gain to -15dB for rev 128 to flatten RSSI curve
+JIRA:BCAWLAN-209425 [6878] Gaintable for 5G iPA mode (constant PAD to IDX52)
+JIRA:BCAWLAN-209429 [6878] DSSS sensitivity spread on A1 chip
+JIRA:BCAWLAN-209433 [6878A1] Improvements to 2G PAPD in driver
+JIRA:BCAWLAN-209428 [6878] Reduce 5G PAD idac_GM/CAS for stability
+JIRA:BCAWLAN-209500 [6878A1] Improvements to 5G PAPD in driver
+JIRA:BCAWLAN-209519 [6878] PAPD loopback set up with "logen_rx_rccr_pu" set to 1
+JIRA:BCAWLAN-209523 [6878A1] Update 5G tuning tables
+JIRA:BCAWLAN-208362 [KUDU] 43570 Skip setting low-power detect as causing PSM-WD's
+JIRA:BCAWLAN-209577 use dev core addr defines to specify separate radio tuning tables for 63178 and 48722 based boards
+JIRA:BCAWLAN-209650 [47622] channel 100/20 does not work anymore
+JIRA:BCAWLAN-209323 [47622] Rx PER spread in 5GHz band
+JIRA:BCAWLAN-209763 Fix average fc calculation for FCC type5 radar detection
+JIRA:BCAWLAN-209107 [KUDU] Allow txbf related phy dumps even when BFD is busy
+JIRA:BCAWLAN-209703 [EAP] Exclude scan samples from noise history
+JIRA:BCAWLAN-209401 [63178A1] RxPER receiver oscillations in 2GHz BW20 rate54 TSS part 3 at -40degC and high voltage
+JIRA:BCAWLAN-209857 [63178] Sync TX CAL setup TCL to driver
+JIRA:BCAWLAN-209884 [63178][47622] ch169/173 support
+JIRA:BCAWLAN-209932 43684 optimize the process of radarargs setting
+JIRA:BCAWLAN-209902 43684 improve FCC-5 detection rate on BW20 high channels
+JIRA:BCAWLAN-209937 [43684] For knoise, update INITgain & a lower gain in shmem based on actual gains used by PHY
+JIRA:BCAWLAN-209987 [EAP] proxd/location
+JIRA:BCAWLAN-210018 FCC type 5 radar false detection in 5G band
+JIRA:BCAWLAN-209603 [6878] RSSI curve in 5G shows jump at LNA bypass point
+JIRA:BCAWLAN-209674 [6878] Sync TX CAL setup TCL to driver
+JIRA:BCAWLAN-209685 [6878] RSSI on in 5G Hz on core 0 shows spike around -45dBm
+JIRA:BCAWLAN-209835 [6878] Tx THPT dips in 5G BW20
+JIRA:BCAWLAN-209892 [6878A1] Improvements to 5G PAPD in driver
+JIRA:BCAWLAN-209974 [6878] increase Tx farrow precision, needed for PAPD accuracy
+JIRA:BCAWLAN-210247 Not supporting ch169 and 173 for Non-HE capable PHY.
+JIRA:BCAWLAN-210433 Fix incorrect FCC-5 average fc value for avg_fc_bin5 and wlc_phy_radar_fc_chirp_2_subband
+JIRA:BCAWLAN-210558 [43684] ULOFDMA: disable per user rssi digGain comp
+JIRA:BCAWLAN-210538 [43684] BW160 11ag packet will be 3dB lower than BW160 11ac/11ax
+JIRA:BCAWLAN-210456 [EAP] [Proxd] give default k values instead of zeros
+JIRA:BCAWLAN-210531 [EAP] [Proxd] [phy] Fixes for Handling subband cases
+JIRA:BCAWLAN-210381 [6878] Enable and configure packet preemption
+JIRA:BCAWLAN-210398 [EAP] Skipping assert when FIPS capable SU ucode is loaded
+JIRA:BCAWLAN-210616 [43684] Un-phydeaf before unsuspend mac for transmitting pkt

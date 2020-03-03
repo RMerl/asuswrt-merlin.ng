@@ -1,0 +1,7 @@
+/ transport
+this cmips 
+#connect ehost domain_socket server 0 /tmp/bdmf_ehost_cmips.socket
+/ bdmf rem
+
+
+

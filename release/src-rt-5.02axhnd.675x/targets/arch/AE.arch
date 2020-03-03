@@ -1,0 +1,79 @@
+<PUBLISH>
+diff -r 46279de2cbe5 targets/96858GWO/96858GWO
+--- a/targets/96858GWO/96858GWO	Thu Jul 20 10:29:50 2017 +0800
++++ b/targets/96858GWO/96858GWO	Thu Jul 20 13:09:41 2017 +0800
+@@ -169,54 +169,54 @@
+ #
+ # GPON Selection
+ #
+-BRCM_DRIVER_GPON=m
+-BCM_MAX_GEM_PORTS=128
+-BUILD_GPON=y
+-BRCM_GPON=y
+-BRCM_OMCI=y
+-BUILD_NGPON=y
+-BUILD_OMCI=y
+-BUILD_GPONIF=dynamic
+-BUILD_GPOND=dynamic
+-BUILD_GPONCTL=dynamic
++# BRCM_DRIVER_GPON is not set
++# BCM_MAX_GEM_PORTS is not set
++# BUILD_GPON is not set
++# BRCM_GPON is not set
++# BRCM_OMCI is not set
++# BUILD_NGPON is not set
++# BUILD_OMCI is not set
++# BUILD_GPONIF is not set
++# BUILD_GPOND is not set
++# BUILD_GPONCTL is not set
+ # USE_GPONRG_OMCI_LIGHT is not set
+-USE_GPONRG_OMCI_FULL=y
++# USE_GPONRG_OMCI_FULL is not set
+ # USE_GONRG_NONE is not set
+-BUILD_GPONRG_OMCI_LIGHT=
+-BUILD_GPONRG_OMCI_FULL=y
++# BUILD_GPONRG_OMCI_LIGHT is not set
++# BUILD_GPONRG_OMCI_FULL is not set
+ # BUILD_OMCI_TR69_DUAL_STACK is not set
+ # BRCM_NO_LAN_PORTS_MIXED_MODE is not set
+-BUILD_GPON_ONU=
++# BUILD_GPON_ONU is not set
+ # BRCM_GPON_SFU is not set
+-BRCM_GPON_HGU=y
++# BRCM_GPON_HGU is not set
+ # BRCM_GPON_NONE is not set
+-GPON_ONU_TYPE=GPON_HGU
++# GPON_ONU_TYPE is not set
+ 
+ #
+ # EPON Selection
+ #
+ BRCM_EPON_STACK=m
+ BRCM_EPON_STACK_IMPL=2
+-BUILD_EPONCTL=y
++# BUILD_EPONCTL is not set
+ # EPON_CLOCK_TRANSPORT is not set
+ EPON_10G_SUPPORT=y
+-BUILD_EPON_SDK=y
++# BUILD_EPON_SDK is not set
+ 
+ #
+ #     OAM Stack Selection
+ #
+ # BUILD_EPON_BCM_OAM is not set
+-BUILD_EPON_CTC_OAM=y
++# BUILD_EPON_CTC_OAM is not set
+ # BUILD_EPON_DPOE_OAM is not set
+ # BUILD_EPON_SDK_VOICE_OAM is not set
+-BUILD_EPONWAN=y
++# BUILD_EPONWAN is not set
+ # OVERRIDE_EPON_MAC_ADDR is not set
+ # BRCM_EPON_SFU is not set
+ # BRCM_EPON_SBU is not set
+-BRCM_EPON_HGU=y
+-EPON_ONU_TYPE=EPON_HGU
++# BRCM_EPON_HGU is not set
++# EPON_ONU_TYPE is not set
+ 
+ #
+ # PacketCable Selection

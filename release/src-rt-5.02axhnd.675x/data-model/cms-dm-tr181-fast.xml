@@ -1,0 +1,501 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.FAST." shortObjectName="Dev2FastObject" specSource="TR181" profile="Device2_FAST:1" requirements="P" supportLevel="Present" oid="3595" />
+  <description source="TRx">FAST Line table (a stackable interface object as described in TR-181i2, Section 4.2).  This table models physical FAST lines. </description>
+
+  <parameter name="LineNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in Line Table</description>
+
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}." shortObjectName="Dev2FastLineObject" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">FAST Line table (a stackable interface object as described in TR-181i2,Section 4.2).  This table models physical FAST lines. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_FAST:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the FAST line. This parameter is based on ''ifAdminStatus'' from RFC2863. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" defaultValue="Unknown" validValuesArray="ifOperStatusValues" />
+    <description source="TRx"> The current operational state of the FAST line (see TR-181i2, Section 4.2.2).  When Enabled is false, then Status SHOULD normally be Down or NotPresent or Error if there is a fault condition on the interface.   When Enable is changed to true then Status SHOULD change to Up if and only if the interface is able to transmit and receive network traffic; it SHOULD change to Dormant if and only if the interface is operable but is waiting for external actions before it can transmit and receive network traffic (and subsequently change to Up if still operable when the expected actions have completed); it SHOULD change to LowerLayerDown if and only if the interface is prevented from entering the Up state because one or more of the interfaces beneath it is down; it SHOULD remain in the Error state if there is an error or other fault condition detected on the interface; it SHOULD remain in the NotPresent state if the interface has missing (typically hardware) components; it SHOULD change to Unknown if the state of the interface can not be determined for some reason. This parameter is based on ''ifOperStatus'' from RFC2863. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-fastline" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the FAST line as assigned by the CPE. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in sedonds since the FAST line entered its current operational state. </description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="X_BROADCOM_COM_BondingLineNumber" type="unsignedInt" specSource="Broadcom" profile="Unspecified" supportLevel="Read" defaultValue="0" minValue="0" maxValue="1" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Indicates the line number for bonding.  Only 0 or 1 is allowed because we only bond 2 lines. This parameter is kept here for purpose of using the existing DSL API. Line 0 is for the physical line 0, and the other is the second FAST line. </description>
+
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" maxLength="1024" notifySskLowerLayersChanged="true" />
+    <description source="TRx">Comma seperated list (maximum length 1024). Each list item must be the be the path name of an interface object that is stacked immediately below this interface object.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  See Section 4.2.1 of TR-181i2. </description>
+
+  <parameter name="Upstream" type="boolean" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" defaultValue="false" alwaysWriteToConfigFile="true" />
+    <description source="TRx"> Indicates whether the interface points towards the Internet (true) or towards End Devices (false) </description>
+
+  <parameter name="FirmwareVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">A string identifying the version of the modem firmware currently installed for this interface. This is applicable only when the modem firmware is separable from the overall CPE software. </description>
+
+  <parameter name="LinkStatus" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" validValuesArray="fastIntfStatusValues" />
+    <description source="TRx">Status of the FAST physical link. When LinkStatus is Up, Status is expected to be Up. When LinkStatus is Initializing or EstablishingLink or NoSignal or Disabled, Status is expected to be Down. The Error value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="AllowedProfiles" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" defaultValue="106a, 212a, 106b, 106c, 212c" />
+    <description source="TRx"> A list of items to indicate which FAST profiles are allowed on the line. </description>
+
+  <parameter name="CurrentProfile" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" defaultValue="106a" validValuesArray="fastProfileValues" />
+    <description source="TRx">Indicates which FAST profile is currently in use on the line. </description>
+
+  <parameter name="X_BROADCOM_COM_FAST_106a" type="boolean" specSource="Broadcom" profile="Device2_FAST:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit FAST_PROFILE_106a&#10;This Broadcom proprietary parameter allows users to configure FAST profile &quot;106a&quot; which is allowed on the line. </description>
+
+  <parameter name="X_BROADCOM_COM_FAST_212a" type="boolean" specSource="Broadcom" profile="Device2_FAST:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit FAST_PROFILE_212a&#10;This Broadcom proprietary parameter allows users to configure FAST profile &quot;212a&quot; which is allowed on the line. </description>
+
+  <parameter name="X_BROADCOM_COM_FAST_106b" type="boolean" specSource="Broadcom" profile="Device2_FAST:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit FAST_PROFILE_106b&#10;This Broadcom proprietary parameter allows users to configure FAST profile &quot;106b&quot; which is allowed on the line. </description>
+
+  <parameter name="X_BROADCOM_COM_FAST_106c" type="boolean" specSource="Broadcom" profile="Device2_FAST:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit FAST_PROFILE_106c&#10;This Broadcom proprietary parameter allows users to configure FAST profile &quot;106c&quot; which is allowed on the line. </description>
+
+  <parameter name="X_BROADCOM_COM_FAST_212c" type="boolean" specSource="Broadcom" profile="Device2_FAST:1" supportLevel="ReadWrite" defaultValue="true" />
+    <description source="BROADCOM">adslConfig bit FAST_PROFILE_212c&#10;This Broadcom proprietary parameter allows users to configure FAST profile &quot;212c&quot; which is allowed on the line. </description>
+
+  <parameter name="PowerManagementState" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="L3" validValuesArray="fastPowerManagementStateValues" />
+    <description source="TRx">The power management state of the line. Enumeration of L0, L2.1, L2.2, L3. Note: See ITU-T Recommendation G.9701. </description>
+
+  <parameter name="SuccessFailureCause" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" minValue="0" maxValue="5" />
+    <description source="TRx">The success failure cause of the initialization. An enumeration of the following integer values: *0: Successful * 1: Configuration error.  This error occurs if the line cannot reach L0 state due to a mismatch of configuration and FTU capabilities.  * 2: Configuration not feasible on the line. This error occurs if the line cannot reach the L0 state due to a mismatch of configuration of line and noise characteristics. * 3: Communication problem.  This error occurs, for example, due to corrupted messages or bad syntax messages or if no common mode  can be selected in the G.994.1 handshaking procedure or due to a timeout. * 4: No far-end FTU detected.  This error occurs if the far-end FTU is not powered or not connected or if the line is too long to allow  detection of a far-end FTU. * 5: Any other or unknown Initialization Failure cause. Note: In G.997.2, this parameter is called &quot;Initialization success/failure cause&quot;. See Clause 7.20.2.1 of ITU-T Recommendation G.998.2.</description>
+
+  <parameter name="UPBOKLER" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1280" />
+    <description source="TRx">This parameter reports the estimate of the electrical length expressed in 0.1 dB units, as determined by the FTU-R (see clause 7.3.1.4.2.1/ITU G.9701) and conveyed in the R-MSG1 initialization message (see clause 12.3.3.2.3 of G.9701). The value is coded as an unsignedInt in the range 0 (coded as 0) to 128 dB (coded as 1280) in steps of 0.1 dB.  Note: This parameter is defined as UPBOKLE-R in Clause 7.10.4.2 of ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="LastTransmittedDownstreamSignal" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="21" />
+    <description source="TRx"> This parameter reports the downstream signal count of the last transmitted initialization signal in the last full or short initialization performed on the line. The valid values are 0..21.  The downstream signal count is defined in clause 12.3.1 in ITU G.9701.  Note: See clause 7.10.2.2 ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="LastTransmittedUpstreamSignal" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="21" />
+    <description source="TRx">This parameter reports the upstream signal count of the last transmitted initialization signal in the last full or short initialization performed on the line. The valid values are 0..21.  The upstream signal count is defined in clause 12.3.1 of ITU Recommendation G.9701.  Note: See clause 7.10.2.3 ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="UPBOKLE" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" minValue="0" maxValue="1280" />
+    <description source="TRx">This parameter reports the electrical length (in 0.1.dB unit) that would have been sent from the FTU-O to the FTU-R if the electrical length was not forced by the DPU-MIB. If the electrical length is not forced by the DPU-MIB, then this object reports the final electrical length, as determined by the FTU-O (see clause 7.3.1.4.2.1 of G.9701) and conveyed in the O-UPDATE initialization message (see clause 12.3.3.2.4 in G.9701).  Note: See clause 7.10.4.1 in ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="LineNumber" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" defaultValue="1" minValue="1" />
+    <description source="TRx">Signifies the line pair that the modem is using to connection.  LineNumber = 1 is the innermost  pair. </description>
+
+  <parameter name="UpstreamMaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the attainable net data rate expressed in Kbps as defined in clause 11.4.1.1.2 in ITU Recommendation G.9701.  Note: This parameter is related to the G.997.2 parameter ATTNDRus. See clause 7.11.2.1 ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="DownstreamMaxBitRate" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the attainable net data rate expressed in Kbps as defined in clause 11.4.1.1.2 of ITU Recommendation G.9701.  Note: This parameter is related to the G.997.2 parameter ATTNDRds. See clause 7.11.2.1 ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="UpstreamNoiseMargin" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the signal-to-noise ratio margin (as defined in clause 9.8.3.2 of ITU Recommendation G.9701 and 11.4.1.3 of G.9701) in the upstream direction. A special value indicates that the signal-to-noise ratio margin is out of the range to be represented.  The parameter is expressed in 0.1dB. Note: In G.997.2, this parameter is called SNRMus. See ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="DownstreamNoiseMargin" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">This parameter reports the signal-to-noise ratio margin (as defined in clause 9.8.3.2 in ITU Recommendation G.9701 and 11.4.1.3 in G.9701) in the upstream direction. A special value indicates that the signal-to-noise ratio margin is out of the range to be represented.  The parameter is expressed in 0.1dB.  Note: In G.997.2, this parameter is called SNRMds. See ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="UpstreamAttenuation" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current upstream signal loss (expressed in 0.1dB). </description>
+
+  <parameter name="DownstreamAttenuation" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current downstream signal loss (expressed in 0.1dB). </description>
+
+  <parameter name="UpstreamPower" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The current output power at the CPE's FAST line (expressed in 0.1dBmV). </description>
+
+  <parameter name="DownstreamPower" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">The current received power at the CPE's DSL line (expressed in 0.1dBmV). </description>
+
+  <parameter name="SNRRMCds" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the signal-to-noise margin for the robust management channel (RMC) in the downstream direction (express in 0.1dB).  A special value (-512)  indicates that the signal-to-noise ratio margin for the RMC is out of the range to be represented.  This parameter is defined in clauses 7.10.12.1 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="SNRRMCus" type="int" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the signal-to-noise margin for the robust management channel (RMC) in the upstream direction (express in 0.1dB).  A special value (-512)  indicates that the signal-to-noise ratio margin for the RMC is out of the range to be represented.  This parameter is defined in clauses 7.10.12.2 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="BITSRMCpsds" type="string" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="4610" />
+    <description source="TRx">List items report the bit allocation values on RMC sub-carriers in RMC symbols in the downstream direction.  Each pair composes of a sub-carrier index from 0..4095 and an 8 bit allocation value.   There are maximum 512 pairs.  This parameter is defined in clause 7.10.12.3 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="BITSRMCpsus" type="string" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="4610" />
+    <description source="TRx">List items report the bit allocation values on RMC sub-carriers in RMC symbols in the upstream direction.  Each pair composes of a sub-carrier index from 0..4095 and an 8 bit allocation value.   There are maximum 512 pairs.  This parameter is defined in clause 7.10.12.4 of ITU-T Recommendation {{bibref|G.997.2}}. </description>
+
+  <parameter name="FEXTCANCELds" type="boolean" specSource="TR181" profile="Device2_FAST:1" supportLevel="R" defaultValue="false" />
+    <description source="TRx">This indicates whether FEXT cancellation in the downstream direction from all the other vectored lines into the line in the vectored group is enabled (TRUE) or disabled (FALSE).   This parameter is defined as FEXT_TO_CANCEL_ENABLEds in clause 7.1.7.1 of ITU Recommendation G.997.2.</description>
+
+  <parameter name="FEXTCANCELus" type="boolean" specSource="TR181" profile="Device2_FAST:1" supportLevel="R" defaultValue="false" />
+    <description source="TRx">This indicates whether FEXT cancellation in the upstream direction from all the other vectored lines into the line in the vectored group is enabled (TRUE) or disabled (FALSE).   This parameter is defined as FEXT_TO_CANCEL_ENABLEds in clause 7.1.7.1 of ITU Recommendation G.997.2.</description>
+
+  <parameter name="ETRds" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the expected throughput rate expressed in Kbps as defined in clause 7.11.1.2 of ITU-T Recommendation G.997.2</description>
+
+  <parameter name="ETRus" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the expected throughput rate expressed in Kbps as defined in clause 7.11.1.2 of ITU-T Recommendation G.997.2</description>
+
+  <parameter name="ATTETRds" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the attainable expected throughput expressed in Kbps as defined in clause 7.11.2.2 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="ATTETRus" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the attainable expected throughput expressed in Kbps as defined in clause 7.11.2.2 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="MINEFTR" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports the minimum error free throughput value expressed in Kbps computed from power up as defined in clause 11.4.1.1.3 of ITU-T Recommendation G.9701</description>
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats." shortObjectName="Dev2FastLineStatsObject" specSource="TR181" profile="Device2_FAST:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface. The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's Enable parameter transitions from false to true). Administrative and operational interface status is discussed in TR-181i2,section 4.2.2. </description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters.  </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters.  </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+    <description source="BROADCOM">REPORT_PROFILE: ADSL:1, ADSL2:1, VDSL2:1</description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors.  </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol.  </description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets which were chosen to be discarded even though no errors had been detected to prevent their being transmitted. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets which were chosen to be discarded even though no errors had been detected to prevent their being delivered. One possible reason for discarding such a packet could be to free up buffer space.  </description>
+
+  <parameter name="EocBytesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc bytes sent.  Refer to ITU-T Rec. G.9701. </description>
+
+  <parameter name="EocBytesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc bytes received.  Refer to ITU-T Rec. G.9701. </description>
+
+  <parameter name="EocPacketsSent" type="unsignedLong" specSource="TR181" profile="Unspecified:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc packets sent.  Refer to ITU-T Rec. G.9701.</description>
+
+  <parameter name="EocPacketsReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc packets received.  Refer to ITU-T Rec. G.9701. </description>
+
+  <parameter name="EocMessagesSent" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc messages sent.  Refer to ITU-T Rec. G.9701. </description>
+
+  <parameter name="EocMessagesReceived" type="unsignedLong" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of eoc messages received.  Refer to ITU-T Rec. G.9701. </description>
+
+  <parameter name="TotalStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">FAST-specific statistic. The Number of seconds since the beginning of the period used for collection of Device.Line.{i}.Stats.Total statistics.  Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible.  Note: TotalStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle.</description>
+
+  <parameter name="ShowtimeStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">FAST-specific statistic. The Number of seconds since the most recent DSL Showtime - the beginning of the period used for collection of Showtime statistics.  Showtime is defined as successful completion of the DSL link establishment process.  The ''Showtime'' statistics are those collected  since the most recent establishment of the DSL link.  Note: ShowtimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle.</description>
+
+  <parameter name="LastShowtimeStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">FAST-specific statistic. The Number of seconds since the second most recent DSL Showtime-the beginning of the period used for collection of LastShowtime statistics.  If the CPE has not retained information about the second most recent Showtime (e.g., on reboot), the start of ''LastShowtime'' statistics MAY temporarily coincide with the start of ''Showtime'' statistics.  Note: LastShowtimeStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="CurrentDayStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">FAST-specific statistic. The Number of seconds since the beginning of the period used for collection of CurrentDay statistics.  The CPE MAY align the beginning of each ''CurrentDay'' interval with days in the UTC time zone, but is not required to do so.  Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible.  Note: CurrentDayStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle.</description>
+
+  <parameter name="QuarterHourStart" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="TRx">FAST-specific statistic. The Number of seconds since the beginning of the period used for collection of QuarterHour statistics.  The CPE MAY align the beginning of each ''QuarterHour'' interval with real-time quarter-hour intervals, but is not required to do so. Statistics SHOULD continue to be accumulated across CPE reboots, though this might not always be possible.  Note: QuarterHourStart SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats.Total." shortObjectName="Dev2FastLineStatsTotalObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains FAST line total statistics. Note: The Stats.Total. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds as defined in ITU-T Rec. G.997.2.  An errored second (ES) is declared if, during a 1-second interval, there are one or more crc anomalies, or one or more los defects, or one or more lor defects, or one or more lpr primitives. </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds as defined in ITU-T Rec. G.997.2. </description>
+
+  <parameter name="LOSS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of signal seconds (LOSS) as defined in ITU-T Rec. G.997.2.  A LOSS is declared if, during a 1-second interval, there are one or more los defects. </description>
+
+  <parameter name="LORS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of RMC seconds (LORS) as defined in ITU-T Rec. G.997.2.  A LORS is declared if, during a 1-second interval, there are one or more lor defects.</description>
+
+  <parameter name="UAS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unavailable seconds (UAS) as defined in ITU-T Rec. G.997.2.  Total number of unavailable seconds (UAS) </description>
+
+  <parameter name="RTXUC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of uncorrected DTU anomalies (rtx_uc).  This parameter is defined in clause 7.8.5 of ITU-T Rec. G.997.2.</description>
+
+  <parameter name="RTXTX" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of retransmitted DTU anomalies (rtx_tx).  This parameter is defined in clause 7.8.6 of ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessBSW" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful bit swap (BSW) primitives.  This parameter is defined as success_BSW in clause 7.7.20 of  ITU-T Rec. {{bibref|G.997.2}}. </description>
+
+  <parameter name="SuccessSRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful autonomous SRA (seamless rate adaptation) primitives.  This parameter is defined as success_SRA in clause 7.7.21 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessFRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful FRA (fast rate adaptation)  primitives.  This parameter is defined as success_FRA in clause 7.7.22 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessRPA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful RPA (RMC parameter adjustment)  primitives.  This parameter is defined as success_RPA in clause 7.7.23 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessTIGA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful TIGA (transmitter initiated gain adjustment) primitives.  This parameter is defined as success_TIGA in clause 7.7.24 of  ITU-T Rec. G.997.2. </description>
+
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats.Showtime." shortObjectName="Dev2FastLineStatsShowtimeObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains FAST line statistics accumulated since the most recent FAST Showtime. See G.997.1,Chapter 7.2.6. Note: This object's parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable/enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds as defined in ITU-T Rec. G.997.2.  An errored second (ES) is declared if, during a 1-second interval, there are one or more crc anomalies, or one or more los defects, or one or more lor defects, or one or more lpr primitives. </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds as defined in ITU-T Rec. G.997.2. </description>
+
+  <parameter name="LOSS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of signal seconds (LOSS) as defined in ITU-T Rec. G.997.2.  A LOSS is declared if, during a 1-second interval, there are one or more los defects. </description>
+
+  <parameter name="LORS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of RMC seconds (LORS) as defined in ITU-T Rec. G.997.2.  A LORS is declared if, during a 1-second interval, there are one or more lor defects.</description>
+
+  <parameter name="UAS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unavailable seconds (UAS) as defined in ITU-T Rec. G.997.2.  Total number of unavailable seconds (UAS) </description>
+
+  <parameter name="RTXUC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of uncorrected DTU anomalies (rtx_uc).  This parameter is defined in clause 7.8.5 of ITU-T Rec. G.997.2.</description>
+
+  <parameter name="RTXTX" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of retransmitted DTU anomalies (rtx_tx).  This parameter is defined in clause 7.8.6 of ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessBSW" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful bit swap (BSW) primitives.  This parameter is defined as success_BSW in clause 7.7.20 of  ITU-T Rec. {{bibref|G.997.2}}. </description>
+
+  <parameter name="SuccessSRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful autonomous SRA (seamless rate adaptation) primitives.  This parameter is defined as success_SRA in clause 7.7.21 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessFRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful FRA (fast rate adaptation)  primitives.  This parameter is defined as success_FRA in clause 7.7.22 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessRPA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful RPA (RMC parameter adjustment)  primitives.  This parameter is defined as success_RPA in clause 7.7.23 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessTIGA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful TIGA (transmitter initiated gain adjustment) primitives.  This parameter is defined as success_TIGA in clause 7.7.24 of  ITU-T Rec. G.997.2. </description>
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats.LastShowtime." shortObjectName="Dev2FastLineStatsLastShowtimeObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains FAST line statistics accumulated since the second most recent FAST Showtime. See G.997.1,Chapter 7.2.6. Note: The object's parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable/enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds as defined in ITU-T Rec. G.997.2.  An errored second (ES) is declared if, during a 1-second interval, there are one or more crc anomalies, or one or more los defects, or one or more lor defects, or one or more lpr primitives. </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds as defined in ITU-T Rec. G.997.2. </description>
+
+  <parameter name="LOSS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of signal seconds (LOSS) as defined in ITU-T Rec. G.997.2.  A LOSS is declared if, during a 1-second interval, there are one or more los defects. </description>
+
+  <parameter name="LORS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of RMC seconds (LORS) as defined in ITU-T Rec. G.997.2.  A LORS is declared if, during a 1-second interval, there are one or more lor defects.</description>
+
+  <parameter name="UAS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unavailable seconds (UAS) as defined in ITU-T Rec. G.997.2.  Total number of unavailable seconds (UAS) </description>
+
+  <parameter name="RTXUC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of uncorrected DTU anomalies (rtx_uc).  This parameter is defined in clause 7.8.5 of ITU-T Rec. G.997.2.</description>
+
+  <parameter name="RTXTX" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of retransmitted DTU anomalies (rtx_tx).  This parameter is defined in clause 7.8.6 of ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessBSW" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful bit swap (BSW) primitives.  This parameter is defined as success_BSW in clause 7.7.20 of  ITU-T Rec. {{bibref|G.997.2}}. </description>
+
+  <parameter name="SuccessSRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful autonomous SRA (seamless rate adaptation) primitives.  This parameter is defined as success_SRA in clause 7.7.21 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessFRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful FRA (fast rate adaptation)  primitives.  This parameter is defined as success_FRA in clause 7.7.22 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessRPA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful RPA (RMC parameter adjustment)  primitives.  This parameter is defined as success_RPA in clause 7.7.23 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessTIGA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful TIGA (transmitter initiated gain adjustment) primitives.  This parameter is defined as success_TIGA in clause 7.7.24 of  ITU-T Rec. G.997.2. </description>
+
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats.CurrentDay." shortObjectName="Dev2FastLineStatsCurrentDayObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains FAST line statistics accumulated during the current day. See G.997.1,Chapter 7.2.6. Note: The CurrentDay. parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds as defined in ITU-T Rec. G.997.2.  An errored second (ES) is declared if, during a 1-second interval, there are one or more crc anomalies, or one or more los defects, or one or more lor defects, or one or more lpr primitives. </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds as defined in ITU-T Rec. G.997.2. </description>
+
+  <parameter name="LOSS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of signal seconds (LOSS) as defined in ITU-T Rec. G.997.2.  A LOSS is declared if, during a 1-second interval, there are one or more los defects. </description>
+
+  <parameter name="LORS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of RMC seconds (LORS) as defined in ITU-T Rec. G.997.2.  A LORS is declared if, during a 1-second interval, there are one or more lor defects.</description>
+
+  <parameter name="UAS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unavailable seconds (UAS) as defined in ITU-T Rec. G.997.2.  Total number of unavailable seconds (UAS) </description>
+
+  <parameter name="RTXUC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of uncorrected DTU anomalies (rtx_uc).  This parameter is defined in clause 7.8.5 of ITU-T Rec. G.997.2.</description>
+
+  <parameter name="RTXTX" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of retransmitted DTU anomalies (rtx_tx).  This parameter is defined in clause 7.8.6 of ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessBSW" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful bit swap (BSW) primitives.  This parameter is defined as success_BSW in clause 7.7.20 of  ITU-T Rec. {{bibref|G.997.2}}. </description>
+
+  <parameter name="SuccessSRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful autonomous SRA (seamless rate adaptation) primitives.  This parameter is defined as success_SRA in clause 7.7.21 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessFRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful FRA (fast rate adaptation)  primitives.  This parameter is defined as success_FRA in clause 7.7.22 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessRPA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful RPA (RMC parameter adjustment)  primitives.  This parameter is defined as success_RPA in clause 7.7.23 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessTIGA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful TIGA (transmitter initiated gain adjustment) primitives.  This parameter is defined as success_TIGA in clause 7.7.24 of  ITU-T Rec. G.997.2. </description>
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.Stats.QuarterHour." shortObjectName="Dev2FastLineStatsQuarterHourObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains FAST line statistics accumulated during the current quarter hour.  Note: The QuarterHour parameters SHOULD NOT be reset when the interface statistics are reset via an interface disable / enable cycle. </description>
+
+  <parameter name="ErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of errored seconds as defined in ITU-T Rec. G.997.2.  An errored second (ES) is declared if, during a 1-second interval, there are one or more crc anomalies, or one or more los defects, or one or more lor defects, or one or more lpr primitives. </description>
+
+  <parameter name="SeverelyErroredSecs" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of severely errored seconds as defined in ITU-T Rec. G.997.2. </description>
+
+  <parameter name="LOSS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of signal seconds (LOSS) as defined in ITU-T Rec. G.997.2.  A LOSS is declared if, during a 1-second interval, there are one or more los defects. </description>
+
+  <parameter name="LORS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of loss of RMC seconds (LORS) as defined in ITU-T Rec. G.997.2.  A LORS is declared if, during a 1-second interval, there are one or more lor defects.</description>
+
+  <parameter name="UAS" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Total number of unavailable seconds (UAS) as defined in ITU-T Rec. G.997.2.  Total number of unavailable seconds (UAS) </description>
+
+  <parameter name="RTXUC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of uncorrected DTU anomalies (rtx_uc).  This parameter is defined in clause 7.8.5 of ITU-T Rec. G.997.2.</description>
+
+  <parameter name="RTXTX" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of retransmitted DTU anomalies (rtx_tx).  This parameter is defined in clause 7.8.6 of ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessBSW" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful bit swap (BSW) primitives.  This parameter is defined as success_BSW in clause 7.7.20 of  ITU-T Rec. {{bibref|G.997.2}}. </description>
+
+  <parameter name="SuccessSRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful autonomous SRA (seamless rate adaptation) primitives.  This parameter is defined as success_SRA in clause 7.7.21 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessFRA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful FRA (fast rate adaptation)  primitives.  This parameter is defined as success_FRA in clause 7.7.22 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessRPA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful RPA (RMC parameter adjustment)  primitives.  This parameter is defined as success_RPA in clause 7.7.23 of  ITU-T Rec. G.997.2. </description>
+
+  <parameter name="SuccessTIGA" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">This parameter reports a count of the successful TIGA (transmitter initiated gain adjustment) primitives.  This parameter is defined as success_TIGA in clause 7.7.24 of  ITU-T Rec. G.997.2. </description>
+
+<object name="InternetGatewayDevice.Device.FAST.Line.{i}.TestParams." shortObjectName="Dev2FastLineTestParamsObject" specSource="TR181" profile="Device2_FAST:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">This object contains the FAST line test parameters that are available during the L0 (i.e., Showtime) state. </description>
+
+  <parameter name="SNRGds" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the number of sub-carriers in any one sub-carrier group used to represent the downstream SNR(f) values.  Valid values are 1, 2, 4, and 8.  See clause 7.10.8.2 ITU-T Recommendation G.997.2.  Note: In ITU-T G.9701-2014, the only valid value is G = 1.</description>
+
+  <parameter name="SNRGus" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the number of sub-carriers in any one sub-carrier group used to represent the upstream SNR(f) values.  Valid values are 1, 2, 4, and 8.  See clause 7.10.8.5 ITU-T Recommendation G.997.2.  Note: In ITU-T G.9701-2014, the only valid value is G = 1. </description>
+
+  <parameter name="SNRpsds" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx">Comma-separated values (maximum list length is 2047) of integers.  Reports the downstream SNR(f) values. A special value indicates that no measurement could be done for this sub-carrier group because it is out of the downstream MEDLEY set or its transmit power is zero.  The number of elements will depend on the value of SNRGds.  Interpretation of the values is as defined in clause 11.4.1.2.2.of ITU-T Rec. G.9701.  Note: See also clause 7.10.8.3 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="SNRpsus" type="string" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" maxLength="2047" />
+    <description source="TRx">Comma-separated values (maximum list length is 2047) of integers.  Reports the upstream SNR(f) values. A special value indicates that no measurement could be done for this sub-carrier group because it is out of the downstream MEDLEY set or its transmit power is zero.  The number of elements will depend on the value of SNRGds.  Interpretation of the values is as defined in clause 11.4.1.2.2.of ITU-T Rec. G.9701.  Note: See also clause 7.10.8.6 of ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="SNRMTds" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" minValue="0" maxValue="65535" />
+    <description source="TRx">Reports the number of symbols used to measure the downstream SNR(f) values.   The valid values 0..65535.  Note: See clause 7.10.8.1 of ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="SNRMTus" type="unsignedInt" specSource="TR181" profile="Device2_FAST:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" minValue="0" maxValue="65535" />
+    <description source="TRx">Reports the number of symbols used to measure the upstream SNR(f) values.   The valid values 0..65535.  Note: See clause 7.10.8.4 of ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="ACTINP" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="2047" />
+    <description source="TRx">Reports the actual INP against SHINE as defined in clause 11.4.1.1.7 in G.9701.   A special value indicates an actual INP against SHINE of 2047 symbols or higher. The valid values are 0..2046 and 2047 is the special value.  Note: See ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="NFEC" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the DTU FEC codeword length (expressed in 1 byte unit) as defined in clause 9.3 in G.9701.   The valid range is 32..255.  Note: See clause 7.11.4.1 ITU-T Recommendation G.997.2.</description>
+
+  <parameter name="RFEC" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Reports the DTU FEC codeword redundancy as defined in clause 9.3 in G.9701.  Note: See ITU-T Recommendation G.997.2. </description>
+
+  <parameter name="UpstreamCurrRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" minValue="0" maxValue="4294967295" />
+    <description source="TRx">Reports the current physical layer aggregate data rate (expressed in {{units}}) of the upstream FAST as defined in clause 11.4.1.1.1 in G.9701.  The current physical layer aggregate data rate (expressed in Kbps) of the upstream FAST connection.  The valid values are 0..4294967295(0 to 2^32-1 kbit/s). </description>
+
+  <parameter name="DownstreamCurrRate" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" minValue="0" maxValue="4294967295" />
+    <description source="TRx"> Reports the current physical layer aggregate data rate (expressed in {{units}}) of the upstream FAST as defined in clause 11.4.1.1.1 in G.9701.  The current physical layer aggregate data rate (expressed in Kbps) of the downstream FAST connection.  The valid values are 0..4294967295(0 to 2^32-1 kbit/s).</description>
+
+  <parameter name="ACTINPREIN" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" minValue="0" maxValue="63" />
+    <description source="TRx">Reports the actual INP against REIN as defined in clause 11.4.1.1.8 in G.9701. A special value indicates an actual INP against REIN of 63 symbols or higher.  The valid range is 0..62 symbols, and 63 is the special value. </description>
+
+<vsaInfo>
+
+<validstringarray name="fastIntfStatusValues" />
+  <element>Up</element>
+  <element>Initializing</element>
+  <element>EstablishingLink</element>
+  <element>NoSignal</element>
+  <element>Disabled</element>
+  <element>Error</element>
+
+<validstringarray name="fastPowerManagementStateValues" />
+  <element>L0</element>
+  <element>L2.1</element>
+  <element>L2.2</element>
+  <element>L3</element>
+
+<validstringarray name="fastProfileValues" />
+  <element>106a</element>
+  <element>212a</element>
+  <element>106b</element>
+  <element>106c</element>
+  <element>212c</element>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_FAST:1" /> 
+<profile name="Unspecified" /> 
+<profile name="Unspecified:1" /> 
+</profileInfo>
+
+</xmlMandatorySingleRootNode>

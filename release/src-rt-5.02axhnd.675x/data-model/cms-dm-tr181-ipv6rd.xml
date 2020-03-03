@@ -1,0 +1,97 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPv6rd." shortObjectName="Dev2Ipv6rdObject" specSource="TR181" profile="Device2_IPv6rd:1" requirements="P" supportLevel="Present" oid="1480" />
+  <description source="TRx">Settings allowing a CPE to derive and route IPv6 Rapid Deployment (6rd) delegated prefixes as specified in {{bibref|RFC5969}}.  The 6rd mechanism is intended to be implemented only on what {{bibref|RFC5969}} refers to as ''Customer Edge Routers'', i.e. on gateway devices, that support IPv6 on the LAN side and only have IPv4 connectivity on the WAN side. See the 6rd Theory of Operation {{bibref|TR-181i2a2|Appendix VI}} for a description of the working of this 6rd data model. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">Enables or disables IPv6rd. </description>
+
+  <parameter name="InterfaceSettingNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_IPv6rd:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the InterfaceSetting table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.IPv6rd.InterfaceSetting.{i}." shortObjectName="Dev2Ipv6rdInterfaceSettingObject" specSource="TR181" profile="Device2_IPv6rd:1" requirements="R" supportLevel="DynamicInstances" />
+  <description source="TRx">6rd {{bibref|RFC5969}} settings. A 6rd delegated prefix is expected to be of maximum length 64 bits, and is the concatenation of the following two items:* Service provider IPv6 prefix: specified via the {{param|SPIPv6Prefix}} parameter * IPv4 address suffix: the IPv4 address with the first {{param|IPv4MaskLength}} bits removedThis object definition is derived from {{bibref|RFC5969}} with some minor nomenclature changes. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enable or disable this {{object}} instance. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="R" supportLevel="ReadOnly" defaultValue="Disabled" validValuesArray="status3eValues" />
+    <description source="TRx">The status of this entry.  {{enum}} The {{enum|Error}} value MAY be used by the CPE to indicate a locally defined error condition. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Unspecified" mayDenyActiveNotification="true" denyActiveNotification="true" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-ipv6rd" autoGenerateAlias="true" />
+    <description source="TRx">{{datatype|expand}} </description>
+
+  <parameter name="BorderRelayIPv4Addresses" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">List items are the IPv4 addresses (possibly anycast) of the 6rd Relay(s). </description>
+
+  <parameter name="AllTrafficToBorderRelay" type="boolean" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="TRx">If {{true}}, the destination address for all 6rd traffic will be set (IPv4 destination address) to one of the {{param|BorderRelayIPv4Addresses}}. If {{false}}, traffic whose destination address begins with the same prefix as {{param|SPIPv6Prefix}} will be sent directly to the destination IPv4 address of the endpoint, which is in the same 6rd domain. See 6rd Theory of Operation for further explanation {{bibref|TR-181i2a2|Appendix VI}}. </description>
+
+  <parameter name="SPIPv6Prefix" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">The Service Provider's 6rd IPv6 prefix for this deployment and this 6rd RG. </description>
+
+  <parameter name="IPv4MaskLength" type="unsignedInt" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" minValue="0" maxValue="32" />
+    <description source="TRx">The number of high-order {{units}} that are identical across all IPv4 addresses within a given 6rd domain. This number of {{units}} MUST be removed from the start of the IPv4 address when generating the 6rd delegated prefix. For example, if this value is 8, only the final 24 {{units}} of the subscriber IPv4 prefix will be used when creating the IPv6 delegated prefix, determining the destination IPv4 encapsulation address, etc.If the value is 0, then the whole 32 {{units}} of the IPv4 address are used in the encoding. </description>
+
+  <parameter name="AddressSource" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="W" supportLevel="ReadWrite" maxLength="256" />
+    <description source="TRx">{{reference}} Points to the IPv4 address that is the source of the IPv4 address embedded in the IPv6 6rd prefix, and used as the source encapsulating IPv4 address. If the value is {{empty}} or this parameter is not present, the device will use internal logic to determine which IPv4 source address to use. </description>
+
+  <parameter name="TunnelInterface" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference}} This is an IP interface of ''Type'' {{enum|Tunnel|.IP.Interface.{i}.Type}} that is logically the tunnel entry point for upstream IPv6 traffic and is also logically the tunnel exit point for downstream IPv6 traffic (i.e. the entry point for non-tunneled upstream IPv6 traffic to enter a tunnel and become tunneled, or conversely, the exit point for downstream IPv6 traffic leaving a tunnel after being un-tunneled).  IPv6 traffic that enters {{param}} from the LAN is expected to continue on through {{param|TunneledInterface}}, and traffic from the WAN is expected to come from {{param|TunneledInterface}} into {{param}}. {{param}} is a logical interface that can allow for classification, marking (of IPv6 headers), and policing of IPv6 traffic that will be going over a 6rd tunnel. These functions are modeled in the {{object|.QoS.}} object.{{param}} can be used also to represent the 6rd virtual interface defined in {{bibref|RFC5969}}. Note: In 6rd, IPv6 packets arriving over one or more device LAN IP interfaces are logically fed into this {{param}}. Likewise, 6rd traffic from the WAN gets logically sent from this {{param}} to LAN IP interfaces. </description>
+
+  <parameter name="TunneledInterface" type="string" specSource="TR181" profile="Device2_IPv6rd:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference}} This is an IP interface of ''Type'' {{enum|Tunneled|.IP.Interface.{i}.Type}} that provides information about the IPv4 headers used to encapsulate the IPv6 packets. Encapsulated IPv6 traffic that enters {{param}} from the WAN is expected to continue on through {{param|TunnelInterface}}, and traffic from the LAN is expected to come from {{param|TunnelInterface}} into {{param}}. {{param}} is a logical interface that can allow for classification, marking (of IPv4 headers and VLAN tags), and policing of IPv4 packets that encapsulate IPv6 packets in 6rd traffic. These functions are modeled in the {{object|.QoS.}} object.Note: In 6rd, {{param}} traffic originating from the LAN logically feeds into a WAN-side IPv4 capable IP interface that the &quot;IPv6 6rd tunnel&quot; goes over. 6rd traffic that enters over this IPv4 WAN interface gets logically sent to this {{param}}. </description>
+
+  <parameter name="X_BROADCOM_COM_TunnelName" type="string" specSource="Broadcom" profile="Device2_IPv6rd:1" supportLevel="ReadWrite" defaultValue="" maxLength="32" />
+    <description source="BROADCOM">User configurable tunnel name</description>
+
+  <parameter name="X_BROADCOM_COM_TunnelInterface" type="string" specSource="Broadcom" profile="Device2_IPv6rd:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="BROADCOM">This parameter contains full path to associated 6rd LAN interface's IP.Interface.x</description>
+
+  <parameter name="X_BROADCOM_COM_TunneledInterface" type="string" specSource="Broadcom" profile="Device2_IPv6rd:1" supportLevel="ReadWrite" defaultValue="" maxLength="256" />
+    <description source="BROADCOM">This parameter contains full path to associated 6rd WAN interface's IP.Interface.x</description>
+
+  <parameter name="X_BROADCOM_COM_Dynamic" type="boolean" specSource="Broadcom" profile="Device2_IPv6rd:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Indicate if 6rd tunnel is static configuration.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="status3eValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+  <element>Error</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Device2_IPv6rd:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

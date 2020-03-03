@@ -1,0 +1,70 @@
+<PUBLISH>
+@@ -181,7 +181,7 @@
+ # BUILD_BUSYBOX_TAR is not set
+ # BUILD_BUSYBOX_TELNET is not set
+ # BUILD_BUSYBOX_VI is not set
+-# BUILD_BUSYBOX_AWK is not set
++BUILD_BUSYBOX_AWK=y
+ # BUILD_BUSYBOX_PIDOF is not set
+ # BUILD_BUSYBOX_NTPD is not set
+ BUILD_IPV6=y
+@@ -198,18 +198,14 @@
+ #
+ # GPON Selection
+ #
+-BRCM_DRIVER_GPON=m
++# BRCM_DRIVER_GPON is not set
+ BCM_MAX_GEM_PORTS=128
+-BUILD_GPON=y
+-BRCM_GPON=y
+-BRCM_OMCI=y
+-BUILD_NGPON=y
+-BUILD_OMCI=y
+-BUILD_BCMIPC=y
++# BUILD_OMCI is not set
++# BUILD_BCMIPC is not set
+ # BUILD_OMCI_AUTH is not set
+-BUILD_GPONIF=dynamic
+-BUILD_GPOND=dynamic
+-BUILD_GPONCTL=dynamic
++# BUILD_GPONIF is not set
++# BUILD_GPOND is not set
++# BUILD_GPONCTL is not set
+ # USE_GPONRG_OMCI_LIGHT is not set
+ # USE_GPONRG_OMCI_FULL is not set
+ USE_GONRG_NONE=y
+@@ -218,10 +214,9 @@
+ BUILD_GPON_ONU=y
+ # BUILD_OMCI_TR69_DUAL_STACK is not set
+-BRCM_GPON_SFU=y
++# BRCM_GPON_SFU is not set
+ # BRCM_GPON_HGU is not set
+-# BRCM_GPON_NONE is not set
+-GPON_ONU_TYPE=GPON_SFU
++BRCM_GPON_NONE=y
+ 
+ #
+ # EPON Selection
+@@ -237,8 +232,9 @@
+ #     OAM Stack Selection
+ #
+ # BUILD_EPON_BCM_OAM is not set
+-BUILD_EPON_CTC_OAM=y
+-# BUILD_EPON_DPOE_OAM is not set
++# BUILD_EPON_CTC_OAM is not set
++BUILD_EPON_DPOE_OAM=y
++BUILD_EPON_DPOE_SSD=y
+ # BUILD_EPON_SDK_VOICE_OAM is not set
+ BUILD_EPONWAN=y
+ # OVERRIDE_EPON_MAC_ADDR is not set
+@@ -368,8 +364,8 @@
+ # BUILD_DDNSD is not set
+ # BUILD_IPROUTE2 is not set
+ # BUILD_ZEBRA is not set
+-BUILD_MCAST_PROXY=dynamic
+-BUILD_MCAST_SNOOP=y
++# BUILD_MCAST_PROXY is not set
++# BUILD_MCAST_SNOOP is not set
+ # BUILD_PCP is not set
+ BCM_JUMBO_FRAME=y
+ BCM_MAX_MTU_SIZE=1998

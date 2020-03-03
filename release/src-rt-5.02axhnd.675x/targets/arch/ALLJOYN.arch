@@ -1,0 +1,4 @@
+<PUBLISH>
+@@ special demark for maketargets.  All + and - lines after this line will modify profile.
+-# BUILD_ALLJOYN is not set
++BUILD_ALLJOYN=y

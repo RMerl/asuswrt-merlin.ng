@@ -1,0 +1,162 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2018" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ethernet." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ethernet.LAG.{i}." shortObjectName="Dev2EthLAGObject" specSource="TR181" profile="Device2_EthLAG:1" requirements="PC" supportLevel="DynamicInstances" oid="1160" />
+  <description source="TRx">Ethernet Link Aggregation Group (LAG) table (a stackable interface object as described in [Section 4.2/TR-181i2]). Table entries model the Link Aggregation Sub-Layer as defined in [Section 802.1AX/]. It is expected that an Ethernet LAG interface can be stacked above Ethernet.Interface type of interfaces only. At most one entry in this table can exist with a given value for Alias, or with a given value for Name, or with a given value for MACAddress.</description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_EthLAG:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables the bonding group. This parameter is based on ''ifAdminStatus'' from RFC2863. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" supportLevel="ReadOnly" validValuesArray="ifOperStatusValues" />
+    <description source="TRx"> This parameter is based on ''ifOperStatus'' from RFC2863. </description>
+
+  <parameter name="Alias" type="string" specSource="TR181" profile="Device2_EthLAG:1" requirements="W" supportLevel="ReadWrite" defaultValue="cpe-bondinggroup" maxLength="64" autoGenerateAlias="true" notifySskAliasChanged="true" />
+    <description source="TRx">A non-volatile handle used to reference this instance. Alias provides a mechanism for an ACS to label this instance for future reference. An initial unique value MUST be assigned when the CPE creates an instance of this object. </description>
+
+  <parameter name="Name" type="string" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" supportLevel="ReadOnly" maxLength="64" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The textual name of the bonding group as assigned by the CPE. </description>
+
+  <parameter name="LastChange" type="unsignedInt" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The accumulated time in seconds since the bonding group entered its current operational state. </description>
+
+  <parameter name="LowerLayers" type="string" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" supportLevel="ReadOnly" maxLength="1024" notifySskLowerLayersChanged="true" alwaysWriteToConfigFile="true" />
+    <description source="TRx">Comma seperated list (maximum length 1024). Each list item must be the be the path name of an interface object that is stacked immediately below this interface object.  If the referenced object is deleted, the corresponding item MUST be removed from the list.  See Section 4.2.1 of TR-181i2. </description>
+
+  <parameter name="MACAddress" type="string" specSource="TR181" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="" maxLength="17" minLength="17" />
+    <description source="TRx">MAC address of the Link Aggregation Interface. </description>
+
+  <parameter name="X_BROADCOM_COM_LastChange" type="unsignedInt" specSource="BROADCOM" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="0" hideParameterFromAcs="true" neverWriteToConfigFile="true" />
+    <description source="BROADCOM">A timestamp, in seconds, of the last status change.  Used to calculate the TR181 LastChange value.</description>
+
+  <parameter name="X_BROADCOM_COM_Upstream" type="boolean" specSource="BROADCOM" profile="Device2_EthLAG:1" requirements="W" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">User selects this EthLAG to be used as WAN or LAN.  Upstream TRUE means WAN interface.  This param mirrors the upstream param in the lowest layer of the interface stack.</description>
+
+  <parameter name="X_BROADCOM_COM_EthIfName1" type="string" specSource="BROADCOM" profile="Device2_EthLAG:1" supportLevel="ReadWrite" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">First Ethernet Interface Name</description>
+
+  <parameter name="X_BROADCOM_COM_EthIfName2" type="string" specSource="BROADCOM" profile="Device2_EthLAG:1" supportLevel="ReadWrite" alwaysWriteToConfigFile="true" />
+    <description source="BROADCOM">Second Ethernet Interface Name</description>
+
+  <parameter name="X_BROADCOM_COM_Mode" type="string" specSource="Broadcom" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="802.3ad" validValuesArray="lagPolicyModeValues" />
+    <description source="BROADCOM">Specifies one of the bonding policies. Possible values (based on bonding driver configuration) are:&#10;balance-rr&#10;Round-robin policy: Transmit packets in sequential order from the first available slave through the last.&#10;This mode provides load balancing and fault tolerance.&#10;balance-xor&#10;  XOR policy: Transmit based on the selected transmit hash policy.&#10;  The default policy is a simple &#10;  [(source MAC address XOR'd with destination MAC address XOR packet type ID) modulo slave count].&#10;  Alternate transmit policies may be selected via the xmitHashPolicy option, described below.&#10;  This mode provides load balancing and fault tolerance.&#10;802.3ad&#10;  IEEE 802.3ad Dynamic link aggregation. Creates aggregation groups that share the same speed and duplex settings.  &#10;  Utilizes all slaves in the active aggregator according to the 802.3ad specification.&#10;  Slave selection for outgoing traffic is done according to the transmit hash policy, &#10;  which may be changed from the default simple XOR policy via the xmitHashPolicy optio&#10;</description>
+
+  <parameter name="X_BROADCOM_COM_XmitHashPolicy" type="string" specSource="Broadcom" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="layer3Plus4" validValuesArray="lagHashPolicyValues" />
+    <description source="BROADCOM">Selects the transmit hash policy to use for slave selection in&#10;	balance-xor, 802.3ad, and tlb modes.  Possible values are:&#10;&#10;	layer2&#10;&#10;		Uses XOR of hardware MAC addresses and packet type ID&#10;		field to generate the hash. The formula is&#10;&#10;		hash = source MAC XOR destination MAC XOR packet type ID&#10;		slave number = hash modulo slave count&#10;&#10;		This algorithm will place all traffic to a particular&#10;		network peer on the same slave.&#10;&#10;		This algorithm is 802.3ad compliant.&#10;&#10;	layer2+3&#10;&#10;		This policy uses a combination of layer2 and layer3&#10;		protocol information to generate the hash.&#10;&#10;		Uses XOR of hardware MAC addresses and IP addresses to&#10;		generate the hash.  The formula is&#10;&#10;		hash = source MAC XOR destination MAC XOR packet type ID&#10;		hash = hash XOR source IP XOR destination IP&#10;		hash = hash XOR (hash RSHIFT 16)&#10;		hash = hash XOR (hash RSHIFT 8)&#10;		And then hash is reduced modulo slave count.&#10;&#10;		If the protocol is IPv6 then the source and destination&#10;		addresses are first hashed using ipv6_addr_hash.&#10;&#10;		This algorithm will place all traffic to a particular&#10;		network peer on the same slave.  For non-IP traffic,&#10;		the formula is the same as for the layer2 transmit&#10;		hash policy.&#10;&#10;		This policy is intended to provide a more balanced&#10;		distribution of traffic than layer2 alone, especially&#10;		in environments where a layer3 gateway device is&#10;		required to reach most destinations.&#10;&#10;		This algorithm is 802.3ad compliant.&#10;&#10;	layer3+4&#10;&#10;		This policy uses upper layer protocol information,&#10;		when available, to generate the hash.  This allows for&#10;		traffic to a particular network peer to span multiple&#10;		slaves, although a single connection will not span&#10;		multiple slaves.&#10;&#10;		The formula for unfragmented TCP and UDP packets is&#10;&#10;		hash = source port, destination port (as in the header)&#10;		hash = hash XOR source IP XOR destination IP&#10;		hash = hash XOR (hash RSHIFT 16)&#10;		hash = hash XOR (hash RSHIFT 8)&#10;		And then hash is reduced modulo slave count.&#10;&#10;		If the protocol is IPv6 then the source and destination&#10;		addresses are first hashed using ipv6_addr_hash.&#10;&#10;		For fragmented TCP or UDP packets and all other IPv4 and&#10;		IPv6 protocol traffic, the source and destination port&#10;		information is omitted.  For non-IP traffic, the&#10;		formula is the same as for the layer2 transmit hash&#10;		policy.&#10;&#10;		This algorithm is not fully 802.3ad compliant.  A&#10;		single TCP or UDP conversation containing both&#10;		fragmented and unfragmented packets will see packets&#10;		striped across two interfaces.  This may result in out&#10;		of order delivery.  Most traffic types will not meet&#10;		this criteria, as TCP rarely fragments traffic, and&#10;		most UDP traffic is not involved in extended&#10;		conversations.  Other implementations of 802.3ad may&#10;		or may not tolerate this noncompliance.&#10;&#10;	encap2+3&#10;&#10;		This policy uses the same formula as layer2+3 but it&#10;		relies on skb_flow_dissect to obtain the header fields&#10;		which might result in the use of inner headers if an&#10;		encapsulation protocol is used. For example this will&#10;		improve the performance for tunnel users because the&#10;		packets will be distributed according to the encapsulated&#10;		flows.&#10;&#10;	encap3+4&#10;&#10;		This policy uses the same formula as layer3+4 but it&#10;		relies on skb_flow_dissect to obtain the header fields&#10;		which might result in the use of inner headers if an&#10;		encapsulation protocol is used. For example this will&#10;		improve the performance for tunnel users because the&#10;		packets will be distributed according to the encapsulated&#10;		flows.</description>
+
+  <parameter name="X_BROADCOM_COM_LacpRate" type="string" specSource="Broadcom" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="slow" maxLength="4" minLength="4" />
+    <description source="BROADCOM">Option specifying the rate in which link partner is asked to transmit LACPDU packets when Mode is 802.3ad.&#10;slow&#10;  Request partner to transmit LACPDUs every 30 seconds&#10;fast&#10;  Request partner to transmit LACPDUs every 1 second</description>
+
+  <parameter name="X_BROADCOM_COM_SelectionLogic" type="string" specSource="Broadcom" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="bandwidth" maxLength="9" />
+    <description source="BROADCOM">Active Aggregator Selection Logic when Mode is 802.3ad.&#10;stable&#10;  The active aggregator is chosen by largest aggregate bandwidth.&#10;  Reselection of the active aggregator occurs only when all slaves of the active aggregator are down or the &#10;  active aggregator has no slaves. &#10;bandwidth&#10;  The active aggregator is chosen by largest aggregate bandwidth.&#10;  Reselection occurs if:&#10;    - A slave is added to or removed from the bond&#10;    - Any slave's link state changes&#10;    - Any slave's 802.3ad association state changes&#10;    - The bond's administrative state changes to up&#10;count&#10;  The active aggregator is chosen by the largest number of ports (slaves).  &#10;  Reselection occurs as described under the &quot;bandwidth&quot; setting, above. &#10;  The bandwidth and count selection policies permit failover of 802.3ad aggregations when &#10;  partial failure of the active aggregator occurs.&#10;  This keeps the aggregator with the highest availability (either in bandwidth or in number of ports)&#10;  active at all times.</description>
+
+  <parameter name="X_BROADCOM_COM_Miimon" type="unsignedInt" specSource="Broadcom" profile="Device2_EthLAG:1" supportLevel="ReadWrite" defaultValue="0" />
+    <description source="BROADCOM">Specifies the MII link monitoring frequency in milliseconds. This determines how often the link state of each slave is inspected for link failures.  A value of zero disables MII	link monitoring.  A value of 100 is a good starting point. The use_carrier option, below, affects how the link state is determined.  See the High Availability section for additional information.  The default value is 0.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Ethernet.LAG.{i}.Stats." shortObjectName="Dev2EthLAGStatsObject" specSource="TR181" profile="Device2_EthLAG:1" requirements="P" supportLevel="Present" />
+  <description source="TRx">Throughput statistics for this interface.&#10;&#10;The CPE MUST reset the interface's Stats parameters (unless otherwise stated in individual object or parameter descriptions) either when the interface becomes operationally down due to a previous administrative down (i.e. the interface's Status parameter transitions to a down state after the interface is disabled) or when the interface becomes administratively up (i.e. the interface's Enable parameter transitions from false to true). Administrative and operational interface status is discussed in [Section 4.2.2/TR-181i2].</description>
+
+  <parameter name="BytesSent" type="unsignedLong" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes transmitted out of the interface, including framing characters. </description>
+
+  <parameter name="BytesReceived" type="unsignedLong" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of bytes received on the interface, including framing characters. </description>
+
+  <parameter name="PacketsSent" type="unsignedLong" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets transmitted out of the interface. </description>
+
+  <parameter name="PacketsReceived" type="unsignedLong" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of packets received on the interface. </description>
+
+  <parameter name="ErrorsSent" type="unsignedInt" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of outbound packets that could not be transmitted because of errors. </description>
+
+  <parameter name="ErrorsReceived" type="unsignedInt" specSource="TR181" profile="Device2_EthLAG:1" requirements="R" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" />
+    <description source="TRx">The total number of inbound packets that contained errors preventing them from being delivered to a higher-layer protocol. </description>
+
+  <parameter name="UnicastPacketsSent" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of packets requested for transmission which were not addressed &#10;to a multicast or broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="UnicastPacketsReceived" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of received packets, delivered by this layer to a higher layer,&#10;which were not addressed to a multicast or broadcast address at this layer.</description>
+
+  <parameter name="DiscardPacketsSent" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of outbound packets which were chosen to be discarded even though no errors had been detected &#10;to prevent their being transmitted. &#10;One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="DiscardPacketsReceived" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of inbound packets which were chosen to be discarded even though no errors had been detected &#10;to prevent their being delivered. &#10;One possible reason for discarding such a packet could be to free up buffer space.</description>
+
+  <parameter name="MulticastPacketsSent" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of packets that higher-level protocols requested for transmission and which were addressed &#10;to a multicast address at this layer, &#10;including those that were discarded or not sent.</description>
+
+  <parameter name="MulticastPacketsReceived" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of received packets, delivered by this layer to a higher layer,which were addressed to a multicast address at this layer.</description>
+
+  <parameter name="BroadcastPacketsSent" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of packets that higher-level protocols requested for transmission and which were addressed to a broadcast address at this layer, including those that were discarded or not sent.</description>
+
+  <parameter name="BroadcastPacketsReceived" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of received packets, delivered by this layer to a higher layer, which were addressed to a broadcast address at this layer.</description>
+
+  <parameter name="UnknownProtoPacketsReceived" type="unsignedLong" specSource="Broadcom" profile="Device2_EthLAG:1" mayDenyActiveNotification="true" denyActiveNotification="true" supportLevel="ReadOnly" defaultValue="0" />
+    <description source="BROADCOM">The total number of packets received via the interface which were discarded because of an unknown or unsupported protocol.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="ifOperStatusValues" />
+  <element>Up</element>
+  <element>Down</element>
+  <element>Unknown</element>
+  <element>Dormant</element>
+  <element>NotPresent</element>
+  <element>LowerLayerDown</element>
+  <element>Error</element>
+
+<validstringarray name="lagHashPolicyValues" />
+  <element>layer2</element>
+  <element>layer2Plus3</element>
+  <element>layer3Plus4</element>
+  <element>encap2Plus3</element>
+  <element>encap3Plus4</element>
+
+<validstringarray name="lagPolicyModeValues" />
+  <element>balance-rr</element>
+  <element>balance-xor</element>
+  <element>802.3ad</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_EthLAG:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

@@ -1,0 +1,11 @@
+#**********************************************
+#  Copyright (c) 2014  Broadcom 
+#  All Rights Reserved
+#*********************************************/
+
+This directory is a placeholder for DSL project specific RDD files. If the source files are same as for DSL_63138, there
+is no need to copy them, but projects/DSL_63138/sources.list file should contain files from
+projects/DSL_63138/drivers/rdd. The only files that should remain here are auto-generated files by table manager, which are updated during firmware build. After they are changed, they should be submitted to P4. 
+
+Please refer to projects/PON_6838_G9991 for reference.
+

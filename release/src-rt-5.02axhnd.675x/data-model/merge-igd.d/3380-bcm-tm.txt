@@ -1,0 +1,8 @@
+#
+# Add the objects in cms-dm-bcm-tm.xml above DeviceConfig.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-tm.xml InternetGatewayDevice.DeviceConfig.
+

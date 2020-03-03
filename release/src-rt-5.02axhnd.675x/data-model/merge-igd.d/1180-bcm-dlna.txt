@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-dlna.xml below the 
+# object InternetGatewayDevice.X_BROADCOM_COM_IPPCfg.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-bcm-dlna.xml InternetGatewayDevice.X_BROADCOM_COM_IPPCfg.

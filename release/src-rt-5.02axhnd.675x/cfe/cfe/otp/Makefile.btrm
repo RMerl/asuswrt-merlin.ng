@@ -1,0 +1,3 @@
+BSPOBJS += bcm63xx_sotp_if.o
+BSPOBJS += sotp_base_funcs.o
+BSPOBJS += bcm_otp_impl1.o

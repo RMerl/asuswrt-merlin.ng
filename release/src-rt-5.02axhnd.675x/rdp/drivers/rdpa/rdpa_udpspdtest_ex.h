@@ -1,0 +1,98 @@
+/*
+* <:copyright-BRCM:2018:proprietary:standard
+*
+*    Copyright (c) 2018 Broadcom
+*    All Rights Reserved
+*
+*  This program is the proprietary software of Broadcom and/or its
+*  licensors, and may only be used, duplicated, modified or distributed pursuant
+*  to the terms and conditions of a separate, written license agreement executed
+*  between you and Broadcom (an "Authorized License").  Except as set forth in
+*  an Authorized License, Broadcom grants no license (express or implied), right
+*  to use, or waiver of any kind with respect to the Software, and Broadcom
+*  expressly reserves all rights in and to the Software and all intellectual
+*  property rights therein.  IF YOU HAVE NO AUTHORIZED LICENSE, THEN YOU HAVE
+*  NO RIGHT TO USE THIS SOFTWARE IN ANY WAY, AND SHOULD IMMEDIATELY NOTIFY
+*  BROADCOM AND DISCONTINUE ALL USE OF THE SOFTWARE.
+*
+*  Except as expressly set forth in the Authorized License,
+*
+*  1. This program, including its structure, sequence and organization,
+*     constitutes the valuable trade secrets of Broadcom, and you shall use
+*     all reasonable efforts to protect the confidentiality thereof, and to
+*     use this information only in connection with your use of Broadcom
+*     integrated circuit products.
+*
+*  2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
+*     AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES, REPRESENTATIONS OR
+*     WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
+*     RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY DISCLAIMS ANY AND
+*     ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY, NONINFRINGEMENT,
+*     FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES, ACCURACY OR
+*     COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR CORRESPONDENCE
+*     TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING OUT OF USE OR
+*     PERFORMANCE OF THE SOFTWARE.
+*
+*  3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BROADCOM OR
+*     ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL, SPECIAL,
+*     INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR IN ANY
+*     WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+*     IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES;
+*     OR (ii) ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE
+*     SOFTWARE ITSELF OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS
+*     SHALL APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY
+*     LIMITED REMEDY.
+ :>
+*/
+
+#ifndef _RDPA_UDPSPDTEST_EX_H_
+#define _RDPA_UDPSPDTEST_EX_H_
+
+#include "rdd.h"
+#include "rdp_drv_sbpm.h"
+#include "rdpa_udpspdtest.h"
+#include "rdpa_spdtest_common_ex.h"
+
+#define UDPSPTD_MAX_NUM_OF_STREAMS 2 /* XXX: RDD_UDPSPDTEST_STREAM_TABLE_SIZE */
+
+typedef struct {
+    rdpa_udpspdtest_cfg_t cfg;
+    spdt_ref_pkt_container_t ref_pkt;
+    rdpa_udpspdtest_rx_params_t rx_params[UDPSPTD_MAX_NUM_OF_STREAMS]; 
+    rdpa_udpspdtest_tx_params_t tx_params[UDPSPTD_MAX_NUM_OF_STREAMS];
+    rdpa_udpspdtest_stat_t accumulative_stat; /* For debugging purpose, store accumulative stats */
+} udpspdtest_drv_priv_t;
+
+int udpspdtest_pre_init_ex(struct bdmf_object *mo);
+void udpspdtest_destroy_ex(struct bdmf_object *mo);
+
+int udpspdtest_attr_cfg_write_ex(udpspdtest_drv_priv_t *spdtest, rdpa_udpspdtest_cfg_t *cfg);
+
+/* RX */
+int udpspdtest_attr_rx_params_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+
+int udpspdtest_attr_rx_start_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+int udpspdtest_attr_rx_stop_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+
+/* TX */
+int udpspdtest_attr_engine_ref_pkt_read_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, void *val, uint32_t size);
+int udpspdtest_attr_engine_ref_pkt_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+
+int udpspdtest_attr_tx_params_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+
+int udpspdtest_attr_tx_start_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+int udpspdtest_attr_tx_stop_write_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, const void *val, uint32_t size);
+
+/* Statistics */
+int udpspdtest_attr_flow_stat_read_ex(struct bdmf_object *mo, struct bdmf_attr *ad,
+    bdmf_index index, void *val, uint32_t size);
+
+#endif /* _RDPA_UDPSPDTEST_EX_H_ */

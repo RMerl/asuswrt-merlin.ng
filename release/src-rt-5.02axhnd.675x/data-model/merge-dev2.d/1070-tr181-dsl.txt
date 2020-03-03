@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-tr181-dsl.xml as 
+# the last child of Device. 
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-dsl.xml Device.
+

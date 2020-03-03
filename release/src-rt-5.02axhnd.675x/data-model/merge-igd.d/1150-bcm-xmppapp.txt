@@ -1,0 +1,7 @@
+#
+# Insert the xmppcCfg object as the last child of the non-empty AppCfgObject. 
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-xmppapp.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="Device." shortObjectName="Dev2DeviceObject" specSource="TR181" profile="Device2_Baseline:1" requirements="P" supportLevel="Present" oid="1000" />
+  <description source="TRx">The top-level object for a Device.</description>
+
+  <parameter name="RootDataModelVersion" type="string" specSource="TR181" profile="Device2_Baseline:3" requirements="R" supportLevel="ReadOnly" maxLength="32" defaultValue="2.12" />
+    <description source="TRx">Root data model version, e.g. 2.4.  For a vendor-defined root data model, this is the standard Broadband Forum model on which the vendor defined model is based.  Possible patters: 2\.\d+</description>
+
+  <parameter name="InterfaceStackNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_Baseline:1" requirements="R" supportLevel="ReadOnly" defaultValue="0" alwaysWriteToConfigFile="true" />
+    <description source="TRx">The number of entries in the InterfaceStack table.</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Baseline:1" /> 
+<profile name="Device2_Baseline:2" /> 
+<profile name="Device2_Baseline:3" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

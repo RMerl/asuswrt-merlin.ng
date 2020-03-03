@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Security." shortObjectName="Dev2SecurityObject" specSource="TR181" profile="Device2_Certificates:1" requirements="P" supportLevel="Present" oid="1720" />
+  <description source="TRx">This object contains general information related to managing security features on the device. </description>
+
+  <parameter name="CertificateNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The number of entries in the Certificate table. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.Security.Certificate.{i}." shortObjectName="Dev2SecurityCertificateObject" specSource="TR181" profile="Device2_Certificates:1" requirements="R" supportLevel="MultipleInstances" />
+  <description source="TRx">This table provides information about all types of public key-based credentials, such as X.509 certificates, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables or disables this certificate. </description>
+
+  <parameter name="LastModif" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The last modification time of this certificate. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The Serial Number field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="Issuer" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The Issuer field in an X.509 certificate, see {{bibref|RFC5280}}; i.e. the Distinguished Name (DN) of the entity who has signed the certificate. </description>
+
+  <parameter name="NotBefore" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The beginning of the certificate validity period; i.e. the Not Before field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="NotAfter" type="dateTime" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The end of the certificate validity period; i.e., the Not After field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="Subject" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The Distinguished Name (DN) of the entity associated with the Public Key; i.e., the Subject field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="SubjectAlt" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" maxLength="256" />
+    <description source="TRx">{{list}} Each item is a DNS Name. The Subject Alternative Names extension field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="SignatureAlgorithm" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The algorithm used in signing the certificate; i.e. the Signature Algorithm field in an X.509 certificate, see {{bibref|RFC5280}}. </description>
+
+  <parameter name="X_BROADCOM_COM_Name" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="NA" />
+    <description source="TRx">Certificate name</description>
+    <description source="BROADCOM">Key to match with name parameter in X_BROADCOM_COM_CertificateCfg object</description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_Certificates:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

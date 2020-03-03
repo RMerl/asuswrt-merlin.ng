@@ -1,0 +1,22 @@
+- review class names
+
+Setpci:
+- auto-width
+- extend the register table
+
+Capabilities with partial decoding:
+- PCIe 2nd set of control/status registers (have spec)
+- HyperTransport caps (have spec)
+
+Capabilities with no decoding:
+- CompactPCI hot-swap
+- CompactPCI central resource control
+- AGP3
+- Secure device
+- Power Budgeting (ext'd, needs write access to enumerate)
+- Root Complex * (ext'd)
+- Multi-Function Virtual Channel (ext'd)
+- Root Bridge Control Block (ext'd)
+
+PCIIDS:
+- delete old DB at SF

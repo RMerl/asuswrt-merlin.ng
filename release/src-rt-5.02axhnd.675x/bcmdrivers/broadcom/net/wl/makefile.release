@@ -1,0 +1,65 @@
+ifeq ($(strip $(BRCM_CHIP)),)
+BRCM_CHIP=$(word 2, $(subst /net/wl/bcm9,/net/wl/bcm9 ,$(shell pwd "-L")))
+endif
+
+BINARCH = mips32 mips32r2 mips32el arma9 armb15 armb53
+BIN = $(shell cat bin_to_keep)
+FIL = $(shell cat files_to_keep)
+
+CURDIR = $(shell pwd "-L")
+IMPL = $(shell basename $(CURDIR) | sed 's/[^0-9]//g')
+WL_SRC_BASE = $(shell if [ "$(IMPL)" -ge 22 ]; then echo main/src/; fi ;)
+save_binary: $(WL_SRC_BASE)wl.o
+	cp -f $(WL_SRC_BASE)wl.o $(WL_SRC_BASE)wl$(BRCM_CHIP)-$(BCMARCH).o_save
+	for a in $(BINARCH); do \
+		for x in $(BIN); do \
+			fname=$$x-$$a; \
+				if [ -e $$fname ]; then \
+					cp -f $$fname $$fname.save; \
+				else \
+					echo "info:$$fname does not exist"; \
+				fi; \
+		done; \
+	done
+
+release:
+	for x in $(FIL); do \
+		if [ -d $$x ]; then \
+			find $$x -type f >> files_2_keep; \
+		else \
+			echo "$$x" >> files_2_keep; \
+		fi; \
+	done
+	sort files_2_keep > files_to_keep.sort
+	comm -23 files_all files_to_keep.sort > files_to_delete
+	for x in $$(cat files_to_delete); do \
+		if [ -e $$x ]; then \
+			rm -f $$x; \
+		fi; \
+	done
+	for a in $(BINARCH); do \
+		for x in $(BIN); do \
+			fname=$$x-$$a; \
+			if [ -e $$fname.save ]; then \
+				mv -f $$fname.save $$fname; \
+			fi; \
+		done; \
+	done
+	find . -name "*.o" -exec rm -f "{}" ";"
+	find . -depth -type d -empty -exec rmdir "{}" ";"
+	rm -rf build
+	rm -f files_to_keep.sort 
+	rm -f files_to_delete
+	rm -f files_2_keep
+
+create_list:
+	for a in $(BINARCH); do \
+		for x in $(BIN); do \
+			fname=$$x-$$a; \
+			rm -f $$fname; \
+			rm -f $$fname.save; \
+			rm -f *.o_save; \
+			rm -f dhd/*.o_save; \
+		done; \
+	done
+	find . -type f | sort > files_all

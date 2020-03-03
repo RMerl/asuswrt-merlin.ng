@@ -1817,12 +1817,6 @@ int main(int argc, char **argv)
 	else if (!strcmp(base, "add_multi_routes")) {
 		return add_multi_routes(0);
 	}
-	else if (!strcmp(base, "led_ctrl")) {
-		if (argc != 3)
-			return 0;
-
-		return(led_control_atomic(atoi(argv[1]), atoi(argv[2])));
-	}
 #ifdef HND_ROUTER
 	else if (!strcmp(base, "hnd-erase")) {
 		if (argv[1] && (!strcmp(argv[1], "nvram"))) {

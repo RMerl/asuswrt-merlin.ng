@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2006" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_LoginCfg." shortObjectName="LoginCfgObject" specSource="BROADCOM" profile="X_BROADCOM_COM_Baseline:1" supportLevel="Present" oid="3120" lockZone="7" />
+  <description source="TRx">Device login information (user name, password)</description>
+
+  <parameter name="AdminUserName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="admin" maxLength="16" />
+    <description source="BROADCOM">Admin has read/write access for LAN access of modem.&#10;PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="AdminPassword" type="string" specSource="BROADCOM" profile="Unspecified" supportLevel="ReadWrite" defaultValue="admin" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="AdminPasswordHash" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+
+  <parameter name="SupportUserName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="support" maxLength="16" />
+    <description source="BROADCOM">Support has read/write access for WAN access of modem.&#10;PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="SupportPassword" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="support" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="SupportPasswordHash" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+
+  <parameter name="UserUserName" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadOnly" defaultValue="user" maxLength="16" />
+    <description source="BROADCOM">User has read access only for LAN/WAN access of modem.&#10;PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="UserPassword" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="user" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+    <description source="BROADCOM">PSI name: BcmCfm_SyslogCfg</description>
+
+  <parameter name="UserPasswordHash" type="string" specSource="Broadcom" profile="Unspecified" supportLevel="ReadWrite" defaultValue="" maxLength="48" isTr69Password="true" isConfigPassword="true" />
+
+
+
+
+<vsaInfo>
+
+<validstringarray name="enabledDisabledStatusValues" />
+  <element>Disabled</element>
+  <element>Enabled</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

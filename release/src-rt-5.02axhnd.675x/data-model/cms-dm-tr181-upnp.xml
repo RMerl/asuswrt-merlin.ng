@@ -1,0 +1,319 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2013" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP." shortObjectName="Dev2UpnpObject" specSource="TR181" profile="Device2_UPnPDev:1" requirements="P" supportLevel="NotSupported" oid="1630" />
+  <description source="TRx">This object contains all UPnP related objects and parameters including Device and Discovery related objects and parameters. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Device." shortObjectName="Dev2UpnpDeviceObject" specSource="TR181" profile="Device2_UPnPDev:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object defines the UPnP devices and UPnP services that are implemented by the CPE. </description>
+
+  <parameter name="Enable" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP support. </description>
+
+  <parameter name="UPnPMediaServer" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP Media Server. </description>
+
+  <parameter name="UPnPMediaRenderer" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP Media Renderer. </description>
+
+  <parameter name="UPnPWLANAccessPoint" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP Wireless Access Point. </description>
+
+  <parameter name="UPnPQoSDevice" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP QoS Device. </description>
+
+  <parameter name="UPnPQoSPolicyHolder" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP QoS Policy Holder. </description>
+
+  <parameter name="UPnPIGD" type="boolean" specSource="TR181" profile="Device2_UPnPDev:1" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP IGD. </description>
+
+  <parameter name="UPnPDMBasicMgmt" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP-DM Basic Management. </description>
+
+  <parameter name="UPnPDMConfigurationMgmt" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP-DM Configuration Management. </description>
+
+  <parameter name="UPnPDMSoftwareMgmt" type="boolean" specSource="TR181" profile="Unspecified" requirements="W" supportLevel="ReadWrite" />
+    <description source="TRx">Enables/Disables UPnP-DM Software Management. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Device.Capabilities." shortObjectName="Dev2UpnpDevCapabilitiesObject" specSource="TR181" profile="Device2_UPnPDev:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object defines what UPnP capabilities this device has. </description>
+
+  <parameter name="UPnPArchitecture" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the major version of the supported UPnP architecture.  If UPnP 1.1 is supported the value is 1.  If UPnP 2.0 is supported the value is 2.A value of 0 indicates no UPnP support. </description>
+
+  <parameter name="UPnPArchitectureMinorVer" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the minor version of the supported UPnP architecture. If UPnP 1.1 is supported the value is 1.  If UPnP 2.0 is supported the value is 0.If {{param|UPnPArchitecture}} is 0 then this parameter SHOULD be ignored. </description>
+
+  <parameter name="UPnPMediaServer" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Media Server. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPMediaRenderer" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Media Renderer. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPWLANAccessPoint" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Wireless Access Point. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPBasicDevice" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Basic Device. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPQoSDevice" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Qos Device.A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPQoSPolicyHolder" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP Qos Policy Holder. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPIGD" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDev:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP IGD. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPDMBasicMgmt" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP-DM Basic Management. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPDMConfigurationMgmt" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP-DM Configuration Management. A value of 0 indicates no support. </description>
+
+  <parameter name="UPnPDMSoftwareMgmt" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Numeric value indicating the supported revision for UPnP-DM Software Management. A value of 0 indicates no support. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Discovery." shortObjectName="Dev2UpnpDiscoveryObject" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">UPnP {{bibref|UPnP-DAv1}} SSDP discovered root devices, embedded devices and embedded services. The CPE MAY, but need not, retain some or all of the information in this object across reboots. </description>
+
+  <parameter name="RootDeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="DeviceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="ServiceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Discovery.RootDevice.{i}." shortObjectName="Dev2UpnpDiscoveryRootDevObj" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">UPnP root device table. This table contains an entry for each UPnP root device that has been discovered via SSDP. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The status of the UPnP root device. {{enum}} The ability to list inactive UPnP root devices is OPTIONAL. The length of time an inactive device remains listed in this table is a local matter to the CPE. </description>
+
+  <parameter name="UUID" type="UUID" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" maxLength="36" />
+    <description source="TRx">This UPnP root device's UUID (Universally Unique IDentifier) {{bibref|RFC4122}}, extracted from any of its USN (Unique Service Name) headers. This is a 36-byte string that uniquely identifies the device, the following is an example: : ''02c29d2a-dbfd-2d91-99c9-306d537e9856''{{pattern}} </description>
+
+  <parameter name="USN" type="string" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the USN (Unique Service Name) header for this UPnP root device. Three discovery messages are sent for root devices, and this SHOULD be the value of the USN header of the following form: : ''uuid:device-UUID::urn:domain-name:device:deviceType:v''SSDP is an unreliable protocol and it is possible that no discovery message containing the USN header of the above form was ever received. If so, one of the other two forms MAY be used: : ''uuid:device-UUID::upnp:rootdevice'': ''uuid:device-UUID'' (for root device UUID) </description>
+
+  <parameter name="LeaseTime" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The UPnP root device lease time in {{units}}, extracted from the CACHE-CONTROL header. </description>
+
+  <parameter name="Location" type="string" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the LOCATION header for this UPnP root device, which is the URL of the root device's DDD (Device Description Document). </description>
+
+  <parameter name="Server" type="string" specSource="TR181" profile="Device2_UPnPDiscBasic:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the SERVER header for this UPnP root device, which is a string of the following form: : ''OS/version UPnP/udaversion product/version''where '''UPnP''' is a literal string, '''udaversion''' is the version of the UPnP Device Architecture. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} Indicates the full path names of all Host table entries, whether active or inactive, that correspond to this UPnP root device. As such entries are added to or removed from the Host tables, the value of this parameter MUST be updated accordingly. </description>
+
+  <parameter name="LastUpdate" type="int" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The date and time at which the last advertisement from this {{object}} was received. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Discovery.Device.{i}." shortObjectName="Dev2UpnpDiscoveryDevObj" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">UPnP embedded device table. This table contains an entry for each UPnP embedded device that has been discovered via SSDP. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The status of the UPnP embedded device. {{enum}} The ability to list inactive UPnP embedded devices is OPTIONAL. The length of time an inactive device remains listed in this table is a local matter to the CPE. </description>
+
+  <parameter name="UUID" type="UUID" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="36" />
+    <description source="TRx">This UPnP embedded device's UUID (Universally Unique IDentifier) {{bibref|RFC4122}}, extracted from any of its USN (Unique Service Name) headers. This is a 36-byte string that uniquely identifies the device, the following is an example: : ''02c29d2a-dbfd-2d91-99c9-306d537e9856''{{pattern}} </description>
+
+  <parameter name="USN" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the USN (Unique Service Name) header for this UPnP embedded device. Two discovery messages are sent for embedded devices, and this SHOULD be the value of the USN header of the following form: : ''uuid:device-UUID::urn:domain-name:device:deviceType:v''SSDP is an unreliable protocol and it is possible that no discovery message containing the USN header of the above form was ever received. If so, the other form MAY be used: : ''uuid:device-UUID'' </description>
+
+  <parameter name="LeaseTime" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The UPnP embedded device lease time in {{units}}, extracted from the CACHE-CONTROL header. </description>
+
+  <parameter name="Location" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the LOCATION header for this UPnP embedded device, which is the URL of the root device's DDD (Device Description Document). </description>
+
+  <parameter name="Server" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the SERVER header for this UPnP embedded device, which is a string of the following form: : ''OS/version UPnP/udaversion product/version''where '''UPnP''' is a literal string, '''udaversion''' is the version of the UPnP Device Architecture. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:2" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} Indicates the full path names of all Host table entries, whether active or inactive, that correspond to this UPnP embedded device. As such entries are added to or removed from the Host tables, the value of this parameter MUST be updated accordingly. </description>
+
+  <parameter name="LastUpdate" type="int" specSource="TR181" profile="Device2_UPnPDiscAdv:2" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The date and time at which the last advertisement from this {{object}} was received. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Discovery.Service.{i}." shortObjectName="Dev2UpnpDiscoveryServiceObj" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">UPnP embedded service table. This table contains an entry for each UPnP embedded service that has been discovered via SSDP. </description>
+
+  <parameter name="Status" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The status of the UPnP embedded service. {{enum}} The ability to list inactive UPnP embedded services is OPTIONAL. The length of time an inactive service remains listed in this table is a local matter to the CPE. </description>
+
+  <parameter name="USN" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the USN (Unique Service Name) header for this UPnP embedded service. This is of the following form: : ''uuid:device-UUID::urn:domain-name:service:serviceType:v'' </description>
+
+  <parameter name="LeaseTime" type="unsignedInt" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The UPnP embedded service lease time in {{units}}, extracted from the CACHE-CONTROL header. </description>
+
+  <parameter name="Location" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the LOCATION header for this UPnP embedded service, which is the URL of the root device's DDD (Device Description Document). </description>
+
+  <parameter name="Server" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:1" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the SERVER header for this UPnP embedded service, which is a string of the following form: : ''OS/version UPnP/udaversion product/version''where '''UPnP''' is a literal string, '''udaversion''' is the version of the UPnP Device Architecture. </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:2" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} Indicates the full path names of all Host table entries, whether active or inactive, that correspond to this UPnP embedded service. As such entries are added to or removed from the Host tables, the value of this parameter MUST be updated accordingly. </description>
+
+  <parameter name="LastUpdate" type="int" specSource="TR181" profile="Device2_UPnPDiscAdv:2" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The date and time at which the last advertisement from this {{object}} was received. </description>
+
+  <parameter name="ParentDevice" type="string" specSource="TR181" profile="Device2_UPnPDiscAdv:2" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference|the {{object|#.RootDevice}} or {{object|#.Device}} table entries that embeds this {{object}}}} This parameter is populated by extracting the "device-UUID" from the service's USN and matching the value against the root device or embedded device UUID value. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Description." shortObjectName="Dev2UpnpDescriptionObj" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="NotSupported" />
+  <description source="TRx">This object contains information from the  Description Document discovered from the UPnP Devices and Services. </description>
+
+  <parameter name="DeviceDescriptionNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="DeviceInstanceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+  <parameter name="ServiceInstanceNumberOfEntries" type="unsignedInt" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" neverWriteToConfigFile="true" />
+    <description source="TRx">{{numentries}} </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Description.DeviceDescription.{i}." shortObjectName="Dev2UpnpDescriptionDevDescriptionObj" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">This table contains information read from the Device Description Document of discovered root devices. The CPE MAY, but need not, retain some or all of the information in this table after the associated SSDP advertisement (objects in the  UPnP.Discovery. object tables) expires.In case the SSDP advertisement expires and the CPE deletes the related instances from the tables in UPnP.Discovery., the reference to such instances MUST be set to the empty string. </description>
+
+  <parameter name="URLBase" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value extracted from the URLBase element in the Device Description Document of the discovered root device. If the URLBase element in the root device's Device Description Document is empty or absent, the URL from which the device description was retrieved (e.g. the LOCATION from the SSDP message) is utilized as the URLBase. Note: the URLBase element is not recommended by {{bibref|UPnP-DAv1}} and is not permitted by {{bibref|UPnP-DAv11}}, so the value of {{param}} will usually be the URL from which the device description was retrieved. </description>
+
+  <parameter name="SpecVersion" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The UPnP Device Architecture version extracted from the specVersion element in the Device Description Document of the discovered root device. The {{param}} is encoded as "major revison.minor revision". {{pattern}} </description>
+
+  <parameter name="Host" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="1024" />
+    <description source="TRx">{{list}} {{reference|the Host table entries associated with the root device from which the device description was retrieved|ignore}} </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Description.DeviceInstance.{i}." shortObjectName="Dev2UpnpDescriptionDevInstanceObj" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">This table contains the information from Device Description Document retrieved for a discovered UPnP root or embedded device. </description>
+
+  <parameter name="UDN" type="UUID" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">Unique Device Name of this device represented as a UUID for the device. This value is extracted from the UDN element in the Device Description Document with the leading uuid: removed. </description>
+
+  <parameter name="ParentDevice" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference|a {{object}} table entry (if this is an embedded device) or {{empty}} (if this is a root device)}} </description>
+
+  <parameter name="DiscoveryDevice" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference|a {{object|##.Discovery.RootDevice}} table entry (if this is a root device) or a {{object|##.Discovery.Device}} table entry (if this is an embedded device)}} This {{param}} value can be {{empty}} because the referenced object has been deleted or the CPE was unable to retrieve the Description Document due to some out-of-band error. The determination to delete this {{object}} or use {{empty}} is implementation specific. </description>
+
+  <parameter name="DeviceType" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP deviceType element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="FriendlyName" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="128" />
+    <description source="TRx">The value of the UPnP friendlyName element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="Manufacturer" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="128" />
+    <description source="TRx">The value of the UPnP manufacturer element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="ManufacturerURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP manufacturerURL element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="ModelDescription" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP modelDescription element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="ModelName" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The value of the UPnP modelName element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="ModelNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">The value of the UPnP modelNumber element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="ModelURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP modelURL element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="128" />
+    <description source="TRx">The value of the UPnP serialNumber element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="UPC" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="12" />
+    <description source="TRx">The value of the UPnP UPC element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the device. </description>
+
+  <parameter name="PresentationURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP presentationURL element in the Device Description Document for this {{object}} and MUST be an absolute URL. The way to obtain an absolute URL from the presentationURL element is specified in {{bibref|UPnP-DAv1}} and {{bibref|UPnP-DAv11}}.If the presentationURL is not provided by the device then this value MUST be {{empty}}. </description>
+
+
+
+<object name="InternetGatewayDevice.Device.UPnP.Description.ServiceInstance.{i}." shortObjectName="Dev2UpnpDescriptionServiceInstanceObj" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="NotSupported" pruneWriteToConfigFile="true" />
+  <description source="TRx">This table contains the information from Device Description Document retrieved for a discovered UPnP service. </description>
+
+  <parameter name="ParentDevice" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference|a {{object|#.DeviceInstance}} table entry}} </description>
+
+  <parameter name="ServiceId" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP serviceId element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the service. If the UPnP serviceId is not provided by the UPnP service, this {{object}} MUST be deleted. </description>
+
+  <parameter name="ServiceDiscovery" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">{{reference|a {{object|##.Discovery.Service}} table entry}} This {{param}} value can be {{empty}} because the referenced object has been deleted or the CPE was unable to retrieve the Description Document due to some out-of-band error. The determination to delete this {{object}} or use {{empty}} is implementation specific. </description>
+
+  <parameter name="ServiceType" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" maxLength="256" />
+    <description source="TRx">The value of the UPnP serviceType element in the Device Description Document for this {{object}}, or {{empty}} if this value is not provided by the service. </description>
+
+  <parameter name="SCPDURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The value of the UPnP SCPDURL element in the Device Description Document for this {{object}} and MUST be an absolute URL. The way to obtain an absolute URL from the SCPDURL element is specified in {{bibref|UPnP-DAv1}} and {{bibref|UPnP-DAv11}}.If the SCPDURL is not provided by the device then this value MUST be {{empty}}. </description>
+
+  <parameter name="ControlURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The value of the UPnP controlURL element in the Device Description Document for this {{object}} and MUST be an absolute URL. The way to obtain an absolute URL from the controlURL element is specified in {{bibref|UPnP-DAv1}} and {{bibref|UPnP-DAv11}}.If the controlURL is not provided by the device then this value MUST be {{empty}} </description>
+
+  <parameter name="EventSubURL" type="string" specSource="TR181" profile="Unspecified" requirements="R" supportLevel="ReadOnly" />
+    <description source="TRx">The value of the UPnP eventSubURL element in the Device Description Document for this {{object}} and MUST be an absolute URL. The way to obtain an absolute URL from the eventSubURLL element is specified in {{bibref|UPnP-DAv1}} and {{bibref|UPnP-DAv11}}.If the eventSubURL is not provided by the device then this value MUST be {{empty}} </description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_UPnPDev:1" /> 
+<profile name="Device2_UPnPDiscBasic:1" /> 
+<profile name="Device2_UPnPDiscAdv:1" /> 
+<profile name="Device2_UPnPDiscAdv:2" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

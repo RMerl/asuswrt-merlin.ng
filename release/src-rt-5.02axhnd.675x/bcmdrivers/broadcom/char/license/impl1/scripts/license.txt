@@ -1,0 +1,11 @@
+START BCM_LICENSE_FILE
+
+START SPDSVC
+This Broadcom Speed Service software license was granted to: Broadcom
+edce4190c20218b85b44e7f776c0df86
+055098ce815c8c429eb8c6f4fe74d94d
+ff021bb714ea1c85ef2968adb137d4b6
+a7b2f10a1219735a7a36843687628980
+END SPDSVC
+
+END BCM_LICENSE_FILE

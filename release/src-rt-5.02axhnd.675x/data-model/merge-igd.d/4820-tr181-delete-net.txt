@@ -1,0 +1,30 @@
+#
+# Delete unneeded TR181 networking objects from the tree.  We only do this in
+# the merge-igd.d directory for the hybrid TR98+181 data model.  In the
+# hybrid data model, we mostly use network objects from the TR98 spec,
+# not the TR181 spec.
+#
+# Note that if the deleted object has children, the children will also be deleted.
+#
+# See 0000-README.txt for more details
+#
+
+#deleteParam InternetGatewayDevice.Device.Routing.Router.{i}.IPv4ForwardingNumberOfEntries
+#deleteObj InternetGatewayDevice.Device.Routing.Router.{i}.IPv4Forwarding.{i}.
+# It is tempting to delete IPv4Forwarding.{i}. and IPv4ForwardingNumberOfEntries
+# from the data model.  But deleting IPv4ForwardingNumberOfEntries param
+# causes problems for the DM detect mode because the Router.{i}. object
+# needs to be the same size in both Hybrid and Pure181, so if we delete
+# a param in Hybrid mode, we also have to delete that param in the
+# Pure181 mode.  So it is better to just keep these IPv4 related
+# objects and params in the Hybrid mode, even though we will not use them. 
+
+
+deleteObj InternetGatewayDevice.Device.Routing.RIP.
+deleteObj InternetGatewayDevice.Device.DHCPv4.
+deleteObj InternetGatewayDevice.Device.NAT.
+deleteObj InternetGatewayDevice.Device.Firewall.
+deleteObj InternetGatewayDevice.Device.IP.ActivePort.{i}.
+deleteObj InternetGatewayDevice.Device.DNS.Relay.
+deleteObj InternetGatewayDevice.Device.DNS.Diagnostics.
+deleteObj InternetGatewayDevice.Device.DNS.SD.

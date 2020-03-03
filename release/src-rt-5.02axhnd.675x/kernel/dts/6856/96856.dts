@@ -1,0 +1,274 @@
+#include <dt-bindings/interrupt-controller/arm-gic.h>
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/soc/bcm963xx_dt_bindings.h> 
+
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI			9
+#define PMU_CORE1_SPI			10
+#define SDIO_EMMC_SPI           95
+
+#define DEVICE_TREE
+#include "../../../shared/opensource/include/pmc/pmc_firmware_68560.h"
+#undef DEVICE_TREE
+
+/dts-v1/;
+
+/memreserve/ 0x00000000 0x00020000;
+/* For PMC3 firmware */
+/memreserve/ PMC3_RESERVED_MEM_START PMC3_RESERVED_MEM_SIZE;
+
+#include "../bcm_rsvdmem_64.dtsi"
+
+/ {
+    model = "Broadcom-v8A";
+    compatible = "brcm,brcm-v8A";
+    interrupt-parent = <&gic>;
+    #address-cells = <2>;
+    #size-cells = <2>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		B53_0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x0>;
+			next-level-cache = <&L2_0>;
+		};
+		B53_1: cpu@1 {
+			device_type = "cpu";
+			compatible = "arm,cortex-a53";
+			reg = <0x0 0x1>;
+#if defined (CONFIG_OPTEE)
+			enable-method = "psci";
+#else
+			enable-method = "spin-table";
+#endif
+			cpu-release-addr = <0x0 0xfff8>;
+			next-level-cache = <&L2_0>;
+		};
+		L2_0: l2-cache0 {
+			compatible = "cache";
+		};
+	};
+
+#if defined (CONFIG_OPTEE)
+	psci {
+		compatible	= "arm,psci-0.2";
+		method		= "smc";
+		cpu_off		= <1>;
+		cpu_on		= <2>;
+	};
+
+	firmware {
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
+		};
+	};
+#endif /* CONFIG_OPTEE */
+
+	gic: interrupt-controller@81000000 {
+		compatible = "arm,cortex-a15-gic", "arm,cortex-a9-gic";
+		#interrupt-cells = <3>;
+		#address-cells = <0>;
+		interrupt-controller;
+		reg = <0x0 GIC_DIST_BASE 0 0x1000>,
+		      <0x0 GIC_CPUI_BASE 0 0x2000>;
+	};
+
+	timer {
+		compatible = "arm,armv8-timer";
+		interrupts = <GIC_PPI TIMER_PHYS_SECURE_PPI    (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_PHYS_NONSECURE_PPI (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_VIRT_PPI           (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>,
+			     <GIC_PPI TIMER_HYP_PPI            (GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_LOW)>;
+	};
+
+	pmu {
+		compatible = "arm,armv8-pmuv3";
+		interrupts = <GIC_SPI PMU_CORE0_SPI IRQ_TYPE_LEVEL_HIGH>,
+			     <GIC_SPI PMU_CORE1_SPI IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-affinity = <&B53_0> ,<&B53_1>;
+	};
+	
+	brcm-legacy {
+		compatible = "brcm,brcm-legacy";
+	};
+
+	memory@00000000 {
+		device_type = "memory";
+		reg = <0x00000000 DRAM_BASE 0x0 DRAM_DEF_SIZE>;  /* 64MBMB */
+	};
+
+    clocks {
+      #address-cells = <1>;
+      #size-cells = <1>;
+      ranges;
+
+      i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+         compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+         reg = <0xFF802080 0x4>;
+      };
+
+      osc: oscillator {
+        #clock-cells = <0>;
+        compatible = "fixed-clock";
+        clock-frequency = <50000000>; /* xpon 50MHz output */
+      };
+
+      i2sclk: i2sclk@0x80158000 {
+        #clock-cells = <0>;
+        compatible = "brcm,i2s-clock";
+        clocks = <&osc>;
+        clk-mclk-syscon        = <&i2s_clkmclk_syscon>;
+        clock-output-names     = "i2s_clk";
+      };
+    };
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		compatible = "simple-bus";
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges = <0x0 0x0 0x0 0xff800000 0x0 0x62000>;
+
+		nand@ff801800 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x0 0x1800 0x0 0x600>, <0x0 0x2000 0x0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+		watchdog@ff800428 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x0 0x428 0x0 0x10>;
+			timeout-sec = <80>;
+		};
+
+		i2s: bcm63xx-i2s@ff802080 {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x21>; 
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc";
+		};
+
+		i2c_0: i2c@ff802100 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x2100 0x0 0x60>;
+		};
+
+		sdhci: sdhci@ff858000 {
+		    compatible = "brcm,bcm63xx-sdhci";
+		   	reg = <0x00000000 0x58000 0x00000000 0x100>;
+			interrupts = <GIC_SPI SDIO_EMMC_SPI IRQ_TYPE_LEVEL_HIGH>;
+			bus-width = <8>;
+			non-removable;
+#ifdef EMMC_DDR_1_8V 
+			mmc-ddr-1_8v;
+#endif
+		};
+
+		rng: rng@ff800b80 {
+			compatible = "brcm,iproc-rng200";
+			reg = <0x0 0x00000b80 0x0 0x28>;
+		};
+
+	};
+
+	pcm5100 {
+		compatible = "brcm,pcm5100";
+	};
+
+	bcm63xx-pcm-audio {
+		compatible = "brcm,bcm63xx-pcm-audio";
+		interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+	};
+
+    /* increase coherent_pool size */
+	chosen {
+		bootargs = "coherent_pool=4M cpuidle_sysfs_switch pci=pcie_bus_safe";
+	};
+
+#if defined(CONFIG_BCM_PCIE_HCD)
+	pcie0: pcie@80040000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80040000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0x90000000 0 0x90000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <0>;
+	};
+
+	pcie1: pcie@80050000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80050000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xA0000000 0 0xA0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <1>;
+	};
+
+	pcie2: pcie@80060000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80060000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xB0000000 0 0xB0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <2>;
+	};
+#endif
+};

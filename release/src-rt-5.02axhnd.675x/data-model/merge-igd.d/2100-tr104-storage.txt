@@ -1,0 +1,9 @@
+#
+# Add the objects in cms-dm-tr140-storage.xml as the
+# last children objects of InternetGatewayDevice.Services.
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr140-storage.xml InternetGatewayDevice.Services.
+

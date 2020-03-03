@@ -1,0 +1,15 @@
+#!/bin/sh
+ifconfig br0 down
+ifconfig br0 up
+ip -6 addr add 3ffe:ffff:200::1/64 dev nas_0_37
+ip -6 addr add 3ffe:ffff:100::1/64 dev br0
+ip -6 ro add 2000::/3 via 3ffe:ffff:200::2 dev nas_0_37
+echo "Starting DHCPV6 client on Interface nas_0_37 \n"
+dhcp6c -c /etc/dhcp6c.conf -dDf nas_0_37 &
+#echo "Starting DHCPV6 server on Interface br0 \n"
+#ifconfig br0 down
+#ifconfig br0 up
+#dhcp6s -c /etc/dhcp6s.conf -dDf br0 &
+#echo "Starting Neighbor Discovery (Route Advertisement) Daemon server on Interface br0 \n"
+#radvd -C /etc/radvd.conf -d 2 &
+#ip -6 addr add 3ffe:ffff:100:0::1/64 dev br0

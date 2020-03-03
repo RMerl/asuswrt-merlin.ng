@@ -1,0 +1,12 @@
+#
+# Add the TR181 XMPP objects to the InternetGatewayDevice. tree.
+#
+# Since TR181 XMPP objects are used as TR157 XMPP objects in
+# TR098 data model, these objects are not followed 0000-README.txt
+# They are added right after 1000-base-tr98-igd.txt to specify
+# these objects are also belonged to TR098 data model, and
+# should be under InternetGatewayDevice. directly
+#
+
+addLastChildObjToObj cms-dm-tr181-xmpp.xml InternetGatewayDevice.
+

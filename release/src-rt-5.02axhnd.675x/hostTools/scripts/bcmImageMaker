@@ -1,0 +1,777 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+
+use FindBin qw($Bin);
+use lib "$Bin/../SecureBootUtils";
+use lib "$Bin/../PerlLib";
+use BRCM::SBI_DEP;
+use BRCM::SBI_UTIL;
+use gen_keystore;
+use File::stat;
+
+use Getopt::Long;
+
+my $cferom;
+my $cfesecrom;
+my $precferom;
+my $pmcrom;
+my $pmcflag;
+my $blocksize;
+my $rootfs;
+my $bootfs;
+my $image;
+my $verbose;
+my $flashtype;
+my $fsonly;
+my $ubifs;
+my $squbifs;
+my $bootofs;
+my $bootsize;
+my $blocksizeinkb;
+my $securehdr;
+my $mediatype;
+my $unsecurehdr;
+my $secbtdatadir;
+my $secbtldr;
+my $btrmflag;
+my $ubionlyimage;
+my $storedir;
+my $romenc;
+my $usefldoem;
+my $imgsizealloc;
+my $nvramalloc;
+my $ddrtype;
+
+my $max_nvram_copies=$ENV{BTRM_NUM_NVRAM_DATA_IN_PARTITION}||$ENV{BTRM_NUM_IMAGES_IN_PARTITION};
+my $sbi_utils = new BRCM::SBI_UTIL;
+sub add_nvram_mirror {
+	my $fname=shift;
+	my $blk_size=shift;
+	my $added=0;
+	my $fstat = stat($fname);
+	my $offset = $fstat->size;
+        #printf("size %d file %s\n",$offset, $fname);
+	my $init_byte="\377";
+	my $d=0;
+	if( int(($offset + 2048)/$blk_size) > int($offset/$blk_size))
+	{
+		$d=($blk_size - ($offset%$blk_size));
+		print("Crossing the block boundry, adding buffer $d\n");
+	}
+	elsif ($offset%2048 != 0)
+	{
+		$d=(2048-($offset%2048));
+		print("Aligning to 2048 page, adding buffer $d\n");
+	}
+	my $b=$init_byte x $d;
+	$offset=$offset+$d;
+	if(open(Fd, ">>$fname"))
+	{
+		print Fd $b;
+		print Fd "nVrAmDaTaSiGnAtUrE";
+		print Fd ($init_byte x (2048-18));
+		close(Fd);
+	}
+return $added;
+	
+}
+
+=pod
+=explaination of the patch 
+ When and address is sent out (e.g ABCDEF) Last 2 nibbles are ignored and 
+ only next 3 nibbles are sent on wire So ABCDEF becomes BCD.
+ During bootrom development, this issue was not discovered, and we do direct address access for
+ a structure.
+ to work around this issue we have to create a fake header before the actual CFEROM and add
+ copy the contents of the structure from real CFE header to the BCD offset.
+ now the total cache is only 2K, so BCD cannpt exceed 0x400
+
+Additional information from email exchange -
+   
+The patch to the flash image is based on the fact that the SPI controller still send out the SPI READ cmd(0x3) with the full 3 byte address to device when we do the XIP access from  btrm.  The btrm first check the magic number using the SPI NAND function at 1KB boundary. This mean the whole 2K page is loaded to device cache using the PAGE READ cmd.  The subsequent read of the image header length using XIP will actually succeed but map to a different address in the same page. 
+ 
+The SPI NOR read uses 3 byte address[23:0] which our chip does the same for XIP.  But for SPI NAND read, it is the same read cmd(0x3) but it only uses 12 bit column address in the middle. The first 4 MSB bits are dummy bits(some vendors use for wrap, plane selection option) and the 8 LSB bits are dummy bits(except the gigadevice rev C device) so only address[19:8] is actually used as the offset the 2KB page cache to read the data back in XIP case.   In our test case we build our image at 68KB offset the XIP access addr pUnAuthHdr->hdrLen is 0xffd11010. The address send to the SPI NAND is 0x11010 and the SPI NAND drop the 8 bit dummy LSB and return the value at 0x110 in that page.  The data we interested in at 0x10 offset so we are reading 0x120 for the value of hdrLen and 0x130 for the value of pAuthHdr->hdrLen. 
+ 
+But these locations are the in cfe rom code. In order to preserve the CFE rom code, we will insert 1KB dummy data at the beginning of page boundary for patching and the SBI image starts at 1KB offset in the same page. This way the patch wont touch any cfe rom code.   But this also means that we can only have image up to 256KB bytes or to be precise, (1KB-0x20)*256= 248KB.  If we preserve the first 64KB and our cfe rom is about 80KB now so we can only have two images with this workaround. 
+ 
+To calculate the exact location for patching and data content:
+1.  Assuming the SBI image address is sbiAddr after 1KB zero padding in the front,  sbiPageAddr = sbiAddr  0x400 and patchBase = (sbiAddr>>8)+ sbiPageAddr;
+2. If patchBase+0x20 > 0x400, stop.
+3.  Set patchBase+0x10 to pUnAuthHdr->hdrLen
+4.  Set patchBase+0x14 to pUnAuthHdr->sbiSize
+5.  Set patchBase+0x20 to pAuthHdr->hdrLen
+6. Repeat for next sbi image.
+
+=end explaination
+=cut
+
+sub nrmz { 
+	my $var = shift; 
+	$var=~s/\"//g; 
+	return $var;
+}
+
+sub read_file {
+   my $file_to_read=$_[0];
+   my $input_data="";
+   if(open(sFileba, "<$file_to_read"))
+   {
+      binmode sFileba;
+      local $/ = undef;
+      $input_data=<sFileba>;
+      close(sFileba);
+   }
+   return $input_data;
+}
+
+#@src1, target
+sub concat_file{
+
+    my @srcfiles=@{$_[0]};
+    my $target_file_to_append=$_[1];
+
+    open(tFileba, ">$target_file_to_append");
+    binmode tFileba;
+    my $input_data="";
+    my $i=0;
+    foreach(@srcfiles) {
+       $input_data=read_file($_);
+       print tFileba $input_data;
+       $i=$i+1;
+    }
+    close(tFileba);
+}
+
+#@src1, target
+sub append_file{
+
+    my @srcfiles=@{$_[0]};
+    my $target_file_to_append=$_[1];
+
+    open(tFileba, ">>$target_file_to_append");
+    binmode tFileba;
+    my $input_data="";
+    my $i=0;
+
+    foreach(@srcfiles)
+    {
+       $input_data=read_file($_);
+       print tFileba $input_data;
+       $i=$i+1;
+    }
+    close(tFileba);
+}
+
+#@targetfile name,offest, append offset to the end of target file
+sub append_offset {
+	my $fname=shift;
+	my $offset=shift;
+    printf("offset  %d \n",$offset);
+
+    #this is only for 63178, arm, and pack offset with little endian
+    my $binary = pack("V", $offset);
+    open(tFileba, ">>$fname");
+    binmode tFileba;
+    print tFileba $binary;
+    close(tFileba);
+}
+
+
+sub concat_with_expand{
+
+    my $destfile=$_[0];
+    my @srcfiles=@{$_[1]};
+    my $expand_to_size=$_[2];
+
+    open(tFileba, ">>$destfile");
+    binmode tFileba;
+
+    foreach(@srcfiles)
+    {
+        my $input_data=read_file($_);
+        print tFileba $input_data;
+    }
+    if($expand_to_size-tell(tFileba) >= 0)
+    {
+        $expand_to_size=$expand_to_size-tell(tFileba);
+        my $zero="\000"x$expand_to_size;
+        print tFileba $zero;
+    }
+    else
+    {
+        truncate tFileba, $expand_to_size;
+    }
+    close(tFileba);
+
+}
+
+sub create_spi_nand_patch {
+
+my $offset=shift;
+my $bindata;
+my $cfe_headered_file_name=shift;
+my $init_byte=shift;
+
+if (!$init_byte)
+{
+	$init_byte="\377";
+}
+
+	open CHFN, "<$cfe_headered_file_name" or die "Error opening $cfe_headered_file_name";
+	binmode CHFN;
+
+	read(CHFN, $bindata, 1024, 0);
+
+	close (CHFN);
+
+	my $b="";
+	if ($offset%4096 != 0)
+	{
+		my $d=4096-($offset%4096);
+		$b=$init_byte x $d;
+		$offset= $offset+$d;
+	}
+
+	my $real_offset=$offset+0x400;
+	my $patch_base=(($real_offset&0xfffff)>>8);
+
+	if(($patch_base + 0x20) > 0x400) {
+		return $init_byte x 1024;
+	}
+
+	( my $magic_1, my $magic_2, my $ver, my $modeElegible, my $hdrLen, my $sbiSize, my $Ver, my $crc, my $authhdrLen) = unpack("IIIIIIIII", $bindata);
+
+	$patch_base=$patch_base+0x10;
+	my $binary=$init_byte x $patch_base;
+	$binary=$binary.pack('I', $hdrLen);
+	$binary=$binary.pack('I', $sbiSize);
+	$binary=$binary.pack('II', 0xffffffff, 0xffffffff);
+	$binary=$binary.pack('I', $authhdrLen);
+	$binary=$binary.$init_byte x (0x400-($patch_base+4+16));
+
+return $b.$binary;
+
+}
+
+sub gen_sec_keystore {
+	my $image = shift;
+	my $tmp_img = "_gen_sec_keyst_tmp_data.$$";
+	my $keystore = "$ENV{PROFILE_DIR}/keystore.bin.$$";
+	my %sec_arg=('secarc'=>"$ENV{SECURE_BOOT_ARCH}", 
+				'secreq'=>"$ENV{SECURE_BOOT_TK_MODE_REQ}", 
+				'byteorder'=>"$ENV{ARCH_ENDIAN}",
+				'abort_timeout'=>"$ENV{SECURE_BOOT_TK_ABORT_TIMEOUT}");
+	if (defined $ENV{SECURE_BOOT_TK_MID} ) {
+		$sec_arg{mid} = $ENV{SECURE_BOOT_TK_MID};
+	} 
+	if (defined $ENV{SECURE_BOOT_TK_OID}) {
+		$sec_arg{oid} = $ENV{SECURE_BOOT_TK_OID};
+	}
+	my $kst_obj = gen_keystore->new($sec_arg{'byteorder'},$sec_arg{'secarc'}); 
+    	$kst_obj->build(\%sec_arg,
+			$keystore,	
+			nrmz($ENV{SEC_CRED_DIR})); 
+    	concat_with_expand("$image", [], $ENV{SECURE_BOOT_TK_KS_OFFS}*1024);
+    	concat_file(["$image","$keystore"],"$tmp_img");
+    	e("cp -f $tmp_img $image");
+    	e("rm -f $keystore $tmp_img");
+}
+
+sub gen_sec2_image  {
+        # Gen1 (63268)/ Gen2 secure boot. Build the entire boot partition
+	my ($media_type, $block_size, $img, $sec_img, $bootofs_img, $out_dir, $out_img) = @_;
+	my $boot_size = $block_size;
+        my $sbi_unsec="$storedir/cfe$ENV{BRCM_CHIP}unsec_unenc.bin.$$";
+        my $sbi_img = "$out_dir/cfe$ENV{BRCM_CHIP}bi_nand.bin.$$";
+        # We know we always need an unsecure, headered cferom, so build itmy 
+	my $sbi_lib = BRCM::SBI_DEP->new({'sec_mode' => "UNSEC",
+			'chip'=>$ENV{BRCM_CHIP},
+			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
+			'out' => $sbi_unsec,
+			'in' => $cferom,
+			'cred_dir'=> nrmz($ENV{SEC_CRED_DIR}),
+			'byteorder' => $ENV{ARCH_ENDIAN}});
+	$sbi_lib->build();
+        if ( ! (-e $sbi_unsec) ) {
+            die("The file $sbi_unsec not successfully created. Exiting.");
+        }
+	$sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "MFG",
+			'chip' => "$ENV{BRCM_CHIP}",
+			'sec_arch' => "$ENV{SECURE_BOOT_ARCH}",
+			'out' => "$sbi_img",
+			'in' => "$sec_img",
+			'cred_dir' => nrmz($ENV{SEC_CRED_DIR}),
+			'byteorder' => "$ENV{ARCH_ENDIAN}"});
+	$sbi_lib->build();
+        if ( ! (-e $sbi_img) ) {
+            die("ERROR: The file $sbi_img was not successfully created. Exiting.");
+	}
+        if ($ENV{BRCM_CHIP} == "63268") {
+             print "Packaging with Gen 1 Secure boot support ...\n";
+             concat_with_expand("$bootofs_img",[$sbi_unsec, $sbi_img], $boot_size);
+        } else {
+             print "Packaging with Gen 2 Secure boot support ...\n";
+		#sanity check for Gen2
+	     if (stat($bootofs_img)->size+stat($img)->size > $block_size or 
+			stat($sbi_img)->size > $block_size ) {
+		 printf(" block_size %d img_size %d sbi_image_size %d\n",$block_size,  stat($bootofs_img)->size+stat($img)->size, stat($sbi_img)->size);
+		 die("Error: Image is more than block size: $block_size \n");
+	     }
+             concat_with_expand("$out_img",["$bootofs_img", $img], $boot_size);
+	     my $i; 
+             $boot_size += $block_size;
+             concat_with_expand("$out_img", [$sbi_unsec], $boot_size);
+             for ($i = 2; $i < $ENV{SECURE_BOOT_NUM_BOOT_BLKS}; $i++) {
+                  $boot_size += $block_size;
+                  if ($i <= $ENV{SECURE_BOOT_NUM_BTLDR_IMAGES}) {
+                      concat_with_expand("$out_img", [$sbi_img], $boot_size);
+                  } else {
+                      concat_with_expand("$out_img", [], $boot_size);
+                  }
+             }
+       }
+       e("rm -vf $sbi_img");
+       return $boot_size;
+}
+
+sub gen_sbi_image_v3 {
+	#arguments
+	my ($sec_opt, $media_type , $cferom , $out_dir ) = @_;
+	#local vars
+
+	my $i;
+        my $j;
+    	my $sbi_fld = "$out_dir/cfe$ENV{BRCM_CHIP}_$media_type.sbi.tmp.$$";
+    	my $sbi_mfg = "$out_dir/cfe$ENV{BRCM_CHIP}sec_enc_mfg.bin.$$";
+
+	# hwa - hardware acceleration;
+	if ($sec_opt eq "hwa_skp") { 
+		$sec_opt = "skp";
+	} elsif ($sec_opt eq "hwa_skp_spu") {
+		$sec_opt = "skp spu";
+	} else {
+		$sec_opt = "";
+	}
+	# Gen3 secure boot. Cferom within secure,headered image might be in the clear or AES encrypted (2 times with two different keys)
+	my %sec_args =( 'chip'=>$ENV{BRCM_CHIP},
+			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}", 
+			'byteorder'=>"$ENV{ARCH_ENDIAN}",
+			'cred_dir' =>nrmz($ENV{SEC_CRED_DIR}),
+			'in'=>"$cferom");
+	if ($ENV{SECURE_BOOT_ENCRYPT_BTLDRS} eq "y") {
+                print "Packaging gen3 secure boot in which the cfe rom is encrypted. This image expects the bootrom to run ...\n";
+                # We know we need a mfg-only secure, headered cferom that is encrypted with Kaes-mfg, so build it
+		# This is a mfg-secure only image, so it doesn't matter what the oem_fld setting is ... just set it to no
+		$sec_args{'sec_mode'} = "MFG";
+		$sec_args{'sec_opt'} = "encrypt ".$sec_opt;
+		$sec_args{'out'} = $sbi_mfg;
+		my $sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
+		$sbi_lib->build();
+		if ( ! (-e $sbi_mfg) ) {
+			die("The file $sbi_mfg was not successfully created. Exiting.");
+		}
+
+		$sec_args{'sec_mode'} = "FLD";
+		$sec_args{'out'} = $sbi_fld;
+        	# We need a field-only secure, headered cferom that is 
+		# encrypted with either Kroe-fld or Kaes-fld
+        	$sec_args{'sec_opt'} = ($ENV{SECURE_BOOT_PROCESS_FLD_OEM_COT} eq "y")?
+			"encrypt oem ".$sec_opt : "encrypt ".$sec_opt;
+		$sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
+		$sbi_lib->build();
+                if ( ! (-e $sbi_fld) ) {
+                  	die("The file $sbi_fld was not successfully created. Exiting.");
+                }
+		    
+	} else {
+
+	        # cferom is in the clear. Only need to build a headered image in which it is good for both mfg secure mode and field secure mode
+                print "Packaging gen3 secure boot in which the cfe rom is not encrypted. This image expects the bootrom to run ...\n";
+
+		$sec_args{'sec_mode'} = "FLD";
+		$sec_args{'out'} = $sbi_fld;
+                $sec_args{'sec_opt'} = 
+				($ENV{SECURE_BOOT_PROCESS_FLD_OEM_COT} eq "y")? "oem":"";
+		my $sbi_lib = BRCM::SBI_DEP->new(\%sec_args);
+		$sbi_lib->build();
+                if ( ! (-e $sbi_fld) ) {
+                    die "The file $sbi_fld was not successfully created. Exiting.";
+		}
+	}
+	return {sbi_fld => $sbi_fld, sbi_mfg => $sbi_mfg};
+}
+
+sub gen_sec3_image {
+	#arguments
+	my ( $images, $media_type, $image_alloc_size , $boot_offset, $boot_size, $block_size, $nvram_alloc_size , $out_image) = @_;
+	my $size;
+	my $i;
+	my $nvram_copies = 0;
+	local *_nvram_mirror = sub { 
+                if ($media_type eq "nand") {
+                    #no point in having a back up nvram in the same block as the primary
+                    if($nvram_copies < $max_nvram_copies) {
+                       if($size/$block_size >= 1) {
+			  #printf("Adding nvram mirror at offs 0x%02x\n",$size);
+                    	  $size += add_nvram_mirror($out_image, $block_size);
+                       }
+                       $nvram_copies++;
+                   }
+                }
+	};
+        # Build the boot partition
+
+	$size = $boot_offset + $nvram_alloc_size + $image_alloc_size;
+	concat_with_expand($out_image, [$images->{'sbi_unsec'}], $size);
+	_nvram_mirror();
+
+	$size += $image_alloc_size;
+	concat_with_expand($out_image, [$images->{'sbi_mfg'}], $size);
+	_nvram_mirror();
+        for ($i = 2; $i < $ENV{BTRM_NUM_IMAGES_IN_PARTITION}; $i++) {
+		$size += $image_alloc_size;
+		concat_with_expand($out_image, [$images->{'sbi_fld'}], $size);
+		_nvram_mirror();
+	}
+        concat_with_expand($out_image, [], $boot_size);
+}
+
+
+GetOptions(
+    "cferom=s", \$cferom, "pmcrom=s", \$pmcrom, "blocksize=i", \$blocksize, "rootfs=s", \$rootfs,  "bootfs=s", \$bootfs,
+    "fsonly=s", \$fsonly, "image=s",     \$image,     "verbose",  \$verbose, "ubifs",    \$ubifs,  "squbifs", \$squbifs,
+    "bootofs=i", \$bootofs, "bootsize=i", \$bootsize, "securehdr=s", \$securehdr, "unsecurehdr", \$unsecurehdr, "mediatype=s",\$mediatype,
+    "ubionlyimage", \$ubionlyimage, "precferom=s", \$precferom , "cfesecrom=s",\$cfesecrom, "ddrtype=s", \$ddrtype,
+
+) or die("bad option");
+
+my @required_env = (
+    qw[
+      PROFILE_DIR HOSTTOOLS_DIR BRCM_VOICE_BOARD_ID BRCM_NUM_MAC_ADDRESSES BRCM_BOARD_ID
+      ]
+);
+
+foreach (@required_env) {
+    $ENV{$_}
+      or die("$_ not defined in environment");
+}
+
+if ( $blocksize == 16 * 1024 ) {
+    $flashtype = "NAND16";
+}
+elsif ( $blocksize == 128 * 1024 ) {
+    $flashtype = "NAND128";
+}
+elsif ( $blocksize == 256 * 1024 ) {
+    $flashtype = "NAND256";
+}
+elsif ( $blocksize == 512 * 1024 ) {
+    $flashtype = "NAND512";
+}
+elsif ( $blocksize == 1024 * 1024 ) {
+    $flashtype = "NAND1024";
+}
+elsif ( $blocksize == 2048 * 1024 ) {
+    $flashtype = "NAND2048";
+}
+elsif ( $blocksize == 2048 ) {
+    $flashtype = "Generic2048";
+}
+else {
+    die("blocksize not supported");
+}
+
+unless( $bootofs < $bootsize )
+{
+    die ("invalid boot offset");
+}
+
+unless ( ( $bootsize % $blocksize ) == 0 )
+{
+    die ("invalid boot size, must be multiple of block size.");
+}
+
+
+chdir $ENV{PROFILE_DIR};
+
+$storedir = "$ENV{PROFILE_DIR}/../cfe";
+
+#$bootsizeinkb = $bootsize/1024;
+#$bootofsinkb = $bootofs/1024;
+$blocksizeinkb = $blocksize/1024;
+
+if ( ($pmcrom) && (-e $pmcrom) ) {
+    concat_with_expand("bootofs.tmp",[$pmcrom], $bootofs);
+    $pmcflag = 1;
+}
+else {
+    concat_with_expand("bootofs.tmp",[], $bootofs);
+    $pmcflag = 0;
+}
+if ( ($precferom) && (-e $precferom) ) {
+
+    if( !$securehdr) {
+        my $btldr = "$storedir/cfe$ENV{BRCM_CHIP}bi_nand.bin";
+	my $sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "UNSEC",
+			'chip'=>$ENV{BRCM_CHIP},
+			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
+			'out' => $btldr,
+			'in' => $cferom,
+			'cred_dir' => nrmz($ENV{SEC_CRED_DIR}),
+			'byteorder' => $ENV{ARCH_ENDIAN}});
+	$sbi_lib->build();
+	if ( ! (-e $btldr) ) {
+		die "The file $btldr was not successfully created. Exiting.";
+	}
+        my $one_k_patch = create_spi_nand_patch(0, $btldr, "\000");
+        open(patch_bin, ">patch_pre_cfe.bin");
+        binmode patch_bin;
+        print patch_bin $one_k_patch;
+        close(patch_bin);
+	e("rm bootofs.tmp");
+        concat_with_expand("bootofs.tmp", ["patch_pre_cfe.bin", "$btldr"], $bootofs);
+        e("rm patch_pre_cfe.bin");
+        e("rm -f $btldr");
+    }
+    else {
+        print("Ignore precferom in secure environment");
+    }
+
+}
+
+if ( !$mediatype || $mediatype eq "") 
+{
+	$mediatype="nand";
+}
+
+if ( ($unsecurehdr) || ($securehdr) ) {
+    # offset where keystore will be placed
+    # if unsecurehdr is defined, then we know it is gen3 and we are building an unsecure boot
+    # if securehdr is defined, then it could be gen1, 2 or 3 and we are building secure boot
+    $btrmflag = 1;
+
+    if ($ENV{BTRM_BOOT_ONLY} eq "y") {
+
+        # XIP to flash not supported. Bootrom boot only, therefore need a flash layout the bootrom recognizes. 
+
+	# Build the beginning of the boot partition that is common to all bootrom-boot-only flash layouts
+	$nvramalloc = 1024*4;
+        $imgsizealloc = 1024*$ENV{BTRM_IMAGE_SIZE_ALLOCATION};
+	if ($ENV{BRCM_CHIP} == "6878" && $ENV{AVS_IMAGE_PATH}) {
+	    $ENV{AVS_IMAGE_PATH} = $ENV{BUILD_DIR} . "/" . nrmz($ENV{AVS_IMAGE_PATH});
+            die ("ERROR: $ENV{AVS_IMAGE_PATH} is not existing") unless ( (-e $ENV{AVS_IMAGE_PATH}) && $ENV{AVS_IMAGE_MAX_SIZE});
+            $imgsizealloc += $ENV{AVS_IMAGE_MAX_SIZE}*1024;
+	}
+        $bootsize = 1024*$ENV{BTRM_NAND_BOOT_PARTITION_SIZE};
+        if( ($ENV{BRCM_CHIP} == "63178" or $ENV{BRCM_CHIP} == "47622") and $mediatype eq "nor") {
+        	#reserve 4 bytes space for cferom size( i.e. cferam offset)
+        	concat_with_expand( "nvramalloc.tmp", [$cferom], $nvramalloc - 4 );
+        } else {
+        	concat_with_expand( "nvramalloc.tmp", [$cferom], $nvramalloc );
+        }
+        concat_file(["bootofs.tmp", "nvramalloc.tmp"], "image.tmp"); 
+        my $i;
+        my $j;
+
+        my $sbi_unsec="$storedir/cfe$ENV{BRCM_CHIP}unsec_unenc.bin.$$";
+
+        # We know we always need an unsecure, headered cferom, so build itmy 
+	my $sbi_lib = BRCM::SBI_DEP->new({'sec_mode' => "UNSEC",
+			'chip'=>$ENV{BRCM_CHIP},
+			'sec_arch'=>"$ENV{SECURE_BOOT_ARCH}",
+			'out' => $sbi_unsec,
+			'in' => $cferom,
+			'cred_dir'=> nrmz($ENV{SEC_CRED_DIR}),
+			'byteorder' => $ENV{ARCH_ENDIAN}});
+	$sbi_lib->build();
+        if ( ! (-e $sbi_unsec) ) {
+            die("The file $sbi_unsec not successfully created. Exiting.");
+        }
+	if ($ENV{BRCM_CHIP} == "6878" && $ENV{AVS_IMAGE_PATH}) {
+            $sbi_utils->fdump($sbi_unsec, $sbi_utils->cat(($sbi_unsec,$ENV{AVS_IMAGE_PATH})));
+        }
+
+        if ($securehdr) {
+		my $images = gen_sbi_image_v3($securehdr, $mediatype, $cferom, $storedir );
+		$images->{'sbi_unsec'} = $sbi_unsec;
+		
+	        if ($ENV{BRCM_CHIP} == "6878") { 
+		    if (-e $images->{sbi_mfg}) {
+                        $sbi_utils->fdump($images->{sbi_mfg}, $sbi_utils->cat(($images->{sbi_mfg},$ENV{AVS_IMAGE_PATH})));
+                    }
+                    $sbi_utils->fdump($images->{sbi_fld}, $sbi_utils->cat(($images->{sbi_fld},$ENV{AVS_IMAGE_PATH})));
+                }
+		gen_sec3_image($images, $mediatype, $imgsizealloc, $bootofs, 
+			$bootsize, $blocksize, $nvramalloc, "image.tmp");
+		e("rm -vf $images->{'sbi_fld'} $images->{'sbi_mfg'}");
+        } else {
+
+            # Unsecure only boot partition. Build the entire boot partition
+            print "Packaging $ENV{SECURE_BOOT_ARCH} unsecure boot. This image expects the bootrom to run ...\n";
+
+            my $nvram_copies=0;
+	    if(($ENV{BRCM_CHIP} == "63178" or $ENV{BRCM_CHIP} == "47622") and $mediatype eq "nor" and $ENV{BTRM_NUM_IMAGES_IN_PARTITION} > 1 )  { 
+               	die("For nor flash, only support 1 cferom.The file $sbi_unsec not successfully created. Exiting.");
+	    }
+            
+            for ($i = 1; $i <= $ENV{BTRM_NUM_IMAGES_IN_PARTITION}; $i++) {
+		my  $patch = "";
+		if($ENV{BRCM_CHIP} == "4908" or $ENV{BRCM_CHIP} == "6858" and $mediatype eq "nand" )
+		{
+			$patch="patch.bin";
+ 	                my $fstat = stat("image.tmp");
+			my $one_k_patch=create_spi_nand_patch($fstat->size, "$sbi_unsec");
+			open(patch_bin, ">patch.bin");
+			binmode patch_bin;
+			print patch_bin $one_k_patch;
+			close(patch_bin);
+		}
+                $j = $bootofs + $nvramalloc + ($i*$imgsizealloc)+($i*1024);
+                if(($ENV{BRCM_CHIP} == "63178" or $ENV{BRCM_CHIP} == "47622") and $mediatype eq "nor") {
+			#add the $bootofs + 4k($nvramalloc) + sizeof (unsec cferom)
+			my $cferamoffset = $bootofs + $nvramalloc + stat($sbi_unsec)->size;
+			append_offset("image.tmp",$cferamoffset);
+                	# for nor flash dont expand.
+			append_file(["$patch", "$sbi_unsec"], "image.tmp"); 
+			# append cferam lz image
+			#to simplify the build bootrom image for nor flash name, its split cferam bin as cferom's name + .cferamlz
+			append_file(["$cferom.cferamlz"], "image.tmp"); 
+                } else {
+                	concat_with_expand("image.tmp", ["$patch", "$sbi_unsec"], $j);
+                }
+
+		if ($mediatype eq "nand")
+		{
+			#no point in having a back up nvram in the same block as the primary
+			if($j/$blocksize >= 1)
+			{
+				if($nvram_copies < $max_nvram_copies)
+				{
+					$j=$j+add_nvram_mirror("image.tmp", $blocksize);
+					$nvram_copies=$nvram_copies+1;
+				}
+			}
+		}
+            }
+
+            # dont expand nor flash to bootsize or change makefile argument to --bootsize $(FLASH_NAND_BLOCK_196KB)
+            if(($ENV{BRCM_CHIP} != "63178" and $ENV{BRCM_CHIP} != "47622") or $mediatype ne "nor") {
+                concat_with_expand("image.tmp", [],$bootsize);
+            }
+       }
+       e("rm -f $sbi_unsec");
+    } else {
+    	if ( (defined $ENV{SECURE_BOOT_NUM_BLKS}) && 3 > $ENV{SECURE_BOOT_NUM_BOOT_BLKS}) {
+        	die("ERROR: Should have  SECURE_BOOT_NUM_BOOT_BLKS at least 3 but it was  $ENV{SECURE_BOOT_NUM_BOOT_BLKS}");
+    	}
+        # gen1 (63268) or gen2 secure boot. Build the entire boot partition
+	my $block_size = $blocksize;
+	if ($mediatype eq "emmc" and $flashtype eq "Generic2048") {
+		$block_size = 192*1024;
+	}
+	$bootsize = gen_sec2_image($mediatype, $block_size, $cferom, $cfesecrom, "bootofs.tmp", $storedir,"image.tmp");
+    }
+    if (defined $ENV{SECURE_BOOT_TURNKEY} and $ENV{SECURE_BOOT_TURNKEY} eq "y" ) {
+	if ($bootsize < $ENV{BTRM_NAND_BOOT_PARTITION_SIZE}*1024) {
+		$bootsize = $ENV{BTRM_NAND_BOOT_PARTITION_SIZE}*1024;
+        	concat_with_expand("image.tmp", [], $bootsize);
+	}
+	print "Building  keystore for $ENV{SECURE_BOOT_ARCH} \n";
+	gen_sec_keystore("image.tmp"); 
+    }
+
+} else {
+
+    # Legacy XIP to flash boot
+    print "Packaging with XIP boot support ...\n";
+    $btrmflag = 0;
+    concat_file(["bootofs.tmp", $cferom], "image.tmp");
+
+}
+
+
+if ($mediatype eq "nand" ) {
+	if (($ubifs) || ($squbifs)){
+    		if ($ubifs) {
+        		e("$ENV{HOSTTOOLS_DIR}/BcmFsTag -s 2 -u $blocksize > marker.tmp");
+    		}
+    		if ($squbifs) {
+        		e("$ENV{HOSTTOOLS_DIR}/BcmFsTag -s 2 -q $blocksize > marker.tmp");
+    		}
+    		if ($ubionlyimage) {
+        		concat_with_expand("image.tmp", [], $bootsize);
+			concat_file(["image.tmp",$rootfs], $image);
+    		} else {
+        		concat_with_expand("image.tmp", [], $bootsize);
+			concat_file(["image.tmp",$bootfs, "marker.tmp", $rootfs], "$image");
+    		}
+    		if ($fsonly) {
+        		concat_file(["$bootfs", "marker.tmp", $rootfs], "merged.tmp");
+        		e("$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype $flashtype --btrm $btrmflag merged.tmp $fsonly.w");
+    		}
+	} else {
+		concat_with_expand("image.tmp", [], $bootsize); 
+		concat_file(["image.tmp",$rootfs], "$image");
+		if ($fsonly) {
+			e("$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype $flashtype --btrm $btrmflag $rootfs $fsonly.w");
+		}
+	}
+
+        if (defined $ddrtype && length $ddrtype > 0) {
+   	    e("$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype $flashtype --pmc $pmcflag --btrm $btrmflag --ddrtype $ddrtype $image $image.w");
+	}
+        else {
+   	    e("$ENV{HOSTTOOLS_DIR}/addvtoken --endian $ENV{ARCH_ENDIAN} --chip $ENV{BRCM_CHIP} --flashtype $flashtype --pmc $pmcflag --btrm $btrmflag $image $image.w");
+	}
+
+	e(      "$ENV{HOSTTOOLS_DIR}/createimg.pl --set boardid=$ENV{BRCM_BOARD_ID} "
+       . " endian $ENV{ARCH_ENDIAN}"
+       . " numbermac=$ENV{BRCM_NUM_MAC_ADDRESSES}"
+       . " macaddr=$ENV{BRCM_BASE_MAC_ADDRESS}"
+       . " tp=$ENV{BRCM_MAIN_TP_NUM}"
+       . " psisize=$ENV{BRCM_PSI_SIZE}"
+       . " flblksz=$blocksizeinkb"
+       . " auxfsprcnt=$ENV{BRCM_AUXFS_PERCENT}"
+       . " gponsn=$ENV{BRCM_GPON_SERIAL_NUMBER}"
+       . " gponpw=$ENV{BRCM_GPON_PASSWORD}"
+       . " misc1=$ENV{BRCM_MISC1_PARTITION_SIZE}"
+      . " misc2=$ENV{BRCM_MISC2_PARTITION_SIZE}"
+      . " misc3=$ENV{BRCM_MISC3_PARTITION_SIZE}"
+      . " misc4=$ENV{BRCM_MISC4_PARTITION_SIZE}"
+      . " --wholeflashfile=$image.w"
+      . " --nvramfile $ENV{HOSTTOOLS_DIR}/nvram.h"
+      . " --nvramdefsfile $ENV{HOSTTOOLS_DIR}/nvram_defaults.h"
+      . " --conf $ENV{HOSTTOOLS_DIR}/local_install/conf/$ENV{TOOLCHAIN_PREFIX}.conf"
+      . " --nvram_base $bootofs");
+} else  {
+	if ( ($mediatype eq "emmc" ) || ($mediatype eq "nor" )) {
+		if(($ENV{BRCM_CHIP} != "63178" and $ENV{BRCM_CHIP} != "47622") or $mediatype ne "nor") {
+			concat_with_expand("image.tmp", [], $bootsize);
+			print "$bootsize \n";
+		}
+		concat_file(["image.tmp"], "$image.bin");
+		e("cp -rvf $image.bin /tmp/");
+	} 
+}
+
+# five lines below used for emulation
+# e("cat $image | head --bytes=1048576 > dummy.tmp");
+# my $objcopy;
+# $objcopy = "/opt/toolchains/crosstools-aarch64-gcc-4.9-linux-4.1-glibc-2.20-binutils-2.24/usr/bin/aarch64-buildroot-linux-gnu-objcopy";
+# e("$objcopy --output-target=srec --input-target=binary --srec-forceS3 --change-addresses=0xffe00000 dummy.tmp $image.srec");
+# e("rm -f dummy.tmp");
+
+
+e("rm -f $image merged.tmp marker.tmp image.tmp imgsizealloc.tmp nvramalloc.tmp fileboot.tmp bootofs.tmp patch.bin");
+
+sub e {
+    my $cmnd = shift;
+    if ($verbose) {
+        print "bcmImageMaker: $cmnd\n";
+    }
+    system($cmnd);
+}
+

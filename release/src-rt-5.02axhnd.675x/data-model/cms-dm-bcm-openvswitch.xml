@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2014" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="Broadcom" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+<object name="InternetGatewayDevice.X_BROADCOM_COM_OpenVSwitchCfg." shortObjectName="OpenvswitchCfgObject" specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:1" supportLevel="Present" oid="3810" />
+  <description source="BROADCOM">This object contains configuration parameters for openvswitch feature.</description>
+
+   <parameter name="Enable" type="boolean"  specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:1" supportLevel="ReadWrite" defaultValue="false" />
+    <description source="BROADCOM">Enable/Disable of openvswitch.</description>
+
+  <parameter name="OFControllerIPAddress" type="string" specSource="BROADCOM" profile="X_BROADCOM_COM_OpenVSwitch:1" supportLevel="ReadWrite" defaultValue="0.0.0.0" maxLength="15" />
+    <description source="BROADCOM">IP address of the OF Controller.</description>
+
+  <parameter name="OFControllerPortNumber" type="unsignedInt" specSource="BROADCOM" profile="X_BROADCOM_COM_OpenVSwitch:1" supportLevel="ReadWrite" defaultValue="6653" minValue="0" maxValue="65535" />
+    <description source="BROADCOM">TCP Port of the OF Controller.</description>
+
+  <parameter name="IfNameList" type="string" specSource="Broadcom" profile="X_BROADCOM_COM_OpenVSwitch:1" supportLevel="ReadWrite" defaultValue="" maxLength="512"/>
+    <description source="BROADCOM">A list of comma-separated human-readable names of ports(interfaces) added into vswitch.</description>
+
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+
+<profileInfo>
+<profile name="Baseline:1" /> 
+<profile name="X_BROADCOM_COM_Baseline:1" /> 
+<profile name="X_BROADCOM_COM_OpenVSwitch:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+
+
+</xmlMandatorySingleRootNode>

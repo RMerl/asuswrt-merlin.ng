@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-tr181-time.xml below the 
+# Device.DeviceInfo. object.
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr181-time.xml Device.GatewayInfo.
+

@@ -1,0 +1,24 @@
+<PUBLISH>
+--- 963178G.old	2019-04-30 10:00:49.928684196 -0700
++++ 963178G	2019-05-01 09:02:57.225557612 -0700
+@@ -421,7 +421,7 @@
+ # Bootloader and Secure Boot Options
+ #
+ BUILD_DYNAMIC_CFE=y
+-# BUILD_CFE_BOARD_DTB is not set
++BUILD_CFE_BOARD_DTB=y
+ # BUILD_HND_EAP_UBOOT is not set
+ BUILD_CFE_APPEND_BOOT_CMDLINE="isolcpus=2"
+ SECURE_BOOT_ARCH=GEN3
+@@ -491,7 +491,10 @@
+ # BUILD_OPENVSWITCH is not set
+ # BRCM_OVS_SUPPORT is not set
+ # BUILD_BRCM_HOSTAPD is not set
+-# BUILD_BCM_ASOC_AUDIO is not set
++BUILD_BCM_ASOC_AUDIO=y
++SND_SOC_MAPLELEAF=y
++# SND_SOC_CS4345 is not set
++# SND_SOC_PCM5100 is not set
+ 
+ #
+ # Management Protocols and User Interface Selection

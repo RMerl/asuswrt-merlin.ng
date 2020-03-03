@@ -1,0 +1,68 @@
+cms2bbf application is built on host computer that has the following environment:
+
+OS: ubuntu 12.04.1
+
+
+ant: Apache Ant(TM) version 1.8.2
+
+The following command can be used to install ant on ubuntu
+
+   sudo apt-get install ant
+
+
+java: version "1.7.0_79"
+OpenJDK Runtime Environment (IcedTea 2.5.5)
+OpenJDK Server VM (build 24.79-b02, mixed mode)
+
+The following command can be used to install OpenJDK version 7 on ubuntu
+
+   sudo apt-get install openjdk-7-jdk
+
+
+The following command show the usage of cms2bbf application:
+
+   ant -f build.xml help
+
+help:
+    [echo] The following targets can be used:
+    [echo]
+    [echo]   help    : (default) prints this message
+    [echo]   clean   : delete build directories
+    [echo]   compile : compile application into class files
+    [echo]   dist    : packages class files into jar file
+    [echo]   run -Darg0=cms.xml -Darg1=bbf.xml : convert cms.xml to bbf.xml
+    [echo]   all -Darg0=cms.xml -Darg1=bbf.xml : cleans, compiles, packages, and convert cms.xml to bbf.xml
+    [echo]
+    [echo] For example, to clean, compile, dist, and convert cms.xml file to bbf.xml file all at once, execute:
+    [echo]   ant all -Darg0=cms.xml -Darg1=bbf.xml
+
+
+For example
+   1. To convert cms.xml file to bbf.xml file only, execute:
+        ant -f build.xml run -Darg0=cms.xml -Darg1=bbf.xml
+   2. To clean, compile, dist, and convert cms.xml file to bbf.xml file all at once, execute:
+        ant -f build.xml all -Darg0=cms.xml -Darg1=bbf.xml
+
+"make menuconfig" can be used to enable/disable "Supported Data Model Profile" feature by enable/disable "PROFILE_SUPPORTED_DATA_MODEL" item under "Management Protocols and User Interface Selection".
+
+When "PROFILE_SUPPORTED_DATA_MODEL" item is enable:
+
+   1. During build process, Makefile under hostTools/cms2bbf directory will use ant and openjdk to build cms2bbf application and distribute it under hostTools/cms2bbf/build/dist/cms2bbf.jar by executing "ant -f build.xml dist;" command.
+
+   2. Later, Makefile under data-model directory will use ant and openjdk to run cms2bbf application for converting cms-data-model-merged.xml in CMS format to bbf-data-model-1.xml in BBF format, and cms-data-model-merged2.xml in CMS format to bbf-data-model-2.xml in BBF format by executing "ant -f $(BBF_BUILD) run -Darg0=$(CURR_DIR)/$(DMFILE) -Darg1=$(CURR_DIR)/$(BBF_DMFILE)" and "ant -f $(BBF_BUILD) run -Darg0=$(CURR_DIR)/$(DMFILE2) -Darg1=$(CURR_DIR)/$(BBF_DMFILE2)" commands.
+
+   3. cms2bbf application will generate an unique uuid and write it to bbf-data-model-1.xml and bbf-data-model-2.xml as value of uuid attribute in document element.
+
+   4. Since "Supported Data Model Profile" feature is currently supported only in BUILD_PURE181_PROFILES mode, only bbf-data-model-2.xml is installed to $(INSTALL_DIR)/webs/data-model. Then ACS can refer and get this XML file from "http://localhost/data-model/bbf-data-model-2.xml".
+
+   5. At boot up time, Device.DeviceInfo.SupportedDataModel.1. object is created or changed (if it's already existed) to intialize its parameters as following:
+
+      5.1. Alias is generated automatically.
+
+      5.2. URL = "http://localhost/data-model/bbf-data-model-2.xml". ACS can use this URL to retrieve BBF XML file.
+
+      5.3. UUID is read from value of uuid attribute in bbf-data-model-2.xml.
+
+      5.4. URN = "urn:broadband-forum-org:tr-181-2-10-0" since CMS data model is based on TR-181 version 2:10.
+
+      5.5. features is generated from DMP_* and SUPPORT_* that are defined in make.common

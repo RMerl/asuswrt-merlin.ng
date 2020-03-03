@@ -1,0 +1,7 @@
+#
+# Add TR181 ATM objects to the interfaces portion of the TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addLastChildObjToObj cms-dm-tr181-atm.xml Device.

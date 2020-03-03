@@ -1,0 +1,8 @@
+#
+# Add the object in cms-dm-bcm-pwrmgmt.xml above the 
+# object InternetGatewayDevice.DeviceConfig.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-selt.xml InternetGatewayDevice.X_BROADCOM_COM_AppCfg.

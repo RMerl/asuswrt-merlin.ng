@@ -1,0 +1,104 @@
+/*
+ * CSS styles used in iQoS Settings page
+ *
+ * $ Copyright Open Broadcom Corporation $
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: iQoSSettings.css, v 1.0 2015-02-12 15:25:43 vbemblek $
+ */
+
+ #PriorityTable{
+	position:relative;
+	background:rgb(226,226,226);
+	margin-top:16px;
+	width:100%;
+}
+.deviceprioritytext{
+	padding:5px;
+	position:relative;
+	margin-left:20px;
+	font-size:18px;
+	font-weight:bold;
+	font-style:italic;
+	width:100%;
+	color:black;
+	text-align:left;
+}
+#PriorityTableSummary{
+	position:relative;
+	background:rgb(226,226,226);
+	top:100%;
+	width:100%;
+	border-collapse:seperate;
+	border-spacing:10px;
+	padding-bottom:20px;
+}
+
+#PriorityTableSummary td{
+	width:30%;
+	vertical-align: top;
+}
+
+.devicepriorityhdg{
+	font-size:1.3em;
+	font-weight:bold;
+	color:white;
+	width:30%;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+
+.prioritybox {
+	display: block;
+	background-color:white;
+	border-radius:6px;
+	position:relative;
+	width:100%;
+}
+
+#dvDest, #dvApp, #dvMac
+{
+	overflow-x:hidden;
+	border: 5px solid #ccc;
+	padding: 5px;
+	min-height: 150px;
+	border:2px solid #008bb0;
+	box-shadow:3px 3px 3px #999;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+}
+.Prioritytag
+{
+	margin-top:2px;
+	margin-right:20px;
+	padding:3px;
+	width:30%;
+	font-weight:bold;
+	color:white;
+	background-color:rgb(0,139,176);
+	border-radius:6px;
+	box-shadow:3px 3px 3px #999;
+}
+.container{
+	overflow:hidden;
+	float:left;
+	width:30%;
+	text-align: center;
+}
+
+#buttons {
+	position:relative;
+	width:100%;
+	text-align:center;
+	padding-bottom:20px;
+	background:rgb(226,226,226);
+}
+
+.btnwidth {
+	padding:10px;
+	width:140px;
+}

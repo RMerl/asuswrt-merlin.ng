@@ -1,0 +1,245 @@
+#define GIC_DIST_BASE	0x81001000
+#define GIC_CPUI_BASE	0x81002000
+
+#define TIMER_HYP_PPI			10
+#define TIMER_VIRT_PPI			11
+#define TIMER_PHYS_SECURE_PPI		13
+#define TIMER_PHYS_NONSECURE_PPI	14
+
+#define PMU_CORE0_SPI			9
+#define PMU_CORE1_SPI			10
+#define PMU_CORE2_SPI			11
+#define PMU_CORE3_SPI			12
+#define SDIO_EMMC_SPI			95
+#define SPU_GMAC_SPI			75
+#define ARM_UART0_SPI			32
+
+#include "../bcm_b53_template.dtsi"
+#include "../bcm_rsvdmem_64.dtsi"
+
+/ {
+	clocks {
+		#address-cells = <2>;
+		#size-cells = <2>;
+		ranges;
+
+		i2s_clkrst_syscon: i2s_clkrst_syscon@0x80158000 {
+			compatible = "brcm,i2s-audio-clkrst-syscon", "syscon";
+			reg = <0x0 0x80158000 0x0 0x4>;
+		};
+		i2s_clknumerator_syscon: i2s_clknumerator_syscon@0x80158340 {
+			compatible = "brcm,i2s-audio-clknumerator-syscon", "syscon";
+			reg = <0x0 0x80158340 0x0 0x4>;
+		};
+		i2s_clkdenominator_syscon: i2s_clkdenominator_syscon@0x80158344 {
+			compatible = "brcm,i2s-audio-clkdenominator-syscon", "syscon";
+			reg = <0x0 0x80158344 0x0 0x4>;
+		};
+		i2s_clkmclk_syscon: i2s_clkmclk_syscon@0xFF802080 {
+			compatible = "brcm,i2s-audio-clkmclk-syscon", "syscon";
+			reg = <0x0 0xFF802080 0x0 0x7f>;
+		};
+		osc: oscillator {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+#if (CONFIG_BRCM_CHIP_REV==0x63158A0)
+			clock-frequency = <250000000>; /* xpon 250MHz output */
+#else
+			clock-frequency = <200000000>; /* xpon 200MHz output */
+#endif
+		};
+
+		i2sclk: i2sclk@0x80158000 {
+			#clock-cells = <0>;
+			compatible = "brcm,i2s-clock";
+			clocks = <&osc>;
+			clk-reset-syscon       = <&i2s_clkrst_syscon>;
+			clk-numerator-syscon   = <&i2s_clknumerator_syscon>;
+			clk-denominator-syscon = <&i2s_clkdenominator_syscon>;
+			clk-mclk-syscon        = <&i2s_clkmclk_syscon>;
+			clock-output-names     = "i2s_clk";		
+		};
+
+#if (CONFIG_BRCM_CHIP_REV!=0x63158A0)
+		uartclk: uartclk {
+			compatible = "fixed-clock";
+			#clock-cells = <0>;
+			clock-frequency = <50000000>;
+		};
+#endif
+
+	};
+
+	/* Legacy UBUS base */
+	ubus@ff800000 {
+		nand@ff801800 {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			compatible = "brcm,nand-bcm63xx", "brcm,brcmnand-v7.1";
+			reg = <0x0 0x1800 0x0 0x600>, <0x0 0x2000 0x0 0x10>;
+			reg-names = "nand", "nand-int-base";
+			status = "okay";
+
+			nandcs@0 {
+				compatible = "brcm,nandcs";
+				reg = <0>;
+				nand-on-flash-bbt;
+			};
+
+		};
+
+#if (CONFIG_BRCM_CHIP_REV!=0x63158A0)
+		sdhci@ff858000 {
+			reg = <0x00000000 0x10000 0x00000000 0x100>;
+		};
+#endif
+#if (CONFIG_BRCM_CHIP_REV!=0x63158A0)
+		watchdog@ff800480 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x0 0x0480 0x0 0x10>;
+			timeout-sec = <80>;
+		};
+#else
+		watchdog@ff802780 {
+			compatible = "brcm,bcm96xxx-wdt";
+			reg = <0x0 0x2780 0x0 0x10>;
+			timeout-sec = <80>;
+		};
+#endif		
+
+		i2s: bcm63xx-i2s {
+			compatible = "brcm,bcm63xx-i2s";
+			reg = <0 0x2080 0 0x7f>;
+			interrupts = <GIC_SPI 84 IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&i2sclk>, <&osc>;
+			clock-names = "i2sclk","i2sosc"; 
+		};
+
+		/* 63158 use first i2c bus for pon sfp i2c device */
+		i2c_0: i2c@ff802100 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x2100 0x0 0x60>;
+		};
+
+		i2c_1: i2c@ff85a800 {
+			compatible = "brcm,bcm63000-i2c";
+			reg = <0x0 0x5a800 0x0 0x60>;
+		};
+#if (CONFIG_BRCM_CHIP_REV!=0x63158A0)
+		arm_serial0: serial@ff812000 {
+			compatible = "arm,pl011", "arm,primecell";
+			reg = <0x0 0x12000 0x0 0x1000>;
+			interrupts = <GIC_SPI ARM_UART0_SPI IRQ_TYPE_LEVEL_HIGH>;
+			clocks = <&uartclk>, <&uartclk>;
+			clock-names = "uartclk", "apb_pclk";
+		};
+#endif
+	};
+
+	pdc@0x8001c000 {
+		compatible = "brcm,pdc";
+		reg = <0x00000000 0x8001c000 0x00000000 0x448>;
+		interrupts = <GIC_SPI SPU_GMAC_SPI IRQ_TYPE_LEVEL_HIGH>;
+		brcm,num_chan = <4>;
+	};
+
+	spu-crypto@0x8001d000 {
+		compatible = "brcm,spu-crypto";
+		reg = <0x00000000 0x8001d000 0x00000000 0x64>;
+		brcm,num_spu = <1>;
+	};
+
+	therm0: brcm-therm {
+		compatible = "brcm,therm";
+	};
+	
+	cs4345 {
+		compatible = "crus,cs4345-dac";
+	};
+
+#if defined(CONFIG_BCM_PCIE_HCD)
+	pcie0: pcie@80040000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80040000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xC0000000 0 0xC0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 60 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <0>;
+	};
+
+	pcie1: pcie@80050000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80050000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xD0000000 0 0xD0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 61 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <1>;
+	};
+
+	pcie2: pcie@80060000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80060000 0 0x0000A000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xE0000000 0 0xE0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 62 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <2>;
+	};
+
+	pcie3: pcie@80070000 {
+		compatible = "brcm,bcm963xx-pcie";
+		device_type = "pci";
+		reg = <0 0x80070000 0 0x0000B000>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		/*        flags,     pci_addr,    cpu_addr     size */
+		ranges = <0x02000000 0 0xB0000000 0 0xB0000000 0 0x10000000>;
+
+		/* core error log interrupts */
+		interrupt-names = "intr";
+		interrupts = <GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+
+		#interrupt-cells = <1>;
+		interrupt-map-mask = <0 0 0 0>;
+		interrupt-map = <0 0 0 0 &gic GIC_SPI 63 IRQ_TYPE_LEVEL_HIGH>;
+
+		brcm,coreid = <3>;
+	};
+#endif
+};

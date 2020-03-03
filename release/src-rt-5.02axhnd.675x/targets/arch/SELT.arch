@@ -1,0 +1,22 @@
+<PUBLISH>
+--- targets/963138GW/963138GW	2014-01-28 19:39:08.587977810 -0800
++++ targets/963138GW_SELT/963138GW_SELT	2014-01-28 19:53:56.428004266 -0800
+@@ -143,7 +143,7 @@
+ BUILD_DSLDIAGD=y
+ # BUILD_DSL_LOOP_DIAG is not set
+ # BRCM_PHY_LOOPBACK is not set
+-# BUILD_DSL_SELT_TEST is not set
++BUILD_DSL_SELT_TEST=y
+ BRCM_DRIVER_XTM=m
+ BUILD_XTMCTL=dynamic
+ BUILD_ATMWAN=y
+@@ -195,7 +195,8 @@
+ #
+ # Auxillary flash file system selection
+ #
+-# BUILD_AUXFS_JFFS2 is not set
++BUILD_AUXFS_JFFS2=y
++BRCM_KERNEL_AUXFS_JFFS2=y
+ 
+ #
+ # Moca Selection

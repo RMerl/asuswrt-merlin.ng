@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<xmlMandatorySingleRootNode copyright="Broadcom Corporation, 2012" >
+
+
+
+
+<object name="InternetGatewayDevice." shortObjectName="FakeParentObject" specSource="TR98" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="BROADCOM">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject. </description>
+
+
+
+
+<object name="InternetGatewayDevice.Device." shortObjectName="FakeParentObject" specSource="TR181" profile="Unspecified" requirements="P" supportLevel="Present" />
+  <description source="TRx">This is a fake object node for the DataModelDesigner to draw the object hierarchy properly.  It will not be inserted into the data model.   The Short Object Name must be FakeParentObject.</description>
+
+
+
+
+<object name="InternetGatewayDevice.Device.GatewayInfo." shortObjectName="Dev2GatewayInfoObject" specSource="TR181" profile="Device2_GatewayInfo:1" requirements="P" supportLevel="Present" oid="1040" />
+  <description source="TRx">This object contains information associated with a connected Internet Gateway Device.</description>
+  <description source="BROADCOM">This object is for devices which sit behind a gateway device.  Since most Broadcom CPE _is_ the gateway device, this object is not applicable to our devices and is therefore not supported.&#10;This object is applicable to devices which sit behind a gateway, such as homeplug/PLC. </description>
+
+  <parameter name="ManufacturerOUI" type="string" specSource="TR181" profile="Device2_GatewayInfo:1" requirements="R" supportLevel="ReadOnly" maxLength="6" />
+    <description source="TRx">Organizationally unique identifier of the associated Internet Gateway Device.  Possible patterns:&#10;* &lt;Empty&gt; (an empty string)&#10;* [0-9A-F]{6}&#10;&#10;An empty string indicates that there is no associated Internet Gateway Device that has been detected.</description>
+
+  <parameter name="ProductClass" type="string" specSource="TR181" profile="Device2_GatewayInfo:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Identifier of the product class of the associated Internet Gateway Device.  {{empty}} indicates either that  there is no associated Internet Gateway Device that has been detected, or the Internet Gateway Device does not support the use of the  product-class parameter. </description>
+
+  <parameter name="SerialNumber" type="string" specSource="TR181" profile="Device2_GatewayInfo:1" requirements="R" supportLevel="ReadOnly" maxLength="64" />
+    <description source="TRx">Serial number of the associated Internet Gateway Device.  {{empty}} indicates that there is no associated  Internet Gateway Device that has been detected. </description>
+
+
+<vsaInfo>
+
+<validstringarray name="minimumSingleVsaValues" />
+  <element>IgnoreThis</element>
+
+</vsaInfo>
+
+
+
+<profileInfo>
+<profile name="Device2_GatewayInfo:1" /> 
+<profile name="Unspecified" /> 
+</profileInfo>
+
+
+</xmlMandatorySingleRootNode>

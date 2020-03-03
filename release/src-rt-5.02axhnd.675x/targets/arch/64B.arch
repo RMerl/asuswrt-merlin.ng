@@ -1,0 +1,16 @@
+<PUBLISH>
+--- 962118GW.old
++++ 962118GW
+@@ -46,11 +46,10 @@
+ #
+ # Toolchain selection
+ #
+-USER_ARCH_ARM=y
+-# USER_ARCH_AARCH64 is not set
+-PROFILE_ARCH=arm
++# USER_ARCH_ARM is not set
++USER_ARCH_AARCH64=y
++PROFILE_ARCH=aarch64
+ KERNEL_ARCH=aarch64
+-# BRCM_UCLIBC is not set
+ BRCM_GLIBC=y

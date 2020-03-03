@@ -1,0 +1,7 @@
+#
+# Add TR181 IPSec objects to TR181 tree
+#
+# See 0000-README.txt for more details
+#
+
+addObjBelowObj cms-dm-tr181-ipsec.xml Device.IP.

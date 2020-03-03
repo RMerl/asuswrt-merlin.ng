@@ -1,0 +1,9 @@
+#
+# Add the object in cms-dm-bcm-battery.xml above the 
+# object InternetGatewayDevice.DeviceConfig.
+#
+# See 0000-README.txt for more details
+#
+
+addObjAboveObj cms-dm-bcm-battery.xml InternetGatewayDevice.DeviceConfig.
+

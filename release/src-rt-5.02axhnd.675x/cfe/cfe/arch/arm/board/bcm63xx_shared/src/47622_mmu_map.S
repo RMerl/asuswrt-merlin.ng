@@ -1,0 +1,144 @@
+/*  *********************************************************************
+    *
+    <:copyright-BRCM:2012:proprietary:standard
+    
+       Copyright (c) 2012 Broadcom 
+       All Rights Reserved
+    
+     This program is the proprietary software of Broadcom and/or its
+     licensors, and may only be used, duplicated, modified or distributed pursuant
+     to the terms and conditions of a separate, written license agreement executed
+     between you and Broadcom (an "Authorized License").  Except as set forth in
+     an Authorized License, Broadcom grants no license (express or implied), right
+     to use, or waiver of any kind with respect to the Software, and Broadcom
+     expressly reserves all rights in and to the Software and all intellectual
+     property rights therein.  IF YOU HAVE NO AUTHORIZED LICENSE, THEN YOU HAVE
+     NO RIGHT TO USE THIS SOFTWARE IN ANY WAY, AND SHOULD IMMEDIATELY NOTIFY
+     BROADCOM AND DISCONTINUE ALL USE OF THE SOFTWARE.
+    
+     Except as expressly set forth in the Authorized License,
+    
+     1. This program, including its structure, sequence and organization,
+        constitutes the valuable trade secrets of Broadcom, and you shall use
+        all reasonable efforts to protect the confidentiality thereof, and to
+        use this information only in connection with your use of Broadcom
+        integrated circuit products.
+    
+     2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED "AS IS"
+        AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES, REPRESENTATIONS OR
+        WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, WITH
+        RESPECT TO THE SOFTWARE.  BROADCOM SPECIFICALLY DISCLAIMS ANY AND
+        ALL IMPLIED WARRANTIES OF TITLE, MERCHANTABILITY, NONINFRINGEMENT,
+        FITNESS FOR A PARTICULAR PURPOSE, LACK OF VIRUSES, ACCURACY OR
+        COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR CORRESPONDENCE
+        TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING OUT OF USE OR
+        PERFORMANCE OF THE SOFTWARE.
+    
+     3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL BROADCOM OR
+        ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL, SPECIAL,
+        INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR IN ANY
+        WAY RELATING TO YOUR USE OF OR INABILITY TO USE THE SOFTWARE EVEN
+        IF BROADCOM HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES;
+        OR (ii) ANY AMOUNT IN EXCESS OF THE AMOUNT ACTUALLY PAID FOR THE
+        SOFTWARE ITSELF OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS
+        SHALL APPLY NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY
+        LIMITED REMEDY.
+    :> 
+    ********************************************************************* */
+#include "mmu_map.h"
+#include "bcm_map.h"
+
+/* Physical address of L1TABLE (must be 4K Aligned */
+#define L1TABLE_PA	(text_start-L1TABLE_SIZE)
+
+FUNC(board_mmu_map_scn)
+	mov	r9,lr
+
+	MMU_INIT_TABLE(L1TABLE_PA, L1TABLE_SIZE)
+#if defined(CFG_RAMAPP)	
+#if !defined(IKOS_NO_DDRINIT)
+	/* read ddr memory size in MEMC */
+	ldr	r2, =MEMC_BASE
+	ldr	r2, [r2, #MEMC_GLB_FSBL_STATE]
+	and	r2, #MEMC_GLB_FSBL_DRAM_SIZE_MASK
+	/* only map up to 1G ddr memory for CFE RAM so we have space for uncached memory */
+	cmp	r2, #10
+	blt	no_adj
+	mov	r2, #10
+no_adj:	
+	mov	r5, #1
+	lsl	r5, r5, r2
+	mov	r10, r5
+
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, r5, SECTION_ATTR_CACHED_MEM, 0x0)
+	/* virtual address 0x4000-0000 to 0x8000-0000 -> 0x0000-0000 to 0x4000-0000 physcial uncached*/
+	mov	r5, r10
+	_MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, r5, SECTION_ATTR_NONCACHED_MEM, 0x0)
+#else
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 1024, SECTION_ATTR_CACHED_MEM, 0x0)
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x40000000, 1024, SECTION_ATTR_NONCACHED_MEM, 0x0)
+#endif
+	/*Entry for CCI */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), CCI500_BASE, 1, SECTION_ATTR_DEVICE, CCI500_BASE)
+	/*sysport */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), SYSPORT_PHYS_BASE, 1, SECTION_ATTR_DEVICE, SYSPORT_PHYS_BASE)
+
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), SYSPORT_1_PHYS_BASE, 1, SECTION_ATTR_DEVICE, SYSPORT_1_PHYS_BASE)
+	/*BIU*/
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), BIU_PHYS_BASE, 1, SECTION_ATTR_DEVICE, BIU_PHYS_BASE)
+	/* entry for UBUS4 at 0x830x-xxxx */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), UBUS_MAPPED_PHYS_BASE, 1, SECTION_ATTR_DEVICE, UBUS_MAPPED_PHYS_BASE)
+#else
+	/* cfe rom DDR must be mapped as non-executable device to prevent speculative data and instruction fetch */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), 0x0, 2048, SECTION_ATTR_DEVICE, 0x0)
+
+	/* entry for PSRAM */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), BTRM_INT_SRAM_ADDR, 1, SECTION_ATTR_CACHED_MEM, BTRM_INT_SRAM_ADDR)
+	/* entry for XIP NOR flash at 0xffdx-xxxx */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), SPIFLASH_PHYS_BASE, 1, SECTION_ATTR_DEVICE_EXEC, SPIFLASH_PHYS_BASE)
+#endif
+
+	/* Periph */ 
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), PERF_PHYS_BASE, 1, SECTION_ATTR_DEVICE, PERF_PHYS_BASE)
+        /* MEMC */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), MEMC_PHYS_BASE, 1, SECTION_ATTR_DEVICE, MEMC_PHYS_BASE)
+	/* entry for PMC at 0xffbx-xxxx */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), PMC_PHYS_BASE, 2, SECTION_ATTR_DEVICE, PMC_PHYS_BASE)
+	/* BROM + BootLUT */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), BTRM_INT_BOOT_ADDR, 1, SECTION_ATTR_DEVICE, BTRM_INT_BOOT_ADDR)
+
+	MMU_SET_TTBR(L1TABLE_PA)
+
+	mov	lr,r9	
+	mov	pc,lr
+END(board_mmu_map_scn)
+
+/* *********************************************************************
+    *  mmu_update_scn(uint* addr)
+    *  
+    *  Update MMU table for entries that does not need XIP support.
+    *  A board mmu callback
+    *	
+    *  Input parameters: 
+    *  	  none 
+    *  	   
+    *  Return value:
+    *  	   nothing
+    *
+    *  Registers used:
+    *  	   nothing
+    ********************************************************************* */
+
+FUNC(board_mmu_update_scn)
+	mov	r11, lr
+#if !defined(CFG_RAMAPP)
+	/* SPI NOR direct window. Add NX to avoid any speculative fetch  */
+	MMU_MAP_SCN(L1TABLE_PA, (L1TABLE_SIZE/4), SPIFLASH_PHYS_BASE, 0x1, SECTION_ATTR_DEVICE, SPIFLASH_PHYS_BASE)
+
+	bl	armv7_l1cache_inval_i
+	bl	armv7_l1cache_flush_d
+	bl	mmu_invalidate_tlb
+#endif
+	mov	lr,r11
+	mov	pc,lr
+END(board_mmu_update_scn)

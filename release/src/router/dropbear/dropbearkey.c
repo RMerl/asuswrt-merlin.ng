@@ -45,7 +45,7 @@
  *
  * Ed25519:
  * string	"ssh-ed25519"
- * string	k (32 bytes) + k (32 bytes)
+ * string	k (32 bytes) + A (32 bytes)
  *
  */
 #include "includes.h"

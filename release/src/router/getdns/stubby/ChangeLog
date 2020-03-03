@@ -1,3 +1,10 @@
+* 2020-02-28: Version 0.3.0
+  * Correct the applied-privacy.net details and remove ibksturm server in stubby.yml.example.
+  * Include AppArmor profile (thanks CameronNemo)
+  * Add `contrib` contributors to the README
+  * Let scheduled task run idefinately on Windows (thanks triatic)
+  * Add `Restart=on-failure` to the systemd.service file (thanks appliedprivacy)
+
 * 2019-12-20: Version 0.3.0-beta.1
   * Migration of build system to cmake.
 

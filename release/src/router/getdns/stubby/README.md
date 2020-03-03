@@ -193,7 +193,7 @@ Or via the GUI:
 
 Powershell scripts are provided in the the windows directory of the source code that can be used to update the system resolvers. 
 Instructions for how to update the resolvers manually are provided are also provided - see https://dnsprivacy.org/wiki/display/DP/Windows+installer+for+Stubby 
-
+Stubby has been reported to work on Windows 7, but we don't officially support it. 
 
 ## Notes:
 
@@ -208,3 +208,12 @@ instructions in the getdns [README](https://github.com/getdnsapi/getdns/blob/dev
 ## Logging/debugging when building from source
 
 > **`--enable-debug-stub`**   If you do want to see _very_ detailed debug information as messages are processed then add the `--enable-debug-stub` option to the `configure` line above (not recommended for use with Stubby)
+
+
+# Contributions
+
+The contrib directory contains code kindly contributed by various people:
+
+vapniks
+Tom Matthews
+CameronNemo

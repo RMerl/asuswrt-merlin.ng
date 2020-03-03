@@ -347,11 +347,8 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
 ## Foundation for Applied Privacy 
-#  - address_data: 37.252.185.232
-#    tls_auth_name: "dot1.appliedprivacy.net"
-# ibksturm testserver
-#  - address_data: 178.82.102.190
-#    tls_auth_name: "ibksturm.synology.me"
+#  - address_data: 93.177.65.183
+#    tls_auth_name: "dot1.applied-privacy.net"
 ## # OARC. Note: this server currently doesn't support strict mode!
 ##   - address_data: 184.105.193.78
 ##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
@@ -471,8 +468,8 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: sG6kj+XJToXwt1M6+9BeCz1SOj/1/mdZn56OZvCyZZc=
 ## Foundation for Applied Privacy 
-#  - address_data: 2a00:63c1:a:229::3
-#    tls_auth_name: "dot1.appliedprivacy.net"
+#  - address_data: 2a03:4000:38:53c::2
+#    tls_auth_name: "dot1.applied-privacy.net"
 ## # OARC. Note: this server currently doesn't support strict mode!
 ##   - address_data: 2620:ff:c000:0:1::64:25
 ##     tls_auth_name: "tls-dns-u.odvr.dns-oarc.net"
@@ -553,9 +550,9 @@ upstream_recursive_servers:
 #      - digest: "sha256"
 #        value: wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI=
 ## Foundation for Applied Privacy 
-#  - address_data: 37.252.185.232
+#  - address_data: 93.177.65.183
 #    tls_port: 443
-#    tls_auth_name: "dot1.appliedprivacy.net"
-#  - address_data: 2a00:63c1:a:229::3
+#    tls_auth_name: "dot1.applied-privacy.net"
+#  - address_data: 2a03:4000:38:53c::2
 #    tls_port: 443
-#    tls_auth_name: "dot1.appliedprivacy.net"
+#    tls_auth_name: "dot1.applied-privacy.net"

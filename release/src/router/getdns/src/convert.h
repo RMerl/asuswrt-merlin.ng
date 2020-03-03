@@ -38,6 +38,10 @@
 #include "types-internal.h"
 #include <stdio.h>
 
+getdns_return_t
+_getdns_wire2msg_dict_scan(struct mem_funcs *mf,
+    const uint8_t **wire, size_t *wire_len, getdns_dict **msg_dict);
+
 getdns_return_t _getdns_wire2rr_dict(struct mem_funcs *mf,
     const uint8_t *wire, size_t wire_len, getdns_dict **rr_dict);
 

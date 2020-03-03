@@ -102,6 +102,8 @@ struct connection {
 	struct sockaddr_storage remote_in;
 	socklen_t               addrlen;
 
+	size_t                  max_udp_size;
+
 	connection             *next;
 	connection            **prev_next;
 };
@@ -326,6 +328,17 @@ getdns_reply(getdns_context *context,
 	else if (conn->l->transport == GETDNS_TRANSPORT_UDP) {
 		listener *l = conn->l;
 
+		if (len > conn->max_udp_size) {
+			_getdns_rr_iter qi_spc, *qi;
+
+			(void)memset(buf + 6, 0, 6);
+			GLDNS_TC_SET(buf);
+			if ((qi = _getdns_rr_iter_init(&qi_spc, buf, len))) {
+				DEBUG_SERVER("Truncating reply to: %d\n",
+					(int)(qi->nxt - buf));
+				len = qi->nxt - buf;
+			}
+		}
 		if (conn->l->fd >= 0 && sendto(conn->l->fd, (void *)buf, len, 0,
 		    (struct sockaddr *)&conn->remote_in, conn->addrlen) == -1) {
 			/* TODO: handle _getdns_socketerror_wants_retry() */
@@ -545,6 +558,7 @@ static void tcp_accept_cb(void *userarg)
 		return;
 
 	(void) memset(conn, 0, sizeof(tcp_connection));
+	conn->super.max_udp_size = 65536;
 	conn->super.l = l;
 	conn->super.addrlen = sizeof(conn->super.remote_in);
 	if ((conn->fd = accept(l->fd, (struct sockaddr *)
@@ -629,6 +643,7 @@ static void udp_read_cb(void *userarg)
 
 	conn->l = l;
 	conn->addrlen = sizeof(conn->remote_in);
+	conn->max_udp_size = 512;
 	if ((len = recvfrom(l->fd, (void *)buf, sizeof(buf), 0,
 	    (struct sockaddr *)&conn->remote_in, &conn->addrlen)) == -1) {
 		if ( _getdns_socketerror_wants_retry() &&
@@ -713,6 +728,8 @@ static void udp_read_cb(void *userarg)
 		; /* FROMERR on input, ignore */
 
 	else {
+		uint32_t max_udp_size = 512;
+
 		/* Insert connection */
 		conn->super.key = conn;
 		if (!_getdns_rbtree_insert(
@@ -723,6 +740,15 @@ static void udp_read_cb(void *userarg)
 		}
 		DEBUG_SERVER("[connection add] count: %d\n",
 		    (int)l->set->connections_set.count);
+
+		if (!getdns_dict_get_int(request_dict,
+		    "/additional/0/udp_payload_size", &max_udp_size))
+			conn->max_udp_size = max_udp_size;
+
+		else if (!getdns_dict_get_int(request_dict,
+		    "/additional/1/udp_payload_size", &max_udp_size))
+			conn->max_udp_size = max_udp_size;
+
 		if ((conn->next = l->connections))
 			conn->next->prev_next = &conn->next;
 		conn->prev_next = &l->connections;

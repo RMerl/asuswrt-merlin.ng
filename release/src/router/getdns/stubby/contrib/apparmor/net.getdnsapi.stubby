@@ -1,0 +1,15 @@
+#include <tunables/global>
+
+profile net.getdnsapi.stubby /usr/bin/stubby {
+  #include <abstractions/base>
+  #include <abstractions/nameservice>
+  capability net_bind_service,
+  # config
+  /etc/stubby/stubby.yml r,
+  owner @{HOME}/.stubby.yml r,
+  # static DNSSEC anchors
+  /etc/unbound/getdns-root.key r,
+  # auto-downloaded DNSSEC anchors
+  /var/cache/stubby/{,**} rw,
+  owner @{HOME}/.getdns/{,**} rw,
+}

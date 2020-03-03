@@ -15,6 +15,10 @@
 
 #include <assert.h>
 #include <stdint.h>
+#if defined(_MSC_VER)
+#include <BaseTsd.h>
+typedef SSIZE_T ssize_t;
+#endif
 #include <stdlib.h>
 #include <string.h>
 

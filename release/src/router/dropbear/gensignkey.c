@@ -4,6 +4,7 @@
 #include "ecdsa.h"
 #include "genrsa.h"
 #include "gendss.h"
+#include "gened25519.h"
 #include "signkey.h"
 #include "dbrandom.h"
 
@@ -69,6 +70,10 @@ static int get_default_bits(enum signkey_type keytype)
 		case DROPBEAR_SIGNKEY_ECDSA_NISTP256:
 			return 256;
 #endif
+#if DROPBEAR_ED25519
+		case DROPBEAR_SIGNKEY_ED25519:
+			return 256;
+#endif
 		default:
 			return 0;
 	}
@@ -117,6 +122,11 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 				keytype = ecdsa_signkey_type(ecckey);
 				*signkey_key_ptr(key, keytype) = ecckey;
 			}
+			break;
+#endif
+#if DROPBEAR_ED25519
+		case DROPBEAR_SIGNKEY_ED25519:
+			key->ed25519key = gen_ed25519_priv_key(bits);
 			break;
 #endif
 		default:

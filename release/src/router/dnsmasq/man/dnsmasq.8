@@ -1554,7 +1554,8 @@ address of the host (or DUID for IPv6) , the IP address, and the hostname,
 if known. "add" means a lease has been created, "del" means it has
 been destroyed, "old" is a notification of an existing lease when
 dnsmasq starts or a change to MAC address or hostname of an existing
-lease (also, lease length or expiry and client-id, if \fB--leasefile-ro\fP is set).
+lease (also, lease length or expiry and client-id, if \fB--leasefile-ro\fP is set
+and lease expiry if \fB--script-on-renewal\fP is set).
 If the MAC address is from a network type other than ethernet,
 it will have the network type prepended, eg "06-01:23:45:67:89:ab" for
 token ring. The process is run as root (assuming that dnsmasq was originally run as
@@ -1743,6 +1744,10 @@ the saved state of the lease database, in dnsmasq leasefile format, to
 stdout and exit with zero exit code. Setting this
 option also forces the leasechange script to be called on changes
 to the client-id and lease length and expiry time.
+.TP
+.B --script-on-renewal
+Call the dhcp script when the lease expiry time changes, for instance when the
+lease is renewed.
 .TP
 .B --bridge-interface=<interface>,<alias>[,<alias>]
 Treat DHCP (v4 and v6) requests and IPv6 Router Solicit packets

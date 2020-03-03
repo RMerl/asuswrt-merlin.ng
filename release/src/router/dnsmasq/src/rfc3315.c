@@ -1310,7 +1310,6 @@ static struct dhcp_netid *add_options(struct state *state, int do_refresh)
 	    {
 	      
 	      o = new_opt6(opt_cfg->opt);
-	      o1 = 0; /* warning */
 	      	  
 	      for (a = (struct in6_addr *)opt_cfg->val, j = 0; j < opt_cfg->len; j+=IN6ADDRSZ, a++)
 		{

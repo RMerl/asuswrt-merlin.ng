@@ -1682,9 +1682,9 @@ void start_dnsmasq(void)
 		if (*value)
 			fprintf(fp, "dhcp-option=lan,option6:24,%s\n", value);
 
-		/* NTP server */
+		/* SNTP server */
 		if (nvram_get_int("ntpd_enable"))
-			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
+			fprintf(fp, "dhcp-option=lan,option6:31,%s\n", "[::]");
 	}
 #endif
 

@@ -27,26 +27,20 @@
 #include <openssl/x509.h>
 #include <openssl/err.h>
 
-#if !defined(OPENSSL_NO_DSA) && defined(HAVE_DSA)
-#include <openssl/dsa.h>
-#else
-#undef HAVE_DSA
-#endif
-
 #if !defined(OPENSSL_NO_ENGINE) && !defined(NO_GOST)
-#include <openssl/engine.h>
-#define HAVE_GOST
+#  include <openssl/engine.h>
+#  define HAVE_GOST
 static ENGINE *gost_engine = NULL;
 static char *gost_hash = NULL;
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10101000L
-#define HAVE_EDDSA
+#  define HAVE_EDDSA
 #endif
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-#define EVP_MD_CTX_new EVP_MD_CTX_create
-#define EVP_MD_CTX_reset EVP_MD_CTX_cleanup
+#  define EVP_MD_CTX_new EVP_MD_CTX_create
+#  define EVP_MD_CTX_reset EVP_MD_CTX_cleanup
 
 static void BN_set(BIGNUM **bp, BIGNUM *b)
 {
@@ -63,30 +57,6 @@ static int RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d)
   BN_set(&r->d, d);
   return 1;
 }
-
-#ifdef HAVE_DSA
-static int DSA_set0_pqg(DSA *d, BIGNUM *p, BIGNUM *q, BIGNUM *g)
-{
-  BN_set(&d->p, p);
-  BN_set(&d->q, q);
-  BN_set(&d->g, g);
-  return 1;
-}
-
-static int DSA_set0_key(DSA *d, BIGNUM *pub_key, BIGNUM *priv_key)
-{
-  BN_set(&d->pub_key, pub_key);
-  BN_set(&d->priv_key, priv_key);
-  return 1;
-}
-
-static int DSA_SIG_set0(DSA_SIG *sig, BIGNUM *r, BIGNUM *s)
-{
-  BN_set(&sig->r, r);
-  BN_set(&sig->s, s);
-  return 1;
-}
-#endif
 
 static int ECDSA_SIG_set0(ECDSA_SIG *sig, BIGNUM *r, BIGNUM *s)
 {
@@ -288,7 +258,6 @@ static int dnsmasq_rsa_verify(struct blockdata *key_data, unsigned int key_len, 
 
   switch (algo)
     {
-    case 1: r = NID_md5; break;
     case 5: r = NID_sha1; break;
     case 7: r = NID_sha1; break;
     case 8: r = NID_sha256; break;
@@ -332,68 +301,6 @@ err:
 
   return 0;
 }
-
-#ifdef HAVE_DSA
-static int dnsmasq_dsa_verify(struct blockdata *key_data, unsigned int key_len, unsigned char *sig, size_t sig_len,
-			      unsigned char *digest, size_t digest_len, int algo)
-{
-  static DSA *dsa = NULL;
-  static DSA_SIG *dsasig = NULL;
-  BIGNUM *Q, *P, *G, *Y, *R, *S;
-
-  unsigned char *p;
-  unsigned int t, l;
-  int r;
-
-  (void)algo;
-
-  if (!dsa && !(dsa = DSA_new()))
-    return 0;
-
-  if (!dsasig && !(dsasig = DSA_SIG_new()))
-    return 0;
-
-  if ((sig_len < 41) || !(p = blockdata_retrieve(key_data, key_len, NULL)))
-    return 0;
-
-  t = *p++;
-  l = 64 + (t*8);
-
-  if (key_len < (213 + (t * 24)))
-    return 0;
-
-  Q = BN_bin2bn(p, 20, NULL); p += 20;
-  P = BN_bin2bn(p, l, NULL); p += l;
-  G = BN_bin2bn(p, l, NULL); p += l;
-  Y = BN_bin2bn(p, l, NULL);
-  R = BN_bin2bn(sig + 1, 20, NULL);
-  S = BN_bin2bn(sig + 21, 20, NULL);
-  if (!Q || !P || !G || !Y || !R || !Y || !DSA_set0_pqg(dsa, P, Q, G))
-    goto err;
-  if (!DSA_set0_key(dsa, Y, NULL))
-    goto err_y;
-  if (!DSA_SIG_set0(dsasig, R, S))
-    goto err_rs;
-
-  r = DSA_do_verify(digest, digest_len, dsasig, dsa);
-
-  DSA_free(dsa), dsa = NULL;
-
-  return (r > 0);
-
-err:
-  BN_free(Q);
-  BN_free(P);
-  BN_free(G);
-err_y:
-  BN_free(Y);
-err_rs:
-  BN_free(R);
-  BN_free(S);
-
-  return 0;
-}
-#endif
 
 static int dnsmasq_ecdsa_verify(struct blockdata *key_data, unsigned int key_len,
 				unsigned char *sig, size_t sig_len,
@@ -597,13 +504,8 @@ static int (*verify_func(int algo))(struct blockdata *key_data, unsigned int key
   /* This switch defines which sig algorithms we support. */
   switch (algo)
     {
-    case 1: case 5: case 7: case 8: case 10:
+    case 5: case 7: case 8: case 10:
       return dnsmasq_rsa_verify;
-
-#ifdef HAVE_DSA
-    case 3: case 6:
-      return dnsmasq_dsa_verify;
-#endif
 
 #ifdef HAVE_GOST
     case 12:
@@ -664,11 +566,9 @@ char *algo_digest_name(int algo)
     {
     case 1: return NULL;          /* RSA/MD5 - Must Not Implement.  RFC 6944 para 2.3. */
     case 2: return NULL;          /* Diffie-Hellman */
-#ifdef HAVE_DSA
-    case 3: return SN_sha1;       /* DSA/SHA1 - Must Not Implement. RFC 8624 para 1.3. */
-    case 6: return SN_sha1;       /* DSA-NSEC3-SHA1 - Must Not Implement. RFC 8624 para 1.3. */
-#endif
+    case 3: return NULL;       /* DSA/SHA1 - Must Not Implement. RFC 8624 para 1.3. */
     case 5: return SN_sha1;       /* RSA/SHA1 */
+    case 6: return NULL;       /* DSA-NSEC3-SHA1 - Must Not Implement. RFC 8624 para 1.3. */
     case 7: return SN_sha1;       /* RSASHA1-NSEC3-SHA1 */
     case 8: return SN_sha256;     /* RSA/SHA-256 */
     case 10: return SN_sha512;    /* RSA/SHA-512 */

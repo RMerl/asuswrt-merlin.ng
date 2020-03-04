@@ -1,0 +1,63 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:        stubby
+# Required-Start:  $remote_fs
+# Required-Stop:   $remote_fs
+# Default-Start:   2 3 4 5
+# Default-Stop: 
+# Short-Description: Start DNS Privacy stub resolver
+### END INIT INFO
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+
+. /lib/lsb/init-functions
+
+DAEMON=/usr/bin/stubby
+OPTS='-g'
+
+test -x $DAEMON || exit 0
+
+if [ -r /etc/default/stubby ]; then
+	. /etc/default/stubby
+fi
+
+RUNASUSER=root
+UGID=$(getent passwd $RUNASUSER | cut -f 3,4 -d:) || true
+
+case $1 in
+	start)
+		log_daemon_msg "Starting DNS Privacy stub resolver" "stubby"
+		if [ -z "$UGID" ]; then
+			log_failure_msg "user \"$RUNASUSER\" does not exist"
+			exit 1
+		fi
+		start-stop-daemon --start --quiet --oknodo --exec $DAEMON --startas $DAEMON -- $OPTS
+		log_end_msg $?
+  		;;
+	stop)
+		log_daemon_msg "Stopping DNS Privacy stub resolver" "stubby"
+		start-stop-daemon --stop --quiet --oknodo --retry=TERM/30/KILL/5 --exec $DAEMON
+		log_end_msg $?
+  		;;
+	restart|force-reload)
+		$0 stop && sleep 2 && $0 start
+  		;;
+	try-restart)
+		if $0 status >/dev/null; then
+			$0 restart
+		else
+			exit 0
+		fi
+		;;
+	reload)
+		exit 3
+		;;
+	status)
+		status_of_proc $DAEMON "DNS Privacy stub resolver"
+		;;
+	*)
+		echo "Usage: $0 {start|stop|restart|try-restart|force-reload|status}"
+		exit 2
+		;;
+esac

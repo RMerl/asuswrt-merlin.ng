@@ -28,6 +28,7 @@
 #include "buffer.h"
 #include "dss.h"
 #include "rsa.h"
+#include "ed25519.h"
 
 enum signkey_type {
 #if DROPBEAR_RSA
@@ -41,6 +42,9 @@ enum signkey_type {
 	DROPBEAR_SIGNKEY_ECDSA_NISTP384,
 	DROPBEAR_SIGNKEY_ECDSA_NISTP521,
 #endif /* DROPBEAR_ECDSA */
+#if DROPBEAR_ED25519
+	DROPBEAR_SIGNKEY_ED25519,
+#endif
 	DROPBEAR_SIGNKEY_NUM_NAMED,
 	DROPBEAR_SIGNKEY_ECDSA_KEYGEN = 70, /* just "ecdsa" for keygen */
 	DROPBEAR_SIGNKEY_ANY = 80,
@@ -77,6 +81,9 @@ struct SIGN_key {
 #if DROPBEAR_ECC_521
 	ecc_key * ecckey521;
 #endif
+#endif
+#if DROPBEAR_ED25519
+	dropbear_ed25519_key * ed25519key;
 #endif
 };
 

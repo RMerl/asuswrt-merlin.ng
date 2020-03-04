@@ -11,6 +11,20 @@
 
 #cmakedefine HAVE_GETOPT	1
 
+#cmakedefine HAVE_INTTYPES_H	1
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>
+#endif
+
+#cmakedefine HAVE_SYS_TYPES_H	1
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
+#cmakedefine SERVER_DEBUG	1
+
+#cmakedefine ENABLE_SYSTEMD     1
+
 #cmakedefine STUBBYCONFDIR      "@STUBBYCONFDIR@"
 #cmakedefine RUNSTATEDIR        "@RUNSTATEDIR@"
 

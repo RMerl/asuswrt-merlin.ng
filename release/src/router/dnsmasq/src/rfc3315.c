@@ -1310,47 +1310,26 @@ static struct dhcp_netid *add_options(struct state *state, int do_refresh)
 	    {
 	      
 	      o = new_opt6(opt_cfg->opt);
-	      o1 = 0; /* warning */
 	      	  
 	      for (a = (struct in6_addr *)opt_cfg->val, j = 0; j < opt_cfg->len; j+=IN6ADDRSZ, a++)
 		{
-		  unsigned char *p = NULL;
-
-		  if (opt_cfg->opt == OPTION6_NTP_SERVER)
-		      o1 = new_opt6(NTP_SUBOPTION_SRV_ADDR);
-
 		  if (IN6_IS_ADDR_UNSPECIFIED(a))
 		    {
 		      if (!add_local_addrs(state->context))
-			p = put_opt6(state->fallback, IN6ADDRSZ);
+			put_opt6(state->fallback, IN6ADDRSZ);
 		    }
 		  else if (IN6_IS_ADDR_ULA_ZERO(a))
 		    {
 		      if (!IN6_IS_ADDR_UNSPECIFIED(state->ula_addr))
-			p = put_opt6(state->ula_addr, IN6ADDRSZ);
+			put_opt6(state->ula_addr, IN6ADDRSZ);
 		    }
 		  else if (IN6_IS_ADDR_LINK_LOCAL_ZERO(a))
 		    {
 		      if (!IN6_IS_ADDR_UNSPECIFIED(state->ll_addr))
-			p = put_opt6(state->ll_addr, IN6ADDRSZ);
+			put_opt6(state->ll_addr, IN6ADDRSZ);
 		    }
 		  else
-		    p = put_opt6(a, IN6ADDRSZ);
-
-		  if (opt_cfg->opt == OPTION6_NTP_SERVER)
-		    {
-		      if (!p)
-			{
-			  save_counter(o1);
-			  continue;
-			}
-		      else if (IN6_IS_ADDR_MULTICAST(p))
-			{
-			  p -= 4;
-			  PUTSHORT(NTP_SUBOPTION_MC_ADDR, p);
-			}
-		      end_opt6(o1);
-		    }
+		    put_opt6(a, IN6ADDRSZ);
 		}
 
 	      end_opt6(o);

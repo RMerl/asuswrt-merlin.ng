@@ -22,6 +22,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DSS_PRIV_FILENAME "/etc/dropbear/dropbear_dss_host_key"
 #define RSA_PRIV_FILENAME "/etc/dropbear/dropbear_rsa_host_key"
 #define ECDSA_PRIV_FILENAME "/etc/dropbear/dropbear_ecdsa_host_key"
+#define ED25519_PRIV_FILENAME "/etc/dropbear/dropbear_ed25519_host_key"
 
 /* Set NON_INETD_MODE if you require daemon functionality (ie Dropbear listens
  * on chosen ports and keeps accepting connections. This is the default.
@@ -116,6 +117,9 @@ IMPORTANT: Some options will require "make clean" after changes */
  * code (either ECDSA or ECDH) increases binary size - around 30kB
  * on x86-64 */
 #define DROPBEAR_ECDSA 1
+/* Ed25519 is faster than ECDSA. Compiling in Ed25519 code increases
+   binary size - around 7,5kB on x86-64 */
+#define DROPBEAR_ED25519 1
 
 /* RSA must be >=1024 */
 #define DROPBEAR_DEFAULT_RSA_SIZE 2048
@@ -143,7 +147,7 @@ IMPORTANT: Some options will require "make clean" after changes */
  * group14 is supported by most implementations.
  * group16 provides a greater strength level but is slower and increases binary size
  * curve25519 and ecdh algorithms are faster than non-elliptic curve methods
- * curve25519 increases binary size by ~8kB on x86-64
+ * curve25519 increases binary size by ~2,5kB on x86-64
  * including either ECDH or ECDSA increases binary size by ~30kB on x86-64
 
  * Small systems should generally include either curve25519 or ecdh for performance.

@@ -51,6 +51,7 @@
 #include "gldns/gbuffer.h"
 #include "gldns/pkthdr.h"
 #include "dnssec.h"
+#include "convert.h"
 
 
 getdns_return_t
@@ -725,6 +726,23 @@ _getdns_create_reply_dict(getdns_context *context, getdns_network_req *req,
 	                                         , answer_spc.rrset.name))
 		goto error;
 
+	if (!req->upstream)
+		;
+	else if (req->upstream->addr.ss_family == AF_INET) {
+		struct sockaddr_in *addr = (struct sockaddr_in *) &req->upstream->addr;
+		if (_getdns_dict_set_const_bindata(result,
+		    "answer_ipv4_address", sizeof(addr->sin_addr)
+		                         , (uint8_t *) & (addr->sin_addr)))
+			goto error;
+	}
+	else if (req->upstream->addr.ss_family == AF_INET6) {
+		struct sockaddr_in6 *addr = (struct sockaddr_in6 *) &req->upstream->addr;
+		if (_getdns_dict_set_const_bindata(result,
+		    "answer_ipv6_address", sizeof(addr->sin6_addr)
+		                         , (uint8_t *) & (addr->sin6_addr)))
+			goto error;
+	}
+
 	if (!req->owner->add_warning_for_bad_dns)
 		goto success;
 
@@ -803,6 +821,9 @@ _getdns_create_call_reporting_dict(
 	getdns_bindata  qname;
 	getdns_dict    *netreq_debug;
 	getdns_dict    *address_debug = NULL;
+	getdns_dict    *query_dict = NULL;
+	const uint8_t  *wire;
+	size_t          wire_len;
 
 	assert(netreq);
 
@@ -839,6 +860,23 @@ _getdns_create_call_reporting_dict(
 		return NULL;
 	}
 	/* Stub resolver debug data */
+	wire = netreq->query;
+	wire_len = netreq->response - netreq->query;
+	if (!wire)
+	       ; /* pass */
+
+	else if(_getdns_wire2msg_dict_scan(
+	    &netreq_debug->mf, &wire, &wire_len, &query_dict)) {
+
+		getdns_dict_destroy(netreq_debug);
+		return NULL;
+
+	} else if (_getdns_dict_set_this_dict(
+	    netreq_debug, "query", query_dict)) {
+
+		getdns_dict_destroy(netreq_debug);
+		return NULL;
+	}
 	_getdns_sockaddr_to_dict(
 	    context, &netreq->upstream->addr, &address_debug);
 
@@ -1125,6 +1163,8 @@ _getdns_create_getdns_response(getdns_dns_req *completed_request)
 	getdns_dict   *netreq_debug;
 	_srvs srvs = { 0, 0, NULL };
 	_getdns_rrset_spc answer_spc;
+	getdns_bindata *answer_ipv4_address = NULL;
+	getdns_bindata *answer_ipv6_address = NULL;
 
 	/* info (bools) about dns_req */
 	int dnssec_return_status;
@@ -1160,8 +1200,7 @@ _getdns_create_getdns_response(getdns_dns_req *completed_request)
 			goto error_free_result;
 		}
 	}
-	if (getdns_dict_set_int(result, GETDNS_STR_KEY_ANSWER_TYPE,
-	    GETDNS_NAMETYPE_DNS))
+	if (getdns_dict_set_int(result, "answer_type", GETDNS_NAMETYPE_DNS))
 		goto error_free_result;
 	
 	if (!(replies_full = getdns_list_create_with_context(context)))
@@ -1176,6 +1215,8 @@ _getdns_create_getdns_response(getdns_dns_req *completed_request)
 
 	for ( netreq_p = completed_request->netreqs
 	    ; (netreq = *netreq_p) ; netreq_p++) {
+		getdns_bindata *tmp_ipv4_address;
+		getdns_bindata *tmp_ipv6_address;
 
 		if (call_reporting && (  netreq->response_len
 		                      || netreq->state == NET_REQ_TIMED_OUT)) {
@@ -1233,6 +1274,27 @@ _getdns_create_getdns_response(getdns_dns_req *completed_request)
 			    result, "canonical_name", canonical_name))
 				goto error;
 		}
+
+		if (!getdns_dict_get_bindata(
+		    reply, "answer_ipv4_address", &tmp_ipv4_address)) {
+			if (!answer_ipv4_address)
+				answer_ipv4_address = tmp_ipv4_address;
+			else if (tmp_ipv4_address->size != answer_ipv4_address->size
+			     || memcmp(    tmp_ipv4_address->data
+			              , answer_ipv4_address->data
+				      , answer_ipv4_address->size))
+				answer_ipv4_address = NULL;
+		}
+		if (!getdns_dict_get_bindata(
+		    reply, "answer_ipv6_address", &tmp_ipv6_address)) {
+			if (!answer_ipv6_address)
+				answer_ipv6_address = tmp_ipv6_address;
+			else if (tmp_ipv6_address->size != answer_ipv6_address->size
+			     || memcmp(    tmp_ipv6_address->data
+			              , answer_ipv6_address->data
+				      , answer_ipv6_address->size))
+				answer_ipv6_address = NULL;
+		}
 		/* TODO: Check instead if canonical_name for request_type
 		 *       is in the answer section.
 		 */
@@ -1267,6 +1329,14 @@ _getdns_create_getdns_response(getdns_dns_req *completed_request)
 	if (!canonical_name &&
 	    _getdns_dict_set_const_bindata(result, "canonical_name",
 		    completed_request->name_len, completed_request->name))
+		goto error;
+
+	if (answer_ipv4_address &&
+	    getdns_dict_set_bindata(result, "answer_ipv4_address", answer_ipv4_address))
+		goto error;
+
+	if (answer_ipv6_address &&
+	    getdns_dict_set_bindata(result, "answer_ipv6_address", answer_ipv6_address))
 		goto error;
 
 	if (call_reporting) {

@@ -45,6 +45,9 @@
 #else
 #include <unistd.h>
 #endif
+#if defined(ENABLE_SYSTEMD)
+#include <systemd/sd-daemon.h>
+#endif
 #if !defined(STUBBY_ON_WINDOWS) && !defined(GETDNS_ON_WINDOWS)
 #include <syslog.h>
 #endif
@@ -994,6 +997,9 @@ main(int argc, char **argv)
 #ifdef SIGPIPE
 			(void)signal(SIGPIPE, SIG_IGN);
 #endif
+#ifdef ENABLE_SYSTEMD
+			sd_notifyf(0, "READY=1\nMAINPID=%u", getpid());
+#endif
 			getdns_context_run(context);
 		}
 	} else
@@ -1040,6 +1046,9 @@ main(int argc, char **argv)
 			       "Starting DAEMON....\n");
 #ifdef SIGPIPE
 		(void)signal(SIGPIPE, SIG_IGN);
+#endif
+#ifdef ENABLE_SYSTEMD
+		sd_notify(0, "READY=1");
 #endif
 		getdns_context_run(context);
 	}

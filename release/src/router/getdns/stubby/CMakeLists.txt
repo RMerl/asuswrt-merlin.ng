@@ -15,7 +15,7 @@ set(PACKAGE "stubby")
 set(PACKAGE_NAME "Stubby")
 set(PACKAGE_VERSION "0.3.0")
 set(PACKAGE_BUGREPORT "team@getdnsapi.net")
-set(RELEASE_CANDIDATE "-beta.1")
+set(RELEASE_CANDIDATE "")
 
 set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}${RELEASE_CANDIDATE}")
 set(PACKAGE_TARNAME "${PACKAGE}-${PACKAGE_VERSION}${RELEASE_CANDIDATE}")
@@ -30,6 +30,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 include(CheckIncludeFile)
 include(CheckSymbolExists)
 include(GNUInstallDirs)
+include(CMakeDependentOption)
+
+# Options.
+find_package(Libsystemd)
+if (Libsystemd_FOUND)
+  option(ENABLE_SYSTEMD "Enable systemd support." ON)
+endif()
 
 # Directories
 if (DEFINED CMAKE_INSTALL_FULL_RUNSTATEDIR)
@@ -53,6 +60,13 @@ if (WIN32)
 endif ()
 
 check_include_file(os/log.h HAVE_OS_LOG_H)
+check_include_file(inttypes.h HAVE_INTTYPES_H)
+check_include_file(sys/types.h HAVE_SYS_TYPES_H)
+
+option(ENABLE_DEBUG_ALL "Enable all debugging messages.")
+cmake_dependent_option(ENABLE_DEBUG_SERVER "Enable server debugging messages." OFF "NOT ENABLE_DEBUG_ALL" ON)
+set(SERVER_DEBUG ${ENABLE_DEBUG_SERVER})
+
 
 check_symbol_exists(getopt "unistd.h" HAVE_GETOPT)
 
@@ -83,6 +97,9 @@ endif ()
 
 target_include_directories(stubby PRIVATE src ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(stubby PRIVATE Libyaml::Libyaml)
+if (ENABLE_SYSTEMD)
+  target_link_libraries(stubby PRIVATE Libsystemd::Libsystemd)
+endif()
 # Are we being built from getdns? If so, use the build tree getdns.
 if (TARGET getdns)
   target_link_libraries(stubby PRIVATE getdns)

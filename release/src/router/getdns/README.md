@@ -174,9 +174,7 @@ Support
 
 ## Mailing lists
 
-We have a [getdns users list](https://getdnsapi.net/mailman/listinfo/users) for this implementation.
-
-The [getdns-api mailing list](https://getdnsapi.net/mailman/listinfo/spec) is a good place to engage in discussions regarding the design of the API.
+We have a [getdns users list](https://lists.getdnsapi.net/mailman/listinfo/users) for this implementation.
 
 ## Tickets and Bug Reports
 
@@ -353,4 +351,4 @@ Contributors
 
 Acknowledgements
 ================
-The development team explicitly acknowledges Paul Hoffman for his initiative and efforts to develop a consensus based DNS API. We would like to thank the participants of the [mailing list](https://getdnsapi.net/mailman/listinfo/spec) for their contributions.
+The development team explicitly acknowledges Paul Hoffman for his initiative and efforts to develop a consensus based DNS API. We would like to thank the participants of the getdns-api mailing list (discontinued) for their contributions.

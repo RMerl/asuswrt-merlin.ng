@@ -105,6 +105,8 @@
 #define SSH_SIGNKEY_DSS_LEN 7
 #define SSH_SIGNKEY_RSA "ssh-rsa"
 #define SSH_SIGNKEY_RSA_LEN 7
+#define SSH_SIGNKEY_ED25519 "ssh-ed25519"
+#define SSH_SIGNKEY_ED25519_LEN 11
 
 /* Agent commands. These aren't part of the spec, and are defined
  * only on the openssh implementation. */

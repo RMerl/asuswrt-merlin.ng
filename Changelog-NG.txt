@@ -2,15 +2,24 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.16 (xx-xx-xxxx)
-  - UPDATED: Merged GPL 384_8137 and binary blobs 384_7968
+  - NEW: Added support for the Asus RT-AX58U and RT-AX3000 (same
+         firmware).
+  - NOTE: The RT-AC87U and RT-AC3200 are now officially considered
+          to be on limited support.  The future for these two
+          models will depend on Asus's own support in the
+          coming months.
+
+  - NEW: Added ed25519 support in Dropbear (themiron)
+  - UPDATED: Merged GPL 384_8253 and binary blobs 384_7968
              for RT-AX88U.
   - UPDATED: Tor to 0.3.5.9.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
-  - UPDATED: dnsmasq to 2.80-148-g3ce803d-openssl (themiron)
+  - UPDATED: dnsmasq to 2.81rc1-29-g5b6f222 (themiron)
   - UPDATED: inadyn to 2.6 (themiron)
-  - UPDATED: getdns to 1.6.0-beta.1 (themiron)
-  - UPDATED: stubby to 0.3.0-beta.1 (themiron)
+  - UPDATED: getdns to 1.6.0 (themiron)
+  - UPDATED: stubby to 0.3.0 (themiron)
+  - UPDATED: amtm to 3.1.4 (thelonelycoder)
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
              they are connected to.

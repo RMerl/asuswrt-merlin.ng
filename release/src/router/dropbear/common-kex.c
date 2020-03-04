@@ -36,6 +36,7 @@
 #include "dbrandom.h"
 #include "runopts.h"
 #include "ecc.h"
+#include "curve25519.h"
 #include "crypto_desc.h"
 
 static void kexinitialise(void);
@@ -703,23 +704,18 @@ void kexecdh_comb_key(struct kex_ecdh_param *param, buffer *pub_them,
 #endif /* DROPBEAR_ECDH */
 
 #if DROPBEAR_CURVE25519
-struct kex_curve25519_param *gen_kexcurve25519_param () {
+struct kex_curve25519_param *gen_kexcurve25519_param() {
 	/* Per http://cr.yp.to/ecdh.html */
 	struct kex_curve25519_param *param = m_malloc(sizeof(*param));
 	const unsigned char basepoint[32] = {9};
 
 	genrandom(param->priv, CURVE25519_LEN);
-	param->priv[0] &= 248;
-	param->priv[31] &= 127;
-	param->priv[31] |= 64;
-
-	curve25519_donna(param->pub, param->priv, basepoint);
+	dropbear_curve25519_scalarmult(param->pub, param->priv, basepoint);
 
 	return param;
 }
 
-void free_kexcurve25519_param(struct kex_curve25519_param *param)
-{
+void free_kexcurve25519_param(struct kex_curve25519_param *param) {
 	m_burn(param->priv, CURVE25519_LEN);
 	m_free(param);
 }
@@ -736,7 +732,7 @@ void kexcurve25519_comb_key(const struct kex_curve25519_param *param, const buff
 		dropbear_exit("Bad curve25519");
 	}
 
-	curve25519_donna(out, param->priv, buf_pub_them->data);
+	dropbear_curve25519_scalarmult(out, param->priv, buf_pub_them->data);
 
 	if (constant_time_memcmp(zeroes, out, CURVE25519_LEN) == 0) {
 		dropbear_exit("Bad curve25519");

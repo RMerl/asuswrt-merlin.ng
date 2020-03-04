@@ -28,18 +28,23 @@ performance, and performance over features.
 
 Supported Devices
 -----------------
-Devices supported on the new generation/current branch (382.xx and newer):
+Fully supported devices:
  * RT-AC66U_B1 (use the RT-AC68U firmware)
  * RT-AC68U, RT-AC68P, RT-AC68UF (including HW revision C1 and E1)
  * RT-AC1900 & RT-AC1900P (use the RT-AC68U firmware)
- * RT-AC87U
- * RT-AC3200
  * RT-AC88U
  * RT-AC3100
  * RT-AC5300
  * RT-AC86U
  * RT-AC2900 (use the RT-AC86U firmware)
  * RT-AX88U
+ * RT-AX58U & RT-AX3000
+
+
+Limited support:
+ * RT-AC87U
+ * RT-AC3200
+
 
 No longer supported:
  * RT-N16
@@ -62,7 +67,7 @@ Features
 Here is a list of features that Asuswrt-merlin adds over the original 
 firmware.
 
-(Note: HND platform = RT-AC86U and RT-AX88U):
+(Note: HND platform = newer Broadcom models starting with RT-AC86U):
 
 System:
    - Various bugfixes and optimizations

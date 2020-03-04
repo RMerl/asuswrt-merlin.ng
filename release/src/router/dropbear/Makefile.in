@@ -36,8 +36,9 @@ COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		queue.o \
 		atomicio.o compat.o fake-rfc2553.o \
 		ltc_prng.o ecc.o ecdsa.o crypto_desc.o \
+		curve25519.o ed25519.o \
 		dbmalloc.o \
-		gensignkey.o gendss.o genrsa.o
+		gensignkey.o gendss.o genrsa.o gened25519.o
 
 SVROBJS=svr-kex.o svr-auth.o sshpty.o \
 		svr-authpasswd.o svr-authpubkey.o svr-authpubkeyoptions.o svr-session.o svr-service.o \
@@ -52,7 +53,7 @@ CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
 CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 			common-channel.o common-chansession.o termcodes.o loginrec.o \
 			tcp-accept.o listener.o process-packet.o dh_groups.o \
-			common-runopts.o circbuffer.o curve25519-donna.o list.o netio.o
+			common-runopts.o circbuffer.o list.o netio.o
 
 KEYOBJS=dropbearkey.o
 

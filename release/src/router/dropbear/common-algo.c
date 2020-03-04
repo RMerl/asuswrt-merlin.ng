@@ -222,6 +222,9 @@ algo_type ssh_nocompress[] = {
 };
 
 algo_type sshhostkey[] = {
+#if DROPBEAR_ED25519
+	{"ssh-ed25519", DROPBEAR_SIGNKEY_ED25519, NULL, 1, NULL},
+#endif
 #if DROPBEAR_ECDSA
 #if DROPBEAR_ECC_256
 	{"ecdsa-sha2-nistp256", DROPBEAR_SIGNKEY_ECDSA_NISTP256, NULL, 1, NULL},

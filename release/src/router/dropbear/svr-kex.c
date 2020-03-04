@@ -123,6 +123,11 @@ static void svr_ensure_hostkey() {
 			fn = ECDSA_PRIV_FILENAME;
 			break;
 #endif
+#if DROPBEAR_ED25519
+		case DROPBEAR_SIGNKEY_ED25519:
+			fn = ED25519_PRIV_FILENAME;
+			break;
+#endif
 		default:
 			dropbear_assert(0);
 	}
@@ -219,7 +224,8 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 			{
 			struct kex_curve25519_param *param = gen_kexcurve25519_param();
 			kexcurve25519_comb_key(param, ecdh_qs, svr_opts.hostkey);
-			buf_putstring(ses.writepayload, (const char*)param->pub, CURVE25519_LEN);
+
+			buf_putstring(ses.writepayload, param->pub, CURVE25519_LEN);
 			free_kexcurve25519_param(param);
 			}
 			break;

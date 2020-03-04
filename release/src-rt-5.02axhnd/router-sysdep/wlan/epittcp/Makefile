@@ -12,7 +12,7 @@ endif
 
 CFLAGS += -I$(TOOLCHAIN)/include
 
-all: $(PROGRAM_NAME)
+all:
 
 install: $(PROGRAM_NAME)
 	install -m 755  $(PROGRAM_NAME) $(INSTALL_DIR)/bin
@@ -21,12 +21,6 @@ install: $(PROGRAM_NAME)
 dynamic: $(PROGRAM_NAME) install
 
 static: $(PROGRAM_NAME).a
-
-$(PROGRAM_NAME): $(PROGRAM_NAME).o
-	$(CC) $(LDFLAGS) -o $(PROGRAM_NAME)  $(PROGRAM_NAME).o
-
-$(PROGRAM_NAME).a: $(PROGRAM_NAME).o
-	$(AR) rcs $(PROGRAM_NAME).a  $(PROGRAM_NAME).o
 
 clean:
 	-rm -f $(PROGRAM_NAME) $(PROGRAM_NAME).a  $(PROGRAM_NAME).o

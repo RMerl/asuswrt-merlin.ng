@@ -92,14 +92,29 @@ then
 	cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/
 	cp -a release/src/router/tuxera/broadcom$ARCH$HND/* $REPO/release/src/router/tuxera/broadcom$ARCH$HND/
 
-elif [ "$MODEL" == "RT-AX88U" ]
+elif [ "$MODEL" == "RT-AX88U" ] || [ "$MODEL" == "RT-AX92U" ]
 then
         SDK="_axhnd"
         ARCH="_arm"
         HND="_axhnd"
 
+	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild_arm_axhnd/
+	cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild_arm_axhnd/
+	cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild_arm_axhnd/
 	cp release/src-rt-5.02axhnd/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd/wl/exe/prebuilt/
 	cp -a release/src/router/tuxera/broadcom_arm_ax/* $REPO/release/src/router/tuxera/broadcom_arm_ax/
+
+elif [ "$MODEL" == "RT-AX56U" ] || [ "$MODEL" == "RT-AX58U" ]
+then
+	SDK="_6750hnd"
+	ARCH="_arm"
+	HND="_6750hnd"
+
+	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild_arm_6750hnd/
+	cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild_arm_6750hnd/
+	cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild_arm_6750hnd/
+	cp release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.02axhnd.675x/wl/exe/prebuilt/
+	cp -a release/src/router/tuxera/broadcom_arm_ax_6750/* $REPO/release/src/router/tuxera/broadcom_arm_ax_6750/
 else
 	echo "Unrecognized model!"
 	exit
@@ -108,6 +123,8 @@ fi
 
 # Asuswrt prebuild (model-specific)
 cp release/src/router/httpd/prebuild/* $REPO/release/src/router/httpd/prebuild/$MODEL
+# Remove this if it exists, as we don't use the closed source version (specific to the AX branch)
+rm $REPO/release/src/router/httpd/prebuild/$MODEL/httpd.o 2> /dev/null
 cp release/src/router/rc/prebuild/* $REPO/release/src/router/rc/prebuild/$MODEL
 cp release/src/router/shared/prebuild/* $REPO/release/src/router/shared/prebuild/$MODEL
 cp release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/prebuild/$MODEL
@@ -127,7 +144,7 @@ then
 fi
 
 # On AX these are in router-sysdep
-if [ "$MODEL" != "RT-AX88U" ]
+if [ "$MODEL" != "RT-AX88U" ] && [ "$MODEL" != "RT-AX92U" ] && [ "$MODEL" != "RT-AX56U" ] && [ "$MODEL" != "RT-AX58U" ]
 then
 	cp release/src/router/acsd$ARCH$SDK/prebuilt/* $REPO/release/src/router/acsd$ARCH$SDK/prebuilt/
 	cp release/src/router/eapd$ARCH$SDK/linux/prebuilt/* $REPO/release/src/router/eapd$ARCH$SDK/linux/prebuilt/
@@ -140,10 +157,6 @@ then
 	cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild$ARCH$HND/
 	cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild$ARCH$HND/
 	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild$HND/
-else
-	cp release/src/router/lighttpd-1.4.39/prebuild/* $REPO/release/src/router/lighttpd-1.4.39/prebuild_arm_axhnd/
-        cp release/src/router/dblog/daemon/prebuild/* $REPO/release/src/router/dblog/daemon/prebuild_arm_axhnd/
-        cp release/src/router/dblog/commands/prebuild/* $REPO/release/src/router/dblog/commands/prebuild_arm_axhnd/
 fi
 
 cp release/src/router/bwdpi_source/asus/prebuild/libbwdpi.so $REPO/release/src/router/bwdpi_source/asus/prebuild$ARCH$SDK/$MODEL/
@@ -172,7 +185,9 @@ cp release/src/router/nt_center/lib/prebuild/* $REPO/release/src/router/nt_cente
 cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild$ARCH$HND/
 cp release/src/router/webdav_client/prebuild/* $REPO/release/src/router/webdav_client/prebuild$ARCH$HND/
 cp release/src/router/asuswebstorage/prebuild/* $REPO/release/src/router/asuswebstorage/prebuild$ARCH$HND/
+cp release/src/router/inotify/prebuild/* $REPO/release/src/router/inotify/prebuild$ARCH$HND/
 cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/libletsencrypt/prebuild$ARCH$HND/
+cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt$ARCH$HND/
 
 
 # Model-specific
@@ -181,7 +196,9 @@ then
 	cp release/src/router/rtl_bin/prebuilt/* $REPO/release/src/router/rtl_bin/prebuilt/
 fi
 
-if [ "$MODEL" == "RT-AC3200" ] || [ "$MODEL" == "RT-AC88U" ] || [ "$MODEL" == "RT-AC3100" ] || [ "$MODEL" == "RT-AC5300" ] || [ "$MODEL" == "RT-AC86U" ]
+# Anything newer than SDK6
+if [ "$SDK" != "" ]
 then
 	cp release/src/router/bsd/prebuilt/* $REPO/release/src/router/bsd/prebuilt$ARCH$SDK/
 fi
+

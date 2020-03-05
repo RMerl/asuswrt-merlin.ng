@@ -110,6 +110,14 @@ tor_log_get_sigsafe_err_fds(const int **out)
  * Update the list of fds that get errors from inside a signal handler or
  * other emergency condition. Ignore any beyond the first
  * TOR_SIGSAFE_LOG_MAX_FDS.
+ *
+ * These fds must remain open even after the log module has shut down. (And
+ * they should remain open even while logs are being reconfigured.) Therefore,
+ * any fds closed by the log module should be dup()ed, and the duplicate fd
+ * should be given to the err module in fds. In particular, the log module
+ * closes the file log fds, but does not close the stdio log fds.
+ *
+ * If fds is NULL or n is 0, clears the list of error fds.
  */
 void
 tor_log_set_sigsafe_err_fds(const int *fds, int n)
@@ -118,8 +126,54 @@ tor_log_set_sigsafe_err_fds(const int *fds, int n)
     n = TOR_SIGSAFE_LOG_MAX_FDS;
   }
 
-  memcpy(sigsafe_log_fds, fds, n * sizeof(int));
-  n_sigsafe_log_fds = n;
+  /* Clear the entire array. This code mitigates against some race conditions,
+   * but there are still some races here:
+   * - err logs are disabled while the array is cleared, and
+   * - a thread can read the old value of n_sigsafe_log_fds, then read a
+   *   partially written array.
+   * We could fix these races using atomics, but atomics use the err module. */
+  n_sigsafe_log_fds = 0;
+  memset(sigsafe_log_fds, 0, sizeof(sigsafe_log_fds));
+  if (fds && n > 0) {
+    memcpy(sigsafe_log_fds, fds, n * sizeof(int));
+    n_sigsafe_log_fds = n;
+  }
+}
+
+/**
+ * Reset the list of emergency error fds to its default.
+ */
+void
+tor_log_reset_sigsafe_err_fds(void)
+{
+  int fds[] = { STDERR_FILENO };
+  tor_log_set_sigsafe_err_fds(fds, 1);
+}
+
+/**
+ * Close the list of fds that get errors from inside a signal handler or
+ * other emergency condition. These fds are shared with the logging code:
+ * closing them flushes the log buffers, and prevents any further logging.
+ *
+ * This function closes stderr, so it should only be called immediately before
+ * process shutdown.
+ */
+void
+tor_log_close_sigsafe_err_fds(void)
+{
+  int n_fds, i;
+  const int *fds = NULL;
+
+  n_fds = tor_log_get_sigsafe_err_fds(&fds);
+  for (i = 0; i < n_fds; ++i) {
+    /* tor_log_close_sigsafe_err_fds_on_error() is called on error and on
+     * shutdown, so we can't log or take any useful action if close()
+     * fails. */
+    (void)close(fds[i]);
+  }
+
+  /* Don't even try logging, we've closed all the log fds. */
+  tor_log_set_sigsafe_err_fds(NULL, 0);
 }
 
 /**
@@ -161,6 +215,18 @@ tor_raw_assertion_failed_msg_(const char *file, int line, const char *expr,
   tor_log_err_sigsafe_write("\n");
 }
 
+/**
+ * Call the abort() function to kill the current process with a fatal
+ * error. But first, close the raw error file descriptors, so error messages
+ * are written before process termination.
+ **/
+void
+tor_raw_abort_(void)
+{
+  tor_log_close_sigsafe_err_fds();
+  abort();
+}
+
 /* As format_{hex,dex}_number_sigsafe, but takes a <b>radix</b> argument
  * in range 2..16 inclusive. */
 static int
@@ -195,7 +261,7 @@ format_number_sigsafe(unsigned long x, char *buf, int buf_len,
     unsigned digit = (unsigned) (x % radix);
     if (cp <= buf) {
       /* Not tor_assert(); see above. */
-      abort();
+      tor_raw_abort_();
     }
     --cp;
     *cp = "0123456789ABCDEF"[digit];
@@ -204,7 +270,7 @@ format_number_sigsafe(unsigned long x, char *buf, int buf_len,
 
   /* NOT tor_assert; see above. */
   if (cp != buf) {
-    abort(); // LCOV_EXCL_LINE
+    tor_raw_abort_(); // LCOV_EXCL_LINE
   }
 
   return len;
@@ -224,8 +290,7 @@ format_number_sigsafe(unsigned long x, char *buf, int buf_len,
  * does not guarantee that an int is wider than a char (an int must be at
  * least 16 bits but it is permitted for a char to be that wide as well), we
  * can't assume a signed int is sufficient to accommodate an unsigned char.
- * Thus, format_helper_exit_status() will still need to emit any require '-'
- * on its own.
+ * Thus, callers will still need to add any required '-' to the final string.
  *
  * For most purposes, you'd want to use tor_snprintf("%x") instead of this
  * function; it's designed to be used in code paths where you can't call

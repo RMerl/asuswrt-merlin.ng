@@ -285,7 +285,7 @@ secret_to_key_compute_key(uint8_t *key_out, size_t key_out_len,
       if (rv < 0)
         return S2K_FAILED;
       return (int)key_out_len;
-#else
+#else /* !defined(ENABLE_OPENSSL) */
       SECItem passItem = { .type = siBuffer,
                            .data = (unsigned char *) secret,
                            .len = (int)secret_len };
@@ -325,7 +325,7 @@ secret_to_key_compute_key(uint8_t *key_out, size_t key_out_len,
       if (alg)
         SECOID_DestroyAlgorithmID(alg, PR_TRUE);
       return rv;
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
     }
 
     case S2K_TYPE_SCRYPT: {
@@ -348,7 +348,7 @@ secret_to_key_compute_key(uint8_t *key_out, size_t key_out_len,
       if (rv != 0)
         return S2K_FAILED;
       return (int)key_out_len;
-#else /* !(defined(HAVE_SCRYPT)) */
+#else /* !defined(HAVE_SCRYPT) */
       return S2K_NO_SCRYPT_SUPPORT;
 #endif /* defined(HAVE_SCRYPT) */
     }

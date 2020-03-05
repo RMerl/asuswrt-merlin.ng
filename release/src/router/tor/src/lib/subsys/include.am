@@ -1,0 +1,4 @@
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS += \
+	src/lib/subsys/subsys.h

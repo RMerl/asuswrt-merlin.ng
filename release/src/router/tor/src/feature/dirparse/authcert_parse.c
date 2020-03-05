@@ -24,7 +24,8 @@ static token_rule_t dir_key_certificate_table[] = {
 /** Parse a key certificate from <b>s</b>; point <b>end-of-string</b> to
  * the first character after the certificate. */
 authority_cert_t *
-authority_cert_parse_from_string(const char *s, const char **end_of_string)
+authority_cert_parse_from_string(const char *s, size_t maxlen,
+                                 const char **end_of_string)
 {
   /** Reject any certificate at least this big; it is probably an overflow, an
    * attack, a bug, or some other nonsense. */
@@ -35,24 +36,25 @@ authority_cert_parse_from_string(const char *s, const char **end_of_string)
   char digest[DIGEST_LEN];
   directory_token_t *tok;
   char fp_declared[DIGEST_LEN];
-  char *eos;
+  const char *eos;
   size_t len;
   int found;
   memarea_t *area = NULL;
+  const char *end_of_s = s + maxlen;
   const char *s_dup = s;
 
-  s = eat_whitespace(s);
-  eos = strstr(s, "\ndir-key-certification");
+  s = eat_whitespace_eos(s, end_of_s);
+  eos = tor_memstr(s, end_of_s - s, "\ndir-key-certification");
   if (! eos) {
     log_warn(LD_DIR, "No signature found on key certificate");
     return NULL;
   }
-  eos = strstr(eos, "\n-----END SIGNATURE-----\n");
+  eos = tor_memstr(eos, end_of_s - eos, "\n-----END SIGNATURE-----\n");
   if (! eos) {
     log_warn(LD_DIR, "No end-of-signature found on key certificate");
     return NULL;
   }
-  eos = strchr(eos+2, '\n');
+  eos = memchr(eos+2, '\n', end_of_s - (eos+2));
   tor_assert(eos);
   ++eos;
   len = eos - s;
@@ -69,7 +71,7 @@ authority_cert_parse_from_string(const char *s, const char **end_of_string)
     log_warn(LD_DIR, "Error tokenizing key certificate");
     goto err;
   }
-  if (router_get_hash_impl(s, strlen(s), digest, "dir-key-certificate-version",
+  if (router_get_hash_impl(s, eos - s, digest, "dir-key-certificate-version",
                            "\ndir-key-certification", '\n', DIGEST_SHA1) < 0)
     goto err;
   tok = smartlist_get(tokens, 0);

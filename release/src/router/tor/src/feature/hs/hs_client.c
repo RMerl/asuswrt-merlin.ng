@@ -167,9 +167,7 @@ purge_hid_serv_request(const ed25519_public_key_t *identity_pk)
    * some point and we don't care about those anymore. */
   hs_build_blinded_pubkey(identity_pk, NULL, 0,
                           hs_get_time_period_num(0), &blinded_pk);
-  if (BUG(ed25519_public_to_base64(base64_blinded_pk, &blinded_pk) < 0)) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, &blinded_pk);
   /* Purge last hidden service request from cache for this blinded key. */
   hs_purge_hid_serv_from_last_hid_serv_requests(base64_blinded_pk);
 }
@@ -356,7 +354,6 @@ directory_launch_v3_desc_fetch(const ed25519_public_key_t *onion_identity_pk,
   ed25519_public_key_t blinded_pubkey;
   char base64_blinded_pubkey[ED25519_BASE64_LEN + 1];
   hs_ident_dir_conn_t hs_conn_dir_ident;
-  int retval;
 
   tor_assert(hsdir);
   tor_assert(onion_identity_pk);
@@ -365,10 +362,7 @@ directory_launch_v3_desc_fetch(const ed25519_public_key_t *onion_identity_pk,
   hs_build_blinded_pubkey(onion_identity_pk, NULL, 0,
                           current_time_period, &blinded_pubkey);
   /* ...and base64 it. */
-  retval = ed25519_public_to_base64(base64_blinded_pubkey, &blinded_pubkey);
-  if (BUG(retval < 0)) {
-    return HS_CLIENT_FETCH_ERROR;
-  }
+  ed25519_public_to_base64(base64_blinded_pubkey, &blinded_pubkey);
 
   /* Copy onion pk to a dir_ident so that we attach it to the dir conn */
   hs_ident_dir_conn_init(onion_identity_pk, &blinded_pubkey,
@@ -407,7 +401,6 @@ directory_launch_v3_desc_fetch(const ed25519_public_key_t *onion_identity_pk,
 STATIC routerstatus_t *
 pick_hsdir_v3(const ed25519_public_key_t *onion_identity_pk)
 {
-  int retval;
   char base64_blinded_pubkey[ED25519_BASE64_LEN + 1];
   uint64_t current_time_period = hs_get_time_period_num(0);
   smartlist_t *responsible_hsdirs = NULL;
@@ -420,10 +413,7 @@ pick_hsdir_v3(const ed25519_public_key_t *onion_identity_pk)
   hs_build_blinded_pubkey(onion_identity_pk, NULL, 0,
                           current_time_period, &blinded_pubkey);
   /* ...and base64 it. */
-  retval = ed25519_public_to_base64(base64_blinded_pubkey, &blinded_pubkey);
-  if (BUG(retval < 0)) {
-    return NULL;
-  }
+  ed25519_public_to_base64(base64_blinded_pubkey, &blinded_pubkey);
 
   /* Get responsible hsdirs of service for this time period */
   responsible_hsdirs = smartlist_new();
@@ -436,7 +426,7 @@ pick_hsdir_v3(const ed25519_public_key_t *onion_identity_pk)
 
   /* Pick an HSDir from the responsible ones. The ownership of
    * responsible_hsdirs is given to this function so no need to free it. */
-  hsdir_rs = hs_pick_hsdir(responsible_hsdirs, base64_blinded_pubkey);
+  hsdir_rs = hs_pick_hsdir(responsible_hsdirs, base64_blinded_pubkey, NULL);
 
   return hsdir_rs;
 }
@@ -459,6 +449,24 @@ fetch_v3_desc, (const ed25519_public_key_t *onion_identity_pk))
   }
 
   return directory_launch_v3_desc_fetch(onion_identity_pk, hsdir_rs);
+}
+
+/* With a given <b>onion_identity_pk</b>, fetch its descriptor. If
+ * <b>hsdirs</b> is specified, use the directory servers specified in the list.
+ * Else, use a random server. */
+void
+hs_client_launch_v3_desc_fetch(const ed25519_public_key_t *onion_identity_pk,
+                               const smartlist_t *hsdirs)
+{
+  tor_assert(onion_identity_pk);
+
+  if (hsdirs != NULL) {
+    SMARTLIST_FOREACH_BEGIN(hsdirs, const routerstatus_t *, hsdir) {
+      directory_launch_v3_desc_fetch(onion_identity_pk, hsdir);
+    } SMARTLIST_FOREACH_END(hsdir);
+  } else {
+    fetch_v3_desc(onion_identity_pk);
+  }
 }
 
 /* Make sure that the given v3 origin circuit circ is a valid correct
@@ -530,13 +538,15 @@ find_desc_intro_point_by_legacy_id(const char *legacy_id,
   SMARTLIST_FOREACH_BEGIN(desc->encrypted_data.intro_points,
                           hs_desc_intro_point_t *, ip) {
     SMARTLIST_FOREACH_BEGIN(ip->link_specifiers,
-                            const hs_desc_link_specifier_t *, lspec) {
+                            const link_specifier_t *, lspec) {
       /* Not all tor node have an ed25519 identity key so we still rely on the
        * legacy identity digest. */
-      if (lspec->type != LS_LEGACY_ID) {
+      if (link_specifier_get_ls_type(lspec) != LS_LEGACY_ID) {
         continue;
       }
-      if (fast_memneq(legacy_id, lspec->u.legacy_id, DIGEST_LEN)) {
+      if (fast_memneq(legacy_id,
+                      link_specifier_getconstarray_un_legacy_id(lspec),
+                      DIGEST_LEN)) {
         break;
       }
       /* Found it. */
@@ -693,7 +703,7 @@ setup_intro_circ_auth_key(origin_circuit_t *circ)
   }
 
   /* Reaching this point means we didn't find any intro point for this circuit
-   * which is not suppose to happen. */
+   * which is not supposed to happen. */
   tor_assert_nonfatal_unreached();
 
  end:
@@ -759,24 +769,13 @@ STATIC extend_info_t *
 desc_intro_point_to_extend_info(const hs_desc_intro_point_t *ip)
 {
   extend_info_t *ei;
-  smartlist_t *lspecs = smartlist_new();
 
   tor_assert(ip);
 
-  /* We first encode the descriptor link specifiers into the binary
-   * representation which is a trunnel object. */
-  SMARTLIST_FOREACH_BEGIN(ip->link_specifiers,
-                          const hs_desc_link_specifier_t *, desc_lspec) {
-    link_specifier_t *lspec = hs_desc_lspec_to_trunnel(desc_lspec);
-    smartlist_add(lspecs, lspec);
-  } SMARTLIST_FOREACH_END(desc_lspec);
-
   /* Explicitly put the direct connection option to 0 because this is client
    * side and there is no such thing as a non anonymous client. */
-  ei = hs_get_extend_info_from_lspecs(lspecs, &ip->onion_key, 0);
+  ei = hs_get_extend_info_from_lspecs(ip->link_specifiers, &ip->onion_key, 0);
 
-  SMARTLIST_FOREACH(lspecs, link_specifier_t *, ls, link_specifier_free(ls));
-  smartlist_free(lspecs);
   return ei;
 }
 
@@ -1547,7 +1546,10 @@ parse_auth_file_content(const char *client_key_str)
   auth = tor_malloc_zero(sizeof(hs_client_service_authorization_t));
   if (base32_decode((char *) auth->enc_seckey.secret_key,
                     sizeof(auth->enc_seckey.secret_key),
-                    seckey_b32, strlen(seckey_b32)) < 0) {
+                    seckey_b32, strlen(seckey_b32)) !=
+      sizeof(auth->enc_seckey.secret_key)) {
+    log_warn(LD_REND, "Client authorization encoded base32 private key "
+                      "can't be decoded: %s", seckey_b32);
     goto err;
   }
   strncpy(auth->onion_address, onion_address, HS_SERVICE_ADDR_LEN_BASE32);

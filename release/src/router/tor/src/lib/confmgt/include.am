@@ -1,0 +1,27 @@
+noinst_LIBRARIES += src/lib/libtor-confmgt.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-confmgt-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_confmgt_a_SOURCES =			\
+	src/lib/confmgt/confparse.c			\
+	src/lib/confmgt/structvar.c                      \
+	src/lib/confmgt/type_defs.c                      \
+	src/lib/confmgt/typedvar.c                      \
+	src/lib/confmgt/unitparse.c
+
+src_lib_libtor_confmgt_testing_a_SOURCES = \
+	$(src_lib_libtor_confmgt_a_SOURCES)
+src_lib_libtor_confmgt_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_confmgt_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/lib/confmgt/confparse.h			\
+	src/lib/confmgt/structvar.h			\
+	src/lib/confmgt/type_defs.h			\
+	src/lib/confmgt/typedvar.h			\
+	src/lib/confmgt/unitparse.h			\
+	src/lib/confmgt/var_type_def_st.h

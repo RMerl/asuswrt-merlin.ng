@@ -5,7 +5,7 @@ Putting out a new release
 Here are the steps that the maintainer should take when putting out a
 new Tor release:
 
-=== 0. Preliminaries
+### 0. Preliminaries
 
 1. Get at least two of weasel/arma/Sebastian to put the new
    version number in their approved versions list.  Give them a few
@@ -18,35 +18,41 @@ new Tor release:
    date of a TB that contains it.  See note below in "commit, upload,
    announce".
 
-=== I. Make sure it works
+### I. Make sure it works
 
-1. Use it for a while, as a client, as a relay, as a hidden service,
-   and as a directory authority. See if it has any obvious bugs, and
-   resolve those.
+1. Make sure that CI passes: have a look at Travis
+   (https://travis-ci.org/torproject/tor/branches), Appveyor
+   (https://ci.appveyor.com/project/torproject/tor/history), and
+   Jenkins (https://jenkins.torproject.org/view/tor/).
+   Make sure you're looking at the right branches.
 
-   As applicable, merge the `maint-X` branch into the `release-X` branch.
-   But you've been doing that all along, right?
+   If there are any unexplained failures, try to fix them or figure them
+   out.
 
-2. Are all of the jenkins builders happy?  See jenkins.torproject.org.
+2. Verify that there are no big outstanding issues.  You might find such
+   issues --
 
-   What about the bsd buildbots?
-         See http://buildbot.pixelminers.net/builders/
+    * On Trac
 
-   What about Coverity Scan?
+    * On coverity scan
 
-   What about clang scan-build?
+    * On OSS-Fuzz
 
-   Does 'make distcheck' complain?
+3. Run checks that aren't covered above, including:
 
-   How about 'make test-stem' and 'make test-network' and
-   `make test-network-full`?
+    * clang scan-build.  (See the script in ./scripts/test/scan_build.sh)
 
-       - Are all those tests still happy with --enable-expensive-hardening ?
+    * make test-network and make test-network-all (with
+      --enable-fragile-hardening)
 
-   Any memory leaks?
+    * Running Tor yourself and making sure that it actually works for you.
+
+    * Running Tor under valgrind.  (Our 'fragile hardening' doesn't cover
+      libevent and openssl, so using valgrind will sometimes find extra
+      memory leaks.)
 
 
-=== II. Write a changelog
+### II. Write a changelog
 
 
 1a. (Alpha release variant)
@@ -55,11 +61,14 @@ new Tor release:
    of them and reordering to focus on what users and funders would find
    interesting and understandable.
 
-   To do this, first run `./scripts/maint/lintChanges.py changes/*` and
-   fix as many warnings as you can.  Then run `./scripts/maint/sortChanges.py
-   changes/* > changelog.in` to combine headings and sort the entries.
-   After that, it's time to hand-edit and fix the issues that lintChanges
-   can't find:
+   To do this, run
+      `./scripts/maint/sortChanges.py changes/* > changelog.in`
+   to combine headings and sort the entries.  Copy the changelog.in file
+   into the ChangeLog.  Run 'format_changelog.py' (see below) to clean
+   up the line breaks.
+
+   After that, it's time to hand-edit and fix the issues that
+   lintChanges can't find:
 
    1. Within each section, sort by "version it's a bugfix on", else by
       numerical ticket order.
@@ -67,8 +76,6 @@ new Tor release:
    2. Clean them up:
 
       Make stuff very terse
-
-      Make sure each section name ends with a colon
 
       Describe the user-visible problem right away
 
@@ -79,7 +86,9 @@ new Tor release:
 
       Present and imperative tense: not past.
 
-      'Relays', not 'servers' or 'nodes' or 'Tor relays'.
+      "Relays", not "servers" or "nodes" or "Tor relays".
+
+      "Onion services", not "hidden services".
 
       "Stop FOOing", not "Fix a bug where we would FOO".
 
@@ -100,11 +109,13 @@ new Tor release:
 
    For stable releases that backport things from later, we try to compose
    their releases, we try to make sure that we keep the changelog entries
-   identical to their original versions, with a 'backport from 0.x.y.z'
+   identical to their original versions, with a "backport from 0.x.y.z"
    note added to each section.  So in this case, once you have the items
    from the changes files copied together, don't use them to build a new
    changelog: instead, look up the corrected versions that were merged
    into ChangeLog in the master branch, and use those.
+
+   Add "backport from X.Y.Z" in the section header for these entries.
 
 2. Compose a short release blurb to highlight the user-facing
    changes. Insert said release blurb into the ChangeLog stanza. If it's
@@ -128,46 +139,60 @@ new Tor release:
    text of existing entries, though.)
 
 
-=== III. Making the source release.
+### III. Making the source release.
 
 1. In `maint-0.?.x`, bump the version number in `configure.ac` and run
-   `perl scripts/maint/updateVersions.pl` to update version numbers in other
+   `make update-versions` to update version numbers in other
    places, and commit.  Then merge `maint-0.?.x` into `release-0.?.x`.
-
-   (NOTE: To bump the version number, edit `configure.ac`, and then run
-   either `make`, or `perl scripts/maint/updateVersions.pl`, depending on
-   your version.)
 
    When you merge the maint branch forward to the next maint branch, or into
    master, merge it with "-s ours" to avoid a needless version bump.
 
 2. Make distcheck, put the tarball up in somewhere (how about your
-   homedir on your homedir on people.torproject.org?) , and tell `#tor`
-   about it. Wait a while to see if anybody has problems building it.
-   (Though jenkins is usually pretty good about catching these things.)
+   homedir on your homedir on people.torproject.org?) , and tell `#tor-dev`
+   about it.
 
-=== IV. Commit, upload, announce
+   If you want, wait until at least one person has built it
+   successfully.  (We used to say "wait for others to test it", but our
+   CI has successfully caught these kinds of errors for the last several
+   years.)
+
+
+3. Make sure that the new version is recommended in the latest consensus.
+   (Otherwise, users will get confused when it complains to them
+   about its status.)
+
+   If it is not, you'll need to poke Roger, Weasel, and Sebastian again: see
+   item 0.1 at the start of this document.
+
+### IV. Commit, upload, announce
 
 1. Sign the tarball, then sign and push the git tag:
 
         gpg -ba <the_tarball>
-        git tag -u <keyid> tor-0.3.x.y-status
-        git push origin tag tor-0.3.x.y-status
+        git tag -s tor-0.4.x.y-<status>
+        git push origin tag tor-0.4.x.y-<status>
 
-   (You must do this before you update the website: it relies on finding
-   the version by tag.)
+   (You must do this before you update the website: the website scripts
+   rely on finding the version by tag.)
+
+   (If your default PGP key is not the one you want to sign with, then say
+   "-u <keyid>" instead of "-s".)
 
 2. scp the tarball and its sig to the dist website, i.e.
-   `/srv/dist-master.torproject.org/htdocs/` on dist-master. When you want
-   it to go live, you run "static-update-component dist.torproject.org"
-   on dist-master.
+   `/srv/dist-master.torproject.org/htdocs/` on dist-master. Run
+   "static-update-component dist.torproject.org" on dist-master.
 
-   In the webwml.git repository, `include/versions.wmi` and `Makefile`
-   to note the new version.
+   In the webwml.git repository, `include/versions.wmi` and `Makefile`.
+   In the project/web/tpo.git repository, update `databags/versions.ini`
+   to note the new version.  Push these changes to master.
 
    (NOTE: Due to #17805, there can only be one stable version listed at
    once.  Nonetheless, do not call your version "alpha" if it is stable,
    or people will get confused.)
+
+   (NOTE: It will take a while for the website update scripts to update
+   the website.)
 
 3. Email the packagers (cc'ing tor-team) that a new tarball is up.
    The current list of packagers is:
@@ -186,37 +211,47 @@ new Tor release:
 
    Also, email tor-packagers@lists.torproject.org.
 
+   Mention where to download the tarball (https://dist.torproject.org).
+
+   Include a link to the changelog.
+
+
 4. Add the version number to Trac.  To do this, go to Trac, log in,
     select "Admin" near the top of the screen, then select "Versions" from
     the menu on the left.  At the right, there will be an "Add version"
     box.  By convention, we enter the version in the form "Tor:
-    0.2.2.23-alpha" (or whatever the version is), and we select the date as
+    0.4.0.1-alpha" (or whatever the version is), and we select the date as
     the date in the ChangeLog.
 
-5. Double-check: did the version get recommended in the consensus yet?  Is
-   the website updated?  If not, don't announce until they have the
-   up-to-date versions, or people will get confused.
+5. Wait for the download page to be updated. (If you don't do this before you
+   announce, people will be confused.)
 
 6. Mail the release blurb and ChangeLog to tor-talk (development release) or
    tor-announce (stable).
 
    Post the changelog on the blog as well. You can generate a
-   blog-formatted version of the changelog with the -B option to
-   format-changelog.
+   blog-formatted version of the changelog with
+      `./scripts/maint/format_changelog.py --B`
 
    When you post, include an estimate of when the next TorBrowser
    releases will come out that include this Tor release.  This will
    usually track https://wiki.mozilla.org/RapidRelease/Calendar , but it
    can vary.
 
+   For templates to use when announcing, see:
+       https://trac.torproject.org/projects/tor/wiki/org/teams/NetworkTeam/AnnouncementTemplates
 
-=== V. Aftermath and cleanup
+### V. Aftermath and cleanup
 
 1. If it's a stable release, bump the version number in the
     `maint-x.y.z` branch to "newversion-dev", and do a `merge -s ours`
     merge to avoid taking that change into master.
 
-2. Forward-port the ChangeLog (and ReleaseNotes if appropriate).
+2. If there is a new `maint-x.y.z` branch, create a Travis CI cron job that
+   builds the release every week. (It's ok to skip the weekly build if the
+   branch was updated in the last 24 hours.)
 
-3. Keep an eye on the blog post, to moderate comments and answer questions.
+3. Forward-port the ChangeLog (and ReleaseNotes if appropriate) to the
+   master branch.
 
+4. Keep an eye on the blog post, to moderate comments and answer questions.

@@ -18,4 +18,4 @@
 void tor_log_mallinfo(int severity);
 MOCK_DECL(int, get_total_system_memory, (size_t *mem_out));
 
-#endif
+#endif /* !defined(TOR_MEMINFO_H) */

@@ -84,7 +84,7 @@ base32_encode(char *dest, size_t destlen, const char *src, size_t srclen)
 }
 
 /** Implements base32 decoding as in RFC 4648.
- * Returns 0 if successful, -1 otherwise.
+ * Return the number of bytes decoded if successful; -1 otherwise.
  */
 int
 base32_decode(char *dest, size_t destlen, const char *src, size_t srclen)
@@ -147,7 +147,7 @@ base32_decode(char *dest, size_t destlen, const char *src, size_t srclen)
   memset(tmp, 0, srclen); /* on the heap, this should be safe */
   tor_free(tmp);
   tmp = NULL;
-  return 0;
+  return i;
 }
 
 #define BASE64_OPENSSL_LINELEN 64
@@ -177,6 +177,18 @@ base64_encode_size(size_t srclen, int flags)
 
   tor_assert(enclen < INT_MAX && (enclen == 0 || enclen > srclen));
   return enclen;
+}
+
+/** Return an upper bound on the number of bytes that might be needed to hold
+ * the data from decoding the base64 string <b>srclen</b>.  This is only an
+ * upper bound, since some part of the base64 string might be padding or
+ * space. */
+size_t
+base64_decode_maxsize(size_t srclen)
+{
+  tor_assert(srclen < INT_MAX / 3);
+
+  return CEIL_DIV(srclen * 3, 4);
 }
 
 /** Internal table mapping 6 bit values to the Base64 alphabet. */
@@ -309,8 +321,10 @@ base64_encode(char *dest, size_t destlen, const char *src, size_t srclen,
   return (int) enclen;
 }
 
-/** As base64_encode, but do not add any internal spaces or external padding
- * to the output stream. */
+/** As base64_encode, but do not add any internal spaces, and remove external
+ * padding from the output stream.
+ * dest must be at least base64_encode_size(srclen, 0), including space for
+ * the removed external padding. */
 int
 base64_encode_nopad(char *dest, size_t destlen,
                     const uint8_t *src, size_t srclen)

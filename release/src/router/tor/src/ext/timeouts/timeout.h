@@ -31,7 +31,7 @@
 
 #include <inttypes.h>   /* PRIu64 PRIx64 PRIX64 uint64_t */
 
-#include "tor_queue.h"  /* TAILQ(3) */
+#include "ext/tor_queue.h"  /* TAILQ(3) */
 
 
 /*
@@ -147,7 +147,7 @@ TIMEOUT_PUBLIC struct timeout *timeout_init(struct timeout *, int);
 #ifndef TIMEOUT_DISABLE_RELATIVE_ACCESS
 TIMEOUT_PUBLIC bool timeout_pending(struct timeout *);
 /* true if on timing wheel, false otherwise */
- 
+
 TIMEOUT_PUBLIC bool timeout_expired(struct timeout *);
 /* true if on expired queue, false otherwise */
 

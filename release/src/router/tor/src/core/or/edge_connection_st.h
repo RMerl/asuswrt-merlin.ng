@@ -73,5 +73,5 @@ struct edge_connection_t {
   uint64_t dirreq_id;
 };
 
-#endif
+#endif /* !defined(EDGE_CONNECTION_ST_H) */
 

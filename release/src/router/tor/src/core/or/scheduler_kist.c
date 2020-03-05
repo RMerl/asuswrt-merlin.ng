@@ -4,7 +4,7 @@
 #define SCHEDULER_KIST_PRIVATE
 
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "feature/nodelist/networkstatus.h"
@@ -104,7 +104,7 @@ static unsigned int kist_lite_mode = 0;
  * changed and it doesn't recognized the values passed to the syscalls needed
  * by KIST. In that case, fallback to the naive approach. */
 static unsigned int kist_no_kernel_support = 0;
-#else /* !(defined(HAVE_KIST_SUPPORT)) */
+#else /* !defined(HAVE_KIST_SUPPORT) */
 static unsigned int kist_lite_mode = 1;
 #endif /* defined(HAVE_KIST_SUPPORT) */
 
@@ -298,7 +298,7 @@ update_socket_info_impl, (socket_table_ent_t *ent))
   }
   return;
 
-#else /* !(defined(HAVE_KIST_SUPPORT)) */
+#else /* !defined(HAVE_KIST_SUPPORT) */
   goto fallback;
 #endif /* defined(HAVE_KIST_SUPPORT) */
 
@@ -724,7 +724,7 @@ kist_scheduler_run(void)
     SMARTLIST_FOREACH_BEGIN(to_readd, channel_t *, readd_chan) {
       scheduler_set_channel_state(readd_chan, SCHED_CHAN_PENDING);
       if (!smartlist_contains(cp, readd_chan)) {
-        if (!SCHED_BUG(chan->sched_heap_idx != -1, chan)) {
+        if (!SCHED_BUG(readd_chan->sched_heap_idx != -1, readd_chan)) {
           /* XXXX Note that the check above is in theory redundant with
            * the smartlist_contains check.  But let's make sure we're
            * not messing anything up, and leave them both for now. */
@@ -833,7 +833,7 @@ scheduler_can_use_kist(void)
   return run_interval > 0;
 }
 
-#else /* !(defined(HAVE_KIST_SUPPORT)) */
+#else /* !defined(HAVE_KIST_SUPPORT) */
 
 int
 scheduler_can_use_kist(void)

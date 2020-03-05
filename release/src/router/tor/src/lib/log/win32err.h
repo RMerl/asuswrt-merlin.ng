@@ -19,4 +19,4 @@
 char *format_win32_error(DWORD err);
 #endif
 
-#endif
+#endif /* !defined(TOR_WIN32ERR_H) */

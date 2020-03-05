@@ -64,7 +64,7 @@ struct tor_tls_t {
   void (*negotiated_callback)(tor_tls_t *tls, void *arg);
   /** Argument to pass to negotiated_callback. */
   void *callback_arg;
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 #ifdef ENABLE_NSS
   /** Last values retried from tor_get_prfiledesc_byte_counts(). */
   uint64_t last_write_count;
@@ -72,4 +72,4 @@ struct tor_tls_t {
 #endif
 };
 
-#endif
+#endif /* !defined(TOR_TORTLS_ST_H) */

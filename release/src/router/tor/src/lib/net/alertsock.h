@@ -42,4 +42,4 @@ typedef struct alert_sockets_t {
 int alert_sockets_create(alert_sockets_t *socks_out, uint32_t flags);
 void alert_sockets_close(alert_sockets_t *socks);
 
-#endif
+#endif /* !defined(TOR_ALERTSOCK_H) */

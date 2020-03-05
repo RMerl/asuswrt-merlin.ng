@@ -19,4 +19,4 @@ int have_capability_support(void);
 #define SWITCH_ID_WARN_IF_NO_CAPS (1<<1)
 int switch_id(const char *user, unsigned flags);
 
-#endif
+#endif /* !defined(TOR_SETUID_H) */

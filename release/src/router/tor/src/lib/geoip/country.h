@@ -13,4 +13,4 @@ typedef int16_t country_t;
 
 #define COUNTRY_MAX INT16_MAX
 
-#endif
+#endif /* !defined(TOR_COUNTRY_H) */

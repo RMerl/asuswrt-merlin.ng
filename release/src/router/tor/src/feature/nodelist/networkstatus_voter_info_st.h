@@ -27,4 +27,4 @@ struct networkstatus_voter_info_t {
   smartlist_t *sigs;
 };
 
-#endif
+#endif /* !defined(NETWORKSTATUS_VOTER_INFO_ST_H) */

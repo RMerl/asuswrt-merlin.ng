@@ -21,26 +21,35 @@ hs_helper_build_intro_point(const ed25519_keypair_t *signing_kp, time_t now,
   /* For a usable intro point we need at least two link specifiers: One legacy
    * keyid and one ipv4 */
   {
-    hs_desc_link_specifier_t *ls_legacy = tor_malloc_zero(sizeof(*ls_legacy));
-    hs_desc_link_specifier_t *ls_v4 = tor_malloc_zero(sizeof(*ls_v4));
-    ls_legacy->type = LS_LEGACY_ID;
-    memcpy(ls_legacy->u.legacy_id, "0299F268FCA9D55CD157976D39AE92B4B455B3A8",
-           DIGEST_LEN);
-    ls_v4->u.ap.port = 9001;
-    int family = tor_addr_parse(&ls_v4->u.ap.addr, addr);
+    tor_addr_t a;
+    tor_addr_make_unspec(&a);
+    link_specifier_t *ls_legacy = link_specifier_new();
+    link_specifier_t *ls_ip = link_specifier_new();
+    link_specifier_set_ls_type(ls_legacy, LS_LEGACY_ID);
+    memset(link_specifier_getarray_un_legacy_id(ls_legacy), 'C',
+           link_specifier_getlen_un_legacy_id(ls_legacy));
+    int family = tor_addr_parse(&a, addr);
     switch (family) {
     case AF_INET:
-          ls_v4->type = LS_IPV4;
+          link_specifier_set_ls_type(ls_ip, LS_IPV4);
+          link_specifier_set_un_ipv4_addr(ls_ip, tor_addr_to_ipv4h(&a));
+          link_specifier_set_un_ipv4_port(ls_ip, 9001);
           break;
         case AF_INET6:
-          ls_v4->type = LS_IPV6;
+          link_specifier_set_ls_type(ls_ip, LS_IPV6);
+          memcpy(link_specifier_getarray_un_ipv6_addr(ls_ip),
+                 tor_addr_to_in6_addr8(&a),
+                 link_specifier_getlen_un_ipv6_addr(ls_ip));
+          link_specifier_set_un_ipv6_port(ls_ip, 9001);
           break;
         default:
-          /* Stop the test, not suppose to have an error. */
-          tt_int_op(family, OP_EQ, AF_INET);
+          /* Stop the test, not supposed to have an error.
+           * Compare with -1 to show the actual family.
+           */
+          tt_int_op(family, OP_EQ, -1);
     }
     smartlist_add(ip->link_specifiers, ls_legacy);
-    smartlist_add(ip->link_specifiers, ls_v4);
+    smartlist_add(ip->link_specifiers, ls_ip);
   }
 
   ret = ed25519_keypair_generate(&auth_kp, 0);
@@ -202,7 +211,6 @@ void
 hs_helper_desc_equal(const hs_descriptor_t *desc1,
                      const hs_descriptor_t *desc2)
 {
-  char *addr1 = NULL, *addr2 = NULL;
   /* Plaintext data section. */
   tt_int_op(desc1->plaintext_data.version, OP_EQ,
             desc2->plaintext_data.version);
@@ -291,35 +299,57 @@ hs_helper_desc_equal(const hs_descriptor_t *desc1,
       tt_int_op(smartlist_len(ip1->link_specifiers), ==,
                 smartlist_len(ip2->link_specifiers));
       for (int j = 0; j < smartlist_len(ip1->link_specifiers); j++) {
-        hs_desc_link_specifier_t *ls1 = smartlist_get(ip1->link_specifiers, j),
-                                 *ls2 = smartlist_get(ip2->link_specifiers, j);
-        tt_int_op(ls1->type, ==, ls2->type);
-        switch (ls1->type) {
+        link_specifier_t *ls1 = smartlist_get(ip1->link_specifiers, j),
+                         *ls2 = smartlist_get(ip2->link_specifiers, j);
+        tt_int_op(link_specifier_get_ls_type(ls1), ==,
+                  link_specifier_get_ls_type(ls2));
+        switch (link_specifier_get_ls_type(ls1)) {
           case LS_IPV4:
+            {
+              uint32_t addr1 = link_specifier_get_un_ipv4_addr(ls1);
+              uint32_t addr2 = link_specifier_get_un_ipv4_addr(ls2);
+              tt_int_op(addr1, OP_EQ, addr2);
+              uint16_t port1 = link_specifier_get_un_ipv4_port(ls1);
+              uint16_t port2 = link_specifier_get_un_ipv4_port(ls2);
+              tt_int_op(port1, ==, port2);
+            }
+            break;
           case LS_IPV6:
             {
-              addr1 = tor_addr_to_str_dup(&ls1->u.ap.addr);
-              addr2 = tor_addr_to_str_dup(&ls2->u.ap.addr);
-              tt_str_op(addr1, OP_EQ, addr2);
-              tor_free(addr1);
-              tor_free(addr2);
-              tt_int_op(ls1->u.ap.port, ==, ls2->u.ap.port);
+              const uint8_t *addr1 =
+                link_specifier_getconstarray_un_ipv6_addr(ls1);
+              const uint8_t *addr2 =
+                link_specifier_getconstarray_un_ipv6_addr(ls2);
+              tt_int_op(link_specifier_getlen_un_ipv6_addr(ls1), OP_EQ,
+                        link_specifier_getlen_un_ipv6_addr(ls2));
+              tt_mem_op(addr1, OP_EQ, addr2,
+                        link_specifier_getlen_un_ipv6_addr(ls1));
+              uint16_t port1 = link_specifier_get_un_ipv6_port(ls1);
+              uint16_t port2 = link_specifier_get_un_ipv6_port(ls2);
+              tt_int_op(port1, ==, port2);
             }
             break;
           case LS_LEGACY_ID:
-            tt_mem_op(ls1->u.legacy_id, OP_EQ, ls2->u.legacy_id,
-                      sizeof(ls1->u.legacy_id));
+            {
+              const uint8_t *id1 =
+                link_specifier_getconstarray_un_legacy_id(ls1);
+              const uint8_t *id2 =
+                link_specifier_getconstarray_un_legacy_id(ls2);
+              tt_int_op(link_specifier_getlen_un_legacy_id(ls1), OP_EQ,
+                        link_specifier_getlen_un_legacy_id(ls2));
+              tt_mem_op(id1, OP_EQ, id2,
+                        link_specifier_getlen_un_legacy_id(ls1));
+            }
             break;
           default:
             /* Unknown type, caught it and print its value. */
-            tt_int_op(ls1->type, OP_EQ, -1);
+            tt_int_op(link_specifier_get_ls_type(ls1), OP_EQ, -1);
         }
       }
     }
   }
 
  done:
-  tor_free(addr1);
-  tor_free(addr2);
+  ;
 }
 

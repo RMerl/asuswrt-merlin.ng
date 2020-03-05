@@ -105,11 +105,7 @@ macro_rules! cstr {
     ($($bytes:expr),*) => (
         ::std::ffi::CStr::from_bytes_with_nul(
             concat!($($bytes),*, "\0").as_bytes()
-        ).unwrap_or(
-            unsafe{
-                ::std::ffi::CStr::from_bytes_with_nul_unchecked(b"\0")
-            }
-        )
+        ).unwrap_or_default()
     )
 }
 

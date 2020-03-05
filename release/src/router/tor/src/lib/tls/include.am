@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-tls-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_tls_a_SOURCES =			\
 	src/lib/tls/buffers_tls.c		\
 	src/lib/tls/tortls.c			\
@@ -29,6 +30,7 @@ src_lib_libtor_tls_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_tls_testing_a_CFLAGS = \
 	$(AM_CFLAGS) $(TOR_CFLAGS_CRYPTLIB) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=				\
 	src/lib/tls/ciphers.inc			\
 	src/lib/tls/buffers_tls.h		\
@@ -36,5 +38,6 @@ noinst_HEADERS +=				\
 	src/lib/tls/tortls.h			\
 	src/lib/tls/tortls_internal.h		\
 	src/lib/tls/tortls_st.h			\
+	src/lib/tls/tortls_sys.h		\
 	src/lib/tls/x509.h			\
 	src/lib/tls/x509_internal.h

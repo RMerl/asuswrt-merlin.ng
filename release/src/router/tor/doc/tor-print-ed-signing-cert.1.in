@@ -35,6 +35,41 @@ tor-print-ed-signing-cert \- print expiration date of ed25519 signing certificat
 .SH "DESCRIPTION"
 .sp
 \fBtor\-print\-ed\-signing\-cert\fR is utility program for Tor relay operators to check expiration date of ed25519 signing certificate\&.
+.sp
+Expiration date is printed in three formats:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Human\-readable timestamp, localized to current timezone\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+RFC 1123 timestamp (at GMT timezone)\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Unix time value\&.
+.RE
 .SH "SEE ALSO"
 .sp
 \fBtor\fR(1)

@@ -30,6 +30,7 @@
 #include "feature/nodelist/routerset.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
+#include "lib/container/bitarray.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/math/fp.h"
 
@@ -585,6 +586,7 @@ compute_weighted_bandwidths(const smartlist_t *sl,
   }
 
   weight_scale = networkstatus_get_weight_scale_param(NULL);
+  tor_assert(weight_scale >= 1);
 
   if (rule == WEIGHT_FOR_GUARD) {
     Wg = networkstatus_get_bw_weight(NULL, "Wgg", -1);
@@ -825,6 +827,58 @@ routerlist_add_node_and_family(smartlist_t *sl, const routerinfo_t *router)
   nodelist_add_node_and_family(sl, node);
 }
 
+/**
+ * Remove every node_t that appears in <b>excluded</b> from <b>sl</b>.
+ *
+ * Behaves like smartlist_subtract, but uses nodelist_idx values to deliver
+ * linear performance when smartlist_subtract would be quadratic.
+ **/
+static void
+nodelist_subtract(smartlist_t *sl, const smartlist_t *excluded)
+{
+  const smartlist_t *nodelist = nodelist_get_list();
+  const int nodelist_len = smartlist_len(nodelist);
+  bitarray_t *excluded_idx = bitarray_init_zero(nodelist_len);
+
+  /* We haven't used nodelist_idx in this way previously, so I'm going to be
+   * paranoid in this code, and check that nodelist_idx is correct for every
+   * node before we use it.  If we fail, we fall back to smartlist_subtract().
+   */
+
+  /* Set the excluded_idx bit corresponding to every excluded node...
+   */
+  SMARTLIST_FOREACH_BEGIN(excluded, const node_t *, node) {
+    const int idx = node->nodelist_idx;
+    if (BUG(idx < 0) || BUG(idx >= nodelist_len) ||
+        BUG(node != smartlist_get(nodelist, idx))) {
+      goto internal_error;
+    }
+    bitarray_set(excluded_idx, idx);
+  } SMARTLIST_FOREACH_END(node);
+
+  /* Then remove them from sl.
+   */
+  SMARTLIST_FOREACH_BEGIN(sl, const node_t *, node) {
+    const int idx = node->nodelist_idx;
+    if (BUG(idx < 0) || BUG(idx >= nodelist_len) ||
+        BUG(node != smartlist_get(nodelist, idx))) {
+      goto internal_error;
+    }
+    if (bitarray_is_set(excluded_idx, idx)) {
+      SMARTLIST_DEL_CURRENT(sl, node);
+    }
+  } SMARTLIST_FOREACH_END(node);
+
+  bitarray_free(excluded_idx);
+  return;
+
+ internal_error:
+  log_warn(LD_BUG, "Internal error prevented us from using the fast method "
+           "for subtracting nodelists. Falling back to the quadratic way.");
+  smartlist_subtract(sl, excluded);
+  bitarray_free(excluded_idx);
+}
+
 /** Return a random running node from the nodelist. Never
  * pick a node that is in
  * <b>excludedsmartlist</b>, or which matches <b>excludedset</b>,
@@ -859,6 +913,7 @@ router_choose_random_node(smartlist_t *excludedsmartlist,
   const int direct_conn = (flags & CRN_DIRECT_CONN) != 0;
   const int rendezvous_v3 = (flags & CRN_RENDEZVOUS_V3) != 0;
 
+  const smartlist_t *node_list = nodelist_get_list();
   smartlist_t *sl=smartlist_new(),
     *excludednodes=smartlist_new();
   const node_t *choice = NULL;
@@ -869,17 +924,17 @@ router_choose_random_node(smartlist_t *excludedsmartlist,
   rule = weight_for_exit ? WEIGHT_FOR_EXIT :
     (need_guard ? WEIGHT_FOR_GUARD : WEIGHT_FOR_MID);
 
-  SMARTLIST_FOREACH_BEGIN(nodelist_get_list(), node_t *, node) {
+  SMARTLIST_FOREACH_BEGIN(node_list, const node_t *, node) {
     if (node_allows_single_hop_exits(node)) {
       /* Exclude relays that allow single hop exit circuits. This is an
        * obsolete option since 0.2.9.2-alpha and done by default in
        * 0.3.1.0-alpha. */
-      smartlist_add(excludednodes, node);
+      smartlist_add(excludednodes, (node_t*)node);
     } else if (rendezvous_v3 &&
                !node_supports_v3_rendezvous_point(node)) {
       /* Exclude relays that do not support to rendezvous for a hidden service
        * version 3. */
-      smartlist_add(excludednodes, node);
+      smartlist_add(excludednodes, (node_t*)node);
     }
   } SMARTLIST_FOREACH_END(node);
 
@@ -896,19 +951,11 @@ router_choose_random_node(smartlist_t *excludedsmartlist,
            "We found %d running nodes.",
             smartlist_len(sl));
 
-  smartlist_subtract(sl,excludednodes);
-  log_debug(LD_CIRC,
-            "We removed %d excludednodes, leaving %d nodes.",
-            smartlist_len(excludednodes),
-            smartlist_len(sl));
-
   if (excludedsmartlist) {
-    smartlist_subtract(sl,excludedsmartlist);
-    log_debug(LD_CIRC,
-              "We removed %d excludedsmartlist, leaving %d nodes.",
-              smartlist_len(excludedsmartlist),
-              smartlist_len(sl));
+    smartlist_add_all(excludednodes, excludedsmartlist);
   }
+  nodelist_subtract(sl, excludednodes);
+
   if (excludedset) {
     routerset_subtract_nodes(sl,excludedset);
     log_debug(LD_CIRC,

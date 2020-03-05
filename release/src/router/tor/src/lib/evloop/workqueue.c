@@ -15,7 +15,7 @@
  *
  * The main thread informs the worker threads of pending work by using a
  * condition variable.  The workers inform the main process of completed work
- * by using an alert_sockets_t object, as implemented in compat_threads.c.
+ * by using an alert_sockets_t object, as implemented in net/alertsock.c.
  *
  * The main thread can also queue an "update" that will be handled by all the
  * workers.  This is useful for updating state that all the workers share.
@@ -36,7 +36,7 @@
 #include "lib/net/socket.h"
 #include "lib/thread/threads.h"
 
-#include "tor_queue.h"
+#include "ext/tor_queue.h"
 #include <event2/event.h>
 #include <string.h>
 
@@ -58,9 +58,6 @@ struct threadpool_s {
   /** Queues of pending work that we have to do. The queue with priority
    * <b>p</b> is work[p]. */
   work_tailq_t work[WORKQUEUE_N_PRIORITIES];
-
-  /** Weak RNG, used to decide when to ignore priority. */
-  tor_weak_rng_t weak_rng;
 
   /** The current 'update generation' of the threadpool.  Any thread that is
    * at an earlier generation needs to run the update function. */
@@ -238,7 +235,7 @@ worker_thread_extract_next_work(workerthread_t *thread)
     this_queue = &pool->work[i];
     if (!TOR_TAILQ_EMPTY(this_queue)) {
       queue = this_queue;
-      if (! tor_weak_random_one_in_n(&pool->weak_rng,
+      if (! crypto_fast_rng_one_in_n(get_thread_fast_rng(),
                                      thread->lower_priority_chance)) {
         /* Usually we'll just break now, so that we can get out of the loop
          * and use the queue where we found work. But with a small
@@ -555,11 +552,6 @@ threadpool_new(int n_threads,
   for (i = WORKQUEUE_PRIORITY_FIRST; i <= WORKQUEUE_PRIORITY_LAST; ++i) {
     TOR_TAILQ_INIT(&pool->work[i]);
   }
-  {
-    unsigned seed;
-    crypto_rand((void*)&seed, sizeof(seed));
-    tor_init_weak_random(&pool->weak_rng, seed);
-  }
 
   pool->new_thread_state_fn = new_thread_state_fn;
   pool->new_thread_state_arg = arg;
@@ -622,8 +614,8 @@ reply_event_cb(evutil_socket_t sock, short events, void *arg)
     tp->reply_cb(tp);
 }
 
-/** Register the threadpool <b>tp</b>'s reply queue with the libevent
- * mainloop of <b>base</b>. If <b>tp</b> is provided, it is run after
+/** Register the threadpool <b>tp</b>'s reply queue with Tor's global
+ * libevent mainloop. If <b>cb</b> is provided, it is run after
  * each time there is work to process from the reply queue. Return 0 on
  * success, -1 on failure.
  */

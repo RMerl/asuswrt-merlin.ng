@@ -6,22 +6,24 @@
 #include "orconfig.h"
 #define COMPAT_PRIVATE
 #define COMPAT_TIME_PRIVATE
-#define CONTROL_PRIVATE
 #define UTIL_PRIVATE
 #define UTIL_MALLOC_PRIVATE
 #define SOCKET_PRIVATE
-#define SUBPROCESS_PRIVATE
+#define PROCESS_WIN32_PRIVATE
 #include "lib/testsupport/testsupport.h"
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "app/config/config.h"
 #include "feature/control/control.h"
+#include "feature/control/control_proto.h"
 #include "feature/client/transports.h"
 #include "lib/crypt_ops/crypto_format.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "lib/defs/time.h"
 #include "test/test.h"
 #include "lib/memarea/memarea.h"
 #include "lib/process/waitpid.h"
+#include "lib/process/process_win32.h"
 #include "test/log_test_helpers.h"
 #include "lib/compress/compress.h"
 #include "lib/compress/compress_zstd.h"
@@ -30,7 +32,6 @@
 #include "lib/fs/winlib.h"
 #include "lib/process/env.h"
 #include "lib/process/pidfile.h"
-#include "lib/process/subprocess.h"
 #include "lib/intmath/weakrng.h"
 #include "lib/thread/numcpus.h"
 #include "lib/math/fp.h"
@@ -39,6 +40,7 @@
 #include "lib/time/tvdiff.h"
 #include "lib/encoding/confline.h"
 #include "lib/net/socketpair.h"
+#include "lib/malloc/map_anon.h"
 
 #ifdef HAVE_PWD_H
 #include <pwd.h>
@@ -58,6 +60,12 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_SYS_MMAN_H
+#include <sys/mman.h>
+#endif
+#ifdef HAVE_SYS_WAIT_H
+#include <sys/wait.h>
+#endif
 
 #ifdef _WIN32
 #include <tchar.h>
@@ -68,6 +76,28 @@
 
 #define INFINITY_DBL ((double)INFINITY)
 #define NAN_DBL ((double)NAN)
+
+/** Test the tor_isinf() wrapper */
+static void
+test_tor_isinf(void *arg)
+{
+  (void) arg;
+
+  tt_assert(tor_isinf(INFINITY_DBL));
+
+  tt_assert(!tor_isinf(NAN_DBL));
+  tt_assert(!tor_isinf(DBL_EPSILON));
+  tt_assert(!tor_isinf(DBL_MAX));
+  tt_assert(!tor_isinf(DBL_MIN));
+
+  tt_assert(!tor_isinf(0.0));
+  tt_assert(!tor_isinf(0.1));
+  tt_assert(!tor_isinf(3));
+  tt_assert(!tor_isinf(3.14));
+
+ done:
+  ;
+}
 
 /* XXXX this is a minimal wrapper to make the unit tests compile with the
  * changed tor_timegm interface. */
@@ -404,7 +434,6 @@ test_util_time(void *arg)
 
 /* Assume tv_usec is an unsigned integer until proven otherwise */
 #define TV_USEC_MAX UINT_MAX
-#define TOR_USEC_PER_SEC 1000000
 
   /* Overflows in the result type */
 
@@ -2058,14 +2087,14 @@ test_util_strmisc(void *arg)
   /* Test mem_is_zero */
   memset(buf,0,128);
   buf[128] = 'x';
-  tt_assert(tor_mem_is_zero(buf, 10));
-  tt_assert(tor_mem_is_zero(buf, 20));
-  tt_assert(tor_mem_is_zero(buf, 128));
-  tt_assert(!tor_mem_is_zero(buf, 129));
+  tt_assert(fast_mem_is_zero(buf, 10));
+  tt_assert(fast_mem_is_zero(buf, 20));
+  tt_assert(fast_mem_is_zero(buf, 128));
+  tt_assert(!fast_mem_is_zero(buf, 129));
   buf[60] = (char)255;
-  tt_assert(!tor_mem_is_zero(buf, 128));
+  tt_assert(!fast_mem_is_zero(buf, 128));
   buf[0] = (char)1;
-  tt_assert(!tor_mem_is_zero(buf, 10));
+  tt_assert(!fast_mem_is_zero(buf, 10));
 
   /* Test 'escaped' */
   tt_ptr_op(escaped(NULL), OP_EQ, NULL);
@@ -2178,15 +2207,6 @@ test_util_strmisc(void *arg)
 
   tt_int_op(strcmp_opt(NULL,  "foo"), OP_LT, 0);
   tt_int_op(strcmp_opt("foo", NULL),  OP_GT, 0);
-
-  /* Test strcmp_len */
-  tt_int_op(strcmp_len("foo", "bar", 3),   OP_GT, 0);
-  tt_int_op(strcmp_len("foo", "bar", 2),   OP_LT, 0);
-  tt_int_op(strcmp_len("foo2", "foo1", 4), OP_GT, 0);
-  tt_int_op(strcmp_len("foo2", "foo1", 3), OP_LT, 0); /* Really stop at len */
-  tt_int_op(strcmp_len("foo2", "foo", 3), OP_EQ, 0);  /* Really stop at len */
-  tt_int_op(strcmp_len("blah", "", 4),     OP_GT, 0);
-  tt_int_op(strcmp_len("blah", "", 0),    OP_EQ, 0);
 
  done:
   tor_free(cp_tmp);
@@ -3769,7 +3789,7 @@ test_util_memarea(void *arg)
   tt_int_op(((uintptr_t)p3) % sizeof(void*),OP_EQ, 0);
   tt_assert(!memarea_owns_ptr(area, p3+8192));
   tt_assert(!memarea_owns_ptr(area, p3+30));
-  tt_assert(tor_mem_is_zero(p2, 52));
+  tt_assert(fast_mem_is_zero(p2, 52));
   /* Make sure we don't overalign. */
   p1 = memarea_alloc(area, 1);
   p2 = memarea_alloc(area, 1);
@@ -4050,6 +4070,13 @@ test_util_string_is_utf8(void *ptr)
   tt_int_op(1, OP_EQ, string_is_utf8("ascii\x7f\n", 7));
   tt_int_op(1, OP_EQ, string_is_utf8("Risqu\u00e9=1", 9));
 
+  /* Test the utf8_no_bom function */
+  tt_int_op(0, OP_EQ, string_is_utf8_no_bom("\uFEFF", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8_no_bom("\uFFFE", 3));
+  tt_int_op(0, OP_EQ, string_is_utf8_no_bom("\uFEFFlove", 7));
+  tt_int_op(1, OP_EQ, string_is_utf8_no_bom("loveandrespect",
+                                            strlen("loveandrespect")));
+
   // Validate exactly 'len' bytes.
   tt_int_op(0, OP_EQ, string_is_utf8("\0\x80", 2));
   tt_int_op(0, OP_EQ, string_is_utf8("Risqu\u00e9=1", 6));
@@ -4320,204 +4347,6 @@ test_util_load_win_lib(void *ptr)
 }
 #endif /* defined(_WIN32) */
 
-#ifndef _WIN32
-static void
-clear_hex_errno(char *hex_errno)
-{
-  memset(hex_errno, '\0', HEX_ERRNO_SIZE + 1);
-}
-
-static void
-test_util_exit_status(void *ptr)
-{
-  /* Leave an extra byte for a \0 so we can do string comparison */
-  char hex_errno[HEX_ERRNO_SIZE + 1];
-  int n;
-
-  (void)ptr;
-
-  clear_hex_errno(hex_errno);
-  tt_str_op("",OP_EQ, hex_errno);
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0, 0, hex_errno);
-  tt_str_op("0/0\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-
-#if SIZEOF_INT == 4
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0, 0x7FFFFFFF, hex_errno);
-  tt_str_op("0/7FFFFFFF\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0xFF, -0x80000000, hex_errno);
-  tt_str_op("FF/-80000000\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-  tt_int_op(n,OP_EQ, HEX_ERRNO_SIZE);
-
-#elif SIZEOF_INT == 8
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0, 0x7FFFFFFFFFFFFFFF, hex_errno);
-  tt_str_op("0/7FFFFFFFFFFFFFFF\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0xFF, -0x8000000000000000, hex_errno);
-  tt_str_op("FF/-8000000000000000\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-  tt_int_op(n,OP_EQ, HEX_ERRNO_SIZE);
-
-#endif /* SIZEOF_INT == 4 || ... */
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0x7F, 0, hex_errno);
-  tt_str_op("7F/0\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-
-  clear_hex_errno(hex_errno);
-  n = format_helper_exit_status(0x08, -0x242, hex_errno);
-  tt_str_op("8/-242\n",OP_EQ, hex_errno);
-  tt_int_op(n,OP_EQ, strlen(hex_errno));
-
-  clear_hex_errno(hex_errno);
-  tt_str_op("",OP_EQ, hex_errno);
-
- done:
-  ;
-}
-#endif /* !defined(_WIN32) */
-
-#ifndef _WIN32
-static void
-test_util_string_from_pipe(void *ptr)
-{
-  int test_pipe[2] = {-1, -1};
-  int retval = 0;
-  enum stream_status status = IO_STREAM_TERM;
-  ssize_t retlen;
-  char buf[4] = { 0 };
-
-  (void)ptr;
-
-  errno = 0;
-
-  /* Set up a pipe to test on */
-  retval = pipe(test_pipe);
-  tt_int_op(retval, OP_EQ, 0);
-
-  /* Send in a string. */
-  retlen = write(test_pipe[1], "ABC", 3);
-  tt_int_op(retlen, OP_EQ, 3);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "ABC");
-  errno = 0;
-
-  /* Send in a string that contains a nul. */
-  retlen = write(test_pipe[1], "AB\0", 3);
-  tt_int_op(retlen, OP_EQ, 3);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "AB");
-  errno = 0;
-
-  /* Send in a string that contains a nul only. */
-  retlen = write(test_pipe[1], "\0", 1);
-  tt_int_op(retlen, OP_EQ, 1);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "");
-  errno = 0;
-
-  /* Send in a string that contains a trailing newline. */
-  retlen = write(test_pipe[1], "AB\n", 3);
-  tt_int_op(retlen, OP_EQ, 3);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "AB");
-  errno = 0;
-
-  /* Send in a string that contains a newline only. */
-  retlen = write(test_pipe[1], "\n", 1);
-  tt_int_op(retlen, OP_EQ, 1);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "");
-  errno = 0;
-
-  /* Send in a string and check that we nul terminate return values. */
-  retlen = write(test_pipe[1], "AAA", 3);
-  tt_int_op(retlen, OP_EQ, 3);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "AAA");
-  tt_mem_op(buf, OP_EQ, "AAA\0", sizeof(buf));
-  errno = 0;
-
-  retlen = write(test_pipe[1], "B", 1);
-  tt_int_op(retlen, OP_EQ, 1);
-
-  memset(buf, '\xff', sizeof(buf));
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "B");
-  tt_mem_op(buf, OP_EQ, "B\0\xff\xff", sizeof(buf));
-  errno = 0;
-
-  /* Send in multiple lines. */
-  retlen = write(test_pipe[1], "A\nB", 3);
-  tt_int_op(retlen, OP_EQ, 3);
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "A\nB");
-  errno = 0;
-
-  /* Send in a line and close */
-  retlen = write(test_pipe[1], "AB", 2);
-  tt_int_op(retlen, OP_EQ, 2);
-  retval = close(test_pipe[1]);
-  tt_int_op(retval, OP_EQ, 0);
-  test_pipe[1] = -1;
-
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_OKAY);
-  tt_str_op(buf, OP_EQ, "AB");
-  errno = 0;
-
-  /* Check for EOF */
-  status = get_string_from_pipe(test_pipe[0], buf, sizeof(buf)-1);
-  tt_int_op(errno, OP_EQ, 0);
-  tt_int_op(status, OP_EQ, IO_STREAM_CLOSED);
-  errno = 0;
-
- done:
-  if (test_pipe[0] != -1)
-    close(test_pipe[0]);
-  if (test_pipe[1] != -1)
-    close(test_pipe[1]);
-}
-
-#endif /* !defined(_WIN32) */
-
 /**
  * Test for format_hex_number_sigsafe()
  */
@@ -4612,124 +4441,12 @@ test_util_format_dec_number(void *ptr)
   return;
 }
 
-/**
- * Test that we can properly format a Windows command line
- */
-static void
-test_util_join_win_cmdline(void *ptr)
-{
-  /* Based on some test cases from "Parsing C++ Command-Line Arguments" in
-   * MSDN but we don't exercise all quoting rules because tor_join_win_cmdline
-   * will try to only generate simple cases for the child process to parse;
-   * i.e. we never embed quoted strings in arguments. */
-
-  const char *argvs[][4] = {
-    {"a", "bb", "CCC", NULL}, // Normal
-    {NULL, NULL, NULL, NULL}, // Empty argument list
-    {"", NULL, NULL, NULL}, // Empty argument
-    {"\"a", "b\"b", "CCC\"", NULL}, // Quotes
-    {"a\tbc", "dd  dd", "E", NULL}, // Whitespace
-    {"a\\\\\\b", "de fg", "H", NULL}, // Backslashes
-    {"a\\\"b", "\\c", "D\\", NULL}, // Backslashes before quote
-    {"a\\\\b c", "d", "E", NULL}, // Backslashes not before quote
-    { NULL } // Terminator
-  };
-
-  const char *cmdlines[] = {
-    "a bb CCC",
-    "",
-    "\"\"",
-    "\\\"a b\\\"b CCC\\\"",
-    "\"a\tbc\" \"dd  dd\" E",
-    "a\\\\\\b \"de fg\" H",
-    "a\\\\\\\"b \\c D\\",
-    "\"a\\\\b c\" d E",
-    NULL // Terminator
-  };
-
-  int i;
-  char *joined_argv = NULL;
-
-  (void)ptr;
-
-  for (i=0; cmdlines[i]!=NULL; i++) {
-    log_info(LD_GENERAL, "Joining argvs[%d], expecting <%s>", i, cmdlines[i]);
-    joined_argv = tor_join_win_cmdline(argvs[i]);
-    tt_str_op(cmdlines[i],OP_EQ, joined_argv);
-    tor_free(joined_argv);
-  }
-
- done:
-  tor_free(joined_argv);
-}
-
 #define MAX_SPLIT_LINE_COUNT 4
 struct split_lines_test_t {
   const char *orig_line; // Line to be split (may contain \0's)
   int orig_length; // Length of orig_line
   const char *split_line[MAX_SPLIT_LINE_COUNT]; // Split lines
 };
-
-/**
- * Test that we properly split a buffer into lines
- */
-static void
-test_util_split_lines(void *ptr)
-{
-  /* Test cases. orig_line of last test case must be NULL.
-   * The last element of split_line[i] must be NULL. */
-  struct split_lines_test_t tests[] = {
-    {"", 0, {NULL}},
-    {"foo", 3, {"foo", NULL}},
-    {"\n\rfoo\n\rbar\r\n", 12, {"foo", "bar", NULL}},
-    {"fo o\r\nb\tar", 10, {"fo o", "b.ar", NULL}},
-    {"\x0f""f\0o\0\n\x01""b\0r\0\r", 12, {".f.o.", ".b.r.", NULL}},
-    {"line 1\r\nline 2", 14, {"line 1", "line 2", NULL}},
-    {"line 1\r\n\r\nline 2", 16, {"line 1", "line 2", NULL}},
-    {"line 1\r\n\r\r\r\nline 2", 18, {"line 1", "line 2", NULL}},
-    {"line 1\r\n\n\n\n\rline 2", 18, {"line 1", "line 2", NULL}},
-    {"line 1\r\n\r\t\r\nline 3", 18, {"line 1", ".", "line 3", NULL}},
-    {"\n\t\r\t\nline 3", 11, {".", ".", "line 3", NULL}},
-    {NULL, 0, { NULL }}
-  };
-
-  int i, j;
-  char *orig_line=NULL;
-  smartlist_t *sl=NULL;
-
-  (void)ptr;
-
-  for (i=0; tests[i].orig_line; i++) {
-    sl = smartlist_new();
-    /* Allocate space for string and trailing NULL */
-    orig_line = tor_memdup(tests[i].orig_line, tests[i].orig_length + 1);
-    tor_split_lines(sl, orig_line, tests[i].orig_length);
-
-    j = 0;
-    log_info(LD_GENERAL, "Splitting test %d of length %d",
-             i, tests[i].orig_length);
-    SMARTLIST_FOREACH_BEGIN(sl, const char *, line) {
-      /* Check we have not got too many lines */
-      tt_int_op(MAX_SPLIT_LINE_COUNT, OP_GT, j);
-      /* Check that there actually should be a line here */
-      tt_ptr_op(tests[i].split_line[j], OP_NE, NULL);
-      log_info(LD_GENERAL, "Line %d of test %d, should be <%s>",
-               j, i, tests[i].split_line[j]);
-      /* Check that the line is as expected */
-      tt_str_op(line,OP_EQ, tests[i].split_line[j]);
-      j++;
-    } SMARTLIST_FOREACH_END(line);
-    /* Check that we didn't miss some lines */
-    tt_ptr_op(NULL,OP_EQ, tests[i].split_line[j]);
-    tor_free(orig_line);
-    smartlist_free(sl);
-    sl = NULL;
-  }
-
- done:
-  tor_free(orig_line);
-  smartlist_free(sl);
-}
 
 static void
 test_util_di_ops(void *arg)
@@ -5682,6 +5399,13 @@ test_util_socketpair(void *arg)
     tt_skip();
   }
 #endif /* defined(__FreeBSD__) */
+#ifdef ENETUNREACH
+  if (ersatz && socketpair_result == -ENETUNREACH) {
+    /* We can also fail with -ENETUNREACH if we have no network stack at
+     * all. */
+    tt_skip();
+  }
+#endif /* defined(ENETUNREACH) */
   tt_int_op(0, OP_EQ, socketpair_result);
 
   tt_assert(SOCKET_OK(fds[0]));
@@ -5828,6 +5552,18 @@ test_util_ipv4_validation(void *arg)
   tt_assert(!string_is_valid_ipv4_address("abcd"));
   tt_assert(!string_is_valid_ipv4_address("300.300.300.300"));
   tt_assert(!string_is_valid_ipv4_address("8.8."));
+
+  done:
+  return;
+}
+
+static void
+test_util_ipv6_validation(void *arg)
+{
+  (void)arg;
+
+  tt_assert(string_is_valid_ipv6_address("2a00:1450:401b:800::200e"));
+  tt_assert(!string_is_valid_ipv6_address("11:22::33:44:"));
 
   done:
   return;
@@ -6387,14 +6123,138 @@ test_util_log_mallinfo(void *arg)
   } else {
     tt_u64_op(mem1, OP_LT, mem2);
   }
-#else
+#else /* !defined(HAVE_MALLINFO) */
   tt_skip();
-#endif
+#endif /* defined(HAVE_MALLINFO) */
  done:
   teardown_capture_of_logs();
   tor_free(log1);
   tor_free(log2);
   tor_free(mem);
+}
+
+static void
+test_util_map_anon(void *arg)
+{
+  (void)arg;
+  char *ptr = NULL;
+  size_t sz = 16384;
+  unsigned inherit=0;
+
+  /* Basic checks. */
+  ptr = tor_mmap_anonymous(sz, 0, &inherit);
+  tt_ptr_op(ptr, OP_NE, 0);
+  tt_int_op(inherit, OP_EQ, INHERIT_RES_KEEP);
+  ptr[sz-1] = 3;
+  tt_int_op(ptr[0], OP_EQ, 0);
+  tt_int_op(ptr[sz-2], OP_EQ, 0);
+  tt_int_op(ptr[sz-1], OP_EQ, 3);
+
+  /* Try again, with a private (non-swappable) mapping. */
+  tor_munmap_anonymous(ptr, sz);
+  ptr = tor_mmap_anonymous(sz, ANONMAP_PRIVATE, &inherit);
+  tt_ptr_op(ptr, OP_NE, 0);
+  tt_int_op(inherit, OP_EQ, INHERIT_RES_KEEP);
+  ptr[sz-1] = 10;
+  tt_int_op(ptr[0], OP_EQ, 0);
+  tt_int_op(ptr[sz/2], OP_EQ, 0);
+  tt_int_op(ptr[sz-1], OP_EQ, 10);
+
+  /* Now let's test a drop-on-fork mapping. */
+  tor_munmap_anonymous(ptr, sz);
+  ptr = tor_mmap_anonymous(sz, ANONMAP_NOINHERIT, &inherit);
+  tt_ptr_op(ptr, OP_NE, 0);
+  ptr[sz-1] = 10;
+  tt_int_op(ptr[0], OP_EQ, 0);
+  tt_int_op(ptr[sz/2], OP_EQ, 0);
+  tt_int_op(ptr[sz-1], OP_EQ, 10);
+
+ done:
+  tor_munmap_anonymous(ptr, sz);
+}
+
+static void
+test_util_map_anon_nofork(void *arg)
+{
+  (void)arg;
+#ifdef _WIN32
+  /* The operating system doesn't support forking. */
+  tt_skip();
+ done:
+  ;
+#else /* !defined(_WIN32) */
+  /* We have the right OS support.  We're going to try marking the buffer as
+   * either zero-on-fork or as drop-on-fork, whichever is supported.  Then we
+   * will fork and send a byte back to the parent process.  This will either
+   * crash, or send zero. */
+
+  char *ptr = NULL;
+  const char TEST_VALUE = 0xd0;
+  size_t sz = 16384;
+  int pipefd[2] = {-1, -1};
+  unsigned inherit=0;
+
+  tor_munmap_anonymous(ptr, sz);
+  ptr = tor_mmap_anonymous(sz, ANONMAP_NOINHERIT, &inherit);
+  tt_ptr_op(ptr, OP_NE, 0);
+  memset(ptr, (uint8_t)TEST_VALUE, sz);
+
+  tt_int_op(0, OP_EQ, pipe(pipefd));
+  pid_t child = fork();
+  if (child == 0) {
+    /* We're in the child. */
+    close(pipefd[0]);
+    ssize_t r = write(pipefd[1], &ptr[sz-1], 1); /* This may crash. */
+    close(pipefd[1]);
+    if (r < 0)
+      exit(1);
+    exit(0);
+  }
+  tt_int_op(child, OP_GT, 0);
+  /* In the parent. */
+  close(pipefd[1]);
+  pipefd[1] = -1;
+  char buf[1];
+  ssize_t r = read(pipefd[0], buf, 1);
+
+  if (inherit == INHERIT_RES_ZERO) {
+    // We should be seeing clear-on-fork behavior.
+    tt_int_op((int)r, OP_EQ, 1); // child should send us a byte.
+    tt_int_op(buf[0], OP_EQ, 0); // that byte should be zero.
+  } else if (inherit == INHERIT_RES_DROP) {
+    // We should be seeing noinherit behavior.
+    tt_int_op(r, OP_LE, 0); // child said nothing; it should have crashed.
+  } else {
+    // noinherit isn't implemented.
+    tt_int_op(inherit, OP_EQ, INHERIT_RES_KEEP);
+    tt_int_op((int)r, OP_EQ, 1); // child should send us a byte.
+    tt_int_op(buf[0], OP_EQ, TEST_VALUE); // that byte should be TEST_VALUE.
+  }
+
+  int ws;
+  waitpid(child, &ws, 0);
+
+#ifndef NOINHERIT_CAN_FAIL
+  /* Only if NOINHERIT_CAN_FAIL should it be possible for us to get
+   * INHERIT_KEEP behavior in this case. */
+  tt_int_op(inherit, OP_NE, INHERIT_RES_KEEP);
+#else
+  if (inherit == INHERIT_RES_KEEP) {
+    /* Call this test "skipped", not "passed", since noinherit wasn't
+     * implemented. */
+    tt_skip();
+  }
+#endif /* !defined(NOINHERIT_CAN_FAIL) */
+
+ done:
+  tor_munmap_anonymous(ptr, sz);
+  if (pipefd[0] >= 0) {
+    close(pipefd[0]);
+  }
+  if (pipefd[1] >= 0) {
+    close(pipefd[1]);
+  }
+#endif /* defined(_WIN32) */
 }
 
 #define UTIL_LEGACY(name)                                               \
@@ -6490,12 +6350,8 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(nowrap_math, 0),
   UTIL_TEST(num_cpus, 0),
   UTIL_TEST_WIN_ONLY(load_win_lib, 0),
-  UTIL_TEST_NO_WIN(exit_status, 0),
-  UTIL_TEST_NO_WIN(string_from_pipe, 0),
   UTIL_TEST(format_hex_number, 0),
   UTIL_TEST(format_dec_number, 0),
-  UTIL_TEST(join_win_cmdline, 0),
-  UTIL_TEST(split_lines, 0),
   UTIL_TEST(n_bits_set, 0),
   UTIL_TEST(eat_whitespace, 0),
   UTIL_TEST(sl_new_from_text_lines, 0),
@@ -6512,6 +6368,7 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(mathlog, 0),
   UTIL_TEST(fraction, 0),
   UTIL_TEST(weak_random, 0),
+  { "tor_isinf", test_tor_isinf, TT_FORK, NULL, NULL },
   { "socket_ipv4", test_util_socket, TT_FORK, &passthrough_setup,
     (void*)"4" },
   { "socket_ipv6", test_util_socket, TT_FORK,
@@ -6524,6 +6381,7 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(hostname_validation, 0),
   UTIL_TEST(dest_validation_edgecase, 0),
   UTIL_TEST(ipv4_validation, 0),
+  UTIL_TEST(ipv6_validation, 0),
   UTIL_TEST(writepid, 0),
   UTIL_TEST(get_avail_disk_space, 0),
   UTIL_TEST(touch_file, 0),
@@ -6536,5 +6394,7 @@ struct testcase_t util_tests[] = {
   UTIL_TEST(htonll, 0),
   UTIL_TEST(get_unquoted_path, 0),
   UTIL_TEST(log_mallinfo, 0),
+  UTIL_TEST(map_anon, 0),
+  UTIL_TEST(map_anon_nofork, 0),
   END_OF_TESTCASES
 };

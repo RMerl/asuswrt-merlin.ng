@@ -34,8 +34,6 @@ tools.  Everybody likes to write init scripts differently, it seems.
 
 tor.service is a sample service file for use with systemd.
 
-The suse/ subdirectory contains files used by the suse distribution.
-
 operator-tools/ -- Tools for Tor relay operators
 ------------------------------------------------
 

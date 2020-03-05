@@ -5,8 +5,10 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-malloc-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_malloc_a_SOURCES =			\
-	src/lib/malloc/malloc.c
+	src/lib/malloc/malloc.c				\
+	src/lib/malloc/map_anon.c
 
 if USE_OPENBSD_MALLOC
 src_lib_libtor_malloc_a_SOURCES += src/ext/OpenBSD_malloc_Linux.c
@@ -17,5 +19,7 @@ src_lib_libtor_malloc_testing_a_SOURCES = \
 src_lib_libtor_malloc_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_malloc_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
-	src/lib/malloc/malloc.h
+	src/lib/malloc/malloc.h				\
+	src/lib/malloc/map_anon.h

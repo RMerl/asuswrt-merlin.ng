@@ -17,4 +17,4 @@
 int smartlist_split_string(smartlist_t *sl, const char *str, const char *sep,
                            int flags, int max);
 
-#endif
+#endif /* !defined(TOR_SMARTLIST_SPLIT_H) */

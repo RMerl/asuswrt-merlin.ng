@@ -29,4 +29,4 @@ int rend_parse_introduction_points(rend_service_descriptor_t *parsed,
                                    size_t intro_points_encoded_size);
 int rend_parse_client_keys(strmap_t *parsed_clients, const char *str);
 
-#endif
+#endif /* !defined(TOR_REND_PARSE_H) */

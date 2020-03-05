@@ -14,5 +14,5 @@ struct rend_authorized_client_t {
   crypto_pk_t *client_key;
 };
 
-#endif
+#endif /* !defined(REND_AUTHORIZED_CLIENT_ST_H) */
 

@@ -82,6 +82,19 @@ config_line_find(const config_line_t *lines,
   return NULL;
 }
 
+/** As config_line_find(), but perform a case-insensitive comparison. */
+const config_line_t *
+config_line_find_case(const config_line_t *lines,
+                      const char *key)
+{
+  const config_line_t *cl;
+  for (cl = lines; cl; cl = cl->next) {
+    if (!strcasecmp(cl->key, key))
+      return cl;
+  }
+  return NULL;
+}
+
 /** Auxiliary function that does all the work of config_get_lines.
  * <b>recursion_level</b> is the count of how many nested %includes we have.
  * <b>opened_lst</b> will have a list of opened files if provided.
@@ -243,7 +256,7 @@ config_lines_dup_and_filter(const config_line_t *inp,
 /** Return true iff a and b contain identical keys and values in identical
  * order. */
 int
-config_lines_eq(config_line_t *a, config_line_t *b)
+config_lines_eq(const config_line_t *a, const config_line_t *b)
 {
   while (a && b) {
     if (strcasecmp(a->key, b->key) || strcmp(a->value, b->value))

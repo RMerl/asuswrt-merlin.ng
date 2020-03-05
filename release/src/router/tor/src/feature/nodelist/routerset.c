@@ -1,5 +1,5 @@
 /* Copyright (c) 2001 Matej Pfajfar.
-n * Copyright (c) 2001-2004, Roger Dingledine.
+ * Copyright (c) 2001-2004, Roger Dingledine.
  * Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson.
  * Copyright (c) 2007-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
@@ -34,6 +34,9 @@ n * Copyright (c) 2001-2004, Roger Dingledine.
 #include "feature/nodelist/nickname.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerset.h"
+#include "lib/conf/conftypes.h"
+#include "lib/confmgt/typedvar.h"
+#include "lib/encoding/confline.h"
 #include "lib/geoip/geoip.h"
 
 #include "core/or/addr_policy_st.h"
@@ -41,6 +44,7 @@ n * Copyright (c) 2001-2004, Roger Dingledine.
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 #include "feature/nodelist/routerstatus_st.h"
+#include "lib/confmgt/var_type_def_st.h"
 
 /** Return a new empty routerset. */
 routerset_t *
@@ -378,7 +382,7 @@ routerset_get_all_nodes(smartlist_t *out, const routerset_t *routerset,
   } else {
     /* We need to iterate over the routerlist to get all the ones of the
      * right kind. */
-    smartlist_t *nodes = nodelist_get_list();
+    const smartlist_t *nodes = nodelist_get_list();
     SMARTLIST_FOREACH(nodes, const node_t *, node, {
         if (running_only && !node->is_running)
           continue;
@@ -461,3 +465,111 @@ routerset_free_(routerset_t *routerset)
   bitarray_free(routerset->countries);
   tor_free(routerset);
 }
+
+/**
+ * config helper: parse a routerset-typed variable.
+ *
+ * Takes as input as a single line in <b>line</b>; writes its results into a
+ * routerset_t** passed as <b>target</b>.  On success return 0; on failure
+ * return -1 and store an error message into *<b>errmsg</b>.
+ **/
+/*
+ * Warning: For this type, the default value (NULL) and "" are sometimes
+ * considered different values.  That is generally risky, and best avoided for
+ * other types in the future.  For cases where we want the default to be "all
+ * routers" (like EntryNodes) we should add a new routerset value indicating
+ * "all routers" (see #31908)
+ */
+static int
+routerset_kv_parse(void *target, const config_line_t *line, char **errmsg,
+                  const void *params)
+{
+  (void)params;
+  routerset_t **p = (routerset_t**)target;
+  routerset_free(*p); // clear the old value, if any.
+  routerset_t *rs = routerset_new();
+  if (routerset_parse(rs, line->value, line->key) < 0) {
+    routerset_free(rs);
+    *errmsg = tor_strdup("Invalid router list.");
+    return -1;
+  } else {
+    if (routerset_is_empty(rs)) {
+      /* Represent empty sets as NULL. */
+      routerset_free(rs);
+    }
+    *p = rs;
+    return 0;
+  }
+}
+
+/**
+ * config helper: encode a routerset-typed variable.
+ *
+ * Return a newly allocated string containing the value of the
+ * routerset_t** passed as <b>value</b>.
+ */
+static char *
+routerset_encode(const void *value, const void *params)
+{
+  (void)params;
+  const routerset_t **p = (const routerset_t**)value;
+  return routerset_to_string(*p);
+}
+
+/**
+ * config helper: free and clear a routerset-typed variable.
+ *
+ * Clear the routerset_t** passed as <b>value</b>.
+ */
+static void
+routerset_clear(void *value, const void *params)
+{
+  (void)params;
+  routerset_t **p = (routerset_t**)value;
+  routerset_free(*p); // sets *p to NULL.
+}
+
+/**
+ * config helper: copy a routerset-typed variable.
+ *
+ * Takes it input from a routerset_t** in <b>src</b>; writes its output to a
+ * routerset_t** in <b>dest</b>.  Returns 0 on success, -1 on (impossible)
+ * failure.
+ **/
+static int
+routerset_copy(void *dest, const void *src, const void *params)
+{
+  (void)params;
+  routerset_t **output = (routerset_t**)dest;
+  const routerset_t *input = *(routerset_t**)src;
+  routerset_free(*output); // sets *output to NULL
+  if (! routerset_is_empty(input)) {
+    *output = routerset_new();
+    routerset_union(*output, input);
+  }
+  return 0;
+}
+
+/**
+ * Function table to implement a routerset_t-based configuration type.
+ **/
+static const var_type_fns_t routerset_type_fns = {
+  .kv_parse = routerset_kv_parse,
+  .encode = routerset_encode,
+  .clear = routerset_clear,
+  .copy = routerset_copy
+};
+
+/**
+ * Definition of a routerset_t-based configuration type.
+ *
+ * Values are mapped to and from strings using the format defined in
+ * routerset_parse(): nicknames, IP address patterns, and fingerprints--with
+ * optional space, separated by commas.
+ *
+ * Empty sets are represented as NULL.
+ **/
+const var_type_def_t ROUTERSET_type_defn = {
+  .name = "RouterList",
+  .fns = &routerset_type_fns
+};

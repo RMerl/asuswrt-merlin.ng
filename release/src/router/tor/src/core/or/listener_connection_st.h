@@ -21,5 +21,5 @@ struct listener_connection_t {
 
 };
 
-#endif
+#endif /* !defined(LISTENER_CONNECTION_ST_H) */
 

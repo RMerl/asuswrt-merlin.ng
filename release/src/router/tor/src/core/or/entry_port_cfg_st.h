@@ -50,5 +50,5 @@ struct entry_port_cfg_t {
 
 };
 
-#endif
+#endif /* !defined(ENTRY_PORT_CFG_ST_H) */
 

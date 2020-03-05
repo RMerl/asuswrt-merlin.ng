@@ -16,7 +16,7 @@
 #include "core/or/circuitmux_ewma.h"
 #include "core/or/circuitbuild.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_edge.h"
 #include "test/test.h"
@@ -45,6 +45,7 @@
 #include "app/config/statefile.h"
 
 #include "test/test_helpers.h"
+#include "test/resolve_test_helpers.h"
 
 #include "feature/dirclient/dir_server_st.h"
 #include "core/or/port_cfg_st.h"
@@ -54,6 +55,7 @@
 #include "lib/meminfo/meminfo.h"
 #include "lib/net/gethostname.h"
 #include "lib/encoding/confline.h"
+#include "lib/encoding/kvline.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -1754,6 +1756,18 @@ add_default_fallback_dir_servers_known_default(void)
   n_add_default_fallback_dir_servers_known_default++;
 }
 
+/* Helper for test_config_adding_dir_servers(), which should be
+ * refactored: clear the fields in the options which the options object
+ * does not really own. */
+static void
+ads_clear_helper(or_options_t *options)
+{
+  options->DirAuthorities = NULL;
+  options->AlternateBridgeAuthority = NULL;
+  options->AlternateDirAuthority = NULL;
+  options->FallbackDir = NULL;
+}
+
 /* Test all the different combinations of adding dir servers */
 static void
 test_config_adding_dir_servers(void *arg)
@@ -1761,7 +1775,7 @@ test_config_adding_dir_servers(void *arg)
   (void)arg;
 
   /* allocate options */
-  or_options_t *options = tor_malloc_zero(sizeof(or_options_t));
+  or_options_t *options = options_new();
 
   /* Allocate and populate configuration lines:
    *
@@ -1884,7 +1898,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -1966,7 +1982,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2107,7 +2125,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2248,7 +2268,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2390,7 +2412,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2542,7 +2566,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2696,7 +2722,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -2859,7 +2887,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -3016,7 +3046,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -3182,7 +3214,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -3345,7 +3379,9 @@ test_config_adding_dir_servers(void *arg)
     n_add_default_fallback_dir_servers_known_default = 0;
 
     /* clear options*/
-    memset(options, 0, sizeof(or_options_t));
+    ads_clear_helper(options);
+    or_options_free(options);
+    options = options_new();
 
     /* clear any previous dir servers:
      consider_adding_dir_servers() should do this anyway */
@@ -3514,10 +3550,7 @@ test_config_adding_dir_servers(void *arg)
   tor_free(test_fallback_directory->value);
   tor_free(test_fallback_directory);
 
-  options->DirAuthorities = NULL;
-  options->AlternateBridgeAuthority = NULL;
-  options->AlternateDirAuthority = NULL;
-  options->FallbackDir = NULL;
+  ads_clear_helper(options);
   or_options_free(options);
 
   UNMOCK(add_default_fallback_dir_servers);
@@ -3532,7 +3565,7 @@ test_config_default_dir_servers(void *arg)
   int fallback_count = 0;
 
   /* new set of options should stop fallback parsing */
-  opts = tor_malloc_zero(sizeof(or_options_t));
+  opts = options_new();
   opts->UseDefaultFallbackDirs = 0;
   /* set old_options to NULL to force dir update */
   consider_adding_dir_servers(opts, NULL);
@@ -3546,7 +3579,7 @@ test_config_default_dir_servers(void *arg)
   /* if we disable the default fallbacks, there must not be any extra */
   tt_assert(fallback_count == trusted_count);
 
-  opts = tor_malloc_zero(sizeof(or_options_t));
+  opts = options_new();
   opts->UseDefaultFallbackDirs = 1;
   consider_adding_dir_servers(opts, opts);
   trusted_count = smartlist_len(router_get_trusted_dir_servers());
@@ -3606,7 +3639,7 @@ test_config_directory_fetch(void *arg)
   (void)arg;
 
   /* Test Setup */
-  or_options_t *options = tor_malloc_zero(sizeof(or_options_t));
+  or_options_t *options = options_new();
   routerinfo_t routerinfo;
   memset(&routerinfo, 0, sizeof(routerinfo));
   mock_router_pick_published_address_result = -1;
@@ -3618,9 +3651,10 @@ test_config_directory_fetch(void *arg)
        mock_router_my_exit_policy_is_reject_star);
   MOCK(advertised_server_mode, mock_advertised_server_mode);
   MOCK(router_get_my_routerinfo, mock_router_get_my_routerinfo);
+  or_options_free(options);
+  options = options_new();
 
   /* Clients can use multiple directory mirrors for bootstrap */
-  memset(options, 0, sizeof(or_options_t));
   options->ClientOnly = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
@@ -3629,7 +3663,8 @@ test_config_directory_fetch(void *arg)
             OP_EQ, 1);
 
   /* Bridge Clients can use multiple directory mirrors for bootstrap */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->UseBridges = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
@@ -3639,7 +3674,8 @@ test_config_directory_fetch(void *arg)
 
   /* Bridge Relays (Bridges) must act like clients, and use multiple
    * directory mirrors for bootstrap */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->BridgeRelay = 1;
   options->ORPort_set = 1;
   tt_assert(server_mode(options) == 1);
@@ -3650,7 +3686,8 @@ test_config_directory_fetch(void *arg)
 
   /* Clients set to FetchDirInfoEarly must fetch it from the authorities,
    * but can use multiple authorities for bootstrap */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->FetchDirInfoEarly = 1;
   tt_assert(server_mode(options) == 0);
   tt_assert(public_server_mode(options) == 0);
@@ -3661,7 +3698,8 @@ test_config_directory_fetch(void *arg)
   /* OR servers only fetch the consensus from the authorities when they don't
    * know their own address, but never use multiple directories for bootstrap
    */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->ORPort_set = 1;
 
   mock_router_pick_published_address_result = -1;
@@ -3681,7 +3719,8 @@ test_config_directory_fetch(void *arg)
   /* Exit OR servers only fetch the consensus from the authorities when they
    * refuse unknown exits, but never use multiple directories for bootstrap
    */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->ORPort_set = 1;
   options->ExitRelay = 1;
   mock_router_pick_published_address_result = 0;
@@ -3711,7 +3750,8 @@ test_config_directory_fetch(void *arg)
    * advertising their dirport, and never use multiple directories for
    * bootstrap. This only applies if they are also OR servers.
    * (We don't care much about the behaviour of non-OR directory servers.) */
-  memset(options, 0, sizeof(or_options_t));
+  or_options_free(options);
+  options = options_new();
   options->DirPort_set = 1;
   options->ORPort_set = 1;
   options->DirCache = 1;
@@ -3765,7 +3805,7 @@ test_config_directory_fetch(void *arg)
             OP_EQ, 0);
 
  done:
-  tor_free(options);
+  or_options_free(options);
   UNMOCK(router_pick_published_address);
   UNMOCK(router_get_my_routerinfo);
   UNMOCK(advertised_server_mode);
@@ -4028,6 +4068,8 @@ test_config_parse_port_config__ports__ports_given(void *data)
   tor_addr_t addr;
 
   slout = smartlist_new();
+
+  mock_hostname_resolver();
 
   // Test error when encounters an invalid Port specification
   config_port_invalid = mock_config_line("DNSPort", "");
@@ -4725,6 +4767,7 @@ test_config_parse_port_config__ports__ports_given(void *data)
 #endif /* defined(_WIN32) */
 
  done:
+  unmock_hostname_resolver();
   if (slout)
     SMARTLIST_FOREACH(slout,port_cfg_t *,pf,port_cfg_free(pf));
   smartlist_free(slout);
@@ -5063,7 +5106,7 @@ test_config_include_no_permission(void *data)
     chmod(dir, 0700);
   tor_free(dir);
 }
-#endif
+#endif /* !defined(_WIN32) */
 
 static void
 test_config_include_recursion_before_after(void *data)
@@ -5762,7 +5805,7 @@ test_config_compute_max_mem_in_queues(void *data)
 #else
   /* We are on a 32-bit system. */
   tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ, GIGABYTE(1));
-#endif
+#endif /* SIZEOF_VOID_P >= 8 */
 
   /* We are able to detect the amount of RAM on the system. */
   total_system_memory_return = 0;
@@ -5803,7 +5846,7 @@ test_config_compute_max_mem_in_queues(void *data)
   /* We will at maximum get MAX_DEFAULT_MEMORY_QUEUE_SIZE here. */
   tt_u64_op(compute_real_max_mem_in_queues(0, 0), OP_EQ,
             MAX_DEFAULT_MEMORY_QUEUE_SIZE);
-#endif
+#endif /* SIZEOF_SIZE_T > 4 */
 
  done:
   UNMOCK(get_total_system_memory);
@@ -5847,6 +5890,7 @@ test_config_extended_fmt(void *arg)
   tt_str_op(lp->value, OP_EQ, "is back here");
   tt_int_op(lp->command, OP_EQ, CONFIG_LINE_NORMAL);
   lp = lp->next;
+  tt_assert(!lp);
   config_free_lines(lines);
 
   /* Try with the "extended" flag enabled. */
@@ -5873,9 +5917,166 @@ test_config_extended_fmt(void *arg)
   tt_str_op(lp->value, OP_EQ, "");
   tt_int_op(lp->command, OP_EQ, CONFIG_LINE_CLEAR);
   lp = lp->next;
+  tt_assert(!lp);
 
  done:
   config_free_lines(lines);
+}
+
+static void
+test_config_kvline_parse(void *arg)
+{
+  (void)arg;
+
+  config_line_t *lines = NULL;
+  char *enc = NULL;
+
+  lines = kvline_parse("A=B CD=EF", 0);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "A");
+  tt_str_op(lines->value, OP_EQ, "B");
+  tt_str_op(lines->next->key, OP_EQ, "CD");
+  tt_str_op(lines->next->value, OP_EQ, "EF");
+  enc = kvline_encode(lines, 0);
+  tt_str_op(enc, OP_EQ, "A=B CD=EF");
+  tor_free(enc);
+  enc = kvline_encode(lines, KV_QUOTED|KV_OMIT_KEYS);
+  tt_str_op(enc, OP_EQ, "A=B CD=EF");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB CDE=F", 0);
+  tt_assert(! lines);
+
+  lines = kvline_parse("AB CDE=F", KV_OMIT_KEYS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "");
+  tt_str_op(lines->value, OP_EQ, "AB");
+  tt_str_op(lines->next->key, OP_EQ, "CDE");
+  tt_str_op(lines->next->value, OP_EQ, "F");
+  tt_assert(lines);
+  enc = kvline_encode(lines, 0);
+  tt_assert(!enc);
+  enc = kvline_encode(lines, KV_QUOTED|KV_OMIT_KEYS);
+  tt_str_op(enc, OP_EQ, "AB CDE=F");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=C CDE=\"F G\"", 0);
+  tt_assert(!lines);
+
+  lines = kvline_parse("AB=C CDE=\"F G\" \"GHI\" ", KV_QUOTED|KV_OMIT_KEYS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "C");
+  tt_str_op(lines->next->key, OP_EQ, "CDE");
+  tt_str_op(lines->next->value, OP_EQ, "F G");
+  tt_str_op(lines->next->next->key, OP_EQ, "");
+  tt_str_op(lines->next->next->value, OP_EQ, "GHI");
+  enc = kvline_encode(lines, 0);
+  tt_assert(!enc);
+  enc = kvline_encode(lines, KV_QUOTED|KV_OMIT_KEYS);
+  tt_str_op(enc, OP_EQ, "AB=C CDE=\"F G\" GHI");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("A\"B=C CDE=\"F\" \"GHI\" ", KV_QUOTED|KV_OMIT_KEYS);
+  tt_assert(! lines);
+
+  lines = kvline_parse("AB=", KV_QUOTED);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "");
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=", 0);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "");
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=", KV_OMIT_VALS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "");
+  config_free_lines(lines);
+
+  lines = kvline_parse(" AB ", KV_OMIT_VALS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "");
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB", KV_OMIT_VALS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "");
+  enc = kvline_encode(lines, KV_OMIT_VALS);
+  tt_str_op(enc, OP_EQ, "AB");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=CD", KV_OMIT_VALS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "CD");
+  enc = kvline_encode(lines, KV_OMIT_VALS);
+  tt_str_op(enc, OP_EQ, "AB=CD");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=CD DE FGH=I", KV_OMIT_VALS);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "CD");
+  tt_str_op(lines->next->key, OP_EQ, "DE");
+  tt_str_op(lines->next->value, OP_EQ, "");
+  tt_str_op(lines->next->next->key, OP_EQ, "FGH");
+  tt_str_op(lines->next->next->value, OP_EQ, "I");
+  enc = kvline_encode(lines, KV_OMIT_VALS);
+  tt_str_op(enc, OP_EQ, "AB=CD DE FGH=I");
+  tor_free(enc);
+  config_free_lines(lines);
+
+  lines = kvline_parse("AB=\"CD E\" DE FGH=\"I\"", KV_OMIT_VALS|KV_QUOTED);
+  tt_assert(lines);
+  tt_str_op(lines->key, OP_EQ, "AB");
+  tt_str_op(lines->value, OP_EQ, "CD E");
+  tt_str_op(lines->next->key, OP_EQ, "DE");
+  tt_str_op(lines->next->value, OP_EQ, "");
+  tt_str_op(lines->next->next->key, OP_EQ, "FGH");
+  tt_str_op(lines->next->next->value, OP_EQ, "I");
+  enc = kvline_encode(lines, KV_OMIT_VALS|KV_QUOTED);
+  tt_str_op(enc, OP_EQ, "AB=\"CD E\" DE FGH=I");
+
+ done:
+  config_free_lines(lines);
+  tor_free(enc);
+}
+
+static void
+test_config_getinfo_config_names(void *arg)
+{
+  (void)arg;
+  char *answer = NULL;
+  const char *error = NULL;
+  int rv;
+
+  rv = getinfo_helper_config(NULL, "config/names", &answer, &error);
+  tt_int_op(rv, OP_EQ, 0);
+  tt_ptr_op(error, OP_EQ, NULL);
+
+  // ContactInfo should be listed.
+  tt_assert(strstr(answer, "\nContactInfo String\n"));
+
+  // V1AuthoritativeDirectory should not be listed, since it is obsolete.
+  tt_assert(! strstr(answer, "V1AuthoritativeDirectory"));
+
+  // ___UsingTestNetworkDefaults should not be listed, since it is invisible.
+  tt_assert(! strstr(answer, "UsingTestNetworkDefaults"));
+
+ done:
+  tor_free(answer);
 }
 
 #define CONFIG_TEST(name, flags)                          \
@@ -5930,5 +6131,7 @@ struct testcase_t config_tests[] = {
   CONFIG_TEST(include_opened_file_list, 0),
   CONFIG_TEST(compute_max_mem_in_queues, 0),
   CONFIG_TEST(extended_fmt, 0),
+  CONFIG_TEST(kvline_parse, 0),
+  CONFIG_TEST(getinfo_config_names, 0),
   END_OF_TESTCASES
 };

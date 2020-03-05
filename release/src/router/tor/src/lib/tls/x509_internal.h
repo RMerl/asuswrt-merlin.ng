@@ -50,4 +50,4 @@ int tor_x509_cert_set_cached_der_encoding(tor_x509_cert_t *cert);
 #define tor_x509_cert_set_cached_der_encoding(cert) (0)
 #endif
 
-#endif
+#endif /* !defined(TOR_X509_INTERNAL_H) */

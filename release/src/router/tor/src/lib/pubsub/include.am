@@ -1,0 +1,28 @@
+
+noinst_LIBRARIES += src/lib/libtor-pubsub.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-pubsub-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_pubsub_a_SOURCES =			\
+	src/lib/pubsub/pubsub_build.c			\
+	src/lib/pubsub/pubsub_check.c			\
+	src/lib/pubsub/pubsub_publish.c
+
+src_lib_libtor_pubsub_testing_a_SOURCES = \
+	$(src_lib_libtor_pubsub_a_SOURCES)
+src_lib_libtor_pubsub_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_pubsub_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/lib/pubsub/pub_binding_st.h			\
+	src/lib/pubsub/pubsub.h				\
+	src/lib/pubsub/pubsub_build.h			\
+	src/lib/pubsub/pubsub_builder_st.h		\
+	src/lib/pubsub/pubsub_connect.h			\
+	src/lib/pubsub/pubsub_flags.h			\
+	src/lib/pubsub/pubsub_macros.h			\
+	src/lib/pubsub/pubsub_publish.h

@@ -53,7 +53,7 @@ pathfind() {
 
 if pathfind torsocks; then
     exec torsocks "$@"
-    echo "$0: Failed to exec torsocks $@" >&2
+    echo "$0: Failed to exec torsocks $*" >&2
     exit 1
 else
     echo "$0: torsocks not found in your PATH.  Perhaps it isn't installed?  (tsocks is no longer supported, for security reasons.)" >&2

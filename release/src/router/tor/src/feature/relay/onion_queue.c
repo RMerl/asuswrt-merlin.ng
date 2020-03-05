@@ -212,10 +212,12 @@ num_ntors_per_tap(void)
 #define MIN_NUM_NTORS_PER_TAP 1
 #define MAX_NUM_NTORS_PER_TAP 100000
 
-  return networkstatus_get_param(NULL, "NumNTorsPerTAP",
-                                 DEFAULT_NUM_NTORS_PER_TAP,
-                                 MIN_NUM_NTORS_PER_TAP,
-                                 MAX_NUM_NTORS_PER_TAP);
+  int result = networkstatus_get_param(NULL, "NumNTorsPerTAP",
+                                       DEFAULT_NUM_NTORS_PER_TAP,
+                                       MIN_NUM_NTORS_PER_TAP,
+                                       MAX_NUM_NTORS_PER_TAP);
+  tor_assert(result > 0);
+  return result;
 }
 
 /** Choose which onion queue we'll pull from next. If one is empty choose

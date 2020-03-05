@@ -59,12 +59,12 @@ ENABLE_GCC_WARNING(redundant-decls)
 #define X509_get_notAfter(cert) \
     X509_getm_notAfter(cert)
 #endif
-#else /* ! OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,0) */
+#else /* !defined(OPENSSL_1_1_API) */
 #define X509_get_notBefore_const(cert) \
   ((const ASN1_TIME*) X509_get_notBefore((X509 *)cert))
 #define X509_get_notAfter_const(cert) \
   ((const ASN1_TIME*) X509_get_notAfter((X509 *)cert))
-#endif
+#endif /* defined(OPENSSL_1_1_API) */
 
 /** Return a newly allocated X509 name with commonName <b>cname</b>. */
 static X509_NAME *

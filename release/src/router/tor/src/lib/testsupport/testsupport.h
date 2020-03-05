@@ -21,7 +21,7 @@
  * tests. */
 #define STATIC
 #define EXTERN(type, name) extern type name;
-#else
+#else /* !defined(TOR_UNIT_TESTS) */
 #define STATIC static
 #define EXTERN(type, name)
 #endif /* defined(TOR_UNIT_TESTS) */
@@ -90,7 +90,7 @@
   do {                                          \
     func = func ##__real;                       \
   } while (0)
-#else /* !(defined(TOR_UNIT_TESTS)) */
+#else /* !defined(TOR_UNIT_TESTS) */
 #define MOCK_DECL(rv, funcname, arglist) \
   rv funcname arglist
 #define MOCK_DECL_ATTR(rv, funcname, arglist, attr) \

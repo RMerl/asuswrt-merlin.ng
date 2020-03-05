@@ -21,8 +21,8 @@
 
 int dirserv_read_measured_bandwidths(const char *from_file,
                                      smartlist_t *routerstatuses,
-                                     smartlist_t *bw_file_headers);
-
+                                     smartlist_t *bw_file_headers,
+                                     uint8_t *digest_out);
 int dirserv_query_measured_bw_cache_kb(const char *node_id,
                                        long *bw_out,
                                        time_t *as_of_out);
@@ -55,4 +55,4 @@ STATIC void dirserv_cache_measured_bw(const measured_bw_line_t *parsed_line,
 STATIC void dirserv_expire_measured_bw_cache(time_t now);
 #endif /* defined(BWAUTH_PRIVATE) */
 
-#endif
+#endif /* !defined(TOR_BWAUTH_H) */

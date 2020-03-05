@@ -99,6 +99,9 @@ struct networkstatus_t {
 
   /** List of key=value strings from the headers of the bandwidth list file */
   smartlist_t *bw_file_headers;
+
+  /** A SHA256 digest of the bandwidth file used in a vote. */
+  uint8_t bw_file_digest256[DIGEST256_LEN];
 };
 
-#endif
+#endif /* !defined(NETWORKSTATUS_ST_H) */

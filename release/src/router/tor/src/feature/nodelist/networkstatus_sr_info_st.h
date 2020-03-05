@@ -19,5 +19,5 @@ struct networkstatus_sr_info_t {
   smartlist_t *commits;
 };
 
-#endif
+#endif /* !defined(NETWORKSTATUS_SR_INFO_ST_H) */
 

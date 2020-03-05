@@ -31,6 +31,9 @@
 #endif
 #include <stddef.h>
 #include <string.h>
+#ifdef __FreeBSD__
+#include <sys/sysctl.h>
+#endif
 
 /** Called before we make any calls to network-related functions.
  * (Some operating systems require their network libraries to be
@@ -58,6 +61,32 @@ network_init(void)
    * too few sockets available. */
 #endif /* defined(_WIN32) */
   return 0;
+}
+
+/**
+ * Warn the user if any system network parameters should be changed.
+ */
+void
+check_network_configuration(bool server_mode)
+{
+#ifdef __FreeBSD__
+  if (server_mode) {
+    int random_id_state;
+    size_t state_size = sizeof(random_id_state);
+
+    if (sysctlbyname("net.inet.ip.random_id", &random_id_state,
+                     &state_size, NULL, 0)) {
+      log_warn(LD_CONFIG,
+               "Failed to figure out if IP ids are randomized.");
+    } else if (random_id_state == 0) {
+      log_warn(LD_CONFIG, "Looks like IP ids are not randomized. "
+               "Please consider setting the net.inet.ip.random_id sysctl, "
+               "so your relay makes it harder to figure out how busy it is.");
+    }
+  }
+#else /* !defined(__FreeBSD__) */
+  (void) server_mode;
+#endif /* defined(__FreeBSD__) */
 }
 
 /* When set_max_file_sockets() is called, update this with the max file
@@ -177,7 +206,7 @@ mark_socket_closed(tor_socket_t s)
     bitarray_clear(open_sockets, s);
   }
 }
-#else /* !(defined(DEBUG_SOCKET_COUNTING)) */
+#else /* !defined(DEBUG_SOCKET_COUNTING) */
 #define mark_socket_open(s) ((void) (s))
 #define mark_socket_closed(s) ((void) (s))
 #endif /* defined(DEBUG_SOCKET_COUNTING) */
@@ -279,7 +308,7 @@ tor_open_socket_with_extensions(int domain, int type, int protocol,
       return TOR_INVALID_SOCKET;
     }
   }
-#else /* !(defined(FD_CLOEXEC)) */
+#else /* !defined(FD_CLOEXEC) */
   (void)cloexec;
 #endif /* defined(FD_CLOEXEC) */
 
@@ -389,7 +418,7 @@ tor_accept_socket_with_extensions(tor_socket_t sockfd, struct sockaddr *addr,
       return TOR_INVALID_SOCKET;
     }
   }
-#else /* !(defined(FD_CLOEXEC)) */
+#else /* !defined(FD_CLOEXEC) */
   (void)cloexec;
 #endif /* defined(FD_CLOEXEC) */
 
@@ -429,7 +458,9 @@ get_n_open_sockets(void)
  * localhost is inaccessible (for example, if the networking
  * stack is down). And even if it succeeds, the socket pair will not
  * be able to read while localhost is down later (the socket pair may
- * even close, depending on OS-specific timeouts).
+ * even close, depending on OS-specific timeouts). The socket pair
+ * should work on IPv4-only, IPv6-only, and dual-stack systems, as long
+ * as they have the standard localhost addresses.
  *
  * Returns 0 on success and -errno on failure; do not rely on the value
  * of errno or WSAGetLastError().
@@ -456,11 +487,11 @@ tor_socketpair(int family, int type, int protocol, tor_socket_t fd[2])
   r = socketpair(family, type, protocol, fd);
   if (r < 0)
     return -errno;
-#else
+#else /* !(defined(HAVE_SOCKETPAIR) && !defined(_WIN32)) */
   r = tor_ersatz_socketpair(family, type, protocol, fd);
   if (r < 0)
     return -r;
-#endif
+#endif /* defined(HAVE_SOCKETPAIR) && !defined(_WIN32) */
 
 #if defined(FD_CLOEXEC)
   if (SOCKET_OK(fd[0])) {

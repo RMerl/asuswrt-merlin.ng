@@ -16,4 +16,4 @@ int is_legal_nickname(const char *s);
 int is_legal_nickname_or_hexdigest(const char *s);
 int is_legal_hexdigest(const char *s);
 
-#endif
+#endif /* !defined(TOR_NICKNAME_H) */

@@ -59,12 +59,11 @@ void directory_info_has_arrived(time_t now, int from_cache, int suppress_logs);
 void ip_address_changed(int at_interface);
 void dns_servers_relaunch_checks(void);
 void reset_all_main_loop_timers(void);
-void reschedule_descriptor_update_check(void);
 void reschedule_directory_downloads(void);
 void reschedule_or_state_save(void);
-void reschedule_dirvote(const or_options_t *options);
 void mainloop_schedule_postloop_cleanup(void);
 void rescan_periodic_events(const or_options_t *options);
+MOCK_DECL(void, schedule_rescan_periodic_events,(void));
 
 void update_current_time(time_t now);
 
@@ -81,13 +80,15 @@ uint64_t get_main_loop_error_count(void);
 uint64_t get_main_loop_idle_count(void);
 
 void periodic_events_on_new_options(const or_options_t *options);
-void reschedule_per_second_timer(void);
 
 void do_signewnym(time_t);
 time_t get_last_signewnym_time(void);
 
+void mainloop_schedule_shutdown(int delay_sec);
+
 void tor_init_connection_lists(void);
 void initialize_mainloop_events(void);
+void initialize_periodic_events(void);
 void tor_mainloop_free_all(void);
 
 struct token_bucket_rw_t;
@@ -98,17 +99,20 @@ extern struct token_bucket_rw_t global_bucket;
 extern struct token_bucket_rw_t global_relayed_bucket;
 
 #ifdef MAINLOOP_PRIVATE
+STATIC int run_main_loop_until_done(void);
 STATIC void close_closeable_connections(void);
-STATIC void initialize_periodic_events(void);
 STATIC void teardown_periodic_events(void);
 STATIC int get_my_roles(const or_options_t *);
+STATIC int check_network_participation_callback(time_t now,
+                                                const or_options_t *options);
+
 #ifdef TOR_UNIT_TESTS
 extern smartlist_t *connection_array;
 
 /* We need the periodic_event_item_t definition. */
 #include "core/mainloop/periodic.h"
-extern periodic_event_item_t periodic_events[];
-#endif
-#endif /* defined(MAIN_PRIVATE) */
+extern periodic_event_item_t mainloop_periodic_events[];
+#endif /* defined(TOR_UNIT_TESTS) */
+#endif /* defined(MAINLOOP_PRIVATE) */
 
-#endif
+#endif /* !defined(TOR_MAINLOOP_H) */

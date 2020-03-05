@@ -14,16 +14,19 @@
 #include "core/crypto/onion_tap.h"
 #include "core/crypto/relay_crypto.h"
 
+#include "lib/intmath/weakrng.h"
+
 #ifdef ENABLE_OPENSSL
 #include <openssl/opensslv.h>
 #include <openssl/evp.h>
 #include <openssl/ec.h>
 #include <openssl/ecdh.h>
 #include <openssl/obj_mac.h>
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 #include "core/or/circuitlist.h"
 #include "app/config/config.h"
+#include "app/main/subsysmgr.h"
 #include "lib/crypt_ops/crypto_curve25519.h"
 #include "lib/crypt_ops/crypto_dh.h"
 #include "core/crypto/onion_ntor.h"
@@ -37,6 +40,9 @@
 
 #include "lib/crypt_ops/digestset.h"
 #include "lib/crypt_ops/crypto_init.h"
+
+#include "feature/dirparse/microdesc_parse.h"
+#include "feature/nodelist/microdesc.h"
 
 #if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_PROCESS_CPUTIME_ID)
 static uint64_t nanostart;
@@ -329,6 +335,65 @@ bench_ed25519(void)
     ed25519_set_impl_params(donna);
     bench_ed25519_impl();
   }
+}
+
+static void
+bench_rand_len(int len)
+{
+  const int N = 100000;
+  int i;
+  char *buf = tor_malloc(len);
+  uint64_t start,end;
+
+  start = perftime();
+  for (i = 0; i < N; ++i) {
+    crypto_rand(buf, len);
+  }
+  end = perftime();
+  printf("crypto_rand(%d): %f nsec.\n", len, NANOCOUNT(start,end,N));
+
+  crypto_fast_rng_t *fr = crypto_fast_rng_new();
+  start = perftime();
+  for (i = 0; i < N; ++i) {
+    crypto_fast_rng_getbytes(fr,(uint8_t*)buf,len);
+  }
+  end = perftime();
+  printf("crypto_fast_rng_getbytes(%d): %f nsec.\n", len,
+         NANOCOUNT(start,end,N));
+  crypto_fast_rng_free(fr);
+
+  if (len <= 32) {
+    start = perftime();
+    for (i = 0; i < N; ++i) {
+      crypto_strongest_rand((uint8_t*)buf, len);
+    }
+    end = perftime();
+    printf("crypto_strongest_rand(%d): %f nsec.\n", len,
+           NANOCOUNT(start,end,N));
+  }
+
+  if (len == 4) {
+    tor_weak_rng_t weak;
+    tor_init_weak_random(&weak, 1337);
+
+    start = perftime();
+    uint32_t t=0;
+    for (i = 0; i < N; ++i) {
+      t += tor_weak_random(&weak);
+    }
+    end = perftime();
+    printf("weak_rand(4): %f nsec.\n", NANOCOUNT(start,end,N));
+  }
+
+  tor_free(buf);
+}
+
+static void
+bench_rand(void)
+{
+  bench_rand_len(4);
+  bench_rand_len(16);
+  bench_rand_len(128);
 }
 
 static void
@@ -636,7 +701,42 @@ bench_ecdh_p224(void)
 {
   bench_ecdh_impl(NID_secp224r1, "P-224");
 }
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
+
+static void
+bench_md_parse(void)
+{
+  uint64_t start, end;
+  const int N = 100000;
+  // selected arbitrarily
+  const char md_text[] =
+    "@last-listed 2018-12-14 18:14:14\n"
+    "onion-key\n"
+    "-----BEGIN RSA PUBLIC KEY-----\n"
+    "MIGJAoGBAMHkZeXNDX/49JqM2BVLmh1Fnb5iMVnatvZZTLJyedqDLkbXZ1WKP5oh\n"
+    "7ec14dj/k3ntpwHD4s2o3Lb6nfagWbug4+F/rNJ7JuFru/PSyOvDyHGNAuegOXph\n"
+    "3gTGjdDpv/yPoiadGebbVe8E7n6hO+XxM2W/4dqheKimF0/s9B7HAgMBAAE=\n"
+    "-----END RSA PUBLIC KEY-----\n"
+    "ntor-onion-key QgF/EjqlNG1wRHLIop/nCekEH+ETGZSgYOhu26eiTF4=\n"
+    "family $00E9A86E7733240E60D8435A7BBD634A23894098 "
+    "$329BD7545DEEEBBDC8C4285F243916F248972102 "
+    "$69E06EBB2573A4F89330BDF8BC869794A3E10E4D "
+    "$DCA2A3FAE50B3729DAA15BC95FB21AF03389818B\n"
+    "p accept 53,80,443,5222-5223,25565\n"
+    "id ed25519 BzffzY99z6Q8KltcFlUTLWjNTBU7yKK+uQhyi1Ivb3A\n";
+
+  reset_perftime();
+  start = perftime();
+  for (int i = 0; i < N; ++i) {
+    smartlist_t *s = microdescs_parse_from_string(md_text, NULL, 1,
+                                                  SAVED_IN_CACHE, NULL);
+    SMARTLIST_FOREACH(s, microdesc_t *, md, microdesc_free(md));
+    smartlist_free(s);
+  }
+
+  end = perftime();
+  printf("Microdesc parse: %f nsec\n", NANOCOUNT(start, end, N));
+}
 
 typedef void (*bench_fn)(void);
 
@@ -656,6 +756,7 @@ static struct benchmark_t benchmarks[] = {
   ENT(onion_TAP),
   ENT(onion_ntor),
   ENT(ed25519),
+  ENT(rand),
 
   ENT(cell_aes),
   ENT(cell_ops),
@@ -665,6 +766,8 @@ static struct benchmark_t benchmarks[] = {
   ENT(ecdh_p256),
   ENT(ecdh_p224),
 #endif
+
+  ENT(md_parse),
   {NULL,NULL,0}
 };
 
@@ -690,9 +793,10 @@ main(int argc, const char **argv)
   char *errmsg;
   or_options_t *options;
 
-  tor_threads_init();
+  subsystems_init_upto(SUBSYS_LEVEL_LIBS);
+  flush_log_messages_from_startup();
+
   tor_compress_init();
-  init_logging(1);
 
   if (argc == 4 && !strcmp(argv[1], "diff")) {
     const int N = 200;
@@ -702,11 +806,13 @@ main(int argc, const char **argv)
       perror("X");
       return 1;
     }
+    size_t f1len = strlen(f1);
+    size_t f2len = strlen(f2);
     for (i = 0; i < N; ++i) {
-      char *diff = consensus_diff_generate(f1, f2);
+      char *diff = consensus_diff_generate(f1, f1len, f2, f2len);
       tor_free(diff);
     }
-    char *diff = consensus_diff_generate(f1, f2);
+    char *diff = consensus_diff_generate(f1, f1len, f2, f2len);
     printf("%s", diff);
     tor_free(f1);
     tor_free(f2);
@@ -737,7 +843,6 @@ main(int argc, const char **argv)
 
   init_protocol_warning_severity_level();
   options = options_new();
-  init_logging(1);
   options->command = CMD_RUN_UNITTESTS;
   options->DataDirectory = tor_strdup("");
   options->KeyDirectory = tor_strdup("");

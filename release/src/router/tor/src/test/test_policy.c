@@ -6,13 +6,18 @@
 
 #include "core/or/or.h"
 #include "app/config/config.h"
+#include "core/or/circuitbuild.h"
 #include "core/or/policies.h"
 #include "feature/dirparse/policy_parse.h"
+#include "feature/hs/hs_common.h"
+#include "feature/hs/hs_descriptor.h"
 #include "feature/relay/router.h"
 #include "lib/encoding/confline.h"
 #include "test/test.h"
+#include "test/log_test_helpers.h"
 
 #include "core/or/addr_policy_st.h"
+#include "core/or/extend_info_st.h"
 #include "core/or/port_cfg_st.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
@@ -2024,6 +2029,115 @@ test_policies_fascist_firewall_allows_address(void *arg)
                            expect_ap); \
   STMT_END
 
+/* Check that fascist_firewall_choose_address_ls() returns the expected
+ * results. */
+#define CHECK_CHOSEN_ADDR_NULL_LS() \
+  STMT_BEGIN \
+    tor_addr_port_t chosen_ls_ap; \
+    tor_addr_make_null(&chosen_ls_ap.addr, AF_UNSPEC); \
+    chosen_ls_ap.port = 0; \
+    setup_full_capture_of_logs(LOG_WARN); \
+    fascist_firewall_choose_address_ls(NULL, 1, &chosen_ls_ap); \
+    expect_single_log_msg("Unknown or missing link specifiers"); \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+#define CHECK_CHOSEN_ADDR_LS(fake_ls, pref_only, expect_rv, expect_ap) \
+  STMT_BEGIN \
+    tor_addr_port_t chosen_ls_ap; \
+    tor_addr_make_null(&chosen_ls_ap.addr, AF_UNSPEC); \
+    chosen_ls_ap.port = 0; \
+    setup_full_capture_of_logs(LOG_WARN); \
+    fascist_firewall_choose_address_ls(fake_ls, pref_only, &chosen_ls_ap); \
+    if (smartlist_len(fake_ls) == 0) { \
+      expect_single_log_msg("Link specifiers are empty"); \
+    } else { \
+      expect_no_log_entry(); \
+      tt_assert(tor_addr_eq(&(expect_ap).addr, &chosen_ls_ap.addr)); \
+      tt_int_op((expect_ap).port, OP_EQ, chosen_ls_ap.port); \
+    } \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+#define CHECK_LS_LEGACY_ONLY(fake_ls) \
+  STMT_BEGIN \
+    tor_addr_port_t chosen_ls_ap; \
+    tor_addr_make_null(&chosen_ls_ap.addr, AF_UNSPEC); \
+    chosen_ls_ap.port = 0; \
+    setup_full_capture_of_logs(LOG_WARN); \
+    fascist_firewall_choose_address_ls(fake_ls, 0, &chosen_ls_ap); \
+    expect_single_log_msg("None of our link specifiers have IPv4 or IPv6"); \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+#define CHECK_HS_EXTEND_INFO_ADDR_LS(fake_ls, direct_conn, expect_ap) \
+  STMT_BEGIN \
+    curve25519_secret_key_t seckey; \
+    curve25519_secret_key_generate(&seckey, 0); \
+    curve25519_public_key_t pubkey; \
+    curve25519_public_key_generate(&pubkey, &seckey); \
+    setup_full_capture_of_logs(LOG_WARN); \
+    extend_info_t *ei = hs_get_extend_info_from_lspecs(fake_ls, &pubkey, \
+                                                       direct_conn); \
+    if (fake_ls == NULL) { \
+      tt_ptr_op(ei, OP_EQ, NULL); \
+      expect_single_log_msg("Specified link specifiers is null"); \
+    } else { \
+      expect_no_log_entry(); \
+      tt_assert(tor_addr_eq(&(expect_ap).addr, &ei->addr)); \
+      tt_int_op((expect_ap).port, OP_EQ, ei->port); \
+      extend_info_free(ei); \
+    } \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+#define CHECK_HS_EXTEND_INFO_ADDR_LS_NULL_KEY(fake_ls) \
+  STMT_BEGIN \
+    setup_full_capture_of_logs(LOG_WARN); \
+    extend_info_t *ei = hs_get_extend_info_from_lspecs(fake_ls, NULL, 0); \
+    tt_ptr_op(ei, OP_EQ, NULL); \
+    expect_single_log_msg("Specified onion key is null"); \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+#define CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(fake_ls, direct_conn) \
+  STMT_BEGIN \
+    curve25519_secret_key_t seckey; \
+    curve25519_secret_key_generate(&seckey, 0); \
+    curve25519_public_key_t pubkey; \
+    curve25519_public_key_generate(&pubkey, &seckey); \
+    extend_info_t *ei = hs_get_extend_info_from_lspecs(fake_ls, &pubkey, \
+                                                       direct_conn); \
+    tt_ptr_op(ei, OP_EQ, NULL); \
+  STMT_END
+
+#define CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_MSG(fake_ls, msg_level, msg) \
+  STMT_BEGIN \
+    curve25519_secret_key_t seckey; \
+    curve25519_secret_key_generate(&seckey, 0); \
+    curve25519_public_key_t pubkey; \
+    curve25519_public_key_generate(&pubkey, &seckey); \
+    setup_full_capture_of_logs(msg_level); \
+    extend_info_t *ei = hs_get_extend_info_from_lspecs(fake_ls, &pubkey, 0); \
+    tt_ptr_op(ei, OP_EQ, NULL); \
+    expect_single_log_msg(msg); \
+    teardown_capture_of_logs(); \
+  STMT_END
+
+/** Mock the preferred address function to return zero (prefer IPv4). */
+static int
+mock_fascist_firewall_rand_prefer_ipv6_addr_use_ipv4(void)
+{
+  return 0;
+}
+
+/** Mock the preferred address function to return one (prefer IPv6). */
+static int
+mock_fascist_firewall_rand_prefer_ipv6_addr_use_ipv6(void)
+{
+  return 1;
+}
+
 /** Run unit tests for fascist_firewall_choose_address */
 static void
 test_policies_fascist_firewall_choose_address(void *arg)
@@ -2421,6 +2535,177 @@ test_policies_fascist_firewall_choose_address(void *arg)
                        ipv4_dir_ap);
   CHECK_CHOSEN_ADDR_RN(fake_rs, fake_node, FIREWALL_DIR_CONNECTION, 1, 1,
                        ipv4_dir_ap);
+
+  /* Test ClientAutoIPv6ORPort and pretend we prefer IPv4. */
+  memset(&mock_options, 0, sizeof(or_options_t));
+  mock_options.ClientAutoIPv6ORPort = 1;
+  mock_options.ClientUseIPv4 = 1;
+  mock_options.ClientUseIPv6 = 1;
+  MOCK(fascist_firewall_rand_prefer_ipv6_addr,
+       mock_fascist_firewall_rand_prefer_ipv6_addr_use_ipv4);
+  /* Simulate the initialisation of fake_node.ipv6_preferred */
+  fake_node.ipv6_preferred = fascist_firewall_prefer_ipv6_orport(
+                                                                &mock_options);
+
+  CHECK_CHOSEN_ADDR_RN(fake_rs, fake_node, FIREWALL_OR_CONNECTION, 0, 1,
+                       ipv4_or_ap);
+  CHECK_CHOSEN_ADDR_RN(fake_rs, fake_node, FIREWALL_OR_CONNECTION, 1, 1,
+                       ipv4_or_ap);
+
+  UNMOCK(fascist_firewall_rand_prefer_ipv6_addr);
+
+  /* Test ClientAutoIPv6ORPort and pretend we prefer IPv6. */
+  memset(&mock_options, 0, sizeof(or_options_t));
+  mock_options.ClientAutoIPv6ORPort = 1;
+  mock_options.ClientUseIPv4 = 1;
+  mock_options.ClientUseIPv6 = 1;
+  MOCK(fascist_firewall_rand_prefer_ipv6_addr,
+       mock_fascist_firewall_rand_prefer_ipv6_addr_use_ipv6);
+  /* Simulate the initialisation of fake_node.ipv6_preferred */
+  fake_node.ipv6_preferred = fascist_firewall_prefer_ipv6_orport(
+                                                                &mock_options);
+
+  CHECK_CHOSEN_ADDR_RN(fake_rs, fake_node, FIREWALL_OR_CONNECTION, 0, 1,
+                       ipv6_or_ap);
+  CHECK_CHOSEN_ADDR_RN(fake_rs, fake_node, FIREWALL_OR_CONNECTION, 1, 1,
+                       ipv6_or_ap);
+
+  UNMOCK(fascist_firewall_rand_prefer_ipv6_addr);
+
+  /* Test firewall_choose_address_ls(). To do this, we make a fake link
+   * specifier. */
+  smartlist_t *lspecs = smartlist_new(),
+              *lspecs_blank = smartlist_new(),
+              *lspecs_v4 = smartlist_new(),
+              *lspecs_v6 = smartlist_new(),
+              *lspecs_no_legacy = smartlist_new(),
+              *lspecs_legacy_only = smartlist_new();
+  link_specifier_t *fake_ls;
+
+  /* IPv4 link specifier */
+  fake_ls = link_specifier_new();
+  link_specifier_set_ls_type(fake_ls, LS_IPV4);
+  link_specifier_set_un_ipv4_addr(fake_ls,
+                                  tor_addr_to_ipv4h(&ipv4_or_ap.addr));
+  link_specifier_set_un_ipv4_port(fake_ls, ipv4_or_ap.port);
+  link_specifier_set_ls_len(fake_ls, sizeof(ipv4_or_ap.addr.addr.in_addr) +
+                            sizeof(ipv4_or_ap.port));
+  smartlist_add(lspecs, fake_ls);
+  smartlist_add(lspecs_v4, fake_ls);
+  smartlist_add(lspecs_no_legacy, fake_ls);
+
+  /* IPv6 link specifier */
+  fake_ls = link_specifier_new();
+  link_specifier_set_ls_type(fake_ls, LS_IPV6);
+  size_t addr_len = link_specifier_getlen_un_ipv6_addr(fake_ls);
+  const uint8_t *in6_addr = tor_addr_to_in6_addr8(&ipv6_or_ap.addr);
+  uint8_t *ipv6_array = link_specifier_getarray_un_ipv6_addr(fake_ls);
+  memcpy(ipv6_array, in6_addr, addr_len);
+  link_specifier_set_un_ipv6_port(fake_ls, ipv6_or_ap.port);
+  link_specifier_set_ls_len(fake_ls, addr_len + sizeof(ipv6_or_ap.port));
+  smartlist_add(lspecs, fake_ls);
+  smartlist_add(lspecs_v6, fake_ls);
+
+  /* Legacy ID link specifier */
+  fake_ls = link_specifier_new();
+  link_specifier_set_ls_type(fake_ls, LS_LEGACY_ID);
+  uint8_t *legacy_id = link_specifier_getarray_un_legacy_id(fake_ls);
+  memset(legacy_id, 'A', sizeof(*legacy_id));
+  link_specifier_set_ls_len(fake_ls,
+                            link_specifier_getlen_un_legacy_id(fake_ls));
+  smartlist_add(lspecs, fake_ls);
+  smartlist_add(lspecs_legacy_only, fake_ls);
+  smartlist_add(lspecs_v4, fake_ls);
+  smartlist_add(lspecs_v6, fake_ls);
+
+  /* Check with bogus requests. */
+  tor_addr_port_t null_ap; \
+  tor_addr_make_null(&null_ap.addr, AF_UNSPEC); \
+  null_ap.port = 0; \
+
+  /* Check for a null link state. */
+  CHECK_CHOSEN_ADDR_NULL_LS();
+  CHECK_HS_EXTEND_INFO_ADDR_LS(NULL, 1, null_ap);
+
+  /* Check for a blank link state. */
+  CHECK_CHOSEN_ADDR_LS(lspecs_blank, 0, 0, null_ap);
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_blank, 0);
+
+  /* Check for a link state with only a Legacy ID. */
+  CHECK_LS_LEGACY_ONLY(lspecs_legacy_only);
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_legacy_only, 0);
+  smartlist_free(lspecs_legacy_only);
+
+  /* Check with a null onion_key. */
+  CHECK_HS_EXTEND_INFO_ADDR_LS_NULL_KEY(lspecs_blank);
+  smartlist_free(lspecs_blank);
+
+  /* Check with a null onion_key. */
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_MSG(lspecs_no_legacy, LOG_WARN,
+                                          "Missing Legacy ID in link state");
+  smartlist_free(lspecs_no_legacy);
+
+  /* Enable both IPv4 and IPv6. */
+  memset(&mock_options, 0, sizeof(or_options_t));
+  mock_options.ClientUseIPv4 = 1;
+  mock_options.ClientUseIPv6 = 1;
+
+  /* Prefer IPv4, enable both IPv4 and IPv6. */
+  mock_options.ClientPreferIPv6ORPort = 0;
+
+  CHECK_CHOSEN_ADDR_LS(lspecs, 0, 1, ipv4_or_ap);
+  CHECK_CHOSEN_ADDR_LS(lspecs, 1, 1, ipv4_or_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 1, ipv4_or_ap);
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 0, ipv4_or_ap);
+
+  /* Prefer IPv6, enable both IPv4 and IPv6. */
+  mock_options.ClientPreferIPv6ORPort = 1;
+
+  CHECK_CHOSEN_ADDR_LS(lspecs, 0, 1, ipv6_or_ap);
+  CHECK_CHOSEN_ADDR_LS(lspecs, 1, 1, ipv6_or_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 1, ipv6_or_ap);
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 0, ipv4_or_ap);
+
+  /* IPv4-only. */
+  memset(&mock_options, 0, sizeof(or_options_t));
+  mock_options.ClientUseIPv4 = 1;
+  mock_options.ClientUseIPv6 = 0;
+
+  CHECK_CHOSEN_ADDR_LS(lspecs, 0, 1, ipv4_or_ap);
+  CHECK_CHOSEN_ADDR_LS(lspecs, 1, 1, ipv4_or_ap);
+
+  CHECK_CHOSEN_ADDR_LS(lspecs_v6, 0, 0, null_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 1, ipv4_or_ap);
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 0, ipv4_or_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_v6, 0);
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_v6, 1);
+
+  /* IPv6-only. */
+  memset(&mock_options, 0, sizeof(or_options_t));
+  mock_options.ClientUseIPv4 = 0;
+  mock_options.ClientUseIPv6 = 1;
+
+  CHECK_CHOSEN_ADDR_LS(lspecs, 0, 1, ipv6_or_ap);
+  CHECK_CHOSEN_ADDR_LS(lspecs, 1, 1, ipv6_or_ap);
+
+  CHECK_CHOSEN_ADDR_LS(lspecs_v4, 0, 0, null_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 1, ipv6_or_ap);
+  CHECK_HS_EXTEND_INFO_ADDR_LS(lspecs, 0, ipv4_or_ap);
+
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_v4, 1);
+  CHECK_HS_EXTEND_INFO_ADDR_LS_EXPECT_NULL(lspecs_v6, 0);
+
+  smartlist_free(lspecs_v4);
+  smartlist_free(lspecs_v6);
+
+  SMARTLIST_FOREACH(lspecs, link_specifier_t *, lspec, \
+                    link_specifier_free(lspec)); \
+  smartlist_free(lspecs);
 
  done:
   UNMOCK(get_options);

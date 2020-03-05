@@ -74,4 +74,4 @@ struct socks_request_t {
   uint8_t socks5_atyp; /* SOCKS5 address type */
 };
 
-#endif
+#endif /* !defined(SOCKS_REQUEST_ST_H) */

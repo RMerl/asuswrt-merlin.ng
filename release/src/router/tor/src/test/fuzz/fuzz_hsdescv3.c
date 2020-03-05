@@ -35,16 +35,21 @@ mock_rsa_ed25519_crosscert_check(const uint8_t *crosscert,
 
 static size_t
 mock_decrypt_desc_layer(const hs_descriptor_t *desc,
-                        const uint8_t *encrypted_blob,
-                        size_t encrypted_blob_size,
                         const uint8_t *descriptor_cookie,
-                        int is_superencrypted_layer,
+                        bool is_superencrypted_layer,
                         char **decrypted_out)
 {
   (void)is_superencrypted_layer;
   (void)desc;
   (void)descriptor_cookie;
   const size_t overhead = HS_DESC_ENCRYPTED_SALT_LEN + DIGEST256_LEN;
+  const uint8_t *encrypted_blob = (is_superencrypted_layer)
+    ? desc->plaintext_data.superencrypted_blob
+    : desc->superencrypted_data.encrypted_blob;
+  size_t encrypted_blob_size = (is_superencrypted_layer)
+    ? desc->plaintext_data.superencrypted_blob_size
+    : desc->superencrypted_data.encrypted_blob_size;
+
   if (encrypted_blob_size < overhead)
     return 0;
   *decrypted_out = tor_memdup_nulterm(

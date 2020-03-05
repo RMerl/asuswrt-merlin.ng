@@ -42,14 +42,20 @@ dir_common_authority_pk_init(authority_cert_t **cert1,
 {
   /* Parse certificates and keys. */
   authority_cert_t *cert;
-  cert = authority_cert_parse_from_string(AUTHORITY_CERT_1, NULL);
+  cert = authority_cert_parse_from_string(AUTHORITY_CERT_1,
+                                          strlen(AUTHORITY_CERT_1),
+                                          NULL);
   tt_assert(cert);
   tt_assert(cert->identity_key);
   *cert1 = cert;
   tt_assert(*cert1);
-  *cert2 = authority_cert_parse_from_string(AUTHORITY_CERT_2, NULL);
+  *cert2 = authority_cert_parse_from_string(AUTHORITY_CERT_2,
+                                            strlen(AUTHORITY_CERT_2),
+                                            NULL);
   tt_assert(*cert2);
-  *cert3 = authority_cert_parse_from_string(AUTHORITY_CERT_3, NULL);
+  *cert3 = authority_cert_parse_from_string(AUTHORITY_CERT_3,
+                                            strlen(AUTHORITY_CERT_3),
+                                            NULL);
   tt_assert(*cert3);
   *sign_skey_1 = crypto_pk_new();
   *sign_skey_2 = crypto_pk_new();
@@ -266,7 +272,9 @@ dir_common_add_rs_and_parse(networkstatus_t *vote, networkstatus_t **vote_out,
   /* dump the vote and try to parse it. */
   v_text = format_networkstatus_vote(sign_skey, vote);
   tt_assert(v_text);
-  *vote_out = networkstatus_parse_vote_from_string(v_text, NULL, NS_TYPE_VOTE);
+  *vote_out = networkstatus_parse_vote_from_string(v_text,
+                                                   strlen(v_text),
+                                                   NULL, NS_TYPE_VOTE);
 
  done:
   if (v_text)
@@ -424,4 +432,3 @@ dir_common_construct_vote_3(networkstatus_t **vote, authority_cert_t *cert,
 
   return 0;
 }
-

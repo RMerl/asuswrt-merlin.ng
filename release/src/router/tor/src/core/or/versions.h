@@ -26,6 +26,8 @@ typedef enum version_status_t {
   VS_UNKNOWN, /**< We have no idea. */
 } version_status_t;
 
+time_t tor_get_approx_release_date(void);
+
 version_status_t tor_version_is_obsolete(const char *myversion,
                                          const char *versionlist);
 int tor_version_parse_platform(const char *platform,
@@ -40,5 +42,7 @@ void sort_version_list(smartlist_t *lst, int remove_duplicates);
 void summarize_protover_flags(protover_summary_flags_t *out,
                               const char *protocols,
                               const char *version);
+
+void protover_summary_cache_free_all(void);
 
 #endif /* !defined(TOR_VERSIONS_H) */

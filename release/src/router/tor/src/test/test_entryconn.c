@@ -11,7 +11,7 @@
 
 #include "feature/client/addressmap.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_edge.h"
 #include "feature/nodelist/nodelist.h"

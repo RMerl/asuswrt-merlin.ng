@@ -29,7 +29,7 @@ authdir_mode_v3(const or_options_t *options)
 
 #define have_module_dirauth() (1)
 
-#else /* HAVE_MODULE_DIRAUTH */
+#else /* !defined(HAVE_MODULE_DIRAUTH) */
 
 #define authdir_mode(options) (((void)(options)),0)
 #define authdir_mode_handles_descs(options,purpose) \
@@ -41,6 +41,6 @@ authdir_mode_v3(const or_options_t *options)
 
 #define have_module_dirauth() (0)
 
-#endif /* HAVE_MODULE_DIRAUTH */
+#endif /* defined(HAVE_MODULE_DIRAUTH) */
 
-#endif /* TOR_MODE_H */
+#endif /* !defined(TOR_DIRAUTH_MODE_H) */

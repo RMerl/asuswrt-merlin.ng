@@ -12,6 +12,8 @@
 #include "core/or/circuit_st.h"
 #include "core/or/crypt_path_st.h"
 
+#include "lib/evloop/token_bucket.h"
+
 struct onion_queue_t;
 
 /** An or_circuit_t holds information needed to implement a circuit at an
@@ -33,11 +35,6 @@ struct or_circuit_t {
   cell_queue_t p_chan_cells;
   /** The channel that is previous in this circuit. */
   channel_t *p_chan;
-  /**
-   * Circuit mux associated with p_chan to which this circuit is attached;
-   * NULL if we have no p_chan.
-   */
-  circuitmux_t *p_mux;
   /** Linked list of Exit streams associated with this circuit. */
   edge_connection_t *n_streams;
   /** Linked list of Exit streams associated with this circuit that are
@@ -74,7 +71,16 @@ struct or_circuit_t {
    * exit-ward queues of this circuit; reset every time when writing
    * buffer stats to disk. */
   uint64_t total_cell_waiting_time;
+
+  /** If set, the DoS defenses are enabled on this circuit meaning that the
+   * introduce2_bucket is initialized and used. */
+  unsigned int introduce2_dos_defense_enabled : 1;
+
+  /** INTRODUCE2 cell bucket controlling how much can go on this circuit. Only
+   * used if this is a service introduction circuit at the intro point
+   * (purpose = CIRCUIT_PURPOSE_INTRO_POINT). */
+  token_bucket_ctr_t introduce2_bucket;
 };
 
-#endif
+#endif /* !defined(OR_CIRCUIT_ST_H) */
 

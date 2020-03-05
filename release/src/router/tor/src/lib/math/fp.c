@@ -75,7 +75,7 @@ clamp_double_to_int64(double number)
 */
 #define PROBLEMATIC_FLOAT_CONVERSION_WARNING
 DISABLE_GCC_WARNING(float-conversion)
-#endif /* defined(MINGW_ANY) && GCC_VERSION >= 409 */
+#endif /* (defined(MINGW_ANY)||defined(__FreeBSD__)) && GCC_VERSION >= 409 */
 
 /*
   With clang 4.0 we apparently run into "double promotion" warnings here,
@@ -114,6 +114,26 @@ DISABLE_GCC_WARNING(double-promotion)
   /* Handle infinities and finite numbers with magnitude >= 2^63. */
   return signbit(number) ? INT64_MIN : INT64_MAX;
 
+#ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
+ENABLE_GCC_WARNING(double-promotion)
+#endif
+#ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
+ENABLE_GCC_WARNING(float-conversion)
+#endif
+}
+
+/* isinf() wrapper for tor */
+int
+tor_isinf(double x)
+{
+  /* Same as above, work around the "double promotion" warnings */
+#ifdef PROBLEMATIC_FLOAT_CONVERSION_WARNING
+DISABLE_GCC_WARNING(float-conversion)
+#endif
+#ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
+DISABLE_GCC_WARNING(double-promotion)
+#endif
+  return isinf(x);
 #ifdef PROBLEMATIC_DOUBLE_PROMOTION_WARNING
 ENABLE_GCC_WARNING(double-promotion)
 #endif

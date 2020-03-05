@@ -28,4 +28,4 @@ int32_t tor_weak_random_range(tor_weak_rng_t *rng, int32_t top);
  * <b>n</b> */
 #define tor_weak_random_one_in_n(rng, n) (0==tor_weak_random_range((rng),(n)))
 
-#endif
+#endif /* !defined(TOR_WEAKRNG_H) */

@@ -74,5 +74,5 @@ struct or_handshake_state_t {
   or_handshake_certs_t *certs;
 };
 
-#endif
+#endif /* !defined(OR_HANDSHAKE_STATE_ST) */
 

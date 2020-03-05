@@ -217,8 +217,6 @@ uint64_t hs_get_time_period_num(time_t now);
 uint64_t hs_get_next_time_period_num(time_t now);
 time_t hs_get_start_time_of_next_time_period(time_t now);
 
-link_specifier_t *hs_link_specifier_dup(const link_specifier_t *lspec);
-
 MOCK_DECL(int, hs_in_period_between_tp_and_srv,
           (const networkstatus_t *consensus, time_t now));
 
@@ -243,7 +241,8 @@ void hs_get_responsible_hsdirs(const struct ed25519_public_key_t *blinded_pk,
                               int use_second_hsdir_index,
                               int for_fetching, smartlist_t *responsible_dirs);
 routerstatus_t *hs_pick_hsdir(smartlist_t *responsible_dirs,
-                              const char *req_key_str);
+                              const char *req_key_str,
+                              bool *is_rate_limited_out);
 
 time_t hs_hsdir_requery_period(const or_options_t *options);
 time_t hs_lookup_last_hid_serv_request(routerstatus_t *hs_dir,
@@ -261,6 +260,8 @@ void hs_dec_rdv_stream_counter(origin_circuit_t *circ);
 extend_info_t *hs_get_extend_info_from_lspecs(const smartlist_t *lspecs,
                           const struct curve25519_public_key_t *onion_key,
                           int direct_conn);
+
+link_specifier_t *link_specifier_dup(const link_specifier_t *src);
 
 #ifdef HS_COMMON_PRIVATE
 

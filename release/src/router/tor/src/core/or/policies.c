@@ -29,7 +29,9 @@
 #include "feature/relay/routermode.h"
 #include "lib/geoip/geoip.h"
 #include "ht.h"
+#include "lib/crypt_ops/crypto_rand.h"
 #include "lib/encoding/confline.h"
+#include "trunnel/ed25519_cert.h"
 
 #include "core/or/addr_policy_st.h"
 #include "feature/dirclient/dir_server_st.h"
@@ -461,7 +463,8 @@ fascist_firewall_use_ipv6(const or_options_t *options)
    * ClientPreferIPv6DirPort is deprecated, but check it anyway. */
   return (options->ClientUseIPv6 == 1 || options->ClientUseIPv4 == 0 ||
           options->ClientPreferIPv6ORPort == 1 ||
-          options->ClientPreferIPv6DirPort == 1 || options->UseBridges == 1);
+          options->ClientPreferIPv6DirPort == 1 || options->UseBridges == 1 ||
+          options->ClientAutoIPv6ORPort == 1);
 }
 
 /** Do we prefer to connect to IPv6, ignoring ClientPreferIPv6ORPort and
@@ -488,6 +491,15 @@ fascist_firewall_prefer_ipv6_impl(const or_options_t *options)
   return -1;
 }
 
+/* Choose whether we prefer IPv4 or IPv6 by randomly choosing an address
+ * family. Return 0 for IPv4, and 1 for IPv6. */
+MOCK_IMPL(int,
+fascist_firewall_rand_prefer_ipv6_addr, (void))
+{
+  /* TODO: Check for failures, and infer our preference based on this. */
+  return crypto_rand_int(2);
+}
+
 /** Do we prefer to connect to IPv6 ORPorts?
  * Use node_ipv6_or_preferred() whenever possible: it supports bridge client
  * per-node IPv6 preferences.
@@ -502,7 +514,10 @@ fascist_firewall_prefer_ipv6_orport(const or_options_t *options)
   }
 
   /* We can use both IPv4 and IPv6 - which do we prefer? */
-  if (options->ClientPreferIPv6ORPort == 1) {
+  if (options->ClientAutoIPv6ORPort == 1) {
+    /* If ClientAutoIPv6ORPort is 1, we prefer IPv4 or IPv6 at random. */
+    return fascist_firewall_rand_prefer_ipv6_addr();
+  } else if (options->ClientPreferIPv6ORPort == 1) {
     return 1;
   }
 
@@ -1001,6 +1016,83 @@ fascist_firewall_choose_address_rs(const routerstatus_t *rs,
   }
 }
 
+/** Like fascist_firewall_choose_address_base(), but takes in a smartlist
+ * <b>lspecs</b> consisting of one or more link specifiers. We assume
+ * fw_connection is FIREWALL_OR_CONNECTION as link specifiers cannot
+ * contain DirPorts.
+ */
+void
+fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
+                                   int pref_only, tor_addr_port_t* ap)
+{
+  int have_v4 = 0, have_v6 = 0;
+  uint16_t port_v4 = 0, port_v6 = 0;
+  tor_addr_t addr_v4, addr_v6;
+
+  tor_assert(ap);
+
+  if (lspecs == NULL) {
+    log_warn(LD_BUG, "Unknown or missing link specifiers");
+    return;
+  }
+  if (smartlist_len(lspecs) == 0) {
+    log_warn(LD_PROTOCOL, "Link specifiers are empty");
+    return;
+  }
+
+  tor_addr_make_null(&ap->addr, AF_UNSPEC);
+  ap->port = 0;
+
+  tor_addr_make_null(&addr_v4, AF_INET);
+  tor_addr_make_null(&addr_v6, AF_INET6);
+
+  SMARTLIST_FOREACH_BEGIN(lspecs, const link_specifier_t *, ls) {
+    switch (link_specifier_get_ls_type(ls)) {
+    case LS_IPV4:
+      /* Skip if we already seen a v4. */
+      if (have_v4) continue;
+      tor_addr_from_ipv4h(&addr_v4,
+                          link_specifier_get_un_ipv4_addr(ls));
+      port_v4 = link_specifier_get_un_ipv4_port(ls);
+      have_v4 = 1;
+      break;
+    case LS_IPV6:
+      /* Skip if we already seen a v6, or deliberately skip it if we're not a
+       * direct connection. */
+      if (have_v6) continue;
+      tor_addr_from_ipv6_bytes(&addr_v6,
+          (const char *) link_specifier_getconstarray_un_ipv6_addr(ls));
+      port_v6 = link_specifier_get_un_ipv6_port(ls);
+      have_v6 = 1;
+      break;
+    default:
+      /* Ignore unknown. */
+      break;
+    }
+  } SMARTLIST_FOREACH_END(ls);
+
+  /* If we don't have IPv4 or IPv6 in link specifiers, log a bug and return. */
+  if (!have_v4 && !have_v6) {
+    if (!have_v6) {
+      log_warn(LD_PROTOCOL, "None of our link specifiers have IPv4 or IPv6");
+    } else {
+      log_warn(LD_PROTOCOL, "None of our link specifiers have IPv4");
+    }
+    return;
+  }
+
+  /* Here, don't check for DirPorts as link specifiers are only used for
+   * ORPorts. */
+  const or_options_t *options = get_options();
+  int pref_ipv6 = fascist_firewall_prefer_ipv6_orport(options);
+  /* Assume that the DirPorts are zero as link specifiers only use ORPorts. */
+  fascist_firewall_choose_address_base(&addr_v4, port_v4, 0,
+                                       &addr_v6, port_v6, 0,
+                                       FIREWALL_OR_CONNECTION,
+                                       pref_only, pref_ipv6,
+                                       ap);
+}
+
 /** Like fascist_firewall_choose_address_base(), but takes <b>node</b>, and
  * looks up the node's IPv6 preference rather than taking an argument
  * for pref_ipv6. */
@@ -1150,6 +1242,15 @@ authdir_policy_badexit_address(uint32_t addr, uint16_t port)
 #define REJECT(arg) \
   STMT_BEGIN *msg = tor_strdup(arg); goto err; STMT_END
 
+/** Check <b>or_options</b> to determine whether or not we are using the
+ * default options for exit policy. Return true if so, false otherwise. */
+static int
+policy_using_default_exit_options(const or_options_t *or_options)
+{
+  return (or_options->ExitPolicy == NULL && or_options->ExitRelay == -1 &&
+          or_options->ReducedExitPolicy == 0 && or_options->IPv6Exit == 0);
+}
+
 /** Config helper: If there's any problem with the policy configuration
  * options in <b>options</b>, return -1 and set <b>msg</b> to a newly
  * allocated description of the error. Else return 0. */
@@ -1168,9 +1269,8 @@ validate_addr_policies(const or_options_t *options, char **msg)
 
   static int warned_about_nonexit = 0;
 
-  if (public_server_mode(options) &&
-      !warned_about_nonexit && options->ExitPolicy == NULL &&
-      options->ExitRelay == -1 && options->ReducedExitPolicy == 0) {
+  if (public_server_mode(options) && !warned_about_nonexit &&
+      policy_using_default_exit_options(options)) {
     warned_about_nonexit = 1;
     log_notice(LD_CONFIG, "By default, Tor does not run as an exit relay. "
                "If you want to be an exit relay, "
@@ -2127,9 +2227,9 @@ policies_parse_exit_policy_from_options(const or_options_t *or_options,
   int rv = 0;
 
   /* Short-circuit for non-exit relays, or for relays where we didn't specify
-   * ExitPolicy or ReducedExitPolicy and ExitRelay is auto. */
-  if (or_options->ExitRelay == 0 || (or_options->ExitPolicy == NULL &&
-      or_options->ExitRelay == -1 && or_options->ReducedExitPolicy == 0)) {
+   * ExitPolicy or ReducedExitPolicy or IPv6Exit and ExitRelay is auto. */
+  if (or_options->ExitRelay == 0 ||
+      policy_using_default_exit_options(or_options)) {
     append_exit_policy_string(result, "reject *4:*");
     append_exit_policy_string(result, "reject *6:*");
     return 0;
@@ -2706,7 +2806,7 @@ parse_short_policy(const char *summary)
   int is_accept;
   int n_entries;
   short_policy_entry_t entries[MAX_EXITPOLICY_SUMMARY_LEN]; /* overkill */
-  const char *next;
+  char *next;
 
   if (!strcmpstart(summary, "accept ")) {
     is_accept = 1;
@@ -2721,57 +2821,56 @@ parse_short_policy(const char *summary)
 
   n_entries = 0;
   for ( ; *summary; summary = next) {
-    const char *comma = strchr(summary, ',');
-    unsigned low, high;
-    char dummy;
-    char ent_buf[32];
-    size_t len;
-
-    next = comma ? comma+1 : strchr(summary, '\0');
-    len = comma ? (size_t)(comma - summary) : strlen(summary);
-
     if (n_entries == MAX_EXITPOLICY_SUMMARY_LEN) {
       log_fn(LOG_PROTOCOL_WARN, LD_DIR, "Impossibly long policy summary %s",
              escaped(orig_summary));
       return NULL;
     }
 
-    if (! TOR_ISDIGIT(*summary) || len > (sizeof(ent_buf)-1)) {
-      /* unrecognized entry format. skip it. */
-      continue;
-    }
-    if (len < 1) {
-      /* empty; skip it. */
-      /* XXX This happens to be unreachable, since if len==0, then *summary is
-       * ',' or '\0', and the TOR_ISDIGIT test above would have failed. */
-      continue;
+    unsigned low, high;
+    int ok;
+    low = (unsigned) tor_parse_ulong(summary, 10, 1, 65535, &ok, &next);
+    if (!ok) {
+      if (! TOR_ISDIGIT(*summary) || *summary == ',') {
+        /* Unrecognized format: skip it. */
+        goto skip_ent;
+      } else {
+        goto bad_ent;
+      }
     }
 
-    memcpy(ent_buf, summary, len);
-    ent_buf[len] = '\0';
+    switch (*next) {
+      case ',':
+        ++next;
+        /* fall through */
+      case '\0':
+        high = low;
+        break;
+      case '-':
+        high = (unsigned) tor_parse_ulong(next+1, 10, low, 65535, &ok, &next);
+        if (!ok)
+          goto bad_ent;
 
-    if (tor_sscanf(ent_buf, "%u-%u%c", &low, &high, &dummy) == 2) {
-      if (low<1 || low>65535 || high<1 || high>65535 || low>high) {
-        log_fn(LOG_PROTOCOL_WARN, LD_DIR,
-               "Found bad entry in policy summary %s", escaped(orig_summary));
-        return NULL;
-      }
-    } else if (tor_sscanf(ent_buf, "%u%c", &low, &dummy) == 1) {
-      if (low<1 || low>65535) {
-        log_fn(LOG_PROTOCOL_WARN, LD_DIR,
-               "Found bad entry in policy summary %s", escaped(orig_summary));
-        return NULL;
-      }
-      high = low;
-    } else {
-      log_fn(LOG_PROTOCOL_WARN, LD_DIR,"Found bad entry in policy summary %s",
-             escaped(orig_summary));
-      return NULL;
+        if (*next == ',')
+          ++next;
+        else if (*next != '\0')
+          goto bad_ent;
+
+        break;
+      default:
+        goto bad_ent;
     }
 
     entries[n_entries].min_port = low;
     entries[n_entries].max_port = high;
     n_entries++;
+
+    continue;
+  skip_ent:
+    next = strchr(next, ',');
+    if (!next)
+      break;
+    ++next;
   }
 
   if (n_entries == 0) {
@@ -2792,6 +2891,11 @@ parse_short_policy(const char *summary)
   result->n_entries = n_entries;
   memcpy(result->entries, entries, sizeof(short_policy_entry_t)*n_entries);
   return result;
+
+ bad_ent:
+  log_fn(LOG_PROTOCOL_WARN, LD_DIR,"Found bad entry in policy summary %s",
+         escaped(orig_summary));
+  return NULL;
 }
 
 /** Write <b>policy</b> back out into a string. */

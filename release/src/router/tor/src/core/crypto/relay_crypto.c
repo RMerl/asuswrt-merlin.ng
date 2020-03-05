@@ -6,12 +6,14 @@
 
 #include "core/or/or.h"
 #include "core/or/circuitlist.h"
+#include "core/or/crypt_path.h"
 #include "app/config/config.h"
 #include "lib/crypt_ops/crypto_cipher.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "core/crypto/hs_ntor.h" // for HS_NTOR_KEY_EXPANSION_KDF_OUT_LEN
 #include "core/or/relay.h"
 #include "core/crypto/relay_crypto.h"
+#include "core/or/sendme.h"
 
 #include "core/or/cell_st.h"
 #include "core/or/or_circuit_st.h"
@@ -20,7 +22,7 @@
 /** Update digest from the payload of cell. Assign integrity part to
  * cell.
  */
-static void
+void
 relay_set_digest(crypto_digest_t *digest, cell_t *cell)
 {
   char integrity[4];
@@ -84,10 +86,37 @@ relay_digest_matches(crypto_digest_t *digest, cell_t *cell)
  *
  * Note that we use the same operation for encrypting and for decrypting.
  */
-static void
+void
 relay_crypt_one_payload(crypto_cipher_t *cipher, uint8_t *in)
 {
   crypto_cipher_crypt_inplace(cipher, (char*) in, CELL_PAYLOAD_SIZE);
+}
+
+/** Return the sendme_digest within the <b>crypto</b> object. */
+uint8_t *
+relay_crypto_get_sendme_digest(relay_crypto_t *crypto)
+{
+  tor_assert(crypto);
+  return crypto->sendme_digest;
+}
+
+/** Record the cell digest, indicated by is_foward_digest or not, as the
+ * SENDME cell digest. */
+void
+relay_crypto_record_sendme_digest(relay_crypto_t *crypto,
+                                  bool is_foward_digest)
+{
+  struct crypto_digest_t *digest;
+
+  tor_assert(crypto);
+
+  digest = crypto->b_digest;
+  if (is_foward_digest) {
+    digest = crypto->f_digest;
+  }
+
+  crypto_digest_get_digest(digest, (char *) crypto->sendme_digest,
+                           sizeof(crypto->sendme_digest));
 }
 
 /** Do the appropriate en/decryptions for <b>cell</b> arriving on
@@ -134,12 +163,12 @@ relay_decrypt_cell(circuit_t *circ, cell_t *cell,
         tor_assert(thishop);
 
         /* decrypt one layer */
-        relay_crypt_one_payload(thishop->crypto.b_crypto, cell->payload);
+        cpath_crypt_cell(thishop, cell->payload, true);
 
         relay_header_unpack(&rh, cell->payload);
         if (rh.recognized == 0) {
           /* it's possibly recognized. have to check digest to be sure. */
-          if (relay_digest_matches(thishop->crypto.b_digest, cell)) {
+          if (relay_digest_matches(cpath_get_incoming_digest(thishop), cell)) {
             *recognized = 1;
             *layer_hint = thishop;
             return 0;
@@ -187,14 +216,17 @@ relay_encrypt_cell_outbound(cell_t *cell,
                             crypt_path_t *layer_hint)
 {
   crypt_path_t *thishop; /* counter for repeated crypts */
-  relay_set_digest(layer_hint->crypto.f_digest, cell);
+  cpath_set_cell_forward_digest(layer_hint, cell);
+
+  /* Record cell digest as the SENDME digest if need be. */
+  sendme_record_sending_cell_digest(TO_CIRCUIT(circ), layer_hint);
 
   thishop = layer_hint;
   /* moving from farthest to nearest hop */
   do {
     tor_assert(thishop);
     log_debug(LD_OR,"encrypting a layer of the relay cell.");
-    relay_crypt_one_payload(thishop->crypto.f_crypto, cell->payload);
+    cpath_crypt_cell(thishop, cell->payload, false);
 
     thishop = thishop->prev;
   } while (thishop != circ->cpath->prev);
@@ -212,6 +244,10 @@ relay_encrypt_cell_inbound(cell_t *cell,
                            or_circuit_t *or_circ)
 {
   relay_set_digest(or_circ->crypto.b_digest, cell);
+
+  /* Record cell digest as the SENDME digest if need be. */
+  sendme_record_sending_cell_digest(TO_CIRCUIT(or_circ), NULL);
+
   /* encrypt one layer */
   relay_crypt_one_payload(or_circ->crypto.b_crypto, cell->payload);
 }

@@ -88,6 +88,9 @@
 ## yourself to make this work.
 #ORPort 443 NoListen
 #ORPort 127.0.0.1:9090 NoAdvertise
+## If you want to listen on IPv6 your numeric address must be explictly
+## between square brackets as follows. You must also listen on IPv4.
+#ORPort [2001:DB8::1]:9050
 
 ## The IP address or full DNS name for incoming connections to your
 ## relay. Leave commented out and Tor will guess.
@@ -174,13 +177,11 @@
 
 ## Uncomment this if you want your relay to be an exit, with the default
 ## exit policy (or whatever exit policy you set below).
-## (If ReducedExitPolicy or ExitPolicy are set, relays are exits.
-## If neither exit policy option is set, relays are non-exits.)
+## (If ReducedExitPolicy, ExitPolicy, or IPv6Exit are set, relays are exits.
+## If none of these options are set, relays are non-exits.)
 #ExitRelay 1
 
 ## Uncomment this if you want your relay to allow IPv6 exit traffic.
-## You must also set ExitRelay, ReducedExitPolicy, or ExitPolicy to make your
-## relay into an exit.
 ## (Relays do not allow any exit traffic by default.)
 #IPv6Exit 1
 

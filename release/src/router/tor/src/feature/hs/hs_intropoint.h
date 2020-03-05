@@ -57,6 +57,9 @@ STATIC int handle_introduce1(or_circuit_t *client_circ,
                              const uint8_t *request, size_t request_len);
 STATIC int validate_introduce1_parsed_cell(const trn_cell_introduce1_t *cell);
 STATIC int circuit_is_suitable_for_introduce1(const or_circuit_t *circ);
+STATIC bool cell_dos_extension_parameters_are_valid(
+                                          uint64_t intro2_rate_per_sec,
+                                          uint64_t intro2_burst_per_sec);
 
 #endif /* defined(HS_INTROPOINT_PRIVATE) */
 

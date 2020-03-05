@@ -104,4 +104,4 @@ struct sockaddr_in6 {
 };
 #endif /* !defined(HAVE_STRUCT_SOCKADDR_IN6) */
 
-#endif /* TOR_INADDR_ST_H */
+#endif /* !defined(TOR_INADDR_ST_H) */

@@ -25,12 +25,12 @@ struct ssl_ctx_st;
 struct ssl_session_st;
 typedef struct ssl_ctx_st tor_tls_context_impl_t;
 typedef struct ssl_st tor_tls_impl_t;
-#else
+#else /* !defined(ENABLE_OPENSSL) */
 struct PRFileDesc;
 typedef struct PRFileDesc tor_tls_context_impl_t;
 typedef struct PRFileDesc tor_tls_impl_t;
-#endif
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
+#endif /* defined(TORTLS_PRIVATE) */
 
 struct tor_x509_cert_t;
 
@@ -144,9 +144,9 @@ void check_no_tls_errors_(const char *fname, int line);
 
 void tor_tls_log_one_error(tor_tls_t *tls, unsigned long err,
                            int severity, int domain, const char *doing);
-#else
+#else /* !defined(ENABLE_OPENSSL) */
 #define check_no_tls_errors() STMT_NIL
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 int tor_tls_get_my_certs(int server,
                          const struct tor_x509_cert_t **link_cert_out,

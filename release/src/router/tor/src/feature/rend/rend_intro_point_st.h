@@ -73,4 +73,4 @@ struct rend_intro_point_t {
   unsigned int circuit_established:1;
 };
 
-#endif
+#endif /* !defined(REND_INTRO_POINT_ST_H) */

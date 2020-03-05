@@ -26,5 +26,5 @@ struct extrainfo_t {
   size_t pending_sig_len;
 };
 
-#endif
+#endif /* !defined(EXTRAINFO_ST_H) */
 

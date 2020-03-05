@@ -15,4 +15,4 @@
 
 ssize_t tor_getpass(const char *prompt, char *output, size_t buflen);
 
-#endif
+#endif /* !defined(TOR_GETPASS_H) */

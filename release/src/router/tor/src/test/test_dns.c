@@ -1,6 +1,7 @@
 /* Copyright (c) 2015-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
+#include "orconfig.h"
 #include "core/or/or.h"
 #include "test/test.h"
 
@@ -13,8 +14,70 @@
 
 #include "core/or/edge_connection_st.h"
 #include "core/or/or_circuit_st.h"
+#include "app/config/or_options_st.h"
+#include "app/config/config.h"
+
+#include <event2/event.h>
+#include <event2/dns.h>
 
 #define NS_MODULE dns
+
+#ifdef HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR
+#define NS_SUBMODULE configure_nameservers_fallback
+
+static or_options_t options = {
+  .ORPort_set = 1,
+};
+
+static const or_options_t *
+mock_get_options(void)
+{
+  return &options;
+}
+
+static void
+NS(test_main)(void *arg)
+{
+  (void)arg;
+  tor_addr_t *nameserver_addr = NULL;
+
+  MOCK(get_options, mock_get_options);
+
+  options.ServerDNSResolvConfFile = (char *)"no_such_file!!!";
+
+  dns_init(); // calls configure_nameservers()
+
+  tt_int_op(number_of_configured_nameservers(), OP_EQ, 1);
+
+  nameserver_addr = configured_nameserver_address(0);
+
+  tt_assert(tor_addr_family(nameserver_addr) == AF_INET);
+  tt_assert(tor_addr_eq_ipv4h(nameserver_addr, 0x7f000001));
+
+#ifndef _WIN32
+  tor_free(nameserver_addr);
+
+  options.ServerDNSResolvConfFile = (char *)"/dev/null";
+
+  dns_init();
+
+  tt_int_op(number_of_configured_nameservers(), OP_EQ, 1);
+
+  nameserver_addr = configured_nameserver_address(0);
+
+  tt_assert(tor_addr_family(nameserver_addr) == AF_INET);
+  tt_assert(tor_addr_eq_ipv4h(nameserver_addr, 0x7f000001));
+#endif /* !defined(_WIN32) */
+
+  UNMOCK(get_options);
+
+ done:
+  tor_free(nameserver_addr);
+  return;
+}
+
+#undef NS_SUBMODULE
+#endif /* defined(HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR) */
 
 #define NS_SUBMODULE clip_ttl
 
@@ -736,6 +799,9 @@ NS(test_main)(void *arg)
 #undef NS_SUBMODULE
 
 struct testcase_t dns_tests[] = {
+#ifdef HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR
+   TEST_CASE(configure_nameservers_fallback),
+#endif
    TEST_CASE(clip_ttl),
    TEST_CASE(resolve),
    TEST_CASE_ASPECT(resolve_impl, addr_is_ip_no_need_to_resolve),

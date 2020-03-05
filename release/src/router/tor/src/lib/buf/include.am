@@ -1,0 +1,19 @@
+
+noinst_LIBRARIES += src/lib/libtor-buf.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-buf-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_buf_a_SOURCES =			\
+	src/lib/buf/buffers.c
+
+src_lib_libtor_buf_testing_a_SOURCES = \
+	$(src_lib_libtor_buf_a_SOURCES)
+src_lib_libtor_buf_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_buf_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=				\
+	src/lib/buf/buffers.h

@@ -20,6 +20,27 @@
 #include <sys/time.h>
 #endif
 
+#ifdef TOR_COVERAGE
+/* For coverage builds, we use a slower definition of these macros without
+ * branches, to make coverage consistent. */
+#undef timeradd
+#undef timersub
+#define timeradd(tv1,tv2,tvout) \
+  do {                          \
+    (tvout)->tv_sec = (tv1)->tv_sec + (tv2)->tv_sec;    \
+    (tvout)->tv_usec = (tv1)->tv_usec + (tv2)->tv_usec; \
+    (tvout)->tv_sec += (tvout)->tv_usec / 1000000;      \
+    (tvout)->tv_usec %= 1000000;                        \
+  } while (0)
+#define timersub(tv1,tv2,tvout) \
+  do {                          \
+    (tvout)->tv_sec = (tv1)->tv_sec - (tv2)->tv_sec - 1;            \
+    (tvout)->tv_usec = (tv1)->tv_usec - (tv2)->tv_usec + 1000000;   \
+    (tvout)->tv_sec += (tvout)->tv_usec / 1000000;                  \
+    (tvout)->tv_usec %= 1000000;                                    \
+  } while (0)
+#endif /* defined(TOR_COVERAGE) */
+
 #ifndef timeradd
 /** Replacement for timeradd on platforms that do not have it: sets tvout to
  * the sum of tv1 and tv2. */
@@ -62,4 +83,4 @@
    ((tv1)->tv_sec op (tv2)->tv_sec))
 #endif /* !defined(timercmp) */
 
-#endif
+#endif /* !defined(TOR_TIMEVAL_H) */

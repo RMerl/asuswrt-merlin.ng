@@ -32,7 +32,7 @@
 DISABLE_GCC_WARNING(redundant-decls)
 #include <openssl/dh.h>
 ENABLE_GCC_WARNING(redundant-decls)
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 /** Run unit tests for Diffie-Hellman functionality. */
 static void
@@ -190,7 +190,7 @@ test_crypto_dh(void *arg)
     DH_get0_key(dh4, &pk, &sk);
 #else
     pk = dh4->pub_key;
-#endif
+#endif /* defined(OPENSSL_1_1_API) */
     tt_assert(pk);
     tt_int_op(BN_num_bytes(pk), OP_LE, DH1024_KEY_LEN);
     tt_int_op(BN_num_bytes(pk), OP_GT, 0);
@@ -207,7 +207,7 @@ test_crypto_dh(void *arg)
     tt_int_op(s1len, OP_GT, 0);
     tt_mem_op(s1, OP_EQ, s2, s1len);
   }
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
  done:
   crypto_dh_free(dh1);
@@ -219,7 +219,7 @@ test_crypto_dh(void *arg)
     DH_free(dh4);
   if (pubkey_tmp)
     BN_free(pubkey_tmp);
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 }
 
 static void
@@ -248,172 +248,10 @@ test_crypto_openssl_version(void *arg)
   tt_int_op(a, OP_GE, 0);
   tt_int_op(b, OP_GE, 0);
   tt_int_op(c, OP_GE, 0);
-#endif
+#endif /* defined(ENABLE_NSS) */
 
  done:
   ;
-}
-
-/** Run unit tests for our random number generation function and its wrappers.
- */
-static void
-test_crypto_rng(void *arg)
-{
-  int i, j, allok;
-  char data1[100], data2[100];
-  double d;
-  char *h=NULL;
-
-  /* Try out RNG. */
-  (void)arg;
-  tt_assert(! crypto_seed_rng());
-  crypto_rand(data1, 100);
-  crypto_rand(data2, 100);
-  tt_mem_op(data1,OP_NE, data2,100);
-  allok = 1;
-  for (i = 0; i < 100; ++i) {
-    uint64_t big;
-    char *host;
-    j = crypto_rand_int(100);
-    if (j < 0 || j >= 100)
-      allok = 0;
-    big = crypto_rand_uint64(UINT64_C(1)<<40);
-    if (big >= (UINT64_C(1)<<40))
-      allok = 0;
-    big = crypto_rand_uint64(UINT64_C(5));
-    if (big >= 5)
-      allok = 0;
-    d = crypto_rand_double();
-    tt_assert(d >= 0);
-    tt_assert(d < 1.0);
-    host = crypto_random_hostname(3,8,"www.",".onion");
-    if (strcmpstart(host,"www.") ||
-        strcmpend(host,".onion") ||
-        strlen(host) < 13 ||
-        strlen(host) > 18)
-      allok = 0;
-    tor_free(host);
-  }
-
-  /* Make sure crypto_random_hostname clips its inputs properly. */
-  h = crypto_random_hostname(20000, 9000, "www.", ".onion");
-  tt_assert(! strcmpstart(h,"www."));
-  tt_assert(! strcmpend(h,".onion"));
-  tt_int_op(63+4+6, OP_EQ, strlen(h));
-
-  tt_assert(allok);
- done:
-  tor_free(h);
-}
-
-static void
-test_crypto_rng_range(void *arg)
-{
-  int got_smallest = 0, got_largest = 0;
-  int i;
-
-  (void)arg;
-  for (i = 0; i < 1000; ++i) {
-    int x = crypto_rand_int_range(5,9);
-    tt_int_op(x, OP_GE, 5);
-    tt_int_op(x, OP_LT, 9);
-    if (x == 5)
-      got_smallest = 1;
-    if (x == 8)
-      got_largest = 1;
-  }
-  /* These fail with probability 1/10^603. */
-  tt_assert(got_smallest);
-  tt_assert(got_largest);
-
-  got_smallest = got_largest = 0;
-  const uint64_t ten_billion = 10 * ((uint64_t)1000000000000);
-  for (i = 0; i < 1000; ++i) {
-    uint64_t x = crypto_rand_uint64_range(ten_billion, ten_billion+10);
-    tt_u64_op(x, OP_GE, ten_billion);
-    tt_u64_op(x, OP_LT, ten_billion+10);
-    if (x == ten_billion)
-      got_smallest = 1;
-    if (x == ten_billion+9)
-      got_largest = 1;
-  }
-
-  tt_assert(got_smallest);
-  tt_assert(got_largest);
-
-  const time_t now = time(NULL);
-  for (i = 0; i < 2000; ++i) {
-    time_t x = crypto_rand_time_range(now, now+60);
-    tt_i64_op(x, OP_GE, now);
-    tt_i64_op(x, OP_LT, now+60);
-    if (x == now)
-      got_smallest = 1;
-    if (x == now+59)
-      got_largest = 1;
-  }
-
-  tt_assert(got_smallest);
-  tt_assert(got_largest);
- done:
-  ;
-}
-
-static void
-test_crypto_rng_strongest(void *arg)
-{
-  const char *how = arg;
-  int broken = 0;
-
-  if (how == NULL) {
-    ;
-  } else if (!strcmp(how, "nosyscall")) {
-    break_strongest_rng_syscall = 1;
-  } else if (!strcmp(how, "nofallback")) {
-    break_strongest_rng_fallback = 1;
-  } else if (!strcmp(how, "broken")) {
-    broken = break_strongest_rng_syscall = break_strongest_rng_fallback = 1;
-  }
-
-#define N 128
-  uint8_t combine_and[N];
-  uint8_t combine_or[N];
-  int i, j;
-
-  memset(combine_and, 0xff, N);
-  memset(combine_or, 0, N);
-
-  for (i = 0; i < 100; ++i) { /* 2^-100 chances just don't happen. */
-    uint8_t output[N];
-    memset(output, 0, N);
-    if (how == NULL) {
-      /* this one can't fail. */
-      crypto_strongest_rand(output, sizeof(output));
-    } else {
-      int r = crypto_strongest_rand_raw(output, sizeof(output));
-      if (r == -1) {
-        if (broken) {
-          goto done; /* we're fine. */
-        }
-        /* This function is allowed to break, but only if it always breaks. */
-        tt_int_op(i, OP_EQ, 0);
-        tt_skip();
-      } else {
-        tt_assert(! broken);
-      }
-    }
-    for (j = 0; j < N; ++j) {
-      combine_and[j] &= output[j];
-      combine_or[j] |= output[j];
-    }
-  }
-
-  for (j = 0; j < N; ++j) {
-    tt_int_op(combine_and[j], OP_EQ, 0);
-    tt_int_op(combine_or[j], OP_EQ, 0xff);
-  }
- done:
-  ;
-#undef N
 }
 
 /** Run unit tests for our AES128 functionality */
@@ -551,7 +389,7 @@ test_crypto_aes128(void *arg)
                                    "\xff\xff\xff\xff\xff\xff\xff\xff"
                                    "\xff\xff\xff\xff\xff\xff\xff\xff");
   crypto_cipher_crypt_inplace(env1, data2, 64);
-  tt_assert(tor_mem_is_zero(data2, 64));
+  tt_assert(fast_mem_is_zero(data2, 64));
 
  done:
   tor_free(mem_op_hex_tmp);
@@ -1173,13 +1011,19 @@ test_crypto_sha3_xof(void *arg)
   crypto_xof_free(xof);
   memset(out, 0, sizeof(out));
 
+  /* Test one-function absorb/squeeze. */
+  crypto_xof(out, sizeof(out), msg, sizeof(msg));
+  test_memeq_hex(out, squeezed_hex);
+  memset(out, 0, sizeof(out));
+
   /* Test incremental absorb/squeeze. */
   xof = crypto_xof_new();
   tt_assert(xof);
   for (size_t i = 0; i < sizeof(msg); i++)
     crypto_xof_add_bytes(xof, msg + i, 1);
-  for (size_t i = 0; i < sizeof(out); i++)
+  for (size_t i = 0; i < sizeof(out); i++) {
     crypto_xof_squeeze_bytes(xof, out + i, 1);
+  }
   test_memeq_hex(out, squeezed_hex);
 
  done:
@@ -1865,13 +1709,13 @@ test_crypto_base32_decode(void *arg)
   /* Encode and decode a random string. */
   base32_encode(encoded, 96 + 1, plain, 60);
   res = base32_decode(decoded, 60, encoded, 96);
-  tt_int_op(res,OP_EQ, 0);
+  tt_int_op(res, OP_EQ, 60);
   tt_mem_op(plain,OP_EQ, decoded, 60);
   /* Encode, uppercase, and decode a random string. */
   base32_encode(encoded, 96 + 1, plain, 60);
   tor_strupper(encoded);
   res = base32_decode(decoded, 60, encoded, 96);
-  tt_int_op(res,OP_EQ, 0);
+  tt_int_op(res, OP_EQ, 60);
   tt_mem_op(plain,OP_EQ, decoded, 60);
   /* Change encoded string and decode. */
   if (encoded[0] == 'A' || encoded[0] == 'a')
@@ -1879,12 +1723,12 @@ test_crypto_base32_decode(void *arg)
   else
     encoded[0] = 'A';
   res = base32_decode(decoded, 60, encoded, 96);
-  tt_int_op(res,OP_EQ, 0);
+  tt_int_op(res, OP_EQ, 60);
   tt_mem_op(plain,OP_NE, decoded, 60);
   /* Bad encodings. */
   encoded[0] = '!';
   res = base32_decode(decoded, 60, encoded, 96);
-  tt_int_op(0, OP_GT, res);
+  tt_int_op(res, OP_LT, 0);
 
  done:
   ;
@@ -2079,7 +1923,7 @@ test_crypto_curve25519_impl(void *arg)
                                 "e0544770bc7de853b38f9100489e3e79";
   const char e1e2k_expected[] = "cd6e8269104eb5aaee886bd2071fba88"
                                 "bd13861475516bc2cd2b6e005e805064";
-#else /* !(defined(SLOW_CURVE25519_TEST)) */
+#else /* !defined(SLOW_CURVE25519_TEST) */
   const int loop_max=200;
   const char e1_expected[]    = "bc7112cde03f97ef7008cad1bdc56be3"
                                 "c6a1037d74cceb3712e9206871dcf654";
@@ -2231,7 +2075,7 @@ test_crypto_curve25519_encode(void *arg)
 
   curve25519_secret_key_generate(&seckey, 0);
   curve25519_public_key_generate(&key1, &seckey);
-  tt_int_op(0, OP_EQ, curve25519_public_to_base64(buf, &key1));
+  curve25519_public_to_base64(buf, &key1);
   tt_int_op(CURVE25519_BASE64_PADDED_LEN, OP_EQ, strlen(buf));
 
   tt_int_op(0, OP_EQ, curve25519_public_from_base64(&key2, buf));
@@ -2290,7 +2134,7 @@ test_crypto_curve25519_persist(void *arg)
   tt_u64_op((uint64_t)st.st_size, OP_EQ,
             32+CURVE25519_PUBKEY_LEN+CURVE25519_SECKEY_LEN);
   tt_assert(fast_memeq(content, "== c25519v1: testing ==", taglen));
-  tt_assert(tor_mem_is_zero(content+taglen, 32-taglen));
+  tt_assert(fast_mem_is_zero(content+taglen, 32-taglen));
   cp = content + 32;
   tt_mem_op(keypair.seckey.secret_key,OP_EQ,
              cp,
@@ -2611,13 +2455,13 @@ test_crypto_ed25519_encode(void *arg)
 
   /* Test roundtrip. */
   tt_int_op(0, OP_EQ, ed25519_keypair_generate(&kp, 0));
-  tt_int_op(0, OP_EQ, ed25519_public_to_base64(buf, &kp.pubkey));
+  ed25519_public_to_base64(buf, &kp.pubkey);
   tt_int_op(ED25519_BASE64_LEN, OP_EQ, strlen(buf));
   tt_int_op(0, OP_EQ, ed25519_public_from_base64(&pk, buf));
   tt_mem_op(kp.pubkey.pubkey, OP_EQ, pk.pubkey, ED25519_PUBKEY_LEN);
 
   tt_int_op(0, OP_EQ, ed25519_sign(&sig1, (const uint8_t*)"ABC", 3, &kp));
-  tt_int_op(0, OP_EQ, ed25519_signature_to_base64(buf, &sig1));
+  ed25519_signature_to_base64(buf, &sig1);
   tt_int_op(0, OP_EQ, ed25519_signature_from_base64(&sig2, buf));
   tt_mem_op(sig1.sig, OP_EQ, sig2.sig, ED25519_SIG_LEN);
 
@@ -3140,15 +2984,6 @@ test_crypto_failure_modes(void *arg)
 
 struct testcase_t crypto_tests[] = {
   CRYPTO_LEGACY(formats),
-  CRYPTO_LEGACY(rng),
-  { "rng_range", test_crypto_rng_range, 0, NULL, NULL },
-  { "rng_strongest", test_crypto_rng_strongest, TT_FORK, NULL, NULL },
-  { "rng_strongest_nosyscall", test_crypto_rng_strongest, TT_FORK,
-    &passthrough_setup, (void*)"nosyscall" },
-  { "rng_strongest_nofallback", test_crypto_rng_strongest, TT_FORK,
-    &passthrough_setup, (void*)"nofallback" },
-  { "rng_strongest_broken", test_crypto_rng_strongest, TT_FORK,
-    &passthrough_setup, (void*)"broken" },
   { "openssl_version", test_crypto_openssl_version, TT_FORK, NULL, NULL },
   { "aes_AES", test_crypto_aes128, TT_FORK, &passthrough_setup, (void*)"aes" },
   { "aes_EVP", test_crypto_aes128, TT_FORK, &passthrough_setup, (void*)"evp" },

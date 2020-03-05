@@ -120,13 +120,13 @@ tor_tls_create_certificate_internal(crypto_pk_t *rsa,
                                      der.data, der.len,
                                      (SECKEYPrivateKey *)signing_key,//const
                                      &cert->signature);
-#else
+#else /* !(0) */
   s = SEC_DerSignData(cert->arena,
                       &signed_der,
                       der.data, der.len,
                       (SECKEYPrivateKey *)signing_key,//const
                       SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION);
-#endif
+#endif /* 0 */
 
   if (s != SECSuccess)
     goto err;
@@ -145,7 +145,7 @@ tor_tls_create_certificate_internal(crypto_pk_t *rsa,
                                &result_cert->signatureWrap, issuer_pk, NULL);
     tor_assert(cert_ok == SECSuccess);
   }
-#endif
+#endif /* 1 */
 
  err:
   if (subject_spki)
@@ -455,4 +455,4 @@ tor_x509_cert_replace_expiration(const tor_x509_cert_t *inp,
 
   return newcert ? tor_x509_cert_new(newcert) : NULL;
 }
-#endif
+#endif /* defined(TOR_UNIT_TESTS) */

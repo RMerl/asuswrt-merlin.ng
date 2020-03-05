@@ -5,9 +5,11 @@ noinst_PROGRAMS+= src/tools/tor-cov-resolve
 endif
 
 src_tools_tor_resolve_SOURCES = src/tools/tor-resolve.c
-src_tools_tor_resolve_LDFLAGS =
+src_tools_tor_resolve_LDFLAGS = @TOR_LDFLAGS_openssl@
 src_tools_tor_resolve_LDADD = \
+	src/trunnel/libor-trunnel.a \
 	$(TOR_UTIL_LIBS) \
+        $(TOR_CRYPTO_LIBS) $(TOR_LIBS_CRYPTLIB)\
 	$(rust_ldadd) \
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@ @TOR_LIB_IPHLPAPI@ @TOR_LIB_USERENV@
 
@@ -15,8 +17,11 @@ if COVERAGE_ENABLED
 src_tools_tor_cov_resolve_SOURCES = src/tools/tor-resolve.c
 src_tools_tor_cov_resolve_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_tools_tor_cov_resolve_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+src_tools_tor_cov_resolve_LDFLAGS = @TOR_LDFLAGS_openssl@
 src_tools_tor_cov_resolve_LDADD = \
+	src/trunnel/libor-trunnel.a \
 	$(TOR_UTIL_TESTING_LIBS) \
+	$(TOR_CRYPTO_TESTING_LIBS) $(TOR_LIBS_CRYPTLIB) \
 	@TOR_LIB_MATH@ @TOR_LIB_WS32@
 endif
 

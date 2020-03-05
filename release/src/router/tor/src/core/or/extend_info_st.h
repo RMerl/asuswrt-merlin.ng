@@ -27,4 +27,4 @@ struct extend_info_t {
   curve25519_public_key_t curve25519_onion_key;
 };
 
-#endif
+#endif /* !defined(EXTEND_INFO_ST_H) */

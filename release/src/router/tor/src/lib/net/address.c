@@ -40,6 +40,7 @@
 
 #include "lib/net/address.h"
 #include "lib/net/socket.h"
+#include "lib/cc/ctassert.h"
 #include "lib/container/smartlist.h"
 #include "lib/ctime/di_ops.h"
 #include "lib/log/log.h"
@@ -52,7 +53,7 @@
 #include "lib/string/printf.h"
 #include "lib/string/util_string.h"
 
-#include "siphash.h"
+#include "ext/siphash.h"
 
 #ifdef HAVE_SYS_TIME_H
 #include <sys/time.h>
@@ -98,6 +99,7 @@
 #if AF_UNSPEC != 0
 #error We rely on AF_UNSPEC being 0. Let us know about your platform, please!
 #endif
+CTASSERT(AF_UNSPEC == 0);
 
 /** Convert the tor_addr_t in <b>a</b>, with port in <b>port</b>, into a
  * sockaddr object in *<b>sa_out</b> of object size <b>len</b>.  If not enough
@@ -337,7 +339,7 @@ tor_addr_to_str(char *dest, const tor_addr_t *addr, size_t len, int decorate)
       break;
     case AF_INET6:
       /* Shortest addr [ :: ] + \0 */
-      if (len < (3 + (decorate ? 2 : 0)))
+      if (len < (3u + (decorate ? 2 : 0)))
         return NULL;
 
       if (decorate)
@@ -371,7 +373,8 @@ tor_addr_to_str(char *dest, const tor_addr_t *addr, size_t len, int decorate)
  *
  * If <b>accept_regular</b> is set and the address is in neither recognized
  * reverse lookup hostname format, try parsing the address as a regular
- * IPv4 or IPv6 address too.
+ * IPv4 or IPv6 address too. This mode will accept IPv6 addresses with or
+ * without square brackets.
  */
 int
 tor_addr_parse_PTR_name(tor_addr_t *result, const char *address,
@@ -1185,35 +1188,73 @@ fmt_addr32(uint32_t addr)
 }
 
 /** Convert the string in <b>src</b> to a tor_addr_t <b>addr</b>.  The string
- * may be an IPv4 address, an IPv6 address, or an IPv6 address surrounded by
- * square brackets.
+ * may be an IPv4 address, or an IPv6 address surrounded by square brackets.
  *
- *  Return an address family on success, or -1 if an invalid address string is
- *  provided. */
-int
-tor_addr_parse(tor_addr_t *addr, const char *src)
+ * If <b>allow_ipv6_without_brackets</b> is true, also allow IPv6 addresses
+ * without brackets.
+ *
+ * Always rejects IPv4 addresses with brackets.
+ *
+ * Returns an address family on success, or -1 if an invalid address string is
+ * provided. */
+static int
+tor_addr_parse_impl(tor_addr_t *addr, const char *src,
+                    bool allow_ipv6_without_brackets)
 {
   /* Holds substring of IPv6 address after removing square brackets */
   char *tmp = NULL;
-  int result;
+  int result = -1;
   struct in_addr in_tmp;
   struct in6_addr in6_tmp;
-  tor_assert(addr && src);
-  if (src[0] == '[' && src[1])
-    src = tmp = tor_strndup(src+1, strlen(src)-2);
+  int brackets_detected = 0;
 
-  if (tor_inet_pton(AF_INET6, src, &in6_tmp) > 0) {
-    result = AF_INET6;
-    tor_addr_from_in6(addr, &in6_tmp);
-  } else if (tor_inet_pton(AF_INET, src, &in_tmp) > 0) {
-    result = AF_INET;
-    tor_addr_from_in(addr, &in_tmp);
-  } else {
-    result = -1;
+  tor_assert(addr && src);
+
+  size_t len = strlen(src);
+
+  if (len && src[0] == '[' && src[len - 1] == ']') {
+    brackets_detected = 1;
+    src = tmp = tor_strndup(src+1, strlen(src)-2);
+  }
+
+  /* Try to parse an IPv6 address if it has brackets, or if IPv6 addresses
+   * without brackets are allowed */
+  if (brackets_detected || allow_ipv6_without_brackets) {
+    if (tor_inet_pton(AF_INET6, src, &in6_tmp) > 0) {
+      result = AF_INET6;
+      tor_addr_from_in6(addr, &in6_tmp);
+    }
+  }
+
+  /* Try to parse an IPv4 address without brackets */
+  if (!brackets_detected) {
+    if (tor_inet_pton(AF_INET, src, &in_tmp) > 0) {
+      result = AF_INET;
+      tor_addr_from_in(addr, &in_tmp);
+    }
+  }
+
+  /* Clear the address on error, to avoid returning uninitialised or partly
+   * parsed data.
+   */
+  if (result == -1) {
+    memset(addr, 0, sizeof(tor_addr_t));
   }
 
   tor_free(tmp);
   return result;
+}
+
+/** Convert the string in <b>src</b> to a tor_addr_t <b>addr</b>.  The string
+ * may be an IPv4 address, an IPv6 address, or an IPv6 address surrounded by
+ * square brackets.
+ *
+ * Returns an address family on success, or -1 if an invalid address string is
+ * provided. */
+int
+tor_addr_parse(tor_addr_t *addr, const char *src)
+{
+  return tor_addr_parse_impl(addr, src, 1);
 }
 
 #ifdef HAVE_IFADDRS_TO_SMARTLIST
@@ -1708,6 +1749,11 @@ get_interface_address6_list,(int severity,
  * form "ip" or "ip:0".  Otherwise, accept those forms, and set
  * *<b>port_out</b> to <b>default_port</b>.
  *
+ * This function accepts:
+ *  - IPv6 address and port, when the IPv6 address is in square brackets,
+ *  - IPv6 address with square brackets,
+ *  - IPv6 address without square brackets.
+ *
  * Return 0 on success, -1 on failure. */
 int
 tor_addr_port_parse(int severity, const char *addrport,
@@ -1717,6 +1763,7 @@ tor_addr_port_parse(int severity, const char *addrport,
   int retval = -1;
   int r;
   char *addr_tmp = NULL;
+  bool has_port;
 
   tor_assert(addrport);
   tor_assert(address_out);
@@ -1726,28 +1773,47 @@ tor_addr_port_parse(int severity, const char *addrport,
   if (r < 0)
     goto done;
 
-  if (!*port_out) {
+  has_port = !! *port_out;
+  /* If there's no port, use the default port, or fail if there is no default
+   */
+  if (!has_port) {
     if (default_port >= 0)
       *port_out = default_port;
     else
       goto done;
   }
 
-  /* make sure that address_out is an IP address */
-  if (tor_addr_parse(address_out, addr_tmp) < 0)
+  /* Make sure that address_out is an IP address.
+   * If there is no port in addrport, allow IPv6 addresses without brackets. */
+  if (tor_addr_parse_impl(address_out, addr_tmp, !has_port) < 0)
     goto done;
 
   retval = 0;
 
  done:
+  /* Clear the address and port on error, to avoid returning uninitialised or
+   * partly parsed data.
+   */
+  if (retval == -1) {
+    memset(address_out, 0, sizeof(tor_addr_t));
+    *port_out = 0;
+  }
   tor_free(addr_tmp);
   return retval;
 }
 
 /** Given an address of the form "host[:port]", try to divide it into its host
- * and port portions, setting *<b>address_out</b> to a newly allocated string
- * holding the address portion and *<b>port_out</b> to the port (or 0 if no
- * port is given).  Return 0 on success, -1 on failure. */
+ * and port portions.
+ *
+ * Like tor_addr_port_parse(), this function accepts:
+ *  - IPv6 address and port, when the IPv6 address is in square brackets,
+ *  - IPv6 address with square brackets,
+ *  - IPv6 address without square brackets.
+ *
+ * Sets *<b>address_out</b> to a newly allocated string holding the address
+ * portion, and *<b>port_out</b> to the port (or 0 if no port is given).
+ *
+ * Return 0 on success, -1 on failure. */
 int
 tor_addr_port_split(int severity, const char *addrport,
                     char **address_out, uint16_t *port_out)
@@ -1756,8 +1822,11 @@ tor_addr_port_split(int severity, const char *addrport,
   tor_assert(addrport);
   tor_assert(address_out);
   tor_assert(port_out);
+
   /* We need to check for IPv6 manually because the logic below doesn't
-   * do a good job on IPv6 addresses that lack a port. */
+   * do a good job on IPv6 addresses that lack a port.
+   * If an IPv6 address without square brackets is ambiguous, it gets parsed
+   * here as an address, rather than address:port. */
   if (tor_addr_parse(&a_tmp, addrport) == AF_INET6) {
     *port_out = 0;
     *address_out = tor_strdup(addrport);
@@ -1797,8 +1866,7 @@ tor_addr_port_split(int severity, const char *addrport,
     tor_free(address_);
   }
 
-  if (port_out)
-    *port_out = ok ? ((uint16_t) port_) : 0;
+  *port_out = ok ? ((uint16_t) port_) : 0;
 
   return ok ? 0 : -1;
 }
@@ -2017,8 +2085,12 @@ string_is_valid_nonrfc_hostname(const char *string)
 
   smartlist_split_string(components,string,".",0,0);
 
-  if (BUG(smartlist_len(components) == 0))
-    return 0; // LCOV_EXCL_LINE should be impossible given the earlier checks.
+  if (BUG(smartlist_len(components) == 0)) {
+    // LCOV_EXCL_START should be impossible given the earlier checks.
+    smartlist_free(components);
+    return 0;
+    // LCOV_EXCL_STOP
+  }
 
   /* Allow a single terminating '.' used rarely to indicate domains
    * are FQDNs rather than relative. */

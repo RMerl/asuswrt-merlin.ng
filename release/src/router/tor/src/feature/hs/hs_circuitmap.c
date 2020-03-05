@@ -272,6 +272,33 @@ hs_circuitmap_get_or_circuit(hs_token_type_t type,
 
 /**** Public relay-side getters: */
 
+/* Public function: Return v2 and v3 introduction circuit to this relay.
+ * Always return a newly allocated list for which it is the caller's
+ * responsability to free it. */
+smartlist_t *
+hs_circuitmap_get_all_intro_circ_relay_side(void)
+{
+  circuit_t **iter;
+  smartlist_t *circuit_list = smartlist_new();
+
+  HT_FOREACH(iter, hs_circuitmap_ht, the_hs_circuitmap) {
+    circuit_t *circ = *iter;
+
+    /* An origin circuit or purpose is wrong or the hs token is not set to be
+     * a v2 or v3 intro relay side type, we ignore the circuit. Else, we have
+     * a match so add it to our list. */
+    if (CIRCUIT_IS_ORIGIN(circ) ||
+        circ->purpose != CIRCUIT_PURPOSE_INTRO_POINT ||
+        (circ->hs_token->type != HS_TOKEN_INTRO_V3_RELAY_SIDE &&
+         circ->hs_token->type != HS_TOKEN_INTRO_V2_RELAY_SIDE)) {
+      continue;
+    }
+    smartlist_add(circuit_list, circ);
+  }
+
+  return circuit_list;
+}
+
 /* Public function: Return a v3 introduction circuit to this relay with
  * <b>auth_key</b>. Return NULL if no such circuit is found in the
  * circuitmap. */

@@ -6,14 +6,14 @@
 umask 077
 set -e
 
-if [ $# -eq 0 ] || [ ! -f ${1} ] || [ ! -x ${1} ]; then
+if [ $# -eq 0 ] || [ ! -f "${1}" ] || [ ! -x "${1}" ]; then
   if [ "$TESTING_TOR_BINARY" = "" ] ; then
     echo "Usage: ${0} PATH_TO_TOR [case-number]"
     exit 1
   fi
 fi
 
-UNAME_OS=`uname -s | cut -d_ -f1`
+UNAME_OS=$(uname -s | cut -d_ -f1)
 if test "$UNAME_OS" = 'CYGWIN' || \
    test "$UNAME_OS" = 'MSYS' || \
    test "$UNAME_OS" = 'MINGW'; then
@@ -47,11 +47,11 @@ dump() { xxd -p "$1" | tr -d '\n '; }
 die() { echo "$1" >&2 ; exit 5; }
 check_dir() { [ -d "$1" ] || die "$1 did not exist"; }
 check_file() { [ -e "$1" ] || die "$1 did not exist"; }
-check_no_file() { [ -e "$1" ] && die "$1 was not supposed to exist" || true; }
-check_files_eq() { cmp "$1" "$2" || die "$1 and $2 did not match: `dump $1` vs `dump $2`"; }
+check_no_file() { if [ -e "$1" ]; then die "$1 was not supposed to exist"; fi }
+check_files_eq() { cmp "$1" "$2" || die "$1 and $2 did not match: $(dump "$1") vs $(dump "$2")"; }
 check_keys_eq() { check_files_eq "${SRC}/keys/${1}" "${ME}/keys/${1}"; }
 
-DATA_DIR=`mktemp -d -t tor_key_expiration_tests.XXXXXX`
+DATA_DIR=$(mktemp -d -t tor_key_expiration_tests.XXXXXX)
 if [ -z "$DATA_DIR" ]; then
   echo "Failure: mktemp invocation returned empty string" >&2
   exit 3
@@ -60,10 +60,10 @@ if [ ! -d "$DATA_DIR" ]; then
   echo "Failure: mktemp invocation result doesn't point to directory" >&2
   exit 3
 fi
-trap "rm -rf '$DATA_DIR'" 0
+trap 'rm -rf "$DATA_DIR"' 0
 
 # Use an absolute path for this or Tor will complain
-DATA_DIR=`cd "${DATA_DIR}" && pwd`
+DATA_DIR=$(cd "${DATA_DIR}" && pwd)
 
 touch "${DATA_DIR}/empty_torrc"
 touch "${DATA_DIR}/empty_defaults_torrc"

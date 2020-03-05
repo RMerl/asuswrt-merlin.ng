@@ -9,7 +9,8 @@
         there may be other license terms that you should be aware of.
 
 ===============================================================================
-Tor is distributed under this license:
+Tor is distributed under the "3-clause BSD" license, a commonly used
+software license that means Tor is both free software and open source:
 
 Copyright (c) 2001-2004, Roger Dingledine
 Copyright (c) 2004-2006, Roger Dingledine, Nick Mathewson

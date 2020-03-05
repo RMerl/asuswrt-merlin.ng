@@ -149,8 +149,9 @@ pub fn main() {
             cfg.component("tor-sandbox-testing");
             cfg.component("tor-encoding-testing");
             cfg.component("tor-fs-testing");
-            cfg.component("tor-time-testing");
             cfg.component("tor-net-testing");
+            cfg.component("tor-buf-testing");
+            cfg.component("tor-time-testing");
             cfg.component("tor-thread-testing");
             cfg.component("tor-memarea-testing");
             cfg.component("tor-log-testing");
@@ -162,6 +163,7 @@ pub fn main() {
             cfg.component("tor-malloc");
             cfg.component("tor-wallclock");
             cfg.component("tor-err-testing");
+            cfg.component("tor-version-testing");
             cfg.component("tor-intmath-testing");
             cfg.component("tor-ctime-testing");
             cfg.component("curve25519_donna");

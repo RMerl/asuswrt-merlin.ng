@@ -12,6 +12,7 @@
 #include "lib/crypt_ops/crypto_dh.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "app/config/or_state_st.h"
+#include "test/rng_test_helpers.h"
 
 #include <stdio.h>
 #ifdef HAVE_FCNTL_H
@@ -37,7 +38,7 @@
 
 #include "core/or/or.h"
 #include "lib/err/backtrace.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitstats.h"
 #include "lib/compress/compress.h"
@@ -283,7 +284,7 @@ test_fast_handshake(void *arg)
   /* First, test an entire handshake. */
   memset(client_handshake, 0, sizeof(client_handshake));
   tt_int_op(0, OP_EQ, fast_onionskin_create(&state, client_handshake));
-  tt_assert(! tor_mem_is_zero((char*)client_handshake,
+  tt_assert(! fast_mem_is_zero((char*)client_handshake,
                               sizeof(client_handshake)));
 
   tt_int_op(0, OP_EQ,
@@ -354,18 +355,6 @@ test_onion_queues(void *arg)
   tor_free(onionskin);
 }
 
-static crypto_cipher_t *crypto_rand_aes_cipher = NULL;
-
-// Mock replacement for crypto_rand: Generates bytes from a provided AES_CTR
-// cipher in <b>crypto_rand_aes_cipher</b>.
-static void
-crypto_rand_deterministic_aes(char *out, size_t n)
-{
-  tor_assert(crypto_rand_aes_cipher);
-  memset(out, 0, n);
-  crypto_cipher_crypt_inplace(crypto_rand_aes_cipher, out, n);
-}
-
 static void
 test_circuit_timeout(void *arg)
 {
@@ -397,8 +386,7 @@ test_circuit_timeout(void *arg)
 
   // Use a deterministic RNG here, or else we'll get nondeterministic
   // coverage in some of the circuitstats functions.
-  MOCK(crypto_rand, crypto_rand_deterministic_aes);
-  crypto_rand_aes_cipher = crypto_cipher_new("xyzzyplughplover");
+  testing_enable_deterministic_rng();
 
   circuitbuild_running_unit_tests();
 #define timeout0 (build_time_t)(30*1000.0)
@@ -534,8 +522,8 @@ test_circuit_timeout(void *arg)
   circuit_build_times_free_timeouts(&final);
   or_state_free(state);
   teardown_periodic_events();
-  UNMOCK(crypto_rand);
-  crypto_cipher_free(crypto_rand_aes_cipher);
+
+  testing_disable_deterministic_rng();
 }
 
 /** Test encoding and parsing of rendezvous service descriptors. */
@@ -845,18 +833,23 @@ struct testgroup_t testgroups[] = {
   { "channeltls/", channeltls_tests },
   { "checkdir/", checkdir_tests },
   { "circuitbuild/", circuitbuild_tests },
+  { "circuitpadding/", circuitpadding_tests },
   { "circuitlist/", circuitlist_tests },
   { "circuitmux/", circuitmux_tests },
-  { "circuituse/", circuituse_tests },
   { "circuitstats/", circuitstats_tests },
+  { "circuituse/", circuituse_tests },
   { "compat/libevent/", compat_libevent_tests },
   { "config/", config_tests },
+  { "config/mgr/", confmgr_tests },
+  { "config/parse/", confparse_tests },
   { "connection/", connection_tests },
   { "conscache/", conscache_tests },
   { "consdiff/", consdiff_tests },
   { "consdiffmgr/", consdiffmgr_tests },
   { "container/", container_tests },
+  { "container/namemap/", namemap_tests },
   { "control/", controller_tests },
+  { "control/btrack/", btrack_tests },
   { "control/event/", controller_event_tests },
   { "crypto/", crypto_tests },
   { "crypto/ope/", crypto_ope_tests },
@@ -864,42 +857,54 @@ struct testgroup_t testgroups[] = {
   { "crypto/openssl/", crypto_openssl_tests },
 #endif
   { "crypto/pem/", pem_tests },
+  { "crypto/rng/", crypto_rng_tests },
   { "dir/", dir_tests },
-  { "dir_handle_get/", dir_handle_get_tests },
+  { "dir/auth/process_descs/", process_descs_tests },
   { "dir/md/", microdesc_tests },
-  { "dir/voting-schedule/", voting_schedule_tests },
+  { "dir/voting/flags/", voting_flags_tests },
+  { "dir/voting/schedule/", voting_schedule_tests },
+  { "dir_handle_get/", dir_handle_get_tests },
+  { "dispatch/", dispatch_tests, },
+  { "dns/", dns_tests },
   { "dos/", dos_tests },
   { "entryconn/", entryconn_tests },
   { "entrynodes/", entrynodes_tests },
-  { "guardfraction/", guardfraction_tests },
   { "extorport/", extorport_tests },
   { "geoip/", geoip_tests },
-  { "legacy_hs/", hs_tests },
+  { "guardfraction/", guardfraction_tests },
   { "hs_cache/", hs_cache },
   { "hs_cell/", hs_cell_tests },
+  { "hs_client/", hs_client_tests },
   { "hs_common/", hs_common_tests },
   { "hs_config/", hs_config_tests },
   { "hs_control/", hs_control_tests },
   { "hs_descriptor/", hs_descriptor },
+  { "hs_dos/", hs_dos_tests },
+  { "hs_intropoint/", hs_intropoint_tests },
   { "hs_ntor/", hs_ntor_tests },
   { "hs_service/", hs_service_tests },
-  { "hs_client/", hs_client_tests },
-  { "hs_intropoint/", hs_intropoint_tests },
   { "introduce/", introduce_tests },
   { "keypin/", keypin_tests },
+  { "legacy_hs/", hs_tests },
   { "link-handshake/", link_handshake_tests },
   { "mainloop/", mainloop_tests },
+  { "netinfo/", netinfo_tests },
   { "nodelist/", nodelist_tests },
   { "oom/", oom_tests },
   { "oos/", oos_tests },
   { "options/", options_tests },
+  { "parsecommon/", parsecommon_tests },
   { "periodic-event/" , periodic_event_tests },
   { "policy/" , policy_tests },
+  { "prob_distr/", prob_distr_tests },
   { "procmon/", procmon_tests },
+  { "process/", process_tests },
   { "proto/http/", proto_http_tests },
   { "proto/misc/", proto_misc_tests },
   { "protover/", protover_tests },
   { "pt/", pt_tests },
+  { "pubsub/build/", pubsub_build_tests },
+  { "pubsub/msg/", pubsub_msg_tests },
   { "relay/" , relay_tests },
   { "relaycell/", relaycell_tests },
   { "relaycrypt/", relaycrypt_tests },
@@ -910,10 +915,12 @@ struct testgroup_t testgroups[] = {
   { "routerlist/", routerlist_tests },
   { "routerset/" , routerset_tests },
   { "scheduler/", scheduler_tests },
-  { "socks/", socks_tests },
+  { "sendme/", sendme_tests },
   { "shared-random/", sr_tests },
+  { "socks/", socks_tests },
   { "status/" , status_tests },
   { "storagedir/", storagedir_tests },
+  { "token_bucket/", token_bucket_tests },
   { "tortls/", tortls_tests },
 #ifndef ENABLE_NSS
   { "tortls/openssl/", tortls_openssl_tests },
@@ -921,10 +928,9 @@ struct testgroup_t testgroups[] = {
   { "tortls/x509/", x509_tests },
   { "util/", util_tests },
   { "util/format/", util_format_tests },
+  { "util/handle/", handle_tests },
   { "util/logging/", logging_tests },
   { "util/process/", util_process_tests },
   { "util/thread/", thread_tests },
-  { "util/handle/", handle_tests },
-  { "dns/", dns_tests },
   END_OF_GROUPS
 };

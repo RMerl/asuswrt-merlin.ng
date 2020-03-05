@@ -11,6 +11,7 @@ else
 readpassphrase_source=
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_term_a_SOURCES =			\
 	src/lib/term/getpass.c			\
 	$(readpassphrase_source)
@@ -20,5 +21,6 @@ src_lib_libtor_term_testing_a_SOURCES = \
 src_lib_libtor_term_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_term_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/term/getpass.h

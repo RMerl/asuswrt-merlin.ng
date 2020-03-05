@@ -101,11 +101,11 @@ smartlist_add_linecpy(smartlist_t *lst, memarea_t *area, const char *s)
 /* This is a separate, mockable function so that we can override it when
  * fuzzing. */
 MOCK_IMPL(STATIC int,
-consensus_compute_digest,(const char *cons,
+consensus_compute_digest,(const char *cons, size_t len,
                           consensus_digest_t *digest_out))
 {
   int r = crypto_digest256((char*)digest_out->sha3_256,
-                           cons, strlen(cons), DIGEST_SHA3_256);
+                           cons, len, DIGEST_SHA3_256);
   return r;
 }
 
@@ -114,11 +114,11 @@ consensus_compute_digest,(const char *cons,
 /* This is a separate, mockable function so that we can override it when
  * fuzzing. */
 MOCK_IMPL(STATIC int,
-consensus_compute_digest_as_signed,(const char *cons,
+consensus_compute_digest_as_signed,(const char *cons, size_t len,
                                     consensus_digest_t *digest_out))
 {
   return router_get_networkstatus_v3_sha3_as_signed(digest_out->sha3_256,
-                                                    cons);
+                                                    cons, len);
 }
 
 /** Return true iff <b>d1</b> and <b>d2</b> contain the same digest */
@@ -1229,7 +1229,8 @@ consdiff_apply_diff(const smartlist_t *cons1,
   cons2_str = consensus_join_lines(cons2);
 
   consensus_digest_t cons2_digests;
-  if (consensus_compute_digest(cons2_str, &cons2_digests) < 0) {
+  if (consensus_compute_digest(cons2_str, strlen(cons2_str),
+                               &cons2_digests) < 0) {
     /* LCOV_EXCL_START -- digest can't fail */
     log_warn(LD_CONSDIFF, "Could not compute digests of the consensus "
         "resulting from applying a consensus diff.");
@@ -1283,12 +1284,13 @@ consdiff_apply_diff(const smartlist_t *cons1,
  * generated cdlines will become invalid.
  */
 STATIC int
-consensus_split_lines(smartlist_t *out, const char *s, memarea_t *area)
+consensus_split_lines(smartlist_t *out,
+                      const char *s, size_t len,
+                      memarea_t *area)
 {
-  const char *end_of_str = s + strlen(s);
-  tor_assert(*end_of_str == '\0');
+  const char *end_of_str = s + len;
 
-  while (*s) {
+  while (s < end_of_str) {
     const char *eol = memchr(s, '\n', end_of_str - s);
     if (!eol) {
       /* File doesn't end with newline. */
@@ -1334,25 +1336,25 @@ consensus_join_lines(const smartlist_t *inp)
  * success, retun a newly allocated string containing that diff.  On failure,
  * return NULL. */
 char *
-consensus_diff_generate(const char *cons1,
-                        const char *cons2)
+consensus_diff_generate(const char *cons1, size_t cons1len,
+                        const char *cons2, size_t cons2len)
 {
   consensus_digest_t d1, d2;
   smartlist_t *lines1 = NULL, *lines2 = NULL, *result_lines = NULL;
   int r1, r2;
   char *result = NULL;
 
-  r1 = consensus_compute_digest_as_signed(cons1, &d1);
-  r2 = consensus_compute_digest(cons2, &d2);
+  r1 = consensus_compute_digest_as_signed(cons1, cons1len, &d1);
+  r2 = consensus_compute_digest(cons2, cons2len, &d2);
   if (BUG(r1 < 0 || r2 < 0))
     return NULL; // LCOV_EXCL_LINE
 
   memarea_t *area = memarea_new();
   lines1 = smartlist_new();
   lines2 = smartlist_new();
-  if (consensus_split_lines(lines1, cons1, area) < 0)
+  if (consensus_split_lines(lines1, cons1, cons1len, area) < 0)
     goto done;
-  if (consensus_split_lines(lines2, cons2, area) < 0)
+  if (consensus_split_lines(lines2, cons2, cons2len, area) < 0)
     goto done;
 
   result_lines = consdiff_gen_diff(lines1, lines2, &d1, &d2, area);
@@ -1375,7 +1377,9 @@ consensus_diff_generate(const char *cons1,
  * consensus.  On failure, return NULL. */
 char *
 consensus_diff_apply(const char *consensus,
-                     const char *diff)
+                     size_t consensus_len,
+                     const char *diff,
+                     size_t diff_len)
 {
   consensus_digest_t d1;
   smartlist_t *lines1 = NULL, *lines2 = NULL;
@@ -1383,15 +1387,15 @@ consensus_diff_apply(const char *consensus,
   char *result = NULL;
   memarea_t *area = memarea_new();
 
-  r1 = consensus_compute_digest_as_signed(consensus, &d1);
+  r1 = consensus_compute_digest_as_signed(consensus, consensus_len, &d1);
   if (BUG(r1 < 0))
     goto done;
 
   lines1 = smartlist_new();
   lines2 = smartlist_new();
-  if (consensus_split_lines(lines1, consensus, area) < 0)
+  if (consensus_split_lines(lines1, consensus, consensus_len, area) < 0)
     goto done;
-  if (consensus_split_lines(lines2, diff, area) < 0)
+  if (consensus_split_lines(lines2, diff, diff_len, area) < 0)
     goto done;
 
   result = consdiff_apply_diff(lines1, lines2, &d1);

@@ -23,4 +23,4 @@ int pem_encode(char *dest, size_t destlen, const uint8_t *src, size_t srclen,
 int pem_decode(uint8_t *dest, size_t destlen, const char *src, size_t srclen,
                const char *objtype);
 
-#endif
+#endif /* !defined(TOR_PEM_H) */

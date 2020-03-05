@@ -15,7 +15,7 @@
 #include "lib/testsupport/testsupport.h"
 #include "lib/cc/torint.h"
 
-#include "siphash.h"
+#include "ext/siphash.h"
 
 #define DECLARE_MAP_FNS(maptype, keytype, prefix)                       \
   typedef struct maptype maptype;                                       \
@@ -258,4 +258,4 @@ void* strmap_remove_lc(strmap_t *map, const char *key);
     return digestmap_iter_done((digestmap_iter_t*)iter);                \
   }
 
-#endif /* !defined(TOR_CONTAINER_H) */
+#endif /* !defined(TOR_MAP_H) */

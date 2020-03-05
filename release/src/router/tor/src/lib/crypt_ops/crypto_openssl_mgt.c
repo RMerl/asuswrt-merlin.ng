@@ -176,6 +176,10 @@ crypto_openssl_free_all(void)
   tor_free(crypto_openssl_version_str);
   tor_free(crypto_openssl_header_version_str);
 
+  /* Destroying a locked mutex is undefined behaviour. This mutex may be
+   * locked, because multiple threads can access it. But we need to destroy
+   * it, otherwise re-initialisation will trigger undefined behaviour.
+   * See #31735 for details. */
 #ifndef NEW_THREAD_API
   if (n_openssl_mutexes_) {
     int n = n_openssl_mutexes_;
@@ -200,10 +204,10 @@ crypto_openssl_early_init(void)
                      OPENSSL_INIT_LOAD_CRYPTO_STRINGS |
                      OPENSSL_INIT_ADD_ALL_CIPHERS |
                      OPENSSL_INIT_ADD_ALL_DIGESTS, NULL);
-#else
+#else /* !defined(OPENSSL_1_1_API) */
     ERR_load_crypto_strings();
     OpenSSL_add_all_algorithms();
-#endif
+#endif /* defined(OPENSSL_1_1_API) */
 
     setup_openssl_threading();
 

@@ -29,4 +29,4 @@ typedef enum {
   SOCKS5_ADDRESS_TYPE_NOT_SUPPORTED = 0x08,
 } socks5_reply_status_t;
 
-#endif
+#endif /* !defined(TOR_SOCKS5_STATUS_H) */

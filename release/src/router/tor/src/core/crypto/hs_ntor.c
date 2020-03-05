@@ -176,7 +176,6 @@ get_introduce1_key_material(const uint8_t *secret_input,
   uint8_t keystream[CIPHER256_KEY_LEN + DIGEST256_LEN];
   uint8_t info_blob[INFO_BLOB_LEN];
   uint8_t kdf_input[KDF_INPUT_LEN];
-  crypto_xof_t *xof;
   uint8_t *ptr;
 
   /* Let's build info */
@@ -193,10 +192,8 @@ get_introduce1_key_material(const uint8_t *secret_input,
   tor_assert(ptr == kdf_input + sizeof(kdf_input));
 
   /* Now we need to run kdf_input over SHAKE-256 */
-  xof = crypto_xof_new();
-  crypto_xof_add_bytes(xof, kdf_input, sizeof(kdf_input));
-  crypto_xof_squeeze_bytes(xof, keystream, sizeof(keystream)) ;
-  crypto_xof_free(xof);
+  crypto_xof(keystream, sizeof(keystream),
+             kdf_input, sizeof(kdf_input));
 
   { /* Get the keys */
     memcpy(&hs_ntor_intro_cell_keys_out->enc_key, keystream,CIPHER256_KEY_LEN);
@@ -594,7 +591,6 @@ hs_ntor_circuit_key_expansion(const uint8_t *ntor_key_seed, size_t seed_len,
 {
   uint8_t *ptr;
   uint8_t kdf_input[NTOR_KEY_EXPANSION_KDF_INPUT_LEN];
-  crypto_xof_t *xof;
 
   /* Sanity checks on lengths to make sure we are good */
   if (BUG(seed_len != DIGEST256_LEN)) {
@@ -611,10 +607,8 @@ hs_ntor_circuit_key_expansion(const uint8_t *ntor_key_seed, size_t seed_len,
   tor_assert(ptr == kdf_input + sizeof(kdf_input));
 
   /* Generate the keys */
-  xof = crypto_xof_new();
-  crypto_xof_add_bytes(xof, kdf_input, sizeof(kdf_input));
-  crypto_xof_squeeze_bytes(xof, keys_out, HS_NTOR_KEY_EXPANSION_KDF_OUT_LEN);
-  crypto_xof_free(xof);
+  crypto_xof(keys_out, HS_NTOR_KEY_EXPANSION_KDF_OUT_LEN,
+             kdf_input, sizeof(kdf_input));
 
   return 0;
 }

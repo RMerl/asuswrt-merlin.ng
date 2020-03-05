@@ -22,13 +22,14 @@
  **/
 #include "core/or/or.h"
 #include "feature/client/bridges.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 /*
  * Define this so we get channel internal functions, since we're implementing
  * part of a subclass (channel_tls_t).
  */
 #define TOR_CHANNEL_INTERNAL_
 #define CONNECTION_OR_PRIVATE
+#define ORCONN_EVENT_PRIVATE
 #include "core/or/channel.h"
 #include "core/or/channeltls.h"
 #include "core/or/circuitbuild.h"
@@ -38,7 +39,7 @@
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_or.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/dirauth/reachability.h"
@@ -46,6 +47,7 @@
 #include "lib/geoip/geoip.h"
 #include "core/mainloop/mainloop.h"
 #include "trunnel/link_handshake.h"
+#include "trunnel/netinfo.h"
 #include "feature/nodelist/microdesc.h"
 #include "feature/nodelist/networkstatus.h"
 #include "feature/nodelist/nodelist.h"
@@ -77,6 +79,8 @@
 
 #include "lib/tls/tortls.h"
 #include "lib/tls/x509.h"
+
+#include "core/or/orconn_event.h"
 
 static int connection_tls_finish_handshake(or_connection_t *conn);
 static int connection_or_launch_v3_or_handshake(or_connection_t *conn);
@@ -400,6 +404,55 @@ connection_or_report_broken_states(int severity, int domain)
   smartlist_free(items);
 }
 
+/**
+ * Helper function to publish an OR connection status event
+ *
+ * Publishes a messages to subscribers of ORCONN messages, and sends
+ * the control event.
+ **/
+void
+connection_or_event_status(or_connection_t *conn, or_conn_status_event_t tp,
+                           int reason)
+{
+  orconn_status_msg_t *msg = tor_malloc(sizeof(*msg));
+
+  msg->gid = conn->base_.global_identifier;
+  msg->status = tp;
+  msg->reason = reason;
+  orconn_status_publish(msg);
+  control_event_or_conn_status(conn, tp, reason);
+}
+
+/**
+ * Helper function to publish a state change message
+ *
+ * connection_or_change_state() calls this to notify subscribers about
+ * a change of an OR connection state.
+ **/
+static void
+connection_or_state_publish(const or_connection_t *conn, uint8_t state)
+{
+  orconn_state_msg_t *msg = tor_malloc(sizeof(*msg));
+
+  msg->gid = conn->base_.global_identifier;
+  if (conn->is_pt) {
+    /* Do extra decoding because conn->proxy_type indicates the proxy
+     * protocol that tor uses to talk with the transport plugin,
+     * instead of PROXY_PLUGGABLE. */
+    tor_assert_nonfatal(conn->proxy_type != PROXY_NONE);
+    msg->proxy_type = PROXY_PLUGGABLE;
+  } else {
+    msg->proxy_type = conn->proxy_type;
+  }
+  msg->state = state;
+  if (conn->chan) {
+    msg->chan = TLS_CHAN_TO_BASE(conn->chan)->global_identifier;
+  } else {
+    msg->chan = 0;
+  }
+  orconn_state_publish(msg);
+}
+
 /** Call this to change or_connection_t states, so the owning channel_tls_t can
  * be notified.
  */
@@ -407,16 +460,13 @@ connection_or_report_broken_states(int severity, int domain)
 static void
 connection_or_change_state(or_connection_t *conn, uint8_t state)
 {
-  uint8_t old_state;
-
   tor_assert(conn);
 
-  old_state = conn->base_.state;
   conn->base_.state = state;
 
+  connection_or_state_publish(conn, state);
   if (conn->chan)
-    channel_tls_handle_state_change_on_orconn(conn->chan, conn,
-                                              old_state, state);
+    channel_tls_handle_state_change_on_orconn(conn->chan, conn, state);
 }
 
 /** Return the number of circuits using an or_connection_t; this used to
@@ -707,8 +757,6 @@ connection_or_finished_connecting(or_connection_t *or_conn)
 
   log_debug(LD_HANDSHAKE,"OR connect() to router at %s:%u finished.",
             conn->address,conn->port);
-  control_event_bootstrap(BOOTSTRAP_STATUS_HANDSHAKE, 0);
-  control_event_boot_first_orconn();
 
   if (proxy_type != PROXY_NONE) {
     /* start proxy handshake */
@@ -758,8 +806,8 @@ connection_or_about_to_close(or_connection_t *or_conn)
       entry_guard_chan_failed(TLS_CHAN_TO_BASE(or_conn->chan));
       if (conn->state >= OR_CONN_STATE_TLS_HANDSHAKING) {
         int reason = tls_error_to_orconn_end_reason(or_conn->tls_error);
-        control_event_or_conn_status(or_conn, OR_CONN_EVENT_FAILED,
-                                     reason);
+        connection_or_event_status(or_conn, OR_CONN_EVENT_FAILED,
+                                   reason);
         if (!authdir_mode_tests_reachability(options))
           control_event_bootstrap_prob_or(
                 orconn_end_reason_to_control_string(reason),
@@ -769,10 +817,10 @@ connection_or_about_to_close(or_connection_t *or_conn)
   } else if (conn->hold_open_until_flushed) {
     /* We only set hold_open_until_flushed when we're intentionally
      * closing a connection. */
-    control_event_or_conn_status(or_conn, OR_CONN_EVENT_CLOSED,
+    connection_or_event_status(or_conn, OR_CONN_EVENT_CLOSED,
                 tls_error_to_orconn_end_reason(or_conn->tls_error));
   } else if (!tor_digest_is_zero(or_conn->identity_digest)) {
-    control_event_or_conn_status(or_conn, OR_CONN_EVENT_CLOSED,
+    connection_or_event_status(or_conn, OR_CONN_EVENT_CLOSED,
                 tls_error_to_orconn_end_reason(or_conn->tls_error));
   }
 }
@@ -1364,7 +1412,7 @@ void
 connection_or_connect_failed(or_connection_t *conn,
                              int reason, const char *msg)
 {
-  control_event_or_conn_status(conn, OR_CONN_EVENT_FAILED, reason);
+  connection_or_event_status(conn, OR_CONN_EVENT_FAILED, reason);
   if (!authdir_mode_tests_reachability(get_options()))
     control_event_bootstrap_prob_or(msg, reason, conn);
   note_or_connect_failed(conn);
@@ -1430,7 +1478,7 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
   int r;
   tor_addr_t proxy_addr;
   uint16_t proxy_port;
-  int proxy_type;
+  int proxy_type, is_pt = 0;
 
   tor_assert(_addr);
   tor_assert(id_digest);
@@ -1471,21 +1519,27 @@ connection_or_connect, (const tor_addr_t *_addr, uint16_t port,
     return NULL;
   }
 
-  connection_or_change_state(conn, OR_CONN_STATE_CONNECTING);
-  control_event_or_conn_status(conn, OR_CONN_EVENT_LAUNCHED, 0);
-
   conn->is_outgoing = 1;
 
   /* If we are using a proxy server, find it and use it. */
-  r = get_proxy_addrport(&proxy_addr, &proxy_port, &proxy_type, TO_CONN(conn));
+  r = get_proxy_addrport(&proxy_addr, &proxy_port, &proxy_type, &is_pt,
+                         TO_CONN(conn));
   if (r == 0) {
     conn->proxy_type = proxy_type;
     if (proxy_type != PROXY_NONE) {
       tor_addr_copy(&addr, &proxy_addr);
       port = proxy_port;
       conn->base_.proxy_state = PROXY_INFANT;
+      conn->is_pt = is_pt;
     }
+    connection_or_change_state(conn, OR_CONN_STATE_CONNECTING);
+    connection_or_event_status(conn, OR_CONN_EVENT_LAUNCHED, 0);
   } else {
+    /* This duplication of state change calls is necessary in case we
+     * run into an error condition below */
+    connection_or_change_state(conn, OR_CONN_STATE_CONNECTING);
+    connection_or_event_status(conn, OR_CONN_EVENT_LAUNCHED, 0);
+
     /* get_proxy_addrport() might fail if we have a Bridge line that
        references a transport, but no ClientTransportPlugin lines
        defining its transport proxy. If this is the case, let's try to
@@ -1981,8 +2035,8 @@ connection_or_client_learned_peer_id(or_connection_t *conn,
 
     /* Tell the new guard API about the channel failure */
     entry_guard_chan_failed(TLS_CHAN_TO_BASE(conn->chan));
-    control_event_or_conn_status(conn, OR_CONN_EVENT_FAILED,
-                                 END_OR_CONN_REASON_OR_IDENTITY);
+    connection_or_event_status(conn, OR_CONN_EVENT_FAILED,
+                               END_OR_CONN_REASON_OR_IDENTITY);
     if (!authdir_mode_tests_reachability(options))
       control_event_bootstrap_prob_or(
                                 "Unexpected identity in router certificate",
@@ -2222,7 +2276,7 @@ int
 connection_or_set_state_open(or_connection_t *conn)
 {
   connection_or_change_state(conn, OR_CONN_STATE_OPEN);
-  control_event_or_conn_status(conn, OR_CONN_EVENT_CONNECTED, 0);
+  connection_or_event_status(conn, OR_CONN_EVENT_CONNECTED, 0);
 
   /* Link protocol 3 appeared in Tor 0.2.3.6-alpha, so any connection
    * that uses an earlier link protocol should not be treated as a relay. */
@@ -2252,6 +2306,8 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
 
   cell_pack(&networkcell, cell, conn->wide_circ_ids);
 
+  /* We need to count padding cells from this non-packed code path
+   * since they are sent via chan->write_cell() (which is not packed) */
   rep_hist_padding_count_write(PADDING_TYPE_TOTAL);
   if (cell->command == CELL_PADDING)
     rep_hist_padding_count_write(PADDING_TYPE_CELL);
@@ -2262,7 +2318,7 @@ connection_or_write_cell_to_buf(const cell_t *cell, or_connection_t *conn)
   if (conn->chan) {
     channel_timestamp_active(TLS_CHAN_TO_BASE(conn->chan));
 
-    if (TLS_CHAN_TO_BASE(conn->chan)->currently_padding) {
+    if (TLS_CHAN_TO_BASE(conn->chan)->padding_enabled) {
       rep_hist_padding_count_write(PADDING_TYPE_ENABLED_TOTAL);
       if (cell->command == CELL_PADDING)
         rep_hist_padding_count_write(PADDING_TYPE_ENABLED_CELL);
@@ -2292,6 +2348,7 @@ connection_or_write_var_cell_to_buf,(const var_cell_t *cell,
   if (conn->base_.state == OR_CONN_STATE_OR_HANDSHAKING_V3)
     or_handshake_state_record_var_cell(conn, conn->handshake_state, cell, 0);
 
+  rep_hist_padding_count_write(PADDING_TYPE_TOTAL);
   /* Touch the channel's active timestamp if there is one */
   if (conn->chan)
     channel_timestamp_active(TLS_CHAN_TO_BASE(conn->chan));
@@ -2428,6 +2485,31 @@ connection_or_send_versions(or_connection_t *conn, int v3_plus)
   return 0;
 }
 
+static netinfo_addr_t *
+netinfo_addr_from_tor_addr(const tor_addr_t *tor_addr)
+{
+  sa_family_t addr_family = tor_addr_family(tor_addr);
+
+  if (BUG(addr_family != AF_INET && addr_family != AF_INET6))
+    return NULL;
+
+  netinfo_addr_t *netinfo_addr = netinfo_addr_new();
+
+  if (addr_family == AF_INET) {
+    netinfo_addr_set_addr_type(netinfo_addr, NETINFO_ADDR_TYPE_IPV4);
+    netinfo_addr_set_len(netinfo_addr, 4);
+    netinfo_addr_set_addr_ipv4(netinfo_addr, tor_addr_to_ipv4h(tor_addr));
+  } else if (addr_family == AF_INET6) {
+    netinfo_addr_set_addr_type(netinfo_addr, NETINFO_ADDR_TYPE_IPV6);
+    netinfo_addr_set_len(netinfo_addr, 16);
+    uint8_t *ipv6_buf = netinfo_addr_getarray_addr_ipv6(netinfo_addr);
+    const uint8_t *in6_addr = tor_addr_to_in6_addr8(tor_addr);
+    memcpy(ipv6_buf, in6_addr, 16);
+  }
+
+  return netinfo_addr;
+}
+
 /** Send a NETINFO cell on <b>conn</b>, telling the other server what we know
  * about their address, our address, and the current time. */
 MOCK_IMPL(int,
@@ -2436,8 +2518,7 @@ connection_or_send_netinfo,(or_connection_t *conn))
   cell_t cell;
   time_t now = time(NULL);
   const routerinfo_t *me;
-  int len;
-  uint8_t *out;
+  int r = -1;
 
   tor_assert(conn->handshake_state);
 
@@ -2450,20 +2531,21 @@ connection_or_send_netinfo,(or_connection_t *conn))
   memset(&cell, 0, sizeof(cell_t));
   cell.command = CELL_NETINFO;
 
+  netinfo_cell_t *netinfo_cell = netinfo_cell_new();
+
   /* Timestamp, if we're a relay. */
   if (public_server_mode(get_options()) || ! conn->is_outgoing)
-    set_uint32(cell.payload, htonl((uint32_t)now));
+    netinfo_cell_set_timestamp(netinfo_cell, (uint32_t)now);
 
   /* Their address. */
-  out = cell.payload + 4;
+  const tor_addr_t *remote_tor_addr =
+    !tor_addr_is_null(&conn->real_addr) ? &conn->real_addr : &conn->base_.addr;
   /* We use &conn->real_addr below, unless it hasn't yet been set. If it
    * hasn't yet been set, we know that base_.addr hasn't been tampered with
    * yet either. */
-  len = append_address_to_payload(out, !tor_addr_is_null(&conn->real_addr)
-                                       ? &conn->real_addr : &conn->base_.addr);
-  if (len<0)
-    return -1;
-  out += len;
+  netinfo_addr_t *their_addr = netinfo_addr_from_tor_addr(remote_tor_addr);
+
+  netinfo_cell_set_other_addr(netinfo_cell, their_addr);
 
   /* My address -- only include it if I'm a public relay, or if I'm a
    * bridge and this is an incoming connection. If I'm a bridge and this
@@ -2471,28 +2553,42 @@ connection_or_send_netinfo,(or_connection_t *conn))
   if ((public_server_mode(get_options()) || !conn->is_outgoing) &&
       (me = router_get_my_routerinfo())) {
     tor_addr_t my_addr;
-    *out++ = 1 + !tor_addr_is_null(&me->ipv6_addr);
-
     tor_addr_from_ipv4h(&my_addr, me->addr);
-    len = append_address_to_payload(out, &my_addr);
-    if (len < 0)
-      return -1;
-    out += len;
+
+    uint8_t n_my_addrs = 1 + !tor_addr_is_null(&me->ipv6_addr);
+    netinfo_cell_set_n_my_addrs(netinfo_cell, n_my_addrs);
+
+    netinfo_cell_add_my_addrs(netinfo_cell,
+                              netinfo_addr_from_tor_addr(&my_addr));
 
     if (!tor_addr_is_null(&me->ipv6_addr)) {
-      len = append_address_to_payload(out, &me->ipv6_addr);
-      if (len < 0)
-        return -1;
+      netinfo_cell_add_my_addrs(netinfo_cell,
+                                netinfo_addr_from_tor_addr(&me->ipv6_addr));
     }
-  } else {
-    *out = 0;
+  }
+
+  const char *errmsg = NULL;
+  if ((errmsg = netinfo_cell_check(netinfo_cell))) {
+    log_warn(LD_OR, "Failed to validate NETINFO cell with error: %s",
+                    errmsg);
+    goto cleanup;
+  }
+
+  if (netinfo_cell_encode(cell.payload, CELL_PAYLOAD_SIZE,
+                          netinfo_cell) < 0) {
+    log_warn(LD_OR, "Failed generating NETINFO cell");
+    goto cleanup;
   }
 
   conn->handshake_state->digest_sent_data = 0;
   conn->handshake_state->sent_netinfo = 1;
   connection_or_write_cell_to_buf(&cell, conn);
 
-  return 0;
+  r = 0;
+ cleanup:
+  netinfo_cell_free(netinfo_cell);
+
+  return r;
 }
 
 /** Helper used to add an encoded certs to a cert cell */

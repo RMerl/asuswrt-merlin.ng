@@ -20,4 +20,4 @@ int onion_num_pending(uint16_t handshake_type);
 void onion_pending_remove(or_circuit_t *circ);
 void clear_pending_onions(void);
 
-#endif
+#endif /* !defined(TOR_ONION_QUEUE_H) */

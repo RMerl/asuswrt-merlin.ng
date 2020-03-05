@@ -11,4 +11,4 @@ int getinfo_helper_geoip(control_connection_t *control_conn,
                      const char *question, char **answer,
                      const char **errmsg);
 
-#endif
+#endif /* !defined(TOR_GETINFO_GEOIP_H) */

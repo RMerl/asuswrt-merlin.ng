@@ -22,4 +22,4 @@ time_t approx_time(void);
 void update_approx_time(time_t now);
 #endif /* defined(TIME_IS_FAST) */
 
-#endif
+#endif /* !defined(TOR_APPROX_TIME_H) */

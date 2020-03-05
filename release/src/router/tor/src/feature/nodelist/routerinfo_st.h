@@ -112,4 +112,4 @@ struct routerinfo_t {
   uint8_t purpose;
 };
 
-#endif
+#endif /* !defined(ROUTERINFO_ST_H) */

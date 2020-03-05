@@ -710,6 +710,11 @@ cache_clean_v3_as_client(time_t now)
     MAP_DEL_CURRENT(key);
     entry_size = cache_get_client_entry_size(entry);
     bytes_removed += entry_size;
+    /* We just removed an old descriptor. We need to close all intro circuits
+     * so we don't have leftovers that can be selected while lacking a
+     * descriptor. We leave the rendezvous circuits opened because they could
+     * be in use. */
+    hs_client_close_intro_circuits_from_desc(entry->desc);
     /* Entry is not in the cache anymore, destroy it. */
     cache_client_desc_free(entry);
     /* Update our OOM. We didn't use the remove() function because we are in

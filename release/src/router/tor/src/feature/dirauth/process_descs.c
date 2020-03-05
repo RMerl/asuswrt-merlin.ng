@@ -216,9 +216,14 @@ dirserv_load_fingerprint_file(void)
 
 #define DISABLE_DISABLING_ED25519
 
-/** Check whether <b>router</b> has a nickname/identity key combination that
- * we recognize from the fingerprint list, or an IP we automatically act on
- * according to our configuration.  Return the appropriate router status.
+/** Check whether <b>router</b> has:
+ * - a nickname/identity key combination that we recognize from the fingerprint
+ *   list,
+ * - an IP we automatically act on according to our configuration,
+ * - an appropriate version, and
+ * - matching pinned keys.
+ *
+ * Return the appropriate router status.
  *
  * If the status is 'FP_REJECT' and <b>msg</b> is provided, set
  * *<b>msg</b> to an explanation of why. */
@@ -236,7 +241,7 @@ dirserv_router_get_status(const routerinfo_t *router, const char **msg,
     return FP_REJECT;
   }
 
-  /* Check for the more usual versions to reject a router first. */
+  /* Check for the more common reasons to reject a router first. */
   const uint32_t r = dirserv_get_status_impl(d, router->nickname,
                                              router->addr, router->or_port,
                                              router->platform, msg, severity);
@@ -310,6 +315,47 @@ dirserv_would_reject_router(const routerstatus_t *rs)
   return (res & FP_REJECT) != 0;
 }
 
+/**
+ * Check whether the platform string in <b>platform</b> describes a platform
+ * that, as a directory authority, we want to reject.  If it does, return
+ * true, and set *<b>msg</b> (if present) to a rejection message.  Otherwise
+ * return false.
+ */
+STATIC bool
+dirserv_rejects_tor_version(const char *platform,
+                            const char **msg)
+{
+  if (!platform)
+    return false;
+
+  static const char please_upgrade_string[] =
+    "Tor version is insecure or unsupported. Please upgrade!";
+
+  /* Versions before Tor 0.2.9 are unsupported. Versions between 0.2.9.0 and
+   * 0.2.9.4 suffer from bug #20499, where relays don't keep their consensus
+   * up to date */
+  if (!tor_version_as_new_as(platform,"0.2.9.5-alpha")) {
+    if (msg)
+      *msg = please_upgrade_string;
+    return true;
+  }
+
+  /* Series between Tor 0.3.0 and 0.3.4 inclusive are unsupported, and some
+   * have bug #27841, which makes them broken as intro points. Reject them.
+   *
+   * Also reject unstable versions of 0.3.5, since (as of this writing)
+   * they are almost none of the network. */
+  if (tor_version_as_new_as(platform,"0.3.0.0-alpha-dev") &&
+      !tor_version_as_new_as(platform,"0.3.5.7")) {
+    if (msg) {
+      *msg = please_upgrade_string;
+    }
+    return true;
+  }
+
+  return false;
+}
+
 /** Helper: As dirserv_router_get_status, but takes the router fingerprint
  * (hex, no spaces), nickname, address (used for logging only), IP address, OR
  * port and platform (logging only) as arguments.
@@ -342,22 +388,8 @@ dirserv_get_status_impl(const char *id_digest, const char *nickname,
     }
   }
 
-  /* Versions before Tor 0.2.4.18-rc are too old to support, and are
-   * missing some important security fixes too. Disable them. */
-  if (platform && !tor_version_as_new_as(platform,"0.2.4.18-rc")) {
-    if (msg)
-      *msg = "Tor version is insecure or unsupported. Please upgrade!";
-    return FP_REJECT;
-  }
-
-  /* Tor 0.2.9.x where x<5 suffers from bug #20499, where relays don't
-   * keep their consensus up to date so they make bad guards.
-   * The simple fix is to just drop them from the network. */
-  if (platform &&
-      tor_version_as_new_as(platform,"0.2.9.0-alpha") &&
-      !tor_version_as_new_as(platform,"0.2.9.5-alpha")) {
-    if (msg)
-      *msg = "Tor version contains bug 20499. Please upgrade!";
+  /* Check whether the version is obsolete, broken, insecure, etc... */
+  if (platform && dirserv_rejects_tor_version(platform, msg)) {
     return FP_REJECT;
   }
 
@@ -423,20 +455,32 @@ dirserv_free_fingerprint_list(void)
 
 /** Return -1 if <b>ri</b> has a private or otherwise bad address,
  * unless we're configured to not care. Return 0 if all ok. */
-static int
+STATIC int
 dirserv_router_has_valid_address(routerinfo_t *ri)
 {
   tor_addr_t addr;
+
   if (get_options()->DirAllowPrivateAddresses)
     return 0; /* whatever it is, we're fine with it */
-  tor_addr_from_ipv4h(&addr, ri->addr);
 
-  if (tor_addr_is_internal(&addr, 0)) {
+  tor_addr_from_ipv4h(&addr, ri->addr);
+  if (tor_addr_is_null(&addr) || tor_addr_is_internal(&addr, 0)) {
     log_info(LD_DIRSERV,
-             "Router %s published internal IP address. Refusing.",
+             "Router %s published internal IPv4 address. Refusing.",
              router_describe(ri));
     return -1; /* it's a private IP, we should reject it */
   }
+
+  /* We only check internal v6 on non-null addresses because we do not require
+   * IPv6 and null IPv6 is normal. */
+  if (!tor_addr_is_null(&ri->ipv6_addr) &&
+      tor_addr_is_internal(&ri->ipv6_addr, 0)) {
+    log_info(LD_DIRSERV,
+             "Router %s published internal IPv6 address. Refusing.",
+             router_describe(ri));
+    return -1; /* it's a private IP, we should reject it */
+  }
+
   return 0;
 }
 
@@ -519,7 +563,8 @@ WRA_MORE_SEVERE(was_router_added_t a, was_router_added_t b)
 /** As for dirserv_add_descriptor(), but accepts multiple documents, and
  * returns the most severe error that occurred for any one of them. */
 was_router_added_t
-dirserv_add_multiple_descriptors(const char *desc, uint8_t purpose,
+dirserv_add_multiple_descriptors(const char *desc, size_t desclen,
+                                 uint8_t purpose,
                                  const char *source,
                                  const char **msg)
 {
@@ -534,7 +579,12 @@ dirserv_add_multiple_descriptors(const char *desc, uint8_t purpose,
   int general = purpose == ROUTER_PURPOSE_GENERAL;
   tor_assert(msg);
 
-  r=ROUTER_ADDED_SUCCESSFULLY; /*Least severe return value. */
+  r=ROUTER_ADDED_SUCCESSFULLY; /* Least severe return value. */
+
+  if (!string_is_utf8_no_bom(desc, desclen)) {
+    *msg = "descriptor(s) or extrainfo(s) not valid UTF-8 or had BOM.";
+    return ROUTER_AUTHDIR_REJECTS;
+  }
 
   format_iso_time(time_buf, now);
   if (tor_snprintf(annotation_buf, sizeof(annotation_buf),
@@ -545,14 +595,12 @@ dirserv_add_multiple_descriptors(const char *desc, uint8_t purpose,
                    !general ? router_purpose_to_string(purpose) : "",
                    !general ? "\n" : "")<0) {
     *msg = "Couldn't format annotations";
-    /* XXX Not cool: we return -1 below, but (was_router_added_t)-1 is
-     * ROUTER_BAD_EI, which isn't what's gone wrong here. :( */
-    return -1;
+    return ROUTER_AUTHDIR_BUG_ANNOTATIONS;
   }
 
   s = desc;
   list = smartlist_new();
-  if (!router_parse_list_from_string(&s, NULL, list, SAVED_NOWHERE, 0, 0,
+  if (!router_parse_list_from_string(&s, s+desclen, list, SAVED_NOWHERE, 0, 0,
                                      annotation_buf, NULL)) {
     SMARTLIST_FOREACH(list, routerinfo_t *, ri, {
         msg_out = NULL;
@@ -568,7 +616,7 @@ dirserv_add_multiple_descriptors(const char *desc, uint8_t purpose,
   smartlist_clear(list);
 
   s = desc;
-  if (!router_parse_list_from_string(&s, NULL, list, SAVED_NOWHERE, 1, 0,
+  if (!router_parse_list_from_string(&s, s+desclen, list, SAVED_NOWHERE, 1, 0,
                                      NULL, NULL)) {
     SMARTLIST_FOREACH(list, extrainfo_t *, ei, {
         msg_out = NULL;

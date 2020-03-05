@@ -29,7 +29,15 @@ tor_mutex_new_nonrecursive(void)
   tor_mutex_init_nonrecursive(m);
   return m;
 }
-/** Release all storage and system resources held by <b>m</b>. */
+/** Release all storage and system resources held by <b>m</b>.
+ *
+ * Destroying a locked mutex is undefined behaviour. Global mutexes may be
+ * locked when they are passed to this function, because multiple threads can
+ * still access them. So we can either:
+ *  - destroy on shutdown, and re-initialise when tor re-initialises, or
+ *  - skip destroying and re-initialisation, using a sentinel variable.
+ * See #31735 for details.
+ */
 void
 tor_mutex_free_(tor_mutex_t *m)
 {

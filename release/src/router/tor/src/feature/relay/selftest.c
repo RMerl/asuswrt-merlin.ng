@@ -26,7 +26,7 @@
 #include "core/or/crypt_path_st.h"
 #include "core/or/origin_circuit_st.h"
 #include "core/or/relay.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/dirclient/dirclient.h"
 #include "feature/dircommon/directory.h"
 #include "feature/nodelist/authority_cert_st.h"
@@ -35,6 +35,7 @@
 #include "feature/nodelist/routerlist.h" // but...
 #include "feature/nodelist/routerset.h"
 #include "feature/nodelist/torcert.h"
+#include "feature/relay/relay_periodic.h"
 #include "feature/relay/router.h"
 #include "feature/relay/selftest.h"
 

@@ -8,7 +8,7 @@
 
 #include "core/or/or.h"
 #include "lib/err/backtrace.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_edge.h"

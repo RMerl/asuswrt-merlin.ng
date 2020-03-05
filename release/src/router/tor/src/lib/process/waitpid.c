@@ -16,7 +16,7 @@
 #include "lib/log/log.h"
 #include "lib/log/util_bug.h"
 #include "lib/malloc/malloc.h"
-#include "ht.h"
+#include "ext/ht.h"
 
 #ifdef HAVE_SYS_WAIT_H
 #include <sys/wait.h>

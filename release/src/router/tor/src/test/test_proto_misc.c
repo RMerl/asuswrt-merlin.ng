@@ -8,7 +8,7 @@
 
 #include "core/or/or.h"
 #include "test/test.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "core/or/connection_or.h"
 #include "feature/relay/ext_orport.h"
 #include "core/proto/proto_cell.h"

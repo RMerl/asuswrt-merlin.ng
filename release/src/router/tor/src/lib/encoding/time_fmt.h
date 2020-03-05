@@ -41,4 +41,4 @@ int parse_iso_time_nospace(const char *cp, time_t *t);
 int parse_http_time(const char *buf, struct tm *tm);
 int format_time_interval(char *out, size_t out_len, long interval);
 
-#endif
+#endif /* !defined(TOR_TIME_FMT_H) */

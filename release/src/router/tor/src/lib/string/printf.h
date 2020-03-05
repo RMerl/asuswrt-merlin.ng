@@ -27,4 +27,4 @@ int tor_asprintf(char **strp, const char *fmt, ...)
 int tor_vasprintf(char **strp, const char *fmt, va_list args)
   CHECK_PRINTF(2,0);
 
-#endif /* !defined(TOR_UTIL_STRING_H) */
+#endif /* !defined(TOR_UTIL_PRINTF_H) */

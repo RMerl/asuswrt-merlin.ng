@@ -33,4 +33,4 @@ const char *crypto_get_header_version_string(void);
 
 int tor_is_using_nss(void);
 
-#endif /* !defined(TOR_CRYPTO_H) */
+#endif /* !defined(TOR_CRYPTO_INIT_H) */

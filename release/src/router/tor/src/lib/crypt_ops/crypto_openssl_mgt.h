@@ -84,6 +84,6 @@ int crypto_openssl_late_init(int useAccel, const char *accelName,
 void crypto_openssl_thread_cleanup(void);
 void crypto_openssl_global_cleanup(void);
 
-#endif /* ENABLE_OPENSSL */
+#endif /* defined(ENABLE_OPENSSL) */
 
 #endif /* !defined(TOR_CRYPTO_OPENSSL_H) */

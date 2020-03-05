@@ -8,7 +8,7 @@
 #define CIRCUITLIST_PRIVATE
 #define CONNECTION_PRIVATE
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "core/or/circuitlist.h"
 #include "lib/evloop/compat_libevent.h"
 #include "core/mainloop/connection.h"

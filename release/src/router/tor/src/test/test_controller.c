@@ -1,11 +1,15 @@
 /* Copyright (c) 2015-2019, The Tor Project, Inc. */
 /* See LICENSE for licensing information */
 
-#define CONTROL_PRIVATE
+#define CONTROL_CMD_PRIVATE
+#define CONTROL_GETINFO_PRIVATE
 #include "core/or/or.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
 #include "feature/client/bridges.h"
 #include "feature/control/control.h"
+#include "feature/control/control_cmd.h"
+#include "feature/control/control_getinfo.h"
+#include "feature/control/control_proto.h"
 #include "feature/client/entrynodes.h"
 #include "feature/hs/hs_common.h"
 #include "feature/nodelist/networkstatus.h"
@@ -15,11 +19,202 @@
 #include "test/test.h"
 #include "test/test_helpers.h"
 #include "lib/net/resolve.h"
+#include "lib/encoding/confline.h"
+#include "lib/encoding/kvline.h"
 
 #include "feature/control/control_connection_st.h"
+#include "feature/control/control_cmd_args_st.h"
 #include "feature/dirclient/download_status_st.h"
 #include "feature/nodelist/microdesc_st.h"
 #include "feature/nodelist/node_st.h"
+
+typedef struct {
+  const char *input;
+  const char *expected_parse;
+  const char *expected_error;
+} parser_testcase_t;
+
+typedef struct {
+  const control_cmd_syntax_t *syntax;
+  size_t n_testcases;
+  const parser_testcase_t *testcases;
+} parse_test_params_t;
+
+static char *
+control_cmd_dump_args(const control_cmd_args_t *result)
+{
+  buf_t *buf = buf_new();
+  buf_add_string(buf, "{ args=[");
+  if (result->args) {
+    if (smartlist_len(result->args)) {
+        buf_add_string(buf, " ");
+    }
+    SMARTLIST_FOREACH_BEGIN(result->args, const char *, s) {
+      const bool last = (s_sl_idx == smartlist_len(result->args)-1);
+      buf_add_printf(buf, "%s%s ",
+                     escaped(s),
+                     last ? "" : ",");
+    } SMARTLIST_FOREACH_END(s);
+  }
+  buf_add_string(buf, "]");
+  if (result->cmddata) {
+    buf_add_string(buf, ", obj=");
+    buf_add_string(buf, escaped(result->cmddata));
+  }
+  if (result->kwargs) {
+    buf_add_string(buf, ", { ");
+    const config_line_t *line;
+    for (line = result->kwargs; line; line = line->next) {
+      const bool last = (line->next == NULL);
+      buf_add_printf(buf, "%s=%s%s ", line->key, escaped(line->value),
+                     last ? "" : ",");
+    }
+    buf_add_string(buf, "}");
+  }
+  buf_add_string(buf, " }");
+
+  char *encoded = buf_extract(buf, NULL);
+  buf_free(buf);
+  return encoded;
+}
+
+static void
+test_controller_parse_cmd(void *arg)
+{
+  const parse_test_params_t *params = arg;
+  control_cmd_args_t *result = NULL;
+  char *error = NULL;
+  char *encoded = NULL;
+
+  for (size_t i = 0; i < params->n_testcases; ++i) {
+    const parser_testcase_t *t = &params->testcases[i];
+    result = control_cmd_parse_args("EXAMPLE",
+                                    params->syntax,
+                                    strlen(t->input),
+                                    t->input,
+                                    &error);
+    // A valid test should expect exactly one parse or error.
+    tt_int_op((t->expected_parse == NULL), OP_NE,
+              (t->expected_error == NULL));
+    // We get a result or an error, not both.
+    tt_int_op((result == NULL), OP_EQ, (error != NULL));
+    // We got the one we expected.
+    tt_int_op((result == NULL), OP_EQ, (t->expected_parse == NULL));
+
+    if (result) {
+      encoded = control_cmd_dump_args(result);
+      tt_str_op(encoded, OP_EQ, t->expected_parse);
+    } else {
+      tt_str_op(error, OP_EQ, t->expected_error);
+    }
+
+    tor_free(error);
+    tor_free(encoded);
+    control_cmd_args_free(result);
+  }
+
+ done:
+  tor_free(error);
+  tor_free(encoded);
+  control_cmd_args_free(result);
+}
+
+#define OK(inp, out) \
+  { inp "\r\n", out, NULL }
+#define ERR(inp, err) \
+  { inp "\r\n", NULL, err }
+
+#define TESTPARAMS(syntax, array)                \
+  { &syntax,                                     \
+      ARRAY_LENGTH(array),                       \
+      array }
+
+static const parser_testcase_t one_to_three_tests[] = {
+   ERR("", "Need at least 1 argument(s)"),
+   ERR("   \t", "Need at least 1 argument(s)"),
+   OK("hello", "{ args=[ \"hello\" ] }"),
+   OK("hello world", "{ args=[ \"hello\", \"world\" ] }"),
+   OK("hello  world", "{ args=[ \"hello\", \"world\" ] }"),
+   OK("  hello  world", "{ args=[ \"hello\", \"world\" ] }"),
+   OK("  hello  world      ", "{ args=[ \"hello\", \"world\" ] }"),
+   OK("hello there world", "{ args=[ \"hello\", \"there\", \"world\" ] }"),
+   ERR("why hello there world", "Cannot accept more than 3 argument(s)"),
+   ERR("hello\r\nworld.\r\n.", "Unexpected body"),
+};
+
+static const control_cmd_syntax_t one_to_three_syntax = {
+   .min_args=1, .max_args=3
+};
+
+static const parse_test_params_t parse_one_to_three_params =
+  TESTPARAMS( one_to_three_syntax, one_to_three_tests );
+
+// =
+static const parser_testcase_t no_args_one_obj_tests[] = {
+  ERR("Hi there!\r\n.", "Cannot accept more than 0 argument(s)"),
+  ERR("", "Empty body"),
+  OK("\r\n", "{ args=[], obj=\"\\n\" }"),
+  OK("\r\nHello world\r\n", "{ args=[], obj=\"Hello world\\n\\n\" }"),
+  OK("\r\nHello\r\nworld\r\n", "{ args=[], obj=\"Hello\\nworld\\n\\n\" }"),
+  OK("\r\nHello\r\n..\r\nworld\r\n",
+     "{ args=[], obj=\"Hello\\n.\\nworld\\n\\n\" }"),
+};
+static const control_cmd_syntax_t no_args_one_obj_syntax = {
+   .min_args=0, .max_args=0,
+   .want_cmddata=true,
+};
+static const parse_test_params_t parse_no_args_one_obj_params =
+  TESTPARAMS( no_args_one_obj_syntax, no_args_one_obj_tests );
+
+static const parser_testcase_t no_args_kwargs_tests[] = {
+  OK("", "{ args=[] }"),
+  OK(" ", "{ args=[] }"),
+  OK("hello there=world", "{ args=[], { hello=\"\", there=\"world\" } }"),
+  OK("hello there=world today",
+     "{ args=[], { hello=\"\", there=\"world\", today=\"\" } }"),
+  ERR("=Foo", "Cannot parse keyword argument(s)"),
+};
+static const control_cmd_syntax_t no_args_kwargs_syntax = {
+   .min_args=0, .max_args=0,
+   .accept_keywords=true,
+   .kvline_flags=KV_OMIT_VALS
+};
+static const parse_test_params_t parse_no_args_kwargs_params =
+  TESTPARAMS( no_args_kwargs_syntax, no_args_kwargs_tests );
+
+static const char *one_arg_kwargs_allow_keywords[] = {
+  "Hello", "world", NULL
+};
+static const parser_testcase_t one_arg_kwargs_tests[] = {
+  ERR("", "Need at least 1 argument(s)"),
+  OK("Hi", "{ args=[ \"Hi\" ] }"),
+  ERR("hello there=world", "Unrecognized keyword argument \"there\""),
+  OK("Hi HELLO=foo", "{ args=[ \"Hi\" ], { HELLO=\"foo\" } }"),
+  OK("Hi world=\"bar baz\" hello  ",
+     "{ args=[ \"Hi\" ], { world=\"bar baz\", hello=\"\" } }"),
+};
+static const control_cmd_syntax_t one_arg_kwargs_syntax = {
+   .min_args=1, .max_args=1,
+   .accept_keywords=true,
+   .allowed_keywords=one_arg_kwargs_allow_keywords,
+   .kvline_flags=KV_OMIT_VALS|KV_QUOTED,
+};
+static const parse_test_params_t parse_one_arg_kwargs_params =
+  TESTPARAMS( one_arg_kwargs_syntax, one_arg_kwargs_tests );
+
+static char *reply_str = NULL;
+/* Mock for control_write_reply that copies the string for inspection
+ * by tests */
+static void
+mock_control_write_reply(control_connection_t *conn, int code, int c,
+                                const char *s)
+{
+  (void)conn;
+  (void)code;
+  (void)c;
+  tor_free(reply_str);
+  reply_str = tor_strdup(s);
+}
 
 static void
 test_add_onion_helper_keyarg_v3(void *arg)
@@ -27,36 +222,52 @@ test_add_onion_helper_keyarg_v3(void *arg)
   int ret, hs_version;
   add_onion_secret_key_t pk;
   char *key_new_blob = NULL;
-  char *err_msg = NULL;
   const char *key_new_alg = NULL;
 
   (void) arg;
+  MOCK(control_write_reply, mock_control_write_reply);
 
   memset(&pk, 0, sizeof(pk));
 
   /* Test explicit ED25519-V3 key generation. */
+  tor_free(reply_str);
   ret = add_onion_helper_keyarg("NEW:ED25519-V3", 0, &key_new_alg,
                                 &key_new_blob, &pk, &hs_version,
-                                &err_msg);
+                                NULL);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_THREE);
   tt_assert(pk.v3);
   tt_str_op(key_new_alg, OP_EQ, "ED25519-V3");
   tt_assert(key_new_blob);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
   tor_free(pk.v3); pk.v3 = NULL;
   tor_free(key_new_blob);
 
+  /* Test "BEST" key generation (Assumes BEST = ED25519-V3). */
+  tor_free(pk.v3); pk.v3 = NULL;
+  tor_free(key_new_blob);
+  ret = add_onion_helper_keyarg("NEW:BEST", 0, &key_new_alg, &key_new_blob,
+                                &pk, &hs_version, NULL);
+  tt_int_op(ret, OP_EQ, 0);
+  tt_int_op(hs_version, OP_EQ, HS_VERSION_THREE);
+  tt_assert(pk.v3);
+  tt_str_op(key_new_alg, OP_EQ, "ED25519-V3");
+  tt_assert(key_new_blob);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
+
   /* Test discarding the private key. */
+  tor_free(reply_str);
+  tor_free(pk.v3); pk.v3 = NULL;
+  tor_free(key_new_blob);
   ret = add_onion_helper_keyarg("NEW:ED25519-V3", 1, &key_new_alg,
                                 &key_new_blob, &pk, &hs_version,
-                                &err_msg);
+                                NULL);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_THREE);
   tt_assert(pk.v3);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
   tor_free(pk.v3); pk.v3 = NULL;
   tor_free(key_new_blob);
 
@@ -76,9 +287,10 @@ test_add_onion_helper_keyarg_v3(void *arg)
 
     tor_asprintf(&key_blob, "ED25519-V3:%s", base64_sk);
     tt_assert(key_blob);
+    tor_free(reply_str);
     ret = add_onion_helper_keyarg(key_blob, 1, &key_new_alg,
                                   &key_new_blob, &pk, &hs_version,
-                                  &err_msg);
+                                  NULL);
     tor_free(key_blob);
     tt_int_op(ret, OP_EQ, 0);
     tt_int_op(hs_version, OP_EQ, HS_VERSION_THREE);
@@ -86,7 +298,7 @@ test_add_onion_helper_keyarg_v3(void *arg)
     tt_mem_op(pk.v3, OP_EQ, hex_sk, 64);
     tt_ptr_op(key_new_alg, OP_EQ, NULL);
     tt_ptr_op(key_new_blob, OP_EQ, NULL);
-    tt_ptr_op(err_msg, OP_EQ, NULL);
+    tt_ptr_op(reply_str, OP_EQ, NULL);
     tor_free(pk.v3); pk.v3 = NULL;
     tor_free(key_new_blob);
   }
@@ -94,7 +306,8 @@ test_add_onion_helper_keyarg_v3(void *arg)
  done:
   tor_free(pk.v3);
   tor_free(key_new_blob);
-  tor_free(err_msg);
+  tor_free(reply_str);
+  UNMOCK(control_write_reply);
 }
 
 static void
@@ -105,72 +318,61 @@ test_add_onion_helper_keyarg_v2(void *arg)
   crypto_pk_t *pk1 = NULL;
   const char *key_new_alg = NULL;
   char *key_new_blob = NULL;
-  char *err_msg = NULL;
   char *encoded = NULL;
   char *arg_str = NULL;
 
   (void) arg;
+  MOCK(control_write_reply, mock_control_write_reply);
 
   memset(&pk, 0, sizeof(pk));
 
   /* Test explicit RSA1024 key generation. */
+  tor_free(reply_str);
   ret = add_onion_helper_keyarg("NEW:RSA1024", 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, &err_msg);
+                                &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(pk.v2);
   tt_str_op(key_new_alg, OP_EQ, "RSA1024");
   tt_assert(key_new_blob);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
-
-  /* Test "BEST" key generation (Assumes BEST = RSA1024). */
-  crypto_pk_free(pk.v2); pk.v2 = NULL;
-  tor_free(key_new_blob);
-  ret = add_onion_helper_keyarg("NEW:BEST", 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, &err_msg);
-  tt_int_op(ret, OP_EQ, 0);
-  tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
-  tt_assert(pk.v2);
-  tt_str_op(key_new_alg, OP_EQ, "RSA1024");
-  tt_assert(key_new_blob);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
 
   /* Test discarding the private key. */
   crypto_pk_free(pk.v2); pk.v2 = NULL;
   tor_free(key_new_blob);
-  ret = add_onion_helper_keyarg("NEW:BEST", 1, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, &err_msg);
+  ret = add_onion_helper_keyarg("NEW:RSA1024", 1, &key_new_alg, &key_new_blob,
+                               &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(pk.v2);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
 
   /* Test generating a invalid key type. */
   crypto_pk_free(pk.v2); pk.v2 = NULL;
   ret = add_onion_helper_keyarg("NEW:RSA512", 0, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, &err_msg);
+                               &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, -1);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(!pk.v2);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(err_msg);
+  tt_assert(reply_str);
 
   /* Test loading a RSA1024 key. */
-  tor_free(err_msg);
+  tor_free(reply_str);
   pk1 = pk_generate(0);
   tt_int_op(0, OP_EQ, crypto_pk_base64_encode_private(pk1, &encoded));
   tor_asprintf(&arg_str, "RSA1024:%s", encoded);
   ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, &err_msg);
+                                &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, 0);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(pk.v2);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
   tt_int_op(crypto_pk_cmp_keys(pk1, pk.v2), OP_EQ, 0);
 
   /* Test loading a invalid key type. */
@@ -179,36 +381,37 @@ test_add_onion_helper_keyarg_v2(void *arg)
   crypto_pk_free(pk.v2); pk.v2 = NULL;
   tor_asprintf(&arg_str, "RSA512:%s", encoded);
   ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                                &pk, &hs_version, &err_msg);
+                                &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, -1);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(!pk.v2);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(err_msg);
+  tt_assert(reply_str);
 
   /* Test loading a invalid key. */
   tor_free(arg_str);
   crypto_pk_free(pk.v2); pk.v2 = NULL;
-  tor_free(err_msg);
+  tor_free(reply_str);
   encoded[strlen(encoded)/2] = '\0';
   tor_asprintf(&arg_str, "RSA1024:%s", encoded);
   ret = add_onion_helper_keyarg(arg_str, 0, &key_new_alg, &key_new_blob,
-                               &pk, &hs_version, &err_msg);
+                               &pk, &hs_version, NULL);
   tt_int_op(ret, OP_EQ, -1);
   tt_int_op(hs_version, OP_EQ, HS_VERSION_TWO);
   tt_assert(!pk.v2);
   tt_ptr_op(key_new_alg, OP_EQ, NULL);
   tt_ptr_op(key_new_blob, OP_EQ, NULL);
-  tt_assert(err_msg);
+  tt_assert(reply_str);
 
  done:
   crypto_pk_free(pk1);
   crypto_pk_free(pk.v2);
   tor_free(key_new_blob);
-  tor_free(err_msg);
+  tor_free(reply_str);
   tor_free(encoded);
   tor_free(arg_str);
+  UNMOCK(control_write_reply);
 }
 
 static void
@@ -362,49 +565,52 @@ static void
 test_add_onion_helper_clientauth(void *arg)
 {
   rend_authorized_client_t *client = NULL;
-  char *err_msg = NULL;
   int created = 0;
 
   (void)arg;
 
+  MOCK(control_write_reply, mock_control_write_reply);
   /* Test "ClientName" only. */
-  client = add_onion_helper_clientauth("alice", &created, &err_msg);
+  tor_free(reply_str);
+  client = add_onion_helper_clientauth("alice", &created, NULL);
   tt_assert(client);
   tt_assert(created);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
   rend_authorized_client_free(client);
 
   /* Test "ClientName:Blob" */
+  tor_free(reply_str);
   client = add_onion_helper_clientauth("alice:475hGBHPlq7Mc0cRZitK/B",
-                                       &created, &err_msg);
+                                       &created, NULL);
   tt_assert(client);
   tt_assert(!created);
-  tt_ptr_op(err_msg, OP_EQ, NULL);
+  tt_ptr_op(reply_str, OP_EQ, NULL);
   rend_authorized_client_free(client);
 
   /* Test invalid client names */
+  tor_free(reply_str);
   client = add_onion_helper_clientauth("no*asterisks*allowed", &created,
-                                       &err_msg);
+                                       NULL);
   tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(err_msg);
-  tor_free(err_msg);
+  tt_assert(reply_str);
 
   /* Test invalid auth cookie */
-  client = add_onion_helper_clientauth("alice:12345", &created, &err_msg);
+  tor_free(reply_str);
+  client = add_onion_helper_clientauth("alice:12345", &created, NULL);
   tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(err_msg);
-  tor_free(err_msg);
+  tt_assert(reply_str);
 
   /* Test invalid syntax */
+  tor_free(reply_str);
   client = add_onion_helper_clientauth(":475hGBHPlq7Mc0cRZitK/B", &created,
-                                       &err_msg);
+                                       NULL);
   tt_ptr_op(client, OP_EQ, NULL);
-  tt_assert(err_msg);
-  tor_free(err_msg);
+  tt_assert(reply_str);
 
  done:
   rend_authorized_client_free(client);
-  tor_free(err_msg);
+  tor_free(reply_str);
+  UNMOCK(control_write_reply);
 }
 
 /* Mocks and data/variables used for GETINFO download status tests */
@@ -1543,7 +1749,7 @@ test_current_time(void *arg)
 static size_t n_nodelist_get_list = 0;
 static smartlist_t *nodes = NULL;
 
-static smartlist_t *
+static const smartlist_t *
 mock_nodelist_get_list(void)
 {
   n_nodelist_get_list++;
@@ -1614,7 +1820,15 @@ test_getinfo_md_all(void *arg)
   return;
 }
 
+#define PARSER_TEST(type)                                             \
+  { "parse/" #type, test_controller_parse_cmd, 0, &passthrough_setup, \
+      (void*)&parse_ ## type ## _params }
+
 struct testcase_t controller_tests[] = {
+  PARSER_TEST(one_to_three),
+  PARSER_TEST(no_args_one_obj),
+  PARSER_TEST(no_args_kwargs),
+  PARSER_TEST(one_arg_kwargs),
   { "add_onion_helper_keyarg_v2", test_add_onion_helper_keyarg_v2, 0,
     NULL, NULL },
   { "add_onion_helper_keyarg_v3", test_add_onion_helper_keyarg_v3, 0,

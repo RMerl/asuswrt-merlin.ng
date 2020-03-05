@@ -1,11 +1,11 @@
 #!/bin/sh
 
-if test "`id -u`" != '0'; then
+if test "$(id -u)" != '0'; then
     echo "This test only works when run as root. Skipping." >&2
     exit 77
 fi
 
-if test "`id -u nobody`" = ""; then
+if test "$(id -u nobody)" = ""; then
     echo "This test requires that your system have a 'nobody' user. Sorry." >&2
     exit 1
 fi

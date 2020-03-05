@@ -2776,8 +2776,8 @@ BlogAction_t _blog_emit( void * nbuff_p, void * dev_p,
             rfc2684HdrLength[BLOG_GET_PHYLEN(phyHdr)],
             blogHash.match );
 
-		if (skb_p->priority)
-			printk(KERN_INFO "%s, blogp = 0x%x\n", __FUNCTION__, blog_p->priority);
+		if (skb_p->priority && net_ratelimit())
+			printk(KERN_DEBUG "%s, blogp = 0x%x\n", __FUNCTION__, blog_p->priority);
         action = blog_tx_hook_g( skb_p, (void*)skb_p->dev,
                                  encap, blogHash.match );
 

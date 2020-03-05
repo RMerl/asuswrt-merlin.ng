@@ -230,7 +230,10 @@ function get_log_data(){
 											</td>
 										</tr>
 									</table>
-									<div class="apply_gen" valign="top"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
+									<div class="apply_gen" valign="top">
+										<input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" />
+										<br/><span id="alert_msg1" style="color:#FC0;"></span>
+									</div>
 									</form>
 									<div style="color:#FFCC00;"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
 									<div style="margin-top:8px">

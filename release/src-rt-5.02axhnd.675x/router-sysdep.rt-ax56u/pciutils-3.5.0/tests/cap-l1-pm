@@ -1,0 +1,26 @@
+Sample lspci -vvxxxx output showing first 8 bytes of extended config space for
+the L1 Substate Capability. Cannot show more since hardware is unreleased.
+
+MJ: Added fake header, so that the test parses.
+
+00:1c.0 PCI bridge:
+        Capabilities: [200 v1] L1 PM Substates
+                L1SubCap: PCI-PM_L1.2+, PCI-PM_L1.1+, ASPM_L1.2+, ASPM_L1.1+, L1_PM_Substates+
+                          PortCommonModeRestoreTime=40us, PortTPowerOnTime=10us
+00: 86 80 08 34 47 01 10 00 12 00 04 06 10 00 01 00
+10: 00 00 00 00 00 00 00 00 00 01 01 00 10 10 00 00
+20: 00 e0 90 e0 81 c7 f1 c7 00 00 00 00 00 00 00 00
+30: 00 00 00 00 40 00 00 00 00 00 00 00 0b 01 00 00
+40: 0d 60 00 00 86 80 53 4f 00 00 00 00 00 00 00 00
+50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+60: 05 90 02 01 20 00 00 00 00 00 00 00 00 00 00 00
+70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+90: 10 e0 42 01 21 80 00 00 20 00 00 00 42 3c 39 01
+a0: 42 00 41 70 1f 00 02 02 c0 07 48 01 00 00 01 00
+b0: 00 00 00 00 3e 00 00 00 39 00 00 00 00 00 00 00
+c0: 11 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 01 00 03 c8 00 00 00 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+100: 1e 00 01 00 1f 28 28 00

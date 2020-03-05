@@ -1,0 +1,143 @@
+This package contains the PCI Utilities, version 3.5.0.
+
+Copyright (c) 1997--2016 Martin Mares <mj@ucw.cz>
+
+All files in this package can be freely distributed and used according
+to the terms of the GNU General Public License, either version 2 or
+(at your opinion) any newer version. See http://www.gnu.org/ for details.
+
+
+1. What's that?
+~~~~~~~~~~~~~~~
+The PCI Utilities package contains a library for portable access to PCI bus
+configuration registers and several utilities based on this library.
+
+In runs on the following systems:
+
+	Linux		(via /sys/bus/pci, /proc/bus/pci or i386 ports)
+	FreeBSD		(via /dev/pci)
+	NetBSD		(via libpci)
+	OpenBSD		(via /dev/pci)
+	GNU/kFreeBSD	(via /dev/pci)
+	Solaris/i386	(direct port access)
+	Aix		(via /dev/pci and odmget)
+	GNU Hurd	(direct port access)
+	Windows		(direct port access, see README.Windows for caveats)
+	CYGWIN		(direct port access)
+	BeOS		(via syscalls)
+	Haiku		(via /dev/misc/poke)
+	Darwin		(via IOKit)
+
+It should be very easy to add support for other systems as well (volunteers
+wanted; if you want to try that, I'll be very glad to see the patches and
+include them in the next version).
+
+The utilities include:  (See manual pages for more details)
+
+  - lspci: displays detailed information about all PCI buses and devices.
+
+  - setpci: allows to read from and write to PCI device configuration
+    registers. For example, you can adjust the latency timers with it.
+    CAUTION: There is a couple of dangerous points and caveats, please read
+    the manual page first!
+
+  - update-pciids: download the current version of the pci.ids file.
+
+
+2. Compiling and (un)installing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Just run "make" to compile the package and then "make install" to install it.
+Please note that GNU make is needed on most platforms.
+
+If you want to change the default installation location, please override
+the PREFIX variable specified in the Makefile -- e.g., you can use
+"make PREFIX=/opt/pciutils install" to create a separate installation
+not interfering with the rest of your system.  Setting the DESTDIR variable
+will allow you to install to a different directory from the one you intend
+to eventually run it from.  This is useful for people who are packaging
+pciutils to install on other computers.
+
+There are several options which can be set in the Makefile or overridden
+when running make:
+
+  ZLIB=yes/no	Enable support for compressed pci.ids (requires zlib).
+		If it is enabled, pciutils will use pci.ids.gz in preference to
+		pci.ids, even if the pci.ids file is newer.  If the pci.ids.gz
+		file is missing, it will use pci.ids instead.  If you do not
+		specify this option, the configure script will try to guess
+		automatically based on the presence of zlib.
+
+  DNS=yes/no	Enable support for querying the central database of PCI IDs
+		using DNS.  Requires libresolv (which is available on most
+		systems as a part of the standard libraries) and tries to
+		autodetect its presence if the option is not specified.
+
+  SHARED=yes/	Build libpci as a shared library.  Requires GCC 4.0 or newer.
+  no/local	The ABI of the shared library is intended to remain backward
+		compatible for a long time (we use symbol versioning to achieve
+		that, like GNU libc does).  The value `local' includes the
+		right directory name in the binaries, so the utilities can be
+		run without installation.  This is not recommended for any
+		production builds.
+
+"make install-lib" installs the library together with its header files
+for use by other programs.
+
+When you are bored of dumping PCI registers, just use "make uninstall".
+
+
+3. Getting new IDs
+~~~~~~~~~~~~~~~~~~~
+The database of PCI IDs (the pci.ids file) gets out of date much faster
+than I release new versions of this package, so it is maintained separately.
+
+It lives at http://pci-ids.ucw.cz/, where you can browse the database,
+download the most recent pci.ids file (e.g., by running the update-ids utility)
+and also submit new entries.
+
+Alternatively, you can use `lspci -q' to query the central database
+for new entries via network.
+
+The pci.ids file is also mirrored at https://github.com/pciutils/pciids.
+
+On Linux systems with a recent enough version of libudev, UDEV's HWDB
+database is consulted when pci.ids lacks the device.
+
+
+4. Getting new versions
+~~~~~~~~~~~~~~~~~~~~~~~
+The current version of pciutils is available at:
+
+	http://mj.ucw.cz/sw/pciutils/
+
+The tarball can be downloaded at the following places:
+
+	ftp://atrey.karlin.mff.cuni.cz/pub/linux/pci/
+	ftp://ftp.kernel.org/pub/software/utils/pciutils/ (expect a couple of hours delay)
+
+There is also a public GIT tree at:
+
+	git://git.kernel.org/pub/scm/utils/pciutils/pciutils.git
+	https://github.com/pciutils/pciutils
+
+
+5. Using the library
+~~~~~~~~~~~~~~~~~~~~
+So far, there is only a little documentation for the library except for the
+general introduction in the pcilib(7) man page. If you want to use the
+library in your programs, please follow the comments in lib/pci.h and in
+the example program example.c.
+
+
+6. Feedback
+~~~~~~~~~~~
+If you have any bug reports or suggestions, send them to the author.
+
+If you have any new IDs, I'll be very glad to add them to the database.
+Just submit them at http://pci-ids.ucw.cz/.
+
+Announcements of new versions are sent to linux-pci@vger.kernel.org
+(see http://vger.kernel.org/ for instructions).
+
+					Have fun
+							Martin

@@ -1,0 +1,52 @@
+#!/usr/bin/perl -w
+# Create a DNS zone with PCI ID records
+
+use strict;
+
+my %ids = ();
+my %comments = ();
+foreach our $file (@ARGV) {
+	my $fn = ($file =~ /\.gz$/) ? "zcat $file |" : ($file =~ /\.bz2$/) ? "bzcat $file |" : $file;
+	open F, $fn or die "Unable to open $file: $!";
+	my @id = ();
+	my $comm = "";
+	sub err($) {
+		print STDERR "Error in $file, line $.: @_\n";
+		exit 1;
+	}
+	while (<F>) {
+		if (/^(#.*)/) {
+			$comm .= $_;
+			next;
+		}
+		chomp;
+		if (my ($indent, $id, $ignored, $name) = /^(\t*)(([0-9a-fA-Z]+ ?)*)((  |\t|$)\s*(.*))$/) {
+			my $depth = length $indent;
+			$depth <= @id or err "Mismatched indentation";
+			@id = (@id[0..$depth-1], $id);
+			my $i = join(":", @id);
+			if ($i ne "") {
+				!exists $ids{$i} or die "ID $i defined twice";
+				$ids{$i} = $name;
+				$comments{$i} = $comm if $comm;
+			}
+		} elsif (!/^$/) {
+			err "Parse error";
+		}
+		$comm = "";
+	}
+	close F;
+}
+
+sub esc($) {
+	my ($x) = @_;
+	$x =~ s/^\s+//;
+	$x =~ s/"/\\"/g;
+	return $x;
+}
+
+foreach my $i (keys %ids) {
+	my $j = join(".", reverse split(/[: ]/, $i));
+	print "$j.pci\tTXT \"i=", esc($ids{$i}), "\"\n";
+	# print "$j.pci\tTXT \"c=", esc($comments{$i}), "\"\n"
+}

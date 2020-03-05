@@ -4,12 +4,12 @@
 archer-objs :=  archer_driver_$(BCMARCH).o_saved archer_host_$(BCMARCH).o_saved archer_ucast_$(BCMARCH).o_saved archer_ucast_l2_$(BCMARCH).o_saved 
 archer-objs +=  archer_mcast_$(BCMARCH).o_saved sysport_classifier.o sysport_spe.o sysport_rsb_$(BCMARCH).o_saved
 archer-objs +=  sysport_crc.o archer_socket.o archer_dpi.o archer_iq_$(BCMARCH).o_saved archer_tm.o
-archer-objs +=  sysport_wol_$(BCMARCH).o_saved
+archer-objs +=  sysport_wol.o
 
 ifeq ($(strip $(CONFIG_BCM_ARCHER_SIM)),)
 archer-objs += archer_thread.o sysport_driver.o sysport_driver_config.o
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63178_4908_63268_63158_),)
-archer-objs += iudma_driver.o archer_xtmrt_$(BCMARCH).o_saved
+archer-objs += iudma_driver.o archer_xtmrt.o
 endif
 ifneq ($(strip $(CONFIG_BCM_ARCHER_WLAN)),)
 archer-objs += archer_wlan_$(BCMARCH).o_saved

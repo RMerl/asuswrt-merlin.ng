@@ -54,6 +54,9 @@ endif
     KBUILD_CFLAGS += -I../../router-sysdep/bcmdrv/include
     KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
     KBUILD_CFLAGS += -DBCA_HNDROUTER
+    #cathy enable BCMDBG
+    KBUILD_CFLAGS += -g -DBCMDBG -DBCMDBG_DUMP
+
 ifeq ($(CMWIFI),)
     KBUILD_CFLAGS += -Wno-error=date-time
 endif

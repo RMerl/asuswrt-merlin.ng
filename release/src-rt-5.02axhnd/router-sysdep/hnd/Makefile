@@ -79,6 +79,8 @@ ifneq ($(strip $(BUILD_HND_NIC)),)
     EXTRA_CFLAGS += -DBCA_HNDNIC
 endif
     EXTRA_CFLAGS += -I$(COMMON_SHARED_DIR)
+    #cathy enable BCMDBG
+    EXTRA_CFLAGS += -g -DBCMDBG -DBCMDBG_DUMP
 
     # wl shared directory
     ifeq ($(strip $(USE_WLAN_SHARED)), 1)

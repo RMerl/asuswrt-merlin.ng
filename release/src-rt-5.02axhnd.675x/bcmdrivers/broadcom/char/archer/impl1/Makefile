@@ -1,9 +1,9 @@
 # File: bcmdrivers/broadcom/char/archer/impl1/Makefile
 
 
-archer-objs :=  archer_driver_$(BCMARCH).o_saved archer_host_$(BCMARCH).o_saved archer_ucast_$(BCMARCH).o_saved archer_ucast_l2_$(BCMARCH).o_saved 
-archer-objs +=  archer_mcast_$(BCMARCH).o_saved sysport_classifier.o sysport_spe.o sysport_rsb_$(BCMARCH).o_saved
-archer-objs +=  sysport_crc.o archer_socket.o archer_dpi.o archer_iq_$(BCMARCH).o_saved archer_tm.o
+archer-objs :=  archer_driver.o archer_host.o archer_ucast.o archer_ucast_l2.o 
+archer-objs +=  archer_mcast.o sysport_classifier.o sysport_spe.o sysport_rsb.o
+archer-objs +=  sysport_crc.o archer_socket.o archer_dpi.o archer_iq.o archer_tm.o
 archer-objs +=  sysport_wol.o
 
 ifeq ($(strip $(CONFIG_BCM_ARCHER_SIM)),)
@@ -12,7 +12,7 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63178_4908_63268_63158_),)
 archer-objs += iudma_driver.o archer_xtmrt.o
 endif
 ifneq ($(strip $(CONFIG_BCM_ARCHER_WLAN)),)
-archer-objs += archer_wlan_$(BCMARCH).o_saved
+archer-objs += archer_wlan.o
 else
 archer-objs += archer_wfd.o
 endif

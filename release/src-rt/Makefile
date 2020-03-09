@@ -4552,6 +4552,12 @@ ifeq ($(REALTEK),y)
 	fi;
 endif
 	$(call save_src_config, $@)
+
+ifeq ($(HND_ROUTER_AX_675X),y)
+	@echo "Copy router-sysdep.$(lowercase_B) content"
+	@rm -fr router-sysdep
+	@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
+endif
 	$(MAKE) bin
 
 Bluecave bluecave:

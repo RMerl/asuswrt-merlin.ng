@@ -1,0 +1,127 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Programmer's Reference, mdk_ug_sample_applications</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Programmer's Reference</a></h2>
+    <h2>7.  Sample Applications
+</h2>
+<p>The MDK provides two simple sample applications which demonstrate 
+how to initialize and use the MDK components. 
+<a name="mdk_ug_building_the_sample_applications"></a>
+<h3>7.1.   Building the Sample Applications</h3>
+<p>The sample applications are located in the <tt>example</tt> directory within the
+MDK source tree. All makefiles contain the basic instructions for
+building the applications and all rely on certain environment variables to be set. 
+Below is an example of how to set these variable using the bash shell:
+<pre class="code">
+bash# export MDK=~/brcm/mdk-2.0
+bash# export CDK=$MDK/cdk
+bash# export BMD=$MDK/bmd
+bash# export PHY=$MDK/phy
+</pre>
+<p><a name="mdk_ug_basic_cdk_shell"></a>
+<h3>7.2.   Basic CDK Shell Simulator</h3>
+<p>The <tt>cdksim</tt> application is a very simple application that
+demonstrates how to use the CDK device package and CDK Shell. 
+<p>The <tt>cdksim</tt> application provides a simple emulation of a handful
+of Broadcom devices and allows you to explore the features of the CDK shell
+by initializing the CDK Shell using those simulations. 
+It can be run natively on the build system and does not require real hardware. 
+<p>On a Linux system, simply go to the example/cdksim directory and run
+<tt>gmake.</tt> The Makefile includes examples of how the <tt>gmake</tt> command line
+option can be used to change the destination directory, flags, options, and other
+aspects of the CDK build. 
+<p><a name="mdk_ug_example_linux"></a>
+<h3>7.3.   Basic Linux Usermode MDK Application</h3>
+<p>The <tt>linux-user-mdk</tt> sample application demonstrates how to initialize and use
+the CDK, BMD, and PHY libraries on a real device. 
+<p>Devices are created by specifying the <tt>vendor,</tt><tt>device,</tt><tt>revision,</tt> and <tt>base_address</tt> as
+arguments on the command line to the application. These arguments are used to create a device context
+in the CDK, attach the BMD driver, and initialize the CDK, BMD, and PHY shell services. 
+<p>The device information needed to initialize the application in a real system can be retrieved using the
+<tt>lspci</tt> command at your system prompt. 
+<p>NOTE: The sample functions on real hardware by <tt>mmapping()</tt> the device's base address. There is no
+support for DMA in this sample application and the BMD TX/RX commands will not function. 
+<p><a name="mdk_ug_cfe_integration"></a>
+<h3>7.4.   CFE Integration</h3>
+<p>The MDK has been integrated into the CFE (Common Firmware Environment)
+to demonstrate how the MDK can be used to initialize basic L2
+switching from the CFE boot loader. It is also possible to run a
+network interface on top of the BMD driver, and this allows software
+images to be loaded via the front panel ports, which eliminates the
+need for a dedicated management network port for e.g. firmware
+upgrades.
+<p>If the MDK is compiled into the CFE with the <tt>CFG_MDK_DEBUG</tt> set to 1, a
+number of additional CFE shell commands will installed, of which the
+most important ones are described below. Use the CFE help function for
+additional help on the MDK shell commands.
+<a name="mdk_ug_mdk_probe"></a>
+<h4>7.4.1.   mdk probe</h4>
+<p>Use this command to probe for MDK devices.
+<p><a name="mdk_ug_mdk_swinit"></a>
+<h4>7.4.2.   mdk swinit</h4>
+<p> This command will execute the  <a href="sect_bmd_api_function_reference.html#bmd_switching_init"><tt>bmd_switching_init</tt></a>  API function on an
+MDK device, i.e. the MDK device will be initialized as an unmanaged
+switch. Note that the mdk probe command must be run prior to this
+command.
+<p><a name="mdk_ug_mdk_netinit"></a>
+<h4>7.4.3.   mdk netinit</h4>
+<p>This command probes for MDK devices and installs a CFE network driver
+on top of the BMD API. To switch from the default network device to
+the MDK network device, run e.g. the following commands (this assumes
+that a front panel port has been hooked up to a network with a DHCP
+server):
+<pre class="code">
+CFE&gt; mdk netinit
+CFE&gt; show devices
+CFE&gt; ifconfig eth0 -off
+CFE&gt; ifconfig eth1 -auto
+</pre>
+<p><a name="mdk_ug_mdk_shell"></a>
+<h4>7.4.4.   mdk shell</h4>
+<p>This command enters an MDK shell, which provides access to both the
+CDK shell commands and the BMD shell commands. For detailed help, run
+the following commands:
+<pre class="code">
+CFE&gt; mdk shell
+MDK&gt; help
+</pre>
+To return to the CFE shell, simply type quit or exit at the MDK
+prompt.
+<p><p>
+</table>
+</body>
+</html>

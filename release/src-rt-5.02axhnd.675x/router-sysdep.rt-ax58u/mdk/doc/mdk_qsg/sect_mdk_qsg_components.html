@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Quick Start Guide, mdk_qsg_components</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Quick Start Guide</a></h2>
+    <h2>2.  MDK Components
+</h2>
+<p>The MDK actually contains several independent packages, which may be
+updated separately.  The following diagram provides an overview of the
+MDK components and external interfaces:
+
+<br><br><img src="mdk.png" alt=""><br><br>
+<a name="mdk_qsg_cdk"></a>
+<h3>2.1.   Chip Development Kit (CDK)</h3>
+<p>The CDK contains the basic building blocks for creating a software
+driver for Broadcom Ethernet switch devices.  The CDK is organized as
+a self-contained library, which includes a very basic C library
+implementation and as well as a basic debug shell implementation.
+<p>The CDK library also contains the most basic access functions for each
+supported switch chip architecture, however it is rarely necessary to
+access these functions directly.  Instead, register access and
+manipulation should be done through the provided set of access-macros,
+which can be found in the CDK include directory:
+<pre class="code">
+$CDK/include/cdk/chip/&lt;chipname&gt;<tt>_defs</tt>.h
+</pre>
+The CDK debug shell provides symbolic access to registers through a
+set of symbols tables, however if the register access-macros are used
+in a driver implementations, it is not required to include the symbol
+tables.  This design allows simple drivers to be very small in size
+and suitable for inclusion in e.g. boot loaders.
+<p><a name="mdk_qsg_bmd"></a>
+<h3>2.2.   Broadcom Mini Driver (BMD)</h3>
+<p>The BMD provides a simple API to the most basic switch functions
+including initialization of unmanaged switching and packet transfer
+between the switch chip and the host CPU. All necessary definitions
+for using the BMD API are found in:
+<pre class="code">
+$BMD/include/bmd/bmd.h
+</pre>
+The BMD implementation also serves as examples of how to use the
+register access macros provided by the CDK.  The chip-specific API
+driver implementations can be found in the BMD chip directory:
+<pre class="code">
+$BMD/chip/&lt;chipname&gt;
+</pre>
+The BMD includes extensions for the CDK debug shell, which allows most
+BMD APIs to be exercised.
+<p><a name="mdk_qsg_phylib"></a>
+<h3>2.3.   PHY Driver Library</h3>
+<p>The PHY library provides a common interface to Ethernet PHYs and
+includes support for a number of Broadcom PHYs. The PHY library
+requires the presence of the CDK, but it should be considered an
+independent component, which can be updated or expanded without
+changing the CDK.
+<p>
+</table>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<title>Broadcom MDK Programmer's Reference, mdk_ug_phy_driver_library</title>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+
+<style type="text/css">
+<!--
+body {
+	font-family: verdana, arial, helvetica, sans-serif;
+}
+pre.code {
+        background: #eaeaea;
+        color: black;
+        width: auto;
+        margin-left: 0em;
+        margin-right: 1em;
+        border: solid 1px black;
+        white-space: pre;
+        padding: 4px;
+        font-family: courier new, courier, monospace;
+        font-weight: normal;
+        font-size: 80%;
+}
+tt {
+        font-family: courier new, courier, monospace;
+}
+a:link, a:visited {
+        text-decoration: none;
+}
+-->
+</style>
+</head>
+
+<body bgcolor="#ffffff">
+<table><tr><td width="20">&nbsp;</td><td width="700">
+    <h2><a href="index.html">Broadcom MDK Programmer's Reference</a></h2>
+    <h2>6.  PHY Driver Library
+</h2>
+<p>The PHY Driver Library (PDL) is an independent library that can be
+used with the BMD or any other application.  By default the PDL relies
+on a few of the basic C types and error codes defined in the CDK, but
+this is easily worked around in case the CDK is not available.
+<p>The PHY drivers in the PDL are designed to support chaining of PHYs
+since this is a commonly used hardware configuration.  A typical
+enterprise class network switch design has one internal PHY and one or
+two external PHYs per network port.  When multiple PHYs exist per port,
+the application normally only needs to interact with the outermost PHY
+in the PHY chain, and all additional configuration and status
+reporting happens within the PHY chain.
+<a name="mdk_ug_phy_probing"></a>
+<h3>6.1.   PHY Probing</h3>
+<p>All hardware access to PHYs is abstracted through the use of PHY bus
+objects, which must be assigned to each PHY in the system during the
+initial probing and configuration phase.  The assignment of PHY buses
+is determined by the switch chip, the hardware system design or a
+combination thereof.  The PDL includes a set of standard PHY bus
+drivers that cover the internal MII Management interfaces of the
+Broadcom switch chips used with the standard PHY addressing used in
+Broadcom reference designs.
+<p>The PHY bus object and a PHY driver object are eventually combined
+into a PHY control object, which must be passed as a parameter to all
+PHY driver functions.  Note that PHY bus objects and PHY driver
+objects can be shared across PHYs whereas the PHY control object must
+be instantiated for each PHY.
+<p>A typical PHY probing sequence for a switch design will look like this:
+<pre class="code">
+foreach (unit in the system) {
+    foreach (port on this unit) {
+        foreach (PHY bus object on this port) {
+            foreach (PHY driver) {
+                create PHY control object
+                call PHY driver's probe function
+                if (PHY found) {
+                    add PHY control object to port driver's PHY chain
+                    next PHY bus object
+                }
+            }
+        }
+    }
+}
+</pre>
+ Please refer to  <a href="sect_mdk_ug_cdk_bmd_components.html#mdk_ug_bmd_phy_management">Section 5.6,  BMD PHY Management</a>  for examples of how to
+probe for PHYs and how to install appropriate PHY drivers for a BMD
+device.
+<p><a name="mdk_ug_pdl_configuration"></a>
+<h3>6.2.   PDL Configuration</h3>
+<p>The PHY Driver Library configuration is controlled from the header
+file <tt>phy_config.h.</tt> This file provides reasonable default values
+for all configuration parameters, but all default configuration values
+can be overridden without changing the <tt>phy_config.h</tt> file. The
+configuration file controls the following major aspects of the PDL:
+<ul><li> Which devices to include support for
+</li><li> Which non-standard features to include
+</li></ul>The configuration parameters can be overridden via the compiler
+command line or through a special configuration file called
+<tt>phy_custom_config</tt>.h, which must exist in the default compiler include
+path. In the latter case the only parameter that needs to be specified
+on the compiler command line is <tt>PHY_INCLUDE_CUSTOM_CONFIG</tt>.
+<p>By default all PHY chips are enabled, but in order to reduce the
+memory footprint the number of PHY chips included can be reduced as
+shown in the example below.
+<pre class="code">
+/* Sample <tt>phy_custom_config</tt>.h */
+#define <tt>PHY_CONFIG_INCLUDE_CHIP_DEFAULT</tt>         0
+#define <tt>PHY_CONFIG_INCLUDE_BCM5461</tt>              1
+#define <tt>PHY_CONFIG_INCLUDE_BCM5488</tt>              1
+</pre>
+If <tt>CDK_CONFIG_INCLUDE_CHIP_DEFAULT</tt>=0, the first define in the example
+above can be omitted.
+<p>Certain PHY devices are not separate chips, but internal PHYs in a
+switch chip. For a driver developer it is not always easy to determine
+which drivers to include for the internal PHYs, but the configuration
+option <tt>PHY_CONFIG_INCLUDE_CHIP_AUTO</tt> (default 1) will take care of this
+based on which switch chips are enabled in the CDK.
+<p>Please refer to the <tt>phy_config.h</tt> file or the following table for a
+complete list of PHY configuration options.
+
+<a name=PHY_CONFIG_TABLE></a>
+<br><br><b>Table 5:   PHY Configuration Definitions</b>
+<table cellpadding="4" cellspacing="0" border="1" summary="section"><tbody><tr><td><b>  DEFINE</b></td><td><b>  DEFAULT</b></td><td><b> Description
+</b></td></tr><tr><td><tt>PHY_INCLUDE_CUSTOM_CONFIG</tt></td><td><tt>Undefined</tt></td><td> Include system config file if specified.
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_CHIP_AUTO</tt></td><td><tt> 1 </tt></td><td> Auto-include support for internal PHYs based on CDK configuration.
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_CHIP_SYMBOLS</tt></td><td><tt> 1 </tt></td><td> Include PHY register symbols for use by a debug shell.
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_LINK_ABILITIES</tt></td><td><tt> 1 </tt></td><td> Set/get local and get link partner auto-negotiation abilities
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_REMOTE_LOOPBACK</tt></td><td><tt> 1 </tt></td><td> Remote (line-side) loopback support
+</td></tr><tr><td><tt>PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT</tt></td><td><tt> 1 </tt></td><td> Default setting for extended PHY configuration
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_XAUI_TX_LANE_MAP_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for changing the XAUI Tx lane map
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_XAUI_RX_LANE_MAP_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for changing the XAUI Rx lane map
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_XAUI_TX_POLARITY_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for setting the XAUI Tx lane polarity
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_XAUI_RX_POLARITY_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for setting the XAUI Rx lane polarity
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_PCS_TX_POLARITY_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for setting the PCS Tx lane polarity
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_PCS_RX_POLARITY_SET</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for setting the PCS Rx lane polarity
+</td></tr><tr><td><tt>PHY_CONFIG_INCLUDE_AUTO_TUNE</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Support for auto-tuning PHY transmit/receive signals.
+</td></tr><tr><td><tt>PHY_CONFIG_EXTERNAL_BOOT_ROM</tt></td><td><tt> PHY_CONFIG_EXTENDED_CONFIG_INCLUDE_DEFAULT </tt></td><td> Enable an external boot ROM, if supported
+</td></tr><tr><td><tt>PHY_CONFIG_MDIO_FAST_LOAD</tt></td><td><tt> 1 </tt></td><td> Allow fast firmware downloads by increasing MDIO clock frequency
+</td></tr><tr><td><tt>PHY_CONFIG_PRIVATE_DATA_WORDS</tt></td><td><tt> 1 </tt></td><td> Local PHY driver data storage in <tt>phy_ctrl_t</tt> structure.
+</td></tr></tbody></table><br><p>
+</table>
+</body>
+</html>

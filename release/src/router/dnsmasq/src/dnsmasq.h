@@ -380,10 +380,12 @@ struct ds_config {
 #define ADDRLIST_REVONLY  4
 #define ADDRLIST_PREFIX   8
 #define ADDRLIST_WILDCARD 16
+#define ADDRLIST_DECLINED 32
 
 struct addrlist {
   union all_addr addr;
-  int flags, prefixlen; 
+  int flags, prefixlen;
+  time_t decline_time;
   struct addrlist *next;
 };
 

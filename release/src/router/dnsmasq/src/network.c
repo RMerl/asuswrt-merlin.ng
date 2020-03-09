@@ -728,7 +728,7 @@ static int make_sock(union mysockaddr *addr, int type, int dienow)
     {
 #ifdef TCP_FASTOPEN
       int qlen = 5;                           
-      setsockopt(fd, SOL_TCP, TCP_FASTOPEN, &qlen, sizeof(qlen));
+      setsockopt(fd, IPPROTO_TCP, TCP_FASTOPEN, &qlen, sizeof(qlen));
 #endif
       
       if (listen(fd, TCP_BACKLOG) == -1)
@@ -785,6 +785,8 @@ int set_ipv6pktinfo(int fd)
 /* Find the interface on which a TCP connection arrived, if possible, or zero otherwise. */
 int tcp_interface(int fd, int af)
 { 
+  (void)fd; /* suppress potential unused warning */
+  (void)af; /* suppress potential unused warning */
   int if_index = 0;
 
 #ifdef HAVE_LINUX_NETWORK
@@ -1187,6 +1189,7 @@ int local_bind(int fd, union mysockaddr *addr, char *intname, unsigned int ifind
 #endif
     }
 
+  (void)intname; /* suppress potential unused warning */
 #if defined(SO_BINDTODEVICE)
   if (intname[0] != 0 &&
       setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, intname, IF_NAMESIZE) == -1)

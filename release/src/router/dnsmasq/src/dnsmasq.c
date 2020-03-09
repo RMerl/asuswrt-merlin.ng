@@ -1870,7 +1870,8 @@ static void check_dns_listeners(time_t now)
 		    if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
 		      {
 			char a;
-			
+			(void)a; /* suppress potential unused warning */
+
 			daemon->tcp_pids[i] = p;
 			daemon->tcp_pipes[i] = pipefd[0];
 #ifdef HAVE_LINUX_NETWORK
@@ -1921,6 +1922,7 @@ static void check_dns_listeners(time_t now)
 	      if (!option_bool(OPT_DEBUG))
 		{
 		  char a = 0;
+		  (void)a; /* suppress potential unused warning */
 		  alarm(CHILD_LIFETIME);
 		  close(pipefd[0]); /* close read end in child. */
 		  daemon->pipe_to_parent = pipefd[1];

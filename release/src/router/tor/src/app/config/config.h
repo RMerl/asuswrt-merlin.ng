@@ -41,8 +41,6 @@ const char *escaped_safe_str_client(const char *address);
 const char *escaped_safe_str(const char *address);
 void init_protocol_warning_severity_level(void);
 int get_protocol_warning_severity_level(void);
-const char *get_version(void);
-const char *get_short_version(void);
 
 /** An error from options_trial_assign() or options_init_from_string(). */
 typedef enum setopt_err_t {
@@ -249,9 +247,8 @@ int options_any_client_port_set(const or_options_t *options);
 #define CL_PORT_DFLT_GROUP_WRITABLE (1u<<7)
 
 STATIC int options_act(const or_options_t *old_options);
-#ifdef TOR_UNIT_TESTS
-extern struct config_format_t options_format;
-#endif
+struct config_mgr_t;
+STATIC const struct config_mgr_t *get_options_mgr(void);
 
 STATIC port_cfg_t *port_cfg_new(size_t namelen);
 #define port_cfg_free(port) \

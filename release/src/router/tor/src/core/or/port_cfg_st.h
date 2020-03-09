@@ -31,5 +31,5 @@ struct port_cfg_t {
   char unix_addr[FLEXIBLE_ARRAY_MEMBER];
 };
 
-#endif
+#endif /* !defined(PORT_CFG_ST_H) */
 

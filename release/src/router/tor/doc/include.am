@@ -15,17 +15,32 @@
 all_mans = doc/tor doc/tor-gencert doc/tor-resolve doc/torify doc/tor-print-ed-signing-cert
 
 if USE_ASCIIDOC
-nodist_man1_MANS = $(all_mans:=.1)
-doc_DATA = $(all_mans:=.html)
-html_in = $(all_mans:=.html.in)
-man_in = $(all_mans:=.1.in)
 txt_in = $(all_mans:=.1.txt)
+
+if BUILD_HTML_DOCS
+html_in = $(all_mans:=.html.in)
+doc_DATA = $(all_mans:=.html)
 else
 html_in =
+doc_DATA =
+endif
+
+if BUILD_MANPAGE
+nodist_man1_MANS = $(all_mans:=.1)
+man_in = $(all_mans:=.1.in)
+else
+nodist_man1_MANS =
+man_in =
+endif
+
+else
+
+html_in =
+doc_DATA =
 man_in =
 txt_in =
 nodist_man1_MANS =
-doc_DATA =
+
 endif
 
 EXTRA_DIST+= doc/asciidoc-helper.sh			\

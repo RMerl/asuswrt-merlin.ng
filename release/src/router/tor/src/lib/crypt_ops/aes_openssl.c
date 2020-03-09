@@ -148,7 +148,7 @@ evaluate_ctr_for_aes(void)
 {
   return 0;
 }
-#else /* !(defined(USE_EVP_AES_CTR)) */
+#else /* !defined(USE_EVP_AES_CTR) */
 
 /*======================================================================*/
 /* Interface to AES code, and counter implementation */

@@ -99,4 +99,4 @@ struct node_t {
   struct hsdir_index_t hsdir_index;
 };
 
-#endif
+#endif /* !defined(NODE_ST_H) */

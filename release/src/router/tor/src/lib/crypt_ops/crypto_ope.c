@@ -57,9 +57,9 @@ ope_val_from_le(ope_val_t x)
     ((x) >> 8) |
     (((x)&0xff) << 8);
 }
-#else
+#else /* !defined(WORDS_BIGENDIAN) */
 #define ope_val_from_le(x) (x)
-#endif
+#endif /* defined(WORDS_BIGENDIAN) */
 
 /**
  * Return a new AES256-CTR stream cipher object for <b>ope</b>, ready to yield

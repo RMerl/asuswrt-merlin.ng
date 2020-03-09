@@ -13,5 +13,5 @@ struct rend_encoded_v2_service_descriptor_t {
   char *desc_str; /**< Descriptor string. */
 };
 
-#endif
+#endif /* !defined(REND_ENCODED_V2_SERVICE_DESCRIPTOR_ST_H) */
 

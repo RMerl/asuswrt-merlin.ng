@@ -21,5 +21,5 @@ struct cached_dir_t {
   int refcnt; /**< Reference count for this cached_dir_t. */
 };
 
-#endif
+#endif /* !defined(CACHED_DIR_ST_H) */
 

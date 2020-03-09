@@ -90,7 +90,7 @@
 #include "core/or/or.h"
 #include "feature/dirauth/shared_random.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/nodelist/networkstatus.h"
@@ -120,8 +120,8 @@ static const char sr_flag_ns_str[] = "shared-rand-participate";
 static int32_t num_srv_agreements_from_vote;
 
 /* Return a heap allocated copy of the SRV <b>orig</b>. */
-STATIC sr_srv_t *
-srv_dup(const sr_srv_t *orig)
+sr_srv_t *
+sr_srv_dup(const sr_srv_t *orig)
 {
   sr_srv_t *duplicate = NULL;
 
@@ -224,7 +224,7 @@ verify_commit_and_reveal(const sr_commit_t *commit)
 STATIC int
 commit_has_reveal_value(const sr_commit_t *commit)
 {
-  return !tor_mem_is_zero(commit->encoded_reveal,
+  return !fast_mem_is_zero(commit->encoded_reveal,
                           sizeof(commit->encoded_reveal));
 }
 
@@ -486,7 +486,7 @@ get_vote_line_from_commit(const sr_commit_t *commit, sr_phase_t phase)
   {
     /* Send a reveal value for this commit if we have one. */
     const char *reveal_str = commit->encoded_reveal;
-    if (tor_mem_is_zero(commit->encoded_reveal,
+    if (fast_mem_is_zero(commit->encoded_reveal,
                         sizeof(commit->encoded_reveal))) {
       reveal_str = "";
     }
@@ -1253,8 +1253,8 @@ sr_act_post_consensus(const networkstatus_t *consensus)
      * decided by the majority. */
     sr_state_unset_fresh_srv();
     /* Set the SR values from the given consensus. */
-    sr_state_set_previous_srv(srv_dup(consensus->sr_info.previous_srv));
-    sr_state_set_current_srv(srv_dup(consensus->sr_info.current_srv));
+    sr_state_set_previous_srv(sr_srv_dup(consensus->sr_info.previous_srv));
+    sr_state_set_current_srv(sr_srv_dup(consensus->sr_info.current_srv));
   }
 
   /* Prepare our state so that it's ready for the next voting period. */

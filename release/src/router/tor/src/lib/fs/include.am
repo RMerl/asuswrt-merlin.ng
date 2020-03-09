@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-fs-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_fs_a_SOURCES =			\
 	src/lib/fs/conffile.c			\
 	src/lib/fs/dir.c			\
@@ -25,6 +26,7 @@ src_lib_libtor_fs_testing_a_SOURCES = \
 src_lib_libtor_fs_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_fs_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/fs/conffile.h				\
 	src/lib/fs/dir.h				\

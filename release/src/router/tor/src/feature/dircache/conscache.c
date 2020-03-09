@@ -92,7 +92,7 @@ consensus_cache_open(const char *subdir, int max_entries)
    */
 #define VERY_LARGE_STORAGEDIR_LIMIT (1000*1000)
   storagedir_max_entries = VERY_LARGE_STORAGEDIR_LIMIT;
-#else /* !(defined(MUST_UNMAP_TO_UNLINK)) */
+#else /* !defined(MUST_UNMAP_TO_UNLINK) */
   /* Otherwise, we can just tell the storagedir to use the same limits
    * as this cache. */
   storagedir_max_entries = max_entries;

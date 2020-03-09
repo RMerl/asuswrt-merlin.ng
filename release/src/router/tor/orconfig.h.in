@@ -3,6 +3,10 @@
 /* Define if building universal (internal helper macro) */
 #undef AC_APPLE_UNIVERSAL_BUILD
 
+/* # for 0.4.2.6 Approximate date when this software was released. (Updated
+   when the version changes.) */
+#undef APPROX_RELEASE_DATE
+
 /* tor's build directory */
 #undef BUILDDIR
 
@@ -106,6 +110,9 @@
 /* Define to 1 if you have the `ERR_load_KDF_strings' function. */
 #undef HAVE_ERR_LOAD_KDF_STRINGS
 
+/* Define to 1 if you have the `evdns_base_get_nameserver_addr' function. */
+#undef HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR
+
 /* Define to 1 if you have the <event2/bufferevent_ssl.h> header file. */
 #undef HAVE_EVENT2_BUFFEREVENT_SSL_H
 
@@ -120,6 +127,9 @@
 
 /* Define to 1 if you have the `EVP_PBE_scrypt' function. */
 #undef HAVE_EVP_PBE_SCRYPT
+
+/* Define to 1 if you have the `EVP_sha3_256' function. */
+#undef HAVE_EVP_SHA3_256
 
 /* Define to 1 if you have the `evutil_secure_rng_add_bytes' function. */
 #undef HAVE_EVUTIL_SECURE_RNG_ADD_BYTES
@@ -267,6 +277,9 @@
 /* Define to 1 if you have the `mach_approximate_time' function. */
 #undef HAVE_MACH_APPROXIMATE_TIME
 
+/* Define to 1 if you have the <mach/vm_inherit.h> header file. */
+#undef HAVE_MACH_VM_INHERIT_H
+
 /* Defined if the compiler supports __FUNCTION__ */
 #undef HAVE_MACRO__FUNCTION__
 
@@ -275,6 +288,9 @@
 
 /* Defined if the compiler supports __func__ */
 #undef HAVE_MACRO__func__
+
+/* Define to 1 if you have the `madvise' function. */
+#undef HAVE_MADVISE
 
 /* Define to 1 if you have the `mallinfo' function. */
 #undef HAVE_MALLINFO
@@ -296,6 +312,9 @@
 
 /* Define to 1 if you have the `memset_s' function. */
 #undef HAVE_MEMSET_S
+
+/* Define to 1 if you have the `minherit' function. */
+#undef HAVE_MINHERIT
 
 /* Define to 1 if you have the `mlockall' function. */
 #undef HAVE_MLOCKALL
@@ -494,7 +513,7 @@
 /* Have systemd */
 #undef HAVE_SYSTEMD
 
-/* Have systemd v209 or more */
+/* Have systemd v209 or greater */
 #undef HAVE_SYSTEMD_209
 
 /* Define to 1 if you have the <sys/capability.h> header file. */
@@ -688,6 +707,9 @@
 
 /* The size of `time_t', as computed by sizeof. */
 #undef SIZEOF_TIME_T
+
+/* The size of `unsigned int', as computed by sizeof. */
+#undef SIZEOF_UNSIGNED_INT
 
 /* The size of `void *', as computed by sizeof. */
 #undef SIZEOF_VOID_P

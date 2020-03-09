@@ -59,7 +59,7 @@ crypto_get_rsa_padding(int padding)
     default: tor_assert(0); return -1; // LCOV_EXCL_LINE
     }
 }
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 /** Compare the public-key components of a and b.  Return non-zero iff
  * a==b.  A NULL key is considered to be distinct from all non-NULL

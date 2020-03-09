@@ -36,7 +36,7 @@ SecureZeroMemory(PVOID ptr, SIZE_T cnt)
 #elif defined(HAVE_READPASSPHRASE_H)
 #include <readpassphrase.h>
 #else
-#include "tor_readpassphrase.h"
+#include "ext/tor_readpassphrase.h"
 #endif /* defined(_WIN32) || ... */
 
 #include <stdlib.h>

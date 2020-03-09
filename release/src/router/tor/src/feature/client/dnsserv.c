@@ -26,8 +26,9 @@
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
 #include "core/or/connection_edge.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "core/mainloop/mainloop.h"
+#include "core/mainloop/netstatus.h"
 #include "core/or/policies.h"
 
 #include "feature/control/control_connection_st.h"
@@ -213,6 +214,9 @@ dnsserv_launch_request(const char *name, int reverse,
   edge_connection_t *conn;
   char *q_name;
 
+  /* Launching a request for a user counts as user activity. */
+  note_user_activity(approx_time());
+
   /* Make a new dummy AP connection, and attach the request to it. */
   entry_conn = entry_connection_new(CONN_TYPE_AP, AF_INET);
   entry_conn->entry_cfg.dns_request = 1;
@@ -234,7 +238,7 @@ dnsserv_launch_request(const char *name, int reverse,
     TO_CONN(conn)->port = control_conn->base_.port;
     TO_CONN(conn)->address = tor_addr_to_str_dup(&control_conn->base_.addr);
   }
-#else /* !(defined(AF_UNIX)) */
+#else /* !defined(AF_UNIX) */
   TO_CONN(conn)->port = control_conn->base_.port;
   TO_CONN(conn)->address = tor_addr_to_str_dup(&control_conn->base_.addr);
 #endif /* defined(AF_UNIX) */

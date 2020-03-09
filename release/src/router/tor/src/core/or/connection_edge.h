@@ -80,6 +80,7 @@ int connection_edge_process_inbuf(edge_connection_t *conn,
 int connection_edge_destroy(circid_t circ_id, edge_connection_t *conn);
 int connection_edge_end(edge_connection_t *conn, uint8_t reason);
 int connection_edge_end_errno(edge_connection_t *conn);
+void connection_edge_end_close(edge_connection_t *conn, uint8_t reason);
 int connection_edge_flushed_some(edge_connection_t *conn);
 int connection_edge_finished_flushing(edge_connection_t *conn);
 int connection_edge_finished_connecting(edge_connection_t *conn);

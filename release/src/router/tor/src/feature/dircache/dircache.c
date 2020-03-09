@@ -49,7 +49,8 @@
 #define ROUTERDESC_BY_DIGEST_CACHE_LIFETIME (48*60*60)
 #define ROBOTS_CACHE_LIFETIME (24*60*60)
 #define MICRODESC_CACHE_LIFETIME (48*60*60)
-
+/* Bandwidth files change every hour. */
+#define BANDWIDTH_CACHE_LIFETIME (30*60)
 /** Parse an HTTP request string <b>headers</b> of the form
  * \verbatim
  * "\%s [http[s]://]\%s HTTP/1..."
@@ -123,7 +124,7 @@ write_http_response_header_impl(dir_connection_t *conn, ssize_t length,
                            long cache_lifetime)
 {
   char date[RFC1123_TIME_LEN+1];
-  time_t now = time(NULL);
+  time_t now = approx_time();
   buf_t *buf = buf_new_with_capacity(1024);
 
   tor_assert(conn);
@@ -166,22 +167,16 @@ write_http_response_header_impl(dir_connection_t *conn, ssize_t length,
   buf_free(buf);
 }
 
-/** As write_http_response_header_impl, but sets encoding and content-typed
- * based on whether the response will be <b>compressed</b> or not. */
+/** As write_http_response_header_impl, but translates method into
+ * encoding */
 static void
 write_http_response_headers(dir_connection_t *conn, ssize_t length,
                             compress_method_t method,
                             const char *extra_headers, long cache_lifetime)
 {
-  const char *methodname = compression_method_get_name(method);
-  const char *doctype;
-  if (method == NO_METHOD)
-    doctype = "text/plain";
-  else
-    doctype = "application/octet-stream";
   write_http_response_header_impl(conn, length,
-                                  doctype,
-                                  methodname,
+                                  "text/plain",
+                                  compression_method_get_name(method),
                                   extra_headers,
                                   cache_lifetime);
 }
@@ -357,12 +352,15 @@ static int handle_get_robots(dir_connection_t *conn,
                                 const get_handler_args_t *args);
 static int handle_get_networkstatus_bridges(dir_connection_t *conn,
                                 const get_handler_args_t *args);
+static int handle_get_next_bandwidth(dir_connection_t *conn,
+                                     const get_handler_args_t *args);
 
 /** Table for handling GET requests. */
 static const url_table_ent_t url_table[] = {
   { "/tor/", 0, handle_get_frontpage },
   { "/tor/status-vote/current/consensus", 1, handle_get_current_consensus },
   { "/tor/status-vote/current/", 1, handle_get_status_vote },
+  { "/tor/status-vote/next/bandwidth", 0, handle_get_next_bandwidth },
   { "/tor/status-vote/next/", 1, handle_get_status_vote },
   { "/tor/micro/d/", 1, handle_get_microdesc },
   { "/tor/server/", 1, handle_get_descriptor },
@@ -495,28 +493,47 @@ handle_get_frontpage(dir_connection_t *conn, const get_handler_args_t *args)
 }
 
 /** Warn that the cached consensus <b>consensus</b> of type
- * <b>flavor</b> is too old and will not be served to clients. Rate-limit the
- * warning to avoid logging an entry on every request.
+ * <b>flavor</b> too new or too old, based on <b>is_too_new</b>,
+ * and will not be served to clients. Rate-limit the warning to avoid logging
+ * an entry on every request.
  */
 static void
-warn_consensus_is_too_old(const struct consensus_cache_entry_t *consensus,
-                          const char *flavor, time_t now)
+warn_consensus_is_not_reasonably_live(
+                          const struct consensus_cache_entry_t *consensus,
+                          const char *flavor, time_t now, bool is_too_new)
 {
-#define TOO_OLD_WARNING_INTERVAL (60*60)
-  static ratelim_t warned = RATELIM_INIT(TOO_OLD_WARNING_INTERVAL);
+#define NOT_REASONABLY_LIVE_WARNING_INTERVAL (60*60)
+  static ratelim_t warned[2] = { RATELIM_INIT(
+                                      NOT_REASONABLY_LIVE_WARNING_INTERVAL),
+                                RATELIM_INIT(
+                                      NOT_REASONABLY_LIVE_WARNING_INTERVAL) };
   char timestamp[ISO_TIME_LEN+1];
-  time_t valid_until;
-  char *dupes;
+  /* valid_after if is_too_new, valid_until if !is_too_new */
+  time_t valid_time = 0;
+  char *dupes = NULL;
 
-  if (consensus_cache_entry_get_valid_until(consensus, &valid_until))
-    return;
+  if (is_too_new) {
+    if (consensus_cache_entry_get_valid_after(consensus, &valid_time))
+      return;
+    dupes = rate_limit_log(&warned[1], now);
+  } else {
+    if (consensus_cache_entry_get_valid_until(consensus, &valid_time))
+      return;
+    dupes = rate_limit_log(&warned[0], now);
+  }
 
-  if ((dupes = rate_limit_log(&warned, now))) {
-    format_local_iso_time(timestamp, valid_until);
-    log_warn(LD_DIRSERV, "Our %s%sconsensus is too old, so we will not "
-             "serve it to clients. It was valid until %s local time and we "
-             "continued to serve it for up to 24 hours after it expired.%s",
-             flavor ? flavor : "", flavor ? " " : "", timestamp, dupes);
+  if (dupes) {
+    format_local_iso_time(timestamp, valid_time);
+    log_warn(LD_DIRSERV, "Our %s%sconsensus is too %s, so we will not "
+             "serve it to clients. It was valid %s %s local time and we "
+             "continued to serve it for up to 24 hours %s.%s",
+             flavor ? flavor : "",
+             flavor ? " " : "",
+             is_too_new ? "new" : "old",
+             is_too_new ? "after" : "until",
+             timestamp,
+             is_too_new ? "before it was valid" : "after it expired",
+             dupes);
     tor_free(dupes);
   }
 }
@@ -859,7 +876,6 @@ handle_get_current_consensus(dir_connection_t *conn,
 
   if (req.diff_only && !cached_consensus) {
     write_short_http_response(conn, 404, "No such diff available");
-    // XXXX warn_consensus_is_too_old(v, req.flavor, now);
     geoip_note_ns_response(GEOIP_REJECT_NOT_FOUND);
     goto done;
   }
@@ -870,19 +886,30 @@ handle_get_current_consensus(dir_connection_t *conn,
                                            &compression_used);
   }
 
-  time_t fresh_until, valid_until;
-  int have_fresh_until = 0, have_valid_until = 0;
+  time_t valid_after, fresh_until, valid_until;
+  int have_valid_after = 0, have_fresh_until = 0, have_valid_until = 0;
   if (cached_consensus) {
+    have_valid_after =
+      !consensus_cache_entry_get_valid_after(cached_consensus, &valid_after);
     have_fresh_until =
       !consensus_cache_entry_get_fresh_until(cached_consensus, &fresh_until);
     have_valid_until =
       !consensus_cache_entry_get_valid_until(cached_consensus, &valid_until);
   }
 
-  if (cached_consensus && have_valid_until &&
+  if (cached_consensus && have_valid_after &&
+      !networkstatus_valid_after_is_reasonably_live(valid_after, now)) {
+    write_short_http_response(conn, 404, "Consensus is too new");
+    warn_consensus_is_not_reasonably_live(cached_consensus, req.flavor, now,
+                                          1);
+    geoip_note_ns_response(GEOIP_REJECT_NOT_FOUND);
+    goto done;
+  } else if (
+      cached_consensus && have_valid_until &&
       !networkstatus_valid_until_is_reasonably_live(valid_until, now)) {
     write_short_http_response(conn, 404, "Consensus is too old");
-    warn_consensus_is_too_old(cached_consensus, req.flavor, now);
+    warn_consensus_is_not_reasonably_live(cached_consensus, req.flavor, now,
+                                          0);
     geoip_note_ns_response(GEOIP_REJECT_NOT_FOUND);
     goto done;
   }
@@ -1045,13 +1072,11 @@ handle_get_status_vote(dir_connection_t *conn, const get_handler_args_t *args)
       if (compress_method != NO_METHOD) {
         conn->compress_state = tor_compress_new(1, compress_method,
                            choose_compression_level(estimated_len));
-        SMARTLIST_FOREACH(items, const char *, c,
-                 connection_buf_add_compress(c, strlen(c), conn, 0));
-        connection_buf_add_compress("", 0, conn, 1);
-      } else {
-        SMARTLIST_FOREACH(items, const char *, c,
-                         connection_buf_add(c, strlen(c), TO_CONN(conn)));
       }
+
+      SMARTLIST_FOREACH(items, const char *, c,
+                        connection_dir_buf_add(c, strlen(c), conn,
+                                               c_sl_idx == c_sl_len - 1));
     } else {
       SMARTLIST_FOREACH(dir_items, cached_dir_t *, d,
           connection_buf_add(compress_method != NO_METHOD ?
@@ -1302,19 +1327,13 @@ handle_get_keys(dir_connection_t *conn, const get_handler_args_t *args)
     if (compress_method != NO_METHOD) {
       conn->compress_state = tor_compress_new(1, compress_method,
                                               choose_compression_level(len));
-      SMARTLIST_FOREACH(certs, authority_cert_t *, c,
-            connection_buf_add_compress(
-                c->cache_info.signed_descriptor_body,
-                c->cache_info.signed_descriptor_len,
-                conn, 0));
-      connection_buf_add_compress("", 0, conn, 1);
-    } else {
-      SMARTLIST_FOREACH(certs, authority_cert_t *, c,
-            connection_buf_add(c->cache_info.signed_descriptor_body,
-                                    c->cache_info.signed_descriptor_len,
-                                    TO_CONN(conn)));
     }
-  keys_done:
+
+    SMARTLIST_FOREACH(certs, authority_cert_t *, c,
+          connection_dir_buf_add(c->cache_info.signed_descriptor_body,
+                                 c->cache_info.signed_descriptor_len,
+                                 conn, c_sl_idx == c_sl_len - 1));
+ keys_done:
     smartlist_free(certs);
     goto done;
   }
@@ -1371,9 +1390,11 @@ handle_get_hs_descriptor_v3(dir_connection_t *conn,
   const char *pubkey_str = NULL;
   const char *url = args->url;
 
-  /* Reject unencrypted dir connections */
-  if (!connection_dir_is_encrypted(conn)) {
-    write_short_http_response(conn, 404, "Not found");
+  /* Reject non anonymous dir connections (which also tests if encrypted). We
+   * do not allow single hop clients to query an HSDir. */
+  if (!connection_dir_is_anonymous(conn)) {
+    write_short_http_response(conn, 503,
+                              "Rejecting single hop HS v3 descriptor request");
     goto done;
   }
 
@@ -1435,6 +1456,39 @@ handle_get_networkstatus_bridges(dir_connection_t *conn,
     goto done;
   }
  done:
+  return 0;
+}
+
+/** Helper function for GET the bandwidth file used for the next vote */
+static int
+handle_get_next_bandwidth(dir_connection_t *conn,
+                          const get_handler_args_t *args)
+{
+  log_debug(LD_DIR, "Getting next bandwidth.");
+  const or_options_t *options = get_options();
+  const compress_method_t compress_method =
+    find_best_compression_method(args->compression_supported, 1);
+
+  if (options->V3BandwidthsFile) {
+    char *bandwidth = read_file_to_str(options->V3BandwidthsFile,
+                                       RFTS_IGNORE_MISSING, NULL);
+    if (bandwidth != NULL) {
+      ssize_t len = strlen(bandwidth);
+      write_http_response_header(conn, compress_method != NO_METHOD ? -1 : len,
+                                 compress_method, BANDWIDTH_CACHE_LIFETIME);
+      if (compress_method != NO_METHOD) {
+        conn->compress_state = tor_compress_new(1, compress_method,
+                                        choose_compression_level(len/2));
+        log_debug(LD_DIR, "Compressing bandwidth file.");
+      } else {
+        log_debug(LD_DIR, "Not compressing bandwidth file.");
+      }
+      connection_dir_buf_add((const char*)bandwidth, len, conn, 1);
+      tor_free(bandwidth);
+      return 0;
+    }
+  }
+  write_short_http_response(conn, 404, "Not found");
   return 0;
 }
 
@@ -1580,10 +1634,15 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
     goto done;
   }
 
-  /* Handle HS descriptor publish request. */
-  /* XXX: This should be disabled with a consensus param until we want to
-   * the prop224 be deployed and thus use. */
-  if (connection_dir_is_encrypted(conn) && !strcmpstart(url, "/tor/hs/")) {
+  /* Handle HS descriptor publish request. We force an anonymous connection
+   * (which also tests for encrypted). We do not allow single-hop client to
+   * post a descriptor onto an HSDir. */
+  if (!strcmpstart(url, "/tor/hs/")) {
+    if (!connection_dir_is_anonymous(conn)) {
+      write_short_http_response(conn, 503,
+                                "Rejecting single hop HS descriptor post");
+      goto done;
+    }
     const char *msg = "HS descriptor stored successfully.";
 
     /* We most probably have a publish request for an HS descriptor. */
@@ -1608,8 +1667,8 @@ directory_handle_command_post,(dir_connection_t *conn, const char *headers,
     const char *msg = "[None]";
     uint8_t purpose = authdir_mode_bridge(options) ?
                       ROUTER_PURPOSE_BRIDGE : ROUTER_PURPOSE_GENERAL;
-    was_router_added_t r = dirserv_add_multiple_descriptors(body, purpose,
-                                             conn->base_.address, &msg);
+    was_router_added_t r = dirserv_add_multiple_descriptors(body, body_len,
+                                           purpose, conn->base_.address, &msg);
     tor_assert(msg);
 
     if (r == ROUTER_ADDED_SUCCESSFULLY) {

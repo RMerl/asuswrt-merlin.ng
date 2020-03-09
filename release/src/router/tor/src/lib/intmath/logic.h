@@ -17,4 +17,4 @@
 /** Macro: true if two values have different boolean values. */
 #define bool_neq(a,b) (!(a)!=!(b))
 
-#endif
+#endif /* !defined(HAVE_TOR_LOGIC_H) */

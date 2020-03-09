@@ -678,7 +678,7 @@ smartlist_sort_pointers(smartlist_t *sl)
 static inline void
 smartlist_heapify(smartlist_t *sl,
                   int (*compare)(const void *a, const void *b),
-                  int idx_field_offset,
+                  ptrdiff_t idx_field_offset,
                   int idx)
 {
   while (1) {
@@ -725,7 +725,7 @@ smartlist_heapify(smartlist_t *sl,
 void
 smartlist_pqueue_add(smartlist_t *sl,
                      int (*compare)(const void *a, const void *b),
-                     int idx_field_offset,
+                     ptrdiff_t idx_field_offset,
                      void *item)
 {
   int idx;
@@ -754,7 +754,7 @@ smartlist_pqueue_add(smartlist_t *sl,
 void *
 smartlist_pqueue_pop(smartlist_t *sl,
                      int (*compare)(const void *a, const void *b),
-                     int idx_field_offset)
+                     ptrdiff_t idx_field_offset)
 {
   void *top;
   tor_assert(sl->num_used);
@@ -778,7 +778,7 @@ smartlist_pqueue_pop(smartlist_t *sl,
 void
 smartlist_pqueue_remove(smartlist_t *sl,
                         int (*compare)(const void *a, const void *b),
-                        int idx_field_offset,
+                        ptrdiff_t idx_field_offset,
                         void *item)
 {
   int idx = IDX_OF_ITEM(item);
@@ -802,7 +802,7 @@ smartlist_pqueue_remove(smartlist_t *sl,
 void
 smartlist_pqueue_assert_ok(smartlist_t *sl,
                            int (*compare)(const void *a, const void *b),
-                           int idx_field_offset)
+                           ptrdiff_t idx_field_offset)
 {
   int i;
   for (i = sl->num_used - 1; i >= 0; --i) {

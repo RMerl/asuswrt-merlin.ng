@@ -57,7 +57,7 @@
 #define MIN_SUPPORTED_CONSENSUS_METHOD 25
 
 /** The highest consensus method that we currently support. */
-#define MAX_SUPPORTED_CONSENSUS_METHOD 28
+#define MAX_SUPPORTED_CONSENSUS_METHOD 29
 
 /** Lowest consensus method where authorities vote on required/recommended
  * protocols. */
@@ -79,6 +79,12 @@
  * addresses. See #23828 and #20916. */
 #define MIN_METHOD_FOR_NO_A_LINES_IN_MICRODESC 28
 
+/**
+ * Lowest consensus method where microdescriptor lines are put in canonical
+ * form for improved compressibility and ease of storage. See proposal 298.
+ **/
+#define MIN_METHOD_FOR_CANONICAL_FAMILIES_IN_MICRODESCS 29
+
 /** Default bandwidth to clip unmeasured bandwidths to using method >=
  * MIN_METHOD_TO_CLIP_UNMEASURED_BW.  (This is not a consensus method; do not
  * get confused with the above macros.) */
@@ -91,6 +97,9 @@
 
 /** Maximum size of a line in a vote. */
 #define MAX_BW_FILE_HEADERS_LINE_LEN 1024
+
+extern const char DIRVOTE_UNIVERSAL_FLAGS[];
+extern const char DIRVOTE_OPTIONAL_FLAGS[];
 
 /*
  * Public API. Used outside of the dirauth subsystem.
@@ -119,7 +128,7 @@ struct config_line_t;
 char *format_recommended_version_list(const struct config_line_t *line,
                                       int warn);
 
-#else /* HAVE_MODULE_DIRAUTH */
+#else /* !defined(HAVE_MODULE_DIRAUTH) */
 
 static inline time_t
 dirvote_act(const or_options_t *options, time_t now)
@@ -184,7 +193,7 @@ dirvote_add_signatures(const char *detached_signatures_body,
   return 0;
 }
 
-#endif /* HAVE_MODULE_DIRAUTH */
+#endif /* defined(HAVE_MODULE_DIRAUTH) */
 
 /* Item access */
 MOCK_DECL(const char*, dirvote_get_pending_consensus,

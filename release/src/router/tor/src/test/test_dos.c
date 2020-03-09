@@ -411,7 +411,7 @@ test_dos_bucket_refill(void *arg)
   }
   tt_uint_op(current_circ_count, OP_EQ, 0);
   tt_uint_op(dos_stats->cc_stats.circuit_bucket, OP_EQ, current_circ_count);
-#endif
+#endif /* SIZEOF_TIME_T == 8 */
 
  done:
   tor_free(chan);

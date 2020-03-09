@@ -17,6 +17,7 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/connection_edge.h"
+#include "core/or/sendme.h"
 #include "core/or/relay.h"
 #include "test/test.h"
 #include "test/log_test_helpers.h"
@@ -812,7 +813,11 @@ test_circbw_relay(void *arg)
   ASSERT_UNCOUNTED_BW();
 
   /* Sendme on circuit with non-full window: counted */
-  PACK_CELL(0, RELAY_COMMAND_SENDME, "Data1234");
+  PACK_CELL(0, RELAY_COMMAND_SENDME, "");
+  /* Recording a cell, the window is updated after decryption so off by one in
+   * order to record and then we process it with the proper window. */
+  circ->cpath->package_window = 901;
+  sendme_record_cell_digest_on_circ(TO_CIRCUIT(circ), circ->cpath);
   circ->cpath->package_window = 900;
   connection_edge_process_relay_cell(&cell, TO_CIRCUIT(circ), edgeconn,
                                      circ->cpath);

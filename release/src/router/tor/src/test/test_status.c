@@ -404,7 +404,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
   {
     case 0:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -412,7 +412,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
       break;
     case 1:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -429,7 +429,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
       break;
     case 3:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "rep_hist_log_circuit_handshake_stats"),
                 OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
@@ -442,13 +442,13 @@ NS(logv)(int severity, log_domain_mask_t domain,
       break;
     case 4:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "rep_hist_log_link_protocol_counts"),
                 OP_NE, NULL);
       break;
     case 5:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_str_op(format, OP_EQ, "DoS mitigation since startup:%s%s%s%s");
       tt_str_op(va_arg(ap, char *), OP_EQ,
                 " 0 circuits killed with too many cells.");
@@ -574,7 +574,7 @@ NS(logv)(int severity, log_domain_mask_t domain, const char *funcname,
   ++NS(n_msgs);
 
   tt_int_op(severity, OP_EQ, LOG_NOTICE);
-  tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+  tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
   tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
   tt_ptr_op(suffix, OP_EQ, NULL);
   tt_str_op(format, OP_EQ,
@@ -709,7 +709,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
   {
     case 0:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -723,7 +723,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
       break;
     case 1:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_accounting"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -889,7 +889,7 @@ NS(logv)(int severity, log_domain_mask_t domain, const char *funcname,
   {
     case 0:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -903,7 +903,7 @@ NS(logv)(int severity, log_domain_mask_t domain, const char *funcname,
       break;
     case 1:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -1038,7 +1038,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
   {
     case 0:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,
@@ -1052,7 +1052,7 @@ NS(logv)(int severity, log_domain_mask_t domain,
       break;
     case 1:
       tt_int_op(severity, OP_EQ, LOG_NOTICE);
-      tt_int_op(domain, OP_EQ, LD_HEARTBEAT);
+      tt_u64_op(domain, OP_EQ, LD_HEARTBEAT);
       tt_ptr_op(strstr(funcname, "log_heartbeat"), OP_NE, NULL);
       tt_ptr_op(suffix, OP_EQ, NULL);
       tt_str_op(format, OP_EQ,

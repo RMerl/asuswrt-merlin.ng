@@ -43,4 +43,4 @@ struct addr_policy_t {
   uint16_t prt_max; /**< Highest port number to accept/reject. */
 };
 
-#endif
+#endif /* !defined(TOR_ADDR_POLICY_ST_H) */

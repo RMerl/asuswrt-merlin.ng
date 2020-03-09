@@ -18,5 +18,5 @@ struct ns_detached_signatures_t {
                          * document_signature_t */
 };
 
-#endif
+#endif /* !defined(NS_DETACHED_SIGNATURES_ST_H) */
 

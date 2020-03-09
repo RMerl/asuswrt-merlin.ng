@@ -13,4 +13,4 @@
 
 int write_pidfile(const char *filename);
 
-#endif
+#endif /* !defined(TOR_PIDFILE_H) */

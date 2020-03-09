@@ -153,6 +153,16 @@ src_test_fuzz_fuzz_socks_LDADD = $(FUZZING_LIBS)
 endif
 
 if UNITTESTS_ENABLED
+src_test_fuzz_fuzz_strops_SOURCES = \
+	src/test/fuzz/fuzzing_common.c \
+	src/test/fuzz/fuzz_strops.c
+src_test_fuzz_fuzz_strops_CPPFLAGS = $(FUZZING_CPPFLAGS)
+src_test_fuzz_fuzz_strops_CFLAGS = $(FUZZING_CFLAGS)
+src_test_fuzz_fuzz_strops_LDFLAGS = $(FUZZING_LDFLAG)
+src_test_fuzz_fuzz_strops_LDADD = $(FUZZING_LIBS)
+endif
+
+if UNITTESTS_ENABLED
 src_test_fuzz_fuzz_vrs_SOURCES = \
 	src/test/fuzz/fuzzing_common.c \
 	src/test/fuzz/fuzz_vrs.c
@@ -176,6 +186,7 @@ FUZZERS = \
 	src/test/fuzz/fuzz-iptsv2 \
 	src/test/fuzz/fuzz-microdesc \
 	src/test/fuzz/fuzz-socks \
+	src/test/fuzz/fuzz-strops \
 	src/test/fuzz/fuzz-vrs
 endif
 
@@ -291,6 +302,15 @@ src_test_fuzz_lf_fuzz_socks_LDADD = $(LIBFUZZER_LIBS)
 endif
 
 if UNITTESTS_ENABLED
+src_test_fuzz_lf_fuzz_strops_SOURCES = \
+	$(src_test_fuzz_fuzz_strops_SOURCES)
+src_test_fuzz_lf_fuzz_strops_CPPFLAGS = $(LIBFUZZER_CPPFLAGS)
+src_test_fuzz_lf_fuzz_strops_CFLAGS = $(LIBFUZZER_CFLAGS)
+src_test_fuzz_lf_fuzz_strops_LDFLAGS = $(LIBFUZZER_LDFLAG)
+src_test_fuzz_lf_fuzz_strops_LDADD = $(LIBFUZZER_LIBS)
+endif
+
+if UNITTESTS_ENABLED
 src_test_fuzz_lf_fuzz_vrs_SOURCES = \
 	$(src_test_fuzz_fuzz_vrs_SOURCES)
 src_test_fuzz_lf_fuzz_vrs_CPPFLAGS = $(LIBFUZZER_CPPFLAGS)
@@ -312,6 +332,7 @@ LIBFUZZER_FUZZERS = \
 	src/test/fuzz/lf-fuzz-iptsv2 \
 	src/test/fuzz/lf-fuzz-microdesc \
 	src/test/fuzz/lf-fuzz-socks \
+	src/test/fuzz/lf-fuzz-strops \
 	src/test/fuzz/lf-fuzz-vrs
 
 else
@@ -406,6 +427,13 @@ src_test_fuzz_liboss_fuzz_socks_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
 endif
 
 if UNITTESTS_ENABLED
+src_test_fuzz_liboss_fuzz_strops_a_SOURCES = \
+	$(src_test_fuzz_fuzz_strops_SOURCES)
+src_test_fuzz_liboss_fuzz_strops_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
+src_test_fuzz_liboss_fuzz_strops_a_CFLAGS = $(LIBOSS_FUZZ_CFLAGS)
+endif
+
+if UNITTESTS_ENABLED
 src_test_fuzz_liboss_fuzz_vrs_a_SOURCES = \
 	$(src_test_fuzz_fuzz_vrs_SOURCES)
 src_test_fuzz_liboss_fuzz_vrs_a_CPPFLAGS = $(LIBOSS_FUZZ_CPPFLAGS)
@@ -425,6 +453,7 @@ OSS_FUZZ_FUZZERS = \
 	src/test/fuzz/liboss-fuzz-iptsv2.a \
 	src/test/fuzz/liboss-fuzz-microdesc.a \
 	src/test/fuzz/liboss-fuzz-socks.a \
+	src/test/fuzz/liboss-fuzz-strops.a \
 	src/test/fuzz/liboss-fuzz-vrs.a
 
 else

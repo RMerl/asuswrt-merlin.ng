@@ -83,4 +83,4 @@ bitarray_is_set(bitarray_t *b, int bit)
   return b[bit >> BITARRAY_SHIFT] & (1u << (bit & BITARRAY_MASK));
 }
 
-#endif /* !defined(TOR_CONTAINER_H) */
+#endif /* !defined(TOR_BITARRAY_H) */

@@ -42,6 +42,7 @@ const char *hex_str(const char *from, size_t fromlen);
 
 #define BASE64_ENCODE_MULTILINE 1
 size_t base64_encode_size(size_t srclen, int flags);
+size_t base64_decode_maxsize(size_t srclen);
 int base64_encode(char *dest, size_t destlen, const char *src, size_t srclen,
                   int flags);
 int base64_decode(char *dest, size_t destlen, const char *src, size_t srclen);
@@ -57,4 +58,4 @@ size_t base32_encoded_size(size_t srclen);
 void base16_encode(char *dest, size_t destlen, const char *src, size_t srclen);
 int base16_decode(char *dest, size_t destlen, const char *src, size_t srclen);
 
-#endif /* !defined(TOR_UTIL_FORMAT_H) */
+#endif /* !defined(TOR_BINASCII_H) */

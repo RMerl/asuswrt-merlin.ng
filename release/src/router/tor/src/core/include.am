@@ -6,11 +6,14 @@ noinst_LIBRARIES += \
 	src/core/libtor-app-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 LIBTOR_APP_A_SOURCES = 				\
 	src/app/config/config.c			\
-	src/app/config/confparse.c		\
 	src/app/config/statefile.c		\
 	src/app/main/main.c			\
+	src/app/main/shutdown.c			\
+	src/app/main/subsystem_list.c		\
+	src/app/main/subsysmgr.c		\
 	src/core/crypto/hs_ntor.c		\
 	src/core/crypto/onion_crypto.c		\
 	src/core/crypto/onion_fast.c		\
@@ -20,6 +23,8 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/core/mainloop/connection.c		\
 	src/core/mainloop/cpuworker.c		\
 	src/core/mainloop/mainloop.c		\
+	src/core/mainloop/mainloop_pubsub.c	\
+	src/core/mainloop/mainloop_sys.c	\
 	src/core/mainloop/netstatus.c		\
 	src/core/mainloop/periodic.c		\
 	src/core/or/address_set.c		\
@@ -30,13 +35,20 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/core/or/circuitlist.c		\
 	src/core/or/circuitmux.c		\
 	src/core/or/circuitmux_ewma.c		\
+	src/core/or/circuitpadding.c		\
+	src/core/or/circuitpadding_machines.c	\
 	src/core/or/circuitstats.c		\
 	src/core/or/circuituse.c		\
+	src/core/or/crypt_path.c		\
 	src/core/or/command.c			\
 	src/core/or/connection_edge.c		\
 	src/core/or/connection_or.c		\
 	src/core/or/dos.c			\
 	src/core/or/onion.c			\
+	src/core/or/ocirc_event.c		\
+	src/core/or/or_periodic.c		\
+	src/core/or/or_sys.c			\
+	src/core/or/orconn_event.c		\
 	src/core/or/policies.c			\
 	src/core/or/protover.c			\
 	src/core/or/protover_rust.c		\
@@ -45,6 +57,7 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/core/or/scheduler.c			\
 	src/core/or/scheduler_kist.c		\
 	src/core/or/scheduler_vanilla.c		\
+	src/core/or/sendme.c			\
 	src/core/or/status.c			\
 	src/core/or/versions.c			\
 	src/core/proto/proto_cell.c		\
@@ -59,10 +72,21 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/feature/client/dnsserv.c		\
 	src/feature/client/entrynodes.c		\
 	src/feature/client/transports.c		\
+	src/feature/control/btrack.c		\
+	src/feature/control/btrack_circuit.c	\
+	src/feature/control/btrack_orconn.c	\
+	src/feature/control/btrack_orconn_cevent.c	\
+	src/feature/control/btrack_orconn_maps.c	\
 	src/feature/control/control.c		\
+	src/feature/control/control_auth.c	\
+	src/feature/control/control_bootstrap.c	\
+	src/feature/control/control_cmd.c	\
+	src/feature/control/control_events.c	\
+	src/feature/control/control_fmt.c	\
+	src/feature/control/control_getinfo.c	\
+	src/feature/control/control_proto.c	\
 	src/feature/control/fmt_serverstatus.c  \
 	src/feature/control/getinfo_geoip.c	\
-	src/feature/dirauth/keypin.c		\
 	src/feature/dircache/conscache.c	\
 	src/feature/dircache/consdiffmgr.c	\
 	src/feature/dircache/dircache.c		\
@@ -92,6 +116,7 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/feature/hs/hs_config.c		\
 	src/feature/hs/hs_control.c		\
 	src/feature/hs/hs_descriptor.c		\
+	src/feature/hs/hs_dos.c			\
 	src/feature/hs/hs_ident.c		\
 	src/feature/hs/hs_intropoint.c		\
 	src/feature/hs/hs_service.c		\
@@ -99,13 +124,13 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/feature/hs_common/replaycache.c	\
 	src/feature/hs_common/shared_random_client.c	\
 	src/feature/keymgt/loadkey.c		\
-	src/feature/dirauth/keypin.c		\
 	src/feature/nodelist/authcert.c		\
 	src/feature/nodelist/describe.c		\
 	src/feature/nodelist/dirlist.c		\
 	src/feature/nodelist/microdesc.c	\
 	src/feature/nodelist/networkstatus.c	\
 	src/feature/nodelist/nickname.c		\
+	src/feature/nodelist/nodefamily.c	\
 	src/feature/nodelist/nodelist.c		\
 	src/feature/nodelist/node_select.c	\
 	src/feature/nodelist/routerinfo.c	\
@@ -116,6 +141,8 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/feature/relay/dns.c			\
 	src/feature/relay/ext_orport.c		\
 	src/feature/relay/onion_queue.c		\
+	src/feature/relay/relay_periodic.c	\
+	src/feature/relay/relay_sys.c		\
 	src/feature/relay/router.c		\
 	src/feature/relay/routerkeys.c		\
 	src/feature/relay/routermode.c		\
@@ -129,17 +156,6 @@ LIBTOR_APP_A_SOURCES = 				\
 	src/feature/stats/geoip_stats.c		\
 	src/feature/stats/rephist.c		\
 	src/feature/stats/predict_ports.c
-
-# These should eventually move into module_dirauth_sources, but for now
-# the separation is only in the code location.
-LIBTOR_APP_A_SOURCES += 			\
-	src/feature/dirauth/bwauth.c		\
-	src/feature/dirauth/dsigs_parse.c	\
-	src/feature/dirauth/guardfraction.c	\
-	src/feature/dirauth/reachability.c	\
-	src/feature/dirauth/recommend_pkg.c	\
-	src/feature/dirauth/process_descs.c	\
-	src/feature/dirauth/voteflags.c
 
 if BUILD_NT_SERVICES
 LIBTOR_APP_A_SOURCES += src/app/main/ntmain.c
@@ -156,10 +172,21 @@ LIBTOR_APP_TESTING_A_SOURCES = $(LIBTOR_APP_A_SOURCES)
 # The Directory Authority module.
 MODULE_DIRAUTH_SOURCES = 					\
 	src/feature/dirauth/authmode.c				\
+	src/feature/dirauth/bridgeauth.c			\
+	src/feature/dirauth/bwauth.c				\
+	src/feature/dirauth/dirauth_periodic.c			\
+	src/feature/dirauth/dirauth_sys.c			\
 	src/feature/dirauth/dircollate.c			\
 	src/feature/dirauth/dirvote.c				\
+	src/feature/dirauth/dsigs_parse.c			\
+	src/feature/dirauth/guardfraction.c			\
+	src/feature/dirauth/keypin.c				\
+	src/feature/dirauth/process_descs.c			\
+	src/feature/dirauth/reachability.c			\
+	src/feature/dirauth/recommend_pkg.c			\
 	src/feature/dirauth/shared_random.c			\
-	src/feature/dirauth/shared_random_state.c
+	src/feature/dirauth/shared_random_state.c		\
+	src/feature/dirauth/voteflags.c
 
 if BUILD_MODULE_DIRAUTH
 LIBTOR_APP_A_SOURCES += $(MODULE_DIRAUTH_SOURCES)
@@ -183,14 +210,16 @@ AM_CPPFLAGS += -DSHARE_DATADIR="\"$(datadir)\""		\
 src_core_libtor_app_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_core_libtor_app_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/app/config/config.h				\
-	src/app/config/confparse.h			\
 	src/app/config/or_options_st.h			\
 	src/app/config/or_state_st.h			\
 	src/app/config/statefile.h			\
 	src/app/main/main.h				\
 	src/app/main/ntmain.h				\
+	src/app/main/shutdown.h 			\
+	src/app/main/subsysmgr.h			\
 	src/core/crypto/hs_ntor.h			\
 	src/core/crypto/onion_crypto.h	        	\
 	src/core/crypto/onion_fast.h			\
@@ -200,6 +229,8 @@ noinst_HEADERS +=					\
 	src/core/mainloop/connection.h			\
 	src/core/mainloop/cpuworker.h			\
 	src/core/mainloop/mainloop.h			\
+	src/core/mainloop/mainloop_pubsub.h		\
+	src/core/mainloop/mainloop_sys.h		\
 	src/core/mainloop/netstatus.h			\
 	src/core/mainloop/periodic.h			\
 	src/core/or/addr_policy_st.h			\
@@ -215,28 +246,37 @@ noinst_HEADERS +=					\
 	src/core/or/circuitmux.h			\
 	src/core/or/circuitmux_ewma.h			\
 	src/core/or/circuitstats.h			\
+	src/core/or/circuitpadding.h			\
+	src/core/or/circuitpadding_machines.h		\
 	src/core/or/circuituse.h			\
 	src/core/or/command.h				\
 	src/core/or/connection_edge.h			\
 	src/core/or/connection_or.h			\
 	src/core/or/connection_st.h			\
+	src/core/or/crypt_path.h			\
 	src/core/or/cpath_build_state_st.h		\
 	src/core/or/crypt_path_reference_st.h		\
 	src/core/or/crypt_path_st.h			\
 	src/core/or/destroy_cell_queue_st.h		\
 	src/core/or/dos.h				\
 	src/core/or/edge_connection_st.h		\
-	src/core/or/half_edge_st.h		\
+	src/core/or/half_edge_st.h			\
 	src/core/or/entry_connection_st.h		\
 	src/core/or/entry_port_cfg_st.h			\
 	src/core/or/extend_info_st.h			\
 	src/core/or/listener_connection_st.h		\
 	src/core/or/onion.h				\
 	src/core/or/or.h				\
+	src/core/or/or_periodic.h			\
+	src/core/or/or_sys.h				\
+	src/core/or/orconn_event.h			\
+	src/core/or/orconn_event_sys.h			\
 	src/core/or/or_circuit_st.h			\
 	src/core/or/or_connection_st.h			\
 	src/core/or/or_handshake_certs_st.h		\
 	src/core/or/or_handshake_state_st.h		\
+	src/core/or/ocirc_event.h			\
+	src/core/or/ocirc_event_sys.h			\
 	src/core/or/origin_circuit_st.h			\
 	src/core/or/policies.h				\
 	src/core/or/port_cfg_st.h			\
@@ -245,6 +285,7 @@ noinst_HEADERS +=					\
 	src/core/or/relay.h				\
 	src/core/or/relay_crypto_st.h			\
 	src/core/or/scheduler.h				\
+	src/core/or/sendme.h				\
 	src/core/or/server_port_cfg_st.h		\
 	src/core/or/socks_request_st.h			\
 	src/core/or/status.h				\
@@ -263,12 +304,27 @@ noinst_HEADERS +=					\
 	src/feature/client/dnsserv.h			\
 	src/feature/client/entrynodes.h			\
 	src/feature/client/transports.h			\
+	src/feature/control/btrack_circuit.h		\
+	src/feature/control/btrack_orconn.h		\
+	src/feature/control/btrack_orconn_cevent.h	\
+	src/feature/control/btrack_orconn_maps.h	\
+	src/feature/control/btrack_sys.h		\
 	src/feature/control/control.h			\
+	src/feature/control/control_auth.h		\
+	src/feature/control/control_cmd.h		\
+	src/feature/control/control_cmd_args_st.h	\
 	src/feature/control/control_connection_st.h	\
+	src/feature/control/control_events.h		\
+	src/feature/control/control_fmt.h		\
+	src/feature/control/control_getinfo.h		\
+	src/feature/control/control_proto.h		\
 	src/feature/control/fmt_serverstatus.h		\
 	src/feature/control/getinfo_geoip.h		\
 	src/feature/dirauth/authmode.h			\
+        src/feature/dirauth/bridgeauth.h		\
 	src/feature/dirauth/bwauth.h			\
+	src/feature/dirauth/dirauth_periodic.h		\
+	src/feature/dirauth/dirauth_sys.h		\
 	src/feature/dirauth/dircollate.h		\
 	src/feature/dirauth/dirvote.h			\
 	src/feature/dirauth/dsigs_parse.h		\
@@ -317,6 +373,7 @@ noinst_HEADERS +=					\
 	src/feature/hs/hs_config.h			\
 	src/feature/hs/hs_control.h			\
 	src/feature/hs/hs_descriptor.h			\
+	src/feature/hs/hs_dos.h				\
 	src/feature/hs/hs_ident.h			\
 	src/feature/hs/hs_intropoint.h			\
 	src/feature/hs/hs_service.h			\
@@ -340,6 +397,8 @@ noinst_HEADERS +=					\
 	src/feature/nodelist/networkstatus_voter_info_st.h	\
 	src/feature/nodelist/nickname.h			\
 	src/feature/nodelist/node_st.h			\
+	src/feature/nodelist/nodefamily.h		\
+	src/feature/nodelist/nodefamily_st.h		\
 	src/feature/nodelist/nodelist.h			\
 	src/feature/nodelist/node_select.h		\
 	src/feature/nodelist/routerinfo.h		\
@@ -356,6 +415,8 @@ noinst_HEADERS +=					\
 	src/feature/relay/dns_structs.h			\
 	src/feature/relay/ext_orport.h			\
 	src/feature/relay/onion_queue.h			\
+	src/feature/relay/relay_periodic.h		\
+	src/feature/relay/relay_sys.h			\
 	src/feature/relay/router.h			\
 	src/feature/relay/routerkeys.h			\
 	src/feature/relay/routermode.h			\
@@ -374,9 +435,10 @@ noinst_HEADERS +=					\
 	src/feature/stats/rephist.h			\
 	src/feature/stats/predict_ports.h
 
-noinst_HEADERS +=			\
-	src/app/config/auth_dirs.inc	\
-	src/app/config/fallback_dirs.inc
+noinst_HEADERS +=				\
+	src/app/config/auth_dirs.inc		\
+	src/app/config/fallback_dirs.inc	\
+	src/app/config/testnet.inc
 
 # This may someday want to be an installed file?
 noinst_HEADERS += src/feature/api/tor_api.h

@@ -49,7 +49,7 @@
 #include "core/or/dos.h"
 #include "core/or/onion.h"
 #include "core/or/relay.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/hibernate/hibernate.h"
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/nodelist.h"
@@ -182,7 +182,7 @@ command_process_cell(channel_t *chan, cell_t *cell)
     command_time_process_cell(cl, cn, & tp ## time ,            \
                               command_process_ ## tp ## _cell);  \
   } STMT_END
-#else /* !(defined(KEEP_TIMING_STATS)) */
+#else /* !defined(KEEP_TIMING_STATS) */
 #define PROCESS_CELL(tp, cl, cn) command_process_ ## tp ## _cell(cl, cn)
 #endif /* defined(KEEP_TIMING_STATS) */
 

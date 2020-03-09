@@ -72,6 +72,8 @@ ENABLE_GCC_WARNING(overlength-strings)
 #define NOT_ENOUGH_CONSENSUS_SIGNATURES "HTTP/1.0 404 " \
   "Consensus not signed by sufficient number of requested authorities\r\n\r\n"
 
+#define consdiffmgr_add_consensus consdiffmgr_add_consensus_nulterm
+
 static dir_connection_t *
 new_dir_conn(void)
 {
@@ -477,8 +479,7 @@ static or_options_t *mock_options = NULL;
 static void
 init_mock_options(void)
 {
-  mock_options = tor_malloc(sizeof(or_options_t));
-  memset(mock_options, 0, sizeof(or_options_t));
+  mock_options = options_new();
   mock_options->TestingTorNetwork = 1;
   mock_options->DataDirectory = tor_strdup(get_fname_rnd("datadir_tmp"));
   mock_options->CacheDirectory = tor_strdup(mock_options->DataDirectory);
@@ -1275,7 +1276,9 @@ test_dir_handle_get_server_keys_authority(void* data)
   size_t body_used = 0;
   (void) data;
 
-  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE, NULL);
+  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE,
+                                               strlen(TEST_CERTIFICATE),
+                                               NULL);
 
   MOCK(get_my_v3_authority_cert, get_my_v3_authority_cert_m);
   MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
@@ -1425,7 +1428,9 @@ test_dir_handle_get_server_keys_sk(void* data)
   size_t body_used = 0;
   (void) data;
 
-  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE, NULL);
+  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE,
+                                               strlen(TEST_CERTIFICATE),
+                                               NULL);
   MOCK(get_my_v3_authority_cert, get_my_v3_authority_cert_m);
   MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
 
@@ -2217,6 +2222,31 @@ test_dir_handle_get_status_vote_next_authority_not_found(void* data)
     tor_free(header);
 }
 
+static void
+test_dir_handle_get_status_vote_next_bandwidth_not_found(void* data)
+{
+  dir_connection_t *conn = NULL;
+  char *header = NULL;
+  (void) data;
+
+  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
+
+  conn = new_dir_conn();
+
+  tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
+    GET("/tor/status-vote/next/bandwdith"), NULL, 0));
+
+  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
+                      NULL, NULL, 1, 0);
+  tt_assert(header);
+  tt_str_op(NOT_FOUND, OP_EQ, header);
+
+  done:
+    UNMOCK(connection_write_to_buf_impl_);
+    connection_free_minimal(TO_CONN(conn));
+    tor_free(header);
+}
+
 NS_DECL(const char*,
 dirvote_get_pending_consensus, (consensus_flavor_t flav));
 
@@ -2393,7 +2423,9 @@ test_dir_handle_get_status_vote_next_authority(void* data)
   routerlist_free_all();
   dirvote_free_all();
 
-  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE, NULL);
+  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE,
+                                               strlen(TEST_CERTIFICATE),
+                                               NULL);
 
   /* create a trusted ds */
   ds = trusted_dir_server_new("ds", "127.0.0.1", 9059, 9060, NULL, digest,
@@ -2455,6 +2487,85 @@ test_dir_handle_get_status_vote_next_authority(void* data)
 }
 
 static void
+test_dir_handle_get_status_vote_next_bandwidth(void* data)
+{
+  dir_connection_t *conn = NULL;
+  char *header = NULL, *body = NULL;
+  size_t body_used = 0;
+  (void) data;
+
+  const char *content =
+    "1541171221\n"
+    "node_id=$68A483E05A2ABDCA6DA5A3EF8DB5177638A27F80 "
+    "master_key_ed25519=YaqV4vbvPYKucElk297eVdNArDz9HtIwUoIeo0+cVIpQ "
+    "bw=760 nick=Test time=2018-05-08T16:13:26\n";
+
+  init_mock_options();
+  MOCK(get_options, mock_get_options);
+  mock_options->V3BandwidthsFile = tor_strdup(
+    get_fname_rnd("V3BandwidthsFile")
+  );
+
+  write_str_to_file(mock_options->V3BandwidthsFile, content, 0);
+
+  MOCK(connection_write_to_buf_impl_, connection_write_to_buf_mock);
+
+  conn = new_dir_conn();
+  tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
+    GET("/tor/status-vote/next/bandwidth"), NULL, 0));
+
+  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
+                      &body, &body_used, strlen(content)+1, 0);
+
+  tt_assert(header);
+  tt_ptr_op(strstr(header, "HTTP/1.0 200 OK\r\n"), OP_EQ, header);
+  tt_assert(strstr(header, "Content-Type: text/plain\r\n"));
+  tt_assert(strstr(header, "Content-Encoding: identity\r\n"));
+  tt_assert(strstr(header, "Content-Length: 167\r\n"));
+
+  /* Check cache lifetime */
+  char expbuf[RFC1123_TIME_LEN+1];
+  time_t now = approx_time();
+  /* BANDWIDTH_CACHE_LIFETIME is defined in dircache.c. */
+  format_rfc1123_time(expbuf, (time_t)(now + 30*60));
+  char *expires = NULL;
+  /* Change to 'Cache-control: max-age=%d' if using http/1.1. */
+  tor_asprintf(&expires, "Expires: %s\r\n", expbuf);
+  tt_assert(strstr(header, expires));
+
+  tt_int_op(body_used, OP_EQ, strlen(body));
+  tt_str_op(content, OP_EQ, body);
+
+  tor_free(header);
+  tor_free(body);
+
+  /* Request the file using compression, the result should be the same. */
+  tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
+    GET("/tor/status-vote/next/bandwidth.z"), NULL, 0));
+
+  fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
+                      &body, &body_used, strlen(content)+1, 0);
+
+  tt_assert(header);
+  tt_ptr_op(strstr(header, "HTTP/1.0 200 OK\r\n"), OP_EQ, header);
+  tt_assert(strstr(header, "Content-Encoding: deflate\r\n"));
+
+  /* Since using connection_write_to_buf_mock instead of mocking
+   * connection_buf_add_compress, the content is not actually compressed.
+   * If it would, the size and content would be different than the original.
+  */
+
+ done:
+  UNMOCK(get_options);
+  UNMOCK(connection_write_to_buf_impl_);
+  connection_free_minimal(TO_CONN(conn));
+  tor_free(header);
+  tor_free(body);
+  tor_free(expires);
+  or_options_free(mock_options);
+}
+
+static void
 test_dir_handle_get_status_vote_current_authority(void* data)
 {
   dir_connection_t *conn = NULL;
@@ -2471,7 +2582,9 @@ test_dir_handle_get_status_vote_current_authority(void* data)
   routerlist_free_all();
   dirvote_free_all();
 
-  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE, NULL);
+  mock_cert = authority_cert_parse_from_string(TEST_CERTIFICATE,
+                                               strlen(TEST_CERTIFICATE),
+                                               NULL);
 
   /* create a trusted ds */
   ds = trusted_dir_server_new("ds", "127.0.0.1", 9059, 9060, NULL, digest,
@@ -2627,6 +2740,8 @@ struct testcase_t dir_handle_get_tests[] = {
   DIR_HANDLE_CMD(status_vote_current_authority, 0),
   DIR_HANDLE_CMD(status_vote_next_authority_not_found, 0),
   DIR_HANDLE_CMD(status_vote_next_authority, 0),
+  DIR_HANDLE_CMD(status_vote_next_bandwidth_not_found, 0),
+  DIR_HANDLE_CMD(status_vote_next_bandwidth, 0),
   DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_enough_sigs, TT_FORK),
   DIR_HANDLE_CMD(status_vote_current_consensus_ns_not_found, TT_FORK),
   DIR_HANDLE_CMD(status_vote_current_consensus_too_old, TT_FORK),

@@ -226,7 +226,7 @@ load_ed_keys(const or_options_t *options, time_t now)
         tor_free(fname);
       }
     }
-    if (tor_mem_is_zero((char*)id->seckey.seckey, sizeof(id->seckey)))
+    if (safe_mem_is_zero((char*)id->seckey.seckey, sizeof(id->seckey)))
       sign_signing_key_with_id = NULL;
     else
       sign_signing_key_with_id = id;
@@ -631,14 +631,14 @@ get_master_identity_keypair(void)
 }
 #endif /* defined(TOR_UNIT_TESTS) */
 
-const ed25519_keypair_t *
-get_master_signing_keypair(void)
+MOCK_IMPL(const ed25519_keypair_t *,
+get_master_signing_keypair,(void))
 {
   return master_signing_key;
 }
 
-const struct tor_cert_st *
-get_master_signing_key_cert(void)
+MOCK_IMPL(const struct tor_cert_st *,
+get_master_signing_key_cert,(void))
 {
   return signing_key_cert;
 }
@@ -706,6 +706,8 @@ make_tap_onion_key_crosscert(const crypto_pk_t *onion_key,
 
   *len_out = 0;
   if (crypto_pk_get_digest(rsa_id_key, (char*)signed_data) < 0) {
+    log_info(LD_OR, "crypto_pk_get_digest failed in "
+                    "make_tap_onion_key_crosscert!");
     return NULL;
   }
   memcpy(signed_data + DIGEST_LEN, master_id_key->pubkey, ED25519_PUBKEY_LEN);
@@ -713,8 +715,12 @@ make_tap_onion_key_crosscert(const crypto_pk_t *onion_key,
   int r = crypto_pk_private_sign(onion_key,
                                (char*)signature, sizeof(signature),
                                (const char*)signed_data, sizeof(signed_data));
-  if (r < 0)
+  if (r < 0) {
+    /* It's probably missing the private key */
+    log_info(LD_OR, "crypto_pk_private_sign failed in "
+                    "make_tap_onion_key_crosscert!");
     return NULL;
+  }
 
   *len_out = r;
 

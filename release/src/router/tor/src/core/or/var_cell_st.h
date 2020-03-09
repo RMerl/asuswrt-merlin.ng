@@ -19,5 +19,5 @@ struct var_cell_t {
   uint8_t payload[FLEXIBLE_ARRAY_MEMBER];
 };
 
-#endif
+#endif /* !defined(VAR_CELL_ST_H) */
 

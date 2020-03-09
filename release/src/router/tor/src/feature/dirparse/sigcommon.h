@@ -43,6 +43,6 @@ MOCK_DECL(STATIC int, signed_digest_equals,
 MOCK_DECL(STATIC int, router_compute_hash_final,(char *digest,
                            const char *start, size_t len,
                            digest_algorithm_t alg));
-#endif
+#endif /* defined(SIGCOMMON_PRIVATE) */
 
 #endif /* !defined(TOR_SIGCOMMON_H) */

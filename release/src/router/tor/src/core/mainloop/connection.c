@@ -57,7 +57,7 @@
 #define CONNECTION_PRIVATE
 #include "core/or/or.h"
 #include "feature/client/bridges.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "lib/tls/buffers_tls.h"
 #include "lib/err/backtrace.h"
 
@@ -82,12 +82,14 @@
 #include "core/or/policies.h"
 #include "core/or/reasons.h"
 #include "core/or/relay.h"
+#include "core/or/crypt_path.h"
 #include "core/proto/proto_http.h"
 #include "core/proto/proto_socks.h"
 #include "feature/client/dnsserv.h"
 #include "feature/client/entrynodes.h"
 #include "feature/client/transports.h"
 #include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/dirauth/authmode.h"
 #include "feature/dircache/dirserv.h"
 #include "feature/dircommon/directory.h"
@@ -696,6 +698,7 @@ connection_free_minimal(connection_t *conn)
     control_connection_t *control_conn = TO_CONTROL_CONN(conn);
     tor_free(control_conn->safecookie_client_hash);
     tor_free(control_conn->incoming_cmd);
+    tor_free(control_conn->current_cmd);
     if (control_conn->ephemeral_onion_services) {
       SMARTLIST_FOREACH(control_conn->ephemeral_onion_services, char *, cp, {
         memwipe(cp, 0, strlen(cp));
@@ -1195,7 +1198,7 @@ make_win32_socket_exclusive(tor_socket_t sock)
     return -1;
   }
   return 0;
-#else /* !(defined(SO_EXCLUSIVEADDRUSE)) */
+#else /* !defined(SO_EXCLUSIVEADDRUSE) */
   (void) sock;
   return 0;
 #endif /* defined(SO_EXCLUSIVEADDRUSE) */
@@ -1466,6 +1469,20 @@ connection_listener_new(const struct sockaddr *listensockaddr,
                tor_socket_strerror(tor_socket_errno(s)));
       goto err;
     }
+
+#ifndef __APPLE__
+    /* This code was introduced to help debug #28229. */
+    int value;
+    socklen_t len = sizeof(value);
+
+    if (!getsockopt(s, SOL_SOCKET, SO_ACCEPTCONN, &value, &len)) {
+      if (value == 0) {
+        log_err(LD_NET, "Could not listen on %s - "
+                        "getsockopt(.,SO_ACCEPTCONN,.) yields 0.", address);
+        goto err;
+      }
+    }
+#endif /* !defined(__APPLE__) */
 #endif /* defined(HAVE_SYS_UN_H) */
   } else {
     log_err(LD_BUG, "Got unexpected address family %d.",
@@ -1644,7 +1661,7 @@ check_sockaddr(const struct sockaddr *sa, int len, int level)
              len,(int)sizeof(struct sockaddr_in6));
       ok = 0;
     }
-    if (tor_mem_is_zero((void*)sin6->sin6_addr.s6_addr, 16) ||
+    if (fast_mem_is_zero((void*)sin6->sin6_addr.s6_addr, 16) ||
         sin6->sin6_port == 0) {
       log_fn(level, LD_NET,
              "Address for new connection has address/port equal to zero.");
@@ -1867,7 +1884,7 @@ connection_init_accepted_conn(connection_t *conn,
       /* Initiate Extended ORPort authentication. */
       return connection_ext_or_start_auth(TO_OR_CONN(conn));
     case CONN_TYPE_OR:
-      control_event_or_conn_status(TO_OR_CONN(conn), OR_CONN_EVENT_NEW, 0);
+      connection_or_event_status(TO_OR_CONN(conn), OR_CONN_EVENT_NEW, 0);
       rv = connection_tls_start_handshake(TO_OR_CONN(conn), 1);
       if (rv < 0) {
         connection_or_close_for_error(TO_OR_CONN(conn), 0);
@@ -1879,6 +1896,9 @@ connection_init_accepted_conn(connection_t *conn,
              sizeof(entry_port_cfg_t));
       TO_ENTRY_CONN(conn)->nym_epoch = get_signewnym_epoch();
       TO_ENTRY_CONN(conn)->socks_request->listener_type = listener->base_.type;
+
+      /* Any incoming connection on an entry port counts as user activity. */
+      note_user_activity(approx_time());
 
       switch (TO_CONN(listener)->type) {
         case CONN_TYPE_AP_LISTENER:
@@ -2077,6 +2097,11 @@ connection_connect_log_client_use_ip_version(const connection_t *conn)
   if (options->UseBridges && conn->type == CONN_TYPE_OR
       && options->ClientPreferIPv6ORPort == -1) {
     return;
+  }
+
+  if (fascist_firewall_use_ipv6(options)) {
+    log_info(LD_NET, "Our outgoing connection is using IPv%d.",
+             tor_addr_family(&real_addr) == AF_INET6 ? 6 : 4);
   }
 
   /* Check if we couldn't satisfy an address family preference */
@@ -2837,7 +2862,7 @@ retry_listener_ports(smartlist_t *old_conns,
           SMARTLIST_DEL_CURRENT(old_conns, conn);
           break;
         }
-#endif
+#endif /* defined(ENABLE_LISTENER_REBIND) */
       }
     } SMARTLIST_FOREACH_END(wanted);
 
@@ -2901,6 +2926,10 @@ retry_all_listeners(smartlist_t *new_conns, int close_all_noncontrol)
     retval = -1;
 
 #ifdef ENABLE_LISTENER_REBIND
+  if (smartlist_len(replacements))
+    log_debug(LD_NET, "%d replacements - starting rebinding loop.",
+              smartlist_len(replacements));
+
   SMARTLIST_FOREACH_BEGIN(replacements, listener_replacement_t *, r) {
     int addr_in_use = 0;
     int skip = 0;
@@ -2912,8 +2941,11 @@ retry_all_listeners(smartlist_t *new_conns, int close_all_noncontrol)
       connection_listener_new_for_port(r->new_port, &skip, &addr_in_use);
     connection_t *old_conn = r->old_conn;
 
-    if (skip)
+    if (skip) {
+      log_debug(LD_NET, "Skipping creating new listener for %s:%d",
+                old_conn->address, old_conn->port);
       continue;
+    }
 
     connection_close_immediate(old_conn);
     connection_mark_for_close(old_conn);
@@ -2932,7 +2964,7 @@ retry_all_listeners(smartlist_t *new_conns, int close_all_noncontrol)
                conn_type_to_string(old_conn->type), old_conn->address,
                old_conn->port, new_conn->address, new_conn->port);
   } SMARTLIST_FOREACH_END(r);
-#endif
+#endif /* defined(ENABLE_LISTENER_REBIND) */
 
   /* Any members that were still in 'listeners' don't correspond to
    * any configured port.  Kill 'em. */
@@ -3931,9 +3963,9 @@ update_send_buffer_size(tor_socket_t sock)
       &isb, sizeof(isb), &bytesReturned, NULL, NULL)) {
     setsockopt(sock, SOL_SOCKET, SO_SNDBUF, (const char*)&isb, sizeof(isb));
   }
-#else
+#else /* !defined(_WIN32) */
   (void) sock;
-#endif
+#endif /* defined(_WIN32) */
 }
 
 /** Try to flush more bytes onto <b>conn</b>-\>s.
@@ -4331,6 +4363,23 @@ connection_write_to_buf_impl_,(const char *string, size_t len,
   connection_write_to_buf_commit(conn, written);
 }
 
+/**
+ * Write a <b>string</b> (of size <b>len</b> to directory connection
+ * <b>dir_conn</b>. Apply compression if connection is configured to use
+ * it and finalize it if <b>done</b> is true.
+ */
+void
+connection_dir_buf_add(const char *string, size_t len,
+                       dir_connection_t *dir_conn, int done)
+{
+  if (dir_conn->compress_state != NULL) {
+    connection_buf_add_compress(string, len, dir_conn, done);
+    return;
+  }
+
+  connection_buf_add(string, len, TO_CONN(dir_conn));
+}
+
 void
 connection_buf_add_compress(const char *string, size_t len,
                             dir_connection_t *conn, int done)
@@ -4443,6 +4492,16 @@ connection_t *
 connection_get_by_type_state(int type, int state)
 {
   CONN_GET_TEMPLATE(conn, conn->type == type && conn->state == state);
+}
+
+/**
+ * Return a connection of type <b>type</b> that is not an internally linked
+ * connection, and is not marked for close.
+ **/
+MOCK_IMPL(connection_t *,
+connection_get_by_type_nonlinked,(int type))
+{
+  CONN_GET_TEMPLATE(conn, conn->type == type && !conn->linked);
 }
 
 /** Return a connection of type <b>type</b> that has rendquery equal
@@ -5287,7 +5346,7 @@ assert_connection_ok(connection_t *conn, time_t now)
         tor_assert(entry_conn->socks_request->has_finished);
         if (!conn->marked_for_close) {
           tor_assert(ENTRY_TO_EDGE_CONN(entry_conn)->cpath_layer);
-          assert_cpath_layer_ok(ENTRY_TO_EDGE_CONN(entry_conn)->cpath_layer);
+          cpath_assert_layer_ok(ENTRY_TO_EDGE_CONN(entry_conn)->cpath_layer);
         }
       }
     }
@@ -5341,17 +5400,20 @@ assert_connection_ok(connection_t *conn, time_t now)
 }
 
 /** Fills <b>addr</b> and <b>port</b> with the details of the global
- *  proxy server we are using.
- *  <b>conn</b> contains the connection we are using the proxy for.
+ *  proxy server we are using. Store a 1 to the int pointed to by
+ *  <b>is_put_out</b> if the connection is using a pluggable
+ *  transport; store 0 otherwise. <b>conn</b> contains the connection
+ *  we are using the proxy for.
  *
  *  Return 0 on success, -1 on failure.
  */
 int
 get_proxy_addrport(tor_addr_t *addr, uint16_t *port, int *proxy_type,
-                   const connection_t *conn)
+                   int *is_pt_out, const connection_t *conn)
 {
   const or_options_t *options = get_options();
 
+  *is_pt_out = 0;
   /* Client Transport Plugins can use another proxy, but that should be hidden
    * from the rest of tor (as the plugin is responsible for dealing with the
    * proxy), check it first, then check the rest of the proxy types to allow
@@ -5367,6 +5429,7 @@ get_proxy_addrport(tor_addr_t *addr, uint16_t *port, int *proxy_type,
       tor_addr_copy(addr, &transport->addr);
       *port = transport->port;
       *proxy_type = transport->socks_version;
+      *is_pt_out = 1;
       return 0;
     }
 
@@ -5403,11 +5466,13 @@ log_failed_proxy_connection(connection_t *conn)
 {
   tor_addr_t proxy_addr;
   uint16_t proxy_port;
-  int proxy_type;
+  int proxy_type, is_pt;
 
-  if (get_proxy_addrport(&proxy_addr, &proxy_port, &proxy_type, conn) != 0)
+  if (get_proxy_addrport(&proxy_addr, &proxy_port, &proxy_type, &is_pt,
+                         conn) != 0)
     return; /* if we have no proxy set up, leave this function. */
 
+  (void)is_pt;
   log_warn(LD_NET,
            "The connection to the %s proxy server at %s just failed. "
            "Make sure that the proxy server is up and running.",

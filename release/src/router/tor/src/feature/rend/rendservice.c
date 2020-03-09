@@ -18,8 +18,9 @@
 #include "core/or/circuituse.h"
 #include "core/or/policies.h"
 #include "core/or/relay.h"
+#include "core/or/crypt_path.h"
 #include "feature/client/circpathbias.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/dirclient/dirclient.h"
 #include "feature/dircommon/directory.h"
 #include "feature/hs/hs_common.h"
@@ -2126,7 +2127,7 @@ rend_service_receive_introduction(origin_circuit_t *circuit,
      *
      * We only use a one-hop path on the first attempt. If the first attempt
      * fails, we use a 3-hop path for reachability / reliability.
-     * See the comment in rend_service_relauch_rendezvous() for details. */
+     * See the comment in rend_service_relaunch_rendezvous() for details. */
     if (rend_service_use_direct_connection(options, rp) && i == 0) {
       flags = flags | CIRCLAUNCH_ONEHOP_TUNNEL;
     }
@@ -2167,7 +2168,7 @@ rend_service_receive_introduction(origin_circuit_t *circuit,
 
   cpath->rend_dh_handshake_state = dh;
   dh = NULL;
-  if (circuit_init_cpath_crypto(cpath,
+  if (cpath_init_circuit_crypto(cpath,
                                 keys+DIGEST_LEN, sizeof(keys)-DIGEST_LEN,
                                 1, 0)<0)
     goto err;
@@ -3016,6 +3017,10 @@ rend_service_relaunch_rendezvous(origin_circuit_t *oldcirc)
 {
   origin_circuit_t *newcirc;
   cpath_build_state_t *newstate, *oldstate;
+  const char *rend_pk_digest;
+  rend_service_t *service = NULL;
+
+  int flags = CIRCLAUNCH_NEED_CAPACITY | CIRCLAUNCH_IS_INTERNAL;
 
   tor_assert(oldcirc->base_.purpose == CIRCUIT_PURPOSE_S_CONNECT_REND);
   oldstate = oldcirc->build_state;
@@ -3030,13 +3035,31 @@ rend_service_relaunch_rendezvous(origin_circuit_t *oldcirc)
   log_info(LD_REND,"Reattempting rendezvous circuit to '%s'",
            safe_str(extend_info_describe(oldstate->chosen_exit)));
 
+  /* Look up the service. */
+  rend_pk_digest = (char *) rend_data_get_pk_digest(oldcirc->rend_data, NULL);
+  service = rend_service_get_by_pk_digest(rend_pk_digest);
+
+  if (!service) {
+    char serviceid[REND_SERVICE_ID_LEN_BASE32+1];
+    base32_encode(serviceid, REND_SERVICE_ID_LEN_BASE32+1,
+                  rend_pk_digest, REND_SERVICE_ID_LEN);
+
+    log_warn(LD_BUG, "Internal error: Trying to relaunch a rendezvous circ "
+                     "for an unrecognized service %s.",
+                     safe_str_client(serviceid));
+    return;
+  }
+
+  if (hs_service_requires_uptime_circ(service->ports)) {
+    flags |= CIRCLAUNCH_NEED_UPTIME;
+  }
+
   /* You'd think Single Onion Services would want to retry the rendezvous
    * using a direct connection. But if it's blocked by a firewall, or the
    * service is IPv6-only, or the rend point avoiding becoming a one-hop
    * proxy, we need a 3-hop connection. */
   newcirc = circuit_launch_by_extend_info(CIRCUIT_PURPOSE_S_CONNECT_REND,
-                            oldstate->chosen_exit,
-                            CIRCLAUNCH_NEED_CAPACITY|CIRCLAUNCH_IS_INTERNAL);
+                            oldstate->chosen_exit, flags);
 
   if (!newcirc) {
     log_warn(LD_REND,"Couldn't relaunch rendezvous circuit to '%s'.",
@@ -3536,7 +3559,7 @@ rend_service_rendezvous_has_opened(origin_circuit_t *circuit)
   hop->package_window = circuit_initial_package_window();
   hop->deliver_window = CIRCWINDOW_START;
 
-  onion_append_to_cpath(&circuit->cpath, hop);
+  cpath_extend_linked_list(&circuit->cpath, hop);
   circuit->build_state->pending_final_cpath = NULL; /* prevent double-free */
 
   /* Change the circuit purpose. */
@@ -3976,7 +3999,7 @@ remove_invalid_intro_points(rend_service_t *service,
        * accounted for when considiring uploading a descriptor. */
       intro->circuit_established = 0;
 
-      /* Node is gone or we've reached our maximum circuit creationg retry
+      /* Node is gone or we've reached our maximum circuit creation retry
        * count, clean up everything, we'll find a new one. */
       if (node == NULL ||
           intro->circuit_retries >= MAX_INTRO_POINT_CIRCUIT_RETRIES) {
@@ -4216,6 +4239,7 @@ rend_consider_services_intro_points(time_t now)
        * directly ourselves. */
       intro->extend_info = extend_info_from_node(node, 0);
       if (BUG(intro->extend_info == NULL)) {
+        tor_free(intro);
         break;
       }
       intro->intro_key = crypto_pk_new();

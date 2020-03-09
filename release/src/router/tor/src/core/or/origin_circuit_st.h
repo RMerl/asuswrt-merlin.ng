@@ -161,6 +161,10 @@ struct origin_circuit_t {
    * connections to this circuit. */
   unsigned int unusable_for_new_conns : 1;
 
+  /* If this flag is set (due to padding negotiation failure), we should
+   * not try to negotiate further circuit padding. */
+  unsigned padding_negotiation_failed : 1;
+
   /**
    * Tristate variable to guard against pathbias miscounting
    * due to circuit purpose transitions changing the decision
@@ -291,4 +295,4 @@ struct origin_circuit_t {
 
 };
 
-#endif
+#endif /* !defined(ORIGIN_CIRCUIT_ST_H) */

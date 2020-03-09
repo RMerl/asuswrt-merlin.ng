@@ -28,7 +28,7 @@ origin_circuit_t *subtest_fourhop_circuit(struct timeval, int);
 origin_circuit_t *add_opened_threehop(void);
 origin_circuit_t *build_unopened_fourhop(struct timeval);
 
-int onion_append_hop(crypt_path_t **head_ptr, extend_info_t *choice);
+int cpath_append_hop(crypt_path_t **head_ptr, extend_info_t *choice);
 
 static int marked_for_close;
 /* Mock function because we are not trying to test the close circuit that does
@@ -57,9 +57,9 @@ add_opened_threehop(void)
   or_circ->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
   or_circ->build_state->desired_path_len = DEFAULT_ROUTE_LEN;
 
-  onion_append_hop(&or_circ->cpath, &fakehop);
-  onion_append_hop(&or_circ->cpath, &fakehop);
-  onion_append_hop(&or_circ->cpath, &fakehop);
+  cpath_append_hop(&or_circ->cpath, &fakehop);
+  cpath_append_hop(&or_circ->cpath, &fakehop);
+  cpath_append_hop(&or_circ->cpath, &fakehop);
 
   or_circ->has_opened = 1;
   TO_CIRCUIT(or_circ)->state = CIRCUIT_STATE_OPEN;
@@ -82,10 +82,10 @@ build_unopened_fourhop(struct timeval circ_start_time)
   or_circ->build_state = tor_malloc_zero(sizeof(cpath_build_state_t));
   or_circ->build_state->desired_path_len = 4;
 
-  onion_append_hop(&or_circ->cpath, fakehop);
-  onion_append_hop(&or_circ->cpath, fakehop);
-  onion_append_hop(&or_circ->cpath, fakehop);
-  onion_append_hop(&or_circ->cpath, fakehop);
+  cpath_append_hop(&or_circ->cpath, fakehop);
+  cpath_append_hop(&or_circ->cpath, fakehop);
+  cpath_append_hop(&or_circ->cpath, fakehop);
+  cpath_append_hop(&or_circ->cpath, fakehop);
 
   tor_free(fakehop);
 
@@ -197,7 +197,7 @@ test_circuitstats_hoplen(void *arg)
 }
 
 #define TEST_CIRCUITSTATS(name, flags) \
-    { #name, test_##name, (flags), NULL, NULL }
+    { #name, test_##name, (flags), &helper_pubsub_setup, NULL }
 
 struct testcase_t circuitstats_tests[] = {
   TEST_CIRCUITSTATS(circuitstats_hoplen, TT_FORK),

@@ -380,7 +380,8 @@ trusted_dirs_load_certs_from_string(const char *contents, int source,
   int added_trusted_cert = 0;
 
   for (s = contents; *s; s = eos) {
-    authority_cert_t *cert = authority_cert_parse_from_string(s, &eos);
+    authority_cert_t *cert = authority_cert_parse_from_string(s, strlen(s),
+                                                              &eos);
     cert_list_t *cl;
     if (!cert) {
       failure_code = -1;

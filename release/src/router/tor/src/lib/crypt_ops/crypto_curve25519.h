@@ -76,8 +76,8 @@ STATIC int curve25519_basepoint_impl(uint8_t *output, const uint8_t *secret);
 
 int curve25519_public_from_base64(curve25519_public_key_t *pkey,
                                   const char *input);
-int curve25519_public_to_base64(char *output,
-                                const curve25519_public_key_t *pkey);
+void curve25519_public_to_base64(char *output,
+                                 const curve25519_public_key_t *pkey);
 
 void curve25519_set_impl_params(int use_ed);
 void curve25519_init(void);

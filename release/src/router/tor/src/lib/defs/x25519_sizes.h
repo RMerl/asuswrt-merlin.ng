@@ -33,4 +33,4 @@
 #define ED25519_BASE64_LEN 43
 #define ED25519_SIG_BASE64_LEN 86
 
-#endif
+#endif /* !defined(TOR_X25519_SIZES_H) */

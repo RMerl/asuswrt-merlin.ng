@@ -50,4 +50,4 @@ typedef struct ratelim_t {
 
 char *rate_limit_log(ratelim_t *lim, time_t now);
 
-#endif
+#endif /* !defined(TOR_RATELIM_H) */

@@ -49,7 +49,7 @@ const char *s = NULL;
  * us do bad things, such as access freed buffers, without crashing. */
 extern const char *malloc_options;
 const char *malloc_options = "sufjj";
-#endif
+#endif /* defined(OpenBSD) */
 
 static unsigned
 fill_a_buffer_memset(void)

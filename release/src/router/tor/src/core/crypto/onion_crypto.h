@@ -44,4 +44,4 @@ void server_onion_keys_free_(server_onion_keys_t *keys);
 #define server_onion_keys_free(keys) \
   FREE_AND_NULL(server_onion_keys_t, server_onion_keys_free_, (keys))
 
-#endif
+#endif /* !defined(TOR_ONION_CRYPTO_H) */

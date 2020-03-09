@@ -40,10 +40,10 @@
 #define raw_socketpair tor_ersatz_socketpair
 #define raw_closesocket closesocket
 #define snprintf _snprintf
-#else
+#else /* !defined(_WIN32) */
 #define raw_socketpair socketpair
 #define raw_closesocket close
-#endif
+#endif /* defined(_WIN32) */
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>

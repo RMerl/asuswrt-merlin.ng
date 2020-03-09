@@ -218,6 +218,9 @@ config_has_invalid_options(const config_line_t *line_,
 
   const char *opts_exclude_v2[] = {
     "HiddenServiceExportCircuitID",
+    "HiddenServiceEnableIntroDoSDefense",
+    "HiddenServiceEnableIntroDoSRatePerSec",
+    "HiddenServiceEnableIntroDoSBurstPerSec",
     NULL /* End marker. */
   };
 
@@ -250,6 +253,16 @@ config_has_invalid_options(const config_line_t *line_,
                             "version %" PRIu32 " of service in %s",
                  opt, service->config.version,
                  service->config.directory_path);
+
+        if (!strcasecmp(line->key, "HiddenServiceAuthorizeClient")) {
+          /* Special case this v2 option so that we can offer alternatives.
+           * If more such special cases appear, it would be good to
+           * generalize the exception mechanism here. */
+          log_warn(LD_CONFIG, "For v3 onion service client authorization, "
+                   "please read the 'CLIENT AUTHORIZATION' section in the "
+                   "manual.");
+        }
+
         ret = 1;
         /* Continue the loop so we can find all possible options. */
         continue;
@@ -276,6 +289,15 @@ config_validate_service(const hs_service_config_t *config)
     goto invalid;
   }
 
+  /* DoS validation values. */
+  if (config->has_dos_defense_enabled &&
+      (config->intro_dos_burst_per_sec < config->intro_dos_rate_per_sec)) {
+    log_warn(LD_CONFIG, "Hidden service DoS defenses burst (%" PRIu32 ") can "
+                        "not be smaller than the rate value (%" PRIu32 ").",
+             config->intro_dos_burst_per_sec, config->intro_dos_rate_per_sec);
+    goto invalid;
+  }
+
   /* Valid. */
   return 0;
  invalid:
@@ -296,6 +318,8 @@ config_service_v3(const config_line_t *line_,
 {
   int have_num_ip = 0;
   bool export_circuit_id = false; /* just to detect duplicate options */
+  bool dos_enabled = false, dos_rate_per_sec = false;
+  bool dos_burst_per_sec = false;
   const char *dup_opt_seen = NULL;
   const config_line_t *line;
 
@@ -332,6 +356,52 @@ config_service_v3(const config_line_t *line_,
         goto err;
       }
       export_circuit_id = true;
+      continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceEnableIntroDoSDefense")) {
+      config->has_dos_defense_enabled =
+        (unsigned int) helper_parse_uint64(line->key, line->value,
+                                           HS_CONFIG_V3_DOS_DEFENSE_DEFAULT,
+                                           1, &ok);
+      if (!ok || dos_enabled) {
+        if (dos_enabled) {
+          dup_opt_seen = line->key;
+        }
+        goto err;
+      }
+      dos_enabled = true;
+      continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceEnableIntroDoSRatePerSec")) {
+      config->intro_dos_rate_per_sec =
+        (unsigned int) helper_parse_uint64(line->key, line->value,
+                              HS_CONFIG_V3_DOS_DEFENSE_RATE_PER_SEC_MIN,
+                              HS_CONFIG_V3_DOS_DEFENSE_RATE_PER_SEC_MAX, &ok);
+      if (!ok || dos_rate_per_sec) {
+        if (dos_rate_per_sec) {
+          dup_opt_seen = line->key;
+        }
+        goto err;
+      }
+      dos_rate_per_sec = true;
+      log_info(LD_REND, "Service INTRO2 DoS defenses rate set to: %" PRIu32,
+               config->intro_dos_rate_per_sec);
+      continue;
+    }
+    if (!strcasecmp(line->key, "HiddenServiceEnableIntroDoSBurstPerSec")) {
+      config->intro_dos_burst_per_sec =
+        (unsigned int) helper_parse_uint64(line->key, line->value,
+                              HS_CONFIG_V3_DOS_DEFENSE_BURST_PER_SEC_MIN,
+                              HS_CONFIG_V3_DOS_DEFENSE_BURST_PER_SEC_MAX, &ok);
+      if (!ok || dos_burst_per_sec) {
+        if (dos_burst_per_sec) {
+          dup_opt_seen = line->key;
+        }
+        goto err;
+      }
+      dos_burst_per_sec = true;
+      log_info(LD_REND, "Service INTRO2 DoS defenses burst set to: %" PRIu32,
+               config->intro_dos_burst_per_sec);
       continue;
     }
   }
@@ -496,15 +566,6 @@ config_generic_service(const config_line_t *line_,
    * becomes a single onion service. */
   if (rend_service_non_anonymous_mode_enabled(options)) {
     config->is_single_onion = 1;
-    /* We will add support for IPv6-only v3 single onion services in a future
-     * Tor version. This won't catch "ReachableAddresses reject *4", but that
-     * option doesn't work anyway. */
-    if (options->ClientUseIPv4 == 0 && config->version == HS_VERSION_THREE) {
-      log_warn(LD_CONFIG, "IPv6-only v3 single onion services are not "
-               "supported. Set HiddenServiceSingleHopMode 0 and "
-               "HiddenServiceNonAnonymousMode 0, or set ClientUseIPv4 1.");
-      goto err;
-    }
   }
 
   /* Success */

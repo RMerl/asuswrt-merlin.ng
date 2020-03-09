@@ -46,6 +46,8 @@ pub enum Protocol {
     LinkAuth,
     Microdesc,
     Relay,
+    Padding,
+    FlowCtrl,
 }
 
 impl fmt::Display for Protocol {
@@ -73,6 +75,8 @@ impl FromStr for Protocol {
             "LinkAuth" => Ok(Protocol::LinkAuth),
             "Microdesc" => Ok(Protocol::Microdesc),
             "Relay" => Ok(Protocol::Relay),
+            "Padding" => Ok(Protocol::Padding),
+            "FlowCtrl" => Ok(Protocol::FlowCtrl),
             _ => Err(ProtoverError::UnknownProtocol),
         }
     }
@@ -163,7 +167,9 @@ pub(crate) fn get_supported_protocols_cstr() -> &'static CStr {
              Link=1-5 \
              LinkAuth=3 \
              Microdesc=1-2 \
-             Relay=1-2"
+             Relay=1-2 \
+             Padding=2 \
+             FlowCtrl=1"
         )
     } else {
         cstr!(
@@ -176,7 +182,9 @@ pub(crate) fn get_supported_protocols_cstr() -> &'static CStr {
              Link=1-5 \
              LinkAuth=1,3 \
              Microdesc=1-2 \
-             Relay=1-2"
+             Relay=1-2 \
+             Padding=2 \
+             FlowCtrl=1"
         )
     }
 }

@@ -150,7 +150,7 @@ voting_schedule_get_next_valid_after_time(void)
   /* This is a safe guard in order to make sure that the voting schedule
    * static object is at least initialized. Using this function with a zeroed
    * voting schedule can lead to bugs. */
-  if (tor_mem_is_zero((const char *) &voting_schedule,
+  if (fast_mem_is_zero((const char *) &voting_schedule,
                       sizeof(voting_schedule))) {
     need_to_recalculate_voting_schedule = true;
     goto done; /* no need for next check if we have to recalculate anyway */

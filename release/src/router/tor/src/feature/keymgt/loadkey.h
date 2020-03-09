@@ -52,4 +52,4 @@ int read_encrypted_secret_key(ed25519_secret_key_t *out,
 int write_encrypted_secret_key(const ed25519_secret_key_t *out,
                                const char *fname);
 
-#endif
+#endif /* !defined(TOR_LOADKEY_H) */

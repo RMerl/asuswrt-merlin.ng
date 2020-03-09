@@ -438,7 +438,7 @@ keypin_load_journal_impl(const char *data, size_t size)
   tor_log(severity, LD_DIRSERV,
           "Loaded %d entries from keypin journal. "
           "Found %d corrupt lines (ignored), %d duplicates (harmless), "
-          "and %d conflicts (resolved in favor or more recent entry).",
+          "and %d conflicts (resolved in favor of more recent entry).",
           n_entries, n_corrupt_lines, n_duplicates, n_conflicts);
 
   return 0;

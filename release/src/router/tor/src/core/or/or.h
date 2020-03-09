@@ -26,7 +26,7 @@
 #include "lib/cc/compat_compiler.h"
 #include "lib/cc/torint.h"
 #include "lib/container/map.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "lib/container/smartlist.h"
 #include "lib/crypt_ops/crypto_cipher.h"
 #include "lib/crypt_ops/crypto_rsa.h"
@@ -97,6 +97,8 @@ struct curve25519_public_key_t;
 #define SIGNEWNYM 129
 #define SIGCLEARDNSCACHE 130
 #define SIGHEARTBEAT 131
+#define SIGACTIVE 132
+#define SIGDORMANT 133
 
 #if (SIZEOF_CELL_T != 0)
 /* On Irix, stdlib.h defines a cell_t type, so we need to make sure
@@ -204,6 +206,9 @@ struct curve25519_public_key_t;
 #define RELAY_COMMAND_INTRO_ESTABLISHED 38
 #define RELAY_COMMAND_RENDEZVOUS_ESTABLISHED 39
 #define RELAY_COMMAND_INTRODUCE_ACK 40
+
+#define RELAY_COMMAND_PADDING_NEGOTIATE 41
+#define RELAY_COMMAND_PADDING_NEGOTIATED 42
 
 /* Reasons why an OR connection is closed. */
 #define END_OR_CONN_REASON_DONE           1
@@ -834,6 +839,14 @@ typedef struct protover_summary_flags_t {
    * service rendezvous point supporting version 3 as seen in proposal 224.
    * This requires HSRend=2. */
   unsigned int supports_v3_rendezvous_point: 1;
+
+  /** True iff this router has a protocol list that allows clients to
+   * negotiate hs circuit setup padding. Requires Padding>=2. */
+  unsigned int supports_hs_setup_padding : 1;
+
+  /** True iff this router has a protocol list that allows it to support the
+   * ESTABLISH_INTRO DoS cell extension. Requires HSIntro>=5. */
+  unsigned int supports_establish_intro_dos_extension : 1;
 } protover_summary_flags_t;
 
 typedef struct routerinfo_t routerinfo_t;

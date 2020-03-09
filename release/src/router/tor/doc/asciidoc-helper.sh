@@ -19,7 +19,7 @@ if [ "$1" = "html" ]; then
     base=${output%%.html.in}
 
     if [ "$2" != none ]; then
-      TZ=UTC "$2" -d manpage -o $output $input;
+      TZ=UTC "$2" -d manpage -o "$output" "$input";
     else
       echo "==================================";
       echo;
@@ -44,8 +44,8 @@ elif [ "$1" = "man" ]; then
       echo "==================================";
       exit 1;
     fi
-    if "$2" -f manpage $input; then
-      mv $base.1 $output;
+    if "$2" -f manpage "$input"; then
+      mv "$base.1" "$output";
     else
       cat<<EOF
 ==================================

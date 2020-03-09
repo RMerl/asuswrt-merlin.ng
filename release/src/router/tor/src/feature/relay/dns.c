@@ -59,7 +59,7 @@
 #include "core/or/connection_edge.h"
 #include "core/or/policies.h"
 #include "core/or/relay.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/relay/dns.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
@@ -1360,6 +1360,42 @@ evdns_err_is_transient(int err)
   }
 }
 
+/**
+ * Return number of configured nameservers in <b>the_evdns_base</b>.
+ */
+size_t
+number_of_configured_nameservers(void)
+{
+  return evdns_base_count_nameservers(the_evdns_base);
+}
+
+#ifdef HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR
+/**
+ * Return address of configured nameserver in <b>the_evdns_base</b>
+ * at index <b>idx</b>.
+ */
+tor_addr_t *
+configured_nameserver_address(const size_t idx)
+{
+ struct sockaddr_storage sa;
+ ev_socklen_t sa_len = sizeof(sa);
+
+ if (evdns_base_get_nameserver_addr(the_evdns_base, (int)idx,
+                                    (struct sockaddr *)&sa,
+                                    sa_len) > 0) {
+   tor_addr_t *tor_addr = tor_malloc(sizeof(tor_addr_t));
+   if (tor_addr_from_sockaddr(tor_addr,
+                              (const struct sockaddr *)&sa,
+                              NULL) == 0) {
+     return tor_addr;
+   }
+   tor_free(tor_addr);
+ }
+
+ return NULL;
+}
+#endif /* defined(HAVE_EVDNS_BASE_GET_NAMESERVER_ADDR) */
+
 /** Configure eventdns nameservers if force is true, or if the configuration
  * has changed since the last time we called this function, or if we failed on
  * our last attempt.  On Unix, this reads from /etc/resolv.conf or
@@ -1391,16 +1427,23 @@ configure_nameservers(int force)
   evdns_set_log_fn(evdns_log_cb);
   if (conf_fname) {
     log_debug(LD_FS, "stat()ing %s", conf_fname);
-    if (stat(sandbox_intern_string(conf_fname), &st)) {
+    int missing_resolv_conf = 0;
+    int stat_res = stat(sandbox_intern_string(conf_fname), &st);
+
+    if (stat_res) {
       log_warn(LD_EXIT, "Unable to stat resolver configuration in '%s': %s",
                conf_fname, strerror(errno));
-      goto err;
-    }
-    if (!force && resolv_conf_fname && !strcmp(conf_fname,resolv_conf_fname)
+      missing_resolv_conf = 1;
+    } else if (!force && resolv_conf_fname &&
+               !strcmp(conf_fname,resolv_conf_fname)
         && st.st_mtime == resolv_conf_mtime) {
       log_info(LD_EXIT, "No change to '%s'", conf_fname);
       return 0;
     }
+
+    if (stat_res == 0 && st.st_size == 0)
+      missing_resolv_conf = 1;
+
     if (nameservers_configured) {
       evdns_base_search_clear(the_evdns_base);
       evdns_base_clear_nameservers_and_suspend(the_evdns_base);
@@ -1413,20 +1456,34 @@ configure_nameservers(int force)
           sandbox_intern_string("/etc/hosts"));
     }
 #endif /* defined(DNS_OPTION_HOSTSFILE) && defined(USE_LIBSECCOMP) */
-    log_info(LD_EXIT, "Parsing resolver configuration in '%s'", conf_fname);
-    if ((r = evdns_base_resolv_conf_parse(the_evdns_base, flags,
-        sandbox_intern_string(conf_fname)))) {
-      log_warn(LD_EXIT, "Unable to parse '%s', or no nameservers in '%s' (%d)",
-               conf_fname, conf_fname, r);
-      goto err;
+
+    if (!missing_resolv_conf) {
+      log_info(LD_EXIT, "Parsing resolver configuration in '%s'", conf_fname);
+      if ((r = evdns_base_resolv_conf_parse(the_evdns_base, flags,
+          sandbox_intern_string(conf_fname)))) {
+        log_warn(LD_EXIT, "Unable to parse '%s', or no nameservers "
+                          "in '%s' (%d)", conf_fname, conf_fname, r);
+
+        if (r != 6) // "r = 6" means "no DNS servers were in resolv.conf" -
+          goto err; // in which case we expect libevent to add 127.0.0.1 as
+                    // fallback.
+      }
+      if (evdns_base_count_nameservers(the_evdns_base) == 0) {
+        log_warn(LD_EXIT, "Unable to find any nameservers in '%s'.",
+                 conf_fname);
+      }
+
+      tor_free(resolv_conf_fname);
+      resolv_conf_fname = tor_strdup(conf_fname);
+      resolv_conf_mtime = st.st_mtime;
+    } else {
+      log_warn(LD_EXIT, "Could not read your DNS config from '%s' - "
+                        "please investigate your DNS configuration. "
+                        "This is possibly a problem. Meanwhile, falling"
+                        " back to local DNS at 127.0.0.1.", conf_fname);
+      evdns_base_nameserver_ip_add(the_evdns_base, "127.0.0.1");
     }
-    if (evdns_base_count_nameservers(the_evdns_base) == 0) {
-      log_warn(LD_EXIT, "Unable to find any nameservers in '%s'.", conf_fname);
-      goto err;
-    }
-    tor_free(resolv_conf_fname);
-    resolv_conf_fname = tor_strdup(conf_fname);
-    resolv_conf_mtime = st.st_mtime;
+
     if (nameservers_configured)
       evdns_base_resume(the_evdns_base);
   }

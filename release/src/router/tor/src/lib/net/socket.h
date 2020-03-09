@@ -54,6 +54,7 @@ int tor_addr_from_getsockname(struct tor_addr_t *addr_out, tor_socket_t sock);
 int set_socket_nonblocking(tor_socket_t socket);
 int tor_socketpair(int family, int type, int protocol, tor_socket_t fd[2]);
 int network_init(void);
+void check_network_configuration(bool server_mode);
 
 int get_max_sockets(void);
 void set_max_sockets(int);
@@ -91,7 +92,7 @@ ssize_t read_all_from_socket(tor_socket_t fd, char *buf, size_t count);
 #define ERRNO_IS_EINTR(e)            ((e) == WSAEINTR || 0)
 int tor_socket_errno(tor_socket_t sock);
 const char *tor_socket_strerror(int e);
-#else /* !(defined(_WIN32)) */
+#else /* !defined(_WIN32) */
 #define SOCK_ERRNO(e) e
 #if EAGAIN == EWOULDBLOCK
 /* || 0 is for -Wparentheses-equality (-Wall?) appeasement under clang */
@@ -115,4 +116,4 @@ const char *tor_socket_strerror(int e);
 #define SIO_IDEAL_SEND_BACKLOG_QUERY 0x4004747b
 #endif
 
-#endif
+#endif /* !defined(TOR_SOCKET_H) */

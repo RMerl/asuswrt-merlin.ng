@@ -27,4 +27,4 @@
                         "\"" XSTR(subsystem) "\" hit. " \
                         "(line "XSTR(__LINE__) ")")
 
-#endif /* TOR_TRACE_LOG_DEBUG_H */
+#endif /* !defined(TOR_TRACE_LOG_DEBUG_H) */

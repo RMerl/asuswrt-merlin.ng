@@ -104,7 +104,7 @@ crypto_read_tagged_contents_from_file(const char *fname,
   prefix[32] = 0;
   /* Check type, extract tag. */
   if (strcmpstart(prefix, "== ") || strcmpend(prefix, " ==") ||
-      ! tor_mem_is_zero(prefix+strlen(prefix), 32-strlen(prefix))) {
+      ! fast_mem_is_zero(prefix+strlen(prefix), 32-strlen(prefix))) {
     saved_errno = EINVAL;
     goto end;
   }
@@ -131,20 +131,27 @@ crypto_read_tagged_contents_from_file(const char *fname,
   return r;
 }
 
-/** Encode <b>pkey</b> as a base64-encoded string, without trailing "="
+/** Encode <b>pkey</b> as a base64-encoded string, including trailing "="
  * characters, in the buffer <b>output</b>, which must have at least
- * CURVE25519_BASE64_PADDED_LEN+1 bytes available.  Return 0 on success, -1 on
- * failure. */
-int
+ * CURVE25519_BASE64_PADDED_LEN+1 bytes available.
+ * Can not fail.
+ *
+ * Careful! CURVE25519_BASE64_PADDED_LEN is one byte longer than
+ * ED25519_BASE64_LEN.
+ */
+void
 curve25519_public_to_base64(char *output,
                             const curve25519_public_key_t *pkey)
 {
   char buf[128];
-  base64_encode(buf, sizeof(buf),
-                (const char*)pkey->public_key, CURVE25519_PUBKEY_LEN, 0);
-  buf[CURVE25519_BASE64_PADDED_LEN] = '\0';
+  int n = base64_encode(buf, sizeof(buf),
+                        (const char*)pkey->public_key,
+                        CURVE25519_PUBKEY_LEN, 0);
+  /* These asserts should always succeed, unless there is a bug in
+   * base64_encode(). */
+  tor_assert(n == CURVE25519_BASE64_PADDED_LEN);
+  tor_assert(buf[CURVE25519_BASE64_PADDED_LEN] == '\0');
   memcpy(output, buf, CURVE25519_BASE64_PADDED_LEN+1);
-  return 0;
 }
 
 /** Try to decode a base64-encoded curve25519 public key from <b>input</b>
@@ -181,8 +188,7 @@ ed25519_fmt(const ed25519_public_key_t *pkey)
     if (ed25519_public_key_is_zero(pkey)) {
       strlcpy(formatted, "<unset>", sizeof(formatted));
     } else {
-      int r = ed25519_public_to_base64(formatted, pkey);
-      tor_assert(!r);
+      ed25519_public_to_base64(formatted, pkey);
     }
   } else {
     strlcpy(formatted, "<null>", sizeof(formatted));
@@ -202,28 +208,35 @@ ed25519_public_from_base64(ed25519_public_key_t *pkey,
 
 /** Encode the public key <b>pkey</b> into the buffer at <b>output</b>,
  * which must have space for ED25519_BASE64_LEN bytes of encoded key,
- * plus one byte for a terminating NUL.  Return 0 on success, -1 on failure.
+ * plus one byte for a terminating NUL.
+ * Can not fail.
+ *
+ * Careful! ED25519_BASE64_LEN is one byte shorter than
+ * CURVE25519_BASE64_PADDED_LEN.
  */
-int
+void
 ed25519_public_to_base64(char *output,
                          const ed25519_public_key_t *pkey)
 {
-  return digest256_to_base64(output, (const char *)pkey->pubkey);
+  digest256_to_base64(output, (const char *)pkey->pubkey);
 }
 
 /** Encode the signature <b>sig</b> into the buffer at <b>output</b>,
  * which must have space for ED25519_SIG_BASE64_LEN bytes of encoded signature,
- * plus one byte for a terminating NUL.  Return 0 on success, -1 on failure.
+ * plus one byte for a terminating NUL.
+ * Can not fail.
  */
-int
+void
 ed25519_signature_to_base64(char *output,
                             const ed25519_signature_t *sig)
 {
   char buf[256];
   int n = base64_encode_nopad(buf, sizeof(buf), sig->sig, ED25519_SIG_LEN);
+  /* These asserts should always succeed, unless there is a bug in
+   * base64_encode_nopad(). */
   tor_assert(n == ED25519_SIG_BASE64_LEN);
+  tor_assert(buf[ED25519_SIG_BASE64_LEN] == '\0');
   memcpy(output, buf, ED25519_SIG_BASE64_LEN+1);
-  return 0;
 }
 
 /** Try to decode the string <b>input</b> into an ed25519 signature. On
@@ -233,16 +246,11 @@ int
 ed25519_signature_from_base64(ed25519_signature_t *sig,
                               const char *input)
 {
-
   if (strlen(input) != ED25519_SIG_BASE64_LEN)
     return -1;
-  char buf[ED25519_SIG_BASE64_LEN+3];
-  memcpy(buf, input, ED25519_SIG_BASE64_LEN);
-  buf[ED25519_SIG_BASE64_LEN+0] = '=';
-  buf[ED25519_SIG_BASE64_LEN+1] = '=';
-  buf[ED25519_SIG_BASE64_LEN+2] = 0;
   char decoded[128];
-  int n = base64_decode(decoded, sizeof(decoded), buf, strlen(buf));
+  int n = base64_decode(decoded, sizeof(decoded), input,
+                        ED25519_SIG_BASE64_LEN);
   if (n < 0 || n != ED25519_SIG_LEN)
     return -1;
   memcpy(sig->sig, decoded, ED25519_SIG_LEN);
@@ -250,24 +258,26 @@ ed25519_signature_from_base64(ed25519_signature_t *sig,
   return 0;
 }
 
-/** Base64 encode DIGEST_LINE bytes from <b>digest</b>, remove the trailing =
+/** Base64 encode DIGEST_LEN bytes from <b>digest</b>, remove the trailing =
  * characters, and store the nul-terminated result in the first
- * BASE64_DIGEST_LEN+1 bytes of <b>d64</b>.  */
-/* XXXX unify with crypto_format.c code */
-int
+ * BASE64_DIGEST_LEN+1 bytes of <b>d64</b>.
+ * Can not fail. */
+void
 digest_to_base64(char *d64, const char *digest)
 {
   char buf[256];
-  base64_encode(buf, sizeof(buf), digest, DIGEST_LEN, 0);
-  buf[BASE64_DIGEST_LEN] = '\0';
+  int n = base64_encode_nopad(buf, sizeof(buf),
+                              (const uint8_t *)digest, DIGEST_LEN);
+  /* These asserts should always succeed, unless there is a bug in
+   * base64_encode_nopad(). */
+  tor_assert(n == BASE64_DIGEST_LEN);
+  tor_assert(buf[BASE64_DIGEST_LEN] == '\0');
   memcpy(d64, buf, BASE64_DIGEST_LEN+1);
-  return 0;
 }
 
 /** Given a base64 encoded, nul-terminated digest in <b>d64</b> (without
  * trailing newline or = characters), decode it and store the result in the
  * first DIGEST_LEN bytes at <b>digest</b>. */
-/* XXXX unify with crypto_format.c code */
 int
 digest_from_base64(char *digest, const char *d64)
 {
@@ -279,22 +289,24 @@ digest_from_base64(char *digest, const char *d64)
 
 /** Base64 encode DIGEST256_LINE bytes from <b>digest</b>, remove the
  * trailing = characters, and store the nul-terminated result in the first
- * BASE64_DIGEST256_LEN+1 bytes of <b>d64</b>. */
- /* XXXX unify with crypto_format.c code */
-int
+ * BASE64_DIGEST256_LEN+1 bytes of <b>d64</b>.
+ * Can not fail. */
+void
 digest256_to_base64(char *d64, const char *digest)
 {
   char buf[256];
-  base64_encode(buf, sizeof(buf), digest, DIGEST256_LEN, 0);
-  buf[BASE64_DIGEST256_LEN] = '\0';
+  int n = base64_encode_nopad(buf, sizeof(buf),
+                              (const uint8_t *)digest, DIGEST256_LEN);
+  /* These asserts should always succeed, unless there is a bug in
+   * base64_encode_nopad(). */
+  tor_assert(n == BASE64_DIGEST256_LEN);
+  tor_assert(buf[BASE64_DIGEST256_LEN] == '\0');
   memcpy(d64, buf, BASE64_DIGEST256_LEN+1);
-  return 0;
 }
 
 /** Given a base64 encoded, nul-terminated digest in <b>d64</b> (without
  * trailing newline or = characters), decode it and store the result in the
  * first DIGEST256_LEN bytes at <b>digest</b>. */
-/* XXXX unify with crypto_format.c code */
 int
 digest256_from_base64(char *digest, const char *d64)
 {

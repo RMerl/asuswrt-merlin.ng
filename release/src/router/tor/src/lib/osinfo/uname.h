@@ -15,4 +15,4 @@
 
 MOCK_DECL(const char *, get_uname,(void));
 
-#endif
+#endif /* !defined(HAVE_TOR_UNAME_H) */

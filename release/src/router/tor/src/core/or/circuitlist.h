@@ -14,6 +14,7 @@
 
 #include "lib/testsupport/testsupport.h"
 #include "feature/hs/hs_ident.h"
+#include "core/or/ocirc_event.h"
 
 /** Circuit state: I'm the origin, still haven't done all my handshakes. */
 #define CIRCUIT_STATE_BUILDING 0
@@ -91,31 +92,33 @@
 #define CIRCUIT_PURPOSE_C_HS_MAX_ 13
 /** This circuit is used for build time measurement only */
 #define CIRCUIT_PURPOSE_C_MEASURE_TIMEOUT 14
-#define CIRCUIT_PURPOSE_C_MAX_ 14
+/** This circuit is being held open by circuit padding */
+#define CIRCUIT_PURPOSE_C_CIRCUIT_PADDING 15
+#define CIRCUIT_PURPOSE_C_MAX_ 15
 
-#define CIRCUIT_PURPOSE_S_HS_MIN_ 15
+#define CIRCUIT_PURPOSE_S_HS_MIN_ 16
 /** Hidden-service-side circuit purpose: at the service, waiting for
  * introductions. */
-#define CIRCUIT_PURPOSE_S_ESTABLISH_INTRO 15
+#define CIRCUIT_PURPOSE_S_ESTABLISH_INTRO 16
 /** Hidden-service-side circuit purpose: at the service, successfully
  * established intro. */
-#define CIRCUIT_PURPOSE_S_INTRO 16
+#define CIRCUIT_PURPOSE_S_INTRO 17
 /** Hidden-service-side circuit purpose: at the service, connecting to rend
  * point. */
-#define CIRCUIT_PURPOSE_S_CONNECT_REND 17
+#define CIRCUIT_PURPOSE_S_CONNECT_REND 18
 /** Hidden-service-side circuit purpose: at the service, rendezvous
  * established. */
-#define CIRCUIT_PURPOSE_S_REND_JOINED 18
+#define CIRCUIT_PURPOSE_S_REND_JOINED 19
 /** This circuit is used for uploading hsdirs */
-#define CIRCUIT_PURPOSE_S_HSDIR_POST 19
-#define CIRCUIT_PURPOSE_S_HS_MAX_ 19
+#define CIRCUIT_PURPOSE_S_HSDIR_POST 20
+#define CIRCUIT_PURPOSE_S_HS_MAX_ 20
 
 /** A testing circuit; not meant to be used for actual traffic. */
-#define CIRCUIT_PURPOSE_TESTING 20
+#define CIRCUIT_PURPOSE_TESTING 21
 /** A controller made this circuit and Tor should not use it. */
-#define CIRCUIT_PURPOSE_CONTROLLER 21
+#define CIRCUIT_PURPOSE_CONTROLLER 22
 /** This circuit is used for path bias probing only */
-#define CIRCUIT_PURPOSE_PATH_BIAS_TESTING 22
+#define CIRCUIT_PURPOSE_PATH_BIAS_TESTING 23
 
 /** This circuit is used for vanguards/restricted paths.
  *
@@ -123,9 +126,9 @@
  *  on-demand. When an HS operation needs to take place (e.g. connect to an
  *  intro point), these circuits are then cannibalized and repurposed to the
  *  actual needed HS purpose. */
-#define CIRCUIT_PURPOSE_HS_VANGUARDS 23
+#define CIRCUIT_PURPOSE_HS_VANGUARDS 24
 
-#define CIRCUIT_PURPOSE_MAX_ 23
+#define CIRCUIT_PURPOSE_MAX_ 24
 /** A catch-all for unrecognized purposes. Currently we don't expect
  * to make or see any circuits with this purpose. */
 #define CIRCUIT_PURPOSE_UNKNOWN 255
@@ -184,6 +187,8 @@ void channel_mark_circid_unusable(channel_t *chan, circid_t id);
 void channel_mark_circid_usable(channel_t *chan, circid_t id);
 time_t circuit_id_when_marked_unusable_on_channel(circid_t circ_id,
                                                   channel_t *chan);
+int circuit_event_status(origin_circuit_t *circ, circuit_status_event_t tp,
+                         int reason_code);
 void circuit_set_state(circuit_t *circ, uint8_t state);
 void circuit_close_all_marked(void);
 int32_t circuit_initial_package_window(void);
@@ -213,7 +218,7 @@ void circuit_mark_all_dirty_circs_as_unusable(void);
 void circuit_synchronize_written_or_bandwidth(const circuit_t *c,
                                               circuit_channel_direction_t dir);
 MOCK_DECL(void, circuit_mark_for_close_, (circuit_t *circ, int reason,
-                                          int line, const char *file));
+                                          int line, const char *cfile));
 int circuit_get_cpath_len(origin_circuit_t *circ);
 int circuit_get_cpath_opened_len(const origin_circuit_t *);
 void circuit_clear_cpath(origin_circuit_t *circ);
@@ -225,7 +230,6 @@ int circuit_count_pending_on_channel(channel_t *chan);
 #define circuit_mark_for_close(c, reason)                               \
   circuit_mark_for_close_((c), (reason), __LINE__, SHORT_FILE__)
 
-void assert_cpath_layer_ok(const crypt_path_t *cp);
 MOCK_DECL(void, assert_circuit_ok,(const circuit_t *c));
 void circuit_free_all(void);
 void circuits_handle_oom(size_t current_allocation);

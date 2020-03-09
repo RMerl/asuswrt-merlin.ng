@@ -83,6 +83,19 @@
          ++var ## _sl_idx) {                                    \
       var = (sl)->list[var ## _sl_idx];
 
+/** Iterates over the items in smartlist <b>sl</b> in reverse order, similar to
+ *  SMARTLIST_FOREACH_BEGIN
+ *
+ * NOTE: This macro is incompatible with SMARTLIST_DEL_CURRENT.
+ */
+#define SMARTLIST_FOREACH_REVERSE_BEGIN(sl, type, var)  \
+  STMT_BEGIN                                                       \
+    int var ## _sl_idx, var ## _sl_len=(sl)->num_used;             \
+    type var;                                                      \
+    for (var ## _sl_idx = var ## _sl_len-1; var ## _sl_idx >= 0;   \
+         --var ## _sl_idx) {                                       \
+      var = (sl)->list[var ## _sl_idx];
+
 #define SMARTLIST_FOREACH_END(var)              \
     var = NULL;                                 \
     (void) var ## _sl_idx;                      \

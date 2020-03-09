@@ -143,8 +143,9 @@ rend_parse_v2_service_descriptor(rend_service_descriptor_t **parsed_out,
     goto err;
   }
   if (base32_decode(desc_id_out, DIGEST_LEN,
-                    tok->args[0], REND_DESC_ID_V2_LEN_BASE32) < 0) {
-    log_warn(LD_REND, "Descriptor ID contains illegal characters: %s",
+                    tok->args[0], REND_DESC_ID_V2_LEN_BASE32) != DIGEST_LEN) {
+    log_warn(LD_REND,
+             "Descriptor ID has wrong length or illegal characters: %s",
              tok->args[0]);
     goto err;
   }
@@ -174,8 +175,10 @@ rend_parse_v2_service_descriptor(rend_service_descriptor_t **parsed_out,
     log_warn(LD_REND, "Invalid secret ID part: '%s'", tok->args[0]);
     goto err;
   }
-  if (base32_decode(secret_id_part, DIGEST_LEN, tok->args[0], 32) < 0) {
-    log_warn(LD_REND, "Secret ID part contains illegal characters: %s",
+  if (base32_decode(secret_id_part, DIGEST_LEN, tok->args[0], 32) !=
+      DIGEST_LEN) {
+    log_warn(LD_REND,
+             "Secret ID part has wrong length or illegal characters: %s",
              tok->args[0]);
     goto err;
   }
@@ -429,8 +432,10 @@ rend_parse_introduction_points(rend_service_descriptor_t *parsed,
     /* Parse identifier. */
     tok = find_by_keyword(tokens, R_IPO_IDENTIFIER);
     if (base32_decode(info->identity_digest, DIGEST_LEN,
-                      tok->args[0], REND_INTRO_POINT_ID_LEN_BASE32) < 0) {
-      log_warn(LD_REND, "Identity digest contains illegal characters: %s",
+                      tok->args[0], REND_INTRO_POINT_ID_LEN_BASE32) !=
+        DIGEST_LEN) {
+      log_warn(LD_REND,
+               "Identity digest has wrong length or illegal characters: %s",
                tok->args[0]);
       rend_intro_point_free(intro);
       goto err;

@@ -756,6 +756,24 @@ tor-print-ed-signing-cert(1) Manual Page
 <div class="sectionbody">
 <div class="paragraph"><p><strong>tor-print-ed-signing-cert</strong> is utility program for Tor relay operators to
 check expiration date of ed25519 signing certificate.</p></div>
+<div class="paragraph"><p>Expiration date is printed in three formats:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+Human-readable timestamp, localized to current timezone.
+</p>
+</li>
+<li>
+<p>
+RFC 1123 timestamp (at GMT timezone).
+</p>
+</li>
+<li>
+<p>
+Unix time value.
+</p>
+</li>
+</ul></div>
 </div>
 </div>
 <div class="sect1">
@@ -776,7 +794,7 @@ check expiration date of ed25519 signing certificate.</p></div>
 <div id="footer">
 <div id="footer-text">
 Last updated
- 2019-10-11 21:48:21 UTC
+ 2019-10-11 21:48:22 UTC
 </div>
 </div>
 </body>

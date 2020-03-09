@@ -20,5 +20,5 @@ struct hsdir_index_t {
   uint8_t store_second[DIGEST256_LEN];
 };
 
-#endif
+#endif /* !defined(HSDIR_INDEX_ST_H) */
 

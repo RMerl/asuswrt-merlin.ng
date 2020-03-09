@@ -19,5 +19,6 @@ double tor_mathlog(double d) ATTR_CONST;
 long tor_lround(double d) ATTR_CONST;
 int64_t tor_llround(double d) ATTR_CONST;
 int64_t clamp_double_to_int64(double number);
+int tor_isinf(double x);
 
-#endif
+#endif /* !defined(TOR_FP_H) */

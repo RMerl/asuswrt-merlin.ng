@@ -61,13 +61,13 @@ int
 fuzz_main(const uint8_t *data, size_t sz)
 {
   networkstatus_t *ns;
-  char *str = tor_memdup_nulterm(data, sz);
   const char *eos = NULL;
   networkstatus_type_t tp = NS_TYPE_CONSENSUS;
   if (tor_memstr(data, MIN(sz, 1024), "tus vote"))
     tp = NS_TYPE_VOTE;
   const char *what = (tp == NS_TYPE_CONSENSUS) ? "consensus" : "vote";
-  ns = networkstatus_parse_vote_from_string(str,
+  ns = networkstatus_parse_vote_from_string((const char *)data,
+                                            sz,
                                             &eos,
                                             tp);
   if (ns) {
@@ -76,6 +76,6 @@ fuzz_main(const uint8_t *data, size_t sz)
   } else {
     log_debug(LD_GENERAL, "Parsing as %s failed", what);
   }
-  tor_free(str);
+
   return 0;
 }

@@ -263,7 +263,7 @@ test_link_handshake_certs_ok(void *arg)
     tt_assert(c1->handshake_state->authenticated_rsa);
     tt_assert(! c1->handshake_state->authenticated_ed25519);
   }
-  tt_assert(! tor_mem_is_zero(
+  tt_assert(! fast_mem_is_zero(
                 (char*)c1->handshake_state->authenticated_rsa_peer_id, 20));
 
   chan2 = tor_malloc_zero(sizeof(*chan2));
@@ -290,7 +290,7 @@ test_link_handshake_certs_ok(void *arg)
     tt_ptr_op(c2->handshake_state->certs->ed_id_sign, OP_EQ, NULL);
   }
   tt_assert(c2->handshake_state->certs->id_cert);
-  tt_assert(tor_mem_is_zero(
+  tt_assert(fast_mem_is_zero(
               (char*)c2->handshake_state->authenticated_rsa_peer_id, 20));
   /* no authentication has happened yet, since we haen't gotten an AUTH cell.
    */
@@ -948,7 +948,7 @@ test_link_handshake_send_authchallenge(void *arg)
 #else
   tt_int_op(36, OP_EQ, cell1->payload_len);
   tt_int_op(36, OP_EQ, cell2->payload_len);
-#endif
+#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
   tt_int_op(0, OP_EQ, cell1->circ_id);
   tt_int_op(0, OP_EQ, cell2->circ_id);
   tt_int_op(CELL_AUTH_CHALLENGE, OP_EQ, cell1->command);
@@ -960,7 +960,7 @@ test_link_handshake_send_authchallenge(void *arg)
 #else
   tt_mem_op("\x00\x01\x00\x03", OP_EQ, cell1->payload + 32, 4);
   tt_mem_op("\x00\x01\x00\x03", OP_EQ, cell2->payload + 32, 4);
-#endif
+#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
   tt_mem_op(cell1->payload, OP_NE, cell2->payload, 32);
 
  done:

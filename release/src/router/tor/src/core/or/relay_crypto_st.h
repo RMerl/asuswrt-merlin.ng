@@ -25,7 +25,9 @@ struct relay_crypto_t {
   /** Digest state for cells heading away from the OR at this step. */
   struct crypto_digest_t *b_digest;
 
+  /** Digest used for the next SENDME cell if any. */
+  uint8_t sendme_digest[DIGEST_LEN];
 };
 #undef crypto_cipher_t
 
-#endif
+#endif /* !defined(RELAY_CRYPTO_ST_H) */

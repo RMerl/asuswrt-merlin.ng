@@ -28,5 +28,5 @@ struct tor_version_t {
   char git_tag[DIGEST_LEN];
 };
 
-#endif
+#endif /* !defined(TOR_VERSION_ST_H) */
 

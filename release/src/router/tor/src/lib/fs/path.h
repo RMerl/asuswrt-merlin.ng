@@ -27,4 +27,4 @@ void clean_fname_for_stat(char *name);
 int get_parent_directory(char *fname);
 char *make_path_absolute(char *fname);
 
-#endif
+#endif /* !defined(TOR_PATH_H) */

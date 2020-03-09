@@ -7,6 +7,10 @@
 
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
+#include "core/or/circuitlist.h"
+#include "core/or/connection_edge.h"
+#include "core/or/connection_or.h"
+#include "core/or/channeltls.h"
 #include "feature/dircache/dircache.h"
 #include "feature/dircache/dirserv.h"
 #include "feature/dirclient/dirclient.h"
@@ -15,6 +19,10 @@
 #include "feature/stats/geoip_stats.h"
 #include "lib/compress/compress.h"
 
+#include "core/or/circuit_st.h"
+#include "core/or/or_circuit_st.h"
+#include "core/or/edge_connection_st.h"
+#include "core/or/or_connection_st.h"
 #include "feature/dircommon/dir_connection_st.h"
 #include "feature/nodelist/routerinfo_st.h"
 
@@ -165,6 +173,82 @@ connection_dir_is_encrypted(const dir_connection_t *conn)
    * connection getting closed.
    */
   return TO_CONN(conn)->linked;
+}
+
+/** Return true iff the given directory connection <b>dir_conn</b> is
+ * anonymous, that is, it is on a circuit via a public relay and not directly
+ * from a client or bridge.
+ *
+ * For client circuits via relays: true for 2-hop+ paths.
+ * For client circuits via bridges: true for 3-hop+ paths.
+ *
+ * This first test if the connection is encrypted since it is a strong
+ * requirement for anonymity. */
+bool
+connection_dir_is_anonymous(const dir_connection_t *dir_conn)
+{
+  const connection_t *conn, *linked_conn;
+  const edge_connection_t *edge_conn;
+  const circuit_t *circ;
+
+  tor_assert(dir_conn);
+
+  if (!connection_dir_is_encrypted(dir_conn)) {
+    return false;
+  }
+
+  /*
+   * Buckle up, we'll do a deep dive into the connection in order to get the
+   * final connection channel of that connection in order to figure out if
+   * this is a client or relay link.
+   *
+   * We go: dir_conn -> linked_conn -> edge_conn -> on_circuit -> p_chan.
+   */
+
+  conn = TO_CONN(dir_conn);
+  linked_conn = conn->linked_conn;
+
+  /* The dir connection should be connected to an edge connection. It can not
+   * be closed or marked for close. */
+  if (linked_conn == NULL || linked_conn->magic != EDGE_CONNECTION_MAGIC ||
+      conn->linked_conn_is_closed || conn->linked_conn->marked_for_close) {
+    log_debug(LD_DIR, "Directory connection is not anonymous: "
+                      "not linked to edge");
+    return false;
+  }
+
+  edge_conn = TO_EDGE_CONN((connection_t *) linked_conn);
+  circ = edge_conn->on_circuit;
+
+  /* Can't be a circuit we initiated and without a circuit, no channel. */
+  if (circ == NULL || CIRCUIT_IS_ORIGIN(circ)) {
+    log_debug(LD_DIR, "Directory connection is not anonymous: "
+                      "not on OR circuit");
+    return false;
+  }
+
+  /* It is possible that the circuit was closed because one of the channel was
+   * closed or a DESTROY cell was received. Either way, this connection can
+   * not continue so return that it is not anonymous since we can not know for
+   * sure if it is. */
+  if (circ->marked_for_close) {
+    log_debug(LD_DIR, "Directory connection is not anonymous: "
+                      "circuit marked for close");
+    return false;
+  }
+
+  /* Get the previous channel to learn if it is a client or relay link. We
+   * BUG() because if the circuit is not mark for close, we ought to have a
+   * p_chan else we have a code flow issue. */
+  if (BUG(CONST_TO_OR_CIRCUIT(circ)->p_chan == NULL)) {
+    log_debug(LD_DIR, "Directory connection is not anonymous: "
+                      "no p_chan on circuit");
+    return false;
+  }
+
+  /* Will be true if the channel is an unauthenticated peer which is only true
+   * for clients and bridges. */
+  return !channel_is_client(CONST_TO_OR_CIRCUIT(circ)->p_chan);
 }
 
 /** Parse an HTTP request line at the start of a headers string.  On failure,

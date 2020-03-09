@@ -22,6 +22,7 @@ typedef struct consdiff_cfg_t {
 struct consensus_cache_entry_t; // from conscache.h
 
 int consdiffmgr_add_consensus(const char *consensus,
+                              size_t consensus_len,
                               const networkstatus_t *as_parsed);
 
 consdiff_status_t consdiffmgr_find_consensus(
@@ -68,8 +69,14 @@ STATIC consensus_cache_entry_t *cdm_cache_lookup_consensus(
 STATIC int cdm_entry_get_sha3_value(uint8_t *digest_out,
                                     consensus_cache_entry_t *ent,
                                     const char *label);
-STATIC int uncompress_or_copy(char **out, size_t *outlen,
-                              consensus_cache_entry_t *ent);
+STATIC int uncompress_or_set_ptr(const char **out, size_t *outlen,
+                                 char **owned_out,
+                                 consensus_cache_entry_t *ent);
 #endif /* defined(CONSDIFFMGR_PRIVATE) */
+
+#ifdef TOR_UNIT_TESTS
+int consdiffmgr_add_consensus_nulterm(const char *consensus,
+                                      const networkstatus_t *as_parsed);
+#endif
 
 #endif /* !defined(TOR_CONSDIFFMGR_H) */

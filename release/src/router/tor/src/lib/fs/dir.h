@@ -30,4 +30,4 @@ MOCK_DECL(int, check_private_dir, (const char *dirname, cpd_check_t check,
 
 MOCK_DECL(struct smartlist_t *, tor_listdir, (const char *dirname));
 
-#endif
+#endif /* !defined(TOR_DIR_H) */

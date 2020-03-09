@@ -28,21 +28,25 @@ struct smartlist_t;
 #define PROTOVER_HS_INTRO_V3 4
 /** The protover version number that signifies HSv3 rendezvous point support */
 #define PROTOVER_HS_RENDEZVOUS_POINT_V3 2
+/** The protover that signals support for HS circuit setup padding machines */
+#define PROTOVER_HS_SETUP_PADDING 2
 
 /** List of recognized subprotocols. */
 /// C_RUST_COUPLED: src/rust/protover/ffi.rs `translate_to_rust`
 /// C_RUST_COUPLED: src/rust/protover/protover.rs `Proto`
 typedef enum protocol_type_t {
-  PRT_LINK,
-  PRT_LINKAUTH,
-  PRT_RELAY,
-  PRT_DIRCACHE,
-  PRT_HSDIR,
-  PRT_HSINTRO,
-  PRT_HSREND,
-  PRT_DESC,
-  PRT_MICRODESC,
-  PRT_CONS,
+  PRT_LINK      = 0,
+  PRT_LINKAUTH  = 1,
+  PRT_RELAY     = 2,
+  PRT_DIRCACHE  = 3,
+  PRT_HSDIR     = 4,
+  PRT_HSINTRO   = 5,
+  PRT_HSREND    = 6,
+  PRT_DESC      = 7,
+  PRT_MICRODESC = 8,
+  PRT_CONS      = 9,
+  PRT_PADDING   = 10,
+  PRT_FLOWCTRL  = 11,
 } protocol_type_t;
 
 bool protover_contains_long_protocol_names(const char *s);

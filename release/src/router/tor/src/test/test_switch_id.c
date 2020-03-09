@@ -87,7 +87,7 @@ main(int argc, char **argv)
 
   fprintf(stderr, "This test is not supported on your OS.\n");
   return 77;
-#else /* !(defined(_WIN32)) */
+#else /* !defined(_WIN32) */
   const char *username;
   const char *testname;
   if (argc != 3) {

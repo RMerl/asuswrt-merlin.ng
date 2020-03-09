@@ -1,0 +1,2 @@
+problem file-size a.c 40 -> 38
+problem file-size z.c 100 -> 0

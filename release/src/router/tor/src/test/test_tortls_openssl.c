@@ -133,7 +133,7 @@ library_init(void)
 #else
   SSL_library_init();
   SSL_load_error_strings();
-#endif
+#endif /* defined(OPENSSL_1_1_API) */
 }
 
 static void
@@ -477,7 +477,7 @@ fake_x509_free(X509 *cert)
     tor_free(cert);
   }
 }
-#endif
+#endif /* !defined(OPENSSL_OPAQUE) */
 
 static tor_x509_cert_t *fixed_x509_cert = NULL;
 static tor_x509_cert_t *

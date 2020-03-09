@@ -96,5 +96,5 @@ struct entry_connection_t {
 /** Cast a entry_connection_t subtype pointer to a edge_connection_t **/
 #define ENTRY_TO_EDGE_CONN(c) (&(((c))->edge_))
 
-#endif
+#endif /* !defined(ENTRY_CONNECTION_ST_H) */
 

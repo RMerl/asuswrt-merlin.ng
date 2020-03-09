@@ -20,6 +20,7 @@
 #include "feature/hs/hs_service.h"
 
 /* Trunnel. */
+#include "trunnel/hs/cell_common.h"
 #include "trunnel/hs/cell_establish_intro.h"
 
 /** We simulate the creation of an outgoing ESTABLISH_INTRO cell, and then we
@@ -38,11 +39,13 @@ test_gen_establish_intro_cell(void *arg)
   /* Create outgoing ESTABLISH_INTRO cell and extract its payload so that we
      attempt to parse it. */
   {
+    hs_service_config_t config;
+    memset(&config, 0, sizeof(config));
     /* We only need the auth key pair here. */
-    hs_service_intro_point_t *ip = service_intro_point_new(NULL, 0, 0);
+    hs_service_intro_point_t *ip = service_intro_point_new(NULL);
     /* Auth key pair is generated in the constructor so we are all set for
      * using this IP object. */
-    ret = hs_cell_build_establish_intro(circ_nonce, ip, buf);
+    ret = hs_cell_build_establish_intro(circ_nonce, &config, ip, buf);
     service_intro_point_free(ip);
     tt_u64_op(ret, OP_GT, 0);
   }
@@ -97,6 +100,9 @@ test_gen_establish_intro_cell_bad(void *arg)
   trn_cell_establish_intro_t *cell = NULL;
   char circ_nonce[DIGEST_LEN] = {0};
   hs_service_intro_point_t *ip = NULL;
+  hs_service_config_t config;
+
+  memset(&config, 0, sizeof(config));
 
   MOCK(ed25519_sign_prefixed, mock_ed25519_sign_prefixed);
 
@@ -107,8 +113,8 @@ test_gen_establish_intro_cell_bad(void *arg)
      ed25519_sign_prefixed() function and make it fail. */
   cell = trn_cell_establish_intro_new();
   tt_assert(cell);
-  ip = service_intro_point_new(NULL, 0, 0);
-  cell_len = hs_cell_build_establish_intro(circ_nonce, ip, NULL);
+  ip = service_intro_point_new(NULL);
+  cell_len = hs_cell_build_establish_intro(circ_nonce, &config, ip, NULL);
   service_intro_point_free(ip);
   expect_log_msg_containing("Unable to make signature for "
                             "ESTABLISH_INTRO cell.");
@@ -120,10 +126,96 @@ test_gen_establish_intro_cell_bad(void *arg)
   UNMOCK(ed25519_sign_prefixed);
 }
 
+static void
+test_gen_establish_intro_dos_ext(void *arg)
+{
+  ssize_t ret;
+  hs_service_config_t config;
+  hs_service_intro_point_t *ip = NULL;
+  trn_cell_extension_t *extensions = NULL;
+  trn_cell_extension_dos_t *dos = NULL;
+
+  (void) arg;
+
+  memset(&config, 0, sizeof(config));
+  ip = service_intro_point_new(NULL);
+  tt_assert(ip);
+  ip->support_intro2_dos_defense = 1;
+
+  /* Case 1: No DoS parameters so no extension to be built. */
+  extensions = build_establish_intro_extensions(&config, ip);
+  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 0);
+  trn_cell_extension_free(extensions);
+  extensions = NULL;
+
+  /* Case 2: Enable the DoS extension. Parameter set to 0 should indicate to
+   * disable the defense on the intro point but there should be an extension
+   * nonetheless in the cell. */
+  config.has_dos_defense_enabled = 1;
+  extensions = build_establish_intro_extensions(&config, ip);
+  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 1);
+  /* Validate the extension. */
+  const trn_cell_extension_field_t *field =
+    trn_cell_extension_getconst_fields(extensions, 0);
+  tt_int_op(trn_cell_extension_field_get_field_type(field), OP_EQ,
+            TRUNNEL_CELL_EXTENSION_TYPE_DOS);
+  ret = trn_cell_extension_dos_parse(&dos,
+                 trn_cell_extension_field_getconstarray_field(field),
+                 trn_cell_extension_field_getlen_field(field));
+  tt_int_op(ret, OP_EQ, 19);
+  /* Rate per sec param. */
+  const trn_cell_extension_dos_param_t *param =
+    trn_cell_extension_dos_getconst_params(dos, 0);
+  tt_int_op(trn_cell_extension_dos_param_get_type(param), OP_EQ,
+            TRUNNEL_DOS_PARAM_TYPE_INTRO2_RATE_PER_SEC);
+  tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 0);
+  /* Burst per sec param. */
+  param = trn_cell_extension_dos_getconst_params(dos, 1);
+  tt_int_op(trn_cell_extension_dos_param_get_type(param), OP_EQ,
+            TRUNNEL_DOS_PARAM_TYPE_INTRO2_BURST_PER_SEC);
+  tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 0);
+  trn_cell_extension_dos_free(dos); dos = NULL;
+  trn_cell_extension_free(extensions); extensions = NULL;
+
+  /* Case 3: Enable the DoS extension. Parameter set to some normal values. */
+  config.has_dos_defense_enabled = 1;
+  config.intro_dos_rate_per_sec = 42;
+  config.intro_dos_burst_per_sec = 250;
+  extensions = build_establish_intro_extensions(&config, ip);
+  tt_int_op(trn_cell_extension_get_num(extensions), OP_EQ, 1);
+  /* Validate the extension. */
+  field = trn_cell_extension_getconst_fields(extensions, 0);
+  tt_int_op(trn_cell_extension_field_get_field_type(field), OP_EQ,
+            TRUNNEL_CELL_EXTENSION_TYPE_DOS);
+  ret = trn_cell_extension_dos_parse(&dos,
+                 trn_cell_extension_field_getconstarray_field(field),
+                 trn_cell_extension_field_getlen_field(field));
+  tt_int_op(ret, OP_EQ, 19);
+  /* Rate per sec param. */
+  param = trn_cell_extension_dos_getconst_params(dos, 0);
+  tt_int_op(trn_cell_extension_dos_param_get_type(param), OP_EQ,
+            TRUNNEL_DOS_PARAM_TYPE_INTRO2_RATE_PER_SEC);
+  tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 42);
+  /* Burst per sec param. */
+  param = trn_cell_extension_dos_getconst_params(dos, 1);
+  tt_int_op(trn_cell_extension_dos_param_get_type(param), OP_EQ,
+            TRUNNEL_DOS_PARAM_TYPE_INTRO2_BURST_PER_SEC);
+  tt_u64_op(trn_cell_extension_dos_param_get_value(param), OP_EQ, 250);
+  trn_cell_extension_dos_free(dos); dos = NULL;
+  trn_cell_extension_free(extensions); extensions = NULL;
+
+ done:
+  service_intro_point_free(ip);
+  trn_cell_extension_dos_free(dos);
+  trn_cell_extension_free(extensions);
+}
+
 struct testcase_t hs_cell_tests[] = {
   { "gen_establish_intro_cell", test_gen_establish_intro_cell, TT_FORK,
     NULL, NULL },
   { "gen_establish_intro_cell_bad", test_gen_establish_intro_cell_bad, TT_FORK,
+    NULL, NULL },
+  { "gen_establish_intro_dos_ext", test_gen_establish_intro_dos_ext, TT_FORK,
     NULL, NULL },
 
   END_OF_TESTCASES

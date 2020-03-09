@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-wallclock-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_wallclock_a_SOURCES =			\
 	src/lib/wallclock/approx_time.c			\
 	src/lib/wallclock/time_to_tm.c			\
@@ -15,8 +16,10 @@ src_lib_libtor_wallclock_testing_a_SOURCES = \
 src_lib_libtor_wallclock_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_wallclock_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/wallclock/approx_time.h			\
 	src/lib/wallclock/timeval.h			\
 	src/lib/wallclock/time_to_tm.h			\
-	src/lib/wallclock/tor_gettimeofday.h
+	src/lib/wallclock/tor_gettimeofday.h		\
+	src/lib/wallclock/wallclock_sys.h

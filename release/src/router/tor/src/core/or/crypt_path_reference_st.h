@@ -19,5 +19,5 @@ struct crypt_path_reference_t {
   crypt_path_t *cpath;
 };
 
-#endif
+#endif /* !defined(CRYPT_PATH_REFERENCE_ST_H) */
 

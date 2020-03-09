@@ -24,14 +24,23 @@ struct onion_handshake_state_t {
   } u;
 };
 
+/** Macro to encapsulate private members of a struct.
+ *
+ *  Renames 'x' to 'x_crypt_path_private_field'.
+ */
+#define CRYPT_PATH_PRIV_FIELD(x) x ## _crypt_path_private_field
+
+#ifdef CRYPT_PATH_PRIVATE
+
+/* Helper macro to access private members of a struct. */
+#define pvt_crypto CRYPT_PATH_PRIV_FIELD(crypto)
+
+#endif /* defined(CRYPT_PATH_PRIVATE) */
+
 /** Holds accounting information for a single step in the layered encryption
  * performed by a circuit.  Used only at the client edge of a circuit. */
 struct crypt_path_t {
   uint32_t magic;
-
-  /** Cryptographic state used for encrypting and authenticating relay
-   * cells to and from this hop. */
-  relay_crypto_t crypto;
 
   /** Current state of the handshake as performed with the OR at this
    * step. */
@@ -65,6 +74,12 @@ struct crypt_path_t {
                        * at this step? */
   int deliver_window; /**< How many cells are we willing to deliver originating
                        * at this step? */
+
+  /*********************** Private members ****************************/
+
+  /** Private member: Cryptographic state used for encrypting and
+   * authenticating relay cells to and from this hop. */
+  relay_crypto_t CRYPT_PATH_PRIV_FIELD(crypto);
 };
 
-#endif
+#endif /* !defined(CRYPT_PATH_ST_H) */

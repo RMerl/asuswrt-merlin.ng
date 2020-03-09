@@ -19,4 +19,4 @@
 /** Length of our legacy DH keys. */
 #define DH1024_KEY_LEN (1024/8)
 
-#endif
+#endif /* !defined(TOR_DH_SIZES_H) */

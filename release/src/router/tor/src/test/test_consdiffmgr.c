@@ -21,6 +21,23 @@
 #include "test/test.h"
 #include "test/log_test_helpers.h"
 
+#define consdiffmgr_add_consensus consdiffmgr_add_consensus_nulterm
+
+static char *
+consensus_diff_apply_(const char *c, const char *d)
+{
+  size_t c_len = strlen(c);
+  size_t d_len = strlen(d);
+  // We use memdup here to ensure that the input is NOT nul-terminated.
+  // This makes it likelier for us to spot bugs.
+  char *c_tmp = tor_memdup(c, c_len);
+  char *d_tmp = tor_memdup(d, d_len);
+  char *result = consensus_diff_apply(c_tmp, c_len, d_tmp, d_len);
+  tor_free(c_tmp);
+  tor_free(d_tmp);
+  return result;
+}
+
 // ============================== Setup/teardown the consdiffmgr
 // These functions get run before/after each test in this module
 
@@ -153,7 +170,8 @@ lookup_diff_from(consensus_cache_entry_t **out,
                  const char *str1)
 {
   uint8_t digest[DIGEST256_LEN];
-  if (router_get_networkstatus_v3_sha3_as_signed(digest, str1)<0) {
+  if (router_get_networkstatus_v3_sha3_as_signed(digest,
+                                                 str1, strlen(str1))<0) {
     TT_FAIL(("Unable to compute sha3-as-signed"));
     return CONSDIFF_NOT_FOUND;
   }
@@ -175,14 +193,15 @@ lookup_apply_and_verify_diff(consensus_flavor_t flav,
 
   consensus_cache_entry_incref(ent);
   size_t size;
-  char *diff_string = NULL;
-  int r = uncompress_or_copy(&diff_string, &size, ent);
+  const char *diff_string = NULL;
+  char *diff_owned = NULL;
+  int r = uncompress_or_set_ptr(&diff_string, &size, &diff_owned, ent);
   consensus_cache_entry_decref(ent);
   if (diff_string == NULL || r < 0)
     return -1;
 
-  char *applied = consensus_diff_apply(str1, diff_string);
-  tor_free(diff_string);
+  char *applied = consensus_diff_apply(str1, strlen(str1), diff_string, size);
+  tor_free(diff_owned);
   if (applied == NULL)
     return -1;
 
@@ -282,7 +301,8 @@ test_consdiffmgr_add(void *arg)
   (void) arg;
   time_t now = approx_time();
 
-  char *body = NULL;
+  const char *body = NULL;
+  char *body_owned = NULL;
 
   consensus_cache_entry_t *ent = NULL;
   networkstatus_t *ns_tmp = fake_ns_new(FLAV_NS, now);
@@ -324,7 +344,7 @@ test_consdiffmgr_add(void *arg)
   tt_assert(ent);
   consensus_cache_entry_incref(ent);
   size_t s;
-  r = uncompress_or_copy(&body, &s, ent);
+  r = uncompress_or_set_ptr(&body, &s, &body_owned, ent);
   tt_int_op(r, OP_EQ, 0);
   tt_int_op(s, OP_EQ, 4);
   tt_mem_op(body, OP_EQ, "quux", 4);
@@ -337,7 +357,7 @@ test_consdiffmgr_add(void *arg)
   networkstatus_vote_free(ns_tmp);
   teardown_capture_of_logs();
   consensus_cache_entry_decref(ent);
-  tor_free(body);
+  tor_free(body_owned);
 }
 
 static void
@@ -370,7 +390,8 @@ test_consdiffmgr_make_diffs(void *arg)
   ns = fake_ns_new(FLAV_MICRODESC, now-3600);
   md_ns_body = fake_ns_body_new(FLAV_MICRODESC, now-3600);
   r = consdiffmgr_add_consensus(md_ns_body, ns);
-  router_get_networkstatus_v3_sha3_as_signed(md_ns_sha3, md_ns_body);
+  router_get_networkstatus_v3_sha3_as_signed(md_ns_sha3, md_ns_body,
+                                             strlen(md_ns_body));
   networkstatus_vote_free(ns);
   tt_int_op(r, OP_EQ, 0);
 
@@ -414,7 +435,7 @@ test_consdiffmgr_make_diffs(void *arg)
   r = consensus_cache_entry_get_body(diff, &diff_body, &diff_size);
   tt_int_op(r, OP_EQ, 0);
   diff_text = tor_memdup_nulterm(diff_body, diff_size);
-  applied = consensus_diff_apply(md_ns_body, diff_text);
+  applied = consensus_diff_apply_(md_ns_body, diff_text);
   tt_assert(applied);
   tt_str_op(applied, OP_EQ, md_ns_body_2);
 

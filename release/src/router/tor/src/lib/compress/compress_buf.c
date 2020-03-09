@@ -11,7 +11,7 @@
 
 #define BUFFERS_PRIVATE
 #include "lib/cc/compat_compiler.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "lib/compress/compress.h"
 #include "lib/log/util_bug.h"
 

@@ -57,4 +57,4 @@ MOCK_DECL(download_status_t *, download_status_for_authority_id_and_sk,
 
 void authcert_free_all(void);
 
-#endif
+#endif /* !defined(TOR_AUTHCERT_H) */

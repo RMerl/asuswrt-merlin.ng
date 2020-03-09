@@ -64,4 +64,4 @@ struct dir_connection_t {
 #endif /* defined(MEASUREMENTS_21206) */
 };
 
-#endif
+#endif /* !defined(DIR_CONNECTION_ST_H) */

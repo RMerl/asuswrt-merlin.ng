@@ -96,9 +96,9 @@ typedef int32_t ssize_t;
 #  else
 #    define TOR_PRIuSZ PRIu32
 #  endif
-#else
+#else /* !defined(_WIN32) */
 #  define TOR_PRIuSZ "zu"
-#endif
+#endif /* defined(_WIN32) */
 
 #ifdef _WIN32
 #  ifdef _WIN64
@@ -106,9 +106,9 @@ typedef int32_t ssize_t;
 #  else
 #    define TOR_PRIdSZ PRId32
 #  endif
-#else
+#else /* !defined(_WIN32) */
 #  define TOR_PRIdSZ "zd"
-#endif
+#endif /* defined(_WIN32) */
 
 #ifndef SSIZE_MAX
 #if (SIZEOF_SIZE_T == 4)
@@ -124,5 +124,14 @@ typedef int32_t ssize_t;
 #define SSIZE_T_CEILING ((ssize_t)(SSIZE_MAX-16))
 /** Any size_t larger than this amount is likely to be an underflow. */
 #define SIZE_T_CEILING  ((size_t)(SSIZE_MAX-16))
+
+#if SIZEOF_INT > SIZEOF_VOID_P
+#error "sizeof(int) > sizeof(void *) - Tor cannot be built on this platform!"
+#endif
+
+#if SIZEOF_UNSIGNED_INT > SIZEOF_VOID_P
+#error "sizeof(unsigned int) > sizeof(void *) - Tor cannot be built on this \
+platform!"
+#endif
 
 #endif /* !defined(TOR_TORINT_H) */

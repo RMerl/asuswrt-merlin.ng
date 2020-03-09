@@ -37,4 +37,4 @@ struct or_handshake_certs_t {
   size_t ed_rsa_crosscert_len;
 };
 
-#endif
+#endif /* !defined(OR_HANDSHAKE_CERTS_ST) */

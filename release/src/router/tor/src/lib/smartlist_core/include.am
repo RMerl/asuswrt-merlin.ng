@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-smartlist-core-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_smartlist_core_a_SOURCES =			\
 	src/lib/smartlist_core/smartlist_core.c                 \
 	src/lib/smartlist_core/smartlist_split.c
@@ -15,6 +16,7 @@ src_lib_libtor_smartlist_core_testing_a_CPPFLAGS = \
 	$(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_smartlist_core_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/smartlist_core/smartlist_core.h         \
 	src/lib/smartlist_core/smartlist_foreach.h      \

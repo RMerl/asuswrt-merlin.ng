@@ -10,6 +10,7 @@
 #define DIRCACHE_PRIVATE
 #define DIRCLIENT_PRIVATE
 #define HS_CACHE_PRIVATE
+#define TOR_CHANNEL_INTERNAL_
 
 #include "trunnel/ed25519_cert.h"
 #include "feature/hs/hs_cache.h"
@@ -20,7 +21,12 @@
 #include "core/mainloop/connection.h"
 #include "core/proto/proto_http.h"
 #include "lib/crypt_ops/crypto_format.h"
+#include "core/or/circuitlist.h"
+#include "core/or/channel.h"
 
+#include "core/or/edge_connection_st.h"
+#include "core/or/or_circuit_st.h"
+#include "core/or/or_connection_st.h"
 #include "feature/dircommon/dir_connection_st.h"
 #include "feature/nodelist/networkstatus_st.h"
 
@@ -232,22 +238,31 @@ helper_fetch_desc_from_hsdir(const ed25519_public_key_t *blinded_key)
 
   /* The dir conn we are going to simulate */
   dir_connection_t *conn = NULL;
+  edge_connection_t *edge_conn = NULL;
+  or_circuit_t *or_circ = NULL;
 
   /* First extract the blinded public key that we are going to use in our
      query, and then build the actual query string. */
   {
     char hsdir_cache_key[ED25519_BASE64_LEN+1];
 
-    retval = ed25519_public_to_base64(hsdir_cache_key,
-                                      blinded_key);
-    tt_int_op(retval, OP_EQ, 0);
+    ed25519_public_to_base64(hsdir_cache_key, blinded_key);
     tor_asprintf(&hsdir_query_str, GET("/tor/hs/3/%s"), hsdir_cache_key);
   }
 
   /* Simulate an HTTP GET request to the HSDir */
   conn = dir_connection_new(AF_INET);
+  tt_assert(conn);
+  TO_CONN(conn)->linked = 1; /* Signal that it is encrypted. */
   tor_addr_from_ipv4h(&conn->base_.addr, 0x7f000001);
-  TO_CONN(conn)->linked = 1;/* Pretend the conn is encrypted :) */
+
+  /* Pretend this conn is anonymous. */
+  edge_conn = edge_connection_new(CONN_TYPE_EXIT, AF_INET);
+  TO_CONN(conn)->linked_conn = TO_CONN(edge_conn);
+  or_circ = or_circuit_new(0, NULL);
+  or_circ->p_chan = tor_malloc_zero(sizeof(channel_t));
+  edge_conn->on_circuit = TO_CIRCUIT(or_circ);
+
   retval = directory_handle_command_get(conn, hsdir_query_str,
                                         NULL, 0);
   tt_int_op(retval, OP_EQ, 0);
@@ -264,8 +279,11 @@ helper_fetch_desc_from_hsdir(const ed25519_public_key_t *blinded_key)
 
  done:
   tor_free(hsdir_query_str);
-  if (conn)
+  if (conn) {
+    tor_free(or_circ->p_chan);
+    connection_free_minimal(TO_CONN(conn)->linked_conn);
     connection_free_minimal(TO_CONN(conn));
+  }
 
   return received_desc;
 }
@@ -487,7 +505,7 @@ test_client_cache(void *arg)
                                        NULL, &published_desc_str);
     tt_int_op(retval, OP_EQ, 0);
     memcpy(wanted_subcredential, published_desc->subcredential, DIGEST256_LEN);
-    tt_assert(!tor_mem_is_zero((char*)wanted_subcredential, DIGEST256_LEN));
+    tt_assert(!fast_mem_is_zero((char*)wanted_subcredential, DIGEST256_LEN));
   }
 
   /* Test handle_response_fetch_hsdesc_v3() */

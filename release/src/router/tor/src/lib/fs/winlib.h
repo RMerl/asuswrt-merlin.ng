@@ -17,6 +17,6 @@
 #include <tchar.h>
 
 HANDLE load_windows_system_library(const TCHAR *library_name);
-#endif
+#endif /* defined(_WIN32) */
 
-#endif
+#endif /* !defined(TOR_WINLIB_H) */

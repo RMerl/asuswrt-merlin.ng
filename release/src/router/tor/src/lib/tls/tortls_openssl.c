@@ -25,7 +25,7 @@
    * <winsock.h> and mess things up, in at least some openssl versions. */
   #include <winsock2.h>
   #include <ws2tcpip.h>
-#endif
+#endif /* defined(_WIN32) */
 
 #include "lib/crypt_ops/crypto_cipher.h"
 #include "lib/crypt_ops/crypto_rand.h"
@@ -318,7 +318,7 @@ tor_tls_init(void)
 #else
     SSL_library_init();
     SSL_load_error_strings();
-#endif
+#endif /* defined(OPENSSL_1_1_API) */
 
 #if (SIZEOF_VOID_P >= 8 &&                              \
      OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,0,1))
@@ -383,7 +383,7 @@ static const char SERVER_CIPHER_LIST[] =
    * conclude that it has no valid ciphers if it's running with TLS1.3.
    */
   TLS1_3_TXT_AES_128_GCM_SHA256 ":"
-#endif
+#endif /* defined(TLS1_3_TXT_AES_128_GCM_SHA256) */
   TLS1_TXT_DHE_RSA_WITH_AES_256_SHA ":"
   TLS1_TXT_DHE_RSA_WITH_AES_128_SHA;
 
@@ -464,7 +464,7 @@ static const char UNRESTRICTED_SERVER_CIPHER_LIST[] =
 /** List of ciphers that clients should advertise, omitting items that
  * our OpenSSL doesn't know about. */
 static const char CLIENT_CIPHER_LIST[] =
-#include "ciphers.inc"
+#include "lib/tls/ciphers.inc"
   /* Tell it not to use SSLv2 ciphers, so that it can select an SSLv3 version
    * of any cipher we say. */
   "!SSLv2"
@@ -657,7 +657,7 @@ tor_tls_context_new(crypto_pk_t *identity, unsigned int key_lifetime,
     if (r < 0)
       goto error;
   }
-#else
+#else /* !(defined(SSL_CTX_set1_groups_list) || defined(HAVE_SSL_CTX_SE...)) */
   if (! is_client) {
     int nid;
     EC_KEY *ec_key;
@@ -673,7 +673,7 @@ tor_tls_context_new(crypto_pk_t *identity, unsigned int key_lifetime,
       SSL_CTX_set_tmp_ecdh(result->ctx, ec_key);
     EC_KEY_free(ec_key);
   }
-#endif
+#endif /* defined(SSL_CTX_set1_groups_list) || defined(HAVE_SSL_CTX_SET1...) */
   SSL_CTX_set_verify(result->ctx, SSL_VERIFY_PEER,
                      always_accept_verify_cb);
   /* let us realloc bufs that we're writing from */
@@ -764,7 +764,7 @@ find_cipher_by_id(const SSL *ssl, const SSL_METHOD *m, uint16_t cipher)
       tor_assert((SSL_CIPHER_get_id(c) & 0xffff) == cipher);
     return c != NULL;
   }
-#else /* !(defined(HAVE_SSL_CIPHER_FIND)) */
+#else /* !defined(HAVE_SSL_CIPHER_FIND) */
 
 # if defined(HAVE_STRUCT_SSL_METHOD_ST_GET_CIPHER_BY_CHAR)
   if (m && m->get_cipher_by_char) {
@@ -1062,7 +1062,7 @@ tor_tls_new(tor_socket_t sock, int isServer)
     /* We can't actually use TLS 1.3 until this bug is fixed. */
     SSL_set_max_proto_version(result->ssl, TLS1_2_VERSION);
   }
-#endif
+#endif /* defined(SSL_CTRL_SET_MAX_PROTO_VERSION) */
 
   if (!SSL_set_cipher_list(result->ssl,
                      isServer ? SERVER_CIPHER_LIST : CLIENT_CIPHER_LIST)) {
@@ -1728,7 +1728,7 @@ tor_tls_export_key_material,(tor_tls_t *tls, uint8_t *secrets_out,
     else
       return -1;
   }
-#endif
+#endif /* defined(TLS1_3_VERSION) */
 
   return (r == 1) ? 0 : -1;
 }

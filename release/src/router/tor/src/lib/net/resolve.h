@@ -24,12 +24,18 @@
 
 struct tor_addr_t;
 
+/*
+ * Primary lookup functions.
+ */
 MOCK_DECL(int, tor_lookup_hostname,(const char *name, uint32_t *addr));
 MOCK_DECL(int, tor_addr_lookup,(const char *name, uint16_t family,
                                 struct tor_addr_t *addr_out));
 int tor_addr_port_lookup(const char *s, struct tor_addr_t *addr_out,
                          uint16_t *port_out);
 
+/*
+ * Sandbox helpers
+ */
 struct addrinfo;
 #ifdef USE_SANDBOX_GETADDRINFO
 /** Pre-calls getaddrinfo in order to pre-record result. */
@@ -42,8 +48,7 @@ int tor_getaddrinfo(const char *name, const char *servname,
                         struct addrinfo **res);
 void tor_freeaddrinfo(struct addrinfo *addrinfo);
 void tor_free_getaddrinfo_cache(void);
-void tor_make_getaddrinfo_cache_active(void);
-#else /* !(defined(USE_SANDBOX_GETADDRINFO)) */
+#else /* !defined(USE_SANDBOX_GETADDRINFO) */
 #define tor_getaddrinfo(name, servname, hints, res)  \
   getaddrinfo((name),(servname), (hints),(res))
 #define tor_add_addrinfo(name) \
@@ -54,5 +59,15 @@ void tor_make_getaddrinfo_cache_active(void);
 #endif /* defined(USE_SANDBOX_GETADDRINFO) */
 
 void sandbox_disable_getaddrinfo_cache(void);
+void tor_make_getaddrinfo_cache_active(void);
 
+/*
+ * Internal resolver wrapper; exposed for mocking.
+ */
+#ifdef RESOLVE_PRIVATE
+MOCK_DECL(STATIC int, tor_addr_lookup_host_impl, (const char *name,
+                                                  uint16_t family,
+                                                  struct tor_addr_t *addr));
 #endif
+
+#endif /* !defined(TOR_RESOLVE_H) */

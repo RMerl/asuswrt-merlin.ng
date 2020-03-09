@@ -22,11 +22,11 @@
 #include <windows.h>
 #define socket_errno() (WSAGetLastError())
 #define SOCKET_EPROTONOSUPPORT WSAEPROTONOSUPPORT
-#else
+#else /* !defined(_WIN32) */
 #define closesocket(x) close(x)
 #define socket_errno() (errno)
 #define SOCKET_EPROTONOSUPPORT EPROTONOSUPPORT
-#endif
+#endif /* defined(_WIN32) */
 
 #ifdef NEED_ERSATZ_SOCKETPAIR
 
@@ -105,7 +105,12 @@ sockaddr_eq(struct sockaddr *sa1, struct sockaddr *sa2)
 /**
  * Helper used to implement socketpair on systems that lack it, by
  * making a direct connection to localhost.
- */
+ *
+ * See tor_socketpair() for details.
+ *
+ * The direct connection defaults to IPv4, but falls back to IPv6 if
+ * IPv4 is not supported.
+ **/
 int
 tor_ersatz_socketpair(int family, int type, int protocol, tor_socket_t fd[2])
 {

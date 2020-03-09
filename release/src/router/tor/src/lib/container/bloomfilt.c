@@ -14,7 +14,7 @@
 #include "lib/container/bloomfilt.h"
 #include "lib/intmath/bits.h"
 #include "lib/log/util_bug.h"
-#include "siphash.h"
+#include "ext/siphash.h"
 
 /** How many bloom-filter bits we set per address. This is twice the
  * BLOOMFILT_N_HASHES value, since we split the siphash output into two 32-bit

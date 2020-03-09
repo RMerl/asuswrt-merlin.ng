@@ -5,6 +5,7 @@
 
 #define CIRCUITLIST_PRIVATE
 #define CIRCUITBUILD_PRIVATE
+#define CONFIG_PRIVATE
 #define STATEFILE_PRIVATE
 #define ENTRYNODES_PRIVATE
 #define ROUTERLIST_PRIVATE
@@ -17,7 +18,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/circuitbuild.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "feature/dircommon/directory.h"
 #include "feature/dirclient/dirclient.h"
@@ -67,7 +68,7 @@ static networkstatus_t *dummy_consensus = NULL;
 
 static smartlist_t *big_fake_net_nodes = NULL;
 
-static smartlist_t *
+static const smartlist_t *
 bfn_mock_nodelist_get_list(void)
 {
   return big_fake_net_nodes;
@@ -127,6 +128,9 @@ big_fake_network_cleanup(const struct testcase_t *testcase, void *ptr)
   return 1; /* NOP */
 }
 
+#define REASONABLY_FUTURE " reasonably-future"
+#define REASONABLY_PAST " reasonably-past"
+
 /* Unittest setup function: Setup a fake network. */
 static void *
 big_fake_network_setup(const struct testcase_t *testcase)
@@ -138,9 +142,10 @@ big_fake_network_setup(const struct testcase_t *testcase)
   const int N_NODES = 271;
 
   const char *argument = testcase->setup_data;
-  int reasonably_live_consensus = 0;
+  int reasonably_future_consensus = 0, reasonably_past_consensus = 0;
   if (argument) {
-    reasonably_live_consensus = strstr(argument, "reasonably-live") != NULL;
+    reasonably_future_consensus = strstr(argument, REASONABLY_FUTURE) != NULL;
+    reasonably_past_consensus = strstr(argument, REASONABLY_PAST) != NULL;
   }
 
   big_fake_net_nodes = smartlist_new();
@@ -193,16 +198,21 @@ big_fake_network_setup(const struct testcase_t *testcase)
       n->md->exit_policy = parse_short_policy("accept 443");
     }
 
+    n->nodelist_idx = smartlist_len(big_fake_net_nodes);
     smartlist_add(big_fake_net_nodes, n);
   }
 
-  dummy_state = tor_malloc_zero(sizeof(or_state_t));
+  dummy_state = or_state_new();
   dummy_consensus = tor_malloc_zero(sizeof(networkstatus_t));
-  if (reasonably_live_consensus) {
-    /* Make the dummy consensus valid from 4 hours ago, but expired an hour
+  if (reasonably_future_consensus) {
+    /* Make the dummy consensus valid in 6 hours, and expiring in 7 hours. */
+    dummy_consensus->valid_after = approx_time() + 6*3600;
+    dummy_consensus->valid_until = approx_time() + 7*3600;
+  } else if (reasonably_past_consensus) {
+    /* Make the dummy consensus valid from 16 hours ago, but expired 12 hours
      * ago. */
-    dummy_consensus->valid_after = approx_time() - 4*3600;
-    dummy_consensus->valid_until = approx_time() - 3600;
+    dummy_consensus->valid_after = approx_time() - 16*3600;
+    dummy_consensus->valid_until = approx_time() - 12*3600;
   } else {
     /* Make the dummy consensus valid for an hour either side of now. */
     dummy_consensus->valid_after = approx_time() - 3600;
@@ -226,12 +236,12 @@ mock_randomize_time_no_randomization(time_t a, time_t b)
   return a;
 }
 
-static or_options_t mocked_options;
+static or_options_t *mocked_options;
 
 static const or_options_t *
 mock_get_options(void)
 {
-  return &mocked_options;
+  return mocked_options;
 }
 
 #define TEST_IPV4_ADDR "123.45.67.89"
@@ -250,7 +260,7 @@ test_node_preferred_orport(void *arg)
   tor_addr_port_t ap;
 
   /* Setup options */
-  memset(&mocked_options, 0, sizeof(mocked_options));
+  mocked_options = options_new();
   /* We don't test ClientPreferIPv6ORPort here, because it's used in
    * nodelist_set_consensus to setup node.ipv6_preferred, which we set
    * directly. */
@@ -273,8 +283,8 @@ test_node_preferred_orport(void *arg)
 
   /* Check the preferred address is IPv4 if we're only using IPv4, regardless
    * of whether we prefer it or not */
-  mocked_options.ClientUseIPv4 = 1;
-  mocked_options.ClientUseIPv6 = 0;
+  mocked_options->ClientUseIPv4 = 1;
+  mocked_options->ClientUseIPv6 = 0;
   node.ipv6_preferred = 0;
   node_get_pref_orport(&node, &ap);
   tt_assert(tor_addr_eq(&ap.addr, &ipv4_addr));
@@ -287,8 +297,8 @@ test_node_preferred_orport(void *arg)
 
   /* Check the preferred address is IPv4 if we're using IPv4 and IPv6, but
    * don't prefer the IPv6 address */
-  mocked_options.ClientUseIPv4 = 1;
-  mocked_options.ClientUseIPv6 = 1;
+  mocked_options->ClientUseIPv4 = 1;
+  mocked_options->ClientUseIPv6 = 1;
   node.ipv6_preferred = 0;
   node_get_pref_orport(&node, &ap);
   tt_assert(tor_addr_eq(&ap.addr, &ipv4_addr));
@@ -296,28 +306,29 @@ test_node_preferred_orport(void *arg)
 
   /* Check the preferred address is IPv6 if we prefer it and
    * ClientUseIPv6 is 1, regardless of ClientUseIPv4 */
-  mocked_options.ClientUseIPv4 = 1;
-  mocked_options.ClientUseIPv6 = 1;
+  mocked_options->ClientUseIPv4 = 1;
+  mocked_options->ClientUseIPv6 = 1;
   node.ipv6_preferred = 1;
   node_get_pref_orport(&node, &ap);
   tt_assert(tor_addr_eq(&ap.addr, &ipv6_addr));
   tt_assert(ap.port == ipv6_port);
 
-  mocked_options.ClientUseIPv4 = 0;
+  mocked_options->ClientUseIPv4 = 0;
   node_get_pref_orport(&node, &ap);
   tt_assert(tor_addr_eq(&ap.addr, &ipv6_addr));
   tt_assert(ap.port == ipv6_port);
 
   /* Check the preferred address is IPv6 if we don't prefer it, but
    * ClientUseIPv4 is 0 */
-  mocked_options.ClientUseIPv4 = 0;
-  mocked_options.ClientUseIPv6 = 1;
-  node.ipv6_preferred = fascist_firewall_prefer_ipv6_orport(&mocked_options);
+  mocked_options->ClientUseIPv4 = 0;
+  mocked_options->ClientUseIPv6 = 1;
+  node.ipv6_preferred = fascist_firewall_prefer_ipv6_orport(mocked_options);
   node_get_pref_orport(&node, &ap);
   tt_assert(tor_addr_eq(&ap.addr, &ipv6_addr));
   tt_assert(ap.port == ipv6_port);
 
  done:
+  or_options_free(mocked_options);
   UNMOCK(get_options);
 }
 
@@ -3039,13 +3050,17 @@ static const struct testcase_setup_t upgrade_circuits = {
 
 #define BFN_TEST(name) \
   EN_TEST_BASE(name, TT_FORK, &big_fake_network, NULL), \
-  { #name "_reasonably_live", test_entry_guard_ ## name, TT_FORK, \
-    &big_fake_network, (void*)("reasonably-live") }
+  { #name "_reasonably_future", test_entry_guard_ ## name, TT_FORK, \
+    &big_fake_network, (void*)(REASONABLY_FUTURE) }, \
+  { #name "_reasonably_past", test_entry_guard_ ## name, TT_FORK, \
+    &big_fake_network, (void*)(REASONABLY_PAST) }
 
 #define UPGRADE_TEST(name, arg) \
   EN_TEST_BASE(name, TT_FORK, &upgrade_circuits, arg), \
-  { #name "_reasonably_live", test_entry_guard_ ## name, TT_FORK, \
-    &upgrade_circuits, (void*)(arg " reasonably-live") }
+  { #name "_reasonably_future", test_entry_guard_ ## name, TT_FORK, \
+    &upgrade_circuits, (void*)(arg REASONABLY_FUTURE) }, \
+  { #name "_reasonably_past", test_entry_guard_ ## name, TT_FORK, \
+    &upgrade_circuits, (void*)(arg REASONABLY_PAST) }
 
 struct testcase_t entrynodes_tests[] = {
   NO_PREFIX_TEST(node_preferred_orport),

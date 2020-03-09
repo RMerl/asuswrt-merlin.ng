@@ -7,6 +7,7 @@
 #define TOR_X509_PRIVATE
 #include "lib/tls/x509.h"
 #include "lib/tls/x509_internal.h"
+#include "lib/tls/tortls_sys.h"
 #include "lib/tls/tortls.h"
 #include "lib/tls/tortls_st.h"
 #include "lib/tls/tortls_internal.h"
@@ -15,6 +16,7 @@
 #include "lib/crypt_ops/crypto_rsa.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/net/socket.h"
+#include "lib/subsys/subsys.h"
 
 #ifdef _WIN32
   #include <winsock2.h>
@@ -440,3 +442,15 @@ tor_tls_verify(int severity, tor_tls_t *tls, crypto_pk_t **identity)
 
   return rv;
 }
+
+static void
+subsys_tortls_shutdown(void)
+{
+  tor_tls_free_all();
+}
+
+const subsys_fns_t sys_tortls = {
+  .name = "tortls",
+  .level = -50,
+  .shutdown = subsys_tortls_shutdown
+};

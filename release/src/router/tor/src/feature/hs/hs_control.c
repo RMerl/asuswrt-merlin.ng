@@ -7,9 +7,10 @@
  **/
 
 #include "core/or/or.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "lib/crypt_ops/crypto_format.h"
 #include "lib/crypt_ops/crypto_util.h"
+#include "feature/hs/hs_client.h"
 #include "feature/hs/hs_common.h"
 #include "feature/hs/hs_control.h"
 #include "feature/hs/hs_descriptor.h"
@@ -73,10 +74,7 @@ hs_control_desc_event_failed(const hs_ident_dir_conn_t *ident,
   tor_assert(reason);
 
   /* Build onion address and encoded blinded key. */
-  IF_BUG_ONCE(ed25519_public_to_base64(base64_blinded_pk,
-                                       &ident->blinded_pk) < 0) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, &ident->blinded_pk);
   hs_build_address(&ident->identity_pk, HS_VERSION_THREE, onion_address);
 
   control_event_hsv3_descriptor_failed(onion_address, base64_blinded_pk,
@@ -98,10 +96,7 @@ hs_control_desc_event_received(const hs_ident_dir_conn_t *ident,
   tor_assert(hsdir_id_digest);
 
   /* Build onion address and encoded blinded key. */
-  IF_BUG_ONCE(ed25519_public_to_base64(base64_blinded_pk,
-                                       &ident->blinded_pk) < 0) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, &ident->blinded_pk);
   hs_build_address(&ident->identity_pk, HS_VERSION_THREE, onion_address);
 
   control_event_hsv3_descriptor_received(onion_address, base64_blinded_pk,
@@ -122,9 +117,7 @@ hs_control_desc_event_created(const char *onion_address,
   tor_assert(blinded_pk);
 
   /* Build base64 encoded blinded key. */
-  IF_BUG_ONCE(ed25519_public_to_base64(base64_blinded_pk, blinded_pk) < 0) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, blinded_pk);
 
   /* Version 3 doesn't use the replica number in its descriptor ID computation
    * so we pass negative value so the control port subsystem can ignore it. */
@@ -150,9 +143,7 @@ hs_control_desc_event_upload(const char *onion_address,
   tor_assert(hsdir_index);
 
   /* Build base64 encoded blinded key. */
-  IF_BUG_ONCE(ed25519_public_to_base64(base64_blinded_pk, blinded_pk) < 0) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, blinded_pk);
 
   control_event_hs_descriptor_upload(onion_address, hsdir_id_digest,
                                      base64_blinded_pk,
@@ -195,10 +186,7 @@ hs_control_desc_event_content(const hs_ident_dir_conn_t *ident,
   tor_assert(hsdir_id_digest);
 
   /* Build onion address and encoded blinded key. */
-  IF_BUG_ONCE(ed25519_public_to_base64(base64_blinded_pk,
-                                       &ident->blinded_pk) < 0) {
-    return;
-  }
+  ed25519_public_to_base64(base64_blinded_pk, &ident->blinded_pk);
   hs_build_address(&ident->identity_pk, HS_VERSION_THREE, onion_address);
 
   control_event_hs_descriptor_content(onion_address, base64_blinded_pk,
@@ -258,4 +246,17 @@ hs_control_hspost_command(const char *body, const char *onion_address,
   /* We don't have ownership of the objects in this list. */
   smartlist_free(hsdirs);
   return ret;
+}
+
+/* With a given <b>onion_identity_pk</b>, fetch its descriptor, optionally
+ * using the list of directory servers given in <b>hsdirs</b>, or a random
+ * server if it is NULL. This function calls hs_client_launch_v3_desc_fetch().
+ */
+void
+hs_control_hsfetch_command(const ed25519_public_key_t *onion_identity_pk,
+                           const smartlist_t *hsdirs)
+{
+  tor_assert(onion_identity_pk);
+
+  hs_client_launch_v3_desc_fetch(onion_identity_pk, hsdirs);
 }

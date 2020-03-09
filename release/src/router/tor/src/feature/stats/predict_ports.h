@@ -27,4 +27,4 @@ int rep_hist_circbuilding_dormant(time_t now);
 int predicted_ports_prediction_time_remaining(time_t now);
 void predicted_ports_free_all(void);
 
-#endif
+#endif /* !defined(TOR_PREDICT_PORTS_H) */

@@ -24,4 +24,4 @@
 /** Length of the output of our 64-bit optimized message digests (SHA512). */
 #define DIGEST512_LEN 64
 
-#endif
+#endif /* !defined(TOR_DIGEST_SIZES_H) */

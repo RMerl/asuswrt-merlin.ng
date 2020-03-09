@@ -20,4 +20,4 @@ char *esc_for_log(const char *string) ATTR_MALLOC;
 char *esc_for_log_len(const char *chars, size_t n) ATTR_MALLOC;
 const char *escaped(const char *string);
 
-#endif /* !defined(TOR_TORLOG_H) */
+#endif /* !defined(TOR_ESCAPE_H) */

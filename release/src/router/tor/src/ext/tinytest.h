@@ -72,6 +72,9 @@ struct testlist_alias_t {
 };
 #define END_OF_ALIASES { NULL, NULL }
 
+/** Return true iff the current test has failed. */
+int tinytest_cur_test_has_failed(void);
+
 /** Implementation: called from a test to indicate failure, before logging. */
 void tinytest_set_test_failed_(void);
 /** Implementation: called from a test to indicate that we're skipping. */

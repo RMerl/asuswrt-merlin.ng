@@ -234,6 +234,7 @@ free_cached_dir_(void *_d)
  * validation is performed. */
 void
 dirserv_set_cached_consensus_networkstatus(const char *networkstatus,
+                                           size_t networkstatus_len,
                                            const char *flavor_name,
                                            const common_digests_t *digests,
                                            const uint8_t *sha3_as_signed,
@@ -244,7 +245,9 @@ dirserv_set_cached_consensus_networkstatus(const char *networkstatus,
   if (!cached_consensuses)
     cached_consensuses = strmap_new();
 
-  new_networkstatus = new_cached_dir(tor_strdup(networkstatus), published);
+  new_networkstatus =
+    new_cached_dir(tor_memdup_nulterm(networkstatus, networkstatus_len),
+                   published);
   memcpy(&new_networkstatus->digests, digests, sizeof(common_digests_t));
   memcpy(&new_networkstatus->digest_sha3_as_signed, sha3_as_signed,
          DIGEST256_LEN);
@@ -580,11 +583,9 @@ spooled_resource_flush_some(spooled_resource_t *spooled,
       /* Absent objects count as "done". */
       return SRFS_DONE;
     }
-    if (conn->compress_state) {
-      connection_buf_add_compress((const char*)body, bodylen, conn, 0);
-    } else {
-      connection_buf_add((const char*)body, bodylen, TO_CONN(conn));
-    }
+
+    connection_dir_buf_add((const char*)body, bodylen, conn, 0);
+
     return SRFS_DONE;
   } else {
     cached_dir_t *cached = spooled->cached_dir_ref;
@@ -619,14 +620,10 @@ spooled_resource_flush_some(spooled_resource_t *spooled,
     if (BUG(remaining < 0))
       return SRFS_ERR;
     ssize_t bytes = (ssize_t) MIN(DIRSERV_CACHED_DIR_CHUNK_SIZE, remaining);
-    if (conn->compress_state) {
-      connection_buf_add_compress(
-              ptr + spooled->cached_dir_offset,
-              bytes, conn, 0);
-    } else {
-      connection_buf_add(ptr + spooled->cached_dir_offset,
-                              bytes, TO_CONN(conn));
-    }
+
+    connection_dir_buf_add(ptr + spooled->cached_dir_offset,
+                           bytes, conn, 0);
+
     spooled->cached_dir_offset += bytes;
     if (spooled->cached_dir_offset >= (off_t)total_len) {
       return SRFS_DONE;

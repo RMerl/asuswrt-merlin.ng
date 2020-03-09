@@ -12,6 +12,7 @@
 #include "orconfig.h"
 #include "core/or/or.h"
 #include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "app/config/config.h"
 #include "lib/crypt_ops/crypto_dh.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
@@ -25,6 +26,8 @@
 #include "lib/compress/compress.h"
 #include "lib/evloop/compat_libevent.h"
 #include "lib/crypt_ops/crypto_init.h"
+#include "lib/version/torversion.h"
+#include "app/main/subsysmgr.h"
 
 #include <stdio.h>
 #ifdef HAVE_FCNTL_H
@@ -86,7 +89,7 @@ setup_directory(void)
                  (int)getpid(), rnd32);
     r = mkdir(temp_dir);
   }
-#else /* !(defined(_WIN32)) */
+#else /* !defined(_WIN32) */
   tor_snprintf(temp_dir, sizeof(temp_dir), "/tmp/tor_test_%d_%s",
                (int) getpid(), rnd32);
   r = mkdir(temp_dir, 0700);
@@ -230,17 +233,17 @@ void
 tinytest_prefork(void)
 {
   free_pregenerated_keys();
-  crypto_prefork();
+  subsystems_prefork();
 }
 void
 tinytest_postfork(void)
 {
-  crypto_postfork();
+  subsystems_postfork();
   init_pregenerated_keys();
 }
 
 static void
-log_callback_failure(int severity, uint32_t domain, const char *msg)
+log_callback_failure(int severity, log_domain_mask_t domain, const char *msg)
 {
   (void)msg;
   if (severity == LOG_ERR || (domain & LD_BUG)) {
@@ -259,24 +262,15 @@ main(int c, const char **v)
   int loglevel = LOG_ERR;
   int accel_crypto = 0;
 
-  /* We must initialise logs before we call tor_assert() */
-  init_logging(1);
+  subsystems_init_upto(SUBSYS_LEVEL_LIBS);
 
-  update_approx_time(time(NULL));
   options = options_new();
-  tor_threads_init();
-  tor_compress_init();
-
-  network_init();
-
-  monotime_init();
 
   struct tor_libevent_cfg cfg;
   memset(&cfg, 0, sizeof(cfg));
   tor_libevent_initialize(&cfg);
 
   control_initialize_event_queue();
-  configure_backtrace_handler(get_version());
 
   for (i_out = i = 1; i < c; ++i) {
     if (!strcmp(v[i], "--warn")) {
@@ -301,7 +295,7 @@ main(int c, const char **v)
     memset(&s, 0, sizeof(s));
     set_log_severity_config(loglevel, LOG_ERR, &s);
     /* ALWAYS log bug warnings. */
-    s.masks[LOG_WARN-LOG_ERR] |= LD_BUG;
+    s.masks[SEVERITY_MASK_IDX(LOG_WARN)] |= LD_BUG;
     add_stream_log(&s, "", fileno(stdout));
   }
   {
@@ -309,9 +303,10 @@ main(int c, const char **v)
     log_severity_list_t s;
     memset(&s, 0, sizeof(s));
     set_log_severity_config(LOG_ERR, LOG_ERR, &s);
-    s.masks[LOG_WARN-LOG_ERR] |= LD_BUG;
+    s.masks[SEVERITY_MASK_IDX(LOG_WARN)] |= LD_BUG;
     add_callback_log(&s, log_callback_failure);
   }
+  flush_log_messages_from_startup();
   init_protocol_warning_severity_level();
 
   options->command = CMD_RUN_UNITTESTS;
@@ -351,8 +346,6 @@ main(int c, const char **v)
   int have_failed = (tinytest_main(c, v, testgroups) != 0);
 
   free_pregenerated_keys();
-
-  crypto_global_cleanup();
 
   if (have_failed)
     return 1;

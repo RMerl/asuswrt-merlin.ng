@@ -492,6 +492,12 @@ tinytest_set_test_skipped_(void)
 		cur_test_outcome = SKIP;
 }
 
+int
+tinytest_cur_test_has_failed(void)
+{
+	return (cur_test_outcome == FAIL);
+}
+
 char *
 tinytest_format_hex_(const void *val_, unsigned long len)
 {

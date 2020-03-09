@@ -626,7 +626,7 @@ static void save_speedjs(long next)
 	FILE *f;
 	uint64_t total;
 	uint64_t tmax;
-	unsigned long n;
+	unsigned long long n;
 	char c;
 
 	if ((f = fopen("/var/tmp/rstats-speed.js", "w")) == NULL) return;
@@ -645,7 +645,7 @@ static void save_speedjs(long next)
 			for (k = 0; k < MAX_NSPEED; ++k) {
 				p = (p + 1) % MAX_NSPEED;
 				n = sp->speed[p][j];
-				fprintf(f, "%s%lu", k ? "," : "", n);
+				fprintf(f, "%s%llu", k ? "," : "", n);
 				total += n;
 				if (n > tmax) tmax = n;
 			}
@@ -848,8 +848,8 @@ static void calc(void)
 	time_t now;
 	time_t mon;
 	struct tm *tms;
-	uint32_t c;
-	uint32_t sc;
+	unsigned long long c;
+	unsigned long long sc;
 	unsigned long long diff;
 	long tick;
 	int n;
@@ -967,15 +967,15 @@ static void calc(void)
 				vlan_tx += counter[1];
 			}
 			if(strncmp(ifname, "eth0", 4)==0){
-				if(counter[0]>vlan_rx) {
+				if(counter[0]>=vlan_rx) {
 					counter[0] -= vlan_rx;
 				} else {
-					counter[0] = counter[0] + 0xffffffff - vlan_rx;
+					counter[0] = counter[0] + (~0ULL - vlan_rx + 1);
 				}
-				if(counter[1]>vlan_tx) {
+				if(counter[1]>=vlan_tx) {
 					counter[1] -= vlan_tx;
 				} else {
-					counter[1] = counter[1] + 0xffffffff - vlan_tx;
+					counter[1] = counter[1] + (~0ULL - vlan_tx + 1);
 				}
 			}
 		}
@@ -983,7 +983,7 @@ static void calc(void)
 /* retrieve vlan-if counters again for bcm5301x case */
 #if defined(RTCONFIG_BCM5301X_TRAFFIC_MONITOR)
 		if(strncmp(ifname, "vlan", 4)==0){
-			traffic_wanlan(ifname, &counter[0], &counter[1]);
+			traffic_wanlan(ifname, (uint32_t*) &counter[0], (uint32_t*) &counter[1]);
 		}
 #endif
 
@@ -1110,7 +1110,7 @@ loopagain:
 				c = tmp->counter[i];
 				sc = sp->last[i];
 				if (c < sc) {
-					diff = (0xFFFFFFFF - sc + 1) + c;
+					diff = ((~0ULL) - sc + 1) + c;
 					if (diff > MAX_ROLLOVER) diff = 0;
 				}
 				else {

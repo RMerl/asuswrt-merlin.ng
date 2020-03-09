@@ -36,4 +36,7 @@
     ((v) > (max)) ? (max) :                     \
     (v) )
 
+/** Give the absolute value of <b>x</b>, independent of its type. */
+#define ABS(x) ( ((x)<0) ? -(x) : (x) )
+
 #endif /* !defined(TOR_INTMATH_CMP_H) */

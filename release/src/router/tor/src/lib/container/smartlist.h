@@ -13,6 +13,7 @@
  **/
 
 #include <stdarg.h>
+#include <stddef.h>
 
 #include "lib/smartlist_core/smartlist_core.h"
 #include "lib/smartlist_core/smartlist_foreach.h"
@@ -72,18 +73,18 @@ int smartlist_bsearch_idx(const smartlist_t *sl, const void *key,
 
 void smartlist_pqueue_add(smartlist_t *sl,
                           int (*compare)(const void *a, const void *b),
-                          int idx_field_offset,
+                          ptrdiff_t idx_field_offset,
                           void *item);
 void *smartlist_pqueue_pop(smartlist_t *sl,
                            int (*compare)(const void *a, const void *b),
-                           int idx_field_offset);
+                           ptrdiff_t idx_field_offset);
 void smartlist_pqueue_remove(smartlist_t *sl,
                              int (*compare)(const void *a, const void *b),
-                             int idx_field_offset,
+                             ptrdiff_t idx_field_offset,
                              void *item);
 void smartlist_pqueue_assert_ok(smartlist_t *sl,
                                 int (*compare)(const void *a, const void *b),
-                                int idx_field_offset);
+                                ptrdiff_t idx_field_offset);
 
 char *smartlist_join_strings(smartlist_t *sl, const char *join, int terminate,
                              size_t *len_out) ATTR_MALLOC;
@@ -165,4 +166,4 @@ char *smartlist_join_strings2(smartlist_t *sl, const char *join,
   }                                             \
   STMT_END
 
-#endif /* !defined(TOR_CONTAINER_H) */
+#endif /* !defined(TOR_SMARTLIST_H) */

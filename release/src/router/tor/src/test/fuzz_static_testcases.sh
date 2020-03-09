@@ -14,7 +14,7 @@ fi
 
 
 for fuzzer in "${builddir:-.}"/src/test/fuzz/fuzz-* ; do
-    f=`basename $fuzzer`
+    f=$(basename "$fuzzer")
     case="${f#fuzz-}"
     if [ -d "${TOR_FUZZ_CORPORA}/${case}" ]; then
         echo "Running tests for ${case}"

@@ -11,6 +11,7 @@ else
 mulodi4_source=
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_ctime_a_SOURCES =			\
 	$(mulodi4_source) 				\
 	src/ext/csiphash.c   				\
@@ -21,5 +22,6 @@ src_lib_libtor_ctime_testing_a_SOURCES = \
 src_lib_libtor_ctime_a_CFLAGS = @CFLAGS_CONSTTIME@
 src_lib_libtor_ctime_testing_a_CFLAGS = @CFLAGS_CONSTTIME@ $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS += \
 	src/lib/ctime/di_ops.h

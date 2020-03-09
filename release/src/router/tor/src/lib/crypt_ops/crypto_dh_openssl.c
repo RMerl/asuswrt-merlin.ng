@@ -34,7 +34,7 @@ static int tor_check_dh_key(int severity, const BIGNUM *bn);
 struct crypto_dh_t {
   DH *dh; /**< The openssl DH object */
 };
-#endif
+#endif /* !defined(ENABLE_NSS) */
 
 static DH *new_openssl_dh_from_params(BIGNUM *p, BIGNUM *g);
 
@@ -68,7 +68,7 @@ crypto_validate_dh_params(const BIGNUM *p, const BIGNUM *g)
     goto out;
   if (!DH_set0_pqg(dh, dh_p, NULL, dh_g))
     goto out;
-#else /* !(defined(OPENSSL_1_1_API)) */
+#else /* !defined(OPENSSL_1_1_API) */
   if (!(dh->p = BN_dup(p)))
     goto out;
   if (!(dh->g = BN_dup(g)))
@@ -100,7 +100,7 @@ crypto_validate_dh_params(const BIGNUM *p, const BIGNUM *g)
     DH_free(dh);
   return ret;
 }
-#endif
+#endif /* 0 */
 
 /**
  * Helper: convert <b>hex<b> to a bignum, and return it.  Assert that the
@@ -202,7 +202,7 @@ crypto_dh_new(int dh_type)
     tor_free(res); // sets res to NULL.
   return res;
 }
-#endif
+#endif /* !defined(ENABLE_NSS) */
 
 /** Create and return a new openssl DH from a given prime and generator. */
 static DH *
@@ -231,7 +231,7 @@ new_openssl_dh_from_params(BIGNUM *p, BIGNUM *g)
 
   if (!DH_set_length(res_dh, DH_PRIVATE_KEY_BITS))
     goto err;
-#else /* !(defined(OPENSSL_1_1_API)) */
+#else /* !defined(OPENSSL_1_1_API) */
   res_dh->p = dh_p;
   res_dh->g = dh_g;
   res_dh->length = DH_PRIVATE_KEY_BITS;
@@ -298,7 +298,7 @@ crypto_dh_generate_public(crypto_dh_t *dh)
              "the-universe chances really do happen.  Treating as a failure.");
     return -1;
   }
-#else /* !(defined(OPENSSL_1_1_API)) */
+#else /* !defined(OPENSSL_1_1_API) */
   if (tor_check_dh_key(LOG_WARN, dh->dh->pub_key)<0) {
     /* LCOV_EXCL_START
      * If this happens, then openssl's DH implementation is busted. */
@@ -461,7 +461,7 @@ crypto_dh_free_(crypto_dh_t *dh)
   DH_free(dh->dh);
   tor_free(dh);
 }
-#endif
+#endif /* !defined(ENABLE_NSS) */
 
 void
 crypto_dh_free_all_openssl(void)

@@ -303,7 +303,7 @@ tor_process_monitor_poll_cb(periodic_timer_t *event, void *procmon_)
       tor_free(errmsg);
     }
   }
-#else /* !(defined(_WIN32)) */
+#else /* !defined(_WIN32) */
   /* Unix makes this part easy, if a bit racy. */
   its_dead_jim = kill(procmon->pid, 0);
   its_dead_jim = its_dead_jim && (errno == ESRCH);

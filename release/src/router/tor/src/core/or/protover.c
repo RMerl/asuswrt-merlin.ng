@@ -39,6 +39,9 @@ static int protocol_list_contains(const smartlist_t *protos,
 static const struct {
   protocol_type_t protover_type;
   const char *name;
+/* If you add a new protocol here, you probably also want to add
+ * parsing for it in routerstatus_parse_entry_from_string() so that
+ * it is set in routerstatus_t */
 } PROTOCOL_NAMES[] = {
   { PRT_LINK, "Link" },
   { PRT_LINKAUTH, "LinkAuth" },
@@ -49,7 +52,9 @@ static const struct {
   { PRT_HSREND, "HSRend" },
   { PRT_DESC, "Desc" },
   { PRT_MICRODESC, "Microdesc"},
-  { PRT_CONS, "Cons" }
+  { PRT_PADDING, "Padding"},
+  { PRT_CONS, "Cons" },
+  { PRT_FLOWCTRL, "FlowCtrl"},
 };
 
 #define N_PROTOCOL_NAMES ARRAY_LENGTH(PROTOCOL_NAMES)
@@ -387,7 +392,7 @@ protover_get_supported_protocols(void)
     "Desc=1-2 "
     "DirCache=1-2 "
     "HSDir=1-2 "
-    "HSIntro=3-4 "
+    "HSIntro=3-5 "
     "HSRend=1-2 "
     "Link=1-5 "
 #ifdef HAVE_WORKING_TOR_TLS_GET_TLSSECRETS
@@ -396,7 +401,9 @@ protover_get_supported_protocols(void)
     "LinkAuth=3 "
 #endif
     "Microdesc=1-2 "
-    "Relay=1-2";
+    "Relay=1-2 "
+    "Padding=2 "
+    "FlowCtrl=1";
 }
 
 /** The protocols from protover_get_supported_protocols(), as parsed into a
@@ -815,6 +822,8 @@ protover_all_supported(const char *s, char **missing_out)
        * ones and, if so, add them to unsupported->ranges. */
       if (versions->low != 0 && versions->high != 0) {
         smartlist_add(unsupported->ranges, versions);
+      } else {
+        tor_free(versions);
       }
       /* Finally, if we had something unsupported, add it to the list of
        * missing_some things and mark that there was something missing. */
@@ -823,7 +832,6 @@ protover_all_supported(const char *s, char **missing_out)
         all_supported = 0;
       } else {
         proto_entry_free(unsupported);
-        tor_free(versions);
       }
     } SMARTLIST_FOREACH_END(range);
 

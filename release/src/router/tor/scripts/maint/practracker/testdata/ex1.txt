@@ -1,0 +1,18 @@
+
+problem file-size a.c 40
+problem include-count a.c 4
+# this problem will produce an error
+problem function-size a.c:i_am_a_function() 8
+# this problem will produce a warning
+problem function-size a.c:another_function() 11
+problem file-size b.c 15
+# This is removed, and so will produce an error.
+# problem function-size b.c:foo() 4
+# This exception isn't used.
+problem file-size z.c 100
+
+problem function-size b.c:bar() 5
+problem dependency-violation a.c 3
+problem dependency-violation header.h 3
+problem file-size header.h 8
+problem include-count header.h 4

@@ -38,4 +38,4 @@ struct vote_routerstatus_t {
   uint8_t ed25519_id[ED25519_PUBKEY_LEN];
 };
 
-#endif
+#endif /* !defined(VOTE_ROUTERSTATUS_ST_H) */

@@ -1765,7 +1765,7 @@ NS(node_get_by_nickname)(const char *nickname, unsigned flags)
  * Structural test for routerset_get_all_nodes, when the nodelist has no nodes.
  */
 
-NS_DECL(smartlist_t *, nodelist_get_list, (void));
+NS_DECL(const smartlist_t *, nodelist_get_list, (void));
 
 static smartlist_t *NS(mock_smartlist);
 
@@ -1795,7 +1795,7 @@ NS(test_main)(void *arg)
     ;
 }
 
-smartlist_t *
+const smartlist_t *
 NS(nodelist_get_list)(void)
 {
   CALLED(nodelist_get_list)++;
@@ -1811,7 +1811,7 @@ NS(nodelist_get_list)(void)
  * the running_only flag is set, but the nodes are not running.
  */
 
-NS_DECL(smartlist_t *, nodelist_get_list, (void));
+NS_DECL(const smartlist_t *, nodelist_get_list, (void));
 
 static smartlist_t *NS(mock_smartlist);
 static node_t NS(mock_node);
@@ -1844,7 +1844,7 @@ NS(test_main)(void *arg)
     ;
 }
 
-smartlist_t *
+const smartlist_t *
 NS(nodelist_get_list)(void)
 {
   CALLED(nodelist_get_list)++;

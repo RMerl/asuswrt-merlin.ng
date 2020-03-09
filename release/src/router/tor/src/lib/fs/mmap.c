@@ -237,4 +237,4 @@ tor_munmap_file(tor_mmap_t *handle)
 }
 #else
 #error "cannot implement tor_mmap_file"
-#endif /* defined(HAVE_MMAP) || ... || ... */
+#endif /* defined(HAVE_MMAP) || defined(RUNNING_DOXYGEN) || ... */

@@ -196,7 +196,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				free(buffer);
 				sprintf(result, "%d", freq);
 			}
-			else if (get_model() == MODEL_RTAX58U)
+			else if (get_model() == MODEL_RTAX58U || get_model() == MODEL_RTAX56U)
 				strcpy(result, "1500");
 			else
 #endif

@@ -23,6 +23,7 @@
 #include "feature/nodelist/dirlist.h"
 #include "feature/nodelist/microdesc.h"
 #include "feature/nodelist/networkstatus.h"
+#include "feature/nodelist/nodefamily.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerlist.h"
 #include "feature/relay/router.h"
@@ -69,6 +70,8 @@ struct microdesc_cache_t {
 };
 
 static microdesc_cache_t *get_microdesc_cache_noload(void);
+static void warn_if_nul_found(const char *inp, size_t len, int64_t offset,
+                              const char *activity);
 
 /** Helper: computes a hash of <b>md</b> to place it in a hash table. */
 static inline unsigned int
@@ -110,8 +113,9 @@ microdesc_note_outdated_dirserver(const char *relay_digest)
 
   /* If we have a reasonably live consensus, then most of our dirservers should
    * still be caching all the microdescriptors in it. Reasonably live
-   * consensuses are up to a day old. But microdescriptors expire 7 days after
-   * the last consensus that referenced them. */
+   * consensuses are up to a day old (or a day in the future). But
+   * microdescriptors expire 7 days after the last consensus that referenced
+   * them. */
   if (!networkstatus_get_reasonably_live_consensus(approx_time(),
                                                    FLAV_MICRODESC)) {
     return;
@@ -221,6 +225,8 @@ dump_microdescriptor(int fd, microdesc_t *md, size_t *annotation_len_out)
   }
 
   md->off = tor_fd_getpos(fd);
+  warn_if_nul_found(md->body, md->bodylen, (int64_t) md->off,
+                    "dumping a microdescriptor");
   written = write_all_to_fd(fd, md->body, md->bodylen);
   if (written != (ssize_t)md->bodylen) {
     written = written < 0 ? 0 : written;
@@ -480,6 +486,27 @@ microdesc_cache_clear(microdesc_cache_t *cache)
   cache->bytes_dropped = 0;
 }
 
+static void
+warn_if_nul_found(const char *inp, size_t len, int64_t offset,
+                  const char *activity)
+{
+  const char *nul_found = memchr(inp, 0, len);
+  if (BUG(nul_found)) {
+    log_warn(LD_BUG, "Found unexpected NUL while %s, offset %"PRId64
+             "at position %"TOR_PRIuSZ"/%"TOR_PRIuSZ".",
+             activity, offset, (nul_found - inp), len);
+    const char *start_excerpt_at, *eos = inp + len;
+    if ((nul_found - inp) >= 16)
+      start_excerpt_at = nul_found - 16;
+    else
+      start_excerpt_at = inp;
+    size_t excerpt_len = MIN(32, eos - start_excerpt_at);
+    char tmp[65];
+    base16_encode(tmp, sizeof(tmp), start_excerpt_at, excerpt_len);
+    log_warn(LD_BUG, "      surrounding string: %s", tmp);
+  }
+}
+
 /** Reload the contents of <b>cache</b> from disk.  If it is empty, load it
  * for the first time.  Return 0 on success, -1 on failure. */
 int
@@ -497,6 +524,7 @@ microdesc_cache_reload(microdesc_cache_t *cache)
 
   mm = cache->cache_content = tor_mmap_file(cache->cache_fname);
   if (mm) {
+    warn_if_nul_found(mm->data, mm->size, 0, "scanning microdesc cache");
     added = microdescs_add_to_cache(cache, mm->data, mm->data+mm->size,
                                     SAVED_IN_CACHE, 0, -1, NULL);
     if (added) {
@@ -508,7 +536,9 @@ microdesc_cache_reload(microdesc_cache_t *cache)
   journal_content = read_file_to_str(cache->journal_fname,
                                      RFTS_IGNORE_MISSING, &st);
   if (journal_content) {
-    cache->journal_len = (size_t) st.st_size;
+    cache->journal_len = strlen(journal_content);
+    warn_if_nul_found(journal_content, (size_t)st.st_size, 0,
+                      "reading microdesc journal");
     added = microdescs_add_to_cache(cache, journal_content,
                                     journal_content+st.st_size,
                                     SAVED_IN_JOURNAL, 0, -1, NULL);
@@ -544,8 +574,8 @@ microdesc_cache_clean(microdesc_cache_t *cache, time_t cutoff, int force)
   size_t bytes_dropped = 0;
   time_t now = time(NULL);
 
-  /* If we don't know a live consensus, don't believe last_listed values: we
-   * might be starting up after being down for a while. */
+  /* If we don't know a reasonably live consensus, don't believe last_listed
+   * values: we might be starting up after being down for a while. */
   if (! force &&
       ! networkstatus_get_reasonably_live_consensus(now, FLAV_MICRODESC))
       return;
@@ -884,10 +914,7 @@ microdesc_free_(microdesc_t *md, const char *fname, int lineno)
   if (md->body && md->saved_location != SAVED_IN_CACHE)
     tor_free(md->body);
 
-  if (md->family) {
-    SMARTLIST_FOREACH(md->family, char *, cp, tor_free(cp));
-    smartlist_free(md->family);
-  }
+  nodefamily_free(md->family);
   short_policy_free(md->exit_policy);
   short_policy_free(md->ipv6_exit_policy);
 
@@ -943,7 +970,7 @@ microdesc_list_missing_digest256(networkstatus_t *ns, microdesc_cache_t *cache,
       continue;
     if (skip && digest256map_get(skip, (const uint8_t*)rs->descriptor_digest))
       continue;
-    if (tor_mem_is_zero(rs->descriptor_digest, DIGEST256_LEN))
+    if (fast_mem_is_zero(rs->descriptor_digest, DIGEST256_LEN))
       continue;
     /* XXXX Also skip if we're a noncache and wouldn't use this router.
      * XXXX NM Microdesc
@@ -973,6 +1000,7 @@ update_microdesc_downloads(time_t now)
   if (directory_too_idle_to_fetch_descriptors(options, now))
     return;
 
+  /* Give up if we don't have a reasonably live consensus. */
   consensus = networkstatus_get_reasonably_live_consensus(now, FLAV_MICRODESC);
   if (!consensus)
     return;

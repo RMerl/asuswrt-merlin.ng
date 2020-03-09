@@ -35,7 +35,7 @@ struct tor_x509_cert_t {
   common_digests_t cert_digests;
   common_digests_t pkey_digests;
 };
-#endif
+#endif /* defined(TOR_X509_PRIVATE) */
 
 void tor_tls_pick_certificate_lifetime(time_t now,
                                        unsigned cert_lifetime,
@@ -47,7 +47,7 @@ tor_x509_cert_t *tor_x509_cert_replace_expiration(
                                                const tor_x509_cert_t *inp,
                                                time_t new_expiration_time,
                                                crypto_pk_t *signing_key);
-#endif
+#endif /* defined(TOR_UNIT_TESTS) */
 
 tor_x509_cert_t *tor_x509_cert_dup(const tor_x509_cert_t *cert);
 
@@ -72,4 +72,4 @@ int tor_tls_cert_is_valid(int severity,
                           time_t now,
                           int check_rsa_1024);
 
-#endif
+#endif /* !defined(TOR_X509_H) */

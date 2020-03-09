@@ -109,7 +109,7 @@ run_s2k_tests(const unsigned flags, const unsigned type,
             secret_to_key_derivekey(buf3, sizeof(buf3), buf, speclen,
                                     pw1, strlen(pw1)));
   tt_mem_op(buf2, OP_EQ, buf3, sizeof(buf3));
-  tt_assert(!tor_mem_is_zero((char*)buf2+keylen, sizeof(buf2)-keylen));
+  tt_assert(!fast_mem_is_zero((char*)buf2+keylen, sizeof(buf2)-keylen));
 
  done:
   ;

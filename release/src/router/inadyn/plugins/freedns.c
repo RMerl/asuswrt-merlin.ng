@@ -77,12 +77,8 @@ static char *fetch_keys(ddns_t *ctx, ddns_info_t *info)
 	snprintf(buffer, sizeof(buffer), "%s|%s",
 		 info->creds.username, info->creds.password);
 	sha1((unsigned char *)buffer, strlen(buffer), digestbuf);
-	for (i = 0; i < SHA1_DIGEST_BYTES; i++) {
-		char hex[3];
-
-		snprintf(hex, sizeof(hex), "%02x", digestbuf[i]);
-		strlcat(digeststr, hex, sizeof(digeststr));
-	}
+	for (i = 0; i < SHA1_DIGEST_BYTES; i++)
+		sprintf(&digeststr[i * 2], "%02x", digestbuf[i]);
 
 	snprintf(buffer, sizeof(buffer), "/api/?action=getdyndns&v=2&sha=%s", digeststr);
 	trans.req_len     = snprintf(ctx->request_buf, ctx->request_buflen, GENERIC_HTTP_REQUEST,

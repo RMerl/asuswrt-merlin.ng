@@ -30,5 +30,5 @@ typedef struct half_edge_t {
   int connected_pending : 1;
 } half_edge_t;
 
-#endif
+#endif /* !defined(HALF_EDGE_ST_H) */
 

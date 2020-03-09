@@ -42,6 +42,7 @@ int connection_edge_package_raw_inbuf(edge_connection_t *conn,
                                       int package_partial,
                                       int *max_cells);
 void connection_edge_consider_sending_sendme(edge_connection_t *conn);
+void circuit_reset_sendme_randomness(circuit_t *circ);
 
 extern uint64_t stats_n_data_cells_packaged;
 extern uint64_t stats_n_data_bytes_packaged;
@@ -78,6 +79,11 @@ void destroy_cell_queue_append(destroy_cell_queue_t *queue,
 void channel_unlink_all_circuits(channel_t *chan, smartlist_t *detached_out);
 MOCK_DECL(int, channel_flush_from_first_active_circuit,
           (channel_t *chan, int max));
+MOCK_DECL(int, circuit_package_relay_cell, (cell_t *cell, circuit_t *circ,
+                           cell_direction_t cell_direction,
+                           crypt_path_t *layer_hint, streamid_t on_stream,
+                           const char *filename, int lineno));
+
 void update_circuit_on_cmux_(circuit_t *circ, cell_direction_t direction,
                              const char *file, int lineno);
 #define update_circuit_on_cmux(circ, direction) \
@@ -89,11 +95,15 @@ const uint8_t *decode_address_from_payload(tor_addr_t *addr_out,
                                         int payload_len);
 void circuit_clear_cell_queue(circuit_t *circ, channel_t *chan);
 
-void stream_choice_seed_weak_rng(void);
-
 circid_t packed_cell_get_circid(const packed_cell_t *cell, int wide_circ_ids);
+uint8_t packed_cell_get_command(const packed_cell_t *cell, int wide_circ_ids);
 
 #ifdef RELAY_PRIVATE
+STATIC int
+handle_relay_cell_command(cell_t *cell, circuit_t *circ,
+                     edge_connection_t *conn, crypt_path_t *layer_hint,
+                     relay_header_t *rh, int optimistic_data);
+
 STATIC int connected_cell_parse(const relay_header_t *rh, const cell_t *cell,
                          tor_addr_t *addr_out, int *ttl_out);
 /** An address-and-ttl tuple as yielded by resolved_cell_parse */
@@ -117,8 +127,11 @@ STATIC int cell_queues_check_size(void);
 STATIC int connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
                                    edge_connection_t *conn,
                                    crypt_path_t *layer_hint);
+STATIC size_t get_pad_cell_offset(size_t payload_len);
+STATIC size_t connection_edge_get_inbuf_bytes_to_package(size_t n_available,
+                                                      int package_partial,
+                                                      circuit_t *on_circuit);
 
 #endif /* defined(RELAY_PRIVATE) */
 
 #endif /* !defined(TOR_RELAY_H) */
-

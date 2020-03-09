@@ -23,5 +23,5 @@ struct destroy_cell_queue_t {
   int n; /**< The number of cells in the queue. */
 };
 
-#endif
+#endif /* !defined(DESTROY_CELL_QUEUE_ST_H) */
 

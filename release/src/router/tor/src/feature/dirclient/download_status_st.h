@@ -61,5 +61,5 @@ struct download_status_t {
                         * only updated if backoff == 1 */
 };
 
-#endif
+#endif /* !defined(DOWNLOAD_STATUS_ST_H) */
 

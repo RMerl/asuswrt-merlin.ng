@@ -51,4 +51,4 @@ struct dir_server_t {
                                **/
 };
 
-#endif
+#endif /* !defined(DIR_SERVER_ST_H) */

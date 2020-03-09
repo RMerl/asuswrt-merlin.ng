@@ -80,7 +80,8 @@ struct timeout_cb {
  * use 32-bit math. */
 #define WHEEL_BIT 5
 #endif
-#include "src/ext/timeouts/timeout.c"
+
+#include "ext/timeouts/timeout.c"
 
 static struct timeouts *global_timeouts = NULL;
 static struct mainloop_event_t *global_timer_event = NULL;

@@ -221,7 +221,7 @@ tor_lzma_compress_new(int compress,
   tor_free(result);
   return NULL;
  /* LCOV_EXCL_STOP */
-#else /* !(defined(HAVE_LZMA)) */
+#else /* !defined(HAVE_LZMA) */
   (void)compress;
   (void)method;
   (void)level;
@@ -312,7 +312,7 @@ tor_lzma_compress_process(tor_lzma_compress_state_t *state,
                lzma_error_str(retval));
       return TOR_COMPRESS_ERROR;
   }
-#else /* !(defined(HAVE_LZMA)) */
+#else /* !defined(HAVE_LZMA) */
   (void)state;
   (void)out;
   (void)out_len;

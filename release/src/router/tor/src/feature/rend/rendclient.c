@@ -17,7 +17,7 @@
 #include "core/or/connection_edge.h"
 #include "core/or/relay.h"
 #include "feature/client/circpathbias.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/dirclient/dirclient.h"
 #include "feature/dircommon/directory.h"
 #include "feature/hs/hs_circuit.h"
@@ -119,7 +119,7 @@ rend_client_send_introduction(origin_circuit_t *introcirc,
   char tmp[RELAY_PAYLOAD_SIZE];
   rend_cache_entry_t *entry = NULL;
   crypt_path_t *cpath;
-  off_t dh_offset;
+  ptrdiff_t dh_offset;
   crypto_pk_t *intro_key = NULL;
   int status = 0;
   const char *onion_address;
@@ -403,14 +403,23 @@ rend_client_introduction_acked(origin_circuit_t *circ,
     } else {
       log_info(LD_REND,"...Found no rend circ. Dropping on the floor.");
     }
+    /* Save the rend data digest to a temporary object so that we don't access
+     * it after we mark the circuit for close. */
+    const uint8_t *rend_digest_tmp = NULL;
+    size_t digest_len;
+    uint8_t *cached_rend_digest = NULL;
+    rend_digest_tmp = rend_data_get_pk_digest(circ->rend_data, &digest_len);
+    cached_rend_digest = tor_malloc_zero(digest_len);
+    memcpy(cached_rend_digest, rend_digest_tmp, digest_len);
+
     /* close the circuit: we won't need it anymore. */
     circuit_change_purpose(TO_CIRCUIT(circ),
                            CIRCUIT_PURPOSE_C_INTRODUCE_ACKED);
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_FINISHED);
 
     /* close any other intros launched in parallel */
-    rend_client_close_other_intros(rend_data_get_pk_digest(circ->rend_data,
-                                                           NULL));
+    rend_client_close_other_intros(cached_rend_digest);
+    tor_free(cached_rend_digest); /* free the temporary digest */
   } else {
     /* It's a NAK; the introduction point didn't relay our request. */
     circuit_change_purpose(TO_CIRCUIT(circ), CIRCUIT_PURPOSE_C_INTRODUCING);
@@ -469,16 +478,19 @@ directory_get_from_hs_dir(const char *desc_id,
 
   /* Automatically pick an hs dir if none given. */
   if (!rs_hsdir) {
+    bool rate_limited = false;
+
     /* Determine responsible dirs. Even if we can't get all we want, work with
      * the ones we have. If it's empty, we'll notice in hs_pick_hsdir(). */
     smartlist_t *responsible_dirs = smartlist_new();
     hid_serv_get_responsible_directories(responsible_dirs, desc_id);
 
-    hs_dir = hs_pick_hsdir(responsible_dirs, desc_id_base32);
+    hs_dir = hs_pick_hsdir(responsible_dirs, desc_id_base32, &rate_limited);
     if (!hs_dir) {
       /* No suitable hs dir can be found, stop right now. */
-      control_event_hsv2_descriptor_failed(rend_query, NULL,
-                                           "QUERY_NO_HSDIR");
+      const char *query_response = (rate_limited) ? "QUERY_RATE_LIMITED" :
+                                                    "QUERY_NO_HSDIR";
+      control_event_hsv2_descriptor_failed(rend_query, NULL, query_response);
       control_event_hs_descriptor_content(rend_data_get_address(rend_query),
                                           desc_id_base32, NULL, NULL);
       return 0;

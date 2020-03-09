@@ -44,13 +44,6 @@ typedef struct hs_ident_circuit_t {
    * the one found in the onion address. */
   ed25519_public_key_t identity_pk;
 
-  /* (All circuit) The type of circuit this identifier is attached to.
-   * Accessors of the fields in this object assert non fatal on this circuit
-   * type. In other words, if a rendezvous field is being accessed, the
-   * circuit type MUST BE of type HS_IDENT_CIRCUIT_RENDEZVOUS. This value is
-   * set when an object is initialized in its constructor. */
-  hs_ident_circuit_type_t circuit_type;
-
   /* (All circuit) Introduction point authentication key. It's also needed on
    * the rendezvous circuit for the ntor handshake. It's used as the unique key
    * of the introduction point so it should not be shared between multiple
@@ -120,8 +113,7 @@ typedef struct hs_ident_edge_conn_t {
 
 /* Circuit identifier API. */
 hs_ident_circuit_t *hs_ident_circuit_new(
-                             const ed25519_public_key_t *identity_pk,
-                             hs_ident_circuit_type_t circuit_type);
+                             const ed25519_public_key_t *identity_pk);
 void hs_ident_circuit_free_(hs_ident_circuit_t *ident);
 #define hs_ident_circuit_free(id) \
   FREE_AND_NULL(hs_ident_circuit_t, hs_ident_circuit_free_, (id))

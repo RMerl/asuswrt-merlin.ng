@@ -22,4 +22,36 @@ const char *node_describe(const struct node_t *node);
 const char *router_describe(const struct routerinfo_t *ri);
 const char *routerstatus_describe(const struct routerstatus_t *ri);
 
-#endif
+void router_get_verbose_nickname(char *buf, const routerinfo_t *router);
+
+#if defined(DESCRIBE_PRIVATE) || defined(TOR_UNIT_TESTS)
+
+/**
+ * Longest allowed output for an IPv4 address "255.255.255.255", with NO
+ * terminating NUL.
+ */
+#define IPV4_BUF_LEN_NO_NUL 15
+
+/**
+ * Longest allowed output of format_node_description, plus 1 character for
+ * NUL.  This allows space for:
+ * "$FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF~xxxxxxxxxxxxxxxxxxx at"
+ * " 255.255.255.255 and [ffff:ffff:ffff:ffff:ffff:ffff:255.255.255.255]"
+ * plus a terminating NUL.
+ */
+#define NODE_DESC_BUF_LEN \
+  (MAX_VERBOSE_NICKNAME_LEN+4+IPV4_BUF_LEN_NO_NUL+5+TOR_ADDR_BUF_LEN)
+
+#endif /* defined(DESCRIBE_PRIVATE) || defined(TOR_UNIT_TESTS) */
+
+#ifdef TOR_UNIT_TESTS
+
+STATIC const char *format_node_description(char *buf,
+                                           const char *id_digest,
+                                           const char *nickname,
+                                           const tor_addr_t *addr,
+                                           uint32_t addr32h);
+
+#endif /* defined(TOR_UNIT_TESTS) */
+
+#endif /* !defined(TOR_DESCRIBE_H) */

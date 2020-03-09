@@ -12,6 +12,8 @@
 
 #include "orconfig.h"
 
+#define CRYPTO_PRIVATE
+
 #include "lib/crypt_ops/crypto_init.h"
 
 #include "lib/crypt_ops/crypto_curve25519.h"
@@ -20,8 +22,11 @@
 #include "lib/crypt_ops/crypto_openssl_mgt.h"
 #include "lib/crypt_ops/crypto_nss_mgt.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "lib/crypt_ops/crypto_sys.h"
 
-#include "siphash.h"
+#include "lib/subsys/subsys.h"
+
+#include "ext/siphash.h"
 
 /** Boolean: has our crypto library been initialized? (early phase) */
 static int crypto_early_initialized_ = 0;
@@ -66,6 +71,8 @@ crypto_early_init(void)
     if (crypto_init_siphash_key() < 0)
       return -1;
 
+    crypto_rand_fast_init();
+
     curve25519_init();
     ed25519_init();
   }
@@ -92,7 +99,7 @@ crypto_global_init(int useAccel, const char *accelName, const char *accelDir)
     (void)useAccel;
     (void)accelName;
     (void)accelDir;
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 #ifdef ENABLE_NSS
     if (crypto_nss_late_init() < 0)
       return -1;
@@ -108,6 +115,7 @@ crypto_thread_cleanup(void)
 #ifdef ENABLE_OPENSSL
   crypto_openssl_thread_cleanup();
 #endif
+  destroy_thread_fast_rng();
 }
 
 /**
@@ -126,6 +134,8 @@ crypto_global_cleanup(void)
   crypto_nss_global_cleanup();
 #endif
 
+  crypto_rand_fast_shutdown();
+
   crypto_early_initialized_ = 0;
   crypto_global_initialized_ = 0;
   have_seeded_siphash = 0;
@@ -142,6 +152,12 @@ crypto_prefork(void)
 #ifdef ENABLE_NSS
   crypto_nss_prefork();
 #endif
+  /* It is not safe to share a fast_rng object across a fork boundary unless
+   * we actually have zero-on-fork support in map_anon.c.  If we have
+   * drop-on-fork support, we will crash; if we have neither, we will yield
+   * a copy of the parent process's rng, which is scary and insecure.
+   */
+  destroy_thread_fast_rng();
 }
 
 /** Run operations that the crypto library requires to be happy again
@@ -202,3 +218,47 @@ tor_is_using_nss(void)
   return 0;
 #endif
 }
+
+static int
+subsys_crypto_initialize(void)
+{
+  if (crypto_early_init() < 0)
+    return -1;
+  crypto_dh_init();
+  return 0;
+}
+
+static void
+subsys_crypto_shutdown(void)
+{
+  crypto_global_cleanup();
+}
+
+static void
+subsys_crypto_prefork(void)
+{
+  crypto_prefork();
+}
+
+static void
+subsys_crypto_postfork(void)
+{
+  crypto_postfork();
+}
+
+static void
+subsys_crypto_thread_cleanup(void)
+{
+  crypto_thread_cleanup();
+}
+
+const struct subsys_fns_t sys_crypto = {
+  .name = "crypto",
+  .supported = true,
+  .level = -60,
+  .initialize = subsys_crypto_initialize,
+  .shutdown = subsys_crypto_shutdown,
+  .prefork = subsys_crypto_prefork,
+  .postfork = subsys_crypto_postfork,
+  .thread_cleanup = subsys_crypto_thread_cleanup,
+};

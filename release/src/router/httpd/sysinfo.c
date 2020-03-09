@@ -573,9 +573,13 @@ unsigned int get_phy_temperature(int radio)
 	strcpy(buf, "phy_tempsense");
 
 	if (radio == 2) {
-		interface = nvram_get("wl0_ifname");
+		interface = nvram_safe_get("wl0_ifname");
 	} else if (radio == 5) {
-		interface = nvram_get("wl1_ifname");
+		interface = nvram_safe_get("wl1_ifname");
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300)
+	} else if (radio == 52) {
+		interface = nvram_safe_get("wl2_ifname");
+#endif
 	} else {
 		return 0;
 	}

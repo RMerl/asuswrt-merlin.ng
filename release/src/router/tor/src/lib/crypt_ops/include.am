@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-crypt-ops-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_crypt_ops_a_SOURCES =			\
 	src/lib/crypt_ops/crypto_cipher.c		\
 	src/lib/crypt_ops/crypto_curve25519.c		\
@@ -17,6 +18,8 @@ src_lib_libtor_crypt_ops_a_SOURCES =			\
 	src/lib/crypt_ops/crypto_ope.c          	\
 	src/lib/crypt_ops/crypto_pwbox.c		\
 	src/lib/crypt_ops/crypto_rand.c			\
+	src/lib/crypt_ops/crypto_rand_fast.c		\
+	src/lib/crypt_ops/crypto_rand_numeric.c		\
 	src/lib/crypt_ops/crypto_rsa.c			\
 	src/lib/crypt_ops/crypto_s2k.c			\
 	src/lib/crypt_ops/crypto_util.c                 \
@@ -25,12 +28,14 @@ src_lib_libtor_crypt_ops_a_SOURCES =			\
 if USE_NSS
 src_lib_libtor_crypt_ops_a_SOURCES +=			\
 	src/lib/crypt_ops/aes_nss.c			\
+	src/lib/crypt_ops/crypto_digest_nss.c		\
 	src/lib/crypt_ops/crypto_dh_nss.c		\
 	src/lib/crypt_ops/crypto_nss_mgt.c		\
 	src/lib/crypt_ops/crypto_rsa_nss.c
 else
 src_lib_libtor_crypt_ops_a_SOURCES +=			\
 	src/lib/crypt_ops/aes_openssl.c			\
+	src/lib/crypt_ops/crypto_digest_openssl.c	\
 	src/lib/crypt_ops/crypto_rsa_openssl.c
 endif
 
@@ -48,6 +53,7 @@ src_lib_libtor_crypt_ops_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_crypt_ops_testing_a_CFLAGS = \
 	$(AM_CFLAGS) $(TOR_CFLAGS_CRYPTLIB) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/crypt_ops/aes.h				\
 	src/lib/crypt_ops/compat_openssl.h		\
@@ -66,5 +72,6 @@ noinst_HEADERS +=					\
 	src/lib/crypt_ops/crypto_rand.h			\
 	src/lib/crypt_ops/crypto_rsa.h			\
 	src/lib/crypt_ops/crypto_s2k.h			\
+	src/lib/crypt_ops/crypto_sys.h			\
 	src/lib/crypt_ops/crypto_util.h                 \
 	src/lib/crypt_ops/digestset.h

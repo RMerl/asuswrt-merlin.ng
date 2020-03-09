@@ -26,4 +26,4 @@ struct cell_queue_t {
   int n; /**< The number of cells in the queue. */
 };
 
-#endif
+#endif /* !defined(PACKED_CELL_ST_H) */

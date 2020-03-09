@@ -71,7 +71,7 @@ tor_memstr(const void *haystack, size_t hlen, const char *needle)
 
 /** Return true iff the 'len' bytes at 'mem' are all zero. */
 int
-tor_mem_is_zero(const char *mem, size_t len)
+fast_mem_is_zero(const char *mem, size_t len)
 {
   static const char ZERO[] = {
     0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
@@ -95,17 +95,14 @@ tor_mem_is_zero(const char *mem, size_t len)
 int
 tor_digest_is_zero(const char *digest)
 {
-  static const uint8_t ZERO_DIGEST[] = {
-    0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0
-  };
-  return tor_memeq(digest, ZERO_DIGEST, DIGEST_LEN);
+  return safe_mem_is_zero(digest, DIGEST_LEN);
 }
 
 /** Return true iff the DIGEST256_LEN bytes in digest are all zero. */
 int
 tor_digest256_is_zero(const char *digest)
 {
-  return tor_mem_is_zero(digest, DIGEST256_LEN);
+  return safe_mem_is_zero(digest, DIGEST256_LEN);
 }
 
 /** Remove from the string <b>s</b> every character which appears in
@@ -210,21 +207,6 @@ strcmpstart(const char *s1, const char *s2)
 {
   size_t n = strlen(s2);
   return strncmp(s1, s2, n);
-}
-
-/** Compare the s1_len-byte string <b>s1</b> with <b>s2</b>,
- * without depending on a terminating nul in s1.  Sorting order is first by
- * length, then lexically; return values are as for strcmp.
- */
-int
-strcmp_len(const char *s1, const char *s2, size_t s1_len)
-{
-  size_t s2_len = strlen(s2);
-  if (s1_len < s2_len)
-    return -1;
-  if (s1_len > s2_len)
-    return 1;
-  return fast_memcmp(s1, s2, s2_len);
 }
 
 /** Compares the first strlen(s2) characters of s1 with s2.  Returns as for
@@ -540,4 +522,17 @@ string_is_utf8(const char *str, size_t len)
     i = next_char;
   }
   return true;
+}
+
+/** As string_is_utf8(), but returns false if the string begins with a UTF-8
+ * byte order mark (BOM).
+ */
+int
+string_is_utf8_no_bom(const char *str, size_t len)
+{
+  if (len >= 3 && (!strcmpstart(str, "\uFEFF") ||
+                   !strcmpstart(str, "\uFFFE"))) {
+    return false;
+  }
+  return string_is_utf8(str, len);
 }

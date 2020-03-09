@@ -143,6 +143,7 @@ noinst_HEADERS += $(ED25519_DONNA_HDRS)
 LIBED25519_DONNA=src/ext/ed25519/donna/libed25519_donna.a
 noinst_LIBRARIES += $(LIBED25519_DONNA)
 
+if BUILD_KECCAK_TINY
 src_ext_keccak_tiny_libkeccak_tiny_a_CFLAGS=\
   @CFLAGS_CONSTTIME@
 
@@ -156,6 +157,7 @@ noinst_HEADERS += $(LIBKECCAK_TINY_HDRS)
 
 LIBKECCAK_TINY=src/ext/keccak-tiny/libkeccak-tiny.a
 noinst_LIBRARIES += $(LIBKECCAK_TINY)
+endif
 
 EXTRA_DIST += \
 	src/ext/timeouts/bench/bench-add.lua 		\

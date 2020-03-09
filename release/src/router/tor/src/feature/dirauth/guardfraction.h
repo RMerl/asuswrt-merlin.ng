@@ -21,4 +21,4 @@ dirserv_read_guardfraction_file_from_str(const char *guardfraction_file_str,
 int dirserv_read_guardfraction_file(const char *fname,
                                  smartlist_t *vote_routerstatuses);
 
-#endif
+#endif /* !defined(TOR_GUARDFRACTION_H) */

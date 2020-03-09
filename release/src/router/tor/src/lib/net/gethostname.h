@@ -16,4 +16,4 @@
 
 MOCK_DECL(int,tor_gethostname,(char *name, size_t namelen));
 
-#endif
+#endif /* !defined(TOR_GETHOSTNAME_H) */

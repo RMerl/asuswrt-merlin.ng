@@ -57,4 +57,4 @@ third_quartile_uint32(uint32_t *array, int n_elements)
   return find_nth_uint32(array, n_elements, (n_elements*3)/4);
 }
 
-#endif /* !defined(TOR_CONTAINER_H) */
+#endif /* !defined(TOR_ORDER_H) */

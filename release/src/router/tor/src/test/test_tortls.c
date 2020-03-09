@@ -219,7 +219,7 @@ test_tortls_tor_tls_get_error(void *data)
   crypto_pk_free(key2);
   tor_tls_free(tls);
 }
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 static void
 test_tortls_x509_cert_get_id_digests(void *ignored)
@@ -336,7 +336,7 @@ test_tortls_server_got_renegotiate(void *ignored)
  done:
   tor_free(tls);
 }
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
 
 static void
 test_tortls_evaluate_ecgroup_for_tls(void *ignored)
@@ -526,7 +526,7 @@ struct testcase_t tortls_tests[] = {
   LOCAL_TEST_CASE(get_forced_write_size, 0),
   LOCAL_TEST_CASE(used_v1_handshake, TT_FORK),
   LOCAL_TEST_CASE(server_got_renegotiate, 0),
-#endif
+#endif /* defined(ENABLE_OPENSSL) */
   LOCAL_TEST_CASE(evaluate_ecgroup_for_tls, 0),
   LOCAL_TEST_CASE(double_init, TT_FORK),
   LOCAL_TEST_CASE(address, TT_FORK),

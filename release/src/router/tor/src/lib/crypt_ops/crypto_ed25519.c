@@ -226,7 +226,7 @@ ed25519_keypair_generate(ed25519_keypair_t *keypair_out, int extra_strong)
 int
 ed25519_public_key_is_zero(const ed25519_public_key_t *pubkey)
 {
-  return tor_mem_is_zero((char*)pubkey->pubkey, ED25519_PUBKEY_LEN);
+  return safe_mem_is_zero((char*)pubkey->pubkey, ED25519_PUBKEY_LEN);
 }
 
 /* Return a heap-allocated array that contains <b>msg</b> prefixed by the

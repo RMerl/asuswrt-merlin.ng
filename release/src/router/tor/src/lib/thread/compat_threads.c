@@ -14,9 +14,11 @@
 #include "orconfig.h"
 #include <stdlib.h>
 #include "lib/thread/threads.h"
+#include "lib/thread/thread_sys.h"
 
 #include "lib/log/log.h"
 #include "lib/log/util_bug.h"
+#include "lib/subsys/subsys.h"
 
 #include <string.h>
 
@@ -65,7 +67,15 @@ atomic_counter_init(atomic_counter_t *counter)
   memset(counter, 0, sizeof(*counter));
   tor_mutex_init_nonrecursive(&counter->mutex);
 }
-/** Clean up all resources held by an atomic counter. */
+/** Clean up all resources held by an atomic counter.
+ *
+ * Destroying a locked mutex is undefined behaviour. Global mutexes may be
+ * locked when they are passed to this function, because multiple threads can
+ * still access them. So we can either:
+ *  - destroy on shutdown, and re-initialise when tor re-initialises, or
+ *  - skip destroying and re-initialisation, using a sentinel variable.
+ * See #31735 for details.
+ */
 void
 atomic_counter_destroy(atomic_counter_t *counter)
 {
@@ -109,3 +119,19 @@ atomic_counter_exchange(atomic_counter_t *counter, size_t newval)
   return oldval;
 }
 #endif /* !defined(HAVE_WORKING_STDATOMIC) */
+
+static int
+subsys_threads_initialize(void)
+{
+  tor_threads_init();
+  return 0;
+}
+
+const subsys_fns_t sys_threads = {
+  .name = "threads",
+  .supported = true,
+  /* Threads is used by logging, which is a diagnostic feature, we want it to
+   * init right after low-level error handling and approx time. */
+  .level = -95,
+  .initialize = subsys_threads_initialize,
+};

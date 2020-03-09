@@ -294,9 +294,6 @@ circuitmux_detach_all_circuits(circuitmux_t *cmux, smartlist_t *detached_out)
               circuitmux_make_circuit_inactive(cmux, circ);
             }
 
-            /* Clear n_mux */
-            circ->n_mux = NULL;
-
             if (detached_out)
               smartlist_add(detached_out, circ);
           } else if (circ->magic == OR_CIRCUIT_MAGIC) {
@@ -308,12 +305,6 @@ circuitmux_detach_all_circuits(circuitmux_t *cmux, smartlist_t *detached_out)
             if (to_remove->muxinfo.cell_count > 0) {
               circuitmux_make_circuit_inactive(cmux, circ);
             }
-
-            /*
-             * It has a sensible p_chan and direction == CELL_DIRECTION_IN,
-             * so clear p_mux.
-             */
-            TO_OR_CIRCUIT(circ)->p_mux = NULL;
 
             if (detached_out)
               smartlist_add(detached_out, circ);
@@ -836,18 +827,14 @@ circuitmux_attach_circuit,(circuitmux_t *cmux, circuit_t *circ,
      */
     log_info(LD_CIRC,
              "Circuit %u on channel %"PRIu64 " was already attached to "
-             "cmux %p (trying to attach to %p)",
+             "(trying to attach to %p)",
              (unsigned)circ_id, (channel_id),
-             ((direction == CELL_DIRECTION_OUT) ?
-                circ->n_mux : TO_OR_CIRCUIT(circ)->p_mux),
              cmux);
 
     /*
      * The mux pointer on this circuit and the direction in result should
      * match; otherwise assert.
      */
-    if (direction == CELL_DIRECTION_OUT) tor_assert(circ->n_mux == cmux);
-    else tor_assert(TO_OR_CIRCUIT(circ)->p_mux == cmux);
     tor_assert(hashent->muxinfo.direction == direction);
 
     /*
@@ -872,13 +859,6 @@ circuitmux_attach_circuit,(circuitmux_t *cmux, circuit_t *circ,
              "Attaching circuit %u on channel %"PRIu64 " to cmux %p",
               (unsigned)circ_id, (channel_id), cmux);
 
-    /*
-     * Assert that the circuit doesn't already have a mux for this
-     * direction.
-     */
-    if (direction == CELL_DIRECTION_OUT) tor_assert(circ->n_mux == NULL);
-    else tor_assert(TO_OR_CIRCUIT(circ)->p_mux == NULL);
-
     /* Insert it in the map */
     hashent = tor_malloc_zero(sizeof(*hashent));
     hashent->chan_id = channel_id;
@@ -901,10 +881,6 @@ circuitmux_attach_circuit,(circuitmux_t *cmux, circuit_t *circ,
     }
     HT_INSERT(chanid_circid_muxinfo_map, cmux->chanid_circid_map,
               hashent);
-
-    /* Set the circuit's mux for this direction */
-    if (direction == CELL_DIRECTION_OUT) circ->n_mux = cmux;
-    else TO_OR_CIRCUIT(circ)->p_mux = cmux;
 
     /* Update counters */
     ++(cmux->n_circuits);
@@ -993,9 +969,6 @@ circuitmux_detach_circuit,(circuitmux_t *cmux, circuit_t *circ))
 
     /* Consistency check: the direction must match the direction searched */
     tor_assert(last_searched_direction == hashent->muxinfo.direction);
-    /* Clear the circuit's mux for this direction */
-    if (last_searched_direction == CELL_DIRECTION_OUT) circ->n_mux = NULL;
-    else TO_OR_CIRCUIT(circ)->p_mux = NULL;
 
     /* Now remove it from the map */
     HT_REMOVE(chanid_circid_muxinfo_map, cmux->chanid_circid_map, hashent);

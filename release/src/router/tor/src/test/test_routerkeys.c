@@ -399,7 +399,7 @@ test_routerkeys_ed_key_init_split(void *arg)
   tt_assert(kp2 != NULL);
   tt_assert(cert == NULL);
   tt_mem_op(&kp1->pubkey, OP_EQ, &kp2->pubkey, sizeof(kp2->pubkey));
-  tt_assert(tor_mem_is_zero((char*)kp2->seckey.seckey,
+  tt_assert(fast_mem_is_zero((char*)kp2->seckey.seckey,
                             sizeof(kp2->seckey.seckey)));
   ed25519_keypair_free(kp2); kp2 = NULL;
 
@@ -409,7 +409,7 @@ test_routerkeys_ed_key_init_split(void *arg)
   tt_assert(kp2 != NULL);
   tt_assert(cert == NULL);
   tt_mem_op(&kp1->pubkey, OP_EQ, &kp2->pubkey, sizeof(kp2->pubkey));
-  tt_assert(tor_mem_is_zero((char*)kp2->seckey.seckey,
+  tt_assert(fast_mem_is_zero((char*)kp2->seckey.seckey,
                             sizeof(kp2->seckey.seckey)));
   ed25519_keypair_free(kp2); kp2 = NULL;
 
@@ -455,11 +455,11 @@ test_routerkeys_ed_keys_init_all(void *arg)
   options->TestingLinkKeySlop = 2*3600;
 
 #ifdef _WIN32
-  mkdir(dir);
-  mkdir(keydir);
+  tt_int_op(0, OP_EQ, mkdir(dir));
+  tt_int_op(0, OP_EQ, mkdir(keydir));
 #else
-  mkdir(dir, 0700);
-  mkdir(keydir, 0700);
+  tt_int_op(0, OP_EQ, mkdir(dir, 0700));
+  tt_int_op(0, OP_EQ, mkdir(keydir, 0700));
 #endif /* defined(_WIN32) */
 
   options->DataDirectory = dir;

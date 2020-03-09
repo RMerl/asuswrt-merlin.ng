@@ -4,12 +4,15 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-encoding-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_encoding_a_SOURCES =			\
 	src/lib/encoding/binascii.c			\
 	src/lib/encoding/confline.c			\
 	src/lib/encoding/cstring.c			\
 	src/lib/encoding/keyval.c			\
+	src/lib/encoding/kvline.c			\
 	src/lib/encoding/pem.c				\
+	src/lib/encoding/qstring.c			\
 	src/lib/encoding/time_fmt.c
 
 src_lib_libtor_encoding_testing_a_SOURCES = \
@@ -17,10 +20,13 @@ src_lib_libtor_encoding_testing_a_SOURCES = \
 src_lib_libtor_encoding_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_encoding_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/encoding/binascii.h			\
 	src/lib/encoding/confline.h			\
 	src/lib/encoding/cstring.h			\
 	src/lib/encoding/keyval.h			\
+	src/lib/encoding/kvline.h			\
 	src/lib/encoding/pem.h				\
+	src/lib/encoding/qstring.h			\
 	src/lib/encoding/time_fmt.h

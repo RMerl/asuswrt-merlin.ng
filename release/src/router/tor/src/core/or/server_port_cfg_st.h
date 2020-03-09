@@ -16,5 +16,5 @@ struct server_port_cfg_t {
   unsigned int bind_ipv6_only : 1;
 };
 
-#endif
+#endif /* !defined(SERVER_PORT_CFG_ST_H) */
 

@@ -16,4 +16,4 @@
 
 uint32_t tor_add_u32_nowrap(uint32_t a, uint32_t b);
 
-#endif /* !defined(TOR_INTMATH_MULDIV_H) */
+#endif /* !defined(TOR_INTMATH_ADDSUB_H) */

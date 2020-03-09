@@ -346,7 +346,7 @@ test_util_format_base32_decode(void *arg)
     const char *src = "mjwgc2dcnrswqmjs";
 
     ret = base32_decode(dst, strlen(expected), src, strlen(src));
-    tt_int_op(ret, OP_EQ, 0);
+    tt_int_op(ret, OP_EQ, 10);
     tt_str_op(expected, OP_EQ, dst);
   }
 
@@ -357,7 +357,7 @@ test_util_format_base32_decode(void *arg)
     const char *src = "mjwgc2dcnrswq";
 
     ret = base32_decode(dst, strlen(expected), src, strlen(src));
-    tt_int_op(ret, OP_EQ, 0);
+    tt_int_op(ret, OP_EQ, 8);
     tt_mem_op(expected, OP_EQ, dst, strlen(expected));
   }
 
@@ -367,7 +367,7 @@ test_util_format_base32_decode(void *arg)
     ret = base32_decode(dst, real_dstlen, "#abcde", 6);
     tt_int_op(ret, OP_EQ, -1);
     /* Make sure the destination buffer has been zeroed even on error. */
-    tt_int_op(tor_mem_is_zero(dst, real_dstlen), OP_EQ, 1);
+    tt_int_op(fast_mem_is_zero(dst, real_dstlen), OP_EQ, 1);
   }
 
  done:
@@ -392,10 +392,13 @@ test_util_format_encoded_size(void *arg)
 
     base64_encode(outbuf, sizeof(outbuf), (char *)inbuf, i, 0);
     tt_int_op(strlen(outbuf), OP_EQ, base64_encode_size(i, 0));
+    tt_int_op(i, OP_LE, base64_decode_maxsize(strlen(outbuf)));
+
     base64_encode(outbuf, sizeof(outbuf), (char *)inbuf, i,
                   BASE64_ENCODE_MULTILINE);
     tt_int_op(strlen(outbuf), OP_EQ,
               base64_encode_size(i, BASE64_ENCODE_MULTILINE));
+    tt_int_op(i, OP_LE, base64_decode_maxsize(strlen(outbuf)));
   }
 
  done:
@@ -417,4 +420,3 @@ struct testcase_t util_format_tests[] = {
   { "encoded_size", test_util_format_encoded_size, 0, NULL, NULL },
   END_OF_TESTCASES
 };
-

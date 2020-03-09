@@ -38,13 +38,12 @@
 #include "lib/err/torerr.h"
 #include "lib/log/log.h"
 #include "lib/cc/torint.h"
-#include "lib/net/resolve.h"
 #include "lib/malloc/malloc.h"
 #include "lib/string/scanf.h"
 
-#include "tor_queue.h"
-#include "ht.h"
-#include "siphash.h"
+#include "ext/tor_queue.h"
+#include "ext/ht.h"
+#include "ext/siphash.h"
 
 #define DEBUGGING_CLOSE
 
@@ -144,6 +143,7 @@ static int filter_nopar_gen[] = {
     SCMP_SYS(clock_gettime),
     SCMP_SYS(close),
     SCMP_SYS(clone),
+    SCMP_SYS(dup),
     SCMP_SYS(epoll_create),
     SCMP_SYS(epoll_wait),
 #ifdef __NR_epoll_pwait
@@ -295,6 +295,7 @@ sb_rt_sigaction(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   unsigned i;
   int rc;
   int param[] = { SIGINT, SIGTERM, SIGPIPE, SIGUSR1, SIGUSR2, SIGHUP, SIGCHLD,
+                  SIGSEGV, SIGILL, SIGFPE, SIGBUS, SIGSYS, SIGIO,
 #ifdef SIGXFSZ
       SIGXFSZ
 #endif
@@ -444,7 +445,7 @@ libc_uses_openat_for_everything(void)
     return 1;
   else
     return 0;
-#else /* !(defined(CHECK_LIBC_VERSION)) */
+#else /* !defined(CHECK_LIBC_VERSION) */
   return 0;
 #endif /* defined(CHECK_LIBC_VERSION) */
 }
@@ -489,24 +490,6 @@ sb_open(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
-
-  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ERRNO(EACCES), SCMP_SYS(open),
-                SCMP_CMP_MASKED(1, O_CLOEXEC|O_NONBLOCK|O_NOCTTY|O_NOFOLLOW,
-                                O_RDONLY));
-  if (rc != 0) {
-    log_err(LD_BUG,"(Sandbox) failed to add open syscall, received libseccomp "
-        "error %d", rc);
-    return rc;
-  }
-
-  rc = seccomp_rule_add_1(ctx, SCMP_ACT_ERRNO(EACCES), SCMP_SYS(openat),
-                SCMP_CMP_MASKED(2, O_CLOEXEC|O_NONBLOCK|O_NOCTTY|O_NOFOLLOW,
-                                O_RDONLY));
-  if (rc != 0) {
-    log_err(LD_BUG,"(Sandbox) failed to add openat syscall, received "
-            "libseccomp error %d", rc);
-    return rc;
   }
 
   return 0;
@@ -557,23 +540,6 @@ sb_chown(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
         return rc;
       }
     }
-  }
-
-  return 0;
-}
-
-static int
-sb__sysctl(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
-{
-  int rc;
-  (void) filter;
-  (void) ctx;
-
-  rc = seccomp_rule_add_0(ctx, SCMP_ACT_ERRNO(EPERM), SCMP_SYS(_sysctl));
-  if (rc != 0) {
-    log_err(LD_BUG,"(Sandbox) failed to add _sysctl syscall, "
-        "received libseccomp error %d", rc);
-    return rc;
   }
 
   return 0;
@@ -830,6 +796,12 @@ sb_getsockopt(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getsockopt),
       SCMP_CMP(1, SCMP_CMP_EQ, SOL_SOCKET),
       SCMP_CMP(2, SCMP_CMP_EQ, SO_ERROR));
+  if (rc)
+    return rc;
+
+  rc = seccomp_rule_add_2(ctx, SCMP_ACT_ALLOW, SCMP_SYS(getsockopt),
+      SCMP_CMP(1, SCMP_CMP_EQ, SOL_SOCKET),
+      SCMP_CMP(2, SCMP_CMP_EQ, SO_ACCEPTCONN));
   if (rc)
     return rc;
 
@@ -1141,7 +1113,6 @@ static sandbox_filter_func_t filter_func[] = {
     sb_chmod,
     sb_open,
     sb_openat,
-    sb__sysctl,
     sb_rename,
 #ifdef __NR_fcntl64
     sb_fcntl64,
@@ -1518,14 +1489,14 @@ install_syscall_filter(sandbox_cfg_t* cfg)
   int rc = 0;
   scmp_filter_ctx ctx;
 
-  ctx = seccomp_init(SCMP_ACT_TRAP);
+  ctx = seccomp_init(SCMP_ACT_ERRNO(EPERM));
   if (ctx == NULL) {
     log_err(LD_BUG,"(Sandbox) failed to initialise libseccomp context");
     rc = -1;
     goto end;
   }
 
-  // protectign sandbox parameter strings
+  // protecting sandbox parameter strings
   if ((rc = prot_strings(ctx, cfg))) {
     goto end;
   }
@@ -1553,7 +1524,6 @@ install_syscall_filter(sandbox_cfg_t* cfg)
 
   // marking the sandbox as active
   sandbox_active = 1;
-  tor_make_getaddrinfo_cache_active();
 
  end:
   seccomp_release(ctx);
@@ -1798,11 +1768,6 @@ int
 sandbox_is_active(void)
 {
   return 0;
-}
-
-void
-sandbox_disable_getaddrinfo_cache(void)
-{
 }
 
 #endif /* !defined(USE_LIBSECCOMP) */

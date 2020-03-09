@@ -23,7 +23,9 @@ TESTSCRIPTS = \
 	src/test/test_workqueue_pipe.sh \
 	src/test/test_workqueue_pipe2.sh \
 	src/test/test_workqueue_socketpair.sh \
-	src/test/test_switch_id.sh
+	src/test/test_switch_id.sh \
+	src/test/test_cmdline.sh \
+	src/test/test_parseconf.sh
 
 if USE_RUST
 TESTSCRIPTS += \
@@ -31,8 +33,19 @@ TESTSCRIPTS += \
 endif
 
 if USEPYTHON
-TESTSCRIPTS += src/test/test_ntor.sh src/test/test_hs_ntor.sh src/test/test_bt.sh
+TESTSCRIPTS += \
+	src/test/test_ntor.sh \
+	src/test/test_hs_ntor.sh \
+	src/test/test_bt.sh \
+	scripts/maint/practracker/test_practracker.sh
+
+if COVERAGE_ENABLED
+# ...
+else
+# Only do this when coverage is not on, since it invokes lots of code
+# in a kind of unpredictable way.
 TESTSCRIPTS += src/test/test_rebind.sh
+endif
 endif
 
 TESTS += src/test/test src/test/test-slow src/test/test-memwipe \
@@ -46,10 +59,8 @@ TESTS += src/test/test src/test/test-slow src/test/test-memwipe \
 TEST_CHUTNEY_FLAVORS = basic-min bridges-min hs-v2-min hs-v3-min \
 	single-onion-v23
 # only run if we can ping6 ::1 (localhost)
-# IPv6-only v3 single onion services don't work yet, so we don't test the
-# single-onion-v23-ipv6-md flavor
 TEST_CHUTNEY_FLAVORS_IPV6 = bridges+ipv6-min ipv6-exit-min hs-v23-ipv6-md \
-	single-onion-ipv6-md
+	single-onion-v23-ipv6-md
 # only run if we can find a stable (or simply another) version of tor
 TEST_CHUTNEY_FLAVORS_MIXED = mixed+hs-v2
 
@@ -65,10 +76,11 @@ noinst_PROGRAMS+= \
 	src/test/test \
 	src/test/test-slow \
 	src/test/test-memwipe \
-	src/test/test-child \
+	src/test/test-process \
 	src/test/test_workqueue \
 	src/test/test-switch-id \
-	src/test/test-timers
+	src/test/test-timers \
+	src/test/test-rng
 endif
 
 src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
@@ -84,22 +96,28 @@ src_test_AM_CPPFLAGS = -DSHARE_DATADIR="\"$(datadir)\"" \
 src_test_test_SOURCES =
 
 if UNITTESTS_ENABLED
+
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_test_test_SOURCES += \
 	src/test/log_test_helpers.c \
 	src/test/hs_test_helpers.c \
 	src/test/rend_test_helpers.c \
+	src/test/resolve_test_helpers.c \
+	src/test/rng_test_helpers.c \
 	src/test/test.c \
 	src/test/test_accounting.c \
 	src/test/test_addr.c \
 	src/test/test_address.c \
 	src/test/test_address_set.c \
 	src/test/test_bridges.c \
+	src/test/test_btrack.c \
 	src/test/test_buffers.c \
 	src/test/test_bwmgt.c \
 	src/test/test_cell_formats.c \
 	src/test/test_cell_queue.c \
 	src/test/test_channel.c \
 	src/test/test_channelpadding.c \
+	src/test/test_circuitpadding.c \
 	src/test/test_channeltls.c \
 	src/test/test_checkdir.c \
 	src/test/test_circuitlist.c \
@@ -109,6 +127,8 @@ src_test_test_SOURCES += \
 	src/test/test_circuitstats.c \
 	src/test/test_compat_libevent.c \
 	src/test/test_config.c \
+	src/test/test_confmgr.c \
+	src/test/test_confparse.c \
 	src/test/test_connection.c \
 	src/test/test_conscache.c \
 	src/test/test_consdiff.c \
@@ -118,10 +138,12 @@ src_test_test_SOURCES += \
 	src/test/test_controller_events.c \
 	src/test/test_crypto.c \
 	src/test/test_crypto_ope.c \
+	src/test/test_crypto_rng.c \
 	src/test/test_data.c \
 	src/test/test_dir.c \
 	src/test/test_dir_common.c \
 	src/test/test_dir_handle_get.c \
+	src/test/test_dispatch.c \
 	src/test/test_dos.c \
 	src/test/test_entryconn.c \
 	src/test/test_entrynodes.c \
@@ -140,12 +162,15 @@ src_test_test_SOURCES += \
 	src/test/test_handles.c \
 	src/test/test_hs_cache.c \
 	src/test/test_hs_descriptor.c \
+	src/test/test_hs_dos.c \
 	src/test/test_introduce.c \
 	src/test/test_keypin.c \
 	src/test/test_link_handshake.c \
 	src/test/test_logging.c \
 	src/test/test_mainloop.c \
 	src/test/test_microdesc.c \
+	src/test/test_namemap.c \
+	src/test/test_netinfo.c \
 	src/test/test_nodelist.c \
 	src/test/test_oom.c \
 	src/test/test_oos.c \
@@ -153,11 +178,16 @@ src_test_test_SOURCES += \
 	src/test/test_pem.c \
 	src/test/test_periodic_event.c \
 	src/test/test_policy.c \
+	src/test/test_process.c \
+	src/test/test_process_descs.c \
+	src/test/test_prob_distr.c \
 	src/test/test_procmon.c \
 	src/test/test_proto_http.c \
 	src/test/test_proto_misc.c \
 	src/test/test_protover.c \
 	src/test/test_pt.c \
+	src/test/test_pubsub_build.c \
+	src/test/test_pubsub_msg.c \
 	src/test/test_relay.c \
 	src/test/test_relaycell.c \
 	src/test/test_relaycrypt.c \
@@ -168,19 +198,23 @@ src_test_test_SOURCES += \
 	src/test/test_routerlist.c \
 	src/test/test_routerset.c \
 	src/test/test_scheduler.c \
+	src/test/test_sendme.c \
 	src/test/test_shared_random.c \
 	src/test/test_socks.c \
 	src/test/test_status.c \
 	src/test/test_storagedir.c \
 	src/test/test_threads.c \
+	src/test/test_token_bucket.c \
 	src/test/test_tortls.c \
 	src/test/test_util.c \
 	src/test/test_util_format.c \
 	src/test/test_util_process.c \
+	src/test/test_voting_flags.c \
 	src/test/test_voting_schedule.c \
 	src/test/test_x509.c \
 	src/test/test_helpers.c \
 	src/test/test_dns.c \
+	src/test/test_parsecommon.c \
 	src/test/testing_common.c \
 	src/test/testing_rsakeys.c \
 	src/ext/tinytest.c
@@ -198,9 +232,13 @@ endif
 src_test_test_slow_SOURCES =
 if UNITTESTS_ENABLED
 src_test_test_slow_SOURCES += \
+	src/test/rng_test_helpers.c \
 	src/test/test_slow.c \
 	src/test/test_crypto_slow.c \
-	src/test/test_util_slow.c \
+	src/test/test_process_slow.c \
+	src/test/test_prob_distr.c \
+	src/test/ptr_helpers.c \
+	src/test/test_ptr_slow.c \
 	src/test/testing_common.c \
 	src/test/testing_rsakeys.c \
 	src/ext/tinytest.c
@@ -251,6 +289,12 @@ src_test_test_slow_CFLAGS = $(src_test_test_CFLAGS)
 src_test_test_slow_LDADD = $(src_test_test_LDADD)
 src_test_test_slow_LDFLAGS = $(src_test_test_LDFLAGS)
 
+src_test_test_rng_CPPFLAGS = $(src_test_test_CPPFLAGS)
+src_test_test_rng_CFLAGS = $(src_test_test_CFLAGS)
+src_test_test_rng_SOURCES = src/test/test_rng.c
+src_test_test_rng_LDFLAGS =  $(src_test_test_LDFLAGS)
+src_test_test_rng_LDADD = $(src_test_test_LDADD)
+
 src_test_test_memwipe_CPPFLAGS = $(src_test_test_CPPFLAGS)
 # Don't use bugtrap cflags here: memwipe tests require memory violations.
 src_test_test_memwipe_CFLAGS = $(TEST_CFLAGS)
@@ -292,12 +336,16 @@ src_test_test_timers_LDADD = \
 	@TOR_LZMA_LIBS@
 src_test_test_timers_LDFLAGS = $(src_test_test_LDFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS+= \
 	src/test/fakechans.h \
 	src/test/hs_test_helpers.h \
 	src/test/log_test_helpers.h \
 	src/test/rend_test_helpers.h \
+	src/test/resolve_test_helpers.h \
+	src/test/rng_test_helpers.h \
 	src/test/test.h \
+	src/test/ptr_helpers.h \
 	src/test/test_helpers.h \
 	src/test/test_dir_common.h \
 	src/test/test_connection.h \
@@ -369,7 +417,9 @@ EXTRA_DIST += \
 	src/test/test_workqueue_efd2.sh \
 	src/test/test_workqueue_pipe.sh \
 	src/test/test_workqueue_pipe2.sh \
-	src/test/test_workqueue_socketpair.sh
+	src/test/test_workqueue_socketpair.sh \
+	src/test/test_cmdline.sh \
+	src/test/test_parseconf.sh
 
 test-rust:
 	$(TESTS_ENVIRONMENT) "$(abs_top_srcdir)/src/test/test_rust.sh"

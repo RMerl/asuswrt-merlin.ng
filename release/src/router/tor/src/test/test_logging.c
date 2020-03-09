@@ -9,14 +9,13 @@
 #include "lib/err/torerr.h"
 #include "lib/log/log.h"
 #include "test/test.h"
-#include "lib/process/subprocess.h"
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
 
 static void
-dummy_cb_fn(int severity, uint32_t domain, const char *msg)
+dummy_cb_fn(int severity, log_domain_mask_t domain, const char *msg)
 {
   (void)severity; (void)domain; (void)msg;
 }
@@ -36,7 +35,7 @@ test_get_sigsafe_err_fds(void *arg)
 
   set_log_severity_config(LOG_WARN, LOG_ERR, &include_bug);
   set_log_severity_config(LOG_WARN, LOG_ERR, &no_bug);
-  no_bug.masks[0] &= ~(LD_BUG|LD_GENERAL);
+  no_bug.masks[SEVERITY_MASK_IDX(LOG_ERR)] &= ~(LD_BUG|LD_GENERAL);
   set_log_severity_config(LOG_INFO, LOG_NOTICE, &no_bug2);
 
   /* Add some logs; make sure the output is as expected. */
@@ -117,22 +116,27 @@ test_sigsafe_err(void *arg)
   content = read_file_to_str(fn, 0, NULL);
 
   tt_ptr_op(content, OP_NE, NULL);
-  tor_split_lines(lines, content, (int)strlen(content));
+  smartlist_split_string(lines, content, "\n", 0, 0);
   tt_int_op(smartlist_len(lines), OP_GE, 5);
 
-  if (strstr(smartlist_get(lines, 0), "opening new log file"))
+  if (strstr(smartlist_get(lines, 0), "opening new log file")) {
+    void *item = smartlist_get(lines, 0);
     smartlist_del_keeporder(lines, 0);
+    tor_free(item);
+  }
+
   tt_assert(strstr(smartlist_get(lines, 0), "Say, this isn't too cool"));
-  /* Next line is blank. */
-  tt_assert(!strcmpstart(smartlist_get(lines, 1), "=============="));
-  tt_assert(!strcmpstart(smartlist_get(lines, 2), "Minimal."));
-  /* Next line is blank. */
-  tt_assert(!strcmpstart(smartlist_get(lines, 3), "=============="));
-  tt_str_op(smartlist_get(lines, 4), OP_EQ,
+  tt_str_op(smartlist_get(lines, 1), OP_EQ, "");
+  tt_assert(!strcmpstart(smartlist_get(lines, 2), "=============="));
+  tt_assert(!strcmpstart(smartlist_get(lines, 3), "Minimal."));
+  tt_str_op(smartlist_get(lines, 4), OP_EQ, "");
+  tt_assert(!strcmpstart(smartlist_get(lines, 5), "=============="));
+  tt_str_op(smartlist_get(lines, 6), OP_EQ,
             "Testing any attempt to manually log from a signal.");
 
  done:
   tor_free(content);
+  SMARTLIST_FOREACH(lines, char *, x, tor_free(x));
   smartlist_free(lines);
 }
 

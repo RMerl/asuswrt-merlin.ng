@@ -11,7 +11,7 @@
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/defs/digest_sizes.h"
 #include "lib/crypt_ops/digestset.h"
-#include "siphash.h"
+#include "ext/siphash.h"
 
 /* Wrap our hash function to have the signature that the bloom filter
  * needs. */

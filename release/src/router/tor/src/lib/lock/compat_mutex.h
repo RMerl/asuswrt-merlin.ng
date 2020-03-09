@@ -48,7 +48,7 @@ typedef struct tor_mutex_t {
 #else
   /** No-threads only: Dummy variable so that tor_mutex_t takes up space. */
   int _unused;
-#endif /* defined(USE_WIN32_MUTEX) || ... */
+#endif /* defined(USE_WIN32_THREADS) || ... */
 } tor_mutex_t;
 
 tor_mutex_t *tor_mutex_new(void);

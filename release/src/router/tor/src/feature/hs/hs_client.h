@@ -44,6 +44,10 @@ typedef struct hs_client_service_authorization_t {
 void hs_client_note_connection_attempt_succeeded(
                                        const edge_connection_t *conn);
 
+void hs_client_launch_v3_desc_fetch(
+                               const ed25519_public_key_t *onion_identity_pk,
+                               const smartlist_t *hsdirs);
+
 int hs_client_decode_descriptor(
                      const char *desc_str,
                      const ed25519_public_key_t *service_identity_pk,

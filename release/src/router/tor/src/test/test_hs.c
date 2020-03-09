@@ -6,7 +6,7 @@
  * \brief Unit tests for hidden service.
  **/
 
-#define CONTROL_PRIVATE
+#define CONTROL_EVENTS_PRIVATE
 #define CIRCUITBUILD_PRIVATE
 #define RENDCOMMON_PRIVATE
 #define RENDSERVICE_PRIVATE
@@ -15,6 +15,8 @@
 #include "core/or/or.h"
 #include "test/test.h"
 #include "feature/control/control.h"
+#include "feature/control/control_events.h"
+#include "feature/control/control_fmt.h"
 #include "app/config/config.h"
 #include "feature/hs/hs_common.h"
 #include "feature/rend/rendcommon.h"
@@ -321,6 +323,16 @@ test_hs_desc_event(void *arg)
   tt_str_op(received_msg,OP_EQ, expected_msg);
   tor_free(received_msg);
 
+  /* test HSDir rate limited */
+  rend_query.auth_type = REND_NO_AUTH;
+  control_event_hsv2_descriptor_failed(&rend_query.base_, NULL,
+                                     "QUERY_RATE_LIMITED");
+  expected_msg = "650 HS_DESC FAILED "STR_HS_ADDR" NO_AUTH " \
+                 "UNKNOWN REASON=QUERY_RATE_LIMITED\r\n";
+  tt_assert(received_msg);
+  tt_str_op(received_msg,OP_EQ, expected_msg);
+  tor_free(received_msg);
+
   /* Test invalid content with no HSDir fingerprint. */
   char *exp_msg;
   control_event_hs_descriptor_content(rend_query.onion_address,
@@ -436,7 +448,7 @@ test_hs_rend_data(void *arg)
   tt_int_op(client_v2->auth_type, OP_EQ, REND_BASIC_AUTH);
   tt_int_op(strlen(client_v2->onion_address), OP_EQ, 0);
   tt_mem_op(client_v2->desc_id_fetch, OP_EQ, desc_id, sizeof(desc_id));
-  tt_int_op(tor_mem_is_zero(client_v2->descriptor_cookie,
+  tt_int_op(fast_mem_is_zero(client_v2->descriptor_cookie,
                             sizeof(client_v2->descriptor_cookie)), OP_EQ, 1);
   tt_assert(client->hsdirs_fp);
   tt_int_op(smartlist_len(client->hsdirs_fp), OP_EQ, 0);

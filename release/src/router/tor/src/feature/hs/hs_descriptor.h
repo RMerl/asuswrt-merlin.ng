@@ -69,28 +69,10 @@ typedef enum {
   HS_DESC_AUTH_ED25519 = 1
 } hs_desc_auth_type_t;
 
-/* Link specifier object that contains information on how to extend to the
- * relay that is the address, port and handshake type. */
-typedef struct hs_desc_link_specifier_t {
-  /* Indicate the type of link specifier. See trunnel ed25519_cert
-   * specification. */
-  uint8_t type;
-
-  /* It must be one of these types, can't be more than one. */
-  union {
-    /* IP address and port of the relay use to extend. */
-    tor_addr_port_t ap;
-    /* Legacy identity. A 20-byte SHA1 identity fingerprint. */
-    uint8_t legacy_id[DIGEST_LEN];
-    /* ed25519 identity. A 32-byte key. */
-    uint8_t ed25519_id[ED25519_PUBKEY_LEN];
-  } u;
-} hs_desc_link_specifier_t;
-
 /* Introduction point information located in a descriptor. */
 typedef struct hs_desc_intro_point_t {
   /* Link specifier(s) which details how to extend to the relay. This list
-   * contains hs_desc_link_specifier_t object. It MUST have at least one. */
+   * contains link_specifier_t objects. It MUST have at least one. */
   smartlist_t *link_specifiers;
 
   /* Onion key of the introduction point used to extend to it for the ntor
@@ -261,12 +243,6 @@ void hs_desc_encrypted_data_free_(hs_desc_encrypted_data_t *desc);
 #define hs_desc_encrypted_data_free(desc) \
   FREE_AND_NULL(hs_desc_encrypted_data_t, hs_desc_encrypted_data_free_, (desc))
 
-void hs_desc_link_specifier_free_(hs_desc_link_specifier_t *ls);
-#define hs_desc_link_specifier_free(ls) \
-  FREE_AND_NULL(hs_desc_link_specifier_t, hs_desc_link_specifier_free_, (ls))
-
-hs_desc_link_specifier_t *hs_desc_link_specifier_new(
-                                  const extend_info_t *info, uint8_t type);
 void hs_descriptor_clear_intro_points(hs_descriptor_t *desc);
 
 MOCK_DECL(int,
@@ -299,10 +275,8 @@ void hs_desc_authorized_client_free_(hs_desc_authorized_client_t *client);
   FREE_AND_NULL(hs_desc_authorized_client_t, \
                 hs_desc_authorized_client_free_, (client))
 
-link_specifier_t *hs_desc_lspec_to_trunnel(
-                                   const hs_desc_link_specifier_t *spec);
-
 hs_desc_authorized_client_t *hs_desc_build_fake_authorized_client(void);
+
 void hs_desc_build_authorized_client(const uint8_t *subcredential,
                                      const curve25519_public_key_t *
                                      client_auth_pk,
@@ -335,10 +309,8 @@ STATIC int desc_sig_is_valid(const char *b64_sig,
                              const char *encoded_desc, size_t encoded_len);
 
 MOCK_DECL(STATIC size_t, decrypt_desc_layer,(const hs_descriptor_t *desc,
-                                             const uint8_t *encrypted_blob,
-                                             size_t encrypted_blob_size,
                                              const uint8_t *descriptor_cookie,
-                                             int is_superencrypted_layer,
+                                             bool is_superencrypted_layer,
                                              char **decrypted_out));
 
 #endif /* defined(HS_DESCRIPTOR_PRIVATE) */

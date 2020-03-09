@@ -11,6 +11,7 @@
 #include "lib/log/util_bug.h"
 #include "lib/log/log.h"
 #include "lib/err/backtrace.h"
+#include "lib/err/torerr.h"
 #ifdef TOR_UNIT_TESTS
 #include "lib/smartlist_core/smartlist_core.h"
 #include "lib/smartlist_core/smartlist_foreach.h"
@@ -63,32 +64,52 @@ tor_set_failed_assertion_callback(void (*fn)(void))
 {
   failed_assertion_cb = fn;
 }
-#else /* !(defined(TOR_UNIT_TESTS)) */
+#else /* !defined(TOR_UNIT_TESTS) */
 #define capturing_bugs() (0)
 #define add_captured_bug(s) do { } while (0)
 #endif /* defined(TOR_UNIT_TESTS) */
 
 /** Helper for tor_assert: report the assertion failure. */
 void
+CHECK_PRINTF(5, 6)
 tor_assertion_failed_(const char *fname, unsigned int line,
-                      const char *func, const char *expr)
+                      const char *func, const char *expr,
+                      const char *fmt, ...)
 {
-  char buf[256];
+  char *buf = NULL;
+  char *extra = NULL;
+  va_list ap;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
+  if (fmt) {
+    va_start(ap,fmt);
+    tor_vasprintf(&extra, fmt, ap);
+    va_end(ap);
+  }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
   log_err(LD_BUG, "%s:%u: %s: Assertion %s failed; aborting.",
           fname, line, func, expr);
-  tor_snprintf(buf, sizeof(buf),
-               "Assertion %s failed in %s at %s:%u",
-               expr, func, fname, line);
+  tor_asprintf(&buf, "Assertion %s failed in %s at %s:%u: %s",
+               expr, func, fname, line, extra ? extra : "");
+  tor_free(extra);
   log_backtrace(LOG_ERR, LD_BUG, buf);
+  tor_free(buf);
 }
 
 /** Helper for tor_assert_nonfatal: report the assertion failure. */
 void
+CHECK_PRINTF(6, 7)
 tor_bug_occurred_(const char *fname, unsigned int line,
                   const char *func, const char *expr,
-                  int once)
+                  int once, const char *fmt, ...)
 {
-  char buf[256];
+  char *buf = NULL;
   const char *once_str = once ?
     " (Future instances of this warning will be silenced.)": "";
   if (! expr) {
@@ -98,7 +119,7 @@ tor_bug_occurred_(const char *fname, unsigned int line,
     }
     log_warn(LD_BUG, "%s:%u: %s: This line should not have been reached.%s",
              fname, line, func, once_str);
-    tor_snprintf(buf, sizeof(buf),
+    tor_asprintf(&buf,
                  "Line unexpectedly reached at %s at %s:%u",
                  func, fname, line);
   } else {
@@ -106,13 +127,32 @@ tor_bug_occurred_(const char *fname, unsigned int line,
       add_captured_bug(expr);
       return;
     }
+
+    va_list ap;
+    char *extra = NULL;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
+    if (fmt) {
+      va_start(ap,fmt);
+      tor_vasprintf(&extra, fmt, ap);
+      va_end(ap);
+    }
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
     log_warn(LD_BUG, "%s:%u: %s: Non-fatal assertion %s failed.%s",
              fname, line, func, expr, once_str);
-    tor_snprintf(buf, sizeof(buf),
-                 "Non-fatal assertion %s failed in %s at %s:%u",
-                 expr, func, fname, line);
+    tor_asprintf(&buf, "Non-fatal assertion %s failed in %s at %s:%u%s%s",
+                 expr, func, fname, line, fmt ? " : " : "",
+                 extra ? extra : "");
+    tor_free(extra);
   }
   log_backtrace(LOG_WARN, LD_BUG, buf);
+  tor_free(buf);
 
 #ifdef TOR_UNIT_TESTS
   if (failed_assertion_cb) {
@@ -122,16 +162,18 @@ tor_bug_occurred_(const char *fname, unsigned int line,
 }
 
 /**
- * Call the abort() function to kill the current process with a fatal
- * error.
+ * Call the tor_raw_abort_() function to close raw logs, then kill the current
+ * process with a fatal error. But first, close the file-based log file
+ * descriptors, so error messages are written before process termination.
  *
  * (This is a separate function so that we declare it in util_bug.h without
- * including stdlib in all the users of util_bug.h)
+ * including torerr.h in all the users of util_bug.h)
  **/
 void
 tor_abort_(void)
 {
-  abort();
+  logs_close_sigsafe();
+  tor_raw_abort_();
 }
 
 #ifdef _WIN32

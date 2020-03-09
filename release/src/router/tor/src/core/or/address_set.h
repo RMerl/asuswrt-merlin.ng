@@ -28,4 +28,4 @@ void address_set_add_ipv4h(address_set_t *set, uint32_t addr);
 int address_set_probably_contains(const address_set_t *set,
                                   const struct tor_addr_t *addr);
 
-#endif
+#endif /* !defined(TOR_ADDRESS_SET_H) */

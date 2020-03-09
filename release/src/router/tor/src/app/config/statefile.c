@@ -32,10 +32,11 @@
 #include "core/or/or.h"
 #include "core/or/circuitstats.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "core/mainloop/mainloop.h"
+#include "core/mainloop/netstatus.h"
 #include "core/mainloop/connection.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/client/entrynodes.h"
 #include "feature/hibernate/hibernate.h"
 #include "feature/stats/rephist.h"
@@ -45,6 +46,7 @@
 #include "app/config/statefile.h"
 #include "lib/encoding/confline.h"
 #include "lib/net/resolve.h"
+#include "lib/version/torversion.h"
 
 #include "app/config/or_state_st.h"
 
@@ -68,16 +70,13 @@ static config_abbrev_t state_abbrevs_[] = {
  * members with CONF_CHECK_VAR_TYPE. */
 DUMMY_TYPECHECK_INSTANCE(or_state_t);
 
-/*XXXX these next two are duplicates or near-duplicates from config.c */
-#define VAR(name,conftype,member,initvalue)                             \
-  { name, CONFIG_TYPE_ ## conftype, offsetof(or_state_t, member),       \
-      initvalue CONF_TEST_MEMBERS(or_state_t, conftype, member) }
-/** As VAR, but the option name and member name are the same. */
-#define V(member,conftype,initvalue)                                    \
+#define VAR(varname,conftype,member,initvalue)                          \
+  CONFIG_VAR_ETYPE(or_state_t, varname, conftype, member, 0, initvalue)
+#define V(member,conftype,initvalue)            \
   VAR(#member, conftype, member, initvalue)
 
 /** Array of "state" variables saved to the ~/.tor/state file. */
-static config_var_t state_vars_[] = {
+static const config_var_t state_vars_[] = {
   /* Remember to document these in state-contents.txt ! */
 
   V(AccountingBytesReadInInterval,    MEMUNIT,  NULL),
@@ -103,19 +102,19 @@ static config_var_t state_vars_[] = {
   V(HidServRevCounter,            LINELIST, NULL),
 
   V(BWHistoryReadEnds,                ISOTIME,  NULL),
-  V(BWHistoryReadInterval,            UINT,     "900"),
+  V(BWHistoryReadInterval,            POSINT,     "900"),
   V(BWHistoryReadValues,              CSV,      ""),
   V(BWHistoryReadMaxima,              CSV,      ""),
   V(BWHistoryWriteEnds,               ISOTIME,  NULL),
-  V(BWHistoryWriteInterval,           UINT,     "900"),
+  V(BWHistoryWriteInterval,           POSINT,     "900"),
   V(BWHistoryWriteValues,             CSV,      ""),
   V(BWHistoryWriteMaxima,             CSV,      ""),
   V(BWHistoryDirReadEnds,             ISOTIME,  NULL),
-  V(BWHistoryDirReadInterval,         UINT,     "900"),
+  V(BWHistoryDirReadInterval,         POSINT,     "900"),
   V(BWHistoryDirReadValues,           CSV,      ""),
   V(BWHistoryDirReadMaxima,           CSV,      ""),
   V(BWHistoryDirWriteEnds,            ISOTIME,  NULL),
-  V(BWHistoryDirWriteInterval,        UINT,     "900"),
+  V(BWHistoryDirWriteInterval,        POSINT,     "900"),
   V(BWHistoryDirWriteValues,          CSV,      ""),
   V(BWHistoryDirWriteMaxima,          CSV,      ""),
 
@@ -126,10 +125,13 @@ static config_var_t state_vars_[] = {
   V(LastRotatedOnionKey,              ISOTIME,  NULL),
   V(LastWritten,                      ISOTIME,  NULL),
 
-  V(TotalBuildTimes,                  UINT,     NULL),
-  V(CircuitBuildAbandonedCount,       UINT,     "0"),
+  V(TotalBuildTimes,                  POSINT,     NULL),
+  V(CircuitBuildAbandonedCount,       POSINT,     "0"),
   VAR("CircuitBuildTimeBin",          LINELIST_S, BuildtimeHistogram, NULL),
   VAR("BuildtimeHistogram",           LINELIST_V, BuildtimeHistogram, NULL),
+
+  V(MinutesSinceUserActivity,         POSINT,     NULL),
+  V(Dormant,                          AUTOBOOL, "auto"),
 
   END_OF_CONFIG_VARS
 };
@@ -143,30 +145,47 @@ static int or_state_validate_cb(void *old_options, void *options,
                                 void *default_options,
                                 int from_setconf, char **msg);
 
-static void or_state_free_cb(void *state);
-
 /** Magic value for or_state_t. */
 #define OR_STATE_MAGIC 0x57A73f57
 
 /** "Extra" variable in the state that receives lines we can't parse. This
  * lets us preserve options from versions of Tor newer than us. */
-static config_var_t state_extra_var = {
-  "__extra", CONFIG_TYPE_LINELIST, offsetof(or_state_t, ExtraLines), NULL
-  CONF_TEST_MEMBERS(or_state_t, LINELIST, ExtraLines)
+static struct_member_t state_extra_var = {
+  .name = "__extra",
+  .type = CONFIG_TYPE_LINELIST,
+  .offset = offsetof(or_state_t, ExtraLines),
 };
 
 /** Configuration format for or_state_t. */
 static const config_format_t state_format = {
   sizeof(or_state_t),
-  OR_STATE_MAGIC,
-  offsetof(or_state_t, magic_),
+  {
+   "or_state_t",
+   OR_STATE_MAGIC,
+   offsetof(or_state_t, magic_),
+  },
   state_abbrevs_,
   NULL,
   state_vars_,
   or_state_validate_cb,
-  or_state_free_cb,
+  NULL,
   &state_extra_var,
+  offsetof(or_state_t, substates_),
 };
+
+/* A global configuration manager for state-file objects */
+static config_mgr_t *state_mgr = NULL;
+
+/** Return the configuration manager for state-file objects. */
+static const config_mgr_t *
+get_state_mgr(void)
+{
+  if (PREDICT_UNLIKELY(state_mgr == NULL)) {
+    state_mgr = config_mgr_new(&state_format);
+    config_mgr_freeze(state_mgr);
+  }
+  return state_mgr;
+}
 
 /** Persistent serialized state. */
 static or_state_t *global_state = NULL;
@@ -262,12 +281,6 @@ or_state_validate_cb(void *old_state, void *state, void *default_state,
   return or_state_validate(state, msg);
 }
 
-static void
-or_state_free_cb(void *state)
-{
-  or_state_free_(state);
-}
-
 /** Return 0 if every setting in <b>state</b> is reasonable, and a
  * permissible transition from <b>old_state</b>.  Else warn and return -1.
  * Should have no side effects, except for normalizing the contents of
@@ -292,7 +305,7 @@ or_state_set(or_state_t *new_state)
   char *err = NULL;
   int ret = 0;
   tor_assert(new_state);
-  config_free(&state_format, global_state);
+  config_free(get_state_mgr(), global_state);
   global_state = new_state;
   if (entry_guards_parse_state(global_state, 1, &err)<0) {
     log_warn(LD_GENERAL,"%s",err);
@@ -308,6 +321,8 @@ or_state_set(or_state_t *new_state)
       get_circuit_build_times_mutable(),global_state) < 0) {
     ret = -1;
   }
+  netstatus_load_from_state(global_state, time(NULL));
+
   return ret;
 }
 
@@ -353,9 +368,8 @@ or_state_save_broken(char *fname)
 STATIC or_state_t *
 or_state_new(void)
 {
-  or_state_t *new_state = tor_malloc_zero(sizeof(or_state_t));
-  new_state->magic_ = OR_STATE_MAGIC;
-  config_init(&state_format, new_state);
+  or_state_t *new_state = config_new(get_state_mgr());
+  config_init(get_state_mgr(), new_state);
 
   return new_state;
 }
@@ -396,7 +410,7 @@ or_state_load(void)
     int assign_retval;
     if (config_get_lines(contents, &lines, 0)<0)
       goto done;
-    assign_retval = config_assign(&state_format, new_state,
+    assign_retval = config_assign(get_state_mgr(), new_state,
                                   lines, 0, &errmsg);
     config_free_lines(lines);
     if (assign_retval<0)
@@ -423,7 +437,7 @@ or_state_load(void)
     or_state_save_broken(fname);
 
     tor_free(contents);
-    config_free(&state_format, new_state);
+    config_free(get_state_mgr(), new_state);
 
     new_state = or_state_new();
   } else if (contents) {
@@ -456,7 +470,7 @@ or_state_load(void)
   tor_free(fname);
   tor_free(contents);
   if (new_state)
-    config_free(&state_format, new_state);
+    config_free(get_state_mgr(), new_state);
 
   return r;
 }
@@ -499,6 +513,8 @@ or_state_save(time_t now)
   entry_guards_update_state(global_state);
   rep_hist_update_state(global_state);
   circuit_build_times_update_state(get_circuit_build_times(), global_state);
+  netstatus_flush_to_state(global_state, now);
+
   if (accounting_is_enabled(get_options()))
     accounting_run_housekeeping(now);
 
@@ -507,7 +523,7 @@ or_state_save(time_t now)
   tor_free(global_state->TorVersion);
   tor_asprintf(&global_state->TorVersion, "Tor %s", get_version());
 
-  state = config_dump(&state_format, NULL, global_state, 1, 0);
+  state = config_dump(get_state_mgr(), NULL, global_state, 1, 0);
   format_local_iso_time(tbuf, now);
   tor_asprintf(&contents,
                "# Tor state file last generated on %s local time\n"
@@ -717,7 +733,7 @@ or_state_free_(or_state_t *state)
   if (!state)
     return;
 
-  config_free(&state_format, state);
+  config_free(get_state_mgr(), state);
 }
 
 void
@@ -725,4 +741,5 @@ or_state_free_all(void)
 {
   or_state_free(global_state);
   global_state = NULL;
+  config_mgr_free(state_mgr);
 }

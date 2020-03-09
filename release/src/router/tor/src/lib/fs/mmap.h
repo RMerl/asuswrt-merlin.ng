@@ -38,4 +38,4 @@ typedef struct tor_mmap_t {
 tor_mmap_t *tor_mmap_file(const char *filename);
 int tor_munmap_file(tor_mmap_t *handle);
 
-#endif
+#endif /* !defined(TOR_MMAP_H) */

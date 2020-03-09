@@ -18,6 +18,7 @@
 
 struct smartlist_t;
 struct config_line_t;
+struct config_suite_t;
 
 /** Enumeration of outbound address configuration types:
  * Exit-only, OR-only, or both */
@@ -72,6 +73,9 @@ struct or_options_t {
   routerset_t *ExitNodes; /**< Structure containing nicknames, digests,
                            * country codes and IP address patterns of ORs to
                            * consider as exits. */
+  routerset_t *MiddleNodes; /**< Structure containing nicknames, digests,
+                             * country codes and IP address patterns of ORs to
+                             * consider as middles. */
   routerset_t *EntryNodes;/**< Structure containing nicknames, digests,
                            * country codes and IP address patterns of ORs to
                            * consider as entry points. */
@@ -118,7 +122,6 @@ struct or_options_t {
   struct config_line_t *RecommendedVersions;
   struct config_line_t *RecommendedClientVersions;
   struct config_line_t *RecommendedServerVersions;
-  struct config_line_t *RecommendedPackages;
   /** Whether dirservers allow router descriptors with private IPs. */
   int DirAllowPrivateAddresses;
   /** Whether routers accept EXTEND cells to routers with private IPs. */
@@ -244,6 +247,17 @@ struct or_options_t {
    * and server. If 0, it will be fully disabled. If 1, the client will still
    * pad to the server regardless of server support. */
   int ConnectionPadding;
+
+  /** Boolean: if true, then circuit padding will be negotiated by client
+   * and server, subject to consenus limits (default). If 0, it will be fully
+   * disabled. */
+  int CircuitPadding;
+
+  /** Boolean: if true, then this client will only use circuit padding
+   * algorithms that are known to use a low amount of overhead. If false,
+   * we will use all available circuit padding algorithms.
+   */
+  int ReducedCircuitPadding;
 
   /** To what authority types do we publish our descriptor? Choices are
    * "v1", "v2", "v3", "bridge", or "". */
@@ -666,6 +680,9 @@ struct or_options_t {
    * accessing this value directly.  */
   int ClientPreferIPv6DirPort;
 
+  /** If true, prefer an IPv4 or IPv6 OR port at random. */
+  int ClientAutoIPv6ORPort;
+
   /** The length of time that we think a consensus should be fresh. */
   int V3AuthVotingInterval;
   /** The length of time we think it will take to distribute votes. */
@@ -1072,6 +1089,33 @@ struct or_options_t {
 
   /** Autobool: Do we refuse single hop client rendezvous? */
   int DoSRefuseSingleHopClientRendezvous;
+
+  /** Interval: how long without activity does it take for a client
+   * to become dormant?
+   **/
+  int DormantClientTimeout;
+
+  /** Boolean: true if having an idle stream is sufficient to prevent a client
+   * from becoming dormant.
+   **/
+  int DormantTimeoutDisabledByIdleStreams;
+
+  /** Boolean: true if Tor should be dormant the first time it starts with
+   * a datadirectory; false otherwise. */
+  int DormantOnFirstStartup;
+  /**
+   * Boolean: true if Tor should treat every startup event as cancelling
+   * a possible previous dormant state.
+   **/
+  int DormantCanceledByStartup;
+
+  /**
+   * Configuration objects for individual modules.
+   *
+   * Never access this field or its members directly: instead, use the module
+   * in question to get its relevant configuration object.
+   */
+  struct config_suite_t *subconfigs_;
 };
 
-#endif
+#endif /* !defined(TOR_OR_OPTIONS_ST_H) */

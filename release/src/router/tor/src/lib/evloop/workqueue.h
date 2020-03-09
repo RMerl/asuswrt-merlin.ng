@@ -63,7 +63,6 @@ replyqueue_t *threadpool_get_replyqueue(threadpool_t *tp);
 replyqueue_t *replyqueue_new(uint32_t alertsocks_flags);
 void replyqueue_process(replyqueue_t *queue);
 
-struct event_base;
 int threadpool_register_reply_event(threadpool_t *tp,
                                     void (*cb)(threadpool_t *tp));
 

@@ -52,6 +52,14 @@
 	background-color:#0096FF;
 }
 
+#tx_bar{
+	background-color:#3CF;
+}
+
+#rx_bar{
+	background-color:#118811;
+}
+
 #cpu0_bar{
 	background-color:#FF9000;	
 }
@@ -186,6 +194,8 @@ function initial(){
 			}
 		}, 10);
 	}
+
+	update_traffic();
 }
 
 function tabclickhandler(wl_unit){
@@ -213,7 +223,6 @@ function tabclickhandler(wl_unit){
 }
 
 function render_RAM(total, free, used){
-	var pt = "";
 	var used_percentage = total_MB = free_MB = used_MB = 0;
 	total_MB = Math.round(total/1024);
 	free_MB = Math.round(free/1024);
@@ -226,15 +235,6 @@ function render_RAM(total, free, used){
 	used_percentage = Math.round((used/total)*100);
 	$("#ram_bar").css("width", used_percentage +"%");
 	$("#ram_quantification").html(used_percentage +"%");
-	
-	ram_usage_array.push(100 - used_percentage);
-	ram_usage_array.splice(0,1);
-	
-	for(i=0;i<array_size;i++){
-		pt += i*6 +","+ ram_usage_array[i] + " ";
-	}
-
-	document.getElementById('ram_graph').setAttribute('points', pt);
 }
 
 function render_CPU(cpu_info_new){
@@ -474,6 +474,95 @@ function get_ethernet_ports() {
 		}
 	});
 }
+
+var last_rx = 0;
+var last_tx = 0;
+var max_rx = 100 * 1024;
+var max_tx = 100 * 1024;
+var current_rx = 0;
+var current_tx = 0;
+function update_traffic() {
+	$.ajax({
+	url: '/update.cgi',
+	dataType: 'script',
+	data: {'output': 'netdev'},
+	error: function(xhr) {
+			setTimeout("update_traffic();", 1000);
+	},
+	success: function(response){
+		var diff_rx = 0;
+		if(last_rx != 0){
+			if((current_rx - last_rx) < 0){
+				diff_rx = 1;
+			}
+			else{
+				diff_rx = (current_rx - last_rx)/2;
+			}
+		}
+
+		last_rx = current_rx;
+		if(netdev.INTERNET){
+			current_rx = netdev.INTERNET.rx;
+		}
+		else{
+			current_rx = netdev.WIRED.rx + netdev.WIRELESS0.rx + netdev.WIRELESS1.rx;
+			if( netdev.WIRELESS2){
+				current_rx += netdev.WIRELESS2.rx;
+			}
+		}
+
+		var diff_tx = 0;
+		if(last_tx != 0){
+			if((current_tx - last_tx) < 0){
+				diff_tx = 1;
+			}
+			else{
+				diff_tx = (current_tx - last_tx)/2;
+			}
+		}
+
+		last_tx = current_tx;
+		if(netdev.INTERNET){
+			current_tx = netdev.INTERNET.tx;
+		}
+		else{
+			current_tx = netdev.WIRED.tx + netdev.WIRELESS0.tx + netdev.WIRELESS1.tx;
+			if( netdev.WIRELESS2){
+				current_tx += netdev.WIRELESS2.tx;
+			}
+		}
+
+		document.getElementById('rx-current').innerHTML = adjust_unit(diff_rx);
+		document.getElementById('tx-current').innerHTML = adjust_unit(diff_tx);
+
+		if (diff_rx > max_rx)
+			max_rx = diff_rx;
+
+		used_percentage = Math.round((diff_rx/max_rx)*100);
+		$("#rx_bar").css("width", used_percentage +"%");
+
+		if (diff_tx > max_tx)
+			max_tx = diff_tx;
+
+		used_percentage = Math.round((diff_tx/max_tx)*100);
+		$("#tx_bar").css("width", used_percentage +"%");
+
+		setTimeout("update_traffic();", 2000);
+	}
+	});
+}
+
+function adjust_unit(value) {
+	value = value / 1024;
+	unit = " KB/s";
+
+	if (value > 1024) {
+		value = value / 1024;
+		unit = " MB/s";
+	}
+	return value.toFixed(2) + unit;
+}
+
 </script>
 </head>
 <body class="statusbody" onload="initial();">
@@ -524,6 +613,52 @@ function get_ethernet_ports() {
 			</td>
 		</table>
 	</td>
+</tr>
+
+<tr>
+	<td>
+                <table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="net" style="margin: 0px 8px;">
+                        <tr>
+                                <td colspan="3">
+                                        <div class="title">Internet Traffic</div>
+                                        <div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
+                                </td>
+                        </tr>
+			<tr>
+				<td width="33%" style="padding-left:25px;">Download:</td>
+				<td width="33%" style="text-align:right;"><div id="rx-current">-- KB/s</div></td>
+				<td width="33%"></td>
+			</tr>
+			<tr>
+				<td class="loading_bar" colspan="2">
+				<div>
+					<div id="rx_bar" class="status_bar"></div>
+				</div>
+				</td>
+				<td>
+					<div style="width:39px;"></div>
+				</td>
+			</tr>
+			<tr>
+				<td width="33%"style="padding-left:25px;">Upload:</td>
+				<td width="33%"style="text-align:right;"><div id="tx-current">-- KB/s</div></td>
+				<td width="33%"></td>
+			</tr>
+			<tr>
+				<td class="loading_bar" colspan="2">
+				<div>
+					<div id="tx_bar" class="status_bar"></div>
+				</div>
+				</td>
+				<td>
+					<div style="width:39px;"></div>
+				</td>
+			</tr>
+                        <tr>
+                                <td colspan="3" style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
+                        </tr>
+                </table>
+        </td>
 </tr>
 
 <tr>
@@ -630,41 +765,6 @@ function get_ethernet_ports() {
 					</div>
 				</td>
 			</tr>
-			<tr style="height:100px;" class="IE8HACK">
-				<td colspan="3">
-					<div style="margin:0px 11px 0px 11px;background-color:black;">
-						<svg width="270px" height="100px">
-							<g>
-								<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="0%" x2="100%" y2="0%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%" x2="100%" y2="25%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%" x2="100%" y2="50%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%" x2="100%" y2="75%" />
-								<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />
-							</g>	
-
-							<g>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">0%</text>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">50%</text>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100%</text>
-							</g>						
-
-							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="0"   y1="0%" x2="0"   y2="100%" id="tick1" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="30"  y1="0%" x2="30"  y2="100%" id="tick2" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="60"  y1="0%" x2="60"  y2="100%" id="tick3" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="90"  y1="0%" x2="90"  y2="100%" id="tick4" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="120" y1="0%" x2="120" y2="100%" id="tick5" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="150" y1="0%" x2="150" y2="100%" id="tick6" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="180" y1="0%" x2="180" y2="100%" id="tick7" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="210" y1="0%" x2="210" y2="100%" id="tick8" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="240" y1="0%" x2="240" y2="100%" id="tick9" />						
-							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="270" y1="0%" x2="270" y2="100%" id="tick10" />
-							
-							<polyline id="ram_graph" style="fill:none;stroke:#0096FF;stroke-width:1;width:200px;"  points="">
-						</svg>
-					</div>
-				</td>
-			</tr>
-			
 			</table>
 		</div>
 	</td>

@@ -10,11 +10,13 @@
 #include "lib/cc/torint.h"  /* TOR_PRIdSZ */
 #include "lib/crypt_ops/crypto_format.h"
 #include "lib/malloc/malloc.h"
+#include "lib/encoding/time_fmt.h"
 
 int
 main(int argc, char **argv)
 {
   ed25519_cert_t *cert = NULL;
+  char rfc1123_buf[RFC1123_TIME_LEN+1] = "";
 
   if (argc != 2) {
     fprintf(stderr, "Usage:\n");
@@ -58,6 +60,11 @@ main(int argc, char **argv)
   time_t expires_at = (time_t)cert->exp_field * 60 * 60;
 
   printf("Expires at: %s", ctime(&expires_at));
+
+  format_rfc1123_time(rfc1123_buf, expires_at);
+  printf("RFC 1123 timestamp: %s\n", rfc1123_buf);
+
+  printf("UNIX timestamp: %ld\n", (long int)expires_at);
 
   ed25519_cert_free(cert);
 

@@ -40,7 +40,8 @@ struct control_connection_t {
   /** A control command that we're reading from the inbuf, but which has not
    * yet arrived completely. */
   char *incoming_cmd;
+  /** The control command that we are currently processing. */
+  char *current_cmd;
 };
 
-#endif
-
+#endif /* !defined(CONTROL_CONNECTION_ST_H) */

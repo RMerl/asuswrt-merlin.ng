@@ -30,9 +30,9 @@
 #include "core/or/or.h"
 
 #include "ht.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "app/config/config.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/client/dnsserv.h"
 #include "core/or/dos.h"
 #include "lib/geoip/geoip.h"

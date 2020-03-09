@@ -34,6 +34,8 @@ void hs_circuitmap_register_intro_circ_v2_relay_side(struct or_circuit_t *circ,
 void hs_circuitmap_register_intro_circ_v3_relay_side(struct or_circuit_t *circ,
                                          const ed25519_public_key_t *auth_key);
 
+smartlist_t *hs_circuitmap_get_all_intro_circ_relay_side(void);
+
 /** Public service-side API: */
 
 struct origin_circuit_t *

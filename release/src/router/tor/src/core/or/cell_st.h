@@ -16,5 +16,5 @@ struct cell_t {
   uint8_t payload[CELL_PAYLOAD_SIZE]; /**< Cell body. */
 };
 
-#endif
+#endif /* !defined(CELL_ST_H) */
 

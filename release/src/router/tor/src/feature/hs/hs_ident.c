@@ -13,14 +13,10 @@
 /* Return a newly allocated circuit identifier. The given public key is copied
  * identity_pk into the identifier. */
 hs_ident_circuit_t *
-hs_ident_circuit_new(const ed25519_public_key_t *identity_pk,
-                     hs_ident_circuit_type_t circuit_type)
+hs_ident_circuit_new(const ed25519_public_key_t *identity_pk)
 {
-  tor_assert(circuit_type == HS_IDENT_CIRCUIT_INTRO ||
-             circuit_type == HS_IDENT_CIRCUIT_RENDEZVOUS);
   hs_ident_circuit_t *ident = tor_malloc_zero(sizeof(*ident));
   ed25519_pubkey_copy(&ident->identity_pk, identity_pk);
-  ident->circuit_type = circuit_type;
   return ident;
 }
 

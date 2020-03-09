@@ -1418,6 +1418,7 @@ write_packed_cell(channel_t *chan, packed_cell_t *cell)
 {
   int ret = -1;
   size_t cell_bytes;
+  uint8_t command = packed_cell_get_command(cell, chan->wide_circ_ids);
 
   tor_assert(chan);
   tor_assert(cell);
@@ -1451,6 +1452,16 @@ write_packed_cell(channel_t *chan, packed_cell_t *cell)
   chan->n_bytes_xmitted += cell_bytes;
   /* Successfully sent the cell. */
   ret = 0;
+
+  /* Update padding statistics for the packed codepath.. */
+  rep_hist_padding_count_write(PADDING_TYPE_TOTAL);
+  if (command == CELL_PADDING)
+    rep_hist_padding_count_write(PADDING_TYPE_CELL);
+  if (chan->padding_enabled) {
+    rep_hist_padding_count_write(PADDING_TYPE_ENABLED_TOTAL);
+    if (command == CELL_PADDING)
+      rep_hist_padding_count_write(PADDING_TYPE_ENABLED_CELL);
+  }
 
  done:
   return ret;

@@ -12,6 +12,11 @@
 #include "core/or/cell_queue_st.h"
 
 struct hs_token_t;
+struct circpad_machine_spec_t;
+struct circpad_machine_runtime_t;
+
+/** Number of padding state machines on a circuit. */
+#define CIRCPAD_MAX_MACHINES (2)
 
 /** "magic" value for an origin_circuit_t */
 #define ORIGIN_CIRCUIT_MAGIC 0x35315243u
@@ -61,12 +66,6 @@ struct circuit_t {
    */
   circid_t n_circ_id;
 
-  /**
-   * Circuit mux associated with n_chan to which this circuit is attached;
-   * NULL if we have no n_chan.
-   */
-  circuitmux_t *n_mux;
-
   /** Queue of cells waiting to be transmitted on n_chan */
   cell_queue_t n_chan_cells;
 
@@ -93,6 +92,10 @@ struct circuit_t {
   /** True iff this circuit has received a DESTROY cell in either direction */
   unsigned int received_destroy : 1;
 
+  /** True iff we have sent a sufficiently random data cell since last
+   * we reset send_randomness_after_n_cells. */
+  unsigned int have_sent_sufficiently_random_cell : 1;
+
   uint8_t state; /**< Current status of this circuit. */
   uint8_t purpose; /**< Why are we creating this circuit? */
 
@@ -105,6 +108,32 @@ struct circuit_t {
    * circuit-level sendme cells to indicate that we're willing to accept
    * more. */
   int deliver_window;
+  /**
+   * How many cells do we have until we need to send one that contains
+   * sufficient randomness?  Used to ensure that authenticated SENDME cells
+   * will reflect some unpredictable information.
+   **/
+  uint16_t send_randomness_after_n_cells;
+
+  /** FIFO containing the digest of the cells that are just before a SENDME is
+   * sent by the client. It is done at the last cell before our package_window
+   * goes down to 0 which is when we expect a SENDME.
+   *
+   * Our current circuit package window is capped to 1000
+   * (CIRCWINDOW_START_MAX) which is also the start value. The increment is
+   * set to 100 (CIRCWINDOW_INCREMENT) which means we don't allow more than
+   * 1000/100 = 10 outstanding SENDME cells worth of data. Meaning that this
+   * list can not contain more than 10 digests of DIGEST_LEN bytes (20).
+   *
+   * At position i in the list, the digest corresponds to the
+   * (CIRCWINDOW_INCREMENT * i)-nth cell received since we expect a SENDME to
+   * be received containing that cell digest.
+   *
+   * For example, position 2 (starting at 0) means that we've received 300
+   * cells so the 300th cell digest is kept at index 2.
+   *
+   * At maximum, this list contains 200 bytes plus the smartlist overhead. */
+  smartlist_t *sendme_last_digests;
 
   /** Temporary field used during circuits_handle_oom. */
   uint32_t age_tmp;
@@ -177,6 +206,27 @@ struct circuit_t {
   /** Hashtable node: used to look up the circuit by its HS token using the HS
       circuitmap. */
   HT_ENTRY(circuit_t) hs_circuitmap_node;
+
+  /** Adaptive Padding state machines: these are immutable. The state machines
+   *  that come from the consensus are saved to a global structure, to avoid
+   *  per-circuit allocations. This merely points to the global copy in
+   *  origin_padding_machines or relay_padding_machines that should never
+   *  change or get deallocated.
+   *
+   *  Each element of this array corresponds to a different padding machine,
+   *  and we can have up to CIRCPAD_MAX_MACHINES such machines. */
+  const struct circpad_machine_spec_t *padding_machine[CIRCPAD_MAX_MACHINES];
+
+  /** Adaptive Padding machine runtime info for above machines. This is
+   *  the per-circuit mutable information, such as the current state and
+   *  histogram token counts. Some of it is optional (aka NULL).
+   *  If a machine is being shut down, these indexes can be NULL
+   *  without the corresponding padding_machine being NULL, while we
+   *  wait for the other end to respond to our shutdown request.
+   *
+   *  Each element of this array corresponds to a different padding machine,
+   *  and we can have up to CIRCPAD_MAX_MACHINES such machines. */
+  struct circpad_machine_runtime_t *padding_info[CIRCPAD_MAX_MACHINES];
 };
 
-#endif
+#endif /* !defined(CIRCUIT_ST_H) */

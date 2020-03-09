@@ -12,18 +12,19 @@
 #ifndef TOR_NS_PARSE_H
 #define TOR_NS_PARSE_H
 
-int router_get_networkstatus_v3_hashes(const char *s,
+int router_get_networkstatus_v3_hashes(const char *s, size_t len,
                                        common_digests_t *digests);
-int router_get_networkstatus_v3_signed_boundaries(const char *s,
+int router_get_networkstatus_v3_signed_boundaries(const char *s, size_t len,
                                                   const char **start_out,
                                                   const char **end_out);
 int router_get_networkstatus_v3_sha3_as_signed(uint8_t *digest_out,
-                                               const char *s);
+                                               const char *s, size_t len);
 int compare_vote_routerstatus_entries(const void **_a, const void **_b);
 
 int networkstatus_verify_bw_weights(networkstatus_t *ns, int);
 enum networkstatus_type_t;
 networkstatus_t *networkstatus_parse_vote_from_string(const char *s,
+                                           size_t len,
                                            const char **eos_out,
                                            enum networkstatus_type_t ns_type);
 
@@ -35,11 +36,12 @@ STATIC int routerstatus_parse_guardfraction(const char *guardfraction_str,
 struct memarea_t;
 STATIC routerstatus_t *routerstatus_parse_entry_from_string(
                                      struct memarea_t *area,
-                                     const char **s, smartlist_t *tokens,
+                                     const char **s, const char *eos,
+                                     smartlist_t *tokens,
                                      networkstatus_t *vote,
                                      vote_routerstatus_t *vote_rs,
                                      int consensus_method,
                                      consensus_flavor_t flav);
-#endif
+#endif /* defined(NS_PARSE_PRIVATE) */
 
-#endif
+#endif /* !defined(TOR_NS_PARSE_H) */

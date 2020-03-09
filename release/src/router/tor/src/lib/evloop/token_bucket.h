@@ -103,6 +103,35 @@ token_bucket_rw_get_write(const token_bucket_rw_t *bucket)
   return token_bucket_raw_get(&bucket->write_bucket);
 }
 
+/**
+ * A specialized bucket containing a single counter.
+ */
+
+typedef struct token_bucket_ctr_t {
+  token_bucket_cfg_t cfg;
+  token_bucket_raw_t counter;
+  uint32_t last_refilled_at_timestamp;
+} token_bucket_ctr_t;
+
+void token_bucket_ctr_init(token_bucket_ctr_t *bucket, uint32_t rate,
+                           uint32_t burst, uint32_t now_ts);
+void token_bucket_ctr_adjust(token_bucket_ctr_t *bucket, uint32_t rate,
+                             uint32_t burst);
+void token_bucket_ctr_reset(token_bucket_ctr_t *bucket, uint32_t now_ts);
+void token_bucket_ctr_refill(token_bucket_ctr_t *bucket, uint32_t now_ts);
+
+static inline bool
+token_bucket_ctr_dec(token_bucket_ctr_t *bucket, ssize_t n)
+{
+  return token_bucket_raw_dec(&bucket->counter, n);
+}
+
+static inline size_t
+token_bucket_ctr_get(const token_bucket_ctr_t *bucket)
+{
+  return token_bucket_raw_get(&bucket->counter);
+}
+
 #ifdef TOKEN_BUCKET_PRIVATE
 
 /* To avoid making the rates too small, we consider units of "steps",
@@ -112,6 +141,6 @@ token_bucket_rw_get_write(const token_bucket_rw_t *bucket)
 
 STATIC uint32_t rate_per_sec_to_rate_per_step(uint32_t rate);
 
-#endif
+#endif /* defined(TOKEN_BUCKET_PRIVATE) */
 
-#endif /* TOR_TOKEN_BUCKET_H */
+#endif /* !defined(TOR_TOKEN_BUCKET_H) */

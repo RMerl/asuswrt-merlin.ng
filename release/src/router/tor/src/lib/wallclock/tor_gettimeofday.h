@@ -17,4 +17,4 @@ struct timeval;
 
 MOCK_DECL(void, tor_gettimeofday, (struct timeval *timeval));
 
-#endif
+#endif /* !defined(TOR_GETTIMEOFDAY_H) */

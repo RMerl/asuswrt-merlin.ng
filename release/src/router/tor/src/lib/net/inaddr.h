@@ -24,4 +24,4 @@ int tor_inet_ntoa(const struct in_addr *in, char *buf, size_t buf_len);
 const char *tor_inet_ntop(int af, const void *src, char *dst, size_t len);
 int tor_inet_pton(int af, const char *src, void *dst);
 
-#endif
+#endif /* !defined(TOR_INADDR_H) */

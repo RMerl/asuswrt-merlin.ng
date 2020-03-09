@@ -27,7 +27,7 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-#endif
+#endif /* defined(_WIN32) */
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -108,7 +108,7 @@ char *read_file_to_str_until_eof(int fd, size_t max_bytes_to_read,
  * Tor is built for unit tests, or when Tor is built on an operating system
  * without its own getdelim(). */
 ssize_t compat_getdelim_(char **lineptr, size_t *n, int delim, FILE *stream);
-#endif
+#endif /* !defined(HAVE_GETDELIM) || defined(TOR_UNIT_TESTS) */
 
 #ifdef HAVE_GETDELIM
 /**
@@ -123,10 +123,10 @@ ssize_t compat_getdelim_(char **lineptr, size_t *n, int delim, FILE *stream);
  */
 #define tor_getdelim(lineptr, n, delim, stream) \
   getdelim((lineptr), (n), (delim), (stream))
-#else
+#else /* !defined(HAVE_GETDELIM) */
 #define tor_getdelim(lineptr, n, delim, stream) \
   compat_getdelim_((lineptr), (n), (delim), (stream))
-#endif
+#endif /* defined(HAVE_GETDELIM) */
 
 #ifdef HAVE_GETLINE
 /**
@@ -137,9 +137,9 @@ ssize_t compat_getdelim_(char **lineptr, size_t *n, int delim, FILE *stream);
  */
 #define tor_getline(lineptr, n, stream) \
   getline((lineptr), (n), (stream))
-#else
+#else /* !defined(HAVE_GETLINE) */
 #define tor_getline(lineptr, n, stream) \
   tor_getdelim((lineptr), (n), '\n', (stream))
-#endif
+#endif /* defined(HAVE_GETLINE) */
 
-#endif
+#endif /* !defined(TOR_FS_H) */

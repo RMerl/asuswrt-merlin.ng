@@ -22,4 +22,4 @@ int tor_get_prfiledesc_byte_counts(struct PRFileDesc *fd,
                                    uint64_t *n_read_out,
                                    uint64_t *n_written_out);
 
-#endif
+#endif /* !defined(TOR_NSS_COUNTBYTES_H) */

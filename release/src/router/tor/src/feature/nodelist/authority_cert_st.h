@@ -28,5 +28,5 @@ struct authority_cert_t {
   uint16_t dir_port;
 };
 
-#endif
+#endif /* !defined(AUTHORITY_CERT_ST_H) */
 

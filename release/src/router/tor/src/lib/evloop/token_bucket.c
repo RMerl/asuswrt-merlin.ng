@@ -256,3 +256,55 @@ token_bucket_rw_dec(token_bucket_rw_t *bucket,
     flags |= TB_WRITE;
   return flags;
 }
+
+/** Initialize a token bucket in <b>bucket</b>, set up to allow <b>rate</b>
+ * per second, with a maximum burst of <b>burst</b>. The bucket is created
+ * such that <b>now_ts</b> is the current timestamp. The bucket starts out
+ * full. */
+void
+token_bucket_ctr_init(token_bucket_ctr_t *bucket, uint32_t rate,
+                      uint32_t burst, uint32_t now_ts)
+{
+  memset(bucket, 0, sizeof(token_bucket_ctr_t));
+  token_bucket_ctr_adjust(bucket, rate, burst);
+  token_bucket_ctr_reset(bucket, now_ts);
+}
+
+/** Change the configured rate and burst of the given token bucket object in
+ * <b>bucket</b>. */
+void
+token_bucket_ctr_adjust(token_bucket_ctr_t *bucket, uint32_t rate,
+                        uint32_t burst)
+{
+  token_bucket_cfg_init(&bucket->cfg, rate, burst);
+  token_bucket_raw_adjust(&bucket->counter, &bucket->cfg);
+}
+
+/** Reset <b>bucket</b> to be full, as of timestamp <b>now_ts</b>. */
+void
+token_bucket_ctr_reset(token_bucket_ctr_t *bucket, uint32_t now_ts)
+{
+  token_bucket_raw_reset(&bucket->counter, &bucket->cfg);
+  bucket->last_refilled_at_timestamp = now_ts;
+}
+
+/** Refill <b>bucket</b> as appropriate, given that the current timestamp is
+ * <b>now_ts</b>. */
+void
+token_bucket_ctr_refill(token_bucket_ctr_t *bucket, uint32_t now_ts)
+{
+  const uint32_t elapsed_ticks =
+    (now_ts - bucket->last_refilled_at_timestamp);
+  if (elapsed_ticks > UINT32_MAX-(300*1000)) {
+    /* Either about 48 days have passed since the last refill, or the
+     * monotonic clock has somehow moved backwards. (We're looking at you,
+     * Windows.).  We accept up to a 5 minute jump backwards as
+     * "unremarkable".
+     */
+    return;
+  }
+
+  token_bucket_raw_refill_steps(&bucket->counter, &bucket->cfg,
+                                elapsed_ticks);
+  bucket->last_refilled_at_timestamp = now_ts;
+}

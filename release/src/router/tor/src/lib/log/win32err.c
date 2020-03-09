@@ -47,7 +47,7 @@ format_win32_error(DWORD err)
     result = tor_malloc(len);
     wcstombs(result,str,len);
     result[len-1] = '\0';
-#else /* !(defined(UNICODE)) */
+#else /* !defined(UNICODE) */
     result = tor_strdup(str);
 #endif /* defined(UNICODE) */
   } else {

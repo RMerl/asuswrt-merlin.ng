@@ -256,7 +256,7 @@ Here are some additional bits of advice and rules:
    or 2) should fail (i.e. in a unittest).
 
    You SHOULD NOT use `unwrap()` anywhere in which it is possible to handle the
-   potential error with either `expect()` or the eel operator, `?`.
+   potential error with the eel operator, `?` or another non panicking way.
    For example, consider a function which parses a string into an integer:
 
         fn parse_port_number(config_string: &str) -> u16 {
@@ -264,12 +264,12 @@ Here are some additional bits of advice and rules:
         }
 
    There are numerous ways this can fail, and the `unwrap()` will cause the
-   whole program to byte the dust!  Instead, either you SHOULD use `expect()`
+   whole program to byte the dust!  Instead, either you SHOULD use `ok()`
    (or another equivalent function which will return an `Option` or a `Result`)
    and change the return type to be compatible:
 
         fn parse_port_number(config_string: &str) -> Option<u16> {
-            u16::from_str_radix(config_string, 10).expect("Couldn't parse port into a u16")
+            u16::from_str_radix(config_string, 10).ok()
         }
 
    or you SHOULD use `or()` (or another similar method):

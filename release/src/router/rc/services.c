@@ -14151,7 +14151,8 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		fprintf(stderr,
 			"WARNING: rc notified of unrecognized event `%s'.\n",
 					script);
-		logmessage("rc", "received unrecognized event: %s", script);
+		if (nvram_get_int("rc_debug"))
+			logmessage("rc", "received unrecognized event: %s", script);
 	}
 
 skip:

@@ -21,4 +21,4 @@ void router_orport_found_reachable(void);
 void router_dirport_found_reachable(void);
 void router_perform_bandwidth_test(int num_circs, time_t now);
 
-#endif
+#endif /* !defined(TOR_SELFTEST_H) */

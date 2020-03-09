@@ -1,4 +1,6 @@
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS += \
 	src/lib/cc/compat_compiler.h \
+	src/lib/cc/ctassert.h \
 	src/lib/cc/torint.h

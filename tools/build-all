@@ -41,6 +41,8 @@ BAC86=y
 
 BAX88=y
 
+BAX58=y
+
 
 ### Paths
 # Store built images there
@@ -72,6 +74,9 @@ build_fw()
 		if [ "$FWMODEL" == "rt-ac86u" -o "$FWMODEL" == "rt-ax88u" ]; then
 			FWNAME=$(ls -t *_cferom_ubi.w | head -n 1)
 			ZIPNAME="${FWNAME//_cferom_ubi.w/}".zip
+		else if [ "$FWMODEL" == "rt-ax58u" ]
+			FWNAME=$(ls -t *_cferom_pureubi.w | head -n 1)
+			ZIPNAME="${FWNAME//_cferom_pureubi.w/}".zip
 		else
 			FWNAME=$(ls -t *.trx | head -n 1)
 			ZIPNAME="${FWNAME%.*}".zip
@@ -132,10 +137,10 @@ if [ "$BAC68" == "y" ]; then
 	clean_tree amng.ac68 release/src-rt-6.x.4708 rt-ac68u mainline
 fi
 if [ "$BAC87" == "y" ]; then
-	clean_tree amng.ac87 release/src-rt-6.x.4708 rt-ac87u mainline
+	clean_tree amng.ac87 release/src-rt-6.x.4708 rt-ac87u 384.13_x
 fi
 if [ "$BAC3200" == "y" ]; then
-	clean_tree amng.ac3200 release/src-rt-7.x.main/src rt-ac3200 mainline
+	clean_tree amng.ac3200 release/src-rt-7.x.main/src rt-ac3200 384.13_x
 fi
 if [ "$BAC3100" == "y" ]; then
 	clean_tree amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 mainline
@@ -150,7 +155,10 @@ if [ "$BAC86" == "y" ]; then
 	clean_tree amng.ac86 release/src-rt-5.02hnd rt-ac86u mainline
 fi
 if [ "$BAX88" == "y" ]; then
-	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u rtax88
+	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u ax
+fi
+if [ "$BAX58" == "y" ]; then
+	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
 fi
 
 echo -e "--- $(date +%R) - All trees ready!\n"
@@ -193,6 +201,10 @@ fi
 if [ "$BAX88" == "y" ]; then
         build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
         sleep 10
+fi
+if [ "$BAX58" == "y" ]; then
+	build_fw amng.ax58/release/src-rt-5.02axhnd.675x rt-ax58u &
+	sleep 10
 fi
 
 echo "--- $(date +%R) - All builds launched, please wait..."

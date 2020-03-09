@@ -1,0 +1,27 @@
+
+noinst_LIBRARIES += src/lib/libtor-version.a
+
+if UNITTESTS_ENABLED
+noinst_LIBRARIES += src/lib/libtor-version-testing.a
+endif
+
+# ADD_C_FILE: INSERT SOURCES HERE.
+src_lib_libtor_version_a_SOURCES =			\
+	src/lib/version/git_revision.c			\
+	src/lib/version/version.c
+
+src_lib_libtor_version_testing_a_SOURCES = \
+	$(src_lib_libtor_version_a_SOURCES)
+src_lib_libtor_version_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
+src_lib_libtor_version_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
+
+# Declare that these object files depend on micro-revision.i.  Without this
+# rule, we could try to build them before micro-revision.i was created.
+src/lib/version/git_revision.$(OBJEXT) \
+  src/lib/version/src_lib_libtor_version_testing_a-git_revision.$(OBJEXT): \
+	micro-revision.i
+
+# ADD_C_FILE: INSERT HEADERS HERE.
+noinst_HEADERS +=					\
+	src/lib/version/git_revision.h			\
+	src/lib/version/torversion.h

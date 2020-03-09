@@ -22,4 +22,4 @@ double tor_parse_double(const char *s, double min, double max, int *ok,
 uint64_t tor_parse_uint64(const char *s, int base, uint64_t min,
                          uint64_t max, int *ok, char **next);
 
-#endif
+#endif /* !defined(TOR_PARSE_INT_H) */

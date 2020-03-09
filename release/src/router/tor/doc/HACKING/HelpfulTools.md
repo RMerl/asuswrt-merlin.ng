@@ -371,3 +371,18 @@ source code. Here's how to use it:
 
   6. See the Doxygen manual for more information; this summary just
      scratches the surface.
+
+Style and best-pratices checking
+--------------------------------
+
+We use scripts to check for various problems in the formatting and style
+of our source code.  The "check-spaces" test detects a bunch of violations
+of our coding style on the local level.  The "check-best-practices" test
+looks for violations of some of our complexity guidelines.
+
+You can tell the tool about exceptions to the complexity guidelines via its
+exceptions file (scripts/maint/practracker/exceptions.txt).  But before you
+do this, consider whether you shouldn't fix the underlying problem.  Maybe
+that file really _is_ too big.  Maybe that function really _is_ doing too
+much.  (On the other hand, for stable release series, it is sometimes better
+to leave things unrefactored.)

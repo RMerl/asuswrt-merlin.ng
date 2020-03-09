@@ -25,19 +25,22 @@ static inline int strncasecmp(const char *a, const char *b, size_t n);
 static inline int strncasecmp(const char *a, const char *b, size_t n) {
   return _strnicmp(a,b,n);
 }
-#endif
+#endif /* !defined(HAVE_STRNCASECMP) */
 #ifndef HAVE_STRCASECMP
 static inline int strcasecmp(const char *a, const char *b);
 static inline int strcasecmp(const char *a, const char *b) {
   return _stricmp(a,b);
 }
-#endif
-#endif
+#endif /* !defined(HAVE_STRCASECMP) */
+#endif /* defined(_WIN32) */
 
 #if defined __APPLE__
 /* On OSX 10.9 and later, the overlap-checking code for strlcat would
  * appear to have a severe bug that can sometimes cause aborts in Tor.
  * Instead, use the non-checking variants.  This is sad.
+ *
+ * (If --enable-fragile-hardening is passed to configure, we use the hardened
+ * variants, which do not suffer from this issue.)
  *
  * See https://trac.torproject.org/projects/tor/ticket/15205
  */
@@ -59,4 +62,4 @@ char *tor_strtok_r_impl(char *str, const char *sep, char **lasts);
 #define tor_strtok_r(str, sep, lasts) tor_strtok_r_impl(str, sep, lasts)
 #endif
 
-#endif
+#endif /* !defined(TOR_COMPAT_STRING_H) */

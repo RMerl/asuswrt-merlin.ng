@@ -12,7 +12,7 @@
 
 #include "core/or/or.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/dirauth/dirvote.h"
 #include "feature/nodelist/networkstatus.h"
@@ -22,6 +22,7 @@
 #include "feature/dirauth/shared_random_state.h"
 #include "feature/dircommon/voting_schedule.h"
 #include "lib/encoding/confline.h"
+#include "lib/version/torversion.h"
 
 #include "app/config/or_state_st.h"
 
@@ -50,24 +51,21 @@ static const char dstate_cur_srv_key[] = "SharedRandCurrentValue";
  * members with CONF_CHECK_VAR_TYPE. */
 DUMMY_TYPECHECK_INSTANCE(sr_disk_state_t);
 
-/* These next two are duplicates or near-duplicates from config.c */
-#define VAR(name, conftype, member, initvalue)                              \
-  { name, CONFIG_TYPE_ ## conftype, offsetof(sr_disk_state_t, member),      \
-      initvalue CONF_TEST_MEMBERS(sr_disk_state_t, conftype, member) }
-/* As VAR, but the option name and member name are the same. */
-#define V(member, conftype, initvalue) \
+#define VAR(varname,conftype,member,initvalue)                          \
+  CONFIG_VAR_ETYPE(sr_disk_state_t, varname, conftype, member, 0, initvalue)
+#define V(member,conftype,initvalue)            \
   VAR(#member, conftype, member, initvalue)
+
 /* Our persistent state magic number. */
 #define SR_DISK_STATE_MAGIC 0x98AB1254
 
 static int
 disk_state_validate_cb(void *old_state, void *state, void *default_state,
                        int from_setconf, char **msg);
-static void disk_state_free_cb(void *);
 
 /* Array of variables that are saved to disk as a persistent state. */
-static config_var_t state_vars[] = {
-  V(Version,                    UINT, "0"),
+static const config_var_t state_vars[] = {
+  V(Version,                    POSINT, "0"),
   V(TorVersion,                 STRING, NULL),
   V(ValidAfter,                 ISOTIME, NULL),
   V(ValidUntil,                 ISOTIME, NULL),
@@ -82,24 +80,44 @@ static config_var_t state_vars[] = {
 
 /* "Extra" variable in the state that receives lines we can't parse. This
  * lets us preserve options from versions of Tor newer than us. */
-static config_var_t state_extra_var = {
-  "__extra", CONFIG_TYPE_LINELIST,
-  offsetof(sr_disk_state_t, ExtraLines), NULL
-  CONF_TEST_MEMBERS(sr_disk_state_t, LINELIST, ExtraLines)
+static const struct_member_t state_extra_var = {
+  .name = "__extra",
+  .type = CONFIG_TYPE_LINELIST,
+  .offset = offsetof(sr_disk_state_t, ExtraLines),
 };
 
 /* Configuration format of sr_disk_state_t. */
 static const config_format_t state_format = {
   sizeof(sr_disk_state_t),
-  SR_DISK_STATE_MAGIC,
-  offsetof(sr_disk_state_t, magic_),
+  {
+   "sr_disk_state_t",
+   SR_DISK_STATE_MAGIC,
+   offsetof(sr_disk_state_t, magic_),
+  },
   NULL,
   NULL,
   state_vars,
   disk_state_validate_cb,
-  disk_state_free_cb,
+  NULL,
   &state_extra_var,
+  -1,
 };
+
+/* Global configuration manager for the shared-random state file */
+static config_mgr_t *shared_random_state_mgr = NULL;
+
+/** Return the configuration manager for the shared-random state file. */
+static const config_mgr_t *
+get_srs_mgr(void)
+{
+  if (PREDICT_UNLIKELY(shared_random_state_mgr == NULL)) {
+    shared_random_state_mgr = config_mgr_new(&state_format);
+    config_mgr_freeze(shared_random_state_mgr);
+  }
+  return shared_random_state_mgr;
+}
+
+static void state_query_del_(sr_state_object_t obj_type, void *data);
 
 /* Return a string representation of a protocol phase. */
 STATIC const char *
@@ -260,23 +278,22 @@ disk_state_free_(sr_disk_state_t *state)
   if (state == NULL) {
     return;
   }
-  config_free(&state_format, state);
+  config_free(get_srs_mgr(), state);
 }
 
 /* Allocate a new disk state, initialize it and return it. */
 static sr_disk_state_t *
 disk_state_new(time_t now)
 {
-  sr_disk_state_t *new_state = tor_malloc_zero(sizeof(*new_state));
+  sr_disk_state_t *new_state = config_new(get_srs_mgr());
 
-  new_state->magic_ = SR_DISK_STATE_MAGIC;
   new_state->Version = SR_PROTO_VERSION;
   new_state->TorVersion = tor_strdup(get_version());
   new_state->ValidUntil = get_state_valid_until_time(now);
   new_state->ValidAfter = now;
 
   /* Init config format. */
-  config_init(&state_format, new_state);
+  config_init(get_srs_mgr(), new_state);
   return new_state;
 }
 
@@ -342,12 +359,6 @@ disk_state_validate_cb(void *old_state, void *state, void *default_state,
   (void) state;
   (void) msg;
   return 0;
-}
-
-static void
-disk_state_free_cb(void *state)
-{
-  disk_state_free_(state);
 }
 
 /* Parse the Commit line(s) in the disk state and translate them to the
@@ -535,7 +546,7 @@ disk_state_put_commit_line(const sr_commit_t *commit, config_line_t *line)
   tor_assert(commit);
   tor_assert(line);
 
-  if (!tor_mem_is_zero(commit->encoded_reveal,
+  if (!fast_mem_is_zero(commit->encoded_reveal,
                        sizeof(commit->encoded_reveal))) {
     /* Add extra whitespace so we can format the line correctly. */
     tor_asprintf(&reveal_str, " %s", commit->encoded_reveal);
@@ -580,11 +591,12 @@ disk_state_reset(void)
   config_free_lines(sr_disk_state->ExtraLines);
   tor_free(sr_disk_state->TorVersion);
 
-  /* Clean up the struct */
-  memset(sr_disk_state, 0, sizeof(*sr_disk_state));
+  /* Clear other fields. */
+  sr_disk_state->ValidAfter = 0;
+  sr_disk_state->ValidUntil = 0;
+  sr_disk_state->Version = 0;
 
   /* Reset it with useful data */
-  sr_disk_state->magic_ = SR_DISK_STATE_MAGIC;
   sr_disk_state->TorVersion = tor_strdup(get_version());
 }
 
@@ -679,7 +691,7 @@ disk_state_load_from_disk_impl(const char *fname)
     }
 
     disk_state = disk_state_new(time(NULL));
-    config_assign(&state_format, disk_state, lines, 0, &errmsg);
+    config_assign(get_srs_mgr(), disk_state, lines, 0, &errmsg);
     config_free_lines(lines);
     if (errmsg) {
       log_warn(LD_DIR, "SR: Reading state error: %s", errmsg);
@@ -732,7 +744,7 @@ disk_state_save_to_disk(void)
   /* Make sure that our disk state is up to date with our memory state
    * before saving it to disk. */
   disk_state_update();
-  state = config_dump(&state_format, NULL, sr_disk_state, 0, 0);
+  state = config_dump(get_srs_mgr(), NULL, sr_disk_state, 0, 0);
   format_local_iso_time(tbuf, now);
   tor_asprintf(&content,
                "# Tor shared random state file last generated on %s "
@@ -833,6 +845,9 @@ state_query_get_commit(const char *rsa_fpr)
 static void *
 state_query_get_(sr_state_object_t obj_type, const void *data)
 {
+  if (BUG(!sr_state))
+    return NULL;
+
   void *obj = NULL;
 
   switch (obj_type) {
@@ -861,23 +876,44 @@ state_query_get_(sr_state_object_t obj_type, const void *data)
 }
 
 /* Helper function: This handles the PUT state action using an
- * <b>obj_type</b> and <b>data</b> needed for the action. */
+ * <b>obj_type</b> and <b>data</b> needed for the action.
+ * PUT frees the previous data before replacing it, if needed. */
 static void
 state_query_put_(sr_state_object_t obj_type, void *data)
 {
+  if (BUG(!sr_state))
+    return;
+
   switch (obj_type) {
   case SR_STATE_OBJ_COMMIT:
   {
     sr_commit_t *commit = data;
     tor_assert(commit);
+    /* commit_add_to_state() frees the old commit, if there is one */
     commit_add_to_state(commit, sr_state);
     break;
   }
   case SR_STATE_OBJ_CURSRV:
-    sr_state->current_srv = (sr_srv_t *) data;
+      /* Check if the new pointer is the same as the old one: if it is, it's
+       * probably a bug. The caller may have confused current and previous,
+       * or they may have forgotten to sr_srv_dup().
+       * Putting NULL multiple times is allowed. */
+    if (!BUG(data && sr_state->current_srv == (sr_srv_t *) data)) {
+      /* We own the old SRV, so we need to free it.  */
+      state_query_del_(SR_STATE_OBJ_CURSRV, NULL);
+      sr_state->current_srv = (sr_srv_t *) data;
+    }
     break;
   case SR_STATE_OBJ_PREVSRV:
-    sr_state->previous_srv = (sr_srv_t *) data;
+      /* Check if the new pointer is the same as the old one: if it is, it's
+       * probably a bug. The caller may have confused current and previous,
+       * or they may have forgotten to sr_srv_dup().
+       * Putting NULL multiple times is allowed. */
+    if (!BUG(data && sr_state->previous_srv == (sr_srv_t *) data)) {
+      /* We own the old SRV, so we need to free it.  */
+      state_query_del_(SR_STATE_OBJ_PREVSRV, NULL);
+      sr_state->previous_srv = (sr_srv_t *) data;
+    }
     break;
   case SR_STATE_OBJ_VALID_AFTER:
     sr_state->valid_after = *((time_t *) data);
@@ -897,6 +933,9 @@ state_query_put_(sr_state_object_t obj_type, void *data)
 static void
 state_query_del_all_(sr_state_object_t obj_type)
 {
+  if (BUG(!sr_state))
+    return;
+
   switch (obj_type) {
   case SR_STATE_OBJ_COMMIT:
   {
@@ -907,7 +946,7 @@ state_query_del_all_(sr_state_object_t obj_type)
     } DIGESTMAP_FOREACH_END;
     break;
   }
-  /* The following object are _NOT_ suppose to be removed. */
+  /* The following objects are _NOT_ supposed to be removed. */
   case SR_STATE_OBJ_CURSRV:
   case SR_STATE_OBJ_PREVSRV:
   case SR_STATE_OBJ_PHASE:
@@ -924,6 +963,9 @@ static void
 state_query_del_(sr_state_object_t obj_type, void *data)
 {
   (void) data;
+
+  if (BUG(!sr_state))
+    return;
 
   switch (obj_type) {
   case SR_STATE_OBJ_PREVSRV:
@@ -999,16 +1041,16 @@ state_del_previous_srv(void)
   state_query(SR_STATE_ACTION_DEL, SR_STATE_OBJ_PREVSRV, NULL, NULL);
 }
 
-/* Rotate SRV value by freeing the previous value, assigning the current
- * value to the previous one and nullifying the current one. */
+/* Rotate SRV value by setting the previous SRV to the current SRV, and
+ * clearing the current SRV. */
 STATIC void
 state_rotate_srv(void)
 {
   /* First delete previous SRV from the state. Object will be freed. */
   state_del_previous_srv();
-  /* Set previous SRV with the current one. */
-  sr_state_set_previous_srv(sr_state_get_current_srv());
-  /* Nullify the current srv. */
+  /* Set previous SRV to a copy of the current one. */
+  sr_state_set_previous_srv(sr_srv_dup(sr_state_get_current_srv()));
+  /* Free and NULL the current srv. */
   sr_state_set_current_srv(NULL);
 }
 
@@ -1029,7 +1071,9 @@ sr_state_get_phase(void)
   return *(sr_phase_t *) ptr;
 }
 
-/* Return the previous SRV value from our state. Value CAN be NULL. */
+/* Return the previous SRV value from our state. Value CAN be NULL.
+ * The state object owns the SRV, so the calling code should not free the SRV.
+ * Use sr_srv_dup() if you want to keep a copy of the SRV. */
 const sr_srv_t *
 sr_state_get_previous_srv(void)
 {
@@ -1048,7 +1092,9 @@ sr_state_set_previous_srv(const sr_srv_t *srv)
               NULL);
 }
 
-/* Return the current SRV value from our state. Value CAN be NULL. */
+/* Return the current SRV value from our state. Value CAN be NULL.
+ * The state object owns the SRV, so the calling code should not free the SRV.
+ * Use sr_srv_dup() if you want to keep a copy of the SRV. */
 const sr_srv_t *
 sr_state_get_current_srv(void)
 {
@@ -1240,6 +1286,7 @@ sr_state_free_all(void)
   /* Nullify our global state. */
   sr_state = NULL;
   sr_disk_state = NULL;
+  config_mgr_free(shared_random_state_mgr);
 }
 
 /* Save our current state in memory to disk. */

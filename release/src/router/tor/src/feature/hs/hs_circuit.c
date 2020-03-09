@@ -15,6 +15,7 @@
 #include "core/or/circuituse.h"
 #include "core/or/policies.h"
 #include "core/or/relay.h"
+#include "core/or/crypt_path.h"
 #include "feature/client/circpathbias.h"
 #include "feature/hs/hs_cell.h"
 #include "feature/hs/hs_circuit.h"
@@ -89,7 +90,7 @@ create_rend_cpath(const uint8_t *ntor_key_seed, size_t seed_len,
   cpath = tor_malloc_zero(sizeof(crypt_path_t));
   cpath->magic = CRYPT_PATH_MAGIC;
 
-  if (circuit_init_cpath_crypto(cpath, (char*)keys, sizeof(keys),
+  if (cpath_init_circuit_crypto(cpath, (char*)keys, sizeof(keys),
                                 is_service_side, 1) < 0) {
     tor_free(cpath);
     goto err;
@@ -126,7 +127,7 @@ create_rend_cpath_legacy(origin_circuit_t *circ, const uint8_t *rend_cell_body)
     goto err;
   }
   /* ... and set up cpath. */
-  if (circuit_init_cpath_crypto(hop,
+  if (cpath_init_circuit_crypto(hop,
                                 keys+DIGEST_LEN, sizeof(keys)-DIGEST_LEN,
                                 0, 0) < 0)
     goto err;
@@ -177,7 +178,7 @@ finalize_rend_circuit(origin_circuit_t *circ, crypt_path_t *hop,
   circ->hs_circ_has_timed_out = 0;
 
   /* Append the hop to the cpath of this circuit */
-  onion_append_to_cpath(&circ->cpath, hop);
+  cpath_extend_linked_list(&circ->cpath, hop);
 
   /* In legacy code, 'pending_final_cpath' points to the final hop we just
    * appended to the cpath. We set the original pointer to NULL so that we
@@ -258,8 +259,7 @@ create_rp_circuit_identifier(const hs_service_t *service,
   tor_assert(server_pk);
   tor_assert(keys);
 
-  ident = hs_ident_circuit_new(&service->keys.identity_pk,
-                               HS_IDENT_CIRCUIT_RENDEZVOUS);
+  ident = hs_ident_circuit_new(&service->keys.identity_pk);
   /* Copy the RENDEZVOUS_COOKIE which is the unique identifier. */
   memcpy(ident->rendezvous_cookie, rendezvous_cookie,
          sizeof(ident->rendezvous_cookie));
@@ -293,8 +293,7 @@ create_intro_circuit_identifier(const hs_service_t *service,
   tor_assert(service);
   tor_assert(ip);
 
-  ident = hs_ident_circuit_new(&service->keys.identity_pk,
-                               HS_IDENT_CIRCUIT_INTRO);
+  ident = hs_ident_circuit_new(&service->keys.identity_pk);
   ed25519_pubkey_copy(&ident->intro_auth_pk, &ip->auth_key_kp.pubkey);
 
   return ident;
@@ -318,7 +317,7 @@ send_establish_intro(const hs_service_t *service,
 
   /* Encode establish intro cell. */
   cell_len = hs_cell_build_establish_intro(circ->cpath->prev->rend_circ_nonce,
-                                           ip, payload);
+                                           &service->config, ip, payload);
   if (cell_len < 0) {
     log_warn(LD_REND, "Unable to encode ESTABLISH_INTRO cell for service %s "
                       "on circuit %u. Closing circuit.",
@@ -388,10 +387,7 @@ launch_rendezvous_point_circuit(const hs_service_t *service,
                                         &data->onion_pk,
                                         service->config.is_single_onion);
   if (info == NULL) {
-    /* We are done here, we can't extend to the rendezvous point.
-     * If you're running an IPv6-only v3 single onion service on 0.3.2 or with
-     * 0.3.2 clients, and somehow disable the option check, it will fail here.
-     */
+    /* We are done here, we can't extend to the rendezvous point. */
     log_fn(LOG_PROTOCOL_WARN, LD_REND,
            "Not enough info to open a circuit to a rendezvous point for "
            "%s service %s.",
@@ -569,81 +565,6 @@ retry_service_rendezvous_point(const origin_circuit_t *circ)
   return;
 }
 
-/* Add all possible link specifiers in node to lspecs:
- *  - legacy ID is mandatory thus MUST be present in node;
- *  - include ed25519 link specifier if present in the node, and the node
- *    supports ed25519 link authentication, even if its link versions are not
- *    compatible with us;
- *  - include IPv4 link specifier, if the primary address is not IPv4, log a
- *    BUG() warning, and return an empty smartlist;
- *  - include IPv6 link specifier if present in the node. */
-static void
-get_lspecs_from_node(const node_t *node, smartlist_t *lspecs)
-{
-  link_specifier_t *ls;
-  tor_addr_port_t ap;
-
-  tor_assert(node);
-  tor_assert(lspecs);
-
-  /* Get the relay's IPv4 address. */
-  node_get_prim_orport(node, &ap);
-
-  /* We expect the node's primary address to be a valid IPv4 address.
-   * This conforms to the protocol, which requires either an IPv4 or IPv6
-   * address (or both). */
-  if (BUG(!tor_addr_is_v4(&ap.addr)) ||
-      BUG(!tor_addr_port_is_valid_ap(&ap, 0))) {
-    return;
-  }
-
-  ls = link_specifier_new();
-  link_specifier_set_ls_type(ls, LS_IPV4);
-  link_specifier_set_un_ipv4_addr(ls, tor_addr_to_ipv4h(&ap.addr));
-  link_specifier_set_un_ipv4_port(ls, ap.port);
-  /* Four bytes IPv4 and two bytes port. */
-  link_specifier_set_ls_len(ls, sizeof(ap.addr.addr.in_addr) +
-                            sizeof(ap.port));
-  smartlist_add(lspecs, ls);
-
-  /* Legacy ID is mandatory and will always be present in node. */
-  ls = link_specifier_new();
-  link_specifier_set_ls_type(ls, LS_LEGACY_ID);
-  memcpy(link_specifier_getarray_un_legacy_id(ls), node->identity,
-         link_specifier_getlen_un_legacy_id(ls));
-  link_specifier_set_ls_len(ls, link_specifier_getlen_un_legacy_id(ls));
-  smartlist_add(lspecs, ls);
-
-  /* ed25519 ID is only included if the node has it, and the node declares a
-     protocol version that supports ed25519 link authentication, even if that
-     link version is not compatible with us. (We are sending the ed25519 key
-     to another tor, which may support different link versions.) */
-  if (!ed25519_public_key_is_zero(&node->ed25519_id) &&
-      node_supports_ed25519_link_authentication(node, 0)) {
-    ls = link_specifier_new();
-    link_specifier_set_ls_type(ls, LS_ED25519_ID);
-    memcpy(link_specifier_getarray_un_ed25519_id(ls), &node->ed25519_id,
-           link_specifier_getlen_un_ed25519_id(ls));
-    link_specifier_set_ls_len(ls, link_specifier_getlen_un_ed25519_id(ls));
-    smartlist_add(lspecs, ls);
-  }
-
-  /* Check for IPv6. If so, include it as well. */
-  if (node_has_ipv6_orport(node)) {
-    ls = link_specifier_new();
-    node_get_pref_ipv6_orport(node, &ap);
-    link_specifier_set_ls_type(ls, LS_IPV6);
-    size_t addr_len = link_specifier_getlen_un_ipv6_addr(ls);
-    const uint8_t *in6_addr = tor_addr_to_in6_addr8(&ap.addr);
-    uint8_t *ipv6_array = link_specifier_getarray_un_ipv6_addr(ls);
-    memcpy(ipv6_array, in6_addr, addr_len);
-    link_specifier_set_un_ipv6_port(ls, ap.port);
-    /* Sixteen bytes IPv6 and two bytes port. */
-    link_specifier_set_ls_len(ls, addr_len + sizeof(ap.port));
-    smartlist_add(lspecs, ls);
-  }
-}
-
 /* Using the given descriptor intro point ip, the node of the
  * rendezvous point rp_node and the service's subcredential, populate the
  * already allocated intro1_data object with the needed key material and link
@@ -666,10 +587,9 @@ setup_introduce1_data(const hs_desc_intro_point_t *ip,
   tor_assert(subcredential);
   tor_assert(intro1_data);
 
-  /* Build the link specifiers from the extend information of the rendezvous
-   * circuit that we've picked previously. */
-  rp_lspecs = smartlist_new();
-  get_lspecs_from_node(rp_node, rp_lspecs);
+  /* Build the link specifiers from the node at the end of the rendezvous
+   * circuit that we opened for this introduction. */
+  rp_lspecs = node_get_link_specifier_smartlist(rp_node, 0);
   if (smartlist_len(rp_lspecs) == 0) {
     /* We can't rendezvous without link specifiers. */
     smartlist_free(rp_lspecs);
@@ -1060,9 +980,7 @@ hs_circ_handle_introduce2(const hs_service_t *service,
   ret = 0;
 
  done:
-  SMARTLIST_FOREACH(data.link_specifiers, link_specifier_t *, lspec,
-                    link_specifier_free(lspec));
-  smartlist_free(data.link_specifiers);
+  link_specifier_smartlist_free(data.link_specifiers);
   memwipe(&data, 0, sizeof(data));
   return ret;
 }

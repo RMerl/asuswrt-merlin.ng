@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ht.h"
+#include "ext/ht.h"
 
 /** Helper: Declare an entry type and a map type to implement a mapping using
  * ht.h.  The map type will be called <b>maptype</b>.  The key part of each

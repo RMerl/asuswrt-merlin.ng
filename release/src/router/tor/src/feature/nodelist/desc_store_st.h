@@ -36,4 +36,4 @@ struct desc_store_t {
   size_t bytes_dropped;
 };
 
-#endif
+#endif /* !defined(DESC_STORE_ST_H) */

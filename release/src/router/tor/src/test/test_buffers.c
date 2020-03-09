@@ -6,7 +6,7 @@
 #define BUFFERS_PRIVATE
 #define PROTO_HTTP_PRIVATE
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "lib/tls/buffers_tls.h"
 #include "lib/tls/tortls.h"
 #include "lib/compress/compress.h"

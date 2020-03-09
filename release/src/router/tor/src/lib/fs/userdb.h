@@ -21,6 +21,6 @@ struct passwd;
 const struct passwd *tor_getpwnam(const char *username);
 const struct passwd *tor_getpwuid(uid_t uid);
 char *get_user_homedir(const char *username);
-#endif
+#endif /* !defined(_WIN32) */
 
-#endif
+#endif /* !defined(TOR_USERDB_H) */

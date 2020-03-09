@@ -17,4 +17,4 @@ smartlist_t *microdescs_parse_from_string(const char *s, const char *eos,
                                           saved_location_t where,
                                           smartlist_t *invalid_digests_out);
 
-#endif
+#endif /* !defined(TOR_MICRODESC_PARSE_H) */

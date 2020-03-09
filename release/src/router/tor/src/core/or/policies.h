@@ -70,6 +70,7 @@ typedef struct short_policy_t {
 int firewall_is_fascist_or(void);
 int firewall_is_fascist_dir(void);
 int fascist_firewall_use_ipv6(const or_options_t *options);
+MOCK_DECL(int, fascist_firewall_rand_prefer_ipv6_addr, (void));
 int fascist_firewall_prefer_ipv6_orport(const or_options_t *options);
 int fascist_firewall_prefer_ipv6_dirport(const or_options_t *options);
 
@@ -90,6 +91,8 @@ int fascist_firewall_allows_dir_server(const dir_server_t *ds,
 
 void fascist_firewall_choose_address_rs(const routerstatus_t *rs,
                                         firewall_connection_t fw_connection,
+                                        int pref_only, tor_addr_port_t* ap);
+void fascist_firewall_choose_address_ls(const smartlist_t *lspecs,
                                         int pref_only, tor_addr_port_t* ap);
 void fascist_firewall_choose_address_node(const node_t *node,
                                           firewall_connection_t fw_connection,

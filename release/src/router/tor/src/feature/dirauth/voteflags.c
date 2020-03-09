@@ -29,6 +29,7 @@
 
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerinfo_st.h"
+#include "feature/nodelist/routerlist_st.h"
 #include "feature/nodelist/vote_routerstatus_st.h"
 
 #include "lib/container/order.h"
@@ -95,7 +96,7 @@ real_uptime(const routerinfo_t *router, time_t now)
  */
 static int
 dirserv_thinks_router_is_unreliable(time_t now,
-                                    routerinfo_t *router,
+                                    const routerinfo_t *router,
                                     int need_uptime, int need_capacity)
 {
   if (need_uptime) {
@@ -238,7 +239,7 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
   uint32_t *uptimes, *bandwidths_kb, *bandwidths_excluding_exits_kb;
   long *tks;
   double *mtbfs, *wfus;
-  smartlist_t *nodelist;
+  const smartlist_t *nodelist;
   time_t now = time(NULL);
   const or_options_t *options = get_options();
 
@@ -531,38 +532,45 @@ dirserv_set_router_is_running(routerinfo_t *router, time_t now)
   node->is_running = answer;
 }
 
-/** Extract status information from <b>ri</b> and from other authority
- * functions and store it in <b>rs</b>. <b>rs</b> is zeroed out before it is
- * set.
- *
- * We assume that ri-\>is_running has already been set, e.g. by
- *   dirserv_set_router_is_running(ri, now);
+/* Check <b>node</b> and <b>ri</b> on whether or not we should publish a
+ * relay's IPv6 addresses. */
+static int
+should_publish_node_ipv6(const node_t *node, const routerinfo_t *ri,
+                         time_t now)
+{
+  const or_options_t *options = get_options();
+
+  return options->AuthDirHasIPv6Connectivity == 1 &&
+    !tor_addr_is_null(&ri->ipv6_addr) &&
+    ((node->last_reachable6 >= now - REACHABLE_TIMEOUT) ||
+     router_is_me(ri));
+}
+
+/**
+ * Extract status information from <b>ri</b> and from other authority
+ * functions and store it in <b>rs</b>, as per
+ * <b>set_routerstatus_from_routerinfo</b>.  Additionally, sets information
+ * in from the authority subsystem.
  */
 void
-set_routerstatus_from_routerinfo(routerstatus_t *rs,
-                                 node_t *node,
-                                 routerinfo_t *ri,
-                                 time_t now,
-                                 int listbadexits)
+dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
+                                         node_t *node,
+                                         const routerinfo_t *ri,
+                                         time_t now,
+                                         int listbadexits)
 {
   const or_options_t *options = get_options();
   uint32_t routerbw_kb = dirserv_get_credible_bandwidth_kb(ri);
 
-  memset(rs, 0, sizeof(routerstatus_t));
+  /* Set these flags so that set_routerstatus_from_routerinfo can copy them.
+   */
+  node->is_stable = !dirserv_thinks_router_is_unreliable(now, ri, 1, 0);
+  node->is_fast = !dirserv_thinks_router_is_unreliable(now, ri, 0, 1);
+  node->is_hs_dir = dirserv_thinks_router_is_hs_dir(ri, node, now);
 
-  rs->is_authority =
-    router_digest_is_trusted_dir(ri->cache_info.identity_digest);
+  set_routerstatus_from_routerinfo(rs, node, ri);
 
-  /* Already set by compute_performance_thresholds. */
-  rs->is_exit = node->is_exit;
-  rs->is_stable = node->is_stable =
-    !dirserv_thinks_router_is_unreliable(now, ri, 1, 0);
-  rs->is_fast = node->is_fast =
-    !dirserv_thinks_router_is_unreliable(now, ri, 0, 1);
-  rs->is_flagged_running = node->is_running; /* computed above */
-
-  rs->is_valid = node->is_valid;
-
+  /* Override rs->is_possible_guard. */
   if (node->is_fast && node->is_stable &&
       ri->supports_tunnelled_dir_requests &&
       ((options->AuthDirGuardBWGuarantee &&
@@ -578,29 +586,16 @@ set_routerstatus_from_routerinfo(routerstatus_t *rs,
     rs->is_possible_guard = 0;
   }
 
+  /* Override rs->is_bad_exit */
   rs->is_bad_exit = listbadexits && node->is_bad_exit;
-  rs->is_hs_dir = node->is_hs_dir =
-    dirserv_thinks_router_is_hs_dir(ri, node, now);
 
-  rs->is_named = rs->is_unnamed = 0;
+  /* Set rs->is_staledesc. */
+  rs->is_staledesc =
+    (ri->cache_info.published_on + DESC_IS_STALE_INTERVAL) < now;
 
-  rs->published_on = ri->cache_info.published_on;
-  memcpy(rs->identity_digest, node->identity, DIGEST_LEN);
-  memcpy(rs->descriptor_digest, ri->cache_info.signed_descriptor_digest,
-         DIGEST_LEN);
-  rs->addr = ri->addr;
-  strlcpy(rs->nickname, ri->nickname, sizeof(rs->nickname));
-  rs->or_port = ri->or_port;
-  rs->dir_port = ri->dir_port;
-  rs->is_v2_dir = ri->supports_tunnelled_dir_requests;
-  if (options->AuthDirHasIPv6Connectivity == 1 &&
-      !tor_addr_is_null(&ri->ipv6_addr) &&
-      node->last_reachable6 >= now - REACHABLE_TIMEOUT) {
-    /* We're configured as having IPv6 connectivity. There's an IPv6
-       OR port and it's reachable so copy it to the routerstatus.  */
-    tor_addr_copy(&rs->ipv6_addr, &ri->ipv6_addr);
-    rs->ipv6_orport = ri->ipv6_orport;
-  } else {
+  if (! should_publish_node_ipv6(node, ri, now)) {
+    /* We're not configured as having IPv6 connectivity or the node isn't:
+     * zero its IPv6 information. */
     tor_addr_make_null(&rs->ipv6_addr, AF_INET6);
     rs->ipv6_orport = 0;
   }
@@ -641,4 +636,21 @@ dirserv_set_routerstatus_testing(routerstatus_t *rs)
   } else if (options->TestingDirAuthVoteHSDirIsStrict) {
     rs->is_hs_dir = 0;
   }
+}
+
+/** Use dirserv_set_router_is_running() to set bridges as running if they're
+ * reachable.
+ *
+ * This function is called from set_bridge_running_callback() when running as
+ * a bridge authority.
+ */
+void
+dirserv_set_bridges_running(time_t now)
+{
+  routerlist_t *rl = router_get_routerlist();
+
+  SMARTLIST_FOREACH_BEGIN(rl->routers, routerinfo_t *, ri) {
+    if (ri->purpose == ROUTER_PURPOSE_BRIDGE)
+      dirserv_set_router_is_running(ri, now);
+  } SMARTLIST_FOREACH_END(ri);
 }

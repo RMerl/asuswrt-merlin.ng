@@ -9,7 +9,9 @@
  **/
 
 #include "orconfig.h"
+#include "lib/subsys/subsys.h"
 #include "lib/wallclock/approx_time.h"
+#include "lib/wallclock/wallclock_sys.h"
 
 /* =====
  * Cached time
@@ -41,3 +43,19 @@ update_approx_time(time_t now)
   cached_approx_time = now;
 }
 #endif /* !defined(TIME_IS_FAST) */
+
+static int
+subsys_wallclock_initialize(void)
+{
+  update_approx_time(time(NULL));
+  return 0;
+}
+
+const subsys_fns_t sys_wallclock = {
+  .name = "wallclock",
+  .supported = true,
+  /* Approximate time is a diagnostic feature, we want it to init right after
+   * low-level error handling. */
+  .level = -98,
+  .initialize = subsys_wallclock_initialize,
+};

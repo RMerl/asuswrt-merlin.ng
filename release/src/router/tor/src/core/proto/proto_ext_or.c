@@ -5,7 +5,7 @@
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "feature/relay/ext_orport.h"
 #include "core/proto/proto_ext_or.h"
 

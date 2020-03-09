@@ -108,7 +108,7 @@ typedef struct {
  * it matches the parameter.
  */
 const char* sandbox_intern_string(const char *param);
-#else /* !(defined(USE_LIBSECCOMP)) */
+#else /* !defined(USE_LIBSECCOMP) */
 #define sandbox_intern_string(s) (s)
 #endif /* defined(USE_LIBSECCOMP) */
 

@@ -5,7 +5,7 @@
 /* See LICENSE for licensing information */
 
 #include "core/or/or.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "core/proto/proto_cell.h"
 
 #include "core/or/connection_or.h"

@@ -15,4 +15,4 @@
 int list_server_status_v1(smartlist_t *routers, char **router_status_out,
                           int for_controller);
 
-#endif
+#endif /* !defined(TOR_FMT_SERVERSTATUS_H) */

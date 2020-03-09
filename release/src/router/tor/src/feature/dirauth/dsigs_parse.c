@@ -127,7 +127,7 @@ networkstatus_parse_detached_signatures(const char *s, const char *eos)
     }
     digests = detached_get_digests(sigs, flavor);
     tor_assert(digests);
-    if (!tor_mem_is_zero(digests->d[alg], digest_length)) {
+    if (!fast_mem_is_zero(digests->d[alg], digest_length)) {
       log_warn(LD_DIR, "Multiple digests for %s with %s on detached "
                "signatures document", flavor, algname);
       continue;

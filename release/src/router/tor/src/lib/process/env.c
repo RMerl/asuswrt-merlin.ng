@@ -47,7 +47,7 @@ get_environment(void)
    * when we do a mostly-static build on OSX 10.7, the resulting binary won't
    * work on OSX 10.6. */
   return *_NSGetEnviron();
-#else /* !(defined(HAVE__NSGETENVIRON)) */
+#else /* !defined(HAVE__NSGETENVIRON) */
   return environ;
 #endif /* defined(HAVE__NSGETENVIRON) */
 }

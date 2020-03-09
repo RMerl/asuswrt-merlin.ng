@@ -38,4 +38,4 @@ void set_environment_variable_in_smartlist(struct smartlist_t *env_vars,
                                            const char *new_var,
                                            void (*free_old)(void*),
                                            int free_p);
-#endif
+#endif /* !defined(TOR_ENV_H) */

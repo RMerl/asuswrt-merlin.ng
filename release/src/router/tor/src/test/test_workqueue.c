@@ -63,7 +63,7 @@ mark_handled(int serial)
   tor_assert(! bitarray_is_set(handled, serial));
   bitarray_set(handled, serial);
   tor_mutex_release(&bitmap_mutex);
-#else /* !(defined(TRACK_RESPONSES)) */
+#else /* !defined(TRACK_RESPONSES) */
   (void)serial;
 #endif /* defined(TRACK_RESPONSES) */
 }

@@ -34,5 +34,5 @@ struct cpath_build_state_t {
   time_t expiry_time;
 };
 
-#endif
+#endif /* !defined(CIRCUIT_BUILD_STATE_ST_ST_H) */
 

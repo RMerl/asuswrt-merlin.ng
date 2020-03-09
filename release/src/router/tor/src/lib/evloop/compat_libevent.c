@@ -181,6 +181,16 @@ tor_libevent_initialize(tor_libevent_cfg *torcfg)
       event_get_version(), tor_libevent_get_method());
 }
 
+/**
+ * Return true iff the libevent module has been successfully initialized,
+ * and not subsequently shut down.
+ **/
+bool
+tor_libevent_is_initialized(void)
+{
+  return the_event_base != NULL;
+}
+
 /** Return the current Libevent event base that we're set up to use. */
 MOCK_IMPL(struct event_base *,
 tor_libevent_get_base, (void))

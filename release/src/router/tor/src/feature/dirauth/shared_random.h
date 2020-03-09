@@ -110,7 +110,7 @@ int sr_init(int save_to_disk);
 void sr_save_and_cleanup(void);
 void sr_act_post_consensus(const networkstatus_t *consensus);
 
-#else /* HAVE_MODULE_DIRAUTH */
+#else /* !defined(HAVE_MODULE_DIRAUTH) */
 
 static inline int
 sr_init(int save_to_disk)
@@ -131,7 +131,7 @@ sr_act_post_consensus(const networkstatus_t *consensus)
   (void) consensus;
 }
 
-#endif /* HAVE_MODULE_DIRAUTH */
+#endif /* defined(HAVE_MODULE_DIRAUTH) */
 
 /* Public methods used only by dirauth code. */
 
@@ -154,6 +154,7 @@ const char *sr_commit_get_rsa_fpr(const sr_commit_t *commit)
 void sr_compute_srv(void);
 sr_commit_t *sr_generate_our_commit(time_t timestamp,
                                     const authority_cert_t *my_rsa_cert);
+sr_srv_t *sr_srv_dup(const sr_srv_t *orig);
 
 #ifdef SHARED_RANDOM_PRIVATE
 
@@ -172,7 +173,6 @@ STATIC sr_srv_t *get_majority_srv_from_votes(const smartlist_t *votes,
                                              int current);
 
 STATIC void save_commit_to_state(sr_commit_t *commit);
-STATIC sr_srv_t *srv_dup(const sr_srv_t *orig);
 STATIC int commitments_are_the_same(const sr_commit_t *commit_one,
                                     const sr_commit_t *commit_two);
 STATIC int commit_is_authoritative(const sr_commit_t *commit,

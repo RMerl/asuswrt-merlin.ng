@@ -15,6 +15,7 @@
 #include "lib/string/printf.h"
 #include "lib/memarea/memarea.h"
 #include "lib/crypt_ops/crypto_rsa.h"
+#include "lib/ctime/di_ops.h"
 
 #include <string.h>
 
@@ -169,7 +170,6 @@ get_token_arguments(memarea_t *area, directory_token_t *tok,
   char *cp = mem;
   int j = 0;
   char *args[MAX_ARGS];
-  memset(args, 0, sizeof(args));
   while (*cp) {
     if (j == MAX_ARGS)
       return -1;
@@ -251,6 +251,16 @@ token_check_object(memarea_t *area, const char *kwd,
   return tok;
 }
 
+/** Return true iff the <b>memlen</b>-byte chunk of memory at
+ * <b>memlen</b> is the same length as <b>token</b>, and their
+ * contents are equal. */
+static bool
+mem_eq_token(const void *mem, size_t memlen, const char *token)
+{
+  size_t len = strlen(token);
+  return memlen == len && fast_memeq(mem, token, len);
+}
+
 /** Helper function: read the next token from *s, advance *s to the end of the
  * token, and return the parsed token.  Parse *<b>s</b> according to the list
  * of tokens in <b>table</b>.
@@ -266,7 +276,7 @@ get_next_token(memarea_t *area,
    * attack, a bug, or some other nonsense. */
 #define MAX_LINE_LENGTH (128*1024)
 
-  const char *next, *eol, *obstart;
+  const char *next, *eol;
   size_t obname_len;
   int i;
   directory_token_t *tok;
@@ -290,7 +300,7 @@ get_next_token(memarea_t *area,
 
   next = find_whitespace_eos(*s, eol);
 
-  if (!strcmp_len(*s, "opt", next-*s)) {
+  if (mem_eq_token(*s, next-*s, "opt")) {
     /* Skip past an "opt" at the start of the line. */
     *s = eat_whitespace_eos_no_nl(next, eol);
     next = find_whitespace_eos(*s, eol);
@@ -301,7 +311,7 @@ get_next_token(memarea_t *area,
   /* Search the table for the appropriate entry.  (I tried a binary search
    * instead, but it wasn't any faster.) */
   for (i = 0; table[i].t ; ++i) {
-    if (!strcmp_len(*s, table[i].t, next-*s)) {
+    if (mem_eq_token(*s, next-*s, table[i].t)) {
       /* We've found the keyword. */
       kwd = table[i].t;
       tok->tp = table[i].v;
@@ -352,9 +362,8 @@ get_next_token(memarea_t *area,
   if (!eol || eol-*s<11 || strcmpstart(*s, "-----BEGIN ")) /* No object. */
     goto check_object;
 
-  obstart = *s; /* Set obstart to start of object spec */
   if (eol - *s <= 16 || memchr(*s+11,'\0',eol-*s-16) || /* no short lines, */
-      strcmp_len(eol-5, "-----", 5) ||           /* nuls or invalid endings */
+      !mem_eq_token(eol-5, 5, "-----") ||   /* nuls or invalid endings */
       (eol-*s) > MAX_UNPARSED_OBJECT_SIZE) {     /* name too long */
     RET_ERR("Malformed object: bad begin line");
   }
@@ -373,8 +382,8 @@ get_next_token(memarea_t *area,
     eol = eos;
   /* Validate the ending tag, which should be 9 + NAME + 5 + eol */
   if ((size_t)(eol-next) != 9+obname_len+5 ||
-      strcmp_len(next+9, tok->object_type, obname_len) ||
-      strcmp_len(eol-5, "-----", 5)) {
+      !mem_eq_token(next+9, obname_len, tok->object_type) ||
+      !mem_eq_token(eol-5, 5, "-----")) {
     tor_snprintf(ebuf, sizeof(ebuf), "Malformed object: mismatched end tag %s",
              tok->object_type);
     ebuf[sizeof(ebuf)-1] = '\0';
@@ -383,21 +392,25 @@ get_next_token(memarea_t *area,
   if (next - *s > MAX_UNPARSED_OBJECT_SIZE)
     RET_ERR("Couldn't parse object: missing footer or object much too big.");
 
-  if (!strcmp(tok->object_type, "RSA PUBLIC KEY")) { /* If it's a public key */
-    tok->key = crypto_pk_new();
-    if (crypto_pk_read_public_key_from_string(tok->key, obstart, eol-obstart))
-      RET_ERR("Couldn't parse public key.");
-  } else if (!strcmp(tok->object_type, "RSA PRIVATE KEY")) { /* private key */
-    tok->key = crypto_pk_new();
-    if (crypto_pk_read_private_key_from_string(tok->key, obstart, eol-obstart))
-      RET_ERR("Couldn't parse private key.");
-  } else { /* If it's something else, try to base64-decode it */
+  {
     int r;
-    tok->object_body = ALLOC(next-*s); /* really, this is too much RAM. */
-    r = base64_decode(tok->object_body, next-*s, *s, next-*s);
+    size_t maxsize = base64_decode_maxsize(next-*s);
+    tok->object_body = ALLOC(maxsize);
+    r = base64_decode(tok->object_body, maxsize, *s, next-*s);
     if (r<0)
       RET_ERR("Malformed object: bad base64-encoded data");
     tok->object_size = r;
+  }
+
+  if (!strcmp(tok->object_type, "RSA PUBLIC KEY")) { /* If it's a public key */
+    tok->key = crypto_pk_asn1_decode(tok->object_body, tok->object_size);
+    if (! tok->key)
+      RET_ERR("Couldn't parse public key.");
+  } else if (!strcmp(tok->object_type, "RSA PRIVATE KEY")) { /* private key */
+    tok->key = crypto_pk_asn1_decode_private(tok->object_body,
+                                             tok->object_size);
+    if (! tok->key)
+      RET_ERR("Couldn't parse private key.");
   }
   *s = eol;
 

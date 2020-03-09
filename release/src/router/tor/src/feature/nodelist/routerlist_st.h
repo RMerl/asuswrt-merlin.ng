@@ -36,5 +36,5 @@ struct routerlist_t {
   desc_store_t extrainfo_store;
 };
 
-#endif
+#endif /* !defined(ROUTERLIST_ST_H) */
 

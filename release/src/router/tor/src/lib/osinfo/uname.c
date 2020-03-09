@@ -137,7 +137,7 @@ get_uname,(void))
         if (!is_server && !is_client) {
           strlcat(uname_result, " [client or server]", sizeof(uname_result));
         }
-#else /* !(defined(_WIN32)) */
+#else /* !defined(_WIN32) */
         /* LCOV_EXCL_START -- can't provoke uname failure */
         strlcpy(uname_result, "Unknown platform", sizeof(uname_result));
         /* LCOV_EXCL_STOP */

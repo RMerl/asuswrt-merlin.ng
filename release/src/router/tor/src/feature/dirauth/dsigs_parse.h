@@ -19,4 +19,4 @@ void ns_detached_signatures_free_(ns_detached_signatures_t *s);
 #define ns_detached_signatures_free(s) \
   FREE_AND_NULL(ns_detached_signatures_t, ns_detached_signatures_free_, (s))
 
-#endif
+#endif /* !defined(TOR_DSIGS_PARSE_H) */

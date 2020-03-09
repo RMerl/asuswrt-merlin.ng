@@ -102,12 +102,15 @@ function update_temperatures(){
 		success: function(response){
 			code = "<b>2.4 GHz:</b><span> " + curr_coreTmp_2_raw + "</span>";
 
-			if (band5g_support)
+			if (wl_info.band5g_2_support) {
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz-1:</b> <span>" + curr_coreTmp_5_raw + "</span>";
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz-2:</b> <span>" + curr_coreTmp_52_raw + "</span>";
+			} else if (band5g_support) {
 				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz:</b> <span>" + curr_coreTmp_5_raw + "</span>";
+			}
 
 			if (curr_coreTmp_cpu != "")
 				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<b>CPU:</b> <span>" + parseInt(curr_coreTmp_cpu) +"&deg;C</span>";
-
 			document.getElementById("temp_td").innerHTML = code;
 			setTimeout("update_temperatures();", 3000);
 		}

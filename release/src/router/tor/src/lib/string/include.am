@@ -5,6 +5,7 @@ if UNITTESTS_ENABLED
 noinst_LIBRARIES += src/lib/libtor-string-testing.a
 endif
 
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_string_a_SOURCES =			\
 	src/lib/string/compat_ctype.c			\
 	src/lib/string/compat_string.c			\
@@ -18,6 +19,7 @@ src_lib_libtor_string_testing_a_SOURCES = \
 src_lib_libtor_string_testing_a_CPPFLAGS = $(AM_CPPFLAGS) $(TEST_CPPFLAGS)
 src_lib_libtor_string_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 noinst_HEADERS +=					\
 	src/lib/string/compat_ctype.h			\
 	src/lib/string/compat_string.h			\

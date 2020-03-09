@@ -25,7 +25,7 @@
  * all invocations of zstd's static-only functions in a check to make sure
  * that the compile-time version matches the run-time version. */
 #define ZSTD_STATIC_LINKING_ONLY
-#endif
+#endif /* defined(ENABLE_ZSTD_ADVANCED_APIS) */
 
 #ifdef HAVE_ZSTD
 #ifdef HAVE_CFLAG_WUNUSED_CONST_VARIABLE
@@ -35,7 +35,7 @@ DISABLE_GCC_WARNING(unused-const-variable)
 #ifdef HAVE_CFLAG_WUNUSED_CONST_VARIABLE
 ENABLE_GCC_WARNING(unused-const-variable)
 #endif
-#endif
+#endif /* defined(HAVE_ZSTD) */
 
 /** Total number of bytes allocated for Zstandard state. */
 static atomic_counter_t total_zstd_allocation;
@@ -77,7 +77,7 @@ tor_zstd_format_version(char *buf, size_t buflen, unsigned version_number)
                version_number / 100 % 100,
                version_number % 100);
 }
-#endif
+#endif /* defined(HAVE_ZSTD) */
 
 #define VERSION_STR_MAX_LEN 16 /* more than enough space for 99.99.99 */
 
@@ -93,7 +93,7 @@ tor_zstd_get_version_str(void)
                           ZSTD_versionNumber());
 
   return version_str;
-#else /* !(defined(HAVE_ZSTD)) */
+#else /* !defined(HAVE_ZSTD) */
   return NULL;
 #endif /* defined(HAVE_ZSTD) */
 }
@@ -125,9 +125,9 @@ tor_zstd_can_use_static_apis(void)
   }
 #endif
   return (ZSTD_VERSION_NUMBER == ZSTD_versionNumber());
-#else
+#else /* !(defined(ZSTD_STATIC_LINKING_ONLY) && defined(HAVE_ZSTD)) */
   return 0;
-#endif
+#endif /* defined(ZSTD_STATIC_LINKING_ONLY) && defined(HAVE_ZSTD) */
 }
 
 /** Internal Zstandard state for incremental compression/decompression.
@@ -237,7 +237,7 @@ tor_zstd_state_size_precalc(int compress, int preset)
 #endif
     }
   }
-#endif
+#endif /* defined(ZSTD_STATIC_LINKING_ONLY) */
   return tor_zstd_state_size_precalc_fake(compress, preset);
 }
 #endif /* defined(HAVE_ZSTD) */
@@ -317,7 +317,7 @@ tor_zstd_compress_new(int compress,
   tor_free(result);
   return NULL;
   // LCOV_EXCL_STOP
-#else /* !(defined(HAVE_ZSTD)) */
+#else /* !defined(HAVE_ZSTD) */
   (void)compress;
   (void)method;
   (void)level;
@@ -454,7 +454,7 @@ tor_zstd_compress_process(tor_zstd_compress_state_t *state,
       return TOR_COMPRESS_OK;
   }
 
-#else /* !(defined(HAVE_ZSTD)) */
+#else /* !defined(HAVE_ZSTD) */
   (void)state;
   (void)out;
   (void)out_len;
@@ -527,7 +527,7 @@ tor_zstd_warn_if_version_mismatched(void)
              "For safety, we'll avoid using advanced zstd functionality.",
              header_version, runtime_version);
   }
-#endif
+#endif /* defined(HAVE_ZSTD) && defined(ENABLE_ZSTD_ADVANCED_APIS) */
 }
 
 #ifdef TOR_UNIT_TESTS
@@ -538,4 +538,4 @@ tor_zstd_set_static_apis_disabled_for_testing(int disabled)
 {
   static_apis_disable_for_testing = disabled;
 }
-#endif
+#endif /* defined(TOR_UNIT_TESTS) */

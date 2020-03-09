@@ -72,7 +72,7 @@ log_credential_status(void)
            "UID is %u (real), %u (effective), %u (saved)",
            (unsigned)ruid, (unsigned)euid, (unsigned)suid);
   }
-#else /* !(defined(HAVE_GETRESUID)) */
+#else /* !defined(HAVE_GETRESUID) */
   /* getresuid is not present on MacOS X, so we can't get the saved (E)UID */
   ruid = getuid();
   euid = geteuid();
@@ -93,7 +93,7 @@ log_credential_status(void)
            "GID is %u (real), %u (effective), %u (saved)",
            (unsigned)rgid, (unsigned)egid, (unsigned)sgid);
   }
-#else /* !(defined(HAVE_GETRESGID)) */
+#else /* !defined(HAVE_GETRESGID) */
   /* getresgid is not present on MacOS X, so we can't get the saved (E)GID */
   rgid = getgid();
   egid = getegid();
@@ -154,7 +154,7 @@ have_capability_support(void)
     return 0;
   cap_free(caps);
   return 1;
-#else /* !(defined(HAVE_LINUX_CAPABILITIES)) */
+#else /* !defined(HAVE_LINUX_CAPABILITIES) */
   return 0;
 #endif /* defined(HAVE_LINUX_CAPABILITIES) */
 }
@@ -265,7 +265,7 @@ switch_id(const char *user, const unsigned flags)
     if (drop_capabilities(1))
       return -1;
   }
-#else /* !(defined(HAVE_LINUX_CAPABILITIES)) */
+#else /* !defined(HAVE_LINUX_CAPABILITIES) */
   (void) keep_bindlow;
   if (warn_if_no_caps) {
     log_warn(LD_CONFIG, "KeepBindCapabilities set, but no capability support "
@@ -376,7 +376,7 @@ switch_id(const char *user, const unsigned flags)
 #endif /* defined(__linux__) && defined(HAVE_SYS_PRCTL_H) && ... */
   return 0;
 
-#else /* !(!defined(_WIN32)) */
+#else /* defined(_WIN32) */
   (void)user;
   (void)flags;
 

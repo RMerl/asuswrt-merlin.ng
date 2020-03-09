@@ -20,13 +20,13 @@
 #define raw_assert(expr) STMT_BEGIN                                     \
     if (!(expr)) {                                                      \
       tor_raw_assertion_failed_msg_(__FILE__, __LINE__, #expr, NULL);   \
-      abort();                                                          \
+      tor_raw_abort_();                                                 \
     }                                                                   \
   STMT_END
 #define raw_assert_unreached(expr) raw_assert(0)
 #define raw_assert_unreached_msg(msg) STMT_BEGIN                    \
     tor_raw_assertion_failed_msg_(__FILE__, __LINE__, "0", (msg));  \
-    abort();                                                        \
+    tor_raw_abort_();                                               \
   STMT_END
 
 void tor_raw_assertion_failed_msg_(const char *file, int line,
@@ -39,9 +39,13 @@ void tor_raw_assertion_failed_msg_(const char *file, int line,
 void tor_log_err_sigsafe(const char *m, ...);
 int tor_log_get_sigsafe_err_fds(const int **out);
 void tor_log_set_sigsafe_err_fds(const int *fds, int n);
+void tor_log_reset_sigsafe_err_fds(void);
+void tor_log_close_sigsafe_err_fds(void);
 void tor_log_sigsafe_err_set_granularity(int ms);
+
+void tor_raw_abort_(void) ATTR_NORETURN;
 
 int format_hex_number_sigsafe(unsigned long x, char *buf, int max_len);
 int format_dec_number_sigsafe(unsigned long x, char *buf, int max_len);
 
-#endif /* !defined(TOR_TORLOG_H) */
+#endif /* !defined(TOR_TORERR_H) */

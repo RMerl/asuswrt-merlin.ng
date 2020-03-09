@@ -7,18 +7,21 @@ if test "$UNAME_OS" = 'CYGWIN' || \
    test "$UNAME_OS" = 'MSYS' || \
    test "$UNAME_OS" = 'MINGW'; then
   if test "$APPVEYOR" = 'True'; then
-    echo "This test is disabled on Windows CI, as it requires firewall examptions. Skipping." >&2
+    echo "This test is disabled on Windows CI, as it requires firewall exemptions. Skipping." >&2
     exit 77
   fi
 fi
 
-exitcode=0
-
 tmpdir=
-clean () { test -n "$tmpdir" && test -d "$tmpdir" && rm -rf "$tmpdir" || :; }
+clean () {
+  if [ -n "$tmpdir" ] && [ -d "$tmpdir" ]; then
+    rm -rf "$tmpdir"
+  fi
+}
+
 trap clean EXIT HUP INT TERM
 
-tmpdir="`mktemp -d -t tor_rebind_test.XXXXXX`"
+tmpdir="$(mktemp -d -t tor_rebind_test.XXXXXX)"
 if [ -z "$tmpdir" ]; then
   echo >&2 mktemp failed
   exit 2

@@ -6,9 +6,9 @@
 
 #include "core/or/or.h"
 #include "feature/client/addressmap.h"
-#include "lib/container/buffers.h"
+#include "lib/buf/buffers.h"
 #include "core/mainloop/connection.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "app/config/config.h"
 #include "lib/crypt_ops/crypto_util.h"
 #include "feature/relay/ext_orport.h"

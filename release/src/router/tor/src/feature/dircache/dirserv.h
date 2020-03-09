@@ -84,6 +84,7 @@ int directory_too_idle_to_fetch_descriptors(const or_options_t *options,
 
 cached_dir_t *dirserv_get_consensus(const char *flavor_name);
 void dirserv_set_cached_consensus_networkstatus(const char *consensus,
+                                              size_t consensus_len,
                                               const char *flavor_name,
                                               const common_digests_t *digests,
                                               const uint8_t *sha3_as_signed,

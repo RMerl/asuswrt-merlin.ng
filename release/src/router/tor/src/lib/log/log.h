@@ -11,10 +11,12 @@
  **/
 
 #ifndef TOR_TORLOG_H
+#define TOR_TORLOG_H
 
 #include <stdarg.h>
 #include "lib/cc/torint.h"
 #include "lib/cc/compat_compiler.h"
+#include "lib/defs/logging_types.h"
 #include "lib/testsupport/testsupport.h"
 
 #ifdef HAVE_SYSLOG_H
@@ -24,7 +26,7 @@
 #error "Your syslog.h thinks high numbers are more important.  " \
        "We aren't prepared to deal with that."
 #endif
-#else /* !(defined(HAVE_SYSLOG_H)) */
+#else /* !defined(HAVE_SYSLOG_H) */
 /* Note: Syslog's logging code refers to priorities, with 0 being the most
  * important.  Thus, all our comparisons needed to be reversed when we added
  * syslog support.
@@ -55,75 +57,92 @@
 /* Logging domains */
 
 /** Catch-all for miscellaneous events and fatal errors. */
-#define LD_GENERAL  (1u<<0)
+#define LD_GENERAL  (UINT64_C(1)<<0)
 /** The cryptography subsystem. */
-#define LD_CRYPTO   (1u<<1)
+#define LD_CRYPTO   (UINT64_C(1)<<1)
 /** Networking. */
-#define LD_NET      (1u<<2)
+#define LD_NET      (UINT64_C(1)<<2)
 /** Parsing and acting on our configuration. */
-#define LD_CONFIG   (1u<<3)
+#define LD_CONFIG   (UINT64_C(1)<<3)
 /** Reading and writing from the filesystem. */
-#define LD_FS       (1u<<4)
+#define LD_FS       (UINT64_C(1)<<4)
 /** Other servers' (non)compliance with the Tor protocol. */
-#define LD_PROTOCOL (1u<<5)
+#define LD_PROTOCOL (UINT64_C(1)<<5)
 /** Memory management. */
-#define LD_MM       (1u<<6)
+#define LD_MM       (UINT64_C(1)<<6)
 /** HTTP implementation. */
-#define LD_HTTP     (1u<<7)
+#define LD_HTTP     (UINT64_C(1)<<7)
 /** Application (socks) requests. */
-#define LD_APP      (1u<<8)
+#define LD_APP      (UINT64_C(1)<<8)
 /** Communication via the controller protocol. */
-#define LD_CONTROL  (1u<<9)
+#define LD_CONTROL  (UINT64_C(1)<<9)
 /** Building, using, and managing circuits. */
-#define LD_CIRC     (1u<<10)
+#define LD_CIRC     (UINT64_C(1)<<10)
 /** Hidden services. */
-#define LD_REND     (1u<<11)
+#define LD_REND     (UINT64_C(1)<<11)
 /** Internal errors in this Tor process. */
-#define LD_BUG      (1u<<12)
+#define LD_BUG      (UINT64_C(1)<<12)
 /** Learning and using information about Tor servers. */
-#define LD_DIR      (1u<<13)
+#define LD_DIR      (UINT64_C(1)<<13)
 /** Learning and using information about Tor servers. */
-#define LD_DIRSERV  (1u<<14)
+#define LD_DIRSERV  (UINT64_C(1)<<14)
 /** Onion routing protocol. */
-#define LD_OR       (1u<<15)
+#define LD_OR       (UINT64_C(1)<<15)
 /** Generic edge-connection functionality. */
-#define LD_EDGE     (1u<<16)
+#define LD_EDGE     (UINT64_C(1)<<16)
 #define LD_EXIT     LD_EDGE
 /** Bandwidth accounting. */
-#define LD_ACCT     (1u<<17)
+#define LD_ACCT     (UINT64_C(1)<<17)
 /** Router history */
-#define LD_HIST     (1u<<18)
+#define LD_HIST     (UINT64_C(1)<<18)
 /** OR handshaking */
-#define LD_HANDSHAKE (1u<<19)
+#define LD_HANDSHAKE (UINT64_C(1)<<19)
 /** Heartbeat messages */
-#define LD_HEARTBEAT (1u<<20)
+#define LD_HEARTBEAT (UINT64_C(1)<<20)
 /** Abstract channel_t code */
-#define LD_CHANNEL   (1u<<21)
+#define LD_CHANNEL   (UINT64_C(1)<<21)
 /** Scheduler */
-#define LD_SCHED     (1u<<22)
+#define LD_SCHED     (UINT64_C(1)<<22)
 /** Guard nodes */
-#define LD_GUARD     (1u<<23)
+#define LD_GUARD     (UINT64_C(1)<<23)
 /** Generation and application of consensus diffs. */
-#define LD_CONSDIFF  (1u<<24)
+#define LD_CONSDIFF  (UINT64_C(1)<<24)
 /** Denial of Service mitigation. */
-#define LD_DOS       (1u<<25)
-/** Number of logging domains in the code. */
-#define N_LOGGING_DOMAINS 26
+#define LD_DOS       (UINT64_C(1)<<25)
+/** Processes */
+#define LD_PROCESS   (UINT64_C(1)<<26)
+/** Pluggable Transports. */
+#define LD_PT        (UINT64_C(1)<<27)
+/** Bootstrap tracker. */
+#define LD_BTRACK    (UINT64_C(1)<<28)
+/** Message-passing backend. */
+#define LD_MESG      (UINT64_C(1)<<29)
 
-/** This log message is not safe to send to a callback-based logger
- * immediately.  Used as a flag, not a log domain. */
-#define LD_NOCB (1u<<31)
-/** This log message should not include a function name, even if it otherwise
- * would. Used as a flag, not a log domain. */
-#define LD_NOFUNCNAME (1u<<30)
+/** The number of log domains. */
+#define N_LOGGING_DOMAINS 30
+/** The highest log domain */
+#define HIGHEST_RESERVED_LD_DOMAIN_ (UINT64_C(1)<<(N_LOGGING_DOMAINS - 1))
+/** All log domains. */
+#define LD_ALL_DOMAINS ((~(UINT64_C(0)))>>(64 - N_LOGGING_DOMAINS))
+
+/** The number of log flags. */
+#define N_LOGGING_FLAGS 3
+/** First bit that is reserved in log_domain_mask_t for non-domain flags. */
+#define LOWEST_RESERVED_LD_FLAG_ (UINT64_C(1)<<(64 - N_LOGGING_FLAGS))
+/** All log flags. */
+#define LD_ALL_FLAGS ((~(UINT64_C(0)))<<(64 - N_LOGGING_FLAGS))
 
 #ifdef TOR_UNIT_TESTS
 /** This log message should not be intercepted by mock_saving_logv */
-#define LD_NO_MOCK (1u<<29)
+#define LD_NO_MOCK (UINT64_C(1)<<61)
 #endif
 
-/** Mask of zero or more log domains, OR'd together. */
-typedef uint32_t log_domain_mask_t;
+/** This log message is not safe to send to a callback-based logger
+ * immediately.  Used as a flag, not a log domain. */
+#define LD_NOCB (UINT64_C(1)<<62)
+/** This log message should not include a function name, even if it otherwise
+ * would. Used as a flag, not a log domain. */
+#define LD_NOFUNCNAME (UINT64_C(1)<<63)
 
 /** Configures which severities are logged for each logging domain for a given
  * log target. */
@@ -134,7 +153,8 @@ typedef struct log_severity_list_t {
 } log_severity_list_t;
 
 /** Callback type used for add_callback_log. */
-typedef void (*log_callback)(int severity, uint32_t domain, const char *msg);
+typedef void (*log_callback)(int severity, log_domain_mask_t domain,
+                             const char *msg);
 
 void init_logging(int disable_startup_queue);
 int parse_log_level(const char *level);
@@ -164,6 +184,7 @@ void logs_set_domain_logging(int enabled);
 int get_min_log_level(void);
 void switch_logs_debug(void);
 void logs_free_all(void);
+void logs_close_sigsafe(void);
 void add_temp_log(int min_severity);
 void close_temp_logs(void);
 void rollback_log_changes(void);
@@ -185,6 +206,21 @@ struct smartlist_t;
 void tor_log_get_logfile_names(struct smartlist_t *out);
 
 extern int log_global_min_severity_;
+
+#ifdef TOR_COVERAGE
+/* For coverage builds, we try to avoid our log_debug optimization, since it
+ * can have weird effects on internal macro coverage. */
+#define debug_logging_enabled() (1)
+#else
+static inline bool debug_logging_enabled(void);
+/**
+ * Return true iff debug logging is enabled for at least one domain.
+ */
+static inline bool debug_logging_enabled(void)
+{
+  return PREDICT_UNLIKELY(log_global_min_severity_ == LOG_DEBUG);
+}
+#endif /* defined(TOR_COVERAGE) */
 
 void log_fn_(int severity, log_domain_mask_t domain,
              const char *funcname, const char *format, ...)
@@ -215,8 +251,8 @@ void tor_log_string(int severity, log_domain_mask_t domain,
   log_fn_ratelim_(ratelim, severity, domain, __FUNCTION__, args)
 #define log_debug(domain, args...)                                      \
   STMT_BEGIN                                                            \
-    if (PREDICT_UNLIKELY(log_global_min_severity_ == LOG_DEBUG))        \
-      log_fn_(LOG_DEBUG, domain, __FUNCTION__, args);            \
+    if (debug_logging_enabled())                                        \
+      log_fn_(LOG_DEBUG, domain, __FUNCTION__, args);                   \
   STMT_END
 #define log_info(domain, args...)                           \
   log_fn_(LOG_INFO, domain, __FUNCTION__, args)
@@ -233,8 +269,8 @@ void tor_log_string(int severity, log_domain_mask_t domain,
 
 #define log_debug(domain, args, ...)                                        \
   STMT_BEGIN                                                                \
-    if (PREDICT_UNLIKELY(log_global_min_severity_ == LOG_DEBUG))            \
-      log_fn_(LOG_DEBUG, domain, __FUNCTION__, args, ##__VA_ARGS__); \
+    if (debug_logging_enabled())                                            \
+      log_fn_(LOG_DEBUG, domain, __FUNCTION__, args, ##__VA_ARGS__);        \
   STMT_END
 #define log_info(domain, args,...)                                      \
   log_fn_(LOG_INFO, domain, __FUNCTION__, args, ##__VA_ARGS__)
@@ -272,5 +308,10 @@ MOCK_DECL(STATIC void, logv, (int severity, log_domain_mask_t domain,
     va_list ap) CHECK_PRINTF(5,0));
 #endif
 
-# define TOR_TORLOG_H
+#if defined(LOG_PRIVATE) || defined(TOR_UNIT_TESTS)
+/** Given a severity, yields an index into log_severity_list_t.masks to use
+ * for that severity. */
+#define SEVERITY_MASK_IDX(sev) ((sev) - LOG_ERR)
+#endif
+
 #endif /* !defined(TOR_TORLOG_H) */

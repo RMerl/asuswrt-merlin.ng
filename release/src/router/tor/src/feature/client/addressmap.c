@@ -22,7 +22,7 @@
 #include "core/or/circuituse.h"
 #include "app/config/config.h"
 #include "core/or/connection_edge.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/relay/dns.h"
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/routerset.h"

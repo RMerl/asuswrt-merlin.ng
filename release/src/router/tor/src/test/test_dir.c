@@ -8,7 +8,7 @@
 
 #define BWAUTH_PRIVATE
 #define CONFIG_PRIVATE
-#define CONTROL_PRIVATE
+#define CONTROL_GETINFO_PRIVATE
 #define DIRCACHE_PRIVATE
 #define DIRCLIENT_PRIVATE
 #define DIRSERV_PRIVATE
@@ -26,13 +26,13 @@
 
 #include "core/or/or.h"
 #include "app/config/config.h"
-#include "app/config/confparse.h"
+#include "lib/confmgt/confparse.h"
 #include "core/mainloop/connection.h"
 #include "core/or/relay.h"
 #include "core/or/versions.h"
 #include "feature/client/bridges.h"
 #include "feature/client/entrynodes.h"
-#include "feature/control/control.h"
+#include "feature/control/control_getinfo.h"
 #include "feature/dirauth/bwauth.h"
 #include "feature/dirauth/dirvote.h"
 #include "feature/dirauth/dsigs_parse.h"
@@ -91,8 +91,28 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
 
 #define NS_MODULE dir
+
+static networkstatus_t *
+networkstatus_parse_vote_from_string_(const char *s,
+                                      const char **eos_out,
+                                      enum networkstatus_type_t ns_type)
+{
+  size_t len = strlen(s);
+  // memdup so that it won't be nul-terminated.
+  char *tmp = tor_memdup(s, len);
+  networkstatus_t *result =
+    networkstatus_parse_vote_from_string(tmp, len, eos_out, ns_type);
+  if (eos_out && *eos_out) {
+    *eos_out = s + (*eos_out - tmp);
+  }
+  tor_free(tmp);
+  return result;
+}
 
 static void
 test_dir_nicknames(void *arg)
@@ -142,6 +162,269 @@ test_dir_nicknames(void *arg)
   ;
 }
 
+/* Allocate and return a new routerinfo, with the fields set from the
+ * arguments to this function.
+ *
+ * Also sets:
+ *  - random RSA identity and onion keys,
+ *  - the platform field using get_platform_str(), and
+ *  - supports_tunnelled_dir_requests to 1.
+ *
+ * If rsa_onion_keypair_out is not NULL, it is set to the onion keypair.
+ * The caller must free this keypair.
+ */
+static routerinfo_t *
+basic_routerinfo_new(const char *nickname, uint32_t ipv4_addr,
+                     uint16_t or_port, uint16_t dir_port,
+                     uint32_t bandwidthrate, uint32_t bandwidthburst,
+                     uint32_t bandwidthcapacity,
+                     time_t published_on,
+                     crypto_pk_t **rsa_onion_keypair_out)
+{
+  char platform[256];
+
+  tor_assert(nickname);
+
+  crypto_pk_t *pk1 = NULL, *pk2 = NULL;
+  /* These keys are random: idx is ignored. */
+  pk1 = pk_generate(0);
+  pk2 = pk_generate(1);
+
+  tor_assert(pk1);
+  tor_assert(pk2);
+
+  get_platform_str(platform, sizeof(platform));
+
+  routerinfo_t *r1 = tor_malloc_zero(sizeof(routerinfo_t));
+
+  r1->nickname = tor_strdup(nickname);
+  r1->platform = tor_strdup(platform);
+
+  r1->addr = ipv4_addr;
+  r1->or_port = or_port;
+  r1->dir_port = dir_port;
+  r1->supports_tunnelled_dir_requests = 1;
+
+  router_set_rsa_onion_pkey(pk1, &r1->onion_pkey, &r1->onion_pkey_len);
+  r1->identity_pkey = pk2;
+
+  r1->bandwidthrate = bandwidthrate;
+  r1->bandwidthburst = bandwidthburst;
+  r1->bandwidthcapacity = bandwidthcapacity;
+
+  r1->cache_info.published_on = published_on;
+
+  if (rsa_onion_keypair_out) {
+    *rsa_onion_keypair_out = pk1;
+  } else {
+    crypto_pk_free(pk1);
+  }
+
+  return r1;
+}
+
+/* Allocate and return a new string containing a "router" line for r1. */
+static char *
+get_new_router_line(const routerinfo_t *r1)
+{
+  char *line = NULL;
+
+  tor_assert(r1);
+
+  tor_asprintf(&line,
+               "router %s %s %d 0 %d\n",
+               r1->nickname, fmt_addr32(r1->addr),
+               r1->or_port, r1->dir_port);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing a "platform" line for the
+ * current Tor version and OS. */
+static char *
+get_new_platform_line(void)
+{
+  char *line = NULL;
+
+  tor_asprintf(&line,
+               "platform Tor %s on %s\n",
+               VERSION, get_uname());
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing a "published" line for r1.
+ * r1->cache_info.published_on must be between 0 and 59 seconds. */
+static char *
+get_new_published_line(const routerinfo_t *r1)
+{
+  char *line = NULL;
+
+  tor_assert(r1);
+
+  tor_assert(r1->cache_info.published_on >= 0);
+  tor_assert(r1->cache_info.published_on <= 59);
+
+  tor_asprintf(&line,
+               "published 1970-01-01 00:00:%02u\n",
+               (unsigned)r1->cache_info.published_on);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing a "fingerprint" line for r1. */
+static char *
+get_new_fingerprint_line(const routerinfo_t *r1)
+{
+  char *line = NULL;
+  char fingerprint[FINGERPRINT_LEN+1];
+
+  tor_assert(r1);
+
+  tor_assert(!crypto_pk_get_fingerprint(r1->identity_pkey, fingerprint, 1));
+  tor_assert(strlen(fingerprint) > 0);
+
+  tor_asprintf(&line,
+               "fingerprint %s\n",
+               fingerprint);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing an "uptime" line with uptime t.
+ *
+ * You should pass a hard-coded value to this function, because even if we made
+ * it reflect uptime, that still wouldn't make it right, because the two
+ * descriptors might be made on different seconds.
+ */
+static char *
+get_new_uptime_line(time_t t)
+{
+  char *line = NULL;
+
+  tor_asprintf(&line,
+               "uptime %u\n",
+               (unsigned)t);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing an "bandwidth" line for r1.
+ */
+static char *
+get_new_bandwidth_line(const routerinfo_t *r1)
+{
+  char *line = NULL;
+
+  tor_assert(r1);
+
+  tor_asprintf(&line,
+               "bandwidth %u %u %u\n",
+               r1->bandwidthrate,
+               r1->bandwidthburst,
+               r1->bandwidthcapacity);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing a key_name block for the
+ * RSA key pk1.
+ */
+static char *
+get_new_rsa_key_block(const char *key_name, crypto_pk_t *pk1)
+{
+  char *block = NULL;
+  char *pk1_str = NULL;
+  size_t pk1_str_len = 0;
+
+  tor_assert(key_name);
+  tor_assert(pk1);
+
+  tor_assert(!crypto_pk_write_public_key_to_string(pk1, &pk1_str,
+                                                   &pk1_str_len));
+  tor_assert(pk1_str);
+  tor_assert(pk1_str_len);
+
+  tor_asprintf(&block,
+               "%s\n%s",
+               key_name,
+               pk1_str);
+  tor_free(pk1_str);
+
+  tor_assert(block);
+  return block;
+}
+
+/* Allocate and return a new string containing an "onion-key" block for the
+ * router r1.
+ */
+static char *
+get_new_onion_key_block(const routerinfo_t *r1)
+{
+  char *block = NULL;
+  tor_assert(r1);
+  crypto_pk_t *pk_tmp = router_get_rsa_onion_pkey(r1->onion_pkey,
+                                                  r1->onion_pkey_len);
+  block = get_new_rsa_key_block("onion-key", pk_tmp);
+  crypto_pk_free(pk_tmp);
+  return block;
+}
+
+/* Allocate and return a new string containing an "signing-key" block for the
+ * router r1.
+ */
+static char *
+get_new_signing_key_block(const routerinfo_t *r1)
+{
+  tor_assert(r1);
+  return get_new_rsa_key_block("signing-key", r1->identity_pkey);
+}
+
+/* Allocate and return a new string containing an "ntor-onion-key" line for
+ * the curve25519 public key ntor_onion_pubkey.
+ */
+static char *
+get_new_ntor_onion_key_line(const curve25519_public_key_t *ntor_onion_pubkey)
+{
+  char *line = NULL;
+  char cert_buf[256];
+  int rv = 0;
+
+  tor_assert(ntor_onion_pubkey);
+
+  rv = base64_encode(cert_buf, sizeof(cert_buf),
+                     (const char*)ntor_onion_pubkey->public_key, 32,
+                     BASE64_ENCODE_MULTILINE);
+  tor_assert(rv > 0);
+  tor_assert(strlen(cert_buf) > 0);
+
+  tor_asprintf(&line,
+               "ntor-onion-key %s",
+               cert_buf);
+  tor_assert(line);
+
+  return line;
+}
+
+/* Allocate and return a new string containing a "bridge-distribution-request"
+ * line for options.
+ */
+static char *
+get_new_bridge_distribution_request_line(const or_options_t *options)
+{
+  if (options->BridgeRelay) {
+    return tor_strdup("bridge-distribution-request any\n");
+  } else {
+    return tor_strdup("");
+  }
+}
+
 static smartlist_t *mocked_configured_ports = NULL;
 
 /** Returns mocked_configured_ports */
@@ -151,71 +434,510 @@ mock_get_configured_ports(void)
   return mocked_configured_ports;
 }
 
-/** Run unit tests for router descriptor generation logic. */
+static tor_cert_t *
+mock_tor_cert_dup_null(const tor_cert_t *cert)
+{
+  (void)cert;
+  return NULL;
+}
+
+static crypto_pk_t *mocked_server_identitykey = NULL;
+
+/* Returns mocked_server_identitykey with no checks. */
+static crypto_pk_t *
+mock_get_server_identity_key(void)
+{
+  return mocked_server_identitykey;
+}
+
+static crypto_pk_t *mocked_onionkey = NULL;
+
+/* Returns mocked_onionkey with no checks. */
+static crypto_pk_t *
+mock_get_onion_key(void)
+{
+  return mocked_onionkey;
+}
+
+static routerinfo_t *mocked_routerinfo = NULL;
+
+/* Returns 0 and sets ri_out to mocked_routerinfo.
+ * ri_out must not be NULL. There are no other checks. */
+static int
+mock_router_build_fresh_unsigned_routerinfo(routerinfo_t **ri_out)
+{
+  tor_assert(ri_out);
+  *ri_out = mocked_routerinfo;
+  return 0;
+}
+
+static ed25519_keypair_t *mocked_master_signing_key = NULL;
+
+/* Returns mocked_master_signing_key with no checks. */
+static const ed25519_keypair_t *
+mock_get_master_signing_keypair(void)
+{
+  return mocked_master_signing_key;
+}
+
+static struct tor_cert_st *mocked_signing_key_cert = NULL;
+
+/* Returns mocked_signing_key_cert with no checks. */
+static const struct tor_cert_st *
+mock_get_master_signing_key_cert(void)
+{
+  return mocked_signing_key_cert;
+}
+
+static curve25519_keypair_t *mocked_curve25519_onion_key = NULL;
+
+/* Returns mocked_curve25519_onion_key with no checks. */
+static const curve25519_keypair_t *
+mock_get_current_curve25519_keypair(void)
+{
+  return mocked_curve25519_onion_key;
+}
+
+/* Unmock get_configured_ports() and free mocked_configured_ports. */
 static void
-test_dir_formats(void *arg)
+cleanup_mock_configured_ports(void)
+{
+  UNMOCK(get_configured_ports);
+
+  if (mocked_configured_ports) {
+    SMARTLIST_FOREACH(mocked_configured_ports, port_cfg_t *, p, tor_free(p));
+    smartlist_free(mocked_configured_ports);
+  }
+}
+
+/* Mock get_configured_ports() with a list containing or_port and dir_port.
+ * If a port is 0, don't set it.
+ * Only sets the minimal data required for the tests to pass. */
+static void
+setup_mock_configured_ports(uint16_t or_port, uint16_t dir_port)
+{
+  cleanup_mock_configured_ports();
+
+  /* Fake just enough of an ORPort and DirPort to get by */
+  MOCK(get_configured_ports, mock_get_configured_ports);
+  mocked_configured_ports = smartlist_new();
+
+  if (or_port) {
+    port_cfg_t *or_port_cfg = tor_malloc_zero(sizeof(*or_port_cfg));
+    or_port_cfg->type = CONN_TYPE_OR_LISTENER;
+    or_port_cfg->addr.family = AF_INET;
+    or_port_cfg->port = or_port;
+    smartlist_add(mocked_configured_ports, or_port_cfg);
+  }
+
+  if (dir_port) {
+    port_cfg_t *dir_port_cfg = tor_malloc_zero(sizeof(*dir_port_cfg));
+    dir_port_cfg->type = CONN_TYPE_DIR_LISTENER;
+    dir_port_cfg->addr.family = AF_INET;
+    dir_port_cfg->port = dir_port;
+    smartlist_add(mocked_configured_ports, dir_port_cfg);
+  }
+}
+
+/* Clean up the data structures and unmock the functions needed for generating
+ * a fresh descriptor. */
+static void
+cleanup_mocks_for_fresh_descriptor(void)
+{
+  tor_free(get_options_mutable()->Nickname);
+
+  mocked_server_identitykey = NULL;
+  UNMOCK(get_server_identity_key);
+
+  crypto_pk_free(mocked_onionkey);
+  UNMOCK(get_onion_key);
+}
+
+/* Mock the data structures and functions needed for generating a fresh
+ * descriptor.
+ *
+ * Sets options->Nickname from r1->nickname.
+ * Mocks get_server_identity_key() with r1->identity_pkey.
+ *
+ * If rsa_onion_keypair is not NULL, it is used to mock get_onion_key().
+ * Otherwise, the public key in r1->onion_pkey is used to mock get_onion_key().
+ */
+static void
+setup_mocks_for_fresh_descriptor(const routerinfo_t *r1,
+                                 crypto_pk_t *rsa_onion_keypair)
+{
+  cleanup_mocks_for_fresh_descriptor();
+
+  tor_assert(r1);
+
+  /* router_build_fresh_signed_extrainfo() requires options->Nickname */
+  get_options_mutable()->Nickname = tor_strdup(r1->nickname);
+
+  /* router_build_fresh_signed_extrainfo() requires get_server_identity_key().
+   * Use the same one as the call to router_dump_router_to_string() above.
+   */
+  mocked_server_identitykey = r1->identity_pkey;
+  MOCK(get_server_identity_key, mock_get_server_identity_key);
+
+  /* router_dump_and_sign_routerinfo_descriptor_body() requires
+   * get_onion_key(). Use the same one as r1.
+   */
+  if (rsa_onion_keypair) {
+    mocked_onionkey = crypto_pk_dup_key(rsa_onion_keypair);
+  } else {
+    mocked_onionkey = router_get_rsa_onion_pkey(r1->onion_pkey,
+                                                r1->onion_pkey_len);
+  }
+  MOCK(get_onion_key, mock_get_onion_key);
+}
+
+/* Set options based on arg.
+ *
+ * b: BridgeRelay 1
+ * e: ExtraInfoStatistics 1
+ * s: sets all the individual statistics options to 1
+ *
+ * Always sets AssumeReachable to 1.
+ *
+ * Does not set ServerTransportPlugin, because it's parsed before use.
+ *
+ * Does not set BridgeRecordUsageByCountry, because the tests don't have access
+ * to a GeoIPFile or GeoIPv6File. */
+static void
+setup_dir_formats_options(const char *arg, or_options_t *options)
+{
+  /* Skip reachability checks for DirPort, ORPort, and tunnelled-dir-server */
+  options->AssumeReachable = 1;
+
+  if (strchr(arg, 'b')) {
+    options->BridgeRelay = 1;
+  }
+
+  if (strchr(arg, 'e')) {
+    options->ExtraInfoStatistics = 1;
+  }
+
+  if (strchr(arg, 's')) {
+    options->DirReqStatistics = 1;
+    options->HiddenServiceStatistics = 1;
+    options->EntryStatistics = 1;
+    options->CellStatistics = 1;
+    options->ExitPortStatistics = 1;
+    options->ConnDirectionStatistics = 1;
+    options->PaddingStatistics = 1;
+  }
+}
+
+/* Check that routerinfos r1 and rp1 are consistent.
+ * Only performs some basic checks.
+ */
+#define CHECK_ROUTERINFO_CONSISTENCY(r1, rp1) \
+STMT_BEGIN \
+  tt_assert(r1); \
+  tt_assert(rp1); \
+\
+  tt_int_op(rp1->addr,OP_EQ, r1->addr); \
+  tt_int_op(rp1->or_port,OP_EQ, r1->or_port); \
+  tt_int_op(rp1->dir_port,OP_EQ, r1->dir_port); \
+  tt_int_op(rp1->bandwidthrate,OP_EQ, r1->bandwidthrate); \
+  tt_int_op(rp1->bandwidthburst,OP_EQ, r1->bandwidthburst); \
+  tt_int_op(rp1->bandwidthcapacity,OP_EQ, r1->bandwidthcapacity); \
+  crypto_pk_t *rp1_onion_pkey = router_get_rsa_onion_pkey(rp1->onion_pkey, \
+                                                      rp1->onion_pkey_len); \
+  crypto_pk_t *r1_onion_pkey = router_get_rsa_onion_pkey(r1->onion_pkey, \
+                                                      r1->onion_pkey_len); \
+  tt_int_op(crypto_pk_cmp_keys(rp1_onion_pkey, r1_onion_pkey), OP_EQ, 0); \
+  crypto_pk_free(rp1_onion_pkey); \
+  crypto_pk_free(r1_onion_pkey); \
+  tt_int_op(crypto_pk_cmp_keys(rp1->identity_pkey, r1->identity_pkey), \
+            OP_EQ, 0); \
+  tt_int_op(rp1->supports_tunnelled_dir_requests, OP_EQ, \
+            r1->supports_tunnelled_dir_requests); \
+STMT_END
+
+/* Check that routerinfo r1 and extrainfo e1 are consistent.
+ * Only performs some basic checks.
+ */
+#define CHECK_EXTRAINFO_CONSISTENCY(r1, e1) \
+STMT_BEGIN \
+  tt_assert(r1); \
+  tt_assert(e1); \
+\
+  tt_str_op(e1->nickname, OP_EQ, r1->nickname); \
+STMT_END
+
+/** Run unit tests for router descriptor generation logic for a RSA-only
+ * router. Tor versions without ed25519 (0.2.6 and earlier) are no longer
+ * officially supported, but the authorities still accept their descriptors.
+ */
+static void
+test_dir_formats_rsa(void *arg)
 {
   char *buf = NULL;
-  char buf2[8192];
-  char platform[256];
-  char fingerprint[FINGERPRINT_LEN+1];
-  char *pk1_str = NULL, *pk2_str = NULL, *cp;
-  size_t pk1_str_len, pk2_str_len;
-  routerinfo_t *r1=NULL, *r2=NULL;
-  crypto_pk_t *pk1 = NULL, *pk2 = NULL;
-  routerinfo_t *rp1 = NULL, *rp2 = NULL;
-  addr_policy_t *ex1, *ex2;
-  routerlist_t *dir1 = NULL, *dir2 = NULL;
+  char *buf2 = NULL;
+  char *cp = NULL;
+
   uint8_t *rsa_cc = NULL;
+
+  routerinfo_t *r1 = NULL;
+  extrainfo_t *e1 = NULL;
+  routerinfo_t *rp1 = NULL;
+  extrainfo_t *ep1 = NULL;
+
+  smartlist_t *chunks = NULL;
+  const char *msg = NULL;
+  int rv = -1;
+
   or_options_t *options = get_options_mutable();
-  const addr_policy_t *p;
-  time_t now = time(NULL);
-  port_cfg_t orport, dirport;
-  char cert_buf[256];
-
-  (void)arg;
-  pk1 = pk_generate(0);
-  pk2 = pk_generate(1);
-
-  tt_assert(pk1 && pk2);
+  setup_dir_formats_options((const char *)arg, options);
 
   hibernate_set_state_for_testing_(HIBERNATE_STATE_LIVE);
 
-  get_platform_str(platform, sizeof(platform));
-  r1 = tor_malloc_zero(sizeof(routerinfo_t));
-  r1->addr = 0xc0a80001u; /* 192.168.0.1 */
-  r1->cache_info.published_on = 0;
-  r1->or_port = 9000;
-  r1->dir_port = 9003;
-  r1->supports_tunnelled_dir_requests = 1;
-  tor_addr_parse(&r1->ipv6_addr, "1:2:3:4::");
-  r1->ipv6_orport = 9999;
-  router_set_rsa_onion_pkey(pk1, &r1->onion_pkey, &r1->onion_pkey_len);
-  /* Fake just enough of an ntor key to get by */
+  /* r1 is a minimal, RSA-only descriptor, with DirPort and IPv6 */
+  r1 = basic_routerinfo_new("Magri", 0xc0a80001u /* 192.168.0.1 */,
+                            9000, 9003,
+                            1000, 5000, 10000,
+                            0,
+                            NULL);
+
+ /* Fake just enough of an ntor key to get by */
   curve25519_keypair_t r1_onion_keypair;
   curve25519_keypair_generate(&r1_onion_keypair, 0);
   r1->onion_curve25519_pkey = tor_memdup(&r1_onion_keypair.pubkey,
                                          sizeof(curve25519_public_key_t));
-  r1->identity_pkey = crypto_pk_dup_key(pk2);
-  r1->bandwidthrate = 1000;
-  r1->bandwidthburst = 5000;
-  r1->bandwidthcapacity = 10000;
-  r1->exit_policy = NULL;
-  r1->nickname = tor_strdup("Magri");
-  r1->platform = tor_strdup(platform);
 
-  ex1 = tor_malloc_zero(sizeof(addr_policy_t));
-  ex2 = tor_malloc_zero(sizeof(addr_policy_t));
-  ex1->policy_type = ADDR_POLICY_ACCEPT;
-  tor_addr_from_ipv4h(&ex1->addr, 0);
-  ex1->maskbits = 0;
-  ex1->prt_min = ex1->prt_max = 80;
-  ex2->policy_type = ADDR_POLICY_REJECT;
-  tor_addr_from_ipv4h(&ex2->addr, 18<<24);
-  ex2->maskbits = 8;
-  ex2->prt_min = ex2->prt_max = 24;
-  r2 = tor_malloc_zero(sizeof(routerinfo_t));
-  r2->addr = 0x0a030201u; /* 10.3.2.1 */
+  /* Now add IPv6 */
+  tor_addr_parse(&r1->ipv6_addr, "1:2:3:4::");
+  r1->ipv6_orport = 9999;
+
+  r1->exit_policy = NULL;
+
+  /* XXXX+++ router_dump_to_string should really take this from ri. */
+  options->ContactInfo = tor_strdup("Magri White "
+                                    "<magri@elsewhere.example.com>");
+
+  setup_mock_configured_ports(r1->or_port, r1->dir_port);
+
+  buf = router_dump_router_to_string(r1, r1->identity_pkey, NULL, NULL, NULL);
+  tt_assert(buf);
+
+  tor_free(options->ContactInfo);
+  cleanup_mock_configured_ports();
+
+  /* Synthesise a router descriptor, without the signature */
+  chunks = smartlist_new();
+
+  smartlist_add(chunks, get_new_router_line(r1));
+  smartlist_add_strdup(chunks, "or-address [1:2:3:4::]:9999\n");
+
+  smartlist_add(chunks, get_new_platform_line());
+  smartlist_add(chunks, get_new_published_line(r1));
+  smartlist_add(chunks, get_new_fingerprint_line(r1));
+
+  smartlist_add(chunks, get_new_uptime_line(0));
+  smartlist_add(chunks, get_new_bandwidth_line(r1));
+
+  smartlist_add(chunks, get_new_onion_key_block(r1));
+  smartlist_add(chunks, get_new_signing_key_block(r1));
+
+  smartlist_add_strdup(chunks, "hidden-service-dir\n");
+
+  smartlist_add_strdup(chunks, "contact Magri White "
+                               "<magri@elsewhere.example.com>\n");
+
+  smartlist_add(chunks, get_new_bridge_distribution_request_line(options));
+  smartlist_add(chunks, get_new_ntor_onion_key_line(&r1_onion_keypair.pubkey));
+  smartlist_add_strdup(chunks, "reject *:*\n");
+  smartlist_add_strdup(chunks, "tunnelled-dir-server\n");
+
+  smartlist_add_strdup(chunks, "router-signature\n");
+
+  size_t len_out = 0;
+  buf2 = smartlist_join_strings(chunks, "", 0, &len_out);
+  SMARTLIST_FOREACH(chunks, char *, s, tor_free(s));
+  smartlist_free(chunks);
+
+  tt_assert(len_out > 0);
+
+  buf[strlen(buf2)] = '\0'; /* Don't compare the sig; it's never the same
+                             * twice */
+
+  tt_str_op(buf,OP_EQ, buf2);
+  tor_free(buf);
+
+  setup_mock_configured_ports(r1->or_port, r1->dir_port);
+
+  buf = router_dump_router_to_string(r1, r1->identity_pkey, NULL, NULL, NULL);
+  tt_assert(buf);
+
+  cleanup_mock_configured_ports();
+
+  /* Now, try to parse buf */
+  cp = buf;
+  rp1 = router_parse_entry_from_string((const char*)cp,NULL,1,0,NULL,NULL);
+
+  CHECK_ROUTERINFO_CONSISTENCY(r1, rp1);
+
+  tt_assert(rp1->policy_is_reject_star);
+
+  tor_free(buf);
+  routerinfo_free(rp1);
+
+  /* Test extrainfo creation.
+   * We avoid calling router_build_fresh_unsigned_routerinfo(), because it's
+   * too complex. Instead, we re-use the manually-created routerinfos.
+   */
+
+  /* Set up standard mocks and data */
+  setup_mocks_for_fresh_descriptor(r1, NULL);
+
+  /* router_build_fresh_signed_extrainfo() passes the result of
+   * get_master_signing_key_cert() directly to tor_cert_dup(), which fails on
+   * NULL. But we want a NULL ei->cache_info.signing_key_cert to test the
+   * non-ed key path.
+   */
+  MOCK(tor_cert_dup, mock_tor_cert_dup_null);
+
+  /* Fake just enough of an ORPort and DirPort to get by */
+  setup_mock_configured_ports(r1->or_port, r1->dir_port);
+
+  /* Test some of the low-level static functions. */
+  e1 = router_build_fresh_signed_extrainfo(r1);
+  tt_assert(e1);
+  router_update_routerinfo_from_extrainfo(r1, e1);
+  rv = router_dump_and_sign_routerinfo_descriptor_body(r1);
+  tt_assert(rv == 0);
+  msg = "";
+  rv = routerinfo_incompatible_with_extrainfo(r1->identity_pkey, e1,
+                                              &r1->cache_info, &msg);
+  /* If they are incompatible, fail and show the msg string */
+  tt_str_op(msg, OP_EQ, "");
+  tt_assert(rv == 0);
+
+  /* Now cleanup */
+  cleanup_mocks_for_fresh_descriptor();
+
+  UNMOCK(tor_cert_dup);
+
+  cleanup_mock_configured_ports();
+
+  CHECK_EXTRAINFO_CONSISTENCY(r1, e1);
+
+  /* Test that the signed ri is parseable */
+  tt_assert(r1->cache_info.signed_descriptor_body);
+  cp = r1->cache_info.signed_descriptor_body;
+  rp1 = router_parse_entry_from_string((const char*)cp,NULL,1,0,NULL,NULL);
+
+  CHECK_ROUTERINFO_CONSISTENCY(r1, rp1);
+
+  tt_assert(rp1->policy_is_reject_star);
+
+  routerinfo_free(rp1);
+
+  /* Test that the signed ei is parseable */
+  tt_assert(e1->cache_info.signed_descriptor_body);
+  cp = e1->cache_info.signed_descriptor_body;
+  ep1 = extrainfo_parse_entry_from_string((const char*)cp,NULL,1,NULL,NULL);
+
+  CHECK_EXTRAINFO_CONSISTENCY(r1, ep1);
+
+  /* In future tests, we could check the actual extrainfo statistics. */
+
+  extrainfo_free(ep1);
+
+ done:
+  dirserv_free_fingerprint_list();
+
+  tor_free(options->ContactInfo);
+  tor_free(options->Nickname);
+
+  cleanup_mock_configured_ports();
+  cleanup_mocks_for_fresh_descriptor();
+
+  if (chunks) {
+    SMARTLIST_FOREACH(chunks, char *, s, tor_free(s));
+    smartlist_free(chunks);
+  }
+
+  routerinfo_free(r1);
+  routerinfo_free(rp1);
+
+  extrainfo_free(e1);
+  extrainfo_free(ep1);
+
+  tor_free(rsa_cc);
+
+  tor_free(buf);
+  tor_free(buf2);
+}
+
+/* Check that the exit policy in rp2 is as expected. */
+#define CHECK_PARSED_EXIT_POLICY(rp2) \
+STMT_BEGIN \
+  tt_int_op(smartlist_len(rp2->exit_policy),OP_EQ, 2); \
+ \
+  p = smartlist_get(rp2->exit_policy, 0); \
+  tt_int_op(p->policy_type,OP_EQ, ADDR_POLICY_ACCEPT); \
+  tt_assert(tor_addr_is_null(&p->addr)); \
+  tt_int_op(p->maskbits,OP_EQ, 0); \
+  tt_int_op(p->prt_min,OP_EQ, 80); \
+  tt_int_op(p->prt_max,OP_EQ, 80); \
+ \
+  p = smartlist_get(rp2->exit_policy, 1); \
+  tt_int_op(p->policy_type,OP_EQ, ADDR_POLICY_REJECT); \
+  tt_assert(tor_addr_eq(&p->addr, &ex2->addr)); \
+  tt_int_op(p->maskbits,OP_EQ, 8); \
+  tt_int_op(p->prt_min,OP_EQ, 24); \
+  tt_int_op(p->prt_max,OP_EQ, 24); \
+STMT_END
+
+/** Run unit tests for router descriptor generation logic for a RSA + ed25519
+ * router.
+ */
+static void
+test_dir_formats_rsa_ed25519(void *arg)
+{
+  char *buf = NULL;
+  char *buf2 = NULL;
+  char *cp = NULL;
+
+  crypto_pk_t *r2_onion_pkey = NULL;
+  char cert_buf[256];
+  uint8_t *rsa_cc = NULL;
+  time_t now = time(NULL);
+
+  routerinfo_t *r2 = NULL;
+  extrainfo_t *e2 = NULL;
+  routerinfo_t *r2_out = NULL;
+  routerinfo_t *rp2 = NULL;
+  extrainfo_t *ep2 = NULL;
+  addr_policy_t *ex1, *ex2;
+  const addr_policy_t *p;
+
+  smartlist_t *chunks = NULL;
+  int rv = -1;
+
+  or_options_t *options = get_options_mutable();
+  setup_dir_formats_options((const char *)arg, options);
+
+  hibernate_set_state_for_testing_(HIBERNATE_STATE_LIVE);
+
+  /* r2 is a RSA + ed25519 descriptor, with an exit policy, but no DirPort or
+   * IPv6 */
+  r2 = basic_routerinfo_new("Fred", 0x0a030201u /* 10.3.2.1 */,
+                            9005, 0,
+                            3000, 3000, 3000,
+                            5,
+                            &r2_onion_pkey);
+
+  /* Fake just enough of an ntor key to get by */
+  curve25519_keypair_t r2_onion_keypair;
+  curve25519_keypair_generate(&r2_onion_keypair, 0);
+  r2->onion_curve25519_pkey = tor_memdup(&r2_onion_keypair.pubkey,
+                                         sizeof(curve25519_public_key_t));
+
+  /* Now add relay ed25519 keys
+   * We can't use init_mock_ed_keys() here, because the keys are seeded */
   ed25519_keypair_t kp1, kp2;
   ed25519_secret_key_from_seed(&kp1.seckey,
                           (const uint8_t*)"YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY");
@@ -228,157 +950,78 @@ test_dir_formats(void *arg)
                                          &kp2.pubkey,
                                          now, 86400,
                                          CERT_FLAG_INCLUDE_SIGNING_KEY);
-  r2->platform = tor_strdup(platform);
-  r2->cache_info.published_on = 5;
-  r2->or_port = 9005;
-  r2->dir_port = 0;
-  r2->supports_tunnelled_dir_requests = 1;
-  router_set_rsa_onion_pkey(pk2, &r2->onion_pkey, &r2->onion_pkey_len);
-  curve25519_keypair_t r2_onion_keypair;
-  curve25519_keypair_generate(&r2_onion_keypair, 0);
-  r2->onion_curve25519_pkey = tor_memdup(&r2_onion_keypair.pubkey,
-                                         sizeof(curve25519_public_key_t));
-  r2->identity_pkey = crypto_pk_dup_key(pk1);
-  r2->bandwidthrate = r2->bandwidthburst = r2->bandwidthcapacity = 3000;
+
+  /* Now add an exit policy */
+  ex1 = tor_malloc_zero(sizeof(addr_policy_t));
+  ex2 = tor_malloc_zero(sizeof(addr_policy_t));
+  ex1->policy_type = ADDR_POLICY_ACCEPT;
+  tor_addr_from_ipv4h(&ex1->addr, 0);
+  ex1->maskbits = 0;
+  ex1->prt_min = ex1->prt_max = 80;
+  ex2->policy_type = ADDR_POLICY_REJECT;
+  tor_addr_from_ipv4h(&ex2->addr, 18<<24);
+  ex2->maskbits = 8;
+  ex2->prt_min = ex2->prt_max = 24;
+
   r2->exit_policy = smartlist_new();
   smartlist_add(r2->exit_policy, ex1);
   smartlist_add(r2->exit_policy, ex2);
-  r2->nickname = tor_strdup("Fred");
 
-  tt_assert(!crypto_pk_write_public_key_to_string(pk1, &pk1_str,
-                                                    &pk1_str_len));
-  tt_assert(!crypto_pk_write_public_key_to_string(pk2 , &pk2_str,
-                                                    &pk2_str_len));
+  /* Fake just enough of an ORPort to get by */
+  setup_mock_configured_ports(r2->or_port, 0);
 
-  /* XXXX+++ router_dump_to_string should really take this from ri.*/
-  options->ContactInfo = tor_strdup("Magri White "
-                                    "<magri@elsewhere.example.com>");
-  /* Skip reachability checks for DirPort and tunnelled-dir-server */
-  options->AssumeReachable = 1;
-
-  /* Fake just enough of an ORPort and DirPort to get by */
-  MOCK(get_configured_ports, mock_get_configured_ports);
-  mocked_configured_ports = smartlist_new();
-
-  memset(&orport, 0, sizeof(orport));
-  orport.type = CONN_TYPE_OR_LISTENER;
-  orport.addr.family = AF_INET;
-  orport.port = 9000;
-  smartlist_add(mocked_configured_ports, &orport);
-
-  memset(&dirport, 0, sizeof(dirport));
-  dirport.type = CONN_TYPE_DIR_LISTENER;
-  dirport.addr.family = AF_INET;
-  dirport.port = 9003;
-  smartlist_add(mocked_configured_ports, &dirport);
-
-  buf = router_dump_router_to_string(r1, pk2, NULL, NULL, NULL);
-
-  UNMOCK(get_configured_ports);
-  smartlist_free(mocked_configured_ports);
-  mocked_configured_ports = NULL;
-
-  tor_free(options->ContactInfo);
+  buf = router_dump_router_to_string(r2,
+                                     r2->identity_pkey, r2_onion_pkey,
+                                     &r2_onion_keypair, &kp2);
   tt_assert(buf);
 
-  strlcpy(buf2, "router Magri 192.168.0.1 9000 0 9003\n"
-          "or-address [1:2:3:4::]:9999\n"
-          "platform Tor "VERSION" on ", sizeof(buf2));
-  strlcat(buf2, get_uname(), sizeof(buf2));
-  strlcat(buf2, "\n"
-          "published 1970-01-01 00:00:00\n"
-          "fingerprint ", sizeof(buf2));
-  tt_assert(!crypto_pk_get_fingerprint(pk2, fingerprint, 1));
-  strlcat(buf2, fingerprint, sizeof(buf2));
-  strlcat(buf2, "\nuptime 0\n"
-  /* XXX the "0" above is hard-coded, but even if we made it reflect
-   * uptime, that still wouldn't make it right, because the two
-   * descriptors might be made on different seconds... hm. */
-         "bandwidth 1000 5000 10000\n"
-          "onion-key\n", sizeof(buf2));
-  strlcat(buf2, pk1_str, sizeof(buf2));
-  strlcat(buf2, "signing-key\n", sizeof(buf2));
-  strlcat(buf2, pk2_str, sizeof(buf2));
-  strlcat(buf2, "hidden-service-dir\n", sizeof(buf2));
-  strlcat(buf2, "contact Magri White <magri@elsewhere.example.com>\n",
-          sizeof(buf2));
-  strlcat(buf2, "ntor-onion-key ", sizeof(buf2));
-  base64_encode(cert_buf, sizeof(cert_buf),
-                (const char*)r1_onion_keypair.pubkey.public_key, 32,
-                BASE64_ENCODE_MULTILINE);
-  strlcat(buf2, cert_buf, sizeof(buf2));
-  strlcat(buf2, "reject *:*\n", sizeof(buf2));
-  strlcat(buf2, "tunnelled-dir-server\nrouter-signature\n", sizeof(buf2));
-  buf[strlen(buf2)] = '\0'; /* Don't compare the sig; it's never the same
-                             * twice */
+  cleanup_mock_configured_ports();
 
-  tt_str_op(buf,OP_EQ, buf2);
-  tor_free(buf);
+  chunks = smartlist_new();
 
-  buf = router_dump_router_to_string(r1, pk2, NULL, NULL, NULL);
-  tt_assert(buf);
-  cp = buf;
-  rp1 = router_parse_entry_from_string((const char*)cp,NULL,1,0,NULL,NULL);
-  tt_assert(rp1);
-  tt_int_op(rp1->addr,OP_EQ, r1->addr);
-  tt_int_op(rp1->or_port,OP_EQ, r1->or_port);
-  tt_int_op(rp1->dir_port,OP_EQ, r1->dir_port);
-  tt_int_op(rp1->bandwidthrate,OP_EQ, r1->bandwidthrate);
-  tt_int_op(rp1->bandwidthburst,OP_EQ, r1->bandwidthburst);
-  tt_int_op(rp1->bandwidthcapacity,OP_EQ, r1->bandwidthcapacity);
-  crypto_pk_t *onion_pkey = router_get_rsa_onion_pkey(rp1->onion_pkey,
-                                                      rp1->onion_pkey_len);
-  tt_int_op(crypto_pk_cmp_keys(onion_pkey, pk1), OP_EQ, 0);
-  crypto_pk_free(onion_pkey);
-  tt_int_op(crypto_pk_cmp_keys(rp1->identity_pkey, pk2), OP_EQ, 0);
-  tt_assert(rp1->supports_tunnelled_dir_requests);
-  //tt_assert(rp1->exit_policy == NULL);
-  tor_free(buf);
+  /* Synthesise a router descriptor, without the signatures */
+  smartlist_add(chunks, get_new_router_line(r2));
 
-  strlcpy(buf2,
-          "router Fred 10.3.2.1 9005 0 0\n"
-          "identity-ed25519\n"
-          "-----BEGIN ED25519 CERT-----\n", sizeof(buf2));
+  smartlist_add_strdup(chunks,
+                       "identity-ed25519\n"
+                       "-----BEGIN ED25519 CERT-----\n");
   base64_encode(cert_buf, sizeof(cert_buf),
                 (const char*)r2->cache_info.signing_key_cert->encoded,
                 r2->cache_info.signing_key_cert->encoded_len,
                 BASE64_ENCODE_MULTILINE);
-  strlcat(buf2, cert_buf, sizeof(buf2));
-  strlcat(buf2, "-----END ED25519 CERT-----\n", sizeof(buf2));
-  strlcat(buf2, "master-key-ed25519 ", sizeof(buf2));
+  smartlist_add_strdup(chunks, cert_buf);
+  smartlist_add_strdup(chunks, "-----END ED25519 CERT-----\n");
+
+  smartlist_add_strdup(chunks, "master-key-ed25519 ");
   {
     char k[ED25519_BASE64_LEN+1];
-    tt_int_op(ed25519_public_to_base64(k,
-                          &r2->cache_info.signing_key_cert->signing_key),
-              OP_GE, 0);
-    strlcat(buf2, k, sizeof(buf2));
-    strlcat(buf2, "\n", sizeof(buf2));
+    ed25519_public_to_base64(k, &r2->cache_info.signing_key_cert->signing_key);
+    smartlist_add_strdup(chunks, k);
+    smartlist_add_strdup(chunks, "\n");
   }
-  strlcat(buf2, "platform Tor "VERSION" on ", sizeof(buf2));
-  strlcat(buf2, get_uname(), sizeof(buf2));
-  strlcat(buf2, "\n"
-          "published 1970-01-01 00:00:05\n"
-          "fingerprint ", sizeof(buf2));
-  tt_assert(!crypto_pk_get_fingerprint(pk1, fingerprint, 1));
-  strlcat(buf2, fingerprint, sizeof(buf2));
-  strlcat(buf2, "\nuptime 0\n"
-          "bandwidth 3000 3000 3000\n", sizeof(buf2));
-  strlcat(buf2, "onion-key\n", sizeof(buf2));
-  strlcat(buf2, pk2_str, sizeof(buf2));
-  strlcat(buf2, "signing-key\n", sizeof(buf2));
-  strlcat(buf2, pk1_str, sizeof(buf2));
+
+  smartlist_add(chunks, get_new_platform_line());
+  smartlist_add(chunks, get_new_published_line(r2));
+  smartlist_add(chunks, get_new_fingerprint_line(r2));
+
+  smartlist_add(chunks, get_new_uptime_line(0));
+  smartlist_add(chunks, get_new_bandwidth_line(r2));
+
+  smartlist_add(chunks, get_new_onion_key_block(r2));
+  smartlist_add(chunks, get_new_signing_key_block(r2));
+
   int rsa_cc_len;
-  rsa_cc = make_tap_onion_key_crosscert(pk2,
+  rsa_cc = make_tap_onion_key_crosscert(r2_onion_pkey,
                                         &kp1.pubkey,
-                                        pk1,
+                                        r2->identity_pkey,
                                         &rsa_cc_len);
   tt_assert(rsa_cc);
   base64_encode(cert_buf, sizeof(cert_buf), (char*)rsa_cc, rsa_cc_len,
                 BASE64_ENCODE_MULTILINE);
-  strlcat(buf2, "onion-key-crosscert\n"
-          "-----BEGIN CROSSCERT-----\n", sizeof(buf2));
-  strlcat(buf2, cert_buf, sizeof(buf2));
-  strlcat(buf2, "-----END CROSSCERT-----\n", sizeof(buf2));
+  smartlist_add_strdup(chunks, "onion-key-crosscert\n"
+                       "-----BEGIN CROSSCERT-----\n");
+  smartlist_add_strdup(chunks, cert_buf);
+  smartlist_add_strdup(chunks, "-----END CROSSCERT-----\n");
   int ntor_cc_sign;
   {
     tor_cert_t *ntor_cc = NULL;
@@ -393,112 +1036,165 @@ test_dir_formats(void *arg)
                 BASE64_ENCODE_MULTILINE);
     tor_cert_free(ntor_cc);
   }
-  tor_snprintf(buf2+strlen(buf2), sizeof(buf2)-strlen(buf2),
+  smartlist_add_asprintf(chunks,
                "ntor-onion-key-crosscert %d\n"
                "-----BEGIN ED25519 CERT-----\n"
                "%s"
                "-----END ED25519 CERT-----\n", ntor_cc_sign, cert_buf);
 
-  strlcat(buf2, "hidden-service-dir\n", sizeof(buf2));
-  strlcat(buf2, "ntor-onion-key ", sizeof(buf2));
-  base64_encode(cert_buf, sizeof(cert_buf),
-                (const char*)r2_onion_keypair.pubkey.public_key, 32,
-                BASE64_ENCODE_MULTILINE);
-  strlcat(buf2, cert_buf, sizeof(buf2));
-  strlcat(buf2, "accept *:80\nreject 18.0.0.0/8:24\n", sizeof(buf2));
-  strlcat(buf2, "tunnelled-dir-server\n", sizeof(buf2));
-  strlcat(buf2, "router-sig-ed25519 ", sizeof(buf2));
+  smartlist_add_strdup(chunks, "hidden-service-dir\n");
 
-  /* Fake just enough of an ORPort to get by */
-  MOCK(get_configured_ports, mock_get_configured_ports);
-  mocked_configured_ports = smartlist_new();
+  smartlist_add(chunks, get_new_bridge_distribution_request_line(options));
+  smartlist_add(chunks, get_new_ntor_onion_key_line(&r2_onion_keypair.pubkey));
+  smartlist_add_strdup(chunks, "accept *:80\nreject 18.0.0.0/8:24\n");
+  smartlist_add_strdup(chunks, "tunnelled-dir-server\n");
 
-  memset(&orport, 0, sizeof(orport));
-  orport.type = CONN_TYPE_OR_LISTENER;
-  orport.addr.family = AF_INET;
-  orport.port = 9005;
-  smartlist_add(mocked_configured_ports, &orport);
+  smartlist_add_strdup(chunks, "router-sig-ed25519 ");
 
-  buf = router_dump_router_to_string(r2, pk1, pk2, &r2_onion_keypair, &kp2);
-  tt_assert(buf);
-  buf[strlen(buf2)] = '\0'; /* Don't compare the sig; it's never the same
+  size_t len_out = 0;
+  buf2 = smartlist_join_strings(chunks, "", 0, &len_out);
+  SMARTLIST_FOREACH(chunks, char *, s, tor_free(s));
+  smartlist_free(chunks);
+
+  tt_assert(len_out > 0);
+
+  buf[strlen(buf2)] = '\0'; /* Don't compare either sig; they're never the same
                              * twice */
 
   tt_str_op(buf, OP_EQ, buf2);
   tor_free(buf);
 
-  buf = router_dump_router_to_string(r2, pk1, NULL, NULL, NULL);
+  setup_mock_configured_ports(r2->or_port, 0);
 
-  UNMOCK(get_configured_ports);
-  smartlist_free(mocked_configured_ports);
-  mocked_configured_ports = NULL;
+  buf = router_dump_router_to_string(r2, r2->identity_pkey, NULL, NULL, NULL);
+  tt_assert(buf);
 
-  /* Reset for later */
+  cleanup_mock_configured_ports();
+
+  /* Now, try to parse buf */
   cp = buf;
   rp2 = router_parse_entry_from_string((const char*)cp,NULL,1,0,NULL,NULL);
-  tt_assert(rp2);
-  tt_int_op(rp2->addr,OP_EQ, r2->addr);
-  tt_int_op(rp2->or_port,OP_EQ, r2->or_port);
-  tt_int_op(rp2->dir_port,OP_EQ, r2->dir_port);
-  tt_int_op(rp2->bandwidthrate,OP_EQ, r2->bandwidthrate);
-  tt_int_op(rp2->bandwidthburst,OP_EQ, r2->bandwidthburst);
-  tt_int_op(rp2->bandwidthcapacity,OP_EQ, r2->bandwidthcapacity);
+
+  CHECK_ROUTERINFO_CONSISTENCY(r2, rp2);
+
   tt_mem_op(rp2->onion_curve25519_pkey->public_key,OP_EQ,
              r2->onion_curve25519_pkey->public_key,
              CURVE25519_PUBKEY_LEN);
-  onion_pkey = router_get_rsa_onion_pkey(rp2->onion_pkey,
-                                         rp2->onion_pkey_len);
-  tt_int_op(crypto_pk_cmp_keys(onion_pkey, pk2), OP_EQ, 0);
-  crypto_pk_free(onion_pkey);
-  tt_int_op(crypto_pk_cmp_keys(rp2->identity_pkey, pk1), OP_EQ, 0);
-  tt_assert(rp2->supports_tunnelled_dir_requests);
 
-  tt_int_op(smartlist_len(rp2->exit_policy),OP_EQ, 2);
+  CHECK_PARSED_EXIT_POLICY(rp2);
 
-  p = smartlist_get(rp2->exit_policy, 0);
-  tt_int_op(p->policy_type,OP_EQ, ADDR_POLICY_ACCEPT);
-  tt_assert(tor_addr_is_null(&p->addr));
-  tt_int_op(p->maskbits,OP_EQ, 0);
-  tt_int_op(p->prt_min,OP_EQ, 80);
-  tt_int_op(p->prt_max,OP_EQ, 80);
+  tor_free(buf);
+  routerinfo_free(rp2);
 
-  p = smartlist_get(rp2->exit_policy, 1);
-  tt_int_op(p->policy_type,OP_EQ, ADDR_POLICY_REJECT);
-  tt_assert(tor_addr_eq(&p->addr, &ex2->addr));
-  tt_int_op(p->maskbits,OP_EQ, 8);
-  tt_int_op(p->prt_min,OP_EQ, 24);
-  tt_int_op(p->prt_max,OP_EQ, 24);
+  /* Test extrainfo creation. */
 
-#if 0
-  /* Okay, now for the directories. */
-  {
-    fingerprint_list = smartlist_new();
-    crypto_pk_get_fingerprint(pk2, buf, 1);
-    add_fingerprint_to_dir(buf, fingerprint_list, 0);
-    crypto_pk_get_fingerprint(pk1, buf, 1);
-    add_fingerprint_to_dir(buf, fingerprint_list, 0);
+  /* Set up standard mocks and data */
+  setup_mocks_for_fresh_descriptor(r2, r2_onion_pkey);
+
+  /* router_build_fresh_descriptor() requires
+   * router_build_fresh_unsigned_routerinfo(), but the implementation is
+   * too complex. Instead, we re-use r2.
+   */
+  mocked_routerinfo = r2;
+  MOCK(router_build_fresh_unsigned_routerinfo,
+       mock_router_build_fresh_unsigned_routerinfo);
+
+  /* r2 uses ed25519, so we need to mock the ed key functions */
+  mocked_master_signing_key = &kp2;
+  MOCK(get_master_signing_keypair, mock_get_master_signing_keypair);
+
+  mocked_signing_key_cert = r2->cache_info.signing_key_cert;
+  MOCK(get_master_signing_key_cert, mock_get_master_signing_key_cert);
+
+  mocked_curve25519_onion_key = &r2_onion_keypair;
+  MOCK(get_current_curve25519_keypair, mock_get_current_curve25519_keypair);
+
+  /* Fake just enough of an ORPort to get by */
+  setup_mock_configured_ports(r2->or_port, 0);
+
+  /* Test the high-level interface. */
+  rv = router_build_fresh_descriptor(&r2_out, &e2);
+  if (rv < 0) {
+    /* router_build_fresh_descriptor() frees r2 on failure. */
+    r2 = NULL;
+    /* Get rid of an alias to rp2 */
+    r2_out = NULL;
   }
+  tt_assert(rv == 0);
+  tt_assert(r2_out);
+  tt_assert(e2);
+  /* Guaranteed by mock_router_build_fresh_unsigned_routerinfo() */
+  tt_ptr_op(r2_out, OP_EQ, r2);
+  /* Get rid of an alias to r2 */
+  r2_out = NULL;
 
-#endif /* 0 */
-  dirserv_free_fingerprint_list();
+  /* Now cleanup */
+  cleanup_mocks_for_fresh_descriptor();
+
+  mocked_routerinfo = NULL;
+  UNMOCK(router_build_fresh_unsigned_routerinfo);
+  mocked_master_signing_key = NULL;
+  UNMOCK(get_master_signing_keypair);
+  mocked_signing_key_cert = NULL;
+  UNMOCK(get_master_signing_key_cert);
+  mocked_curve25519_onion_key = NULL;
+  UNMOCK(get_current_curve25519_keypair);
+
+  cleanup_mock_configured_ports();
+
+  CHECK_EXTRAINFO_CONSISTENCY(r2, e2);
+
+  /* Test that the signed ri is parseable */
+  tt_assert(r2->cache_info.signed_descriptor_body);
+  cp = r2->cache_info.signed_descriptor_body;
+  rp2 = router_parse_entry_from_string((const char*)cp,NULL,1,0,NULL,NULL);
+
+  CHECK_ROUTERINFO_CONSISTENCY(r2, rp2);
+
+  tt_mem_op(rp2->onion_curve25519_pkey->public_key,OP_EQ,
+            r2->onion_curve25519_pkey->public_key,
+            CURVE25519_PUBKEY_LEN);
+
+  CHECK_PARSED_EXIT_POLICY(rp2);
+
+  routerinfo_free(rp2);
+
+  /* Test that the signed ei is parseable */
+  tt_assert(e2->cache_info.signed_descriptor_body);
+  cp = e2->cache_info.signed_descriptor_body;
+  ep2 = extrainfo_parse_entry_from_string((const char*)cp,NULL,1,NULL,NULL);
+
+  CHECK_EXTRAINFO_CONSISTENCY(r2, ep2);
+
+  /* In future tests, we could check the actual extrainfo statistics. */
+
+  extrainfo_free(ep2);
 
  done:
-  if (r1)
-    routerinfo_free(r1);
-  if (r2)
-    routerinfo_free(r2);
-  if (rp2)
-    routerinfo_free(rp2);
+  dirserv_free_fingerprint_list();
+
+  tor_free(options->Nickname);
+
+  cleanup_mock_configured_ports();
+  cleanup_mocks_for_fresh_descriptor();
+
+  if (chunks) {
+    SMARTLIST_FOREACH(chunks, char *, s, tor_free(s));
+    smartlist_free(chunks);
+  }
+
+  routerinfo_free(r2);
+  routerinfo_free(r2_out);
+  routerinfo_free(rp2);
+
+  extrainfo_free(e2);
+  extrainfo_free(ep2);
 
   tor_free(rsa_cc);
+  crypto_pk_free(r2_onion_pkey);
+
   tor_free(buf);
-  tor_free(pk1_str);
-  tor_free(pk2_str);
-  if (pk1) crypto_pk_free(pk1);
-  if (pk2) crypto_pk_free(pk2);
-  if (rp1) routerinfo_free(rp1);
-  tor_free(dir1); /* XXXX And more !*/
-  tor_free(dir2); /* And more !*/
+  tor_free(buf2);
 }
 
 #include "failing_routerdescs.inc"
@@ -1767,7 +2463,8 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, "", 0);
   setup_capture_of_logs(LOG_WARN);
   tt_int_op(-1, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                        bw_file_headers));
+                                                        bw_file_headers,
+                                                        NULL));
   expect_log_msg("Empty bandwidth file\n");
   teardown_capture_of_logs();
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
@@ -1783,7 +2480,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(-1, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                        bw_file_headers));
+                                                        bw_file_headers,
+                                                        NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op("", OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1794,7 +2493,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, header_lines_v100, 0);
   bw_file_headers = smartlist_new();
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v100, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1807,7 +2508,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v100, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1818,7 +2521,8 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   tor_asprintf(&content, "%s%s", header_lines_v100, relay_lines_v100);
   write_str_to_file(fname, content, 0);
   tor_free(content);
-  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL));
+  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL,
+                                                       NULL));
 
   /* Test bandwidth file including v1.1.0 bandwidth headers and
    * v1.0.0 relay lines. bw_file_headers will contain the v1.1.0 headers. */
@@ -1828,7 +2532,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1844,7 +2550,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v100, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1861,7 +2569,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v100, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1872,7 +2582,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   bw_file_headers = smartlist_new();
   write_str_to_file(fname, header_lines_v110_no_terminator, 0);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1883,7 +2595,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   bw_file_headers = smartlist_new();
   write_str_to_file(fname, header_lines_v110, 0);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1898,7 +2612,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1913,7 +2629,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1929,7 +2647,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_v110, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1946,7 +2666,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
   tt_str_op(bw_file_headers_str_bad, OP_EQ, bw_file_headers_str);
   SMARTLIST_FOREACH(bw_file_headers, char *, c, tor_free(c));
@@ -1964,7 +2686,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   tt_int_op(MAX_BW_FILE_HEADER_COUNT_IN_VOTE, OP_EQ,
             smartlist_len(bw_file_headers));
   bw_file_headers_str = smartlist_join_strings(bw_file_headers, " ", 0, NULL);
@@ -1985,7 +2709,9 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
   write_str_to_file(fname, content, 0);
   tor_free(content);
   tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL,
-                                                       bw_file_headers));
+                                                       bw_file_headers,
+                                                       NULL));
+
   tt_int_op(MAX_BW_FILE_HEADER_COUNT_IN_VOTE, OP_EQ,
             smartlist_len(bw_file_headers));
   /* force bw_file_headers to be bigger than
@@ -2014,7 +2740,8 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
 
   /* Read the bandwidth file */
   setup_full_capture_of_logs(LOG_DEBUG);
-  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL));
+  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL,
+                                                       NULL));
   expect_log_msg_containing("Ignoring bandwidth file line");
   teardown_capture_of_logs();
 
@@ -2032,11 +2759,13 @@ test_dir_dirserv_read_measured_bandwidths(void *arg)
 
   /* Read the bandwidth file */
   setup_full_capture_of_logs(LOG_DEBUG);
-  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL));
+  tt_int_op(0, OP_EQ, dirserv_read_measured_bandwidths(fname, NULL, NULL,
+                                                       NULL));
   expect_log_msg_not_containing("Ignoring bandwidth file line");
   teardown_capture_of_logs();
 
  done:
+  unlink(fname);
   tor_free(fname);
   tor_free(header_lines_v100);
   tor_free(header_lines_v110_no_terminator);
@@ -2863,11 +3592,17 @@ test_a_networkstatus(
   MOCK(get_my_v3_authority_cert, get_my_v3_authority_cert_m);
 
   /* Parse certificates and keys. */
-  cert1 = mock_cert = authority_cert_parse_from_string(AUTHORITY_CERT_1, NULL);
+  cert1 = mock_cert = authority_cert_parse_from_string(AUTHORITY_CERT_1,
+                                                 strlen(AUTHORITY_CERT_1),
+                                                 NULL);
   tt_assert(cert1);
-  cert2 = authority_cert_parse_from_string(AUTHORITY_CERT_2, NULL);
+  cert2 = authority_cert_parse_from_string(AUTHORITY_CERT_2,
+                                           strlen(AUTHORITY_CERT_2),
+                                           NULL);
   tt_assert(cert2);
-  cert3 = authority_cert_parse_from_string(AUTHORITY_CERT_3, NULL);
+  cert3 = authority_cert_parse_from_string(AUTHORITY_CERT_3,
+                                           strlen(AUTHORITY_CERT_3),
+                                           NULL);
   tt_assert(cert3);
   sign_skey_1 = crypto_pk_new();
   sign_skey_2 = crypto_pk_new();
@@ -2969,7 +3704,7 @@ test_a_networkstatus(
                                                    sign_skey_leg1,
                                                    FLAV_NS);
   tt_assert(consensus_text);
-  con = networkstatus_parse_vote_from_string(consensus_text, NULL,
+  con = networkstatus_parse_vote_from_string_(consensus_text, NULL,
                                              NS_TYPE_CONSENSUS);
   tt_assert(con);
   //log_notice(LD_GENERAL, "<<%s>>\n<<%s>>\n<<%s>>\n",
@@ -2981,7 +3716,7 @@ test_a_networkstatus(
                                                    sign_skey_leg1,
                                                    FLAV_MICRODESC);
   tt_assert(consensus_text_md);
-  con_md = networkstatus_parse_vote_from_string(consensus_text_md, NULL,
+  con_md = networkstatus_parse_vote_from_string_(consensus_text_md, NULL,
                                                 NS_TYPE_CONSENSUS);
   tt_assert(con_md);
   tt_int_op(con_md->flavor,OP_EQ, FLAV_MICRODESC);
@@ -3080,13 +3815,13 @@ test_a_networkstatus(
     tt_assert(consensus_text3);
     tt_assert(consensus_text_md2);
     tt_assert(consensus_text_md3);
-    con2 = networkstatus_parse_vote_from_string(consensus_text2, NULL,
+    con2 = networkstatus_parse_vote_from_string_(consensus_text2, NULL,
                                                 NS_TYPE_CONSENSUS);
-    con3 = networkstatus_parse_vote_from_string(consensus_text3, NULL,
+    con3 = networkstatus_parse_vote_from_string_(consensus_text3, NULL,
                                                 NS_TYPE_CONSENSUS);
-    con_md2 = networkstatus_parse_vote_from_string(consensus_text_md2, NULL,
+    con_md2 = networkstatus_parse_vote_from_string_(consensus_text_md2, NULL,
                                                 NS_TYPE_CONSENSUS);
-    con_md3 = networkstatus_parse_vote_from_string(consensus_text_md3, NULL,
+    con_md3 = networkstatus_parse_vote_from_string_(consensus_text_md3, NULL,
                                                 NS_TYPE_CONSENSUS);
     tt_assert(con2);
     tt_assert(con3);
@@ -3862,6 +4597,62 @@ mock_get_options(void)
   ++mock_get_options_calls;
   tor_assert(mock_options);
   return mock_options;
+}
+
+/**
+ * Test dirauth_get_b64_digest_bw_file.
+ * This function should be near the other bwauth functions, but it needs
+ * mock_get_options, that is only defined here.
+ */
+
+static void
+test_dir_bwauth_bw_file_digest256(void *arg)
+{
+  (void)arg;
+  const char *content =
+    "1541171221\n"
+    "node_id=$68A483E05A2ABDCA6DA5A3EF8DB5177638A27F80 "
+    "master_key_ed25519=YaqV4vbvPYKucElk297eVdNArDz9HtIwUoIeo0+cVIpQ "
+    "bw=760 nick=Test time=2018-05-08T16:13:26\n";
+
+  char *fname = tor_strdup(get_fname("V3BandwidthsFile"));
+  /* Initialize to a wrong digest. */
+  uint8_t digest[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+
+  /* Digest of an empty string. Initialize to a wrong digest. */
+  char digest_empty_str[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+  crypto_digest256(digest_empty_str, "", 0, DIGEST_SHA256);
+
+  /* Digest of the content. Initialize to a wrong digest. */
+  char digest_expected[DIGEST256_LEN] = "01234567890123456789abcdefghijkl";
+  crypto_digest256(digest_expected, content, strlen(content), DIGEST_SHA256);
+
+  /* When the bandwidth file can not be found. */
+  tt_int_op(-1, OP_EQ,
+            dirserv_read_measured_bandwidths(fname,
+                                             NULL, NULL, digest));
+  tt_mem_op(digest, OP_EQ, digest_empty_str, DIGEST256_LEN);
+
+  /* When there is a timestamp but it is too old. */
+  write_str_to_file(fname, content, 0);
+  tt_int_op(-1, OP_EQ,
+            dirserv_read_measured_bandwidths(fname,
+                                             NULL, NULL, digest));
+  /* The digest will be correct. */
+  tt_mem_op(digest, OP_EQ, digest_expected, DIGEST256_LEN);
+
+  update_approx_time(1541171221);
+
+  /* When there is a bandwidth file and it can be read. */
+  tt_int_op(0, OP_EQ,
+            dirserv_read_measured_bandwidths(fname,
+                                             NULL, NULL, digest));
+  tt_mem_op(digest, OP_EQ, digest_expected, DIGEST256_LEN);
+
+ done:
+  unlink(fname);
+  tor_free(fname);
+  update_approx_time(time(NULL));
 }
 
 static void
@@ -6087,6 +6878,80 @@ test_dir_find_dl_min_delay(void* data)
 }
 
 static void
+test_dir_matching_flags(void *arg)
+{
+  (void) arg;
+  routerstatus_t *rs_noflags = NULL;
+  routerstatus_t *rs = NULL;
+  char *s = NULL;
+
+  smartlist_t *tokens = smartlist_new();
+  memarea_t *area = memarea_new();
+
+  int expected_val_when_unused = 0;
+
+  const char *ex_noflags =
+    "r example hereiswhereyouridentitygoes 2015-08-30 12:00:00 "
+       "192.168.0.1 9001 0\n"
+    "m thisoneislongerbecauseitisa256bitmddigest33\n"
+    "s\n";
+  const char *cp = ex_noflags;
+  rs_noflags = routerstatus_parse_entry_from_string(
+         area, &cp,
+         cp + strlen(cp),
+         tokens, NULL, NULL,
+         MAX_SUPPORTED_CONSENSUS_METHOD, FLAV_MICRODESC);
+  tt_assert(rs_noflags);
+
+#define FLAG(string, field) STMT_BEGIN {        \
+    tor_asprintf(&s,\
+                 "r example hereiswhereyouridentitygoes 2015-08-30 12:00:00 " \
+                 "192.168.0.1 9001 0\n"                                 \
+                 "m thisoneislongerbecauseitisa256bitmddigest33\n"      \
+                 "s %s\n", string);                                     \
+    cp = s;                                                             \
+    rs =  routerstatus_parse_entry_from_string(                         \
+      area, &cp,                                                        \
+      cp + strlen(cp),                                                  \
+      tokens, NULL, NULL,                                               \
+      MAX_SUPPORTED_CONSENSUS_METHOD, FLAV_MICRODESC);                  \
+    /* the field should usually be 0 when no flags are listed */        \
+    tt_int_op(rs_noflags->field, OP_EQ, expected_val_when_unused);      \
+    /* the field should be 1 when this flags islisted */                \
+    tt_int_op(rs->field, OP_EQ, 1);                                     \
+    tor_free(s);                                                        \
+    routerstatus_free(rs);                                              \
+} STMT_END
+
+  FLAG("Authority", is_authority);
+  FLAG("BadExit", is_bad_exit);
+  FLAG("Exit", is_exit);
+  FLAG("Fast", is_fast);
+  FLAG("Guard", is_possible_guard);
+  FLAG("HSDir", is_hs_dir);
+  FLAG("Stable", is_stable);
+  FLAG("StaleDesc", is_staledesc);
+  FLAG("V2Dir", is_v2_dir);
+
+  // These flags are assumed to be set whether they're declared or not.
+  expected_val_when_unused = 1;
+  FLAG("Running", is_flagged_running);
+  FLAG("Valid", is_valid);
+  expected_val_when_unused = 0;
+
+  // These flags are no longer used, but still parsed.
+  FLAG("Named", is_named);
+  FLAG("Unnamed", is_unnamed);
+
+ done:
+  tor_free(s);
+  routerstatus_free(rs);
+  routerstatus_free(rs_noflags);
+  memarea_drop_all(area);
+  smartlist_free(tokens);
+}
+
+static void
 test_dir_assumed_flags(void *arg)
 {
   (void)arg;
@@ -6101,9 +6966,10 @@ test_dir_assumed_flags(void *arg)
        "192.168.0.1 9001 0\n"
     "m thisoneislongerbecauseitisa256bitmddigest33\n"
     "s Fast Guard Stable\n";
+  const char *eos = str1 + strlen(str1);
 
   const char *cp = str1;
-  rs = routerstatus_parse_entry_from_string(area, &cp, tokens, NULL, NULL,
+  rs = routerstatus_parse_entry_from_string(area, &cp, eos, tokens, NULL, NULL,
                                             24, FLAV_MICRODESC);
   tt_assert(rs);
   tt_assert(rs->is_flagged_running);
@@ -6356,7 +7222,22 @@ test_dir_format_versions_list(void *arg)
 
 struct testcase_t dir_tests[] = {
   DIR_LEGACY(nicknames),
-  DIR_LEGACY(formats),
+  /* extrainfo without any stats */
+  DIR_ARG(formats_rsa, TT_FORK, ""),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, ""),
+  /* on a bridge */
+  DIR_ARG(formats_rsa, TT_FORK, "b"),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, "b"),
+  /* extrainfo with basic stats */
+  DIR_ARG(formats_rsa, TT_FORK, "e"),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, "e"),
+  DIR_ARG(formats_rsa, TT_FORK, "be"),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, "be"),
+  /* extrainfo with all stats */
+  DIR_ARG(formats_rsa, TT_FORK, "es"),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, "es"),
+  DIR_ARG(formats_rsa, TT_FORK, "bes"),
+  DIR_ARG(formats_rsa_ed25519, TT_FORK, "bes"),
   DIR(routerinfo_parsing, 0),
   DIR(extrainfo_parsing, 0),
   DIR(parse_router_list, TT_FORK),
@@ -6370,6 +7251,7 @@ struct testcase_t dir_tests[] = {
   DIR_LEGACY(measured_bw_kb_line_is_after_headers),
   DIR_LEGACY(measured_bw_kb_cache),
   DIR_LEGACY(dirserv_read_measured_bandwidths),
+  DIR(bwauth_bw_file_digest256, 0),
   DIR_LEGACY(param_voting),
   DIR(param_voting_lookup, 0),
   DIR_LEGACY(v3_networkstatus),
@@ -6410,6 +7292,7 @@ struct testcase_t dir_tests[] = {
   DIR_ARG(find_dl_min_delay, TT_FORK, "cfr"),
   DIR_ARG(find_dl_min_delay, TT_FORK, "car"),
   DIR(assumed_flags, 0),
+  DIR(matching_flags, 0),
   DIR(networkstatus_compute_bw_weights_v10, 0),
   DIR(platform_str, 0),
   DIR(networkstatus_consensus_has_ipv6, TT_FORK),

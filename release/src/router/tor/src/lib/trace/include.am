@@ -2,6 +2,7 @@
 noinst_LIBRARIES += \
 	src/lib/libtor-trace.a
 
+# ADD_C_FILE: INSERT HEADERS HERE.
 TRACEHEADERS = \
 	src/lib/trace/trace.h \
 	src/lib/trace/events.h
@@ -11,7 +12,7 @@ TRACEHEADERS += \
 	src/lib/trace/debug.h
 endif
 
-# Library source files.
+# ADD_C_FILE: INSERT SOURCES HERE.
 src_lib_libtor_trace_a_SOURCES = \
 	src/lib/trace/trace.c
 

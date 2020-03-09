@@ -17,11 +17,9 @@ void router_get_prim_orport(const routerinfo_t *router,
 int router_has_orport(const routerinfo_t *router,
                       const tor_addr_port_t *orport);
 
-void router_get_verbose_nickname(char *buf, const routerinfo_t *router);
-
 smartlist_t *router_get_all_orports(const routerinfo_t *ri);
 
 const char *router_purpose_to_string(uint8_t p);
 uint8_t router_purpose_from_string(const char *s);
 
-#endif
+#endif /* !defined(TOR_ROUTERINFO_H) */

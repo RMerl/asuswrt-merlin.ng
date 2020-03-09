@@ -18,4 +18,4 @@ int finish_daemon(const char *desired_cwd);
 
 bool start_daemon_has_been_called(void);
 
-#endif
+#endif /* !defined(TOR_DAEMON_H) */

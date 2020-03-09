@@ -96,6 +96,30 @@ test_container_smartlist_basic(void *arg)
   tor_free(v555);
 }
 
+/** Test SMARTLIST_FOREACH_REVERSE_BEGIN loop macro */
+static void
+test_container_smartlist_foreach_reverse(void *arg)
+{
+  smartlist_t *sl = smartlist_new();
+  int i;
+
+  (void) arg;
+
+  /* Add integers to smartlist in increasing order */
+  for (i=0;i<100;i++) {
+    smartlist_add(sl, (void*)(uintptr_t)i);
+  }
+
+  /* Pop them out in reverse and test their value */
+  SMARTLIST_FOREACH_REVERSE_BEGIN(sl, void*, k) {
+    i--;
+    tt_ptr_op(k, OP_EQ, (void*)(uintptr_t)i);
+  } SMARTLIST_FOREACH_END(k);
+
+ done:
+  smartlist_free(sl);
+}
+
 /** Run unit tests for smartlist-of-strings functionality. */
 static void
 test_container_smartlist_strings(void *arg)
@@ -582,6 +606,66 @@ test_container_smartlist_ints_eq(void *arg)
   smartlist_free(sl2);
 }
 
+static void
+test_container_smartlist_grow(void *arg)
+{
+  (void)arg;
+  smartlist_t *sl = smartlist_new();
+  int i;
+  const char *s[] = { "first", "2nd", "3rd" };
+
+  /* case 1: starting from empty. */
+  smartlist_grow(sl, 10);
+  tt_int_op(10, OP_EQ, smartlist_len(sl));
+  for (i = 0; i < 10; ++i) {
+    tt_ptr_op(smartlist_get(sl, i), OP_EQ, NULL);
+  }
+
+  /* case 2: starting with a few elements, probably not reallocating. */
+  smartlist_free(sl);
+  sl = smartlist_new();
+  smartlist_add(sl, (char*)s[0]);
+  smartlist_add(sl, (char*)s[1]);
+  smartlist_add(sl, (char*)s[2]);
+  smartlist_grow(sl, 5);
+  tt_int_op(5, OP_EQ, smartlist_len(sl));
+  for (i = 0; i < 3; ++i) {
+    tt_ptr_op(smartlist_get(sl, i), OP_EQ, s[i]);
+  }
+  tt_ptr_op(smartlist_get(sl, 3), OP_EQ, NULL);
+  tt_ptr_op(smartlist_get(sl, 4), OP_EQ, NULL);
+
+  /* case 3: starting with a few elements, but reallocating. */
+  smartlist_free(sl);
+  sl = smartlist_new();
+  smartlist_add(sl, (char*)s[0]);
+  smartlist_add(sl, (char*)s[1]);
+  smartlist_add(sl, (char*)s[2]);
+  smartlist_grow(sl, 100);
+  tt_int_op(100, OP_EQ, smartlist_len(sl));
+  for (i = 0; i < 3; ++i) {
+    tt_ptr_op(smartlist_get(sl, i), OP_EQ, s[i]);
+  }
+  for (i = 3; i < 100; ++i) {
+    tt_ptr_op(smartlist_get(sl, i), OP_EQ, NULL);
+  }
+
+  /* case 4: shrinking doesn't happen. */
+  smartlist_free(sl);
+  sl = smartlist_new();
+  smartlist_add(sl, (char*)s[0]);
+  smartlist_add(sl, (char*)s[1]);
+  smartlist_add(sl, (char*)s[2]);
+  smartlist_grow(sl, 1);
+  tt_int_op(3, OP_EQ, smartlist_len(sl));
+  for (i = 0; i < 3; ++i) {
+    tt_ptr_op(smartlist_get(sl, i), OP_EQ, s[i]);
+  }
+
+ done:
+  smartlist_free(sl);
+}
+
 /** Run unit tests for bitarray code */
 static void
 test_container_bitarray(void *arg)
@@ -922,6 +1006,10 @@ test_container_smartlist_remove(void *arg)
   tt_ptr_op(smartlist_get(sl, 1), OP_EQ, &array[2]);
   tt_ptr_op(smartlist_get(sl, 2), OP_EQ, &array[1]);
   tt_ptr_op(smartlist_get(sl, 3), OP_EQ, &array[2]);
+  /* Ordinary code should never look at this pointer; we're doing it here
+   * to make sure that we really cleared the pointer we removed.
+   */
+  tt_ptr_op(sl->list[4], OP_EQ, NULL);
 
  done:
   smartlist_free(sl);
@@ -1281,12 +1369,14 @@ test_container_smartlist_strings_eq(void *arg)
 struct testcase_t container_tests[] = {
   CONTAINER_LEGACY(smartlist_basic),
   CONTAINER_LEGACY(smartlist_strings),
+  CONTAINER_LEGACY(smartlist_foreach_reverse),
   CONTAINER_LEGACY(smartlist_overlap),
   CONTAINER_LEGACY(smartlist_digests),
   CONTAINER_LEGACY(smartlist_join),
   CONTAINER_LEGACY(smartlist_pos),
   CONTAINER(smartlist_remove, 0),
   CONTAINER(smartlist_ints_eq, 0),
+  CONTAINER(smartlist_grow, 0),
   CONTAINER_LEGACY(bitarray),
   CONTAINER_LEGACY(digestset),
   CONTAINER_LEGACY(strmap),

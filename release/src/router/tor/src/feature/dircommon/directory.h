@@ -94,6 +94,7 @@ int parse_http_command(const char *headers,
 char *http_get_header(const char *headers, const char *which);
 
 int connection_dir_is_encrypted(const dir_connection_t *conn);
+bool connection_dir_is_anonymous(const dir_connection_t *conn);
 int connection_dir_reached_eof(dir_connection_t *conn);
 int connection_dir_process_inbuf(dir_connection_t *conn);
 int connection_dir_finished_flushing(dir_connection_t *conn);

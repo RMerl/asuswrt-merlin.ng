@@ -22,9 +22,10 @@ def skip(msg):
 
 def try_connecting_to_socksport():
     socks_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    if socks_socket.connect_ex(('127.0.0.1', socks_port)):
+    e = socks_socket.connect_ex(('127.0.0.1', socks_port))
+    if e:
         tor_process.terminate()
-        fail('Cannot connect to SOCKSPort')
+        fail('Cannot connect to SOCKSPort: error ' + os.strerror(e))
     socks_socket.close()
 
 def wait_for_log(s):

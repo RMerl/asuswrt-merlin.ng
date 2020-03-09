@@ -21,4 +21,4 @@ int tor_vsscanf(const char *buf, const char *pattern, va_list ap) \
 int tor_sscanf(const char *buf, const char *pattern, ...)
   CHECK_SCANF(2, 3);
 
-#endif /* !defined(TOR_UTIL_STRING_H) */
+#endif /* !defined(TOR_UTIL_SCANF_H) */

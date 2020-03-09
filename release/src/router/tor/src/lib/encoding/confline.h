@@ -48,7 +48,9 @@ config_line_t *config_lines_dup_and_filter(const config_line_t *inp,
                                            const char *key);
 const config_line_t *config_line_find(const config_line_t *lines,
                                       const char *key);
-int config_lines_eq(config_line_t *a, config_line_t *b);
+const config_line_t *config_line_find_case(const config_line_t *lines,
+                                           const char *key);
+int config_lines_eq(const config_line_t *a, const config_line_t *b);
 int config_count_key(const config_line_t *a, const char *key);
 void config_free_lines_(config_line_t *front);
 #define config_free_lines(front) \

@@ -54,4 +54,4 @@ int crypto_cipher_decrypt_with_iv(const char *key,
                                   char *to, size_t tolen,
                                   const char *from, size_t fromlen);
 
-#endif /* !defined(TOR_CRYPTO_H) */
+#endif /* !defined(TOR_CRYPTO_CIPHER_H) */

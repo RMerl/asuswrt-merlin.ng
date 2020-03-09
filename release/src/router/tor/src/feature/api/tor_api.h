@@ -55,7 +55,7 @@ typedef SOCKET tor_control_socket_t;
 #else
 typedef int tor_control_socket_t;
 #define INVALID_TOR_CONTROL_SOCKET (-1)
-#endif
+#endif /* defined(_WIN32) */
 
 /** DOCDOC */
 tor_control_socket_t tor_main_configuration_setup_control_socket(

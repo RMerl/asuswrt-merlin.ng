@@ -30,5 +30,5 @@ struct rend_service_descriptor_t {
   smartlist_t *successful_uploads;
 };
 
-#endif
+#endif /* !defined(REND_SERVICE_DESCRIPTOR_ST_H) */
 

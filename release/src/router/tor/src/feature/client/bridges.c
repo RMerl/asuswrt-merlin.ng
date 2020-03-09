@@ -348,7 +348,7 @@ int
 node_is_a_configured_bridge(const node_t *node)
 {
   /* First, let's try searching for a bridge with matching identity. */
-  if (BUG(tor_digest_is_zero(node->identity)))
+  if (BUG(fast_mem_is_zero(node->identity, DIGEST_LEN)))
     return 0;
 
   if (find_bridge_by_digest(node->identity) != NULL)
@@ -844,7 +844,8 @@ rewrite_node_address_for_bridge(const bridge_info_t *bridge, node_t *node)
       }
     }
 
-    if (options->ClientPreferIPv6ORPort == -1) {
+    if (options->ClientPreferIPv6ORPort == -1 ||
+        options->ClientAutoIPv6ORPort == 0) {
       /* Mark which address to use based on which bridge_t we got. */
       node->ipv6_preferred = (tor_addr_family(&bridge->addr) == AF_INET6 &&
                               !tor_addr_is_null(&node->ri->ipv6_addr));

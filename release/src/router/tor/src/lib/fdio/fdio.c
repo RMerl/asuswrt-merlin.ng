@@ -17,12 +17,16 @@
 #ifdef _WIN32
 #include <windows.h>
 #endif
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
 
 #include "lib/fdio/fdio.h"
 #include "lib/cc/torint.h"
 #include "lib/err/torerr.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 /** @{ */
 /** Some old versions of Unix didn't define constants for these values,

@@ -88,6 +88,30 @@ smartlist_ensure_capacity(smartlist_t *sl, size_t size)
 #undef MAX_CAPACITY
 }
 
+/** Expand <b>sl</b> so that its length is at least <b>new_size</b>,
+ * filling in previously unused entries with NULL>
+ *
+ * Do nothing if <b>sl</b> already had at least <b>new_size</b> elements.
+ */
+void
+smartlist_grow(smartlist_t *sl, size_t new_size)
+{
+  smartlist_ensure_capacity(sl, new_size);
+
+  if (new_size > (size_t)sl->num_used) {
+    /* This memset() should be a no-op: everything else in the smartlist code
+     * tries to make sure that unused entries are always NULL.  Still, that is
+     * meant as a safety mechanism, so let's clear the memory here.
+     */
+    memset(sl->list + sl->num_used, 0,
+           sizeof(void *) * (new_size - sl->num_used));
+
+    /* This cast is safe, since we already asserted that we were below
+     * MAX_CAPACITY in smartlist_ensure_capacity(). */
+    sl->num_used = (int)new_size;
+  }
+}
+
 /** Append element to the end of the list. */
 void
 smartlist_add(smartlist_t *sl, void *element)
@@ -153,6 +177,8 @@ smartlist_remove_keeporder(smartlist_t *sl, const void *element)
       sl->list[i++] = sl->list[j];
     }
   }
+  memset(sl->list + sl->num_used, 0,
+         sizeof(void *) * (num_used_orig - sl->num_used));
 }
 
 /** If <b>sl</b> is nonempty, remove and return the final element.  Otherwise,

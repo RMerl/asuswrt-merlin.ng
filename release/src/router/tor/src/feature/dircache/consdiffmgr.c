@@ -189,6 +189,7 @@ static consdiff_cfg_t consdiff_cfg = {
 
 static int consdiffmgr_ensure_space_for_files(int n);
 static int consensus_queue_compression_work(const char *consensus,
+                                            size_t consensus_len,
                                             const networkstatus_t *as_parsed);
 static int consensus_diff_queue_diff_work(consensus_cache_entry_t *diff_from,
                                           consensus_cache_entry_t *diff_to);
@@ -509,8 +510,25 @@ get_max_age_to_cache(void)
                                         MAX_MAX_AGE_TO_CACHE);
 }
 
+#ifdef TOR_UNIT_TESTS
+/** As consdiffmgr_add_consensus, but requires a nul-terminated input. For
+ * testing. */
+int
+consdiffmgr_add_consensus_nulterm(const char *consensus,
+                                  const networkstatus_t *as_parsed)
+{
+  size_t len = strlen(consensus);
+  /* make a non-nul-terminated copy so that we can have a better chance
+   * of catching errors. */
+  char *ctmp = tor_memdup(consensus, len);
+  int r = consdiffmgr_add_consensus(ctmp, len, as_parsed);
+  tor_free(ctmp);
+  return r;
+}
+#endif /* defined(TOR_UNIT_TESTS) */
+
 /**
- * Given a string containing a networkstatus consensus, and the results of
+ * Given a buffer containing a networkstatus consensus, and the results of
  * having parsed that consensus, add that consensus to the cache if it is not
  * already present and not too old.  Create new consensus diffs from or to
  * that consensus as appropriate.
@@ -519,6 +537,7 @@ get_max_age_to_cache(void)
  */
 int
 consdiffmgr_add_consensus(const char *consensus,
+                          size_t consensus_len,
                           const networkstatus_t *as_parsed)
 {
   if (BUG(consensus == NULL) || BUG(as_parsed == NULL))
@@ -544,7 +563,7 @@ consdiffmgr_add_consensus(const char *consensus,
   }
 
   /* We don't have it. Add it to the cache. */
-  return consensus_queue_compression_work(consensus, as_parsed);
+  return consensus_queue_compression_work(consensus, consensus_len, as_parsed);
 }
 
 /**
@@ -1387,18 +1406,20 @@ typedef struct consensus_diff_worker_job_t {
 } consensus_diff_worker_job_t;
 
 /** Given a consensus_cache_entry_t, check whether it has a label claiming
- * that it was compressed.  If so, uncompress its contents into <b>out</b> and
- * set <b>outlen</b> to hold their size.  If not, just copy the body into
- * <b>out</b> and set <b>outlen</b> to its length.  Return 0 on success,
- * -1 on failure.
- *
- * In all cases, the output is nul-terminated. */
+ * that it was compressed.  If so, uncompress its contents into *<b>out</b> and
+ * set <b>outlen</b> to hold their size, and set *<b>owned_out</b> to a pointer
+ * that the caller will need to free.  If not, just set *<b>out</b> and
+ * <b>outlen</b> to its extent in memory.  Return 0 on success, -1 on failure.
+ **/
 STATIC int
-uncompress_or_copy(char **out, size_t *outlen,
-                   consensus_cache_entry_t *ent)
+uncompress_or_set_ptr(const char **out, size_t *outlen,
+                      char **owned_out,
+                      consensus_cache_entry_t *ent)
 {
   const uint8_t *body;
   size_t bodylen;
+
+  *owned_out = NULL;
 
   if (consensus_cache_entry_get_body(ent, &body, &bodylen) < 0)
     return -1;
@@ -1410,8 +1431,17 @@ uncompress_or_copy(char **out, size_t *outlen,
   if (lv_compression)
     method = compression_method_get_by_name(lv_compression);
 
-  return tor_uncompress(out, outlen, (const char *)body, bodylen,
+  int rv;
+  if (method == NO_METHOD) {
+    *out = (const char *)body;
+    *outlen = bodylen;
+    rv = 0;
+  } else {
+    rv = tor_uncompress(owned_out, outlen, (const char *)body, bodylen,
                         method, 1, LOG_WARN);
+    *out = *owned_out;
+  }
+  return rv;
 }
 
 /**
@@ -1478,16 +1508,17 @@ consensus_diff_worker_threadfn(void *state_, void *work_)
 
   char *consensus_diff;
   {
-    char *diff_from_nt = NULL, *diff_to_nt = NULL;
+    const char *diff_from_nt = NULL, *diff_to_nt = NULL;
+    char *owned1 = NULL, *owned2 = NULL;
     size_t diff_from_nt_len, diff_to_nt_len;
 
-    if (uncompress_or_copy(&diff_from_nt, &diff_from_nt_len,
-                           job->diff_from) < 0) {
+    if (uncompress_or_set_ptr(&diff_from_nt, &diff_from_nt_len, &owned1,
+                              job->diff_from) < 0) {
       return WQ_RPL_REPLY;
     }
-    if (uncompress_or_copy(&diff_to_nt, &diff_to_nt_len,
-                           job->diff_to) < 0) {
-      tor_free(diff_from_nt);
+    if (uncompress_or_set_ptr(&diff_to_nt, &diff_to_nt_len, &owned2,
+                              job->diff_to) < 0) {
+      tor_free(owned1);
       return WQ_RPL_REPLY;
     }
     tor_assert(diff_from_nt);
@@ -1496,9 +1527,12 @@ consensus_diff_worker_threadfn(void *state_, void *work_)
     // XXXX ugh; this is going to calculate the SHA3 of both its
     // XXXX inputs again, even though we already have that. Maybe it's time
     // XXXX to change the API here?
-    consensus_diff = consensus_diff_generate(diff_from_nt, diff_to_nt);
-    tor_free(diff_from_nt);
-    tor_free(diff_to_nt);
+    consensus_diff = consensus_diff_generate(diff_from_nt,
+                                             diff_from_nt_len,
+                                             diff_to_nt,
+                                             diff_to_nt_len);
+    tor_free(owned1);
+    tor_free(owned2);
   }
   if (!consensus_diff) {
     /* Couldn't generate consensus; we'll leave the reply blank. */
@@ -1746,8 +1780,8 @@ consensus_compress_worker_threadfn(void *state_, void *work_)
                           (const uint8_t *)consensus, bodylen);
   {
     const char *start, *end;
-    if (router_get_networkstatus_v3_signed_boundaries(consensus,
-                                                        &start, &end) < 0) {
+    if (router_get_networkstatus_v3_signed_boundaries(consensus, bodylen,
+                                                      &start, &end) < 0) {
       start = consensus;
       end = consensus+bodylen;
     }
@@ -1811,14 +1845,15 @@ static int background_compression = 0;
  */
 static int
 consensus_queue_compression_work(const char *consensus,
+                                 size_t consensus_len,
                                  const networkstatus_t *as_parsed)
 {
   tor_assert(consensus);
   tor_assert(as_parsed);
 
   consensus_compress_worker_job_t *job = tor_malloc_zero(sizeof(*job));
-  job->consensus = tor_strdup(consensus);
-  job->consensus_len = strlen(consensus);
+  job->consensus = tor_memdup_nulterm(consensus, consensus_len);
+  job->consensus_len = strlen(job->consensus);
   job->flavor = as_parsed->flavor;
 
   char va_str[ISO_TIME_LEN+1];

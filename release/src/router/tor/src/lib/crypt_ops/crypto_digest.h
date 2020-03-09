@@ -124,6 +124,8 @@ void crypto_xof_squeeze_bytes(crypto_xof_t *xof, uint8_t *out, size_t len);
 void crypto_xof_free_(crypto_xof_t *xof);
 #define crypto_xof_free(xof) \
   FREE_AND_NULL(crypto_xof_t, crypto_xof_free_, (xof))
+void crypto_xof(uint8_t *output, size_t output_len,
+                const uint8_t *input, size_t input_len);
 
 #ifdef TOR_UNIT_TESTS
 digest_algorithm_t crypto_digest_get_algorithm(crypto_digest_t *digest);

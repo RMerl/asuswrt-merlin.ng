@@ -22,7 +22,7 @@ test_protover_parse(void *arg)
   tt_skip();
  done:
   ;
-#else
+#else /* !defined(HAVE_RUST) */
   char *re_encoded = NULL;
 
   const char *orig = "Foo=1,3 Bar=3 Baz= Quux=9-12,14,15-16,900";
@@ -89,7 +89,7 @@ test_protover_parse(void *arg)
     SMARTLIST_FOREACH(elts, proto_entry_t *, ent, proto_entry_free(ent));
   smartlist_free(elts);
   tor_free(re_encoded);
-#endif
+#endif /* defined(HAVE_RUST) */
 }
 
 static void
@@ -133,7 +133,7 @@ test_protover_parse_fail(void *arg)
                            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
   tt_ptr_op(elts, OP_EQ, NULL);
 
-#endif
+#endif /* defined(HAVE_RUST) */
  done:
   ;
 }
@@ -335,7 +335,7 @@ test_protover_all_supported(void *arg)
                  "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
                  "aaaaaaaaaaaa=1-65536", &msg));
   tor_end_capture_bugs_();
-#endif
+#endif /* !defined(HAVE_RUST) */
 
  done:
   tor_end_capture_bugs_();
@@ -459,7 +459,7 @@ test_protover_supported_protocols(void *arg)
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_LINKAUTH,
                                             PROTOVER_LINKAUTH_V1));
-#endif
+#endif /* defined(HAVE_WORKING_TOR_TLS_GET_TLSSECRETS) */
   /* Latest LinkAuth is not exposed in the headers. */
   tt_assert(protocol_list_supports_protocol(supported_protocols,
                                             PRT_LINKAUTH,

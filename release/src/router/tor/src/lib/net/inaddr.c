@@ -168,6 +168,13 @@ tor_inet_pton(int af, const char *src, void *dst)
   if (af == AF_INET) {
     return tor_inet_aton(src, dst);
   } else if (af == AF_INET6) {
+    ssize_t len = strlen(src);
+
+    /* Reject if src has needless trailing ':'. */
+    if (len > 2 && src[len - 1] == ':' && src[len - 2] != ':') {
+      return 0;
+    }
+
     struct in6_addr *out = dst;
     uint16_t words[8];
     int gapPos = -1, i, setWords=0;
@@ -207,7 +214,6 @@ tor_inet_pton(int af, const char *src, void *dst)
         return 0;
       if (TOR_ISXDIGIT(*src)) {
         char *next;
-        ssize_t len;
         long r = strtol(src, &next, 16);
         if (next == NULL || next == src) {
           /* The 'next == src' error case can happen on versions of openbsd

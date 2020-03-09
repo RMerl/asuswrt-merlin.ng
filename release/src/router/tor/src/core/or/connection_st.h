@@ -146,4 +146,4 @@ struct connection_t {
  * directory connection. */
 #define DIR_CONN_IS_SERVER(conn) ((conn)->purpose == DIR_PURPOSE_SERVER)
 
-#endif
+#endif /* !defined(CONNECTION_ST_H) */

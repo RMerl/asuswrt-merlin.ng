@@ -20,4 +20,4 @@ int router_append_dirobj_signature(char *buf, size_t buf_len,
                                    const char *digest,
                                    size_t digest_len,
                                    crypto_pk_t *private_key);
-#endif
+#endif /* !defined(TOR_SIGNING_H) */

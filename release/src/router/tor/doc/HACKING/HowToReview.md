@@ -63,7 +63,7 @@ Let's look at the code!
 Let's look at the documentation!
 --------------------------------
 
-- Does the documentation confirm to CodingStandards.txt?
+- Does the documentation conform to CodingStandards.txt?
 
 - Does it make sense?
 

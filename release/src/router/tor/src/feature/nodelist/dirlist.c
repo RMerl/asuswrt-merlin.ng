@@ -28,7 +28,7 @@
 
 #include "app/config/config.h"
 #include "core/or/policies.h"
-#include "feature/control/control.h"
+#include "feature/control/control_events.h"
 #include "feature/dirauth/authmode.h"
 #include "feature/dircommon/directory.h"
 #include "feature/nodelist/dirlist.h"

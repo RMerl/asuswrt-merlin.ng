@@ -230,12 +230,6 @@ function ddns_load_body(){
 
         change_ddns_setting(document.form.ddns_server_x.value);
 
-        if(letsencrypt_support){
-            show_cert_settings(1);
-            change_cert_method(orig_le_enable);
-            show_cert_details();
-        }
-
 	    if(document.form.ddns_server_x.value == "WWW.ORAY.COM"){
 		    if(ddns_updated_t == "1"){
 				document.getElementById("ddns_hostname_info_tr").style.display = "";
@@ -254,6 +248,12 @@ function ddns_load_body(){
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
 	showhide("ddns_ipcheck_tr", 0);
+    }
+
+    if(letsencrypt_support){
+        show_cert_settings(1);
+        change_cert_method(orig_le_enable);
+        show_cert_details();
     }
 
     hideLoading();

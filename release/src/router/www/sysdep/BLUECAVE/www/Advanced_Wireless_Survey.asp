@@ -144,21 +144,21 @@ function showSiteTable(){
 
 	document.getElementById("SearchingIcon").style.display = "none";
 
-	htmlCode +='<table style="width:670px;" border="0" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="aplist_table">';
+	htmlCode +='<table style="width:100%;" border="0" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" id="aplist_table">';
 
 	if(wlc_scan_state != 5){ // on scanning
-		htmlCode +='<tr><th style="text-align:center;font-size:12px;" colspan="4"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>';
+		htmlCode +='<tr><th style="text-align:center;" colspan="5"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_AP#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></th></tr>';
 	}
 	else{ // show ap list
 		if ((aplist.length) && (aplist[0].length == 0)) {
-			htmlCode +='<tr><td style="text-align:center;font-size:12px; colspan="4"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
+			htmlCode +='<tr><td style="text-align:center;" colspan="5"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
 		}
 		else{
-			htmlCode += '<th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;' + addBorder(1) + '"><#Wireless_name#></th>';
+			htmlCode += '<tr><th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;' + addBorder(1) + '"><#Wireless_name#></th>';
 			htmlCode += '<th onclick="doSorter(2, \'num\', true);" width="15%" style="text-align:center;cursor:pointer;line-height:120%;' + addBorder(2) + '"><#WLANConfig11b_Channel_itemname#></th>';
 			htmlCode += '<th onclick="doSorter(3, \'str\', true);" width="27%" style="cursor:pointer;' + addBorder(3) + '"><#QIS_finish_wireless_item2#></th>';
 	                htmlCode += '<th onclick="doSorter(0, \'str\', true);" width="10%" style="text-align:center;cursor:pointer;line-height:120%;' + addBorder(0) + '">Band</th>';
-			htmlCode += '<th onclick="doSorter(5, \'num\', true);" width="10%" id="sigTh" style="text-align:center;cursor:pointer;' + addBorder(5) + '">Signal</th>';
+			htmlCode += '<th onclick="doSorter(5, \'num\', true);" width="10%" id="sigTh" style="text-align:center;cursor:pointer;' + addBorder(5) + '">Signal</tr>';
 
 			for(var i = 0; i < aplist.length; i++){
 				if(aplist[i][1] == null)
@@ -172,7 +172,7 @@ function showSiteTable(){
 				htmlCode += '<tr>';
 
 				//ssid
-				ssid_str=decodeURI(handle_show_str(aplist[i][1]));
+				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
 				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">' + ssid_str + '</td>';
 
 				// channel
@@ -207,12 +207,6 @@ function showSiteTable(){
 		document.getElementById("wlscan_table").innerHTML = htmlCode;
 		htmlCode_tmp = htmlCode;
 	}
-
-	if(document.getElementById("wlscan_table_container").scrollHeight > document.getElementById("wlscan_table_container").clientHeight && navigator.userAgent.search("Macintosh") == -1)
-		document.getElementById("wlscan_table").style.marginLeft = "32px";
-	else
-		document.getElementById("wlscan_table").style.marginLeft = "18px";
-
 }
 
 
@@ -283,10 +277,7 @@ function rescan(){
 				<input disabled type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen_dis">
 				<img id="SearchingIcon" style="display:none;" src="/images/InternetScan.gif">
 			</div>
-
-			<div style="height:660px;overflow-y:auto;margin-top:0px;" id="wlscan_table_container">
-				<div id="wlscan_table" style="height:460px;margin-left:35px;margin-top:0px;vertical-align:top;"></div>
-			</div>
+			<div id="wlscan_table" style="overflow-y:auto;height:650px;margin-left:10px;margin-right:10px;margin-top:20px;vertical-align:top;"></div>
 		</td>
 		</tr>
 	        </tbody>

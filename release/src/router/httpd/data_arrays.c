@@ -1042,7 +1042,7 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 	FILE *fp;
 	char line[100];
 	int firstline = 1;
-	char proto[4], address[16], dest[16], state[15], port1[6], port2[6];
+	char proto[6], address[16], dest[16], state[15], port1[6], port2[6];
 	int ret = 0;
 
 	ret += websWrite(wp, "var connarray = [");
@@ -1060,14 +1060,25 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 			firstline = 0;
 			continue;
 		}
-                if (sscanf(line,
-			"%3s%*[ \t]"
-			"%15[0-9.]%*[:]"
-			"%5s%*[ \t]"
-			"%15[0-9.]%*[:]"
-			"%5s%*[ \t]"
-			"%14s%*[ \t]",
-		    proto, address, port1, dest, port2, state) < 6) continue;
+		if (!strncmp(line,"icmp",4)) {
+			if (sscanf(line,
+			    "%5s%*[ \t]"
+			    "%15[0-9.]%*[ \t]"
+			    "%15[0-9.]%*[ \t]",
+			    proto, address, dest) != 3) continue;
+			state[0] = '\0';
+			port2[0] = '\0';
+			port1[0] = '\0';
+		} else {
+			if (sscanf(line,
+			    "%5s%*[ \t]"
+			    "%15[0-9.]%*[:]"
+			    "%5s%*[ \t]"
+			    "%15[0-9.]%*[:]"
+			    "%5s%*[ \t]"
+			    "%14s%*[ \t]",
+			    proto, address, port1, dest, port2, state) != 6) continue;
+		}
 
 		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
 		                      proto, address, port1, dest, port2, state);

@@ -772,7 +772,7 @@ function save_cert_key(){
 			<tr style="display:none;">
 				<th><#DDNS_verification_frequency#></th>
 				<td>
-					<input type="text" lass="input_3_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
+					<input type="text" class="input_3_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
 				</td>
 			</tr>
 			<tr style="display:none;">

@@ -5252,9 +5252,9 @@ libnl: $(LIBNL_DIR)/Makefile
 libnl-install:
 	install -d $(INSTALL_DIR)/lib/gpl
 	cp -rf $(LIBNL_DIR)/install/lib/* $(INSTALL_DIR)/lib/gpl/
-	find $(INSTALL_DIR)/lib/gpl -name "libnl*.la" -delete
-	find $(INSTALL_DIR)/lib/gpl -name "libnl*.pc" -delete
-	find $(INSTALL_DIR)/lib/gpl -name "libnl*.a" -delete
+	find $(INSTALL_DIR)/lib/gpl -name "*.la" -delete
+	find $(INSTALL_DIR)/lib/gpl -name "*.pc" -delete
+	find $(INSTALL_DIR)/lib/gpl -name "*.a" -delete
 
 libnl-clean:
 	+$(MAKE) -C $(LIBNL_DIR) distclean

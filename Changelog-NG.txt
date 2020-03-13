@@ -17,7 +17,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Tor to 0.4.2.6.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
-  - UPDATED: dnsmasq to 2.81rc1-29-g5b6f222 (themiron)
+  - UPDATED: dnsmasq to 2.81rc3-29-g495e518 (themiron)
   - UPDATED: inadyn to 2.6 (themiron)
   - UPDATED: getdns to 1.6.0 (themiron)
   - UPDATED: stubby to 0.3.0 (themiron)
@@ -28,11 +28,18 @@ Asuswrt-Merlin 384/NG Changelog
   - CHANGED: Report temperature of second 5 GHz radio on Sysinfo page
              for tri-band models.
   - CHANGED: Added down/upload monitor to network status page, and
-             remove useless RAM chart to free some space.
+             removed useless RAM chart to free some space.
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: Router Security Assessment would fail to recognize WPA3
            as being secure.
+  - FIXED: miniupnpd would reject private WAN IPs - changed that
+           upstream behaviour to allow these.
+  - FIXED: Would require you to reset the DHCP scope if you
+           changed the LAN hostname.
+  - FIXED: Couldn't set http mode to http-only if you previously
+           had WAN access enabled but have since switched to
+           non-router mode.
 
 
 384.15 (8-Feb-2020)

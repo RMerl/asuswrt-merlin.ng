@@ -124,6 +124,16 @@ for(i=0;i<array_size;i++){
 }
 /*End*/
 
+var last_rx = 0;
+var last_tx = 0;
+var max_rx = 100 * 1024;
+var max_tx = 100 * 1024;
+var current_rx = 0;
+var current_tx = 0;
+var qos_enable = "<% nvram_get("qos_enable"); %>";
+var qos_ibw = "<% nvram_get("qos_ibw"); %>";
+var qos_obw = "<% nvram_get("qos_obw"); %>";
+
 function initial(){
 	generate_cpu_field();
 	if((parent.sw_mode == 2 || parent.sw_mode == 4) && '<% nvram_get("wlc_band"); %>' == '<% nvram_get("wl_unit"); %>')
@@ -195,6 +205,10 @@ function initial(){
 		}, 10);
 	}
 
+	if (qos_enable > 0 && qos_ibw > 0 && qos_obw > 0) {
+		max_rx = qos_ibw * 1024 / 8;
+		max_tx = qos_obw * 1024 / 8;
+	}
 	update_traffic();
 }
 
@@ -475,12 +489,6 @@ function get_ethernet_ports() {
 	});
 }
 
-var last_rx = 0;
-var last_tx = 0;
-var max_rx = 100 * 1024;
-var max_tx = 100 * 1024;
-var current_rx = 0;
-var current_tx = 0;
 function update_traffic() {
 	$.ajax({
 	url: '/update.cgi',

@@ -1310,7 +1310,7 @@ function enable_wan_access(flag){
 }
 
 function check_wan_access(http_enable){
-	if(http_enable == "0" && document.form.misc_http_x[0].checked == true){	//While Accesss from WAN enabled, not allow to set HTTP only
+	if(sw_mode == "1" && http_enable == "0" && document.form.misc_http_x[0].checked == true){	//While Accesss from WAN enabled, not allow to set HTTP only
 		alert("When \"Web Access from WAN\" is enabled, HTTPS must be enabled.");
 		document.form.http_enable.selectedIndex = 2;
 		hide_https_lanport(document.form.http_enable.value);

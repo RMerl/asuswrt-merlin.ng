@@ -347,8 +347,10 @@ GetExternalIPAddress(struct upnphttp * h, const char * action, const char * ns)
 			ext_if_name);
 		strncpy(ext_ip_addr, "0.0.0.0", INET_ADDRSTRLEN);
 	}
+#if 0
 	if (addr_is_reserved(&addr))
 		strncpy(ext_ip_addr, "0.0.0.0", INET_ADDRSTRLEN);
+#endif
 #else
 	struct lan_addr_s * lan_addr;
 	strncpy(ext_ip_addr, "0.0.0.0", INET_ADDRSTRLEN);

@@ -611,7 +611,7 @@ void check_tftp_listeners(time_t now)
 	    {
 	      /* don't complain about timeout when we're awaiting the last
 		 ACK, some clients never send it */
-	      if (len == transfer->blocksize + 4)
+	      if ((unsigned)len == transfer->blocksize + 4)
 		endcon = 1;
 	      len = 0;
 	    }

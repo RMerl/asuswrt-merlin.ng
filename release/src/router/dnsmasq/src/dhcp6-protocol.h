@@ -59,8 +59,12 @@
 #define OPTION6_REMOTE_ID       37
 #define OPTION6_SUBSCRIBER_ID   38
 #define OPTION6_FQDN            39
+#define OPTION6_NTP_SERVER      56
 #define OPTION6_CLIENT_MAC      79
 
+#define NTP_SUBOPTION_SRV_ADDR  1
+#define NTP_SUBOPTION_MC_ADDR   2
+#define NTP_SUBOPTION_SRV_FQDN  3
 
 #define DHCP6SUCCESS     0
 #define DHCP6UNSPEC      1

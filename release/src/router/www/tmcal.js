@@ -150,10 +150,10 @@ function showTab(name)
 	tabHigh(name);
 
 	for(var i = 0; i < tabs.length; i++){
-		if(name == tabs[i][0]){
-			document.getElementById("iftitle").innerHTML = tabs[i][1];
-			document.getElementById("iftitle").style.display = "block";
-		}
+//		if(name == tabs[i][0]){
+//			document.getElementById("iftitle").innerHTML = tabs[i][1];
+//			document.getElementById("iftitle").style.display = "block";
+//		}
 
 		if(tabs[i][0].indexOf("INTERNET") != -1)
 			wan_num++;

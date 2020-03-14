@@ -252,9 +252,9 @@ function validForm(){
 	}
 	
 	// check IP changed or not
-  // No matter it changes or not, it will submit the form
-  //Viz modify 2011.10 for DHCP pool issue {
-	if(sw_mode == "1"){
+	if(sw_mode == "1" &&
+	   (origin_lan_ip != document.form.lan_ipaddr.value ||
+	    origin_lan_mask != document.form.lan_netmask.value)) {
 		var pool_change = calculatorIPPoolRange();
 		if(!pool_change)
 			return false;
@@ -263,7 +263,6 @@ function validForm(){
 			document.form.lan_netmask_rt.value = document.form.lan_netmask.value;			
 		}
 	}				
-	//}Viz modify 2011.10 for DHCP pool issue 
 
 	return true;
 }

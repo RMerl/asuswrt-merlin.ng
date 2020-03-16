@@ -63,9 +63,9 @@ if (band5g_support) {
 	                 "<% nvram_get("wl1.2_ssid"); %>",
 	                 "<% nvram_get("wl1.3_ssid"); %>"]);
 	if (wl_info.band5g_2_support) {
-		guestnames.push(["<% nvram_get("wl1.1_ssid"); %>",
-		                 "<% nvram_get("wl1.2_ssid"); %>",
-		                 "<% nvram_get("wl1.3_ssid"); %>"]);
+		guestnames.push(["<% nvram_get("wl2.1_ssid"); %>",
+		                 "<% nvram_get("wl2.2_ssid"); %>",
+		                 "<% nvram_get("wl2.3_ssid"); %>"]);
 	}
 }
 

@@ -122,7 +122,7 @@ char user_agent[1024];
 char gen_token[32];
 int do_ssl = 0; 	// use Global for HTTPS upgrade judgment in web.c
 int ssl_stream_fd; 	// use Global for HTTPS stream fd in web.c
-char indexpage[128];
+int json_support = 0;
 
 #ifdef TRANSLATE_ON_FLY
 char Accept_Language[16];
@@ -255,6 +255,7 @@ char login_url[128];
 int login_error_status = 0;
 char cloud_file[256];
 int add_try = 0;
+char indexpage[128];
 
 
 /* Added by Joey for handle one people at the same time */
@@ -284,9 +285,6 @@ int amas_support = 0;
 /* Const vars */
 const int int_1 = 1;
 const struct linger linger = { 1, 0 };
-
-/* Kludge */
-int json_support = 0;
 
 void http_login(unsigned int ip, char *url);
 void http_login_timeout(unsigned int ip, char *cookies, int fromapp_flag);
@@ -562,7 +560,7 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
     if ( extra_header != (char*) 0 )
 	(void) fprintf( conn_fp, "%s\r\n", extra_header );
     if ( mime_type != (char*) 0 ){
-	if(fromapp != 0)
+	if(fromapp != FROM_BROWSER && fromapp != FROM_WebView)
 		(void) fprintf( conn_fp, "Content-Type: %s\r\n", "application/json;charset=UTF-8" );		
 	else
 		(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
@@ -700,6 +698,8 @@ int check_user_agent(char* user_agent){
 				fromapp=FROM_IFTTT;
 			else if(strcmp( app_framework, "Alexa") == 0)
 				fromapp=FROM_ALEXA;
+			else if(strcmp( app_framework, "WebView") == 0)
+				fromapp=FROM_WebView;
 			else
 				fromapp=FROM_UNKNOWN;
 		}
@@ -1945,6 +1945,10 @@ int main(int argc, char **argv)
 	 * it suppose to be convert after applying
 	 * time_zone_x_mapping(); */
 	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
+
+#ifdef RTCONFIG_LETSENCRYPT
+	nvram_unset("le_restart_httpd");
+#endif
 
 	if (nvram_get_int("HTTPD_DBG") > 0)
 		eval("touch", HTTPD_DEBUG);

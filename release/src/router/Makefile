@@ -1349,7 +1349,7 @@ obj-$(HND_ROUTER) += mcpd
 #obj-$(HND_ROUTER) += jqplot
 #obj-$(HND_ROUTER) += jquery
 #obj-$(HND_ROUTER) += tablesorter
-#obj-$(HND_ROUTER) += memaccess
+obj-$(HND_ROUTER) += memaccess
 
 # ALPINE compile package
 obj-$(RTCONFIG_ALPINE) += qsr10g_image

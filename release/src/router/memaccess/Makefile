@@ -11,7 +11,7 @@
 EXE = memaccess
 OBJS = memaccess.o
 LIBS = 
-LINKS=dw dh db sw sh sb fw fh fb
+LINKS=dw dh db sw sh.bcm sb fw fh fb
 SCRIPTS=dumpmem setmem
 
 all dynamic install: conditional_build

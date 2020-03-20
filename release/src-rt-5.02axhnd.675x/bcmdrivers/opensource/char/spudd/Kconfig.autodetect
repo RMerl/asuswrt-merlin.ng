@@ -1,0 +1,11 @@
+config BCM_SPU
+	tristate "Support for Crypto SPU"
+	default n
+	
+config BCM_SPU_IMPL
+	int "Implementation index for Crypto SPU"
+	depends on BCM_SPU
+	default 2 if BCM963268
+	default 3 if BCM963138 || BCM963148
+	default 4 if BCM94908 || BCM963158 || BCM96858 || BCM947622
+

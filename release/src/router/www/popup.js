@@ -26,7 +26,7 @@ function LoadingTime(seconds, flag){
 			}
 
 			showtext(document.getElementById("proceeding_main_txt"), "<#Main_alert_proceeding_desc4#>");
-			showtext(document.getElementById("proceeding_txt"), Math.round(y)+"% <#Main_alert_proceeding_desc1#>");
+			showtext(document.getElementById("proceeding_txt"), '<span style="color:#FFFFCC;">' + Math.round(y)+"% </span><#Main_alert_proceeding_desc1#>");
 			--seconds;
 			setTimeout("LoadingTime("+seconds+", '"+flag+"');", 1000);
 		}

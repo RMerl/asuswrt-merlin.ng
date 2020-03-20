@@ -53,11 +53,11 @@
 }
 
 #tx_bar{
-	background-color:#3CF;
+	background-color:#0096FF;
 }
 
 #rx_bar{
-	background-color:#118811;
+	background-color:#FF9000;
 }
 
 #cpu0_bar{

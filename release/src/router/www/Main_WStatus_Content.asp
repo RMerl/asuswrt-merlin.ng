@@ -152,11 +152,14 @@ function display_clients(clientsarray, obj, unit) {
 			// Need Guest header?
 			flags = client[11];
 			for (ii = 1; ii < 5; ii++) {
-				if ((flags.indexOf(ii) > 0) {
+				if (flags.indexOf(ii) > 0) {
 					flags = client[11].replace(ii,"");
-					if (guestheader < ii)) {
+					if (guestheader < ii) {
 						guestheader = ii;
-						code += '<tr><th colspan="6" style="color:white;height:20px;"><span style="color:#FFCC00;font-weight:bolder;">Guest Network ' + guestheader +':</span> ' + guestnames[unit][ii-1] + '</th></tr>';
+						if (sw_mode == "2")
+							code += '<tr><th colspan="6" style="color:white;height:20px;"><span style="color:#FFCC00;font-weight:bolder;">Local Clients:</span> ' + guestnames[unit][ii-1] + '</th></tr>';
+						else
+							code += '<tr><th colspan="6" style="color:white;height:20px;"><span style="color:#FFCC00;font-weight:bolder;">Guest Network ' + guestheader +':</span> ' + guestnames[unit][ii-1] + '</th></tr>';
 						ii = 5;
 					}
 				}

@@ -1751,8 +1751,7 @@ void start_dnsmasq(void)
 	} else
 #endif
 	if (nvram_get_int("dnssec_enable")) {
-		fprintf(fp, "trust-anchor=.,19036,8,2,49AAC11D7B6F6446702E54A1607371607A1A41855200FD2CE1CDDE32F24E8FB5\n"
-		            "trust-anchor=.,20326,8,2,E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n"
+		fprintf(fp, "trust-anchor=.,20326,8,2,E06D44B80B8F1D39A95C0B0D7C65D08458E880409BBC683457104237C7F8EC8D\n"
 		            "dnssec\n");
 
 		/* If NTP isn't set yet, wait until rc's ntp signals us to start validating time */

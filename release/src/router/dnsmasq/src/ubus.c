@@ -102,6 +102,7 @@ void ubus_init()
           my_syslog(LOG_ERR, _("Cannot add object to UBus: %s"), ubus_strerror(ret));
           error_logged = 1;
         }
+      ubus_destroy(ubus);
       return;
     }
 

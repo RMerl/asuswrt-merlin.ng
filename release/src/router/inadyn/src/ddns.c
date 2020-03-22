@@ -852,6 +852,7 @@ static int check_error(ddns_t *ctx, int rc)
 		break;
 
 	case RC_DDNS_RSP_NOTOK:
+	case RC_DDNS_RSP_AUTH_FAIL:
 		if (ignore_errors) {
 			logit(LOG_WARNING, "%s, ignoring ...", errstr);
 			break;

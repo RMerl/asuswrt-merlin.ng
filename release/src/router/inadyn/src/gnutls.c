@@ -63,8 +63,11 @@ static int verify_certificate_callback(gnutls_session_t session)
 	if (status & GNUTLS_CERT_EXPIRED)
 		logit(LOG_WARNING, "The certificate has expired.");
 
-	if (status & GNUTLS_CERT_NOT_ACTIVATED)
+	if (status & GNUTLS_CERT_NOT_ACTIVATED) {
 		logit(LOG_WARNING, "The certificate is not yet activated.");
+		if (broken_rtc && (status &= ~GNUTLS_CERT_NOT_ACTIVATED) == GNUTLS_CERT_INVALID)
+			status = 0;
+	}
 
 	if (status & GNUTLS_CERT_INVALID) {
 		logit(LOG_ERR, "The certificate is not trusted.");

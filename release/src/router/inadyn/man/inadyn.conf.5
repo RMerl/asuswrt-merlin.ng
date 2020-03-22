@@ -90,6 +90,17 @@ then
 .Nm inadyn
 will only issue a warning.  By default this setting is enabled, because
 security matters.
+.It Cm broken-rtc = < true | false >
+HTTPS certificates are only valid within specified time windows, so on
+systems without hardware real-time clock and default bootup time far in
+the past, false-positive validation fail is expected. When this setting
+is enabled, i.e.
+.Ar true ,
+then
+.Nm inadyn
+will only issue a warning
+that the certificate is not valid yet. By default this setting is
+disabled, because security matters.
 .It Cm ca-trust-file = FILE
 By default
 .Nm inadyn

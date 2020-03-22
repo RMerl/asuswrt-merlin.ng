@@ -843,17 +843,31 @@ int extract_addresses(struct dns_header *header, size_t qlen, char *name, time_t
 			      if ((flags & F_IPV4) &&
 				  private_net(addr.addr4, !option_bool(OPT_LOCAL_REBIND)))
 				return 1;
-			      
-			      if ((flags & F_IPV6) &&
-				  IN6_IS_ADDR_V4MAPPED(&addr.addr6))
+
+			      /* Block IPv4-mapped IPv6 addresses in private IPv4 address space */
+			      if (flags & F_IPV6)
 				{
-				  struct in_addr v4;
-				  v4.s_addr = ((const uint32_t *) (&addr.addr6))[3];
-				  if (private_net(v4, !option_bool(OPT_LOCAL_REBIND)))
+				  if (IN6_IS_ADDR_V4MAPPED(&addr.addr6))
+				    {
+				      struct in_addr v4;
+				      v4.s_addr = ((const uint32_t *) (&addr.addr6))[3];
+				      if (private_net(v4, !option_bool(OPT_LOCAL_REBIND)))
+					return 1;
+				    }
+
+				  /* Check for link-local (LL) and site-local (ULA) IPv6 addresses */
+				  if (IN6_IS_ADDR_LINKLOCAL(&addr.addr6) ||
+				      IN6_IS_ADDR_SITELOCAL(&addr.addr6))
+				    return 1;
+
+				  /* Check for the IPv6 loopback address (::1) when
+				     option rebind-localhost-ok is NOT set */
+				  if (!option_bool(OPT_LOCAL_REBIND) &&
+				      IN6_IS_ADDR_LOOPBACK(&addr.addr6))
 				    return 1;
 				}
 			    }
-			  
+
 #ifdef HAVE_IPSET
 			  if (ipsets && (flags & (F_IPV4 | F_IPV6)))
 			    {

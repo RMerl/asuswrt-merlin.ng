@@ -89,11 +89,15 @@ int main (int argc, char **argv)
   sigaction(SIGPIPE, &sigact, NULL);
 
   umask(022); /* known umask, create leases and pid files as 0644 */
- 
+
   rand_init(); /* Must precede read_opts() */
   
   read_opts(argc, argv, compile_opts);
  
+#ifdef HAVE_LINUX_NETWORK
+  daemon->kernel_version = kernel_version();
+#endif
+
   if (daemon->edns_pktsz < PACKETSZ)
     daemon->edns_pktsz = PACKETSZ;
 

@@ -4,6 +4,24 @@ Change Log
 All notable changes to the project are documented in this file.
 
 
+[v2.7][] - 2020-03-22
+---------------------
+
+### Changes
+- Issue #301: Add `broken-rtc = <true | false>` .conf file setting, by
+  Vladislav Grishenko
+- Issue #302: Add common authentication failure error code handling, by
+  Vladislav Grishenko
+- Issue #308: Improve Dockerfile by using the same commit of the current
+  Dockerfile to to build inadyn.  Previously the Dockerfile always pulled
+  the latest git master, by Dominik Courcelles
+
+### Fixes
+- Fix #300: `--force` option not being recognized, by Eric Sauvageau
+- Fix #305: Fix hash generation regression in FreeDNS plugin, found and
+  fixed by Eric Sauvageau and Vladislav Grishenko
+
+
 [v2.6][] - 2020-02-22
 ---------------------
 

@@ -17,11 +17,12 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Tor to 0.4.2.6.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
-  - UPDATED: dnsmasq to 2.81rc3-29-g495e518 (themiron)
-  - UPDATED: inadyn to 2.6 (themiron)
+  - UPDATED: dnsmasq to 2.81rc4-33-g7558f2b-openssl (themiron)
+  - UPDATED: inadyn to 2.7 (themiron, merlin)
   - UPDATED: getdns to 1.6.0 (themiron)
   - UPDATED: stubby to 0.3.0 (themiron)
   - UPDATED: amtm to 3.1.4 (thelonelycoder)
+  - UPDATED: openssl-1.1 to 1.1.1e.
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
              they are connected to.
@@ -33,6 +34,23 @@ Asuswrt-Merlin 384/NG Changelog
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: Router Security Assessment would fail to recognize WPA3
            as being secure.
+  - FIXED: miniupnpd would reject private WAN IPs - changed that
+           upstream behaviour to allow these.
+  - FIXED: Would require you to reset the DHCP scope if you
+           changed the LAN hostname.
+  - FIXED: Couldn't set http mode to http-only if you previously
+           had WAN access enabled but have since switched to
+           non-router mode.
+
+
+384.13_5 (xx-xxx-xxxx)
+  This release is only available for the RT-AC87U and RT-AC3200.
+  These two models are now considered to be on limited support, and
+  their future will depend on Asus's future support for these two.
+
+  - UPDATED: openssl to 1.1.1e.
+  - FIXED: DNS server was unreachable when connecting to an OpenVPN
+           server with Advertise DNS enabled, due to firewall rules.
   - FIXED: miniupnpd would reject private WAN IPs - changed that
            upstream behaviour to allow these.
   - FIXED: Would require you to reset the DHCP scope if you

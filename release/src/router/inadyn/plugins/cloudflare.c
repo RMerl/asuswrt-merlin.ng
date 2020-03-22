@@ -108,7 +108,7 @@ static int check_response_code(int status)
 		return RC_DDNS_RSP_NOTOK;
 	case 403:
 		logit(LOG_ERR, "HTTP 403: Provided API token does not have the required permissions.");
-		return RC_DDNS_INVALID_OPTION;
+		return RC_DDNS_RSP_AUTH_FAIL;
 	case 429:
 		logit(LOG_WARNING, "HTTP 429: We got rate limited.");
 		return RC_DDNS_RSP_RETRY_LATER;

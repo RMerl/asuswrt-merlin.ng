@@ -395,11 +395,13 @@ were previously disabled.
 .TP
 .B --stop-dns-rebind
 Reject (and log) addresses from upstream nameservers which are in the
-private IP ranges. This blocks an attack where a browser behind a
-firewall is used to probe machines on the local network.
+private ranges. This blocks an attack where a browser behind a
+firewall is used to probe machines on the local network. For IPv6, the
+private range covers the IPv4-mapped addresses in private space plus
+all link-local (LL) and site-local (ULA) addresses.
 .TP
 .B --rebind-localhost-ok
-Exempt 127.0.0.0/8 from rebinding checks. This address range is
+Exempt 127.0.0.0/8 and ::1 from rebinding checks. This address range is
 returned by realtime black hole servers, so blocking it may disable
 these services.
 .TP 

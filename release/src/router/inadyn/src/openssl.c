@@ -69,12 +69,12 @@ static int verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
 		X509_STORE_CTX_set_error(ctx, err);
 	}
 
-	if (!preverify_ok && broken_rtc && (err == X509_V_ERR_CERT_NOT_YET_VALID))
-		preverify_ok = 1;
-
-	if (!preverify_ok)
+	if (!preverify_ok) {
 		logit(LOG_ERR, "Certificate verification error:num=%d:%s:depth=%d:%s",
 		      err, X509_verify_cert_error_string(err), depth, buf);
+		if (broken_rtc && err == X509_V_ERR_CERT_NOT_YET_VALID)
+			preverify_ok = 1;
+	}
 
 	/*
 	 * At this point, err contains the last verification error. We can use

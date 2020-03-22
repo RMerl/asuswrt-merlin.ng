@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([In-a-dyn], [2.6], [https://github.com/troglobit/inadyn/issues],
+AC_INIT([In-a-dyn], [2.7], [https://github.com/troglobit/inadyn/issues],
 	[inadyn], [https://troglobit.com/projects/inadyn/])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])

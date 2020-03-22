@@ -365,6 +365,23 @@ last example above.
 Build & Install
 ---------------
 
+### Debian/Ubuntu
+
+    curl -sS https://deb.troglobit.com/pubkey.gpg | sudo apt-key add -
+    echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" | sudo tee /etc/apt/sources.list.d/troglobit.list
+    sudo apt-get update && sudo apt-get install inadyn
+
+### Docker
+
+Automatically built images available here:
+
+* https://hub.docker.com/r/troglobit/inadyn
+
+A Dockerfile is provided to simplify building and running `inadyn`.
+
+    docker build -t inadyn:latest .
+    docker run --rm -v "$PWD/inadyn.conf:/etc/inadyn.conf" inadyn:latest
+
 ### Homebrew (macOS)
 
 To run the latest stable version on macOS, type:
@@ -498,14 +515,6 @@ Building from GIT requires, at least, the previously mentioned library
 dependencies.  GIT sources are a moving target and are not recommended
 for production systems, unless you know what you are doing!
 
-
-Building with Docker
---------------------
-
-A Dockerfile is provided to simplify building and running `inadyn`.
-
-    docker build -t inadyn:latest .
-    docker run --rm -v "$PWD/inadyn.conf:/etc/inadyn.conf" inadyn:latest
 
 Origin & References
 -------------------

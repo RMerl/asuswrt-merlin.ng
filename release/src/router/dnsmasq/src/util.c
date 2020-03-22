@@ -30,6 +30,10 @@
 #include <idna.h>
 #endif
 
+#ifdef HAVE_LINUX_NETWORK
+#include <sys/utsname.h>
+#endif
+
 /* SURF random number generator */
 
 static u32 seed[32];
@@ -817,3 +821,22 @@ int wildcard_matchn(const char* wildcard, const char* match, int num)
 
   return (!num) || (*wildcard == *match);
 }
+
+#ifdef HAVE_LINUX_NETWORK
+int kernel_version(void)
+{
+  struct utsname utsname;
+  int version;
+  char *split;
+  
+  if (uname(&utsname) < 0)
+    die(_("failed to find kernel version: %s"), NULL, EC_MISC);
+  
+  split = strtok(utsname.release, ".");
+  version = (split ? atoi(split) : 0);
+  split = strtok(NULL, ".");
+  version = version * 256 + (split ? atoi(split) : 0);
+  split = strtok(NULL, ".");
+  return version * 256 + (split ? atoi(split) : 0);
+}
+#endif

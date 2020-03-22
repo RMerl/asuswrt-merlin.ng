@@ -6,6 +6,7 @@ Asuswrt-Merlin 384/NG Changelog
   These two models are now considered to be on limited support, and
   their future will depend on Asus's future support for these two.
 
+  - UPDATED: openssl-1.1 to 1.1.1e.
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: miniupnpd would reject private WAN IPs - changed that

@@ -22,9 +22,7 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <sys/utsname.h>
 #include <arpa/inet.h>
-#include <linux/version.h>
 #include <linux/netlink.h>
 
 /* We want to be able to compile against old header files
@@ -87,20 +85,7 @@ static inline void add_attr(struct nlmsghdr *nlh, uint16_t type, size_t len, con
 
 void ipset_init(void)
 {
-  struct utsname utsname;
-  int version;
-  char *split;
-  
-  if (uname(&utsname) < 0)
-    die(_("failed to find kernel version: %s"), NULL, EC_MISC);
-  
-  split = strtok(utsname.release, ".");
-  version = (split ? atoi(split) : 0);
-  split = strtok(NULL, ".");
-  version = version * 256 + (split ? atoi(split) : 0);
-  split = strtok(NULL, ".");
-  version = version * 256 + (split ? atoi(split) : 0);
-  old_kernel = (version < KERNEL_VERSION(2,6,32));
+  old_kernel = (daemon->kernel_version < KERNEL_VERSION(2,6,32));
   
   if (old_kernel && (ipset_sock = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) != -1)
     return;

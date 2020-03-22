@@ -9,10 +9,10 @@
 # Simon Kelley <simon@thekelleys.org.uk>, 2005.
 msgid ""
 msgstr ""
-"Project-Id-Version: dnsmasq 2.80\n"
+"Project-Id-Version: dnsmasq 2.81\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-06-18 12:24+0100\n"
-"PO-Revision-Date: 2018-09-29 00:13+0200\n"
+"PO-Revision-Date: 2020-03-08 20:25+0100\n"
 "Last-Translator: Conrad Kostecki <conrad@kostecki.com>\n"
 "Language-Team: German <de@li.org>\n"
 "Language: de\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.1.1\n"
+"X-Generator: Poedit 2.3\n"
 "X-Poedit-SourceCharset: UTF-8\n"
 
 #: cache.c:559
@@ -431,7 +431,7 @@ msgstr "DBus-Schnittstelle zum Festlegen vorgelagerter Server usw. festlegen."
 
 #: option.c:431
 msgid "Enable the UBus interface."
-msgstr ""
+msgstr "UBus-Schnittstelle aktivieren."
 
 #: option.c:432
 msgid "Do not provide DHCP on this interface, only provide DNS."
@@ -451,7 +451,7 @@ msgstr "DHCP-Anfragen von Alias-Schnittstellen für die Hauptschnittstelle beant
 
 #: option.c:436
 msgid "Specify extra networks sharing a broadcast domain for DHCP"
-msgstr ""
+msgstr "Geben Sie zusätzliche Netzwerke an, die eine Broadcast-Domäne für DHCP gemeinsam nutzen"
 
 #: option.c:437
 msgid "Disable ICMP echo address checking in the DHCP server."
@@ -546,7 +546,7 @@ msgstr "Bereich für vorübergehende Ports für TFTP-Übertragungen."
 
 #: option.c:459
 msgid "Use only one port for TFTP server."
-msgstr ""
+msgstr "Bitte nur einen Port für den TFTP-Server nutzen."
 
 #: option.c:460
 msgid "Extra logging for DHCP."
@@ -577,9 +577,8 @@ msgid "Set tag if client includes matching option in request."
 msgstr "Marke setzen, wenn Klient eine entsprechende Option anfragt."
 
 #: option.c:467
-#, fuzzy
 msgid "Set tag if client provides given name."
-msgstr "Marke setzen, wenn Klient eine entsprechende Option anfragt."
+msgstr "Setzt das Tag, wenn der Client diesen Namen anbietet."
 
 #: option.c:468
 msgid "Use alternative ports for DHCP."
@@ -651,9 +650,8 @@ msgid "Attempt to allocate sequential IP addresses to DHCP clients."
 msgstr "Versuche sequenzielle IP-Adressen an DHCP-Klienten zu vergeben."
 
 #: option.c:485
-#, fuzzy
 msgid "Ignore client identifier option sent by DHCP clients."
-msgstr "Von DHCP-Clients gelieferte Hostnamen ignorieren."
+msgstr "Ignorieren Sie die von DHCP-Clients gesendete Client-ID-Option."
 
 #: option.c:486
 msgid "Copy connection-track mark from queries to upstream connections."
@@ -677,7 +675,7 @@ msgstr "Spezifiziere Host (A/AAAA und PTR) Einträge"
 
 #: option.c:491
 msgid "Specify certification authority authorization record"
-msgstr ""
+msgstr "Geben Sie den Autorisierungsdatensatz der Zertifizierungsstelle an"
 
 #: option.c:492
 msgid "Specify arbitrary DNS resource record"
@@ -781,20 +779,19 @@ msgstr "Verzögere DHCP-Antworten für mindestens Anzahl von Sekunden."
 
 #: option.c:517
 msgid "Enables DHCPv4 Rapid Commit option."
-msgstr ""
+msgstr "Aktiviert die Option DHCPv4 Rapid Commit."
 
 #: option.c:518
 msgid "Path to debug packet dump file"
-msgstr ""
+msgstr "Pfad zur Debug-Paketdatei, wohin gedumpt werden soll"
 
 #: option.c:519
 msgid "Mask which packets to dump"
-msgstr ""
+msgstr "Maskiere Pakete, welche gedumpt werden sollen"
 
 #: option.c:520
-#, fuzzy
 msgid "Call dhcp-script when lease expiry changes."
-msgstr "Rufe dhcp-script mit Änderungen an der lokalen ARP-Tabelle auf."
+msgstr "Rufe dhcp-script auf, wenn der Ablauf des Leases sich ändert."
 
 #: option.c:725
 #, c-format
@@ -931,7 +928,7 @@ msgstr "unzulässige Brücken-Schnittstelle"
 
 #: option.c:2941
 msgid "bad shared-network"
-msgstr ""
+msgstr "unzulässiger geteiltes Netz"
 
 #: option.c:2996
 msgid "only one tag allowed"
@@ -970,9 +967,8 @@ msgid "bad hex constant"
 msgstr "Falscher Hexwert"
 
 #: option.c:3315
-#, fuzzy
 msgid "bad IPv6 prefix"
-msgstr "unzulässiger Präfix"
+msgstr "unzulässiger IPv6-Präfix"
 
 #: option.c:3362
 #, c-format
@@ -1008,9 +1004,8 @@ msgid "bad DUID"
 msgstr "unzulässige DUID"
 
 #: option.c:4023
-#, fuzzy
 msgid "missing address in alias"
-msgstr "Adresse ungültig"
+msgstr "Adresse fehlt in Alias"
 
 #: option.c:4029
 msgid "invalid alias range"
@@ -1037,9 +1032,8 @@ msgid "bad RR record"
 msgstr "unzulässiger RR-Eintrag"
 
 #: option.c:4236
-#, fuzzy
 msgid "bad CAA record"
-msgstr "unzulässiger RR-Eintrag"
+msgstr "unzulässiger CAA-Eintrag"
 
 #: option.c:4265
 msgid "bad TXT record"
@@ -1071,7 +1065,7 @@ msgstr "Unzulässiger Name in host-record"
 
 #: option.c:4444
 msgid "bad value for dnssec-check-unsigned"
-msgstr ""
+msgstr "Ungültiger Wert für dnssec-check-unsigned"
 
 #: option.c:4480
 msgid "bad trust anchor"
@@ -1310,9 +1304,9 @@ msgid "domain"
 msgstr "Domain"
 
 #: network.c:1543
-#, fuzzy, c-format
+#, c-format
 msgid "using only locally-known addresses for %s %s"
-msgstr "Benutze lokale Adressen nur für %s %s"
+msgstr "Benutze nur lokal-bekannte Adressen für %s %s"
 
 #: network.c:1546
 #, c-format
@@ -1394,9 +1388,8 @@ msgid "loop detection not available: set HAVE_LOOP in src/config.h"
 msgstr "Loop-Erkennung nicht verfügbar, Aktiviere HAVE_LOOP in src/config.h"
 
 #: dnsmasq.c:232
-#, fuzzy
 msgid "Ubus not available: set HAVE_UBUS in src/config.h"
-msgstr "DBus nicht verfügbar: setzen Sie HAVE_DBUS in src/config.h"
+msgstr "UBus nicht verfügbar: setzen Sie HAVE_UBUS in src/config.h"
 
 #: dnsmasq.c:236
 msgid "max_port cannot be smaller than min_port"
@@ -1404,7 +1397,7 @@ msgstr "max_port darf nicht kleiner als min_port sein"
 
 #: dnsmasq.c:243
 msgid "--auth-server required when an auth zone is defined."
-msgstr ""
+msgstr "--Auth-Server ist notwendig, wenn eine Auth-Zone definiert ist."
 
 #: dnsmasq.c:248
 msgid "zone serial must be configured in --auth-soa"
@@ -1429,9 +1422,8 @@ msgid "unknown interface %s"
 msgstr "unbekannte Schnittstelle %s"
 
 #: dnsmasq.c:406
-#, fuzzy
 msgid "Packet dumps not available: set HAVE_DUMP in src/config.h"
-msgstr "DBus nicht verfügbar: setzen Sie HAVE_DBUS in src/config.h"
+msgstr "Paketdump nicht verfügbar: setzen Sie HAVE_DUMP in src/config.h"
 
 #: dnsmasq.c:416 dnsmasq.c:1171
 #, c-format
@@ -1443,9 +1435,8 @@ msgid "DBus not available: set HAVE_DBUS in src/config.h"
 msgstr "DBus nicht verfügbar: setzen Sie HAVE_DBUS in src/config.h"
 
 #: dnsmasq.c:429
-#, fuzzy
 msgid "UBus not available: set HAVE_UBUS in src/config.h"
-msgstr "DBus nicht verfügbar: setzen Sie HAVE_DBUS in src/config.h"
+msgstr "UBus nicht verfügbar: setzen Sie HAVE_UBUS in src/config.h"
 
 #: dnsmasq.c:459
 #, c-format
@@ -1455,7 +1446,7 @@ msgstr "Unbekannter Benutzer oder Gruppe: %s"
 #: dnsmasq.c:535
 #, c-format
 msgid "process is missing required capability %s"
-msgstr ""
+msgstr "Prozess benötigt nicht vorhandene Fähigkeit %s"
 
 #: dnsmasq.c:567
 #, c-format
@@ -1475,7 +1466,7 @@ msgstr "gestartet, Version %s, Cachegröße %d"
 
 #: dnsmasq.c:822
 msgid "cache size greater than 10000 may cause performance issues, and is unlikely to be useful."
-msgstr ""
+msgstr "Die Cachegröße größer als 10000 kann Performanceprobleme verursachen und der positive Nutzen ist zudem unwahrscheinlich."
 
 #: dnsmasq.c:825
 #, c-format
@@ -1500,18 +1491,16 @@ msgid "DBus support enabled: bus connection pending"
 msgstr "DBus-Unterstützung eingeschaltet: warte auf Systembus-Verbindung"
 
 #: dnsmasq.c:850
-#, fuzzy
 msgid "UBus support enabled: connected to system bus"
-msgstr "DBus-Unterstützung eingeschaltet: mit Systembus verbunden"
+msgstr "UBus-Unterstützung aktiviert: Mit Systembus verbunden"
 
 #: dnsmasq.c:852
-#, fuzzy
 msgid "UBus support enabled: bus connection pending"
-msgstr "DBus-Unterstützung eingeschaltet: warte auf Systembus-Verbindung"
+msgstr "UBus-Unterstützung aktiviert: BUS-Verbindung wird hergestellt"
 
 #: dnsmasq.c:872
 msgid "DNSSEC validation enabled but all unsigned answers are trusted"
-msgstr ""
+msgstr "DNSSEC-Validierung aktiviert, jedoch wird allen unsignierten Antworten vertraut"
 
 #: dnsmasq.c:874
 msgid "DNSSEC validation enabled"
@@ -1528,7 +1517,7 @@ msgstr "DNSSEC Signatur-Zeitstempel werden erst überprüft, sobald die Systemuh
 #: dnsmasq.c:884
 #, c-format
 msgid "configured with trust anchor for %s keytag %u"
-msgstr ""
+msgstr "konfiguriert mit Vertrauensanker für% s Schlüsselwort % u"
 
 #: dnsmasq.c:890
 #, c-format
@@ -1580,9 +1569,8 @@ msgid "secure mode"
 msgstr "sicherer Modus"
 
 #: dnsmasq.c:961
-#, fuzzy
 msgid "single port mode"
-msgstr "unzulässige Portnummer"
+msgstr "Einzelport-Modus"
 
 #: dnsmasq.c:964
 #, c-format
@@ -1762,14 +1750,14 @@ msgid "DHCP relay %s -> %s"
 msgstr "DHCP Weiterleitung %s -> %s"
 
 #: lease.c:64
-#, fuzzy, c-format
+#, c-format
 msgid "ignoring invalid line in lease database: %s %s %s %s ..."
-msgstr "Fehler beim Parsen der Lease-Datenbank, ungültige Zeile: %s %s %s %s ..."
+msgstr "ignoriere fehlerhafte Zeile in Lease-Datenbank: %s %s %s %s ..."
 
 #: lease.c:101
 #, c-format
 msgid "ignoring invalid line in lease database, bad address: %s"
-msgstr ""
+msgstr "ignoriere fehlerhafte Zeile in Lease-Datenbank, ungültige Adresse: %s"
 
 #: lease.c:108
 msgid "too many stored leases"
@@ -1781,9 +1769,8 @@ msgid "cannot open or create lease file %s: %s"
 msgstr "kann Lease-Datei %s nicht öffnen: %s"
 
 #: lease.c:185
-#, fuzzy
 msgid "failed to parse lease database cleanly"
-msgstr "Fehler beim Parsen der Lease-Datenbank, ungültige Zeile: %s %s %s %s ..."
+msgstr "Fehler beim korrekten Parsen der Lease-Datenbank"
 
 #: lease.c:188
 #, c-format
@@ -2287,12 +2274,12 @@ msgstr "Prüfe jetzt DNSSEC Signatur-Zeitstempel."
 #: dnssec.c:902
 #, c-format
 msgid "Insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"
-msgstr ""
+msgstr "Unsichere DS-Antwort für %s, bitte Domainkonfiguration und Upstream DNS-Server für DNSSEC-Unterstützung überprüfen"
 
 #: blockdata.c:55
-#, fuzzy, c-format
+#, c-format
 msgid "pool memory in use %u, max %u, allocated %u"
-msgstr "DNSSEC Speicher in Benutzung %u, Max %u, zugewiesen %u"
+msgstr "Pool Speicher in Benutzung %u, Max %u, zugewiesen %u"
 
 #: tables.c:61
 #, c-format
@@ -2369,65 +2356,63 @@ msgid "inotify, new or changed file %s"
 msgstr "inotify, neue oder geänderte Datei %s"
 
 #: dump.c:64
-#, fuzzy, c-format
+#, c-format
 msgid "cannot create %s: %s"
-msgstr "kann %s nicht lesen: %s"
+msgstr "kann %s nicht erstellen: %s"
 
 #: dump.c:70
-#, fuzzy, c-format
+#, c-format
 msgid "bad header in %s"
-msgstr "Adresse in Nutzung"
+msgstr "Unzulässiger Header in %s"
 
 #: dump.c:201
-#, fuzzy
 msgid "failed to write packet dump"
-msgstr "Fehlgeschlagen, folgendes Paket zu senden: %s"
+msgstr "schreiben des Paketmitschnitt fehlgeschlagen"
 
 #: dump.c:203
 #, c-format
 msgid "dumping UDP packet %u mask 0x%04x"
-msgstr ""
+msgstr "Dumpe UDP Paket %u Maske 0x%04x"
 
 #: ubus.c:52
 #, c-format
 msgid "UBus subscription callback: %s subscriber(s)"
-msgstr ""
+msgstr "UBus-Subskription Rückruf: %s Teilnehmer"
 
 #: ubus.c:73
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot reconnect to UBus: %s"
-msgstr "Kann Logdatei %s nicht öffnen: %s"
+msgstr "Kann mit UBus nicht erneut verbinden: %s"
 
 #: ubus.c:89
 msgid "Cannot initialize UBus: connection failed"
-msgstr ""
+msgstr "Kann UBus nicht initialisieren: Verbindung fehlgeschlagen"
 
 #: ubus.c:102
-#, fuzzy, c-format
+#, c-format
 msgid "Cannot add object to UBus: %s"
-msgstr "Kann Logdatei %s nicht öffnen: %s"
+msgstr "Kann Objekt zu UBus nicht hinzufügen: %s"
 
 #: ubus.c:112
-#, fuzzy
 msgid "Connected to system UBus"
-msgstr "Mit System-DBus verbunden"
+msgstr "Mit System-UBus verbunden"
 
 #: ubus.c:122
 msgid "Cannot set UBus listeners: no connection"
-msgstr ""
+msgstr "Kann UBus-Zuhörer nicht setzen: Keine Verbindung"
 
 #: ubus.c:142
 msgid "Cannot poll UBus listeners: no connection"
-msgstr ""
+msgstr "Kann UBus-Zuhörer nicht abfragen: Keine Verbindung"
 
 #: ubus.c:155
 msgid "Disconnecting from UBus"
-msgstr ""
+msgstr "Mit System-UBus trennen"
 
 #: ubus.c:199
-#, fuzzy, c-format
+#, c-format
 msgid "Failed to send UBus event: %s"
-msgstr "Fehlgeschlagen, folgendes Paket zu senden: %s"
+msgstr "Fehlgeschlagen, folgendes UBus-Event zu senden: %s"
 
 #~ msgid "Specify DHCPv6 prefix class"
 #~ msgstr "Spezifiziere DHCPv6 Prefix Klasse"

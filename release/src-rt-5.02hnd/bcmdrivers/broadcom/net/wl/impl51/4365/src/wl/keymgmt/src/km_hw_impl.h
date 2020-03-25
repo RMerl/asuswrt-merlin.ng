@@ -91,6 +91,7 @@ struct km_hw {
 	km_hw_impl_t		impl;
 	amt_idx_bitmap_t	*used;			/* used slots */
 	skl_idx_t		*skl;
+	uint8 rand_def_key[KM_HW_MAX_DATA_LEN];
 };
 
 /* algorithm support */
@@ -271,6 +272,7 @@ struct km_hw_algo_entry {
 	(_dt) == WLC_KEY_DATA_TYPE_MIC_KEY_TO_DS || \
 	(_dt) == WLC_KEY_DATA_TYPE_MIC_KEY)
 
+#define KM_HW_PRINT(args) WL_PRINT(args)
 #define KM_HW_ERR(args) KM_ERR(args)
 #define KM_HW_LOG(args) KM_LOG(args)
 #define KM_HW_LOG_DECL(stmt) KM_LOG_DECL(stmt)
@@ -337,6 +339,7 @@ int km_hw_algo_set_hw_key(km_hw_t *hw, hw_idx_t hw_idx, const km_hw_algo_entry_t
     km_hw_dt_mask_t dt_mask, wlc_key_t *key, const wlc_key_info_t *key_info);
 int km_hw_algo_update_sw_key(km_hw_t *hw, hw_idx_t hw_idx, const km_hw_algo_entry_t *ae,
     km_hw_dt_mask_t dt_mask, wlc_key_t *key, const wlc_key_info_t *key_info);
+const uint8 * km_hw_fixup_null_hw_key(km_hw_t *hw, const uint8 *data, size_t data_len);
 #ifdef WL_HWKTAB
 extern const km_hw_algo_callbacks_t sms4_callbacks_hwktab;
 extern const km_hw_algo_callbacks_t tkip_callbacks_hwktab;

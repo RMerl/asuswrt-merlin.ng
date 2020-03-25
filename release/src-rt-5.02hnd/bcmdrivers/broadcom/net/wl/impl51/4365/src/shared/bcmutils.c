@@ -2638,6 +2638,7 @@ bcm_format_flags(const bcm_bit_desc_t *bd, uint32 flags, char* buf, int len)
 
 	return (int)(p - buf);
 }
+#endif /* BCMDBG || WLMSG_PRHDRS || WLMSG_PRPKT || WLMSG_ASSOC || BCMDBG_DUMP || DHD_DEBUG */
 
 /* print bytes formatted as hex to a string. return the resulting string length */
 int
@@ -2653,7 +2654,6 @@ bcm_format_hex(char *str, const void *bytes, int len)
 	}
 	return (int)(p - str);
 }
-#endif /* BCMDBG || WLMSG_PRHDRS || WLMSG_PRPKT || WLMSG_ASSOC || BCMDBG_DUMP || DHD_DEBUG */
 
 /* pretty hex print a contiguous buffer */
 void

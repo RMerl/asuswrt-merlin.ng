@@ -47,6 +47,9 @@ km_hw_algo_write_key(km_hw_t *hw, shm_addr_t addr, const uint8 *data, size_t dat
 {
 	wlc_info_t *wlc = KM_HW_WLC(hw);
 
+	if ((data_len > 0) && !data[0]) {
+		data = km_hw_fixup_null_hw_key(hw, data, data_len);
+	}
 	KM_HW_COPYTO_SHM(wlc, addr, data, (int)data_len);
 	if (data_len < hw->max_key_size)
 		KM_HW_SET_SHM(wlc, addr + (shm_addr_t)data_len, 0,

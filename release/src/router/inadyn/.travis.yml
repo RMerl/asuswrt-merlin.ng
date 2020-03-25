@@ -1,0 +1,61 @@
+# Travis CI integration
+# Defaults to GNU GCC and autotools: ./configure && make && make test
+language: c
+
+# Use docker for quicker builds, it now allows https://docs.travis-ci.com/user/apt/
+sudo: false
+
+# Test build with both GCC and Clang (LLVM)
+compiler:
+  - gcc
+  - clang
+
+env:
+  global:
+   # The next declaration is the encrypted COVERITY_SCAN_TOKEN, created
+   #   via the "travis encrypt" command using the project repo's public key
+   - secure: "JFknJb+purjGIPuKNWFBPlsSLX6KohuYmYV4dmisIhjkeFhhXFQNmoabYQ6D+r/mWYPWiNnohoTSyKv8gjj6eC1SbXb+f2dEXHrmAwr36Enbp2tV0XLx7V2KHZzUmKeJxOSwnNUVZxmSvzVbuiDodtU1PJ2YPK0CM0KF/J+wePA="
+
+# Use Ubuntu 18.04 LTS for builds
+dist: bionic
+
+addons:
+  apt:
+    packages:
+      - tree
+      - fakeroot
+      - debhelper
+      - dh-systemd
+      - libconfuse-dev
+      - libgnutls28-dev
+  coverity_scan:
+    project:
+      name: "troglobit/inadyn"
+      description: "Inadyn | Small and Simple DDNS Client"
+    notification_email: troglobit@gmail.com
+    build_command_prepend: "./autogen.sh && PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --enable-openssl"
+    build_command:   "make clean all"
+    branch_pattern: dev
+
+install:
+  - wget https://github.com/martinh/libconfuse/releases/download/v3.0/confuse-3.0.tar.xz
+  - tar xf confuse-3.0.tar.xz
+  - (cd confuse-3.0 && ./configure --prefix=/tmp --disable-examples && make && make install-strip)
+
+script:
+  - ./autogen.sh
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix= --disable-ssl
+  - make clean
+  - make V=1 -j5
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix=
+  - make clean
+  - make V=1 -j5
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig ./configure --prefix= --enable-openssl
+  - make clean
+  - make V=1 -j5
+  - DESTDIR=/tmp/tok make install-strip
+  - tree /tmp/tok
+  - ldd /tmp/tok/sbin/inadyn
+  - LD_LIBRARY_PATH=/tmp/lib /tmp/tok/sbin/inadyn -h
+  - PKG_CONFIG_PATH=/tmp/lib/pkgconfig make package
+  - cat ../inadyn*.changes

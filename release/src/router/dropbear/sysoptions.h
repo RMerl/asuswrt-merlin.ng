@@ -311,8 +311,12 @@ If you test it please contact the Dropbear author */
  * Currently server is enabled but client is disabled by default until there
  * is further compatibility testing */
 #ifdef __linux__
+#ifndef DROPBEAR_SERVER_TCP_FAST_OPEN
 #define DROPBEAR_SERVER_TCP_FAST_OPEN 1
+#endif
+#ifndef DROPBEAR_CLIENT_TCP_FAST_OPEN
 #define DROPBEAR_CLIENT_TCP_FAST_OPEN 0
+#endif
 #else
 #define DROPBEAR_SERVER_TCP_FAST_OPEN 0
 #define DROPBEAR_CLIENT_TCP_FAST_OPEN 0

@@ -1,5 +1,8 @@
 /* ASUSWRT-Merlin custom configuration */
 
+/* Override SSH 2.0 ident */
+#define LOCAL_IDENT "SSH-2.0-dropbear"
+
 /* Set INETD_MODE if you want to be able to run Dropbear with inetd (or
  * similar), where it will use stdin/stdout for connections, and each process
  * lasts for a single connection. Dropbear should be invoked with the -i flag

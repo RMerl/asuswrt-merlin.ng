@@ -260,6 +260,13 @@ void add_usb_host_module(void)
 #endif
 	modprobe(USBCORE_MOD);
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if(nvram_get_int("usb_usb3") == 1)
+		eval("insmod", "bcm_usb", "usb3_enable=1");
+	else
+		eval("insmod", "bcm_usb", "usb3_enable=0");
+#endif
+
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P)
 	if (nvram_get_int("usb_usb3") == 1)
@@ -346,13 +353,7 @@ void add_usb_host_module(void)
 #endif
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER
-#ifdef RTCONFIG_HND_ROUTER_AX
-        if(nvram_get_int("usb_usb3") == 1)
-                eval("insmod", "bcm_usb", "usb3_enable=1");
-        else
-                eval("insmod", "bcm_usb", "usb3_enable=0");
-#else
+#if defined(RTCONFIG_HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
 	if(!nvram_get_int("usb_usb3")){
 		modprobe("xhci-plat-hcd");
 	}
@@ -363,7 +364,6 @@ void add_usb_host_module(void)
 		modprobe_r("xhci-plat-hcd");
 		modprobe_r(USB30_MOD);
 	}
-#endif
 #endif
 }
 

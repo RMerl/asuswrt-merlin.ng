@@ -1418,7 +1418,7 @@ function refreshVPNIP() {
 								<option value="2" <% nvram_match("vpn_client_tlsremote","2","selected"); %> >Common Name Prefix</option>
 								<option value="3" <% nvram_match("vpn_client_tlsremote","3","selected"); %> >Subject</option>
 							</select>
-							<label style="padding-left:3em;" id="client_cn_label">Value:</label><input type="text" maxlength="255" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="<% nvram_get("vpn_client_cn"); %>">
+							<label style="padding-left:3em;" id="client_cn_label">Value:</label><input type="text" maxlength="255" class="input_22_table" id="vpn_client_cn" name="vpn_client_cn" value="<% nvram_get("vpn_client_cn"); %>">
 						</td>
 					</tr>
 					<tr>

@@ -7,6 +7,9 @@ Asuswrt-Merlin 384/NG Changelog
   their future will depend on Asus's future support for these two.
 
   - UPDATED: openssl-1.1 to 1.1.1e.
+  - CHANGED: Security hardening in dropbear: dropped CBC and 3DES
+             ciphers, removed version disclosure from ident
+             string (themiron)
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: miniupnpd would reject private WAN IPs - changed that
@@ -16,6 +19,8 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Couldn't set http mode to http-only if you previously
            had WAN access enabled but have since switched to
            non-router mode.
+  - FIXED: Disks with a single quote in their name would fail to
+           properly list on various USB service pages.
 
 
 

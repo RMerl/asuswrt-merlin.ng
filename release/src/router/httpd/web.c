@@ -18160,7 +18160,7 @@ int ej_get_folder_tree(int eid, webs_t wp, int argc, char **argv){
 			else
 				websWrite(wp, ", ");
 
-			websWrite(wp, "'%s#%u#%u'", follow_disk->tag, disk_count, partition_count);
+			websWrite(wp, "\"%s#%u#%u\"", follow_disk->tag, disk_count, partition_count);
 		}
 
 		if (layer > 0 && disk_count == disk_order)
@@ -18263,7 +18263,7 @@ int ej_get_share_tree(int eid, webs_t wp, int argc, char **argv){
 			else
 				websWrite(wp, ", ");
 
-			websWrite(wp, "'%s#%u#%u'", follow_disk->tag, disk_count, partition_count);
+			websWrite(wp, "\"%s#%u#%u\"", follow_disk->tag, disk_count, partition_count);
 		}
 
 		if (layer > 0 && disk_count == disk_order)

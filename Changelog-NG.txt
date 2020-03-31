@@ -14,6 +14,7 @@ Asuswrt-Merlin 384/NG Changelog
   - NEW: Added ed25519 support in Dropbear (themiron)
   - UPDATED: Merged GPL 384_8253 and binary blobs 384_7977
              for RT-AX88U.
+  - UPDATED: Merged SDK + binary blobs 384_81352 for RT-AC86U
   - UPDATED: Tor to 0.4.2.6.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
@@ -23,6 +24,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: stubby to 0.3.0 (themiron)
   - UPDATED: amtm to 3.1.4 (thelonelycoder)
   - UPDATED: openssl-1.1 to 1.1.1e.
+  - UPDATED: Chart.js to 2.9.3
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
              they are connected to.
@@ -30,6 +32,9 @@ Asuswrt-Merlin 384/NG Changelog
              for tri-band models.
   - CHANGED: Added down/upload monitor to network status page, and
              removed useless RAM chart to free some space.
+  - CHANGED: Security hardening in dropbear dropped CBC and 3DES
+             ciphers, removed version disclosure from ident
+             string (themiron)
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: Router Security Assessment would fail to recognize WPA3
@@ -41,6 +46,8 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Couldn't set http mode to http-only if you previously
            had WAN access enabled but have since switched to
            non-router mode.
+  - FIXED: Disks with a single quote in their name would fail to
+           properly list on various USB service pages.
 
 
 384.13_5 (xx-xxx-xxxx)
@@ -48,7 +55,10 @@ Asuswrt-Merlin 384/NG Changelog
   These two models are now considered to be on limited support, and
   their future will depend on Asus's future support for these two.
 
-  - UPDATED: openssl to 1.1.1e.
+  - UPDATED: openssl-1.1 to 1.1.1e.
+  - CHANGED: Security hardening in dropbear: dropped CBC and 3DES
+             ciphers, removed version disclosure from ident
+             string (themiron)
   - FIXED: DNS server was unreachable when connecting to an OpenVPN
            server with Advertise DNS enabled, due to firewall rules.
   - FIXED: miniupnpd would reject private WAN IPs - changed that
@@ -58,6 +68,8 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Couldn't set http mode to http-only if you previously
            had WAN access enabled but have since switched to
            non-router mode.
+  - FIXED: Disks with a single quote in their name would fail to
+           properly list on various USB service pages.
 
 
 384.15 (8-Feb-2020)

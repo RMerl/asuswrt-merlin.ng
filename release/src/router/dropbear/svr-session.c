@@ -85,6 +85,9 @@ svr_session_cleanup(void) {
 	svr_pubkey_options_cleanup();
 
 	m_free(svr_ses.addrstring);
+#ifdef SECURITY_NOTIFY
+	m_free(svr_ses.hoststring);
+#endif
 	m_free(svr_ses.remotehost);
 	m_free(svr_ses.childpids);
 	svr_ses.childpidsize = 0;
@@ -111,7 +114,11 @@ void svr_session(int sock, int childpipe) {
 	len = strlen(host) + strlen(port) + 2;
 	svr_ses.addrstring = m_malloc(len);
 	snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
+#ifdef SECURITY_NOTIFY
+	svr_ses.hoststring = host;
+#else
 	m_free(host);
+#endif
 	m_free(port);
 
 	get_socket_address(ses.sock_in, NULL, NULL, 

@@ -7,7 +7,9 @@
 #define DROPBEAR_VERSION "2019.78"
 #endif
 
+#ifndef LOCAL_IDENT
 #define LOCAL_IDENT "SSH-2.0-dropbear_" DROPBEAR_VERSION
+#endif
 #define PROGNAME "dropbear"
 
 /* Spec recommends after one hour or 1 gigabyte of data. One hour
@@ -312,8 +314,12 @@ If you test it please contact the Dropbear author */
  * Currently server is enabled but client is disabled by default until there
  * is further compatibility testing */
 #ifdef __linux__
+#ifndef DROPBEAR_SERVER_TCP_FAST_OPEN
 #define DROPBEAR_SERVER_TCP_FAST_OPEN 1
+#endif
+#ifndef DROPBEAR_CLIENT_TCP_FAST_OPEN
 #define DROPBEAR_CLIENT_TCP_FAST_OPEN 0
+#endif
 #else
 #define DROPBEAR_SERVER_TCP_FAST_OPEN 0
 #define DROPBEAR_CLIENT_TCP_FAST_OPEN 0

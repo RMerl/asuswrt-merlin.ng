@@ -3358,7 +3358,7 @@ start_samba(void)
 #endif
 #endif
 
-#if defined(SMP)
+#if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 #if 0
 	if(cpu_num > 1)

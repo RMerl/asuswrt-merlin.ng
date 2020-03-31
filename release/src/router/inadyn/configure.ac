@@ -4,7 +4,6 @@ AC_INIT([In-a-dyn], [2.7], [https://github.com/troglobit/inadyn/issues],
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
 AM_SILENT_RULES([yes])
-AM_MAINTAINER_MODE
 
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADER([include/config.h])

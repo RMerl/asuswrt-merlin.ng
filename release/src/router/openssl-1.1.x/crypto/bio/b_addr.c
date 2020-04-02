@@ -18,6 +18,14 @@
 #include <openssl/buffer.h>
 #include "internal/thread_once.h"
 
+/* _BSD_SOURCE is not defined */
+#ifndef NI_MAXHOST
+#define NI_MAXHOST 1025
+#endif
+#ifndef NI_MAXSERV
+#define NI_MAXSERV 32
+#endif
+
 CRYPTO_RWLOCK *bio_lookup_lock;
 static CRYPTO_ONCE bio_lookup_init = CRYPTO_ONCE_STATIC_INIT;
 

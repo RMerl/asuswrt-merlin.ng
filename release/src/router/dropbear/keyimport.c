@@ -35,6 +35,15 @@
 #include "buffer.h"
 #include "dbutil.h"
 #include "ecc.h"
+#include "ssh.h"
+
+static const unsigned char OSSH_PKEY_BLOB[] =
+	"openssh-key-v1\0"			/* AUTH_MAGIC */
+	"\0\0\0\4none"				/* cipher name*/
+	"\0\0\0\4none"				/* kdf name */
+	"\0\0\0\0"				/* kdf */
+	"\0\0\0\1";				/* key num */
+#define OSSH_PKEY_BLOBLEN (sizeof(OSSH_PKEY_BLOB) - 1)
 
 #if DROPBEAR_ECDSA
 static const unsigned char OID_SEC256R1_BLOB[] = {0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07};
@@ -352,7 +361,7 @@ struct mpint_pos { void *start; int bytes; };
  * Code to read and write OpenSSH private keys.
  */
 
-enum { OSSH_DSA, OSSH_RSA, OSSH_EC };
+enum { OSSH_DSA, OSSH_RSA, OSSH_EC, OSSH_PKEY };
 struct openssh_key {
 	int type;
 	int encrypted;
@@ -364,11 +373,12 @@ struct openssh_key {
 static struct openssh_key *load_openssh_key(const char *filename)
 {
 	struct openssh_key *ret;
+	buffer *buf = NULL;
 	FILE *fp = NULL;
 	char buffer[256];
 	char *errmsg = NULL, *p = NULL;
 	int headers_done;
-	unsigned long len, outlen;
+	unsigned long len;
 
 	ret = (struct openssh_key*)m_malloc(sizeof(struct openssh_key));
 	ret->keyblob = NULL;
@@ -397,12 +407,15 @@ static struct openssh_key *load_openssh_key(const char *filename)
 		ret->type = OSSH_DSA;
 	else if (!strcmp(buffer, "-----BEGIN EC PRIVATE KEY-----\n"))
 		ret->type = OSSH_EC;
+	else if (!strcmp(buffer, "-----BEGIN OPENSSH PRIVATE KEY-----\n"))
+		ret->type = OSSH_PKEY;
 	else {
 		errmsg = "Unrecognised key type";
 		goto error;
 	}
 
 	headers_done = 0;
+	buf = buf_new(0);
 	while (1) {
 		if (!fgets(buffer, sizeof(buffer), fp)) {
 			errmsg = "Unexpected end of file";
@@ -448,20 +461,31 @@ static struct openssh_key *load_openssh_key(const char *filename)
 		} else {
 			headers_done = 1;
 			len = strlen(buffer);
-			outlen = len*4/3;
-			if (ret->keyblob_len + outlen > ret->keyblob_size) {
-				ret->keyblob_size = ret->keyblob_len + outlen + 256;
-				ret->keyblob = (unsigned char*)m_realloc(ret->keyblob,
-						ret->keyblob_size);
-			}
-			outlen = ret->keyblob_size - ret->keyblob_len;
-			if (base64_decode((const unsigned char *)buffer, len,
-						ret->keyblob + ret->keyblob_len, &outlen) != CRYPT_OK){
-				errmsg = "Error decoding base64";
-				goto error;
-			}
-			ret->keyblob_len += outlen;
+			buf = buf_resize(buf, buf->size + len);
+			buf_putbytes(buf, buffer, len);
 		}
+	}
+
+	if (buf && buf->len) {
+		ret->keyblob_size = ret->keyblob_len + buf->len*4/3 + 256;
+		ret->keyblob = (unsigned char*)m_realloc(ret->keyblob, ret->keyblob_size);
+		len = ret->keyblob_size;
+		if (base64_decode((const unsigned char *)buf->data, buf->len,
+					ret->keyblob, &len) != CRYPT_OK){
+			errmsg = "Error decoding base64";
+			goto error;
+		}
+		ret->keyblob_len = len;
+	}
+
+	if (ret->type == OSSH_PKEY) {
+		if (ret->keyblob_len < OSSH_PKEY_BLOBLEN ||
+				memcmp(ret->keyblob, OSSH_PKEY_BLOB, OSSH_PKEY_BLOBLEN)) {
+			errmsg = "Error decoding OpenSSH key";
+			goto error;
+		}
+		ret->keyblob_len -= OSSH_PKEY_BLOBLEN;
+		memmove(ret->keyblob, ret->keyblob + OSSH_PKEY_BLOBLEN, ret->keyblob_len);
 	}
 
 	if (ret->keyblob_len == 0 || !ret->keyblob) {
@@ -474,10 +498,18 @@ static struct openssh_key *load_openssh_key(const char *filename)
 		goto error;
 	}
 
+	if (buf) {
+		buf_burn(buf);
+		buf_free(buf);
+	}
 	m_burn(buffer, sizeof(buffer));
 	return ret;
 
 error:
+	if (buf) {
+		buf_burn(buf);
+		buf_free(buf);
+	}
 	m_burn(buffer, sizeof(buffer));
 	if (ret) {
 		if (ret->keyblob) {
@@ -567,6 +599,57 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 		memset(&md5c, 0, sizeof(md5c));
 		memset(keybuf, 0, sizeof(keybuf));
 #endif 
+	}
+
+	/*
+	 * Now we have a decrypted key blob, which contains OpenSSH
+	 * encoded private key. We must now untangle the OpenSSH format.
+	 */
+	if (key->type == OSSH_PKEY) {
+		blobbuf = buf_new(key->keyblob_len);
+		buf_putbytes(blobbuf, key->keyblob, key->keyblob_len);
+		buf_setpos(blobbuf, 0);
+
+		/* limit length of private key blob */
+		len = buf_getint(blobbuf);
+		buf_setlen(blobbuf, blobbuf->pos + len);
+
+		type = DROPBEAR_SIGNKEY_ANY;
+		if (buf_get_pub_key(blobbuf, retkey, &type)
+				!= DROPBEAR_SUCCESS) {
+			errmsg = "Error parsing OpenSSH key";
+			goto ossh_error;
+		}
+
+		/* restore full length */
+		buf_setlen(blobbuf, key->keyblob_len);
+
+		if (type != DROPBEAR_SIGNKEY_NONE) {
+			retkey->type = type;
+			/* limit length of private key blob */
+			len = buf_getint(blobbuf);
+			buf_setlen(blobbuf, blobbuf->pos + len);
+#if DROPBEAR_ED25519
+			if (type == DROPBEAR_SIGNKEY_ED25519) {
+				buf_incrpos(blobbuf, 8);
+				buf_eatstring(blobbuf);
+				buf_eatstring(blobbuf);
+				buf_incrpos(blobbuf, -SSH_SIGNKEY_ED25519_LEN-4);
+				if (buf_get_ed25519_priv_key(blobbuf, retkey->ed25519key)
+						== DROPBEAR_SUCCESS) {
+					errmsg = NULL;
+					retval = retkey;
+					goto error;
+				}
+			}
+#endif
+		}
+
+		errmsg = "Unsupported OpenSSH key type";
+		ossh_error:
+		sign_key_free(retkey);
+		retkey = NULL;
+		goto error;
 	}
 
 	/*
@@ -1126,6 +1209,51 @@ static int openssh_write(const char *filename, sign_key *key,
 
 		header = "-----BEGIN EC PRIVATE KEY-----\n";
 		footer = "-----END EC PRIVATE KEY-----\n";
+	}
+#endif
+
+#if DROPBEAR_ED25519
+	if (key->type == DROPBEAR_SIGNKEY_ED25519) {
+		buffer *buf = buf_new(300);
+		keyblob = buf_new(100);
+		extrablob = buf_new(200);
+
+		/* private key blob w/o header */
+		buf_put_priv_key(keyblob, key, key->type);
+		buf_setpos(keyblob, 0);
+		buf_incrpos(keyblob, buf_getint(keyblob));
+		len = buf_getint(keyblob);
+
+		/* header */
+		buf_putbytes(buf, OSSH_PKEY_BLOB, OSSH_PKEY_BLOBLEN);
+
+		/* public key */
+		buf_put_pub_key(buf, key, key->type);
+
+		/* private key */
+		buf_incrwritepos(extrablob, 4);
+		buf_put_pub_key(extrablob, key, key->type);
+		buf_putstring(extrablob, buf_getptr(keyblob, len), len);
+		/* comment */
+		buf_putstring(extrablob, "", 0);
+		/* padding to cipher block length */
+		len = (extrablob->len+8) & ~7;
+		for (i = 1; len - extrablob->len > 0; i++)
+			buf_putbyte(extrablob, i);
+		buf_setpos(extrablob, 0);
+		buf_putbytes(extrablob, "\0\0\0\0\0\0\0\0", 8);
+		buf_putbufstring(buf, extrablob);
+
+		outlen = len = pos = buf->len;
+		outblob = (unsigned char*)m_malloc(outlen);
+		memcpy(outblob, buf->data, buf->len);
+
+		buf_burn(buf);
+		buf_free(buf);
+		buf = NULL;
+
+		header = "-----BEGIN OPENSSH PRIVATE KEY-----\n";
+		footer = "-----END OPENSSH PRIVATE KEY-----\n";
 	}
 #endif
 

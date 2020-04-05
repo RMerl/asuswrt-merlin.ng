@@ -1,12 +1,13 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.13_5 (xx-xxx-xxxx)
+384.13_6 (5-Apr-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
   These two models are now considered to be on limited support, and
   their future will depend on Asus's future support for these two.
 
-  - UPDATED: openssl-1.1 to 1.1.1e.
+  - UPDATED: openssl-1.1 to 1.1.1f (themiron, merlin)
+  - UPDATED: amtm to 3.1.6 (thelonelycoder)
   - CHANGED: Security hardening in dropbear: dropped CBC and 3DES
              ciphers, removed version disclosure from ident
              string (themiron)
@@ -21,7 +22,7 @@ Asuswrt-Merlin 384/NG Changelog
            non-router mode.
   - FIXED: Disks with a single quote in their name would fail to
            properly list on various USB service pages.
-
+  - FIXED: CVE-2020-8597.
 
 
 384.13_4 (8-Feb-2020)

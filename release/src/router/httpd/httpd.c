@@ -2049,10 +2049,11 @@ int main(int argc, char **argv)
 
 	/* Loop forever handling requests */
 	for (;;) {
-		int max_fd, count;
+		const static struct timeval timeout = { .tv_sec = MAX_CONN_TIMEOUT, .tv_usec = 0 };
 		struct timeval tv;
 		fd_set rfds;
 		conn_item_t *item, *next;
+		int max_fd, count;
 
 		memcpy(&rfds, &active_rfds, sizeof(rfds));
 		max_fd = -1;
@@ -2068,8 +2069,7 @@ int main(int argc, char **argv)
 			max_fd = max(item->fd, max_fd);
 
 		/* Wait for new connection or incoming request */
-		tv.tv_sec = MAX_CONN_TIMEOUT;
-		tv.tv_usec = 0;
+		tv = timeout;
 		while ((count = select(max_fd + 1, &rfds, NULL, NULL, &tv)) < 0 && errno == EINTR)
 			continue;
 		if (count < 0) {
@@ -2100,6 +2100,10 @@ int main(int argc, char **argv)
 				free(item);
 				continue;
 			}
+
+			/* Set receive/send timeouts */
+			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+			setsockopt(item->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
 			/* Set the KEEPALIVE option to cull dead connections */
 			setsockopt(item->fd, SOL_SOCKET, SO_KEEPALIVE, &int_1, sizeof(int_1));

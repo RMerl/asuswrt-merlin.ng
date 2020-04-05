@@ -1002,7 +1002,7 @@ int dnssec_validate_ds(time_t now, struct dns_header *header, size_t plen, char 
       
       cache_end_insert();  
       
-      log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, "no DS");
+      log_query(F_NOEXTRA | F_UPSTREAM, name, NULL, nons ? "no DS/cut" : "no DS");
     }
       
   return STAT_OK;

@@ -38,7 +38,7 @@ static struct ubus_object_type ubus_object_type =
   UBUS_OBJECT_TYPE("dnsmasq", ubus_object_methods);
 
 static struct ubus_object ubus_object = {
-  .name = "dnsmasq",
+  .name = NULL,
   .type = &ubus_object_type,
   .methods = ubus_object_methods,
   .n_methods = ARRAY_SIZE(ubus_object_methods),
@@ -94,6 +94,7 @@ void ubus_init()
       return;
     }
 
+  ubus_object.name = daemon->ubus_name;
   ret = ubus_add_object(ubus, &ubus_object);
   if (ret)
     {

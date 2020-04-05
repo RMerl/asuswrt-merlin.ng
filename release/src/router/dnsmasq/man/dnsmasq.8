@@ -244,7 +244,7 @@ specified interface. The <domain> is the "glue record". It should
 resolve in the global DNS to an A and/or AAAA record which points to
 the address dnsmasq is listening on. When an interface is specified,
 it may be qualified with "/4" or "/6" to specify only the IPv4 or IPv6
-addresses associated with the interface. Since any defined authoritative zones are also available as part of the normal recusive DNS service supplied by dnsmasq, it can make sense to have an --auth-server declaration with no interfaces or address, but simply specifying the glue record. 
+addresses associated with the interface. Since any defined authoritative zones are also available as part of the normal recusive DNS service supplied by dnsmasq, it can make sense to have an --auth-server declaration with no interfaces or address, but simply specifying the primary external nameserver.
 .TP
 .B --local-service
 Accept DNS queries only from hosts whose address is on a local subnet,
@@ -366,10 +366,13 @@ been built with DBus support. If the service name is given, dnsmasq
 provides service at that name, rather than the default which is 
 .B uk.org.thekelleys.dnsmasq
 .TP 
-.B --enable-ubus
+.B --enable-ubus[=<service-name>]
 Enable dnsmasq UBus interface. It sends notifications via UBus on
 DHCPACK and DHCPRELEASE events. Furthermore it offers metrics.
-Requires that dnsmasq has been built with UBus support.
+Requires that dnsmasq has been built with UBus support. If the service
+name is given, dnsmasq provides service at that namespace, rather than
+the default which is
+.B dnsmasq
 .TP
 .B \-o, --strict-order
 By default, dnsmasq will send queries to any of the upstream servers

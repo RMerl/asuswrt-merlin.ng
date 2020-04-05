@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.16 (xx-xx-xxxx)
+384.16 (5-Apr-2020)
   - NEW: Added support for the RT-AX58U and RT-AX3000 (same
          firmware), based on GPL 384_8253 + binary blobs 384_8137.
   - NEW: Added support for the RT-AX56U, based on GPL + binary
@@ -12,9 +12,9 @@ Asuswrt-Merlin 384/NG Changelog
           coming months.
 
   - NEW: Added ed25519 support in Dropbear (themiron)
-  - UPDATED: Merged GPL 384_8253 and binary blobs 384_7977
-             for RT-AX88U.
-  - UPDATED: Merged SDK + binary blobs 384_81352 for RT-AC86U
+  - UPDATED: Merged GPL 384_8253 for AX models.
+  - UPDATED: Merged SDK + binary blobs 384_7977 for RT-AX88U.
+  - UPDATED: Merged SDK + binary blobs 384_81352 for RT-AC86U.
   - UPDATED: Tor to 0.4.2.6.
   - UPDATED: curl to 7.68.0.
   - UPDATED: nano to 4.8.
@@ -22,8 +22,8 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: inadyn to 2.7 (themiron, merlin)
   - UPDATED: getdns to 1.6.0 (themiron)
   - UPDATED: stubby to 0.3.0 (themiron)
-  - UPDATED: amtm to 3.1.4 (thelonelycoder)
-  - UPDATED: openssl-1.1 to 1.1.1e.
+  - UPDATED: amtm to 3.1.6 (thelonelycoder)
+  - UPDATED: openssl-1.1 to 1.1.1f (themiron, merlin)
   - UPDATED: Chart.js to 2.9.3
   - CHANGED: Wireless Log page will now regroup Guest Network
              clients together and identify which guest instance
@@ -48,14 +48,16 @@ Asuswrt-Merlin 384/NG Changelog
            non-router mode.
   - FIXED: Disks with a single quote in their name would fail to
            properly list on various USB service pages.
+  - FIXED: CVE-2020-8597 security issue.
 
 
-384.13_5 (xx-xxx-xxxx)
+384.13_6 (5-Apr-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
   These two models are now considered to be on limited support, and
   their future will depend on Asus's future support for these two.
 
-  - UPDATED: openssl-1.1 to 1.1.1e.
+  - UPDATED: openssl-1.1 to 1.1.1f (themiron, merlin)
+  - UPDATED: amtm to 3.1.6 (thelonelycoder)
   - CHANGED: Security hardening in dropbear: dropped CBC and 3DES
              ciphers, removed version disclosure from ident
              string (themiron)
@@ -70,6 +72,7 @@ Asuswrt-Merlin 384/NG Changelog
            non-router mode.
   - FIXED: Disks with a single quote in their name would fail to
            properly list on various USB service pages.
+  - FIXED: CVE-2020-8597.
 
 
 384.15 (8-Feb-2020)

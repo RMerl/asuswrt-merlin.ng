@@ -125,6 +125,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DROPBEAR_DEFAULT_RSA_SIZE 2048
 /* DSS is always 1024 */
 /* ECDSA defaults to largest size configured, usually 521 */
+/* Ed25519 is always 256 */
 
 /* Add runtime flag "-R" to generate hostkeys as-needed when the first 
    connection using that key type occurs.

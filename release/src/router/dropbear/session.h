@@ -38,6 +38,7 @@
 #include "chansession.h"
 #include "dbutil.h"
 #include "netio.h"
+#include "chachapoly.h"
 
 void common_session_init(int sock_in, int sock_out);
 void session_loop(void(*loophandler)(void)) ATTRIB_NORETURN;
@@ -77,6 +78,9 @@ struct key_context_directional {
 		symmetric_CBC cbc;
 #if DROPBEAR_ENABLE_CTR_MODE
 		symmetric_CTR ctr;
+#endif
+#if DROPBEAR_CHACHA20POLY1305
+		dropbear_chachapoly_state chachapoly;
 #endif
 	} cipher_state;
 	unsigned char mackey[MAX_MAC_LEN];

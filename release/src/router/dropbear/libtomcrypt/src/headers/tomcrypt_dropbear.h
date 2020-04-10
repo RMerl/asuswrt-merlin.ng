@@ -27,7 +27,7 @@
 #define LTC_DES
 #endif
 
-#if DROPBEAR_ENABLE_CTR_MODE
+#if DROPBEAR_ENABLE_CBC_MODE
 #define LTC_CBC_MODE
 #endif
 

@@ -75,7 +75,9 @@ struct key_context_directional {
 #endif
 	/* actual keys */
 	union {
+#if DROPBEAR_ENABLE_CBC_MODE
 		symmetric_CBC cbc;
+#endif
 #if DROPBEAR_ENABLE_CTR_MODE
 		symmetric_CTR ctr;
 #endif

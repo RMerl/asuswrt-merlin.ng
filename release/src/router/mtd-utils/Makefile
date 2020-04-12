@@ -38,9 +38,9 @@ SCRIPTS = flash_eraseall
 ifeq ($(ALPINE)$(LANTIQ),y)
 # BINS =
 else
-BINS =
+BINS = flash_erase nanddump nandwrite nandtest
 endif
-SCRIPTS =
+SCRIPTS = flash_eraseall
 
 ifeq ($(UBIFS),y)
 BINS += mkfs.ubifs/mkfs.ubifs
@@ -53,6 +53,9 @@ ifeq ($(MTK_NAND),y)
 UBI_BINS += ubiattach ubimkvol
 endif
 ifeq ($(ALPINE)$(LANTIQ),y)
+UBI_BINS += ubiformat ubiattach ubimkvol ubidetach ubiupdatevol ubirmvol
+endif
+ifeq ($(RTK3),y))
 UBI_BINS += ubiformat ubiattach ubimkvol ubidetach ubiupdatevol ubirmvol
 endif
 BINS += $(addprefix ubi-utils/,$(UBI_BINS))

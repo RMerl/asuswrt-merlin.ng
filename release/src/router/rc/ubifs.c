@@ -33,6 +33,14 @@
 #define NUM_OH_LEB	24		/* for ubifs overhead */
 #endif
 
+#ifdef RTK3
+#define JFFS2_MTD_NAME	"brcmnand"
+#define UBI_DEV_NUM	0
+#define UBI_DEV_PATH	"/dev/ubi0"
+#define LEBS		0x1F000		/* 124 KiB */
+#define NUM_OH_LEB	24		/* for ubifs overhead */
+#endif
+
 static void error(const char *message)
 {
 	char s[512];
@@ -124,7 +132,7 @@ void start_ubifs(void)
 #if defined(RTCONFIG_TEST_BOARDDATA_FILE)
 	int r;
 #endif
-#ifdef RTCONFIG_MTK_NAND
+#if defined(RTCONFIG_MTK_NAND) || defined(RTK3)
 	int mtd_part = 0, mtd_size = 0;
 	char dev_mtd[] = "/dev/mtdXXX";
 #endif
@@ -142,7 +150,7 @@ void start_ubifs(void)
 		return;
 #endif
 
-#ifdef RTCONFIG_MTK_NAND
+#if defined(RTCONFIG_MTK_NAND) || defined(RTK3)
 	if (!mtd_getinfo(JFFS2_MTD_NAME, &mtd_part, &mtd_size)) return;
 
 	_dprintf("*** ubifs: %s (%d, %d)\n", UBIFS_VOL_NAME, mtd_part, mtd_size);
@@ -151,19 +159,27 @@ void start_ubifs(void)
 		/* attach ubi */
 		snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 		_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
-		eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+		//eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+		doSystem("ubiattach -p %s -d %d", dev_mtd, UBI_DEV_NUM);
 	}
 
 	if (ubi_getinfo(UBIFS_VOL_NAME, &dev, &part, &size) == 1) {	//ubi volume not found, format it and create volume
 		unsigned int num_leb = 0, num_avail_leb = 0, vol_size = 0;
-		
+
 		_dprintf("*** ubifs: ubi volume not found\n");
 
+#ifdef RTK3
+		/* format ubi */
+		snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
+		_dprintf("*** ubifs: format (%s)\n", dev_mtd);
+		doSystem("ubiformat -y %s", dev_mtd);
+#else
 		/* mtd erase on UBIFS_VOL_NAME first */
 		if (mtd_erase(JFFS2_MTD_NAME)) {
 			error("formatting");
 			return;
 		}
+#endif
 
 		/* compute jffs2's volume size */
 		num_leb = mtd_size >> 17;			/* compute number of leb divde by 128KiB */
@@ -178,11 +194,13 @@ void start_ubifs(void)
 			/* attach ubi */
 			snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 			_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
-			eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+			//eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+			doSystem("ubiattach -p %s -d %d", dev_mtd, UBI_DEV_NUM);
 
 			/* make ubi volume */
 			_dprintf("*** ubifs: create jffs2 volume\n");
-			eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
+			//eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
+			doSystem("ubimkvol %s -s %s -N %s", UBI_DEV_PATH, vol_size_s, UBIFS_VOL_NAME);
 		}
 	}
 #endif
@@ -229,7 +247,7 @@ void start_ubifs(void)
 			error("unlocking");
 			return;
 		}
-#ifdef RTCONFIG_MTK_NAND
+#if defined(RTCONFIG_MTK_NAND) || defined(RTK3)
 		nvram_unset("ubifs_clean_fs");
 		nvram_commit_x();
 #endif

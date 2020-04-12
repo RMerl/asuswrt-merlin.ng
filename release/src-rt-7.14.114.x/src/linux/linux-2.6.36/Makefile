@@ -564,6 +564,10 @@ endif
 
 include $(SRCBASE)/.config
 MODEL = $(subst -,,$(BUILD_NAME))
+ifeq ($(MODEL),RTK3)
+KBUILD_CFLAGS += -DRTK3
+MODEL:=RTAC3100
+endif
 KBUILD_CFLAGS   += -D$(MODEL)
 
 

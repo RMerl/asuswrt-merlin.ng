@@ -55,6 +55,11 @@ TARGET_MODEL = $(subst -,_,$(BUILD_NAME))
 else
 TARGET_MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
+ifeq ($(TARGET_MODEL),RTK3)
+export RTK3=y
+CFLAGS += -DRTK3
+TARGET_MODEL:=RTAC3100
+endif
 CFLAGS  += -D$(TARGET_MODEL)
 
 # for QCA toolchain compile issue, xxxx-ld has no pthead and dl in openwrt-toolchain

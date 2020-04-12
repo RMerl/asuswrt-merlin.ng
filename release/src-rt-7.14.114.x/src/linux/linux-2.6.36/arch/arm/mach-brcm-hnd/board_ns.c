@@ -177,7 +177,7 @@ void __init board_init_irq(void)
 {
 early_printk("board_init_irq\n");
 	soc_init_irq();
-	
+
 	/* serial_setup(sih); */
 }
 
@@ -296,6 +296,11 @@ static int __init rootfs_mtdblock(void)
 	int bootdev;
 	int knldev;
 	int block = 0;
+#ifdef RTK3
+	const int num = 4; // mtd4 "linux"
+#else
+	const int num = 3; // mtd3 "linux"
+#endif
 #ifdef CONFIG_FAILSAFE_UPGRADE
 	char *img_boot = nvram_get(BOOTPARTITION);
 #endif
@@ -313,9 +318,9 @@ static int __init rootfs_mtdblock(void)
 		if (img_boot && simple_strtol(img_boot, NULL, 10))
 			return 5;
 		else
-			return 3;
+			return num;
 #else
-		return 3;
+		return num;
 #endif
 	}
 
@@ -1032,6 +1037,23 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 		offset = bcm947xx_nflash_parts[nparts].size;
 		nparts++;
 
+#ifdef RTK3
+		/* Setup NVRAM MTD partition */
+		bcm947xx_nflash_parts[nparts].name = "nvram";
+		bcm947xx_nflash_parts[nparts].size = 0x100000;
+		bcm947xx_nflash_parts[nparts].offset = offset;
+
+		offset += bcm947xx_nflash_parts[nparts].size;
+		nparts++;
+
+		/* Setup phicomm partition */
+		bcm947xx_nflash_parts[nparts].name = "phicomm";
+		bcm947xx_nflash_parts[nparts].size = nfl_boot_size(nfl) - offset;
+		bcm947xx_nflash_parts[nparts].offset = offset;
+
+		offset = nfl_boot_size(nfl);
+		nparts++;
+#else
 		/* Setup NVRAM MTD partition */
 		bcm947xx_nflash_parts[nparts].name = "nvram";
 		bcm947xx_nflash_parts[nparts].size = nfl_boot_size(nfl) - offset;
@@ -1039,6 +1061,7 @@ init_nflash_mtd_partitions(hndnand_t *nfl, struct mtd_info *mtd, size_t size)
 
 		offset = nfl_boot_size(nfl);
 		nparts++;
+#endif
 	}
 
 	if (knldev == SOC_KNLDEV_NANDFLASH) {

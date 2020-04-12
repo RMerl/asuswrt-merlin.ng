@@ -2,11 +2,11 @@
  * Broadcom chipcommon NAND flash interface
  *
  * Copyright (C) 2015, Broadcom Corporation. All Rights Reserved.
- * 
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -35,7 +35,12 @@
 #define NFL_SECTOR_SIZE			512
 #define NFL_TABLE_END			0xffffffff
 
+//Add Phicomm K3 boot address
+#ifdef RTK3
+#define NFL_BOOT_SIZE			0x400000
+#else
 #define NFL_BOOT_SIZE			0x200000
+#endif
 /* ASUS LINUX MTD SIZE */
 #if CONFIG_LINUX_MTD == 32
  #define NFL_BOOT_OS_SIZE                      0x2000000
@@ -49,7 +54,12 @@
 #define NFL_BBT_SIZE			0x100000
 
 #ifdef __ARM_ARCH_7A__
+//Add Phicomm K3 boot address
+#ifdef RTK3
+#define NFL_BIG_BOOT_SIZE		0x400000	/* 4 MB */
+#else
 #define NFL_BIG_BOOT_SIZE		0x800000	/* 8 MB */
+#endif
 #define NFL_BIG_BOOT_OS_SIZE		0x2600000	/* 38 MB */
 #define NFL_1M_BLOCK_SIZE		1024		/* KB */
 

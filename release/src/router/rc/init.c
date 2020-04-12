@@ -15880,6 +15880,7 @@ int init_nvram(void)
 #endif
 		/* gpio */
 		/* HW reset, 2 | LOW */
+#ifndef RTK3
 		nvram_set_int("led_pwr_gpio", 3|GPIO_ACTIVE_LOW);
 #ifdef RTCONFIG_LED_BTN
 		nvram_set_int("btn_led_gpio", 4|GPIO_ACTIVE_LOW);
@@ -15910,6 +15911,11 @@ int init_nvram(void)
 		nvram_set_int("led_lan_gpio", 21|GPIO_ACTIVE_LOW);	/* FAN CTRL: reserved */
 		/* PA 5V/3.3V switch, 22 */
 		/* SDIO_EN_1P8, 23 | HIGH */
+#else
+		nvram_set_int("btn_rst_gpio", 17|GPIO_ACTIVE_LOW);
+		nvram_set_int("pwr_usb2_gpio", 18|GPIO_ACTIVE_LOW);
+		nvram_set_int("pwr_usb_gpio", 21|GPIO_ACTIVE_LOW);
+#endif
 
 #ifdef RTCONFIG_XHCIMODE
 		nvram_set("xhci_ports", "1-1");
@@ -15930,7 +15936,11 @@ int init_nvram(void)
 
 		if (!nvram_get("ct_max"))
 			nvram_set("ct_max", "300000");
+#ifdef RTK3
+		add_rc_support("mssid 2.4G 5G usbX1");
+#else
 		add_rc_support("mssid 2.4G 5G usbX2");
+#endif
 #ifdef RTCONFIG_MERLINUPDATE
 		add_rc_support("update");
 #else

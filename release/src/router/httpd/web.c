@@ -30605,7 +30605,11 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 	char speedstr[2];
 #endif
 
+#ifdef RTK3
+	fp = popen("rc Get_PhyStatus", "r");
+#else
 	fp = popen("ATE Get_WanLanStatus", "r");
+#endif
 	if (fp == NULL)
 		goto error;
 

@@ -37,6 +37,10 @@
 #include <sys/reboot.h>
 #endif
 
+#ifdef RTK3
+#include "k3.h"
+#endif
+
 #ifdef RTCONFIG_COMFW
 #include <comfw.h>
 #endif
@@ -457,12 +461,24 @@ static int rctest_main(int argc, char *argv[])
 		setup_passwd();
 	}
 #endif
+#ifdef RTK3
+	else if (strcmp(argv[1], "GetPhyStatus")==0) {
+		printf("Get Phy status:%d\n", GetPhyStatusk3(0));
+	}
+	else if (strcmp(argv[1], "Get_PhyStatus")==0) {
+		GetPhyStatusk3(1);
+	}
+	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
+		printf("Get Ext Phy status:%d\n", GetPhyStatusk3(atoi(argv[2])));
+	}
+#else
 	else if (strcmp(argv[1], "GetPhyStatus")==0) {
 		printf("Get Phy status:%d\n", GetPhyStatus(0, NULL));
 	}
 	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
 		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2]), NULL));
 	}
+#endif
 #ifdef CONFIG_BCMWL5
 	else if(strcmp(argv[1], "frdwa")==0){
 		printf("frdwa\n");

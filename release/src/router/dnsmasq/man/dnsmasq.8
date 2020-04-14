@@ -1,4 +1,4 @@
-.TH DNSMASQ 8
+.TH DNSMASQ 8 2020-04-05
 .SH NAME
 dnsmasq \- A lightweight DHCP and caching DNS server.
 .SH SYNOPSIS
@@ -909,7 +909,7 @@ then the address can be simply ::
 The optional 
 .B set:<tag> 
 sets an alphanumeric label which marks this network so that
-dhcp options may be specified on a per-network basis. 
+DHCP options may be specified on a per-network basis.
 When it is prefixed with 'tag:' instead, then its meaning changes from setting
 a tag to matching it. Only one tag may be set, but more than one tag
 may be matched.
@@ -1017,7 +1017,7 @@ may contain an IPv4 address or one or more IPv6 addresses, or both. IPv6 address
 .B --dhcp-host=laptop,[1234::56]
 IPv6 addresses may contain only the host-identifier part:
 .B --dhcp-host=laptop,[::56]
-in which case they act as wildcards in constructed dhcp ranges, with
+in which case they act as wildcards in constructed DHCP ranges, with
 the appropriate network part inserted. For IPv6, an address may include a prefix length:
 .B --dhcp-host=laptop,[1234:50/126]
 which (in this case) specifies four addresses, 1234::50 to 1234::53. This (an the ability
@@ -1354,7 +1354,7 @@ vendor-identifying vendor classes for the specified enterprise. Please
 see RFC 3925 for more details of these rare and interesting beasts.
 .TP
 .B --dhcp-name-match=set:<tag>,<name>[*]
-Set the tag if the given name is supplied by a dhcp client. There may be a single trailing wildcard *, which has the usual meaning. Combined with dhcp-ignore or dhcp-ignore-names this gives the ability to ignore certain clients by name, or disallow certain hostnames from being claimed by a client.
+Set the tag if the given name is supplied by a DHCP client. There may be a single trailing wildcard *, which has the usual meaning. Combined with dhcp-ignore or dhcp-ignore-names this gives the ability to ignore certain clients by name, or disallow certain hostnames from being claimed by a client.
 .TP
 .B --tag-if=set:<tag>[,set:<tag>[,tag:<tag>[,tag:<tag>]]]
 Perform boolean operations on tags. Any tag appearing as set:<tag> is set if
@@ -1751,7 +1751,7 @@ option also forces the leasechange script to be called on changes
 to the client-id and lease length and expiry time.
 .TP
 .B --script-on-renewal
-Call the dhcp script when the lease expiry time changes, for instance when the
+Call the DHCP script when the lease expiry time changes, for instance when the
 lease is renewed.
 .TP
 .B --bridge-interface=<interface>,<alias>[,<alias>]
@@ -1767,25 +1767,34 @@ It is permissible to add more than one alias using more than one \fB--bridge-int
 \fB--bridge-interface=int1,alias1,alias2\fP is exactly equivalent to
 \fB--bridge-interface=int1,alias1 --bridge-interface=int1,alias2\fP
 .TP
-.B --shared-network=<interface>|<addr>,<addr>
-The DHCP server determines which dhcp ranges are useable for allocating and
+.B --shared-network=<interface>,<addr>
+.PD 0
+.TP
+.B --shared-network=<addr>,<addr>
+.PD 1v
+The DHCP server determines which DHCP ranges are useable for allocating an
 address to a DHCP client based on the network from which the DHCP request arrives,
 and the IP configuration of the server's interface on that network. The shared-network
-option extends the available subnets (and therefore dhcp ranges) beyond the
-subnets configured on the arrival interface. The first argument is either the
-name of an interface or an address which is configured on a local interface, and the
+option extends the available subnets (and therefore DHCP ranges) beyond the
+subnets configured on the arrival interface.
+
+The first argument is either the
+name of an interface, or an address that is configured on a local interface, and the
 second argument is an address which defines another subnet on which addresses can be allocated.
-To be useful, there must be suitable dhcp-range which allows address allocation on this subnet
-and this dhcp-range MUST include the netmask. Use shared-network also needs extra
-consideration of routing. Dnsmasq doesn't have the usual information which it uses to
+
+To be useful, there must be a suitable dhcp-range which allows address allocation on this subnet
+and this dhcp-range MUST include the netmask.
+
+Using shared-network also needs extra
+consideration of routing. Dnsmasq does not have the usual information that it uses to
 determine the default route, so the default route option (or other routing) MUST be
-manually configured. The client must have a route to the server: if the two-address form
-of shared-network is used, this will be to the first specified address. If the interface,address
+configured manually. The client must have a route to the server: if the two-address form
+of shared-network is used, this needs to be to the first specified address. If the interface,address
 form is used, there must be a route to all of the addresses configured on the interface.
 
 The two-address form of shared-network is also usable with a DHCP relay: the first address
 is the address of the relay and the second, as before, specifies an extra subnet which
-may be allocated.
+addresses may be allocated from.
 
 .TP
 .B \-s, --domain=<domain>[,<address range>[,local]]
@@ -1795,7 +1804,7 @@ firstly it causes the DHCP server to return the domain to any hosts
 which request it, and secondly it sets the domain which it is legal
 for DHCP-configured hosts to claim. The intention is to constrain
 hostnames so that an untrusted host on the LAN cannot advertise 
-its name via dhcp as e.g. "microsoft.com" and capture traffic not 
+its name via DHCP as e.g. "microsoft.com" and capture traffic not 
 meant for it. If no domain suffix is specified, then any DHCP
 hostname with a domain part (ie with a period) will be disallowed 
 and logged. If suffix is specified, then hostnames with a domain 
@@ -1886,7 +1895,7 @@ The mtu: parameter may be an arbitrary interface name, in which case the MTU val
 for (eg) advertising the MTU of a WAN interface on the other interfaces of a router.
 .TP
 .B --dhcp-reply-delay=[tag:<tag>,]<integer>
-Delays sending DHCPOFFER and proxydhcp replies for at least the specified number of seconds.
+Delays sending DHCPOFFER and PROXYDHCP replies for at least the specified number of seconds.
 This can be used as workaround for bugs in PXE boot firmware that does not function properly when
 receiving an instant reply.
 This option takes into account the time already spent waiting (e.g. performing ping check) if any.
@@ -2022,7 +2031,7 @@ and
 .I /etc/ethers 
 and any file given by \fB--dhcp-hostsfile\fP, \fB--dhcp-hostsdir\fP, \fB--dhcp-optsfile\fP,
 \fB--dhcp-optsdir\fP, \fB--addn-hosts\fP or \fB--hostsdir\fP.
-The dhcp lease change script is called for all
+The DHCP lease change script is called for all
 existing DHCP leases. If 
 .B
 --no-poll
@@ -2200,7 +2209,6 @@ as is the tag "bootp", allowing some control over the options returned to
 different classes of hosts.
 
 .SH AUTHORITATIVE CONFIGURATION
-.PP 
 Configuring dnsmasq to act as an authoritative DNS server is
 complicated by the fact that it involves configuration of external DNS
 servers to provide delegation. We will walk through three scenarios of
@@ -2370,7 +2378,6 @@ used, and must match the zone's domain.
 
 
 .SH EXIT CODES
-.PP
 0 - Dnsmasq successfully forked into the background, or terminated
 normally if backgrounding is not enabled.
 .PP

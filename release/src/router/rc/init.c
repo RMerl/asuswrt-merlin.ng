@@ -78,6 +78,10 @@
 #include <sys/statfs.h>
 #endif
 
+#ifdef RTK3
+#include "k3.h"
+#endif
+
 #define SHELL "/bin/sh"
 #define LOGIN "/bin/login"
 
@@ -15717,6 +15721,9 @@ int init_nvram(void)
 #endif
 	case MODEL_RTAC88U:
 	case MODEL_RTAC3100:
+#ifdef RTK3
+		k3_init();
+#endif
 		ldo_patch();
 
 		set_tcode_misc();

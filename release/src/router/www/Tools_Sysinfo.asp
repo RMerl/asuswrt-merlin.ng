@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - System Information</title>
+<title><#Web_Title#> - <#System_Information#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="/js/table/table.css">
@@ -48,7 +48,7 @@ var etherstate = "<% sysinfo("ethernet"); %>";
 var rtkswitch = <% sysinfo("ethernet.rtk"); %>;
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
-
+var modelname = "<% nvram_get("modelname"); %>";
 overlib_str_tmp = "";
 overlib.isOut = true;
 
@@ -167,24 +167,24 @@ function hwaccel_state(){
 		code += "</span>";
 	} else {
 		if (ctf_dis == "1") {
-			code = "Disabled";
+			code = "<#HW_Disabled#>";
 			if (ctf_dis_force == "1")
-				code += " <i>(by user)</i>";
+				code += " <i><#(by user)#></i>";
 			else {
-				code += " <i> - incompatible with:<span>  ";	// Two trailing spaces
-				if ('<% nvram_get("cstats_enable"); %>' == '1') code += 'IPTraffic, ';
-				if ((qos_enable == '1') && (qos_type == '0')) code += 'QoS, ';
-				if ('<% nvram_get("sw_mode"); %>' == '2') code += 'Repeater mode, ';
-				if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += 'USB modem, ';
+				code += " <i> - <#incompatible_with#>:<span>  ";	// Two trailing spaces
+				if ('<% nvram_get("cstats_enable"); %>' == '1') code += '<#IPTraffic#>, ';
+				if ((qos_enable == '1') && (qos_type == '0')) code += '<#QoS#>, ';
+				if ('<% nvram_get("sw_mode"); %>' == '2') code += '<#Repeater_mode#>, ';
+				if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += '<#USB_modem#>, ';
 
 				// We're disabled but we don't know why
-				if (code.slice(-2) == "  ") code += "&lt;unknown&gt;, ";
+				if (code.slice(-2) == "  ") code += "&lt;<#unknown#>&gt;, ";
 
 				// Trim two trailing chars, either "  " or ", "
 				code = code.slice(0,-2) + "</span>";
 			}
 		} else if (ctf_dis == "0") {
-			code = "<span>Enabled";
+			code = "<span><#HW_Enabled#>";
 			if (ctf_fa != "") {
 				if (ctf_fa != "0")
 					code += " (CTF + FA)";
@@ -200,11 +200,11 @@ function hwaccel_state(){
 
 
 function showbootTime(){
-        Days = Math.floor(boottime / (60*60*24));        
+        Days = Math.floor(boottime / (60*60*24));
         Hours = Math.floor((boottime / 3600) % 24);
         Minutes = Math.floor(boottime % 3600 / 60);
         Seconds = Math.floor(boottime % 60);
-        
+
         document.getElementById("boot_days").innerHTML = Days;
         document.getElementById("boot_hours").innerHTML = Hours;
         document.getElementById("boot_minutes").innerHTML = Minutes;
@@ -240,16 +240,16 @@ function show_etherstate(){
 
 		if (line[0] == "Port") {
 			if (line[2] == "DOWN")
-				state2 = "Unplugged";
+				state2 = "<#Unplugged#>";
 			else {
-				state = line[2].replace("FD"," Full Duplex");
-				state2 = state.replace("HD"," Half Duplex");
+				state = line[2].replace("FD","Mbps <#Full_Duplex#>");
+				state2 = state.replace("HD","Mbps <#Half_Duplex#>");
 			}
 
 			hostname = "";
 
 			if (devicemac == "00:00:00:00:00:00") {
-				devicename = '<span class="ClientName">&lt;none&gt;</span>';
+				devicename = '<span class="ClientName">&lt;<#none#>&gt;</span>';
 			} else {
 				overlib_str = "<p><#MAC_Address#>:</p>" + devicemac;
 
@@ -259,11 +259,25 @@ function show_etherstate(){
 				if ((typeof hostname !== 'undefined') && (hostname != "")) {
 					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ hostname +'</span>';
 				} else {
-					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ devicemac +'</span>'; 
+					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ devicemac +'</span>';
 				}
 			}
 			port = line[1].replace(":","");
-
+			if (modelname == "K3") {
+				if (port > 3) {	//int ports[SWPORT_COUNT] = { 3, 1, 0, 2, 5 };
+					continue;
+				} else if (port == "3") {
+					wan_array = [ "WAN", (line[7] & 0xFFF), state2, devicename];
+					continue;
+				} else {
+					if (port == "0")
+						port_array.unshift(["LAN2 ", (line[7] & 0xFFF), state2, devicename]);
+					else if (port == "1")
+						port_array.unshift(["LAN1 ", (line[7] & 0xFFF), state2, devicename]);
+					else if (port == "2")
+						port_array.push(["LAN3 ", (line[7] & 0xFFF), state2, devicename]);
+				}
+			} else {
 			if (port == "8") {		// CPU Port
 				continue;
 			} else if ((based_modelid == "RT-AC56U") || (based_modelid == "RT-AC56S") || (based_modelid == "RT-AC88U") || (based_modelid == "RT-AC3100")) {
@@ -274,7 +288,7 @@ function show_etherstate(){
 					continue;	// This is the internal LAN port
 				if (port == "10") {
 					port = "4";	// This is LAN 4 (RTL) from QTN
-					devicename = '<span class="ClientName">&lt;unknown&gt;</span>';
+					devicename = '<span class="ClientName">&lt;<#unknown#>&gt;</span>';
 				}
 			}
 			if (port == "0") {
@@ -290,7 +304,7 @@ function show_etherstate(){
 				port_array.unshift(["LAN "+ port, (line[7] & 0xFFF), state2, devicename]);
 			else
 				port_array.push(["LAN " + port, (line[7] & 0xFFF), state2, devicename]);
-
+			}
 		}
 	}
 
@@ -301,11 +315,11 @@ function show_etherstate(){
 		for (var i = 0; i < rtkswitch.length; i++) {
 			line = rtkswitch[i];
 			if (line[1] == "0")
-				state = "Unplugged"
+				state = "<#Unplugged#>"
 			else
 				state = line[1] + " Mbps";
 
-			port_array.push(['LAN ' +line[0] + ' (RTK)', 'NA', state, '&lt;unknown&gt;']);
+			port_array.push(['LAN ' +line[0] + ' (RTK)', 'NA', state, '&lt;<#unknown#>&gt;']);
 		}
 
 	}
@@ -318,19 +332,19 @@ function show_etherstate(){
 		container: "tableContainer",
 		header: [
 			{
-				"title" : "Port",
+				"title" : "<#Port#>",
 				"width" : "21%"
 			},
 			{
-				"title" : "VLAN",
+				"title" : "<#VLAN#>",
 				"width" : "14%"
 			},
 			{
-				"title" : "Link State",
+				"title" : "<#Link_State#>",
 				"width" : "25%"
 			},
 			{
-				"title" : "Last Device Seen",
+				"title" : "<#Last_Device_Seen#>",
 				"width" : "40%"
 			}
 		]
@@ -352,7 +366,7 @@ function show_etherstate_hnd(){
 		speedMapping["Q"] = "2.5 Gbps";
 		speedMapping["F"] = "5 Gbps";
 		speedMapping["T"] = "10 Gbps";
-		speedMapping["X"] = "Unplugged";
+		speedMapping["X"] = "<#Unplugged#>";
 
 		var parseArray = [];
 		for (var prop in _array) {
@@ -371,11 +385,11 @@ function show_etherstate_hnd(){
 		container: "tableContainer",
 		header: [
 			{
-				"title" : "Port",
+				"title" : "<#Port#>",
 				"width" : "50%"
 			},
 			{
-				"title" : "Link State",
+				"title" : "<#Link_State#>",
 				"width" : "50%"
 			},
 		]
@@ -389,7 +403,7 @@ function show_etherstate_hnd(){
 
 
 function show_connstate(){
-	document.getElementById("conn_td").innerHTML = conn_stats_arr[0] + " / <% sysinfo("conn.max"); %>&nbsp;&nbsp;-&nbsp;&nbsp;" + conn_stats_arr[1] + " active";
+	document.getElementById("conn_td").innerHTML = conn_stats_arr[0] + " / <% sysinfo("conn.max"); %>&nbsp;&nbsp;-&nbsp;&nbsp;" + conn_stats_arr[1] + " <b><#active#></b>";
 
 	if (based_modelid === 'GT-AXE16000') {
 		wlc_24_arr = wlc_3_arr;
@@ -406,24 +420,24 @@ function show_connstate(){
 			wlc_6_arr = wlc_2_arr;
 	}
 
-	document.getElementById("wlc_24_td").innerHTML = "Associated: <span>" + wlc_24_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-	                                                 "Authorized: <span>" + wlc_24_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-	                                                 "Authenticated: <span>" + wlc_24_arr[2] + "</span>";
+	document.getElementById("wlc_24_td").innerHTML = "<#Associated#>: <span>" + wlc_24_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "<#Authorized#>: <span>" + wlc_24_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "<#Authenticated#>: <span>" + wlc_24_arr[2] + "</span>";
 
 	if (band5g_support) {
 		if (based_modelid == "RT-AC87U") {
-			document.getElementById("wlc_5qtn_td").innerHTML = "Associated: <span>" +wlc_51_arr[0] + "</span>";
+			document.getElementById("wlc_5qtn_td").innerHTML = "<#Associated#>: <span>" +wlc_51_arr[0] + "</span>";
 		} else {
-			document.getElementById("wlc_51_td").innerHTML = "Associated: <span>" + wlc_51_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-			                                                 "Authorized: <span>" + wlc_51_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-			                                                 "Authenticated: <span>" + wlc_51_arr[2] + "</span>";
+			document.getElementById("wlc_51_td").innerHTML = "<#Associated#>: <span>" + wlc_51_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+			                                                 "<#Authorized#>: <span>" + wlc_51_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+			                                                 "<#Authenticated#>: <span>" + wlc_51_arr[2] + "</span>";
 		}
 	}
 
 	if (wl_info.band5g_2_support) {
-		document.getElementById("wlc_52_td").innerHTML = "Associated: <span>" + wlc_52_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "Authorized: <span>" + wlc_52_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "Authenticated: <span>" + wlc_52_arr[2] + "</span>";
+		document.getElementById("wlc_52_td").innerHTML = "<#Associated#>: <span>" + wlc_52_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<#Authorized#>: <span>" + wlc_52_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<#Authenticated#>: <span>" + wlc_52_arr[2] + "</span>";
 	}
 
 	if (wl_info.band6g_support) {
@@ -442,7 +456,7 @@ function show_memcpu(){
 	document.getElementById("mem_buffer_td").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_td").innerHTML = mem_stats_arr[3] + " MB";
 	if (parseInt(mem_stats_arr[5]) == 0)
-		document.getElementById("mem_swap_td").innerHTML = "<span>No swap configured</span>";
+		document.getElementById("mem_swap_td").innerHTML = "<span><#No_swap_configured#></span>";
 	else
 		document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
 	document.getElementById("nvram_td").innerHTML = mem_stats_arr[6] + " / " + <% sysinfo("nvram.total"); %> + " bytes";
@@ -538,42 +552,42 @@ function show_wifi_version() {
                 <tr bgcolor="#4D595D">
                 <td valign="top">
                 <div>&nbsp;</div>
-                <div class="formfonttitle">Tools - System Information</div>
+                <div class="formfonttitle"><#Tools#> - <#System_Information#></div>
 		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Router</td>
+							<td colspan="2"><#Router#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>Model</th>
+						<th><#Model#></th>
 							<td id="model_id"><% nvram_get("productid"); %></td>
 					</tr>
 					<tr>
-						<th>Firmware Version</th>
+						<th><#Firmware_Version#></th>
 						<td id="fwver"></td>
 					</tr>
 
 					<tr>
-						<th>Firmware Build</th>
+						<th><#Firmware_Build#></th>
 						<td><% nvram_get("buildinfo"); %></td>
 					</tr>
 					<tr>
-						<th>Bootloader (CFE)</th>
+						<th><#Bootloader_(CFE)#></th>
 						<td><% sysinfo("cfe_version"); %></td>
 					</tr>
 					<tr>
-						<th>Wireless Driver Version</th>
+						<th>#Wireless Driver Version#</th>
 						<td id="wifi_version_td"></td>
 					</tr>
 					<tr id="qtn_version" style="display:none;">
-						<th>Quantenna Firmware</th>
+						<th><#Quantenna_Firmware#></th>
 						<td><% sysinfo("qtn_version"); %></td>
 					</tr>
 					<tr>
-						<th>Features</th>
+						<th><#Features#></th>
 						<td id="rc_td"></td>
 					</tr>
 					<tr>
@@ -582,7 +596,7 @@ function show_wifi_version() {
 					</tr>
 
 					<tr>
-						<th>Temperatures</th>
+						<th><#Temperatures#></th>
 						<td id="temp_td"></td>
 					</tr>
 				</table>
@@ -595,15 +609,15 @@ function show_wifi_version() {
 					</thead>
 
 					<tr>
-						<th>CPU Model</th>
+						<th><#CPU_Model#></th>
 						<td><% sysinfo("cpu.model"); %>	</td>
 					</tr>
 					<tr>
-						<th>CPU Frequency</th>
+						<th><#CPU_Frequency#></th>
 						<td><% sysinfo("cpu.freq"); %> MHz</td>
 					</tr>
 					<tr>
-						<th>CPU Load Average (1, 5, 15 mins)</th>
+						<th><#CPU_Load_Average#></th>
 						<td id="cpu_stats_td"></td>
 					</tr>
 
@@ -612,31 +626,31 @@ function show_wifi_version() {
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Memory</td>
+							<td colspan="2"><#Memory#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>Total</th>
+						<th><#Sysinfo_Total#></th>
 						<td id="mem_total_td"></td>
 					</tr>
 
 					<tr>
-						<th>Free</th>
+						<th><#Free#></th>
 						<td id="mem_free_td"></td>
 					</tr>
 
 					<tr>
-						<th>Buffers</th>
+						<th><#Buffers#></th>
 						<td id="mem_buffer_td"></td>
 					</tr>
 
 					<tr>
-						<th>Cache</th>
+						<th><#Cache#></th>
 						<td id="mem_cache_td"></td>
 					</tr>
 
 					<tr>
-						<th>Swap</th>
+						<th><#Swap#></th>
 						<td id="mem_swap_td"></td>
 					</tr>
 				</table>
@@ -644,15 +658,15 @@ function show_wifi_version() {
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Internal Storage</td>
+							<td colspan="2"><#Internal_Storage#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>NVRAM usage</th>
+						<th><#NVRAM_usage#></th>
 						<td id="nvram_td"></td>
 					</tr>
 					<tr>
-						<th>JFFS</th>
+						<th><#JFFS#></th>
 						<td id="jffs_td"></td>
 					</tr>
 				</table>
@@ -660,38 +674,38 @@ function show_wifi_version() {
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Network</td>
+							<td colspan="2"><#Network#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>HW acceleration</th>
+						<th><#HW_acceleration#></th>
 						<td id="hwaccel"></td>
 					</tr>
 					<tr>
-						<th>Connections</th>
+						<th><#Sysinfo_Connections#></th>
 						<td id="conn_td"></td>
 					</tr>
 					<tr>
-						<th>Ethernet Ports</th>
+						<th><#Ethernet_Ports#></th>
 						<td>
-							<span id="rtk_warning" style="display:none;">Note: not all information can be retrieved for Realtek ports.</span>
+							<span id="rtk_warning" style="display:none;"><#Note_Realtek_ports#></span>
 							<div id="tableContainer" style="margin-top:-10px;"></div>
 						</td>
 					</tr>
 					<tr>
-						<th>Wireless Clients (2.4 GHz)</th>
+						<th><#Wireless_Clients_(2.4GHz)#></th>
 						<td id="wlc_24_td"></td>
 					</tr>
 					<tr id="wifi5_clients_tr" style="display:none;">
-						<th id="wifi51_clients_th">Wireless Clients (5 GHz)</th>
+						<th id="wifi51_clients_th"><#Wireless_clients_(5GHz)#></th>
 						<td id="wlc_51_td"></td>
 					</tr>
 					<tr id="wifi5_2_clients_tr" style="display:none;">
-						<th>Wireless Clients (5 GHz-2)</th>
+						<th><#Wireless_Clients_(5GHz-2)#></th>
 						<td id="wlc_52_td"></td>
 					</tr>
 					<tr id="wifi5_clients_tr_qtn" style="display:none;">
-						<th>Wireless Clients (5 GHz)</th>
+						<th><#Wireless_Clients_(5GHz)#></th>
 						<td id="wlc_5qtn_td"></td>
 					</tr>
 					<tr id="wifi6_clients_tr" style="display:none;">

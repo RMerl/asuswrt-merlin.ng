@@ -17,4 +17,5 @@
  *
  */
 
+extern void k3_init(void);
 extern int GetPhyStatusk3(int verbose);

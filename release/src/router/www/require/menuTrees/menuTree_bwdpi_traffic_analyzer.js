@@ -195,11 +195,11 @@ define(function(){
 				] 
 			},
 			{
-				menuName: "Tools",
+				menuName: "<#Tools#>",
 				index: "menu_Tools",
 				tab: [
-					{url: "Tools_Sysinfo.asp", tabName: "Sysinfo"},
-					{url: "Tools_OtherSettings.asp", tabName: "Other Settings"},
+					{url: "Tools_Sysinfo.asp", tabName: "<#Sysinfo#>"},
+					{url: "Tools_OtherSettings.asp", tabName: "<#Other_Settings#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},

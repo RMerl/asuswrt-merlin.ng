@@ -28,6 +28,13 @@
 #include <auth_common.h>
 #include "k3.h"
 
+void k3_init()
+{
+	if (!nvram_get("modelname"))
+		nvram_set("modelname", "K3");
+	nvram_commit();
+}
+
 int GetPhyStatusk3(int verbose)
 {
 	int port[] = { 3, 1, 0, 2 };

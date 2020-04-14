@@ -8,7 +8,7 @@
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
-<title><#Web_Title#> - Other Settings</title>
+<title><#Web_Title#> - <#Other_Settings#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 
@@ -95,7 +95,7 @@ function initial() {
 	}
 
 	if ((machine_name.search("arm") != -1) || hnd_support) {
-		document.getElementById("ct_established_default").innerHTML = "Default: 2400";
+		document.getElementById("ct_established_default").innerHTML = "<#note_Default#>: 2400";
 		if (!hnd_support) showhide("memory_mgmt_tr" ,1);
 	}
 
@@ -672,84 +672,84 @@ function done_validating(action){
                 <tr bgcolor="#4D595D">
                 <td valign="top">
 			<div>&nbsp;</div>
-			<div class="formfonttitle">Tools - Other Settings</div>
+			<div class="formfonttitle"><#Tools#> - <#Other_Settings#></div>
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Traffic Monitoring</td>
+							<td colspan="2"><#Traffic_Monitoring#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>Traffic history location</th>
+						<th><#Traffic_history_location#></th>
 						<td>
 							<select name="rstats_location" class="input_option" onchange="hide_rstats_storage(this.value);">
-								<option value="0">RAM (Default)</option>
-								<option value="1">Custom location</option>
-								<option value="2">NVRAM</option>
+								<option value="0"><#rsloc_RAM#></option>
+								<option value="1"><#rsloc_Custom#></option>
+								<option value="2"><#rsloc_NVRAM#></option>
 							</select>
-							<span id="invalid_location" style="display:none;" class="formfontdesc">Cannot use NVRAM if IPTraffic is enabled!</span>
+							<span id="invalid_location" style="display:none;" class="formfontdesc"><#rsloc_invalid#></span>
 						</td>
 					</tr>
 
 					<tr id="rstats_stime_tr">
-						<th>Save frequency</th>
+						<th><#Save_frequency#></th>
 						<td>
 							<select name="rstats_stime" class="input_option" >
-								<option value="1" <% nvram_match("rstats_stime", "1","selected"); %>>Every 1 hour</option>
-								<option value="6" <% nvram_match("rstats_stime", "6","selected"); %>>Every 6 hours</option>
-								<option value="12" <% nvram_match("rstats_stime", "12","selected"); %>>Every 12 hours</option>
-								<option value="24" <% nvram_match("rstats_stime", "24","selected"); %>>Every 1 day</option>
-								<option value="72" <% nvram_match("rstats_stime", "72","selected"); %>>Every 3 days</option>
-								<option value="168" <% nvram_match("rstats_stime", "168","selected"); %>>Every 1 week</option>
+								<option value="1" <% nvram_match("rstats_stime", "1","selected"); %>><#stime_1h#></option>
+								<option value="6" <% nvram_match("rstats_stime", "6","selected"); %>><#stime_6h#></option>
+								<option value="12" <% nvram_match("rstats_stime", "12","selected"); %>><#stime_12h#></option>
+								<option value="24" <% nvram_match("rstats_stime", "24","selected"); %>><#stime_1d#></option>
+								<option value="72" <% nvram_match("rstats_stime", "72","selected"); %>><#stime_3d#></option>
+								<option value="168" <% nvram_match("rstats_stime", "168","selected"); %>><#stime_1w#></option>
 							</select>
 						</td>
 					</tr>
 					<tr id="rstats_path_tr">
-						<th>Save history location<br><i>Directory must end with a '/'.</i></th>
+						<th><#Save_history_location#><br><i><#saveloc_note#></i></th>
 						<td><input type="text" id="rstats_path" size=32 maxlength=90 name="rstats_path" class="input_32_table" value="<% nvram_get("rstats_path"); %>">
-						<button id="pathPicker" onclick="get_disk_tree(); return false;">Select...</button></td>
+						<button id="pathPicker" onclick="get_disk_tree(); return false;"><#path_Select#>...</button></td>
 					</tr>
 					<tr id="rstats_new_tr">
-						<th>Create or reset data files:<br><i>Enable if using a new location</i></th>
+						<th><#Create_or_reset_data_files#>:<br><i><#newloc_note#></i></th>
 						<td>
 							<input type="radio" name="rstats_new" class="input" value="1" <% nvram_match_x("", "rstats_new", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="rstats_new" class="input" value="0" <% nvram_match_x("", "rstats_new", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th>Starting day of monthly cycle</th>
+						<th><#Starting_day_of_monthly_cycle#></th>
 						<td><input type="text" maxlength="2" class="input_3_table" name="rstats_offset" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("rstats_offset"); %>"></td>
 					</tr>
 					<tr id="cstats_enable_tr">
-						<th>Enable IPTraffic (per IP monitoring)</i></th>
+						<th><#Enable_IPTraffic#></i></th>
 						<td>
 							<input type="radio" name="cstats_enable" class="input" value="1" <% nvram_match_x("", "cstats_enable", "1", "checked"); %> onclick="hide_cstats(this.value);"><#checkbox_Yes#>
 							<input type="radio" name="cstats_enable" class="input" value="0" <% nvram_match_x("", "cstats_enable", "0", "checked"); %> onclick="hide_cstats(this.value);"><#checkbox_No#>
 						</td>
 					</tr>
 					<tr id="cstats_1_tr">
-						<th>Create or reset IPTraffic data files</th>
+						<th><#Create_or_reset_IPTraffic#></th>
 						<td>
 							<input type="radio" name="cstats_new" class="input" value="1" <% nvram_match_x("", "cstats_new", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="cstats_new" class="input" value="0" <% nvram_match_x("", "cstats_new", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr id="cstats_2_tr">
-						<th>Monitor all IPs by default</th>
+						<th><#Monitor_all_IPs#></th>
 						<td>
 							<input type="radio" name="cstats_all" class="input" value="1" <% nvram_match_x("", "cstats_all", "1", "checked"); %> onclick="hide_cstats_ip(this.value);"><#checkbox_Yes#>
 							<input type="radio" name="cstats_all" class="input" value="0" <% nvram_match_x("", "cstats_all", "0", "checked"); %> onclick="hide_cstats_ip(this.value);"><#checkbox_No#>
 						</td>
 					</tr>
 					<tr id="cstats_inc_tr">
-						<th>List of IPs to monitor (comma-separated):</th>
+						<th><#List_of_IPs_to_monitor#>:</th>
 						<td>
 							<input type="text" maxlength="512" class="input_32_table" name="cstats_include" onKeyPress="return validator.ipList(this,event);" onchange="update_filter(this,this.value);" value="<% nvram_get("cstats_include"); %>">
 						</td>
 					</tr>
 					<tr id="cstats_exc_tr">
-						<th>List of IPs to exclude (comma-separated):</th>
+						<th><#List_of_IPs_to_exclude#>:</th>
 						<td>
 							<input type="text" maxlength="512" class="input_32_table" name="cstats_exclude" onKeyPress="return validator.ipList(this,event);" onchange="update_filter(this,this.value);" value="<% nvram_get("cstats_exclude"); %>">
 						</td>
@@ -760,133 +760,133 @@ function done_validating(action){
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">TCP/IP settings</td>
+							<td colspan="2"><#TCP/IP_settings#></td>
 						</tr>
 					</thead>
 					<tr>
-						<th>TCP connections limit</th>
+						<th><#TCP_connections_limit#></th>
 						<td>
 							<input type="text" maxlength="6" class="input_12_table" name="ct_max" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("ct_max"); %>">
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: Established</th>
+						<th><#TCP_Timeout#>: Established</th>
 						<td>
 							<input type="text" maxlength="6" class="input_6_table" name="tcp_established" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span id="ct_established_default">Default: 1200</span>
+							<span id="ct_established_default"><#note_Default#>: 1200</span>
 						</td>
 
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: syn_sent</th>
+						<th><#TCP_Timeout#>: syn_sent</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_syn_sent" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 120</span>
+							<span><#note_Default#>: 120</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: syn_recv</th>
+						<th><#TCP_Timeout#>: syn_recv</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_syn_recv" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 60</span>
+							<span><#note_Default#>: 60</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: fin_wait</th>
+						<th><#TCP_Timeout#>: fin_wait</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_fin_wait" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 120</span>
+							<span><#note_Default#>: 120</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: time_wait</th>
+						<th><#TCP_Timeout#>: time_wait</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_time_wait" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 120</span>
+							<span><#note_Default#>: 120</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: close</th>
+						<th><#TCP_Timeout#>: close</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_close" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 10</span>
+							<span><#note_Default#>: 10</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: close_wait</th>
+						<th><#TCP_Timeout#>: close_wait</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_close_wait" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 60</span>
+							<span><#note_Default#>: 60</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>TCP Timeout: last_ack</th>
+						<th><#TCP_Timeout#>: last_ack</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="tcp_last_ack" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 30</span>
+							<span><#note_Default#>: 30</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>UDP Timeout: Assured</th>
+						<th><#UDP_Timeout#>: Assured</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="udp_assured" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 180</span>
+							<span><#note_Default#>: 180</span>
 						</td>
 					</tr>
 
 					<tr>
-						<th>UDP Timeout: Unreplied</th>
+						<th><#UDP_Timeout#>: Unreplied</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="udp_unreplied" onKeyPress="return validator.isNumber(this,event);" value="">
-							<span>Default: 30</span>
+							<span><#note_Default#>: 30</span>
 						</td>
 					</tr>
 				</table>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
                                         <thead>
 						<tr>
-							<td colspan="2">Advanced Tweaks and Hacks</td>
+							<td colspan="2"><#Advanced_Tweaks_and_Hacks#></td>
 						</tr>
 					</thead>
 					<tr id="memory_mgmt_tr" style="display:none;">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,2);">Memory Management: Regularly flush caches (default: Yes)</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,2);"><#Memory_Management#> (<#note_Default#>: <#checkbox_Yes#>)</a></th>
 						<td>
 							<input type="radio" name="drop_caches" class="input" value="1" <% nvram_match_x("", "drop_caches", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="drop_caches" class="input" value="0" <% nvram_match_x("", "drop_caches", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,4);">Firewall: Drop IPv6 neighbour solicitation broadcasts (default: No)</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,4);"><#Firewall_Drop_broadcasts#> (<#note_Default#>: <#checkbox_No#>)</a></th>
 						<td>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="1" <% nvram_match_x("", "ipv6_ns_drop", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="ipv6_ns_drop" class="input" value="0" <% nvram_match_x("", "ipv6_ns_drop", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,27);">Wan: Use local caching DNS server as system resolver (default: No)</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,27);"><#Wan_Use_local#> (<#note_Default#>: <#checkbox_No#>)</a></th>
 						<td>
 							<input type="radio" name="dns_local_cache" class="input" value="1" <% nvram_match_x("", "dns_local_cache", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="dns_local_cache" class="input" value="0" <% nvram_match_x("", "dns_local_cache", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th>Disable Asusnat tunnel</th>
+						<th><#Disable_Asusnat_tunnel#></th>
 						<td>
 							<input type="radio" name="aae_disable_force" class="input" value="1" <% nvram_match_x("", "aae_disable_force", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="aae_disable_force" class="input" value="0" <% nvram_match_x("", "aae_disable_force", "0", "checked"); %>><#checkbox_No#>
 						</td>
 					</tr>
 					<tr>
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);">dhcpd: send empty WPAD with a carriage return</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,21);"><#dhcpd_send_return#></a></th>
 						<td>
 							<input type="radio" name="dhcpd_send_wpad" class="input" value="1" <% nvram_match_x("", "dhcpd_send_wpad", "1", "checked"); %>><#checkbox_Yes#>
 							<input type="radio" name="dhcpd_send_wpad" class="input" value="0" <% nvram_match_x("", "dhcpd_send_wpad", "0", "checked"); %>><#checkbox_No#>

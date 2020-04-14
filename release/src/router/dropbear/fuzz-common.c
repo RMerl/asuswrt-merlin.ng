@@ -112,6 +112,14 @@ static void load_fixed_hostkeys(void) {
         dropbear_exit("failed fixed ecdsa hostkey");
     }
 
+    buf_setlen(b, 0);
+    buf_putbytes(b, keyed25519, keyed25519_len);
+    buf_setpos(b, 0);
+    type = DROPBEAR_SIGNKEY_ED25519;
+    if (buf_get_priv_key(b, svr_opts.hostkey, &type) == DROPBEAR_FAILURE) {
+        dropbear_exit("failed fixed ed25519 hostkey");
+    }
+
     buf_free(b);
 }
 

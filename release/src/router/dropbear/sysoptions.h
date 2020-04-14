@@ -94,7 +94,11 @@
 #define MD5_HASH_SIZE 16
 #define MAX_HASH_SIZE 64 /* sha512 */
 
+#if DROPBEAR_CHACHA20POLY1305
+#define MAX_KEY_LEN 64 /* 2 x 256 bits for chacha20 */
+#else
 #define MAX_KEY_LEN 32 /* 256 bits for aes256 etc */
+#endif
 #define MAX_IV_LEN 20 /* must be same as max blocksize,  */
 
 #if DROPBEAR_SHA2_512_HMAC
@@ -209,6 +213,8 @@ If you test it please contact the Dropbear author */
 
 #define DROPBEAR_TWOFISH ((DROPBEAR_TWOFISH256) || (DROPBEAR_TWOFISH128))
 
+#define DROPBEAR_AEAD_MODE ((DROPBEAR_CHACHA20POLY1305))
+
 #define DROPBEAR_CLI_ANYTCPFWD ((DROPBEAR_CLI_REMOTETCPFWD) || (DROPBEAR_CLI_LOCALTCPFWD))
 
 #define DROPBEAR_TCP_ACCEPT ((DROPBEAR_CLI_LOCALTCPFWD) || (DROPBEAR_SVR_REMOTETCPFWD))
@@ -248,7 +254,7 @@ If you test it please contact the Dropbear author */
 
 
 #if !(DROPBEAR_AES128 || DROPBEAR_3DES || DROPBEAR_AES256 || DROPBEAR_BLOWFISH \
-      || DROPBEAR_TWOFISH256 || DROPBEAR_TWOFISH128)
+      || DROPBEAR_TWOFISH256 || DROPBEAR_TWOFISH128 || DROPBEAR_CHACHA20POLY1305)
 	#error "At least one encryption algorithm must be enabled. AES128 is recommended."
 #endif
 

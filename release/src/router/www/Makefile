@@ -792,3 +792,4 @@ endif
 	ln -sf user/user9.asp $(INSTALLDIR)/www/user9.asp
 	ln -sf user/user10.asp $(INSTALLDIR)/www/user10.asp
 
+	rm -rf $(INSTALLDIR)/www/Advanced_Feedback.asp

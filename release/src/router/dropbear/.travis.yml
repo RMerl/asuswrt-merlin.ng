@@ -57,6 +57,7 @@ script:
   - ~/inst/bin/dropbearkey -t ecdsa -f testec256 -s 256
   - ~/inst/bin/dropbearkey -t ecdsa -f testec384 -s 384
   - ~/inst/bin/dropbearkey -t ecdsa -f testec521 -s 521
+  - ~/inst/bin/dropbearkey -t ed25519 -f tested25519
   - test -z $DO_FUZZ || ./fuzzers_test.sh
 
 branches:

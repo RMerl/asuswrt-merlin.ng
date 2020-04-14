@@ -1693,7 +1693,7 @@ static int set_dns_listeners(time_t now)
   
   /* will we be able to get memory? */
   if (daemon->port != 0)
-    get_new_frec(now, &wait, 0);
+    get_new_frec(now, &wait, NULL);
   
   for (serverfdp = daemon->sfds; serverfdp; serverfdp = serverfdp->next)
     poll_listen(serverfdp->fd, POLLIN);
@@ -2122,6 +2122,4 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
 
   return 0;
 }
-#endif
-
- 
+#endif /* HAVE_DHCP */

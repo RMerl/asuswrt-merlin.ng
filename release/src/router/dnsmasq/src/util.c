@@ -210,6 +210,8 @@ int valid_hostname(char *name)
     "localhost",
     "ip6-localhost",
     "ip6-loopback",
+    "wpad",
+    "isatap",
     NULL
   };
   const char **next;

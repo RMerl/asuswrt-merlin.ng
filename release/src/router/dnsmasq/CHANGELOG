@@ -1,12 +1,12 @@
 version 2.81
-	Impove cache behaviour for TCP connections. For ease of
+	Improve cache behaviour for TCP connections. For ease of
 	implementaion, dnsmasq has always forked a new process to handle
 	each incoming TCP connection. A side-effect of this is that
 	any DNS queries answered from TCP connections are not cached:
 	when TCP connections were rare, this was not a problem.
-	With the coming of DNSSEC, it's now the case that some
+	With the coming of DNSSEC, it is now the case that some
 	DNSSEC queries have answers which spill to TCP, and if,
-	for instance, this applies to the keys for the root then
+	for instance, this applies to the keys for the root, then
 	those never get cached, and performance is very bad.
 	This fix passes cache entries back from the TCP child process to
 	the main server process, and fixes the problem.
@@ -35,7 +35,7 @@ version 2.81
 	configuration.
 
 	Add --shared-network config. This enables allocation of addresses
-	the DHCP server in subnets where the server (or relay) doesn't
+	by the DHCP server in subnets where the server (or relay) does not
 	have an interface on the network in that subnet. Many thanks to
 	kamp.de for sponsoring this feature.
 	
@@ -66,7 +66,7 @@ version 2.81
 	Evgenii Seliavka for the suggestion and initial patch.
 
 	In the router advert code, handle case where we have two
-	different interfaces on the same IPv6 net, and we're doing
+	different interfaces on the same IPv6 net, and we are doing
 	RA/DHCP service on only one of them. Thanks to NIIBE Yutaka
 	for spotting this case and making the initial patch.
 

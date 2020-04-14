@@ -2122,6 +2122,4 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
 
   return 0;
 }
-#endif
-
- 
+#endif /* HAVE_DHCP */

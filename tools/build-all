@@ -12,10 +12,10 @@
 
 ### Manual/hardcoded
 # Append git revision
-export BUILDREV=1
+#export BUILDREV=1
 
 # Enable update server support (don't use if you build a fork!)
-# export MERLINUPDATE=y
+#export MERLINUPDATE=y
 
 # rsync tree from central source tree before build
 RSYNC_TREE=y
@@ -42,7 +42,7 @@ BAC86=y
 BAX88=y
 
 BAX58=y
-
+BAX56=y
 
 ### Paths
 # Store built images there
@@ -74,7 +74,7 @@ build_fw()
 		if [ "$FWMODEL" == "rt-ac86u" -o "$FWMODEL" == "rt-ax88u" ]; then
 			FWNAME=$(ls -t *_cferom_ubi.w | head -n 1)
 			ZIPNAME="${FWNAME//_cferom_ubi.w/}".zip
-		else if [ "$FWMODEL" == "rt-ax58u" ]
+		elif [ "$FWMODEL" == "rt-ax58u" -o "$FWMODEL" == "rt-ax56u" ]; then
 			FWNAME=$(ls -t *_cferom_pureubi.w | head -n 1)
 			ZIPNAME="${FWNAME//_cferom_pureubi.w/}".zip
 		else
@@ -160,6 +160,9 @@ fi
 if [ "$BAX58" == "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
 fi
+if [ "$BAX56" == "y" ]; then
+	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u ax
+fi
 
 echo -e "--- $(date +%R) - All trees ready!\n"
 
@@ -205,6 +208,10 @@ fi
 if [ "$BAX58" == "y" ]; then
 	build_fw amng.ax58/release/src-rt-5.02axhnd.675x rt-ax58u &
 	sleep 10
+fi
+if [ "$BAX56" == "y" ]; then
+        build_fw amng.ax56/release/src-rt-5.02axhnd.675x rt-ax56u &
+        sleep 10
 fi
 
 echo "--- $(date +%R) - All builds launched, please wait..."

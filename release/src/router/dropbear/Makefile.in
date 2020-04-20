@@ -53,7 +53,7 @@ CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
 CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 			common-channel.o common-chansession.o termcodes.o loginrec.o \
 			tcp-accept.o listener.o process-packet.o dh_groups.o \
-			common-runopts.o circbuffer.o list.o netio.o
+			common-runopts.o circbuffer.o list.o netio.o chachapoly.o
 
 KEYOBJS=dropbearkey.o
 

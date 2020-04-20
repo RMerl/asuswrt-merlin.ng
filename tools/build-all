@@ -158,7 +158,6 @@ fi
 if [ "$BAX58" = "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
 fi
-
 if [ "$BAX56" = "y" ]; then
 	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u ax
 fi

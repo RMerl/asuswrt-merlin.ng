@@ -235,6 +235,8 @@ function addRow_Group(upper){
 		document.form.dhcp_staticmac_x_0.value = "";
 		document.form.dhcp_dnsip_x_0.value = "";
 		document.form.dhcp_staticname_x_0.value = "";
+
+		sortdir = sortdir * -1;	/* sortlist() will switch order back */
 		sortlist(sortfield);
 		showdhcp_staticlist();		
 

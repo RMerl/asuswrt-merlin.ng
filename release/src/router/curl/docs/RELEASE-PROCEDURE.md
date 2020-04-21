@@ -61,12 +61,12 @@ celebrate
 curl release scheduling
 =======================
 
-Basics
-------
+Release Cycle
+-------------
 
 We do releases every 8 weeks on Wednesdays. If critical problems arise, we can
 insert releases outside of the schedule or we can move the release date - but
-this is very rare.
+this is rare.
 
 Each 8 week release cycle is split in two 4-week periods.
 
@@ -78,20 +78,28 @@ Each 8 week release cycle is split in two 4-week periods.
   then only focus on fixing bugs and polishing things to make a solid coming
   release.
 
+- After a regular procedure-following release (made on Wednesdays), the
+  feature window remains closed until the following Monday in case of special
+  actions or patch releases etc.
+
+If a future release date happens to end up on a "bad date", like in the middle
+of common public holidays or when the lead release manager is away traveling,
+the release date can be moved forwards or backwards a full week. This is then
+advertised well in advance.
+
 Coming dates
 ------------
 
 Based on the description above, here are some planned release dates (at the
 time of this writing):
 
-- January 8, 2020 (moved)
-- February 27, 2020
-- April 22, 2020
-- June 17, 2020
-- August 12, 2020
-- October 7, 2020
-- December 2, 2020
-- January 27, 2021
+- March 4, 2020 (7.69.0)
+- April 29, 2020
+- June 24, 2020
+- August 19, 2020
+- October 14, 2020
+- December 9, 2020
+- February 3, 2021
 
 The above (and more) curl-related dates are published in
 [iCalendar format](https://calendar.google.com/calendar/ical/c9u5d64odop9js55oltfarjk6g%40group.calendar.google.com/public/basic.ics)

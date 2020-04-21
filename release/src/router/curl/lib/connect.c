@@ -745,13 +745,15 @@ void Curl_updateconninfo(struct connectdata *conn, curl_socket_t sockfd)
   Curl_persistconninfo(conn);
 }
 
-/* after a TCP connection to the proxy has been verified, this function does
-   the next magic step.
+/* After a TCP connection to the proxy has been verified, this function does
+   the next magic steps. If 'done' isn't set TRUE, it is not done yet and
+   must be called again.
 
    Note: this function's sub-functions call failf()
 
 */
-static CURLcode connected_proxy(struct connectdata *conn, int sockindex)
+static CURLcode connect_SOCKS(struct connectdata *conn, int sockindex,
+                              bool *done)
 {
   CURLcode result = CURLE_OK;
 
@@ -760,41 +762,60 @@ static CURLcode connected_proxy(struct connectdata *conn, int sockindex)
     /* for the secondary socket (FTP), use the "connect to host"
      * but ignore the "connect to port" (use the secondary port)
      */
-    const char * const host = conn->bits.httpproxy ?
-                              conn->http_proxy.host.name :
-                              conn->bits.conn_to_host ?
-                              conn->conn_to_host.name :
-                              sockindex == SECONDARYSOCKET ?
-                              conn->secondaryhostname : conn->host.name;
-    const int port = conn->bits.httpproxy ? (int)conn->http_proxy.port :
-                     sockindex == SECONDARYSOCKET ? conn->secondary_port :
-                     conn->bits.conn_to_port ? conn->conn_to_port :
-                     conn->remote_port;
-    conn->bits.socksproxy_connecting = TRUE;
+    const char * const host =
+      conn->bits.httpproxy ?
+      conn->http_proxy.host.name :
+      conn->bits.conn_to_host ?
+      conn->conn_to_host.name :
+      sockindex == SECONDARYSOCKET ?
+      conn->secondaryhostname : conn->host.name;
+    const int port =
+      conn->bits.httpproxy ? (int)conn->http_proxy.port :
+      sockindex == SECONDARYSOCKET ? conn->secondary_port :
+      conn->bits.conn_to_port ? conn->conn_to_port :
+      conn->remote_port;
     switch(conn->socks_proxy.proxytype) {
     case CURLPROXY_SOCKS5:
     case CURLPROXY_SOCKS5_HOSTNAME:
       result = Curl_SOCKS5(conn->socks_proxy.user, conn->socks_proxy.passwd,
-                         host, port, sockindex, conn);
+                           host, port, sockindex, conn, done);
       break;
 
     case CURLPROXY_SOCKS4:
     case CURLPROXY_SOCKS4A:
       result = Curl_SOCKS4(conn->socks_proxy.user, host, port, sockindex,
-                           conn);
+                           conn, done);
       break;
 
     default:
       failf(conn->data, "unknown proxytype option given");
       result = CURLE_COULDNT_CONNECT;
     } /* switch proxytype */
-    conn->bits.socksproxy_connecting = FALSE;
 #else
   (void)sockindex;
 #endif /* CURL_DISABLE_PROXY */
   }
+  else
+    *done = TRUE; /* no SOCKS proxy, so consider us connected */
 
   return result;
+}
+
+/*
+ * post_SOCKS() is called after a successful connect to the peer, which
+ * *could* be a SOCKS proxy
+ */
+static void post_SOCKS(struct connectdata *conn,
+                       int sockindex,
+                       bool *connected)
+{
+  conn->bits.tcpconnect[sockindex] = TRUE;
+
+  *connected = TRUE;
+  if(sockindex == FIRSTSOCKET)
+    Curl_pgrsTime(conn->data, TIMER_CONNECT); /* connect done */
+  Curl_updateconninfo(conn, conn->sock[sockindex]);
+  Curl_verboseconnect(conn);
 }
 
 /*
@@ -832,6 +853,14 @@ CURLcode Curl_is_connected(struct connectdata *conn,
     /* time-out, bail out, go home */
     failf(data, "Connection time-out");
     return CURLE_OPERATION_TIMEDOUT;
+  }
+
+  if(SOCKS_STATE(conn->cnnct.state)) {
+    /* still doing SOCKS */
+    result = connect_SOCKS(conn, sockindex, connected);
+    if(!result && *connected)
+      post_SOCKS(conn, sockindex, connected);
+    return result;
   }
 
   for(i = 0; i<2; i++) {
@@ -900,18 +929,13 @@ CURLcode Curl_is_connected(struct connectdata *conn,
           conn->tempsock[other] = CURL_SOCKET_BAD;
         }
 
-        /* see if we need to do any proxy magic first once we connected */
-        result = connected_proxy(conn, sockindex);
-        if(result)
+        /* see if we need to kick off any SOCKS proxy magic once we
+           connected */
+        result = connect_SOCKS(conn, sockindex, connected);
+        if(result || !*connected)
           return result;
 
-        conn->bits.tcpconnect[sockindex] = TRUE;
-
-        *connected = TRUE;
-        if(sockindex == FIRSTSOCKET)
-          Curl_pgrsTime(data, TIMER_CONNECT); /* connect done */
-        Curl_updateconninfo(conn, conn->sock[sockindex]);
-        Curl_verboseconnect(conn);
+        post_SOCKS(conn, sockindex, connected);
 
         return CURLE_OK;
       }
@@ -1007,8 +1031,6 @@ static void tcpnodelay(struct connectdata *conn, curl_socket_t sockfd)
                 sizeof(onoff)) < 0)
     infof(data, "Could not set TCP_NODELAY: %s\n",
           Curl_strerror(SOCKERRNO, buffer, sizeof(buffer)));
-  else
-    infof(data, "TCP_NODELAY set\n");
 #else
   (void)conn;
   (void)sockfd;
@@ -1216,8 +1238,6 @@ static CURLcode singleipconnect(struct connectdata *conn,
       if(setsockopt(sockfd, IPPROTO_TCP, TCP_FASTOPEN_CONNECT,
                     (void *)&optval, sizeof(optval)) < 0)
         infof(data, "Failed to enable TCP Fast Open on fd %d\n", sockfd);
-      else
-        infof(data, "TCP_FASTOPEN_CONNECT set\n");
 
       rc = connect(sockfd, &addr.sa_addr, addr.addrlen);
 #elif defined(MSG_FASTOPEN) /* old Linux */
@@ -1428,12 +1448,11 @@ int Curl_closesocket(struct connectdata *conn,
                       curl_socket_t sock)
 {
   if(conn && conn->fclosesocket) {
-    if((sock == conn->sock[SECONDARYSOCKET]) &&
-       conn->sock_accepted[SECONDARYSOCKET])
+    if((sock == conn->sock[SECONDARYSOCKET]) && conn->sock_accepted)
       /* if this socket matches the second socket, and that was created with
          accept, then we MUST NOT call the callback but clear the accepted
          status */
-      conn->sock_accepted[SECONDARYSOCKET] = FALSE;
+      conn->sock_accepted = FALSE;
     else {
       int rc;
       Curl_multi_closed(conn->data, sock);

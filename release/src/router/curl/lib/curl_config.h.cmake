@@ -73,6 +73,9 @@
 #define CURL_EXTERN_SYMBOL
 #endif
 
+/* Allow SMB to work on Windows */
+#cmakedefine USE_WIN32_CRYPTO
+
 /* Use Windows LDAP implementation */
 #cmakedefine USE_WIN32_LDAP 1
 
@@ -451,9 +454,6 @@
 
 /* Define to 1 if you have the <openssl/crypto.h> header file. */
 #cmakedefine HAVE_OPENSSL_CRYPTO_H 1
-
-/* Define to 1 if you have the <openssl/engine.h> header file. */
-#cmakedefine HAVE_OPENSSL_ENGINE_H 1
 
 /* Define to 1 if you have the <openssl/err.h> header file. */
 #cmakedefine HAVE_OPENSSL_ERR_H 1
@@ -935,9 +935,6 @@ ${SIZEOF_TIME_T_CODE}
 
 /* if GnuTLS is enabled */
 #cmakedefine USE_GNUTLS 1
-
-/* if PolarSSL is enabled */
-#cmakedefine USE_POLARSSL 1
 
 /* if Secure Transport is enabled */
 #cmakedefine USE_SECTRANSP 1

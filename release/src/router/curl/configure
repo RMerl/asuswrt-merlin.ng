@@ -11,7 +11,7 @@
 # This configure script is free software; the Free Software Foundation
 # gives unlimited permission to copy, distribute and modify it.
 #
-# Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
+# Copyright (c) 1998 - 2020 Daniel Stenberg, <daniel@haxx.se>
 # This configure script may be copied, distributed and modified under the
 # terms of the curl license; see COPYING for more details
 
@@ -914,6 +914,7 @@ CURL_LT_SHLIB_USE_VERSIONED_SYMBOLS_FALSE
 CURL_LT_SHLIB_USE_VERSIONED_SYMBOLS_TRUE
 CURL_LT_SHLIB_VERSIONED_FLAVOUR
 USE_LIBRTMP
+USE_WOLFSSH
 USE_LIBSSH
 USE_LIBSSH2
 LIBMETALINK_CPPFLAGS
@@ -1189,6 +1190,7 @@ with_libpsl
 with_libmetalink
 with_libssh2
 with_libssh
+with_wolfssh
 with_librtmp
 enable_versioned_symbols
 with_winidn
@@ -2048,9 +2050,9 @@ Optional Packages:
   --with-ca-path=DIRECTORY
                           Path to a directory containing CA certificates
                           stored individually, with their filenames in a hash
-                          format. This option can be used with OpenSSL, GnuTLS
-                          and PolarSSL backends. Refer to OpenSSL c_rehash for
-                          details. (example: /etc/certificates)
+                          format. This option can be used with the OpenSSL,
+                          GnuTLS and mbedTLS backends. Refer to OpenSSL
+                          c_rehash for details. (example: /etc/certificates)
   --without-ca-path       Don't use a default CA path
   --with-ca-fallback      Use the built in CA store of the SSL library
   --without-ca-fallback   Don't use the built in CA store of the SSL library
@@ -2059,14 +2061,19 @@ Optional Packages:
                           installation root
   --without-libmetalink   disable libmetalink detection
   --with-libssh2=PATH     Where to look for libssh2, PATH points to the
-                          LIBSSH2 installation; when possible, set the
+                          libssh2 installation; when possible, set the
                           PKG_CONFIG_PATH environment variable instead of
                           using this option
-  --with-libssh2          enable LIBSSH2
-  --with-libssh=PATH      Where to look for libssh, PATH points to the LIBSSH
+  --with-libssh2          enable libssh2
+  --with-libssh=PATH      Where to look for libssh, PATH points to the libssh
                           installation; when possible, set the PKG_CONFIG_PATH
                           environment variable instead of using this option
-  --with-libssh           enable LIBSSH
+  --with-libssh           enable libssh
+  --with-wolfssh=PATH     Where to look for wolfssh, PATH points to the
+                          wolfSSH installation; when possible, set the
+                          PKG_CONFIG_PATH environment variable instead of
+                          using this option
+  --with-wolfssh          enable wolfssh
   --with-librtmp=PATH     Where to look for librtmp, PATH points to the
                           LIBRTMP installation; when possible, set the
                           PKG_CONFIG_PATH environment variable instead of
@@ -2178,7 +2185,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This configure script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it.
 
-Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
+Copyright (c) 1998 - 2020 Daniel Stenberg, <daniel@haxx.se>
 This configure script may be copied, distributed and modified under the
 terms of the curl license; see COPYING for more details
 _ACEOF
@@ -8769,7 +8776,7 @@ esac
 fi
 
 : ${AR=ar}
-: ${AR_FLAGS=cru}
+: ${AR_FLAGS=cr}
 
 
 
@@ -10487,8 +10494,8 @@ int forced_loaded() { return 2;}
 _LT_EOF
       echo "$LTCC $LTCFLAGS -c -o conftest.o conftest.c" >&5
       $LTCC $LTCFLAGS -c -o conftest.o conftest.c 2>&5
-      echo "$AR cru libconftest.a conftest.o" >&5
-      $AR cru libconftest.a conftest.o 2>&5
+      echo "$AR cr libconftest.a conftest.o" >&5
+      $AR cr libconftest.a conftest.o 2>&5
       echo "$RANLIB libconftest.a" >&5
       $RANLIB libconftest.a 2>&5
       cat > conftest.c << _LT_EOF
@@ -25512,8 +25519,8 @@ fi
         ca="$want_ca"
     capath="no"
   elif test "x$want_capath" != "xno" -a "x$want_capath" != "xunset"; then
-        if test "x$OPENSSL_ENABLED" != "x1" -a "x$GNUTLS_ENABLED" != "x1" -a "x$POLARSSL_ENABLED" != "x1"; then
-      as_fn_error $? "--with-ca-path only works with OpenSSL, GnuTLS or PolarSSL" "$LINENO" 5
+        if test "x$OPENSSL_ENABLED" != "x1" -a "x$GNUTLS_ENABLED" != "x1" -a "x$MBEDTLS_ENABLED" != "x1"; then
+      as_fn_error $? "--with-ca-path only works with OpenSSL, GnuTLS or mbedTLS" "$LINENO" 5
     fi
     capath="$want_capath"
     ca="no"
@@ -26066,6 +26073,13 @@ $as_echo "$as_me: libmetalink library defective or too old" >&6;}
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
+    if test "x$OPENSSL_ENABLED" != "x1" -a "x$USE_WINDOWS_SSPI" != "x1" \
+        -a "x$GNUTLS_ENABLED" != "x1" -a "x$NSS_ENABLED" != "x1" \
+        -a "x$SECURETRANSPORT_ENABLED" != "x1"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: metalink support requires a compatible SSL/TLS backend" >&5
+$as_echo "$as_me: WARNING: metalink support requires a compatible SSL/TLS backend" >&2;}
+      want_metalink="no"
+    fi
     CPPFLAGS="$clean_CPPFLAGS"
     LDFLAGS="$clean_LDFLAGS"
     LIBS="$clean_LIBS"
@@ -26104,6 +26118,16 @@ if test "${with_libssh+set}" = set; then :
   withval=$with_libssh; OPT_LIBSSH=$withval
 else
   OPT_LIBSSH=no
+fi
+
+
+OPT_WOLFSSH=off
+
+# Check whether --with-wolfssh was given.
+if test "${with_wolfssh+set}" = set; then :
+  withval=$with_wolfssh; OPT_WOLFSSH=$withval
+else
+  OPT_WOLFSSH=no
 fi
 
 
@@ -26595,6 +26619,81 @@ $as_echo "$as_me: Added $DIR_SSH to CURL_LIBRARY_PATH" >&6;}
     CPPFLAGS=$CLEANCPPFLAGS
     LIBS=$CLEANLIBS
   fi
+elif test X"$OPT_WOLFSSH" != Xno; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+  if test "$OPT_WOLFSSH" != yes; then
+     WOLFCONFIG="$OPT_WOLFSSH/bin/wolfssh-config"
+     LDFLAGS="$LDFLAGS `$WOLFCONFIG --libs`"
+     CPPFLAGS="$CPPFLAGS `$WOLFCONFIG --cflags`"
+  fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wolfSSH_Init in -lwolfssh" >&5
+$as_echo_n "checking for wolfSSH_Init in -lwolfssh... " >&6; }
+if ${ac_cv_lib_wolfssh_wolfSSH_Init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwolfssh  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char wolfSSH_Init ();
+int main (void)
+{
+return wolfSSH_Init ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_wolfssh_wolfSSH_Init=yes
+else
+  ac_cv_lib_wolfssh_wolfSSH_Init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_wolfssh_wolfSSH_Init" >&5
+$as_echo "$ac_cv_lib_wolfssh_wolfSSH_Init" >&6; }
+if test "x$ac_cv_lib_wolfssh_wolfSSH_Init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBWOLFSSH 1
+_ACEOF
+
+  LIBS="-lwolfssh $LIBS"
+
+fi
+
+
+  for ac_header in wolfssh/ssh.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "wolfssh/ssh.h" "ac_cv_header_wolfssh_ssh_h" "$ac_includes_default"
+if test "x$ac_cv_header_wolfssh_ssh_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_WOLFSSH_SSH_H 1
+_ACEOF
+ curl_ssh_msg="enabled (wolfSSH)"
+    WOLFSSH_ENABLED=1
+
+$as_echo "#define USE_WOLFSSH 1" >>confdefs.h
+
+    USE_WOLFSSH=1
+
+
+fi
+
+done
+
+
 fi
 
 
@@ -27643,11 +27742,11 @@ $as_echo "$as_me: -L is $LD_H2" >&6;}
     CPPFLAGS="$CPPFLAGS $CPP_H2"
     LIBS="$LIB_H2 $LIBS"
 
-    # use nghttp2_option_set_no_recv_client_magic to require nghttp2
-    # >= 1.0.0
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nghttp2_option_set_no_recv_client_magic in -lnghttp2" >&5
-$as_echo_n "checking for nghttp2_option_set_no_recv_client_magic in -lnghttp2... " >&6; }
-if ${ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic+:} false; then :
+    # use nghttp2_session_set_local_window_size to require nghttp2
+    # >= 1.12.0
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nghttp2_session_set_local_window_size in -lnghttp2" >&5
+$as_echo_n "checking for nghttp2_session_set_local_window_size in -lnghttp2... " >&6; }
+if ${ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -27659,26 +27758,26 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char nghttp2_option_set_no_recv_client_magic ();
+char nghttp2_session_set_local_window_size ();
 int main (void)
 {
-return nghttp2_option_set_no_recv_client_magic ();
+return nghttp2_session_set_local_window_size ();
  ;
  return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic=yes
+  ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size=yes
 else
-  ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic=no
+  ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic" >&5
-$as_echo "$ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic" >&6; }
-if test "x$ac_cv_lib_nghttp2_nghttp2_option_set_no_recv_client_magic" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size" >&5
+$as_echo "$ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size" >&6; }
+if test "x$ac_cv_lib_nghttp2_nghttp2_session_set_local_window_size" = xyes; then :
 
        for ac_header in nghttp2/nghttp2.h
 do :
@@ -42938,6 +43037,10 @@ if test "x$USE_LIBSSH2" = "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi
 if test "x$USE_LIBSSH" = "x1"; then
+  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SCP"
+  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
+fi
+if test "x$USE_WOLFSSH" = "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SCP"
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi

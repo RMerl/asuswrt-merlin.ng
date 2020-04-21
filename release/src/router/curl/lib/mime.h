@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -31,6 +31,7 @@
 /* Part flags. */
 #define MIME_USERHEADERS_OWNER  (1 << 0)
 #define MIME_BODY_ONLY          (1 << 1)
+#define MIME_FAST_READ          (1 << 2)
 
 #define FILE_CONTENTTYPE_DEFAULT        "application/octet-stream"
 #define MULTIPART_CONTENTTYPE_DEFAULT   "multipart/mixed"
@@ -87,7 +88,7 @@ typedef struct {
 typedef struct {
   enum mimestate state;       /* Current state token. */
   void *ptr;                  /* State-dependent pointer. */
-  size_t offset;              /* State-dependent offset. */
+  curl_off_t offset;          /* State-dependent offset. */
 }  mime_state;
 
 /* minimum buffer size for the boundary string */
@@ -125,6 +126,7 @@ struct curl_mimepart_s {
   mime_state state;                /* Current readback state. */
   const mime_encoder *encoder;     /* Content data encoder. */
   mime_encoder_state encstate;     /* Data encoder state. */
+  size_t lastreadstatus;           /* Last read callback returned status. */
 };
 
 CURLcode Curl_mime_add_header(struct curl_slist **slp, const char *fmt, ...);
@@ -147,6 +149,7 @@ size_t Curl_mime_read(char *buffer, size_t size, size_t nitems,
                       void *instream);
 CURLcode Curl_mime_rewind(curl_mimepart *part);
 const char *Curl_mime_contenttype(const char *filename);
+void Curl_mime_unpause(curl_mimepart *part);
 
 #else
 /* if disabled */
@@ -158,6 +161,7 @@ const char *Curl_mime_contenttype(const char *filename);
 #define Curl_mime_size(x) (curl_off_t) -1
 #define Curl_mime_read NULL
 #define Curl_mime_rewind(x) ((void)x, CURLE_NOT_BUILT_IN)
+#define Curl_mime_unpause(x)
 #endif
 
 

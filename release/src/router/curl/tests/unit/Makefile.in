@@ -14,6 +14,28 @@
 
 @SET_MAKE@
 
+#***************************************************************************
+#                                  _   _ ____  _
+#  Project                     ___| | | |  _ \| |
+#                             / __| | | | |_) | |
+#                            | (__| |_| |  _ <| |___
+#                             \___|\___/|_| \_\_____|
+#
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+#
+# This software is licensed as described in the file COPYING, which
+# you should have received as part of this distribution. The terms
+# are also available at https://curl.haxx.se/docs/copyright.html.
+#
+# You may opt to use, copy, modify, merge, publish, distribute and/or sell
+# copies of the Software, and permit persons to whom the Software is
+# furnished to do so, under the terms of the COPYING file.
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
+# KIND, either express or implied.
+#
+###########################################################################
+
 # these files are used in every single unit test program
 
 VPATH = @srcdir@
@@ -127,6 +149,7 @@ am__EXEEXT_1 = unit1300$(EXEEXT) unit1301$(EXEEXT) unit1302$(EXEEXT) \
 	unit1601$(EXEEXT) unit1602$(EXEEXT) unit1603$(EXEEXT) \
 	unit1604$(EXEEXT) unit1605$(EXEEXT) unit1606$(EXEEXT) \
 	unit1607$(EXEEXT) unit1608$(EXEEXT) unit1609$(EXEEXT) \
+	unit1610$(EXEEXT) unit1611$(EXEEXT) unit1612$(EXEEXT) \
 	unit1620$(EXEEXT) unit1621$(EXEEXT) unit1650$(EXEEXT) \
 	unit1651$(EXEEXT) unit1652$(EXEEXT) unit1653$(EXEEXT) \
 	unit1654$(EXEEXT) unit1655$(EXEEXT)
@@ -299,49 +322,67 @@ unit1609_OBJECTS = $(am_unit1609_OBJECTS)
 unit1609_LDADD = $(LDADD)
 unit1609_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_28 = ../libtest/unit1620-first.$(OBJEXT)
-am_unit1620_OBJECTS = unit1620-unit1620.$(OBJEXT) $(am__objects_28)
+am__objects_28 = ../libtest/unit1610-first.$(OBJEXT)
+am_unit1610_OBJECTS = unit1610-unit1610.$(OBJEXT) $(am__objects_28)
+unit1610_OBJECTS = $(am_unit1610_OBJECTS)
+unit1610_LDADD = $(LDADD)
+unit1610_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
+	$(top_builddir)/lib/libcurlu.la
+am__objects_29 = ../libtest/unit1611-first.$(OBJEXT)
+am_unit1611_OBJECTS = unit1611-unit1611.$(OBJEXT) $(am__objects_29)
+unit1611_OBJECTS = $(am_unit1611_OBJECTS)
+unit1611_LDADD = $(LDADD)
+unit1611_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
+	$(top_builddir)/lib/libcurlu.la
+am__objects_30 = ../libtest/unit1612-first.$(OBJEXT)
+am_unit1612_OBJECTS = unit1612-unit1612.$(OBJEXT) $(am__objects_30)
+unit1612_OBJECTS = $(am_unit1612_OBJECTS)
+unit1612_LDADD = $(LDADD)
+unit1612_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
+	$(top_builddir)/lib/libcurlu.la
+am__objects_31 = ../libtest/unit1620-first.$(OBJEXT)
+am_unit1620_OBJECTS = unit1620-unit1620.$(OBJEXT) $(am__objects_31)
 unit1620_OBJECTS = $(am_unit1620_OBJECTS)
 unit1620_LDADD = $(LDADD)
 unit1620_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_29 = ../libtest/unit1621-first.$(OBJEXT)
-am_unit1621_OBJECTS = unit1621-unit1621.$(OBJEXT) $(am__objects_29)
+am__objects_32 = ../libtest/unit1621-first.$(OBJEXT)
+am_unit1621_OBJECTS = unit1621-unit1621.$(OBJEXT) $(am__objects_32)
 unit1621_OBJECTS = $(am_unit1621_OBJECTS)
 unit1621_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurl.la
-am__objects_30 = ../libtest/unit1650-first.$(OBJEXT)
-am_unit1650_OBJECTS = unit1650-unit1650.$(OBJEXT) $(am__objects_30)
+am__objects_33 = ../libtest/unit1650-first.$(OBJEXT)
+am_unit1650_OBJECTS = unit1650-unit1650.$(OBJEXT) $(am__objects_33)
 unit1650_OBJECTS = $(am_unit1650_OBJECTS)
 unit1650_LDADD = $(LDADD)
 unit1650_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_31 = ../libtest/unit1651-first.$(OBJEXT)
-am_unit1651_OBJECTS = unit1651-unit1651.$(OBJEXT) $(am__objects_31)
+am__objects_34 = ../libtest/unit1651-first.$(OBJEXT)
+am_unit1651_OBJECTS = unit1651-unit1651.$(OBJEXT) $(am__objects_34)
 unit1651_OBJECTS = $(am_unit1651_OBJECTS)
 unit1651_LDADD = $(LDADD)
 unit1651_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_32 = ../libtest/unit1652-first.$(OBJEXT)
-am_unit1652_OBJECTS = unit1652-unit1652.$(OBJEXT) $(am__objects_32)
+am__objects_35 = ../libtest/unit1652-first.$(OBJEXT)
+am_unit1652_OBJECTS = unit1652-unit1652.$(OBJEXT) $(am__objects_35)
 unit1652_OBJECTS = $(am_unit1652_OBJECTS)
 unit1652_LDADD = $(LDADD)
 unit1652_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_33 = ../libtest/unit1653-first.$(OBJEXT)
-am_unit1653_OBJECTS = unit1653-unit1653.$(OBJEXT) $(am__objects_33)
+am__objects_36 = ../libtest/unit1653-first.$(OBJEXT)
+am_unit1653_OBJECTS = unit1653-unit1653.$(OBJEXT) $(am__objects_36)
 unit1653_OBJECTS = $(am_unit1653_OBJECTS)
 unit1653_LDADD = $(LDADD)
 unit1653_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_34 = ../libtest/unit1654-first.$(OBJEXT)
-am_unit1654_OBJECTS = unit1654-unit1654.$(OBJEXT) $(am__objects_34)
+am__objects_37 = ../libtest/unit1654-first.$(OBJEXT)
+am_unit1654_OBJECTS = unit1654-unit1654.$(OBJEXT) $(am__objects_37)
 unit1654_OBJECTS = $(am_unit1654_OBJECTS)
 unit1654_LDADD = $(LDADD)
 unit1654_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
 	$(top_builddir)/lib/libcurlu.la
-am__objects_35 = ../libtest/unit1655-first.$(OBJEXT)
-am_unit1655_OBJECTS = unit1655-unit1655.$(OBJEXT) $(am__objects_35)
+am__objects_38 = ../libtest/unit1655-first.$(OBJEXT)
+am_unit1655_OBJECTS = unit1655-unit1655.$(OBJEXT) $(am__objects_38)
 unit1655_OBJECTS = $(am_unit1655_OBJECTS)
 unit1655_LDADD = $(LDADD)
 unit1655_DEPENDENCIES = $(top_builddir)/src/libcurltool.la \
@@ -388,6 +429,9 @@ am__depfiles_remade = ../libtest/$(DEPDIR)/unit1300-first.Po \
 	../libtest/$(DEPDIR)/unit1607-first.Po \
 	../libtest/$(DEPDIR)/unit1608-first.Po \
 	../libtest/$(DEPDIR)/unit1609-first.Po \
+	../libtest/$(DEPDIR)/unit1610-first.Po \
+	../libtest/$(DEPDIR)/unit1611-first.Po \
+	../libtest/$(DEPDIR)/unit1612-first.Po \
 	../libtest/$(DEPDIR)/unit1620-first.Po \
 	../libtest/$(DEPDIR)/unit1621-first.Po \
 	../libtest/$(DEPDIR)/unit1650-first.Po \
@@ -423,6 +467,9 @@ am__depfiles_remade = ../libtest/$(DEPDIR)/unit1300-first.Po \
 	./$(DEPDIR)/unit1607-unit1607.Po \
 	./$(DEPDIR)/unit1608-unit1608.Po \
 	./$(DEPDIR)/unit1609-unit1609.Po \
+	./$(DEPDIR)/unit1610-unit1610.Po \
+	./$(DEPDIR)/unit1611-unit1611.Po \
+	./$(DEPDIR)/unit1612-unit1612.Po \
 	./$(DEPDIR)/unit1620-unit1620.Po \
 	./$(DEPDIR)/unit1621-unit1621.Po \
 	./$(DEPDIR)/unit1650-unit1650.Po \
@@ -459,6 +506,7 @@ SOURCES = $(unit1300_SOURCES) $(unit1301_SOURCES) $(unit1302_SOURCES) \
 	$(unit1601_SOURCES) $(unit1602_SOURCES) $(unit1603_SOURCES) \
 	$(unit1604_SOURCES) $(unit1605_SOURCES) $(unit1606_SOURCES) \
 	$(unit1607_SOURCES) $(unit1608_SOURCES) $(unit1609_SOURCES) \
+	$(unit1610_SOURCES) $(unit1611_SOURCES) $(unit1612_SOURCES) \
 	$(unit1620_SOURCES) $(unit1621_SOURCES) $(unit1650_SOURCES) \
 	$(unit1651_SOURCES) $(unit1652_SOURCES) $(unit1653_SOURCES) \
 	$(unit1654_SOURCES) $(unit1655_SOURCES)
@@ -471,7 +519,8 @@ DIST_SOURCES = $(unit1300_SOURCES) $(unit1301_SOURCES) \
 	$(unit1600_SOURCES) $(unit1601_SOURCES) $(unit1602_SOURCES) \
 	$(unit1603_SOURCES) $(unit1604_SOURCES) $(unit1605_SOURCES) \
 	$(unit1606_SOURCES) $(unit1607_SOURCES) $(unit1608_SOURCES) \
-	$(unit1609_SOURCES) $(unit1620_SOURCES) $(unit1621_SOURCES) \
+	$(unit1609_SOURCES) $(unit1610_SOURCES) $(unit1611_SOURCES) \
+	$(unit1612_SOURCES) $(unit1620_SOURCES) $(unit1621_SOURCES) \
 	$(unit1650_SOURCES) $(unit1651_SOURCES) $(unit1652_SOURCES) \
 	$(unit1653_SOURCES) $(unit1654_SOURCES) $(unit1655_SOURCES)
 am__can_run_installinfo = \
@@ -647,6 +696,7 @@ USE_SCHANNEL = @USE_SCHANNEL@
 USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
 USE_WINDOWS_SSPI = @USE_WINDOWS_SSPI@
+USE_WOLFSSH = @USE_WOLFSSH@
 USE_WOLFSSL = @USE_WOLFSSL@
 VERSION = @VERSION@
 VERSIONNUM = @VERSIONNUM@
@@ -771,7 +821,8 @@ UNITPROGS = unit1300 unit1301 unit1302 unit1303 unit1304 unit1305 unit1307 \
  unit1330 unit1394 unit1395 unit1396 unit1397 unit1398 \
  unit1399 \
  unit1600 unit1601 unit1602 unit1603 unit1604 unit1605 unit1606 unit1607 \
- unit1608 unit1609 unit1620 unit1621 \
+ unit1608 unit1609 unit1610 unit1611 unit1612 \
+ unit1620 unit1621 \
  unit1650 unit1651 unit1652 unit1653 unit1654 unit1655
 
 unit1300_SOURCES = unit1300.c $(UNITFILES)
@@ -831,6 +882,12 @@ unit1608_SOURCES = unit1608.c $(UNITFILES)
 unit1608_CPPFLAGS = $(AM_CPPFLAGS)
 unit1609_SOURCES = unit1609.c $(UNITFILES)
 unit1609_CPPFLAGS = $(AM_CPPFLAGS)
+unit1610_SOURCES = unit1610.c $(UNITFILES)
+unit1610_CPPFLAGS = $(AM_CPPFLAGS)
+unit1611_SOURCES = unit1611.c $(UNITFILES)
+unit1611_CPPFLAGS = $(AM_CPPFLAGS)
+unit1612_SOURCES = unit1612.c $(UNITFILES)
+unit1612_CPPFLAGS = $(AM_CPPFLAGS)
 unit1620_SOURCES = unit1620.c $(UNITFILES)
 unit1620_CPPFLAGS = $(AM_CPPFLAGS)
 unit1621_SOURCES = unit1621.c $(UNITFILES)
@@ -1065,6 +1122,24 @@ unit1608$(EXEEXT): $(unit1608_OBJECTS) $(unit1608_DEPENDENCIES) $(EXTRA_unit1608
 unit1609$(EXEEXT): $(unit1609_OBJECTS) $(unit1609_DEPENDENCIES) $(EXTRA_unit1609_DEPENDENCIES) 
 	@rm -f unit1609$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(unit1609_OBJECTS) $(unit1609_LDADD) $(LIBS)
+../libtest/unit1610-first.$(OBJEXT): ../libtest/$(am__dirstamp) \
+	../libtest/$(DEPDIR)/$(am__dirstamp)
+
+unit1610$(EXEEXT): $(unit1610_OBJECTS) $(unit1610_DEPENDENCIES) $(EXTRA_unit1610_DEPENDENCIES) 
+	@rm -f unit1610$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unit1610_OBJECTS) $(unit1610_LDADD) $(LIBS)
+../libtest/unit1611-first.$(OBJEXT): ../libtest/$(am__dirstamp) \
+	../libtest/$(DEPDIR)/$(am__dirstamp)
+
+unit1611$(EXEEXT): $(unit1611_OBJECTS) $(unit1611_DEPENDENCIES) $(EXTRA_unit1611_DEPENDENCIES) 
+	@rm -f unit1611$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unit1611_OBJECTS) $(unit1611_LDADD) $(LIBS)
+../libtest/unit1612-first.$(OBJEXT): ../libtest/$(am__dirstamp) \
+	../libtest/$(DEPDIR)/$(am__dirstamp)
+
+unit1612$(EXEEXT): $(unit1612_OBJECTS) $(unit1612_DEPENDENCIES) $(EXTRA_unit1612_DEPENDENCIES) 
+	@rm -f unit1612$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(unit1612_OBJECTS) $(unit1612_LDADD) $(LIBS)
 ../libtest/unit1620-first.$(OBJEXT): ../libtest/$(am__dirstamp) \
 	../libtest/$(DEPDIR)/$(am__dirstamp)
 
@@ -1148,6 +1223,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1607-first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1608-first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1609-first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1610-first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1611-first.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1612-first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1620-first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1621-first.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@../libtest/$(DEPDIR)/unit1650-first.Po@am__quote@ # am--include-marker
@@ -1183,6 +1261,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1607-unit1607.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1608-unit1608.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1609-unit1609.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1610-unit1610.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1611-unit1611.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1612-unit1612.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1620-unit1620.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1621-unit1621.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unit1650-unit1650.Po@am__quote@ # am--include-marker
@@ -1978,6 +2059,90 @@ unit1609-unit1609.obj: unit1609.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1609_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1609-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
 
+unit1610-unit1610.o: unit1610.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1610-unit1610.o -MD -MP -MF $(DEPDIR)/unit1610-unit1610.Tpo -c -o unit1610-unit1610.o `test -f 'unit1610.c' || echo '$(srcdir)/'`unit1610.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1610-unit1610.Tpo $(DEPDIR)/unit1610-unit1610.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1610.c' object='unit1610-unit1610.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1610-unit1610.o `test -f 'unit1610.c' || echo '$(srcdir)/'`unit1610.c
+
+unit1610-unit1610.obj: unit1610.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1610-unit1610.obj -MD -MP -MF $(DEPDIR)/unit1610-unit1610.Tpo -c -o unit1610-unit1610.obj `if test -f 'unit1610.c'; then $(CYGPATH_W) 'unit1610.c'; else $(CYGPATH_W) '$(srcdir)/unit1610.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1610-unit1610.Tpo $(DEPDIR)/unit1610-unit1610.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1610.c' object='unit1610-unit1610.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1610-unit1610.obj `if test -f 'unit1610.c'; then $(CYGPATH_W) 'unit1610.c'; else $(CYGPATH_W) '$(srcdir)/unit1610.c'; fi`
+
+../libtest/unit1610-first.o: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1610-first.o -MD -MP -MF ../libtest/$(DEPDIR)/unit1610-first.Tpo -c -o ../libtest/unit1610-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1610-first.Tpo ../libtest/$(DEPDIR)/unit1610-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1610-first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1610-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+
+../libtest/unit1610-first.obj: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1610-first.obj -MD -MP -MF ../libtest/$(DEPDIR)/unit1610-first.Tpo -c -o ../libtest/unit1610-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1610-first.Tpo ../libtest/$(DEPDIR)/unit1610-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1610-first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1610_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1610-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+
+unit1611-unit1611.o: unit1611.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1611-unit1611.o -MD -MP -MF $(DEPDIR)/unit1611-unit1611.Tpo -c -o unit1611-unit1611.o `test -f 'unit1611.c' || echo '$(srcdir)/'`unit1611.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1611-unit1611.Tpo $(DEPDIR)/unit1611-unit1611.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1611.c' object='unit1611-unit1611.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1611-unit1611.o `test -f 'unit1611.c' || echo '$(srcdir)/'`unit1611.c
+
+unit1611-unit1611.obj: unit1611.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1611-unit1611.obj -MD -MP -MF $(DEPDIR)/unit1611-unit1611.Tpo -c -o unit1611-unit1611.obj `if test -f 'unit1611.c'; then $(CYGPATH_W) 'unit1611.c'; else $(CYGPATH_W) '$(srcdir)/unit1611.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1611-unit1611.Tpo $(DEPDIR)/unit1611-unit1611.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1611.c' object='unit1611-unit1611.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1611-unit1611.obj `if test -f 'unit1611.c'; then $(CYGPATH_W) 'unit1611.c'; else $(CYGPATH_W) '$(srcdir)/unit1611.c'; fi`
+
+../libtest/unit1611-first.o: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1611-first.o -MD -MP -MF ../libtest/$(DEPDIR)/unit1611-first.Tpo -c -o ../libtest/unit1611-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1611-first.Tpo ../libtest/$(DEPDIR)/unit1611-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1611-first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1611-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+
+../libtest/unit1611-first.obj: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1611-first.obj -MD -MP -MF ../libtest/$(DEPDIR)/unit1611-first.Tpo -c -o ../libtest/unit1611-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1611-first.Tpo ../libtest/$(DEPDIR)/unit1611-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1611-first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1611_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1611-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+
+unit1612-unit1612.o: unit1612.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1612-unit1612.o -MD -MP -MF $(DEPDIR)/unit1612-unit1612.Tpo -c -o unit1612-unit1612.o `test -f 'unit1612.c' || echo '$(srcdir)/'`unit1612.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1612-unit1612.Tpo $(DEPDIR)/unit1612-unit1612.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1612.c' object='unit1612-unit1612.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1612-unit1612.o `test -f 'unit1612.c' || echo '$(srcdir)/'`unit1612.c
+
+unit1612-unit1612.obj: unit1612.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1612-unit1612.obj -MD -MP -MF $(DEPDIR)/unit1612-unit1612.Tpo -c -o unit1612-unit1612.obj `if test -f 'unit1612.c'; then $(CYGPATH_W) 'unit1612.c'; else $(CYGPATH_W) '$(srcdir)/unit1612.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1612-unit1612.Tpo $(DEPDIR)/unit1612-unit1612.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='unit1612.c' object='unit1612-unit1612.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unit1612-unit1612.obj `if test -f 'unit1612.c'; then $(CYGPATH_W) 'unit1612.c'; else $(CYGPATH_W) '$(srcdir)/unit1612.c'; fi`
+
+../libtest/unit1612-first.o: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1612-first.o -MD -MP -MF ../libtest/$(DEPDIR)/unit1612-first.Tpo -c -o ../libtest/unit1612-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1612-first.Tpo ../libtest/$(DEPDIR)/unit1612-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1612-first.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1612-first.o `test -f '../libtest/first.c' || echo '$(srcdir)/'`../libtest/first.c
+
+../libtest/unit1612-first.obj: ../libtest/first.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT ../libtest/unit1612-first.obj -MD -MP -MF ../libtest/$(DEPDIR)/unit1612-first.Tpo -c -o ../libtest/unit1612-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) ../libtest/$(DEPDIR)/unit1612-first.Tpo ../libtest/$(DEPDIR)/unit1612-first.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='../libtest/first.c' object='../libtest/unit1612-first.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1612_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o ../libtest/unit1612-first.obj `if test -f '../libtest/first.c'; then $(CYGPATH_W) '../libtest/first.c'; else $(CYGPATH_W) '$(srcdir)/../libtest/first.c'; fi`
+
 unit1620-unit1620.o: unit1620.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unit1620_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT unit1620-unit1620.o -MD -MP -MF $(DEPDIR)/unit1620-unit1620.Tpo -c -o unit1620-unit1620.o `test -f 'unit1620.c' || echo '$(srcdir)/'`unit1620.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/unit1620-unit1620.Tpo $(DEPDIR)/unit1620-unit1620.Po
@@ -2362,6 +2527,9 @@ distclean: distclean-am
 	-rm -f ../libtest/$(DEPDIR)/unit1607-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1608-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1609-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1610-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1611-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1612-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1620-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1621-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1650-first.Po
@@ -2397,6 +2565,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/unit1607-unit1607.Po
 	-rm -f ./$(DEPDIR)/unit1608-unit1608.Po
 	-rm -f ./$(DEPDIR)/unit1609-unit1609.Po
+	-rm -f ./$(DEPDIR)/unit1610-unit1610.Po
+	-rm -f ./$(DEPDIR)/unit1611-unit1611.Po
+	-rm -f ./$(DEPDIR)/unit1612-unit1612.Po
 	-rm -f ./$(DEPDIR)/unit1620-unit1620.Po
 	-rm -f ./$(DEPDIR)/unit1621-unit1621.Po
 	-rm -f ./$(DEPDIR)/unit1650-unit1650.Po
@@ -2477,6 +2648,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ../libtest/$(DEPDIR)/unit1607-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1608-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1609-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1610-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1611-first.Po
+	-rm -f ../libtest/$(DEPDIR)/unit1612-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1620-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1621-first.Po
 	-rm -f ../libtest/$(DEPDIR)/unit1650-first.Po
@@ -2512,6 +2686,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/unit1607-unit1607.Po
 	-rm -f ./$(DEPDIR)/unit1608-unit1608.Po
 	-rm -f ./$(DEPDIR)/unit1609-unit1609.Po
+	-rm -f ./$(DEPDIR)/unit1610-unit1610.Po
+	-rm -f ./$(DEPDIR)/unit1611-unit1611.Po
+	-rm -f ./$(DEPDIR)/unit1612-unit1612.Po
 	-rm -f ./$(DEPDIR)/unit1620-unit1620.Po
 	-rm -f ./$(DEPDIR)/unit1621-unit1621.Po
 	-rm -f ./$(DEPDIR)/unit1650-unit1650.Po

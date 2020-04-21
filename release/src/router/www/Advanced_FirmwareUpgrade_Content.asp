@@ -1241,7 +1241,7 @@ function toggle_fw_check(state) {
 				<td><% nvram_get("dsllog_drvver"); %></td>
 			</tr>
 			<tr id="sig_ver_field" style="display:none;">
-				<th><#sig_ver#></th>
+				<th>Trend Micro: <#sig_ver#></th>
 				<td >
 					<div style="height:33px;margin-top:5px;"><span id="sig_ver_word" style="color:#FFFFFF;"></span><span id="sig_update_date"></span></div>
 					<div style="margin-left:300px;margin-top:-38px;">

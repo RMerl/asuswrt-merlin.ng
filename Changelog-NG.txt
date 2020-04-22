@@ -13,6 +13,14 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Various webui issues with sorting DHCP reservations.
 
 
+384.13_7 (xx-xxx-xxxx)
+  This release is only available for the RT-AC87U and RT-AC3200.
+
+  - UPDATED: dnsmasq to 2.81-openssl (themiron)
+  - UPDATED: openvpn to 2.4.9.
+  - UPDATED: openssl-1.1 to 1.1.1g (themiron)
+
+
 384.16 (5-Apr-2020)
   - NEW: Added support for the RT-AX58U and RT-AX3000 (same
          firmware), based on GPL 384_8253 + binary blobs 384_8137.

@@ -342,7 +342,6 @@ if(pm_support) {
 	["10", "iPhone"], ["11", "Apple TV"], ["12", "Set-Top Box"], ["13", ""], ["14", "iMac"], ["15", "ROG"], ["16", ""], ["17", ""], ["18", "Printer"], ["19", "Windows Phone"], ["20", "Android Tablet"],
 	["21", "iPad"], ["22", "Linux Device"], ["23", "Smart TV"], ["24", "Repeater"], ["25", "Kindle"], ["26", "Scanner"], ["27", "Chromecast"], ["28", "ASUS Smartphone"],
 	["29", "ASUS Pad"], ["30", "Windows"], ["31", "Android"], ["32", "Mac OS"]
-	, ["33", "Smartphone"], ["34", "Desktop"], ["35", "Windows Laptop"], ["36", "Linux"], ["37", "ASUS"], ["38", "ASUS Laptop"], ["39", "Smart Watch"], ["40", "Laptop"]
 	];
 
 	var device_type_array = new Array();

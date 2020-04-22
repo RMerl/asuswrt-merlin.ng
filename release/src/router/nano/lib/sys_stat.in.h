@@ -392,13 +392,25 @@ struct stat
 
 
 #if @GNULIB_FCHMODAT@
-# if !@HAVE_FCHMODAT@
+# if @REPLACE_FCHMODAT@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef fchmodat
+#   define fchmodat rpl_fchmodat
+#  endif
+_GL_FUNCDECL_RPL (fchmodat, int,
+                  (int fd, char const *file, mode_t mode, int flag)
+                  _GL_ARG_NONNULL ((2)));
+_GL_CXXALIAS_RPL (fchmodat, int,
+                  (int fd, char const *file, mode_t mode, int flag));
+# else
+#  if !@HAVE_FCHMODAT@
 _GL_FUNCDECL_SYS (fchmodat, int,
                   (int fd, char const *file, mode_t mode, int flag)
                   _GL_ARG_NONNULL ((2)));
-# endif
+#  endif
 _GL_CXXALIAS_SYS (fchmodat, int,
                   (int fd, char const *file, mode_t mode, int flag));
+# endif
 _GL_CXXALIASWARN (fchmodat);
 #elif defined GNULIB_POSIXCHECK
 # undef fchmodat
@@ -443,18 +455,22 @@ _GL_WARN_ON_USE (fstat, "fstat has portability problems - "
 #   define fstatat rpl_fstatat
 #  endif
 _GL_FUNCDECL_RPL (fstatat, int,
-                  (int fd, char const *name, struct stat *st, int flags)
+                  (int fd, char const *restrict name, struct stat *restrict st,
+                   int flags)
                   _GL_ARG_NONNULL ((2, 3)));
 _GL_CXXALIAS_RPL (fstatat, int,
-                  (int fd, char const *name, struct stat *st, int flags));
+                  (int fd, char const *restrict name, struct stat *restrict st,
+                   int flags));
 # else
 #  if !@HAVE_FSTATAT@
 _GL_FUNCDECL_SYS (fstatat, int,
-                  (int fd, char const *name, struct stat *st, int flags)
+                  (int fd, char const *restrict name, struct stat *restrict st,
+                   int flags)
                   _GL_ARG_NONNULL ((2, 3)));
 #  endif
 _GL_CXXALIAS_SYS (fstatat, int,
-                  (int fd, char const *name, struct stat *st, int flags));
+                  (int fd, char const *restrict name, struct stat *restrict st,
+                   int flags));
 # endif
 _GL_CXXALIASWARN (fstatat);
 #elif @GNULIB_OVERRIDES_STRUCT_STAT@
@@ -502,31 +518,12 @@ _GL_WARN_ON_USE (futimens, "futimens is not portable - "
 #if @GNULIB_LCHMOD@
 /* Change the mode of FILENAME to MODE, without dereferencing it if FILENAME
    denotes a symbolic link.  */
-# if !@HAVE_LCHMOD@
-/* The lchmod replacement follows symbolic links.  Callers should take
-   this into account; lchmod should be applied only to arguments that
-   are known to not be symbolic links.  On hosts that lack lchmod,
-   this can lead to race conditions between the check and the
-   invocation of lchmod, but we know of no workarounds that are
-   reliable in general.  You might try requesting support for lchmod
-   from your operating system supplier.  */
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
-#   define lchmod chmod
-#  endif
-/* Need to cast, because on mingw, the second parameter of chmod is
-                                                int mode.  */
-_GL_CXXALIAS_RPL_CAST_1 (lchmod, chmod, int,
-                         (const char *filename, mode_t mode));
-# else
-#  if 0 /* assume already declared */
+# if !@HAVE_LCHMOD@ || defined __hpux
 _GL_FUNCDECL_SYS (lchmod, int, (const char *filename, mode_t mode)
                                _GL_ARG_NONNULL ((1)));
-#  endif
+# endif
 _GL_CXXALIAS_SYS (lchmod, int, (const char *filename, mode_t mode));
-# endif
-# if @HAVE_LCHMOD@
 _GL_CXXALIASWARN (lchmod);
-# endif
 #elif defined GNULIB_POSIXCHECK
 # undef lchmod
 # if HAVE_RAW_DECL_LCHMOD
@@ -543,17 +540,21 @@ _GL_WARN_ON_USE (lchmod, "lchmod is unportable - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define lstat stat
 #  endif
-_GL_CXXALIAS_RPL_1 (lstat, stat, int, (const char *name, struct stat *buf));
+_GL_CXXALIAS_RPL_1 (lstat, stat, int,
+                    (const char *restrict name, struct stat *restrict buf));
 # elif @REPLACE_LSTAT@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   undef lstat
 #   define lstat rpl_lstat
 #  endif
-_GL_FUNCDECL_RPL (lstat, int, (const char *name, struct stat *buf)
-                              _GL_ARG_NONNULL ((1, 2)));
-_GL_CXXALIAS_RPL (lstat, int, (const char *name, struct stat *buf));
+_GL_FUNCDECL_RPL (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf)
+                  _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf));
 # else
-_GL_CXXALIAS_SYS (lstat, int, (const char *name, struct stat *buf));
+_GL_CXXALIAS_SYS (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf));
 # endif
 # if @HAVE_LSTAT@
 _GL_CXXALIASWARN (lstat);
@@ -766,7 +767,7 @@ _GL_WARN_ON_USE (mknodat, "mknodat is not portable - "
 #    define stat(name, st) rpl_stat (name, st)
 #   endif /* !_LARGE_FILES */
 #  endif /* !@GNULIB_OVERRIDES_STRUCT_STAT@ */
-_GL_EXTERN_C int stat (const char *name, struct stat *buf)
+_GL_EXTERN_C int stat (const char *restrict name, struct stat *restrict buf)
                       _GL_ARG_NONNULL ((1, 2));
 # endif
 #elif @GNULIB_OVERRIDES_STRUCT_STAT@

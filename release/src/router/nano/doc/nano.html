@@ -45,7 +45,7 @@ ul.no-bullet {list-style: none}
 
 
 <span id="Top"></span><span id="SEC_Top"></span>
-<p>This manual documents the GNU <code>nano</code> editor, version 4.8.
+<p>This manual documents the GNU <code>nano</code> editor, version 4.9.2.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -483,16 +483,17 @@ disabled to display the help-system navigation keys.
 </p>
 </dd>
 <dt><samp>-z</samp></dt>
-<dt><samp>--suspend</samp></dt>
+<dt><samp>--suspendable</samp></dt>
 <dd><p>Enable the ability to suspend <code>nano</code> using the system&rsquo;s suspend
 keystroke (usually <kbd>^Z</kbd>).
 </p>
 </dd>
 <dt><samp>-$</samp></dt>
 <dt><samp>--softwrap</samp></dt>
-<dd><p>Enable &rsquo;soft wrapping&rsquo;.  This will make <code>nano</code> attempt to display the
-entire contents of any line, even if it is longer than the screen width, by
-continuing it over multiple screen lines.  Since
+<dd><p>Display lines that exceed the screen&rsquo;s width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen&rsquo;s edge, by using also <code>--atblanks</code>.)
+Since
 <code>$</code> normally refers to a variable in the Unix shell, you should specify
 this option last when using other options (e.g. <code>nano -wS$</code>) or pass it
 separately (e.g. <code>nano -wS -$</code>).
@@ -726,7 +727,7 @@ The following global toggles are available:
 </p>
 </dd>
 <dt><code>Suspension</code></dt>
-<dd><p><kbd>Meta-Z</kbd> toggles the <samp>-z</samp> (<samp>--suspend</samp>) command-line option.
+<dd><p><kbd>Meta-Z</kbd> toggles the <samp>-z</samp> (<samp>--suspendable</samp>) command-line option.
 </p>
 </dd>
 </dl>
@@ -735,9 +736,8 @@ The following global toggles are available:
 <hr>
 <span id="Nanorc-Files"></span><span id="Nanorc-Files-1"></span><h2 class="chapter">7 Nanorc Files</h2>
 
-<p>The nanorc files contain the default settings for <code>nano</code>.  They
-should be in Unix format, not in DOS or Mac format.  During startup,
-if <samp>--rcfile</samp> is not given, <code>nano</code> will read two files:
+<p>The nanorc files contain the default settings for <code>nano</code>.  During
+startup, if <samp>--rcfile</samp> is not given, <code>nano</code> will read two files:
 first the system-wide settings, from <samp>/etc/nanorc</samp> (the exact path
 might be different on your system), and then the user-specific settings,
 either from <samp>~/.nanorc</samp> or from <samp>$XDG_CONFIG_HOME/nano/nanorc</samp>
@@ -1026,7 +1026,9 @@ When needed, use <code>unset jumpyscrolling</code> instead.
 </p>
 </dd>
 <dt><code>set softwrap</code></dt>
-<dd><p>Enable soft line wrapping for easier viewing of very long lines.
+<dd><p>Display lines that exceed the screen&rsquo;s width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen&rsquo;s edge, by using also <code>set atblanks</code>.)
 </p>
 </dd>
 <dt><code>set speller &quot;<var>program</var> [<var>argument</var> &hellip;]&quot;</code></dt>
@@ -1044,8 +1046,8 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
-<dt><code>set suspend</code></dt>
-<dd><p>Allow <code>nano</code> to be suspended.
+<dt><code>set suspendable</code></dt>
+<dd><p>Allow <code>nano</code> to be suspended (with <kbd>^Z</kbd> by default).
 </p>
 </dd>
 <dt><code>set tabsize <var>number</var></code></dt>
@@ -1301,6 +1303,8 @@ with Shift.)
 </li></ul>
 
 <p>Rebinding <code>^M</code> (Enter) or <code>^I</code> (Tab) is probably not a good idea.
+Rebinding <code>^[</code> (Esc) is not possible, because its keycode
+is the starter byte of escape sequences and Meta keystrokes.
 On some terminals it&rsquo;s not possible to rebind <code>^H</code> (unless <code>--raw</code>
 is used) because its keycode is identical to that of the Backspace key.
 </p>
@@ -1377,7 +1381,7 @@ current cursor position.
 <dd><p>Deletes from the cursor position to the beginning of the preceding word.
 (This function is bound by default to &lt;Shift+Ctrl+Delete&gt;.  If your terminal
 produces <code>^H</code> for &lt;Ctrl+Backspace&gt;, you can make &lt;Ctrl+Backspace&gt; delete
-the word to the left of the cursor by rebinding ^H to this function.)
+the word to the left of the cursor by rebinding <kbd>^H</kbd> to this function.)
 </p>
 </dd>
 <dt><code>chopwordright</code></dt>
@@ -1581,7 +1585,7 @@ as a macro.  When already recording, the recording is stopped.
 </dd>
 <dt><code>suspend</code></dt>
 <dd><p>Suspends the editor (if the suspending function is enabled, see the
-&quot;suspendenable&quot; entry below).
+<code>suspendable</code> toggle item below).
 </p>
 </dd>
 <dt><code>casesens</code></dt>
@@ -1726,8 +1730,10 @@ position to the end of the line.
 <dd><p>Toggles mouse support.
 </p>
 </dd>
-<dt><code>suspendenable</code></dt>
-<dd><p>Toggles whether the suspend shortcut (normally <kbd>^Z</kbd>) will suspend the editor.
+<dt><code>suspendable</code></dt>
+<dd><p>Toggles whether the suspend keystroke (<kbd>^Z</kbd> by default)
+will actually suspend the editor.
+(The old name of this function, &rsquo;suspendenable&rsquo;, is deprecated.)
 </p>
 </dd>
 </dl>

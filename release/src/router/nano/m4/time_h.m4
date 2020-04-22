@@ -2,7 +2,7 @@
 
 # Copyright (C) 2000-2001, 2003-2007, 2009-2020 Free Software Foundation, Inc.
 
-# serial 11
+# serial 12
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -19,10 +19,12 @@ AC_DEFUN([gl_HEADER_TIME_H],
 
 AC_DEFUN([gl_HEADER_TIME_H_BODY],
 [
-  AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([gl_HEADER_TIME_H_DEFAULTS])
+
   gl_NEXT_HEADERS([time.h])
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 dnl Check whether 'struct timespec' is declared

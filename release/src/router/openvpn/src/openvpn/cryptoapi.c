@@ -50,6 +50,7 @@
 
 #include "buffer.h"
 #include "openssl_compat.h"
+#include "win32.h"
 
 /* MinGW w32api 3.17 is still incomplete when it comes to CryptoAPI while
  * MinGW32-w64 defines all macros used. This is a hack around that problem.
@@ -529,27 +530,32 @@ find_certificate_in_store(const char *cert_prop, HCERTSTORE cert_store)
      * SUBJ:<certificate substring to match>
      * THUMB:<certificate thumbprint hex value>, e.g.
      *     THUMB:f6 49 24 41 01 b4 fb 44 0c ce f4 36 ae d0 c4 c9 df 7a b6 28
+     * The first matching certificate that has not expired is returned.
      */
     const CERT_CONTEXT *rv = NULL;
+    DWORD find_type;
+    const void *find_param;
+    unsigned char hash[255];
+    CRYPT_HASH_BLOB blob = {.cbData = 0, .pbData = hash};
+    struct gc_arena gc = gc_new();
 
     if (!strncmp(cert_prop, "SUBJ:", 5))
     {
         /* skip the tag */
-        cert_prop += 5;
-        rv = CertFindCertificateInStore(cert_store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                                        0, CERT_FIND_SUBJECT_STR_A, cert_prop, NULL);
-
+        find_param = wide_string(cert_prop + 5, &gc);
+        find_type = CERT_FIND_SUBJECT_STR_W;
     }
     else if (!strncmp(cert_prop, "THUMB:", 6))
     {
-        unsigned char hash[255];
-        char *p;
+        const char *p;
         int i, x = 0;
-        CRYPT_HASH_BLOB blob;
+        find_type = CERT_FIND_HASH;
+        find_param = &blob;
 
         /* skip the tag */
         cert_prop += 6;
-        for (p = (char *) cert_prop, i = 0; *p && i < sizeof(hash); i++) {
+        for (p = cert_prop, i = 0; *p && i < sizeof(hash); i++)
+        {
             if (*p >= '0' && *p <= '9')
             {
                 x = (*p - '0') << 4;
@@ -564,7 +570,8 @@ find_certificate_in_store(const char *cert_prop, HCERTSTORE cert_store)
             }
             if (!*++p)  /* unexpected end of string */
             {
-                break;
+                msg(M_WARN, "WARNING: cryptoapicert: error parsing <THUMB:%s>.", cert_prop);
+                goto out;
             }
             if (*p >= '0' && *p <= '9')
             {
@@ -585,12 +592,33 @@ find_certificate_in_store(const char *cert_prop, HCERTSTORE cert_store)
             }
         }
         blob.cbData = i;
-        blob.pbData = (unsigned char *) &hash;
-        rv = CertFindCertificateInStore(cert_store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-                                        0, CERT_FIND_HASH, &blob, NULL);
-
+    }
+    else
+    {
+        msg(M_WARN, "WARNING: cryptoapicert: unsupported certificate specification <%s>", cert_prop);
+        goto out;
     }
 
+    while(true)
+    {
+        int validity = 1;
+        /* this frees previous rv, if not NULL */
+        rv = CertFindCertificateInStore(cert_store, X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                                        0, find_type, find_param, rv);
+        if (rv)
+        {
+            validity = CertVerifyTimeValidity(NULL, rv->pCertInfo);
+        }
+        if (!rv || validity == 0)
+        {
+            break;
+        }
+        msg(M_WARN, "WARNING: cryptoapicert: ignoring certificate in store %s.",
+            validity < 0 ? "not yet valid" : "that has expired");
+    }
+
+out:
+    gc_free(&gc);
     return rv;
 }
 

@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -102,7 +102,6 @@ CURLcode Curl_none_md5sum(unsigned char *input, size_t inputlen,
 #include "gtls.h"           /* GnuTLS versions */
 #include "nssg.h"           /* NSS versions */
 #include "gskit.h"          /* Global Secure ToolKit versions */
-#include "polarssl.h"       /* PolarSSL versions */
 #include "wolfssl.h"        /* wolfSSL versions */
 #include "schannel.h"       /* Schannel SSPI version */
 #include "sectransp.h"      /* SecureTransport (Darwin) version */
@@ -263,7 +262,6 @@ bool Curl_ssl_false_start(void);
 #define Curl_ssl_send(a,b,c,d,e) -1
 #define Curl_ssl_recv(a,b,c,d,e) -1
 #define Curl_ssl_initsessions(x,y) CURLE_OK
-#define Curl_ssl_version(x,y) 0
 #define Curl_ssl_data_pending(x,y) 0
 #define Curl_ssl_check_cxn(x) 0
 #define Curl_ssl_free_certinfo(x) Curl_nop_stmt

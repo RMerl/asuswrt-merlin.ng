@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "January 05, 2020" "libcurl 7.68.0" "libcurl Manual"
+.TH curl_easy_setopt 3 "January 14, 2020" "libcurl 7.69.1" "libcurl Manual"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
@@ -358,6 +358,8 @@ Address of the sender. See \fICURLOPT_MAIL_FROM(3)\fP
 Address of the recipients. See \fICURLOPT_MAIL_RCPT(3)\fP
 .IP CURLOPT_MAIL_AUTH
 Authentication address. See \fICURLOPT_MAIL_AUTH(3)\fP
+.IP CURLOPT_MAIL_RCPT_ALLLOWFAILS
+Allow RCPT TO command to fail for some recipients. See \fICURLOPT_MAIL_RCPT_ALLLOWFAILS(3)\fP
 .SH TFTP OPTIONS
 .IP CURLOPT_TFTP_BLKSIZE
 TFTP block size. See \fICURLOPT_TFTP_BLKSIZE(3)\fP

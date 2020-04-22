@@ -1,3 +1,23 @@
+2020.04.07 - GNU nano 4.9.2 "Mali Lošinj"
+• Another bug introduced in version 4.9 is fixed: a likely crash
+  after undoing an <Enter> at the end of leading whitespace.
+
+2020.03.31 - GNU nano 4.9.1 "Sapperdeflap"
+• Two bugs introduced in version 4.9 are fixed: the cursor
+  getting misplaced when undoing line cuts, and filtering
+  of the whole buffer to a new buffer not working.
+
+2020.03.24 - GNU nano 4.9 "die fetten Jahre sind vorbei"
+• When justifying a selection, the new paragraph and the
+  succeeding one get the appropriate first-line indent.
+• Trying to justify an empty selection does not crash.
+• Redoing the insertion of an empty file does not crash.
+• On the BSDs and macOS, ^H has become rebindable again
+  (in most terminal emulators, not on the console).
+• DOS line endings in nanorc files are accepted.
+• Option --suspend / 'set suspend' has been renamed to
+  the more logical --suspendable / 'set suspendable'.
+
 2020.02.07 - GNU nano 4.8 "Jaška"
 • When something is pasted into nano, auto-indentation is suppressed,
   and the paste can be undone as a whole with a single M-U.

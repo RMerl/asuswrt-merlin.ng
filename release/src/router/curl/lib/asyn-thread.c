@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -71,7 +71,6 @@
 #include "strerror.h"
 #include "url.h"
 #include "multiif.h"
-#include "inet_pton.h"
 #include "inet_ntop.h"
 #include "curl_threads.h"
 #include "connect.h"
@@ -692,25 +691,10 @@ Curl_addrinfo *Curl_resolver_getaddrinfo(struct connectdata *conn,
                                          int port,
                                          int *waitp)
 {
-  struct in_addr in;
   struct Curl_easy *data = conn->data;
   struct resdata *reslv = (struct resdata *)data->state.resolver;
 
   *waitp = 0; /* default to synchronous response */
-
-#ifdef ENABLE_IPV6
-  {
-    struct in6_addr in6;
-    /* check if this is an IPv6 address string */
-    if(Curl_inet_pton(AF_INET6, hostname, &in6) > 0)
-      /* This is an IPv6 address literal */
-      return Curl_ip2addr(AF_INET6, &in6, hostname, port);
-  }
-#endif /* ENABLE_IPV6 */
-
-  if(Curl_inet_pton(AF_INET, hostname, &in) > 0)
-    /* This is a dotted IP address 123.123.123.123-style */
-    return Curl_ip2addr(AF_INET, &in, hostname, port);
 
   reslv->start = Curl_now();
 
@@ -736,31 +720,11 @@ Curl_addrinfo *Curl_resolver_getaddrinfo(struct connectdata *conn,
                                          int *waitp)
 {
   struct addrinfo hints;
-  char sbuf[12];
   int pf = PF_INET;
   struct Curl_easy *data = conn->data;
   struct resdata *reslv = (struct resdata *)data->state.resolver;
 
   *waitp = 0; /* default to synchronous response */
-
-#ifndef USE_RESOLVE_ON_IPS
-  {
-    struct in_addr in;
-    /* First check if this is an IPv4 address string */
-    if(Curl_inet_pton(AF_INET, hostname, &in) > 0)
-      /* This is a dotted IP address 123.123.123.123-style */
-      return Curl_ip2addr(AF_INET, &in, hostname, port);
-  }
-#ifdef ENABLE_IPV6
-  {
-    struct in6_addr in6;
-    /* check if this is an IPv6 address string */
-    if(Curl_inet_pton(AF_INET6, hostname, &in6) > 0)
-      /* This is an IPv6 address literal */
-      return Curl_ip2addr(AF_INET6, &in6, hostname, port);
-  }
-#endif /* ENABLE_IPV6 */
-#endif /* !USE_RESOLVE_ON_IPS */
 
 #ifdef CURLRES_IPV6
   /*
@@ -778,7 +742,7 @@ Curl_addrinfo *Curl_resolver_getaddrinfo(struct connectdata *conn,
     break;
   }
 
-  if((pf != PF_INET) && !Curl_ipv6works())
+  if((pf != PF_INET) && !Curl_ipv6works(conn))
     /* The stack seems to be a non-IPv6 one */
     pf = PF_INET;
 #endif /* CURLRES_IPV6 */
@@ -787,8 +751,6 @@ Curl_addrinfo *Curl_resolver_getaddrinfo(struct connectdata *conn,
   hints.ai_family = pf;
   hints.ai_socktype = (conn->transport == TRNSPRT_TCP)?
     SOCK_STREAM : SOCK_DGRAM;
-
-  msnprintf(sbuf, sizeof(sbuf), "%d", port);
 
   reslv->start = Curl_now();
   /* fire up a new resolver thread! */

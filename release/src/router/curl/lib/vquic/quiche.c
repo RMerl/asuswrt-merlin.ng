@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -171,7 +171,7 @@ CURLcode Curl_quic_connect(struct connectdata *conn, curl_socket_t sockfd,
     return CURLE_FAILED_INIT;
   }
 
-  quiche_config_set_idle_timeout(qs->cfg, QUIC_IDLE_TIMEOUT);
+  quiche_config_set_max_idle_timeout(qs->cfg, QUIC_IDLE_TIMEOUT);
   quiche_config_set_initial_max_data(qs->cfg, QUIC_MAX_DATA);
   quiche_config_set_initial_max_stream_data_bidi_local(qs->cfg, QUIC_MAX_DATA);
   quiche_config_set_initial_max_stream_data_bidi_remote(qs->cfg,
@@ -532,7 +532,7 @@ static ssize_t h3_stream_send(struct connectdata *conn,
  */
 int Curl_quic_ver(char *p, size_t len)
 {
-  return msnprintf(p, len, " quiche/%s", quiche_version());
+  return msnprintf(p, len, "quiche/%s", quiche_version());
 }
 
 /* Index where :authority header field will appear in request header

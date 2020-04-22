@@ -1,5 +1,3 @@
-#ifndef HEADER_CURL_POLARSSL_H
-#define HEADER_CURL_POLARSSL_H
 /***************************************************************************
  *                                  _   _ ____  _
  *  Project                     ___| | | |  _ \| |
@@ -7,8 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2012 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
- * Copyright (C) 2010, Hoi-Ho Chan, <hoiho.chan@gmail.com>
+ * Copyright (C) 2013 - 2020, Linus Nielsen Feltzing, <linus@haxx.se>
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -22,11 +19,29 @@
  * KIND, either express or implied.
  *
  ***************************************************************************/
-#include "curl_setup.h"
+#include "test.h"
 
-#ifdef USE_POLARSSL
+#include "testutil.h"
+#include "warnless.h"
+#include "memdebug.h"
 
-extern const struct Curl_ssl Curl_ssl_polarssl;
+int test(char *URL)
+{
+  CURLcode ret = CURLE_OK;
+  CURL *hnd;
+  start_test_timing();
 
-#endif /* USE_POLARSSL */
-#endif /* HEADER_CURL_POLARSSL_H */
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  hnd = curl_easy_init();
+  if(hnd) {
+    curl_easy_setopt(hnd, CURLOPT_URL, URL);
+    curl_easy_setopt(hnd, CURLOPT_NOPROGRESS, 1L);
+    curl_easy_setopt(hnd, CURLOPT_ALTSVC, "log/altsvc-1908");
+    ret = curl_easy_perform(hnd);
+    curl_easy_reset(hnd);
+    curl_easy_cleanup(hnd);
+  }
+  curl_global_cleanup();
+  return (int)ret;
+}

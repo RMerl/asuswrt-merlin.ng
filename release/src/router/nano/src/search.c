@@ -519,8 +519,6 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 	linestruct *top, *bot;
 	size_t top_x, bot_x;
 	bool right_side_up = FALSE;
-		/* TRUE if (mark_begin, mark_begin_x) is the top of the mark,
-		 * FALSE if (current, current_x) is. */
 
 	/* If the mark is on, frame the region, and turn the mark off. */
 	if (openfile->mark) {

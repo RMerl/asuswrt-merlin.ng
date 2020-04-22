@@ -44,118 +44,91 @@ bool using_utf8(void)
 }
 #endif /* ENABLE_UTF8 */
 
-/* Concatenate two allocated strings, and free the second. */
-char *addstrings(char* str1, size_t len1, char* str2, size_t len2)
-{
-	str1 = charealloc(str1, len1 + len2 + 1);
-	str1[len1] = '\0';
-
-	strncat(&str1[len1], str2, len2);
-	free(str2);
-
-	return str1;
-}
-
-/* Return TRUE if the value of c is in byte range, and FALSE otherwise. */
-bool is_byte(int c)
-{
-	return ((unsigned int)c == (unsigned char)c);
-}
-
-/* This function is equivalent to isalpha() for multibyte characters. */
-bool is_alpha_mbchar(const char *c)
+#ifdef ENABLE_SPELLER
+/* Return TRUE when the given character is some kind of letter. */
+bool is_alpha_char(const char *c)
 {
 #ifdef ENABLE_UTF8
-	if (use_utf8) {
-		wchar_t wc;
+	wchar_t wc;
 
-		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
-			return FALSE;
+	if (mbtowc(&wc, c, MAXCHARLEN) < 0)
+		return FALSE;
 
-		return iswalpha(wc);
-	} else
+	return iswalpha(wc);
+#else
+	return isalpha((unsigned char)*c);
 #endif
-		return isalpha((unsigned char)*c);
 }
+#endif /* ENABLE_SPELLER */
 
-/* This function is equivalent to isalnum() for multibyte characters. */
-bool is_alnum_mbchar(const char *c)
+/* Return TRUE when the given character is some kind of letter or a digit. */
+bool is_alnum_char(const char *c)
 {
 #ifdef ENABLE_UTF8
-	if (use_utf8) {
-		wchar_t wc;
+	wchar_t wc;
 
-		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
-			return FALSE;
+	if (mbtowc(&wc, c, MAXCHARLEN) < 0)
+		return FALSE;
 
-		return iswalnum(wc);
-	} else
+	return iswalnum(wc);
+#else
+	return isalnum((unsigned char)*c);
 #endif
-		return isalnum((unsigned char)*c);
 }
 
-/* This function is equivalent to isblank() for multibyte characters. */
-bool is_blank_mbchar(const char *c)
+/* Return TRUE when the given character is space or tab or other whitespace. */
+bool is_blank_char(const char *c)
 {
 #ifdef ENABLE_UTF8
-	if (use_utf8) {
-		wchar_t wc;
+	wchar_t wc;
 
-		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
-			return FALSE;
+	if ((signed char)*c >= 0)
+		return (*c == ' ' || *c == '\t');
 
-		return iswblank(wc);
-	} else
+	if (mbtowc(&wc, c, MAXCHARLEN) < 0)
+		return FALSE;
+
+	return iswblank(wc);
+#else
+	return isblank((unsigned char)*c);
 #endif
-		return isblank((unsigned char)*c);
 }
 
-/* This function is equivalent to iscntrl(), except in that it only
- * handles non-high-bit control characters. */
-bool is_ascii_cntrl_char(int c)
-{
-	return (0 <= c && c < 32);
-}
-
-/* This function is equivalent to iscntrl() for multibyte characters,
- * except in that it also handles multibyte control characters with
- * their high bits set. */
-bool is_cntrl_mbchar(const char *c)
+/* Return TRUE when the given character is a control character. */
+bool is_cntrl_char(const char *c)
 {
 #ifdef ENABLE_UTF8
 	if (use_utf8) {
-		return ((c[0] & 0xE0) == 0 || c[0] == 127 ||
+		return ((c[0] & 0xE0) == 0 || c[0] == DEL_CODE ||
 				((signed char)c[0] == -62 && (signed char)c[1] < -96));
 	} else
 #endif
-		return (((unsigned char)*c & 0x60) == 0 || (unsigned char)*c == 127);
+		return ((*c & 0x60) == 0 || *c == DEL_CODE);
 }
 
-/* This function is equivalent to ispunct() for multibyte characters. */
-bool is_punct_mbchar(const char *c)
+/* Return TRUE when the given character is a punctuation character. */
+bool is_punct_char(const char *c)
 {
 #ifdef ENABLE_UTF8
-	if (use_utf8) {
-		wchar_t wc;
+	wchar_t wc;
 
-		if (mbtowc(&wc, c, MAXCHARLEN) < 0)
-			return FALSE;
+	if (mbtowc(&wc, c, MAXCHARLEN) < 0)
+		return FALSE;
 
-		return iswpunct(wc);
-	} else
+	return iswpunct(wc);
+#else
+	return ispunct((unsigned char)*c);
 #endif
-		return ispunct((unsigned char)*c);
 }
 
-/* Return TRUE when the given multibyte character c is a word-forming
- * character (that is: alphanumeric, or specified in wordchars, or
- * punctuation when allow_punct is TRUE), and FALSE otherwise. */
-bool is_word_mbchar(const char *c, bool allow_punct)
+/* Return TRUE when the given character is word-forming (it is alphanumeric or
+ * specified in 'wordchars', or it is punctuation when allow_punct is TRUE). */
+bool is_word_char(const char *c, bool allow_punct)
 {
 	if (*c == '\0')
 		return FALSE;
 
-	if (is_alnum_mbchar(c))
+	if (is_alnum_char(c))
 		return TRUE;
 
 	if (word_chars != NULL && *word_chars != '\0') {
@@ -166,7 +139,7 @@ bool is_word_mbchar(const char *c, bool allow_punct)
 		return (strstr(word_chars, symbol) != NULL);
 	}
 
-	return (allow_punct && is_punct_mbchar(c));
+	return (allow_punct && is_punct_char(c));
 }
 
 /* Return the visible representation of control character c. */
@@ -229,11 +202,10 @@ int mbwidth(const char *c)
  * allocated) multibyte character and a length of zero. */
 char *make_mbchar(long code, int *length)
 {
-	char *mb_char;
+	char *mb_char = charalloc(MAXCHARLEN);
 
 #ifdef ENABLE_UTF8
 	if (use_utf8) {
-		mb_char = charalloc(MAXCHARLEN);
 		*length = wctomb(mb_char, (wchar_t)code);
 
 		/* Reject invalid Unicode characters. */
@@ -244,7 +216,7 @@ char *make_mbchar(long code, int *length)
 	} else
 #endif
 	{
-		mb_char = measured_copy((char *)&code, 1);
+		*mb_char = (char)code;
 		*length = 1;
 	}
 
@@ -319,7 +291,7 @@ int advance_over(const char *string, size_t *column)
 		int charlen = mblen(string, MAXCHARLEN);
 
 		if (charlen > 0) {
-			if (is_cntrl_mbchar(string))
+			if (is_cntrl_char(string))
 				*column += 2;
 			else
 				*column += mbwidth(string);
@@ -612,7 +584,7 @@ bool has_blank_char(const char *string)
 	while (*string != '\0') {
 		string += collect_char(string, symbol);
 
-		if (is_blank_mbchar(symbol))
+		if (is_blank_char(symbol))
 			return TRUE;
 	}
 
@@ -623,7 +595,7 @@ bool has_blank_char(const char *string)
 /* Return TRUE when the given string is empty or consists of only blanks. */
 bool white_string(const char *string)
 {
-	while (*string != '\0' && (is_blank_mbchar(string) || *string == '\r'))
+	while (*string != '\0' && (is_blank_char(string) || *string == '\r'))
 		string += char_length(string);
 
 	return !*string;

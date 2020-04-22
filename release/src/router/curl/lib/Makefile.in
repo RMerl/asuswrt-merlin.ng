@@ -21,7 +21,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -229,7 +229,8 @@ am__objects_1 = libcurl_la-file.lo libcurl_la-timeval.lo \
 	libcurl_la-curl_path.lo libcurl_la-curl_ctype.lo \
 	libcurl_la-curl_range.lo libcurl_la-psl.lo libcurl_la-doh.lo \
 	libcurl_la-urlapi.lo libcurl_la-curl_get_line.lo \
-	libcurl_la-altsvc.lo libcurl_la-socketpair.lo
+	libcurl_la-altsvc.lo libcurl_la-socketpair.lo \
+	libcurl_la-rename.lo
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_2 = vauth/libcurl_la-vauth.lo \
 	vauth/libcurl_la-cleartext.lo vauth/libcurl_la-cram.lo \
@@ -240,15 +241,15 @@ am__objects_2 = vauth/libcurl_la-vauth.lo \
 	vauth/libcurl_la-spnego_sspi.lo
 am__objects_3 = vtls/libcurl_la-openssl.lo vtls/libcurl_la-gtls.lo \
 	vtls/libcurl_la-vtls.lo vtls/libcurl_la-nss.lo \
-	vtls/libcurl_la-polarssl.lo \
-	vtls/libcurl_la-polarssl_threadlock.lo \
+	vtls/libcurl_la-mbedtls_threadlock.lo \
 	vtls/libcurl_la-wolfssl.lo vtls/libcurl_la-schannel.lo \
 	vtls/libcurl_la-schannel_verify.lo \
 	vtls/libcurl_la-sectransp.lo vtls/libcurl_la-gskit.lo \
 	vtls/libcurl_la-mbedtls.lo vtls/libcurl_la-mesalink.lo \
 	vtls/libcurl_la-bearssl.lo
 am__objects_4 = vquic/libcurl_la-ngtcp2.lo vquic/libcurl_la-quiche.lo
-am__objects_5 = vssh/libcurl_la-libssh2.lo vssh/libcurl_la-libssh.lo
+am__objects_5 = vssh/libcurl_la-libssh2.lo vssh/libcurl_la-libssh.lo \
+	vssh/libcurl_la-wolfssh.lo
 am__objects_6 = $(am__objects_1) $(am__objects_2) $(am__objects_3) \
 	$(am__objects_4) $(am__objects_5)
 am__objects_7 =
@@ -317,7 +318,7 @@ am__objects_9 = libcurlu_la-file.lo libcurlu_la-timeval.lo \
 	libcurlu_la-curl_ctype.lo libcurlu_la-curl_range.lo \
 	libcurlu_la-psl.lo libcurlu_la-doh.lo libcurlu_la-urlapi.lo \
 	libcurlu_la-curl_get_line.lo libcurlu_la-altsvc.lo \
-	libcurlu_la-socketpair.lo
+	libcurlu_la-socketpair.lo libcurlu_la-rename.lo
 am__objects_10 = vauth/libcurlu_la-vauth.lo \
 	vauth/libcurlu_la-cleartext.lo vauth/libcurlu_la-cram.lo \
 	vauth/libcurlu_la-digest.lo vauth/libcurlu_la-digest_sspi.lo \
@@ -328,8 +329,7 @@ am__objects_10 = vauth/libcurlu_la-vauth.lo \
 	vauth/libcurlu_la-spnego_sspi.lo
 am__objects_11 = vtls/libcurlu_la-openssl.lo vtls/libcurlu_la-gtls.lo \
 	vtls/libcurlu_la-vtls.lo vtls/libcurlu_la-nss.lo \
-	vtls/libcurlu_la-polarssl.lo \
-	vtls/libcurlu_la-polarssl_threadlock.lo \
+	vtls/libcurlu_la-mbedtls_threadlock.lo \
 	vtls/libcurlu_la-wolfssl.lo vtls/libcurlu_la-schannel.lo \
 	vtls/libcurlu_la-schannel_verify.lo \
 	vtls/libcurlu_la-sectransp.lo vtls/libcurlu_la-gskit.lo \
@@ -338,7 +338,7 @@ am__objects_11 = vtls/libcurlu_la-openssl.lo vtls/libcurlu_la-gtls.lo \
 am__objects_12 = vquic/libcurlu_la-ngtcp2.lo \
 	vquic/libcurlu_la-quiche.lo
 am__objects_13 = vssh/libcurlu_la-libssh2.lo \
-	vssh/libcurlu_la-libssh.lo
+	vssh/libcurlu_la-libssh.lo vssh/libcurlu_la-wolfssh.lo
 am__objects_14 = $(am__objects_9) $(am__objects_10) $(am__objects_11) \
 	$(am__objects_12) $(am__objects_13)
 am_libcurlu_la_OBJECTS = $(am__objects_14) $(am__objects_8)
@@ -438,6 +438,7 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	./$(DEPDIR)/libcurl_la-pop3.Plo \
 	./$(DEPDIR)/libcurl_la-progress.Plo \
 	./$(DEPDIR)/libcurl_la-psl.Plo ./$(DEPDIR)/libcurl_la-rand.Plo \
+	./$(DEPDIR)/libcurl_la-rename.Plo \
 	./$(DEPDIR)/libcurl_la-rtsp.Plo \
 	./$(DEPDIR)/libcurl_la-security.Plo \
 	./$(DEPDIR)/libcurl_la-select.Plo \
@@ -548,6 +549,7 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	./$(DEPDIR)/libcurlu_la-progress.Plo \
 	./$(DEPDIR)/libcurlu_la-psl.Plo \
 	./$(DEPDIR)/libcurlu_la-rand.Plo \
+	./$(DEPDIR)/libcurlu_la-rename.Plo \
 	./$(DEPDIR)/libcurlu_la-rtsp.Plo \
 	./$(DEPDIR)/libcurlu_la-security.Plo \
 	./$(DEPDIR)/libcurlu_la-select.Plo \
@@ -610,17 +612,18 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	vquic/$(DEPDIR)/libcurlu_la-quiche.Plo \
 	vssh/$(DEPDIR)/libcurl_la-libssh.Plo \
 	vssh/$(DEPDIR)/libcurl_la-libssh2.Plo \
+	vssh/$(DEPDIR)/libcurl_la-wolfssh.Plo \
 	vssh/$(DEPDIR)/libcurlu_la-libssh.Plo \
 	vssh/$(DEPDIR)/libcurlu_la-libssh2.Plo \
+	vssh/$(DEPDIR)/libcurlu_la-wolfssh.Plo \
 	vtls/$(DEPDIR)/libcurl_la-bearssl.Plo \
 	vtls/$(DEPDIR)/libcurl_la-gskit.Plo \
 	vtls/$(DEPDIR)/libcurl_la-gtls.Plo \
 	vtls/$(DEPDIR)/libcurl_la-mbedtls.Plo \
+	vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Plo \
 	vtls/$(DEPDIR)/libcurl_la-mesalink.Plo \
 	vtls/$(DEPDIR)/libcurl_la-nss.Plo \
 	vtls/$(DEPDIR)/libcurl_la-openssl.Plo \
-	vtls/$(DEPDIR)/libcurl_la-polarssl.Plo \
-	vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Plo \
 	vtls/$(DEPDIR)/libcurl_la-schannel.Plo \
 	vtls/$(DEPDIR)/libcurl_la-schannel_verify.Plo \
 	vtls/$(DEPDIR)/libcurl_la-sectransp.Plo \
@@ -630,11 +633,10 @@ am__depfiles_remade = ./$(DEPDIR)/libcurl_la-altsvc.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-gskit.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-gtls.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-mbedtls.Plo \
+	vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-mesalink.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-nss.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-openssl.Plo \
-	vtls/$(DEPDIR)/libcurlu_la-polarssl.Plo \
-	vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-schannel.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-schannel_verify.Plo \
 	vtls/$(DEPDIR)/libcurlu_la-sectransp.Plo \
@@ -838,6 +840,7 @@ USE_SCHANNEL = @USE_SCHANNEL@
 USE_SECTRANSP = @USE_SECTRANSP@
 USE_UNIX_SOCKETS = @USE_UNIX_SOCKETS@
 USE_WINDOWS_SSPI = @USE_WINDOWS_SSPI@
+USE_WOLFSSH = @USE_WOLFSSH@
 USE_WOLFSSL = @USE_WOLFSSL@
 VERSION = @VERSION@
 VERSIONNUM = @VERSIONNUM@
@@ -978,19 +981,18 @@ LIB_VAUTH_CFILES = vauth/vauth.c vauth/cleartext.c vauth/cram.c         \
 
 LIB_VAUTH_HFILES = vauth/vauth.h vauth/digest.h vauth/ntlm.h
 LIB_VTLS_CFILES = vtls/openssl.c vtls/gtls.c vtls/vtls.c vtls/nss.c     \
-  vtls/polarssl.c vtls/polarssl_threadlock.c                            \
-  vtls/wolfssl.c vtls/schannel.c vtls/schannel_verify.c                 \
-  vtls/sectransp.c vtls/gskit.c vtls/mbedtls.c vtls/mesalink.c          \
-  vtls/bearssl.c
+  vtls/mbedtls_threadlock.c vtls/wolfssl.c vtls/schannel.c              \
+  vtls/schannel_verify.c vtls/sectransp.c vtls/gskit.c vtls/mbedtls.c   \
+  vtls/mesalink.c vtls/bearssl.c
 
-LIB_VTLS_HFILES = vtls/openssl.h vtls/vtls.h vtls/gtls.h                \
-  vtls/nssg.h vtls/polarssl.h vtls/polarssl_threadlock.h                \
-  vtls/wolfssl.h vtls/schannel.h vtls/sectransp.h vtls/gskit.h          \
-  vtls/mbedtls.h vtls/mesalink.h vtls/bearssl.h
+LIB_VTLS_HFILES = vtls/openssl.h vtls/vtls.h vtls/gtls.h vtls/nssg.h    \
+  vtls/mbedtls_threadlock.h vtls/wolfssl.h vtls/schannel.h              \
+  vtls/sectransp.h vtls/gskit.h vtls/mbedtls.h vtls/mesalink.h          \
+  vtls/bearssl.h
 
 LIB_VQUIC_CFILES = vquic/ngtcp2.c vquic/quiche.c
 LIB_VQUIC_HFILES = vquic/ngtcp2.h vquic/quiche.h
-LIB_VSSH_CFILES = vssh/libssh2.c vssh/libssh.c
+LIB_VSSH_CFILES = vssh/libssh2.c vssh/libssh.c vssh/wolfssh.c
 LIB_VSSH_HFILES = vssh/ssh.h
 LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   cookie.c http.c sendf.c ftp.c url.c dict.c if2ip.c speedcheck.c       \
@@ -1010,7 +1012,7 @@ LIB_CFILES = file.c timeval.c base64.c hostip.c progress.c formdata.c   \
   curl_multibyte.c hostcheck.c conncache.c dotdot.c                     \
   x509asn1.c http2.c smb.c curl_endian.c curl_des.c system_win32.c      \
   mime.c sha256.c setopt.c curl_path.c curl_ctype.c curl_range.c psl.c  \
-  doh.c urlapi.c curl_get_line.c altsvc.c socketpair.c
+  doh.c urlapi.c curl_get_line.c altsvc.c socketpair.c rename.c
 
 LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   formdata.h cookie.h http.h sendf.h ftp.h url.h dict.h if2ip.h         \
@@ -1031,7 +1033,7 @@ LIB_HFILES = arpa_telnet.h netrc.h file.h timeval.h hostip.h progress.h \
   x509asn1.h http2.h sigpipe.h smb.h curl_endian.h curl_des.h           \
   curl_printf.h system_win32.h rand.h mime.h curl_sha256.h setopt.h     \
   curl_path.h curl_ctype.h curl_range.h psl.h doh.h urlapi-int.h        \
-  curl_get_line.h altsvc.h quic.h socketpair.h
+  curl_get_line.h altsvc.h quic.h socketpair.h rename.h
 
 LIB_RCFILES = libcurl.rc
 CSOURCES = $(LIB_CFILES) $(LIB_VAUTH_CFILES) $(LIB_VTLS_CFILES) \
@@ -1194,9 +1196,7 @@ vtls/libcurl_la-vtls.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
 vtls/libcurl_la-nss.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
-vtls/libcurl_la-polarssl.lo: vtls/$(am__dirstamp) \
-	vtls/$(DEPDIR)/$(am__dirstamp)
-vtls/libcurl_la-polarssl_threadlock.lo: vtls/$(am__dirstamp) \
+vtls/libcurl_la-mbedtls_threadlock.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
 vtls/libcurl_la-wolfssl.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
@@ -1234,6 +1234,8 @@ vssh/libcurl_la-libssh2.lo: vssh/$(am__dirstamp) \
 	vssh/$(DEPDIR)/$(am__dirstamp)
 vssh/libcurl_la-libssh.lo: vssh/$(am__dirstamp) \
 	vssh/$(DEPDIR)/$(am__dirstamp)
+vssh/libcurl_la-wolfssh.lo: vssh/$(am__dirstamp) \
+	vssh/$(DEPDIR)/$(am__dirstamp)
 
 libcurl.la: $(libcurl_la_OBJECTS) $(libcurl_la_DEPENDENCIES) $(EXTRA_libcurl_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libcurl_la_LINK) -rpath $(libdir) $(libcurl_la_OBJECTS) $(libcurl_la_LIBADD) $(LIBS)
@@ -1269,9 +1271,7 @@ vtls/libcurlu_la-vtls.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
 vtls/libcurlu_la-nss.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
-vtls/libcurlu_la-polarssl.lo: vtls/$(am__dirstamp) \
-	vtls/$(DEPDIR)/$(am__dirstamp)
-vtls/libcurlu_la-polarssl_threadlock.lo: vtls/$(am__dirstamp) \
+vtls/libcurlu_la-mbedtls_threadlock.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
 vtls/libcurlu_la-wolfssl.lo: vtls/$(am__dirstamp) \
 	vtls/$(DEPDIR)/$(am__dirstamp)
@@ -1296,6 +1296,8 @@ vquic/libcurlu_la-quiche.lo: vquic/$(am__dirstamp) \
 vssh/libcurlu_la-libssh2.lo: vssh/$(am__dirstamp) \
 	vssh/$(DEPDIR)/$(am__dirstamp)
 vssh/libcurlu_la-libssh.lo: vssh/$(am__dirstamp) \
+	vssh/$(DEPDIR)/$(am__dirstamp)
+vssh/libcurlu_la-wolfssh.lo: vssh/$(am__dirstamp) \
 	vssh/$(DEPDIR)/$(am__dirstamp)
 
 libcurlu.la: $(libcurlu_la_OBJECTS) $(libcurlu_la_DEPENDENCIES) $(EXTRA_libcurlu_la_DEPENDENCIES) 
@@ -1394,6 +1396,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-progress.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-psl.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-rand.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-rename.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-rtsp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-security.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurl_la-select.Plo@am__quote@ # am--include-marker
@@ -1505,6 +1508,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-progress.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-psl.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-rand.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-rename.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-rtsp.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-security.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcurlu_la-select.Plo@am__quote@ # am--include-marker
@@ -1567,17 +1571,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@vquic/$(DEPDIR)/libcurlu_la-quiche.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurl_la-libssh.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurl_la-libssh2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurl_la-wolfssh.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurlu_la-libssh.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurlu_la-libssh2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@vssh/$(DEPDIR)/libcurlu_la-wolfssh.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-bearssl.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-gskit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-gtls.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-mbedtls.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-mesalink.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-nss.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-openssl.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-polarssl.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-schannel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-schannel_verify.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurl_la-sectransp.Plo@am__quote@ # am--include-marker
@@ -1587,11 +1592,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-gskit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-gtls.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-mbedtls.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-mesalink.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-nss.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-openssl.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-polarssl.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-schannel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-schannel_verify.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@vtls/$(DEPDIR)/libcurlu_la-sectransp.Plo@am__quote@ # am--include-marker
@@ -2405,6 +2409,13 @@ libcurl_la-socketpair.lo: socketpair.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o libcurl_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
 
+libcurl_la-rename.lo: rename.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT libcurl_la-rename.lo -MD -MP -MF $(DEPDIR)/libcurl_la-rename.Tpo -c -o libcurl_la-rename.lo `test -f 'rename.c' || echo '$(srcdir)/'`rename.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurl_la-rename.Tpo $(DEPDIR)/libcurl_la-rename.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rename.c' object='libcurl_la-rename.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o libcurl_la-rename.lo `test -f 'rename.c' || echo '$(srcdir)/'`rename.c
+
 vauth/libcurl_la-vauth.lo: vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vauth/libcurl_la-vauth.lo -MD -MP -MF vauth/$(DEPDIR)/libcurl_la-vauth.Tpo -c -o vauth/libcurl_la-vauth.lo `test -f 'vauth/vauth.c' || echo '$(srcdir)/'`vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vauth/$(DEPDIR)/libcurl_la-vauth.Tpo vauth/$(DEPDIR)/libcurl_la-vauth.Plo
@@ -2517,19 +2528,12 @@ vtls/libcurl_la-nss.lo: vtls/nss.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurl_la-nss.lo `test -f 'vtls/nss.c' || echo '$(srcdir)/'`vtls/nss.c
 
-vtls/libcurl_la-polarssl.lo: vtls/polarssl.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vtls/libcurl_la-polarssl.lo -MD -MP -MF vtls/$(DEPDIR)/libcurl_la-polarssl.Tpo -c -o vtls/libcurl_la-polarssl.lo `test -f 'vtls/polarssl.c' || echo '$(srcdir)/'`vtls/polarssl.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurl_la-polarssl.Tpo vtls/$(DEPDIR)/libcurl_la-polarssl.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/polarssl.c' object='vtls/libcurl_la-polarssl.lo' libtool=yes @AMDEPBACKSLASH@
+vtls/libcurl_la-mbedtls_threadlock.lo: vtls/mbedtls_threadlock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vtls/libcurl_la-mbedtls_threadlock.lo -MD -MP -MF vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Tpo -c -o vtls/libcurl_la-mbedtls_threadlock.lo `test -f 'vtls/mbedtls_threadlock.c' || echo '$(srcdir)/'`vtls/mbedtls_threadlock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Tpo vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/mbedtls_threadlock.c' object='vtls/libcurl_la-mbedtls_threadlock.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurl_la-polarssl.lo `test -f 'vtls/polarssl.c' || echo '$(srcdir)/'`vtls/polarssl.c
-
-vtls/libcurl_la-polarssl_threadlock.lo: vtls/polarssl_threadlock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vtls/libcurl_la-polarssl_threadlock.lo -MD -MP -MF vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Tpo -c -o vtls/libcurl_la-polarssl_threadlock.lo `test -f 'vtls/polarssl_threadlock.c' || echo '$(srcdir)/'`vtls/polarssl_threadlock.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Tpo vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/polarssl_threadlock.c' object='vtls/libcurl_la-polarssl_threadlock.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurl_la-polarssl_threadlock.lo `test -f 'vtls/polarssl_threadlock.c' || echo '$(srcdir)/'`vtls/polarssl_threadlock.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurl_la-mbedtls_threadlock.lo `test -f 'vtls/mbedtls_threadlock.c' || echo '$(srcdir)/'`vtls/mbedtls_threadlock.c
 
 vtls/libcurl_la-wolfssl.lo: vtls/wolfssl.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vtls/libcurl_la-wolfssl.lo -MD -MP -MF vtls/$(DEPDIR)/libcurl_la-wolfssl.Tpo -c -o vtls/libcurl_la-wolfssl.lo `test -f 'vtls/wolfssl.c' || echo '$(srcdir)/'`vtls/wolfssl.c
@@ -2614,6 +2618,13 @@ vssh/libcurl_la-libssh.lo: vssh/libssh.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vssh/libssh.c' object='vssh/libcurl_la-libssh.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vssh/libcurl_la-libssh.lo `test -f 'vssh/libssh.c' || echo '$(srcdir)/'`vssh/libssh.c
+
+vssh/libcurl_la-wolfssh.lo: vssh/wolfssh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -MT vssh/libcurl_la-wolfssh.lo -MD -MP -MF vssh/$(DEPDIR)/libcurl_la-wolfssh.Tpo -c -o vssh/libcurl_la-wolfssh.lo `test -f 'vssh/wolfssh.c' || echo '$(srcdir)/'`vssh/wolfssh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vssh/$(DEPDIR)/libcurl_la-wolfssh.Tpo vssh/$(DEPDIR)/libcurl_la-wolfssh.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vssh/wolfssh.c' object='vssh/libcurl_la-wolfssh.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurl_la_CPPFLAGS) $(CPPFLAGS) $(libcurl_la_CFLAGS) $(CFLAGS) -c -o vssh/libcurl_la-wolfssh.lo `test -f 'vssh/wolfssh.c' || echo '$(srcdir)/'`vssh/wolfssh.c
 
 libcurlu_la-file.lo: file.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT libcurlu_la-file.lo -MD -MP -MF $(DEPDIR)/libcurlu_la-file.Tpo -c -o libcurlu_la-file.lo `test -f 'file.c' || echo '$(srcdir)/'`file.c
@@ -3392,6 +3403,13 @@ libcurlu_la-socketpair.lo: socketpair.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o libcurlu_la-socketpair.lo `test -f 'socketpair.c' || echo '$(srcdir)/'`socketpair.c
 
+libcurlu_la-rename.lo: rename.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT libcurlu_la-rename.lo -MD -MP -MF $(DEPDIR)/libcurlu_la-rename.Tpo -c -o libcurlu_la-rename.lo `test -f 'rename.c' || echo '$(srcdir)/'`rename.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcurlu_la-rename.Tpo $(DEPDIR)/libcurlu_la-rename.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='rename.c' object='libcurlu_la-rename.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o libcurlu_la-rename.lo `test -f 'rename.c' || echo '$(srcdir)/'`rename.c
+
 vauth/libcurlu_la-vauth.lo: vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vauth/libcurlu_la-vauth.lo -MD -MP -MF vauth/$(DEPDIR)/libcurlu_la-vauth.Tpo -c -o vauth/libcurlu_la-vauth.lo `test -f 'vauth/vauth.c' || echo '$(srcdir)/'`vauth/vauth.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vauth/$(DEPDIR)/libcurlu_la-vauth.Tpo vauth/$(DEPDIR)/libcurlu_la-vauth.Plo
@@ -3504,19 +3522,12 @@ vtls/libcurlu_la-nss.lo: vtls/nss.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurlu_la-nss.lo `test -f 'vtls/nss.c' || echo '$(srcdir)/'`vtls/nss.c
 
-vtls/libcurlu_la-polarssl.lo: vtls/polarssl.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vtls/libcurlu_la-polarssl.lo -MD -MP -MF vtls/$(DEPDIR)/libcurlu_la-polarssl.Tpo -c -o vtls/libcurlu_la-polarssl.lo `test -f 'vtls/polarssl.c' || echo '$(srcdir)/'`vtls/polarssl.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurlu_la-polarssl.Tpo vtls/$(DEPDIR)/libcurlu_la-polarssl.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/polarssl.c' object='vtls/libcurlu_la-polarssl.lo' libtool=yes @AMDEPBACKSLASH@
+vtls/libcurlu_la-mbedtls_threadlock.lo: vtls/mbedtls_threadlock.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vtls/libcurlu_la-mbedtls_threadlock.lo -MD -MP -MF vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Tpo -c -o vtls/libcurlu_la-mbedtls_threadlock.lo `test -f 'vtls/mbedtls_threadlock.c' || echo '$(srcdir)/'`vtls/mbedtls_threadlock.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Tpo vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/mbedtls_threadlock.c' object='vtls/libcurlu_la-mbedtls_threadlock.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurlu_la-polarssl.lo `test -f 'vtls/polarssl.c' || echo '$(srcdir)/'`vtls/polarssl.c
-
-vtls/libcurlu_la-polarssl_threadlock.lo: vtls/polarssl_threadlock.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vtls/libcurlu_la-polarssl_threadlock.lo -MD -MP -MF vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Tpo -c -o vtls/libcurlu_la-polarssl_threadlock.lo `test -f 'vtls/polarssl_threadlock.c' || echo '$(srcdir)/'`vtls/polarssl_threadlock.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Tpo vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vtls/polarssl_threadlock.c' object='vtls/libcurlu_la-polarssl_threadlock.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurlu_la-polarssl_threadlock.lo `test -f 'vtls/polarssl_threadlock.c' || echo '$(srcdir)/'`vtls/polarssl_threadlock.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vtls/libcurlu_la-mbedtls_threadlock.lo `test -f 'vtls/mbedtls_threadlock.c' || echo '$(srcdir)/'`vtls/mbedtls_threadlock.c
 
 vtls/libcurlu_la-wolfssl.lo: vtls/wolfssl.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vtls/libcurlu_la-wolfssl.lo -MD -MP -MF vtls/$(DEPDIR)/libcurlu_la-wolfssl.Tpo -c -o vtls/libcurlu_la-wolfssl.lo `test -f 'vtls/wolfssl.c' || echo '$(srcdir)/'`vtls/wolfssl.c
@@ -3601,6 +3612,13 @@ vssh/libcurlu_la-libssh.lo: vssh/libssh.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vssh/libssh.c' object='vssh/libcurlu_la-libssh.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vssh/libcurlu_la-libssh.lo `test -f 'vssh/libssh.c' || echo '$(srcdir)/'`vssh/libssh.c
+
+vssh/libcurlu_la-wolfssh.lo: vssh/wolfssh.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -MT vssh/libcurlu_la-wolfssh.lo -MD -MP -MF vssh/$(DEPDIR)/libcurlu_la-wolfssh.Tpo -c -o vssh/libcurlu_la-wolfssh.lo `test -f 'vssh/wolfssh.c' || echo '$(srcdir)/'`vssh/wolfssh.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) vssh/$(DEPDIR)/libcurlu_la-wolfssh.Tpo vssh/$(DEPDIR)/libcurlu_la-wolfssh.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='vssh/wolfssh.c' object='vssh/libcurlu_la-wolfssh.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcurlu_la_CPPFLAGS) $(CPPFLAGS) $(libcurlu_la_CFLAGS) $(CFLAGS) -c -o vssh/libcurlu_la-wolfssh.lo `test -f 'vssh/wolfssh.c' || echo '$(srcdir)/'`vssh/wolfssh.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -3828,6 +3846,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libcurl_la-progress.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-psl.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-rand.Plo
+	-rm -f ./$(DEPDIR)/libcurl_la-rename.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-rtsp.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-security.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-select.Plo
@@ -3939,6 +3958,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libcurlu_la-progress.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-psl.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-rand.Plo
+	-rm -f ./$(DEPDIR)/libcurlu_la-rename.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-rtsp.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-security.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-select.Plo
@@ -4001,17 +4021,18 @@ distclean: distclean-am
 	-rm -f vquic/$(DEPDIR)/libcurlu_la-quiche.Plo
 	-rm -f vssh/$(DEPDIR)/libcurl_la-libssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurl_la-libssh2.Plo
+	-rm -f vssh/$(DEPDIR)/libcurl_la-wolfssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurlu_la-libssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurlu_la-libssh2.Plo
+	-rm -f vssh/$(DEPDIR)/libcurlu_la-wolfssh.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-bearssl.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-gskit.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-gtls.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-mbedtls.Plo
+	-rm -f vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-mesalink.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-nss.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-openssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurl_la-polarssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-schannel.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-schannel_verify.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-sectransp.Plo
@@ -4021,11 +4042,10 @@ distclean: distclean-am
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-gskit.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-gtls.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-mbedtls.Plo
+	-rm -f vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-mesalink.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-nss.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-openssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurlu_la-polarssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-schannel.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-schannel_verify.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-sectransp.Plo
@@ -4155,6 +4175,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libcurl_la-progress.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-psl.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-rand.Plo
+	-rm -f ./$(DEPDIR)/libcurl_la-rename.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-rtsp.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-security.Plo
 	-rm -f ./$(DEPDIR)/libcurl_la-select.Plo
@@ -4266,6 +4287,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libcurlu_la-progress.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-psl.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-rand.Plo
+	-rm -f ./$(DEPDIR)/libcurlu_la-rename.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-rtsp.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-security.Plo
 	-rm -f ./$(DEPDIR)/libcurlu_la-select.Plo
@@ -4328,17 +4350,18 @@ maintainer-clean: maintainer-clean-am
 	-rm -f vquic/$(DEPDIR)/libcurlu_la-quiche.Plo
 	-rm -f vssh/$(DEPDIR)/libcurl_la-libssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurl_la-libssh2.Plo
+	-rm -f vssh/$(DEPDIR)/libcurl_la-wolfssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurlu_la-libssh.Plo
 	-rm -f vssh/$(DEPDIR)/libcurlu_la-libssh2.Plo
+	-rm -f vssh/$(DEPDIR)/libcurlu_la-wolfssh.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-bearssl.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-gskit.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-gtls.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-mbedtls.Plo
+	-rm -f vtls/$(DEPDIR)/libcurl_la-mbedtls_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-mesalink.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-nss.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-openssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurl_la-polarssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurl_la-polarssl_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-schannel.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-schannel_verify.Plo
 	-rm -f vtls/$(DEPDIR)/libcurl_la-sectransp.Plo
@@ -4348,11 +4371,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-gskit.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-gtls.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-mbedtls.Plo
+	-rm -f vtls/$(DEPDIR)/libcurlu_la-mbedtls_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-mesalink.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-nss.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-openssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurlu_la-polarssl.Plo
-	-rm -f vtls/$(DEPDIR)/libcurlu_la-polarssl_threadlock.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-schannel.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-schannel_verify.Plo
 	-rm -f vtls/$(DEPDIR)/libcurlu_la-sectransp.Plo

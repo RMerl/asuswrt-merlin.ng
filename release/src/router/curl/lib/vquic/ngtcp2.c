@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -146,7 +146,7 @@ static void quic_settings(ngtcp2_settings *s,
   s->transport_params.initial_max_data = QUIC_MAX_DATA;
   s->transport_params.initial_max_streams_bidi = 1;
   s->transport_params.initial_max_streams_uni = 3;
-  s->transport_params.idle_timeout = QUIC_IDLE_TIMEOUT;
+  s->transport_params.max_idle_timeout = QUIC_IDLE_TIMEOUT;
 }
 
 static FILE *keylog_file; /* not thread-safe */
@@ -535,6 +535,8 @@ static ngtcp2_conn_callbacks ng_callbacks = {
   NULL, /* extend_max_remote_streams_bidi */
   NULL, /* extend_max_remote_streams_uni */
   cb_extend_max_stream_data,
+  NULL, /* dcid_status */
+  NULL  /* handshake_confirmed */
 };
 
 /*
@@ -574,10 +576,10 @@ CURLcode Curl_quic_connect(struct connectdata *conn,
   qs->version = NGTCP2_PROTO_VER;
   qs->sslctx = quic_ssl_ctx(data);
   if(!qs->sslctx)
-    return CURLE_FAILED_INIT; /* TODO: better return code */
+    return CURLE_QUIC_CONNECT_ERROR;
 
   if(quic_init_ssl(qs))
-    return CURLE_FAILED_INIT; /* TODO: better return code */
+    return CURLE_QUIC_CONNECT_ERROR;
 
   qs->dcid.datalen = NGTCP2_MAX_CIDLEN;
   result = Curl_rand(data, qs->dcid.data, NGTCP2_MAX_CIDLEN);
@@ -595,7 +597,7 @@ CURLcode Curl_quic_connect(struct connectdata *conn,
   rv = getsockname(sockfd, (struct sockaddr *)&qs->local_addr,
                    &qs->local_addrlen);
   if(rv == -1)
-    return CURLE_FAILED_INIT;
+    return CURLE_QUIC_CONNECT_ERROR;
 
   ngtcp2_addr_init(&path.local, (uint8_t *)&qs->local_addr, qs->local_addrlen,
                    NULL);
@@ -609,7 +611,7 @@ CURLcode Curl_quic_connect(struct connectdata *conn,
   rc = ngtcp2_conn_client_new(&qs->qconn, &qs->dcid, &qs->scid, &path, QUICVER,
                               &ng_callbacks, &qs->settings, NULL, qs);
   if(rc)
-    return CURLE_FAILED_INIT; /* TODO: create a QUIC error code */
+    return CURLE_QUIC_CONNECT_ERROR;
 
   ngtcp2_conn_get_local_transport_params(qs->qconn, &params);
   nwrite = ngtcp2_encode_transport_params(
@@ -618,15 +620,15 @@ CURLcode Curl_quic_connect(struct connectdata *conn,
   if(nwrite < 0) {
     failf(data, "ngtcp2_encode_transport_params: %s\n",
           ngtcp2_strerror((int)nwrite));
-    return CURLE_FAILED_INIT;
+    return CURLE_QUIC_CONNECT_ERROR;
   }
 
   if(!SSL_set_quic_transport_params(qs->ssl, paramsbuf, nwrite))
-    return CURLE_FAILED_INIT;
+    return CURLE_QUIC_CONNECT_ERROR;
 
   rc = setup_initial_crypto_context(qs);
   if(rc)
-    return CURLE_FAILED_INIT; /* TODO: better return code */
+    return CURLE_QUIC_CONNECT_ERROR;
 
   return CURLE_OK;
 }
@@ -639,7 +641,7 @@ int Curl_quic_ver(char *p, size_t len)
 {
   ngtcp2_info *ng2 = ngtcp2_version(0);
   nghttp3_info *ht3 = nghttp3_version(0);
-  return msnprintf(p, len, " ngtcp2/%s nghttp3/%s",
+  return msnprintf(p, len, "ngtcp2/%s nghttp3/%s",
                    ng2->version_str, ht3->version_str);
 }
 
@@ -998,7 +1000,7 @@ static int init_ngh3_conn(struct quicsocket *qs)
 
   if(ngtcp2_conn_get_max_local_streams_uni(qs->qconn) < 3) {
     failf(qs->conn->data, "too few available QUIC streams");
-    return CURLE_FAILED_INIT;
+    return CURLE_QUIC_CONNECT_ERROR;
   }
 
   nghttp3_conn_settings_default(&qs->h3settings);
@@ -1015,32 +1017,32 @@ static int init_ngh3_conn(struct quicsocket *qs)
 
   rc = ngtcp2_conn_open_uni_stream(qs->qconn, &ctrl_stream_id, NULL);
   if(rc) {
-    result = CURLE_FAILED_INIT;
+    result = CURLE_QUIC_CONNECT_ERROR;
     goto fail;
   }
 
   rc = nghttp3_conn_bind_control_stream(qs->h3conn, ctrl_stream_id);
   if(rc) {
-    result = CURLE_FAILED_INIT;
+    result = CURLE_QUIC_CONNECT_ERROR;
     goto fail;
   }
 
   rc = ngtcp2_conn_open_uni_stream(qs->qconn, &qpack_enc_stream_id, NULL);
   if(rc) {
-    result = CURLE_FAILED_INIT;
+    result = CURLE_QUIC_CONNECT_ERROR;
     goto fail;
   }
 
   rc = ngtcp2_conn_open_uni_stream(qs->qconn, &qpack_dec_stream_id, NULL);
   if(rc) {
-    result = CURLE_FAILED_INIT;
+    result = CURLE_QUIC_CONNECT_ERROR;
     goto fail;
   }
 
   rc = nghttp3_conn_bind_qpack_streams(qs->h3conn, qpack_enc_stream_id,
                                        qpack_dec_stream_id);
   if(rc) {
-    result = CURLE_FAILED_INIT;
+    result = CURLE_QUIC_CONNECT_ERROR;
     goto fail;
   }
 
@@ -1599,9 +1601,11 @@ static CURLcode ng_flush_egress(struct connectdata *conn, int sockfd,
   case AF_INET:
     pktlen = NGTCP2_MAX_PKTLEN_IPV4;
     break;
+#ifdef ENABLE_IPV6
   case AF_INET6:
     pktlen = NGTCP2_MAX_PKTLEN_IPV6;
     break;
+#endif
   default:
     assert(0);
   }

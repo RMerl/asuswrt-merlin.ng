@@ -736,7 +736,7 @@ function update_sig_ver(){
     		document.getElementById("sig_update_date").innerHTML = "";
     		document.getElementById("sig_update_scan").style.display = "none";
 			document.getElementById("sig_check").disabled = false;
-    		$("#sig_status").html("Signature update completely");	/* Untranslated */
+    		$("#sig_status").html("Signature update completed");	/* Untranslated */
     		$("#sig_ver_word").html(sig_ver);
   		}
   	});

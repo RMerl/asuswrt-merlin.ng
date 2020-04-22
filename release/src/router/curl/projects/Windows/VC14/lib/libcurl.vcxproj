@@ -2458,6 +2458,7 @@
     <ClCompile Include="..\..\..\..\lib\progress.c" />
     <ClCompile Include="..\..\..\..\lib\psl.c" />
     <ClCompile Include="..\..\..\..\lib\rand.c" />
+    <ClCompile Include="..\..\..\..\lib\rename.c" />
     <ClCompile Include="..\..\..\..\lib\rtsp.c" />
     <ClCompile Include="..\..\..\..\lib\security.c" />
     <ClCompile Include="..\..\..\..\lib\select.c" />
@@ -2506,15 +2507,15 @@
     <ClCompile Include="..\..\..\..\lib\vquic\quiche.c" />
     <ClCompile Include="..\..\..\..\lib\vssh\libssh2.c" />
     <ClCompile Include="..\..\..\..\lib\vssh\libssh.c" />
+    <ClCompile Include="..\..\..\..\lib\vssh\wolfssh.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\bearssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\mbedtls_threadlock.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mesalink.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\nss.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\openssl.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\polarssl.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\polarssl_threadlock.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\schannel.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\schannel_verify.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\sectransp.c" />
@@ -2602,6 +2603,7 @@
     <ClInclude Include="..\..\..\..\lib\psl.h" />
     <ClInclude Include="..\..\..\..\lib\quic.h" />
     <ClInclude Include="..\..\..\..\lib\rand.h" />
+    <ClInclude Include="..\..\..\..\lib\rename.h" />
     <ClInclude Include="..\..\..\..\lib\rtsp.h" />
     <ClInclude Include="..\..\..\..\lib\select.h" />
     <ClInclude Include="..\..\..\..\lib\sendf.h" />
@@ -2643,11 +2645,10 @@
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\mbedtls_threadlock.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mesalink.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\nssg.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\openssl.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\polarssl.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\polarssl_threadlock.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\schannel.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\sectransp.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\vtls.h" />

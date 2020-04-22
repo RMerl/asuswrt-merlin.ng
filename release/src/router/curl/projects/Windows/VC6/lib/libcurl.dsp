@@ -1046,6 +1046,10 @@ SOURCE=..\..\..\..\lib\rand.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\rename.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\rtsp.c
 # End Source File
 # Begin Source File
@@ -1238,6 +1242,10 @@ SOURCE=..\..\..\..\lib\vssh\libssh.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\vssh\wolfssh.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\vtls\bearssl.c
 # End Source File
 # Begin Source File
@@ -1254,6 +1262,10 @@ SOURCE=..\..\..\..\lib\vtls\mbedtls.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\vtls\mbedtls_threadlock.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\vtls\mesalink.c
 # End Source File
 # Begin Source File
@@ -1263,14 +1275,6 @@ SOURCE=..\..\..\..\lib\vtls\nss.c
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\openssl.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\vtls\polarssl.c
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\vtls\polarssl_threadlock.c
 # End Source File
 # Begin Source File
 
@@ -1618,6 +1622,10 @@ SOURCE=..\..\..\..\lib\rand.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\rename.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\rtsp.h
 # End Source File
 # Begin Source File
@@ -1782,6 +1790,10 @@ SOURCE=..\..\..\..\lib\vtls\mbedtls.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\..\lib\vtls\mbedtls_threadlock.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\..\lib\vtls\mesalink.h
 # End Source File
 # Begin Source File
@@ -1791,14 +1803,6 @@ SOURCE=..\..\..\..\lib\vtls\nssg.h
 # Begin Source File
 
 SOURCE=..\..\..\..\lib\vtls\openssl.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\vtls\polarssl.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\lib\vtls\polarssl_threadlock.h
 # End Source File
 # Begin Source File
 

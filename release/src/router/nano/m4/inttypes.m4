@@ -1,4 +1,4 @@
-# inttypes.m4 serial 28
+# inttypes.m4 serial 29
 dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -28,6 +28,8 @@ AC_DEFUN_ONCE([gl_INTTYPES_INCOMPLETE],
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <inttypes.h>
     ]], [imaxabs imaxdiv strtoimax strtoumax])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 # Ensure that the PRI* and SCN* macros are defined appropriately.

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -76,13 +76,12 @@
 #include "setopt.h"
 #include "http_digest.h"
 #include "system_win32.h"
+#include "http2.h"
 
 /* The last 3 #include files should be in this order */
 #include "curl_printf.h"
 #include "curl_memory.h"
 #include "memdebug.h"
-
-void Curl_version_init(void);
 
 /* true globals -- for curl_global_init() and curl_global_cleanup() */
 static unsigned int  initialized;
@@ -185,20 +184,20 @@ static CURLcode global_init(long flags, bool memoryfuncs)
     goto fail;
   }
 
-  (void)Curl_ipv6works();
-
 #if defined(USE_SSH)
   if(Curl_ssh_init()) {
     goto fail;
   }
 #endif
 
-  if(flags & CURL_GLOBAL_ACK_EINTR)
-    Curl_ack_eintr = 1;
+#ifdef USE_WOLFSSH
+  if(WS_SUCCESS != wolfSSH_Init()) {
+    DEBUGF(fprintf(stderr, "Error: wolfSSH_Init failed\n"));
+    return CURLE_FAILED_INIT;
+  }
+#endif
 
   init_flags = flags;
-
-  Curl_version_init();
 
   return CURLE_OK;
 
@@ -271,6 +270,10 @@ void curl_global_cleanup(void)
   Curl_amiga_cleanup();
 
   Curl_ssh_cleanup();
+
+#ifdef USE_WOLFSSH
+  (void)wolfSSH_Cleanup();
+#endif
 
   init_flags  = 0;
 }
@@ -684,10 +687,6 @@ static CURLcode easy_perform(struct Curl_easy *data, bool events)
 
   sigpipe_ignore(data, &pipe_st);
 
-  /* assign this after curl_multi_add_handle() since that function checks for
-     it and rejects this handle otherwise */
-  data->multi = multi;
-
   /* run the transfer */
   result = events ? easy_events(multi) : easy_transfer(multi);
 
@@ -884,6 +883,17 @@ struct Curl_easy *curl_easy_duphandle(struct Curl_easy *data)
                              data->state.resolver))
     goto fail;
 
+#ifdef USE_ARES
+  if(Curl_set_dns_servers(outcurl, data->set.str[STRING_DNS_SERVERS]))
+    goto fail;
+  if(Curl_set_dns_interface(outcurl, data->set.str[STRING_DNS_INTERFACE]))
+    goto fail;
+  if(Curl_set_dns_local_ip4(outcurl, data->set.str[STRING_DNS_LOCAL_IP4]))
+    goto fail;
+  if(Curl_set_dns_local_ip6(outcurl, data->set.str[STRING_DNS_LOCAL_IP6]))
+    goto fail;
+#endif /* USE_ARES */
+
   Curl_convert_setup(outcurl);
 
   Curl_initinfo(outcurl);
@@ -970,56 +980,81 @@ void curl_easy_reset(struct Curl_easy *data)
  */
 CURLcode curl_easy_pause(struct Curl_easy *data, int action)
 {
-  struct SingleRequest *k = &data->req;
+  struct SingleRequest *k;
   CURLcode result = CURLE_OK;
+  int oldstate;
+  int newstate;
 
-  /* first switch off both pause bits */
-  int newstate = k->keepon &~ (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE);
+  if(!GOOD_EASY_HANDLE(data) || !data->conn)
+    /* crazy input, don't continue */
+    return CURLE_BAD_FUNCTION_ARGUMENT;
 
-  /* set the new desired pause bits */
-  newstate |= ((action & CURLPAUSE_RECV)?KEEP_RECV_PAUSE:0) |
+  k = &data->req;
+  oldstate = k->keepon & (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE);
+
+  /* first switch off both pause bits then set the new pause bits */
+  newstate = (k->keepon &~ (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE)) |
+    ((action & CURLPAUSE_RECV)?KEEP_RECV_PAUSE:0) |
     ((action & CURLPAUSE_SEND)?KEEP_SEND_PAUSE:0);
+
+  if((newstate & (KEEP_RECV_PAUSE| KEEP_SEND_PAUSE)) == oldstate) {
+    /* Not changing any pause state, return */
+    DEBUGF(infof(data, "pause: no change, early return\n"));
+    return CURLE_OK;
+  }
+
+  /* Unpause parts in active mime tree. */
+  if((k->keepon & ~newstate & KEEP_SEND_PAUSE) &&
+     (data->mstate == CURLM_STATE_PERFORM ||
+      data->mstate == CURLM_STATE_TOOFAST) &&
+     data->state.fread_func == (curl_read_callback) Curl_mime_read) {
+    Curl_mime_unpause(data->state.in);
+  }
 
   /* put it back in the keepon */
   k->keepon = newstate;
 
-  if(!(newstate & KEEP_RECV_PAUSE) && data->state.tempcount) {
-    /* there are buffers for sending that can be delivered as the receive
-       pausing is lifted! */
-    unsigned int i;
-    unsigned int count = data->state.tempcount;
-    struct tempbuf writebuf[3]; /* there can only be three */
-    struct connectdata *conn = data->conn;
-    struct Curl_easy *saved_data = NULL;
+  if(!(newstate & KEEP_RECV_PAUSE)) {
+    Curl_http2_stream_pause(data, FALSE);
 
-    /* copy the structs to allow for immediate re-pausing */
-    for(i = 0; i < data->state.tempcount; i++) {
-      writebuf[i] = data->state.tempwrite[i];
-      data->state.tempwrite[i].buf = NULL;
+    if(data->state.tempcount) {
+      /* there are buffers for sending that can be delivered as the receive
+         pausing is lifted! */
+      unsigned int i;
+      unsigned int count = data->state.tempcount;
+      struct tempbuf writebuf[3]; /* there can only be three */
+      struct connectdata *conn = data->conn;
+      struct Curl_easy *saved_data = NULL;
+
+      /* copy the structs to allow for immediate re-pausing */
+      for(i = 0; i < data->state.tempcount; i++) {
+        writebuf[i] = data->state.tempwrite[i];
+        data->state.tempwrite[i].buf = NULL;
+      }
+      data->state.tempcount = 0;
+
+      /* set the connection's current owner */
+      if(conn->data != data) {
+        saved_data = conn->data;
+        conn->data = data;
+      }
+
+      for(i = 0; i < count; i++) {
+        /* even if one function returns error, this loops through and frees
+           all buffers */
+        if(!result)
+          result = Curl_client_write(conn, writebuf[i].type, writebuf[i].buf,
+                                     writebuf[i].len);
+        free(writebuf[i].buf);
+      }
+
+      /* recover previous owner of the connection */
+      if(saved_data)
+        conn->data = saved_data;
+
+      if(result)
+        return result;
     }
-    data->state.tempcount = 0;
-
-    /* set the connection's current owner */
-    if(conn->data != data) {
-      saved_data = conn->data;
-      conn->data = data;
-    }
-
-    for(i = 0; i < count; i++) {
-      /* even if one function returns error, this loops through and frees all
-         buffers */
-      if(!result)
-        result = Curl_client_write(conn, writebuf[i].type, writebuf[i].buf,
-                                   writebuf[i].len);
-      free(writebuf[i].buf);
-    }
-
-    /* recover previous owner of the connection */
-    if(saved_data)
-      conn->data = saved_data;
-
-    if(result)
-      return result;
   }
 
   /* if there's no error and we're not pausing both directions, we want
@@ -1027,6 +1062,10 @@ CURLcode curl_easy_pause(struct Curl_easy *data, int action)
   if((newstate & (KEEP_RECV_PAUSE|KEEP_SEND_PAUSE)) !=
      (KEEP_RECV_PAUSE|KEEP_SEND_PAUSE)) {
     Curl_expire(data, 0, EXPIRE_RUN_NOW); /* get this handle going again */
+
+    /* force a recv/send check of this connection, as the data might've been
+       read off the socket already */
+    data->conn->cselect_bits = CURL_CSELECT_IN | CURL_CSELECT_OUT;
     if(data->multi)
       Curl_update_timer(data->multi);
   }

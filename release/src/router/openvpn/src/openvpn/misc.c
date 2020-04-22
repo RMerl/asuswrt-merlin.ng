@@ -880,6 +880,43 @@ absolute_pathname(const char *pathname)
     }
 }
 
+#ifdef ENABLE_MANAGEMENT
+
+/* Get username/password from the management interface */
+static bool
+auth_user_pass_mgmt(struct user_pass *up, const char *prefix, const unsigned int flags,
+                    const char *auth_challenge)
+{
+    const char *sc = NULL;
+
+    if (flags & GET_USER_PASS_PREVIOUS_CREDS_FAILED)
+    {
+        management_auth_failure(management, prefix, "previous auth credentials failed");
+    }
+
+#ifdef ENABLE_CLIENT_CR
+    if (auth_challenge && (flags & GET_USER_PASS_STATIC_CHALLENGE))
+    {
+        sc = auth_challenge;
+    }
+#endif
+
+    if (!management_query_user_pass(management, up, prefix, flags, sc))
+    {
+        if ((flags & GET_USER_PASS_NOFATAL) != 0)
+        {
+            return false;
+        }
+        else
+        {
+            msg(M_FATAL, "ERROR: could not read %s username/password/ok/string from management interface", prefix);
+        }
+    }
+    return true;
+}
+
+#endif /* ifdef ENABLE_MANAGEMENT */
+
 /*
  * Get and store a username/password
  */
@@ -913,30 +950,10 @@ get_user_pass_cr(struct user_pass *up,
             && (!from_authfile && (flags & GET_USER_PASS_MANAGEMENT))
             && management_query_user_pass_enabled(management))
         {
-            const char *sc = NULL;
             response_from_stdin = false;
-
-            if (flags & GET_USER_PASS_PREVIOUS_CREDS_FAILED)
+            if (!auth_user_pass_mgmt(up, prefix, flags, auth_challenge))
             {
-                management_auth_failure(management, prefix, "previous auth credentials failed");
-            }
-
-#ifdef ENABLE_CLIENT_CR
-            if (auth_challenge && (flags & GET_USER_PASS_STATIC_CHALLENGE))
-            {
-                sc = auth_challenge;
-            }
-#endif
-            if (!management_query_user_pass(management, up, prefix, flags, sc))
-            {
-                if ((flags & GET_USER_PASS_NOFATAL) != 0)
-                {
-                    return false;
-                }
-                else
-                {
-                    msg(M_FATAL, "ERROR: could not read %s username/password/ok/string from management interface", prefix);
-                }
+                return false;
             }
         }
         else
@@ -1013,6 +1030,22 @@ get_user_pass_cr(struct user_pass *up,
             {
                 strncpy(up->password, password_buf, USER_PASS_LEN);
             }
+            /* The auth-file does not have the password: get both username
+             * and password from the management interface if possible.
+             * Otherwise set to read password from console.
+             */
+#if defined(ENABLE_MANAGEMENT)
+            else if (management
+                     && (flags & GET_USER_PASS_MANAGEMENT)
+                     && management_query_user_pass_enabled(management))
+            {
+                msg(D_LOW, "No password found in %s authfile '%s'. Querying the management interface", prefix, auth_file);
+                if (!auth_user_pass_mgmt(up, prefix, flags, auth_challenge))
+                {
+                    return false;
+                }
+            }
+#endif
             else
             {
                 password_from_stdin = 1;

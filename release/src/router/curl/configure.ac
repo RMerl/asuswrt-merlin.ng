@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -31,7 +31,7 @@ XC_OVR_ZZ60
 CURL_OVERRIDE_AUTOCONF
 
 dnl configure script copyright
-AC_COPYRIGHT([Copyright (c) 1998 - 2019 Daniel Stenberg, <daniel@haxx.se>
+AC_COPYRIGHT([Copyright (c) 1998 - 2020 Daniel Stenberg, <daniel@haxx.se>
 This configure script may be copied, distributed and modified under the
 terms of the curl license; see COPYING for more details])
 
@@ -2770,6 +2770,12 @@ if test X"$OPT_LIBMETALINK" != Xno; then
       AC_MSG_NOTICE([libmetalink library defective or too old])
       want_metalink="no"
     ])
+    if test "x$OPENSSL_ENABLED" != "x1" -a "x$USE_WINDOWS_SSPI" != "x1" \
+        -a "x$GNUTLS_ENABLED" != "x1" -a "x$NSS_ENABLED" != "x1" \
+        -a "x$SECURETRANSPORT_ENABLED" != "x1"; then
+      AC_MSG_WARN([metalink support requires a compatible SSL/TLS backend])
+      want_metalink="no"
+    fi
     CPPFLAGS="$clean_CPPFLAGS"
     LDFLAGS="$clean_LDFLAGS"
     LIBS="$clean_LIBS"
@@ -2795,16 +2801,22 @@ dnl **********************************************************************
 dnl Default to compiler & linker defaults for LIBSSH2 files & libraries.
 OPT_LIBSSH2=off
 AC_ARG_WITH(libssh2,dnl
-AC_HELP_STRING([--with-libssh2=PATH],[Where to look for libssh2, PATH points to the LIBSSH2 installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
-AC_HELP_STRING([--with-libssh2], [enable LIBSSH2]),
+AC_HELP_STRING([--with-libssh2=PATH],[Where to look for libssh2, PATH points to the libssh2 installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
+AC_HELP_STRING([--with-libssh2], [enable libssh2]),
   OPT_LIBSSH2=$withval, OPT_LIBSSH2=no)
 
 
 OPT_LIBSSH=off
 AC_ARG_WITH(libssh,dnl
-AC_HELP_STRING([--with-libssh=PATH],[Where to look for libssh, PATH points to the LIBSSH installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
-AC_HELP_STRING([--with-libssh], [enable LIBSSH]),
+AC_HELP_STRING([--with-libssh=PATH],[Where to look for libssh, PATH points to the libssh installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
+AC_HELP_STRING([--with-libssh], [enable libssh]),
   OPT_LIBSSH=$withval, OPT_LIBSSH=no)
+
+OPT_WOLFSSH=off
+AC_ARG_WITH(wolfssh,dnl
+AC_HELP_STRING([--with-wolfssh=PATH],[Where to look for wolfssh, PATH points to the wolfSSH installation; when possible, set the PKG_CONFIG_PATH environment variable instead of using this option])
+AC_HELP_STRING([--with-wolfssh], [enable wolfssh]),
+  OPT_WOLFSSH=$withval, OPT_WOLFSSH=no)
 
 if test X"$OPT_LIBSSH2" != Xno; then
   dnl backup the pre-libssh2 variables
@@ -2952,6 +2964,28 @@ elif test X"$OPT_LIBSSH" != Xno; then
     CPPFLAGS=$CLEANCPPFLAGS
     LIBS=$CLEANLIBS
   fi
+elif test X"$OPT_WOLFSSH" != Xno; then
+  dnl backup the pre-wolfssh variables
+  CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+  if test "$OPT_WOLFSSH" != yes; then
+     WOLFCONFIG="$OPT_WOLFSSH/bin/wolfssh-config"
+     LDFLAGS="$LDFLAGS `$WOLFCONFIG --libs`"
+     CPPFLAGS="$CPPFLAGS `$WOLFCONFIG --cflags`"
+  fi
+
+  AC_CHECK_LIB(wolfssh, wolfSSH_Init)
+
+  AC_CHECK_HEADERS(wolfssh/ssh.h,
+    curl_ssh_msg="enabled (wolfSSH)"
+    WOLFSSH_ENABLED=1
+    AC_DEFINE(USE_WOLFSSH, 1, [if wolfSSH is in use])
+    AC_SUBST(USE_WOLFSSH, [1])
+  )
+
 fi
 
 dnl **********************************************************************
@@ -3351,9 +3385,9 @@ if test X"$want_h2" != Xno; then
     CPPFLAGS="$CPPFLAGS $CPP_H2"
     LIBS="$LIB_H2 $LIBS"
 
-    # use nghttp2_option_set_no_recv_client_magic to require nghttp2
-    # >= 1.0.0
-    AC_CHECK_LIB(nghttp2, nghttp2_option_set_no_recv_client_magic,
+    # use nghttp2_session_set_local_window_size to require nghttp2
+    # >= 1.12.0
+    AC_CHECK_LIB(nghttp2, nghttp2_session_set_local_window_size,
       [
        AC_CHECK_HEADERS(nghttp2/nghttp2.h,
           curl_h2_msg="enabled (nghttp2)"
@@ -3695,9 +3729,9 @@ if test X"$want_quiche" != Xno; then
         LIBS=$CLEANLIBS
     )
   else
-    dnl no nghttp3 pkg-config found, deal with it
+    dnl no quiche pkg-config found, deal with it
     if test X"$want_quiche" != Xdefault; then
-      dnl To avoid link errors, we do not allow --with-nghttp3 without
+      dnl To avoid link errors, we do not allow --with-quiche without
       dnl a pkgconfig file
       AC_MSG_ERROR([--with-quiche was specified but could not find quiche pkg-config file.])
     fi
@@ -4758,6 +4792,10 @@ if test "x$USE_LIBSSH2" = "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi
 if test "x$USE_LIBSSH" = "x1"; then
+  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SCP"
+  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
+fi
+if test "x$USE_WOLFSSH" = "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SCP"
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi

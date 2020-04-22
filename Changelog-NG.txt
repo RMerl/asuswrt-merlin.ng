@@ -1,6 +1,18 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.17 (xx-xxx-xxxx)
+  - NEW: Add Chacha20-poly1305 support to dropbear (themiron)
+  - UPDATED: dnsmasq to 2.81-openssl (themiron)
+  - UPDATED: openvpn to 2.4.9.
+  - UPDATED: curl to 7.69.1.
+  - UPDATED: openssl-1.1 to 1.1.1g (themiron)
+  - UPDATED: nano to 4.9.2.
+  - FIXED: RT-AC88U/RT-AC3100/RT-AC5300 could fail to upgrade
+           from newer stock versions to Asuswrt-Merlin.
+  - FIXED: Various webui issues with sorting DHCP reservations.
+
+
 384.16 (5-Apr-2020)
   - NEW: Added support for the RT-AX58U and RT-AX3000 (same
          firmware), based on GPL 384_8253 + binary blobs 384_8137.

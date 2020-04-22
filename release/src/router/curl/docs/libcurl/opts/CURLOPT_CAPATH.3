@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAPATH 3 "September 10, 2017" "libcurl 7.68.0" "curl_easy_setopt options"
+.TH CURLOPT_CAPATH 3 "March 04, 2020" "libcurl 7.69.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CAPATH \- specify directory holding CA certificates
@@ -55,9 +55,8 @@ if(curl) {
 }
 .fi
 .SH AVAILABILITY
-This option is supported by the OpenSSL, GnuTLS, PolarSSL and mbedTLS
-(since 7.56.0) backends. The NSS backend provides the option only for
-backward compatibility.
+This option is supported by the OpenSSL, GnuTLS and mbedTLS (since 7.56.0)
+backends. The NSS backend provides the option only for backward compatibility.
 .SH RETURN VALUE
 CURLE_OK if supported; or an error such as:
 

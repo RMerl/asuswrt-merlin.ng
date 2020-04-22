@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -85,7 +85,7 @@ char *add_file_name_to_url(char *url, const char *filename)
   else
     ptr = url;
   ptr = strrchr(ptr, '/');
-  if(!ptr || !strlen(++ptr)) {
+  if(!ptr || !*++ptr) {
     /* The URL has no file name part, add the local file name. In order
        to be able to do so, we have to create a new URL in another
        buffer.*/

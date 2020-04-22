@@ -3933,6 +3933,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\rename.c"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\rtsp.c"
 			>
 			</File>
@@ -4385,6 +4389,10 @@
 			>
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\rename.h"
+			>
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\rtsp.h"
 			>
 			</File>
@@ -4631,6 +4639,10 @@
 					RelativePath="..\..\..\..\lib\vssh\libssh.c"
 				>
 				</File>
+				<File
+					RelativePath="..\..\..\..\lib\vssh\wolfssh.c"
+				>
+				</File>
 			</Filter>
 			<Filter
 				Name="Header Files"
@@ -4664,6 +4676,10 @@
 				>
 				</File>
 				<File
+					RelativePath="..\..\..\..\lib\vtls\mbedtls_threadlock.c"
+				>
+				</File>
+				<File
 					RelativePath="..\..\..\..\lib\vtls\mesalink.c"
 				>
 				</File>
@@ -4673,14 +4689,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\openssl.c"
-				>
-				</File>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\polarssl.c"
-				>
-				</File>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\polarssl_threadlock.c"
 				>
 				</File>
 				<File
@@ -4724,6 +4732,10 @@
 				>
 				</File>
 				<File
+					RelativePath="..\..\..\..\lib\vtls\mbedtls_threadlock.h"
+				>
+				</File>
+				<File
 					RelativePath="..\..\..\..\lib\vtls\mesalink.h"
 				>
 				</File>
@@ -4733,14 +4745,6 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\lib\vtls\openssl.h"
-				>
-				</File>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\polarssl.h"
-				>
-				</File>
-				<File
-					RelativePath="..\..\..\..\lib\vtls\polarssl_threadlock.h"
 				>
 				</File>
 				<File

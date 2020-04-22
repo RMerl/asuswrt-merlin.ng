@@ -626,47 +626,43 @@ function adjust_unit(value) {
 <tr>
 	<td>
                 <table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="net" style="margin: 0px 8px;">
-                        <tr>
-                                <td colspan="3">
-                                        <div class="title">Internet Traffic</div>
-                                        <div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
-                                </td>
-                        </tr>
 			<tr>
-				<td width="33%" style="padding-left:25px;">Download:</td>
-				<td width="33%" style="text-align:right;"><div id="rx-current">-- KB/s</div></td>
-				<td width="33%"></td>
+				<td colspan="3">
+					<div class="title">Internet Traffic</div>
+					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
+				</td>
 			</tr>
 			<tr>
-				<td class="loading_bar" colspan="2">
-				<div>
-					<div id="rx_bar" class="status_bar"></div>
-				</div>
+				<td class="loading_bar">
+					<div>
+						<div id="rx_bar" class="status_bar"></div>
+					</div>
 				</td>
 				<td>
-					<div style="width:39px;"></div>
+					<div>Down:</div>
+				</td>
+				<td style="text-align:right;padding-right:10px;">
+					<div id="rx-current">-- KB/s</div>
 				</td>
 			</tr>
 			<tr>
-				<td width="33%"style="padding-left:25px;">Upload:</td>
-				<td width="33%"style="text-align:right;"><div id="tx-current">-- KB/s</div></td>
-				<td width="33%"></td>
-			</tr>
-			<tr>
-				<td class="loading_bar" colspan="2">
-				<div>
-					<div id="tx_bar" class="status_bar"></div>
-				</div>
+				<td class="loading_bar">
+					<div>
+						<div id="tx_bar" class="status_bar"></div>
+					</div>
 				</td>
 				<td>
-					<div style="width:39px;"></div>
+					<div>Up:</div>
+				</td>
+				<td style="text-align:right;padding-right:10px;">
+					<div id="tx-current">-- KB/s</div>
 				</td>
 			</tr>
-                        <tr>
-                                <td colspan="3" style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
-                        </tr>
-                </table>
-        </td>
+			<tr>
+				<td colspan="3" style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
+			</tr>
+		</table>
+	</td>
 </tr>
 
 <tr>

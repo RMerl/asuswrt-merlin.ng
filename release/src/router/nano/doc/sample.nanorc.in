@@ -1,15 +1,12 @@
 ## Sample initialization file for GNU nano.
 ##
-## This file should not be in DOS or Mac format, and characters
-## specially interpreted by the shell should not be escaped here.
-##
-## To make sure an option is disabled, use "unset <option>".
-##
-## For the options that take parameters, the default value is given.
-## Other options are unset by default.
-##
-## Inside string parameters, quotes should not be escaped.  The last
+## Characters that are special in a shell should not be escaped here.
+## Inside string parameters, quotes should not be escaped -- the last
 ## double quote on the line will be seen as the closing quote.
+##
+## For the options that take parameters, the default value is shown.
+## Other options are unset by default.  To make sure that an option
+## is disabled, you can use "unset <option>".
 
 ## Make the 'nextword' function (Ctrl+Right) stop at word ends
 ## instead of at beginnings.
@@ -145,15 +142,16 @@
 ## beginning of the line.
 # set smarthome
 
-## Enable soft line wrapping (AKA full-line display).
+## Spread overlong lines over multiple screen lines.
 # set softwrap
 
 ## Use this spelling checker instead of the internal one.  This option
 ## does not have a default value.
 # set speller "aspell -x -c"
 
-## Allow nano to be suspended.
-# set suspend
+## Allow nano to be suspended (with ^Z by default).
+# set suspendable
+## (The old form of this option, 'set suspend', is deprecated.)
 
 ## Use this tab size instead of the default; it must be greater than 0.
 # set tabsize 8

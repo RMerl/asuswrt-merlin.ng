@@ -149,6 +149,10 @@
 #undef GNULIB_FSCANF
 
 /* Define to a C preprocessor expression that evaluates to 1 or 0, depending
+   whether the gnulib module isblank shall be considered present. */
+#undef GNULIB_ISBLANK
+
+/* Define to a C preprocessor expression that evaluates to 1 or 0, depending
    whether the gnulib module lock shall be considered present. */
 #undef GNULIB_LOCK
 
@@ -1234,9 +1238,6 @@
 # endif
 #endif
 
-/* Enable large inode numbers on Mac OS X 10.5. */
-#undef _DARWIN_USE_64_BIT_INODE
-
 /* Number of bits in a file offset, on hosts where this is settable. */
 #undef _FILE_OFFSET_BITS
 
@@ -1267,7 +1268,10 @@
 #  define _Noreturn [[noreturn]]
 # elif ((!defined __cplusplus || defined __clang__) \
         && (201112 <= (defined __STDC_VERSION__ ? __STDC_VERSION__ : 0)  \
-            || 4 < __GNUC__ + (7 <= __GNUC_MINOR__)))
+            || 4 < __GNUC__ + (7 <= __GNUC_MINOR__) \
+            || (defined __apple_build_version__ \
+                ? 6000000 <= __apple_build_version__ \
+                : 3 < __clang_major__ + (5 <= __clang_minor__))))
    /* _Noreturn works as-is.  */
 # elif 2 < __GNUC__ + (8 <= __GNUC_MINOR__) || 0x5110 <= __SUNPRO_C
 #  define _Noreturn __attribute__ ((__noreturn__))

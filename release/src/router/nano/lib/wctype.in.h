@@ -556,10 +556,12 @@ _GL_CXXALIAS_RPL (iswcntrl, int, (wint_t wc));
 #else
 _GL_CXXALIAS_SYS (iswcntrl, int, (wint_t wc));
 #endif
-#if @REPLACE_ISWDIGIT@
+#if @GNULIB_ISWDIGIT@
+# if @REPLACE_ISWDIGIT@
 _GL_CXXALIAS_RPL (iswdigit, int, (wint_t wc));
-#else
+# else
 _GL_CXXALIAS_SYS (iswdigit, int, (wint_t wc));
+# endif
 #endif
 #if @REPLACE_ISWCNTRL@
 _GL_CXXALIAS_RPL (iswgraph, int, (wint_t wc));
@@ -591,10 +593,12 @@ _GL_CXXALIAS_RPL (iswupper, int, (wint_t wc));
 #else
 _GL_CXXALIAS_SYS (iswupper, int, (wint_t wc));
 #endif
-#if @REPLACE_ISWXDIGIT@
+#if @GNULIB_ISWXDIGIT@
+# if @REPLACE_ISWXDIGIT@
 _GL_CXXALIAS_RPL (iswxdigit, int, (wint_t wc));
-#else
+# else
 _GL_CXXALIAS_SYS (iswxdigit, int, (wint_t wc));
+# endif
 #endif
 #if __GLIBC__ >= 2
 _GL_CXXALIASWARN (iswalnum);

@@ -116,9 +116,15 @@ _GL_WARN_ON_USE (creat, "creat is not always POSIX compliant - "
 #  endif
 _GL_FUNCDECL_RPL (fcntl, int, (int fd, int action, ...));
 _GL_CXXALIAS_RPL (fcntl, int, (int fd, int action, ...));
+#  if !GNULIB_defined_rpl_fcntl
+#   define GNULIB_defined_rpl_fcntl 1
+#  endif
 # else
 #  if !@HAVE_FCNTL@
 _GL_FUNCDECL_SYS (fcntl, int, (int fd, int action, ...));
+#   if !GNULIB_defined_fcntl
+#    define GNULIB_defined_fcntl 1
+#   endif
 #  endif
 _GL_CXXALIAS_SYS (fcntl, int, (int fd, int action, ...));
 # endif

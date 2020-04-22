@@ -5,7 +5,7 @@
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 22
+# serial 23
 
 # Written by Paul Eggert.
 
@@ -18,7 +18,6 @@ AC_DEFUN([gl_HEADER_STRING_H],
 
 AC_DEFUN([gl_HEADER_STRING_H_BODY],
 [
-  AC_REQUIRE([AC_C_RESTRICT])
   AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
   gl_NEXT_HEADERS([string.h])
 
@@ -30,6 +29,8 @@ AC_DEFUN([gl_HEADER_STRING_H_BODY],
     [ffsl ffsll memmem mempcpy memrchr rawmemchr stpcpy stpncpy strchrnul
      strdup strncat strndup strnlen strpbrk strsep strcasestr strtok_r
      strerror_r strsignal strverscmp])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 AC_DEFUN([gl_STRING_MODULE_INDICATOR],

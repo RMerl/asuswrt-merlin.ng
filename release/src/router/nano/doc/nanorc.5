@@ -16,16 +16,15 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 4.8" "February 2020"
+.TH NANORC 5 "version 4.9.2" "April 2020"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
 
 .SH DESCRIPTION
-The \fInanorc\fP files contain the default settings for \fBnano\fP, a
-small and friendly editor.  They should be in Unix format, not in
-DOS or Mac format.  During startup, if \fB\-\-rcfile\fR is not given,
-\fBnano\fR will read two files: first the
+The \fInanorc\fP files contain the default settings for \fBnano\fP,
+a small and friendly editor.  During startup, if \fB\-\-rcfile\fR
+is not given, \fBnano\fR will read two files: first the
 system-wide settings, from \fI/etc/nanorc\fP (the exact path might be
 different on your system), and then the user-specific settings, either
 from \fI~/.nanorc\fR or from \fI$XDG_CONFIG_HOME/nano/nanorc\fR
@@ -180,7 +179,7 @@ System, and on the console when gpm is running.  Text can still be
 selected through dragging by holding down the Shift key.
 .TP
 .B set multibuffer
-When reading in a file with ^R, insert it into a new buffer by default.
+When reading in a file with \fB^R\fR, insert it into a new buffer by default.
 .TP
 .B set noconvert
 Don't convert files from DOS/Mac format.
@@ -214,7 +213,7 @@ Save the cursor position of files between editing sessions.
 The cursor position is remembered for the 200 most-recently edited files.
 .TP
 .B set preserve
-Preserve the XON and XOFF keys (^Q and ^S).
+Preserve the XON and XOFF keys (\fB^Q\fR and \fB^S\fR).
 .TP
 .BI "set punct """ characters """
 Set the characters treated as closing punctuation when justifying
@@ -268,7 +267,9 @@ Deprecated option since it has become the default setting.
 When needed, use \fBunset jumpyscrolling\fR instead.
 .TP
 .B set softwrap
-Enable soft line wrapping for easier viewing of very long lines.
+Display lines that exceed the screen's width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen's edge, by using also \fBset atblanks\fR.)
 .TP
 .B set speller """\fIprogram\fR [\fIargument \fR...]\fB"""
 Use the given \fIprogram\fR to do spell checking and correcting, instead of
@@ -282,8 +283,8 @@ See \fBset titlecolor\fR for more details.
 Specify the color combination to use for the vertical guiding stripe.
 See \fBset titlecolor\fR for more details.
 .TP
-.B set suspend
-Allow \fBnano\fP to be suspended.
+.B set suspendable
+Allow \fBnano\fP to be suspended (with \fB^Z\fR by default).
 .TP
 .B set tabsize \fInumber\fR
 Use a tab size of \fInumber\fR columns.  The value of \fInumber\fP must be
@@ -509,6 +510,8 @@ Example: F10.
 .RE
 
 Rebinding \fB^M\fR (Enter) or \fB^I\fR (Tab) is probably not a good idea.
+Rebinding \fB^[\fR (Esc) is not possible, because its keycode
+is the starter byte of escape sequences and Meta keystrokes.
 On some terminals it's not possible to rebind \fB^H\fR (unless \fB\-\-raw\fR
 is used) because its keycode is identical to that of the Backspace key.
 
@@ -570,7 +573,7 @@ Throws away the current line (or the marked region).
 Deletes from the cursor position to the beginning of the preceding word.
 (This function is bound by default to <Shift+Ctrl+Delete>.  If your terminal
 produces \fB^H\fR for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
-the word to the left of the cursor by rebinding ^H to this function.)
+the word to the left of the cursor by rebinding \fB^H\fR to this function.)
 .TP
 .B chopwordright
 Deletes from the cursor position to the beginning of the next word.
@@ -726,7 +729,7 @@ Refreshes the screen.
 .TP
 .B suspend
 Suspends the editor (if the suspending function is enabled, see the
-"suspendenable" entry below).
+\fBsuspendable\fR toggle item below).
 .TP
 .B casesens
 Toggles whether searching/replacing ignores or respects the case of
@@ -837,8 +840,10 @@ Toggles whether typed tabs will be converted to spaces.
 .B mouse
 Toggles mouse support.
 .TP
-.B suspendenable
-Toggles whether the suspend sequence (normally ^Z) will suspend the editor window.
+.B suspendable
+Toggles whether the suspend keystroke (\fB^Z\fR by default)
+will actually suspend the editor.
+(The old name of this function, 'suspendenable', is deprecated.)
 .RE
 
 .TP

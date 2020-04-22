@@ -4,7 +4,7 @@
  *   Copyright (C) 2001-2011, 2013-2020 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mike Frysinger                                    *
  *   Copyright (C) 2019 Brand Huntsman                                    *
- *   Copyright (C) 2014-2019 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2020 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -89,7 +89,8 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_SPELLER
 	{"speller", 0},
 #endif
-	{"suspend", SUSPEND},
+	{"suspend", SUSPENDABLE},  /* Deprecated; remove in 2022. */
+	{"suspendable", SUSPENDABLE},
 	{"tabsize", 0},
 	{"tempfile", TEMP_FILE},
 	{"view", VIEW_MODE},
@@ -264,7 +265,7 @@ keystruct *strtosc(const char *input)
 #endif
 #ifdef ENABLE_SPELLER
 	else if (!strcmp(input, "tospell") ||
-			 !strcmp(input, "speller"))
+	         !strcmp(input, "speller"))
 		s->func = do_spell;
 #endif
 #ifdef ENABLE_COLOR
@@ -285,9 +286,9 @@ keystruct *strtosc(const char *input)
 	else if (!strcmp(input, "fulljustify"))
 		s->func = do_full_justify;
 	else if (!strcmp(input, "beginpara"))
-		s->func = do_para_begin_void;
+		s->func = to_para_begin;
 	else if (!strcmp(input, "endpara"))
-		s->func = do_para_end_void;
+		s->func = to_para_end;
 #endif
 #ifdef ENABLE_COMMENT
 	else if (!strcmp(input, "comment"))
@@ -303,10 +304,10 @@ keystruct *strtosc(const char *input)
 	else if (!strcmp(input, "unindent"))
 		s->func = do_unindent;
 	else if (!strcmp(input, "chopwordleft") ||
-			 !strcmp(input, "cutwordleft"))  /* Deprecated; remove in 2021. */
+	         !strcmp(input, "cutwordleft"))  /* Deprecated; remove in 2021. */
 		s->func = chop_previous_word;
 	else if (!strcmp(input, "chopwordright") ||
-			 !strcmp(input, "cutwordright"))  /* Deprecated; remove in 2021. */
+	         !strcmp(input, "cutwordright"))  /* Deprecated; remove in 2021. */
 		s->func = chop_next_word;
 	else if (!strcmp(input, "findbracket"))
 		s->func = do_find_bracket;
@@ -322,16 +323,16 @@ keystruct *strtosc(const char *input)
 		s->func = do_redo;
 #endif
 	else if (!strcmp(input, "left") ||
-			 !strcmp(input, "back"))
+	         !strcmp(input, "back"))
 		s->func = do_left;
 	else if (!strcmp(input, "right") ||
-			 !strcmp(input, "forward"))
+	         !strcmp(input, "forward"))
 		s->func = do_right;
 	else if (!strcmp(input, "up") ||
-			 !strcmp(input, "prevline"))
+	         !strcmp(input, "prevline"))
 		s->func = do_up;
 	else if (!strcmp(input, "down") ||
-			 !strcmp(input, "nextline"))
+	         !strcmp(input, "nextline"))
 		s->func = do_down;
 #if !defined(NANO_TINY) || defined(ENABLE_HELP)
 	else if (!strcmp(input, "scrollup"))
@@ -340,22 +341,22 @@ keystruct *strtosc(const char *input)
 		s->func = do_scroll_down;
 #endif
 	else if (!strcmp(input, "prevword"))
-		s->func = do_prev_word_void;
+		s->func = to_prev_word;
 	else if (!strcmp(input, "nextword"))
-		s->func = do_next_word_void;
+		s->func = to_next_word;
 	else if (!strcmp(input, "home"))
 		s->func = do_home;
 	else if (!strcmp(input, "end"))
 		s->func = do_end;
 	else if (!strcmp(input, "prevblock"))
-		s->func = do_prev_block;
+		s->func = to_prev_block;
 	else if (!strcmp(input, "nextblock"))
-		s->func = do_next_block;
+		s->func = to_next_block;
 	else if (!strcmp(input, "pageup") ||
-			 !strcmp(input, "prevpage"))
+	         !strcmp(input, "prevpage"))
 		s->func = do_page_up;
 	else if (!strcmp(input, "pagedown") ||
-			 !strcmp(input, "nextpage"))
+	         !strcmp(input, "nextpage"))
 		s->func = do_page_down;
 	else if (!strcmp(input, "firstline"))
 		s->func = to_first_line;
@@ -421,7 +422,7 @@ keystruct *strtosc(const char *input)
 #endif
 #ifdef ENABLE_BROWSER
 	else if (!strcmp(input, "tofiles") ||
-			 !strcmp(input, "browser"))
+	         !strcmp(input, "browser"))
 		s->func = to_files;
 	else if (!strcmp(input, "gotodir"))
 		s->func = goto_dir;
@@ -465,8 +466,9 @@ keystruct *strtosc(const char *input)
 		else if (!strcmp(input, "mouse"))
 			s->toggle = USE_MOUSE;
 #endif
-		else if (!strcmp(input, "suspendenable"))
-			s->toggle = SUSPEND;
+		else if (!strcmp(input, "suspendable") ||
+		         !strcmp(input, "suspendenable"))  /* Deprecated; remove in 2022. */
+			s->toggle = SUSPENDABLE;
 		else
 #endif /* !NANO_TINY */
 		{
@@ -553,14 +555,21 @@ char *parse_argument(char *ptr)
 }
 
 #ifdef ENABLE_COLOR
-/* Pass over the current regex string in the line starting at ptr,
- * null-terminate it, and return a pointer to the /next/ word. */
+/* Advance over one regular expression in the line starting at ptr,
+ * null-terminate it, and return a pointer to the succeeding text. */
 char *parse_next_regex(char *ptr)
 {
-	/* Continue until the end of line, or until a " followed by a
-	 * blank character or the end of line. */
+	char *starting_point = ptr;
+
+	if (*(ptr - 1) != '"') {
+		jot_error(N_("Regex strings must begin and end with a \" character"));
+		return NULL;
+	}
+
+	/* Continue until the end of the line, or until a double quote followed
+	 * by end-of-line or a blank. */
 	while (*ptr != '\0' && (*ptr != '"' ||
-				(*(ptr + 1) != '\0' && !isblank((unsigned char)ptr[1]))))
+						(ptr[1] != '\0' && !isblank((unsigned char)ptr[1]))))
 		ptr++;
 
 	if (*ptr == '\0') {
@@ -568,7 +577,12 @@ char *parse_next_regex(char *ptr)
 		return NULL;
 	}
 
-	/* Null-terminate and advance ptr. */
+	if (ptr == starting_point) {
+		jot_error(N_("Empty regex string"));
+		return NULL;
+	}
+
+	/* Null-terminate the regex and skip until the next non-blank. */
 	*ptr++ = '\0';
 
 	while (isblank((unsigned char)*ptr))
@@ -694,7 +708,7 @@ bool is_universal(void (*func)(void))
 	return (func == do_left || func == do_right ||
 		func == do_home || func == do_end ||
 #ifndef NANO_TINY
-		func == do_prev_word_void || func == do_next_word_void ||
+		func == to_prev_word || func == to_next_word ||
 #endif
 		func == do_delete || func == do_backspace ||
 		func == cut_text || func == paste_text ||
@@ -993,7 +1007,7 @@ short color_to_short(const char *colorname, bool *bright)
 
 /* Parse the color name (or pair of color names) in the given string.
  * Return FALSE when any color name is invalid; otherwise return TRUE. */
-bool parse_color_names(char *combostr, short *fg, short *bg, int *attributes)
+bool parse_combination(char *combostr, short *fg, short *bg, int *attributes)
 {
 	char *comma = strchr(combostr, ',');
 	bool bright;
@@ -1025,23 +1039,24 @@ bool parse_color_names(char *combostr, short *fg, short *bg, int *attributes)
 	return TRUE;
 }
 
-/* Parse the color string in the line at ptr, and add it to the current
- * file's associated colors.  rex_flags are the regex compilation flags
- * to use, excluding or including REG_ICASE for case (in)sensitivity. */
-void parse_colors(char *ptr, int rex_flags)
+/* Parse the color specification that starts at ptr, and then the one or more
+ * regexes that follow it.  For each valid regex (or start=/end= regex pair),
+ * add a rule to the current syntax. */
+void parse_rule(char *ptr, int rex_flags)
 {
+	char *names, *regexstring;
 	short fg, bg;
 	int attributes;
-	char *item;
 
 	if (*ptr == '\0') {
 		jot_error(N_("Missing color name"));
 		return;
 	}
 
-	item = ptr;
+	names = ptr;
 	ptr = parse_next_word(ptr);
-	if (!parse_color_names(item, &fg, &bg, &attributes))
+
+	if (!parse_combination(names, &fg, &bg, &attributes))
 		return;
 
 	if (*ptr == '\0') {
@@ -1049,93 +1064,68 @@ void parse_colors(char *ptr, int rex_flags)
 		return;
 	}
 
-	/* Now for the fun part.  Start adding regexes to individual strings
-	 * in the colorstrings array, woo! */
-	while (ptr != NULL && *ptr != '\0') {
+	while (*ptr != '\0') {
+		regex_t *start_rgx = NULL, *end_rgx = NULL;
+			/* Intermediate storage for compiled regular expressions. */
 		colortype *newcolor = NULL;
-			/* The container for a color plus its regexes. */
-		bool goodstart;
-			/* Whether the start expression was valid. */
+			/* Container for compiled regex (pair) and the color it paints. */
 		bool expectend = FALSE;
-			/* Whether to expect an end= line. */
+			/* Whether it is a start=/end= regex pair. */
 
 		if (strncmp(ptr, "start=", 6) == 0) {
 			ptr += 6;
 			expectend = TRUE;
 		}
 
-		if (*ptr != '"') {
-			jot_error(N_("Regex strings must begin and end with a \" character"));
-			ptr = parse_next_regex(ptr);
-			continue;
-		}
-
-		item = ++ptr;
+		regexstring = ++ptr;
 		ptr = parse_next_regex(ptr);
-		if (ptr == NULL)
-			break;
 
-		if (*item == '\0') {
-			jot_error(N_("Empty regex string"));
-			goodstart = FALSE;
-		} else {
-			newcolor = (colortype *)nmalloc(sizeof(colortype));
-			goodstart = compile(item, rex_flags, &newcolor->start);
-		}
-
-		/* If the start regex is valid, fill in the rest of the data, and
-		 * hook the new color struct in at the tail of the linked list. */
-		if (goodstart) {
-			newcolor->fg = fg;
-			newcolor->bg = bg;
-			newcolor->attributes = attributes;
-
-			newcolor->end = NULL;
-			newcolor->next = NULL;
-
-			if (lastcolor == NULL)
-				live_syntax->color = newcolor;
-			else
-				lastcolor->next = newcolor;
-
-			lastcolor = newcolor;
-		} else
-			free(newcolor);
-
-		if (!expectend)
-			continue;
-
-		if (ptr == NULL || strncmp(ptr, "end=", 4) != 0) {
-			jot_error(N_("\"start=\" requires a corresponding \"end=\""));
+		/* When there is no regex, or it is invalid, skip this line. */
+		if (ptr == NULL || !compile(regexstring, rex_flags, &start_rgx))
 			return;
+
+		if (expectend) {
+			if (strncmp(ptr, "end=", 4) != 0) {
+				jot_error(N_("\"start=\" requires a corresponding \"end=\""));
+				regfree(start_rgx);
+				free(start_rgx);
+				return;
+			}
+
+			regexstring = ptr + 5;
+			ptr = parse_next_regex(ptr + 5);
+
+			/* When there is no valid end= regex, abandon the rule. */
+			if (ptr == NULL || !compile(regexstring, rex_flags, &end_rgx)) {
+				regfree(start_rgx);
+				free(start_rgx);
+				return;
+			}
 		}
 
-		ptr += 4;
-		if (*ptr != '"') {
-			jot_error(N_("Regex strings must begin and end with a \" character"));
-			continue;
+		/* Allocate a rule, fill in the data, and link it into the list. */
+		newcolor = (colortype *)nmalloc(sizeof(colortype));
+
+		newcolor->start = start_rgx;
+		newcolor->end = end_rgx;
+
+		newcolor->fg = fg;
+		newcolor->bg = bg;
+		newcolor->attributes = attributes;
+
+		if (lastcolor == NULL)
+			live_syntax->color = newcolor;
+		else
+			lastcolor->next = newcolor;
+
+		newcolor->next = NULL;
+		lastcolor = newcolor;
+
+		/* For a multiline rule, give it a number and increase the count. */
+		if (expectend) {
+			newcolor->id = live_syntax->nmultis;
+			live_syntax->nmultis++;
 		}
-
-		item = ++ptr;
-		ptr = parse_next_regex(ptr);
-		if (ptr == NULL)
-			break;
-
-		if (*item == '\0') {
-			jot_error(N_("Empty regex string"));
-			continue;
-		}
-
-		/* If the start regex was invalid, the end regex cannot be saved. */
-		if (!goodstart)
-			continue;
-
-		/* Save the compiled ending regex (when it's valid). */
-		compile(item, rex_flags, &newcolor->end);
-
-		/* Lame way to skip another static counter. */
-		newcolor->id = live_syntax->nmultis;
-		live_syntax->nmultis++;
 	}
 }
 
@@ -1144,7 +1134,7 @@ colortype *parse_interface_color(char *combostr)
 {
 	colortype *trio = nmalloc(sizeof(colortype));
 
-	if (parse_color_names(combostr, &trio->fg, &trio->bg, &trio->attributes)) {
+	if (parse_combination(combostr, &trio->fg, &trio->bg, &trio->attributes)) {
 		free(combostr);
 		return trio;
 	} else {
@@ -1158,7 +1148,8 @@ colortype *parse_interface_color(char *combostr)
  * by ptr, and store them quoteless in the passed storage place. */
 void grab_and_store(const char *kind, char *ptr, regexlisttype **storage)
 {
-	regexlisttype *lastthing;
+	regexlisttype *lastthing, *newthing;
+	const char *regexstring;
 
 	if (!opensyntax) {
 		jot_error(N_("A '%s' command requires a preceding 'syntax' command"), kind);
@@ -1184,16 +1175,9 @@ void grab_and_store(const char *kind, char *ptr, regexlisttype **storage)
 
 	/* Now gather any valid regexes and add them to the linked list. */
 	while (*ptr != '\0') {
-		const char *regexstring;
-		regexlisttype *newthing;
-
-		if (*ptr != '"') {
-			jot_error(N_("Regex strings must begin and end with a \" character"));
-			return;
-		}
-
 		regexstring = ++ptr;
 		ptr = parse_next_regex(ptr);
+
 		if (ptr == NULL)
 			return;
 
@@ -1245,9 +1229,9 @@ void pick_up_name(const char *kind, char *ptr, char **storage)
 bool parse_syntax_commands(char *keyword, char *ptr)
 {
 	if (strcmp(keyword, "color") == 0)
-		parse_colors(ptr, NANO_REG_EXTENDED);
+		parse_rule(ptr, NANO_REG_EXTENDED);
 	else if (strcmp(keyword, "icolor") == 0)
-		parse_colors(ptr, NANO_REG_EXTENDED | REG_ICASE);
+		parse_rule(ptr, NANO_REG_EXTENDED | REG_ICASE);
 	else if (strcmp(keyword, "comment") == 0) {
 #ifdef ENABLE_COMMENT
 		pick_up_name("comment", ptr, &live_syntax->comment);
@@ -1299,10 +1283,10 @@ static void check_vitals_mapped(void)
 void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 {
 	char *buffer = NULL;
-	ssize_t len;
 	size_t size = 0;
+	ssize_t length;
 
-	while ((len = getline(&buffer, &size, rcstream)) > 0) {
+	while ((length = getline(&buffer, &size, rcstream)) > 0) {
 		char *ptr, *keyword, *option, *argument;
 #ifdef ENABLE_COLOR
 		bool drop_open = FALSE;
@@ -1317,9 +1301,11 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 		if (just_syntax && !intros_only && lineno <= live_syntax->lineno)
 			continue;
 #endif
-		/* Strip the terminating newline, if any. */
-		if (buffer[len - 1] == '\n')
-			buffer[len - 1] = '\0';
+		/* Strip the terminating newline and possibly a carriage return. */
+		if (buffer[length - 1] == '\n')
+			buffer[--length] = '\0';
+		if (length > 0 && buffer[length - 1] == '\r')
+			buffer[--length] = '\0';
 
 		ptr = buffer;
 		while (isblank((unsigned char)*ptr))
@@ -1338,17 +1324,17 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 		if (!just_syntax && strcmp(keyword, "extendsyntax") == 0) {
 			augmentstruct *newitem, *extra;
 			char *syntaxname = ptr;
-			syntaxtype *sint;
+			syntaxtype *sntx;
 
 			check_for_nonempty_syntax();
 
 			ptr = parse_next_word(ptr);
 
-			for (sint = syntaxes; sint != NULL; sint = sint->next)
-				if (!strcmp(sint->name, syntaxname))
+			for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+				if (!strcmp(sntx->name, syntaxname))
 					break;
 
-			if (sint == NULL) {
+			if (sntx == NULL) {
 				jot_error(N_("Could not find syntax \"%s\" to extend"), syntaxname);
 				continue;
 			}
@@ -1361,7 +1347,7 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 			 * other commands are stored for possible later processing. */
 			if (strcmp(keyword, "header") == 0 || strcmp(keyword, "magic") == 0) {
 				free(argument);
-				live_syntax = sint;
+				live_syntax = sntx;
 				opensyntax = TRUE;
 				drop_open = TRUE;
 			} else {
@@ -1372,13 +1358,13 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 				newitem->data = argument;
 				newitem->next = NULL;
 
-				if (sint->augmentations != NULL) {
-					extra = sint->augmentations;
+				if (sntx->augmentations != NULL) {
+					extra = sntx->augmentations;
 					while (extra->next != NULL)
 						extra = extra->next;
 					extra->next = newitem;
 				} else
-					sint->augmentations = newitem;
+					sntx->augmentations = newitem;
 
 				continue;
 			}

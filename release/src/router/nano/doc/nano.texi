@@ -8,8 +8,8 @@
 
 @smallbook
 @set EDITION 0.5
-@set VERSION 4.8
-@set UPDATED February 2020
+@set VERSION 4.9.2
+@set UPDATED April 2020
 
 @dircategory Editors
 @direntry
@@ -23,7 +23,7 @@
 @titlepage
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 4.8
+@subtitle version 4.9.2
 
 @author Chris Allegretta
 @page
@@ -63,7 +63,7 @@ e-mail: @email{chrisa@@asty.org}@*
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 4.8.
+This manual documents the GNU @command{nano} editor, version 4.9.2.
 
 @menu
 * Introduction::
@@ -456,15 +456,16 @@ disabled to display the help-system navigation keys.
 Make Ctrl+Right stop at word ends instead of beginnings.
 
 @item -z
-@itemx --suspend
+@itemx --suspendable
 Enable the ability to suspend @command{nano} using the system's suspend
 keystroke (usually @kbd{^Z}).
 
 @item -$
 @itemx --softwrap
-Enable 'soft wrapping'.  This will make @command{nano} attempt to display the
-entire contents of any line, even if it is longer than the screen width, by
-continuing it over multiple screen lines.  Since
+Display lines that exceed the screen's width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen's edge, by using also @code{--atblanks}.)
+Since
 @code{$} normally refers to a variable in the Unix shell, you should specify
 this option last when using other options (e.g.@: @code{nano -wS$}) or pass it
 separately (e.g.@: @code{nano -wS -$}).
@@ -682,7 +683,7 @@ The following global toggles are available:
 --- @pxref{Syntax Highlighting}).
 
 @item Suspension
-@kbd{Meta-Z} toggles the @option{-z} (@option{--suspend}) command-line option.
+@kbd{Meta-Z} toggles the @option{-z} (@option{--suspendable}) command-line option.
 
 @end table
 
@@ -690,9 +691,8 @@ The following global toggles are available:
 @node Nanorc Files
 @chapter Nanorc Files
 
-The nanorc files contain the default settings for @command{nano}.  They
-should be in Unix format, not in DOS or Mac format.  During startup,
-if @option{--rcfile} is not given, @command{nano} will read two files:
+The nanorc files contain the default settings for @command{nano}.  During
+startup, if @option{--rcfile} is not given, @command{nano} will read two files:
 first the system-wide settings, from @file{/etc/nanorc} (the exact path
 might be different on your system), and then the user-specific settings,
 either from @file{~/.nanorc} or from @file{$XDG_CONFIG_HOME/nano/nanorc}
@@ -935,7 +935,9 @@ Deprecated option since it has become the default setting.
 When needed, use @code{unset jumpyscrolling} instead.
 
 @item set softwrap
-Enable soft line wrapping for easier viewing of very long lines.
+Display lines that exceed the screen's width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen's edge, by using also @code{set atblanks}.)
 
 @item set speller "@var{program} [@var{argument} @dots{}]"
 Use the given program to do spell checking and correcting.
@@ -949,8 +951,8 @@ Use this color combination for the status bar.
 Use this color combination for the vertical guiding stripe.
 @xref{@code{set functioncolor}} for valid color names.
 
-@item set suspend
-Allow @command{nano} to be suspended.
+@item set suspendable
+Allow @command{nano} to be suspended (with @kbd{^Z} by default).
 
 @item set tabsize @var{number}
 Use a tab size of @var{number} columns.  The value of @var{number} must be
@@ -1186,6 +1188,8 @@ with Shift.)
 @end itemize
 
 Rebinding @code{^M} (Enter) or @code{^I} (Tab) is probably not a good idea.
+Rebinding @code{^[} (Esc) is not possible, because its keycode
+is the starter byte of escape sequences and Meta keystrokes.
 On some terminals it's not possible to rebind @code{^H} (unless @code{--raw}
 is used) because its keycode is identical to that of the Backspace key.
 
@@ -1248,7 +1252,7 @@ Throws away the current line (or the marked region).
 Deletes from the cursor position to the beginning of the preceding word.
 (This function is bound by default to <Shift+Ctrl+Delete>.  If your terminal
 produces @code{^H} for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
-the word to the left of the cursor by rebinding ^H to this function.)
+the word to the left of the cursor by rebinding @kbd{^H} to this function.)
 
 @item chopwordright
 Deletes from the cursor position to the beginning of the next word.
@@ -1405,7 +1409,7 @@ Refreshes the screen.
 
 @item suspend
 Suspends the editor (if the suspending function is enabled, see the
-"suspendenable" entry below).
+@code{suspendable} toggle item below).
 
 @item casesens
 Toggles whether searching/replacing ignores or respects the case of
@@ -1516,8 +1520,10 @@ Toggles whether typed tabs will be converted to spaces.
 @item mouse
 Toggles mouse support.
 
-@item suspendenable
-Toggles whether the suspend shortcut (normally @kbd{^Z}) will suspend the editor.
+@item suspendable
+Toggles whether the suspend keystroke (@kbd{^Z} by default)
+will actually suspend the editor.
+(The old name of this function, 'suspendenable', is deprecated.)
 
 @end table
 

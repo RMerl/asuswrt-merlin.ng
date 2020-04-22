@@ -7,7 +7,7 @@ comment "#"
 color brightred ".*"
 
 # Keywords
-color brightgreen "^[[:space:]]*(set|unset)[[:space:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|backwards|boldtext|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|finalnewline|historylog|jumpyscrolling|linenumbers|locking|morespace|mouse|multibuffer|noconvert|nohelp|nopauses|nonewlines|nowrap|positionlog|preserve|quickblank|quiet|rebinddelete|rebindkeypad|regexp|showcursor|smarthome|smooth|softwrap|suspend|tabstospaces|tempfile|trimblanks|unix|view|wordbounds|zap)\>"
+color brightgreen "^[[:space:]]*(set|unset)[[:space:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|backwards|boldtext|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|finalnewline|historylog|jumpyscrolling|linenumbers|locking|morespace|mouse|multibuffer|noconvert|nohelp|nopauses|nonewlines|nowrap|positionlog|preserve|quickblank|quiet|rawsequences|rebinddelete|regexp|showcursor|smarthome|smooth|softwrap|suspendable|tabstospaces|tempfile|trimblanks|unix|view|wordbounds|zap)\>"
 color yellow "^[[:space:]]*set[[:space:]]+((error|function|key|number|selected|status|stripe|title)color)[[:space:]]+(bright)?(white|black|red|blue|green|yellow|magenta|cyan|normal)?(,(white|black|red|blue|green|yellow|magenta|cyan|normal))?\>"
 color brightgreen "^[[:space:]]*set[[:space:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|numbercolor|operatingdir|punct|quotestr|selectedcolor|speller|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:space:]]+"
 color brightgreen "^[[:space:]]*set[[:space:]]+(fill[[:space:]]+-?[[:digit:]]+|(guidestripe|tabsize)[[:space:]]+[1-9][0-9]*)\>"

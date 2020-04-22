@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -516,7 +516,7 @@ void Curl_ssl_close_all(struct Curl_easy *data)
 }
 
 #if defined(USE_OPENSSL) || defined(USE_GNUTLS) || defined(USE_SCHANNEL) || \
-  defined(USE_SECTRANSP) || defined(USE_POLARSSL) || defined(USE_NSS) || \
+  defined(USE_SECTRANSP) || defined(USE_NSS) || \
   defined(USE_MBEDTLS) || defined(USE_WOLFSSL) || defined(USE_BEARSSL)
 int Curl_ssl_getsock(struct connectdata *conn, curl_socket_t *socks)
 {
@@ -1183,8 +1183,6 @@ const struct Curl_ssl *Curl_ssl =
   &Curl_ssl_nss;
 #elif defined(USE_OPENSSL)
   &Curl_ssl_openssl;
-#elif defined(USE_POLARSSL)
-  &Curl_ssl_polarssl;
 #elif defined(USE_SCHANNEL)
   &Curl_ssl_schannel;
 #elif defined(USE_MESALINK)
@@ -1217,9 +1215,6 @@ static const struct Curl_ssl *available_backends[] = {
 #if defined(USE_OPENSSL)
   &Curl_ssl_openssl,
 #endif
-#if defined(USE_POLARSSL)
-  &Curl_ssl_polarssl,
-#endif
 #if defined(USE_SCHANNEL)
   &Curl_ssl_schannel,
 #endif
@@ -1236,7 +1231,7 @@ static size_t Curl_multissl_version(char *buffer, size_t size)
 {
   static const struct Curl_ssl *selected;
   static char backends[200];
-  static size_t total;
+  static size_t backends_len;
   const struct Curl_ssl *current;
 
   current = Curl_ssl == &Curl_ssl_multi ? available_backends[0] : Curl_ssl;
@@ -1248,27 +1243,32 @@ static size_t Curl_multissl_version(char *buffer, size_t size)
 
     selected = current;
 
-    for(i = 0; available_backends[i] && p < (end - 4); i++) {
-      if(i)
-        *(p++) = ' ';
-      if(selected != available_backends[i])
-        *(p++) = '(';
-      p += available_backends[i]->version(p, end - p - 2);
-      if(selected != available_backends[i])
-        *(p++) = ')';
+    backends[0] = '\0';
+
+    for(i = 0; available_backends[i]; ++i) {
+      char vb[200];
+      bool paren = (selected != available_backends[i]);
+
+      if(available_backends[i]->version(vb, sizeof(vb))) {
+        p += msnprintf(p, end - p, "%s%s%s%s", (p != backends ? " " : ""),
+                       (paren ? "(" : ""), vb, (paren ? ")" : ""));
+      }
     }
-    *p = '\0';
-    total = p - backends;
+
+    backends_len = p - backends;
   }
 
-  if(size > total)
-    memcpy(buffer, backends, total + 1);
-  else {
-    memcpy(buffer, backends, size - 1);
+  if(!size)
+    return 0;
+
+  if(size <= backends_len) {
+    strncpy(buffer, backends, size - 1);
     buffer[size - 1] = '\0';
+    return size - 1;
   }
 
-  return CURLMIN(size - 1, total);
+  strcpy(buffer, backends);
+  return backends_len;
 }
 
 static int multissl_init(const struct Curl_ssl *backend)

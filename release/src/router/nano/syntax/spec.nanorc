@@ -4,20 +4,17 @@ syntax spec "\.spec(\.[^/]+)?$"
 comment "#"
 
 # Main tags.
-color brightblue "((Icon|ExclusiveOs|ExcludeOs)[[:space:]]*:)"
-color brightblue "((BuildArch|BuildArchitectures|ExclusiveArch|ExcludeArch)[[:space:]]*:)"
-color brightblue "((Conflicts|Obsoletes|Provides|Requires|Requires\(.*\)|Enhances|Suggests|BuildConflicts|BuildRequires|Recommends|PreReq|Supplements)[[:space:]]*:)"
-color brightblue "((Epoch|Serial|Nosource|Nopatch)[[:space:]]*:)"
-color brightblue "((AutoReq|AutoProv|AutoReqProv)[[:space:]]*:)"
-color brightblue "((Copyright|License|Summary|Summary\(.*\)|Distribution|Vendor|Packager|Group|Source\d*|Patch\d*|BuildRoot|Prefix)[[:space:]]*:)"
-color brightblue "((Name|Version|Release|Url|URL)[[:space:]]*:)"
-color brightblue start="^Source" end=":" start="^Patch" end=":"
+color brightblue "\<(Name|Version|Release|Summary|Group|URL|Url|Epoch|Icon|Serial)[[:space:]]*:"
+color brightblue "\<(BuildArch(itectures)?|Exclusive(Arch|OS)|Exclude(Arch|OS))[[:space:]]*:"
+color brightblue "\<(Provides|Requires(\(.*\))?|Obsoletes|Conflicts|Recommends|Suggests|Supplements|Enhances|PreReq)[[:space:]]*:"
+color brightblue "\<(BuildRoot|BuildRequires|BuildConflicts|Prefix|RemovePathPostfixes)[[:space:]]*:"
+color brightblue "\<(AutoReq|AutoProv|AutoReqProv)[[:space:]]*:"
+color brightblue "\<(License|Copyright|Distribution|Vendor|Packager)[[:space:]]*:"
+color brightblue "\<((Source|Patch)[0-9]*|Nosource|Nopatch)[[:space:]]*:"
 # Architectures.
-color brightred "(i386|i486|i586|i686|athlon|ia64|alpha|alphaev5|alphaev56|alphapca56|alphaev6|alphaev67|sparc|sparcv9|sparc64armv3l|armv4b|armv4lm|ips|mipsel|ppc|ppc|iseries|ppcpseries|ppc64|m68k|m68kmint|Sgi|rs6000|i370|s390x|s390|noarch)"
-# Architecture conditionals.
-color brightred "(ifarch|ifnarch)"
-# OS conditionals.
-color brightred "(ifos|ifnos)"
+color brightred "\<(i386|i486|i586|i686|athlon|ia64|alpha|alphaev5|alphaev56|alphapca56|alphaev6|alphaev67|sparc|sparcv9|sparc64armv3l|armv4b|armv4lm|ips|mipsel|ppc|ppciseries|ppcpseries|ppc64|m68k|m68kmint|Sgi|rs6000|i370|s390x?|noarch)\>"
+# Architecture and OS conditionals.
+color brightred "%(ifarch|elifarch|ifnarch|ifos|elifos|ifnos)\>"
 # %* strings.
 color green "%([A-Z_a-z_0-9_]*)"
 color magenta "%_([A-Z_a-z_0-9_]*)"
@@ -25,16 +22,20 @@ color yellow start="%__" end="\ "
 color magenta start="%\{" end="\}"
 color yellow start="%\{__" end="\}"
 # Sections.
-color red "^%(build$|changelog|check$|clean$|description|files|install$|package|pre|prep$|pretrans|preun)"
-color red "^%(post|posttrans|postun|trigger|triggerin|triggerpostun|triggerun|verifyscript)"
+color red "^%((prep|build|install|check|clean)$|(description|files|package|changelog)\>)"
+color red "^%((pre|post)(trans|un)?|trigger(prein|in|un|postun)?)\>"
+color red "^%(trans)?filetrigger(in|un|postun)\>"
+color red "^%(sourcelist|patchlist|generate_buildrequires|verifyscript)\>"
 # Conditionals and defines.
-color brightred "%(if|else|endif|define|global|undefine)"
+color brightred "%(if|elif|else|endif|define|global|undefine)\>"
 
 # Comments.
-color cyan "#.*"
+color cyan "(#|%dnl[[:space:]]).*"
 # Special case: "# norootforbuild" is handled as main tag.
 color brightblue "^# norootforbuild"
-# %changelog date entries.
-color brightyellow "^\* .*\)$"
+# For %changelog entries: first the author, then just the date.
+color yellow "^\* .+>"
+color brightyellow "^\* [[:alnum:] ]+ [0-9]{4} "
+
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

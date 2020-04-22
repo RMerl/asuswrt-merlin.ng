@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 44
+# wchar_h.m4 serial 45
 
 AC_DEFUN([gl_WCHAR_H],
 [
@@ -57,6 +57,8 @@ AC_DEFUN([gl_WCHAR_H],
      wcsncmp wcscasecmp wcsncasecmp wcscoll wcsxfrm wcsdup wcschr wcsrchr
      wcscspn wcsspn wcspbrk wcsstr wcstok wcswidth wcsftime
     ])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 dnl Check whether <wchar.h> is usable at all.

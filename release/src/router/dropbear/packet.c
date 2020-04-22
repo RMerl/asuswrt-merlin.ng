@@ -215,7 +215,7 @@ static int read_packet_init() {
 
 	unsigned int maxlen;
 	int slen;
-	unsigned int len;
+	unsigned int len, plen;
 	unsigned int blocksize;
 	unsigned int macsize;
 
@@ -254,21 +254,35 @@ static int read_packet_init() {
 	/* now we have the first block, need to get packet length, so we decrypt
 	 * the first block (only need first 4 bytes) */
 	buf_setpos(ses.readbuf, 0);
-	if (ses.keys->recv.crypt_mode->decrypt(buf_getptr(ses.readbuf, blocksize), 
-				buf_getwriteptr(ses.readbuf, blocksize),
-				blocksize,
-				&ses.keys->recv.cipher_state) != CRYPT_OK) {
-		dropbear_exit("Error decrypting");
+#if DROPBEAR_AEAD_MODE
+	if (ses.keys->recv.crypt_mode->aead_crypt) {
+		if (ses.keys->recv.crypt_mode->aead_getlength(ses.recvseq,
+					buf_getptr(ses.readbuf, blocksize), &plen,
+					blocksize,
+					&ses.keys->recv.cipher_state) != CRYPT_OK) {
+			dropbear_exit("Error decrypting");
+		}
+		len = plen + 4 + macsize;
+	} else
+#endif
+	{
+		if (ses.keys->recv.crypt_mode->decrypt(buf_getptr(ses.readbuf, blocksize), 
+					buf_getwriteptr(ses.readbuf, blocksize),
+					blocksize,
+					&ses.keys->recv.cipher_state) != CRYPT_OK) {
+			dropbear_exit("Error decrypting");
+		}
+		plen = buf_getint(ses.readbuf) + 4;
+		len = plen + macsize;
 	}
-	len = buf_getint(ses.readbuf) + 4 + macsize;
 
 	TRACE2(("packet size is %u, block %u mac %u", len, blocksize, macsize))
 
 
 	/* check packet length */
 	if ((len > RECV_MAX_PACKET_LEN) ||
-		(len < MIN_PACKET_LEN + macsize) ||
-		((len - macsize) % blocksize != 0)) {
+		(plen < blocksize) ||
+		(plen % blocksize != 0)) {
 		dropbear_exit("Integrity error (bad packet size %u)", len);
 	}
 
@@ -294,23 +308,42 @@ void decrypt_packet() {
 
 	ses.kexstate.datarecv += ses.readbuf->len;
 
-	/* we've already decrypted the first blocksize in read_packet_init */
-	buf_setpos(ses.readbuf, blocksize);
+#if DROPBEAR_AEAD_MODE
+	if (ses.keys->recv.crypt_mode->aead_crypt) {
+		/* first blocksize is not decrypted yet */
+		buf_setpos(ses.readbuf, 0);
 
-	/* decrypt it in-place */
-	len = ses.readbuf->len - macsize - ses.readbuf->pos;
-	if (ses.keys->recv.crypt_mode->decrypt(
-				buf_getptr(ses.readbuf, len), 
-				buf_getwriteptr(ses.readbuf, len),
-				len,
-				&ses.keys->recv.cipher_state) != CRYPT_OK) {
-		dropbear_exit("Error decrypting");
-	}
-	buf_incrpos(ses.readbuf, len);
+		/* decrypt it in-place */
+		len = ses.readbuf->len - macsize - ses.readbuf->pos;
+		if (ses.keys->recv.crypt_mode->aead_crypt(ses.recvseq,
+					buf_getptr(ses.readbuf, len + macsize),
+					buf_getwriteptr(ses.readbuf, len),
+					len, macsize,
+					&ses.keys->recv.cipher_state, LTC_DECRYPT) != CRYPT_OK) {
+			dropbear_exit("Error decrypting");
+		}
+		buf_incrpos(ses.readbuf, len);
+	} else
+#endif
+	{
+		/* we've already decrypted the first blocksize in read_packet_init */
+		buf_setpos(ses.readbuf, blocksize);
 
-	/* check the hmac */
-	if (checkmac() != DROPBEAR_SUCCESS) {
-		dropbear_exit("Integrity error");
+		/* decrypt it in-place */
+		len = ses.readbuf->len - macsize - ses.readbuf->pos;
+		if (ses.keys->recv.crypt_mode->decrypt(
+					buf_getptr(ses.readbuf, len), 
+					buf_getwriteptr(ses.readbuf, len),
+					len,
+					&ses.keys->recv.cipher_state) != CRYPT_OK) {
+			dropbear_exit("Error decrypting");
+		}
+		buf_incrpos(ses.readbuf, len);
+
+		/* check the hmac */
+		if (checkmac() != DROPBEAR_SUCCESS) {
+			dropbear_exit("Integrity error");
+		}
 	}
 
 	/* get padding length */
@@ -557,9 +590,16 @@ void encrypt_packet() {
 	buf_setpos(ses.writepayload, 0);
 	buf_setlen(ses.writepayload, 0);
 
-	/* length of padding - packet length must be a multiple of blocksize,
-	 * with a minimum of 4 bytes of padding */
-	padlen = blocksize - (writebuf->len) % blocksize;
+	/* length of padding - packet length excluding the packetlength uint32
+	 * field in aead mode must be a multiple of blocksize, with a minimum of
+	 * 4 bytes of padding */
+	len = writebuf->len;
+#if DROPBEAR_AEAD_MODE
+	if (ses.keys->trans.crypt_mode->aead_crypt) {
+		len -= 4;
+	}
+#endif
+	padlen = blocksize - len % blocksize;
 	if (padlen < 4) {
 		padlen += blocksize;
 	}
@@ -579,23 +619,42 @@ void encrypt_packet() {
 	buf_incrlen(writebuf, padlen);
 	genrandom(buf_getptr(writebuf, padlen), padlen);
 
-	make_mac(ses.transseq, &ses.keys->trans, writebuf, writebuf->len, mac_bytes);
+#if DROPBEAR_AEAD_MODE
+	if (ses.keys->trans.crypt_mode->aead_crypt) {
+		/* do the actual encryption, in-place */
+		buf_setpos(writebuf, 0);
+		/* encrypt it in-place*/
+		len = writebuf->len;
+		buf_incrlen(writebuf, mac_size);
+		if (ses.keys->trans.crypt_mode->aead_crypt(ses.transseq,
+					buf_getptr(writebuf, len),
+					buf_getwriteptr(writebuf, len + mac_size),
+					len, mac_size,
+					&ses.keys->trans.cipher_state, LTC_ENCRYPT) != CRYPT_OK) {
+			dropbear_exit("Error encrypting");
+		}
+		buf_incrpos(writebuf, len + mac_size);
+	} else
+#endif
+	{
+		make_mac(ses.transseq, &ses.keys->trans, writebuf, writebuf->len, mac_bytes);
 
-	/* do the actual encryption, in-place */
-	buf_setpos(writebuf, 0);
-	/* encrypt it in-place*/
-	len = writebuf->len;
-	if (ses.keys->trans.crypt_mode->encrypt(
-				buf_getptr(writebuf, len),
-				buf_getwriteptr(writebuf, len),
-				len,
-				&ses.keys->trans.cipher_state) != CRYPT_OK) {
-		dropbear_exit("Error encrypting");
+		/* do the actual encryption, in-place */
+		buf_setpos(writebuf, 0);
+		/* encrypt it in-place*/
+		len = writebuf->len;
+		if (ses.keys->trans.crypt_mode->encrypt(
+					buf_getptr(writebuf, len),
+					buf_getwriteptr(writebuf, len),
+					len,
+					&ses.keys->trans.cipher_state) != CRYPT_OK) {
+			dropbear_exit("Error encrypting");
+		}
+		buf_incrpos(writebuf, len);
+
+		/* stick the MAC on it */
+		buf_putbytes(writebuf, mac_bytes, mac_size);
 	}
-	buf_incrpos(writebuf, len);
-
-	/* stick the MAC on it */
-	buf_putbytes(writebuf, mac_bytes, mac_size);
 
 	/* Update counts */
 	ses.kexstate.datatrans += writebuf->len;

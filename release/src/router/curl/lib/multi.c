@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -47,6 +47,7 @@
 #include "http_proxy.h"
 #include "http2.h"
 #include "socketpair.h"
+#include "socks.h"
 /* The last 3 #include files should be in this order */
 #include "curl_printf.h"
 #include "curl_memory.h"
@@ -369,6 +370,8 @@ struct Curl_multi *Curl_multi_handle(int hashsize, /* socket hash */
 
   /* -1 means it not set by user, use the default value */
   multi->maxconnects = -1;
+  multi->max_concurrent_streams = 100;
+  multi->ipv6_works = Curl_ipv6works(NULL);
 
 #ifdef ENABLE_WAKEUP
   if(Curl_socketpair(AF_UNIX, SOCK_STREAM, 0, multi->wakeup_pair) < 0) {
@@ -590,6 +593,9 @@ static CURLcode multi_done(struct Curl_easy *data,
   detach_connnection(data);
   if(CONN_INUSE(conn)) {
     /* Stop if still used. */
+    /* conn->data must not remain pointing to this transfer since it is going
+       away! Find another to own it! */
+    conn->data = conn->easyq.head->ptr;
     CONN_UNLOCK(data);
     DEBUGF(infof(data, "Connection still in use %zu, "
                  "no more multi_done now!\n",
@@ -725,8 +731,8 @@ CURLMcode curl_multi_remove_handle(struct Curl_multi *multi,
        we don't leave a half-baked one around */
     if(easy_owns_conn) {
 
-      /* multi_done() clears the conn->data field to lose the association
-         between the easy handle and the connection
+      /* multi_done() clears the association between the easy handle and the
+         connection.
 
          Note that this ignores the return code simply because there's
          nothing really useful to do with it anyway! */
@@ -850,6 +856,9 @@ static int waitconnect_getsock(struct connectdata *conn,
   if(CONNECT_FIRSTSOCKET_PROXY_SSL())
     return Curl_ssl_getsock(conn, sock);
 #endif
+
+  if(SOCKS_STATE(conn->cnnct.state))
+    return Curl_SOCKS_getsock(conn, sock, FIRSTSOCKET);
 
   for(i = 0; i<2; i++) {
     if(conn->tempsock[i] != CURL_SOCKET_BAD) {
@@ -1048,6 +1057,9 @@ static CURLMcode Curl_multi_wait(struct Curl_multi *multi,
   if(multi->in_callback)
     return CURLM_RECURSIVE_API_CALL;
 
+  if(timeout_ms < 0)
+    return CURLM_BAD_FUNCTION_ARGUMENT;
+
   /* Count up how many fds we have from the multi handle */
   data = multi->easyp;
   while(data) {
@@ -1182,14 +1194,16 @@ static CURLMcode Curl_multi_wait(struct Curl_multi *multi,
       if(use_wakeup && multi->wakeup_pair[0] != CURL_SOCKET_BAD) {
         if(ufds[curlfds + extra_nfds].revents & POLLIN) {
           char buf[64];
+          ssize_t nread;
           while(1) {
             /* the reading socket is non-blocking, try to read
                data from it until it receives an error (except EINTR).
                In normal cases it will get EAGAIN or EWOULDBLOCK
                when there is no more data, breaking the loop. */
-            if(sread(multi->wakeup_pair[0], buf, sizeof(buf)) < 0) {
+            nread = sread(multi->wakeup_pair[0], buf, sizeof(buf));
+            if(nread <= 0) {
 #ifndef USE_WINSOCK
-              if(EINTR == SOCKERRNO)
+              if(nread < 0 && EINTR == SOCKERRNO)
                 continue;
 #endif
               break;
@@ -2183,8 +2197,13 @@ static CURLMcode multi_runsingle(struct Curl_multi *multi,
           }
         }
       }
-      else if(comeback)
-        rc = CURLM_CALL_MULTI_PERFORM;
+      else if(comeback) {
+        /* This avoids CURLM_CALL_MULTI_PERFORM so that a very fast transfer
+           won't get stuck on this transfer at the expense of other concurrent
+           transfers */
+        Curl_expire(data, 0, EXPIRE_RUN_NOW);
+        rc = CURLM_OK;
+      }
       break;
     }
 
@@ -2897,8 +2916,8 @@ CURLMcode curl_multi_setopt(struct Curl_multi *multi,
       if(streams < 1)
         streams = 100;
       multi->max_concurrent_streams =
-          (streams > (long)INITIAL_MAX_CONCURRENT_STREAMS)?
-          (long)INITIAL_MAX_CONCURRENT_STREAMS : streams;
+        (streams > (long)INITIAL_MAX_CONCURRENT_STREAMS)?
+        INITIAL_MAX_CONCURRENT_STREAMS : (unsigned int)streams;
     }
     break;
   default:
@@ -3340,8 +3359,8 @@ void Curl_multi_dump(struct Curl_multi *multi)
 }
 #endif
 
-size_t Curl_multi_max_concurrent_streams(struct Curl_multi *multi)
+unsigned int Curl_multi_max_concurrent_streams(struct Curl_multi *multi)
 {
-  return multi ? ((size_t)multi->max_concurrent_streams ?
-                  (size_t)multi->max_concurrent_streams : 100) : 0;
+  DEBUGASSERT(multi);
+  return multi->max_concurrent_streams;
 }

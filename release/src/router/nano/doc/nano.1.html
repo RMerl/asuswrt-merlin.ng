@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Fri Feb  7 11:11:00 2020 -->
+<!-- CreationDate: Tue Apr  7 11:23:14 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -490,8 +490,8 @@ chroot.</p>
 <b>&minus;&minus;preserve</b></p>
 
 <p style="margin-left:22%;">Preserve the XON and XOFF
-sequences (^Q and ^S) so they will be caught by the
-terminal.</p>
+sequences (<b>^Q</b> and <b>^S</b>) so they will be caught
+by the terminal.</p>
 
 
 <p style="margin-left:11%;"><b>&minus;r&nbsp;</b><i>number</i>,
@@ -560,22 +560,23 @@ lines at the bottom of the screen.</p>
 ends instead of beginnings.</p>
 
 <p style="margin-left:11%;"><b>&minus;z</b>,
-<b>&minus;&minus;suspend</b></p>
+<b>&minus;&minus;suspendable</b></p>
 
-<p style="margin-left:22%;">Enable the suspend ability.</p>
+<p style="margin-left:22%;">Allow the user to suspend the
+editor (with <b>^Z</b> by default).</p>
 
 <p style="margin-left:11%;"><b>&minus;$</b>,
 <b>&minus;&minus;softwrap</b></p>
 
-<p style="margin-left:22%;">Enable &rsquo;soft
-wrapping&rsquo;. This will make <b>nano</b> attempt to
-display the entire contents of any line, even if it is
-longer than the screen width, by continuing it over multiple
-screen lines. Since &rsquo;$&rsquo; normally refers to a
-variable in the Unix shell, you should specify this option
-last when using other options (e.g. &rsquo;nano
-&minus;wS$&rsquo;) or pass it separately (e.g. &rsquo;nano
-&minus;wS &minus;$&rsquo;).</p>
+<p style="margin-left:22%;">Display lines that exceed the
+screen&rsquo;s width over multiple screen lines. (You can
+make this soft-wrapping occur at whitespace instead of
+rudely at the screen&rsquo;s edge, by using also
+<b>&minus;&minus;atblanks</b>.) Since &rsquo;$&rsquo;
+normally refers to a variable in the Unix shell, you should
+specify this option last when using other options (e.g.
+&rsquo;nano &minus;wS$&rsquo;) or pass it separately (e.g.
+&rsquo;nano &minus;wS &minus;$&rsquo;).</p>
 
 <h2>TOGGLES
 <a name="TOGGLES"></a>

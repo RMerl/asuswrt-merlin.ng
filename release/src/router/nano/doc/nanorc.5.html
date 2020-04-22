@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Fri Feb  7 11:11:01 2020 -->
+<!-- CreationDate: Tue Apr  7 11:26:13 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -47,8 +47,7 @@ GNU nano&rsquo;s configuration file</p>
 
 <p style="margin-left:11%; margin-top: 1em">The
 <i>nanorc</i> files contain the default settings for
-<b>nano</b>, a small and friendly editor. They should be in
-Unix format, not in DOS or Mac format. During startup, if
+<b>nano</b>, a small and friendly editor. During startup, if
 <b>&minus;&minus;rcfile</b> is not given, <b>nano</b> will
 read two files: first the system-wide settings, from
 <i>/etc/nanorc</i> (the exact path might be different on
@@ -286,8 +285,8 @@ Shift key.</p>
 
 <p style="margin-left:11%;"><b>set multibuffer</b></p>
 
-<p style="margin-left:15%;">When reading in a file with ^R,
-insert it into a new buffer by default.</p>
+<p style="margin-left:15%;">When reading in a file with
+<b>^R</b>, insert it into a new buffer by default.</p>
 
 <p style="margin-left:11%;"><b>set noconvert</b></p>
 
@@ -340,7 +339,7 @@ remembered for the 200 most-recently edited files.</p>
 <p style="margin-left:11%;"><b>set preserve</b></p>
 
 <p style="margin-left:15%;">Preserve the XON and XOFF keys
-(^Q and ^S).</p>
+(<b>^Q</b> and <b>^S</b>).</p>
 
 <p style="margin-left:11%;"><b>set punct
 &quot;</b><i>characters</i><b>&quot;</b></p>
@@ -421,8 +420,11 @@ jumpyscrolling</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set softwrap</b></p>
 
-<p style="margin-left:15%;">Enable soft line wrapping for
-easier viewing of very long lines.</p>
+<p style="margin-left:15%;">Display lines that exceed the
+screen&rsquo;s width over multiple screen lines. (You can
+make this soft-wrapping occur at whitespace instead of
+rudely at the screen&rsquo;s edge, by using also <b>set
+atblanks</b>.)</p>
 
 <p style="margin-left:11%;"><b>set speller
 &quot;</b><i>program</i> [<i>argument</i>
@@ -447,10 +449,10 @@ more details.</p>
 to use for the vertical guiding stripe. See <b>set
 titlecolor</b> for more details.</p>
 
-<p style="margin-left:11%;"><b>set suspend</b></p>
+<p style="margin-left:11%;"><b>set suspendable</b></p>
 
 <p style="margin-left:15%;">Allow <b>nano</b> to be
-suspended.</p>
+suspended (with <b>^Z</b> by default).</p>
 
 <p style="margin-left:11%;"><b>set tabsize</b>
 <i>number</i></p>
@@ -812,9 +814,12 @@ F10. (Often, <b>F13</b> to <b>F24</b> can be typed as
 
 <p style="margin-left:11%; margin-top: 1em">Rebinding
 <b>^M</b> (Enter) or <b>^I</b> (Tab) is probably not a good
-idea. On some terminals it&rsquo;s not possible to rebind
-<b>^H</b> (unless <b>&minus;&minus;raw</b> is used) because
-its keycode is identical to that of the Backspace key. <br>
+idea. Rebinding <b>^[</b> (Esc) is not possible, because its
+keycode is the starter byte of escape sequences and Meta
+keystrokes. On some terminals it&rsquo;s not possible to
+rebind <b>^H</b> (unless <b>&minus;&minus;raw</b> is used)
+because its keycode is identical to that of the Backspace
+key. <br>
 Valid <i>function</i> names to be bound are:</p>
 
 <p style="margin-left:15%;"><b>help</b></p>
@@ -903,8 +908,8 @@ position to the beginning of the preceding word. (This
 function is bound by default to &lt;Shift+Ctrl+Delete&gt;.
 If your terminal produces <b>^H</b> for
 &lt;Ctrl+Backspace&gt;, you can make &lt;Ctrl+Backspace&gt;
-delete the word to the left of the cursor by rebinding ^H to
-this function.)</p>
+delete the word to the left of the cursor by rebinding
+<b>^H</b> to this function.)</p>
 
 <p style="margin-left:15%;"><b>chopwordright</b></p>
 
@@ -1153,8 +1158,8 @@ action (add text, delete text, etc).</p>
 <p style="margin-left:15%;"><b>suspend</b></p>
 
 <p style="margin-left:18%;">Suspends the editor (if the
-suspending function is enabled, see the
-&quot;suspendenable&quot; entry below).</p>
+suspending function is enabled, see the <b>suspendable</b>
+toggle item below).</p>
 
 <p style="margin-left:15%;"><b>casesens</b></p>
 
@@ -1332,10 +1337,12 @@ be converted to spaces.</p>
 
 <p style="margin-left:18%;">Toggles mouse support.</p>
 
-<p style="margin-left:15%;"><b>suspendenable</b></p>
+<p style="margin-left:15%;"><b>suspendable</b></p>
 
 <p style="margin-left:18%;">Toggles whether the suspend
-sequence (normally ^Z) will suspend the editor window.</p>
+keystroke (<b>^Z</b> by default) will actually suspend the
+editor. (The old name of this function,
+&rsquo;suspendenable&rsquo;, is deprecated.)</p>
 
 <p style="margin-left:11%;">Valid <i>menu</i> sections
 are:</p>

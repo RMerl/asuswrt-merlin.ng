@@ -1,4 +1,4 @@
-# unistd_h.m4 serial 77
+# unistd_h.m4 serial 78
 dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -48,6 +48,8 @@ AC_DEFUN([gl_UNISTD_H],
     group_member isatty lchown link linkat lseek pipe pipe2 pread pwrite
     readlink readlinkat rmdir sethostname sleep symlink symlinkat
     truncate ttyname_r unlink unlinkat usleep])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 AC_DEFUN([gl_UNISTD_MODULE_INDICATOR],

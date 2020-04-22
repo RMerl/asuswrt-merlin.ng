@@ -294,6 +294,7 @@ static void gen_new_keys() {
 	hash_state hs;
 	const struct ltc_hash_descriptor *hash_desc = ses.newkeys->algo_kex->hash_desc;
 	char mactransletter, macrecvletter; /* Client or server specific */
+	int recv_cipher, trans_cipher;
 
 	TRACE(("enter gen_new_keys"))
 	/* the dh_K and hash are the start of all hashes, we make use of that */
@@ -328,28 +329,30 @@ static void gen_new_keys() {
 	hashkeys(C2S_key, sizeof(C2S_key), &hs, 'C');
 	hashkeys(S2C_key, sizeof(S2C_key), &hs, 'D');
 
+	recv_cipher = -1;
 	if (ses.newkeys->recv.algo_crypt->cipherdesc != NULL) {
-		int recv_cipher = find_cipher(ses.newkeys->recv.algo_crypt->cipherdesc->name);
+		recv_cipher = find_cipher(ses.newkeys->recv.algo_crypt->cipherdesc->name);
 		if (recv_cipher < 0)
 			dropbear_exit("Crypto error");
-		if (ses.newkeys->recv.crypt_mode->start(recv_cipher, 
-				recv_IV, recv_key, 
-				ses.newkeys->recv.algo_crypt->keysize, 0, 
-				&ses.newkeys->recv.cipher_state) != CRYPT_OK) {
-			dropbear_exit("Crypto error");
-		}
+	}
+	if (ses.newkeys->recv.crypt_mode->start(recv_cipher, 
+			recv_IV, recv_key, 
+			ses.newkeys->recv.algo_crypt->keysize, 0, 
+			&ses.newkeys->recv.cipher_state) != CRYPT_OK) {
+		dropbear_exit("Crypto error");
 	}
 
+	trans_cipher = -1;
 	if (ses.newkeys->trans.algo_crypt->cipherdesc != NULL) {
-		int trans_cipher = find_cipher(ses.newkeys->trans.algo_crypt->cipherdesc->name);
+		trans_cipher = find_cipher(ses.newkeys->trans.algo_crypt->cipherdesc->name);
 		if (trans_cipher < 0)
 			dropbear_exit("Crypto error");
-		if (ses.newkeys->trans.crypt_mode->start(trans_cipher, 
-				trans_IV, trans_key, 
-				ses.newkeys->trans.algo_crypt->keysize, 0, 
-				&ses.newkeys->trans.cipher_state) != CRYPT_OK) {
-			dropbear_exit("Crypto error");
-		}
+	}
+	if (ses.newkeys->trans.crypt_mode->start(trans_cipher, 
+			trans_IV, trans_key, 
+			ses.newkeys->trans.algo_crypt->keysize, 0, 
+			&ses.newkeys->trans.cipher_state) != CRYPT_OK) {
+		dropbear_exit("Crypto error");
 	}
 
 	if (ses.newkeys->trans.algo_mac->hash_desc != NULL) {
@@ -868,19 +871,29 @@ static void read_kex_algos() {
 
 	/* mac_algorithms_client_to_server */
 	c2s_hash_algo = buf_match_algo(ses.payload, sshhashes, NULL, NULL);
+#if DROPBEAR_AEAD_MODE
+	if (((struct dropbear_cipher_mode*)c2s_cipher_algo->mode)->aead_crypt != NULL) {
+		c2s_hash_algo = NULL;
+	} else
+#endif
 	if (c2s_hash_algo == NULL) {
 		erralgo = "mac c->s";
 		goto error;
 	}
-	TRACE(("hash c2s is  %s", c2s_hash_algo->name))
+	TRACE(("hash c2s is  %s", c2s_hash_algo ? c2s_hash_algo->name : "<implicit>"))
 
 	/* mac_algorithms_server_to_client */
 	s2c_hash_algo = buf_match_algo(ses.payload, sshhashes, NULL, NULL);
+#if DROPBEAR_AEAD_MODE
+	if (((struct dropbear_cipher_mode*)s2c_cipher_algo->mode)->aead_crypt != NULL) {
+		s2c_hash_algo = NULL;
+	} else
+#endif
 	if (s2c_hash_algo == NULL) {
 		erralgo = "mac s->c";
 		goto error;
 	}
-	TRACE(("hash s2c is  %s", s2c_hash_algo->name))
+	TRACE(("hash s2c is  %s", s2c_hash_algo ? s2c_hash_algo->name : "<implicit>"))
 
 	/* compression_algorithms_client_to_server */
 	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, NULL, NULL);
@@ -925,8 +938,14 @@ static void read_kex_algos() {
 		ses.newkeys->trans.crypt_mode =
 			(struct dropbear_cipher_mode*)c2s_cipher_algo->mode;
 		ses.newkeys->recv.algo_mac = 
+#if DROPBEAR_AEAD_MODE
+			s2c_hash_algo == NULL ? ses.newkeys->recv.crypt_mode->aead_mac :
+#endif
 			(struct dropbear_hash*)s2c_hash_algo->data;
 		ses.newkeys->trans.algo_mac = 
+#if DROPBEAR_AEAD_MODE
+			c2s_hash_algo == NULL ? ses.newkeys->trans.crypt_mode->aead_mac :
+#endif
 			(struct dropbear_hash*)c2s_hash_algo->data;
 		ses.newkeys->recv.algo_comp = s2c_comp_algo->val;
 		ses.newkeys->trans.algo_comp = c2s_comp_algo->val;
@@ -941,8 +960,14 @@ static void read_kex_algos() {
 		ses.newkeys->trans.crypt_mode =
 			(struct dropbear_cipher_mode*)s2c_cipher_algo->mode;
 		ses.newkeys->recv.algo_mac = 
+#if DROPBEAR_AEAD_MODE
+			c2s_hash_algo == NULL ? ses.newkeys->recv.crypt_mode->aead_mac :
+#endif
 			(struct dropbear_hash*)c2s_hash_algo->data;
 		ses.newkeys->trans.algo_mac = 
+#if DROPBEAR_AEAD_MODE
+			s2c_hash_algo == NULL ? ses.newkeys->trans.crypt_mode->aead_mac :
+#endif
 			(struct dropbear_hash*)s2c_hash_algo->data;
 		ses.newkeys->recv.algo_comp = c2s_comp_algo->val;
 		ses.newkeys->trans.algo_comp = s2c_comp_algo->val;

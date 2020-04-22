@@ -28,6 +28,132 @@ static char *prompt = NULL;
 static size_t typing_x = HIGHEST_POSITIVE;
 		/* The cursor position in answer. */
 
+/* Move to the beginning of the answer. */
+void do_statusbar_home(void)
+{
+	typing_x = 0;
+}
+
+/* Move to the end of the answer. */
+void do_statusbar_end(void)
+{
+	typing_x = strlen(answer);
+}
+
+#ifndef NANO_TINY
+/* Move to the next word in the answer. */
+void do_statusbar_next_word(void)
+{
+	bool seen_space = !is_word_char(answer + typing_x, FALSE);
+	bool seen_word = !seen_space;
+
+	/* Move forward until we reach either the end or the start of a word,
+	 * depending on whether the AFTER_ENDS flag is set or not. */
+	while (answer[typing_x] != '\0') {
+		typing_x = step_right(answer, typing_x);
+
+		if (ISSET(AFTER_ENDS)) {
+			/* If this is a word character, continue; else it's a separator,
+			 * and if we've already seen a word, then it's a word end. */
+			if (is_word_char(answer + typing_x, FALSE))
+				seen_word = TRUE;
+			else if (seen_word)
+				break;
+		} else {
+			/* If this is not a word character, then it's a separator; else
+			 * if we've already seen a separator, then it's a word start. */
+			if (!is_word_char(answer + typing_x, FALSE))
+				seen_space = TRUE;
+			else if (seen_space)
+				break;
+		}
+	}
+}
+
+/* Move to the previous word in the answer. */
+void do_statusbar_prev_word(void)
+{
+	bool seen_a_word = FALSE, step_forward = FALSE;
+
+	/* Move backward until we pass over the start of a word. */
+	while (typing_x != 0) {
+		typing_x = step_left(answer, typing_x);
+
+		if (is_word_char(answer + typing_x, FALSE))
+			seen_a_word = TRUE;
+		else if (seen_a_word) {
+			/* This is space now: we've overshot the start of the word. */
+			step_forward = TRUE;
+			break;
+		}
+	}
+
+	if (step_forward)
+		/* Move one character forward again to sit on the start of the word. */
+		typing_x = step_right(answer, typing_x);
+}
+#endif /* !NANO_TINY */
+
+/* Move left one character in the answer. */
+void do_statusbar_left(void)
+{
+	if (typing_x > 0)
+		typing_x = step_left(answer, typing_x);
+}
+
+/* Move right one character in the answer. */
+void do_statusbar_right(void)
+{
+	if (answer[typing_x] != '\0')
+		typing_x = step_right(answer, typing_x);
+}
+
+/* Delete one character in the answer. */
+void do_statusbar_delete(void)
+{
+	if (answer[typing_x] != '\0') {
+		int charlen = char_length(answer + typing_x);
+
+		memmove(answer + typing_x, answer + typing_x + charlen,
+						strlen(answer) - typing_x - charlen + 1);
+	}
+}
+
+/* Backspace over one character in the answer. */
+void do_statusbar_backspace(void)
+{
+	if (typing_x > 0) {
+		typing_x = step_left(answer, typing_x);
+		do_statusbar_delete();
+	}
+}
+
+/* Zap some or all text from the answer. */
+void do_statusbar_cut_text(void)
+{
+	if (!ISSET(CUT_FROM_CURSOR))
+		typing_x = 0;
+
+	answer[typing_x] = '\0';
+}
+
+/* Paste the first line of the cutbuffer into the current answer. */
+void paste_into_answer(void)
+{
+	size_t pastelen = strlen(cutbuffer->data);
+	char *fusion = charalloc(strlen(answer) + pastelen + 1);
+
+	/* Concatenate: the current answer before the cursor, the first line
+	 * of the cutbuffer, plus the rest of the current answer. */
+	strncpy(fusion, answer, typing_x);
+	strncpy(fusion + typing_x, cutbuffer->data, pastelen);
+	strcpy(fusion + typing_x + pastelen, answer + typing_x);
+
+	free(answer);
+	answer = fusion;
+	typing_x += pastelen;
+}
+
 #ifdef ENABLE_MOUSE
 /* Handle a mouse click on the status-bar prompt or the shortcut list. */
 int do_statusbar_mouse(void)
@@ -50,6 +176,35 @@ int do_statusbar_mouse(void)
 }
 #endif
 
+/* Insert the given short burst of bytes into the answer. */
+void inject_into_answer(char *burst, size_t count)
+{
+	/* First encode any embedded NUL byte as 0x0A. */
+	for (size_t index = 0; index < count; index++)
+		if (burst[index] == '\0')
+			burst[index] = '\n';
+
+	answer = charealloc(answer, strlen(answer) + count + 1);
+	memmove(answer + typing_x + count, answer + typing_x,
+								strlen(answer) - typing_x + 1);
+	strncpy(answer + typing_x, burst , count);
+
+	typing_x += count;
+}
+
+/* Get a verbatim keystroke and insert it into the answer. */
+void do_statusbar_verbatim_input(void)
+{
+	char *bytes;
+	size_t count;
+
+	bytes = get_verbatim_kbinput(bottomwin, &count);
+
+	inject_into_answer(bytes, count);
+
+	free(bytes);
+}
+
 /* Read in a keystroke, interpret it if it is a shortcut or toggle, and
  * return it.  Set finished to TRUE if we're done after running
  * or trying to run a function associated with a shortcut key. */
@@ -57,9 +212,9 @@ int do_statusbar_input(bool *finished)
 {
 	int input;
 		/* The character we read in. */
-	static int *kbinput = NULL;
+	static char *puddle = NULL;
 		/* The input buffer. */
-	static size_t kbinput_len = 0;
+	static size_t depth = 0;
 		/* The length of the input buffer. */
 	const keystruct *shortcut;
 
@@ -87,40 +242,30 @@ int do_statusbar_input(bool *finished)
 	/* Check for a shortcut in the current list. */
 	shortcut = get_shortcut(&input);
 
-	/* If we got a non-high-bit control key, a meta key sequence, or a
-	 * function key, and it's not a shortcut or toggle, throw it out. */
+	/* If not a command, discard anything that is not a normal character byte.
+	 * Apart from that, only accept input when not in restricted mode, or when
+	 * not at the "Write File" prompt, or when there is no filename yet. */
 	if (shortcut == NULL) {
-		if (is_ascii_cntrl_char(input) || meta_key || !is_byte(input)) {
+		if (input < 0x20 || input > 0xFF || meta_key)
 			beep();
-			input = ERR;
-		}
-	}
-
-	/* If the keystroke isn't a shortcut nor a toggle, it's a normal text
-	 * character: add the it to the input buffer, when allowed. */
-	if (input != ERR && shortcut == NULL) {
-		/* Only accept input when not in restricted mode, or when not at
-		 * the "Write File" prompt, or when there is no filename yet. */
-		if (!ISSET(RESTRICTED) || currmenu != MWRITEFILE ||
+		else if (!ISSET(RESTRICTED) || currmenu != MWRITEFILE ||
 						openfile->filename[0] == '\0') {
-			kbinput_len++;
-			kbinput = (int *)nrealloc(kbinput, kbinput_len * sizeof(int));
-			kbinput[kbinput_len - 1] = input;
+			puddle = charealloc(puddle, depth + 2);
+			puddle[depth++] = (char)input;
 		}
 	}
 
-	/* If we got a shortcut, or if there aren't any other keystrokes waiting
-	 * after the one we read in, we need to insert all the characters in the
-	 * input buffer (if not empty) into the answer. */
-	if ((shortcut || get_key_buffer_len() == 0) && kbinput != NULL) {
-		/* Inject all characters in the input buffer at once, filtering out
-		 * control characters. */
-		inject_into_answer(kbinput, kbinput_len, TRUE);
+	/* If we got a shortcut, or if there aren't any other keystrokes waiting,
+	 * it's time to insert all characters in the input buffer (if not empty)
+	 * into the answer, and then clear the input buffer. */
+	if ((shortcut || get_key_buffer_len() == 0) && puddle != NULL) {
+		puddle[depth] = '\0';
 
-		/* Empty the input buffer. */
-		kbinput_len = 0;
-		free(kbinput);
-		kbinput = NULL;
+		inject_into_answer(puddle, depth);
+
+		free(puddle);
+		puddle = NULL;
+		depth = 0;
 	}
 
 	if (shortcut) {
@@ -136,9 +281,9 @@ int do_statusbar_input(bool *finished)
 		else if (shortcut->func == do_right)
 			do_statusbar_right();
 #ifndef NANO_TINY
-		else if (shortcut->func == do_prev_word_void)
+		else if (shortcut->func == to_prev_word)
 			do_statusbar_prev_word();
-		else if (shortcut->func == do_next_word_void)
+		else if (shortcut->func == to_next_word)
 			do_statusbar_next_word();
 #endif
 		else if (shortcut->func == do_home)
@@ -169,7 +314,7 @@ int do_statusbar_input(bool *finished)
 			do_statusbar_backspace();
 		else if (shortcut->func == paste_text) {
 			if (cutbuffer != NULL)
-				do_statusbar_uncut_text();
+				paste_into_answer();
 		} else {
 			/* Handle any other shortcut in the current menu, setting finished
 			 * to TRUE to indicate that we're done after running or trying to
@@ -181,184 +326,6 @@ int do_statusbar_input(bool *finished)
 	}
 
 	return input;
-}
-
-/* The user typed input_len multibyte characters.  Add them to the answer,
- * filtering out ASCII control characters if filtering is TRUE. */
-void inject_into_answer(int *the_input, size_t input_len, bool filtering)
-{
-	char *output = charalloc(input_len + 1);
-	char onechar[MAXCHARLEN];
-	size_t charlen, i, j = 0;
-
-	/* Copy the typed stuff so it can be treated. */
-	for (i = 0; i < input_len; i++)
-		output[i] = (char)the_input[i];
-	output[i] = '\0';
-
-	while (j < input_len) {
-		/* Encode any NUL byte as 0x0A. */
-		if (output[j] == '\0')
-			output[j] = '\n';
-
-		/* Interpret the next multibyte character. */
-		charlen = collect_char(output + j, onechar);
-
-		j += charlen;
-
-		/* When filtering, skip any ASCII control character. */
-		if (filtering && is_ascii_cntrl_char(*(output + j - charlen)))
-			continue;
-
-		/* Insert the typed character into the existing answer string. */
-		answer = charealloc(answer, strlen(answer) + charlen + 1);
-		memmove(answer + typing_x + charlen, answer + typing_x,
-								strlen(answer) - typing_x + 1);
-		strncpy(answer + typing_x, onechar, charlen);
-
-		typing_x += charlen;
-	}
-
-	free(output);
-}
-
-/* Move to the beginning of the answer. */
-void do_statusbar_home(void)
-{
-	typing_x = 0;
-}
-
-/* Move to the end of the answer. */
-void do_statusbar_end(void)
-{
-	typing_x = strlen(answer);
-}
-
-/* Move left one character. */
-void do_statusbar_left(void)
-{
-	if (typing_x > 0)
-		typing_x = step_left(answer, typing_x);
-}
-
-/* Move right one character. */
-void do_statusbar_right(void)
-{
-	if (answer[typing_x] != '\0')
-		typing_x = step_right(answer, typing_x);
-}
-
-/* Delete one character. */
-void do_statusbar_delete(void)
-{
-	if (answer[typing_x] != '\0') {
-		int charlen = char_length(answer + typing_x);
-
-		memmove(answer + typing_x, answer + typing_x + charlen,
-						strlen(answer) - typing_x - charlen + 1);
-	}
-}
-
-/* Backspace over one character. */
-void do_statusbar_backspace(void)
-{
-	if (typing_x > 0) {
-		typing_x = step_left(answer, typing_x);
-		do_statusbar_delete();
-	}
-}
-
-/* Zap some or all text from the answer. */
-void do_statusbar_cut_text(void)
-{
-	if (!ISSET(CUT_FROM_CURSOR))
-		typing_x = 0;
-
-	answer[typing_x] = '\0';
-}
-
-#ifndef NANO_TINY
-/* Move to the next word in the answer. */
-void do_statusbar_next_word(void)
-{
-	bool seen_space = !is_word_mbchar(answer + typing_x, FALSE);
-	bool seen_word = !seen_space;
-
-	/* Move forward until we reach either the end or the start of a word,
-	 * depending on whether the AFTER_ENDS flag is set or not. */
-	while (answer[typing_x] != '\0') {
-		typing_x = step_right(answer, typing_x);
-
-		if (ISSET(AFTER_ENDS)) {
-			/* If this is a word character, continue; else it's a separator,
-			 * and if we've already seen a word, then it's a word end. */
-			if (is_word_mbchar(answer + typing_x, FALSE))
-				seen_word = TRUE;
-			else if (seen_word)
-				break;
-		} else {
-			/* If this is not a word character, then it's a separator; else
-			 * if we've already seen a separator, then it's a word start. */
-			if (!is_word_mbchar(answer + typing_x, FALSE))
-				seen_space = TRUE;
-			else if (seen_space)
-				break;
-		}
-	}
-}
-
-/* Move to the previous word in the answer. */
-void do_statusbar_prev_word(void)
-{
-	bool seen_a_word = FALSE, step_forward = FALSE;
-
-	/* Move backward until we pass over the start of a word. */
-	while (typing_x != 0) {
-		typing_x = step_left(answer, typing_x);
-
-		if (is_word_mbchar(answer + typing_x, FALSE))
-			seen_a_word = TRUE;
-		else if (seen_a_word) {
-			/* This is space now: we've overshot the start of the word. */
-			step_forward = TRUE;
-			break;
-		}
-	}
-
-	if (step_forward)
-		/* Move one character forward again to sit on the start of the word. */
-		typing_x = step_right(answer, typing_x);
-}
-#endif /* !NANO_TINY */
-
-/* Get verbatim input and inject it into the answer, without filtering. */
-void do_statusbar_verbatim_input(void)
-{
-	int *kbinput;
-	size_t kbinput_len;
-
-	kbinput = get_verbatim_kbinput(bottomwin, &kbinput_len);
-
-	inject_into_answer(kbinput, kbinput_len, FALSE);
-
-	free(kbinput);
-}
-
-/* Paste the first line of the cutbuffer into the current answer. */
-void do_statusbar_uncut_text(void)
-{
-	size_t pastelen = strlen(cutbuffer->data);
-	char *fusion = charalloc(strlen(answer) + pastelen + 1);
-
-	/* Concatenate: the current answer before the cursor, the first line
-	 * of the cutbuffer, plus the rest of the current answer. */
-	strncpy(fusion, answer, typing_x);
-	strncpy(fusion + typing_x, cutbuffer->data, pastelen);
-	strcpy(fusion + typing_x + pastelen, answer + typing_x);
-
-	free(answer);
-	answer = fusion;
-	typing_x += pastelen;
 }
 
 /* Return the column number of the first character of the answer that is
@@ -493,7 +460,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 		if (func == do_tab) {
 #ifdef ENABLE_HISTORIES
 			if (history_list != NULL) {
-				if (last_kbinput != the_code_for(do_tab, TAB_CODE))
+				if (last_kbinput != the_code_for(do_tab, '\t'))
 					complete_len = strlen(answer);
 
 				if (complete_len > 0) {

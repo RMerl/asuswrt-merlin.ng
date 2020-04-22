@@ -380,7 +380,7 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
     /* do not create (or even overwrite) the file in case we get no
        data because of unmet condition */
     curl_easy_getinfo(curl, CURLINFO_CONDITION_UNMET, &cond_unmet);
-    if(!cond_unmet && !tool_create_output_file(outs))
+    if(!cond_unmet && !tool_create_output_file(outs, config))
       result = CURLE_WRITE_ERROR;
   }
 
@@ -866,13 +866,13 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         /* default headers output stream is stdout */
         heads = &per->heads;
         heads->stream = stdout;
-        heads->config = config;
 
         /* Single header file for all URLs */
         if(config->headerfile) {
           /* open file for output: */
           if(strcmp(config->headerfile, "-")) {
-            FILE *newfile = fopen(config->headerfile, "wb");
+            FILE *newfile;
+            newfile = fopen(config->headerfile, per->prev == NULL?"wb":"ab");
             if(!newfile) {
               warnf(config->global, "Failed to open %s\n", config->headerfile);
               result = CURLE_WRITE_ERROR;
@@ -891,10 +891,22 @@ static CURLcode single_transfer(struct GlobalConfig *global,
           }
         }
 
+        hdrcbdata = &per->hdrcbdata;
+
+        outs = &per->outs;
+        input = &per->input;
+
+        per->outfile = NULL;
+        per->infdopen = FALSE;
+        per->infd = STDIN_FILENO;
+
+        /* default output stream is stdout */
+        outs->stream = stdout;
+
         /* --etag-save */
         etag_save = &per->etag_save;
         etag_save->stream = stdout;
-        etag_save->config = config;
+
         if(config->etag_save_file) {
           /* open file for output: */
           if(strcmp(config->etag_save_file, "-")) {
@@ -960,19 +972,6 @@ static CURLcode single_transfer(struct GlobalConfig *global,
             fclose(file);
           }
         }
-
-        hdrcbdata = &per->hdrcbdata;
-
-        outs = &per->outs;
-        input = &per->input;
-
-        per->outfile = NULL;
-        per->infdopen = FALSE;
-        per->infd = STDIN_FILENO;
-
-        /* default output stream is stdout */
-        outs->stream = stdout;
-        outs->config = config;
 
         if(metalink) {
           /* For Metalink download, use name in Metalink file as
@@ -1836,6 +1835,10 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         if(config->mail_rcpt)
           my_setopt_slist(curl, CURLOPT_MAIL_RCPT, config->mail_rcpt);
 
+        /* curl 7.69.x */
+        my_setopt(curl, CURLOPT_MAIL_RCPT_ALLLOWFAILS,
+          config->mail_rcpt_allowfails ? 1L : 0L);
+
         /* curl 7.20.x */
         if(config->ftp_pret)
           my_setopt(curl, CURLOPT_FTP_USE_PRET, 1L);
@@ -1963,11 +1966,8 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         if(config->disallow_username_in_url)
           my_setopt(curl, CURLOPT_DISALLOW_USERNAME_IN_URL, 1L);
 
-#ifdef USE_ALTSVC
-        /* only if explicitly enabled in configure */
         if(config->altsvc)
           my_setopt_str(curl, CURLOPT_ALTSVC, config->altsvc);
-#endif
 
 #ifdef USE_METALINK
         if(!metalink && config->use_metalink) {

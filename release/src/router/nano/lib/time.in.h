@@ -286,14 +286,17 @@ _GL_CXXALIASWARN (ctime);
 #   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #    define strftime rpl_strftime
 #   endif
-_GL_FUNCDECL_RPL (strftime, size_t, (char *__buf, size_t __bufsize,
-                                     const char *__fmt, const struct tm *__tp)
-                                    _GL_ARG_NONNULL ((1, 3, 4)));
-_GL_CXXALIAS_RPL (strftime, size_t, (char *__buf, size_t __bufsize,
-                                     const char *__fmt, const struct tm *__tp));
+_GL_FUNCDECL_RPL (strftime, size_t,
+                  (char *restrict __buf, size_t __bufsize,
+                   const char *restrict __fmt, const struct tm *restrict __tp)
+                  _GL_ARG_NONNULL ((1, 3, 4)));
+_GL_CXXALIAS_RPL (strftime, size_t,
+                  (char *restrict __buf, size_t __bufsize,
+                   const char *restrict __fmt, const struct tm *restrict __tp));
 #  else
-_GL_CXXALIAS_SYS (strftime, size_t, (char *__buf, size_t __bufsize,
-                                     const char *__fmt, const struct tm *__tp));
+_GL_CXXALIAS_SYS (strftime, size_t,
+                  (char *restrict __buf, size_t __bufsize,
+                   const char *restrict __fmt, const struct tm *restrict __tp));
 #  endif
 #  if __GLIBC__ >= 2
 _GL_CXXALIASWARN (strftime);

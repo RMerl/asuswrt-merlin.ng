@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -118,6 +118,8 @@ struct httprequest {
   int rcmd;       /* doing a special command, see defines above */
   int prot_version;  /* HTTP version * 10 */
   int callcount;  /* times ProcessRequest() gets called */
+  bool skipall;   /* skip all incoming data */
+  bool noexpect;  /* refuse Expect: (don't read the body) */
   bool connmon;   /* monitor the state of the connection, log disconnects */
   bool upgrade;   /* test case allows upgrade to http2 */
   bool upgrade_request; /* upgrade request found and allowed */
@@ -178,6 +180,9 @@ const char *serverlogfile = DEFAULT_LOGFILE;
 
 /* close connection */
 #define CMD_SWSCLOSE "swsclose"
+
+/* deny Expect: requests */
+#define CMD_NOEXPECT "no-expect"
 
 #define END_OF_HEADERS "\r\n\r\n"
 
@@ -427,6 +432,10 @@ static int parse_servercmd(struct httprequest *req)
         logmsg("instructed to skip this number of bytes %d", num);
         req->skip = num;
       }
+      else if(!strncmp(CMD_NOEXPECT, cmd, strlen(CMD_NOEXPECT))) {
+        logmsg("instructed to reject Expect: 100-continue");
+        req->noexpect = TRUE;
+      }
       else if(1 == sscanf(cmd, "writedelay: %d", &num)) {
         logmsg("instructed to delay %d secs between packets", num);
         req->writedelay = num;
@@ -605,7 +614,7 @@ static int ProcessRequest(struct httprequest *req)
     }
 
     if(req->testno == DOCNUMBER_NOTHING) {
-      /* Still no test case number. Try to get the the number off the last dot
+      /* Still no test case number. Try to get the number off the last dot
          instead, IE we consider the TLD to be the test number. Test 123 can
          then be written as "example.com.123". */
 
@@ -735,19 +744,28 @@ static int ProcessRequest(struct httprequest *req)
         req->open = FALSE; /* closes connection */
         return 1; /* done */
       }
-      req->cl = clen - req->skip;
+      if(req->skipall)
+        req->cl = 0;
+      else
+        req->cl = clen - req->skip;
 
       logmsg("Found Content-Length: %lu in the request", clen);
       if(req->skip)
         logmsg("... but will abort after %zu bytes", req->cl);
-      break;
     }
     else if(strncasecompare("Transfer-Encoding: chunked", line,
                             strlen("Transfer-Encoding: chunked"))) {
       /* chunked data coming in */
       chunked = TRUE;
     }
-
+    else if(req->noexpect &&
+            strncasecompare("Expect: 100-continue", line,
+                            strlen("Expect: 100-continue"))) {
+      if(req->cl)
+        req->cl = 0;
+      req->skipall = TRUE;
+      logmsg("Found Expect: 100-continue, ignore body");
+    }
 
     if(chunked) {
       if(strstr(req->reqbuf, "\r\n0\r\n\r\n")) {
@@ -939,6 +957,8 @@ static void init_httprequest(struct httprequest *req)
   req->digest = FALSE;
   req->ntlm = FALSE;
   req->skip = 0;
+  req->skipall = FALSE;
+  req->noexpect = FALSE;
   req->writedelay = 0;
   req->rcmd = RCMD_NORMALREQ;
   req->prot_version = 0;
@@ -2143,7 +2163,7 @@ int main(int argc, char *argv[])
   case AF_UNIX:
     memset(&me.sau, 0, sizeof(me.sau));
     me.sau.sun_family = AF_UNIX;
-    strncpy(me.sau.sun_path, unix_socket, sizeof(me.sau.sun_path));
+    strncpy(me.sau.sun_path, unix_socket, sizeof(me.sau.sun_path) - 1);
     rc = bind(sock, &me.sa, sizeof(me.sau));
     if(0 != rc && errno == EADDRINUSE) {
       struct stat statbuf;

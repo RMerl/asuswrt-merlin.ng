@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_escape 3 "February 03, 2016" "libcurl 7.68.0" "libcurl Manual"
+.TH curl_escape 3 "March 02, 2020" "libcurl 7.69.1" "libcurl Manual"
 
 .SH NAME
 curl_escape - URL encodes the given string
@@ -39,7 +39,7 @@ two-digit hexadecimal number).
 If the 'length' argument is set to 0, curl_escape() will use strlen() on the
 input 'url' string to find out the size.
 
-You must curl_free() the returned string when you're done with it.
+You must \fIcurl_free(3)\fP the returned string when you're done with it.
 .SH AVAILABILITY
 Since 7.15.4, \fIcurl_easy_escape(3)\fP should be used. This function will
 be removed in a future release.

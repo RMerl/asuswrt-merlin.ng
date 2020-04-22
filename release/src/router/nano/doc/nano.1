@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 4.8" "February 2020"
+.TH NANO 1 "version 4.9.2" "April 2020"
 
 .SH NAME
 nano \- Nano's ANOther editor, inspired by Pico
@@ -281,8 +281,8 @@ Set the operating directory.  This makes \fBnano\fP set up something
 similar to a chroot.
 .TP
 .BR \-p ", " \-\-preserve
-Preserve the XON and XOFF sequences (^Q and ^S) so they will be caught
-by the terminal.
+Preserve the XON and XOFF sequences (\fB^Q\fR and \fB^S\fR) so they
+will be caught by the terminal.
 .TP
 .BR \-r\ \fInumber ", " \-\-fill= \fInumber
 Set the target width for justifying and automatic hard-wrapping at this
@@ -320,13 +320,14 @@ Don't show the two help lines at the bottom of the screen.
 .BR \-y ", " \-\-afterends
 Make Ctrl+Right stop at word ends instead of beginnings.
 .TP
-.BR \-z ", " \-\-suspend
-Enable the suspend ability.
+.BR \-z ", " \-\-suspendable
+Allow the user to suspend the editor (with \fB^Z\fR by default).
 .TP
 .BR \-$ ", " \-\-softwrap
-Enable 'soft wrapping'.  This will make \fBnano\fP attempt to display the
-entire contents of any line, even if it is longer than the screen width, by
-continuing it over multiple screen lines.  Since
+Display lines that exceed the screen's width over multiple screen lines.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen's edge, by using also \fB\-\-atblanks\fR.)
+Since
 \&'$' normally refers to a variable in the Unix shell, you should specify
 this option last when using other options (e.g.\& 'nano \-wS$') or pass it
 separately (e.g.\& 'nano \-wS \-$').

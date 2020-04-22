@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_share_setopt 3 "June 04, 2019" "libcurl 7.68.0" "libcurl Manual"
+.TH curl_share_setopt 3 "March 06, 2020" "libcurl 7.69.1" "libcurl Manual"
 
 .SH NAME
 curl_share_setopt - Set options for a shared object
@@ -60,6 +60,8 @@ be set to one of the values described below.
 .RS
 .IP CURL_LOCK_DATA_COOKIE
 Cookie data will be shared across the easy handles using this shared object.
+Note that this does not activate an easy handle's cookie handling. You can do
+that separately by using \fICURLOPT_COOKIEFILE(3)\fP for example.
 .IP CURL_LOCK_DATA_DNS
 Cached DNS hosts will be shared across the easy handles using this shared
 object. Note that when you use the multi interface, all easy handles added to

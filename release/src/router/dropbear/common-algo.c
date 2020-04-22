@@ -30,6 +30,7 @@
 #include "dh_groups.h"
 #include "ltc_prng.h"
 #include "ecc.h"
+#include "chachapoly.h"
 
 /* This file (algo.c) organises the ciphers which can be used, and is used to
  * decide which ciphers/hashes/compression/signing to use during key exchange*/
@@ -86,11 +87,11 @@ const struct dropbear_cipher dropbear_nocipher =
  * about the symmetric_CBC vs symmetric_CTR cipher_state pointer */
 #if DROPBEAR_ENABLE_CBC_MODE
 const struct dropbear_cipher_mode dropbear_mode_cbc =
-	{(void*)cbc_start, (void*)cbc_encrypt, (void*)cbc_decrypt};
+	{(void*)cbc_start, (void*)cbc_encrypt, (void*)cbc_decrypt, NULL, NULL, NULL};
 #endif /* DROPBEAR_ENABLE_CBC_MODE */
 
 const struct dropbear_cipher_mode dropbear_mode_none =
-	{void_start, void_cipher, void_cipher};
+	{void_start, void_cipher, void_cipher, NULL, NULL, NULL};
 
 #if DROPBEAR_ENABLE_CTR_MODE
 /* a wrapper to make ctr_start and cbc_start look the same */
@@ -101,7 +102,7 @@ static int dropbear_big_endian_ctr_start(int cipher,
 	return ctr_start(cipher, IV, key, keylen, num_rounds, CTR_COUNTER_BIG_ENDIAN, ctr);
 }
 const struct dropbear_cipher_mode dropbear_mode_ctr =
-	{(void*)dropbear_big_endian_ctr_start, (void*)ctr_encrypt, (void*)ctr_decrypt};
+	{(void*)dropbear_big_endian_ctr_start, (void*)ctr_encrypt, (void*)ctr_decrypt, NULL, NULL, NULL};
 #endif /* DROPBEAR_ENABLE_CTR_MODE */
 
 /* Mapping of ssh hashes to libtomcrypt hashes, including keysize etc.
@@ -137,6 +138,10 @@ const struct dropbear_hash dropbear_nohash =
  * that is also supported by the server will get used. */
 
 algo_type sshciphers[] = {
+#if DROPBEAR_CHACHA20POLY1305
+	{"chacha20-poly1305@openssh.com", 0, &dropbear_chachapoly, 1, &dropbear_mode_chachapoly},
+#endif
+
 #if DROPBEAR_ENABLE_CTR_MODE
 #if DROPBEAR_AES128
 	{"aes128-ctr", 0, &dropbear_aes128, 1, &dropbear_mode_ctr},

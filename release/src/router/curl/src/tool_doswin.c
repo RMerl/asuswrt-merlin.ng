@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -695,6 +695,32 @@ cleanup:
   if(hnd != INVALID_HANDLE_VALUE)
     CloseHandle(hnd);
   return slist;
+}
+
+LARGE_INTEGER Curl_freq;
+bool Curl_isVistaOrGreater;
+
+CURLcode win32_init(void)
+{
+  OSVERSIONINFOEXA osvi;
+  unsigned __int64 mask = 0;
+  unsigned char op = VER_GREATER_EQUAL;
+
+  memset(&osvi, 0, sizeof(osvi));
+  osvi.dwOSVersionInfoSize = sizeof(osvi);
+  osvi.dwMajorVersion = 6;
+  VER_SET_CONDITION(mask, VER_MAJORVERSION, op);
+  VER_SET_CONDITION(mask, VER_MINORVERSION, op);
+
+  if(VerifyVersionInfoA(&osvi, (VER_MAJORVERSION | VER_MINORVERSION), mask))
+    Curl_isVistaOrGreater = true;
+  else if(GetLastError() == ERROR_OLD_WIN_VERSION)
+    Curl_isVistaOrGreater = false;
+  else
+    return CURLE_FAILED_INIT;
+
+  QueryPerformanceFrequency(&Curl_freq);
+  return CURLE_OK;
 }
 
 #endif /* WIN32 */

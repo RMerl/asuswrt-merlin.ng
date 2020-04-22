@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -79,26 +79,29 @@ struct Curl_dns_entry {
  * use, or we'll leak memory!
  */
 /* return codes */
-#define CURLRESOLV_TIMEDOUT -2
-#define CURLRESOLV_ERROR    -1
-#define CURLRESOLV_RESOLVED  0
-#define CURLRESOLV_PENDING   1
-int Curl_resolv(struct connectdata *conn,
-                const char *hostname,
-                int port,
-                bool allowDOH,
-                struct Curl_dns_entry **dnsentry);
-int Curl_resolv_timeout(struct connectdata *conn, const char *hostname,
-                        int port, struct Curl_dns_entry **dnsentry,
-                        timediff_t timeoutms);
+enum resolve_t {
+  CURLRESOLV_TIMEDOUT = -2,
+  CURLRESOLV_ERROR    = -1,
+  CURLRESOLV_RESOLVED =  0,
+  CURLRESOLV_PENDING  =  1
+};
+enum resolve_t Curl_resolv(struct connectdata *conn,
+                           const char *hostname,
+                           int port,
+                           bool allowDOH,
+                           struct Curl_dns_entry **dnsentry);
+enum resolve_t Curl_resolv_timeout(struct connectdata *conn,
+                                   const char *hostname, int port,
+                                   struct Curl_dns_entry **dnsentry,
+                                   timediff_t timeoutms);
 
 #ifdef CURLRES_IPV6
 /*
  * Curl_ipv6works() returns TRUE if IPv6 seems to work.
  */
-bool Curl_ipv6works(void);
+bool Curl_ipv6works(struct connectdata *conn);
 #else
-#define Curl_ipv6works() FALSE
+#define Curl_ipv6works(x) FALSE
 #endif
 
 /*

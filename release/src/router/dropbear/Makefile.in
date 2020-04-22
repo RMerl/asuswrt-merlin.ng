@@ -53,7 +53,7 @@ CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
 CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 			common-channel.o common-chansession.o termcodes.o loginrec.o \
 			tcp-accept.o listener.o process-packet.o dh_groups.o \
-			common-runopts.o circbuffer.o list.o netio.o
+			common-runopts.o circbuffer.o list.o netio.o chachapoly.o
 
 KEYOBJS=dropbearkey.o
 
@@ -256,7 +256,7 @@ tidy:
 ## Fuzzing targets
 
 # list of fuzz targets
-FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths fuzzer-kexdh fuzzer-kexecdh
+FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519
 
 FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
 
@@ -293,6 +293,9 @@ fuzzer-kexdh: fuzzer-kexdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
 fuzzer-kexecdh: fuzzer-kexecdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
+fuzzer-kexcurve25519: fuzzer-kexcurve25519.o fuzz-harness.o
+	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
+
 fuzzer-%.options: Makefile
 	echo "[libfuzzer]"               > $@
 	echo "max_len = 50000"          >> $@
@@ -303,7 +306,9 @@ fuzz-hostkeys:
 	dropbearkey -t rsa -f keyr
 	dropbearkey -t dss -f keyd
 	dropbearkey -t ecdsa -size 256 -f keye
+	dropbearkey -t ed25519 -f keyed25519
 	echo > hostkeys.c
 	/usr/bin/xxd -i -a keyr >> hostkeys.c
 	/usr/bin/xxd -i -a keye >> hostkeys.c
 	/usr/bin/xxd -i -a keyd >> hostkeys.c
+	/usr/bin/xxd -i -a keyed25519 >> hostkeys.c

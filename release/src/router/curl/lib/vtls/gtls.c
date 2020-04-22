@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -665,6 +665,10 @@ gtls_connect_step1(struct connectdata *conn,
 
   /* Initialize TLS session as a client */
   init_flags = GNUTLS_CLIENT;
+
+#if defined(GNUTLS_FORCE_CLIENT_CERT)
+  init_flags |= GNUTLS_FORCE_CLIENT_CERT;
+#endif
 
 #if defined(GNUTLS_NO_TICKETS)
   /* Disable TLS session tickets */

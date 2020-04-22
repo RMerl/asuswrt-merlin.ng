@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -69,6 +69,7 @@ BEGIN {
 use strict;
 use warnings;
 use Cwd;
+use Digest::MD5 qw(md5);
 
 # Subs imported from serverhelp module
 use serverhelp qw(
@@ -110,6 +111,8 @@ use pathhelp;
 require "getpart.pm"; # array functions
 require "valgrind.pm"; # valgrind report parser
 require "ftp.pm";
+require "azure.pm";
+require "appveyor.pm";
 
 my $HOSTIP="127.0.0.1";   # address on which the test server listens
 my $HOST6IP="[::1]";      # address on which the test server listens
@@ -117,6 +120,8 @@ my $CLIENTIP="127.0.0.1"; # address which curl uses for incoming connections
 my $CLIENT6IP="[::1]";    # address which curl uses for incoming connections
 
 my $base = 8990; # base port number
+my $minport;     # minimum used port number
+my $maxport;     # maximum used port number
 
 my $HTTPPORT;            # HTTP server port
 my $HTTP6PORT;           # HTTP IPv6 server port
@@ -149,6 +154,8 @@ my $SMBPORT;             # SMB server port
 my $SMBSPORT;            # SMBS server port
 my $NEGTELNETPORT;       # TELNET server port with negotiation
 
+my $SSHSRVMD5;           # MD5 of ssh server public key
+
 my $srcdir = $ENV{'srcdir'} || '.';
 my $CURL="../src/curl".exe_ext('TOOL'); # what curl executable to run on the tests
 my $VCURL=$CURL;   # what curl binary to use to verify the servers with
@@ -163,7 +170,7 @@ my $UNITDIR="./unit";
 my $SERVERIN="$LOGDIR/server.input"; # what curl sent the server
 my $SERVER2IN="$LOGDIR/server2.input"; # what curl sent the second server
 my $PROXYIN="$LOGDIR/proxy.input"; # what curl sent the proxy
-my $CURLLOG="$LOGDIR/curl.log"; # all command lines run
+my $CURLLOG="commands.log"; # all command lines run
 my $FTPDCMD="$LOGDIR/ftpserver.cmd"; # copy ftp server instructions here
 my $SERVERLOGS_LOCK="$LOGDIR/serverlogs.lock"; # server logs advisor read lock
 my $CURLCONFIG="../curl-config"; # curl-config from current build
@@ -241,6 +248,7 @@ my $has_altsvc;     # set if libcurl is built with alt-svc support
 my $has_ldpreload;  # set if curl is built for systems supporting LD_PRELOAD
 my $has_multissl;   # set if curl is build with MultiSSL support
 my $has_manual;     # set if curl is built with built-in manual
+my $has_win32;      # set if curl is built for Windows
 
 # this version is decided by the particular nghttp2 library that is being used
 my $h2cver = "h2c";
@@ -249,7 +257,6 @@ my $has_openssl;    # built with a lib using an OpenSSL-like API
 my $has_gnutls;     # built with GnuTLS
 my $has_nss;        # built with NSS
 my $has_wolfssl;    # built with wolfSSL
-my $has_polarssl;   # built with polarssl
 my $has_winssl;     # built with WinSSL    (Secure Channel aka Schannel)
 my $has_darwinssl;  # built with DarwinSSL (Secure Transport)
 my $has_boringssl;  # built with BoringSSL
@@ -272,8 +279,10 @@ my $skipped=0;  # number of tests skipped; reported in main loop
 my %skipped;    # skipped{reason}=counter, reasons for skip
 my @teststat;   # teststat[testnum]=reason, reasons for skip
 my %disabled_keywords;  # key words of tests to skip
+my %ignored_keywords;   # key words of tests to ignore results
 my %enabled_keywords;   # key words of tests to run
 my %disabled;           # disabled test cases
+my %ignored;            # ignored results of test cases
 
 my $sshdid;      # for socks server, ssh daemon version id
 my $sshdvernum;  # for socks server, ssh daemon version number
@@ -295,7 +304,8 @@ my %timevrfyend; # timestamp for each test result verification end
 
 my $testnumcheck; # test number, set in singletest sub.
 my %oldenv;
-my %feature; # array of enabled features
+my %feature;      # array of enabled features
+my %keywords;     # array of keywords from the test spec
 
 #######################################################################
 # variables that command line options may set
@@ -323,7 +333,11 @@ my $torture;
 my $tortnum;
 my $tortalloc;
 my $shallow;
-my $shallowseed;
+my $randseed = 0;
+
+# Azure Pipelines specific variables
+my $AZURE_RUN_ID = 0;
+my $AZURE_RESULT_ID = 0;
 
 #######################################################################
 # logmsg is our general message logging subroutine.
@@ -471,7 +485,7 @@ sub startnew {
             logmsg "startnew: failed to write fake $pidfile with pid=$child\n";
         }
         # could/should do a while connect fails sleep a bit and loop
-        sleep $timeout;
+        portable_sleep($timeout);
         if (checkdied($child)) {
             logmsg "startnew: child process has failed to start\n" if($verbose);
             return (-1,-1);
@@ -2129,6 +2143,18 @@ sub runsshserver {
         return (0,0);
     }
 
+    my $hstpubmd5f = "curl_host_rsa_key.pub_md5";
+    if(!open(PUBMD5FILE, "<", $hstpubmd5f) ||
+       (read(PUBMD5FILE, $SSHSRVMD5, 32) != 32) ||
+       !close(PUBMD5FILE) ||
+       ($SSHSRVMD5 !~ /^[a-f0-9]{32}$/i))
+    {
+        my $msg = "Fatal: $srvrname pubkey md5 missing : \"$hstpubmd5f\" : $!";
+        logmsg "$msg\n";
+        stopservers($verbose);
+        die $msg;
+    }
+
     if($verbose) {
         logmsg "RUN: $srvrname server is now running PID $pid2\n";
     }
@@ -2172,7 +2198,7 @@ sub runsocksserver {
     $logfile = server_logfilename($LOGDIR, $proto, $ipvnum, $idnum);
 
     # start our socks server, get commands from the FTP cmd file
-    my $cmd="server/socksd".
+    my $cmd="server/socksd".exe_ext('SRV').
         " --port $port ".
         " --pidfile $pidfile".
         " --backend $HOSTIP".
@@ -2559,7 +2585,7 @@ sub cleardir {
     opendir(DIR, $dir) ||
         return 0; # can't open dir
     while($file = readdir(DIR)) {
-        if($file !~ /^\./) {
+        if(($file !~ /^\./)) {
             unlink("$dir/$file");
             $count++;
         }
@@ -2632,6 +2658,7 @@ sub setupfeatures {
     $feature{"alt-svc"} = $has_altsvc;
     $feature{"manual"} = $has_manual;
     $feature{"unix-sockets"} = $has_unix;
+    $feature{"win32"} = $has_win32;
 
     # make each protocol an enabled "feature"
     for my $p (@protocols) {
@@ -2685,7 +2712,7 @@ sub checksystem {
     @version = <VERSOUT>;
     close(VERSOUT);
 
-    open(DISABLED, "server/disabled|");
+    open(DISABLED, "server/disabled".exe_ext('TOOL')."|");
     @disabled = <DISABLED>;
     close(DISABLED);
 
@@ -2711,6 +2738,7 @@ sub checksystem {
                 # Win32-style path.
                 $pwd = pathhelp::sys_native_current_path();
                 $has_textaware = 1;
+                $has_win32 = 1;
             }
            if ($libcurl =~ /(winssl|schannel)/i) {
                $has_winssl=1;
@@ -2730,10 +2758,6 @@ sub checksystem {
            }
            elsif ($libcurl =~ /wolfssl/i) {
                $has_wolfssl=1;
-               $has_sslpinning=1;
-           }
-           elsif ($libcurl =~ /polarssl/i) {
-               $has_polarssl=1;
                $has_sslpinning=1;
            }
            elsif ($libcurl =~ /securetransport/i) {
@@ -3008,6 +3032,8 @@ sub checksystem {
     logmsg sprintf("* Env: %s%s", $valgrind?"Valgrind ":"",
                    $run_event_based?"event-based ":"");
     logmsg sprintf("%s\n", $libtool?"Libtool ":"");
+    logmsg ("* Seed: $randseed\n");
+    logmsg ("* Port range: $minport-$maxport\n");
 
     if($verbose) {
         logmsg "* Ports:\n";
@@ -3149,8 +3175,18 @@ sub subVariables {
   $$thing =~ s/%SRCDIR/$srcdir/g;
   $$thing =~ s/%USER/$USER/g;
 
+  if($$thing =~ /%SSHSRVMD5/) {
+      if(!$SSHSRVMD5) {
+          my $msg = "Fatal: Missing SSH server pubkey MD5. Is server running?";
+          logmsg "$msg\n";
+          stopservers($verbose);
+          die $msg;
+      }
+      $$thing =~ s/%SSHSRVMD5/$SSHSRVMD5/g;
+  }
+
   # The purpose of FTPTIME2 and FTPTIME3 is to provide times that can be
-  # used for time-out tests and that whould work on most hosts as these
+  # used for time-out tests and that would work on most hosts as these
   # adjust for the startup/check time for this particular host. We needed
   # to do this to make the test suite run better on very slow hosts.
 
@@ -3238,6 +3274,7 @@ sub singletest {
     my $why;
     my $cmd;
     my $disablevalgrind;
+    my $errorreturncode = 1; # 1 means normal error, 2 means ignored error
 
     # fist, remove all lingering log files
     cleardir($LOGDIR);
@@ -3254,6 +3291,10 @@ sub singletest {
     }
     if($disabled{$testnum}) {
         logmsg "Warning: test$testnum is explicitly disabled\n";
+    }
+    if($ignored{$testnum}) {
+        logmsg "Warning: test$testnum result is ignored\n";
+        $errorreturncode = 2;
     }
 
     # load the test case file definition
@@ -3304,21 +3345,30 @@ sub singletest {
     }
 
     if(!$why) {
-        my @keywords = getpart("info", "keywords");
+        my @info_keywords = getpart("info", "keywords");
         my $match;
         my $k;
 
-        if(!$keywords[0]) {
+        # Clear the list of keywords from the last test
+        %keywords = ();
+
+        if(!$info_keywords[0]) {
             $why = "missing the <keywords> section!";
         }
 
-        for $k (@keywords) {
+        for $k (@info_keywords) {
             chomp $k;
             if ($disabled_keywords{lc($k)}) {
                 $why = "disabled by keyword";
             } elsif ($enabled_keywords{lc($k)}) {
                 $match = 1;
             }
+            if ($ignored_keywords{lc($k)}) {
+                logmsg "Warning: test$testnum result is ignored due to $k\n";
+                $errorreturncode = 2;
+            }
+
+            $keywords{$k} = 1;
         }
 
         if(!$why && !$match && %enabled_keywords) {
@@ -3339,6 +3389,19 @@ sub singletest {
             $ENV{$var} = $oldenv{$var};
         }
         delete $oldenv{$var};
+    }
+
+    # get the name of the test early
+    my @testname= getpart("client", "name");
+    my $testname = $testname[0];
+    $testname =~ s/\n//g;
+
+    # create test result in CI services
+    if(azure_check_environment() && $AZURE_RUN_ID) {
+        $AZURE_RESULT_ID = azure_create_test_result($AZURE_RUN_ID, $testnum, $testname);
+    }
+    elsif(appveyor_check_environment()) {
+        appveyor_create_test_result($testnum, $testname);
     }
 
     # remove test server commands file before servers are started/verified
@@ -3500,9 +3563,6 @@ sub singletest {
     my $CURLOUT="$LOGDIR/curl$testnum.out"; # curl output if not stdout
 
     # name of the test
-    my @testname= getpart("client", "name");
-    my $testname = $testname[0];
-    $testname =~ s/\n//g;
     logmsg "[$testname]\n" if(!$short);
 
     if($listonly) {
@@ -3614,7 +3674,7 @@ sub singletest {
         $tool=$CMDLINE;
         $disablevalgrind=1;
     }
-    elsif(!$tool) {
+    elsif(!$tool && !$keywords{"unittest"}) {
         # run curl, add suitable command line options
         my $inc="";
         if((!$cmdhash{'option'}) || ($cmdhash{'option'} !~ /no-include/)) {
@@ -3633,6 +3693,11 @@ sub singletest {
     else {
         $cmdargs = " $cmd"; # $cmd is the command line for the test file
         $CURLOUT = $STDOUT; # sends received data to stdout
+
+        # Default the tool to a unit test with the same name as the test spec
+        if($keywords{"unittest"} && !$tool) {
+            $tool="unit$testnum";
+        }
 
         if($tool =~ /^lib/) {
             $CMDLINE="$LIBDIR/$tool";
@@ -3703,7 +3768,9 @@ sub singletest {
         logmsg "$CMDLINE\n";
     }
 
+    open(CMDLOG, ">", "$LOGDIR/$CURLLOG");
     print CMDLOG "$CMDLINE\n";
+    close(CMDLOG);
 
     unlink("core");
 
@@ -3778,7 +3845,7 @@ sub singletest {
     if($serverlogslocktimeout) {
         my $lockretry = $serverlogslocktimeout * 20;
         while((-f $SERVERLOGS_LOCK) && $lockretry--) {
-            select(undef, undef, undef, 0.05);
+            portable_sleep(0.05);
         }
         if(($lockretry < 0) &&
            ($serverlogslocktimeout >= $defserverlogslocktimeout)) {
@@ -3795,7 +3862,7 @@ sub singletest {
     # based tests might need a small delay once that the client command has
     # run to avoid false test failures.
 
-    sleep($postcommanddelay) if($postcommanddelay);
+    portable_sleep($postcommanddelay) if($postcommanddelay);
 
     # timestamp removal of server logs advisor read lock
     $timesrvrlog{$testnum} = Time::HiRes::time();
@@ -3884,7 +3951,7 @@ sub singletest {
                 logmsg " postcheck FAILED\n";
                 # timestamp test result verification end
                 $timevrfyend{$testnum} = Time::HiRes::time();
-                return 1;
+                return $errorreturncode;
             }
         }
     }
@@ -3956,7 +4023,7 @@ sub singletest {
 
         $res = compare($testnum, $testname, "stdout", \@actual, \@validstdout);
         if($res) {
-            return 1;
+            return $errorreturncode;
         }
         $ok .= "s";
     }
@@ -4007,7 +4074,7 @@ sub singletest {
 
         $res = compare($testnum, $testname, "stderr", \@actual, \@validstderr);
         if($res) {
-            return 1;
+            return $errorreturncode;
         }
         $ok .= "r";
     }
@@ -4053,7 +4120,7 @@ sub singletest {
 
         $res = compare($testnum, $testname, "protocol", \@out, \@protstrip);
         if($res) {
-            return 1;
+            return $errorreturncode;
         }
 
         $ok .= "p";
@@ -4068,7 +4135,7 @@ sub singletest {
         my @out = loadarray($CURLOUT);
         $res = compare($testnum, $testname, "data", \@out, \@reply);
         if ($res) {
-            return 1;
+            return $errorreturncode;
         }
         $ok .= "d";
     }
@@ -4092,7 +4159,7 @@ sub singletest {
 
         $res = compare($testnum, $testname, "upload", \@out, \@upload);
         if ($res) {
-            return 1;
+            return $errorreturncode;
         }
         $ok .= "u";
     }
@@ -4138,7 +4205,7 @@ sub singletest {
 
         $res = compare($testnum, $testname, "proxy", \@out, \@protstrip);
         if($res) {
-            return 1;
+            return $errorreturncode;
         }
 
         $ok .= "P";
@@ -4196,7 +4263,7 @@ sub singletest {
             $res = compare($testnum, $testname, "output ($filename)",
                            \@generated, \@outfile);
             if($res) {
-                return 1;
+                return $errorreturncode;
             }
 
             $outputok = 1; # output checked
@@ -4226,7 +4293,7 @@ sub singletest {
         logmsg " exit FAILED\n";
         # timestamp test result verification end
         $timevrfyend{$testnum} = Time::HiRes::time();
-        return 1;
+        return $errorreturncode;
     }
 
     if($has_memory_tracking) {
@@ -4249,7 +4316,7 @@ sub singletest {
                 logmsg @memdata;
                 # timestamp test result verification end
                 $timevrfyend{$testnum} = Time::HiRes::time();
-                return 1;
+                return $errorreturncode;
             }
             else {
                 $ok .= "m";
@@ -4266,7 +4333,7 @@ sub singletest {
                 logmsg "ERROR: unable to read $LOGDIR\n";
                 # timestamp test result verification end
                 $timevrfyend{$testnum} = Time::HiRes::time();
-                return 1;
+                return $errorreturncode;
             }
             my @files = readdir(DIR);
             closedir(DIR);
@@ -4281,7 +4348,7 @@ sub singletest {
                 logmsg "ERROR: valgrind log file missing for test $testnum\n";
                 # timestamp test result verification end
                 $timevrfyend{$testnum} = Time::HiRes::time();
-                return 1;
+                return $errorreturncode;
             }
             my @e = valgrindparse("$LOGDIR/$vgfile");
             if(@e && $e[0]) {
@@ -4294,7 +4361,7 @@ sub singletest {
                 }
                 # timestamp test result verification end
                 $timevrfyend{$testnum} = Time::HiRes::time();
-                return 1;
+                return $errorreturncode;
             }
             $ok .= "v";
         }
@@ -4333,6 +4400,9 @@ sub singletest {
         logmsg "PASS: $testnum - $testname\n";
     }
 
+    if($errorreturncode==2) {
+        logmsg "Warning: test$testnum result is ignored, but passed!\n";
+    }
 
     return 0;
 }
@@ -5046,17 +5116,19 @@ while(@ARGV) {
             $tortalloc = $1;
         }
     }
-    elsif($ARGV[0] =~ /--shallow=(\d+)(,|)(\d*)/) {
+    elsif($ARGV[0] =~ /--shallow=(\d+)/) {
         # Fail no more than this amount per tests when running
         # torture.
-        my ($num, $seed)=($1,$3);
+        my ($num)=($1);
         $shallow=$num;
-        $shallowseed=$seed?$seed:1234; # get a real seed later
-        srand($shallowseed); # make it predictable
     }
     elsif($ARGV[0] =~ /--repeat=(\d+)/) {
         # Repeat-run the given tests this many times
         $repeat = $1;
+    }
+    elsif($ARGV[0] =~ /--seed=(\d+)/) {
+        # Set a fixed random seed (used for -R and --shallow)
+        $randseed = $1;
     }
     elsif($ARGV[0] eq "-a") {
         # continue anyway, even if a test fail
@@ -5118,18 +5190,21 @@ Usage: runtests.pl [options] [test selection(s)]
   -l       list all test case names/descriptions
   -n       no valgrind
   -p       print log file contents when a test fails
-  -R       scrambled order
+  -R       scrambled order (uses the random seed, see --seed)
   -r       run time statistics
   -rf      full run time statistics
   -s       short output
-  --shallow=[num](,seed) make the torture tests thinner
+  --seed=[num] set the random seed to a fixed number
+  --shallow=[num] randomly makes the torture tests "thinner"
   -t[N]    torture (simulate function failures); N means fail Nth function
   -v       verbose output
   -vc path use this curl only to verify the existing servers
   [num]    like "5 6 9" or " 5 to 22 " to run those tests only
   [!num]   like "!5 !6 !9" to disable those tests
+  [~num]   like "~5 ~6 ~9" to ignore the result of those tests
   [keyword] like "IPv6" to select only tests containing the key word
   [!keyword] like "!cookies" to disable any tests containing the key word
+  [~keyword] like "~cookies" to ignore results of tests containing key word
 EOHELP
     ;
         exit;
@@ -5162,8 +5237,15 @@ EOHELP
         $fromnum = -1;
         $disabled{$1}=$1;
     }
+    elsif($ARGV[0] =~ /^~(\d+)/) {
+        $fromnum = -1;
+        $ignored{$1}=$1;
+    }
     elsif($ARGV[0] =~ /^!(.+)/) {
         $disabled_keywords{lc($1)}=$1;
+    }
+    elsif($ARGV[0] =~ /^~(.+)/) {
+        $ignored_keywords{lc($1)}=$1;
     }
     elsif($ARGV[0] =~ /^([-[{a-zA-Z].*)/) {
         $enabled_keywords{lc($1)}=$1;
@@ -5174,6 +5256,20 @@ EOHELP
     }
     shift @ARGV;
 }
+
+if(!$randseed) {
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) =
+        localtime(time);
+    # seed of the month. December 2019 becomes 201912
+    $randseed = ($year+1900)*100 + $mon+1;
+    open(C, "$CURL --version 2>/dev/null|");
+    my @c = <C>;
+    close(C);
+    # use the first line of output and get the md5 out of it
+    my $str = md5($c[0]);
+    $randseed += unpack('S', $str);  # unsigned 16 bit value
+}
+srand $randseed;
 
 if(@testthis && ($testthis[0] ne "")) {
     $TESTCASES=join(" ", @testthis);
@@ -5231,6 +5327,8 @@ if ($gdbthis) {
     }
 }
 
+$minport         = $base; # original base port number
+
 $HTTPPORT        = $base++; # HTTP server port
 $HTTPSPORT       = $base++; # HTTPS (stunnel) server port
 $FTPPORT         = $base++; # FTP server port
@@ -5261,6 +5359,8 @@ $SMBPORT         = $base++; # SMB port
 $SMBSPORT        = $base++; # SMBS port
 $NEGTELNETPORT   = $base++; # TELNET port with negotiation
 $HTTPUNIXPATH    = 'http.sock'; # HTTP server Unix domain socket path
+
+$maxport         = $base-1; # updated base port number
 
 #######################################################################
 # clear and create logging directory:
@@ -5372,14 +5472,6 @@ if($scrambleorder) {
     $TESTCASES = join(" ", @rand);
 }
 
-#######################################################################
-# Start the command line log
-#
-open(CMDLOG, ">$CURLLOG") ||
-    logmsg "can't log command lines to $CURLLOG\n";
-
-#######################################################################
-
 # Display the contents of the given file.  Line endings are canonicalized
 # and excessively long files are elided
 sub displaylogcontent {
@@ -5475,12 +5567,22 @@ sub displaylogs {
 }
 
 #######################################################################
+# Setup Azure Pipelines Test Run (if running in Azure DevOps)
+#
+
+if(azure_check_environment()) {
+    $AZURE_RUN_ID = azure_create_test_run();
+    logmsg "Azure Run ID: $AZURE_RUN_ID\n" if ($verbose);
+}
+
+#######################################################################
 # The main test-loop
 #
 
 my $failed;
 my $testnum;
 my $ok=0;
+my $ign=0;
 my $total=0;
 my $lasttest=0;
 my @at = split(" ", $TESTCASES);
@@ -5494,6 +5596,16 @@ foreach $testnum (@at) {
     $count++;
 
     my $error = singletest($run_event_based, $testnum, $count, scalar(@at));
+
+    # update test result in CI services
+    if(azure_check_environment() && $AZURE_RUN_ID && $AZURE_RESULT_ID) {
+        $AZURE_RESULT_ID = azure_update_test_result($AZURE_RUN_ID, $AZURE_RESULT_ID, $testnum, $error,
+                                                    $timeprepini{$testnum}, $timevrfyend{$testnum});
+    }
+    elsif(appveyor_check_environment()) {
+        appveyor_update_test_result($testnum, $error, $timeprepini{$testnum}, $timevrfyend{$testnum});
+    }
+
     if($error < 0) {
         # not a test we can run
         next;
@@ -5502,12 +5614,21 @@ foreach $testnum (@at) {
     $total++; # number of tests we've run
 
     if($error>0) {
-        $failed.= "$testnum ";
+        if($error==2) {
+            # ignored test failures are wrapped in ()
+            $failed.= "($testnum) ";
+        }
+        else {
+            $failed.= "$testnum ";
+        }
         if($postmortem) {
             # display all files in log/ in a nice way
             displaylogs($testnum);
         }
-        if(!$anyway) {
+        if($error==2) {
+            $ign++; # ignored test result counter
+        }
+        elsif(!$anyway) {
             # a test failed, abort
             logmsg "\n - abort tests\n";
             last;
@@ -5523,9 +5644,12 @@ foreach $testnum (@at) {
 my $sofar = time() - $start;
 
 #######################################################################
-# Close command log
+# Finish Azure Pipelines Test Run (if running in Azure DevOps)
 #
-close(CMDLOG);
+
+if(azure_check_environment() && $AZURE_RUN_ID) {
+    $AZURE_RUN_ID = azure_update_test_run($AZURE_RUN_ID);
+}
 
 # Tests done, stop the servers
 stopservers($verbose);
@@ -5580,6 +5704,6 @@ if($skipped && !$short) {
     }
 }
 
-if($total && ($ok != $total)) {
+if($total && (($ok+$ign) != $total)) {
     exit 1;
 }

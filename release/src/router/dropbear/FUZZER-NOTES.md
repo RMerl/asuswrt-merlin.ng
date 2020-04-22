@@ -72,3 +72,6 @@ Current fuzzers are
 
 - [fuzzer-kexecdh](fuzzer-kexecdh.c) - test Elliptic Curve Diffie-Hellman key exchange like fuzzer-kexdh.
   This is testing libtommath ECC routines.
+
+- [fuzzer-kexcurve25519](fuzzer-kexcurve25519.c) - test Curve25519 Elliptic Curve Diffie-Hellman key exchange
+  like fuzzer-kexecdh. This is testing `dropbear_curve25519_scalarmult()` and other libtommath routines.

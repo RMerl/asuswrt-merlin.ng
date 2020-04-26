@@ -1,7 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.17 (xx-xxx-xxxx)
+384.17 (26-Apr-2020)
+  Updating some models (like the RT-AC88U) from stock firmware
+  3.0.0.4.384_81790 and newer will require a factory default reset
+  after flashing Asuswrt-Merlin, due to a change in how Asus
+  stores the admin password starting with 384_81790.
+
   - NEW: Add Chacha20-poly1305 support to dropbear (themiron)
   - UPDATED: dnsmasq to 2.81-openssl (themiron)
   - UPDATED: openvpn to 2.4.9.
@@ -13,7 +18,7 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: Various webui issues with sorting DHCP reservations.
 
 
-384.13_7 (xx-xxx-xxxx)
+384.13_8 (26-Apr-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
 
   - UPDATED: dnsmasq to 2.81-openssl (themiron)

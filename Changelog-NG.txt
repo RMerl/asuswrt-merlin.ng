@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.13_7 (xx-xxx-xxxx)
+384.13_8 (26-Apr-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
 
   - UPDATED: dnsmasq to 2.81-openssl (themiron)

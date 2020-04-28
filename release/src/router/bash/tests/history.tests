@@ -1,0 +1,114 @@
+trap 'rm /tmp/newhistory' 0
+
+# bad options
+history -x
+# cannot use -r and -w at the same time
+history -r -w /dev/null
+
+# bad option
+fc -v
+
+unset HISTFILESIZE
+
+# all of these should result in an empty history list
+history -c
+history -r /dev/null
+history -n /dev/null
+history -c
+
+HISTFILE=history.list
+HISTCONTROL=ignoreboth
+HISTIGNORE='&:history*:fc*'
+HISTSIZE=32
+
+shopt -s cmdhist
+set -o history
+
+history
+
+fc -l
+fc -nl
+
+fc -lr
+fc -nlr
+
+history -s "echo line for history"
+history
+
+history -p '!!'
+
+fc -nl
+
+HISTFILE=/tmp/newhistory
+history -a
+echo displaying \$HISTFILE after history -a
+cat $HISTFILE
+
+history
+history -w
+cat $HISTFILE
+
+history -s "echo line 2 for history"
+history
+history -p '!e'
+history -p '!!'
+
+# this should show up as one history entry
+for x in one two three
+do
+	:
+done
+history
+
+# just a basic test.  a full test suite for history expansion should be
+# created
+set -H
+!!
+!e
+
+unset HISTSIZE
+unset HISTFILE
+
+fc -l 4
+fc -l 4 8
+
+fc -l one=two three=four 502
+
+history 4
+
+shopt -so history
+shopt -s expand_aliases
+
+alias r="fc -s"
+
+echo aa ab ac
+
+r a=x
+r x=4 b=8
+
+# this had better fail with `no command found'
+r cc
+
+unalias -a
+alias
+
+# these two blocks had better both result in the same output
+echo aa
+echo bb
+echo cc
+fc -e cat
+
+echo aa
+echo bb
+echo cc
+fc -e cat -1
+
+set +o history
+
+shopt -q -o history
+echo $?
+
+${THIS_SH} ./history1.sub
+rm -f $TMPDIR/foohist-*
+
+${THIS_SH} ./history2.sub

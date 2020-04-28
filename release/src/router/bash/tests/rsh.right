@@ -1,0 +1,13 @@
+./rsh.tests: line 9: cd: restricted
+./rsh.tests: line 10: PATH: readonly variable
+./rsh.tests: line 11: SHELL: readonly variable
+./rsh.tests: line 12: /bin/sh: restricted: cannot specify `/' in command names
+./rsh.tests: line 14: .: ./source.sub3: restricted
+./rsh.tests: line 17: /tmp/restricted: restricted: cannot redirect output
+./rsh.tests: line 21: /tmp/restricted: restricted: cannot redirect output
+./rsh.tests: line 26: command: -p: restricted
+./rsh.tests: line 28: set: +r: invalid option
+set: usage: set [-abefhkmnptuvxBCHP] [-o option-name] [--] [arg ...]
+./rsh.tests: line 29: set: restricted: invalid option name
+./rsh.tests: line 31: exec: restricted
+./rsh.tests: after exec

@@ -1,0 +1,34 @@
+# arrays referenced using @ subscript and positional parameters should behave
+# the same way
+
+foo=(0 0 0); [[ -z ${foo[@]#0} ]]; echo $?
+
+recho "${foo[@]#0}"
+bar=${foo[@]#0}
+recho bar
+recho $bar
+recho -$bar-
+recho "$bar"
+
+qux="${foo[@]#0}"
+recho qux
+recho $qux
+recho -$qux-
+recho "$qux"
+
+unset foo qux bar
+
+set -- 0 0 0
+
+recho "${@#0}"
+bar=${@#0}
+recho bar
+recho $bar
+recho -$bar-
+recho "$bar"
+
+qux="${@#0}"
+recho qux
+recho $qux
+recho -$qux-
+recho "$qux"

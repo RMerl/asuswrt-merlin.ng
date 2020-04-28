@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# Out of file descriptors, because it forgets to close redirection.  Only
+# happens in a shell function.  Problem through bash-4.2.
+
+ulimit -n 128
+
+bug()
+{
+c=`ulimit -n`
+let c+=100
+while let c--
+do
+	while read -ru3 x
+	do
+		echo -n :
+	done 3< <(echo x)
+
+done
+}
+
+bug
+echo
+
+exit 0

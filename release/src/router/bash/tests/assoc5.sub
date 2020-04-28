@@ -1,0 +1,27 @@
+declare -A myarray
+
+# this needs fixes to skipsubscript
+myarray["a]a"]="abc"
+
+echo ${myarray["a]a"]}
+
+myarray[$(echo ])]=def
+
+echo ${myarray[']']}
+echo ${myarray[\]]}
+
+declare myarray["foo[bar"]=bleh
+myarray["foo"]=bleh
+
+echo "${myarray[@]}"
+
+bar='a]=test1;#a'
+myarray[$bar]=123
+
+set | grep ^myarray=
+echo ${myarray[a]}
+
+echo "${myarray['a]=test1;#a']}"
+myarray['a]=test2;#a']="def"
+
+set | grep ^myarray=

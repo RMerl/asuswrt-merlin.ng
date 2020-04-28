@@ -1,0 +1,20 @@
+# problems with non-fatal expansion errors through bash-4.3
+: ${THIS_SH:=./bash}
+
+${THIS_SH} -c 'echo ${x!y} second
+echo after 1: $?' 2>/dev/null
+
+${THIS_SH} -c 'echo ${#+} second
+echo after 2: $?' 2>/dev/null
+
+${THIS_SH} -c 'echo ${#foo%} second
+echo after 3: $?' 2>/dev/null
+
+${THIS_SH} -c 'b[0]=4 ; echo ${b[   ]}
+echo array after 1: $?'  2>/dev/null
+${THIS_SH} -c 'typeset -A v ; v["0"]=one ; echo ${v[   ]}
+echo array after 2: $?'  2>/dev/null
+
+echo ${-3}
+x=-3; echo ${!x}
+echo after indir: $?

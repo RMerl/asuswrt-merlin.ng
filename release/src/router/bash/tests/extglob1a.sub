@@ -1,0 +1,16 @@
+shopt -s extglob
+
+TESTDIR=${TMPDIR:-/tmp}/eglob-test-$$
+mkdir $TESTDIR
+builtin cd $TESTDIR || { echo $0: cannot cd to $TESTDIR >&2 ; exit 1; }
+rm -rf *
+
+touch a ab ba
+
+echo a*!(x)
+echo a!(x)
+echo a*?(x)
+echo a?(x)
+
+builtin cd /
+rm -rf $TESTDIR

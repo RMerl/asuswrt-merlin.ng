@@ -1,0 +1,33 @@
+# test restricted shell mode -- these should all be errors
+#
+# things not tested for:
+#	adding builtins dynamically with enable -f
+#	importing function definitions from environment
+
+set -r
+
+cd /
+PATH=$PATH:/usr/local/bin
+SHELL=/bin/sh
+/bin/sh -c 'echo /bin/sh executed'
+
+. ./source.sub3
+
+rm -f /tmp/restricted
+echo abc > /tmp/restricted
+if [ -f /tmp/restricted ]; then
+	echo oops 1 -- output
+fi
+echo abc >> /tmp/restricted
+if [ -f /tmp/restricted ]; then
+	echo oops 2 -- append
+fi
+
+command -p date
+
+set +r
+set +o restricted
+
+exec /bin/date
+
+echo $0: after exec

@@ -1,0 +1,97 @@
+# tests for quoted and unquoted, split and unsplit expansions of $@ and $*
+# Posix interpretation 221 speaks to this issue
+
+set -- a b
+IFS=
+x=abc
+
+printf "<%s>\n" ${x#$*}
+
+a="a bc"
+echo ${a#$*}
+unset x a
+
+a=$@
+echo "$a"
+
+a=$*
+echo "$a"
+
+printf '<%s>' $@ ; echo
+
+IFS=' 	
+'
+
+a=$@
+echo "$a"
+
+a=$*
+echo "$a"
+
+unset a
+
+unset IFS
+set a b "c d"
+printf '<%s>' $* ; echo
+
+IFS=
+set a b "c d"
+printf '<%s>' $* ; echo
+
+IFS=:
+set a b
+printf '<%s>' ${foo=$*} ; echo
+printf '<%s>' "${foo}" ; echo
+
+unset foo
+IFS=' 	
+'
+printf '<%s>' ${foo=$@} ; echo
+printf '<%s>' "$foo" ; echo
+
+IFS=?
+set a c
+foo=abcd
+
+echo ${foo#"$*"}
+echo "${foo#$*}"
+
+echo "${foo#'a?c'}"
+echo "${foo#a?c}"
+
+IFS=?
+set a c
+str=a$'\001'c
+pat=a$'\001'
+echo "${str#$pat}"
+
+set a b
+IFS=:
+
+a=$@
+recho "$a"
+
+recho ${foo=$*}
+recho "$foo"
+
+unset foo
+IFS=' 	
+'
+recho ${foo=$@}
+recho "$foo"
+
+shift $#
+unset foo x
+
+set -- a b
+x=abc
+
+IFS=
+printf "<%s>\n" ${x#$*}
+printf "<%s>\n" "${x#$*}"
+
+x=abcd
+set a c
+IFS='?'
+printf "<%s>\n" ${x#$*}
+printf "<%s>\n" "${x#$*}"

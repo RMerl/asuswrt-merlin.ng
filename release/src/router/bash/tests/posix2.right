@@ -1,0 +1,6 @@
+Testing for POSIX.2 conformance
+./posix2.tests: eval: line 182: syntax error near unexpected token `esac'
+./posix2.tests: eval: line 182: `case esac in (esac) ;; *) echo "case esac test 3" ;; esac'
+./posix2.tests: eval: line 184: syntax error near unexpected token `)'
+./posix2.tests: eval: line 184: `case esac in esac) ;; *) echo "case esac test 4";; esac'
+All tests passed

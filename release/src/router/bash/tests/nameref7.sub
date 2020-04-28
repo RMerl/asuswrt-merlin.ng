@@ -1,0 +1,18 @@
+fn ()
+{
+	declare -n var=foo; var=bar
+}
+
+unset foo
+fn
+echo ${foo:-unset}
+
+unset -f fn
+unset foo
+fn()
+{
+	declare -n var; var=foo
+}
+
+fn
+echo ${foo:-unset}

@@ -1,0 +1,7 @@
+LANG=en_US.UTF-8
+
+shopt -s extglob
+a="aaaäöü"
+
+echo "${a}" "${a//?aa}" "${a//\aaa}"
+exit 0 

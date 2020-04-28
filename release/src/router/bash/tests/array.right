@@ -1,0 +1,504 @@
+
+./array.tests: line 15: syntax error near unexpected token `&'
+./array.tests: line 15: `test=(first & second)'
+1
+abcde
+abcde
+abcde bdef
+abcde bdef
+declare -a BASH_ARGC=()
+declare -a BASH_ARGV=()
+declare -a BASH_LINENO=([0]="0")
+declare -a BASH_SOURCE=([0]="./array.tests")
+declare -a DIRSTACK=()
+declare -a FUNCNAME
+declare -a a=([0]="abcde" [1]="" [2]="bdef")
+declare -a b
+declare -ar c
+abcde bdef
+abcde bdef
+abcde
+abcde
+abcde
+
+bdef
+hello world
+11
+3
+bdef hello world test expression test 2
+./array.tests: line 76: readonly: `a[5]': not a valid identifier
+declare -ar a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+declare -ar c
+declare -ar a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+declare -ar c
+readonly -a a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+readonly -a c
+a test
+declare -a BASH_ARGC=()
+declare -a BASH_ARGV=()
+declare -a BASH_LINENO=([0]="0")
+declare -a BASH_SOURCE=([0]="./array.tests")
+declare -a DIRSTACK=()
+declare -a FUNCNAME
+declare -ar a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+declare -a b=([0]="this" [1]="is" [2]="a" [3]="test" [4]="" [5]="/etc/passwd")
+declare -ar c
+declare -a d=([1]="" [2]="bdef" [5]="hello world" [6]="test" [9]="ninth element")
+declare -a e=([0]="test")
+declare -a f=([0]="" [1]="bdef" [2]="hello world" [3]="test" [4]="ninth element")
+./array.tests: line 100: a: readonly variable
+./array.tests: line 102: b[]: bad array subscript
+./array.tests: line 103: b[*]: bad array subscript
+./array.tests: line 104: ${b[   ]}: bad substitution
+./array.tests: line 106: c[-2]: bad array subscript
+./array.tests: line 107: c: bad array subscript
+
+./array.tests: line 109: d[7]: cannot assign list to array member
+./array.tests: line 111: []=abcde: bad array subscript
+./array.tests: line 111: [*]=last: cannot assign to non-numeric index
+./array.tests: line 111: [-65]=negative: bad array subscript
+declare -a BASH_ARGC=()
+declare -a BASH_ARGV=()
+declare -a BASH_LINENO=([0]="0")
+declare -a BASH_SOURCE=([0]="./array.tests")
+declare -a DIRSTACK=()
+declare -a FUNCNAME
+declare -ar a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+declare -a b=([0]="this" [1]="is" [2]="a" [3]="test" [4]="" [5]="/etc/passwd")
+declare -ar c
+declare -a d=([1]="test test")
+declare -a f=([0]="" [1]="bdef" [2]="hello world" [3]="test" [4]="ninth element")
+./array.tests: line 119: unset: ps1: not an array variable
+./array.tests: line 123: declare: c: cannot destroy array variables in this way
+this of
+this is a test of read using arrays
+this test
+this is a test of arrays
+declare -a BASH_ARGC=()
+declare -a BASH_ARGV=()
+declare -a BASH_LINENO=([0]="0")
+declare -a BASH_SOURCE=([0]="./array.tests")
+declare -a DIRSTACK=()
+declare -a FUNCNAME
+declare -ar a=([1]="" [2]="bdef" [5]="hello world" [6]="test expression" [15]="test 2")
+declare -a b=([0]="this" [1]="is" [2]="a" [3]="test" [4]="" [5]="/etc/passwd")
+declare -ar c
+declare -a d=([1]="test test")
+declare -a f=([0]="" [1]="bdef" [2]="hello world" [3]="test" [4]="ninth element")
+declare -a rv=([0]="this" [1]="is" [2]="a" [3]="test" [4]="of" [5]="read" [6]="using" [7]="arrays")
+abde
+abde
+bbb
+efgh
+wxyz
+wxyz
+./array.tests
+a
+b c
+d
+e f g
+h
+./array.tests
+a
+b c
+d
+e f g
+h
+/bin /usr/bin /usr/ucb /usr/local/bin . /sbin /usr/sbin
+bin bin ucb bin . sbin sbin
+bin
+/ / / / / /
+/
+argv[1] = <bin>
+argv[1] = </>
+argv[1] = <sbin>
+argv[1] = </>
+\bin \usr/bin \usr/ucb \usr/local/bin . \sbin \usr/sbin
+\bin \usr\bin \usr\ucb \usr\local\bin . \sbin \usr\sbin
+\bin \usr\bin \usr\ucb \usr\local\bin . \sbin \usr\sbin
+4 -- 4
+7 -- 7
+55
+49
+6 -- 6
+42 14 44
+grep [ 123 ] *
+6 7 9
+6 7 9 5
+length = 3
+value = new1 new2 new3
+./array.tests: line 239: narray: unbound variable
+./array1.sub: line 1: syntax error near unexpected token `('
+./array1.sub: line 1: `printf "%s\n" -a a=(a 'b  c')'
+./array2.sub: line 1: declare: `[]=asdf': not a valid identifier
+./array2.sub: line 2: a[]: bad array subscript
+./array2.sub: line 4: syntax error near unexpected token `('
+./array2.sub: line 4: `declare -a ''=(a 'b c')'
+9
+9
+
+
+7 8 9
+8 11
+8 11
+6
+6
+nordholz
+8
+8
+8
+
+a b c d e f g
+for case if then else
+<> < > !
+12 14 16 18 20
+4414758999202
+aaa bbb
+./array.tests: line 289: syntax error near unexpected token `<>'
+./array.tests: line 289: `metas=( <> < > ! )'
+./array.tests: line 290: syntax error near unexpected token `<>'
+./array.tests: line 290: `metas=( [1]=<> [2]=< [3]=> [4]=! )'
+abc 3
+case 4
+abc case if then else 5
+abc case if then else 5
+0
+case 4
+case if then else 5
+case if then else 5
+argv[1] = <0>
+argv[2] = <1>
+argv[3] = <4>
+argv[4] = <10>
+argv[1] = <0>
+argv[2] = <1>
+argv[3] = <4>
+argv[4] = <10>
+argv[1] = <0>
+argv[2] = <1>
+argv[3] = <4>
+argv[4] = <10>
+argv[1] = <0 1 4 10>
+include null element -- expect one
+one
+include unset element -- expect three five
+three five
+start at unset element -- expect five seven
+five seven
+too many elements -- expect three five seven
+three five seven
+positive offset - expect five seven
+five seven
+negative offset to unset element - expect seven
+seven
+positive offset 2 - expect seven
+seven
+negative offset 2 - expect seven
+seven
+out-of-range offset
+
+e
+4
+1 4 7 10
+'b
+b  c
+$0
+t
+[3]=abcde r s t u v
+e
+9
+2
+a b c
+argv[1] = <-iname 'a>
+argv[2] = <-iname 'b>
+argv[3] = <-iname 'c>
+'hey'
+hey
+''hey
+'hey'
+argv[1] = <c>
+argv[2] = <d>
+argv[3] = <e>
+argv[4] = <f>
+argv[1] = <c d>
+argv[2] = <e f>
+argv[1] = <c d>
+argv[2] = <e f>
+argv[1] = <c d>
+argv[2] = <e f>
+argv[1] = <-iname 'abc>
+argv[2] = <-iname 'def>
+argv[1] = <-iname 'abc>
+argv[2] = <-iname 'def>
+argv[1] = <-iname>
+argv[2] = <abc -iname def>
+argv[1] = <-iname 'abc>
+argv[2] = <-iname 'def>
+argv[1] = <-iname>
+argv[2] = <abc -iname def>
+argv[1] = <-iname 'abc>
+argv[2] = <-iname 'def>
+argv[1] = <-iname 'abc>
+argv[2] = <-iname 'def>
+argv[1] = <-iname>
+argv[2] = <abc -iname def>
+*.* OK
+1
+a1 2 3c
+argv[1] = <var with spaces>
+argv[1] = <var with spaces>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+argv[1] = <var with spacesab>
+argv[2] = <cd>
+argv[3] = <ef>
+2
+argv[1] = <element1 with spaces>
+argv[2] = <element2 with spaces>
+argv[1] = <element1 with spaces>
+argv[2] = <element2 with spaces>
+nord!olz
+
+rdholz
+
+rdholz
+rdho
+
+
+argv[1] = <fooq//barq/>
+argv[1] = <fooq>
+argv[2] = <>
+argv[3] = <barq>
+argv[4] = <>
+argv[1] = <foo!//bar!/>
+argv[1] = <foo!>
+argv[2] = <>
+argv[3] = <bar!>
+argv[4] = <>
+argv[1] = <ooq//arq/>
+argv[1] = <ooq>
+argv[2] = <>
+argv[3] = <arq>
+argv[4] = <>
+argv[1] = <Fooq//Barq/>
+argv[1] = <Fooq>
+argv[2] = <>
+argv[3] = <Barq>
+argv[4] = <>
+argv[1] = <FOOQ//BARQ/>
+argv[1] = <FOOQ>
+argv[2] = <>
+argv[3] = <BARQ>
+argv[4] = <>
+126
+127
+128
+argv[1] = <€>
+argv[1] = <~>
+argv[2] = <^?>
+argv[3] = <€>
+argv[1] = <~>
+argv[2] = <^?>
+argv[3] = <€>
+argv[1] = <~>
+argv[2] = <^?>
+argv[3] = <€>
+Monday Tuesday Wednesday Thursday Friday Saturday Sunday
+Monday
+Monday
+Tuesday
+Monday
+Monday
+Tuesday
+Monday
+Tuesday
+Wednesday
+Monday
+Tuesday
+Wednesday
+monday, monday, tuesday
+wednesday, wednesday, thursday
+monday, monday, tuesday
+Wednesday, Wednesday, Thursday
+nday
+esday
+dnesday
+nday
+esday
+dnesday
+onday
+uesday
+ednesday
+onday
+uesday
+ednesday
+version[agent]
+version.agent
+version[agent]
+version.agent
+version[agent] foo[bar]
+version.agent bowl
+foo foobar] foo[bar]
+bbb bleh bleh
+ab]
+bar
+1
+1
+1
+1
+1
+1
+main main
+function function
+function function
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4" [5]="5")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4")
+declare -a x=([0]="0" [1]="1" [2]="2" [4]="4")
+./array14.sub: line 11: unset: [-10]: bad array subscript
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4" [5]="five")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4" [5]="5")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4" [5]="foo")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4" [5]="5")
+declare -a x=([0]="0" [1]="1" [2]="2" [3]="3" [4]="4four" [5]="5")
+strlen(4four) = 5
+1 2 0 3
+1 2 0 3
+1 2 0 3
+1 2 0 3
+1 2 0 3
+foo index 1: ok
+foo index 2: ok
+foo: implicit reference to element 0: ok
+foo: arithmetic evaluation: ok
+bar: array with element zero unset: ok
+bar: element zero: ok
+qux: unset array: ok
+qux: unset array element 0: ok
+2
+2
+2
+2
+0
+0
+1
+2
+0
+0
+3
+3
+0
+0
+zero
+zero
+one
+one
+one
+one
+two
+two
+./array17.sub: line 76: ~ : syntax error: operand expected (error token is "~ ")
+1
+argv[1] = <>
+argv[2] = <>
+argv[3] = <>
+argv[1] = <bar>
+argv[1] = <-->
+argv[1] = <>
+argv[1] = <qux>
+argv[1] = <->
+argv[2] = <->
+argv[1] = <  >
+argv[1] = <>
+argv[2] = <>
+argv[3] = <>
+argv[1] = <bar>
+argv[1] = <-->
+argv[1] = <>
+argv[1] = <qux>
+argv[1] = <->
+argv[2] = <->
+argv[1] = <  >
+declare -a foo=([0]="( zeroind )")
+declare -a foo=([0]="zeroind")
+declare -a foo=([0]="zeroind")
+declare -a foo=([0]="[0]=bar")
+declare -a foo=([0]="[0]=bar")
+declare -a foo=([0]="[0]=bar")
+declare -- a="(1 2 3)"
+declare -a a=([0]="1" [1]="2" [2]="3")
+./array19.sub: line 46: a: 1: must use subscript when assigning associative array
+./array19.sub: line 46: a: 2: must use subscript when assigning associative array
+./array19.sub: line 46: a: 3: must use subscript when assigning associative array
+declare -A a=()
+declare -- a="([0]=a [1]=b)"
+declare -a a=([0]="a" [1]="b")
+declare -A a=([0]="a" [1]="b" )
+declare -a var=([0]="[\$(echo" [1]="total" [2]="0)]=1" [3]="[2]=2]")
+declare -a var=([0]="[\$(echo total 0)]=1 [2]=2]")
+declare -a var=([0]="[\$(echo" [1]="total" [2]="0)]=1" [3]="[2]=2]")
+./array19.sub: line 81: total 0: syntax error in expression (error token is "0")
+declare -a var=()
+declare -al foo=([0]="abcde" [1]="two" [2]="three")
+declare -al foo=([0]="abcde")
+declare -al ar=([0]="one" [1]="two" [2]="three")
+declare -a a=([2]="foo")
+declare -a a=([2]="foo")
+declare -a a=([1]="(var)" [2]="foo")
+./array19.sub: line 120: warning: a[1]=(var): quoted compound array assignment deprecated
+declare -a a=([1]="(var)")
+declare -a a=([0]="1" [1]="2" [2]="(1 2 3)")
+declare -a a=([0]="1" [1]="2" [2]="(1 2 3)")
+declare -a a=([0]="1" [1]="2" [2]="3")
+declare -a a=([0]="1" [1]="2" [2]="3")
+declare -a a=([0]="1" [1]="2" [2]="3")
+declare -- a="a b"
+declare -- b="/scratch/bash"
+declare -- c="(1 2)"
+declare -- d="(\$a)"
+declare -- e="(\$(echo Darwin))"
+declare -a a=([0]="a b")
+declare -a b=([0]="/scratch/bash")
+declare -a c=([0]="1" [1]="2")
+declare -a d=([0]="a" [1]="b")
+declare -a e=([0]="Darwin")
+./array19.sub: line 166: c: 1: must use subscript when assigning associative array
+./array19.sub: line 166: c: 2: must use subscript when assigning associative array
+./array19.sub: line 166: d: $a: must use subscript when assigning associative array
+./array19.sub: line 166: e: $(echo Darwin): must use subscript when assigning associative array
+declare -A a=([0]="a b" )
+declare -A b=([0]="/scratch/bash" )
+declare -A c=()
+declare -A d=()
+declare -A e=()
+a+b+c
+x+b+c
+a+b+c
+x+b+c
+argv[1] = <a+b+c+d+e+f>
+argv[1] = <x+b+c+d+e+f>
+a b c
+x b c
+a b c
+x b c
+declare -a a=([1]="2" [2]="3" [3]="4")
+abcd
+unset
+./array21.sub: line 17: typeset: a: not found
+./array21.sub: line 20: typeset: A: not found
+declare -a a=()
+declare -A A=()
+declare -a foo=([0]="1" [1]="(4 5 6)" [2]="3")

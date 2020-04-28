@@ -1,0 +1,29 @@
+# quoted null problems in versions of bash prior to 3.2
+
+str='12'
+snul=$'\177'
+
+recho "${str:2}"
+recho "+${str:2}"
+recho "+${snul:0:1}"
+recho  "+""${str:2}"
+
+recho "${str/?/$snul}"
+recho ${str/?/$snul}
+
+recho "${snul/x/y}"
+recho ${snul/x/y}
+
+recho "${snul/$snul/}"
+recho "${str/$str/}"
+
+recho "${snul##$snul}"
+recho "${str##$str}"
+recho "${str##$nul}"
+
+A=""
+B="${A:0}"
+
+recho "$B"
+recho "${A:0}"
+recho "/tmp/test/TEST${A:0}"

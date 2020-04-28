@@ -1,0 +1,38 @@
+# test of redone post-increment and post-decrement code
+echo $(( 4-- ))
+echo $(( 4++ ))
+echo $(( 4 -- ))
+echo $(( 4 ++ ))
+
+(( array[0]++ ))
+echo ${array}
+
+(( array[0] ++ ))
+echo ${array}
+
+(( a++ ))
+echo $a
+(( a ++ ))
+echo $a
+
+echo $(( a ++ + 4 ))
+echo $a
+
+echo $(( a+++4 ))
+echo $a
+
+echo $(( a---4 ))
+echo $a
+
+echo $(( a -- + 4 ))
+echo $a
+
+echo $(( a -- - 4 ))
+echo $a
+
+(( ++ + 7 ))
+
+(( ++ ))
+echo $(( +++7 ))
+echo $(( ++ + 7 ))
+(( -- ))

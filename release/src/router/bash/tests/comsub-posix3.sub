@@ -1,0 +1,22 @@
+# parsing errors before bash-4.2
+
+a=$(/bin/cat << EOF | wc -l
+a
+b
+c
+EOF
+)
+
+a=$(cat << EOF | wc -l
+a
+b
+c
+EOF
+)
+
+a=$(/bin/cat << EOF
+a
+b
+c
+EOF
+)

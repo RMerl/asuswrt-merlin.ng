@@ -1,0 +1,53 @@
+case foo in
+bar)	echo skip ;;
+foo)	echo fallthrough ;&
+bax)	echo to here ;&
+qux)	echo and here;;
+fop)	echo but not here;;
+esac
+
+case foobar in
+bar)	echo skip ;;
+foo*)	echo retest ;;&
+*bar)	echo and match ;;&
+qux)	echo but not this ;;
+esac
+
+case a in
+a)	echo no more clauses;&
+esac
+
+x=0 y=1
+case 1 in
+  $((y=0)) ) ;;
+  $((x=1)) ) ;&
+  $((x=2)) ) echo $x.$y ;;
+esac
+
+unset x
+readonly xx=1
+case 1 in $((xx++)) ) echo hi1 ;; *) echo hi2; esac
+echo ${xx}.$?
+
+unset var empty
+
+var=
+case ']' in
+[$var]*[$var])	echo matches 1;;
+*)		echo no match 1 ;;
+esac
+
+case abc in ( [] ) echo yes ;; ( * ) echo no ;; esac
+empty=''
+case abc in ( ["$empty"] ) echo yes ;; ( * ) echo no ;; esac
+
+case abc in ( [] | [!a-z]* ) echo yes ;; ( * ) echo no ;; esac
+empty=''
+case abc in ( ["$empty"] | [!a-z]* ) echo yes ;; ( * ) echo no ;; esac
+
+case abc in (["$empty"]|[!a-z]*) echo yes ;; (*) echo no ;; esac
+
+case " " in ( [" "] ) echo ok;; ( * ) echo no;; esac
+
+# tests of quote removal and pattern matching
+${THIS_SH} ./case1.sub

@@ -1,0 +1,49 @@
+#Time-stamp: <95/06/07 07:40:40 hrue@imf.unit.no>
+
+getop () {
+
+    local OPTIND
+    local OPTERR=1
+
+    echo getop: OPTERR=$OPTERR    
+    while getopts ab arg "$@"; do
+	case $arg in
+	    a)
+		echo a here
+		;;
+	    b)
+		echo b here
+		;;
+	    :|?|*)
+		echo something else here
+		;;
+	esac
+    done
+    echo getop: OPTIND=$OPTIND
+}
+
+OPTIND=
+OPTERR=0
+
+echo OPTERR=$OPTERR
+while getopts ab arg; do
+    case $arg in
+	a)
+	    echo a here
+	    ;;
+	b)
+	    echo b here
+	    ;;
+	:|?|*)
+	    
+	    echo something else here
+	    ;;
+    esac
+done
+
+echo OPTIND=$OPTIND
+
+getop "$@" -d -e
+
+echo OPTIND=$OPTIND
+echo OPTERR=$OPTERR

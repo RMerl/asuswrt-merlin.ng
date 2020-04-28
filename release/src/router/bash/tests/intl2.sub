@@ -1,0 +1,11 @@
+unset LC_ALL LC_NUMERIC
+export LANG=de_DE.UTF-8
+printf '%.4f\n' 1
+
+LANG=C printf '%.4f\n' 1
+LANG=C /usr/bin/printf '%.4f\n' 1
+
+env LANG=C printf '%.4f\n' 1
+(LANG=C; printf '%.4f\n' 1)
+
+printf '%.4f\n' 1

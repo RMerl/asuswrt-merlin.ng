@@ -1,0 +1,52 @@
+days=({Mon,Tues,Wednes,Thurs,Fri,Satur,Sun}day)
+echo ${days[@]}
+
+typeset -i count
+
+count=0
+echo ${days[${count}]}
+echo ${days[$((count++))]}
+echo ${days[$((count++))]}
+
+count=0
+echo ${days[count]}
+echo ${days[count++]}
+echo ${days[count++]}
+
+count=0
+echo ${days[$((count++))]/foo/bar}
+echo ${days[$((count++))]/foo/bar}
+echo ${days[$((count++))]/foo/bar}
+
+count=0
+echo ${days[count++]/foo/bar}
+echo ${days[count++]/foo/bar}
+echo ${days[count++]/foo/bar}
+
+count=0
+echo "${days[${count}],,}, ${days[$((count++))],,}, ${days[$((count++))],,}"
+echo "${days[${count}],,}, ${days[$((count++))],,}, ${days[$((count++))],,}"
+
+count=0
+echo "${days[${count}],,}, ${days[$((count++))],,}, ${days[$((count++))],,}"
+echo "${days[${count}]/foo/bar}, ${days[$((count++))]/foo/bar}, ${days[$((count++))]/foo/bar}"
+
+count=0
+echo ${days[$((count++))]:2}
+echo ${days[$((count++))]:2}
+echo ${days[$((count++))]:2}
+
+count=0
+echo ${days[count++]:2}
+echo ${days[count++]:2}
+echo ${days[count++]:2}
+
+count=0
+echo ${days[$((count++))]#?}
+echo ${days[$((count++))]#?}
+echo ${days[$((count++))]#?}
+
+count=0
+echo ${days[count++]#?}
+echo ${days[count++]#?}
+echo ${days[count++]#?}

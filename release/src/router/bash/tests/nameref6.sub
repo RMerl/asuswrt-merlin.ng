@@ -1,0 +1,44 @@
+# these should be errors
+typeset -n x=x
+#echo $x -- $?
+
+typeset -n x[3]=x
+#echo $x -- $?
+
+x=(the browns suck)
+y=(one two three)
+# should be an error but not disturb the current contents of x
+# maybe rethink that later
+typeset -n x=y
+echo $x -- $?
+
+typeset -n
+
+unset x y
+
+y=42
+typeset -i x=1
+
+# the integer attribute causes arithmetic eval to be done
+# we should not allow namerefs to non-identifiers
+typeset -n x=y
+echo $x -- $?
+
+typeset +n x
+echo $x -- $?
+
+# same kind of thing
+
+unset -n x
+unset y
+
+set -- first second third
+y=2
+typeset -i x=1
+
+typeset -n x=y
+echo $x -- $?
+echo ${x} -- $?
+
+typeset +n x
+echo $x -- $?

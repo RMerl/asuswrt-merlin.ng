@@ -1,0 +1,28 @@
+# test out the export behavior of variable assignments preceding `eval', `.'
+# and shell functions
+
+func()
+{
+	printenv var
+}
+
+export var=10
+echo expect 20
+var=20 eval printenv var
+
+: ${TMPDIR:=/tmp}
+TMPFILE=$TMPDIR/evalsub.$$
+
+rm -f $TMPFILE
+echo 'printenv var' > $TMPFILE
+
+echo expect 30
+var=30 . $TMPFILE
+
+rm -f $TMPFILE
+
+echo expect 40
+var=40 func
+
+echo expect 50
+var=50 command printenv var

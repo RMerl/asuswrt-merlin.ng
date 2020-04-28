@@ -1,0 +1,45 @@
+echo $(( --7 ))
+echo $(( ++7 ))
+echo $(( -- 7 ))
+echo $(( ++ 7 ))
+
+((++array[0] ))
+echo $array
+(( ++ array[0] ))
+echo $array
+
+(( ++a ))
+echo $a
+(( ++ a ))
+echo $a
+
+(( --a ))
+echo $a
+(( -- a ))
+echo $a
+
+echo $(( 4 + ++a ))
+echo $a
+
+echo $(( 4+++a ))
+echo $a
+
+echo $(( 4---a ))
+echo $a
+
+echo $(( 4 - -- a ))
+echo $a
+
+(( -- ))
+echo $(( ---7 ))
+echo $(( -- - 7 ))
+
+(( ++ ))
+echo $(( ++7 ))
+echo $(( ++ + 7 ))
+
+echo $(( ++-7 ))
+echo $(( ++ - 7 ))
+
+echo $(( +--7 ))
+echo $(( -- + 7 ))

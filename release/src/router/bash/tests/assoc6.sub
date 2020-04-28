@@ -1,0 +1,146 @@
+declare -A foo
+
+foo=([bar\"bie]=doll)
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo=(["bar\"bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo=(["bar\"bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo["bar\"bie"]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo[bar\"bie]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo=([bar\'bie]=doll)
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo=(["bar'bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo=(["bar'bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo["bar'bie"]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo[bar\'bie]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo=([bar\$bie]=doll)
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo=(["bar[bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo=(["bar\`bie"]="doll")
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+# this doesn't work right without the backslash
+foo["bar\]bie"]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo
+
+foo[bar\${foo}bie]="doll"
+
+echo ${!foo[@]}
+echo ${foo[@]}
+
+declare -p foo
+
+unset foo
+declare -A foo

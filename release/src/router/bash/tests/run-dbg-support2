@@ -1,0 +1,16 @@
+#!../bash
+#$Id: run-dbg-support2,v 1.3 2002/11/14 06:08:16 rockyb Exp $
+
+TEST_NAME='dbg-support2'
+TEST_FILE="/tmp/${TEST_NAME}.check"
+${THIS_SH} ./${TEST_NAME}.tests > $TEST_FILE 2>&1 < /dev/null
+set -f
+diff $TEST_FILE ${TEST_NAME}.right && rm -f $TEST_FILE
+
+# Return code tells testing mechanism whether passed or not.
+exit $?
+
+#;;; Local Variables: ***
+#;;; mode:shell-script ***
+#;;; eval: (sh-set-shell "bash") ***
+#;;; End: ***

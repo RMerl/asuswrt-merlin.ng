@@ -1,0 +1,15 @@
+foo()
+{
+	declare -A afoo=([six]="six" [foo bar]="foo quux")
+
+	declare -A
+	recho inside: "${afoo[@]}"
+}
+
+declare -A afoo=([main]=outside)
+echo outside: "${afoo[@]}"
+
+foo
+
+echo outside 2: "${afoo[@]}"
+

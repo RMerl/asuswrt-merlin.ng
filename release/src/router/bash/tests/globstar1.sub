@@ -1,0 +1,21 @@
+shopt -s globstar
+wdir=$PWD
+
+: ${TMPDIR:=/var/tmp}
+DIR=$TMPDIR/globstar-$$
+mkdir -p $DIR
+cd $DIR || {
+	echo "$DIR: cannot cd" >&2
+	exit 1
+}
+mkdir -p foo/{a,b} bar/{c,d,foo/{e,f}} baz/{g,h}
+
+
+echo **/foo*
+
+echo **/foo*/
+
+echo **/foo*/*
+
+cd $wdir
+rm -rf $DIR

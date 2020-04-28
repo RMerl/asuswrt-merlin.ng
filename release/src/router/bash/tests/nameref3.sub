@@ -1,0 +1,37 @@
+# nameref requires changes to unset
+bar=one
+typeset -n foo=bar
+
+# normal unset unsets only variable nameref references
+# need unset -n to unset nameref itself
+unset foo
+echo "expect <unset>"
+recho ${bar-unset}
+echo "expect <unset>"
+recho ${foo-unset}
+echo "expect <bar>"
+recho ${!foo}
+unset -n foo
+echo "expect <unset>"
+recho "${!foo-unset}"
+
+readonly bar=two
+typeset -n foo=bar
+
+unset foo	# this should fail because bar is readonly
+
+echo "expect <two>"
+echo ${bar-unset}
+echo "expect <two>"
+echo ${foo-unset}
+
+# one question is what happens when you unset the underlying variable
+qux=three
+typeset -n ref
+ref=qux
+
+echo $ref
+unset qux
+echo ${ref-unset}
+qux=four
+echo ${ref-unset}

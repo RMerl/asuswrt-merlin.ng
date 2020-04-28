@@ -1,0 +1,59 @@
+# subshell failure should cause the shell to exit silently
+${THIS_SH} -ce '(exit 17) ; echo "after (exit 17): $?"'
+
+# pipeline failure should cause shell to exit silently
+${THIS_SH} -c 'set -e ; false | echo foo | while read x ; do ( exit 17 ) ; done; echo after pipeline subshell;'
+
+# should be silent in posix mode
+${THIS_SH} -c 'set -o posix; set -e ; z=$(false;echo posix foo) ; echo $z'
+# but echo foo in non-posix
+${THIS_SH} -c 'set -e ; z=$(false;echo non-posix foo) ; echo $z'
+
+${THIS_SH} -ce 'x=$(false) ; echo "x=\$(false) does not exit"'
+
+${THIS_SH} -ce '{ false; echo false in brace group does not exit; }'
+echo after brace group failure: $?
+
+${THIS_SH} -ce '(false ; echo A $?) && echo B $?; echo C $?'; echo D $?
+
+${THIS_SH} -ce '(false ; echo A $?) ; echo B $?; echo C $?'; echo D $?
+
+${THIS_SH} -ce 'f() (false ; echo A $?); f && echo B $?; echo C $?'; echo D $?
+
+${THIS_SH} -ce 'f() (false ; echo A $?) ; f; echo B $?; echo C $?'; echo D $?
+
+${THIS_SH} -ce 'if false; echo A $?; then echo B $?; fi'; echo C $?
+
+${THIS_SH} -ce '! { false; echo A $?; } | cat; echo B $?'; echo C $?
+
+${THIS_SH} -ce '{ false; echo A $?; } | cat ; echo B $?'; echo C $?
+
+set -e
+
+! false
+echo after negation 1: $?
+
+! false | false
+echo after negation 2: $?
+
+! true
+echo after negation 3: $?
+
+! (false)
+echo after negation 4: $?
+
+{ false ; echo foo; } | cat
+echo after brace pipeline
+
+false | echo foo | cat
+echo after failure 1
+
+false | (echo foo; false) | true
+echo after failure 2
+
+false | echo foo | while read x ; do ( exit 17 ) ; done | true
+echo after failure 3
+
+# this pipeline failure should cause the shell to exit
+false | echo foo | false
+echo after failure 4

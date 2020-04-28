@@ -1,0 +1,26 @@
+#!../bash
+#
+# Test correct trap return codes = 2 means skip execution.
+shopt -s extdebug
+print_trap() {
+   echo "lineno: $1 ($LINENO) ${FUNCNAME[1]}"
+   if [[ $debug_exit == 2 ]] ; then
+     debug_exit=0
+     return 2
+   fi
+   return 0
+}
+
+debug_exit=0
+trap 'print_trap $LINENO' DEBUG
+
+x=1
+echo "x is $x"
+debug_exit=2
+x=2
+echo "x is $x"
+
+#;;; Local Variables: ***
+#;;; mode:shell-script ***
+#;;; eval: (sh-set-shell "bash") ***
+#;;; End: ***

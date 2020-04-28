@@ -1,0 +1,21 @@
+# Test the substitution quoting characters (CTLESC and CTLNUL) in different
+# combinations
+
+recho `echo ''`
+recho `echo ""`
+recho `echo `
+
+# Test the unquoted special quoting characters
+recho 
+recho ""
+recho ''
+
+# This should give argv[1] = ^A argv[2] = ^?
+FOO=`echo ' ' | tr ' ' '\012'`
+recho $FOO
+
+# Test patterns that come up when the shell quotes funny character
+# combinations
+recho ''
+recho ''
+recho ''

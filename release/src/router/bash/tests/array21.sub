@@ -1,0 +1,37 @@
+typeset -a a
+a=(1 2 3 4)
+
+typeset -A A
+A=([one]=1 [two]=2 [three]=3 [four]=4)
+
+unset 'a[0]'
+typeset -p a
+
+scalar=abcd
+echo ${scalar[0]}
+
+unset 'scalar[0]'
+echo ${scalar-unset}
+
+unset 'a[@]'
+typeset -p a
+
+unset 'A[@]'
+typeset -p A
+
+typeset -a a
+a=(1 2 3 4)
+typeset -A A
+A=([one]=1 [two]=2 [three]=3 [four]=4)
+
+# supported, recommended way to unset all array elements
+a=()
+typeset -p a
+A=()
+typeset -p A
+
+declare -a foo
+declare foo='(1 2 3)'
+declare foo[1]='(4 5 6)'
+
+declare -p foo

@@ -1,0 +1,24 @@
+p=1
+export p
+
+export p=4
+declare -p p
+
+r=(1)
+export r
+
+f() { export r=(4) ; }
+f
+declare -p r
+
+f() { export r='(5)' ; }
+f
+declare -p r
+
+f() { export -a r=(6) ; }
+f
+declare -p r
+
+f() { export -a r='(7)' ; }
+f
+declare -p r

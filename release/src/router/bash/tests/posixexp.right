@@ -1,0 +1,41 @@
+a
+b
+a b
+argv[1] = <a>
+argv[2] = <b>
+argv[3] = <x>
+argv[4] = <a>
+argv[5] = <b>
+argv[1] = <a\ b>
+argv[2] = <x>
+argv[3] = <a\ b>
+argv[1] = <foo 'bar' baz>
+argv[1] = <a b  c d>
+argv[1] = <a b  c d>
+argv[1] = <foo ax{{{}b c d{} bar>
+argv[2] = <}>
+argv[3] = <baz>
+argv[1] = <'foo'>
+argv[1] = <'foo'>
+argv[1] = <$a>
+argv[1] = <'foo'>
+argv[1] = <foo*bar>
+argv[1] = <foo*bar>
+argv[1] = <foo*bar'}>
+argv[1] = <x'>
+<.> <x> <.> <> <.> <x> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+<.> <w> <.> <> <.> <w> <.> 
+<.> <w> <.> <> <.> <w> <.> 
+<x> <.> <x> <.> <x> <.> <x> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+<x> <.> <w> <.> <x> <.> <w> <.> 
+argv[1] = <'bar>
+argv[1] = <foo 'bar baz>
+argv[1] = <}z>
+argv[1] = <''z}>
+./posixexp.tests: line 77: unexpected EOF while looking for matching `}'
+./posixexp.tests: line 78: syntax error: unexpected end of file

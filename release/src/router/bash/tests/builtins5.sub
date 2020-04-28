@@ -1,0 +1,61 @@
+# a start at a test suite for what it means for an array to be set or unset and
+# how to test that state
+typeset -A A
+A[a]=1
+typeset -a a
+a[1]=1
+
+if [ -v A ]; then echo assoc 1; else echo assoc 1 unset; fi
+if [ -v a ]; then echo array 1; else echo array 1 unset; fi
+
+if [ -v "${A[@]}" ]; then echo assoc 2; else echo assoc 2 unset; fi
+if [ -v "${a[@]}" ]; then echo array 2; else echo array 2 unset; fi
+
+echo ${A-unset1}
+echo ${a-unset2}
+
+echo ${A[@]-unset3}
+echo ${a[@]-unset4}
+
+echo ${#A[@]}
+echo ${#a[@]}
+
+typeset -A B
+typeset -a b
+
+scalar1=foo
+scalar2=
+
+if [ -v A[@] ]; then echo assoc A; else echo assoc A unset; fi
+if [ -v a[@] ]; then echo array a; else echo array a unset; fi
+
+if [ -v B[@] ]; then echo assoc B; else echo assoc B unset; fi
+if [ -v b[@] ]; then echo array b; else echo array b unset; fi
+
+if [ -v scalar1[@] ]; then echo scalar 1; else echo scalar 1 unset; fi
+if [ -v scalar2[@] ]; then echo scalar 2; else echo scalar 2 unset; fi
+if [ -v scalar3[@] ]; then echo scalar 3; else echo scalar 3 unset; fi
+
+unset a A
+declare -A assoc=([one]=one [two]=two [three]=three)
+declare -a array=(one two three)
+
+scalar="one two three"
+scalar2=
+
+recho "${scalar[@]}"
+
+echo assoc: ${#assoc[@]}
+echo array: ${#array[@]}
+
+echo scalar: ${#scalar}
+echo scalar: ${#scalar[@]}
+
+echo scalar: ${#scalar2}
+echo scalar: ${#scalar2[@]}
+
+echo scalar: ${#scalar3}
+echo scalar: ${#scalar3[@]}
+
+
+

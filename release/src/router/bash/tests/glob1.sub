@@ -1,0 +1,14 @@
+# bash-2.01.1 failed this test
+FN=/tmp/bash-glob.$$
+mkdir $FN
+cd $FN
+mkdir foo
+mkdir foobar
+touch foo/bar
+touch foobar/bar
+chmod 311 foo foobar
+echo f*/bar
+
+chmod 777 foo foobar
+cd /
+rm -rf $FN

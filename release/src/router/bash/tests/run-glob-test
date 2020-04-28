@@ -1,0 +1,4 @@
+PATH=$PATH:`pwd`
+export PATH
+${THIS_SH} ./glob.tests 2>&1 | grep -v '^expect' > ${BASH_TSTOUT}
+diff ${BASH_TSTOUT} glob.right && rm -f ${BASH_TSTOUT}

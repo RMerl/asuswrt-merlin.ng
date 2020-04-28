@@ -1,0 +1,22 @@
+THIS=alias2
+FN=$TMPDIR/$THIS.script
+
+cat > $FN <<'EOF'
+#
+(echo "$1")
+EOF
+chmod u+x $FN
+
+shopt -s expand_aliases
+
+alias foo1='$FN one; source $FN two; source $FN three; $FN four'
+
+alias foo2='$FN one
+source $FN two
+source $FN three
+$FN four'
+
+foo1
+foo2
+
+rm -f $FN

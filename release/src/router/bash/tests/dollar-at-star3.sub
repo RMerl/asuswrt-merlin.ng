@@ -1,0 +1,44 @@
+unset f ; f=abcd
+
+first_char=${f[@]:0:1}
+recho $first_char
+
+first_char=${f[0]:0:1}
+recho $first_char
+
+first_char=${f:0:1}
+recho $first_char
+
+first_char="${f[@]:0:1}"
+recho $first_char
+
+first_char="${f[@]:0:1}"
+recho $first_char
+
+first_char="${f[0]:0:1}"
+recho $first_char
+
+first_char="${f:0:1}"
+recho $first_char
+
+unset f;
+f=( one two three )
+first_word=${f[@]:0:1}
+recho $first_word
+
+first_word=${f[0]:0:1}
+recho $first_word
+
+first_word=${f:0:1}
+recho $first_word
+
+unset f;
+f=( one two three )
+first_word=${f[@]:0:1}
+recho $first_word
+
+set -- abc def ghi
+
+printf '<%s> ' "123 $@ 456"; echo
+printf '<%s> ' "123 $@\ 456"; echo
+

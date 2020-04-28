@@ -1,0 +1,25 @@
+: ${TMPDIR:=/var/tmp}
+TRACEFILE=$TMPDIR/bash-trace-$$
+trap 'rm -f $TRACEFILE' 0 1 2 3 6 15
+
+exec 4>$TRACEFILE
+BASH_XTRACEFD=4
+
+set -x
+
+echo 1
+echo 2
+echo 3
+echo 4
+
+unset BASH_XTRACEFD
+
+for f in a b c d e; do echo $f ; done
+
+set +x
+
+echo TRACEFILE:
+cat $TRACEFILE
+echo =====
+
+exit 0

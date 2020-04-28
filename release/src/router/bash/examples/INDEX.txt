@@ -1,0 +1,199 @@
+Path	Description	X-Ref
+./obashdb	Deprecated sample implementation of a bash debugger	
+
+./complete	Shell completion code	
+
+./functions	Example functions	
+./functions/array-stuff	Various array functions (ashift, array_sort, reverse).	
+./functions/array-to-string	Convert an array to a string.	
+./functions/autoload	An almost ksh-compatible 'autoload' (no lazy load).	ksh
+./functions/autoload.v2	An almost ksh-compatible 'autoload' (no lazy load).	ksh
+./functions/autoload.v3	A more ksh-compatible 'autoload' (with lazy load).	ksh
+./functions/basename	A replacement for basename(1).	basename
+./functions/basename2	Fast basename(1) and dirname(1) functions for BASH/SH.	basename, dirname
+./functions/coproc.bash	Start, control, and end coprocesses.	
+./functions/coshell.bash	Control shell coprocesses (see coprocess.bash).	
+./functions/coshell.README	README for coshell and coproc.	
+./functions/csh-compat	A C-shell compatibility package.	csh
+./functions/dirfuncs	Directory manipulation functions from the book 'The Korn Shell'.	
+./functions/dirname	A replacement for dirname(1).	dirname
+./functions/emptydir	Find out if a directory is empty.	
+./functions/exitstat	Display the exit status of processes.	
+./functions/external	Like 'command' but FORCES use of external command.	
+./functions/fact	Recursive factorial function.	
+./functions/fstty	Front end to sync TERM changes to both stty(1) and readline 'bind'.	stty.bash
+./functions/func	Print out definitions for functions named by arguments.	
+./functions/gethtml	Get a web page from a remote server (wget(1) in bash!).	
+./functions/getoptx.bash	getopt function that parses long-named options.	
+./functions/inetaddr	Internet address conversion (inet2hex & hex2inet).	
+./functions/inpath	Return zero if the argument is in the path and executable.	inpath
+./functions/isnum.bash	Test user input on numeric or character value.	
+./functions/isnum2	Test user input on numeric values, with floating point.	
+./functions/isvalidip	Test user input for valid IP Addresses.	
+./functions/jdate.bash	Julian date conversion.	
+./functions/jj.bash	Look for running jobs.	
+./functions/keep	Try to keep some programs in the foreground and running.	
+./functions/ksh-cd	ksh-like 'cd': cd [-LP] [dir [change]].	ksh
+./functions/ksh-compat-test	ksh-like arithmetic test replacements.	ksh
+./functions/kshenv	Functions and aliases to provide the beginnings of a ksh environment for bash.	ksh
+./functions/login	Replace the 'login' and 'newgrp' builtins in old Bourne shells.	
+./functions/lowercase	Rename files to lower case.	rename lower
+./functions/manpage	Find and print a manual page.	fman
+./functions/mhfold	Print MH folders, useful only because folders(1) doesn't print mod date/times.	
+./functions/notify.bash	Notify when jobs change status.	
+./functions/pathfuncs	Path related functions (no_path, add_path, pre-path, del_path).	path
+./functions/README	README	
+./functions/recurse	Recursive directory traverser.	
+./functions/repeat2	A clone of C shell builtin 'repeat'.	repeat, csh
+./functions/repeat3	A clone of C shell builtin 'repeat'.	repeat, csh
+./functions/seq	Generate a sequence from m to n, m defaults to 1.	
+./functions/seq2	Generate a sequence from m to n, m defaults to 1.	
+./functions/shcat	Readline-based pager.	cat, readline pager
+./functions/shcat2	Readline-based pagers.	cat, readline pager
+./functions/sort-pos-params	Sort the positional parameters.	
+./functions/substr	A function to emulate the ancient ksh builtin.	ksh
+./functions/substr2	A function to emulate the ancient ksh builtin.	ksh
+./functions/term	A shell function to set the terminal type interactively or not.	
+./functions/whatis	An implementation of the 10th Edition Unix sh builtin 'whatis(1)' command.	
+./functions/whence	An almost-ksh compatible 'whence(1)' command.	
+./functions/which	An emulation of 'which(1)' as it appears in FreeBSD.	
+./functions/xalias.bash	Convert csh alias commands to bash functions.	csh, aliasconv
+./functions/xfind.bash	A 'find(1)' clone.	
+
+./loadables/	Example loadable replacements	
+./loadables/basename.c	Return non-directory portion of pathname.	basename
+./loadables/cat.c	cat(1) replacement with no options - the way cat was intended.	cat, readline pager
+./loadables/cut.c	cut(1) replacement.	
+./loadables/dirname.c	Return directory portion of pathname.	dirname
+./loadables/finfo.c	Print file info.	
+./loadables/getconf.c	POSIX.2 getconf utility.	
+./loadables/getconf.h	Replacement definitions for ones the system doesn't provide.	
+./loadables/head.c	Copy first part of files.	
+./loadables/hello.c	Obligatory "Hello World" / sample loadable.	
+./loadables/id.c	POSIX.2 user identity.	
+./loadables/ln.c	Make links.	
+./loadables/logname.c	Print login name of current user.	
+./loadables/Makefile.in	Simple makefile for the sample loadable builtins.	
+./loadables/mkdir.c	Make directories.	
+./loadables/necho.c	echo without options or argument interpretation.	
+./loadables/pathchk.c	Check pathnames for validity and portability.	
+./loadables/print.c	Loadable ksh-93 style print builtin.	
+./loadables/printenv.c	Minimal builtin clone of BSD printenv(1).
+./loadables/push.c	Anyone remember TOPS-20?
+./loadables/README	README
+./loadables/realpath.c	Canonicalize pathnames, resolving symlinks.
+./loadables/rmdir.c	Remove directory.
+./loadables/sleep.c	sleep for fractions of a second.
+./loadables/strftime.c	Loadable builtin interface to strftime(3).
+./loadables/sync.c	Sync the disks by forcing pending filesystem writes to complete.
+./loadables/tee.c	Duplicate standard input.
+./loadables/template.c	Example template for loadable builtin.
+./loadables/truefalse.c	True and false builtins.
+./loadables/tty.c	Return terminal name.
+./loadables/uname.c	Print system information.
+./loadables/unlink.c	Remove a directory entry.
+./loadables/whoami.c	Print out username of current user.
+
+./loadables/perl/	Illustrate how to build a Perl interpreter into bash.	
+
+./misc	Miscellaneous	
+./misc/aliasconv.bash	Convert csh aliases to bash aliases and functions.	csh, xalias
+./misc/aliasconv.sh	Convert csh aliases to bash aliases and functions.	csh, xalias
+./misc/cshtobash	Convert csh aliases, environment variables, and variables to bash equivalents.	csh, xalias
+./misc/README	README	
+./misc/suncmd.termcap	SunView TERMCAP string.	
+
+./scripts.noah	Noah Friedman's collection of scripts (updated to bash v2 syntax by Chet Ramey)	
+./scripts.noah/aref.bash	Pseudo-arrays and substring indexing examples.	
+./scripts.noah/bash.sub.bash	Library functions used by require.bash.	
+./scripts.noah/bash_version.bash	A function to slice up $BASH_VERSION.	
+./scripts.noah/meta.bash	Enable and disable eight-bit readline input.	
+./scripts.noah/mktmp.bash	Make a temporary file with a unique name.	
+./scripts.noah/number.bash	A fun hack to translate numerals into English.	
+./scripts.noah/PERMISSION	Permissions to use the scripts in this directory.	
+./scripts.noah/prompt.bash	A way to set PS1 to some predefined strings.	
+./scripts.noah/README	README	
+./scripts.noah/remap_keys.bash	A front end to 'bind' to redo readline bindings.	
+./scripts.noah/require.bash	Lisp-like require/provide library functions for bash.	
+./scripts.noah/send_mail.bash	Replacement SMTP client written in bash.	
+./scripts.noah/shcat.bash	Bash replacement for 'cat(1)'.	cat
+./scripts.noah/source.bash	Replacement for source that uses current directory.	
+./scripts.noah/string.bash	The string(3) functions at the shell level.	
+./scripts.noah/stty.bash	Front-end to stty(1) that changes readline bindings too.	fstty
+./scripts.noah/y_or_n_p.bash	Prompt for a yes/no/quit answer.	ask
+
+./scripts.v2	John DuBois' ksh script collection (converted to bash v2 syntax by Chet Ramey).	
+./scripts.v2/arc2tarz	Convert an "arc" archive to a compressed tar archive.	
+./scripts.v2/bashrand	Random number generator with upper and lower bounds and optional seed.	random
+./scripts.v2/cal2day.bash	Convert a day number to a name.	
+./scripts.v2/cdhist.bash	cd replacement with a directory stack added.	
+./scripts.v2/corename	Tell what produced a core file.	
+./scripts.v2/fman	Fast man(1) replacement.	manpage
+./scripts.v2/frcp	Copy files using ftp(1) but with rcp-type command line syntax.	
+./scripts.v2/lowercase	Change filenames to lower case.	rename lower
+./scripts.v2/ncp	A nicer front end for cp(1) (has -i, etc.).	
+./scripts.v2/newext	Change the extension of a group of files.	rename
+./scripts.v2/nmv	A nicer front end for mv(1) (has -i, etc.).	rename
+./scripts.v2/pages	Print specified pages from files.	
+./scripts.v2/PERMISSION	Permissions to use the scripts in this directory.	
+./scripts.v2/pf	A pager front end that handles compressed files.	
+./scripts.v2/pmtop	Poor man's 'top(1)' for SunOS 4.x and BSD/OS.	
+./scripts.v2/README	README	
+./scripts.v2/ren	Rename files by changing parts of filenames that match a pattern.	rename
+./scripts.v2/rename	Change the names of files that match a pattern.	rename
+./scripts.v2/repeat	Execute a command multiple times.	repeat
+./scripts.v2/shprof	Line profiler for bash scripts.	
+./scripts.v2/untar	Unarchive a (possibly compressed) tarfile into a directory.	
+./scripts.v2/uudec	Carefully uudecode(1) multiple files.	
+./scripts.v2/uuenc	uuencode(1) multiple files.	
+./scripts.v2/vtree	Print a visual display of a directory tree.	tree
+./scripts.v2/where	Show where commands that match a pattern are.	
+
+./scripts	Example scripts	
+./scripts/adventure.sh	Text adventure game in bash!	
+./scripts/bash-hexdump.sh	hexdump(1) in bash
+./scripts/bcsh.sh	Bourne shell cshell-emulator.	csh
+./scripts/cat.sh	Readline-based pager.	cat, readline pager
+./scripts/center	Center - center a group of lines.	
+./scripts/dd-ex.sh	Line editor using only /bin/sh, /bin/dd and /bin/rm.	
+./scripts/fixfiles.bash	Recurse a tree and fix files containing various "bad" chars.	
+./scripts/hanoi.bash	The inevitable Towers of Hanoi in bash.	
+./scripts/inpath	Search $PATH for a file the same name as $1; return TRUE if found.	inpath
+./scripts/krand.bash	Produces a random number within integer limits.	random
+./scripts/line-input.bash	Line input routine for GNU Bourne-Again Shell plus terminal-control primitives.	
+./scripts/nohup.bash	bash version of 'nohup' command.	
+./scripts/precedence	Test relative precedences for '&&' and '||' operators.	
+./scripts/randomcard.bash	Print a random card from a card deck.	random
+./scripts/README	README	
+./scripts/scrollbar	Display scrolling text.	
+./scripts/scrollbar2	Display scrolling text.	
+./scripts/self-repro	A self-reproducing script (careful!)	
+./scripts/showperm.bash	Convert ls(1) symbolic permissions into octal mode.	
+./scripts/shprompt	Display a prompt and get an answer satisfying certain criteria.	ask
+./scripts/spin.bash	Display a 'spinning wheel' to show progress.	
+./scripts/timeout	Give rsh(1) a shorter timeout.	
+./scripts/timeout2	Execute a given command with a timeout.
+./scripts/timeout3	Execute a given command with a timeout.
+./scripts/vtree2	Display a tree printout of dir in 1k blocks.	tree
+./scripts/vtree3	Display a graphical tree printout of dir.	tree
+./scripts/vtree3a	Display a graphical tree printout of dir.	tree
+./scripts/websrv.sh	A web server in bash!	
+./scripts/xterm_title	Print the contents of the xterm title bar.	
+./scripts/zprintf	Emulate printf (obsolete since it's now a bash builtin).	
+
+./startup-files	Example Start-up files.	
+./startup-files/Bash_aliases	Some useful aliases (Fox).	
+./startup-files/Bash_profile	Sample startup file for bash login shells (Fox).	
+./startup-files/bash-profile	Sample startup file for bash login shells (Ramey).	
+./startup-files/bashrc	Sample Bourne Again SHell init file (Ramey).	
+./startup-files/Bashrc.bfox	Sample Bourne Again SHell init file (Fox).	
+./startup-files/README	README	
+
+./startup-files/apple	Example Start-up files for Mac OS X.	
+./startup-files/apple/aliases	Sample aliases for Mac OS X.	
+./startup-files/apple/bash.defaults	Sample User preferences file.
+./startup-files/apple/environment	Sample Bourne Again Shell environment file.
+./startup-files/apple/login	Sample login wrapper.
+./startup-files/apple/logout	Sample logout wrapper.
+./startup-files/apple/rc	Sample Bourne Again Shell config file.
+./startup-files/apple/README	README

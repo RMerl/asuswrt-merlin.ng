@@ -1,0 +1,24 @@
+# fixes for make_internal_declare not handling integer attribute for arrays
+declare -ai -g foo=(1 2 xx 3)
+echo "${foo[@]}"
+
+unset foo
+declare -ai -g foo='(1 2 xx 3)'
+echo "${foo[@]}"
+
+unset foo
+declare -ia -g foo=(1 2 xx 3)
+echo "${foo[@]}" 
+
+unset foo
+declare -ia -g foo='(1 2 xx 3)'
+echo "${foo[@]}" 
+
+unset foo
+func()
+{
+	declare -ai -g foo=(1 2 xx 3)
+}
+
+func
+echo "${foo[@]}" 

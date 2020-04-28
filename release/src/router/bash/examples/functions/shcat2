@@ -1,0 +1,19 @@
+shcat()
+{
+	while read -r line
+	do
+		echo "$line"
+	done
+}
+
+shcat2()
+{
+	while [ $# -ge 1 ]; do
+		case "$1" in
+		-)	shcat ;;
+		*)	shcat < "$1" ;;
+		esac
+		shift
+	done
+	exit 0
+}

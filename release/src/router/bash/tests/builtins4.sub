@@ -1,0 +1,44 @@
+declare -a c
+declare -p c
+
+declare -A d
+declare -p d
+unset c d
+
+declare -a c
+c=4
+declare -p c
+unset c
+
+declare -A c
+c=4
+declare -p c
+unset c
+
+declare -a c
+c=(1 2 3)
+declare -p c
+unset c
+
+declare -A c
+c=([one]=1 [two]=2 [three]=3)
+declare -p c
+unset c
+
+declare -a c
+read -a c < <(echo 1 2 3)
+declare -p c
+unset c
+
+declare -a c
+mapfile -t c < <(echo 1$'\n'2$'\n'3)
+declare -p c
+unset c
+
+unset foo
+declare -A foo
+echo ${foo-unset}
+
+unset foo
+declare -a foo
+echo ${foo-unset}

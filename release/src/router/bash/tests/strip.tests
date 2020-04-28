@@ -1,0 +1,22 @@
+v=`echo "" ; echo "" ; echo ""`
+echo "'$v'"
+v=`echo -n " ab "`
+echo "'$v'"
+v=`echo -n " "`
+echo "'$v'"
+v=`echo -n ""`
+echo "'$v'"
+v=`echo ""`
+echo "'$v'"
+v=`echo`
+echo "'$v'"
+v=`echo ababababababab`
+echo "'$v'"
+v=`echo "ababababababab  "`
+echo "'$v'"
+v=`echo -n "ababababababab  "`
+echo "'$v'"
+v=`echo -ne "abababa\nbababab  "`
+echo "'$v'"
+v="`echo -e '\n\n\n\n'`"
+echo "'$v'"

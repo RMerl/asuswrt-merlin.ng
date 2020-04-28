@@ -1,0 +1,35 @@
+HISTFILE=${TMPDIR}/bashhist-$$
+
+set -o history
+set -o histexpand
+
+echo a
+echo $(echo !!)
+
+echo a
+echo !! $(echo !!)
+
+echo b
+echo '!!' '$(echo !!)'
+
+echo c
+echo "!!" "$(echo !!)"
+
+echo d
+echo "!!" $(echo "!!")
+
+echo e
+echo '!!' $(echo '!!')
+
+echo f
+echo '!!'
+echo f
+eval echo '!!'
+
+echo g
+echo "!!"
+echo g
+eval echo "!!"
+
+set +o history
+rm -f $HISTFILE		# just in case

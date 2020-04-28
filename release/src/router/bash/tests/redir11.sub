@@ -1,0 +1,53 @@
+# make sure redirections do not have access to the temporary environment, even
+# in subshells and command substitutions
+
+a=1
+a=4 b=7 ss=4 echo $a
+
+a=42
+a=2 echo foo >&$a
+a=2 echo foo >&$(echo $a)
+
+foo()
+{
+	local -i a
+	local v=0 x=1
+	a+=3
+	echo $a
+}
+
+a=4 b=7 ss=4 declare -i ss
+a=4 b=7 foo
+echo after: $a
+
+unset a
+a=4 echo foo >&$(foo)
+a=1 echo foo >&$(foo)
+a=1 echo foo >&$(a=4 foo)
+echo foo >&$(a=4 foo)
+
+a=42
+a=2 echo foo >&$a
+a=2 echo foo >&$(echo $a)
+
+unset -f foo
+foo()
+{
+	local -i a
+	local v=0 x=1
+	a+=3
+	echo $a >&$(ss= declare -i ss)
+}
+
+a=4 b=7 foo
+echo after: $a
+
+unset a
+typeset -i a
+a=4 eval echo $(echo a+=3)
+a=2
+a=9 echo foo >&$(echo $a)
+a=2
+a=9 eval echo foo >&$(echo $a)
+a=2
+a=9 eval echo foo '>&$(echo $a)'

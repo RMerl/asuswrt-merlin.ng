@@ -1,0 +1,31 @@
+x=$(
+  case 1 in
+    1) echo 1
+  esac
+  case 2 in
+    2) echo 2
+  esac
+)
+echo "$x" 
+
+x=$(case 1 in 1) echo 3;; esac; case 2 in 2) echo 4;; esac;)
+echo "$x" 
+
+x=$(case 1 in 1) echo 5;; esac; case 2 in 2) echo 6;; esac)
+echo "$x" 
+
+x=$(case 1 in 1) echo 5;; esac; case 2 in 2) echo 6;; esac; for f in a b c; do echo "$f" ; done)
+echo "$x" 
+
+x=$(
+  for f in a b c; do
+	echo $f
+  done
+  case 1 in
+    1) echo 1
+  esac
+  case 2 in
+    2) echo 2
+  esac
+)
+echo "$x"

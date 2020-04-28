@@ -1,0 +1,20 @@
+# make sure commands before the last one in the pipeline can't change $?
+false
+false | echo $?
+false
+(false) | echo $?
+
+false
+true | echo $?
+false
+(true) | echo $?
+
+true
+false | echo $?
+true
+(false) | echo $?
+
+true
+true | echo $?
+true
+(true) | echo $?

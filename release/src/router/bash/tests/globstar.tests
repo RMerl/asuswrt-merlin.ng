@@ -1,0 +1,42 @@
+: ${TMPDIR:=/var/tmp}
+dir=$PWD
+
+shopt -s globstar
+
+export LANG=C LC_ALL=C LC_COLLATE=C
+
+GDIR=$TMPDIR/globstar-$$
+
+mkdir $GDIR || exit 1
+cd $GDIR || exit 1
+
+mkdir lib builtins
+mkdir lib/glob lib/readline lib/sh
+
+touch builtins/history.o builtins/jobs.o builtins/kill.o builtins/let.o builtins/mapfile.o
+touch lib/glob/glob.o lib/glob/smatch.o lib/glob/strmatch.o
+touch lib/readline/bind.o lib/readline/callback.o lib/readline/compat.o lib/readline/complete.o lib/readline/display.o
+
+touch lib/sh/casemod.o lib/sh/clktck.o lib/sh/clock.o lib/sh/eaccess.o
+touch lib/sh/fdprintf.o lib/sh/fmtullong.o lib/sh/fmtulong.o lib/sh/fmtumax.o
+touch lib/sh/fpurge.o lib/sh/getenv.o lib/sh/input_avail.o lib/sh/itos.o
+
+touch alias.o
+touch pcomplib.o print_cmd.o redir.o shell.o sig.o stringlib.o subst.o syntax.o
+touch test.o trap.o unwind_prot.o variables.o version.o xmalloc.o y.tab.o
+
+ls lib/**
+
+ls lib/**/*.o
+
+echo **/*.o
+
+ls **
+
+echo **
+
+cd $dir
+rm -rf $GDIR
+
+${THIS_SH} ./globstar1.sub
+${THIS_SH} ./globstar2.sub

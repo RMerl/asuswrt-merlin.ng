@@ -1,0 +1,19 @@
+recho "A${*:-w}R"
+recho "A${*-w}R"
+recho "A${*}R"
+
+set -- ""
+
+recho "A${*:-w}R"
+recho "A${*-w}R"
+recho "A${*}R"
+
+set -- $'\177'
+
+recho "A${*:+w}R"
+recho "A${*+w}R"
+recho "A${*}R"
+
+recho A${*:+w}R
+recho A${*+w}R
+recho A${*}R

@@ -1,0 +1,83 @@
+olddir=$PWD
+EMPTY=/tmp/empty
+
+shopt -s globstar
+s()
+{
+  printf '== <%s> ==\n' "$@"
+}
+p()
+{
+  printf '<%q>\n' "$@"
+}
+
+mkdir -p $EMPTY/a/a/a
+cd $EMPTY
+
+# good
+p **
+p **/**
+p **/**/**
+
+rm -rf a
+mkdir -p $EMPTY/{a,b}/{a,b}/{a,b}/{a,b}
+cd $EMPTY
+
+# good
+s '**/a'
+p **/a
+
+# good
+s 'a/**'
+p a/**
+
+# good
+s '**'
+p **
+
+# good
+s '**/**'
+p **/**
+
+# good
+s '**/**/**'
+p **/**/**
+
+# good
+s '**/**/**/**/**'
+p **/**/**/**/**
+
+# good
+s '**/**/a'
+p **/**/a
+
+# good 
+s 'a/**/**'
+p a/**/**
+
+# good
+s 'a/**/**/**'
+p a/**/**/**
+
+# good
+s 'a/**/**/**/**'
+p a/**/**/**/**
+
+# same as ksh93
+s '**/a/**'
+p **/a/**
+
+# same as ksh93
+s '**/a/**/**'
+p **/a/**/**
+
+# same as ksh93
+s '**/a/**/**/**'
+p **/a/**/**/**
+
+# good
+s '**/**/a/**'
+p **/**/a/**
+
+cd "$olddir"
+rm -rf $EMPTY

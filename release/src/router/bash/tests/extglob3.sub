@@ -1,0 +1,21 @@
+shopt -s extglob
+DIR=/tmp/extglob-$$
+mkdir $DIR
+cd $DIR
+
+touch a.log
+
+echo *(.)
+echo *(.)*
+echo ?(foo)*
+echo ?(foo)
+echo *(foo)*
+echo @(|foo)*
+
+echo *(foo).*
+
+echo !(foo)*
+
+cd $OLDPWD
+rm -rf $DIR
+

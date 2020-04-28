@@ -1,0 +1,31 @@
+# tests of ksh93-like dup-and-close redirection operators
+exec 9<$0
+
+f()
+{
+exec 5<$0
+
+exec 0<&5-
+
+while read line; do
+	echo "$line"
+done
+}
+
+f
+
+typeset -f f
+
+# make sure it was closed
+read -u 5 foo
+echo after read
+
+exec 5<&0
+
+exec <&-
+
+read abcde
+
+exec 0<&9-
+read line
+echo $line

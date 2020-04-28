@@ -1,0 +1,78 @@
+SAVEPWD=$PWD
+cd $TMPDIR || echo "heredoc3.sub: cannot cd to $TMPDIR" >&2
+
+text=$(cat <<EOF
+here is the text
+EOF)
+
+echo = $text =
+
+unbalanced=$(cat <<EOF
+this paren ) is not a problem
+EOF)
+
+echo $unbalanced
+
+balanced=$(cat <<EOF
+these balanced parens ( ) are not a problem
+EOF)
+
+echo $balanced
+
+balanced=$(cat <<EOF
+quoted balanced parens \( ) are not a problem either
+EOF)
+
+echo $balanced
+
+(cat <<EOF
+more text in a subshell
+EOF
+)
+
+(cat <<EOF; )
+some more text in a different subshell
+EOF
+echo end
+
+# semi-weird examples posted by Wayne Pollack to austin-group mailing list
+cat <<-'	END'
+	hello
+	END
+
+cat <<END
+hello
+END\
+END
+END
+echo end ENDEND
+
+cat <<'    END    '
+hello
+    END    
+echo end hello
+
+cat <<x*x >/dev/null & touch 'x*x'
+x star x
+x*x
+wait $!
+echo end 'x*x'
+rm 'x*x'
+
+cat <<END
+hello\
+END
+END
+echo end helloEND
+
+cat <<END
+hello
+\END
+END
+echo end 'hello<NL>\END'
+
+# this has to be last -- results in a syntax error
+# doesn't currently parse because EOF is not on a line by itself -- should it?
+(cat <<EOF
+still more text in a subshell
+EOF)

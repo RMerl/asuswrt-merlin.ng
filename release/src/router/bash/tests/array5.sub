@@ -1,0 +1,34 @@
+
+: ${TMPDIR:=/tmp}
+
+mkdir $TMPDIR/bash-test-$$
+cd $TMPDIR/bash-test-$$
+
+trap "cd / ; rm -rf $TMPDIR/bash-test-$$" 0 1 2 3 6 15
+
+touch '[3]=abcde'
+
+touch r s t u v
+
+declare -a x=(*)
+
+echo ${x[3]}
+echo ${x[@]}
+
+unset x
+x=(a b c d e)
+
+echo ${x[*]: -1}
+
+unset x[4]
+unset x[2]
+
+x[9]='9'
+
+echo ${x[*]: -1}
+
+TOOLKIT=(1 2 3 4 5 6 7 8 9 10)
+ARRAY="1"
+echo ${TOOLKIT["$ARRAY"]}
+
+exit 0

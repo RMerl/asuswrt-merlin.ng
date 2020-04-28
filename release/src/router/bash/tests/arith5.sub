@@ -1,0 +1,56 @@
+intmax_max=$((2**63 - 1))
+intmax_min1=$((2**63))
+intmax_min2=$((-2**63))
+
+case $intmax_max in
+9223372036854775807)	;;
+*)		echo "warning: your machine does not support 64-bit arithmetic using intmax_t" 2>&1 ;;
+esac
+
+# these are actually the same
+echo $(( $intmax_min1 % -1 ))
+echo $(( $intmax_min2 % -1 ))
+
+echo $(( $intmax_max % -1 ))
+
+lvalue=$intmax_min1
+(( lvalue%= -1 ))
+echo $lvalue
+
+lvalue=$intmax_min2
+(( lvalue%= -1 ))
+echo $lvalue
+
+lvalue=$intmax_max
+(( lvalue%= -1 ))
+echo $lvalue
+
+# and these
+echo $(( $intmax_min1 / -1 ))
+echo $(( $intmax_min2 / -1 ))
+
+lvalue=$intmax_min1
+(( lvalue /= -1 ))
+echo $lvalue
+
+lvalue=$intmax_min2
+(( lvalue /= -1 ))
+echo $lvalue
+
+echo $(( $intmax_min1 * -1 ))
+echo $(( $intmax_min2 * -1 ))
+
+lvalue=$intmax_min1
+(( lvalue *= -1 ))
+echo $lvalue
+
+lvalue=$intmax_min2
+(( lvalue *= -1 ))
+echo $lvalue
+
+echo $(( -${intmax_min1} ))
+echo $(( -${intmax_min2} ))
+
+foo1=$(( $intmax_max - 2 ))
+
+eval echo \{${foo1}..${intmax_max}\}

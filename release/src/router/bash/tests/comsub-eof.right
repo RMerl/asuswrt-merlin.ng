@@ -1,0 +1,13 @@
+./comsub-eof0.sub: line 1: unexpected EOF while looking for matching `)'
+./comsub-eof0.sub: line 5: syntax error: unexpected end of file
+hi
+./comsub-eof2.sub: line 2: warning: here-document at line 1 delimited by end-of-file (wanted `EOF')
+hi
+./comsub-eof3.sub: line 1: unexpected EOF while looking for matching `)'
+./comsub-eof3.sub: line 5: syntax error: unexpected end of file
+./comsub-eof4.sub: line 6: warning: here-document at line 4 delimited by end-of-file (wanted `EOF')
+contents
+./comsub-eof5.sub: line 8: warning: here-document at line 6 delimited by end-of-file (wanted `)')
+hi
+./comsub-eof5.sub: line 13: warning: here-document at line 11 delimited by end-of-file (wanted `EOF')
+hi

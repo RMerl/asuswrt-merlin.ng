@@ -1,0 +1,27 @@
+. -i /dev/tty
+
+f()
+{
+	return -1
+}
+
+set -- a b c
+shift -4
+
+f
+
+for f in 1 2 3; do
+	break -1
+done
+
+
+f()
+{
+	return -25
+}
+
+f
+echo after f
+exit -25
+
+exit -56

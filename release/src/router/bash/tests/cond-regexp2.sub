@@ -1,0 +1,30 @@
+[[ "\\" =~ ["."] ]] && echo bad 1
+
+[[ "\\" =~ "[.]" ]] && echo bad 2
+
+[[ "\\" =~ [\. ]] && echo bad 3
+
+[[ "\\" =~ [\.] ]] && echo bad 4
+
+[[ "\\" =~ [\\] ]] || echo bad 5
+
+[[ dog =~ [[=d=]].. ]] && echo ok 1
+[[ d.. =~ [[=d=]]\.\. ]] && echo ok 2
+[[ dog =~ ['[=d=]'].. ]] && echo ok 3	# dubious
+
+[[ dog =~ [[=d=]].[[=G=][=g=]] ]] && echo ok 4
+[[ dog =~ [[=d=]].[\[=G=][=g=]] ]] && echo ok 4a
+
+[[ dog =~ "d.." ]] || echo ok 5
+
+[[ dog =~ [[.d.][.D.]]o. ]] && echo ok 6
+
+[[ dog =~ ([[.d.][.D.]])o(.) ]] && echo ok 7 -- ${BASH_REMATCH[1]}
+[[ dog =~ d([[.o.][.O.]])(.) ]] && echo ok 8 -- ${BASH_REMATCH[1]}
+[[ dog =~ .([[.o.][.O.]])(.) ]] && echo ok 9
+
+[[ dog =~ 'd''o''g' ]] && echo ok 10
+
+[[ ']' =~ [']'] ]] && echo ok 11
+
+[[ a =~ ['a]'] ]] || echo ok 12

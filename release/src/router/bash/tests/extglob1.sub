@@ -1,0 +1,37 @@
+MYDIR=$PWD
+
+: ${TMPDIR:=/tmp}
+GDIR=$TMPDIR/gtest-$$
+
+shopt -s extglob
+
+mkdir $GDIR || exit 1
+cd $GDIR || exit 1
+
+touch a.c
+
+echo +([[:alpha:].])
+echo +([[:alpha:].])+([[:alpha:].])
+echo *([[:alpha:].])
+echo *([[:alpha:].])*([[:alpha:].])
+
+echo ?([[:alpha:].])?([[:alpha:].])?([[:alpha:].])
+echo @([[:alpha:].])@([[:alpha:].])@([[:alpha:].])
+
+case . in
+!([[:alpha:].]) )	echo bad 1;;
+*)			echo ok 1;;
+esac
+
+case . in
+?([[:alpha:].]) )	echo ok 2;;
+*)			echo bad 2;;
+esac
+
+case . in
+@([[:alpha:].]) )	echo ok 3;;
+*)			echo bad 3;;
+esac
+
+cd "$MYDIR"
+rm -rf $GDIR

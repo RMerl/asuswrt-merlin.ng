@@ -1,0 +1,40 @@
+#! /bin/sh
+
+: ${TMPDIR:=/tmp}
+export TMPDIR
+
+# basic /bin/sh syntax
+SUFFIX=`${THIS_SH} -c 'echo $(( $RANDOM + $BASHPID ))'`
+
+BASH_TSTOUT=${TMPDIR}/bashtst-$SUFFIX	# for now
+export BASH_TSTOUT
+
+trap 'rm -f $BASH_TSTOUT' 0
+
+PATH=.:$PATH	# just to get recho/zecho/printenv if not run via `make tests'
+export PATH
+
+# unset BASH_ENV only if it is set
+[ "${BASH_ENV+set}" = "set" ] && unset BASH_ENV
+# ditto for SHELLOPTS
+#[ "${SHELLOPTS+set}" = "set" ] && unset SHELLOPTS
+
+: ${THIS_SH:=../bash}
+export THIS_SH
+
+${THIS_SH} ./version
+
+rm -f ${BASH_TSTOUT}
+
+echo Any output from any test, unless otherwise noted, indicates a possible anomaly
+
+for x in run-*
+do
+	case $x in
+	$0|run-minimal|run-gprof)	;;
+	*.orig|*~) ;;
+	*)	echo $x ; sh $x ; rm -f ${BASH_TSTOUT} ;;
+	esac
+done
+
+exit 0

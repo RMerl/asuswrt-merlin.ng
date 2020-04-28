@@ -1,0 +1,27 @@
+funca() (
+	echo func-a
+)
+
+funcb() ( echo func-b )
+
+funcc() (
+	echo func-c
+) 2>&1
+
+type funca
+type funcb
+type funcc
+
+funca
+funcb
+funcc
+
+# when not in posix mode, bash allows non-identifiers as function names
+set +o posix
+foo-bar()
+{
+	:;
+}
+
+declare -F foo-bar
+declare -f foo-bar

@@ -1,0 +1,30 @@
+:
+# Set up some dummy variables beginning with _Q
+_QUANTITY=
+_QUOTA=
+_QUOTE=
+_QUILL=
+_QUEST=
+_QUART=
+
+recho ${!_Q*}
+recho ${!_Q@}		# compatibility
+
+IFS="-$IFS"
+
+recho ${!_Q*}
+recho "${!_Q*}"
+
+recho ${!_Q@}
+recho "${!_Q@}"
+
+recho ${!_Y*}
+
+recho "${!_Q* }"
+
+IFS=$' \t\n'
+
+set a b c d e f g h i j k l m n o p
+recho ${!1*}
+
+recho ${!@*}

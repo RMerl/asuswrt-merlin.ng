@@ -1,0 +1,54 @@
+: $(echo \;)
+
+: $(case a in a) echo ;;# comment
+esac)
+
+: $(case a in a) echo ;; # comment
+esac)
+
+: $(: \;# not a comment )
+
+: $(: \ # not a comment)
+
+echo $(case a in a) echo \#esac ;;
+esac)
+
+: $(case a in a) : ;#esac ;;
+esac)
+
+: $(case a in a) : ;#esac comment )
+esac)
+
+: $(case a in a) : ;
+esac)
+
+echo $(#comment )
+echo a)
+
+echo $(case a in (a) echo ok 1;; # comment
+esac)
+
+echo $(case a in (a) echo ok 2;; # comment
+(b) echo moo;;
+esac)
+
+echo $(case a in (a) echo ok 3 # comment
+;;
+esac)
+
+echo $(case a in a) echo ok 4;; # comment
+esac)
+
+echo $(case a in a) echo ok 5;; # comment
+b) echo moo;;
+esac)
+
+echo $(case a in (a) echo ok 6 # comment
+;;
+esac)
+
+echo $( # we just took and pasted in some
+# code from another script inside a
+# command substitution
+echo xyz
+)

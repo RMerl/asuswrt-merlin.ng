@@ -1,0 +1,31 @@
+indirarray()
+{
+   local intermediary
+   local sub
+
+   intermediary="${1}[@]"
+   local -a leftValue=("${!intermediary}")
+
+   local -a leftSub
+   eval leftSub=(\"\${!${1}[@]}\")
+
+   echo "$1" Value = ${leftValue[@]}
+   echo "$1" Sub = ${leftSub[@]}
+}
+
+a=(1 2 3 4 5)
+b=(a b c d e)
+
+c=([0]=10 [2]=20 [4]=40 [8]=80)
+
+indirarray a
+indirarray b
+indirarray c
+
+ref=a
+tmp="$ref[@]"
+printf "<%s> " "${!tmp}"; echo    # Iterate whole array.
+
+ref=c
+tmp="$ref[@]"
+printf "<%s> " "${!tmp}"; echo    # Iterate whole array.

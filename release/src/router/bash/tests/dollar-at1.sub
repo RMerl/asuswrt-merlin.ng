@@ -1,0 +1,29 @@
+echo_argc()
+{
+	echo $#
+}
+
+a()
+{
+	shift
+	echo_argc "$@"
+	echo_argc ${1:+"$@"}
+	echo_argc "${1:+$@}"
+	echo_argc 1 2 3
+}
+
+b()
+{
+	_IFS="$IFS"
+	IFS="$1"
+	shift
+	echo_argc "$@"
+	echo_argc ${1:+"$@"}
+	echo_argc "${1:+$@}"
+	echo_argc 1 2 3
+	IFS="$_IFS"
+}
+
+a "X" foo bar hoge
+
+b "X" foo bar hoge

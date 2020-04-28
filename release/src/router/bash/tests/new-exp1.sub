@@ -1,0 +1,11 @@
+expect()
+{
+        echo expect "$@"
+}
+
+expect this is a test of proc subst
+cat <(echo this is a test of proc subst)
+echo this is test 2 > /tmp/x
+expect this is test 2
+cat <(cat /tmp/x)
+rm -f /tmp/x

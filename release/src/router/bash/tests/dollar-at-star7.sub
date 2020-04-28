@@ -1,0 +1,25 @@
+IFS=''			# testing with only empty IFS
+
+set -- this is a test
+
+printf '|%s|\n' ${1+"$@"}
+echo
+printf '|%s|\n' "${1+$@}"
+echo
+printf '|%s|\n' "$@"
+echo
+
+printf '|%s|\n' ${1-"$@"}
+printf '|%s|\n' "${1-$@}"
+
+echo
+: ${foo:="$@"}
+printf '|%s|\n' "$foo"
+
+unset foo
+: "${foo:=$@}"
+printf '|%s|\n' "$foo"
+
+unset foo
+printf '|%s|\n' ${foo-"$@"}
+printf '|%s|\n' "${foo-$@}"

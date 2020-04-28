@@ -1,0 +1,30 @@
+aflag=
+bflag=
+
+while getopts :ab: opt-var "$@"
+do
+	case $name in
+	a)	aflag=1 ;;
+	b)	bflag=1
+		bval=$OPTARG;;
+	:)	echo $0: error: option \`$OPTARG\' requires an argument
+		echo Usage: $0 [-a] [-b value] args
+		exit 2;;
+	?)	echo $0: error: illegal option character \`$OPTARG\'
+		echo Usage: $0 [-a] [-b value] args
+		exit 2;;
+	esac
+
+done
+
+if [ ! -z "$aflag" ] ; then echo -a specified ; fi
+if [ ! -z "$bflag" ] ; then echo -b $bval specified ; fi
+
+if [ "$OPTIND" -gt 1 ]
+then
+	shift $(( $OPTIND - 1 ))
+fi
+
+echo remaining args: "$*"
+
+exit 0

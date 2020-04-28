@@ -1,0 +1,42 @@
+# make sure subshells at the end of pipelines run any exit traps they set
+
+: | { trap 'echo exit subshell 1' EXIT; exit; }; echo current shell
+
+: | { trap 'echo exit subshell 2' EXIT; exit; }; echo current shell
+
+: | { trap 'echo exit subshell 3' EXIT; exit; } | : ; echo current shell
+
+: | { trap 'echo exit subshell 4' EXIT; exit; } | : ; echo current shell
+
+trap 'echo inherited exit trap' EXIT
+: | { exit; } ; echo outside 1
+: | ( exit; ) ; echo outside 2
+: | { exit; } | : ; echo outside 3
+: | ( exit; ) | : ; echo outside 4
+
+trap - EXIT
+
+# make sure group commands that are not at the beginning or end of pipelines
+# run an EXIT trap, with and without the exit builtin
+echo ignored |
+{
+    trap 'echo "in trap EXIT">&2' EXIT
+    sleep 4 &
+    echo 'sleep 2'>&2
+    sleep 2
+    echo 'wait $!'>&2
+    wait $!
+    echo 'exit'>&2
+    exit
+} | cat
+
+echo ignored |
+{
+    trap 'echo "in trap EXIT">&2' EXIT
+    sleep 4 &
+    echo 'sleep 2'>&2
+    sleep 2
+    echo 'wait $!'>&2
+    wait $!
+    echo 'exit'>&2
+} | cat

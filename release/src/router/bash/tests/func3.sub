@@ -1,0 +1,54 @@
+#
+# test some posix-mode-specific function behavior
+#
+set -o posix
+func()
+{
+	return 5
+}
+
+myfunction () {
+    var=20 return
+}
+var=10
+echo expect 5 10
+func
+echo $? $var
+
+myfunction
+echo expect 20
+echo $var
+
+echo expect 5 20
+func
+echo $? $var
+
+echo expect 5 30
+var=30 func
+echo $? $var
+
+: ${TMPDIR:=/tmp}
+TMPFILE=$TMPDIR/func3.sub.$$
+
+rm -f $TMPFILE
+echo 'var=40 return 2' > $TMPFILE
+
+# test the behavior of `return' and preceding variable assignments here
+# because it's convenient
+var=10
+echo expect 2 40
+. $TMPFILE
+echo $? $var
+
+rm -f $TMPFILE
+
+#set -o posix
+var=0
+func()
+{
+	var=20 return 5
+}
+
+echo expect 5 20
+var=30 func
+echo $? $var

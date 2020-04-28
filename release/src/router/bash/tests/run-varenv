@@ -1,0 +1,2 @@
+${THIS_SH} ./varenv.sh 2>&1 | grep -v '^expect' > ${BASH_TSTOUT}
+diff ${BASH_TSTOUT} varenv.right && rm -f ${BASH_TSTOUT}

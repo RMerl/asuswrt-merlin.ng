@@ -1,0 +1,80 @@
+This file is inlib.def, from which is created inlib.c.
+It implements the Apollo-specific builtin "inlib" in Bash.
+
+Copyright (C) 1987-2002 Free Software Foundation, Inc.
+
+This file is part of GNU Bash, the Bourne Again SHell.
+
+Bash is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Bash is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Bash.  If not, see <http://www.gnu.org/licenses/>.
+
+$PRODUCES inlib.c
+#include <config.h>
+
+#include <stdio.h>
+#include "../shell.h"
+
+$BUILTIN inlib
+$FUNCTION inlib_builtin
+$DEPENDS_ON apollo
+$SHORT_DOC inlib pathname [pathname...]
+Install user-supplied library.
+
+Install a user-supplied library specified by pathname in the current
+shell process. The library is used to resolve external references
+in programs and libraries loaded after its installation.  Note
+that the library is not loaded into the address space unless it is
+needed to resolve an external reference.  The list of inlibed
+libraries is passed to all children of the current shell.
+
+Exit Status:
+Returns success unless PATHNAME is not found or an error occurs.
+$END
+
+#if defined (apollo)
+
+#include <apollo/base.h>
+#include <apollo/loader.h>
+
+inlib_builtin (list)
+     WORD_LIST *list;
+{
+  status_$t status;
+  int return_value;
+  short len;
+
+  if (!list)
+    {
+      builtin_usage ();
+      return (EX_USAGE);
+    }
+
+  return_value = EXECUTION_SUCCESS;
+
+  while (list)
+    {
+      len = (short)strlen (list->word->word);
+      loader_$inlib (list->word->word, len, &status);
+
+      if (status.all != status_$ok)
+	{
+	  builtin_error (_("%s: inlib failed"), list->word->word);
+	  return_value = EXECUTION_FAILURE;
+	}
+
+      list = list->next;
+    }
+
+  return (return_value);
+}
+#endif /* apollo */

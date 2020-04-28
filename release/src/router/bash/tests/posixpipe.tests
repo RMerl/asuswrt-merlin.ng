@@ -1,0 +1,43 @@
+# Test timed and negated pipelines in bash-4.2 and later
+export TIMEFORMAT=$'real %2R\nuser %2U\nsys %2S'
+
+!
+echo $?
+
+! !
+echo $?
+
+time ! echo a
+echo $?
+
+! time echo a
+echo $?
+
+tfunc()
+{
+	time
+}
+
+type tfunc
+
+! true
+echo $?
+! ! true
+echo $?
+! ! ! true
+echo $?
+
+time time echo a
+echo $?
+
+time time -p echo a
+echo $?
+time -p time echo a
+echo $?
+
+!
+echo $?
+! !
+echo $?
+
+time -p -- echo a

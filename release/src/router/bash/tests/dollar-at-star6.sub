@@ -1,0 +1,29 @@
+OIFS="$IFS"
+arr=(a b c)
+
+recho ${arr[@]@Q}
+recho "${arr[@]@Q}"
+
+IFS="'"
+recho ${arr[@]@Q}
+recho "${arr[@]@Q}"
+IFS="$OIFS"
+
+arr=("'a'" "'b'" "'c'")
+
+IFS="'"
+recho ${arr[@]}
+recho "${arr[@]}"
+IFS="$OIFS"
+
+IFS="'"
+a="'a'"
+recho $a
+recho "$a"
+IFS="$OIFS"
+
+set -- "'a'" "'b'" "'c'"
+
+IFS="'"
+recho "${@}"
+recho "$@"

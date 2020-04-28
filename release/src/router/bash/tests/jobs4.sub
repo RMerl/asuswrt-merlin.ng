@@ -1,0 +1,24 @@
+# test being able to use job control notation in jobs/kill/wait without
+# job control active, as the SUS requires
+
+sleep 5 &
+
+sleep 5 &
+sleep 5 &
+sleep 5 &
+(sleep 5 ; exit 4) &
+
+jobs
+
+wait %%
+echo $?
+
+wait %1
+echo $?
+
+wait
+
+# the sleep is intended to give the kill time to execute before the job
+# exits
+(sleep 1 ; cat ) &
+kill -1 %% && echo i killed it || echo could not kill it

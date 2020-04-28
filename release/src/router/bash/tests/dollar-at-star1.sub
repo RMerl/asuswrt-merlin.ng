@@ -1,0 +1,23 @@
+# from dan douglas
+expassign()
+{
+	typeset -a a
+	a=("$@")
+	typeset var asn
+
+	while IFS= read -r asn; do
+		IFS=: command eval "$asn"
+		printf '%-14s... %s\n' "$asn" "$var"
+	done <<\EOF
+var=${a[*]}
+var="${a[*]}"
+var=$*
+var="$*"
+var=${a[@]}
+var="${a[@]}"
+var=$@
+var="$@"
+EOF
+}
+
+expassign one:::two three:::four

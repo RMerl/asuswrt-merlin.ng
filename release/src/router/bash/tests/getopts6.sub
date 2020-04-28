@@ -1,0 +1,27 @@
+aflag=
+bflag=
+
+while getopts :ac name "$@"
+do
+	case $name in
+	a)	aflag=1 ;;
+	c)	cflag=1 ;;
+	?)	exit 2;;
+	esac
+
+	# this came in in a bug report -- it's really a usage error
+	# but it shouldn't cause the shell to crash
+	shift
+done
+
+if [ ! -z "$aflag" ] ; then echo -a specified ; fi
+if [ ! -z "$cflag" ] ; then echo -c specified ; fi
+
+if [ "$OPTIND" -gt 1 ]
+then
+	shift $(( $OPTIND - 1 ))
+fi
+
+echo remaining args: "$*"
+
+exit 0

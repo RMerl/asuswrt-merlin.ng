@@ -1,0 +1,26 @@
+aflag=
+bflag=
+
+while getopts ab:c:de name "$@"
+do
+	case $name in
+	a)	aflag=1 ;;
+	b)	bflag=1
+		bval=$OPTARG;;
+	c)	cflag=1
+		cval=$OPTARG ;;
+	d)	dflag=1 ;;
+	e)	eflag=1;;
+	?)	echo Usage: $0 [-a] [-b value] [-c value] -[de] args
+		exit 2;;
+	esac
+
+done
+
+[ ! -z "$aflag" ] && echo -a specified
+[ ! -z "$bflag" ] && echo -b $bval specified
+[ ! -z "$cflag" ] && echo -c $cval specified
+[ ! -z "$dflag" ] && echo -d specified
+[ ! -z "$eflag" ] && { echo -n - ; echo e specified; }
+
+exit 0

@@ -1,0 +1,16 @@
+set -- a b
+IFS=
+
+echo $*
+echo "$*"
+
+a=abcd
+echo "${a#$*}"
+
+case ab in
+$*)	echo ok 1;;
+esac
+
+case $* in
+ab)	echo ok 2 ;;
+esac

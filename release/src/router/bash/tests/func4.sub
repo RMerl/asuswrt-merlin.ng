@@ -1,0 +1,39 @@
+# test FUNCNEST functionality -- bash-4.2
+FUNCNEST=100
+
+foo()
+{
+	(( f++ ))
+	if (( f > 200 )); then
+		return 7
+	fi
+	foo
+}
+
+f=0
+foo
+echo $?
+echo after: f = $f
+
+f=0
+foo
+echo $?
+echo after: f = $f
+
+f=0
+FUNCNEST=0
+foo
+echo $?
+echo after FUNCNEST reset: f = $f
+
+f=0
+unset FUNCNEST
+foo
+echo $?
+echo after FUNCNEST unset: f = $f
+
+FUNCNEST=20
+f=$(( FUNCNEST - 2 ))
+foo
+echo $?
+echo after FUNCNEST assign: f = $f

@@ -1,0 +1,56 @@
+minus=-
+
+# standard input
+fd=0
+
+exec 3<&$fd
+
+read line <&3
+echo from stdin: $line
+
+# close fd 3
+exec 3<&${minus}
+
+# should give `bad fd', but exact error messages vary
+# read line <&3
+
+# standard output
+fd=1
+
+exec 4>&$fd
+
+echo to stdout >&4
+
+exec 4>&$minus
+
+# should give `bad fd', but exact error messages vary
+# echo to stdout >&4
+
+unset fd
+
+# these are ambiguous redirects
+exec 3<&$fd
+exec 4>&$fd
+
+exec 3>&1 4>&2
+
+exec >&/tmp/err-and-out
+echo to stdout
+echo to stderr >&2
+
+exec 1>&3 2>&4
+echo /tmp/err-and-out:
+cat /tmp/err-and-out
+
+rm /tmp/err-and-out
+
+fd=/tmp/err-and-out
+exec >&$fd
+echo to stdout
+echo to stderr >&2
+
+exec 1>&3 2>&4
+echo /tmp/err-and-out:
+cat /tmp/err-and-out
+
+rm /tmp/err-and-out

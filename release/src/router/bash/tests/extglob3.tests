@@ -1,0 +1,56 @@
+shopt -s extglob
+
+[[ ab/../ == @(ab|+([^/]))/..?(/) ]] && echo match 1
+
+[[ ab/../ == +([^/])/..?(/) ]] && echo match 2
+
+[[ ab/../ == @(ab|?b)/..?(/) ]] && echo match 3
+
+[[ ab/../ == +([^/])/../ ]] && echo match 4
+
+[[ ab/../ == +([!/])/..?(/) ]] && echo match 1a
+
+[[ ab/../ == @(ab|+([!/]))/..?(/) ]] && echo match 1b
+
+[[ ab/../ == +([!/])/../ ]] && echo match 2a
+
+[[ ab/../ == +([!/])/..?(/) ]] && echo match 2b
+
+[[ ab/../ == +([!/])/..@(/) ]] && echo match 3a
+
+[[ ab/../ == +(ab)/..?(/) ]] && echo match 3b
+
+[[ ab/../ == [!/][!/]/../ ]] && echo match 4a
+
+[[ ab/../ == @(ab|?b)/..?(/) ]] && echo match 4b
+
+[[ ab/../ == [^/][^/]/../ ]] && echo match 5
+
+[[ ab/../ == ?b/..?(/) ]] && echo match 6
+
+[[ ab/../ == +(?b)/..?(/) ]] && echo match 7
+
+[[ ab/../ == +(?b|?b)/..?(/) ]] && echo match 8
+
+[[ ab/../ == @(?b|?b)/..?(/) ]] && echo match 9
+
+[[ ab/../ == @(a?|?b)/..?(/) ]] && echo match 10
+
+[[ ab/../ == ?(ab)/..?(/) ]] && echo match 11
+
+[[ ab/../ == ?(ab|??)/..?(/) ]] && echo match 12
+
+[[ ab/../ == @(??)/..?(/) ]] && echo match 13
+
+[[ ab/../ == @(??|a*)/..?(/) ]] && echo match 14
+
+[[ ab/../ == @(a*)/..?(/) ]] && echo match 15
+
+[[ ab/../ == +(??)/..?(/) ]] && echo match 16
+
+[[ ab/../ == +(??|a*)/..?(/) ]] && echo match 17
+
+[[ ab/../ == +(a*)/..?(/) ]] && echo match 18
+
+#
+j="@(x)" ; [[ x == $j ]] && echo ok 19

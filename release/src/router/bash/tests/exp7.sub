@@ -1,0 +1,11 @@
+IFS=$'\001'
+c=$'\001'
+c2=$'\003'
+
+IFS=$c		# this is the problem line, IFS should end up being \001
+recho "$IFS"
+set -- $c2$c$c2$c$c2
+recho $# "$1" "$2" "$3"
+
+x=$c
+recho "$x"

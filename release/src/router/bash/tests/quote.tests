@@ -1,0 +1,112 @@
+echo "Single Quote"
+echo 'foo
+bar'
+echo 'foo
+bar'
+echo 'foo\
+bar'
+
+echo "Double Quote"
+echo "foo
+bar"
+echo "foo
+bar"
+echo "foo\
+bar" 
+
+echo "Backslash Single Quote"
+echo `echo 'foo
+bar'`   
+echo `echo 'foo  
+bar'`   
+echo `echo 'foo\
+bar'`  
+
+echo "Backslash Double Quote"
+echo `echo "foo
+bar"`
+echo `echo "foo
+bar"`
+echo `echo "foo\
+bar"`
+
+echo "Double Quote Backslash Single Quote"
+echo "`echo 'foo
+bar'`"
+echo "`echo 'foo
+bar'`"
+echo "`echo 'foo\
+bar'`"
+
+echo "Dollar Paren Single Quote"
+echo $(echo 'foo
+bar')
+echo $(echo 'foo
+bar')
+echo $(echo 'foo\
+bar')
+
+echo "Dollar Paren Double Quote"
+echo $(echo "foo
+bar")
+echo $(echo "foo
+bar")
+echo $(echo "foo\
+bar")
+
+echo "Double Quote Dollar Paren Single Quote"
+echo "$(echo 'foo
+bar')"
+echo "$(echo 'foo
+bar')"
+echo "$(echo 'foo\
+bar')"
+
+# old-style command substitution parsing compatibility tests -- post bash-3.1
+recho 'foo \\
+bar'
+
+recho 'foo \
+bar'
+
+echo `recho sed -e 's/[	:]/\\
+/g'`
+
+echo `recho sed -e 's/[	:]/\
+/g'`
+
+echo `recho 'foo\\
+bar'`
+
+echo `recho 'foo\
+bar'`  
+
+echo $(recho 'foo\
+bar')
+
+a=`echo 'a b c' | sed 's/ /\\
+/g' | grep 'b'`
+echo $a
+a=`echo 'a b c' | sed 's/ /\\
+/g'`
+echo "$a"
+
+recho `echo 'a\' b`
+
+recho `echo '\$' bab`
+recho `echo '\$foo' bab`
+recho `echo '$foo' bab`
+
+recho `echo '\`' ab`
+
+recho `echo '\\' ab`
+
+echo `echo '${'`
+
+recho `echo "(\\")"`
+# produces no output
+: `: "\\""`
+# ultimate workaround
+recho `echo "(\")"`
+
+${THIS_SH} ./quote1.sub

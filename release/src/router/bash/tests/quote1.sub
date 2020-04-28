@@ -1,0 +1,49 @@
+# inconsistency with quoted pattern substitution patterns through bash-4.2
+# fixed in a ksh93-compatible (and Posix-compatible, in general) way
+# NOT backwards compatible
+
+test="weferfds'dsfsdf"
+
+# why does this work, this list was born of frustration, I tried
+# everything I could think of.
+echo \'${test//"'"/\'\\\'\'}\'" "
+
+#but none of the following
+
+echo "'${test//"'"/}'"
+
+echo "'${test//"'"/"'\\''"}'"
+
+echo "'${test//"'"/\'\\'\'}'"
+
+#echo "'${test//'/}'"   # hangs waiting for '
+#echo "'${test//"'"/'\\''}'" # hangs waiting for '
+
+unset test
+test=teststrtest
+echo "${test//str/"dd dd"}"
+echo ${test//str/"dd '\''dd"}
+
+unset test
+test=teststring
+
+echo "${test//str/"dddd"}"
+
+echo ${test//str/"dddd"}
+
+echo ${test//str/"'"}
+
+echo "${test//str/"'"}"
+
+#echo "${test//str/'}"   # hangs
+
+test=test\'string
+echo "${test//"'"/"'"}"
+
+x="a'b'c"; echo "${x//\'/\'}"
+
+printf '%s\n' "foo ${IFS+"b   c"} baz"
+
+# this is where the default behavior differs from posix
+set -o posix
+echo "foo ${IFS+'bar} baz"

@@ -1,0 +1,50 @@
+# nameref variables as for loop index variables are special
+v1=1
+v2=2
+
+# simple for loop
+for v in v1 v2
+do
+	typeset -n ref=$v
+	echo $ref
+done
+unset v
+
+set -- first second third fourth fifth
+
+# unless you put a ${!v} in the for loop, ksh93 misbehaves
+typeset -n v=v1
+for v in v1 v2; do
+	echo "${!v}: $v"
+done
+unset v
+
+# example cribbed from ksh93 o'reilly book
+first="I am first"
+second="I am in the middle"
+third="I am last"
+
+typeset -n ref=first
+for ref in first second third ; do
+	echo "ref -> ${!ref}, value: $ref"
+done
+echo final state: "ref -> ${!ref}, value: $ref"
+
+readonly one=1
+readonly two=2
+readonly three=3
+
+typeset -n ref=one
+for ref in one two three; do
+	echo "ref -> ${!ref}, value: $ref"
+done
+echo final state: "ref -> ${!ref}, value: $ref"
+
+unset ref
+typeset -n ref=one
+readonly ref
+
+for ref in one two three; do
+	echo "ref -> ${!ref}, value: $ref"
+done
+echo final state: "ref -> ${!ref}, value: $ref"

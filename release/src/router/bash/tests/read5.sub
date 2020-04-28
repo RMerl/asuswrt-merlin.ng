@@ -1,0 +1,35 @@
+IFS=: read x y z << EOF
+:::
+EOF
+recho $x
+recho "$x"
+recho $y
+recho "$y"
+recho $z
+recho "$z"
+
+if [ -z "$x" ]; then
+	echo FOO
+else
+	echo BAR
+fi
+
+IFS=: read -a A << EOF
+:::
+EOF
+
+recho ${A[0]}
+recho "${A[0]}"
+
+recho ${#A[@]}
+
+recho "${A[@]}"
+
+if [ -z "${A[0]}" ]; then
+	echo FOO
+else
+	echo BAR
+fi
+
+echo -n ${A[0]} | cat -vet
+echo -n ${A[0]} | wc | ( IFS=$' \t\n' ;  while read line; do echo $line; done; )

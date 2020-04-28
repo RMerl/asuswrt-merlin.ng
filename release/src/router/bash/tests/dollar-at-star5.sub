@@ -1,0 +1,53 @@
+# testing various combinations of quoted and unquoted expansions of $@, and
+# whether they generate empty words after expansion
+
+n() { echo "$#"; }
+
+n "$@"
+n ${foo-"$@"}
+n "${foo-$@}"
+
+n ""$@
+n """$@"
+
+n $(true)$@
+n "$(true)$@"
+n "$(true)$@"
+n "$(true)""$@"
+
+n $xxx$@
+n "$xxx$@"
+n $xxx"$@"
+n "$xxx""$@"
+
+recho $xxx"$@"
+echo after 1
+
+recho "$xxx$@"
+echo after 2
+
+recho ${foo:-$xxx"$@"}
+echo after 3
+
+# this is where these things start to differ
+echo same as 1
+recho "${foo:-$xxx"$@"}"
+echo same as 2
+recho "${foo:-$xxx$@}"
+
+echo null fields
+recho ""$@
+recho """$@"
+
+echo null fields in rhs
+echo null string with unquoted '$@'
+recho ${foo:-""$@}
+echo null string with quoted '$@'
+recho ${foo:-"""$@"}
+
+echo assignment
+recho "${foo=$@}"
+echo variable
+recho "$foo"
+echo dollar-at
+recho "${@}"

@@ -1,0 +1,49 @@
+# command substution parsing tests
+
+TABSIZE=`grep -v '^[ #]' $CAPS </dev/null | grep -v "^$" | grep -v "^capalias"| grep -v "^infoalias" | wc -l`
+
+recho `echo ab cd #efg
+hijkl`
+
+recho ab$(echo mn; echo op)yz
+
+a=`echo 'a b c' | sed 's/ /\\
+/g' | grep 'b'`
+recho $a
+
+recho `echo 'a\' b`
+
+recho `echo '\$' bab`
+
+recho `echo '\`' ab`
+
+recho `echo '\\' ab`
+
+# old-style command substitution parsing compatibility tests -- post bash-3.1
+recho 'foo \\
+bar'
+
+recho 'foo \
+bar'
+
+echo `recho sed -e 's/[	:]/\\
+/g'`
+
+echo `recho sed -e 's/[	:]/\
+/g'`
+
+echo `recho 'foo\\
+bar'`
+
+echo `recho 'foo\
+bar'`  
+
+echo $(recho 'foo\
+bar')
+
+# long-standing parse error in all versions up through bash-4.3
+echo ${foo:-$(echo a{b,c})} >/dev/null
+
+${THIS_SH} ./comsub1.sub
+${THIS_SH} ./comsub2.sub
+${THIS_SH} ./comsub3.sub

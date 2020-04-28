@@ -1,0 +1,23 @@
+a=7
+echo 'abcdefg|xyz' | {
+	read -d '|' a 
+	echo a = "${a-unset}"
+}
+
+echo xyz 123 | {
+	read -d ' ' a
+	echo a = "${a-unset}"
+}
+
+echo xyz 123 | {
+	read -d $'\n' a
+	echo a = -"${a-unset}"-
+}
+
+a=44
+echo abcd | {
+	read -d d a
+	echo a = $a
+}
+
+exit 0

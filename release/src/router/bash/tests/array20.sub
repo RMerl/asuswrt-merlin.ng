@@ -1,0 +1,34 @@
+# tests to make sure that $* and ${array[*]} expand consistently in `list'
+# and `scalar' contexts
+
+arr=(a b c)
+IFS=+
+
+# these two should both expand to `+' separated strings
+a=${arr[*]} ; echo "$a"
+b=${arr[*]/a/x}; echo "$b"
+
+set -- a b c
+
+# these two should both expand to `+' separated strings
+a=${*} ; echo "$a"
+b=${*/a/x}; echo "$b"
+
+# these two should both expand to `+' separated strings and it should handle
+# characters in IFS as chars in the string
+unset a b
+
+set -- 'a+b' 'c+d' 'e+f'
+a=${*} ; recho "$a"
+b=${*/a/x}; recho "$b"
+
+# now let's make sure that @ always uses space separators even in contexts
+# where we don't do word splitting
+set -- a b c
+a=${@} ; echo "$a"
+b=${@/a/x}; echo "$b"
+
+unset a b
+
+a=${arr[@]} ; echo "$a"
+b=${arr[@]/a/x}; echo "$b"

@@ -1,0 +1,69 @@
+# Problems with padding, field widths, and `+' through bash-4.2
+
+printf "x%10.0fx\n" 123
+printf -v foo "x%10.0fx" 123
+echo "$foo"
+
+printf "x%10.0fx\n" 123
+printf -v foo "x%10.0fx" 123
+echo "$foo"
+
+printf "x%10.fx\n" 123
+printf -v foo "x%10.fx" 123
+echo "$foo"
+
+printf "x%10.2fx\n" 123
+printf -v foo "x%10.2fx" 123
+echo "$foo"
+
+printf "x%10.02fx\n" 123
+printf -v foo "x%10.02fx" 123
+echo "$foo"
+
+printf "x%-010.0fx\n" 123
+printf -v foo "x%-010.0fx" 123
+echo "$foo"
+
+printf "x%+010.0ex\n" 123
+printf -v foo "x%+010.0ex" 123
+echo "$foo"
+
+printf "x%+010.0fx\n" 123
+printf -v foo "x%+010.0fx" 123
+echo "$foo"
+
+printf "x%+010.0gx\n" 123
+printf -v foo "x%+010.0gx" 123
+echo "$foo"
+
+printf "x%+010.0dx\n" 123
+printf -v foo "x%+010.0dx" 123
+echo "$foo"
+
+printf "x%+010.0ldx\n" 123
+printf -v foo "x%+010.0ldx" 123
+echo "$foo"
+
+printf "x%+010.0xx\n" 123
+printf -v foo "x%+010.0xx" 123
+echo "$foo"
+
+printf "x%-+10.0fx\n" 123
+printf -v foo "x%-+10.0fx" 123
+echo "$foo"
+
+printf "x%-+10.0dx\n" 123
+printf -v foo "x%-+10.0dx" 123
+echo "$foo"
+
+printf "%f\n" -123
+printf -v foo "%f" -123
+echo "$foo"
+
+printf "x%+10.0fx\n" 123
+printf -v foo "x%+10.0fx" 123
+echo "$foo"
+
+printf "x%+10.0dx\n" 123
+printf -v foo "x%+10.0dx" 123
+echo "$foo"

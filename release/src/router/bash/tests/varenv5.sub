@@ -1,0 +1,16 @@
+function foobar {
+   declare -rgA FOOBAR=([foo]=bar)
+   declare -p FOOBAR
+}
+foobar
+declare -p FOOBAR
+
+unset -f foobar
+
+foobar() {
+   declare -rga FOOBAR2=([foo]=bar)
+   declare -p FOOBAR2
+}
+
+foobar
+declare -p FOOBAR2

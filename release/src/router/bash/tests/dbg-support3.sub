@@ -1,0 +1,39 @@
+shopt -s extdebug
+
+callstack(){
+ deep=${#BASH_ARGV[*]}
+ echo "deep $deep"
+ i=0
+ for ff in ${BASH_ARGV[@]}
+ do
+  echo "$i $ff"
+  i=$(($i+1))
+ done
+}
+
+f3()
+{
+	echo $FUNCNAME: calling callstack
+	callstack
+	echo FUNCNAME stack: ${FUNCNAME[@]}
+	caller 0
+	echo $FUNCNAME: returning
+}
+
+f2()
+{
+	echo $FUNCNAME: calling f3
+	f3 3 z
+	echo $FUNCNAME: return from f3
+}
+
+f1()
+{
+	echo $FUNCNAME: calling f2
+	f2 2 y
+	echo $FUNCNAME: return from f2
+}
+
+echo main: calling f1
+f1 1 x
+echo main: f1 returns

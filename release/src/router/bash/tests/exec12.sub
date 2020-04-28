@@ -1,0 +1,17 @@
+: ${TMPDIR:=/var/tmp}
+TMPFILE=$TMPDIR/exitcode
+
+rm -f $TMPFILE
+set -e
+exit_handler() { echo "exit code: $?" ; touch $TMPFILE; }
+false() { ! :; }
+notfound() { nosuchcommand ; }
+syntaxerror() { !:; }
+
+main()
+{(
+    trap exit_handler 0
+    "$@" >> /dev/null 2>&1
+)}
+main "$@"
+echo "after main: should not get here"

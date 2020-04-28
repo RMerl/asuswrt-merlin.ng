@@ -1,0 +1,15 @@
+typeset -A foo=([one]=bar [two]=baz [three]=quux)
+typeset -p foo
+
+foo+=zero
+typeset -p foo
+
+foo+=([four]=four)
+typeset -p foo
+
+typeset -ia iarr=(2 2 3)
+iarr+=1
+typeset -p iarr
+
+iarr+=(4 5 6)
+typeset -p iarr

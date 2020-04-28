@@ -1,0 +1,26 @@
+set A B
+
+IFS=
+
+x=$*
+y="$*"
+
+recho "$x"
+recho "$y" 
+
+IFS=$' \t\n'
+
+set 'A B' 'C D'
+
+IFS=
+
+x=$*
+y="$*"
+
+recho "$x"
+recho "$y"
+
+recho $x
+recho $*
+recho $y
+recho "$*"

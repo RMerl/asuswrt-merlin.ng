@@ -1,0 +1,43 @@
+bb()
+{
+	(
+	cat << EOF
+foo
+bar
+EOF
+	)
+	echo after subshell
+}
+
+type bb
+
+
+mkcoprocs()
+{
+	coproc a { cat <<EOF1
+producer 1
+EOF1
+}
+coproc b { cat << EOF2
+producer 2
+EOF2
+}
+
+echo "coprocs created"
+}
+
+type mkcoprocs
+
+unset -f mkcoprocs
+
+mkcoprocs()
+{
+	coproc ( b cat << EOF
+heredoc
+body
+EOF
+	)
+echo "coprocs created"
+}
+
+type mkcoprocs

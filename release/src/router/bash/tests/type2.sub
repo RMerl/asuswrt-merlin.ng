@@ -1,0 +1,16 @@
+foo()
+{
+	echo
+	cat <<END
+bar
+END
+	cat <<EOF
+qux
+EOF
+}
+
+type foo
+foo
+
+eval "$(type foo | sed 1d)"
+foo

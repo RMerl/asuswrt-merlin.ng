@@ -1,0 +1,15 @@
+echo ${BASH_ALIASES[@]}
+
+alias foo=/usr/sbin/foo
+alias qux='/usr/local/bin/qux -l'
+
+echo ${!BASH_ALIASES[@]}
+recho ${BASH_ALIASES[@]}
+
+BASH_ALIASES[blat]='cd /blat ; echo $PWD'
+BASH_ALIASES[sh]='/bin/bash --login -o posix'
+
+alias -p
+
+echo ${!BASH_ALIASES[@]}
+recho "${BASH_ALIASES[@]}"

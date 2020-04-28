@@ -1,0 +1,6 @@
+shopt -s execfail
+
+exec /tmp/bash-notthere
+# make sure we're still around
+echo $?
+

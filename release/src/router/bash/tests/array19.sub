@@ -1,0 +1,167 @@
+# tests for changes to declare and assignment statement arguments post-bash-4.3
+
+unset foo l a b
+
+l="( zeroind )"
+
+unset foo
+declare -a foo
+foo="$l"
+declare -p foo
+
+unset foo
+declare -a foo="$l"
+declare -p foo
+
+unset foo
+declare -a foo=$l
+declare -p foo
+
+b='[0]=bar'
+
+unset foo
+declare -a foo="$b"
+declare -p foo
+
+unset foo
+declare -a foo=("$b")
+declare -p foo
+
+unset foo
+declare -a foo=($b)
+declare -p foo
+
+unset a
+
+declare a='(1 2 3)'
+declare -p a
+unset a
+
+declare -a a
+declare a='(1 2 3)'
+declare -p a
+unset a
+
+declare -A a
+declare a='(1 2 3)'
+declare -p a
+unset a
+
+declare a='([0]=a [1]=b)'
+declare -p a
+unset a
+
+declare -a a
+declare a='([0]=a [1]=b)'
+declare -p a
+unset a
+
+declare -A a
+declare a='([0]=a [1]=b)'
+declare -p a
+unset a
+unset var value
+
+value='[$(echo total 0)]=1 [2]=2]'
+
+unset var
+declare -a var
+var=($value)
+declare -p var
+
+unset var
+declare -a var=("$value")
+declare -p var
+
+unset var
+declare -a var=($value)
+declare -p var
+
+unset var
+declare -a var="($value)"
+declare -p var
+unset foo value
+
+value="AbCdE"
+
+declare -a foo
+foo=( one two three )
+
+declare -l foo="$value"
+declare -p foo
+
+unset foo
+value='(AbCdE)'
+
+declare -a foo
+foo=( one two three )
+
+declare -l foo="$value"
+declare -p foo
+unset ar
+declare -a ar=(ONE TWO THREE)
+declare -al ar=(${ar[@]})
+declare -p ar 
+unset a
+
+declare -a a
+a[2]=foo
+declare -p a
+
+unset a
+declare -a a
+declare a[2]=foo
+declare -p a
+
+declare a[1]='(var)'
+declare -p a
+
+unset a
+declare a[1]='(var)'
+declare -p a
+unset a
+
+a=(1 2 3)
+a[2]='(1 2 3)'
+
+declare -p a
+
+unset a
+a=(1 2 3)
+declare a[2]='(1 2 3)'
+
+declare -p a
+
+unset a
+a=(1 2 3)
+declare a='(1 2 3)'
+
+declare -p a
+
+unset a
+a=(1 2 3)
+declare 'a=(1 2 3)'
+
+declare -p a
+
+unset a
+declare -a a='(1 2 3)'
+
+declare -p a
+unset a b c d e x y
+
+HOME=/scratch/bash
+x='a b'
+y='($(echo Darwin))'
+
+declare a=$x b=~ c='(1 2)' d='($a)' e=$y
+
+declare -p a b c d e
+
+unset a b c d e
+declare -a a=$x b=~ c='(1 2)' d='($a)' e=$y
+declare -p a b c d e
+
+unset a b c d e
+declare -A a=$x b=~ c='(1 2)' d='($a)' e=$y
+declare -p a b c d e

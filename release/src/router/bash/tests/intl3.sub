@@ -1,0 +1,23 @@
+. ./test-glue-functions
+
+# more tests to make sure that IFS splits on characters, not bytes
+export LANG=en_US.UTF-8
+
+euro=$'\342\202\254'
+o342=$'\342'
+o202=$'\202'
+o254=$'\254'
+
+IFS=$o254
+t=+$euro+
+set -- $t
+
+echo "$#"
+
+# but matching still occurs on bytes if we don't have a valid multibyte char
+case $euro in
+*$o202*)	echo bytematch ;;
+*)		echo mbchar match ;;
+esac
+
+echo "${euro##*$o202}" | od -b | _intl_normalize_spaces

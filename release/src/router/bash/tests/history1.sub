@@ -1,0 +1,15 @@
+trap 'rm -f $HISTFILE' 0 1 2 3 6 15
+
+HISTFILE=$TMPDIR/foohist-$$
+unset HISTIGNORE HISTCONTROL
+set -o history
+
+history -c
+cat <<!
+one
+two
+three
+!
+
+history
+fc -s cat

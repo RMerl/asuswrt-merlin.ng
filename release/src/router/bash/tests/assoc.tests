@@ -1,0 +1,209 @@
+# TEST - basic declaration and assignment
+typeset -A fluff
+declare -A
+
+fluff[foo]=one
+fluff[bar]=two
+
+declare -A
+declare -p fluff
+
+unset fluff[foo]
+declare -p fluff
+
+fluff[bar]=newval
+declare fluff[qux]=assigned
+
+declare -p fluff
+
+unset fluff
+
+# TEST - compount assignment and variable attributes
+declare -A wheat chaff
+wheat=( [zero]=0 [one]=a [two]=b [three]=c )
+
+declare -i chaff
+chaff=( [zero]=1+4 [one]=3+7 four )
+
+declare -A waste=( [pid]=42134 [version]=4.0-devel [source]=$0 [lineno]=$LINENO )
+declare -r waste
+
+declare -A
+
+declare +i chaff
+chaff[hello world]=flip
+declare -p chaff
+
+# TEST - errors
+waste[stuff]=other
+unset waste
+chaff[*]=12
+chaff=( [one]=a [*]=12 )
+
+# TEST - key expansion -- no word splitting
+chaff[hello world]=flip
+declare -p chaff
+echo ${chaff[hello world]}
+
+chaff[box]="multiple words"
+
+recho ${chaff[@]}
+recho "${chaff[@]}"
+
+recho ${chaff[*]}
+recho "${chaff[*]}"
+
+unset chaff
+declare -A chaff[200]
+declare +A chaff
+
+chaff[*]=12
+chaff=( [one]=a [*]=12 )
+
+# TEST - keys and values containing spaces
+unset wheat
+declare -A wheat
+wheat=([six]=6 [foo bar]="qux qix" )
+
+declare -p wheat
+
+unset wheat
+declare -A wheat=([six]=6 [foo bar]="qux qix" )
+
+recho ${wheat[foo bar]}
+recho "${wheat[foo bar]}"
+
+declare -p wheat
+
+# TEST - basic expansions: number of elements and value length
+unset wheat
+typeset -A wheat
+wheat=([six]=6 [foo bar]="qux qix" )
+
+recho ${#wheat[@]}
+
+recho ${#wheat[foo bar]}
+
+# TEST - appending assignment operator
+unset wheat
+typeset -A wheat
+wheat=([six]=6 [foo bar]="qux qix" )
+
+wheat[foo bar]+=' blat'
+
+recho ${wheat[foo bar]}
+recho "${wheat[foo bar]}"
+unset wheat
+
+flix=9
+typeset -Ai wheat
+wheat=([six]=6 [foo bar]=flix )
+
+wheat[foo bar]+=7
+
+recho ${wheat[foo bar]}
+recho "${wheat[foo bar]}"
+unset flix wheat
+
+# TEST - index expansion: no word splitting or globbing
+typeset -A wheat
+cd /tmp
+touch '[sfiri]'
+wheat=([s*]=6 [foo bar]=flix )
+
+recho ${wheat[@]}
+rm '[sfiri]'
+cd $OLDPWD
+
+# TEST -- associative array keys expansion
+unset wheat
+typeset -A wheat
+
+wheat=([six]=6 [foo bar]=flix )
+
+recho ${!wheat[@]}
+recho "${!wheat[@]}"
+
+# TEST -- associative array pattern removal
+unset xpath
+typeset -A xpath
+
+xpath=( [0]=/bin [one]=/bin [two]=/usr/bin [three]=/usr/ucb [four]=/usr/local/bin)
+xpath+=( [five]=/sbin [six]=/usr/sbin [seven]=. )
+
+echo ${#xpath[@]}
+
+echo ${xpath[@]}
+echo ${xpath[@]##*/}
+echo ${xpath[0]##*/}
+echo ${xpath[@]%%[!/]*}
+echo ${xpath[0]%%[!/]*}
+recho ${xpath##*/}
+recho ${xpath%%[!/]*}
+recho ${xpath[five]##*/}
+recho ${xpath[five]%%[!/]*}
+
+echo ${#xpath[*]}
+
+echo ${xpath[*]}
+echo ${xpath[*]##*/}
+echo ${xpath[*]%%[!/]*}
+
+# TEST -- associative array pattern substitution
+unset xpath
+typeset -A xpath
+
+xpath=( [0]=/bin [one]=/bin [two]=/usr/bin [three]=/usr/ucb [four]=/usr/local/bin)
+xpath+=( [five]=/sbin [six]=/usr/sbin [seven]=. )
+
+echo ${#xpath[@]}
+# default element is "0" (as a string)
+echo ${#xpath} -- ${xpath["0"]}
+
+echo ${xpath[@]//\//^}
+echo "${xpath[@]//\//^}" | cat -v
+
+zecho "${xpath[@]/\//\\}"
+zecho "${xpath[@]//\//\\}"
+zecho "${xpath[@]//[\/]/\\}"
+
+# test assignment to key "0"
+unset T
+declare -A T
+T='([a]=1)'
+echo "${T[@]}"
+unset T
+
+${THIS_SH} ./assoc1.sub
+
+${THIS_SH} ./assoc2.sub
+
+${THIS_SH} ./assoc3.sub
+
+${THIS_SH} ./assoc4.sub
+
+${THIS_SH} ./assoc5.sub
+
+${THIS_SH} ./assoc6.sub
+
+${THIS_SH} ./assoc7.sub
+
+# test converting between scalars and assoc arrays
+unset assoc
+assoc=assoc
+declare -A assoc
+declare -p assoc
+echo ${assoc[@]}
+
+# weird syntax required to append to multiple existing array elements using
+# compound assignment syntax
+unset assoc
+declare -A assoc 
+assoc=( [one]=one [two]=two [three]=three )
+assoc+=( [one]+=more [two]+=less )
+declare -p assoc
+
+readonly -A assoc
+declare -p assoc
+
+${THIS_SH} ./assoc8.sub

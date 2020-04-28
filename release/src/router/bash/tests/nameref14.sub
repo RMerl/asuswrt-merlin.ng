@@ -1,0 +1,43 @@
+# exporting namerefs and putting namerefs in temp env post bash-4.3
+
+typeset -nx ref=var;
+typeset -p ref
+
+var=foo; str=''
+printenv ref                 # var
+ref+=$str    printenv ref    # var
+ref+="$str"  printenv ref    # var
+ref=$ref$str printenv ref    # var
+
+export ref		# follows nameref and exports var
+
+printenv var                 # foo
+ref+=$str    printenv var    # foo
+ref+="$str"  printenv var    # foo
+ref=$ref$str printenv var    # foo
+
+# none of these should change ref; should follow the nameref and export var
+unset var; unset -n ref; typeset -n ref=var
+
+echo before
+typeset -p ref var
+
+echo first
+ref=xxx typeset -p ref var
+
+echo invalid
+var= ref=5 typeset -p ref var
+
+echo after
+typeset -p ref var
+
+# ref isn't exported, so none of the printenvs should print anything
+unset var ; unset -n ref
+typeset -n ref=var;
+typeset -p ref
+
+var=foo; str=''
+printenv ref
+ref+=$str    printenv ref
+ref+="$str"  printenv ref
+ref=$ref$str printenv ref

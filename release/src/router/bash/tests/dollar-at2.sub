@@ -1,0 +1,19 @@
+t1()
+{
+	xxx="echo $@"
+
+	recho "$xxx ; echo $@"
+}
+
+t2()
+{
+	xxx="echo $@"
+
+	recho "${xxx} ; echo $@"
+}
+
+t1 1
+t1 1 2
+
+t2 1
+t2 1 2

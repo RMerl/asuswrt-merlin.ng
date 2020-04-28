@@ -1,0 +1,69 @@
+# expansion test cases from Posix interp 888
+
+set "abc" "def ghi" "jkl"
+unset novar
+IFS=' ' # a space
+printf '%s\n' $*
+printf '%s\n' "$*"
+printf '%s\n' xx$*yy
+printf '%s\n' "xx$*yy"
+printf '%s\n' $@
+printf '%s\n' "$@"
+printf '%s\n' ${1+"$@"}
+printf '%s\n' ${novar-"$@"}
+printf '%s\n' xx$@yy
+printf '%s\n' "xx$@yy"
+printf '%s\n' $@$@
+printf '%s\n' "$@$@"
+IFS=':'
+printf '%s\n' "$*"
+var=$*; printf '%s\n' "$var"
+var="$*"; printf '%s\n' "$var"
+unset var
+printf '%s\n' ${var-$*}
+printf '%s\n' "${var-$*}"
+printf '%s\n' ${var-"$*"}
+printf '%s\n' ${var=$*}
+printf 'var=%s\n' "$var"
+unset var
+printf '%s\n' "${var=$*}"
+printf 'var=%s\n' "$var"
+
+IFS='' # null
+printf '%s\n' "$*"
+var=$*; printf '%s\n' "$var"
+var="$*"; printf '%s\n' "$var"
+unset var
+printf '%s\n' ${var-$*}
+printf '%s\n' "${var-$*}"
+printf '%s\n' ${var-"$*"}
+printf '%s\n' ${var=$*}
+printf 'var=%s\n' "$var"
+unset var
+printf '%s\n' "${var=$*}"
+printf 'var=%s\n' "$var"
+printf '%s\n' "$@"
+
+unset IFS
+printf '%s\n' "$*"
+var=$*; printf '%s\n' "$var"
+var="$*"; printf '%s\n' "$var"
+unset var
+printf '%s\n' ${var-$*}
+printf '%s\n' "${var-$*}"
+printf '%s\n' ${var-"$*"}
+printf '%s\n' ${var=$*}
+printf 'var=%s\n' "$var"
+unset var
+printf '%s\n' "${var=$*}"
+printf 'var=%s\n' "$var"
+printf '%s\n' "$@"
+
+set --
+printf '[%s]\n' foo "$*"
+printf '[%s]\n' foo "$novar$*$(echo)"
+printf '[%s]\n' foo $@
+printf '[%s]\n' foo "$@"
+printf '[%s]\n' foo ''$@
+printf '[%s]\n' foo ''"$@"
+printf '[%s]\n' foo ''"$novar$@$(echo)"

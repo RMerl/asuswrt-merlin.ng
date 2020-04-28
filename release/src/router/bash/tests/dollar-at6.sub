@@ -1,0 +1,30 @@
+set -- ''; 
+
+recho "${@}" x
+recho "${@:1}" x
+
+set -- "${@:1}"
+echo "$#" 
+
+set  -- '' ''
+
+recho "${@:1}" x 
+recho "${@:1:1}" x 
+
+typeset -a A	# ksh93 needs this
+A=('' '')
+recho "${A[@]:0}" x 
+
+recho "${A[@]:0:1}" x
+
+recho "${A[@]:1}" x 
+
+set -- ''
+
+recho "${@/foo/bar}"
+recho "${@^^[abcde]}"
+
+A=( '' )
+
+recho "${A[@]/foo/bar}"
+recho "${A[@],,[abcde]}"

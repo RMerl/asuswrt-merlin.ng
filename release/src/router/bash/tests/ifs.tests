@@ -1,0 +1,61 @@
+OIFS="$IFS"
+IFS=":$IFS"
+eval foo="a:b:c"
+IFS="$OIFS"
+echo $foo
+
+OIFS=$IFS
+IFS=":$IFS"
+foo=$(echo a:b:c)
+IFS=$OIFS
+
+for i in $foo
+do
+	echo $i
+done
+
+OIFS=$IFS
+IFS=":$IFS"
+foo=`echo a:b:c`
+IFS=$OIFS
+
+for i in $foo
+do
+	echo $i
+done
+
+DEFIFS=$' \t\n'
+
+# local copy of IFS that shadows global version
+function f
+{
+	typeset IFS=:
+
+	echo $1
+}
+
+function ff
+{
+	echo $1
+}
+
+f a:b:c:d:e
+x=a:b:c:d:e
+echo $x
+
+IFS=: ff a:b:c:d:e
+echo $x
+
+# doesn't get word split
+IFS=$DEFIFS
+# variable assignment doesn't use new value for word splitting
+IFS=: echo $x
+# but does this time because of the eval
+IFS=: eval echo \$x
+
+# in posix mode, assignments preceding special builtins and functions are global
+set -o posix
+IFS=: export x
+echo $x
+
+IFS="$DEFIFS"

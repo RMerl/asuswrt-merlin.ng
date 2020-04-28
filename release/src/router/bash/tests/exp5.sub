@@ -1,0 +1,22 @@
+# expansions involving patterns
+
+var='[hello'
+echo "${var//[/}"
+
+red='\[\e[0;31m\]'
+echo "${red//\\[\\e/}"
+
+foo="${red//\\[\\e/}"
+
+# foo == [0;31m\]
+echo "${foo//[0;31m\\/}"
+
+echo "${var//[]/}"
+echo "${red//[]/}"
+
+v=hello
+foo='[:alpha:]'
+
+echo ${v//[[:alpha:]]/}
+echo ${v//[[:alpha]]/}
+echo ${v//[[:alpha]/}

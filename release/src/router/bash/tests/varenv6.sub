@@ -1,0 +1,28 @@
+f()
+{
+	local str=F
+	g str
+}
+
+g()
+{
+	local -n ref=$1
+	printf "%s " "$ref"
+	ref=G
+}
+
+str=OUTSIDE;
+f
+
+printf "%s\n" "$str"
+
+unset -f f g
+unset str
+
+f() { local -a arr=(F); g arr; };
+
+g() { local -n ref=$1; printf "%s " "${ref[0]}"; ref=(G); };
+
+arr=(OUTSIDE);
+f;
+printf "%s\n" "${arr[0]}"

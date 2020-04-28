@@ -1,0 +1,21 @@
+foo[0]=a
+foo[1]=b
+
+[[ -v foo[1] ]] && echo foo index 1: ok
+[[ -v foo[2] ]] || echo foo index 2: ok
+
+[[ -v foo ]] && echo foo: implicit reference to element 0: ok
+
+typeset -i foo
+
+[[ -v foo[1] ]] && echo foo: arithmetic evaluation: ok
+
+typeset -a bar
+bar[1]=set
+
+[[ -v bar ]] || echo bar: array with element zero unset: ok
+[[ -v bar[0] ]] || echo bar: element zero: ok
+
+typeset -a qux
+[[ -v qux ]] || echo qux: unset array: ok
+[[ -v qux[0] ]] || echo qux: unset array element 0: ok

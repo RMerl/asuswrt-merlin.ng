@@ -1,0 +1,16 @@
+hash -r
+echo ${BASH_CMDS[@]}
+
+hash -p /usr/sbin/foo foo
+hash -p /usr/local/bin/qux qux
+
+echo ${!BASH_CMDS[@]}
+echo ${BASH_CMDS[@]}
+
+BASH_CMDS[blat]=/sbin/blat
+BASH_CMDS[sh]=/bin/sh
+
+hash
+
+echo ${!BASH_CMDS[@]}
+echo "${BASH_CMDS[@]}"

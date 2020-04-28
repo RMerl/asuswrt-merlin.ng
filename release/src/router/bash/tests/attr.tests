@@ -1,0 +1,41 @@
+a=(outside)
+
+f1() { readonly a=(1) ; }
+f2() { readonly -a a=(2) ; }
+f3() { readonly 'a=(3)' ; }
+f4() { readonly -a 'a=(4)' ; }
+
+f1
+echo -n after f1:
+declare -p a
+f2
+echo -n after f2:
+declare -p a
+f3
+echo -n after f3:
+declare -p a
+f4
+echo -n after f4:
+declare -p a
+
+b=(outside)
+c=(outside)
+d=(outside)
+
+f2() { readonly -a b=(2) ; }
+f3() { readonly 'c=(3)' ; }
+f4() { readonly -a 'd=(4)' ; }
+
+f2
+echo -n after f2:
+declare -p b
+f3
+echo -n after f3:
+declare -p c
+f4
+echo -n after f4:
+declare -p d
+
+${THIS_SH} ./attr1.sub
+${THIS_SH} ./attr2.sub
+

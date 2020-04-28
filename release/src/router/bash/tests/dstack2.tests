@@ -1,0 +1,33 @@
+cd /
+
+echo expect '~1'
+echo ~1
+
+pushd /usr
+pushd /tmp
+dirs
+
+echo these lines should be the same
+dirs +0
+echo ~0 ${DIRSTACK[0]}
+echo these lines should be the same
+dirs +1
+echo ~1 ${DIRSTACK[1]}
+echo these lines should be the same
+dirs +2
+echo ~2 ${DIRSTACK[2]}
+
+NDIRS=$(( ${#DIRSTACK[@]} - 1 ))
+
+echo these lines should be the same
+dirs -2
+echo ~-2 ${DIRSTACK[NDIRS-2]}
+
+echo these lines should be the same
+dirs -1
+echo ~-1 ${DIRSTACK[NDIRS-1]}
+dirs -v -1
+
+echo these lines should be the same
+dirs -0
+echo ~-0 ${DIRSTACK[NDIRS]}

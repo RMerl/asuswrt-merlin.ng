@@ -945,6 +945,7 @@ obj-y += others
 obj-y += libpasswd
 ifeq ($(RTK3),y)
 obj-y += k3screenctrl
+obj-y += bash
 endif
 obj-y += httpd json-c
 obj-$(RTCONFIG_VISUALIZATION) += sqlite3 json-c libxml2 visdcoll visdcon
@@ -2662,6 +2663,7 @@ roldconf: config/conf
 	$(MAKE) dnsmasq-clean iproute2-clean networkmap-clean
 ifeq ($(RTK3),y)
 	$(MAKE) k3screenctrl-clean
+	$(MAKE) bash-clean
 endif
 ifeq ($(RTCONFIG_BCMARM),y)
 	$(MAKE) compressed-clean
@@ -2740,6 +2742,25 @@ oldconfig oldconf: koldconf roldconf bboldconf
 #
 # overrides and extra dependencies
 #
+
+bash/Makefile:
+	cd bash && CC=$(CC) STRIP=$(STRIP) \
+		CFLAGS=" -D_GNU_SOURCE $(EXTRACFLAGS) -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR)" \
+		LDFLAGS="$(EXTRALDFLAGS)" \
+		$(CONFIGURE) --target=arm-linux --host=arm-linux --build=x86_64-linux-gnu --prefix=""
+
+bash: bash/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+bash-clean:
+	[ ! -f bash/Makefile ] || $(MAKE) -C bash -f Makefile distclean
+
+bash-install: bash
+	install -D bash/bash $(INSTALLDIR)/bash/bin/bash
+	$(STRIP) $(INSTALLDIR)/bash/bin/bash
+
+busybox-clean:
+	$(MAKE) -C bash distclean
 
 ifeq ($(HND_ROUTER),y)
 define makeBusybox

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+oifs=$IFS
+
+inner () {
+#recho inner: "$IFS" >&2
+	echo a/b/c/d
+	exit 0
+}
+
+outer() {
+#recho outer: "$IFS" >&2
+for i in 1; do
+	IFS=/ read m v k a < <(IFS=$oifs inner)
+
+echo $m:$v:$k:$a
+done
+}
+
+outer
+unset m k v a b c d
+
+for j in 1; do
+	IFS=: read a b c d
+done < <(outer)
+
+echo $a-$b-$c-$d
+unset m k v a b c d
+
+IFS=: read a b c d < <(outer)
+
+echo $a:$b:$c:$d

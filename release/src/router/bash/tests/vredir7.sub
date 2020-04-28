@@ -1,0 +1,23 @@
+swizzle()
+{
+exec {fd[0]}<&0
+exec {fd[1]}>&1
+
+exec {stdin}<&${fd[0]}-
+exec {stdout}>&${fd[1]}-
+}
+
+swizzle
+
+echo $stdin $stdout
+
+read line <&$stdin <<EOF
+a
+EOF
+
+echo $line
+echo $line >&$stdout
+
+type swizzle
+
+exit 0

@@ -1,0 +1,25 @@
+set +e
+trap 'echo ERRTRAP' ERR
+
+false
+false
+false
+
+echo after falses
+
+if ! false; then
+	echo if negation ok
+fi
+
+! false
+echo after negation 
+
+while false; do
+	echo while negation ok
+done
+
+echo after while
+
+./trap2a.sub
+
+echo $(false ; echo command substitution)

@@ -1,0 +1,17 @@
+set -- -a bb
+readonly OPTARG
+getopts :x x
+
+echo OPTARG = $OPTARG x = $x
+
+getopts x x
+echo ${OPTARG-unset} x = $x
+
+typeset -r RO=foo
+typeset -n OPTARG=RO
+
+getopts :x x
+typeset -p RO
+
+getopts x x
+typeset -p RO

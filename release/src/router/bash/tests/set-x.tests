@@ -1,0 +1,20 @@
+#!../bash
+# $Id: set-x.tests,v 1.1 2002/12/09 13:12:37 rockyb Exp $
+#
+# Test that "set -x" shows what we think it should.
+#
+set -x
+for ((i=0; i<=5; i++ )) ; do
+  x=0
+done
+for i in 0 1 2 ; do
+  x=i
+done
+case x in 
+ 0) x=i ;;
+ *) x=i ;;
+esac
+set +x
+
+# test BASH_XTRACEFD
+${THIS_SH} ./set-x1.sub

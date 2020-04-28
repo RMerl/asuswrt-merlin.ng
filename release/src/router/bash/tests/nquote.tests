@@ -1,0 +1,120 @@
+expect()
+{
+        echo expect "$@"
+}
+
+expect '<^J^J^J>'
+recho $'\n\n\n'
+
+expect '<++^J++>'
+f=$'\n'
+recho "++$f++"
+unset f
+
+z1=$''
+expect '<>'
+recho "$z1"
+
+ZIFS=$'\n'$'\t'$' '
+
+expect '<^J^I >'
+recho "$ZIFS"
+
+expect '<abc>'
+recho $'abc'
+
+expect '<^M^[^Gabc>'
+recho $'\r\e\aabc'
+
+D=$"hello"," "$"world"
+
+expect '<hello,> <world>'
+recho $D
+
+expect '<hello, world>'
+recho "$D"
+
+D=$""
+expect '<>'
+recho "$D"
+
+world=chet
+
+expect '<$hello, world>'
+recho \$"hello, world"
+
+expect '<hello, $world>'
+recho $"hello, \$world"
+
+expect '<hello, "world">'
+recho $"hello, \"world\""
+
+expect '<hello, $"world">'
+recho $"hello"', $"world"'
+
+expect '<hello, $"world">'
+recho $'hello, $"world"'
+
+expect '<$hello, chet>'
+recho \$"hello, $world"
+
+expect '<hello, chet>'
+recho $"hello, $world"
+
+z=$'\v\f\a\b'
+case "$z" in
+$'\v\f\a\b')	echo ok;;
+*)		echo bad;;
+esac
+
+# Dave Korn says this should be allowed and echo 'abcd'
+echo $'\'abcd\''
+
+# printf translates \' to ' ...
+printf "\'abcd\'\n"
+
+# but echo -e doesn't
+echo -e "\'abcd\'"
+echo -e "\\'abcd\\'"
+
+# and what do we do about unrecognized escape sequences?
+
+shopt -s xpg_echo
+
+recho $'A\CB'
+
+recho "A\CB"
+
+cde=c
+recho $'ab$cde'
+
+printf "%b\n" 'A\CB'
+printf 'A\CB\n'
+
+echo 'A\CB'
+
+world=chet
+
+recho $'hello, $"world"'
+recho $'hello, \$"world"'
+recho $'hello, $\"world"'
+
+recho "hello, $"world""
+
+# ansi quoting inside double-quoted command subst - bash-3.1 bug
+echo $(set -- $'a b'; echo $#)
+echo "$(set -- $'a b'; echo $#)"
+
+echo "$(echo $';foo')"
+
+args ()
+{
+ for a in "$@";do echo "'$a'";done
+}
+unset mytab
+recho "${mytab:-$'\t'}"
+recho "$( args $'A\tB' )"
+
+${THIS_SH} ./nquote1.sub
+${THIS_SH} ./nquote2.sub
+${THIS_SH} ./nquote3.sub

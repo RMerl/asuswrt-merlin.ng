@@ -1,0 +1,20 @@
+shopt -s expand_aliases
+
+alias foo=echo
+
+< /dev/null foo bar
+
+< /dev/null x=value
+echo $x
+
+< /dev/null x=newvalue foo bar
+echo $x
+
+# problem reported by Vincent Lefevre
+alias a="echo OK >&2"
+a
+> /dev/null a
+
+${THIS_SH} -c 'shopt -s expand_aliases; alias a="echo OK >&2"
+ a
+ > /dev/null a'

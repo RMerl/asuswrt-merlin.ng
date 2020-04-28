@@ -1,0 +1,19 @@
+LC_ALL=en_US.UTF-8
+unset LC_ALL
+unset LANG
+export LC_ALL=C
+export LANG=C
+
+set +o posix
+
+# attempting to source a non-existant file is not an error...
+. /tmp/source-notthere
+
+echo after bad source 1
+
+set -o posix
+
+# ...unless you're in posix mode
+. /tmp/source-notthere
+
+echo after bad source 2

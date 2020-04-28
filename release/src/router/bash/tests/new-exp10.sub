@@ -1,0 +1,86 @@
+# new framework for parameter transformations, post bash-4.3
+
+printf "<%s>" "${x@Q}" ; echo
+printf "<%s>" "${x@E}" ; echo
+printf "<%s>" "${x@P}" ; echo
+printf "<%s>" "${x@A}" ; echo
+
+x="ab 'cd' ef"
+printf "<%s> " "${x@Q}" ; echo 
+
+printf "<%s>" "${x@C}"
+
+# if unquoted, normal word splitting happens
+set -- ab 'cd ef' '' gh
+printf "<%s> " "${@@Q}" ; echo
+printf "<%s> " "${*@Q}" ; echo
+printf "<%s> " ${@@Q} ; echo
+printf "<%s> " ${*@Q} ; echo
+
+y[0]=4
+y[1]='ab cd'
+
+printf "<%s> " "${y[1]@Q}" ; echo
+printf "<%s> " "${y[@]@Q}" ; echo	# mksh doesn't like @ or * or arrays subscripted with them
+
+printf "<%s> " "${z@Q}"	; echo	# empty string?
+
+recho ${z@Q}		# this disappears
+
+#
+HOST=host
+SHELL_LEVEL=2
+NPS1='\[\]${HOST}($SHELL_LEVEL)[\v]\$ '
+
+recho "${NPS1@P}"
+
+#
+D=' \t\n'
+printf "<%s>" "${D@E}" ; echo
+printf "<%s>" "${D@Q}" ; echo
+
+E=$' \t\n'
+printf "<%s>" "${E@E}" ; echo
+printf "<%s>" "${E@Q}" ; echo
+
+declare x
+declare -r x="ab 'cd' ef"
+printf "%s" "${x@A}" ; echo 
+
+set -- ab 'cd ef' '' gh
+printf "%s " "${@@A}" ; echo
+
+A=( "$@" )
+printf "%s " "${A[@]@A}" ; echo
+B=()
+printf "%s " "${B[@]@A}" ; echo
+
+unset A
+declare -A A
+A=( [one]=1 [two]='b c' [three]='' [four]=de )
+printf "%s " "${A[@]@A}" ; echo
+
+unset X
+declare X
+declare -r X="ab 'cd' ef"
+printf "%s" "${X@a}" ; echo 
+
+set -- 1 2 3 4
+
+unset A
+A=( "$@" )
+printf "%s " "${A@a}" ; echo
+
+unset A
+declare -A A
+A=( [one]=1 [two]='b c' [three]='' [four]=de )
+printf "%s " "${A@a}" ; echo
+
+declare -ir Y=0
+printf "%s" "${Y@a}" ; echo 
+
+# make sure we still handle ${#@} and ${@} as posix requires
+set -- a b c d e
+echo ${@}
+echo ${#@}
+echo a${#@}b

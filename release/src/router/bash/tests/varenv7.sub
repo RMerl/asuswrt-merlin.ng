@@ -1,0 +1,62 @@
+foo()
+{
+	local -a myvar=()
+	local -r myvar=0
+
+	echo "${myvar[@]}"
+	declare -p myvar
+}
+
+foo2()
+{
+	local -i myvar=0
+	local -r myvar=1
+
+	echo "${myvar}"
+	declare -p myvar
+}
+
+declare -a outside=()
+declare -r outside
+declare -p outside
+
+outside1=1
+declare -ir outside1
+declare -p outside1
+
+tempenv=foo declare -r tempenv
+echo tempenv = $tempenv
+
+foo
+foo2
+
+tempvar1=foo declare -r tempvar1
+echo ${tempvar1@A}
+
+tempvar2=bar declare -r tempvar2=qux
+echo ${tempvar2@A}
+
+unset foo
+readonly var=outside
+
+func()
+{
+	local var=inside
+	echo "inside: $var"
+}
+
+func
+echo outside: $var
+
+unset -f f
+unset VAR1 VAR2
+export VAR1=abc VAR2=abc
+
+f()
+{
+	local VAR1; local VAR2
+	echo local: ${VAR1-unset1} ${VAR2-unset2}
+	printenv VAR1 ; printenv VAR2
+}
+
+f

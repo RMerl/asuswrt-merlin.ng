@@ -1,0 +1,18 @@
+POSIXLY_CORRECT=1
+x=2
+x+=5 eval printf '"$x "'
+echo "$x"
+
+unset x
+typeset -i x=2
+x+=5 eval printf '"$x "'
+echo "$x"
+
+a=1
+a+=4
+echo $a
+
+# idiotically, ksh93 makes these two cases differ (?)
+a+=5 printenv a
+a+=5 eval printf '"$a "'
+echo $a

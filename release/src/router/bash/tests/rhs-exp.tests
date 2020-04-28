@@ -1,0 +1,51 @@
+selvecs='&m68kcoff_vec'
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS='$selvecs'}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\'$selvecs\'}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="$selvecs"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\"$selvecs\"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\\$selvecs\\}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=$selvecs}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\$selvecs}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\$selvecs"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS='$selvecs'"$null"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\\$selvecs"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\'$selvecs\'"}"
+
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS='$selvecs'}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\'$selvecs\'}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="$selvecs"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\"$selvecs\"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\\$selvecs\\}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=$selvecs}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\$selvecs}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\$selvecs"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS='$selvecs'"$null"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\\$selvecs"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\'$selvecs\'"}
+
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\p"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\p}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\\"}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\\}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS=\'}"
+recho "TDEFAULTS = ${selvecs:+-DSELECT_VECS="\'"}"
+
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\p"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\p}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\\"}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\\}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS=\'}
+recho TDEFAULTS = ${selvecs:+-DSELECT_VECS="\'"}
+
+# more tests for bash-3.0 behavior
+
+var="a*b" ; echo "${var//\\*/}"
+var="a*b" ; echo "${var//\*/}"
+
+var="a?b" ; echo "${var//\\?/}"
+var="a?b" ; echo "${var//\?/}"
+
+var="a/b" ; echo "${var//\\//}"
+var="a/b" ; echo "${var//\//}"
+
+${THIS_SH} ./rhs-exp1.sub

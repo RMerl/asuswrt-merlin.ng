@@ -1,0 +1,20 @@
+# make sure that bash really checks the right things when deciding what
+# constitutes an executable file
+
+[ $UID -eq 0 ] && { echo "exec7.sub: the test suite should not be run as root" >&2 ; }
+
+: ${TMPDIR:=/tmp}
+
+cd $TMPDIR || { echo "cannot cd to $TMPDIR" >&2 ; exit 2; }
+
+mkdir testa testb
+
+echo 'echo "testa"' > testa/foo
+echo 'echo "testb"' > testb/foo
+
+chmod 655 testa/foo
+chmod 755 testb/foo
+
+PATH=$TMPDIR/testa:$TMPDIR/testb $THIS_SH -c foo
+
+rm -rf testa testb

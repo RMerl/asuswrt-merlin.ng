@@ -1,0 +1,48 @@
+: ${TMPDIR:=/var/tmp}
+TMPFILE=$TMPDIR/foo
+
+bar()
+{
+exec {v}>$TMPFILE
+echo $v
+}
+
+bar
+
+echo foo 1 >&$v
+echo foo 2 >&$v
+echo foo 3 >&$v
+
+cat $TMPFILE
+rm -f $TMPFILE
+
+type bar
+exec {v}>&-
+
+readonly v=42
+bar
+
+echo foo 1 >&$v
+echo foo 2 >&$v
+echo foo 3 >&$v
+
+cat $TMPFILE
+rm -f $TMPFILE
+
+type bar
+
+${THIS_SH} ./vredir1.sub
+
+${THIS_SH} ./vredir2.sub
+
+${THIS_SH} ./vredir3.sub
+
+${THIS_SH} ./vredir4.sub
+
+${THIS_SH} ./vredir5.sub
+
+${THIS_SH} ./vredir6.sub
+
+${THIS_SH} ./vredir7.sub
+
+exit 0

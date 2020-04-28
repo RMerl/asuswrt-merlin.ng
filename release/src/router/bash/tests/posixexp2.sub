@@ -1,0 +1,21 @@
+
+x=a\ b
+[ "$x" = "${x?}" ] || exit 1
+set -- ${x?}
+{ [ "$#" = 2 ] && [ "$1" = a ] && [ "$2" = b ]; } || exit 1
+unset x
+(echo ${x?abcdefg}) 2>&1 | grep abcdefg >/dev/null || exit 1
+${THIS_SH} -c 'unset foo; echo ${foo?}' 2>/dev/null && exit 2
+${THIS_SH} -c 'foo=; echo ${foo:?}' 2>/dev/null && exit 3
+${THIS_SH} -c 'foo=; echo ${foo?}' >/dev/null || exit 4
+${THIS_SH} -c 'foo=1; echo ${foo:?}' >/dev/null || exit 5
+${THIS_SH} -c 'echo ${!?}' 2>/dev/null && exit 6
+${THIS_SH} -c ':& echo ${!?}' >/dev/null || exit 7
+${THIS_SH} -c 'echo ${#?}' >/dev/null || exit 8
+${THIS_SH} -c 'echo ${*?}' 2>/dev/null && exit 9
+${THIS_SH} -c 'echo ${*?}' ${THIS_SH} x >/dev/null || exit 10
+${THIS_SH} -c 'echo ${1?}' 2>/dev/null && exit 11
+${THIS_SH} -c 'echo ${1?}' ${THIS_SH} x >/dev/null || exit 12
+${THIS_SH} -c 'echo ${2?}' ${THIS_SH} x 2>/dev/null && exit 13
+${THIS_SH} -c 'echo ${2?}' ${THIS_SH} x y >/dev/null || exit 14
+exit 0

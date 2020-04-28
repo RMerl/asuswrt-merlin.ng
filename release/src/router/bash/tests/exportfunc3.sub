@@ -1,0 +1,25 @@
+# test function names that cannot be exported
+
+unset foo		# remove from environment if necessary
+
+function foo=bar
+{
+	echo equals-1
+}
+
+export -f 'foo=bar'
+echo status: $?
+
+foo\=bar
+printenv | grep 'foo=bar'
+${THIS_SH} -c 'foo\=bar 2>/dev/null'
+
+function /bin/echo
+{
+	echo bad echo
+}
+
+/bin/echo foo
+export -f '/bin/echo'
+
+${THIS_SH} -c '/bin/echo bar'

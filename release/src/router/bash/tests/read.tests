@@ -1,0 +1,98 @@
+echo " a " | (read x; echo "$x.")
+
+echo " a  b  " | ( read x y ; echo -"$x"-"$y"- )
+echo " a  b\ " | ( read x y ; echo -"$x"-"$y"- )
+echo " a  b  " | ( read x ; echo -"$x"- )
+echo " a  b\ " | ( read x ; echo -"$x"- )
+
+echo " a  b\ " | ( read -r x y ; echo -"$x"-"$y"- )
+echo " a  b\ " | ( read -r x ; echo -"$x"- )
+
+echo "\ a  b\ " | ( read -r x y ; echo -"$x"-"$y"- )
+echo "\ a  b\ " | ( read -r x ; echo -"$x"- )
+echo " \ a  b\ " | ( read -r x y ; echo -"$x"-"$y"- )
+echo " \ a  b\ " | ( read -r x ; echo -"$x"- )
+
+# make sure that CTLESC and CTLNUL are passed through correctly
+echo $'\001' | ( read var ; recho "$var" )
+echo $'\001' | ( read ; recho "$REPLY" )
+
+echo $'\177' | ( read var ; recho "$var" )
+echo $'\177' | ( read ; recho "$REPLY" )
+
+# make sure a backslash-quoted \\n still disappears from the input when
+# we're not reading in `raw' mode, and no stray CTLESC chars are left in
+# the input stream
+echo $'ab\\\ncd' | ( read ; recho "$REPLY" )
+
+echo "A B " > /tmp/IN
+unset x y z
+read x y z < /tmp/IN
+echo 1: "x[$x] y[$y] z[$z]"
+echo 1a: ${z-z not set}
+read x < /tmp/IN
+echo 2: "x[$x]"
+rm /tmp/IN
+
+# this is where the bash `read' behavior with respect to $REPLY differs
+# from ksh93
+echo "A B " > /tmp/IN
+
+read < /tmp/IN
+echo "[$REPLY]"
+
+rm /tmp/IN
+
+echo " A B " > /tmp/IN
+
+read < /tmp/IN
+echo "[$REPLY]"
+
+rm /tmp/IN
+
+# make sure that read with more variables than words sets the extra
+# variables to the empty string
+
+bvar=bvar
+cvar=cvar
+echo aa > /tmp/IN
+read avar bvar cvar < /tmp/IN
+echo =="$avar"==
+echo =="$bvar"==
+echo =="$cvar"==
+
+rm /tmp/IN
+
+# test behavior of read with various settings of IFS
+
+echo " foo" | { IFS= read line; recho "$line"; }
+
+echo " foo" | { IFS= ; read line; recho "$line"; }
+
+echo " foo" | { unset IFS ; read line; recho "$line"; }
+
+echo " foo" | { IFS=$'\n' ; read line; recho "$line"; }
+
+echo " foo" | { IFS=$' \n' ; read line; recho "$line"; }
+
+echo " foo" | { IFS=$' \t\n' ; read line; recho "$line"; }
+
+echo " foo" | { IFS=$':' ; read line; recho "$line"; }
+
+# test read -d delim behavior
+${THIS_SH} ./read1.sub
+
+# test read -t timeout behavior
+${THIS_SH} ./read2.sub
+
+# test read -n nchars behavior
+${THIS_SH} ./read3.sub
+
+# test read -u fd behavior
+${THIS_SH} ./read4.sub
+
+# test behavior when IFS is not the default -- bug through bash-2.05b
+${THIS_SH} ./read5.sub
+
+# test behavior of read -t 0
+${THIS_SH} ./read6.sub

@@ -1,0 +1,27 @@
+echo $(( 0x7e ))
+echo $(( 0x7f ))
+echo $(( 0x80 ))
+
+a=$'\x80'
+recho "$a"
+
+a=( $'\x7e' $'\x7f' $'\x80' )
+
+recho "${a[@]}"
+
+unset a
+a[0]=$'\x7e'
+a[1]=$'\x7f'
+a[2]=$'\x80'
+
+recho "${a[@]}"
+
+b1=$'\x7e'
+b2=$'\x7f'
+b3=$'\x80'
+
+unset a
+a=( "$b1" "$b2" "$b3" )
+
+recho "${a[@]}"
+

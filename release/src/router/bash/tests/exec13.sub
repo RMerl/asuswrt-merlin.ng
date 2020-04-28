@@ -1,0 +1,21 @@
+echo x1 | ( cat & wait )
+echo x1a | ( :& cat & wait )
+
+echo x2 | for f in 1; do
+	cat & wait
+done
+echo x2a | if true; then cat & wait; fi
+echo x2b | for (( i=0; i < 1; i++ )) ; do cat & wait; done
+
+echo x3 | { cat & wait; }
+
+lambda() { cat & wait; }
+echo x3a | lambda
+
+: ${TMPDIR:=/tmp}
+SRCF=$TMPDIR/bash-src-$$
+cat > $SRCF << \EOF
+cat & wait
+EOF
+echo x3b | . $SRCF
+rm -f $SRCF

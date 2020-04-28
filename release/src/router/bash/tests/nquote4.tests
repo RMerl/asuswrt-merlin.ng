@@ -1,0 +1,24 @@
+recho $'ab\x{}cd'
+recho $'ab\x{41}cd'
+recho $'ab\x41cd'
+
+recho $'ab\x{4}cd'
+recho $'ab\x4cd'
+
+recho $'ab\x{cde'
+
+recho $'ab\x{cde'
+recho $'ab\x{cd}e'
+recho $'ab\x{c}de'
+
+recho $'\x{abcX'
+recho $'\x{ab}cX'
+recho $'\x{}X'
+recho $'\x{X'
+recho $'\x{01234567X'
+
+recho $'\x{41}b'
+recho $'\x{}bc'
+recho $'\x{1}bcd'
+
+recho $'\x{bde'

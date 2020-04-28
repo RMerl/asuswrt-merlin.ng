@@ -1,0 +1,18 @@
+# make sure process substitution runs the exit trap
+[[ -n $(< <(trap "cat /dev/fd/0" EXIT)) ]] <<<works && echo works || echo "fail :("
+
+read foo < <(trap "echo bar" EXIT)
+echo $foo
+
+cat <(trap "echo bar" EXIT)
+
+trap "echo bar" EXIT	#should proc subst inherit this?
+cat <(echo foo ; exit 0;)
+
+trap - 0
+trap
+
+cat <(echo foo; trap "echo bar" EXIT)
+
+trap "echo bar" EXIT	#should proc subst inherit this?
+cat <(echo foo)

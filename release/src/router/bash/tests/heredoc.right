@@ -1,0 +1,90 @@
+there
+one - alpha
+two - beta
+three - gamma
+hi\
+there$a
+stuff
+hi\
+there
+EO\
+F
+hi
+hi
+tab 1
+tab 2
+tab 3
+abc
+def ghi
+jkl mno
+fff is a function
+fff () 
+{ 
+    ed /tmp/foo  > /dev/null <<ENDOFINPUT
+/^name/d
+w
+q
+ENDOFINPUT
+
+    aa=1
+}
+fff is a function
+fff () 
+{ 
+    ed /tmp/foo > /dev/null  <<ENDOFINPUT
+/^name/d
+w
+q
+ENDOFINPUT
+
+    aa=1
+}
+foo is a function
+foo () 
+{ 
+    echo;
+    cat  <<END
+bar
+END
+
+    cat  <<EOF
+qux
+EOF
+
+}
+
+bar
+qux
+
+bar
+qux
+abc def geh
+./heredoc3.sub: line 9: warning: here-document at line 7 delimited by end-of-file (wanted `EOF')
+= here is the text =
+./heredoc3.sub: line 15: warning: here-document at line 13 delimited by end-of-file (wanted `EOF')
+this paren ) is not a problem
+./heredoc3.sub: line 21: warning: here-document at line 19 delimited by end-of-file (wanted `EOF')
+these balanced parens ( ) are not a problem
+./heredoc3.sub: line 27: warning: here-document at line 25 delimited by end-of-file (wanted `EOF')
+quoted balanced parens \( ) are not a problem either
+more text in a subshell
+some more text in a different subshell
+end
+hello
+hello
+ENDEND
+end ENDEND
+hello
+end hello
+end x*x
+helloEND
+end helloEND
+hello
+\END
+end hello<NL>\END
+./heredoc3.sub: line 78: warning: here-document at line 76 delimited by end-of-file (wanted `EOF')
+./heredoc3.sub: line 79: syntax error: unexpected end of file
+comsub here-string
+./heredoc.tests: line 105: warning: here-document at line 103 delimited by end-of-file (wanted `EOF')
+hi
+there

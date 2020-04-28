@@ -1,0 +1,18 @@
+# test effect of assigning to readonly vars on loops and non-interactive shells
+# fatal error when in posix mode
+var=foo
+readonly var
+for num in 1 2 3 4 5; do
+	if [ $num -eq 3 ]; then
+		var=bar
+	fi
+	echo $num
+done 
+echo after readonly assignment
+
+# non-numeric arguments to break are fatal errors for all non-interactive shells
+for f in 1 2 3 4 5
+do
+	break x
+done
+echo after loop

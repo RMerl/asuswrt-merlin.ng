@@ -1,0 +1,44 @@
+declare -a A
+mapfile A < mapfile.data
+for (( i = 0 ; i < ${#A[@]} ; i++ )); do
+    echo -n "${A[${i}]}"
+done
+
+declare -a B
+mapfile -t B < mapfile.data
+for (( i = 0 ; i < ${#B[@]} ; i++ )); do
+    echo "${B[${i}]}"
+done
+
+mapfile -C "echo" -c 1 A < mapfile.data
+mapfile -C "echo" -c 3 A < mapfile.data
+mapfile -C "echo" -c 19 A < mapfile.data
+
+declare -a C
+mapfile -t -u 3 C 3< mapfile.data < mapfile.tests
+for (( i = 0 ; i < ${#C[@]} ; i++ )); do
+    echo "${C[${i}]}"
+done
+
+
+declare -a D
+for (( i = 0 ; i < 30; i++ )); do
+    D[${i}]="[$i] aaa"
+done
+mapfile -O 10 -t D < mapfile.data
+for (( i = 0 ; i < ${#D[@]} ; i++ )); do
+    echo "${D[${i}]}"
+done
+
+declare -a E
+for (( i = 0 ; i < 30; i++ )); do
+    E[${i}]="[$i] aaa"
+done
+mapfile -O 10 -n 5 -t E < mapfile.data
+for (( i = 0 ; i < ${#E[@]} ; i++ )); do
+    echo "${E[${i}]}"
+done
+
+${THIS_SH} ./mapfile1.sub
+
+${THIS_SH} ./mapfile2.sub

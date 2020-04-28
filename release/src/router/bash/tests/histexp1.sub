@@ -1,0 +1,23 @@
+LC_ALL=C
+LANG=C
+
+set -o history
+set -H
+
+echo '!'
+echo "!"
+echo !
+
+echo "$( echo '!' )"
+echo "$( echo "!" )"
+echo "$( echo ! )"
+
+echo $( echo '!' )
+echo $( echo "!" )
+echo $( echo ! )
+
+echo "$( echo "\!" )"
+echo "\!"
+
+echo "$( echo '\!' )"
+echo '\!'

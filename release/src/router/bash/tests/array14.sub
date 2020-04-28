@@ -1,0 +1,30 @@
+# start at a test suite for negative indexed array subscripts -- post bash-4.2
+x=( 0 1 2 3 4 5)
+declare -p x
+
+unset 'x[-1]'
+declare -p x
+
+unset 'x[-2]'
+declare -p x
+
+unset 'x[-10]'
+
+x[-2]=3
+declare -p x
+
+x+=( five )
+declare -p x
+x[-1]=5
+declare -p x
+
+x+=( [-1]=foo )
+declare -p x
+
+x[-1]=5
+declare -p x
+
+x[-2]+=four
+declare -p x
+
+echo "strlen(${x[-2]})" = ${#x[-2]}

@@ -1,0 +1,31 @@
+#!/bin/bash
+
+arrayA=("A" "B" "C")
+
+arrayB=(  ${arrayA[*]}  )
+echo "Case01---${#arrayB[*]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+arrayB=( "${arrayA[*]}" )
+echo "Case02---${#arrayB[*]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+arrayB=(  ${arrayA[@]}  )
+echo "Case03---${#arrayB[@]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+arrayB=( "${arrayA[@]}" )
+echo "Case04---${#arrayB[@]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+xx="arrayA[*]"
+
+arrayB=(  ${!xx}  )
+echo "Case05---${#arrayB[*]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+arrayB=( "${!xx}" )
+echo "Case06---${#arrayB[*]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+xx="arrayA[@]"
+
+arrayB=(  ${!xx}  )
+echo "Case07---${#arrayB[@]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"
+
+arrayB=( "${!xx}" )
+echo "Case08---${#arrayB[@]}---${arrayB[0]}:${arrayB[1]}:${arrayB[2]}---"

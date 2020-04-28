@@ -1,0 +1,42 @@
+export LC_ALL=C
+export LANG=C
+
+# test out the new $(< filename) code
+# it should be exactly equivalent to $(cat filename)
+
+FILENAME=/tmp/bashtmp.x$$
+
+trap 'rm -f $FILENAME' 0
+
+cat >$FILENAME << EOF
+line 1
+line 2
+line 3
+EOF
+
+LINES1=$(cat $FILENAME)
+LINES2=$(< $FILENAME)
+
+if [[ $LINES1 != $LINES2 ]]; then
+	echo 'whoops: $(< filename) failed'
+fi
+
+LINES2=$(< /tmp/bashtmp.x*)
+if [[ $LINES1 != $LINES2 ]]; then
+	echo 'whoops: $(< filename) with glob expansion failed'
+fi
+
+# but the glob expansion in the redirection should fail in posix mode
+set -o posix
+LINES2=$(< /tmp/bashtmp.x*)
+set +o posix
+
+# now see what happens when we try it with a non-existant file
+LINES3=$(< /tmp/redir-notthere)
+echo $?
+
+# These were bugs through bash-4.2
+{ : "$({xxxxxxxxxxxxxxxxxxxx}</dev/stdin)"; } <<<'hi'
+echo ${xxxxxxxxxxxxxxxxxxxx}
+
+{ echo "$(1111111111111111111111</dev/stdin)"; } <<<'hi'

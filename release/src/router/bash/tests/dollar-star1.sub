@@ -1,0 +1,31 @@
+set -- a b c
+x=(a b c); IFS='|'
+
+echo "${*/#/x}"
+echo "${x[*]/#/x}"
+
+echo "$*"
+echo "${x[*]}"
+
+echo "$@"
+echo "${x[@]}"
+
+echo "${@/#/x}"
+echo "${x[@]/#/x}"
+
+echo "${*:1:2}"
+echo "${x[*]:1:2}"
+
+echo "${@:1:2}"
+echo "${x[@]:1:2}"
+
+IFS=$' \t\n'
+set -- xa xb xc
+x=(xa xb xc)
+IFS='|'
+
+echo "${*#x}"
+echo "${x[*]#x}"
+
+echo "$*"
+echo "${x[*]}"

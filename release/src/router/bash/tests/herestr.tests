@@ -1,0 +1,41 @@
+a=hot
+b=damn
+f1()
+{
+cat <<< "abcde"
+
+cat <<< "yo"
+
+cat <<< "$a $b"
+
+cat <<< 'what a fabulous window treatment'
+
+cat <<< 'double"quote'
+}
+
+f2()
+{
+cat <<< onetwothree
+}
+
+f3()
+{
+cat <<< "$@"
+}
+
+f1
+f2
+f3 first second third
+
+typeset -f
+
+cat <<< 'echo $(echo hi)'
+
+cat <<< "echo ho"
+
+cat <<< "echo $(echo off to work we go)"
+
+IFS="/" read -r -d $'\000' -a uu <<< /kghfjk/jkfzuk/i
+declare -p uu
+
+${THIS_SH} ./herestr1.sub

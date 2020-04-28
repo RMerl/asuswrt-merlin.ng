@@ -1,0 +1,50 @@
+: ${TMPDIR:=/tmp}
+
+func()
+{
+	echo "to stdout"
+	echo "to stderr" >&2
+}
+
+TMPFN=$TMPDIR/foo-$$
+
+rm -f $TMPFN
+
+echo hey > $TMPFN
+func &>> $TMPFN
+
+cat $TMPFN
+
+echo
+func &> $TMPFN
+
+cat $TMPFN
+
+echo
+func >$TMPFN
+cat $TMPFN
+
+echo
+echo hey > $TMPFN
+func >> $TMPFN
+cat $TMPFN
+
+rm -f $TMPFN
+
+logfunc()
+{
+	echo "$@" &>> $TMPDIR/log
+}
+
+type logfunc
+
+echo foo 2>&1
+
+bix()
+{
+echo foo |& cat
+}
+
+type bix
+
+bix

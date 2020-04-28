@@ -1,0 +1,94 @@
+# let's try an error message first
+shopt -z
+
+# first, set up a known environment
+shopt -u cdable_vars
+shopt -s cdspell
+shopt -u checkhash
+shopt -u checkwinsize
+shopt -s cmdhist
+shopt -u dotglob
+shopt -u execfail
+shopt -s expand_aliases
+shopt -u extglob
+shopt -u histreedit
+shopt -u histappend
+shopt -u histverify
+shopt -s hostcomplete
+shopt -u huponexit
+shopt -s interactive_comments
+shopt -u lithist
+shopt -u mailwarn
+shopt -u nocaseglob
+shopt -u nullglob
+shopt -s promptvars
+shopt -u shift_verbose
+shopt -s sourcepath
+shopt -u xpg_echo
+
+# Now, start checking the output
+builtin printf -- "--\n"
+shopt -p	# list 'em all
+builtin printf -- "--\n"
+# test specific variables
+shopt -p huponexit
+shopt -p checkwinsize
+shopt -p sourcepath
+
+builtin printf -- "--\n"
+shopt -s -p
+builtin printf -- "--\n"
+shopt -u -p
+builtin printf -- "--\n"
+shopt -u
+
+# Now set up another known environment
+set +o allexport
+set -o braceexpand
+set +o errexit
+set -o hashall
+set -o histexpand
+set +o keyword
+set -o monitor
+set +o noclobber
+set +o noexec
+set +o noglob
+set +o notify
+set +o nounset
+set +o onecmd
+set +o physical
+set -o privileged
+set +o verbose
+set +o xtrace
+set -o history
+set +o ignoreeof
+set -o interactive-comments
+set +o posix
+set -o emacs
+set +o vi
+
+# list 'em all
+builtin printf -- "--\n"
+shopt -o -p
+
+builtin printf -- "--\n"
+set -o
+builtin printf -- "--\n"
+set +o
+
+# test specific variables
+builtin printf -- "--\n"
+shopt -p -o history
+shopt -p -o verbose
+
+builtin printf -- "--\n"
+shopt -s -p -o
+builtin printf -- "--\n"
+shopt -u -p -o
+builtin printf -- "--\n"
+shopt -u -o
+
+# errors
+builtin printf -- "--\n"
+shopt -p xyz1
+shopt -o -p xyz1

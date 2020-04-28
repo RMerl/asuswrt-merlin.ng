@@ -1,0 +1,160 @@
+abc
+./redir.tests: line 15: /tmp/redir-test: cannot overwrite existing file
+abc
+def
+def
+./redir.tests: line 31: $z: ambiguous redirect
+Point 1
+Point 2
+to a
+to b
+Point 3
+to a
+to a
+to b
+to b
+Point 4
+to c
+Point 5
+this is redir1.sub
+this is redir2.sub
+read line1 "ab"
+read line2 "root"
+read line3 "cd"
+read line4 "daemon"
+from stdin: aa
+to stdout
+./redir4.sub: line 32: $fd: ambiguous redirect
+./redir4.sub: line 33: $fd: ambiguous redirect
+/tmp/err-and-out:
+to stdout
+to stderr
+/tmp/err-and-out:
+to stdout
+to stderr
+0 -- 3 0
+0 -- 4 0
+ab
+cd
+ef
+gh
+ij
+kl
+0
+ab
+cd
+cd
+./redir.tests: line 154: redir1.*: No such file or directory
+# tests of ksh93-like dup-and-close redirection operators
+exec 9<$0
+
+f()
+{
+exec 5<$0
+
+exec 0<&5-
+
+while read line; do
+echo "$line"
+done
+}
+
+f
+
+typeset -f f
+
+# make sure it was closed
+read -u 5 foo
+echo after read
+
+exec 5<&0
+
+exec <&-
+
+read abcde
+
+exec 0<&9-
+read line
+echo $line
+f () 
+{ 
+    exec 5< $0;
+    exec 0<&5-;
+    while read line; do
+        echo "$line";
+    done
+}
+./redir5.sub: line 20: read: 5: invalid file descriptor: Bad file descriptor
+after read
+./redir5.sub: line 27: read: read error: 0: Bad file descriptor
+# tests of ksh93-like dup-and-close redirection operators
+/
+/
+/
+0
+0
+0
+before block
+after block
+c1 is 1
+c2 is 2
+c3 is 3
+c4 is 4
+fd 10
+fd 8
+fd 10
+fd 8
+1
+2
+3
+4
+1
+2
+3
+4
+cat /tmp/foo
+whatsis
+hey
+to stdout
+to stderr
+
+to stdout
+to stderr
+
+to stderr
+to stdout
+
+to stderr
+hey
+to stdout
+logfunc is a function
+logfunc () 
+{ 
+    echo "$@" &>> $TMPDIR/log
+}
+foo
+bix is a function
+bix () 
+{ 
+    echo foo 2>&1 | cat
+}
+foo
+::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+1
+./redir11.sub: line 8: $a: Bad file descriptor
+./redir11.sub: line 9: $(echo $a): Bad file descriptor
+7
+after: 42
+./redir11.sub: line 24: echo: write error: Bad file descriptor
+./redir11.sub: line 25: echo: write error: Bad file descriptor
+./redir11.sub: line 26: $(a=4 foo): Bad file descriptor
+./redir11.sub: line 27: $(a=4 foo): Bad file descriptor
+./redir11.sub: line 30: $a: Bad file descriptor
+./redir11.sub: line 31: $(echo $a): Bad file descriptor
+./redir11.sub: line 39: $(ss= declare -i ss): ambiguous redirect
+after: 42
+a+=3
+foo
+foo
+./redir11.sub: line 53: $(echo $a): Bad file descriptor
+123

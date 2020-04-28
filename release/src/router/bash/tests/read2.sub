@@ -1,0 +1,32 @@
+a=4
+
+read -t 2 a < /dev/tty
+estat=$?
+if [ $estat -gt 128 ]; then
+	echo timeout 1: ok
+else
+	echo $estat
+fi
+
+echo $a
+
+sleep 5 | read -t 1 a
+estat=$?
+if [ $estat -gt 128 ]; then
+	echo timeout 2: ok
+else
+	echo $estat
+fi
+
+echo $a
+
+read -t -3 a < /dev/tty
+echo $?
+
+echo $a
+
+# the above should all time out
+echo abcde | {
+	read -t 2 a
+	echo $a
+}

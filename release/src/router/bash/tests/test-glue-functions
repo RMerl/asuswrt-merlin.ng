@@ -1,0 +1,9 @@
+# shell functions to include in multiple test files
+
+# squeeze out blanks to avoid white space differences in od implementations
+_intl_normalize_spaces()
+{
+	sed -e 's/[[:space:]]\{1,\}/ /g' -e 's/[[:space:]]*$//'
+}
+
+

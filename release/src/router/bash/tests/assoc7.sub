@@ -1,0 +1,16 @@
+# problem with bash versions through bash-4.2
+foo()
+{
+    declare -A hash
+    declare hash[baz]=bar #bash crashes here
+
+    echo ${hash[@]}
+}
+
+foo
+
+declare -a ary
+printf -v ary[0] "%b" ""
+echo "after printf"
+x="${ary[*]}"  # segfaults here
+echo "after use: $?" 

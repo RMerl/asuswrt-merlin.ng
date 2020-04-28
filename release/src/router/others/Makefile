@@ -7,7 +7,7 @@ install:
 	install -d $(INSTALLDIR)/usr/sbin
 	install -d $(INSTALLDIR)/lib
 
-ifeq ($(TCONFIG_USB),y)
+ifeq ($(RTCONFIG_USB),y)
 # Optware perl symlink
 	install -d $(INSTALLDIR)/usr/bin
 	ln -sf /opt/bin/perl $(INSTALLDIR)/usr/bin/perl

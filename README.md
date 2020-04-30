@@ -1,19 +1,35 @@
-asuswrt-merlin New Gen (version 382.xx and higher)
-==================================================
+﻿## asuswrt-merlin New Gen for K3(version 382.xx and higher)
 
-#### Support is available via the forums at [SNBForums](https://www.snbforums.com/forums/asuswrt-merlin.42/).
+This project forks form Asuswrt-Merlin, the goal is to fit for PHICOMM-K3.
 
-Asuswrt-Merlin is an enhanced version of Asuswrt, the firmware used by Asus's modern routers.
 
-The goal of this project is to fix issues and bring some minor functionality adjustments to the 
-original Asus firmware.  While some features do get added, this is not the main focus of this project.  
-It is not meant to replace existing projects such as Tomato or DD-WRT, but rather to offer an alternative 
-for people who prefer the original firmware featureset.
+## features
 
-This is the new development branch, originally based on Asus's 
-3.0.0.4.382_xxxx firmware release.  Development of the 380.xx 
-legacy branch has been dropped.
+1.Based entirely on asuswrt-merlin.ng.
 
-Please consult the Wiki for an up-to-date list of supported models:
+2.Fixed kernel boot & gpio for K3, no error in TTL.
 
-https://github.com/RMerl/asuswrt-merlin.ng/wiki/Supported-Devices
+3.Transplant CFE code from src-rt-7.x.main to K3, router will not crash.
+
+4.Adding K3 screen control util, screen is full function now.
+
+5.Some extra CN & TW translation.
+
+
+## how to build
+
+Added model RT-K3, use "make rt-k3" to compile and gen trx image.
+
+
+## Credits
+
+ASUS
+
+[RMerl](https://github.com/RMerl/) for makeing up asuswrt-merlin.ng
+
+Lostlonger for research transplant from merlin to K3
+
+[MerlinRdev](https://github.com/MerlinRdev/) for sharing K3-merlin.ng source code
+
+[Updateing](https://github.com/Updateing/) for making screen usable
+

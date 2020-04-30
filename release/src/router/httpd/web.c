@@ -5349,6 +5349,14 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv)
 				else
 					strlcpy(notify_cmd, action_script, sizeof(notify_cmd));
 
+#if defined(RTK3)
+				if(strstr(action_script,"restart_screen"))
+				{
+					notify_cmd[0] = '\0';
+					doSystem("k3screen");
+				}
+#endif
+
 				if(strcmp(action_script, "saveNvram"))
 				{
 #ifdef RTCONFIG_CFGSYNC

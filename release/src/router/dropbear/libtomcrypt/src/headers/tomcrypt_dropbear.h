@@ -35,6 +35,10 @@
 #define LTC_CTR_MODE
 #endif
 
+#if DROPBEAR_CHACHA20POLY1305
+#define LTC_CHACHA
+#define LTC_POLY1305
+#endif
 
 #if DROPBEAR_SHA512
 #define LTC_SHA512

@@ -81,7 +81,7 @@ void send_msg_kexdh_init() {
 				}
 				cli_ses.curve25519_param = gen_kexcurve25519_param();
 			}
-			buf_putstring(ses.writepayload, (const char*)cli_ses.curve25519_param->pub, CURVE25519_LEN);
+			buf_putstring(ses.writepayload, cli_ses.curve25519_param->pub, CURVE25519_LEN);
 			break;
 #endif
 	}

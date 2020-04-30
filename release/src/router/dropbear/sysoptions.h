@@ -94,7 +94,11 @@
 #define MD5_HASH_SIZE 16
 #define MAX_HASH_SIZE 64 /* sha512 */
 
+#if DROPBEAR_CHACHA20POLY1305
+#define MAX_KEY_LEN 64 /* 2 x 256 bits for chacha20 */
+#else
 #define MAX_KEY_LEN 32 /* 256 bits for aes256 etc */
+#endif
 #define MAX_IV_LEN 20 /* must be same as max blocksize,  */
 
 #if DROPBEAR_SHA2_512_HMAC
@@ -147,7 +151,8 @@ If you test it please contact the Dropbear author */
 #define DROPBEAR_SHA384 (DROPBEAR_ECC_384)
 /* LTC SHA384 depends on SHA512 */
 #define DROPBEAR_SHA512 ((DROPBEAR_SHA2_512_HMAC) || (DROPBEAR_ECC_521) \
-			|| (DROPBEAR_SHA384) || (DROPBEAR_DH_GROUP16))
+			|| (DROPBEAR_SHA384) || (DROPBEAR_DH_GROUP16) \
+			|| (DROPBEAR_ED25519))
 #define DROPBEAR_MD5 (DROPBEAR_MD5_HMAC)
 
 #define DROPBEAR_DH_GROUP14 ((DROPBEAR_DH_GROUP14_SHA256) || (DROPBEAR_DH_GROUP14_SHA1))
@@ -188,7 +193,7 @@ If you test it please contact the Dropbear author */
 /* For a 4096 bit DSS key, empirically determined */
 #define MAX_PRIVKEY_SIZE 1700
 
-#define MAX_HOSTKEYS 3
+#define MAX_HOSTKEYS 4
 
 /* The maximum size of the bignum portion of the kexhash buffer */
 /* Sect. 8 of the transport rfc 4253, K_S + e + f + K */
@@ -207,6 +212,8 @@ If you test it please contact the Dropbear author */
 #define DROPBEAR_AES ((DROPBEAR_AES256) || (DROPBEAR_AES128))
 
 #define DROPBEAR_TWOFISH ((DROPBEAR_TWOFISH256) || (DROPBEAR_TWOFISH128))
+
+#define DROPBEAR_AEAD_MODE ((DROPBEAR_CHACHA20POLY1305))
 
 #define DROPBEAR_CLI_ANYTCPFWD ((DROPBEAR_CLI_REMOTETCPFWD) || (DROPBEAR_CLI_LOCALTCPFWD))
 
@@ -247,11 +254,11 @@ If you test it please contact the Dropbear author */
 
 
 #if !(DROPBEAR_AES128 || DROPBEAR_3DES || DROPBEAR_AES256 || DROPBEAR_BLOWFISH \
-      || DROPBEAR_TWOFISH256 || DROPBEAR_TWOFISH128)
+      || DROPBEAR_TWOFISH256 || DROPBEAR_TWOFISH128 || DROPBEAR_CHACHA20POLY1305)
 	#error "At least one encryption algorithm must be enabled. AES128 is recommended."
 #endif
 
-#if !(DROPBEAR_RSA || DROPBEAR_DSS || DROPBEAR_ECDSA)
+#if !(DROPBEAR_RSA || DROPBEAR_DSS || DROPBEAR_ECDSA || DROPBEAR_ED25519)
 	#error "At least one hostkey or public-key algorithm must be enabled; RSA is recommended."
 #endif
 

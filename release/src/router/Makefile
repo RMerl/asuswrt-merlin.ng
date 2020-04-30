@@ -5573,7 +5573,8 @@ fb_wifi-clean:
 
 #libcurl
 curl/configure:
-	@cd curl && buildconf
+	@cd curl && ./buildconf
+
 curl/Makefile: curl/configure
 	@cd curl && $(CONFIGURE) CC=$(CC) \
 		--prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \

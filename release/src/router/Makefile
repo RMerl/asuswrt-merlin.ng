@@ -3176,6 +3176,7 @@ getdns/build/Makefile:
 		-DCMAKE_DISABLE_FIND_PACKAGE_Libsystemd=TRUE \
 		-DUSE_LIBIDN2=FALSE \
 		-DSTRPTIME_WORKS_EXITCODE=0 \
+		-DSTRPTIME_WORKS_EXITCODE__TRYRUN_OUTPUT=0 \
 		..
 
 getdns: $(OPENSSLDIR) libyaml getdns/build/Makefile

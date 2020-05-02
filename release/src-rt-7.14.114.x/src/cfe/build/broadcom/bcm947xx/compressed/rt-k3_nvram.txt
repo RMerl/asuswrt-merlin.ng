@@ -1,0 +1,796 @@
+# NVRAM board text file for the BCM94709r_foxconn PA 2623L and 5542 Rev P503
+#
+# Copyright 2012, Broadcom Corporation
+# All Rights Reserved.
+#
+# THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
+# KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
+# SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A SPECIFIC PURPOSE OR NON-INFRINGEMENT CONCERNING THIS SOFTWARE.
+
+# sromrev tells the software what "version" of NVRAM is used. This is just for the CPU chip. The wireless chips will
+# their own sromrev settings.
+sromrev=8
+
+# boardnum is set by the nvserial program. Don't edit it here.
+boardnum=${serno}
+
+# boardtype describes what type of Broadcom reference board that the design resembles
+#   Reference Board  boardtype    Reference Board  boardtype
+#   ---------------  ---------    ---------------  ---------
+#     BCM94704agr     0x042F        BCM95356ssnr    0x0505
+#     BCM94712ap      0x0445        BCM94718nrl     0x050D
+#     BCM94712p       0x0446        BCM94718nrx     0x050E
+#     BCM94712agr     0x0451        BCM947186nrh    0x052A
+#     BCM95350gr      0x0456        BCM947186nr2    0x052B
+#     BCM94712lgr     0x0460        BCM94718nrlfmc  0x052C
+#     BCM95352gr      0x0467        BCM95357nr      0x053A
+#     BCM95351agr     0x0470        BCM95357nrepa   0x053B
+#     BCM94704mpcb    0x0472        BCM95358nr2     0x053D
+#     BCM94712agsdio  0x047B        BCM95357nr2epa  0x054C
+#     BCM95352elgr    0x047F        BCM95357nr2     0x054D
+#     BCM94705lmp     0x0489        BCM95357cbtnr2epa 0x056A
+#     BCM94705gmp     0x0489        BCM94706nr      0x05B2
+#     BCM94705gmp115  0x0489        BCM94706nrh     0x05D8
+#     BCM94312mcg     0x048B        BCM94706Lmiih5  0x0603
+#     BCM94312mcag    0x048C        BCM94706nr2hmc  0x0617
+#     BCM95354gr      0x048E        BCM94708r       0x0646
+#     BCM94705nogig   0x0496        BCM94709r       0x0665
+#     BCM94703nr      0x04C0
+#     BCM94716nr2     0x04CD
+#     BCM94717ap      0x04CE
+#     BCM94718nr      0x04CF
+#     BCM94717mii     0x04ED
+#     BCM94717cbtnr   0x04EF
+#     BCM94716nr2ipa  0x04FB
+#
+# set a boardtype of BCM94709r
+boardtype=0x072F
+
+# Board revision.
+# With sromrev 4 and above, the boardrev is a 16 bit number as follows:
+# Bits [15:12] - Board Revision Type (brt), a 4 bit number with values:
+#                0: Legacy (old boardrev numbering scheme)
+#                2: Prototype "P" board.
+#                2: Production "A" board.
+#                3-15: Reserved.
+# Bits [12:0] - Board revision, 12 bits which use BCD encoding to represent a decimal number between 0 and 999.
+#
+# Ex: A legacy board rev of 4.5 is 0x0045
+# Ex: A P304 board rev is 0x1304
+#
+# Board revision is P503
+boardrev=0x1503
+
+# boardflags: 32-bits (LSB on top, MSB on bottom)
+#   0 = no Bluetooth coexistence                                 1 = board supports Bluetooth coexistence
+#   0 = set the PA VREF LDO to 2.85V                             1 = set the PA VREF LDO to 3.00V
+#         (4360 ONLY!)
+#   0 = does not implement GPIO 13 radio disable (Airline mode)  1 = board implements Airline mode on GPIO 13
+#   0 = enable 256QAM support                                    1 = disable 256QAM support
+#         (11ac chips only!)
+#  ---
+#   0 = board does not have RoboSwitch or Ethernet switch core   1 = has RoboSwitch chip or Ethernet switch core
+#   0 = OK to power down PLL and chip                            (deprecated)
+#   0 = no high power CCK (disables opo parameter)               1 = can do high power CCK transmission (enables opo)
+#   0 = board does not have ADMtek switch                        1 = board has ADMtek Ethernet switch
+#  ---
+#   0 = Ethernet switch does not have VLAN capability            1 = Ethernet switch has VLAN capability
+#   0 = no Afterburner support                                   (depricated)
+#   0 = chip has it's PCI/PCIe interface connected               1 = PCI/PCIe is floating or there is no PCI/PCIe interface on the chip
+#   0 = board does not have a FEM                                1 = board uses a FEM
+#       (legacy SISO chips only, not used for MIMO chips)
+#  ---
+#   0 = board does not have an external 2.4GHz LNA               1 = board has an external 2.4GHz LNA
+#   0 = board does not have a high gain PA                       1 = board has a high gain PA
+#       (legacy SISO chips only, not used for MIMO chips)
+#   0 = no alternate Bluetooth coexistence                       1 = 2-wire BT coex on GPIOs 4 & 5
+#   0 = do not use alternate IQ imbalance settings               1 = use alt IQ settings
+#       (only applies to 4318)
+#  ---
+#   0 = board has external PA(s)                                 1 = board does not have external PA(s)
+#       (legacy SISO chips only, not used for MIMO chips)
+#   0 = board's TSSI is negative slope                           1 = board's TSSI is positive slope
+#       (legacy SISO chips only, not used for MIMO chips)
+#   0 = board does not use the PA voltage reference LDO          1 = board uses the PA voltage reference LDO
+#       (only applies to the 4326, 4328, and 5354)
+#   0 = no triple-throw switch shared with Bluetooth             1 = has triple-throw switch shared with BT
+#  ---
+#   0 = chip does not support the phase shifter for MRC          1 = chip supports the phase shifter for MRC
+#       (applies to 4325, 4326, 4328, and 5354 only)
+#   0 = board power topology does not use the Buck/Boost reg     1 = board power topology uses the Buck/Boost regulator
+#       (4325 only)
+#   0 = board does not share antenna with Bluetooth              1 = board has FEM and switch to share antenna with BT
+#   0 = board power topology uses CBUCK (core buck)              1 = board power topology does not use CBUCK (core buck)
+#       (applies to 4325 only)
+#  ---
+#   0 = normal CCK EVM and spectral mask                         1 = favor CCK EVM over spectral mask
+#   0 = board power topology does not use PALDO                  1 = board power topology use PALDO
+#   0 = normal LNLDO2 (low noise LDO2)                           1 = select 2.5V as LNLDO2 (low noise LDO2) output voltage
+#       (4325 only)
+#   0 = non 4325: no minimum power index                         1 = non 4325: enforce minimum power index to avoid FEM damage
+#       (set to "1" only for SiGe SE2559L FEMs)
+#       4325: no power-on-reset workaround                           4325: Apply power-on-reset workaround
+#  ---
+#   0 = board does not have an external 5GHz LNA                 1 = board has an external 5GHz LNA
+#   0 = for a 1x2 design, board does not have two T/R switches   1 = for a 1x2 design, board has two T/R switches
+#   0 = normal operation of 5GHz T/R switch for high RF          1 = hold T/R switch in the "R" position for high RF input powers.
+#       input power.
+#   0 = use normal "InitGain"                                    1 = backoff "InitGain" based on the elna2g/5g parameters, for external LNAs only.
+#
+boardflags=0x00000110
+
+# boardflags2: 32-bits (LSB on top, MSB on bottom)
+#   0 = board uses the 2055's built-in LDOs to power the 2055    1 = board uses external rxbb regulator to power the 2055
+#   0 = use normal 5GHz band PLL settings                        1 = use alternate 5GHz band PLL settings
+#       (4322x and 4716/17/18 only)
+#   0 = do not use H/W TX power control on 4321                  1 = use H/W TX power control on 4321
+#       (4321 only)
+#   0 = board does not support the 2x4 diversity switch          1 = board supports the 2x4 diversity switch
+#  ---
+#   0 = board does not support the 5GHz band TX power gain       1 = board supports the 5GHz band TX power gain
+#   0 = board does not override the ASPM and CLKREQ settings     1 = board overrides the ASPM and CLKREQ settings
+#   0 = board is not a BCM94321mc123 board                       1 = board is a BCM94321mc123 board (unused by S/W)
+#   0 = board uses SECI Bluetooth coexistence                    1 = board uses 3-wire Bluetooth coexistence
+#  ---
+#   0 = BCM94321mcm93 uses SiGe FEM                              1 = BCM94321mcm93 uses Skyworks FEM
+#       (for BCM94321mcm93 and BCM94321coex boards only)
+#   0 = no workaround for clock harmonic spurs                   1 = use the workaround for clock-harmonic spurs
+#   0 = use normal 2.4GHz band PLL settings                      1 = use alternate 2.4GHz band PLL settings
+#       (4322x and 4716/17/18 only)
+#   0 = Normal LED drive (full push-pull)                        1 = Drive the LED outputs as open-drain
+#       (43224 only)
+#  ---
+#   0 = enable TX diversity for 11b frames                       1 = Transmit 11b frames only on antenna 0
+#   0 = no WAR to reduce/avoid clock harmonic spurs in 2G band   1 = enable WAR to reduce/avoid clock harmonic spurs in 2G band
+#   0 = do not transmit 11b frames using all TX cores            1 = transmit 11b frames using all TX cores
+#       (TX diversity enabled or not by bit 12)                      (no TX diversity)
+#   0 = use normal filter settings for 2.4GHz bandedge channels  1 = use alternate filter settings for 2.4GHz bandedge channels
+#       (4716, 4717, 4718, 5357, 5358, and 47186 internal PAs only)
+#  ---
+#   0 = do not use 200kHz PLL bandwidth for 2G band              1 = use 200kHz PLL bandwidth for 2G band
+#   0 = GPAIO pin is not connected to 3.3V                       1 = GPAIO pin is connected to 3.3V
+#       (43226 only)
+#   0 = for external PAs, use external TSSI for TX IQCAL         1 = use internal envelope detector for TX IQCAL even with external PAs
+#       (4322x and 4716/17/18 only)
+#   0 = can turn off the buffered crystal output from the radio  1 = keep the buffered crystal output from radio ON
+#  ---
+#   0 = control 2GHz PAs with the digital PA control signals     1 = control 2GHz PAs with the analog PA VERF LDO outputs
+#   0 = control 5GHz PAs with the digital PA control signals     1 = control 5GHz PAs with the analog PA VERF LDO outputs
+#   0 = normal external LNA and TR switch controls               1 = For AZW designs, 2GHz gmode_elna_gain conrols the TR switch
+#       (4329 only)
+#   0 = no antenna sharing with Bluetooth                        1 = share the chain 0 antenna with Bluetooth
+#  ---
+#   0 = no adjustment to the temperature threshold, "tempthresh" 1 = chip can sustain a higher tempsense threshold
+#                                                                    add the value of parameter "tempoffset" to "tempthresh"
+#   0 = use standard 4-wire Bluetooth coexistance                1 = use standard 3-wire Bluetooth coexistance only. 4-wire not supported
+#   0 = 4331 power savings mode enabled (use for STAs)           1 = 4331 power savings mode disabled (not used in any boards)
+#       (4331 only)
+#   0 = no ucode powersave WAR                                   1 = enable ucade powersave WAR
+#       (4331 only)
+#  ---
+#   0 = enable dynamic Vmid in idle TSSI calibration             1 = disable dynamic Vmid in idle TSSI calibration
+#
+#   (bits 29-31 are unused)
+#
+boardflags2=0x00000000
+
+# frequency of the crystal driving the PLL, in kHz
+# Even if the chip does not support any other crystal frequency, this parameter must still be specified.
+xtalfreq=25000
+
+# For 4707/8/9: ARM clock frequency (in MHz), DDR clock frequency (in MHz). All other dividers are fixed ratios of this (div2, div4).
+# For 4707/8/81 ARM clock frequency is 800MHz max. For 4709 ARM clock frequency is 1000MHz max.
+# For DDR frequency, the possible settings are: 333, 400 for DDR2, and 333, 400, 533, 666, 800 for DDR3
+clkfreq=1400,800
+
+# The reset button is on GPIO 17. It MUST be active low, or the software will have to be modified.
+reset_gpio=17
+
+# If the board has a USB power control chip, then the parameter "gpioX=usbportY" is used to tell
+# the USB driver code that it needs to set that GPIO HIGH to turn on power to that USB port.
+# "X" is the GPIO number, 0-31. "Y" is the USB port number, starting at "1".
+#gpio10=usbport1
+#gpio12=usbport2
+gpio21=usbport1
+gpio18=usbport2
+
+# for 4707/8/9
+# Only sdram_config is used. It is a 16-bit number.
+# Bits   Definition
+# -----  -----------------------------------------------------------------------------------------------------------
+# 15:11  Reserved
+#  10:8  Column Size: 000 = 2048 columns; 001 = 1024 columns; 010 = 512 columns
+#   7    0 = 16 bit wide data bus; 1 = 8 bit wide data bus
+#   6    0 = 4 banks; 1 = 8 banks
+#            NOTE: For 4 banks, columns can be 512, 1024, or 2048. For 8 banks, columns can only be 1024 or 2048.
+#  5:4   Reserved
+#  2:0   CAS latency
+#
+# Set 128MB (1Gbit) of DDR3 (DDR3M64X16), x16, 8 banks, CL=11
+sdram_config=0x014B
+
+#  For 4707/8/9 - Required to set the DDR PHY clock correctly *before*
+#  the boot code is copied to DDR. Since the NVRAM parsing is done
+#  after the execution is passed to DDR, the DDR PHY clock must be
+#  reconfigured from its default of 333MHz. This parameter is stored
+#  in a fixed location in the CFE space, the bootloader can read it
+#  while XIP processing is still active. This is a limitation of the
+#  way the DDR PHY clock reconfiguration occurs on 4708x parts.
+
+# Set DDR clock of 533MHz (800MT/s) for 4708r
+#sdram_ncdl=0
+
+# et0mcdport is which MDC/MDIO port is used to connect to the PHY/Switch chip. Only 4703/4704 has two MIIs, so this
+# parameter is nearly always "0".
+et0mdcport=0
+# Configure the internal GMAC port to talk to the internal Ethernet switch
+# et0phyaddr is the PHY address of the PHY chip or the address of the MII/RvMII/GMII/RGMII port of the switch chip.
+et0phyaddr=30
+
+# Set the MAC address of the Ethernet ports
+# From 9/2009 onward MAC addresses have changed from that 8/16 split to a 12/12 split, so the new macmid will be
+# based on MAC addresses with the following format:
+#   47   40 39   32 31   24 23   16 15    8 7     0
+#  |  00   |  90   |  4C   |  XX   |  XY   |  YY   |
+# where the low 24 bits are evenly split into 4096 interface/ boardtypes and 4096 serial numbers. The low nibble of
+# XXX cannot be 0, since that corresponds to an old style MAC address, and macmid will correspond to bits 22:12, so
+# its easy to differentiate them from the old ones.
+#
+# The new "macmid" values will start at 1 and go up to 0xFFF, skipping those that have the low nibble as 0 and the
+# ones with the patterns 0x04Ex and 0x04Fx (These restrictions are enforced in the code). To form the mac address,
+# the whole OUI (00:90:4C) will be prepended to those values and 12 bits of serial number will be appended.
+#
+# A new-style macmid:
+#   BCM947186nrh  0x008
+#
+# For router boards, nvserial now defines a new variable: "maclo12"
+# so nvram text files for new boards will have to define the MAC address like this (for a macmid 0x008):
+#   et0macaddr=00:90:4C:00:8${maclo12}
+# instead of the previous way:
+#   et0macaddr=00:90:4C:FC:${maclo}
+#
+# Set the MAC address of the Ethernet ports
+#   Reference Board   macmid
+#   ---------------  ---------
+#     BCM94704agr      4C:4E (1st MII)
+#     BCM94704agr      4C:4F (2nd MII)
+#     BCM94712ap       4C:68
+#     BCM94712agr      4C:76
+#     BCM95350gr       4C:7D
+#     BCM94712lgr      4C:88
+#     BCM95352gr       4C:91
+#     BCM95352grl      4C:91
+#     BCM95351agr      4C:9C
+#     BCM94704mpcb     4C:A0 (1st MII)
+#     BCM94704mpcb     4C:A1 (2nd MII)
+#     BCM94704nr       4C:A0 (1st MII)
+#     BCM94704nr       4C:A1 (2nd MII)
+#     BCM95352elgr     4C:AD
+#     BCM94705gmp      4C:B9
+#     BCM95354gr       4C:C0
+#     BCM94703nr       4C:F0 (1st MII)
+#     BCM94703nr       4C:F1 (2nd MII)
+#     BCM94716nr2      4C:04
+#     BCM94717ap       4C:06
+#     BCM94718nr       4C:08
+#     BCM94717mii      4C:2D
+#     BCM94717cbtnr    4C:2F
+#     BCM95356ssnr     4C:36
+#     BCM94718nrl      4C:56
+#     BCM94718nrx      4C:57
+#     BCM947186nrh     00:8
+#     BCM95357nr       02:2
+#     BCM95357nrepa    02:4
+#     BCM95358nr2      02:6
+#     BCM947186nr2     02:E
+#     BCM95357nr2epa   02:4
+#     BCM95357cbtnr2epa 02:8
+#     BCM94718nrlfmc   05:6
+#     BCM94706nr       08:A
+#     BCM94706nrh      0B:4
+#     BCM94706Lmiih5   0C:8
+#     BCM94706nr2hmc   0D:B
+#     BCM94708r        0F:F
+#     BCM94709r        12:2
+#
+# New style:
+# The value of 00:90:4C:12:2 is for a BCM94709r reference design.
+# The "maclo12" part is filled in by the nvserial program.
+#et0macaddr=00:90:4C:12:2${maclo12}
+et0macaddr=00:11:22:33:44:55
+
+# Enable telent at startup
+telnetd_startup=1
+forcegen1rc=1
+
+# Ethernet switch config (vlan0:LAN, vlan2:WAN)
+# WAN is on port 0, LAN is on ports 1-4. Port 5 is the MAC interface to the internal switch or switch core.
+# It MUST be present on all VLANs. The "*" means to enable this group for CFE use. Only one VLAN can have this,
+# typically the LAN. 5325E/F and all internal switch cores use "5" for the MII port. 5395, 5397, and 53115 all use
+# "8" for the MII/GMII/RGMII port number.
+# NOTE: All packets on vlan1 (LAN) are tagged as such.
+# vlan1 is the LAN.
+vlan1ports=0 1 2 5*
+vlan1hwname=et0
+
+# vlan2 is the WAN. The "u" configures the switch to not add vlan tags for packets to/from the
+# WAN port. A "t" (or nothing) in place of the "u" will configure the switch to add vlan tags for packets
+# to/from the WAN port. Also see note under "wandevs".
+vlan2ports=3 5
+vlan2hwname=et0
+
+# If the board is a dual band design the second wireless interface (usually the "a" band)
+# will come up as a second device. But we have to tell the software to hook to this
+# second wireless interface named  "wl1". So set "landevs=vlan1 wl0 wl1".
+# Else, just use the standard configuration of "landevs=vlan1 wl0".
+#landevs=vlan1 wl1
+#landevs=vlan1 wl0
+#landevs=vlan1 wl0 wl1
+
+landevs=vlan1 wl0 wl1
+
+# The WAN port is almost always on an Ethernet port so use the normal config. If the WAN
+# port is not an Ethernet port, then this parameter must be changed accordingly.
+# NOTE: If WAN packets are vlan tagged, then must use "vlan2" in place of "et0".
+#       For the default case of no WAN vlan tags, then must use "et0".
+# NOTE: If the board does not have a WAN port then must use "wandevs=".
+# WAN port is on eth0.
+wandevs=vlan2
+
+# Set default IP address and net mask for the router.
+lan_ipaddr=192.168.1.1
+lan_netmask=255.255.255.0
+
+# If the board supports WPS, then these parameters tell the software
+# which GPIO is used for the WPS pushbutton and which is used for the WPS LED indicator.
+#gpio2=wps_led
+#gpio3=wps_button
+
+# Set a short delay on boot so the CFE delays a bit before loading Linux. Allows easier S/W updates.
+boot_wait=on
+
+# If boot_wait is on, then "wait_time" sets the wait time from 3 to 20 seconds.
+wait_time=1
+
+# Watchdog timer in ms (0 will disable), 3000ms is minimum. 5592ms is maximum.
+#watchdog=3000
+watchdog=2100
+
+# For a PCIe interface to the wireless chip, these parameters must have a special prefix. There are two formats for this prefix:
+# The old format is:
+#   pci/<bus_#>/<slot_#>/<param>
+#
+#   where: <bus_#> is the PCIe bus number. It is the RC (root complex) number + 1.
+#             (Ex: bus_# = 1 for the first RC/PCIe port. bus_# = 2 for the second RC/PCIe port.)
+#          <slot_#> slot number is always "1" for PCIe.
+#          <param> is the parameter assignment. i.e. "boardflags=0x0000A248"
+#
+# The new format is:
+#   pcie/<domain_#>/<bus_#>/<param>     NOTE the first part of the parameter is "pcie", not "pci".
+#
+#   where: <domain_#> is the PCIe RC (root complex) number + 1. I.E. for PCIe port "PCI0" the domain number is "1".
+#          <bus_#> is the PCIe bus number
+#             This is alwasy "1" unless the wireless chip is behind a PCIe switch chip, then it will be a higher number.
+#             What that number is depends upon the switch chip and what downstream port of the swtich chip the wireless
+#             chip is connected to.
+#               For a PXL PEX8603 PCIe switch chip, it's downstream port #1 is bus_# 3, and port #2 is bus_# 4.
+#          <param> is the parameter assignment. i.e. "boardflags=0x0000A248"
+
+# The 43602 2.4GHz high power RF section, like on the 43602mch2 P102, using sromrev=11, is connected to port #2 of the PLX PEX8603
+# PCIe switch, which is connected to port #0 of the 4709. So the domain_#=1, bus_#=4 in the new format. (bus_#=4, slot_#=1 in the old format)
+
+# Due to the increasing number of NVRAM parameters being added with new wireless chips, sometimes the NVRAM will grow too
+# large and not fit in the 4K allocated to it in the CFE image. In order to compress the NVRAM somewhat, the
+# "devpathX=<prefix>" notation can be used.
+#
+# The "devpathX" parameters set an abbreviated notation to replace a prefix. The notation for the abbreviated prefix
+# is "X:", where X is the same number as used in the "devpathX=<prefix>" definition.
+#
+# For example, if "devpath1=pcie/1/1/" is set, then instead of using the full "pcie/1/1/" prefix, the abbreviation "2:" is used as the prefix.
+#
+# NOTE: With the use of compressed eNVRAM there is no longer a need to use "devpathX" parameters, and the full prefixes should be used.
+#
+#devpath0=pcie/1/4/
+1:devpath1=sb/1/
+2:devpath2=sb/1/
+devpath1=pcie/1/1/
+
+### 2G and 5G lower band share PCIe_0
+1:sromrev=13
+1:boardflags=0x10001000
+1:boardflags2=0x4
+1:boardflags3=0x0
+1:boardflags4=0xe
+1:venid=0x14e4
+1:devid=0x43c4
+1:macaddr=00:11:22:33:44:66
+1:ccode=ALL
+1:regrev=0
+1:aa2g=15
+1:agbg0=0x133
+1:agbg1=0x133
+1:agbg2=0x133
+1:agbg3=0x133
+1:antswitch=0
+1:tssiposslope2g=1
+1:epagain2g=0
+1:pdgain2g=2
+1:tworangetssi2g=0
+1:papdcap2g=0
+1:femctrl=2
+1:gainctrlsph=0
+1:tempthresh=120
+1:tempoffset=255
+1:rawtempsense=0x1ff
+1:measpower=0x7f
+1:tempsense_slope=0xff
+1:tempcorrx=0x3f
+1:tempsense_option=0x3
+1:xtalfreq=40000
+1:phycal_tempdelta=40
+1:temps_period=10
+1:temps_hysteresis=5
+1:measpower1=0x7f
+1:measpower2=0x7e
+1:tssifloor2g=0x339
+1:pdoffset2g40ma0=0
+1:pdoffset2g40ma1=0
+1:pdoffset2g40ma2=0
+1:pdoffset2g40mvalid=0
+1:pdoffset40ma0=43452
+1:pdoffset40ma1=43452
+1:pdoffset40ma2=43452
+1:pdoffset80ma0=43452
+1:pdoffset80ma1=2114
+1:pdoffset80ma2=99
+1:paparambwver=0
+1:pa2gccka0=0xffff,0xffff,0xffff
+1:cckbw202gpo=0
+1:cckbw20ul2gpo=0
+1:mcsbw202gpo=0xCCA86400
+1:mcsbw402gpo=0xCCA86400
+1:dot11agofdmhrbw202gpo=0x8420
+1:ofdmlrbw202gpo=0
+1:sb20in40hrpo=0
+1:sb20in40lrpo=0
+1:sb20in40hrlrpox=0
+1:dot11agduphrpo=0
+1:dot11agduplrpo=0
+1:dot11agduphrlrpox=0
+1:pcieingress_war=15
+1:sar2g=18
+1:noiselvl2ga0=31
+1:noiselvl2ga1=31
+1:noiselvl2ga2=31
+1:rxgainerr2ga0=63
+1:rxgainerr2ga1=31
+1:rxgainerr2ga2=31
+1:rpcal2g=0
+1:txidxcap2g=0
+1:pdoffsetcckma0=15
+1:pdoffsetcckma1=15
+1:pdoffsetcckma2=15
+1:rxgains2gelnagaina0=3
+1:rxgains2gelnagaina1=3
+1:rxgains2gelnagaina2=3
+1:rxgains2gelnagaina3=3
+1:rxgains2gtrisoa0=7
+1:rxgains2gtrisoa1=7
+1:rxgains2gtrisoa2=7
+1:rxgains2gtrisoa3=7
+1:rxgains2gtrelnabypa0=1
+1:rxgains2gtrelnabypa1=1
+1:rxgains2gtrelnabypa2=1
+1:rxgains2gtrelnabypa3=1
+1:eu_edthresh2g=255
+1:noiselvl2ga3=31
+1:rxgainerr2ga3=31
+1:mcs1024qam2gpo=0x000
+1:ulbpproffs2g=65535
+1:mcs8poexp=0
+1:mcs9poexp=0
+1:mcs10poexp=0x11111111
+1:mcs11poexp=0x11111111
+1:ulbpdoffs2ga0=65535
+1:ulbpdoffs2ga1=65535
+1:ulbpdoffs2ga2=65535
+1:ulbpdoffs2ga3=65535
+1:sb20in40hrlrpox=0
+1:pdoffset2gcck=0x0000
+1:pdoffset20in40m2g=0x7BDE
+1:pdoffset20in40m2gcore3=0x001E
+1:swctrlmap4_cfg=0x5
+1:swctrlmap4_TX2g_fem3to0=0xaaaa
+1:swctrlmap4_RX2g_fem3to0=0x4444
+1:swctrlmap4_RXByp2g_fem3to0=0x6666
+1:swctrlmap4_misc2g_fem3to0=0x2222
+1:swctrlmap4_TX2g_fem7to4=0
+1:swctrlmap4_RX2g_fem7to4=0
+1:swctrlmap4_RXByp2g_fem7to4=0
+1:swctrlmap4_misc2g_fem7to4=0
+1:maxp2ga0=0x72
+1:maxp2ga1=0x72
+1:maxp2ga2=0x72
+1:maxp2ga3=0x72
+1:pa2ga0=0x1D05,0xD4C7,0x1E54,0x2407
+1:pa2ga1=0x1CE3,0xD4E9,0x1E27,0x2409
+1:pa2ga2=0x1C71,0xD5A8,0x1D21,0x23DC
+1:pa2ga3=0x1D10,0xD52A,0x1F11,0x2433
+1:pa2g40a0=0x1D72,0xDC6E,0x2BD6,0x255B
+1:pa2g40a1=0x1D34,0xDDE4,0x2EFF,0x25D6
+1:pa2g40a2=0x1D63,0xDBC2,0x2ACE,0x2533
+1:pa2g40a3=0x1D6B,0xDE8E,0x2FCB,0x25D7
+1:pa5ga0=0x1D05,0xD4C7,0x1E54,0x2407,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5ga1=0x1CE3,0xD4E9,0x1E27,0x2409,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5ga2=0x1D10,0xD52A,0x1F11,0x2433,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5ga3=0x1D10,0xD52A,0x1F11,0x2433,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5g40a0=0x1D72,0xDC6E,0x2BD6,0x255B,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5g40a1=0x1D34,0xDDE4,0x2EFF,0x25D6,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5g40a2=0x1D63,0xDBC2,0x2ACE,0x2533,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:pa5g40a3=0x1D6B,0xDE8E,0x2FCB,0x25D7,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0
+1:rxchain=0xf
+1:txchain=0xf
+1:srom13sig=0x4D55
+
+# The "devpathX" parameters set an abbreviated notation to replace a prefix. The notation for the abbreviated prefix
+# is "X:", where X is the same number as used in the "devpathX=<prefix>" definition.
+devpath2=pcie/2/1/
+
+##5G high band BCM43602 with SKY5542, PCIe_1
+2:sromrev=13
+2:boardflags=0x10001000
+2:boardflags2=0x00000004
+2:boardflags3=0x0
+2:boardflags4=0x000E
+2:venid=0x14e4
+2:devid=0x43c5
+2:macaddr=00:11:22:33:44:77
+2:ccode=ALL
+2:regrev=0
+2:aa5g=15
+2:aga0=71
+2:aga1=71
+2:aga2=71
+2:aga3=71
+2:antswitch=0
+2:femctrl=2
+2:tssiposslope5g=1
+2:epagain5g=0
+2:pdgain5g=2
+2:tworangetssi5g=0
+2:papdcap5g=0
+2:gainctrlsph=0
+2:tempthresh=120
+2:tempoffset=255
+2:rawtempsense=0x1ff
+2:measpower=0x7f
+2:tempsense_slope=0xff
+2:tempcorrx=0x3f
+2:tempsense_option=0x3
+2:xtalfreq=40000
+2:phycal_tempdelta=40
+2:temps_period=10
+2:temps_hysteresis=5
+2:measpower1=0x7f
+2:measpower2=0x7e
+2:tssifloor5g=0x0,0x3ff,0x335,0x318
+2:pdoffset40ma0=43452
+2:pdoffset40ma1=43452
+2:pdoffset40ma2=43452
+2:pdoffset80ma0=43452
+2:pdoffset80ma1=2114
+2:pdoffset80ma2=99
+2:subband5gver=0x5
+2:paparambwver=0
+2:mcsbw205glpo=0xCBA87642
+2:mcsbw405glpo=0xCBA87642
+2:mcsbw805glpo=0xCBA87642
+2:mcsbw205gmpo=0xCBA87642
+2:mcsbw405gmpo=0xCBA87642
+2:mcsbw805gmpo=0xCBA87642
+2:mcsbw205ghpo=0xCBA87642
+2:mcsbw405ghpo=0xCBA87642
+2:mcsbw805ghpo=0xCBA87642
+2:mcslr5glpo=0
+2:mcslr5gmpo=0
+2:mcslr5ghpo=0
+2:sb20in40hrpo=0
+2:sb20in80and160hr5glpo=0
+2:sb40and80hr5glpo=0
+2:sb20in80and160hr5gmpo=0
+2:sb40and80hr5gmpo=0
+2:sb20in80and160hr5ghpo=0
+2:sb40and80hr5ghpo=0
+2:sb20in40lrpo=0
+2:sb20in80and160lr5glpo=0
+2:sb40and80lr5glpo=0
+2:sb20in80and160lr5gmpo=0
+2:sb40and80lr5gmpo=0
+2:sb20in80and160lr5ghpo=0
+2:sb40and80lr5ghpo=0
+2:dot11agduphrpo=0
+2:dot11agduplrpo=0
+2:sar5g=15
+2:pcieingress_war=15
+2:noiselvl5ga0=31,31,31,31
+2:noiselvl5ga1=31,31,31,31
+2:noiselvl5ga2=31,31,31,31
+2:noiselvl5ga3=31,31,31,31
+2:rxgainerr5ga0=63,63,63,63
+2:rxgainerr5ga1=31,31,31,31
+2:rxgainerr5ga2=31,31,31,31
+2:rxgainerr5ga3=31,31,31,31
+2:rpcal5gb0=0
+2:rpcal5gb1=0
+2:rpcal5gb2=0
+2:rpcal5gb3=0
+2:rpcal5gb4=0
+2:txidxcap5g=0
+2:pdoffsetcckma0=15
+2:pdoffsetcckma1=15
+2:pdoffsetcckma2=15
+2:pdoffsetcck=0
+2:pdoffset20in40m5gb0=0x7BBD
+2:pdoffset20in40m5gb1=0x7BBD
+2:pdoffset20in40m5gb2=0x77BD
+2:pdoffset20in40m5gb3=0x77BD
+2:pdoffset20in40m5gb4=0x77BD
+2:pdoffset40in80m5gb0=0x0000
+2:pdoffset40in80m5gb1=0x0420
+2:pdoffset40in80m5gb2=0x0440
+2:pdoffset40in80m5gb3=0x0820
+2:pdoffset40in80m5gb4=0x0841
+2:pdoffset20in80m5gb0=0x7BDD
+2:pdoffset20in80m5gb1=0x7FFF
+2:pdoffset20in80m5gb2=0x7BDE
+2:pdoffset20in80m5gb3=0x7BDE
+2:pdoffset20in80m5gb4=0x7BDE
+2:mcsbw205gx1po=0xCBA87642
+2:mcsbw405gx1po=0xCBA87642
+2:mcsbw805gx1po=0xCBA87642
+2:mcslr5gx1po=0
+2:sb20in80and160hr5gx1po=0
+2:sb40and80hr5gx1po=0
+2:sb20in40hrlrpox=0
+2:dot11agduphrlrpox=0
+2:mcsbw205gx2po=0xCBA87642
+2:mcsbw405gx2po=0xCBA87642
+2:mcsbw805gx2po=0xCBA87642
+2:mcslr5gx2po=0
+2:sb40and80lr5gx2po=0
+2:sb20in80and160hr5gx2po=0
+2:sb40and80hr5gx2po=0
+2:sb20in80and160lr5gx2po=0
+2:rxgains5gelnagaina0=3
+2:rxgains5gelnagaina1=3
+2:rxgains5gelnagaina2=3
+2:rxgains5gelnagaina3=3
+2:rxgains5gtrisoa0=7
+2:rxgains5gtrisoa1=7
+2:rxgains5gtrisoa2=7
+2:rxgains5gtrisoa3=7
+2:rxgains5gtrelnabypa0=1
+2:rxgains5gtrelnabypa1=1
+2:rxgains5gtrelnabypa2=1
+2:rxgains5gtrelnabypa3=1
+2:rxgains5gmelnagaina0=3
+2:rxgains5gmelnagaina1=3
+2:rxgains5gmelnagaina2=3
+2:rxgains5gmelnagaina3=3
+2:rxgains5gmtrisoa0=6
+2:rxgains5gmtrisoa1=6
+2:rxgains5gmtrisoa2=6
+2:rxgains5gmtrisoa3=6
+2:rxgains5gmtrelnabypa0=1
+2:rxgains5gmtrelnabypa1=1
+2:rxgains5gmtrelnabypa2=1
+2:rxgains5gmtrelnabypa3=1
+2:rxgains5ghelnagaina0=3
+2:rxgains5ghelnagaina1=3
+2:rxgains5ghelnagaina2=3
+2:rxgains5ghelnagaina3=3
+2:rxgains5ghtrisoa0=6
+2:rxgains5ghtrisoa1=6
+2:rxgains5ghtrisoa2=6
+2:rxgains5ghtrisoa3=6
+2:rxgains5ghtrelnabypa0=1
+2:rxgains5ghtrelnabypa1=1
+2:rxgains5ghtrelnabypa2=1
+2:rxgains5ghtrelnabypa3=1
+2:eu_edthresh5g=255
+2:noiselvl5ga3=31,31,31,31
+2:rxgainerr5ga3=31,31,31,31
+2:mcs1024qam5glpo=0x00000000
+2:mcs1024qam5gmpo=0x00000000
+2:mcs1024qam5ghpo=0x00000000
+2:mcs1024qam5gx1po=0x00000000
+2:mcs1024qam5gx2po=0x00000000
+2:mcsbw1605glpo=0xFFFFFFFF
+2:mcsbw1605gmpo=0xFFFFFFFF
+2:mcsbw1605ghpo=0xFFFFFFFF
+2:mcsbw1605gx1po=0xFFFFFFFF
+2:mcsbw1605gx2po=0xFFFFFFFF
+2:mcs8poexp=0
+2:mcs9poexp=0
+2:mcs10poexp=0x3E3E3E3E
+2:mcs11poexp=0x3E3E3E3E
+2:ulbpdoffs5gb0a0=65535
+2:ulbpdoffs5gb0a1=65535
+2:ulbpdoffs5gb0a2=65535
+2:ulbpdoffs5gb0a3=65535
+2:ulbpdoffs5gb1a0=65535
+2:ulbpdoffs5gb1a1=65535
+2:ulbpdoffs5gb1a2=65535
+2:ulbpdoffs5gb1a3=65535
+2:ulbpdoffs5gb2a0=65535
+2:ulbpdoffs5gb2a1=65535
+2:ulbpdoffs5gb2a2=65535
+2:ulbpdoffs5gb2a3=65535
+2:ulbpdoffs5gb3a0=65535
+2:ulbpdoffs5gb3a1=65535
+2:ulbpdoffs5gb3a2=65535
+2:ulbpdoffs5gb3a3=65535
+2:ulbpdoffs5gb4a0=65535
+2:ulbpdoffs5gb4a1=65535
+2:ulbpdoffs5gb4a2=65535
+2:ulbpdoffs5gb4a3=65535
+2:pdoffset40in80m5gcore3=0x0422
+2:pdoffset40in80m5gcore3_1=0x0041
+2:pdoffset20in80m5gcore3=0x7BFE
+2:pdoffset20in80m5gcore3_1=0x03DE
+2:pdoffset20in40m5gcore3=0x77BD
+2:pdoffset20in40m5gcore3_1=0x03BD
+2:swctrlmap4_cfg=1
+2:swctrlmap4_TX5g_fem3to0=0x6666
+2:swctrlmap4_RX5g_fem3to0=0x1111
+2:swctrlmap4_RXByp5g_fem3to0=0x3333
+2:swctrlmap4_misc5g_fem3to0=0x0000
+2:swctrlmap4_TX5g_fem7to4=0
+2:swctrlmap4_RX5g_fem7to4=0
+2:swctrlmap4_RXByp5g_fem7to4=0
+2:swctrlmap4_misc5g_fem7to4=0
+2:rxchain=0xf
+2:txchain=0xf
+2:srom13sig=0x4D55
+2:maxp5gb0a0=0x72
+2:maxp5gb1a0=0x72
+2:maxp5gb2a0=0x72
+2:maxp5gb3a0=0x72
+2:maxp5gb4a0=0x72
+2:maxp5gb0a1=0x72
+2:maxp5gb1a1=0x72
+2:maxp5gb2a1=0x72
+2:maxp5gb3a1=0x72
+2:maxp5gb4a1=0x72
+2:maxp5gb0a2=0x72
+2:maxp5gb1a2=0x72
+2:maxp5gb2a2=0x72
+2:maxp5gb3a2=0x72
+2:maxp5gb4a2=0x72
+2:maxp5gb0a3=0x72
+2:maxp5gb1a3=0x72
+2:maxp5gb2a3=0x72
+2:maxp5gb3a3=0x72
+2:maxp5gb4a3=0x72
+2:pa5g80a0=0x1fef,0xd66f,0x3a19,0x257b,0x2078,0xd598,0x3bc7,0x2598,0x1F6E,0xD912,0x3B2A,0x2563,0x1FA2,0xD71C,0x38D3,0x2524,0x1fd2,0xd7e4,0x42ab,0x2637
+2:pa5g80a1=0x1ed5,0xe3ac,0x56d4,0x27c7,0x1e7e,0xeaa7,0x62ff,0x2842,0x1ED4,0xDCF0,0x44D1,0x25F4,0x1ECA,0xDED1,0x4896,0x266E,0x1f1c,0xd90b,0x41f2,0x2620
+2:pa5g80a2=0x1ecb,0xe726,0x5734,0x2793,0x1fe3,0xd902,0x3d54,0x25a6,0x1DE2,0xE5E7,0x5F8C,0x28A1,0x1E82,0xDD7E,0x5587,0x286B,0x1f57,0xd90b,0x3f66,0x25f2
+2:pa5g80a3=0x1ea8,0xea7e,0x5cdc,0x2822,0x1f52,0xdfa1,0x430d,0x2666,0x1F70,0xDB8A,0x3E87,0x2598,0x1F1F,0xE0DF,0x4913,0x2648,0x1f9c,0xd896,0x3d91,0x260e
+2:pa5g40a0=0x1e40,0xdd5e,0x46a5,0x2699,0x1e89,0xdca4,0x4b89,0x275b,0x1E2D,0xDD7C,0x48B6,0x2673,0x1E70,0xD82F,0x3C1A,0x2584,0x1e67,0xd73d,0x38d3,0x255a
+2:pa5g40a1=0x1e67,0xda86,0x4b71,0x276d,0x1e4b,0xd847,0x3d72,0x2615,0x1DFF,0xDC74,0x43FF,0x25DE,0x1DEB,0xDE7C,0x4797,0x261E,0x1e65,0xd326,0x35b9,0x257b
+2:pa5g40a2=0x1e4b,0xda9b,0x3f76,0x25db,0x1e81,0xd6a5,0x34ef,0x24f9,0x1D78,0xDAE3,0x48F0,0x274A,0x1DBD,0xD4EB,0x4109,0x2708,0x1edc,0xd4f9,0x4027,0x26bd
+2:pa5g40a3=0x1ea3,0xd766,0x3a4f,0x25f6,0x1e75,0xdac3,0x3e88,0x2684,0x1E35,0xDE82,0x4888,0x26AD,0x1E10,0xE04E,0x4982,0x269B,0x1e9e,0xda04,0x43be,0x26fb
+2:pa5ga0=0x1d13,0xdce8,0x4bf9,0x2791,0x1d32,0xd66c,0x3722,0x259e,0x1DF3,0xCD12,0x29F2,0x250B,0x1DDC,0xD034,0x3117,0x25E9,0x1d64,0xd594,0x3bb8,0x2625
+2:pa5ga1=0x1cfb,0xdb5c,0x4a00,0x2766,0x1d0a,0xd371,0x309e,0x24e1,0x1DD0,0xCD36,0x29D0,0x24B6,0x1DD1,0xCD4F,0x2A67,0x2513,0x1d62,0xd3b9,0x3b94,0x2672
+2:pa5ga2=0x1d25,0xdd47,0x55d5,0x28d5,0x1d15,0xd804,0x3c8c,0x2625,0x1D29,0xC81B,0x2008,0x239B,0x1D4D,0xCCA5,0x41FC,0x2AAE,0x1e00,0xc759,0x1efa,0x232f
+2:pa5ga3=0x1d91,0xd187,0x2e92,0x2546,0x1cbc,0xe328,0x56b7,0x28f2,0x1DF9,0xD0D6,0x310C,0x2617,0x1E02,0xCE15,0x2954,0x2555,0x1dcb,0xcdf4,0x2965,0x24f2
+
+# for NAND flash
+bootflags=1
+
+# ODM Product ID
+odmpid=ASUS
+
+# Model Name
+#model=RT-K3

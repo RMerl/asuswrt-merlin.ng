@@ -5621,6 +5621,7 @@ FUNC(RunProgram)
 	 * MERGE_FRAG function is stored right before entry point.
 	 * Note: {r0-r4} must be preserved
 	 */
+#ifndef RTK3
 	ldr r7, =_frag_merge_func_len
 	ldr r6, [r7]
 	ldr r8, =_frag_info_sz
@@ -5631,6 +5632,7 @@ FUNC(RunProgram)
 	cmp r6, #0
 	beq do_run
 	mov pc, r6	/* Go to _merge_func */
+#endif
 do_run:
 	mov pc, r4		/* go for it. */
 END(RunProgram)

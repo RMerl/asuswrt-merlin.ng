@@ -10,7 +10,7 @@
 
 add=/jffs/addons/amtm
 amtmURL=https://fwupdate.asuswrt-merlin.net/amtm_fw
-amtmRev=3
+amtmRev=4
 
 a_m(){ [ -z "$am" ] && am=$1 || am="$am\\n$1";}
 c_nl(){ [ -n "$(tail -c2 "$1")" ] && echo >> "$1";}
@@ -23,6 +23,7 @@ theme_standard(){ R='[31m';R_BG='[41m';E_BG='[41m';GN='[92m';GN_BG='[42m';B
 theme_green(){ R='[33m';R_BG='[42m';E_BG='[41m';GN='[92m';GN_BG='[42m';B='[94m';GY='[90m';NC='[0m';COR=20;}
 theme_blue(){ R='[34m';R_BG='[44m';E_BG='[101m';GN='[94m';GN_BG='[104m';B='[38;5;112m';GY='[90m';NC='[0m';COR=21;}
 theme_blue_on_white(){ R='[34m';R_BG='[104m';E_BG='[101m';GN='[94m';GN_BG='[104m';B='[38;5;112m';GY='[90m';NC='[0m';COR=21;}
+theme_solarized(){ R='[38;2;220;50;47m';R_BG='[48;2;220;50;47m';E_BG='[48;2;220;50;47m';GN='[38;2;133;153;0m';GN_BG='[48;2;7;54;66m';B='[38;2;38;139;210m';GY='[38;2;88;110;117m';NC='[0m';COR=32;}
 theme_high_contrast(){ R='[91m';R_BG='[41m';E_BG='[41m';GN='[32m';GN_BG='[42m';B='[38;5;51m';GY='[90m';NC='[0m';COR=20;}
 theme_reduced(){ R='[31m';R_BG='[100m';E_BG='[100m';GN='[37m';GN_BG='[100m';B='[37m';GY='[90m';NC='[0m';COR=21;}
 theme_reduced_w(){ R='[31m';R_BG='[97;40m';E_BG='[97;40m';GN='[32m';GN_BG='[97;40m';B='[30m';GY='[90m';NC='[0m';COR=23;}
@@ -90,34 +91,35 @@ theme_amtm(){
 	else
 		printf " Select a theme that works best in your\\n SSH client. All colors in use are shown.\\n\\n"
 	fi
-	themes='standard green blue blue_on_white high_contrast reduced reduced_w reduced_cw reduced_b reduced_cb'
+	themes='standard green blue blue_on_white solarized high_contrast reduced reduced_w reduced_cw reduced_b reduced_cb'
 	i=1
 	for theme in $themes; do
 		ncorr=' '
 		case $theme in
 			blue)			corr1=-1;corr2=-1;;
 			blue_on_white)	corr2=-1;;
+			solarized)		corr3=-2;;
 			reduced)		corr2=-1;;
 			reduced_w)		corr2=-3;;
 			reduced_cw)		corr2=-3;;
-			reduced_b)		corr2=+5;;
+			reduced_b)		corr2=+5;ncorr=;;
 			reduced_cb)		corr1=-2;corr2=+3;ncorr=;;
 		esac
 		theme_$theme
-		printf "%-$((COR+2$corr1))s %-$((COR+4))s %-$((COR-6))s\\n" "${R_BG}$ncorr$i. $theme" "${NC}${GN_BG} $theme" "${NC}${B} ${theme:0:10}${NC}"
+		printf "%-$((COR+2$corr1))s %-$((COR+4$corr3))s %-$((COR-6))s\\n" "${R_BG}$ncorr$i. $theme" "${NC}${GN_BG} $theme" "${NC}${B} ${theme:0:10}${NC}"
 		printf "   %-$((COR-1))s %-$((COR+4$corr2))s %-s\\n" "${E_BG} $theme" "${NC}${GN} $theme" "${NC}${GY} ${theme:0:10}${NC}"
 		p_e_l
 		i=$((i+1))
-		unset corr2 corr1 ncorr
+		unset corr3 corr2 corr1 ncorr
 	done
 	theme_basic
-	printf "${R_BG}11. basic         ${NC}${GN_BG} basic${NC}\\n"
+	printf "${R_BG}12. basic         ${NC}${GN_BG} basic${NC}\\n"
 	p_r_l
-	ton=11;noad=
+	ton=12;noad=
 	if [ -f "$divconf" ]; then
-		printf "\\n12. Let Diversion set theme ($(grep "THEME=" "$divconf" | sed -e 's/THEME=//'))\\n"
+		printf "\\n13. Let Diversion set theme ($(grep "THEME=" "$divconf" | sed -e 's/THEME=//'))\\n"
 		p_r_l
-		ton=12;noad=12
+		ton=13;noad=13
 	fi
 	printf "\\n The basic and reduced themes use no or fewer\\n colors, service states may not be visible.\\n"
 	theme_standard
@@ -132,13 +134,14 @@ theme_amtm(){
 			2) theme=green;break;;
 			3) theme=blue;break;;
 			4) theme=blue_on_white;break;;
-			5) theme=high_contrast;break;;
-			6) theme=reduced;break;;
-			7) theme=reduced_w;break;;
-			8) theme=reduced_cw;break;;
-			9) theme=reduced_b;break;;
-			10) theme=reduced_cb;break;;
-			11) theme=basic;break;;
+			5) theme=solarized;break;;
+			6) theme=high_contrast;break;;
+			7) theme=reduced;break;;
+			8) theme=reduced_w;break;;
+			9) theme=reduced_cw;break;;
+			10) theme=reduced_b;break;;
+			11) theme=reduced_cb;break;;
+			12) theme=basic;break;;
 		$noad)	[ -f "${add}"/.amtm_theme ] && rm "${add}"/.amtm_theme
 				theme=
 				show_amtm " amtm now uses the Diversion theme"
@@ -157,7 +160,7 @@ init_amtm(){
 	if [ ! -d "${add}" ]; then
 		printf "\\n amtm failed to create the directory\\n ${add}\\n Please investigate. Aborting amtm now.\\n\\n";exit 1
 	fi
-	if [ "$(nvram get ntp_ready)" = "0" ]; then
+	if [ "$(nvram get ntp_ready)" = 0 ]; then
 		printf "\\n NTP not ready, check that the router time\\n is synced.\\n Aborting amtm now.\\n\\n";exit 1
 	fi
 	mv /jffs/amtm-* "${add}" 2> /dev/null;mv /jffs/.amtm_* "${add}" 2> /dev/null

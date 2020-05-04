@@ -930,7 +930,7 @@ int parse_kbinput(WINDOW *win)
 		case 1:
 			if (keycode >= 0x80)
 				retval = keycode;
-			else if (keycode == TAB_CODE)
+			else if (keycode == '\t')
 				retval = SHIFT_TAB;
 			else if ((keycode != 'O' && keycode != 'o' && keycode != '[') ||
 						key_buffer_len == 0 || *key_buffer == ESC_CODE) {
@@ -1144,7 +1144,7 @@ int parse_kbinput(WINDOW *win)
 		}
 		/* Is Shift being held? */
 		if (modifiers & 0x01) {
-			if (retval == TAB_CODE)
+			if (retval == '\t')
 				return SHIFT_TAB;
 			if (!meta_key)
 				shift_held = TRUE;
@@ -1194,7 +1194,7 @@ int parse_kbinput(WINDOW *win)
 
 #ifndef NANO_TINY
 	/* When <Tab> is pressed while the mark is on, do an indent. */
-	if (retval == TAB_CODE && openfile->mark && currmenu == MMAIN &&
+	if (retval == '\t' && openfile->mark && currmenu == MMAIN &&
 				!bracketed_paste && openfile->mark != openfile->current)
 		return INDENT_KEY;
 #endif
@@ -1502,44 +1502,6 @@ int get_control_kbinput(int kbinput)
 	return kbinput;
 }
 
-/* Read in a stream of characters verbatim, and return the length of the
- * string in kbinput_len.  Assume nodelay(win) is FALSE. */
-int *get_verbatim_kbinput(WINDOW *win, size_t *kbinput_len)
-{
-	int *retval;
-
-	/* Turn off flow control characters if necessary so that we can type
-	 * them in verbatim, and turn the keypad off if necessary so that we
-	 * don't get extended keypad values. */
-	if (ISSET(PRESERVE))
-		disable_flow_control();
-	if (!ISSET(RAW_SEQUENCES))
-		keypad(win, FALSE);
-
-	/* Read in one keycode, or one or two escapes. */
-	retval = parse_verbatim_kbinput(win, kbinput_len);
-
-	/* If the code is invalid in the current mode, discard it. */
-	if (retval != NULL && ((*retval == '\n' && as_an_at) ||
-								(*retval == '\0' && !as_an_at))) {
-		*kbinput_len = 0;
-		beep();
-	}
-
-	/* Turn flow control characters back on if necessary and turn the
-	 * keypad back on if necessary now that we're done. */
-	if (ISSET(PRESERVE))
-		enable_flow_control();
-	/* Use the global window pointers, because a resize may have freed
-	 * the data that the win parameter points to. */
-	if (!ISSET(RAW_SEQUENCES)) {
-		keypad(edit, TRUE);
-		keypad(bottomwin, TRUE);
-	}
-
-	return retval;
-}
-
 /* Read in one control character (or an iTerm/Eterm/rxvt double Escape),
  * or convert a series of six digits into a Unicode codepoint.  Return
  * in count either 1 (for a control character or the first byte of a
@@ -1577,7 +1539,7 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 		 * Unicode value, and put back the corresponding byte(s). */
 		else {
 			char *multibyte;
-			int onebyte, i;
+			int onebyte;
 
 			reveal_cursor = FALSE;
 
@@ -1592,7 +1554,7 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 			multibyte = make_mbchar(unicode, (int *)count);
 
 			/* Insert the multibyte sequence into the input buffer. */
-			for (i = *count; i > 0 ; i--) {
+			for (size_t i = *count; i > 0 ; i--) {
 				onebyte = (unsigned char)multibyte[i - 1];
 				put_back(onebyte);
 			}
@@ -1612,6 +1574,56 @@ int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 		*count = 2;
 
 	return get_input(NULL, *count);
+}
+
+/* Read in one control code, one character byte, or the leading escapes of
+ * an escape sequence, and return the resulting number of bytes in count. */
+char *get_verbatim_kbinput(WINDOW *win, size_t *count)
+{
+	char *bytes = charalloc(MAXCHARLEN + 1);
+	int *input;
+
+	/* Turn off flow control characters if necessary so that we can type
+	 * them in verbatim, and turn the keypad off if necessary so that we
+	 * don't get extended keypad values. */
+	if (ISSET(PRESERVE))
+		disable_flow_control();
+	if (!ISSET(RAW_SEQUENCES))
+		keypad(win, FALSE);
+
+	/* Read in a single byte or two escapes. */
+	input = parse_verbatim_kbinput(win, count);
+
+	/* If the byte is invalid in the current mode, discard it;
+	 * if it is an incomplete Unicode sequence, stuff it back. */
+	if (input != NULL) {
+		if ((*input == '\n' && as_an_at) || (*input == '\0' && !as_an_at)) {
+			*count = 0;
+			beep();
+		} else if (*input >= 0x80 && *count == 1) {
+			put_back(*input);
+			*count = 0;
+		}
+	}
+
+	/* Turn flow control characters back on if necessary and turn the
+	 * keypad back on if necessary now that we're done. */
+	if (ISSET(PRESERVE))
+		enable_flow_control();
+	/* Use the global window pointers, because a resize may have freed
+	 * the data that the win parameter points to. */
+	if (!ISSET(RAW_SEQUENCES)) {
+		keypad(edit, TRUE);
+		keypad(bottomwin, TRUE);
+	}
+
+	for (size_t i = 0; i < *count; i++)
+		bytes[i] = (char)input[i];
+	bytes[*count] = '\0';
+
+	free(input);
+
+	return bytes;
 }
 
 #ifdef ENABLE_MOUSE
@@ -1845,7 +1857,7 @@ char *display_string(const char *buf, size_t column, size_t span,
 	 * overwritten by a "<" token, then show placeholders instead. */
 	if (*buf != '\0' && *buf != '\t' && (start_col < column ||
 						(start_col > 0 && isdata && !ISSET(SOFTWRAP)))) {
-		if (is_cntrl_mbchar(buf)) {
+		if (is_cntrl_char(buf)) {
 			if (start_col < column) {
 				converted[index++] = control_mbrep(buf, isdata);
 				column++;
@@ -1919,7 +1931,7 @@ char *display_string(const char *buf, size_t column, size_t span,
 		}
 
 		/* Represent a control character with a leading caret. */
-		if (is_cntrl_mbchar(buf)) {
+		if (is_cntrl_char(buf)) {
 			converted[index++] = '^';
 			converted[index++] = control_mbrep(buf, isdata);
 			buf += char_length(buf);
@@ -2264,16 +2276,37 @@ void warn_and_shortly_pause(const char *msg)
 {
 	blank_bottombars();
 	statusline(ALERT, msg);
+	lastmessage = HUSH;
 	napms(1500);
+}
+
+/* Write a key's representation plus a minute description of its function
+ * to the screen.  For example, the key could be "^C" and its tag "Cancel".
+ * Key plus tag may occupy at most width columns. */
+void post_one_key(const char *keystroke, const char *tag, int width)
+{
+	wattron(bottomwin, interface_color_pair[KEY_COMBO]);
+	waddnstr(bottomwin, keystroke, actual_x(keystroke, width));
+	wattroff(bottomwin, interface_color_pair[KEY_COMBO]);
+
+	/* If the remaining space is too small, skip the description. */
+	width -= breadth(keystroke);
+	if (width < 2)
+		return;
+
+	waddch(bottomwin, ' ');
+	wattron(bottomwin, interface_color_pair[FUNCTION_TAG]);
+	waddnstr(bottomwin, tag, actual_x(tag, width - 1));
+	wattroff(bottomwin, interface_color_pair[FUNCTION_TAG]);
 }
 
 /* Display the shortcut list corresponding to menu on the last two rows
  * of the bottom portion of the window. */
 void bottombars(int menu)
 {
-	size_t number, itemwidth, i;
-	funcstruct *f;
+	size_t index, number, itemwidth;
 	const keystruct *s;
+	funcstruct *f;
 
 	/* Set the global variable to the given menu. */
 	currmenu = menu;
@@ -2295,43 +2328,25 @@ void bottombars(int menu)
 
 	/* Display the first number of shortcuts in the given menu that
 	 * have a key combination assigned to them. */
-	for (f = allfuncs, i = 0; i < number && f != NULL; f = f->next) {
+	for (f = allfuncs, index = 0; f != NULL && index < number; f = f->next) {
 		if ((f->menus & menu) == 0)
 			continue;
 
 		s = first_sc_for(menu, f->func);
+
 		if (s == NULL)
 			continue;
 
-		wmove(bottomwin, 1 + i % 2, (i / 2) * itemwidth);
+		wmove(bottomwin, 1 + index % 2, (index / 2) * itemwidth);
 
-		post_one_key(s->keystr, _(f->desc), itemwidth + (COLS % itemwidth));
-		i++;
+		post_one_key(s->keystr, _(f->desc), itemwidth +
+								((index < number - 2) ? 0 : COLS % itemwidth));
+		index++;
 	}
 
 	/* Defeat a VTE bug by homing the cursor and forcing a screen update. */
 	wmove(bottomwin, 0, 0);
 	wrefresh(bottomwin);
-}
-
-/* Write a key's representation plus a minute description of its function
- * to the screen.  For example, the key could be "^C" and its tag "Cancel".
- * Key plus tag may occupy at most width columns. */
-void post_one_key(const char *keystroke, const char *tag, int width)
-{
-	wattron(bottomwin, interface_color_pair[KEY_COMBO]);
-	waddnstr(bottomwin, keystroke, actual_x(keystroke, width));
-	wattroff(bottomwin, interface_color_pair[KEY_COMBO]);
-
-	/* If the remaning space is too small, skip the description. */
-	width -= breadth(keystroke);
-	if (width < 2)
-		return;
-
-	waddch(bottomwin, ' ');
-	wattron(bottomwin, interface_color_pair[FUNCTION_TAG]);
-	waddnstr(bottomwin, tag, actual_x(tag, width - 1));
-	wattroff(bottomwin, interface_color_pair[FUNCTION_TAG]);
 }
 
 /* Redetermine current_y from the position of current relative to edittop,
@@ -2810,6 +2825,8 @@ int update_softwrapped_line(linestruct *line)
 		/* The end column of the current chunk. */
 	char *converted;
 		/* The data of the chunk with tabs and control characters expanded. */
+	bool end_of_line = FALSE;
+		/* Becomes TRUE when the last chunk of the line has been reached. */
 
 	if (line == openfile->edittop)
 		from_col = openfile->firstcolumn;
@@ -2831,9 +2848,7 @@ int update_softwrapped_line(linestruct *line)
 
 	starting_row = row;
 
-	while (row < editwinrows) {
-		bool end_of_line = FALSE;
-
+	while (!end_of_line && row < editwinrows) {
 		to_col = get_softwrap_breakpoint(line->data, from_col, &end_of_line);
 
 		sequel_column = (end_of_line) ? 0 : to_col;
@@ -2843,14 +2858,6 @@ int update_softwrapped_line(linestruct *line)
 									TRUE, FALSE);
 		draw_row(row++, converted, line, from_col);
 		free(converted);
-
-		if (end_of_line)
-			break;
-
-		/* If the line is softwrapped early (because of a two-column character),
-		 * show a "[" placeholder, unless we're softwrapping at blanks. */
-		if (!ISSET(AT_BLANKS) && to_col - from_col < editwincols)
-			mvwaddch(edit, row - 1, to_col - from_col, '[');
 
 		from_col = to_col;
 	}
@@ -3048,7 +3055,7 @@ size_t get_softwrap_breakpoint(const char *text, size_t leftedge,
 	/* Now find the place in text where this chunk should end. */
 	while (*text != '\0' && column <= goal_column) {
 		/* When breaking at blanks, do it *before* the target column. */
-		if (ISSET(AT_BLANKS) && is_blank_mbchar(text) && column < goal_column) {
+		if (ISSET(AT_BLANKS) && is_blank_char(text) && column < goal_column) {
 			farthest_blank = text;
 			last_blank_col = column;
 		}

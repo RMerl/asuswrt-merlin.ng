@@ -344,7 +344,7 @@ static CURLcode http_output_bearer(struct connectdata *conn)
   userp = &conn->allocptr.userpwd;
   free(*userp);
   *userp = aprintf("Authorization: Bearer %s\r\n",
-                   conn->oauth_bearer);
+                   conn->data->set.str[STRING_BEARER]);
 
   if(!*userp) {
     result = CURLE_OUT_OF_MEMORY;
@@ -555,7 +555,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   CURLcode result = CURLE_OK;
   unsigned long authmask = ~0ul;
 
-  if(!conn->oauth_bearer)
+  if(!data->set.str[STRING_BEARER])
     authmask &= (unsigned long)~CURLAUTH_BEARER;
 
   if(100 <= data->req.httpcode && 199 >= data->req.httpcode)
@@ -565,7 +565,7 @@ CURLcode Curl_http_auth_act(struct connectdata *conn)
   if(data->state.authproblem)
     return data->set.http_fail_on_error?CURLE_HTTP_RETURNED_ERROR:CURLE_OK;
 
-  if((conn->bits.user_passwd || conn->oauth_bearer) &&
+  if((conn->bits.user_passwd || data->set.str[STRING_BEARER]) &&
      ((data->req.httpcode == 401) ||
       (conn->bits.authneg && data->req.httpcode < 300))) {
     pickhost = pickoneauth(&data->state.authhost, authmask);
@@ -641,9 +641,7 @@ output_auth_headers(struct connectdata *conn,
 {
   const char *auth = NULL;
   CURLcode result = CURLE_OK;
-#if !defined(CURL_DISABLE_VERBOSE_STRINGS)
   struct Curl_easy *data = conn->data;
-#endif
 
 #ifdef CURL_DISABLE_CRYPTO_AUTH
   (void)request;
@@ -707,7 +705,7 @@ output_auth_headers(struct connectdata *conn,
   }
   if(authstatus->picked == CURLAUTH_BEARER) {
     /* Bearer */
-    if((!proxy && conn->oauth_bearer &&
+    if((!proxy && data->set.str[STRING_BEARER] &&
         !Curl_checkheaders(conn, "Authorization:"))) {
       auth = "Bearer";
       result = http_output_bearer(conn);
@@ -765,7 +763,7 @@ Curl_http_output_auth(struct connectdata *conn,
   authproxy = &data->state.authproxy;
 
   if((conn->bits.httpproxy && conn->bits.proxy_user_passwd) ||
-     conn->bits.user_passwd || conn->oauth_bearer)
+     conn->bits.user_passwd || data->set.str[STRING_BEARER])
     /* continue please */;
   else {
     authhost->done = TRUE;
@@ -1691,7 +1689,7 @@ static CURLcode expect100(struct Curl_easy *data,
   CURLcode result = CURLE_OK;
   data->state.expect100header = FALSE; /* default to false unless it is set
                                           to TRUE below */
-  if(use_http_1_1plus(data, conn) &&
+  if(!data->state.disableexpect && use_http_1_1plus(data, conn) &&
      (conn->httpversion < 20)) {
     /* if not doing HTTP 1.0 or version 2, or disabled explicitly, we add an
        Expect: 100-continue to the headers which actually speeds up post
@@ -2390,7 +2388,7 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
         return CURLE_OUT_OF_MEMORY;
       }
     }
-    /* Extract the the URL to use in the request. Store in STRING_TEMP_URL for
+    /* Extract the URL to use in the request. Store in STRING_TEMP_URL for
        clean-up reasons if the function returns before the free() further
        down. */
     uc = curl_url_get(h, CURLUPART_URL, &data->set.str[STRING_TEMP_URL], 0);
@@ -3046,6 +3044,8 @@ CURLcode Curl_http(struct connectdata *conn, bool *done)
   }
   if(result)
     return result;
+  if(!postsize)
+    data->req.upload_done = TRUE;
 
   if(data->req.writebytecount) {
     /* if a request-body has been sent off, we make sure this progress is noted
@@ -3545,7 +3545,16 @@ CURLcode Curl_http_readwrite_headers(struct Curl_easy *data,
              */
             Curl_expire_done(data, EXPIRE_100_TIMEOUT);
             if(!k->upload_done) {
-              if(data->set.http_keep_sending_on_error) {
+              if((k->httpcode == 417) && data->state.expect100header) {
+                /* 417 Expectation Failed - try again without the Expect
+                   header */
+                infof(data, "Got 417 while waiting for a 100\n");
+                data->state.disableexpect = TRUE;
+                DEBUGASSERT(!data->req.newurl);
+                data->req.newurl = strdup(conn->data->change.url);
+                Curl_done_sending(conn, k);
+              }
+              else if(data->set.http_keep_sending_on_error) {
                 infof(data, "HTTP error before end of send, keep sending\n");
                 if(k->exp100 > EXP100_SEND_DATA) {
                   k->exp100 = EXP100_SEND_DATA;

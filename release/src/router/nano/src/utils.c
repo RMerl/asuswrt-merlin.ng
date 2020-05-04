@@ -209,8 +209,8 @@ bool is_separate_word(size_t position, size_t length, const char *buf)
 	/* If the word starts at the beginning of the line OR the character before
 	 * the word isn't a letter, and if the word ends at the end of the line OR
 	 * the character after the word isn't a letter, we have a whole word. */
-	return ((position == 0 || !is_alpha_mbchar(before)) &&
-				(buf[word_end] == '\0' || !is_alpha_mbchar(after)));
+	return ((position == 0 || !is_alpha_char(before)) &&
+				(buf[word_end] == '\0' || !is_alpha_char(after)));
 }
 #endif /* ENABLE_SPELLER */
 
@@ -324,12 +324,14 @@ char *mallocstrcpy(char *dest, const char *src)
 	return dest;
 }
 
-/* Return an allocated copy of the first count characters of the given string. */
+/* Return an allocated copy of the first count characters
+ * of the given string, and NUL-terminate the copy. */
 char *measured_copy(const char *string, size_t count)
 {
-	char *thecopy = charalloc(count);
+	char *thecopy = charalloc(count + 1);
 
 	strncpy(thecopy, string, count);
+	thecopy[count] = '\0';
 
 	return thecopy;
 }
@@ -337,7 +339,7 @@ char *measured_copy(const char *string, size_t count)
 /* Return an allocated copy of the given string. */
 char *copy_of(const char *string)
 {
-	return measured_copy(string, strlen(string) + 1);
+	return measured_copy(string, strlen(string));
 }
 
 /* Free the string at dest and return the string at src. */
@@ -448,15 +450,21 @@ void remove_magicline(void)
 #endif
 
 #ifndef NANO_TINY
+/* Return TRUE when the mark is before or at the cursor, and FALSE otherwise. */
+bool mark_is_before_cursor(void)
+{
+	return (openfile->mark->lineno < openfile->current->lineno ||
+						(openfile->mark == openfile->current &&
+						openfile->mark_x <= openfile->current_x));
+}
+
 /* Return in (top, top_x) and (bot, bot_x) the start and end "coordinates"
  * of the marked region.  If right_side_up isn't NULL, set it to TRUE when
  * the mark is at the top of the marked region, and to FALSE otherwise. */
 void get_region(const linestruct **top, size_t *top_x,
 				const linestruct **bot, size_t *bot_x, bool *right_side_up)
 {
-	if (openfile->mark->lineno < openfile->current->lineno ||
-				(openfile->mark == openfile->current &&
-				openfile->mark_x < openfile->current_x)) {
+	if (mark_is_before_cursor()) {
 		*top = openfile->mark;
 		*top_x = openfile->mark_x;
 		*bot = openfile->current;

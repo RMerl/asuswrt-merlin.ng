@@ -1,4 +1,4 @@
-# signal_h.m4 serial 18
+# signal_h.m4 serial 19
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -34,6 +34,8 @@ AC_DEFUN([gl_SIGNAL_H],
     ]], [pthread_sigmask sigaction
     sigaddset sigdelset sigemptyset sigfillset sigismember
     sigpending sigprocmask])
+
+  AC_REQUIRE([AC_C_RESTRICT])
 ])
 
 AC_DEFUN([gl_CHECK_TYPE_SIGSET_T],

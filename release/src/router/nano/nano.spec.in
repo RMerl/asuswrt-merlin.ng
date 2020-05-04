@@ -1,21 +1,21 @@
-%define name	@PACKAGE@
-%define version	@VERSION@
-%define release	1
+%define name     @PACKAGE@
+%define version  @VERSION@
+%define release  1
 
-Name		: %{name}
-Version		: %{version}
-Release		: %{release}
-Summary		: a user-friendly editor, a Pico clone with enhancements
+Name    : %{name}
+Version : %{version}
+Release : %{release}
+Summary : a user-friendly editor, a Pico clone with enhancements
 
-License		: GPLv3+
-Group		: Applications/Editors
-URL		: https://nano-editor.org/
-Source		: https://nano-editor.org/dist/latest/%{name}-%{version}.tar.gz
+License : GPLv3+
+Group   : Applications/Editors
+URL     : https://nano-editor.org/
+Source  : https://nano-editor.org/dist/latest/%{name}-%{version}.tar.gz
 
-BuildRoot	: %{_tmppath}/%{name}-%{version}-root
-BuildRequires	: autoconf, automake, gettext-devel, ncurses-devel, texinfo
-Requires(post)	: info
-Requires(preun)	: info
+BuildRoot       : %{_tmppath}/%{name}-%{version}-root
+BuildRequires   : autoconf, automake, gettext-devel, ncurses-devel, texinfo
+Requires(post)  : info
+Requires(preun) : info
 
 %description
 GNU nano is a small and friendly text editor.  It aims to emulate the
@@ -47,7 +47,6 @@ fi
 %{_bindir}/*
 %{_docdir}/nano/*
 %{_mandir}/man*/*
-%{_mandir}/fr/man*/*
 %{_infodir}/nano.info*
 %{_datadir}/locale/*/LC_MESSAGES/nano.mo
 %{_datadir}/nano/*

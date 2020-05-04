@@ -55,8 +55,17 @@
 
 #ifndef __glibc_clang_prereq
 # if defined __clang_major__ && defined __clang_minor__
-#  define __glibc_clang_prereq(maj, min) \
-     ((maj) < __clang_major__ + ((min) <= __clang_minor__))
+#  ifdef __apple_build_version__
+/* Apple for some reason renumbers __clang_major__ and __clang_minor__.
+   Gnulib code uses only __glibc_clang_prereq (3, 5); map it to
+   6000000 <= __apple_build_version__.  Support for other calls to
+   __glibc_clang_prereq can be added here as needed.  */
+#   define __glibc_clang_prereq(maj, min) \
+      ((maj) == 3 && (min) == 5 ? 6000000 <= __apple_build_version__ : 0)
+#  else
+#   define __glibc_clang_prereq(maj, min) \
+      ((maj) < __clang_major__ + ((min) <= __clang_minor__))
+#  endif
 # else
 #  define __glibc_clang_prereq(maj, min) 0
 # endif

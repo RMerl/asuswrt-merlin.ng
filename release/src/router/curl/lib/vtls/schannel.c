@@ -27,16 +27,6 @@
  * but vtls.c should ever call or use these functions.
  */
 
-/*
- * Based upon the PolarSSL implementation in polarssl.c and polarssl.h:
- *   Copyright (C) 2010, 2011, Hoi-Ho Chan, <hoiho.chan@gmail.com>
- *
- * Based upon the CyaSSL implementation in cyassl.c and cyassl.h:
- *   Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
- *
- * Thanks for code and inspiration!
- */
-
 #include "curl_setup.h"
 
 #ifdef USE_SCHANNEL
@@ -718,7 +708,7 @@ schannel_connect_step1(struct connectdata *conn, int sockindex)
     unsigned short* list_len = NULL;
 
     /* The first four bytes will be an unsigned int indicating number
-       of bytes of data in the rest of the the buffer. */
+       of bytes of data in the rest of the buffer. */
     extension_len = (unsigned int *)(&alpn_buffer[cur]);
     cur += sizeof(unsigned int);
 

@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2018, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -493,7 +493,7 @@ sub sendcontrol {
 
         for(@a) {
             sockfilt $_;
-            select(undef, undef, undef, 0.01);
+            portable_sleep(0.01);
         }
     }
     my $log;
@@ -530,7 +530,7 @@ sub senddata {
             # pause between each byte
             for (split(//,$l)) {
                 sockfiltsecondary $_;
-                select(undef, undef, undef, 0.01);
+                portable_sleep(0.01);
             }
         }
     }
@@ -813,6 +813,7 @@ sub MAIL_smtp {
     else {
         my $from;
         my $size;
+        my $smtputf8 = grep /^SMTPUTF8$/, @capabilities;
         my @elements = split(/ /, $args);
 
         # Get the FROM and SIZE parameters
@@ -827,11 +828,11 @@ sub MAIL_smtp {
 
         # Validate the from address (only <> and a valid email address inside
         # <> are allowed, such as <user@example.com>)
-        if ((!$from) || (($from ne "<>") && ($from !~
-            /^<([a-zA-Z0-9._%+-]+)\@([a-zA-Z0-9.-]+).([a-zA-Z]{2,4})>$/))) {
-            sendcontrol "501 Invalid address\r\n";
-        }
-        else {
+        if (($from eq "<>") ||
+            (!$smtputf8 && $from =~
+              /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
+            ($smtputf8 && $from =~
+              /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
             my @found;
             my $valid = 1;
 
@@ -852,6 +853,9 @@ sub MAIL_smtp {
                 sendcontrol "250 Sender OK\r\n";
             }
         }
+        else {
+            sendcontrol "501 Invalid address\r\n";
+        }
     }
 
     return 0;
@@ -867,16 +871,19 @@ sub RCPT_smtp {
         sendcontrol "501 Unrecognized parameter\r\n";
     }
     else {
+        my $smtputf8 = grep /^SMTPUTF8$/, @capabilities;
         my $to = $1;
 
         # Validate the to address (only a valid email address inside <> is
         # allowed, such as <user@example.com>)
-        if ($to !~
-            /^<([a-zA-Z0-9._%+-]+)\@([a-zA-Z0-9.-]+).([a-zA-Z]{2,4})>$/) {
-            sendcontrol "501 Invalid address\r\n";
+        if ((!$smtputf8 && $to =~
+              /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
+            ($smtputf8 && $to =~
+              /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
+            sendcontrol "250 Recipient OK\r\n";      
         }
         else {
-            sendcontrol "250 Recipient OK\r\n";
+            sendcontrol "501 Invalid address\r\n";
         }
     }
 
@@ -1030,10 +1037,33 @@ sub VRFY_smtp {
         sendcontrol "501 Unrecognized parameter\r\n";
     }
     else {
-        my @data = getreplydata($smtp_client);
+        my $smtputf8 = grep /^SMTPUTF8$/, @capabilities;
 
-        for my $d (@data) {
-            sendcontrol $d;
+        # Validate the username (only a valid local or external username is
+        # allowed, such as user or user@example.com)
+        if ((!$smtputf8 && $username =~
+            /^([a-zA-Z0-9._%+-]+)(\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4}))?$/) ||
+            ($smtputf8 && $username =~
+            /^([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)(\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4}))?$/)) {
+
+            my @data = getreplydata($smtp_client);
+
+            if(!@data) {
+                if ($username !~
+                    /^([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})$/) {
+                  push @data, "250 <$username\@example.com>\r\n"
+                }
+                else {
+                  push @data, "250 <$username>\r\n"
+                }
+            }
+
+            for my $d (@data) {
+                sendcontrol $d;
+            }
+        }
+        else {
+            sendcontrol "501 Invalid address\r\n";
         }
     }
 
@@ -3169,7 +3199,7 @@ while(1) {
             logmsg("Sleep for $delay seconds\n");
             my $twentieths = $delay * 20;
             while($twentieths--) {
-                select(undef, undef, undef, 0.05) unless($got_exit_signal);
+                portable_sleep(0.05) unless($got_exit_signal);
             }
         }
 

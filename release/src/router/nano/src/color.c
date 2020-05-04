@@ -40,13 +40,13 @@
 
 /* Assign pair numbers for the colors in the given syntax, giving identical
  * color pairs the same number. */
-void set_syntax_colorpairs(syntaxtype *sint)
+void set_syntax_colorpairs(syntaxtype *sntx)
 {
 	int new_number = NUMBER_OF_ELEMENTS + 1;
 	colortype *ink;
 
-	for (ink = sint->color; ink != NULL; ink = ink->next) {
-		const colortype *beforenow = sint->color;
+	for (ink = sntx->color; ink != NULL; ink = ink->next) {
+		const colortype *beforenow = sntx->color;
 
 		while (beforenow != ink && (beforenow->fg != ink->fg ||
 									beforenow->bg != ink->bg))
@@ -65,7 +65,6 @@ void set_syntax_colorpairs(syntaxtype *sint)
  * for the colors in each loaded syntax. */
 void set_colorpairs(void)
 {
-	syntaxtype *sint;
 	bool using_defaults = FALSE;
 
 	/* Tell ncurses to enable colors. */
@@ -105,9 +104,9 @@ void set_colorpairs(void)
 	}
 
 	/* For each loaded syntax, assign pair numbers to color combinations. */
-	for (sint = syntaxes; sint != NULL; sint = sint->next)
-		if (sint->filename == NULL)
-			set_syntax_colorpairs(sint);
+	for (syntaxtype *sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+		if (sntx->filename == NULL)
+			set_syntax_colorpairs(sntx);
 }
 
 /* Initialize the color information. */
@@ -167,7 +166,7 @@ bool found_in_list(regexlisttype *head, const char *shibboleth)
 /* Update the color information based on the current filename and content. */
 void color_update(void)
 {
-	syntaxtype *sint = NULL;
+	syntaxtype *sntx = NULL;
 
 	/* If the rcfiles were not read, or contained no syntaxes, get out. */
 	if (syntaxes == NULL)
@@ -179,42 +178,39 @@ void color_update(void)
 		if (strcmp(syntaxstr, "none") == 0)
 			return;
 
-		for (sint = syntaxes; sint != NULL; sint = sint->next) {
-			if (strcmp(sint->name, syntaxstr) == 0)
+		for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+			if (strcmp(sntx->name, syntaxstr) == 0)
 				break;
-		}
 
-		if (sint == NULL && !inhelp)
+		if (sntx == NULL && !inhelp)
 			statusline(ALERT, _("Unknown syntax name: %s"), syntaxstr);
 	}
 
 	/* If no syntax-override string was specified, or it didn't match,
 	 * try finding a syntax based on the filename (extension). */
-	if (sint == NULL && !inhelp) {
+	if (sntx == NULL && !inhelp) {
 		char *fullname = get_full_path(openfile->filename);
 
 		if (fullname == NULL)
 			fullname = mallocstrcpy(fullname, openfile->filename);
 
-		for (sint = syntaxes; sint != NULL; sint = sint->next) {
-			if (found_in_list(sint->extensions, fullname))
+		for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+			if (found_in_list(sntx->extensions, fullname))
 				break;
-		}
 
 		free(fullname);
 	}
 
 	/* If the filename didn't match anything, try the first line. */
-	if (sint == NULL && !inhelp) {
-		for (sint = syntaxes; sint != NULL; sint = sint->next) {
-			if (found_in_list(sint->headers, openfile->filetop->data))
+	if (sntx == NULL && !inhelp) {
+		for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+			if (found_in_list(sntx->headers, openfile->filetop->data))
 				break;
-		}
 	}
 
 #ifdef HAVE_LIBMAGIC
 	/* If we still don't have an answer, try using magic. */
-	if (sint == NULL && !inhelp) {
+	if (sntx == NULL && !inhelp) {
 		struct stat fileinfo;
 		magic_t cookie = NULL;
 		const char *magicstring = NULL;
@@ -238,10 +234,9 @@ void color_update(void)
 
 		/* Now try and find a syntax that matches the magic string. */
 		if (magicstring != NULL) {
-			for (sint = syntaxes; sint != NULL; sint = sint->next) {
-				if (found_in_list(sint->magics, magicstring))
+			for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+				if (found_in_list(sntx->magics, magicstring))
 					break;
-			}
 		}
 
 		if (stat(openfile->filename, &fileinfo) == 0)
@@ -250,21 +245,20 @@ void color_update(void)
 #endif /* HAVE_LIBMAGIC */
 
 	/* If nothing at all matched, see if there is a default syntax. */
-	if (sint == NULL && !inhelp) {
-		for (sint = syntaxes; sint != NULL; sint = sint->next) {
-			if (strcmp(sint->name, "default") == 0)
+	if (sntx == NULL && !inhelp) {
+		for (sntx = syntaxes; sntx != NULL; sntx = sntx->next)
+			if (strcmp(sntx->name, "default") == 0)
 				break;
-		}
 	}
 
 	/* When the syntax isn't loaded yet, parse it and initialize its colors. */
-	if (sint != NULL && sint->filename != NULL) {
-		parse_one_include(sint->filename, sint);
-		set_syntax_colorpairs(sint);
+	if (sntx != NULL && sntx->filename != NULL) {
+		parse_one_include(sntx->filename, sntx);
+		set_syntax_colorpairs(sntx);
 	}
 
-	openfile->syntax = sint;
-	openfile->colorstrings = (sint == NULL ? NULL : sint->color);
+	openfile->syntax = sntx;
+	openfile->colorstrings = (sntx == NULL ? NULL : sntx->color);
 }
 
 /* Allocate and initialize (for the given line) the cache for multiline info. */
@@ -272,7 +266,7 @@ void set_up_multicache(linestruct *line)
 {
 	line->multidata = (short *)nmalloc(openfile->syntax->nmultis * sizeof(short));
 
-	for (int index = 0; index < openfile->syntax->nmultis; index++)
+	for (short index = 0; index < openfile->syntax->nmultis; index++)
 		line->multidata[index] = -1;
 }
 

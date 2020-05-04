@@ -2,7 +2,7 @@
  *   nano.c  --  This file is part of GNU nano.                           *
  *                                                                        *
  *   Copyright (C) 1999-2011, 2013-2020 Free Software Foundation, Inc.    *
- *   Copyright (C) 2014-2019 Benno Schulenberg                            *
+ *   Copyright (C) 2014-2020 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -223,8 +223,7 @@ void partition_buffer(linestruct *top, size_t top_x,
 	 * top of the partition from it, and save the text before top_x. */
 	foreline = top->prev;
 	top->prev = NULL;
-	antedata = measured_copy(top->data, top_x + 1);
-	antedata[top_x] = '\0';
+	antedata = measured_copy(top->data, top_x);
 
 	/* Remember which line is below the bottom of the partition, detach the
 	 * bottom of the partition from it, and save the text after bot_x. */
@@ -340,9 +339,8 @@ void finish(void)
 	/* If the user wants history persistence, write the relevant files. */
 	if (ISSET(HISTORYLOG))
 		save_history();
-	if (ISSET(POSITIONLOG)) {
+	if (ISSET(POSITIONLOG) && openfile)
 		update_poshistory(openfile->filename, openfile->current->lineno, xplustabs() + 1);
-	}
 #endif
 
 	/* Get out. */
@@ -671,9 +669,9 @@ void usage(void)
 	print_opt("-y", "--afterends", N_("Make Ctrl+Right stop at word ends"));
 #endif
 	if (!ISSET(RESTRICTED))
-		print_opt("-z", "--suspend", N_("Enable suspension"));
+		print_opt("-z", "--suspendable", N_("Enable suspension"));
 #ifndef NANO_TINY
-	print_opt("-$", "--softwrap", N_("Enable soft line wrapping"));
+	print_opt("-$", "--softwrap", N_("Display overlong lines on multiple rows"));
 #endif
 }
 
@@ -981,7 +979,7 @@ void signal_init(void)
 	sigaction(SIGWINCH, &deed, NULL);
 #endif
 
-	if (ISSET(SUSPEND)) {
+	if (ISSET(SUSPENDABLE)) {
 		/* Block all other signals in the suspend and continue handlers.
 		 * If we don't do this, other stuff interrupts them! */
 		sigfillset(&deed.sa_mask);
@@ -1054,7 +1052,7 @@ RETSIGTYPE do_suspend(int signal)
 /* Put nano to sleep (if suspension is enabled). */
 void do_suspend_void(void)
 {
-	if (ISSET(SUSPEND))
+	if (ISSET(SUSPENDABLE))
 		do_suspend(0);
 	else {
 		statusbar(_("Suspension is not enabled"));
@@ -1153,7 +1151,7 @@ void do_toggle(int flag)
 {
 	bool enabled;
 
-	if (flag == SUSPEND && in_restricted_mode())
+	if (flag == SUSPENDABLE && in_restricted_mode())
 		return;
 
 	TOGGLE(flag);
@@ -1169,7 +1167,7 @@ void do_toggle(int flag)
 			mouse_init();
 			break;
 #endif
-		case SUSPEND:
+		case SUSPENDABLE:
 			signal_init();
 			break;
 		case SOFTWRAP:
@@ -1325,7 +1323,7 @@ int get_keycode(const char *keyname, const int standard)
 }
 
 #ifdef ENABLE_LINENUMBERS
-/* Ensure that the margin can accomodate the buffer's highest line number. */
+/* Ensure that the margin can accommodate the buffer's highest line number. */
 void confirm_margin(void)
 {
 	int needed_margin = digits(openfile->filebot->lineno) + 1;
@@ -1436,11 +1434,11 @@ bool wanted_to_move(void (*func)(void))
 	return func == do_left || func == do_right ||
 			func == do_up || func == do_down ||
 			func == do_home || func == do_end ||
-			func == do_prev_word_void || func == do_next_word_void ||
+			func == to_prev_word || func == to_next_word ||
 #ifdef ENABLE_JUSTIFY
-			func == do_para_begin_void || func == do_para_end_void ||
+			func == to_para_begin || func == to_para_end ||
 #endif
-			func == do_prev_block || func == do_next_block ||
+			func == to_prev_block || func == to_next_block ||
 			func == do_page_up || func == do_page_down ||
 			func == to_first_line || func == to_last_line;
 }
@@ -1471,13 +1469,13 @@ void suck_up_input_and_paste_it(void)
 	while (bracketed_paste) {
 		int input = get_kbinput(edit, BLIND);
 
-		if (input == CR_CODE) {
+		if (input == '\r' || input == '\n') {
 			line->next = make_new_node(line);
 			line = line->next;
 			line->data = copy_of("");
 			index = 0;
 		} else if ((0x20 <= input && input <= 0xFF && input != DEL_CODE) ||
-													input == TAB_CODE) {
+														input == '\t') {
 			line->data = charealloc(line->data, index + 2);
 			line->data[index++] = (char)input;
 			line->data[index] = '\0';
@@ -1493,9 +1491,8 @@ void suck_up_input_and_paste_it(void)
 }
 #endif
 
-/* Read in a keystroke.  Act on the keystroke if it is a shortcut or a toggle;
- * otherwise, insert it into the edit buffer. */
-void do_input(void)
+/* Read in a keystroke, and execute its command or insert it into the buffer. */
+void process_a_keystroke(void)
 {
 	int input;
 		/* The keystroke we read in: a character or a shortcut. */
@@ -1512,16 +1509,13 @@ void do_input(void)
 	if (input == KEY_WINCH)
 		return;
 #endif
-
 #ifdef ENABLE_MOUSE
 	if (input == KEY_MOUSE) {
-		/* We received a mouse click. */
+		/* If the user clicked on a shortcut, read in the key code that it was
+		 * converted into.  Else the click has been handled or was invalid. */
 		if (do_mouse() == 1)
-			/* The click was on a shortcut -- read in the character
-			 * that it was converted into. */
 			input = get_kbinput(edit, BLIND);
 		else
-			/* The click was invalid or has been handled -- get out. */
 			return;
 	}
 #endif
@@ -1529,20 +1523,11 @@ void do_input(void)
 	/* Check for a shortcut in the main list. */
 	shortcut = get_shortcut(&input);
 
-	/* If we got a non-high-bit control key, a meta key sequence, or a
-	 * function key, and it's not a shortcut or toggle, throw it out. */
+	/* If not a command, discard anything that is not a normal character byte. */
 	if (shortcut == NULL) {
-		if (is_ascii_cntrl_char(input) || meta_key || !is_byte(input)) {
+		if (input < 0x20 || input > 0xFF || meta_key)
 			unbound_key(input);
-			input = ERR;
-		}
-	}
-
-	/* If the keystroke isn't a shortcut nor a toggle, it's a normal text
-	 * character: add the character to the input buffer -- or display a
-	 * warning when we're in view mode. */
-	if (input != ERR && shortcut == NULL) {
-		if (ISSET(VIEW_MODE))
+		else if (ISSET(VIEW_MODE))
 			print_view_warning();
 		else {
 			/* Store the byte, and leave room for a terminating zero. */
@@ -1557,22 +1542,16 @@ void do_input(void)
 #endif
 	}
 
-	/* If we got a shortcut or toggle, or if there aren't any other
-	 * characters waiting after the one we read in, we need to output
-	 * all available characters in the input puddle.  Note that this
-	 * puddle will be empty if we're in view mode. */
-	if (shortcut || get_key_buffer_len() == 0) {
-		if (puddle != NULL) {
-			/* Insert all bytes in the input buffer into the edit buffer
-			 * at once, filtering out any ASCII control codes. */
-			puddle[depth] = '\0';
-			inject(puddle, depth, TRUE);
+	/* If we have a command, or if there aren't any other key codes waiting,
+	 * it's time to insert the gathered bytes into the edit buffer. */
+	if ((shortcut || get_key_buffer_len() == 0) && puddle != NULL) {
+		puddle[depth] = '\0';
 
-			/* Empty the input buffer. */
-			free(puddle);
-			puddle = NULL;
-			depth = 0;
-		}
+		inject(puddle, depth);
+
+		free(puddle);
+		puddle = NULL;
+		depth = 0;
 	}
 
 	if (shortcut == NULL) {
@@ -1655,103 +1634,87 @@ void do_input(void)
 #endif
 }
 
-/* The user typed output_len multibyte characters.  Add them to the edit
- * buffer, filtering out ASCII control characters when filtering is TRUE. */
-void inject(char *output, size_t output_len, bool filtering)
+/* Insert the given short burst of bytes into the edit buffer. */
+void inject(char *burst, size_t count)
 {
-	char onechar[MAXCHARLEN];
-	int charlen;
-	size_t current_len = strlen(openfile->current->data);
-	size_t i = 0;
+	linestruct *thisline = openfile->current;
+	size_t datalen = strlen(thisline->data);
 #ifndef NANO_TINY
 	size_t original_row = 0, old_amount = 0;
 
 	if (ISSET(SOFTWRAP)) {
 		if (openfile->current_y == editwinrows - 1)
-			original_row = chunk_for(xplustabs(), openfile->current);
-		old_amount = number_of_chunks_in(openfile->current);
+			original_row = chunk_for(xplustabs(), thisline);
+		old_amount = number_of_chunks_in(thisline);
 	}
 #endif
 
-	while (i < output_len) {
-		/* Encode an embedded NUL byte as 0x0A. */
-		if (output[i] == '\0')
-			output[i] = '\n';
-
-		/* Get the next multibyte character. */
-		charlen = collect_char(output + i, onechar);
-
-		i += charlen;
-
-		/* If controls are not allowed, ignore an ASCII control character. */
-		if (filtering && is_ascii_cntrl_char(*(output + i - charlen)))
-			continue;
-
-		/* Make room for the new character and copy it into the line. */
-		openfile->current->data = charealloc(openfile->current->data,
-										current_len + charlen + 1);
-		memmove(openfile->current->data + openfile->current_x + charlen,
-						openfile->current->data + openfile->current_x,
-						current_len - openfile->current_x + 1);
-		strncpy(openfile->current->data + openfile->current_x, onechar,
-						charlen);
-		current_len += charlen;
-		openfile->totsize++;
-		set_modified();
+	/* Encode an embedded NUL byte as 0x0A. */
+	for (size_t index = 0; index < count; index++)
+		if (burst[index] == '\0')
+			burst[index] = '\n';
 
 #ifndef NANO_TINY
-		/* Only add a new undo item when the current item is not an ADD or when
-		 * the current typing is not contiguous with the previous typing. */
-		if (openfile->last_action != ADD ||
-				openfile->current_undo->mark_begin_lineno != openfile->current->lineno ||
-				openfile->current_undo->mark_begin_x != openfile->current_x)
-			add_undo(ADD, NULL);
+	/* Only add a new undo item when the current item is not an ADD or when
+	 * the current typing is not contiguous with the previous typing. */
+	if (openfile->last_action != ADD ||
+				openfile->current_undo->tail_lineno != thisline->lineno ||
+				openfile->current_undo->tail_x != openfile->current_x)
+		add_undo(ADD, NULL);
+#endif
 
-		/* Note that current_x has not yet been incremented. */
-		if (openfile->current == openfile->mark &&
-						openfile->current_x < openfile->mark_x)
-			openfile->mark_x += charlen;
+	/* Make room for the new bytes and copy them into the line. */
+	thisline->data = charealloc(thisline->data, datalen + count + 1);
+	memmove(thisline->data + openfile->current_x + count,
+						thisline->data + openfile->current_x,
+						datalen - openfile->current_x + 1);
+	strncpy(thisline->data + openfile->current_x, burst, count);
 
-		/* When the cursor is on the top row and not on the first chunk
-		 * of a line, adding text there might change the preceding chunk
-		 * and thus require an adjustment of firstcolumn. */
-		if (openfile->current == openfile->edittop &&
-						openfile->firstcolumn > 0) {
-			ensure_firstcolumn_is_aligned();
+#ifndef NANO_TINY
+	/* When the mark is to the right of the cursor, compensate its position. */
+	if (thisline == openfile->mark && openfile->current_x < openfile->mark_x)
+		openfile->mark_x += count;
+
+	/* When the cursor is on the top row and not on the first chunk
+	 * of a line, adding text there might change the preceding chunk
+	 * and thus require an adjustment of firstcolumn. */
+	if (thisline == openfile->edittop && openfile->firstcolumn > 0) {
+		ensure_firstcolumn_is_aligned();
+		refresh_needed = TRUE;
+	}
+#endif
+	/* If text was added to the magic line, create a new magic line. */
+	if (thisline == openfile->filebot && !ISSET(NO_NEWLINES)) {
+		new_magicline();
+		if (margin > 0)
 			refresh_needed = TRUE;
-		}
-#endif
+	}
 
-		openfile->current_x += charlen;
+	openfile->current_x += count;
+
+	openfile->totsize += mbstrlen(burst);
+	set_modified();
 
 #ifndef NANO_TINY
-		update_undo(ADD);
+	update_undo(ADD);
 #endif
-
-		/* If we've added text to the magic line, create a new magic line. */
-		if (openfile->filebot == openfile->current && !ISSET(NO_NEWLINES)) {
-			new_magicline();
-			if (margin > 0)
-				refresh_needed = TRUE;
-		}
 
 #ifdef ENABLE_WRAPPING
-		/* If text gets wrapped, the edit window needs a refresh. */
-		if (ISSET(BREAK_LONG_LINES) && do_wrap())
-			refresh_needed = TRUE;
+	/* Wrap the line when needed, and if so, schedule a refresh. */
+	if (ISSET(BREAK_LONG_LINES) && do_wrap())
+		refresh_needed = TRUE;
 #endif
-	}
 
 #ifndef NANO_TINY
-	/* If the number of screen rows that a softwrapped line occupies has
-	 * changed, we need a full refresh.  And if we were on the last line
-	 * of the edit window, and we moved one screen row, we're now below
-	 * the last line of the edit window, so we need a full refresh too. */
-	if (ISSET(SOFTWRAP) && refresh_needed == FALSE &&
-				(number_of_chunks_in(openfile->current) != old_amount ||
-				(openfile->current_y == editwinrows - 1 &&
-				chunk_for(xplustabs(), openfile->current) != original_row)))
+	/* If we were on the last row of the edit window and moved to a new chunk,
+	 * or if the number of chunks that the current softwrapped line occupies
+	 * changed, we need a full refresh. */
+	if (ISSET(SOFTWRAP) && ((openfile->current_y == editwinrows - 1 &&
+				chunk_for(xplustabs(), openfile->current) > original_row) ||
+				number_of_chunks_in(openfile->current) != old_amount)) {
 		refresh_needed = TRUE;
+		focusing = FALSE;
+	}
 #endif
 
 	openfile->placewewant = xplustabs();
@@ -1760,7 +1723,6 @@ void inject(char *output, size_t output_len, bool filtering)
 	if (!refresh_needed)
 		check_the_multis(openfile->current);
 #endif
-
 	if (!refresh_needed)
 		update_line(openfile->current, openfile->current_x);
 }
@@ -1843,7 +1805,7 @@ int main(int argc, char **argv)
 		{"nowrap", 0, NULL, 'w'},
 #endif
 		{"nohelp", 0, NULL, 'x'},
-		{"suspend", 0, NULL, 'z'},
+		{"suspendable", 0, NULL, 'z'},
 #ifndef NANO_TINY
 		{"smarthome", 0, NULL, 'A'},
 		{"backup", 0, NULL, 'B'},
@@ -2150,7 +2112,7 @@ int main(int argc, char **argv)
 				break;
 #endif
 			case 'z':
-				SET(SUSPEND);
+				SET(SUSPENDABLE);
 				break;
 #ifndef NANO_TINY
 			case '$':
@@ -2277,7 +2239,7 @@ int main(int argc, char **argv)
 	 * since they allow writing to files not specified on the command line. */
 	if (ISSET(RESTRICTED)) {
 		UNSET(BACKUP_FILE);
-		UNSET(SUSPEND);
+		UNSET(SUSPENDABLE);
 #ifdef ENABLE_NANORC
 		UNSET(HISTORYLOG);
 		UNSET(POSITIONLOG);
@@ -2608,6 +2570,6 @@ int main(int argc, char **argv)
 		put_cursor_at_end_of_answer();
 
 		/* Read in and interpret a single keystroke. */
-		do_input();
+		process_a_keystroke();
 	}
 }

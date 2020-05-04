@@ -87,6 +87,8 @@
 
  10. LDAP
  10.1 SASL based authentication mechanisms
+ 10.2 CURLOPT_SSL_CTX_FUNCTION for LDAPS
+ 10.3 Paged searches on LDAP server
 
  11. SMB
  11.1 File listing support
@@ -132,6 +134,7 @@
  18.1 sync
  18.2 glob posts
  18.3 prevent file overwriting
+ 18.4 --proxycommand
  18.5 UTF-8 filenames in Content-Disposition
  18.7 at least N milliseconds between requests
  18.9 Choose the name of file in braces for complex URLs
@@ -403,7 +406,6 @@
  EWOULDBLOCK or similar. Blocking cases include:
 
  - Name resolves on non-windows unless c-ares or the threaded resolver is used
- - SOCKS proxy handshakes
  - file:// transfers
  - TELNET transfers
  - The "DONE" operation (post transfer protocol-specific actions) for the
@@ -602,6 +604,17 @@
  using the simple authentication mechanism (as clear text). However, it should
  be possible to use ldap_bind_s() instead specifying the security context
  information ourselves.
+
+10.2 CURLOPT_SSL_CTX_FUNCTION for LDAPS
+
+ CURLOPT_SSL_CTX_FUNCTION works perfectly for HTTPS and email protocols, but
+ it has no effect for LDAPS connections.
+
+ https://github.com/curl/curl/issues/4108
+
+10.3 Paged searches on LDAP server
+
+ https://github.com/curl/curl/issues/4452
 
 11. SMB
 
@@ -856,6 +869,16 @@ that doesn't exist on the server, just like --ftp-create-dirs.
  (either -O or -o), a number should be appended (and increased if already
  existing). So that index.html becomes first index.html.1 and then
  index.html.2 etc.
+
+18.4 --proxycommand
+
+ Allow the user to make curl run a command and use its stdio to make requests
+ and not do any network connection by itself. Example:
+
+   curl --proxycommand 'ssh pi@raspberrypi.local -W 10.1.1.75 80' \
+        http://some/otherwise/unavailable/service.php
+
+ See https://github.com/curl/curl/issues/4941
 
 18.5 UTF-8 filenames in Content-Disposition
 

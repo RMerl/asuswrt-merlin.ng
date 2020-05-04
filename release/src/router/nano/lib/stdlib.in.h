@@ -311,13 +311,17 @@ _GL_WARN_ON_USE (malloc, "malloc is not POSIX compliant everywhere - "
 #   undef mbtowc
 #   define mbtowc rpl_mbtowc
 #  endif
-_GL_FUNCDECL_RPL (mbtowc, int, (wchar_t *pwc, const char *s, size_t n));
-_GL_CXXALIAS_RPL (mbtowc, int, (wchar_t *pwc, const char *s, size_t n));
+_GL_FUNCDECL_RPL (mbtowc, int,
+                  (wchar_t *restrict pwc, const char *restrict s, size_t n));
+_GL_CXXALIAS_RPL (mbtowc, int,
+                  (wchar_t *restrict pwc, const char *restrict s, size_t n));
 # else
 #  if !@HAVE_MBTOWC@
-_GL_FUNCDECL_SYS (mbtowc, int, (wchar_t *pwc, const char *s, size_t n));
+_GL_FUNCDECL_SYS (mbtowc, int,
+                  (wchar_t *restrict pwc, const char *restrict s, size_t n));
 #  endif
-_GL_CXXALIAS_SYS (mbtowc, int, (wchar_t *pwc, const char *s, size_t n));
+_GL_CXXALIAS_SYS (mbtowc, int,
+                  (wchar_t *restrict pwc, const char *restrict s, size_t n));
 # endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (mbtowc);
@@ -866,15 +870,19 @@ _GL_WARN_ON_USE (reallocarray, "reallocarray is not portable - "
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #   define realpath rpl_realpath
 #  endif
-_GL_FUNCDECL_RPL (realpath, char *, (const char *name, char *resolved)
-                                    _GL_ARG_NONNULL ((1)));
-_GL_CXXALIAS_RPL (realpath, char *, (const char *name, char *resolved));
+_GL_FUNCDECL_RPL (realpath, char *,
+                  (const char *restrict name, char *restrict resolved)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (realpath, char *,
+                  (const char *restrict name, char *restrict resolved));
 # else
 #  if !@HAVE_REALPATH@
-_GL_FUNCDECL_SYS (realpath, char *, (const char *name, char *resolved)
-                                    _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (realpath, char *,
+                  (const char *restrict name, char *restrict resolved)
+                  _GL_ARG_NONNULL ((1)));
 #  endif
-_GL_CXXALIAS_SYS (realpath, char *, (const char *name, char *resolved));
+_GL_CXXALIAS_SYS (realpath, char *,
+                  (const char *restrict name, char *restrict resolved));
 # endif
 _GL_CXXALIASWARN (realpath);
 #elif defined GNULIB_POSIXCHECK
@@ -957,15 +965,19 @@ _GL_WARN_ON_USE (setenv, "setenv is unportable - "
 #   define strtod rpl_strtod
 #  endif
 #  define GNULIB_defined_strtod_function 1
-_GL_FUNCDECL_RPL (strtod, double, (const char *str, char **endp)
-                                  _GL_ARG_NONNULL ((1)));
-_GL_CXXALIAS_RPL (strtod, double, (const char *str, char **endp));
+_GL_FUNCDECL_RPL (strtod, double,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtod, double,
+                  (const char *restrict str, char **restrict endp));
 # else
 #  if !@HAVE_STRTOD@
-_GL_FUNCDECL_SYS (strtod, double, (const char *str, char **endp)
-                                  _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (strtod, double,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
 #  endif
-_GL_CXXALIAS_SYS (strtod, double, (const char *str, char **endp));
+_GL_CXXALIAS_SYS (strtod, double,
+                  (const char *restrict str, char **restrict endp));
 # endif
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (strtod);
@@ -985,15 +997,19 @@ _GL_WARN_ON_USE (strtod, "strtod is unportable - "
 #   define strtold rpl_strtold
 #  endif
 #  define GNULIB_defined_strtold_function 1
-_GL_FUNCDECL_RPL (strtold, long double, (const char *str, char **endp)
-                                        _GL_ARG_NONNULL ((1)));
-_GL_CXXALIAS_RPL (strtold, long double, (const char *str, char **endp));
+_GL_FUNCDECL_RPL (strtold, long double,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (strtold, long double,
+                  (const char *restrict str, char **restrict endp));
 # else
 #  if !@HAVE_STRTOLD@
-_GL_FUNCDECL_SYS (strtold, long double, (const char *str, char **endp)
-                                        _GL_ARG_NONNULL ((1)));
+_GL_FUNCDECL_SYS (strtold, long double,
+                  (const char *restrict str, char **restrict endp)
+                  _GL_ARG_NONNULL ((1)));
 #  endif
-_GL_CXXALIAS_SYS (strtold, long double, (const char *str, char **endp));
+_GL_CXXALIAS_SYS (strtold, long double,
+                  (const char *restrict str, char **restrict endp));
 # endif
 _GL_CXXALIASWARN (strtold);
 #elif defined GNULIB_POSIXCHECK
@@ -1015,11 +1031,13 @@ _GL_WARN_ON_USE (strtold, "strtold is unportable - "
    to ERANGE.  */
 # if !@HAVE_STRTOLL@
 _GL_FUNCDECL_SYS (strtoll, long long,
-                  (const char *string, char **endptr, int base)
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
                   _GL_ARG_NONNULL ((1)));
 # endif
 _GL_CXXALIAS_SYS (strtoll, long long,
-                  (const char *string, char **endptr, int base));
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
 _GL_CXXALIASWARN (strtoll);
 #elif defined GNULIB_POSIXCHECK
 # undef strtoll
@@ -1040,11 +1058,13 @@ _GL_WARN_ON_USE (strtoll, "strtoll is unportable - "
    ERANGE.  */
 # if !@HAVE_STRTOULL@
 _GL_FUNCDECL_SYS (strtoull, unsigned long long,
-                  (const char *string, char **endptr, int base)
+                  (const char *restrict string, char **restrict endptr,
+                   int base)
                   _GL_ARG_NONNULL ((1)));
 # endif
 _GL_CXXALIAS_SYS (strtoull, unsigned long long,
-                  (const char *string, char **endptr, int base));
+                  (const char *restrict string, char **restrict endptr,
+                   int base));
 _GL_CXXALIASWARN (strtoull);
 #elif defined GNULIB_POSIXCHECK
 # undef strtoull

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -43,19 +43,11 @@
 
 #define H2_BUFSIZE 32768
 
-#if (NGHTTP2_VERSION_NUM < 0x010000)
+#if (NGHTTP2_VERSION_NUM < 0x010c00)
 #error too old nghttp2 version, upgrade!
 #endif
 
-#if (NGHTTP2_VERSION_NUM > 0x010800)
-#define NGHTTP2_HAS_HTTP2_STRERROR 1
-#endif
-
-#if (NGHTTP2_VERSION_NUM >= 0x010900)
-/* nghttp2_session_callbacks_set_error_callback is present in nghttp2 1.9.0 or
-   later */
-#define NGHTTP2_HAS_ERROR_CALLBACK 1
-#else
+#ifdef CURL_DISABLE_VERBOSE_STRINGS
 #define nghttp2_session_callbacks_set_error_callback(x,y)
 #endif
 
@@ -63,7 +55,7 @@
 #define NGHTTP2_HAS_SET_LOCAL_WINDOW_SIZE 1
 #endif
 
-#define HTTP2_HUGE_WINDOW_SIZE (1 << 30)
+#define HTTP2_HUGE_WINDOW_SIZE (32 * 1024 * 1024) /* 32 MB */
 
 #ifdef DEBUG_HTTP2
 #define H2BUGF(x) x
@@ -341,36 +333,7 @@ static const struct Curl_handler Curl_handler_http2_ssl = {
 int Curl_http2_ver(char *p, size_t len)
 {
   nghttp2_info *h2 = nghttp2_version(0);
-  return msnprintf(p, len, " nghttp2/%s", h2->version_str);
-}
-
-/* HTTP/2 error code to name based on the Error Code Registry.
-https://tools.ietf.org/html/rfc7540#page-77
-nghttp2_error_code enums are identical.
-*/
-static const char *http2_strerror(uint32_t err)
-{
-#ifndef NGHTTP2_HAS_HTTP2_STRERROR
-  const char *str[] = {
-    "NO_ERROR",             /* 0x0 */
-    "PROTOCOL_ERROR",       /* 0x1 */
-    "INTERNAL_ERROR",       /* 0x2 */
-    "FLOW_CONTROL_ERROR",   /* 0x3 */
-    "SETTINGS_TIMEOUT",     /* 0x4 */
-    "STREAM_CLOSED",        /* 0x5 */
-    "FRAME_SIZE_ERROR",     /* 0x6 */
-    "REFUSED_STREAM",       /* 0x7 */
-    "CANCEL",               /* 0x8 */
-    "COMPRESSION_ERROR",    /* 0x9 */
-    "CONNECT_ERROR",        /* 0xA */
-    "ENHANCE_YOUR_CALM",    /* 0xB */
-    "INADEQUATE_SECURITY",  /* 0xC */
-    "HTTP_1_1_REQUIRED"     /* 0xD */
-  };
-  return (err < sizeof(str) / sizeof(str[0])) ? str[err] : "unknown";
-#else
-  return nghttp2_http2_strerror(err);
-#endif
+  return msnprintf(p, len, "nghttp2/%s", h2->version_str);
 }
 
 /*
@@ -838,7 +801,7 @@ static int on_stream_close(nghttp2_session *session, int32_t stream_id,
       return 0;
     }
     H2BUGF(infof(data_s, "on_stream_close(), %s (err %d), stream %u\n",
-                 http2_strerror(error_code), error_code, stream_id));
+                 nghttp2_strerror(error_code), error_code, stream_id));
     stream = data_s->req.protop;
     if(!stream)
       return NGHTTP2_ERR_CALLBACK_FAILURE;
@@ -1138,8 +1101,7 @@ static ssize_t data_source_read_callback(nghttp2_session *session,
   return nread;
 }
 
-#if defined(NGHTTP2_HAS_ERROR_CALLBACK) &&      \
-  !defined(CURL_DISABLE_VERBOSE_STRINGS)
+#if !defined(CURL_DISABLE_VERBOSE_STRINGS)
 static int error_callback(nghttp2_session *session,
                           const char *msg,
                           size_t len,
@@ -1156,9 +1118,10 @@ static void populate_settings(struct connectdata *conn,
                               struct http_conn *httpc)
 {
   nghttp2_settings_entry *iv = httpc->local_settings;
+  DEBUGASSERT(conn->data);
 
   iv[0].settings_id = NGHTTP2_SETTINGS_MAX_CONCURRENT_STREAMS;
-  iv[0].value = (uint32_t)Curl_multi_max_concurrent_streams(conn->data->multi);
+  iv[0].value = Curl_multi_max_concurrent_streams(conn->data->multi);
 
   iv[1].settings_id = NGHTTP2_SETTINGS_INITIAL_WINDOW_SIZE;
   iv[1].value = HTTP2_HUGE_WINDOW_SIZE;
@@ -1257,9 +1220,7 @@ static CURLcode http2_init(struct connectdata *conn)
     /* nghttp2_on_header_callback */
     nghttp2_session_callbacks_set_on_header_callback(callbacks, on_header);
 
-#ifndef CURL_DISABLE_VERBOSE_STRINGS
     nghttp2_session_callbacks_set_error_callback(callbacks, error_callback);
-#endif
 
     /* The nghttp2 session is not yet setup, do it */
     rc = nghttp2_session_client_new(&conn->proto.httpc.h2, callbacks, conn);
@@ -1457,7 +1418,7 @@ static ssize_t http2_handle_stream_close(struct connectdata *conn,
   }
   else if(httpc->error_code != NGHTTP2_NO_ERROR) {
     failf(data, "HTTP/2 stream %d was not closed cleanly: %s (err %u)",
-          stream->stream_id, http2_strerror(httpc->error_code),
+          stream->stream_id, nghttp2_strerror(httpc->error_code),
           httpc->error_code);
     *err = CURLE_HTTP2_STREAM;
     return -1;
@@ -1594,8 +1555,12 @@ static ssize_t http2_recv(struct connectdata *conn, int sockindex,
     return ncopy;
   }
 
-  H2BUGF(infof(data, "http2_recv: easy %p (stream %u)\n",
-               data, stream->stream_id));
+  H2BUGF(infof(data, "http2_recv: easy %p (stream %u) win %u/%u\n",
+               data, stream->stream_id,
+               nghttp2_session_get_local_window_size(httpc->h2),
+               nghttp2_session_get_stream_local_window_size(httpc->h2,
+                                                            stream->stream_id)
+           ));
 
   if((data->state.drain) && stream->memlen) {
     H2BUGF(infof(data, "http2_recv: DRAIN %zu bytes stream %u!! (%p => %p)\n",
@@ -1626,7 +1591,6 @@ static ssize_t http2_recv(struct connectdata *conn, int sockindex,
     stream->pausedata += nread;
     stream->pauselen -= nread;
 
-    infof(data, "%zd data bytes written\n", nread);
     if(stream->pauselen == 0) {
       H2BUGF(infof(data, "Unpaused by stream %u\n", stream->stream_id));
       DEBUGASSERT(httpc->pause_stream_id == stream->stream_id);
@@ -2264,7 +2228,6 @@ CURLcode Curl_http2_switched(struct connectdata *conn,
     }
   }
 
-#ifdef NGHTTP2_HAS_SET_LOCAL_WINDOW_SIZE
   rv = nghttp2_session_set_local_window_size(httpc->h2, NGHTTP2_FLAG_NONE, 0,
                                              HTTP2_HUGE_WINDOW_SIZE);
   if(rv != 0) {
@@ -2272,7 +2235,6 @@ CURLcode Curl_http2_switched(struct connectdata *conn,
           nghttp2_strerror(rv), rv);
     return CURLE_HTTP2;
   }
-#endif
 
   /* we are going to copy mem to httpc->inbuf.  This is required since
      mem is part of buffer pointed by stream->mem, and callbacks
@@ -2327,6 +2289,51 @@ CURLcode Curl_http2_switched(struct connectdata *conn,
     return CURLE_HTTP2;
   }
 
+  return CURLE_OK;
+}
+
+CURLcode Curl_http2_stream_pause(struct Curl_easy *data, bool pause)
+{
+  DEBUGASSERT(data);
+  DEBUGASSERT(data->conn);
+  /* if it isn't HTTP/2, we're done */
+  if(!data->conn->proto.httpc.h2)
+    return CURLE_OK;
+#ifdef NGHTTP2_HAS_SET_LOCAL_WINDOW_SIZE
+  else {
+    struct HTTP *stream = data->req.protop;
+    struct http_conn *httpc = &data->conn->proto.httpc;
+    uint32_t window = !pause * HTTP2_HUGE_WINDOW_SIZE;
+    int rv = nghttp2_session_set_local_window_size(httpc->h2,
+                                                   NGHTTP2_FLAG_NONE,
+                                                   stream->stream_id,
+                                                   window);
+    if(rv) {
+      failf(data, "nghttp2_session_set_local_window_size() failed: %s(%d)",
+            nghttp2_strerror(rv), rv);
+      return CURLE_HTTP2;
+    }
+
+    /* make sure the window update gets sent */
+    rv = h2_session_send(data, httpc->h2);
+    if(rv)
+      return CURLE_SEND_ERROR;
+
+    DEBUGF(infof(data, "Set HTTP/2 window size to %u for stream %u\n",
+                 window, stream->stream_id));
+
+#ifdef DEBUGBUILD
+    {
+      /* read out the stream local window again */
+      uint32_t window2 =
+        nghttp2_session_get_stream_local_window_size(httpc->h2,
+                                                     stream->stream_id);
+      DEBUGF(infof(data, "HTTP/2 window size is now %u for stream %u\n",
+                   window2, stream->stream_id));
+    }
+#endif
+  }
+#endif
   return CURLE_OK;
 }
 

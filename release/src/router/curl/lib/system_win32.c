@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2016 - 2019, Steve Holme, <steve_holme@hotmail.com>.
+ * Copyright (C) 2016 - 2020, Steve Holme, <steve_holme@hotmail.com>.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -109,11 +109,11 @@ CURLcode Curl_win32_init(long flags)
   if(Curl_verify_windows_version(6, 0, PLATFORM_WINNT,
                                  VERSION_GREATER_THAN_EQUAL)) {
     Curl_isVistaOrGreater = TRUE;
-    QueryPerformanceFrequency(&Curl_freq);
   }
   else
     Curl_isVistaOrGreater = FALSE;
 
+  QueryPerformanceFrequency(&Curl_freq);
   return CURLE_OK;
 }
 

@@ -183,9 +183,9 @@ char *do_browser(char *path)
 		} else if (func == do_right) {
 			if (selected < filelist_len - 1)
 				selected++;
-		} else if (func == do_prev_word_void) {
+		} else if (func == to_prev_word) {
 			selected -= (selected % width);
-		} else if (func == do_next_word_void) {
+		} else if (func == to_next_word) {
 			selected += width - 1 - (selected % width);
 			if (selected >= filelist_len)
 				selected = filelist_len - 1;
@@ -195,10 +195,10 @@ char *do_browser(char *path)
 		} else if (func == do_down) {
 			if (selected + width <= filelist_len - 1)
 				selected += width;
-		} else if (func == do_prev_block) {
+		} else if (func == to_prev_block) {
 			selected = ((selected / (editwinrows * width)) *
 								editwinrows * width) + selected % width;
-		} else if (func == do_next_block) {
+		} else if (func == to_next_block) {
 			selected = ((selected / (editwinrows * width)) *
 								editwinrows * width) + selected % width +
 								editwinrows * width - width;

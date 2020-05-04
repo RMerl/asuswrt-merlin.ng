@@ -37,7 +37,7 @@ void to_first_line(void)
 void to_last_line(void)
 {
 	openfile->current = openfile->filebot;
-	openfile->current_x = strlen(openfile->filebot->data);
+	openfile->current_x = (inhelp) ? 0 : strlen(openfile->filebot->data);
 	openfile->placewewant = xplustabs();
 
 	/* Set the last line of the screen as the target for the cursor. */
@@ -192,7 +192,7 @@ void do_para_end(linestruct **line)
 }
 
 /* Move up to first start of a paragraph before the current line. */
-void do_para_begin_void(void)
+void to_para_begin(void)
 {
 	linestruct *was_current = openfile->current;
 
@@ -203,7 +203,7 @@ void do_para_begin_void(void)
 }
 
 /* Move down to just after the first found end of a paragraph. */
-void do_para_end_void(void)
+void to_para_end(void)
 {
 	linestruct *was_current = openfile->current;
 
@@ -222,7 +222,7 @@ void do_para_end_void(void)
 #endif /* ENABLE_JUSTIFY */
 
 /* Move to the preceding block of text. */
-void do_prev_block(void)
+void to_prev_block(void)
 {
 	linestruct *was_current = openfile->current;
 	bool is_text = FALSE, seen_text = FALSE;
@@ -244,7 +244,7 @@ void do_prev_block(void)
 }
 
 /* Move to the next block of text. */
-void do_next_block(void)
+void to_next_block(void)
 {
 	linestruct *was_current = openfile->current;
 	bool is_white = white_string(openfile->current->data);
@@ -281,7 +281,7 @@ void do_prev_word(bool allow_punct)
 		openfile->current_x = step_left(openfile->current->data,
 												openfile->current_x);
 
-		if (is_word_mbchar(openfile->current->data + openfile->current_x,
+		if (is_word_char(openfile->current->data + openfile->current_x,
 								allow_punct)) {
 			seen_a_word = TRUE;
 			/* If at the head of a line now, this surely is a word start. */
@@ -305,7 +305,7 @@ void do_prev_word(bool allow_punct)
  * part of a word.  Return TRUE if we started on a word, and FALSE otherwise. */
 bool do_next_word(bool after_ends, bool allow_punct)
 {
-	bool started_on_word = is_word_mbchar(openfile->current->data +
+	bool started_on_word = is_word_char(openfile->current->data +
 								openfile->current_x, allow_punct);
 	bool seen_space = !started_on_word;
 #ifndef NANO_TINY
@@ -332,7 +332,7 @@ bool do_next_word(bool after_ends, bool allow_punct)
 		if (after_ends) {
 			/* If this is a word character, continue; else it's a separator,
 			 * and if we've already seen a word, then it's a word end. */
-			if (is_word_mbchar(openfile->current->data + openfile->current_x,
+			if (is_word_char(openfile->current->data + openfile->current_x,
 								allow_punct))
 				seen_word = TRUE;
 			else if (seen_word)
@@ -342,7 +342,7 @@ bool do_next_word(bool after_ends, bool allow_punct)
 		{
 			/* If this is not a word character, then it's a separator; else
 			 * if we've already seen a separator, then it's a word start. */
-			if (!is_word_mbchar(openfile->current->data + openfile->current_x,
+			if (!is_word_char(openfile->current->data + openfile->current_x,
 								allow_punct))
 				seen_space = TRUE;
 			else if (seen_space)
@@ -355,7 +355,7 @@ bool do_next_word(bool after_ends, bool allow_punct)
 
 /* Move to the previous word in the file, treating punctuation as part of a
  * word if the WORD_BOUNDS flag is set, and update the screen afterwards. */
-void do_prev_word_void(void)
+void to_prev_word(void)
 {
 	linestruct *was_current = openfile->current;
 
@@ -367,7 +367,7 @@ void do_prev_word_void(void)
 /* Move to the next word in the file.  If the AFTER_ENDS flag is set, stop
  * at word ends instead of beginnings.  If the WORD_BOUNDS flag is set, treat
  * punctuation as part of a word.  Update the screen afterwards. */
-void do_next_word_void(void)
+void to_next_word(void)
 {
 	linestruct *was_current = openfile->current;
 
@@ -437,7 +437,7 @@ void do_home(void)
 }
 
 /* Move to the end of the current line (or softwrapped chunk).
- * When softwrapping and alredy at the end of a chunk, go to the
+ * When softwrapping and already at the end of a chunk, go to the
  * end of the full line. */
 void do_end(void)
 {

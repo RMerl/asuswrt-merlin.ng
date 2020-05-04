@@ -332,6 +332,7 @@ AC_DEFUN([gl_INIT],
   if test $HAVE_ISBLANK = 0; then
     AC_LIBOBJ([isblank])
   fi
+  gl_MODULE_INDICATOR([isblank])
   gl_CTYPE_MODULE_INDICATOR([isblank])
   gl_FUNC_ISNAND_NO_LIBM
   if test $gl_func_isnand_no_libm != yes; then
@@ -568,6 +569,7 @@ AC_DEFUN([gl_INIT],
   gl_UTIME_MODULE_INDICATOR([utime])
   gl_UTIME_H
   gl_UTIMENS
+  AC_REQUIRE([AC_C_RESTRICT])
   gl_FUNC_VASNPRINTF
   gl_FUNC_VSNPRINTF
   gl_STDIO_MODULE_INDICATOR([vsnprintf])

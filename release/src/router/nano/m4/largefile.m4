@@ -113,9 +113,6 @@ if test "$enable_largefile" != no; then
       [Define for large files, on AIX-style hosts.],
       [_AC_SYS_LARGEFILE_TEST_INCLUDES])
   fi
-
-  AC_DEFINE([_DARWIN_USE_64_BIT_INODE], [1],
-    [Enable large inode numbers on Mac OS X 10.5.])
 fi
 ])# AC_SYS_LARGEFILE
 ])# m4_version_prereq 2.70

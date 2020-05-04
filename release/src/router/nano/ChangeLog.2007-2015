@@ -330,7 +330,7 @@ GNU nano 2.5.2 - 2016.02.12
 
 2016-02-09  Benno Schulenberg  <bensberg@justemail.net>
 	* src/files.c (stat_with_alloc, open_buffer, write_file): Check the
-	result of a stat() to avoid referencing unitialized data.  Original
+	result of a stat() to avoid referencing uninitialized data.  Original
 	patch was by Kamil Dudka.
 	* doc/man/{nano.1,rnano.1,nanorc.5}: Adjust version for release.
 
@@ -661,7 +661,7 @@ GNU nano 2.5.0 - 2015.12.05
 	This addresses Debian bug #805288.
 
 2015-12-01  Benno Schulenberg  <bensberg@justemail.net>
-	* src/files.c (do_insertfile): Mark the buffer as mofified only when
+	* src/files.c (do_insertfile): Mark the buffer as modified only when
 	actually something was inserted.  This fixes Savannah bug #45409.
 	* src/files.c (do_insertfile): Rename two variables for clarity.
 	* src/text.c (redo_cut): Delete two redundant assignments.
@@ -1305,7 +1305,7 @@ GNU nano 2.4.2 - 2015.07.05
 	* src/text.c (do_alt_speller, do_linter, do_formatter): Distinguish
 	a failure to launch the linter from receiving zero parsable lines;
 	add a new function to glue together the invocation-error string.
-	* src/global.c (shortcut_init): In the Help Viewer and File Browswer,
+	* src/global.c (shortcut_init): In the Help Viewer and File Browser,
 	bind the unbound Home and End keys to goto_top and goto_bottom, to
 	mimic the behaviour of these keys in file viewers and web browsers.
 	Also show ^Y and ^V in the WhereisFile menu instead of M-\ and M-/,
@@ -2005,7 +2005,7 @@ GNU nano 2.3.4 - 2014.06.02
 
 2014-06-02  Chris Allegretta  <chrisa@asty.org>
 	* doc/syntax/default.nanorc: Can't do trailing spaces in the
-	  default syntax or it will hilight the spaces as you type them
+	  default syntax or it will highlight the spaces as you type them
 	  into a new file, which for non-programming is infuriating.
 
 2014-05-29  Mark Majeres  <mark@engine12.com>
@@ -3448,14 +3448,14 @@ GNU nano 2.1.8 - 2009.02.07
 2009-01-25 Chris Allegretta <chrisa@asty.org>
 	* files.c (open_file), nanorc.c (parse_include): Don't get_full_path on included
 	  rc files, due to it potentially impacting the ability to read files in nano's
-	  cwd().  Fixes Savnanah bug #25297 reported by Mike Frysinger.
+	  cwd().  Fixes Savannah bug #25297 reported by Mike Frysinger.
 
 2009-01-24 Chris Allegretta <chrisa@asty.org>
-	* First pass at some caching of caching color info.  Right now it's only for
+	* First pass at some caching of color info.  Right now it's only for
 	  multi-line regexes but this may not be enough to increase performance.
 	* Add interruptability to search functions.  New functions enable_nodelay and
 	  disable_nodelay and changes to the routines to handle checking for pending
-	  searches.  Fixes Savnnah bug #24946: Need interrrupt for search.
+	  searches.  Fixes Savannah bug #24946: Need interrupt for search.
 
 2009-01-19 Chris Allegretta <chrisa@asty.org>
 	* Change function definitions to shorts instead of (void *)s.  New mapping function
@@ -3494,7 +3494,7 @@ GNU nano 2.1.6 - 2008.10.03
 	* ocaml.nanorc: Sample OCaml syntax highlighting file.
 
 2008-09-30 Dave Geering <dgeering@toshiba-tap.com>
-	* objc.nanorc: Sample Objective-C syntax hightlighting file.
+	* objc.nanorc: Sample Objective-C syntax highlighting file.
 
 2008-09-30 Chris Allegretta <chrisa@asty.org>
 	* configure.ac: Change extra, multibuffer, color and rcfile configure options
@@ -3648,7 +3648,7 @@ GNU nano 2.1.1 - 2008.04.01
 	* gentoo.nanorc: Gentoo syntax highlighting config.
 
 2008-03-17  Benno Schulenberg <bensberg@justemail.net>
-	* global.c: Fix incorrect first line jump messsage, fix
+	* global.c: Fix incorrect first line jump message, fix
 	  more comments to assist translators.
 	* winio.c: Fix shortcut labels not being translated.
 

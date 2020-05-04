@@ -317,6 +317,9 @@ curl_easy_strerror(CURLcode error)
   case CURLE_HTTP3:
     return "HTTP/3 error";
 
+  case CURLE_QUIC_CONNECT_ERROR:
+    return "QUIC connection error";
+
     /* error codes not used by current libcurl */
   case CURLE_OBSOLETE20:
   case CURLE_OBSOLETE24:
@@ -391,6 +394,9 @@ curl_multi_strerror(CURLMcode error)
 
   case CURLM_WAKEUP_FAILURE:
     return "Wakeup is unavailable or failed";
+
+  case CURLM_BAD_FUNCTION_ARGUMENT:
+    return "A libcurl function was given a bad argument";
 
   case CURLM_LAST:
     break;

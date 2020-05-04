@@ -338,6 +338,14 @@ static int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value);
 */
 // 2008.08 magic }
 
+
+#ifndef RTAX58U		// Kludge - added in 384_8563
+int check_cmd_injection_blacklist(char *para)
+{
+	return (strchr(para, '`') != NULL);
+}
+#endif
+
 #include <sys/mman.h>
 typedef uint32_t __u32; //2008.08 magic
 #ifndef	O_BINARY		/* should be define'd on __WIN32__ */

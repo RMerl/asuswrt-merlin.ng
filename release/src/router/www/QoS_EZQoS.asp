@@ -366,8 +366,8 @@ if(pm_support) {
 
 function initial(){
 	show_menu();
-	// https://www.asus.com/support/FAQ/1008718/
-	httpApi.faqURL("1010935", function(url){document.getElementById("faq").href=url;});
+	// https://www.asus.com/support/FAQ/1010951/
+	httpApi.faqURL("1010951", function(url){document.getElementById("faq").href=url;});
 
 	if(downsize_4m_support || downsize_8m_support)
 		document.getElementById("guest_image").parentNode.style.display = "none";

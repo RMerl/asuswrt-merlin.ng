@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.c 777533 2019-08-05 10:02:41Z $
+ * $Id: bcmutils.c 778392 2019-08-30 03:08:05Z $
  */
 
 #include <bcm_cfg.h>
@@ -3875,6 +3875,17 @@ bcm_next_tlv(const  bcm_tlv_t *elt, int *buflen)
 bcm_tlv_t *
 bcm_parse_tlvs(const void *buf, int buflen, uint key)
 {
+	return bcm_parse_tlvs_ext(buf, buflen, key, -1);
+}
+
+/* Extends bcm_parse_tlvs() to look-up ext_key (first octet of variable lenvth
+ * value) when the key is 255.
+ * When not matching ext_key, pass special value -1.
+ * Pass non-negative ext_key only when the key is 255.
+ */
+bcm_tlv_t *
+bcm_parse_tlvs_ext(const void *buf, int buflen, uint key, int ext_key)
+{
 	const bcm_tlv_t *elt;
 	int totlen;
 
@@ -3886,14 +3897,21 @@ bcm_parse_tlvs(const void *buf, int buflen, uint key)
 	/* find tagged parameter */
 	while (totlen >= TLV_HDR_LEN) {
 		int len = elt->len;
-
 		/* validate remaining totlen */
 		if ((elt->id == key) && (totlen >= (int)(len + TLV_HDR_LEN))) {
-		GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST();
-		return (bcm_tlv_t *)(elt);
-		GCC_DIAGNOSTIC_POP();
+			/*
+			 * for key == 255, data[0] holds ext_key
+			 *
+			 * if ext_key == -1 or key != 255, main tag id match is enough
+			 * else match ext_key in data[0] also
+			 */
+			if (ext_key == -1 || key != 255 ||
+					(len > 0 && elt->data[0] == ext_key)) {
+				GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST();
+				return (bcm_tlv_t *)(elt);
+				GCC_DIAGNOSTIC_POP();
+			}
 		}
-
 		elt = (const bcm_tlv_t*)((const uint8*)elt + (len + TLV_HDR_LEN));
 		totlen -= (len + TLV_HDR_LEN);
 	}

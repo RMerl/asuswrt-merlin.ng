@@ -34,6 +34,38 @@ var colors = [
 var colorRX = [ '#FF9000', '#3CF', '#000000',  '#dd0000', '#999999',  '#118811'];
 var colorTX = ['#FF9000', '#3CF', '#000000',  '#dd0000', '#999999',  '#118811'];
 
+function getTrafficUnit(){
+	var value = 0;
+	if(cookie.get('ASUS_TrafficMonitor_unit')){
+		value = cookie.get('ASUS_TrafficMonitor_unit');
+	}
+
+	return value;
+}
+
+function trafficTotalScale(byt){
+	var unit = getTrafficUnit();
+	var value = '';
+	var scale = 'KB';
+	if(unit == '1'){	// MB
+		value = (byt/1e6).toFixed(2);
+		scale = 'MB';
+	}
+	else if(unit == '2'){	// GB
+		value = (byt/1e9).toFixed(2);
+		scale = 'GB';
+	}
+	else if(unit == '3'){	// TB
+		value = (byt/1e12).toFixed(2);
+		scale = 'TB';
+	}
+	else{	// unit == 9
+		return scaleSize(byt);
+	}
+
+	return value + ' <small>'+ scale +'</small>';
+}
+
 function xpsb(byt)
 {
 /* REMOVE-BEGIN
@@ -41,7 +73,26 @@ function xpsb(byt)
 	125 = 1000 / 8
 	((B * 8) / 1000)
 REMOVE-END */
-	return (byt / 1024).toFixed(2) + ' <small>KB/s</small>';
+	var unit = getTrafficUnit();
+	var value = '';
+	var scale = 'KB/s';
+	if(unit == '1'){	// MB
+		value = (byt/1e6).toFixed(2);
+		scale = 'MB/s';
+	}
+	else if(unit == '2'){	// GB
+		value = (byt/1e9).toFixed(2);
+		scale = 'GB/s';
+	}
+	else if(unit == '3'){	// TB
+		value = (byt/1e12).toFixed(2);
+		scale = 'TB/s';
+	}
+	else{	// unit == 9
+		value = (byt/1000).toFixed(2);
+	}
+
+	return value + ' <small>'+ scale +'</small>';
 }
 
 function showCTab()
@@ -201,8 +252,8 @@ function showTab(name)
 	E('tx-avg').innerHTML = xpsb(h.tx_avg);
 	E('tx-max').innerHTML = xpsb(h.tx_max);
 
-	E('rx-total').innerHTML = scaleSize(h.rx_total);
-	E('tx-total').innerHTML = scaleSize(h.tx_total);
+	E('rx-total').innerHTML = trafficTotalScale(h.rx_total);
+	E('tx-total').innerHTML = trafficTotalScale(h.tx_total);
 
 	if (svgReady) {
 		max = scaleMode ? MAX(h.rx_max, h.tx_max) : xx_max

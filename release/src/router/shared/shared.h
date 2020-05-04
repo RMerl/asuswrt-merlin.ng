@@ -838,6 +838,7 @@ enum {
 	MODEL_GTAX11000,
 	MODEL_RTAX92U,
 	MODEL_RTAX95Q,
+	MODEL_RTAX56_XD4,
 	MODEL_RTAX58U,
 	MODEL_RTAX56U,
 	MODEL_SHAC1300,
@@ -846,6 +847,8 @@ enum {
 	MODEL_ZENWIFICD6N,
 	MODEL_RTAX86U,
 	MODEL_RTAX68U,
+	MODEL_RT4GAC56,
+	MODEL_DSLAX82U,
 	MODEL_MAX
 };
 
@@ -1794,11 +1797,13 @@ extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigne
 extern int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long long regdata);
 extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
 extern int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr);
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#ifdef RTCONFIG_EXTPHY_BCM84880
 extern int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start_bit, unsigned int end_bit, unsigned int wait_ms);
 #endif
+#if !defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
 extern int ethctl_get_link_status(char *ifname);
 #endif
+#endif // HND_ROUTER
 extern int fw_check(void);
 extern int with_non_dfs_chspec(char *wif);
 extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspec);
@@ -2018,14 +2023,14 @@ extern double traffic_limiter_get_realtime(int unit);
 #if defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
 extern struct vlan_rules_s *get_vlan_rules(void);
 #endif
-#if defined(HND_ROUTER) && defined(RTCONFIG_BONDING)
+#if defined(RTCONFIG_BONDING)
+#if defined(HND_ROUTER)
 extern int get_bonding_status();
 #endif
-#ifdef RTCONFIG_BONDING
 #ifdef RTCONFIG_HND_ROUTER_AX
 extern int get_bonding_speed(char *bond_if);
 #endif
-#endif
+#endif // RTCONFIG_BONDING
 extern int isValidMacAddress(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 extern int isValid_digit_string(const char *string);

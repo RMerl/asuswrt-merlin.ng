@@ -558,7 +558,17 @@ function initial(){
 		setTimeout("parent.location.href='/qis/QIS_internet_account.htm';", restart_time*1000);
 	}	
 	else if(action_script == "saveNvram"){
-		return;
+		if(getflag == "finish"){
+			if(parent.document.getElementById("hidden_frame")){
+				setTimeout("parent.location.href='/qis/QIS_finish.htm';", restart_time*1000);
+			}
+			else{
+				parent.parent.showLoading(restart_time, "waiting");
+				setTimeout("showdr_advise('finish');", (restart_time+1)*1000);
+			}
+		}
+		else
+			return;
 	}
 	else if(getflag == "background"){
 		return;
@@ -601,9 +611,6 @@ function initial(){
 			else
 				setTimeout("top_delay_redirect('"+next_page+"');", restart_time*1000);
 		}
-	}
-	else if(getflag == "background"){
-			return;
 	}
 	else if(action_script == "reboot" || action_script.search("restart_subnet") !== -1){
 		parent.showLoading(restart_time);

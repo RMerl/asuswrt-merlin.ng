@@ -217,6 +217,8 @@ i5_dm_chan_rc_map_type *i5DmGetChannelRCMap(unsigned int *rc_map_count);
 i5_dm_rc_chan_map_type *i5DmGetRCChannelMap(unsigned int *reg_class_count);
 /* Check whether the channel is valid in the regulatory class */
 int i5DmIsChannelValidInRC(unsigned char channel, unsigned char rc);
+/* Update the DFS status of the current operating channel from channel preference report */
+void i5DmUpdateDFSStatusFromChannelPreference(i5_dm_interface_type *ifr);
 /* Copy AP Capability */
 int i5DmCopyAPCaps(ieee1905_ap_caps_type *ToApCaps, ieee1905_ap_caps_type *FromApCaps);
 /* Copy Radio Capability */

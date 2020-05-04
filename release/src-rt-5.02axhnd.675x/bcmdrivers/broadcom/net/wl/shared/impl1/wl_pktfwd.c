@@ -2601,7 +2601,7 @@ void
 wl_pktfwd_pktqueue_add_pkt(struct wl_info * wl, struct net_device * net_device,
                            void * pkt, uint16_t flowid)
 {
-    uint16_t d3domain, pktfwd_key, prio;
+    uint16_t d3domain, pktfwd_key;
     uint8_t           * d3_addr;
     d3lut_elem_t      * d3lut_elem;
     pktqueue_t        * pktqueue;
@@ -2638,19 +2638,21 @@ wl_pktfwd_pktqueue_add_pkt(struct wl_info * wl, struct net_device * net_device,
     if ( likely(d3lut_elem != D3LUT_ELEM_NULL) &&
          (eh->ether_type != hton16(ETHER_TYPE_8021Q)))
     {	/* d3lut hit and Untagged frames */
+        uint8_t prio4bit = 0;
         d3domain = d3lut_elem->key.domain; /* WLAN to WLAN/LAN */
 
         /* Reset wl FlowInf and set pktfwd FlowInf */
-        prio        = PKTPRIO(pkt);
         skb->wl.u32 = 0U;
 
 
         pktfwd_key = PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain,
                                         d3lut_elem->key.v16);
+        ENCODE_WLAN_PRIORITY_MARK(prio4bit, skb->mark);
+
         /* Tag packet with d3lut pktfwd_key_t  */
         skb->wl.pktfwd.is_ucast     = 1;
         skb->wl.pktfwd.pktfwd_key   = pktfwd_key;
-        skb->wl.pktfwd.wl_prio      = prio;
+        skb->wl.pktfwd.wl_prio      = prio4bit;
         skb->wl.pktfwd.ssid         = d3lut_elem->ext.ssid;
     }
     else /* !d3lut_elem || VLAN */
@@ -2698,7 +2700,7 @@ wl_pktfwd_pktqueue_add_pkt(struct wl_info * wl, struct net_device * net_device,
 
         wlif        = WL_DEV_IF(net_device);
         d3fwd_wlif  = __wlif_2_d3fwd_wlif(wlif);
-        prio        = GET_WLAN_PRIORITY(PKTPRIO(skb));
+        prio        = PKTPRIO(skb);
 
         D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_tot_pkts, 1);
 

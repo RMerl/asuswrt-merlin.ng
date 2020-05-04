@@ -191,6 +191,26 @@ struct REPLACE_PRODUCTID_S {
 #define NMP_CL_JSON_FILE                "/tmp/nmp_cl_json.js"
 #endif
 
+enum {
+	HTTP_OK = 200,
+	HTTP_FAIL = 400,
+	HTTP_RULE_ADD_SUCCESS = 2001,
+	HTTP_RULE_DEL_SUCCESS,
+	HTTP_NORULE_DEL,
+	HTTP_OVER_MAX_RULE_LIMIT = 4000,
+	HTTP_INVALID_ACTION,
+	HTTP_INVALID_MAC,
+	HTTP_INVALID_ENABLE_OPT,
+	HTTP_INVALID_NAME,
+	HTTP_INVALID_EMAIL,
+	HTTP_INVALID_INPUT,
+	HTTP_INVALID_IPADDR,
+	HTTP_INVALID_TS,
+	HTTP_INVALID_FILE,
+	HTTP_SHMGET_FAIL = 5000,
+	HTTP_FB_SVR_FAIL
+};
+
 /* Exception MIME handler */
 struct except_mime_handler {
 	char *pattern;
@@ -402,6 +422,7 @@ extern int check_AiMesh_whitelist(char *page);
 #ifdef RTCONFIG_DNSPRIVACY
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
+extern int check_cmd_injection_blacklist(char *para);
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);

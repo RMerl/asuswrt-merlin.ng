@@ -4654,6 +4654,11 @@ int i5TlvChannelPreferenceTypeExtract(i5_message_type *pmsg, int isAgent)
         free(LocalChanPrefs.rc_map);
       }
     }
+
+    /* Update the DFS status of the current operating channel in controller */
+    if (!isAgent) {
+      i5DmUpdateDFSStatusFromChannelPreference(pdmif);
+    }
   }
   return 0;
 
@@ -4897,6 +4902,9 @@ int i5TlvOperatingChannelReportTypeExtract(i5_message_type *pmsg)
     if (i5_config.cbs.operating_chan_report) {
       i5_config.cbs.operating_chan_report(i5MessageSrcMacAddressGet(pmsg), &chan_report);
     }
+
+    /* Update the DFS status of the current operating channel in controller */
+    i5DmUpdateDFSStatusFromChannelPreference(pdmif);
     free(chan_report.list);
   }
 end:

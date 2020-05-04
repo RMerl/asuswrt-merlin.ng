@@ -190,6 +190,15 @@ int is_phy_connect(int unit){
 		return get_wanports_status(unit);
 }
 
+int is_phy_connect2(int unit){
+#ifdef RTCONFIG_USB_MODEM
+	if(dualwan_unit__usbif(unit))
+		return 1;
+	else
+#endif
+		return get_wanports_status(unit);
+}
+
 int is_ip_conflict(int unit){
 	int wan_state, wan_sbstate;
 
@@ -1104,7 +1113,8 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 #ifdef RTAX58U
 		if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
-			sprintf((char *)ssidbase, "Stuff-Fibre_%02X", mac_binary[5]);
+			sprintf((char *)ssidbase, "Stuff-Fibre_%02X_%s", mac_binary[5], !unit ? "2G" : "5G");
+		else
 #endif
 #ifdef RTAC68U
 		if (is_dpsta_repeater())

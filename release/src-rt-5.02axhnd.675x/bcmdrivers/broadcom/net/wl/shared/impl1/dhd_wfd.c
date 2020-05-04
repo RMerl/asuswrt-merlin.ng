@@ -206,7 +206,7 @@ dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 
             blog_emit(pktbuf, dhd_idx2net(dhdp, ifidx), TYPE_ETH, 0, BLOG_WLANPHY);
 
-#if defined(BCM_DHD_RUNNER)
+#if defined(BCM_DHD_RUNNER) && !defined(BCM_COUNTER_EXTSTATS)
             /* when RUNNER accelerate flow, stats will not be availabe until
              * put_stats is called blog has to fill vir_dev in order to get
              * put_stats called, so call this blog_link() to fill vir_dev
@@ -357,6 +357,8 @@ _dhd_wfd_mcasthandler(uint32_t wl_radio_idx, uint32_t ifidx, void *fkb)
 
     DHD_PERIM_LOCK_ALL(wl_radio_idx % FWDER_MAX_UNIT);
     dhdp = g_dhd_info[wl_radio_idx];
+    if(dhd_idx2net(dhdp,ifidx)==NULL)
+       goto free_drop;
 #if (defined(DSLCPE) && defined(BCM_NBUFF))|| defined(BCM_NBUFF_WLMCAST)
 
     if (PKTATTACHTAG(dhdp->osh,  pNBuf)) {
@@ -408,8 +410,6 @@ _dhd_wfd_mcasthandler(uint32_t wl_radio_idx, uint32_t ifidx, void *fkb)
 #endif
             goto mcast_count;
         }
-    } else {
-        DHD_ERROR(("%s: flowid_update error.\n", __FUNCTION__));
     }
 free_drop:
     PKTFREE(dhdp->osh, pNBuf, FALSE);
@@ -423,7 +423,7 @@ succ_count:
 mcast_count:
     dhdp->tx_packets_wfd_mcast++;
 unlock:
-    DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+    DHD_PERIM_UNLOCK_ALL( wl_radio_idx % FWDER_MAX_UNIT);
     return;
 }
 
@@ -444,6 +444,10 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long p_s
 
 		/* Clear the bit we found */
 		ssid_vector &= ~(1 << wl_if_index);
+#if !defined(BCM_AWL) && defined(BCM_WFD)
+		if(!wfd_dev_by_id_get(wl_radio_idx,wl_if_index)) 
+			continue;
+#endif
 
 		if (ssid_vector) /* Don't make a copy for only/last interface */
 		{

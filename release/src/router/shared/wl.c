@@ -1,7 +1,7 @@
 /*
  * Wireless network adapter utilities
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,11 +18,12 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl.c 778393 2019-08-30 03:10:52Z $
+ * $Id: wl.c 780737 2019-11-01 18:50:56Z $
  */
 #include <typedefs.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
@@ -162,7 +163,6 @@ wl_iovar_getbuf(char *ifname, char *iovar, void *param, int paramlen, void *bufp
 	int err;
 	uint namelen;
 	uint iolen;
-	uint wlc_cmd = WLC_GET_VAR;
 
 	namelen = strlen(iovar) + 1;	 /* length of iovar name plus null */
 	iolen = namelen + paramlen;
@@ -174,7 +174,7 @@ wl_iovar_getbuf(char *ifname, char *iovar, void *param, int paramlen, void *bufp
 	memcpy(bufptr, iovar, namelen);	/* copy iovar name including null */
 	memcpy((int8*)bufptr + namelen, param, paramlen);
 
-	err = wl_ioctl(ifname, wlc_cmd, bufptr, buflen);
+	err = wl_ioctl(ifname, WLC_GET_VAR, bufptr, buflen);
 
 	return (err);
 }
@@ -415,6 +415,22 @@ dhd_bssiovar_setbuf(char *ifname, char *iovar, int bssidx, void *param, int para
 
 	return dhd_ioctl(ifname, WLC_SET_VAR, bufptr, iolen);
 }
+
+/*
+ * get named & bss indexed driver variable to buffer value
+ */
+int
+dhd_bssiovar_getbuf(char *ifname, char *iovar, int bssidx, void *param, int paramlen, void *bufptr,
+                   int buflen)
+{
+	int err, iolen;
+
+	err = wl_bssiovar_mkbuf(iovar, bssidx, param, paramlen, bufptr, buflen, &iolen);
+	if (err)
+		return err;
+
+	return dhd_ioctl(ifname, WLC_GET_VAR, bufptr, iolen);
+}
 #endif /* __CONFIG_DHDAP__ */
 
 /*
@@ -456,6 +472,28 @@ dhd_bssiovar_set(char *ifname, char *iovar, int bssidx, void *param, int paramle
 
 	return dhd_bssiovar_setbuf(ifname, iovar, bssidx, param, paramlen, smbuf, sizeof(smbuf));
 }
+
+/*
+ * set named & bss indexed driver variable to buffer value
+ */
+int
+dhd_bssiovar_get(char *ifname, char *iovar, int bssidx, void *outbuf, int len)
+{
+	int err;
+	char smbuf[WLC_IOCTL_SMLEN];
+
+	/* use the return buffer if it is bigger than what we have on the stack */
+	if (len > (int)sizeof(smbuf)) {
+		err = dhd_bssiovar_getbuf(ifname, iovar, bssidx, NULL, 0, outbuf, len);
+	} else {
+		memset(smbuf, 0, sizeof(smbuf));
+		err = dhd_bssiovar_getbuf(ifname, iovar, bssidx, NULL, 0, smbuf, sizeof(smbuf));
+		if (err == 0)
+			memcpy(outbuf, smbuf, len);
+	}
+
+	return err;
+}
 #endif
 
 /*
@@ -488,17 +526,6 @@ wl_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val)
 {
 	return wl_bssiovar_set(ifname, iovar, bssidx, &val, sizeof(int));
 }
-
-#ifdef __CONFIG_DHDAP__
-/*
- * set named & bss indexed driver variable to int value
- */
-int
-dhd_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val)
-{
-	return dhd_bssiovar_set(ifname, iovar, bssidx, &val, sizeof(int));
-}
-#endif
 
 /*
 void
@@ -570,61 +597,116 @@ wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val)
 }
 #endif
 
+/*
+ * Set msched subcommand to int value
+ */
+int
+wl_msched_iovar_setint(char *ifname, char *iovar, char *subcmd, int val)
+{
+	int ret = BCME_OK;
+	wl_musched_cmd_params_t *musched_params = NULL;
+	uint musched_cmd_param_size = sizeof(wl_musched_cmd_params_t);
+
+	if ((musched_params = (wl_musched_cmd_params_t *)malloc(musched_cmd_param_size)) == NULL) {
+		fprintf(stderr, "Error allocating %d bytes for musched_cmd params\n",
+			musched_cmd_param_size);
+		ret = BCME_NOMEM;
+		goto fail;
+	}
+
+	/* Init musched_params */
+	memset(musched_params, 0, musched_cmd_param_size);
+	musched_params->bw = -1;
+	musched_params->ac = -1;
+	musched_params->row = -1;
+	musched_params->col = -1;
+
+	/* Init flags based on the one passed from caller */
+	if (strcmp(iovar, "msched") == 0) {
+		WL_MUSCHED_FLAGS_DL_SET(musched_params);
+	} else if (strcmp(iovar, "umsched") == 0) {
+		WL_MUSCHED_FLAGS_UL_SET(musched_params);
+	}
+
+	strncpy(musched_params->keystr, subcmd,
+		MIN(strlen(subcmd), WL_MUSCHED_CMD_KEYSTR_MAXLEN));
+
+	musched_params->vals[musched_params->num_vals++] = (int16)val;
+
+	ret = wl_iovar_set(ifname, iovar, (void *)musched_params, musched_cmd_param_size);
+
+fail:
+	if (musched_params)
+		free(musched_params);
+
+	return ret;
+}
+
+#ifdef __CONFIG_DHDAP__
+/*
+ * set named & bss indexed driver variable to int value
+ */
+int
+dhd_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val)
+{
+	return dhd_bssiovar_set(ifname, iovar, bssidx, &val, sizeof(int));
+}
+#endif
+
 int
 wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8* param, uint16 paramlen, uint16 version,
-       uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts, uint8 *bufptr, uint16 buf_len)
+	uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts, uint8 *bufptr, uint16 buf_len)
 {
-       bcm_iov_buf_t *iov_buf = NULL;
-       uint8 *pxtlv = NULL;
-       uint16 buflen = 0, buflen_start = 0;
-       uint16 iovlen = 0;
-       uint namelen;
-       uint iolen;
+	bcm_iov_buf_t *iov_buf = NULL;
+	uint8 *pxtlv = NULL;
+	uint16 buflen = 0, buflen_start = 0;
+	uint16 iovlen = 0;
+	uint namelen;
+	uint iolen;
 
-       iov_buf = (bcm_iov_buf_t *)calloc(1, WLC_IOCTL_MEDLEN);
+	iov_buf = (bcm_iov_buf_t *)calloc(1, WLC_IOCTL_MEDLEN);
 
-       /* fill header */
-       iov_buf->version = version;
-       iov_buf->id = cmd_id;
+	/* fill header */
+	iov_buf->version = version;
+	iov_buf->id = cmd_id;
 
-       pxtlv = (uint8 *)&iov_buf->data[0];
-       buflen = buflen_start = WLC_IOCTL_MEDLEN - sizeof(bcm_iov_buf_t);
-       if ((bcm_pack_xtlv_entry(&pxtlv, &buflen, xtlv_id, paramlen, param, opts)) != BCME_OK) {
-               return BCME_ERROR;
-       }
-       iov_buf->len = buflen_start - buflen;
-       iovlen = sizeof(bcm_iov_buf_t) + iov_buf->len;
+	pxtlv = (uint8 *)&iov_buf->data[0];
+	buflen = buflen_start = WLC_IOCTL_MEDLEN - sizeof(bcm_iov_buf_t);
+	if ((bcm_pack_xtlv_entry(&pxtlv, &buflen, xtlv_id, paramlen, param, opts)) != BCME_OK) {
+		return BCME_ERROR;
+	}
+	iov_buf->len = buflen_start - buflen;
+	iovlen = sizeof(bcm_iov_buf_t) + iov_buf->len;
 
-       namelen = strlen(iovar) + 1;     /* length of iovar name plus null */
-       iolen = namelen + iovlen;
+	namelen = strlen(iovar) + 1;	 /* length of iovar name plus null */
+	iolen = namelen + iovlen;
 
-       /* check for overflow */
-       if (iolen > buf_len) {
-               return (BCME_BUFTOOSHORT);
-       }
+	/* check for overflow */
+	if (iolen > buf_len) {
+		return (BCME_BUFTOOSHORT);
+	}
 
-       memcpy(bufptr, iovar, namelen); /* copy iovar name including null */
-       memcpy((int8*)bufptr + namelen, (void*)iov_buf, iovlen);
+	memcpy(bufptr, iovar, namelen);	/* copy iovar name including null */
+	memcpy((int8*)bufptr + namelen, (void*)iov_buf, iovlen);
 
-       free(iov_buf);
-       return wl_ioctl(ifname, WLC_SET_VAR, bufptr, iolen);
+	free(iov_buf);
+	return wl_ioctl(ifname, WLC_SET_VAR, bufptr, iolen);
 }
 
 int
 wl_iovar_xtlv_set(char *ifname, char *iovar, uint8 *param, uint16 paramlen, uint16 version,
-       uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts)
+	uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts)
 {
-       uint8 smbuf[WLC_IOCTL_SMLEN];
+	uint8 smbuf[WLC_IOCTL_SMLEN];
 
-       return wl_iovar_xtlv_setbuf(ifname, iovar, param, paramlen, version, cmd_id, xtlv_id,
-               opts, smbuf, sizeof(smbuf));
+	return wl_iovar_xtlv_setbuf(ifname, iovar, param, paramlen, version, cmd_id, xtlv_id,
+		opts, smbuf, sizeof(smbuf));
 }
 
 int
 wl_iovar_xtlv_setint(char *ifname, char *iovar, int32 val, uint16 version,
-       uint16 cmd_id, uint16 xtlv_id)
+	uint16 cmd_id, uint16 xtlv_id)
 {
 	return wl_iovar_xtlv_set(ifname, iovar, (uint8*)&val, sizeof(val), version,
-               cmd_id, xtlv_id, BCM_XTLV_OPTION_ALIGN32);
+		cmd_id, xtlv_id, BCM_XTLV_OPTION_ALIGN32);
 }
-

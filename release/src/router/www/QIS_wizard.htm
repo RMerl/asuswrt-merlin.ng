@@ -843,6 +843,15 @@ function get_isp_settings(isp){
 						$("#contentM").css("display", "none");
 					};
 				});
+
+				$iframe.load(function(){
+					var bodyHeight = $('#contentM').contents().find('body').height();
+					if(bodyHeight > 550 && document.getElementById("contentM").contentWindow.location.pathname.search("QIS_wireless.htm") == -1){
+						var new_height = bodyHeight + 30 + "px";
+						$iframe.css("height", new_height);
+						$("._contentM_qis").css("height", new_height);
+					}
+				});
 			})()
 		</script>
     </td>

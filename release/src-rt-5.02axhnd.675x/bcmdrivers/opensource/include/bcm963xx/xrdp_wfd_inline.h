@@ -544,7 +544,7 @@ static inline struct sk_buff *single_packet_read_and_handle(uint32_t qid, wfd_ob
     if ((skb->wl.ucast.nic.is_ucast = info.is_ucast))
     {
         skb->wl.ucast.nic.wl_chainidx = wl_nic.chain_id;
-        *tx_prio = wl_nic.tx_prio; /* No IQPRIO */
+        *tx_prio = wl_nic.tx_prio;                  /* No IQPRIO */
         encode_val = wl_nic.word >> WFD_NIC_WLAN_PRIORITY_START_IN_WORD;
         DECODE_WLAN_PRIORITY_MARK(encode_val, skb->mark);
     }

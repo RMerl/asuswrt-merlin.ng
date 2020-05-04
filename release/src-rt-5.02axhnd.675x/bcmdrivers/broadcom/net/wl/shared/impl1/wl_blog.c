@@ -182,9 +182,6 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
         return;
     }
 
-    /* Release reference to device */
-    dev_put(dev);
-
 	switch (e->event.event_type) {
 		case WLC_E_DEAUTH:
 		case WLC_E_DEAUTH_IND:
@@ -251,8 +248,10 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			break;
 
 		default:
-			return;
+			break;
 	}
+    /* Release reference to device */
+    dev_put(dev);
 }
 
 #endif /* BCM_BLOG */

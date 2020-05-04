@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl.h 777625 2019-08-06 19:54:12Z $
+ * $Id: wlioctl.h 779905 2019-10-09 21:01:51Z $
  */
 
 #ifndef _wlioctl_h_
@@ -15437,6 +15437,7 @@ typedef struct svmp_mem {
 #define EAP_AMSDU_CRYPTO_OFFLD_CAP		(1 << 19)
 #define EAP_ALLOW_OMGMT_FRM_CAP			(1 << 20)
 #define EAP_ACK_RSSI_CAP			(1 << 21)
+#define EAP_FTM_CAP				(1 << 23)
 
 // Keep in sync with above definitions
 typedef enum
@@ -15489,7 +15490,10 @@ typedef enum
 	// Allow other management frames
 	C_UCODE_FEAT_ALLOW_OMGMT_FRM_NBIT			= 4,
 	// Include ack RSSI in txstatus
-	C_UCODE_FEAT_ACK_RSSI_NBIT				= 5
+	C_UCODE_FEAT_ACK_RSSI_NBIT				= 5,
+	// Is EAP FTM AVB Capability present in ucode
+	C_UCODE_FEAT_FTM_NBIT					= 7
+
 } ePsmFeatureSetRegBitDefinitions2;
 
 /** IOVAR 'mu_rate' parameter. read/set mu rate for upto four users */

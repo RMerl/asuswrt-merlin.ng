@@ -403,6 +403,7 @@ RTCONFIG_6RELAYD=y
 # RTCONFIG_RGBLED is not set
 # RTCONFIG_BCM_CLED is not set
 # RTCONFIG_SINGLE_LED is not set
+# RTCONFIG_PIPEFW is not set
 # RTCONFIG_AURASYNC is not set
 # RTCONFIG_I2CTOOLS is not set
 # RTCONFIG_QAM256_2G is not set

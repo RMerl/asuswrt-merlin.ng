@@ -765,6 +765,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_OPENVPN
 	{ "ovpn-up",			ovpn_up_main				},
 	{ "ovpn-down",			ovpn_down_main			},
+	{ "ovpn-route-up",		ovpn_route_up_main				},
 #endif
 #ifdef RTCONFIG_EAPOL
 	{ "wpa_cli",			wpacli_main			},
@@ -1384,6 +1385,12 @@ int main(int argc, char **argv)
 		restart_wireless();
 		return 0;
 	}
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+	else if (!strcmp(base, "sendarp")) {
+		send_arpreq();
+		return 0;
+	}
+#endif
 #ifdef RTCONFIG_BCM_7114
 	else if (!strcmp(base, "stop_wl")) {
 		stop_wl_bcm();
@@ -2055,7 +2062,7 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#ifdef RTCONFIG_EXTPHY_BCM84880
 	else if (!strcmp(base, "extphy_bit_op")) {
 		unsigned int reg, val, start_bit, end_bit, wait_ms;
 		int wr, ret;
@@ -2103,7 +2110,7 @@ int main(int argc, char **argv)
 
 		ret = extphy_bit_op(reg, val, wr, start_bit, end_bit, wait_ms);
 
-		//_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
+		_dprintf("addr=0x%02x, reg=0x%06x, val=0x%04x\n", EXTPHY_ADDR, reg, ret);
 
 		return 0;
 	}

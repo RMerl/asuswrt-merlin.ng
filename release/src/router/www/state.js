@@ -576,6 +576,15 @@ var sdk_5 = sdk_version_array[0] == 5 ? true : false;
 var bcm_mumimo_support = isSupport("mumimo");		//Broadcom MU-MIMOs
 var he_frame_support = isSupport("11AX");
 var ofdma_support = isSupport("ofdma");
+var mbo_support = (function(){
+	var wl_unit = '<% nvram_get("wl_unit"); %>';
+	if(based_modelid == 'RT-AX92U' && (wl_unit == '0' || wl_unit == '1')){
+		return false;
+	}	
+	else{
+		return (isSupport("mbo") == "1") ? true : false;
+	}
+})();
 var nt_center_support = isSupport("nt_center");
 var dblog_support = isSupport("dblog");
 var wan_bonding_support = isSupport("wanbonding");

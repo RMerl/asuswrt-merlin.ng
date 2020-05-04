@@ -16,6 +16,7 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style>
 .wifiheader{
@@ -69,9 +70,45 @@ if (band5g_support) {
 	}
 }
 
-var nvram_dump_String = function(){/*
-<% nvram_dump("wlan11b_2g.log",""); %>
-*/}.toString().slice(14,-3);
+var classObj= {
+        ToHexCode:function(str){
+                return encodeURIComponent(str).replace(/%/g,"\\x").toLowerCase();
+        },
+        UnHexCode:function(str){
+                return decodeURIComponent(str.replace(/\\x/g, "%"));
+        }
+}
+
+var content = "";
+function GenContent(){
+	var dead = 0;
+	$.ajax({
+		url: '/wl_log.asp',
+		dataType: 'text',
+		timeout: 1500,
+		error: function(xhr){
+			if(dead > 30){
+				$("#wl_log").html("Fail to grab wireless log.");
+				break;
+			}
+			else{
+				dead++;
+				setTimeout("GenContent();", 1000);
+			}
+		},
+
+		success: function(resp){
+			content = htmlEnDeCode.htmlEncode(resp);
+			content = classObj.UnHexCode(content);
+			if(content.length > 10){
+				$("#wl_log").html(content);
+			}
+			else{
+				$("#wl_log").html("Fail to grab wireless log.");
+			}
+		}
+	});
+}
 
 function initial(){
 	show_menu();
@@ -117,11 +154,7 @@ function redraw(){
 		}
 	}
 
-	try {
-		document.getElementById("wl_log").innerHTML = classObj.UnHexCode(nvram_dump_String);
-	} catch(e) {
-		document.getElementById("wl_log").innerHTML = nvram_dump_String;
-	}
+	GenContent();
 }
 
 

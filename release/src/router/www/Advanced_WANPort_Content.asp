@@ -123,7 +123,7 @@ function initial(){
 	addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 	addWANOption(document.form.wans_second, wans_caps_secondary.split(" "));
 
-	httpApi.faqURL("1011718", function(url){document.getElementById("dualwan_faq").href=url;});
+	httpApi.faqURL("1011719", function(url){document.getElementById("dualwan_faq").href=url;});
 	httpApi.faqURL("1037368", function(url){document.getElementById("network_detect_faq").href=url;});
 
    	document.form.wans_mode.value = wans_mode_orig;

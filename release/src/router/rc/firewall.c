@@ -84,6 +84,10 @@ const int allowed_local_icmpv6[] =
 	  148, 149, 151, 152, 153 };
 #endif
 
+#ifdef RTCONFIG_VPN_FUSION
+extern int write_vpn_fusion(FILE *fp, const char* lan_ip);
+#endif
+
 char *mac_conv(char *mac_name, int idx, char *buf);	// oleg patch
 
 void write_porttrigger(FILE *fp, char *wan_if, int is_nat);
@@ -1600,6 +1604,10 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 			":CLIENT_TO_INTERNET - [0:0]\n");
 	}
 #endif
+#ifdef RTCONFIG_VPN_FUSION
+	fprintf(fp,
+		":VPN_FUSION - [0:0]\n");
+#endif
 
 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 
@@ -1670,6 +1678,10 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	}
 
 
+#endif
+
+#ifdef RTCONFIG_VPN_FUSION
+        write_vpn_fusion(fp, lan_ip);
 #endif
 
 #ifdef RTCONFIG_YANDEXDNS
@@ -1881,7 +1893,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 	symlink(name, NAT_RULES);
 
 	wan_unit = wan_ifunit(wan_if);
-	if(is_phy_connect(wan_unit)){
+	if(is_phy_connect2(wan_unit)){
 		/* force nat update */
 		nvram_set_int("nat_state", NAT_STATE_UPDATE);
 _dprintf("nat_rule: start_nat_rules 1.\n");
@@ -1925,7 +1937,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
 #endif
 
-	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
+ 	ip2class(lan_ip, nvram_safe_get("lan_netmask"), lan_class);
 
 #ifdef RTCONFIG_MULTICAST_IPTV
 	if (nvram_get_int("switch_stb_x") > 6)
@@ -2595,7 +2607,7 @@ start_default_filter(int lanunit)
 
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_filter_input(fp);
-#endif	
+#endif
 
 	if (nvram_match("enable_acc_restriction", "1"))
 	{
@@ -3309,6 +3321,14 @@ TRACE_PT("writing Parental Control\n");
 #endif
 
 	if (nvram_match("fw_enable_x", "1")) {
+
+#if defined(RTCONFIG_TR069)
+            if(nvram_match("tr_enable", "1")){
+                /*add _cassie_*/
+                fprintf(fp, "-I INPUT -p tcp -m tcp --dport %s -j %s\n", nvram_safe_get("tr_conn_port"), logaccept);
+                fprintf(fp, "-I INPUT -p udp -m udp --dport %s -j %s\n", nvram_safe_get("tr_conn_port"), logaccept);
+            }
+#endif
 		/* Drop ICMP before ESTABLISHED state */
 		if (!nvram_get_int("misc_ping_x")) {
 #ifdef RTCONFIG_IPV6
@@ -4843,7 +4863,7 @@ TRACE_PT("writing Parental Control\n");
 
 #ifdef RTCONFIG_AMAS_WGN
 	wgn_filter_forward(fp);
-#endif	
+#endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
 
@@ -6203,9 +6223,9 @@ int start_firewall(int wanunit, int lanunit)
 		modprobe("xt_hl");
 	}
 	/* nat setting */
-#ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
+ #ifdef RTCONFIG_DUALWAN // RTCONFIG_DUALWAN
 	if (nvram_match("wans_mode", "lb")) {
-		nat_setting2(lan_if, lan_ip, logaccept, logdrop);
+ 		nat_setting2(lan_if, lan_ip, logaccept, logdrop);
 
 #ifdef WEB_REDIRECT
 		redirect_setting();
@@ -6236,7 +6256,7 @@ int start_firewall(int wanunit, int lanunit)
 		if(wanunit != wan_primary_ifunit())
 			goto leave;
 
-		nat_setting(wan_if, wan_ip, wanx_if, wanx_ip, lan_if, lan_ip, logaccept, logdrop);
+ 		nat_setting(wan_if, wan_ip, wanx_if, wanx_ip, lan_if, lan_ip, logaccept, logdrop);
 
 #ifdef WEB_REDIRECT
 		redirect_setting();

@@ -439,6 +439,7 @@ endif
 endif
 
 ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
+OBJS += arpreq.o
 OBJS += psta_monitor.o
 endif
 
@@ -839,6 +840,7 @@ ifeq ($(RTCONFIG_FANCTRL),y)
 endif
 
 ifeq ($(and $(RTCONFIG_BCMWL6),$(RTCONFIG_PROXYSTA)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc sendarp
 	@cd $(INSTALLDIR)/sbin && ln -sf rc psta_monitor
 endif
 
@@ -1166,7 +1168,7 @@ ifeq ($(RTAC68U),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc fw_check
 endif
 
-ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+ifeq ($(RTCONFIG_EXTPHY_BCM84880),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc extphy_bit_op
 endif
 

@@ -503,6 +503,7 @@ function detect_update(){
 		}
 		else{
 			document.start_update.action_mode.value="apply";
+			document.start_update.webs_update_trigger.value="AFC.asp";
 			document.start_update.action_script.value="start_webs_update";
 			document.start_update.submit();
 		}
@@ -515,6 +516,7 @@ function detect_update(){
 				((first_link_status == "2" && first_link_auxstatus == "0") || (first_link_status == "2" && first_link_auxstatus == "2")) ||
 				((secondary_link_status == "2" && secondary_link_auxstatus == "0") || (secondary_link_status == "2" && secondary_link_auxstatus == "2"))){
 		document.start_update.action_mode.value="apply";
+		document.start_update.webs_update_trigger.value="AFC.asp";
 		document.start_update.action_script.value="start_webs_update";
 		document.getElementById('update_states').style.display="";
 		document.getElementById('update_states').innerHTML="Contacting the update server...";
@@ -1368,6 +1370,7 @@ function toggle_fw_check(state) {
 <input type="hidden" name="action_mode" value="">
 <input type="hidden" name="action_script" value="">
 <input type="hidden" name="action_wait" value="">
+<input type="hidden" name="webs_update_trigger" value="">
 </form>
 <form method="post" name="sig_update" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">

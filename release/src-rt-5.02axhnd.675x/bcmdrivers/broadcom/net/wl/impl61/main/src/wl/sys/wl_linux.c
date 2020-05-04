@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl_linux.c 777908 2019-08-14 17:49:27Z $
+ * $Id: wl_linux.c 779941 2019-10-10 17:12:37Z $
  */
 
 /**
@@ -319,6 +319,7 @@ static int wl_cfg80211_enabled(void);
 
 static void wl_linux_watchdog(void *ctx);
 static int wl_found = 0;
+static int wl_get_next_instance(void);
 #if defined(CONFIG_WL_MODULE) && defined(CONFIG_BCM47XX) && defined(WLRSDB)
 static int rsdb_found = 0;
 #endif /* CONFIG_WL_MODULE && CONFIG_BCM47XX && WLRSDB */
@@ -582,6 +583,10 @@ module_param(nompc, int, 0);
 #ifndef BRCM_WLAN_IFNAME
 #define BRCM_WLAN_IFNAME eth%d
 #endif // endif
+
+#ifdef WL_WORK_TASK
+static void wl_work_task_handler(struct work_struct *work_task);
+#endif /* WL_WORK_TASK */
 
 #define SCHEDULE_WORK(wl, work)		schedule_work(work)
 #define SCHEDULE_WORK_ON(wl, cpu, work)	schedule_work_on((cpu), (work))
@@ -983,6 +988,51 @@ wl_client_get_info(struct net_device *net, char *mac, int priority, wlan_client_
 #endif /* PLATFORM_WITH_RUNNER && BCM_BLOG && CONFIG_BCM_KF_BLOG */
 
 /**
+ * Get the next instance number used as unit#
+ *
+ * skip all powered down wlan interfaces during calculation of next instance
+ * if wlan deep power down feature is enabled. Called only once per radio
+ *
+ * @params none.
+ *
+ * return next unit# to be used
+ */
+static int
+wl_get_next_instance(void)
+{
+	int inst = wl_found + instance_base;
+
+#if defined(CONFIG_BCM_WLAN_DPDCTL)
+	static int inst_skipped = 0;
+	char varstr[32];
+	char *var;
+	int pwrdn;
+
+	var = getvar(NULL, "wl_dpdctl_enable");
+	if (var && bcm_strtoul(var, NULL, 0) == 1) {
+	    inst += inst_skipped;
+	    do {
+	        pwrdn = 0;
+	        snprintf(varstr, sizeof(varstr), "wl%d_dpd", inst);
+	        var = getvar(NULL, varstr);
+	        if (var) {
+	            /* Get the nvram setting */
+	            pwrdn = (uint32)bcm_strtoul(var, NULL, 0);
+	        }
+
+	        if (pwrdn == 1) {
+	            /* Skip this instance */
+	            inst++;
+	            inst_skipped++;
+	        }
+	    } while (pwrdn == 1);
+	}
+#endif /* CONFIG_BCM_WLAN_DPDCTL */
+
+	return inst;
+}
+
+/**
  * attach to the WL device.
  *
  * Attach to the WL device identified by vendor and device parameters.
@@ -1031,7 +1081,7 @@ wl_attach(uint16 vendor, uint16 device, ulong regs,
 	struct wl_cmn_data *commmondata = (struct wl_cmn_data *)cmndata; /**< for multiple NIC */
 	int primary_idx = 0;
 	uint online_cpus, iomode = 0;
-	unit = wl_found + instance_base;
+	unit = wl_get_next_instance();
 	err = 0;
 
 	if (device == EMBEDDED_2x2AX_ID) { /**< PCIe device id for 63178 802.11ax dualband device */
@@ -1151,6 +1201,13 @@ wl_attach(uint16 vendor, uint16 device, ulong regs,
 		wl->txq_task.context = wl;
 	}
 #endif /* WL_ALL_PASSIVE */
+#ifdef WL_WORK_TASK
+	MY_INIT_WORK(&wl->wl_work_task.work, (work_func_t)wl_work_task_handler);
+	wl->wl_work_task.context = wl;
+
+	spin_lock_init(&wl->wl_work_task.work_lock);
+	dll_init(&wl->wl_work_task.work_list);
+#endif /* WL_WORK_TASK */
 
 #if defined(WL_USE_L34_THREAD)
 	if (wl_thread_attach(wl) != 0)
@@ -1486,22 +1543,31 @@ wl_attach(uint16 vendor, uint16 device, ulong regs,
 #endif /* BCMJTAG */
 	{
 		int r = -1; /** Linux return value */
+		char *irqname = dev->name;
+
+#if defined(CONFIG_BCM_WLAN_DPDCTL)
+		/* bustype = PCI, even embedded 2x2AX devices have virtual pci underneeth */
+		snprintf(wl->pciname, sizeof(wl->pciname), "wlpcie:%s, wl%d",
+			pci_name(btparam), wl->unit);
+		irqname = wl->pciname;
+#endif /* !CONFIG_BCM_WLAN_DPDCTL */
+
 		if (device == EMBEDDED_2x2AX_ID) {
 #ifdef IS_BCA_2x2AX_BUILD
 			/* request two non-shared interrupt lines */
 			irq = GET_2x2AX_D11_IRQV(regs);
-			r = request_irq(irq, wl_isr, 0, dev->name, wl);
+			r = request_irq(irq, wl_isr, 0, irqname, wl);
 #ifdef WLC_OFFLOADS_TXSTS /* M2M/BME core transfers txstatus from d11 core into memory \
 	*/
 			if (r == 0) {
-			    r = request_irq(GET_2x2AX_M2M_IRQV(regs), wl_isr, 0, dev->name, wl);
+			    r = request_irq(GET_2x2AX_M2M_IRQV(regs), wl_isr, 0, irqname, wl);
 			}
 #endif /* WLC_OFFLOADS_TXSTS */
 #elif defined(BCMQT) && defined(WLC_OFFLOADS_TXSTS)
-			r = request_irq(irq, wl_veloce_isr, IRQF_SHARED, dev->name, wl);
+			r = request_irq(irq, wl_veloce_isr, IRQF_SHARED, irqname, wl);
 #endif /* BCMQT && WLC_OFFLOADS_TXSTS */
 		} else	{
-			r = request_irq(irq, wl_isr, IRQF_SHARED, dev->name, wl);
+			r = request_irq(irq, wl_isr, IRQF_SHARED, irqname, wl);
 		}
 
 		if (r != 0) {
@@ -2268,6 +2334,7 @@ wl_free(wl_info_t *wl)
 #if defined(USE_CFG80211)
 	struct bcm_cfg80211 *cfg = NULL;
 #endif // endif
+	unsigned long wait_callback_timeout;
 
 	WL_TRACE(("wl: wl_free\n"));
 #ifdef SAVERESTORE
@@ -2408,6 +2475,11 @@ wl_free(wl_info_t *wl)
 
 	wlc_module_unregister(wl->pub, "linux", wl);
 
+#if defined(BCM_EAPFWD) && defined(BCM_PKTFWD)
+	if (wl->wlc)
+		wl_eap_unbind(wl->wlc->pub->unit);
+#endif // endif
+
 	/* free common resources */
 	if (wl->wlc) {
 #if defined(CONFIG_PROC_FS)
@@ -2429,8 +2501,12 @@ wl_free(wl_info_t *wl)
 	/* virtual interface deletion is deferred so we cannot spinwait */
 
 	/* wait for all pending callbacks to complete */
-	while (atomic_read(&wl->callbacks) > 0)
+	printf("wl%d: set timeout 5 secs to wait callbacks %d\n",
+		wl->unit, atomic_read(&wl->callbacks));
+	wait_callback_timeout = jiffies + (HZ * 5);
+	while ((atomic_read(&wl->callbacks) > 0) && time_after(wait_callback_timeout, jiffies))
 		schedule();
+	printf("wl%d: callbacks %d\n", wl->unit, atomic_read(&wl->callbacks));
 
 #if defined(PKTC_TBL) && defined(BCM_PKTFWD)
 	/* BCM_PKTFWD: wl_pktfwd_radio_del(wl) to delete wl radio from pktfwd */
@@ -2744,6 +2820,47 @@ wl_txflowcontrol(wl_info_t *wl, struct wl_if *wlif, bool state, int prio)
 }
 
 #if defined(AP) || defined(WL_ALL_PASSIVE) || defined(WL_MONITOR)
+#ifdef WL_WORK_TASK
+static void
+wl_work_task_handler(struct work_struct *work_task)
+{
+	wl_task_t *wl_work_task = (wl_task_t *)work_task;
+	wl_info_t *wl;
+	wl_task_t *task;
+	dll_t *node;
+
+	if (!wl_work_task)
+		return;
+
+	wl = (wl_info_t *)wl_work_task->context;
+
+	WL_WORK_LOCK(wl);
+	printk("%s %d: wl%d: %p\n", __FUNCTION__, __LINE__,
+		wl->pub->unit, wl);
+
+	while (!dll_empty(&wl_work_task->work_list)) {
+		node = dll_head_p(&wl_work_task->work_list);
+		task = (wl_task_t *)container_of(node, wl_task_t, work_list);
+		dll_delete(&task->work_list);
+		//WL_WORK_UNLOCK(wl);
+		printk("%s %d: wl%d: task %p func %pS context %p\n", __FUNCTION__, __LINE__,
+			wl->pub->unit, task, task->work.func, task->context);
+		if (task->work.func) {
+			task->work.func((void *)task);
+			//test
+			//WL_WORK_LOCK(wl);
+			break;
+		}
+		else {
+			MFREE(wl->osh, task, sizeof(wl_task_t));
+			CALLBACK_DEC_AND_ASSERT(wl);
+		}
+		//WL_WORK_LOCK(wl);
+	}
+	WL_WORK_UNLOCK(wl);
+}
+#endif /* WL_WORK_TASK */
+
 /** Schedule a completion handler to run at safe time */
 int
 wl_schedule_task(wl_info_t *wl, void (*fn)(struct wl_task *task), void *context)
@@ -2763,13 +2880,29 @@ wl_schedule_task(wl_info_t *wl, void (*fn)(struct wl_task *task), void *context)
 
 	atomic_inc(&wl->callbacks);
 
+#ifdef WL_WORK_TASK
+	dll_init(&task->work_list);
+
+	WL_WORK_LOCK(wl);
+	printk("%s %d: wl%d: task %p func %pS context %p wl %p\n", __FUNCTION__, __LINE__,
+			wl->pub->unit, task, task->work.func, task->context, wl);
+	dll_append(&wl->wl_work_task.work_list, &task->work_list); 
+	WL_WORK_UNLOCK(wl);
+
+	if (!SCHEDULE_WORK(wl, &wl->wl_work_task.work)) {
+		WL_ERROR(("wl%d: schedule_work() failed\n", wl->pub->unit));
+		MFREE(wl->osh, task, sizeof(wl_task_t));
+		CALLBACK_DEC_AND_ASSERT(wl);
+		return -ENOMEM;
+	}
+#else /* !WL_WORK_TASK */
 	if (!SCHEDULE_WORK(wl, &task->work)) {
 		WL_ERROR(("wl%d: schedule_work() failed\n", wl->pub->unit));
 		MFREE(wl->osh, task, sizeof(wl_task_t));
 		CALLBACK_DEC_AND_ASSERT(wl);
 		return -ENOMEM;
 	}
-
+#endif /* !WL_WORK_TASK */
 	return 0;
 }
 #endif /* defined(AP) || defined(WL_ALL_PASSIVE) || defined(WL_MONITOR) */
@@ -3079,6 +3212,25 @@ _wl_add_if(wl_task_t *task)
 #endif /* WL_CFG80211 && LINUX_VERSION_CODE >= KERNEL_VERSION(3, 0, 0) */
 
 	WL_TRACE(("%s\n", __FUNCTION__));
+
+	/* During bsscfg allocation we schedule this function.
+	 * After bsscfg allocation, if something bad happens
+	 * (like no memory) we do not have any mechanism
+	 * implemented to flush this function during bsscfg_init().
+	 * Most of the flush API can sleep so we can not really use
+	 * them from IOVAR context.
+	 *
+	 * If bsscfg_init() fails, we call bsscfg_free() which
+	 * frees cfg and corresponding wlcif structure as well.
+	 * So accessing cfg in the failuire case will result crash.
+	 *
+	 * wl_bsscfg_find() returns bsscfg based on wlcif and if wlcif
+	 * is NULL it will return the primary bsscfg. So can not build
+	 * a logic based on wl_bsscfg_find() return value.
+	 */
+	if (!wlif->wlcif)
+		goto done;
+
 	/* alloc_netdev and populate priv_link */
 	if ((dev = wl_alloc_linux_if(wlif)) == NULL) {
 		WL_ERROR(("%s: Call to  wl_alloc_linux_if failed\n", __FUNCTION__));
@@ -3116,24 +3268,7 @@ _wl_add_if(wl_task_t *task)
 #endif /* BCM_BLOG && CONFIG_BCM_KF_BLOG */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36) */
 
-	/* During bsscfg allocation we schedule this function.
-	 * After bsscfg allocation, if something bad happens
-	 * (like no memory) we do not have any mechanism
-	 * implemented to flush this function during bsscfg_init().
-	 * Most of the flush API can sleep so we can not really use
-	 * them from IOVAR context.
-	 *
-	 * If bsscfg_init() fails, we call bsscfg_free() which
-	 * frees cfg and corresponding wlcif structure as well.
-	 * So accessing cfg in the failuire case will result crash.
-	 *
-	 * wl_bsscfg_find() returns bsscfg based on wlcif and if wlcif
-	 * is NULL it will return the primary bsscfg. So can not build
-	 * a logic based on wl_bsscfg_find() return value.
-	 */
-	if (!wlif->wlcif) {
-	    goto done;
-	}
+
 	cfg = wl_bsscfg_find(wlif);
 	ASSERT(cfg != NULL);
 
@@ -3240,12 +3375,22 @@ _wl_del_if(wl_task_t *task)
 {
 	wl_if_t *wlif = (wl_if_t *) task->context;
 	wl_info_t *wl = wlif->wl;
+	unsigned long wait_dev_reg_timeout = jiffies + (HZ * 5);
 #if defined(USE_CFG80211)
 	struct bcm_cfg80211 *cfg = wiphy_priv(wl->wiphy);
 	bool expected = FALSE;
 	int ifidx;
 	uint8 bssidx;
+#endif
 
+	printf("wl%d: set timeout 5 secs to wait dev reg finish\n", wl->unit);
+	while (!wlif->dev_registered &&	time_after(wait_dev_reg_timeout, jiffies))
+		schedule();
+
+	if (!wlif->dev_registered)
+		printf("wl%d: dev %p reg failed\n", wl->unit, wlif->dev);
+
+#if defined(USE_CFG80211)
 	ASSERT(cfg);
 
 	if (wlif->dev->ieee80211_ptr) {
@@ -5367,6 +5512,9 @@ wl_link_down(wl_info_t *wl, char *ifname)
 void
 wl_event(wl_info_t *wl, char *ifname, wlc_event_t *e)
 {
+	/* skip processing if netdev was freed */
+	if (!wl->dev)
+		return;
 #ifdef USE_IW
 	wl_iw_event(wl->dev, &(e->event), e->data);
 #endif /* USE_IW */
@@ -5839,18 +5987,23 @@ static void wl_timer(struct timer_list *tmr)
 {
 	wl_timer_t *t = from_timer(t, tmr, timer);
 #endif /* KERNEL_VERSION < 4.15 */
-	if (!WL_ALL_PASSIVE_ENAB(t->wl))
+	if (!WL_ALL_PASSIVE_ENAB(t->wl)) {
 		_wl_timer(t);
 #ifdef WL_ALL_PASSIVE
-	else
-		wl_schedule_task(t->wl, wl_timer_task, t);
+	} else {
+		atomic_set(&t->sched, 1);
+		if (wl_schedule_task(t->wl, wl_timer_task, t) < 0)
+			atomic_set(&t->sched, 0);
 #endif /* WL_ALL_PASSIVE */
+	}
 }
 
 static void
 _wl_timer(wl_timer_t *t)
 {
 	wl_info_t *wl = t->wl;
+	void (*timer_fn)(void *) = t->fn;
+	void *timer_arg = t->arg;
 
 	WL_LOCK(wl);
 
@@ -5877,17 +6030,36 @@ _wl_timer(wl_timer_t *t)
 		} else
 			t->set = FALSE;
 
-		t->fn(t->arg);
+#ifdef BCMDBG
+		t->ticks++;
+#endif
+#ifdef WL_ALL_PASSIVE
+		/* need to clear sched flag as timer function may
+		 * free itself so after this timer variable can no
+		 * longer be referenced.
+		 */
+		atomic_set(&t->sched, 0);
+#endif /* WL_ALL_PASSIVE */		
+
+		timer_fn(timer_arg);
+
 #ifdef BCMDBG
 		wlc_update_perf_stats(wl->wlc, WLC_PERF_STATS_TMR_DPC);
-		t->ticks++;
 #endif // endif
 
 	}
+#ifdef WL_ALL_PASSIVE
+	else {
+		/* no timer function called but still need to clear
+		 * the sched flag here.
+		 */
+		atomic_set(&t->sched, 0);
+	}
+#endif /* WL_ALL_PASSIVE */
 
 	CALLBACK_DEC_AND_ASSERT(wl);
 
-	WL_UNLOCK(wl);
+WL_UNLOCK(wl);
 } /* _wl_timer */
 
 wl_timer_t *
@@ -5985,21 +6157,26 @@ wl_del_timer(wl_info_t *wl, wl_timer_t *t)
 	ASSERT(t);
 	if (t->set) {
 		t->set = FALSE;
-		if (!del_timer(&t->timer)) {
+#ifdef WL_ALL_PASSIVE
+		if (!del_timer_sync(&t->timer)) {
 #ifdef BCMDBG
 			WL_INFORM(("wl%d: Deleted inactive timer %s.\n", wl->unit, t->name));
 #endif // endif
-#ifdef WL_ALL_PASSIVE
 			/*
 			 * The timer was inactive - this is normal in passive mode when we
 			 * try to delete a timer after it fired, but before the associated
 			 * task got scheduled.
 			 */
 			return TRUE;
-#else
-			return FALSE;
-#endif // endif
 		}
+#else /* WL_ALL_PASSIVE */
+		if (!del_timer(&t->timer)) {
+#ifdef BCMDBG
+			WL_INFORM(("wl%d: Deleted inactive timer %s.\n", wl->unit, t->name));
+#endif
+			return FALSE;
+		}
+#endif /* !WL_ALL_PASSIVE */
 		CALLBACK_DEC_AND_ASSERT(wl);
 	}
 
@@ -6013,6 +6190,11 @@ wl_free_timer(wl_info_t *wl, wl_timer_t *t)
 
 	/* delete the timer in case it is active */
 	wl_del_timer(wl, t);
+
+#ifdef WL_ALL_PASSIVE
+	while (atomic_read(&t->sched))
+		schedule();
+#endif /* WL_ALL_PASSIVE */
 
 	if (wl->timers == t) {
 		wl->timers = wl->timers->next;
@@ -7022,9 +7204,11 @@ int wl_register_interface(void *pub, int ifidx, struct net_device *new_dev, bool
 	priv_link_t *priv_link;
 	wl_if_t *wlif;
 	wl_info_t *wl;
+	bool dev_registered = FALSE;
+
 	priv_link = netdev_priv(new_dev);
 	wlif = priv_link->wlif;
-	if (!wlif && !wlif->wlcif) {
+	if (!wlif || !wlif->wlcif) {
 		goto done;
 	}
 	wl = wlif->wl;
@@ -7062,7 +7246,7 @@ int wl_register_interface(void *pub, int ifidx, struct net_device *new_dev, bool
 			goto done;
 		}
 	}
-	wlif->dev_registered = TRUE;
+	dev_registered = TRUE;
 
 #if defined(BCM_WFD)
 	if (wl_wfd_registerdevice(wl->wfd_idx, new_dev) != 0) {
@@ -7088,7 +7272,9 @@ int wl_register_interface(void *pub, int ifidx, struct net_device *new_dev, bool
 #endif /* HNDCTF */
 
 done:
-		return 0;
+	wlif->dev_registered = dev_registered;
+
+	return 0;
 } /* wl_register_interface */
 
 /** Fetch net_device given a interface index (subunit) */

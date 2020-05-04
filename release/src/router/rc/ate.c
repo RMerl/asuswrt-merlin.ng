@@ -196,7 +196,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth7", "ledbh", "15", "1"); // wl 5G
 				eval("wl", "-i", "eth8", "ledbh", "15", "1"); // wl 5G-2
 #ifdef RTCONFIG_EXTPHY_BCM84880
-				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7FFF0", "0x0011");	// 2.5G LED (1000M/100M)
+				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x0011");	// 2.5G LED (1000M/100M)
 				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x21");        // 2.5G LED (2500M)
 				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a83b", "0xa490");
 #endif
@@ -206,7 +206,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth7", "ledbh", "15", "0"); // wl 5G
 				eval("wl", "-i", "eth8", "ledbh", "15", "0"); // wl 5G-2
 #ifdef RTCONFIG_EXTPHY_BCM84880
-				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7FFF0", "0x0009");
+				eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x0009");
 #endif
 			}
 		}
@@ -314,7 +314,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 					LED_POWER, LED_WAN_NORMAL,
 #ifdef RTCONFIG_LAN4WAN_LED
 					LED_LAN1, LED_LAN2, LED_LAN3, LED_LAN4,
-#elif RTCONFIG_LANWAN_LED
+#else
 					LED_LAN,
 #endif
 					//LED_WPS,
@@ -338,8 +338,10 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth6", "ledbh", "7", "1"); // wl 2.4G
 				eval("wl", "-i", "eth7", "ledbh", "15", "1"); // wl 5G
 #ifdef RTCONFIG_EXTPHY_BCM84880
-				if(ext_phy_model == 0)
-					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x8");
+				if(ext_phy_model == 0){
+					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x0");	// CTL LED3 MASK LOW
+					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a835", "0xffff");	// CTL LED4 MASK LOW
+				}
 #endif
 			}
 			else {
@@ -347,7 +349,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 				eval("wl", "-i", "eth7", "ledbh", "15", "0"); // wl 5G
 #ifdef RTCONFIG_EXTPHY_BCM84880
 				if(ext_phy_model == 0)
-					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x0");
+					eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a835", "0x0");
 #endif
 			}
 		}
@@ -2524,12 +2526,11 @@ int ate_dev_status(void)
 
 #if defined(RTCONFIG_EXTPHY_BCM84880)
 	/* Get extend 2.5G phy bcm84880 status */
-#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
-	if(!hnd_get_phy_status("eth5") ||
-			(nvram_get_int("ext_phy_model") == 0 && ethctl_phy_op("ext", EXTPHY_ADDR, 0x1e4037, 0, 0) == -1))
-#else
-	if(ethctl_get_link_status("eth5") == -1 || ethctl_phy_op("ext", EXTPHY_ADDR, 0x1e4037, 0, 0) == -1)
+	if(
+#if defined(RTAX86U) || defined(RTAX5700)
+		nvram_get_int("ext_phy_model") == 0 &&
 #endif
+			(ethctl_get_link_status("eth5") == -1 || ethctl_phy_op("ext", EXTPHY_ADDR, 0x1e4037, 0, 0) == -1))
 		result = 'X';
 	else
 		result = 'O';

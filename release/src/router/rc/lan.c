@@ -5477,6 +5477,7 @@ void lanaccess_mssid_ban(const char *limited_ifname)
 
 #ifdef RTCONFIG_AMAS_WGN
 	char lan_ipaddr[16] = {0}, lan_netmask[16] = {0};
+	char *s1 = NULL, *s2 = NULL;
 #endif	/* RTCONFIG_AMAS_WGN */	
 
 #ifdef RTAC87U
@@ -5515,7 +5516,12 @@ void lanaccess_mssid_ban(const char *limited_ifname)
  	}
 
 #ifdef RTCONFIG_AMAS_WGN
- 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", wgn_guest_lan_ipaddr(limited_ifname, lan_ipaddr, sizeof(lan_ipaddr)-1), wgn_guest_lan_netmask(limited_ifname, lan_netmask, sizeof(lan_netmask)-1));
+	s1 = wgn_guest_lan_ipaddr(limited_ifname, lan_ipaddr, sizeof(lan_ipaddr)-1);
+	s2 = wgn_guest_lan_netmask(limited_ifname, lan_netmask, sizeof(lan_netmask)-1);
+	if (s1 != NULL && s2 != NULL)
+ 		snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", s1, s2);
+	else
+		snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #else 	/* RTCONFIG_AMAS_WGN */
 	snprintf(lan_subnet, sizeof(lan_subnet), "%s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 #endif 	/* RTCONFIG_AMAS_WGN */
@@ -5528,7 +5534,10 @@ void lanaccess_mssid_ban(const char *limited_ifname)
 	}
 #endif
 #ifdef RTCONFIG_AMAS_WGN
-	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", lan_ipaddr, "-j", "ACCEPT");
+	if (s1 != NULL)
+		eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", lan_ipaddr, "-j", "ACCEPT");
+	else
+		eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", nvram_safe_get("lan_ipaddr"), "-j", "ACCEPT");
 #else  	/* RTCONFIG_AMAS_WGN */
 	eval("ebtables", "-t", "broute", "-A", "BROUTING", "-i", (char*)limited_ifname, "-p", "ipv4", "--ip-proto", "icmp", "--ip-dst", nvram_safe_get("lan_ipaddr"), "-j", "ACCEPT");
 #endif	/* RTCONFIG_AMAS_WGN */

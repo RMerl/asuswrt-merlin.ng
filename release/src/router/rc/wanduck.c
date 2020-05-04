@@ -804,7 +804,7 @@ int do_dns_detect(int wan_unit)
 	hints.ai_family = AF_INET;
 #endif
 	hints.ai_socktype = SOCK_STREAM;
-	timeout = nvram_get_int("dns_probe_timeout") ? : 3;
+	timeout = nvram_get_int("dns_probe_timeout") ? : scan_interval-2;
 
 	ret = -1;
 	if (pipe(pipefd) < 0)

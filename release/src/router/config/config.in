@@ -1834,6 +1834,10 @@ config RTCONFIG_SINGLE_LED
 	bool "model which has only one LED"
 	default n
 
+config RTCONFIG_PIPEFW
+	bool "pipe-write fw to flash directly, don't store in mem"
+	default n
+
 config RTCONFIG_AURASYNC
 	bool "AURASYNC support"
 	default n

@@ -1,12 +1,9 @@
 #ifndef __VPNC_FUSION_H__
 #define __VPNC_FUSION_H__
 
-#define USE_MULTIPATH_ROUTE_TABLE	1
 //#define USE_IPTABLE_ROUTE_TARGE		1
 
-#ifdef USE_MULTIPATH_ROUTE_TABLE
 #define INTERNET_ROUTE_TABLE_ID	1
-#endif
 
 #define L2TP_VPNC_PID	"/var/run/l2tpd-vpnc%d.pid"
 #define L2TP_VPNC_CTRL	"/var/run/l2tpctrl-vpnc%d"
@@ -77,12 +74,10 @@ typedef struct _vpnc_dev_policy{
 	int vpnc_idx;	//vpn client index
 }VPNC_DEV_POLICY;
 
-#ifdef USE_MULTIPATH_ROUTE_TABLE
 typedef enum{
 	VPNC_ROUTE_ADD,
 	VPNC_ROUTE_DEL,	
 }VPNC_ROUTE_CMD;
-#endif
 
 #define VPNC_UNIT_BASIC 5
 

@@ -81,9 +81,11 @@ typedef int (*i5MacAddressDeliveryFunc)(unsigned char const * macAddressList, un
 /* Bit flags for status book-keeping used in i5_dm_interface_type structure */
 #define I5_FLAG_IFR_M1_SENT		0x1
 #define I5_FLAG_IFR_M2_RECEIVED		0x2
+#define I5_FLAG_IFR_CAC_PENDING           0x80  /* CAC is not completed */
 
 #define I5_IS_M1_SENT(flags)		((flags) & I5_FLAG_IFR_M1_SENT)
 #define I5_IS_M2_RECEIVED(flags)	((flags) & I5_FLAG_IFR_M2_RECEIVED)
+#define I5_IS_IFR_CAC_PENDING(flags)            ((flags) & I5_FLAG_IFR_CAC_PENDING)
 
 /* SSID Type */
 typedef struct {

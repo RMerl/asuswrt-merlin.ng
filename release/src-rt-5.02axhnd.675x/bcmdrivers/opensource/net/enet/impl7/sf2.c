@@ -452,7 +452,7 @@ void link_change_handler(enetx_port_t *port, int linkstatus, int speed, int dupl
                 snprintf(link, sizeof(link), "LINK=up");
                 kobject_uevent_env(&port->dev->dev.kobj, KOBJ_CHANGE, env);
                 netif_carrier_on(port->dev);
-			}
+            }
 
             _port_sf2_print_status(port, old_link == phy_dev->link);
         }

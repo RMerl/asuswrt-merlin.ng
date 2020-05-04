@@ -156,7 +156,6 @@ var vpnc_default_wan = '<% nvram_get("vpnc_default_wan"); %>';
 var vpnc_index = -1;
 var vpnc_dev_policy_list_array = [];
 var vpnc_dev_policy_list_array_ori = [];
-var dhcp_staticlist_array = [];
 var dhcp_staticlist_ori = decodeURIComponent('<% nvram_char_to_ascii("","dhcp_staticlist"); %>');
 
 <% wanlink(); %>
@@ -220,6 +219,7 @@ function initial(){
 	vpnc_dev_policy_list_array = parse_vpnc_dev_policy_list('<% nvram_char_to_ascii("","vpnc_dev_policy_list"); %>');
 
 	//combine vpnc_dev_policy_list_array and dhcp_staticlist
+	var dhcp_staticlist_array = [];
 	var dhcp_staticlist_tmp = '<% nvram_char_to_ascii("","dhcp_staticlist"); %>';
 	if(dhcp_staticlist_tmp != "") {
 		var dhcp_staticlist_row = decodeURIComponent(dhcp_staticlist_tmp).split("<");
@@ -318,19 +318,15 @@ function gen_exception_list_table() {
 		header: [ 
 			{
 				"title" : "<#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)",
-				"width" : "25%"
+				"width" : "30%"
 			},
 			{
 				"title" : "<#IPConnection_ExternalIPAddress_itemname#>",
 				"width" : "20%"
 			},
 			{
-				"title" : "<#LANHostConfig_x_LDNSServer1_itemname#>",
-				"width" : "20%"
-			},
-			{
 				"title" : "<#VPN_Fusion_Connection_Name#>",
-				"width" : "15%"
+				"width" : "30%"
 			},
 			{
 				"title" : "<#CTL_Activate#>",
@@ -352,11 +348,7 @@ function gen_exception_list_table() {
 					"validator" : "ipAddressDHCP"
 				},
 				{
-					"editMode" : "text",
-					"title" : "<#LANHostConfig_x_LDNSServer1_itemname#> (Optional)",
-					"maxlength" : "15",
-					"validator" : "ipAddress",
-					"valueMust" : false
+					"editMode" : "hidden"
 				},
 				{
 					"editMode" : "select",
@@ -380,6 +372,7 @@ function gen_exception_list_table() {
 				},
 				{
 					"editMode" : "pureText",
+					"styleList" : {"display":"none"}
 				},
 				{
 					"editMode" : "select",

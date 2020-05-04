@@ -48,6 +48,7 @@ PLATFORM_ROUTER:=
 export HND_ROUTER := $(shell pwd | sed 's/.*hnd.*/y/g' | sed 's/.*src.*//g')
 export HND_ROUTER_AX := $(shell pwd | sed 's/.*axhnd.*/y/g' | sed 's/.*src.*//g')
 export HND_ROUTER_AX_675X := $(shell pwd | sed 's/.*axhnd.675x/y/g' | sed 's/.*src.*//g')
+export BRCM_SDK_502L07p1 := $(shell pwd | sed 's/.*p1axhnd.675x.*/y/g' | sed 's/.*src.*//g')
 
 ifeq ($(HND_ROUTER_AX_675X),y)
 ifeq (,$(wildcard ./chip_profile.tmp))
@@ -1240,6 +1241,10 @@ define RouterOptions
 	if [ "$(SINGLE_LED)" = "y" ] ; then \
 		sed -i "/RTCONFIG_SINGLE_LED/d" $(1); \
 		echo "RTCONFIG_SINGLE_LED=y" >>$(1); \
+	fi; \
+	if [ "$(PIPEFW)" = "y" ] ; then \
+		sed -i "/RTCONFIG_PIPEFW/d" $(1); \
+		echo "RTCONFIG_PIPEFW=y" >>$(1); \
 	fi; \
 	if [ "$(AURASYNC)" = "y" ]; then \
 		sed -i "/RTCONFIG_AURASYNC/d" $(1); \

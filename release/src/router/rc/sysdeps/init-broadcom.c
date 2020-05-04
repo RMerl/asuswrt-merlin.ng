@@ -1844,7 +1844,7 @@ void init_switch()
 			nvram_set("lanports", buf);
 
 #ifdef RTCONFIG_EXTPHY_BCM84880
-#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+#if defined(RTAX86U) || defined(RTAX5700)
 			int ext_phy_model = nvram_get_int("ext_phy_model"); // 0: BCM54991, 1: RTL8226
 #endif
 #endif
@@ -1852,7 +1852,7 @@ void init_switch()
 			for(i = 0; i < LAN_PORTS; ++i)
 			{
 #ifdef RTCONFIG_EXTPHY_BCM84880
-#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+#if defined(RTAX86U) || defined(RTAX5700)
 				if(i == (LAN_PORTS-1) && ext_phy_model == 1)
 					break;
 #endif
@@ -1871,7 +1871,7 @@ void init_switch()
 				ptr = buf+strlen(buf);
 			}
 			nvram_set("wanports", buf);
-#if defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+#if defined(RTAX86U) || defined(RTAX5700)
 			setLANLedOn();
 #endif
 			break;
@@ -1938,10 +1938,6 @@ void init_switch()
 	eval("insmod", "igs");
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
-	return;
-#endif
-
 	hnd_nat_ac_init(1);
 
 	enable_jumbo_frame();
@@ -1965,7 +1961,7 @@ void config_switch(void)
 {
 }
 
-#else
+#else // HND_ROUTER
 void init_switch()
 {
 	generate_switch_para();
@@ -2146,28 +2142,26 @@ void config_switch(void)
 	generate_switch_para();
 
 }
-#endif
+#endif // HND_ROUTER
 
-void 
+void
 init_switch_misc()
 {
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
-	switch (get_model()) {
-		case MODEL_RTAX95Q:
-		case MODEL_RTAX56U:
-		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
-			system("ethswctl -c wan -o enable -i eth0");
-			break;
-		case MODEL_RTAX58U:
-			system("ethswctl -c wan -o enable -i eth4");
-			break;
-	}
-	return;
-#endif
 #ifdef HND_ROUTER
-	system("ethswctl -c wan -o enable -i eth0");
+	doSystem("ethswctl -c wan -o enable -i %s", WAN_IF_ETH);
 
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+	system("ethctl eth0 ethernet@wirespeed enable");
+	system("ethctl eth1 ethernet@wirespeed enable");
+	system("ethctl eth2 ethernet@wirespeed enable");
+	system("ethctl eth3 ethernet@wirespeed enable");
+#ifndef RTAX95Q
+	system("ethctl eth4 ethernet@wirespeed enable");
+#endif
+#if defined(RTAX86U) || defined(RTAX5700)
+	system("ethctl eth5 ethernet@wirespeed enable");
+#endif
+#else
 #if defined(GTAC5300)
 	// clean the egress port first to avoid the 2nd WAN's DHCP.
 	system("ethswctl -c regaccess -l 4 -v 0x3102 -d 0x60");
@@ -2183,22 +2177,20 @@ init_switch_misc()
         system("ethswctl -c regaccess -l 4 -v 0x3100 -d 0xd0");
 #endif
 
-#ifndef RTAX95Q
         system("ethctl eth0 ethernet@wirespeed enable");
-#endif
         system("ethctl eth1 ethernet@wirespeed enable");
         system("ethctl eth2 ethernet@wirespeed enable");
         system("ethctl eth3 ethernet@wirespeed enable");
-#ifndef RTAX95Q
         system("ethctl eth4 ethernet@wirespeed enable");
-#endif
+
 #ifdef RTCONFIG_EXT_BCM53134
 	system("ethswctl -c pmdioaccess -x 0x1030 -l 2 -d 0xf017");
 	system("ethswctl -c pmdioaccess -x 0x1130 -l 2 -d 0xf017");
 	system("ethswctl -c pmdioaccess -x 0x1230 -l 2 -d 0xf017");
 	system("ethswctl -c pmdioaccess -x 0x1330 -l 2 -d 0xf017");
 #endif
-#endif
+#endif	/* RTCONFIG_HND_ROUTER_AX_675X */
+#endif	/* HND_ROUTER */
 }
 
 #ifdef RTCONFIG_HND_ROUTER_AX
@@ -2506,6 +2498,7 @@ void load_wl()
 	int unit;
 	char ifname[16] = {0};
 	char instance_base[128];
+	char instance_base2[128];
 
 #ifdef RTCONFIG_BCM_7114
 	int dhd_reboot = 0;
@@ -2534,12 +2527,22 @@ void load_wl()
 					}
 				}
 			}
+			memset(instance_base, 0, sizeof(instance_base));
+			memset(instance_base2, 0, sizeof(instance_base2));
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 			if ((strcmp(module, "dhd") == 0) || (strcmp(module, "dhd24") == 0))
 				snprintf(instance_base, sizeof(instance_base), "instance_base=%d dhd_msg_level=%d", maxunit + 1, nvram_get_int("dhd_msg_level"));
 			else
 #endif
-			snprintf(instance_base, sizeof(instance_base), "instance_base=%d", maxunit + 1);
+			{
+				if (strtoul(nvram_safe_get("wl_msglevel"), NULL, 0))
+					snprintf(instance_base, sizeof(instance_base), "msglevel=%d", (int)strtoul(nvram_safe_get("wl_msglevel"), NULL, 0));
+				if (strtoul(nvram_safe_get("wl_msglevel2"), NULL, 0))
+					snprintf(instance_base2, sizeof(instance_base2), "%s msglevel2=%d", instance_base, (int)strtoul(nvram_safe_get("wl_msglevel2"), NULL, 0));
+				else
+					strncpy(instance_base2, instance_base, sizeof(instance_base2));
+				snprintf(instance_base, sizeof(instance_base), "instance_base=%d %s", maxunit + 1, instance_base2);
+			}
 			eval("insmod", module, instance_base);
 		} else {
 			eval("insmod", module);
@@ -3168,12 +3171,14 @@ void tweak_usb_affinity(int enable)
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 #if defined(RTAX95Q)
 	int usb_irqs[] = {45, 46, 47, -1};	// BCM6755
+#elif defined(RTCONFIG_HND_ROUTER_AX_6710)
+	int usb_irqs[] = {25, 26, 27, -1};	// RT-AX86U, RT-AX68U
 #else
 	int usb_irqs[] = {41, 42, 43, -1};	// BCM6750
 #endif
 #else
 	int usb_irqs[] = {28, 29, 30, -1};	// BCM4906, BCM4908
-#endif
+#endif // RTCONFIG_HND_ROUTER_AX_675X
 	int on, off, i;
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 
@@ -3220,7 +3225,7 @@ void init_others(void)
 	system("sw 0xff803014 0xffffffff");
 #endif
 }
-#else
+#else // HND_ROUTER
 
 #define ASUS_TWEAK
 
@@ -4446,9 +4451,13 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #ifdef RTCONFIG_HND_ROUTER_AX
 		if (cap_11ax && nvram_match(strcat_r(prefix, "11ax", tmp), "1"))
 		{
-			if (nvram_match(strcat_r(prefix, "ofdma", tmp), "1"))
+			if (nvram_match(strcat_r(prefix, "ofdma", tmp), "1"))		// DL OFDMA Only
 				nvram_set(strcat_r(prefix, "he_features", tmp), "7");
-			else
+			else if (nvram_match(strcat_r(prefix, "ofdma", tmp), "2"))	// DL+UL OFDMA
+				nvram_set(strcat_r(prefix, "he_features", tmp), "15");
+			else if (nvram_match(strcat_r(prefix, "ofdma", tmp), "3"))	// DL+UL OFDMA + HE MU-MIMO
+				nvram_set(strcat_r(prefix, "he_features", tmp), "31");
+			else								// Disable OFDMA
 				nvram_set(strcat_r(prefix, "he_features", tmp), "3");
 		}
 		else

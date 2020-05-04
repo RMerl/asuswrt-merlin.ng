@@ -45,14 +45,6 @@ else
 var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
 var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
 var wl_reg_mode = '<% nvram_get("wl_reg_mode"); %>';
-var mbo_support = (function(){
-	if(based_modelid == 'RT-AX92U' && (wl_unit == '0' || wl_unit == '1')){
-		return false;
-	}	
-	else{
-		return ('<% nvram_get("wl_mbo_enable"); %>' != "") ? true : false;
-	}
-})();
 
 function initial(){
 	show_menu();
@@ -2137,7 +2129,7 @@ function handleMFP(){
 			  </tr>
 			<tr id="he_mode_field" style="display:none">
 				<th>
-					<a id="he_mode_text" class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
+					<a id="he_mode_text" class="hintstyle"><#WLANConfig11b_HE_Frame_Mode_itemname#></a>
 				</th>
 				<td>
 					<div style="width:465px;display:flex;align-items: center;">
@@ -2151,7 +2143,7 @@ function handleMFP(){
 			</tr>
 			<tr id="mbo_field" style="display:none">
 				<th>
-					<a class="hintstyle" href="javascript:void(0);" onClick="">Wi-Fi Agile Multiband</a>
+					<a class="hintstyle">Wi-Fi Agile Multiband</a>
 				</th>
 				<td>
 					<div style="width:465px;display:flex;align-items: center;">
@@ -2164,7 +2156,7 @@ function handleMFP(){
 			</tr>
 			<tr id="twt_field" style="display:none">
 				<th>
-					<a class="hintstyle" href="javascript:void(0);" onClick="">Target Wake Time</a>
+					<a class="hintstyle">Target Wake Time</a>
 				</th>
 				<td>
 					<div style="width:465px;display:flex;align-items: center;">
@@ -2362,7 +2354,7 @@ function handleMFP(){
 					<td>
 						<select name="band0_channel" class="input_option" onChange="separateChannelHandler('0', this.value);"></select>
 						<span id="band0_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
-						<span id="band0_acs_ch13"><input id="band0_acs_ch13_checkbox" type="checkbox" onClick="" <%
+						<span id="band0_acs_ch13"><input id="band0_acs_ch13_checkbox" type="checkbox" <%
 							 nvram_match("acs_ch13", "1" , "checked" ); %>><#WLANConfig11b_EChannel_acs_ch13#></span>
 					</td>
 				</tr>

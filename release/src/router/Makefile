@@ -20,6 +20,10 @@ ifeq ($(HND_ROUTER_AX_675X),)
 export HND_ROUTER_AX_675X := $(shell pwd | sed 's/.*axhnd.675x.*/y/g' | sed 's/.*src.*//g')
 endif
 
+ifeq ($(BRCM_SDK_502L07p1),)
+export BRCM_SDK_502L07p1 := $(shell pwd | sed 's/.*p1axhnd.675x.*/y/g' | sed 's/.*src.*//g')
+endif
+
 ifeq ($(HND_ROUTER_AX_675X),y)
 ifeq ($(CUR_CHIP_PROFILE),)
 export CHIP_CONFIG_DIR := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
@@ -1450,6 +1454,8 @@ obj-$(HND_ROUTER) += wlan
 ifeq ($(HND_ROUTER_AX_675X),y)
 obj-$(HND_ROUTER) += sys_util
 obj-$(HND_ROUTER) += gen_util
+obj-$(BRCM_SDK_502L07p1) += archer_lib
+#obj-y += archer_lib
 obj-$(HND_ROUTER) += archerctl
 endif
 obj-$(HND_ROUTER) += bcm_util
@@ -1566,10 +1572,20 @@ all: clean-build kernel_header libc version obj_prelibs kernel $(obj-y)
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
+ifneq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
 version: $(SRCBASE)/include/epivers.h
 	$(SEP)
+endif
 
 EPIVERS_OPTION =
+
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+version:  $(SRCBASE)/include/epivers.h
+	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION) REUSE_VERSION=1
+ifeq ($(RTCONFIG_DHDAP),y)
+	$(MAKE) pciefd-version
+endif
+endif
 
 $(SRCBASE)/include/epivers.h:
 	$(MAKE) -C $(SRCBASE)/include $(EPIVERS_OPTION)
@@ -8411,6 +8427,12 @@ bridgeutil:
 	$(MAKE) -C $(TOPX_DIR)
 
 .PHONY : bridgeutil
+
+archer_lib:
+	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
+	$(MAKE) -C $(TOPX_DIR)
+
+.PHONY : archer_lib
 
 archerctl:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))

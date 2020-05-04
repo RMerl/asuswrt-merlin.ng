@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
 <head>
 	<meta charset="UTF-8">
@@ -239,13 +239,17 @@ var QAM1024_support = false;
 		}
 
 		QAM1024_support = (function(){
-			if(based_modelid == 'RT-AC88U' || based_modelid == 'RT-AC3100' || based_modelid == 'RT-AC5300'
-			|| based_modelid == 'RT-AC86U' || based_modelid == 'GT-AC2900' || based_modelid == 'GT-AC5300'){
-				return true;
+			if(isNaN(_chipset)){	// check the value is hexdecimal and then convert it to decimal
+				_chipset = parseInt(_chipset, 16);
 			}
 
-			return (_cap.indexOf('11ax') != -1) ? true : false;
+			if(_cap.indexOf('11ax') != -1 || _chipset == '4366' || _chipset == '4365' || _chipset == '43664' || _chipset == '43666'){
+				return true
+			}
+
+			return false;
 		})();
+		
 		QAM256_support = (_cap.indexOf('vht-prop-rates') != -1) ? true : false;
 	}
 	else{
@@ -340,15 +344,24 @@ function initial(){
 			based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" ||
 			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U"
 			|| based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U"
-			)
-			
-		{
+			){
 			if(no_vht_support){
 				inputCtrl(document.form.wl_txbf, 0);
 				inputCtrl(document.form.wl_itxbf, 0);
 			}
 			else{
-				document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
+				if(band5g_11ax_support){
+					if(wl_unit_value == '1' && based_modelid == 'RT-AX92U'){
+						document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
+					}
+					else{
+						document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_axBeam#>";
+					}			
+				}
+				else{
+					document.getElementById('wl_txbf_desc').innerHTML = "<#WLANConfig11b_x_acBeam#>";
+				}
+				
 				inputCtrl(document.form.wl_txbf, 1);
 				inputCtrl(document.form.wl_itxbf, 1);
 			}
@@ -645,14 +658,13 @@ function initial(){
 		}
 	}
 
-	if(ofdma_support && wl_unit_value != '0'){
+	if(ofdma_support){
 		var wl_11ax = '<% nvram_get("wl_11ax"); %>';
 		if(document.form.wl_nmode_x.value == '0' || document.form.wl_nmode_x.value == '8'){
 			if (based_modelid != 'RT-AX92U' || (wl_unit_value != '0' && wl_unit_value != '1')) {
 				$('#ofdma_field').show();
 				if(wl_11ax == '0'){
 					document.form.wl_ofdma.value = 0;
-					document.getElementsByName('wl_ofdma')[0].style.backgroundColor = "#4C4C4C";
 					document.form.wl_ofdma.disabled = true;
 					$('#ofdma_hint').show();
 				}
@@ -662,7 +674,6 @@ function initial(){
 			$('#ofdma_field').show();
 			if(wl_11ax == '0'){
 				document.form.wl_ofdma.value = 0;
-				document.getElementsByName('wl_ofdma')[0].style.backgroundColor = "#4C4C4C";
 				document.form.wl_ofdma.disabled = true;
 				$('#ofdma_hint').show();
 			}
@@ -1503,16 +1514,6 @@ function checkWLReady(){
 	    }
   	});
 }
-
-function setOFDMA(){
-	// 2.4 GHz does not support so far
-	//document.form.wl0_ofdma.disabled = false;
-	document.form.wl1_ofdma.disabled = false;
-	if(band5g2_support){
-		document.form.wl2_ofdma.disabled = false;
-	}
-}
-
 </script>
 </head>
 
@@ -1698,7 +1699,7 @@ function setOFDMA(){
 			  			</td>
 					</tr>
 					<tr id="wl_dtim_field">
-			  			<th><a class="hintstyle" id="wl_dtim_th" href="javascript:void(0);" onClick=""><#WLANConfig11b_x_DTIM_itemname#></a></th>
+			  			<th><a class="hintstyle" id="wl_dtim_th"><#WLANConfig11b_x_DTIM_itemname#></a></th>
 						<td>
 			  				<input type="text" maxlength="3" name="wl_dtim" class="input_6_table" value="<% nvram_get("wl_dtim"); %>" onKeyPress="return validator.isNumber(this,event)" autocorrect="off" autocapitalize="off">
 						</td>			  
@@ -1830,7 +1831,7 @@ function setOFDMA(){
 					<!-- [MODELDEP] end -->
 					<!--For 5GHz of RT-AC87U  -->
 					<tr id="wl_80211h_tr" style="display:none;">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_x_80211H#></a></th>
+						<th><a class="hintstyle"><#WLANConfig11b_x_80211H#></a></th>
 						<td>
 							<select name="wl1_80211h" class="input_option">
 									<option value="0" <% nvram_match("wl1_80211h", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
@@ -1853,7 +1854,7 @@ function setOFDMA(){
 					
 					<!--Multi-User MU-MIMO for RT-AC88U, RT-AX88U, RT-AC86U, AC2900, RT-AC3100, RT-AC5300, GT-AX11000, RT-AX92U and RT-AC87U 5 GHz only-->
 					<tr id="wl_MU_MIMO_field" style="display:none">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_MUMIMO_itemdesc#></a></th>
+						<th><a class="hintstyle"><#WLANConfig11b_MUMIMO_itemdesc#></a></th>
 						<td>
 							<div style="display:table-cell;vertical-align:middle">
 								<select name="wl_mumimo" class="input_option" onchange="handle_mimo(this.value)" disabled>
@@ -1864,12 +1865,14 @@ function setOFDMA(){
 						</td>
 					</tr>
 					<tr id="ofdma_field" style="display:none">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="">OFDMA</a></th>
+						<th><a class="hintstyle"><#OFDMA_title#></a></th>
 						<td>
 							<div style="display:table-cell;vertical-align:middle">
 								<select name="wl_ofdma" class="input_option">
 									<option value="0" <% nvram_match("wl_ofdma", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
-									<option value="1" <% nvram_match("wl_ofdma", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+									<option value="1" <% nvram_match("wl_ofdma", "1","selected"); %>>DL OFDMA only</option>
+									<option value="2" <% nvram_match("wl_ofdma", "2","selected"); %>>DL/UL OFDMA</option>
+									<option value="3" <% nvram_match("wl_ofdma", "3","selected"); %>>DL/UL OFDMA + MU-MIMO</option>
 								</select>
 								<span id="ofdma_hint" style="margin-left:4px;display:none">*Need to enable <a href="Advanced_Wireless_Content.asp" style="color:#FC0;text-decoration:underline;">802.11ax / Wi-Fi 6 mode</a></span>
 							</div>
@@ -1896,11 +1899,20 @@ function setOFDMA(){
 					</tr>					
 					<!-- RT-AC82U & RT-AC58U & 4G-AC53U & MAP-AC1300 & MAP-AC2200 & VZW-AC1300 & MAP-AC1750 & MAP-AC3000 -->
 					<tr id="wl_implicitxbf_field"  style="display:none">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="">Implicit beamforming</a></th>
+						<th><a class="hintstyle"><#WLANConfig11b_x_uniBeam#></a></th>
 						<td>
 							<select name="wl_implicitxbf" class="input_option">
 								<option value="0" <% nvram_match("wl_implicitxbf", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 								<option value="1" <% nvram_match("wl_implicitxbf", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
+							</select>
+						</td>
+					</tr>
+					<tr id="ext_nss_field" style="display:none">
+						<th><a class="hintstyle">Extended NSS</a></th>
+						<td>
+							<select name="wl_ext_nss" class="input_option">
+								<option value="0" <% nvram_match("wl_ext_nss", "0","selected"); %>><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+								<option value="1" <% nvram_match("wl_ext_nss", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 							</select>
 						</td>
 					</tr>
@@ -1935,7 +1947,7 @@ function setOFDMA(){
 					</tr>
 
 					<tr id="region_tr" style="display:none" class="rept ew">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick=""><#WLANConfig11b_x_Region#></a></th>
+						<th><a class="hintstyle"><#WLANConfig11b_x_Region#></a></th>
 						<td><div id="region_div"></div></td>
 					</tr>
 				</table>				

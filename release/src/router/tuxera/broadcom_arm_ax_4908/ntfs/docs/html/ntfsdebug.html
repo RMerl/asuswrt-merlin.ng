@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2011 Erik Larsson / Tuxera Inc.
+   See LICENSE file for licensing information.
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    div.Pp { margin: 1ex 0ex; }
+    div.Nd, div.Bf, div.Op { display: inline; }
+    span.Pa, span.Ad { font-style: italic; }
+    span.Ms { font-weight: bold; }
+    dl.Bl-diag > dt { font-weight: bold; }
+    code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
+    code.Cd { font-weight: bold; font-family: inherit; }
+  </style>
+  <title>NTFSDEBUG(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">NTFSDEBUG(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">NTFSDEBUG(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<h1 class="Sh" title="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+ntfsdebug - Efficiently dump the metadata contents of an NTFS volume.
+<h1 class="Sh" title="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<b>ntfsdebug</b> <i>device|image</i>
+<h1 class="Sh" title="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<b>ntfsdebug</b> will efficiently extract all relevant metadata from an NTFS
+  volume and dump it to standard output. It works at disk sector level and
+  copies only the used data. Unused disk space becomes zero. <b>ntfsdebug</b>
+  can be useful to exact the metadata snapshot of an NTFS file system for
+  developers to investigate and troubleshoot users' issues using the clone
+  without the risk of destroying the original file system.
+<h1 class="Sh" title="Sh" id="EXIT_CODES"><a class="permalink" href="#EXIT_CODES">EXIT
+  CODES</a></h1>
+The exit code is 0 on success, non-zero otherwise.
+<h1 class="Sh" title="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>ntfsdebug /dev/sda1 | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with
+  less memory e.g. for 20 MB memory use:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>ntfsdebug /dev/sda1 --mem 20 | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image in a system with
+  less memory and letting tool adjust memory usage:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>ntfsdebug /dev/sda1 --automatic-mem | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump NTFS metadata on /dev/sda1 to a compressed metadata image but also collect
+  a full NTFS Journal ($LogFile), use:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>ntfsdebug /dev/sda1 --logfile | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump NTFS metadata to a remote host, using ssh. Please note that ssh may ask for
+  a password.
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>ntfsdebug /dev/sda1 | bzip2 | ssh host 'cat &gt; sda1.img.bzip2'</b></div>
+<h1 class="Sh" title="Sh" id="KNOWN_ISSUES"><a class="permalink" href="#KNOWN_ISSUES">KNOWN
+  ISSUES</a></h1>
+If you find a problem then please send an email describing it to
+  ntfs-support@tuxera.com.
+<h1 class="Sh" title="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<b>ntfsdebug</b> is part of the <b>Tuxera NTFS</b> package.</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">Sept 2011</td>
+    <td class="foot-os">Tuxera NTFS Utilities 3017.7.18.14</td>
+  </tr>
+</table>
+</body>
+</html>

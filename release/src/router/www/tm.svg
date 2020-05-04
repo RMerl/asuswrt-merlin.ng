@@ -100,10 +100,27 @@ function pad(n)
 	return n;
 }
 
-function xps(n)
-{
-	n /= 1024;
-	return n.toFixed(2) + ' KB/s';
+function xps(n){
+	var unit = getTrafficUnit();
+	var value = '';
+	var scale = 'KB/s';
+	if(unit == '1'){	// MB
+		value = (n/1e6).toFixed(2);
+		scale = 'MB/s';
+	}
+	else if(unit == '2'){	// GB
+		value = (n/1e9).toFixed(2);
+		scale = 'GB/s';
+	}
+	else if(unit == '3'){	// TB
+		value = (n/1e12).toFixed(2);
+		scale = 'TB/s';
+	}
+	else{	// unit == 9
+		value = (n/1000).toFixed(2);
+	}
+
+	return value + ' '+ scale;
 }
 
 function setText(e, text)
@@ -200,12 +217,21 @@ function drawData(poly, data, mode, color)
 	pt += ' ' + (vWidth + 5) + ',' + y + ' ' + (vWidth + 10) + ',' + vHeight;
 	poly.setAttribute('points', pt);
 }
+function getTrafficUnit(){
+	var _index = 'ASUS_TrafficMonitor_unit=';
+	var x = document.cookie;
+	if(x.indexOf(_index) == -1){
+		document.cookie = 'ASUS_TrafficMonitor_unit=9';
+		x = document.cookie
+	}
 
+	var _offset =x.indexOf(_index) + _index.length;
+	return x.substring(_offset, _offset + 1);
+}
 function updateSVG(rxData, txData, maxValue, mode, rxColor, txColor, intv, maxLen, dataD, avgSamp, clock)
 {
 	var x, y, z, i;
 	var v, e;
-
 	maxV = maxValue;
 	interval = intv;
 	maxL = maxLen;

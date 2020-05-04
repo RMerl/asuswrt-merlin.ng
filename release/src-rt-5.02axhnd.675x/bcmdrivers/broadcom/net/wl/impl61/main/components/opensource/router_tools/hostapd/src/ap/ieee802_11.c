@@ -340,9 +340,14 @@ static void handle_auth_ft_finish(void *ctx, const u8 *dst, const u8 *bssid,
 	struct sta_info *sta;
 	int reply_res;
 
+#ifdef CONFIG_DRIVER_BRCM
+	brcm_build_ft_auth_resp_send(ctx, dst, status, ies, ies_len);
+	reply_res = status;
+#else
 	reply_res = send_auth_reply(hapd, dst, bssid, WLAN_AUTH_FT,
 				    auth_transaction, status, ies, ies_len,
 				    "auth-ft-finish");
+#endif // endif
 
 	sta = ap_get_sta(hapd, dst);
 	if (sta == NULL)

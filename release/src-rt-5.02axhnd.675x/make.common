@@ -489,12 +489,20 @@ endif
 
 ifeq ($(strip $(BUILD_DYNAMIC_CFE)),y)
 # build on the fly
+ifneq ($(wildcard $(TOP_PLATFORM)/cfe),)
 CFE_ROM_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_nand/cfe$(BRCM_CHIP)rom.bin
+else
+CFE_ROM_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)rom.bin
+endif
 
 ifeq ($(strip $(BUILD_HND_EAP_UBOOT)),y)
 CFE_RAM_FILE = $(TARGETS_DIR)/uboot/uboot$(BRCM_CHIP)ram.bin
 else
+ifneq ($(wildcard $(TOP_PLATFORM)/cfe),)
 CFE_RAM_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferam_nand/cfe$(BRCM_CHIP)ram.bin
+else
+CFE_RAM_FILE = $(TARGETS_DIR)/cfe/cfe$(BRCM_CHIP)ram.bin
+endif
 endif
 
 CFE_ROM_EMMC_FILE = $(BUILD_DIR)/cfe/build/broadcom/build_cferom_emmc/cfe$(BRCM_CHIP)rom.bin

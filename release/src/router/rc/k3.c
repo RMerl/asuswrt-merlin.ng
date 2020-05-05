@@ -28,11 +28,21 @@
 
 void k3_init()
 {
-	if (!nvram_get("modelname"))
+	bool isChange = 0;
+
+	if (!nvram_safe_get("modelname"))
+	{
 		nvram_set("modelname", "K3");
-	if (!nvram_get("screen_timeout"))
+		isChange = 1;
+	}
+	if (!nvram_safe_get("screen_timeout"))
+	{
 		nvram_set("screen_timeout", "30");
-	nvram_commit();
+		isChange = 1;
+	}
+
+	if (isChange)
+		nvram_commit();
 }
 
 void k3_init_done()

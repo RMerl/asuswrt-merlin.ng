@@ -20813,6 +20813,9 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 #ifndef RTCONFIG_LANTIQ
 			nvram_set("success_start_service", "1");
 			force_free_caches();
+#ifdef RTK3
+			k3_init_done();
+#endif
 #endif
 
 			extern int start_misc_services(void);

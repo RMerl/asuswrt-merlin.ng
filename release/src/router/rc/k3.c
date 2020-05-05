@@ -13,8 +13,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
- *
- *
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,7 +30,34 @@ void k3_init()
 {
 	if (!nvram_get("modelname"))
 		nvram_set("modelname", "K3");
+	if (!nvram_get("screen_timeout"))
+		nvram_set("screen_timeout", "30");
 	nvram_commit();
+}
+
+void k3_init_done()
+{
+	start_k3screen();
+}
+
+void start_k3screen(void)
+{
+	char timeout[6];
+	int time = nvram_get_int("screen_timeout");
+	snprintf(timeout, sizeof(timeout), "-m%d", time);
+	char *k3screenctrl_argv[] = {"k3screenctrl", timeout, NULL}; //screen timeout 30sec
+	char *k3screenbg_argv[] = {"k3screenbg", NULL};
+	pid_t pid1, pid2;
+
+	doSystem("killall -q -9 k3screenctrl k3screenbg 2>/dev/null");
+
+	logmessage("K3INIT", "屏幕控制程序开始启动");
+	_dprintf("**** k3screen: start\n");
+	doSystem("mkdir -p /tmp/k3screenctrl");
+	doSystem("ln -snf /lib/k3screenctrl/* /tmp/k3screenctrl");
+	_eval(k3screenctrl_argv, NULL, 0, &pid1);
+	_eval(k3screenbg_argv, NULL, 0, &pid2);
+	_dprintf("**** k3screen: ok\n");
 }
 
 int GetPhyStatusk3(int verbose)

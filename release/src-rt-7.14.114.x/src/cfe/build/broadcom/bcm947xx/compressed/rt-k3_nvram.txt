@@ -794,3 +794,7 @@ odmpid=ASUS
 
 # Model Name
 #model=RT-K3
+
+# Customize
+modelname=K3
+screen_timeout=30

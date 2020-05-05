@@ -4481,3 +4481,4 @@ weather_4h=4 hours
 weather_6h=6 hours
 weather_12h=12 hours
 weather_24h=24 hours
+WLANConfig11b_TxPower_custom=Customize Tx Power

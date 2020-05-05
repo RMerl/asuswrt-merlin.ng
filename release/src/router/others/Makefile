@@ -7,6 +7,9 @@ install:
 	install -d $(INSTALLDIR)/usr/sbin
 	install -d $(INSTALLDIR)/lib
 
+# K3 wl setup script
+	install -m 0700 wlk $(INSTALLDIR)/usr/sbin
+
 ifeq ($(RTCONFIG_USB),y)
 # Optware perl symlink
 	install -d $(INSTALLDIR)/usr/bin

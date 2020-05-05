@@ -284,6 +284,9 @@ ifeq ($(MODEL),RTK3)
 export RTK3=y
 export CFLAGS += -DRTK3
 MODEL:=RTAC3100
+export FILE_NAME:=RT-AC3100
+else
+export FILE_NAME:=$(BUILD_NAME)
 endif
 ifneq ($(MODEL),)
 export MODEL
@@ -1082,9 +1085,9 @@ else
 endif
 ifneq ($(CONFIG_BCMWL5),)
 ifeq ($(FAKEHDR),y)
-	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),$(FORCE_SN),$(FORCE_EN),$(SFINFO),image/$(IMGNAME).trx
+	ctools/trx_asus -i image/linux-lzma.trx -r $(FILE_NAME),$(KERNEL_VER).$(FS_VER),$(FORCE_SN),$(FORCE_EN),$(SFINFO),image/$(IMGNAME).trx
 else
-	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),$(SERIALNO),$(EXTENDNO),$(SFINFO),image/$(IMGNAME).trx
+	ctools/trx_asus -i image/linux-lzma.trx -r $(FILE_NAME),$(KERNEL_VER).$(FS_VER),$(SERIALNO),$(EXTENDNO),$(SFINFO),image/$(IMGNAME).trx
 endif
 else
 	ctools/trx_asus -i image/linux-lzma.trx -r $(BUILD_NAME),$(KERNEL_VER).$(FS_VER),image/$(IMGNAME).trx

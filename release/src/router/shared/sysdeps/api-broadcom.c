@@ -1521,6 +1521,7 @@ uint32_t set_phy_ctrl(uint32_t portmask, int ctrl)
 }
 
 #define IMAGE_HEADER "HDR0"
+#define CFE_HEADER "\xFF\x04\x00\xEA"
 #define MAX_VERSION_LEN 64
 #define MAX_PID_LEN 12
 #define MAX_HW_COUNT 4
@@ -1613,6 +1614,10 @@ int check_imageheader(char *buf, long *filelen)
 #endif
 		_dprintf("image len: %x\n", aligned);
 		return 1;
+	} else if(memcmp(buf, CFE_HEADER, sizeof(CFE_HEADER) - 1) == 0) {
+		_dprintf("found cfe image.\n");
+		*filelen = (512 + 1) * 1024; //512kb cfe, and 1kb phicomm_inno
+		return 2;
 	}
 	else return 0;
 }

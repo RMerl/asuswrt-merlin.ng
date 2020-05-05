@@ -1378,7 +1378,9 @@ function toggle_fw_check(state) {
 					<li><#FW_n0#></li>
 					<li><#FW_n1#></li>
 					<li id="fw_note2"><#FW_n2#>&nbsp;<#FW_n3#></li>
+					<!--
 					<li id="fw_note3">Get the latest firmware version from the download site at <a style="font-weight: bolder;text-decoration: underline;color:#FFFFFF;" href="https://www.asuswrt-merlin.net/download/" target="_blank">https://www.asuswrt-merlin.net/download/</a></li>
+					-->
 				</ol>
 		  </div>
 		  <br>
@@ -1458,13 +1460,13 @@ function toggle_fw_check(state) {
 					</div>
 				</td>
 			</tr>
-			<tr id="fwcheck_tr">
+			<!--<tr id="fwcheck_tr">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,15);">Scheduled check for new firmware availability</a></th>
 				<td>
 					<input type="radio" onclick="toggle_fw_check(1);" name="firmware_check_enable" class="input" value="1" <% nvram_match("firmware_check_enable", "1", "checked"); %>><#checkbox_Yes#>
 					<input type="radio" onclick="toggle_fw_check(0);" name="firmware_check_enable" class="input" value="0" <% nvram_match("firmware_check_enable", "0", "checked"); %>><#checkbox_No#>
 				</td>
-			</tr>
+			</tr>-->
 			<tr id="fw_version_tr">
 				<th><#FW_item2#></th>
 				<td>

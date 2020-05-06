@@ -1,6 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.18 (xx-xxx-2020)
+  - UPDATED: Merged GPL 384_8563 for AX models.
+  - UPDATED: Merged SDK + binary blobs 384_8563 for RT-AX88U.
+  - UPDATED: amtm to 3.1.7.
+
+
 384.17 (26-Apr-2020)
   Updating some models (like the RT-AC88U) from stock firmware
   3.0.0.4.384_81790 and newer will require a factory default reset

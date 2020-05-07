@@ -38,9 +38,15 @@ ifeq ($(RTCONFIG_BCM7),y)
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+	@cp include/tdts/sysdeps/bcm6710-tmcfg.h include/tdts/tmcfg.h -f                     # bcm6710
+	@cp include/udb/sysdeps/bcm6710-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm6710
+	@cp bin/bcm6710/* bin/ -rf                                                           # bcm6710
+else
 	@cp include/tdts/sysdeps/bcm675x-tmcfg.h include/tdts/tmcfg.h -f                     # bcm675x
 	@cp include/udb/sysdeps/bcm675x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm675x
 	@cp bin/bcm675x/* bin/ -rf                                                           # bcm675x
+endif # RTCONFIG_HND_ROUTER_AX_6710
 else
 	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
 	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
@@ -97,8 +103,13 @@ ifeq ($(RTCONFIG_BCM7),y)
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+	@cp include/tdts/sysdeps/bcm6710-tmcfg.h include/tdts/tmcfg.h -f                     # bcm6710
+	@cp include/udb/sysdeps/bcm6710-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm6710
+else
 	@cp include/tdts/sysdeps/bcm675x-tmcfg.h include/tdts/tmcfg.h -f                     # bcm675x
 	@cp include/udb/sysdeps/bcm675x-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # bcm675x
+endif # RTCONFIG_HND_ROUTER_AX_6710
 else
 	@cp include/tdts/sysdeps/axhnd-tmcfg.h include/tdts/tmcfg.h -f                       # ax-hnd
 	@cp include/udb/sysdeps/axhnd-tmcfg_udb.h include/udb/tmcfg_udb.h -f                 # ax-hnd
@@ -171,7 +182,11 @@ ifeq ($(RTCONFIG_BCM7),y)
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
 ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
+	@cp -f modules/bcm6710/* RC_INDEP/
+else
 	@cp -f modules/bcm675x/* RC_INDEP/
+endif # RTCONFIG_HND_ROUTER_AX_6710
 else
 	@cp -f modules/axhnd/* RC_INDEP/
 endif # RTCONFIG_HND_ROUTER_AX_675X
@@ -189,7 +204,7 @@ else
 endif
 endif
 endif
-ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X)),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/
@@ -215,7 +230,7 @@ install:
 	# [INSTALL] prebuild into RC_INDEP
 	-@mkdir RC_INDEP
 	-@cp -f prebuild$(BCMEX)$(EX7)$(EXHND)/* RC_INDEP/
-ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X)),y)
+ifeq ($(or $(HND_ROUTER),$(HND_ROUTER_AX),$(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710)),y)
 	@echo "start to install bwdpi_source into 94908HND"
 	@install -d $(INSTALLDIR)/usr/bwdpi/
 	@cp -f $(TOP)/bwdpi_source/RC_INDEP/*.so $(INSTALLDIR)/usr/lib/

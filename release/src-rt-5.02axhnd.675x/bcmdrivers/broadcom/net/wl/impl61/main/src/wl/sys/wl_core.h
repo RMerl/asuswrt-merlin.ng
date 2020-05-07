@@ -67,7 +67,7 @@ struct wl_core_priv {
 	int dhcp_in_progress;   /* DHCP period */
 	int early_suspended;    /* Early suspend status */
 #endif // endif
-#define WLC_IOCTL_MAXBUF_FWCAP  512
+#define WLC_IOCTL_MAXBUF_FWCAP  1024
 	char  fw_capabilities[WLC_IOCTL_MAXBUF_FWCAP];
 };
 

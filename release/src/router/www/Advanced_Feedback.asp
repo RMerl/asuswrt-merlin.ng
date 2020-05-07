@@ -312,13 +312,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#Network_Tools#>","Network Tools"]);
 		url_group.push(["Status_"]);
 
-		desclist.push(["Rescue Mode","Rescue"]);
+		desclist.push(["<#Rescue_Mode#>","Rescue"]);
 		url_group.push(["Rescue"]);//false value
 
 		desclist.push(["<#feedback_compat_wond#>","Other Devices"]);	//25
 		url_group.push(["Other_Device"]);//false value
 
-		desclist.push(["Cannot access firmware page","Fail to access"]);
+		desclist.push(["<#WebGUI_issue#>","Fail to access"]);
 		url_group.push(["GUI"]);//false value
 
 		desclist.push(["<#menu5_6_3#>","FW update"]);

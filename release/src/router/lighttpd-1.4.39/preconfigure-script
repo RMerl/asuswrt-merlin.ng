@@ -40,6 +40,11 @@ if [ -n "$BCMARM" ]; then
 	CFLAGS+=" -I$srcbase_dir/shared/bcmwifi/include"
 fi
 
+NVRAM_ENCRYPT=`cat ../.config |grep "RTCONFIG_NVRAM_ENCRYPT=y"`
+if [ -n "$NVRAM_ENCRYPT" ]; then
+        CFLAGS+=" -DNVRAM_ENCRYPT_ENABLE=1"
+fi
+
 ####	Set compiler variable ####
 export CFLAGS="$CFLAGS"
 export LIBS="$LIBS"

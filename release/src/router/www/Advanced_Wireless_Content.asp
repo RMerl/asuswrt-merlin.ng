@@ -989,6 +989,7 @@ function ajax_wl_channel(){
 <input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>" disabled>
 <input type="hidden" name="wps_multiband" value="<% nvram_get("wps_multiband"); %>" disabled>
 <input type="hidden" name="w_Setting" value="1">
+<input type="hidden" name="w_apply" value="1">
 <input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">

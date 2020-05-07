@@ -836,7 +836,10 @@ int wanport_status(int wan_unit)
 	return get_phy_status(wan_unit);
 #else // Broadcom
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
-	return hnd_get_phy_status(get_wanx_ifname(wan_unit));
+	if(!is_router_mode())
+		return hnd_get_phy_status(nvram_safe_get("eth_ifnames"));
+	else
+		return hnd_get_phy_status(get_wanx_ifname(wan_unit));
 #elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 	int i = 0;
 	char word[100], *next;
@@ -849,7 +852,7 @@ int wanport_status(int wan_unit)
 	}
 
 	return 0;
-#else
+#else // RTCONFIG_HND_ROUTER_AX_675X
 	char word[100], *next;
 	int mask;
 	char wan_ports[16];
@@ -895,7 +898,7 @@ int wanport_status(int wan_unit)
 		}
 #endif
 	}
-#else
+#else // HND_ROUTER
 #ifndef RTN53
 	if(sw_mode() == SW_MODE_AP && nvram_get_int("re_mode") == 0)
 		strcpy(wan_ports, "lanports");
@@ -911,7 +914,7 @@ int wanport_status(int wan_unit)
 		if(sw_mode() == SW_MODE_AP)
 			break;
 	}
-#endif
+#endif // HND_ROUTER
 
 #ifdef RTCONFIG_WIRELESSWAN
 	// to do for report wireless connection status
@@ -944,7 +947,7 @@ int wanport_status(int wan_unit)
 		}
 	}
 	return ret;
-#else
+#else // HND_ROUTER
 	return get_phy_status(mask);
 #endif // HND_ROUTER
 #endif	/* RTCONFIG_HND_ROUTER_AX_675X */

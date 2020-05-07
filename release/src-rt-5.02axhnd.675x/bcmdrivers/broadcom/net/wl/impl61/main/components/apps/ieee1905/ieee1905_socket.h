@@ -195,6 +195,7 @@ typedef struct {
 typedef struct {
   dll_t node;                 /* self referencial (next,prev) pointers of type dll_t */
   char ifname[I5_MAX_IFNAME]; /* Interface Name for which the VLAN is created */
+  bool hwStpDisabled;         /* HW STP disabled for this interface */
 } i5_vlan_ifr_node;
 
 typedef struct {

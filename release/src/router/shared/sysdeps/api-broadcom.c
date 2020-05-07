@@ -529,7 +529,7 @@ static inline int ethswctl_init(struct ifreq *p_ifr)
     return skfd;
 }
 
-#ifndef RTCONFIG_HND_ROUTER_AX_675X
+#if !defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_EXTPHY_BCM84880)
 static int et_dev_subports_query(int skfd, struct ifreq *ifr)
 {
 	int port_list = 0;
@@ -642,6 +642,31 @@ static void mdio_write(int skfd, struct ifreq *ifr, int phy_id, int location, in
 
 int ethctl_get_link_status(char *ifname)
 {
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+	char *cmd[] = {"ethctl", ifname, "media-type", NULL};
+	char *output = "/tmp/ethctl_get_link_status.txt";
+	char *str;
+	int ret;
+
+	unlink(output);
+	_eval(cmd, output, 0, NULL);
+
+	str = file2str(output);
+	//_dprintf("%s", str);
+	if(!strstr(str, "Enabled"))
+		ret = -1;
+	else{
+		if(strstr(str, "Up"))
+			ret = 1;
+		else
+			ret = 0;
+	}
+
+	free(str);
+	unlink(output);
+
+	return ret;
+#else
 	int skfd=0, err, bmsr;
 	struct ethswctl_data ifdata;
 	struct ifreq ifr;
@@ -704,6 +729,7 @@ int ethctl_get_link_status(char *ifname)
 error:
 	if (skfd) close(skfd);
 	return -1;
+#endif
 }
 
 #define _MB 0x1
@@ -811,7 +837,7 @@ error:
 	if (skfd) close(skfd);
 	return -1;
 }
-#endif
+#endif // RTCONFIG_HND_ROUTER_AX_675X
 
 struct ethctl_data ethctl;
 int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr)
@@ -910,7 +936,7 @@ int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value
 	return 0;
 }
 
-#ifdef RTCONFIG_HND_ROUTER_AX_6710
+#ifdef RTCONFIG_EXTPHY_BCM84880
 int extphy_bit_op(unsigned int reg, unsigned int val, int wr, unsigned int start_bit, unsigned int end_bit, unsigned int wait_ms){
 #define MIN_BIT 0
 #define MAX_BIT 15
@@ -1903,6 +1929,18 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(RTAX86U) || defined(RTAX5700)
+	int lan_ports = 5;
+	char *ports[lan_ports+1];
+	/* 7 4 3 2 1 0	L5(2.5G) W0 L1 L2 L3 L4 */
+	/* eth5 eth0 eth4 eth3 eth2 eth1 */
+	ports[0] = "eth0"; ports[1] = "eth4"; ports[2] = "eth3"; ports[3] = "eth2"; ports[4] = "eth1"; ports[5] = "eth5";
+#elif defined(RTAX68U)
+	int lan_ports = 4;
+	char *ports[lan_ports+1];
+	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
+	/* eth0 eth4 eth3 eth2 eth1 */
+	ports[0] = "eth0"; ports[1] = "eth4"; ports[2] = "eth3"; ports[3] = "eth2"; ports[4] = "eth1";
 #elif defined(RTCONFIG_EXTPHY_BCM84880) /* GT-AX11000 */
 	int lan_ports=5;
 	int ports[lan_ports+1];
@@ -1929,14 +1967,19 @@ int get_bonding_port_status(int port)
 #endif
 
 	/* WAN port */
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
-	if (!hnd_get_phy_status(ports[port])) {				/*Disconnect*/
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
+	if (!hnd_get_phy_status(ports[port]))				/*Disconnect*/
 #else
-	if (!hnd_get_phy_status(ports[port], extra_p0, regv, pmdv)) {	/*Disconnect*/
+	if (!hnd_get_phy_status(ports[port], extra_p0, regv, pmdv))	/*Disconnect*/
 #endif
+	{
 		port_status = 0;
 	}else{
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#ifdef RTCONFIG_HND_ROUTER_AX_6710
+		ret = hnd_get_phy_speed(ports[port]);
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 		ret = hnd_get_phy_speed(ports[port]);
 #else
 		ret = hnd_get_phy_speed(ports[port], extra_p0, regv2, pmdv2);
@@ -1955,9 +1998,10 @@ int get_bonding_port_status(int port)
 	port_status = 2500 : connect and phy speed 2500Mbps
 */
 	return port_status;
-#else
+#else // RTCONFIG_BONDING_WAN
 	return 0;
-#endif
+#endif // RTCONFIG_BONDING_WAN
 }
-#endif
-#endif
+#endif // RTCONFIG_HND_ROUTER_AX
+#endif // RTCONFIG_BONDING
+

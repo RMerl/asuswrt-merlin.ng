@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl_cfg80211.c 777842 2019-08-13 07:19:23Z $
+ * $Id: wl_cfg80211.c 779885 2019-10-09 11:45:06Z $
  */
 
 /** XXX
@@ -98,6 +98,8 @@
 #endif /* RTT_SUPPORT */
 #ifdef WL11U
 #endif /* WL11U */
+
+#define CFG80211_WL_EVENTING_MASK_LEN   MAX(WL_EVENTING_MASK_LEN, (ROUNDUP(WLC_E_LAST, NBBY)/NBBY))
 
 #define WLAN_AKM_SUITE_DPP 0x506f9a02
 
@@ -8726,6 +8728,12 @@ wl_validate_opensecurity(struct net_device *dev, s32 bssidx, bool privacy)
 		return BCME_ERROR;
 	}
 
+	err = wldev_iovar_setint_bsscfg(dev, "eap_restrict", 0, bssidx);
+	if (err < 0) {
+		WL_ERR(("eap_restrict error %d\n", err));
+		return BCME_ERROR;
+	}
+
 	return 0;
 }
 
@@ -8801,7 +8809,7 @@ wl_cfg80211_recv_mgmt_frame(struct bcm_cfg80211 *cfg, bcm_struct_cfgdev *cfgdev,
 			return -EINVAL;
 		}
 		sinfo.assoc_req_ies = data;
-		sinfo.assoc_req_ies_len = len;
+		sinfo.assoc_req_ies_len = ntoh32(e->datalen);
 		if (event == WLC_E_REASSOC_IND) {
 			sinfo.filled |= BIT(NL80211_STA_INFO_STA_FLAGS);
 			sinfo.sta_flags.mask = BIT(NL80211_STA_FLAG_AUTHENTICATED);
@@ -9192,6 +9200,8 @@ wl_validate_wpa2ie(struct net_device *dev, const bcm_tlv_t *wpa2ie, s32 bssidx)
 	int mfp = 0;
 	struct bcm_cfg80211 *cfg = wl_get_cfg(dev);
 #endif /* MFP */
+	u32 preauth = 0;
+	u32 curr_wpa_cap = 0;
 
 	u16 suite_count;
 	u8 rsn_cap[2];
@@ -9335,7 +9345,11 @@ wl_validate_wpa2ie(struct net_device *dev, const bcm_tlv_t *wpa2ie, s32 bssidx)
 		mfp = WL_MFP_CAPABLE;
 	}
 #endif /* MFP */
-
+		if (rsn_cap[0] & RSN_CAP_PREAUTH) {
+			preauth = 1;
+		} else {
+			preauth = 0;
+		}
 		/* set wme_bss_disable to sync RSN Capabilities */
 		err = wldev_iovar_setint_bsscfg(dev, "wme_bss_disable", wme_bss_disable, bssidx);
 		if (err < 0) {
@@ -9394,6 +9408,21 @@ wl_validate_wpa2ie(struct net_device *dev, const bcm_tlv_t *wpa2ie, s32 bssidx)
 #ifdef MFP
 	cfg->mfp_mode = mfp;
 #endif /* MFP */
+
+	/* set wpa_cap for preauth */
+	err = wldev_iovar_getint(dev, "wpa_cap", &curr_wpa_cap);
+	if (err < 0) {
+		WL_ERR(("Get wpa_cap for preauth error %d\n", err));
+		return BCME_ERROR;
+	} else {
+		curr_wpa_cap = preauth ? (curr_wpa_cap | RSN_CAP_PREAUTH):
+			(curr_wpa_cap & ~RSN_CAP_PREAUTH);
+		err = wldev_iovar_setint_bsscfg(dev, "wpa_cap", curr_wpa_cap, bssidx);
+		if (err < 0) {
+			WL_ERR(("Set wpa_cap for preauth error %d\n", err));
+			return BCME_ERROR;
+		}
+	}
 
 	/* set upper-layer auth */
 	err = wldev_iovar_setint_bsscfg(dev, "wpa_auth", wpa_auth, bssidx);
@@ -9667,6 +9696,8 @@ wl_validate_wpaie_wpa2ie(struct net_device *dev, const wpa_ie_fixed_t *wpaie,
 	int mfp = 0;
 	struct bcm_cfg80211 *cfg = wl_get_cfg(dev);
 #endif /* MFP */
+	u32 preauth = 0;
+	u32 curr_wpa_cap = 0;
 
 	if (wpaie == NULL || wpa2ie == NULL)
 		goto exit;
@@ -9798,6 +9829,11 @@ wl_validate_wpaie_wpa2ie(struct net_device *dev, const wpa_ie_fixed_t *wpaie,
 			mfp = WL_MFP_CAPABLE;
 		}
 #endif /* MFP */
+		if (rsn_cap[0] & RSN_CAP_PREAUTH) {
+			preauth = 1;
+		} else {
+			preauth = 0;
+		}
 	} else {
 		WL_DBG(("There is no RSN Capabilities. remained len %d\n", len));
 	}
@@ -9829,6 +9865,21 @@ wl_validate_wpaie_wpa2ie(struct net_device *dev, const wpa_ie_fixed_t *wpaie,
 #ifdef MFP
 	cfg->mfp_mode = mfp;
 #endif /* MFP */
+
+	err = wldev_iovar_getint(dev, "wpa_cap", &curr_wpa_cap);
+	if (err < 0) {
+		WL_ERR(("Get wpa_cap for preauth error %d\n", err));
+		return BCME_ERROR;
+	} else {
+		curr_wpa_cap = preauth ? (curr_wpa_cap | RSN_CAP_PREAUTH):
+			(curr_wpa_cap & ~RSN_CAP_PREAUTH);
+		err = wldev_iovar_setint_bsscfg(dev, "wpa_cap", curr_wpa_cap, bssidx);
+		if (err < 0) {
+			WL_ERR(("Set wpa_cap for preauth error %d\n", err));
+			return BCME_ERROR;
+		}
+	}
+
 	/* set upper-layer auth */
 	err = wldev_iovar_setint_bsscfg(dev, "wpa_auth", wpa_auth, bssidx);
 	if (err < 0) {
@@ -11241,6 +11292,10 @@ wl_cfg80211_change_beacon(
 
 	ie_offset = DOT11_MGMT_HDR_LEN + DOT11_BCN_PRB_FIXED_LEN;
 	/* find the SSID */
+	err = wldev_get_ssid(dev, &cfg->hostapd_ssid);
+	if (err < 0) {
+		WL_ERR(("WLC_GET_SSID error %d\n", err));
+	}
 	if ((ssid_ie = bcm_parse_tlvs(&info->head[ie_offset],
 		info->head_len - ie_offset, DOT11_MNG_SSID_ID)) != NULL) {
 		if (dev_role == NL80211_IFTYPE_AP) {
@@ -17171,6 +17226,12 @@ wl_event_handler(struct work_struct *work_data)
 
 	WL_DBG(("Enter \n"));
 	BCM_SET_CONTAINER_OF(cfg, work_data, struct bcm_cfg80211, event_work);
+
+	if (!cfg->event_workq_init) {
+		WL_ERR(("%s, Event handler is not created\n", __FUNCTION__));
+		return;
+	}
+
 	while ((e = wl_deq_event(cfg))) {
 			WL_DBG(("event type (%d), ifidx: %d bssidx: %d \n",
 				e->etype, e->emsg.ifidx, e->emsg.bsscfgidx));
@@ -17419,9 +17480,9 @@ wl_cfg80211_apply_eventbuffer(
 	struct bcm_cfg80211 *cfg,
 	wl_eventmsg_buf_t *ev)
 {
-	char eventmask[WL_EVENTING_MASK_LEN];
+	char eventmask[CFG80211_WL_EVENTING_MASK_LEN];
 	int i, ret = 0;
-	s8 iovbuf[WL_EVENTING_MASK_LEN + 12];
+	s8 iovbuf[CFG80211_WL_EVENTING_MASK_LEN + 12];
 
 	if (!ev || (!ev->num))
 		return -EINVAL;
@@ -17436,7 +17497,7 @@ wl_cfg80211_apply_eventbuffer(
 		WL_ERR(("Get event_msgs error (%d)\n", ret));
 		goto exit;
 	}
-	memcpy(eventmask, iovbuf, WL_EVENTING_MASK_LEN);
+	memcpy(eventmask, iovbuf, CFG80211_WL_EVENTING_MASK_LEN);
 
 	/* apply the set bits */
 	for (i = 0; i < ev->num; i++) {
@@ -17462,8 +17523,8 @@ exit:
 s32
 wl_add_remove_eventmsg(struct net_device *ndev, u16 event, bool add)
 {
-	s8 iovbuf[WL_EVENTING_MASK_LEN + 12];
-	s8 eventmask[WL_EVENTING_MASK_LEN];
+	s8 iovbuf[CFG80211_WL_EVENTING_MASK_LEN + 12];
+	s8 eventmask[CFG80211_WL_EVENTING_MASK_LEN];
 	s32 err = 0;
 	struct bcm_cfg80211 *cfg;
 
@@ -17484,13 +17545,13 @@ wl_add_remove_eventmsg(struct net_device *ndev, u16 event, bool add)
 		WL_ERR(("Get event_msgs error (%d)\n", err));
 		goto eventmsg_out;
 	}
-	memcpy(eventmask, iovbuf, WL_EVENTING_MASK_LEN);
+	memcpy(eventmask, iovbuf, CFG80211_WL_EVENTING_MASK_LEN);
 	if (add) {
 		setbit(eventmask, event);
 	} else {
 		clrbit(eventmask, event);
 	}
-	bcm_mkiovar("event_msgs", eventmask, WL_EVENTING_MASK_LEN, iovbuf,
+	bcm_mkiovar("event_msgs", eventmask, CFG80211_WL_EVENTING_MASK_LEN, iovbuf,
 		sizeof(iovbuf));
 	err = wldev_ioctl_set(ndev, WLC_SET_VAR, iovbuf, sizeof(iovbuf));
 	if (unlikely(err)) {

@@ -421,7 +421,6 @@ int init_toggle(void)
 		case MODEL_RTAX58U:
 		case MODEL_RTAX56U:
 		case MODEL_RTAX86U:
-		case MODEL_RTAX68U:
 			nvram_set("btn_ez_radiotoggle", "1");
 			return BTN_WIFI_TOG;
 #endif
@@ -3277,8 +3276,10 @@ void btn_check(void)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
 #elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
-#elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+#elif defined(RTAX86U) || defined(RTAX5700)
 				eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(RTAX68U)
+				eval("wl", "-i", "eth5", "ledbh", "7", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RTCONFIG_BCM_7114) || defined(RTAC86U) || defined(AC2900)
@@ -3300,8 +3301,10 @@ void btn_check(void)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 				eval("wl", "-i", "eth6", "ledbh", "15", "7");
-#elif defined(RTAX86U) || defined(RTAX5700) || defined(RTAX68U)
+#elif defined(RTAX86U) || defined(RTAX5700)
 				eval("wl", "-i", "eth7", "ledbh", "15", "7");
+#elif defined(RTAX68U)
+				eval("wl", "-i", "eth6", "ledbh", "7", "7");
 #elif defined(RTAX56U)
 				eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #elif defined(RTAC86U) || defined(AC2900)
@@ -4285,7 +4288,7 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U) || defined(RTAX68U)
 	unsigned long tmpcnt=0;
 #endif
 
@@ -4304,7 +4307,7 @@ unsigned long get_etlan_count()
 		if ((ifname = strrchr(buf, ' ')) == NULL) ifname = buf;
 		else ++ifname;
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U) || defined(RTAX68U)
 		if (strcmp(ifname, "eth1") && strcmp(ifname, "eth2") && strcmp(ifname, "eth3") && strcmp(ifname, "eth4")
 #ifdef RTCONFIG_EXT_BCM53134
  			&& strcmp(ifname, "eth5")
@@ -4326,7 +4329,7 @@ unsigned long get_etlan_count()
 	return counter;
 }
 
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX56U)
+#if defined(GTAC5300) || defined(RTAX88U)
 enum {
 	AGGLED_ACT_ALLOFF,
 	AGGLED_ACT_ALLON,
@@ -4388,7 +4391,7 @@ void fake_etlan_led(void)
 		(!nvram_get_int("wans_extwan") && !(phystatus & 0x1e)))  // configure 2.5G port as LAN, ignore 2.5G port
 #else
 	if (!phystatus
-#if defined(RTAX92U) || defined(RTAX95Q)
+#if defined(RTAX92U) || defined(RTAX95Q) || defined(RTAX68U)
 		|| phystatus == 1 // ignore WAN
 #endif
 			)
@@ -6136,50 +6139,39 @@ static void ntevent_disk_usage_check(){
         } \
     }
 
-
 static void auto_firmware_check()
 {
-	static int period_retry = -1;
-	static int period = 2877;
+	int periodic_check = 0;
+	static int period_retry = 0;
+	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
-	static int periodic_check = 0;
-	int cycle_manual = nvram_get_int("fw_check_period");
-	int cycle = (cycle_manual > 1) ? cycle_manual : 2880;
+#ifndef RTCONFIG_FW_JUMP
 	char *datestr[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	time_t now;
 	struct tm local;
 	static int rand_hr, rand_min;
-	int initial_state;
+#endif
 
-	if (!nvram_get_int("ntp_ready") || !nvram_get_int("firmware_check_enable")) {
-		// FAUPGRADE_DBG("ntp_ready false");
+	if (!nvram_get_int("ntp_ready")){
+		//FAUPGRADE_DBG("ntp_ready false");
+		return;
+	}
+
+	if(bootup_check_period > 0){	//bootup wait 90s to check
+		bootup_check_period--;
 		return;
 	}
 
 	time(&now);
 	localtime_r(&now, &local);
 
-#ifdef RTCONFIG_FW_JUMP
-	period = 0;
-#else
-	if (!bootup_check && !periodic_check)
-	{
-		if ((local.tm_hour == (2 + rand_hr)) &&	// every 24 hours at 2 am + random offset
-		    (local.tm_min == rand_min))
-		{
-			periodic_check = 1;
-			period = -1;
-		}
-	}
+	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
+		periodic_check = 1;
 
-	if (bootup_check || periodic_check)
-		period = (period + 1) % cycle;
-	else
-		return;
+	//FAUPGRADE_DBG("periodic_check = %d, period_retry = %d, bootup_check = %d", periodic_check, period_retry, bootup_check);
+#ifndef RTCONFIG_FW_JUMP
+	if (bootup_check || periodic_check || period_retry!=0)
 #endif
-
-	//FAUPGRADE_DBG("period = %d, period_retry = %d, bootup_check = %d", period, period_retry, bootup_check);
-	if (!period || (period_retry < 2 && bootup_check == 0))
 	{
 #ifndef RTCONFIG_FW_JUMP
 		if(nvram_get_int("webs_state_dl_error")){
@@ -6189,21 +6181,26 @@ static void auto_firmware_check()
 				nvram_set("webs_state_dl_error", "0");
 		}
 
-		period_retry = (period_retry+1) % 3;
-		FAUPGRADE_DBG("period_retry = %d", period_retry);
 		if (bootup_check)
 		{
 			bootup_check = 0;
 			rand_hr = rand_seed_by_time() % 4;
 			rand_min = rand_seed_by_time() % 60;
 			FAUPGRADE_DBG("periodic_check AM %d:%d", 2 + rand_hr, rand_min);
+#ifdef RTCONFIG_AMAS
+			if(nvram_match("re_mode", "1"))
+				return;
+#endif
 		}
-		initial_state = nvram_get_int("webs_state_flag");
+
+		period_retry = (period_retry+1) % 3;
+#endif
 
 		if(!nvram_contains_word("rc_support", "noupdate")){
 #if defined(RTL_WTDOG)
 			stop_rtl_watchdog();
 #endif
+			nvram_set("webs_update_trigger", "watchdog");
 			eval("/usr/sbin/webs_update.sh");
 #if defined(RTL_WTDOG)
 			start_rtl_watchdog();
@@ -6216,23 +6213,10 @@ static void auto_firmware_check()
 		if (nvram_get_int("webs_state_update")
 				&& !nvram_get_int("webs_state_error")
 				&& !nvram_get_int("webs_state_dl_error")
-				&& strlen(nvram_safe_get("webs_state_info_am"))
+				&& strlen(nvram_safe_get("webs_state_info"))
 				)
 		{
 			FAUPGRADE_DBG("retrieve firmware information");
-
-			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
-			{
-				char version[4], revision[3], build[16];
-
-				memset(version, 0, sizeof(version));
-				memset(revision, 0, sizeof(revision));
-				memset(build, 0, sizeof(build));
-
-				sscanf(nvram_safe_get("webs_state_info_am"), "%3[^_]_%2[^_]_%15s", version, revision, build);
-				logmessage("watchdog", "New firmware version %s.%s_%s is available.", version, revision, build);
-				run_custom_script("update-notification", 0, NULL, NULL);
-			}
 
 			if (!get_chance_to_control()){
 				FAUPGRADE_DBG("user in use");
@@ -6248,7 +6232,7 @@ static void auto_firmware_check()
 
 			if (nvram_get_int("webs_state_flag") != 2)
 			{
-				dbg("no need to upgrade firmware\n");
+				period_retry = 0; //stop retry
 				FAUPGRADE_DBG("no need to upgrade firmware");
 				return;
 			}
@@ -6309,7 +6293,6 @@ static void link_pap_status()
 			if (nvram_get_int("link_ap"))
 				link_pap_status = 1;
 		}
-#endif
 
 		if (link_pap_status != prelink_pap_status)
 		{
@@ -6770,7 +6753,6 @@ void wlcnt_chk()
 			printf("\nWL go insanity! calm down it\n");
 #ifndef RTCONFIG_AHS
 			logmessage("watchdog", "detect wl reinit count %d", val - pre_val);
-			system("reboot&");
 #else
 			/* export specific string to syslog for ahsd recover action*/
 			logmessage("watchdog", "wl reinit count %d", val - pre_val);
@@ -7597,7 +7579,7 @@ void watchdog(int sig)
 	ate_temperature_record();
 #endif
 
-#ifdef RTCONFIG_HND_ROUTER_AX
+#ifdef HND_ROUTER
 	dump_WlGetDriverStats(0, 1);
 #endif
 

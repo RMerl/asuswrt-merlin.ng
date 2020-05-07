@@ -76,6 +76,11 @@
 #define CATDB           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/bwdpi.cat.db" : "/tmp/bwdpi/bwdpi.cat.db"
 #define RULEV           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/rule.version" : "/tmp/bwdpi/rule.version"
 
+// module
+#define KTDTS            "/sys/module/tdts"
+#define KTDTS_UDB        "/sys/module/tdts_udb"
+#define KTDTS_UDBFW      "/sys/module/tdts_udbfw"
+
 // log and tmp file
 #define WRS_FULL_LOG    "/tmp/wrs_full.txt"
 #define VP_FULL_LOG     "/tmp/vp_full.txt"

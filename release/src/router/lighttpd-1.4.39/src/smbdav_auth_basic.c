@@ -30,7 +30,7 @@
 #include <dlinklist.h>
 #include "mod_smbdav.h"
 
-#define DBE 0
+#define DBE 1
 
 #ifndef EMBEDDED_EANBLE
 char* g_is_webdav_block = "0";
@@ -45,7 +45,7 @@ int do_account_authentication(const char *username, const char *password)
 	char *nvram_acc_list;
 	
 #if EMBEDDED_EANBLE
-	//- if file /etc/shadow exist.
+	//- if file /etc/shadow exist and only http username.
 	if (access("/etc/shadow", R_OK) == 0 &&
 	    strcmp(username, nvram_get_http_username()) == 0 &&
 	    compare_passwd_in_shadow(username, password)) {
@@ -77,7 +77,7 @@ int do_account_authentication(const char *username, const char *password)
 
 	buffer* buffer_acc_name = buffer_init();
 	buffer* buffer_acc_pass = buffer_init();
-	
+
 	while(pch!=NULL){
 		char *name;
 		char *pass;
@@ -100,12 +100,13 @@ int do_account_authentication(const char *username, const char *password)
 		pass[len] = '\0';
 		buffer_copy_string(buffer_acc_pass, pass);
 
-#if EMBEDDED_EANBLE
-		//int len_dec = pw_dec_len(pass);
-		//char output[len_dec];
-		//memset(output, 0, sizeof(output));
-		//pw_dec(pass, output);
-		//buffer_copy_string(buffer_acc_pass, output);
+#if NVRAM_ENCRYPT_ENABLE
+		int len_dec = pw_dec_len(pass);
+		char output[len_dec];
+		memset(output, 0, sizeof(output));
+		pw_dec(pass, output);
+		buffer_copy_string(buffer_acc_pass, output);
+		Cdbg(DBE, 'aaa buffer_acc_pass=%s', buffer_acc_pass->ptr);
 #endif
 
 		buffer_urldecode_path(buffer_acc_pass);

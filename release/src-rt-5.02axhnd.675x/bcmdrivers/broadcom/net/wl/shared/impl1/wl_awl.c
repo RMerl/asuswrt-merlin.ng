@@ -313,6 +313,7 @@ char wl_awl_rx_mode_str_g[][8] = {
  * =============================================================================
  */
 extern void BCMFASTPATH wlc_recv(wlc_info_t *wlc, void *p);
+extern void BCMFASTPATH wl_sendup(wl_info_t *wl, wl_if_t *wlif, void *p, int numpkt);
 
 /**
  * =============================================================================
@@ -441,6 +442,12 @@ wl_awl_rx_sendup(struct wl_info *wl, struct sk_buff *skb)
 
 	if (!skb->dev)
 		return -1;
+
+	if (skb->dev->reg_state != NETREG_REGISTERED) {
+		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
+			skb->dev->reg_state);
+		return -1;
+	}
 
 	if (skb->dev->reg_state != NETREG_REGISTERED) {
 		printk("%s: invalid dev(%s) reg_state %d\n", __FUNCTION__, skb->dev->name,
@@ -578,16 +585,9 @@ wl_awl_rx_process_intrabss(struct wl_info *wl, struct sk_buff *skb)
 	}
 
 	if (intrabss == TRUE) {
-	    wlc_bsscfg_t * bsscfg = wlc_bsscfg_find_by_wlcif(wl->wlc, wlif->wlcif);
-
-	    /* Clear pkttag information saved in recv path */
-	    WLPKTTAGCLEAR(skb);
-/* To be enabled if next flow to be done through FC instead of directly */
-//#if defined(BCM_BLOG) && !defined(WL_AWL_FILTER_INTRABSS)
-//	    wl_handle_blog_emit(wl, wlif, skb, net);
-//#endif /* BCM_BLOG && !WL_AWL_FILTER_INTRABSS */
-
-	    wlc_sendpkt(wl->wlc, skb, bsscfg->wlcif);
+	    if (wl_intrabss_forward(wl, skb->dev, skb) == FALSE) {
+	        wl_sendup(wl, wlif, skb, 1);
+	    }
 	    return BCME_OK;
 	}
 

@@ -49,20 +49,14 @@ if(band5g_support){
 		return false;
 	})();
 	wl_info['1'].bw_160_support = (function(){
-		if(based_modelid == 'RT-AX92U'|| based_modelid == 'RT-AX95Q' || based_modelid == 'RT-AX56U'){
-			return false;
+		var count = 0;
+		for(i=0;i<_chanspecs_5g.length;i++){
+			if(_chanspecs_5g[i].indexOf('/160') != -1){
+				count++;
+			}
 		}
-		else if(based_modelid == 'GT-AC2900'){
-			return (country == 'JP') ? false : true;
-		}
-		else if(based_modelid == 'RT-AX58U' || based_modelid == 'TUF-AX3000' || based_modelid == "RT-AX82U"){		// special case, added temporary
-			 return (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1) ? true : false;
-		}
-		else if(band5g_11ax_support){
-			return true;
-		}
-
-		return false;
+		
+		return (count != 0) ? true : false;
 	})();
 }
 
@@ -111,7 +105,14 @@ if(wl_info.band5g_2_support){
 		return false;
 	})();
 	wl_info['2'].bw_160_support = (function(){
-		return band5g_11ax_support ? true : false;
+		var count = 0;
+		for(i=0;i<_chanspecs_5g_2.length;i++){
+			if(_chanspecs_5g_2[i].indexOf('/160') != -1){
+				count++;
+			}
+		}
+		
+		return (count != 0) ? true : false;
 	})();
 
 

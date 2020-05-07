@@ -552,26 +552,26 @@ function addWhitelist(){
 	var _url = $("#newDomain").val();
 	$('#domainErrMessage').hide();
 	if(_url == ''){
-		$('#domainErrMessage').html('The domain name can not be blank');
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_blank#>');
 		$('#domainErrMessage').show();
 		return false;
 	}
 
 	if(!validator.domainName_flag(_url) && !validator.ipv4_addr(_url)){
-		$('#domainErrMessage').html('wrong domain name / IPv4 address format');
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_wrong_format#>');
 		$('#domainErrMessage').show();
 		return false;
 	}
 
 	if(whitelist.data.length >= 64){
-		$('#domainErrMessage').html('The whitelist is reaching maximum, the maximum size is 64');
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_full#>');
 		$('#domainErrMessage').show();
 		return false;
 	}
 
 	for(i=0;i<whitelist.data.length;i++){
 		if(_url == whitelist.data[i]){
-			$('#domainErrMessage').html('The domain name is already in the whitelist');
+			$('#domainErrMessage').html('<#AiProtection_ErrMsg_duplicate#>');
 			$('#domainErrMessage').show();
 			return false;
 		}
@@ -712,11 +712,11 @@ function quickAdd(value){
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <div id="erase_confirm" class="confirm">
-	<div style="margin: 16px 24px;font-size:24px;"><span id="model_name"></span> says</div>
-	<div style="margin: 16px 24px;font-size:16px;">Are you sure want to permanently delete events.</div>
+	<div style="margin: 16px 24px;font-size:24px;"><span id="model_name"></span> : </div>
+	<div style="margin: 16px 24px;font-size:16px;"><#AiProtection_event_del_confirm#></div>
 	<div style="display:flex;justify-content: flex-end;margin: 36px 24px;">
-		<div class="confirm-button" onclick="hideConfirm();">Cancel</div>
-		<div class="confirm-button" onclick="eraseDatabase();">OK</div>
+		<div class="confirm-button" onclick="hideConfirm();"><#CTL_Cancel#></div>
+		<div class="confirm-button" onclick="eraseDatabase();"><#CTL_ok#></div>
 	</div>
 </div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
@@ -845,12 +845,12 @@ function quickAdd(value){
 											</div>
 											<div id="whitelistField" style="position: absolute;width:600px;height:650px;background-color: rgba(47,62,68,1);margin:-350px 0 0 35px;z-index:30;padding: 32px 24px 24px 24px;display:none;">
 												<div style="display:flex;justify-content: space-between;align-items: center;">
-													<div style="font-size: 24px;">Whitelist</div>
+													<div style="font-size: 24px;"><#WhitelList#></div>
 													<div onclick="hideWhitelistField();"><img src="images/New_ui/icon_close.svg" alt="" style="width:32px;height:32px;cursor:pointer;"></div>
 												</div>
-												<div style="color: #CCCCCC;font-size: 16px;margin: 12px 0 24px 0;">Add a domain you trust and unlock it with AiProtection</div>
+												<div style="color: #CCCCCC;font-size: 16px;margin: 12px 0 24px 0;"><#AiProtection_sites_trust#></div>
 												<div>
-													<div style="font-size: 14px;padding: 0 0 2px 4px;">Add domain to whitelist</div>
+													<div style="font-size: 14px;padding: 0 0 2px 4px;"><#AiProtection_sites_trust_add#></div>
 													<div>
 														<input id="newDomain" style="font-size: 14px;" type="text" maxlength="32" size="22" class="input_32_table" autocomplete="off" autocorrect="off" autocapitalize="off">
 														<ul id="query_list" class="query_list"></ul>						
@@ -862,8 +862,8 @@ function quickAdd(value){
 												</div>
 												<div style="width:100%;" class="line_horizontal"></div>
 												<div style="margin-top:24px;">
-													<span style="font-size: 24px;padding-right:12px;">My whitelist</span>
-													<span style="font-size: 14px;">Count: <b id="list_count">0</b> (<#List_limit#>&nbsp;64)</span>
+													<span style="font-size: 24px;padding-right:12px;"><#WhitelList#></span>
+													<span style="font-size: 14px;"><#NetworkTools_Count#>: <b id="list_count">0</b> (<#List_limit#>&nbsp;64)</span>
 												</div>
 												<div id="whitelistTable" style="overflow: auto;height:420px;"></div>
 											</div>
@@ -883,7 +883,7 @@ function quickAdd(value){
 											</div>
 										</div>
 									</div>
-									<div style="width:135px;height:55px;margin: 10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
+									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 								</td>
 							</tr>
 							</tbody>	

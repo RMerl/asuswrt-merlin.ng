@@ -1,8 +1,6 @@
 #!/bin/sh
 
-wget_timeout=`nvram get apps_wget_timeout`
-#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30 --no-check-certificate"
 
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
 dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
@@ -14,12 +12,15 @@ nvram set webs_state_flag=0   # 0: Do not do upgrade  1: New firmeware available
 nvram set webs_state_error=0
 nvram set webs_state_odm=0
 nvram set webs_state_url=""
+nvram set webs_state_info=""
+nvram set webs_state_REQinfo=""
 
-#openssl support rsa check
+#nt_center
 IS_SUPPORT_NOTIFICATION_CENTER=`nvram get rc_support|grep -i nt_center`
 if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
 . /tmp/nc/event.conf
 fi
+
 #support FORCE_AUTO_UPGRADE
 IS_FUPGRADE=`nvram get rc_support|grep -i fupgrade`
 # current firmware information
@@ -35,6 +36,10 @@ current_extendno=`echo $current_extendno | sed s/-g.*//;`
 
 # get firmware information
 forsq=`nvram get apps_sq`
+if [ -z "$forsq" ]; then
+	forsq=0
+fi
+
 model=`nvram get productid`
 model="$model#"
 odmpid=`nvram get odmpid`
@@ -49,43 +54,40 @@ elif [ "$model" == "RT-AX92U#" ] || [ "$model" == "RT-N11P_B1#" ]; then
 	model_30="1"	#Use another info after middle firmware
 fi
 
-dlinfo=""
+echo "---- To download control file, Start ----" > /tmp/webs_upgrade.log
+
+dlinfo=0
 if [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
-		echo "---- update SQ beta_user ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip ----" > /tmp/webs_upgrade.log
-		wget $wget_options ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip -O /tmp/wlan_update.txt
-		dlinfo="$?"
-		echo "---- [LiveUpdate] wget ctrl: ${dlinfo} ----"
+	echo "---- update SQ beta_user ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip ----" >> /tmp/webs_upgrade.log
+	wget $wget_options ${dl_path_SQ_beta}${forsq}/wlan_update_beta${forsq}.zip -O /tmp/wlan_update.txt
 elif [ "$forsq" == "1" ]; then
 	if [ "$model_31" == "1" ]; then
-		echo "---- update SQ for model_31 ${dl_path_SQ}/wlan_update_31.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update SQ for model_31 ${dl_path_SQ}/wlan_update_31.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ}/wlan_update_31.zip -O /tmp/wlan_update.txt
 	elif [ "$model_30" == "1" ]; then
-		echo "---- update SQ for model_30 ${dl_path_SQ}/wlan_update_30.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update SQ for model_30 ${dl_path_SQ}/wlan_update_30.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ}/wlan_update_30.zip -O /tmp/wlan_update.txt
 	else
-		echo "---- update SQ for general ${dl_path_SQ}/wlan_update_v2.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update SQ for general ${dl_path_SQ}/wlan_update_v2.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ}/wlan_update_v2.zip -O /tmp/wlan_update.txt
 	fi
-	dlinfo="$?"
-	echo "---- [LiveUpdate] wget ctrl: ${dlinfo} ----"
 else
 	if [ "$model_31" == "1" ]; then
-		echo "---- update dl_path_info for model_31 ${dl_path_info}/wlan_update_31.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update dl_path_info for model_31 ${dl_path_info}/wlan_update_31.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_info}/wlan_update_31.zip -O /tmp/wlan_update.txt
 	elif [ "$model_30" == "1" ]; then
-		echo "---- update dl_path_info for model_30  ${dl_path_info}/wlan_update_30.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update dl_path_info for model_30  ${dl_path_info}/wlan_update_30.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_info}/wlan_update_30.zip -O /tmp/wlan_update.txt
 	else
-		echo "---- update dl_path_info for general ${dl_path_info}/wlan_update_v2.zip ----" > /tmp/webs_upgrade.log
+		echo "---- update dl_path_info for general ${dl_path_info}/wlan_update_v2.zip ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_info}/wlan_update_v2.zip -O /tmp/wlan_update.txt
 	fi
-	dlinfo="$?"
-	echo "---- [LiveUpdate] wget ctrl: ${dlinfo} ----"
 fi	
+dlinfo=$?
+echo "---- [LiveUpdate] wget ctrl file, exit code: ${dlinfo} ----" >> /tmp/webs_upgrade.log
 
 if [ "$dlinfo" != "0" ]; then
-	echo "---- download ctrl failure : $dlinfo ----" >> /tmp/webs_upgrade.log
-    echo "---- [LiveUpdate] download ctrl failure : $dlinfo ----"
+	echo "---- download ctrl failure ----" >> /tmp/webs_upgrade.log
 	nvram set webs_state_error=1
 else
 	# parse latest information
@@ -146,6 +148,7 @@ else
 		REQbuildno="$REQbuildno_odmpid"
 		REQlextendno="$REQlextendno_odmpid"
 		nvram set webs_state_odm=1		# with Live Update odmpid sku
+		echo "---- webs_state_odm=${webs_state_odm} ----" >> /tmp/webs_upgrade.log
 	fi
 
 	urlpath=`grep $model /tmp/wlan_update.txt | sed s/.*#URL//;`
@@ -170,86 +173,87 @@ echo "---- productid : $firmver $buildno $lextendno ----" >> /tmp/webs_upgrade.l
 echo "---- REQodmpid : $REQfirmver_odmpid $REQbuildno_odmpid $REQlextendno_odmpid ----" >> /tmp/webs_upgrade.log
 echo "---- REQproductid : $REQfirmver $REQbuildno $REQlextendno ----" >> /tmp/webs_upgrade.log
 
-
 update_webs_state_info=`nvram get webs_state_info`
 last_webs_state_info=`nvram get webs_last_info` 
 if [ "$firmver" == "" ] || [ "$buildno" == "" ] || [ "$lextendno" == "" ]; then
 	nvram set webs_state_error=1	# exist no Info
 else
-	if [ "$IS_FUPGRADE" != "" ]; then
-		if [ "$current_buildno" -lt "$REQbuildno" ]; then
-    	   	nvram set webs_state_flag=2 # Do force Upgrade
-			echo "---- < REQbuildno ----" >> /tmp/webs_upgrade.log
-			echo "---- [LiveUpdate] < REQbuildno ----"
-			if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
-				if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
-        	   	    Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
-					nvram set webs_last_info="$update_webs_state_info"
-	   	        fi
-			fi
-		elif [ "$current_buildno" -eq "$REQbuildno" ]; then
-			if [ "$current_firm" -lt "$REQfirmver" ]; then
-				nvram set webs_state_flag=2 # Do Force Upgrade
-				echo "---- < REQfirmver ----" >> /tmp/webs_upgrade.log
-				echo "---- [LiveUpdate] < REQfirmver ----"
+	if [ -n "$IS_FUPGRADE" ]; then
+		if [ -n "$REQbuildno" ] && [ -n "$REQfirmver" ] && [ -n "$REQlextendno" ]; then
+			if [ "$current_buildno" -lt "$REQbuildno" ]; then
+	    	   	nvram set webs_state_flag=2 # Do force Upgrade
+				echo "---- < REQbuildno ----" >> /tmp/webs_upgrade.log
 				if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
 					if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
-						Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
+	        	   	    Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
 						nvram set webs_last_info="$update_webs_state_info"
-					fi
+		   	        fi
 				fi
-			elif [ "$current_firm" -eq "$REQfirmver" ]; then
-				if [ "$current_extendno" -lt "$REQlextendno" ]; then
+			elif [ "$current_buildno" -eq "$REQbuildno" ]; then
+				if [ "$current_firm" -lt "$REQfirmver" ]; then
 					nvram set webs_state_flag=2 # Do Force Upgrade
-					echo "---- < REQlextendno ----" >> /tmp/webs_upgrade.log
-					echo "---- [LiveUpdate] < REQlextendno ----"
+					echo "---- < REQfirmver ----" >> /tmp/webs_upgrade.log
 					if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
 						if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
 							Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
 							nvram set webs_last_info="$update_webs_state_info"
 						fi
 					fi
+				elif [ "$current_firm" -eq "$REQfirmver" ]; then
+					if [ "$current_extendno" -lt "$REQlextendno" ]; then
+						nvram set webs_state_flag=2 # Do Force Upgrade
+						echo "---- < REQlextendno ----" >> /tmp/webs_upgrade.log
+						if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
+							if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
+								Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
+								nvram set webs_last_info="$update_webs_state_info"
+							fi
+						fi
+					fi
 				fi
 			fi
+		else
+			echo "---- Can't compare REQFW ----" >> /tmp/webs_upgrade.log
 		fi
 	fi	
 
 	tmp_webs_state_flag=`nvram get webs_state_flag`
 	if [ "$tmp_webs_state_flag" == "0" ]; then	##compare to webs_state_info, because DUT fwv > webs_state_REQinfo
-		if [ "$current_buildno" -lt "$buildno" ]; then
-			nvram set webs_state_flag=1 # Do upgrade
-			echo "---- < buildno ----" >> /tmp/webs_upgrade.log
-			echo "---- [LiveUpdate] < buildno ----"
-			if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
-				if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
-					Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
-					nvram set webs_last_info="$update_webs_state_info"
-				fi
-			fi
-		elif [ "$current_buildno" -eq "$buildno" ]; then
-			if [ "$current_firm" -lt "$firmver" ]; then
+		if [ -n "$buildno" ] && [ -n "$firmver" ] && [ -n "$lextendno" ]; then
+			if [ "$current_buildno" -lt "$buildno" ]; then
 				nvram set webs_state_flag=1 # Do upgrade
-				echo "---- < firmver ----" >> /tmp/webs_upgrade.log
-				echo "---- [LiveUpdate] < firmver ----"
+				echo "---- < buildno ----" >> /tmp/webs_upgrade.log
 				if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
 					if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
 						Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
 						nvram set webs_last_info="$update_webs_state_info"
 					fi
 				fi
-			elif [ "$current_firm" -eq "$firmver" ]; then
-				if [ "$current_extendno" -lt "$lextendno" ]; then
+			elif [ "$current_buildno" -eq "$buildno" ]; then
+				if [ "$current_firm" -lt "$firmver" ]; then
 					nvram set webs_state_flag=1 # Do upgrade
-					echo "---- < lextendno ----" >> /tmp/webs_upgrade.log
-					echo "---- [LiveUpdate] < lextendno ----"
+					echo "---- < firmver ----" >> /tmp/webs_upgrade.log
 					if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
 						if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
 							Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
 							nvram set webs_last_info="$update_webs_state_info"
 						fi
 					fi
+				elif [ "$current_firm" -eq "$firmver" ]; then
+					if [ "$current_extendno" -lt "$lextendno" ]; then
+						nvram set webs_state_flag=1 # Do upgrade
+						echo "---- < lextendno ----" >> /tmp/webs_upgrade.log
+						if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
+							if [ "$last_webs_state_info" != "$update_webs_state_info" ]; then
+								Notify_Event2NC "$SYS_FW_NWE_VERSION_AVAILABLE_EVENT" "{\"fw_ver\":\"$update_webs_state_info\"}"    #Send Event to Notification Center
+								nvram set webs_last_info="$update_webs_state_info"
+							fi
+						fi
+					fi
 				fi
 			fi
+		else
+			echo "---- Can't compare FW ----" >> /tmp/webs_upgrade.log
 		fi
 	fi
 
@@ -268,39 +272,42 @@ releasenote_file0=`echo $get_productid`_`nvram get webs_state_info`_"$LANG"_note
 releasenote_file0_US=`echo $get_productid`_`nvram get webs_state_info`_US_note.zip
 releasenote_path0="/tmp/release_note0.txt"
 
+dlinfo2=""
+dlinfo3=""
 if [ "$forsq" -ge 2 ] && [ "$forsq" -le 9 ]; then
 	echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file0 -O $releasenote_path0
-	if [ "$?" != "0" ]; then
+	dlinfo2=$?
+	echo "---- [LiveUpdate] wget pLang release note, exit code: ${dlinfo2} ----" >> /tmp/webs_upgrade.log
+	if [ "$dlinfo2" != "0" ]; then
 		echo "---- download SQ beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			echo "---- download SQ US beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
-			echo "---- download SQ US beta_user release note ${dl_path_SQ_beta}${forsq}/$releasenote_file0_US  [Failed] ----"
-		fi
+		dlinfo3=$?
+		echo "---- [LiveUpdate] wget US release note, exit code: ${dlinfo3} ----" >> /tmp/webs_upgrade.log
 	fi
 elif [ "$forsq" == "1" ]; then
 	echo "---- download SQ release note ${dl_path_SQ}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_SQ}/$releasenote_file0 -O $releasenote_path0
-	if [ "$?" != "0" ]; then
+	dlinfo2=$?
+	echo "---- [LiveUpdate] wget pLang release note, exit code: ${dlinfo2} ----" >> /tmp/webs_upgrade.log
+	if [ "$dlinfo2" != "0" ]; then
 		echo "---- download SQ release note ${dl_path_SQ}/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_SQ}/$releasenote_file0_US -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			echo "---- download SQ US release note ${dl_path_SQ}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
-			echo "---- download SQ US release note ${dl_path_SQ}/$releasenote_file0_US  [Failed] ----"
-		fi
+		dlinfo3=$?
+		echo "---- [LiveUpdate] wget US release note, exit code: ${dlinfo3} ----" >> /tmp/webs_upgrade.log
 	fi
 else
 	echo "---- download real release note ${dl_path_file}/$releasenote_file0 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_file}/$releasenote_file0 -O $releasenote_path0
-	if [ "$?" != "0" ]; then
+	dlinfo2=$?
+	echo "---- [LiveUpdate] wget pLang release note, exit code: ${dlinfo2} ----" >> /tmp/webs_upgrade.log
+	if [ "$dlinfo2" != "0" ]; then
 		echo "---- download real release note ${dl_path_file}/$releasenote_file0_US ----" >> /tmp/webs_upgrade.log
 		wget $wget_options ${dl_path_file}/$releasenote_file0_US -O $releasenote_path0
-		if [ "$?" != "0" ]; then
-			echo "---- download real US release note ${dl_path_file}/$releasenote_file0_US  [Failed] ----" >> /tmp/webs_upgrade.log
-			echo "---- download real US release note ${dl_path_file}/$releasenote_file0_US  [Failed] ----"
-		fi
+		dlinfo3=$?
+		echo "---- [LiveUpdate] wget US release note, exit code: ${dlinfo3} ----" >> /tmp/webs_upgrade.log
 	fi
 fi
 
+echo "---- To download control file, End ----" >> /tmp/webs_upgrade.log
 nvram set webs_state_update=1

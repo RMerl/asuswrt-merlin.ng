@@ -362,6 +362,7 @@ extern char *link_wan_nvname(int unit, char *buf, int size);
 extern int is_internet_connect(int unit);
 extern int is_wan_connect(int unit);
 extern int is_phy_connect(int unit);
+extern int is_phy_connect2(int unit);
 extern int is_ip_conflict(int unit);
 extern int get_wan_unit(char *ifname);
 extern char *get_wan_ifname(int unit);

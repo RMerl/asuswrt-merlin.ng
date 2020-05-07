@@ -149,6 +149,9 @@ enum{
 	INDEX_BANDWIDTH_MONITOR
 };
 
+//dpi.c
+extern int check_tdts_module_exist();
+
 //wrs.c
 void free_id_list(cid_s **target_list);
 cid_s *get_id_list(cid_s **target_list, char *target_string);

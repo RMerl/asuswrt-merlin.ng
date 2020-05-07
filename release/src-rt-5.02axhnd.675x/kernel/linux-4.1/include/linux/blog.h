@@ -798,7 +798,6 @@ typedef enum {
     BLOG_DECL(blog_skip_reason_ct_tcp_state_not_est)
     BLOG_DECL(blog_skip_reason_ct_tcp_state_ignore)
     BLOG_DECL(blog_skip_reason_ct_status_donot_blog)
-    BLOG_DECL(blog_skip_reason_nf_xt_mark)
     BLOG_DECL(blog_skip_reason_nf_xt_skiplog)
     BLOG_DECL(blog_skip_reason_nf_ebt_skiplog)
     BLOG_DECL(blog_skip_reason_scrub_pkt)

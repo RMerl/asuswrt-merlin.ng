@@ -12956,7 +12956,7 @@ check_ddr_done:
 	}
 	else if (strcmp(script, "wrs_force") == 0)
 	{
-		if(action & RC_SERVICE_STOP) stop_dpi_engine_service(1);
+		if(action & RC_SERVICE_STOP) stop_dpi_engine_service(3);
 	}
 	else if (strcmp(script, "sig_check") == 0)
 	{
@@ -14659,9 +14659,12 @@ start_autodet(void)
 		return;
 	}
 
-	killall_tk("autodet");
+	// default, autodet will only be called by wanduck
+	if(!nvram_get_int("x_Setting"))
+		return;
 
-	_eval(autodet_argv, NULL, 0, &pid);
+	if(!pids("autodet"))
+		_eval(autodet_argv, NULL, 0, &pid);
 }
 
 void
@@ -14673,6 +14676,7 @@ stop_autodet(void)
 	}
 
 	killall_tk("autodet");
+	nvram_set("autodet_proceeding", "0");
 }
 
 // string = S20transmission -> return value = transmission.

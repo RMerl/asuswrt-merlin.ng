@@ -311,7 +311,7 @@ function showLoadingUpdate(){
 				if(parent.rog_support)
 					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -95px';
 				else
-					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '0 -95px';
+					parent.document.getElementById('iconUSBdisk_'+diskOrder).style.backgroundPosition = '1px -105px';
 				disk_scan_status();
 				return false;
 			}

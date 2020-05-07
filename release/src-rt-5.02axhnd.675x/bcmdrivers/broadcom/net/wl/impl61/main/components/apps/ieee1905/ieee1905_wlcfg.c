@@ -2180,6 +2180,9 @@ int i5WlcfgApAutoconfigurationRenewProcess(i5_message_type *pmsg, unsigned int f
         return -1;
     }
 
+    /* Set the agent configured NVRAM to 0, as it will do M1/M2 again */
+    nvram_set(I5_WLCFG_NVRAM_AGENT_CONFIGURED, "0");
+
     time(&pdevice->active_time);
 
     /* make all the interface as not configured */

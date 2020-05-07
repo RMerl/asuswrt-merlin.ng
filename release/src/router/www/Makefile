@@ -401,8 +401,12 @@ ifneq ($(RTCONFIG_BWDPI)$(RTCONFIG_BWDPI_DEP),y)
 	rm -rf $(INSTALLDIR)/www/AiProtection_HomeProtection.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_WebProtector.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_InfectedDevicePreventBlock.asp
+	rm -rf $(INSTALLDIR)/www/AiProtection_InfectedDevicePreventBlock_m.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_IntrusionPreventionSystem.asp
+	rm -rf $(INSTALLDIR)/www/AiProtection_IntrusionPreventionSystem_m.asp
 	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking.asp
+	rm -rf $(INSTALLDIR)/www/AiProtection_MaliciousSitesBlocking_m.asp
+	rm -rf $(INSTALLDIR)/www/css/adaptive_mobile.css
 	rm -rf $(INSTALLDIR)/www/images/New_ui/QoS_quick
 	rm -rf $(INSTALLDIR)/www/images/New_ui/infected.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/IPS.svg
@@ -443,7 +447,7 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/AiProtection_03.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/Home_Protection_Scenario.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_power.png
+	rm -rf $(INSTALLDIR)/www/images/New_ui/TrendMirco_logo.svg
 	rm -rf $(INSTALLDIR)/www/images/New_ui/tm_logo_1.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/app_icons
 ifneq ($(RTCONFIG_ROG_UI),y)

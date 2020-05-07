@@ -711,8 +711,10 @@ void set_dpsta_ifnames();
 #ifdef RTAC86U
 extern void hnd_cfe_check();
 #endif
-#ifdef RTCONFIG_HND_ROUTER_AX
+#ifdef HND_ROUTER
 extern void dump_WlGetDriverStats(int fb, int count);
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
 extern void dfs_cac_check(void);
 #endif
 #endif
@@ -1169,6 +1171,8 @@ extern int usbled_main(int argc, char *argv[]);
 extern int phy_tempsense_main(int argc, char *argv[]);
 #endif
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+// arp.c
+extern int send_arpreq(void);
 // psta_monitor.c
 extern int psta_monitor_main(int argc, char *argv[]);
 #endif
@@ -1394,6 +1398,7 @@ extern int vpnc_set_dev_policy_rule();
 // ovpn.c
 extern int ovpn_up_main(int argc, char **argv);
 extern int ovpn_down_main(int argc, char **argv);
+extern int ovpn_route_up_main(int argc, char **argv);
 
 // openvpn.c
 #ifdef RTCONFIG_OPENVPN

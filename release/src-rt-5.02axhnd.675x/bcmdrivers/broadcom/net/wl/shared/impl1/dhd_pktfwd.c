@@ -1578,6 +1578,9 @@ _dhd_pktfwd_mcasthandler(uint32_t radio_idx, uint16_t ifidx, pNBuff_t * pNBuf)
 
     dhd_pub = g_dhd_info[radio_idx];
 
+    if(dhd_idx2net(dhd_pub,ifidx)==NULL)
+       goto dhd_pktfwd_mcasthandler_free;
+
 #if defined(BCM_NBUFF_WLMCAST)
     if (PKTATTACHTAG(dhd_pub->osh,  pNBuf)) {
         PKTFWD_ERROR("PKTTAG attach failed; dropping packet<%p>", pNBuf);
@@ -1637,8 +1640,6 @@ _dhd_pktfwd_mcasthandler(uint32_t radio_idx, uint16_t ifidx, pNBuff_t * pNBuf)
             dhd_pub->tx_packets_wfd_mcast++;
             goto dhd_pktfwd_mcasthandler_success;
         }
-    } else {
-        PKTFWD_ERROR("flowid_update error.; dropping pkt<%p>",pNBuf);
     }
 
 dhd_pktfwd_mcasthandler_free:
@@ -1699,6 +1700,10 @@ dhd_pktfwd_mcast_pktlist_xmit(
         while (ssid_vector)
         {
             ifidx = pktfwd_map_ssid_vector_to_ssid(&ssid_vector);
+#if !defined(BCM_AWL) && defined(BCM_WFD)
+            if(!wfd_dev_by_id_get(dhd_pktlist_context->unit,ifidx))
+                continue;
+#endif
             net_device = dhd_idx2net(dhd_pub, ifidx);
 
             PKTFWD_ASSERT(net_device != NULL);
@@ -2057,6 +2062,7 @@ dhd_pktfwd_pktqueue_add_pkt(dhd_pub_t * dhd_pub, struct net_device * net_device,
     D3LUT_LOCK(dhd_pktfwd->d3lut); // +++++++++++++++++++++++++++++++++++++++++
 
     d3lut_elem = d3lut_lkup(dhd_pktfwd->d3lut, d3_addr, D3LUT_LKUP_GLOBAL_POOL);
+    prio       = PKTPRIO(pkt);
 
     if ( likely(d3lut_elem != D3LUT_ELEM_NULL) &&
          (eh->ether_type != hton16(ETHER_TYPE_8021Q)))
@@ -2065,7 +2071,6 @@ dhd_pktfwd_pktqueue_add_pkt(dhd_pub_t * dhd_pub, struct net_device * net_device,
         d3domain = d3lut_elem->key.domain; /* WLAN to WLAN/LAN */
 
         /* Reset dhd FlowInf and set pktfwd FlowInf */
-        prio        = PKTPRIO(pkt);
         fkb->wl.u32 = 0U;
 
         pktfwd_key = PKTC_WFD_CHAIN_IDX(d3lut_elem->key.domain,
@@ -2121,13 +2126,11 @@ dhd_pktfwd_pktqueue_add_pkt_bypass:
 
     D3FWD_STATS_EXPR(
     {
-        uint16_t            prio;
         dhd_pktfwd_priv_t * dhd_pktfwd_priv;
         d3fwd_wlif_t      * d3fwd_wlif;
 
         dhd_pktfwd_priv = dhd_pktfwd_get_priv(net_device);
         d3fwd_wlif      = dhd_pktfwd_priv->d3fwd_wlif;
-        prio            = GET_WLAN_PRIORITY(PKTPRIO(pkt));
 
         D3FWD_STATS_ADD(d3fwd_wlif->stats[prio].rx_tot_pkts, 1);
 

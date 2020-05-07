@@ -274,6 +274,9 @@ extern int ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_cap_2g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_cap_5g(int eid, webs_t wp, int argc, char **argv);
 extern int ej_wl_cap_5g_2(int eid, webs_t wp, int argc, char **argv);
+extern int ej_wl_chipnum_2g(int eid, webs_t wp, int argc, char **argv);
+extern int ej_wl_chipnum_5g(int eid, webs_t wp, int argc, char **argv);
+extern int ej_wl_chipnum_5g_2(int eid, webs_t wp, int argc, char **argv);
 #endif
 extern int ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv);
 #ifdef RTCONFIG_PROXYSTA
@@ -334,6 +337,14 @@ static int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value);
 }while (0)
 */
 // 2008.08 magic }
+
+
+#ifndef RTAX58U		// Kludge - added in 384_8563
+int check_cmd_injection_blacklist(char *para)
+{
+	return (strchr(para, '`') != NULL);
+}
+#endif
 
 #include <sys/mman.h>
 typedef uint32_t __u32; //2008.08 magic
@@ -2632,6 +2643,9 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 					if(value)cprintf("%s:%d find %s value=%s\n",__FUNCTION__,__LINE__, tmp,value);
 					if(value&& strcmp(nvram_safe_get(tmp), value))
 					{
+						if(strstr(name, "maclist") && check_cmd_injection_blacklist(value))
+							continue;
+
 						nvram_check_and_set_for_prefix(name, tmp, value);
 						//nvram_set(tmp, value);
 						found = NVRAM_MODIFIED_BIT|NVRAM_MODIFIED_WL_BIT;
@@ -2649,6 +2663,9 @@ int validate_instance(webs_t wp, char *name, json_object *root)
 				if(check_user_agent(user_agent) == FROM_IFTTT || check_user_agent(user_agent) == FROM_ALEXA)
 					IFTTT_DEBUG("[HTTPD] nvram set %s = %s\n", tmp, value);
 #endif
+				if(strstr(name, "maclist") && check_cmd_injection_blacklist(value))
+					continue;
+
 				nvram_check_and_set_for_prefix(name, tmp, value);
 #ifdef RTCONFIG_LANTIQ
 				wave_app_flag = wave_handle_app_flag(tmp, wave_app_flag);
@@ -3077,6 +3094,9 @@ int validate_apply(webs_t wp, json_object *root) {
 #ifdef RTCONFIG_LANTIQ
 					wave_app_flag = wave_handle_app_flag(tmp, wave_app_flag);
 #endif
+					if(strstr(name, "maclist") && check_cmd_injection_blacklist(value))
+						continue;
+
 					nvram_set(tmp, value);
 					nvram_modified = 1;
 					nvram_modified_wl = 1;
@@ -3418,7 +3438,7 @@ int validate_apply(webs_t wp, json_object *root) {
 				}
 #endif
 				if( !strcmp(name, "PM_MY_EMAIL") || !strcmp(name, "PM_SMTP_AUTH_USER") || !strcmp(name, "fb_email")){
-					if (strchr(value, '`') != NULL)
+					if(check_cmd_injection_blacklist(value))
 						continue;
 				}
 #ifdef RTCONFIG_CFGSYNC
@@ -10632,7 +10652,11 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 #endif
 #elif defined(HND_ROUTER)
 			eval("ether-wake", "-i", "eth3", dstmac);
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+			eval("ether-wake", "-i", "eth2", dstmac);
+#else
 			eval("ether-wake", "-i", "eth4", dstmac);
+#endif
 #endif
 #endif
 			strncpy(SystemCmd, system_cmd, sizeof(SystemCmd));
@@ -11546,8 +11570,10 @@ wps_finish:
 		!strcmp(action_mode, "firmware_check")) {
 		char event_msg[64] = {0};
 
-		if (!strcmp(action_mode, "firmware_check"))
+		if (!strcmp(action_mode, "firmware_check")){
+			nvram_set("webs_update_trigger", "cfgsync_firmware_check");
 			snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_CHECK);
+		}
 		else if (!strcmp(action_mode, "firmware_upgrade"))
 			snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_UPGRADE);
 
@@ -11828,6 +11854,124 @@ do_lang_post(char *url, FILE *stream, int len, char *boundary)
 int upgrade_err;
 int stop_upgrade_once = 0;
 
+#ifdef RTCONFIG_PIPEFW
+#define BUFSIZ	4096
+static int
+sys_upgrade_bca(FILE *stream, int *total, char* boundary)
+{
+	char upload_fifo[] = "/tmp/uploadXXXXXX";
+#ifdef HND_ROUTER
+	char *write_argv[] = { "hnd-write", upload_fifo, NULL, NULL };
+#else
+	char *write_argv[] = { "mtd-write2", upload_fifo, NULL, NULL };
+#endif
+	FILE *fifo = NULL;
+	pid_t pid = getpid();
+	char *buf = NULL;
+	int count, ret = 0;
+	long flags = -1;
+	int boundary_len = ((boundary != NULL) ? strlen(boundary) : 0);
+
+	if (stream == NULL || total == NULL) {
+	  cprintf("*** Error(pid:%d): %s@%d Invalid arguments. Aborting.\n",
+		  pid, __FUNCTION__, __LINE__);
+	  ret = EINVAL;
+	  goto err;
+	}
+
+	/* Feed write from a temporary FIFO */
+	if (!mktemp(upload_fifo) ||
+	    mkfifo(upload_fifo, S_IRWXU) < 0||
+	    (ret = _eval(write_argv, NULL, 0, &pid)) ||
+	    !(fifo = fopen(upload_fifo, "w"))) {
+		cprintf("*** Error(pid:%d) %s@%d failed ret=%d\n",
+				pid, __FUNCTION__, __LINE__, ret);
+		if (!ret)
+			ret = errno;
+		goto err;
+	}
+
+	/* Set nonblock on the socket so we can timeout */
+	if ((flags = fcntl(fileno(stream), F_GETFL)) < 0 ||
+	    fcntl(fileno(stream), F_SETFL, flags | O_NONBLOCK) < 0) {
+		ret = errno;
+		cprintf("*** Error(pid:%d) %s@%d failed. %s\n",
+				pid, __FUNCTION__, __LINE__, strerror(errno));
+		goto err;
+	}
+
+	/*
+	 * Calculating actual image size. Get rid of "last boundary marker".
+	 * (*total) is the image size + size of "last boundary marker".
+	 * Subtracting the "last boundary marker" size from (*total).
+	 * 2 is len of "\r\n" in front of "last boundary marker".
+	 * 2 is "--" (two hyphens) that usually boundary markers start with.
+	 * 4 is len of "--\r\n" appears at the end of "last boundary marker".
+	 */
+	*total = *total - (2 + 2 + boundary_len + 4);
+
+	/* send actual image size to "write" process */
+	if ((count = safe_fwrite(total, 1, sizeof(*total), fifo)) != sizeof(*total)) {
+		cprintf("*** Error(pid:%d): %s@%d Failed to write %d bytes to pipe. Written bytes=%d\n",
+			pid, __FUNCTION__, __LINE__, sizeof(*total), count);
+		ret = EPIPE;
+		goto err;
+	}
+
+	if ((buf = malloc(BUFSIZ)) == NULL) {
+		ret = ENOMEM;
+		cprintf("*** Error(pid:%d): %s@%d malloc failed: %s\n",
+				pid, __FUNCTION__, __LINE__, strerror(errno));
+		goto err;
+	}
+
+	/* Read image from HTTP content and pipe it to the child process */
+	while (*total) {
+		int readlen = MIN(*total, BUFSIZ);
+
+		if (waitfor(fileno(stream), 5) < 0) {
+			cprintf("*** Error(pid:%d): %s@%d Bad stream: %s\n",
+				pid, __FUNCTION__, __LINE__, strerror(errno));
+			break;
+		}
+
+		count = safe_fread(buf, 1, readlen, stream);
+		if (!count && (ferror(stream) || feof(stream))) {
+			cprintf("*** Error(pid:%d): %s@%d Failed to read %d bytes from pipe.\n",
+				pid, __FUNCTION__, __LINE__, readlen);
+			break;
+		}
+
+		safe_fwrite(buf, 1, count, fifo);
+
+		*total -= count;
+	}
+	fclose(fifo);
+	fifo = NULL;
+
+	/* Wait for "write" process to terminate */
+	waitpid(pid, &ret, 0);
+
+	/* Reset nonblock on the socket */
+	if (fcntl(fileno(stream), F_SETFL, flags) < 0) {
+		cprintf("*** Error(pid:%d) %s@%d failed. %s\n",
+				pid, __FUNCTION__, __LINE__, strerror(errno));
+
+		ret = errno;
+		goto err;
+	}
+
+ err:
+	if (buf)
+		free(buf);
+	if (fifo)
+		fclose(fifo);
+	unlink(upload_fifo);
+
+	return ret;
+}
+#endif
+
 #ifdef RTAC68A
 static void
 do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
@@ -11854,6 +11998,11 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #ifndef RTCONFIG_SMALL_FW_UPDATE
 	struct sysinfo si;
 #endif
+#ifdef HND_ROUTER
+	int boundary_len = ((boundary != NULL) ? strlen(boundary) : 0);
+	int ex_len = 2 + 2 + boundary_len + 4;
+#endif
+
 	upgrade_err=1;
 	/* workaround to RAM disk space issue */
 	stop_upgrade_once = 0;
@@ -11907,8 +12056,6 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #define BYTE_TO_KB(b) ((b >> 10) + ((b & 0x2ff)?1:0))
 	free_caches(FREE_MEM_PAGE, 5, BYTE_TO_KB(len));
 
-	if (!(fifo = fopen(upload_fifo, "a+"))) goto err;
-
 #ifndef RTCONFIG_SMALL_FW_UPDATE
 	sysinfo(&si);
 	/* free memory should be 4 * TRX_size */
@@ -11919,22 +12066,20 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 		stop_upgrade_once = 1;
 	}
 #endif
-#ifdef HND_ROUTER
-	int boundary_len = ((boundary != NULL) ? strlen(boundary) : 0);
-	int ex_len = 2 + 2 + boundary_len + 4;
 
+#ifdef RTCONFIG_PIPEFW
+	sys_upgrade_bca(stream, &len, boundary);
+#ifdef HND_ROUTER
+	len += ex_len;
+#endif
+	upgrade_err = 0;
+
+#else	// RTCONFIG_PIPEFW
+
+	if (!(fifo = fopen(upload_fifo, "a+"))) goto err;
+#ifdef HND_ROUTER
 	len = len - ex_len;
 
-#if 0
-	if(!nvram_match("fakelive", "1")) {
-        	if ((count = safe_fwrite(&len, 1, sizeof(len), fifo)) != sizeof(len)) {
-                	_dprintf("*** Failed to write %d bytes. Written bytes=%d\n",
-                        	sizeof(len), count);
-                	goto err;
-        	}
-		nvram_set("uup", "1");
-	}
-#endif
 	_dprintf("\nfile len is %d\n", len);
 #endif
 	filelen = len;
@@ -12039,13 +12184,14 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 
 	if (upgrade_err) /* 0: legal image, 1: illegal image 2: new trx format validation failure */
 		goto err;
-
+#endif	// RTCONFIG_PIPEFW
 err:
 	nvram_set_int("upgrade_fw_status", FW_UPLOADING_ERROR);
 	if (fifo)
 		fclose(fifo);
 
 	/* Slurp anything remaining in the request */
+	_dprintf("\nslurp remaining %d bytes\n", len);
 	while (len-- > 0)
 		if((ch = fgetc(stream)) == EOF)
 			break;
@@ -14026,10 +14172,6 @@ static void GetWanStatus(char *state)
 			snprintf(prefix2, sizeof(prefix2), "autodet%d_", unit);
 
 		if (nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_NOLINK) {
-			if(nvram_get_int(strcat_r(prefix, "auxstate_t", tmp))==1) {
-				nvram_set("autodet_state", "0");
-				notify_rc_after_period_wait("start_autodet", 0);
-			}
 			wanstatus = BLE_WAN_STATUS_ALL_DISCONN;
 		}
 		else if (nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE
@@ -14550,13 +14692,11 @@ void do_get_timezone_cgi(char *url, FILE *stream){
 	json_object_put(res);
 }
 
-// 2010.09 James. {
 static char no_cache_IE7[] =
 "Cache-Control: no-cache, no-store, must-revalidate\r\n"
 "Pragma: no-cache\r\n"
 "Expires: 0"
 ;
-// 2010.09 James. }
 
 static char no_cache[] =
 "Cache-Control: no-cache, no-store, must-revalidate\r\n"
@@ -16559,7 +16699,7 @@ struct mime_handler mime_handlers[] = {
 	{ "ure_success.htm", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "ureip.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
 	{ "remote.asp", "text/html", no_cache_IE7, do_html_post_and_get, do_ej, NULL },
-	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL }, // 2010.09 James.
+	{ "js/jquery.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/ouiDB.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "js/chart.min.js", "text/javascript", cache_object, NULL, do_file, NULL },
 	{ "require/require.min.js", "text/javascript", no_cache_IE7, NULL, do_file, NULL },
@@ -19646,7 +19786,8 @@ int ej_UI_rs_status(int eid, webs_t wp, int argc, char **argv){
 	return 0;
 }
 
-#define WEBDEVINFO_VER 1 //log ej_webdavInfo
+#define WEBDEVINFO_VER 2 //log ej_webdavInfo
+/* lv2: add nvram odmpid, productid, extendno info */
 int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 
 	unsigned short ExtendCap=0;
@@ -19717,6 +19858,9 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 	websWrite(wp, "toAPPInfo=['%d'", WEBDEVINFO_VER);
 	websWrite(wp, ",'%u',", ExtendCap);
 	websWrite(wp, "'%s',", get_label_mac());
+	websWrite(wp, "'%s',", nvram_safe_get("odmpid"));
+	websWrite(wp, "'%s',", nvram_safe_get("productid"));
+	websWrite(wp, "'%s',", nvram_safe_get("extendno"));
 	websWrite(wp, "''];\n");
 
 	return 0;
@@ -19724,16 +19868,15 @@ int ej_webdavInfo(int eid, webs_t wp, int argc, char **argv) {
 //#endif
 #endif
 
-// 2010.09 James. {
 int start_autodet(int eid, webs_t wp, int argc, char **argv) {
 	if(strcmp(nvram_safe_get("autodet_proceeding"), "1")){
-		nvram_set("autodet_state", "");
 		notify_rc_after_period_wait("start_autodet", 0);
 	}
 	return 0;
 }
 
 int start_force_autodet(int eid, webs_t wp, int argc, char **argv) {
+	nvram_set("autodet_proceeding", "0");
         notify_rc_after_period_wait("start_autodet", 0);
         return 0;
 }
@@ -21453,8 +21596,7 @@ ej_check_wireless_encryption(int eid, webs_t wp, int argc, char **argv){
 		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		auth_mode = nvram_safe_get(strcat_r(prefix, "auth_mode_x", tmp));
-		if(!strcmp(auth_mode,"psk2") || !strcmp(auth_mode,"pskpsk2") || !strcmp(auth_mode,"wpa2") || !strcmp(auth_mode,"wpawpa2") ||
-		   !strcmp(auth_mode,"psk2sae") || !strcmp(auth_mode,"sae"))
+		if(!strcmp(auth_mode,"psk2") || !strcmp(auth_mode,"pskpsk2") || !strcmp(auth_mode,"sae") || !strcmp(auth_mode,"psk2sae") || !strcmp(auth_mode,"wpa2") || !strcmp(auth_mode,"wpawpa2"))
 			;
 		else
 			return websWrite(wp, "\"0\"");
@@ -24892,6 +25034,9 @@ struct ej_handler ej_handlers[] = {
 	{ "wl_cap_2g", ej_wl_cap_2g },
 	{ "wl_cap_5g", ej_wl_cap_5g },
 	{ "wl_cap_5g_2", ej_wl_cap_5g_2 },
+	{ "wl_chipnum_2g", ej_wl_chipnum_2g },
+	{ "wl_chipnum_5g", ej_wl_chipnum_5g },
+	{ "wl_chipnum_5g_2", ej_wl_chipnum_5g_2 },
 #endif
 	{ "nat_accel_status", ej_nat_accel_status },
 	{ "get_wl_channel_list_2g", ej_get_wl_channel_list_2g },

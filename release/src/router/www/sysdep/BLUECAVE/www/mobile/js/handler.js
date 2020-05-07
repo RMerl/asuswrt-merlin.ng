@@ -1031,20 +1031,8 @@ abort.wanType = function(){
 	}
 	else if(systemVariable.detwanResult.wanType == "CHECKING"){
 		systemVariable.manualWanSetup = false;
-
-		setTimeout(function(){
-			if(!isPage("waiting_page")) return false;
-
-			if(systemVariable.detwanResult.wanType == "" || systemVariable.detwanResult.wanType == "CHECKING"){
-				systemVariable.detwanResult = httpApi.detwanGetRet();
-				if(isPage("waiting_page")) setTimeout(arguments.callee, 1000);
-				return false;
-			}
-
-			if(!systemVariable.manualWanSetup) goTo.autoWan();	
-		}, 1000);
-
-		goTo.loadPage("waiting_page", true);	
+		goTo.loadPage("waiting_page", true);
+		goTo.Waiting();
 	}
 	else{
 		if(!systemVariable.forceChangePw)

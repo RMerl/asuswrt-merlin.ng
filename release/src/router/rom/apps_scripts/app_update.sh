@@ -23,9 +23,7 @@ case $f in
 		;;
 esac
 ASUS_SERVER=`nvram get apps_ipkg_server`
-wget_timeout=`nvram get apps_wget_timeout`
-#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30"
 
 APPS_PATH=/opt
 CONF_FILE=$APPS_PATH/etc/ipkg.conf

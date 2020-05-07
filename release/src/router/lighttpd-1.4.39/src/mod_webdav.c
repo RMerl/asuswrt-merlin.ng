@@ -3504,6 +3504,12 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "URL"))) {
 			buffer_url = ds->value;
+
+			if (buffer_url->used> 2048) {
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
+
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -3511,6 +3517,12 @@ propmatch_cleanup:
 		
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "FILENAME"))) {
 			buffer_filename = ds->value;
+
+			if (buffer_filename->used> 255) {
+				con->http_status = 400;
+				return HANDLER_FINISHED;
+			}
+
 		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
@@ -3544,9 +3556,9 @@ propmatch_cleanup:
 		}
 		
 		char auth[100]="\0";		
-		if(con->aidisk_username->used && con->aidisk_passwd->used)
+		if(con->aidisk_username->used && con->aidisk_passwd->used) {
 			snprintf(auth, sizeof(auth), "%s:%s", con->aidisk_username->ptr, con->aidisk_passwd->ptr);
-		else{
+		} else {
 			con->http_status = 400;
 			return HANDLER_FINISHED;
 		}
@@ -4256,28 +4268,97 @@ propmatch_cleanup:
 			parentid = ds->value;
 		}
 
-		//- Check paramter
-		if( (start!=NULL && !is_string_encode_as_integer(start->ptr)) || 
-			(end!=NULL && !is_string_encode_as_integer(end->ptr)) ||
-			(keyword!=NULL && keyword->used > 200 ) ||
-			(orderby!=NULL && orderby->used > 20 ) ||
-			(orderrule!=NULL && orderrule->used > 20 ) ||
-			(parentid!=NULL && parentid->used > 20 ) ){
-			
-			Cdbg(DBE, "NULL value 'sql_minidlna'!");
+		//- media_type : Avoid SQL injection!
+		if (!buffer_is_empty(media_type) &&
+			!buffer_is_equal_string(media_type, CONST_STR_LEN("0")) &&
+			!buffer_is_equal_string(media_type, CONST_STR_LEN("1")) &&
+			!buffer_is_equal_string(media_type, CONST_STR_LEN("2")) && 
+			!buffer_is_equal_string(media_type, CONST_STR_LEN("3"))){
+
+			Cdbg(DBE, "The paramter media_type is invalid!");
 			con->http_status = 207;
 			con->file_finished = 1;
 			return HANDLER_FINISHED;
 		}
 
-		//- Avoid SQL injection!
-		if( keyword!=NULL && strstr(keyword->ptr, "'")!=NULL) {			
-			Cdbg(DBE, "keyword is invalid!");
+		//- start : Avoid SQL injection!
+		if (!buffer_is_empty(start) && 
+		    !is_string_encode_as_integer(start->ptr) &&
+		    atoi(start->ptr) < 0) {
+
+			Cdbg(DBE, "The paramter start is invalid!");
 			con->http_status = 207;
 			con->file_finished = 1;
 			return HANDLER_FINISHED;
 		}
-		
+
+		//- end : Avoid SQL injection!
+		if (!buffer_is_empty(end) && 
+		    !is_string_encode_as_integer(end->ptr) &&
+		    atoi(end->ptr) < 0) {
+
+			Cdbg(DBE, "The paramter end is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
+		//- orderby : Avoid SQL injection!
+        if (!buffer_is_empty(orderby) && 
+		    !buffer_is_equal_caseless_string(orderby, CONST_STR_LEN("TIMESTAMP")) && 
+		    !buffer_is_equal_caseless_string(orderby, CONST_STR_LEN("TITLE")) && 
+			!buffer_is_equal_caseless_string(orderby, CONST_STR_LEN("SIZE"))) {
+			
+			Cdbg(DBE, "The paramter orderby is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
+		//- orderrule : Avoid SQL injection!
+		if (!buffer_is_empty(orderrule) &&
+			!buffer_is_equal_caseless_string(orderrule, CONST_STR_LEN("DESC")) &&
+		    !buffer_is_equal_caseless_string(orderrule, CONST_STR_LEN("ASC"))) {
+			
+			Cdbg(DBE, "The paramter orderrule is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+
+			return HANDLER_FINISHED;
+		}
+
+		//- parentid : Avoid SQL injection!
+		if (!buffer_is_empty(parentid) && 
+		    !is_string_encode_as_integer(parentid->ptr) &&
+		    atoi(parentid->ptr) < 0) {
+
+			Cdbg(DBE, "The paramter parentid is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
+		//- keyword : Avoid SQL injection!
+		if (!buffer_is_empty(keyword) && 
+		    (strstr(keyword->ptr, "'")!=NULL ||
+			keyword->used > 200)) {
+
+			Cdbg(DBE, "The paramter keyword is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
+		//- Check paramter
+		// if( (keyword!=NULL && keyword->used > 200 ) ||
+		// 	(parentid!=NULL && parentid->used > 20 ) ){
+			
+		// 	Cdbg(DBE, "NULL value 'sql_minidlna'!");
+		// 	con->http_status = 207;
+		// 	con->file_finished = 1;
+		// 	return HANDLER_FINISHED;
+		// }
+
 		get_minidlna_db_path(p);
 		
 		if (!buffer_is_empty(p->minidlna_db_file)) {			
@@ -4628,7 +4709,7 @@ propmatch_cleanup:
 		//- test
 		Cdbg(DBE, "------------------------------");
 
-		//- 專輯
+		//- Album
 		column_count = 4;
 		//sprintf(sql_query, "SELECT PATH, TITLE, ALBUM_ART, ARTIST from DETAILS where TITLE='- All Albums -'");				
 		sprintf(sql_query, "SELECT d.PATH as PATH, "
@@ -4651,7 +4732,7 @@ propmatch_cleanup:
 			sqlite3_free_table(result);
 		}
 		
-		//- 演唱者
+		//- singer
 		column_count = 4;
 		//sprintf(sql_query, "SELECT PATH, TITLE, ALBUM_ART, ARTIST from DETAILS where TITLE='- All Albums -'");				
 		sprintf(sql_query, "SELECT d.PATH as PATH, d.TITLE as TITLE, d.ALBUM_ART as ALBUM_ART, d.ARTIST as ARTIST from OBJECTS o "
@@ -4968,6 +5049,16 @@ propmatch_cleanup:
 			con->file_finished = 1;
 			return HANDLER_FINISHED;
 		}
+
+		if (!buffer_is_empty(play_id) &&
+		    !is_string_encode_as_integer(play_id->ptr) &&
+		    atoi(play_id->ptr) < 0) {
+			Cdbg(DBE, "The paramter play_id is invalid!");
+			con->http_status = 207;
+			con->file_finished = 1;
+			return HANDLER_FINISHED;
+		}
+
 #ifdef USE_MINIDLNA_DB
 		sqlite3 *sql_minidlna = NULL;
 		if (!buffer_is_empty(p->minidlna_db_file)) {			
@@ -5068,7 +5159,7 @@ propmatch_cleanup:
 										
 					Cdbg(DBE, "filename=%s, filepath=%s", buffer_filename->ptr, buffer_filepath->ptr);
 					
-					buffer* buffer_result_share_link;
+					buffer* buffer_result_share_link = NULL;
 					if( generate_sharelink(srv, 
 						                   con, 
 						                   buffer_filename->ptr, 
@@ -5079,6 +5170,9 @@ propmatch_cleanup:
 						Cdbg(DBE, "sharelink=%s", buffer_result_share_link->ptr);
 						buffer_append_string_buffer(b,buffer_result_share_link);
 						buffer_append_string_len(b,CONST_STR_LEN("</sharelink>"));					
+					}
+					else {
+						Cdbg(DBE, "fail to generate sharelink");
 					}
 
 					free(usbdisk_name);
@@ -5231,7 +5325,7 @@ propmatch_cleanup:
 
 				#if 0
 					#define BUF_LEN 256
-					//char utf[1024] = "我的測試字串";
+					//char utf[1024] = "My test string";
 					unsigned long uni2[BUF_LEN] = {
 				        0x8BF7, 0x4FDD, 0x8BC1, 0x8BE5, 0x6587, 0x4EF6, 0x662F, 0x4EE5,
 				        0x20, 0x75, 0x74, 0x66, 0x2D, 0x38, 0x20, 0x683C, 0x5F0F,
@@ -5305,7 +5399,7 @@ propmatch_cleanup:
 								
 								char utf2[BUF_LEN];
 								int utflen2 = BUF_LEN;
-								//char uni2[BUF_LEN] = "我的測試字串";
+								//char uni2[BUF_LEN] = "My test string";
 								/*
 								unsigned long uni2[BUF_LEN] = {
 								        0x8BF7, 0x4FDD, 0x8BC1, 0x8BE5, 0x6587, 0x4EF6, 0x662F, 0x4EE5,

@@ -74,6 +74,9 @@ else ifeq ($(BUILD_NAME), RT-AX58U)
 else ifeq ($(BUILD_NAME), RT-AX56U)
 	install icon.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtax56u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RT-AX68U)
+	install icon.rtax68u.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax68u.ico $(INSTALLDIR)/usr/sbin/icon.large.ico	
 else ifeq ($(BUILD_NAME),RT-AC1200G)
 	install icon.rtac1200g.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.rtac1200g.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

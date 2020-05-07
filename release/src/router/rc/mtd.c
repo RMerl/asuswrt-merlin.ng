@@ -1112,39 +1112,21 @@ bca_sys_upgrade(const char *path)
 		goto fail;
 	}
 
+#ifdef RTCONFIG_PIPEFW
 	/* HTTPD parent process supposed to send the image size. reading it. */
-#if 0
-	if (nvram_match("uup", "1")) {
-		r_count = safe_fread((void*)&imgsz, 1, sizeof(imgsz), fp);
-		if (r_count < sizeof(imgsz)) {
-			_dprintf("*** Error(pid:%d): %s@%d Pipe read failed. Expected:%d,read:%d. Aborting\n",
-				pid, __FUNCTION__, __LINE__, sizeof(imgsz), r_count);
-			ret = EPIPE;
-			goto fail;
-		}
-		nvram_set("uup", "0");
-		_dprintf("%s@%d(pid:%d): image size=%d.\n",
-			__FUNCTION__, __LINE__, pid, imgsz);
-	} else if ((spsz = atoi(nvram_safe_get("spsz")))) {
-		imgsz = spsz;
-		_dprintf("\nnonui update(spsz): imgsz is %d\n", imgsz);
-		nvram_set("spsz", "0");
-		nvram_set("fakelive", "0");
-	} else {	// liveupdate
-#else
-	{
-#endif
-#if 0
-		nvram_set("fakelive", "0");
-#endif
-		fseek(fp, 0, SEEK_END);
-
-		imgsz = ftell(fp);
-#if 0
-		_dprintf("\nnonui update: imgsz is %d\n", imgsz);
-#endif
-		fseek(fp, 0, SEEK_SET);
+	r_count = safe_fread((void*)&imgsz, 1, sizeof(imgsz), fp);
+	if (r_count < sizeof(imgsz)) {
+		_dprintf("*** Error(pid:%d): %s@%d Pipe read failed. Expected:%d,read:%d. Aborting\n",
+			pid, __FUNCTION__, __LINE__, sizeof(imgsz), r_count);
+		ret = EPIPE;
+		goto fail;
 	}
+	_dprintf("%s@%d(pid:%d): image size=%d.\n", __FUNCTION__, __LINE__, pid, imgsz);
+#else
+	fseek(fp, 0, SEEK_END);
+	imgsz = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+#endif
 
 	/* Initialize IMGIF context */
 	imgifHandle = imgif_open(parseImgHdr, NULL);

@@ -274,7 +274,7 @@ if [ ! -z "$2" ]; then
 else
     if [ ! -z $CPEROUTER ]; then
         if [ -f /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko ]; then
-            all_wlan_modules="cfg80211 hnd emf igs wl"
+            all_wlan_modules="cfg80211 hnd emf igs dpsta dhd wl"
         else
             all_wlan_modules="hnd emf igs wl"
         fi

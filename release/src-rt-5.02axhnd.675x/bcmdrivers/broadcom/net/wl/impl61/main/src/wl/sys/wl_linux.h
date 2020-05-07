@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wl_linux.h 776775 2019-07-09 10:59:34Z $
+ * $Id: wl_linux.h 779941 2019-10-10 17:12:37Z $
  */
 
 #ifndef _wl_linux_h_
@@ -54,16 +54,28 @@ typedef struct wl_timer {
 	char*	name; /**< Description of the timer */
 	uint32	ticks;	/**< how many timer timer fired */
 #endif // endif
+#ifdef WL_ALL_PASSIVE
+	atomic_t sched; /**< task is scheduled for this timer */
+#endif /* WL_ALL_PASSIVE */
 } wl_timer_t;
 
 /* contortion to call functions at safe time */
 /* In 2.6.20 kernels work functions get passed a pointer to the struct work, so things
  * will continue to work as long as the work structure is the first component of the task structure.
  */
+#define WL_TASKQ
 typedef struct wl_task {
 	struct work_struct work;
 	void *context;
+#ifdef WL_TASKQ
+	dll_t task_list;
+#endif /* WL_TASKQ */
 } wl_task_t;
+
+#ifdef WL_TASKQ
+#define WL_TASKQ_LOCK(_wl) spin_lock_bh(&(_wl)->taskq_lock)
+#define WL_TASKQ_UNLOCK(_wl) spin_unlock_bh(&(_wl)->taskq_lock)
+#endif /* WL_TASKQ */
 
 /* This becomes netdev->priv and is the link between netdev and wlif struct */
 typedef struct priv_link {
@@ -219,7 +231,10 @@ struct wl_info {
 	wl_task_t	wl_dpc_task;	/**< work queue for wl_dpc() */
 	bool		all_dispatch_mode;
 #endif /* WL_ALL_PASSIVE */
-
+#ifdef WL_TASKQ
+	wl_task_t	taskq;
+	spinlock_t	taskq_lock;
+#endif /* WL_TASKQ */
 #ifdef WL_THREAD
     struct task_struct      *thread;
     wait_queue_head_t       thread_wqh;
@@ -298,6 +313,9 @@ struct wl_info {
 #ifdef WL_CFG80211
 	struct wiphy *wiphy;
 #endif // endif
+#if defined(CONFIG_BCM_WLAN_DPDCTL)
+	char pciname[32];
+#endif /* CONFIG_BCM_WLAN_DPDCTL */
 };
 
 #if (defined(NAPI_POLL) && defined(WL_ALL_PASSIVE))

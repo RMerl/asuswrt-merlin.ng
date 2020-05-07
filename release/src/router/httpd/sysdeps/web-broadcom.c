@@ -50,11 +50,13 @@
 #include <wlc_types.h>
 #include <802.11ax.h>
 //#include <bcmwifi_rspec.h>
+#define WLC_MAXRATE	108
 #endif
 #include <wlutils.h>
 #include <linux/types.h>
 #include <wlscan.h>
 #include <sysinfo.h>
+#include <bcmdevs.h>
 #ifdef RTCONFIG_BCMWL6
 #include <dirent.h>
 #ifdef __CONFIG_DHDAP__
@@ -163,6 +165,9 @@ static bool g_swap = FALSE;
 #ifndef dtoh32
 #define dtoh32(i) (g_swap?bcmswap32(i):(uint32)(i))
 #endif
+#ifndef htodchanspec
+#define htodchanspec(i) (g_swap?htod16(i):i)
+#endif
 #ifndef dtohchanspec
 #define dtohchanspec(i) (g_swap?dtoh16(i):i)
 #endif
@@ -192,22 +197,44 @@ capmode2str(uint16 capability)
 		return "<unknown>";
 }
 #endif
+
 int
 dump_rateset(int eid, webs_t wp, int argc, char_t **argv, uint8 *rates, uint count)
 {
 	uint i;
 	uint r;
 	bool b;
+#ifdef RTCONFIG_HND_ROUTER_AX
+	bool sel = FALSE;	/* flag indicating BSS Membership Selector(s) */
+#endif
 	int retval = 0;
 
 	retval += websWrite(wp, "[ ");
 	for (i = 0; i < count; i++) {
 		r = rates[i] & 0x7f;
 		b = rates[i] & 0x80;
+#ifdef RTCONFIG_HND_ROUTER_AX
+		/* Assuming any "rate" above 54 Mbps is a BSS Membership Selector value */
+		if (r > WLC_MAXRATE) {
+			sel = TRUE;
+			continue;
+		}
+#endif
 		if (r == 0)
 			break;
 		retval += websWrite(wp, "%d%s%s ", (r / 2), (r % 2)?".5":"", b?"(b)":"");
 	}
+#ifdef RTCONFIG_HND_ROUTER_AX
+	/* Now print the BSS Membership Selector values (r standars for raw value) */
+	if (sel) {
+		for (i = 0; i < count && rates[i] != 0; i ++) {
+			if ((rates[i] & 0x7f) <= WLC_MAXRATE) {
+				continue;
+			}
+			retval += websWrite(wp, "%02X(r) ", rates[i]);
+		}
+	}
+#endif
 	retval += websWrite(wp, "]");
 
 	return retval;
@@ -1065,35 +1092,227 @@ wl_chspec_from_driver(chanspec_t chanspec)
 	return chanspec;
 }
 
+static chanspec_t
+wl_chspec_to_driver(chanspec_t chanspec)
+{
+	/*
+	if (ioctl_version == 1) {
+		chanspec = wl_chspec_to_legacy(chanspec);
+		if (chanspec == INVCHANSPEC) {
+			return chanspec;
+		}
+	}
+	*/
+	chanspec = htodchanspec(chanspec);
+
+	return chanspec;
+}
+
 #if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #define VHT_PROP_MCS_MAP_NONE	3
 #endif
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+static int
+wl_ext_cap_ie_dump(int eid, webs_t wp, int argc, char_t **argv, bcm_tlv_t* ext_cap_ie)
+{
+	int retval = 0;
+
+	retval += websWrite(wp, "Extended Capabilities: ");
+
+	if (ext_cap_ie->len >= CEIL(DOT11_EXT_CAP_IW, NBBY)) {
+		/* check IW bit */
+		if (isset(ext_cap_ie->data, DOT11_EXT_CAP_IW))
+			retval += websWrite(wp, "IW ");
+	}
+
+	if (ext_cap_ie->len >= CEIL(DOT11_EXT_CAP_CIVIC_LOC, NBBY)) {
+		/* check Civic Location bit */
+		if (isset(ext_cap_ie->data, DOT11_EXT_CAP_CIVIC_LOC))
+			retval += websWrite(wp, "Civic_Location ");
+	}
+
+	if (ext_cap_ie->len >= CEIL(DOT11_EXT_CAP_LCI, NBBY)) {
+		/* check Geospatial Location bit */
+		if (isset(ext_cap_ie->data, DOT11_EXT_CAP_LCI))
+			retval += websWrite(wp, "Geospatial_Location ");
+	}
+
+	if (ext_cap_ie->len > 0) {
+		/* check 20/40 BSS Coexistence Management support bit */
+		if (isset(ext_cap_ie->data, DOT11_EXT_CAP_OBSS_COEX_MGMT))
+			retval += websWrite(wp, "20/40_Bss_Coexist ");
+	}
+
+	if (ext_cap_ie->len >= CEIL(DOT11_EXT_CAP_BSSTRANS_MGMT, NBBY)) {
+		/* check BSS Transition Management support bit */
+		if (isset(ext_cap_ie->data, DOT11_EXT_CAP_BSSTRANS_MGMT))
+			retval += websWrite(wp, "BSS_Transition");
+	}
+
+	retval += websWrite(wp, "\n");
+
+	return retval;
+}
+
+static int
+wl_dump_ext_cap(int eid, webs_t wp, int argc, char_t **argv, uint8* cp, uint len)
+{
+	uint8 *parse = cp;
+	uint parse_len = len;
+	uint8 *ext_cap_ie;
+	int retval = 0;
+
+	if ((ext_cap_ie = wlu_parse_tlvs(parse, parse_len, DOT11_MNG_EXT_CAP_ID))) {
+		retval += wl_ext_cap_ie_dump(eid, wp, argc, argv, (bcm_tlv_t*)ext_cap_ie);
+	} else
+		retval += websWrite(wp, "Extended Capabilities: Not_Available\n");
+
+	return retval;
+}
+
+static int
+wl_print_hemcsnss(int eid, webs_t wp, int argc, char_t **argv, uint16 *mcsset)
+{
+	int i, nss;
+	static const char zero[sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX] = { 0 };
+	int retval = 0;
+
+	uint rx_mcs, tx_mcs;
+	char *rx_mcs_str, *tx_mcs_str, *bw_str;
+	uint16 he_txmcsmap, he_rxmcsmap;
+
+	if (mcsset == NULL || !memcmp(mcsset, zero, sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX)) {
+		return retval;
+	}
+
+	for (i = 0; i < 3; i++) {
+		if (i == 0) {
+			bw_str = "80 Mhz";
+		} else if (i == 1) {
+			bw_str = "160 Mhz";
+		} else {
+			bw_str = "80+80 Mhz";
+		}
+
+		/* get he bw80, bw160, bw80p80 tx mcs from mcsset[0], mcsset[2], and mcsset[4] */
+		he_txmcsmap = dtoh16(mcsset[i * 2]);
+		/* get he bw80, bw160, bw80p80 rx mcs from mcsset[1], mcsset[3], and mcsset[5] */
+		he_rxmcsmap = dtoh16(mcsset[(i * 2) + 1]);
+
+		for (nss = 1; nss <= HE_CAP_MCS_MAP_NSS_MAX; nss++) {
+			tx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_txmcsmap);
+			rx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_rxmcsmap);
+			tx_mcs_str =
+				(tx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11      " :
+				(tx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9       " :
+				(tx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7       " :
+					"---       ")));
+			rx_mcs_str =
+				(rx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11" :
+				(rx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9" :
+				(rx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7" :
+				"---")));
+			if ((tx_mcs != HE_CAP_MAX_MCS_NONE) ||
+				(rx_mcs != HE_CAP_MAX_MCS_NONE)) {
+				if (nss == 1)
+					retval += websWrite(wp, "\t    %s:\n", bw_str);
+				retval += websWrite(wp, "\t\tNSS%d Tx: %s  Rx: %s\n", nss,
+					tx_mcs_str, rx_mcs_str);
+			}
+		}
+	}
+
+	return retval;
+}
+
+/* vendor specific TLV match */
+static bool bcm_vs_ie_match(uint8 *ie, uint8 *oui, int oui_len, uint8 type)
+{
+	/* If the contents match the OUI and the type */
+	if (ie[TLV_LEN_OFF] >= oui_len + 1 &&
+	    !wlu_bcmp(&ie[TLV_BODY_OFF], oui, oui_len) &&
+	    type == ie[TLV_BODY_OFF + oui_len]) {
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+static bcm_tlv_t *bcm_find_vs_ie(uint8 *parse, int len,
+	uint8 *oui, uint8 oui_len, uint8 oui_type)
+{
+	bcm_tlv_t *ie;
+
+	while ((ie = bcm_parse_tlvs(parse, (int)len, DOT11_MNG_VS_ID))) {
+		if (bcm_vs_ie_match((uint8 *)ie, oui, oui_len, oui_type))
+			return ie;
+		if ((ie = bcm_next_tlv(ie, &len)) == NULL)
+			break;
+	}
+	return NULL;
+}
+
+static int bcm_print_vs_ie(webs_t wp, uint8 *parse, int len)
+{
+	bcm_tlv_t *ie;
+	int retval = 0;
+
+	while ((ie = bcm_parse_tlvs(parse, (int)len, DOT11_MNG_VS_ID))) {
+		int len_tmp = 0;
+		retval += websWrite(wp, "VS_IE:");
+		retval += websWrite(wp, "%02x%02x", ie->id, ie->len);
+		while (len_tmp < ie->len) {
+			retval += websWrite(wp, "%02x", ie->data[len_tmp]);
+			len_tmp++;
+		}
+		retval += websWrite(wp, "\n");
+
+		if ((parse = (uint8 *)bcm_next_tlv(ie, &len)) == NULL)
+			break;
+	}
+
+	return retval;
+}
+#endif
 #endif
 
 static int
-dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
+dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 {
 	char ssidbuf[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
-	wl_bss_info_107_t *old_bi;
-	wl_bss_info_v109_1_t *new_bi = (wl_bss_info_v109_1_t *) bi;
-#ifndef RTCONFIG_QTN
-	int mcs_idx = 0;
+#ifdef RTCONFIG_HND_ROUTER_AX
+	wl_bss_info_v109_1_t *bi;
+#else
+	wl_bss_info_t *bi;
 #endif
+	int mcs_idx = 0, start_idx = 0;
+	bool start_idx_valid = FALSE;
+	uint16 capability;
+	uint32 version;
+	uint32 length;
 	int retval = 0;
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+	bi = (wl_bss_info_v109_1_t*)bi_generic;
+#else
+	bi = (wl_bss_info_t*)bi_generic;
+#endif
+	version = dtoh32(bi->version);
+	length = dtoh32(bi->length);
+
 	/* Convert version 107 to 109 */
-	if (dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION) {
-		old_bi = (wl_bss_info_107_t *)bi;
-		bi->chanspec = CH20MHZ_CHSPEC(old_bi->channel);
-		bi->ie_length = old_bi->ie_length;
+	if (version == LEGACY_WL_BSS_INFO_VERSION) {
+		wl_bss_info_107_t *bi_v107 = (wl_bss_info_107_t *)bi_generic;
+		bi->chanspec = CH20MHZ_CHSPEC(bi_v107->channel);
+		bi->ie_length = bi_v107->ie_length;
 		bi->ie_offset = sizeof(wl_bss_info_107_t);
 #ifdef RTCONFIG_BCMWL6
 	} else {
 		/* do endian swap and format conversion for chanspec if we have
-		* not created it from legacy bi above
-		*/
+		 * not created it from legacy bi above
+		 */
 		bi->chanspec = wl_chspec_from_driver(bi->chanspec);
 #endif
 	}
@@ -1109,111 +1328,216 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 	 * SNR has valid value in only 109 version.
 	 * So print SNR for 109 version only.
 	 */
-	if (dtoh32(bi->version) == WL_BSS_INFO_VERSION) {
+	if (version == WL_BSS_INFO_VERSION) {
 		retval += websWrite(wp, "SNR: %d dB\t", (int16)(dtoh16(bi->SNR)));
 	}
 
 	retval += websWrite(wp, "noise: %d dBm\t", bi->phy_noise);
 	if (bi->flags) {
-		bi->flags = dtoh16(bi->flags);
+		uint16 flags = dtoh16(bi->flags);
 		retval += websWrite(wp, "Flags: ");
-		if (bi->flags & WL_BSS_FLAGS_FROM_BEACON) retval += websWrite(wp, "FromBcn ");
-		if (bi->flags & WL_BSS_FLAGS_FROM_CACHE) retval += websWrite(wp, "Cached ");
-		if (bi->flags & WL_BSS_FLAGS_RSSI_ONCHANNEL) retval += websWrite(wp, "RSSI on-channel ");
+		if (flags & WL_BSS_FLAGS_FROM_BEACON)
+			retval += websWrite(wp, "FromBcn ");
+		if (flags & WL_BSS_FLAGS_FROM_CACHE)
+			retval += websWrite(wp, "Cached ");
+		if (flags & WL_BSS_FLAGS_RSSI_ONCHANNEL)
+			retval += websWrite(wp, "RSSI on-channel ");
 		retval += websWrite(wp, "\t");
 	}
-	retval += websWrite(wp, "Channel: %s\n", wf_chspec_ntoa(dtohchanspec(bi->chanspec), chspec_str));
+	retval += websWrite(wp, "Channel: %s\n", wf_chspec_ntoa(bi->chanspec, chspec_str));
 
 	retval += websWrite(wp, "BSSID: %s\t", wl_ether_etoa(&bi->BSSID));
 
 #ifndef RTCONFIG_QTN
 	retval += websWrite(wp, "Capability: ");
-	bi->capability = dtoh16(bi->capability);
-	if (bi->capability & DOT11_CAP_ESS) retval += websWrite(wp, "ESS ");
-	if (bi->capability & DOT11_CAP_IBSS) retval += websWrite(wp, "IBSS ");
-	if (bi->capability & DOT11_CAP_POLLABLE) retval += websWrite(wp, "Pollable ");
-	if (bi->capability & DOT11_CAP_POLL_RQ) retval += websWrite(wp, "PollReq ");
-	if (bi->capability & DOT11_CAP_PRIVACY) retval += websWrite(wp, "WEP ");
-	if (bi->capability & DOT11_CAP_SHORT) retval += websWrite(wp, "ShortPre ");
-	if (bi->capability & DOT11_CAP_PBCC) retval += websWrite(wp, "PBCC ");
-	if (bi->capability & DOT11_CAP_AGILITY) retval += websWrite(wp, "Agility ");
-	if (bi->capability & DOT11_CAP_SHORTSLOT) retval += websWrite(wp, "ShortSlot ");
-	if (bi->capability & DOT11_CAP_CCK_OFDM) retval += websWrite(wp, "CCK-OFDM ");
+	capability = dtoh16(bi->capability);
+	if (capability & DOT11_CAP_ESS)
+		retval += websWrite(wp, "ESS ");
+	if (capability & DOT11_CAP_IBSS)
+		retval += websWrite(wp, "IBSS ");
+	if (capability & DOT11_CAP_POLLABLE)
+		retval += websWrite(wp, "Pollable ");
+	if (capability & DOT11_CAP_POLL_RQ)
+		retval += websWrite(wp, "PollReq ");
+	if (capability & DOT11_CAP_PRIVACY)
+		retval += websWrite(wp, "WEP ");
+	if (capability & DOT11_CAP_SHORT)
+		retval += websWrite(wp, "ShortPre ");
+	if (capability & DOT11_CAP_PBCC)
+		retval += websWrite(wp, "PBCC ");
+	if (capability & DOT11_CAP_AGILITY)
+		retval += websWrite(wp, "Agility ");
+	if (capability & DOT11_CAP_SHORTSLOT)
+		retval += websWrite(wp, "ShortSlot ");
+	if (capability & DOT11_CAP_RRM)
+		retval += websWrite(wp, "RRM ");
+	if (capability & DOT11_CAP_CCK_OFDM)
+		retval += websWrite(wp, "CCK-OFDM ");
 #endif
 	retval += websWrite(wp, "\n");
 
 	retval += websWrite(wp, "Supported Rates: ");
 	retval += dump_rateset(eid, wp, argc, argv, bi->rateset.rates, dtoh32(bi->rateset.count));
 	retval += websWrite(wp, "\n");
-	if (dtoh32(bi->ie_length))
+	if (dtoh32(bi->ie_length)) {
 		retval += wl_dump_wpa_rsn_ies(eid, wp, argc, argv, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
-				    dtoh32(bi->ie_length));
+		                    dtoh32(bi->ie_length));
+#ifdef RTCONFIG_HND_ROUTER_AX
+		retval += wl_dump_ext_cap(eid, wp, argc, argv, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
+		                    dtoh32(bi->ie_length));
+#endif
+	}
+
 #ifndef RTCONFIG_QTN
-	if (dtoh32(bi->version) != LEGACY_WL_BSS_INFO_VERSION && bi->n_cap) {
-#ifdef RTCONFIG_BCMWL6
-		if (bi->vht_cap)
+	if (version != LEGACY_WL_BSS_INFO_VERSION && bi->n_cap) {
+#ifdef RTCONFIG_HND_ROUTER_AX
+		if (bi->he_cap) {
+			retval += websWrite(wp, "HE Capable:\n");
+		} else
+#endif
+		if (bi->vht_cap) {
 			retval += websWrite(wp, "VHT Capable:\n");
-		else
+		} else {
 			retval += websWrite(wp, "HT Capable:\n");
-		retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
-			CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
-		       (CHSPEC_IS160(bi->chanspec) ?
-			160 : CHSPEC_IS80(bi->chanspec) ?
+		}
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+		if (CHSPEC_IS8080(bi->chanspec)) {
+			 retval += websWrite(wp, "\tChanspec: 5GHz channel %d-%d 80+80MHz (0x%x)\n",
+			 wf_chspec_primary80_channel(bi->chanspec),
+			 wf_chspec_secondary80_channel(bi->chanspec),
+			 bi->chanspec);
+		}
+		else
+#endif
+		{
+			retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
+				CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
+				(CHSPEC_IS160(bi->chanspec) ?
+				160:(CHSPEC_IS80(bi->chanspec) ?
 				80 : (CHSPEC_IS40(bi->chanspec) ?
-			      		40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10))),
-			bi->chanspec);
+				40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10)))),
+				bi->chanspec);
+		}
 		retval += websWrite(wp, "\tPrimary channel: %d\n", bi->ctl_ch);
 		retval += websWrite(wp, "\tHT Capabilities: ");
-#else
-		retval += websWrite(wp, "802.11N Capable:\n");
-		bi->chanspec = dtohchanspec(bi->chanspec);
-		retval += websWrite(wp, "\tChanspec: %sGHz channel %d %dMHz (0x%x)\n",
-			CHSPEC_IS2G(bi->chanspec)?"2.4":"5", CHSPEC_CHANNEL(bi->chanspec),
-			CHSPEC_IS40(bi->chanspec) ? 40 : (CHSPEC_IS20(bi->chanspec) ? 20 : 10),
-			bi->chanspec);
-		retval += websWrite(wp, "\tControl channel: %d\n", bi->ctl_ch);
-		retval += websWrite(wp, "\t802.11N Capabilities: ");
-#endif
 		if (dtoh32(bi->nbss_cap) & HT_CAP_40MHZ)
 			retval += websWrite(wp, "40Mhz ");
 		if (dtoh32(bi->nbss_cap) & HT_CAP_SHORT_GI_20)
 			retval += websWrite(wp, "SGI20 ");
 		if (dtoh32(bi->nbss_cap) & HT_CAP_SHORT_GI_40)
 			retval += websWrite(wp, "SGI40 ");
-		retval += websWrite(wp, "\n\tSupported MCS : [ ");
-		for (mcs_idx = 0; mcs_idx < (MCSSET_LEN * 8); mcs_idx++)
-			if (isset(bi->basic_mcs, mcs_idx))
-				retval += websWrite(wp, "%d ", mcs_idx);
-		retval += websWrite(wp, "]\n");
+		retval += websWrite(wp, "\n\tSupported HT MCS :");
+		for (mcs_idx = 0; mcs_idx < (MCSSET_LEN * 8); mcs_idx++) {
+			if (isset(bi->basic_mcs, mcs_idx) && !start_idx_valid) {
+				retval += websWrite(wp, " %d", mcs_idx);
+				start_idx = mcs_idx;
+				start_idx_valid = TRUE;
+			}
+
+			if (!isset(bi->basic_mcs, mcs_idx) && start_idx_valid) {
+				if ((mcs_idx - start_idx) > 1)
+					retval += websWrite(wp, "-%d", (mcs_idx - 1));
+				start_idx_valid = FALSE;
+
+			}
+		}
+		retval += websWrite(wp, "\n");
 
 #ifdef RTCONFIG_BCMWL6
 		if (bi->vht_cap) {
 			int i;
 			uint mcs;
 #if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
- 			uint prop_mcs = VHT_PROP_MCS_MAP_NONE;
-#endif
+			uint rx_mcs, prop_mcs = VHT_PROP_MCS_MAP_NONE;
+			char *mcs_str, *rx_mcs_str;
+
+			if (bi->vht_mcsmap) {
+				retval += websWrite(wp, "\tNegotiated VHT MCS:\n");
+				for (i = 1; i <= VHT_CAP_MCS_MAP_NSS_MAX; i++) {
+					mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i, dtoh16(bi->vht_mcsmap));
+
+					/* roundup to be in sync with driver
+					 * wlc_bss2wl_bss().
+					 */
+					if (length >= (OFFSETOF(wl_bss_info_t,
+						vht_mcsmap_prop) +
+						ROUNDUP(dtoh32(bi->ie_length), 4) +
+						sizeof(uint16))) {
+						prop_mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
+							dtoh16(bi->vht_mcsmap_prop));
+					}
+					mcs_str =
+						(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-9 " :
+						(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8 " :
+						(mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7 " :
+						 " -- ")));
+					if (prop_mcs != VHT_PROP_MCS_MAP_NONE)
+						mcs_str =
+							(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-11      " :
+							(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8, 10-11" :
+							(mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7, 10-11" :
+							 "    --    ")));
+
+					if (mcs != VHT_CAP_MCS_MAP_NONE) {
+						retval += websWrite(wp, "\t\tNSS%d : %s \n", i,
+							mcs_str);
+					}
+				}
+			} else {
+				retval += websWrite(wp, "\tSupported VHT MCS:\n");
+				for (i = 1; i <= VHT_CAP_MCS_MAP_NSS_MAX; i++) {
+					mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
+						dtoh16(bi->vht_txmcsmap));
+
+					rx_mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
+						dtoh16(bi->vht_rxmcsmap));
+
+					/* roundup to be in sync with driver
+					 * wlc_bss2wl_bss().
+					 */
+					if (length >= (OFFSETOF(wl_bss_info_t,
+						vht_txmcsmap_prop) +
+						ROUNDUP(dtoh32(bi->ie_length), 4) +
+						sizeof(uint16))) {
+						prop_mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
+							dtoh16(bi->vht_txmcsmap_prop));
+					}
+
+					mcs_str =
+						(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-9 " :
+						(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8 " :
+						(mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7 " : " -- ")));
+					if (prop_mcs != VHT_PROP_MCS_MAP_NONE)
+						mcs_str =
+						    (mcs == VHT_CAP_MCS_MAP_0_9 ? "0-11      " :
+						    (mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8, 10-11" :
+						    (mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7, 10-11" :
+						     "    --    ")));
+
+					rx_mcs_str =
+						(rx_mcs == VHT_CAP_MCS_MAP_0_9 ? "0-9 " :
+						(rx_mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8 " :
+						(rx_mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7 " : " -- ")));
+					if (prop_mcs != VHT_PROP_MCS_MAP_NONE)
+						rx_mcs_str =
+						    (rx_mcs == VHT_CAP_MCS_MAP_0_9 ? "0-11      " :
+						    (rx_mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8, 10-11" :
+						    (rx_mcs == VHT_CAP_MCS_MAP_0_7 ? "0-7, 10-11" :
+						     "    --    ")));
+
+					if ((mcs != VHT_CAP_MCS_MAP_NONE) ||
+						(rx_mcs != VHT_CAP_MCS_MAP_NONE)) {
+						retval += websWrite(wp, "\t\tNSS%d Tx: %s  Rx: %s\n", i,
+							mcs_str, rx_mcs_str);
+					}
+				}
+			}
+#else
 			retval += websWrite(wp, "\tVHT Capabilities: \n");
 			retval += websWrite(wp, "\tSupported VHT (tx) Rates:\n");
 			for (i = 1; i <= VHT_CAP_MCS_MAP_NSS_MAX; i++) {
 				mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i, dtoh16(bi->vht_txmcsmap));
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-				if (dtoh16(bi->length) >= (OFFSETOF(wl_bss_info_t,
-					vht_txmcsmap_prop) +
-					ROUNDUP(dtoh32(bi->ie_length), 4) +
-					sizeof(uint16))) {
-						prop_mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
-						dtoh16(bi->vht_txmcsmap_prop));
-				}
-#endif
 				if (mcs != VHT_CAP_MCS_MAP_NONE){
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-					if (prop_mcs != VHT_PROP_MCS_MAP_NONE)
-						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", i,
-							(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-11" :
-							(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8, 10-11" : "0-7, 10-11")));
-					else
-#endif
 					retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", i,
 						(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-9" :
 						(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8" : "0-7")));
@@ -1222,119 +1546,34 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
 			retval += websWrite(wp, "\tSupported VHT (rx) Rates:\n");
 			for (i = 1; i <= VHT_CAP_MCS_MAP_NSS_MAX; i++) {
 				mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i, dtoh16(bi->vht_rxmcsmap));
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-				if (dtoh16(bi->length) >= (OFFSETOF(wl_bss_info_t,
-					vht_txmcsmap_prop) +
-					ROUNDUP(dtoh32(bi->ie_length), 4) +
-					sizeof(uint16))) {
-						prop_mcs = VHT_MCS_MAP_GET_MCS_PER_SS(i,
-						dtoh16(bi->vht_txmcsmap_prop));
-				}
-#endif
-
 				if (mcs != VHT_CAP_MCS_MAP_NONE) {
-#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-					if (prop_mcs != VHT_PROP_MCS_MAP_NONE)
-						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", i,
-							(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-11" :
-							(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8, 10-11" : "0-7, 10-11")));
-					else
-#endif
 					retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", i,
 						(mcs == VHT_CAP_MCS_MAP_0_9 ? "0-9" :
 						(mcs == VHT_CAP_MCS_MAP_0_8 ? "0-8" : "0-7")));
 				}
 			}
+#endif
 		}
+
+
 #ifdef RTCONFIG_HND_ROUTER_AX
-		if (new_bi->he_cap) {
-			int i, nss, neg = 0;
-			static const char zero[sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX] = { 0 };
+		if (bi->he_cap) {
 			uint16 *he_mcsmap;
-			uint16 he_txmcsmap, he_rxmcsmap;
-			char *mcs_str, *bw_str;
-			uint rx_mcs, tx_mcs;
 
-			retval += websWrite(wp, "\tHE Capabilities: \n");
-			if (new_bi->he_neg_bw80_tx_mcs != 0xffff) {
-				he_mcsmap = &new_bi->he_neg_bw80_tx_mcs;
-				neg = 1;
+			if (bi->he_neg_bw80_tx_mcs != 0xffff) {
+				retval += websWrite(wp, "\tNegotiated HE MCS:\n");
+				he_mcsmap = &bi->he_neg_bw80_tx_mcs;
 			} else {
-				he_mcsmap = &new_bi->he_sup_bw80_tx_mcs;
+				retval += websWrite(wp, "\tSupported HE MCS:\n");
+				he_mcsmap = &bi->he_sup_bw80_tx_mcs;
 			}
 
-			if (he_mcsmap == NULL || !memcmp(he_mcsmap, zero, sizeof(uint16) * WL_HE_CAP_MCS_MAP_NSS_MAX)) {
-				goto SKIP;
-			}
-
-			if(neg)
-				retval += websWrite(wp, "\tNegotiated HE (tx) Rates:\n");
-			else
-				retval += websWrite(wp, "\tSupported HE (tx) Rates:\n");
-			for (i = 0; i < 3; i++) {
-				if (i == 0) {
-					bw_str = "80 Mhz";
-				} else if (i == 1) {
-					bw_str = "160 Mhz";
-				} else {
-					bw_str = "80+80 Mhz";
-				}
-
-				/* get he bw80, bw160, bw80p80 tx mcs from mcsset[0], mcsset[2], and mcsset[4] */
-				he_txmcsmap = dtoh16(he_mcsmap[i * 2]);
-
-				for (nss = 1; nss <= HE_CAP_MCS_MAP_NSS_MAX; nss++) {
-					tx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_txmcsmap);
-					mcs_str =
-						(tx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11" :
-						(tx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9" :
-						(tx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7" :
-						"---")));
-					if ((tx_mcs != HE_CAP_MAX_MCS_NONE)) {
-						if (nss == 1)
-							retval += websWrite(wp, "\t    %s:\n", bw_str);
-						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", nss, mcs_str);
-					}
-				}
-			}
-
-			if(neg)
-				retval += websWrite(wp, "\tNegotiated HE (rx) Rates:\n");
-			else
-				retval += websWrite(wp, "\tSupported HE (rx) Rates:\n");
-			for (i = 0; i < 3; i++) {
-				if (i == 0) {
-					bw_str = "80 Mhz";
-				} else if (i == 1) {
-					bw_str = "160 Mhz";
-				} else {
-					bw_str = "80+80 Mhz";
-				}
-
-				/* get he bw80, bw160, bw80p80 rx mcs from mcsset[1], mcsset[3], and mcsset[5] */
-				he_rxmcsmap = dtoh16(he_mcsmap[(i * 2) + 1]);
-
-				for (nss = 1; nss <= HE_CAP_MCS_MAP_NSS_MAX; nss++) {
-					rx_mcs = HE_CAP_MAX_MCS_NSS_GET_MCS(nss, he_rxmcsmap);
-					mcs_str =
-						(rx_mcs == HE_CAP_MAX_MCS_0_11 ? "0-11" :
-						(rx_mcs == HE_CAP_MAX_MCS_0_9 ? "0-9" :
-						(rx_mcs == HE_CAP_MAX_MCS_0_7 ? "0-7" :
-						"---")));
-					if ((rx_mcs != HE_CAP_MAX_MCS_NONE)) {
-						if (nss == 1)
-							retval += websWrite(wp, "\t    %s:\n", bw_str);
-						retval += websWrite(wp, "\t\tNSS: %d MCS: %s\n", nss, mcs_str);
-					}
-				}
-			}
-SKIP:
-		;
-		}//he_cap
-#endif	//AX
+			retval += wl_print_hemcsnss(eid, wp, argc, argv, (uint16 *)he_mcsmap);
+		}
 #endif
+#endif
+		bi->chanspec = wl_chspec_to_driver(bi->chanspec);
 	}
-#endif
 
 #ifdef RTCONFIG_BCMWL6
 	if (dtoh32(bi->ie_length))
@@ -1342,6 +1581,20 @@ SKIP:
 		retval += wl_dump_wps(wp, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
 			dtoh32(bi->ie_length));
 	}
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if (dtoh16(bi->flags) & WL_BSS_FLAGS_HS20) {
+		retval += websWrite(wp, "Hotspot 2.0 capable\n");
+	}
+
+	if (bcm_find_vs_ie((uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
+		dtoh32(bi->ie_length),
+		(uint8 *)WFA_OUI, WFA_OUI_LEN, WFA_OUI_TYPE_OSEN) != NULL) {
+		retval += websWrite(wp, "OSEN supported\n");
+	}
+	retval += bcm_print_vs_ie(wp, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
+		dtoh32(bi->ie_length));
+#endif
+#endif
 #endif
 
 	retval += websWrite(wp, "\n");
@@ -3089,6 +3342,61 @@ int
 ej_wl_cap_5g_2(int eid, webs_t wp, int argc, char **argv)
 {
 	return ej_wl_cap(eid, wp, argc, argv, 2);
+}
+
+static int ej_wl_chipnum(int eid, webs_t wp, int argc, char_t **argv, int unit)
+{
+	int retval = 0;
+	char ifname[NVRAM_MAX_PARAM_LEN];
+	char word[256], *next;
+	int unit_max = 0, unit_cur = -1;
+	wlc_rev_info_t revinfo;
+	unsigned int chipid = 0;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next)
+		unit_max++;
+
+	if (unit > (unit_max - 1))
+		goto ERROR;
+
+	wl_ifname(unit, 0, ifname);
+	memset(&revinfo, 0, sizeof(revinfo));
+
+	wl_ioctl(ifname, WLC_GET_INSTANCE, &unit_cur, sizeof(unit_cur));
+	if (unit != unit_cur)
+		goto ERROR;
+	else if (wl_ioctl(ifname, WLC_GET_REVINFO, &revinfo, sizeof(revinfo))) {
+		dbg("can not get wl revinfo of %s\n", ifname);
+		goto ERROR;
+	}
+#ifdef HND_ROUTER
+	if (BCM4365_CHIP(revinfo.chipnum))
+		chipid = BCM4366_CHIP_ID;
+	else
+#endif
+		chipid = revinfo.chipnum;
+
+ERROR:
+	retval += websWrite(wp, "%x", chipid);
+	return retval;
+}
+
+int
+ej_wl_chipnum_2g(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_chipnum(eid, wp, argc, argv, 0);
+}
+
+int
+ej_wl_chipnum_5g(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_chipnum(eid, wp, argc, argv, 1);
+}
+
+int
+ej_wl_chipnum_5g_2(int eid, webs_t wp, int argc, char **argv)
+{
+	return ej_wl_chipnum(eid, wp, argc, argv, 2);
 }
 
 static int wps_stop_count = 0;

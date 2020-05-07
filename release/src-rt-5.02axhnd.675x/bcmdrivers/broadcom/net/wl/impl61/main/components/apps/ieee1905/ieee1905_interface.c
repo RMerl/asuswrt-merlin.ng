@@ -511,7 +511,7 @@ void i5InterfaceNew(char *ifname, unsigned short media_type, unsigned char const
        */
       if (!i5GlueIsIfnameVLAN(ifname, NULL, NULL)) {
         i5TraceInfo("Socket Created For[%s]. So, create VLANs\n", ifname);
-        i5GlueCreateVLAN(ifname);
+        i5GlueCreateVLAN(ifname, (i5DmIsInterfaceWireless(media_type) ? 1 : 0));
       }
     }
 

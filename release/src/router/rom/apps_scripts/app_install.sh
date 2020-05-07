@@ -7,9 +7,7 @@ apps_ipkg_old=`nvram get apps_ipkg_old`
 APPS_PATH=/opt
 CONF_FILE=$APPS_PATH/etc/ipkg.conf
 ASUS_SERVER=`nvram get apps_ipkg_server`
-wget_timeout=`nvram get apps_wget_timeout`
-#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30"
 download_file=
 apps_from_internet=`nvram get rc_support |grep appnet`
 apps_local_space=`nvram get apps_local_space`
@@ -239,7 +237,7 @@ echo "file_ver4=$file_ver4, list_ver4=$list_ver4."
 			return 1
 		fi
 		i=0
-		while [ $i -lt $wget_timeout ] && [ ! -f "$target" ]; do
+		while [ $i -lt 30 ] && [ ! -f "$target" ]; do
 			i=$((i+1))
 			sleep 1
 		done
@@ -390,7 +388,7 @@ _download_lib_package(){
 			return 1
 		fi
 		i=0
-		while [ $i -lt $wget_timeout ] && [ ! -f "$target" ]; do
+		while [ $i -lt 30 ] && [ ! -f "$target" ]; do
 			i=$((i+1))
 			sleep 1
 		done

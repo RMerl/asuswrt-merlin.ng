@@ -57,7 +57,7 @@ ifeq ($(RTCONFIG_BCM7),y)
 	# bcm7
 else ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
-ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_HND_ROUTER_AX_6710)),y)
 CFLAGS += -DPGCONTROL3
 else
 	# ax-hnd

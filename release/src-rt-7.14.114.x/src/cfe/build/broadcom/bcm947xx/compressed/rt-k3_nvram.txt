@@ -790,10 +790,16 @@ devpath2=pcie/2/1/
 bootflags=1
 
 # ODM Product ID
-odmpid=ASUS
+odmpid=RT-AC3100
 
 # Model Name
-#model=RT-K3
+model=RT-AC3100
+
+# Bootloader Version
+bl_version=1.0.37
+
+# ATEMODE
+ATEMODE=0
 
 # Customize
 modelname=K3

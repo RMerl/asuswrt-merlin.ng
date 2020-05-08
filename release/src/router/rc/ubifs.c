@@ -124,6 +124,11 @@ static inline int ubifs_erase(int dev, int part)
 
 void start_ubifs(void)
 {
+	if (!nvram_match("jffs2_enable", "1")) {
+		notice_set("jffs", "");
+		return;
+	}
+
 	int format = 0;
 	char s[256];
 	int dev, part, size;
@@ -209,8 +214,9 @@ void start_ubifs(void)
 		return;
 
 	_dprintf("*** ubifs: %s %d, %d, %d\n", UBIFS_VOL_NAME, dev, part, size);
-	if (nvram_match("ubifs_format", "1")) {
+	if (nvram_match("ubifs_format", "1") || nvram_match("jffs2_format", "1")) {
 		nvram_set("ubifs_format", "0");
+		nvram_set("jffs2_format", "0");
 
 		if (ubifs_erase(dev, part)) {
 			error("formatting");

@@ -4482,3 +4482,6 @@ weather_6h=6 hours
 weather_12h=12 hours
 weather_24h=24 hours
 WLANConfig11b_TxPower_custom=Customize Tx Power
+JFFS2_Persistent=Persistent JFFS2 partition
+JFFS2_Format_Next=Format JFFS partition at next boot
+JFFS2_Scripts=Enable JFFS custom scripts and configs

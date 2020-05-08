@@ -4482,3 +4482,6 @@ weather_6h=6小时
 weather_12h=12小时
 weather_24h=24小时
 WLANConfig11b_TxPower_custom=自定义功率
+JFFS2_Persistent=JFFS2分区设置
+JFFS2_Format_Next=下次启动时格式化JFFS分区
+JFFS2_Scripts=启用JFFS自定义脚本和配置

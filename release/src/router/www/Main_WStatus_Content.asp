@@ -89,7 +89,6 @@ function GenContent(){
 		error: function(xhr){
 			if(dead > 30){
 				$("#wl_log").html("Fail to grab wireless log.");
-				break;
 			}
 			else{
 				dead++;

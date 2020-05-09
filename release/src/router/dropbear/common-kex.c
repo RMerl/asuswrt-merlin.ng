@@ -294,7 +294,6 @@ static void gen_new_keys() {
 	hash_state hs;
 	const struct ltc_hash_descriptor *hash_desc = ses.newkeys->algo_kex->hash_desc;
 	char mactransletter, macrecvletter; /* Client or server specific */
-	int recv_cipher, trans_cipher;
 
 	TRACE(("enter gen_new_keys"))
 	/* the dh_K and hash are the start of all hashes, we make use of that */
@@ -329,30 +328,34 @@ static void gen_new_keys() {
 	hashkeys(C2S_key, sizeof(C2S_key), &hs, 'C');
 	hashkeys(S2C_key, sizeof(S2C_key), &hs, 'D');
 
-	recv_cipher = -1;
 	if (ses.newkeys->recv.algo_crypt->cipherdesc != NULL) {
-		recv_cipher = find_cipher(ses.newkeys->recv.algo_crypt->cipherdesc->name);
-		if (recv_cipher < 0)
+		int recv_cipher = -1;
+		if (ses.newkeys->recv.algo_crypt->cipherdesc->name != NULL) {
+			recv_cipher = find_cipher(ses.newkeys->recv.algo_crypt->cipherdesc->name);
+			if (recv_cipher < 0)
+				dropbear_exit("Crypto error");
+		}
+		if (ses.newkeys->recv.crypt_mode->start(recv_cipher, 
+				recv_IV, recv_key, 
+				ses.newkeys->recv.algo_crypt->keysize, 0, 
+				&ses.newkeys->recv.cipher_state) != CRYPT_OK) {
 			dropbear_exit("Crypto error");
-	}
-	if (ses.newkeys->recv.crypt_mode->start(recv_cipher, 
-			recv_IV, recv_key, 
-			ses.newkeys->recv.algo_crypt->keysize, 0, 
-			&ses.newkeys->recv.cipher_state) != CRYPT_OK) {
-		dropbear_exit("Crypto error");
+		}
 	}
 
-	trans_cipher = -1;
 	if (ses.newkeys->trans.algo_crypt->cipherdesc != NULL) {
-		trans_cipher = find_cipher(ses.newkeys->trans.algo_crypt->cipherdesc->name);
-		if (trans_cipher < 0)
+		int trans_cipher = -1;
+		if (ses.newkeys->trans.algo_crypt->cipherdesc->name != NULL) {
+			trans_cipher = find_cipher(ses.newkeys->trans.algo_crypt->cipherdesc->name);
+			if (trans_cipher < 0)
+				dropbear_exit("Crypto error");
+		}
+		if (ses.newkeys->trans.crypt_mode->start(trans_cipher, 
+				trans_IV, trans_key, 
+				ses.newkeys->trans.algo_crypt->keysize, 0, 
+				&ses.newkeys->trans.cipher_state) != CRYPT_OK) {
 			dropbear_exit("Crypto error");
-	}
-	if (ses.newkeys->trans.crypt_mode->start(trans_cipher, 
-			trans_IV, trans_key, 
-			ses.newkeys->trans.algo_crypt->keysize, 0, 
-			&ses.newkeys->trans.cipher_state) != CRYPT_OK) {
-		dropbear_exit("Crypto error");
+		}
 	}
 
 	if (ses.newkeys->trans.algo_mac->hash_desc != NULL) {

@@ -2611,7 +2611,7 @@ function notice_apply(){
 							<div id="helpname" style="padding-top:10px;font-size:16px;"></div>
 						</div>							
 						<div class="NM_radius_bottom_container">
-							<iframe id="statusframe" class="NM_radius_bottom" style="display:none;margin-left:0px;height:760px;width:320px;\9" name="statusframe" frameborder="0"></iframe>
+							<iframe id="statusframe" class="NM_radius_bottom" style="display:none;margin-left:0px;height:880px;width:320px;\9" name="statusframe" frameborder="0"></iframe>
 						</div>
 				
 						<script>

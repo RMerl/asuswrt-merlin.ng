@@ -24,6 +24,14 @@ var core_num = '<%cpu_core_num();%>';
 var array_size = 46;
 var cpu_usage_array = new Array();
 var ram_usage_array = new Array();
+var temperature_array = new Array();
+var temp_array_size = 46;
+for(i=0;i<3;i++){
+	temperature_array[i] = new Array();
+	for(j=0;j<temp_array_size;j++){
+		temperature_array[i][j] = 101;
+	}
+}
 
 var last_rx = 0;
 var last_tx = 0;
@@ -39,6 +47,9 @@ if (qos_enable > 0 && qos_ibw > 0 && qos_obw > 0) {
 	var max_rx = 100 * 1024;
 	var max_tx = 100 * 1024;
 }
+curr_coreTmp_cpu = "<% get_cpu_temperature(); %>";
+curr_coreTmp_2 = "<% sysinfo("temperature.2"); %>".replace("&deg;C", "");
+curr_coreTmp_5 = "<% sysinfo("temperature.5"); %>".replace("&deg;C", "");
 
 
 var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
@@ -64,10 +75,12 @@ $(document).ready(function(){
 	initiailzeParameter();
 	genCPUElement();
 	genRAMElement();
+	genTEMPElement();
 	genNETelement();
 	get_ethernet_ports();
 	get_plc_ports();
 	detect_CPU_RAM();
+	update_coretmp();
 	update_traffic();
 	if(isSupport("ledg")){
 		$("#light_effect_tab").show();
@@ -418,6 +431,48 @@ function detect_CPU_RAM(){
 	}
 }
 
+function update_coretmp(e){
+  $.ajax({
+    url: '/ajax_coretmp.asp',
+    dataType: 'script',
+
+    error: function(xhr){
+		update_coretmp();
+    },
+    success: function(response){
+			render_Temperature(curr_coreTmp_2, curr_coreTmp_5, curr_coreTmp_cpu);
+			setTimeout("update_coretmp();", 2000);
+		}
+  });
+}
+
+function render_Temperature(_coreTemp_2, _coreTemp_5, _cpuTemp){
+	var temp_pt = "";
+	var tmp = 0;
+	var coreTmp = new Array();
+	coreTmp[0] = _coreTemp_2;
+	coreTmp[1] = _coreTemp_5;
+	coreTmp[2] = _cpuTemp;
+
+	$("#temper_2").html(_coreTemp_2 + "°C");
+	$("#temper_5").html(_coreTemp_5 + "°C");
+	$("#temper_cpu").html(_cpuTemp + "°C");
+
+	for(i=0;i<3;i++){
+		temp_pt = "";
+		tmp = Math.max(parseInt(coreTmp[i]), 20);
+		tmp = Math.min(parseInt(coreTmp[i]), 100);
+		temperature_array[i].push(100 - 100*(tmp-20)/80);
+		temperature_array[i].splice(0,1);
+
+		for(j=0;j<temp_array_size;j++){
+			temp_pt += j*6 +","+ temperature_array[i][j] + " ";
+		}
+
+		document.getElementById('temp'+i+'_graph').setAttribute('points', temp_pt);
+	}
+}
+
 function genCPUElement(){
 	var code = '<div class="division-block"><#Status_CPU#></div>';
 	code += '<div>';
@@ -646,6 +701,53 @@ function get_plc_ports() {
 		$('#plc_ports').show();
 		setTimeout("get_plc_ports();", 3000);
 	}
+function genTEMPElement() {
+	var code = '<div class="division-block"><#Temperatures#></div>';
+	code += '<div>';
+	code += '<div>';
+	code += '<div class="display-flex flex-a-center ram-content">';
+	code += '<div class="ram-text-width">2.4 GHz</div>';
+	code += '<div class="ram-text-width">5 GHz</div>';
+	code += '<div class="ram-text-width">CPU</div>';
+	code += '</div>';
+	code += '<div class="display-flex flex-a-center ram-content">';
+	code += '<div id="temper_2" class="ram-text-width" style="color:#FF9000;"></div>';
+	code += '<div id="temper_5" class="ram-text-width" style="color:#33CCFF;"></div>';
+	code += '<div id="temper_cpu" class="ram-text-width" style="color:#00FF33;"></div>';
+	code += '</div>';
+	code += '</div>';
+
+	code += '<svg class="svg-block" width="100%" height="100px">';
+	code += '<g>';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="0%" x2="100%" y2="0%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%" x2="100%" y2="25%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%" x2="100%" y2="50%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%" x2="100%" y2="75%" />';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />';
+	code += '</g>';
+	code += '<g>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">20°C</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="80%">40°C</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">60°C</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="30%">80°C</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100°C</text>';
+	code += '</g>';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(0,0,121)" x1="0" y1="0%" x2="0" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="11%" y1="0%" x2="11%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="22%" y1="0%" x2="22%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="33%" y1="0%" x2="33%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="44%" y1="0%" x2="44%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="55%" y1="0%" x2="55%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="66%" y1="0%" x2="66%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="77%" y1="0%" x2="77%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="88%" y1="0%" x2="88%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(0,0,121)"   x1="100%" y1="0%" x2="100%" y2="100%" />';
+	code += '<polyline id="temp0_graph" class="svg-line" style="stroke:#FF9000;" points=""></polyline>';
+	code += '<polyline id="temp1_graph" class="svg-line" style="stroke:#33CCFF;" points=""></polyline>';
+	code += '<polyline id="temp2_graph" class="svg-line" style="stroke:#00FF33;" points=""></polyline>';
+	code += '</svg>';
+
+	$('#temp_field').html(code);
 }
 
 function switchTab(id){
@@ -672,6 +774,7 @@ function switchTab(id){
 	<div id="net_field" class="unit-block"></div>
 	<div id="cpu_field" class="unit-block"></div>
 	<div id="ram_field" class="unit-block"></div>
+	<div id="temp_field" class="unit-block"></div>
 	<div id="phy_ports" class="unit-block"></div>
 	<div id="plc_ports" class="unit-block" style="display:none"></div>
 	<div id="led_field" class="unit-block" style="display:none"></div>

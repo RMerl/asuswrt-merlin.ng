@@ -2493,6 +2493,10 @@ config RTCONFIG_WIFI6E
 	bool "WiFi 6E"
 	default n
 
+config RTCONFIG_SOFTCENTER
+	bool "softcenter"
+	default n
+
 config RTCONFIG_VAR_NVRAM
 	bool "save some nvram under /var"
 	default n

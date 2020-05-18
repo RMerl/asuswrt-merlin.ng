@@ -1,0 +1,2 @@
+set args -d ./db/a
+b main

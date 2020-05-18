@@ -6170,6 +6170,36 @@ stop_telnetd(void)
 		killall_tk("telnetd");
 }
 
+
+#ifdef RTCONFIG_SOFTCENTER
+void
+start_skipd(void)
+{
+	char *skipd_argv[] = { "skipd", NULL };
+	pid_t pid;
+	if (getpid() != 1) {
+		notify_rc("start_skipd");
+		return;
+	}
+	if (pids("skipd"))
+		killall_tk("skipd");
+	logmessage(LOGNAME, "start skipd");
+	_eval(skipd_argv, NULL, 0, &pid);
+
+}
+
+void
+stop_skipd(void)
+{
+	if (getpid() != 1) {
+		notify_rc("stop_skipd");
+		return;
+	}
+	if (pids("skipd"))
+		killall_tk("skipd");
+}
+#endif
+
 void
 start_httpd(void)
 {
@@ -10593,6 +10623,9 @@ start_services(void)
 #else
 	start_haveged();
 #endif
+#ifdef RTCONFIG_SOFTCENTER
+	start_skipd();
+#endif
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 	start_ledg();
 	start_ledbtn();
@@ -10995,6 +11028,9 @@ stop_services(void)
 {
 	run_custom_script("services-stop", 0, NULL, NULL);
 
+#ifdef RTCONFIG_SOFTCENTER
+	stop_skipd();
+endif
 #ifdef RTCONFIG_WIREGUARD
 	stop_wgsall();
 #endif
@@ -15728,6 +15764,13 @@ check_ddr_done:
 		if(action & RC_SERVICE_STOP) stop_dnsmasq();
 		if(action & RC_SERVICE_START) start_dnsmasq();
 	}
+#ifdef RTCONFIG_SOFTCENTER
+	else if (strcmp(script, "skipd") == 0)
+	{
+		if(action & RC_SERVICE_STOP) stop_skipd();
+		if(action & RC_SERVICE_START) start_skipd();
+	}
+#endif
 #ifdef RTCONFIG_DNSPRIVACY
 	else if (strcmp(script, "stubby") == 0)
 	{

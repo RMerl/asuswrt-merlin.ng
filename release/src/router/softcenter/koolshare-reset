@@ -1,0 +1,26 @@
+#!/bin/sh
+
+echo "开始重置软件中心！"
+
+# stop httpdb
+kill -9 $(pidof skipd) >/dev/null 2>&1
+cd /koolshare/perp
+sh perp.sh stop >/dev/null 2>&1
+
+# remove software center files
+cd /
+rm -rf /jffs/db
+rm -rf /jffs/.asusrouter
+rm -rf /jffs/.koolshare
+rm -rf /jffs/scripts/dnsmasq.postconf
+rm -rf /jffs/configs/dnsmasq/*
+service restart_dnsmasq >/dev/null 2>&1
+
+sleep 1
+
+# initiate software center
+jffsinit.sh >/dev/null 2>&1
+cd /koolshare/perp
+sh perp.sh start >/dev/null 2>&1
+
+echo "软件中心完成，请清空浏览器缓存后重新进入软件中心！"

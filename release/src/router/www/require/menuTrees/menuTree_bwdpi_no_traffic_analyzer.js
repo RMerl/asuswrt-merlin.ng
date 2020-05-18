@@ -297,6 +297,22 @@ define(function(){
 					{url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
+			},
+			{
+				menuName: "软件中心",
+				index: "menu_Split",
+				tab: [
+					{url: "NULL", tabName: "__HIDE__"}
+				]
+			},
+			{
+				menuName: "软件中心",
+				index: "menu_Softcenter",
+				tab: [
+					{url: "Module_Softcenter.asp", tabName: "软件中心"},
+					{url: "Module_Softsetting.asp", tabName: "离线安装"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				]
 			}
 		],
 

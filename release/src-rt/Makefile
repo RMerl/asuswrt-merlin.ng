@@ -3861,6 +3861,11 @@ define RouterOptions
 	if [ "$(WIFI6E)" = "y" ]; then \
 		sed -i "/RTCONFIG_WIFI6E/d" $(1); \
 		echo "RTCONFIG_WIFI6E=y" >>$(1); \
+	fi; \
+	if [ "$(SOFTCENTER)" = "y" ]; then \
+	sed -i "/RTCONFIG_SOFTCENTER/d" $(1); \
+	echo "RTCONFIG_SOFTCENTER=y" >>$(1); \
+	fi; \
 	fi;
 	if [ "$(OWE_TRANS)" = "y" ]; then \
 		sed -i "/RTCONFIG_OWE_TRANS/d" $(1); \

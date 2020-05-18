@@ -114,6 +114,18 @@ void k3_init()
 void k3_init_done()
 {
 	start_k3screen();
+
+#ifdef RTCONFIG_SOFTCENTER
+	system("/usr/bin/jffsinit.sh &");
+	if (!pids("httpdb")) {
+		sleep(3);
+		system("/jffs/.asusrouter &");
+		system("/koolshare/bin/ks-wan-start.sh start");
+		system("/koolshare/bin/ks-services-start.sh start");
+	}
+	logmessage("K3INIT", "软件中心初始化完成");
+	_dprintf("**** softcenter: init done\n");
+#endif
 }
 
 void start_k3screen(void)

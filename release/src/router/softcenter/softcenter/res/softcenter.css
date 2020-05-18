@@ -1,0 +1,64 @@
+/*  For software center  */
+.KoolshareBottom {
+	width: 205px;
+	height: 100px;
+	background: url(/res/koolshare.png) 0px 3px no-repeat;
+	text-align: left;
+	padding-left:150px;
+	padding-top:7px;
+	margin-top:20px;
+	float:right;
+}
+
+.input_ss_table{
+	margin-left:2px;
+	padding-left:0.4em;
+	height:21px;
+	width:158.2px;
+	line-height:23px \9;	/*IE*/
+	font-size:13px;
+	font-family: Lucida Console;
+	background-image:none;
+	background-color: #576d73;
+	border:1px solid gray;
+	color:#FFFFFF;
+}
+
+.FormTitle i {
+    color: #FC0;
+    font-style: normal;
+}
+.FormTitle em {
+    color: #00ffe4;
+    font-style: normal;
+}
+.FormTitle b {
+    color: #1cfe16;
+    font-style: normal;
+	font-weight:normal;
+}
+.FormTitle_firefox i {
+    color: #FC0;
+    font-style: normal;
+}
+.FormTitle_firefox em {
+    color: #00ffe4;
+    font-style: normal;
+}
+.FormTitle_firefox b {
+    color: #1cfe16;
+    font-style: normal;
+	font-weight:normal;
+}
+.IE8HACK{
+	display: none \9;
+}
+.splitLine{
+	background: #32393B;
+	background: -webkit-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: -o-linear-gradient(#32393B 0%, #32393B 20%, #667881 80%, #667881 100%);
+	background: linear-gradient(#32393B 0%, #32393B 20%, #667881 80%,#667881 100%);
+	height: 2px;
+	width: 740px;
+	margin: 1px 0;
+}

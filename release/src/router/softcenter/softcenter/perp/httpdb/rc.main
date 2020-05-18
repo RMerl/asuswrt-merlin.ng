@@ -1,0 +1,7 @@
+#!/bin/sh
+
+export KSROOT=/koolshare
+source $KSROOT/scripts/base.sh
+
+exec 2>&1
+exec httpdb

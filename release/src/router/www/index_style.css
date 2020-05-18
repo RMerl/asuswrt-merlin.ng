@@ -961,6 +961,10 @@ width:122px;
 	background-size: 100%;
 	background-repeat: no-repeat;
 }
+.menu_Softcenter{
+	background: url(images/New_ui/softcenter.png);
+	background-position: 0px 0px;
+}
 .menuClicked{
 	background: #8AA6BE; /* Old browsers */
 	background: -moz-linear-gradient(top, #8AA6BE  0%, #668CAD 44%, #4A779D 45%, #3A6894 46%, #376C9B 100%); /* FF3.6+ */

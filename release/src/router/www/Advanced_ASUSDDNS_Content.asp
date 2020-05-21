@@ -18,11 +18,9 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
-*{
-    box-sizing: content-box;
-}
 .contentM_upload{
 	position:absolute;
 	-webkit-border-radius: 5px;
@@ -89,7 +87,7 @@ function init(){
 		}
 	}
 
-	setTimeout(show_warning_message, 100);
+	setTimeout(show_warning_message, 1000);
 
 	ASUS_EULA.config(applyRule, refreshpage);
 	if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM"){
@@ -136,7 +134,6 @@ function show_warning_message(){
 		showhide("wan_ip_hide2", 1);
 }
 
-<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',
@@ -156,11 +153,11 @@ function submitForm(){
 		if(document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'){
 			document.form.https_crt_gen.value = "1";
 		}
-		if(document.form.ddns_enable_x.value == "1" && document.form.le_enable.value == "1"){
+		if($("input[name='ddns_enable_x']:checked").val() == "1" && $("input[name='le_enable']:checked").val() == "1"){
 			document.form.action_wait.value = "10";
 			document.form.action_script.value = "restart_ddns_le";
 		}
-		else if(http_enable != "0" && (document.form.le_enable.value != orig_le_enable || document.form.https_crt_gen.value == "1" || httpd_restart == 1 )){
+		else if(http_enable != "0" && ($("input[name='le_enable']:checked").val() != orig_le_enable || document.form.https_crt_gen.value == "1" || httpd_restart == 1 )){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
 				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
@@ -225,7 +222,6 @@ function ddns_load_body(){
         }
 	inputCtrl(document.form.ddns_refresh_x, 1);
 	showhide("ddns_ipcheck_tr", 1);
-	showhide("ddns_status_tr", 1);
 
         change_ddns_setting(document.form.ddns_server_x.value);
 
@@ -247,23 +243,24 @@ function ddns_load_body(){
 	inputCtrl(document.form.ddns_refresh_x, 0);
         showhide("wildcard_field",0);
 	showhide("ddns_ipcheck_tr", 0);
-	showhide("ddns_status_tr", 0);
     }
 
-	if(letsencrypt_support){
-		show_cert_settings(1);
-		change_cert_method(orig_le_enable);
-		show_cert_details();
-	}
-   
+    if(letsencrypt_support){
+        show_cert_settings(1);
+        change_cert_method(orig_le_enable);
+        show_cert_details();
+    }
+
     hideLoading();
 
 	if(ddns_enable_x == "1")
 	{
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-		if(ddnsHint != "")
-			document.getElementById('ddns_status').innerHTML = '<span style="color:#FFCC00;">' + ddnsHint + '</span>';
+		if(ddnsHint != ""){
+			document.getElementById("ddns_result").innerHTML = ddnsHint;
+			document.getElementById('ddns_result_tr').style.display = "";
+		}
 		if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
 			showhide("wan_ip_hide2", 0);
 			if(ddns_server_x == "WWW.ASUS.COM"){
@@ -271,13 +268,6 @@ function ddns_load_body(){
 			}
 		}
 	}
-
-    if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
-        showhide("wan_ip_hide2", 0);
-        if(ddns_server_x == "WWW.ASUS.COM"){
-            showhide("wan_ip_hide3", 1);
-        }
-    }
 }
 
 function get_cert_info(){
@@ -574,7 +564,7 @@ function show_cert_details(){
 			document.getElementById("cert_status").innerHTML = "<#CTL_ok#>";
 	}
 	else{
-		document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
+		document.getElementById("cert_status").innerHTML = "Authorizing";
 		setTimeout("get_cert_info();", 1000);
 	}
 	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
@@ -679,11 +669,9 @@ function save_cert_key(){
 				<input type="radio" value="0" name="ddns_enable_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')" <% nvram_match("ddns_enable_x", "0", "checked"); %>><#checkbox_No#>
 				</td>
 			</tr>
-			<tr id="ddns_status_tr">
-				<th>DDNS status</th>
-				<td id="ddns_status">
-					Ok
-				</td>
+			<tr id="ddns_result_tr" style="display:none;">
+				<th>DDNS Registration Result</th>
+				<td id="ddns_result"></td>
 			</tr>
 			<tr>
 				<th id="ddns_wan_unit_th"><#wan_interface#></th>
@@ -836,7 +824,7 @@ function save_cert_key(){
 						<div id="cert_status" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_to#> :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_to#> :</div>
 						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;">
@@ -844,11 +832,11 @@ function save_cert_key(){
 						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_by#> :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_by#> :</div>
 						<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;white-space: nowrap;">
-						<div style="display:table-cell;"><#vpn_openvpn_KC_expire#> :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_expire#> :</div>
 						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div>

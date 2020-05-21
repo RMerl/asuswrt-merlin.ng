@@ -53,31 +53,32 @@ static int msglevel = 0;//OBD_DEBUG_ERROR | OBD_DEBUG_INFO | OBD_DEBUG_EVENT | O
 
 #define OBD_ERROR(fmt, arg...) \
 	do { if ((msglevel & OBD_DEBUG_ERROR) || f_exists(OBD_DEBUG) > 0) \
-		dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+        dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define OBD_WARNING(fmt, arg...) \
 	do { if ((msglevel & OBD_DEBUG_WARNING) || f_exists(OBD_DEBUG) > 0) \
-		dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+        dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define OBD_INFO(fmt, arg...) \
 	do { if ((msglevel & OBD_DEBUG_INFO) || f_exists(OBD_DEBUG) > 0) \
-		dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+        dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define OBD_EVENT(fmt, arg...) \
 	do { if ((msglevel & OBD_DEBUG_EVENT) || f_exists(OBD_DEBUG) > 0) \
-		dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+        dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define OBD_DBG(fmt, arg...) \
 	do { if ((msglevel & OBD_DEBUG_DETAIL) || f_exists(OBD_DEBUG) > 0) \
-		dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+        dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define OBD_PRINT(fmt, arg...) \
-	do { dbg("OBD %s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+	do { _\
+		dbg("OBD(%d) %lu: "fmt, getpid(), uptime(), ##arg); \
 	} while (0)
 
 #define MAX_VSIE_LEN 1024
@@ -96,7 +97,7 @@ struct scanned_bss {
 
 // sysdeps prototype
 int obd_init();
-void obd_final();
+void obd_final(int clean_vsie);
 void obd_save_para();
 void obd_start_active_scan();
 struct scanned_bss *obd_get_bss_scan_result();

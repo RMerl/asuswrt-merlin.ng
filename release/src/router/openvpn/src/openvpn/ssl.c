@@ -3139,6 +3139,12 @@ tls_process(struct tls_multi *multi,
     }
 
 error:
+#ifdef ASUSWRT
+    if (ks->state < S_ACTIVE)
+        update_nvram_status(EVENT_NET_CONN);
+    else
+        update_nvram_status(EVENT_TLS_ERROR);
+#endif
     tls_clear_error();
     ks->state = S_ERROR;
     msg(D_TLS_ERRORS, "TLS Error: TLS handshake failed");

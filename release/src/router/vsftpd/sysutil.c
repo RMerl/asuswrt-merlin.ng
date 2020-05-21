@@ -2460,7 +2460,7 @@ vsf_sysutil_getpwnam(const char* p_user){
 #ifdef RTCONFIG_NVRAM_ENCRYPT
                             char dec_passwd[64];
                             memset(dec_passwd, 0, sizeof(dec_passwd));
-                            pw_dec(tmp_passwd, dec_passwd);
+                            pw_dec(tmp_passwd, dec_passwd, sizeof(dec_passwd));
                             tmp_passwd = dec_passwd;
 #endif
 				char char_user[64], char_passwd[64];

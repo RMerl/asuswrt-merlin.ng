@@ -183,7 +183,6 @@ function tag_control(){
 	document.getElementById("ifttt_asus_channel").target="_blank";
 }
 
-<% get_realip(); %>
 function get_real_ip(){
 	if(AccLinkStatus.RemoteStatus.link_internet == '2'){
 		$.ajax({

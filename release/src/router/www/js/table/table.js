@@ -1020,7 +1020,7 @@ var tableApi = {
 							.css(dataRawStyleListJson)
 							.addClass(dataRawClass)
 							.attr("row_td_idx", k)
-							.attr("width", _headerWidthArray[k])
+							//.attr("width", _headerWidthArray[k])
 							.attr({"title" : textHint})
 							.html(
 								$("<div>")
@@ -1134,18 +1134,12 @@ var tableApi = {
 								else {
 									id = $(this).find($(".dataEdit"))[0].id;
 								}
-
-								if($('body').find('.row_tr').hasClass("data_raw_editing")) {	
-									$('body').find('.row_tr').removeClass("data_raw_editing");
-									$('body').find('.row_tr').find('.edit-mode').css({"display":'none'});
-									$('body').find('.row_tr').find('.static-text').css({"display":''});
-
+								if(!$('body').find('.row_tr').hasClass("data_raw_editing")) {
+									$("#" + id).closest(".row_tr").addClass("data_raw_editing");
+									$("#" + id).closest(".row_tr").find('.edit-mode').css({"display":''});
+									$("#" + id).closest(".row_tr").find('.static-text').css({"display":'none'});
 								}
-								$("#" + id).closest(".row_tr").addClass("data_raw_editing");
-								$("#" + id).closest(".row_tr").find('.edit-mode').css({"display":''});
-								$("#" + id).closest(".row_tr").find('.static-text').css({"display":'none'});
 								$("#" + id).focus();
-
 							}
 						);
 						break;

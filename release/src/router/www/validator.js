@@ -290,6 +290,16 @@ var validator = {
 		}
 	},
 
+	integer: function(_val){
+		var obj_value = _val;
+		var re = new RegExp("[^0-9]+","gi");
+
+		if(re.test(obj_value))
+			return false;
+		else
+			return true;
+	},
+
 	hex: function(obj){
 		var obj_value = obj.value
 		var re = new RegExp("[^a-fA-F0-9]+","gi");
@@ -342,8 +352,45 @@ var validator = {
 			return "";
 		}
 		else{
-			return "<#JS_validhostname#>";
+			return "<#JS_valid_FQDN#>";
 		}
+	},
+
+	host_name: function(obj){
+		var re = new RegExp(/^[a-z0-9][a-z0-9-_]+$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+	},
+
+	samba_name: function(obj){
+		var re = new RegExp(/^[a-z0-9][a-z0-9-_]*$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_host_name#> <#JS_valid_host_name_first_char#>";
+	},
+
+	friendly_name: function(obj){
+		var invalid_char = "";
+		for(var i = 0; i < obj.value.length; ++i){
+			if(obj.value.charAt(i) < ' ' || obj.value.charAt(i) > '~')
+				invalid_char = invalid_char+obj.value.charAt(i);
+		}
+
+		if(invalid_char != "")
+			return "<#JS_validstr2#> '"+invalid_char+"' !";
+		else
+			return "";
+	},
+
+	account_name: function(obj){
+		var re = new RegExp(/^[a-z][a-z0-9-]*$/i);
+		if(re.test(obj.value))
+			return "";
+		else
+			return "<#JS_valid_account_name#> <#JS_valid_account_name_first_char#>";
 	},
 
 	requireWANIP: function(v){

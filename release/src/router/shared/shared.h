@@ -196,6 +196,10 @@ extern int PS_pclose(FILE *);
 #define IS_GFN_QOS()            (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 3)   // GeForce NOW QoS (Nvidia)
 #define IS_NON_AQOS()           (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)   // non A.QoS = others QoS (T.QoS / bandwidth monitor ... etc.)
 
+/* Guest network mark */
+#define GUEST_INIT_MARKNUM 10   /*10 ~ 30 for Guest Network. */
+#define INITIAL_MARKNUM    30   /*30 ~ X  for LAN . */
+
 #ifdef RTCONFIG_INTERNAL_GOBI
 #define DEF_SECOND_WANIF	"usb"
 #elif (defined(RTCONFIG_WANPORT2) && defined(BRTAC828))
@@ -466,6 +470,7 @@ enum {
 	FROM_ASSIA,
 	FROM_IFTTT,
 	FROM_ALEXA,
+	FROM_WebView,
 	FROM_UNKNOWN
 };
 
@@ -849,9 +854,19 @@ enum {
 	MODEL_GTAX11000,
 	MODEL_RTAX92U,
 	MODEL_RTAX95Q,
+	MODEL_RTAX56_XD4,
 	MODEL_RTAX58U,
 	MODEL_RTAX56U,
- 	MODEL_MAX};
+	MODEL_SHAC1300,
+	MODEL_RPAC92,
+	MODEL_ZENWIFICD6R,
+	MODEL_ZENWIFICD6N,
+	MODEL_RTAX86U,
+	MODEL_RTAX68U,
+	MODEL_RT4GAC56,
+	MODEL_DSLAX82U,
+	MODEL_MAX
+};
 
 /* NOTE: Do not insert new entries in the middle of this enum,
  * always add them to the end! */
@@ -1992,7 +2007,7 @@ extern int with_non_dfs_chspec(char *wif);
 extern chanspec_t select_band1_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_band4_chspec_with_same_bw(char *wif, chanspec_t chanspec);
 extern chanspec_t select_chspec_with_band_bw(char *wif, int band, int bw, chanspec_t chanspec);
-extern void wl_list_5g_chans(int unit, int band, char *buf, int len);
+extern void wl_list_5g_chans(int unit, int band, int war, char *buf, int len);
 extern int wl_cap(int unit, char *cap_check);
 #endif
 #ifdef RTCONFIG_AMAS
@@ -2049,6 +2064,7 @@ extern int replace_char(char *str, const char from, const char to);
 extern int str_escape_quotes(const char *output, const char *input, int outsize);
 extern void toLowerCase(char *str);
 extern void toUpperCase(char *str);
+extern void trim_colon(char *str);
 
 /* ethtool.c */
 extern int iface_exist(const char *iface);
@@ -2727,6 +2743,7 @@ extern int FindBrifByWlif(char *wl_ifname, char *brif_name, int size);
 #ifdef RTAC68U
 extern int is_ac66u_v2_series();
 extern int is_n66u_v2();
+extern int is_ac68u_v3_series();
 extern int hw_usb_cap();
 extern int is_ssid_rev3_series();
 #ifdef RTCONFIG_TCODE
@@ -2748,13 +2765,15 @@ extern char *search_mnt(char *mac);
 extern void erase_symbol(char *old, char *sym);
 
 /* pwenc.c */
+#if defined(RTCONFIG_NVRAM_ENCRYPT) || defined(RTCONFIG_ASD) || defined(RTCONFIG_AHS)
+extern int pw_enc(const char *input, char *output);
+extern int pw_dec(const char *input, char *output, int len);
+extern int pw_enc_blen(const char *input);
+extern int pw_dec_len(const char *input);
+#endif
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 #define NVRAM_ENC_LEN	1024
 #define NVRAM_ENC_MAXLEN	4096
-extern int pw_enc(const char *input, char *output);
-extern int pw_dec(const char *input, char *output);
-extern int pw_enc_blen(const char *input);
-extern int pw_dec_len(const char *input);
 extern int set_enc_nvram(char *name, char *input, char *output);
 extern int enc_nvram(char *name, char *input, char *output);
 extern int dec_nvram(char *name, char *input, char *output);
@@ -2960,5 +2979,7 @@ extern int get_chance_to_control(void);
 extern int wl_set_wifiscan(char *ifname, int val);
 extern int wl_set_mcsindex(char *ifname, int *is_auto, int *idx, char *idx_type, int *stream);
 #endif
+
+extern int amazon_wss_ap_isolate_support(char *prefix);
 
 #endif	/* !__SHARED_H__ */

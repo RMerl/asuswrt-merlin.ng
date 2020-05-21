@@ -312,13 +312,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#Network_Tools#>","Network Tools"]);
 		url_group.push(["Status_"]);
 
-		desclist.push(["Rescue Mode","Rescue"]);
+		desclist.push(["<#Rescue_Mode#>","Rescue"]);
 		url_group.push(["Rescue"]);//false value
 
 		desclist.push(["<#feedback_compat_wond#>","Other Devices"]);	//25
 		url_group.push(["Other_Device"]);//false value
 
-		desclist.push(["Cannot access firmware page","Fail to access"]);
+		desclist.push(["<#WebGUI_issue#>","Fail to access"]);
 		url_group.push(["GUI"]);//false value
 
 		desclist.push(["<#menu5_6_3#>","FW update"]);
@@ -436,11 +436,22 @@ function applyRule(){
 			}
 		}
 		
-		var re = new RegExp("^[a-zA-Z][0-9]{10}","gi");
-		if(!re.test(document.form.fb_serviceno.value) && document.form.fb_serviceno.value != ""){
-			alert("<#JS_validchar#>");
-			document.form.fb_serviceno.focus();
-			return false;
+		var re_asus = new RegExp("^[a-zA-Z][0-9]{9,10}","gi");
+		var re_crs = new RegExp("^[0-9]{5}","gi");
+		var re_valid = 0;
+		if(document.form.fb_serviceno.value != ""){
+			if(!re_asus.test(document.form.fb_serviceno.value)){
+				re_valid++;				
+			}
+			if(document.form.fb_serviceno.value.length != 5 || !re_crs.test(document.form.fb_serviceno.value)){
+				re_valid++;				
+			}
+
+			if(re_valid == 2){
+				alert("<#JS_validchar#>");
+				document.form.fb_serviceno.focus();
+				return false;
+			}
 		}
 		
 		if(fb_trans_id != "")

@@ -58,8 +58,6 @@ static const char *mangle_fn_ipv6 = "/tmp/mangle_rules_ipv6";
 
 int etable_flag = 0;
 int manual_return = 0;
-#define GUEST_INIT_MARKNUM 10 /*10 ~ 30 for Guest Network. */
-#define INITIAL_MARKNUM    30 /*30 ~ X  for LAN . */
 
 /*
 	ip / mac / ip-range status

@@ -18,12 +18,94 @@
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/js/Chart.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/validator.js"></script>
 <style>
 #googleMap > div{
 	border-radius: 10px;
 }
+.detail-table{
+	background-color: #3C3C3C;
+	margin: 6px 3px;
+	padding: 6px 18px;
+	border-radius: 6px;
+}
+.arrow-field{
+	cursor:pointer;
+	background-size: 100%;
+	background-repeat: no-repeat;
+	transition: linear 0.3s;
+}
+.arrow-right{
+	padding: 0 4px;
+	margin-left: 10px;
+	background-image: url('images/New_ui/arrow_right.svg');
+}
+.arrow-down{
+	padding: 0 7px;
+	margin-left: 5px;
+	background-image: url('images/New_ui/arrow_down.svg');
+}
+.confirm{
+	width:650px;
+	height:200px;
+	position:absolute;
+	background: #293438;
+	z-index:10;
+	margin: 0 0 0 300px;
+	border-radius:10px;
+	display: none;
+}
+.confirm-button{
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
+	height:33px;
+	cursor: pointer;
+	min-width:120px;
+	line-height: 33px;
+	text-align: center;
+	margin: 0 12px;
+}
+.icon-container{
+	width: 24px;
+	height: 24px;
+	cursor:pointer;
+	background-size: 100%;
+}
+.icon-save{
+	background:url('images/save.svg');
+}
+.icon-save:hover{
+	background:url('images/save_hover.svg');
+}
+.icon-save:active{
+	background:url('images/save_active.svg');
+}
+.icon-delete{
+	background:url('images/delete.svg');
+}
+.icon-delete:hover{
+	background:url('images/delete_hover.svg');
+}
+.icon-delete:active{
+	background:url('images/delete_active.svg');
+}
+.icon-edit{
+	background:url('images/edit.svg');
+}
+.icon-edit:hover{
+	background:url('images/edit_hover.svg');
+}
+.icon-edit:active{
+	background:url('images/edit_active.svg');
+}
 </style>
 <script>
+window.onresize = function() {
+	if(document.getElementById("erase_confirm").style.display == "block") {
+		cal_panel_block("erase_confirm", 0.25);
+	}
+}
 <% get_AiDisk_status(); %>
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
@@ -48,6 +130,19 @@ function initial(){
 	var date = timestamp.toString().substring(0, 10);
 	getIPSChart("mals", date);
 	getIPSDetailData("mals", "all");
+
+	$('#newDomain').on({
+		search: function(e){	
+			var inputValue = e.currentTarget.value;
+			quickAdd(inputValue);
+		},
+		keyup: function(e){
+			var inputValue = e.currentTarget.value;
+			if(e.keyCode != '13'){
+				query(inputValue);
+			}
+		}
+	});
 }
 
 function getEventTime(){
@@ -245,6 +340,8 @@ function drawLineChart(date_label, high_array, medium_array, low_array){
 	});
 }
 
+var dataObject = new Object;
+var csvContent = 'Time,Threat,Source,Destination';
 function getIPSDetailData(type, event){
 	$.ajax({
 		url: '/getIPSDetailEvent.asp?type=' + type + '&event=' + event,
@@ -255,7 +352,32 @@ function getIPSDetailData(type, event){
 		success: function(response){
 			if(data != ""){
 				var data_array = JSON.parse(data);
-				generateDetailTable(data_array);
+				for(i=0; i<data_array.length; i++){
+					csvContent += '\n';
+					csvContent += data_array[i][0] + ',' + data_array[i][1] + ',' + data_array[i][2] + ',' + data_array[i][3];
+
+					var _index = data_array[i][3] + '_' + data_array[i][2];
+					if(dataObject[_index]){
+						dataObject[_index].source.push(data_array[i][2]);
+						dataObject[_index].destination.push(data_array[i][3]);
+						dataObject[_index].time.push(data_array[i][0]);
+					}
+					else{					
+						dataObject[_index] = {
+							source: [],
+							destination: [],
+							time: [],
+							threat: ''
+						}
+
+						dataObject[_index].source.push(data_array[i][2]);
+						dataObject[_index].destination.push(data_array[i][3]);
+						dataObject[_index].time.push(data_array[i][0]);
+						dataObject[_index].threat = data_array[i][1];
+					}
+				}
+
+				generateDetailTable(dataObject);
 			}
 		}
 	});
@@ -279,33 +401,78 @@ function catID_Object(id, description){
 	return this;
 }
 
-
-function generateDetailTable(data_array){
+function generateDetailTable(dataObj){
 	var code = '';
 	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">';
-	code += '<div style="display:table-cell;width:130px;padding-right:5px;"><#diskUtility_time#></div>';
-	code += '<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Threat#></div>';
-	code += '<div style="display:table-cell;width:200px;padding-right:5px;"><#AiProtection_event_Source#></div>';
+	code += '<div style="display:table-cell;width:180px;padding-right:5px;"><#diskUtility_time#></div>';
+	code += '<div style="display:table-cell;width:80px;padding-right:5px;"><#AiProtection_event_Threat#></div>';
+	code += '<div style="display:table-cell;width:170px;padding-right:5px;"><#AiProtection_event_Source#></div>';
 	code += '<div style="display:table-cell;width:200px;padding-right:5px;"><#AiProtection_event_Destination#></div>';
+	code += '<div style="display:table-cell;width:50px;padding-right:5px;"></div>';
 	code += '</div>';
 
-	if(data_array == ""){
+	if(dataObj == ""){
 		code += '<div style="text-align:center;font-size:16px;color:#FC0;margin-top:90px;"><#IPConnection_VSList_Norule#></div>';
 	}
 	else{
-		for(i=0;i<data_array.length;i++){
+		for(i=0; i<Object.keys(dataObj).length; i++){
 			code += '<div style="word-break:break-all;border-bottom: 1px solid #797979">';
-			code += '<div style="display:table-cell;width:130px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][0] +'</div>';
-			var cat_id_index = "_" + data_array[i][1];
+			code += '<div style="display:table-cell;width:180px;height:30px;vertical-align:middle;padding-right:5px;">';
+			var eventID = Object.keys(dataObj)[i];
 
-			code += '<div style="display:table-cell;width:150px;height:30px;vertical-align:middle;padding-right:5px;">'+ cat_id_array[cat_id_index].description +'</div>';
-			code += '<div style="display:table-cell;width:200px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][2] +'</div>';
-			code += '<div style="display:table-cell;width:200px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][3] +'</div>';
+			code += dataObj[eventID].time[0];
+			if(dataObj[eventID].time.length != 1){
+				code += '<span id="'+ eventID +'_arrow" class="arrow-field arrow-right" onclick="showDetailEvent(this, \''+ eventID +'\');"></span>';
+			}
+	
+			code += '</div>';
+
+			var cat_id_index = "_" + dataObj[eventID].threat;
+			code += '<div style="display:table-cell;width:80px;height:30px;vertical-align:middle;padding-right:5px;">'+ cat_id_array[cat_id_index].description +'</div>';
+			var _name = dataObj[eventID].source[0];
+			if(clientList[dataObj[eventID].source[0]]){
+				_name = clientList[dataObj[eventID].source[0]].name;
+			}
+
+			code += '<div style="display:table-cell;width:170px;height:30px;vertical-align:middle;padding-right:5px;">'+ _name +'</div>';
+			code += '<div style="display:table-cell;width:200px;height:30px;vertical-align:middle;padding-right:5px;text-decoration:underline;cursor:pointer;" title="<#AiProtection_DetailTable_Click_Title#>" onclick="checkEventSafe(\''+ dataObj[eventID].destination[0] +'\');">'+ dataObj[eventID].destination[0] +'</div>';
+			code += '<div style="display:table-cell;width:50px;padding-right:5px;vertical-align:middle" onclick="quickAddWhitelist(\''+ dataObj[eventID].destination[0] +'\')"><img src="images/New_ui/add.svg" style="width:21px;height:21px;"></div>';
 			code += '</div>';
 		}
 	}
 	
 	$("#detail_info_table").html(code);
+}
+
+function checkEventSafe(url){
+	httpApi.isItSafe_trend(url);
+}
+
+function showDetailEvent(obj, event){
+	if(document.getElementById(event)){
+		document.getElementById(event).remove();
+		document.getElementById(event + '_arrow').className = 'arrow-field arrow-right';
+	}
+	else{		// show detail table
+		var target = obj.parentNode.parentNode;
+		var temp  = document.createElement('div');
+		temp.id = event;
+		temp.className = 'detail-table';
+		var code = '';
+		var data = dataObject[event];
+		code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:#FC0;">'+ data.source.length +'</span></div>';
+		for(i=0; i<data.time.length; i++){
+			code += '<div style="display:flex;padding:2px 0;">';
+			code += '<div style="width: 150px;">'+ data.time[i] +'</div>';
+			code += '<div style="width: 150px;">'+ data.source[i] +'</div>';
+			code += '<div>'+ data.destination[i] +'</div>';
+			code += '</div>';
+		}
+
+		temp.innerHTML = code;
+		target.appendChild(temp);
+		document.getElementById(event + '_arrow').className = 'arrow-field arrow-down';
+	}
 }
 
 function recount(){
@@ -365,20 +532,192 @@ function eraseDatabase(){
 	applyRule();
 }
 
-function deleteHover(flag){
-	if(flag == 1){
-		$("#delete_icon").css("background","url('images/New_ui/delete_hover.svg')");
+function showEraseConfirm(){
+	$('#model_name').html(based_modelid)
+	cal_panel_block("erase_confirm", 0.25);
+	$('#erase_confirm').fadeIn(300);
+}
+
+function hideConfirm(){
+	$('#erase_confirm').fadeOut(100);
+}
+
+function quickAddWhitelist(domain){
+	showWhitelistField();
+	$("#newDomain").val(domain);
+}
+
+
+function addWhitelist(){
+	var _url = $("#newDomain").val();
+	$('#domainErrMessage').hide();
+	if(_url == ''){
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_blank#>');
+		$('#domainErrMessage').show();
+		return false;
+	}
+
+	if(!validator.domainName_flag(_url) && !validator.ipv4_addr(_url)){
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_wrong_format#>');
+		$('#domainErrMessage').show();
+		return false;
+	}
+
+	if(whitelist.data.length >= 64){
+		$('#domainErrMessage').html('<#AiProtection_ErrMsg_full#>');
+		$('#domainErrMessage').show();
+		return false;
+	}
+
+	for(i=0;i<whitelist.data.length;i++){
+		if(_url == whitelist.data[i]){
+			$('#domainErrMessage').html('<#AiProtection_ErrMsg_duplicate#>');
+			$('#domainErrMessage').show();
+			return false;
+		}
+	}
+
+	$.ajax({
+		url: "/wrs_wbl.cgi?action=add&type=0&url_type=url&url=" + _url,
+		type: "POST",
+		success: function(response){
+			whitelist.data.push(_url);
+			genWhitelist(whitelist);
+		}
+	});
+
+	$("#newDomain").val('');
+}
+
+function deleteWhitelist(domain){
+	var _url = domain;
+	$.ajax({
+		url: "/wrs_wbl.cgi?action=del&type=0&url_type=url&url="+ _url,
+		type: "POST",
+		error: function(xhr) {
+			deleteWhitelist(_url);
+		},
+		success: function(response){
+			for(i=0;i< whitelist.data.length;i++){
+				if(whitelist.data[i] == _url){
+					whitelist.data.splice(i,1);
+					i--;
+				}
+			}
+			
+			genWhitelist(whitelist);
+		}
+	});
+}
+
+var whitelist = new Object;
+function getWhitelist(){
+	$.ajax({
+		url: "/wrs_wbl.cgi?action=get&type=0",
+		type: "POST",
+		error: function(xhr) {
+			getWhitelist();
+		},
+		success: function(response){
+			whitelist = JSON.parse(response);
+			genWhitelist(whitelist);
+		}
+	}); 
+}
+
+function genWhitelist(list){
+	var code = '';
+	var _list = list.data;
+	var _list_length = Object.keys(_list).length;
+	for(var i=0; i< _list_length; i++){
+		code += '<div style="display:flex;margin: 12px 6px;justify-content: space-between;align-items: center;padding:0 6px 6px 0;border-bottom: 1px solid #667881 ">';
+		code += '<div style="font-size:14px;word-break:break-all">'+ _list[i] +'</div>';
+		code += '<div class="icon-container icon-delete" onclick="deleteWhitelist(\''+ _list[i] +'\')"></div>';
+		code += '</div>';
+	}
+
+	$('#whitelistTable').html(code);
+	$('#list_count').html(_list_length);
+}
+
+function showWhitelistField(){
+	getWhitelist();
+	$('#whitelistField').show();
+}
+
+function hideWhitelistField(){
+	$('#whitelistField').hide();
+}
+
+var download = function(content, fileName, mimeType) {
+	var a = document.createElement('a');
+	mimeType = mimeType || 'application/octet-stream';
+	if (navigator.msSaveBlob) { // IE10
+		return navigator.msSaveBlob(new Blob([content], { type: mimeType }), fileName);
+	} 
+	else if ('download' in a) { //html5 A[download]
+		a.href = 'data:' + mimeType + ',' + encodeURIComponent(content);
+		a.setAttribute('download', fileName);
+		document.getElementById("save_icon").appendChild(a);
+		setTimeout(function() {
+			document.getElementById("save_icon").removeChild(a);
+			a.click();
+		}, 66);
+		return true;
+	} 
+	else { //do iframe dataURL download (old ch+FF):
+		var f = document.createElement('iframe');
+		document.getElementById("save_icon").appendChild(f);
+		f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
+		setTimeout(function() {
+			document.getElementById("save_icon").removeChild(f);
+			}, 333);
+		return true;
+	}
+};
+
+function query(value){
+	var code = '';
+	if(value == ''){
+		$('#query_list').hide();
 	}
 	else{
-		$("#delete_icon").css("background","url('images/New_ui/delete.svg')");
+		var _array = Object.keys(dataObject);
+		var _obj_list = new Array;
+		for(i=0;i<_array.length;i++){
+			var _name = dataObject[_array[i]].destination[0]
+			if(_name.indexOf(value) != -1 && _obj_list[_name] == undefined){
+				code += '<li onclick="quickAdd(\''+ _name +'\')">'+ _name +'</li>';
+				_obj_list[_name] = '';
+			}
+
+		}
 	}
+
+	if(code != ''){
+		$('#query_list').show();
+	}
+
+	$('#query_list').html(code);
+}
+
+function quickAdd(value){
+	$('#newDomain').val(value);
+	$('#query_list').hide();
 }
 </script>
 </head>
-
 <body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
+<div id="erase_confirm" class="confirm">
+	<div style="margin: 16px 24px;font-size:24px;"><span id="model_name"></span> : </div>
+	<div style="margin: 16px 24px;font-size:16px;"><#AiProtection_event_del_confirm#></div>
+	<div style="display:flex;justify-content: flex-end;margin: 36px 24px;">
+		<div class="confirm-button" onclick="hideConfirm();"><#CTL_Cancel#></div>
+		<div class="confirm-button" onclick="eraseDatabase();"><#CTL_ok#></div>
+	</div>
+</div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5.]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
@@ -494,19 +833,51 @@ function deleteHover(flag){
 
 											</div>
 										</div-->
-										<div>
-											<div style="text-align:center;font-size:16px;"><#AiProtection_eventdetails#></div>
-											<div style="float:right;margin:-20px 30px 0 0"><div id="delete_icon" style="width:25px;height:25px;background:url('images/New_ui/delete.svg')" onclick="eraseDatabase();" onmouseover="deleteHover('1')" onmouseout="deleteHover('0')"></div></div>
+										<div style="margin: 0 24px;">
+											<div style="display:flex;justify-content: space-between;align-content: center;">											
+												<div style="text-align:center;font-size:16px;"><#AiProtection_eventdetails#></div>
+												<div style="display: flex;">
+													<div style="margin: 0 8px;"><div id="save_icon" class="icon-container icon-save" title="<#CTL_onlysave#>" onclick="download(csvContent, 'MaliciousSitesBlocking.csv', 'data:text/csv;charset=utf-8');"></div></div>
+													<div style="margin: 0 8px;"><div id="delete_icon" class="icon-container icon-delete" onclick="showEraseConfirm();" title="<#CTL_del#>"></div></div>
+													<div style="margin: 0 8px;"><div id="edit_icon" class="icon-container icon-edit" onclick="showWhitelistField();" title="Manage Whitelist"></div></div>
+												</div>
+											</div>
+											<div id="whitelistField" style="position: absolute;width:600px;height:650px;background-color: rgba(47,62,68,1);margin:-350px 0 0 35px;z-index:30;padding: 32px 24px 24px 24px;display:none;">
+												<div style="display:flex;justify-content: space-between;align-items: center;">
+													<div style="font-size: 24px;"><#WhiteList#></div>
+													<div onclick="hideWhitelistField();"><img src="images/New_ui/icon_close.svg" alt="" style="width:32px;height:32px;cursor:pointer;"></div>
+												</div>
+												<div style="color: #CCCCCC;font-size: 16px;margin: 12px 0 24px 0;"><#AiProtection_sites_trust#></div>
+												<div>
+													<div style="font-size: 14px;padding: 0 0 2px 4px;"><#AiProtection_sites_trust_add#></div>
+													<div>
+														<input id="newDomain" style="font-size: 14px;" type="text" maxlength="32" size="22" class="input_32_table" autocomplete="off" autocorrect="off" autocapitalize="off">
+														<ul id="query_list" class="query_list"></ul>						
+													</div>
+													<div id="domainErrMessage" style="color: #FC0;margin: 4px 0 2px 4px;"></div>
+												</div>
+												<div style="margin: 12px 0;text-align: right;">
+													<input type="button" class="button_gen" value="<#CTL_add#>" onclick="addWhitelist();">
+												</div>
+												<div style="width:100%;" class="line_horizontal"></div>
+												<div style="margin-top:24px;">
+													<span style="font-size: 24px;padding-right:12px;"><#WhiteList#></span>
+													<span style="font-size: 14px;"><#NetworkTools_Count#>: <b id="list_count">0</b> (<#List_limit#>&nbsp;64)</span>
+												</div>
+												<div id="whitelistTable" style="overflow: auto;height:420px;"></div>
+											</div>
 										</div>
+
 										<div style="margin: 10px auto;width:720px;height:500px;background:#444f53;border-radius:10px;position:relative;overflow:auto">
-											<div id="info_shade" style="position:absolute;width:710px;height:490px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
+											
+											<div id="info_shade" style="position:absolute;width:710px;height:490px;background-color:#4b3b3b;opacity:0.6;margin:5px;display:none"></div>
 											<div id="detail_info_table" style="padding: 10px 15px;">
 												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">
-													<div style="display:table-cell;width:110px;padding-right:5px;"><#diskUtility_time#></div>
-													<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>
-													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>
-													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Destination#></div>
-													<div style="display:table-cell;width:220px;padding-right:5px;"><#AiProtection_alert#></div>
+													<div style="display:table-cell;width:180px;padding-right:5px;"><#diskUtility_time#></div>
+													<div style="display:table-cell;width:80px;padding-right:5px;"><#AiProtection_event_Threat#></div>
+													<div style="display:table-cell;width:170px;padding-right:5px;"><#AiProtection_event_Source#></div>
+													<div style="display:table-cell;width:200px;padding-right:5px;"><#AiProtection_event_Destination#></div>
+													<div style="display:table-cell;width:50px;padding-right:5px;"></div>
 												</div>											
 											</div>
 										</div>

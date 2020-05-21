@@ -307,7 +307,14 @@ function showWlHint(){
 			if(smart_connect_nvram == 1){
 				// Tri band steering
 				wlObj.length = 1;
-				wlObj[0].band = "Tri-band Smart Connect";
+				if(parent.smart_connect_support){
+					if(parent.band5g2_support){
+						wlObj[0].band = "Tri-Band Smart Connect";
+					}
+					else{
+						wlObj[0].band = "Dual-Band Smart Connect";
+					}
+				}
 			}
 			else if(smart_connect_nvram == 2){
 				// 5GHz band steering
@@ -318,7 +325,14 @@ function showWlHint(){
 		else if(applyParam.smartConnect == 1){
 			// Tri band steering
 			wlObj.length = 1;
-			wlObj[0].band = "Tri-band Smart Connect";
+			if(parent.smart_connect_support){
+				if(parent.band5g2_support){
+					wlObj[0].band = "Tri-Band Smart Connect";
+				}
+				else{
+					wlObj[0].band = "Dual-Band Smart Connect";
+				}
+			}
 		}
 		else if(applyParam.smartConnect == 2){
 			// 5GHz band steering

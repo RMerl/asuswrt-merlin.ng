@@ -75,7 +75,7 @@ function submitForm(){
 		return false;
 	}
 	else{
-		var alert_str = validator.hostName(document.form.http_username);
+		var alert_str = validator.account_name(document.form.http_username);
 		if(alert_str != ""){
 			document.getElementById("alert_msg1").innerHTML = htmlEnDeCode.htmlEncode(alert_str);
 			document.getElementById("alert_msg1").style.display = "";

@@ -9,9 +9,7 @@ nonautorun_file=$autorun_file.disabled
 APPS_INSTALL_FOLDER=`nvram get apps_install_folder`
 APPS_DEV=`nvram get apps_dev`
 ASUS_SERVER=`nvram get apps_ipkg_server`
-wget_timeout=`nvram get apps_wget_timeout`
-#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30"
 apps_from_internet=`nvram get rc_support |grep appnet`
 apps_local_space=`nvram get apps_local_space`
 apps_local_test=`nvram get apps_local_test`
@@ -179,7 +177,7 @@ if [ ! -f "$APPS_INSTALL_PATH/bin/ipkg" ] || [ -z "$had_uclibc" ]; then
 				return 1
 			fi
 			i=0
-			while [ $i -lt $wget_timeout ] && [ ! -f "$TEMP_BASELEN_FILE" ]; do
+			while [ $i -lt 30 ] && [ ! -f "$TEMP_BASELEN_FILE" ]; do
 				i=$((i+1))
 				sleep 1
 			done
@@ -228,7 +226,7 @@ if [ ! -f "$APPS_INSTALL_PATH/bin/ipkg" ] || [ -z "$had_uclibc" ]; then
 			return 1
 		fi
 		i=0
-		while [ $i -lt $wget_timeout ] && [ ! -f "$target" ]; do
+		while [ $i -lt 30 ] && [ ! -f "$target" ]; do
 			i=$((i+1))
 			sleep 1
 		done

@@ -154,6 +154,7 @@ if [ $apps_new_arm -eq 1 ]; then
 	ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so.1
 	ln -sf $APP_LIB/libcrypt-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libcrypt.so
 	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so.1
+	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so.0
 	ln -sf $APP_LIB/libuClibc-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libc.so
 	ln -sf $APP_LIB/libdl-$NEW_UCLIBC_VERSION.so $APP_LINK_LIB/libdl.so.1
 	ln -sf $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so

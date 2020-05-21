@@ -22,8 +22,79 @@
 #googleMap > div{
 	border-radius: 10px;
 }
+.detail-table{
+	background-color: #3C3C3C;
+	margin: 6px 3px;
+	padding: 6px 18px;
+	border-radius: 6px;
+}
+.arrow-field{
+	cursor:pointer;
+	background-size: 100%;
+	background-repeat: no-repeat;
+	transition: linear 0.3s;
+}
+.arrow-right{
+	padding: 0 4px;
+	margin-left: 10px;
+	background-image: url('images/New_ui/arrow_right.svg');
+}
+.arrow-down{
+	padding: 0 7px;
+	margin-left: 5px;
+	background-image: url('images/New_ui/arrow_down.svg');
+}
+.confirm{
+	width:650px;
+	height:200px;
+	position:absolute;
+	background: #293438;
+	z-index:10;
+	margin: 0 0 0 300px;
+	border-radius:10px;
+	display: none;
+}
+.confirm-button{
+	background: linear-gradient(#233438 0%, #0F1011 100%);
+	border-radius: 8px;
+	height:33px;
+	cursor: pointer;
+	min-width:120px;
+	line-height: 33px;
+	text-align: center;
+	margin: 0 12px;
+}
+.icon-container{
+	width: 24px;
+	height: 24px;
+	cursor:pointer;
+	background-size: 100%;
+}
+.icon-save{
+	background:url('images/save.svg');
+}
+.icon-save:hover{
+	background:url('images/save_hover.svg');
+}
+.icon-save:active{
+	background:url('images/save_active.svg');
+}
+.icon-delete{
+	background:url('images/delete.svg');
+}
+.icon-delete:hover{
+	background:url('images/delete_hover.svg');
+}
+.icon-delete:active{
+	background:url('images/delete_active.svg');
+}
 </style>
 <script>
+window.onresize = function() {
+	if(document.getElementById("erase_confirm").style.display == "block") {
+		cal_panel_block("erase_confirm", 0.25);
+	}
+}
 <% get_AiDisk_status(); %>
 var AM_to_cifs = get_share_management_status("cifs");  // Account Management for Network-Neighborhood
 var AM_to_ftp = get_share_management_status("ftp");  // Account Management for FTP
@@ -244,15 +315,7 @@ function drawLineChart(date_label, high_array, medium_array, low_array){
 			pointHighlightStroke: "#FFE500",
 			data: medium_array
 		},
-		/*{
-			fillColor: "rgba(255,255,255,0)",
-			strokeColor: "#00B0FF",
-			pointColor: "#00B0FF",
-			pointHighlightFill: "#FFF",
-			pointHighlightStroke: "#00B0FF",
-			data: ["48", "68", "56", "74", "59", "56", "33"]
-		},*/
-			{
+		{
 			fillColor: "rgba(255,255,255,0)",
 			strokeColor: "#59CA5E",
 			pointColor: "#59CA5E",
@@ -269,63 +332,178 @@ function drawLineChart(date_label, high_array, medium_array, low_array){
 	});
 }
 
+var dataObject = new Object;
+var csvContent = 'Time,Level,Type,Source,Destination,Threat';
 function getIPSDetailData(type, event){
 	$.ajax({
 		url: '/getIPSDetailEvent.asp?type=' + type + '&event=' + event,
 		dataType: 'script',	
 		error: function(xhr) {
-			setTimeout("getIPSDetailData('vp', event);", 1000);
+			setTimeout(function(){getIPSDetailData('vp', event);}, 1000);
 		},
 		success: function(response){
 			if(data != ""){
 				var data_array = JSON.parse(data);
-				generateDetailTable(data_array);
+				for(i=0; i<data_array.length; i++){
+					csvContent += '\n';
+					csvContent += data_array[i][0] + ',' + data_array[i][1] + ',' + direct_type[data_array[i][5]] + ',' + data_array[i][2] + ',' + data_array[i][3] + ',' + data_array[i][4];
+
+					var _index = data_array[i][4].split(' ')[0] + '_' + data_array[i][3];
+					if(dataObject[_index]){
+						dataObject[_index].source.push(data_array[i][2]);
+						dataObject[_index].destination.push(data_array[i][3]);
+						dataObject[_index].time.push(data_array[i][0]);
+					}
+					else{
+						dataObject[_index] = {
+							source: [],
+							destination: [],
+							time: [],
+							level: '',
+							attackType: '',
+							title: '',
+							catId: ''
+						}
+
+						dataObject[_index].source.push(data_array[i][2]);
+						dataObject[_index].destination.push(data_array[i][3]);
+						dataObject[_index].time.push(data_array[i][0]);
+						dataObject[_index].level = data_array[i][1];
+						dataObject[_index].attackType = data_array[i][5];
+						dataObject[_index].title = data_array[i][4];
+						dataObject[_index].catId = (data_array[i][7]) ? data_array[i][7] : "0";
+					}
+
+				}
+				
+				var _array = new Array;
+				for(i=0; i<Object.keys(dataObject).length; i++){
+					var eventID = Object.keys(dataObject)[i];
+					var time = dataObject[eventID].time[0];
+					time = time.split(' ');
+					time = time[0].split('-').concat(time[1].split(':'));
+					var t = new Date(time[0], parseInt(time[1])-1, time[2], time[3], time[4], time[5]).getTime();
+					_array[i] = [
+						t, 
+						dataObject[eventID].time[0], 
+						dataObject[eventID].level, 
+						dataObject[eventID].source[0], 
+						dataObject[eventID].destination[0], 
+						dataObject[eventID].title, 
+						dataObject[eventID].attackType, 
+						eventID, 
+						dataObject[eventID].time.length, 
+						dataObject[eventID].catId
+					];
+				}
+				
+				_array.sort(function(a, b){
+					return b[0] - a[0];
+				});
+
+				generateDetailTable(_array);
 			}
 		}
 	});
 }
 
+var direct_type = ["", "Device Infected", "External Attacks"];
 function generateDetailTable(data_array){
-	var direct_type = ["", "Client Device Infected", "External Attacks"];
 	var code = '';
 	code += '<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">';
 	code += '<div style="display:table-cell;width:70px;padding-right:5px;"><#diskUtility_time#></div>';
 	code += '<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>';
-	code += '<div style="display:table-cell;width:140px;padding-right:5px;">Type</div>';
-	
-	code += '<div style="display:table-cell;width:130px;padding-right:5px;"><#AiProtection_event_Source#></div>';
+	code += '<div style="display:table-cell;width:100px;padding-right:5px;">Type</div>';
+	code += '<div style="display:table-cell;width:100px;padding-right:5px;"><#AiProtection_event_Source#></div>';
 	code += '<div style="display:table-cell;width:130px;padding-right:5px;"><#AiProtection_event_Destination#></div>';
-	code += '<div style="display:table-cell;width:180px;padding-right:5px;"><#AiProtection_alert#></div>';
+	code += '<div style="display:table-cell;width:180px;padding-right:5px;"><#AiProtection_event_Threat#></div>';
 	code += '</div>';
 
 	if(data_array == ""){
 		code += '<div style="text-align:center;font-size:16px;color:#FC0;margin-top:90px;"><#IPConnection_VSList_Norule#></div>';
 	}
 	else{
-		for(i=0;i<data_array.length;i++){
+		for(i=0; i<data_array.length; i++){
 			code += '<div style="word-break:break-all;border-bottom: 1px solid #797979">';
-			code += '<div style="display:table-cell;width:70px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][0] +'</div>';
+			code += '<div style="display:table-cell;width:70px;height:30px;vertical-align:middle;padding-right:5px;">';
+			code += data_array[i][1];
+			if(data_array[i][8] != 1){
+				code += '<span id="'+ data_array[i][7] +'_arrow" class="arrow-field arrow-right" onclick="showDetailEvent(this, \''+ data_array[i][7] +'\');"></span>';
+			}
+			code += '</div>';
 			var color = "";
-			if(data_array[i][1] == "H"){
+			if(data_array[i][2] == "H"){
 				color = '#ED1C24';
 			}
-			else if(data_array[i][1] == "M"){
+			else if(data_array[i][2] == "M"){
 				color = '#FFE500';
 			}
 			else{
 				color = '#59CA5E';
 			}
+
 			code += '<div style="display:table-cell;width:50px;height:30px;vertical-align:middle;padding-right:5px;"><div style="width:15px;height:15px;background-color:'+color+';border-radius:50%;margin-left:10px;"></div></div>';
-			code += '<div style="display:table-cell;width:140px;height:30px;vertical-align:middle;padding-right:5px;">'+ direct_type[data_array[i][5]] +'</div>';
-			
-			code += '<div style="display:table-cell;width:130px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][2] +'</div>';
-			code += '<div style="display:table-cell;width:130px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][3] +'</div>';
-			code += '<div style="display:table-cell;width:180px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][4] +'</div>';
+			code += '<div style="display:table-cell;width:100px;height:30px;vertical-align:middle;padding-right:5px;">'+ direct_type[data_array[i][6]] +'</div>';
+			code += '<div style="display:table-cell;width:100px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][3] +'</div>';
+			code += '<div style="display:table-cell;width:130px;height:30px;vertical-align:middle;padding-right:5px;">'+ data_array[i][4] +'</div>';
+			code += '<div style="display:table-cell;width:180px;height:30px;vertical-align:middle;padding-right:5px;text-decoration:underline;cursor:pointer" title="<#AiProtection_DetailTable_Click_Title#>" onclick="threatQuery(\''+ data_array[i][7] +'\', \'' + data_array[i][5].split(" ").slice(0,3).join("+") + '\')">'+ data_array[i][5] + '</div>';
 			code += '</div>';
 		}
 	}
 	
 	$("#detail_info_table").html(code);
+}
+
+function showDetailEvent(obj, event){
+	if($('#' + event).length){	// hide table	
+		$('#' + event).slideUp(function(){$(this).remove();});
+		$('#' + event + '_arrow')
+		.removeClass('arrow-down')
+		.addClass('arrow-right');
+	}
+	else{		// show detail table
+		var target = obj.parentNode.parentNode;
+		var temp  = document.createElement('div');
+		temp.id = event;
+		temp.className = 'detail-table';
+		var code = '';
+		var data = dataObject[event];
+		code += '<div style="border-bottom: 1px solid #C0C0C0;">Count: <span style="color:#FC0;">'+ data.source.length +'</span></div>';
+		for(i=0; i<data.time.length; i++){
+			code += '<div style="display:flex;padding:2px 0;">';
+			code += '<div style="width: 150px;">'+ data.time[i] +'</div>';
+			code += '<div style="width: 150px;">'+ data.source[i] +'</div>';
+			code += '<div>'+ data.destination[i] +'</div>';
+			code += '</div>';
+		}
+
+		temp.innerHTML = code;
+		target.appendChild(temp);
+		$("#" + event).slideDown();
+		$('#' + event + '_arrow')
+		.removeClass('arrow-right')
+		.addClass('arrow-down');
+	}
+}
+
+function threatQuery(id, keyword){
+/*
+	var keywordMappingTable = {
+		"0": "",
+		"1": "Misc",
+		"2": "Web Attack",
+		"4": "Buffer Overflow",
+		"8": "Backdoor/Trojan",
+		"10": "Access Control",
+		"80": "Virus/Worm",
+		"100": "Botnet",
+		"200": "DoS/DDoS",
+		"400": "Scan",
+		"800": "File Transfer"
+	}
+*/
+	var url = 'http://nw-dlcdnet.asus.com/trend/' + id + "?q=" + keyword/*8keywordMappingTable[catId]*/;
+	window.open(url, '_blank');
 }
 
 function recount(){
@@ -385,20 +563,55 @@ function eraseDatabase(){
 	applyRule();
 }
 
-function deleteHover(flag){
-	if(flag == 1){
-		$("#delete_icon").css("background","url('images/New_ui/delete_hover.svg')");
-	}
-	else{
-		$("#delete_icon").css("background","url('images/New_ui/delete.svg')");
-	}
+function showEraseConfirm(){
+	$('#model_name').html(based_modelid)
+	cal_panel_block("erase_confirm", 0.25);
+	$('#erase_confirm').fadeIn(300);
 }
+
+function hideConfirm(){
+	$('#erase_confirm').fadeOut(100);
+}
+var download = function(content, fileName, mimeType) {
+	var a = document.createElement('a');
+	mimeType = mimeType || 'application/octet-stream';
+	if (navigator.msSaveBlob) { // IE10
+		return navigator.msSaveBlob(new Blob([content], { type: mimeType }), fileName);
+	} 
+	else if ('download' in a) { //html5 A[download]
+		a.href = 'data:' + mimeType + ',' + encodeURIComponent(content);
+		a.setAttribute('download', fileName);
+		document.getElementById("save_icon").appendChild(a);
+		setTimeout(function() {
+			document.getElementById("save_icon").removeChild(a);
+			a.click();
+		}, 66);
+		return true;
+	} 
+	else { //do iframe dataURL download (old ch+FF):
+		var f = document.createElement('iframe');
+		document.getElementById("save_icon").appendChild(f);
+		f.src = 'data:' + mimeType + ',' + encodeURIComponent(content);
+		setTimeout(function() {
+			document.getElementById("save_icon").removeChild(f);
+			}, 333);
+		return true;
+	}
+};
 </script>
 </head>
 
 <body onload="initial();" onunload="unload_body();" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
+<div id="erase_confirm" class="confirm">
+	<div style="margin: 16px 24px;font-size:24px;"><span id="model_name"></span> : </div>
+	<div style="margin: 16px 24px;font-size:16px;"><#AiProtection_event_del_confirm#></div>
+	<div style="display:flex;justify-content: flex-end;margin: 36px 24px;">
+		<div class="confirm-button" onclick="hideConfirm();"><#CTL_Cancel#></div>
+		<div class="confirm-button" onclick="eraseDatabase();"><#CTL_ok#></div>
+	</div>
+</div>
 <div id="hiddenMask" class="popup_bg" style="z-index:999;">
 	<table cellpadding="5" cellspacing="0" id="dr_sweet_advise" class="dr_sweet_advise" align="center"></table>
 	<!--[if lte IE 6.5.]><script>alert("<#ALERT_TO_CHANGE_BROWSER#>");</script><![endif]-->
@@ -549,27 +762,26 @@ function deleteHover(flag){
 
 											</div>
 										</div-->
-										<div>
-											<div style="text-align:center;font-size:16px;"><#AiProtection_eventdetails#></div>
-											<div style="float:right;margin:-20px 30px 0 0"><div id="delete_icon" style="width:25px;height:25px;background:url('images/New_ui/delete.svg')" onclick="eraseDatabase();" onmouseover="deleteHover('1')" onmouseout="deleteHover('0')"></div></div>
+										<div style="margin: 0 24px;">
+											<div style="display:flex;justify-content: space-between;align-content: center;">											
+												<div style="text-align:center;font-size:16px;"><#AiProtection_eventdetails#></div>
+												<div style="display: flex;">
+													<div style="margin: 0 8px;"><div id="save_icon" class="icon-container icon-save" title="<#CTL_onlysave#>" onclick="download(csvContent, 'IntrusionPreventionSystem.csv', 'data:text/csv;charset=utf-8');"></div></div>
+													<div style="margin: 0 8px;"><div id="delete_icon" class="icon-container icon-delete" onclick="showEraseConfirm();" title="<#CTL_del#>"></div></div>								
+												</div>
+											</div>		
 										</div>
 										<div style="margin: 10px auto;width:720px;height:500px;background:#444f53;border-radius:10px;position:relative;overflow:auto">
 											<div id="info_shade" style="position:absolute;width:710px;height:490px;background-color:#505050;opacity:0.6;margin:5px;display:none"></div>
 											<div id="detail_info_table" style="padding: 10px 15px;">
 												<div style="font-size:14px;font-weight:bold;border-bottom: 1px solid #797979">
-													<div style="display:table-cell;width:110px;padding-right:5px;"><#diskUtility_time#></div>
+													<div style="display:table-cell;width:70px;padding-right:5px;"><#diskUtility_time#></div>
 													<div style="display:table-cell;width:50px;padding-right:5px;"><#AiProtection_level_th#></div>
-													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Source#></div>
-													<div style="display:table-cell;width:150px;padding-right:5px;"><#AiProtection_event_Destination#></div>
-													<div style="display:table-cell;width:220px;padding-right:5px;"><#AiProtection_alert#></div>
-												</div>
-												<!--div style="word-break:break-all;border-bottom: 1px solid #797979">
-													<div style="display:table-cell;width:110px;height:30px;vertical-align:middle;padding-right:5px;">2016/08/15 11:25</div>
-													<div style="display:table-cell;width:50px;height:30px;vertical-align:middle;padding-right:5px;"><div style="width:15px;height:15px;background-color:#F9BA63;border-radius:50%;margin-left:10px;"></div></div>
-													<div style="display:table-cell;width:150px;height:30px;vertical-align:middle;padding-right:5px;">192.168.111.222</div>
-													<div style="display:table-cell;width:150px;height:30px;vertical-align:middle;padding-right:5px;">device name or ip or mac</div>
-													<div style="display:table-cell;width:220px;height:30px;vertical-align:middle;padding-right:5px;">write something here</div>
-												</div-->												
+													<div style="display:table-cell;width:100px;padding-right:5px;">Type</div>
+													<div style="display:table-cell;width:100px;padding-right:5px;"><#AiProtection_event_Source#></div>
+													<div style="display:table-cell;width:130px;padding-right:5px;"><#AiProtection_event_Destination#></div>
+													<div style="display:table-cell;width:180px;padding-right:5px;"><#AiProtection_event_Threat#></div>
+												</div>																			
 											</div>
 										</div>
 									</div>

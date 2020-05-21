@@ -81,8 +81,6 @@ static unsigned int ipv6_qos_applied = 0;
 
 int etable_flag = 0;
 int manual_return = 0;
-#define GUEST_INIT_MARKNUM 10 /*10 ~ 30 for Guest Network. */
-#define INITIAL_MARKNUM    30 /*30 ~ X  for LAN . */
 
 /* In load-balance mode, redirect TX of each WAN interface to
  * imq0 interface and limit TX speed of imq0 interface instead

@@ -65,6 +65,9 @@
 #include "pc.h"
 #endif
 
+#ifdef RTCONFIG_INTERNETCTRL
+#include "ic.h"
+#endif
 
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
 
@@ -676,7 +679,7 @@ static inline const void *req_fw_hook(const char *filename, size_t *new_size) { 
 
 /* board API under sysdeps/init-broadcom.c sysdeps/broadcom sysdeps/tcode_brcm.c */
 extern void init_others(void);
-#if defined(CONFIG_BCMWL5) || defined(RTCONFIG_WIRELESSREPEATER)
+#if defined(CONFIG_BCMWL5)
 extern int is_ure(int unit);
 #endif
 #ifdef CONFIG_BCMWL5
@@ -715,6 +718,8 @@ extern int wl_subband(char *wif, int idx);
 #if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 extern void check_4366_dummy(void);
 extern void check_4366_fabid(void);
+extern void dummy_alert_led_wifi(void);
+extern int dummy_alert_led_pwr(void);
 #endif
 extern void wl_dfs_radarthrs_config(char *ifname, int unit);
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
@@ -778,10 +783,11 @@ extern void hnd_nat_ac_init(int bootup);
 extern void setLANLedOn(void);
 extern void setLANLedOff(void);
 extern int mtd_erase_image_update();
+extern int mtd_erase_misc2();
 extern int wait_to_forward_state(char *ifname);
-#ifndef RTCONFIG_HND_ROUTER_AX
-extern void wl_fail_db(int unit, int state, int count);
 #endif
+#if (defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)) || defined(RTCONFIG_BCM_7114)
+extern void wl_fail_db(int unit, int state, int count);
 #endif
 #ifdef RTCONFIG_BCMWL6
 extern int hw_vht_cap();
@@ -793,11 +799,16 @@ void set_dpsta_ifnames();
 #ifdef RTAC86U
 extern void hnd_cfe_check();
 #endif
+#if defined(HND_ROUTER) || defined(RTCONFIG_BCM_7114)
+extern void wl_driver_mode_update(void);
+extern void dump_WlGetDriverStats(int fb, int count);
+#endif
 #ifdef RTCONFIG_RGBLED
 extern int setRogRGBLedTest(int RGB);
 #endif
 extern void hnd_set_hwstp(void);
 #endif
+extern int wl_max_no_vifs(int unit);
 
 #ifdef RTCONFIG_AMAS
 enum {
@@ -954,7 +965,7 @@ extern int dpdt_ant_main(int argc, char *argv[]);
 extern int thermal_txpwr_main(int argc, char *argv[]);
 extern void start_wan(void);
 extern void stop_wan(void);
-extern int add_multi_routes(void);
+extern int add_multi_routes(int check_link);
 extern int add_routes(char *prefix, char *var, char *ifname);
 extern int del_routes(char *prefix, char *var, char *ifname);
 extern void start_wan_if(int unit);
@@ -1095,6 +1106,11 @@ extern void config_blocking_redirect(FILE *fp);
 // pc_tmp.c
 #ifdef RTCONFIG_PARENTALCTRL
 extern int pc_tmp_main(int argc, char *argv[]);
+#endif
+
+/* ic.c */
+#ifdef RTCONFIG_INTERNETCTRL
+extern int ic_main(int argc, char *argv[]);
 #endif
 
 // ppp.c
@@ -1295,6 +1311,8 @@ extern void restart_fanctrl(void);
 #endif
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+// arp.c
+extern int send_arpreq(void);
 // psta_monitor.c
 extern int psta_monitor_main(int argc, char *argv[]);
 #endif
@@ -1553,6 +1571,7 @@ extern void subtime(struct timeval *a, struct timeval *b, struct timeval *res);
 extern void setupset(fd_set *theset, int *numfds);
 extern void waitforconnects();
 extern int tcpcheck_main(int argc, char *argv[]);
+extern int tcpcheck_retval(int timeout, char *host_port);
 
 // readmem.c
 #ifdef BUILD_READMEM
@@ -1819,7 +1838,7 @@ extern int firmware_check_main(int argc, char *argv[]);
 #ifdef RTCONFIG_HTTPS
 extern int rsasign_check_main(int argc, char *argv[]);
 extern int rsarootca_check_main(int argc, char *argv[]);
-extern char *pwdec(const char *input, char *output);
+extern char *pwdec(const char *input, char *output, int output_len);
 extern char *pwdec_dsl(char *input);
 #endif
 #ifdef RTCONFIG_ISP_CUSTOMIZE
@@ -2073,6 +2092,7 @@ extern void extract_data(char *path, FILE *fp);
 extern int merge_log(char *path, int len);
 extern void stop_dpi_engine_service(int forced);
 extern void start_dpi_engine_service();
+extern void start_wrs_wbl_service();
 extern void setup_wrs_conf();
 extern void auto_sig_check();
 extern void sqlite_db_check();
@@ -2486,6 +2506,10 @@ extern int asus_ctrl_write(char *asusctrl);
 #else
 static inline int asus_ctrl_write(char *asusctrl) { return 0; }
 #endif
+extern void asus_ctrl_sku_check();
+#ifdef GTAC5300
+extern void asus_ctrl_sku_update();
+#endif
 #endif
 
 #ifdef RTCONFIG_BCMARM
@@ -2497,5 +2521,14 @@ typedef struct WiFi_temperature_s {
 double get_cpu_temp();
 int get_wifi_temps(WiFi_temperature_t *wt);
 #endif /* RTCONFIG_BCMARM */
+
+#ifdef RTCONFIG_GN_WBL
+extern void add_GN_WBL_EBTbrouteRule();
+extern void add_GN_WBL_ChainRule(FILE *fp);
+extern void add_GN_WBL_ForwardRule(FILE *fp);
+#ifdef RTCONFIG_LANTIQ
+extern void GN_WBL_restart();
+#endif
+#endif
 
 #endif	/* __RC_H__ */

@@ -142,6 +142,8 @@ $OPENSSL req -new -x509 -key $KEYNAME.$PID -sha256 -out $CERTNAME.$PID -days $DA
 # server.pem for WebDav SSL
 cat $KEYNAME.$PID $CERTNAME.$PID > server.pem
 
+cp $CERTNAME.$PID cert.crt
+
 mv $KEYNAME.$PID $KEYNAME
 mv $CERTNAME.$PID $CERTNAME
 

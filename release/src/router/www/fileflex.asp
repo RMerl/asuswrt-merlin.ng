@@ -100,7 +100,7 @@ function introduction(){
 											<table width="100%">
 												<tr>
 													<td align="left">
-														<span class="formfonttitle">FileFlex Connector</span><!-- untranslated -->
+														<span class="formfonttitle"><#FileFlex_Connector#></span>
 													</td>
 													<td align="right">
 														<img onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;position:absolute;margin-left:-40px;margin-top:-30px;" title="Back to USB Extension" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
@@ -116,14 +116,14 @@ function introduction(){
 														<div class="fileflex_icon"></div>
 													</td>
 													<td>
-														<div class="formfonttitle">FileFlex Connector Installation Successful !</div><!-- untranslated -->
+														<div class="formfonttitle"><#FileFlex_Connector_success#></div>
 														<div class="formfontdesc" style="font-style:italic;font-size:14px;">
-															FileFlex provides the cloud functionality of secure remote access, sharing and streaming to the router's USB attached storage or the storage of router-networked devices from a smart phone, tablet or remote computer. It also provides automatic back up of photos and videos from smart phones and tablets to your router's USB attached storage or the storage of router-networked devices.<!-- untranslated -->
+															<#FileFlex_desc1#>
 														</div>
 														<br>
 														<div class="formfonttitle">
 															<div style="margin-top:10px;float:left;">
-																<span class="text_link yellow" onclick="loginAcc();">Login FileFlex now</span><!-- untranslated -->
+																<span class="text_link yellow" onclick="loginAcc();"><#FileFlex_login#></span>
 															</div>
 															<div style="margin-left:10px;float:left;"><img src="images/New_ui/aidisk/steparrow.png"></div>
 															<div style="clear:both;"></div>
@@ -135,13 +135,13 @@ function introduction(){
 										<div style="margin:5px;" class="splitLine"></div>
 										<ul style="line-height:30px;">
 											<li>
-												<span class="text_link" onclick="createAcc();">Create a new FileFlex account</span><!-- untranslated -->
+												<span class="text_link" onclick="createAcc();"><#FileFlex_create#></span>
 											</li>
 											<li>
-												<span class="text_link" onclick="installFAQ();">FileFlex Installation FAQ</span><!-- untranslated -->
+												<span class="text_link" onclick="installFAQ();"><#FileFlex_faq#></span>
 											</li>
 											<li>
-												<span class="text_link" onclick="introduction();">FileFlex Introduction</span><!-- untranslated -->
+												<span class="text_link" onclick="introduction();"><#FileFlex_Intro#></span>
 											</li>
 										</ul>
 									</td>

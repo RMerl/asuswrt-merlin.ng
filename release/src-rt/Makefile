@@ -1105,6 +1105,10 @@ define RouterOptions
 			echo "RTCONFIG_CONNTRACK=y" >>$(1); \
 		fi; \
 	fi; \
+	if [ "$(INTERNETCTRL)" = "y" ]; then \
+		sed -i "/RTCONFIG_INTERNETCTRL/d" $(1); \
+		echo "RTCONFIG_INTERNETCTRL=y" >>$(1); \
+	fi; \
 	if [ "$(OPENSSL)" = "11" -o "$(OPENSSL11)" = "y" ]; then \
 		sed -i "/RTCONFIG_OPENSSL/d" $(1); \
 		echo "# RTCONFIG_OPENSSL10 is not set" >>$(1); \
@@ -1213,10 +1217,6 @@ define RouterOptions
 	if [ "$(ODMPID)" = "y" ]; then \
 		sed -i "/RTCONFIG_ODMPID/d" $(1); \
 		echo "RTCONFIG_ODMPID=y" >>$(1); \
-	fi; \
-	if [ "$(NONASUS)" = "y" ]; then \
-		sed -i "/RTCONFIG_NONASUS/d" $(1); \
-		echo "RTCONFIG_NONASUS=y" >>$(1); \
 	fi; \
 	if [ "$(MDNS)" = "y" ]; then \
 		sed -i "/RTCONFIG_MDNS/d" $(1); \
@@ -1452,6 +1452,14 @@ define RouterOptions
 		echo "RTCONFIG_AHS=y" >>$(1); \
 		sed -i "/RTCONFIG_HTTPS/d" $(1); \
 		echo "RTCONFIG_HTTPS=y" >>$(1); \
+		sed -i "/RTCONFIG_LIBASC/d" $(1); \
+		echo "RTCONFIG_LIBASC=y" >>$(1); \
+	fi; \
+	if [ "$(ASD)" = "y" ]; then \
+		sed -i "/RTCONFIG_ASD/d" $(1); \
+		echo "RTCONFIG_ASD=y" >>$(1); \
+		sed -i "/RTCONFIG_LIBASC/d" $(1); \
+		echo "RTCONFIG_LIBASC=y" >>$(1); \
 	fi; \
 	if [ "$(RSYSLOGD)" = "y" ]; then \
 		sed -i "/RTCONFIG_RSYSLOGD/d" $(1); \
@@ -2894,6 +2902,24 @@ define RouterOptions
 	if [ "$(NO_TRY_DWB_PROFILE)" = "y" ]; then \
 		sed -i "/RTCONFIG_NO_TRY_DWB_PROFILE/d" $(1); \
 		echo "RTCONFIG_NO_TRY_DWB_PROFILE=y" >>$(1); \
+	fi; \
+	if [ -n "$(FW_JUMP)" ]; then \
+		sed -i "/RTCONFIG_FW_JUMP/d" $(1); \
+		echo "RTCONFIG_FW_JUMP=y" >>$(1); \
+	fi; \
+	if [ "$(GN_WBL)" = "y" ]; then \
+		sed -i "/RTCONFIG_GN_WBL\>/d" $(1); \
+		echo "RTCONFIG_GN_WBL=y" >>$(1); \
+	fi; \
+	if [ "$(AMAZON_WSS)" = "y" ]; then \
+		sed -i "/RTCONFIG_AMAZON_WSS\>/d" $(1); \
+		echo "RTCONFIG_AMAZON_WSS=y" >>$(1); \
+		sed -i "/RTCONFIG_GN_WBL\>/d" $(1); \
+		echo "RTCONFIG_GN_WBL=y" >>$(1); \
+	fi; \
+	if [ -n "$(CAPTCHA)" ]; then \
+		sed -i "/RTCONFIG_CAPTCHA/d" $(1); \
+		echo "RTCONFIG_CAPTCHA=y" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))

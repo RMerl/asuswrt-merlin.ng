@@ -205,7 +205,6 @@ function tag_control(){
 	}
 }
 
-<% get_realip(); %>
 function get_real_ip(){
 	if(AccLinkStatus.RemoteStatus.link_internet == '2'){
 		$.ajax({

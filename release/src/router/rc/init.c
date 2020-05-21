@@ -358,7 +358,7 @@ misc_ioctrl(void)
 		case MODEL_RTAC86U:
 		case MODEL_RTAC3100:
 #ifdef RTAC68U
-			if (!is_ac66u_v2_series())
+			if (!is_ac66u_v2_series() && !is_ac68u_v3_series())
 				return;
 #endif
 
@@ -627,6 +627,15 @@ wl_defaults(void)
 				nvram_set(strcat_r(prefix, "bw_ul", tmp), "");
 			}
 
+#ifdef RTCONFIG_GN_WBL
+			if (!nvram_get(strcat_r(prefix, "gn_wbl_enable", tmp)))
+			{
+				nvram_set(strcat_r(prefix, "gn_wbl_enable", tmp), "0");
+				nvram_set(strcat_r(prefix, "gn_wbl_type", tmp), "1");
+				nvram_set(strcat_r(prefix, "gn_wbl_rule", tmp), "");
+			}
+#endif
+
 			if (!nvram_get(strcat_r(prefix, "ssid", tmp))) {
 				pssid = nvram_default_get(strcat_r(pprefix, "ssid", tmp));
 				if (strlen(pssid))
@@ -797,15 +806,6 @@ wl_defaults(void)
 
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	reset_psr_hwaddr();
-#endif
-#ifdef RTCONFIG_AVBLCHAN
-	nvram_set("wl0_acs_excl_chans_cfg", "");
-	nvram_set("wl1_acs_excl_chans_cfg", "");
-	nvram_set("wl2_acs_excl_chans_cfg", "");
-	nvram_set("wl0_acs_excl_chans", "");
-	nvram_set("wl1_acs_excl_chans", "");
-	nvram_set("wl2_acs_excl_chans", "");
-	nvram_set("excbase", "0");
 #endif
 }
 
@@ -1120,10 +1120,10 @@ void usbctrl_default()
 
 		http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-		int declen = pw_dec_len(http_passwd);
+		int declen = strlen(http_passwd);
 		char dec_passwd[declen];
 		memset(dec_passwd, 0, sizeof(dec_passwd));
-		pw_dec(http_passwd, dec_passwd);
+		pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
 
 		char_to_ascii_safe(ascii_passwd, dec_passwd, 84);
 
@@ -1267,6 +1267,23 @@ convert_defaults()
 		nvram_commit();
 	}
 }
+
+#ifdef RTCONFIG_AVBLCHAN
+void
+avblchan_defaults()
+{
+	nvram_set("wl0_acs_excl_chans_base", "");
+	nvram_set("wl1_acs_excl_chans_base", "");
+	nvram_set("wl2_acs_excl_chans_base", "");
+	nvram_set("wl0_acs_excl_chans_cfg", "");
+	nvram_set("wl1_acs_excl_chans_cfg", "");
+	nvram_set("wl2_acs_excl_chans_cfg", "");
+	nvram_set("wl0_acs_excl_chans", "");
+	nvram_set("wl1_acs_excl_chans", "");
+	nvram_set("wl2_acs_excl_chans", "");
+	nvram_set("excbase", "0");
+}
+#endif
 
 void
 misc_defaults(int restore_defaults)
@@ -1541,25 +1558,14 @@ misc_defaults(int restore_defaults)
 #ifdef RTCONFIG_QTN
 	nvram_unset("qtn_ready");
 #endif
-	nvram_set("mfp_ip_requeue", "");
-	nvram_unset("webs_state_update");
-	nvram_unset("webs_state_upgrade");
-	nvram_unset("webs_state_info");
-	nvram_unset("webs_state_REQinfo");
-	nvram_unset("webs_state_url");
-	nvram_unset("webs_state_flag");
-	nvram_unset("webs_state_error");
-#if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
-	nvram_set_int("auto_upgrade", 0);
-	nvram_unset("fw_check_period");
-#endif
 #ifdef RTAC68U
 	nvram_unset("fw_enc_crc");
+	nvram_unset("fw_check");
 #endif
 
 	if (restore_defaults)
 	{
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)) && !defined(RTCONFIG_JFFS_NVRAM)
 		nvram_set("jffs2_clean_fs", "1");
 #elif defined(RTCONFIG_YAFFS)
 		nvram_set("yaffs_clean_fs", "1");
@@ -1660,6 +1666,7 @@ misc_defaults(int restore_defaults)
 	nvram_set("aae_support", "1");
 #define AAE_ENABLE_AIHOME 2
 #define AAE_EANBLE_AICLOUD 4
+	nvram_set("aae_enable", "0");
 #ifdef RTCONFIG_AIHOME_TUNNEL
 	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | AAE_ENABLE_AIHOME));
 #endif
@@ -1686,6 +1693,7 @@ misc_defaults(int restore_defaults)
 #ifdef CONFIG_BCMWL5
 	nvram_unset("obd_allow_scan");
 	nvram_unset("obd_scan_state");
+	nvram_unset("acs_skip_init_acs");
 #endif
 #ifdef RTCONFIG_ADV_RAST
 	nvram_unset("diag_chk_cap");
@@ -3010,6 +3018,10 @@ int init_nvram(void)
 #if 0
 	conf_swmode_support(model);
 #endif
+#ifdef RTCONFIG_SSH
+	if(nvram_get_int("sshd_port")>0 && nvram_get_int("sshd_port_x")<=0)
+		nvram_set("sshd_port_x", nvram_safe_get("sshd_port"));
+#endif
 
 #ifdef RTCONFIG_DSL_TCLINUX
 	nvram_set("dsllog_opmode", "");
@@ -3995,6 +4007,7 @@ int init_nvram(void)
 		add_rc_support("switchctrl");
 		add_rc_support("manual_stb");
 		add_rc_support("11AC");
+		add_rc_support("gameMode");
 		add_rc_support("app");
 		//add_rc_support("pwrctrl");
 		// the following values is model dep. so move it from default.c to here
@@ -5934,6 +5947,7 @@ int init_nvram(void)
 		add_rc_support("movistarTriple");
 		add_rc_support("11AC");
 		add_rc_support("app");
+		add_rc_support("gameMode");
 
 		// the following values is model dep. so move it from default.c to here
 		nvram_set("wl0_HT_TxStream", "4");
@@ -7136,6 +7150,7 @@ int init_nvram(void)
 			nvram_set_int("btn_led_gpio", 5);		// active high
 #endif
 #ifdef RTCONFIG_LOGO_LED
+			if (!is_ac68u_v3_series())
 			nvram_set_int("led_logo_gpio", 4|GPIO_ACTIVE_LOW);
 #endif
 			nvram_set_int("led_usb_gpio", 0|GPIO_ACTIVE_LOW);
@@ -7155,6 +7170,8 @@ int init_nvram(void)
 #ifdef RTCONFIG_WIFI_TOG_BTN
 			nvram_set_int("btn_wltog_gpio", 15|GPIO_ACTIVE_LOW);
 #endif
+			if (is_ac68u_v3_series())
+				nvram_set_int("led_wan_gpio", 4);
 		} else {
 			nvram_set_int("led_pwr_gpio", 0|GPIO_ACTIVE_LOW);
 			nvram_set_int("led_wan_gpio", 5);
@@ -7238,6 +7255,7 @@ int init_nvram(void)
 #ifndef RT4GAC68U
 		if (hw_usb_cap())
 		add_rc_support("app");
+		add_rc_support("gameMode");
 #endif
 		if (!hw_vht_cap())
 			add_rc_support("no_vht");
@@ -7422,6 +7440,7 @@ int init_nvram(void)
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 		add_rc_support("app");
+		add_rc_support("gameMode");
 
 		break;
 #endif
@@ -7595,6 +7614,7 @@ int init_nvram(void)
 		add_rc_support("movistarTriple");
 		add_rc_support("wifi2017");
 		add_rc_support("meoVoda");
+		add_rc_support("gameMode");
 		add_rc_support("app");
 		if (!strncmp(nvram_safe_get("territory_code"), "CX", 2)) {
 			add_rc_support("nz_isp");
@@ -7826,6 +7846,9 @@ int init_nvram(void)
 		add_rc_support("meoVoda");
 		add_rc_support("movistarTriple");
 		add_rc_support("app");
+#if defined(RTAC88U)
+		add_rc_support("gameMode");
+#endif			
 		nvram_set("ehci_irq", "111");
 		nvram_set("xhci_irq", "112");
 #ifdef RTCONFIG_MMC_LED
@@ -9269,6 +9292,9 @@ NO_USB_CAP:
 		else
 			nvram_set("wrs_protect_enable", "0");
 	}
+
+	// wrs - white and black list
+	add_rc_support("wrs_wbl");
 #endif
 
 #ifdef RTCONFIG_TRAFFIC_LIMITER
@@ -9558,6 +9584,12 @@ NO_USB_CAP:
 	add_rc_support("nvgfn");
 #endif
 
+#ifdef RTCONFIG_GN_WBL
+	add_rc_support("gn_wbl");
+#ifdef RTCONFIG_AMAZON_WSS
+	add_rc_support("amazon_wss"); // depends on gn_wbl
+#endif
+#endif
 	return 0;
 }
 
@@ -9731,6 +9763,22 @@ int init_nvram2(void)
 	dwb_init_settings();
 #endif
 	nvram_set("label_mac", get_label_mac());
+
+	// upgrade/downgrade dont keep info
+	if(!nvram_match("extendno", nvram_safe_get("extendno_org"))){
+		nvram_set("mfp_ip_requeue", "");
+		nvram_unset("webs_state_update");
+		nvram_unset("webs_state_upgrade");
+		nvram_unset("webs_state_info");
+		nvram_unset("webs_state_REQinfo");
+		nvram_unset("webs_state_url");
+		nvram_unset("webs_state_flag");
+		nvram_unset("webs_state_error");
+#if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
+		nvram_set_int("auto_upgrade", 0);
+#endif
+	}
+
 
 	return 0;
 }
@@ -10754,6 +10802,9 @@ static void sysinit(void)
 	int gmac3 = 0;
 
 	if (!nvram_match("disable_gmac3_force", "1")
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+		&& !psr_mode()
+#endif
 #ifdef RTCONFIG_DPSTA
 		&& !dpsta_mode()
 #endif
@@ -10793,11 +10844,22 @@ static void sysinit(void)
 	nvram_set("success_start_service", "0");
 #endif
 	init_nvram();  // for system indepent part after getting model
+#ifdef RTCONFIG_JFFS_NVRAM
+	if(RESTORE_DEFAULTS()) {
+		nvram_set("jffs2_on", "1");
+		nvram_set("jffs2_clean_fs", "1");
+	}
+	start_jffs2();
+#endif
 	restore_defaults(); // restore default if necessary
 	init_nvram2();
 
 	/* set hostname after nvram init */
 	set_hostname();
+
+#ifdef RTCONFIG_AVBLCHAN
+	avblchan_defaults();
+#endif
 
 #if defined (RTCONFIG_WLMODULE_MT7615E_AP)
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
@@ -10979,6 +11041,7 @@ void config_format_compatibility_handler(void)
 #endif
 }
 
+#ifdef RTCONFIG_WIFILOGO
 static void
 run_rc_local(void)
 {
@@ -10990,6 +11053,7 @@ run_rc_local(void)
 		system(cmd);
 	}
 }
+#endif
 
 int init_main(int argc, char *argv[])
 {
@@ -11035,7 +11099,7 @@ int init_main(int argc, char *argv[])
 		init_others_defer();
 #endif
 
-#if !defined(RTCONFIG_TEST_BOARDDATA_FILE)
+#if !defined(RTCONFIG_TEST_BOARDDATA_FILE) && !defined(RTCONFIG_JFFS_NVRAM)
 		start_jffs2();
 #endif
 
@@ -11628,7 +11692,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 #endif
 #endif // RTCONFIG_USB
 
+#ifdef RTCONFIG_WIFILOGO
 			run_rc_local();
+#endif
 
 #ifndef RTCONFIG_LANTIQ
 			nvram_set("success_start_service", "1");
@@ -11694,6 +11760,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			check_services();
 		}
 
+#ifdef RTCONFIG_ASD
+		monitor_asd();
+#endif
 		do {
 		ret = sigwaitinfo(&sigset, &info);
 		} while (ret == -1);

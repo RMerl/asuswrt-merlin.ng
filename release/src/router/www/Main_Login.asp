@@ -121,6 +121,47 @@ body{
 	width: 600px;
 }
 
+#captcha_img_div{
+	margin: 30px 0px 0px 30px;
+	width: 160px;
+	height: 60px;
+	border-radius: 4px;
+	background-color:#FFF;
+	float: left;
+}
+
+#captcha_pic{
+	width: 90%;
+	height:90%;
+	margin: 3px 0px 0px 0px;
+}
+
+#captcha_input_div{
+	margin: 30px 0px 0px 78px;
+	float: left;
+}
+
+#captcha_text{
+	width: 245px;
+	background-color: rgba(255,255,255,0.2);
+	background-color: #576D73\9;
+	border-radius: 4px;
+	padding: 15px 22px;
+	border: 0;
+	height: 30px;
+	color: #fff;
+	font-size: 28px;
+}
+
+#reCaptcha{
+	margin: 45px 0px 0px 10px;
+	width: 30px;
+	height: 30px;
+	float: left;
+	background-image: url("data:image/svg+xml;charset=US-ASCII,%3C%3Fxml%20version%3D%221.0%22%20encoding%3D%22iso-8859-1%22%3F%3E%0A%3C!DOCTYPE%20svg%20PUBLIC%20%22-%2F%2FW3C%2F%2FDTD%20SVG%201.1%2F%2FEN%22%20%22http%3A%2F%2Fwww.w3.org%2FGraphics%2FSVG%2F1.1%2FDTD%2Fsvg11.dtd%22%3E%0A%3Csvg%20version%3D%221.1%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20xmlns%3Axlink%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxlink%22%20width%3D%2232%22%20height%3D%2232%22%20viewBox%3D%220%200%2032%2032%22%3E%0A%3Cpath%20fill%3D%22%23ABB2BB%22%20d%3D%22M31.638%2022.702c-0.181-0.664-0.906-0.604-1.509-0.785l-1.208-0.423c0.966-1.992%201.087-3.321%201.087-5.555%200-8.211-6.642-14.853-14.853-14.853s-14.853%206.702-14.853%2014.913%206.641%2014.853%2014.853%2014.853c0.664%200%201.208-0.543%201.208-1.208s-0.543-1.208-1.208-1.208c-6.823%200-12.438-5.555-12.438-12.438s5.615-12.438%2012.438-12.438%2012.438%205.555%2012.438%2012.438c0%201.872-0.060%202.838-0.845%204.528l-0.906-0.785c-0.604-0.423-0.906-0.966-1.509-0.785-0.664%200.181-0.966%200.906-0.785%201.509l1.449%204.408c0.181%200.543%200.664%200.845%201.147%200.845%200.121%200%200.241%200%200.362-0.060l4.408-1.449c0.604-0.181%200.966-0.845%200.725-1.509v0z%22%3E%3C%2Fpath%3E%0A%3C%2Fsvg%3E%0A");
+	background-repeat: no-repeat;
+}
+
 /*for mobile device*/
 @media screen and (max-width: 1000px){
 	.title_name {
@@ -188,6 +229,44 @@ body{
 		margin: 10px 15px;
 		width: 100%; 
 	}
+
+	#captcha_img_div{
+		margin-left: 10px;
+		width: 30%;
+		height: 40px;
+		border-radius: 4px;
+		background-color:#FFF;
+		float: left;
+	}
+
+	#captcha_pic{
+		width: 90%;
+		height: 90%;
+		margin: 2px 0px 0px 3px;
+	}
+
+	#captcha_input_div{
+		margin-left: 15px;
+		width: 47%;
+		height: 40px;
+	}
+
+	#captcha_text{
+		padding: 0px 11px;
+		width: 80%;
+		height: 40px;
+		font-size: 16px
+	}
+
+	#reCaptcha{
+		margin-top: 35px;
+	}
+}
+
+@media screen and (max-width: 320px){
+	#captcha_input_div{
+		width: 44%;
+	}
 }
 </style>
 <script>
@@ -239,6 +318,16 @@ var chdom = function(){window.location.href=domainNameUrl};
 })();
 }
 
+function isSupport(_ptn){
+	var ui_support = [<% get_ui_support(); %>][0];
+	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
+}
+var captcha_support = isSupport("captcha");
+if(captcha_support)
+	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7")? true : false;
+else
+	var captcha_on = false;
+
 function initial(){
 	var flag = login_info.error_status;
 	if(isIE8 || isIE9){
@@ -269,6 +358,9 @@ function initial(){
 			document.getElementById("login_filed").style.display ="none";
 			document.getElementById("nologin_field").style.display ="";
 		}
+		else if(flag == 10){
+			document.getElementById("error_captcha_field").style.display ="";
+		}
 		else{
 			document.getElementById("error_status_field").style.display ="none";
 		}
@@ -287,13 +379,17 @@ function initial(){
 	document.form.login_username.onkeypress = function(e){
 		e=e||event;
 		if(e.keyCode == 13){
-			return false;		}
+			return false;
+		}
 	};
 
 	document.form.login_passwd.onkeyup = function(e){
 		e=e||event;
 		if(e.keyCode == 13){
-			login();
+			if(captcha_on)
+				document.form.captcha_text.focus();
+			else
+				login();
 			return false;
 		}
 	};
@@ -303,6 +399,31 @@ function initial(){
 			return false;
 		}
 	};
+
+	if(captcha_on){
+		var timestamp = new Date().getTime();
+		var captcha_pic = document.getElementById("captcha_pic");
+		captcha_pic.src = "captcha.gif?t=" + timestamp;
+
+		document.form.captcha_text.onkeyup = function(e){
+			e=e||event;
+			if(e.keyCode == 13){
+				login();
+				return false;
+			}
+		};
+
+		document.form.captcha_text.onkeypress = function(e){
+			e=e||event;
+			if(e.keyCode == 13){
+				return false;
+			}
+		};
+
+		document.getElementById("captcha_field").style.display = "";
+	}
+	else
+		document.getElementById("captcha_field").style.display = "none";
 
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
 }
@@ -381,6 +502,8 @@ function login(){
 	document.form.login_authorization.value = btoa(document.form.login_username.value + ':' + document.form.login_passwd.value);
 	document.form.login_username.disabled = true;
 	document.form.login_passwd.disabled = true;
+	document.form.login_captcha.value = btoa(document.form.captcha_text.value);
+	document.form.captcha_text.disabled = true;
 
 	try{
 		if(redirect_page == "" 
@@ -427,6 +550,13 @@ function checkTime(i){
 	}
 	return i
 }
+
+function regen_captcha(){
+	var timestamp = new Date().getTime();
+	var captcha_pic = document.getElementById("captcha_pic");
+	var queryString = "?t=" + timestamp;
+	captcha_pic.src = "captcha.gif" + queryString;
+}
 </script>
 </head>
 <body class="wrapper" onload="initial();">
@@ -441,6 +571,7 @@ function checkTime(i){
 <input type="hidden" name="current_page" value="Main_Login.asp">
 <input type="hidden" name="next_page" value="Main_Login.asp">
 <input type="hidden" name="login_authorization" value="">
+<input type="hidden" name="login_captcha" value="">
 <div class="div_table main_field_gap">
 	<div class="div_tr">
 		<div class="title_name">
@@ -464,6 +595,12 @@ function checkTime(i){
 				<input type="password" name="login_passwd" tabindex="2" class="form_input" maxlength="16" placeholder="<#HSDPAConfig_Password_itemname#>" autocapitalize="off" autocomplete="off">
 			</div>
 			<div class="error_hint" style="display:none;" id="error_status_field"></div>
+			<div id="captcha_field" style="display: none;">
+				<div id="captcha_input_div"><input id ="captcha_text" name="captcha_text" tabindex="3" maxlength="5" autocapitalize="off" autocomplete="off"></div>
+				<div id="captcha_img_div"><img id="captcha_pic"></div>
+				<div id="reCaptcha" onclick="regen_captcha();"></div>
+				<div class="error_hint" style="display:none; clear:left;" id="error_captcha_field">Captcha is wrong. Please input again.</div>
+			</div>
 			<input type="submit" value="<#CTL_signin#>" class="button" style="border-style: hidden;" onclick="login();">
 		</div>
 

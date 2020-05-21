@@ -172,7 +172,7 @@ BUILD_VLANCTL=dynamic
 # BUILD_LANVLAN is not set
 # BUILD_VLAN_AGGR is not set
 # BRCM_VLAN_ROUTED_WAN_USES_ROOT_DEV_MAC is not set
-# BUILD_ETHTOOL is not set
+BUILD_ETHTOOL=y
 
 #
 # USB, SATA and Storage Options Selection
@@ -251,6 +251,7 @@ BUILD_GRE_TUNNEL=y
 #
 # Firewall, ALGs, and Networking Features
 #
+BRCM_KERNEL_BONDING=y
 
 #
 # Netfilter and firewall selection

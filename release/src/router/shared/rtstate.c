@@ -197,6 +197,15 @@ int is_phy_connect(int unit){
 		return get_wanports_status(unit);
 }
 
+int is_phy_connect2(int unit){
+#ifdef RTCONFIG_USB_MODEM
+	if(dualwan_unit__usbif(unit))
+		return 1;
+	else
+#endif
+		return get_wanports_status(unit);
+}
+
 int is_ip_conflict(int unit){
 	int wan_state, wan_sbstate;
 

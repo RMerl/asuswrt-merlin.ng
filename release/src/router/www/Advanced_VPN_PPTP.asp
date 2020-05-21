@@ -102,7 +102,7 @@ function initial(){
 		document.getElementById("wan_ctrl").innerHTML = "<#PPTP_desc2#> " +  wan_ipaddr;
 
 		//check DUT is belong to private IP.
-		setTimeout("show_warning_message();", 100);
+		setTimeout("show_warning_message();", 1000);
 	}
 	//setting pptpd_ms_network_option and pptpd_broadcast_option
 	if(document.form.pptpd_ms_network.value == "1") {
@@ -209,7 +209,6 @@ function show_warning_message(){
 		document.getElementById("privateIP_notes").style.display = "";
 }
 
-<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',

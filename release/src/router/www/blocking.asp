@@ -137,6 +137,9 @@ li{
 #tm_block{
 	margin: 0 20px;
 }
+a{
+	color: #FC0;
+}
 /*for mobile device*/
 @media screen and (max-width: 1000px){
 	.title_name {
@@ -344,14 +347,16 @@ function show_information(){
 	else if(target_info.category_type == "Home Protection"){
 		code_title = "<div class='er_title' style='height:auto;'><#block_HP_Title#></div>";
 		code_suggestion = "<ul>";
-		code_suggestion += "<li><#block_HP_suggest1#></li>";
-		code_suggestion += '<li><#AiProtection_sites_report_desc#><a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank"><#AiProtection_sites_report_tm#></a></li>';
+		//code_suggestion += "<li><#block_HP_suggest1#></li>";
+		//code_suggestion += '<li><#AiProtection_sites_report_desc#><a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank"><#AiProtection_sites_report_tm#></a></li>';
+		code_suggestion += '<li>If you are not sure of this webiste, visit <a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank">TrendMicro\'s Site Safety Caneter</a> for more information. You can check the safety level of a particular URL that might seem suspicious.</li>';
+		code_suggestion += "<li>If you trust this website, click <a href='http://router.asus.com/AiProtection_MaliciousSitesBlocking.asp'>here</a> to unblock (administrator credential required)</li>";
 		code_suggestion += "</ul>";
 		document.getElementById('tm_block').style.display = "";
-		$("#go_btn").click(function(){
+		/*$("#go_btn").click(function(){
 			location.href = "AiProtection_HomeProtection.asp";
 		});
-		document.getElementById('go_btn').style.display = "";
+		document.getElementById('go_btn').style.display = "";*/
 	}
 	else if(flag != ""){
 		code_title = "<div class='er_title' style='height:auto;'><#web_redirect_message#></div>";
@@ -420,7 +425,7 @@ function show_information(){
 				<div id="case_content"></div>
 				<div id="suggestion"></div>
 				<div id="tm_block" style="display:none">
-					<div><#block_HP_suggest2#></div>
+					<!--div><#block_HP_suggest2#></div-->
 					<div class="tm_logo"></div>
 				</div>
 			</div>

@@ -1692,6 +1692,12 @@ int main(int argc, char **argv)
 		restart_wireless();
 		return 0;
 	}
+#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
+	else if (!strcmp(base, "sendarp")) {
+		send_arpreq();
+		return 0;
+	}
+#endif
 #ifdef RTCONFIG_BCM_7114
 	else if (!strcmp(base, "stop_wl")) {
 		stop_wl_bcm();
@@ -2052,6 +2058,12 @@ int main(int argc, char **argv)
 		return 0;
 	}
 #endif
+#ifdef RTCONFIG_INTERNETCTRL
+	else if (!strcmp(base, "ic")) {
+		ic_main(argc, argv);
+		return 0;
+	}
+#endif
 #if defined(CONFIG_BCMWL5) \
 		|| (defined(RTCONFIG_RALINK) && defined(RTCONFIG_WIRELESSREPEATER)) \
 		|| defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) \
@@ -2114,7 +2126,7 @@ int main(int argc, char **argv)
 	}
 #endif
 	else if (!strcmp(base, "add_multi_routes")) {
-		return add_multi_routes();
+		return add_multi_routes(0);
 	}
 	else if (!strcmp(base, "led_ctrl")) {
 		if (argc != 3)
@@ -2141,6 +2153,9 @@ int main(int argc, char **argv)
 	}
 	else if (!strcmp(base, "mtd_erase_image_update")) {
 		return mtd_erase_image_update();
+	}
+	else if (!strcmp(base, "mtd_erase_misc2")) {
+		return mtd_erase_misc2();
 	}
 #else
 	else if (!strcmp(base, "nvram_erase")) {

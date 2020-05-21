@@ -4848,3 +4848,21 @@ int get_index_page(char *page, int size)
 
 	return 0;
 }
+
+/*
+	general API to check wss supported interface
+*/
+int amazon_wss_ap_isolate_support(char *prefix)
+{
+	char gn_wbl_en[32] = {0};
+
+	/* not amazon_wss interface */
+	if (strcmp(prefix, "wl0.2_")) return 0;
+
+	/* amazon_ffs is enabled */
+	snprintf(gn_wbl_en, sizeof(gn_wbl_en), "%sgn_wbl_enable", prefix);
+	if (nvram_match(gn_wbl_en, "1")) return 1;
+
+	/* mismatch */
+	return 0;
+}

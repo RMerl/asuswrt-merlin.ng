@@ -2341,7 +2341,7 @@ extern int add_account(const char *const account, const char *const password){
 	char enc_passwd[enclen];
 	char passwdbuf[NVRAM_ENC_MAXLEN];
 
-	if(!pw_dec(password, passwdbuf)){
+	if(!pw_dec(password, passwdbuf, sizeof(passwdbuf))){
 		pw_enc(ascii_passwd, enc_passwd);
 		strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
 	}else{

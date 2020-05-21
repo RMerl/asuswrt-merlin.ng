@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="js/httpApi.js"></script>
 <style>
 </style>
 <script>
@@ -159,6 +160,12 @@ function initial(){
 		}
 		cookie.unset("captive_portal_gn_idx");
 	}
+
+	//LYRA_VOICE
+	if(based_modelid == "MAP-AC2200V"){
+		document.form.action_wait.value = parseInt(document.form.action_wait.value)+135;
+		document.unitform.action_wait.value = parseInt(document.unitform.action_wait.value)+135;
+	}
 }
 
 function change_wl_expire_radio(){
@@ -208,8 +215,14 @@ function translate_auth(flag){
 	else if(flag == "sae"){
 		return "WPA3-Personal";
 	}	 
-	else if(flag == "pskpsk2")
-		return "WPA-Auto-Personal";
+	else if(flag == "pskpsk2"){
+		if(wpa3_support){
+			return "WPA/WPA2-Personal";
+		}
+		else{
+			return "WPA-Auto-Personal";
+		}
+	}
 	else if(flag == "psk2sae"){
 		return "WPA2/WPA3-Personal";	
 	}	
@@ -218,7 +231,7 @@ function translate_auth(flag){
 	else if(flag == "wpa2")
 		return "WPA2-Enterprise";
 	else if(flag == "wpawpa2")
-		return "WPA-Auto-Enterprise";	
+		return "WPA-Auto-Enterprise";		
 	else if(flag == "radius")
 		return "Radius with 802.1x";
 	else
@@ -251,8 +264,11 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	
 	if(tmo_support)	//keep wlx.3 for usingg Passpoint
 		var gn_array_length = gn_array.length-1;
-	else	
+	else if(Qcawifi_support && amesh_wgn_support)
+		var gn_array_length = gn_array.length-1;
+        else
 		var gn_array_length = gn_array.length;
+
 	for(var i=0; i<gn_array_length; i++){			
 			var subunit = i+1+slicesb*4;
 			var show_str;
@@ -324,93 +340,113 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 			var control_setting_flag = false;
 			if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined || captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
 				control_setting_flag = true;
+			var amazon_wss_if_support = (amazon_wss_support && httpApi.amazon_wss.if_support(unit, subunit));
+			var amazon_wss_status = (amazon_wss_support && httpApi.amazon_wss.getStatue(unit, subunit) == "1") ? true : false;
+			htmlcode += '<td style="position:relative;"><table id="GNW_'+GN_band+'G'+i+'" class="gninfo_table" align="center" style="margin:auto;border-collapse:collapse;">';
+			if(amazon_wss_if_support && amazon_wss_status){
+				htmlcode += '<tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="remove_amazon_wss('+ unit +','+ subunit +');"></td></tr>';
+			}
+			else{
+				if(gn_array[i][0] == "1"){
+					if(control_setting_flag) {
+						htmlcode += '<tr><td align="center" class="gninfo_table_top"></td></tr>';
+						show_str = decodeURIComponent(gn_array[i][1]);
+						if(show_str.length >= 21)
+							show_str = show_str.substring(0,17) + "...";
+						show_str = handle_show_str(show_str);
+						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
+						if(!lyra_hide_support)
+							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ translate_auth(gn_array[i][2]) +'</td></tr>';
 
-			htmlcode += '<td><table id="GNW_'+GN_band+'G'+i+'" class="gninfo_table" align="center" style="margin:auto;border-collapse:collapse;">';			
-			if(gn_array[i][0] == "1"){
-				if(control_setting_flag) {
-					htmlcode += '<tr><td align="center" class="gninfo_table_top"></td></tr>';
-					show_str = decodeURIComponent(gn_array[i][1]);
-					if(show_str.length >= 21)
-						show_str = show_str.substring(0,17) + "...";
-					show_str = handle_show_str(show_str);
-					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
-					if(!lyra_hide_support)
-						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ translate_auth(gn_array[i][2]) +'</td></tr>';
-					
-					if(gn_array[i][2].indexOf("wpa") >= 0 || gn_array[i][2].indexOf("radius") >= 0)
-							show_str = "";
-					else if(gn_array[i][2].indexOf("psk") >= 0 || gn_array[i][2].indexOf("sae") >= 0)
-							show_str = gn_array[i][4];
-					else if(gn_array[i][2] == "open" && gn_array[i][5] == "0")
-							show_str = "None";
-					else{
-							var key_index = parseInt(gn_array[i][6])+6;
-							show_str = gn_array[i][key_index];
-					}
+						if(gn_array[i][2].indexOf("wpa") >= 0 || gn_array[i][2].indexOf("radius") >= 0)
+								show_str = "";
+						else if(gn_array[i][2].indexOf("psk") >= 0 || gn_array[i][2].indexOf("sae") >= 0)
+								show_str = gn_array[i][4];
+						else if(gn_array[i][2] == "open" && gn_array[i][5] == "0")
+								show_str = "None";
+						else{
+								var key_index = parseInt(gn_array[i][6])+6;
+								show_str = gn_array[i][key_index];
+						}
 
-					show_str = decodeURIComponent(show_str);
-					if(show_str.length >= 21)
-						show_str = show_str.substring(0,17) + "...";
-					show_str = handle_show_str(show_str);
-					if(show_str.length <= 0)
-						show_str = "&nbsp; ";
-					htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
-					
-					if(gn_array[i][11] == 0)
-							htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><#Limitless#></td></tr>';
-					else{
-							var expire_day = Math.floor(gn_array[i][13]/86400);
-							var expire_hr = Math.floor((gn_array[i][13]%86400)/3600);
-							var expire_min = Math.floor((gn_array[i][13]%3600)/60);
-							if(expire_day > 0)
-									htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_day_'+i+'">'+ expire_day + '</b> <#Day#> <b id="expire_hr_'+i+'">'+ expire_hr + '</b> <#Hour#> <b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
-							else if(expire_hr > 0)
-									htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_hr_'+i+'">'+ expire_hr + '</b> <#Hour#> <b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
-							else{
-									if(expire_min > 0)
-											htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
-									else
-											htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_min_'+i+'">< 1</b> <#Minute#></td></tr>';
-							}				
+						show_str = decodeURIComponent(show_str);
+						if(show_str.length >= 21)
+							show_str = show_str.substring(0,17) + "...";
+						show_str = handle_show_str(show_str);
+						if(show_str.length <= 0)
+							show_str = "&nbsp; ";
+						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ show_str +'</td></tr>';
+
+						if(gn_array[i][11] == 0)
+								htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><#Limitless#></td></tr>';
+						else{
+								var expire_day = Math.floor(gn_array[i][13]/86400);
+								var expire_hr = Math.floor((gn_array[i][13]%86400)/3600);
+								var expire_min = Math.floor((gn_array[i][13]%3600)/60);
+								if(expire_day > 0)
+										htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_day_'+i+'">'+ expire_day + '</b> <#Day#> <b id="expire_hr_'+i+'">'+ expire_hr + '</b> <#Hour#> <b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
+								else if(expire_hr > 0)
+										htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_hr_'+i+'">'+ expire_hr + '</b> <#Hour#> <b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
+								else{
+										if(expire_min > 0)
+												htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_min_'+i+'">' + expire_min +'</b> <#Minute#></td></tr>';
+										else
+												htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');"><b id="expire_min_'+i+'">< 1</b> <#Minute#></td></tr>';
+								}
+						}
 					}
+					else {
+						htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
+					}
+				}else{
+					if(amazon_wss_if_support){
+						htmlcode += '<tfoot>';
+						htmlcode += '<tr rowspan="3"><td align="center"><input type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="create_guest_unit('+ unit +','+ subunit +');"></td></tr>';
+						htmlcode += '<tr rowspan="3"><td align="center"><input type="button" class="button_gen" value="Amazon Wi-Fi Simple Setup" onclick="enable_amazon_wss('+ unit +','+ subunit +');"></td></tr>';/* untranslated */
+						htmlcode += '</tfoot>';
+					}
+					else
+						htmlcode += '<tfoot><tr rowspan="3"><td align="center"><input type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="create_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
 				}
-				else {
-					htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
-				}			
-			}else{					
-					htmlcode += '<tfoot><tr rowspan="3"><td align="center"><input type="button" class="button_gen" value="<#WLANConfig11b_WirelessCtrl_button1name#>" onclick="create_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
-			}														
-			
-			if(sw_mode != "3"){
-					if(gn_array[i][0] == "1" && control_setting_flag){
+
+				if(sw_mode != "3"){
+					if(gn_array[i][0] == "1" && control_setting_flag && !amazon_wss_if_support){
 						var status_Access_Intranet = (gn_array[i][12]=="on")?"<#WLANConfig11b_WirelessCtrl_button1name#>":"<#btn_disable#>";
 						htmlcode += '<tr><td align="center" onclick="change_guest_unit('+ unit +','+ subunit +');">'+ status_Access_Intranet +'</td></tr>';
 					}
-			}
-										
-			if(gn_array[i][0] == "1" && control_setting_flag){
-				if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined) {
-					htmlcode += '<tr><td align="center" class="gninfo_table_bottom"></td></tr>';
-					htmlcode += '<tfoot><tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
 				}
-				else {
-					if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
-						htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
+
+				if(gn_array[i][0] == "1" && control_setting_flag){
+					if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined) {
+						htmlcode += '<tr><td align="center" class="gninfo_table_bottom"></td></tr>';
+						htmlcode += '<tfoot><tr><td align="center"><input type="button" class="button_gen" value="<#btn_remove#>" onclick="close_guest_unit('+ unit +','+ subunit +');"></td></tr></tfoot>';
+					}
+					else {
+						if(captive_portal_used_wl_array["wl" + unit_subunit] != "Facebook Wi-Fi")
+							htmlcode += '<tfoot><tr rowspan="3"><td align="center"><span style="color:#FFCC00;">Used by ' + captive_portal_used_wl_array["wl" + unit_subunit] + '</span></td></tr></tfoot>';
+					}
 				}
 			}
-
-			if(i == (gn_array_length-1)){
-				htmlcode += '<tfoot><tr><td align="center"><div id="smart_home_'+unit+'" style="font-size: 12px;font-weight:bolder;color:rgb(255, 204, 0);position:absolute;margin:33px 0px 0px -20px;display:none"><#Guest_Network_AlexaIFTTT_setting#></div></td></tr></tfoot>';
+			htmlcode += '</table>';
+			if(amazon_wss_if_support && amazon_wss_status){
+				htmlcode += '<div style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;width:100%;">Used by <br>Amazon Wi-Fi Simple Setup</div>';/* untranslated */
 			}
-			htmlcode += '</table></td>';		
-
+			if(lyra_hide_support){
+				if(i == "0")
+					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
+			}
+			else{
+				if(i == (gn_array_length-1))
+					htmlcode += '<div id="smart_home_'+unit+'" style="font-size:12px;font-weight:bolder;color:#FC0;position:absolute;text-align:center;display:none;width:100%;"><#Guest_Network_AlexaIFTTT_setting#></div>';
+			}
+			htmlcode += '</td>';
 			all_gn_status.push({"idx" : unit_subunit, "enable" : (gn_array[i][0] == '1'), "bw_enabled" : (gn_array[i][18] == '1')});
-	}	
+	}
 
 	if(slicesb > 0){
 		for(var td=0; td<(4-gn_array_length); td++)
 			htmlcode += '<td style="width:135px"></td>';
-	}			
+	}
 
 	htmlcode += '</tr></table>';
 	return htmlcode;
@@ -435,6 +471,17 @@ function gen_gntable(){
 	var band5sb = 0;
 	var band5sb_2 = 0;
 	var band60sb = 0;
+	var gn_bw_enabled = false;
+	var check_bw_status = function(_gn_array){
+		if(!gn_bw_enabled){
+			$.each(_gn_array, function(index, item){
+				if(item[0] == "1" && item[18] == "1"){
+					gn_bw_enabled = true;
+					return false;
+				}
+			});
+		}
+	};
 
 	if(gn_array_2g_tmp.length > 0){
 		htmlcode += '<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_2g">';
@@ -453,6 +500,7 @@ function gen_gntable(){
 		htmlcode += '</td></tr>';
 		htmlcode += '</table>';
 		document.getElementById("guest_table2").innerHTML = htmlcode;
+		check_bw_status(gn_array_2g_tmp);
 	}
 	
 	if(gn_array_5g_tmp.length > 0){
@@ -477,6 +525,7 @@ function gen_gntable(){
 		htmlcode5 += '</td></tr>';
 		htmlcode5 += '</table>';
 		document.getElementById("guest_table5").innerHTML = htmlcode5;
+		check_bw_status(gn_array_5g_tmp);
 	}
 
   	if(wl_info.band5g_2_support && gn_array_5g_2_tmp.length > 0){
@@ -496,6 +545,7 @@ function gen_gntable(){
 		htmlcode5_2 += '</td></tr>';
 		htmlcode5_2 += '</table>';
 		document.getElementById("guest_table5_2").innerHTML = htmlcode5_2;
+		check_bw_status(gn_array_5g_2_tmp);
 	}
 
 	if(wl_info.band60g_support) {
@@ -505,6 +555,8 @@ function gen_gntable(){
 		htmlcode60 += '</table>';
 		document.getElementById("guest_table60").innerHTML = htmlcode60;
 	}
+	if(gn_bw_enabled)
+		$("#nat_off_hint").show();
 }
 
 function add_options_value(o, arr, orig){
@@ -571,6 +623,49 @@ function applyRule(){
 
 		dis_qos_enable(document.form.wl_unit.value + "." + document.form.wl_subunit.value, document.form, "bw_enabled");
 
+		if(amesh_support && amesh_wgn_support){
+			$("input[name='wl_ap_isolate']").attr("disabled", false);
+			var wl_ap_isolate = ($("select[name='wl_lanaccess']").val() == "off") ? 1 : 0;
+			$("input[name='wl_ap_isolate']").val(wl_ap_isolate);
+		}
+
+		if(amazon_wss_support && httpApi.amazon_wss.if_support(document.form.wl_unit.value, document.form.wl_subunit.value) && apply_amazon_wss_flag){
+			document.form.action_script.value = "restart_wireless;restart_qos;restart_firewall;";
+			document.form.wl_closed.value = "1";
+			document.form.wl_ssid.value = "simple_setup";
+			document.form.wl_auth_mode_x.value = "open";
+			document.form.wl_wep_x.value = "0";
+			document.form.wl_expire.value = "0";
+			document.form.qos_enable.value = "1";
+			document.form.qos_type.value = "2";
+			document.form.wl_bw_enabled.value = "1";
+			document.form.wl_bw_dl.value = "80";
+			document.form.wl_bw_ul.value = "80";
+			document.form.wl_lanaccess.value = "off";
+			document.form.wl_macmode.value = "disabled";
+			document.form.wl_wpa_psk.value = "";
+			document.form.wl_crypto.value = "aes";
+			document.form.wl_phrase_x.value = "";
+			document.form.wl_key.value = "";
+			document.form.wl_key1.value = "";
+			document.form.wl_key2.value = "";
+			document.form.wl_key3.value = "";
+			document.form.wl_key4.value = "";
+			if (lantiq_support)
+				document.form.action_wait.value = "60"; // for extend the time to let Amazon WSS ebtable rule ready, or it will block all clients
+
+			var postData = {
+				"do_rc": "0",
+				"wss_enable": "1"
+			};
+			var parmData = {
+				"wl_unit": document.form.wl_unit.value,
+				"wl_subunit": document.form.wl_subunit.value,
+				"async": false
+			};
+			httpApi.amazon_wss.set(postData, parmData);
+		}
+
 		var _unit_subunit = "wl" + document.form.wl_unit.value + "." + document.form.wl_subunit.value;
 		if(captive_portal_used_wl_array[_unit_subunit] != undefined) {
 			document.form.wl_key.disabled = true;
@@ -611,6 +706,8 @@ function applyRule(){
 }
 
 function validForm(){
+	if(amazon_wss_support && httpApi.amazon_wss.if_support(document.form.wl_unit.value, document.form.wl_subunit.value) && apply_amazon_wss_flag)
+		return true;
 	var auth_mode = document.form.wl_auth_mode_x.value;
 	
 	if(!validator.stringSSID(document.form.wl_ssid))
@@ -902,6 +999,19 @@ function change_guest_unit(_unit, _subunit){
 		document.getElementById("psk_title").innerHTML = "<#Network_key#>";
 		inputCtrl(document.form.wl_macmode, 0);
 		inputCtrl(document.form.wl_lanaccess, 1);
+	}
+
+	if(amesh_support && amesh_wgn_support){
+		$("#aimesh_sync_field").show();
+		$("#aimesh_sync_field select[name='wl_sync_node']").attr("disabled", false);
+		if(gn_array[idx][23] == undefined || gn_array[idx][23] == "")
+			$("#aimesh_sync_field select[name='wl_sync_node']").val("0");
+		else
+			$("#aimesh_sync_field select[name='wl_sync_node']").val(decodeURIComponent(gn_array[idx][23]));
+	}
+	else{
+		$("#aimesh_sync_field").hide();
+		$("#aimesh_sync_field select[name='wl_sync_node']").attr("disabled", true);
 	}
 }
 
@@ -1239,6 +1349,50 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 		}
 	}
 }
+function enable_amazon_wss(unit, subunit){
+	change_guest_unit(unit, subunit);
+	$(".gn_info_table_bg").hide();
+	$(".gn_set_table_bg").hide();
+	$("#guest_tableAmazonWSS").show();
+	$("#amazon_wss_hint").hide();
+	if(ctf_disable_orig == "0" || QoS_enable_orig == "0" || (QoS_enable_orig == "1" && QoS_type_orig != "2"))
+		$("#amazon_wss_hint").show();
+}
+function remove_amazon_wss(unit, subunit){
+	var postData = {
+		"do_rc": "0",
+		"wss_enable": "0"
+	};
+	var parmData = {
+		"wl_unit": unit,
+		"wl_subunit": subunit,
+		"async": false
+	};
+	httpApi.amazon_wss.set(postData, parmData);
+	var append_hidden_item = function(_item, _value){
+		var NewInput = document.createElement("input");
+		NewInput.type = "hidden";
+		NewInput.name =  _item;
+		NewInput.value = _value;
+		document.unitform.appendChild(NewInput);
+	};
+	append_hidden_item("wl_bw_enabled", "0");
+	append_hidden_item("wl_bw_dl", "0");
+	append_hidden_item("wl_bw_ul", "0");
+	if (lantiq_support)
+		document.unitform.action_wait.value = "60"; // for extend the time to let Amazon WSS ebtable rule ready, or it will block all clients
+	close_guest_unit(unit, subunit);
+}
+function cancel_amazon_wss(){
+	$("#guest_tableAmazonWSS").hide();
+	guest_divctrl(0);
+}
+var apply_amazon_wss_flag = false;
+function apply_amazon_wss(){
+	apply_amazon_wss_flag = true;
+	document.form.wl_bss_enabled.value = "1";
+	applyRule();
+}
 </script>
 </head>
 
@@ -1310,6 +1464,7 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 <input type="hidden" name="wl_gmode_protection" value="<% nvram_get("wl_gmode_protection"); %>" disabled>
 <input type="hidden" name="wl_mode_x" value="<% nvram_get("wl_mode_x"); %>" disabled>
 <input type="hidden" name="wl_maclist_x" value="<% nvram_get("wl_maclist_x"); %>">
+<input type="hidden" name="wl_ap_isolate" value="<% nvram_get("wl_ap_isolate"); %>" disabled>
 <select name="wl_subunit" class="input_option" onChange="change_wl_unit();" style="display:none"></select>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
@@ -1342,18 +1497,18 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 									</td>
 									<td>
 										<div id="gn_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;"><#GuestNetwork_desc#></div>
-										
+										<div id="nat_off_hint" class="formfontdesc" style="color:#FC0;display:none;"><#NAT_Acceleration_disabled#></div>
 									</td>
 								</tr>
 							</table>
 						</div>			
 					<!-- info table -->
 						<div id="guest_block_anchor"></div>
-						<div id="guest_table2"></div>			
-						<div id="guest_table5"></div>
-						<div id="guest_table5_2"></div>
-						<div id="guest_table60"></div>
-						<div id="guest_tableFBWiFi">
+						<div id="guest_table2" class="gn_info_table_bg"></div>
+						<div id="guest_table5" class="gn_info_table_bg"></div>
+						<div id="guest_table5_2" class="gn_info_table_bg"></div>
+						<div id="guest_table60" class="gn_info_table_bg"></div>
+						<div id="guest_tableFBWiFi" class="gn_info_table_bg">
 							<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table" id="gninfo_table_FBWiFi">
 								<tr id="FBWiFi_title">
 									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
@@ -1371,8 +1526,33 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 								</tr>
 							</table>
 						</div>
+						<div id="guest_tableAmazonWSS" class="gn_info_table_bg" style="display:none;">
+							<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table">
+								<tr>
+									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
+										<span><#WSS_setup#></span>
+									</td>
+								</tr>
+								<tr>
+									<td>
+										<span style="line-height:20px;"><#WSS_setup_desc0#></span>&nbsp;
+										<a style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
+										<br>
+										<span><#WSS_setup_desc1#></span>
+										<br>
+										<span id="amazon_wss_hint" style="color:#FC0;line-height:20px;"><#FW_note#>&nbsp;<#WSS_setup_desc2#></span>
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align:center;">
+										<input type="button" class="button_gen" value="<#CTL_Cancel#>" onclick="cancel_amazon_wss();">
+										<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="apply_amazon_wss();">
+									</td>
+								</tr>
+							</table>
+						</div>
 					<!-- setting table -->
-						<table width="80%" border="1" align="center" style="margin-top:10px;display:none" cellpadding="4" cellspacing="0" id="gnset_table" class="FormTable">
+						<table width="80%" border="1" align="center" style="margin-top:10px;display:none" cellpadding="4" cellspacing="0" id="gnset_table" class="FormTable gn_set_table_bg">
 							<tr id="wl_unit_field" style="display:none">
 								<th><#Interface#></th>
 								<td>
@@ -1575,6 +1755,15 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 									</select>
 								</td>
 							</tr>
+							<tr id="aimesh_sync_field" class="captive_portal_control_class">
+								<th>Sync to AiMesh Node</th><!-- untranslated -->
+								<td>
+									<select name="wl_sync_node" class="input_option">
+										<option class="content_input_fd" value="0" <% nvram_match("wl_sync_node", "0","selected"); %>>Router only</option><!-- untranslated -->
+										<option class="content_input_fd" value="1" <% nvram_match("wl_sync_node", "1","selected"); %>><#All#></option>
+									</select>
+								</td>
+							</tr>
 							<tr>
 								<th><#enable_macmode#></th>
 								<td>
@@ -1617,7 +1806,7 @@ function dis_qos_enable(_wl_idx, _form_obj, _control_item){
 							<div id="wl_maclist_x_Block"></div>
 						</div>
 
-						<div class="apply_gen" id="applyButton" style="display:none;margin-top:20px">
+						<div class="apply_gen gn_set_table_bg" id="applyButton" style="display:none;margin-top:20px">
 							<input type="button" class="button_gen" value="<#CTL_Cancel#>" onclick="guest_divctrl(0);">
 							<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 						</div>			  	

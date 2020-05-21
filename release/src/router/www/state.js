@@ -554,6 +554,7 @@ var hdspindown_support = isSupport("hdspindown");
 var amesh_support = isSupport("amas");
 var ameshRouter_support = isSupport("amasRouter");
 var ameshNode_support = isSupport("amasNode");
+var amesh_wgn_support = isSupport("amas_wgn");
 var ifttt_support = isSupport("ifttt");
 var alexa_support = isSupport("alexa");
 var hnd_support = isSupport("hnd");
@@ -565,7 +566,7 @@ var movistarTriple_support = isSupport("movistarTriple");
 var utf8_ssid_support = isSupport("utf8_ssid");
 var wpa3_support = isSupport('wpa3');
 var uu_support = isSupport('uu_accel');
-
+var gameMode_support = isSupport('gameMode');
 var QISWIZARD = "QIS_wizard.htm";
 
 var wl_version = "<% nvram_get("wl_version"); %>";
@@ -582,6 +583,12 @@ var dblog_support = isSupport("dblog");
 var qca_support = isSupport("qca");
 var geforceNow_support = isSupport("nvgfn");
 var fileflex_support = isSupport("fileflex");
+var re_mode = '<% nvram_get("re_mode"); %>';
+var conndiag_support = (function(){
+	return (isSupport("conndiag") && ('<% nvram_get("enable_diag"); %>' == "2"));
+})();
+
+var amazon_wss_support = isSupport("amazon_wss");
 
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
@@ -616,7 +623,6 @@ var gn_array_5g = <% wl_get_guestnetwork("1"); %>;
 var gn_array_5g_2 = <% wl_get_guestnetwork("2"); %>;
 var gn_array_60g = <% wl_get_guestnetwork("3"); %>;
 if(lyra_hide_support){
-	gn_array_2g.splice(1, gn_array_2g.length-1);
 	gn_array_5g = [];
 	gn_array_5g_2 = [];
 }
@@ -683,6 +689,9 @@ var realip_ip = "";
 var external_ip = 0;
 
 var link_internet = '<% nvram_get("link_internet"); %>';
+var le_restart_httpd_chk = "";
+
+var ui_lang = '<% nvram_get("preferred_lang"); %>';
 
 if(lyra_hide_support){
 	var Android_app_link = "https://play.google.com/store/apps/details?id=com.asus.hive";
@@ -1473,6 +1482,9 @@ function showMenuTree(menuList, menuExclude){
 			else if(isSupport("amazon_avs") && current_url.indexOf("Advanced_Smart_Home_Alexa") >= 0 && tableHeight < 890){
 				document.getElementById("FormTitle").style.height = "890px";
 			}
+			else if(current_url.indexOf("GameBoost.asp") != -1){
+				document.getElementById("FormTitle").style.height = "auto";
+			}
 			else{
 				document.getElementById("FormTitle").style.height = tableHeight - CONTENT_PADDING + "px";
 			}
@@ -1572,7 +1584,7 @@ function show_footer(){
 		//Play Store
 		footer_code +='<div style="padding:20px 10px;">';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;padding-left:10px;">';
-		if(is_CN){
+		if(is_CN || ui_lang == "CN"){
 			footer_code +='<div><img src="images/New_ui/asus_router_android_qr_cn.png" style="width:75px;height:75px;"></div>';
 		}
 		else{
@@ -1580,12 +1592,12 @@ function show_footer(){
 		}
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
-		if(is_CN){
+		if(is_CN || ui_lang == "CN"){
 			Android_app_link = "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk";
-			banner_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;">Android App</div></a></div>';
+			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:160px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;margin: auto;">Android App</div></a></div>';
 		}
 		else{
-			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;height:60px;background:url(\'images/googleplay.png\') no-repeat;"></div></a></div>';
+			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:160px;height:46px;background:url(\'images/googleplay.png\') no-repeat;background-size:100%;margin:auto;"></div></a></div>';
 		}
 		footer_code +='</div>';
 		footer_code +='</div>';
@@ -1595,7 +1607,7 @@ function show_footer(){
 		footer_code +='<div><img src="images/New_ui/asus_router_ios_qr.png" style="width:75px;height:75px;"></div>';
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
-		footer_code +='<div style="padding-left: 30px;"><a href="https://itunes.apple.com/tw/app/asus-router/id1033794044" target="_blank"><div style="width:172px;height:51px;background:url(\'images/AppStore.png\') no-repeat;"></div></a></div>';
+		footer_code +='<div style="padding-left: 30px;"><a href="'+IOS_app_link+'" target="_blank"><div style="width:160px;height:46px;background:url(\'images/AppStore.png\') no-repeat;background-size:100%;margin:auto;"></div></a></div>';
 		footer_code +='</div>';	
 		footer_code +='</div>';
 
@@ -2298,13 +2310,14 @@ function hadPlugged(deviceType){
 
 //Update current system status
 var AUTOLOGOUT_MAX_MINUTE = parseInt('<% nvram_get("http_autologout"); %>') * 20;
+var error_num = 5;
 function updateStatus(){
 	if(stopFlag == 1) return false;
 	if(AUTOLOGOUT_MAX_MINUTE == 1) location = "Logout.asp"; // 0:disable auto logout, 1:trigger auto logout. 
 
 	require(['/require/modules/makeRequest.js'], function(makeRequest){
 		if(AUTOLOGOUT_MAX_MINUTE != 0) AUTOLOGOUT_MAX_MINUTE--;
-		makeRequest.start('/ajax_status.xml', refreshStatus, function(){stopFlag = 1;});
+		makeRequest.start('/ajax_status.xml', refreshStatus, function(){ if(error_num > 0){ error_num--; updateStatus(); }	else stopFlag = 1; });
 	});
 }
 
@@ -2430,6 +2443,7 @@ function refreshStatus(xhr){
 	rssi_5g = wanStatus[30].firstChild.nodeValue.replace("rssi_5g=", "");
 	rssi_5g_2 = wanStatus[31].firstChild.nodeValue.replace("rssi_5g_2=", "");
 	link_internet = wanStatus[32].firstChild.nodeValue.replace("link_internet=", "");
+	le_restart_httpd = wanStatus[34].firstChild.nodeValue.replace("le_restart_httpd=", "");
 
 	var vpnStatus = devicemapXML[0].getElementsByTagName("vpn");
 	vpnc_proto = vpnStatus[0].firstChild.nodeValue.replace("vpnc_proto=", "");
@@ -2529,14 +2543,24 @@ function refreshStatus(xhr){
 	
 	//Adaptive QoS mode	
 	if(bwdpi_support && qos_enable_flag && qos_type_flag == "1"){
-		if(bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<game")
-			document.getElementById("bwdpi_status").className = "bwdpistatus_game";			
-		else if(bwdpi_app_rulelist == "9,20<4<0,5,6,15,17<8<13,24<1,3,14<7,10,11,21,23<<media")
+		if(bwdpi_app_rulelist.indexOf('game') != -1){
+			document.getElementById("bwdpi_status").className = "bwdpistatus_game";
+		}	
+		else if(bwdpi_app_rulelist.indexOf('media') != -1){
 			document.getElementById("bwdpi_status").className = "bwdpistatus_media";
-		else if(bwdpi_app_rulelist == "9,20<13,24<4<0,5,6,15,17<8<1,3,14<7,10,11,21,23<<web")
+		}
+		else if(bwdpi_app_rulelist.indexOf('web') != -1){
 			document.getElementById("bwdpi_status").className = "bwdpistatus_web";
-		else
-			document.getElementById("bwdpi_status").className = "bwdpistatus_customize";			
+		}
+		else if(bwdpi_app_rulelist.indexOf('eLearning') != -1){
+			document.getElementById("bwdpi_status").className = "bwdpistatus_eLearning";
+		}
+		else if(bwdpi_app_rulelist.indexOf('videoConference') != -1){
+			document.getElementById("bwdpi_status").className = "bwdpistatus_videoConference";
+		}
+		else{
+			document.getElementById("bwdpi_status").className = "bwdpistatus_customize";
+		}		
 		
 		document.getElementById("bwdpi_status").onclick = function(){openHint(24,9);}
 		document.getElementById("bwdpi_status").onmouseover = function(){overHint("A");}
@@ -3199,7 +3223,12 @@ function refreshStatus(xhr){
 		setTimeout(function(){notification.updateNTDB_Status();}, 10000);
 	else
 		notification.updateNTDB_Status()
-	
+
+	if(letsencrypt_support && le_restart_httpd == "1" && le_restart_httpd_chk == ""){
+		alert("<#LANHostConfig_x_DDNSLetsEncrypt_ReloginHint#>");
+		le_restart_httpd_chk = le_restart_httpd;
+	}
+
 	if(window.frames["statusframe"] && window.frames["statusframe"].stopFlag == 1 || stopFlag == 1){
 		return 0;
 	}

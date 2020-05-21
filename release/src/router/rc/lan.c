@@ -4759,9 +4759,6 @@ void restart_wl(void)
 	init_wllc();
 #endif
 
-#ifndef RTCONFIG_QCA
-	nvram_set_int("wlready", 1);
-#endif
 	nvram_set("reload_svc_radio", "1");
 #ifndef RTCONFIG_QCA
 	timecheck();
@@ -5094,7 +5091,7 @@ void restart_wireless(void)
 	stop_chilli();
 	stop_CP();
 #endif
-#if defined(RTCONFIG_WLCEVENTD) && (defined(CONFIG_BCMWL5) || defined(RTCONFIG_RALINK))
+#if defined(RTCONFIG_WLCEVENTD) && defined(CONFIG_BCMWL5)
 	stop_wlceventd();
 #endif
 	stop_wps();
@@ -5155,7 +5152,7 @@ void restart_wireless(void)
 	start_8021x();
 #endif
 	start_wps();
-#if defined(RTCONFIG_WLCEVENTD) && (defined(CONFIG_BCMWL5) || defined(CONFIG_REALTEK) || defined(RTCONFIG_RALINK))
+#if defined(RTCONFIG_WLCEVENTD) && defined(CONFIG_BCMWL5) || defined(CONFIG_REALTEK)
 	start_wlceventd();
 #endif
 #ifdef RTCONFIG_BCMWL6
@@ -5199,6 +5196,9 @@ void restart_wireless(void)
 #ifndef RTCONFIG_DHDAP
 	restart_wl();
 	lanaccess_wl();
+#endif
+#ifndef RTCONFIG_QCA
+	nvram_set_int("wlready", 1);
 #endif
 
 #ifdef CONFIG_BCMWL5

@@ -16,6 +16,7 @@
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
 <style>
 .wifiheader{
@@ -69,9 +70,45 @@ if (band5g_support) {
 	}
 }
 
-var nvram_dump_String = function(){/*
-<% nvram_dump("wlan11b_2g.log",""); %>
-*/}.toString().slice(14,-3);
+var classObj= {
+        ToHexCode:function(str){
+                return encodeURIComponent(str).replace(/%/g,"\\x").toLowerCase();
+        },
+        UnHexCode:function(str){
+                return decodeURIComponent(str.replace(/\\x/g, "%"));
+        }
+}
+
+var content = "";
+function GenContent(){
+	var dead = 0;
+	$.ajax({
+		url: '/wl_log.asp',
+		dataType: 'text',
+		timeout: 1500,
+		error: function(xhr){
+			if(dead > 30){
+				$("#wl_log").html("Fail to grab wireless log.");
+				break;
+			}
+			else{
+				dead++;
+				setTimeout("GenContent();", 1000);
+			}
+		},
+
+		success: function(resp){
+			content = htmlEnDeCode.htmlEncode(resp);
+			content = classObj.UnHexCode(content);
+			if(content.length > 10){
+				$("#wl_log").html(content);
+			}
+			else{
+				$("#wl_log").html("Fail to grab wireless log.");
+			}
+		}
+	});
+}
 
 function initial(){
 	show_menu();
@@ -117,11 +154,7 @@ function redraw(){
 		}
 	}
 
-	try {
-		document.getElementById("wl_log").innerHTML = classObj.UnHexCode(nvram_dump_String);
-	} catch(e) {
-		document.getElementById("wl_log").innerHTML = nvram_dump_String;
-	}
+	GenContent();
 }
 
 
@@ -139,7 +172,7 @@ function display_clients(clientsarray, obj, unit) {
 	if (clientsarray.length > 1) {
 		if (clientsarray[0][8] != "")
 			code += '<td width="10%">Streams</td>';
-		else if (clientsarray[0][9] != "")
+		else
 			code += '<td width="10%">PHY</td>';
 	}
 	code += '<td width="10%">Flags</td>';
@@ -207,24 +240,18 @@ function display_clients(clientsarray, obj, unit) {
 			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI
 			code += '<td style="text-align: right;vertical-align:top;">' + client[7] + '</td>';	// Time
 
-			if (client[8] != "" || client[9] != "" || client[10] != "") {
-				code += '<td style="vertical-align:top;">';
-			}
-
 			if (client[8] != "") {
-				code += client[8] + ' ('+ client[9] +')';	// NSS + PHY
+				code += '<td style="vertical-align:top;">' + client[8] + ' ('+ client[9] +')';	// NSS + PHY
 			} else if (client[9] != "") {
-				code += client[9];	// PHY
+				code += '<td style="vertical-align:top;">' + client[9];	// PHY
+			} else {
+				code += '<td>';
 			}
-
 			if (client[10] != "") {
-				code += '<br><span style="margin-top:-15px; color: cyan;">' + client[10];  // BW
+				code += '<br><span style="margin-top:-15px; color: cyan;">' + client[10] + '</td>';  // BW
+			} else {
+				code += '</td>';
 			}
-
-                        if (client[8] != "" || client[9] != "" || client[10] != "") {
-                                code += '</td>';
-                        }
-
 			code += '<td style="vertical-align:top;">' + flags + '</td>';	// Flags
 			code += '</tr>';
 		}
@@ -320,7 +347,7 @@ function hide_details_window(){
 }
 </script>
 </head>
-<body onload="initial();" class="bg">
+<body onload="initial();">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
@@ -405,7 +432,7 @@ function hide_details_window(){
 
 <div id="details_window"  class="contentM_details" style="box-shadow: 1px 5px 10px #000;">
 	<div style="margin: 15px;">
-		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"><% nvram_dump("wlan11b_2g.log",""); %></textarea>
+		<textarea id="wl_log" cols="63" rows="30" class="textarea_ssh_table" style="width:99%;font-family:'Courier New', Courier, mono; font-size:13px;" readonly="readonly" wrap="off"></textarea>
 	</div>
 	<div style="margin-top:5px;margin-bottom:5px;width:100%;text-align:center;">
 		<input class="button_gen" type="button" onclick="hide_details_window();" value="Close">

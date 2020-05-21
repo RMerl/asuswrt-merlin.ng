@@ -158,7 +158,7 @@ void check_wan_nvram(void){
 	if(nvram_match("wan1_proto", "")) nvram_set("wan1_proto", "dhcp");
 }
 #else
-int add_multi_routes(void){
+int add_multi_routes(int check_link){
 	int unit;
 	char tmp[100], prefix[] = "wanXXXXXXXXXX_";
 	char wan_proto[32];
@@ -167,6 +167,7 @@ int add_multi_routes(void){
 	int debug = nvram_get_int("routes_debug");
 	int lock;
 	lock = file_lock("mt_routes");
+_dprintf("add_multi_routes: running...\n");
 
 	// clean the rules of routing table and re-build them then.
 	system("ip rule flush");
@@ -186,8 +187,10 @@ int add_multi_routes(void){
 		snprintf(wan_multi_gate[unit], sizeof(wan_multi_gate[unit]), "%s", nvram_safe_get(strcat_r(prefix, "gateway", tmp)));
 
 		// when wan_down().
-		if(!is_wan_connect(unit))
+		if(check_link && !is_wan_connect(unit)){
+_dprintf("add_multi_routes: skip because of the result of is_wan_connect(%d)...\n", unit);
 			continue;
+		}
 
 		snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", wan_multi_gate[unit], wan_multi_if[unit]);
 if(debug) printf("test 10. cmd=%s.\n", cmd);
@@ -2148,7 +2151,9 @@ int update_resolvconf(void)
 					break;
 #endif
 				foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
-					fprintf(fp_servers, "server=%s\n", tmp);
+				{
+ 					fprintf(fp_servers, "server=%s\n", tmp);
+				}
 			} while (0);
 
 			wan_domain = nvram_safe_get_r(strcat_r(prefix, "domain", tmp), wan_domain_buf, sizeof(wan_domain_buf));
@@ -2177,7 +2182,7 @@ int update_resolvconf(void)
 	}
 
 /* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
-#ifdef RTCONFIG_OPENVPN
+#if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
 	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 
@@ -2734,7 +2739,7 @@ wan_up(const char *pwan_ifname)
 	update_resolvconf();
 
 	/* default route via default gateway */
-	add_multi_routes();
+	add_multi_routes(0);
 
 	/* Kick syslog to re-resolve remote server */
 	reload_syslogd();
@@ -2777,6 +2782,10 @@ wan_up(const char *pwan_ifname)
 	if (!nvram_get_int("ntp_ready"))
 #endif
 		refresh_ntpc();
+
+#ifdef RTCONFIG_VPN_FUSION
+	vpnc_set_internet_policy(1);
+#endif
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (wan_unit != wan_primary_ifunit()
@@ -2835,6 +2844,59 @@ wan_up(const char *pwan_ifname)
 
 #ifdef RTCONFIG_BLINK_LED
 	adjust_netdev_if_of_wan_bled(1, wan_unit, wan_ifname);
+#endif
+
+#ifdef RTCONFIG_BWDPI
+	int enabled = check_bwdpi_nvram_setting();
+	int changed = tdts_check_wan_changed();
+
+	BWDPI_DBG("enabled = %d, changed = %d\n", enabled, changed);
+
+	if(enabled){
+		_dprintf("[%s] do dpi engine service ... \n", __FUNCTION__);
+		// if Adaptive QoS or AiProtection is enabled
+		int count = 0;
+		int val = 0;
+		while (count < 3) {
+			sleep(1);
+			val = found_default_route(0);
+			count++;
+			if ((val == 1) || (count == 3)) break;
+		}
+
+		BWDPI_DBG("found_default_route result: %d\n", val);
+
+		if (val) {
+			// if restart_wan_if, remove dpi engine related
+			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
+				stop_dpi_engine_service(0);
+			}
+			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
+				stop_dpi_engine_service(1);
+			}
+			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
+			set_codel_patch();
+			start_dpi_engine_service();
+			start_firewall(wan_unit, 0);
+		}
+
+		if(IS_NON_AQOS()){
+			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
+			start_iQos();
+		}
+	}
+	else{
+		if(IS_NON_AQOS()){
+			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
+			start_iQos();
+		}
+	}
+#else
+	start_iQos();
 #endif
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
@@ -2908,59 +2970,6 @@ wan_up(const char *pwan_ifname)
 	if (nvram_get_int("ntp_ready")) {
 		start_ovpn_eas();
 	}
-#endif
-
-#ifdef RTCONFIG_BWDPI
-	int enabled = check_bwdpi_nvram_setting();
-	int changed = tdts_check_wan_changed();
-
-	BWDPI_DBG("enabled = %d, changed = %d\n", enabled, changed);
-
-	if(enabled){
-		_dprintf("[%s] do dpi engine service ... \n", __FUNCTION__);
-		// if Adaptive QoS or AiProtection is enabled
-		int count = 0;
-		int val = 0;
-		while (count < 5) {
-			sleep(1);
-			val = found_default_route(0);
-			usleep(400*1000);
-			count++;
-			if ((val == 1) || (count == 5)) break;
-		}
-
-		BWDPI_DBG("found_default_route result: %d\n", val);
-
-		if (val) {
-			// if restart_wan_if, remove dpi engine related
-			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
-			{
-				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
-				stop_dpi_engine_service(0);
-			}
-			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
-			{
-				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
-			stop_dpi_engine_service(1);
-			}
-			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
-			start_dpi_engine_service();
-			start_firewall(wan_unit, 0);
-		}
-
-		if(IS_NON_AQOS()){
-			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
-			start_iQos();
-		}
-	}
-	else{
-		if(IS_NON_AQOS()){
-			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
-			start_iQos();
-		}
-	}
-#else
-	start_iQos();
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -3066,7 +3075,7 @@ wan_down(char *wan_ifname)
 
 #ifdef RTCONFIG_DUALWAN
 	if(nvram_match("wans_mode", "lb"))
-		add_multi_routes();
+		add_multi_routes(1);
 #endif
 
 #ifdef RTCONFIG_GETREALIP
@@ -3081,6 +3090,10 @@ wan_down(char *wan_ifname)
 #ifdef RTCONFIG_LANTIQ
 	disable_ppa_wan(wan_ifname);
 #endif
+#ifdef RTCONFIG_VPN_FUSION
+	vpnc_set_internet_policy(0);
+#endif
+
 }
 
 int
@@ -3521,7 +3534,6 @@ start_wan(void)
 #endif
 #endif // RTCONFIG_DUALWAN
 
-	sleep(1); // let wanduck's detect not be close with start_wan().
 	nvram_set("wanduck_start_detect", "1");
 
 #ifdef RTCONFIG_MULTICAST_IPTV
@@ -3562,7 +3574,7 @@ stop_wan(void)
 #else
 	_dprintf("no wifison feature\n");
 #endif
-	}	
+	}
 	else
 	{
 		if (!is_routing_enabled())
@@ -3845,8 +3857,11 @@ int autodet_main(int argc, char *argv[]){
 		}
 
 		if(nvram_get_int(strcat_r(prefix2, "state", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE
-				|| nvram_get_int(strcat_r(prefix2, "auxstate", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE)
+				|| nvram_get_int(strcat_r(prefix2, "auxstate", tmp2)) == AUTODET_STATE_FINISHED_WITHPPPOE){
+			nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_FINISHED_OK);
+			nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_FINISHED_WITHPPPOE);
 			continue;
+		}
 
 		nvram_set_int(strcat_r(prefix2, "state", tmp2), AUTODET_STATE_INITIALIZING);
 		nvram_set_int(strcat_r(prefix2, "auxstate", tmp2), AUTODET_STATE_INITIALIZING);
@@ -4252,7 +4267,7 @@ static void detwan_preinit(void)
 		nvram_set("lan_ifnames", lan);
 
 	stop_wanduck();
-	// Only MAP-AC2200 && MAC-AC1300 support DETWAN 
+	// Only MAP-AC2200 && MAC-AC1300 support DETWAN
 	// following configs are same in both products
 	nvram_set("detwan_proto", "-1");
 	nvram_set("wanports_mask", "0");

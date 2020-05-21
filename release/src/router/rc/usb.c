@@ -3316,7 +3316,7 @@ start_samba(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			char dec_passwd[64];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd);
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			memset(char_passwd, 0, 64);
@@ -3760,10 +3760,10 @@ write_mt_daapd_conf(char *servername)
 #if 1
 	char *http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = pw_dec_len(http_passwd);
+	int declen = strlen(http_passwd);
 	char dec_passwd[declen];
 	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(http_passwd, dec_passwd);
+	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
 	http_passwd = dec_passwd;
 #endif
 	memset(dbdir, 0, sizeof(dbdir));
@@ -3938,10 +3938,10 @@ void write_webdav_permissions()
 			ascii_to_char_safe(char_user, tmp_ascii_user, 64);
 			memset(char_passwd, 0, 64);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-			int declen = pw_dec_len(tmp_ascii_passwd);
+			int declen = strlen(tmp_ascii_passwd);
 			char dec_passwd[declen];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd);
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			ascii_to_char_safe(char_passwd, tmp_ascii_passwd, 64);

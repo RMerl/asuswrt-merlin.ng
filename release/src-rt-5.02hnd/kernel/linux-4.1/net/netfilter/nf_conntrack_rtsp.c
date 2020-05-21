@@ -831,6 +831,7 @@ static int __init nf_conntrack_rtsp_init(void)
 		rtsp[i].tuple.src.l3num = PF_INET;
 		rtsp[i].tuple.src.u.tcp.port = htons(ports[i]);
 		rtsp[i].tuple.dst.protonum = IPPROTO_TCP;
+		rtsp[i].data_len = sizeof(struct nf_ct_rtsp_master);
 		rtsp[i].expect_policy = &rtsp_exp_policy;
 		rtsp[i].expect_class_max = 1;
 		rtsp[i].me = THIS_MODULE;

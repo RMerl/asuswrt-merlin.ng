@@ -601,7 +601,7 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
     if ( extra_header != (char*) 0 )
 	(void) fprintf( conn_fp, "%s\r\n", extra_header );
     if ( mime_type != (char*) 0 ){
-	if(fromapp != 0)
+	if(fromapp != FROM_BROWSER && fromapp != FROM_WebView)
 		(void) fprintf( conn_fp, "Content-Type: %s\r\n", "application/json;charset=UTF-8" );		
 	else
 		(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
@@ -739,6 +739,8 @@ int check_user_agent(char* user_agent){
 				fromapp=FROM_IFTTT;
 			else if(strcmp( app_framework, "Alexa") == 0)
 				fromapp=FROM_ALEXA;
+			else if(strcmp( app_framework, "WebView") == 0)
+				fromapp=FROM_WebView;
 			else
 				fromapp=FROM_UNKNOWN;
 		}
@@ -1419,6 +1421,9 @@ handle_request(void)
 #ifdef RTCONFIG_OPENVPN
 					&& !strstr(file, "server_ovpn.cert")
 #endif
+#ifdef RTCONFIG_CAPTCHA
+					&& !strstr(file, "captcha.gif")
+#endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
 				return;
@@ -2028,6 +2033,10 @@ int main(int argc, char **argv)
 	 * time_zone_x_mapping(); */
 	setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1);
 
+#ifdef RTCONFIG_LETSENCRYPT
+	nvram_unset("le_restart_httpd");
+#endif
+
 	if (nvram_get_int("HTTPD_DBG") > 0)
 		eval("touch", HTTPD_DEBUG);
 
@@ -2079,7 +2088,7 @@ int main(int argc, char **argv)
 
 #ifdef RTCONFIG_HTTPS
 	//if (do_ssl)
-		start_ssl();
+		start_ssl(http_port);
 #endif
 
 	/* Initialize listen socket */
@@ -2180,6 +2189,10 @@ int main(int argc, char **argv)
 				free(item);
 				continue;
 			}
+
+			/* Set receive/send timeouts */
+			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+			setsockopt(item->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
 			/* Set receive/send timeouts */
 			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
@@ -2291,24 +2304,25 @@ void erase_cert(void)
 #else
 	nvram_unset("https_crt_file");
 #endif
-	//nvram_unset("https_crt_gen");
 	nvram_set("https_crt_gen", "0");
 	nvram_commit();
 }
 
-void start_ssl(void)
+void start_ssl(int http_port)
 {
-	int lockfd;
-	int retry;
+	int lock;
+	int ok;
+	int save;
 	int i;
+	int retry;
 	unsigned long long sn;
 	char t[32];
 
-	lockfd = open("/var/lock/sslinit.lock", O_CREAT | O_RDWR, 0666);
+	lock = file_lock("httpd");
 
 	// Avoid collisions if another httpd instance is initializing SSL cert
-	for ( i = 1; i < 5; i++ ) {
-		if (flock(lockfd, LOCK_EX | LOCK_NB) < 0) {
+	for (i = 1; i < 5; i++) {
+		if (lock < 0) {
 			//logmessage("httpd", "Conflict, waiting %d", i);
 			sleep(i*i);
 		} else {
@@ -2322,35 +2336,53 @@ void start_ssl(void)
 
 	retry = 1;
 	while (1) {
+		save = nvram_match("https_crt_save", "1");
+
 		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
-			erase_cert();
-			logmessage("httpd", "Generating SSL certificate...");
+			ok = 0;
+			if (save) {
+				logmessage("httpd", "Save SSL certificate...%d", http_port);
+				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
+					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+						ok = 1;
+					}
 
-			// browsers seems to like this when the ip address moves...     -- zzz
-			f_read("/dev/urandom", &sn, sizeof(sn));
+					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
+					if(save_intermediate_crt){
+						eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/intermediate_cert.pem");
+					}
 
-			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-			eval("gencert.sh", t);
+					unlink("/tmp/cert.tgz");
+				}
+			}
+			if (!ok) {
+				erase_cert();
+				logmessage("httpd", "Generating SSL certificate...%d", http_port);
+				// browsers seems to like this when the ip address moves...	-- zzz
+				f_read("/dev/urandom", &sn, sizeof(sn));
 
-#ifdef RTCONFIG_LETSENCRYPT
-			if (nvram_match("le_enable", "2"))
-#endif
-			{
-				save_cert();
+				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				eval("gencert.sh", t);
 			}
 		}
 
+		if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
+			save_cert();
+		}
+
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
-			flock(lockfd, LOCK_UN);
+			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);
+			file_unlock(lock);
 			return;
 		}
 
-		logmessage("httpd", "Failed to initialize SSL, generating new key/cert.");
+		logmessage("httpd", "Failed to initialize SSL, generating new key/cert...%d", http_port);
 		erase_cert();
 
 		if (!retry) {
-			flock(lockfd, LOCK_UN);
-			logmessage("httpd", "Unable to start in SSL mode, exiting!");
+			logmessage("httpd", "Unable to start in SSL mode, exiting! %d", http_port);
+			file_unlock(lock);
 			exit(1);
 		}
 		retry = 0;

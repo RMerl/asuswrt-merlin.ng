@@ -1166,38 +1166,38 @@ padding-top:1px;
 
 #bwdpi_status{
 	cursor: pointer;
+	height: 22px;
+	width: 22px;
+	margin: auto;
+	background-size: 100%;
+	background-repeat:no-repeat;
 }
 
 .bwdpistatus_game{
 	height:20px;
 	width:22px;
 	background-image:url(images/New_ui/QoS_quick/game_icon.svg);
-	background-repeat:no-repeat;
-	background-position:0px 2px;
 }
-
 .bwdpistatus_media{
 	height:20px;
 	width:21px;
 	background-image:url(images/New_ui/QoS_quick/media_icon.svg);
-	background-repeat:no-repeat;
-	background-position:0px 2px;
 }
-
 .bwdpistatus_web{
 	height:20px;
 	width:22px;
 	background-image:url(images/New_ui/QoS_quick/web_icon.svg);
-	background-repeat:no-repeat;
-	background-position:2px 0px;
 }
-
+.bwdpistatus_videoConference{
+	background-image:url(images/New_ui/QoS_quick/video_conference_icon.svg);
+}
+.bwdpistatus_eLearning{
+	background-image:url(images/New_ui/QoS_quick/elearning_icon.svg);
+}
 .bwdpistatus_customize{
 	height:21px;
 	width:23px;
 	background-image:url(images/New_ui/QoS_quick/customize_icon.svg);
-	background-repeat:no-repeat;
-	background-position:2px 2px;
 }
 
 .vpnstatuson{
@@ -2146,4 +2146,14 @@ padding-top:1px;
 	height: 2px;
 	width: 740px;
 	margin: 1px 0;
+}
+.query_list{
+	display: none;
+	background-color: #576D73;
+	border: 1px solid  #929EA1;
+	list-style: none;
+	width:339px; height:120px; 
+	margin:0 0 0 2px;
+	padding: 6px;position: absolute;
+	overflow-y: auto;
 }

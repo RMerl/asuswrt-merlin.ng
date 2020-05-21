@@ -370,6 +370,10 @@ config RTCONFIG_PARENTALCTRL
 	bool "Parental Control Function"
 	default n
 
+config RTCONFIG_INTERNETCTRL
+	bool "Internet Control Function"
+	default n
+
 config RTCONFIG_YANDEXDNS
 	bool "Yandex.DNS Support"
 	depends on !RTCONFIG_DNSFILTER
@@ -405,6 +409,10 @@ config RTCONFIG_SYSSTATE
 
 config RTCONFIG_AHS
 	bool "Auto Healing System"
+	default n
+
+config RTCONFIG_LIBASC
+	bool "ASUS server command library"
 	default n
 
 config RTCONFIG_DUALWAN
@@ -961,10 +969,6 @@ config RTCONFIG_ODMPID
 
 config RTCONFIG_32BYTES_ODMPID
 	bool "ODM Product ID increase to 32 bytes"
-	default n
-
-config RTCONFIG_NONASUS
-	bool "ODM model with ASUS logo"
 	default n
 
 config RTCONFIG_TIMEMACHINE
@@ -2034,6 +2038,9 @@ config RTCONFIG_FRS_LIVE_UPDATE
 	bool "RTCONFIG_FRS_LIVE_UPDATE support"
 	default n
 
+config RTCONFIG_ASD
+	bool "RTCONFIG_ASD support"
+	default n
 config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
 	default n
@@ -2044,4 +2051,16 @@ config RTCONFIG_WIFI_DRV_DISABLE
 
 config RTCONFIG_ATEFROMWAN
 	bool "Set IP in default for device only one WAN port"
+	default n
+
+config RTCONFIG_GN_WBL
+	bool "Guest Network white and black list support"
+	default n
+
+config RTCONFIG_AMAZON_WSS
+	bool "AMAZON WSS (WiFi Simple Setup) certificate (depends on GN_WBL feature)"
+	default n
+
+config RTCONFIG_CAPTCHA
+	bool "Web UI supports captcha"
 	default n

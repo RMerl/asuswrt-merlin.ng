@@ -368,6 +368,8 @@ void start_dsl()
 
 	_eval(argv_tp_init, NULL, 0, &pid);
 
+	/// host interface
+	convert_dsl_config_num();
 	int config_num = nvram_get_int("dslx_config_num");
 
 	// IPTV

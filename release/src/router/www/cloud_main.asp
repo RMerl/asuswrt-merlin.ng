@@ -159,7 +159,7 @@ function initial(){
 		document.getElementById("rrsLink").style.display = "none";
 
 	//check DUT is belong to private IP.
-	setTimeout("show_warning_message();", 100);
+	setTimeout("show_warning_message();", 1000);
 }
 
 var wans_mode ='<% nvram_get("wans_mode"); %>';
@@ -192,7 +192,6 @@ function show_warning_message(){
 	}
 }
 
-<% get_realip(); %>
 function get_real_ip(){
 	$.ajax({
 		url: 'get_real_ip.asp',

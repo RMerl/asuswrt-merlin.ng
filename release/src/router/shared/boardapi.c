@@ -556,6 +556,7 @@ int set_pwr_usb(int boolOn) {
 			    (nvram_get_double("HW_ver") != 1.95) &&
 			    (nvram_get_double("HW_ver") != 2.10) &&
 			    (nvram_get_double("HW_ver") != 2.20) &&
+			    (nvram_get_double("HW_ver") != 3.00) &&
 			    !is_ac66u_v2_series() &&
 			    !nvram_match("cpurev", "c0"))
 				return 0;

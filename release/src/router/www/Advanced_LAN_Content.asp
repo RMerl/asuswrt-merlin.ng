@@ -137,7 +137,7 @@ function validForm(){
 	var alert_str = "";
 
 	if(document.form.lan_hostname.value.length > 0)
-		alert_str = validator.hostName(document.form.lan_hostname);
+		alert_str = validator.host_name(document.form.lan_hostname);
 	else
 		alert_str = "<#JS_fieldblank#>";
 	if(alert_str != ""){

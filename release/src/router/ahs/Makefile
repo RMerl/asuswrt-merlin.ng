@@ -28,7 +28,7 @@ OBJS = utility.o ahs.o
 
 ifneq ($(wildcard ./prebuild),)
 all:
-	@-cp -f ./prebuild/ahs .
+	@-cp -f ./prebuild/$(BUILD_NAME)/ahs .
 else
 all: ahs
 endif

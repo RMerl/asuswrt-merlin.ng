@@ -1869,8 +1869,9 @@ typedef struct wlc_iov_trx_s {
 #define WLC_SET_TXBF_RATESET			319
 #define WLC_SCAN_CQ				320
 #define WLC_GET_RSSI_QDB			321 /* qdB portion of the RSSI */
-#define WLC_DUMP_RATESET                       322
-#define WLC_LAST				323
+#define WLC_DUMP_RATESET			322
+#define WLC_SET_WSEC_PORTOPEN			323
+#define WLC_LAST				324
 
 #ifndef EPICTRL_COOKIE
 #define EPICTRL_COOKIE		0xABADCEDE

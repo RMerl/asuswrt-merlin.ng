@@ -1090,6 +1090,10 @@ endif
 ifeq ($(WLPROBRESP_SW),1)
 	WLFLAGS += -DWLPROBRESP_SW
 	WLFILES_SRC_HI += src/wl/sys/wlc_probresp.c
+ifeq ($(WLPROBRESP_MAC_FILTER),1)
+	WLFLAGS += -DWLPROBRESP_MAC_FILTER
+	WLFILES_SRC_HI += src/wl/sys/wlc_probresp_mac_filter.c
+endif
 endif
 #endif
 

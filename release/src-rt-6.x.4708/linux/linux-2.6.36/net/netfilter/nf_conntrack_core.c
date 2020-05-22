@@ -327,7 +327,10 @@ ip_conntrack_ipct_add(struct sk_buff *skb, u_int32_t hooknum,
 			ctf_brc_release(kcih, ipc_entry.brcp);
 	}
 
-	hh = skb_dst(skb)->hh;
+	if (skb_dst(skb))
+		hh = skb_dst(skb)->hh;
+	else
+		return;
 	if (hh != NULL) {
 		eth = (struct ethhdr *)(((unsigned char *)hh->hh_data) + 2);
 		memcpy(ipc_entry.dhost.octet, eth->h_dest, ETH_ALEN);

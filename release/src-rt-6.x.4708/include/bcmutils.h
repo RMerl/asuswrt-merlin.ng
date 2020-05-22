@@ -874,11 +874,7 @@ extern int bcm_format_field(const bcm_bit_desc_ex_t *bd, uint32 field, char* buf
 extern int bcm_format_flags(const bcm_bit_desc_t *bd, uint32 flags, char* buf, int len);
 #endif
 
-#if defined(BCMDBG) || defined(DHD_DEBUG) || defined(BCMDBG_ERR) || \
-	defined(WLMSG_PRHDRS) || defined(WLMSG_PRPKT) || defined(WLMSG_ASSOC) || \
-	defined(WLMEDIA_PEAKRATE)
 extern int bcm_format_hex(char *str, const void *bytes, int len);
-#endif
 
 #ifdef BCMDBG
 extern void deadbeef(void *p, uint len);

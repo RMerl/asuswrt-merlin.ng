@@ -354,6 +354,14 @@ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
 		   -Werror-implicit-function-declaration \
 		   -Wno-format-security \
 		   -fno-delete-null-pointer-checks
+
+ifneq ($(findstring 4G-,$(BUILD_NAME)),)
+MODEL = RT$(subst -,,$(BUILD_NAME))
+else
+MODEL = $(subst -,,$(BUILD_NAME))
+endif
+KBUILD_CFLAGS += -D$(MODEL)
+
 KBUILD_AFLAGS_KERNEL :=
 KBUILD_CFLAGS_KERNEL :=
 KBUILD_AFLAGS   := -D__ASSEMBLY__
@@ -372,11 +380,6 @@ KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
 
 # Bcm dbg flag
 #KBUILD_CFLAGS += -DBCMDBG
-
-ifeq ($(FEM_PATCH),y)
-KBUILD_CFLAGS += -DSKY85710_FEM_PATCH
-endif
-
 
 # Read KERNELRELEASE from include/config/kernel.release (if it exists)
 KERNELRELEASE = $(shell cat include/config/kernel.release 2> /dev/null)

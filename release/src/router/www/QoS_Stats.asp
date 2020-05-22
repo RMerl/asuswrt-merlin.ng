@@ -58,29 +58,33 @@ var qos_type ="<% nvram_get("qos_type"); %>";
 
 if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 	var qos_mode = 0;
+	var qos_default = 0;
 }else if (bwdpi_support && (qos_type == "1")) {	// aQoS
 	var qos_mode = 2;
+	var qos_default = 4;
 } else if (qos_type == "0") {			// tQoS
 	var qos_mode = 1;
+	var qos_default = "<% nvram_get("qos_default"); %>";
 } else if (qos_type == "2") {			// BW limiter
 	var qos_mode = 3;
+	var qos_default = 0;
 } else {					// invalid mode
 	var qos_mode = 0;
+	var qos_default = 0;
 }
 
 if (qos_mode == 2) {
 	var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 	var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	if (bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){
-		bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<";
+		bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<";
 		bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	}
-	var category_title = ["Net Control Packets", "<#Adaptive_Game#>", "<#Adaptive_Stream#>","<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "Default"];
-	var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23], []];
+	var category_title = ["Net Control Packets", "<#Adaptive_Game#>", "<#Adaptive_Stream#>","<#Adaptive_Message#>", "<#Adaptive_eLearning#>","<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>"];
+	var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [4,13], [13,24], [1,3,14], [7,10,11,21,23]];
 } else {
 	var category_title = ["", "Highest", "High", "Medium", "Low", "Lowest"];
 }
-
 
 var pie_obj_ul, pie_obj_dl;
 var refreshRate;
@@ -92,6 +96,7 @@ const maxshown = 500;
 const maxrendered = 750;
 
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
+var labels_array = [];
 
 var pieOptions = {
         segmentShowStroke : false,
@@ -141,13 +146,11 @@ function initial(){
 	get_data();
 }
 
-
-
 function get_qos_class(category, appid){
 	var i, j, catlist, rules;
 
-	if ((category == 0 && appid == 0) || (qos_mode != 2))
-		return 7;
+	if (qos_mode != 2 || (category == 0 && appid == 0))
+		return qos_default;
 
 	for (i=0; i < bwdpi_app_rulelist_row.length-2; i++){
 		rules = bwdpi_app_rulelist_row[i];
@@ -167,7 +170,7 @@ function get_qos_class(category, appid){
 			}
 		}
 	}
-	return 7;
+	return qos_default;
 }
 
 function compIPV6(input) {
@@ -181,7 +184,7 @@ function set_filter(field, o) {
 }
 
 function draw_conntrack_table(){
-	var i, j, qosclass;
+	var i, j, qosclass, label;
 	var tracklen, shownlen = 0;
 	var code;
 	var clientObj, clientName;
@@ -278,8 +281,14 @@ function draw_conntrack_table(){
 
 		shownlen++;
 
-		// Get QoS Class for popup
+		// Get QoS priority
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
+
+		// Get priority label
+		if ((qos_mode == 2 && bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0) || (qos_mode == 1 && qosclass == qos_default))
+			label = "Default (" + labels_array[qosclass] + ")";
+		else
+			label = labels_array[qosclass];
 
 
 		// Output row
@@ -290,7 +299,7 @@ function draw_conntrack_table(){
 		code += "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
 		          dsthost + "</td>";
 		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
-		code += "<td><span title=\"" + (qos_mode == 2 ? category_title[qosclass] : "") + "\" class=\"catrow cat" +
+		code += "<td><span title=\"" + label + "\" class=\"catrow cat" +
 	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
 	                  bwdpi_conntrack[i][5] + "</span></td></tr>";
 	}
@@ -427,33 +436,37 @@ function get_data() {
 function draw_chart(data_array, ctx, pie) {
 	var code = '<table><thead style="text-align:left;"><tr><th style="padding-left:5px;">Class</th><th style="padding-left:5px;">Total</th><th style="padding-left:20px;">Rate</th><th style="padding-left:20px;">Packet rate</th></tr></thead>';
 	var values_array = [];
-	var labels_array = [];
+	var i, index, label;
+
+	labels_array = [];
 
 	for (i=0; i < data_array.length-1; i++){
 		var value = parseInt(data_array[i][1]);
 		var tcclass = parseInt(data_array[i][0]);
-		var rate;
+		var rate, label;
 
 		if (qos_mode == 2) {
-			var index = 0;
-
-			for(j=1;j<cat_id_array.length;j++){
-				if(cat_id_array[j] == bwdpi_app_rulelist_row[i]){
-					index = j;
+			for(index=0;index<cat_id_array.length;index++){
+				if(cat_id_array[index] == bwdpi_app_rulelist_row[i]){
 					break;
 				}
 			}
 
-			var label = category_title[index];
+			if (index == cat_id_array.length)
+				label = "Unknown";
+			else
+				label = category_title[index];
 		} else {
 			tcclass = tcclass / 10;
-			var label = category_title[tcclass];
-			if (label == undefined) {
+			label = category_title[tcclass];
+			if (label == undefined)
 				label = "Class " + tcclass;
-			}
 		}
 		labels_array.push(label);
 		values_array.push(value);
+
+		if (i == qos_default)
+			label = label + "<span style=\"font-size: 75%; font-style: italic;\"> (Default)</span>";
 
 		var unit = " Bytes";
 		if (value > 1024) {

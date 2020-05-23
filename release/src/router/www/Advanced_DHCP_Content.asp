@@ -413,7 +413,7 @@ function applyRule(){
 			dhcp_hostnames_array += "<" + manually_dhcp_list_array[key].mac + ">" + manually_dhcp_list_array[key].hostname;
 		});
 
-		if (dhcp_staticlist_array.length > 2998 || dhcp_hostnames_array.length > 2998)  {
+		if (dhcp_staticlist_array.length > 2499 || dhcp_hostnames_array.length > 2998)  {
 			alert("Resulting list of DHCP reservations is too long - remove some, or use shorter names.");
 			return false;
 		}

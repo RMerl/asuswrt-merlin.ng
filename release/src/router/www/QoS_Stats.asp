@@ -149,7 +149,7 @@ function initial(){
 function get_qos_class(category, appid){
 	var i, j, catlist, rules;
 
-	if (qos_mode != 2 || (category == 0 && appid == 0))
+	if (category == 0 && appid == 0)
 		return qos_default;
 
 	for (i=0; i < bwdpi_app_rulelist_row.length-2; i++){
@@ -285,7 +285,7 @@ function draw_conntrack_table(){
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
 
 		// Get priority label
-		if ((qos_mode == 2 && bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0) || (qos_mode == 1 && qosclass == qos_default))
+		if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0)
 			label = "Default (" + labels_array[qosclass] + ")";
 		else
 			label = labels_array[qosclass];
@@ -322,7 +322,6 @@ function setsort(newfield) {
 		sortdir = (sortdir ? 0 : 1);
 	}
 }
-
 
 
 function table_sort(a, b){
@@ -425,7 +424,8 @@ function get_data() {
 			get_data();
 		},
 		success: function(response){
-			redraw();draw_conntrack_table();
+			redraw();
+			if (qos_mode == 2) draw_conntrack_table();
 			if (refreshRate > 0)
 				timedEvent = setTimeout("get_data();", refreshRate * 1000);
 		}
@@ -465,7 +465,7 @@ function draw_chart(data_array, ctx, pie) {
 		labels_array.push(label);
 		values_array.push(value);
 
-		if (i == qos_default)
+		if ((qos_mode == 2 && i == qos_default) || (qos_mode == 1 && tcclass-1 == qos_default))
 			label = label + "<span style=\"font-size: 75%; font-style: italic;\"> (Default)</span>";
 
 		var unit = " Bytes";

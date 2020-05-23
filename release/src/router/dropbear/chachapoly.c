@@ -35,11 +35,13 @@
 #define POLY1305_KEY_LEN 32
 #define POLY1305_TAG_LEN 16
 
-const struct dropbear_cipher dropbear_chachapoly =
-	{NULL, CHACHA20_KEY_LEN*2, CHACHA20_BLOCKSIZE};
+static const struct ltc_cipher_descriptor dummy = {.name = NULL};
 
 static const struct dropbear_hash dropbear_chachapoly_mac =
 	{NULL, POLY1305_KEY_LEN, POLY1305_TAG_LEN};
+
+const struct dropbear_cipher dropbear_chachapoly =
+	{&dummy, CHACHA20_KEY_LEN*2, CHACHA20_BLOCKSIZE};
 
 static int dropbear_chachapoly_start(int UNUSED(cipher), const unsigned char* UNUSED(IV),
 			const unsigned char *key, int keylen,

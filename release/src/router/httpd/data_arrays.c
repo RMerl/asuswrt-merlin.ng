@@ -679,6 +679,11 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	FILE *fp;
 	int ret = 0;
 	char tmp[64];
+#ifdef RTAX58U
+	char *wan_ifname = "eth4";
+#else
+	char *wan_ifname = "eth0";
+#endif
 
 	if (nvram_get_int("qos_enable") == 0) {
 		ret += websWrite(wp, "var tcdata_lan_array = [[]];\nvar tcdata_wan_array = [[]];\n");
@@ -702,7 +707,7 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	}
 
 	if (nvram_get_int("qos_type") != 2) {	// Must not be BW Limiter
-		snprintf(tmp, sizeof(tmp), "tc -s class show dev %s > /tmp/tcclass.txt", "eth0");
+		snprintf(tmp, sizeof(tmp), "tc -s class show dev %s > /tmp/tcclass.txt", wan_ifname);
 		system(tmp);
 
 	        ret += websWrite(wp, "var tcdata_wan_array = [\n");

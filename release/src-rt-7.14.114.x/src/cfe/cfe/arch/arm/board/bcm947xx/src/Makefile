@@ -2,11 +2,11 @@
 # Makefile for Broadcom BCM947XX (ARM) boards
 #
 # Copyright (C) 2014, Broadcom Corporation. All Rights Reserved.
-# 
+#
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
 # copyright notice and this permission notice appear in all copies.
-# 
+#
 # THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
 # WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
 # MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -101,7 +101,7 @@ endif
 ifeq ($(strip $(CFG_ET)),1)
 
 ETOBJS := etc.o et_cfe.o bcmrobo.o
-CFLAGS += -DCFG_ET=1 -I$(SRCBASE)/et/sys -I$(SRCBASE)/et/include -DETROBO -DDMA -DROBO_SRAB
+CFLAGS += -DCFG_ET=1 -I$(SRCBASE)/et/cfe/sys -I$(SRCBASE)/et/cfe/include -DETROBO -DDMA -DROBO_SRAB
 
 ifeq ($(strip $(CFG_GMAC)),1)
 ETOBJS += etcgmac.o
@@ -121,8 +121,8 @@ endif
 HNDDMA := 1
 
 # Search for sources under src/et/sys or objects under src/et/cfe
-ifneq ($(wildcard $(SRCBASE)/et/sys),)
-vpath %.c $(SRCBASE)/et/sys
+ifneq ($(wildcard $(SRCBASE)/et/cfe/sys),)
+vpath %.c $(SRCBASE)/et/cfe/sys
 ALLOBJS += $(ETOBJS)
 else
 ALLOBJS += $(foreach obj,$(ETOBJS),$(SRCBASE)/et/cfe/$(obj))
@@ -132,7 +132,7 @@ endif
 ifeq ($(strip $(CFG_WL)),1)
 CFLAGS += -DCFG_WL=1 -DBCMDMA64
 
-# get wl driver source files and flags, 
+# get wl driver source files and flags,
 # macros are defined in build/broadcom/bcm947xx/Makefile
 # WLCFE is to pick wl_cfe.c from wl.mk
 WLCFE=1
@@ -153,7 +153,7 @@ endif
 
 # add these path for WLOBJS only
 $(WLOBJS): WL_CFLAGS := -I$(SRCBASE)/wl/sys -I$(SRCBASE)/wl/phy -I$(SRCBASE)/wl/exe $(WL_DFLAGS)
-CFLAGS += $(WL_CFLAGS) 
+CFLAGS += $(WL_CFLAGS)
 
 # Search for sources under src/wl/sys or objects under src/wl/cfe
 ifneq ($(wildcard $(SRCBASE)/wl/sys/wlc.h),)

@@ -924,10 +924,10 @@ Open_dev:
         }
 #endif
 		if(!cfe) {
-                	for (i=0; i<6; i++)
+                	//for (i=0; i<6; i++)
 	                       send_rescueack(0x0006, 0x0001);
         	        res = 0;
-                	printf("\nBCM47XX SYSTEM RESET!!!\n\n");
+                	xprintf("\nBCM47XX SYSTEM RESET!!!\n\n");
 	                cfe_close(fh);
         	        ui_docommand("reboot");
 		}
@@ -935,7 +935,7 @@ Open_dev:
         else {
                 ui_showerror(amtcopy,"Failed.");
 		if(!cfe) {
-	                for (i=0; i<6; i++)
+	                //for (i=0; i<6; i++)
         	                send_rescueack(0x0006, 0x0000);
                 	res = CFE_ERR_IOERR;
 		}

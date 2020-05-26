@@ -146,13 +146,13 @@ basicConstraints = CA:true
 # Key usage: this is typical for a CA certificate. However since it will
 # prevent it being used as an test self-signed certificate it is best
 # left out by default.
-# keyUsage = cRLSign, keyCertSign
+keyUsage = digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
 
 # Some might want this also
 # nsCertType = sslCA, emailCA
 
 # Include email address in subject alt name: another PKIX recommendation
-# subjectAltName=email:copy
+subjectAltName = @alt_names
 # Copy issuer details
 # issuerAltName=issuer:copy
 

@@ -13120,7 +13120,9 @@ do_download_cert_key_cgi(char *url, FILE *stream)
 		"-C",
 		"/etc",
 		"cert.pem",
-		"key.pem"
+		"key.pem",
+		"server.pem",
+		"cert.crt"
 		);
 	do_file("/tmp/cert_key.tar", stream);
 }

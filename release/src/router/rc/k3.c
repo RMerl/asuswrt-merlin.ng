@@ -24,7 +24,73 @@
 #include <shutils.h>
 #include <siutils.h>
 #include <auth_common.h>
+#include <sys/reboot.h>
 #include "k3.h"
+
+#define ROMCFE "/rom/cfe"
+
+void envram_set(char *key, char *val)
+{
+	int i = 0;
+	while (!pids("envrams"))
+	{
+		if (i++ >= 5)
+			return;
+		system("/usr/sbin/envrams >/dev/null");
+		sleep(1);
+	}
+	doSystem("envram set %s='%s'", key, val);
+}
+
+void envram_commit(void)
+{
+	int i = 0;
+	while (!pids("envrams"))
+	{
+		if (i++ >= 5)
+			return;
+		system("/usr/sbin/envrams >/dev/null");
+		sleep(1);
+	}
+	system("envram commit");
+}
+
+void update_cfe_k3(void)
+{
+	char et0mac[18], wl1mac[18], wl2mac[18];
+	char buf[128];
+
+	if (!check_if_file_exist(ROMCFE) || cfe_nvram_match("bl_version", "1.0.37"))
+		return;
+	//if (pids("envrams"))
+		//sleep(5);
+
+	strcpy(et0mac, cfe_nvram_safe_get("et0macaddr"));
+	strcpy(wl1mac, cfe_nvram_safe_get("1:macaddr"));
+	strcpy(wl2mac, cfe_nvram_safe_get("2:macaddr"));
+
+	if (pids("envrams")) {
+		killall_tk("envrams");
+		usleep(100000);
+	}
+
+	doSystem("dd if=%s of=/dev/mtdblock0 2>/dev/null", ROMCFE);
+
+	envram_set("et0macaddr", et0mac);
+	envram_set("1:macaddr", wl1mac);
+	envram_set("2:macaddr", wl2mac);
+	envram_commit();
+
+	//if (pids("envrams"))
+		//killall_tk("envrams");
+
+	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN=%s, 2.4G=%s, 5G=%s", et0mac, wl1mac, wl2mac);
+	//logmessage("K3INIT", "CFE has upgraded to 1.0.37 already!");
+	//logmessage("K3INIT", buf);
+	_dprintf("**** Upgraded CFE - %s\n", buf);
+	usleep(100000);
+	reboot(RB_AUTOBOOT);
+}
 
 void k3_init()
 {

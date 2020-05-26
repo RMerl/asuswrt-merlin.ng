@@ -15,6 +15,10 @@
  * MA 02111-1307 USA
  */
 
+void envram_set(char *key, char *val);
+void envram_commit(void);
+
+extern void update_cfe_k3(void);
 extern void k3_init(void);
 extern void k3_init_done(void);
 extern void start_k3screen(void);

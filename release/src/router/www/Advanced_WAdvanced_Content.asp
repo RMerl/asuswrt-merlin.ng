@@ -678,6 +678,13 @@ function initial(){
 				$('#ofdma_hint').show();
 			}
 		}
+		/* Temporary kludge - requires SDK update for these two */
+		if (based_modelid == 'RT-AX88U' || based_modelid == 'RT-AX56U') {
+                        var value = ['0', '1'];
+                        var desc = ['<#WLANConfig11b_WirelessCtrl_buttonname#>', 'DL OFDMA'];
+                        add_options_x2(document.form.wl_ofdma, desc, value, document.form.wl_ofdma.value);
+
+		}
 	}
 }
 

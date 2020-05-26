@@ -274,7 +274,7 @@ The only call back made by this firmware to me is when it checks for the
 availability of a new version.  The automated check can be disabled if desired.
 More info on the Wiki:
 
-https://github.com/RMerl/asuswrt-merlin.ng/wiki/RMerl/asuswrt-merlin/wiki/Privacy-disclosure
+https://github.com/RMerl/asuswrt-merlin.ng/wiki/Privacy-disclosure
 
 
 --- 

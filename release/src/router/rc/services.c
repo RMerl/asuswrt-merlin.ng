@@ -4934,6 +4934,7 @@ start_httpd(void)
                 if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
                         eval("cp", UPLOAD_CERT, HTTPD_CERT);
                         eval("cp", UPLOAD_KEY, HTTPD_KEY);
+                        eval("cp", UPLOAD_CERT, "/etc/cert.crt");
 			system(tmp);
 		}
 	}
@@ -4941,6 +4942,7 @@ start_httpd(void)
 	if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
 		eval("cp", UPLOAD_CERT, HTTPD_CERT);
 		eval("cp", UPLOAD_KEY, HTTPD_KEY);
+		eval("cp", UPLOAD_CERT, "/etc/cert.crt");
 		system(tmp);
 	}
 #endif

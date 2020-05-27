@@ -26,6 +26,20 @@ for CN in $NVCN; do
         I=$(($I + 1))
 done
 
+# Required extension
+sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" openssl.config
+
+# Start of SAN extensions
+sed -i "/\[ CA_default \]/acopy_extensions = copy" openssl.config
+sed -i "/\[ v3_req \]/asubjectAltName = @alt_names" openssl.config
+echo "[alt_names]" >> openssl.config
+
+I=1
+for CN in $NVCN; do
+	echo "DNS.$I = $CN" >> openssl.config
+	I=$(($I + 1))
+done
+
 # create the key and certificate request
 OPENSSL_CONF=/etc/cfg_mnt/openssl.config $OPENSSL req -new -out /etc/cfg_mnt/cert.csr -keyout /etc/cfg_mnt/privkey.pem -newkey rsa:2048 -passout pass:password
 # remove the passphrase from the key

@@ -2364,6 +2364,11 @@ void start_ssl(int http_port)
 
 				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
 				eval("gencert.sh", t);
+
+#ifdef RTCONFIG_LETSENCRYPT
+				if (nvram_match("le_enable", "2"))
+#endif
+					save_cert();
 			}
 		}
 

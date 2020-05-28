@@ -20,6 +20,8 @@ This project forks form Asuswrt-Merlin, the goal is to fit for PHICOMM-K3.
 
 Firsr of all you should modify cfe MAC address to your own in rt-k3_nvram.txt
 
+(release/src-rt-7.14.114.x/src/cfe/build/broadcom/bcm947xx/compressed/rt-k3_nvram.txt)
+
 where to modify:
 
 (LAN MAC)	et0macaddr=00:11:22:33:44:55 -> et0macaddr=XX:XX:XX:XX:XX:XX
@@ -32,7 +34,7 @@ XX:XX:XX:XX:XX:XX means your own MAC address of LAN, 2.4G, 5G(They are generally
 
 ---------------
 
-Added model RT-K3, use "make rt-k3" to compile and gen trx image.
+Added model RT-K3, use "make rt-k3" in src-rt-7.14.114.x/src to compile and gen trx image.
 
 Use "make" to compile cfe separately in:
 
@@ -72,5 +74,5 @@ Lostlonger for research transplant from merlin to K3
 
 ## 打赏我(buy me a beer)
 
-![alipay](https://s1.ax1x.com/2020/05/24/YxgA9f.jpg)
-![wechat](https://s1.ax1x.com/2020/05/24/YxgVgS.jpg)
+![alipay](https://wx1.sbimg.cn/2020/05/28/alipay.jpg)
+![wechat](https://wx1.sbimg.cn/2020/05/28/wechat.jpg)

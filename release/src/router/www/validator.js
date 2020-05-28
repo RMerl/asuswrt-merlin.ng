@@ -320,22 +320,6 @@ var validator = {
 		}
 	},
 
-	hostName: function (obj){
-		var re = new RegExp(/^[a-zA-Z0-9][a-zA-Z0-9\-\_]*$/gi);
-		if(re.test(obj.value)){
-			return "";
-		}
-		else if(location.pathname == "/" || location.pathname == "<% abs_index_page(); %>"){
-			return "Client device name only accept alphanumeric characters, under line and dash symbol. The first character cannot be dash \"-\" or under line \"_\".";
-		}
-		else{
-			if(obj.value.length < 2)
-				return "<#JS_short_username#>";
-			else
-				return "<#JS_validhostname#>";
-		}
-	},
-
 	hostNameChar: function(ch){
 		if (ch>=48&&ch<=57) return true;	//0-9
 		if (ch>=97&&ch<=122) return true;	//little EN

@@ -82,7 +82,7 @@ static int dropbear_chachapoly_crypt(unsigned int seq,
 		return CRYPT_ERROR;
 	}
 
-	STORE64H(seq, seqbuf);
+	STORE64H((uint64_t)seq, seqbuf);
 	chacha_ivctr64(&state->chacha, seqbuf, sizeof(seqbuf), 0);
 	if ((err = chacha_keystream(&state->chacha, key, sizeof(key))) != CRYPT_OK) {
 		return err;
@@ -128,7 +128,7 @@ static int dropbear_chachapoly_getlength(unsigned int seq,
 		return CRYPT_ERROR;
 	}
 
-	STORE64H(seq, seqbuf);
+	STORE64H((uint64_t)seq, seqbuf);
 	chacha_ivctr64(&state->header, seqbuf, sizeof(seqbuf), 0);
 	if ((err = chacha_crypt(&state->header, in, sizeof(buf), buf)) != CRYPT_OK) {
 		return err;

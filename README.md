@@ -15,12 +15,17 @@ This project forks form Asuswrt-Merlin, the goal is to fit for PHICOMM-K3.
 
 5.Some extra CN & TW translation.
 
+## Toolchains to be prepared in advance
+
+Asuswrt-Merlin toolchains - https://github.com/RMerl/am-toolchains
 
 ## how to build
 
-Firsr of all you should modify cfe MAC address to your own in rt-k3_nvram.txt
+You can modify cfe MAC address to your own in rt-k3_nvram.txt
 
 (release/src-rt-7.14.114.x/src/cfe/build/broadcom/bcm947xx/compressed/rt-k3_nvram.txt)
+
+New firmware flash will copy MAC from orignal CFE on the fisrt startup, it takes effect only when flash cfe separately.
 
 where to modify:
 

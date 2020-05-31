@@ -38,14 +38,14 @@ CFLAGS += -Wall -Werror -Wstrict-prototypes -fno-stack-protector
 # Tools locations
 #
 TOOLPREFIX ?= arm-linux-
-GCC        ?= $(TOOLS)$(TOOLPREFIX)gcc
-GCPP       ?= $(TOOLS)$(TOOLPREFIX)cpp
-GLD        ?= $(TOOLS)$(TOOLPREFIX)ld
-GAR        ?= $(TOOLS)$(TOOLPREFIX)ar
-OBJDUMP    ?= $(TOOLS)$(TOOLPREFIX)objdump
-OBJCOPY    ?= $(TOOLS)$(TOOLPREFIX)objcopy
-RANLIB     ?= $(TOOLS)$(TOOLPREFIX)ranlib
-STRIP      ?= $(TOOLS)$(TOOLPREFIX)strip
+GCC        ?= $(TOOLPREFIX)gcc
+GCPP       ?= $(TOOLPREFIX)cpp
+GLD        ?= $(TOOLPREFIX)ld
+GAR        ?= $(TOOLPREFIX)ar
+OBJDUMP    ?= $(TOOLPREFIX)objdump
+OBJCOPY    ?= $(TOOLPREFIX)objcopy
+RANLIB     ?= $(TOOLPREFIX)ranlib
+STRIP      ?= $(TOOLPREFIX)strip
 
 #
 # Check for 64-bit mode

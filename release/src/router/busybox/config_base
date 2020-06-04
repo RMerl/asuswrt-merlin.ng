@@ -211,7 +211,7 @@ CONFIG_TR=y
 # CONFIG_FEATURE_TR_EQUIV is not set
 # CONFIG_TRUNCATE is not set
 # CONFIG_UNLINK is not set
-# CONFIG_BASE64 is not set
+CONFIG_BASE64=y
 # CONFIG_WHO is not set
 # CONFIG_USERS is not set
 # CONFIG_CAL is not set

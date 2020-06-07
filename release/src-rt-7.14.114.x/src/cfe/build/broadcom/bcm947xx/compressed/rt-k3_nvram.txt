@@ -803,4 +803,3 @@ ATEMODE=0
 
 # Customize
 modelname=K3
-screen_timeout=30

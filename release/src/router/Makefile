@@ -2591,7 +2591,7 @@ rc: shared nvram$(BCMEX)$(EX7) libbcmcrypto libdisk $(if $(RTCONFIG_FBWIFI),fb_w
 # Dig into our collection of prebuilt objects based on model
 	@-rm -f rc/prebuild/*.o || true
 	@-cp -f rc/prebuild/$(BUILD_NAME)/* rc/prebuild/
-	@$(MAKE) -C rc
+	@$(MAKE) -C rc $(PARALLEL_BUILD)
 
 rc-install:
 	$(MAKE) -C rc INSTALLDIR=$(INSTALLDIR)/rc install
@@ -6356,7 +6356,7 @@ wget/Makefile: wget/Makefile.in
 		LDFLAGS="$(EXTRALDFLAGS) -Wl,--gc-sections -pthread"
 
 wget: $(OPENSSLDIR) zlib wget/Makefile
-	$(MAKE) -C $@
+	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 wget-clean:
 	[ ! -f wget/Makefile ] || $(MAKE) -C wget distclean

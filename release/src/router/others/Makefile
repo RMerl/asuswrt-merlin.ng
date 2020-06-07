@@ -9,6 +9,8 @@ install:
 
 # K3 wl setup script
 	install -m 0700 wlk $(INSTALLDIR)/usr/sbin
+# Gtoolbox
+	install -m 0755 gtoolbox $(INSTALLDIR)/usr/sbin
 
 ifeq ($(RTCONFIG_USB),y)
 # Optware perl symlink

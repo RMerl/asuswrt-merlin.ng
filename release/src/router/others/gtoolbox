@@ -1,0 +1,83 @@
+#!/bin/sh
+####################################################################
+get_mac() {
+	/usr/sbin/envrams >/dev/null
+	MAC_LAN=`envram get et0macaddr`
+	MAC_2G=`envram get 1:macaddr`
+	MAC_5G=`envram get 2:macaddr`
+}
+
+ops() {
+	echo "${x} - 选项无效"; sleep 1
+}
+
+fix_timeout() {
+	envram unset screen_timeout
+	envram commit
+}
+
+mod_lanmac() {
+	echo "LAN MAC: $MAC_LAN"
+	read -p "MAC(留空不修改):" maclan
+	if [ -n "$maclan" ]; then
+		`envram set 'et0macaddr'="$maclan"`
+		envram commit
+	fi
+}
+
+mod_2gmac() {
+	echo "2.4G MAC: $MAC_2G"
+	read -p "MAC(留空不修改):" mac2g
+	if [ -n "$mac2g" ]; then
+		`envram set '1:macaddr'="$mac2g"`
+		envram commit
+	fi
+}
+
+mod_5gmac() {
+	echo "2.4G MAC: $MAC_5G"
+	read -p "MAC(留空不修改):" mac5g
+	if [ -n "$mac5g" ]; then
+		`envram set '2:macaddr'="$mac5g"`
+		envram commit
+	fi
+}
+####################################################################
+
+/usr/sbin/envrams >/dev/null
+sleep 1
+while true
+do
+	get_mac
+	clear
+	echo "#########################"
+	echo "       GTOOL工具箱"
+	echo "#########################"
+	echo "修改MAC重启后生效"
+	echo "LAN  - $MAC_LAN"
+	echo "2.4G - $MAC_2G"
+	echo "5G   - $MAC_5G"
+	echo "#########################"
+	echo "1) 修复屏幕超时保存"
+	echo "2) 修改LAN MAC"
+	echo "3) 修改2.4G MAC"
+	echo "4) 修改5G MAC"
+	echo "q) 退出"
+	echo
+	read -n 1 -p "Choice: " x
+	echo
+	case ${x} in
+    1)
+		fix_timeout;sleep 1;;
+    2)
+		mod_lanmac;sleep 1;;
+    3)
+		mod_2gmac;sleep 1;;
+    4)
+		mod_5gmac;sleep 1;;
+    q)
+		killall -9 envrams; echo; exit;;
+    *)
+		ops;;
+	esac
+done

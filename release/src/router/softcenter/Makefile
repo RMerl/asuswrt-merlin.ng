@@ -1,21 +1,6 @@
 include ../common.mak
 
-#export SC_BUILD=y
-ifeq ($(SC_BUILD), y)
-all: versioncmp base64_encode resolveip
-
-versioncmp:
-	$(CC) -static versioncmp.c -o versioncmp
-	$(STRIP) versioncmp
-base64_encode:
-	$(CC) -static base64.c -o base64_encode
-	$(STRIP) base64_encode
-resolveip:
-	$(CC) -static resolveip.c -o resolveip
-	$(STRIP) resolveip
-else
 all:
-endif
 
 install:
 	install -d $(INSTALLDIR)/sbin
@@ -28,11 +13,11 @@ install:
 ifeq ($(HND_ROUTER), y)
 	install -d $(INSTALLDIR)/www/www
 	install -d $(INSTALLDIR)/www/www/js
-	install -d $(INSTALLDIR)/www/www/res
+	ln -snrf $(INSTALLDIR)/jffs/.koolshare/res $(INSTALLDIR)/www/www/res
 else
 	install -d $(INSTALLDIR)/www
 	install -d $(INSTALLDIR)/www/js
-	install -d $(INSTALLDIR)/www/res
+	ln -snrf $(INSTALLDIR)/jffs/.koolshare/res $(INSTALLDIR)/www/res
 endif
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AC2900 GT-AC5300))
 	install -d $(INSTALLDIR)/rom/etc/koolshare/ROG/res

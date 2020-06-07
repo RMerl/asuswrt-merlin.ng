@@ -4473,10 +4473,13 @@ dhcpd_send_return=dhcpd: send empty WPAD with a carriage return
 K3Screen=Screen
 tools_screen_desc=Configures the screen of router.
 weather_key=Weather API key
-weather_key_hint=Free signup and get API key from www.seniverse.com
+weather_key_hint=Free signup and get API private key from <a style="text-decoration: underline;color:#FC0;" href="https://www.seniverse.com" target="_blank">www.seniverse.com</a>
 weather_city=City
+weather_note=empty=ip
 weather_interval=Update interval
 screen_timeout=Screen timeout(sec)
+screen_hidepwd=Hide WiFi Password
+screen_hidepwd_visitor=Hide Vistor Password
 weather_off=OFF
 weather_1h=1 hour
 weather_2h=2 hours

@@ -4473,10 +4473,13 @@ dhcpd_send_return=DHCPD: 發送空WPAD並附帶回車
 K3Screen=屏幕
 tools_screen_desc=設置路由器的屏幕。
 weather_key=天氣API密鑰
-weather_key_hint=免費在www.seniverse.com註冊心知天氣帳號，獲取API密鑰。
+weather_key_hint=免費在<a style="text-decoration: underline;color:#FC0;" href="https://www.seniverse.com" target="_blank">www.seniverse.com</a>註冊心知天氣帳號，獲取API私鑰。
 weather_city=城市
+weather_note=留空則按IP地址定位
 weather_interval=更新間隔
 screen_timeout=屏幕超時(秒)
+screen_hidepwd=隱藏无線密碼
+screen_hidepwd_visitor=隱藏訪客密碼
 weather_off=關閉
 weather_1h=1小時
 weather_2h=2小時

@@ -90,7 +90,10 @@ function initial(){
 
         <tr>
           <th><#weather_city#></th>
-          <td><input type="text" maxlength="16" class="input_20_table" name="weather_city" value="<% nvram_get("weather_city"); %>" autocorrect="off" autocapitalize="off"></td>
+			<td>
+		      <input type="text" maxlength="16" class="input_20_table" name="weather_city" value="<% nvram_get("weather_city"); %>" autocorrect="off" autocapitalize="off">
+		      <span><#weather_note#></span>
+			</td>
         </tr>
 
         <tr>
@@ -106,6 +109,22 @@ function initial(){
 				<option value="86400" <% nvram_match("weather_interval", "86400","selected"); %>><#weather_24h#></option>
 			</select>
           </td>
+        </tr>
+
+        <tr id="hidepwd_tr">
+          <th><#screen_hidepwd#></th>
+			<td>
+				<input type="radio" name="screen_hidepwd" class="input" value="1" <% nvram_match_x("", "screen_hidepwd", "1", "checked"); %>><#checkbox_Yes#>
+				<input type="radio" name="screen_hidepwd" class="input" value="0" <% nvram_match_x("", "screen_hidepwd", "0", "checked"); %>><#checkbox_No#>
+			</td>
+        </tr>
+
+        <tr id="hidepwd_visitor_tr">
+          <th><#screen_hidepwd_visitor#></th>
+			<td>
+				<input type="radio" name="screen_hidepwd_visitor" class="input" value="1" <% nvram_match_x("", "screen_hidepwd_visitor", "1", "checked"); %>><#checkbox_Yes#>
+				<input type="radio" name="screen_hidepwd_visitor" class="input" value="0" <% nvram_match_x("", "screen_hidepwd_visitor", "0", "checked"); %>><#checkbox_No#>
+			</td>
         </tr>
 
         <tr>

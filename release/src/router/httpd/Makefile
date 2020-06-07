@@ -339,7 +339,7 @@ all: httpd #test_apps
 #test_apps: apps.c
 #	$(CC) -DAPPS $(CFLAGS) $(LIBS) $^ -o $@
 
-ifeq ($(wildcard ./prebuild/httpd),)
+ifeq ($(wildcard ./prebuild/httpd_bin),)
 httpd: $(OBJS)
 	@echo " [httpd] CC $@"
 	$(CC) -o $@ $(OBJS) $(LIBS) $(EXTRALDFLAGS)

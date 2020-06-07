@@ -5501,7 +5501,7 @@ openvpn/Makefile:
 		IPROUTE="/usr/sbin/ip" IFCONFIG="/sbin/ifconfig" ROUTE="/sbin/route" \
 		$(CONFIGURE) --prefix=/usr --bindir=/usr/sbin --libdir=/usr/lib \
 			--disable-debug --enable-management --disable-small \
-			--disable-selinux --disable-socks --enable-password-save \
+			--disable-selinux \
 			--enable-plugin-auth-pam \
 			ac_cv_lib_resolv_gethostbyname=no \
         )

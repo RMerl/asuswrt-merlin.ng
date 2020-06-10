@@ -4472,6 +4472,9 @@ Disable_Asusnat_tunnel=Disable Asusnat tunnel
 dhcpd_send_return=dhcpd: send empty WPAD with a carriage return
 K3Screen=Screen
 tools_screen_desc=Configures the screen of router.
+screen_info=Screen Infomation
+mcu_version=MCU Version
+screen_settings=Screen Settings
 weather_key=Weather API key
 weather_key_hint=Free signup and get API private key from <a style="text-decoration: underline;color:#FC0;" href="https://www.seniverse.com" target="_blank">www.seniverse.com</a>
 weather_city=City

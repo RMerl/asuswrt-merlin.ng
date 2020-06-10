@@ -80,6 +80,20 @@ function initial(){
 		  <div class="formfontdesc"><#tools_screen_desc#></div>
 
 	<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+	<thead>
+		<tr>
+			<td colspan="2"><#screen_info#></td>
+		</tr>
+	</thead>
+		<tr>
+			<th><#mcu_version#></th>
+			<td><% nvram_get("mcu_version"); %></td>
+		</tr>
+	<thead>
+		<tr>
+			<td colspan="2"><#screen_settings#></td>
+		</tr>
+	</thead>
         <tr>
           <th><#weather_key#></th>
           <td>

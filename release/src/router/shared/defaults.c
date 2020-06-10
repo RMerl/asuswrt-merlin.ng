@@ -4667,6 +4667,9 @@ struct nvram_tuple router_defaults[] = {
 	{ "screen_hidepwd", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "screen_hidepwd_visitor", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
+#ifdef RTCONFIG_SOFTCENTER
+	{ "httpd_delay", "100000", CKN_STR7, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 /* End of K3-specific settings */
 
 #ifdef RTCONFIG_BCM_OAM

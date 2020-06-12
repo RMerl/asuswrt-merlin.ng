@@ -700,6 +700,10 @@ function table_sort(a, b){
 		case 3:
 			aa = a.dns.split(".");
 			bb = b.dns.split(".");
+			if (aa.length != 4)
+				aa = [0,0,0,0];
+			if (bb.length != 4)
+				bb = [0,0,0,0];
 			isIP = 1;
 			break;
 		case 2:

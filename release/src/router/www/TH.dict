@@ -3635,6 +3635,7 @@ Captive_Portal_Above=ด้านบน
 Captive_Portal_Selected_Color=สีที่เลือก
 Captive_Portal_Local=ในเครื่อง
 Configuration=การกำหนดค่า
+Continuous_Mode=โหมดถ่ายต่อเนื่อง
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=นโยบายการเข้าถึง
 FreeWiFi_AccountSetting_desc1=การตั้งค่าบัญชีเป็นการกำหนดค่าบัญชีแขกรับเชิญที่ง่ายซึ่งช่วยให้คุณสามารถรักษาฐานข้อมูลบัญชีแขกรับเชิญเพื่อรักษาความปลอดภัยเครือข่ายแขกรับเชิญของคุณไคลเอ็นต์ที่เกี่ยวข้องต้องป้อนบัญชีและรหัสผ่านต่อไปนี้เพื่อเข้าสู่ระบบก่อนที่จะเข้าถึงอินเทอร์เน็ต

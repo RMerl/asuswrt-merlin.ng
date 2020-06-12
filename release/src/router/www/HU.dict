@@ -3635,6 +3635,7 @@ Captive_Portal_Above=felette
 Captive_Portal_Selected_Color=Kijelölt szín
 Captive_Portal_Local=Helyi
 Configuration=Konfiguráció
+Continuous_Mode=folyamatos üzemmódban
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Hozzáférési házirend
 FreeWiFi_AccountSetting_desc1=A Fiókbeállítás egy egyszerű vendégfiók-konfiguráció, amely lehetővé teszi, hogy a vendégfiókok adatbázisát felügyelje a vendéghálózat biztonsága érdekében. A kapcsolódó kliensnek meg kell adnia a következő fióknevet és jelszót a bejelentkezéshez, mielőtt kapcsolódhatna az internethez.

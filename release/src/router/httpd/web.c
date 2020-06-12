@@ -449,6 +449,7 @@ extern char cloud_file[256];
 #define CFG_JSON_FILE           "/tmp/cfg.json"
 #define CFG_SERVER_PID		"/var/run/cfg_server.pid"
 int cfg_changed = 0;
+int is_cfg_server_ready();
 void save_changed_param(json_object *cfg_root, char *param);
 int check_cfg_changed(json_object *root);
 static int is_wireless_client(char *mac);
@@ -3513,7 +3514,7 @@ int validate_apply(webs_t wp, json_object *root) {
 	if(acc_modified){
 		// ugly solution?
 #ifdef RTCONFIG_CFGSYNC
-		if (nvram_match("x_Setting", "1") && pids("cfg_server"))
+		if (is_cfg_server_ready())
 			strlcat(acc_action_script, "chpass", sizeof(acc_action_script));
 		else
 #endif
@@ -3539,7 +3540,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			mod_account(orig_acc, modified_acc, modified_pass);
 
 #ifdef RTCONFIG_CFGSYNC
-		if (nvram_match("x_Setting", "1") && pids("cfg_server")) {
+		if (is_cfg_server_ready()) {
 			if (strlen(acc_action_script))
 				strlcat(acc_action_script, ";", sizeof(acc_action_script));
 			strlcat(acc_action_script, "restart_ftpsamba", sizeof(acc_action_script));
@@ -3618,8 +3619,7 @@ int validate_apply(webs_t wp, json_object *root) {
 			nvram_set("w_Setting", "1");
 
 #ifdef RTCONFIG_CFGSYNC
-		if (nvram_match("x_Setting", "1") && pids("cfg_server") &&
-			check_if_file_exist(CFG_SERVER_PID))
+		if (is_cfg_server_ready())
 		{
 			/* add action_script */
 			if (!acc_modified && strlen(action_script) > 0)
@@ -4517,8 +4517,7 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv)
 				{
 #ifdef RTCONFIG_CFGSYNC
 
-					if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server") &&
-						check_if_file_exist(CFG_SERVER_PID))
+					if (cfg_changed && is_cfg_server_ready())
 					{
 						/* trigger cfg_server to send notification */
 						kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
@@ -4534,8 +4533,7 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv)
 #ifdef RTCONFIG_CFGSYNC
 				else if (strcmp(action_script, "saveNvram") == 0)
 				{
-					if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server") &&
-						check_if_file_exist(CFG_SERVER_PID))
+					if (cfg_changed && is_cfg_server_ready())
 					{
 						/* trigger cfg_server to send notification */
 						kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
@@ -10652,8 +10650,7 @@ apply_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 
 		if(action_para && strlen(action_para) > 0) {
 #ifdef RTCONFIG_CFGSYNC
-			if (nvram_match("x_Setting", "1") && cfg_changed && pids("cfg_server") &&
-				check_if_file_exist(CFG_SERVER_PID))
+			if (cfg_changed && is_cfg_server_ready())
 			{
 
 				json_object *cfg_root = NULL;
@@ -13093,24 +13090,33 @@ err:
 static void
 do_upload_cert_key_cgi(char *url, FILE *stream)
 {
-	_dprintf("do_upload_cert_key_cgi\n");
+	//_dprintf("do_upload_cert_key_cgi\n");
 }
 #endif
 
 static void
-do_download_cert_key_cgi(char *url, FILE *stream)
+do_download_cert_key_cgi(char *url, FILE *stream)//for DUT
 {
-	_dprintf("do_download_cert_key_cgi\n");
 	eval("tar", "cf",
 		"/tmp/cert_key.tar",
 		"-C",
 		"/etc",
 		"cert.pem",
-		"key.pem",
-		"server.pem",
-		"cert.crt"
+		"key.pem"
 		);
 	do_file("/tmp/cert_key.tar", stream);
+}
+
+static void
+do_download_cert_cgi(char *url, FILE *stream)//for browser
+{
+	eval("tar", "cf",
+		"/tmp/cert.tar",
+		"-C",
+		"/etc",
+		"cert.crt"
+		);
+	do_file("/tmp/cert.tar", stream);
 }
 
 // Viz 2010.08
@@ -15608,6 +15614,7 @@ login_cgi(webs_t wp, char_t *urlPrefix, char_t *webDir, int arg,
 	}
 	else{
 		captcha_right = 0;
+		HTTPD_DBG("Wrong captcha!\n");
 		websWrite(wp,"Connection: close\r\n" );
 		websWrite(wp,"\r\n" );
 		login_error_status = WRONGCAPTCHA;
@@ -17086,7 +17093,7 @@ do_del_client_data_cgi(char *url, FILE *stream) {
 	nvram_commit();
 
 #ifdef RTCONFIG_CFGSYNC
-	if (nvram_match("x_Setting", "1") && pids("cfg_server") && check_if_file_exist(CFG_SERVER_PID))
+	if (is_cfg_server_ready())
 	{
 		char cfg_ver[9] = {0};
 
@@ -17285,6 +17292,7 @@ struct mime_handler mime_handlers[] = {
 	{ "upload_cert_key.cgi*", "text/html", no_cache_IE7, do_upload_cert_key, do_upload_cert_key_cgi, do_auth },
 #endif
 	{ "cert_key.tar", "application/force-download", NULL, do_html_post_and_get, do_download_cert_key_cgi, do_auth },
+	{ "cert.tar", "application/force-download", NULL, do_html_post_and_get, do_download_cert_cgi, do_auth },
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 	{ "get_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_get_IFTTTPincode_cgi, do_auth },
 	{ "send_IFTTTPincode.cgi", "text/html", no_cache_IE7, do_html_post_and_get, do_send_IFTTTPincode_cgi, do_auth },
@@ -22683,9 +22691,18 @@ static int ej_show_info_between_nodes(int eid, webs_t wp, int argc, char **argv)
 #endif
 
 #ifdef RTCONFIG_CFGSYNC
+int is_cfg_server_ready()
+{
+	if (nvram_match("x_Setting", "1") && (nvram_get_int("cfg_recount") > 0) &&
+		pids("cfg_server") && check_if_file_exist(CFG_SERVER_PID))
+		return 1;
+
+	return 0;
+}
+
 void save_changed_param(json_object *cfg_root, char *param)
 {
-	if (nvram_match("x_Setting", "1") && pids("cfg_server")){
+	if (is_cfg_server_ready()){
 		json_object *tmp = NULL;
 		struct param_mapping_s *pParam = &param_mapping_list[0];
 

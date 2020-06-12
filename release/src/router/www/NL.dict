@@ -3635,6 +3635,7 @@ Captive_Portal_Above=boven
 Captive_Portal_Selected_Color=Geselecteerde kleur
 Captive_Portal_Local=Lokaal
 Configuration=Configuratie
+Continuous_Mode=continue modus
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Toegangsbeleid
 FreeWiFi_AccountSetting_desc1=Account Setting (Accountinstelling) is een eenvoudige configuratie voor een gastaccount waarmee u de gastaccountdatabase kunt onderhouden voor het beschermen van uw gastnetwerk. De gekoppelde client moet de volgende account en het wachtwoord invoeren voordat internettoegang mogelijk is.

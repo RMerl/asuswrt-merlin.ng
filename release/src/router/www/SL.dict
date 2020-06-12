@@ -3635,6 +3635,7 @@ Captive_Portal_Above=zgoraj
 Captive_Portal_Selected_Color=Izbrana barva
 Captive_Portal_Local=Lokalno
 Configuration=Konfiguracija
+Continuous_Mode=безперервний режим
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Access Policy (Politika dostopa)
 FreeWiFi_AccountSetting_desc1=Nastavitev računa je enostavna konfiguracija gostujočega računa, ki vam omogoča ohranjanje baze podatkov gostov za zavarovanje omrežja gostov. Pridruženi odjemalec mora vnesti naslednja račun in geslo za prijavo, šele nato lahko dostopa do interneta.

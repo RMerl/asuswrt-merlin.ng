@@ -64,6 +64,7 @@
 typedef unsigned int __u32;   // 1225 ham
 
 #include <httpd.h>
+#include <common.h>
 //2008.08 magic{
 #include <bcmnvram.h>	//2008.08 magic
 #include <arpa/inet.h>	//2008.08 magic
@@ -297,6 +298,7 @@ static int check_if_inviteCode(const char *dirpath){
 }
 #endif
 
+#ifndef RTCONFIG_LIBASUSLOG
 static int
 log_pass_handler(char *url)
 {
@@ -336,6 +338,7 @@ void Debug2File(const char *path, const char *fmt, ...)
 	} else
 		fprintf(stderr, "Open %s Error!\n", path);
 }
+#endif
 
 void sethost(const char *host)
 {
@@ -1418,6 +1421,7 @@ handle_request(void)
 					&& !strstr(file, "asustitle.png")
 #endif
 					&& !strstr(file,"cert_key.tar")
+					&& !strstr(file,"cert.tar")
 #ifdef RTCONFIG_OPENVPN
 					&& !strstr(file, "server_ovpn.cert")
 #endif
@@ -2345,6 +2349,7 @@ void start_ssl(int http_port)
 				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
 					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
 						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+						system("cp /etc/cert.pem /etc/cert.crt"); // openssl self-signed certificate for router.asus.com LAN access
 						ok = 1;
 					}
 

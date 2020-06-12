@@ -143,7 +143,8 @@ enum
 	FLAG_PRINTER,
 	FLAG_ITUNE,
 	FLAG_EXIST,
-	FLAG_VENDOR
+	FLAG_VENDOR,
+	FLAG_ASUS
 };
 
 //Device service info data structure

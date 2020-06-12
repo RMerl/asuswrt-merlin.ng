@@ -3005,15 +3005,21 @@ NEITHER_WDS_OR_PSTA:
 			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
 			_dprintf("hotplug net: %s=%s.\n", tmp2, modem_type);
 
-			snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
-			snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
-			_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
+			if(strcmp(modem_type, "rndis")){
+				snprintf(nvram_name, sizeof(nvram_name), "usb_path%s_act", port_path);
+				snprintf(word, sizeof(word), "%s", nvram_safe_get(nvram_name));
+				_dprintf("hotplug net(%s): %s %s.\n", interface, nvram_name, word);
 
-			logmessage("hotplug", "set net %s.", interface);
-			_dprintf("hotplug net: set net %s.\n", interface);
-			nvram_set(nvram_name, interface);
-			nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
-			nvram_set(strcat_r(prefix, "ifname", tmp), interface);
+				logmessage("hotplug", "set net %s.", interface);
+				_dprintf("hotplug net: set net %s.\n", interface);
+				nvram_set(nvram_name, interface);
+				nvram_set(strcat_r(prefix2, "act_dev", tmp2), interface);
+				nvram_set(strcat_r(prefix, "ifname", tmp), interface);
+			}
+			else{
+				logmessage("hotplug", "android skip to set net %s.", interface);
+				_dprintf("hotplug net: android skip set net %s.\n", interface);
+			}
 
 #if defined(RTCONFIG_DUALWAN) && !defined(RTCONFIG_ALPINE) && !defined(RTCONFIG_LANTIQ)
 			// avoid the busy time of every start_wan when booting.

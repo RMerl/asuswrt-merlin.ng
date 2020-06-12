@@ -3635,6 +3635,7 @@ Captive_Portal_Above=以上
 Captive_Portal_Selected_Color=所選顏色
 Captive_Portal_Local=本地
 Configuration=設定
+Continuous_Mode=連續模式
 CTL_Apply_Enable=套用並開啟
 FreeWiFi_AccessPolicy=存取原則
 FreeWiFi_AccountSetting_desc1=帳號設定可讓您輕鬆進行訪客帳號設定。為保護您的訪客網路，您可以對訪客帳號資料進行維護。相關用戶端造訪網際網路前需要輸入下列帳號和密碼。

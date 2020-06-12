@@ -3635,6 +3635,7 @@ Captive_Portal_Above=выше
 Captive_Portal_Selected_Color=Выбранный цвет
 Captive_Portal_Local=Локальный
 Configuration=Конфигурация
+Continuous_Mode=непрерывный режим
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Политика доступа
 FreeWiFi_AccountSetting_desc1=Настройка учетной записи это конфигурация гостевой учетной записи, которая позволяет поддерживать базу данных гостевых учетных записей для обеспечения безопасности вашей гостевой сети. Для получения доступа к сети Интернет клиент должен ввести логин и пароль.

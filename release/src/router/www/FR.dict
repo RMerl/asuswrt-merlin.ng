@@ -3635,6 +3635,7 @@ Captive_Portal_Above=au-dessus
 Captive_Portal_Selected_Color=Couleur sélectionnée
 Captive_Portal_Local=Local
 Configuration=Configuration
+Continuous_Mode=mode continu
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Politique d'accès
 FreeWiFi_AccountSetting_desc1=La configuration de compte est une configuration facile de compte invité qui vous permet d'avoir une base de données de comptes invités afin de sécuriser votre réseau invité. Le client associé doit saisir le nom de compte et mot de passe suivant pour se connecter avant d'avoir accès à Internet.

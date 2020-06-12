@@ -3635,6 +3635,7 @@ Captive_Portal_Above=이상
 Captive_Portal_Selected_Color=선택된 색상
 Captive_Portal_Local=로컬
 Configuration=구성
+Continuous_Mode=연속 모드
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=액세스정책
 FreeWiFi_AccountSetting_desc1=Account Setting(계정설정)은쉬운게스트계정구성으로서게스트네트워크보안을위해게스트계정데이터베이스를유지관리할수있습니다.연결된클라이언트는다음계정과비밀번호를입력하여로그인해야인터넷에액세스할수있습니다.

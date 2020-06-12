@@ -883,7 +883,18 @@ static int tcp_packet(struct nf_conn *ct,
 			 * context and we must give it a chance to terminate.
 			 */
 			if (nf_ct_kill(ct))
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+			{
+				if (del_timer(&ct->timeout)) {
+					printk("%s: delete ct right now.\n", __FUNCTION__);
+					nf_ct_delete(ct, 0, 0);
+					return NF_DROP;
+				}
 				return -NF_REPEAT;
+			}
+#else /* ! (CONFIG_BCM_KF_BLOG && CONFIG_BLOG) */
+				return -NF_REPEAT;
+#endif /* ! (CONFIG_BCM_KF_BLOG && CONFIG_BLOG) */
 			return NF_DROP;
 		}
 		/* Fall through */

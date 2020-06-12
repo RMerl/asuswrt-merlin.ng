@@ -67,6 +67,7 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	case GET_RTK_PHYSTATES:
 	case SOFT_RESET:
 	case GET_CPU:
+	case GET_AWARE:
 	case GET_GREEN_ETHERNET:
 		p = NULL;
 		break;

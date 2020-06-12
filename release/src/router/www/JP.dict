@@ -3635,6 +3635,7 @@ Captive_Portal_Above=以上
 Captive_Portal_Selected_Color=選択した色
 Captive_Portal_Local=ローカル
 Configuration=設定
+Continuous_Mode=連続モード
 CTL_Apply_Enable=適用
 FreeWiFi_AccessPolicy=アクセスポリシー
 FreeWiFi_AccountSetting_desc1=アカウント設定は簡易なゲストアカウント設定です。ゲストネットワークのセキュリティを維持するためにゲストアカウントデータベースを維持・管理します。インターネットにアクセスする前に、接続クライアントは次のアカウントとパスワードを入力してログインする必要があります。

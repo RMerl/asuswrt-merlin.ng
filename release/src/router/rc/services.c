@@ -4470,7 +4470,7 @@ int
 start_acsd()
 {
 	int ret = 0;
-#ifdef RTCONFIG_BCM_7114
+#if defined(RTCONFIG_BCM_7114) || defined(GTAC5300)
 	char *acsd_argv[] = { "/usr/sbin/acsd", NULL };
 	int pid;
 #endif
@@ -4483,7 +4483,10 @@ start_acsd()
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames")))
-#ifdef RTCONFIG_BCM_7114
+#if defined(RTCONFIG_BCM_7114) || defined(GTAC5300)
+#if defined(GTAC5300)
+		if (nvram_get_int("re_mode") == 1)
+#endif
 		ret = _eval(acsd_argv, NULL, 0, &pid);
 #else
 		ret = eval("/usr/sbin/acsd");

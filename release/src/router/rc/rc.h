@@ -799,7 +799,7 @@ void set_dpsta_ifnames();
 #ifdef RTAC86U
 extern void hnd_cfe_check();
 #endif
-#if defined(HND_ROUTER) || defined(RTCONFIG_BCM_7114)
+#if defined(HND_ROUTER) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM4708)
 extern void wl_driver_mode_update(void);
 extern void dump_WlGetDriverStats(int fb, int count);
 #endif

@@ -750,12 +750,27 @@ void parse_openvpn_status(int unit)
 				token = strtok(NULL, ",");	//Bytes Sent
 				token = strtok(NULL, ",");	//Connected Since
 				token = strtok(NULL, ",");	//Connected Since (time_t)
-				token = strtok(NULL, ",");	//Username, include'\n'
+				token = strtok(NULL, ",");	//Username
 				if(token)
 					fprintf(fpo, "%s\n", token);
 				else
 					fprintf(fpo, "NoUsername\n");
+				fprintf(fpo, "\n");
 			}
+#if 0
+			else if(!strncmp(buf, "REMOTE", 6)) {
+				token = strtok(buf, ",");       //REMOTE,
+				token = strtok(NULL, ",");      //Real Address
+				if(token)
+					fprintf(fpo, "%s ", token);
+				else
+					fprintf(fpo, "NoRealAddress ");
+
+				fprintf(fpo, "%s ", conf.remote);
+				fprintf(fpo, "Static_Key");
+				break;
+			}
+#endif
 		}
 	}
 	if(fpi) fclose(fpi);

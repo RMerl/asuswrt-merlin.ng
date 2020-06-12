@@ -3635,6 +3635,7 @@ Captive_Portal_Above=over
 Captive_Portal_Selected_Color=Valgt farge
 Captive_Portal_Local=Lokal
 Configuration=Konfigurasjon
+Continuous_Mode=kontinuerlig modus
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Tilgangspolicy
 FreeWiFi_AccountSetting_desc1=Kontoinnstilling er en enkel gjestekontokonfigurasjon som lar deg opprettholde gjestekontodatabasen for å sikre gjestenettverket. Den tilknyttede klienten må legge inn følgende konto og passord for å logge på og tilgang til Internett.

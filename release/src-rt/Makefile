@@ -2731,11 +2731,9 @@ define RouterOptions
 		echo "RTCONFIG_MASTER_DET=y" >>$(1); \
 		sed -i "/RTCONFIG_ADV_RAST/d" $(1); \
 		echo "RTCONFIG_ADV_RAST=y" >>$(1); \
-		if [ "$(BTM_11V)" = "y" ]; then \
-			if [ "$(INFO_EXAP)" = "y" ]; then \
-				sed -i "/RTCONFIG_CONN_EVENT_TO_EX_AP/d" $(1); \
-				echo "RTCONFIG_CONN_EVENT_TO_EX_AP=y" >>$(1); \
-			fi; \
+		if [ "$(INFO_EXAP)" = "y" ]; then \
+			sed -i "/RTCONFIG_CONN_EVENT_TO_EX_AP/d" $(1); \
+			echo "RTCONFIG_CONN_EVENT_TO_EX_AP=y" >>$(1); \
 		fi; \
 		if [ "$(LANTIQ)" = "y" ]; then \
 			sed -i "/RTCONFIG_HAPDEVENT/d" $(1); \

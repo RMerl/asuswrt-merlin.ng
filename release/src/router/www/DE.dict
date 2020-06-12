@@ -3635,6 +3635,7 @@ Captive_Portal_Above=Oberhalb
 Captive_Portal_Selected_Color=Ausgewählte Farbe
 Captive_Portal_Local=Lokal
 Configuration=Konfiguration
+Continuous_Mode=Dauerbetrieb
 CTL_Apply_Enable=Anwenden und Aktivieren
 FreeWiFi_AccessPolicy=Zugangsvorgabe
 FreeWiFi_AccountSetting_desc1=Die Kontoeinstellung beinhaltet eine einfache Gastkonto-Konfiguration, die es Ihnen ermöglicht, die Gastkonto-Datenbank zum Schutz Ihres Gastnetzwerks zu verwalten. Der verbundene Client muss einen Kontonamen und ein Kennwort zur Anmeldung eingeben, bevor der Zugang zum Internet möglich ist.

@@ -3635,6 +3635,7 @@ Captive_Portal_Above=above
 Captive_Portal_Selected_Color=Selected Color
 Captive_Portal_Local=Local
 Configuration=Configuration
+Continuous_Mode=Continuous Mode
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Access Policy
 FreeWiFi_AccountSetting_desc1=Account Setting is an easy guest account configuration, which allows you to maintain the guest account database for securing your guest network. The associated client has to enter the following account and password to log in before accessing Internet.

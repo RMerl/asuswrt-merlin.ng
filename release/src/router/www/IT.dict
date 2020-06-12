@@ -3635,6 +3635,7 @@ Captive_Portal_Above=sopra
 Captive_Portal_Selected_Color=Colore selezionato
 Captive_Portal_Local=Locale
 Configuration=Configurazione
+Continuous_Mode=modalità continua
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Regole di accesso
 FreeWiFi_AccountSetting_desc1=Impostazione account è una configurazione rapida degli account ospiti che vi permette di mantenere il database degli account ospiti per mettere in sicurezza la rete ospiti. Il client associato deve inserire il seguente account e password prima di poter accedere a Internet.

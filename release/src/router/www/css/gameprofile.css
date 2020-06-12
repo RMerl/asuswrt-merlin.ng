@@ -369,6 +369,21 @@
 .game-p-wolcenLordsofMayhem{
     background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/wolcenLordsofMayhem.jpg'), url('../images/gameprofile/default-game.png');
 }
+.game-p-animalCrossingNewHorizons{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/animalCrossingNewHorizons.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-finalFantasy7{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/finalFantasy7.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-nba2k20{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/nba2k20.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-residentEvil2{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/residentEvil2.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-residentEvil3{
+    background-image: url('http://nw-dlcdnet.asus.com/plugin/gameImages/residentEvil3.jpg'), url('../images/gameprofile/default-game.png');
+}
 .new-g-p-t-field{
     height: 70px;
     background-color: rgba(30,28,28,0.8);

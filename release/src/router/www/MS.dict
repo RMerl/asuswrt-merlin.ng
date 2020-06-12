@@ -3635,6 +3635,7 @@ Captive_Portal_Above=di atas
 Captive_Portal_Selected_Color=Warna Yang Dipilih
 Captive_Portal_Local=Tempatan
 Configuration=Konfigurasi
+Continuous_Mode=mod berterusan
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Dasar Akses
 FreeWiFi_AccountSetting_desc1=Tetapan Akaun ialah konfigurasi akaun tetamu mudah, yang membolehkan anda mengekalkan pangkalan data akaun tetamu untuk melindungi rangkaian tetamu anda. Klien yang berkaitan perlu memasukkan akaun dan kata laluan berikut untuk melog masuk sebelum mengakses Internet.

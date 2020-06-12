@@ -3635,6 +3635,7 @@ Captive_Portal_Above=üstü
 Captive_Portal_Selected_Color=Seçilen Renk
 Captive_Portal_Local=Yerel
 Configuration=Yapılandırması
+Continuous_Mode=sürekli mod
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Erişim İlkesi
 FreeWiFi_AccountSetting_desc1=Hesap Ayarı, misafir ağınızı güvenli kılmak için misafir hesabı veritabanını iyi durumda tutmanızı sağlayan kolay bir misafir hesabı yapılandırmasıdır. İlişkili istemci, Internet'e erişmeden önce oturum açmak için aşağıdaki hesabı ve şifreyi girmek zorundadır.

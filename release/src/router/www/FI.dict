@@ -3635,6 +3635,7 @@ Captive_Portal_Above=yllä
 Captive_Portal_Selected_Color=Valittu väri
 Captive_Portal_Local=Paikallinen
 Configuration=Määritys
+Continuous_Mode=jatkuva tila
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Käyttökäytäntö
 FreeWiFi_AccountSetting_desc1=Tiliasetus on helppo vierastilimääritys, joka antaa ylläpitää vierastilitietokantaa vierasverkon suojausta varten. Yhdistetyn asiakkaan on syötettävä seuraava tili ja salasana voidakseen kirjautua sisään ennen internet-käyttöä.

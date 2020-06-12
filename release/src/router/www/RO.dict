@@ -3635,6 +3635,7 @@ Captive_Portal_Above=peste
 Captive_Portal_Selected_Color=Culoare selectată
 Captive_Portal_Local=Local
 Configuration=Configuraţie
+Continuous_Mode=безперервний режим
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Politică de acces
 FreeWiFi_AccountSetting_desc1=Account Setting (Configurare cont) reprezintă o metodă facilă de configurare a unui cont de invitat care vă permite să păstrați baza de date cu conturi de invitați și să vă securizați rețeaua pentru invitați. Clientul asociat trebuie să introducă informațiile următoare pentru cont și parolă pentru a se conecta, înainte de a avea accesa la internet.

@@ -3635,6 +3635,7 @@ Captive_Portal_Above=arriba
 Captive_Portal_Selected_Color=Color seleccionado
 Captive_Portal_Local=Local
 Configuration=Configuración
+Continuous_Mode=modo continuo
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Política de acceso
 FreeWiFi_AccountSetting_desc1=Account Setting (Configuración de la cuenta) es una configuración sencilla de la cuenta para invitados que le permite mantener la base de datos de la cuenta para invitados para proteger la red para invitados. El cliente asociado tiene que especificar la siguiente cuenta y contraseña para iniciar sesión antes de acceder a Internet.

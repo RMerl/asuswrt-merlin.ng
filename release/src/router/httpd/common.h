@@ -41,6 +41,36 @@
 #define FALSE 0
 #endif
 
+#ifdef RTCONFIG_LIBASUSLOG
+#include <libasuslog.h>
+#endif
+
+/* DEBUG DEFINE */
+#define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#define HTTPD_DEBUG_FILE                "/jffs/HTTPD_DEBUG.log"
+#else
+#define HTTPD_DEBUG_FILE                  "/tmp/HTTPD_DEBUG.log"
+#endif
+
+/* DEBUG FUNCTION */
+#ifdef RTCONFIG_LIBASUSLOG
+#define HTTPD_DBG(fmt, arg...) do {\
+	int save_errno = errno; \
+	if (f_exists(HTTPD_DEBUG) > 0 || nvram_get_int("HTTPD_DBG") > 0) \
+		asusdebuglog(LOG_INFO, HTTPD_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s(%d)]:"fmt"\n", __FUNCTION__, __LINE__ , ##arg); \
+	errno = save_errno; \
+}while(0)
+#else
+extern void Debug2File(const char *path, const char *fmt, ...);
+#define HTTPD_DBG(fmt, args...) ({ \
+	int save_errno = errno; \
+	if (f_exists(HTTPD_DEBUG) > 0 || nvram_get_int("HTTPD_DBG") > 0) \
+		Debug2File(HTTPD_DEBUG_FILE, "[%s:(%d)]: "fmt, __FUNCTION__, __LINE__, ##args); \
+	errno = save_errno; \
+})
+#endif
+
 // 2008.10 magic {
 enum{
 	RESTART_FTPSAMBA = 0x1,

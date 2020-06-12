@@ -3635,6 +3635,7 @@ Captive_Portal_Above=nad
 Captive_Portal_Selected_Color=Vybraná barva
 Captive_Portal_Local=Místní
 Configuration=Konfigurace
+Continuous_Mode=nepřetržitý režim
 CTL_Apply_Enable=Apply and Enable
 FreeWiFi_AccessPolicy=Zásada přístupu
 FreeWiFi_AccountSetting_desc1=Nastavení účtu je snadná konfigurace hostitelského účtu, která vám umožňuje zachovat databázi hostitelských účtů pro zabezpečení hostitelské sítě. Přidružený klient musí před přístupem k internetu zadat následující účet a heslo pro přihlášení.

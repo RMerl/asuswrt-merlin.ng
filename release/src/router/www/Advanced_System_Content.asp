@@ -1164,11 +1164,11 @@ function hide_https_lanport(_value){
 	if(le_enable == "0" && _value != "0"){
 		$("#https_download_cert").css("display", "");
 		if(orig_http_enable == "0"){
-			$("#down_cert_btn").css("display", "none");
+			$("#download_cert_btn").css("display", "none");
 			$("#download_cert_desc").css("display", "");
 		}
 		else{
-			$("#down_cert_btn").css("display", "");
+			$("#download_cert_btn").css("display", "");
 			$("#download_cert_desc").css("display", "none");
 		}
 	}
@@ -1824,7 +1824,7 @@ function myisPortConflict(_val, service){
 
 
 function save_cert_key(){
-	location.href = "cert_key.tar";
+	location.href = "cert.tar";
 }
 </script>
 </head>
@@ -2307,8 +2307,8 @@ function save_cert_key(){
 				<tr id="https_download_cert" style="display: none;">
 					<th>Download Certificate</th>
 					<td>
-						<input id="down_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-						<span id="download_cert_desc">Download and install SSL certificate on your browser to trust accessing your local domain “router.asus.com” with HTTPS protocol. To export certificate after applying setting. <a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00;" target="_blank">FAQ</a></span>
+						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<span id="download_cert_desc">Download and install SSL certificate on your browser to trust accessing your local domain “router.asus.com” with HTTPS protocol. To export certificate after applying setting.</span><a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>

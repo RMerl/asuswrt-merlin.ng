@@ -2,6 +2,11 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.18 (xx-xxx-2020)
+  - NOTE: Starting with 384.18, the RT-AC88U/3100/5300 firmware now uses
+          the new encrypted router password mechanism.  This means that
+          downgrading any of these models to an older version (or to a
+          stock firmware older than 384_81790) will require a factory
+          default reset afterward.
   - UPDATED: Merged GPL 384_8563 for AX models.
   - UPDATED: Merged GPL 384_81846 for mainline models (code is almost
              identical to 385_20490)
@@ -11,6 +16,8 @@ Asuswrt-Merlin 384/NG Changelog
              and RT-AC3100.
   - UPDATED: Merged SDK + binary blobs 384_8563 for RT-AX58U.
   - UPDATED: amtm to 3.1.7.
+  - UPDATED: Root certificate bundle to June 3rd 2020.
+  - UPDATED: OUI database used by the webui.
   - FIXED: ssh/scp client would fail to connect while negotiating
            a chacha20 connection (themiron)
 

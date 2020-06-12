@@ -17,6 +17,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Merged SDK + binary blobs 384_8563 for RT-AX58U.
   - UPDATED: amtm to 3.1.7.
   - UPDATED: Root certificate bundle to June 3rd 2020.
+  - UPDATED: OUI database used by the webui.
   - FIXED: ssh/scp client would fail to connect while negotiating
            a chacha20 connection (themiron)
 

@@ -2377,9 +2377,11 @@ void start_ssl(int http_port)
 			}
 		}
 
+#if 0
 		if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
 			save_cert();
 		}
+#endif
 
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
 			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);

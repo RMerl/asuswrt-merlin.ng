@@ -96,12 +96,12 @@ void k3_init()
 {
 	bool isChange = 0;
 
-	if (!nvram_safe_get("modelname"))
+	if (!nvram_get("modelname"))
 	{
 		nvram_set("modelname", "K3");
 		isChange = 1;
 	}
-	if (!nvram_safe_get("screen_timeout"))
+	if (!nvram_get("screen_timeout"))
 	{
 		nvram_set("screen_timeout", "30");
 		isChange = 1;
@@ -137,14 +137,23 @@ void start_k3screen(void)
 	char *k3screenbg_argv[] = {"k3screenbg", NULL};
 	pid_t pid1, pid2;
 
-	doSystem("killall -q -9 k3screenctrl k3screenbg 2>/dev/null");
+	killall_tk("k3screenctrl");
+	killall_tk("k3screenbg");
 
 	logmessage("K3INIT", "屏幕控制程序开始启动");
 	_dprintf("**** k3screen: start\n");
 	doSystem("mkdir -p /tmp/k3screenctrl");
 	doSystem("ln -snf /lib/k3screenctrl/* /tmp/k3screenctrl");
-	_eval(k3screenctrl_argv, NULL, 0, &pid1);
-	_eval(k3screenbg_argv, NULL, 0, &pid2);
+	_eval(k3screenbg_argv, NULL, 0, &pid1);
+	_eval(k3screenctrl_argv, NULL, 0, &pid2);
+	if (!nvram_get("mcu_version"))
+	{
+		pid_t pid3;
+		sleep(3);
+		_eval(k3screenctrl_argv, NULL, 0, &pid3);
+		sleep(1);
+		kill(-pid3, SIGKILL);
+	}
 	_dprintf("**** k3screen: ok\n");
 }
 

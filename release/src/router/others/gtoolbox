@@ -1,10 +1,13 @@
 #!/bin/sh
 ####################################################################
 get_mac() {
-	/usr/sbin/envrams >/dev/null
 	MAC_LAN=`envram get et0macaddr`
 	MAC_2G=`envram get 1:macaddr`
 	MAC_5G=`envram get 2:macaddr`
+}
+
+get_wl_driver() {
+	WL_DRIVER=`lsmod | grep dpsta | awk '{print $4}'`
 }
 
 ops() {
@@ -42,6 +45,32 @@ mod_5gmac() {
 		envram commit
 	fi
 }
+
+wl_dhd() {
+	if [ "dhd" = $WL_DRIVER ]; then
+		echo "当前驱动为dhd，无需更换。"
+		return
+	fi
+	envram set 'chiprev'='0x4'
+	envram commit
+	nvram set 'chiprev'='0x4'
+	rmmod dhd24
+	modprobe dhd
+	echo "已更换无线驱动为dhd"
+}
+
+wl_dhd24() {
+	if [ "dhd24" = $WL_DRIVER ]; then
+		echo "当前驱动为dhd24，无需更换。"
+		return
+	fi
+	envram set 'chiprev'='0x3'
+	envram commit
+	nvram set 'chiprev'='0x3'
+	rmmod dhd
+	modprobe dhd24
+	echo "已更换无线驱动为dhd24"
+}
 ####################################################################
 
 /usr/sbin/envrams >/dev/null
@@ -49,6 +78,7 @@ sleep 1
 while true
 do
 	get_mac
+	get_wl_driver
 	clear
 	echo "#########################"
 	echo "       GTOOL工具箱"
@@ -57,11 +87,15 @@ do
 	echo "LAN  - $MAC_LAN"
 	echo "2.4G - $MAC_2G"
 	echo "5G   - $MAC_5G"
+	echo "-------------------------"
+	echo "无线驱动 - ${WL_DRIVER}.ko"
 	echo "#########################"
 	echo "1) 修复屏幕超时保存"
 	echo "2) 修改LAN MAC"
 	echo "3) 修改2.4G MAC"
 	echo "4) 修改5G MAC"
+	echo "5) 无线驱动更换成dhd24.ko"
+	echo "6) 无线驱动更换成dhd.ko"
 	echo "q) 退出"
 	echo
 	read -n 1 -p "Choice: " x
@@ -75,6 +109,10 @@ do
 		mod_2gmac;sleep 1;;
     4)
 		mod_5gmac;sleep 1;;
+    5)
+		wl_dhd24;sleep 1;;
+    6)
+		wl_dhd;sleep 1;;
     q)
 		killall -9 envrams; echo; exit;;
     *)

@@ -8,12 +8,11 @@ Asuswrt-Merlin 384/NG Changelog
           stock firmware older than 384_81790) will require a factory
           default reset afterward.
   - UPDATED: Merged GPL 384_8563 for AX models.
-  - UPDATED: Merged GPL 384_81846 for mainline models (code is almost
-             identical to 385_20490)
-  - UPDATED: Merged SDK + binary blobs from 384_81846 for RT-AC86U.
+  - UPDATED: Merged GPL 384_81918 for mainline models
+  - UPDATED: Merged SDK + binary blobs from 384_81918 for RT-AC86U.
   - UPDATED: Merged SDK + binary blobs from 384_81844 for RT-AC5300.
   - UPDATED: Merged SDK + binary blobs from 385_20490 for RT-AC68U
-             and RT-AC3100.
+             and RT-AC3100 (code is identical to 384_81490)
   - UPDATED: Merged SDK + binary blobs 384_8563 for RT-AX58U.
   - UPDATED: amtm to 3.1.7.
   - UPDATED: Root certificate bundle to June 3rd 2020.
@@ -26,8 +25,13 @@ Asuswrt-Merlin 384/NG Changelog
 384.13_9 (xx-xxx-2020)
   This release is only available for the RT-AC87U and RT-AC3200.
 
+  - UPDATED: amtm to 3.1.7.
+  - UPDATED: Root certificate bundle to June 3rd 2020.
+  - UPDATED: OUI database used by the webui.
   - UPDATED: Wireless driver from 382_52230 for RT-AC87U (should
              address Kr00k)
+  - FIXED: ssh/scp client would fail to connect while negotiating
+           a chacha20 connection (themiron)
 
 
 384.17 (26-Apr-2020)

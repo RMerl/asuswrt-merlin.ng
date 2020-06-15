@@ -30,7 +30,12 @@ int hmac_file(int hash, const char *fname,
                     unsigned char *out, unsigned long *outlen)
 {
 #ifdef LTC_NO_FILE
-    (void)hash; (void)fname; (void)key; (void)keylen; (void)out; (void)outlen;
+   LTC_UNUSED_PARAM(hash);
+   LTC_UNUSED_PARAM(fname);
+   LTC_UNUSED_PARAM(key);
+   LTC_UNUSED_PARAM(keylen);
+   LTC_UNUSED_PARAM(out);
+   LTC_UNUSED_PARAM(outlen);
     return CRYPT_NOP;
 #else
    hmac_state hmac;

@@ -48,7 +48,7 @@ IMPORTANT: Some options will require "make clean" after changes */
 #define DROPBEAR_SMALL_CODE 1
 
 /* Enable X11 Forwarding - server only */
-#define DROPBEAR_X11FWD 1
+#define DROPBEAR_X11FWD 0
 
 /* Enable TCP Fowarding */
 /* 'Local' is "-L" style (client listening port forwarded via server)
@@ -83,33 +83,36 @@ IMPORTANT: Some options will require "make clean" after changes */
  * Including both AES keysize variants (128 and 256) will result in 
  * a minimal size increase */
 #define DROPBEAR_AES128 1
-#define DROPBEAR_3DES 1
 #define DROPBEAR_AES256 1
+#define DROPBEAR_3DES 0
 #define DROPBEAR_TWOFISH256 0
 #define DROPBEAR_TWOFISH128 0
-/* Compiling in Blowfish will add ~6kB to runtime heap memory usage */
-#define DROPBEAR_BLOWFISH 0
-
-/* Enable CBC mode for ciphers. This has security issues though
- * is the most compatible with older SSH implementations */
-#define DROPBEAR_ENABLE_CBC_MODE 1
-
-/* Enable "Counter Mode" for ciphers. This is more secure than
- * CBC mode against certain attacks. It is recommended for security
- * and forwards compatibility */
-#define DROPBEAR_ENABLE_CTR_MODE 1
 
 /* Enable Chacha20-Poly1305 authenticated encryption mode. This is
  * generally faster than AES256 on CPU w/o dedicated AES instructions,
- * having the same key size.
+ * having the same key size. Recommended.
  * Compiling in will add ~5,5kB to binary size on x86-64 */
 #define DROPBEAR_CHACHA20POLY1305 1
+
+/* Enable "Counter Mode" for ciphers. Recommended. */
+#define DROPBEAR_ENABLE_CTR_MODE 1
+
+/* Enable CBC mode for ciphers. This has security issues though
+   may be required for compatibility with old implementations */
+#define DROPBEAR_ENABLE_CBC_MODE 0
+
+/* Enable "Galois/Counter Mode" for ciphers. This authenticated
+ * encryption mode is combination of CTR mode and GHASH. Recommended
+ * for security and forwards compatibility, but slower than CTR on
+ * CPU w/o dedicated AES/GHASH instructions.
+ * Compiling in will add ~6kB to binary size on x86-64 */
+#define DROPBEAR_ENABLE_GCM_MODE 0
 
 /* Message integrity. sha2-256 is recommended as a default, 
    sha1 for compatibility */
 #define DROPBEAR_SHA1_HMAC 1
-#define DROPBEAR_SHA1_96_HMAC 1
 #define DROPBEAR_SHA2_256_HMAC 1
+#define DROPBEAR_SHA1_96_HMAC 0
 
 /* Hostkey/public key algorithms - at least one required, these are used
  * for hostkey as well as for verifying signatures with pubkey auth.
@@ -185,7 +188,7 @@ group1 in Dropbear server too */
 #define DO_HOST_LOOKUP 0
 
 /* Whether to print the message of the day (MOTD). */
-#define DO_MOTD 0
+#define DO_MOTD 1
 #define MOTD_FILENAME "/etc/motd"
 
 /* Authentication Types - at least one required.

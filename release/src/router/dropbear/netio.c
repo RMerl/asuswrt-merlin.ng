@@ -293,13 +293,15 @@ void packet_queue_to_iovec(const struct Queue *queue, struct iovec *iov, unsigne
 	int len;
 	buffer *writebuf;
 
-	#ifndef IOV_MAX
-		#if defined(__CYGWIN__) && !defined(UIO_MAXIOV)
+#ifndef IOV_MAX
+	#if defined(__CYGWIN__) && !defined(UIO_MAXIOV)
 		#define IOV_MAX 1024
-		#else
+	#elif defined(__sgi)
+		#define IOV_MAX 512 
+	#else 
 		#define IOV_MAX UIO_MAXIOV
-		#endif
 	#endif
+#endif
 
 	*iov_count = MIN(MIN(queue->count, IOV_MAX), *iov_count);
 
@@ -398,9 +400,9 @@ void set_sock_priority(int sock, enum dropbear_prio prio) {
 	}
 	/* linux specific, sets QoS class. see tc-prio(8) */
 	rc = setsockopt(sock, SOL_SOCKET, SO_PRIORITY, (void*) &so_prio_val, sizeof(so_prio_val));
-	if (rc < 0 && errno != ENOTSOCK)
-		dropbear_log(LOG_WARNING, "Couldn't set SO_PRIORITY (%s)",
-				strerror(errno));
+	if (rc < 0 && errno != ENOTSOCK) {
+		TRACE(("Couldn't set SO_PRIORITY (%s)", strerror(errno)))
+    }
 #endif
 
 }

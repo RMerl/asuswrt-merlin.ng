@@ -42,9 +42,10 @@ int main(int argc, char **argv)
       printf("  need to allocate %u bytes \n\n", sizes_list_len);
 
       /* get and print the names (and sizes) list */
-      sizes_list = malloc(sizes_list_len);
+      if ((sizes_list = malloc(sizes_list_len)) == NULL) exit(EXIT_FAILURE);
       if (crypt_list_all_sizes(sizes_list, &sizes_list_len) != 0) exit(EXIT_FAILURE);
       printf("  supported sizes:\n\n%s\n\n", sizes_list);
+      free(sizes_list);
    } else if (argc == 2) {
       if (strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "--help") == 0) {
          char* base = strdup(basename(argv[0]));
@@ -60,9 +61,10 @@ int main(int argc, char **argv)
          /* get and print the length of the names (and sizes) list */
          if (crypt_list_all_sizes(NULL, &sizes_list_len) != 0) exit(EXIT_FAILURE);
          /* get and print the names (and sizes) list */
-         sizes_list = malloc(sizes_list_len);
+         if ((sizes_list = malloc(sizes_list_len)) == NULL) exit(EXIT_FAILURE);
          if (crypt_list_all_sizes(sizes_list, &sizes_list_len) != 0) exit(EXIT_FAILURE);
          printf("%s\n", sizes_list);
+         free(sizes_list);
       }
    } else if (argc == 3) {
       if (strcmp(argv[1], "-s") == 0) {

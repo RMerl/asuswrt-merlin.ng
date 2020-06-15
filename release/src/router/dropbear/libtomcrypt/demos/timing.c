@@ -466,7 +466,7 @@ static void time_cipher_lrw(void)
    tally_results(1);
 }
 #else
-static void time_cipher_lrw(void) { fprintf(stderr, "NO LRW\n"); return 0; }
+static void time_cipher_lrw(void) { fprintf(stderr, "NO LRW\n"); }
 #endif
 
 

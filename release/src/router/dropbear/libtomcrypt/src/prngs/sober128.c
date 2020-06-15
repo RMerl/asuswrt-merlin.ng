@@ -189,7 +189,7 @@ int sober128_import(const unsigned char *in, unsigned long inlen, prng_state *pr
    if (inlen < (unsigned long)sober128_desc.export_size) return CRYPT_INVALID_ARG;
 
    if ((err = sober128_start(prng)) != CRYPT_OK) return err;
-   if ((err = sober128_add_entropy(in, sober128_desc.export_size, prng)) != CRYPT_OK) return err;
+   if ((err = sober128_add_entropy(in, inlen, prng)) != CRYPT_OK) return err;
    return CRYPT_OK;
 }
 

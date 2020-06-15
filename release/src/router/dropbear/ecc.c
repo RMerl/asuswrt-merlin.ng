@@ -166,13 +166,13 @@ ecc_key * buf_get_ecc_raw_pubkey(buffer *buf, const struct dropbear_ecc_curve *c
 	key = new_ecc_key();
 	key->dp = curve->dp;
 
-	if (mp_read_unsigned_bin(key->pubkey.x, buf_getptr(buf, size), size) != MP_OKAY) {
+	if (mp_from_ubin(key->pubkey.x, buf_getptr(buf, size), size) != MP_OKAY) {
 		TRACE(("failed to read x"))
 		goto out;
 	}
 	buf_incrpos(buf, size);
 
-	if (mp_read_unsigned_bin(key->pubkey.y, buf_getptr(buf, size), size) != MP_OKAY) {
+	if (mp_from_ubin(key->pubkey.y, buf_getptr(buf, size), size) != MP_OKAY) {
 		TRACE(("failed to read y"))
 		goto out;
 	}

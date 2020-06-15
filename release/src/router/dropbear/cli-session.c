@@ -81,6 +81,7 @@ static const packettype cli_packettypes[] = {
 	{SSH_MSG_REQUEST_SUCCESS, ignore_recv_response},
 	{SSH_MSG_REQUEST_FAILURE, ignore_recv_response},
 #endif
+	{SSH_MSG_EXT_INFO, recv_msg_ext_info},
 	{0, NULL} /* End */
 };
 
@@ -352,11 +353,13 @@ static void cli_session_cleanup(void) {
 	(void)fcntl(cli_ses.stderrcopy, F_SETFL, cli_ses.stderrflags);
 
 	cli_tty_cleanup();
-
+	if (cli_ses.server_sig_algs) {
+		buf_free(cli_ses.server_sig_algs);
+	}
 }
 
 static void cli_finished() {
-	TRACE(("cli_finised()"))
+	TRACE(("cli_finished()"))
 
 	session_cleanup();
 	fprintf(stderr, "Connection to %s@%s:%s closed.\n", cli_opts.username,

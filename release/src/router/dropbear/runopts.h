@@ -125,6 +125,11 @@ typedef struct svr_runopts {
 
 	char * forced_command;
 
+#if DROPBEAR_PLUGIN 
+        char *pubkey_plugin;
+        char *pubkey_plugin_options;
+#endif
+
 } svr_runopts;
 
 extern svr_runopts svr_opts;

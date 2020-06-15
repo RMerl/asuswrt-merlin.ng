@@ -94,7 +94,7 @@ void send_msg_kexdh_init() {
 void recv_msg_kexdh_reply() {
 
 	sign_key *hostkey = NULL;
-	unsigned int type, keybloblen;
+	unsigned int keytype, keybloblen;
 	unsigned char* keyblob = NULL;
 
 	TRACE(("enter recv_msg_kexdh_reply"))
@@ -102,8 +102,8 @@ void recv_msg_kexdh_reply() {
 	if (cli_ses.kex_state != KEXDH_INIT_SENT) {
 		dropbear_exit("Received out-of-order kexdhreply");
 	}
-	type = ses.newkeys->algo_hostkey;
-	TRACE(("type is %d", type))
+	keytype = ses.newkeys->algo_hostkey;
+	TRACE(("keytype is %d", keytype))
 
 	hostkey = new_sign_key();
 	keybloblen = buf_getint(ses.payload);
@@ -114,7 +114,7 @@ void recv_msg_kexdh_reply() {
 		checkhostkey(keyblob, keybloblen);
 	}
 
-	if (buf_get_pub_key(ses.payload, hostkey, &type) != DROPBEAR_SUCCESS) {
+	if (buf_get_pub_key(ses.payload, hostkey, &keytype) != DROPBEAR_SUCCESS) {
 		TRACE(("failed getting pubkey"))
 		dropbear_exit("Bad KEX packet");
 	}
@@ -155,10 +155,12 @@ void recv_msg_kexdh_reply() {
 #endif
 	}
 
+#if DROPBEAR_NORMAL_DH
 	if (cli_ses.dh_param) {
 		free_kexdh_param(cli_ses.dh_param);
 		cli_ses.dh_param = NULL;
 	}
+#endif
 #if DROPBEAR_ECDH
 	if (cli_ses.ecdh_param) {
 		free_kexecdh_param(cli_ses.ecdh_param);
@@ -173,7 +175,8 @@ void recv_msg_kexdh_reply() {
 #endif
 
 	cli_ses.param_kex_algo = NULL;
-	if (buf_verify(ses.payload, hostkey, ses.hash) != DROPBEAR_SUCCESS) {
+	if (buf_verify(ses.payload, hostkey, ses.newkeys->algo_signature, 
+			ses.hash) != DROPBEAR_SUCCESS) {
 		dropbear_exit("Bad hostkey signature");
 	}
 
@@ -409,4 +412,39 @@ out:
 		buf_free(line);
 	}
 	m_free(fingerprint);
+}
+
+void recv_msg_ext_info(void) {
+	/* This message is not client-specific in the protocol but Dropbear only handles
+	a server-sent message at present. */
+	unsigned int num_ext;
+	unsigned int i;
+
+	TRACE(("enter recv_msg_ext_info"))
+
+	/* Must be after the first SSH_MSG_NEWKEYS */
+	TRACE(("last %d, donefirst %d, donescond %d", ses.lastpacket, ses.kexstate.donefirstkex, ses.kexstate.donesecondkex))
+	if (!(ses.lastpacket == SSH_MSG_NEWKEYS && !ses.kexstate.donesecondkex)) {
+		TRACE(("leave recv_msg_ext_info: ignoring packet received at the wrong time"))
+		return;
+	}
+
+	num_ext = buf_getint(ses.payload);
+	TRACE(("received SSH_MSG_EXT_INFO with %d items", num_ext))
+
+	for (i = 0; i < num_ext; i++) {
+		unsigned int name_len;
+		char *ext_name = buf_getstring(ses.payload, &name_len);
+		TRACE(("extension %d name '%s'", i, ext_name))
+		if (cli_ses.server_sig_algs == NULL
+				&& name_len == strlen(SSH_SERVER_SIG_ALGS)
+				&& strcmp(ext_name, SSH_SERVER_SIG_ALGS) == 0) {
+			cli_ses.server_sig_algs = buf_getbuf(ses.payload);
+		} else {
+			/* valid extension values could be >MAX_STRING_LEN */
+			buf_eatstring(ses.payload);
+		}
+		m_free(ext_name);
+	}
+	TRACE(("leave recv_msg_ext_info"))
 }

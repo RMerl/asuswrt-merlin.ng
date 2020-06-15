@@ -22,7 +22,7 @@ EXTRALIBS = ../libtommath/tommath.lib
 #Compilation flags
 LTC_CFLAGS  = /nologo /Isrc/headers/ /Itests/ /D_CRT_SECURE_NO_WARNINGS /D_CRT_NONSTDC_NO_DEPRECATE /DLTC_SOURCE /W3 $(CFLAGS)
 LTC_LDFLAGS = advapi32.lib $(EXTRALIBS)
-VERSION=1.18.1
+VERSION=1.18.2
 
 #Libraries to be created (this makefile builds only static libraries)
 LIBMAIN_S =tomcrypt.lib

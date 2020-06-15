@@ -114,7 +114,7 @@ int rsa_import_pkcs8(const unsigned char *in, unsigned long inlen,
 
    /* check alg oid */
    if ((alg_seq[0].size != rsaoid.OIDlen) ||
-      XMEMCMP(rsaoid.OID, alg_seq[0].data, rsaoid.OIDlen * sizeof(rsaoid.OID[0]))) {
+      XMEMCMP(rsaoid.OID, alg_seq[0].data, rsaoid.OIDlen * sizeof(rsaoid.OID[0])) != 0) {
       err = CRYPT_PK_INVALID_TYPE;
       goto LBL_ERR;
    }

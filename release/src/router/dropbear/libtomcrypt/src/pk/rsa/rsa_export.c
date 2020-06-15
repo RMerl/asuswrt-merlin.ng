@@ -58,7 +58,7 @@ int rsa_export(unsigned char *out, unsigned long *outlen, int type, rsa_key *key
       unsigned char* tmp = NULL;
 
       if (type & PK_STD) {
-          tmplen = (mp_count_bits(key->N)/8)*2+8;
+          tmplen = (unsigned long)(mp_count_bits(key->N) / 8) * 2 + 8;
           tmp = XMALLOC(tmplen);
           ptmplen = &tmplen;
           if (tmp == NULL) {

@@ -1094,6 +1094,25 @@ static int der_choice_test(void)
 }
 
 
+static void _der_recursion_limit(void)
+{
+   int failed = 0;
+   unsigned int n;
+   unsigned long integer = 123, s;
+   ltc_asn1_list seqs[LTC_DER_MAX_RECURSION + 2], dummy[1], *flexi;
+   unsigned char buf[2048];
+   LTC_SET_ASN1(dummy, 0, LTC_ASN1_SHORT_INTEGER, &integer, 1);
+   LTC_SET_ASN1(seqs, LTC_DER_MAX_RECURSION + 1, LTC_ASN1_SEQUENCE, dummy, 1);
+   for (n = 0; n < LTC_DER_MAX_RECURSION + 1; ++n) {
+      LTC_SET_ASN1(seqs, LTC_DER_MAX_RECURSION - n, LTC_ASN1_SEQUENCE, &seqs[LTC_DER_MAX_RECURSION - n + 1], 1);
+   }
+   s = sizeof(buf);
+   DO(der_encode_sequence(seqs, 1, buf, &s));
+   DO(der_decode_sequence(buf, s, seqs, 1));
+   SHOULD_FAIL(der_decode_sequence_flexi(buf, &s, &flexi));
+   if (failed) exit(EXIT_FAILURE);
+}
+
 int der_test(void)
 {
    unsigned long x, y, z, zz, oid[2][32];
@@ -1126,6 +1145,8 @@ int der_test(void)
    unsigned char utf8_buf[32];
    wchar_t utf8_out[32];
 
+
+   _der_recursion_limit();
    der_cacert_test();
 
    DO(mp_init_multi(&a, &b, &c, &d, &e, &f, &g, NULL));

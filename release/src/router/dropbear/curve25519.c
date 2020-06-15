@@ -208,7 +208,7 @@ sv pow2523(gf o,const gf i)
 #endif /* DROPBEAR_ED25519 && DROPBEAR_SIGNKEY_VERIFY */
 
 #if DROPBEAR_CURVE25519
-int dropbear_curve25519_scalarmult(u8 *q,const u8 *n,const u8 *p)
+void dropbear_curve25519_scalarmult(u8 *q,const u8 *n,const u8 *p)
 {
   u8 z[32];
   i64 x[80],r,i;
@@ -256,7 +256,6 @@ int dropbear_curve25519_scalarmult(u8 *q,const u8 *n,const u8 *p)
   inv25519(x+32,x+32);
   M(x+16,x+16,x+32);
   pack25519(q,x+16);
-  return 0;
 }
 #endif /* DROPBEAR_CURVE25519 */
 
@@ -338,7 +337,7 @@ sv scalarbase(gf p[4],const u8 *s)
   scalarmult(p,q,s);
 }
 
-int dropbear_ed25519_make_key(u8 *pk,u8 *sk)
+void dropbear_ed25519_make_key(u8 *pk,u8 *sk)
 {
   u8 d[64];
   gf p[4];
@@ -352,8 +351,6 @@ int dropbear_ed25519_make_key(u8 *pk,u8 *sk)
 
   scalarbase(p,d);
   pack(pk,p);
-
-  return 0;
 }
 
 static const u64 L[32] = {0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58, 0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10};
@@ -392,7 +389,7 @@ sv reduce(u8 *r)
   modL(r,x);
 }
 
-int dropbear_ed25519_sign(const u8 *m,u32 mlen,u8 *s,u32 *slen,const u8 *sk, const u8 *pk)
+void dropbear_ed25519_sign(const u8 *m,u32 mlen,u8 *s,u32 *slen,const u8 *sk, const u8 *pk)
 {
   hash_state hs;
   u8 d[64],h[64],r[64];
@@ -426,8 +423,6 @@ int dropbear_ed25519_sign(const u8 *m,u32 mlen,u8 *s,u32 *slen,const u8 *sk, con
   FOR(i,32) x[i] = (u64) r[i];
   FOR(i,32) FOR(j,32) x[i+j] += h[i] * (u64) d[j];
   modL(s + 32,x);
-
-  return 0;
 }
 
 #if DROPBEAR_SIGNKEY_VERIFY

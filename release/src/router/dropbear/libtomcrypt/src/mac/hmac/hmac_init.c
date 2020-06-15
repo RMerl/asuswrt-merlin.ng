@@ -20,7 +20,7 @@
 /**
    Initialize an HMAC context.
    @param hmac     The HMAC state
-   @param hash     The index of the hash you want to use 
+   @param hash     The index of the hash you want to use
    @param key      The secret key
    @param keylen   The length of the secret key (octets)
    @return CRYPT_OK if successful
@@ -64,9 +64,9 @@ int hmac_init(hmac_state *hmac, int hash, const unsigned char *key, unsigned lon
         XMEMCPY(hmac->key, key, (size_t)keylen);
     }
 
-        if(keylen < LTC_HMAC_BLOCKSIZE) {
-            zeromem((hmac->key) + keylen, (size_t)(LTC_HMAC_BLOCKSIZE - keylen));
-        }
+    if(keylen < LTC_HMAC_BLOCKSIZE) {
+       zeromem((hmac->key) + keylen, (size_t)(LTC_HMAC_BLOCKSIZE - keylen));
+    }
 
     /* Create the initialization vector for step (3) */
     for(i=0; i < LTC_HMAC_BLOCKSIZE;   i++) {
@@ -89,8 +89,8 @@ done:
 #ifdef LTC_CLEAN_STACK
    zeromem(buf, LTC_HMAC_BLOCKSIZE);
 #endif
- 
-   return err;    
+
+   return err;
 }
 
 #endif

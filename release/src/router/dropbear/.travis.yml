@@ -3,30 +3,34 @@ language: c
 git:
   depth: 3
 
+# use focal which provides libtommath 1.20
+dist: focal
+
 matrix:
   include:
-    # subsequent matrix options use these first settings
-    - os: linux
+    - name: "plain linux"
       compiler: gcc
       env: WEXTRAFLAGS=-Werror
-      sudo: false
-    - env: MULTI=1 WEXTRAFLAGS=-Werror
-    # libtom has some warnings, so no WEXTRAFLAGS
-    - env: CONFIGURE_FLAGS=--enable-bundled-libtom WEXTRAFLAGS=""
-    - env: NOWRITEV=1 WEXTRAFLAGS=-Werror
-    # libtomcrypt 1.18.1 fixes clang problems, distro doesn't have that yet
-    - os: linux
+    - name: "multi binary"
+      env: MULTI=1 WEXTRAFLAGS=-Werror
+    - name: "bundled libtom, xenial, no writev()"
+      # NOWRITEV is unrelated to libtom/xenial, test here to save a job
+      env: CONFIGURE_FLAGS=--enable-bundled-libtom WEXTRAFLAGS=-Werror NOWRITEV=1 
+      # can use an older distro with bundled libtom
+      dist: xenial
+    - name: "linux clang"
+      os: linux
       compiler: clang
-      env: CONFIGURE_FLAGS=--enable-bundled-libtom WEXTRAFLAGS=""
-    - os: osx
+      env: WEXTRAFLAGS=-Werror
+    - name: "osx"
+      os: osx
       compiler: clang
-      env: WEXTRAFLAGS=""
-
+      # OS X says daemon() and utmp are deprecated
+      env: WEXTRAFLAGS="-Wno-deprecated-declarations -Werror"
     # Note: the fuzzing malloc wrapper doesn't replace free() in system libtomcrypt, so need bundled.
-    - env: DO_FUZZ=1 CONFIGURE_FLAGS="--enable-fuzz --disable-harden --enable-bundled-libtom" WEXTRAFLAGS="" LDFLAGS=-fsanitize=address EXTRACFLAGS=-fsanitize=address CXX=clang++
+    - name: "fuzzing"
+      env: DO_FUZZ=1 CONFIGURE_FLAGS="--enable-fuzz --disable-harden --enable-bundled-libtom" WEXTRAFLAGS=-Werror LDFLAGS=-fsanitize=address EXTRACFLAGS=-fsanitize=address CXX=clang++
       compiler: clang
-      # sanitizers need ptrace which is privileged https://github.com/travis-ci/travis-ci/issues/9033
-      sudo: required
 
 # container-based builds
 addons:
@@ -46,6 +50,7 @@ install:
   - autoheader 
   - ./configure $CONFIGURE_FLAGS CFLAGS="-O2 -Wall -Wno-pointer-sign $WEXTRAFLAGS $EXTRACFLAGS" --prefix="$HOME/inst" || (cat config.log; exit 1)
   - if [ "$NOWRITEV" = "1" ]; then sed -i -e s/HAVE_WRITEV/DONT_HAVE_WRITEV/ config.h ; fi
+  - make lint
   - make -j3 
   - test -z $DO_FUZZ || make fuzzstandalone
   # avoid concurrent install, osx/freebsd is racey (https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=208093)

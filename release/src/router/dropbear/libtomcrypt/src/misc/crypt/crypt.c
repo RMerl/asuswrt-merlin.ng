@@ -399,6 +399,7 @@ const char *crypt_build_settings =
 #endif
 #if defined(LTC_DER)
     " DER "
+    " " NAME_VALUE(LTC_DER_MAX_RECURSION) " "
 #endif
 #if defined(LTC_PKCS_1)
     " PKCS#1 "

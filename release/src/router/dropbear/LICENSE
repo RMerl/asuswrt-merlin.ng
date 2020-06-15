@@ -90,8 +90,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 =====
 
-crypto25519.c:
-crypto26619.h:
+curve25519.c:
 
 Modified TweetNaCl version 20140427, a self-contained public-domain C library.
 https://tweetnacl.cr.yp.to/

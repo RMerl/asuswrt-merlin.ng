@@ -92,6 +92,7 @@ int svr_pubkey_allows_pty() {
  * by any 'command' public key option. */
 void svr_pubkey_set_forced_command(struct ChanSess *chansess) {
 	if (ses.authstate.pubkey_options && ses.authstate.pubkey_options->forced_command) {
+		TRACE(("Forced command '%s'", ses.authstate.pubkey_options->forced_command))
 		if (chansess->cmd) {
 			/* original_command takes ownership */
 			chansess->original_command = chansess->cmd;
@@ -182,8 +183,6 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 					memcpy(ses.authstate.pubkey_options->forced_command,
 							command_start, command_len-1);
 					ses.authstate.pubkey_options->forced_command[command_len-1] = '\0';
-					dropbear_log(LOG_WARNING, "Forced command '%s'", 
-						ses.authstate.pubkey_options->forced_command);
 					goto next_option;
 				}
 				escaped = (!escaped && c == '\\');

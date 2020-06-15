@@ -31,6 +31,12 @@ int pmac_file(int cipher,
                     unsigned char *out, unsigned long *outlen)
 {
 #ifdef LTC_NO_FILE
+   LTC_UNUSED_PARAM(cipher);
+   LTC_UNUSED_PARAM(key);
+   LTC_UNUSED_PARAM(keylen);
+   LTC_UNUSED_PARAM(filename);
+   LTC_UNUSED_PARAM(out);
+   LTC_UNUSED_PARAM(outlen);
    return CRYPT_NOP;
 #else
    size_t x;

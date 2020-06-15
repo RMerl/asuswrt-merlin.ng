@@ -5,6 +5,7 @@
 *.bb
 *.bbg
 *.prof
+.*.swp
 /autom4te.cache
 /config.log
 /config.status
@@ -13,6 +14,9 @@
 /dropbearconvert
 /dropbearkey
 /dropbearmulti
+/fuzzcorpus
+/fuzzer-*
+/fuzzer-*.options
 /scp
 /scp-progress
 Makefile
@@ -20,3 +24,4 @@ config.h
 config.h.in
 configure
 default_options_guard.h
+tags

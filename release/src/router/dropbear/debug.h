@@ -43,12 +43,6 @@
 #define CHECKCLEARTOWRITE()
 #endif
 
-/* Define this, compile with -pg and set GMON_OUT_PREFIX=gmon to get gmon
- * output when Dropbear forks. This will allow it gprof to be used.
- * It's useful to run dropbear -F, so you don't fork as much */
-/* (This is Linux specific) */
-/*#define DEBUG_FORKGPROF*/
-
 /* A couple of flags, not usually useful, and mightn't do anything */
 
 /*#define DEBUG_KEXHASH*/
@@ -66,7 +60,9 @@ extern int debug_trace;
 
 /* To debug with GDB it is easier to run with no forking of child processes.
    You will need to pass "-F" as well. */
-/* #define DEBUG_NOFORK */
+#ifndef DEBUG_NOFORK
+#define DEBUG_NOFORK 0
+#endif
 
 
 /* For testing as non-root on shadowed systems, include the crypt of a password

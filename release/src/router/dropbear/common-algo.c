@@ -30,7 +30,9 @@
 #include "dh_groups.h"
 #include "ltc_prng.h"
 #include "ecc.h"
+#include "gcm.h"
 #include "chachapoly.h"
+#include "ssh.h"
 
 /* This file (algo.c) organises the ciphers which can be used, and is used to
  * decide which ciphers/hashes/compression/signing to use during key exchange*/
@@ -61,10 +63,6 @@ static const struct dropbear_cipher dropbear_aes256 =
 #if DROPBEAR_AES128
 static const struct dropbear_cipher dropbear_aes128 = 
 	{&aes_desc, 16, 16};
-#endif
-#if DROPBEAR_BLOWFISH
-static const struct dropbear_cipher dropbear_blowfish = 
-	{&blowfish_desc, 16, 8};
 #endif
 #if DROPBEAR_TWOFISH256
 static const struct dropbear_cipher dropbear_twofish256 = 
@@ -142,6 +140,15 @@ algo_type sshciphers[] = {
 	{"chacha20-poly1305@openssh.com", 0, &dropbear_chachapoly, 1, &dropbear_mode_chachapoly},
 #endif
 
+#if DROPBEAR_ENABLE_GCM_MODE
+#if DROPBEAR_AES128
+	{"aes128-gcm@openssh.com", 0, &dropbear_aes128, 1, &dropbear_mode_gcm},
+#endif
+#if DROPBEAR_AES256
+	{"aes256-gcm@openssh.com", 0, &dropbear_aes256, 1, &dropbear_mode_gcm},
+#endif
+#endif /* DROPBEAR_ENABLE_GCM_MODE */
+
 #if DROPBEAR_ENABLE_CTR_MODE
 #if DROPBEAR_AES128
 	{"aes128-ctr", 0, &dropbear_aes128, 1, &dropbear_mode_ctr},
@@ -174,15 +181,18 @@ algo_type sshciphers[] = {
 #if DROPBEAR_TWOFISH128
 	{"twofish128-cbc", 0, &dropbear_twofish128, 1, &dropbear_mode_cbc},
 #endif
+#endif /* DROPBEAR_ENABLE_CBC_MODE */
+
 #if DROPBEAR_3DES
+#if DROPBEAR_ENABLE_CTR_MODE
 	{"3des-ctr", 0, &dropbear_3des, 1, &dropbear_mode_ctr},
 #endif
-#if DROPBEAR_3DES
+#if DROPBEAR_ENABLE_CBC_MODE
 	{"3des-cbc", 0, &dropbear_3des, 1, &dropbear_mode_cbc},
 #endif
-#if DROPBEAR_BLOWFISH
-	{"blowfish-cbc", 0, &dropbear_blowfish, 1, &dropbear_mode_cbc},
-#endif
+#endif /* DROPBEAR_3DES */
+
+#if DROPBEAR_ENABLE_CBC_MODE
 #endif /* DROPBEAR_ENABLE_CBC_MODE */
 	{NULL, 0, NULL, 0, NULL}
 };
@@ -226,26 +236,31 @@ algo_type ssh_nocompress[] = {
 	{NULL, 0, NULL, 0, NULL}
 };
 
-algo_type sshhostkey[] = {
+algo_type sigalgs[] = {
 #if DROPBEAR_ED25519
-	{"ssh-ed25519", DROPBEAR_SIGNKEY_ED25519, NULL, 1, NULL},
+	{"ssh-ed25519", DROPBEAR_SIGNATURE_ED25519, NULL, 1, NULL},
 #endif
 #if DROPBEAR_ECDSA
 #if DROPBEAR_ECC_256
-	{"ecdsa-sha2-nistp256", DROPBEAR_SIGNKEY_ECDSA_NISTP256, NULL, 1, NULL},
+	{"ecdsa-sha2-nistp256", DROPBEAR_SIGNATURE_ECDSA_NISTP256, NULL, 1, NULL},
 #endif
 #if DROPBEAR_ECC_384
-	{"ecdsa-sha2-nistp384", DROPBEAR_SIGNKEY_ECDSA_NISTP384, NULL, 1, NULL},
+	{"ecdsa-sha2-nistp384", DROPBEAR_SIGNATURE_ECDSA_NISTP384, NULL, 1, NULL},
 #endif
 #if DROPBEAR_ECC_521
-	{"ecdsa-sha2-nistp521", DROPBEAR_SIGNKEY_ECDSA_NISTP521, NULL, 1, NULL},
+	{"ecdsa-sha2-nistp521", DROPBEAR_SIGNATURE_ECDSA_NISTP521, NULL, 1, NULL},
 #endif
 #endif
 #if DROPBEAR_RSA
-	{"ssh-rsa", DROPBEAR_SIGNKEY_RSA, NULL, 1, NULL},
+#if DROPBEAR_RSA_SHA256
+	{"rsa-sha2-256", DROPBEAR_SIGNATURE_RSA_SHA256, NULL, 1, NULL},
+#endif
+#if DROPBEAR_RSA_SHA1
+	{"ssh-rsa", DROPBEAR_SIGNATURE_RSA_SHA1, NULL, 1, NULL},
+#endif
 #endif
 #if DROPBEAR_DSS
-	{"ssh-dss", DROPBEAR_SIGNKEY_DSS, NULL, 1, NULL},
+	{"ssh-dss", DROPBEAR_SIGNATURE_DSS, NULL, 1, NULL},
 #endif
 	{NULL, 0, NULL, 0, NULL}
 };
@@ -263,8 +278,6 @@ static const struct dropbear_kex kex_dh_group14_sha256 = {DROPBEAR_KEX_NORMAL_DH
 static const struct dropbear_kex kex_dh_group16_sha512 = {DROPBEAR_KEX_NORMAL_DH, dh_p_16, DH_P_16_LEN, NULL, &sha512_desc };
 #endif
 
-/* These can't be const since dropbear_ecc_fill_dp() fills out
- ecc_curve at runtime */
 #if DROPBEAR_ECDH
 #if DROPBEAR_ECC_256
 static const struct dropbear_kex kex_ecdh_nistp256 = {DROPBEAR_KEX_ECDH, NULL, 0, &ecc_curve_nistp256, &sha256_desc };
@@ -282,6 +295,7 @@ static const struct dropbear_kex kex_ecdh_nistp521 = {DROPBEAR_KEX_ECDH, NULL, 0
 static const struct dropbear_kex kex_curve25519 = {DROPBEAR_KEX_CURVE25519, NULL, 0, NULL, &sha256_desc };
 #endif
 
+/* data == NULL for non-kex algorithm identifiers */
 algo_type sshkex[] = {
 #if DROPBEAR_CURVE25519
 	{"curve25519-sha256", 0, &kex_curve25519, 1, NULL},
@@ -311,49 +325,122 @@ algo_type sshkex[] = {
 	{"diffie-hellman-group16-sha512", 0, &kex_dh_group16_sha512, 1, NULL},
 #endif
 #if DROPBEAR_KEXGUESS2
-	{KEXGUESS2_ALGO_NAME, KEXGUESS2_ALGO_ID, NULL, 1, NULL},
+	{KEXGUESS2_ALGO_NAME, 0, NULL, 1, NULL},
+#endif
+#if DROPBEAR_EXT_INFO
+#if DROPBEAR_CLIENT
+	/* Set unusable by svr_algos_initialise() */
+	{SSH_EXT_INFO_C, 0, NULL, 1, NULL},
+#endif
 #endif
 	{NULL, 0, NULL, 0, NULL}
 };
 
-/* algolen specifies the length of algo, algos is our local list to match
- * against.
- * Returns DROPBEAR_SUCCESS if we have a match for algo, DROPBEAR_FAILURE
- * otherwise */
-int have_algo(const char* algo, size_t algolen, const algo_type algos[]) {
-
-	int i;
-
-	for (i = 0; algos[i].name != NULL; i++) {
-		if (strlen(algos[i].name) == algolen
-				&& (strncmp(algos[i].name, algo, algolen) == 0)) {
-			return DROPBEAR_SUCCESS;
-		}
-	}
-
-	return DROPBEAR_FAILURE;
-}
-
 /* Output a comma separated list of algorithms to a buffer */
-void buf_put_algolist(buffer * buf, const algo_type localalgos[]) {
-
+void buf_put_algolist_all(buffer * buf, const algo_type localalgos[], int useall) {
 	unsigned int i, len;
 	unsigned int donefirst = 0;
-	buffer *algolist = NULL;
+	unsigned int startpos;
 
-	algolist = buf_new(300);
+	startpos = buf->pos;
+	/* Placeholder for length */
+	buf_putint(buf, 0); 
 	for (i = 0; localalgos[i].name != NULL; i++) {
-		if (localalgos[i].usable) {
-			if (donefirst)
-				buf_putbyte(algolist, ',');
+		if (localalgos[i].usable || useall) {
+			if (donefirst) {
+				buf_putbyte(buf, ',');
+			}
 			donefirst = 1;
 			len = strlen(localalgos[i].name);
-			buf_putbytes(algolist, (const unsigned char *) localalgos[i].name, len);
+			buf_putbytes(buf, (const unsigned char *) localalgos[i].name, len);
 		}
 	}
-	buf_putstring(buf, (const char*)algolist->data, algolist->len);
-	TRACE(("algolist add '%*s'", algolist->len, algolist->data))
-	buf_free(algolist);
+	/* Fill out the length */
+	len = buf->pos - startpos - 4;
+	buf_setpos(buf, startpos);
+	buf_putint(buf, len);
+	TRACE(("algolist add %d '%*s'", len, len, buf_getptr(buf, len)))
+	buf_incrwritepos(buf, len);
+}
+
+void buf_put_algolist(buffer * buf, const algo_type localalgos[]) {
+	buf_put_algolist_all(buf, localalgos, 0);
+}
+
+/* returns a list of pointers into algolist, of null-terminated names.
+   ret_list should be passed in with space for *ret_count elements,
+   on return *ret_count has the number of names filled.
+   algolist is modified. */
+static void get_algolist(char* algolist, unsigned int algolist_len,
+				const char* *ret_list, unsigned int *ret_count) {
+	unsigned int max_count = *ret_count;
+	unsigned int i;
+
+	if (*ret_count == 0) {
+		return;
+	}
+	if (algolist_len > MAX_PROPOSED_ALGO*(MAX_NAME_LEN+1)) {
+		*ret_count = 0;
+		}
+
+	/* ret_list will contain a list of the strings parsed out.
+	   We will have at least one string (even if it's just "") */
+	ret_list[0] = algolist;
+	*ret_count = 1;
+	for (i = 0; i < algolist_len; i++) {
+		if (algolist[i] == '\0') {
+			/* someone is trying something strange */
+			*ret_count = 0;
+			return;
+	}
+
+		if (algolist[i] == ',') {
+			if (*ret_count >= max_count) {
+				/* Too many */
+				*ret_count = 0;
+				return;
+			}
+			algolist[i] = '\0';
+			ret_list[*ret_count] = &algolist[i+1];
+			(*ret_count)++;
+		}
+	}
+}
+
+/* Return DROPBEAR_SUCCESS if the namelist contains algo,
+DROPBEAR_FAILURE otherwise. buf position is not incremented. */
+int buf_has_algo(buffer *buf, const char *algo) {
+	unsigned char* algolist = NULL;
+	unsigned int orig_pos = buf->pos;
+	unsigned int len, remotecount, i;
+	const char *remotenames[MAX_PROPOSED_ALGO];
+	int ret = DROPBEAR_FAILURE;
+
+	algolist = buf_getstring(buf, &len);
+	remotecount = MAX_PROPOSED_ALGO;
+	get_algolist(algolist, len, remotenames, &remotecount);
+	for (i = 0; i < remotecount; i++)
+	{
+		if (strcmp(remotenames[i], algo) == 0) {
+			ret = DROPBEAR_SUCCESS;
+			break;
+		}
+	}
+	if (algolist) {
+		m_free(algolist);
+	}
+	buf_setpos(buf, orig_pos);
+	return ret;
+}
+
+algo_type * first_usable_algo(algo_type algos[]) {
+	int i;
+	for (i = 0; algos[i].name != NULL; i++) {
+		if (algos[i].usable) {
+			return &algos[i];
+		}
+	}
+	return NULL;
 }
 
 /* match the first algorithm in the comma-separated list in buf which is
@@ -362,9 +449,7 @@ void buf_put_algolist(buffer * buf, const algo_type localalgos[]) {
  * 0 otherwise. This is used for checking if the kexalgo/hostkeyalgos are
  * guessed correctly */
 algo_type * buf_match_algo(buffer* buf, algo_type localalgos[],
-		enum kexguess2_used *kexguess2, int *goodguess)
-{
-
+		int kexguess2, int *goodguess) {
 	char * algolist = NULL;
 	const char *remotenames[MAX_PROPOSED_ALGO], *localnames[MAX_PROPOSED_ALGO];
 	unsigned int len;
@@ -379,40 +464,8 @@ algo_type * buf_match_algo(buffer* buf, algo_type localalgos[],
 	/* get the comma-separated list from the buffer ie "algo1,algo2,algo3" */
 	algolist = buf_getstring(buf, &len);
 	TRACE(("buf_match_algo: %s", algolist))
-	if (len > MAX_PROPOSED_ALGO*(MAX_NAME_LEN+1)) {
-		goto out;
-	}
-
-	/* remotenames will contain a list of the strings parsed out */
-	/* We will have at least one string (even if it's just "") */
-	remotenames[0] = algolist;
-	remotecount = 1;
-	for (i = 0; i < len; i++) {
-		if (algolist[i] == '\0') {
-			/* someone is trying something strange */
-			goto out;
-		}
-		if (algolist[i] == ',') {
-			algolist[i] = '\0';
-			remotenames[remotecount] = &algolist[i+1];
-			remotecount++;
-		}
-		if (remotecount >= MAX_PROPOSED_ALGO) {
-			break;
-		}
-	}
-	if (kexguess2 && *kexguess2 == KEXGUESS2_LOOK) {
-		for (i = 0; i < remotecount; i++)
-		{
-			if (strcmp(remotenames[i], KEXGUESS2_ALGO_NAME) == 0) {
-				*kexguess2 = KEXGUESS2_YES;
-				break;
-			}
-		}
-		if (*kexguess2 == KEXGUESS2_LOOK) {
-			*kexguess2 = KEXGUESS2_NO;
-		}
-	}
+	remotecount = MAX_PROPOSED_ALGO;
+	get_algolist(algolist, len, remotenames, &remotecount);
 
 	for (i = 0; localalgos[i].name != NULL; i++) {
 		if (localalgos[i].usable) {
@@ -444,12 +497,11 @@ algo_type * buf_match_algo(buffer* buf, algo_type localalgos[],
 			}
 			if (strcmp(servnames[j], clinames[i]) == 0) {
 				/* set if it was a good guess */
-				if (goodguess && kexguess2) {
-					if (*kexguess2 == KEXGUESS2_YES) {
+				if (goodguess != NULL) {
+					if (kexguess2) {
 						if (i == 0) {
 							*goodguess = 1;
 						}
-
 					} else {
 						if (i == 0 && j == 0) {
 							*goodguess = 1;

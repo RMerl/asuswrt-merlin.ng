@@ -36,10 +36,12 @@ void recv_msg_newkeys(void);
 void kexfirstinitialise(void);
 void finish_kexhashbuf(void);
 
+#if DROPBEAR_NORMAL_DH
 struct kex_dh_param *gen_kexdh_param(void);
 void free_kexdh_param(struct kex_dh_param *param);
 void kexdh_comb_key(struct kex_dh_param *param, mp_int *dh_pub_them,
 		sign_key *hostkey);
+#endif
 
 #if DROPBEAR_ECDH
 struct kex_ecdh_param *gen_kexecdh_param(void);
@@ -65,6 +67,8 @@ void recv_msg_kexdh_init(void); /* server */
 void send_msg_kexdh_init(void); /* client */
 void recv_msg_kexdh_reply(void); /* client */
 
+void recv_msg_ext_info(void);
+
 struct KEXState {
 
 	unsigned sentkexinit : 1; /*set when we've sent/recv kexinit packet */
@@ -73,8 +77,9 @@ struct KEXState {
 	unsigned sentnewkeys : 1; /* set once we've send MSG_NEWKEYS (will be cleared once we have also received */
 	unsigned recvnewkeys : 1; /* set once we've received MSG_NEWKEYS (cleared once we have also sent */
 
-	unsigned donefirstkex : 1; /* Set to 1 after the first kex has completed,
+	unsigned int donefirstkex; /* Set to 1 after the first kex has completed,
 								  ie the transport layer has been set up */
+	unsigned int donesecondkex; /* Set to 1 after the second kex has completed */
 
 	unsigned our_first_follows_matches : 1;
 
@@ -84,10 +89,12 @@ struct KEXState {
 
 };
 
+#if DROPBEAR_NORMAL_DH
 struct kex_dh_param {
 	mp_int pub; /* e */
 	mp_int priv; /* x */
 };
+#endif
 
 #if DROPBEAR_ECDH
 struct kex_ecdh_param {
@@ -101,9 +108,6 @@ struct kex_curve25519_param {
 	unsigned char priv[CURVE25519_LEN];
 	unsigned char pub[CURVE25519_LEN];
 };
-
-/* No header file for curve25519_donna */
-int curve25519_donna(unsigned char *out, const unsigned char *secret, const unsigned char *other);
 #endif
 
 #endif /* DROPBEAR_KEX_H_ */

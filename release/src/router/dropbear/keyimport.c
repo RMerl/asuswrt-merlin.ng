@@ -36,6 +36,9 @@
 #include "dbutil.h"
 #include "ecc.h"
 #include "ssh.h"
+#include "rsa.h"
+#include "dss.h"
+#include "ed25519.h"
 
 static const unsigned char OSSH_PKEY_BLOB[] =
 	"openssh-key-v1\0"			/* AUTH_MAGIC */
@@ -864,7 +867,7 @@ static sign_key *openssh_read(const char *filename, const char * UNUSED(passphra
 			goto error;
 		}
 		m_mp_alloc_init_multi((mp_int**)&ecc->k, NULL);
-		if (mp_read_unsigned_bin(ecc->k, private_key_bytes, private_key_len)
+		if (mp_from_ubin(ecc->k, private_key_bytes, private_key_len)
 			!= MP_OKAY) {
 			errmsg = "Error parsing ECC key";
 			goto error;
@@ -1139,6 +1142,7 @@ static int openssh_write(const char *filename, sign_key *key,
 		unsigned long pubkey_size = 2*curve_size+1;
 		int k_size;
 		int err = 0;
+		size_t written;
 
 		/* version. less than 10 bytes */
 		buf_incrwritepos(seq_buf,
@@ -1146,12 +1150,14 @@ static int openssh_write(const char *filename, sign_key *key,
 		buf_putbyte(seq_buf, 1);
 
 		/* privateKey */
-		k_size = mp_unsigned_bin_size((*eck)->k);
+		k_size = mp_ubin_size((*eck)->k);
 		dropbear_assert(k_size <= curve_size);
 		buf_incrwritepos(seq_buf,
 			ber_write_id_len(buf_getwriteptr(seq_buf, 10), 4, k_size, 0));
-		mp_to_unsigned_bin((*eck)->k, buf_getwriteptr(seq_buf, k_size));
-		buf_incrwritepos(seq_buf, k_size);
+		if (mp_to_ubin((*eck)->k, buf_getwriteptr(seq_buf, k_size), k_size, &written) != MP_OKAY) {
+			dropbear_exit("ECC error");
+		}
+		buf_incrwritepos(seq_buf, written);
 
 		/* SECGCurveNames */
 		switch (key->type)

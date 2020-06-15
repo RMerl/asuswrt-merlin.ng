@@ -9,7 +9,7 @@
 #include "tomcrypt.h"
 
 #ifndef LTC_NO_FILE
-/** 
+/**
   @file hash_file.c
   Hash a file, Tom St Denis
 */
@@ -34,7 +34,7 @@ int hash_file(int hash, const char *fname, unsigned char *out, unsigned long *ou
     }
 
     in = fopen(fname, "rb");
-    if (in == NULL) { 
+    if (in == NULL) {
        return CRYPT_FILE_NOTFOUND;
     }
 

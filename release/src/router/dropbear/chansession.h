@@ -41,6 +41,9 @@ struct ChanSess {
 
 	char * cmd; /* command to exec */
 	pid_t pid; /* child process pid */
+	/* command that was sent by the client, if authorized_keys command= or
+	dropbear -c was used */
+	char *original_command;
 
 	/* pty details */
 	int master; /* the master terminal fd*/
@@ -71,10 +74,6 @@ struct ChanSess {
 	struct Listener * agentlistener;
 	char * agentfile;
 	char * agentdir;
-#endif
-
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
-	char *original_command;
 #endif
 };
 

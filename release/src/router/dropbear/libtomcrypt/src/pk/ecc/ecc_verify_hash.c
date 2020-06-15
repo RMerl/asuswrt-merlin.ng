@@ -14,10 +14,10 @@
 /**
   @file ecc_verify_hash.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 static int _ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
-                    const unsigned char *hash, unsigned long hashlen, 
+                            const unsigned char *hash, unsigned long hashlen,
                             int *stat, ecc_key *key, int sigformat)
 {
    ecc_point    *mG, *mQ;
@@ -66,9 +66,9 @@ static int _ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    }
    else {
       /* ASN.1 format */
-   if ((err = der_decode_sequence_multi(sig, siglen,
-                                  LTC_ASN1_INTEGER, 1UL, r,
-                                  LTC_ASN1_INTEGER, 1UL, s,
+      if ((err = der_decode_sequence_multi(sig, siglen,
+                                     LTC_ASN1_INTEGER, 1UL, r,
+                                     LTC_ASN1_INTEGER, 1UL, s,
                                      LTC_ASN1_EOL, 0UL, NULL)) != CRYPT_OK)                             { goto error; }
    }
 
@@ -125,13 +125,13 @@ static int _ecc_verify_hash(const unsigned char *sig,  unsigned long siglen,
    if (ltc_mp.ecc_mul2add == NULL) {
       if ((err = ltc_mp.ecc_ptmul(u1, mG, mG, m, 0)) != CRYPT_OK)                                       { goto error; }
       if ((err = ltc_mp.ecc_ptmul(u2, mQ, mQ, m, 0)) != CRYPT_OK)                                       { goto error; }
-  
+
       /* find the montgomery mp */
       if ((err = mp_montgomery_setup(m, &mp)) != CRYPT_OK)                                              { goto error; }
 
       /* add them */
       if ((err = ltc_mp.ecc_ptadd(mQ, mG, mG, m, mp)) != CRYPT_OK)                                      { goto error; }
-   
+
       /* reduce */
       if ((err = ltc_mp.ecc_map(mG, m, mp)) != CRYPT_OK)                                                { goto error; }
    } else {
@@ -153,7 +153,7 @@ error:
    ltc_ecc_del_point(mG);
    ltc_ecc_del_point(mQ);
    mp_clear_multi(r, s, v, w, u1, u2, p, e, m, NULL);
-   if (mp != NULL) { 
+   if (mp != NULL) {
       mp_montgomery_free(mp);
    }
    return err;

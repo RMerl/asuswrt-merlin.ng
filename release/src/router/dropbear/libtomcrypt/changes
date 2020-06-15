@@ -1,3 +1,16 @@
+July 1st, 2018
+v1.18.2
+      -- Fix Side Channel Based ECDSA Key Extraction (CVE-2018-12437) (PR #408)
+      -- Fix potential stack overflow when DER flexi-decoding (CVE-2018-0739) (PR #373)
+      -- Fix two-key 3DES (PR #390)
+      -- Fix accelerated CTR mode (PR #359)
+      -- Fix Fortuna PRNG (PR #363)
+      -- Fix compilation on platforms where cc doesn't point to gcc (PR #382)
+      -- Fix using the wrong environment variable LT instead of LIBTOOL (PR #392)
+      -- Fix build on platforms where the compiler provides __WCHAR_MAX__ but wchar.h is not available (PR #390)
+      -- Fix & re-factor crypt_list_all_sizes() and crypt_list_all_constants() (PR #414)
+      -- Minor fixes (PR's #350 #351 #375 #377 #378 #379)
+
 January 22nd, 2018
 v1.18.1
       -- Fix wrong SHA3 blocksizes, thanks to Claus Fischer for reporting this via Mail (PR #329)

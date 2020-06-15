@@ -25,9 +25,9 @@
 #ifndef DROPBEAR_CURVE25519_H
 #define DROPBEAR_CURVE25519_H
 
-int dropbear_curve25519_scalarmult(unsigned char *q, const unsigned char *n, const unsigned char *p);
-int dropbear_ed25519_make_key(unsigned char *pk, unsigned char  *sk);
-int dropbear_ed25519_sign(const unsigned char *m, unsigned long mlen,
+void dropbear_curve25519_scalarmult(unsigned char *q, const unsigned char *n, const unsigned char *p);
+void dropbear_ed25519_make_key(unsigned char *pk, unsigned char  *sk);
+void dropbear_ed25519_sign(const unsigned char *m, unsigned long mlen,
 			  unsigned char *s, unsigned long *slen,
 			  const unsigned char *sk, const unsigned char *pk);
 int dropbear_ed25519_verify(const unsigned char *m, unsigned long mlen,

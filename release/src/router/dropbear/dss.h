@@ -30,7 +30,7 @@
 
 #if DROPBEAR_DSS 
 
-typedef struct {
+typedef struct dropbear_DSS_Key {
 
 	mp_int* p;
 	mp_int* q;

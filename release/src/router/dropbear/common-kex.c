@@ -65,7 +65,7 @@ void send_msg_kexinit() {
 	buf_put_algolist(ses.writepayload, sshkex);
 
 	/* server_host_key_algorithms */
-	buf_put_algolist(ses.writepayload, sshhostkey);
+	buf_put_algolist(ses.writepayload, sigalgs);
 
 	/* encryption_algorithms_client_to_server */
 	buf_put_algolist(ses.writepayload, sshciphers);
@@ -110,8 +110,9 @@ void send_msg_kexinit() {
 	ses.newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
 
 	if (ses.send_kex_first_guess) {
-		ses.newkeys->algo_kex = sshkex[0].data;
-		ses.newkeys->algo_hostkey = sshhostkey[0].val;
+		ses.newkeys->algo_kex = first_usable_algo(sshkex)->data;
+		ses.newkeys->algo_signature = first_usable_algo(sigalgs)->val;
+		ses.newkeys->algo_hostkey = signkey_type_from_signature(ses.newkeys->algo_signature);
 		ses.send_kex_first_guess();
 	}
 
@@ -152,6 +153,7 @@ static void switch_keys() {
 		TRACE(("switch_keys done"))
 		ses.keys->algo_kex = ses.newkeys->algo_kex;
 		ses.keys->algo_hostkey = ses.newkeys->algo_hostkey;
+		ses.keys->algo_signature = ses.newkeys->algo_signature;
 		ses.keys->allow_compress = 0;
 		m_free(ses.newkeys);
 		ses.newkeys = NULL;
@@ -173,6 +175,9 @@ void send_msg_newkeys() {
 	
 	/* set up our state */
 	ses.kexstate.sentnewkeys = 1;
+	if (ses.kexstate.donefirstkex) {
+		ses.kexstate.donesecondkex = 1;
+	}
 	ses.kexstate.donefirstkex = 1;
 	ses.dataallowed = 1; /* we can send other packets again now */
 	gen_new_keys();
@@ -195,8 +200,6 @@ void recv_msg_newkeys() {
 
 /* Set up the kex for the first time */
 void kexfirstinitialise() {
-	ses.kexstate.donefirstkex = 0;
-
 #ifdef DISABLE_ZLIB
 	ses.compress_algos = ssh_nocompress;
 #else
@@ -332,8 +335,9 @@ static void gen_new_keys() {
 		int recv_cipher = -1;
 		if (ses.newkeys->recv.algo_crypt->cipherdesc->name != NULL) {
 			recv_cipher = find_cipher(ses.newkeys->recv.algo_crypt->cipherdesc->name);
-			if (recv_cipher < 0)
+			if (recv_cipher < 0) {
 				dropbear_exit("Crypto error");
+			}
 		}
 		if (ses.newkeys->recv.crypt_mode->start(recv_cipher, 
 				recv_IV, recv_key, 
@@ -347,8 +351,9 @@ static void gen_new_keys() {
 		int trans_cipher = -1;
 		if (ses.newkeys->trans.algo_crypt->cipherdesc->name != NULL) {
 			trans_cipher = find_cipher(ses.newkeys->trans.algo_crypt->cipherdesc->name);
-			if (trans_cipher < 0)
+			if (trans_cipher < 0) {
 				dropbear_exit("Crypto error");
+			}
 		}
 		if (ses.newkeys->trans.crypt_mode->start(trans_cipher, 
 				trans_IV, trans_key, 
@@ -543,6 +548,7 @@ void recv_msg_kexinit() {
 	TRACE(("leave recv_msg_kexinit"))
 }
 
+#if DROPBEAR_NORMAL_DH
 static void load_dh_p(mp_int * dh_p)
 {
 	bytes_to_mp(dh_p, ses.newkeys->algo_kex->dh_p_bytes, 
@@ -567,9 +573,7 @@ struct kex_dh_param *gen_kexdh_param() {
 	/* read the prime and generator*/
 	load_dh_p(&dh_p);
 	
-	if (mp_set_int(&dh_g, DH_G_VAL) != MP_OKAY) {
-		dropbear_exit("Diffie-Hellman error");
-	}
+	mp_set_ul(&dh_g, DH_G_VAL);
 
 	/* calculate q = (p-1)/2 */
 	/* dh_priv is just a temp var here */
@@ -653,6 +657,7 @@ void kexdh_comb_key(struct kex_dh_param *param, mp_int *dh_pub_them,
 	/* calculate the hash H to sign */
 	finish_kexhashbuf();
 }
+#endif
 
 #if DROPBEAR_ECDH
 struct kex_ecdh_param *gen_kexecdh_param() {
@@ -824,21 +829,36 @@ static void read_kex_algos() {
 	int goodguess = 0;
 	int allgood = 1; /* we AND this with each goodguess and see if its still
 						true after */
-
-#if DROPBEAR_KEXGUESS2
-	enum kexguess2_used kexguess2 = KEXGUESS2_LOOK;
-#else
-	enum kexguess2_used kexguess2 = KEXGUESS2_NO;
-#endif
+	int kexguess2 = 0;
 
 	buf_incrpos(ses.payload, 16); /* start after the cookie */
 
 	memset(ses.newkeys, 0x0, sizeof(*ses.newkeys));
 
 	/* kex_algorithms */
-	algo = buf_match_algo(ses.payload, sshkex, &kexguess2, &goodguess);
+#if DROPBEAR_KEXGUESS2
+	if (buf_has_algo(ses.payload, KEXGUESS2_ALGO_NAME) == DROPBEAR_SUCCESS) {
+		kexguess2 = 1;
+	}
+#endif
+
+#if DROPBEAR_EXT_INFO
+	/* Determine if SSH_MSG_EXT_INFO messages should be sent.
+	Should be done for the first key exchange. Only required on server side
+    for server-sig-algs */
+	if (IS_DROPBEAR_SERVER) {
+		if (!ses.kexstate.donefirstkex) {
+			if (buf_has_algo(ses.payload, SSH_EXT_INFO_C) == DROPBEAR_SUCCESS) {
+				ses.allow_ext_info = 1;
+			}
+		}
+	}
+#endif
+
+	algo = buf_match_algo(ses.payload, sshkex, kexguess2, &goodguess);
 	allgood &= goodguess;
-	if (algo == NULL || algo->val == KEXGUESS2_ALGO_ID) {
+	if (algo == NULL || algo->data == NULL) {
+		/* kexguess2, ext-info-c, ext-info-s should not match negotiation */
 		erralgo = "kex";
 		goto error;
 	}
@@ -847,17 +867,18 @@ static void read_kex_algos() {
 	ses.newkeys->algo_kex = algo->data;
 
 	/* server_host_key_algorithms */
-	algo = buf_match_algo(ses.payload, sshhostkey, &kexguess2, &goodguess);
+	algo = buf_match_algo(ses.payload, sigalgs, kexguess2, &goodguess);
 	allgood &= goodguess;
 	if (algo == NULL) {
 		erralgo = "hostkey";
 		goto error;
 	}
-	TRACE(("hostkey algo %s", algo->name))
-	ses.newkeys->algo_hostkey = algo->val;
+	TRACE(("signature algo %s", algo->name))
+	ses.newkeys->algo_signature = algo->val;
+	ses.newkeys->algo_hostkey = signkey_type_from_signature(ses.newkeys->algo_signature);
 
 	/* encryption_algorithms_client_to_server */
-	c2s_cipher_algo = buf_match_algo(ses.payload, sshciphers, NULL, NULL);
+	c2s_cipher_algo = buf_match_algo(ses.payload, sshciphers, 0, NULL);
 	if (c2s_cipher_algo == NULL) {
 		erralgo = "enc c->s";
 		goto error;
@@ -865,7 +886,7 @@ static void read_kex_algos() {
 	TRACE(("enc c2s is  %s", c2s_cipher_algo->name))
 
 	/* encryption_algorithms_server_to_client */
-	s2c_cipher_algo = buf_match_algo(ses.payload, sshciphers, NULL, NULL);
+	s2c_cipher_algo = buf_match_algo(ses.payload, sshciphers, 0, NULL);
 	if (s2c_cipher_algo == NULL) {
 		erralgo = "enc s->c";
 		goto error;
@@ -873,7 +894,7 @@ static void read_kex_algos() {
 	TRACE(("enc s2c is  %s", s2c_cipher_algo->name))
 
 	/* mac_algorithms_client_to_server */
-	c2s_hash_algo = buf_match_algo(ses.payload, sshhashes, NULL, NULL);
+	c2s_hash_algo = buf_match_algo(ses.payload, sshhashes, 0, NULL);
 #if DROPBEAR_AEAD_MODE
 	if (((struct dropbear_cipher_mode*)c2s_cipher_algo->mode)->aead_crypt != NULL) {
 		c2s_hash_algo = NULL;
@@ -886,7 +907,7 @@ static void read_kex_algos() {
 	TRACE(("hash c2s is  %s", c2s_hash_algo ? c2s_hash_algo->name : "<implicit>"))
 
 	/* mac_algorithms_server_to_client */
-	s2c_hash_algo = buf_match_algo(ses.payload, sshhashes, NULL, NULL);
+	s2c_hash_algo = buf_match_algo(ses.payload, sshhashes, 0, NULL);
 #if DROPBEAR_AEAD_MODE
 	if (((struct dropbear_cipher_mode*)s2c_cipher_algo->mode)->aead_crypt != NULL) {
 		s2c_hash_algo = NULL;
@@ -899,7 +920,7 @@ static void read_kex_algos() {
 	TRACE(("hash s2c is  %s", s2c_hash_algo ? s2c_hash_algo->name : "<implicit>"))
 
 	/* compression_algorithms_client_to_server */
-	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, NULL, NULL);
+	c2s_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
 	if (c2s_comp_algo == NULL) {
 		erralgo = "comp c->s";
 		goto error;
@@ -907,7 +928,7 @@ static void read_kex_algos() {
 	TRACE(("hash c2s is  %s", c2s_comp_algo->name))
 
 	/* compression_algorithms_server_to_client */
-	s2c_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, NULL, NULL);
+	s2c_comp_algo = buf_match_algo(ses.payload, ses.compress_algos, 0, NULL);
 	if (s2c_comp_algo == NULL) {
 		erralgo = "comp s->c";
 		goto error;

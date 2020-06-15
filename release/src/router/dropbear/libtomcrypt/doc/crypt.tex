@@ -3666,10 +3666,14 @@ key, and any hash that produces at least a 256--bit output.  However, to make th
 it has been fixed to those choices.
 
 Fortuna is more secure than Yarrow in the sense that attackers who learn parts of the entropy being
-added to the PRNG learn far less about the state than that of Yarrow.  Without getting into to many
+added to the PRNG learn far less about the state than that of Yarrow.  Without getting into too many
 details Fortuna has the ability to recover from state determination attacks where the attacker starts
 to learn information from the PRNGs output about the internal state.  Yarrow on the other hand, cannot
 recover from that problem until new entropy is added to the pool and put to use through the ready() function.
+
+For detailed information on how the algorithm works and what you have to do to maintain the secure state
+get a copy of the book\footnote{Niels Ferguson and Bruce Schneier, Practical Cryptography. ISBN 0-471-22357-3.} or
+read the paper online\footnote{\url{https://www.schneier.com/academic/paperfiles/fortuna.pdf} [Accessed on 7th Dec. 2017]}.
 
 \subsubsection{RC4}
 

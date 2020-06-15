@@ -38,6 +38,10 @@
 #include "chansession.h"
 #include "dbutil.h"
 #include "netio.h"
+#if DROPBEAR_PLUGIN
+#include "pubkeyapi.h"
+#endif
+#include "gcm.h"
 #include "chachapoly.h"
 
 void common_session_init(int sock_in, int sock_out);
@@ -81,6 +85,9 @@ struct key_context_directional {
 #if DROPBEAR_ENABLE_CTR_MODE
 		symmetric_CTR ctr;
 #endif
+#if DROPBEAR_ENABLE_GCM_MODE
+		dropbear_gcm_state gcm;
+#endif
 #if DROPBEAR_CHACHA20POLY1305
 		dropbear_chachapoly_state chachapoly;
 #endif
@@ -95,7 +102,8 @@ struct key_context {
 	struct key_context_directional trans;
 
 	const struct dropbear_kex *algo_kex;
-	int algo_hostkey;
+	enum signkey_type algo_hostkey; /* server key type */
+	enum signature_type algo_signature; /* server signature type */
 
 	int allow_compress; /* whether compression has started (useful in 
 							zlib@openssh.com delayed compression case) */
@@ -187,6 +195,9 @@ struct sshsession {
 
 	/* Enables/disables compression */
 	algo_type *compress_algos;
+
+	/* Other side allows SSH_MSG_EXT_INFO. Currently only set for server */
+	int allow_ext_info;
 							
 	/* a list of queued replies that should be sent after a KEX has
 	   concluded (ie, while dataallowed was unset)*/
@@ -222,6 +233,10 @@ struct sshsession {
 	volatile int exitflag;
 	/* set once the ses structure (and cli_ses/svr_ses) have been populated to their initial state */
 	int init_done;
+
+#if DROPBEAR_PLUGIN
+        struct PluginSession * plugin_session;
+#endif
 };
 
 struct serversession {
@@ -252,6 +267,13 @@ struct serversession {
 	pid_t server_pid;
 #endif
 
+#if DROPBEAR_PLUGIN
+	/* The shared library handle */
+	void *plugin_handle;
+
+	/* The instance created by the plugin_new function */
+	struct PluginInstance *plugin_instance;
+#endif
 };
 
 typedef enum {
@@ -280,7 +302,6 @@ struct clientsession {
 
 	cli_kex_state kex_state; /* Used for progressing KEX */
 	cli_state state; /* Used to progress auth/channelsession etc */
-	unsigned donefirstkex : 1; /* Set when we set sentnewkeys, never reset */
 
 	int tty_raw_mode; /* Whether we're in raw mode (and have to clean up) */
 	struct termios saved_tio;
@@ -307,6 +328,8 @@ struct clientsession {
 									  interactive auth.*/
 #endif
 	sign_key *lastprivkey;
+
+	buffer *server_sig_algs;
 
 	int retval; /* What the command exit status was - we emulate it */
 #if 0

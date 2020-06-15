@@ -78,7 +78,7 @@ void cipher_gen(void)
             printf("keysize error: %s\n", error_to_string(err));
             exit(EXIT_FAILURE);
          }
-         if (kl == lastkl) break;
+         if (kl == lastkl) continue;
          lastkl = kl;
          fprintf(out, "Key Size: %d bytes\n", kl);
 

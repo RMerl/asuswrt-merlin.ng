@@ -66,9 +66,9 @@ static int _fortuna_reseed(prng_state *prng)
 {
    unsigned char tmp[MAXBLOCKSIZE];
    hash_state    md;
+   ulong64       reset_cnt;
    int           err, x;
 
-   ++prng->fortuna.reset_cnt;
 
    /* new K == LTC_SHA256(K || s) where s == LTC_SHA256(P0) || LTC_SHA256(P1) ... */
    sha256_init(&md);
@@ -77,8 +77,10 @@ static int _fortuna_reseed(prng_state *prng)
       return err;
    }
 
+   reset_cnt = prng->fortuna.reset_cnt + 1;
+
    for (x = 0; x < LTC_FORTUNA_POOLS; x++) {
-       if (x == 0 || ((prng->fortuna.reset_cnt >> (x-1)) & 1) == 0) {
+       if (x == 0 || ((reset_cnt >> (x-1)) & 1) == 0) {
           /* terminate this hash */
           if ((err = sha256_done(&prng->fortuna.pool[x], tmp)) != CRYPT_OK) {
              sha256_done(&md, tmp);
@@ -108,9 +110,10 @@ static int _fortuna_reseed(prng_state *prng)
    }
    _fortuna_update_iv(prng);
 
-   /* reset pool len */
+   /* reset/update internals */
    prng->fortuna.pool0_len = 0;
    prng->fortuna.wd        = 0;
+   prng->fortuna.reset_cnt = reset_cnt;
 
 
 #ifdef LTC_CLEAN_STACK
@@ -119,6 +122,46 @@ static int _fortuna_reseed(prng_state *prng)
 #endif
 
    return CRYPT_OK;
+}
+
+/**
+  "Update Seed File"-compliant update of K
+
+  @param in       The PRNG state
+  @param inlen    Size of the state
+  @param prng     The PRNG to import
+  @return CRYPT_OK if successful
+*/
+static int _fortuna_update_seed(const unsigned char *in, unsigned long inlen, prng_state *prng)
+{
+   int           err;
+   unsigned char tmp[MAXBLOCKSIZE];
+   hash_state    md;
+
+   LTC_MUTEX_LOCK(&prng->lock);
+   /* new K = LTC_SHA256(K || in) */
+   sha256_init(&md);
+   if ((err = sha256_process(&md, prng->fortuna.K, 32)) != CRYPT_OK) {
+      sha256_done(&md, tmp);
+      goto LBL_UNLOCK;
+   }
+   if ((err = sha256_process(&md, in, inlen)) != CRYPT_OK) {
+      sha256_done(&md, tmp);
+      goto LBL_UNLOCK;
+   }
+   /* finish key */
+   if ((err = sha256_done(&md, prng->fortuna.K)) != CRYPT_OK) {
+      goto LBL_UNLOCK;
+   }
+   _fortuna_update_iv(prng);
+
+LBL_UNLOCK:
+   LTC_MUTEX_UNLOCK(&prng->lock);
+#ifdef LTC_CLEAN_STACK
+   zeromem(&md, sizeof(md));
+#endif
+
+   return err;
 }
 
 /**
@@ -245,10 +288,15 @@ unsigned long fortuna_read(unsigned char *out, unsigned long outlen, prng_state 
    }
 
    /* do we have to reseed? */
-   if (++prng->fortuna.wd == LTC_FORTUNA_WD || prng->fortuna.pool0_len >= 64) {
+   if ((++prng->fortuna.wd == LTC_FORTUNA_WD) && (prng->fortuna.pool0_len >= 64)) {
       if (_fortuna_reseed(prng) != CRYPT_OK) {
          goto LBL_UNLOCK;
       }
+   }
+
+   /* ensure that one reseed happened before allowing to read */
+   if (prng->fortuna.reset_cnt == 0) {
+      goto LBL_UNLOCK;
    }
 
    /* now generate the blocks required */
@@ -404,10 +452,10 @@ LBL_UNLOCK:
 */
 int fortuna_import(const unsigned char *in, unsigned long inlen, prng_state *prng)
 {
-   int err, x;
+   int           err;
 
-   LTC_ARGCHK(in   != NULL);
-   LTC_ARGCHK(prng != NULL);
+   LTC_ARGCHK(in    != NULL);
+   LTC_ARGCHK(prng  != NULL);
 
    if (inlen < (unsigned long)fortuna_desc.export_size) {
       return CRYPT_INVALID_ARG;
@@ -416,12 +464,12 @@ int fortuna_import(const unsigned char *in, unsigned long inlen, prng_state *prn
    if ((err = fortuna_start(prng)) != CRYPT_OK) {
       return err;
    }
-   for (x = 0; x < LTC_FORTUNA_POOLS; x++) {
-      if ((err = fortuna_add_entropy(in+x*32, 32, prng)) != CRYPT_OK) {
-         return err;
-      }
+
+   if ((err = _fortuna_update_seed(in, inlen, prng)) != CRYPT_OK) {
+      return err;
    }
-   return CRYPT_OK;
+
+   return err;
 }
 
 /**

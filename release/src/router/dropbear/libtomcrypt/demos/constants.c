@@ -65,9 +65,10 @@ int main(int argc, char **argv)
          /* get and print the length of the names (and values) list */
          if (crypt_list_all_constants(NULL, &names_list_len) != 0) exit(EXIT_FAILURE);
          /* get and print the names (and values) list */
-         names_list = malloc(names_list_len);
+         if ((names_list = malloc(names_list_len)) == NULL) exit(EXIT_FAILURE);
          if (crypt_list_all_constants(names_list, &names_list_len) != 0) exit(EXIT_FAILURE);
          printf("%s\n", names_list);
+         free(names_list);
       }
    } else if (argc == 3) {
       if (strcmp(argv[1], "-s") == 0) {

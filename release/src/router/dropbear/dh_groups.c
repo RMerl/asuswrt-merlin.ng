@@ -1,6 +1,8 @@
 #include "options.h"
 #include "dh_groups.h"
 
+#if DROPBEAR_NORMAL_DH
+
 #if DROPBEAR_DH_GROUP1
 /* diffie-hellman-group1-sha1 value for p */
 const unsigned char dh_p_1[DH_P_1_LEN] = {
@@ -92,3 +94,4 @@ const unsigned char dh_p_16[DH_P_16_LEN] = {
 /* Same for all groups */
 const int DH_G_VAL = 2;
 
+#endif /* DROPBEAR_NORMAL_DH */

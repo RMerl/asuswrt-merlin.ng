@@ -9,27 +9,6 @@
  * for inetd, and can only accept IPv4 connections. */
 #define INETD_MODE 0
 
-/* Enable X11 Forwarding - server only */
-#define DROPBEAR_X11FWD 0
-
-/* Encryption - at least one required.
- * AES128 should be enabled, some very old implementations might only
- * support 3DES.
- * Including both AES keysize variants (128 and 256) will result in 
- * a minimal size increase */
-#define DROPBEAR_3DES 0
-
-/* Enable CBC mode for ciphers. This has security issues though
- * is the most compatible with older SSH implementations */
-#define DROPBEAR_ENABLE_CBC_MODE 0
-
-/* Message integrity. sha2-256 is recommended as a default, 
-   sha1 for compatibility */
-#define DROPBEAR_SHA1_96_HMAC 0
-
-/* Whether to print the message of the day (MOTD). */
-#define DO_MOTD 1
-
 /* Specify the number of clients we will allow to be connected but
  * not yet authenticated. After this limit, connections are rejected */
 /* The first setting is per-IP, to avoid denial of service */

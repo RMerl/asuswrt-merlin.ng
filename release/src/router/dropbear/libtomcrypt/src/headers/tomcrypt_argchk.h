@@ -45,7 +45,7 @@ void crypt_argchk(const char *v, const char *s, int d) NORETURN;
 
 #elif ARGTYPE == 3
 
-#define LTC_ARGCHK(x) 
+#define LTC_ARGCHK(x)
 #define LTC_ARGCHKVD(x) LTC_ARGCHK(x)
 
 #elif ARGTYPE == 4

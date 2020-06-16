@@ -1,41 +1,22 @@
-#include <tommath_private.h>
+#include "tommath_private.h"
 #ifdef BN_MP_SHRINK_C
-/* LibTomMath, multiple-precision integer library -- Tom St Denis
- *
- * LibTomMath is a library that provides multiple-precision
- * integer arithmetic as well as number theoretic functionality.
- *
- * The library was designed directly after the MPI library by
- * Michael Fromberger but has been written from scratch with
- * additional optimizations in place.
- *
- * The library is free for all purposes without any express
- * guarantee it works.
- *
- * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
- */
+/* LibTomMath, multiple-precision integer library -- Tom St Denis */
+/* SPDX-License-Identifier: Unlicense */
 
 /* shrink a bignum */
-int mp_shrink (mp_int * a)
+mp_err mp_shrink(mp_int *a)
 {
-  mp_digit *tmp;
-  int used = 1;
-  
-  if(a->used > 0) {
-    used = a->used;
-  }
-  
-  if (a->alloc != used) {
-    if ((tmp = OPT_CAST(mp_digit) XREALLOC (a->dp, sizeof (mp_digit) * used)) == NULL) {
-      return MP_MEM;
-    }
-    a->dp    = tmp;
-    a->alloc = used;
-  }
-  return MP_OKAY;
+   mp_digit *tmp;
+   int alloc = MP_MAX(MP_MIN_PREC, a->used);
+   if (a->alloc != alloc) {
+      if ((tmp = (mp_digit *) MP_REALLOC(a->dp,
+                                         (size_t)a->alloc * sizeof(mp_digit),
+                                         (size_t)alloc * sizeof(mp_digit))) == NULL) {
+         return MP_MEM;
+      }
+      a->dp    = tmp;
+      a->alloc = alloc;
+   }
+   return MP_OKAY;
 }
 #endif
-
-/* ref:         $Format:%D$ */
-/* git commit:  $Format:%H$ */
-/* commit time: $Format:%ai$ */

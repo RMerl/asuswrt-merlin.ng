@@ -13,7 +13,7 @@ dropbearkey \- create private keys for the use with dropbear(8) or dbclient(1)
 .SH DESCRIPTION
 .B dropbearkey
 generates a
-\fIRSA\fR, \fIDSS\fR, or \fIECDSA\fR
+\fIRSA\fR, \fIDSS\fR, \fIECDSA\fR, or \fIEd25519\fR
 format SSH private key, and saves it to a file for the use with the
 Dropbear client or server.
 Note that 
@@ -26,6 +26,7 @@ Type of key to generate.
 Must be one of
 .I rsa
 .I ecdsa
+.I ed25519
 or
 .IR dss .
 .TP

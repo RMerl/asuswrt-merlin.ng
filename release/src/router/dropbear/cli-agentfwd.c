@@ -255,11 +255,12 @@ void cli_load_agent_keys(m_list *ret_list) {
 }
 
 void agent_buf_sign(buffer *sigblob, sign_key *key, 
-		const buffer *data_buf) {
+		const buffer *data_buf, enum signature_type sigtype) {
 	buffer *request_data = NULL;
 	buffer *response = NULL;
 	unsigned int siglen;
 	int packet_type;
+	int flags = 0;
 	
 	/* Request format
 	byte			SSH2_AGENTC_SIGN_REQUEST
@@ -271,7 +272,12 @@ void agent_buf_sign(buffer *sigblob, sign_key *key,
 	buf_put_pub_key(request_data, key, key->type);
 	
 	buf_putbufstring(request_data, data_buf);
-	buf_putint(request_data, 0);
+#if DROPBEAR_RSA_SHA256
+	if (sigtype == DROPBEAR_SIGNATURE_RSA_SHA256) {
+		flags |= SSH_AGENT_RSA_SHA2_256;
+	}
+#endif
+	buf_putint(request_data, flags);
 	
 	response = agent_request(SSH2_AGENTC_SIGN_REQUEST, request_data);
 	

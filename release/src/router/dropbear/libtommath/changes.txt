@@ -1,4 +1,63 @@
-XXX, 2017
+XXX XXth, 2019
+v1.2.0
+       -- A huge refactoring of the library happened - renaming,
+          deprecating and replacing existing functions by improved API's.
+
+          All deprecated functions, macros and symbols are only marked as such
+          so this version is still API and ABI compatible to v1.x.
+
+       -- Daniel Mendler was pushing for those changes and contributing a load of patches,
+          refactorings, code reviews and whatnotelse.
+       -- Christoph Zurnieden re-worked internals of the library, improved the performance,
+          did code reviews and wrote documentation.
+       -- Francois Perrad did some refactoring and took again care of linting the sources and
+          provided all fixes.
+       -- Jan Nijtmans, Karel Miko and Joachim Breitner contributed various patches.
+
+       -- Private symbols can now be hidden for the shared library builds, disabled by default.
+       -- All API's follow a single code style, are prefixed the same etc.
+       -- Unified, safer and improved API's
+       -- Less magic numbers - return values (where appropriate) and most flags are now enums,
+          this was implemented in a backwards compatible way where return values were int.
+       -- API's with return values are now by default marked as "warn on unsused result", this
+          can be disabled if required (which will most likely hide bugs), c.f. MP_WUR in tommath.h
+       -- Provide a whole set of setters&getters for different primitive types (long, uint32_t, etc.)
+       -- All those primitive setters are now optimized.
+       -- It's possible to automatically tune the cutoff values for Karatsuba&Toom-Cook
+       -- The custom allocators which were formerly known as XMALLOC(), XFREE() etc. are now available
+          as MP_MALLOC(), MP_REALLOC(), MP_CALLOC() and MP_FREE(). MP_REALLOC() and MP_FREE() now also
+          provide the allocated size to ease the usage of simple allocators without tracking.
+       -- Building is now also possible with MSVC 2015, 2017 and 2019 (use makefile.msvc)
+       -- Added mp_decr() and mp_incr()
+       -- Added mp_log_u32()
+       -- Improved prime-checking
+       -- Improved Toom-Cook multiplication
+       -- Removed the LTM book (`make docs` now builds the user manual)
+
+
+Jan 28th, 2019
+v1.1.0
+       -- Christoph Zurnieden contributed FIPS 186.4 compliant
+          prime-checking (PR #113), several other fixes and a load of documentation
+       -- Daniel Mendler provided two's-complement functions (PR #124)
+          and mp_{set,get}_double() (PR #123)
+       -- Francois Perrad took care of linting the sources, provided all fixes and
+          a astylerc to auto-format the sources.
+       -- A bunch of patches by Kevin B Kenny have been back-ported from TCL
+       -- Jan Nijtmans provided the patches to `const`ify all API
+          function arguments (also from TCL)
+       -- mp_rand() has now several native random provider implementations
+          and doesn't rely on `rand()` anymore
+       -- Karel Miko provided fixes when building for MS Windows
+          and re-worked the makefile generating process
+       -- The entire environment and build logic has been extended and improved
+          regarding auto-detection of platforms, libtool and a lot more
+       -- Prevent some potential BOF cases
+       -- Improved/fixed mp_lshd() and mp_invmod()
+       -- A load more bugs were fixed by various contributors
+
+
+Aug 29th, 2017
 v1.0.1
        -- Dmitry Kovalenko provided fixes to mp_add_d() and mp_init_copy()
        -- Matt Johnston contributed some improvements to mp_div_2d(),

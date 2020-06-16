@@ -147,7 +147,7 @@ void fuzz_get_socket_address(int UNUSED(fd), char **local_host, char **local_por
 void fuzz_fake_send_kexdh_reply(void) {
     assert(!ses.dh_K);
     m_mp_alloc_init_multi(&ses.dh_K, NULL);
-    mp_set_int(ses.dh_K, 12345678);
+    mp_set_ul(ses.dh_K, 12345678uL);
     finish_kexhashbuf();
 }
 

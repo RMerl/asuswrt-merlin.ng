@@ -583,7 +583,9 @@ function applyRule(manual_switch){
 	for(i=0; i<rule_num; i++){
 		tmp_value += "<";
 		for(j=0; j<item_num-1; j++){
-			tmp_value += document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
+			var field = document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
+			if (field == "0.0.0.0") field = "";
+			tmp_value += field;
 			if(j != item_num-2)
 				tmp_value += ">";
 		}
@@ -732,6 +734,8 @@ function showclientlist(){
 			code +='<tr id="row'+i+'">';
 			var clientlist_col = clientlist_row[i].split('&#62');
 				for(var j = 0; j < clientlist_col.length; j++){
+					if ((j == 1 || j == 2) && clientlist_col[j] == "0.0.0.0")
+						clientlist_col[j] = "";
 					code +='<td width="' + width[j] +'">'+ clientlist_col[j] +'</td>';
 				}
 				if (j < 4) {
@@ -766,12 +770,6 @@ function addRow_Group(upper){
 
 	if (!validator.safeName(document.form.clientlist_deviceName))
 		return false;
-
-	if(document.form.clientlist_ipAddr.value=="")
-		document.form.clientlist_ipAddr.value="0.0.0.0";
-
-	if(document.form.clientlist_dstipAddr.value=="")
-		document.form.clientlist_dstipAddr.value="0.0.0.0";
 
 	if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
 		document.form.clientlist_ipAddr.focus();

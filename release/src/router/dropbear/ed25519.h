@@ -32,7 +32,7 @@
 
 #define CURVE25519_LEN 32
 
-typedef struct {
+typedef struct dropbear_ED25519_Key {
 
 	unsigned char priv[CURVE25519_LEN];
 	unsigned char pub[CURVE25519_LEN];

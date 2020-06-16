@@ -80,7 +80,7 @@ int der_decode_subject_public_key_info(const unsigned char *in, unsigned long in
    }
 
    if ((alg_id[0].size != oid.OIDlen) ||
-        XMEMCMP(oid.OID, alg_id[0].data, oid.OIDlen * sizeof(oid.OID[0]))) {
+        XMEMCMP(oid.OID, alg_id[0].data, oid.OIDlen * sizeof(oid.OID[0])) != 0) {
         /* OID mismatch */
         err = CRYPT_PK_INVALID_TYPE;
         goto LBL_ERR;

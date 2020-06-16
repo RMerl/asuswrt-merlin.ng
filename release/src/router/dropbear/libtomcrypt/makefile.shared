@@ -16,19 +16,19 @@
 
 PLATFORM := $(shell uname | sed -e 's/_.*//')
 
-ifndef LT
+ifndef LIBTOOL
   ifeq ($(PLATFORM), Darwin)
-    LT:=glibtool
+    LIBTOOL:=glibtool
   else
-    LT:=libtool
+    LIBTOOL:=libtool
   endif
 endif
 ifeq ($(PLATFORM), CYGWIN)
   NO_UNDEFINED:=-no-undefined
 endif
-LTCOMPILE = $(LT) --mode=compile --tag=CC $(CC)
-INSTALL_CMD = $(LT) --mode=install install
-UNINSTALL_CMD = $(LT) --mode=uninstall rm
+LTCOMPILE = $(LIBTOOL) --mode=compile --tag=CC $(CC)
+INSTALL_CMD = $(LIBTOOL) --mode=install install
+UNINSTALL_CMD = $(LIBTOOL) --mode=uninstall rm
 
 #Output filenames for various targets.
 ifndef LIBNAME
@@ -49,15 +49,15 @@ src/ciphers/aes/aes_enc.o: src/ciphers/aes/aes.c src/ciphers/aes/aes_tab.c
 LOBJECTS = $(OBJECTS:.o=.lo)
 
 $(LIBNAME): $(OBJECTS)
-	$(LT) --mode=link --tag=CC $(CC) $(LTC_CFLAGS) $(CPPFLAGS) $(LTC_LDFLAGS) $(LOBJECTS) $(EXTRALIBS) -o $@ -rpath $(LIBPATH) -version-info $(VERSION_LT) $(NO_UNDEFINED)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(LTC_LDFLAGS) $(LOBJECTS) $(EXTRALIBS) -o $@ -rpath $(LIBPATH) -version-info $(VERSION_LT) $(NO_UNDEFINED)
 
 test: $(call print-help,test,Builds the library and the 'test' application to run all self-tests) $(LIBNAME) $(TOBJECTS)
-	$(LT) --mode=link --tag=CC $(CC) $(LTC_CFLAGS) $(CPPFLAGS) $(LTC_LDFLAGS) -o $(TEST) $(TOBJECTS) $(LIBNAME) $(EXTRALIBS)
+	$(LIBTOOL) --mode=link --tag=CC $(CC) $(LTC_LDFLAGS) -o $(TEST) $(TOBJECTS) $(LIBNAME) $(EXTRALIBS)
 
 # build the demos from a template
 define DEMO_template
 $(1): $(call print-help,$(1),Builds the library and the '$(1)' demo) demos/$(1).o $$(LIBNAME)
-	$$(LT) --mode=link --tag=CC $$(CC) $$(LTC_CFLAGS) $$(CPPFLAGS) $$(LTC_LDFLAGS) $$^ $$(EXTRALIBS) -o $(1)
+	$$(LIBTOOL) --mode=link --tag=CC $$(CC) $$(LTC_LDFLAGS) $$^ $$(EXTRALIBS) -o $(1)
 endef
 
 $(foreach demo, $(strip $(DEMOS)), $(eval $(call DEMO_template,$(demo))))

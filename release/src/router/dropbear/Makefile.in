@@ -53,7 +53,7 @@ CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
 CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
 			common-channel.o common-chansession.o termcodes.o loginrec.o \
 			tcp-accept.o listener.o process-packet.o dh_groups.o \
-			common-runopts.o circbuffer.o list.o netio.o chachapoly.o
+			common-runopts.o circbuffer.o list.o netio.o chachapoly.o gcm.o
 
 KEYOBJS=dropbearkey.o
 
@@ -79,6 +79,15 @@ else
 	dropbearkeyobjs=$(COMMONOBJS) $(KEYOBJS)
 	dropbearconvertobjs=$(COMMONOBJS) $(CONVERTOBJS)
 	scpobjs=$(SCPOBJS)
+endif
+
+ifeq (@DROPBEAR_PLUGIN@, 1)
+    # rdynamic makes all the global symbols of dropbear available to all the loaded shared libraries
+    # this allow a plugin to reuse existing crypto/utilities like base64_decode/base64_encode without
+    # the need to rewrite them.
+    PLUGIN_LIBS=-ldl -rdynamic
+else
+    PLUGIN_LIBS=
 endif
 
 VPATH=@srcdir@
@@ -166,7 +175,7 @@ insmulti%: dropbearmulti$(EXEEXT)
 	-rm -f $(DESTDIR)$(bindir)/$*$(EXEEXT) 
 	-ln -s $(bindir)/dropbearmulti$(EXEEXT) $(DESTDIR)$(bindir)/$*$(EXEEXT) 
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man1
-	if test -e $*.1; then $(INSTALL) -m 644 $*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
+	if test -e $(srcdir)/$*.1; then $(INSTALL) -m 644 $(srcdir)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
 
 # dropbear should go in sbin, so it needs a separate rule
 inst_dropbear: dropbear
@@ -179,7 +188,7 @@ inst_%: %
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) $*$(EXEEXT) $(DESTDIR)$(bindir)
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man1
-	if test -e $*.1; then $(INSTALL) -m 644 $*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
+	if test -e $(srcdir)/$*.1; then $(INSTALL) -m 644 $(srcdir)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
 
 inst_dropbearmulti: $(addprefix insmulti, $(PROGRAMS)) 
 
@@ -190,7 +199,7 @@ dropbearkey: $(dropbearkeyobjs)
 dropbearconvert: $(dropbearconvertobjs)
 
 dropbear: $(HEADERS) $(LIBTOM_DEPS) Makefile
-	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS) $(LIBS) @CRYPTLIB@
+	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS) $(LIBS) @CRYPTLIB@ $(PLUGIN_LIBS)
 
 dbclient: $(HEADERS) $(LIBTOM_DEPS) Makefile
 	$(CC) $(LDFLAGS) -o $@$(EXEEXT) $($@objs) $(LIBTOM_LIBS) $(LIBS)
@@ -227,7 +236,7 @@ $(STATIC_LTC): $(OPTION_HEADERS)
 $(STATIC_LTM): $(OPTION_HEADERS)
 	$(MAKE) -C libtommath
 
-.PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean
+.PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean lint
 
 ltc-clean:
 	$(MAKE) -C libtomcrypt clean
@@ -253,6 +262,9 @@ distclean: clean tidy
 tidy:
 	-rm -f *~ *.gcov */*~
 
+lint:
+	cd $(srcdir); ./dropbear_lint.sh
+
 ## Fuzzing targets
 
 # list of fuzz targets
@@ -270,27 +282,29 @@ fuzzstandalone: fuzz-harness.o fuzz-targets
 # exclude svr-main.o to avoid duplicate main
 svrfuzzobjs=$(subst svr-main.o, ,$(dropbearobjs))
 
+fuzz-harness.o: $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs) fuzz-common.o
+
 # build all the fuzzers. This will require fail to link unless built with
 # make fuzz-targets FUZZLIB=-lFuzzer.a 
 # or similar - the library provides main().
 fuzz-targets: $(FUZZ_TARGETS) $(FUZZER_OPTIONS)
 
-fuzzer-preauth: fuzzer-preauth.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-preauth: fuzzer-preauth.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-preauth_nomaths: fuzzer-preauth_nomaths.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-preauth_nomaths: fuzzer-preauth_nomaths.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-pubkey: fuzzer-pubkey.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-pubkey: fuzzer-pubkey.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-verify: fuzzer-verify.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-verify: fuzzer-verify.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-kexdh: fuzzer-kexdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-kexdh: fuzzer-kexdh.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
-fuzzer-kexecdh: fuzzer-kexecdh.o $(HEADERS) $(LIBTOM_DEPS) Makefile $(svrfuzzobjs)
+fuzzer-kexecdh: fuzzer-kexecdh.o fuzz-harness.o
 	$(CXX) $(CXXFLAGS) $@.o $(LDFLAGS) $(svrfuzzobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 fuzzer-kexcurve25519: fuzzer-kexcurve25519.o fuzz-harness.o

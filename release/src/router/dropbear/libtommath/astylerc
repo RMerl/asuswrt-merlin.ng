@@ -1,0 +1,30 @@
+# Artistic Style, see http://astyle.sourceforge.net/
+# full documentation, see: http://astyle.sourceforge.net/astyle.html
+#
+# usage:
+#       astyle --options=astylerc *.[ch]
+
+# Do not create backup, annonying in the times of git
+suffix=none
+
+## Bracket Style Options
+style=kr
+
+## Tab Options
+indent=spaces=3
+
+## Bracket Modify Options
+
+## Indentation Options
+min-conditional-indent=0
+
+## Padding Options
+pad-header
+unpad-paren
+align-pointer=name
+
+## Formatting Options
+break-after-logical
+max-code-length=120
+convert-tabs
+mode=c

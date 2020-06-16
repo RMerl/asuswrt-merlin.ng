@@ -627,6 +627,7 @@ DROPBEAR_FUZZ
 ac_ct_CXX
 CXXFLAGS
 CXX
+DROPBEAR_PLUGIN
 CRYPTLIB
 EGREP
 GREP
@@ -703,6 +704,7 @@ enable_pam
 enable_openpty
 enable_syslog
 enable_shadow
+enable_plugin
 enable_fuzz
 enable_bundled_libtom
 enable_lastlog
@@ -1346,10 +1348,12 @@ Optional Features:
   --disable-openpty       Don't use openpty, use alternative method
   --disable-syslog        Don't include syslog support
   --disable-shadow        Don't use shadow passwords (if available)
+  --enable-plugin         Enable support for External Public Key Authentication plug-in
   --enable-fuzz           Build fuzzing. Not recommended for deployment.
   --enable-bundled-libtom       Force using bundled libtomcrypt/libtommath even if a system version exists.
   --disable-bundled-libtom      Force using system libtomcrypt/libtommath, fail if it does not exist.
                                 Default is to use system if available, otherwise bundled.
+                                Dropbear requires system libtommath >= 1.2.0 and libtomcrypt >= 1.18.0
   --disable-lastlog       Disable use of lastlog even if detected no
   --disable-utmp          Disable use of utmp even if detected no
   --disable-utmpx         Disable use of utmpx even if detected no
@@ -5206,17 +5210,41 @@ $as_echo "$as_me: Using shadow passwords if available" >&6;}
 fi
 
 
+# Check whether --enable-plugin was given.
+if test "${enable_plugin+set}" = set; then :
+  enableval=$enable_plugin;
+
+$as_echo "#define DROPBEAR_PLUGIN 1" >>confdefs.h
+
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: Enabling support for External Public Key Authentication" >&5
+$as_echo "$as_me: Enabling support for External Public Key Authentication" >&6;}
+		DROPBEAR_PLUGIN=1
+
+else
+
+
+$as_echo "#define DROPBEAR_PLUGIN 0" >>confdefs.h
+
+		DROPBEAR_PLUGIN=0
+
+
+
+fi
+
+
+
 # Check whether --enable-fuzz was given.
 if test "${enable_fuzz+set}" = set; then :
   enableval=$enable_fuzz;
+		if test "x$enableval" = "xyes"; then
 
 $as_echo "#define DROPBEAR_FUZZ 1" >>confdefs.h
 
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: Enabling fuzzing" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: Enabling fuzzing" >&5
 $as_echo "$as_me: Enabling fuzzing" >&6;}
-		DROPBEAR_FUZZ=1
-		# libfuzzer needs linking with c++ libraries
-		ac_ext=cpp
+            DROPBEAR_FUZZ=1
+            # libfuzzer needs linking with c++ libraries
+            ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
@@ -5473,12 +5501,22 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+        else
+
+$as_echo "#define DROPBEAR_FUZZ 0" >>confdefs.h
+
+            { $as_echo "$as_me:${as_lineno-$LINENO}: Disabling fuzzing" >&5
+$as_echo "$as_me: Disabling fuzzing" >&6;}
+            DROPBEAR_FUZZ=0
+        fi
 
 else
 
 
 $as_echo "#define DROPBEAR_FUZZ 0" >>confdefs.h
 
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: Disabling fuzzing" >&5
+$as_echo "$as_me: Disabling fuzzing" >&6;}
 		DROPBEAR_FUZZ=0
 
 
@@ -5646,7 +5684,8 @@ for ac_header in netinet/in.h netinet/tcp.h \
 	crypt.h \
 	pty.h libutil.h libgen.h inttypes.h stropts.h utmp.h \
 	utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h \
-	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h
+	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h \
+	sys/random.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -6543,7 +6582,7 @@ fi
 done
 
 
-for ac_func in explicit_bzero memset_s
+for ac_func in explicit_bzero memset_s getrandom
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -6565,9 +6604,9 @@ if test "${enable_bundled_libtom+set}" = set; then :
 $as_echo "$as_me: Forcing bundled libtom*" >&6;}
 		else
 			BUNDLED_LIBTOM=0
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for mp_exptmod in -ltommath" >&5
-$as_echo_n "checking for mp_exptmod in -ltommath... " >&6; }
-if ${ac_cv_lib_tommath_mp_exptmod+:} false; then :
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for mp_to_ubin in -ltommath" >&5
+$as_echo_n "checking for mp_to_ubin in -ltommath... " >&6; }
+if ${ac_cv_lib_tommath_mp_to_ubin+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6581,35 +6620,35 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char mp_exptmod ();
+char mp_to_ubin ();
 int
 main ()
 {
-return mp_exptmod ();
+return mp_to_ubin ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_tommath_mp_exptmod=yes
+  ac_cv_lib_tommath_mp_to_ubin=yes
 else
-  ac_cv_lib_tommath_mp_exptmod=no
+  ac_cv_lib_tommath_mp_to_ubin=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_exptmod" >&5
-$as_echo "$ac_cv_lib_tommath_mp_exptmod" >&6; }
-if test "x$ac_cv_lib_tommath_mp_exptmod" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_to_ubin" >&5
+$as_echo "$ac_cv_lib_tommath_mp_to_ubin" >&6; }
+if test "x$ac_cv_lib_tommath_mp_to_ubin" = xyes; then :
   LIBTOM_LIBS="-ltommath $LIBTOM_LIBS"
 else
-  as_fn_error $? "Missing system libtommath and --disable-bundled-libtom was specified" "$LINENO" 5
+  as_fn_error $? "Missing/old system libtommath and --disable-bundled-libtom was specified" "$LINENO" 5
 fi
 
-			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for register_cipher in -ltomcrypt" >&5
-$as_echo_n "checking for register_cipher in -ltomcrypt... " >&6; }
-if ${ac_cv_lib_tomcrypt_register_cipher+:} false; then :
+			{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for poly1305_init in -ltomcrypt" >&5
+$as_echo_n "checking for poly1305_init in -ltomcrypt... " >&6; }
+if ${ac_cv_lib_tomcrypt_poly1305_init+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6623,30 +6662,30 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char register_cipher ();
+char poly1305_init ();
 int
 main ()
 {
-return register_cipher ();
+return poly1305_init ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_tomcrypt_register_cipher=yes
+  ac_cv_lib_tomcrypt_poly1305_init=yes
 else
-  ac_cv_lib_tomcrypt_register_cipher=no
+  ac_cv_lib_tomcrypt_poly1305_init=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_register_cipher" >&5
-$as_echo "$ac_cv_lib_tomcrypt_register_cipher" >&6; }
-if test "x$ac_cv_lib_tomcrypt_register_cipher" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_poly1305_init" >&5
+$as_echo "$ac_cv_lib_tomcrypt_poly1305_init" >&6; }
+if test "x$ac_cv_lib_tomcrypt_poly1305_init" = xyes; then :
   LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS"
 else
-  as_fn_error $? "Missing system libtomcrypt and --disable-bundled-libtom was specified" "$LINENO" 5
+  as_fn_error $? "Missing/old system libtomcrypt and --disable-bundled-libtom was specified" "$LINENO" 5
 fi
 
 		fi
@@ -6654,9 +6693,9 @@ fi
 else
 
 		BUNDLED_LIBTOM=0
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for mp_exptmod in -ltommath" >&5
-$as_echo_n "checking for mp_exptmod in -ltommath... " >&6; }
-if ${ac_cv_lib_tommath_mp_exptmod+:} false; then :
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for mp_to_ubin in -ltommath" >&5
+$as_echo_n "checking for mp_to_ubin in -ltommath... " >&6; }
+if ${ac_cv_lib_tommath_mp_to_ubin+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6670,27 +6709,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char mp_exptmod ();
+char mp_to_ubin ();
 int
 main ()
 {
-return mp_exptmod ();
+return mp_to_ubin ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_tommath_mp_exptmod=yes
+  ac_cv_lib_tommath_mp_to_ubin=yes
 else
-  ac_cv_lib_tommath_mp_exptmod=no
+  ac_cv_lib_tommath_mp_to_ubin=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_exptmod" >&5
-$as_echo "$ac_cv_lib_tommath_mp_exptmod" >&6; }
-if test "x$ac_cv_lib_tommath_mp_exptmod" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tommath_mp_to_ubin" >&5
+$as_echo "$ac_cv_lib_tommath_mp_to_ubin" >&6; }
+if test "x$ac_cv_lib_tommath_mp_to_ubin" = xyes; then :
   LIBTOM_LIBS="-ltommath $LIBTOM_LIBS"
 else
   BUNDLED_LIBTOM=1
@@ -8835,5 +8874,5 @@ fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: " >&5
 $as_echo "$as_me: " >&6;}
-{ $as_echo "$as_me:${as_lineno-$LINENO}: Now edit options.h to choose features." >&5
-$as_echo "$as_me: Now edit options.h to choose features." >&6;}
+{ $as_echo "$as_me:${as_lineno-$LINENO}: Now edit localoptions.h to choose features." >&5
+$as_echo "$as_me: Now edit localoptions.h to choose features." >&6;}

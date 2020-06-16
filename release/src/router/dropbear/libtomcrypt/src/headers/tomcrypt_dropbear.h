@@ -10,9 +10,9 @@
 #define LTC_SMALL_CODE
 #endif
 
-#if DROPBEAR_BLOWFISH
-#define LTC_BLOWFISH
-#endif
+/* Fewer entries needed */
+#define TAB_SIZE      5
+
 #if DROPBEAR_AES
 #define LTC_RIJNDAEL
 #endif
@@ -33,6 +33,10 @@
 
 #if DROPBEAR_ENABLE_CTR_MODE
 #define LTC_CTR_MODE
+#endif
+
+#if DROPBEAR_ENABLE_GCM_MODE
+#define LTC_GCM_MODE
 #endif
 
 #if DROPBEAR_CHACHA20POLY1305

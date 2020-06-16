@@ -86,7 +86,7 @@ void m_mp_free_multi(mp_int **mp, ...)
 
 void bytes_to_mp(mp_int *mp, const unsigned char* bytes, unsigned int len) {
 
-	if (mp_read_unsigned_bin(mp, (unsigned char*)bytes, len) != MP_OKAY) {
+	if (mp_from_ubin(mp, (unsigned char*)bytes, len) != MP_OKAY) {
 		dropbear_exit("Mem alloc error");
 	}
 }

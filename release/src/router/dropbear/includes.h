@@ -124,6 +124,10 @@
 #include <sys/uio.h>
 #endif
 
+#ifdef HAVE_SYS_RANDOM_H
+#include <sys/random.h>
+#endif
+
 #ifdef BUNDLED_LIBTOM
 #include "libtomcrypt/src/headers/tomcrypt.h"
 #include "libtommath/tommath.h"
@@ -162,6 +166,10 @@ typedef u_int32_t uint32_t;
 #ifdef HAVE_LINUX_PKT_SCHED_H
 #include <linux/types.h>
 #include <linux/pkt_sched.h>
+#endif
+
+#if DROPBEAR_PLUGIN
+#include <dlfcn.h>
 #endif
 
 #include "fake-rfc2553.h"

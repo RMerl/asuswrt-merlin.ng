@@ -7,9 +7,9 @@
  * guarantee it works.
  */
 
- /** 
+ /**
    @file twofish.c
-   Implementation of Twofish by Tom St Denis 
+   Implementation of Twofish by Tom St Denis
  */
 #include "tomcrypt.h"
 
@@ -145,14 +145,14 @@ static ulong32 gf_mult(ulong32 a, ulong32 b, ulong32 p)
    result = P[0] = B[0] = 0;
 
    /* unrolled branchless GF multiplier */
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1); 
-   result ^= B[a&1]; 
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1]; a >>= 1;  B[1] = P[B[1]>>7] ^ (B[1] << 1);
+   result ^= B[a&1];
 
    return result;
 }
@@ -243,7 +243,7 @@ static void h_func(const unsigned char *in, unsigned char *out, unsigned char *M
   unsigned char y[4];
   for (x = 0; x < 4; x++) {
       y[x] = in[x];
- }
+  }
   switch (k) {
      case 4:
             y[0] = (unsigned char)(sbox(1, (ulong32)y[0]) ^ M[4 * (6 + offset) + 0]);
@@ -439,7 +439,7 @@ int twofish_setup(const unsigned char *key, int keylen, int num_rounds, symmetri
    /* small ram variant */
    switch (k) {
          case 4 : skey->twofish.start = 0; break;
-         case 3 : skey->twofish.start = 1; break; 
+         case 3 : skey->twofish.start = 1; break;
          default: skey->twofish.start = 2; break;
    }
 #endif
@@ -473,18 +473,18 @@ int twofish_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_ke
     int r;
 #if !defined(LTC_TWOFISH_SMALL) && !defined(__GNUC__)
     ulong32 *S1, *S2, *S3, *S4;
-#endif    
+#endif
 
     LTC_ARGCHK(pt   != NULL);
     LTC_ARGCHK(ct   != NULL);
     LTC_ARGCHK(skey != NULL);
-    
+
 #if !defined(LTC_TWOFISH_SMALL) && !defined(__GNUC__)
     S1 = skey->twofish.S[0];
     S2 = skey->twofish.S[1];
     S3 = skey->twofish.S[2];
     S4 = skey->twofish.S[3];
-#endif    
+#endif
 
     LOAD32L(a,&pt[0]); LOAD32L(b,&pt[4]);
     LOAD32L(c,&pt[8]); LOAD32L(d,&pt[12]);
@@ -492,20 +492,20 @@ int twofish_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_ke
     b ^= skey->twofish.K[1];
     c ^= skey->twofish.K[2];
     d ^= skey->twofish.K[3];
-    
+
     k  = skey->twofish.K + 8;
     for (r = 8; r != 0; --r) {
         t2 = g1_func(b, skey);
         t1 = g_func(a, skey) + t2;
         c  = RORc(c ^ (t1 + k[0]), 1);
         d  = ROLc(d, 1) ^ (t2 + t1 + k[1]);
-        
+
         t2 = g1_func(d, skey);
         t1 = g_func(c, skey) + t2;
         a  = RORc(a ^ (t1 + k[2]), 1);
         b  = ROLc(b, 1) ^ (t2 + t1 + k[3]);
         k += 4;
-   }
+    }
 
     /* output with "undo last swap" */
     ta = c ^ skey->twofish.K[4];
@@ -533,7 +533,7 @@ int twofish_ecb_encrypt(const unsigned char *pt, unsigned char *ct, symmetric_ke
   Decrypts a block of text with Twofish
   @param ct The input ciphertext (16 bytes)
   @param pt The output plaintext (16 bytes)
-  @param skey The key as scheduled 
+  @param skey The key as scheduled
   @return CRYPT_OK if successful
 */
 #ifdef LTC_CLEAN_STACK
@@ -546,18 +546,18 @@ int twofish_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_ke
     int r;
 #if !defined(LTC_TWOFISH_SMALL) && !defined(__GNUC__)
     ulong32 *S1, *S2, *S3, *S4;
-#endif    
+#endif
 
     LTC_ARGCHK(pt   != NULL);
     LTC_ARGCHK(ct   != NULL);
     LTC_ARGCHK(skey != NULL);
-    
+
 #if !defined(LTC_TWOFISH_SMALL) && !defined(__GNUC__)
     S1 = skey->twofish.S[0];
     S2 = skey->twofish.S[1];
     S3 = skey->twofish.S[2];
     S4 = skey->twofish.S[3];
-#endif    
+#endif
 
     /* load input */
     LOAD32L(ta,&ct[0]); LOAD32L(tb,&ct[4]);
@@ -588,7 +588,7 @@ int twofish_ecb_decrypt(const unsigned char *ct, unsigned char *pt, symmetric_ke
     b ^= skey->twofish.K[1];
     c ^= skey->twofish.K[2];
     d ^= skey->twofish.K[3];
-    
+
     /* store */
     STORE32L(a, &pt[0]); STORE32L(b, &pt[4]);
     STORE32L(c, &pt[8]); STORE32L(d, &pt[12]);
@@ -612,8 +612,8 @@ int twofish_test(void)
 {
  #ifndef LTC_TEST
     return CRYPT_NOP;
- #else    
- static const struct { 
+ #else
+ static const struct {
      int keylen;
      unsigned char key[32], pt[16], ct[16];
  } tests[] = {
@@ -633,7 +633,7 @@ int twofish_test(void)
        0x85, 0xB6, 0xDC, 0x07, 0x3C, 0xA3, 0x41, 0xB2 },
      { 0x18, 0x2B, 0x02, 0xD8, 0x14, 0x97, 0xEA, 0x45,
        0xF9, 0xDA, 0xAC, 0xDC, 0x29, 0x19, 0x3A, 0x65 }
-   }, { 
+   }, {
      32,
      { 0xD4, 0x3B, 0xB7, 0x55, 0x6E, 0xA3, 0x2E, 0x46,
        0xF2, 0xA2, 0x82, 0xB7, 0xD4, 0x5B, 0x4E, 0x0D,
@@ -647,11 +647,11 @@ int twofish_test(void)
 };
 
 
- symmetric_key key;
- unsigned char tmp[2][16];
- int err, i, y;
- 
- for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
+  symmetric_key key;
+  unsigned char tmp[2][16];
+  int err, i, y;
+
+  for (i = 0; i < (int)(sizeof(tests)/sizeof(tests[0])); i++) {
     if ((err = twofish_setup(tests[i].key, tests[i].keylen, 0, &key)) != CRYPT_OK) {
        return err;
     }
@@ -661,17 +661,17 @@ int twofish_test(void)
           compare_testvector(tmp[1], 16, tests[i].pt, 16, "Twofish Decrypt", i) != 0) {
        return CRYPT_FAIL_TESTVECTOR;
     }
-      /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
-      for (y = 0; y < 16; y++) tmp[0][y] = 0;
-      for (y = 0; y < 1000; y++) twofish_ecb_encrypt(tmp[0], tmp[0], &key);
-      for (y = 0; y < 1000; y++) twofish_ecb_decrypt(tmp[0], tmp[0], &key);
-      for (y = 0; y < 16; y++) if (tmp[0][y] != 0) return CRYPT_FAIL_TESTVECTOR;
- }    
- return CRYPT_OK;
-#endif 
+    /* now see if we can encrypt all zero bytes 1000 times, decrypt and come back where we started */
+    for (y = 0; y < 16; y++) tmp[0][y] = 0;
+    for (y = 0; y < 1000; y++) twofish_ecb_encrypt(tmp[0], tmp[0], &key);
+    for (y = 0; y < 1000; y++) twofish_ecb_decrypt(tmp[0], tmp[0], &key);
+    for (y = 0; y < 16; y++) if (tmp[0][y] != 0) return CRYPT_FAIL_TESTVECTOR;
+  }
+  return CRYPT_OK;
+#endif
 }
 
-/** Terminate the context 
+/** Terminate the context
    @param skey    The scheduled key
 */
 void twofish_done(symmetric_key *skey)

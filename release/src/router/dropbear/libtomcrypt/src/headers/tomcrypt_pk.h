@@ -667,16 +667,16 @@ int der_printable_value_decode(int v);
 
 /* UTF-8 */
 #if (defined(SIZE_MAX) || __STDC_VERSION__ >= 199901L || defined(WCHAR_MAX) || defined(__WCHAR_MAX__) || defined(_WCHAR_T) || defined(_WCHAR_T_DEFINED) || defined (__WCHAR_TYPE__)) && !defined(LTC_NO_WCHAR)
-#include <wchar.h>
-#if defined(__WCHAR_MAX__)
-#define LTC_WCHAR_MAX __WCHAR_MAX__
-#elif defined(WCHAR_MAX)
-#define LTC_WCHAR_MAX WCHAR_MAX
-#endif
+   #if defined(__WCHAR_MAX__)
+      #define LTC_WCHAR_MAX __WCHAR_MAX__
+   #else
+      #include <wchar.h>
+      #define LTC_WCHAR_MAX WCHAR_MAX
+   #endif
 /* please note that it might happen that LTC_WCHAR_MAX is undefined */
 #else
-typedef ulong32 wchar_t;
-#define LTC_WCHAR_MAX 0xFFFFFFFF
+   typedef ulong32 wchar_t;
+   #define LTC_WCHAR_MAX 0xFFFFFFFF
 #endif
 
 int der_encode_utf8_string(const wchar_t *in,  unsigned long inlen,

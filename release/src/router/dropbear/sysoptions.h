@@ -4,7 +4,7 @@
  *******************************************************************/
 
 #ifndef DROPBEAR_VERSION
-#define DROPBEAR_VERSION "2019.78"
+#define DROPBEAR_VERSION "2020.79"
 #endif
 
 #ifndef LOCAL_IDENT
@@ -145,9 +145,17 @@ If you test it please contact the Dropbear author */
  * signing operations slightly slower. */
 #define DROPBEAR_RSA_BLINDING 1
 
+#ifndef DROPBEAR_RSA_SHA1
+#define DROPBEAR_RSA_SHA1 DROPBEAR_RSA
+#endif
+#ifndef DROPBEAR_RSA_SHA256
+#define DROPBEAR_RSA_SHA256 DROPBEAR_RSA
+#endif
+
 /* hashes which will be linked and registered */
-#define DROPBEAR_SHA256 ((DROPBEAR_SHA2_256_HMAC) || (DROPBEAR_ECC_256)  \
- 			|| (DROPBEAR_CURVE25519) || (DROPBEAR_DH_GROUP14_SHA256))
+#define DROPBEAR_SHA256 ((DROPBEAR_SHA2_256_HMAC) || (DROPBEAR_ECC_256) \
+ 			|| (DROPBEAR_CURVE25519) || (DROPBEAR_DH_GROUP14_SHA256) \
+			|| (DROPBEAR_RSA_SHA256))
 #define DROPBEAR_SHA384 (DROPBEAR_ECC_384)
 /* LTC SHA384 depends on SHA512 */
 #define DROPBEAR_SHA512 ((DROPBEAR_SHA2_512_HMAC) || (DROPBEAR_ECC_521) \
@@ -158,6 +166,10 @@ If you test it please contact the Dropbear author */
 #define DROPBEAR_DH_GROUP14 ((DROPBEAR_DH_GROUP14_SHA256) || (DROPBEAR_DH_GROUP14_SHA1))
 
 #define DROPBEAR_NORMAL_DH ((DROPBEAR_DH_GROUP1) || (DROPBEAR_DH_GROUP14) || (DROPBEAR_DH_GROUP16))
+
+/* Dropbear only uses server-sig-algs, only needed if we have rsa-sha256 pubkey auth */
+#define DROPBEAR_EXT_INFO ((DROPBEAR_RSA_SHA256) \
+		&& ((DROPBEAR_CLI_PUBKEY_AUTH) || (DROPBEAR_SVR_PUBKEY_AUTH)))
 
 /* roughly 2x 521 bits */
 #define MAX_ECC_SIZE 140
@@ -213,7 +225,7 @@ If you test it please contact the Dropbear author */
 
 #define DROPBEAR_TWOFISH ((DROPBEAR_TWOFISH256) || (DROPBEAR_TWOFISH128))
 
-#define DROPBEAR_AEAD_MODE ((DROPBEAR_CHACHA20POLY1305))
+#define DROPBEAR_AEAD_MODE ((DROPBEAR_CHACHA20POLY1305) || (DROPBEAR_ENABLE_GCM_MODE))
 
 #define DROPBEAR_CLI_ANYTCPFWD ((DROPBEAR_CLI_REMOTETCPFWD) || (DROPBEAR_CLI_LOCALTCPFWD))
 
@@ -252,6 +264,9 @@ If you test it please contact the Dropbear author */
 	#error "At least one server authentication type must be enabled. DROPBEAR_SVR_PUBKEY_AUTH and DROPBEAR_SVR_PASSWORD_AUTH are recommended."
 #endif
 
+#if (DROPBEAR_PLUGIN && !DROPBEAR_SVR_PUBKEY_AUTH)
+	#error "You must define DROPBEAR_SVR_PUBKEY_AUTH in order to use plugins"
+#endif
 
 #if !(DROPBEAR_AES128 || DROPBEAR_3DES || DROPBEAR_AES256 || DROPBEAR_BLOWFISH \
       || DROPBEAR_TWOFISH256 || DROPBEAR_TWOFISH128 || DROPBEAR_CHACHA20POLY1305)

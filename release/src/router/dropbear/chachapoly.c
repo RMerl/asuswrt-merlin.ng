@@ -122,7 +122,7 @@ static int dropbear_chachapoly_getlength(unsigned int seq,
 	unsigned char seqbuf[8], buf[4];
 	int err;
 
-	TRACE2(("enter dropbear_chachapoly_parse"))
+	TRACE2(("enter dropbear_chachapoly_getlength"))
 
 	if (len < sizeof(buf)) {
 		return CRYPT_ERROR;
@@ -136,7 +136,7 @@ static int dropbear_chachapoly_getlength(unsigned int seq,
 
 	LOAD32H(*outlen, buf);
 
-	TRACE2(("leave dropbear_chachapoly_parse"))
+	TRACE2(("leave dropbear_chachapoly_getlength"))
 	return CRYPT_OK;
 }
 

@@ -38,13 +38,15 @@
 #include "gensignkey.h"
 
 static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs);
+#if DROPBEAR_EXT_INFO
+static void send_msg_ext_info(void);
+#endif
 
 /* Handle a diffie-hellman key exchange initialisation. This involves
  * calculating a session key reply value, and corresponding hash. These
  * are carried out by send_msg_kexdh_reply(). recv_msg_kexdh_init() calls
  * that function, then brings the new keys into use */
 void recv_msg_kexdh_init() {
-
 	DEF_MP_INT(dh_e);
 	buffer *ecdh_qs = NULL;
 
@@ -86,6 +88,14 @@ void recv_msg_kexdh_init() {
 	}
 
 	send_msg_newkeys();
+
+#if DROPBEAR_EXT_INFO
+	/* Only send it following the first newkeys */
+	if (!ses.kexstate.donesecondkex && ses.allow_ext_info) {
+		send_msg_ext_info();
+	}
+#endif
+
 	ses.requirenext = SSH_MSG_NEWKEYS;
 	TRACE(("leave recv_msg_kexdh_init"))
 }
@@ -234,7 +244,7 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 
 	/* calc the signature */
 	buf_put_sign(ses.writepayload, svr_opts.hostkey, 
-			ses.newkeys->algo_hostkey, ses.hash);
+			ses.newkeys->algo_signature, ses.hash);
 
 	/* the SSH_MSG_KEXDH_REPLY is done */
 	encrypt_packet();
@@ -242,3 +252,20 @@ static void send_msg_kexdh_reply(mp_int *dh_e, buffer *ecdh_qs) {
 	TRACE(("leave send_msg_kexdh_reply"))
 }
 
+#if DROPBEAR_EXT_INFO
+/* Only used for server-sig-algs on the server side */
+static void send_msg_ext_info(void) {
+	TRACE(("enter send_msg_ext_info"))
+
+	buf_putbyte(ses.writepayload, SSH_MSG_EXT_INFO);
+	/* nr-extensions */
+	buf_putint(ses.writepayload, 1);
+
+	buf_putstring(ses.writepayload, SSH_SERVER_SIG_ALGS, strlen(SSH_SERVER_SIG_ALGS));
+	buf_put_algolist_all(ses.writepayload, sigalgs, 1);
+	
+	encrypt_packet();
+
+	TRACE(("leave send_msg_ext_info"))
+}
+#endif

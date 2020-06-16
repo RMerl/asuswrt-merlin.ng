@@ -180,3 +180,13 @@ void m_free_direct(void* ptr) {
 }
 
 #endif /* DROPBEAR_TRACKING_MALLOC */
+
+void * m_realloc_ltm(void* ptr, size_t oldsize, size_t newsize) {
+   (void)oldsize;
+   return m_realloc(ptr, newsize);
+}
+
+void m_free_ltm(void *mem, size_t size) {
+   (void)size;
+   m_free_direct(mem);
+}

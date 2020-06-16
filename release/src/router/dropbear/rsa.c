@@ -35,11 +35,16 @@
 #include "buffer.h"
 #include "ssh.h"
 #include "dbrandom.h"
+#include "signkey.h"
 
 #if DROPBEAR_RSA 
 
+#if !(DROPBEAR_RSA_SHA1 || DROPBEAR_RSA_SHA256)
+#error Somehow RSA was enabled with neither DROPBEAR_RSA_SHA1 nor DROPBEAR_RSA_SHA256
+#endif
+
 static void rsa_pad_em(const dropbear_rsa_key * key,
-	const buffer *data_buf, mp_int * rsa_em);
+	const buffer *data_buf, mp_int * rsa_em, enum signature_type sigtype);
 
 /* Load a public rsa key from a buffer, initialising the values.
  * The key will have the same format as buf_put_rsa_key.
@@ -191,7 +196,8 @@ void buf_put_rsa_priv_key(buffer* buf, const dropbear_rsa_key *key) {
 #if DROPBEAR_SIGNKEY_VERIFY
 /* Verify a signature in buf, made on data by the key given.
  * Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
-int buf_rsa_verify(buffer * buf, const dropbear_rsa_key *key, const buffer *data_buf) {
+int buf_rsa_verify(buffer * buf, const dropbear_rsa_key *key, 
+		enum signature_type sigtype, const buffer *data_buf) {
 	unsigned int slen;
 	DEF_MP_INT(rsa_s);
 	DEF_MP_INT(rsa_mdash);
@@ -205,12 +211,12 @@ int buf_rsa_verify(buffer * buf, const dropbear_rsa_key *key, const buffer *data
 	m_mp_init_multi(&rsa_mdash, &rsa_s, &rsa_em, NULL);
 
 	slen = buf_getint(buf);
-	if (slen != (unsigned int)mp_unsigned_bin_size(key->n)) {
+	if (slen != (unsigned int)mp_ubin_size(key->n)) {
 		TRACE(("bad size"))
 		goto out;
 	}
 
-	if (mp_read_unsigned_bin(&rsa_s, buf_getptr(buf, buf->len - buf->pos),
+	if (mp_from_ubin(&rsa_s, buf_getptr(buf, buf->len - buf->pos),
 				buf->len - buf->pos) != MP_OKAY) {
 		TRACE(("failed reading rsa_s"))
 		goto out;
@@ -223,7 +229,7 @@ int buf_rsa_verify(buffer * buf, const dropbear_rsa_key *key, const buffer *data
 	}
 
 	/* create the magic PKCS padded value */
-	rsa_pad_em(key, data_buf, &rsa_em);
+	rsa_pad_em(key, data_buf, &rsa_em, sigtype);
 
 	if (mp_exptmod(&rsa_s, key->e, key->n, &rsa_mdash) != MP_OKAY) {
 		TRACE(("failed exptmod rsa_s"))
@@ -246,9 +252,12 @@ out:
 
 /* Sign the data presented with key, writing the signature contents
  * to the buffer */
-void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, const buffer *data_buf) {
-	unsigned int nsize, ssize;
+void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, 
+		enum signature_type sigtype, const buffer *data_buf) {
+	const char *name = NULL;
+	unsigned int nsize, ssize, namelen = 0;
 	unsigned int i;
+	size_t written;
 	DEF_MP_INT(rsa_s);
 	DEF_MP_INT(rsa_tmp1);
 	DEF_MP_INT(rsa_tmp2);
@@ -259,7 +268,7 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, const buffer *da
 
 	m_mp_init_multi(&rsa_s, &rsa_tmp1, &rsa_tmp2, &rsa_tmp3, NULL);
 
-	rsa_pad_em(key, data_buf, &rsa_tmp1);
+	rsa_pad_em(key, data_buf, &rsa_tmp1, sigtype);
 
 	/* the actual signing of the padded data */
 
@@ -311,23 +320,24 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, const buffer *da
 	mp_clear_multi(&rsa_tmp1, &rsa_tmp2, &rsa_tmp3, NULL);
 	
 	/* create the signature to return */
-	buf_putstring(buf, SSH_SIGNKEY_RSA, SSH_SIGNKEY_RSA_LEN);
+	name = signature_name_from_type(sigtype, &namelen);
+	buf_putstring(buf, name, namelen);
 
-	nsize = mp_unsigned_bin_size(key->n);
+	nsize = mp_ubin_size(key->n);
 
 	/* string rsa_signature_blob length */
 	buf_putint(buf, nsize);
 	/* pad out s to same length as n */
-	ssize = mp_unsigned_bin_size(&rsa_s);
+	ssize = mp_ubin_size(&rsa_s);
 	dropbear_assert(ssize <= nsize);
 	for (i = 0; i < nsize-ssize; i++) {
 		buf_putbyte(buf, 0x00);
 	}
 
-	if (mp_to_unsigned_bin(&rsa_s, buf_getwriteptr(buf, ssize)) != MP_OKAY) {
+	if (mp_to_ubin(&rsa_s, buf_getwriteptr(buf, ssize), ssize, &written) != MP_OKAY) {
 		dropbear_exit("RSA error");
 	}
-	buf_incrwritepos(buf, ssize);
+	buf_incrwritepos(buf, written);
 	mp_clear(&rsa_s);
 
 #if defined(DEBUG_RSA) && DEBUG_TRACE
@@ -340,51 +350,74 @@ void buf_put_rsa_sign(buffer* buf, const dropbear_rsa_key *key, const buffer *da
 	TRACE(("leave buf_put_rsa_sign"))
 }
 
-/* Creates the message value as expected by PKCS, see rfc2437 etc */
-/* format to be padded to is:
- * EM = 01 | FF* | 00 | prefix | hash
- *
- * where FF is repeated enough times to make EM one byte
- * shorter than the size of key->n
- *
- * prefix is the ASN1 designator prefix,
- * hex 30 21 30 09 06 05 2B 0E 03 02 1A 05 00 04 14
- *
- * rsa_em must be a pointer to an initialised mp_int.
- */
+/* Creates the message value as expected by PKCS, 
+   see rfc8017 section 9.2 */
 static void rsa_pad_em(const dropbear_rsa_key * key,
-	const buffer *data_buf, mp_int * rsa_em) {
+	const buffer *data_buf, mp_int * rsa_em, enum signature_type sigtype) {
+    /* EM = 0x00 || 0x01 || PS || 0x00 || T 
+	   PS is padding of 0xff to make EM the size of key->n
 
-	/* ASN1 designator (including the 0x00 preceding) */
-	const unsigned char rsa_asn1_magic[] = 
-		{0x00, 0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b, 
+	   T is the DER encoding of the hash alg (sha1 or sha256)
+	*/
+
+	/* From rfc8017 page 46 */
+#if DROPBEAR_RSA_SHA1
+	const unsigned char T_sha1[] =
+		{0x30, 0x21, 0x30, 0x09, 0x06, 0x05, 0x2b,
 		 0x0e, 0x03, 0x02, 0x1a, 0x05, 0x00, 0x04, 0x14};
-	const unsigned int RSA_ASN1_MAGIC_LEN = 16;
+#endif
+#if DROPBEAR_RSA_SHA256
+	const unsigned char T_sha256[] =
+		{0x30, 0x31, 0x30, 0x0d, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01,
+		 0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20};
+#endif
 
+    int Tlen = 0;
+    const unsigned char *T = NULL;
+	const struct ltc_hash_descriptor *hash_desc = NULL;
 	buffer * rsa_EM = NULL;
 	hash_state hs;
 	unsigned int nsize;
-	
-	dropbear_assert(key != NULL);
-	nsize = mp_unsigned_bin_size(key->n);
 
-	rsa_EM = buf_new(nsize-1);
+	switch (sigtype) {
+#if DROPBEAR_RSA_SHA1
+		case DROPBEAR_SIGNATURE_RSA_SHA1:
+			Tlen = sizeof(T_sha1);
+			T = T_sha1;
+			hash_desc = &sha1_desc;
+			break;
+#endif
+#if DROPBEAR_RSA_SHA256
+		case DROPBEAR_SIGNATURE_RSA_SHA256:
+			Tlen = sizeof(T_sha256);
+			T = T_sha256;
+			hash_desc = &sha256_desc;
+			break;
+#endif
+		default:
+			assert(0);
+	}
+	
+
+	nsize = mp_ubin_size(key->n);
+
+	rsa_EM = buf_new(nsize);
 	/* type byte */
+	buf_putbyte(rsa_EM, 0x00);
 	buf_putbyte(rsa_EM, 0x01);
-	/* Padding with 0xFF bytes */
-	while(rsa_EM->pos != rsa_EM->size - RSA_ASN1_MAGIC_LEN - SHA1_HASH_SIZE) {
+	/* Padding with PS 0xFF bytes */
+	while(rsa_EM->pos != rsa_EM->size - (1 + Tlen + hash_desc->hashsize)) {
 		buf_putbyte(rsa_EM, 0xff);
 	}
+	buf_putbyte(rsa_EM, 0x00);
 	/* Magic ASN1 stuff */
-	memcpy(buf_getwriteptr(rsa_EM, RSA_ASN1_MAGIC_LEN),
-			rsa_asn1_magic, RSA_ASN1_MAGIC_LEN);
-	buf_incrwritepos(rsa_EM, RSA_ASN1_MAGIC_LEN);
+	buf_putbytes(rsa_EM, T, Tlen);
 
 	/* The hash of the data */
-	sha1_init(&hs);
-	sha1_process(&hs, data_buf->data, data_buf->len);
-	sha1_done(&hs, buf_getwriteptr(rsa_EM, SHA1_HASH_SIZE));
-	buf_incrwritepos(rsa_EM, SHA1_HASH_SIZE);
+	hash_desc->init(&hs);
+	hash_desc->process(&hs, data_buf->data, data_buf->len);
+	hash_desc->done(&hs, buf_getwriteptr(rsa_EM, hash_desc->hashsize));
+	buf_incrwritepos(rsa_EM, hash_desc->hashsize);
 
 	dropbear_assert(rsa_EM->pos == rsa_EM->size);
 

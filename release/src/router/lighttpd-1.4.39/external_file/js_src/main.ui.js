@@ -504,7 +504,7 @@ function refreshAdminUI(){
 	}
 }
 
-function createHostList(query_type, g_folder_array){
+function createHostList(query_type, folder_array){
 	
 	var host_item_html = "";
 	$("#hostview").empty();
@@ -515,16 +515,16 @@ function createHostList(query_type, g_folder_array){
 	var rescan_samba_timer = g_storage.getl("rescan_samba_timer");
 	//alert("on_rescan_samba_count: " + on_rescan_samba_count+", on_rescan_samba="+on_rescan_samba);
 	if(query_type==2){	
-		for(var i=0;i<g_folder_array.length;i++){	
-			var s = g_folder_array[i].furl + "|" + 
-							g_folder_array[i].name + "|" + 
-							g_folder_array[i].online + "|" + 
-							g_folder_array[i].ip + "|" + 
-							g_folder_array[i].mac + "|" + 
-							g_folder_array[i].uid + "|" + 
-							g_folder_array[i].freadonly + "|" + 
-							g_folder_array[i].fhidden + "|" + 
-							g_folder_array[i].type;
+		for(var i=0;i<folder_array.length;i++) {	
+			var s = folder_array[i].furl + "|" + 
+					folder_array[i].name + "|" + 
+					folder_array[i].online + "|" + 
+					folder_array[i].ip + "|" + 
+					folder_array[i].mac + "|" + 
+					folder_array[i].uid + "|" + 
+					folder_array[i].freadonly + "|" + 
+					folder_array[i].fhidden + "|" + 
+					folder_array[i].type;
 							
 			if(!items.contains(s)){    			
 				items.push(s);

@@ -24,6 +24,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <ctype.h>
 
 #ifdef USE_OPENSSL
 # include <openssl/ssl.h>
@@ -35,12 +36,24 @@
 #endif
 
 #if EMBEDDED_EANBLE
+#include "nvram_control.h"
 #include <dirent.h>
 #endif
 
 #include "sys-socket.h"
 
 #include <dlinklist.h>
+
+/* smb_auth.c */
+extern buffer* smbc_wrapper_physical_url_path(server *srv, connection *con);
+extern void free_share_link_info(share_link_info_t *smb_sharelink_info);
+extern const char *get_filename_ext(const char *filename);
+extern int open_close_streaming_port(server* srv, int toOpen);
+extern int smbc_wrapper_open(connection* con, const char *furl, int flags, mode_t mode);
+extern int smbc_wrapper_stat(connection* con, const char *url, struct stat *st);
+extern int smbc_wrapper_close(connection* con, int fd);
+extern int smbc_wrapper_unlink(connection* con, const char *furl);
+
 #define DBE 1
 
 typedef struct {

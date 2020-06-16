@@ -632,15 +632,15 @@ function parserPropfindXML(xmlDoc, open_url, append_result){
 			}
 			else if(y[j].nodeType==1&&y[j].nodeName=="D:href"){
 				this_href = String(y[j].childNodes[0].nodeValue);
-								
+				
 				var cur_host = "";
 							
 				if(this_href.match(/^http/)){						
 					cur_host = g_storage.get('request_host_url');
 				}
-									
+				
 				var cururl = cur_host + addPathSlash(open_url);
-																
+				
 				if(this_href!=cururl){
 					var o_url = open_url;								
 									
@@ -1093,7 +1093,7 @@ function refreshHostList(){
 					
 					//- Create host list
 					createHostList(this_query_type, folder_array);
-		  	}		  	
+		  		}		  	
 			}
 		}, null, 1);
 	}
@@ -1154,7 +1154,7 @@ function onMouseDownListDIVHandler(e, file_item){
 }
 
 function openSelItem(item){	
-
+	
 	var loc = (item.attr("uhref")==undefined) ? "" : item.attr("uhref");	
 	var qtype = (item.attr("qtype")==undefined) ? 0 : item.attr("qtype");
 	var isdir = (item.attr("isdir")==undefined) ? 0 : item.attr("isdir");
@@ -1466,10 +1466,9 @@ $(document).ready(function(){
 		g_storage.set("HostList", "");
 		
 		doPROPFIND( "/", function(){
-			if(loc!=undefined && loc!="/"){
+			if( loc!=undefined && loc!="/" && loc.indexOf("https://")==0 ){
 				doPROPFIND(loc);
 			}
-			
 		}, 0);
 	}
 	else{

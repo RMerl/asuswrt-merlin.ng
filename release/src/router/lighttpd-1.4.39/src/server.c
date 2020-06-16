@@ -64,6 +64,13 @@
 # include <openssl/err.h> 
 #endif
 
+#if EMBEDDED_EANBLE
+# include "nvram_control.h"
+#endif
+
+/* smb_auth.c */
+void process_share_link_for_router_sync_use();
+
 #ifndef __sgi
 /* IRIX doesn't like the alarm based time() optimization */
 /* #define USE_ALARM */

@@ -36,6 +36,9 @@
 # define MAX_CHUNKS SYS_MAX_CHUNKS
 #endif
 
+/* network_write_mmap.c */
+extern int network_write_smbfile_chunk_mmap(server *srv, connection *con, int fd, chunkqueue *cq, off_t *p_max_bytes);
+
 #define DBE 0
 
 int network_writev_mem_chunks(server *srv, connection *con, int fd, chunkqueue *cq, off_t *p_max_bytes) {

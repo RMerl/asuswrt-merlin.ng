@@ -16,7 +16,13 @@
 
 #ifdef HAVE_LIBSMBCLIENT_H
 #include <libsmbclient.h>
+#include "stat_cache.h"	//stat_cache_get_entry()
 #endif
+
+/* smb_auth.c */
+extern off_t smbc_wrapper_lseek(connection* con, int fd, off_t offset, int whence);
+extern size_t smbc_wrapper_read(connection* con, int fd, void *buf, size_t bufsize);
+extern int smbc_wrapper_close(connection* con, int fd);
 
 #define DBE 0
 

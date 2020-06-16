@@ -30,6 +30,11 @@
 #include <dlinklist.h>
 #include "mod_smbdav.h"
 
+/* smb_auth.c */
+extern char *ldb_base64_encode(const char *buf, int len);
+extern void smbc_wrapper_response_401(server *srv, connection *con);
+extern unsigned char * base64_decode_t(buffer *out, const char *in);
+
 #define DBE 1
 
 

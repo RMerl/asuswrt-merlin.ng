@@ -49,13 +49,38 @@
 #include <curl/curl.h>
 #include <openssl/md5.h>
 
-//#include "sql.h"
 /*
 #if defined(HAVE_LIBXML_H) && defined(HAVE_SQLITE3_H) && defined(HAVE_UUID_UUID_H)
 #define USE_LOCKS
 #include <uuid/uuid.h>
 #endif
 */
+
+#include "nvram_control.h"
+#include "sql.h"
+
+/* smb_auth.c */
+extern int is_dms_enabled(void);
+extern int extract_filename(const char* src, char** out);
+extern int extract_filepath(const char* src, char** out);
+extern char *ldb_base64_encode(const char *buf, int len);
+extern const char *get_filename_ext(const char *filename);
+extern void md5String(const char* input1, const char* input2, char** out);
+extern int smbc_parse_mnt_path(const char* physical_path, const char* mnt_path, int mnt_path_len, char** usbdisk_path, char** usbdisk_share_folder);
+extern int smbc_get_usbdisk_permission(const char* user_name, const char* usbdisk_rel_sub_path, const char* usbdisk_sub_share_folder);
+extern char *replace_str(char *st, char *orig, char *repl, char* buff);
+extern int check_skip_folder_name(char* foldername);
+extern int createDirectory(const char * path);
+extern int in_the_same_folder(buffer *src, buffer *dst);
+extern int get_sharelink_save_count();
+extern int generate_sharelink(server* srv, connection *con, const char* filename, const char* url, const char* base64_auth, int expire, int toShare, buffer** out);
+extern void save_sharelink_list();
+extern void stop_arpping_process();
+extern int is_string_encode_as_integer( const char *s );
+extern int string_starts_with( const char *a, const char *b );
+extern int file_exist(const char *filepath);
+extern void md5sum(char* output, int counter, ...);
+
 
 #if defined(HAVE_LIBXML_H) && defined(HAVE_SQLITE3_H)
 #define USE_LOCKS
@@ -179,6 +204,8 @@ INIT_FUNC(mod_webdav_init) {
 	
 	return p;
 }
+
+
 
 /* detroy the plugin data */
 FREE_FUNC(mod_webdav_free) {

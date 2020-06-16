@@ -26,6 +26,11 @@
 # define O_LARGEFILE 0
 #endif
 
+#if EMBEDDED_EANBLE
+# include "nvram_control.h"
+#endif
+
+
 /* retry write on EINTR or when not all data was written */
 ssize_t write_all(int fd, const void* buf, size_t count) {
 	ssize_t written = 0;

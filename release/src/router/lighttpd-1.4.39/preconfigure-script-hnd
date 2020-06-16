@@ -1,6 +1,7 @@
 ####	set path variable #####
 cur_dir=`pwd`									### current directory
 router_dir=$cur_dir/..
+router_sysdep_dir=$TOP_PLATFORM
 srcbase_dir=$SRCBASE
 mipsel_path=$TOOLCHAIN								### mipsel tool-chain path
 uclib=$TOOLCHAIN/lib								### mipsel lib path 

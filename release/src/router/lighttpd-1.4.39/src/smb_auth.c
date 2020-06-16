@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <string.h>
 #include <assert.h>
+#include <ctype.h>	//isdigit()
 
 #if IM_MESSGAE_EANBLE
 #include "im_ipc.h" // asusnatnl/natnl
@@ -27,7 +28,11 @@ typedef li_MD5_CTX MD5_CTX;
 #define MD5_Final li_MD5_Final
 #endif
 
+#include "response.h"	//response_header_insert()
+
 #if EMBEDDED_EANBLE
+#include "shared.h"	// check_if_file_exist() in shared/shared.h
+#include "nvram_control.h"
 #ifndef APP_IPKG
 #include "disk_share.h"
 #endif
@@ -36,6 +41,15 @@ typedef li_MD5_CTX MD5_CTX;
 #if defined(HAVE_LIBXML_H) && defined(HAVE_SQLITE3_H)
 #include <sqlite3.h>
 #endif
+
+/* lighttpd-monitor.c */
+extern int pids(char *appname);
+
+/* this smb_auth.c */
+int get_aicloud_permission(const char *const account, const char *const mount_path, const char *const folder, const int is_group);
+int prefix_is(char* source, char* prefix);
+int char_to_ascii_safe(const char *output, const char *input, int outsize);
+int change_port_rule_on_iptable(int toOpen, char* port_number);
 
 #define DBE 0
 #define LIGHTTPD_ARPPING_PID_FILE_PATH	"/tmp/lighttpd/lighttpd-arpping.pid"
@@ -1262,11 +1276,11 @@ char *replace_str(char *st, char *orig, char *repl, char* buff) {
 	return buff;
 }
 
-//- §PÂ_¶}©l¨ú­È¦ì¸m 
+//- ï¿½Pï¿½_ï¿½}ï¿½lï¿½ï¿½ï¿½È¦ï¿½m 
 int startposizition( char *str, int start )  
 {  
-	int i=0;            //-¥Î©ó­p¼Æ
-    int posizition=0;   //- ªð¦^¦ì¸m
+	int i=0;            //-ï¿½Î©ï¿½pï¿½ï¿½
+    int posizition=0;   //- ï¿½ï¿½^ï¿½ï¿½m
     int tempposi=start;    
     while(str[tempposi]<0)  
     {  
@@ -1281,11 +1295,11 @@ int startposizition( char *str, int start )
     return posizition;  
 } 
 
-//- §PÂ_¥½ºÝ¨ú­È¦ì¸m
+//- ï¿½Pï¿½_ï¿½ï¿½ï¿½Ý¨ï¿½ï¿½È¦ï¿½m
 int endposizition( char *str, int end )  
 {  
-	int i=0;            //-¥Î©ó­p¼Æ
-	int posizition=0;   //- ªð¦^¦ì¸m
+	int i=0;            //-ï¿½Î©ï¿½pï¿½ï¿½
+	int posizition=0;   //- ï¿½ï¿½^ï¿½ï¿½m
 	int tempposi=end; 
 	while(str[tempposi]<0)  
 	{ 
@@ -2043,9 +2057,11 @@ int generate_sharelink( server* srv,
 #endif
 
 	buffer* buffer_real_url = buffer_init();
-	buffer_copy_buffer(buffer_real_url, con->url.path);
+	// buffer_copy_buffer(buffer_real_url, con->url.path);
+	buffer_copy_string(buffer_real_url, url);
+	
 	if( con->mode != SMB_BASIC && 
-            con->mode != SMB_NTLM && 
+        con->mode != SMB_NTLM && 
 	    prefix_is(buffer_real_url->ptr, usbdisk_path)==1){
 		char buff[2048];
 		char* tmp = replace_str(buffer_real_url->ptr,
@@ -2085,7 +2101,7 @@ int generate_sharelink( server* srv,
 			}
 			else{
 				struct stat stat_buf;
-    				if (-1 == stat(buffer_file_path->ptr, &stat_buf)) {
+    			if (-1 == stat(buffer_file_path->ptr, &stat_buf)) {
 					buffer_free(buffer_real_url);
 					buffer_free(buffer_file_path);
 
@@ -2311,6 +2327,7 @@ void save_sharelink_list(){
 
 #if EMBEDDED_EANBLE
 	nvram_set_sharelink_str(sharelink_list->ptr);
+	nvram_do_commit();
 #else
 	unlink(g_temp_sharelink_file);
 	FILE* fp = fopen(g_temp_sharelink_file, "w");
@@ -2862,6 +2879,7 @@ void process_share_link_for_router_sync_use(){
 
 #if EMBEDDED_EANBLE
 	nvram_set_share_link_result(return_sharelink->ptr);
+	nvram_do_commit();
 	free(str_sharelink_param);
 #endif
 
@@ -3279,14 +3297,14 @@ int enc_utf8_to_unicode(const unsigned char* pInput, int nMembIn,unsigned long* 
         if ( pOutCur - pOutput >= outSize )
         {
             *nMembOut = pOutCur - pOutput;
-            return 2; // ?¥XªÅ?¤£¨¬
+            return 2; // ?ï¿½Xï¿½ï¿½?ï¿½ï¿½ï¿½ï¿½
         }
 
         ret = enc_utf8_to_unicode_one(pIn, pOutCur);
         if ( ret == 0 )
         {
             *nMembOut = pOutCur - pOutput;
-            return 0; // ?¤Jªº¦r²Å??¤£¬OUTF8
+            return 0; // ?ï¿½Jï¿½ï¿½ï¿½rï¿½ï¿½??ï¿½ï¿½ï¿½OUTF8
         }
 
         i    += ret;
@@ -3942,6 +3960,7 @@ void save_aicloud_acc_list(){
 
 #if EMBEDDED_EANBLE
 	nvram_set_aicloud_acc_list(aicloud_acc_list->ptr);
+	nvram_do_commit();
 #else
 	unlink("/tmp/aicloud_acc_list");
 	FILE* fp = fopen("/tmp/aicloud_acc_list", "w");
@@ -4138,6 +4157,7 @@ void save_aicloud_acc_invite_list(){
 
 #if EMBEDDED_EANBLE
 	nvram_set_aicloud_acc_invite_list(aicloud_acc_invite_list->ptr);
+	nvram_do_commit();
 #else
 	unlink("/tmp/aicloud_acc_invite_list");
 	FILE* fp = fopen("/tmp/aicloud_acc_invite_list", "w");

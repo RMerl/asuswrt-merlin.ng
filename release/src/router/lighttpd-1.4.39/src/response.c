@@ -27,6 +27,9 @@
 #include "sys-socket.h"
 #include "version.h"
 
+/* smb_auth.c */
+buffer* smbc_wrapper_physical_url_path(server *srv, connection *con);
+
 int http_response_write_header(server *srv, connection *con) {
 	buffer *b;
 	size_t i;

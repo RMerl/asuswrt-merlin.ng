@@ -1028,8 +1028,8 @@ function refreshShareLinkList(){
 					
 					table_html += "<td fid='check' align='center'><input type='checkbox' id='check_del' name='check_del' class='check_del' link=\"" + $(this).attr("url") + "\"></td>";
 					
-					table_html += "<td fid='filename' align='center'><div style='overflow:hidden;'>";
-					table_html += "<a class='share_link_url' uhref=\"" + url + "\" href='#' title=\"" + filetitle + "\" style='white-space:nowrap;'>" + filetitle + "</a>";
+					table_html += "<td fid='filename' align='center'><div style='overflow:hidden;padding:5px;white-space:normal;word-break:break-all;text-align:left;'>";
+					table_html += "<a class='share_link_url' uhref=\"" + url + "\" href='#' title=\"" + filetitle + "\">" + filetitle + "</a>";
 					table_html += "</div></td>";
 					table_html += "<td fid='createtime' align='center'>" + createtime + "</td>";
 					if(expiretime==0){

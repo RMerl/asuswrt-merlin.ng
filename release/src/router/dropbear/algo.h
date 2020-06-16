@@ -47,7 +47,7 @@ typedef struct Algo_Type algo_type;
 
 /* lists mapping ssh types of algorithms to internal values */
 extern algo_type sshkex[];
-extern algo_type sshhostkey[];
+extern algo_type sigalgs[];
 extern algo_type sshciphers[];
 extern algo_type sshhashes[];
 extern algo_type ssh_compress[];
@@ -120,21 +120,17 @@ struct dropbear_kex {
 	const struct ltc_hash_descriptor *hash_desc;
 };
 
-int have_algo(const char* algo, size_t algolen, const algo_type algos[]);
+/* Includes all algorithms is useall is set */
+void buf_put_algolist_all(buffer * buf, const algo_type localalgos[], int useall);
+/* Includes "usable" algorithms */
 void buf_put_algolist(buffer * buf, const algo_type localalgos[]);
 
-enum kexguess2_used {
-	KEXGUESS2_LOOK,
-	KEXGUESS2_NO,
-	KEXGUESS2_YES,
-};
-
 #define KEXGUESS2_ALGO_NAME "kexguess2@matt.ucc.asn.au"
-#define KEXGUESS2_ALGO_ID 99
 
-
+int buf_has_algo(buffer *buf, const char *algo);
+algo_type * first_usable_algo(algo_type algos[]);
 algo_type * buf_match_algo(buffer* buf, algo_type localalgos[],
-		enum kexguess2_used *kexguess2, int *goodguess);
+		int kexguess2, int *goodguess);
 
 #if DROPBEAR_USER_ALGO_LIST
 int check_user_algos(const char* user_algo_list, algo_type * algos, 

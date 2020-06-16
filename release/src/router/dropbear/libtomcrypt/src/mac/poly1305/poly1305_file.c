@@ -28,6 +28,11 @@
 int poly1305_file(const char *fname, const unsigned char *key, unsigned long keylen, unsigned char *mac, unsigned long *maclen)
 {
 #ifdef LTC_NO_FILE
+   LTC_UNUSED_PARAM(fname);
+   LTC_UNUSED_PARAM(key);
+   LTC_UNUSED_PARAM(keylen);
+   LTC_UNUSED_PARAM(mac);
+   LTC_UNUSED_PARAM(maclen);
    return CRYPT_NOP;
 #else
    poly1305_state st;

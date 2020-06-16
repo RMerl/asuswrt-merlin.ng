@@ -1,6 +1,7 @@
 repo: d7da3b1e15401eb234ec866d5eac992fc4cd5878
-node: d2753238f35f2f80507d1241f03639a20285ef46
+node: e2e4929d057b09422f2ea4556fb64209aff58161
 branch: default
-latesttag: DROPBEAR_2019.78
-latesttagdistance: 2
-changessincelatesttag: 2
+latesttag: github/main
+latesttag: github/master
+latesttagdistance: 3
+changessincelatesttag: 3

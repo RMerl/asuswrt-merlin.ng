@@ -1,3 +1,57 @@
+2020.79 - 15 June 2020
+
+- Support ed25519 hostkeys and authorized_keys, many thanks to Vladislav Grishenko.
+  This also replaces curve25519 with a TweetNaCl implementation that reduces code size.
+
+- Add chacha20-poly1305 authenticated cipher. This will perform faster than AES
+  on many platforms. Thanks to Vladislav Grishenko
+
+- Support using rsa-sha2 signatures. No changes are needed to hostkeys/authorized_keys
+  entries, existing RSA keys can be used with the new signature format (signatures
+  are ephemeral within a session). Old ssh-rsa signatures will no longer
+  be supported by OpenSSH in future so upgrading is recommended.
+
+- Use getrandom() call on Linux to ensure sufficient entropy has been gathered at startup.
+  Dropbear now avoids reading from the random source at startup, instead waiting until
+  the first connection. It is possible that some platforms were running without enough 
+  entropy previously, those could potentially block at first boot generating host keys.
+  The dropbear "-R" option is one way to avoid that.
+
+- Upgrade libtomcrypt to 1.18.2 and libtommath to 1.2.0, many thanks to Steffen Jaeckel for
+  updating Dropbear to use the current API. Dropbear's configure script will check 
+  for sufficient system library versions, otherwise using the bundled versions.
+
+- CBC ciphers, 3DES, hmac-sha1-96, and x11 forwarding are now disabled by default.
+  They can be set in localoptions.h if required.
+  Blowfish has been removed.
+
+- Support AES GCM, patch from Vladislav Grishenko. This is disabled by default,
+  Dropbear doesn't currently use hardware accelerated AES.
+
+- Added an API for specifying user public keys as an authorized_keys replacement.
+  See pubkeyapi.h for details, thanks to Fabrizio Bertocci
+
+- Fix idle detection clashing with keepalives, thanks to jcmathews
+
+- Include IP addresses in more early exit messages making it easier for fail2ban
+  processing. Patch from Kevin Darbyshire-Bryant
+
+- scp fix for CVE-2018-20685 where a server could modify name of output files
+
+- SSH_ORIGINAL_COMMAND is set for "dropbear -c" forced command too
+
+- Fix writing key files on systems without hard links, from Matt Robinson
+
+- Compatibility fixes for IRIX from Kazuo Kuroi
+
+- Re-enable printing MOTD by default, was lost moving from options.h. Thanks to zciendor
+
+- Call fsync() is called on parent directory when writing key files to ensure they are flushed
+
+- Fix "make install" for manpages in out-of-tree builds, from Gabor Z. Papp
+
+- Some notes are added in DEVELOPER.md
+
 2019.78 - 27 March 2019
 
 - Fix dbclient regression in 2019.77. After exiting the terminal would be left

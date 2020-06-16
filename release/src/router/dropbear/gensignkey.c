@@ -9,14 +9,21 @@
 #include "dbrandom.h"
 
 /* Returns DROPBEAR_SUCCESS or DROPBEAR_FAILURE */
-static int buf_writefile(buffer * buf, const char * filename) {
+static int buf_writefile(buffer * buf, const char * filename, int skip_exist) {
 	int ret = DROPBEAR_FAILURE;
 	int fd = -1;
 
 	fd = open(filename, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR);
 	if (fd < 0) {
-		dropbear_log(LOG_ERR, "Couldn't create new file %s: %s",
-			filename, strerror(errno));
+		/* If generating keys on connection (skip_exist) it's OK to get EEXIST
+		- we probably just lost a race with another connection to generate the key */
+		if (skip_exist && errno == EEXIST) {
+			ret = DROPBEAR_SUCCESS;
+		} else {
+			dropbear_log(LOG_ERR, "Couldn't create new file %s: %s",
+				filename, strerror(errno));
+		}
+
 		goto out;
 	}
 
@@ -144,7 +151,7 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 
 	fn_temp = m_malloc(strlen(filename) + 30);
 	snprintf(fn_temp, strlen(filename)+30, "%s.tmp%d", filename, getpid());
-	ret = buf_writefile(buf, fn_temp);
+	ret = buf_writefile(buf, fn_temp, 0);
 
 	if (ret == DROPBEAR_FAILURE) {
 		goto out;
@@ -154,13 +161,23 @@ int signkey_generate(enum signkey_type keytype, int bits, const char* filename, 
 		/* If generating keys on connection (skipexist) it's OK to get EEXIST 
 		- we probably just lost a race with another connection to generate the key */
 		if (!(skip_exist && errno == EEXIST)) {
-			dropbear_log(LOG_ERR, "Failed moving key file to %s: %s", filename,
-				strerror(errno));
-			/* XXX fallback to non-atomic copy for some filesystems? */
-			ret = DROPBEAR_FAILURE;
+			if (errno == EPERM || errno == EACCES) {
+				/* Non-atomic fallback when hard-links not allowed or unsupported */
+				buf_setpos(buf, 0);
+				ret = buf_writefile(buf, filename, skip_exist);
+			} else {
+				dropbear_log(LOG_ERR, "Failed moving key file to %s: %s", filename,
+					strerror(errno));
+				ret = DROPBEAR_FAILURE;
+			}
+
 			goto out;
 		}
 	}
+
+	/* ensure directory update is flushed to disk, otherwise we can end up
+	with zero-byte hostkey files if the power goes off */
+	fsync_parent_dir(filename);
 
 out:
 	if (buf) {

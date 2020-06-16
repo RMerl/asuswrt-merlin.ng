@@ -17,7 +17,7 @@
 /**
   @file ltc_ecc_mulmod_timing.c
   ECC Crypto, Tom St Denis
-*/  
+*/
 
 #ifdef LTC_MECC
 
@@ -59,8 +59,8 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
       return err;
    }
 
-  /* alloc ram for window temps */
-  for (i = 0; i < 3; i++) {
+   /* alloc ram for window temps */
+   for (i = 0; i < 3; i++) {
       M[i] = ltc_ecc_new_point();
       if (M[i] == NULL) {
          for (j = 0; j < i; j++) {
@@ -70,7 +70,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
          mp_montgomery_free(mp);
          return CRYPT_MEM;
       }
-  }
+   }
 
    /* make a copy of G incase R==G */
    tG = ltc_ecc_new_point();
@@ -82,7 +82,7 @@ int ltc_ecc_mulmod(void *k, ecc_point *G, ecc_point *R, void *modulus, int map)
    if ((err = mp_mulmod(G->z, mu, modulus, tG->z)) != CRYPT_OK)                      { goto done; }
    mp_clear(mu);
    mu = NULL;
-   
+
    /* calc the M tab */
    /* M[0] == G */
    if ((err = mp_copy(tG->x, M[0]->x)) != CRYPT_OK)                                  { goto done; }

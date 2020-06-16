@@ -378,6 +378,11 @@ void cli_getopts(int argc, char ** argv) {
 		}
 	}
 
+#if DROPBEAR_USER_ALGO_LIST
+	/* -c help doesn't need a hostname */
+	parse_ciphers_macs();
+#endif
+
 	/* Done with options/flags; now handle the hostname (which may not
 	 * start with a hyphen) and optional command */
 
@@ -407,10 +412,6 @@ void cli_getopts(int argc, char ** argv) {
 	}
 
 	/* And now a few sanity checks and setup */
-
-#if DROPBEAR_USER_ALGO_LIST
-	parse_ciphers_macs();
-#endif
 
 #if DROPBEAR_CLI_PROXYCMD                                                                                                                                   
 	if (cli_opts.proxycmd) {

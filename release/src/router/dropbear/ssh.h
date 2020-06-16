@@ -32,6 +32,7 @@
 #define SSH_MSG_DEBUG                  4
 #define SSH_MSG_SERVICE_REQUEST        5
 #define SSH_MSG_SERVICE_ACCEPT         6
+#define SSH_MSG_EXT_INFO               7
 #define SSH_MSG_KEXINIT                20
 #define SSH_MSG_NEWKEYS                21
 #define SSH_MSG_KEXDH_INIT             30
@@ -94,19 +95,26 @@
 #define SSH_DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE  14
 #define SSH_DISCONNECT_ILLEGAL_USER_NAME               15
 
+/* rfc8308 */
+#define SSH_EXT_INFO_S "ext-info-s"
+#define SSH_EXT_INFO_C "ext-info-c"
+#define SSH_SERVER_SIG_ALGS "server-sig-algs"
+
 /* service types */
 #define SSH_SERVICE_USERAUTH "ssh-userauth"
 #define SSH_SERVICE_USERAUTH_LEN 12
 #define SSH_SERVICE_CONNECTION "ssh-connection"
 #define SSH_SERVICE_CONNECTION_LEN 14
 
-/* public key types */
+/* public/signature key types */
 #define SSH_SIGNKEY_DSS "ssh-dss"
 #define SSH_SIGNKEY_DSS_LEN 7
 #define SSH_SIGNKEY_RSA "ssh-rsa"
 #define SSH_SIGNKEY_RSA_LEN 7
 #define SSH_SIGNKEY_ED25519 "ssh-ed25519"
 #define SSH_SIGNKEY_ED25519_LEN 11
+/* signature type */
+#define SSH_SIGNATURE_RSA_SHA256 "rsa-sha2-256"
 
 /* Agent commands. These aren't part of the spec, and are defined
  * only on the openssh implementation. */

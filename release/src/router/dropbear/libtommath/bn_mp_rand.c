@@ -1,80 +1,46 @@
-#include <tommath_private.h>
+#include "tommath_private.h"
 #ifdef BN_MP_RAND_C
-/* LibTomMath, multiple-precision integer library -- Tom St Denis
- *
- * LibTomMath is a library that provides multiple-precision
- * integer arithmetic as well as number theoretic functionality.
- *
- * The library was designed directly after the MPI library by
- * Michael Fromberger but has been written from scratch with
- * additional optimizations in place.
- *
- * The library is free for all purposes without any express
- * guarantee it works.
- *
- * Tom St Denis, tstdenis82@gmail.com, http://libtom.org
- */
+/* LibTomMath, multiple-precision integer library -- Tom St Denis */
+/* SPDX-License-Identifier: Unlicense */
 
-#if MP_GEN_RANDOM_MAX == 0xffffffff
-  #define MP_GEN_RANDOM_SHIFT  32
-#elif MP_GEN_RANDOM_MAX == 32767
-  /* SHRT_MAX */
-  #define MP_GEN_RANDOM_SHIFT  15
-#elif MP_GEN_RANDOM_MAX == 2147483647
-  /* INT_MAX */
-  #define MP_GEN_RANDOM_SHIFT  31
-#elif !defined(MP_GEN_RANDOM_SHIFT)
-#error Thou shalt define their own valid MP_GEN_RANDOM_SHIFT
-#endif
+mp_err(*s_mp_rand_source)(void *out, size_t size) = s_mp_rand_platform;
 
-/* makes a pseudo-random int of a given size */
-static mp_digit s_gen_random(void)
+void mp_rand_source(mp_err(*source)(void *out, size_t size))
 {
-  mp_digit d = 0, msk = 0;
-  do {
-    d <<= MP_GEN_RANDOM_SHIFT;
-    d |= ((mp_digit) MP_GEN_RANDOM());
-    msk <<= MP_GEN_RANDOM_SHIFT;
-    msk |= (MP_MASK & MP_GEN_RANDOM_MAX);
-  } while ((MP_MASK & msk) != MP_MASK);
-  d &= MP_MASK;
-  return d;
+   s_mp_rand_source = (source == NULL) ? s_mp_rand_platform : source;
 }
 
-int
-mp_rand (mp_int * a, int digits)
+mp_err mp_rand(mp_int *a, int digits)
 {
-  int     res;
-  mp_digit d;
+   int i;
+   mp_err err;
 
-  mp_zero (a);
-  if (digits <= 0) {
-    return MP_OKAY;
-  }
+   mp_zero(a);
 
-  /* first place a random non-zero digit */
-  do {
-    d = s_gen_random();
-  } while (d == 0);
+   if (digits <= 0) {
+      return MP_OKAY;
+   }
 
-  if ((res = mp_add_d (a, d, a)) != MP_OKAY) {
-    return res;
-  }
+   if ((err = mp_grow(a, digits)) != MP_OKAY) {
+      return err;
+   }
 
-  while (--digits > 0) {
-    if ((res = mp_lshd (a, 1)) != MP_OKAY) {
-      return res;
-    }
+   if ((err = s_mp_rand_source(a->dp, (size_t)digits * sizeof(mp_digit))) != MP_OKAY) {
+      return err;
+   }
 
-    if ((res = mp_add_d (a, s_gen_random(), a)) != MP_OKAY) {
-      return res;
-    }
-  }
+   /* TODO: We ensure that the highest digit is nonzero. Should this be removed? */
+   while ((a->dp[digits - 1] & MP_MASK) == 0u) {
+      if ((err = s_mp_rand_source(a->dp + digits - 1, sizeof(mp_digit))) != MP_OKAY) {
+         return err;
+      }
+   }
 
-  return MP_OKAY;
+   a->used = digits;
+   for (i = 0; i < digits; ++i) {
+      a->dp[i] &= MP_MASK;
+   }
+
+   return MP_OKAY;
 }
 #endif
-
-/* ref:         $Format:%D$ */
-/* git commit:  $Format:%H$ */
-/* commit time: $Format:%ai$ */

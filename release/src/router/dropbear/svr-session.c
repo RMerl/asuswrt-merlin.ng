@@ -91,6 +91,18 @@ svr_session_cleanup(void) {
 	m_free(svr_ses.remotehost);
 	m_free(svr_ses.childpids);
 	svr_ses.childpidsize = 0;
+
+#if DROPBEAR_PLUGIN
+        if (svr_ses.plugin_handle != NULL) {
+            if (svr_ses.plugin_instance) {
+                svr_ses.plugin_instance->delete_plugin(svr_ses.plugin_instance);
+                svr_ses.plugin_instance = NULL;
+            }
+
+            dlclose(svr_ses.plugin_handle);
+            svr_ses.plugin_handle = NULL;
+        }
+#endif
 }
 
 void svr_session(int sock, int childpipe) {
@@ -104,10 +116,6 @@ void svr_session(int sock, int childpipe) {
 #if DROPBEAR_VFORK
 	svr_ses.server_pid = getpid();
 #endif
-	svr_authinitialise();
-	chaninitialise(svr_chantypes);
-	svr_chansessinitialise();
-	svr_algos_initialise();
 
 	/* for logging the remote address */
 	get_socket_address(ses.sock_in, NULL, NULL, &host, &port, 0);
@@ -120,6 +128,56 @@ void svr_session(int sock, int childpipe) {
 	m_free(host);
 #endif
 	m_free(port);
+
+#if DROPBEAR_PLUGIN
+        /* Initializes the PLUGIN Plugin */
+        svr_ses.plugin_handle = NULL;
+        svr_ses.plugin_instance = NULL;
+        if (svr_opts.pubkey_plugin) {
+#if DEBUG_TRACE
+            const int verbose = debug_trace;
+#else
+            const int verbose = 0;
+#endif
+            PubkeyExtPlugin_newFn  pluginConstructor;
+
+            /* RTLD_NOW: fails if not all the symbols are resolved now. Better fail now than at run-time */
+            svr_ses.plugin_handle = dlopen(svr_opts.pubkey_plugin, RTLD_NOW);
+            if (svr_ses.plugin_handle == NULL) {
+                dropbear_exit("failed to load external pubkey plugin '%s': %s", svr_opts.pubkey_plugin, dlerror());
+            }
+            pluginConstructor = (PubkeyExtPlugin_newFn)dlsym(svr_ses.plugin_handle, DROPBEAR_PUBKEY_PLUGIN_FNNAME_NEW);
+            if (!pluginConstructor) {
+                dropbear_exit("plugin constructor method not found in external pubkey plugin");
+            }
+
+            /* Create an instance of the plugin */
+            svr_ses.plugin_instance = pluginConstructor(verbose, svr_opts.pubkey_plugin_options, svr_ses.addrstring);
+            if (svr_ses.plugin_instance == NULL) {
+                dropbear_exit("external plugin initialization failed");
+            }
+            /* Check if the plugin is compatible */
+            if ( (svr_ses.plugin_instance->api_version[0] != DROPBEAR_PLUGIN_VERSION_MAJOR) ||
+                 (svr_ses.plugin_instance->api_version[1] < DROPBEAR_PLUGIN_VERSION_MINOR) ) {
+                dropbear_exit("plugin version check failed: "
+                              "Dropbear=%d.%d, plugin=%d.%d",
+                        DROPBEAR_PLUGIN_VERSION_MAJOR, DROPBEAR_PLUGIN_VERSION_MINOR,
+                        svr_ses.plugin_instance->api_version[0], svr_ses.plugin_instance->api_version[1]);
+            }
+            if (svr_ses.plugin_instance->api_version[1] > DROPBEAR_PLUGIN_VERSION_MINOR) {
+                dropbear_log(LOG_WARNING, "plugin API newer than dropbear API: "
+                              "Dropbear=%d.%d, plugin=%d.%d",
+                        DROPBEAR_PLUGIN_VERSION_MAJOR, DROPBEAR_PLUGIN_VERSION_MINOR,
+                        svr_ses.plugin_instance->api_version[0], svr_ses.plugin_instance->api_version[1]);
+            }
+            dropbear_log(LOG_INFO, "successfully loaded and initialized pubkey plugin '%s'", svr_opts.pubkey_plugin);
+        }
+#endif
+
+	svr_authinitialise();
+	chaninitialise(svr_chantypes);
+	svr_chansessinitialise();
+	svr_algos_initialise();
 
 	get_socket_address(ses.sock_in, NULL, NULL, 
 			&svr_ses.remotehost, NULL, 1);
@@ -156,28 +214,43 @@ void svr_session(int sock, int childpipe) {
 void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 	char exitmsg[150];
 	char fullmsg[300];
+	char fromaddr[60];
 	int i;
+
+#if DROPBEAR_PLUGIN
+        if ((ses.plugin_session != NULL)) {
+            svr_ses.plugin_instance->delete_session(ses.plugin_session);
+        }
+        ses.plugin_session = NULL;
+#endif
 
 	/* Render the formatted exit message */
 	vsnprintf(exitmsg, sizeof(exitmsg), format, param);
 
+	/* svr_ses.addrstring may not be set for some early exits, or for
+	the listener process */
+	fromaddr[0] = '\0';
+	if (svr_ses.addrstring) {
+	    snprintf(fromaddr, sizeof(fromaddr), " from <%s>", svr_ses.addrstring);
+    }
+
 	/* Add the prefix depending on session/auth state */
 	if (!ses.init_done) {
 		/* before session init */
-		snprintf(fullmsg, sizeof(fullmsg), "Early exit: %s", exitmsg);
+		snprintf(fullmsg, sizeof(fullmsg), "Early exit%s: %s", fromaddr, exitmsg);
 	} else if (ses.authstate.authdone) {
 		/* user has authenticated */
 		snprintf(fullmsg, sizeof(fullmsg),
-				"Exit (%s): %s", 
-				ses.authstate.pw_name, exitmsg);
+				"Exit (%s)%s: %s", 
+				ses.authstate.pw_name, fromaddr, exitmsg);
 	} else if (ses.authstate.pw_name) {
 		/* we have a potential user */
 		snprintf(fullmsg, sizeof(fullmsg), 
-				"Exit before auth (user '%s', %u fails): %s",
-				ses.authstate.pw_name, ses.authstate.failcount, exitmsg);
+				"Exit before auth%s: (user '%s', %u fails): %s",
+				fromaddr, ses.authstate.pw_name, ses.authstate.failcount, exitmsg);
 	} else {
 		/* before userauth */
-		snprintf(fullmsg, sizeof(fullmsg), "Exit before auth: %s", exitmsg);
+		snprintf(fullmsg, sizeof(fullmsg), "Exit before auth%s: %s", fromaddr, exitmsg);
 	}
 
 	dropbear_log(LOG_INFO, "%s", fullmsg);
@@ -264,13 +337,18 @@ static void svr_remoteclosed() {
 }
 
 static void svr_algos_initialise(void) {
-#if DROPBEAR_DH_GROUP1 && DROPBEAR_DH_GROUP1_CLIENTONLY
 	algo_type *algo;
 	for (algo = sshkex; algo->name; algo++) {
+#if DROPBEAR_DH_GROUP1 && DROPBEAR_DH_GROUP1_CLIENTONLY
 		if (strcmp(algo->name, "diffie-hellman-group1-sha1") == 0) {
 			algo->usable = 0;
 		}
-	}
 #endif
+#if DROPBEAR_EXT_INFO
+		if (strcmp(algo->name, SSH_EXT_INFO_C) == 0) {
+			algo->usable = 0;
+		}
+#endif
+	}
 }
 

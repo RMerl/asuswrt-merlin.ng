@@ -3,8 +3,8 @@
 #  (GNU make only)
 
 # The version - BEWARE: VERSION, VERSION_PC and VERSION_LT are updated via ./updatemakes.sh
-VERSION=1.18.1
-VERSION_PC=1.18.1
+VERSION=1.18.2
+VERSION_PC=1.18.2
 # http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
 VERSION_LT=1:1
 
@@ -13,9 +13,23 @@ ifndef CROSS_COMPILE
   CROSS_COMPILE:=
 endif
 
-ifeq ($(CC),cc)
-  CC := $(CROSS_COMPILE)gcc
+# We only need to go through this dance of determining the right compiler if we're using
+# cross compilation, otherwise $(CC) is fine as-is.
+ifneq (,$(CROSS_COMPILE))
+ifeq ($(origin CC),default)
+CSTR := "\#ifdef __clang__\nCLANG\n\#endif\n"
+ifeq ($(PLATFORM),FreeBSD)
+  # XXX: FreeBSD needs extra escaping for some reason
+  CSTR := $$$(CSTR)
 endif
+ifneq (,$(shell echo $(CSTR) | $(CC) -E - | grep CLANG))
+  CC := $(CROSS_COMPILE)clang
+else
+  CC := $(CROSS_COMPILE)gcc
+endif # Clang
+endif # cc is Make's default
+endif # CROSS_COMPILE non-empty
+
 LD:=$(CROSS_COMPILE)ld
 AR:=$(CROSS_COMPILE)ar
 
@@ -24,7 +38,12 @@ AR:=$(CROSS_COMPILE)ar
 ARFLAGS:=r
 
 ifndef MAKE
-  MAKE:=make
+# BSDs refer to GNU Make as gmake
+ifneq (,$(findstring $(PLATFORM),FreeBSD OpenBSD DragonFly NetBSD))
+  MAKE=gmake
+else
+  MAKE=make
+endif
 endif
 
 ifndef INSTALL_CMD
@@ -389,7 +408,7 @@ doc/crypt.pdf: $(call print-help,doc/crypt.pdf,Builds the Developer Manual)
 	$(MAKE) -C doc/ crypt.pdf V=$(V)
 
 
-install_all: $(call print-help,install_all,Install everything - library bins docs tests) install install_bins install_docs install_test
+install_all: $(call print-help,install_all,Install everything - library bins docs tests) install install_bins install_docs
 
 INSTALL_OPTS ?= -m 644
 

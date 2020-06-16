@@ -2,6 +2,7 @@
 #include "session.h"
 #include "fuzz-wrapfd.h"
 #include "debug.h"
+#include "dss.h"
 
 static void setup_fuzzer(void) {
 	fuzz_common_setup();
@@ -27,21 +28,35 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 
 	if (setjmp(fuzz.jmp) == 0) {
 		sign_key *key = new_sign_key();
-		enum signkey_type type = DROPBEAR_SIGNKEY_ANY;
-		if (buf_get_pub_key(fuzz.input, key, &type) == DROPBEAR_SUCCESS) {
-			if (buf_verify(fuzz.input, key, verifydata) == DROPBEAR_SUCCESS) {
+		enum signkey_type keytype = DROPBEAR_SIGNKEY_ANY;
+		if (buf_get_pub_key(fuzz.input, key, &keytype) == DROPBEAR_SUCCESS) {
+			enum signature_type sigtype;
+			if (keytype == DROPBEAR_SIGNKEY_RSA) {
+				/* Flip a coin to decide rsa signature type */
+				int flag = buf_getbyte(fuzz.input);
+				if (flag & 0x01) {
+					sigtype = DROPBEAR_SIGNATURE_RSA_SHA256;
+				} else {
+					sigtype = DROPBEAR_SIGNATURE_RSA_SHA1;
+				}
+			} else {
+				sigtype = signature_type_from_signkey(keytype);
+			}
+			if (buf_verify(fuzz.input, key, sigtype, verifydata) == DROPBEAR_SUCCESS) {
 				/* The fuzzer is capable of generating keys with a signature to match.
 				We don't want false positives if the key is bogus, since a client/server 
 				wouldn't be trusting a bogus key anyway */
 				int boguskey = 0;
 
-				if (type == DROPBEAR_SIGNKEY_DSS) {
+				if (keytype == DROPBEAR_SIGNKEY_DSS) {
 					/* So far have seen dss keys with bad p/q/g domain parameters */
-					int pprime, qprime;
-				    assert(mp_prime_is_prime(key->dsskey->p, 5, &pprime) == MP_OKAY);
-				    assert(mp_prime_is_prime(key->dsskey->q, 18, &qprime) == MP_OKAY);
-				    boguskey = !(pprime && qprime);
-				    /* Could also check g**q mod p == 1 */
+					int pprime, qprime, trials;
+					trials = mp_prime_rabin_miller_trials(mp_count_bits(key->dsskey->p));
+					assert(mp_prime_is_prime(key->dsskey->p, trials, &pprime) == MP_OKAY);
+					trials = mp_prime_rabin_miller_trials(mp_count_bits(key->dsskey->q));
+					assert(mp_prime_is_prime(key->dsskey->q, trials, &qprime) == MP_OKAY);
+					boguskey = !(pprime && qprime);
+					/* Could also check g**q mod p == 1 */
 				}
 
 				if (!boguskey) {

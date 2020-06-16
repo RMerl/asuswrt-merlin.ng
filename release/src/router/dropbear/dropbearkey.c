@@ -133,7 +133,7 @@ static void check_signkey_bits(enum signkey_type type, int bits)
 			}
 			break;
 #endif
-#ifdef DROPEAR_DSS
+#if DROPEAR_DSS
 		case DROPBEAR_SIGNKEY_DSS:
 			if (bits != 1024) {
 				dropbear_exit("DSS keys have a fixed size of 1024 bits\n");

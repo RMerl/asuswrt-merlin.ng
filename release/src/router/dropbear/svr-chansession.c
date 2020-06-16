@@ -322,10 +322,7 @@ static void cleanupchansess(const struct Channel *channel) {
 
 	m_free(chansess->cmd);
 	m_free(chansess->term);
-
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
 	m_free(chansess->original_command);
-#endif
 
 	if (chansess->tty) {
 		/* write the utmp/wtmp login record */
@@ -833,7 +830,7 @@ static int ptycommand(struct Channel *channel, struct ChanSess *chansess) {
 			(dup2(chansess->slave, STDOUT_FILENO) < 0)) {
 			TRACE(("leave ptycommand: error redirecting filedesc"))
 			return DROPBEAR_FAILURE;
-		}
+			}
 
 		close(chansess->slave);
 
@@ -997,11 +994,9 @@ static void execchild(const void *user_data) {
 		addnewvar("SSH_CLIENT", chansess->client_string);
 	}
 	
-#if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
 	if (chansess->original_command) {
 		addnewvar("SSH_ORIGINAL_COMMAND", chansess->original_command);
 	}
-#endif
 
 	/* change directory */
 	if (chdir(ses.authstate.pw_dir) < 0) {

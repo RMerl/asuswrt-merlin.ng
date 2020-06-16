@@ -64,44 +64,35 @@ out:
 
 #if DROPBEAR_USER_ALGO_LIST
 void
-parse_ciphers_macs()
-{
-	if (opts.cipher_list)
-	{
-		if (strcmp(opts.cipher_list, "help") == 0)
-		{
+parse_ciphers_macs() {
+	int printed_help = 0;
+	if (opts.cipher_list) {
+		if (strcmp(opts.cipher_list, "help") == 0) {
 			char *ciphers = algolist_string(sshciphers);
-			dropbear_log(LOG_INFO, "Available ciphers:\n%s\n", ciphers);
+			dropbear_log(LOG_INFO, "Available ciphers: %s", ciphers);
 			m_free(ciphers);
-			dropbear_exit(".");
-		}
-
-		if (strcmp(opts.cipher_list, "none") == 0)
-		{
-			/* Encryption is required during authentication */
-			opts.cipher_list = "none,aes128-ctr";
-		}
-
-		if (check_user_algos(opts.cipher_list, sshciphers, "cipher") == 0)
-		{
-			dropbear_exit("No valid ciphers specified for '-c'");
+			printed_help = 1;
+		} else {
+			if (check_user_algos(opts.cipher_list, sshciphers, "cipher") == 0) {
+				dropbear_exit("No valid ciphers specified for '-c'");
+			}
 		}
 	}
 
-	if (opts.mac_list)
-	{
-		if (strcmp(opts.mac_list, "help") == 0)
-		{
+	if (opts.mac_list) {
+		if (strcmp(opts.mac_list, "help") == 0) {
 			char *macs = algolist_string(sshhashes);
-			dropbear_log(LOG_INFO, "Available MACs:\n%s\n", macs);
+			dropbear_log(LOG_INFO, "Available MACs: %s", macs);
 			m_free(macs);
-			dropbear_exit(".");
+			printed_help = 1;
+		} else {
+			if (check_user_algos(opts.mac_list, sshhashes, "MAC") == 0) {
+				dropbear_exit("No valid MACs specified for '-m'");
+			}
 		}
-
-		if (check_user_algos(opts.mac_list, sshhashes, "MAC") == 0)
-		{
-			dropbear_exit("No valid MACs specified for '-m'");
-		}
+	}
+	if (printed_help) {
+		dropbear_exit(".");
 	}
 }
 #endif

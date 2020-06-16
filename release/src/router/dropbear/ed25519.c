@@ -139,11 +139,9 @@ void buf_put_ed25519_sign(buffer* buf, const dropbear_ed25519_key *key, const bu
 	TRACE(("enter buf_put_ed25519_sign"))
 	dropbear_assert(key != NULL);
 
-	if (dropbear_ed25519_sign(data_buf->data, data_buf->len,
-				  s, &slen, key->priv, key->pub) == 0) {
-		buf_putstring(buf, SSH_SIGNKEY_ED25519, SSH_SIGNKEY_ED25519_LEN);
-		buf_putstring(buf, s, slen);
-	}
+	dropbear_ed25519_sign(data_buf->data, data_buf->len, s, &slen, key->priv, key->pub);
+	buf_putstring(buf, SSH_SIGNKEY_ED25519, SSH_SIGNKEY_ED25519_LEN);
+	buf_putstring(buf, s, slen);
 
 	TRACE(("leave buf_put_ed25519_sign"))
 }

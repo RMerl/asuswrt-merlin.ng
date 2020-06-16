@@ -39,7 +39,7 @@ EXTRALIBS = ../libtommath/libtommath.a
 #Compilation flags
 LTC_CFLAGS  = -Isrc/headers -Itests -DLTC_SOURCE $(CFLAGS)
 LTC_LDFLAGS = $(LDFLAGS) $(EXTRALIBS)
-VERSION=1.18.1
+VERSION=1.18.2
 
 #Libraries to be created (this makefile builds only static libraries)
 LIBMAIN_S =libtomcrypt.a

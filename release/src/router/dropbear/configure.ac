@@ -323,17 +323,39 @@ AC_ARG_ENABLE(shadow,
 	]
 )
 
+AC_ARG_ENABLE(plugin,
+	[  --enable-plugin         Enable support for External Public Key Authentication plug-in],
+	[
+		AC_DEFINE(DROPBEAR_PLUGIN, 1, External Public Key Authentication)
+		AC_MSG_NOTICE(Enabling support for External Public Key Authentication)
+		DROPBEAR_PLUGIN=1
+	],
+	[
+		AC_DEFINE(DROPBEAR_PLUGIN, 0, External Public Key Authentication)
+		DROPBEAR_PLUGIN=0
+	]
+
+)
+AC_SUBST(DROPBEAR_PLUGIN)
+
 AC_ARG_ENABLE(fuzz,
 	[  --enable-fuzz           Build fuzzing. Not recommended for deployment.],
 	[
-		AC_DEFINE(DROPBEAR_FUZZ, 1, Fuzzing)
-		AC_MSG_NOTICE(Enabling fuzzing)
-		DROPBEAR_FUZZ=1
-		# libfuzzer needs linking with c++ libraries
-		AC_PROG_CXX
+		if test "x$enableval" = "xyes"; then
+            AC_DEFINE(DROPBEAR_FUZZ, 1, Fuzzing)
+            AC_MSG_NOTICE(Enabling fuzzing)
+            DROPBEAR_FUZZ=1
+            # libfuzzer needs linking with c++ libraries
+            AC_PROG_CXX
+        else
+            AC_DEFINE(DROPBEAR_FUZZ, 0, Fuzzing)
+            AC_MSG_NOTICE(Disabling fuzzing)
+            DROPBEAR_FUZZ=0
+        fi
 	],
 	[
 		AC_DEFINE(DROPBEAR_FUZZ, 0, Fuzzing)
+		AC_MSG_NOTICE(Disabling fuzzing)
 		DROPBEAR_FUZZ=0
 	]
 
@@ -348,7 +370,8 @@ AC_CHECK_HEADERS([netinet/in.h netinet/tcp.h \
 	crypt.h \
 	pty.h libutil.h libgen.h inttypes.h stropts.h utmp.h \
 	utmpx.h lastlog.h paths.h util.h netdb.h security/pam_appl.h \
-	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h])
+	pam/pam_appl.h netinet/in_systm.h sys/uio.h linux/pkt_sched.h \
+	sys/random.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -504,27 +527,28 @@ AC_CHECK_FUNCS(clock_gettime)
 AC_CHECK_HEADERS([mach/mach_time.h])
 AC_CHECK_FUNCS(mach_absolute_time)
 
-AC_CHECK_FUNCS(explicit_bzero memset_s)
+AC_CHECK_FUNCS(explicit_bzero memset_s getrandom)
 
 AC_ARG_ENABLE(bundled-libtom,
 [  --enable-bundled-libtom       Force using bundled libtomcrypt/libtommath even if a system version exists.
   --disable-bundled-libtom      Force using system libtomcrypt/libtommath, fail if it does not exist.
-                                Default is to use system if available, otherwise bundled.],
+                                Default is to use system if available, otherwise bundled.
+                                Dropbear requires system libtommath >= 1.2.0 and libtomcrypt >= 1.18.0],
 	[
 		if test "x$enableval" = "xyes"; then
 			BUNDLED_LIBTOM=1
 			AC_MSG_NOTICE(Forcing bundled libtom*)
 		else
 			BUNDLED_LIBTOM=0
-			AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS",
-				[AC_MSG_ERROR([Missing system libtommath and --disable-bundled-libtom was specified])] )
-			AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS",
-				[AC_MSG_ERROR([Missing system libtomcrypt and --disable-bundled-libtom was specified])] )
+			AC_CHECK_LIB(tommath, mp_to_ubin, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS",
+				[AC_MSG_ERROR([Missing/old system libtommath and --disable-bundled-libtom was specified])] )
+			AC_CHECK_LIB(tomcrypt, poly1305_init, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS",
+				[AC_MSG_ERROR([Missing/old system libtomcrypt and --disable-bundled-libtom was specified])] )
 		fi
 	],
 	[
 		BUNDLED_LIBTOM=0
-		AC_CHECK_LIB(tommath, mp_exptmod, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
+		AC_CHECK_LIB(tommath, mp_to_ubin, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
 		AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
 	]
 )
@@ -858,4 +882,4 @@ AC_MSG_NOTICE([crypt() not available, dropbear server will not have password aut
 fi
 
 AC_MSG_NOTICE()
-AC_MSG_NOTICE([Now edit options.h to choose features.])
+AC_MSG_NOTICE([Now edit localoptions.h to choose features.])

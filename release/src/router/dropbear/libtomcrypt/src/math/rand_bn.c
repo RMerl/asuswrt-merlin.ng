@@ -8,7 +8,7 @@
  */
 #include "tomcrypt.h"
 
-#ifdef LTC_MDSA
+#if defined(LTC_MDSA) || defined(LTC_MECC)
 /**
   Generate a random number N with given bitlength (note: MSB can be 0)
 */

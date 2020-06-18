@@ -131,15 +131,17 @@ bool is_word_char(const char *c, bool allow_punct)
 	if (is_alnum_char(c))
 		return TRUE;
 
+	if (allow_punct && is_punct_char(c))
+		return TRUE;
+
 	if (word_chars != NULL && *word_chars != '\0') {
 		char symbol[MAXCHARLEN + 1];
 		int symlen = collect_char(c, symbol);
 
 		symbol[symlen] = '\0';
 		return (strstr(word_chars, symbol) != NULL);
-	}
-
-	return (allow_punct && is_punct_char(c));
+	} else
+		return FALSE;
 }
 
 /* Return the visible representation of control character c. */

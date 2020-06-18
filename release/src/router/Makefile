@@ -1781,6 +1781,11 @@ ifneq ($(RTCONFIG_SNMPD),y)
 	rm -f $(TARGETDIR)/usr/lib/libnmp.so
 endif
 
+# RT-AC3200 kludge - use precompiled driver
+ifeq ($(RTCONFIG_BCM7),y)
+	cp $(TOP)/wl_arm_7/prebuilt/dhd.ko $(TARGETDIR)/lib/modules/*/kernel/drivers/net/dhd/
+endif
+
 # uClibc
 ifeq ($(RTL8197F), y) # Realtek RTL8197F platform.
 	install $(LIBDIR)/ld-uClibc.so.1 $(TARGETDIR)/lib/

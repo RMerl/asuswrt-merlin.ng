@@ -6,6 +6,8 @@ Asuswrt-Merlin 384/NG Changelog
           compatible with previous versions.  Downgrading to
           a previous release will require a factory default reset
           afterward in many cases.
+  - NOTE: This release is not available on the RT-AC88U
+          (incompatible binary blobs)
   - UPDATED: Merged GPL 384_8563 for AX models.
   - UPDATED: Merged GPL 384_81918 for mainline models.
   - UPDATED: Merged SDK + binary blobs 384_81918 for RT-AC86U.
@@ -35,7 +37,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: OUI database used by the webui.
   - UPDATED: Dropbear 2020.79 (themiron)
   - UPDATED: Wireless driver from 382_52230 for RT-AC87U and
-             RT-AC3200 (should address Kr00k)
+             RT-AC3200 (should in theory address Kr00k)
   - FIXED: ssh/scp client would fail to connect while negotiating
            a chacha20 connection (themiron)
 

@@ -1,3 +1,7 @@
+2020.05.23 - GNU nano 4.9.3 "Almendras"
+• One more bug introduced in version 4.9 is fixed: a crash when
+  the terminal screen is resized while at a lock-file prompt.
+
 2020.04.07 - GNU nano 4.9.2 "Mali Lošinj"
 • Another bug introduced in version 4.9 is fixed: a likely crash
   after undoing an <Enter> at the end of leading whitespace.

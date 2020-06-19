@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU nano-4.9-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2020-04-07 11:26+0200\n"
+"POT-Creation-Date: 2020-05-23 17:07+0200\n"
 "PO-Revision-Date: 2020-04-03 20:25-0700\n"
 "Last-Translator: Božidar Putanec <bozidarp@yahoo.com>\n"
 "Language-Team: Croatian <lokalizacija@linux.hr>\n"
@@ -900,7 +900,7 @@ msgstr "pokrene program za oblikovanje međuspremnika (format, itd.)"
 msgid "Get Help"
 msgstr "Pomoć"
 
-#: src/global.c:738 src/prompt.c:665
+#: src/global.c:738 src/prompt.c:668
 msgid "Cancel"
 msgstr "Odustajem"
 
@@ -2137,122 +2137,122 @@ msgstr "Rabite „fg“ za povratak u nano.\n"
 msgid "Suspension is not enabled"
 msgstr "Obustava nije omogućena"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "enabled"
 msgstr " »OMOGUĆENO«"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "disabled"
 msgstr "je onemogućen(a/o)"
 
-#: src/nano.c:1353
+#: src/nano.c:1355
 msgid "Unbound key"
 msgstr "Tipka ne radi u ovom kontekstu"
 
-#: src/nano.c:1356
+#: src/nano.c:1358
 msgid "Unbindable key: M-["
 msgstr "Kombinacija M-[ nije moguća"
 
-#: src/nano.c:1359
+#: src/nano.c:1361
 #, c-format
 msgid "Unbindable key: M-^%c"
 msgstr "Nemoguća kombinacija: M-^%c"
 
-#: src/nano.c:1363
+#: src/nano.c:1365
 #, c-format
 msgid "Unbound key: Sh-M-%c"
 msgstr "Nepovezana kombinacija: Sh-M-%c"
 
-#: src/nano.c:1366
+#: src/nano.c:1368
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Prečac M-%c: ne radi u ovom kontekstu"
 
-#: src/nano.c:1368
+#: src/nano.c:1370
 msgid "Unbindable key: ^["
 msgstr "Kombinacija ^[ nije moguća"
 
-#: src/nano.c:1370
+#: src/nano.c:1372
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Prečac ^%c: ne radi u ovom kontekstu"
 
-#: src/nano.c:1373
+#: src/nano.c:1375
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Prečac %c: nije radi u ovom kontekstu"
 
-#: src/nano.c:1931 src/rcfile.c:1526
+#: src/nano.c:1933 src/rcfile.c:1526
 #, c-format
 msgid "Guide column \"%s\" is invalid"
 msgstr "Stupac „%s“ nije valjan i nije ga moguće istaknuti"
 
-#: src/nano.c:1955 src/nano.c:1974
+#: src/nano.c:1957 src/nano.c:1976
 #, c-format
 msgid "Option %s is ignored; it is the default\n"
 msgstr "Opcija %s se ignorira; to je zadano\n"
 
-#: src/nano.c:1980 src/rcfile.c:1582
+#: src/nano.c:1982 src/rcfile.c:1582
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Zatražena širina tabulatora „%s“ nije valjana"
 
-#: src/nano.c:2076 src/rcfile.c:1517
+#: src/nano.c:2078 src/rcfile.c:1517
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Zatražena veličina ispune „%s“ nije valjana"
 
-#: src/nano.c:2123
+#: src/nano.c:2125
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Naredba „%s -h“ će vam pokazati sve dostupne opcije.\n"
 
-#: src/nano.c:2300
+#: src/nano.c:2302
 #, c-format
 msgid "Bad quoting regex \"%s\": %s\n"
 msgstr "Loši regularni izraz (regex) „%s“: %s\n"
 
-#: src/nano.c:2445
+#: src/nano.c:2447
 #, c-format
 msgid "Invalid search modifier '%c'"
 msgstr "Nevaljani način pretraživanja „%c“"
 
-#: src/nano.c:2456
+#: src/nano.c:2458
 msgid "Empty search string"
 msgstr "Nema teksta za pretraživanje"
 
-#: src/nano.c:2461 src/search.c:782
+#: src/nano.c:2463 src/search.c:782
 msgid "Invalid line or column number"
 msgstr "Nevaljani broj retka ili stupca"
 
-#: src/nano.c:2535
+#: src/nano.c:2537
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "Dobro došli u nano. Pritisnite Ctrl+G za upute za osnovnu uporabu."
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:626
+#: src/prompt.c:629
 msgid "Yy"
 msgstr "Dd"
 
-#: src/prompt.c:627
+#: src/prompt.c:630
 msgid "Nn"
 msgstr "Nn"
 
-#: src/prompt.c:628
+#: src/prompt.c:631
 msgid "Aa"
 msgstr "Ss"
 
-#: src/prompt.c:652
+#: src/prompt.c:655
 msgid "Yes"
 msgstr "Da"
 
-#: src/prompt.c:656
+#: src/prompt.c:659
 msgid "No"
 msgstr "Ne"
 
-#: src/prompt.c:661
+#: src/prompt.c:664
 msgid "All"
 msgstr "Sve"
 

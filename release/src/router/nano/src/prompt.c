@@ -580,6 +580,8 @@ int do_prompt(bool allow_tabs, bool allow_files,
 	/* Reserve five columns for colon plus angles plus answer, ":<aa>". */
 	prompt[actual_x(prompt, (COLS < 5) ? 0 : COLS - 5)] = '\0';
 
+	lastmessage = VACUUM;
+
 	func = acquire_an_answer(&retval, allow_tabs, allow_files, &listed,
 								history_list, refresh_func);
 	free(prompt);
@@ -602,7 +604,8 @@ int do_prompt(bool allow_tabs, bool allow_files,
 	else if (func == do_enter)
 		retval = (*answer == '\0') ? -2 : 0;
 
-	wipe_statusbar();
+	if (lastmessage == VACUUM)
+		wipe_statusbar();
 
 #ifdef ENABLE_TABCOMP
 	/* If we've done tab completion, there might still be a list of
@@ -678,6 +681,9 @@ int do_yesno_prompt(bool all, const char *msg)
 		kbinput = get_kbinput(bottomwin, !all);
 
 #ifndef NANO_TINY
+		if (kbinput == KEY_WINCH)
+			continue;
+
 		/* Accept the first character of an external paste. */
 		if (bracketed_paste && kbinput == BRACKETED_PASTE_MARKER)
 			kbinput = get_kbinput(bottomwin, BLIND);

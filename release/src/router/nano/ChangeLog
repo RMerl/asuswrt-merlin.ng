@@ -1,3 +1,14 @@
+Changes between v4.9.2 and v4.9.3:
+----------------------------------
+
+Benno Schulenberg (5):
+      bump version numbers and add a news item for the 4.9.3 release
+      counting: count words correctly also when --wordchars is used
+      display: do not try to draw content when there is no open buffer yet
+      feedback: skip wiping the prompt bar when the shortcut printed a message
+      prompt: at Yes-No, do not treat a screen resize as an invalid keystroke
+
+
 Changes between v4.9.1 and v4.9.2:
 ----------------------------------
 

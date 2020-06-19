@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano 4.9-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2020-04-07 11:26+0200\n"
+"POT-Creation-Date: 2020-05-23 17:07+0200\n"
 "PO-Revision-Date: 2020-03-17 13:50+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
@@ -880,7 +880,7 @@ msgstr ""
 msgid "Get Help"
 msgstr "Довідка"
 
-#: src/global.c:738 src/prompt.c:665
+#: src/global.c:738 src/prompt.c:668
 msgid "Cancel"
 msgstr "Скасувати"
 
@@ -2087,122 +2087,122 @@ msgstr "Використовуйте «fg» для повернення у nano\
 msgid "Suspension is not enabled"
 msgstr "Призупинення не увімкнено"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "enabled"
 msgstr "дозволено"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "disabled"
 msgstr "заборонено"
 
-#: src/nano.c:1353
+#: src/nano.c:1355
 msgid "Unbound key"
 msgstr "Непов'язана комбінація"
 
-#: src/nano.c:1356
+#: src/nano.c:1358
 msgid "Unbindable key: M-["
 msgstr "Непов'язана комбінація: M-["
 
-#: src/nano.c:1359
+#: src/nano.c:1361
 #, c-format
 msgid "Unbindable key: M-^%c"
 msgstr "Непов'язана комбінація: M-^%c"
 
-#: src/nano.c:1363
+#: src/nano.c:1365
 #, c-format
 msgid "Unbound key: Sh-M-%c"
 msgstr "Непов'язана комбінація: Sh-M-%c"
 
-#: src/nano.c:1366
+#: src/nano.c:1368
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Непов'язана комбінація: M-%c"
 
-#: src/nano.c:1368
+#: src/nano.c:1370
 msgid "Unbindable key: ^["
 msgstr "Непов'язана комбінація: ^["
 
-#: src/nano.c:1370
+#: src/nano.c:1372
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Непов'язана комбінація: ^%c"
 
-#: src/nano.c:1373
+#: src/nano.c:1375
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Непов'язана комбінація: %c"
 
-#: src/nano.c:1931 src/rcfile.c:1526
+#: src/nano.c:1933 src/rcfile.c:1526
 #, c-format
 msgid "Guide column \"%s\" is invalid"
 msgstr "Напрямна позиція «%s» є некоректною"
 
-#: src/nano.c:1955 src/nano.c:1974
+#: src/nano.c:1957 src/nano.c:1976
 #, c-format
 msgid "Option %s is ignored; it is the default\n"
 msgstr "Параметр %s проігноровано; це типова поведінка\n"
 
-#: src/nano.c:1980 src/rcfile.c:1582
+#: src/nano.c:1982 src/rcfile.c:1582
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "Запитаний розмір табуляції «%s» не підходить"
 
-#: src/nano.c:2076 src/rcfile.c:1517
+#: src/nano.c:2078 src/rcfile.c:1517
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "Надіслано запит на некоректний розмір заповнення «%s»"
 
-#: src/nano.c:2123
+#: src/nano.c:2125
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Введіть команду «%s -h», щоб отримати список доступних параметрів.\n"
 
-#: src/nano.c:2300
+#: src/nano.c:2302
 #, c-format
 msgid "Bad quoting regex \"%s\": %s\n"
 msgstr "Помилковий формальний вираз «%s» у лапках: %s\n"
 
-#: src/nano.c:2445
+#: src/nano.c:2447
 #, c-format
 msgid "Invalid search modifier '%c'"
 msgstr "Некоректний модифікатор пошуку, «%c»"
 
-#: src/nano.c:2456
+#: src/nano.c:2458
 msgid "Empty search string"
 msgstr "Порожній рядок для пошуку"
 
-#: src/nano.c:2461 src/search.c:782
+#: src/nano.c:2463 src/search.c:782
 msgid "Invalid line or column number"
 msgstr "Некоректний номер рядка або позиції"
 
-#: src/nano.c:2535
+#: src/nano.c:2537
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "Вітаємо у nano. Базова довідка: Ctrl+G."
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:626
+#: src/prompt.c:629
 msgid "Yy"
 msgstr "YyТт"
 
-#: src/prompt.c:627
+#: src/prompt.c:630
 msgid "Nn"
 msgstr "NnНн"
 
-#: src/prompt.c:628
+#: src/prompt.c:631
 msgid "Aa"
 msgstr "AaВв"
 
-#: src/prompt.c:652
+#: src/prompt.c:655
 msgid "Yes"
 msgstr "Так"
 
-#: src/prompt.c:656
+#: src/prompt.c:659
 msgid "No"
 msgstr "Ні"
 
-#: src/prompt.c:661
+#: src/prompt.c:664
 msgid "All"
 msgstr "Все"
 

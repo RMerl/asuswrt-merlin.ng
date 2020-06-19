@@ -147,7 +147,7 @@ typedef enum {
 } format_type;
 
 typedef enum {
-	HUSH, NOTICE, MILD, ALERT
+	VACUUM, HUSH, NOTICE, MILD, ALERT
 } message_type;
 
 typedef enum {

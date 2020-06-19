@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU nano 4.9-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2020-04-07 11:26+0200\n"
+"POT-Creation-Date: 2020-05-23 17:07+0200\n"
 "PO-Revision-Date: 2020-03-17 19:43+0800\n"
 "Last-Translator: Yi-Jyun Pan <pan93412@gmail.com>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@lists.linux.org.tw>\n"
@@ -855,7 +855,7 @@ msgstr "呼叫應用程式來格式化、排列及操縱緩衝區"
 msgid "Get Help"
 msgstr "取得說明"
 
-#: src/global.c:738 src/prompt.c:665
+#: src/global.c:738 src/prompt.c:668
 msgid "Cancel"
 msgstr "取消"
 
@@ -2035,122 +2035,122 @@ msgstr "請使用「fg」回到 nano。\n"
 msgid "Suspension is not enabled"
 msgstr "尚未啟用暫停功能"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "enabled"
 msgstr "啟用"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "disabled"
 msgstr "停用"
 
-#: src/nano.c:1353
+#: src/nano.c:1355
 msgid "Unbound key"
 msgstr "按鍵未綁定"
 
-#: src/nano.c:1356
+#: src/nano.c:1358
 msgid "Unbindable key: M-["
 msgstr "按鍵未綁定：M-["
 
-#: src/nano.c:1359
+#: src/nano.c:1361
 #, c-format
 msgid "Unbindable key: M-^%c"
 msgstr "按鍵未綁定：M-^%c"
 
-#: src/nano.c:1363
+#: src/nano.c:1365
 #, c-format
 msgid "Unbound key: Sh-M-%c"
 msgstr "按鍵未綁定：Sh-M-%c"
 
-#: src/nano.c:1366
+#: src/nano.c:1368
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "按鍵未綁定：M-%c"
 
-#: src/nano.c:1368
+#: src/nano.c:1370
 msgid "Unbindable key: ^["
 msgstr "無法綁定按鍵：^["
 
-#: src/nano.c:1370
+#: src/nano.c:1372
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "按鍵未指定：^%c"
 
-#: src/nano.c:1373
+#: src/nano.c:1375
 #, c-format
 msgid "Unbound key: %c"
 msgstr "按鍵未綁定：%c"
 
-#: src/nano.c:1931 src/rcfile.c:1526
+#: src/nano.c:1933 src/rcfile.c:1526
 #, c-format
 msgid "Guide column \"%s\" is invalid"
 msgstr "指引欄「%s」無效"
 
-#: src/nano.c:1955 src/nano.c:1974
+#: src/nano.c:1957 src/nano.c:1976
 #, c-format
 msgid "Option %s is ignored; it is the default\n"
 msgstr "已忽略 %s 選項；該選項為預設值\n"
 
-#: src/nano.c:1980 src/rcfile.c:1582
+#: src/nano.c:1982 src/rcfile.c:1582
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "所請求的 Tab 寬度「%s」無效"
 
-#: src/nano.c:2076 src/rcfile.c:1517
+#: src/nano.c:2078 src/rcfile.c:1517
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "所請求的填充長度「%s」無效"
 
-#: src/nano.c:2123
+#: src/nano.c:2125
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "輸入「%s -h」顯示可用的選項列表。\n"
 
-#: src/nano.c:2300
+#: src/nano.c:2302
 #, c-format
 msgid "Bad quoting regex \"%s\": %s\n"
 msgstr "引號中的正規表示式「%s」無效：%s\n"
 
-#: src/nano.c:2445
+#: src/nano.c:2447
 #, c-format
 msgid "Invalid search modifier '%c'"
 msgstr "搜尋修飾符「%c」無效"
 
-#: src/nano.c:2456
+#: src/nano.c:2458
 msgid "Empty search string"
 msgstr "搜尋字串為空"
 
-#: src/nano.c:2461 src/search.c:782
+#: src/nano.c:2463 src/search.c:782
 msgid "Invalid line or column number"
 msgstr "行碼或欄碼無效"
 
-#: src/nano.c:2535
+#: src/nano.c:2537
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "歡迎使用 nano。請按 Ctrl+G 取得基本使用說明。"
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:626
+#: src/prompt.c:629
 msgid "Yy"
 msgstr "Yy"
 
-#: src/prompt.c:627
+#: src/prompt.c:630
 msgid "Nn"
 msgstr "Nn"
 
-#: src/prompt.c:628
+#: src/prompt.c:631
 msgid "Aa"
 msgstr "Aa"
 
-#: src/prompt.c:652
+#: src/prompt.c:655
 msgid "Yes"
 msgstr "是"
 
-#: src/prompt.c:656
+#: src/prompt.c:659
 msgid "No"
 msgstr "否"
 
-#: src/prompt.c:661
+#: src/prompt.c:664
 msgid "All"
 msgstr "全部"
 

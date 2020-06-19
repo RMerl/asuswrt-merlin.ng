@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: nano-4.9-pre1\n"
 "Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
-"POT-Creation-Date: 2020-04-07 11:26+0200\n"
+"POT-Creation-Date: 2020-05-23 17:07+0200\n"
 "PO-Revision-Date: 2020-03-17 21:30+0100\n"
 "Last-Translator: Antonio Ceballos <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
@@ -875,7 +875,7 @@ msgstr "Invocar un programa para aplicar formato/organizar/manipular el búfer"
 msgid "Get Help"
 msgstr "Ver ayuda"
 
-#: src/global.c:738 src/prompt.c:665
+#: src/global.c:738 src/prompt.c:668
 msgid "Cancel"
 msgstr "Cancelar"
 
@@ -2094,122 +2094,122 @@ msgstr "Use «fg» para volver a nano.\n"
 msgid "Suspension is not enabled"
 msgstr "La suspensión no está activada"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "enabled"
 msgstr "habilitado"
 
-#: src/nano.c:1195
+#: src/nano.c:1197
 msgid "disabled"
 msgstr "deshabilitado"
 
-#: src/nano.c:1353
+#: src/nano.c:1355
 msgid "Unbound key"
 msgstr "Tecla sin asociar"
 
-#: src/nano.c:1356
+#: src/nano.c:1358
 msgid "Unbindable key: M-["
 msgstr "Tecla no asociable: M-["
 
-#: src/nano.c:1359
+#: src/nano.c:1361
 #, c-format
 msgid "Unbindable key: M-^%c"
 msgstr "Tecla no asociable: M-^%c"
 
-#: src/nano.c:1363
+#: src/nano.c:1365
 #, c-format
 msgid "Unbound key: Sh-M-%c"
 msgstr "Tecla sin asociar: Sh-M-%c"
 
-#: src/nano.c:1366
+#: src/nano.c:1368
 #, c-format
 msgid "Unbound key: M-%c"
 msgstr "Tecla sin asociar: M-%c"
 
-#: src/nano.c:1368
+#: src/nano.c:1370
 msgid "Unbindable key: ^["
 msgstr "Tecla no asociable: ^["
 
-#: src/nano.c:1370
+#: src/nano.c:1372
 #, c-format
 msgid "Unbound key: ^%c"
 msgstr "Tecla sin asociar: ^%c"
 
-#: src/nano.c:1373
+#: src/nano.c:1375
 #, c-format
 msgid "Unbound key: %c"
 msgstr "Tecla sin asociar: %c"
 
-#: src/nano.c:1931 src/rcfile.c:1526
+#: src/nano.c:1933 src/rcfile.c:1526
 #, c-format
 msgid "Guide column \"%s\" is invalid"
 msgstr "La columna de guía «%s» no es válida"
 
-#: src/nano.c:1955 src/nano.c:1974
+#: src/nano.c:1957 src/nano.c:1976
 #, c-format
 msgid "Option %s is ignored; it is the default\n"
 msgstr "La opción %s se ignora; es lo predefinido\n"
 
-#: src/nano.c:1980 src/rcfile.c:1582
+#: src/nano.c:1982 src/rcfile.c:1582
 #, c-format
 msgid "Requested tab size \"%s\" is invalid"
 msgstr "El tamaño «%s» de tabulador no es válido"
 
-#: src/nano.c:2076 src/rcfile.c:1517
+#: src/nano.c:2078 src/rcfile.c:1517
 #, c-format
 msgid "Requested fill size \"%s\" is invalid"
 msgstr "El tamaño «%s» de llenado no es válido"
 
-#: src/nano.c:2123
+#: src/nano.c:2125
 #, c-format
 msgid "Type '%s -h' for a list of available options.\n"
 msgstr "Teclea «%s -h» para la lista de opciones.\n"
 
-#: src/nano.c:2300
+#: src/nano.c:2302
 #, c-format
 msgid "Bad quoting regex \"%s\": %s\n"
 msgstr "Expresión regular con comillas incorrectas «%s»: %s\n"
 
-#: src/nano.c:2445
+#: src/nano.c:2447
 #, c-format
 msgid "Invalid search modifier '%c'"
 msgstr "Modificador de búsqueda '%c' no válido"
 
-#: src/nano.c:2456
+#: src/nano.c:2458
 msgid "Empty search string"
 msgstr "Cadena de búsqueda vacía"
 
-#: src/nano.c:2461 src/search.c:782
+#: src/nano.c:2463 src/search.c:782
 msgid "Invalid line or column number"
 msgstr "Número de línea o columna no válido"
 
-#: src/nano.c:2535
+#: src/nano.c:2537
 msgid "Welcome to nano.  For basic help, type Ctrl+G."
 msgstr "Bienvenido a nano.  Para obtener ayuda básica, pulse Ctrl+G."
 
 #. TRANSLATORS: For the next three strings, specify the starting letters
 #. * of the translations for "Yes"/"No"/"All".  The first letter of each of
 #. * these strings MUST be a single-byte letter; others may be multi-byte.
-#: src/prompt.c:626
+#: src/prompt.c:629
 msgid "Yy"
 msgstr "SsYy"
 
-#: src/prompt.c:627
+#: src/prompt.c:630
 msgid "Nn"
 msgstr "Nn"
 
-#: src/prompt.c:628
+#: src/prompt.c:631
 msgid "Aa"
 msgstr "TtAa"
 
-#: src/prompt.c:652
+#: src/prompt.c:655
 msgid "Yes"
 msgstr "Sí"
 
-#: src/prompt.c:656
+#: src/prompt.c:659
 msgid "No"
 msgstr "No"
 
-#: src/prompt.c:661
+#: src/prompt.c:664
 msgid "All"
 msgstr "Todas"
 

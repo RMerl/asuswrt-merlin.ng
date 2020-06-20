@@ -35,7 +35,7 @@
 
 #ifdef RTK3
 #define JFFS2_MTD_NAME	"brcmnand"
-#define UBI_DEV_NUM	0
+#define UBI_DEV_NUM	"0"
 #define UBI_DEV_PATH	"/dev/ubi0"
 #define LEBS		0x1F000		/* 124 KiB */
 #define NUM_OH_LEB	24		/* for ubifs overhead */
@@ -164,12 +164,12 @@ void start_ubifs(void)
 		/* attach ubi */
 		snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 		_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
-		//eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
-		doSystem("ubiattach -p %s -d %d", dev_mtd, UBI_DEV_NUM);
+		eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
 	}
 
+	unsigned int num_leb = 0, num_avail_leb = 0, vol_size = 0;
+	num_leb = mtd_size >> 17;			/* compute number of leb divde by 128KiB */
 	if (ubi_getinfo(UBIFS_VOL_NAME, &dev, &part, &size) == 1) {	//ubi volume not found, format it and create volume
-		unsigned int num_leb = 0, num_avail_leb = 0, vol_size = 0;
 
 		_dprintf("*** ubifs: ubi volume not found\n");
 
@@ -177,7 +177,7 @@ void start_ubifs(void)
 		/* format ubi */
 		snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 		_dprintf("*** ubifs: format (%s)\n", dev_mtd);
-		doSystem("ubiformat -y %s", dev_mtd);
+		eval("ubiformat", "-y", dev_mtd);
 #else
 		/* mtd erase on UBIFS_VOL_NAME first */
 		if (mtd_erase(JFFS2_MTD_NAME)) {
@@ -187,7 +187,6 @@ void start_ubifs(void)
 #endif
 
 		/* compute jffs2's volume size */
-		num_leb = mtd_size >> 17;			/* compute number of leb divde by 128KiB */
 		num_avail_leb = num_leb - NUM_OH_LEB;
 		vol_size = (num_avail_leb * LEBS) >> 10;	/* convert to KiB unit */
 		if (vol_size > 0) {
@@ -199,13 +198,11 @@ void start_ubifs(void)
 			/* attach ubi */
 			snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 			_dprintf("*** ubifs: attach (%s, %d)\n", dev_mtd, UBI_DEV_NUM);
-			//eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
-			doSystem("ubiattach -p %s -d %d", dev_mtd, UBI_DEV_NUM);
+			eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
 
 			/* make ubi volume */
 			_dprintf("*** ubifs: create jffs2 volume\n");
-			//eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
-			doSystem("ubimkvol %s -s %s -N %s", UBI_DEV_PATH, vol_size_s, UBIFS_VOL_NAME);
+			eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
 		}
 	}
 #endif
@@ -260,19 +257,35 @@ void start_ubifs(void)
 	}
 	sprintf(s, "/dev/ubi%d_%d", dev, part);
 
-	if (mount(s, UBIFS_MNT_DIR, UBIFS_FS_TYPE, MS_NOATIME, "") != 0) {
-		_dprintf("*** ubifs mount error\n");
-		if (ubifs_erase(dev, part)) {
-			error("formatting");
-			return;
-		}
-
-		format = 1;
+	int loop = 1;
+	while (loop <= 4)
+	{
 		if (mount(s, UBIFS_MNT_DIR, UBIFS_FS_TYPE, MS_NOATIME, "") != 0) {
-			_dprintf("*** ubifs 2-nd mount error\n");
-			error("mounting");
-			return;
+			if (loop == 4) {
+				error("mounting");
+				return;
+			}
+			_dprintf("*** ubifs mount error - %d time\n", loop);
+			num_avail_leb = num_leb - (NUM_OH_LEB * loop);
+			vol_size = (num_avail_leb * LEBS) >> 10;	/* convert to KiB unit */
+			if (vol_size > 0) {
+				char vol_size_s[32] = {0};
+				snprintf(vol_size_s, sizeof(vol_size_s), "%dKiB", vol_size);
+				_dprintf("*** ubifs: mtd_part(%02x), num_leb(%d), num_avail_leb(%d), vol_size(%s)\n", mtd_part, num_leb, num_avail_leb, vol_size_s);
+				eval("ubidetach", "-p", dev_mtd);
+				eval("ubiformat", "-y", dev_mtd);
+				eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+				eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
+			}
+			if (ubifs_erase(dev, part)) {
+				error("formatting");
+				continue;
+			}
+		} else {
+			format = 1;
+			break;
 		}
+		loop++;
 	}
 
 

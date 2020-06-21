@@ -8138,7 +8138,7 @@ void watchdog(int sig)
 	ate_temperature_record();
 #endif
 
-#if !defined(RTAC88U) && !defined(RTAC68U)	// Kludge - requires newer GPL
+#if !defined(RTAC68U)	// Kludge - requires newer GPL
 #if defined(HND_ROUTER) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM4708)
 	dump_WlGetDriverStats(0, 1);
 #endif

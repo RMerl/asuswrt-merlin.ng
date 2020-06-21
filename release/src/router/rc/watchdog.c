@@ -2273,7 +2273,7 @@ void rtkl_check()
 	if(rtl_count++ >= rtl_period) {
 		rtl_count = 0;
 
-		if((rtkswitch_ioctl(GET_AWARE, 0, 0)) < 0 || rtkswitch_ioctl(GET_LANPORTS_LINK_STATUS, 0, 0) < 0) 
+		if((rtkswitch_ioctl(GET_AWARE, 0, 0)) < 0 /* || rtkswitch_ioctl(GET_LANPORTS_LINK_STATUS, 0, 0) < 0*/) 
 			rtl_fail++;
 //#if 0
 		if(nvram_match("rtl_dbg", "1")) {
@@ -8138,7 +8138,7 @@ void watchdog(int sig)
 	ate_temperature_record();
 #endif
 
-#if !defined(RTAC88U) && !defined(RTAC68U)	// Kludge - requires newer GPL
+#if !defined(RTAC68U)	// Kludge - requires newer GPL
 #if defined(HND_ROUTER) || defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM4708)
 	dump_WlGetDriverStats(0, 1);
 #endif

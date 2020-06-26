@@ -35,6 +35,30 @@ runtime (doesn't work for server as of June 2020).
 Enabling/disabling algorithms is done in [localoptions.h](localoptions.h),
 see [default_options.h](default_options.h).
 
+## Style
+
+Source code is indented with tabs, width set to 4 (though width shouldn't
+matter much). Braces are on the same line as functions/loops/if - try
+to keep consistency with existing code.
+
+All `if` statements should have braces, no exceptions.
+
+Avoid using pointer arithmetic, instead the functions in
+[buffer.h](buffer.h) should be used.
+
+Some Dropbear platforms have old compilers.
+Variable declarations must be at the top of a scope and
+comments must be `/* */` rather than `//`.
+
+Pointer variables should be initialised to NULL - it can reduce the
+severity of bugs.
+
+## Third party code
+
+Libtomcrypt and libtommath are periodically synced from upstream, so
+avoid making changes to that code which will need to be maintained.
+Improvements can be sent upstream to the libtom project.
+
 ## Non-root user
 
 Dropbear server will run fine as a non-root user, allowing logins only for 

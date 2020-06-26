@@ -4,7 +4,7 @@
  *******************************************************************/
 
 #ifndef DROPBEAR_VERSION
-#define DROPBEAR_VERSION "2020.79"
+#define DROPBEAR_VERSION "2020.80"
 #endif
 
 #ifndef LOCAL_IDENT

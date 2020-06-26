@@ -1312,6 +1312,10 @@
 #undef BN_MP_KARATSUBA_SQR_C
 #undef BN_MP_TOOM_MUL_C
 #undef BN_MP_TOOM_SQR_C
+#undef BN_S_MP_KARATSUBA_MUL_C
+#undef BN_S_MP_KARATSUBA_SQR_C
+#undef BN_S_MP_TOOM_MUL_C
+#undef BN_S_MP_TOOM_SQR_C
 
 #include "dbmalloc.h"
 #define MP_MALLOC    m_malloc

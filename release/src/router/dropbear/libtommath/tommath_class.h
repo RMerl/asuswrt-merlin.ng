@@ -1322,3 +1322,6 @@
 #define MP_FREE      m_free_ltm
 #define MP_REALLOC   m_realloc_ltm
 #define MP_CALLOC    m_calloc
+
+#undef BN_S_MP_RAND_PLATFORM_C
+#define s_mp_rand_platform genrandom_ltm

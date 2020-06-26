@@ -1,7 +1,6 @@
 #!/bin/sh
 
-wget_timeout=`nvram get apps_wget_timeout`
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30"
 
 nvram set cfg_note=0
 get_preferred_lang=`nvram get preferred_lang`

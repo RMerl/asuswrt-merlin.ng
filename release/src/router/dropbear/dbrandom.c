@@ -343,6 +343,11 @@ void genrandom(unsigned char* buf, unsigned int len) {
 	m_burn(hash, sizeof(hash));
 }
 
+mp_err genrandom_ltm(void *out, size_t size) {
+    genrandom(out, size);
+    return MP_OKAY;
+}
+
 /* Generates a random mp_int. 
  * max is a *mp_int specifying an upper bound.
  * rand must be an initialised *mp_int for the result.

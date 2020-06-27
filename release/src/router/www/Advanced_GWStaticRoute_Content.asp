@@ -352,6 +352,7 @@ function Ctrl_LANIPList(obj){
 							<option value="LAN">LAN</option>
 							<option value="MAN">MAN</option>
 							<option value="WAN">WAN</option>
+							<option value="VPN">VPN</option>
 						</select>
 					</td>
 				

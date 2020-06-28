@@ -549,7 +549,7 @@ AC_ARG_ENABLE(bundled-libtom,
 	[
 		BUNDLED_LIBTOM=0
 		AC_CHECK_LIB(tommath, mp_to_ubin, LIBTOM_LIBS="-ltommath $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
-		AC_CHECK_LIB(tomcrypt, register_cipher, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
+		AC_CHECK_LIB(tomcrypt, poly1305_init, LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS", BUNDLED_LIBTOM=1)
 	]
 )
 

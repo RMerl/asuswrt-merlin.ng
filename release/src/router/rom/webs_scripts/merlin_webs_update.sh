@@ -1,8 +1,6 @@
 #!/bin/sh
 
-wget_timeout=$(nvram get apps_wget_timeout)
-#wget_options="-nv -t 2 -T $wget_timeout --dns-timeout=120"
-wget_options="-q -t 2 -T $wget_timeout"
+wget_options="-q -t 2 -T 30"
 
 fwsite=$(nvram get firmware_server)
 if [ "$fwsite" == "" ]; then

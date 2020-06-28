@@ -2838,7 +2838,8 @@ function del_exception_list_confirm(_parArray) {
 <input type="hidden" name="action_wait" value="3">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
-<input type="hidden" name="vpnc_dnsenable_x" value="1">
+<input type="hidden" name="vpnc_dnsenable_x" value="<% nvram_get("vpnc_dnsenable_x"); %>">
+<input type="hidden" name="vpnc_defroute_x" value="<% nvram_get("vpnc_defroute_x"); %>">
 <input type="hidden" name="vpnc_clientlist" value='<% nvram_get("vpnc_clientlist"); %>'>
 <input type="hidden" name="vpnc_type" value="PPTP">
 <input type="hidden" name="vpn_client_unit" value="1">

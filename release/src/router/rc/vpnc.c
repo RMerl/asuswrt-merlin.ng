@@ -506,15 +506,20 @@ vpnc_up(char *vpnc_ifname)
 	char *gateway = nvram_safe_get(strcat_r(prefix, "gateway", tmp));
 
 	/* Add default routes via VPN interface */
-	if (route_add(vpnc_ifname, 0, "0.0.0.0", gateway, "128.0.0.0") != 0)
-		goto error;
-	if (route_add(vpnc_ifname, 0, "128.0.0.0", gateway, "128.0.0.0") != 0) {
-		route_del(vpnc_ifname, 0, "0.0.0.0", gateway, "128.0.0.0");
-	error:
-		_dprintf("%s: fail to add route table\n", __FUNCTION__);
-		update_vpnc_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_IPGATEWAY_CONFLICT);
-		return;
+	if (nvram_get_int(strcat_r(prefix, "defroute_x", tmp))) {
+		if (route_add(vpnc_ifname, 0, "0.0.0.0", gateway, "128.0.0.0") != 0)
+			goto error;
+		if (route_add(vpnc_ifname, 0, "128.0.0.0", gateway, "128.0.0.0") != 0) {
+			route_del(vpnc_ifname, 0, "0.0.0.0", gateway, "128.0.0.0");
+		error:
+			_dprintf("%s: fail to add route table\n", __FUNCTION__);
+			update_vpnc_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_IPGATEWAY_CONFLICT);
+			return;
+		}
 	}
+
+	/* Add interface dependent static routes */
+	add_routes(prefix, "route", vpnc_ifname);
 
 	/* Remove obsolete default route via VPN interface */
 	route_del(vpnc_ifname, 0, "0.0.0.0", NULL, "0.0.0.0");

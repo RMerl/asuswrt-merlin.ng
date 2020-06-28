@@ -2475,7 +2475,8 @@ function changePFS() {
 <input type="hidden" name="vpnc_pppoe_username" value="<% nvram_get("vpnc_pppoe_username"); %>">
 <input type="hidden" name="vpnc_pppoe_passwd" value="<% nvram_get("vpnc_pppoe_passwd"); %>">
 <input type="hidden" name="vpnc_heartbeat_x" value="<% nvram_get("vpnc_heartbeat_x"); %>">
-<input type="hidden" name="vpnc_dnsenable_x" value="1">
+<input type="hidden" name="vpnc_dnsenable_x" value="<% nvram_get("vpnc_dnsenable_x"); %>">
+<input type="hidden" name="vpnc_defroute_x" value="<% nvram_get("vpnc_defroute_x"); %>">
 <input type="hidden" name="vpnc_proto" value="<% nvram_get("vpnc_proto"); %>">
 <input type="hidden" name="vpnc_clientlist" value='<% nvram_get("vpnc_clientlist"); %>'>
 <input type="hidden" name="vpnc_type" value="PPTP">

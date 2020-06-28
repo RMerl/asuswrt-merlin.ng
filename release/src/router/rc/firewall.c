@@ -1029,6 +1029,9 @@ void convert_routes(void)
 	char *nv, *nvp, *b;
 	char *ip, *netmask, *gateway, *metric, *interface;
 	char wroutes[1024], lroutes[1024], mroutes[1024];
+#ifdef RTCONFIG_VPNC
+	char vroutes[1024];
+#endif
 	int wan_max_unit = WAN_UNIT_MAX;
 
 #ifdef RTCONFIG_MULTICAST_IPTV
@@ -1040,6 +1043,9 @@ void convert_routes(void)
 	wroutes[0] = 0;
 	lroutes[0] = 0;
 	mroutes[0] = 0;
+#ifdef RTCONFIG_VPNC
+	vroutes[0] = 0;
+#endif
 
 	if (nvram_match("sr_enable_x", "1")) {
 		nv = nvp = strdup(nvram_safe_get("sr_rulelist"));
@@ -1056,6 +1062,10 @@ void convert_routes(void)
 					routes = mroutes;
 				else if (strcmp(interface, "LAN") == 0)
 					routes = lroutes;
+#ifdef RTCONFIG_VPNC
+				else if (strcmp(interface, "VPN") == 0)
+					routes = vroutes;
+#endif
 				else
 					continue;
 
@@ -1074,6 +1084,10 @@ void convert_routes(void)
 		nvram_set(strcat_r(prefix, "route", tmp), wroutes);
 		nvram_set(strcat_r(prefix, "mroute", tmp), mroutes);
 	}
+
+#ifdef RTCONFIG_VPNC
+	nvram_set("vpnc_route", vroutes);
+#endif
 }
 
 /*

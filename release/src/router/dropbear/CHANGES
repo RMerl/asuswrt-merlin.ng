@@ -1,3 +1,18 @@
+2020.80 - 26 June 2020
+
+- Don't block authorized_keys logins with no-X11-forwarding or no-agent-forwarding 
+  restrictions when X11 or agent forwarding are disabled at compile time.
+  This is more of a problem now X11 is disabled by default, reported by Guilhem Moulin
+
+- Reduce binary size by 4kB (x64) when using bundled libtommath
+
+- Define GNU_SOURCE for getrandom() on uclibc, reported by Laurent Bercot and
+  Fabrice Fontaine
+
+- Improve checking libtomcrypt version compatibility
+
+- Add some style notes to DEVELOPING.md
+
 2020.79 - 15 June 2020
 
 - Support ed25519 hostkeys and authorized_keys, many thanks to Vladislav Grishenko.
@@ -50,7 +65,7 @@
 
 - Fix "make install" for manpages in out-of-tree builds, from Gabor Z. Papp
 
-- Some notes are added in DEVELOPER.md
+- Some notes are added in DEVELOPING.md
 
 2019.78 - 27 March 2019
 

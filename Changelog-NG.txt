@@ -1,7 +1,7 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.18 (xx-xxx-2020)
+384.18 (28-June-2020)
   - NOTE: A number of changes for some models are not backward
           compatible with previous versions.  Downgrading to
           a previous release will require a factory default reset
@@ -19,7 +19,7 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: amtm to 3.1.7.
   - UPDATED: Root certificate bundle to June 3rd 2020.
   - UPDATED: OUI database used by the webui.
-  - UPDATED: Dropbear 2020.79 (themiron)
+  - UPDATED: Dropbear 2020.80 (themiron)
   - UPDATED: nano to 4.9.3.
   - CHANGED: Optimized OpenVPN routing policy storage (this change
              is NOT backward compatible with previous firmwares)
@@ -28,14 +28,14 @@ Asuswrt-Merlin 384/NG Changelog
 
 
 
-384.13_9 (xx-xxx-2020)
+384.13_10 (28-June-2020)
   This release will most likely be the last release for the
   RT-AC87U and RT-AC3200, due to limited upstream support.
 
   - UPDATED: amtm to 3.1.7.
   - UPDATED: Root certificate bundle to June 3rd 2020.
   - UPDATED: OUI database used by the webui.
-  - UPDATED: Dropbear 2020.79 (themiron)
+  - UPDATED: Dropbear 2020.80 (themiron)
   - UPDATED: Wireless driver from 382_52230 for RT-AC87U and
              RT-AC3200 (should in theory address Kr00k)
   - FIXED: ssh/scp client would fail to connect while negotiating

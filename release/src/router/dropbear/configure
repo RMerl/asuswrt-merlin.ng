@@ -6735,9 +6735,9 @@ else
   BUNDLED_LIBTOM=1
 fi
 
-		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for register_cipher in -ltomcrypt" >&5
-$as_echo_n "checking for register_cipher in -ltomcrypt... " >&6; }
-if ${ac_cv_lib_tomcrypt_register_cipher+:} false; then :
+		{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for poly1305_init in -ltomcrypt" >&5
+$as_echo_n "checking for poly1305_init in -ltomcrypt... " >&6; }
+if ${ac_cv_lib_tomcrypt_poly1305_init+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -6751,27 +6751,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char register_cipher ();
+char poly1305_init ();
 int
 main ()
 {
-return register_cipher ();
+return poly1305_init ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_tomcrypt_register_cipher=yes
+  ac_cv_lib_tomcrypt_poly1305_init=yes
 else
-  ac_cv_lib_tomcrypt_register_cipher=no
+  ac_cv_lib_tomcrypt_poly1305_init=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_register_cipher" >&5
-$as_echo "$ac_cv_lib_tomcrypt_register_cipher" >&6; }
-if test "x$ac_cv_lib_tomcrypt_register_cipher" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tomcrypt_poly1305_init" >&5
+$as_echo "$ac_cv_lib_tomcrypt_poly1305_init" >&6; }
+if test "x$ac_cv_lib_tomcrypt_poly1305_init" = xyes; then :
   LIBTOM_LIBS="-ltomcrypt $LIBTOM_LIBS"
 else
   BUNDLED_LIBTOM=1

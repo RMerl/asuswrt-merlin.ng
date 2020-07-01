@@ -8,14 +8,14 @@ MODELS_HAVE_USB3 = AC2900 \
 	DSL-AC68U \
 	RT-AC5300 GT-AC5300 GT-AC9600 RT-AC95U RT-AC3100 RT-AC3200 GT-AX11000\
 	RT-AC55U RT-AC55UHP RT-AC58U 4G-AC53U RT-AC82U RT-AC88Q \
-	RT-AC86U RT-AC88U RT-AX88U RT-AC87U RT-AC85U RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U RT-AX92U RT-AX95Q RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U \
+	RT-AC86U RT-AC88U RT-AX88U RT-AC87U RT-AC85U RT-AC68U RT-AC68A 4G-AC68U RT-AC65U RT-AC56S RT-AC56U RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U \
 	RT-AX86U RT-AX5700 RT-AX68U \
 	RT-N65U \
 	RT-N18U \
 	RP-AC68U
 
 MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 DSL-AC68U RT-AC68U \
-	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW GT-AX11000 RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE RT-AX92U RT-AX95Q RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U \
+	4G-AC68U RT-AC68R RT-AC68W RT-AC68RW GT-AX11000 RT-AC1900P RT-AC67U RT-AC56U RT-AC56R RT-AC85U RT-AC85P RT-AC65U BRT-AC828 BLUECAVE RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U \
 	RT-AX86U RT-AX5700 RT-AX68U
 
 MODELS_QIS_SLIDER = GT-AX11000 GT-AX6000 GT-AC5400
@@ -453,7 +453,6 @@ endif
 ifneq ($(RTCONFIG_ROG_UI),y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/indicator.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/speedmeter_2.png
 endif
 endif
 ifneq ($(RTCONFIG_ADBLOCK),y)
@@ -481,7 +480,7 @@ ifneq ($(RTCONFIG_SNMPD), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_SNMP_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U))
 	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Connect.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
@@ -520,7 +519,7 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), 4G-AC53U 4G-AC55U 4G-AC68U))
 	rm -rf $(INSTALLDIR)/www/Advanced_Modem_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AX88U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U AC2900 RT-AC3200 GT-AX11000 RT-AX92U RT-AX95Q RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U))
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AX88U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U AC2900 RT-AC3200 GT-AX11000 RT-AX92U RT-AX95Q RT-AX56_XD4 RT-AX58U TUF-AX3000 RT-AX82U RT-AX56U RT-AX86U RT-AX5700 RT-AX68U))
 	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 	rm -rf $(INSTALLDIR)/www/css/effect.css
 	rm -rf $(INSTALLDIR)/www/qis_m
@@ -550,7 +549,6 @@ endif
 
 ifneq ($(RTCONFIG_WTFAST), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_WTFast_Content.asp
-	rm -rf $(INSTALLDIR)/www/GameBoost.asp
 	rm -rf $(INSTALLDIR)/www/js/fire.js
 	rm -rf $(INSTALLDIR)/www/images/fire.jpg
 	rm -rf $(INSTALLDIR)/www/images/wtfast_bg.png
@@ -571,12 +569,8 @@ endif
 	rm -rf $(INSTALLDIR)/www/images/New_ui/upgrade_hover.svg
 endif
 ifneq ($(RTCONFIG_WTF_REDEEM)$(RTCONFIG_WTFAST), y)
-	rm -rf $(INSTALLDIR)/www/images/New_ui/game.svg
-	rm -rf $(INSTALLDIR)/www/GameBoost.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/GameBoost_AiProtection.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/GameBoost_QoS.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/GameBoost_WTFast.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/mainimage_img_Game.jpg
 endif
 	rm -rf $(INSTALLDIR)/www/js/fire.js
 ifneq ($(RTCONFIG_IPSEC), y)
@@ -764,25 +758,24 @@ ifneq ($(RTCONFIG_UUPLUGIN), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/icon_UU.png
 endif
 
-ifneq ($(RTCONFIG_ROG_UI),y)
-	rm -rf $(INSTALLDIR)/www/fonts
+ifneq ($(RTCONFIG_ROG_UI),y)   
+	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.otf
+	rm -rf $(INSTALLDIR)/www/fonts/ROG_Fonts-Regular.woff
+	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.otf
+	rm -rf $(INSTALLDIR)/www/fonts/xolonium.regular.woff
 	rm -rf $(INSTALLDIR)/www/images/triLvGameAcceleration
-	rm -rf $(INSTALLDIR)/www/css/triLvGameAcceleration.css
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), TUF-AX3000))
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/arrow-icon.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/card-frame-corner.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/check.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/default-game.png
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/edit.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/map_light_indicator.png
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/open-nat_map-link.png
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/pause.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/plus.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/trashcan.svg
-	rm -rf $(INSTALLDIR)/www/images/gameprofile/world_map.png
-	rm -rf $(INSTALLDIR)/www/css/gameprofile.css
-endif	
+	rm -rf $(INSTALLDIR)/www/css/triLvGameAcceleration.css	
 	rm -rf $(INSTALLDIR)/www/ajax_wanlink.asp
+	rm -rf $(INSTALLDIR)/www/GearAccelerator.asp
+endif
+
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AX11000 GT-AXE11000 GT-AXY16000 RT-AX82U))
+	rm -rf $(INSTALLDIR)/www/fonts
+endif
+
+ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AX82U))
+	rm -rf $(INSTALLDIR)/www/light_effect
+	rm -rf $(INSTALLDIR)/www/images/New_ui/light_effect
 endif
 
 	ln -sf user/user1.asp $(INSTALLDIR)/www/user1.asp

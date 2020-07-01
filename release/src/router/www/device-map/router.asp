@@ -478,8 +478,93 @@ function UIunderRepeater(){
 	ssidObj.name="wlc_ure_ssid";
 }
 
+function getAiMeshOnboardinglist(_onboardingList){
+	var jsonArray = [];
+	var profile = function(){
+		this.name = "";
+		this.ui_model_name = "";
+		this.signal = "";
+		this.rssi = "";
+		this.source = "";
+		this.mac = "";
+		this.pap_mac = "";
+		this.id = "";
+	};
+	var convRSSI = function(val) {
+		var result = 1;
+		val = parseInt(val);
+		if(val >= -50) result = 4;
+		else if(val >= -80) result = Math.ceil((24 + ((val + 80) * 26)/10)/25);
+		else if(val >= -90) result = Math.ceil((((val + 90) * 26)/10)/25);
+		else return 1;
+
+		if(result == 0) result = 1;
+		return result;
+	};
+
+	Object.keys(_onboardingList).forEach(function(key) {
+		var papMac = key;
+		var newReMacArray = _onboardingList[papMac];
+		Object.keys(newReMacArray).forEach(function(key) {
+			var newReMac = key;
+			var node_info  = new profile();
+			node_info.name = newReMacArray[newReMac].model_name;
+			node_info.ui_model_name = newReMacArray[newReMac].ui_model_name;
+			node_info.signal = convRSSI(newReMacArray[newReMac].rssi);
+			node_info.rssi = newReMacArray[newReMac].rssi;
+			node_info.source = newReMacArray[newReMac].source;
+			node_info.mac = newReMac;
+			node_info.pap_mac = papMac;
+			node_info.id = newReMac.replace(/:/g, "");
+			jsonArray.push(node_info);
+		});
+	});
+
+	return jsonArray;
+}
+
 function wl_auth_mode_change(isload){
 	var mode = document.form.wl_auth_mode_x.value;
+
+	if(mode == "sae"){
+		var get_capability_support = function(_node_info, _type){
+			var bitwise_map = {"usb":0, "guest_network":1, "wpa3":2};
+			var bitwise_value = -1;
+			var capability_value = 0;
+			var result = false;
+			if(bitwise_map[_type] != undefined)
+				bitwise_value = bitwise_map[_type];
+
+			if("capability" in _node_info) {
+				if("4" in _node_info.capability) {//4 is rc_support
+					capability_value = _node_info.capability["4"];
+					if(capability_value == "")
+						capability_value = 0;
+				}
+			}
+			if(bitwise_value == -1 || capability_value == 0)
+				result = false;
+			else
+				result = (capability_value & (1 << bitwise_value)) ? true : false;
+
+			return result;
+		};
+
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+
+		if(get_cfg_clientlist != undefined){
+			var len = get_cfg_clientlist.length;
+			for(var i = 1; i < len; i += 1){//filter CAP
+				if(get_cfg_clientlist[i] != undefined && !get_capability_support(get_cfg_clientlist[i], "wpa3")){
+					if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "";
+					break;
+				}
+			}
+		}
+	}
+	else{
+		if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "none";
+	}
 
 	change_wep_type(mode);
 	change_wpa_type(mode);
@@ -1105,7 +1190,19 @@ function checkWLReady(){
 							<option value="wpawpa2" <% nvram_match("wl_auth_mode_x", "wpawpa2","selected"); %>>WPA-Auto-Enterprise</option>
 							<option value="radius"  <% nvram_match("wl_auth_mode_x", "radius", "selected"); %>>Radius with 802.1x</option>
 				  		</select>
-							<img style="display:none;margin-top:-30px;margin-left:185px;cursor:pointer;" id="wl_nmode_x_hint" src="/images/alertImg.png" width="30px" onClick="parent.overlib(parent.helpcontent[0][24], parent.FIXX, 870, parent.FIXY, 350);" onMouseOut="parent.nd();">
+						
+						<img style="display:none;margin-top:-30px;margin-left:185px;cursor:pointer;" id="wl_nmode_x_hint" src="/images/alertImg.png" width="30px" onClick="parent.overlib(parent.helpcontent[0][24], parent.FIXX, 870, parent.FIXY, 350);" onMouseOut="parent.nd();">
+
+						<div id="no_wp3_hint" style="display:none;color:#FC0;margin-top:5px;">
+							<span><#AiMesh_confirm_msg10#></span>
+							<script>
+								$("#wpa3FaqLink")
+									.attr("target", "_blank")
+									.attr("href", "https://www.asus.com/support/FAQ/1042500")
+									.css({"color": "#FC0", "text-decoration": "underline"})
+							</script>
+						</div>
+
 	  					<div style="margin-top:5px; *margin-top:-10px;" class="line_horizontal"></div>
     			</td>
   		</tr>

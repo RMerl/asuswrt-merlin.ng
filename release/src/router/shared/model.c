@@ -7,7 +7,6 @@
 #include <bcmdevs.h>
 #include "shared.h"
 
-
 struct model_s {
 	char *pid;
 	int model;
@@ -104,10 +103,12 @@ static const struct model_s model_list[] = {
 	{ "GT-AX11000",	MODEL_GTAX11000	},
 	{ "RT-AX92U",	MODEL_RTAX92U	},
 	{ "RT-AX95Q",	MODEL_RTAX95Q	},
+	{ "RT-AX56_XD4",			MODEL_RTAX56_XD4		},
 	{ "RT-AX58U",	MODEL_RTAX58U	},
 	{ "TUF-AX3000",	MODEL_RTAX58U	},
 	{ "RT-AX82U",	MODEL_RTAX58U	},
 	{ "RT-AX56U",	MODEL_RTAX56U	},
+	{ "RT-AX55",	MODEL_RTAX55	},
 	{ "RT-AX86U",	MODEL_RTAX86U	},
 	{ "RT-AX5700",	MODEL_RTAX86U	},
 	{ "RT-AX68U",	MODEL_RTAX68U	},
@@ -172,7 +173,8 @@ static int get_model_by_hw(void)
 #define BLV_MAX 4
 #define BL_VERSION(a,b,c,d) (((a) << 12) + ((b) << 8) + ((c) << 4) + (d))
 
-int get_blver(char *bls) {
+int get_blver(char *bls)
+{
 	int bv[BLV_MAX], blver=0, i=0;
 	char *tok, *delim = ".";
 	char buf[32], *bp=NULL;
@@ -190,7 +192,8 @@ int get_blver(char *bls) {
 	return blver;
 }
 
-int get_fwver(char *buildno, char *extendno) {
+int get_fwver(char *buildno, char *extendno)
+{
 	
 	return atoi(buildno)*100000 + atoi(extendno);
 }

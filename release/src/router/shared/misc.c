@@ -4234,92 +4234,81 @@ int is_valid_domainname(const char *name)
 	return p - name;
 }
 
-#if defined(RTCONFIG_AMAS)
-/*
-	define amas_lib trigger function
-*/
-static int SEND_AMAS_NODE_EVENT(AMASLIB_EVENT_T *event)
+int get_discovery_ssid(char *ssid_g, int size)
 {
-	struct    sockaddr_un addr;
-	int       sockfd, n;
-
-	if ((sockfd = socket(AF_UNIX, SOCK_STREAM, 0)) == -1) {
-		printf("[%s:(%d)] ERROR socket.\n", __FUNCTION__, __LINE__);
-		perror("socket error");
-		return 0;
-	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.sun_family = AF_UNIX;
-	strlcpy(addr.sun_path, AMASLIB_SOCKET_PATH, sizeof(addr.sun_path));
-
-	if (connect(sockfd, (struct sockaddr*)&addr, sizeof(addr)) == -1) {
-		printf("[%s:(%d)] ERROR connecting:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-		perror("connect error");
-		close(sockfd);
-		return 0;
-	}
-
-	n = write(sockfd, (AMASLIB_EVENT_T *)event, sizeof(AMASLIB_EVENT_T));
-
-	close(sockfd);
-
-	if (n < 0) {
-		printf("[%s:(%d)] ERROR writing:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-		perror("writing error");
-		return 0;
-	}
-
-	return 1;
-}
-
-int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag)
-{
-	AMASLIB_EVENT_T *node = NULL;
-	node = (AMASLIB_EVENT_T *)malloc(sizeof(AMASLIB_EVENT_T));
-
-	char *buf1 = sta2g;
-	char *buf2 = sta5g;
-
-	if (node == NULL) {
-		printf("[%s:(%d)] malloc(AMASLIB_EVENT_T) error:%s.\n", __FUNCTION__, __LINE__, strerror(errno));
-		return 0;
-	}
-
-	if (sta2g == NULL) buf1 = "\0";
-	if (sta5g == NULL) buf2 = "\0";
-
-	//printf("[%s:(%d)] sta2g=%s, sta5g=%s, flag=%d\n", __FUNCTION__, __LINE__, buf1, buf2, flag);
-	memset(node, 0, sizeof(AMASLIB_EVENT_T));
-	memcpy(node->sta2g, buf1, sizeof(node->sta2g));
-	memcpy(node->sta5g, buf2, sizeof(node->sta5g));
-	node->flag = flag;
-
-	/* send wlc event into wlc_nt */
-	SEND_AMAS_NODE_EVENT(node);
-
-	/* free memory */
-	if (node) free(node);
-
-	return 1;
-}
-
-/*
-	define amaslib enable function for check
-*/
-int is_amaslib_enabled()
-{
-	int ret = 0;
-	if ((nvram_get_int("wrs_enable") && nvram_get_int("wrs_app_enable")) ||
-		(nvram_get_int("qos_enable") && (nvram_get_int("qos_type") == 0 || nvram_get_int("qos_type") == 2)) ||
-		nvram_get_int("MULTIFILTER_ALL"))
-	{
-		ret = 1;
-	}
-
-	return ret;
-}
+#if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
+	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
 #endif
+#ifdef RTCONFIG_DPSTA
+	char word[80], *next;
+	int unit, connected;
+#endif
+#ifdef RTCONFIG_WIRELESSREPEATER
+	if (sw_mode() == SW_MODE_REPEATER)
+	{
+#ifdef RTCONFIG_CONCURRENTREPEATER
+		if (nvram_get_int("wlc_band") < 0 || nvram_get_int("wlc_express") == 0)
+			snprintf(prefix, sizeof(prefix), "wl0.1_");
+		else if (nvram_get_int("wlc_express") == 1)
+			snprintf(prefix, sizeof(prefix), "wl1.1_");
+		else if (nvram_get_int("wlc_express") == 2)
+			snprintf(prefix, sizeof(prefix), "wl0.1_");
+		else
+#endif
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
+		strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+	}
+	else
+#ifdef RTCONFIG_REALTEK
+		if (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1)
+		{
+#ifdef RTCONFIG_CONCURRENTREPEATER
+			snprintf(prefix, sizeof(prefix), "wl0_");
+#else
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
+#endif
+			strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+		}
+		else
+#endif
+#endif
+#ifdef RTCONFIG_BCMWL6
+#ifdef RTCONFIG_PROXYSTA
+#ifdef RTCONFIG_DPSTA
+		if (dpsta_mode() && nvram_get_int("re_mode") == 0)
+		{
+			connected = 0;
+			foreach(word, nvram_safe_get("dpsta_ifnames"), next) {
+				wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
+				snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
+				if (nvram_get_int(strcat_r(prefix, "state", tmp)) == 2) {
+					connected = 1;
+					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
+					strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+					break;
+				}
+			}
+		if (!connected)
+			strlcpy(ssid_g, nvram_safe_get("wl0.1_ssid"), size);
+		}
+		else
+#endif
+		if (is_psta(nvram_get_int("wlc_band")))
+		{
+			snprintf(prefix, sizeof(prefix), "wl%d_", nvram_get_int("wlc_band"));
+			strncpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+		}
+		else if (is_psr(nvram_get_int("wlc_band")))
+		{
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", nvram_get_int("wlc_band"));
+			strlcpy(ssid_g, nvram_safe_get(strcat_r(prefix, "ssid", tmp)), size);
+		}
+		else
+#endif
+#endif
+	strlcpy(ssid_g, nvram_safe_get("wl0_ssid"), size);
+	return 0;
+}
 
 int get_chance_to_control(void)
 {

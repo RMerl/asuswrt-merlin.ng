@@ -352,6 +352,9 @@ else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
+ifeq ($(or $(RTAX55)),y)
+OBJS += rtkswitch.o
+endif
 endif
 endif
 

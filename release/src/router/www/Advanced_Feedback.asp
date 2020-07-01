@@ -221,9 +221,9 @@ function gen_ptype_list(url){
 	ptypelist = new Array();
 	ptypelist.push(["<#Select_menu_default#> ...", "No_selected"]);
 	ptypelist.push(["<#feedback_setting_problem#>", "Setting_Problem"]);	
-	ptypelist.push(["<#feedback_conn_problem#>", "Connection_or_Speed_Problem"]);
+	ptypelist.push(["<#feedback_conn_problem#> ", "Connection_or_Speed_Problem"]);
 	ptypelist.push(["<#feedback_compat_problem#>", "Compatibility_Problem"]);
-	ptypelist.push(["<#feedback_translation#>", "Translated_Suggestion"]);
+	ptypelist.push(["<#feedback_suggestion#>", "Suggestion"]);
 	ptypelist.push(["<#Adaptive_Others#>", "Other_Problem"]);
 	free_options(document.form.fb_ptype);
 	document.form.fb_ptype.options.length = ptypelist.length;
@@ -261,17 +261,23 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#EzQoS_type_traditional#>","Traditional QoS"]);
 		url_group.push(["AiProtection"]);
 
-		desclist.push(["<#Menu_TrafficManager#>","<#Traffic_Analyzer#>"]);
+		desclist.push(["<#Adaptive_Game#>","Gaming"]);
+		url_group.push(["GameBoost"]);
+
+		desclist.push(["<#Traffic_Analyzer#>/<#Menu_TrafficManager#>","Traffic Analyzer/Manager"]);
 		url_group.push(["TrafficMonitor"]);
 
 		desclist.push(["<#Parental_Control#>","Parental Ctrl"]);
 		url_group.push(["ParentalControl"]);
 
-		desclist.push(["<#Menu_usb_application#>","USB Application"]);
+		desclist.push(["<#Menu_usb_application#>","USB Application"]);		//10
 		url_group.push(["APP_", "AiDisk", "aidisk", "mediaserver", "PrinterServer", "TimeMachine"]);
 
-		desclist.push(["AiCloud","AiCloud"]);	//10
+		desclist.push(["AiCloud","AiCloud"]);
 		url_group.push(["cloud"]);
+
+		desclist.push(["AiMesh","AiMesh"]);
+        url_group.push(["AiMesh"]);
 
 		desclist.push(["<#menu5_1#>","Wireless"]);
 		url_group.push(["ACL", "WAdvanced", "Wireless", "WMode", "WSecurity", "WWPS"]);
@@ -279,13 +285,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#menu5_3#>","WAN"]);
 		url_group.push(["WAN_", "PortTrigger", "VirtualServer", "Exposed", "NATPassThrough"]);
 
-		desclist.push(["<#dualwan#>","Dual WAN"]);
+		desclist.push(["<#dualwan#>","Dual WAN"]);		//15
 		url_group.push(["WANPort"]);
 
 		desclist.push(["<#menu5_2#>","LAN"]);
 		url_group.push(["LAN", "DHCP", "GWStaticRoute", "IPTV", "SwitchCtrl"]);
 
-		desclist.push(["<#menu5_4_4#>","USB dongle"]);	//15
+		desclist.push(["<#menu5_4_4#>","USB dongle"]);
 		url_group.push(["Modem"]);
 
 		desclist.push(["<#DM_title#>","DM"]);
@@ -294,13 +300,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#menu5_3_6#>","DDNS"]);
 		url_group.push(["DDNS"]);
 
-		desclist.push(["IPv6","IPv6"]);
+		desclist.push(["IPv6","IPv6"]);		//20
 		url_group.push(["IPv6"]);
 
 		desclist.push(["VPN","VPN"]);
 		url_group.push(["VPN"]);
 
-		desclist.push(["<#menu5_5#>","Firewall"]);	//20
+		desclist.push(["<#menu5_5#>","Firewall"]);
 		url_group.push(["Firewall", "KeywordFilter", "URLFilter"]);
 
 		desclist.push(["<#menu5_6#>","Administration"]);
@@ -309,13 +315,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#System_Log#>","System Log"]);
 		url_group.push(["VPN"]);
 
-		desclist.push(["<#Network_Tools#>","Network Tools"]);
+		desclist.push(["<#Network_Tools#>","Network Tools"]);		//25
 		url_group.push(["Status_"]);
 
 		desclist.push(["<#Rescue_Mode#>","Rescue"]);
 		url_group.push(["Rescue"]);//false value
 
-		desclist.push(["<#feedback_compat_wond#>","Other Devices"]);	//25
+		desclist.push(["<#feedback_compat_wond#>","Other Devices"]);
 		url_group.push(["Other_Device"]);//false value
 
 		desclist.push(["<#WebGUI_issue#>","Fail to access"]);
@@ -331,6 +337,7 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#feedback_conn_sws#>","Wired speed"]);
 		desclist.push(["<#feedback_conn_ucp#>","Unstable connection"]);
 		desclist.push(["<#feedback_conn_rra#>","Router reboot"]);
+		desclist.push(["<#feedback_conn_wdc#>","Wireless disconnected"]);
 		
 	}
 	else if(ptype == "Compatibility_Problem"){
@@ -344,10 +351,13 @@ function Reload_pdesc(obj, url){
 		desclist.push(["<#feedback_compat_wond#>","network devices"]);
 
 	}
-	else if(ptype == "Translated_Suggestion"){
+	else if(ptype == "Suggestion"){
 		
 		desclist.splice(0,1);
-		desclist.push(["<#feedback_translation_ts#>","Translation"]);		
+		desclist.push(["<#feedback_suggestion_ts#>","Translation"]);
+		desclist.push(["<#feedback_suggestion_ux#>","UI/UX"]);
+		desclist.push(["<#feedback_suggestion_cf#>","Current Feature"]);
+		desclist.push(["<#feedback_suggestion_nfr#>","New Feature Request"]);
 	}
 	else{	//Other_Problem
 		
@@ -436,11 +446,22 @@ function applyRule(){
 			}
 		}
 		
-		var re = new RegExp("^[a-zA-Z][0-9]{9,10}","gi");
-		if(!re.test(document.form.fb_serviceno.value) && document.form.fb_serviceno.value != ""){
-			alert("<#JS_validchar#>");
-			document.form.fb_serviceno.focus();
-			return false;
+		var re_asus = new RegExp("^[a-zA-Z][0-9]{8,11}","gi");
+		var re_crs = new RegExp("^[0-9]{5}","gi");
+		var re_valid = 0;
+		if(document.form.fb_serviceno.value != ""){
+			if(!re_asus.test(document.form.fb_serviceno.value)){
+				re_valid++;				
+			}
+			if(document.form.fb_serviceno.value.length != 5 || !re_crs.test(document.form.fb_serviceno.value)){
+				re_valid++;				
+			}
+
+			if(re_valid == 2){
+				alert("<#JS_validchar#>");
+				document.form.fb_serviceno.focus();
+				return false;
+			}
 		}
 		
 		if(fb_trans_id != "")

@@ -45,6 +45,9 @@
 # define lstat stat
 #endif
 
+/* smb_auth.c */
+extern int smbc_wrapper_stat(connection* con, const char *url, struct stat *st);
+
 #define DBE 0
 
 #if 0

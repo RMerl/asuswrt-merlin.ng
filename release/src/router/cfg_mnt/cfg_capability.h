@@ -54,6 +54,7 @@ enum capabilityType {
 /* for RC_SUPPORT */
 #define USBX			BIT(0)
 #define GUEST_NETWORK		BIT(1)
+#define WPA3			BIT(2)
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)

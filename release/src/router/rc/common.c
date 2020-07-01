@@ -1471,7 +1471,9 @@ int setup_dnsmq(int mode)
 	else {
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
+#ifdef CONFIG_BCMWL5
 		if (is_ure(nvram_get_int("wlc_band")))
+#endif
 		eval("ebtables", "-I", "FORWARD", "-i", nvram_safe_get(wlc_nvname("ifname")), "-j", "DROP");
 	}	
 	

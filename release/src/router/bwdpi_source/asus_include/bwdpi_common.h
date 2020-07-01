@@ -99,6 +99,9 @@
 #define DEVNODE         "/dev/detector"
 #endif
 
+// OOM protection
+#define IS_IDPFW()      f_exists("/dev/idpfw")
+
 // database hidden path and function path
 #define BWDPI_DB_DIR    "/jffs/.sys"
 #define BWDPI_ANA_DIR   BWDPI_DB_DIR"/TrafficAnalyzer"
@@ -142,6 +145,7 @@ extern int get_anomaly_main(char *cmd);
 extern int get_app_patrol_main();
 
 //dpi.c
+extern int check_tdts_module_exist();
 extern int check_daulwan_mode();
 extern int tdts_check_wan_changed();
 extern void stop_dpi_engine_service(int forced);

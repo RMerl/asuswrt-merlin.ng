@@ -98,9 +98,6 @@
 // Web History database
 #define BWDPI_HIS_DB    (strcmp(nvram_safe_get("bwdpi_his_path"), "")) ? nvram_safe_get("bwdpi_his_path") : BWDPI_HIS_DIR"/WebHistory.db"
 
-// OOM protection
-#define IS_IDPFW()      f_exists("/dev/idpfw")
-
 typedef struct cat_id cid_s;
 struct cat_id{
 	int id;
@@ -150,6 +147,7 @@ enum{
 };
 
 //dpi.c
+extern int is_sig_wrs_models();
 extern int check_tdts_module_exist();
 
 //wrs.c

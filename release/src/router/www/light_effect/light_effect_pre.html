@@ -1,0 +1,155 @@
+﻿<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="stylesheet" type="text/css" href="/light_effect/light_effect.css" />
+<head>
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
+</head>
+<script >
+var $light_effect_bg = $("#light_effect_bg");
+var scheme_item_post = {
+	"LED_Set" : {
+		"1" : {"R" : 0, "G" : 0, "B" : 128},
+		"2" : {"R" : 0, "G" : 0, "B" : 128},
+		"3" : {"R" : 0, "G" : 0, "B" : 128},
+		"4" : {"R" : 0, "G" : 0, "B" : 128},
+	},
+	"Mode" : 6
+}
+function initial_led_control() {
+	$light_effect_bg = $("#light_effect_bg");
+
+	var ledg_scheme = httpApi.nvramGet(["ledg_scheme"], true).ledg_scheme;
+	if(ledg_scheme == "2" || ledg_scheme == "3" || ledg_scheme == "7") {
+		var ledg_rgb = httpApi.nvramGet(["ledg_rgb" + ledg_scheme + ""], true)["ledg_rgb" + ledg_scheme + ""];
+		var ledg_rgb_array = ledg_rgb.split(",");
+		scheme_item_post["LED_Set"]["1"]["R"] = multiply_rgb(parseInt(ledg_rgb_array[0]));
+		scheme_item_post["LED_Set"]["1"]["G"] = multiply_rgb(parseInt(ledg_rgb_array[1]));
+		scheme_item_post["LED_Set"]["1"]["B"] = multiply_rgb(parseInt(ledg_rgb_array[2]));
+		scheme_item_post["LED_Set"]["4"] = scheme_item_post["LED_Set"]["3"] = scheme_item_post["LED_Set"]["2"] = scheme_item_post["LED_Set"]["1"];
+	}
+	else if(ledg_scheme == "6") {
+		scheme_item_post["LED_Set"]["1"]["R"] = multiply_rgb(0);
+		scheme_item_post["LED_Set"]["1"]["G"] = multiply_rgb(0);
+		scheme_item_post["LED_Set"]["1"]["B"] = multiply_rgb(128);
+		scheme_item_post["LED_Set"]["4"] = scheme_item_post["LED_Set"]["3"] = scheme_item_post["LED_Set"]["2"] = scheme_item_post["LED_Set"]["1"];
+	}
+	scheme_item_post.Mode = ledg_scheme;
+	var default_rgb = [scheme_item_post["LED_Set"]["1"]["R"], scheme_item_post["LED_Set"]["1"]["G"], scheme_item_post["LED_Set"]["1"]["B"]];
+	set_scheme_mode(scheme_item_post.Mode, default_rgb);
+
+	if(ledg_scheme == "0") {
+		lightl_effect_animate.clear($light_effect_bg);
+		$light_effect_bg.removeClass().addClass("light_effect_bg prePage");
+		$light_effect_bg.css("background", "initial");
+	}
+}
+function set_scheme_mode(_type, _rgbArr){
+	switch(_type) {
+		case "2" :
+			$light_effect_bg.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")");
+			scheme_item_post["LED_Set"]["1"]["R"] = _rgbArr[0];
+			scheme_item_post["LED_Set"]["1"]["G"] = _rgbArr[1];
+			scheme_item_post["LED_Set"]["1"]["B"] = _rgbArr[2];
+			scheme_item_post.Mode = "2";//static
+			break;
+		case "3" :
+			$light_effect_bg.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")");
+			lightl_effect_animate.breathing($light_effect_bg, _rgbArr);
+			scheme_item_post["LED_Set"]["1"]["R"] = _rgbArr[0];
+			scheme_item_post["LED_Set"]["1"]["G"] = _rgbArr[1];
+			scheme_item_post["LED_Set"]["1"]["B"] = _rgbArr[2];
+			scheme_item_post.Mode = "3";//breathing
+			break;
+		case "6" :
+			$light_effect_bg.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")");
+			lightl_effect_animate.wave($light_effect_bg, _rgbArr);
+			scheme_item_post.Mode = "6";//wave
+			break;
+		case "7" :
+			$light_effect_bg.css("background", "rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ")");
+			lightl_effect_animate.marquee($light_effect_bg, _rgbArr);
+			scheme_item_post["LED_Set"]["1"]["R"] = _rgbArr[0];
+			scheme_item_post["LED_Set"]["1"]["G"] = _rgbArr[1];
+			scheme_item_post["LED_Set"]["1"]["B"] = _rgbArr[2];
+			scheme_item_post.Mode = 7;//marquee
+			break;
+		case "1" :
+			$light_effect_bg.addClass("gradient");
+			scheme_item_post.Mode = "1";//gradient
+			break;
+		case "4" :
+			$light_effect_bg.addClass("evolution");
+			scheme_item_post.Mode = "4";//evolution
+			break;
+		case "5" :
+			$light_effect_bg.addClass("rainbow");
+			scheme_item_post.Mode = "5";//rainbow
+			break;
+	}
+}
+var lightl_effect_animate = {
+	"interval" : false,
+	"breathing" : function(_obj, _rgbArr) {
+		var breathing_color = function(_obj, _rgbArr) {
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 1)"
+			}, 1000);
+
+			_obj.animate({
+				backgroundColor: "rgba("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ", 0.2)"
+			}, 1000);
+
+		};
+		breathing_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			breathing_color(_obj, _rgbArr);
+		},2000);
+	},
+	"marquee" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var marquee_color = function(_obj, _rgbArr) {
+			var min = middle = max = 0;
+			min = Math.max(0, (percent_init - 30));
+			middle = percent_init;
+			max = Math.min(100, (percent_init + 30));
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) " + min + "%, rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ") " + middle + "%, rgb(0, 0, 0) " + max + "%)");
+		};
+		marquee_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			marquee_color(_obj, _rgbArr);
+			if(percent_init >= 100)
+				percent_init = 0;
+		},200);
+	},
+	"wave" : function(_obj, _rgbArr) {
+		var percent_init = 0;
+		var percent_end = 100;
+		var wave_color = function(_obj, _rgbArr) {
+			_obj.css("background", "linear-gradient(to right, rgb(0, 0, 0) 0%, rgb("+ _rgbArr[0] + ", " + _rgbArr[1] + ", " + _rgbArr[2] + ") " + percent_init + "%, rgb(0, 0, 0) 100%)");
+		};
+		wave_color(_obj, _rgbArr);
+		lightl_effect_animate.interval = setInterval(function(){
+			percent_init += 10;
+			wave_color(_obj, _rgbArr);
+			if(percent_init >= 100)
+				percent_init = 0;
+		},150);
+	},
+	"clear" : function(_obj) {
+		clearInterval(lightl_effect_animate.interval);
+		_obj.stop(true,true);
+	}
+}
+function multiply_rgb(_value) {
+	return (Math.ceil(_value * 2) > 255) ? 255 : Math.ceil(_value * 2);
+}
+$(document).ready(initial_led_control);
+</script>
+<body style="margin:initial;background-color:#000;">
+<div class="light_effect_bg prePage" id="light_effect_bg">
+	<div class="light_effect_mask prePage"></div>
+</div>
+</body>

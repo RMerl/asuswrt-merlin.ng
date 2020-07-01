@@ -16,3 +16,6 @@ if(cfg_sync_support){
 	cfg_check = '<% nvram_get("cfg_check"); %>';
 	cfg_upgrade = '<% nvram_get("cfg_upgrade"); %>';
 }
+if(pipefw_support || urlfw_support){
+	hndwr_status = '<% nvram_get("hndwr"); %>';
+}

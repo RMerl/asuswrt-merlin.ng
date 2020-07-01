@@ -193,6 +193,8 @@ _Pragma("GCC diagnostic ignored \"-Wmissing-field-initializers\"")
 #define MAX_NO_2G_CHANNELS 14 //Have to make dynamic
 #define MAX_NO_5G_CHANNELS 40
 
+extern uint32 wl_msg_level;
+
 static s32 wl_cfg80211_alloc_2g_channel_bands(struct wireless_dev *wdev);
 static s32 wl_cfg80211_alloc_5g_channel_bands(struct wireless_dev *wdev);
 static s32 wl_cfg80211_alloc_bands(struct wireless_dev *wdev);
@@ -5304,6 +5306,7 @@ wl_fils_add_hlp_container(struct bcm_cfg80211 *cfg, struct net_device *dev,
 			return;
 		}
 
+		if (wl_msg_level & WL_ERROR_VAL)
 		prhex("HLP, HLP", (const uchar *)hlp_ie, hlp_len);
 
 		pxtlv = (uint8 *)&iov_buf->data[0];
@@ -22240,8 +22243,11 @@ wl_cfg80211_set_rekey_data(struct wiphy *wiphy, struct net_device *dev,
 		return -EINVAL;
 	}
 
+	if (wl_msg_level & WL_ERROR_VAL)
 	prhex("kck", (const u8 *) (data->kck), RSN_KCK_LENGTH);
+	if (wl_msg_level & WL_ERROR_VAL)
 	prhex("kek", (const u8 *) (data->kek), RSN_KEK_LENGTH);
+	if (wl_msg_level & WL_ERROR_VAL)
 	prhex("replay_ctr", (const u8 *) (data->replay_ctr), RSN_REPLAY_LEN);
 	bcopy(data->kck, keyinfo.KCK, RSN_KCK_LENGTH);
 	bcopy(data->kek, keyinfo.KEK, RSN_KEK_LENGTH);

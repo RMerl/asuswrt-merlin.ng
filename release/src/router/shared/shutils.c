@@ -1101,26 +1101,28 @@ make_wl_prefix(char *prefix, int prefix_size, int mode, char *ifname)
  * locate the string "needle"
  */
 char *
-find_in_list(const char *haystack, const char *needle)
+_find_in_list(const char *haystack, const char *needle, char deli)
 {
 	const char *ptr = haystack;
 	int needle_len = 0;
 	int haystack_len = 0;
 	int len = 0;
+	char strde[2];
 
 	if (!haystack || !needle || !*haystack || !*needle)
 		return NULL;
 
+	sprintf(strde, "%c", deli);
 	needle_len = strlen(needle);
 	haystack_len = strlen(haystack);
 
 	while (*ptr != 0 && ptr < &haystack[haystack_len])
 	{
 		/* consume leading spaces */
-		ptr += strspn(ptr, " ");
+		ptr += strspn(ptr, strde);
 
 		/* what's the length of the next word */
-		len = strcspn(ptr, " ");
+		len = strcspn(ptr, strde);
 
 		if ((needle_len == len) && (!strncmp(needle, ptr, len)))
 			return (char*) ptr;
@@ -1130,6 +1132,12 @@ find_in_list(const char *haystack, const char *needle)
 	return NULL;
 }
 
+
+char *
+find_in_list(const char *haystack, const char *needle)
+{
+	return _find_in_list(haystack, needle, ' ');
+}
 
 /**
  *	remove_from_list
@@ -1142,7 +1150,7 @@ find_in_list(const char *haystack, const char *needle)
  *	@return	error code
  */
 int
-remove_from_list(const char *name, char *list, int listsize)
+_remove_from_list(const char *name, char *list, int listsize, char deli)
 {
 	int namelen = 0;
 	char *occurrence = list;
@@ -1152,7 +1160,7 @@ remove_from_list(const char *name, char *list, int listsize)
 
 	namelen = strlen(name);
 
-	occurrence = find_in_list(occurrence, name);
+	occurrence = _find_in_list(occurrence, name, deli);
 
 	if (!occurrence)
 		return EINVAL;
@@ -1165,7 +1173,7 @@ remove_from_list(const char *name, char *list, int listsize)
 			occurrence--;
 		occurrence[0] = 0;
 	}
-	else if (occurrence[namelen] == ' ')
+	else if (occurrence[namelen] == deli)
 	{
 		/* Using memmove because of possible overlapping source and destination buffers */
 		memmove(occurrence, &occurrence[namelen+1 /* space */],
@@ -1173,6 +1181,12 @@ remove_from_list(const char *name, char *list, int listsize)
 	}
 
 	return 0;
+}
+
+int
+remove_from_list(const char *name, char *list, int listsize)
+{
+	return _remove_from_list(name, list, listsize, ' ');
 }
 
 /**

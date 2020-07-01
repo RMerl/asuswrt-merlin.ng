@@ -28,8 +28,8 @@
 	<script>
 		$("#tm_eula_content").html($("#tm_eula_content").html().replace(/\\'/g, "'"))
 		$("#eula_url").attr("href", "https://www.asus.com/Microsite/networks/Trend_Micro_EULA/");
-		$("#tm_eula_url").attr("href", "https://www.trendmicro.com/en_us/about/legal/privacy-policy-product.html");
-		$("#tm_disclosure_url").attr("href", "https://esupport.trendmicro.com/en-us/home/pages/technical-support/1120473.aspx");
+		$("#tm_eula_url").attr("href", "http://nw-dlcdnet.asus.com/trend/tm_privacy");
+		$("#tm_disclosure_url").attr("href", "http://nw-dlcdnet.asus.com/trend/tm_pdcd");
 
 		httpApi.nvramGetAsync({
 			data: ["preferred_lang"],

@@ -1553,6 +1553,9 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 		}
 	}
 #endif	/* RTCONFIG_MULTIWAN_CFG */
+#if defined(RTAX56_XD4)
+	write_extra_port_forwarding(fp, lan_ip);
+#endif
 }
 
 void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	// oleg patch
@@ -2456,6 +2459,9 @@ void redirect_setting(void)
 		"-I YADNS 1 -p udp -j DNAT --to-destination %s:18018\n", lan_ipaddr_t);
 #endif
 
+#if defined(RTAX56_XD4)
+	write_extra_port_forwarding(redirect_fp, lan_ipaddr_t);
+#endif
 	fprintf(redirect_fp, "COMMIT\n");
 
 	fclose(redirect_fp);
@@ -5583,7 +5589,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	}
 #endif
 
-#if defined(RTAC58U) || defined(RTAC88U) || defined(RTAX58U)
+#if defined(RTAC58U) || defined(RTAC88U) || defined(RTAX58U) || defined(RTAX56U)
 	if (nvram_match("switch_wantag", "stuff_fibre")) {
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--dport", "53", "-j", "CLASSIFY", "--set-class", "0:3");
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-d", "27.111.14.67", "-j", "CLASSIFY", "--set-class", "0:3");

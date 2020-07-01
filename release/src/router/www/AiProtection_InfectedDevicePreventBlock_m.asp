@@ -319,8 +319,9 @@ function getIPSDetailData(type, event){
 			setTimeout("getIPSDetailData('cc', event);", 1000);
 		},
 		success: function(response){
-			if(data != ""){
-				data_array = JSON.parse(data);
+			data_array = JSON.parse(data);
+			if(data_array != ""){
+				
 				for(i=0; i<data_array.length; i++){
 					csvContent += '\n';
 					csvContent += data_array[i][0] + ',' + cat_id_array['_' + data_array[i][1]].description + ',' + data_array[i][2] + ',' + data_array[i][3];
@@ -487,6 +488,7 @@ function eraseDatabase(obj){
 			getIPSData("cc", "mac");
 			getIPSChart("cc", date);
 			getIPSDetailData("cc", "all");
+			hideConfirm();
 		}, 1000);	
 	});
 }
@@ -626,7 +628,7 @@ function hideConfirm(){
 			<div class="page-title"><#AiProtection_eventdetails#></div>
 			<div>
 				<!-- <img src="images/save.svg" alt="" style="width:24px;height:24px;"> -->
-				<img id="deleteData" src="images/delete.svg" alt="" class="icon-size24" style="display:none" onclick="eraseDatabase(this);">
+				<img id="deleteData" src="images/delete.svg" alt="" class="icon-size24" style="display:none" onclick="showConfirm(this.id);">
 				<!-- <img src="images/edit.svg" alt="" style="width:24px;height:24px;"> -->
 			</div>
 		</div>

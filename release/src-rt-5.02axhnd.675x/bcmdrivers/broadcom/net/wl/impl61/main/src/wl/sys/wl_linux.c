@@ -476,9 +476,9 @@ MODULE_DEVICE_TABLE(pci, wl_id_table);
 #endif // endif
 
 #ifdef BCMDBG
-static int msglevel = 0xdeadbeef;
+static int msglevel = 0;
 module_param(msglevel, int, 0);
-static int msglevel2 = 0xdeadbeef;
+static int msglevel2 = 0;
 module_param(msglevel2, int, 0);
 static int phymsglevel = 0xdeadbeef;
 module_param(phymsglevel, int, 0);
@@ -2152,6 +2152,7 @@ wl_module_init(void)
 	int error = -ENODEV;
 
 #ifdef BCMDBG
+#if 0
 	if (msglevel != 0xdeadbeef)
 		wl_msg_level = msglevel;
 	else {
@@ -2159,7 +2160,11 @@ wl_module_init(void)
 		if (var)
 			wl_msg_level = bcm_strtoul(var, NULL, 0);
 	}
+#else
+	wl_msg_level = msglevel;
+#endif
 	printf("%s: msglevel set to 0x%x\n", __FUNCTION__, wl_msg_level);
+#if 0
 	if (msglevel2 != 0xdeadbeef)
 		wl_msg_level2 = msglevel2;
 	else {
@@ -2167,6 +2172,9 @@ wl_module_init(void)
 		if (var)
 			wl_msg_level2 = bcm_strtoul(var, NULL, 0);
 	}
+#else
+	wl_msg_level2 = msglevel2;
+#endif
 	printf("%s: msglevel2 set to 0x%x\n", __FUNCTION__, wl_msg_level2);
 	{
 		extern uint32 phyhal_msg_level;

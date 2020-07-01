@@ -90,7 +90,7 @@ endif
 #endif // endif
 
 #ifdef BCM_EVENTD
-ifeq ($(RTCONFIG_BCMEVENTD),y)
+ifeq ($(or $(RTCONFIG_BCMEVENTD),$(RTCONFIG_BCN_RPT)),y)
 OBJS += eventd_eap.o
 CFLAGS += -DBCM_EVENTD
 endif

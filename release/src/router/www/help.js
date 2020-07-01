@@ -281,6 +281,15 @@ function overHint(itemNum){
 	else if(itemNum == 96){
 		statusmenu ="<span><#Adaptive_Category6#></span>";
 	}
+	else if(itemNum == 97){
+		statusmenu ="<span><#Adaptive_Category7#></span>";
+	}
+	else if(itemNum == 103){
+		statusmenu ="<span><#Adaptive_videoConference_desc#></span>";
+	}
+	else if(itemNum == 104){
+		statusmenu ="<span><#Adaptive_eLearning_desc#></span>";			
+	}
 	
 	if(itemNum == 98){
 		var signal = parseInt(sim_signal);
@@ -362,17 +371,23 @@ function overHint(itemNum){
 	// Viz add 2015.07 bwdpi : Adpative QoS mode start
 	if(itemNum == "A"){
 		statusmenu = "<div class='StatusHint'><#Adaptive_QoS#> :</div>";
-		if(bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<game"){
-			modeDesc = "Game mode";		/* untranslated */
+		if(bwdpi_app_rulelist.indexOf('game') != -1){
+			modeDesc = "<#AiProtection_filter_stream1#>";		/* untranslated */
 		}	
-		else if(bwdpi_app_rulelist == "9,20<4<0,5,6,15,17<8<13,24<1,3,14<7,10,11,21,23<<media"){
-			modeDesc = "Media Streaming mode";		/* untranslated */
+		else if(bwdpi_app_rulelist.indexOf('media') != -1){
+			modeDesc = "<#AiProtection_filter_stream2#>";		/* untranslated */
 		}	
-		else if(bwdpi_app_rulelist == "9,20<13,24<4<0,5,6,15,17<8<1,3,14<7,10,11,21,23<<web"){
-			modeDesc = "Web Surfing mode";		/* untranslated */
+		else if(bwdpi_app_rulelist.indexOf('web') != -1){
+			modeDesc = "<#Adaptive_WebSurf#>";		/* untranslated */
+		}
+		else if(bwdpi_app_rulelist.indexOf('eLearning') != -1){
+			modeDesc = "<#Adaptive_eLearning#>";	/* untranslated */
+		}
+		else if(bwdpi_app_rulelist.indexOf('videoConference') != -1){
+			modeDesc = "<#Adaptive_Message#>";	/* untranslated */
 		}	
 		else{
-			modeDesc = "Customize mode";		/* untranslated */
+			modeDesc = "<#Customize#>";		/* untranslated */
 		}		
 		
 		statusmenu += "<span>" + modeDesc + "</span>";

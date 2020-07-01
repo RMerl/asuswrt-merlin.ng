@@ -70,6 +70,7 @@ define(function(){
 					{url: "Advanced_QOSUserPrio_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_QOSUserRules_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_WTFast_Content.asp", tabName: "WTFast"},
+					{url: "GearAccelerator.asp", tabName: "Gear Accelerator"},
 					//{url: "AdaptiveQoS_Adaptive.asp", tabName: "__INHERIT__"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 

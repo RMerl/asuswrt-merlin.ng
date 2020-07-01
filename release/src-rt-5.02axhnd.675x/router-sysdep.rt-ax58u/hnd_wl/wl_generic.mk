@@ -45,6 +45,9 @@ ifeq ($(REBUILD_WL_MODULE),1)
     KBUILD_CFLAGS += -I../../router-sysdep/bcmdrv/include
     KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
     KBUILD_CFLAGS += -DBCA_HNDROUTER
+ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 RTAX82U RTAX55))
+    KBUILD_CFLAGS += -g -DBCMDBG -DWLMSG_ASSOC
+endif
 ifeq ($(CMWIFI),)
     KBUILD_CFLAGS += -Wno-error=date-time
 endif

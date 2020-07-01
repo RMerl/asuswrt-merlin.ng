@@ -416,6 +416,10 @@ config RTCONFIG_AHS
 	bool "Auto Healing System"
 	default n
 
+config RTCONFIG_LIBASC
+	bool "ASUS server command library"
+	default n
+
 config RTCONFIG_DUALWAN
 	bool "Dual WAN Support"
 	default n
@@ -1838,6 +1842,10 @@ config RTCONFIG_PIPEFW
 	bool "pipe-write fw to flash directly, don't store in mem"
 	default n
 
+config RTCONFIG_URLFW
+	bool "url-download fw to flash directly"
+	default n
+
 config RTCONFIG_AURASYNC
 	bool "AURASYNC support"
 	default n
@@ -1954,8 +1962,16 @@ config RTCONFIG_NTPD
 	bool "ntp & ntpd support"
 	default n
 
+config RTCONFIG_ASD
+	bool "RTCONFIG_ASD support"
+	default n
+
 config RTCONFIG_UUPLUGIN
 	bool "UU plugin support"
+	default n
+
+config RTCONFIG_TCPLUGIN
+	bool "Tencent plugin support"
 	default n
 
 config RTCONFIG_IPERF3
@@ -1991,3 +2007,6 @@ config RTCONFIG_AMAS_ADTBW
 	default n
 
 
+config RTCONFIG_CAPTCHA
+	bool "Web UI supprts captcha"
+	default n

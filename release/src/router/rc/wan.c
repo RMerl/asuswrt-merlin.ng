@@ -84,6 +84,10 @@
 #ifdef RTCONFIG_BWDPI
 #include <bwdpi_common.h>
 #endif
+
+#if defined(RTCONFIG_AMAS)
+#include <amas_lib.h>
+#endif
 #define	MAX_MAC_NUM	16
 static int mac_num;
 static char mac_clone[MAX_MAC_NUM][18];
@@ -1079,20 +1083,18 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 		}
 
 		TRACE_PT("3g begin.\n");
-		if(nvram_match("g3err_pin", "1")){
+		update_wan_state(prefix, WAN_STATE_CONNECTING, WAN_STOPPED_REASON_NONE);
+
+		putenv(env_unit);
+		eval("/usr/sbin/find_modem_type.sh");
+		unsetenv("unit");
+		snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
+
+		if(nvram_match("g3err_pin", "1")
+				&& strcmp(modem_type, "rndis")){ // Android phone's shared network don't need to check SIM
 			TRACE_PT("3g end: PIN error previously!\n");
 			update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
 			return;
-		}
-
-		update_wan_state(prefix, WAN_STATE_CONNECTING, WAN_STOPPED_REASON_NONE);
-
-		snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
-		if(strlen(modem_type) <= 0){
-			putenv(env_unit);
-			eval("/usr/sbin/find_modem_type.sh");
-			unsetenv("unit");
-			snprintf(modem_type, sizeof(modem_type), "%s", nvram_safe_get(strcat_r(prefix2, "act_type", tmp2)));
 		}
 
 		if(!strcmp(modem_type, "tty") || !strcmp(modem_type, "qmi") || !strcmp(modem_type, "mbim") || !strcmp(modem_type, "gobi")){
@@ -1149,24 +1151,26 @@ _dprintf("start_wan_if: USB modem is scanning...\n");
 			_eval(modem_argv, ">>/tmp/usb.log", 0, NULL);
 			unsetenv("unit");
 
-			if(nvram_match("g3err_pin", "1")){
-				TRACE_PT("3g end: PIN error!\n");
-				update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
-				return;
-			}
-
-			snprintf(tmp, sizeof(tmp), "%s", nvram_safe_get(strcat_r(prefix2, "act_sim", tmp2)));
-			if(strlen(tmp) > 0){
-				sim_state = atoi(tmp);
-				if(sim_state == 2 || sim_state == 3){
-					TRACE_PT("3g end: Need to input PIN or PUK.\n");
+			if(strcmp(modem_type, "rndis")){ // Android phone's shared network don't need to check SIM
+				if(nvram_match("g3err_pin", "1")){
+					TRACE_PT("3g end: PIN error!\n");
 					update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
 					return;
 				}
-				else if(sim_state != 1){
-					TRACE_PT("3g end: SIM isn't ready.\n");
-					update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_NONE);
-					return;
+
+				snprintf(tmp, sizeof(tmp), "%s", nvram_safe_get(strcat_r(prefix2, "act_sim", tmp2)));
+				if(strlen(tmp) > 0){
+					sim_state = atoi(tmp);
+					if(sim_state == 2 || sim_state == 3){
+						TRACE_PT("3g end: Need to input PIN or PUK.\n");
+						update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_PINCODE_ERR);
+						return;
+					}
+					else if(sim_state != 1){
+						TRACE_PT("3g end: SIM isn't ready.\n");
+						update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_NONE);
+						return;
+					}
 				}
 			}
 		}
@@ -2050,7 +2054,10 @@ int update_resolvconf(void)
 	char tmp[100], prefix[sizeof("wanXXXXXXXXXX_")];
 	char *wan_dns, *wan_domain, *next;
 	char wan_dns_buf[INET6_ADDRSTRLEN*3 + 3], wan_domain_buf[256];
+	char *wan_xdns, *wan_xdomain;
+	char wan_xdns_buf[sizeof("255.255.255.255 ")*2], wan_xdomain_buf[256];
 	char domain[64], *next_domain;
+	int primary_unit = wan_primary_ifunit();
 	int unit, lock;
 #ifdef RTCONFIG_YANDEXDNS
 	int yadns_mode = nvram_get_int("yadns_enable_x") ? nvram_get_int("yadns_mode") : YADNS_DISABLED;
@@ -2081,21 +2088,28 @@ int update_resolvconf(void)
 #endif
 	{
 		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
-			char *wan_xdns, *wan_xdomain;
-			char wan_xdns_buf[sizeof("255.255.255.255 ")*2], wan_xdomain_buf[256];
-
-#ifdef RTCONFIG_DUALWAN
-			/* skip disconnected WANs in LB mode */
-			if (nvram_match("wans_mode", "lb") && !is_phy_connect(unit))
-				continue;
-#endif
-
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 			wan_dns = nvram_safe_get_r(strcat_r(prefix, "dns", tmp), wan_dns_buf, sizeof(wan_dns_buf));
 			wan_xdns = nvram_safe_get_r(strcat_r(prefix, "xdns", tmp), wan_xdns_buf, sizeof(wan_xdns_buf));
 
 			if (!*wan_dns && !*wan_xdns)
 				continue;
+
+#ifdef RTCONFIG_DUALWAN
+			/* skip disconnected WANs in LB mode */
+			if (nvram_match("wans_mode", "lb")) {
+				if (!is_phy_connect(unit))
+					continue;
+			} else
+			/* skip non-primary WANs except not fully connected in FB mode */
+			if (nvram_match("wans_mode", "fb")) {
+				if (unit != primary_unit && *wan_dns)
+					continue;
+			} else
+#endif
+			/* skip non-primary WANs */
+			if (unit != primary_unit)
+					continue;
 
 #ifdef NORESOLV /* dnsmasq uses no resolv.conf */
 			foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
@@ -2148,7 +2162,7 @@ int update_resolvconf(void)
 	}
 
 /* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
-#ifdef RTCONFIG_OPENVPN
+#if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
 	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 

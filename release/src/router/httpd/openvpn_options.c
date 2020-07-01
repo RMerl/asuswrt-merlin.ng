@@ -550,6 +550,18 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
+	else if (streq (p[0], "tls-crypt") && p[1])
+	{
+		nvram_pf_set(prefix, "tlscrypt", "1");
+		if (streq (p[1], INLINE_FILE_TAG) && p[2])
+		{
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC, p[2], NULL);
+		}
+		else
+		{
+			return VPN_UPLOAD_NEED_STATIC;
+		}
+	}
 	else if (streq (p[0], "secret") && p[1])
 	{
 		nvram_pf_set(prefix, "crypt", "secret");
@@ -738,12 +750,27 @@ void parse_openvpn_status(int unit)
 				token = strtok(NULL, ",");	//Bytes Sent
 				token = strtok(NULL, ",");	//Connected Since
 				token = strtok(NULL, ",");	//Connected Since (time_t)
-				token = strtok(NULL, ",");	//Username, include'\n'
+				token = strtok(NULL, ",");	//Username
 				if(token)
 					fprintf(fpo, "%s\n", token);
 				else
 					fprintf(fpo, "NoUsername\n");
+				fprintf(fpo, "\n");
 			}
+#if 0
+			else if(!strncmp(buf, "REMOTE", 6)) {
+				token = strtok(buf, ",");       //REMOTE,
+				token = strtok(NULL, ",");      //Real Address
+				if(token)
+					fprintf(fpo, "%s ", token);
+				else
+					fprintf(fpo, "NoRealAddress ");
+
+				fprintf(fpo, "%s ", conf.remote);
+				fprintf(fpo, "Static_Key");
+				break;
+			}
+#endif
 		}
 	}
 	if(fpi) fclose(fpi);

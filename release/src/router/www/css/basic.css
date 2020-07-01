@@ -299,7 +299,7 @@ input[type="checkbox"]:checked + label > div{
     height: 18px;
     background-repeat: no-repeat;
     background-size: contain;
-    margin: 7px 0 0 7px;
+    margin: 9px 0 0 9px;
 }
 .icon-cancel{
     background-image: url('../images/gameprofile/cancel.svg');

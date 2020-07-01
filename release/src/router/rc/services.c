@@ -135,6 +135,7 @@ int mkdir_if_none(const char *path)
 
 #ifdef RTCONFIG_AMAS
 #include <amas-utils.h>
+#include <amas_lib.h>
 int init_x_Setting = -1;
 #endif
 
@@ -705,7 +706,7 @@ void create_passwd(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	else{
 		memset(dec_passwd, 0, sizeof(dec_passwd));
-		pw_dec(p, dec_passwd);
+		pw_dec(p, dec_passwd, sizeof(dec_passwd));
 		p = dec_passwd;
 	}
 #endif
@@ -4153,6 +4154,32 @@ _dprintf("%s:\n", __FUNCTION__);
 #endif
 #endif
 
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+	char path[32];
+	FILE *fp;
+	char line[256];
+	int count = 0;
+
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+	snprintf(path, sizeof(path), "/jffs/crashlog.log");
+#else
+	snprintf(path, sizeof(path), "/tmp/crashlog.log");
+#endif
+
+	if ((fp = fopen(path, "r")) != NULL) {
+		while (fgets(line, sizeof(line), fp) && count < 5) {
+			logmessage("crashlog", "%s", line);
+
+			if (!strlen(line))
+				count++;
+		}
+
+		fclose(fp);
+
+		unlink(path);
+	}
+#endif
+
 	return 0;
 }
 
@@ -4449,11 +4476,6 @@ start_acsd()
 		return 0;
 #endif
 
-#ifdef RTCONFIG_AMAS
-	if (nvram_get_int("re_mode") == 1 && !need_to_start_acsd())
-		return 0;
-#endif
-
 	stop_acsd();
 
 	if (!restore_defaults_g && strlen(nvram_safe_get("acs_ifnames"))) {
@@ -4586,7 +4608,7 @@ void stop_ahs(void)
 {
 	if (pids("ahs"))
 	{
-		kill_pidfile_s(AHS_PIDFILE, SIGTERM);
+		killall_tk("ahs");
 	}
 }
 
@@ -4596,6 +4618,22 @@ void start_ahs(void)
 	xstart("ahs");
 }
 #endif /* RTCONFIG_AHS */
+
+#ifdef RTCONFIG_ASD
+void stop_asd(void)
+{
+	if (pids("asd"))
+	{
+		killall("asd", SIGTERM);
+	}
+}
+
+void start_asd(void)
+{
+	stop_asd();
+	xstart("asd");
+}
+#endif /* RTCONFIG_ASD */
 
 void
 stop_misc(void)
@@ -6216,6 +6254,12 @@ void start_dbus_daemon(void)
 	pid_t pid;
 	char *dbusd_argv[] = { "dbus-daemon", "--system", NULL };
 
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		/* Slave, no bluetooth */
+		return;
+	}
+#endif
 	if (getpid()!=1) {
 		notify_rc("start_dbus_daemon");
 		return;
@@ -6232,6 +6276,12 @@ void start_dbus_daemon(void)
 
 void stop_dbus_daemon(void)
 {
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		/* Slave, no bluetooth */
+		return;
+	}
+#endif
 	if (getpid() != 1) {
 		notify_rc("stop_dbus_daemon");
 		return;
@@ -6249,6 +6299,12 @@ int check_bluetooth_device(const char *bt_dev)
 	int fd;
 	int ret = -1;
 
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		/* Slave, no bluetooth */
+		return 0;
+	}
+#endif
 	if(bt_dev == NULL || strlen(bt_dev) < 4)
 		return -1;
 
@@ -6349,7 +6405,7 @@ void change_bt_mac(void)
 		logmessage("BLE", "## mac5(%02x:%02x:%02x:%02x:%02x:%02x)\n", mac5[0], mac5[1], mac5[2], mac5[3], mac5[4], mac5[5]);
 		logmessage("BLE", "## mac5_2(%02x:%02x:%02x:%02x:%02x:%02x)\n", mac5_2[0], mac5_2[1], mac5_2[2], mac5_2[3], mac5_2[4], mac5_2[5]);
 	}
-#elif defined(RTAX95Q)
+#elif defined(RTAX95Q) || defined(RTAX56_XD4)
 	system("hciconfig hci0 up");
 	doSystem("btconfig wba %s", get_label_mac());
 #endif
@@ -6366,6 +6422,12 @@ void start_bluetooth_service(void)
 	int retry=0;
 #endif
 
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		/* Slave, no bluetooth */
+		return;
+	}
+#endif
 	if(dbg) ble_argv[4] = "-d";
 
 #if defined(BLUECAVE) || defined(RTAX95Q)
@@ -6375,7 +6437,7 @@ void start_bluetooth_service(void)
 	}
 #endif
 
-#if !defined(BLUECAVE) && !defined(RTAX95Q)
+#if !defined(BLUECAVE) && !defined(RTAX95Q) && !defined(RTAX56_XD4)
 	system("/usr/bin/btchk.sh &"); /* workaround script */
 
 	while (1) {
@@ -6399,7 +6461,7 @@ void start_bluetooth_service(void)
 	}
 	if (pids("bluetoothd")) killall_tk("bluetoothd");
 
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAX56_XD4)
 	change_bt_mac();
 	system("hciconfig hci0 reset");
 	system("hciconfig hci0 leadv 0");
@@ -6435,6 +6497,12 @@ void start_bluetooth_service(void)
 
 void stop_bluetooth_service(void)
 {
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		/* Slave, no bluetooth */
+		return;
+	}
+#endif
 	if (pids("bluetoothd")) {
 		_dprintf("Turn off Bluetooth\n");
 		killall_tk("bluetoothd");
@@ -7041,12 +7109,12 @@ void chilli_config(void)
 
 	fprintf(fp, "dns1 %s\n", nvram_safe_get("lan_ipaddr"));
 
-	char *chilli_uamsecret =  nvram_get("chilli_uamsecret");
+	char *chilli_uamsecret =  nvram_safe_get("chilli_uamsecret");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = pw_dec_len(chilli_uamsecret);
+	int declen = strlen(chilli_uamsecret);
 	char dec_passwd[declen];
 	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(chilli_uamsecret, dec_passwd);
+	pw_dec(chilli_uamsecret, dec_passwd, sizeof(dec_passwd));
 	chilli_uamsecret = dec_passwd;
 #endif
 	if (nvram_invmatch("chilli_uamsecret", ""))
@@ -7067,10 +7135,10 @@ void chilli_config(void)
 		fprintf(fp, "macauth\n");
 		char *chilli_macpasswd = nvram_safe_get("chilli_macpasswd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-		int declen2 = pw_dec_len(chilli_macpasswd);
+		int declen2 = strlen(chilli_macpasswd);
 		char dec_passwd2[declen2];
 		memset(dec_passwd2, 0, sizeof(dec_passwd2));
-		pw_dec(chilli_macpasswd, dec_passwd2;);
+		pw_dec(chilli_macpasswd, dec_passwd2, sizeof(dec_passwd2));
 		chilli_macpasswd = dec_passwd2;
 #endif
 		if (strlen(chilli_macpasswd) > 0)
@@ -7217,12 +7285,12 @@ void chilli_config_CP(void)
 
 	fprintf(fp, "dns1 %s\n", nvram_safe_get("lan_ipaddr"));
 
-	char *enc_value =  nvram_get("cp_uamsecret");
+	char *enc_value =  nvram_safe_get("cp_uamsecret");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = pw_dec_len(enc_value);
+	int declen = strlen(enc_value);
 	char dec_passwd[declen];
 	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(enc_value, dec_passwd);
+	pw_dec(enc_value, dec_passwd, sizeof(dec_passwd));
 	enc_value = dec_passwd;
 #endif
 	if (nvram_invmatch("cp_uamsecret", ""))
@@ -8479,6 +8547,14 @@ stop_netool(void)
 int
 start_services(void)
 {
+#ifdef RTCONFIG_ASD
+	//asd must be the first service. Please add your service after asd.
+	start_asd();
+#endif
+#ifdef RTAX82U
+	start_ledg();
+	start_ledbtn();
+#endif
 #ifdef RTCONFIG_LANTIQ
 	start_wave_monitor();
 #endif
@@ -8791,6 +8867,9 @@ start_services(void)
 #ifdef RTCONFIG_AMAS_ADTBW
 	start_amas_adtbw();
 #endif
+#ifdef RTCONFIG_TCPLUGIN
+	exec_tcplugin();
+#endif
 
 #ifdef RTCONFIG_FRS_FEEDBACK
 #ifdef RTCONFIG_DBLOG
@@ -9045,6 +9124,10 @@ stop_services(void)
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	stop_roamast();
 #endif
+#ifdef RTAX82U
+	stop_ledbtn();
+	stop_ledg();
+#endif
 }
 
 #ifdef RTCONFIG_QCA
@@ -9106,6 +9189,10 @@ int stop_wifi_service(void)
 void
 stop_services_mfg(void)
 {
+#ifdef RTAX82U
+	stop_ledbtn();
+	stop_ledg();
+#endif
 #ifdef RTCONFIG_USB
 #ifdef RTCONFIG_DISK_MONITOR
 	stop_diskmon();
@@ -9467,7 +9554,7 @@ start_sw_devled(void)
 	char *sw_devled_argv[] = {"sw_devled", NULL};
 	pid_t whpid;
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4)
 	return 1;
 #endif
 	if (pidof("sw_devled") > 0) return -1;
@@ -9824,22 +9911,22 @@ int start_quagga(void)
 	zebra_hostname = nvram_safe_get("productid");
 	rip_hostname = nvram_safe_get("productid");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = pw_dec_len(zebra_passwd);
+	int declen = strlen(zebra_passwd);
 	char dec_passwd[declen];
 	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(zebra_passwd, dec_passwd);
+	pw_dec(zebra_passwd, dec_passwd, sizeof(dec_passwd));
 	zebra_passwd = dec_passwd;
 
-	int declen2 = pw_dec_len(zebra_enpasswd);
+	int declen2 = strlen(zebra_enpasswd);
 	char dec_passwd2[declen2];
 	memset(dec_passwd2, 0, sizeof(dec_passwd2));
-	pw_dec(zebra_enpasswd, dec_passwd2);
+	pw_dec(zebra_enpasswd, dec_passwd2, sizeof(dec_passwd2));
 	zebra_enpasswd = dec_passwd2;
 
-	int declen3 = pw_dec_len(rip_passwd);
+	int declen3 = strlen(rip_passwd);
 	char dec_passwd3[declen3];
 	memset(dec_passwd3, 0, sizeof(dec_passwd3));
-	pw_dec(rip_passwd, dec_passwd3);
+	pw_dec(rip_passwd, dec_passwd3, sizeof(dec_passwd3));
 	rip_passwd = dec_passwd3;
 #endif
 	if (pids("zebra")){
@@ -9926,6 +10013,50 @@ void start_aurargb(void)
 #endif
 	}
 #endif
+}
+#endif
+
+#ifdef RTAX82U
+int
+start_ledg(void)
+{
+	char *ledg_argv[] = {"ledg", NULL};
+	pid_t pid;
+#ifdef RTCONFIG_BCM_MFG
+	return 0;
+#endif
+	stop_ledg();
+	return _eval(ledg_argv, NULL, 0, &pid);
+}
+
+int
+stop_ledg(void)
+{
+	if (pids("ledg"))
+		killall_tk("ledg");
+
+	return 0;
+}
+
+int
+start_ledbtn(void)
+{
+	char *ledbtn_argv[] = {"ledbtn", NULL};
+	pid_t pid;
+#ifdef RTCONFIG_BCM_MFG
+	return 0;
+#endif
+	stop_ledbtn();
+	return _eval(ledbtn_argv, NULL, 0, &pid);
+}
+
+int
+stop_ledbtn(void)
+{
+	if (pids("ledbtn"))
+		killall_tk("ledbtn");
+
+	return 0;
 }
 #endif
 
@@ -10246,6 +10377,9 @@ again:
 #if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
 		eval("touch", "/jffs/remove_hidden_flag");
 #endif
+#ifdef HND_ROUTER
+		mtd_erase_misc2();
+#endif
 		factory_reset();
 	}
 	else if(strcmp(script, "resetdefault") == 0)
@@ -10390,14 +10524,14 @@ again:
 #endif
 		}
 		if(action & RC_SERVICE_START) {
+#ifndef RTCONFIG_PIPEFW
 			int sw = 0, r;
-
 			if ((fp = fopen("/tmp/ate_upgrade_state", "w")) != NULL) {
 				fprintf(fp, "start_upgarde_ate\n");
 				fclose(fp);
 			}
 			else	_dprintf("Fail to open /tmp/ate_upgrade_state\n");
-
+#endif
 #ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_RALINK
 			_dprintf("to do start_tc_upgrade\n");
@@ -10408,7 +10542,7 @@ again:
 #endif
 
 			limit_page_cache_ratio(90);
-
+#ifndef RTCONFIG_PIPEFW
 			/* flash it if exists */
 			if (f_exists(upgrade_file)) {
 #ifdef RTCONFIG_CONCURRENTREPEATER
@@ -10557,8 +10691,8 @@ again:
 				else	_dprintf("Fail to open /tmp/ate_upgrade_state\n");
 
 				_dprintf("firmware image not found...\n");
-
 			}
+#endif
 		}
 	}
 	else if(strcmp(script, "upgrade") == 0) {
@@ -14162,7 +14296,7 @@ skip:
 
 	run_custom_script("service-event-end", 0, actionstr, script);
 
-	if(nvptr){
+	if(nvptr && strlen(nvptr)){
 _dprintf("goto again(%d)...\n", getpid());
 		goto again;
 	}
@@ -14425,6 +14559,13 @@ void gen_lldpd_if(char *bind_ifnames)
 			}
 		}
 	}
+#ifdef RTAX82U
+	else if (strcmp(script, "ledg") == 0)
+	{
+		if (action & RC_SERVICE_STOP) stop_ledg();
+		if (action & RC_SERVICE_START) start_ledg();
+	}
+#endif
 	else
 	{
 
@@ -14742,7 +14883,7 @@ int start_nat_rules(void)
 	int ret, retry, nat_state;
 
 	// all rules applied directly according to currently status, wanduck help to triger those not cover by normal flow
-#if defined(RTAC58U) || defined(RTAX58U)
+#if defined(RTAC58U) || defined(RTAX58U) || defined(RTAX56U)
 	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
 		;
 	else

@@ -42,6 +42,7 @@ char* nvram_get_misc_http_x();
 char* nvram_get_misc_http_port();
 char* nvram_get_misc_https_port();
 
+char* nvram_get_apps_sq(void);
 
 char* nvram_get_enable_webdav_captcha();
 
@@ -77,9 +78,18 @@ int nvram_setfile_https_crt_file(const char* file, int size);
 int nvram_getfile_https_crt_file(const char* file, int size);
 char* nvram_get_https_crt_file();
 char* nvram_get_odmpid();
+char* nvram_get_productid(void);
+char* nvram_get_acc_list(void);
+char* nvram_get_lan_http_port(void);
+char* nvram_get_lan_https_port(void);
+char* nvram_get_aicloud_acc_list(void);
+int nvram_set_aicloud_acc_list(const char* aicloud_acc_list);
+char* nvram_get_aicloud_acc_invite_list(void);
+int nvram_set_aicloud_acc_invite_list(const char* aicloud_acc_invite_list);
 
 int nvram_set_value(const char* key, const char* value);
 char* nvram_get_value(const char* key);
+int nvram_do_commit(void);
 
 int check_aicloud_db(const char* username, const char* password);
 

@@ -99,6 +99,7 @@ var webs_state_update;
 var webs_state_error;
 var webs_state_info;
 var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
+var fileflex_text = "<#FileFlex_desc0#>";
 
 function initial(){
 	show_menu();

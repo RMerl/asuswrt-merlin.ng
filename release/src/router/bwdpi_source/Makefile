@@ -163,12 +163,13 @@ install: all
 ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp -f modules/ipq806x/* RC_INDEP/
 else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
-	@cp -f modules/ipq807x/* RC_INDEP/
+	@$(if $(RTCONFIG_SPF8_QSDK),cp -f modules/ipq807x/* RC_INDEP/)				# SPF8
+	@$(if $(RTCONFIG_SPF11_QSDK),cp -f modules/ipq807x_spf11/* RC_INDEP/)			# SPF11
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
 	@cp -f modules/dakota/* RC_INDEP/
 else ifeq ($(RTCONFIG_QCA956X),y)
 	@cp -f modules/qca956x/* RC_INDEP/
-	@cp -f bin/lite/rule.trf RC_INDEP/
+	@cp -f bin/wrs/rule.trf RC_INDEP/ # wrs / lite version
 else ifeq ($(RTCONFIG_RALINK),y)
 	@cp -f modules/mtk/* RC_INDEP/
 	@cp -f bin/partial/rule.trf RC_INDEP/
@@ -185,6 +186,9 @@ ifeq ($(RTCONFIG_HND_ROUTER_AX_675X),y)
 ifeq ($(RTCONFIG_HND_ROUTER_AX_6710),y)
 	@cp -f modules/bcm6710/* RC_INDEP/
 else
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 RT-AX55))
+	@cp -f bin/wrs/rule.trf RC_INDEP/ # wrs / lite version
+endif
 	@cp -f modules/bcm675x/* RC_INDEP/
 endif # RTCONFIG_HND_ROUTER_AX_6710
 else

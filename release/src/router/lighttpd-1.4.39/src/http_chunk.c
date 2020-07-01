@@ -20,6 +20,8 @@
 #include <errno.h>
 #include <string.h>
 
+extern void chunkqueue_append_smb_file(chunkqueue *cq, buffer *fn, off_t offset, off_t len);
+
 static void http_chunk_append_len(server *srv, connection *con, size_t len) {
 	buffer *b;
 

@@ -211,7 +211,7 @@ int _bcm_cled_ctrl(int rgb, int cled_mode)
 int bcm_cled_ctrl(int rgb, int cled_mode)
 {
 	int state_changed = 0;
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAX56_XD4)
 	state_changed = _bcm_cled_ctrl(rgb, cled_mode);
 	if(state_changed == 1){
 		f_write_string("/proc/bcm_cled/activate", "0x0001C000", 0, 0);
@@ -482,7 +482,7 @@ int phy_ioctl(int fd, int write, int phy, int reg, uint32_t *value)
 	struct ifreq ifr;
 	int ret, vecarg[2];
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55)
 	return 1;
 #endif
 	memset(&ifr, 0, sizeof(ifr));
@@ -506,7 +506,7 @@ static inline int ethswctl_init(struct ifreq *p_ifr)
 {
     int skfd;
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55)
 	return 1;
 #endif
     /* Open a basic socket */
@@ -1192,6 +1192,12 @@ int hnd_ethswctl(ecmd_t act, unsigned int val, int len, int wr, unsigned long lo
 	return ret_val;
 }
 
+typedef struct {
+	unsigned int link[4];
+	unsigned int speed[4];
+	unsigned int duplex[4];
+} phyState;
+
 #if defined(RTCONFIG_HND_ROUTER_AX_6710)
 uint32_t hnd_get_phy_status(char *ifname)
 {
@@ -1210,14 +1216,39 @@ uint32_t hnd_get_phy_status(int port)
 {
 	char ifname[16], tmp[100], buf[32];
 
-	snprintf(ifname, sizeof(ifname), "eth%d", port);
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
+#ifdef RTAX55
+	int fd;
+	phyState pS;
 
-	f_read_string(tmp, buf, sizeof(buf));
-	if(!strncmp(buf, "up", 2))
-		return 1;
+	if (port)
+	{
+		fd = open("/dev/rtkswitch", O_RDONLY);
+		if (fd < 0) {
+			perror("/dev/rtkswitch");
+		} else {
+			memset(&pS, 0, sizeof(pS));
+			if (ioctl(fd, 0, &pS) < 0) {
+				perror("rtkswitch ioctl");
+				close(fd);
+			}
+
+			close(fd);
+		}
+
+		return pS.link[port - 1];
+	}
 	else
-		return 0;
+#endif
+	{
+		snprintf(ifname, sizeof(ifname), "eth%d", port);
+		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/operstate", ifname);
+
+		f_read_string(tmp, buf, sizeof(buf));
+		if(!strncmp(buf, "up", 2))
+			return 1;
+		else
+			return 0;
+	}
 }
 #else
 uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsigned int pmdv)
@@ -1256,11 +1287,39 @@ uint32_t hnd_get_phy_speed(int port)
 {
 	char ifname[16], tmp[100], buf[32];
 
-	snprintf(ifname, sizeof(ifname), "eth%d", port);
-	snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/speed", ifname);
+#ifdef RTAX55
+	int fd;
+	phyState pS;
 
-	f_read_string(tmp, buf, sizeof(buf));
-	return strtoul(buf, NULL, 10);
+	if (port)
+	{
+		fd = open("/dev/rtkswitch", O_RDONLY);
+		if (fd < 0) {
+			perror("/dev/rtkswitch");
+		} else {
+			memset(&pS, 0, sizeof(pS));
+			if (ioctl(fd, 0, &pS) < 0) {
+				perror("rtkswitch ioctl");
+				close(fd);
+			}
+
+			close(fd);
+		}
+
+		if (pS.link[port - 1])
+			return ((pS.speed[port - 1] == 2) ? 1000 : 100);
+		else
+			return 0;
+	}
+	else
+#endif
+	{
+		snprintf(ifname, sizeof(ifname), "eth%d", port);
+		snprintf(tmp, sizeof(tmp), "/sys/class/net/%s/speed", ifname);
+
+		f_read_string(tmp, buf, sizeof(buf));
+		return strtoul(buf, NULL, 10);
+	}
 }
 #else
 uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv)
@@ -1400,7 +1459,7 @@ uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl)
 	int i=0;
 	uint32_t value;
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4)
 	return 1;
 #endif
 	for (i = 0; i < 4 && (portmask >> i); i++) {
@@ -1422,7 +1481,7 @@ uint32_t set_phy_ctrl(uint32_t portmask, int ctrl)
 	int fd, i, model;
 	uint32_t value;
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55)
 	return 1;
 #endif
 	model = get_switch();
@@ -1919,6 +1978,22 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 7 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(RTAX56_XD4)
+	int lan_ports=1;
+
+	if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
+		lan_ports = 1;
+	} else {
+		lan_ports = 0;
+	}
+	int ports[lan_ports+1];
+	if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
+		/* 7 3	W0 L1 */
+		ports[0]=7; ports[1]=3;
+	} else {
+		/* 7 W0 */
+		ports[0]=7;
+	}
 #elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 	int lan_ports=4;
 	int ports[lan_ports+1];

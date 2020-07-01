@@ -1390,7 +1390,7 @@ function apply_amazon_wss(){
 <input type="hidden" name="gwlu" value="" disabled>
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_mode" value="apply_new">
-<input type="hidden" name="action_script" value="restart_wireless">
+<input type="hidden" name="action_script" value="restart_wireless;restart_firewall;">
 <input type="hidden" name="action_wait" value="15">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="wl_country_code" value="<% nvram_get("wl0_country_code"); %>" disabled>
@@ -1450,7 +1450,7 @@ function apply_amazon_wss(){
 									</td>
 									<td>
 										<div id="gn_desc" class="formfontdesc" style="font-style: italic;font-size: 14px;"><#GuestNetwork_desc#></div>
-										<div id="nat_off_hint" class="formfontdesc" style="color:#FC0;display:none;">NAT accelerator is turned off because of bandwidth limiter of Guest Network enabled.</div><!-- untranslated -->
+										<div id="nat_off_hint" class="formfontdesc" style="color:#FC0;display:none;"><#NAT_Acceleration_disabled#></div>
 									</td>
 								</tr>
 							</table>
@@ -1483,19 +1483,17 @@ function apply_amazon_wss(){
 							<table style="margin-left:20px;margin-top:25px;" width="95%" align="center" cellpadding="4" cellspacing="0" class="gninfo_head_table">
 								<tr>
 									<td align="left" style="color:#5AD; font-size:16px; border-bottom:1px dashed #AAA;" colspan="2">
-										<span>Amazon Wi-Fi simple setup</span><!-- untranslated -->
+										<span><#WSS_setup#></span>
 									</td>
 								</tr>
 								<tr>
 									<td>
-										<span style="line-height:20px;">Amazon Wi-Fi simple setup helps you connect supported devices to your Wi-Fi network and Alexa account in fewer steps. Enabling this feature creates a simple setup network that supported devices can use to access Wi-Fi credentials saved in the Amazon Wi-Fi Locker.<!-- untranslated -->
-										</span>
-										&nbsp;
-										<a style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank">Learn more.</a><!-- untranslated -->
+										<span style="line-height:20px;"><#WSS_setup_desc0#></span>&nbsp;
+										<a style="color:#FC0;text-decoration:underline;cursor:pointer;" href="https://www.amazon.com/gp/help/customer/display.html/?nodeId=GMPKVYDBR223TRPY" target="_blank"><#Learn_more#></a>
 										<br>
-										<span>You can only turn on either the 2nd set of Guest Network on 2.4GHz or Amazon Wi-Fi simple setup feature.</span><!-- untranslated -->
+										<span><#WSS_setup_desc1#></span>
 										<br>
-										<span id="amazon_wss_hint" style="color:#FC0;line-height:20px;">[Note] Enable this feature will turn off NAT acceleration for more precise packet inspection and turn on QoS function of traffic manager with setting as Bandwidth Limiter mode by default.</span><!-- untranslated -->
+										<span id="amazon_wss_hint" style="color:#FC0;line-height:20px;"><#FW_note#>&nbsp;<#WSS_setup_desc2#></span>
 									</td>
 								</tr>
 								<tr>

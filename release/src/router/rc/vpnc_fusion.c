@@ -142,7 +142,7 @@ int change_default_wan_as_vpnc_updown(const int unit, const int up)
 * INPUT:
 * OUTPUT:
 * RETURN:  0:success, -1:failed
-* NOTE:
+* NOTE:	2020/3/27, Andy Chiu. Add nvram commit to save the vhanged default wan value.
 *******************************************************************/
 int change_default_wan()
 {
@@ -161,6 +161,7 @@ int change_default_wan()
 
 	vpnc_update_resolvconf(default_wan_new);
 
+	nvram_commit_x();
 	return 0;
 }
 

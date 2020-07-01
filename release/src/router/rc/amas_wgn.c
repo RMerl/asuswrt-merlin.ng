@@ -59,6 +59,8 @@
 
 #define IS_ZERO_MAC(MACADDR)	( (memcmp(MACADDR, "\x00\x00\x00\x00\x00\x00", 6) == 0) )
 #define IS_RE_MODE()  			( (nvram_get_int("re_mode") == 1) )
+#define IS_ROUTER_MODE() 		( (sw_mode() == SW_MODE_ROUTER) )
+#define IS_CAP_MODE() 			( (sw_mode() == SW_MODE_ROUTER || access_point_mode()) )
 #define WGN_WLIFU_MAX_NO_BRIDGE	WLIFU_MAX_NO_BRIDGE
 #if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 #define WGN_ETH_IFNAME			"eth4"
@@ -365,6 +367,9 @@ void check_vlan_rulelist_subnet_conflict(
 	if (IS_RE_MODE())
 		return;
 
+	if (!IS_CAP_MODE())
+		return;
+
 	memset(tagged_base_vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
 	if (!wgn_vlan_list_get_other_from_nvram(tagged_base_vlan_list, WGN_MAXINUM_VLAN_RULELIST, &tagged_base_vlan_list_size))
 		return;
@@ -479,6 +484,9 @@ void check_ip_subnet_conflict(
 	char *lan_netmask;
 
 	if (IS_RE_MODE())
+		return;
+
+	if (!IS_CAP_MODE())
 		return;
 
 	wan_ipaddr = wan_netmask = NULL;
@@ -708,6 +716,9 @@ extern
 void wgn_check_subnet_conflict(
 	void)
 {
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return;
+
 	// check_ip_subnet_conflict
 	check_ip_subnet_conflict();
 	// check_vlan_rulelist_subnet_conflict
@@ -729,6 +740,9 @@ void wgn_check_avalible_brif(
 	char brif_rule[256 * WGN_MAXINUM_VLAN_RULELIST];
 	char brx[81], s[133];	
 	struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
+
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return;
 
 	nvram_unset(WGN_BRIF_RULE_NVRAM);
 	memset(vlan_list, 0, sizeof(struct wgn_vlan_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
@@ -928,6 +942,7 @@ void wgn_filter_forward(
 	char word[64];
 	char *next = NULL;
 	char *wan_ifname = NULL;
+    char *pppoe_ifname = NULL;
 	char *wgn_ifnames = NULL;
 
 	struct brif_rule_t *p_brif_rule = NULL;
@@ -940,16 +955,22 @@ void wgn_filter_forward(
 	if (IS_RE_MODE())
 		return;
 
+	if (!IS_CAP_MODE())
+		return;
+
 	if (!fp)
 		return;
 
-	wan_ifname = nvram_safe_get(WGN_WAN_IFNAME);
+    wan_ifname = nvram_safe_get(WGN_WAN_IFNAME);
 	if (wan_ifname[0] == '\0') 
 		return;
 
 	wgn_ifnames = nvram_safe_get(WGN_IFNAMES);
 	if (wgn_ifnames[0] == '\0')
 		return;
+
+    if (nvram_invmatch("wan0_pppoe_ifname", ""))
+        pppoe_ifname = nvram_get("wan0_pppoe_ifname");
 
 	memset(brif_list, 0, sizeof(struct brif_rule_t) * WGN_MAXINUM_VLAN_RULELIST);
 	if (!brif_list_get_from_nvram(brif_list, WGN_MAXINUM_VLAN_RULELIST, &brif_listsize))
@@ -971,7 +992,10 @@ void wgn_filter_forward(
 			continue;
 
 		//iptables -A  FORWARD  -i brX -o eth0 -j ACCEPT
-		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_ifname);		
+		fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, wan_ifname);
+
+        if (pppoe_ifname)
+            fprintf(fp, "-A FORWARD -i %s -o %s -j ACCEPT\n", word, pppoe_ifname);
 	}
 
 	return;
@@ -991,7 +1015,13 @@ void wgn_filter_input(
 	wgn_vlan_rule vlan_list[WGN_MAXINUM_VLAN_RULELIST];
 	size_t vlan_listsize = 0;
 
+	int unit = 0;
+	int subunit = 0; 
+
 	if (IS_RE_MODE()) 
+		return;
+
+	if (!IS_CAP_MODE())
 		return;
 
 	if (!fp)
@@ -1019,8 +1049,25 @@ void wgn_filter_input(
 		if (!p_vlan_rule->internet)
 			continue;
 
-		//iptables -A INPUT  -i brX -m state --state NEW -j ACCEPT
-		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", word);		
+		unit = subunit = -1;
+		wgn_get_wl_unit(&unit, &subunit, p_vlan_rule);
+		if (unit < 0 || subunit <= 0)
+			continue;
+
+		if (!get_wl_bss_enabled(unit, subunit))
+			continue;
+
+		if (get_wl_lanaccess(unit, subunit))
+			continue;
+
+		// iptables -A INPUT -i brX -p udp --dport 53 -j ACCEPT
+		fprintf(fp, "-A INPUT -i %s -p udp --dport 53 -j ACCEPT\n", word);
+		// iptables -A INPUT -i brX -p udp --dport 67 -j ACCEPT
+		fprintf(fp, "-A INPUT -i %s -p udp --dport 67 -j ACCEPT\n", word);
+		// iptables -A INPUT -i brX -p udp --dport 68 -j ACCEPT
+		fprintf(fp, "-A INPUT -i %s -p udp --dport 68 -j ACCEPT\n", word);
+		// iptables -A INPUT -i brX -j DROP
+		fprintf(fp, "-A INPUT -i %s -j DROP\n", word);
 	}
 
 	return;
@@ -1040,6 +1087,9 @@ void wgn_dnsmasq_conf(
 	size_t subnet_listsize = 0;
 
 	if (IS_RE_MODE())
+		return;
+
+	if (!IS_CAP_MODE())
 		return;
 
 	if (fp == NULL)
@@ -1097,6 +1147,9 @@ int wgn_if_check_used(
 	size_t total = 0;
 	struct wgn_vlan_rule_t vlan_list[WGN_MAXINUM_VLAN_RULELIST];
 	
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return 0;
+
 	if (!ifname)
 		return 0;
 
@@ -2024,6 +2077,9 @@ void wgn_start(
 	memset(wgn_ifnames, 0, sizeof(wgn_ifnames));
 	memset(wl_ifnames, 0, sizeof(wl_ifnames));
 
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return;	
+
 	if (IS_RE_MODE())
 		wgn_check_avalible_brif();
 
@@ -2138,6 +2194,9 @@ char* wgn_guest_lan_ipaddr(
 	struct wgn_subnet_rule_t *p_subnet_rule = NULL;
 	size_t subnet_total = 0;
 
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return NULL;
+
 	if (!result || result_bsize <= 0)
 		return NULL;
 
@@ -2210,6 +2269,9 @@ char* wgn_guest_lan_netmask(
 	struct wgn_subnet_rule_t *p_subnet_rule = NULL;
 	size_t subnet_total = 0;
 
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return NULL;
+
 	if (!result || result_bsize <= 0)
 		return NULL;
 
@@ -2273,6 +2335,9 @@ char* wgn_guest_lan_ifnames(
 	char word[64], *next = NULL;
 	int ifidx = 0;
 
+	if (!IS_CAP_MODE() && !IS_RE_MODE())
+		return NULL;
+
 	if (!ret_ifnames || ret_ifnames_bsize <= 0)
 		return NULL;
 
@@ -2320,7 +2385,8 @@ char* wgn_all_lan_ifnames(
 		if (ss[strlen(ss)-1] != ' ') strlcat(b, " ", alloc_size);
 	}
 
-	if (!IS_RE_MODE())
+	//if (!IS_RE_MODE())
+	if (IS_CAP_MODE())
 	{
 		if ((wgn_ifnames = nvram_get(WGN_IFNAMES)) && strlen(wgn_ifnames) > 0)
 		{

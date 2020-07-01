@@ -604,10 +604,10 @@ static int rctest_main(int argc, char *argv[])
 }
 #endif
 
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q) || defined(RTAX55)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -722,7 +722,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RTCONFIG_LANTIQ) || defined(RPAC51) || defined(MAPAC1750) || defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX55)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -860,7 +860,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_NETOOL
 	{ "netool", 			netool_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -903,6 +903,10 @@ static const applets_t applets[] = {
 #ifdef RTAC68U
 	{ "firmware_enc_crc",		firmware_enc_crc_main		},
 	{ "fw_check",			fw_check_main			},
+#endif
+#ifdef RTAX82U
+	{ "ledg",			ledg_main			},
+	{ "ledbtn",			ledbtn_main			},
 #endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
@@ -1834,15 +1838,24 @@ int main(int argc, char **argv)
 		}
 	}
 	else if (!strcmp(base, "hnd-write")) {
-		if (argc >= 2) {
-			return bca_sys_upgrade(argv[1]);
-		} else {
-			_dprintf("%s@%d *** Error argc=%d\n", __FUNCTION__, __LINE__, argc);
-			return EINVAL;
-		}
+                int ret = -1;
+
+                nvram_set_int("hndwr", -100);
+                if (argc >= 2) {
+                        ret = bca_sys_upgrade(argv[1]);
+                } else {
+                        _dprintf("%s@%d *** Error argc=%d\n", __FUNCTION__, __LINE__, argc);
+                        ret = EINVAL;
+                }
+
+                nvram_set_int("hndwr", ret);
+                return ret;
 	}
 	else if (!strcmp(base, "mtd_erase_image_update")) {
 		return mtd_erase_image_update();
+	}
+	else if (!strcmp(base, "mtd_erase_misc2")) {
+		return mtd_erase_misc2();
 	}
 #else
 	else if (!strcmp(base, "nvram_erase")) {

@@ -420,7 +420,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" ||
 				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
@@ -592,6 +592,10 @@ function applyRule(){
 		}
 		else if(auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
 			if(mbo_support && mbo == '1' && document.form.wl_mfp.value == '0'){
+				document.form.wl_mfp.value = '1';
+			}
+
+			if(document.form.wl_mfp.value == '2'){
 				document.form.wl_mfp.value = '1';
 			}
 		}
@@ -979,7 +983,7 @@ function regen_5G_mode(obj,flag){	//please sync to initial() : //Change wireless
 		}
 		else if(band5g_11ax_support){
 			obj.options[0] = new Option("<#Auto#>", 0);
-			if((based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q") && flag == 1){
+			if(based_modelid == "RT-AX92U" && flag == 1){
 				obj.options[1] = new Option("N/AC mixed", 8);
 				obj.options[2] = new Option("Legacy", 2);
 			}
@@ -2206,19 +2210,30 @@ function handleMFP(){
 			  <tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a></th>
 					<td>
-				  		<select name="wl_auth_mode_x" class="input_option" onChange="authentication_method_change(this);">
-							<option value="open"    <% nvram_match("wl_auth_mode_x", "open",   "selected"); %>>Open System</option>
-							<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
-							<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
-							<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
-							<option value="sae"    <% nvram_match("wl_auth_mode_x", "sae",   "selected"); %>>WPA3-Personal</option>
-							<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
-							<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
-							<option value="wpa"     <% nvram_match("wl_auth_mode_x", "wpa",    "selected"); %>>WPA-Enterprise</option>
-							<option value="wpa2"    <% nvram_match("wl_auth_mode_x", "wpa2",   "selected"); %>>WPA2-Enterprise</option>
-							<option value="wpawpa2" <% nvram_match("wl_auth_mode_x", "wpawpa2","selected"); %>>WPA-Auto-Enterprise</option>
-							<option value="radius"  <% nvram_match("wl_auth_mode_x", "radius", "selected"); %>>Radius with 802.1x</option>
-				  		</select>
+						<div>
+					  		<select name="wl_auth_mode_x" class="input_option" onChange="authentication_method_change(this);">
+								<option value="open"    <% nvram_match("wl_auth_mode_x", "open",   "selected"); %>>Open System</option>
+								<option value="shared"  <% nvram_match("wl_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
+								<option value="psk"     <% nvram_match("wl_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
+								<option value="psk2"    <% nvram_match("wl_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
+								<option value="sae"    <% nvram_match("wl_auth_mode_x", "sae",   "selected"); %>>WPA3-Personal</option>
+								<option value="pskpsk2" <% nvram_match("wl_auth_mode_x", "pskpsk2","selected"); %>>WPA-Auto-Personal</option>
+								<option value="psk2sae" <% nvram_match("wl_auth_mode_x", "psk2sae","selected"); %>>WPA2/WPA3-Personal</option>
+								<option value="wpa"     <% nvram_match("wl_auth_mode_x", "wpa",    "selected"); %>>WPA-Enterprise</option>
+								<option value="wpa2"    <% nvram_match("wl_auth_mode_x", "wpa2",   "selected"); %>>WPA2-Enterprise</option>
+								<option value="wpawpa2" <% nvram_match("wl_auth_mode_x", "wpawpa2","selected"); %>>WPA-Auto-Enterprise</option>
+								<option value="radius"  <% nvram_match("wl_auth_mode_x", "radius", "selected"); %>>Radius with 802.1x</option>
+					  		</select>
+				  		</div>
+				  		<div id="no_wp3_hint" style="display:none">
+							<span><#AiMesh_confirm_msg10#></span>
+							<script>
+								$("#wpa3FaqLink")
+									.attr("target", "_blank")
+									.attr("href", "https://www.asus.com/support/FAQ/1042500")
+									.css({"color": "#FC0", "text-decoration": "underline"})
+							</script>
+				  		</div>
 					</td>
 			  	</tr>
 			  	

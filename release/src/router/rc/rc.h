@@ -663,6 +663,9 @@ extern void update_cfe_675x();
 #if defined(RTAX58U) || defined(TUFAX3000)
 extern void update_cfe_ax58u();
 #endif
+#if defined(GTAX11000) || defined(RTAX88U)
+extern void update_cfe_basemac();
+#endif
 #ifdef RTCONFIG_BCM_MFG
 extern void brcm_mfg_init();
 extern void brcm_mfg_services();
@@ -673,8 +676,16 @@ extern void fc_fini();
 extern void hnd_nat_ac_init(int bootup);
 extern void setLANLedOn(void);
 extern void setLANLedOff(void);
+#ifdef RTAX82U
+extern void setLEDGroupOn(void);
+extern void setLEDGroupOff(void);
+extern void cled_set(int gpio, uint32_t config0, uint32_t config1, uint32_t config2, uint32_t config3);
+extern void LEDGroupReset(int mode);
+extern void setAllLedNormal(void);
+#endif
 extern void activateLANLed();
 extern int mtd_erase_image_update();
+extern int mtd_erase_misc2();
 extern int wait_to_forward_state(char *ifname);
 #endif
 #ifdef RTCONFIG_BCMWL6
@@ -1116,6 +1127,9 @@ extern int mtd_write(const char *path, const char *mtd);
 extern int mtd_write_main(int argc, char *argv[]);
 extern int mtd_unlock_erase_main(int argc, char *argv[]);
 #endif
+#ifdef RTCONFIG_URLFW
+extern FILE *url_fopen(const char *path, const char *mode);
+#endif /* RTCONFIG_URLFW */
 
 // jffs2.c
 #if defined(RTCONFIG_UBIFS)
@@ -1175,6 +1189,11 @@ extern int phy_tempsense_main(int argc, char *argv[]);
 extern int send_arpreq(void);
 // psta_monitor.c
 extern int psta_monitor_main(int argc, char *argv[]);
+#endif
+// ledg.c
+#ifdef RTAX82U
+extern int ledg_main(int argc, char *argv[]);
+extern int ledbtn_main(int argc, char *argv[]);
 #endif
 #if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
 // obd.c
@@ -1368,6 +1387,10 @@ extern int mount_cifs_main(int argc, char *argv[]);
 #else
 static inline void start_cifs(void) {};
 static inline void stop_cifs(void) {};
+#endif
+#ifdef RTAX82U
+extern int start_ledg(void);
+extern int stop_ledg(void);
 #endif
 
 // linkmonitor.c
@@ -1689,7 +1712,7 @@ extern int firmware_check_main(int argc, char *argv[]);
 #ifdef RTCONFIG_HTTPS
 extern int rsasign_check_main(int argc, char *argv[]);
 extern int rsarootca_check_main(int argc, char *argv[]);
-extern char *pwdec(const char *input, char *output);
+extern char *pwdec(const char *input, char *output, int output_len);
 extern char *pwdec_dsl(char *input);
 #endif
 extern int service_main(int argc, char *argv[]);
@@ -2336,6 +2359,9 @@ extern void oauth_google_check_token_status(void);
 
 #ifdef RTCONFIG_UUPLUGIN
 extern void exec_uu();
+#endif
+#ifdef RTCONFIG_TCPLUGIN
+extern void exec_tcplugin();
 #endif
 
 // rmd.c

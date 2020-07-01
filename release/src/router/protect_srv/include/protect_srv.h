@@ -48,12 +48,20 @@ typedef struct __ptcsrv_state_report__t_
 
 } PTCSRV_STATE_REPORT_T;
 
+typedef struct __ptcsrv_is_locked__t_
+{
+	PTCSRV_SVC_TYPE_T   s_type;             /* Service type */
+	char                addr[16];           /* address */
+
+} PTCSRV_IS_LOCKED_T;
+
 typedef enum {
 	PTCSRV_S_RPT=0,
 	PTCSRV_G_WAN_STAT,
 	PTCSRV_G_LAN_STAT,
 	PTCSRV_G_WAN_RECORD,
 	PTCSRV_G_LAN_RECORD,
+	PTCSRV_G_LOCK,
 
 } PTCSRV_DATA_TYPE_T;
 
@@ -63,6 +71,7 @@ typedef struct __ptcsrv_sock_data_t_
 	union {
 	PTCSRV_STATE_REPORT_T report;  /* State report */
 	PTCSRV_SVC_TYPE_T s_type;      /* Service type */
+	PTCSRV_IS_LOCKED_T ilk;     /* check address is locked or not */
 	};
 
 } PTCSRV_SOCK_DATA_T;

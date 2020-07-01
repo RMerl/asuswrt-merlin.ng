@@ -80,8 +80,8 @@ void start_ovpn_client(int clientNum)
 		return;
 	}
 
-	nvram_pf_set(prefix, "state", "1");	// Initializing
-	nvram_pf_set(prefix, "errno", "0");
+	nvram_pf_set_int(prefix, "state", OVPN_STS_INIT);
+	nvram_pf_set_int(prefix, "errno", OVPN_ERRNO_NONE);
 	nvram_pf_set(prefix, "rip", "");
 
 	// Determine interface
@@ -596,8 +596,8 @@ void stop_ovpn_client(int clientNum)
 	}
 
 	snprintf(buffer, sizeof (buffer), "vpn_client%d_", clientNum);
-	nvram_pf_set(buffer, "state","0");
-	nvram_pf_set(buffer, "errno", "0");
+	nvram_pf_set_int(buffer, "state", OVPN_STS_STOP);
+	nvram_pf_set_int(buffer, "errno", OVPN_ERRNO_NONE);
 	nvram_pf_set(buffer, "rip", "");
 	update_resolvconf();
 
@@ -642,8 +642,8 @@ void start_ovpn_server(int serverNum)
 		return;
 	}
 
-	nvram_pf_set(prefix, "state", "1");	//initializing
-	nvram_pf_set(prefix, "errno", "0");
+	nvram_pf_set_int(prefix, "state", OVPN_STS_INIT);
+	nvram_pf_set_int(prefix, "errno", OVPN_ERRNO_NONE);
 
 	// Determine interface type
 	strlcpy(buffer, nvram_pf_safe_get(prefix, "if"), sizeof (buffer) );
@@ -1435,15 +1435,15 @@ void start_ovpn_server(int serverNum)
 	{
 		vpnlog(VPN_LOG_ERROR,"Starting VPN instance failed...");
 		stop_ovpn_server(serverNum);
-		nvram_pf_set(prefix, "state", "-1");
+		nvram_pf_set_int(prefix, "state", OVPN_STS_ERROR);
 		return;
 	}
 	vpnlog(VPN_LOG_EXTRA,"Done starting openvpn");
 
 	if ( cryptMode == SECRET )
 	{
-		nvram_pf_set(prefix, "state", "2");	//running
-		nvram_pf_set(prefix, "errno", "0");
+		nvram_pf_set_int(prefix, "state", OVPN_STS_RUNNING);
+		nvram_pf_set_int(prefix, "error", OVPN_ERRNO_NONE);
 	}
 
 	// watchdog
@@ -1546,8 +1546,8 @@ void stop_ovpn_server(int serverNum)
 	}
 
 	sprintf(buffer, "vpn_server%d_", serverNum);
-	nvram_pf_set(buffer, "state", "0");
-	nvram_pf_set(buffer, "errno", "0");
+	nvram_pf_set_int(buffer, "state", OVPN_STS_STOP);
+	nvram_pf_set_int(buffer, "errno", OVPN_ERRNO_NONE);
 
 	vpnlog(VPN_LOG_INFO,"VPN GUI server backend stopped.");
 }
@@ -1741,7 +1741,7 @@ void create_ovpn_passwd()
 				continue;
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(passwd, dec_passwd);
+			pw_dec(passwd, dec_passwd, sizeof(dec_passwd));
 			passwd = dec_passwd;
 #endif
 			p = crypt(passwd, salt);

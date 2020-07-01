@@ -64,6 +64,7 @@
 typedef unsigned int __u32;   // 1225 ham
 
 #include <httpd.h>
+#include <common.h>
 //2008.08 magic{
 #include <bcmnvram.h>	//2008.08 magic
 #include <arpa/inet.h>	//2008.08 magic
@@ -297,6 +298,7 @@ static int check_if_inviteCode(const char *dirpath){
 }
 #endif
 
+#ifndef RTCONFIG_LIBASUSLOG
 static int
 log_pass_handler(char *url)
 {
@@ -336,6 +338,7 @@ void Debug2File(const char *path, const char *fmt, ...)
 	} else
 		fprintf(stderr, "Open %s Error!\n", path);
 }
+#endif
 
 void sethost(const char *host)
 {
@@ -1249,6 +1252,9 @@ handle_request(void)
 				}
 			}
 			if (handler->auth) {
+#ifdef RTAX82U
+				switch_ledg(LEDG_QIS_FINISH);
+#endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
 					//skip_auth=1;
 				}
@@ -1266,7 +1272,8 @@ handle_request(void)
 #endif
 #ifdef RTCONFIG_AMAS
 				//RD can do firmware upgrade, if re_upgrade set to 1.
-				else if(!fromapp && nvram_match("re_mode", "1") && nvram_get_int("re_upgrade") == 0 && !check_AiMesh_whitelist(file)){
+				else if(!fromapp && (nvram_match("re_mode", "1") || nvram_match("disable_ui", "1")) &&
+					nvram_get_int("re_upgrade") == 0 && !check_AiMesh_whitelist(file)){
 					snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; url=message.htm\">\r\n");
 					send_page( 200, "OK", (char*) 0, inviteCode, 0);
 					return;
@@ -1372,8 +1379,12 @@ handle_request(void)
 					&& !strstr(file, "asustitle.png")
 #endif
 					&& !strstr(file,"cert_key.tar")
+					&& !strstr(file,"cert.tar")
 #ifdef RTCONFIG_OPENVPN
 					&& !strstr(file, "server_ovpn.cert")
+#endif
+#ifdef RTCONFIG_CAPTCHA
+					&& !strstr(file, "captcha.gif")
 #endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
@@ -1530,7 +1541,7 @@ int is_auth(void)
 
 int is_firsttime(void)
 {
-#if defined(RTAC58U) || defined(RTAX58U)
+#if defined(RTAC58U) || defined(RTAX58U) || defined(RTAX56U)
 	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
 		return 0;
 	else
@@ -2044,7 +2055,7 @@ int main(int argc, char **argv)
 
 #ifdef RTCONFIG_HTTPS
 	//if (do_ssl)
-		start_ssl();
+		start_ssl(http_port);
 #endif
 
 	/* Initialize listen socket */
@@ -2145,6 +2156,10 @@ int main(int argc, char **argv)
 				free(item);
 				continue;
 			}
+
+			/* Set receive/send timeouts */
+			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+			setsockopt(item->fd, SOL_SOCKET, SO_SNDTIMEO, &timeout, sizeof(timeout));
 
 			/* Set receive/send timeouts */
 			setsockopt(item->fd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
@@ -2261,19 +2276,21 @@ void erase_cert(void)
 	nvram_commit();
 }
 
-void start_ssl(void)
+void start_ssl(int http_port)
 {
-	int lockfd;
-	int retry;
+	int lock;
+	int ok;
+	int save;
 	int i;
+	int retry;
 	unsigned long long sn;
 	char t[32];
 
-	lockfd = open("/var/lock/sslinit.lock", O_CREAT | O_RDWR, 0666);
+	lock = file_lock("httpd");
 
 	// Avoid collisions if another httpd instance is initializing SSL cert
-	for ( i = 1; i < 5; i++ ) {
-		if (flock(lockfd, LOCK_EX | LOCK_NB) < 0) {
+	for (i = 1; i < 5; i++) {
+		if (lock < 0) {
 			//logmessage("httpd", "Conflict, waiting %d", i);
 			sleep(i*i);
 		} else {
@@ -2287,35 +2304,61 @@ void start_ssl(void)
 
 	retry = 1;
 	while (1) {
+		save = nvram_match("https_crt_save", "1");
+
 		if ((!f_exists("/etc/cert.pem")) || (!f_exists("/etc/key.pem"))) {
-			erase_cert();
-			logmessage("httpd", "Generating SSL certificate...");
+			ok = 0;
+			if (save) {
+				logmessage("httpd", "Save SSL certificate...%d", http_port);
+				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
+					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+						system("cp /etc/cert.pem /etc/cert.crt"); // openssl self-signed certificate for router.asus.com LAN access
+						ok = 1;
+					}
 
-			// browsers seems to like this when the ip address moves...     -- zzz
-			f_read("/dev/urandom", &sn, sizeof(sn));
+					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
+					if(save_intermediate_crt){
+						eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/intermediate_cert.pem");
+					}
 
-			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-			eval("gencert.sh", t);
+					unlink("/tmp/cert.tgz");
+				}
+			}
+			if (!ok) {
+				erase_cert();
+				logmessage("httpd", "Generating SSL certificate...%d", http_port);
+				// browsers seems to like this when the ip address moves...	-- zzz
+				f_read("/dev/urandom", &sn, sizeof(sn));
+
+				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				eval("gencert.sh", t);
 
 #ifdef RTCONFIG_LETSENCRYPT
-			if (nvram_match("le_enable", "2"))
+				if (nvram_match("le_enable", "2"))
 #endif
-			{
-				save_cert();
+					save_cert();
 			}
 		}
 
+#if 0
+		if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
+			save_cert();
+		}
+#endif
+
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
-			flock(lockfd, LOCK_UN);
+			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);
+			file_unlock(lock);
 			return;
 		}
 
-		logmessage("httpd", "Failed to initialize SSL, generating new key/cert.");
+		logmessage("httpd", "Failed to initialize SSL, generating new key/cert...%d", http_port);
 		erase_cert();
 
 		if (!retry) {
-			flock(lockfd, LOCK_UN);
-			logmessage("httpd", "Unable to start in SSL mode, exiting!");
+			logmessage("httpd", "Unable to start in SSL mode, exiting! %d", http_port);
+			file_unlock(lock);
 			exit(1);
 		}
 		retry = 0;

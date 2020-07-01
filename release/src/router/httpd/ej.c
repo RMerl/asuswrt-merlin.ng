@@ -266,9 +266,20 @@ do_ej(char *path, FILE *stream)
 		nvram_set("preferred_lang", lang);
 	}
 
-	if (load_dictionary (lang, &kw)){
-		no_translate = 0;
+	char *current_lang;
+	struct json_object *root=NULL;
+	do_json_decode(&root);
+	if ((current_lang = get_cgi_json("current_lang", root)) != NULL){
+		if (load_dictionary (current_lang, &kw)){
+			no_translate = 0;
+		}
 	}
+	else{
+		if (load_dictionary (lang, &kw)){
+			no_translate = 0;
+		}
+	}
+	if (root) json_object_put(root);
 #endif  //defined TRANSLATE_ON_FLY
 
 	start_pat = end_pat = pattern;

@@ -375,6 +375,11 @@ var httpApi ={
 		){
 			retData.wanType = (iCanUsePPPoE && wanInfo.x_Setting  == "0") ? wanTypeList.pppdhcp : wanTypeList.connected;
 		}
+		else if( (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "2") ||
+				 (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "0")
+		){
+				retData.wanType = wanTypeList.dhcp;
+		}
 		else if(wanInfo.autodet_state == ""){
 			retData.wanType = wanTypeList.check;
 			if(this.detRetryCnt > 0){
@@ -407,9 +412,6 @@ var httpApi ={
 			else{
 				retData.wanType = wanTypeList.noWan;
 			}
-		}
-		else if(wanInfo.autodet_state == "2"){
-			retData.wanType = wanTypeList.dhcp;
 		}
 		else{
 			retData.wanType = wanTypeList.check;
@@ -979,5 +981,19 @@ var httpApi ={
 				value: "Check Now"
 			}))			
 			.appendTo("body").submit().remove();
+	},
+
+	"set_ledg" : function(postData, parmData){
+		var asyncDefault = true;
+		$.ajax({
+			url: '/set_ledg.cgi',
+			dataType: 'json',
+			data: postData,
+			async: asyncDefault,
+			error: function(){},
+			success: function(response){
+				if(parmData.callBack) parmData.callBack.call(response);
+			}
+		});
 	}
 }

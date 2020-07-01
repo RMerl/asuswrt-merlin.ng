@@ -45,7 +45,7 @@
 #include	<sys/resource.h>
 #include	<sys/stat.h>
 #include 	<sys/ioctl.h>
-#define		BASEPORT	9100
+#define		BASEPORT	nvram_get_int("lprng_baseport") ? : 9100
 #ifdef 		DEBUG
 #define		PRINT(...)
 #else
@@ -72,9 +72,9 @@ extern int          errno;
 
 
 #ifdef LPR_with_ASUS//JY1112
-#define PNT_SVR_PORT_ASUS    3838
+#define PNT_SVR_PORT_ASUS	3838
 #endif
-#define PNT_SVR_PORT_LPR 515
+#define PNT_SVR_PORT_LPR	nvram_get_int("lpnrg_lpdport") ? : 515
 #define PRINT printf
 
 #define UCHAR unsigned char

@@ -109,6 +109,9 @@ start_lpd()
 		return;
 #endif
 
+	if (!nvram_get_int("usb_printer"))
+		return;
+
 	if (!pids("lpd"))
 	{
 		unlink("/var/run/lpdparent.pid");
@@ -150,6 +153,9 @@ start_u2ec()
 	if (!hw_usb_cap())
 		return;
 #endif
+
+	if (!nvram_get_int("usb_printer"))
+		return;
 
 	if (!pids("u2ec"))
 	{
@@ -3268,7 +3274,7 @@ start_samba(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			char dec_passwd[64];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd);
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			memset(char_passwd, 0, 64);
@@ -3311,11 +3317,8 @@ start_samba(void)
 
 #if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064)
-#if 0
-	if(cpu_num > 1)
-		taskset_ret = cpu_eval(NULL, "1", "ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");
-	else
-		taskset_ret = eval("ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+	taskset_ret = -1;
 #else
 	if(!nvram_match("stop_taskset", "1")){
 		if(cpu_num > 1)
@@ -3719,10 +3722,10 @@ write_mt_daapd_conf(char *servername)
 #if 1
 	char *http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	int declen = pw_dec_len(http_passwd);
+	int declen = strlen(http_passwd);
 	char dec_passwd[declen];
 	memset(dec_passwd, 0, sizeof(dec_passwd));
-	pw_dec(http_passwd, dec_passwd);
+	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
 	http_passwd = dec_passwd;
 #endif
 	memset(dbdir, 0, sizeof(dbdir));
@@ -3897,10 +3900,10 @@ void write_webdav_permissions()
 			ascii_to_char_safe(char_user, tmp_ascii_user, 64);
 			memset(char_passwd, 0, 64);
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-			int declen = pw_dec_len(tmp_ascii_passwd);
+			int declen = strlen(tmp_ascii_passwd);
 			char dec_passwd[declen];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd);
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			ascii_to_char_safe(char_passwd, tmp_ascii_passwd, 64);

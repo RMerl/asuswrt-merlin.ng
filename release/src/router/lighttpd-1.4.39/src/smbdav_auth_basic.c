@@ -30,6 +30,18 @@
 #include <dlinklist.h>
 #include "mod_smbdav.h"
 
+#ifdef EMBEDDED_EANBLE
+#include "shared.h"	//shared/shared.h
+#include "nvram_control.h"
+#endif
+
+/* smb_auth.c */
+extern void smbc_wrapper_response_401(server *srv, connection *con);
+extern int smbc_parser_basic_authentication(server *srv, connection* con, char** username,  char** password);
+/* disk_data.c */
+extern int compare_passwd_in_shadow(const char *username, const char *passwd);
+
+
 #define DBE 1
 
 #ifndef EMBEDDED_EANBLE
@@ -101,10 +113,9 @@ int do_account_authentication(const char *username, const char *password)
 		buffer_copy_string(buffer_acc_pass, pass);
 
 #if NVRAM_ENCRYPT_ENABLE
-		int len_dec = pw_dec_len(pass);
-		char output[len_dec];
+		char output[len+1];
 		memset(output, 0, sizeof(output));
-		pw_dec(pass, output);
+		pw_dec(pass, output, sizeof(output));
 		buffer_copy_string(buffer_acc_pass, output);
 		Cdbg(DBE, 'aaa buffer_acc_pass=%s', buffer_acc_pass->ptr);
 #endif

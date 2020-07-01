@@ -1007,7 +1007,7 @@ void bcm_ethsw_init(void)
         for(;ETHSW_CORE->port_traffic_ctrl[i] & PORT_CTRL_RX_DISABLE; udelay(100));
     }
 #elif defined(_BCM947622_) || defined(CONFIG_BCM947622)
-#if defined(RTAX95Q) || defined(RTAX56U)
+#if defined(RTAX95Q) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(RTAX55)
 {
 #define SWITCH_REG_MDIO_CFG         0x80411304
     printk("Change SYSTEM PORT MDIO clock to 2.5MHz\n");

@@ -470,7 +470,7 @@ function change_cert_method(cert_method){
 		if(cert_method === undefined){
 			//Let's encrypt default on
 			if(ddns_server_x_t != document.form.ddns_server_x.value && orig_le_enable == "0")
-				cert_method = "1";
+				cert_method = "0";
 			else
 				cert_method = orig_le_enable;
 

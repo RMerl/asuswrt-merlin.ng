@@ -1166,32 +1166,30 @@ padding-top:1px;
 
 #bwdpi_status{
 	cursor: pointer;
-	height: 20px;
-	width: 21px;
+	height: 22px;
+	width: 22px;
+	margin: auto;
+	background-size: 100%;
+	background-repeat:no-repeat;
 }
 
 .bwdpistatus_game{
 	background-image:url(images/New_ui/QoS_quick/game_icon.svg);
-	background-repeat:no-repeat;
-	background-position:0px 2px;
 }
-
 .bwdpistatus_media{
 	background-image:url(images/New_ui/QoS_quick/media_icon.svg);
-	background-repeat:no-repeat;
-	background-position:0px 2px;
 }
-
 .bwdpistatus_web{
 	background-image:url(images/New_ui/QoS_quick/web_icon.svg);
-	background-repeat:no-repeat;
-	background-position:2px 0px;
 }
-
+.bwdpistatus_videoConference{
+	background-image:url(images/New_ui/QoS_quick/video_conference_icon.svg);
+}
+.bwdpistatus_eLearning{
+	background-image:url(images/New_ui/QoS_quick/elearning_icon.svg);
+}
 .bwdpistatus_customize{
 	background-image:url(images/New_ui/QoS_quick/customize_icon.svg);
-	background-repeat:no-repeat;
-	background-position:2px 2px;
 }
 
 .vpnstatuson{

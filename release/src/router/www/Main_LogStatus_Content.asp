@@ -195,8 +195,9 @@ function get_log_data(){
 												<input type="hidden" name="action_mode" value="apply">
 												<input type="hidden" name="action_script" value="restart_logger">
 												<input type="hidden" name="action_wait" value="5">
-												<input type="text" maxlength="64" class="input_15_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isIPAddr(this, event)" autocorrect="off" autocapitalize="off">
+												<input type="text" maxlength="64" class="input_30_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 												<label style="padding-left:15px;">Port:</label><input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 65535);" value='<% nvram_get("log_port"); %>' autocorrect="off" autocapitalize="off">
+												<br/><span id="alert_msg1" style="color:#FC0;"></span>
 											</td>
 										</tr>
 										<tr>
@@ -230,10 +231,7 @@ function get_log_data(){
 											</td>
 										</tr>
 									</table>
-									<div class="apply_gen" valign="top">
-										<input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" />
-										<br/><span id="alert_msg1" style="color:#FC0;"></span>
-									</div>
+									<div class="apply_gen" valign="top"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
 									</form>
 									<div style="color:#FFCC00;"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
 									<div style="margin-top:8px">

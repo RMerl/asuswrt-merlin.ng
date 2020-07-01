@@ -76,6 +76,9 @@ ifneq ($(strip $(BUILD_HND_NIC)),)
     EXTRA_CFLAGS += -DBCA_HNDNIC
 endif
     EXTRA_CFLAGS += -I$(COMMON_SHARED_DIR)
+ifneq (,$(filter $(MODEL),RTAX58U TUFAX3000 RTAX82U RTAX55))
+    EXTRA_CFLAGS += -g -DBCMDBG -DWLMSG_ASSOC
+endif
 
     # wl shared directory
     ifeq ($(strip $(USE_WLAN_SHARED)), 1)

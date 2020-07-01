@@ -21,7 +21,10 @@ endif
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 
-OBJS = ahs.o
+CFLAGS += -I$(TOP)/libasc
+LDFLAGS += -L$(TOP)/libasc -lasc
+
+OBJS = utility.o ahs.o
 
 ifneq ($(wildcard ./prebuild),)
 all:

@@ -36,6 +36,7 @@ function initial_amesh_obj() {
 function check_wl_auth_support(_wl_auth_mode_x, _obj) {
 	var support_flag = false;
 	var support_auth = ["psk2", "pskpsk2"];
+
 	for (var idx in support_auth) {
 		if (support_auth.hasOwnProperty(idx)) {
 			if(_wl_auth_mode_x == support_auth[idx]) {
@@ -46,7 +47,7 @@ function check_wl_auth_support(_wl_auth_mode_x, _obj) {
 	}
 	if(!support_flag) {
 		var auth_text = _obj.text();
-		var confirm_msg = "<#AiMesh_confirm_msg1_0#> " + auth_text + "<#AiMesh_confirm_msg1_1#>\n<#AiMesh_confirm_msg0#>";
+		var confirm_msg = "<#AiMesh_confirm_msg9#>".replace("#AUTHMODE", auth_text);
 		support_flag = confirm(confirm_msg);
 	}
 	return support_flag;

@@ -49,11 +49,17 @@
 			</div>
 		</div>
 
+		<div id="wpa3_hint" class="pageDesc onboarding_unit">
+			<#AiMesh_confirm_msg11#>
+			<br>
+			<#AiMesh_confirm_msg12#>
+		</div>
+
 		<!-- Action Button -->
 		<div id="controlBtn_apply" class="onboarding_unit">
 			<div class="footer_desktop">
 				<div class="desktop_abortBtn" onclick='goTo.amasearch();'><#AiMesh_Choose_Another_Node#></div>
-				<div class="desktop_applyBtn" onclick='apply.amaonboarding();'><#Connecting#></div>
+				<div class="desktop_applyBtn" onclick='apply.amasonboarding();'><#CTL_Add_enrollee#></div>
 			</div>
 			<div class="footer_mobile">
 				<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -61,8 +67,8 @@
 						<td class="mobileAbort" style="width:50%;" onclick='goTo.amasearch();'>
 							<div class="mobile_abortBtn"><#AiMesh_Choose_Another_Node#></div>
 						</td>
-						<td class="mobileApply" onclick='apply.amaonboarding();'>
-							<div class="mobile_applyBtn"><#Connecting#></div>
+						<td class="mobileApply" onclick='apply.amasonboarding();'>
+							<div class="mobile_applyBtn"><#CTL_Add_enrollee#></div>
 						</td>
 					</tr>
 				</table>

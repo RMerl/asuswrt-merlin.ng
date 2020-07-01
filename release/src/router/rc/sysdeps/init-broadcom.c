@@ -35,6 +35,14 @@
 
 #include <linux/major.h>
 
+#if defined(RTAX56_XD4)
+#define WL_IF_PREFIX "wl%d"
+#define WL_IF_PREFIX_2 "wl"
+#else
+#define WL_IF_PREFIX "eth%d"
+#define WL_IF_PREFIX_2 "eth"
+#endif
+
 #ifdef RTCONFIG_BCMWL6
 #include <d11.h>
 #ifdef RTCONFIG_HND_ROUTER_AX
@@ -88,7 +96,7 @@ void generate_switch_para(void)
 	memset(glan, 0, sizeof(glan));
 #endif
 
-#ifdef RTAX95Q
+#if defined(RTAX95Q) || defined(RTAX56_XD4)
 	return ;
 #endif
 	// generate nvram nvram according to system setting
@@ -1207,7 +1215,9 @@ void generate_switch_para(void)
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
@@ -1877,23 +1887,32 @@ void init_switch()
 			break;
 		}
 		case MODEL_RTAX95Q:
+		case MODEL_RTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
 		{
 			/* set wanports in init_nvram for dualwan */
 			/* WAN L1 L2 L3 L4 */
 #if defined(RTAX95Q)
 			int ports[4] = { 0, 1, 2, 3 };
+#elif defined(RTAX56_XD4)
+			int ports[1] = { 0 };
 #elif defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 			int ports[5] = { 4, 3, 2, 1, 0 };
+#elif defined(RTAX55)
+			int ports[5] = { 0, 1, 2, 3, 4 };
 #else //defined(RTAX56U)
 			int ports[5] = { 0, 4, 3, 2, 1 };
 #endif
-
 			char buf[64], *ptr;
 			int i, len, wancfg;
 			int tmp_type;
-
+#ifdef RTAX55
+			eval("mknod", "/dev/rtkswitch", "c", "206", "0");
+			eval("insmod", "rtl8367s");
+			eval("ethswctl", "-c", "setlinkstatus", "-n", "0", "-p", "1", "-x", "1", "-y", "1000", "-z", "1");
+#endif
 			if (get_wans_dualwan() & WANSCAP_LAN) {
 				wancfg = nvram_get_int("wans_lanport");
 
@@ -1912,8 +1931,11 @@ void init_switch()
 			}
 			else {
 				wancfg = 0;
-
+#ifdef RTAX55
+				nvram_set("lanports", "1 2 3 4");
+#else
 				nvram_set("lanports", "3 2 1 0");
+#endif
 			}
 
 			memset(buf, 0, sizeof(buf));
@@ -1926,7 +1948,7 @@ void init_switch()
 				ptr = buf+strlen(buf);
 			}
 			nvram_set("wanports", buf);
-#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX56U)
+#if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U) || defined(RTAX56U) || defined(RTAX55)
 			setLANLedOn();
 #endif
 			break;
@@ -2152,10 +2174,14 @@ init_switch_misc()
 
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
 	system("ethctl eth0 ethernet@wirespeed enable");
+#ifndef RTAX55
 	system("ethctl eth1 ethernet@wirespeed enable");
+#endif
+#if !defined(RTAX56_XD4) && !defined(RTAX55)
 	system("ethctl eth2 ethernet@wirespeed enable");
 	system("ethctl eth3 ethernet@wirespeed enable");
-#ifndef RTAX95Q
+#endif
+#if !defined(RTAX95Q) && !defined(RTAX56_XD4) && !defined(RTAX55)
 	system("ethctl eth4 ethernet@wirespeed enable");
 #endif
 #if defined(RTAX86U) || defined(RTAX5700)
@@ -2179,9 +2205,13 @@ init_switch_misc()
 
         system("ethctl eth0 ethernet@wirespeed enable");
         system("ethctl eth1 ethernet@wirespeed enable");
+#if !defined(RTAX56_XD4) && !defined(RTAX55)
         system("ethctl eth2 ethernet@wirespeed enable");
         system("ethctl eth3 ethernet@wirespeed enable");
+#endif
+#if !defined(RTAX95Q) && !defined(RTAX56_XD4) && !defined(RTAX55)
         system("ethctl eth4 ethernet@wirespeed enable");
+#endif
 
 #ifdef RTCONFIG_EXT_BCM53134
 	system("ethswctl -c pmdioaccess -x 0x1030 -l 2 -d 0xf017");
@@ -2312,6 +2342,7 @@ reset_mssid_hwaddr(int unit)
 			case MODEL_RTAC86U:
 			case MODEL_RTAC3100:
 			case MODEL_RTAX95Q:
+			case MODEL_RTAX56_XD4:
 			case MODEL_RTAX58U:
 			case MODEL_RTAX86U:
 			case MODEL_RTAX68U:
@@ -2322,6 +2353,7 @@ reset_mssid_hwaddr(int unit)
 #endif
 				snprintf(macaddr_str, sizeof(macaddr_str), "%d:macaddr", unit);
 				break;
+			case MODEL_RTAX55:
 			case MODEL_RTAX56U:
 				snprintf(macaddr_str, sizeof(macaddr_str), "sb/%d/macaddr", unit);
 				break;
@@ -2457,13 +2489,9 @@ reset_psr_hwaddr()
 		case MODEL_RTAX92U:
 			unit = 1;
 			break;
-		case MODEL_RTAX56U:
-		case MODEL_RTAX95Q:
-			unit = 0;
-			break;
 	}
 
-	if (model == MODEL_RTAX56U)
+	if (model == MODEL_RTAX56U || model == MODEL_RTAX55)
 		snprintf(macaddr_name, sizeof(macaddr_name), "sb/%d/macaddr", unit);
 	else
 		snprintf(macaddr_name, sizeof(macaddr_name), "%d:macaddr", unit);
@@ -2545,7 +2573,17 @@ void load_wl()
 			}
 			eval("insmod", module, instance_base);
 		} else {
+#if defined(RTAX56_XD4)
+			if(strcmp(module, "wl") == 0){
+				eval("insmod", "wl", "intf_name=wl%d");
+			} else {
+				eval("insmod", module);
+				 _dprintf("\nmodule %s loaded\n", module);
+			}
+#else
 			eval("insmod", module);
+			 _dprintf("\nmodule %s loaded\n", module); 
+#endif
 		}
 	}
 #ifdef RTCONFIG_BCM_7114
@@ -2738,61 +2776,30 @@ void init_wl_compact(void)
 #endif
 	check_wl_country();
 #ifndef RTCONFIG_BRCM_USBAP
-	if ((model == MODEL_DSLAC68U) ||
-		(model == MODEL_RTAC1200G) ||
-		(model == MODEL_RTAC1200GP) ||
-		(model == MODEL_RTAC3100) ||
-		(model == MODEL_RTAC3200) ||
-		(model == MODEL_RTAC5300) ||
-		(model == MODEL_GTAC5300) ||
-		(model == MODEL_RTAC53U) ||
-		(model == MODEL_RTAC56U) ||
-		(model == MODEL_RTAC56S) ||
-		(model == MODEL_RTAC66U) ||
-		(model == MODEL_RTAC68U) ||
-		(model == MODEL_RTAC87U) ||
-		(model == MODEL_RTAC88U) ||
-		(model == MODEL_RTAC86U) ||
-		(model == MODEL_RTAX88U) ||
-		(model == MODEL_GTAX11000) ||
-		(model == MODEL_RTAX92U) ||
-#ifndef RTAX95Q
-		(model == MODEL_RTAX95Q) ||
-#endif
-		(model == MODEL_RTAX58U) ||
-		(model == MODEL_RTAX56U) ||
-		(model == MODEL_RTAX86U) ||
-		(model == MODEL_RTAX68U) ||
-		(model == MODEL_RTN12HP_B1) ||
-		(model == MODEL_RTN18U) ||
-		(model == MODEL_RTN66U)) {
 #if defined(RTAC3200) || defined(RTAC68U) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-		wl_disband5grp();
+	wl_disband5grp();
 #endif
 #if !(defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTAX92U) || defined(GTAX11000))
-		set_wltxpower();
+	set_wltxpower();
 #endif
 #ifdef RTCONFIG_DHDAP
-		load_wl();
+	load_wl();
 #else
-		eval("insmod", "wl");
+	eval("insmod", "wl");
 #endif
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTAX92U) || defined(GTAX11000)
-		set_wltxpower();
+	set_wltxpower();
 #endif
 #ifndef RTCONFIG_BCMARM
 #if defined(NAS_GTK_PER_STA) && defined(PROXYARP)
-		eval("insmod", "proxyarp");
+	eval("insmod", "proxyarp");
 #endif
 #endif
-	}
 #endif
 }
 
 void fini_wl(void)
 {
-	int model = get_model();
-
 	/* no wireless driver re-loading to keep CAC information when restarting wireless */
 #if defined(RTCONFIG_BCMWL6) && !defined(RTN66U)
 	if (num_of_wl_if() > 1)
@@ -2806,33 +2813,9 @@ void fini_wl(void)
 #endif
 
 #ifndef RTCONFIG_BRCM_USBAP
-	if (((model == MODEL_DSLAC68U) ||
-		(model == MODEL_RTAC1200G) ||
-		(model == MODEL_RTAC1200GP) ||
-		(model == MODEL_RTAC3100) ||
-		(model == MODEL_RTAC3200) ||
-		(model == MODEL_RTAC5300) ||	/* will be removed in 7.x */
-		(model == MODEL_GTAC5300) ||	/* will be removed in 7.x */
-		(model == MODEL_RTAC66U) ||
-		(model == MODEL_RTAC68U) ||
-		(model == MODEL_RTAC87U) ||
-		(model == MODEL_RTAC88U) ||
-		(model == MODEL_RTAC86U) ||
-		(model == MODEL_RTAX88U) ||
-		(model == MODEL_GTAX11000) ||
-		(model == MODEL_RTAX92U) ||
-		(model == MODEL_RTAX95Q) ||
-		(model == MODEL_RTAX58U) ||
-		(model == MODEL_RTAX56U) ||
-		(model == MODEL_RTAX86U) ||
-		(model == MODEL_RTAX68U) ||
-		(model == MODEL_RTN12HP_B1) |
-		(model == MODEL_RTN18U) ||
-		(model == MODEL_RTN66U))
 #ifdef RTCONFIG_DPSTA
-		&& !dpsta_mode()
+	if (!dpsta_mode())
 #endif
-	)
 	eval("rmmod", "wl");
 #endif
 #ifdef RTCONFIG_DHDAP
@@ -2978,7 +2961,9 @@ void init_syspara(void)
 		case MODEL_GTAX11000:
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
+		case MODEL_RTAX56_XD4:
 		case MODEL_RTAX58U:
+		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
@@ -3048,8 +3033,8 @@ void wl_thread_affinity_update(void)
 #endif
 	int cpu_affinity_disable;
 	char interrupt_string[5];
-	pid_t pid_wl, pid_wfd;
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+	pid_t pid_wl;
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 	pid_t pid_archer;
 	char value[sizeof("255")];
 #endif
@@ -3060,6 +3045,8 @@ void wl_thread_affinity_update(void)
 	char buf[128];
 	char affinity_cmd[128];
 	int cpu_count = 0;
+	char tmp[100], prefix[]="wlXXXXXXX_", *ptr;
+	int val;
 
 #define MAX_RADIO_NUM 3
 #define CPU_MAP 0x1
@@ -3073,7 +3060,7 @@ void wl_thread_affinity_update(void)
 			sprintf(pid, "%d", pid_wl);
 			eval("taskset", "-p", "0x1", pid);
 		}
-#ifdef RTCONFIG_HND_ROUTER_AX_675X
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
 		if ((pid_archer = get_pid_by_thrd_name("bcm_archer_us")) > 0)
 		{
 			sprintf(pid, "%d", pid_archer);
@@ -3107,7 +3094,7 @@ void wl_thread_affinity_update(void)
 		/* Set the Interrupt Affinities */
 		if ((fp = fopen("/proc/interrupts", "r")) != NULL) {
 			while (fgets(buf, sizeof(buf), fp) != NULL) {
-				if (strstr(buf, "eth") != NULL
+				if (strstr(buf, WL_IF_PREFIX_2) != NULL
 #if defined(RTAX95Q) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 					|| strstr(buf, "dhdpcie") != NULL
 #endif
@@ -3133,32 +3120,34 @@ void wl_thread_affinity_update(void)
 			}
 			fclose(fp);
 		}
-	}
-	/* Set Affinities for the WL threads */
-	for (i = 0; i < MAX_RADIO_NUM; i++) {
-		sprintf(process_name, "wl%d-kthrd", i);
-		if ((pid_wl = get_pid_by_thrd_name(process_name)) <= 0)
-			continue;
-		sprintf(pid, "%d", pid_wl);
-		if (!cpu_affinity_disable)
-		{
+
+		/* Set Affinities for the WL threads */
+		for (i = 0; i < MAX_RADIO_NUM; i++) {
 			/* Check for MAX CPU and set map index */
-			if (i >= (cpu_count -1)){
-				printf("More WL interfaces exist than CPUs, Setting Interrupt Affinity to last CPU\n");
-				sprintf(affinity, "%d", CPU_MAP << (cpu_count - 1));
-			} else {
-				sprintf(affinity, "%d", CPU_MAP << (i+1));
+			snprintf(prefix, sizeof(prefix), "wl%d_", i);
+			if ((ptr = nvram_get(strcat_r(prefix, "affinity", tmp))) && *ptr && (val = atoi(ptr)) > 0)
+				snprintf(affinity, sizeof(affinity), "%d", val);
+			else {
+				if (i >= (cpu_count -1)) {
+					printf("More WL interfaces exist than CPUs, Setting Interrupt Affinity to last CPU\n");
+					sprintf(affinity, "%d", CPU_MAP << (cpu_count - 1));
+				} else {
+					sprintf(affinity, "%d", CPU_MAP << (i+1));
+				}
 			}
-			eval("taskset", "-p", affinity, pid);
+
+			sprintf(process_name, "wl%d-kthrd", i);
+			if ((pid_wl = get_pid_by_thrd_name(process_name)) > 0) {
+				sprintf(pid, "%d", pid_wl);
+				eval("taskset", "-p", affinity, pid);
+			}
 
 			sprintf(process_name, "wfd%d-thrd", i);
-			if ((pid_wfd = get_pid_by_thrd_name(process_name)) > 0) {
-				sprintf(pid, "%d", pid_wfd);
+			if ((pid_wl = get_pid_by_thrd_name(process_name)) > 0) {
+				sprintf(pid, "%d", pid_wl);
 				eval("taskset", "-p", affinity, pid);
 			}
 		}
-		else
-			eval("taskset", "-p", "0xf", pid);
 	}
 }
 #endif /* BCA_HNDROUTER */
@@ -3169,7 +3158,7 @@ void tweak_usb_affinity(int enable)
 	char smp[32], val_on[4], val_off[4];
 	int *ptr;
 #ifdef RTCONFIG_HND_ROUTER_AX_675X
-#if defined(RTAX95Q)
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX56U) || defined(RTAX55)
 	int usb_irqs[] = {45, 46, 47, -1};	// BCM6755
 #elif defined(RTCONFIG_HND_ROUTER_AX_6710)
 	int usb_irqs[] = {25, 26, 27, -1};	// RT-AX86U, RT-AX68U
@@ -3182,7 +3171,14 @@ void tweak_usb_affinity(int enable)
 	int on, off, i;
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 
+#if defined(RTAX95Q) || defined(RTAX56_XD4) || defined(RTAX56U) || defined(RTAX55)
+	if(cpu_num > 2)
+		on = 1 << (cpu_num - 2);
+	else
+		on = 1 << (cpu_num - 1);
+#else
 	on = 1 << (cpu_num - 1);
+#endif
 	snprintf(val_on, sizeof(val_on), "%x", on);
 
 	off = 0;
@@ -3220,9 +3216,28 @@ void init_others(void)
 #if defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
 	update_cfe_ax58u();
 #endif
+#if defined(RTCONFIG_BCM_MFG) && defined(RTAX55)
+	update_cfe_ax55();
+#endif
 #ifdef RTAX56U
 	/* restore LED 16 active high/low status (refer cfe) */
 	system("sw 0xff803014 0xffffffff");
+#endif
+#if defined(RTAX56_XD4)
+	/* restore LED 16 active high/low status (refer cfe) */
+	system("sw 0xff803014 0xffffffff");
+
+	/* high performance */
+	system("echo 255 > /sys/class/leds/22/brightness");
+
+	setAllLedOn();
+
+	if(nvram_match("HwId", "B") || nvram_match("HwId", "D")){
+		if(nvram_get_int("x_Setting") == 0)
+			nvram_set("disable_ui", "1");
+		else
+			nvram_set("disable_ui", "0");
+	}
 #endif
 }
 #else // HND_ROUTER
@@ -4462,6 +4477,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		}
 		else
 			nvram_set(strcat_r(prefix, "he_features", tmp), "0");
+#if defined(RTAX92U)
+		if(unit == 0 || unit == 1)
+		{
+			nvram_unset(strcat_r(prefix, "acs_use_escan", tmp));
+		}
+#endif
 #endif
 
 		if (nvram_match(strcat_r(prefix, "txbf", tmp), "1"))
@@ -4763,6 +4784,18 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (unit == 1) runtime_config_qtn(unit, subunit);
 	}
 #endif
+
+	/* configure mfp for wireless backhaul and guest network */
+	if (nvram_get_int("re_mode") == 1
+		&& (subunit == 1 || subunit == 2 || subunit == 3) ){
+		if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "sae")){
+			nvram_set_int(strcat_r(prefix, "mfp", tmp), 2);
+		} else if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "psk2sae")){
+			nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+		}else{
+			nvram_set_int(strcat_r(prefix, "mfp", tmp), 0);
+		}
+	}
 }
 
 #define BCM5325_ventry(vid, inet_vid, iptv_vid, voip_vid) ( \
@@ -5744,6 +5777,10 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				/* eth0 eth1 eth2 eth3						  */	
 				/* WAN  L1   L2   L3						  */
 
+	case MODEL_RTAX56_XD4:
+				/* eth0 eth1						  */	
+				/* WAN  L1						  */
+
 	case MODEL_RTAX58U:
 				/* eth4 eth3 eth2 eth1 eth0					  */	
 				/* WAN  L1   L2   L3   L4					  */
@@ -5802,6 +5839,16 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 			sprintf(vlanDev2, "eth2.v0");
 			sprintf(vlanDev3, "eth2.v0");
 			sprintf(vlanDev4, "eth1.v0");
+		}
+		/* Spefici net devices order for RTAX56_XD4 */
+		else if (model == MODEL_RTAX56_XD4) {
+			if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
+				sprintf(ethPort1, "eth1");
+				sprintf(vlanDev1, "eth1.v0");
+			} else {
+				sprintf(ethPort1, "");
+				sprintf(vlanDev1, "");
+			}
 		}
 
 		/* write default WAN net device to handle vlanctl commands */
@@ -7885,9 +7932,6 @@ void set_acs_ifnames()
 
 #ifdef RTCONFIG_DPSTA
 			if (is_psr(unit)) {
-#if defined(RTCONFIG_AMAS)
-				if (nvram_get_int("re_mode") == 0 || (nvram_get_int("re_mode") == 1 && add_interface_for_acsd(unit)))
-#endif
 				sprintf(acs_ifnames2, "%s%s%s", acs_ifnames, strlen(acs_ifnames) ? " " : "", wlvif);
 			}
 			else
@@ -7981,9 +8025,9 @@ void set_acs_ifnames()
 		add_cfgexcl_2_acsexcl(cfg_excl_chans);
 #endif
 	nvram_set_int("wl0_acs_dfs", 0);
-	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? (is_psr(1) ? 1 : 2) : 0);
+	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? 1 : 0);
 #if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q)
-	nvram_set_int("wl2_acs_dfs", nvram_match("wl2_reg_mode", "h") ? (is_psr(2) ? 1 : 2) : 0);
+	nvram_set_int("wl2_acs_dfs", nvram_match("wl2_reg_mode", "h") ? 1 : 0);
 #endif
 }
 #endif

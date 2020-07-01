@@ -62,3 +62,6 @@ js-rtc-y = rtc.o
 
 obj-$(CONFIG_TILE_SROM)		+= tile-srom.o
 obj-$(CONFIG_XILLYBUS)		+= xillybus/
+ifeq ($(MODEL),$(or RTAX55))
+obj-m				+= rtk/
+endif

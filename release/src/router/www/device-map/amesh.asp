@@ -327,6 +327,7 @@ function ajax_onboarding() {
 							parent.$("#amesh_connect_msg").find(".amesh_hint_text.amesh_device_info").html(device_info);
 							parent.$("#amesh_connect_msg").find(".amesh_hint_text.amesh_device_info").css("display", "");
 							parent.$("#amesh_connect_msg").find(".wait_search").css("display", "none");
+
 							if((parseInt(rssi) < parseInt(get_onboardingstatus.cfg_wifi_quality)) && (source != "2")) {
 								parent.$("#amesh_connect_msg").find(".quality_ok").css("display", "none");
 								parent.$("#amesh_connect_msg").find(".quality_weak").css("display", "");
@@ -582,12 +583,52 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 	/* Update ameshNumber end */
 }
 
-function connectingDevice(_reMac, _newReMac) {
-	document.form.re_mac.disabled = false;
-	document.form.new_re_mac.disabled = false;
-	document.form.re_mac.value = _reMac;
-	document.form.new_re_mac.value = _newReMac;
-	document.form.submit();
+function getAiMeshOnboardinglist(_onboardingList){
+	var jsonArray = [];
+	var profile = function(){
+		this.name = "";
+		this.ui_model_name = "";
+		this.signal = "";
+		this.rssi = "";
+		this.source = "";
+		this.mac = "";
+		this.pap_mac = "";
+		this.id = "";
+	};
+	var convRSSI = function(val) {
+		var result = 1;
+		val = parseInt(val);
+		if(val >= -50) result = 4;
+		else if(val >= -80) result = Math.ceil((24 + ((val + 80) * 26)/10)/25);
+		else if(val >= -90) result = Math.ceil((((val + 90) * 26)/10)/25);
+		else return 1;
+
+		if(result == 0) result = 1;
+		return result;
+	};
+
+	Object.keys(_onboardingList).forEach(function(key) {
+		var papMac = key;
+		var newReMacArray = _onboardingList[papMac];
+		Object.keys(newReMacArray).forEach(function(key) {
+			var newReMac = key;
+			var node_info  = new profile();
+			node_info.name = newReMacArray[newReMac].model_name;
+			node_info.ui_model_name = newReMacArray[newReMac].ui_model_name;
+			node_info.signal = convRSSI(newReMacArray[newReMac].rssi);
+			node_info.rssi = newReMacArray[newReMac].rssi;
+			node_info.source = newReMacArray[newReMac].source;
+			node_info.mac = newReMac;
+			node_info.pap_mac = papMac;
+			node_info.id = newReMac.replace(/:/g, "");
+			jsonArray.push(node_info);
+		});
+	});
+
+	return jsonArray;
+}
+
+function connectingDevice(_reMac, _newReMac, delay) {
 	var device_id = _newReMac.replace(/:/g, "").toUpperCase();
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".loading-container").css("display", "");
 	$('#ready_onBoarding_block').find("#" + device_id + "").find(".amesh_each_router_icon_bg").css("display", "none");
@@ -599,6 +640,48 @@ function connectingDevice(_reMac, _newReMac) {
 	$("#searchReadyOnBoarding").css("display", "none");
 	$("#amesh_loadingIcon").css("display", "none");
 	onboarding_flag = true;
+
+	var onboardingSearch = function(){
+		httpApi.nvramSet({"action_mode": "onboarding"})
+
+		setTimeout(function(){
+			var obList = getAiMeshOnboardinglist(httpApi.hookGet("get_onboardinglist", true));
+			var got = false;
+
+			obList.forEach(function(nodeInfo){
+				if(nodeInfo.mac == _newReMac){
+					got = true;
+
+					httpApi.nvramSet({
+						"action_mode": "ob_selection", 
+						"new_re_mac": nodeInfo.mac, 
+						"ob_path": nodeInfo.source
+					});
+
+					httpApi.nvramSet({
+						"action_mode": "onboarding", 
+						"re_mac": nodeInfo.pap_mac, 
+						"new_re_mac": nodeInfo.mac
+					});
+				}
+			})
+
+			if(!got){
+				setTimeout(arguments.callee, 1000);
+			}
+		}, 2000);
+	}
+
+	if(delay){
+		setTimeout(onboardingSearch, parseInt(delay)*1000)
+	}
+	else{
+		document.form.re_mac.disabled = false;
+		document.form.new_re_mac.disabled = false;
+		document.form.re_mac.value = _reMac;
+		document.form.new_re_mac.value = _newReMac;
+		document.form.submit();	
+	}
 }
 function ajax_get_onboardinglist_status() {
 	var accelerate_count = function(_device_id) {
@@ -927,8 +1010,42 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _rssi, _ob_path) {
 				$amesh_action_bg.append($amesh_apply);
 				$amesh_apply.click(
 					function() {
-						initial_amesh_obj();
-						connectingDevice(_reMac, _newReMac);
+						var authMode = httpApi.nvramGet(["wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x"], true);
+						var postData = {};
+
+						Object.keys(authMode).map(function(item, idx){ 
+							if(authMode[item] == "sae"){
+								postData[item] = "psk2sae";
+								postData["wl" + idx + "_mfp"] = 1;
+							}
+						});
+
+						if(Object.keys(postData).length){
+							var $amesh_wpa3_text = $('<div>');
+							$amesh_wpa3_text.addClass("amesh_hint_text");
+							var hint_text = "<#AiMesh_confirm_msg11#>";
+							hint_text += "<br>";
+							hint_text += "<#AiMesh_confirm_msg12#>";
+							$amesh_wpa3_text.html(hint_text);
+							$amesh_wpa3_text.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#FC0", "text-decoration": "underline"});
+							httpApi.faqURL("1042500", function(url){$amesh_wpa3_text.find("#wpa3FaqLink").attr("href", url);});
+							$connectHtml.find(".amesh_action_bg").before($amesh_wpa3_text);
+							$amesh_apply.unbind("click");
+							$amesh_apply.click(
+								function() {
+									initial_amesh_obj();
+									postData.action_mode = "apply";
+									postData.rc_service = "restart_wireless";
+									httpApi.nvramSet(postData, function(){
+										connectingDevice(_reMac, _newReMac, 10);
+									})
+								}
+							);
+						}
+						else{
+							initial_amesh_obj();
+							connectingDevice(_reMac, _newReMac);
+						}
 					}
 				);
 

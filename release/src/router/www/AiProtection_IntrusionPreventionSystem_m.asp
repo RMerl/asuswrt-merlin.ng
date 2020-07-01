@@ -315,8 +315,9 @@ function getIPSDetailData(type, event){
 		},
 		success: function(response){
 			dataObject = {};
-			if(data != ""){
-				var data_array = JSON.parse(data);
+			var data_array = JSON.parse(data);
+			if(data_array != ""){
+				
 				for(i=0; i<data_array.length; i++){
 					csvContent += '\n';
 					csvContent += data_array[i][0] + ',' + data_array[i][1] + ',' + direct_type[data_array[i][5]] + ',' + data_array[i][2] + ',' + data_array[i][3] + ',' + data_array[i][4];

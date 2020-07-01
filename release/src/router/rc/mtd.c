@@ -735,6 +735,7 @@ mtd_erase(const char *mtd)
 	return 0;
 }
 
+#ifndef RTCONFIG_URLFW
 static char *
 base64enc(const char *p, char *buf, int len)
 {
@@ -880,6 +881,7 @@ http_get(const char *server, char *buf, size_t count, off_t offset)
 {
 	return wget(METHOD_GET, server, buf, count, offset);
 }
+#endif /* !RTCONFIG_URLFW */
 
 /*
  * Write a file to an MTD device
@@ -904,10 +906,19 @@ mtd_write(const char *path, const char *mtd)
 	int ret = -1;
 
 	/* Examine TRX header */
+#ifdef RTCONFIG_URLFW
+	if ((fp = url_fopen(path, "rb")))
+		count = safe_fread(&trx, 1, sizeof(struct trx_header), fp);
+	else {
+		fprintf(stderr, "%s: Can't open path\n", path);
+		goto fail;
+	}
+#else /* !RTCONFIG_URLFW */
 	if ((fp = fopen(path, "r")))
 		count = safe_fread(&trx, 1, sizeof(struct trx_header), fp);
 	else
 		count = http_get(path, (char *) &trx, sizeof(struct trx_header), 0);
+#endif /* !RTCONFIG_URLFW */
 	if (count < sizeof(struct trx_header)) {
 		fprintf(stderr, "%s: File is too small (%ld bytes)\n", path, count);
 		goto fail;
@@ -963,10 +974,14 @@ mtd_write(const char *path, const char *mtd)
 			count = off = sizeof(struct trx_header);
 			memcpy(buf, &trx, sizeof(struct trx_header));
 		}
+#ifdef RTCONFIG_URLFW
+		count += safe_fread(&buf[off], 1, len - off, fp);
+#else /* !RTCONFIG_URLFW */
 		if (fp)
 			count += safe_fread(&buf[off], 1, len - off, fp);
 		else
 			count += http_get(path, &buf[off], len - off, erase_info.start + off);
+#endif /* !RTCONFIG_URLFW */
 		if (count < len) {
 			fprintf(stderr, "%s: Truncated file (actual %ld expect %ld)\n", path,
 				count - off, len - off);
@@ -1091,66 +1106,84 @@ CmsImageFormat parseImgHdr(UINT8 *bufP, UINT32 bufLen)
 int
 bca_sys_upgrade(const char *path)
 {
-	int ret = 0;
-	pid_t pid = getpid();
-	int imgsz, ulimgsz = 0;
-#if 0
-	int spsz;
+	FILE *fp;
+#ifdef RTCONFIG_PIPEFW
+	struct stat st;
 #endif
+	int ret = 0;
+	int imgsz, ulimgsz = 0;
 	int r_count, w_count;
-	FILE *fp = NULL;
 	char *buf = NULL;
-	uint bufsz = 0;
 	imgif_flash_info_t flash_info;
 	uint blknum = 0;
-
-	/* Opening communication pipe between HTTPD parent process */
-	if ((fp = fopen(path, "r")) == NULL) {
-		_dprintf("*** Filed open a file %s. Error: %s. Aborting \n",
-				path, strerror(errno));
-		ret = errno;
-		goto fail;
-	}
+	uint bufsz = 0;
+	pid_t pid = getpid();
 
 #ifdef RTCONFIG_PIPEFW
-	/* HTTPD parent process supposed to send the image size. reading it. */
-	r_count = safe_fread((void*)&imgsz, 1, sizeof(imgsz), fp);
-	if (r_count < sizeof(imgsz)) {
-		_dprintf("*** Error(pid:%d): %s@%d Pipe read failed. Expected:%d,read:%d. Aborting\n",
-			pid, __FUNCTION__, __LINE__, sizeof(imgsz), r_count);
-		ret = EPIPE;
+	if (strcmp(path, "-") == 0)
+		fp = freopen(NULL, "rb", stdin);
+	else
+#endif
+	{
+#ifdef RTCONFIG_URLFW
+		fp = url_fopen(path, "rb");
+#else /* !RTCONFIG_URLFW */
+		fp = fopen(path, "rb");
+#endif /* !RTCONFIG_URLFW */
+	}
+	if (fp == NULL) {
+		ret = errno;
+		_dprintf("*** Error(pid:%d): %s@%d Failed to open file %s: %s. Aborting\n",
+			pid, __FUNCTION__, __LINE__, path, strerror(errno));
 		goto fail;
 	}
-	_dprintf("%s@%d(pid:%d): image size=%d.\n", __FUNCTION__, __LINE__, pid, imgsz);
-#else
-	fseek(fp, 0, SEEK_END);
-	imgsz = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
+	
+#ifdef RTCONFIG_PIPEFW
+	if ((strcmp(path, "-") == 0) ||
+	    (stat(path, &st) == 0 && (S_ISFIFO(st.st_mode) || S_ISSOCK(st.st_mode)))) {
+		nvram_set("pipe_path", path);
+		/* HTTPD parent process supposed to send the image size. reading it. */
+		r_count = safe_fread((void*)&imgsz, 1, sizeof(imgsz), fp);
+		if (r_count < sizeof(imgsz)) {
+			ret = EPIPE;
+			_dprintf("*** Error(pid:%d): %s@%d Failed to read pipe. Expected %ld, read %d: %s. Aborting\n",
+				pid, __FUNCTION__, __LINE__, sizeof(imgsz), r_count, strerror(errno));
+			nvram_set_int("pipe_size", imgsz);
+			nvram_set_int("pipe_rcount", r_count);
+			goto fail;
+		}
+		nvram_set_int("pipe_size", imgsz);
+	} else
 #endif
+	{
+		fseek(fp, 0, SEEK_END);
+		imgsz = ftell(fp);
+		fseek(fp, 0, SEEK_SET);
+	}
 
 	/* Initialize IMGIF context */
 	imgifHandle = imgif_open(parseImgHdr, NULL);
 	if (imgifHandle == NULL) {
+		ret = EIO;
 		_dprintf("*** Error(pid:%d): %s@%d Failed to create image ifc context. Aborting\n",
 			pid, __FUNCTION__, __LINE__);
-		ret = EIO;
 		goto fail;
 	}
 
 #if defined(IMGIF_API_VERSION)
 	/* query flash device information */
 	if (imgif_get_flash_info(&flash_info) < 0) {
-		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
-			getpid(), __FUNCTION__, __LINE__);
 		ret = EIO;
+		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
+			pid, __FUNCTION__, __LINE__);
 	goto fail;
 	}
 #else
 	/* query flash device information */
 	if (imgif_get_flash_info(imgifHandle, &flash_info) < 0) {
-		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
-			getpid(), __FUNCTION__, __LINE__);
 		ret = EIO;
+		_dprintf("*** Error(pid:%d): %s@%d Failed to get flash info. Aborting\n",
+			pid, __FUNCTION__, __LINE__);
 		goto fail;
 	}
 #endif
@@ -1167,9 +1200,9 @@ bca_sys_upgrade(const char *path)
 
 	/* Allocating image upload buffer */
 	if ((buf = malloc(bufsz)) == NULL) {
-		_dprintf("*** Error(pid:%d) %s@%d malloc failed. %s\n",
-				getpid(), __FUNCTION__, __LINE__, strerror(errno));
 		ret = errno;
+		_dprintf("*** Error(pid:%d) %s@%d malloc failed. %s\n",
+			pid, __FUNCTION__, __LINE__, strerror(errno));
 		goto fail;
 	}
 
@@ -1179,17 +1212,17 @@ bca_sys_upgrade(const char *path)
 		r_count = safe_fread((void*)buf, 1, bufsz, fp);
 		if ((r_count < bufsz) && ((r_count + ulimgsz) != imgsz)) {
 			/* This must be the last chunk, othrwise fail */
-			_dprintf("*** Error(pid:%d): %s@%d Pipe read failed. Expected:%d,read:%d. Aborting\n",
-			pid, __FUNCTION__, __LINE__, bufsz, r_count);
 			ret = EPIPE;
+			_dprintf("*** Error(pid:%d): %s@%d Pipe read failed. Expected:%d,read:%d. Aborting\n",
+				pid, __FUNCTION__, __LINE__, bufsz, r_count);
 			goto fail;
 		}
 		/* Write chunk to the flash. */
 		w_count = imgif_write(imgifHandle, (UINT8*)buf, r_count);
 		if ((w_count < 0) || (w_count != r_count)) {
+			ret = EIO;
 			_dprintf("\nimgif_write() failed, towrite=%d, ret=%d",
 				     w_count, r_count);
-			ret = EIO;
 			goto fail;
 		}
 		_dprintf(".");
@@ -1203,13 +1236,32 @@ bca_sys_upgrade(const char *path)
 	if (imgifHandle != NULL) {
 		if (imgif_close(imgifHandle, (ret != 0)) == 0) {
 			if (ret == 0) {
+				ret = 99;
 				_dprintf("\nDone. (written %d bytes, %d blocks with size %d\n",
 					ulimgsz, blknum, flash_info.eraseSize);
 				setBootImageState(BOOT_SET_NEW_IMAGE);
+
+				if (nvram_match(ATE_FACTORY_MODE_STR(), "1") ||
+					nvram_match(ATE_UPGRADE_MODE_STR(), "1")) {
+					if ((fp = fopen("/tmp/ate_upgrade_state", "w")) != NULL) {
+						fprintf(fp, "Upgarde Complete\n");
+						fclose(fp);
+					} else
+						_dprintf("Fail to open /tmp/ate_upgrade_state\n");
+				}
 			}
 		} else {
 			if (ret == 0) {
 				_dprintf("\n*** Fail to write the image\n");
+
+				if (nvram_match(ATE_FACTORY_MODE_STR(), "1") ||
+					nvram_match(ATE_UPGRADE_MODE_STR(), "1")) {
+					if ((fp = fopen("/tmp/ate_upgrade_state", "w")) != NULL) {
+						fprintf(fp, "Can't write firmware image\n");
+						fclose(fp);
+					} else
+						_dprintf("Fail to open /tmp/ate_upgrade_state\n");
+				}
 			}
 			ret = EIO;
 		}

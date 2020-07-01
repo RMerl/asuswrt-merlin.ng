@@ -446,7 +446,11 @@ extern int initial_var_file(const char *const account, const char *const mount_p
 	get_all_folder(mount_path, &sh_num, &folder_list);
 
 	// 2. get the var file
+#if defined(RTCONFIG_PERMISSION_MANAGEMENT)
+	if(get_var_file_name(account, mount_path, &var_file, is_group)){
+#else
 	if(get_var_file_name(account, mount_path, &var_file, 0)){
+#endif
 		usb_dbg("Can't malloc \"var_file\".\n");
 		free_2_dimension_list(&sh_num, &folder_list);
 		return -1;
@@ -872,7 +876,11 @@ extern int modify_if_exist_new_folder(const char *const account, const char *con
 #endif
 	
 	// 1. get the var file
+#if defined(RTCONFIG_PERMISSION_MANAGEMENT)
+	if(get_var_file_name(account, mount_path, &var_file, is_group)){
+#else
 	if(get_var_file_name(account, mount_path, &var_file, 0)){
+#endif
 		usb_dbg("Can't malloc \"var_file\".\n");
 		return -1;
 	}
@@ -2342,7 +2350,7 @@ extern int add_account(const char *const account, const char *const password){
 	char enc_passwd[enclen];
 	char passwdbuf[NVRAM_ENC_MAXLEN];
 
-	if(!pw_dec(password, passwdbuf)){
+	if(!pw_dec(password, passwdbuf, sizeof(passwdbuf))){
 		pw_enc(ascii_passwd, enc_passwd);
 		strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
 	}else{

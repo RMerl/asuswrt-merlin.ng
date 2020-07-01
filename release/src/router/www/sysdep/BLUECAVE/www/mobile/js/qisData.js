@@ -262,7 +262,8 @@ var systemVariable = {
 	"wanOption": false,
 	"interval_status": false,
 	"modelCloudIcon": [],
-	"onboardingInfo": {}
+	"onboardingInfo": {},
+	"authModePostData": {}
 }
 
 var aimeshObj = {

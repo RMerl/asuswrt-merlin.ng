@@ -95,4 +95,18 @@ WL_MAP=1
 WLWRR=1
 SLAVE_RADAR=1
 BCMOTP=1
+MFP=1
+HSPOT=1
+# For Voice Enterprise(VE)
+# radio resource management
+WL11K=1
+WL11K_AP=1
+WL11K_ALL_MEAS=1
+
+# driver resident supplicant / fast roaming / 802.11r
+WLFBT=1
+# 11v wireless radio management info
+WLWNM=1
+# WLSCANCACHE=1
 WLWNM_AP=1
+MBO_AP=1

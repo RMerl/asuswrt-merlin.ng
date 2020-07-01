@@ -14,6 +14,7 @@
 
 #ifndef _shutils_h_
 #define _shutils_h_
+#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <rtconfig.h>
@@ -171,11 +172,7 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 })
 
 /* skip the space ' ' in front of s (string) */
-#define skip_space(s) {						\
-	while(*s == ' ')					\
-		s++;						\
-}
-
+#define skip_space(p)	{if(p != NULL){ while(isspace(*p)) p++;}}
 
 /* Simple version of _eval() (no timeout and wait for child termination) */
 #if 1
@@ -284,6 +281,20 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 				word[sizeof(word) - 1] = '\0', \
 				next = strchr(next, '>'))
 
+/* Copy each token in wordlist delimited by ascii_124 into word */
+#define foreach_124(word, wordlist, next) \
+		for (next = &wordlist[strspn(wordlist, "|")], \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "|")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '|'); \
+				strlen(word); \
+				next = next ? &next[strspn(next, "|")] : "", \
+				strncpy(word, next, sizeof(word)), \
+				word[strcspn(word, "|")] = '\0', \
+				word[sizeof(word) - 1] = '\0', \
+				next = strchr(next, '|'))
+
 /* Return NUL instead of NULL if undefined */
 #define safe_getenv(s) (getenv(s) ? : "")
 
@@ -369,6 +380,7 @@ get_bridged_interfaces(char *bridge_name);
 
 		@return	error code
 */
+extern int _remove_from_list(const char *name, char *list, int listsize, char deli);
 extern int remove_from_list(const char *name, char *list, int listsize);
 
 /*
@@ -384,6 +396,7 @@ extern int remove_from_list(const char *name, char *list, int listsize);
 */
 extern int add_to_list(const char *name, char *list, int listsize);
 
+extern char *_find_in_list(const char *haystack, const char *needle, char deli);
 extern char *find_in_list(const char *haystack, const char *needle);
 
 extern char *find_next_in_list(const char *haystack, const char *needle,

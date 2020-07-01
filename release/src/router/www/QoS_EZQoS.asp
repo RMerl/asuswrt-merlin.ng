@@ -69,8 +69,8 @@
 }
 
 #category_list {
-	width:99%;
-	height:520px;
+	width: 99%;
+	height: 590px;
 }
 
 #category_list div{
@@ -107,36 +107,51 @@
 }
 
 .priority_lowest{
-	margin:-10px 0px 20px 0px;
+	margin-bottom: 10px;
 }
 
 .Quick_Setup_title{
-	font-family: Arial, Helvetica, sans-serif;
-	font-size:16px;
-	font-weight:bold;
+	font-size: 16px;
+	font-weight: bold;
+	text-align: center;
 }
 
-.quick_setup{
-	width:96px;
-	height:96px;
-	margin-left:2px;
-	cursor:pointer;
-	background-size: cover;
+#Game_act, #Game:hover,
+#Media_act, #Media:hover,
+#Web_act, #Web:hover,
+#eLearning_act, #eLearning:hover,
+#videoConference_act, #videoConference:hover,
+#Customize_act, #Customize:hover{
+	width: 96px;
+	height: 96px;
+}
+
+#Game,
+#Media,
+#Web,
+#eLearning,
+#videoConference,
+#Customize{
+	width: 84px;
+	height: 84px;	
+}
+
+#Game, #Game_act, #Game:hover,
+#Media, #Media_act, #Media:hover,
+#Web, #Web_act, #Web:hover,
+#eLearning, #eLearning_act, #eLearning:hover,
+#videoConference, #videoConference_act, #videoConference:hover,
+#Customize, #Customize_act, #Customize:hover{
+	background-size: 100%;
+	background-repeat: no-repeat;
+	margin: auto;
 }
 
 #Game{
 	background-image:url('images/New_ui/QoS_quick/game.svg');
 }
 
-#Game:hover{
-	width:118px;
-	height:118px;
-	background-image:url('images/New_ui/QoS_quick/game_act.svg');
-}
-
-#Game_act{
-	width:118px;
-	height:118px;
+#Game_act, #Game:hover{
 	background-image:url('images/New_ui/QoS_quick/game_act.svg');
 }
 
@@ -144,15 +159,7 @@
 	background-image:url('images/New_ui/QoS_quick/media.svg');
 }
 
-#Media:hover{
-	width:118px;
-	height:118px;
-	background-image:url('images/New_ui/QoS_quick/media_act.svg');
-}
-
-#Media_act{
-	width:118px;
-	height:118px;
+#Media_act, #Media:hover{
 	background-image:url('images/New_ui/QoS_quick/media_act.svg');
 }
 
@@ -160,33 +167,34 @@
 	background-image:url('images/New_ui/QoS_quick/web.svg');
 }
 
-#Web:hover{
-	width:118px;
-	height:118px;
+#Web_act, #Web:hover{
 	background-image:url('images/New_ui/QoS_quick/web_act.svg');
 }
 
-#Web_act{
-	width:118px;
-	height:118px;
-	background-image:url('images/New_ui/QoS_quick/web_act.svg');
+#eLearning{
+	background-image:url('images/New_ui/QoS_quick/elearning.svg');
+}
+
+#eLearning_act, #eLearning:hover{
+	background-image:url('images/New_ui/QoS_quick/elearning_act.svg');	
+}
+
+#videoConference{
+	background-image:url('images/New_ui/QoS_quick/video_conference.svg');
+}
+
+#videoConference_act, #videoConference:hover{
+	background-image:url('images/New_ui/QoS_quick/video_conference_act.svg');
 }
 
 #Customize{
 	background-image:url('images/New_ui/QoS_quick/customize.svg');
 }
 
-#Customize:hover{
-	width:118px;
-	height:118px;
+#Customize_act, #Customize:hover{;
 	background-image:url('images/New_ui/QoS_quick/customize_act.svg');
 }
 
-#Customize_act{
-	width:118px;
-	height:118px;
-	background-image:url('images/New_ui/QoS_quick/customize_act.svg');
-}
 
 .bandwidth_setting{
 	display:inline-block;
@@ -263,8 +271,8 @@ var runner_disable_orig = '<% nvram_get("runner_disable"); %>';
 
 
 var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
-var category_title = ["", "<#Adaptive_Game#>", "<#Adaptive_Stream#>","<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>"];
-var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23]];
+var category_title = ["", "<#Adaptive_Game#>", "<#Adaptive_Stream#>", "<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "<#Adaptive_eLearning#>"];
+var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23], [4,13]];
 var ctf_disable = '<% nvram_get("ctf_disable"); %>';
 var ctf_fa_mode = '<% nvram_get("ctf_fa_mode"); %>';
 var qos_bw_rulelist = "<% nvram_get("qos_bw_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
@@ -560,7 +568,6 @@ function switchPage(page){
 }
 
 function validForm(){
-
 	if(document.form.qos_enable.value == 0 && document.form.qos_enable_orig.value == 0){
 		if(geforceNow_support){
 			if(document.form.nvgfn_enable.value == orig_nvgfn_enable){
@@ -641,16 +648,31 @@ function validForm(){
 			}
 
 			if(qos_type == 1){	//Adaptive QoS
-				if(document.getElementById("Game_act") || document.getElementById("Media_act") || document.getElementById("Web_act") || document.getElementById("Customize_act")){
+				if(document.getElementById("Game_act")
+				|| document.getElementById("Media_act")
+				|| document.getElementById("Web_act")
+				|| document.getElementById("eLearning_act")
+				|| document.getElementById("videoConference_act")
+				|| document.getElementById("Customize_act")){
 					document.form.bwdpi_app_rulelist.disabled = "";
-					if(document.getElementById("Game_act"))
-						document.form.bwdpi_app_rulelist.value = "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<game";
-					else if(document.getElementById("Media_act"))
-						document.form.bwdpi_app_rulelist.value = "9,20<4<0,5,6,15,17<8<13,24<1,3,14<7,10,11,21,23<<media";
-					else if(document.getElementById("Web_act"))
-						document.form.bwdpi_app_rulelist.value = "9,20<13,24<4<0,5,6,15,17<8<1,3,14<7,10,11,21,23<<web";
-					else
+					if(document.getElementById("Game_act")){
+						document.form.bwdpi_app_rulelist.value = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<game";
+					}						
+					else if(document.getElementById("Media_act")){
+						document.form.bwdpi_app_rulelist.value = "9,20<4<0,5,6,15,17<4,13<8<13,24<1,3,14<7,10,11,21,23<media";
+					}						
+					else if(document.getElementById("Web_act")){
+						document.form.bwdpi_app_rulelist.value = "9,20<13,24<4<0,5,6,15,17<4,13<8<1,3,14<7,10,11,21,23<web";
+					}
+					else if(document.getElementById("eLearning_act")){
+						document.form.bwdpi_app_rulelist.value = "9,20<4,13<4<0,5,6,15,17<13,24<8<1,3,14<7,10,11,21,23<eLearning";
+					}
+					else if(document.getElementById("videoConference_act")){
+						document.form.bwdpi_app_rulelist.value = "9,20<0,5,6,15,17<4<4,13<13,24<8<1,3,14<7,10,11,21,23<videoConference";
+					}						
+					else{
 						document.form.bwdpi_app_rulelist.value = bwdpi_app_rulelist;
+					}				
 				}
 				else{
 					alert("You have not selected QoS priority mode.");		//untranslated
@@ -673,9 +695,7 @@ function validForm(){
 }
 
 function submitQoS(){
-
 	if(validForm()){
-
 		if(document.form.qos_enable.value == 1 && document.form.qos_type.value == 1 && document.form.TM_EULA.value == 0){
 			ASUS_EULA
 				.config(eula_confirm, cancel)
@@ -710,8 +730,9 @@ function submitQoS(){
 				}
 			}
 
-			if(reset_wan_to_fo.change_status)
+			if(reset_wan_to_fo.change_status){
 				reset_wan_to_fo.change_wan_mode(document.form);
+			}	
 
 			if(GN_with_Amazon_WSS_enabled && 
 				((document.form.qos_enable_orig.value == "1" && document.form.qos_enable.value == "0") || //Qos enable to disable
@@ -889,23 +910,45 @@ function check_actived(){
 	if(document.getElementById("Game_act")) document.getElementById("Game_act").id = "Game";
 	if(document.getElementById("Media_act")) document.getElementById("Media_act").id = "Media";
 	if(document.getElementById("Web_act")) document.getElementById("Web_act").id = "Web";
+	if(document.getElementById("eLearning_act")) document.getElementById("eLearning_act").id = "eLearning";
+	if(document.getElementById("videoConference_act")) document.getElementById("videoConference_act").id = "videoConference";
 	if(document.getElementById("Customize_act")) document.getElementById("Customize_act").id = "Customize";
 
-	if(bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<"){	//default APP priority of QoS
+	//default APP priority of QoS
+	if(bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<"		// old version
+	|| bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<"){	// new version
 		return;
 	}
 
-	if(bwdpi_app_rulelist == "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<game"){
-		if(document.getElementById("Game"))		document.getElementById("Game").id = "Game_act";
+	if(bwdpi_app_rulelist.indexOf('game') != -1){
+		if(document.getElementById("Game")){
+			document.getElementById("Game").id = "Game_act";
+		}
 	}
-	else if(bwdpi_app_rulelist == "9,20<4<0,5,6,15,17<8<13,24<1,3,14<7,10,11,21,23<<media"){
-		if(document.getElementById("Media"))	document.getElementById("Media").id = "Media_act";
+	else if(bwdpi_app_rulelist.indexOf('media') != -1){
+		if(document.getElementById("Media")){
+			document.getElementById("Media").id = "Media_act";
+		}	
 	}
-	else if(bwdpi_app_rulelist == "9,20<13,24<4<0,5,6,15,17<8<1,3,14<7,10,11,21,23<<web"){
-		if(document.getElementById("Web"))		document.getElementById("Web").id = "Web_act";
+	else if(bwdpi_app_rulelist.indexOf('web') != -1){
+		if(document.getElementById("Web")){
+			document.getElementById("Web").id = "Web_act";
+		}
+	}
+	else if(bwdpi_app_rulelist.indexOf('eLearning') != -1){
+		if(document.getElementById("eLearning")){
+			document.getElementById("eLearning").id = "eLearning_act";
+		}
+	}
+	else if(bwdpi_app_rulelist.indexOf('videoConference') != -1){
+		if(document.getElementById("videoConference")){
+			document.getElementById("videoConference").id = "videoConference_act";
+		}
 	}
 	else{
-		if(document.getElementById("Customize"))	document.getElementById("Customize").id = "Customize_act";
+		if(document.getElementById("Customize")){
+			document.getElementById("Customize").id = "Customize_act";
+		}
 	}
 }
 
@@ -915,23 +958,28 @@ function clickEvent(obj){
 	if(document.getElementById("Game_act")) document.getElementById("Game_act").id = "Game";
 	if(document.getElementById("Media_act")) document.getElementById("Media_act").id = "Media";
 	if(document.getElementById("Web_act")) document.getElementById("Web_act").id = "Web";
+	if(document.getElementById("eLearning_act")) document.getElementById("eLearning_act").id = "eLearning";
+	if(document.getElementById("videoConference_act")) document.getElementById("videoConference_act").id = "videoConference";
 	if(document.getElementById("Customize_act")) document.getElementById("Customize_act").id = "Customize";
+
 	if(obj.id.indexOf("Game") >= 0){
 		document.getElementById("Game").id = "Game_act";
-		stitle = "Game";
 	}
 	else if(obj.id.indexOf("Media") >= 0){
 		obj.id = "Media_act";
-		stitle = "Media";
 	}
 	else if(obj.id.indexOf("Web") >= 0){
 		obj.id = "Web_act";
-		stitle = "Web";
+	}
+	else if(obj.id.indexOf("eLearning") >= 0){
+		obj.id = "eLearning_act";
+	}
+	else if(obj.id.indexOf("videoConference") >= 0){
+		obj.id = "videoConference_act";
 	}
 	else if(obj.id.indexOf("Customize") >= 0){
 		obj.id = "Customize_act";
 		show_settings("NonAdaptive");
-		stitle = "Customize";
 	}
 	else
 		alert("mouse over on wrong place!");
@@ -953,7 +1001,6 @@ function regen_priority(obj){
 		rule_temp += cat_id_array[priority_array[i].id] + "<";
 	}
 
-	rule_temp += "<";
 	bwdpi_app_rulelist = rule_temp+"customize";
 }
 
@@ -961,14 +1008,33 @@ function gen_category_block(){
 	bwdpi_app_rulelist = bwdpi_app_rulelist.replace(/&#60/g, "<");
 	var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	if(bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){	//Avoid customized app list cannot show out
-		//customize default "bwdpi_app_rulelist", "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<"
-		bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<13,24<1,3,14<7,10,11,21,23<<";
+		bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<";
 		bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	}
+	else{
+		if(bwdpi_app_rulelist.indexOf('4,13') == -1){		// old version transforms to new version
+			if(bwdpi_app_rulelist.indexOf('game') != -1){
+				bwdpi_app_rulelist = '9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<game';
+			}
+			else if(bwdpi_app_rulelist.indexOf('media') != -1){
+				bwdpi_app_rulelist = '9,20<4<0,5,6,15,17<4,13<8<13,24<1,3,14<7,10,11,21,23<media';
+			}
+			else if(bwdpi_app_rulelist.indexOf('web') != -1){
+				bwdpi_app_rulelist = '9,20<13,24<4<0,5,6,15,17<4,13<8<1,3,14<7,10,11,21,23<web';
+			}
+			else{	// default state, transform default value
+				bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<";
+			}
+
+			bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
+		}
+	}
+
+
 	var index = 0;
 	var code = "";
-
-	for(i=1;i<bwdpi_app_rulelist_row.length-2;i++){
+	
+	for(i=1;i<bwdpi_app_rulelist_row.length-1;i++){
 		for(j=1;j<cat_id_array.length;j++){
 			if(cat_id_array[j] == bwdpi_app_rulelist_row[i]){
 				index = j;
@@ -1002,6 +1068,7 @@ function register_event1(){
 				regen_priority(this);
 			}
 		});
+
 		$("#category_list").disableSelection();
 	});
 }
@@ -1019,6 +1086,10 @@ function register_overHint(){
 	document.getElementById('5').onmouseout = function(){nd();}
 	document.getElementById('6').onmouseover = function(){overHint(96);}
 	document.getElementById('6').onmouseout = function(){nd();}
+	if(document.getElementById('7')){
+		document.getElementById('7').onmouseover = function(){overHint(97);}
+		document.getElementById('7').onmouseout = function(){nd();}
+	}
 }
 
 function bandwidth_setting(){
@@ -1522,7 +1593,7 @@ function change_scheduler(value){
 								</tr>
 								</tbody>
 							</table>
-							<div style="margin-top:5px;width:100%;text-align:center;">
+							<div style="margin-bottom:10px;width:100%;text-align:center;">
 								<input class="button_gen" id="btn_cancel_priority" type="button" onclick="cancel_priority_panel();" value="<#CTL_Cancel#>">
 								<input class="button_gen" type="button" onclick="save_priority();" value="<#CTL_onlysave#>">
 							</div>
@@ -1781,40 +1852,46 @@ function change_scheduler(value){
 							</tr>
 						</table>
 
-						<table id="quick_setup_table" width="100%" border="0" align="center" style="display:none;">
-							<tr height="130px">
-								<td width="10px"></td>
-								<td width="130px" align="center">
-									<div id="Game" class="quick_setup" onclick="clickEvent(this);" onmouseover="overHint(86);" onmouseout="nd();"><a href=""></a></div>
-								</td>
-								<td width="50px"></td>
-								<td width="130px" align="center">
-									<div id="Media" class="quick_setup" onclick="clickEvent(this);" onmouseover="overHint(87);" onmouseout="nd();"><a href=""></a></div>
-								</td>
-								<td width="50px"></td>
-								<td width="130px" align="center">
-									<div id="Web" class="quick_setup" onclick="clickEvent(this);" onmouseover="overHint(88);" onmouseout="nd();"><a href=""></a></div>
-								</td>
-								<td width="50px"></td>
-								<td width="130px" align="center">
-									<div id="Customize" class="quick_setup" onclick="clickEvent(this);set_priority('on');" onmouseover="overHint(85);" onmouseout="nd();"><a href=""></a></div>
-								</td>
-								<td width="20px"></td>
-							</tr>
-							<tr height="40px" align="center">
-								<td width="10px"></td>
-								<td class="Quick_Setup_title" align="center"><#AiProtection_filter_stream1#></td><!--Games-->
-								<td width="50px"></td>
-								<td class="Quick_Setup_title" align="center"><#AiProtection_filter_stream2#></td><!--Media Streaming-->
-								<td width="50px"></td>
-								<td class="Quick_Setup_title" align="center"><#Adaptive_WebSurf#></td><!--Web Surfing-->
-								<td width="50px"></td>
-								<td class="Quick_Setup_title" align="center"><#Customize#></td>
-								<td width="20px"></td>
-							</tr>
-							<tr height="40">
-							</tr>
-						</table>
+						<div id="quick_setup_table" style="display:none;">
+							<div style="display:flex;align-items: center;justify-content: center;">
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="Game" onclick="clickEvent(this);" onmouseover="overHint(86);" onmouseout="nd();"></div>
+									</div>				
+									<div class="Quick_Setup_title"><#AiProtection_filter_stream1#></div>
+								</div>
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="Media" onclick="clickEvent(this);" onmouseover="overHint(87);" onmouseout="nd();"></div>
+									</div>		
+									<div class="Quick_Setup_title"><#AiProtection_filter_stream2#></div>
+								</div>
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="Web" onclick="clickEvent(this);" onmouseover="overHint(88);" onmouseout="nd();"></div>
+									</div>					
+									<div class="Quick_Setup_title"><#Adaptive_WebSurf#></div>
+								</div>
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="eLearning" onclick="clickEvent(this);" onmouseover="overHint(104);" onmouseout="nd();"></div>
+									</div>								
+									<div class="Quick_Setup_title"><#Adaptive_eLearning#></div>
+								</div>
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="videoConference" onclick="clickEvent(this);" onmouseover="overHint(103);" onmouseout="nd();"></div>
+									</div>		
+									<div class="Quick_Setup_title"><#Adaptive_Message#></div>
+								</div>
+								<div style="width: 120px;height:174px;">
+									<div style="display:flex;height:132px;">
+										<div id="Customize" onclick="clickEvent(this);set_priority('on');" onmouseover="overHint(85);" onmouseout="nd();"></div>
+									</div>
+									<div class="Quick_Setup_title"><#Customize#></div>
+								</div>
+							</div>
+						</div>
 
 						<table id="list_table" width="94%" border="0" cellpadding="0" cellspacing="0" style="padding-left:8px;">
 							<tr>

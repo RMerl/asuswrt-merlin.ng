@@ -17,6 +17,10 @@
 #include <errno.h>
 #include <string.h>
 
+/* smb_auth.c */
+extern int smbc_wrapper_open(connection* con, const char *furl, int flags, mode_t mode);
+extern int smbc_wrapper_stat(connection* con, const char *url, struct stat *st);
+
 #define DBE 0
 
 int network_open_file_chunk(server *srv, connection *con, chunkqueue *cq) {

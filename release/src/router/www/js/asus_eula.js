@@ -1,6 +1,6 @@
 ﻿$('head').append('<link rel="stylesheet" href="css/asus_eula.css" type="text/css" />');
-$('head').append('<link rel="stylesheet" href="css/basic.css" type="text/css" />');
 $('head').append('<script type="text/javascript" src="/js/httpApi.js">');
+if(rog_support) $('head').append('<link rel="stylesheet" href="css/basic.css" type="text/css" />');
 
 var ASUS_EULA = {
 	"agree_eula_callback": function(){},

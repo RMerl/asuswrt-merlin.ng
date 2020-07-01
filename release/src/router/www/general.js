@@ -1392,6 +1392,46 @@ function wl_auth_mode_change(isload){
 	var i, cur, algos;
 	inputCtrl(document.form.wl_wep_x,  1);
 
+	if(mode == "sae"){
+		var get_capability_support = function(_node_info, _type){
+			var bitwise_map = {"usb":0, "guest_network":1, "wpa3":2};
+			var bitwise_value = -1;
+			var capability_value = 0;
+			var result = false;
+			if(bitwise_map[_type] != undefined)
+				bitwise_value = bitwise_map[_type];
+
+			if("capability" in _node_info) {
+				if("4" in _node_info.capability) {//4 is rc_support
+					capability_value = _node_info.capability["4"];
+					if(capability_value == "")
+						capability_value = 0;
+				}
+			}
+			if(bitwise_value == -1 || capability_value == 0)
+				result = false;
+			else
+				result = (capability_value & (1 << bitwise_value)) ? true : false;
+
+			return result;
+		};
+
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+
+		if(get_cfg_clientlist != undefined){
+			var len = get_cfg_clientlist.length;
+			for(var i = 1; i < len; i += 1){//filter CAP
+				if(get_cfg_clientlist[i] != undefined && !get_capability_support(get_cfg_clientlist[i], "wpa3")){
+					if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "";
+					break;
+				}
+			}
+		}
+	}
+	else{
+		if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "none";
+	}
+
 	/* enable/disable crypto algorithm */
 	if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "sae" || mode == "pskpsk2" || mode == "psk2sae")
 		inputCtrl(document.form.wl_crypto,  1);

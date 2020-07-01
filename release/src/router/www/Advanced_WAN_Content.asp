@@ -1733,6 +1733,7 @@ function change_wizard(o, id){
 		<select name="dhcpc_mode" class="input_option">
 			<option value="0" <% nvram_match(" dhcpc_mode", "0","selected"); %>><#DHCPnormal#></option>
 			<option value="1" <% nvram_match(" dhcpc_mode", "1","selected"); %>><#DHCPaggressive#></option>
+			<option value="2" <% nvram_match(" dhcpc_mode", "2","selected"); %>><#Continuous_Mode#></option>
 		</select>
 		</td>
 		</tr>

@@ -192,4 +192,6 @@ static inline void buffer_append_slash(buffer *b) {
 	if (len > 0 && '/' != b->ptr[len-1]) BUFFER_APPEND_STRING_CONST(b, "/");
 }
 
+int LI_ltostr(char *buf, long val);
+
 #endif

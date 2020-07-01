@@ -771,9 +771,54 @@ apply.WANModem = function(){
 	}
 	goTo.Modem();
 };
-apply.amaonboarding = function(){
+apply.amasonboarding = function(){
+	var onboardingSearch = function(){
+		httpApi.nvramSet({"action_mode": "onboarding"})
+
+		setTimeout(function(){
+			var obList = getAiMeshOnboardinglist(httpApi.hookGet("get_onboardinglist", true));
+			var got = false;
+
+			obList.forEach(function(nodeInfo){
+				if(nodeInfo.mac == systemVariable.onboardingInfo.mac){
+					got = true;
+					onboardingCmd(nodeInfo.pap_mac, nodeInfo.mac, nodeInfo.source);
+				}
+			})
+
+			if(!got){
+				setTimeout(arguments.callee, 1000);
+			}
+		}, 2000);
+	}
+
+	var onboardingCmd = function(pap_Mac, re_Mac, source){
+		httpApi.nvramSet({
+			"action_mode": "ob_selection", 
+			"new_re_mac": re_Mac, 
+			"ob_path": source
+		});
+
+		httpApi.nvramSet({
+			"action_mode": "onboarding", 
+			"re_mac": pap_Mac, 
+			"new_re_mac": re_Mac
+		});
+	}
+
 	clearIntervalStatus();
-	httpApi.nvramSet({"action_mode": "onboarding", "re_mac":systemVariable.onboardingInfo.pap_mac, "new_re_mac":systemVariable.onboardingInfo.mac});
+	if(Object.keys(systemVariable.authModePostData).length){
+		systemVariable.authModePostData.action_mode = "apply";
+		systemVariable.authModePostData.rc_service = "restart_wireless";
+
+		httpApi.nvramSet(systemVariable.authModePostData, function(){
+			setTimeout(onboardingSearch, 10000)
+		})
+	}
+	else{
+		onboardingCmd(systemVariable.onboardingInfo.pap_mac, systemVariable.onboardingInfo.mac, systemVariable.onboardingInfo.source);
+	}
+
 	$("#amasonboarding_page").find(".onboarding_unit").hide();
 	$('#amasonboarding_page').find("#title").hide();
 	$("#amasonboarding_page").find("#loading").show();
@@ -1532,7 +1577,7 @@ goTo.autoWan = function(){
 	systemVariable.detwanResult = httpApi.detwanGetRet();
 	switch(systemVariable.detwanResult.wanType){
 		case "DHCP":
-			goTo.DHCP();
+			goTo.Waiting();
 			break;
 		case "PPPoE":
 			goTo.PPPoE();
@@ -2770,7 +2815,7 @@ goTo.NoWan = function(){
 				goTo.Wireless();
 				break;
 			case "DHCP":
-				goTo.DHCP();
+				goTo.Waiting();
 				break;
 			case "PPPoE":
 				goTo.PPPoE();
@@ -2823,19 +2868,29 @@ goTo.ResetModem = function(){
 
 goTo.Waiting = function(){
 	systemVariable.manualWanSetup = false;
-
+	var wandog_interval = parseInt(httpApi.nvramGet(["wandog_interval"], true).wandog_interval);
 	var errCount = 0;
+	var check_linkInternet_count = 0;
+	var MAX_WAN_Detection = wandog_interval * 4;
+	var MAX_LinkInternet_Detection = wandog_interval;
+
 	setTimeout(function(){
 		if(systemVariable.manualWanSetup) return false;
 
-		if(errCount > 10){
+		if(errCount > MAX_WAN_Detection || check_linkInternet_count > MAX_LinkInternet_Detection){
 			goTo.WAN();
 			return false;
 		}
 
+		systemVariable.detwanResult = httpApi.detwanGetRet();
 		if(systemVariable.detwanResult.wanType == "" || systemVariable.detwanResult.wanType == "CHECKING"){
 			errCount++;
-			systemVariable.detwanResult = httpApi.detwanGetRet();
+			if(isPage("waiting_page")) setTimeout(arguments.callee, 1000);
+			return false;
+		}
+		else if(systemVariable.detwanResult.wanType == "DHCP"){
+			errCount = 0;
+			check_linkInternet_count++;
 			if(isPage("waiting_page")) setTimeout(arguments.callee, 1000);
 			return false;
 		}
@@ -2843,7 +2898,7 @@ goTo.Waiting = function(){
 		if(isPage("waiting_page")) goTo.autoWan();
 	}, 1000);
 
-	goTo.loadPage("waiting_page", false);	
+	goTo.loadPage("waiting_page", false);
 };
 
 goTo.leaveQIS = function(){
@@ -3065,6 +3120,21 @@ goTo.amasOnboarding = function(){
 	}
 	else
 		$("#amasonboarding_page").find("#controlBtn_apply").show();
+
+	var authMode = httpApi.nvramGet(["wl0_auth_mode_x", "wl1_auth_mode_x", "wl2_auth_mode_x"], true);
+	systemVariable.authModePostData = {};
+	Object.keys(authMode).map(function(item, idx){
+		if(authMode[item] == "sae"){
+			systemVariable.authModePostData[item] = "psk2sae";
+			systemVariable.authModePostData["wl" + idx + "_mfp"] = 1;
+		}
+	});
+
+	if(Object.keys(systemVariable.authModePostData).length){
+		$("#amasonboarding_page").find("#wpa3_hint").show();
+		$("#amasonboarding_page").find("#wpa3_hint #wpa3FaqLink").attr("target", "_blank").attr("style","color:#FC0 !important;");
+		httpApi.faqURL("1042500", function(url){$("#amasonboarding_page").find("#wpa3_hint #wpa3FaqLink").attr("href", url);});
+	}
 
 	goTo.loadPage("amasonboarding_page", false);
 };

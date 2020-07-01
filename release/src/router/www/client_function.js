@@ -362,11 +362,11 @@ function getUploadIconList() {
 
 function getVenderIconClassName(venderName) {
 	var vender_class_name = "";
-	if(Boolean(venderName.match(venderArrayRE))) {
-		vender_class_name = venderName;
-		if(venderName == "hon hai") {
+	var match_data = venderName.match(venderArrayRE);
+	if(Boolean(match_data) && match_data[0] != undefined) {
+		vender_class_name = match_data[0];
+		if(vender_class_name == "hon hai")
 			vender_class_name = "honhai";
-		}
 	}
 	else {
 		vender_class_name = "";

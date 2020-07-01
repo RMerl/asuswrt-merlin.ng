@@ -1709,7 +1709,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 
 	// ssid
 	snprintf(nv_name, sizeof(nv_name), "%s_ssid", prefix);
-	if (!nvram_match(nv_name, creds->ssid)) {
+	//if (!nvram_match(nv_name, creds->ssid))
+	{
 		nvram_set(nv_name, creds->ssid);
 		if (!wps_configured)
 		for (i = 0; i < wlif_num; i++) {
@@ -1760,7 +1761,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			val = "psk psk2";
 		break;
 	}
-	if (!nvram_match(nv_name, val)) {
+	//if (!nvram_match(nv_name, val))
+	{
 		nvram_set(nv_name, val);
 		if (!wps_configured)
 		for (i = 0; i < wlif_num; i++) {
@@ -1884,7 +1886,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			val = "tkip+aes";
 		break;
 	}
-	if (!nvram_match(nv_name, val)) {
+	//if (!nvram_match(nv_name, val))
+	{
 		nvram_set(nv_name, val);
 		if (!wps_configured)
 		for (i = 0; i < wlif_num; i++) {
@@ -1908,7 +1911,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	}
 
 	snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", prefix);
-	if (!nvram_match(nv_name, creds->nw_key)) {
+	//if (!nvram_match(nv_name, creds->nw_key))
+	{
 		nvram_set(nv_name, creds->nw_key);
 		if (!wps_configured)
 		for (i = 0; i < wlif_num; i++) {
@@ -1930,13 +1934,17 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	if (!ret) {
 		if (!wps_configured) {
 			nvram_set("w_Setting", "1");
-			if (nvram_get_int("amesh_wps_enr")) {
-				if (nvram_get_int("wps_enr_hw") == 1)
-					nvram_set("x_Setting", "1");
-#ifdef RTCONFIG_AMAS
-				nvram_set("obd_Setting", "1");
+		}
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+		if (nvram_get_int("amesh_wps_enr"))
 #endif
-			}
+		{
+			if (nvram_get_int("wps_enr_hw") == 1)
+				nvram_set("x_Setting", "1");
+#ifdef RTCONFIG_AMAS
+			nvram_set("obd_Setting", "1");
+#endif
 		}
 		nvram_commit();
 	}

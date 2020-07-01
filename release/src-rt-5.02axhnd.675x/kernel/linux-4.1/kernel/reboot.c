@@ -213,6 +213,9 @@ void migrate_to_reboot_cpu(void)
  */
 void kernel_restart(char *cmd)
 {
+#ifdef CRASHLOG
+	crashlog_enable = 1;
+#endif
 	kernel_restart_prepare(cmd);
 	migrate_to_reboot_cpu();
 	syscore_shutdown();

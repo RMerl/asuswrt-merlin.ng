@@ -127,6 +127,9 @@ else
 var httpd_cert_info = [<% httpd_cert_info(); %>][0];
 var uploaded_cert = false;
 
+var le_enable = '<% nvram_get("le_enable"); %>';
+var orig_http_enable = '<% nvram_get("http_enable"); %>';
+
 function initial(){	
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
@@ -260,6 +263,7 @@ function initial(){
 		document.getElementById("telnet_tr").style.display = "";
 		document.form.telnetd_enable[0].disabled = false;
 		document.form.telnetd_enable[1].disabled = false;
+		telnet_enable(httpApi.nvramGet(["telnetd_enable"]).telnetd_enable);
 	}
 	// load shell_timeout_x
 	document.form.shell_timeout_x.value = orig_shell_timeout_x;
@@ -307,6 +311,8 @@ function initial(){
 		showhide("ntpd_server_tr", 0);
 		showhide("ntpd_redir_tr", 0);
 	}
+
+	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
 }
 
 var time_zone_tmp="";
@@ -1069,6 +1075,22 @@ function hide_https_lanport(_value){
 	else{
 		document.getElementById("https_access_page").style.display = 'none';
 	}
+
+
+	if(le_enable == "0" && _value != "0"){
+		$("#https_download_cert").css("display", "");
+		if(orig_http_enable == "0"){
+			$("#download_cert_btn").css("display", "none");
+			$("#download_cert_desc").css("display", "");
+		}
+		else{
+			$("#download_cert_btn").css("display", "");
+			$("#download_cert_desc").css("display", "none");
+		}
+	}
+	else{
+		$("#https_download_cert").css("display", "none");
+	}
 }
 
 function hide_https_crt(){
@@ -1388,6 +1410,7 @@ function check_sshd_enable(obj_value){
 	document.getElementById("sshd_bfp_field").style.display = state;
 	document.getElementById("sshd_password_tr").style.display = state;
 	document.getElementById("sshd_port_tr").style.display = state;
+	document.getElementById('SSH_Port_Suggestion1').style.display = state;
 }
 
 /*function sshd_remote_access(obj_value){
@@ -1408,6 +1431,9 @@ function check_sshd_enable(obj_value){
 	}
 
 }*/
+function telnet_enable(flag){
+	document.getElementById('SSH_Port_Suggestion2').style.display = (flag == 1) ? "":"none";
+}
 
 function display_spec_IP(flag){
 	if(flag == 0){
@@ -1722,6 +1748,9 @@ function reset_portconflict_hint(){
 	$("#port_conflict_httpslanport").hide();
 }
 
+function save_cert_key(){
+	location.href = "cert.tar";
+}
 </script>
 </head>
 
@@ -2154,8 +2183,9 @@ function reset_portconflict_hint(){
 				<tr id="telnet_tr">
 					<th><#Enable_Telnet#></th>
 					<td>
-						<input type="radio" name="telnetd_enable" class="input" value="1" <% nvram_match_x("LANHostConfig", "telnetd_enable", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="telnetd_enable" class="input" value="0" <% nvram_match_x("LANHostConfig", "telnetd_enable", "0", "checked"); %>><#checkbox_No#>
+						<input type="radio" name="telnetd_enable" value="1" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="telnetd_enable" value="0" onchange="telnet_enable(this.value);" <% nvram_match_x("LANHostConfig", "telnetd_enable", "0", "checked"); %>><#checkbox_No#>
+						<div style="color: #FFCC00;display:none;" id="SSH_Port_Suggestion2">* <#SSH_Port_Suggestion2#></div>
 					</td>
 				</tr>
 				<tr id="sshd_enable_tr">
@@ -2163,8 +2193,8 @@ function reset_portconflict_hint(){
 					<td>
 						<select name="sshd_enable" class="input_option" onchange="check_sshd_enable(this.value);">
 							<option value="0" <% nvram_match("sshd_enable", "0", "selected"); %>><#checkbox_No#></option>
-							<option value="1" <% nvram_match("sshd_enable", "1", "selected"); %>>LAN + WAN</option>
 							<option value="2" <% nvram_match("sshd_enable", "2", "selected"); %>>LAN only</option>
+							<option value="1" <% nvram_match("sshd_enable", "1", "selected"); %>>LAN + WAN</option>
 						</select>
 					</td>
 				</tr>
@@ -2181,6 +2211,7 @@ function reset_portconflict_hint(){
 						<input type="text" class="input_6_table" maxlength="5" id="sshd_port" name="sshd_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("sshd_port"); %>' onkeydown="reset_portconflict_hint();">
 						<span id="port_conflict_sshdport" style="color: #e68282; display: none;">Port Conflict</span>
 						<div style="color: #FFCC00;">* Using a different port than the default port 22 is recommended to avoid port scan attacks.</div>
+						<div style="color: #FFCC00;display:none;" id="SSH_Port_Suggestion1">* <#SSH_Port_Suggestion1#></div>
 					</td>
 				</tr>
 				<tr id="sshd_password_tr">
@@ -2209,6 +2240,14 @@ function reset_portconflict_hint(){
 					<td>
 						<input type="text" class="input_3_table" maxlength="3" name="shell_timeout_x" value="" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off"> <#Minute#>
 						<span>(<#zero_disable#>)</span>
+					</td>
+				</tr>
+
+				<tr id="https_download_cert" style="display: none;">
+					<th>Download Certificate</th>
+					<td>
+						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<span id="download_cert_desc">Download and install SSL certificate on your browser to trust accessing your local domain “router.asus.com” with HTTPS protocol. To export certificate after applying setting.</span><a href="https://www.asus.com/support/FAQ/1034294" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
 			</table>

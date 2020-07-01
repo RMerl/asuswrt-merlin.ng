@@ -70,6 +70,7 @@
 #define CFG_STR_WLC_LLDP_COST_STAT  "lldp_wlc_cost_stat"
 #define CFG_STR_ETH_LLDP_COST_STAT  "lldp_eth_cost_stat"
 #if defined(RTCONFIG_AMAS_WGN)
+#define CFG_STR_WGN_WLOFF_VIFS		"cfg_wgn_wloff_vifs"
 #define CFG_STR_SYNC_NODE_X_Y		"cfg_wl%d.%d_sync_node"
 #define CFG_STR_SYNC_NODE_2G_G1		"cfg_wl0.1_sync_node"
 #define CFG_STR_SYNC_NODE_2G_G2		"cfg_wl0.2_sync_node"

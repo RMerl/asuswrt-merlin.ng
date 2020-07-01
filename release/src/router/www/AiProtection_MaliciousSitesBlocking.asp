@@ -845,7 +845,7 @@ function quickAdd(value){
 											</div>
 											<div id="whitelistField" style="position: absolute;width:600px;height:650px;background-color: rgba(47,62,68,1);margin:-350px 0 0 35px;z-index:30;padding: 32px 24px 24px 24px;display:none;">
 												<div style="display:flex;justify-content: space-between;align-items: center;">
-													<div style="font-size: 24px;"><#WhitelList#></div>
+													<div style="font-size: 24px;"><#WhiteList#></div>
 													<div onclick="hideWhitelistField();"><img src="images/New_ui/icon_close.svg" alt="" style="width:32px;height:32px;cursor:pointer;"></div>
 												</div>
 												<div style="color: #CCCCCC;font-size: 16px;margin: 12px 0 24px 0;"><#AiProtection_sites_trust#></div>
@@ -862,7 +862,7 @@ function quickAdd(value){
 												</div>
 												<div style="width:100%;" class="line_horizontal"></div>
 												<div style="margin-top:24px;">
-													<span style="font-size: 24px;padding-right:12px;"><#WhitelList#></span>
+													<span style="font-size: 24px;padding-right:12px;"><#WhiteList#></span>
 													<span style="font-size: 14px;"><#NetworkTools_Count#>: <b id="list_count">0</b> (<#List_limit#>&nbsp;64)</span>
 												</div>
 												<div id="whitelistTable" style="overflow: auto;height:420px;"></div>

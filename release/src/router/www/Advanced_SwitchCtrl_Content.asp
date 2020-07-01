@@ -70,7 +70,7 @@ function initial(){
 		new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
 		document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
 	}
-	else if(based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U"){
+	else if(based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AX88U" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "RT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U"){
 		document.getElementById("ctf_tr").style.display = "none";
 	}
 

@@ -79,6 +79,14 @@ define(function(){
 				]
 			},
 			{
+				menuName: "<#Game_Boost#>",
+				index: "menu_GameBoost",
+				tab: [
+						{url: "GameBoost.asp", tabName: "<#Game_Boost#>"},
+						{url: "NULL", tabName: "__INHERIT__"}
+				]
+			},
+			{
 				menuName: "Open NAT",
 				index: "menu_GameProfile", 
 				tab: [

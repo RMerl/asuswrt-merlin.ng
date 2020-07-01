@@ -1,7 +1,7 @@
 #
 # Broadcom Linux Router WL firmware Makefile
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2020, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -26,7 +26,11 @@ PCIEFD_EMBED_HEADER		:= $(SRCBASE_DHD)/shared/rtecdc_router.h
 PCIEFD_IMAGE_DIR		:= $(SRCBASE_DHD)/dongle/bin
 
 # All firmware targets must be defined here
-PCIEFD_TARGETS_LIST		:= 43684b0
+ifeq ($(BUILD_43684C0),y)
+    PCIEFD_TARGETS_LIST		:= 43684c0
+else
+    PCIEFD_TARGETS_LIST		:= 43684b0
+endif
 ifneq ($(CONFIG_STBAP),y)
 #ifneq ($(CONFIG_AIRIQ),)
 #PCIEFD_TARGETS_LIST            += 4363c0
@@ -62,6 +66,11 @@ FW_43684b0_BUILD_PREFIX		:= $(FW_43684b0_CHIPID)-ram
 FW_43684b0_MAKE_PATH		:= $(FW_43684b0_SRCBASE)/dongle/make/wl
 FW_43684b0_BUILD_PATH		:= $(FW_43684b0_SRCBASE)/../build/dongle/$(FW_43684b0_BUILD_PREFIX)
 FW_43684b0_OS_PATH		:= $(FW_43684b0_SRCBASE)/../components/threadx
+ifeq ($(USE_GCC_8_2),1)
+FW_43684b0_COMPILER		:= arm-buildroot-linux-gnueabi
+else
+FW_43684b0_COMPILER		:= arm-none-eabi
+endif
 
 fw_options :=
 ifeq ($(CONFIG_STBAP),y)
@@ -81,6 +90,37 @@ else
 endif
 
 # ---------------------
+# 43684c0 target
+FW_43684c0_SRCBASE		:= $(abspath $(SRCBASE)/../../43684/src)
+FW_43684c0_CHIPID		:= 43684c0
+FW_43684c0_BUILD_PREFIX		:= $(FW_43684c0_CHIPID)-ram
+FW_43684c0_MAKE_PATH		:= $(FW_43684c0_SRCBASE)/dongle/make/wl
+FW_43684c0_BUILD_PATH		:= $(FW_43684c0_SRCBASE)/../build/dongle/$(FW_43684c0_BUILD_PREFIX)
+FW_43684c0_OS_PATH		:= $(FW_43684c0_SRCBASE)/../components/threadx
+ifeq ($(USE_GCC_8_2),1)
+FW_43684c0_COMPILER		:= arm-buildroot-linux-gnueabi
+else
+FW_43684c0_COMPILER		:= arm-none-eabi
+endif
+
+fw_options :=
+ifeq ($(CONFIG_STBAP),y)
+	fw_options := $(fw_options)_stb
+else
+	ifeq ($(CONFIG_AIRIQ),y)
+		ifneq ($(WLTEST),1)
+			fw_options := $(fw_options)_airiq
+		endif # WLTEST
+	endif # CONFIG_AIRIQ
+endif # CONFIG_STBAP
+
+ifeq ($(WLTEST),1)
+	FW_43684c0_TARGET	?= config_pcie_fdap_mfgtest$(fw_options)
+else
+	FW_43684c0_TARGET	?= config_pcie_fdap_release$(fw_options)
+endif
+
+# ---------------------
 # 43602a1-roml target
 FW_43602a1_SRCBASE		:= $(abspath $(SRCBASE)/../../43602/src)
 FW_43602a1_CHIPID		:= 43602a1
@@ -88,6 +128,7 @@ FW_43602a1_BUILD_PREFIX		:= $(FW_43602a1_CHIPID)-roml
 FW_43602a1_MAKE_PATH		:= $(FW_43602a1_SRCBASE)/dongle/rte/wl
 FW_43602a1_BUILD_PATH		:= $(FW_43602a1_MAKE_PATH)/builds/$(FW_43602a1_BUILD_PREFIX)
 FW_43602a1_OS_PATH		:= $(FW_43602a1_SRCBASE)/hndrte
+FW_43602a1_COMPILER		:= arm-none-eabi
 
 ifeq ($(WLTEST),1)
     FW_43602a1_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-ringer-dmaindex16
@@ -103,14 +144,15 @@ FW_43602a3_BUILD_PREFIX		:= $(FW_43602a3_CHIPID)-roml
 FW_43602a3_MAKE_PATH		:= $(FW_43602a3_SRCBASE)/dongle/rte/wl
 FW_43602a3_BUILD_PATH		:= $(FW_43602a3_MAKE_PATH)/builds/$(FW_43602a3_BUILD_PREFIX)
 FW_43602a3_OS_PATH		:= $(FW_43602a3_SRCBASE)/hndrte
+FW_43602a3_COMPILER		:= arm-none-eabi
 
 ifeq ($(WLTEST),1)
-    FW_43602a3_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-ringer-dmaindex16-assoc_lt-fbt
+    FW_43602a3_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-ringer-dmaindex16-assoc_lt-fbt-sae
 else
 ifneq ($(CONFIG_STBAP),y)
-        FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-dhdhdr-assoc_lt-fbt
+        FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-dhdhdr-assoc_lt-fbt-sae
 else
-        FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-assoc_lt-fbt
+        FW_43602a3_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-ringer-dmaindex16-bssload-wnm-splitassoc-dbwsw-stamon-acksupr-authrmf-assoc_lt-fbt-sae
 endif # CONFIG_STBAP
 endif
 
@@ -122,6 +164,7 @@ FW_4366c0_ram_BUILD_PREFIX	:= $(FW_4366c0_ram_CHIPID)-ram
 FW_4366c0_ram_MAKE_PATH		:= $(FW_4366c0_ram_SRCBASE)/dongle/make/wl
 FW_4366c0_ram_BUILD_PATH	:= $(FW_4366c0_ram_SRCBASE)/../build/dongle/$(FW_4366c0_ram_BUILD_PREFIX)
 FW_4366c0_ram_OS_PATH		:= $(FW_4366c0_ram_SRCBASE)/../components/threadx
+FW_4366c0_ram_COMPILER		:= arm-none-eabi
 ifeq ($(WLTEST),1)
     FW_4366c0_ram_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-dmaindex16-proptxstatus-11nprop-chanim-assert-vasip-cfp-acwi$(STBTARGET)
 else
@@ -136,14 +179,15 @@ FW_4366c0_BUILD_PREFIX		:= $(FW_4366c0_CHIPID)-roml
 FW_4366c0_MAKE_PATH		:= $(FW_4366c0_SRCBASE)/dongle/make/wl
 FW_4366c0_BUILD_PATH		:= $(FW_4366c0_SRCBASE)/../build/dongle/$(FW_4366c0_BUILD_PREFIX)
 FW_4366c0_OS_PATH		:= $(FW_4366c0_SRCBASE)/../components/threadx
+FW_4366c0_COMPILER		:= arm-none-eabi
 
 ifeq ($(WLTEST),1)
-    FW_4366c0_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-dbgam-dbgams-ringer-dmaindex16-bgdfs-hostpmac-murx-splitassoc-hostmemucode-dyn160-fbt-assoc_lt-ccamesh-mbo$(STBTARGET)
+    FW_4366c0_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-dbgam-dbgams-ringer-dmaindex16-bgdfs-hostpmac-murx-splitassoc-hostmemucode-dyn160-fbt-assoc_lt-ccamesh-mbo-sae$(STBTARGET)
 else
 ifneq ($(CONFIG_STBAP),y)
-        FW_4366c0_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs-stamon-hostpmac-murx-splitassoc-hostmemucode-dyn160-dhdhdr-fbt-htxhdr-amsdufrag-assoc_lt-ccamesh-mbo
+        FW_4366c0_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs-stamon-hostpmac-murx-splitassoc-hostmemucode-dyn160-dhdhdr-fbt-htxhdr-amsdufrag-assoc_lt-ccamesh-mbo-sae
 else
-        FW_4366c0_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs-stamon-hostpmac-murx-splitassoc-dyn160-fbt-assoc_lt-ccamesh-mbo$(STBTARGET)
+        FW_4366c0_TARGET	:= pcie-ag-splitrx-fdap-mbss-mfp-wnm-osen-wl11k-wl11u-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-obss-dbwsw-ringer-dmaindex16-bgdfs-stamon-hostpmac-murx-splitassoc-dyn160-fbt-assoc_lt-ccamesh-mbo-sae$(STBTARGET)
 endif # CONFIG_STBAP
 endif
 
@@ -155,6 +199,7 @@ FW_4363c0_BUILD_PREFIX		:= $(FW_4363c0_CHIPID)-roml
 FW_4363c0_MAKE_PATH		:= $(FW_4363c0_SRCBASE)/dongle/make/wl
 FW_4363c0_BUILD_PATH		:= $(FW_4363c0_SRCBASE)/../build/dongle/$(FW_4363c0_BUILD_PREFIX)
 FW_4363c0_OS_PATH		:= $(FW_4363c0_SRCBASE)/../components/threadx
+FW_4363c0_COMPILER		:= arm-none-eabi
 
 ifeq ($(WLTEST),1)
     FW_4363c0_TARGET		:= pcie-ag-splitrx-fdap-mbss-mfgtest-seqcmds-phydbg-phydump-txbf-pktctx-amsdutx-ampduretry-chkd2hdma-proptxstatus-11nprop-dbgam-dbgams-ringer-dmaindex16-bgdfs-hostpmac-splitassoc-hostmemucode-fbt-assoc_lt-airiq-mbo
@@ -169,7 +214,7 @@ endif
 # target specific override to remove all CFLAGS that are inherited from router Make
 $(obj-pciefd): CFLAGS=
 
-# obj-pciefd expands to e.g. '43684b0-obj 4363c0-obj 43602a3-obj 4366c0-obj'.
+# obj-pciefd expands to e.g. '43684b0-obj 43684c0-obj 4363c0-obj 43602a3-obj 4366c0-obj'.
 # The below rule is executed for each of these targets, so e.g. for '43684b0-obj'.
 # On each invocation of this rule, it builds one dongle firmware image and
 # copies it into a DHD directory. This rule does *not* build the DHD itself.
@@ -178,13 +223,14 @@ $(obj-pciefd):
 	@# FW_$(R_CHIP)_OS_PATH expands to e.g. '.../43684/components/threadx'
 	@#
 	$(eval R_CHIP := $(patsubst %-obj,%,$@))
+	$(eval COMPILER := $(FW_$(R_CHIP)_COMPILER))
 	@# The following snippet will generate a file named '.tcchked' in the respective firmware build directory using the phony target tcchk as in
 	@#   'make ... -C .../43684/src/dongle/make/wl 43684b0-ram/config_pcie_fdap_internal/tcchk'
 	@#
 	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ] && [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
 	if [ ! -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/.tcchked ]; then \
 		if [ "$(findstring threadx,$(FW_$(R_CHIP)_OS_PATH))" = "threadx" ]; then \
-			$(MAKE) CLM_BLOBS="$(R_CLM_BLOBS)" CROSS_COMPILE=arm-none-eabi -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET)/tcchk TCPATHCHK=0; \
+			$(MAKE) CLM_BLOBS="$(R_CLM_BLOBS)" CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET)/tcchk TCPATHCHK=0; \
 		else \
 			install -d $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET); \
 			touch $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/.tcchked; \
@@ -207,7 +253,10 @@ $(obj-pciefd):
 				cp -rpf $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/* $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET); \
 			fi \
 		fi && \
-		$(MAKE) CROSS_COMPILE=arm-none-eabi -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET) && \
+		if [ -f $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/avs.o ]; then \
+			cp -u $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt/avs.o $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET); \
+		fi && \
+		$(MAKE) CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET) && \
 		if [ -e $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/rtecdc_$(FW_$(R_CHIP)_CHIPID).h ]; then \
 			mkdir -p $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID) && \
 			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/rtecdc.bin $(PCIEFD_IMAGE_DIR)/$(FW_$(R_CHIP)_CHIPID) && \
@@ -234,8 +283,11 @@ $(obj-pciefd):
 		fi && \
 		if [ ! -d $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt ]; then \
 			(cd $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET) && find * \( -name "tx_*.*" -o -name "txe_*.*" \) | cpio -pdm $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt); \
+		fi && \
+		if [ -f $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/avs.o ]; then \
+			cp $(FW_$(R_CHIP)_BUILD_PATH)/$(FW_$(R_CHIP)_TARGET)/avs.o $(FW_$(R_CHIP)_BUILD_PATH)/.prebuilt; \
 		fi \
-	else \
+		else \
 		if [ -e $(SRCBASE_DHD)/shared/rtecdc_$(FW_$(R_CHIP)_CHIPID).h ]; then \
 			echo "#include <rtecdc_$(FW_$(R_CHIP)_CHIPID).h>" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID) && \
 			echo "#define DLIMAGE_$(FW_$(R_CHIP)_CHIPID)" >> $(PCIEFD_EMBED_HEADER).tmp.$(FW_$(R_CHIP)_CHIPID); \
@@ -256,7 +308,7 @@ $(clean-pciefd):
 	@# below snippet executes e.g. 'make ... -C 43684/src/dongle/make/wl 43684b0-ram/config_pcie_fdap_internal/clean'
 	@if [ -d $(FW_$(R_CHIP)_SRCBASE)/wl/sys ]; then \
 		if [ -d $(FW_$(R_CHIP)_OS_PATH) ]; then \
-			$(MAKE) CROSS_COMPILE=arm-none-eabi -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET)/clean; \
+			$(MAKE) CROSS_COMPILE=$(COMPILER) -C $(FW_$(R_CHIP)_MAKE_PATH) $(FW_$(R_CHIP)_BUILD_PREFIX)/$(FW_$(R_CHIP)_TARGET)/clean; \
 			$(MAKE) -C $(FW_$(R_CHIP)_SRCBASE)/include ; \
 		fi \
 	fi

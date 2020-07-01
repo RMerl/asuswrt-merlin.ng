@@ -14,6 +14,14 @@
 #include <stdio.h>
 #include <string.h>
 
+/* smb_auth.c */
+extern buffer* smbc_wrapper_physical_url_path(server *srv, connection *con);
+/* chunk.c */
+extern void chunkqueue_append_smb_file(chunkqueue *cq, buffer *fn, off_t offset, off_t len);
+/* http_chunk.c */
+extern void http_chunk_append_smb_file(server *srv, connection *con, buffer *fn, off_t offset, off_t len);
+
+
 #define DBE 0
 
 /**

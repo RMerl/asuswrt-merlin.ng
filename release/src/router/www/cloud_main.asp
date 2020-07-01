@@ -730,7 +730,7 @@ function update_applist(e){
 																<a id="googleplay" href="https://play.google.com/store/apps/details?id=com.asustek.aicloud" target="_blank">
 																	<div style="width:172px;height:51px;background:url('images/googleplay.png') no-repeat;background-size:75%;"></div>
 																</a>												
-																<a id="googleApp_CN" href="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk" target="_blank" style="display:none">
+																<a id="googleApp_CN" href="https://m.wandoujia.com/apps/1091409" target="_blank" style="display:none">
 																	<div style="width:130px;text-align: center;font-size: 20px;border: 1px solid #BDBDBD;border-radius: 6px;padding: 7px 4px;margin-bottom:12px;">Android App</div>
 																</a>			
 																<a href="https://itunes.apple.com/us/app/aicloud-lite/id527118674" target="_blank">

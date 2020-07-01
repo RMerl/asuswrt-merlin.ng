@@ -156,7 +156,7 @@ function tab_reset(v){
 			else
 				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U")
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX56_XD4" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX5700" || based_modelid == "RT-AX68U")
 			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
 		
 		document.getElementById("t1").style.display = "none";

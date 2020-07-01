@@ -16,6 +16,7 @@ KERNELVER=_set_by_buildFS_
 HNDROUTER=_set_by_buildFS_
 CPEROUTER=_set_by_buildFS_
 PROD_FW_PATH=_set_by_buildFS_
+BRCM_CHIP=_set_by_buildFS_
 if [ ! -z $PROD_FW_PATH ]; then
     MFG_FW_PATH=$PROD_FW_PATH"/mfg"
 else
@@ -234,6 +235,15 @@ if [ ! -z $HNDROUTER ]; then
     if [ -z $CPEROUTER ]; then
         echo "Skipping wlan-drivers.sh for HND images ..."
         exit 0
+    fi
+fi
+
+# For 47189 Host CPU, Check nvram "forcegen1rc" and set default vaule if not exist.
+# the part must before dhd.ko insmod.
+if [ "$BRCM_CHIP" == "47189" ]; then
+    forcegen1rc_val=`nvram get forcegen1rc`
+    if [ -z "$forcegen1rc_val" ]; then
+        `nvram set forcegen1rc=1 ; nvram commit`
     fi
 fi
 

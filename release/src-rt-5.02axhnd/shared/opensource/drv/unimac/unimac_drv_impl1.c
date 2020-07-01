@@ -1082,10 +1082,8 @@ void mac_hwapi_get_rx_counters(rdpa_emac emacNum,rdpa_emac_rx_stat_t *rxCounters
     UNIMAC_READ32_MIB(emacNum,GRFCS,rxCounters->fcs_error);
     rxCounters->fragments				=	0;//?????
     UNIMAC_READ32_MIB(emacNum,GR255,rxCounters->frame_128_255);
-    UNIMAC_READ32_MIB(emacNum,GRMGV,tempVal);
-    rxCounters->frame_1519_mtu			=	tempVal;
     UNIMAC_READ32_MIB(emacNum,GR2047,tempVal);
-    rxCounters->frame_1519_mtu			+=	tempVal;
+    rxCounters->frame_1519_mtu			=	tempVal;
     UNIMAC_READ32_MIB(emacNum,GR4095,tempVal);
     rxCounters->frame_1519_mtu			+=	tempVal;
     UNIMAC_READ32_MIB(emacNum,GR9216,tempVal);

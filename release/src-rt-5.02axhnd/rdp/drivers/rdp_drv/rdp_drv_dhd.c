@@ -299,6 +299,7 @@ static int rdp_drv_dhd_cpu_tx_send_message(uint32_t message_type, uint32_t radio
 {
     int rc = 0;
     uint8_t  cpu_msg_done = 0;
+    int32_t  timeout = 100000;
     rdpa_dhd_ffd_data_t  params = (rdpa_dhd_ffd_data_t)read_idx_flow_ring_idx;
     
     RDD_DHD_CPU_QM_DESCRIPTOR_DTS cpu_tx_descriptor = {};
@@ -327,7 +328,12 @@ static int rdp_drv_dhd_cpu_tx_send_message(uint32_t message_type, uint32_t radio
     do
     {
         RDD_DHD_POST_COMMON_RADIO_ENTRY_CPU_MSG_DONE_READ_G(cpu_msg_done, RDD_DHD_POST_COMMON_RADIO_DATA_ADDRESS_ARR, radio_idx);
-    } while (cpu_msg_done == 0);
+    } while ((cpu_msg_done == 0) && (timeout-- > 0));
+    
+    if (timeout <= 0) 
+    {
+      bdmf_print("ERROR: rdp_drv_dhd_cpu_tx_send_message failed: message_type=%d, radio_idx=%d, flow_ring_idx=%d\n", message_type, radio_idx, params.flowring_idx);
+    }
     
     return 0;
 }

@@ -347,7 +347,8 @@ static void handle_auth_ft_finish(void *ctx, const u8 *dst, const u8 *bssid,
 	reply_res = send_auth_reply(hapd, dst, bssid, WLAN_AUTH_FT,
 				    auth_transaction, status, ies, ies_len,
 				    "auth-ft-finish");
-#endif
+#endif // endif
+
 	sta = ap_get_sta(hapd, dst);
 	if (sta == NULL)
 		return;

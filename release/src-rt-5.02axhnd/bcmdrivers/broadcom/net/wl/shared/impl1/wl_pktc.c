@@ -508,13 +508,11 @@ int32 wl_rxchainhandler(wl_info_t *wl, struct sk_buff *skb)
 		}
 		tx_dev = pt->tx_dev;
 		
-#if defined(CONFIG_BCM_FC_BASED_WFD)
 		if(pt->tx_dev->priv_flags & (IFF_BCM_WLANDEV))
 		{ /* not support handle CHAIN XMIT yet .. let fcache handle it*/
 			spin_unlock_bh(&pktctbl_lock);
 			goto exit;
 		}
-#endif		
 
 		dev_xmit = (unsigned long)(tx_dev->netdev_ops->ndo_start_xmit);
 		if (!dev_xmit) {
@@ -583,6 +581,8 @@ void wl_pktc_detach(struct wl_info *wl)
 	}
 
 	fdb_check_expired_wl_hook = NULL;
+	wl_pktc_req_hook = NULL;
+	wl_pktc_del_hook = NULL;
 }
 
 int wl_pktc_init(wl_if_t *wlif, struct net_device *dev)

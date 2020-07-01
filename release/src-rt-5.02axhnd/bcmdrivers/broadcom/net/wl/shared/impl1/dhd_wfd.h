@@ -40,10 +40,6 @@
 
 extern dhd_pub_t *g_dhd_info[];
 
-#if (defined(DSLCPE) && defined(BCM_DHD_RUNNER)) || defined(BCM_NBUFF_WLMCAST)
-extern int g_multicast_priority;
-#endif /* (DSLCPE && BCM_DHD_RUNNER) || BCM_NBUFF_WLMCAST */
-
 int dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
 	void *pktbuf, int b_wmf_unicast);
 int dhd_wfd_bind(struct net_device *net, unsigned int unit);
@@ -67,5 +63,9 @@ extern int dhd_wfd_registerdevice(int wfd_idx, struct net_device *dev);
 extern int dhd_wfd_unregisterdevice(int wfd_idx, struct net_device *dev);
 
 #endif /* BCM_WFD */
+
+#if (defined(DSLCPE) && defined(BCM_DHD_RUNNER)) || defined(BCM_NBUFF_WLMCAST)
+extern int g_multicast_priority;
+#endif /* DSLCPE && BCM_DHD_RUNNER || BCM_NBUFF_WLMCAST*/
 
 #endif /* __DHD_WFD_H__ */

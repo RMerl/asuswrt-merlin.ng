@@ -314,12 +314,11 @@ int32 dhd_rxchainhandler(void *p, struct sk_buff *skb)
 		pt = (wl_pktc_tbl_t *)dhd_pktc_req(PKTC_TBL_GET_BY_DA, (unsigned long)(eh->ether_dhost), 0, 0);
 		if (pt && pt->tx_dev != NULL) {
 
-#if defined(CONFIG_BCM_FC_BASED_WFD)
 			if(pt->tx_dev->priv_flags & (IFF_BCM_WLANDEV) )
 			{ /* wlX not support handle CHAIN XMIT yet ..*/
   			     return (BCME_ERROR);
 			}
-#endif            
+
 			if (pt->tx_dev->netdev_ops == NULL)
 				return (BCME_ERROR);
 			dev_xmit = (unsigned long)(pt->tx_dev->netdev_ops->ndo_start_xmit);

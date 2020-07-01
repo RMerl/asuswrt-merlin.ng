@@ -62,7 +62,7 @@ ifeq ("$(CONFIG_SYSTEM)", "linux")
 	EXTRA_CFLAGS = -Werror $(INC_RDP_FLAGS) $(EXTRA_INCLUDES) $(EXTRA_DEFINES) $(PROJ_DEFS)
 	SYSTEM_OBJS += system/linux/bdmf_chrdev.o
 	obj-$(CONFIG_BCM_BDMF) = bdmf.o
-ifneq ($(PREBUILT_EXTRAMOD),1)
+ifneq ($(PREBUILT_EXTRAMOD),1)	
 	bdmf-objs = $(OBJS)
 else
 	bdmf-objs := bdmf$(PRBM_EXT).o

@@ -782,7 +782,6 @@ int osl_pkttag_attach(void *osh, void *pkt)
 	DHD_PKT_CLR_WFD_BUF(pkt);
 	DHD_PKT_CLR_WMF_FKB_UCAST(pkt);
 	DHD_PKT_CLR_WAN_MCAST(pkt);
-	DHD_PKT_CLR_DATA_DHDHDR(pkt);
 #endif
 	return 0;
 }

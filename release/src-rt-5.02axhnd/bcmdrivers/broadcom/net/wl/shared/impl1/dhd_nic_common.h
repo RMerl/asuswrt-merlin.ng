@@ -30,6 +30,9 @@
 #ifndef __DHD_NIC_COMMON_H__
 #define __DHD_NIC_COMMON_H__
 
+#include <linux/netdevice.h>
+#include <linux/skbuff.h>
+
 typedef struct {
     uint tx_tag_nobuf;
     uint tx_fkb_pool_nobuf;
@@ -55,4 +58,30 @@ enum WLEMF_CMD {
 };
 #endif
 
+#ifndef netdev_wlan_set
+#define netdev_wlan_set(_dev)           (_dev)->priv_flags |= IFF_BCM_WLANDEV
 #endif
+
+#ifndef netdev_wlan_unset
+#define netdev_wlan_unset(_dev)         (_dev)->priv_flags &= ~IFF_BCM_WLANDEV
+#endif
+
+#ifndef is_netdev_wlan
+#define is_netdev_wlan(_dev)            ((_dev)->priv_flags & IFF_BCM_WLANDEV)
+#endif
+
+#ifndef netdev_wlan_client_get_info
+#define netdev_wlan_client_get_info(dev) ((dev)->wlan_client_get_info)
+#endif
+
+#ifdef bcm_netdev_ext_field_get
+#define bcm_netdev_blog_stats_flags(dev)  bcm_netdev_ext_field_get(dev,blog_stats_flags)
+#else
+#define bcm_netdev_blog_stats_flags(dev)  (dev)->blog_stats_flags
+#endif
+
+#ifndef skbuff_bcm_ext_wlan_get
+#define skbuff_bcm_ext_wlan_get(skb,f) (skb)->f
+#endif
+
+#endif /* __DHD_NIC_COMMON_H__ */

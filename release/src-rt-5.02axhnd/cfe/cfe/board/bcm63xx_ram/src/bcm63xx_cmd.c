@@ -1617,6 +1617,8 @@ static int bootNandImage(void)
                 state = BOOT_SET_NEW_IMAGE;
         }
 
+        bootInfo.bootPartition = state; 
+
         if( state == BOOT_SET_NEW_IMAGE )
         {
             bootImgA = BOOTED_NEW_IMAGE;

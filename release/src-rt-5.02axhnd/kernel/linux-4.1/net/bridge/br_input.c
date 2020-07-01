@@ -143,6 +143,11 @@ static void br_do_proxy_arp(struct sk_buff *skb, struct net_bridge *br,
 	}
 }
 
+#if defined(CONFIG_BCM_KF_WL)
+//  ETHER_TYPE_BRCM 0x886c, ETHER_TYPE_802_1X 0x888e, ETHER_TYPE_802_1X_PREAUTH 0x88c7
+#define WL_AUTH_PROTOCOLS(proto)    ((proto)==htons(0x886c)||(proto)==htons(0x888e)||(proto)==htons(0x88c7))
+#endif
+
 /* note: already called with rcu_read_lock */
 int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 {
@@ -155,7 +160,11 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 	bool unicast = true;
 	u16 vid = 0;
 
+#if defined(CONFIG_BCM_KF_WL)
+	if (!p || (p->state == BR_STATE_DISABLED && !WL_AUTH_PROTOCOLS(skb->protocol)))
+#else
 	if (!p || p->state == BR_STATE_DISABLED)
+#endif
 		goto drop;
 
 	if (!br_allowed_ingress(p->br, nbp_get_vlan_info(p), skb, &vid))
@@ -186,13 +195,9 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 	    br_multicast_rcv(br, p, skb, vid))
 		goto drop;
 
-#if defined(CONFIG_BCM_KF_WL)
-	if ((p->state == BR_STATE_LEARNING) &&
-	    (skb->protocol != htons(0x886c) /*ETHER_TYPE_BRCM*/) &&
-	    (skb->protocol != htons(0x888e) /*ETHER_TYPE_802_1X*/) &&
-	    (skb->protocol != htons(0x88c7) /*ETHER_TYPE_802_1X_PREAUTH*/))
-#else
 	if (p->state == BR_STATE_LEARNING)
+#if defined(CONFIG_BCM_KF_WL)
+      if (!WL_AUTH_PROTOCOLS(skb->protocol))
 #endif
 		goto drop;
 
@@ -437,17 +442,9 @@ static int br_handle_local_finish(struct sock *sk, struct sk_buff *skb)
 	struct net_bridge_port *p = br_port_get_rcu(skb->dev);
 	u16 vid = 0;
 
-#if defined(CONFIG_BCM_KF_BYPASS_STP_FOR_LOCAL)
-	if (p->state != BR_STATE_DISABLED) {
-		/* check if vlan is allowed, to avoid spoofing */
-		if (p->flags & BR_LEARNING && br_should_learn(p, skb, &vid))
-			br_fdb_update(p->br, p, eth_hdr(skb)->h_source, vid, false);
-	}
-#else 
 	/* check if vlan is allowed, to avoid spoofing */
 	if (p->flags & BR_LEARNING && br_should_learn(p, skb, &vid))
 		br_fdb_update(p->br, p, eth_hdr(skb)->h_source, vid, false);
-#endif /* CONFIG_BCM_KF_BYPASS_STP_FOR_LOCAL */
 	return 0;	 /* process further */
 }
 
@@ -549,10 +546,7 @@ forward:
 #endif
 
 #if defined(CONFIG_BCM_KF_WL)
-	if (( (skb->protocol == htons(0x886c) /*ETHER_TYPE_BRCM*/) ||
-	       (skb->protocol == htons(0x888e) /*ETHER_TYPE_802_1X*/) ||
-	       (skb->protocol == htons(0x88c7) /*ETHER_TYPE_802_1X_PREAUTH*/) ) &&
-	    (p->state != BR_STATE_FORWARDING) && (p->state != BR_STATE_DISABLED)) {
+    if ((p->state != BR_STATE_FORWARDING) && WL_AUTH_PROTOCOLS(skb->protocol)) {
 		/* force to forward brcm_type event packet */
 		NF_HOOK(NFPROTO_BRIDGE, NF_BR_PRE_ROUTING, NULL, skb, skb->dev, NULL,
 			br_handle_frame_finish);
@@ -561,20 +555,6 @@ forward:
 #endif
 
 	switch (p->state) {
-#if defined(CONFIG_BCM_KF_BYPASS_STP_FOR_LOCAL)
-	case BR_STATE_DISABLED:
-		if (ether_addr_equal(p->br->dev->dev_addr, dest))
-			skb->pkt_type = PACKET_HOST;
-
-		if (NF_HOOK(NFPROTO_BRIDGE, NF_BR_PRE_ROUTING, NULL, skb, skb->dev, NULL,
-			br_handle_local_finish))
-			break;
-
-		BR_INPUT_SKB_CB(skb)->brdev = p->br->dev;
-		br_pass_frame_up(skb);
-		break;
-
-#endif /* CONFIG_BCM_KF_BYPASS_STP_FOR_LOCAL */
 	case BR_STATE_FORWARDING:
 #if !defined(CONFIG_BCM_KF_IEEE1905) || !defined(CONFIG_BCM_IEEE1905)
 		rhook = rcu_dereference(br_should_route_hook);

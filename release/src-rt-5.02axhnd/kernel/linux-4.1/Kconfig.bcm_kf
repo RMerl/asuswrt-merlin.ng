@@ -583,7 +583,3 @@ config BCM_KF_CFG80211_BACKPORT
 	bool
 	default y
 
-config BCM_KF_BYPASS_STP_FOR_LOCAL
-	bool
-	default y
-

@@ -71,6 +71,11 @@ static int dhd_fc_wfd_enqueue(void * nbuff_p,const Blog_t * const blog_p)
 #endif
 #endif
 
+static inline void map_ssid_vector_to_ssid_index(uint16_t *bridge_port_ssid_vector, uint32_t *wifi_drv_ssid_index)
+{
+	*wifi_drv_ssid_index = __ffs(*bridge_port_ssid_vector);
+}
+
 int
 dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
                     void *pktbuf, int b_wmf_unicast)
@@ -146,7 +151,7 @@ dhd_handle_wfd_blog(dhd_pub_t *dhdp, struct net_device *net, int ifidx,
             DHD_PERIM_UNLOCK(dhdp);
             blog_emit(pktbuf, dhd_idx2net(dhdp, ifidx), TYPE_ETH, 0, BLOG_WLANPHY);
 
-#if defined(BCM_DHD_RUNNER)
+#if defined(BCM_DHD_RUNNER) && !defined(BCM_COUNTER_EXTSTATS)
             /* when RUNNER accelerate flow, stats will not be availabe until
              * put_stats is called blog has to fill vir_dev in order to get
              * put_stats called, so call this blog_link() to fill vir_dev
@@ -197,6 +202,8 @@ dhd_wfd_forward(unsigned int pkt_cnt, void **pkts, unsigned long wl_radio_idx, u
             dhd_if_inc_txpkt_drop_cnt(dhdp, ifidx);
             continue;
         }
+        /* for unicast, it is master fkb, to clear dhdhdr bit */
+        dhd_clr_fkb_dhdhdr_flag(fkb_p);
 #endif /* DSLCPE && BCM_NBUFF || BCM_NBUFF_WLMCAST */
 
         flowid = fkb_p->wl.ucast.dhd.flowring_idx;
@@ -278,11 +285,10 @@ dhd_send_all(unsigned int dummy)
 }
 
 static void BCMFASTPATH
-dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev)
+_dhd_wfd_mcasthandler(uint32_t wl_radio_idx, uint32_t ifidx, void *fkb)
 {
     pNBuff_t *pNBuf = FKBUFF_2_PNBUFF((FkBuff_t *)fkb);
-    struct net_device *dev_p = (struct net_device *)dev;
-    int ret = 0,ifidx;
+    int ret = 0;
     dhd_pub_t *dhdp;
 #ifdef DHD_WMF
     dhd_wmf_t *wmf;
@@ -291,17 +297,10 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev
     int pktlen;
 #endif
 
-#ifdef WLCSM_DEBUG
-    wlcsm_dbg_inc(10,1);
-    WLCSM_TRACE(WLCSM_TRACE_DBG, "wfd mcast coming\n");
-#endif
     DHD_PERIM_LOCK_ALL(wl_radio_idx % FWDER_MAX_UNIT);
     dhdp = g_dhd_info[wl_radio_idx];
-    /*  we can assum ifidx will be right since it comes from fastpath. */
-    ifidx = dhd_dev_get_ifidx(dev_p);
-#ifdef DHD_WMF
-    wmf = dhd_wmf_conf(dhdp, ifidx);
-#endif
+    if(dhd_idx2net(dhdp,ifidx)==NULL)
+       goto free_drop;
 #if (defined(DSLCPE) && defined(BCM_NBUFF))|| defined(BCM_NBUFF_WLMCAST)
 
     if (PKTATTACHTAG(dhdp->osh,  pNBuf)) {
@@ -309,15 +308,6 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev
         goto free_drop;
     }
 #endif /* DSLCPE && BCM_NBUFF || defined(BCM_NBUFF_WLMCAST */
-
-
-    DHD_PKT_CLR_DATA_DHDHDR(pNBuf);
-
-    /* if pkt's priority is not set, retrive it from TOS/DSCP and set it,
-     * if it is still 0, then set it to VI by default, in runner offloading N+M case,
-     * N will use pre-defined priority and for M the packet should be marked by
-     * correct dscp matching to the pre-defined priority.
-     */
 
 #if (defined(DSLCPE) && defined(BCM_DHD_RUNNER)) || defined(BCM_NBUFF_WLMCAST)
     /*  when DHD_RUNNER offloading is enabled, the N and M station priority has to be the same
@@ -333,6 +323,7 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev
                 PKTSETPRIO(pNBuf, PRIO_8021D_VI);
         }
 #ifdef DHD_WMF
+    wmf = dhd_wmf_conf(dhdp, ifidx);
     if (wmf->wmf_enable) {
         /* set  WAN multicast indication before sending to EMF module */
         DHD_PKT_SET_WFD_BUF(pNBuf);
@@ -361,8 +352,6 @@ dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long dev
 #endif
             goto mcast_count;
         }
-    } else {
-        DHD_ERROR(("%s: flowid_update error.\n", __FUNCTION__));
     }
 free_drop:
     PKTFREE(dhdp->osh, pNBuf, FALSE);
@@ -376,10 +365,49 @@ succ_count:
 mcast_count:
     dhdp->tx_packets_wfd_mcast++;
 unlock:
-    DHD_PERIM_UNLOCK_ALL((dhdp->fwder_unit % FWDER_MAX_UNIT));
+    DHD_PERIM_UNLOCK_ALL( wl_radio_idx % FWDER_MAX_UNIT);
     return;
 }
 
+static void BCMFASTPATH
+dhd_wfd_mcasthandler(uint32_t wl_radio_idx, unsigned long fkb, unsigned long p_ssid_vector)
+{
+
+	uint32_t wl_if_index;
+	void *fkb_cloned = NULL;
+	uint16_t ssid_vector=*(uint16_t *)p_ssid_vector;
+
+	/* clear fkb dhdhdr,all fkb is master fkb here */
+	dhd_clr_fkb_dhdhdr_flag((void *)fkb);
+
+	while (ssid_vector)
+	{
+		map_ssid_vector_to_ssid_index(&ssid_vector, &wl_if_index);
+
+		/* Clear the bit we found */
+		ssid_vector &= ~(1 << wl_if_index);
+#if !defined(BCM_AWL) && defined(BCM_WFD)
+		if(!wfd_dev_by_id_get(wl_radio_idx,wl_if_index)) 
+			continue;
+#endif
+
+		if (ssid_vector) /* Don't make a copy for only/last interface */
+		{
+			fkb_cloned = fkb_clone((void *)fkb);
+			if (fkb_cloned == (FkBuff_t *) NULL)
+			{
+				printk("%s %s: Failed to clone fkb\n", __FILE__, __FUNCTION__);
+				nbuff_free(FKBUFF_2_PNBUFF(fkb));
+				return;
+			}
+		}
+		else
+		{
+			fkb_cloned =(void *)fkb;
+		}
+		_dhd_wfd_mcasthandler(wl_radio_idx, wl_if_index, FKBUFF_2_PNBUFF(fkb_cloned));
+	}
+}
 
 int dhd_wfd_bind(struct net_device *net, unsigned int unit)
 {

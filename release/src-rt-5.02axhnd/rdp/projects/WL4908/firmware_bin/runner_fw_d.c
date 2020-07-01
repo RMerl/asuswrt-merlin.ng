@@ -27,7 +27,7 @@
 :>
 */
 
-/* Firmware version: 2.5.0.242508 */
+/* Firmware version: 2.5.0.234510 */
 
 
 uint32_t firmware_binary_D[] = {
@@ -8224,4 +8224,4 @@ uint32_t firmware_binary_D[] = {
     0xFC000000,
     0xFC000000,
 };
-char *rdpa_version_fw_d = "$Change: 242709 $";
+char *rdpa_version_fw_d = "$Change: 242069 $";

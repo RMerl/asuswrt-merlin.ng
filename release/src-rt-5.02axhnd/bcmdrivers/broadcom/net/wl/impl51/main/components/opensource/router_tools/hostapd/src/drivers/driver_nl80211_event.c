@@ -146,6 +146,10 @@ static void mlme_event_auth(struct wpa_driver_nl80211_data *drv,
 {
 	const struct ieee80211_mgmt *mgmt;
 	union wpa_event_data event;
+#ifdef CONFIG_DRIVER_BRCM
+	u16 auth_type;
+	u16 fc, stype;
+#endif /* CONFIG_DRIVER_BRCM */
 
 	if (!(drv->capa.flags & WPA_DRIVER_FLAGS_SME) &&
 	    drv->force_connect_cmd) {
@@ -169,6 +173,19 @@ static void mlme_event_auth(struct wpa_driver_nl80211_data *drv,
 	os_memcpy(drv->auth_bssid, mgmt->sa, ETH_ALEN);
 	os_memset(drv->auth_attempt_bssid, 0, ETH_ALEN);
 	os_memset(&event, 0, sizeof(event));
+#ifdef CONFIG_DRIVER_BRCM
+	auth_type = le_to_host16(mgmt->u.auth.auth_alg);
+	fc = le_to_host16(mgmt->frame_control);
+	stype = WLAN_FC_GET_STYPE(fc);
+
+	if ((stype == WLAN_FC_STYPE_AUTH) &&
+			(auth_type == WLAN_AUTH_SAE)) {
+		wpa_printf(MSG_DEBUG, "nl80211: SAE Authenticate event");
+		event.rx_mgmt.frame = frame;
+		event.rx_mgmt.frame_len = len;
+		wpa_supplicant_event(drv->ctx, EVENT_RX_MGMT, &event);
+	} else
+#endif /* CONFIG_DRIVER_BRCM */
 	{
 		os_memcpy(event.auth.peer, mgmt->sa, ETH_ALEN);
 		event.auth.auth_type = le_to_host16(mgmt->u.auth.auth_alg);

@@ -1074,11 +1074,9 @@ if [ "$BRCM_DRIVER_WIRELESS" = "y" -o "$BRCM_DRIVER_WIRELESS" = "m" ]; then
 
   if [ "$WLSETUP_WPS" = "y" ]; then
     define_string BUILD_WPS_BTN "dynamic"
-    define_string BUILD_LLTD    "dynamic"
     define_string BUILD_WSC     "dynamic"
   else
     define_string BUILD_WPS_BTN ""
-    define_string BUILD_LLTD    ""
     define_string BUILD_WSC     ""
   fi
 

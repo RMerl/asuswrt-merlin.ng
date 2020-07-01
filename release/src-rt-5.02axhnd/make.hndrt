@@ -1595,7 +1595,6 @@ BUILD_IPSEC_TOOLS          \
 BUILD_L2TPAC               \
 BUILD_ACCEL_PPTP           \
 BUILD_WPS_BTN              \
-BUILD_LLTD                 \
 BUILD_WSC                  \
 BUILD_BCMCRYPTO            \
 BUILD_BCMSHARED            \

@@ -725,7 +725,7 @@ dhd_runner_iovar_fn_t * dhd_rnr_iovar_table[DHD_RNR_MAX_IOVARS][2] = {
 	},
 };
 
-static int dhd_rnr_mcast_obj_ref_cnt = 0;
+static int dhd_rnr_mcast_obj_ref_cnt = -1;
 
 /*
  * +----------------------------------------------------------------------------
@@ -1959,16 +1959,18 @@ dhd_runner_init(dhd_runner_hlp_t *dhd_hlp, struct pci_dev *pci_dev)
 
 	dhd_hlp->dhd_mcast_obj = NULL;
 	rc = rdpa_wlan_mcast_get(&(dhd_hlp->dhd_mcast_obj));
-	if (rc)
+	if (rc && dhd_rnr_mcast_obj_ref_cnt < 0)
 	{
 	    /* Create one mcast object for all radios */
 	    rc = bdmf_new_and_set(rdpa_wlan_mcast_drv(), NULL, wlan_mcast_attrs,
 	        &dhd_hlp->dhd_mcast_obj);
 	    if (rc)
 	        DHD_ERROR(("%s: MCAST HANDLER FAILURE  %d\n", __FUNCTION__, rc));
+	    else
+	        dhd_rnr_mcast_obj_ref_cnt = 0;
 	}
 
-	if (!rc) {
+	if (!rc && (dhd_rnr_mcast_obj_ref_cnt >= 0)) {
 	    dhd_rnr_mcast_obj_ref_cnt++;
 	}
 
@@ -2148,11 +2150,13 @@ dhd_helper_detach(dhd_runner_hlp_t *dhd_hlp)
 	    bdmf_destroy(dhd_hlp->dhd_helper_obj);
 
 	if (dhd_hlp->dhd_mcast_obj) {
-	    if (dhd_rnr_mcast_obj_ref_cnt == 1) {
-	        bdmf_destroy(dhd_hlp->dhd_mcast_obj);
+	    if (dhd_rnr_mcast_obj_ref_cnt > 0) {
+	        if (dhd_rnr_mcast_obj_ref_cnt == 1) {
+	            bdmf_destroy(dhd_hlp->dhd_mcast_obj);
+	        }
+	        dhd_rnr_mcast_obj_ref_cnt--;
 	    }
 	    dhd_hlp->dhd_mcast_obj = NULL;
-	    dhd_rnr_mcast_obj_ref_cnt--;
 	}
 }
 

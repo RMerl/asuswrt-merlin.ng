@@ -1317,6 +1317,8 @@
 #undef BN_S_MP_TOOM_MUL_C
 #undef BN_S_MP_TOOM_SQR_C
 
+#define MP_FIXED_CUTOFFS
+
 #include "dbmalloc.h"
 #define MP_MALLOC    m_malloc
 #define MP_FREE      m_free_ltm

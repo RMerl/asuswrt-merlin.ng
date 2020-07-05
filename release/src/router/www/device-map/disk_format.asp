@@ -89,6 +89,10 @@ function set_disk_info(device) {
 			document.form.disk_name.maxLength = 30;
 			disk_system = "thfsplus";
 			break;
+		case "ext4" :
+			document.form.disk_name.maxLength = 16;
+			disk_system = "ext4";
+			break;
 		default :
 			document.form.disk_name.maxLength = 11;
 			disk_system = "tfat";
@@ -186,6 +190,10 @@ function go_format() {
 		if(temp_label.length > 31)
 			document.form.disk_name.value = temp_label.substr(0, 30);
 	}
+	else if(disk_system == "ext4") {
+		if(temp_label.length > 17)
+			document.form.disk_name.value = temp_label.substr(0, 16);
+	}
 
 	if(!Block_chars(document.form.disk_name, ["~", "`", "!", "#", "$", "%", "^", "&", "*", "(", ")", "+", "=", "{", "[", "}", "]", "|", "\\", ":", ";", "\"", "'", "<", ">", ",", ".", "?", "/", " "]))
 		return false;
@@ -223,6 +231,9 @@ function change_disk_system() {
 		document.form.disk_name.maxLength = 30;
 		if(temp_label.length > 31)
 			document.form.disk_name.value = temp_label.substr(0, 30);
+	}
+	else if(disk_system == "ext4") {
+		document.form.disk_name.maxLength = 16;
 	}
 }
 function show_loadingBar_field(){
@@ -366,7 +377,7 @@ function showLoadingUpdate(){
 			<div>
 				<input type="text" maxlength="32" class="input_25_table" name="disk_name" value="" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 			</div>
-			
+
 		</div>
 		<div style="margin-top:5px;*margin-top:-10px;width:283px;" class="line_horizontal"></div>
 		<div style="padding:7px;">
@@ -376,6 +387,7 @@ function showLoadingUpdate(){
 					<option value="tntfs">NTFS</option>
 					<option value="tfat">FAT</option>
 					<option value="thfsplus">HFS</option>
+					<option value="ext4">EXT4</option>
 				</select>
 			</div>
 		</div>

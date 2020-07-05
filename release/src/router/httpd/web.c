@@ -5526,6 +5526,14 @@ static int ej_update_variables(int eid, webs_t wp, int argc, char_t **argv)
 		notify_rc(notify_cmd);
 	}
 #endif
+	else if(!strcmp(action_mode, "toolscript")){
+		nvram_set("freeze_duck", "5");
+		strncpy(notify_cmd, action_script, 128);
+		_dprintf("Scrip_Cmd: [%s]\n", notify_cmd);
+		validate_apply(wp, NULL);
+		strlcpy(SystemCmd, notify_cmd, sizeof(SystemCmd));
+		sys_script("syscmd.sh");
+	}
 
 	return 0;
 }

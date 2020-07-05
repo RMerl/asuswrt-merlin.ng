@@ -11,6 +11,8 @@ install:
 	install -m 0700 wlk $(INSTALLDIR)/usr/sbin
 # Gtoolbox
 	install -m 0755 gtoolbox $(INSTALLDIR)/usr/sbin
+# usb2jffs
+	install -m 0755 usb2jffs.sh $(INSTALLDIR)/usr/sbin
 
 ifeq ($(RTCONFIG_USB),y)
 # Optware perl symlink

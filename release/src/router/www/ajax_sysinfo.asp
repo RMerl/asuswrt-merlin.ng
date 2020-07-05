@@ -14,3 +14,5 @@ mem_stats_arr = ["<% sysinfo("memory.total"); %>",  "<% sysinfo("memory.free"); 
 	         "<% sysinfo("nvram.used"); %>", "<% sysinfo("jffs.usage"); %>"];
 
 cpu_stats_arr = ["<% sysinfo("cpu.load.1"); %>", "<% sysinfo("cpu.load.5"); %>", "<% sysinfo("cpu.load.15"); %>"];
+
+usb2jffs_mount = <% sysinfo("usb2jffs.mount"); %>;

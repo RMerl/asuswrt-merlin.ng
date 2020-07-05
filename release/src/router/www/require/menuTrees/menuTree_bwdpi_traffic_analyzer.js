@@ -201,6 +201,7 @@ define(function(){
 					{url: "Tools_Sysinfo.asp", tabName: "<#Sysinfo#>"},
 					{url: "Tools_OtherSettings.asp", tabName: "<#Other_Settings#>"},
 					{url: "Tools_K3Screen.asp", tabName: "<#K3Screen#>"},
+					{url: "Tools_Usb2Jffs.asp", tabName: "USB2JFFS"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			},

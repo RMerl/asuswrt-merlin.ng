@@ -142,7 +142,7 @@ void start_k3screen(void)
 
 	logmessage("K3INIT", "屏幕控制程序开始启动");
 	_dprintf("**** k3screen: start\n");
-	doSystem("mkdir -p /tmp/k3screenctrl");
+	mkdir_if_none("/tmp/k3screenctrl");
 	doSystem("ln -snf /lib/k3screenctrl/* /tmp/k3screenctrl");
 	_eval(k3screenbg_argv, NULL, 0, &pid1);
 	_eval(k3screenctrl_argv, NULL, 0, &pid2);

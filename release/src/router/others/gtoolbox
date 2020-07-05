@@ -71,6 +71,16 @@ wl_dhd24() {
 	modprobe dhd24
 	echo "已更换无线驱动为dhd24"
 }
+
+erase_mtd() {
+	flash_erase /dev/mtd5 0 0
+	echo "格式化完成！"
+}
+
+rm_softcenter_detect() {
+	sed -i 's/\tdetect_package/\t# detect_package/g' /koolshare/scripts/ks_tar_install.sh
+	echo "去除软件中心检测完成！"
+}
 ####################################################################
 
 /usr/sbin/envrams >/dev/null
@@ -96,6 +106,8 @@ do
 	echo "4) 修改5G MAC"
 	echo "5) 无线驱动更换成dhd24.ko"
 	echo "6) 无线驱动更换成dhd.ko"
+	echo "7）格式化/dev/mtd5"
+	echo "8）去除软件中心检测"
 	echo "q) 退出"
 	echo
 	read -n 1 -p "Choice: " x
@@ -113,6 +125,10 @@ do
 		wl_dhd24;sleep 1;;
     6)
 		wl_dhd;sleep 1;;
+	7)
+		erase_mtd;sleep 1;;
+	8)
+		rm_softcenter_detect;sleep 1;;
     q)
 		killall -9 envrams; echo; exit;;
     *)

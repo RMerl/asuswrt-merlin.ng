@@ -2824,75 +2824,6 @@ wan_up(const char *pwan_ifname)
 	adjust_netdev_if_of_wan_bled(1, wan_unit, wan_ifname);
 #endif
 
-#ifdef RTCONFIG_BWDPI
-	int enabled = check_bwdpi_nvram_setting();
-	int changed = tdts_check_wan_changed();
-
-	BWDPI_DBG("enabled = %d, changed = %d\n", enabled, changed);
-
-	if(enabled){
-		_dprintf("[%s] do dpi engine service ... \n", __FUNCTION__);
-		// if Adaptive QoS or AiProtection is enabled
-		int count = 0;
-		int val = 0;
-		while (count < 5) {
-			sleep(1);
-			val = found_default_route(0);
-			usleep(400*1000);
-			count++;
-			if ((val == 1) || (count == 5)) break;
-		}
-
-		BWDPI_DBG("found_default_route result: %d\n", val);
-
-		if (val) {
-			// if restart_wan_if, remove dpi engine related
-			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
-			{
-				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
-				stop_dpi_engine_service(0);
-			}
-			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
-			{
-				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
-				stop_dpi_engine_service(1);
-			}
-			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
-			start_dpi_engine_service();
-			start_firewall(wan_unit, 0);
-		}
-
-		if(IS_NON_AQOS()){
-			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
-			start_iQos();
-		}
-	}
-	else{
-		if(IS_NON_AQOS()){
-			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
-			start_iQos();
-		}
-	}
-#else
-	start_iQos();
-#endif
-
-#ifdef RTCONFIG_AMAS
-	if (is_amaslib_enabled()) {
-		// force to trigger amaslib to do static scan
-		AMAS_EVENT_TRIGGER(NULL, NULL, 3);
-	}
-#endif
-
-#if defined(RTCONFIG_HND_ROUTER_AX)
-	if (strcmp(wan_proto, "pptp") == 0) {
-		eval("fc", "config", "--tcp-ack-mflows", "0");
-	}
-	else {
-		eval("fc", "config", "--tcp-ack-mflows", "1");
-	}
-#endif
-
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	/* FIXME: Protect below code from 2-nd WAN temporarilly. */
 	if(wan_unit == wan_primary_ifunit())
@@ -2963,6 +2894,75 @@ wan_up(const char *pwan_ifname)
 #ifdef RTCONFIG_OPENVPN
 	if (nvram_get_int("ntp_ready")) {
 		start_ovpn_eas();
+	}
+#endif
+
+#ifdef RTCONFIG_BWDPI
+	int enabled = check_bwdpi_nvram_setting();
+	int changed = tdts_check_wan_changed();
+
+	BWDPI_DBG("enabled = %d, changed = %d\n", enabled, changed);
+
+	if(enabled){
+		_dprintf("[%s] do dpi engine service ... \n", __FUNCTION__);
+		// if Adaptive QoS or AiProtection is enabled
+		int count = 0;
+		int val = 0;
+		while (count < 5) {
+			sleep(1);
+			val = found_default_route(0);
+			usleep(400*1000);
+			count++;
+			if ((val == 1) || (count == 5)) break;
+		}
+
+		BWDPI_DBG("found_default_route result: %d\n", val);
+
+		if (val) {
+			// if restart_wan_if, remove dpi engine related
+			if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 0)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
+				stop_dpi_engine_service(0);
+			}
+			else if ((f_exists("/dev/detector") || f_exists("/dev/idpfw")) && changed == 1)
+			{
+				_dprintf("[%s] stop dpi engine service - %d\n", __FUNCTION__, changed);
+				stop_dpi_engine_service(1);
+			}
+			_dprintf("[%s] start dpi engine service\n", __FUNCTION__);
+			start_dpi_engine_service();
+			start_firewall(wan_unit, 0);
+		}
+
+		if(IS_NON_AQOS()){
+			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
+			start_iQos();
+		}
+	}
+	else{
+		if(IS_NON_AQOS()){
+			_dprintf("[wan up] tradtional qos or bandwidth limiter start\n");
+			start_iQos();
+		}
+	}
+#else
+	start_iQos();
+#endif
+
+#ifdef RTCONFIG_AMAS
+	if (is_amaslib_enabled()) {
+		// force to trigger amaslib to do static scan
+		AMAS_EVENT_TRIGGER(NULL, NULL, 3);
+	}
+#endif
+
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	if (strcmp(wan_proto, "pptp") == 0) {
+		eval("fc", "config", "--tcp-ack-mflows", "0");
+	}
+	else {
+		eval("fc", "config", "--tcp-ack-mflows", "1");
 	}
 #endif
 

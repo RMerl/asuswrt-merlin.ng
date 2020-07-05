@@ -14283,6 +14283,13 @@ _dprintf("test 2. turn off the USB power during %d seconds.\n", reset_seconds[re
 		if (action & RC_SERVICE_STOP) stop_watchdog();
 		if (action & RC_SERVICE_START) start_watchdog();
 	}
+#ifdef RTAX82U
+	else if (strcmp(script, "ledg") == 0)
+	{
+		if (action & RC_SERVICE_STOP) stop_ledg();
+		if (action & RC_SERVICE_START) start_ledg();
+	}
+#endif
  	else
 	{
 		fprintf(stderr,

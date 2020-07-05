@@ -100,10 +100,6 @@ void start_yaffs(void)
 		}
 	}
 
-#if defined(RTCONFIG_ISP_CUSTOMIZE)
-	load_customize_package();
-#endif
-
 	if (nvram_get_int("yaffs_clean_fs")) {
 		_dprintf("Clean /jffs/*\n");
 		system("rm -fr /jffs/*");

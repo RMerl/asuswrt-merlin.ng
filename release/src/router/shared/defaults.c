@@ -14,12 +14,10 @@
 #define XSTR(s) STR(s)
 #define STR(s) #s
 
-#ifdef RTCONFIG_OPENVPN
-#ifdef HND_ROUTER
+#if defined(RTCONFIG_OPENVPN) && defined(HND_ROUTER) && !defined(HND_ROUTER_AX_675X)
 #define DEFAULT_NCP_CIPHERS "AES-256-GCM:AES-128-GCM:AES-256-CBC:AES-128-CBC"
 #else
 #define DEFAULT_NCP_CIPHERS "AES-128-GCM:AES-256-GCM:AES-128-CBC:AES-256-CBC"
-#endif
 #endif
 
 // stub for wlconf, etc.

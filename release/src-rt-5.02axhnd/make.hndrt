@@ -477,7 +477,7 @@ inner_kernelbuild: pre_kernelbuild hnd_dongle
 else
 inner_kernelbuild: pre_kernelbuild
 endif
-	$(MAKE) -C $(KERNEL_DIR)
+	$(MAKE) $(PARALLEL_BUILD) -C $(KERNEL_DIR)
 
 linux_tools: linux_tools_perf
 
@@ -546,7 +546,7 @@ export PRBM_DIR=prebuilt
 inner_modbuild:
 	@echo "******************** Starting modbuild ********************";
 	rm -rf $(HND_SRC)/targets/$(PROFILE)/modules
-	cd $(KERNEL_DIR); $(MAKE) modules && $(MAKE) modules_install
+	cd $(KERNEL_DIR); $(MAKE) $(PARALLEL_BUILD) modules && $(MAKE) modules_install
 	@echo "******************** DONE modbuild ********************";
 
 mocamodbuild:

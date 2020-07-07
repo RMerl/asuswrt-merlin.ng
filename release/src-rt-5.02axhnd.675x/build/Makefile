@@ -27,7 +27,7 @@ all:
 	$(MAKE) -f build/Makefile default
 
 all_postcheck1: profile_saved_check sanity_check rdp_link\
-     create_install pinmuxcheck dynamic_cfe kernelbuild modbuild\
+     create_install pinmuxcheck dynamic_cfe #kernelbuild #modbuild\
      parallel_targets #gdbserver buildimage
 
 # Order-only rules

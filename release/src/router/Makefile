@@ -1526,12 +1526,12 @@ endif
 endif
 else	# RTCONFIG_BCMARM
 	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) |\
-		$(MAKE) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) zImage
+		$(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) zImage
 	+$(MAKE) CONFIG_SQUASHFS=$(CONFIG_SQUASHFS) -C $(SRCBASE)/router/compressed ARCH=$(ARCH)
 
 	$(if $(shell grep "CONFIG_MODULES=y" ${LINUXDIR}/.config), \
-	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) MFG_WAR=1 zImage ; \
-	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) -C ${LINUXDIR} -f - ARCH=$(ARCH) modules)
+	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) MFG_WAR=1 zImage ; \
+	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - ARCH=$(ARCH) modules)
 	# Preserve the debug versions of these and strip for release
 	$(call STRIP_DEBUG_SYMBOLS,$(LINUXDIR)/vmlinux)
 	$(call STRIP_DEBUG_SYMBOLS,$(LINUXDIR)/drivers/net/wl/wl.ko)

@@ -47,11 +47,18 @@ pc_delete() {
 am_get_webui_page() {
 	for i in 1 2 3 4 5 6 7 8 9 10; do
 		page="/www/user/user$i.asp"
-		if [ ! -f "$page" ] || [ "$(md5sum < "$1")" = "$(md5sum < "$page")" ]; then
+		if [ -f "$page" ] && [ "$(md5sum < "$1")" = "$(md5sum < "$page")" ]; then
 			am_webui_page="user$i.asp"
 			return
 		fi
 	done
+	for i in 1 2 3 4 5 6 7 8 9 10; do
+		page="/www/user/user$i.asp"
+		if [ ! -f "$page" ]; then
+			am_webui_page="user$i.asp"
+			return
+		fi
+	done	
 	am_webui_page="none"
 }
 

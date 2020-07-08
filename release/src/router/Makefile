@@ -5319,7 +5319,7 @@ $(LIBNL_DIR)/Makefile:
 		--prefix=$(LIBNL_DIR)/install)
 
 libnl: $(LIBNL_DIR)/Makefile
-	+$(MAKE) -C $(LIBNL_DIR)
+	+$(MAKE) $(PARALLEL_BUILD) -C $(LIBNL_DIR)
 	+$(MAKE) -C $(LIBNL_DIR) install
 
 libnl-install:
@@ -5337,7 +5337,7 @@ $(HOSTAPD_DIR)/hostapd/.config: $(HOSTAPD_DIR)/hostapd/brcm.config
 	cp $(HOSTAPD_DIR)/hostapd/brcm.config $(HOSTAPD_DIR)/hostapd/.config;
 
 hostapd: libnl openssl $(HOSTAPD_DIR)/hostapd/.config
-	+$(MAKE) -C $(HOSTAPD_DIR)/hostapd
+	+$(MAKE) $(PARALLEL_BUILD) -C $(HOSTAPD_DIR)/hostapd
 
 hostapd-install:
 	install -d $(INSTALLDIR)/hostapd/usr/sbin
@@ -5354,7 +5354,7 @@ $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config: $(WPA_SUPPLICANT_DIR)/wpa_supplica
 	cp $(WPA_SUPPLICANT_DIR)/wpa_supplicant/brcm.config $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config;
 
 wpa_supplicant-2.7: libnl $(WPA_SUPPLICANT_DIR)/wpa_supplicant/.config
-	+$(MAKE) -C $(WPA_SUPPLICANT_DIR)/wpa_supplicant
+	+$(MAKE) $(PARALLEL_BUILD) -C $(WPA_SUPPLICANT_DIR)/wpa_supplicant
 
 wpa_supplicant-2.7-install:
 	install -d $(INSTALLDIR)/wpa_supplicant-2.7/usr/sbin

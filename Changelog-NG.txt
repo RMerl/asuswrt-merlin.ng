@@ -1,6 +1,18 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
+384.19 (xx-xxx-2020)
+  - NEW: Added support for static routes for PPTP/L2TP VPN
+         clients, on the Static Route page (themiron)
+  - NEW: Added notification when jffs free space drops below
+         3 MB.
+  - UPDATED: Merged GPL 384_9354 for AX models.
+  - UPDATED: Merged SDK + binary blobs 384_9354 for RT-AX58U.
+  - UPDATED: Merged SDK + binary blobs 384_9107 for RT_AX88U.
+  - FIXED: Broken French webui on AX models (fixed with
+           Asus's GPL update)
+
+
 384.18 (28-June-2020)
   - NOTE: A number of changes for some models are not backward
           compatible with previous versions.  Downgrading to

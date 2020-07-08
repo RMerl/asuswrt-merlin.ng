@@ -274,6 +274,15 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 			if (mount_info) free(mount_info);
 
+		} else if(strcmp(type,"jffs.free") == 0) {
+			struct statvfs fiData;
+
+			if (statvfs("/jffs",&fiData) == 0 ) {
+				sprintf(result,"%d",(fiData.f_bfree * fiData.f_frsize / MBYTES));
+			} else {
+				strcpy(result,"-1");
+			}
+
 		} else if(strncmp(type,"temperature",11) == 0) {
 			unsigned int temperature;
 			int radio;

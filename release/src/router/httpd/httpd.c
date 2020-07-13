@@ -2280,20 +2280,14 @@ int main(int argc, char **argv)
 
 void save_cert(void)
 {
-	eval("cp", "-p", "/etc/cert.pem", "/etc/key.pem", "/jffs/.cert/");
-	chmod("/jffs/.cert/key.pem", S_IRUSR|S_IWUSR);
 	eval("tar", "-C", "/", "-czf", HTTPS_CA_JFFS, "etc/cert.pem", "etc/key.pem");
-
 }
 
 void erase_cert(void)
 {
 	unlink("/etc/cert.pem");
 	unlink("/etc/key.pem");
-	unlink(UPLOAD_CERT);
-	unlink(UPLOAD_KEY);
 	nvram_set("https_crt_gen", "0");
-	nvram_commit();
 }
 
 void start_ssl(int http_port)
@@ -2349,19 +2343,12 @@ void start_ssl(int http_port)
 
 				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
 				eval("gencert.sh", t);
-
-#ifdef RTCONFIG_LETSENCRYPT
-				if (nvram_match("le_enable", "2"))
-#endif
-					save_cert();
 			}
 		}
 
-#if 0
-		if (save) {
+		if ((save)) {
 			save_cert();
 		}
-#endif
 
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
 			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);

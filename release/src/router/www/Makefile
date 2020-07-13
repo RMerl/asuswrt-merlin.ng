@@ -435,6 +435,7 @@ ifneq ($(RTCONFIG_PARENTALCTRL),y)
 endif
 	rm -rf $(INSTALLDIR)/www/getTraffic.asp
 	rm -rf $(INSTALLDIR)/www/getWebHistory.asp
+	rm -rf $(INSTALLDIR)/www/getDBList.asp
 	rm -rf $(INSTALLDIR)/www/getAppTraffic.asp
 	rm -rf $(INSTALLDIR)/www/getWanTraffic.asp
 	rm -rf $(INSTALLDIR)/www/getAiProtectionEvent.asp

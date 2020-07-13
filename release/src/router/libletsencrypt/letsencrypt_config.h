@@ -57,7 +57,8 @@ typedef struct {
 	int enable;
 	le_acme_auth_t authtype;
 	u_int16_t port;
-	int force;
+	int force; // issue/revoke
+	int renew_force;
 	int staging;
 	int debug;
 	char acme_logpath[128];

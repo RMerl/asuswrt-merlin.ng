@@ -34,12 +34,13 @@
 }
 </style>
 <script>
+
 function initial(){
 	show_menu();
 	if(document.form.bwdpi_wh_enable.value == 1){
 		document.getElementById("log_field").style.display = "";
 		getWebHistory("all", "1");
-		genClientListOption();
+		getWebHistoryList();
 	}
 	else{
 		document.getElementById("log_field").style.display = "none";
@@ -129,33 +130,31 @@ function parsingAjaxResult(rawData){
 
 		match = 0;
 	}
-												
+
 	var code = "";
-	code += '<div style="display:flex;margin:3px 12px;">';
-	code += "<div style='width:20%;'><#Access_Time#></div>";
-	code += "<div style='width:30%;'><#PPPConnection_x_MacAddressForISP_itemname#> / <#Client_Name#></div>";
-	code += "<div style='width:50%;'><#Domain_Name#></div>";
-	code += "</div>";
+	code += "<tr>";
+	code += "<th style='width:20%;text-align:left'><#Access_Time#></th>";
+	code += "<th style='width:30%;text-align:left'><#PPPConnection_x_MacAddressForISP_itemname#> / <#Client_Name#></th>";
+	code += "<th style='width:50%;text-align:left'><#Domain_Name#></th>";
+	code += "</tr>";
 	for(var i=0; i<data_array.length; i++){
 		var thisLog = {
 			macAddr: data_array[i][0],
 			timeStamp: data_array[i][1],
 			hostName: data_array[i][2]
 		}
-		
 
-		code += '<div style="display:flex;margin:3px 12px;">';
-		code += "<div style='width:20%;'>" + convertTime(thisLog.timeStamp) + "</div>";
+		code += "<tr style='line-height:15px;'>";
+		code += "<td>" + convertTime(thisLog.timeStamp) + "</td>";
 		if(clientList[thisLog.macAddr] != undefined) {
 			var clientName = (clientList[thisLog.macAddr].nickName == "") ? clientList[thisLog.macAddr].name : clientList[thisLog.macAddr].nickName;
-			code += "<div style='width:30%;' title="+ thisLog.macAddr + ">" + clientName + "</div>";
+			code += "<td title="+ thisLog.macAddr + ">" + clientName + "</td>";
 		}
-		else{
-			code += "<div style='width:30%;'>" + thisLog.macAddr + "</div>";
-		}	
+		else
+			code += "<td>" + thisLog.macAddr + "</td>";
 
-		code += "<div style='width:50%;'>" + thisLog.hostName + "</div>";
-		code += "</div>";
+		code += "<td>" + thisLog.hostName + "</td>";
+		code += "</tr>";
 	}
 
 	document.getElementById('log_table').innerHTML = code;
@@ -185,7 +184,6 @@ function transform_time_format(time){
 }
 
 var history_array = new Array();
-var temp = new Array();
 function getWebHistory(mac, page){
 	var page_count = page;
 	var client = "?client=" + mac + "&page=" + page_count;
@@ -198,42 +196,85 @@ function getWebHistory(mac, page){
 		},
 		success: function(response){
 			history_array = array_temp;
-			if(page == '1'){
-				temp = [];
-			}	
-
-			temp = temp.concat(array_temp);
-			temp.sort(function(a,b){
-				return b[1] - a[1];
-			});            
-
-			parsingAjaxResult(temp);
-			if(history_array.length == 50){
-				getWebHistory(mac, parseInt(page_count)+1)
+			parsingAjaxResult(array_temp);
+			if(page_count == "1"){
+				document.getElementById('previous_button').style.visibility = "hidden";
 			}
+			else{
+				document.getElementById('previous_button').style.visibility = "visible";
+			}
+
+			if(history_array.length < 50){
+				document.getElementById('next_button').style.visibility = "hidden";
+			}
+			else{
+				document.getElementById('next_button').style.visibility = "visible";
+			}
+
+			if(page_count == "1" && history_array.length < 50){
+				document.getElementById('current_page').style.visibility = "hidden";
+			}
+			else{
+				document.getElementById('current_page').style.visibility = "visible";
+			}
+
+			document.getElementById('current_page').value = page_count;
+		}
+	});
+}
+
+function getWebHistoryList(){
+	$.ajax({
+		url: '/getDBList.asp?type=WebHistory',
+		dataType: 'script',
+		error: function(xhr){
+			setTimeout("getWebHistoryList();", 1000);
+		},
+		success: function(response){
+			genClientListOption();
 		}
 	});
 }
 
 function genClientListOption(){
-	if(clientList.length == 0){
-		setTimeout("genClientListOption();", 500);
+	var _list = dbList[0];
+
+	if(_list == undefined || _list.length == 0){
+		setTimeout("genClientListOption();", 1000);
 		return false;
 	}
 
 	document.getElementById("clientListOption").options.length = 1;
-	for(var i=0; i<clientList.length; i++){
-		var clientObj = clientList[clientList[i]];
-
-		if(clientObj.isGateway || !clientObj.isOnline)
-			continue;
-
-		var clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
-		var newItem = new Option(clientName, clientObj.mac);
+	for(var i=0; i<_list.length; i++){
+		var mac = _list[i];
+		if(clientList[_list[i]]){
+			var clientObj = clientList[_list[i]];
+			var clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+			var newItem = new Option(clientName, clientObj.mac);
+		}
+		else{
+			var newItem = new Option(mac, mac);
+		}
+				
 		document.getElementById("clientListOption").options.add(newItem);
 	}
 }
 
+function change_page(flag, target){
+	var current_page = document.getElementById('current_page').value;
+	var page = 1;
+	if(flag == "next"){
+		page = parseInt(current_page) + 1;
+		getWebHistory(target, page);
+	}
+	else{
+		page = parseInt(current_page) - 1;
+		if(page < 1)
+			page = 1;
+
+		getWebHistory(target, page);
+	}
+}
 function applyRule(){
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
@@ -248,14 +289,14 @@ function applyRule(){
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.bwdpi_wh_enable.value = 1;
-	document.form.action_wait.value = "15";
+	document.form.action_wait.value = "30";
 	applyRule();
 }
 
 function cancel(){
 	curState = 0;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
-	document.form.action_wait.value = "3";
+	document.form.action_wait.value = "30";
 	document.form.action_script.value = "restart_qos;restart_firewall";
 }
 function switch_control(_status){
@@ -321,7 +362,7 @@ function updateWebHistory() {
 <input type="hidden" name="next_page" value="/AdaptiveQoS_WebHistory.asp">
 <input type="hidden" name="action_mode" value="apply">
 <input type="hidden" name="action_script" value="restart_qos;restart_firewall">
-<input type="hidden" name="action_wait" value="3">
+<input type="hidden" name="action_wait" value="30">
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="bwdpi_wh_enable" value="<% nvram_get("bwdpi_wh_enable"); %>">
 <input type="hidden" name="bwdpi_wh_stamp" value="<% nvram_get("bwdpi_wh_stamp"); %>">
@@ -370,9 +411,12 @@ function updateWebHistory() {
 											<select id="clientListOption" class="input_option" name="clientList" onchange="getWebHistory(this.value, '1');">
 												<option value="all" selected><#All_Client#></option>
 											</select>
+											<label style="margin: 0 5px 0 20px;visibility:hidden;cursor:pointer" id="previous_button" onclick="change_page('previous', document.getElementById('clientListOption').value);">Previous</label>
+											<input class="input_3_table" value="1" id="current_page"></input>
+											<label style="margin-left:5px;cursor:pointer" id="next_button" onclick="change_page('next', document.getElementById('clientListOption').value);">Next</label>
 										</div>
-										<div class="web_frame" style="height:700px;overflow:auto;margin:5px">
-											<div style="width:100%" id="log_table"></div>
+										<div class="web_frame" style="height:600px;overflow:auto;margin:5px">
+											<table style="width:100%" id="log_table"></table>
 										</div>
 										<div class="apply_gen">
 											<input class="button_gen" onClick="httpApi.cleanLog('web_history', updateWebHistory);" type="button" value="<#CTL_clear#>" >

@@ -2771,7 +2771,9 @@ void fini_wl(void)
 #if defined(RTCONFIG_QCA) && defined(RTCONFIG_SOC_IPQ40XX)
         if(nvram_get_int("restwifi_qis")==0) //reduce the finish time of QIS 
         {
+#if defined(RTCONFIG_BT_CONN)
 		stop_bluetooth_service();
+#endif
 		eval("killall", "hostapd");
 #if defined(RTCONFIG_AMAS)
 		if(sw_mode()==SW_MODE_ROUTER)

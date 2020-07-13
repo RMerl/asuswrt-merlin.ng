@@ -5430,6 +5430,26 @@ int init_nvram(void)
 		nvram_set("wl0_HT_RxStream", "2");
 		nvram_set("wl1_HT_TxStream", "4");
 		nvram_set("wl1_HT_RxStream", "4");
+#if defined(RTCONFIG_AMAS) || defined(RTCONFIG_CFGSYNC)
+		nvram_set("wired_ifnames", "eth1");
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_QCA_LBD)
+		if (sw_mode()!=SW_MODE_REPEATER) {
+			nvram_set("qca_lbd_enable", "1");
+		}
+#endif
+
+#ifdef RTCONFIG_AMAS
+		if (sw_mode() == SW_MODE_AP && nvram_match("re_mode", "1")) {
+			_dprintf("[%s][%d] sw mode = %d, repeater=%d, ap= %d ",
+						__func__, __LINE__,
+						sw_mode(),SW_MODE_REPEATER,SW_MODE_AP);
+			nvram_set("eth_ifnames", "eth0");
+			nvram_set("sta_phy_ifnames", "sta0 sta1");
+			nvram_set("sta_ifnames", "sta0 sta1");
+			nvram_unset("dfschinfo");
+		}
+#endif
 		break;
 #endif //RTAC82U
 
@@ -10809,7 +10829,7 @@ static void sysinit(void)
 
 	if (!nvram_match("disable_gmac3_force", "1")
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
-		&& !psr_mode()
+		&& !psr_mode() && !psta_exist()
 #endif
 #ifdef RTCONFIG_DPSTA
 		&& !dpsta_mode()
@@ -10888,6 +10908,7 @@ static void sysinit(void)
 	gmac3_restore_nvram();
 #endif
 #endif
+	nvram_set("label_mac", get_label_mac());
 
 #if defined(RPAC51)
 	write_caldata_file();

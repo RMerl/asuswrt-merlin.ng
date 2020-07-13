@@ -5,7 +5,7 @@ OBJ = main.o feature_def.o signature.o utility.o protect_name.o
 OBJ += blockfile.o chknvram.o misc.o
 
 CFLAGS += -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
-CFLAGS += -I$(TOP)/curl-7.21.7/include
+CFLAGS += -I$(TOP)/curl/include
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS += -I$(TOP)/libasc
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -29,7 +29,7 @@ endif
 
 LDFLAGS += -lpthread -lm
 LDFLAGS += $(LIBS) -L$(TOP)/shared -lshared -L$(TOP)/nvram -lnvram
-LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl -L$(TOP)/
+LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c

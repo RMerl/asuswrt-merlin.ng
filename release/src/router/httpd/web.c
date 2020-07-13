@@ -325,8 +325,6 @@ static int nvram_check_and_set(char *name, char *value);
 static int nvram_check_and_set_for_prefix(char *name, char *tmp, char *value);
 #define wan_prefix(unit, prefix)	snprintf(prefix, sizeof(prefix), "wan%d_", unit)
 
-#define nvram_default_safe_get(name) (nvram_default_get(name) ? : "")
-
 /*
 #define csprintf(fmt, args...) do{\
 	FILE *cp = fopen("/dev/console", "w");\
@@ -16685,19 +16683,19 @@ do_amazon_wss_cgi(char *url, FILE *stream)
 
 	if(!isValidEnableOption(wss_enable, 1)){
 		HTTPD_DBG("invalid enabled option\n");
-		ret = 4001;
+		ret = HTTP_INVALID_ENABLE_OPT;
 		goto FINISH;
 	}
 
 	if(!isValidEnableOption(do_rc, 1)){
 		HTTPD_DBG("invalid enabled option\n");
-		ret = 4002;
+		ret = HTTP_INVALID_ENABLE_OPT;
 		goto FINISH;
 	}
 
 	if(num_of_mssid_support(0) < 2){
 		HTTPD_DBG("mssid is not support\n");
-		ret = 4003;
+		ret = HTTP_INVALID_SUPPORT;
 		goto FINISH;
 	}
 
@@ -21559,6 +21557,19 @@ ej_bwdpi_monitor_nonips(int eid, webs_t wp, int argc, char_t **argv)
 
 	return retval;
 }
+
+static int
+ej_bwdpi_maclist_db(int eid, webs_t wp, int argc, char_t **argv)
+{
+	int retval = 0;
+	char *type = NULL;
+
+	type = websGetVar(wp, "type", "");
+
+	bwdpi_maclist_db(type, &retval, wp);
+
+	return retval;
+}
 #else
 static int
 ej_bwdpi_engine_status(int eid, webs_t wp, int argc, char_t **argv)
@@ -25547,6 +25558,7 @@ struct ej_handler ej_handlers[] = {
 	{ "bwdpi_monitor_info", ej_bwdpi_monitor_info},
 	{ "bwdpi_monitor_ips", ej_bwdpi_monitor_ips},
 	{ "bwdpi_monitor_nonips", ej_bwdpi_monitor_nonips},
+	{ "bwdpi_maclist_db", ej_bwdpi_maclist_db},
 #else
 	{ "bwdpi_engine_status", ej_bwdpi_engine_status},
 #endif

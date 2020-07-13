@@ -2789,8 +2789,10 @@ wan_up(const char *pwan_ifname)
 
 #if !defined(RTCONFIG_MULTIWAN_CFG)
 	if (wan_unit != wan_primary_ifunit()
+#ifndef RT4GAC68U
 #ifdef RTCONFIG_DUALWAN
 			|| nvram_match("wans_mode", "lb")
+#endif
 #endif
 			)
 	{

@@ -4,7 +4,7 @@ include $(SRCBASE)/.config
 OBJ = libasc.o
 
 CFLAGS += -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
-CFLAGS += -I$(TOP)/curl-7.21.7/include
+CFLAGS += -I$(TOP)/curl/include
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS +=  -shared
 
@@ -29,7 +29,7 @@ endif
 
 LDFLAGS += -lpthread -lm
 LDFLAGS += $(LIBS) -L$(TOP)/shared -lshared -L$(TOP)/nvram -lnvram
-LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl -L$(TOP)/
+LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 
 TARGET = libasc.so

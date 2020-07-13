@@ -717,6 +717,7 @@ void create_passwd(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	char dec_passwd[64];
 #endif
+	char passwd_buf[128] = {0};
 
 #ifdef RTCONFIG_SAMBASRV	//!!TB
 	char *smbd_user;
@@ -747,7 +748,8 @@ void create_passwd(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	else{
 		memset(dec_passwd, 0, sizeof(dec_passwd));
-		pw_dec(p, dec_passwd, sizeof(dec_passwd));
+		strlcpy(passwd_buf, nvram_safe_get("http_passwd"), sizeof(passwd_buf));
+		pw_dec(passwd_buf, dec_passwd, sizeof(dec_passwd));
 		p = dec_passwd;
 	}
 #endif

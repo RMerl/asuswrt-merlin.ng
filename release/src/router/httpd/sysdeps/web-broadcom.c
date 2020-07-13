@@ -6079,7 +6079,7 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 
 	if (wl_ioctl(name, WLC_GET_SSID, &ssid, sizeof(ssid)))
 		goto PSTA_ERR;
-	else if (!nvram_match(strcat_r(prefix, "ssid", tmp), (const char *) ssid.SSID))
+	else if (strncmp(nvram_safe_get(strcat_r(prefix, "ssid", tmp)), (const char *) ssid.SSID, strlen(nvram_safe_get(strcat_r(prefix, "ssid", tmp)))))
 		goto PSTA_ERR;
 
 	if (wl_ioctl(name, WLC_GET_BSSID, &bssid, ETHER_ADDR_LEN) != 0)

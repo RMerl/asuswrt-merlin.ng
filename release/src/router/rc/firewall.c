@@ -85,7 +85,7 @@ const int allowed_local_icmpv6[] =
 #endif
 
 #ifdef RTCONFIG_VPN_FUSION
-extern int write_vpn_fusion(FILE *fp, const char* lan_ip);
+extern int write_vpn_fusion_nat(FILE *fp, const char* lan_ip);
 #endif
 
 char *mac_conv(char *mac_name, int idx, char *buf);	// oleg patch
@@ -1689,7 +1689,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #endif
 
 #ifdef RTCONFIG_VPN_FUSION
-        write_vpn_fusion(fp, lan_ip);
+        write_vpn_fusion_nat(fp, lan_ip);
 #endif
 
 #ifdef RTCONFIG_YANDEXDNS

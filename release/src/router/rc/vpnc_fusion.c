@@ -57,10 +57,11 @@ static int vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, 
 int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action);
 int stop_vpnc_by_unit(const int unit);
 int set_routing_table(const int cmd, const int vpnc_id);
-#if 0
+#if 1
 static void vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile);
 #endif
 static VPNC_PROFILE* vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id);
+static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
 int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id);
 int set_routing_rule(const VPNC_ROUTE_CMD cmd, const char *source_ip, const int vpnc_id);
 int clean_routing_rule_by_vpnc_idx(const int vpnc_idx);
@@ -1056,7 +1057,7 @@ vpnc_dump_dev_policy_list(const VPNC_DEV_POLICY *list, const int list_size)
 }
 #endif
 
-#if 0
+#if 1
 static void
 vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile)
 {
@@ -1257,6 +1258,27 @@ static VPNC_PROFILE* vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int l
 	return NULL;
 }
 
+/*******************************************************************
+* NAME: vpnc_get_proto_in_profile_by_vpnc_id
+* AUTHOR: Andy Chiu
+* CREATE DATE: 2020/6/11
+* DESCRIPTION: get the protocol of the profile by vpnc_id
+* INPUT:  vpnc_id: number. The index of the vpnc profile
+* OUTPUT:
+* RETURN:  a value in VPNC_PROTO
+* NOTE:
+*******************************************************************/
+static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id)
+{
+	VPNC_PROFILE *prof = NULL;
+	prof =  vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
+	if(prof)
+	{
+		return prof->protocol;
+	}
+	return VPNC_PROTO_UNDEF;
+}
+	
 /*******************************************************************
 * NAME: vpnc_get_dev_policy_list
 * AUTHOR: Andy Chiu
@@ -2094,7 +2116,11 @@ int set_routing_table(const int cmd, const int vpnc_id)
 			if(prof->protocol == VPNC_PROTO_PPTP || prof->protocol == VPNC_PROTO_L2TP)
 			{
 				//set default routing
-				eval("ip", "route", "add", "default", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
+//				eval("ip", "route", "add", "default", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
+//					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+				eval("ip", "route", "add", "0.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
+					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
+				eval("ip", "route", "add", "128.0.0.0/1", "via", nvram_safe_get(strlcat_r(prefix, "gateway", tmp, sizeof(tmp))),
 					"dev", nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), "table", id_str);
 			}
 			else if(prof->protocol == VPNC_PROTO_OVPN)
@@ -2364,46 +2390,73 @@ int get_vpnc_state(const int vpnc_idx)
 	return nvram_get_int(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)));
 }
 
-int write_vpn_fusion(FILE *fp, const char* lan_ip)
+int write_vpn_fusion_nat(FILE *fp, const char* lan_ip)
 {
-    VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
-    int policy_cnt = 0, i;
-    char vpnc_prefix[] = "vpncXXXX_", tmp[128], tmp2[128], cmd[512], *p, *dns;
+	VPNC_DEV_POLICY dev_policy[MAX_DEV_POLICY] = {{0}};
+	int policy_cnt = 0, i;
+	char vpnc_prefix[] = "vpncXXXX_", tmp[128], tmp2[128], cmd[512], *p, *dns;
+	VPNC_PROTO proto;
 
-    if(!fp || !lan_ip)
-        return -1;
+	if(!fp || !lan_ip)
+		return -1;
 
-    fprintf(fp, "-A PREROUTING -p udp -d %s --dport 53 -j VPN_FUSION\n", lan_ip);
+	vpnc_init();
+	if(!vpnc_profile_num)
+		return 0;
 
-    policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+	//write dns forwarding rule
+	fprintf(fp, "-A PREROUTING -p udp -d %s --dport 53 -j VPN_FUSION\n", lan_ip);
 
-    for(i = 0; i < policy_cnt; ++i)
-    {
-        if(dev_policy[i].active)
-        {
-            snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", dev_policy[i].vpnc_idx);
+	//write vpnc nat rules
+	for (i = VPNC_UNIT_BASIC; i < VPNC_UNIT_BASIC + MAX_VPNC_PROFILE; i++) 
+	{
+		snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", i);
 
-            //check vpnc connetced
-            if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
-            {
-                dns = strdup(nvram_safe_get(strcat_r(vpnc_prefix, "dns", tmp)));
-                if(dns)
-                {
-                    if(dns[0] != '\0')  //has dns
-                    {
-                        //only redirect to the first dns server.
-                        p = strchr(dns, ' ');
-                        if(p)
-                            *p = '\0';
-                        fprintf(fp, "iptables -t nat -A VPN_FUSION -p udp -s %s -d %s --dport 53 -j DNAT --to-destination %s\n",
-                            dev_policy[i].src_ip, lan_ip, dns);
-                    }
-                    SAFE_FREE(dns);
-                }
-            }
-        }
-    }
-    return 0;
+		if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
+		{
+			proto = vpnc_get_proto_in_profile_by_vpnc_id(i);
+			if(proto == VPNC_PROTO_PPTP || proto == VPNC_PROTO_L2TP)
+			{
+				//set PREROUTING
+				fprintf(fp, "-I PREROUTING -d %s -j VSERVER\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
+
+				//set POSTROUTING
+				fprintf(fp, "-I POSTROUTING -o %s ! -s %s -j MASQUERADE\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp)))
+					, nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))));
+			}			
+		}
+	}
+
+	//write policy rules
+	policy_cnt =  vpnc_get_dev_policy_list(dev_policy, MAX_DEV_POLICY, 0);
+
+	for(i = 0; i < policy_cnt; ++i)
+	{
+		if(dev_policy[i].active)
+		{
+			snprintf(vpnc_prefix, sizeof(vpnc_prefix), "vpnc%d_", dev_policy[i].vpnc_idx);
+
+			//check vpnc connetced
+			if(nvram_match(strlcat_r(vpnc_prefix, "state_t", tmp, sizeof(tmp)), "2"))   //connected
+			{
+				dns = strdup(nvram_safe_get(strcat_r(vpnc_prefix, "dns", tmp)));
+				if(dns)
+				{
+					if(dns[0] != '\0')  //has dns
+					{
+						//only redirect to the first dns server.
+						p = strchr(dns, ' ');
+						if(p)
+							*p = '\0';
+						fprintf(fp, "-A VPN_FUSION -p udp -s %s -d %s --dport 53 -j DNAT --to-destination %s\n",
+						dev_policy[i].src_ip, lan_ip, dns);
+					}
+					SAFE_FREE(dns);
+				}
+			}
+		}
+	}
+	return 0;
 }
 
 int set_policy_dns_iptables_rules()

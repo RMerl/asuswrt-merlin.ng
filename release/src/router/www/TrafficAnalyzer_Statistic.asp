@@ -132,7 +132,7 @@ function get_client_used_apps_info(client_index, used_data_array, top5_info, typ
 	var description = "";
 
 	if(type == "router"){
-		document.getElementById('top_client_title').innerHTML = "<#Client_Name#>:";
+		document.getElementById('top_client_title').innerHTML = "<#MAC_Address#>:";
 		if(period == "monthly"){
 			description = "<#traffic_analysis_top5client_monthly#>";
 		}
@@ -1683,7 +1683,7 @@ function setUnit(unit){
 													<div id="top5_info_block" style="width:310px;min-height:330px;;background-color:#B3645B;border-bottom-right-radius:10px;border-bottom-left-radius:10px;border-top-right-radius:10px;box-shadow: 3px 5px 5px #2E3537;">
 														<table style="width:99%;padding-top:20px">
 															<tr>
-																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD" id="top_client_title"><#ParentalCtrl_username#>:</th>
+																<th style="font-size:16px;text-align:left;padding-left:10px;width:140px;color:#ADADAD" id="top_client_title"><#MAC_Address#>:</th>
 																<td style="font-size:14px;" id="top_client_name"></td>
 															</tr>
 															<tr>

@@ -915,7 +915,7 @@ apply.yadnsDisable = function(){
 apply.yadnsSetting = function(){
 	httpApi.nvramSet((function(){
 		qisPostData.action_mode = "apply";
-		qisPostData.rc_service = "restart_yadns";
+		qisPostData.rc_service = getRestartService();
 		return qisPostData;
 	})(), (systemVariable.isNewFw == 0) ? goTo.Finish : goTo.Update);
 };
@@ -1764,7 +1764,7 @@ goTo.rpMode = function(){
 		qisPostData.wlc_psta = 2;
 		qisPostData.wlc_dpsta = 1;
 	}
-	else if((isSdk("7") || isSdk("9")) && isSupport("bcmwifi")){
+	else if(isSupport("amas") && isSupport("bcmwifi")){
 		qisPostData.sw_mode = 3;
 		qisPostData.wlc_psta = 2;
 		qisPostData.wlc_dpsta = 0;

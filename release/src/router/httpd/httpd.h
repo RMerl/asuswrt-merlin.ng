@@ -194,6 +194,7 @@ enum {
 	HTTP_INVALID_IPADDR,
 	HTTP_INVALID_TS,
 	HTTP_INVALID_FILE,
+        HTTP_INVALID_SUPPORT,
 	HTTP_SHMGET_FAIL = 5000,
 	HTTP_FB_SVR_FAIL
 };
@@ -313,6 +314,7 @@ typedef char char_t;
 #define websDefaultHandler(wp, urlPrefix, webDir, arg, url, path, query) ({ do_ej(path, wp); fflush(wp); 1; })
 #define websWriteData(wp, buf, nChars) ({ int TMPVAR = fwrite(buf, 1, nChars, wp); fflush(wp); TMPVAR; })
 #define websWriteDataNonBlock websWriteData
+#define nvram_default_safe_get(name) (nvram_default_get(name) ? : "")
 
 extern int ejArgs(int argc, char_t **argv, char_t *fmt, ...);
 

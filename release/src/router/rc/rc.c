@@ -2126,7 +2126,10 @@ int main(int argc, char **argv)
 	}
 #endif
 	else if (!strcmp(base, "add_multi_routes")) {
-		return add_multi_routes(0);
+		if(argc == 2)
+			return add_multi_routes(atoi(argv[1]));
+		else
+			return add_multi_routes(0);
 	}
 	else if (!strcmp(base, "led_ctrl")) {
 		if (argc != 3)

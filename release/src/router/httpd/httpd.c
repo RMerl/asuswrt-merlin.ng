@@ -2245,35 +2245,18 @@ int main(int argc, char **argv)
 }
 
 #ifdef RTCONFIG_HTTPS
+#define HTTPS_CA_JFFS  "/jffs/cert.tgz"
+
 void save_cert(void)
 {
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	eval("cp", "-p", "/etc/cert.pem", "/etc/key.pem", "/jffs/.cert/");
-	chmod("/jffs/.cert/key.pem", S_IRUSR|S_IWUSR);
-#else
-	if (eval("tar", "-C", "/", "-czf", "/tmp/cert.tgz", "etc/cert.pem", "etc/key.pem") == 0) {
-		if (nvram_set_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
-			nvram_commit_x();
-		}
-	}
-	unlink("/tmp/cert.tgz");
-#endif
-
+	eval("tar", "-C", "/", "-czf", HTTPS_CA_JFFS, "etc/cert.pem", "etc/key.pem");
 }
 
 void erase_cert(void)
 {
 	unlink("/etc/cert.pem");
 	unlink("/etc/key.pem");
-#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS)
-	unlink(UPLOAD_CERT);
-	unlink(UPLOAD_KEY);
-#else
-	nvram_unset("https_crt_file");
-#endif
-	//nvram_unset("https_crt_gen");
 	nvram_set("https_crt_gen", "0");
-	nvram_commit();
 }
 
 void start_ssl(int http_port)
@@ -2310,8 +2293,7 @@ void start_ssl(int http_port)
 			ok = 0;
 			if (save) {
 				logmessage("httpd", "Save SSL certificate...%d", http_port);
-				if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
-					if (eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+					if (eval("tar", "-xzf", HTTPS_CA_JFFS, "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
 						system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
 						system("cp /etc/cert.pem /etc/cert.crt"); // openssl self-signed certificate for router.asus.com LAN access
 						ok = 1;
@@ -2319,11 +2301,8 @@ void start_ssl(int http_port)
 
 					int save_intermediate_crt = nvram_match("https_intermediate_crt_save", "1");
 					if(save_intermediate_crt){
-						eval("tar", "-xzf", "/tmp/cert.tgz", "-C", "/", "etc/intermediate_cert.pem");
+						eval("tar", "-xzf", HTTPS_CA_JFFS, "-C", "/", "etc/intermediate_cert.pem");
 					}
-
-					unlink("/tmp/cert.tgz");
-				}
 			}
 			if (!ok) {
 				erase_cert();
@@ -2333,19 +2312,12 @@ void start_ssl(int http_port)
 
 				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
 				eval("gencert.sh", t);
-
-#ifdef RTCONFIG_LETSENCRYPT
-				if (nvram_match("le_enable", "2"))
-#endif
-					save_cert();
 			}
 		}
 
-#if 0
-		if ((save) && (*nvram_safe_get("https_crt_file")) == 0) {
+		if (save && nvram_get_int("le_enable") == 0) {
 			save_cert();
 		}
-#endif
 
 		if (mssl_init("/etc/cert.pem", "/etc/key.pem")) {
 			logmessage("httpd", "Succeed to init SSL certificate...%d", http_port);

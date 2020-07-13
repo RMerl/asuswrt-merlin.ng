@@ -2703,15 +2703,20 @@ void write_ftpd_conf()
 #endif
 		}
 
-		// Is it valid now?  Otherwise, generate one.
+		// Is it valid now?  Otherwise, restore saved cert, or generate one.
 		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
 #ifdef RTCONFIG_LETSENCRYPT
                         || !cert_key_match(HTTPD_CERT, HTTPD_KEY)
 #endif
 		) {
-			f_read("/dev/urandom", &sn, sizeof(sn));
-			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-			eval("gencert.sh", t);
+			if (eval("tar", "-xzf", "/jffs/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
+				system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+				system("cp /etc/cert.pem /etc/cert.crt");
+			} else {
+				f_read("/dev/urandom", &sn, sizeof(sn));
+				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+				eval("gencert.sh", t);
+			}
 		}
 	} else {
 		fprintf(fp, "ssl_enable=NO\n");

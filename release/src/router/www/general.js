@@ -294,10 +294,7 @@ function show_cert_settings(show){
 	if(show){
 		document.form.le_enable.disabled = false;
 		showhide("https_cert", 1);
-		if(orig_le_enable != "0")
-			showhide("cert_details", 1);
-		else
-			showhide("cert_details", 0);
+		showhide("cert_details", 1);
 	}
 	else{
 		document.form.le_enable.disabled = true;

@@ -494,15 +494,11 @@ function change_cert_method(cert_method){
 
 		switch(cert_method){
 			case "0":
-				document.getElementById("cert_gen").style.display = "none";
-				document.getElementById("cert_san").style.display = "none";
+				document.getElementById("cert_gen").style.display = "";
+				document.getElementById("cert_san").style.display = "";
 				document.getElementById("cert_desc").style.display = "none";
 				document.getElementById("cert_act").style.display = "none";
-				if(orig_le_enable != "0")
-					document.getElementById("cert_details").style.display = "";
-				else
-					document.getElementById("cert_details").style.display = "none";
-
+				document.getElementById("cert_details").style.display = "";
 				break;
 
 			case "1":
@@ -526,10 +522,7 @@ function change_cert_method(cert_method){
 				else
 					document.getElementById("cert_act").style.display = "none";
 
-				if(orig_le_enable != "0")
 					document.getElementById("cert_details").style.display = "";
-				else
-					document.getElementById("cert_details").style.display = "none";
 
 				if(orig_le_enable == "1")
 					document.form.letsEncryptTerm_check.checked = true;
@@ -537,17 +530,13 @@ function change_cert_method(cert_method){
 				break;
 
 			case "2":
-				document.getElementById("cert_gen").style.display = "";
-				document.getElementById("cert_san").style.display = "";
+				document.getElementById("cert_gen").style.display = "none";
+				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "none";
 				html_code += '<div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
 				document.getElementById("cert_act").style.display = "";
-				if(orig_le_enable != "0")
-					document.getElementById("cert_details").style.display = "";
-				else
-					document.getElementById("cert_details").style.display = "none";
-
+				document.getElementById("cert_details").style.display = "";
 				break;
 		}
 	}
@@ -563,20 +552,29 @@ function hide_upload_window(){
 
 function show_cert_details(){
 	if(httpd_cert_info.issueTo != "" && httpd_cert_info.issueBy != "" && httpd_cert_info.expire != ""){
-		if(orig_le_enable == "1" && le_state == "0" && httpd_cert_info.issueBy.indexOf("Let's Encrypt") == -1){
-			document.getElementById("cert_status").innerHTML = "<#upgrade_processing#>";
+		if(orig_le_enable == "1" && le_state == "0"){
+			if(httpd_cert_info.issueBy.indexOf("Let's Encrypt") == -1)
+				document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
+			else
+				document.getElementById("cert_status").innerHTML = "<#upgrade_processing#>";
+			setTimeout("get_cert_info();", 1000);
 		}
-		else
-			document.getElementById("cert_status").innerHTML = "<#CTL_ok#>";
+		else{
+			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
+			document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
+			document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
+			document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
+			document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
+		}
 	}
 	else{
-		document.getElementById("cert_status").innerHTML = "Authorizing";
-		setTimeout("get_cert_info();", 1000);
+		if(orig_le_enable == "1") {
+			document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
+			setTimeout("get_cert_info();", 1000);
+		} else {
+			document.getElementById("cert_status").innerHTML = "No certificate found";
+		}
 	}
-	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
-	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
-	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
-	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
 }
 
 function check_filename(){
@@ -795,7 +793,7 @@ function save_cert_key(){
 					<span id="le_crypt" style="color:#FFF;display:none;">
 					<input type="radio" value="1" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "1", "checked"); %>>Let's Encrypt
 					</span>
-					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>>Import/Persistent Auto-generated<!--untranslated-->
+					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>><#DDNS_https_cert_Import#>
 					<span id="self_signed" style="color:#FFF;">
 					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#wl_securitylevel_0#>
 					</span>	

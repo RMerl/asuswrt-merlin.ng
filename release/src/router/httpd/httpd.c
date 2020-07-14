@@ -2346,7 +2346,7 @@ void start_ssl(int http_port)
 			}
 		}
 
-		if ((save)) {
+		if (save && nvram_get_int("le_enable") == 0) {
 			save_cert();
 		}
 

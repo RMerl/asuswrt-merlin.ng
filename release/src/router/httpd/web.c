@@ -14701,6 +14701,8 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 
 	upgrade_err = check_imagefile(upload_fifo);
 
+	if (upgrade_err == 2)
+		nvram_set_int("reboot_time", nvram_get_int("reboot_time")+30);
 	if (upgrade_err) /* 0: legal image, 1: illegal image 2: new trx format validation failure */
 		goto err;
 
@@ -14741,7 +14743,7 @@ do_upgrade_cgi(char *url, FILE *stream)
                 return;
         }
 
-	if (upgrade_err == 0)
+	if (upgrade_err == 0 || upgrade_err == 2)
 	{
 #if defined(RTCONFIG_DSL) && defined(RTCONFIG_RALINK)
 		int ret_val_comp;
@@ -14787,6 +14789,8 @@ do_upgrade_cgi(char *url, FILE *stream)
 		system("ls -al /tmp");
 		system(SINGLE_IMAGE_SCRIPT);
 #endif
+		if (upgrade_err == 2 && !err)
+			system("nvram erase");
 	}
 	else
 	{

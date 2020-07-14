@@ -4,7 +4,7 @@
 	background-color:#2A3539;
 }
 .statusTitle{	
-	font-family: "Times New Roman", Times, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, serif;
+	font-family: "Times New Roman", Times, serif;
 	background: #A5A5A5; /* Old browsers */
 	background: -moz-linear-gradient(top, #A5A5A5  0%, #434343 100%); /* FF3.6+ */
 	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#A5A5A5 ), color-stop(100%,#434343)); /* Chrome,Safari4+ */
@@ -31,7 +31,7 @@
 .input{color:#3b5f71;border:1px solid #7398ac;background-color:#cae9f3;font-family :Verdana;font-size : 11px;padding-left:5px;}
 
 .NMdesp{
-	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:11px;
 	line-height:180%;
 	text-align:left;
@@ -107,8 +107,8 @@
 }
 
 .table1px tbody td div#wl_nmode_x_hint{color:#FC0;margin-top:3px;line-height:120%;}
-.table1px tbody td{font-size:11px; font-family:Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;}
-.table1px th{font-size:11px; font-family:Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;color:#FFFFFF;  background-color:#4d595d; text-align:left;}
+.table1px tbody td{font-size:11px; font-family:Verdana, Arial, Helvetica, sans-serif;}
+.table1px th{font-size:11px; font-family:Verdana, Arial, Helvetica, sans-serif;color:#FFFFFF;  background-color:#4d595d; text-align:left;}
 
 .Tablehead {font-family :Verdana;font-size : 11px;text-align:center;color:#000000; font-weight:bold;  line-height:190%; background-color:#6692B0;}
 .Tabletitle td{font-family :Verdana;font-size : 11px;text-align:center; color:#000000;line-height:190%;  background-color:#7aa3bd; }
@@ -117,14 +117,14 @@
 .top-message2 {font-family :Verdana;font-size : 11px;text-align:left;color:#23344d;font-weight:normal;background:#a7d2e2;}
 
 .clients{
-	font-family:Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	font-size:13px;
 	line-height:150%;
 	margin-top:10px;
 }
 
 .clients span{
-	font-family:Arial Black, Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Arial Black, Verdana, Arial, Helvetica, sans-serif;
 	color:#569AC7;
 	font-size:15px;
 }
@@ -171,7 +171,7 @@
 	overflow:hidden;
 	font-size:12px;
 	color:#FFF;
-	font-family:Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	line-height:20px;
 	padding:2px;
 }
@@ -185,7 +185,7 @@
 	z-index:100;
 	font-size:11px;	
 	line-height:16px;
-	font-family:Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Verdana, Arial, Helvetica, sans-serif;
 	color:#000;	
 }
 .hardware_title{

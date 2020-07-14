@@ -13,7 +13,7 @@
 <title>ASUS Login</title>
 <style>
 body{
-	font-family: Arial, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Arial, sans-serif;
 }
 .wrapper{
 	background:url(images/New_ui/login_bg.png) #283437 no-repeat;

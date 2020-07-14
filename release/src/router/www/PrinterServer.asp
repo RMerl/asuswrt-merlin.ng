@@ -14,7 +14,7 @@
 <style type="text/css"> 
 	div.wrapper { margin: 0 auto; width: 730px;}
 	td.sidenav { width:200px;}
-	body {font-family: Verdana, Tohoma, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;padding:0;margin:0;}
+	body {font-family: Verdana, Tohoma, Arial, Helvetica, sans-serif;padding:0;margin:0;}
 	.wrapperDesc { margin: 0 auto; width: 570px;}
 </style> 
 <script type="text/javascript" src="/state.js"></script>

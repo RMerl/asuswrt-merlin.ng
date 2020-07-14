@@ -40,7 +40,7 @@ legend {
 	height:19px;
 	float:left;
 	text-align:left;
-	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size: 14px;
 	font-weight: bold;
 	border-bottom:1px solid #CCC;
@@ -157,7 +157,7 @@ legend {
 }
 
 .QISalert{	
-	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-size:12px;
 }
 
@@ -168,7 +168,7 @@ legend {
 	font-weight:bold;
 	line-height:140%;	
 	color:#FFFFFF;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 .hackiframe{	/* iframe for Hack IE 6.0 to avoid select menu over DIV layer. */
@@ -199,7 +199,7 @@ legend {
 .mode_desc{
 	font-size:8pt;
 	color:#333;
-	font-family: Verdana, Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	line-height:130%;
 	padding:2px;
 }
@@ -208,7 +208,7 @@ legend {
 	margin-top:12px;
 	width:185px;
 	text-align:center;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	color:#ffffff;
 	font-weight:bold;
 	padding-top:0px;
@@ -224,7 +224,7 @@ legend {
 	margin-top: -2px;
 	width:185px;
 	height: 50px;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	font-size : 12px;
 	color:#ffffff;
 	font-weight:bold;
@@ -245,7 +245,7 @@ legend {
 .lefttabmid {
 	width:185px;
 	height:50px;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	font-size:12px;
 	text-align:left;
 	position:relative;
@@ -282,7 +282,7 @@ legend {
 	background-repeat: repeat;
 	visibility:hidden;
 	overflow:hidden;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 }
 .loadingBlock{
 	filter:alpha(opacity=90);
@@ -299,7 +299,7 @@ legend {
 	color:#FFFFFF;
 	font-weight:bolder;
 	background-color:#000000;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 .dr_sweet_advise{
@@ -316,7 +316,7 @@ legend {
 	font-size:20px;
 	color:#FFFFFF;
 	background-color:#000000;
-	font-family: Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Arial, Helvetica, sans-serif;
 }
 
 .IPaddr_qis{
@@ -410,7 +410,7 @@ legend {
 	text-align:left;
 	color:#FFFFFF;
 	height:30px;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	font-size:12px;
 	/*background-color:#1f2d35;*/
 	background-color:#2B373B;

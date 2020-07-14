@@ -138,7 +138,7 @@ select {
 	padding-bottom: 10px;
 	padding-left: 10px;
 	padding-right: 10px;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	font-size: 12px;
 	font-weight: bold;
 	display: block;
@@ -385,7 +385,7 @@ table.fields {
 }
 .bwmg th{
 	padding: 4px;
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	background-color:#1F2D35;
 	font-weight:normal;
 	line-height:30px;
@@ -443,7 +443,7 @@ table.fields {
 }
 
 #bwm-input {
-	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family: Verdana, sans-serif;
 	font-size:11px;
 	color:#000000;
 	line-height:200%;
@@ -454,7 +454,7 @@ table.fields {
 .FormTitle{
 	line-height:160%;
 	font-size:12px;
-	font-family:Arial, Verdana, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Arial, Verdana, Helvetica, sans-serif;
 	color:white;
 	position:relative
 }
@@ -467,12 +467,12 @@ table.fields {
 /*Viz Add  20120709   --- start */
 .DescTable{
 	font-size:12px;
-	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Arial, Helvetica, sans-serif;
 	border: 1px solid #000000;
 	border-collapse: collapse;
 }
 .DescTable th{
-	font-family:Arial, Helvetica, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
+	font-family:Arial, Helvetica, sans-serif;
 	color:#FFFFFF	;
 	font-weight:normal;
 	line-height:15px;

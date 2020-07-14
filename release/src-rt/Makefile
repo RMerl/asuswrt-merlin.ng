@@ -2307,6 +2307,10 @@ define RouterOptions
 	fi; \
 	fi; \
 	fi; \
+	if [ "$(CRASHLOG)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM_HND_CRASHLOG/d" $(1); \
+		echo "RTCONFIG_BCM_HND_CRASHLOG=y" >>$(1); \
+	fi; \
 	if [ "$(TOR)" = "y" ]; then \
 		sed -i "/RTCONFIG_TOR/d" $(1); \
 		echo "RTCONFIG_TOR=y" >>$(1); \

@@ -1342,6 +1342,130 @@ static int nandWriteBlk(struct mtd_info *mtd, int blk_addr, int data_len, char *
     return(sts);
 }
 
+#ifdef CRASHLOG
+#define MIN(a,b)        (((a)<(b))?(a):(b))
+
+#define CRASHLOG_MAX_SIZE (52000)
+static unsigned char crashLogBuf[CRASHLOG_MAX_SIZE] = {0};
+static unsigned int cLogOffset = 0, cLogPrintState = 0;;
+/* e.g. misc3 in raw partition*/
+extern char crashlog_mtd[10];
+
+/* save console printing to crash log buffer, dont print in this function */
+void crashLogText(const char *buffer, unsigned int len)
+{
+    int copylen;
+    if (!cLogPrintState) {
+        memset(crashLogBuf, 0, sizeof(crashLogBuf));
+        cLogPrintState = 1;
+    }
+    copylen = MIN(len, sizeof(crashLogBuf) - cLogOffset);
+
+    memcpy(&crashLogBuf[cLogOffset], buffer, copylen);
+    cLogOffset += copylen;
+    len -= copylen;
+    if (len) {
+        memcpy(&crashLogBuf[0], &buffer[copylen], len);
+        cLogOffset = len;
+        cLogPrintState = 2; /* wrap over */
+    }
+    cLogOffset = (cLogOffset >= sizeof(crashLogBuf)) ? 0 : cLogOffset;
+    return;
+}
+
+/* Commit buffer to flash. Simple try write wrap around buffer.
+May took two NAND flash block but to prevent malloc during panic. */
+int crashLogCommit(void)
+{
+    struct mtd_info *mtd;
+    int block = 0, data_offset = 0, tot_mtdblocks;
+
+    mtd = get_mtd_device_nm(crashlog_mtd);
+    if (IS_ERR_OR_NULL(mtd)) {
+        printk("\n crashLogCommit: Failed to get mtd !\n");
+        return -1;
+    }
+
+    if ((cLogOffset > (sizeof(crashLogBuf) - 4)))
+        cLogOffset = 0;
+    if (cLogPrintState == 2) {
+        cLogOffset = (cLogOffset+0x3) & 0xfffffffc;
+        sprintf(&crashLogBuf[cLogOffset], "%s", "LOG");
+    } else
+        sprintf(&crashLogBuf[0], "%s", "LOG");
+
+    tot_mtdblocks = div_u64(mtd->size, mtd->erasesize);
+    block = 0;
+    data_offset = cLogOffset;
+    for (; (cLogPrintState == 2) && (block < tot_mtdblocks) && (data_offset < sizeof(crashLogBuf)); block++) {
+        /* skip bad block */
+        if (nandEraseBlk(mtd, (block * mtd->erasesize)) == 0) {
+            nandWriteBlk(mtd, (block * mtd->erasesize), mtd->erasesize, &crashLogBuf[data_offset], FALSE);
+            data_offset += mtd->erasesize;
+        }
+    }
+
+    data_offset = 0;
+    for (; (block < tot_mtdblocks) && (data_offset < cLogOffset); block++) {
+        /* skip bad block */
+        if (nandEraseBlk(mtd, (block * mtd->erasesize)) == 0)  {
+            nandWriteBlk(mtd, (block * mtd->erasesize), mtd->erasesize, &crashLogBuf[data_offset], FALSE);
+            data_offset += mtd->erasesize;
+        }
+    }
+
+    printk("crashLogCommit: write %d blocks  data_offset %d \n", block, data_offset);
+
+    return 0;
+}
+/* Read from nand flash and save to file */
+int crashFileSet(const char* filename)
+{
+    struct mtd_info *mtd;
+    char *pbuffer = NULL;
+    size_t retlen = 0, size = CRASHLOG_MAX_SIZE;
+    int ret;
+    int i;
+    mtd = get_mtd_device_nm(crashlog_mtd);
+    if (IS_ERR_OR_NULL(mtd)) {
+        printk("\n %s: Failed to get mtd !\n", __FUNCTION__);
+        return -1;
+    }
+
+    pbuffer = kmalloc(size, GFP_ATOMIC);
+    if (pbuffer == NULL) {
+        printk("\n %s: fail to allocate memory", __FUNCTION__);
+        return -1;
+    }
+    memset(pbuffer, 0, size);
+    ret = mtd_read(mtd, 0, size, &retlen, pbuffer);
+
+    /* override NAND flash erased content */
+    for (i = 0; i < CRASHLOG_MAX_SIZE; i++) {
+        if (pbuffer[i] == 0xff)
+            pbuffer[i] = 0x0;
+    }
+
+    if (ret != 0 || retlen <= 4 || pbuffer[0] != 'L' || pbuffer[1] != 'O' || pbuffer[2] != 'G') {
+        printk("crashFileSet: log signature invalid ! \n");
+        size = 0; /* zero-length file */
+    }
+
+    if(size) {
+	printk("%s: export crash log! \n", __FUNCTION__);
+        kerSysFsFileSet(filename, pbuffer, size);
+    }
+    kfree(pbuffer);
+
+    /* erase NAND flash to destory log signature*/
+    if (size && pbuffer[0] == 'L' && pbuffer[1] == 'O' && pbuffer[2] == 'G') {
+	if(nandEraseBlk(mtd, 0) == 0)
+	printk("%s: erase block 0 to destory log signature! \n", __FUNCTION__);
+    }
+
+    return 0;
+}
+#endif
 
 // NAND flash bcm image 
 // return: 
@@ -3850,8 +3974,23 @@ int setup_mtd_parts(struct mtd_info* mtd)
     bcm63XX_nand_parts[2].size = nvram.ulNandPartSizeKb[NP_DATA] * 1024;
     bcm63XX_nand_parts[2].ecclayout = mtd->ecclayout;
 
+#ifdef CRASHLOG
+    /* Ares hack to adjust partition. misc2 is 64 (or 48) MB, misc3 0 MB, --> modify to misc2 63 (or 47) MB, misc3 1 MB */
+#ifdef GTAC5300
+    if (nvram.part_info[1].size == 64 && nvram.part_info[2].size == 0) {
+        nvram.part_info[1].size = 63;
+#else
+    if (nvram.part_info[1].size == 48 && nvram.part_info[2].size == 0) {
+        nvram.part_info[1].size = 47;
+#endif
+        nvram.part_info[2].size = 1;
+    }
+#endif
+
     // skip DATA partition
     for (i = BCM_MAX_EXTRA_PARTITIONS - 2; i >= 0; i--) {
+        printk("setup_mtd_parts: misc indx %d name %s nvram configured size %d \n", i,misc_mtd_partition_names[i], nvram.part_info[i].size);
+
         if (nvram.part_info[i].size == 0xffff)
             continue;
 
@@ -3880,6 +4019,12 @@ int setup_mtd_parts(struct mtd_info* mtd)
             bcm63XX_nand_parts[nr_parts].offset = (nvram.ulNandPartOfsKb[NP_DATA] * 1024) - extra;
             bcm63XX_nand_parts[nr_parts].size = extra_single_part_size;
             bcm63XX_nand_parts[nr_parts].ecclayout = mtd->ecclayout;
+
+            printk("setup_mtd_parts: name %s configured size 0x%08x offset 0x%llX\n"
+                , misc_mtd_partition_names[i]
+                , (int)bcm63XX_nand_parts[nr_parts].size
+                , bcm63XX_nand_parts[nr_parts].offset);
+
             nr_parts++;
         }
     }

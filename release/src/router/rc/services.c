@@ -4195,6 +4195,32 @@ start_logger(void)
 #endif
 #endif
 
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+	char path[32];
+	FILE *fp;
+	char line[256];
+	int count = 0;
+
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+	snprintf(path, sizeof(path), "/jffs/crashlog.log");
+#else
+	snprintf(path, sizeof(path), "/tmp/crashlog.log");
+#endif
+
+	if ((fp = fopen(path, "r")) != NULL) {
+		while (fgets(line, sizeof(line), fp) && count < 5) {
+			logmessage("crashlog", "%s", line);
+
+			if (!strlen(line))
+				count++;
+		}
+
+		fclose(fp);
+
+		unlink(path);
+	}
+#endif
+
 	return 0;
 }
 

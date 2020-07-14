@@ -322,6 +322,10 @@ void die(const char *str, struct pt_regs *regs, int err)
 	unsigned long flags = oops_begin();
 	int sig = SIGSEGV;
 
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+	enable_oopsbuf(1);
+#endif
+
 	if (!user_mode(regs))
 		bug_type = report_bug(regs->ARM_pc, regs);
 	if (bug_type != BUG_TRAP_TYPE_NONE)

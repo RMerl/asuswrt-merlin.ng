@@ -10804,6 +10804,10 @@ static void sysinit(void)
 	f_write_string("/proc/sys/net/unix/max_dgram_qlen", "150", 0, 0);
 #endif
 
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+	f_write_string("/proc/sys/kernel/crashlog_mtd", "misc3", 0, 0);
+#endif
+
 	for (i = 0; i < sizeof(fatalsigs) / sizeof(fatalsigs[0]); i++) {
 		signal(fatalsigs[i], handle_fatalsigs);
 	}
@@ -11181,6 +11185,14 @@ int init_main(int argc, char *argv[])
 			if(strcmp(filename, syslog[i]) != 0)
 				eval("ln", "-s", filename, syslog[i]);
 		}
+#endif
+
+#ifdef RTCONFIG_BCM_HND_CRASHLOG
+#if defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2)
+	f_write_string("/proc/sys/kernel/crashlog_filename", "/jffs/crashlog.log", 0, 0);
+#else
+	f_write_string("/proc/sys/kernel/crashlog_filename", "/tmp/crashlog.log", 0, 0);
+#endif
 #endif
 
 #ifdef RTN65U

@@ -216,6 +216,9 @@ void kernel_restart(char *cmd)
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
 #endif
+#ifdef CRASHLOG
+	crashlog_enable = 1;
+#endif
 	kernel_restart_prepare(cmd);
 	migrate_to_reboot_cpu();
 	syscore_shutdown();

@@ -4,13 +4,31 @@ Asuswrt-Merlin 384/NG Changelog
 384.19 (xx-xxx-2020)
   - NEW: Added support for static routes for PPTP/L2TP VPN
          clients, on the Static Route page (themiron)
-  - NEW: Added notification when jffs free space drops below
-         3 MB.
+  - NEW: Added notification when jffs free space drops
+         below 3 MB.
   - UPDATED: Merged GPL 384_9354 for AX models.
+  - UPDATED: Merged GPL 384_81992 for mainline models.
   - UPDATED: Merged SDK + binary blobs 384_9354 for RT-AX58U.
   - UPDATED: Merged SDK + binary blobs 384_9107 for RT_AX88U.
+  - UPDATED: Merged binary blobs + SDK 384_81981 for RT_AC5300.
+  - UPDATED: Merged binary blobs + SDK 384_81992 for RT-AC86U.
+  - UPDATED: Merged bwdpi components from 385_20630 firmware
+             image for RT-AC68U.
+  - CHANGED: Improved mechanism for providing an available
+             mount point for addon API scripters (dave14305)
+  - CHANGED: Harmonized the various SSL certificate modes with
+             upstream.
+             0-None - will be self-generated
+             1-Imported - lets you upload your own (no longer
+                           self generated unless you don't
+                           upload one)
+            2-Let's Encrypt (unchanged)
+            Self-generated cert will be stored to /jffs/cert.tgz,
+            just like upstream.
   - FIXED: Broken French webui on AX models (fixed with
            Asus's GPL update)
+  - FIXED: Chacha20 wasn't prioritized for bcm675x models which
+           lacked AES acceleration (RT-AX56U and RT-AX58U)
 
 
 384.18 (28-June-2020)

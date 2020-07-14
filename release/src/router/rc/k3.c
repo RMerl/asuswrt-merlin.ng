@@ -59,17 +59,55 @@ void update_cfe_k3(void)
 {
 	char et0mac[18], wl1mac[18], wl2mac[18];
 	char buf[128];
+	char PIN[9];
+	int i, j, k = 0;
+	int val;
 
-	if (!check_if_file_exist(ROMCFE) || cfe_nvram_match("bl_version", "1.0.37"))
+	if (!check_if_file_exist(ROMCFE) || cfe_nvram_match("bl_version", "1.0.37_mesh"))
 		return;
 	//if (pids("envrams"))
-		//sleep(5);
+	//sleep(5);
 
 	strcpy(et0mac, cfe_nvram_safe_get("et0macaddr"));
 	strcpy(wl1mac, cfe_nvram_safe_get("1:macaddr"));
 	strcpy(wl2mac, cfe_nvram_safe_get("2:macaddr"));
+	for (i = 0; et0mac[i]; ++i) {
+		if (et0mac[i] == '-')
+			et0mac[i] = ':';
+	} // AiMesh only recognize 'XX:XX:XX:XX:XX:XX'
+	for (i = 0; wl1mac[i]; ++i) {
+		if (wl1mac[i] == '-')
+			wl1mac[i] = ':';
+	} // AiMesh only recognize 'XX:XX:XX:XX:XX:XX'
+	for (i = 0; wl2mac[i]; ++i) {
+		if (wl2mac[i] == '-')
+			wl2mac[i] = ':';
+	} // AiMesh only recognize 'XX:XX:XX:XX:XX:XX'
 
-	if (pids("envrams")) {
+	bzero(buf, sizeof(buf));
+	snprintf(buf, sizeof(buf), "%s", et0mac);
+	for (i = j = 0; buf[i]; ++i) {
+		if (buf[i] != ':')
+			buf[j++] = buf[i];
+	}
+	buf[j] = '\0';
+
+	/*
+		Generate PIN code with LAN MAC hex2dec
+	*/
+	val = strtoull(buf, 0, 16) % 10000000;
+	if (val < 1000000)
+		val += 1000000;
+	k += 3 * ((val / 1000000) + (val / 10000 % 10) + (val / 100 % 10) + (val / 1 % 10));
+	k += (val / 100000) + (val / 1000 % 10) + (val / 10 % 10);
+	k = 10 - (k % 10);
+	if (k == 10)
+		k = 0;
+	val = val * 10 + k;
+	snprintf(PIN, sizeof(PIN), "%d", val);
+
+	if (pids("envrams"))
+	{
 		killall_tk("envrams");
 		usleep(100000);
 	}
@@ -77,17 +115,24 @@ void update_cfe_k3(void)
 	doSystem("dd if=%s of=/dev/mtdblock0 2>/dev/null", ROMCFE);
 
 	envram_set("et0macaddr", et0mac);
-	envram_set("1:macaddr", wl1mac);
+	envram_set("1:macaddr", et0mac); // 2.4G MAC is the same as LAN MAC in Merlin
 	envram_set("2:macaddr", wl2mac);
+	if (cfe_nvram_safe_get("1:macbak") == "")
+		envram_set("1:macbak", wl1mac); // Backup 2.4G MAC
+	envram_set("secret_code", PIN);
 	envram_commit();
+	nvram_set("secret_code", PIN);
+	nvram_commit();
 
 	//if (pids("envrams"))
-		//killall_tk("envrams");
+	//killall_tk("envrams");
 
-	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN=%s, 2.4G=%s, 5G=%s", et0mac, wl1mac, wl2mac);
-	//logmessage("K3INIT", "CFE has upgraded to 1.0.37 already!");
+	bzero(buf, sizeof(buf));
+	snprintf(buf, sizeof(buf), "Set CFE MAC: LAN & 2.4G=%s, 2.4G_bak=%s, 5G=%s", et0mac, wl1mac, wl2mac);
+	//logmessage("K3INIT", "CFE has upgraded to 1.0.37_mesh already!");
 	//logmessage("K3INIT", buf);
 	_dprintf("**** Upgraded CFE - %s\n", buf);
+	_dprintf("**** Upgraded CFE - Set PIN=%s\n", PIN);
 	usleep(100000);
 	reboot(RB_AUTOBOOT);
 }

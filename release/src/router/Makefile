@@ -2656,7 +2656,7 @@ openssl-1.1/Makefile:
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
-	$(if $(filter y,$(HND_ROUTER)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
+	$(if $(filter 4908,$(BCM_CHIP)),,-DOPENSSL_PREFER_CHACHA_OVER_GCM)
 	-@$(MAKE) -C openssl-1.1 depend clean
 	@touch $@
 

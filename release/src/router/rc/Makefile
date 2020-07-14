@@ -1054,7 +1054,7 @@ endif
 ifneq (,$(filter y,$(RTCONFIG_WLAN_LED) $(RTN18U) $(RTCONFIG_FAKE_ETLAN_LED) $(SW_USBLED) $(RTCONFIG_MMC_LED) $(RTCONFIG_BRCM_USBAP) $(RTAC66U) $(BCM4352) $(SW_DSLWANLED) $(RTCONFIG_SW_DEVLED)))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc sw_devled
 endif
-ifeq ($(RTAC1200G),y)
+ifeq ($(or $(RTAC1200G),$(RTK3)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc wdg_monitor
 endif
 ifeq ($(and $(CONFIG_BCMWL5),$(RTCONFIG_FANCTRL)),y)

@@ -823,7 +823,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_sw_devled();
 		}
 #endif
-#if defined(RTAC1200G) || defined(RTAC1200GP)
+#if defined(RTAC1200G) || defined(RTAC1200GP) || defined(RTK3)
 		else if (strcmp(argv[1], "wdg_monitor") == 0) {
 			if (on) start_wdg_monitor();
 			else stop_wdg_monitor();
@@ -1728,7 +1728,7 @@ static const applets_t applets[] = {
 #ifdef SW_DEVLED
 	{ "sw_devled",			sw_devled_main			},
 #endif
-#if defined(RTAC1200G) || defined(RTAC1200GP)
+#if defined(RTAC1200G) || defined(RTAC1200GP) || defined(RTK3)
 	{ "wdg_monitor",		wdg_monitor_main		},
 #endif
 #if defined(CONFIG_BCMWL5) && defined(RTCONFIG_FANCTRL)

@@ -1721,7 +1721,11 @@ misc_defaults(int restore_defaults)
 		case MODEL_RTAC5300:
 		case MODEL_RTAC88U:
 		case MODEL_RTAC3100:
+#ifdef RTK3
+			nvram_set("reboot_time", "70");
+#else
 			nvram_set("reboot_time", "140");
+#endif
 			break;
 		case MODEL_RTAC3200:
 		case MODEL_RTAC1200G:

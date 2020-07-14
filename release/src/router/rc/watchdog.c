@@ -7204,31 +7204,21 @@ void dnsmasq_check()
 #ifdef RTK3
 void k3screen_check()
 {
-	if ((strcmp(nvram_get("k3screen"), "A")==0) || (strcmp(nvram_get("k3screen"), "a")==0))
+	if (!pids("k3screenbg"))
 	{
-		if (!pids("phi_speed"))
-			doSystem("phi_speed &");
-		if (!pids("wl_cr"))
-			doSystem("wl_cr &");
-		if (!pids("uhmi"))
-			doSystem("uhmi &");
-	} else {
-		if (!pids("k3screenbg"))
-		{
-			char *k3screend_argv[] = { "k3screenbg", NULL };
-			pid_t pid;
-			_eval(k3screend_argv, NULL, 0, &pid);
-			logmessage("watchdog", "restart k3screenbg");
-		}
-		if (!pids("k3screenctrl")){
-			char timeout[6];
-			int time = nvram_get_int("screen_timeout");
-			snprintf(timeout, sizeof(timeout), "-m%d", time);
-			char *k3screenctrl_argv[] = { "k3screenctrl", timeout, NULL };
-			pid_t pid;
-			_eval(k3screenctrl_argv, NULL, 0, &pid);
-			logmessage("watchdog", "restart k3screenctrl");
-		}
+		char *k3screend_argv[] = { "k3screenbg", NULL };
+		pid_t pid;
+		_eval(k3screend_argv, NULL, 0, &pid);
+		logmessage("watchdog", "restart k3screenbg");
+	}
+	if (!pids("k3screenctrl")){
+		char timeout[6];
+		int time = nvram_get_int("screen_timeout");
+		snprintf(timeout, sizeof(timeout), "-m%d", time);
+		char *k3screenctrl_argv[] = { "k3screenctrl", timeout, NULL };
+		pid_t pid;
+		_eval(k3screenctrl_argv, NULL, 0, &pid);
+		logmessage("watchdog", "restart k3screenctrl");
 	}
 }
 #endif

@@ -550,18 +550,6 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
-	else if (streq (p[0], "tls-crypt") && p[1])
-	{
-		nvram_pf_set(prefix, "tlscrypt", "1");
-		if (streq (p[1], INLINE_FILE_TAG) && p[2])
-		{
-			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC, p[2], NULL);
-		}
-		else
-		{
-			return VPN_UPLOAD_NEED_STATIC;
-		}
-	}
 	else if (streq (p[0], "secret") && p[1])
 	{
 		nvram_pf_set(prefix, "crypt", "secret");

@@ -580,3 +580,66 @@ void update_ovpn_profie_remote()
 	}
 }
 
+
+int copy_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *target) {
+	FILE *fp;
+	char buffer[8192];
+
+	if (ovpn_key_exists(type, unit, key_type)) {
+		fp = fopen(get_ovpn_runtime_filename(type, key_type, buffer, sizeof(buffer)), "w");
+		chmod(buffer, S_IRUSR|S_IWUSR);
+		fprintf(fp, "%s", get_ovpn_key(type, unit, key_type, buffer, sizeof(buffer)));
+		fclose(fp);
+		return 0;
+	}
+	return -1;
+}
+
+
+char *get_ovpn_runtime_filename(ovpn_type_t type, ovpn_key_t key_type, char *buffer, int len) {
+	char *filename;
+
+	switch (key_type) {
+		case OVPN_CLIENT_STATIC:
+		case OVPN_SERVER_STATIC:
+			filename = "static.key";
+			break;
+		case OVPN_CLIENT_CA:
+		case OVPN_SERVER_CA:
+			filename = "ca.crt";
+			break;
+		case OVPN_CLIENT_CERT:
+			filename = "client.crt";
+			break;
+		case OVPN_SERVER_CERT:
+			filename = "server.crt";
+			break;
+		case OVPN_CLIENT_KEY:
+			filename = "client.key";
+			break;
+		case OVPN_SERVER_KEY:
+			filename = "server.key";
+			break;
+		case OVPN_CLIENT_CRL:
+		case OVPN_SERVER_CRL:
+			filename = "crl.pem";
+			break;
+		case OVPN_SERVER_CA_KEY:
+			filename = "ca.key";
+			break;
+		case OVPN_SERVER_DH:
+			filename = "dh.pem";
+			break;
+		case OVPN_CLIENT_EXTRA:
+		case OVPN_SERVER_EXTRA:
+			filename = "extra.pem";
+			break;
+		default:
+			filename = "unknown";
+	}
+
+	snprintf(buffer, len, "/etc/openvpn/%s%d/%s",
+			type == OVPN_TYPE_CLIENT ? "client" : "server", unit, filename);
+
+	return buffer;
+}

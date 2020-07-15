@@ -120,4 +120,6 @@ extern void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf);
 extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
 extern char *get_ovpn_remote_address(char *buf, int len);
 extern void update_ovpn_profie_remote(void);
+extern int copy_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *target);
+extern char *get_ovpn_runtime_filename(ovpn_type_t type, ovpn_key_t key_type);
 #endif

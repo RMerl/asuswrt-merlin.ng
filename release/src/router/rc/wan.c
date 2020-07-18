@@ -2545,6 +2545,7 @@ wan_up(const char *pwan_ifname)
 #endif
 	FILE *fp;
 	int i=0;
+	int first_ntp_sync = 0;
 
 	/* Value of pwan_ifname can be modfied after do_dns_detect */
 	strlcpy(wan_ifname, pwan_ifname, 16);
@@ -2779,9 +2780,11 @@ wan_up(const char *pwan_ifname)
 
 	/* Sync time if not already set, or not running a daemon */
 #ifdef RTCONFIG_NTPD
-	if (!nvram_get_int("ntp_ready"))
+	if (!nvram_get_int("ntp_ready")) {
+		first_ntp_sync = 1;
 #endif
 		refresh_ntpc();
+	}
 
 #ifdef RTCONFIG_VPN_FUSION
 	vpnc_set_internet_policy(1);
@@ -2796,7 +2799,9 @@ wan_up(const char *pwan_ifname)
 #endif
 			)
 	{
-		if (nvram_get_int("ntp_ready")) {
+
+		/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
+		if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 #ifdef RTCONFIG_OPENVPN
 			start_ovpn_eas();
 #endif
@@ -2815,7 +2820,8 @@ wan_up(const char *pwan_ifname)
 	stop_upnp();
 	start_upnp();
 
-	if (nvram_get_int("ntp_ready")) {
+	/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
+	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 		stop_ddns();
 		start_ddns();
 	}
@@ -2969,7 +2975,8 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_OPENVPN
-	if (nvram_get_int("ntp_ready")) {
+	/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
+	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
 		start_ovpn_eas();
 	}
 #endif

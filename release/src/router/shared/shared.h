@@ -2114,6 +2114,9 @@ static inline int is_aqr_phy_exist(void)
 #endif	/* RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033 */
 
 /* misc.c */
+#if !defined(HND_ROUTER)
+extern void ipt_account(FILE *fp, char *interface);
+#endif
 extern char *get_productid(void);
 extern char *get_lan_hostname(void);
 extern void logmessage_normal(char *logheader, char *fmt, ...);

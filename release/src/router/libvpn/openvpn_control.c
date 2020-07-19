@@ -27,7 +27,9 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
+#include <shutils.h>
 #include <shared.h>
 #include "openvpn_config.h"
 #include "openvpn_control.h"
@@ -69,3 +71,49 @@ void update_ovpn_routing(int unit){
 	system(cmd);
 }
 
+int ovpn_start_instance(ovpn_type_t type, int unit){
+	char buffer[64], buffer2[64], cpulist[8];
+	char *instanceType;
+	int cpuCores;
+
+	if (type == OVPN_TYPE_SERVER)
+		instanceType = "server";
+	else
+		instanceType = "client";
+
+	logmessage("Starting OpenVPN %s %d...", instanceType, unit);
+
+	// Start the VPN instance
+	sprintf(buffer, "/etc/openvpn/vpn%s%d", instanceType, unit);
+	sprintf(buffer2, "/etc/openvpn/%s%d", instanceType, unit);
+
+	// Spread instances on cpu 1,0 or 1,2,3,0 (in that order)
+	cpuCores = sysconf(_SC_NPROCESSORS_CONF) - 1;
+	if (cpuCores < 0) cpuCores = 0;
+	snprintf(cpulist, sizeof(cpulist), "%d", (unit & cpuCores));
+
+	if (cpu_eval(NULL, cpulist, buffer, "--cd", buffer2, "--config", "config.ovpn")) {
+		logmessage("openvpn", "Starting OpenVPN failed!");
+		return -1;
+	}
+
+	return 0;
+}
+
+
+void run_ovpn_fw_scripts(){
+	char buffer[74];
+	int unit;
+
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/server%d/fw.sh", unit);
+		if (f_exists(buffer))
+			eval(buffer);
+	}
+
+	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw.sh", unit);
+		if(f_exists(buffer))
+			eval(buffer);
+	}
+}

@@ -1692,6 +1692,9 @@ extern int mdio_phy_speed(char *ifname);
 #endif
 
 /* misc.c */
+#if !defined(HND_ROUTER)
+extern void ipt_account(FILE *fp, char *interface);
+#endif
 extern char *get_productid(void);
 extern void logmessage_normal(char *logheader, char *fmt, ...);
 extern char *get_logfile_path(void);

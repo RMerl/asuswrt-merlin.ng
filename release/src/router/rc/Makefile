@@ -400,7 +400,7 @@ endif
 ifeq ($(RTCONFIG_OPENVPN),y)
 CFLAGS += -I$(TOP)/libvpn
 LDFLAGS += -L$(TOP)/libvpn -lvpn
-OBJS += openvpn.o ovpn.o
+OBJS += openvpn.o ovpn.o openvpn_am.o
 endif
 
 ifeq ($(RTCONFIG_IPSEC),y)

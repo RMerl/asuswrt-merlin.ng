@@ -13,6 +13,8 @@
 
 #define OVPN_CCD_MAX	16
 
+#define PUSH_LAN_METRIC 500
+
 // interfaces
 #define OVPN_CLIENT_BASEIF 10
 #define OVPN_SERVER_BASEIF 20
@@ -30,7 +32,6 @@
 #define VPN_LOG_NOTE 0
 #define VPN_LOG_INFO 1
 #define VPN_LOG_EXTRA 2
-#define vpnlog(level,x...) if(nvram_get_int("vpn_debug")>=level) syslog(LOG_INFO, #level ": " __LINE_T__ ": " x)
 
 // client_access
 #define OVPN_CLT_ACCESS_LAN 0
@@ -101,6 +102,125 @@ typedef enum ovpn_errno{
 
 #define OVPN_ACCNT_MAX	15
 
+typedef enum ovpn_if{
+	OVPN_IF_TUN = 0,
+	OVPN_IF_TAP
+}ovpn_if_t;
+
+
+typedef enum ovpn_auth{
+	OVPN_AUTH_STATIC = 0,
+	OVPN_AUTH_TLS
+}ovpn_auth_t;
+
+typedef enum ovpn_rt{
+	OVPN_RT_BRIDGE = 0,
+	OVPN_RT_NAT,
+	OVPN_RT_NONE
+}ovpn_rt_t;
+
+typedef struct ovpn_cconf {
+	int enable;
+	char progname[16];
+// Tunnel options
+	char addr[128];	//remote server address
+	int did_resolv_addr;
+	char resolv_addr[1024];
+	int retry;	//retry resolve hostname
+	char proto[16];
+	int port;
+	ovpn_if_t if_type;
+	char if_name[8];	//interface name
+	char local[16];
+	char remote[16];
+	char netmask[16];
+	int redirect_gateway;
+	char gateway[16];
+	int verb;	//verbosity
+	char comp[16];	//LZO compression: "yes", "no", or "adaptive"
+	ovpn_auth_t auth_mode;	//authentication mode: static, tls
+	int userauth;	//username, password
+	int useronly;	//client certificte not required
+	char username[64];
+	char password[64];
+
+//Data Channel Encryption Options:
+	int direction;	//key-direction of secret or tls-auth (hmac)
+	char digest[32]; //HMAC message digest algorithm: e.g. SHA1, RSA-SHA512, ecdsa-with-SHA1
+	int ncp;
+	char ncp_ciphers[256];
+	char cipher[32];	//cipher algorithm: e.g. AES-128-CBC, CAMELLIA-256-CBC
+
+//TLS Mode Options:
+	int reneg;	//TLS Renegotiation Time
+	int tlscrypt;	//Encrypt and authenticate all control channel packets.
+	int verify_x509_type;	//TYPE of verify-x509-name
+	char verify_x509_name[32];	//NAME of verify-x509-name
+
+//Router options and info
+//	char firewall[8];	//auto
+	int fw;		//Block inbound connections
+	int poll;	//polling interval of cron job in seconds
+	int bridge;
+	int nat;
+	int adns;
+
+	char custom[4096];
+}ovpn_cconf_t;
+
+typedef struct ovpn_sconf {
+	int enable;
+	char progname[16];
+// Tunnel options
+	char proto[16];
+	int port;
+	ovpn_if_t if_type;
+	char if_name[8];	//interface name
+	char local[16];
+	char remote[16];
+	int verb;	//verbosity
+	char comp[16];	//LZO compression: "yes", "no", or "adaptive"
+	ovpn_auth_t auth_mode;	//authentication mode: static, tls
+	int useronly;	//client certificte not required
+	int userauth;
+
+//Server mode
+	char network[16];
+	char netmask[16];
+	int dhcp;	//DHCP-proxy mode
+	char pool_start[16];	//--server-bridge gateway netmask pool-start-IP pool-end-IP
+	char pool_end[16];
+	int redirect_gateway;
+	int push_lan;
+	int push_dns;
+	int ccd;	//client config dir
+	int c2c;	//client to client
+	int ccd_excl;	//ccd-exclusive
+	char ccd_val[2048];
+//	ovpn_ccd_info_t ccd_info;
+
+//Data Channel Encryption Options:
+	int direction;	//key-direction of secret or tls-auth (hmac)
+	int tlscrypt;	//Encrypt and authenticate all control channel packets.
+	char digest[32]; //HMAC message digest algorithm: e.g. SHA1, RSA-SHA512, ecdsa-with-SHA1
+	int ncp;
+	char ncp_ciphers[256];
+	char cipher[32];	//cipher algorithm: e.g. AES-128-CBC, CAMELLIA-256-CBC
+
+//TLS Mode Options:
+	int reneg;	//TLS Renegotiation Time
+
+	int tls_keysize;	//auto generation
+
+//Router options and info
+	char firewall[8];	//auto
+	int poll;	//polling interval of cron job in seconds
+	char lan_ipaddr[16];
+	char lan_netmask[16];
+
+	char custom[4096];
+}ovpn_sconf_t;
+
 
 int _set_crt_parsed(const char *name, char *file_path);
 extern int set_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buf, char *path);
@@ -120,6 +240,18 @@ extern void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf);
 extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
 extern char *get_ovpn_remote_address(char *buf, int len);
 extern void update_ovpn_profie_remote(void);
-extern int copy_ovpn_key(ovpn_type_t type, int unit, ovpn_key_t key_type, char *target);
-extern char *get_ovpn_runtime_filename(ovpn_type_t type, ovpn_key_t key_type);
+extern int ovpn_write_key(ovpn_type_t type, int unit, ovpn_key_t key_type);
+extern int ovpn_setup_iface(char *iface, ovpn_if_t iface_type, int bridge);
+extern void ovpn_remove_iface(ovpn_type_t type, int unit);
+extern char *ovpn_get_runtime_filename(ovpn_type_t type, int unit, ovpn_key_t key_type, char *buffer, int len);
+extern void ovpn_setup_dirs(ovpn_type_t type, int unit);
+extern ovpn_cconf_t *ovpn_get_cconf(int unit);
+extern ovpn_sconf_t *ovpn_get_sconf(int unit);
+extern int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit);
+extern int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit);
+extern void ovpn_write_client_keys(ovpn_cconf_t *cconf, int unit);
+extern void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit, int valid_client_cert);
+extern void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit);
+extern void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit);
+extern void ovpn_setup_server_watchdog(ovpn_sconf_t *sconf, int unit);
 #endif

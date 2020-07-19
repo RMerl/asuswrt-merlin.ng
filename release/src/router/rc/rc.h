@@ -964,7 +964,6 @@ extern void redirect_nat_setting(void);
 extern void set_load_balance(void);
 #endif
 extern void ip2class(char *lan_ip, char *netmask, char *buf);
-extern void ipt_account(FILE *fp, char *interface);
 #ifdef RTCONFIG_WIFI_SON
 extern void set_cap_apmode_filter(void);
 #endif
@@ -1425,15 +1424,19 @@ extern int ovpn_route_up_main(int argc, char **argv);
 
 // openvpn.c
 #ifdef RTCONFIG_OPENVPN
-extern void start_ovpn_client(int clientNum);
-extern void stop_ovpn_client(int clientNum);
-extern void start_ovpn_server(int serverNum);
-extern void stop_ovpn_server(int serverNum);
 extern void start_ovpn_eas(void);
 extern void stop_ovpn_eas(void);
 extern void run_ovpn_fw_script();
 extern void create_ovpn_passwd();
 extern void stop_ovpn_all();
+
+// openvpn_am.c
+extern void start_ovpn_client(int unit);
+extern void start_ovpn_server(int unit);
+extern void stop_ovpn_client(int unit);
+extern void stop_ovpn_server(int unit);
+extern void ovpn_write_dh(ovpn_sconf_t *sconf, int unit);
+extern int ovpn_is_clientcert_valid(int unit);
 #endif
 
 // wanduck.c

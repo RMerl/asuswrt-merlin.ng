@@ -14,6 +14,10 @@ Asuswrt-Merlin 384/NG Changelog
   - UPDATED: Merged binary blobs + SDK 384_81992 for RT-AC86U.
   - UPDATED: Merged bwdpi components from 385_20630 firmware
              image for RT-AC68U.
+  - CHANGED: Rewrote a large portion of the OpenVPN implementation,
+             to make the code easier to maintain.  Functionality
+             should largely remain the same.  A few minor issues
+             discovered during the rewrite have been fixed.
   - CHANGED: Improved mechanism for providing an available
              mount point for addon API scripters (dave14305)
   - CHANGED: Harmonized the various SSL certificate modes with
@@ -29,6 +33,9 @@ Asuswrt-Merlin 384/NG Changelog
            Asus's GPL update)
   - FIXED: Chacha20 wasn't prioritized for bcm675x models which
            lacked AES acceleration (RT-AX56U and RT-AX58U)
+  - FIXED: ddns updates and OpenVPN instances might be launched
+           twice at boot time if the initial ntp clock sync
+           happened too fast.
 
 
 384.18 (28-June-2020)

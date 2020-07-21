@@ -540,8 +540,8 @@ function validForm(){
 
 	if (!validator.safeName(document.form.vpn_client_desc) ||
 	    !validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
-	    !validator.numberRange(document.form.vpn_client_reneg, -1, 2147483647) ||
-	    !validator.numberRange(document.form.vpn_client_connretry, -1, 999) ||
+	    !validator.numberRange(document.form.vpn_client_reneg, -1, 32767) ||
+	    !validator.numberRange(document.form.vpn_client_connretry, 0, 999) ||
 	    !validator.numberRange(document.form.vpn_client_port, 1, 65535))
 		return false;
 
@@ -1402,7 +1402,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr>
-						<th>Connection Retry attempts<br><i>(-1 for infinite)</th>
+						<th>Connection Retry attempts<br><i>(0 for infinite)</th>
 						<td>
 							<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
 						</td>

@@ -81,7 +81,7 @@ int ovpn_start_instance(ovpn_type_t type, int unit){
 	else
 		instanceType = "client";
 
-	logmessage("Starting OpenVPN %s %d...", instanceType, unit);
+	logmessage("openvpn", "Starting OpenVPN %s %d...", instanceType, unit);
 
 	// Start the VPN instance
 	sprintf(buffer, "/etc/openvpn/vpn%s%d", instanceType, unit);

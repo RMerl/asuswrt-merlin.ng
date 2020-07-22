@@ -23,16 +23,6 @@
 #define OVPN_DIR_SAVE	"/jffs/openvpn"
 #endif
 
-// Line number as text string
-#define __LINE_T__ __LINE_T_(__LINE__)
-#define __LINE_T_(x) __LINE_T(x)
-#define __LINE_T(x) # x
-
-#define VPN_LOG_ERROR -1
-#define VPN_LOG_NOTE 0
-#define VPN_LOG_INFO 1
-#define VPN_LOG_EXTRA 2
-
 // client_access
 #define OVPN_CLT_ACCESS_LAN 0
 #define OVPN_CLT_ACCESS_WAN 1
@@ -100,12 +90,6 @@ typedef enum ovpn_auth{
 	OVPN_AUTH_STATIC = 0,
 	OVPN_AUTH_TLS
 }ovpn_auth_t;
-
-typedef enum ovpn_rt{
-	OVPN_RT_BRIDGE = 0,
-	OVPN_RT_NAT,
-	OVPN_RT_NONE
-}ovpn_rt_t;
 
 typedef struct ovpn_cconf {
 	int enable;

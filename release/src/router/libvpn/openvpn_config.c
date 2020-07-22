@@ -132,6 +132,7 @@ void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, o
 
 	sprintf(varname, "vpn_%s%d_state", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
 	nvram_set_int(varname, status_type);
+
         sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
         nvram_set_int(varname, err_no);
 

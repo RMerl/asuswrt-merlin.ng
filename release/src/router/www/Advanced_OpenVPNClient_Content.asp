@@ -538,6 +538,13 @@ function validForm(){
 		return false;
 	}
 
+	if (getRadioValue(document.form.vpn_client_userauth) &&
+	    (document.form.vpn_client_username.value == "" || document.form.vpn_client_username.value == "")) {
+		alert("You must provide a username and a password.")
+		document.form.vpn_client_username.focus();
+		return false;
+	}
+
 	if (!validator.safeName(document.form.vpn_client_desc) ||
 	    !validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
 	    !validator.numberRange(document.form.vpn_client_reneg, -1, 32767) ||

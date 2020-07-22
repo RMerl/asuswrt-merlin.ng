@@ -113,12 +113,6 @@ typedef enum ovpn_auth{
 	OVPN_AUTH_TLS
 }ovpn_auth_t;
 
-typedef enum ovpn_rt{
-	OVPN_RT_BRIDGE = 0,
-	OVPN_RT_NAT,
-	OVPN_RT_NONE
-}ovpn_rt_t;
-
 typedef struct ovpn_cconf {
 	int enable;
 	char progname[16];

@@ -65,13 +65,13 @@ int check_ovpn_client_enabled(int unit) {
 	return _check_ovpn_enabled(unit, OVPN_TYPE_CLIENT);
 }
 
-void update_ovpn_routing(int unit){
+void ovpn_update_routing(int unit){
 	char cmd[56];
 	snprintf(cmd, sizeof (cmd), "dev=tun1%d script_type=rmupdate /usr/sbin/vpnrouting.sh", unit);
 	system(cmd);
 }
 
-int ovpn_start_instance(ovpn_type_t type, int unit){
+int ovpn_run_instance(ovpn_type_t type, int unit){
 	char buffer[64], buffer2[64], cpulist[8];
 	char *instanceType;
 	int cpuCores;
@@ -81,7 +81,7 @@ int ovpn_start_instance(ovpn_type_t type, int unit){
 	else
 		instanceType = "client";
 
-	logmessage("openvpn", "Starting OpenVPN %s %d...", instanceType, unit);
+//	logmessage("openvpn", "Starting OpenVPN %s %d...", instanceType, unit);
 
 	// Start the VPN instance
 	sprintf(buffer, "/etc/openvpn/vpn%s%d", instanceType, unit);
@@ -93,7 +93,6 @@ int ovpn_start_instance(ovpn_type_t type, int unit){
 	snprintf(cpulist, sizeof(cpulist), "%d", (unit & cpuCores));
 
 	if (cpu_eval(NULL, cpulist, buffer, "--cd", buffer2, "--config", "config.ovpn")) {
-		logmessage("openvpn", "Starting OpenVPN failed!");
 		return -1;
 	}
 
@@ -101,8 +100,8 @@ int ovpn_start_instance(ovpn_type_t type, int unit){
 }
 
 
-void run_ovpn_fw_scripts(){
-	char buffer[74];
+void ovpn_run_fw_scripts(){
+	char buffer[64];
 	int unit;
 
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
@@ -116,4 +115,37 @@ void run_ovpn_fw_scripts(){
 		if(f_exists(buffer))
 			eval(buffer);
 	}
+}
+
+
+void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, ovpn_errno_t err_no)
+{
+	char varname[32];
+
+	sprintf(varname, "vpn_%s%d_state", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+	nvram_set_int(varname, status_type);
+
+        sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+        nvram_set_int(varname, err_no);
+
+	if (type == OVPN_TYPE_SERVER && (status_type == OVPN_STS_INIT || status_type == OVPN_STS_STOP)) {
+		sprintf(varname, "vpn_server%d_rip", unit);
+		nvram_set(varname, "");
+	}
+}
+
+ovpn_status_t get_ovpn_status(ovpn_type_t type, int unit)
+{
+	char varname[32];
+
+	sprintf(varname, "vpn_%s%d_state", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+	return nvram_get_int(varname);
+}
+
+ovpn_errno_t get_ovpn_errno(ovpn_type_t type, int unit)
+{
+	char varname[32];
+
+	sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
+	return nvram_get_int(varname);
 }

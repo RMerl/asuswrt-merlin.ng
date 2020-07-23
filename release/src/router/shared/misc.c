@@ -4379,38 +4379,6 @@ int get_index_page(char *page, int size)
 	return 0;
 }
 
-#if !defined(HND_ROUTER)
-void ipt_account(FILE *fp, char *interface) {
-	struct in_addr ipaddr, netmask, network;
-	char netaddrnetmask[] = "255.255.255.255/255.255.255.255 ";
-	int unit;
-
-	inet_aton(nvram_safe_get("lan_ipaddr"), &ipaddr);
-	inet_aton(nvram_safe_get("lan_netmask"), &netmask);
-
-	// bitwise AND of ip and netmask gives the network
-	network.s_addr = ipaddr.s_addr & netmask.s_addr;
-
-	sprintf(netaddrnetmask, "%s/%s", inet_ntoa(network), nvram_safe_get("lan_netmask"));
-
-	// If we are provided an interface (usually a VPN interface) then use it as WAN.
-	if (interface){
-		fprintf(fp, "iptables -A ipttolan -i %s -m account --aaddr %s --aname lan -j RETURN\n", interface, netaddrnetmask);
-		fprintf(fp, "iptables -A iptfromlan -o %s -m account --aaddr %s --aname lan -j RETURN\n", interface, netaddrnetmask);
-
-	} else {	// Create rules for every WAN interfaces available
-		fprintf(fp, "-I FORWARD -i br0 -j iptfromlan\n");
-		fprintf(fp, "-I FORWARD -o br0 -j ipttolan\n");
-		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
-			if ((get_dualwan_by_unit(unit) != WANS_DUALWAN_IF_NONE) && (strlen(get_wan_ifname(unit)))) {
-				fprintf(fp, "-A ipttolan -i %s -m account --aaddr %s --aname lan -j RETURN\n", get_wan_ifname(unit), netaddrnetmask);
-				fprintf(fp, "-A iptfromlan -o %s -m account --aaddr %s --aname lan -j RETURN\n", get_wan_ifname(unit), netaddrnetmask);
-			}
-		}
-	}
-}
-#endif
-
 /*
 	general API to check wss supported interface
 */

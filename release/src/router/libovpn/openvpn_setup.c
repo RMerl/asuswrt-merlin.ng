@@ -443,8 +443,6 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 
 			if (sconf->ccd_excl)
 				fprintf(fp, "ccd-exclusive\n");
-			else
-				fprintf(fp, "duplicate-cn\n");
 
 			sprintf(buffer, "/etc/openvpn/server%d/ccd", unit);
 			mkdir(buffer, 0700);

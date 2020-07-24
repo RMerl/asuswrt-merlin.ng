@@ -31,6 +31,7 @@
 #define EVENT_AUTH_FAILED         1
 #define EVENT_TLS_ERROR           2
 #define EVENT_NET_CONN            3
+#define EVENT_CONF_ERROR          4
 void update_nvram_status(int event);
 #endif
 

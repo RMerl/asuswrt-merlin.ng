@@ -274,6 +274,7 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
     if (flags & M_OPTERR)
     {
         openvpn_snprintf(m2, ERR_BUF_SIZE, "Options error: %s", m1);
+        update_nvram_status(EVENT_CONF_ERROR);
         SWAP;
     }
 

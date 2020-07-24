@@ -336,6 +336,7 @@ status_read(struct status_output *so, struct buffer *buf)
 #define ERRNO_SSL                4
 #define ERRNO_AUTH               6
 #define ST_RUNNING		2
+#define ERRNO_CONF		7
 void update_nvram_status(int event)
 {
 	char cmd[128] = {0};
@@ -354,6 +355,12 @@ void update_nvram_status(int event)
 		break;
 	case EVENT_TLS_ERROR:
 		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_SSL);
+		system(cmd);
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
+		system(cmd);
+		break;
+	case EVENT_CONF_ERROR:
+		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_errno=%d", p, ERRNO_CONF);
 		system(cmd);
 		snprintf(cmd, sizeof(cmd), "nvram set vpn_%s_state=%d", p, ST_ERROR);
 		system(cmd);

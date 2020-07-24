@@ -934,9 +934,6 @@ function showConnStatus() {
 				case "6":
 					code = "Error - Authentication failure!";
 					break;
-				case "7":
-					code = "Error - Key/Certificate error!";
-					break;
 				default:
 					code = "Error - check configuration!";
 					break;

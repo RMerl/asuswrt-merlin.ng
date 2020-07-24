@@ -2753,7 +2753,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 #ifdef RTCONFIG_OPENVPN
-	stop_ovpn_all();
+	stop_ovpn_eas();
 #endif
 
 	/* Sync time if not already set, or not running a daemon */

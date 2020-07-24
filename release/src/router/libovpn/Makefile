@@ -12,26 +12,26 @@ LDFLAGS += -lcrypt
 
 INSTALL = install
 
-OBJS = openvpn_config.o openvpn_control.o
+OBJS = openvpn_config.o openvpn_control.o openvpn_setup.o
 
-all: libvpn.so
+all: libovpn.so
 
-libvpn.so: $(OBJS)
-	@echo " [libvpn] LD $@"
+libovpn.so: $(OBJS)
+	@echo " [libovpn] LD $@"
 	@$(CC) $(LDFLAGS) -shared -o $@ $^
 
 
 install: all
-	@echo " [libvpn] Installing as $(INSTALLDIR)/usr/lib/libvpn.so"
+	@echo " [libovpn] Installing as $(INSTALLDIR)/usr/lib/libovpn.so"
 	@install -d $(INSTALLDIR)/usr/lib
-	@install -m 755 libvpn.so $(INSTALLDIR)/usr/lib
-	@$(STRIP) $(INSTALLDIR)/usr/lib/libvpn.so
+	@install -m 755 libovpn.so $(INSTALLDIR)/usr/lib
+	@$(STRIP) $(INSTALLDIR)/usr/lib/libovpn.so
 
 clean:
 	rm -f *.o *.so *.a .*.depend *.prep
 
 %.o: %.c .%.depend
-	@echo " [libvpn] CC $@"
+	@echo " [libovpn] CC $@"
 	@$(CC) $(CFLAGS) -o $@ -c $<
 
 .depend: $(OBJS:%.o=%.c)

@@ -398,9 +398,9 @@ ifeq ($(RTCONFIG_SNMPD),y)
 OBJS += snmpd.o
 endif
 ifeq ($(RTCONFIG_OPENVPN),y)
-CFLAGS += -I$(TOP)/libvpn
-LDFLAGS += -L$(TOP)/libvpn -lvpn
-OBJS += openvpn.o ovpn.o openvpn_am.o
+CFLAGS += -I$(TOP)/libovpn
+LDFLAGS += -L$(TOP)/libovpn -lovpn
+OBJS += ovpn.o openvpn.o
 endif
 
 ifeq ($(RTCONFIG_IPSEC),y)

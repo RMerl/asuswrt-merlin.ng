@@ -26,7 +26,7 @@ create_client_list(){
 		fi
 
 		VPN_IP=$(echo "$ENTRY" | cut -d ">" -f 2)
-		if [ "$VPN_IP" != "0.0.0.0" ]
+		if [ "$VPN_IP" != "" ]
 		then
 			TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
 			if [ "$TARGET_ROUTE" = "VPN" ]

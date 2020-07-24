@@ -217,8 +217,8 @@ endif
 
 ifeq ($(RTCONFIG_OPENVPN),y)
 OBJS += openvpn_options.o
-CFLAGS += -I$(TOP)/libvpn
-LIBS += -L$(TOP)/libvpn -lvpn
+CFLAGS += -I$(TOP)/libovpn
+LIBS += -L$(TOP)/libovpn -lovpn
 ifeq ($(RTCONFIG_OPENSSL11),y)
 LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto -ldl
 else

@@ -13536,7 +13536,7 @@ retry_wps_enr:
 		if (action & RC_SERVICE_START) start_ovpn_server(atoi(&script[9]));
 	}
 	else if (strncmp(script, "vpnrouting" ,10) == 0) {
-		if (action & RC_SERVICE_START) update_ovpn_routing(atoi(&script[10]));
+		if (action & RC_SERVICE_START) ovpn_update_routing(atoi(&script[10]));
 	}
 #endif
 #if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
@@ -13558,7 +13558,7 @@ retry_wps_enr:
 			stop_ovpn_server(openvpn_unit);
 		}
 		if (action & RC_SERVICE_START){
- 			start_ovpn_server(openvpn_unit);
+			start_ovpn_server(openvpn_unit);
  		}
  	}
 	else if (strncmp(script, "clearvpnserver", 14) == 0)

@@ -112,11 +112,19 @@ void ovpn_run_fw_scripts(){
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
 		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw.sh", unit);
-		if(f_exists(buffer))
+		if (f_exists(buffer))
 			eval(buffer);
+
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/dns.sh", unit);
+		if (f_exists(buffer))
+			eval(buffer);
+
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/qos.sh", unit);
+		if (f_exists(buffer))
+			eval(buffer);
+
 	}
 }
-
 
 void update_ovpn_status(ovpn_type_t type, int unit, ovpn_status_t status_type, ovpn_errno_t err_no)
 {

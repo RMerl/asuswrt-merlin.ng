@@ -4,9 +4,6 @@
 #define OVPN_SERVER_MAX	2
 #define OVPN_CLIENT_MAX	5
 
-#define OVPN_CCD_MAX	16
-#define OVPN_ACCNT_MAX  15
-
 #define PUSH_LAN_METRIC 500
 
 // interfaces
@@ -81,8 +78,6 @@ typedef enum ovpn_errno{
 	OVPN_ERRNO_CONF,
 	OVPN_ERRNO_NET_CONN,
 }ovpn_errno_t;
-
-#define OVPN_ACCNT_MAX	15
 
 typedef enum ovpn_if{
 	OVPN_IF_TUN = 0,

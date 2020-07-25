@@ -220,7 +220,6 @@ void stop_ovpn_client(int unit) {
 	eval("rm", "-rf", buffer);
 
 	update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_STOP, OVPN_ERRNO_NONE);
-	update_resolvconf();
 
 //	logmessage("openvpn", "OpenVPN client %d stopped.", unit);
 }

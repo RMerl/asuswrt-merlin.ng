@@ -72,9 +72,17 @@ then
 		/bin/sh $qosscript
 		rm $qosscript
 	fi
-	
+
+	[ -f "$dnsscript" ] && rm "$dnsscript"
 	[ -f "$resolvfile" ] && rm "$resolvfile"
   	[ -f "$dnsscript" ] && rm "$dnsscript"
+
+	if [ "$(nvram get vpn_client$(echo $instance)_adns)" = 2 ]
+	then
+		/sbin/service restart_dnsmasq &
+	else
+		/sbin/service updateresolv &
+	fi
 fi
 
 if [ "$instance" = "" ] || [ "$(nvram get vpn_client$(echo $instance)_adns)" -eq 0 ]
@@ -130,7 +138,16 @@ then
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
-	chmod a+rx $dnsscript
+
+	if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ]
+	then
+		if [ -f $dnsscript ]
+		then
+			chmod a+rx $dnsscript
+			/bin/sh $dnsscript
+		fi
+		/sbin/service updateresolv &
+	fi
 
 # QoS
 	if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
@@ -142,29 +159,6 @@ then
 	fi
 fi
 
-if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ]
-then
-	if [ $script_type = 'up' ] ; then
-		if [ -f $dnsscript ]
-		then
-			/bin/sh $dnsscript
-		fi
-		/sbin/service updateresolv
-	elif [ $script_type = 'down' ]; then
-		rm $dnsscript
-		if [ "$(nvram get vpn_client$(echo $instance)_adns)" = 2 ]
-		then
-			/sbin/service restart_dnsmasq
-		else
-			/sbin/service updateresolv
-		fi
-	fi
-fi
-
-rmdir $filedir
-rmdir /etc/openvpn
-
 run_script_event $*
 
 exit 0
-

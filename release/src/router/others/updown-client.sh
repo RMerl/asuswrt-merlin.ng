@@ -73,7 +73,6 @@ then
 		rm $qosscript
 	fi
 
-	[ -f "$dnsscript" ] && rm "$dnsscript"
 	[ -f "$resolvfile" ] && rm "$resolvfile"
   	[ -f "$dnsscript" ] && rm "$dnsscript"
 

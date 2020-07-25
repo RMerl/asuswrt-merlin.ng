@@ -95,9 +95,9 @@ void start_ovpn_client(int unit) {
 	if (ovpn_run_instance(OVPN_TYPE_CLIENT, unit)) {
 		logmessage("openvpn", "Starting OpenVPN client %d failed!", unit);
 		stop_ovpn_client(unit);
-		return;
+		if (get_ovpn_status(OVPN_TYPE_CLIENT, unit) != OVPN_STS_ERROR)
+			update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_ERROR, OVPN_ERRNO_CONF);
 	}
-//	logmessage("openvpn", "OpenVPN client %d launch completed.", unit);
 }
 
 

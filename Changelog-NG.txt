@@ -16,8 +16,20 @@ Asuswrt-Merlin 384/NG Changelog
              image for RT-AC68U.
   - CHANGED: Rewrote a large portion of the OpenVPN implementation,
              to make the code easier to maintain.  Functionality
-             should largely remain the same.  A few minor issues
-             discovered during the rewrite have been fixed.
+             should largely remain the same.
+  - CHANGED: Enabling Client Config Dir (ccd) for an OpenVPN
+             server in non-exclusive mode will no longer accept
+             duplicate common names (to prevent issues with
+             two clients trying to share the same settings).
+             If you need such an unusual setup, you should
+             enable "Username/Password auth only", which will
+             make the common name become the username.  Or
+             better, ensure that you have unique certificates
+             for all of your users.
+  - CHANGED: Removed the (undocumented) vpn_debug nvram.  Debug
+             logging will now only come from OpenVPN itself
+             (through the log verbosity setting).  This was only
+             useful for development.
   - CHANGED: Improved mechanism for providing an available
              mount point for addon API scripters (dave14305)
   - CHANGED: Harmonized the various SSL certificate modes with
@@ -36,6 +48,12 @@ Asuswrt-Merlin 384/NG Changelog
   - FIXED: ddns updates and OpenVPN instances might be launched
            twice at boot time if the initial ntp clock sync
            happened too fast.
+  - FIXED: Enforced DNS and tQoS fix would be lost when the firewall
+           gets restarted while an OpenVPN client is running.
+  - FIXED: Various issues surrounding error state notification when
+           an OpenVPN client failed to start properly.  Config errors
+           for instance will now be reported as such on the webui.
+
 
 
 384.18 (28-June-2020)

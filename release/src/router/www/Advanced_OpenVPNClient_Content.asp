@@ -538,11 +538,16 @@ function validForm(){
 		return false;
 	}
 
-	if (getRadioValue(document.form.vpn_client_userauth) &&
-	    (document.form.vpn_client_username.value == "" || document.form.vpn_client_password.value == "")) {
-		alert("You must provide a username and a password.")
-		document.form.vpn_client_username.focus();
-		return false;
+	if (getRadioValue(document.form.vpn_client_userauth) == 1) {
+		if (document.form.vpn_client_username.value == "" ) {
+			alert("You must provide a username.")
+			document.form.vpn_client_username.focus();
+			return false;
+	        } else if (document.form.vpn_client_password.value == "") {
+			alert("You must provide a password.")
+			document.form.vpn_client_password.focus();
+			return false;
+		}
 	}
 
 	if (!validator.safeName(document.form.vpn_client_desc) ||

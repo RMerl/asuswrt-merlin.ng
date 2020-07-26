@@ -472,16 +472,29 @@ void cache_start_insert(void)
 struct crec *cache_insert(char *name, union all_addr *addr, unsigned short class,
 			  time_t now,  unsigned long ttl, unsigned int flags)
 {
-  /* Don't log DNSSEC records here, done elsewhere */
-  if (flags & (F_IPV4 | F_IPV6 | F_CNAME | F_SRV))
+#ifdef HAVE_DNSSEC
+  if (flags & (F_DNSKEY | F_DS)) 
     {
+      /* The DNSSEC validation process works by getting needed records into the
+	 cache, then retrying the validation until they are all in place.
+	 This can be messed up by very short TTLs, and _really_ messed up by
+	 zero TTLs, so we force the TTL to be at least long enough to do a validation.
+	 Ideally, we should use some kind of reference counting so that records are
+	 locked until the validation that asked for them is complete, but this
+	 is much easier, and just as effective. */
+      if (ttl < DNSSEC_MIN_TTL)
+	ttl = DNSSEC_MIN_TTL;
+    }
+  else
+#endif
+    {
+      /* Don't log DNSSEC records here, done elsewhere */
       log_query(flags | F_UPSTREAM, name, addr, NULL);
-      /* Don't mess with TTL for DNSSEC records. */
       if (daemon->max_cache_ttl != 0 && daemon->max_cache_ttl < ttl)
 	ttl = daemon->max_cache_ttl;
       if (daemon->min_cache_ttl != 0 && daemon->min_cache_ttl > ttl)
 	ttl = daemon->min_cache_ttl;
-    }
+    }	
   
   return really_insert(name, addr, class, now, ttl, flags);
 }

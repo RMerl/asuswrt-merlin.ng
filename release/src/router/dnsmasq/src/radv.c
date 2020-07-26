@@ -626,8 +626,11 @@ static int add_prefixes(struct in6_addr *local,  int prefix,
 		    real_prefix = context->prefix;
 		  }
 
-		/* find floor time, don't reduce below 3 * RA interval. */
-		if (time > context->lease_time)
+		/* find floor time, don't reduce below 3 * RA interval.
+		   If the lease time has been left as default, don't
+		   use that as a floor. */
+		if ((context->flags & CONTEXT_SETLEASE) &&
+		    time > context->lease_time)
 		  {
 		    time = context->lease_time;
 		    if (time < ((unsigned int)(3 * param->adv_interval)))

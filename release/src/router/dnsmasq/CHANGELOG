@@ -1,6 +1,27 @@
+version 2.82
+	Improve behaviour in the face of network interfaces which come
+	and go and change index. Thanks to Petr Mensik for the patch.
+
+	Convert hard startup failure on NETLINK_NO_ENOBUFS under qemu-user
+	to a warning.
+
+	Allow IPv6 addresses ofthe form [::ffff:1.2.3.4] in --dhcp-option.
+
+	Fix crash under heavy TCP connection load introduced in 2.81.
+	Thanks to Frank for good work chasing this down.
+
+	Change default lease time for DHCPv6 to one day.
+
+	Alter calculation of preferred and valid times in router
+	advertisements, so that these do not have a floor applied
+	of the lease time in the dhcp-range if this is not explicitly
+	specified and is merely the default.
+	Thanks to Martin-Éric Racine for suggestions on this.
+
+	
 version 2.81
 	Improve cache behaviour for TCP connections. For ease of
-	implementaion, dnsmasq has always forked a new process to handle
+	implementation, dnsmasq has always forked a new process to handle
 	each incoming TCP connection. A side-effect of this is that
 	any DNS queries answered from TCP connections are not cached:
 	when TCP connections were rare, this was not a problem.

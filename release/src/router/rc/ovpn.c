@@ -7,6 +7,7 @@
 #include "rc.h"
 #include <string.h>
 
+#if 0	// Replaced by rc/openvpn.c versions
 int ovpn_up_main(int argc, char **argv)
 {
 	int unit;
@@ -38,6 +39,7 @@ int ovpn_down_main(int argc, char **argv)
 
 	return 0;
 }
+#endif
 
 #ifdef RTCONFIG_OPENVPN
 void create_ovpn_passwd()

@@ -61,8 +61,9 @@ void tftp_request(struct listener *listen, time_t now)
   char *prefix = daemon->tftp_prefix;
   struct tftp_prefix *pref;
   union all_addr addra;
+  int family = listen->addr.sa.sa_family;
   /* Can always get recvd interface for IPv6 */
-  int check_dest = !option_bool(OPT_NOWILD) || listen->family == AF_INET6;
+  int check_dest = !option_bool(OPT_NOWILD) || family == AF_INET6;
   union {
     struct cmsghdr align; /* this ensures alignment */
     char control6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
@@ -121,10 +122,10 @@ void tftp_request(struct listener *listen, time_t now)
       if (msg.msg_controllen < sizeof(struct cmsghdr))
         return;
       
-      addr.sa.sa_family = listen->family;
+      addr.sa.sa_family = family;
       
 #if defined(HAVE_LINUX_NETWORK)
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	  if (cmptr->cmsg_level == IPPROTO_IP && cmptr->cmsg_type == IP_PKTINFO)
 	    {
@@ -138,7 +139,7 @@ void tftp_request(struct listener *listen, time_t now)
 	    }
       
 #elif defined(HAVE_SOLARIS_NETWORK)
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	  {
 	    union {
@@ -154,7 +155,7 @@ void tftp_request(struct listener *listen, time_t now)
 	  }
       
 #elif defined(IP_RECVDSTADDR) && defined(IP_RECVIF)
-      if (listen->family == AF_INET)
+      if (family == AF_INET)
 	for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
 	  {
 	    union {
@@ -171,7 +172,7 @@ void tftp_request(struct listener *listen, time_t now)
 	  
 #endif
 
-      if (listen->family == AF_INET6)
+      if (family == AF_INET6)
         {
           for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
             if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
@@ -194,7 +195,7 @@ void tftp_request(struct listener *listen, time_t now)
       
       addra.addr4 = addr.in.sin_addr;
 
-      if (listen->family == AF_INET6)
+      if (family == AF_INET6)
 	addra.addr6 = addr.in6.sin6_addr;
 
       if (daemon->tftp_interfaces)
@@ -210,12 +211,12 @@ void tftp_request(struct listener *listen, time_t now)
       else
 	{
 	  /* Do the same as DHCP */
-	  if (!iface_check(listen->family, &addra, name, NULL))
+	  if (!iface_check(family, &addra, name, NULL))
 	    {
 	      if (!option_bool(OPT_CLEVERBIND))
 		enumerate_interfaces(0); 
-	      if (!loopback_exception(listen->tftpfd, listen->family, &addra, name) &&
-		  !label_exception(if_index, listen->family, &addra))
+	      if (!loopback_exception(listen->tftpfd, family, &addra, name) &&
+		  !label_exception(if_index, family, &addra))
 		return;
 	    }
 	  
@@ -281,7 +282,7 @@ void tftp_request(struct listener *listen, time_t now)
 	  prefix = pref->prefix;  
     }
 
-  if (listen->family == AF_INET)
+  if (family == AF_INET)
     {
       addr.in.sin_port = htons(port);
 #ifdef HAVE_SOCKADDR_SA_LEN
@@ -304,7 +305,7 @@ void tftp_request(struct listener *listen, time_t now)
   
   if (option_bool(OPT_SINGLE_PORT))
     transfer->sockfd = listen->tftpfd;
-  else if ((transfer->sockfd = socket(listen->family, SOCK_DGRAM, 0)) == -1)
+  else if ((transfer->sockfd = socket(family, SOCK_DGRAM, 0)) == -1)
     {
       free(transfer);
       return;
@@ -322,7 +323,7 @@ void tftp_request(struct listener *listen, time_t now)
   transfer->opt_blocksize = transfer->opt_transize = 0;
   transfer->netascii = transfer->carrylf = 0;
  
-  prettyprint_addr(&peer, daemon->addrbuff);
+  (void)prettyprint_addr(&peer, daemon->addrbuff);
   
   /* if we have a nailed-down range, iterate until we find a free one. */
   while (!option_bool(OPT_SINGLE_PORT))
@@ -337,7 +338,7 @@ void tftp_request(struct listener *listen, time_t now)
 	    {
 	      if (++port <= daemon->end_tftp_port)
 		{ 
-		  if (listen->family == AF_INET)
+		  if (family == AF_INET)
 		    addr.in.sin_port = htons(port);
 		  else
 		    addr.in6.sin6_port = htons(port);
@@ -375,7 +376,7 @@ void tftp_request(struct listener *listen, time_t now)
 	      if ((opt = next(&p, end)) && !option_bool(OPT_TFTP_NOBLOCK))
 		{
 		  /* 32 bytes for IP, UDP and TFTP headers, 52 bytes for IPv6 */
-		  int overhead = (listen->family == AF_INET) ? 32 : 52;
+		  int overhead = (family == AF_INET) ? 32 : 52;
 		  transfer->blocksize = atoi(opt);
 		  if (transfer->blocksize < 1)
 		    transfer->blocksize = 1;
@@ -624,7 +625,7 @@ void check_tftp_listeners(time_t now)
 	    {
 	      strcpy(daemon->namebuff, transfer->file->filename);
 	      sanitise(daemon->namebuff);
-	      prettyprint_addr(&transfer->peer, daemon->addrbuff);
+	      (void)prettyprint_addr(&transfer->peer, daemon->addrbuff);
 	      my_syslog(MS_TFTP | LOG_INFO, endcon ? _("failed sending %s to %s") : _("sent %s to %s"), daemon->namebuff, daemon->addrbuff);
 	      /* unlink */
 	      *up = tmp;
@@ -667,7 +668,7 @@ static void handle_tftp(time_t now, struct tftp_transfer *transfer, ssize_t len)
 	  char *end = daemon->packet + len;
 	  char *err = next(&p, end);
 	  
-	  prettyprint_addr(&transfer->peer, daemon->addrbuff);
+	  (void)prettyprint_addr(&transfer->peer, daemon->addrbuff);
 	  
 	  /* Sanitise error message */
 	  if (!err)

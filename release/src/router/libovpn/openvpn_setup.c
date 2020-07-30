@@ -49,39 +49,13 @@
 #include "openvpn_setup.h"
 #include "openvpn_control.h"
 
-// Determine how to handle dnsmasq server list based on
-// highest active dnsmode
-int get_max_dnsmode() {
-	int unit, maxlevel = 0, level;
-	char filename[40];
-	char varname[32];
-
-	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
-		sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
-		if (f_exists(filename)) {
-			sprintf(varname, "vpn_client%d_", unit);
-			level = nvram_pf_get_int(varname, "adns");
-
-			// Ignore exclusive mode if policy mode is also enabled
-			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == OVPN_DNSMODE_EXCLUSIVE))
-				continue;
-
-			// Only return the highest active level, so one exclusive client
-			// will override a relaxed client.
-			if (level > maxlevel) maxlevel = level;
-		}
-	}
-	return maxlevel;
-}
-
-
 void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf) {
 	int unit;
 	char filename[40], prefix[16];
 	char *buffer;
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
-		sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
+		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
 		if (f_exists(filename)) {
 			sprintf(prefix, "vpn_client%d_", unit);
 
@@ -115,7 +89,7 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
 		// Add strict-order if any client is set to "strict" and we haven't done so yet
 		if (!modeset) {
-			sprintf(filename, "/etc/openvpn/dns/client%d.resolv", unit);
+			sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
 			if (f_exists(filename)) {
 				snprintf(varname, sizeof(varname), "vpn_client%d_adns", unit);
 				if (nvram_get_int(varname) == OVPN_DNSMODE_STRICT) {
@@ -127,7 +101,7 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 		}
 
 		// Add WINS entries if any client provides it
-		sprintf(filename, "/etc/openvpn/dns/client%d.conf", unit);
+		sprintf(filename, "/etc/openvpn/client%d/client.conf", unit);
 		if (f_exists(filename)) {
 			buffer = read_whole_file(filename);
 			if (buffer) {
@@ -555,11 +529,15 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 	else if (sconf->auth_mode == OVPN_AUTH_STATIC)
 		fprintf(fp, "secret static.key\n");
 
-	sprintf(buffer, "/etc/openvpn/server%d/updown.sh", unit);
-	symlink("/usr/sbin/updown-server.sh", buffer);
 	fprintf(fp, "script-security 2\n");
-	fprintf(fp, "up updown.sh\n");
-	fprintf(fp, "down updown.sh\n");
+
+	sprintf(buffer, "/etc/openvpn/server%d/ovpn-up", unit);
+	symlink("/sbin/rc", buffer);
+	sprintf(buffer, "/etc/openvpn/server%d/ovpn-down", unit);
+	symlink("/sbin/rc", buffer);
+
+	fprintf(fp, "up 'ovpn-up %d server'\n", unit);
+	fprintf(fp, "down 'ovpn-down %d server'\n", unit);
 
 	fprintf(fp, "status-version 2\n");
 	fprintf(fp, "status status 5\n");
@@ -698,10 +676,13 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 			fprintf(fp, "secret static.key\n");
 	}
 
-	sprintf(buffer, "/etc/openvpn/client%d/updown.sh", unit);
-	symlink("/usr/sbin/updown-client.sh", buffer);
-	fprintf(fp, "up updown.sh\n");
-	fprintf(fp, "down updown.sh\n");
+	sprintf(buffer, "/etc/openvpn/client%d/ovpn-up", unit);
+	symlink("/sbin/rc", buffer);
+	sprintf(buffer, "/etc/openvpn/client%d/ovpn-down", unit);
+	symlink("/sbin/rc", buffer);
+
+	fprintf(fp, "up 'ovpn-up %d client'\n", unit);
+	fprintf(fp, "down 'ovpn-down %d client'\n", unit);
 
 	// For selective routing
 	fprintf(fp, "script-security 2\n");     // also for up/down scripts

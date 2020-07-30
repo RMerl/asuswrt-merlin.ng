@@ -8,7 +8,6 @@ extern void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit, int valid_clie
 extern void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit);
 extern void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit);
 extern void ovpn_setup_server_watchdog(ovpn_sconf_t *sconf, int unit);
-extern int get_max_dnsmode(void);
 extern void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf);
 extern void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf);
 extern char *get_ovpn_remote_address(char *buf, int len);

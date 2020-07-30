@@ -1225,7 +1225,7 @@ static int parse_dhcp_opt(char *errstr, char *arg, int flags)
 	  } 
 	else if (c == '.')	
 	  {
-	    is_addr6 = is_dec = is_hex = 0;
+	    is_dec = is_hex = 0;
 	    dots++;
 	  }
 	else if (c == '-')
@@ -2993,7 +2993,6 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	struct dhcp_context *new = opt_malloc(sizeof(struct dhcp_context));
 	
 	memset (new, 0, sizeof(*new));
-	new->lease_time = DEFLEASE;
 	
 	while(1)
 	  {
@@ -3043,6 +3042,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	if (inet_pton(AF_INET, a[0], &new->start))
 	  {
 	    new->next = daemon->dhcp;
+	    new->lease_time = DEFLEASE;
 	    daemon->dhcp = new;
 	    new->end = new->start;
 	    if (strcmp(a[1], "static") == 0)
@@ -3090,6 +3090,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	    new->flags |= CONTEXT_V6; 
 	    new->prefix = 64; /* default */
 	    new->end6 = new->start6;
+	    new->lease_time = DEFLEASE6;
 	    new->next = daemon->dhcp6;
 	    daemon->dhcp6 = new;
 
@@ -3189,7 +3190,10 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 	      }
 	    
 	    if (strcmp(a[leasepos], "infinite") == 0)
-	      new->lease_time = 0xffffffff;
+	      {
+		new->lease_time = 0xffffffff;
+		new->flags |= CONTEXT_SETLEASE;
+	      }
 	    else if (strcmp(a[leasepos], "deprecated") == 0)
 	      new->flags |= CONTEXT_DEPRECATE;
 	    else
@@ -3228,6 +3232,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		      ret_err_free(_("bad dhcp-range"), new);
 		    
 		    new->lease_time = atoi(a[leasepos]) * fac;
+		    new->flags |= CONTEXT_SETLEASE;
 		    /* Leases of a minute or less confuse
 		       some clients, notably Apple's */
 		    if (new->lease_time < 120)
@@ -3235,6 +3240,7 @@ static int one_opt(int option, char *arg, char *errstr, char *gen_err, int comma
 		  }
 	      }
 	  }
+
 	break;
       }
 

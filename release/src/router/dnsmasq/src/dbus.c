@@ -237,7 +237,7 @@ static DBusMessage *dbus_reply_server_loop(DBusMessage *message)
   for (serv = daemon->servers; serv; serv = serv->next)
     if (serv->flags & SERV_LOOP)
       {
-	prettyprint_addr(&serv->addr, daemon->addrbuff);
+	(void)prettyprint_addr(&serv->addr, daemon->addrbuff);
 	dbus_message_iter_append_basic (&args_iter, DBUS_TYPE_STRING, &daemon->addrbuff);
       }
   

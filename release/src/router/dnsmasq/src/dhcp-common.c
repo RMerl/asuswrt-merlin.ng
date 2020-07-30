@@ -38,7 +38,7 @@ void dhcp_common_init(void)
 
 ssize_t recv_dhcp_packet(int fd, struct msghdr *msg)
 {  
-  ssize_t sz;
+  ssize_t sz, new_sz;
  
   while (1)
     {
@@ -65,9 +65,18 @@ ssize_t recv_dhcp_packet(int fd, struct msghdr *msg)
 	}
     }
   
-  while ((sz = recvmsg(fd, msg, 0)) == -1 && errno == EINTR);
+  while ((new_sz = recvmsg(fd, msg, 0)) == -1 && errno == EINTR);
+
+  /* Some kernels seem to ignore MSG_PEEK, and dequeue the packet anyway. 
+     If that happens we get EAGAIN here because the socket is non-blocking.
+     Use the result of the original testing recvmsg as long as the buffer
+     was big enough. There's a small race here that may lose the odd packet,
+     but it's UDP anyway. */
   
-  return (msg->msg_flags & MSG_TRUNC) ? -1 : sz;
+  if (new_sz == -1 && (errno == EWOULDBLOCK || errno == EAGAIN))
+    new_sz = sz;
+  
+  return (msg->msg_flags & MSG_TRUNC) ? -1 : new_sz;
 }
 
 struct dhcp_netid *run_tag_if(struct dhcp_netid *tags)

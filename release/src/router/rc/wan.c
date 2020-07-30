@@ -2083,7 +2083,7 @@ int update_resolvconf(void)
 
 /* Add DNS if no VPN client is globally set to exclusive */
 #ifdef RTCONFIG_OPENVPN
-	dnsmode = get_max_dnsmode();
+	dnsmode = ovpn_max_dnsmode();
 	if (dnsmode != OVPN_DNSMODE_EXCLUSIVE)
 #endif
 	{

@@ -34,6 +34,35 @@
 #include "openvpn_config.h"
 #include "openvpn_control.h"
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+// Determine how to handle dnsmasq server list based on
+// highest active dnsmode
+int ovpn_max_dnsmode() {
+	int unit, maxlevel = 0, level;
+	char filename[40];
+	char varname[32];
+
+	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
+		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+		if (f_exists(filename)) {
+			sprintf(varname, "vpn_client%d_", unit);
+			level = nvram_pf_get_int(varname, "adns");
+
+			// Ignore exclusive mode if policy mode is also enabled
+			if ((nvram_pf_get_int(varname, "rgw") >= OVPN_RGW_POLICY ) && (level == OVPN_DNSMODE_EXCLUSIVE))
+				continue;
+
+			// Only return the highest active level, so one exclusive client
+			// will override a relaxed client.
+			if (level > maxlevel) maxlevel = level;
+		}
+	}
+	return maxlevel;
+}
+
 int _check_ovpn_enabled(int unit, ovpn_type_t type){
 	char tmp[2];
 	char* varname = NULL;
@@ -156,4 +185,234 @@ ovpn_errno_t get_ovpn_errno(ovpn_type_t type, int unit)
 
 	sprintf(varname, "vpn_%s%d_errno", (type == OVPN_TYPE_SERVER ? "server" : "client"), unit);
 	return nvram_get_int(varname);
+}
+
+void ovpn_server_up_handler(int unit)
+{
+	_ovpn_run_event_script();
+}
+
+void ovpn_server_down_handler(int unit)
+{
+	_ovpn_run_event_script();
+}
+
+void ovpn_client_down_handler(int unit)
+{
+	char buffer[64];
+	char dirname[64];
+
+	if ((unit < 1) || (unit > OVPN_CLIENT_MAX))
+		return;
+
+	sprintf(buffer, "DNSVPN%d", unit);
+	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-F", buffer);
+	eval("/usr/sbin/iptables", "-t", "nat", "-X", buffer);
+
+	sprintf(dirname, "/etc/openvpn/client%d", unit);
+
+	sprintf(buffer, "%s/qos.sh", dirname);
+	if (f_exists(buffer)) {
+		eval("sed", "-i", "s/-A/-D/g", buffer);
+		eval(buffer);
+		unlink(buffer);
+	}
+
+	sprintf(buffer, "%s/dns.sh", dirname);
+	if (f_exists(buffer))
+		unlink(buffer);
+
+	sprintf(buffer, "%s/client.resolv", dirname);
+	if (f_exists(buffer))
+		unlink(buffer);
+
+	sprintf(buffer, "%s/client.conf", dirname);
+	if (f_exists(buffer))
+		unlink(buffer);
+}
+
+
+void ovpn_client_up_handler(int unit)
+{
+	char buffer[64];
+	char dirname[64];
+	char prefix[32];
+	FILE *fp_dns = NULL, *fp_resolv = NULL, *fp_conf = NULL, *fp_qos = NULL;
+	int setdns;
+	int i, j;
+	char *option, *option2;
+	struct in_addr addr;
+
+	if ((unit < 1) || (unit > OVPN_CLIENT_MAX))
+		return;
+
+	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
+	sprintf(dirname, "/etc/openvpn/client%d", unit);
+
+	// tQOS fix
+	if ((nvram_pf_get_int(prefix, "rgw") >= 1) &&
+	    (nvram_get_int("qos_enable") == 1) &&
+	    (nvram_get_int("qos_type") == 1)) {
+		sprintf(buffer, "%s/qos.sh", dirname);
+		fp_qos = fopen(buffer, "w");
+		if (fp_qos) {
+			fprintf(fp_qos, "#!/bin/sh\n"
+				        "/usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000\n");
+			fclose(fp_qos);
+			chmod(buffer, 0755);
+			eval(buffer);
+		}
+	}
+
+	// DNS stuff
+	if (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_IGNORE)
+		goto exit;
+
+	sprintf(buffer, "%s/dns.sh", dirname);
+	fp_dns = fopen(buffer, "w");
+	if (!fp_dns)
+		goto exit;
+
+	fprintf(fp_dns, "#!/bin/sh\n"
+	            "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
+	             unit);
+
+	if ((nvram_pf_get_int(prefix, "rgw") >= 2) && (nvram_pf_get_int(prefix, "adns") == OVPN_DNSMODE_EXCLUSIVE))
+		setdns = 0;	// Need to configure enforced DNS
+	else
+		setdns = -1;	// Do not enforce DNS
+
+	// Parse foreign options
+	for (i = 1; i < 999; i++) {
+		sprintf(buffer, "foreign_option_%d", i);
+		option = getenv(buffer);
+		//logmessage("openvpn", "Checking %s", buffer);
+		if (!option)
+			break;
+
+		if (!strncmp(option, "dhcp-option WINS ", 17)) {
+			if (!inet_aton(&option[17], &addr))
+				continue;
+
+			if (!fp_conf) {
+				sprintf(buffer, "%s/client.conf", dirname);
+				if ((fp_conf = fopen(buffer, "w")) == NULL)
+					goto exit;
+			}
+			fprintf(fp_conf, "dhcp-option=44,%s\n", &option[17]);
+
+		} else if (!strncmp(option, "dhcp-option DNS ", 16)) {
+			if (!inet_aton(&option[16], &addr))
+				continue;
+
+			if (!fp_resolv) {
+				sprintf(buffer, "%s/client.resolv", dirname);
+				if ((fp_resolv = fopen(buffer, "w")) == NULL)
+					goto exit;
+			}
+			fprintf(fp_resolv, "server=%s\n", &option[16]);
+
+			if (!setdns) {
+				_set_exclusive_dns(fp_dns, unit, &option[16]);
+				setdns = 1;
+			}
+
+			// Any search domains for that server
+			for (j = 1; j < 999; j++) {
+				sprintf(buffer, "foreign_option_%d", j);
+				option2 = getenv(buffer);
+				if (!option2)
+					break;
+				if (!strncmp(option2, "dhcp-option DOMAIN ", 19)) {
+					fprintf(fp_resolv, "server=/%s/%s\n", &option2[19], &option[16]);
+				}
+			}
+		}
+	}
+
+exit:
+	if (fp_dns) {
+		fclose(fp_dns);
+		sprintf(buffer, "%s/dns.sh", dirname);
+		chmod(buffer, 0755);
+		eval(buffer);
+	}
+
+	if (fp_resolv)
+		fclose(fp_resolv);
+
+	if (fp_conf)
+		fclose(fp_conf);
+
+	_ovpn_run_event_script();
+}
+
+
+void _set_exclusive_dns(FILE *fp, int unit, char *server) {
+	char rules[2048], buffer[32];
+	char *nvp, *entry;
+	char *src, *dst, *iface, *name;
+	struct in_addr addr;
+
+	if (!fp) return;
+
+	sprintf(buffer, "vpn_client%d_clientlist", unit);
+#ifdef HND_ROUTER
+	nvram_split_get(buffer, rules, sizeof (rules), 5);
+#else
+	strlcpy(rules, nvram_safe_get(buffer), sizeof(rules));
+#endif
+
+	nvp = rules;
+
+	while ((entry = strsep(&nvp, "<")) != NULL) {
+		if (vstrsep(entry, ">", &name, &src, &dst, &iface) != 4)
+			continue;
+
+		if (*src && inet_aton(src, &addr)) {
+			if (!strcmp(iface, "VPN")) {
+                                fprintf(fp, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
+                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+                        } else if (!strcmp(iface, "WAN")) {
+                                fprintf(fp, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
+                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
+                        }
+		}
+	}
+
+	fprintf(fp, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
+	            "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
+	             unit, unit);
+}
+
+
+char *_safe_getenv(const char* name) {
+	char *value;
+
+	value = getenv(name);
+	return (value ? value : "");
+}
+
+
+void _ovpn_run_event_script() {
+	ovpn_if_t type;
+
+	if (!strncmp(_safe_getenv("dev"),"tun", 3))
+		type = OVPN_IF_TUN;
+	else if (!strncmp(_safe_getenv("dev"),"tap", 3))
+		type = OVPN_IF_TAP;
+	else
+		return;
+
+	if (f_exists("/jffs/scripts/openvpn-event")) {
+		if (nvram_get_int("jffs2_scripts") == 0) {
+			logmessage("custom_script", "Found openvpn-event, but custom script execution is disabled!");
+		} else {
+			eval("/jffs/scripts/openvpn-event", _safe_getenv("dev"), (type == OVPN_IF_TUN ? _safe_getenv("tun_mtu") : _safe_getenv("tap_mtu")), _safe_getenv("link_mtu"),
+			      _safe_getenv("ifconfig_local"), _safe_getenv("ifconfig_remote"), _safe_getenv("script_context"));
+			logmessage("custom_script", "Running openvpn-event");
+		}
+	}
 }

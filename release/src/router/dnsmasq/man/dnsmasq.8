@@ -428,7 +428,7 @@ Tells dnsmasq to never forward A or AAAA queries for plain names, without dots
 or domain parts, to upstream nameservers. If the name is not known
 from /etc/hosts or DHCP then a "not found" answer is returned.
 .TP
-.B \-S, --local, --server=[/[<domain>]/[domain/]][<ipaddr>[#<port>][@<source-ip>|<interface>[#<port>]]
+.B \-S, --local, --server=[/[<domain>]/[domain/]][<ipaddr>[#<port>]][@<source-ip>|<interface>[#<port>]]
 Specify IP address of upstream servers directly. Setting this flag does
 not suppress reading of /etc/resolv.conf, use \fB--no-resolv\fP to do that. If one or more
 optional domains are given, that server is used only for those domains
@@ -861,7 +861,7 @@ in
 options. If the lease time is given, then leases
 will be given for that length of time. The lease time is in seconds,
 or minutes (eg 45m) or hours (eg 1h) or "infinite". If not given,
-the default lease time is one hour. The
+the default lease time is one hour for IPv4 and one day for IPv6. The
 minimum lease time is two minutes. For IPv6 ranges, the lease time
 maybe "deprecated"; this sets the preferred lifetime sent in a DHCP
 lease or router advertisement to zero, which causes clients to use

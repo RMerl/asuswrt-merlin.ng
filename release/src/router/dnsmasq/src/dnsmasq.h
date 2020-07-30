@@ -568,7 +568,8 @@ struct irec {
 };
 
 struct listener {
-  int fd, tcpfd, tftpfd, family;
+  int fd, tcpfd, tftpfd, used;
+  union mysockaddr addr;
   struct irec *iface; /* only sometimes valid for non-wildcard */
   struct listener *next;
 };
@@ -938,6 +939,7 @@ struct shared_network {
 #define CONTEXT_OLD            (1u<<16)
 #define CONTEXT_V6             (1u<<17)
 #define CONTEXT_RA_OFF_LINK    (1u<<18)
+#define CONTEXT_SETLEASE       (1u<<19)
 
 struct ping_result {
   struct in_addr addr;
@@ -1455,7 +1457,7 @@ void clear_cache_and_reload(time_t now);
 
 /* netlink.c */
 #ifdef HAVE_LINUX_NETWORK
-void netlink_init(void);
+char *netlink_init(void);
 void netlink_multicast(void);
 #endif
 

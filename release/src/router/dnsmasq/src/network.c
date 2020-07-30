@@ -388,10 +388,11 @@ static int iface_allowed(struct iface_param *param, int if_index, char *label,
   /* check whether the interface IP has been added already 
      we call this routine multiple times. */
   for (iface = daemon->interfaces; iface; iface = iface->next) 
-    if (sockaddr_isequal(&iface->addr, addr))
+    if (sockaddr_isequal(&iface->addr, addr) && iface->index == if_index)
       {
 	iface->dad = !!(iface_flags & IFACE_TENTATIVE);
 	iface->found = 1; /* for garbage collection */
+	iface->netmask = netmask;
 	return 1;
       }
 
@@ -532,7 +533,82 @@ static int iface_allowed_v4(struct in_addr local, int if_index, char *label,
 
   return iface_allowed((struct iface_param *)vparam, if_index, label, &addr, netmask, prefix, 0);
 }
-   
+
+/*
+ * Clean old interfaces no longer found.
+ */
+static void clean_interfaces()
+{
+  struct irec *iface;
+  struct irec **up = &daemon->interfaces;
+
+  for (iface = *up; iface; iface = *up)
+  {
+    if (!iface->found && !iface->done)
+      {
+        *up = iface->next;
+        free(iface->name);
+        free(iface);
+      }
+    else
+      {
+        up = &iface->next;
+      }
+  }
+}
+
+/** Release listener if no other interface needs it.
+ *
+ * @return 1 if released, 0 if still required
+ */
+static int release_listener(struct listener *l)
+{
+  if (l->used > 1)
+    {
+      struct irec *iface;
+      for (iface = daemon->interfaces; iface; iface = iface->next)
+	if (iface->done && sockaddr_isequal(&l->addr, &iface->addr))
+	  {
+	    if (iface->found)
+	      {
+		/* update listener to point to active interface instead */
+		if (!l->iface->found)
+		  l->iface = iface;
+	      }
+	    else
+	      {
+		l->used--;
+		iface->done = 0;
+	      }
+	  }
+
+      /* Someone is still using this listener, skip its deletion */
+      if (l->used > 0)
+	return 0;
+    }
+
+  if (l->iface->done)
+    {
+      int port;
+
+      port = prettyprint_addr(&l->iface->addr, daemon->addrbuff);
+      my_syslog(LOG_DEBUG, _("stopped listening on %s(#%d): %s port %d"),
+		l->iface->name, l->iface->index, daemon->addrbuff, port);
+      /* In case it ever returns */
+      l->iface->done = 0;
+    }
+
+  if (l->fd != -1)
+    close(l->fd);
+  if (l->tcpfd != -1)
+    close(l->tcpfd);
+  if (l->tftpfd != -1)
+    close(l->tftpfd);
+
+  free(l);
+  return 1;
+}
+
 int enumerate_interfaces(int reset)
 {
   static struct addrlist *spare = NULL;
@@ -630,6 +706,7 @@ int enumerate_interfaces(int reset)
 	 in OPT_CLEVERBIND mode, that at listener will just disappear after
 	 a call to enumerate_interfaces, this is checked OK on all calls. */
       struct listener *l, *tmp, **up;
+      int freed = 0;
       
       for (up = &daemon->listeners, l = daemon->listeners; l; l = tmp)
 	{
@@ -637,25 +714,17 @@ int enumerate_interfaces(int reset)
 	  
 	  if (!l->iface || l->iface->found)
 	    up = &l->next;
-	  else
+	  else if (release_listener(l))
 	    {
-	      *up = l->next;
-	      
-	      /* In case it ever returns */
-	      l->iface->done = 0;
-	      
-	      if (l->fd != -1)
-		close(l->fd);
-	      if (l->tcpfd != -1)
-		close(l->tcpfd);
-	      if (l->tftpfd != -1)
-		close(l->tftpfd);
-	      
-	      free(l);
+	      *up = tmp;
+	      freed = 1;
 	    }
 	}
+
+      if (freed)
+	clean_interfaces();
     }
-  
+
   errno = errsave;
   spare = param.spare;
     
@@ -895,10 +964,11 @@ static struct listener *create_listeners(union mysockaddr *addr, int do_tftp, in
     {
       l = safe_malloc(sizeof(struct listener));
       l->next = NULL;
-      l->family = addr->sa.sa_family;
       l->fd = fd;
       l->tcpfd = tcpfd;
-      l->tftpfd = tftpfd;	
+      l->tftpfd = tftpfd;
+      l->addr = *addr;
+      l->used = 1;
       l->iface = NULL;
     }
 
@@ -937,20 +1007,48 @@ void create_wildcard_listeners(void)
   daemon->listeners = l;
 }
 
+static struct listener *find_listener(union mysockaddr *addr)
+{
+  struct listener *l;
+  for (l = daemon->listeners; l; l = l->next)
+    if (sockaddr_isequal(&l->addr, addr))
+      return l;
+  return NULL;
+}
+
 void create_bound_listeners(int dienow)
 {
   struct listener *new;
   struct irec *iface;
   struct iname *if_tmp;
+  struct listener *existing;
 
   for (iface = daemon->interfaces; iface; iface = iface->next)
-    if (!iface->done && !iface->dad && iface->found &&
-	(new = create_listeners(&iface->addr, iface->tftp_ok, dienow)))
+    if (!iface->done && !iface->dad && iface->found)
       {
-	new->iface = iface;
-	new->next = daemon->listeners;
-	daemon->listeners = new;
-	iface->done = 1;
+	existing = find_listener(&iface->addr);
+	if (existing)
+	  {
+	    iface->done = 1;
+	    existing->used++; /* increase usage counter */
+	  }
+	else if ((new = create_listeners(&iface->addr, iface->tftp_ok, dienow)))
+	  {
+	    new->iface = iface;
+	    new->next = daemon->listeners;
+	    daemon->listeners = new;
+	    iface->done = 1;
+
+	    /* Don't log the initial set of listen addresses created
+               at startup, since this is happening before the logging
+               system is initialised and the sign-on printed. */
+            if (!dienow)
+              {
+		int port = prettyprint_addr(&iface->addr, daemon->addrbuff);
+		my_syslog(LOG_DEBUG, _("listening on %s(#%d): %s port %d"),
+			  iface->name, iface->index, daemon->addrbuff, port);
+	      }
+	  }
       }
 
   /* Check for --listen-address options that haven't been used because there's
@@ -970,6 +1068,12 @@ void create_bound_listeners(int dienow)
       {
 	new->next = daemon->listeners;
 	daemon->listeners = new;
+
+	if (!dienow)
+	  {
+	    int port = prettyprint_addr(&if_tmp->addr, daemon->addrbuff);
+	    my_syslog(LOG_DEBUG, _("listening on %s port %d"), daemon->addrbuff, port);
+	  }
       }
 }
 
@@ -1301,7 +1405,7 @@ void pre_allocate_sfds(void)
 	errno != 0 &&
 	option_bool(OPT_NOWILD))
       {
-	prettyprint_addr(&srv->source_addr, daemon->namebuff);
+	(void)prettyprint_addr(&srv->source_addr, daemon->namebuff);
 	if (srv->interface[0] != 0)
 	  {
 	    strcat(daemon->namebuff, " ");

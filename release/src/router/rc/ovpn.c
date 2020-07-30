@@ -6,6 +6,7 @@
 
 #include "rc.h"
 
+#if 0	// Replaced by rc/openvpn.c versions
 int ovpn_up_main(int argc, char **argv)
 {
 //	ovpn_up_handler();
@@ -31,6 +32,7 @@ int ovpn_route_up_main(int argc, char **argv)
 
 	return 0;
 }
+#endif
 
 void create_ovpn_passwd()
 {

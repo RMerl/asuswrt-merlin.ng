@@ -303,20 +303,31 @@ int nvram_commit(void)
 {
 	int r = 0;
 	FILE *fp;
+	pid_t pid = getpid();
+	int n;
 
 	if (nvram_get(ASUS_STOP_COMMIT) != NULL)
 	{
-		cprintf("# skip nvram commit #\n");
+		cprintf("# %s skip pid(%d %s) #\n", __func__, pid, get_process_name_by_pid(pid));
 		return r;
 	}
 
 	fp = fopen("/var/log/commit_ret", "w");
 
-	if (wait_action_idle(10)) {
-		if (nvram_fd < 0) {
-			if ((r = nvram_init(NULL)) != 0) goto finish;
-		}
+	if (n = wait_action_idle(10)) {
 		set_action(ACT_NVRAM_COMMIT);
+		if (n != 10 && nvram_get(ASUS_STOP_COMMIT) != NULL)
+		{
+			set_action(ACT_IDLE);
+			cprintf("# %s SKIP pid(%d %s) #\n", __func__, pid, get_process_name_by_pid(pid));
+			return r;
+		}
+		if (nvram_fd < 0) {
+			if ((r = nvram_init(NULL)) != 0) {
+				set_action(ACT_IDLE);
+				goto finish;
+			}
+		}
 //		nvram_unset("dirty");
 		r = ioctl(nvram_fd, NVRAM_MAGIC, NULL);
 		set_action(ACT_IDLE);

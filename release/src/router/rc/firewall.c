@@ -1673,7 +1673,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 		wanx_rules = 1;
 #endif
 #ifdef RTCONFIG_OPEN_NAT
-		fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wan_ip);
+		fprintf(fp, "-A PREROUTING -d %s -j GAME_VSERVER\n", wanx_ip);
 #endif
 		fprintf(fp, "-A PREROUTING -d %s -j VSERVER\n", wanx_ip);
 	}

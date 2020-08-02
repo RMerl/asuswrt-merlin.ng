@@ -226,6 +226,10 @@ function initial(){
 	}
 	
 	if(sw_mode != 1){
+		document.form.sshd_enable.remove(2);
+		if (ssh_support && ("<% nvram_get("sshd_enable"); %>" == "1"))
+			document.form.sshd_enable.selectedIndex = 1;
+
 		document.getElementById('misc_http_x_tr').style.display = "none";
 		hideport(0);
 		document.form.misc_http_x.disabled = true;

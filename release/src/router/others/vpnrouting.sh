@@ -11,7 +11,6 @@ my_logger(){
 	fi
 }
 
-
 create_client_list(){
 	OLDIFS=$IFS
 	IFS="<"

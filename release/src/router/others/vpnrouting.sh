@@ -29,7 +29,7 @@ create_client_list(){
 			TARGET_LOOKUP=$VPN_TBL
 			VPN_PRIO=$((VPN_PRIO+1))
 			RULE_PRIO=$VPN_PRIO
-			TARGET_NAME="VPN client "$VPN_UNIT
+			TARGET_NAME="VPN client $VPN_UNIT"
 		fi
 		VPN_IP=$(echo $ENTRY | cut -d ">" -f 2)
 		if [ "$VPN_IP" != "0.0.0.0" ] && [ -n "$VPN_IP" ]

@@ -257,35 +257,18 @@ void start_ubifs(void)
 	}
 	sprintf(s, "/dev/ubi%d_%d", dev, part);
 
-	int loop = 1;
-	while (loop <= 4)
-	{
+	if (mount(s, UBIFS_MNT_DIR, UBIFS_FS_TYPE, MS_NOATIME, "") != 0) {
+		_dprintf("*** ubifs mount error\n");
+		eval("ubidetach", "-p", dev_mtd);
+		eval("ubiformat", "-y", dev_mtd);
+		eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
+		eval("ubimkvol", UBI_DEV_PATH, "-N", UBIFS_VOL_NAME, "-m");
+		format = 1;
 		if (mount(s, UBIFS_MNT_DIR, UBIFS_FS_TYPE, MS_NOATIME, "") != 0) {
-			if (loop == 4) {
-				error("mounting");
-				return;
-			}
-			_dprintf("*** ubifs mount error - %d time\n", loop);
-			num_avail_leb = num_leb - (NUM_OH_LEB * loop);
-			vol_size = (num_avail_leb * LEBS) >> 10;	/* convert to KiB unit */
-			if (vol_size > 0) {
-				char vol_size_s[32] = {0};
-				snprintf(vol_size_s, sizeof(vol_size_s), "%dKiB", vol_size);
-				_dprintf("*** ubifs: mtd_part(%02x), num_leb(%d), num_avail_leb(%d), vol_size(%s)\n", mtd_part, num_leb, num_avail_leb, vol_size_s);
-				eval("ubidetach", "-p", dev_mtd);
-				eval("ubiformat", "-y", dev_mtd);
-				eval("ubiattach", "-p", dev_mtd, "-d", UBI_DEV_NUM);
-				eval("ubimkvol", UBI_DEV_PATH, "-s", vol_size_s, "-N", UBIFS_VOL_NAME);
-			}
-			if (ubifs_erase(dev, part)) {
-				error("formatting");
-				continue;
-			}
-		} else {
-			format = 1;
-			break;
+			_dprintf("*** ubifs 2-nd mount error\n");
+			error("mounting");
+			return;
 		}
-		loop++;
 	}
 
 

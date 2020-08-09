@@ -4475,6 +4475,7 @@ tools_screen_desc=Configures the screen of router.
 screen_info=Screen Infomation
 mcu_version=MCU Version
 screen_settings=Screen Settings
+screen_switch=Enable Screen
 weather_key=Weather API key
 weather_key_hint=Free signup and get API private key from <a style="text-decoration: underline;color:#FC0;" href="https://www.seniverse.com" target="_blank">www.seniverse.com</a>
 weather_city=City

@@ -4475,6 +4475,7 @@ tools_screen_desc=设置路由器的屏幕。
 screen_info=屏幕信息
 mcu_version=MCU固件版本
 screen_settings=屏幕设置
+screen_switch=启用屏幕
 weather_key=天气API密钥
 weather_key_hint=免费在<a style="text-decoration: underline;color:#FC0;" href="https://www.seniverse.com" target="_blank">www.seniverse.com</a>注册心知天气帐号，获取API私钥。
 weather_city=城市

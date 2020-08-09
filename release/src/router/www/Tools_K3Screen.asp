@@ -16,6 +16,9 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
 function applyRule(){
@@ -54,6 +57,7 @@ function initial(){
 <input type="hidden" name="first_time" value="">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="screen_enable" value="<% nvram_get("screen_enable"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -94,6 +98,27 @@ function initial(){
 			<td colspan="2"><#screen_settings#></td>
 		</tr>
 	</thead>
+        <tr>
+          <th><#screen_switch#></th>
+			<td>
+				<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="screen_enable"></div>
+				<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+					<script type="text/javascript">
+						$('#screen_enable').iphoneSwitch('<% nvram_get("screen_enable"); %>',
+							function(){
+								document.form.screen_enable.value = 1;
+								applyRule();
+							},
+							function(){
+								document.form.screen_enable.value = 0;
+								applyRule();
+							}
+						);
+					</script>
+				</div>
+			</td>
+        </tr>
+
         <tr>
           <th><#weather_key#></th>
           <td>

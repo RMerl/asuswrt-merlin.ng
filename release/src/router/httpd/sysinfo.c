@@ -553,7 +553,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			fp = fopen("/proc/mounts", "r");
 			if (fp) {
 				while(!feof(fp))  {
-					fscanf(fp, "%s %s", device, path);
+					fscanf(fp, "%30s %30s", device, path);
 					if (strcmp(path, "/jffs") == 0 && strstr(device, "/dev/s")) {
 						sprintf(result, "%d", 1);
 						break;

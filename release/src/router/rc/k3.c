@@ -117,7 +117,7 @@ void update_cfe_k3(void)
 	envram_set("et0macaddr", et0mac);
 	envram_set("1:macaddr", et0mac); // 2.4G MAC is the same as LAN MAC in Merlin
 	envram_set("2:macaddr", wl2mac);
-	if (cfe_nvram_safe_get("1:macbak") == "")
+	if (!strlen(cfe_nvram_safe_get("1:macbak")))
 		envram_set("1:macbak", wl1mac); // Backup 2.4G MAC
 	envram_set("secret_code", PIN);
 	envram_commit();
@@ -179,26 +179,15 @@ void start_k3screen(void)
 	int time = nvram_get_int("screen_timeout");
 	snprintf(timeout, sizeof(timeout), "-m%d", time);
 	char *k3screenctrl_argv[] = {"k3screenctrl", timeout, NULL}; //screen timeout 30sec
-	char *k3screenbg_argv[] = {"k3screenbg", NULL};
-	pid_t pid1, pid2;
+	pid_t pid1;
 
 	killall_tk("k3screenctrl");
-	killall_tk("k3screenbg");
 
 	logmessage("K3INIT", "屏幕控制程序开始启动");
 	_dprintf("**** k3screen: start\n");
 	mkdir_if_none("/tmp/k3screenctrl");
 	doSystem("ln -snf /lib/k3screenctrl/* /tmp/k3screenctrl");
-	_eval(k3screenbg_argv, NULL, 0, &pid1);
-	_eval(k3screenctrl_argv, NULL, 0, &pid2);
-	if (!nvram_get("mcu_version"))
-	{
-		pid_t pid3;
-		sleep(3);
-		_eval(k3screenctrl_argv, NULL, 0, &pid3);
-		sleep(1);
-		kill(-pid3, SIGKILL);
-	}
+	_eval(k3screenctrl_argv, NULL, 0, &pid1);
 	_dprintf("**** k3screen: ok\n");
 }
 

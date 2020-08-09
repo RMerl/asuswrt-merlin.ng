@@ -7208,14 +7208,15 @@ void k3screen_check()
 	{
 		return;
 	}
-	if (!pids("k3screenbg"))
+	/*if (!pids("k3screenbg"))
 	{
 		char *k3screend_argv[] = { "k3screenbg", NULL };
 		pid_t pid;
 		_eval(k3screend_argv, NULL, 0, &pid);
 		logmessage("watchdog", "restart k3screenbg");
-	}
-	if (!pids("k3screenctrl")){
+	}*/
+	if (!pids("k3screenctrl"))
+	{
 		char timeout[6];
 		int time = nvram_get_int("screen_timeout");
 		snprintf(timeout, sizeof(timeout), "-m%d", time);

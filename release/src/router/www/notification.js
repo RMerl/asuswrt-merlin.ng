@@ -399,10 +399,14 @@ var notification = {
 			notification.low_nvram = 0;
 
 		// Low JFFS
-		if(<% sysinfo("jffs.free"); %> < 3){
+		var jffs_free = "<% sysinfo("jffs.free"); %>";
+		if(jffs_free < 3){
 			notification.array[18] = 'noti_low_jffs';
 			notification.low_jffs = 1;
-			notification.desc[18] = "Your router is running low on free JFFS storage, which might affect its stability.<br>Review the content of the /jffs directory on your router.";
+			if(jffs_free == -1)
+				notification.desc[18] = "Your router was unable to mount the JFFS partition, which will prevent it from working correctly.  Try rebooting it.";
+			else
+				notification.desc[18] = "Your router is running low on free JFFS storage, which might affect its stability.<br>Review the content of the /jffs directory on your router.";
 			notification.action_desc[18] = "Review System Information now";
 			notification.clickCallBack[18] = "location.href = 'Tools_Sysinfo.asp';"
 		}else

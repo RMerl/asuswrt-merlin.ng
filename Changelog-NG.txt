@@ -2,10 +2,15 @@ Asuswrt-Merlin 384/NG Changelog
 ===============================
 
 384.19 (xx-xxx-2020)
+  - NOTE: Due to flash partitioning changes done by Asus, it is
+          strongly recommended to make a backup of your JFFS
+          partition before upgrading the RT-AC86U, and restoring
+          that backup afterward.
   - NOTE: The RT-AX56U build is not available for this release.
+
   - NEW: Added support for static routes for PPTP/L2TP VPN
          clients, on the Static Route page (themiron)
-  - NEW: Added notification when jffs free space drops
+  - NEW: Added notification when JFFS free space drops
          below 3 MB.
   - UPDATED: Merged GPL 384_9354 for AX models.
   - UPDATED: Merged GPL 384_81992 for mainline models.
@@ -17,12 +22,12 @@ Asuswrt-Merlin 384/NG Changelog
              image for RT-AC68U.
   - UPDATED: dnsmasq to 2.82-openssl (themiron)
   - CHANGED: Rewrote a large portion of the OpenVPN implementation,
-             to make the code easier to maintain.  Functionality
+             to make the code easier to maintain.  The new libovpn
+             code is released under a GPL licence.  Functionality
              should largely remain the same.
   - CHANGED: Replaced updown-*.sh OpenVPN event handler scripts
-             with binary libovpn functions. Should only affect
-             people who were overwriting the original event
-             handler with their own.
+             with binary libovpn functions. The new code does
+             stricter validation of the configuration.
   - CHANGED: Enabling Client Config Dir (ccd) for an OpenVPN
              server in non-exclusive mode will no longer accept
              duplicate common names (to prevent issues with
@@ -34,7 +39,7 @@ Asuswrt-Merlin 384/NG Changelog
              for all of your users.
   - CHANGED: Removed the (undocumented) vpn_debug setting.  Debug
              logging will now only come from OpenVPN itself
-             (through the log verbosity setting).
+             (configurable through the log verbosity setting).
   - CHANGED: Improved mechanism for providing an available
              mount point for addon API scripters (dave14305)
   - CHANGED: Harmonized the various SSL certificate modes with
@@ -60,6 +65,8 @@ Asuswrt-Merlin 384/NG Changelog
            when an OpenVPN client failed to start properly.
   - FIXED: WINS provided by an OpenVPN server weren't properly
            used.
+  - FIXED: Some large DNS queries could fail when using DoT
+           (patch backported from upstream)
 
 
 384.18 (28-June-2020)

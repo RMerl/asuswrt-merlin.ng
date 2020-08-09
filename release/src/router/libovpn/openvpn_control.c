@@ -353,8 +353,9 @@ exit:
 void _set_exclusive_dns(FILE *fp, int unit, char *server) {
 	char rules[2048], buffer[32];
 	char *nvp, *entry;
-	char *src, *dst, *iface, *name;
+	char *src, *dst, *iface, *name, *netptr;
 	struct in_addr addr;
+	int mask;
 
 	if (!fp) return;
 
@@ -371,14 +372,27 @@ void _set_exclusive_dns(FILE *fp, int unit, char *server) {
 		if (vstrsep(entry, ">", &name, &src, &dst, &iface) != 4)
 			continue;
 
-		if (*src && inet_aton(src, &addr)) {
-			if (!strcmp(iface, "VPN")) {
-                                fprintf(fp, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
-                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
-                        } else if (!strcmp(iface, "WAN")) {
-                                fprintf(fp, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
-                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
-                        }
+		if (*src) {
+			strlcpy(buffer, src, sizeof(buffer));
+
+			if ((netptr = strchr(buffer, '/'))) {
+				*netptr = '\0';
+				mask = atoi(&netptr[1]);
+			} else {
+				mask = 32;
+			}
+
+			if ((mask >= 0) &&
+			    (mask <= 32) &&
+			    (inet_aton(buffer, &addr))) {
+				if (!strcmp(iface, "VPN")) {
+	                                fprintf(fp, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
+	                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+	                        } else if (!strcmp(iface, "WAN")) {
+	                                fprintf(fp, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
+	                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
+	                        }
+			}
 		}
 	}
 

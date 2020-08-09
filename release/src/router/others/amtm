@@ -10,11 +10,11 @@
 
 add=/jffs/addons/amtm
 amtmURL=https://fwupdate.asuswrt-merlin.net/amtm_fw
-amtmRev=4
+amtmRev=5
 
 a_m(){ [ -z "$am" ] && am=$1 || am="$am\\n$1";}
 c_nl(){ [ -n "$(tail -c2 "$1")" ] && echo >> "$1";}
-c_url(){ /usr/sbin/curl -fsNL --retry 2 --connect-timeout 3 -m 8 "$@";}
+c_url(){ /usr/sbin/curl -fsNL --connect-timeout 10 --retry 3 --max-time 12 "$@";}
 d_t_u(){ dos2unix < $1 | cmp -s - $1;[ "$?" = 1 ] && dos2unix $1;}
 p_r_l(){ echo "${R}_____________________________________________${NC}";}
 p_e_l(){ p_r_l;echo;}

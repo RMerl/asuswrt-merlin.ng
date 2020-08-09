@@ -2083,10 +2083,16 @@ void start_dnsmasq(void)
 		   "dhcp-ignore-names=tag:wpad-ignore\n");
 
 	/* dhcp-script */
+#if defined(RTCONFIG_SOFTCENTER)
+	if (!f_exists("/jffs/configs/dnsmasq.d/dhcp_trigger.conf"))
+#endif
 	fprintf(fp, "dhcp-script=/sbin/dhcpc_lease\n");
 #if defined(RTCONFIG_AMAS)
 	fprintf(fp, "script-arp\n");
 #endif
+#define dir_dnsmasq "/jffs/configs/dnsmasq.d"
+	if (d_exists(dir_dnsmasq))
+		fprintf(fp, "conf-dir=%s\n", dir_dnsmasq);
 
 	fprintf(fp, "edns-packet-max=1232\n");
 
@@ -2102,6 +2108,21 @@ void start_dnsmasq(void)
 	f_write(dmresolv, NULL, 0, FW_APPEND, 0644);
 	/* Create resolv.dnsmasq with empty server list */
 	f_write(dmservers, NULL, 0, FW_APPEND, 0644);
+
+#if defined(RTCONFIG_SOFTCENTER) && defined(RTCONFIG_AMAS)
+	fp = fopen("/jffs/configs/dnsmasq.d/dhcp_trigger.conf", "r");
+	if (fp) {
+		char buffer[128], file[128];
+		while (fgets(buffer, sizeof(buffer), fp)) {
+			if (sscanf(buffer, "dhcp-script=%115s", file) == 1) {
+				eval("sed", "-i", "/dhcpc_lease/d", file);
+				eval("sed", "-i", "2i\\/sbin/dhcpc_lease $@", file);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+#endif
 
 #ifdef RTCONFIG_DNSPRIVACY
 	start_stubby();

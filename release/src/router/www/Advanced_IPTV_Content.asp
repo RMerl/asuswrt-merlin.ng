@@ -62,6 +62,8 @@ var iptv_profiles = [<% get_iptvSettings();%>][0];
 var isp_profiles = iptv_profiles.isp_profiles;
 var stbPortMappings = [<% get_stbPortMappings();%>][0];
 var orig_wanports_bond = '<% nvram_get("wanports_bond"); %>';
+var orig_wnaports_bond = '<% nvram_get("wanports_bond"); %>';
+var modelname = '<% nvram_get("modelname"); %>';
 if(lacp_support){
 	if(based_modelid == "GT-AC5300")
 		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
@@ -152,7 +154,9 @@ function create_stb_select(switch_stb_x){
 				selected = true;
 
 			var option = new Option(text, option_list[i].value, false, selected);
-			select.options.add(option);
+			if(!(modelname == "K3" && text.indexOf("LAN4") != -1)){
+				select.options.add(option);
+			}
 		}
 	}
 
@@ -227,7 +231,9 @@ function set_manual_items(){
 			port_name = "LAN Port " + manual_settings.iptv_port.substr(3);
 		else
 			port_name = manual_settings.iptv_port;
-		document.getElementById("wan_iptv_port4_x").style.display = "";
+		if(modelname != "K3"){
+			document.getElementById("wan_iptv_port4_x").style.display = "";
+		}
 		document.getElementById("iptv_port4").innerHTML = port_name;
 	}
 

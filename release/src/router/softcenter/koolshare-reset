@@ -13,7 +13,7 @@ rm -rf /jffs/db
 rm -rf /jffs/.asusrouter
 rm -rf /jffs/.koolshare
 rm -rf /jffs/scripts/dnsmasq.postconf
-rm -rf /jffs/configs/dnsmasq/*
+rm -rf /jffs/configs/dnsmasq.d/*
 service restart_dnsmasq >/dev/null 2>&1
 
 sleep 1

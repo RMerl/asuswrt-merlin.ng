@@ -361,6 +361,7 @@ static void save(int quick)
 				if (eval("cp", hgz, tmp) == 0) {
 					//_dprintf("%s: copy ok\n", __FUNCTION__);
 
+#if 0
 					if (!nvram_match("rstats_bak", "0")) {
 						now = time(0);
 						tms = localtime(&now);
@@ -377,6 +378,7 @@ static void save(int quick)
 							if (eval("cp", "-p", save_path, bak) == 0) lastbak = tms->tm_yday;
 						}
 					}
+#endif
 
 					//_dprintf("%s: rename %s %s\n", __FUNCTION__, tmp, save_path);
 					if (rename(tmp, save_path) == 0) {
@@ -1326,7 +1328,7 @@ _dprintf("last_t= %ld\n", last_connect_time);
 				gothup = 0;
 			}
 			if (gotterm) {
-				save(!nvram_match("rstats_sshut", "1"));
+				save(0);
 				exit(0);
 			}
 			if (gotuser == 1) {

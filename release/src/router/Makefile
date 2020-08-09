@@ -944,7 +944,7 @@ obj-y += rom
 obj-y += others
 obj-y += libpasswd
 ifeq ($(RTK3),y)
-obj-y += k3screenctrl
+obj-y += k3screenctrl k3util
 #obj-y += bash
 endif
 ifeq ($(RTCONFIG_SOFTCENTER),y)

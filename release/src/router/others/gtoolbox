@@ -81,6 +81,26 @@ rm_softcenter_detect() {
 	sed -i 's/\tdetect_package/\t# detect_package/g' /koolshare/scripts/ks_tar_install.sh
 	echo "去除软件中心检测完成！"
 }
+
+upgrade_mcu_firmware() {
+	ORG_SCREEN=`nvram get screen_enable`
+	nvram set screen_enable=0
+
+	while [ "$(pidof k3screenctrl | grep -c [0-9])" -ge 1 ]; do
+		sleep 1
+	done
+
+	devmem 0x1800c1c1 32 0x00001f0f
+	phi_speed &
+	wl_cr &
+	uhmi
+	killall -9 wl_cr
+	killall -9 phi_speed
+	nvram unset mcu_version
+	nvram set screen_enable=${ORG_SCREEN}
+	nvram commit
+	echo "MCU固件升级完成！"
+}
 ####################################################################
 
 /usr/sbin/envrams >/dev/null
@@ -108,6 +128,7 @@ do
 	echo "6) 无线驱动更换成dhd.ko"
 	echo "7）格式化/dev/mtd5"
 	echo "8）去除软件中心检测"
+	echo "9）升级MCU固件"
 	echo "q) 退出"
 	echo
 	read -n 1 -p "Choice: " x
@@ -129,6 +150,8 @@ do
 		erase_mtd;sleep 1;;
 	8)
 		rm_softcenter_detect;sleep 1;;
+	9)
+		upgrade_mcu_firmware;sleep 1;;
     q)
 		killall -9 envrams; echo; exit;;
     *)

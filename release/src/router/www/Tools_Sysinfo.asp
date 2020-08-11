@@ -628,7 +628,7 @@ function update_sysinfo(e){
 						<td id="wlc_24_td"></td>
 					</tr>
 					<tr id="wifi5_clients_tr" style="display:none;">
-						<th id="wifi51_clients_th">Wireless clients (5 GHz)</th>
+						<th id="wifi51_clients_th">Wireless Clients (5 GHz)</th>
 						<td id="wlc_51_td"></td>
 					</tr>
 					<tr id="wifi5_2_clients_tr" style="display:none;">

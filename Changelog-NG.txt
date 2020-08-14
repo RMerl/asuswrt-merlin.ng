@@ -1,11 +1,12 @@
 Asuswrt-Merlin 384/NG Changelog
 ===============================
 
-384.19 (xx-xxx-2020)
+384.19 (14-Aug-2020)
   - NOTE: Due to flash partitioning changes done by Asus, it is
           strongly recommended to make a backup of your JFFS
           partition before upgrading the RT-AC86U, and restoring
-          that backup afterward.
+          that backup afterward.  If you run into issues,
+          reformat your JFFS partition and reboot.
   - NOTE: The RT-AX56U build is not available for this release.
 
   - NEW: Added support for static routes for PPTP/L2TP VPN

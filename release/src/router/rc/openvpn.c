@@ -385,7 +385,11 @@ void ovpn_write_dh(ovpn_sconf_t *sconf, int unit) {
 
 				dhparams = PEM_read_DHparams(fp, NULL, 0, NULL);
 				if (dhparams) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+					len = DH_bits(dhparams);
+#else
 					len = BN_num_bits(dhparams->p);
+#endif
 					OPENSSL_free(dhparams);
 				}
 				if ((len != 0) && (len < 1024))

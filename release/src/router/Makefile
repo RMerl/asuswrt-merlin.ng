@@ -3725,9 +3725,7 @@ k3screenctrl-clean:
 
 k3screenctrl-install: k3screenctrl
 	install -D k3screenctrl/src/k3screenctrl $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
-	install -D k3screenctrl/src/k3screenbg $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenbg
 	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
-	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenbg
 
 libev-4.22/configure:
 	cd libev-4.22 && ./autogen.sh

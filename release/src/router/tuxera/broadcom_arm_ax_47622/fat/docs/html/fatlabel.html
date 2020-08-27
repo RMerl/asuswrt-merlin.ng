@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+table.head, table.foot { width: 100%; }
+td.head-rtitle, td.foot-os { text-align: right; }
+td.head-vol { text-align: center; }
+table.foot td { width: 50%; }
+table.head td { width: 33%; }
+div.spacer { margin: 1em 0; }
+</style>
+<title>
+FATLABEL(8)</title>
+</head>
+<body>
+<div class="mandoc">
+<table class="head">
+<tbody>
+<tr>
+<td class="head-ltitle">
+FATLABEL(8)</td>
+<td class="head-vol">
+System Manager's Manual</td>
+<td class="head-rtitle">
+FATLABEL(8)</td>
+</tr>
+</tbody>
+</table>
+<div class="section">
+<h1>NAME</h1> fatlabel - display/change the label on a FAT file system</div>
+<div class="section">
+<h1>SYNOPSIS</h1> <b>fatlabel</b> [ <i>options</i>] <i>device</i></div>
+<div class="section">
+<h1>DESCRIPTION</h1> <b>fatlabel</b> will display or change the file system label on the FAT file system located on <i>device</i>.<div class="spacer">
+</div>
+If the option <b>-l</b>  is not specified, the current volume label will be printed to standard output and no modifications will be made.<div class="spacer">
+</div>
+It is also possible to set the file system label using the <b>-l</b> option of <b>mkfatfs</b>(8) during creation of the file system.</div>
+<div class="section">
+<h1>OPTIONS</h1> Below is a summary of all the options that <b>fatlabel</b> accepts.  Nearly all options have two equivalent names.  The short name is preceded by <b>-</b> and the long name is preceded by <b>--</b>.<dl>
+<dt>
+<b>--cp</b> CODEPAGE</dt>
+<dd>
+Use the given code page to decode or encode the volume label. The following code pages are supported: 437, 737, 775, 850, 852, 855, 857, 860, 861, 862, 863, 864, 865, 866, 869, 874, 932, 936, 949, 950. The default is 437.</dd>
+</dl>
+<dl>
+<dt>
+<b>-l</b>, <b>--label</b> LABEL</dt>
+<dd>
+Set the volume label for the filesystem. The volume label can be up to 11 bytes long when encoded with code page specified by --cp option.</dd>
+</dl>
+</div>
+<div class="section">
+<h1>PLEASE NOTE</h1> <b>fatlabel</b> currently does not support FAT12 volumes.</div>
+<div class="section">
+<h1>BUGS</h1> There are no known problems with <b>fatlabel</b>. If you find a bug please send an email describing the problem to fat-support@tuxera.com.</div>
+<div class="section">
+<h1>AUTHORS</h1> <b>fatlabel</b> was written by<div style="margin-left: 8.00ex;">
+Erik Larsson, Tuxera Inc.<div style="height: 0.00em;">
+&#160;</div>
+Sougata Santra, Tuxera Inc.</div>
+</div>
+<div class="section">
+<h1>AVAILABILITY</h1> <b>fatlabel</b> is part of the <b>Tuxera TFATprogs</b> package.</div>
+<table class="foot">
+<tr>
+<td class="foot-date">
+March 2014</td>
+<td class="foot-os">
+Tuxera TFATprogs 3017.7.17.3</td>
+</tr>
+</table>
+</div>
+</body>
+</html>
+

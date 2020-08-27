@@ -1746,13 +1746,18 @@ function _tabCreate(tabs)
 	var wireless_tab = 0;
 	var internet_tabs = [];
 	var internet_tab = 0;
+	var wired_tabs = [];
+	var wired_tab = 0;
 
 	for(var i = 0; i < arguments.length; i++){
 		if(arguments[i][0].indexOf("WIRELESS") != -1){
 			wireless_tabs.push(arguments[i]);
 		}
-		else if(arguments[i][0].indexOf("INTERNET") != -1){
+		else if(arguments[i][0].indexOf("INTERNET") != -1 || arguments[i][0].indexOf("WAGGR") != -1){
 			internet_tabs.push(arguments[i]);
+		}
+		else if(arguments[i][0].indexOf("WIRED") != -1 || arguments[i][0].indexOf("LACP") != -1){
+			wired_tabs.push(arguments[i]);
 		}
 	}
 
@@ -1787,6 +1792,51 @@ function _tabCreate(tabs)
 			}
 			else
 				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + '<#menu5_3_1#> (' + arguments[i][1] + ')</a></li>');
+		}
+		else if(arguments[i][0].indexOf("WAGGR") != -1){
+			if(internet_tabs.length > 1){
+				if(!internet_tab){
+					buf.push('<li><a style="margin-right: 3px;" href="#" id="internet_tabs">bond-slave</a>');
+					buf.push('<ul>');
+					for(var j = 0; j < internet_tabs.length; j++){
+						buf.push('<li><a href="javascript:tabSelect(\'' + internet_tabs[j][0] +'\')" id="' + internet_tabs[j][0] + '">' + internet_tabs[j][1] + '</a></li>');
+					}
+					buf.push('</ul></li>');
+					internet_tab = 1;
+				}
+			}
+			else
+				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a></li>');
+		}
+		else if(arguments[i][0].indexOf("WIRED") != -1){
+			if(wired_tabs.length > 1){
+				if(!wired_tab){
+					buf.push('<li><a style="margin-right: 3px;" href="#" id="wired_tabs"><#tm_wired#></a>');
+					buf.push('<ul>');
+					for(var j = 0; j < wired_tabs.length; j++){
+						buf.push('<li><a href="javascript:tabSelect(\'' + wired_tabs[j][0] +'\')" id="' + wired_tabs[j][0] + '">' + wired_tabs[j][1] + '</a></li>');
+					}
+					buf.push('</ul></li>');
+					wired_tab = 1;
+				}
+			}
+			else
+				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a></li>');
+		}
+		else if(arguments[i][0].indexOf("LACP") != -1){
+			if(wired_tabs.length > 1){
+				if(!wired_tab){
+					buf.push('<li><a style="margin-right: 3px;" href="#" id="wired_tabs">bond-slave</a>');
+					buf.push('<ul>');
+					for(var j = 0; j < wired_tabs.length; j++){
+						buf.push('<li><a href="javascript:tabSelect(\'' + wired_tabs[j][0] +'\')" id="' + wired_tabs[j][0] + '">' + wired_tabs[j][1] + '</a></li>');
+					}
+					buf.push('</ul></li>');
+					wired_tab = 1;
+				}
+			}
+			else
+				buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a></li>');
 		}
 		else
 		buf.push('<li><a style="margin-right: 3px;" href="javascript:tabSelect(\'' + arguments[i][0] + '\')" id="' + arguments[i][0] + '">' + arguments[i][1] + '</a>');

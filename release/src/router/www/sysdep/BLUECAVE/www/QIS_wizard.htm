@@ -20,6 +20,21 @@
 		<script type="text/javascript" src="./mobile/js/handler.js"></script>
 		<script>
 			$(document).ready(function(){
+				var getJsonFromUrl = (function(){
+					var query = location.search.substr(1);
+					var result = {};
+					query.split("&").forEach(function(part) {
+						var item = part.split("=");
+						result[item[0]] = decodeURIComponent(item[1]);
+					});
+					return result;
+				})();
+
+				if(getJsonFromUrl["flag"] == "amas_addNode"){
+					$("#welcome").hide();
+					installPages("amasAddNodePages");
+				}
+
 				document.querySelector("meta[name=viewport]").setAttribute(
 					'content', 'width=' + verge.viewportW() + ', target-densitydpi=device-dpi, initial-scale=' + (0.5*verge.viewportW())/375 + ', maximum-scale=1, user-scalable=no'
 				);
@@ -79,15 +94,6 @@
 					}
 
 					handleSysDep();
-					var getJsonFromUrl =  (function(){
-						var query = location.search.substr(1);
-						var result = {};
-						query.split("&").forEach(function(part) {
-							var item = part.split("=");
-							result[item[0]] = decodeURIComponent(item[1]);
-						});
-						return result;
-					})();
 
 					switch(getJsonFromUrl["flag"] || ""){
 						case "sitesurvey_rep":
@@ -113,6 +119,10 @@
 						break;
 						case "amasnode_page":
 							goTo.asNode();
+						break;
+						case "amas_addNode":
+							systemVariable.amas_newWindow_addNode = true;
+							setTimeout(goTo.amasearch, 50);
 						break;
 						default:
 							goTo.Welcome();
@@ -148,7 +158,7 @@
 					</tr>
 				</table>
 			</div>
-			<div class="tableContainerIndex">
+			<div class="tableContainerIndex">		
 				<div id="welcomeTitle"></div>
 				<div class="pageDesc" style="display:none"></div>
 
@@ -160,7 +170,7 @@
 					<div><div id="ROGLOGO"></div></div>
 				</div>
 
-				<div style="text-align:center;margin:50px 0">
+				<div style="text-align:center;margin:50px 0;">
 					<div id="welcome_button" onclick="apply.welcome();"></div>
 				</div>
 
@@ -174,14 +184,61 @@
 		
 				<div class="tos tosSupport">
 					<input id="tosCheckbox" type="checkbox" />
-					<span id="tosTitle">By using ASUS AiProtection, you agree to the</span>
+					<span id="tosTitle"><#TM_eula_confirm#>&nbsp;</span>
 					<a href="#" onclick="goTo.AsusPP()">ASUS Privacy Policy</a>, 
-					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> and 
+					<a href="#" onclick="goTo.AsusToS()">ASUS Terms of Use</a> & 
 					<a href="#" onclick="goTo.TMToS()">Trend Micro End User License Agreement</a>.
+				</div>
+			</div>			
+		</div>
+		
+		<!-- Prelink description -->
+		<div id="prelink_desc" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Setup_node#></div>
+					</div>
+				</div>
+				<div class="table_td">
+					<div class="pageDesc">
+						<div>
+							<div class="descSteps"><#Step_1#></div>
+							<div style="font-weight: normal;" id="setupNode_step1_desc"><#Setup_node_desc_step1#></div>
+						</div>
+						<div style="margin-top: 20px;">
+							<div class="descSteps"><#Step_2#></div>
+							<div style="font-weight: normal;"><#Setup_node_desc_step2#></div>
+						</div>
+						<div style="text-align: center;">
+							<div><img id="product_location" width="504" src="/images/product_location.png"></div>
+						</div>
+					</div>
+
+					<div>
+						<!-- Action Button -->
+						<div class="footer_desktop" style="margin-top:0px;">
+							<div class="desktop_abortBtn" onclick="abort.prelink()"><#CTL_prev#></div>
+							<div class="desktop_applyBtn" onclick="apply.prelink()"><#CTL_next#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" style="width:50%" onclick='abort.prelink()'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="apply.prelink()">
+										<div class="mobile_applyBtn"><#CTL_next#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
 				</div>
 			</div>
 		</div>
-		
+
 		<!-- Advanced Setting -->
 		<div id="advanced_setting" data-role="page" class="qisBackground">
 			<div class="headerBar"></div>
@@ -452,7 +509,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="selectorContainer">
+							<div class="selectorContainer apSupport">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="goTo.apMode()">
 										<#OP_AP_item#>
@@ -795,7 +852,7 @@
 							<div class="selectorContainer LWAN_10G">
 								<div class="selectorContainerDiv">
 									<div class="selectBar" onclick="apply.WAN10G();">
-										10G base-T
+										10G <#wan_ethernet#>
 									</div>
 									<div class="narrowContainer">
 										<div class="icon_arrow_right" style="width:20px;height:32px;"></div>
@@ -2172,7 +2229,7 @@
 					<!-- Action Button -->
 					<div class="footer_desktop">
 						<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
-						<div class="desktop_applyBtn" onclick="apply.amasbundle();"><#AiMesh_Add_Another_Node#></div>
+						<div class="desktop_applyBtn" onclick="goTo.amasearch();"><#AiMesh_Add_Another_Node#></div>
 					</div>
 					<div class="footer_mobile">
 						<table style="width:100%;" cellpadding="0" cellspacing="0">
@@ -2180,7 +2237,7 @@
 								<td class="mobileAbort" style="width:50%" onclick='abort.amasbundle();'>
 									<div class="mobile_abortBtn"><#CTL_finished#></div>
 								</td>
-								<td class="mobileApply" onclick="apply.amasbundle();">
+								<td class="mobileApply" onclick="goTo.amasearch();">
 									<div class="mobile_applyBtn"><#AiMesh_Add_Another_Node#></div>
 								</td>
 							</tr>
@@ -2189,6 +2246,12 @@
 				</div>
 			</div>			
 		</div>
+
+		<!-- AMAS Search -->
+		<div id="amassearch_page" data-role="page" class="qisBackground aimeshPages"></div>
+
+		<!-- AMAS Onboarding -->
+		<div id="amasonboarding_page" data-role="page" class="qisBackground aimeshPages"></div>
 
 		<!-- Err: Redirect Fail  -->
 		<div id="amaserr_connrouter_page" data-role="page" class="qisBackground aimeshPages"></div>
@@ -2310,5 +2373,13 @@
 			</div>
 		</div>
 
+		<div id="gundam_page" data-role="page" class="qisBackground" style="display:none">
+			<div class="GD-content">
+				<div style="display: flex;justify-content: center;">
+					<div class="GD-bg"></div>
+					<div class="GD-logo"></div>
+				</div>
+			</div>
+		</div>
 	</body>
 </html>

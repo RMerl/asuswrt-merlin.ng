@@ -25,7 +25,7 @@ vpath %.c $(SRCBASE)/protect_srv/
 
 ifeq ($(wildcard $(SRCBASE)/router/protect_srv/lib/*.c),)
 all: 
-	-cp -f prebuild$(BCMEX)$(EXHND)/libptcsrv.so libptcsrv.so
+	-cp -f prebuild/$(BUILD_NAME)/libptcsrv.so libptcsrv.so
 else
 all: libptcsrv.so libptcsrv.a
 endif

@@ -70,8 +70,6 @@
 #include "dtc.h"
 #include "srcpos.h"
 
-YYLTYPE yylloc;
-
 extern int yylex(void);
 extern void print_error(char const *fmt, ...);
 extern void yyerror(char const *s);
@@ -144,6 +142,7 @@ extern int yydebug;
    };
 #endif
 
+extern YYLTYPE yylloc;
 
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 typedef union YYSTYPE

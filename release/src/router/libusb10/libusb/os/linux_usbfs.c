@@ -2013,6 +2013,12 @@ static int submit_bulk_transfer(struct usbi_transfer *itransfer)
 		   2.6.32 and not a problem for most applications */
 		bulk_buffer_len = MAX_BULK_BUFFER_LENGTH;
 		use_bulk_continuation = 0;
+#ifdef ASUS_U2EC
+		if (transfer->bulk_buffer_len > 0 &&
+		    transfer->bulk_buffer_len < bulk_buffer_len) {
+			bulk_buffer_len = transfer->bulk_buffer_len;
+		}
+#endif
 	}
 
 	int num_urbs = transfer->length / bulk_buffer_len;

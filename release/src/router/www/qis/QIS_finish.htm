@@ -87,6 +87,7 @@ var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
 var webs_state_info = '<% nvram_get("webs_state_info"); %>';
+var webs_state_level = '<% nvram_get("webs_state_level"); %>';
 var PPPOEFAILREASON = "<#qis_fail_desc9#>";
 var delayTimeout = 500;
 
@@ -245,12 +246,12 @@ function doLiveUpdate(_do){
 		document.getElementById("newFWDetected").style.display = "none";
 		document.getElementById("progressBar").style.display = "";
 		document.start_update.action_mode.value="apply";
-		document.start_update.action_script.value="start_webs_upgrade";
+		document.start_update.action_script.value="stop_upgrade;start_webs_upgrade";
 		document.start_update.action_wait.value="300";
 		document.start_update.submit();
 	}
 	else{
-		setTimeout("parent.location.href='/'", 3000);
+		finish_qis();
 	}
 }
 
@@ -442,23 +443,30 @@ function checkIsNewFirmware(){
 		if(parent.new_FW_type==2){
 			document.getElementById("liveUpdate_div_leftbutton").value = "<#CTL_UpgradeNight#>";
 			document.getElementById("liveUpdate_div_rightbutton").value = "<#CTL_UpgradeNow#>";
+			if(parent.forceLevel==1){
+                document.getElementById("liveUpdate_div_leftbutton").style.display = "none";
+            }
 		}
 
 	}
 	else{
-		if(parent.sysReboot || isWLclient())
-			restartService();
-		else if(parent.changeSubnet){
-			document.restartForm.action_wait.value = 10;
-			document.restartForm.action_script.value = "restart_subnet";
-			document.restartForm.submit();
-		}
-		else
-		{
-			setTimeout(function(){
-				parent.location.href = '/';
-			}, delayTimeout);
-		}
+		finish_qis();
+	}
+}
+
+function finish_qis(){
+	if(parent.sysReboot || isWLclient())
+		restartService();
+	else if(parent.changeSubnet){
+		document.restartForm.action_wait.value = 10;
+		document.restartForm.action_script.value = "restart_subnet";
+		document.restartForm.submit();
+	}
+	else
+	{
+		setTimeout(function(){
+			parent.location.href = '/';
+		}, delayTimeout);
 	}
 }
 

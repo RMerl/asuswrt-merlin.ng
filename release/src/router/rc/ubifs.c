@@ -17,6 +17,7 @@
 #ifndef MNT_DETACH
 #define MNT_DETACH	0x00000002
 #endif
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 
 #define UBI_SYSFS_DIR	"/sys/class/ubi"
 

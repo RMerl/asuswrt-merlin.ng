@@ -17,6 +17,7 @@ LDFLAGS += -Wl,-soname,$(SONAME)
 LIB_SRCS = kvp.c log.c net.c misc.c
 LIB_OBJS = $(LIB_SRCS:.c=.o)
 LIB_NAME = libgpnutils.so
+STATIC_LIB_NAME = libgpnutils.a
 
 TEST_SRCS_1 = test_libgpnutils.c
 TEST_OBJS_1 = $(TEST_SRCS_1:.c=.o)
@@ -26,10 +27,11 @@ TEST_OBJS_2 = $(TEST_SRCS_2:.c=.o)
 UPSTREAM_NAME = libgpnutils_$(LIB_VER_MAJOR).$(LIB_VER_MINOR).$(LIB_VER_MICRO)
 
 LIB_TARGET = $(LIB_NAME).$(LIB_VER_MAJOR).$(LIB_VER_MINOR).$(LIB_VER_MICRO)
+STATIC_LIB_TARGET = $(STATIC_LIB_NAME)
 TEST_TARGETS = test_libgpnutils test_gpn_tcp_listen
 
 OBJS = $(LIB_OBJS) $(TEST_OBJS_1) $(TEST_OBJS_2)
-TARGETS = $(LIB_TARGET)
+TARGETS = $(STATIC_LIB_TARGET)
 
 LIB = $(DESTDIR)/usr/lib
 INC = $(DESTDIR)/usr/include
@@ -40,6 +42,9 @@ all: $(TARGETS)
 
 $(LIB_TARGET): $(LIB_OBJS)
 	$(CC) -shared $(LDFLAGS) -o $@ $(LIB_OBJS)
+
+$(STATIC_LIB_TARGET): $(LIB_OBJS)
+	$(AR) rcs $@ $(LIB_OBJS)
 
 test_libgpnutils: $(TEST_OBJS_1) $(LIB_OBJS)
 ifneq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
@@ -75,6 +80,17 @@ dist: clean
 
 deb: dist
 	git-buildpackage -uc -us -b
+
+# asuswrt
+PREBUILT_SRCS = $(filter-out $(wildcard $(LIB_SRCS)),$(LIB_SRCS))
+ifneq ($(PREBUILT_SRCS),)
+include ../../common.mak
+ifeq ($(RTCONFIG_BCMARM),y)
+PREBUILT_ARCH := $(BCMEX)$(EX7)
+endif
+$(PREBUILT_SRCS:.c=.o): %.o:  prebuilt$(PREBUILT_ARCH)/$(STATIC_LIB_TARGET)
+	$(AR) xo $< $@
+endif
 
 #
 # Tribute to a long-forgotten hack...

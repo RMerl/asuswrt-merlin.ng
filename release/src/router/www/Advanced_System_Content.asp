@@ -133,7 +133,9 @@ var uploaded_cert = false;
 var le_enable = '<% nvram_get("le_enable"); %>';
 var orig_http_enable = '<% nvram_get("http_enable"); %>';
 
-function initial(){	
+var captcha_support = isSupport("captcha");
+
+function initial(){
 	//parse nvram to array
 	var parseNvramToArray = function(oriNvram) {
 		var parseArray = [];
@@ -205,52 +207,36 @@ function initial(){
 	if (lanport == '') lanport = '80';
 	change_url(lanport, 'http_lan')
 
-	if(wifi_tog_btn_support || wifi_hw_sw_support || sw_mode == 2 || sw_mode == 4){		// wifi_tog_btn && wifi_hw_sw && hide WPS button behavior under repeater mode
-			if(cfg_wps_btn_support){
-				document.getElementById('turn_WPS').style.display = "";
-				document.form.btn_ez_radiotoggle[1].disabled = true;
-				document.getElementById('turn_WiFi').style.display = "none";
-				document.getElementById('turn_WiFi_str').style.display = "none";
-				document.getElementById('turn_LED').style.display = "";
-				if(document.form.btn_ez_radiotoggle[2].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
-			else{
-				document.form.btn_ez_radiotoggle[0].disabled = true;
-				document.form.btn_ez_radiotoggle[1].disabled = true;
-				document.form.btn_ez_radiotoggle[2].disabled = true;
-				document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
-			}
+	var WPSArray = ['WPS'];
+	var ez_mode = httpApi.nvramGet (['btn_ez_mode']).btn_ez_mode;
+	var ez_radiotoggle = httpApi.nvramGet (['btn_ez_radiotoggle']).btn_ez_radiotoggle;
+	if(!wifi_tog_btn_support && !wifi_hw_sw_support && sw_mode != 2 && sw_mode != 4){
+		WPSArray.push('WiFi');
 	}
-	else{
-			
-			document.getElementById('btn_ez_radiotoggle_tr').style.display = "";
-			if(cfg_wps_btn_support){
-				document.getElementById('turn_WPS').style.display = "";
-				document.getElementById('turn_WiFi').style.display = "";
-				document.getElementById('turn_LED').style.display = "";
-				if(document.form.btn_ez_radiotoggle[1].checked == false && document.form.btn_ez_radiotoggle[2].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
-			else{
-				document.getElementById('turn_WPS').style.display = "";
-				document.getElementById('turn_WiFi').style.display = "";
-				document.getElementById('turn_LED').disabled = true;
-				document.getElementById('turn_LED').style.display = "none";
-				document.getElementById('turn_LED_str').style.display = "none";
-				if(document.form.btn_ez_radiotoggle[1].checked == false)
-					document.form.btn_ez_radiotoggle[0].checked = true;
-			}
+
+	if(cfg_wps_btn_support){
+		WPSArray.push('LED');
+	}
+
+	if(WPSArray.length > 1){
+		$('#btn_ez_radiotoggle_tr').show();
+		for(i=0;i<WPSArray.length;i++){
+			$('#btn_ez_' + WPSArray[i]).show();
+		}
+
+		if(ez_radiotoggle == '1' && ez_mode == '0'){	// WiFi
+			document.form.btn_ez_radiotoggle[1].checked = true;
+		}
+		else if(ez_radiotoggle == '0' && ez_mode == '1'){	// LED
+			document.form.btn_ez_radiotoggle[2].checked = true;
+		}
+		else{	// WPS
+			document.form.btn_ez_radiotoggle[0].checked = true;
+		}
 	}
 
 	/* MODELDEP */
-	if(based_modelid == "GT-AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-		document.form.btn_ez_radiotoggle[0].disabled = true;
-		document.form.btn_ez_radiotoggle[1].disabled = true;
-		document.form.btn_ez_radiotoggle[2].disabled = true;
-		document.getElementById('btn_ez_radiotoggle_tr').style.display = "none";
-	}
-	else if(wifison == 1){
+	if(wifison == 1){
 		if(sw_mode == 1 || (sw_mode == 3 && cfg_master == 1))
 			document.getElementById("sw_mode_radio_tr").style.display = "";
 		if(based_modelid == "MAP-AC2200")
@@ -362,6 +348,8 @@ function initial(){
 	}
 
 	$("#https_download_cert").css("display", (le_enable == "0" && orig_http_enable != "0")? "": "none");
+
+	$("#login_captcha_tr").css("display", captcha_support? "": "none");
 }
 
 var time_zone_tmp="";
@@ -511,7 +499,7 @@ function applyRule(){
 			}
 		}
 
-		if(document.form.ncb_enable_option.value != ncb_enable){
+		if(ncb_enable != "" && document.form.ncb_enable_option.value != ncb_enable){
 			document.form.ncb_enable.value = document.form.ncb_enable_option.value;
 			ncb_enable_option_flag = true;
 		}
@@ -524,17 +512,17 @@ function applyRule(){
 			sw_mode_radio_flag = true;
 		}
 
-		if(document.form.btn_ez_radiotoggle[1].disabled == false && document.form.btn_ez_radiotoggle[1].checked == true){
-				document.form.btn_ez_radiotoggle.value=1;
-				document.form.btn_ez_mode.value=0;
+		if(document.form.btn_ez_radiotoggle[1].checked){	// WiFi
+			document.form.btn_ez_radiotoggle.value = 1;
+			document.form.btn_ez_mode.value = 0;
 		}
-		else if(document.form.btn_ez_radiotoggle[2].disabled == false && document.form.btn_ez_radiotoggle[2].checked == true){
-				document.form.btn_ez_radiotoggle.value=0;
-				document.form.btn_ez_mode.value=1;
+		else if(document.form.btn_ez_radiotoggle[2].checked){	// LED
+			document.form.btn_ez_radiotoggle.value = 0;
+			document.form.btn_ez_mode.value = 1;
 		}
-		else{
-				document.form.btn_ez_radiotoggle.value=0;
-				document.form.btn_ez_mode.value=0;
+		else{	// WPS
+			document.form.btn_ez_radiotoggle.value = 0;
+			document.form.btn_ez_mode.value = 0;
 		}
 		
 		if(reboot_schedule_support){
@@ -767,9 +755,6 @@ function validForm(){
 			document.form.sshd_port.focus();
 			return false;
 		}
-		else{
-			document.form.sshd_port.disabled = false;
-		}
 	}
 	else{
 		document.form.sshd_port.disabled = true;
@@ -869,7 +854,7 @@ function validForm(){
 		}
 
 		if(WebUI_selected <= 0){
-			alert("Please select at least one Web UI of Access Type and enable it in [Allow only specified IP address]");   //Untranslated 2017/08
+			alert("<#JS_access_type#> <#System_login_specified_Iplist_enable#>");
 			document.form.http_client_ip_x_0.focus();
 			return false;
 		}
@@ -1299,7 +1284,7 @@ function addRow(obj, upper){
 			access_type_value += parseInt($(this).val());
 	});	
 	if(access_type_value == 0) {
-		alert("Please select at least one Access Type.");/*untranslated*/
+		alert("<#JS_access_type#>");
 		return false;
 	}
 	else{
@@ -1731,7 +1716,7 @@ function appendMonitorOption(obj){
 var isPingListOpen = 0;
 function showPingTargetList(){
 	var ttc = httpApi.nvramGet(["territory_code"]).territory_code;
-	if(ttc.search("CN") >= 0){
+	if(ttc.search("CN") >= 0 || ttc.search("GD") >= 0 || ttc.search("CT") >= 0){
 		var APPListArray = [
 			["Baidu", "www.baidu.com"], ["QQ", "www.qq.com"], ["Taobao", "www.taobao.com"]
 		];
@@ -1948,6 +1933,13 @@ function save_cert_key(){
 						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
+				<tr id="login_captcha_tr" style="display:none">
+					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(11,13)">Enable Login Captcha</a></th>
+					<td>
+						<input type="radio" value="1" name="captcha_enable" <% nvram_match("captcha_enable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" value="0" name="captcha_enable" <% nvram_match("captcha_enable", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
 			</table>
 
 			<table id="hdd_spindown_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;display:none;">
@@ -1996,6 +1988,7 @@ function save_cert_key(){
 						</select>
 						<script>
 							var needReboot = false;
+
 
 							if (isSupport("usb3")) {
 								$("#reduce_usb3_tr").show();
@@ -2162,12 +2155,18 @@ function save_cert_key(){
 					</td>
 				</tr>
 
-				<tr id="btn_ez_radiotoggle_tr">
+				<tr id="btn_ez_radiotoggle_tr" style="display: none;">
 					<th><#WPS_btn_behavior#></th>
 					<td>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" style="display:none;" value="0"><label for="turn_WPS"><#WPS_btn_actWPS#></label>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" style="display:none;" value="1" <% nvram_match_x("", "btn_ez_radiotoggle", "1", "checked"); %>><label for="turn_WiFi" id="turn_WiFi_str"><#WPS_btn_toggle#></label>
-						<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" style="display:none;" value="0" <% nvram_match_x("", "btn_ez_mode", "1", "checked"); %>><label for="turn_LED" id="turn_LED_str">Turn LED On/Off</label>
+						<label for="turn_WPS" id="btn_ez_WPS">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_WPS" class="input" value="0"><#WPS_btn_actWPS#>
+						</label>
+						<label for="turn_WiFi" id="btn_ez_WiFi" style="display:none;">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_WiFi" class="input" value="1"><#WPS_btn_toggle#>
+						</label>
+						<label for="turn_LED" id="btn_ez_LED" style="display:none;">
+							<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" value="0"><#LED_switch#>
+						</label>					
 					</td>
 				</tr>
 				<tr>

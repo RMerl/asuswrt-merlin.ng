@@ -45,6 +45,8 @@
 #include <sys/syslimits.h>
 #endif
 #include <sys/errno.h>
+#include <sys/types.h>
+
 
 #ifdef __cplusplus
 extern	"C" {

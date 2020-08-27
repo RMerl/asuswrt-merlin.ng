@@ -36,7 +36,11 @@
 #endif
 #include <sys/select.h>
 #include <sys/socket.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif 
 
 #if defined(HAVE_CPUSET_SETAFFINITY)
 #include <sys/param.h>

@@ -1,0 +1,2 @@
+#define XTABLES_VERSION "libxtables.so.@libxtables_vmajor@"
+#define XTABLES_VERSION_CODE @libxtables_vmajor@

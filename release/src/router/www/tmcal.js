@@ -194,7 +194,7 @@ function showTab(name)
 	var i;
 	var rx, tx;
 	var e;
-	var wan_num = 0, wireless_num = 0, multi_wan = 0, multi_wireless = 0;
+	var wan_num = 0, wireless_num = 0, multi_wan = 0, multi_wireless = 0, wired_num = 0, multi_waggr = 0, multi_wired = 0;
 
 	ifname = name.replace('speed-tab-', '');
 	cookie.set(cprefix + 'tab', ifname, 14);
@@ -206,11 +206,14 @@ function showTab(name)
 //			document.getElementById("iftitle").style.display = "block";
 //		}
 
-		if(tabs[i][0].indexOf("INTERNET") != -1)
+		if(tabs[i][0].indexOf("INTERNET") != -1 || tabs[i][0].indexOf("WAGGR") != -1)
 			wan_num++;
 
 		if(tabs[i][0].indexOf("WIRELESS") != -1)
 			wireless_num++;
+
+		if(tabs[i][0].indexOf("WIRED") != -1 || tabs[i][0].indexOf("LACP") != -1)
+			wired_num++;
 	}
 
 	if(wan_num > 1)
@@ -219,8 +222,11 @@ function showTab(name)
 	if(wireless_num > 1)
 		multi_wireless = 1;
 
+	if(wired_num > 1)
+		multi_wired = 1;
+
 	if(multi_wan){
-		if(ifname.indexOf("INTERNET") != -1){
+		if(ifname.indexOf("INTERNET") != -1 || ifname.indexOf("WAGGR") != -1){
 			document.getElementById("internet_tabs").style.background = "url(/images/svg_th_hover.png) repeat-x";
 			document.getElementById("internet_tabs").style.color = "#FFFFFF";
 		}
@@ -238,6 +244,17 @@ function showTab(name)
 		else{
 			document.getElementById("wireless_tabs").style.background = "";
 			document.getElementById("wireless_tabs").style.color = "#000000";
+		}
+	}
+
+	if(multi_wired){
+		if(ifname.indexOf("WIRED") != -1 || ifname.indexOf("LACP") != -1){
+			document.getElementById("wired_tabs").style.background = "url(/images/svg_th_hover.png) repeat-x";
+			document.getElementById("wired_tabs").style.color = "#FFFFFF";
+		}
+		else{
+			document.getElementById("wired_tabs").style.background = "";
+			document.getElementById("wired_tabs").style.color = "#000000";
 		}
 	}
 
@@ -259,7 +276,8 @@ function showTab(name)
 		max = scaleMode ? MAX(h.rx_max, h.tx_max) : xx_max
 		if (max > 12500) max = Math.round((max + 12499) / 12500) * 12500;
 			else max += 100;
-		if(ifname == "WIRED" || ifname == "WIRELESS0" || ifname == "WIRELESS1" || ifname == "WIRELESS2" || ifname == "WIRELESS3"){
+		if(ifname == "WIRED" || ifname == "WIRELESS0" || ifname == "WIRELESS1" || ifname == "WIRELESS2" || ifname == "WIRELESS3"
+		|| ifname == "LACP1" || ifname == "LACP2" || ifname == "LACP3" || ifname == "LACP4" || ifname == "LACP5" || ifname == "LACP6" || ifname == "LACP7" || ifname == "LACP8"){
 			updateSVG(h.rx, h.tx, max, drawMode, colorTX[drawColorTX], colorRX[drawColorRX], updateInt, updateMaxL, updateDiv, avgMode, clock);
 			document.getElementById("rx-current").className = "blue_line";
 			document.getElementById("tx-current").className = "orange_line";
@@ -343,8 +361,12 @@ function loadData()
 						else
 							t = "USB Modem";
 					}
-					else if(wans_dualwan_array[0] == "wan")
-						t = "WAN";
+					else if(wans_dualwan_array[0] == "wan"){
+						if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+							t = "Bond";
+						else
+							t = "WAN";
+					}
 					else if(wans_dualwan_array[0] == "wan2"){
 						if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
 							t = "10G base-T";
@@ -369,8 +391,12 @@ function loadData()
 					else
 						t = "USB Modem";
 				}
-				else if(wans_dualwan_array[1] == "wan")
-					t = "WAN";
+				else if(wans_dualwan_array[1] == "wan"){
+					if (nvram.bond_wan == '1' && nvram.rc_support.indexOf("wanbonding") != -1)
+						t = "Bond";
+					else
+						t = "WAN";
+				}
 				else if(wans_dualwan_array[1] == "wan2"){
 					if (based_modelid == "GT-AXY16000" || based_modelid == "RT-AX89U")
 						t = "10G base-T";
@@ -386,9 +412,22 @@ function loadData()
 			}
 			else if (i.search("WIRELESS") > -1 && i.search(".") > -1)
 				t = "NotUsed";
+			else if (i.search("WAGGR") > -1){
+				var bs_port_id = i.substr(5);
+				if (bs_port_id == 0)
+					t = "bond-slave (WAN)";
+				else if (bs_port_id >= 1 && bs_port_id <= 8)
+					t = "bond-slave (LAN"+bs_port_id+")";
+				else if (bs_port_id == 30)
+					t = "bond-slave (10G base-T)";
+				else if (bs_port_id == 31)
+					t = "bond-slave (10G SFP+)";
+				else
+					t = "NotUsed";
+			}
 			else if (i.search("LACP") > -1){
 				var num = i.substr(4);
-				t = "Bonding (LAN"+num+")";
+				t = "bond-slave (LAN"+num+")";
 			}			
 			else
 				t = i;			
@@ -414,7 +453,7 @@ function loadData()
 		}
 		
 		//Sort tab by Viz 2014.06
-		var tabsort = ["speed-tab-INTERNET,<#Internet#>", "speed-tab-INTERNET,<#dualwan_primary#>","speed-tab-INTERNET1,<#dualwan_secondary#>","speed-tab-INTERNET,DSL WAN","speed-tab-INTERNET,WAN","speed-tab-INTERNET,WAN2","speed-tab-INTERNET,10G base-T","speed-tab-INTERNET,10G SFP+","speed-tab-INTERNET,LAN","speed-tab-INTERNET,USB Modem","speed-tab-INTERNET,<#Mobile_title#>","speed-tab-INTERNET1,WAN","speed-tab-INTERNET1,WAN2","speed-tab-INTERNET1,10G base-T","speed-tab-INTERNET1,10G SFP+","speed-tab-INTERNET1,LAN","speed-tab-INTERNET1,<#Mobile_title#>","speed-tab-INTERNET1,USB Modem","speed-tab-WIRED,<#tm_wired#>", "speed-tab-LACP1,Bonding (LAN1)", "speed-tab-LACP2,Bonding (LAN2)", "speed-tab-LACP5,Bonding (LAN5)", "speed-tab-LACP6,Bonding (LAN6)", "speed-tab-WIRELESS0,<#tm_wireless#> (2.4GHz)","speed-tab-WIRELESS1,<#tm_wireless#> (5GHz)", "speed-tab-WIRELESS1,<#tm_wireless#> (5GHz-1)", "speed-tab-WIRELESS2,<#tm_wireless#> (5GHz-2)", "speed-tab-WIRELESS3,<#tm_wireless#> (60GHz)", "speed-tab-BRIDGE,LAN"];
+		var tabsort = ["speed-tab-INTERNET,<#Internet#>", "speed-tab-INTERNET,<#dualwan_primary#>","speed-tab-INTERNET1,<#dualwan_secondary#>","speed-tab-INTERNET,DSL WAN","speed-tab-INTERNET,WAN","speed-tab-INTERNET,WAN2","speed-tab-INTERNET,10G base-T","speed-tab-INTERNET,10G SFP+","speed-tab-INTERNET,Bond","speed-tab-INTERNET,LAN","speed-tab-INTERNET,USB Modem","speed-tab-INTERNET,<#Mobile_title#>","speed-tab-INTERNET1,WAN","speed-tab-INTERNET1,WAN2","speed-tab-INTERNET1,10G base-T","speed-tab-INTERNET1,10G SFP+","speed-tab-INTERNET1,Bond","speed-tab-INTERNET1,LAN","speed-tab-INTERNET1,<#Mobile_title#>","speed-tab-INTERNET1,USB Modem", "speed-tab-WAGGR0,bond-slave (WAN)", "speed-tab-WAGGR1,bond-slave (LAN1)", "speed-tab-WAGGR2,bond-slave (LAN2)", "speed-tab-WAGGR3,bond-slave (LAN3)", "speed-tab-WAGGR4,bond-slave (LAN4)", "speed-tab-WAGGR5,bond-slave (LAN5)", "speed-tab-WAGGR6,bond-slave (LAN6)", "speed-tab-WAGGR7,bond-slave (LAN7)", "speed-tab-WAGGR8,bond-slave (LAN8)", "speed-tab-WAGGR30,bond-slave (10G base-T)", "speed-tab-WAGGR31,bond-slave (10G SFP+)", "speed-tab-WIRED,<#tm_wired#>", "speed-tab-LACP1,bond-slave (LAN1)", "speed-tab-LACP2,bond-slave (LAN2)", "speed-tab-LACP3,bond-slave (LAN3)", "speed-tab-LACP4,bond-slave (LAN4)", "speed-tab-LACP5,bond-slave (LAN5)", "speed-tab-LACP6,bond-slave (LAN6)", "speed-tab-LACP7,bond-slave (LAN7)", "speed-tab-LACP8,bond-slave (LAN8)", "speed-tab-WIRELESS0,<#tm_wireless#> (2.4GHz)","speed-tab-WIRELESS1,<#tm_wireless#> (5GHz)", "speed-tab-WIRELESS1,<#tm_wireless#> (5GHz-1)", "speed-tab-WIRELESS2,<#tm_wireless#> (5GHz-2)", "speed-tab-WIRELESS3,<#tm_wireless#> (60GHz)", "speed-tab-BRIDGE,LAN"];
 		var sortabs = [];
 		for(var i=0;i<tabsort.length;i++){
 			for(var j=0;j<tabs.length;j++){	

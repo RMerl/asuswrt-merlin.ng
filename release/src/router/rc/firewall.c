@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <netdb.h>	// for struct addrinfo
 #include <net/ethernet.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 
 #if defined(RTCONFIG_FBWIFI)
 #include "../fb_wifi/fbwifi.h"
@@ -1558,6 +1559,9 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 		}
 	}
 #endif	/* RTCONFIG_MULTIWAN_CFG */
+#if defined(RTAX56_XD4) || defined(RTAC59_CD6N)
+	write_extra_port_forwarding(fp, lan_ip);
+#endif
 }
 
 void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	// oleg patch
@@ -2440,6 +2444,9 @@ void redirect_setting(void)
 	}
 #endif
 
+#if defined(RTAX56_XD4) || defined(RTAC59_CD6N)
+	write_extra_port_forwarding(redirect_fp, lan_ipaddr_t);
+#endif
 	fprintf(redirect_fp, "COMMIT\n");
 
 	fclose(redirect_fp);
@@ -2605,6 +2612,11 @@ start_default_filter(int lanunit)
 	/* Write input rule for vlan */
 	vlan_subnet_filter_input(fp);
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_input(fp);
+#endif
+
 	if (nvram_match("enable_acc_restriction", "1"))
 	{
 		int  https_port = 0;
@@ -2805,7 +2817,10 @@ void set_cap_apmode_filter(void)
 	eval("ip6tables-restore", cap_rules);
 #endif	/* RTCONFIG_IPV6 */
 }
+#endif
 
+#if defined(RTCONFIG_WIFI_SON) \
+|| (defined(RTCONFIG_PRELINK) && defined(RTCONFIG_QCA))
 void reset_filter(void)
 {
 	const char *filter_rules = "/tmp/hive_filter.default";
@@ -2871,6 +2886,7 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 
 	char *ptr, *p, *pvalue;
 	char list[256], list2[256];
+	int first;
 
 	snprintf(config_rule, sizeof(config_rule), "-d %s", lan_ip);
 #ifdef RTCONFIG_IPV6
@@ -2914,10 +2930,17 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 				memset(list2, 0, sizeof(list2));
 
 				ptr = pvalue = strdup(url);
+				first = 1;
 				while (pvalue && (p = strsep(&pvalue, ".")) != NULL) {
 					if (!strlen(p)) {
 						pvalue++;
 						continue;
+					}
+
+					if (first) {
+						first = 0;
+						if (!strncasecmp(p, "www", 3))
+							continue;
 					}
 
 					snprintf(list2, sizeof(list2), "%s|%02x|%s", list, strlen(p), p);
@@ -2948,10 +2971,17 @@ void write_UrlFilter(char *chain, char *lan_if, char *lan_ip, char *logdrop, FIL
 					memset(list2, 0, sizeof(list2));
 
 					ptr = pvalue = strdup(url);
+					first = 1;
 					while (pvalue && (p = strsep(&pvalue, ".")) != NULL) {
 						if (!strlen(p)) {
 							pvalue++;
 							continue;
+						}
+
+						if (first) {
+							first = 0;
+							if (!strncasecmp(p, "www", 3))
+								continue;
 						}
 
 						snprintf(list2, sizeof(list2), "%s|%02x|%s", list, strlen(p), p);
@@ -3422,6 +3452,13 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A INPUT -p 2 -d 224.0.0.0/4 -j %s\n", logaccept);
 			fprintf(fp, "-A INPUT -p udp -d 224.0.0.0/4 ! --dport 1900 -j %s\n", logaccept);
 		}
+#ifdef RTCONFIG_IPV6
+		/* not necesary for now, udpxy is ipv4-only
+		if (ipv6_enabled() && (nvram_get_int("mr_enable_x") & 2)) {
+			fprintf(fp_ipv6, "-A INPUT -p udp -d ff00::/8 ! --dport 1900 -j %s\n", logaccept);
+		}
+		*/
+#endif
 
 		/* enable incoming packets from broken dhcp servers, which are sending replies
 		 * from addresses other than used for query, this could lead to lower level
@@ -3590,6 +3627,11 @@ TRACE_PT("writing Parental Control\n");
 		/* Write input rule for vlan */
 		vlan_subnet_filter_input(fp);
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+		wgn_filter_input(fp);
+#endif
+
 #if defined(RTCONFIG_WIFI_SON) && defined(RTCONFIG_ETHBACKHAUL)
 		if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1"))
 			fprintf(fp, "-A INPUT -p udp --sport 9413 --dport 9413 -j ACCEPT\n");
@@ -3609,6 +3651,10 @@ TRACE_PT("writing Parental Control\n");
 	/* Pass multicast */
 	if (nvram_get_int("mr_enable_x"))
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled() && (nvram_get_int("mr_enable_x") & 2))
+		fprintf(fp_ipv6, "-A FORWARD -p udp -d ff00::/8 -j ACCEPT\n");
+#endif
 
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	if (nvram_get_int("jumbo_frame_enable") ||
@@ -3679,6 +3725,10 @@ TRACE_PT("writing Parental Control\n");
 
 	/* Write forward rule for deny lan */
 	vlan_subnet_deny_forward(fp);
+#endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_forward(fp);
 #endif
 
 	if(nvram_match("wifison_ready", "1"))
@@ -4620,6 +4670,13 @@ TRACE_PT("writing Parental Control\n");
 			fprintf(fp, "-A INPUT -p 2 -d 224.0.0.0/4 -j %s\n", logaccept);
 			fprintf(fp, "-A INPUT -p udp -d 224.0.0.0/4 ! --dport 1900 -j %s\n", logaccept);
 		}
+#ifdef RTCONFIG_IPV6
+		/* not necesary for now, udpxy is ipv4-only
+		if (ipv6_enabled() && (nvram_get_int("mr_enable_x") & 2)) {
+			fprintf(fp_ipv6, "-A INPUT -p udp -d ff00::/8 ! --dport 1900 -j %s\n", logaccept);
+		}
+		*/
+#endif
 
 //#ifdef RTCONFIG_MULTICAST_IPTV
 		if (nvram_get_int("switch_stb_x") > 6) {
@@ -4746,11 +4803,6 @@ TRACE_PT("writing Parental Control\n");
 
 		if (!nvram_match("misc_lpr_x", "0"))
 		{
-/*
-			fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n", wan_ip, 515, logaccept);
-			fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n", wan_ip, 9100, logaccept);
-			fprintf(fp, "-A INPUT -p tcp -m tcp -d %s --dport %d -j %s\n", wan_ip, 3838, logaccept);
-*/
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", 515, logaccept);	// oleg patch
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", 9100, logaccept);	// oleg patch
 			fprintf(fp, "-A INPUT -p tcp -m tcp --dport %d -j %s\n", 3838, logaccept);	// oleg patch
@@ -4795,6 +4847,10 @@ TRACE_PT("writing Parental Control\n");
 		/* Write input rule for vlan */
 		vlan_subnet_filter_input(fp);
 #endif
+
+#ifdef RTCONFIG_AMAS_WGN
+		wgn_filter_input(fp);
+#endif
 		fprintf(fp, "-A INPUT -j %s\n", logdrop);
 	}
 
@@ -4810,6 +4866,10 @@ TRACE_PT("writing Parental Control\n");
 	/* Pass multicast */
 	if (nvram_get_int("mr_enable_x"))
 		fprintf(fp, "-A FORWARD -p udp -d 224.0.0.0/4 -j ACCEPT\n");
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled() && (nvram_get_int("mr_enable_x") & 2))
+		fprintf(fp_ipv6, "-A FORWARD -p udp -d ff00::/8 -j ACCEPT\n");
+#endif
 
 	/* Clamp TCP MSS to PMTU of WAN interface before accepting RELATED packets */
 	if (nvram_get_int("jumbo_frame_enable"))
@@ -4890,6 +4950,10 @@ TRACE_PT("writing Parental Control\n");
 #ifdef RTCONFIG_TAGGED_BASED_VLAN
 	/* Write forward rule for vlan */
 	vlan_subnet_filter_forward(fp, wan_if);
+#endif
+
+#ifdef RTCONFIG_AMAS_WGN
+	wgn_filter_forward(fp);
 #endif
 // ~ oleg patch
 		/* Filter out invalid WAN->WAN connections */
@@ -5605,7 +5669,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 	}
 #endif
 
-#if defined(RTAC58U) || defined(RTAC88U)
+#if defined(RTAC58U) || defined(RTAC59U) || defined(RTAC88U) || defined(RTAX58U) || defined(RTAX56U)
 	if (nvram_match("switch_wantag", "stuff_fibre")) {
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--dport", "53", "-j", "CLASSIFY", "--set-class", "0:3");
 		eval("iptables", "-t", "mangle", "-A", "POSTROUTING", "-d", "27.111.14.67", "-j", "CLASSIFY", "--set-class", "0:3");
@@ -6111,6 +6175,49 @@ add_samba_rules(void)
 #endif
 #endif
 
+#ifdef RTCONFIG_MULTISERVICE_WAN
+void add_mswan_rules(char *logaccept, char *logdrop)
+{
+	int unit = 0;
+	char wan_prefix[16] = {0};
+	char wan_ifname[16] = {0};
+	char wan_ip[16] = {0};
+	int misc_ping_x = nvram_get_int("misc_ping_x");
+
+	for (unit = WAN_UNIT_FIRST_MULTISRV_BASE; unit < WAN_UNIT_MULTISRV_MAX; unit++)
+	{
+		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", unit);
+		if (nvram_pf_get_int(wan_prefix, "enable"))
+		{
+			if (!is_wan_connect(unit))
+				continue;
+			if(nvram_pf_match(wan_prefix, "proto", "bridge"))
+				continue;
+
+			snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wan_ifname(unit));
+			snprintf(wan_ip, sizeof(wan_ip), "%s", nvram_pf_safe_get(wan_prefix, "ipaddr"));
+
+			// filter
+			if (!misc_ping_x)
+			{
+				eval("iptables", "-A", "INPUT_PING"
+					, "-i", wan_ifname, "-p", "icmp", "-j", logdrop);
+			}
+
+			// nat
+			if (nvram_pf_get_int(wan_prefix, "nat_x"))
+			{
+				eval("iptables", "-t", "nat", "-A", "PREROUTING"
+					, "-d", wan_ip, "-j", "VSERVER");
+				eval("iptables", "-t", "nat", "-A", "POSTROUTING"
+					, "-o", wan_ifname, "!", "-s", wan_ip
+					, "-j", "MASQUERADE");
+			}
+		}
+	}
+}
+#endif
+
 //int start_firewall(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip)
 int start_firewall(int wanunit, int lanunit)
 {
@@ -6167,54 +6274,33 @@ int start_firewall(int wanunit, int lanunit)
 
 	/* Mcast needs rp filter to be turned off only for non default iface */
 	if (nvram_get_int("mr_enable_x") || nvram_get_int("udpxy_enable_x")) {
-#ifdef RTCONFIG_DSL /* Paul add 2012/9/21 for DSL model, rp_filter should be disabled for br1. */
+		char wan_prefix[sizeof("wanXXXXXXXXXX_")];
+		char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
+
+		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
+		mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
+
+#ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_DUALWAN
-		if ( get_dualwan_primary() == WANS_DUALWAN_IF_DSL
-			&& nvram_get_int("dslx_config_num") > 1) {
-				mcast_ifname = "br1";
-		}
-		else {
-			char wan_prefix[] = "wanXXXXXXXXXX_";
-			char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
-			snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-			mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
-			if (wan_ifname && strcmp(wan_ifname, mcast_ifname) == 0)
-				mcast_ifname = NULL;
-		}
+		if (get_dualwan_primary() == WANS_DUALWAN_IF_DSL && nvram_get_int("dslx_config_num") > 1)
+			mcast_ifname = "br1";
 #else
 		mcast_ifname = "br1";
 #endif
-#else
-		char wan_prefix[] = "wanXXXXXXXXXX_";
-		char *wan_ifname = get_wan_ifname(wan_primary_ifunit());
-		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_primary_ifunit());
-		mcast_ifname = nvram_safe_get(strcat_r(wan_prefix, "ifname", tmp));
+#elif defined(RTCONFIG_MULTICAST_IPTV)
+		if (nvram_get_int("switch_stb_x") > 6) {
+			if (nvram_match("switch_wantag", "maxis_fiber_sp_iptv") ||
+			    nvram_match("switch_wantag", "maxis_fiber_iptv") ||
+			    nvram_match("switch_wantag", "starhub") ||
+			    nvram_match("switch_wantag", "movistar"))
+				mcast_ifname = nvram_safe_get("iptv_ifname");
+		}
+#endif
+		/* Don't turn off rp_filter for default interface */
 		if (wan_ifname && strcmp(wan_ifname, mcast_ifname) == 0)
 			mcast_ifname = NULL;
-#endif
 	} else
 		mcast_ifname = NULL;
-
-#ifdef RTCONFIG_MULTICAST_IPTV
-	if (nvram_get_int("switch_stb_x") > 6) {
-		if (nvram_match("switch_wantag", "maxis_fiber_sp_iptv") ||
-		    nvram_match("switch_wantag", "maxis_fiber_iptv")) {
-#ifndef HND_ROUTER
-			mcast_ifname = nvram_safe_get("iptv_wan_ifnames"); /* bug here, boyau */
-#else
-#endif
-		}
-		else if (nvram_match("switch_wantag", "movistar")) {
-#if defined(HND_ROUTER)
-			mcast_ifname = "eth0.v1";
-#elif defined(BLUECAVE)
-			mcast_ifname = "eth1.2";
-#else
-			mcast_ifname = "vlan2"; /* and here */
-#endif
-		}
-	}
-#endif
 
 	/* Block obviously spoofed IP addresses */
 	if ((dir = opendir("/proc/sys/net/ipv4/conf")) != NULL) {
@@ -6280,9 +6366,9 @@ int start_firewall(int wanunit, int lanunit)
 	else
 #endif // RTCONFIG_DUALWAN
 #ifdef RTCONFIG_MULTICAST_IPTV
-	if ((nvram_get_int("switch_stb_x") > 6 &&
-	    nvram_match("switch_wantag", "movistar"))) {
-		nat_setting2(lan_if, lan_ip, logaccept, logdrop);
+	if (nvram_get_int("switch_stb_x") > 6 &&
+	    (nvram_match("switch_wantag", "movistar") || nvram_match("switch_wantag", "starhub"))) {
+ 		nat_setting2(lan_if, lan_ip, logaccept, logdrop);
 
 #ifdef WEB_REDIRECT
 		redirect_setting();
@@ -6295,7 +6381,11 @@ int start_firewall(int wanunit, int lanunit)
 	else
 #endif // RTCONFIG_MULTICAST_IPTV
 	{
-		if(wanunit != wan_primary_ifunit())
+		if(wanunit != wan_primary_ifunit()
+#ifdef RTCONFIG_MULTISERVICE_WAN
+			&& wanunit < WAN_UNIT_MAX
+#endif
+		)
 			goto leave;
 
  		nat_setting(wan_if, wan_ip, wanx_if, wanx_ip, lan_if, lan_ip, logaccept, logdrop);
@@ -6496,6 +6586,10 @@ int start_firewall(int wanunit, int lanunit)
 #endif
 #ifdef RTCONFIG_LETSENCRYPT
 	run_le_fw_script();
+#endif
+
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	add_mswan_rules(logaccept, logdrop);
 #endif
 
 	/* Assuming wan interface doesn't change */

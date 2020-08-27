@@ -1,4 +1,4 @@
-/* Copyright (C) 2010-2014 B.A.T.M.A.N. contributors:
+/* Copyright (C) 2010-2015 B.A.T.M.A.N. contributors:
  *
  * Marek Lindner
  *
@@ -15,16 +15,36 @@
  * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "main.h"
 #include "sysfs.h"
-#include "translation-table.h"
+#include "main.h"
+
+#include <linux/atomic.h>
+#include <linux/compiler.h>
+#include <linux/device.h>
+#include <linux/errno.h>
+#include <linux/fs.h>
+#include <linux/if.h>
+#include <linux/if_vlan.h>
+#include <linux/kernel.h>
+#include <linux/netdevice.h>
+#include <linux/printk.h>
+#include <linux/rculist.h>
+#include <linux/rcupdate.h>
+#include <linux/rtnetlink.h>
+#include <linux/slab.h>
+#include <linux/stat.h>
+#include <linux/stddef.h>
+#include <linux/string.h>
+#include <linux/stringify.h>
+
 #include "distributed-arp-table.h"
-#include "network-coding.h"
-#include "originator.h"
-#include "hard-interface.h"
-#include "soft-interface.h"
-#include "gateway_common.h"
 #include "gateway_client.h"
+#include "gateway_common.h"
+#include "bridge_loop_avoidance.h"
+#include "hard-interface.h"
+#include "network-coding.h"
+#include "packet.h"
+#include "soft-interface.h"
 
 static struct net_device *batadv_kobj_to_netdev(struct kobject *obj)
 {
@@ -44,7 +64,7 @@ static struct batadv_priv *batadv_kobj_to_batpriv(struct kobject *obj)
  * batadv_vlan_kobj_to_batpriv - convert a vlan kobj in the associated batpriv
  * @obj: kobject to covert
  *
- * Returns the associated batadv_priv struct.
+ * Return: the associated batadv_priv struct.
  */
 static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
 {
@@ -62,9 +82,10 @@ static struct batadv_priv *batadv_vlan_kobj_to_batpriv(struct kobject *obj)
 
 /**
  * batadv_kobj_to_vlan - convert a kobj in the associated softif_vlan struct
+ * @bat_priv: the bat priv with all the soft interface information
  * @obj: kobject to covert
  *
- * Returns the associated softif_vlan struct if found, NULL otherwise.
+ * Return: the associated softif_vlan struct if found, NULL otherwise.
  */
 static struct batadv_softif_vlan *
 batadv_kobj_to_vlan(struct batadv_priv *bat_priv, struct kobject *obj)
@@ -151,7 +172,7 @@ ssize_t batadv_show_##_name(struct kobject *kobj,			\
 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
 			   batadv_store_##_name)
 
-#define BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)	\
+#define BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)	\
 ssize_t batadv_store_##_name(struct kobject *kobj,			\
 			     struct attribute *attr, char *buff,	\
 			     size_t count)				\
@@ -161,24 +182,24 @@ ssize_t batadv_store_##_name(struct kobject *kobj,			\
 									\
 	return __batadv_store_uint_attr(buff, count, _min, _max,	\
 					_post_func, attr,		\
-					&bat_priv->_name, net_dev);	\
+					&bat_priv->_var, net_dev);	\
 }
 
-#define BATADV_ATTR_SIF_SHOW_UINT(_name)				\
+#define BATADV_ATTR_SIF_SHOW_UINT(_name, _var)				\
 ssize_t batadv_show_##_name(struct kobject *kobj,			\
 			    struct attribute *attr, char *buff)		\
 {									\
 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);	\
 									\
-	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_name));	\
+	return sprintf(buff, "%i\n", atomic_read(&bat_priv->_var));	\
 }									\
 
 /* Use this, if you are going to set [name] in the soft-interface
  * (bat_priv) to an unsigned integer value
  */
-#define BATADV_ATTR_SIF_UINT(_name, _mode, _min, _max, _post_func)	\
-	static BATADV_ATTR_SIF_STORE_UINT(_name, _min, _max, _post_func)\
-	static BATADV_ATTR_SIF_SHOW_UINT(_name)				\
+#define BATADV_ATTR_SIF_UINT(_name, _var, _mode, _min, _max, _post_func)\
+	static BATADV_ATTR_SIF_STORE_UINT(_name, _var, _min, _max, _post_func)\
+	static BATADV_ATTR_SIF_SHOW_UINT(_name, _var)			\
 	static BATADV_ATTR(_name, _mode, batadv_show_##_name,		\
 			   batadv_store_##_name)
 
@@ -222,9 +243,12 @@ ssize_t batadv_show_vlan_##_name(struct kobject *kobj,			\
 
 static int batadv_store_bool_attr(char *buff, size_t count,
 				  struct net_device *net_dev,
-				  const char *attr_name, atomic_t *attr)
+				  const char *attr_name, atomic_t *attr,
+				  bool *changed)
 {
 	int enabled = -1;
+
+	*changed = false;
 
 	if (buff[count - 1] == '\n')
 		buff[count - 1] = '\0';
@@ -252,6 +276,8 @@ static int batadv_store_bool_attr(char *buff, size_t count,
 		    atomic_read(attr) == 1 ? "enabled" : "disabled",
 		    enabled == 1 ? "enabled" : "disabled");
 
+	*changed = true;
+
 	atomic_set(attr, (unsigned int)enabled);
 	return count;
 }
@@ -262,11 +288,12 @@ __batadv_store_bool_attr(char *buff, size_t count,
 			 struct attribute *attr,
 			 atomic_t *attr_store, struct net_device *net_dev)
 {
+	bool changed;
 	int ret;
 
 	ret = batadv_store_bool_attr(buff, count, net_dev, attr->name,
-				     attr_store);
-	if (post_func && ret)
+				     attr_store, &changed);
+	if (post_func && changed)
 		post_func(net_dev);
 
 	return ret;
@@ -438,7 +465,7 @@ static ssize_t batadv_show_gw_bwidth(struct kobject *kobj,
 				     struct attribute *attr, char *buff)
 {
 	struct batadv_priv *bat_priv = batadv_kobj_to_batpriv(kobj);
-	uint32_t down, up;
+	u32 down, up;
 
 	down = atomic_read(&bat_priv->gw.bandwidth_down);
 	up = atomic_read(&bat_priv->gw.bandwidth_up);
@@ -465,7 +492,7 @@ static ssize_t batadv_store_gw_bwidth(struct kobject *kobj,
  * @attr: the batman-adv attribute the user is interacting with
  * @buff: the buffer that will contain the data to send back to the user
  *
- * Returns the number of bytes written into 'buff' on success or a negative
+ * Return: the number of bytes written into 'buff' on success or a negative
  * error code in case of failure
  */
 static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
@@ -485,7 +512,7 @@ static ssize_t batadv_show_isolation_mark(struct kobject *kobj,
  * @buff: the buffer containing the user data
  * @count: number of bytes in the buffer
  *
- * Returns 'count' on success or a negative error code in case of failure
+ * Return: 'count' on success or a negative error code in case of failure
  */
 static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
 					   struct attribute *attr, char *buff,
@@ -493,7 +520,7 @@ static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
 {
 	struct net_device *net_dev = batadv_kobj_to_netdev(kobj);
 	struct batadv_priv *bat_priv = netdev_priv(net_dev);
-	uint32_t mark, mask;
+	u32 mark, mask;
 	char *mask_ptr;
 
 	/* parse the mask if it has been specified, otherwise assume the mask is
@@ -530,7 +557,8 @@ static ssize_t batadv_store_isolation_mark(struct kobject *kobj,
 BATADV_ATTR_SIF_BOOL(aggregated_ogms, S_IRUGO | S_IWUSR, NULL);
 BATADV_ATTR_SIF_BOOL(bonding, S_IRUGO | S_IWUSR, NULL);
 #ifdef CONFIG_BATMAN_ADV_BLA
-BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR, NULL);
+BATADV_ATTR_SIF_BOOL(bridge_loop_avoidance, S_IRUGO | S_IWUSR,
+		     batadv_bla_status_update);
 #endif
 #ifdef CONFIG_BATMAN_ADV_DAT
 BATADV_ATTR_SIF_BOOL(distributed_arp_table, S_IRUGO | S_IWUSR,
@@ -540,19 +568,20 @@ BATADV_ATTR_SIF_BOOL(fragmentation, S_IRUGO | S_IWUSR, batadv_update_min_mtu);
 static BATADV_ATTR(routing_algo, S_IRUGO, batadv_show_bat_algo, NULL);
 static BATADV_ATTR(gw_mode, S_IRUGO | S_IWUSR, batadv_show_gw_mode,
 		   batadv_store_gw_mode);
-BATADV_ATTR_SIF_UINT(orig_interval, S_IRUGO | S_IWUSR, 2 * BATADV_JITTER,
-		     INT_MAX, NULL);
-BATADV_ATTR_SIF_UINT(hop_penalty, S_IRUGO | S_IWUSR, 0, BATADV_TQ_MAX_VALUE,
-		     NULL);
-BATADV_ATTR_SIF_UINT(gw_sel_class, S_IRUGO | S_IWUSR, 1, BATADV_TQ_MAX_VALUE,
-		     batadv_post_gw_reselect);
+BATADV_ATTR_SIF_UINT(orig_interval, orig_interval, S_IRUGO | S_IWUSR,
+		     2 * BATADV_JITTER, INT_MAX, NULL);
+BATADV_ATTR_SIF_UINT(hop_penalty, hop_penalty, S_IRUGO | S_IWUSR, 0,
+		     BATADV_TQ_MAX_VALUE, NULL);
+BATADV_ATTR_SIF_UINT(gw_sel_class, gw_sel_class, S_IRUGO | S_IWUSR, 1,
+		     BATADV_TQ_MAX_VALUE, batadv_post_gw_reselect);
 static BATADV_ATTR(gw_bandwidth, S_IRUGO | S_IWUSR, batadv_show_gw_bwidth,
 		   batadv_store_gw_bwidth);
 #ifdef CONFIG_BATMAN_ADV_MCAST
 BATADV_ATTR_SIF_BOOL(multicast_mode, S_IRUGO | S_IWUSR, NULL);
 #endif
 #ifdef CONFIG_BATMAN_ADV_DEBUG
-BATADV_ATTR_SIF_UINT(log_level, S_IRUGO | S_IWUSR, 0, BATADV_DBG_ALL, NULL);
+BATADV_ATTR_SIF_UINT(log_level, log_level, S_IRUGO | S_IWUSR, 0,
+		     BATADV_DBG_ALL, NULL);
 #endif
 #ifdef CONFIG_BATMAN_ADV_NC
 BATADV_ATTR_SIF_BOOL(network_coding, S_IRUGO | S_IWUSR,
@@ -592,9 +621,7 @@ static struct batadv_attribute *batadv_mesh_attrs[] = {
 
 BATADV_ATTR_VLAN_BOOL(ap_isolation, S_IRUGO | S_IWUSR, NULL);
 
-/**
- * batadv_vlan_attrs - array of vlan specific sysfs attributes
- */
+/* array of vlan specific sysfs attributes */
 static struct batadv_attribute *batadv_vlan_attrs[] = {
 	&batadv_attr_vlan_ap_isolation,
 	NULL,
@@ -655,7 +682,7 @@ void batadv_sysfs_del_meshif(struct net_device *dev)
  * @dev: netdev of the mesh interface
  * @vlan: private data of the newly added VLAN interface
  *
- * Returns 0 on success and -ENOMEM if any of the structure allocations fails.
+ * Return: 0 on success and -ENOMEM if any of the structure allocations fails.
  */
 int batadv_sysfs_add_vlan(struct net_device *dev,
 			  struct batadv_softif_vlan *vlan)

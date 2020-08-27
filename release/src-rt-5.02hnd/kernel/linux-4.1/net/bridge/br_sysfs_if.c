@@ -173,6 +173,22 @@ BRPORT_ATTR_FLAG(unicast_flood, BR_FLOOD);
 BRPORT_ATTR_FLAG(proxyarp, BR_PROXYARP);
 BRPORT_ATTR_FLAG(proxyarp_wifi, BR_PROXYARP_WIFI);
 
+static ssize_t show_isolate_mode(struct net_bridge_port *p, char *buf)
+{
+	int isolate_mode = (p->flags & BR_ISOLATE_MODE) ? 1 : 0;
+	return sprintf(buf, "%d\n", isolate_mode);
+}
+static int store_isolate_mode(struct net_bridge_port *p, unsigned long v)
+{
+	if (v)
+		p->flags |= BR_ISOLATE_MODE;
+	else
+		p->flags &= ~BR_ISOLATE_MODE;
+	return 0;
+}
+static BRPORT_ATTR(isolate_mode, S_IRUGO | S_IWUSR,
+		   show_isolate_mode, store_isolate_mode);
+
 #ifdef CONFIG_BRIDGE_IGMP_SNOOPING
 static ssize_t show_multicast_router(struct net_bridge_port *p, char *buf)
 {
@@ -282,6 +298,7 @@ static const struct brport_attribute *brport_attrs[] = {
 	&brport_attr_stp_bpdu_blocked,
 	&brport_attr_stp_dedicated,
 #endif
+	&brport_attr_isolate_mode,
 	NULL
 };
 

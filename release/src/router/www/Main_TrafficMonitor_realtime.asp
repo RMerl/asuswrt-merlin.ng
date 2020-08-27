@@ -21,7 +21,7 @@
 
 <script type='text/javascript'>
 
-<% backup_nvram("wan_ifname,lan_ifname,wl_ifname,wan_proto,web_svg,rstats_colors,cstats_enable"); %>
+<% backup_nvram("wan_ifname,lan_ifname,wl_ifname,wan_proto,web_svg,rstats_colors,cstats_enable,bond_wan,rc_support"); %>
 
 var cprefix = 'bw_r';
 var updateInt = 2;

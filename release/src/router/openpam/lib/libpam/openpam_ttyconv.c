@@ -292,6 +292,7 @@ prompt(const char *message, char *response, int echo)
 	if (isatty(STDIN_FILENO)) {
 		fflush(stdout);
 #ifdef HAVE_FPURGE
+		int fpurge(FILE *stream);	/* unsupported in standard c */
 		fpurge(stdin);
 #endif
 		ifd = STDIN_FILENO;

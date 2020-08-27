@@ -1,0 +1,17 @@
+{
+	"timeStamp": "2016-10-17 03:50:33",
+	"aaeAppId": "",
+	"otaInfoUrl": "http:\/\/dlcdnet.asus.com\/pub\/ASUS\/LiveUpdate\/Release\/Wireless\/wlan_update_v2.zip",
+	"awsAppPortal": "cloudsyncportal01.asuswebstorage.com",
+	"aaeAppKey": "",
+	"aaeOAuthPortal": "oauth.asuswebstorage.com\/oauth",
+	"awsAppKey": "03805FDC48594FDEA89183D2ADA82586",
+	"aaeAppPortal": "aae-spweb-v2.asuscloud.com",
+	"aaeSid": "39747443",
+	"awsAppId": "83379331",
+	"awsSid": "32070675",
+	"awsOAuthPortal": "oauth.asuswebstorage.com\/oauth",
+	"awsAppGateway": "https:\/\/sgd02.asuswebstorage.com",
+	"fbRtmpUrl": "rtmp://rtmp-api.facebook.com:80/rtmp/274683429676475?ds=1&s_e=4&s_l=1&a=ATjhAFNip5GB6JhD",
+	"otaFileUrl": "http:\/\/dlcdnet.asus.com\/pub\/ASUS\/ASUSWRT\/"
+}

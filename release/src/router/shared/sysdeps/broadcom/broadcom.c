@@ -11,6 +11,9 @@
 #include "utils.h"
 #include "shutils.h"
 #include "shared.h"
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <wlc_types.h>
+#endif
 
 #ifdef LINUX26
 #define GPIO_IOCTL
@@ -241,7 +244,8 @@ int get_psta_status(int unit)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "psta") &&
-	    !nvram_match(strcat_r(prefix, "mode", tmp2), "psr"))
+	    !nvram_match(strcat_r(prefix, "mode", tmp2), "psr") &&
+	    !nvram_match(strcat_r(prefix, "mode", tmp2), "wet"))
 		goto PSTA_ERR;
 
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
@@ -337,23 +341,820 @@ int string2hex(const char *a, unsigned char *e, int len)
 	return 1;
 } /* End of string2hex */
 
-void add_beacon_vsie(char *hexdata)
+/**
+ * @brief add beacon vise by unit and subunit
+ *
+ * @param unit band index
+ * @param subunit mssid index
+ * @param hexdata vise string
+ */
+void add_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
 {
-	unsigned char value[256];
+	unsigned char value[512];
 	int pktflag = VNDR_IE_BEACON_FLAG | VNDR_IE_PRBRSP_FLAG;
 	int len = 0;
 
 	len = DOT11_OUI_LEN + strlen(hexdata)/2;
 
 	if (string2hex(hexdata, value, strlen(hexdata)))
-		wl_add_ie(0, pktflag, len, (uchar *) OUI_ASUS, value);
+		wl_add_ie(unit, subunit, pktflag, len, (uchar *) OUI_ASUS, value);
+}
+
+/**
+ * @brief add guest vsie
+ *
+ * @param hexdata vsie string
+ */
+void add_beacon_vsie_guest(char *hexdata)
+{
+    int unit = 0, subunit = 0;
+    char word[100], *next;
+
+    foreach (word, nvram_safe_get("wl_ifnames"), next) {
+        if (nvram_get_int("re_mode") == 1)  // RE
+            subunit = 3;
+        else  // CAP/Router
+            subunit = 2;
+        for (; subunit <=  num_of_mssid_support(unit); subunit++) {
+			char buf[] = "wlXX.XX_ifname";
+			memset(buf, 0, sizeof(buf));
+			snprintf(buf, sizeof(buf), "wl%d.%d_ifname", unit, subunit);
+            if (is_intf_up(nvram_safe_get(buf)) != -1)  // interface exist
+                add_beacon_vsie_by_unit(unit, subunit, hexdata);
+        }
+        unit++;
+    }
+}
+
+void add_beacon_vsie(char *hexdata)
+{
+	unsigned char value[512];
+	int pktflag = VNDR_IE_BEACON_FLAG | VNDR_IE_PRBRSP_FLAG;
+	int len = 0;
+#ifdef RTCONFIG_BHCOST_OPT
+	int unit = 0;
+	char word[100], *next;
+#endif
+
+	len = DOT11_OUI_LEN + strlen(hexdata)/2;
+
+	if (string2hex(hexdata, value, strlen(hexdata))) {
+#ifdef RTCONFIG_BHCOST_OPT
+		foreach (word, nvram_safe_get("wl_ifnames"), next) {
+			wl_add_ie(unit, 0, pktflag, len, (uchar *) OUI_ASUS, value);
+			unit++;
+		}
+#else
+		wl_add_ie(0, 0, pktflag, len, (uchar *) OUI_ASUS, value);
+#endif
+	}
+}
+
+/**
+ * @brief remove beacon vsie by unit and subunit
+ *
+ * @param unit band index
+ * @param subunit mssid index
+ * @param hexdata vsie string
+ */
+void del_beacon_vsie_by_unit(int unit, int subunit, char *hexdata)
+{
+	wl_del_ie_with_oui(unit, subunit, (uchar *) OUI_ASUS);
+}
+
+/**
+ * @brief remove guest beacon vsie
+ *
+ * @param hexdata vsie string
+ */
+void del_beacon_vsie_guest(char *hexdata)
+{
+    int unit = 0, subunit = 0;
+    char word[100], *next;
+
+    foreach (word, nvram_safe_get("wl_ifnames"), next) {
+        if (nvram_get_int("re_mode") == 1)  // RE
+            subunit = 3;
+        else  // CAP/Router
+            subunit = 2;
+        for (; subunit <= num_of_mssid_support(unit); subunit++) {
+			char buf[] = "wlXX.XX_ifname";
+			memset(buf, 0, sizeof(buf));
+			snprintf(buf, sizeof(buf), "wl%d.%d_ifname", unit, subunit);
+            if (is_intf_up(nvram_safe_get(buf)) != -1)  // interface exist
+                del_beacon_vsie_by_unit(unit, subunit, hexdata);
+        }
+        unit++;
+    }
 }
 
 void del_beacon_vsie(char *hexdata)
 {
-	wl_del_ie_with_oui(0, (uchar *) OUI_ASUS);
-}
+#ifdef RTCONFIG_BHCOST_OPT
+	int unit = 0;
+	char word[100], *next;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		wl_del_ie_with_oui(unit, 0, (uchar *) OUI_ASUS);
+		unit++;
+	}
+#else
+	wl_del_ie_with_oui(0, 0, (uchar *) OUI_ASUS);
 #endif
+}
+
+int add_interface_for_acsd(int unit)
+{
+	int ret = 0, i = 0, band_unit = -1, use = -1, max_items = 4;
+	char *nv, *nvp, *b;
+
+	nv = nvp = strdup(nvram_safe_get("sta_priority"));
+	if (nv) {
+		while ((b = strsep(&nvp, " ")) != NULL) {
+			/* reset count */
+			if (i == max_items) {
+				i = 0;
+				band_unit = -1;
+				use = -1;
+			}
+
+			i++;
+
+			if (i == 2)	/* band unit */
+				band_unit = atoi(b);
+			if (i == 4)	/* use */
+				use = atoi(b);
+
+			/* judge */
+			if ((band_unit != -1 && use != -1)
+				&& (band_unit == unit && use == 0))
+			{
+				ret = 1;
+				break;
+			}
+		}
+		free(nv);
+	}
+
+	dbg("add_interface_for_acsd(%d), ret(%d)\n", unit, ret);
+
+	return ret;
+}
+
+int need_to_start_acsd()
+{
+	int ret = 0, i = 0, max_items = 4;
+	char *nv, *nvp, *b;
+
+	nv = nvp = strdup(nvram_safe_get("sta_priority"));
+	if (nv) {
+		while ((b = strsep(&nvp, " ")) != NULL) {
+			i++;
+
+			if (i == max_items) {	/* use */
+				if (atoi(b) == 0) {
+					ret = 1;
+					break;
+				}
+
+				/* reset count */
+				i = 0;
+			}
+		}
+		free(nv);
+	}
+
+	dbg("need_to_start_acsd(%d)\n", ret);
+
+	return ret;
+}
+
+int get_wlan_service_status(int bssidx, int vifidx)
+{
+	char tmp[128] = {0}, prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+	int ret = 0;
+	int result = 0;
+	int bsscfg_idx = 0;
+	char data_buf[WLC_IOCTL_MAXLEN];
+
+	if (nvram_get_int("wlready") == 0)
+		return -1;
+
+	if (vifidx > 0)
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", bssidx, vifidx);
+	else
+		snprintf(prefix, sizeof(prefix), "wl%d", bssidx);
+
+	ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+
+	bsscfg_idx = htod32(vifidx);
+
+	ret = wl_iovar_getbuf(ifname, "bss", &bsscfg_idx, sizeof(bsscfg_idx),
+		data_buf, WLC_IOCTL_MAXLEN);
+	if (ret < 0) {
+		dbg("failed to get bss on %s\n", ifname);
+		return -1;
+	}
+
+	result = *(int*)data_buf;
+        result = dtoh32(result);
+
+	//dbg("result: %d\n", result);
+
+	return result;
+}
+
+void set_wlan_service_status(int bssidx, int vifidx, int enabled)
+{
+
+	char tmp[128]={0}, prefix[] = "wlXXXXXXXXXX_";
+	char *ifname = NULL;
+	int val, ret;
+	struct ether_addr addr = {{255, 255, 255, 255, 255, 255}};
+	struct {int bsscfg_idx; int enable;} setbuf;
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	int hapd_is_ready = 0;
+#endif	// RTCONFIG_BRCM_HOSTAPD
+
+        if (nvram_get_int("wlready") == 0)
+                return;
+
+	if (vifidx > 0)
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", bssidx, vifidx);
+	else
+		snprintf(prefix, sizeof(prefix), "wl%d_", bssidx);
+
+	ifname = strdup(nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	if (ifname == NULL || strlen(ifname) == 0) {
+		_dprintf("Getting bssidx(%d) vifidx(%d) ifname fail.\n", bssidx, vifidx);
+		if (ifname)
+			free(ifname);
+		return;
+	}
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+        FILE *fp1 = NULL;
+        char cmd1[64], buf1[256];
+        if(nvram_match("hapd_enable", "1")) {
+                snprintf(cmd1, sizeof(cmd1), "hostapd_cli -i %s ping", ifname);
+                fp1 = popen(cmd1, "r");
+                if(fp1) {
+                        while (fgets(buf1, sizeof(buf1), fp1) != NULL) {
+                                if(strstr(buf1, "PONG") != NULL)
+                                {
+                                    hapd_is_ready = 1;
+                                    break;
+                                }
+                        }
+                        pclose(fp1);
+                }
+        }
+#endif	// RTCONFIG_BRCM_HOSTAPD
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	if (hapd_is_ready) {
+#endif	// RTCONFIG_BRCM_HOSTAPD
+
+	if (enabled == 0) {
+
+		/* deauthe all sta */
+		if (wl_ioctl(ifname, WLC_SCB_DEAUTHENTICATE, &addr, ETHER_ADDR_LEN) < 0) {
+			dbg("deauth all sta failed on %s\n", ifname);
+		}
+#if defined(RTCONFIG_HND_ROUTER_AX)
+                val = 0;
+#elif defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+                val = 9;
+#else
+                val = 0;
+#endif
+	}
+	else
+	{
+#if defined(RTCONFIG_HND_ROUTER_AX)
+                val = 1;
+#elif defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+                val = 8;
+#else
+                val = 1;
+#endif
+	}
+
+	setbuf.bsscfg_idx = htod32(vifidx);
+	setbuf.enable = htod32(val);
+
+	dbg("set bss to %d on %s\n", val, ifname);
+
+	ret = wl_iovar_set(ifname, "bss", &setbuf, sizeof(setbuf));
+	if (ret) {
+		dbg("failed to set bss to %d on %s\n", val, ifname);
+	}
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	} else {
+		dbg("%s: Hostapd not running\n", ifname);
+	}
+#endif	// RTCONFIG_BRCM_HOSTAPD
+
+
+#ifdef RTCONFIG_BRCM_HOSTAPD
+	FILE *fp = NULL;
+	char cmd[64], buf[256];
+	int hapd_is_running = 0;
+	if(nvram_match("hapd_enable", "1")) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -i %s ping", ifname);
+		fp = popen(cmd, "r");
+		if(fp) {
+			while (fgets(buf, sizeof(buf), fp) != NULL) {
+				if(strstr(buf, "PONG") != NULL)
+				{
+				    hapd_is_running = 1;
+				    break;
+				}
+			}
+			pclose(fp);
+		}
+
+		// restart hostapd in case previous start hostapd operation is unsuccess since bss is down
+		if(!hapd_is_running && enabled) {
+			snprintf(cmd, sizeof(cmd), "hostapd %s /tmp/%s_hapd.conf &",
+				(nvram_match("hapd_dbg", "1") ? "-ddt" : "-B"), ifname);
+			system(cmd);
+		}
+	}
+#endif
+	free(ifname);
+}
+
+#ifdef RTCONFIG_BHCOST_OPT
+#ifdef RTCONFIG_AMAS_ETHDETECT
+unsigned int test_get_uplinkports_linkrate(char *ifname)
+{
+	unsigned int link_rate = 1000;
+
+	//TODO for getting link rate
+
+	return link_rate;
+}
+
+#if defined(RTCONFIG_EXT_RTL8370MB)
+#define MAX_RTL_PORTS 8
+#else
+#define MAX_RTL_PORTS 4
+#endif
+
+int
+get_uplinkports_linkrate(char *ifname)
+{
+	int i, ret;
+	char out_buf[64];
+	int lret=0;
+
+#if defined(RTCONFIG_HND_ROUTER_AX_6710)
+	// MODEL_RTAX86U, MODEL_RTAX68U
+#if defined(RTCONFIG_EXTPHY_BCM84880)
+	// L5(2.5G) W0 L1 L2 L3 L4
+	// eth5 eth0 eth4 eth3 eth2 eth1
+	int lan_ports = 5;
+#else
+	// W0 L1 L2 L3 L4
+	// eth0 eth4 eth3 eth2 eth1
+	int lan_ports = 4;
+#endif
+	char word[256], *next;
+
+	hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+	hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+
+	foreach(word, nvram_safe_get("wan_ifname"), next){
+		ret = hnd_get_phy_status(word);
+		if(ret == 0)
+			sprintf(out_buf, "W0=X;");
+		else{
+			ret = hnd_get_phy_speed(word);
+			sprintf(out_buf, "W0=%s;",
+#ifdef RTCONFIG_EXTPHY_BCM84880
+					(ret == 2500)? "Q" :
+#endif
+							(ret == 1000) ? "G" : "M");
+			lret |= 1;
+		}
+
+		break;
+	}
+
+	i = 1;
+	foreach(word, nvram_safe_get("lan_ifnames"), next){
+		ret = hnd_get_phy_status(word);
+		if(ret == 0)
+			sprintf(out_buf, "%sL%d=X;", out_buf, i);
+		else{
+			ret = hnd_get_phy_speed(word);
+			sprintf(out_buf, "%sL%d=%s;", out_buf, i,
+#ifdef RTCONFIG_EXTPHY_BCM84880
+					(ret == 2500)? "Q" :
+#endif
+							(ret == 1000) ? "G" : "M");
+			lret |= 1 << i;
+		}
+
+		++i;
+		if(i > lan_ports) break;
+	}
+
+	return lret;
+#else // RTCONFIG_HND_ROUTER_AX_6710
+#if defined(HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX_675X)
+	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
+#endif
+#ifdef RTCONFIG_EXT_BCM53134
+#if defined(RTAX95Q)
+	int lan_ports=3;
+#elif defined(RTAX56_XD4)
+	int lan_ports=1;
+#elif defined(RTAX56U) || defined(RTAX55) || defined(RTAX1800)
+	int lan_ports=4;
+#else
+	int lan_ports=8;
+#endif
+#elif defined(RTCONFIG_EXTPHY_BCM84880)
+	int lan_ports=5;
+#else
+	int lan_ports=4;
+#endif
+
+#if defined(RTAX56_XD4)
+	if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
+		lan_ports = 1;
+	} else {
+		lan_ports = 0;
+	}
+#endif
+	int ports[lan_ports+1];
+	int lrate[lan_ports+1];
+	char pif[lan_ports+1][8];
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+	int ext = 0;
+	int exrate[MAX_RTL_PORTS];
+	char ex_pif[MAX_RTL_PORTS][8];
+#endif
+	int ext_lret=0, model, mask;
+	int extra_p0=0;
+
+	for (i=0; i<lan_ports+1; i++) {
+		lrate[i] = -1;
+		sprintf(pif[i], "%s", "X");
+	}
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+	for (i=0; i<MAX_RTL_PORTS; i++) {
+		exrate[i] = -1;
+		sprintf(ex_pif[i], "%s", "X");
+	}
+#endif
+
+	model = get_model();
+	switch(model) {
+#ifndef HND_ROUTER
+	case MODEL_RTN14UHP:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=4; ports[1]=0; ports[2]=1, ports[3]=2; ports[4]=3;
+		break;
+	case MODEL_RTN53:
+	case MODEL_RTN15U:
+	case MODEL_RTN12:
+	case MODEL_RTN12B1:
+	case MODEL_RTN12C1:
+	case MODEL_RTN12D1:
+	case MODEL_RTN12VP:
+	case MODEL_RTN12HP:
+	case MODEL_RTN12HP_B1:
+	case MODEL_APN12HP:
+	case MODEL_RTN10P:
+	case MODEL_RTN10D1:
+	case MODEL_RTN10PV2:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=4; ports[1]=3; ports[2]=2, ports[3]=1; ports[4]=0;
+		break;
+	case MODEL_RTN16:
+	case MODEL_RTN10U:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=0; ports[1]=4; ports[2]=3, ports[3]=2; ports[4]=1;
+		break;
+	case MODEL_RTAC88U:
+	case MODEL_RTAC3100:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+		ext = 1;
+#endif
+		break;
+	case MODEL_RTAC56S:
+	case MODEL_RTAC56U:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=4; ports[1]=0; ports[2]=1; ports[3]=2; ports[4]=3;
+		break;
+
+	case MODEL_RTAC87U:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=0; ports[1]=5; ports[2]=3; ports[3]=2; ports[4]=1;
+		break;
+
+	case MODEL_DSLAC68U:
+	case MODEL_RTAC68U:
+	case MODEL_RTAC3200:
+	case MODEL_RTN18U:
+	case MODEL_RTAC53U:
+	case MODEL_RTN66U:
+	case MODEL_RTAC66U:
+	case MODEL_RTAC1200G:
+	case MODEL_RTAC1200GP:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+		break;
+	case MODEL_RTAC5300:
+		/* WAN L1 L2 L3 L4 */
+		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+#ifdef RTCONFIG_EXT_RTL8365MB
+		ext = 1;
+#endif
+		break;
+#else
+#ifndef RTCONFIG_HND_ROUTER_AX_675X
+	case MODEL_RTAC86U:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+//		printf("phystatus: [%x][%x]\n", regv, regv2);
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		break;
+	case MODEL_GTAC5300:
+		/*
+			  1 0 s3 s2	   L1 L2 L3 L4
+			7 3 2 s1 s0	W0 L5 L6 L7 L8
+ 		 */
+		extra_p0 = S_53134;
+		ports[0]=7; ports[1]=1; ports[2]=0; ports[3]=3+extra_p0; ports[4]=2+extra_p0;
+		ports[5]=3; ports[6]=2; ports[7]=1+extra_p0; ports[8]=extra_p0;
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
+#endif
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
+#endif
+//		printf("phystatus: [%x][%x][%x][%x]\n", regv, pmdv, regv2, pmdv2);
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		sprintf(pif[5], "%s", "eth5");
+		sprintf(pif[6], "%s", "eth5");
+		sprintf(pif[7], "%s", "eth5");
+		sprintf(pif[8], "%s", "eth5");
+		break;
+	case MODEL_GTAX11000:
+#ifdef RTCONFIG_EXT_BCM53134
+		/*
+			  1 0 s3 s2	   L1 L2 L3 L4
+			7 3 2 s1 s0	W0 L5 L6 L7 L8
+ 		 */
+		extra_p0 = S_53134;
+		ports[0]=7; ports[1]=1; ports[2]=0; ports[3]=3+extra_p0; ports[4]=2+extra_p0;
+		ports[5]=3; ports[6]=2; ports[7]=1+extra_p0; ports[8]=extra_p0;
+#elif defined(RTCONFIG_EXTPHY_BCM84880)
+		/*
+			7 4 3 2 1 0 	L5(2.5G) W0 L1 L2 L3 L4
+		*/
+		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		ports[5]=7;
+#endif
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
+#endif
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
+#endif
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		sprintf(pif[5], "%s", "eth5");
+		break;
+	case MODEL_RTAX88U:
+		/*
+			7 3 2 1 0 s3 s2 s1 s0	W0 L1 L2 L3 L4 L5 L6 L7 L8
+ 		 */
+		extra_p0 = S_53134;
+		ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		ports[5]=3+extra_p0; ports[6]=2+extra_p0; ports[7]=1+extra_p0; ports[8]=extra_p0;
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv = hnd_ethswctl(PMDIOACCESS, 0x0100, 2, 0, 0);
+#endif
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+#ifdef RTCONFIG_EXT_BCM53134
+		pmdv2 = hnd_ethswctl(PMDIOACCESS, 0x0104, 4, 0, 0);
+#endif
+//		printf("phystatus: [%x][%x][%x][%x]\n", regv, pmdv, regv2, pmdv2);
+
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		sprintf(pif[5], "%s", "eth5");
+		sprintf(pif[6], "%s", "eth5");
+		sprintf(pif[7], "%s", "eth5");
+		sprintf(pif[8], "%s", "eth5");
+		break;
+	case MODEL_RTAX92U:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		regv = hnd_ethswctl(REGACCESS, 0x0100, 2, 0, 0) & 0xf;
+		regv2 = hnd_ethswctl(REGACCESS, 0x0104, 4, 0, 0);
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		break;
+#else
+	case MODEL_RTAX95Q:
+		/*
+			0 1 2 3 W0 L1 L2 L3
+ 		 */
+		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3;
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth1");
+		sprintf(pif[2], "%s", "eth2");
+		sprintf(pif[3], "%s", "eth3");
+		break;
+	case MODEL_RTAX56_XD4:
+		/*
+			0 1 W0 L1
+ 		 */
+		if(nvram_match("HwId", "A") || nvram_match("HwId", "C")){
+			ports[0]=0; ports[1]=1;
+			sprintf(pif[0], "%s", "eth0");
+			sprintf(pif[1], "%s", "eth1");
+		} else {
+			ports[0]=0;;
+			sprintf(pif[0], "%s", "eth0");
+		}
+		break;
+	case MODEL_DSLAX82U:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		break;
+	case MODEL_RTAX58U:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+		break;
+	case MODEL_RTAX55:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth1");
+		sprintf(pif[2], "%s", "eth2");
+		sprintf(pif[3], "%s", "eth3");
+		sprintf(pif[4], "%s", "eth4");
+		break;
+	case MODEL_RTAX56U:
+		/* WAN L4 L3 L2 L1 */
+		ports[0]=0; ports[1]=4; ports[2]=3; ports[3]=2; ports[4]=1;
+		sprintf(pif[0], "%s", "eth0");
+		sprintf(pif[1], "%s", "eth4");
+		sprintf(pif[2], "%s", "eth3");
+		sprintf(pif[3], "%s", "eth2");
+		sprintf(pif[4], "%s", "eth1");
+		break;
+#endif
+#endif
+	}
+
+	memset(out_buf, 0, 64);
+
+	for (i=0; i<lan_ports+1; i++) {
+		mask = 0;
+		mask |= 0x0001<<ports[i];
+
+#ifndef HND_ROUTER
+		if (get_phy_status(mask)==0) /*Disconnect*/
+#else
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+		if (hnd_get_phy_status(ports[i])==0) /*Disconnect*/
+#else
+		if (hnd_get_phy_status(ports[i], extra_p0, regv, pmdv)==0) /*Disconnect*/
+#endif
+#endif
+		{
+			if (i==0) {
+				sprintf(out_buf, "W0=X;");
+				lrate[0] = 0;
+			} else {
+				sprintf(out_buf, "%sL%d=X;", out_buf, i);
+				lrate[i] = 0;
+			}
+		}
+		else { /*Connect, keep check speed*/
+			mask = 0;
+			mask |= (0x0003<<(ports[i]*2));
+#ifndef HND_ROUTER
+			ret=get_phy_speed(mask);
+			ret>>=(ports[i]*2);
+#else
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+			ret = hnd_get_phy_speed(ports[i]);
+#else
+			ret = hnd_get_phy_speed(ports[i], extra_p0, regv2, pmdv2);
+#endif
+#endif
+			if (i==0) {
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+				sprintf(out_buf, "W0=%s;", (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
+				lrate[i] = ret;
+#else
+				sprintf(out_buf, "W0=%s;",
+#ifdef RTCONFIG_EXTPHY_BCM84880
+						(ret & 4)? "Q" :
+#endif
+						(ret & 2)
+						? "G" : "M");
+				lrate[i] = (ret&4)?2500:(ret&2)?1000:100;
+#endif
+#ifdef HND_ROUTER
+				lret |= 1 << i;
+#endif
+			}
+			else {
+				lret |= 1 << i;
+
+				if (ports[i] >= extra_p0)
+					ext_lret = 1;
+
+#ifdef RTCONFIG_HND_ROUTER_AX_675X
+				sprintf(out_buf, "%sL%d=%s;", out_buf, i, (ret == 2500) ? "Q" : ((ret == 1000) ? "G" : "M"));
+				lrate[i] = ret;
+#else
+				sprintf(out_buf, "%sL%d=%s;", out_buf, i,
+#ifdef RTCONFIG_EXTPHY_BCM84880
+					(ret & 4)? "Q" :
+#endif
+					(ret & 2)
+					? "G" : "M");
+				lrate[i] = (ret&4)?2500:(ret&2)?1000:100;
+#endif
+			}
+		}
+	}
+
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+	if (ext) {
+		ext_lret = ext_rtk_phyState(0, &exrate[0]);
+		if(ext_lret) lret |= ext_lret << (lan_ports+1);
+	}
+#endif
+
+	if(nvram_match("verbose", "1")) {
+		for( i=0; i<lan_ports+1; ++i)
+			printf("[%d] portif=%s, lrate=%d\n", i, pif[i], lrate[i]);
+		printf("\n");
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+		for( i=0; i<MAX_RTL_PORTS; ++i)
+			printf("[%d] exif=%s, exrate=%d\n", i, ex_pif[i], exrate[i]);
+		printf("\n");
+#endif
+	}
+
+	for( i=0; i<lan_ports+1; ++i) {
+		if(strcmp(pif[i], ifname) == 0)	
+			return lrate[i];
+	}
+#if defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB)
+	for( i=0; i<MAX_RTL_PORTS; ++i) {
+		if(strcmp(ex_pif[i], ifname) == 0)	
+			return exrate[i];
+	}
+#endif
+
+	return -2;
+#endif // RTCONFIG_HND_ROUTER_AX_6710
+}
+#endif	/* RTCONFIG_AMAS_ETHDETECT */
+#endif	/* RTCONFIG_BHCOST_OPT */
+#endif  /* RTCONFIG_AMAS */
 
 #ifdef RTCONFIG_CFGSYNC
 void update_macfilter_relist()

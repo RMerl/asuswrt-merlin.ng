@@ -231,7 +231,7 @@ static struct ebt_u_target dnat_target =
 	.extra_ops	= opts_d,
 };
 
-void _init(void)
+__attribute__((constructor)) static void extension_init(void)
 {
 	ebt_register_target(&snat_target);
 	ebt_register_target(&dnat_target);

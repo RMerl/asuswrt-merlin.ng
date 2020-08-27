@@ -55,7 +55,20 @@ var changedPermissions = new Array();
 var folderlist = new Array();
 
 function initial(){
-	show_menu();
+	if(re_mode == "1"){
+		$("#apply_btn").addClass("perNode_apply_gen");
+		show_loading_obj();
+	}
+	else{
+		console.log("else");
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("FormTitle content_bg");
+		$("#apply_btn").addClass("apply_gen");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	document.aidiskForm.protocol.value = PROTOCOL;
 	
 	//complete SMBv1_FAQ link
@@ -105,7 +118,7 @@ function initial(){
 
 	//short term solution for brt-ac828
 	if(based_modelid == "BRT-AC828") {
-		document.getElementById("back_app_installation").style.display = "none";
+		document.getElementById("returnBtn").style.display = "none";
 	}
 
 	if(pm_support)
@@ -766,7 +779,7 @@ function switchUserType(flag){
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="current_page" value="Advanced_AiDisk_samba.asp">
 
-<table width="983" border="0" align="center" cellpadding="0" cellspacing="0" class="content">
+<table id="content_table" border="0" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>				
 	
@@ -778,33 +791,25 @@ function switchUserType(flag){
 	<td valign="top">
 	  <div id="tabMenu" class="submenuBlock"></div>
 	  <!--=====Beginning of Main Content=====-->
-<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-	<tr>
-		<td valign="top">
-
-	  <table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
-
-<tbody>
-	<tr>
-		  <td bgcolor="#4D595D">
-		  <div>&nbsp;</div>
-			<div style="width:730px">
-				<table width="730px">
-					<tr>
-						<td align="left">
-							<span class="formfonttitle"><#menu5_4#> - <#menu5_4_1#><span id="clouddiskstr"> / <#Cloud_Disk#></span></span>
-						</td>
-						<td align="right">
-							<img id='back_app_installation' onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;position:absolute;margin-left:-20px;margin-top:-30px;" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
-						</td>
-					</tr>
-				</table>
+<div id="FormTitle" align="left" border="0" cellpadding="0" cellspacing="0" style="width: 760px; display: none;">
+<table border="0" cellpadding="5" cellspacing="0">
+	<tbody>
+		<tr>
+		  <td>
+			<div style="width: 99%; margin-top: 30px; margin-bottom: 5px;">
+				<span class="formfonttitle"><#menu5_4#> - <#menu5_4_1#><span id="clouddiskstr"> / <#Cloud_Disk#></span></span>
+				<span id="returnBtn" class="returnBtn">
+					<img onclick="go_setting('/APP_Installation.asp')" align="right" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+				</span>
 			</div>
-			<div style="margin:5px;" class="splitLine"></div>
-			<div class="formfontdesc"><#Samba_desc#></div>
+			<div id="splitLine" class="splitLine"></div>
+			<div class="formfontdesc" style="margin-top: 10px;"><#Samba_desc#></div>
 			<!-- div class="formfontdesc"><#ADSL_FW_note#>&nbsp;<#SMBv1_enable_hint#></div -->
-
-			<table width="740px" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+		  </td>
+		</tr>
+		<tr>
+		<td>
+			<table width="99%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 				<tr>
 				<th><#enableCIFS#></th>
 					<td>
@@ -910,7 +915,7 @@ function switchUserType(flag){
 				</tr>				
 			</table>
 			
-			<div class="apply_gen">
+			<div id="apply_btn">
 					<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 			</div>			
 
@@ -956,8 +961,8 @@ function switchUserType(flag){
 					</table>						
 		  		</td>
   			</tr>
-	  	  </table>
-	  	</div>
+			</table>
+			</div><!-- The table of shareStatus. -->
 	    
 		<!-- The table of accounts and folders. -->
 	    <!-- <table width="99%" height="400"  border="0" align="center" cellpadding="0" cellspacing="1" bgcolor="#999999">-->
@@ -990,21 +995,16 @@ function switchUserType(flag){
 			  </div>
 		    </td>
           </tr>
-	    </table>
-	  </td>
-	 
-	</tr>
-  </tbody>
+	      </table>
+		</td>
+		</tr>
+	</tbody>
 </table>
-	  <!-- The table of DDNS. -->
-    </td>
-  <td width="10"></td>
-  </tr>
-</table>
+</div>
 
 			</td>
     <td width="10" align="center" valign="top">&nbsp;</td>
-	</tr>
+</tr>
 </table>
 </form>
 

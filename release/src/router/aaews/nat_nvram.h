@@ -27,6 +27,11 @@
 
 #define NVRAM_RETRY_COUNT "aae_retry_cnt"
 
+// The retry related definition for DM login and aaews running.
+#define RETRY_MAX_TIMES 4
+#define RETRY_DELAY_BASE_SECONDS 240 //seconds
+#define MAX_RETRY_DELAY_DELAYED_SECONDS 3840 //seconds
+
 /*#define HTTP_WAN_PORT "misc_httpport_x"
 #define HTTP_ENABLE "http_enable"*/
 //#define AAE_SEM_NAME "AAE_ENABLE_SEM"
@@ -37,6 +42,7 @@ int nvram_set_server_status(const char* server, const int status, const char* st
 int nvram_set_aae_sip_connected(const char* aae_sip_connected);
 int nvram_get_aae_pwd(char** aae_pwd);
 int nvram_get_aae_username(char** aae_username);
+int nvram_save_value(const char* name, const char* value);
 int nvram_set_aae_info(const char* deviceid);
 int nvram_get_aae_sdk_log_level();
 int nvram_set_aae_sdk_log_level(const char* aae_sdk_log_level);
@@ -51,4 +57,5 @@ void WatchingNVram();
 int nvram_get_mac_addr(char* mac_addr);
 int nvram_get_link_internet();
 void aae_support_check(int *is_terminate);
+int get_random_delay(int count, int random_base, int random_max);
 #endif

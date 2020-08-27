@@ -502,6 +502,14 @@ function change_common_radio(o, s, v, r){
 						showhide("WPS_hideSSID_hint",0);
 			}
 	}
+	else if(v=="bond_wan" && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+		if(r==1){
+			document.getElementById("wanports_bond_menu").style.display = "";
+			document.form.wanports_bond.disabled = false;
+		}else{
+			document.getElementById("wanports_bond_menu").style.display = "none";
+		}
+	}
 
 	return true;
 }
@@ -856,12 +864,33 @@ function insertExtChannelOption_5g(){
 				}
 			}
 			if(is_RU_sku){
+				var RU_band4 = (function(){
+					for(i=0;i<wl_channel_list_5g.length;i++){
+						if(wl_channel_list_5g[i] >= '149'){
+							return true;
+						}
+					}
+
+					return false;
+				})();
 				if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
 					if(document.form.wl_bw.value == 3){    // 80 MHz
-						wl_channel_list_5g = ['42', '58', '138'];
+						if(RU_band4){
+							wl_channel_list_5g = ['42', '58', '138', '155'];
+						}
+						else{
+							wl_channel_list_5g = ['42', '58', '138'];
+						}
+						
 					}
 					else if(document.form.wl_bw.value == 2){    // 40 MHz
-						wl_channel_list_5g = ['38', '46', '54', '62', '134', '142'];
+						if(RU_band4){
+							wl_channel_list_5g = ['38', '46', '54', '62', '134', '142', '151', '159'];
+						}
+						else{
+							wl_channel_list_5g = ['38', '46', '54', '62', '134', '142'];
+						}
+						
 					}			
 				}
 			}
@@ -1248,12 +1277,33 @@ function insertExtChannelOption_5g(){
 		}
 		
 		if(is_RU_sku){
+			var RU_band4 = (function(){
+				for(i=0;i<wl_channel_list_5g.length;i++){
+					if(wl_channel_list_5g[i] >= '149'){
+						return true;
+					}
+				}
+
+				return false;
+			})();
 			if(document.form.wl_nmode_x.value == 0 || document.form.wl_nmode_x.value == 8){    // Auto or N/AC mixed
 				if(document.form.wl_bw.value == 3){    // 80 MHz
-					ch_v = ['0', '36', '52', '132'];
+					if(RU_band4){
+						ch_v = ['0', '36', '52', '132', '149'];
+					}
+					else{
+						ch_v = ['0', '36', '52', '132'];
+					}
+					
 				}
 				else if(document.form.wl_bw.value == 2){    // 40 MHz
-					ch_v = ['0', '36', '44', '52', '60', '132', '140'];
+					if(RU_band4){
+						ch_v = ['0', '36', '44', '52', '60', '132', '140', '149', '157'];
+					}
+					else{
+						ch_v = ['0', '36', '44', '52', '60', '132', '140'];
+					}
+					
 				}			
 			}
 		}
@@ -1355,6 +1405,22 @@ function wl_auth_mode_change(isload){
 	var i, cur, algos;
 	inputCtrl(document.form.wl_wep_x,  1);
 
+	if(mode == "sae"){
+		var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
+		if(get_cfg_clientlist != undefined){
+			var len = get_cfg_clientlist.length;
+			for(var i = 1; i < len; i += 1){//filter CAP
+				if(get_cfg_clientlist[i] != undefined && !httpApi.aimesh_get_node_capability(get_cfg_clientlist[i]).wpa3){
+					if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "";
+					break;
+				}
+			}
+		}
+	}
+	else{
+		if(document.getElementById("no_wp3_hint")) document.getElementById("no_wp3_hint").style.display = "none";
+	}
+
 	/* enable/disable crypto algorithm */
 	if(mode == "wpa" || mode == "wpa2" || mode == "wpawpa2" || mode == "psk" || mode == "psk2" || mode == "sae" || mode == "pskpsk2" || mode == "psk2sae")
 		inputCtrl(document.form.wl_crypto,  1);
@@ -1407,6 +1473,22 @@ function wl_auth_mode_change(isload){
 			inputCtrl(document.form.wl_radius_port,  0);
 			inputCtrl(document.form.wl_radius_key,  0);
 		}
+
+		if(mode == 'sae' && document.form.wl_mfp.value != '2'){
+			$('#mbo_notice_combo').hide();
+			$('#mbo_notice_wpa3').show();
+			$('#mbo_notice').hide();
+		}
+		else if(mode == 'psk2sae' && document.form.wl_mfp.value == '0'){
+			$('#mbo_notice_wpa3').hide();
+			$('#mbo_notice_combo').show();
+			$('#mbo_notice').hide();
+		}
+		else{
+			$('#mbo_notice_wpa3').hide();
+			$('#mbo_notice_combo').hide();
+			$('#mbo_notice').hide();
+		}
 	}
 
 	if(current_url.indexOf("Guest_network") != 0){ //except Guest_network page
@@ -1450,7 +1532,7 @@ function wl_auth_mode_change(isload){
 	else{
 		algos = new Array("1", "2", "3", "4");
 	}
-
+	
 	/* Reconstruct network key indices array from new network key indices */
 	free_options(document.form.wl_key);
 	document.form.wl_key.length = algos.length;
@@ -1561,21 +1643,10 @@ function wireless_mode_change(obj){
 		if (obj.value == '0') {
 			if (based_modelid != 'RT-AX92U' || (wl_unit != '0' && wl_unit != '1')) {
 				$("#he_mode_field").show();
-				document.form.wl0_he_features.disabled = false;
-				document.form.wl1_he_features.disabled = false;
-				if (band5g2_support) {
-					document.form.wl2_he_features.disabled = false;
-				}
 			}
 		}
 		else {
 			$("#he_mode_field").hide();
-			document.form.wl0_he_features.disabled = true;
-			document.form.wl1_he_features.disabled = true;
-			if (band5g2_support) {
-				document.form.wl2_he_features.disabled = true;
-			}
-
 		}
 	}
 
@@ -1600,7 +1671,12 @@ function limit_auth_method(g_unit){
 	var _current_page = document.form.current_page.value;
 	var auth_method_array = document.form.wl_auth_mode_x.value;
 	if(sw_mode == 2){
-		var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];
+		if(wpa3_support){
+			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA3-Personal", "sae"], ["WPA/WPA2-Personal", "pskpsk2"], ["WPA2/WPA3-Personal", "psk2sae"]];
+		}
+		else{
+			var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"], ["WPA-Auto-Personal", "pskpsk2"]];
+		}
 	}
 	else if(document.form.wl_unit.value == "3"){//60G, kernel 3.4 11ad driver doesn't support WPA-Enterprise.
 		var auth_array = [["Open System", "open"], ["WPA2-Personal", "psk2"]];
@@ -1752,7 +1828,7 @@ function gen_switch_menu(_arrayList, _currentItem) {
 		var gen_pressed_content = function(_itemArray, _cssMode) {
 			var pressed_code = "";
 			pressed_code += "<div style='width:110px;height:30px;float:left;" + _cssMode + "' class='block_filter_pressed'>";
-			pressed_code += "<div style='text-align:center;padding-top:5px;color:#93A9B1;font-size:14px'>" +  _itemArray[0] + "</div>";
+			pressed_code += "<div style='text-align:center;padding-top:5px;font-size:14px'>" +  _itemArray[0] + "</div>";
 			pressed_code += "</div>";
 			return pressed_code;
 		};

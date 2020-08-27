@@ -198,3 +198,6 @@ obj-$(CONFIG_IP_SET) += ipset/
 
 # IPVS
 obj-$(CONFIG_IP_VS) += ipvs/
+
+# ASUS Net Filter
+obj-$(CONFIG_NETFILTER_ASUS_FILTER) += fltr/

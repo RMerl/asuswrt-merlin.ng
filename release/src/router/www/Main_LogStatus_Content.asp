@@ -29,7 +29,7 @@ function showclock(){
 				  /*JS_timeObj.getFullYear() + " GMT" +
 				  timezone;*/ // Viz remove GMT timezone 2011.08
 				  JS_timeObj.getFullYear();
-	document.getElementById("system_time").value = JS_timeObj2;
+	document.getElementById("system_time").innerHTML = JS_timeObj2;
 	setTimeout("showclock()", 1000);
 	if(navigator.appName.indexOf("Microsoft") >= 0)
 		document.getElementById("textarea").style.width = "99%";
@@ -74,10 +74,10 @@ function initial(){
 }
 
 function applySettings(){
-	var dot_array = document.config_form.log_ipaddr.value.split(".");	
+	var dot_array = document.config_form.log_ipaddr.value.split(".");
 	var valid_ipv4 = true;
 	var asIPv4_flag = 0;
-	if(dot_array.length==4){		
+	if(dot_array.length==4){
 		for(var i=0;i<4;i++){
 			if(validator.integer(dot_array[i])){
 				asIPv4_flag++;
@@ -175,32 +175,38 @@ function get_log_data(){
 									<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 									<div class="formfontdesc"><#GeneralLog_title#></div>
 									<form method="post" name="config_form" action="start_apply.htm" target="hidden_frame">
-									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-										<tr>
-											<th width="20%"><#General_x_SystemTime_itemname#></th>
-											<td>
-												<input type="text" id="system_time" name="system_time" size="40" class="devicepin" value="" readonly="1" style="font-size:12px;" autocorrect="off" autocapitalize="off">
-												<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
-											</td>
-										</tr>
-										<tr>
-											<th><!--a class="hintstyle" href="javascript:void(0);" onClick="openHint(12, 1);"--><#General_x_SystemUpTime_itemname#></a></th>
-											<td><span id="boot_days"></span> <#Day#> <span id="boot_hours"></span> <#Hour#> <span id="boot_minutes"></span> <#Minute#> <span id="boot_seconds"></span> <#Second#></td>
-										</tr>
-										<tr>
-											<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,1)"><#LANHostConfig_x_ServerLogEnable_itemname#></a></th>
-											<td>
-												<input type="hidden" name="current_page" value="Main_LogStatus_Content.asp">
-												<input type="hidden" name="next_page" value="Main_LogStatus_Content.asp">
-												<input type="hidden" name="action_mode" value="apply">
-												<input type="hidden" name="action_script" value="restart_logger">
-												<input type="hidden" name="action_wait" value="5">
-												<input type="text" maxlength="64" class="input_30_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
-												<label style="padding-left:15px;">Port:</label><input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 65535);" value='<% nvram_get("log_port"); %>' autocorrect="off" autocapitalize="off">
-												<br/><span id="alert_msg1" style="color:#FC0;"></span>
-											</td>
-										</tr>
-										<tr>
+										<input type="hidden" name="current_page" value="Main_LogStatus_Content.asp">
+										<input type="hidden" name="next_page" value="Main_LogStatus_Content.asp">
+										<input type="hidden" name="action_mode" value="apply">
+										<input type="hidden" name="action_script" value="restart_logger">
+										<input type="hidden" name="action_wait" value="5">
+										<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+											<tr>
+												<th width="20%"><#General_x_SystemTime_itemname#></th>
+												<td>
+														<span id="system_time" class="devicepin" style="color:#FFFFFF;"></span>
+													<br><span id="dstzone" style="display:none;margin-left:5px;color:#FFFFFF;"></span>
+												</td>
+											</tr>
+											<tr>
+												<th><!--a class="hintstyle" href="javascript:void(0);" onClick="openHint(12, 1);"--><#General_x_SystemUpTime_itemname#></a></th>
+												<td><span id="boot_days"></span> <#Day#> <span id="boot_hours"></span> <#Hour#> <span id="boot_minutes"></span> <#Minute#> <span id="boot_seconds"></span> <#Second#></td>
+											</tr>
+											<tr>
+												<th><a class="hintstyle"  href="javascript:void(0);" onClick="openHint(11,1)"><#LANHostConfig_x_ServerLogEnable_itemname#></a></th>
+												<td>
+														<input type="text" maxlength="64" class="input_30_table" name="log_ipaddr" value="<% nvram_get("log_ipaddr"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
+														<br/><span id="alert_msg1" style="color:#FC0;"></span>
+													</td>
+												</tr>
+												<tr>
+													<th>Remote Log Server Port</th>
+													<td>
+														<input type="text" class="input_6_table" maxlength="5" name="log_port" onKeyPress="return validator.isNumber(this,event);" autocorrect="off" autocapitalize="off" value='<% nvram_get("log_port"); %>'>
+														<div style="color: #FFCC00;">* The default port is 514. If you reconfigured the port number, please make sure that the remote log server or IoT devices’ settings match your current configuration.</div>
+												</td>
+											</tr>
+											<tr>
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,11);">Default message log level</a></th>
 											<td>
 												<select name="message_loglevel" class="input_option">
@@ -214,8 +220,8 @@ function get_log_data(){
 												<option value="7" <% nvram_match("message_loglevel", "7", "selected"); %>>debug</option>
 												</select>
 											</td>
-										</tr>
-										<tr>
+											</tr>
+											<tr>
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,12);">Log only messages more urgent than</a></th>
 											<td>
 												<select name="log_level" class="input_option">
@@ -229,13 +235,13 @@ function get_log_data(){
 												<option value="8" <% nvram_match("log_level", "8", "selected"); %>>all</option>
 												</select>
 											</td>
-										</tr>
-									</table>
-									<div class="apply_gen" valign="top"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
+											</tr>
+										</table>
 									</form>
+									<div style="margin-top: 5px; text-align: center;"><input class="button_gen" onclick="applySettings();" type="button" value="<#CTL_apply#>" /></div>
 									<div style="color:#FFCC00;"><input type="checkbox" checked id="auto_refresh">Auto refresh</div>
 									<div style="margin-top:8px">
-										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_log_table" style="font-family:'Courier New', Courier, mono; font-size:11px;"><% nvram_dump("syslog.log",""); %></textarea>
+										<textarea cols="63" rows="27" wrap="off" readonly="readonly" id="textarea" class="textarea_ssh_table" style="width:99%; font-family:'Courier New', Courier, mono; font-size:11px;"><% nvram_dump("syslog.log",""); %></textarea>
 									</div>
 									<div>
 									<table class="apply_gen">

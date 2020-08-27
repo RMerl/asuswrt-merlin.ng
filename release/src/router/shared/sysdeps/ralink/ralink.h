@@ -43,11 +43,12 @@ extern const char APCLI_2G[];
 #define BW_BOTH			2
 #define BW_80			2
 #define BW_10			3
+#define BW_160			3
 
 #define INIC_VLAN_ID_START	4 //first vlan id used for RT3352 iNIC MII
 #define INIC_VLAN_IDX_START	2 //first available index to set vlan id and its group.
 
-#if defined(RTCONFIG_WLMODULE_MT7610_AP)
+#if defined(RTCONFIG_WLMODULE_MT7610_AP) || defined(RTCONFIG_WLMODULE_MT7663E_AP)
 #define RT_802_11_MAC_ENTRY_for_5G		RT_802_11_MAC_ENTRY_11AC
 #define MACHTTRANSMIT_SETTING_for_5G		MACHTTRANSMIT_SETTING_11AC
 #else
@@ -93,6 +94,18 @@ typedef union  _MACHTTRANSMIT_SETTING_2G {
  } MACHTTRANSMIT_SETTING_2G, *PMACHTTRANSMIT_SETTING_2G;
 
 typedef union  _MACHTTRANSMIT_SETTING_11AC {
+#if defined(RTCONFIG_WLMODULE_MT7663E_AP)
+	struct  {	/* refter to src-mtk3.5/linux/linux-3.10.108/driver/net/wireless/mtk/mt7663e/mt_wifi/embedded/include/oid.h: typedef union _HTTRANSMIT_SETTING{}; */
+	unsigned short MCS:6;
+	unsigned short ldpc:1;
+	unsigned short BW:2;
+	unsigned short ShortGI:1;
+	unsigned short STBC:1;
+	unsigned short eTxBF:1;
+	unsigned short iTxBF:1;
+	unsigned short MODE:3;
+	} field;
+#else
 	struct  {
 	unsigned short	MCS:7;	// MCS
 	unsigned short	BW:2;	//channel bandwidth 20MHz or 40 MHz
@@ -102,6 +115,7 @@ typedef union  _MACHTTRANSMIT_SETTING_11AC {
 	unsigned short	iTxBF:1;
 	unsigned short	MODE:3;	// Use definition MODE_xxx.
 	} field;
+#endif
 	unsigned short	word;
  } MACHTTRANSMIT_SETTING_11AC, *PMACHTTRANSMIT_SETTING_11AC;
 
@@ -249,6 +263,15 @@ typedef struct _SITE_SURVEY_ARRAY
 	SITE_SURVEY SiteSurvey[64];
 } SSA;
 
+struct _SITESURVEY_VSIE {
+	char Ssid[33];
+	unsigned char Bssid[6];
+    unsigned char Channel;
+    char Rssi;
+    unsigned char vendor_ie[128];
+    unsigned char vendor_ie_len;
+};
+
 #define SITE_SURVEY_APS_MAX	(16*1024)
 
 //#if WIRELESS_EXT <= 11
@@ -301,16 +324,15 @@ enum ASUS_IOCTL_SUBCMD {
 	ASUS_SUBCMD_GETSKUTABLE,
     ASUS_SUBCMD_GETSKUTABLE_TXBF,
 	ASUS_SUBCMD_CLIQ,
-#ifdef RTCONFIG_AMAS
+	ASUS_SUBCMD_DRIVERVER,
     ASUS_SUBCMD_CLRSSI,    
-#ifdef RTCONFIG_ADV_RAST
     ASUS_SUBCMD_GMONITOR_RSSI,
     ASUS_SUBCMD_MACMODE,
     ASUS_SUBCMD_MACLIST,
-#endif
-#else
-	ASUS_SUBCMD_DRIVERVER,
-#endif
+	ASUS_SUBCMD_GDFSNOPCHANNEL,
+	ASUS_SUBCMD_GCHANNELINFO,
+    ASUS_SUBCMD_GETSITESURVEY_VSIE,
+    ASUS_SUBCMD_GETAPCLIENABLE,
 	ASUS_SUBCMD_MAX
 };
 

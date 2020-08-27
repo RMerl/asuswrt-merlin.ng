@@ -28,6 +28,7 @@
 #include <arpa/inet.h>
 #include <sys/syscall.h>
 #include <sys/timerfd.h>
+#include <stdio.h>	//FILE
 
 
 struct assignment {

@@ -1,4 +1,5 @@
 #include <linux/sockios.h>
+#include <netinet/if_ether.h>		//have to in front of <linux/ethtool.h> and <linux/mii.h> to avoid redefinition of 'struct ethhdr'
 #include <linux/ethtool.h>
 
 #include <stdio.h>

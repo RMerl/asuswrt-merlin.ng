@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <netinet/if_ether.h>	//have in front of <linux/mii.h> to avoid redefinition of 'struct ethhdr'
 #include <linux/mii.h>
 #include <dirent.h>
 
@@ -98,17 +99,54 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 	{1,1,1,1,1,1,1,1,1,2,3}  // ALL
 };
 
+#if defined(RTCONFIG_BONDING_WAN) || defined(RTCONFIG_LACP)
+/* array index:		port number used in wanports_bond, enum bs_port_id.
+ * 			0: WAN, 1~8: LAN1~8, 30: 10G base-T (RJ-45), 31: 10G SFP+
+ * array element:	virtual port
+ * 			e.g. LAN1_PORT ~ LAN8_PORT, WAN_PORT, etc.
+ */
+static const int bsport_to_vport[32] = {
+	WAN_PORT, LAN1_PORT, LAN2_PORT, LAN3_PORT, LAN4_PORT, LAN5_PORT, LAN6_PORT, LAN7_PORT, LAN8_PORT,
+	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+	WAN10GR_PORT, WAN10GS_PORT
+};
+#endif
+
 /* array index:		virtual port mapping enumeration.
  * 			e.g. LAN1_PORT, LAN2_PORT, etc.
  * array element:	PHY address, negative value means absent PHY.
  * 			QCA8337 port X uses PHY X-1
- * 			0x10? means Aquentia AQR107,
+ * 			0x10? means Aquantia AQR107,
  * 			      check it with is_aqr_phy_exist before using it on GT-AXY16000/GX-AC5400.
  * 			0x20? means ethX, ethtool ioctl
  */
-static const int vport_to_phy_addr[MAX_WANLAN_PORT] = {
+#if defined(RTAX89U)
+/* HwId: A ~ B, AQR107, AQR113 A1/B0 */
+static const int vport_to_phy_addr_hwid_a[MAX_WANLAN_PORT] = {
 	10, 9, 4, 3, 2, 1, 0, 6, 11, 0x107, 0x204
 };
+
+/* HwId: C, AQR113C */
+static const int vport_to_phy_addr_hwid_c[MAX_WANLAN_PORT] = {
+	10, 9, 4, 3, 2, 1, 0, 6, 11, 0x108, 0x204
+};
+
+static const int *vport_to_phy_addr = vport_to_phy_addr_hwid_a;
+#elif defined(GTAXY16000)
+/* HwId: A ~ B, AQR107, AQR113 A1/B0 */
+static const int vport_to_phy_addr_hwid_a[MAX_WANLAN_PORT] = {
+	10, 9, 4, 3, 2, 1, 0, 6, 11, 0x107, 0x204
+};
+
+/* HwId: C, exchange LAN3/LAN4, LAN5/LAN6 */
+static const int vport_to_phy_addr_hwid_c[MAX_WANLAN_PORT] = {
+	10, 9, 3, 4, 1, 2, 0, 6, 11, 0x107, 0x204
+};
+
+static const int *vport_to_phy_addr = vport_to_phy_addr_hwid_c;
+#else
+#error FIXME
+#endif
 
 /**
  * The vport_to_iface array is used to get interface name of each virtual
@@ -140,17 +178,28 @@ static const char *vport_to_iface[MAX_WANLAN_PORT] = {
  * 			e.g. LAN1_PORT, LAN2_PORT, etc.
  * array element:	Port mask of QCA8337
  */
-static const int vport_to_8337port[MAX_WANLAN_PORT] = {
+static const int vport_to_8337port_hwid_a[MAX_WANLAN_PORT] = {
 	-1, -1, 5, 4, 3, 2, 1, 6,				/* LAN1~8, LAN8 is connected to P6 of QCA8337 indirectly. */
 	-1, -1, -1						/* WAN1, WAN2 10G RJ-45, 10G SFP+ */
 };
+
+#if defined(GTAXY16000)
+static const int vport_to_8337port_hwid_c[MAX_WANLAN_PORT] = {
+	-1, -1, 4, 5, 2, 3, 1, 6,				/* LAN1~8, LAN8 is connected to P6 of QCA8337 indirectly. */
+	-1, -1, -1						/* WAN1, WAN2 10G RJ-45, 10G SFP+ */
+};
+
+static const int *vport_to_8337port = vport_to_8337port_hwid_c;
+#else
+static const int *vport_to_8337port = vport_to_8337port_hwid_a;
+#endif
 
 static const unsigned int qca8337_vportmask =
 	(1U << LAN3_PORT) | (1U << LAN4_PORT) | (1U << LAN5_PORT) |
 	(1U << LAN6_PORT) | (1U << LAN7_PORT) | (1U << LAN8_PORT);
 
 /* array index:		switch_stb_x nvram variable.
- * array element:	platform specific VoIP/STB port bitmask.
+ * array element:	platform specific VoIP/STB virtual port bitmask.
  */
 static const unsigned int stb_to_mask[7] = { 0,
 	(1U << LAN1_PORT),
@@ -166,7 +215,7 @@ void reset_qca_switch(void);
 #define	CPU_PORT_WAN_MASK	(1U << WAN_PORT)
 #define CPU_PORT_LAN_MASK	(0xF)
 
-/* ALL WAN/LAN port bit-mask */
+/* ALL WAN/LAN virtual port bit-mask */
 static unsigned int wanlanports_mask = ((1U << WAN_PORT) | (1U << WAN10GR_PORT) | (1U << WAN10GS_PORT) | \
 	(1U << LAN1_PORT) | (1U << LAN2_PORT) | (1U << LAN3_PORT) | (1U << LAN4_PORT) | \
 	(1U << LAN5_PORT) | (1U << LAN6_PORT) | (1U << LAN7_PORT) | (1U << LAN8_PORT));
@@ -226,6 +275,30 @@ static inline int lan_id_to_vport_nr(int id)
 	return lan_id_to_vport[id];
 }
 
+static inline void get_qca8337_port_definition(void)
+{
+	static char g_HwId[HWID_LENGTH] = { 0 };
+
+	if (*g_HwId == '\0')
+		strlcpy(g_HwId, nvram_safe_get("HwId"), sizeof(g_HwId));
+
+#if defined(RTAX89U)
+	if (!strcmp(g_HwId, "B") || !strcmp(g_HwId, "A")) {
+		vport_to_phy_addr = vport_to_phy_addr_hwid_a;
+	} else if (!strcmp(g_HwId, "C")) {
+		vport_to_phy_addr = vport_to_phy_addr_hwid_c;
+	}
+#elif defined(GTAXY16000)
+	if (!strcmp(g_HwId, "B") || !strcmp(g_HwId, "A")) {
+		vport_to_phy_addr = vport_to_phy_addr_hwid_a;
+		vport_to_8337port = vport_to_8337port_hwid_a;
+	} else if (!strcmp(g_HwId, "C")) {
+		vport_to_phy_addr = vport_to_phy_addr_hwid_c;
+		vport_to_8337port = vport_to_8337port_hwid_c;
+	}
+#endif
+}
+
 /**
  * Get WAN port mask
  * @wan_unit:	wan_unit, if negative, select WANS_DUALWAN_IF_WAN
@@ -264,8 +337,10 @@ static unsigned int get_lan_port_mask(void)
 	return m;
 }
 
-#define IPQ807X_MDIO_SYS_DIR	"/sys/devices/platform/soc/90000.mdio/mdio_bus/90000.mdio"
-#define AQR_PHY_SYS_DIR		"/sys/devices/platform/soc/90000.mdio/mdio_bus/90000.mdio/90000.mdio:07"
+#define IPQ807X_MDIO_SYS_DIR	"/sys/devices/platform/soc/90000.mdio/mdio_bus/90000.mdio/"
+#define SW_MDIO1_SYS_DIR	"/sys/devices/platform/soc/soc:mdio1/mdio_bus/gpio-0/"
+#define AQR_PHY_SYS_DIR		IPQ807X_MDIO_SYS_DIR "90000.mdio:07"
+#define AQR113C_PHY_SYS_DIR	SW_MDIO1_SYS_DIR "gpio-0:08"
 int is_aqr_phy_exist(void)
 {
 	static int aqr_phy_absent = -1;
@@ -278,13 +353,44 @@ int is_aqr_phy_exist(void)
 		return 1;
 	}
 
-	if (d_exists(AQR_PHY_SYS_DIR)) {
+	if (d_exists(AQR_PHY_SYS_DIR) || d_exists(AQR113C_PHY_SYS_DIR)) {
 		aqr_phy_absent = 0;
 	} else {
 		aqr_phy_absent = 1;
 	}
 
 	return !aqr_phy_absent;
+}
+
+/* Return PHY address of AQR107/113/113C based on HwId
+ * @return:
+ * 	-1: error
+ *  0 ~ 31: PHY address
+ */
+int aqr_phy_addr(void)
+{
+	static int phy_addr = -1;
+	char hwid = '\0';
+
+#if defined(RTAX89U)
+        char min_aqr113c_hwid = 'C';
+#elif defined(GTAXY16000)
+#warning FIXME
+        char min_aqr113c_hwid = 'D';
+#else
+        char min_aqr113c_hwid = 'A';
+#endif
+
+	if (phy_addr >= 0)
+		return phy_addr;
+
+	memcpy(&hwid, nvram_safe_get("HwId"), 1);
+	if (hwid >= min_aqr113c_hwid)
+		phy_addr = 8;
+	else
+		phy_addr = 7;
+
+	return phy_addr;
 }
 
 /**
@@ -339,14 +445,15 @@ unsigned int vportmask_to_rportmask(unsigned int vportmask)
 	int vport;
 	unsigned int rportmask = 0, m;
 
+	get_qca8337_port_definition();
 	for (vport = 0, m = vportmask;
-	     vport < ARRAY_SIZE(vport_to_8337port) && m != 0;
+	     vport < MAX_WANLAN_PORT && m != 0;
 	     m >>= 1, vport++)
 	{
-		if (!(m & 1) || vport_to_8337port[vport] < 0)
+		if (!(m & 1) || *(vport_to_8337port + vport) < 0)
 			continue;
 
-		rportmask |= (1U << vport_to_8337port[vport]);
+		rportmask |= (1U << *(vport_to_8337port + vport));
 	}
 
 	return rportmask;
@@ -411,7 +518,7 @@ int set_qca8337_port_vlan(int port, int vid, int prio, int untag)
  */
 int qca8075_8337_8035_8033_aqr107_vlan_set(int vtype, char *upstream_if, int vid, int prio, unsigned int mbr, unsigned int untag)
 {
-	unsigned int m = mbr, u = untag;
+	unsigned int m = mbr, u = untag, upstream_mask = 0;
 	int vport, port, upstream_vport, wan_vlan_br = 0, wan_br = 0;
 	char wvlan_if[IFNAMSIZ], qvlan_if[IFNAMSIZ], vid_str[6], prio_str[4], brv_if[IFNAMSIZ];
 	char *ventry_create[] = { "ssdk_sh", SWID_QCA8337, "vlan", "entry", "create", vid_str, NULL };
@@ -427,10 +534,30 @@ int qca8075_8337_8035_8033_aqr107_vlan_set(int vtype, char *upstream_if, int vid
 		return -1;
 	}
 
-	upstream_vport = iface_name_to_vport(upstream_if);
-	if (upstream_vport < 0 || upstream_vport >= MAX_WANLAN_PORT) {
-		dbg("%s: Can't find vport for upstream iface [%s]\n", __func__, upstream_if);
-		return -1;
+	if (bond_wan_enabled() && !strcmp(upstream_if, "bond1")) {
+		uint32_t wmask = nums_str_to_u32_mask(nvram_safe_get("wanports_bond"));
+		int b;
+		const char *p;
+
+		while ((b = ffs(wmask)) > 0) {
+			b--;
+			if ((p = bs_port_id_to_iface(b)) != NULL) {
+				upstream_vport = iface_name_to_vport(p);
+				if (upstream_vport < 0 || upstream_vport >= MAX_WANLAN_PORT) {
+					dbg("%s: Can't find vport for upstream iface [%s] of bond1\n", __func__, upstream_if);
+					return -1;
+				}
+				upstream_mask |= 1U << upstream_vport;
+			}
+			wmask &= ~(1U << b);
+		}
+	} else {
+		upstream_vport = iface_name_to_vport(upstream_if);
+		if (upstream_vport < 0 || upstream_vport >= MAX_WANLAN_PORT) {
+			dbg("%s: Can't find vport for upstream iface [%s]\n", __func__, upstream_if);
+			return -1;
+		}
+		upstream_mask = 1U << upstream_vport;
 	}
 
 	if (vtype == VLAN_TYPE_WAN_NO_VLAN) {
@@ -443,11 +570,11 @@ int qca8075_8337_8035_8033_aqr107_vlan_set(int vtype, char *upstream_if, int vid
 	/* Replace WAN port as selected upstream port. */
 	if (mbr & (1U << WAN_PORT)) {
 		mbr &= ~(1U << WAN_PORT);
-		mbr |= (1U << upstream_vport);
+		mbr |= upstream_mask;
 	}
 	if (untag & (1U << WAN_PORT)) {
 		untag &= ~(1U << WAN_PORT);
-		untag |= (1U << upstream_vport);
+		untag |= upstream_mask;
 	}
 
 	snprintf(vid_str, sizeof(vid_str), "%d", vid);
@@ -487,6 +614,7 @@ int qca8075_8337_8035_8033_aqr107_vlan_set(int vtype, char *upstream_if, int vid
 		eval("ifconfig", wvlan_if, "0.0.0.0", "up");
 	}
 
+	get_qca8337_port_definition();
 	if ((vtype == VLAN_TYPE_WAN && wan_vlan_br) || vtype == VLAN_TYPE_STB_VOIP) {
 		if (mbr & qca8337_vportmask) {
 			snprintf(qvlan_if, sizeof(qvlan_if), "%s.%d", QCA8337_IFACE, vid);
@@ -499,14 +627,14 @@ int qca8075_8337_8035_8033_aqr107_vlan_set(int vtype, char *upstream_if, int vid
 				_eval(p0vmbr_add, DBGOUT, 0, NULL);
 		}
 
-		for (vport = 0, m = mbr & ~((1U << upstream_vport)), u = untag;
+		for (vport = 0, m = mbr & ~upstream_mask, u = untag;
 		     vport < MAX_WANLAN_PORT && m > 0;
 		     vport++, m >>= 1, u >>= 1)
 		{
 			if (!(m & 1))
 				continue;
 
-			if ((port = vport_to_8337port[vport]) < 0) {
+			if ((port = *(vport_to_8337port + vport)) < 0) {
 				/* IPQ807x ports */
 				dbg("%s: vport %d iface %s vid %d prio %d u %d\n",
 					__func__, vport, vport_to_iface[vport], vid, prio, u & 1);
@@ -547,14 +675,16 @@ static void is_singtel_mio(int is)
  * 			*speed = 3 means 10Gbps
  * 			*speed = 4 means 2.5Gbps
  * 			*speed = 5 means 5Gbps
+ * @link_speed:	pointer to unsigned integer which is used to store normal link speed.
+ * 		e.g. 100 = 100Mbps, 10000 = 10Gbps, etc.
  * @return
  * 	0:	success
  *     -1:	invalid parameter.
  *     -2:	miireg_read() MII_BMSR failed
  */
-static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *speed)
+static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *speed, unsigned int *link_speed)
 {
-	int r = 0, l = 1, s = 0;
+	int r = 0, l = 1, s = 0, lspd = 0;
 	char iface[IFNAMSIZ];
 	uint32_t uspd;
 
@@ -586,6 +716,7 @@ static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *spee
 		dbg("%s: Unknown PHY address 0x%x\n", __func__, phy);
 	}
 
+	lspd = r;
 	switch (r) {
 	case 5000:
 		s = 5;
@@ -606,15 +737,16 @@ static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *spee
 		s = 0;
 		break;
 	default:
-		l = 0;
+		l  = lspd = 0;
 		break;
 	}
 
 	if (link)
 		*link = l;
-	if (speed) {
+	if (speed)
 		*speed = s;
-	}
+	if (link_speed)
+		*link_speed = lspd;
 
 	return 0;
 }
@@ -639,7 +771,7 @@ static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsi
 {
 	int phy;
 
-	if (vport >= ARRAY_SIZE(vport_to_phy_addr) || (!link && !speed))
+	if (vport >= MAX_WANLAN_PORT || (!link && !speed))
 		return -1;
 
 	if (link)
@@ -650,13 +782,14 @@ static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsi
 	if (vport == WAN10GR_PORT && !is_aqr_phy_exist())
 		return 0;
 
-	phy = vport_to_phy_addr[vport];
+	get_qca8337_port_definition();
+	phy = *(vport_to_phy_addr + vport);
 	if (phy < 0) {
 		dbg("%s: can't get PHY address of vport %d\n", __func__, vport);
 		return -1;
 	}
 
-	get_phy_info(phy, link, speed);
+	get_phy_info(phy, link, speed, NULL);
 
 	return 0;
 }
@@ -664,13 +797,16 @@ static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsi
 /**
  * Get linkstatus in accordance with port bit-mask.
  * @mask:	port bit-mask.
- * 		bit0 = P0, bit1 = P1, etc.
+ * 		bit0 = VP0, bit1 = VP1, etc.
  * @linkStatus:	link status of all ports that is defined by mask.
  * 		If one port of mask is linked-up, linkStatus is true.
+ * @return:	speed.
+ * 	0:	not connected.
+ *  non-zero:	linkrate.
  */
-static void get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, unsigned int *linkStatus)
+static int get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, unsigned int *linkStatus)
 {
-	int i;
+	int i,t,speed=0;
 	unsigned int value = 0, m;
 
 	m = mask & wanlanports_mask;
@@ -678,11 +814,37 @@ static void get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, 
 		if (!(m & 1))
 			continue;
 
-		get_qca8075_8337_8035_8033_aqr107_vport_info(i, &value, NULL);
+		get_qca8075_8337_8035_8033_aqr107_vport_info(i, &value, (unsigned int*) &t);
 		value &= 0x1;
 	}
 	*linkStatus = value;
+
+	switch (t) {
+	case 0x0:
+		speed = 10;
+		break;
+	case 0x1:
+		speed = 100;
+		break;
+	case 0x2:
+		speed = 1000;
+		break;
+	case 0x3:
+		speed = 10000;
+		break;
+	case 0x4:
+		speed = 2500;
+		break;
+	case 0x5:
+		speed = 5000;
+		break;
+	default:
+		speed=0;
+		_dprintf("%s: invalid speed!\n", __func__);
+	}
+	return speed;
 }
+
 
 /**
  * Set wanports_mask, wanXports_mask, and lanports_mask based on
@@ -867,14 +1029,15 @@ static void link_down_up_qca8075_8337_8035_8033_aqr107_PHY(unsigned int vpmask, 
 	for (vport = 0, m = vpmask; m; ++vport, m >>= 1) {
 		if (!(m & 1))
 			continue;
-		if (vport >= ARRAY_SIZE(vport_to_phy_addr)) {
+		if (vport >= MAX_WANLAN_PORT) {
 			dbg("%s: PHY address is not defined for vport %d\n", __func__, vport);
 			continue;
 		}
 
 		if (vport == WAN10GR_PORT && !is_aqr_phy_exist())
 			return;
-		phy = vport_to_phy_addr[vport];
+		get_qca8337_port_definition();
+		phy = *(vport_to_phy_addr + vport);
 		if (phy < 0) {
 			dbg("%s: can't get PHY address of vport %d\n", __func__, vport);
 			return;
@@ -890,7 +1053,7 @@ static void link_down_up_qca8075_8337_8035_8033_aqr107_PHY(unsigned int vpmask, 
 				r &= ~(BMCR_PDOWN);
 			write_phy_reg(phy, MII_BMCR, r);
 		} else if (phy >= 0x100 && phy < 0x120) {
-			/* Aquentia PHY */
+			/* Aquantia PHY */
 			if ((r = read_phy_reg(phy & 0x1F, 0x40010009)) < 0)
 				r = 0;
 			if (!status)	/* power down PHY */
@@ -1115,9 +1278,41 @@ int config_rtkswitch(int argc, char *argv[])
 }
 
 unsigned int
+rtkswitch_Port_phyStatus(unsigned int port_mask)
+{
+        unsigned int status = 0;
+
+	get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(port_mask, &status);
+
+        return status;
+}
+
+unsigned int
+rtkswitch_Port_phyLinkRate(unsigned int port_mask)
+{
+        unsigned int speed = 0 ,status = 0;
+
+	speed=get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(port_mask, &status);
+
+        return speed;
+}
+
+
+unsigned int
 rtkswitch_wanPort_phyStatus(int wan_unit)
 {
 	unsigned int status = 0;
+
+#if defined(RTCONFIG_BONDING_WAN)
+	if (bond_wan_enabled() && sw_mode() == SW_MODE_ROUTER
+	 && get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_WAN)
+	{
+		int r = ethtool_glink("bond1");
+		if (r >= 0)
+			status = r;
+		return status;
+	}
+#endif
 
 	get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(get_wan_port_mask(wan_unit), &status);
 
@@ -1316,6 +1511,8 @@ void __pre_config_switch(void)
 
 	_eval(autoneg, DBGOUT, 0, NULL);
 
+	get_qca8337_port_definition();
+
 	/* If AQR PHY doesn't exist, remove related settings. */
 	if (!is_aqr_phy_exist()) {
 		upstream_iptv_ifaces[WANS_DUALWAN_IF_WAN2] = NULL;
@@ -1324,15 +1521,17 @@ void __pre_config_switch(void)
 		logmessage("system", "AQR PHY firmware: N/A");
 
 	} else {
+		int aqr_addr = aqr_phy_addr();
 		/* 10G link status is shown on LED2 (GREEN, closed to WAN) of AQR107.
-		 * No need to show 10G link statis on LED1 (YELLOW, closed to WAN) too.
+		 * Don't show 10G link status on same set of LED, LED1 (YELLOW, closed to WAN),
+		 * due to YELLOW and GREEN are mixed and GREEN basically disappear.
 		 */
-		if ((r1 = read_phy_reg(7, 0x401EC431)) < 0)
+		if ((r1 = read_phy_reg(aqr_addr, 0x401EC431)) < 0)
 			r1 = 0;
-		write_phy_reg(7, 0x401EC431, r1 & ~(1U << 7));
+		write_phy_reg(aqr_addr, 0x401EC431, r1 & ~(1U << 7));
 
 		/* Print AQR firmware version. */
-		for (i = 0, paddr = &vport_to_phy_addr[0]; i < ARRAY_SIZE(vport_to_phy_addr); ++i, ++paddr) {
+		for (i = 0, paddr = vport_to_phy_addr; i < MAX_WANLAN_PORT; ++i, ++paddr) {
 			int fw, build;
 
 			/* only accept AQR phy */
@@ -1344,7 +1543,7 @@ void __pre_config_switch(void)
 			if (fw < 0  || build < 0) {
 				dbg("Can't get AQR PHY firmware version.\n");
 			} else {
-				dbg("AQR PHY firmware %d.%d build %d.%d\n",
+				dbg("AQR PHY @ %d firmware %d.%d build %d.%d\n", *paddr & 0xFF,
 					(fw >> 8) & 0xFF, fw & 0xFF, (build >> 4) & 0xF, build & 0xF);
 			}
 		}
@@ -1398,7 +1597,10 @@ void __pre_config_switch(void)
 
 void __post_config_switch(void)
 {
-	char *p1_8023az[] = { "ssdk_sh", SWID_IPQ807X, "port", "ieee8023az", "set", "1", "disable", NULL };
+	int i;
+	char port[sizeof("1XX")];
+	char *ipq807x_p1_8023az[] = { "ssdk_sh", SWID_IPQ807X, "port", "ieee8023az", "set", "1", "disable", NULL };
+	char *qca8337_px_8023az[] = { "ssdk_sh", SWID_QCA8337, "port", "ieee8023az", "set", port, "disable", NULL };
 	char *p0_vegress[] = { "ssdk_sh", SWID_QCA8337, "portVlan", "egress", "set", QCA8337_CPUPORT, "untouched", NULL };
 #if defined(GTAXY16000) || defined(RTAX89U)
 	unsigned int rx_afe_2 = 0xf67;
@@ -1413,10 +1615,12 @@ void __post_config_switch(void)
 	_eval(adj_uniphy2_rx_afe_2, DBGOUT, 0, NULL);
 #endif
 
-	/* Always turn off IEEE 802.3az support on IPQ8074 port 1,
-	 * which connects to QCA8035 and then QCA8337.
-	 */
-	_eval(p1_8023az, DBGOUT, 0, NULL);
+	/* Always turn off IEEE 802.3az support on IPQ8074 port 1 and QCA8337 port 1~5. */
+	_eval(ipq807x_p1_8023az, DBGOUT, 0, NULL);
+	for (i = 1; i <= 5; ++i) {
+		snprintf(port, sizeof(port), "%d", i);
+		_eval(qca8337_px_8023az, DBGOUT, 0, NULL);
+	}
 
 	if (sw_mode() != SW_MODE_ROUTER || !iptv_enabled())
 		return;
@@ -1462,7 +1666,7 @@ int __sw_based_iptv(void)
  */
 int __sw_bridge_iptv_different_switches(void)
 {
-	const int stb_x = nvram_get_int("switch_stb_x");
+	int stb_x = nvram_get_int("switch_stb_x");
 	const int upstream_wanif = get_dualwan_by_unit(get_upstream_wan_unit()); /* WANS_DUALWAN_IF_XXX */
 	const char *no_lan_port_profiles[] = { "spark", "2degrees", "slingshot", "orcon", "voda_nz",
 		"tpg", "iinet", "aapt", "intronode", "amaysim", "dodo", "iprimus", NULL
@@ -1472,10 +1676,9 @@ int __sw_bridge_iptv_different_switches(void)
 	strlcpy(switch_wantag, nvram_safe_get("switch_wantag"), sizeof(switch_wantag));
 	if (*switch_wantag == '\0')
 		return 0;
-	else if (stb_x < 0 || stb_x > 6) {
-		dbg("%s: unknown switch_stb_x %d\n", __func__, stb_x);
-		return 0;
-	}
+
+	if (stb_x < 0 || stb_x > 6)
+		stb_x = 0;
 
 	/* If ISP IPTV profile doesn't need any LAN port, return 0. */
 	for (p = &no_lan_port_profiles[0]; *p != NULL; ++p) {
@@ -1518,7 +1721,12 @@ char *__get_wan_base_if(char *wan_base_if)
 		if (!upstream_iptv_ifaces[wanif_type] || *upstream_iptv_ifaces[wanif_type] == '\0')
 			continue;
 
-		strlcpy(wan_base_if, upstream_iptv_ifaces[wanif_type], IFNAMSIZ);
+#if defined(RTCONFIG_BONDING_WAN)
+		if (wanif_type == WANS_DUALWAN_IF_WAN && sw_mode() == SW_MODE_ROUTER && bond_wan_enabled()) {
+			strlcpy(wan_base_if, "bond1", IFNAMSIZ);
+		} else
+#endif
+			strlcpy(wan_base_if, upstream_iptv_ifaces[wanif_type], IFNAMSIZ);
 	}
 
 	return wan_base_if;
@@ -1543,6 +1751,59 @@ int __get_upstream_wan_unit(void)
 
 	return unit;
 }
+
+#if defined(RTCONFIG_BONDING_WAN)
+/** Helper function of get_bonding_port_status().
+ * Convert bonding slave port definition that is used in wanports_bond to our virtual port definition
+ * and get link status/speed of it.
+ * @bs_port:	bonding slave port number, 0: WAN, 1~8: LAN1~8, 30: 10G base-T (RJ-45), 31: 10G SFP+
+ * @return:
+ *  <= 0:	disconnected
+ *  otherwise:	link speed
+ */
+int __get_bonding_port_status(enum bs_port_id bs_port)
+{
+	int vport, phy, link = 0, speed = 0;
+
+	if (bs_port < 0 || bs_port >= ARRAY_SIZE(bsport_to_vport))
+		return 0;
+
+	vport = bsport_to_vport[bs_port];
+	if (vport == WAN10GR_PORT && !is_aqr_phy_exist())
+		return 0;
+
+	phy = vport_to_phy_addr[vport];
+	if (phy < 0) {
+		dbg("%s: can't get PHY address of vport %d\n", __func__, vport);
+		return 0;
+	}
+	get_phy_info(phy, &link, NULL, &speed);
+
+	return link? speed : 0;
+}
+#endif
+
+#if defined(RTCONFIG_BONDING_WAN) || defined(RTCONFIG_LACP)
+/** Convert bs_port_id to interface name.
+ * @bs_port:	enum bs_port_id
+ * @return:	pointer to interface name or NULL.
+ *  NULL:	@bs_port doesn't have interface name or error.
+ *  otherwise:	interface name.
+ */
+const char *bs_port_id_to_iface(enum bs_port_id bs_port)
+{
+	int vport;
+
+	if (bs_port < 0 || bs_port >= ARRAY_SIZE(bsport_to_vport))
+		return NULL;
+
+	vport = bsport_to_vport[bs_port];
+	if (vport == WAN10GR_PORT && !is_aqr_phy_exist())
+		return NULL;
+
+	return vport_to_iface_name(vport);
+}
+#endif
 
 void set_jumbo_frame(void)
 {

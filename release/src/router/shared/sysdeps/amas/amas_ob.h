@@ -8,6 +8,12 @@
 #define MAX_VALUE_CONNECTION_TIMEOUT	300	/* second */
 #define MAX_VALUE_TRAFFIC_TIMEOUT	300	/* second */
 
+#if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
+#define CFG_MNT_FOLDER		"/jffs/.sys/cfg_mnt/"
+#else
+#define CFG_MNT_FOLDER		"/tmp/cfg_mnt/"
+#endif
+
 struct time_mapping_s {
 	char *model_name;
 	int reboot_time;	/* unit: second, the range is > 0 and <= MAX_VALUE_REBOOT_TIME. */
@@ -34,12 +40,26 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "RT-AX89X",	80,	120,	60},
 	{ "Lyra",	80,	60,	60},
 	{ "Lyra_Mini",	80,	60,	60},
-	{ "Lyra_Trio",	80,	60,	60},
+	{ "Lyra_Trio",	80,	120,	60},
+	{ "RT-AC59U_V2",	80,	120,	60},
+	{ "RT-AC58U_V3",	80,	120,	60},
+	{ "RT-AC57U_V3",	80,	120,	60},
+	{ "RT-AC1300G_PLUS_V3",	80,	120,	60},
+	{ "ZenWiFi_CD6R",	80,	120,	120},
+	{ "ZenWiFi_CD6N",	80,	120,	120},
 	{ "RT-AX88U",	50,     60,     60},
 	{ "RT-AX92U",	50,     60,     60},
+	{ "RT-AX95Q",   50,     60,     60},
+	{ "ZenWiFi_XD4",   50,     60,     60},
+	{ "RT-AX56_XD4",   50,     60,     60},
+	{ "RT-AX58U",   50,     60,     60},
+	{ "RT-AX56U",   50,     60,     60},
 	{ "GT-AX11000",	50,     60,     60},
+	{ "RT-AC85P",	120,	60,	60},
+	{ "GT-AXY16000",80,     120,    60},
+	{ "GT-AXE11000", 50,     60,     60},
 	/* END */
-	{ NULL, 0, 0, 0}
+	{ NULL, 0, 0, 0 }
 };
 
 static void
@@ -76,10 +96,21 @@ time_mapping_get(char *model_name, struct time_mapping_s *time_mapping)
 					time_mapping->traffic_timeout = pTimeout->traffic_timeout;
 				else
 					time_mapping->traffic_timeout = 0;
-				return;
+
+				break;
 			}
 		}
 	}
+#ifdef RTCONFIG_PRELINK
+#if defined(RTCONFIG_QCA)
+	if (has_dfs_channel())
+#else
+#warning ### NEED method to identify is DFS mode or NOT ###
+#endif	/* QCA */
+	{
+		time_mapping->connection_timeout += 60;
+	}
+#endif	/* PRELINK */
 }
 
 #endif // __AMAS_OB_H__

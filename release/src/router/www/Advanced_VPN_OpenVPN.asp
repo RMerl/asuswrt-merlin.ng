@@ -1200,7 +1200,7 @@ function callback_upload_cert(_flag) {
 	if(_flag) {
 		var waiting_time = parseInt(document.form.action_wait.value);
 		showLoading(waiting_time);
-		setTimeout(function(){location.href= location.href}, waiting_time*1000);
+		setTimeout(function(){location.href = location.href;}, waiting_time*1000);
 	}
 	else {
 		alert("<#SET_fail_desc#>");

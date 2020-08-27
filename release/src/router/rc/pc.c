@@ -331,14 +331,22 @@ pc_s *get_all_pc_list(pc_s **pc_list){
 
 	follow_pc = *pc_list;
 	i = 0;
+#if 0 //def RTCONFIG_SCHED_V2
+	foreach_62(word, nvram_safe_get("MULTIFILTER_MACFILTER_DAYTIME_V2"), next_word){
+#else
 	foreach_62(word, nvram_safe_get("MULTIFILTER_MACFILTER_DAYTIME"), next_word){
+#endif
 		++i;
 		if(follow_pc == NULL){
 			_dprintf("*** %3dth Parental Control rule(DAYTIME) had something wrong!\n", i);
 			return *pc_list;
 		}
 
+#if 0 //def RTCONFIG_SCHED_V2
+		get_event_list_by_sched_v2(&(follow_pc->events), word);
+#else
 		get_event_list(&(follow_pc->events), word);
+#endif
 
 		follow_pc = follow_pc->next;
 	}

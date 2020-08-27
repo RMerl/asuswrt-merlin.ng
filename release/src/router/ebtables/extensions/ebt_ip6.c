@@ -556,7 +556,7 @@ static struct ebt_u_match ip6_match =
 	.extra_ops	= opts,
 };
 
-void _init(void)
+__attribute__((constructor)) static void extension_init(void)
 {
 	ebt_register_match(&ip6_match);
 }

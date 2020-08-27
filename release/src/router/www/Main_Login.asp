@@ -323,7 +323,8 @@ function isSupport(_ptn){
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 var captcha_support = isSupport("captcha");
-if(captcha_support)
+var captcha_enable = '<% nvram_get("captcha_enable"); %>';
+if(captcha_support && captcha_enable != "0")
 	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7")? true : false;
 else
 	var captcha_on = false;

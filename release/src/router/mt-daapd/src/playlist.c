@@ -24,6 +24,7 @@
 #endif
 
 #include <stdio.h>
+#define _GNU_SOURCE	//strcasestr()
 #include <string.h>
 #include <time.h>
 

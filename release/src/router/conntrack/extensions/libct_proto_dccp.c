@@ -117,8 +117,9 @@ static int parse_options(char c,
 			 struct nf_conntrack *mask,
 			 unsigned int *flags)
 {
-	int i;
 	uint16_t port;
+	int i = 0;
+	const char *delim = ",";
 
 	switch(c) {
 	case 1:
@@ -158,12 +159,38 @@ static int parse_options(char c,
 		*flags |= CT_DCCP_MASK_DPORT;
 		break;
 	case 7:
+#if 1 //Andrew
+		if (strchr(optarg, ',')) {
+			char *p = NULL;
+			char *saveptr = NULL;
+			p = strtok_r(optarg, delim, &saveptr);
+			do {
+				for (i=0; i<DCCP_CONNTRACK_MAX; i++) {
+					if (strcmp(p, dccp_states[i]) == 0) {
+						nfct_set_attr_u8(ct, ATTR_DCCP_STATE, i);
+						nfct_set_attr_u16(ct, ATTR_DCCP_STATE_BIT, 1UL<<i);
+						break;
+					}
+				}
+				p = strtok_r(NULL, delim, &saveptr);
+			} while (p);
+		} else {
+			for (i=0; i<DCCP_CONNTRACK_MAX; i++) {
+				if (strcmp(optarg, dccp_states[i]) == 0) {
+					nfct_set_attr_u8(ct, ATTR_DCCP_STATE, i);
+					nfct_set_attr_u16(ct, ATTR_DCCP_STATE_BIT, 1UL<<i);
+					break;
+				}
+			}
+		}
+#else
 		for (i=0; i<DCCP_CONNTRACK_MAX; i++) {
 			if (strcmp(optarg, dccp_states[i]) == 0) {
 				nfct_set_attr_u8(ct, ATTR_DCCP_STATE, i);
 				break;
 			}
 		}
+#endif
 		if (i == DCCP_CONNTRACK_MAX)
 			exit_error(PARAMETER_PROBLEM,
 				   "Unknown DCCP state `%s'", optarg);

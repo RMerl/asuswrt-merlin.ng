@@ -26,7 +26,7 @@
  *		   v			v
  * 		   unit-time		sign
  *
- * step: total 32
+* step: total 32
  * unit-time: 0- 0.49(ms/step), 1- 15.6(ms/step)
  * sign: 0- increase, 1- discrease 
 */
@@ -35,45 +35,67 @@
 
 #define MAX_STEP 31
 
-static const char lp55xx_path[] = "/sys/class/leds/blue1/device/";
+static const char lp55xx_path[] = "/sys/class/leds/blue1/device";
 static int brightness = 100;
-static int max_unit = 0;
+/*
+Led array : [BLUE], [GREEN], [RED], NULL
+*/
+static char *led_arr[]  = { "blue", "green", "red", NULL };
+static char *led_patten_arr[]  = {
 #if defined(RTAC95U)
-static char led_red[]	="000000001";
-static char led_green[]	="000010000";
-static char led_blue[]	="000001000";
+				"000001000",
+				"000010000",
+				"000000001",
 #else
-static char led_red[]	="000000111";
-static char led_green[]	="000111000";
-static char led_blue[]	="111000000";
+				"111000000",
+				"000111000",
+				"000000111",
 #endif
+				NULL
+			};
 
-
-//	Voltage of LEDS
+// Voltage of LEDS
 struct lp55xx_leds_pattern lp55xx_leds_col[] = {
-//	{ COLOR_INDEX,		blue  green red	}
-	{ LP55XX_ALL_LEDS_ON,	"ff", "ff", "ff" },
-	{ LP55XX_ALL_LEDS_OFF,	"00", "00", "00" },
-	{ LP55XX_ALL_BLEDS_ON,	"ff", "00", "00" },
-	{ LP55XX_ALL_GLEDS_ON,	"00", "ff", "00" },
-	{ LP55XX_ALL_RLEDS_ON,	"00", "00", "ff" },
-	{ LP55XX_ALL_BREATH_LEDS,	"00", "00", "00" },
-	{ LP55XX_ALL_DOWN_LEDS,	"00", "00", "00" },		// 
-	{ LP55XX_RED_LEDS,	"00", "00", "c8" },		// RED
-	{ LP55XX_ORANGE_LEDS,	"00", "99", "ff" },		// ORANGE
-	{ LP55XX_PURPLE_LEDS,	"ff", "00", "5a" },		// PURPLE
-	{ LP55XX_NIAGARA_BLUE_LEDS,	"ff", "41", "0f" },	// NIAGARA BLUE
-	{ LP55XX_PALE_DOGWOOD_LEDS,	"6e", "c3", "ff" },	//
-	{ LP55XX_GREENERY_LEDS,	"41", "ff", "32" },		// GREEN
-	{ LP55XX_PRIMROSE_YELLOW_LEDS,	"0a", "ff", "ff" },	// YELLOW
-#if defined(VZWAC1300)
-	{ LP55XX_WHITE_LEDS,	"ff", "ff", "1e" },		// BLUE
-	{ LP55XX_LIGHT_CYAN_LEDS,	"ff", "ff", "ff" },	// WHITE
+//	{ COLOR_INDEX,				blue	green	red	}
+	{ LP55XX_ALL_LEDS_ON,			"0xff", "0xff", "0xff" },
+	{ LP55XX_ALL_LEDS_OFF,			"0x00", "0x00", "0x00" },
+	{ LP55XX_ALL_BLEDS_ON,			"0xff", "0x00", "0x00" },
+	{ LP55XX_ALL_GLEDS_ON,			"0x00", "0xff", "0x00" },
+	{ LP55XX_ALL_RLEDS_ON,			"0x00", "0x00", "0xff" },
+	{ LP55XX_ALL_BREATH_LEDS,		"0xfa", "0xfa", "0xfa" },
+	{ LP55XX_BLACK_LEDS,			"0x00", "0x00", "0x00" },
+	{ LP55XX_WHITE_LEDS,			"0xff", "0xff", "0xff" },
+	{ LP55XX_RED_LEDS,			"0x00", "0x00", "0xf0" },
+	{ LP55XX_LIGHT_CYAN_LEDS,		"0xff", "0xff", "0x1e" },
+	{ LP55XX_PURPLE_LEDS,			"0xff", "0x00", "0x5a" },
+	{ LP55XX_NIAGARA_BLUE_LEDS,		"0xff", "0x41", "0x0f" },
+	{ LP55XX_PALE_DOGWOOD_LEDS,		"0x6e", "0xc3", "0xff" },
+	{ LP55XX_PRIMROSE_YELLOW_LEDS,		"0x0a", "0xff", "0xff" },
+	{ LP55XX_BLUEGREEN_BREATH,		"0xfa", "0xfa", "0x00" },
+#if defined(RTAC95U)
+	{ LP55XX_BTCOR_LEDS,			"0xff", "0x1e", "0x00" },	// BLUE
+	{ LP55XX_LINKCOR_LEDS,			"0xff", "0xff", "0xaa" },	// WHITE
+	{ LP55XX_DISCONNCOR_LDES,		"0x00", "0x00", "0xf0" },	// RED
+	{ LP55XX_WPS_SYNC_LEDS,			"0xff", "0x1e", "0x00" },	// BLUE
+	{ LP55XX_AMAS_ETH_LINK_LEDS,		"0xff", "0xff", "0xaa" },	// WHITE
+	{ LP55XX_AMAS_RE_SYNC_LEDS,		"0xff", "0x1e", "0x00" },	// BLUE
+	{ LP55XX_AMAS_CAPAP_LEDS,		"0xff", "0xff", "0xaa" },	// RED
+	{ LP55XX_AMAS_REJOIN_LDES,		"0x00", "0xff", "0x1e" },	// GREEN
+	{ LP55XX_ORANGE_LEDS,			"0x00", "0x82", "0xff" },
+	{ LP55XX_GREENERY_LEDS,			"0x00", "0xff", "0x1e" },
 #else
-	{ LP55XX_WHITE_LEDS,	"ff", "ff", "8c" },		// WHITE
-	{ LP55XX_LIGHT_CYAN_LEDS,	"ff", "ff", "1e" },	// BLUE
+	{ LP55XX_BTCOR_LEDS,			"0xff", "0xff", "0xf0" },	// WHITE
+	{ LP55XX_LINKCOR_LEDS,			"0xff", "0xff", "0x1e" },	// BLUE
+	{ LP55XX_DISCONNCOR_LDES,		"0x00", "0x00", "0xf0" },	// RED
+	{ LP55XX_WPS_SYNC_LEDS,			"0x41", "0xff", "0x32" },	// GREEN
+	{ LP55XX_AMAS_ETH_LINK_LEDS,		"0x41", "0xff", "0x32" },	// GREEN
+	{ LP55XX_AMAS_RE_SYNC_LEDS,		"0x41", "0xff", "0x32" },	// GREEN
+	{ LP55XX_AMAS_CAPAP_LEDS,		"0x00", "0x99", "0xff" },	// ORANGE
+	{ LP55XX_AMAS_REJOIN_LDES,		"0x41", "0xff", "0x32" },	// GREEN
+	{ LP55XX_ORANGE_LEDS,			"0x00", "0x99", "0xff" },
+	{ LP55XX_GREENERY_LEDS,			"0x41", "0xff", "0x32" },
 #endif
-	{ LP55XX_END_COLOR,	"", "", "" }
+	{ LP55XX_END_COLOR,			NULL,	NULL, 	NULL }
 };
 
 /* Behavior of LEDS
@@ -82,14 +104,15 @@ struct lp55xx_leds_pattern lp55xx_leds_col[] = {
  *
  * */
 struct lp55xx_leds_pattern lp55xx_leds_beh[] = {
-//	{ PATTERN_INDEX,		blue  				green 				red	}
-	{ LP55XX_ACT_NONE,		"",				"", 				"" },
-	{ LP55XX_ACT_SBLINK,		"7e00420040007e004200",		"7e00420040007e004200", 	"7e00420040007e004200" },
-	{ LP55XX_ACT_3ON1OFF,		"7e00620040006000",		"7e00620040006000", 		"7e00620040006000" },
-	{ LP55XX_ACT_BREATH,		"44101ef042001ff04510",		"44101af042001bf04510", 	"44101cf042001df04510" },
-	{ LP55XX_ACT_BREATH_DOWN_011,	"",				"43584508420044084258", 	"43584508420044084258" },
-	{ LP55XX_ACT_BREATH_EXCEPTION,	"BREATH_EXCEPTION",		"BREATH_EXCEPTION",	 	"BREATH_EXCEPTION" },
-	{ LP55XX_END_BLINK,		"", 				"", 				"" }
+	{ LP55XX_ACT_NONE,			"",				NULL,			NULL	}, // (300)
+	{ LP55XX_ACT_SBLINK,			"7e00420040007e004200",		NULL,			NULL	}, // (301)
+	{ LP55XX_ACT_3ON1OFF,			"7e00620040006000",		NULL,			NULL	}, // (302)
+	{ LP55XX_ACT_BREATH_UP_00,		"44101ef042001ff04510",		"44101af042001bf04510",	"44101cf042001df04510"	}, // (303)
+	{ LP55XX_ACT_BREATH_DOWN_00,		"1ff04510420044101ef0",		NULL,			NULL	}, // (304)
+	{ LP55XX_ACT_BREATH_DOWN_01,		"15e6420014e6",			NULL,			NULL	}, // (305)
+	{ LP55XX_ACT_BREATH_DOWN_02,		"11a523504400225010a5",		NULL,			NULL	}, // (306)
+	{ LP55XX_ACT_BREATH_UP_01,		"44101ed006001fd04510",		"1fd04510060044101ed0",	""	}, // (307)
+	{ LP55XX_END_BLINK,			NULL,				NULL, 			NULL 	}
 };
 
 void split(char **arr, char *str, char *del) {
@@ -101,202 +124,134 @@ void split(char **arr, char *str, char *del) {
 	}
 }
 
-int get_unit(int value)
-{
-	return value *9 / 10 / 2;
-}
-
-void max_col_cur(char *b, char *g, char *r)
-{
-	int blue = (int)strtol(b, NULL, 16);
-	int green = (int)strtol(g, NULL, 16);
-	int red = (int)strtol(r, NULL, 16);
-	int max, min;
-
-	max = min = blue;
-
-	if (max<green)
-		max = green;
-
-	if (max<red)
-		max = red;
-
-	max_unit = get_unit(max) * brightness / 100;
-
-	return;
-}
-
-void pattern_breath_ex(int value, char *output)
-{
-	char *wait = "4200";
-	char result[CKN_STR256], increase[CKN_STR256], decrease[CKN_STR256], tmp[CKN_STR256]; 
-	int val_unit = get_unit(value);
-	int mul_unit = max_unit / val_unit;
-	int wait_unit = max_unit - (mul_unit*val_unit);
-	int fnl_stp1, fnl_stp2, fnl_stp3;
-
-	memset(result, '\0', sizeof(result));
-	memset(increase, '\0', sizeof(increase));
-	memset(decrease, '\0', sizeof(decrease));
-
-	if (mul_unit < MAX_STEP) {
-		fnl_stp1 = 4 + mul_unit/8;
-		fnl_stp2 = (mul_unit%8)*2;
-		fnl_stp3 = fnl_stp2 + 1;
-	}
-	else
-		return;
-
-	snprintf(increase, sizeof(increase), "%x%x%s%x", fnl_stp1, fnl_stp2, val_unit<16?"0":"", val_unit);
-	snprintf(decrease, sizeof(decrease), "%x%x%s%x", fnl_stp1, fnl_stp3, val_unit<16?"0":"", val_unit);
-
-	while (wait_unit) {
-		if (wait_unit < MAX_STEP)
-			mul_unit = wait_unit;
-		else
-			mul_unit = MAX_STEP;
-
-		fnl_stp1 = 4 + mul_unit/8;
-		fnl_stp2 = (mul_unit%8)*2;
-
-		memset(tmp, '\0', sizeof(tmp));
-		strncpy(tmp, increase, sizeof(increase));
-		snprintf(increase, sizeof(increase), "%x%x%s%s", fnl_stp1, fnl_stp2, "00", tmp);
-
-		memset(tmp, '\0', sizeof(tmp));
-		strncpy(tmp, decrease, sizeof(decrease));
-		snprintf(decrease, sizeof(decrease), "%s%x%x%s", tmp, fnl_stp1, fnl_stp2, "00");
-
-		if (wait_unit < MAX_STEP)
-			break;
-		else
-			wait_unit -= MAX_STEP;
-	}
-
-	snprintf(result, sizeof(result), "%s%s%s%s%s", decrease, decrease, wait, increase, increase);
-
-	printf("result: %s\n", result);
-	memcpy(output, result, strlen(result));
-
-	return;
-}
-
-void pattern_combine(char *initial, char *color, char *behavior, char *output)
+void pattern_combine(char *initial, char *pwm, char *behavior, char *output)
 {
 	char result[CKN_STR256];
-	char tmp1[CKN_STR256];
-	int color_val = (int)strtol(color, NULL, 16);
+	int pwm_val = (int)strtol(pwm, NULL, 16);
 
-	memset(result, '\0', CKN_STR256);
-	memset(tmp1, '\0', CKN_STR256);
+	memset(result, '\0', sizeof(result));
 
-	color_val = color_val * brightness / 100;
-	if (!strncmp(behavior, "BREATH_EXCEPTION", 15))
-	{
-		if (color_val==0)
-			snprintf(result, sizeof(result), "%s%s%x", initial, color_val<16?"0":"", color_val);
-		else
-		{
-			pattern_breath_ex(color_val, tmp1);
-			snprintf(result, sizeof(result), "%s%s%x%s%s%s%x", initial, color_val<16?"0":"", color_val, tmp1, "40", color_val<16?"0":"", color_val);
-		}
-	}
-	else 
-		snprintf(result, sizeof(result), "%s%s%x%s", initial, color_val<16?"0":"", color_val, behavior);
-
+	snprintf(result, sizeof(result), "%s%s%x%s", initial, pwm_val<16?"0":"", pwm_val, behavior);
 	memcpy(output, result, strlen(result));
 
 	return;
 }
 
-/* combine the str and save
- * @engine_index: select engine 1, 2, 3
- * @str_type: mode, load, leds
+
+/* combine the string and save
+ * @index: select engine 1, 2, 3
+ * @engine_type: mode, load, leds
  * @value:
  * @return:
 */
-void engine_save(int engine_index, char *str_type, char *value) {
-	char result[CKN_STR256];
-	memset(result, '\0', CKN_STR256);
+void led_current_setting(int index, char *led, char *value) {
+	char path[CKN_STR256];
+	char result[CKN_STR8];
+	int current = (int)strtol(value, NULL, 16);
 
-	snprintf(result, sizeof(result), "%sengine%d_%s", lp55xx_path, engine_index, str_type);
+	memset(path, '\0', sizeof(path));
+	memset(result, '\0', sizeof(result));
 
-	f_write_string( result, value, 0, 0);
+	current = current*brightness/100;
+	snprintf(path, sizeof(path), "%s/leds/%s%d/led_current", lp55xx_path, led, index);
+	snprintf(result, sizeof(result), "0x%x", current);
+//	_dprintf("\n\n path: %s, value:%s\n", path, value);
+	f_write_string( path, result, 0, 0);
+
+	return;
+}
+
+/* combine the string and save
+ * @index: select engine 1, 2, 3
+ * @engine_type: mode, load, leds
+ * @value:
+ * @return:
+*/
+void engine_setting(int index, char *action, char *value) {
+	char path[CKN_STR256];
+
+	memset(path, '\0', sizeof(path));
+
+	snprintf(path, sizeof(path), "%s/engine%d_%s", lp55xx_path, index, action);
+//	_dprintf("\n\n path: %s, value:%s\n", path, value);
+	f_write_string( path, value, 0, 0);
 
 	return;
 }
 
 void lp55xx_set_pattern_led(int col_mode, int beh_mode)
 {
-	char *initial[3] = {"9d8040", "9d8044", "9d8048"};
+	char *initial[3] = {"9d8040", "9d8046", "9d804c"};
 	struct lp55xx_leds_pattern *blnk_leds_col = lp55xx_leds_col;
 	struct lp55xx_leds_pattern *blnk_leds_beh = lp55xx_leds_beh;
-	char tmp1[CKN_STR256];
-	char tmp2[CKN_STR256];
-	char tmp3[CKN_STR256];
-	int i=0, set=0;
-
-	memset(tmp1, '\0', CKN_STR256);
-	memset(tmp2, '\0', CKN_STR256);
-	memset(tmp3, '\0', CKN_STR256);
-
+	char *current[3]={ 0 }, *pattern[3]={ 0 };
+	char led_pattern[CKN_STR10];
+	char tmp[CKN_STR256];
+	int i=0, j=0, set=0;
 
 	for (; blnk_leds_beh->ptn_mode!=LP55XX_END_BLINK; blnk_leds_beh++) {
+// Get BLUE/GREEN/RED leds behavior pattern 
 		if (beh_mode == blnk_leds_beh->ptn_mode){
-			if (col_mode==LP55XX_MANUAL_COL)
-			{
+			pattern[0] = blnk_leds_beh->ptn1;
+			pattern[1] = blnk_leds_beh->ptn2?blnk_leds_beh->ptn2:blnk_leds_beh->ptn1;
+			pattern[2] = blnk_leds_beh->ptn3?blnk_leds_beh->ptn3:blnk_leds_beh->ptn1;
+
+// Get BLUE/GREEN/RED leds current from Manual 
+			if (col_mode==LP55XX_MANUAL_COL) {
 				char lp55xx_lp5523_manual[CKN_STR256];
-				char *arr[3];
 
-				memset(lp55xx_lp5523_manual, '\0', CKN_STR256);
+				brightness = nvram_get_int("lp55xx_lp5523_user_brightness");
+				memset(lp55xx_lp5523_manual, '\0', sizeof(lp55xx_lp5523_manual));
 				strcpy(lp55xx_lp5523_manual, nvram_safe_get("lp55xx_lp5523_manual"));
-				split(arr, lp55xx_lp5523_manual, "_");
-				max_col_cur(arr[0], arr[1], arr[2]);
-
-				pattern_combine(initial[i], arr[0], blnk_leds_beh->ptn1, tmp1);
-				if (col_mode==LP55XX_ALL_BREATH_LEDS) i++;
-				pattern_combine(initial[i], arr[1], blnk_leds_beh->ptn2, tmp2);
-				if (col_mode==LP55XX_ALL_BREATH_LEDS) i++;
-				pattern_combine(initial[i], arr[2], blnk_leds_beh->ptn3, tmp3);
+				split(current, lp55xx_lp5523_manual, "_");
+				set = 1;
 			}
-			else
-			{
+			else {
 				for (; blnk_leds_col->ptn_mode!=LP55XX_END_COLOR; blnk_leds_col++) {
-					if (col_mode == blnk_leds_col->ptn_mode){
-						max_col_cur(blnk_leds_col->ptn1, blnk_leds_col->ptn2, blnk_leds_col->ptn3);
-
-						pattern_combine(initial[i], blnk_leds_col->ptn1, blnk_leds_beh->ptn1, tmp1);
-						if (col_mode==LP55XX_ALL_BREATH_LEDS) i++;
-						pattern_combine(initial[i], blnk_leds_col->ptn2, blnk_leds_beh->ptn2, tmp2);
-						if (col_mode==LP55XX_ALL_BREATH_LEDS) i++;
-						pattern_combine(initial[i], blnk_leds_col->ptn3, blnk_leds_beh->ptn3, tmp3);
+// Get BLUE/GREEN/RED leds current 
+					if (blnk_leds_col->ptn_mode == col_mode){
+						current[0] = blnk_leds_col->ptn1;
+						current[1] = blnk_leds_col->ptn2;
+						current[2] = blnk_leds_col->ptn3;
+						set = 1;
+						break;
 					}
 				}
 			}
-
-			set=1;
 			break;
 		}
 	}
 
-	if (set)
-	{
+	if (set) {
 		for (i = LP55XX_ENGINE_1; i <= LP55XX_ENGINE_3; i++) {
-			if (i==LP55XX_ENGINE_1)
-			{
-				engine_save(i, "load", tmp1);
-				engine_save(i, "leds", led_blue);
+			memset(led_pattern, '\0', sizeof(led_pattern));
+			strncpy(led_pattern, led_patten_arr[i-1], strlen(led_patten_arr[i-1]));
+
+			for (j = 0; j <= strlen(led_pattern); j++) {
+				if (led_pattern[j] == '1') {
+/* Set BLUE/GREEN/RED leds current */
+					led_current_setting((j%3)+1, led_arr[j/3], current[i-1]);
+				}
 			}
-			else if (i==LP55XX_ENGINE_2)
-			{
-				engine_save(i, "load", tmp2);
-				engine_save(i, "leds", led_green);
+			memset(tmp, '\0', sizeof(tmp));
+/* Set Engine pattern */
+			if (col_mode == LP55XX_ALL_LEDS_OFF)
+				pattern_combine(initial[0], "00", pattern[i-1], tmp);
+			else if (col_mode==LP55XX_ALL_BREATH_LEDS)
+				pattern_combine(initial[i-1], "00", pattern[i-1], tmp);
+			else if (col_mode==LP55XX_BLUEGREEN_BREATH) {
+				if (i == LP55XX_ENGINE_1)
+					pattern_combine(initial[0], "05", pattern[i-1], tmp);
+				else if (i == LP55XX_ENGINE_2)
+					pattern_combine(initial[0], "e5", pattern[i-1], tmp);
+				else
+					pattern_combine(initial[0], "00", pattern[i-1], tmp);
 			}
 			else
-			{
-				engine_save(i, "load", tmp3);
-				engine_save(i, "leds", led_red);
-			}
+				pattern_combine(initial[0], "fa", pattern[i-1], tmp);
+
+			engine_setting(i, "load", tmp);
+			engine_setting(i, "leds", led_pattern);
 		}
 	}
 }
@@ -306,15 +261,15 @@ void lp55xx_blink_leds(int col_mode, int beh_mode)
 	int i;
 
 	for (i = LP55XX_ENGINE_1; i <= LP55XX_ENGINE_3; i++)
-		engine_save(i, "mode", "disabled");
+		engine_setting(i, "mode", "disabled");
 
-	for (i = LP55XX_ENGINE_1; i <= LP55XX_ENGINE_3; i++)
-		engine_save(i, "mode", "load");
+	for (i = LP55XX_ENGINE_1; i<=LP55XX_ENGINE_3; i++)
+		engine_setting(i, "mode", "load");
 
 	lp55xx_set_pattern_led(col_mode, beh_mode);
 
-	for (i = LP55XX_ENGINE_1; i <= LP55XX_ENGINE_3; i++)
-		engine_save(i, "mode", "run");
+	for (i = LP55XX_ENGINE_1; i<=LP55XX_ENGINE_3; i++)
+		engine_setting(i, "mode", "run");
 }
 
 void lp55xx_leds_proc(int col_mode, int beh_mode)
@@ -325,12 +280,9 @@ void lp55xx_leds_proc(int col_mode, int beh_mode)
 
 	brightness = 100;
 
-	if (col_mode==col_old && beh_mode_tmp==beh_old)
-		return;
-
+//	_dprintf("\n\n col: %d, beh:%d\n", col_mode, beh_mode) ;
 	// Behavior of ACT
-	switch (beh_mode_tmp)
-	{
+	switch (beh_mode_tmp) {
 		case LP55XX_PREVIOUS_STATE:
 			col_mode = col_old;
 			beh_mode_tmp = beh_old;
@@ -358,46 +310,72 @@ void lp55xx_leds_proc(int col_mode, int beh_mode)
 			beh_mode_tmp = nvram_get_int("lp55xx_lp5523_sch_beh");
 			brightness = nvram_get_int("lp55xx_lp5523_sch_brightness");
 			break;
+		case LP55XX_MANUAL_BREATH:
+			col_mode = LP55XX_ALL_BREATH_LEDS;
+			beh_mode_tmp = LP55XX_ACT_BREATH_UP_00;
+			break;
 		default:
-			nvram_set_int("lp55xx_lp5523_col", col_mode);
-			nvram_set_int("lp55xx_lp5523_beh", beh_mode_tmp);
+			if (col_mode != LP55XX_MANUAL_COL) {
+				nvram_set_int("lp55xx_lp5523_col", col_mode);
+				nvram_set_int("lp55xx_lp5523_beh", beh_mode_tmp);
+			}
 			break;
 	}
 
 	// Color
-	switch (col_mode)
-	{
-		case LP55XX_LIGHT_CYAN_LEDS:
+	switch (col_mode) {
+		case LP55XX_LINKCOR_LEDS:
 		case LP55XX_GREENERY_LEDS:
-			if (beh_mode_tmp == LP55XX_ACT_NONE
-				&& nvram_match("lp55xx_lp5523_user_enable", "1")
-				&& !nvram_match("lp55xx_lp5523_sch_enable", "2")
-			   )
-			{
-				col_mode = nvram_get_int("lp55xx_lp5523_user_col");
-				beh_mode_tmp = nvram_get_int("lp55xx_lp5523_user_beh");
-				brightness = nvram_get_int("lp55xx_lp5523_user_brightness");
+		case LP55XX_ORANGE_LEDS:
+			if (beh_mode_tmp == LP55XX_ACT_NONE ) {
+				if (nvram_match("lp55xx_lp5523_user_enable", "1") && !nvram_match("lp55xx_lp5523_sch_enable", "2")) {
+					col_mode = nvram_get_int("lp55xx_lp5523_user_col");
+					beh_mode_tmp = nvram_get_int("lp55xx_lp5523_user_beh");
+					brightness = nvram_get_int("lp55xx_lp5523_user_brightness");
+				}
+#if defined(RTCONFIG_SW_CTRL_ALLLED)
+				else if (nvram_match("AllLED", "0")) {
+					col_mode = LP55XX_ALL_LEDS_OFF;
+					beh_mode_tmp = LP55XX_ACT_NONE;
+				}
+#endif
+				else if (nvram_get_int("prelink_pap_status") > 5000) {
+					brightness = 50;
+				}
+			}
+#if defined(RTAC95U)
+			else if (col_mode==LP55XX_GREENERY_LEDS && beh_mode_tmp==LP55XX_ACT_3ON1OFF) {
+				beh_mode_tmp = LP55XX_ACT_BREATH_DOWN_00;
+			}
+#endif
+			break;
+#if defined(RTAC95U)
+		case LP55XX_ALL_BREATH_LEDS: 
+			if (beh_mode_tmp == LP55XX_ACT_BREATH_UP_00) {
+				col_mode = LP55XX_GREENERY_LEDS; 
+				beh_mode_tmp = LP55XX_ACT_BREATH_DOWN_02;
 			}
 			break;
-		case LP55XX_ALL_BREATH_LEDS:
-			beh_mode_tmp=LP55XX_ACT_BREATH;
+#endif
+		case LP55XX_ALL_LEDS_OFF:
+#if defined(RTCONFIG_SW_CTRL_ALLLED)
+			if (nvram_match("AllLED", "0")) {
+				nvram_set_int("prelink_pap_status", 0);
+				return;
+			}
+#endif
 			break;
 	}
 
-	// Behavior of Blink Mode
-	if (beh_mode_tmp==LP55XX_ACT_BREATH && col_mode!=LP55XX_ALL_BREATH_LEDS)
-		 beh_mode_tmp = LP55XX_ACT_BREATH_EXCEPTION;
-
 	// Check schedule
-	if (nvram_match("lp55xx_lp5523_sch_enable", "2"))
-	{
+	if (nvram_match("lp55xx_lp5523_sch_enable", "2")) {
 		if (beh_mode!=LP55XX_SCH_ENABLE)
 			return;
 	}
 
-	lp55xx_blink_leds(LP55XX_ALL_LEDS_OFF, LP55XX_ACT_NONE);
-	if (col_mode != LP55XX_ALL_LEDS_OFF)
-		lp55xx_blink_leds(col_mode, beh_mode_tmp);
+	if (col_mode == LP55XX_ALL_BREATH_LEDS)
+		lp55xx_blink_leds(LP55XX_ALL_LEDS_OFF, LP55XX_ACT_NONE);
+	lp55xx_blink_leds(col_mode, beh_mode_tmp);
 
 	return;
 }
@@ -410,7 +388,7 @@ void lp55xx_leds_sch(int start, int end)
 	int start_time=0, end_time=0;
 	int week, hour;
 
-	memset(result, '\0', 128);
+	memset(result, '\0', sizeof(result));
 
 	for (week=0;week<7;week++) {
 		for (hour=0;hour<24;hour++) {

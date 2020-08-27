@@ -399,6 +399,10 @@ a{
 	font-size: 1.4em;
 	font-style: italic;
 }
+.text_yellow_italic{
+	color: #FC0;
+	font-style: italic;
+}
 .selectorHint{
 	margin-top: 10px;
 	margin-left: 35px;
@@ -497,6 +501,53 @@ a{
 .ap_icon_container{
 	display: table-cell;
 	width: 38px;
+}
+.ap_icon_container.middle{
+	vertical-align: middle;
+}
+.aimesh_icon{
+	background-image: url(/images/New_ui/amesh/Amesh_button_light.png);
+	background-position: 50% 50%;
+	background-size: contain;
+	background-repeat: no-repeat;
+	height: 80px;
+	width: 90px;
+}
+.aimesh_icon.onboarding{
+	width: 50%;
+	height: 200px;
+	margin: auto;
+	float: left;
+	background-position-x: 70%;
+}
+.aimesh_mac{
+	font-size: 0.8em;
+	color: #B8D8FF;
+}
+.aimesh_info{
+	font-size: 1.8em;
+	color: #DBDBDB;
+	width: 50%;
+	float: left;
+	position: relative;
+	height: 200px;
+}
+.aimesh_info > div{
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: min-content;
+	bottom: 0;
+	margin: auto;
+}
+.aimesh_band_icon{
+	width: 40px;
+	height: 40px;
+	margin-right: 20px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: 50% 50%;
 }
 .ap_icon{
 	width: 38px;
@@ -732,6 +783,9 @@ a{
 	left: calc(50% - 49px);
 	position: absolute;
 }
+.amesh_device_info {
+	color: #569AC7;
+}
 
 /* CSS Loader */
 .cssload-bellContainer{
@@ -868,7 +922,8 @@ a{
 		width:30%;
 		min-width: 250px;
 		color: #007AFF;
-		text-align:right;		
+		text-align:right;
+		vertical-align: top;
 	}
 	.footer_mobile{
 		display:none;
@@ -1258,4 +1313,98 @@ a{
 .textClick {
 	text-decoration: underline;
 	cursor: pointer;
+}
+@keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@-moz-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@-webkit-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+	}
+
+@-o-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@-moz-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@-webkit-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+
+@-o-keyframes rotate-loading {
+	0%  {transform: rotate(0deg);-ms-transform: rotate(0deg); -webkit-transform: rotate(0deg); -o-transform: rotate(0deg); -moz-transform: rotate(0deg);}
+	100% {transform: rotate(360deg);-ms-transform: rotate(360deg); -webkit-transform: rotate(360deg); -o-transform: rotate(360deg); -moz-transform: rotate(360deg);}
+}
+.loading-container{
+	position: relative;
+	height: 100px;
+	margin: auto;
+	margin-top: 60px;
+}
+.loading-container > div{
+	height: 100px;
+	width: 100px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	margin: auto;
+	font-size: 1.5em;
+	font-weight: bolder;
+	text-align: center;
+	line-height: 100px;
+	border-radius: 100%;
+	color: #ffffff;
+}
+.loadingAnimation {
+	border: 2px solid transparent;
+	border-color: transparent #fff transparent #FFF;
+	-moz-animation: rotate-loading 1.5s linear 0s infinite normal;
+	-moz-transform-origin: 50% 50%;
+	-o-animation: rotate-loading 1.5s linear 0s infinite normal;
+	-o-transform-origin: 50% 50%;
+	-webkit-animation: rotate-loading 1.5s linear 0s infinite normal;
+	-webkit-transform-origin: 50% 50%;
+	animation: rotate-loading 1.5s linear 0s infinite normal;
+	transform-origin: 50% 50%;
+}
+#prelink_desc{
+	min-height: 750px;
+}
+#noWan_page{
+	min-height: 750px;
+}
+#resetModem_page{
+	min-height: 750px;
+}
+#waiting_page{
+	min-height: 750px;
+}
+#login_name{
+	min-height: 750px;
+}
+#summary_page{
+	min-height: 750px;
+}
+#wireless_setting{
+	min-height: 800px;
 }

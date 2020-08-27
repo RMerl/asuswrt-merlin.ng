@@ -1174,18 +1174,12 @@ padding-top:1px;
 }
 
 .bwdpistatus_game{
-	height:20px;
-	width:22px;
 	background-image:url(images/New_ui/QoS_quick/game_icon.svg);
 }
 .bwdpistatus_media{
-	height:20px;
-	width:21px;
 	background-image:url(images/New_ui/QoS_quick/media_icon.svg);
 }
 .bwdpistatus_web{
-	height:20px;
-	width:22px;
 	background-image:url(images/New_ui/QoS_quick/web_icon.svg);
 }
 .bwdpistatus_videoConference{
@@ -1195,8 +1189,6 @@ padding-top:1px;
 	background-image:url(images/New_ui/QoS_quick/elearning_icon.svg);
 }
 .bwdpistatus_customize{
-	height:21px;
-	width:23px;
 	background-image:url(images/New_ui/QoS_quick/customize_icon.svg);
 }
 
@@ -2147,6 +2139,43 @@ padding-top:1px;
 	width: 740px;
 	margin: 1px 0;
 }
+
+.perNode_MainContent{
+	width: 740px;
+	position: absolute;
+	left: 50%;
+	margin-top: 30px;
+	margin-left: -370px;
+	background-color: transparent;
+}
+
+.MainContent{
+	background-color: #4D595D;
+	width: 99%;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius:3px;
+}
+
+.returnBtn{
+	float:right;
+	cursor:pointer;
+	margin-left:-20px;
+	margin-top: -20px;
+}
+
+.perNode_returnBtn{
+	float:right;
+	cursor:pointer;
+	margin-left:-20px;
+	margin-top: -25px;
+}
+
+.perNode_apply_gen{
+	text-align: center;
+	width: 100%;
+	margin-top: 10px;
+}
 .query_list{
 	display: none;
 	background-color: #576D73;
@@ -2156,4 +2185,51 @@ padding-top:1px;
 	margin:0 0 0 2px;
 	padding: 6px;position: absolute;
 	overflow-y: auto;
+}
+
+.dns_server_list_dropdown {
+	border:1px outset #999;
+	background-color:#576D73;
+	position:absolute;
+	margin-left:2px;
+	width:255px;
+	text-align:left;
+	height:380px;
+	overflow-y:auto;
+	z-index:200;
+	padding: 1px;
+	display:none;
+}
+.dns_server_list_dropdown div {
+	background-color:#576D73;
+	height:auto;
+	line-height:20px;
+	text-decoration:none;
+	font-family: Lucida Console;
+}
+.dns_server_list_dropdown a {
+	background-color:#EFEFEF;
+	color:#FFF;
+	font-size:12px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-decoration:none;
+}
+.dns_server_list_dropdown strong {
+	padding-left: 3px;
+}
+.dns_server_list_dropdown div:hover, .dns_server_list_dropdown a:hover {
+	background-color:#3366FF;
+	color:#FFFFFF;
+	cursor:default;
+}
+.dns_pull_arrow {
+	position: absolute;
+	float: left;
+	cursor: pointer;
+	border: 2px outset #EFEFEF;
+	background-color: #CCC;
+	padding: 3px 2px 4px 0px;
+	height: 16px;
+	width: 14px;
+	display: none;
 }

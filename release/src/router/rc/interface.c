@@ -18,7 +18,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <errno.h>
+#ifdef __GLIBC__		//musl doesn't have error.h
 #include <error.h>
+#endif	/* __GLIBC__ */
 #include <string.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
@@ -274,6 +276,16 @@ int _ifconfig(const char *name, int flags, const char *addr, const char *netmask
 	}
 
 	close(s);
+
+//Andrew add
+#ifdef RTCONFIG_CONNTRACK 
+	if(flags & IFUP)
+		conntrack_check(CONNTRACK_START); 
+	else if (flags & IFFDOWN)
+		conntrack_check(CONNTRACK_STOP); 
+#endif
+//Andrew end
+
 	return 0;
 
  ERROR:
@@ -648,8 +660,11 @@ int start_vlan(void)
 		nvram_match("switch_wantag", "tpg") || nvram_match("switch_wantag", "iinet") ||
 		nvram_match("switch_wantag", "aapt") || nvram_match("switch_wantag", "intronode") ||
 		nvram_match("switch_wantag", "amaysim") || nvram_match("switch_wantag", "dodo") ||
-		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual"))) {
-		char *wan_base_if = "eth0";
+		nvram_match("switch_wantag", "iprimus") || nvram_match("switch_wantag", "manual") ||
+		nvram_match("switch_wantag", "kpn_nl") || nvram_match("switch_wantag", "centurylink") ||
+		nvram_match("switch_wantag", "actrix") || nvram_match("switch_wantag", "jastel") ||
+		nvram_match("switch_wantag", "google_fiber"))) {
+		char *wan_base_if = (get_model() == MODEL_RTAX58U) ? "eth4" : "eth0";
 		ifconfig(wan_base_if, IFUP, NULL, NULL);
 		set_wan_tag(wan_base_if);
 	}

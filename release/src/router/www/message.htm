@@ -87,8 +87,9 @@ var cfg_master_ipaddr = decodeURIComponent('<% nvram_char_to_ascii("","cfg_maste
 var cfg_alive = decodeURIComponent('<% nvram_char_to_ascii("","cfg_alive"); %>');
 
 var isAMeshRE = ('<% nvram_get("re_mode"); %>' == '1') ? true : false;
+var isDisableUI = ('<% nvram_get("disable_ui"); %>' == '1') ? true : false;
 (function(){
-	if(isAMeshRE) {
+	if(isAMeshRE || isDisableUI) {
 		if(cfg_alive == "1" && cfg_master_ipaddr != "") {
 			var s = document.createElement("script");
 			s.type = "text/javascript";

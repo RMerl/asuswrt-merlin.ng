@@ -166,6 +166,11 @@ enum {
     ETHSWOAMIDXMAPPING,
     ETHSWBONDINGPORTS,
     ETHSWCFP,
+
+    // add by Andrew
+    ETHSWARLDUMP = 201,
+    ETHSWMIBDUMP,
+    ETHSWPORTDUMP,
 };
 
 typedef struct cfpArg_s {
@@ -362,6 +367,33 @@ enum phy_cfg_flag {
 #define IFNAMSIZ  16
 #endif
 
+/* eth switch mac entry -- add by Andrew 2020/05/04 */
+typedef struct ethsw_mac_entry_s {
+    unsigned char mac[6];
+    unsigned short port;
+} ethsw_mac_entry;
+
+#ifndef MAX_MAC_ENTRY
+#define MAX_MAC_ENTRY 128
+#endif
+
+typedef struct ethsw_mac_table_s {
+    unsigned int count;
+    unsigned int len;
+    ethsw_mac_entry entry[MAX_MAC_ENTRY];
+} ethsw_mac_table;
+
+typedef struct ethsw_port_stats_s {
+    uint32 txPackets;
+    uint64 txBytes;
+    uint32 txDrops;
+    uint32 rxPackets;
+    uint64 rxBytes;
+    uint32 rxDrops;
+    uint32 rxDiscards;
+} ethsw_port_stats;
+/* end of add */
+
 struct ethswctl_data
 {
     /* NOTE : Common attribute for all messages */
@@ -393,6 +425,10 @@ struct ethswctl_data
     union
     {
         cfpArg_t cfpArgs;
+
+		ethsw_mac_table mac_table;  // add by Andrew
+		ethsw_port_stats port_stats; // add by Andrew
+
         struct
         {
 #define TYPE_SUBSET  0

@@ -16,7 +16,7 @@ include ../common.mak
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -Wall
 #CFLAGS	+= -g -DDEBUG
 CFLAGS	+= -s -Os -DBCMWPA2 $(EXTRACFLAGS)
-LDFLAGS	+= -L$(TOP)/nvram -lnvram -L$(TOP)/shared -lshared
+LDFLAGS	+= -L$(TOP_PLATFORM)/nvram -lnvram -L$(TOP)/shared -lshared
 LDFLAGS += $(EXTRA_LDFLAGS)
 
 ifeq ($(RTAC53U), y)

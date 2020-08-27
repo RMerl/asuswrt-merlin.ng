@@ -32,7 +32,9 @@ apps: .conf
 ifeq ($(HND_ROUTER),y)
 LIB_RESOLV="yes"
 else
+ifneq ($(RTCONFIG_MUSL_LIBC),y)
 DEF_FCNTL="-Dfcntl=fcntl64"
+endif
 LIB_RESOLV="no"
 endif
 

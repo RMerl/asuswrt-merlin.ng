@@ -143,6 +143,13 @@ function initial(){
 			}
 		}
 	});
+
+	var malware = cookie.get("malware");
+	if(malware){
+		showWhitelistField();
+		$("#newDomain").val(malware);
+		cookie.unset("malware");
+	}
 }
 
 function getEventTime(){
@@ -642,11 +649,11 @@ function genWhitelist(list){
 
 function showWhitelistField(){
 	getWhitelist();
-	$('#whitelistField').show();
+	$('#whitelistField').fadeIn(300);
 }
 
 function hideWhitelistField(){
-	$('#whitelistField').hide();
+	$('#whitelistField').fadeOut(300);
 }
 
 var download = function(content, fileName, mimeType) {
@@ -704,6 +711,7 @@ function query(value){
 function quickAdd(value){
 	$('#newDomain').val(value);
 	$('#query_list').hide();
+	//genLogTable(value);
 }
 </script>
 </head>
@@ -882,7 +890,7 @@ function quickAdd(value){
 											</div>
 										</div>
 									</div>
-									<div style="width:135px;height:55px;margin: 10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
+									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 								</td>
 							</tr>
 							</tbody>	

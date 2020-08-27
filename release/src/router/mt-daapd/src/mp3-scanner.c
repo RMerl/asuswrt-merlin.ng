@@ -44,6 +44,9 @@
 #include <netinet/in.h>  /* htons and friends */
 #include <sys/stat.h>
 #include <dirent.h>      /* why here?  For osx 10.2, of course! */
+#ifndef __GLIBC__
+#include <sys/param.h>	//musl
+#endif	/* __GLIBC__ */
 
 #include "daapd.h"
 #include "db-memory.h"

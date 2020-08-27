@@ -181,20 +181,20 @@ mod_alias_la_SOURCES = mod_alias.c
 mod_alias_la_LDFLAGS = -module -export-dynamic -avoid-version
 mod_alias_la_LIBADD = $(common_libadd)
 
-#lib_LTLIBRARIES += mod_userdir.la
-#mod_userdir_la_SOURCES = mod_userdir.c
-#mod_userdir_la_LDFLAGS = -module -export-dynamic -avoid-version
-#mod_userdir_la_LIBADD = $(common_libadd)
+lib_LTLIBRARIES += mod_userdir.la
+mod_userdir_la_SOURCES = mod_userdir.c
+mod_userdir_la_LDFLAGS = -module -export-dynamic -avoid-version
+mod_userdir_la_LIBADD = $(common_libadd)
 
 #lib_LTLIBRARIES += mod_rrdtool.la
 #mod_rrdtool_la_SOURCES = mod_rrdtool.c
 #mod_rrdtool_la_LDFLAGS = -module -export-dynamic -avoid-version
 #mod_rrdtool_la_LIBADD = $(common_libadd)
 
-#lib_LTLIBRARIES += mod_usertrack.la
-#mod_usertrack_la_SOURCES = mod_usertrack.c
-#mod_usertrack_la_LDFLAGS = -module -export-dynamic -avoid-version
-#mod_usertrack_la_LIBADD = $(common_libadd)
+lib_LTLIBRARIES += mod_usertrack.la
+mod_usertrack_la_SOURCES = mod_usertrack.c
+mod_usertrack_la_LDFLAGS = -module -export-dynamic -avoid-version
+mod_usertrack_la_LIBADD = $(common_libadd)
 
 #lib_LTLIBRARIES += mod_proxy.la
 #mod_proxy_la_SOURCES = mod_proxy.c
@@ -256,15 +256,15 @@ mod_auth_la_SOURCES = mod_auth.c http_auth.c
 mod_auth_la_LDFLAGS = -module -export-dynamic -avoid-version
 mod_auth_la_LIBADD = $(CRYPT_LIB) $(SSL_LIB) $(LDAP_LIB) $(LBER_LIB) $(common_libadd)
 
-#lib_LTLIBRARIES += mod_rewrite.la
-#mod_rewrite_la_SOURCES = mod_rewrite.c
-#mod_rewrite_la_LDFLAGS = -module -export-dynamic -avoid-version
-#mod_rewrite_la_LIBADD = $(PCRE_LIB) $(common_libadd)
+lib_LTLIBRARIES += mod_rewrite.la
+mod_rewrite_la_SOURCES = mod_rewrite.c
+mod_rewrite_la_LDFLAGS = -module -export-dynamic -avoid-version
+mod_rewrite_la_LIBADD = $(PCRE_LIB) $(common_libadd)
 
-#lib_LTLIBRARIES += mod_redirect.la
-#mod_redirect_la_SOURCES = mod_redirect.c
-#mod_redirect_la_LDFLAGS = -module -export-dynamic -avoid-version
-#mod_redirect_la_LIBADD = $(PCRE_LIB) $(common_libadd)
+lib_LTLIBRARIES += mod_redirect.la
+mod_redirect_la_SOURCES = mod_redirect.c
+mod_redirect_la_LDFLAGS = -module -export-dynamic -avoid-version
+mod_redirect_la_LIBADD = $(PCRE_LIB) $(common_libadd)
 
 #lib_LTLIBRARIES += mod_status.la
 #mod_status_la_SOURCES = mod_status.c

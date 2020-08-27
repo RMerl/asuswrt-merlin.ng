@@ -371,6 +371,9 @@ function refresh_wpsinfo(xhr){
 		var wps_infos1 = wpss[0].getElementsByTagName("wps_info1");
 		show_wsc_status2(wps_infos0, wps_infos1);
 	}
+
+	if(lyra_hide_support)
+		document.getElementById("devicePIN_tr").style.display = "none";
 }
 
 function show_wsc_status(wps_infos){

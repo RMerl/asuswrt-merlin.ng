@@ -1152,7 +1152,7 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
 	return PJ_RETURN_OS_ERROR(rc);
 
     if (type == PJ_MUTEX_SIMPLE) {
-#if PJ_ANDROID==1
+#if PJ_ANDROID==1 || !(defined(__GLIBC__) || defined(__UCLIBC__))
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
 #elif (defined(PJ_LINUX) && PJ_LINUX!=0) || \
     defined(PJ_HAS_PTHREAD_MUTEXATTR_SETTYPE)
@@ -1164,7 +1164,9 @@ static pj_status_t init_mutex(int inst_id, pj_mutex_t *mutex, const char *name, 
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_NORMAL);
 #endif
     } else {
-#if (defined(PJ_LINUX) && PJ_LINUX!=0) || \
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+#elif (defined(PJ_LINUX) && PJ_LINUX!=0) || \
      defined(PJ_HAS_PTHREAD_MUTEXATTR_SETTYPE)
 	rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE_NP);
 #elif (defined(PJ_RTEMS) && PJ_RTEMS!=0) || \

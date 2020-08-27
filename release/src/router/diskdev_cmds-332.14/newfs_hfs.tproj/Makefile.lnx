@@ -4,7 +4,7 @@ OFILES = $(CFILES:.c=.o)
 all: newfs_hfs
 
 newfs_hfs: $(OFILES)
-	${CC} ${CFLAGS} -o newfs_hfs ${OFILES} -lssl -lcrypto -ldl
+	${CC} ${CFLAGS} -o newfs_hfs ${OFILES} -lssl -lcrypto -lpthread -ldl
 
 clean:
 	$(RM) newfs_hfs $(OFILES)

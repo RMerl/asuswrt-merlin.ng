@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 #include <bcmnvram.h>
 #include <shutils.h>
 #include <shared.h>

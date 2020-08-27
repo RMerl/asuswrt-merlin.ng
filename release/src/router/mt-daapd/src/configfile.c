@@ -54,6 +54,8 @@
 # include "rend.h"
 #endif
 
+#include "db-memory.h"
+
 
 /*
  * Forwards

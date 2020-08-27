@@ -905,7 +905,7 @@ mDNSlocal mStatus	UpdateInterfaceList( mDNS *const inMDNS, mDNSs32 inUTC )
 			mDNSPlatformMemZero( &ifr6, sizeof( ifr6 ) );
 			strcpy( ifr6.ifr_name, ifa->ifa_name );
 			ifr6.ifr_addr = *sa6;
-			if( ioctl( infoSock, SIOCGIFAFLAG_IN6, (int) &ifr6 ) != -1 )
+			if( ioctl( infoSock, SIOCGIFAFLAG_IN6, (long) &ifr6 ) != -1 )
 			{
 				flags = ifr6.ifr_ifru.ifru_flags6;
 			}
@@ -1456,7 +1456,7 @@ mDNSlocal mStatus	SetupSocket( mDNS *const inMDNS, const mDNSAddr *inAddr, mDNSB
 	
 	// Make the socket non-blocking so we can potentially get multiple packets per select call.
 	
-	err = ioctl( sock, FIONBIO, (int) &on );
+	err = ioctl( sock, FIONBIO, (long) &on );
 	check_translated_errno( err == 0, errno_compat(), kOptionErr );
 	
 	*sockPtr = sock;

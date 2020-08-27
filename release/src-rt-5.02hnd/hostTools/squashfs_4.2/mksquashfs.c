@@ -32,6 +32,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <sys/time.h>
+#include <sys/sysmacros.h>
 #include <sys/types.h>
 #include <sys/sysmacros.h>
 #include <sys/stat.h>
@@ -3341,7 +3342,7 @@ struct inode_info *lookup_inode(struct stat *buf)
 }
 
 
-inline void add_dir_entry(char *name, char *pathname, struct dir_info *sub_dir,
+void add_dir_entry(char *name, char *pathname, struct dir_info *sub_dir,
 	struct inode_info *inode_info, struct dir_info *dir)
 {
 	if((dir->count % DIR_ENTRIES) == 0) {

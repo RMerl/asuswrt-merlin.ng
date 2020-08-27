@@ -1,0 +1,13 @@
+{
+"fwver": "0.47.1.23",
+"tcode": "US/01",
+"sn" : "", 
+"apilevel": "2",
+"recordplan": "default",
+"privateip": "192.168.31.242",
+"macaddr":"78:DA:38:AE:55:2D",
+"videomode":"00",
+"initattachabledevice":"off"
+}
+
+

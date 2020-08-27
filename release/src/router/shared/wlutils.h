@@ -1,15 +1,24 @@
 /*
  * Broadcom wireless network adapter utility functions
  *
- * Copyright 2005, Broadcom Corporation
- * All Rights Reserved.
- * 
- * THIS SOFTWARE IS OFFERED "AS IS", AND BROADCOM GRANTS NO WARRANTIES OF ANY
- * KIND, EXPRESS OR IMPLIED, BY STATUTE, COMMUNICATION OR OTHERWISE. BROADCOM
- * SPECIFICALLY DISCLAIMS ANY IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A SPECIFIC PURPOSE OR NONINFRINGEMENT CONCERNING THIS SOFTWARE.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
- * $Id: wlutils.h,v 1.1.1.10 2005/03/07 07:31:20 kanki Exp $
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+ * SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
+ * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: wlutils.h 779706 2019-10-04 13:58:11Z $
  */
 
 #ifndef _wlutils_h_
@@ -23,9 +32,15 @@ extern int wl_ioctl(char *name, int cmd, void *buf, int len);
 #endif //RTCONFIG_REALTEK
 #ifdef CONFIG_BCMWL5
 #include <typedefs.h>
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <ethernet.h>
+#else
 #include <proto/ethernet.h>
+#endif
 #include <wlioctl.h>
-
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <bcmtlv.h>
+#endif
 /*
  * Pass a wlioctl request to the specified interface.
  * @param	name	interface name
@@ -43,7 +58,7 @@ extern int wl_ioctl(char *name, int cmd, void *buf, int len);
  * @param	len	length of buf
  * @return	>= 0 if successful or < 0 otherwise
  */
-#define DEV_TYPE_LEN 3
+#define DEV_TYPE_LEN 3	/* Length for dev type 'et'/'wl' */
 extern int wl_get_dev_type(char *name, void *buf, int len);
 
 /*
@@ -105,6 +120,13 @@ extern int wl_iovar_get(char *ifname, char *iovar, void *bufptr, int buflen);
 extern int wl_iovar_setint(char *ifname, char *iovar, int val);
 extern int wl_iovar_getint(char *ifname, char *iovar, int *val);
 
+#ifdef __CONFIG_DHDAP__
+extern int dhd_iovar_setbuf(char *ifname, char *iovar, void *param, int paramlen,
+		void *bufptr, int buflen);
+extern int dhd_iovar_set(char *ifname, char *iovar, void *param, int paramlen);
+extern int dhd_iovar_setint(char *ifname, char *iovar, int val);
+#endif /* __CONFIG_DHDAP__ */
+
 /*
  * Set/Get named variable indexed by BSS Configuration
  * @param	ifname		interface name
@@ -126,8 +148,80 @@ extern int wl_bssiovar_setint(char *ifname, char *iovar, int bssidx, int val);
 
 extern char * wl_ether_etoa(const struct ether_addr *n);
 
+/*
+ * Probe the specified interface for its endianess.
+ * @param	name	interface name
+ * @return	>= 0 if successful or < 0 otherwise
+ */
+extern int wl_endian_probe(char *name);
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+/*
+ * Set HE related commands
+ * @param      ifname          interface name
+ * @param      iovar           variable name
+ * @param      subcmd          he subcommand
+ * @param      val             val or val pointer for int routines
+ * @return     success == 0, failure != 0
+ */
+
+extern int wl_heiovar_setint(char *ifname, char *iovar, char *subcmd, int val);
+
+/*
+ * Set msched/umsched related commands
+ * @param	ifname		interface name
+ * @param	iovar		variable name
+ * @param	subcmd		msched/umsched subcommand
+ * @param	val		val or val pointer for int routines
+ * @return	success == 0, failure != 0
+ */
+extern int wl_msched_iovar_setint(char *ifname, char *iovar, char *subcmd, int val);
+
+/*
+ * Set xtlv related iovar commands
+ * @param      ifname          interface name
+ * @param      iovar           variable name
+ * @param      param           input parameter
+ * @param      paramlen
+ * @param      version         iovar version
+ * @param      cmd_id
+ * @param      xtlv_id
+ * @param      xtlv_option     int/buf etc
+ * @return     success == 0, failure != 0
+ */
+extern int wl_iovar_xtlv_set(char *ifname, char *iovar, uint8 *param, uint16 paramlen,
+               uint16 version, uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts);
+/*
+ * Set xtlv related iovar commands
+ * @param      ifname          interface name
+ * @param      iovar           variable name
+ * @param      val             val or val pointer for int routines
+ * @param      version         iovar version
+ * @param      cmd_id
+ * @param      xtlv_id
+ * @return     success == 0, failure != 0
+ */
+extern int wl_iovar_xtlv_setint(char *ifname, char *iovar, int32 val, uint16 version,
+               uint16 cmd_id, uint16 xtlv_id);
+/*
+ * Set xtlv buf related iovar commands
+ * @param      ifname          interface name
+ * @param      iovar           variable name
+ * @param      param           input data
+ * @param      paramlen        data len
+ * @param      version         iovar version
+ * @param      cmd_id
+ * @param      xtlv_id
+ * @param      xtlv_option     int/buf etc
+ * @return     success == 0, failure != 0
+ */
+extern int wl_iovar_xtlv_setbuf(char *ifname, char *iovar, uint8 *param, uint16 paramlen,
+               uint16 version, uint16 cmd_id, uint16 xtlv_id, bcm_xtlv_opts_t opts,
+               uint8 *buf, uint16 buflen);
+#endif
+
 #ifdef __CONFIG_DHDAP__
 extern int dhd_probe(char *name);
-#endif // endif
+#endif
 #endif /* CONFIG_BCMWL5 */
 #endif /* _wlutils_h_ */

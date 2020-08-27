@@ -75,6 +75,9 @@ start_pppd(int unit)
 	char buf[256];	/* although maximum length of pppoe_username/pppoe_passwd is 64. pppd accepts up to 256 characters. */
 	mode_t mask;
 	int ret = 0;
+#ifdef RTCONFIG_DSL
+	char dsl_prefix[16] = {0};
+#endif
 
 	_dprintf("%s: unit=%d.\n", __FUNCTION__, unit);
 
@@ -174,14 +177,13 @@ start_pppd(int unit)
 			fprintf(fp, "-pap\n");
 		}
 
+		get_dsl_prefix_by_wan_unit(unit, dsl_prefix, sizeof(dsl_prefix));
 		if (nvram_match("dslx_transmode", "atm")
-			&& nvram_match("dsl0_proto", "pppoa")
-#ifdef RTCONFIG_DUALWAN
-			&& get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_DSL
-#endif
+			&& nvram_pf_match(dsl_prefix, "proto", "pppoa")
 		) {
-			FILE *fp_dsl_mac;
 			char *dsl_mac = NULL;
+#ifdef RTCONFIG_DSL_REMOTE
+			FILE *fp_dsl_mac;
 			int timeout = 10; /* wait up to 10 seconds */
 
 			while (timeout--) {
@@ -194,15 +196,17 @@ start_pppd(int unit)
 				}
 				usleep(1000*1000);
 			}
-
 			fprintf(fp, "rp_pppoe_sess %d:%s\n", 154,
 				(dsl_mac && *dsl_mac) ? dsl_mac : "00:11:22:33:44:55");
+#else
+			fprintf(fp, "rp_pppoe_sess %d:%s\n", 154,
+				nvram_safe_get(strcat_r(prefix, "hwaddr", tmp)));
+#endif
 		}
 #endif
 
-		fprintf(fp, "mru %s mtu %s\n",
-			nvram_safe_get(strcat_r(prefix, "pppoe_mru", tmp)),
-			nvram_safe_get(strcat_r(prefix, "pppoe_mtu", tmp)));
+		fprintf(fp, "mru %d\n", nvram_valid_get_int(strcat_r(prefix, "pppoe_mru", tmp), 128, 1500, 1492));
+		fprintf(fp, "mtu %d\n", nvram_valid_get_int(strcat_r(prefix, "pppoe_mtu", tmp), 128, 1500, 1492));
 	}
 
 	if (nvram_invmatch(strcat_r(prefix, "proto", tmp), "l2tp")) {

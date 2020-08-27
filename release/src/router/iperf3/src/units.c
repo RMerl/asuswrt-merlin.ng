@@ -60,7 +60,11 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/time.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif
 
 
 #include "iperf.h"

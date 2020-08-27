@@ -1,6 +1,6 @@
 ﻿var Untranslated = {
 	fw_size_higher_mem : 'Memory space is NOT enough to upgrade on internet. Please wait for rebooting.',
-	ASUSGATE_note9 : "Your DSL (Digital Suscriber Line) seems unstable. DLA (Dynamic Line Adjustment) enabled by default has modified the necessary setting to improve the network stability. If failed, please submit feedback to our support team.",
+	ASUSGATE_note9 : 'Your DSL line appears to be unstable. DLA (Dynamic Line Adjustment) which enabled by default already adopted necessary changes and ensure stability. However, if interruption continues please submit a Feedback form with "Enable DSL Line Diagnostic" option set as "Yes" and "Diagnostic debug log capture duration" set as 24 hours for our analysis(no need to enable System diagnostic).',
 	ASUSGATE_note6 : "Your DSL (Digital Suscriber Line) seems unstable. We strongly recommend that you submit feedback to our support team.",
 	ASUSGATE_note7 : "If you are experiencing any DSL related issues or you have any comments, please feel free to inform our support team.",
 	ASUSGATE_act_feedback : "Feedback now",
@@ -222,13 +222,21 @@ function upated_sim_record(){ //delete the oldest record and save the current da
 var debug_end_time = parseInt("<% nvram_get("dslx_diag_end_uptime"); %>");
 var wans_mode = '<%nvram_get("wans_mode");%>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
+var orig_wnaports_bond = '<% nvram_get("wanports_bond"); %>';
 
 function overHint(itemNum){
 	var statusmenu = "";
 	var title2 = 0;
 	var title5 = 0;
-	var title5_2 = 0;	
-	
+	var title5_2 = 0;
+
+	if(itemNum == 101){
+		statusmenu ="<span><#WANAggregation_help_WAN#></span>";
+	}
+	else if(itemNum == 102){
+		statusmenu ="<span><#WANAggregation_help_LAN#></span>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
+	}
+
 	if(itemNum == 50){
 		statusmenu ="<span><#QIS_PPTP_L2TP_enable#></span>";
 	}
@@ -1197,6 +1205,20 @@ function openHint(hint_array_id, hint_show_id, flag){
 		}
 
 		return overlib(statusmenu, OFFSETX, -160, LEFT, STICKY, CAPTION, " ", CLOSETITLE, '');
+	}
+	else if(hint_array_id == 28){ //wan aggregation
+		statusmenu = "<div>";
+		statusmenu += "<#WANAggregation_help_desc#>";
+		statusmenu += "<ol>";
+		statusmenu += "<li><#WANAggregation_help_step1#></li>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
+		statusmenu += "<li><#WANAggregation_help_step2#></li>";
+		statusmenu += "<li><#WANAggregation_help_step3#></li>";
+		statusmenu += "<li><#WANAggregation_help_step4#></li>";
+		statusmenu += "</ol>";
+		statusmenu += "<#WANAggregation_help_final#>";
+		statusmenu += "</div>";
+
+		return overlib(statusmenu, OFFSETX, -160, LEFT, DELAY, 400, WIDTH, 300, STICKY, CAPTION, " ");
 	}
 
 	var tag_name= document.getElementsByTagName('a');	

@@ -80,7 +80,7 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		sudo yum install gettext-devel libxml2-devel mtd-utils-ubi ncurses-devel \
 			zlib-devel intltool sharutils docbook-dtds docbook-style-xsl \
 			uboot-tools dtc gengetopt qemu gperf cmake glib2-devel gtk-doc \
-			texinfo lzo-devel
+			texinfo lzo-devel libbsd-devel
 
 		If you are using Fedora 19 or above, you need to install below packages.
 		sudo yum groupinstall "C Development Tools and Libraries"
@@ -96,6 +96,9 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 
 		If you are using Fedora 29+, you may need to install 32-bit packages listed below.
 			glibc-devel.i686
+
+		If you are using Fedora 31+, you may need to install packages listed below.
+			python2
 
    2. prepare source to, ex, $HOME/asuswrt
 
@@ -158,10 +161,10 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 
 		      export STAGING_DIR=/opt/openwrt-gcc463.mips
 
-	Qualcomm IPQ806x/IPQ807x/IPQ40xx ARM SoC models
+	Qualcomm IPQ806x/IPQ807x ARM SoC models
 	===============================================
 
-		For example, BRT-AC828, RT-AC58U, GT-AXY16000, RT-AX89U.
+		For example, BRT-AC828, RT-AC58U, GT-AXY16000, RT-AX89X.
 
 		To install the tools:
 		    - extract tools/openwrt-gcc463.arm.tar.bz2 directory to /opt
@@ -170,6 +173,20 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		      add STAGING_DIR environment variable as below:
 	
 		      export STAGING_DIR=/opt/openwrt-gcc463.arm
+
+	Qualcomm IPQ40xx ARM SoC models
+	===============================
+
+		For example, MAP-AC2200
+
+		To install the tools:
+		    - extract tools/openwrt-gcc483.arm.tar.bz2 directory to /opt
+		    - add /opt/openwrt-gcc483.arm/bin to your path
+		    - If you want to build small utilities out of asuswrt box,
+		      add STAGING_DIR environment variable as below:
+
+		      export STAGING_DIR=/opt/openwrt-gcc483.arm
+
 
 	Note: Broadcom/Ralink(except 4708 series) platform use the same toolchain for user space program, so please set PATH to the same directory as above
 
@@ -206,7 +223,7 @@ Set Up Environment(Tested in Fedora 8/9 and Ubuntu)
 		make rt-ac55u
 		( make rt-ac55uhp )
 
-	g. brt-ac828 (/ rt-ad7200 / gt-axy16000 / rt-ax89u)
+	g. brt-ac828 (/ rt-ad7200 / gt-axy16000 / rt-ax89x)
 		cd release/src-qca-ipq806x
 		make brt-ac828
 		( make rt-ad7200 )

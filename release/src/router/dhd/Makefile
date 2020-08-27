@@ -1,5 +1,5 @@
 all:
-	-cp -f prebuilt$(BCMEX)$(EX7)/dhd dhd
+	-cp -f prebuilt/$(BUILD_NAME)/dhd dhd
 clean:
 	rm -f *.o dhd
 
@@ -9,5 +9,5 @@ install: all
 	$(STRIP) $(INSTALLDIR)/usr/sbin/dhd
 
 dhd:
-	-cp -f prebuilt$(BCMEX)$(EX7)/dhd dhd
+	-cp -f prebuilt/$(BUILD_NAME)/dhd dhd
 

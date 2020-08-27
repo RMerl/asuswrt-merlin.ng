@@ -1,0 +1,679 @@
+﻿<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script src="/js/httpApi.js"></script>
+<script src="/js/jquery.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<style>
+body{
+	margin: 0;
+}
+
+.split-Line{
+	background: rgba(74,144,226,0.50);
+	width: auto;
+	height: 1px;
+	margin: 6px 0;
+}
+
+.description-bar{
+	border-left: 4px solid #00BFFF;
+	padding-left: 12px;
+}
+
+.bg-tencent{
+	width: 100%;
+	position: relative;
+	background-image:
+		url('images/tencent/img-bg-tencent03.png'),
+		url('images/tencent/img-bg-tencent02.png'),
+		url('images/tencent/img-bg-tencent01.png');
+	background-repeat: no-repeat, no-repeat, no-repeat;
+	background-position:
+		100% 72%,
+		center center,
+		center center;
+	background-size: 50%, cover, cover;
+	color: #FFFFFF;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 13px;
+	line-height: 180%;
+}
+
+.tencent_title{
+	position: absolute;
+	bottom: 0px;
+	left: 0px;
+	font-size: 20px;
+}
+
+.tencent_desc{
+	width: 70%;
+}
+
+.tencent_desc_logo{
+	background-image: url(images/tencent/logo_tencent-signal_line.png);
+	background-repeat: no-repeat;
+	background-size: 70%;
+	width: 30%;
+	background-position: center center;
+}
+
+#network_disconnect_hint{
+	margin: 10px 10px 0 10px;
+	color: #FFCC00;
+	display: none;
+}
+
+#setting_window_mask{
+	position: fixed;
+	width: 420px;
+	height: 180px;
+	border-radius: 24px;
+	background: #000000;
+	z-index: 999;
+	opacity: 0.5;
+	margin-top: 20px;
+	display: none;
+}
+
+.tencent_setting_window{
+	width: 420px;
+	height: 180px;
+	opacity: 0.85;
+	background: #000000;
+	box-shadow: 0 -8px 10px 1px rgba(0,0,0,0.24), 0 3px 14px 2px rgba(0,0,0,0.32), 0 5px 5px -3px rgba(0,0,0,0.20);
+	border-radius: 24px;
+	margin-top: 20px;
+	border: #24AFFF 1px solid;
+	display: flex;
+	flex-direction: column;
+}
+
+.tencent_setting_div{
+	width: 100%;
+	height: 65%;
+	display: flex;
+}
+
+.tencent_setting_logo{
+	width: 100%;
+	height: 100%;
+	background-image: url(images/tencent/logo_tencent-signal_line.png);
+	background-repeat: no-repeat;
+	background-size: 85%;
+	background-position: center center;
+}
+
+.tencent_setting_logo_div{
+	width: 60%;
+	height: 90%;
+	margin-top: 10px;
+}
+
+.tencent_switch_div{
+	height: 90%;
+	margin-top: 10px;
+	flex-grow: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+#switch_mask{
+	position: fixed;
+	border-radius: 7px;
+	height: 32px;
+	width: 74px;
+	background: #000000;
+	z-index: 999;
+	opacity: 0.5;
+	display: none;
+}
+
+.tencent_eula_check_container{
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+	margin-right: 10px;
+	border: 2px solid;
+	border-radius: 3px;
+}
+
+.tencent_eula_check_yes{
+	background: url(images/tencent/checked_24px_black.svg) no-repeat center;
+	background-color: #FFFFFF;
+}
+
+.tencent_bottom_div{
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.tencent_content_back{
+	position: relative;
+	left: 10%;
+	width: 80%;
+	height: 80%;
+	opacity: 0.85;
+	padding: 1px;
+	border-radius: 24px;
+	background-image: -webkit-linear-gradient(top, #31d9ff 0%,#24afff 51%,#6800be 100%);
+	background-image: -moz-linear-gradient(top, #31d9ff 0%, #24afff 51%, #6800be 100%);
+	background-image: linear-gradient(to bottom, #31d9ff 0%,#24afff 51%,#6800be 100%);
+}
+
+.tencent_content_front{
+	width: 100%;
+	height: 100%;
+	background:#000000;
+	border-radius: 24px;
+}
+
+.tencent_eula_logo_div{
+	width: 98%;
+	height: 10%;
+	display: flex;
+	justify-content: flex-end;
+}
+
+.tencent_eula_logo{
+	width: 30%;
+	height: 100%;
+	margin-right: 15px;
+	background-image: url(images/tencent/logo_tencent-signal_line.png);
+	background-repeat: no-repeat;
+	background-size: contain;
+}
+
+.tencent_login_btn{
+	width: 200px;
+	height: 34px;
+	background: #5F5F5F;
+	border-radius: 18px;
+	text-align: center;
+	line-height: 34px;
+	cursor: pointer;
+}
+
+#tencent_login_btn_mask{
+	position: fixed;
+	width: 200px;
+	height: 34px;
+	border-radius: 18px;
+	background: #000000;
+	z-index: 999;
+	opacity: 0.5;
+	display: none;
+}
+
+.close_icon{
+	background: url(images/close.svg) no-repeat center;
+	width: 40px;
+	height: 100%;
+}
+
+.tencent_eula_content{
+	width: 94%;
+	height: 77%;
+	margin-left: 3%;
+	overflow: auto;
+}
+
+::-webkit-scrollbar{
+	width: 8px;
+}
+
+::-webkit-scrollbar-track {
+	-webkit-border-radius: 6px;
+	border-radius:6px;
+	margin: 20px 0 10px 0;
+}
+
+::-webkit-scrollbar-thumb {
+	-webkit-border-radius: 4px;
+	border-radius: 4px;
+	background: #4B596F;
+}
+
+.eula_paragraph{
+	margin-top: 20px;
+}
+
+.eula_paragraph_sub{
+	margin: 20px 0 0 10px;
+}
+
+@media screen and (-ms-high-contrast: active),(-ms-high-contrast: none)
+ {
+    #switch_mask { margin-top: -16px; } /* IE10 */
+    *::-ms-backdrop, #switch_mask { margin-top: -16px; } /* IE11 */
+    #tencent_login_btn_mask { margin-top: -17px; } /* IE10 */
+    *::-ms-backdrop, #tencent_login_btn_mask { margin-top: -17px; } /* IE11 */
+ }
+
+@media (max-width: 420px) {
+	.bg-tencent{
+		height: 100%;
+		background-size: 65%, cover, cover;
+	}
+	.split-Line{
+		display: none;
+	}
+
+	.description-bar{
+		border-left: 0px;
+	}
+
+	.description-title{
+		display: none;
+	}
+
+	.tencent_title{
+		left: 5vw;
+		bottom: 0vh;
+	}
+
+	.tencent_desc{
+		width: 90vw;
+		margin-left: 1vw;
+		margin-top: 1vh;
+	}
+
+	.tencent_desc_logo{
+		display: none;
+	}
+
+	#network_disconnect_hint{
+		margin-left: 24px;
+	}
+
+	#setting_window_mask{
+		width: 85%;
+		height: 150px;
+		border-radius: 20px;
+	}
+
+	.tencent_setting_window{
+		width: 85%;
+		height: 150px;
+		border-radius: 20px;
+	}
+
+	.tencent_content_back{
+		width: 90%;
+		left: 5%;
+	}
+
+	.tencent_eula_logo_div{
+		display: none;
+	}
+
+	.tencent_login_btn{
+		width: 50%;
+	}
+
+	#tencent_login_btn_mask{
+		width: 50%;
+	}
+}
+</style>
+<script>
+var orig_tencent_qmacc_enable = httpApi.nvramGet(["tencent_qmacc_enable"], true).tencent_qmacc_enable;
+var curState = orig_tencent_qmacc_enable;
+var orig_tencent_eula_check = httpApi.nvramGet(["tencent_eula_check"], true).tencent_eula_check;
+var cur_eula_check = orig_tencent_eula_check;
+var label_mac = <% get_label_mac(); %>.toLowerCase().split(":").join("");
+var productid = httpApi.nvramGet(["productid"], true).productid;
+
+$(document).ready(function(){
+	initial();
+});
+
+function initial(){
+	var login_url = "https://jiasu.qq.com/mobile/routercontent/asus/#/login?type=asus&sn="+label_mac+"&model="+productid;
+	var loginObj = document.getElementById("login_url");
+	loginObj.setAttribute('href',login_url);
+
+	if(document.body.clientWidth > 420){
+		var height = document.body.clientHeight * 0.95;
+		$(".bg-tencent").css("height", height);
+	}
+
+	check_link_internet();
+
+	if(orig_tencent_eula_check == "1"){
+		$("#tencent_eula_div").css("display", "none");
+		if(orig_tencent_qmacc_enable == "1")
+			show_tencent_login(1);
+		else
+			show_tencent_login(-1);
+	}
+	else{
+		$("#switch_mask").css("display", "block");
+	}
+}
+
+function check_link_internet(){
+	var link_internet = httpApi.nvramGet(["link_internet"], true).link_internet;
+	if(link_internet != "2"){
+		$("#setting_window_mask").css("display", "block");
+		$("#network_disconnect_hint").css("display", "block");
+	}
+	else{
+		$("#setting_window_mask").css("display", "none");
+		$("#network_disconnect_hint").css("display", "none");
+	}
+
+	setTimeout(check_link_internet, 3000);
+}
+
+function open_tencent_eula(){
+	$(".tencent_setting_window").hide();
+	$("#tencent_eula_window").fadeIn(500);
+}
+
+function close_tencent_eula(){
+	$("#tencent_eula_window").hide();
+	$(".tencent_setting_window").fadeIn(500);
+}
+
+function check_eula(){
+	$("#tencent_eula_checkbox").toggleClass("tencent_eula_check_yes");
+	if($("#tencent_eula_checkbox").hasClass("tencent_eula_check_yes")){
+		cur_eula_check = "1";
+		$("#switch_mask").css("display", "none");
+	}
+	else{
+		cur_eula_check = "0";
+		$("#switch_mask").css("display", "block");
+	}
+
+	httpApi.nvramSet({
+		"tencent_eula_check": cur_eula_check,
+		"action_mode": "apply",
+		"action_script": "saveNvram"
+	});
+}
+
+function show_tencent_login(show){
+	if($("#loadingIcon").css("display") != "none")
+		$("#loadingIcon").hide();
+
+	if(show == "1"){
+		if($("#tencent_login_btn_mask").css("display") != "none")
+			$("#tencent_login_btn_mask").hide();
+
+		if($("#tencent_login_div").css("display") == "none")
+			$("#tencent_login_div").fadeIn(500);
+	}
+	else if(show == "0"){
+		if($("#tencent_login_div").css("display") != "none")
+			$("#tencent_login_div").fadeOut(500);
+	}
+	else if(show == "-1"){//disable
+		if($("#tencent_login_div").css("display") == "none")
+			$("#tencent_login_div").show();
+
+		$("#tencent_login_btn_mask").show();
+	}
+}
+</script>
+<div class="bg-tencent">
+	<div style="margin: 0px 10px 0 10px;">
+		<div style="position:relative; height: 70px;"><div class="tencent_title">腾讯网游加速器</div></div>
+		<div class="split-Line"></div>
+		<div class="description-bar">
+			<div style="display: flex;">
+				<div class="tencent_desc">腾讯官方出品的海外网络加速工具。一机畅玩全平台游戏（PC、手游和主机），独享金融级专线，节点全球覆盖，有效解决游戏中出现的延迟、卡顿、丢包等问题，全方位满足用户在各种网络情况下的游戏体验。让你随时开黑，游戏快人一步。</div>
+				<div class="tencent_desc_logo"></div>
+			</div>
+		</div>
+	</div>
+	<div id="network_disconnect_hint"><#tencent_disconnect_hint#></div>
+	<div style="display: flex; justify-content: center;">
+		<div id="setting_window_mask"></div>
+		<div class="tencent_setting_window">
+			<div class="tencent_setting_div">
+				<div class="tencent_setting_logo_div">
+					<div class="tencent_setting_logo"></div>
+				</div>
+				<div class="tencent_switch_div">
+					<div id="switch_mask"></div>
+					<div class="left" style="cursor:pointer;" id="tencent_qmacc_enable"></div>
+					<div class="iphone_switch_container">
+					<script type="text/javascript">
+						$('#tencent_qmacc_enable').iphoneSwitch(orig_tencent_qmacc_enable,
+							function() {
+								if(cur_eula_check == "1"){
+									httpApi.nvramSet({
+										"tencent_qmacc_enable": "1",
+										"action_mode": "apply",
+										"rc_service": "start_qmacc"
+										}, function( response ) {
+											if($("#tencent_eula_div").css("display") != "none"){
+												$("#tencent_eula_div").hide();
+											}
+
+											if($("#tencent_login_div").css("display") != "none")
+												$("#tencent_login_div").hide();
+
+											$("#loadingIcon").show();
+											setTimeout("show_tencent_login(1);", 10000);
+									});
+									curState = "1";
+								}
+								else{
+									$('#tencent_qmacc_enable').find('.iphone_switch').animate({backgroundPosition: -37}, "slow");
+								}
+							},
+							function() {
+								if(cur_eula_check == "1"){
+									httpApi.nvramSet({
+										"tencent_qmacc_enable": "0",
+										"action_mode": "apply",
+										"rc_service": "stop_qmacc"
+										}, function( response ) {
+											if($("#tencent_login_div").css("display") != "none")
+												$("#tencent_login_div").hide();
+
+											$("#loadingIcon").show();
+											setTimeout("show_tencent_login(-1);", 5000);
+									});
+									curState = "0";
+								}
+								else{
+									$('#tencent_qmacc_enable').find('.iphone_switch').animate({backgroundPosition: 0}, "slow");
+								}
+							}
+						);
+					</script>
+					</div>
+				</div>
+			</div>
+			<div style="flex-grow: 1;">
+				<div id="tencent_eula_div" class="tencent_bottom_div">
+					<div id="tencent_eula_checkbox" class="tencent_eula_check_container" onclick="check_eula();"></div>
+					<div>阅读并同意<a href="https://jiasu.qq.com/announcements/251.html?a=0" target="_blank" style="color: #31FFD6;">腾讯网游加速器服务协议</a></div>
+				</div>
+				<div id="loadingIcon" class="tencent_bottom_div" style="display: none;">
+						<div>请等待</div>
+						<div style="margin-left: 5px;"><img src="/images/InternetScan.gif"></div>
+				</div>
+				<div id="tencent_login_div" class="tencent_bottom_div" style="display: none;">
+					<div id="tencent_login_btn_mask"></div>
+					<div class="tencent_login_btn"><a id="login_url" target="_blank" style="color: #00FCFF; text-decoration: underline;">登录腾讯网游加速器</span></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="tencent_eula_window" class="tencent_content_back" style="display: none;">
+		<div class="tencent_content_front">
+			<div style="width: 100%; height: 100%;">
+				<div style="width: 94%; height: 10%; display: flex; align-items: center; margin-left: 3%;">
+					<div class="close_icon" onclick="close_tencent_eula();"></div>
+					<div style="flex-grow: 1; font-size: 16px;">腾讯网游加速器软件许可及服务协议</div>
+				</div>
+				<div class="tencent_eula_logo_div">
+					<div class="tencent_eula_logo"></div>
+				</div>
+				<div class="tencent_eula_content">
+					<div>
+						<div>【首部及导言】</div>
+						<div>欢迎您使用腾讯网游加速器软件及服务！</div>
+					</div>
+					<div class="eula_paragraph">为使用腾讯网游加速器软件（以下简称“本软件”）及服务，您应当阅读并遵守《腾讯网游加速器软件许可及服务协议》（以下简称“本协议”），以及《腾讯服务协议》、《QQ号码规则》。请您务必审慎阅读、充分理解各条款内容，特别是免除或者限制责任的条款，以及开通或使用某项服务的单独协议，并选择接受或不接受。限制、免责条款可能以黑体加粗形式提示您注意。</div>
+					<div class="eula_paragraph">除非您已阅读并接受本协议所有条款，否则您无权下载、安装或使用本软件及相关服务。您的下载、安装、使用、登录等行为即视为您已阅读并同意上述协议的约束。</div>
+					<div class="eula_paragraph">如果您未满18周岁，请在法定监护人的陪同下阅读本协议及其他上述协议，并特别注意未成年人使用条款。</div>
+					<div class="eula_paragraph">
+						<div>一、【协议的范围】</div>
+						<div>1.1 【协议适用主体范围】</div>
+					</div>
+					<div class="eula_paragraph">本协议是您与腾讯公司（以下简称“腾讯”）之间关于您下载、安装、使用、复制本软件，以及使用腾讯网游加速器服务所订立的协议。</div>
+					<div class="eula_paragraph">1.2 【协议关系及冲突条款】</div>
+					<div class="eula_paragraph">本协议被视为《腾讯服务协议》（链接地址：http://www.qq.com/contract.shtml，若链接地址变更的，则以变更后的链接地址所对应的内容为准；其他链接地址变更的情形，均适用前述约定）《QQ号码规则》（链接地址：http://zc.qq.com/chs/agreement1_chs.html）的补充协议，是其不可分割的组成部分，与其构成统一整体。本协议与上述内容存在冲突的，以本协议为准。</div>
+					<div class="eula_paragraph">本协议内容同时包括腾讯可能不断发布的关于本服务的相关协议、业务规则等内容。上述内容一经正式发布，即为本协议不可分割的组成部分，您同样应当遵守。</div>
+					<div class="eula_paragraph">
+						<div>二、【关于本服务】</div>
+						<div>2.1 【本服务的内容】</div>
+					</div>
+					<div class="eula_paragraph">本服务是指腾讯提供安装在电脑终端上具有包括但不限于快速、安全、稳定连接网游服务器的软件许可及服务（以下简称“本服务”）。</div>
+					<div class="eula_paragraph">2.2 【本服务的形式】</div>
+					<div class="eula_paragraph">您使用本服务需要下载腾讯网游加速器客户端软件，对于这些软件，腾讯给予您一项个人的、不可转让及非排他性的许可。</div>
+					<div class="eula_paragraph">2.3 【本服务许可的范围】</div>
+					<div class="eula_paragraph">2.3.1 腾讯给予您一项个人的、不可转让及非排他性的许可，以使用本软件。您可以为非商业目的在单一终端设备上安装、使用、显示、运行本软件。</div>
+					<div class="eula_paragraph">2.3.2 您可以为使用本软件及服务的目的用计算机可读形式制作本软件的一个副本，仅用作备份。备份副本必须包含原软件中含有的所有著作权信息。</div>
+					<div class="eula_paragraph">2.3.3 本条及本协议其他条款未明示授权的其他一切权利仍由腾讯保留，您在行使这些权利时须另外取得腾讯的书面许可。腾讯如果未行使前述任何权利，并不构成对该权利的放弃。</div>
+					<div class="eula_paragraph">
+						<div>三、【软件的获取】</div>
+						<div>3.1 您可以直接从本服务的网站上获取本软件，也可以从得到腾讯授权的第三方获取。</div>
+					</div>
+					<div class="eula_paragraph">3.2 如果您从未经腾讯授权的第三方获取本软件或与本软件名称相同的安装程序，腾讯无法保证该软件能够正常使用，并对因此给您造成的损失不予负责。</div>
+					<div class="eula_paragraph">
+						<div>四、【软件的安装与卸载】</div>
+						<div>4.1 腾讯可能为不同的终端设备开发了不同的软件版本，您应当根据实际情况选择下载合适的版本进行安装，且您不得将本软件安装在未经腾讯明示许可的其他终端设备上。由于您未正确安装合适的软件版本所带来的风险及损失，腾讯不承担任何责任。</div>
+					</div>
+					<div class="eula_paragraph">4.2 下载安装程序后，您需要按照该程序提示的步骤正确安装。</div>
+					<div class="eula_paragraph">4.3 为提供更加优质、安全的服务，在本软件安装腾讯可能推荐您安装其他软件，您可以选择安装或不安装。</div>
+					<div class="eula_paragraph">4.4 如果您不再需要使用本软件或者需要安装新版软件，可以自行卸载。如果您愿意帮助腾讯改进产品服务，请告知卸载的原因。</div>
+					<div class="eula_paragraph">
+						<div>五、【软件的更新】</div>
+						<div>5.1 为了增进用户体验、完善服务内容，腾讯将不断努力开发新的服务，并为您不时提供软件更新（这些更新可能会采取软件替换、修改、功能强化、版本升级等形式）。</div>
+					</div>
+					<div class="eula_paragraph">5.2 为了改善用户体验，并保证服务的安全性和功能的一致性，腾讯有权不经向您特别通知而对软件进行更新，或者对软件的部分功能效果进行改变或限制。</div>
+					<div class="eula_paragraph">5.3 本软件新版本发布后，旧版本的软件可能无法使用。腾讯不保证旧版本软件继续可用及相应的客户服务，请您随时核对并下载最新版本。</div>
+					<div class="eula_paragraph">
+						<div>六、【用户个人信息保护】</div>
+						<div>6.1 保护用户个人信息是腾讯的一项基本原则。腾讯将按照本协议及《隐私政策》（链接地址：http://www.qq.com/privacy.htm）的规定收集、使用、储存和分享您的个人信息。本协议对个人信息保护规定的内容与上述《隐私政策》有相冲突的，及本协议对个人信息保护相关内容未作明确规定的，均应以《隐私政策》的内容为准。</div>
+					</div>
+					<div class="eula_paragraph">6.2 腾讯将会采取合理的措施保护用户的个人信息。除法律法规规定的情形外，未经用户许可腾讯不会向第三方公开、透露用户个人信息。腾讯对相关信息采用专业加密存储与传输方式，保障用户个人信息的安全。</div>
+					<div class="eula_paragraph">6.3 腾讯将运用各种安全技术和程序建立完善的管理制度来保护您的个人信息，以免遭受未经授权的访问、使用或披露。</div>
+					<div class="eula_paragraph">6.4 您在使用本服务的过程中，可能需要使用一些必要的信息，例如，为向您提供服务时进行用户身份识别，需要您填写QQ号码等信息。若国家法律法规或政策有特殊规定的，您需要提供真实的身份信息。若您不提供或提供的信息不完整，则无法使用本服务或在使用过程中受到限制。</div>
+					<div class="eula_paragraph">6.5 一般情况下，您可随时浏览、修改自己提交的信息，但出于安全性和身份识别的考虑，您可能无法修改注册时提供的初始注册信息及其他验证信息。</div>
+					<div class="eula_paragraph">6.6 未经您的同意，腾讯不会向腾讯以外的任何公司、组织和个人披露您的个人信息，但法律法规另有规定的除外。</div>
+					<div class="eula_paragraph">6.7 腾讯非常重视对未成年人个人信息的保护。若您是18周岁以下的未成年人，在使用腾讯的服务前，应事先取得您家长或法定监护人的书面同意。</div>
+					<div class="eula_paragraph">
+						<div>七、【主权利义务条款】</div>
+						<div>7.1 【帐号使用规范】</div>
+					</div>
+					<div class="eula_paragraph">7.1.1 腾讯网游加速器可通过QQ号码登录。关于您使用帐号的具体规则，请遵守《QQ号码规则》及相关帐号使用协议以及腾讯为此发布的专项规则。</div>
+					<div class="eula_paragraph">7.1.2 用户有责任妥善保管注册帐户信息及帐户密码的安全，用户需要对注册帐户以及密码下的行为承担法律责任。用户同意在任何情况下不向他人透露帐户及密码信息。在您怀疑他人在使用您的帐号时，您应立即通知腾讯公司。</div>
+					<div class="eula_paragraph">7.2 【用户注意事项】</div>
+					<div class="eula_paragraph">7.2.1 您理解并同意：为了向您提供有效的服务，本软件会利用您终端的处理器和带宽等资源。本软件使用过程中可能产生数据流量的费用，用户需自行向运营商了解相关资费信息，并自行承担相关费用。腾讯不保证可以对所有第三方游戏等产品提供加速等本协议约定的服务，腾讯有权根据产品策略等原因决定支持的第三方游戏或软件的类型、数量等，您在此表示同意并承担由此产生的法律责任。</div>
+					<div class="eula_paragraph">7.2.2 您在使用本软件某一特定服务时，该服务可能会另有单独的协议、相关业务规则等（以下统称为“单独协议”），您在使用该项服务前请阅读并同意相关的单独协议。</div>
+					<div class="eula_paragraph">7.2.3您理解并同意腾讯将会尽其商业上的合理努力保障您在本软件及服务中的数据存储安全，但是，腾讯并不能就此提供完全保证，包括但不限于以下情形：</div>
+					<div class="eula_paragraph">7.2.3.1 腾讯不对您在本软件及服务中相关数据的删除或储存失败负责；</div>
+					<div class="eula_paragraph">7.2.3.2 腾讯有权根据实际情况自行决定单个用户在本软件及服务中数据的最长储存期限，并在服务器上为其分配数据最大存储空间等。您可根据自己的需要自行备份本软件及服务中的相关数据；</div>
+					<div class="eula_paragraph">7.2.3.3 如果您停止使用本软件及服务或服务被终止或取消，腾讯可以从服务器上永久地删除您的数据。服务停止、终止或取消后，腾讯没有义务向您返还任何数据。</div>
+					<div class="eula_paragraph">您充分了解并同意，您可使用本软件及服务上传或发布属于您原创或您有权发表的观点看法、数据、文字、信息、用户名、图片、照片、个人信息、音频、视频文件、链接等信息内容。您必须保证，您拥有你所上传或发布信息内容的著作权或已获得合法授权，您使用本软件及服务的任何行为未侵犯任何第三方之合法权益。您必须为自己登录帐号下的一切上述所有行为负责并自行承担责任。您应对本软件及服务中的内容自行加以判断，并须自行承担如下来自腾讯不可掌控的风险内容，包括但不限于：</div>
+					<div class="eula_paragraph">7.2.4.1由于不可抗拒因素可能引起的个人信息丢失、泄漏等风险；</div>
+					<div class="eula_paragraph">7.2.4.2 用户必须选择与是电脑设备相匹配的软件版本，否则，由于软件与设备不相匹配所导致的任何问题或损害，均由用户自行承担；</div>
+					<div class="eula_paragraph">7.2.4.3 用户在使用本软件访问第三方产品时，因第三方产品及相关内容所可能导致的风险，由用户自行承担；</div>
+					<div class="eula_paragraph">7.2.4.4 由于网络信号不稳定、网络带宽小等原因，所引起的登录失败、资料同步不完整、页面打开速度慢等风险；</div>
+					<div class="eula_paragraph">7.2.4.5用户发布的内容被他人转发、分享，因此等传播可能带来的风险和责任。</div>
+					<div class="eula_paragraph">7.3 【收费服务】</div>
+					<div class="eula_paragraph">7.3.腾讯将根据经营的需要，向用户提供与本服务相关的免费或收费服务腾讯有权将本服务的部分或全部调整为收费服务，并有权制定收费标准、收费方式等规则。您可以接受或拒绝收费服务，如果您选择使用收费服务，需要支付费用；如果您拒绝支付费用腾讯有权停止向您提供服务，并有权向您主张违约责任。</div>
+					<div class="eula_paragraph">7.3.2您所享有的本服务的具体内容可能会因为级别、是否年费、开通期限、您选择的具体服务类别等因素而有不同，通常高级别、开通年费服务、开通期限较长等情况下，您将会享有更多的服务，具体以相关服务页面公布、实际提供的内容为准。</div>
+					<div class="eula_paragraph">7.3.3您理解并同意：您通腾讯指定渠道开通本服务后，可能会由于您使用的软件版本、设备、操作系统等不同以及其他第三方原因等导致您实际可使用的具体服务有差别，由此可能给您带来的不便，您表示理解，并不会因此腾讯提出任何主张或追腾讯的任何责任。</div>
+					<div class="eula_paragraph">7.3.4您理解并同意腾讯有权对本服务进行调整，并可能会对您已享有或正在享有的权益造成影响，您同意按照调整后的内容进行使用，且不要腾讯承担任何责任。</div>
+					<div class="eula_paragraph">7.4【服务开通】</div>
+					<div class="eula_paragraph">7.4.1您应该通腾讯指定的包括但不限于银行卡、微信支付、Q币等现有方式或今腾讯指定方式，在依约支付一定费用后开通本服务。本服务开通之后，不可退订，您已支付的费用将不能退还。</div>
+					<div class="eula_paragraph">7.4.2本服务开通后，您不可将本服务向第三方转让。</div>
+					<div class="eula_paragraph">7.4.3您不得通过以下任何方式为自己或他人开通本服务：</div>
+					<div class="eula_paragraph_sub">（1）以营利、经营等非个人使用的目的为自己或他人开通本服务；</div>
+					<div class="eula_paragraph_sub">（2）通过任何机器人软件、蜘蛛软件、爬虫软件、刷屏软件等任何程序、软件方式为自己或他人开通本服务；</div>
+					<div class="eula_paragraph_sub">（3）通过任何不正当手段或以违反诚实信用原则的方式为自己或他人开通本服务；</div>
+					<div class="eula_paragraph_sub">（4）通过腾讯指定的方式为自己或他人开通本服务；</div>
+					<div class="eula_paragraph_sub">（5）通过侵腾讯或他人合法权益的方式为自己或他人开通本服务；</div>
+					<div class="eula_paragraph_sub">（6）通过其他违反相关法律、行政法规、国家政策等的方式为自己或他人开通本服务。</div>
+					<div class="eula_paragraph">7.4.腾讯有权对您的交易及使用行为进行独立判断，如腾讯判断认为可能存在风险的腾讯有权拒绝您通过当前方式开通本服务或拒绝您开通本服务。</div>
+					<div class="eula_paragraph">7.5【服务期限】</div>
+					<div class="eula_paragraph">7.5.1本服务的服务期限以您自行选择并支付相应服务费用的期限为准，您也可以登陆本服务的相应页面查询。</div>
+					<div class="eula_paragraph">7.5.2本服务的服务开通最高期限可能会受到一定限制，具体腾讯制定的的规则为准。</div>
+					<div class="eula_paragraph">7.6 【广告】</div>
+					<div class="eula_paragraph">您理解并同意，在向您提供服务的过程中腾讯有权向您推送、展示广告或推广信息。您知晓该广告或推广信息腾讯无关。</div>
+					<div class="eula_paragraph">7.7 【第三方产品和服务】</div>
+					<div class="eula_paragraph">7.7.1 您在使用本软件中第三方提供的产品或服务时，除遵守本协议约定外，还应遵守第三方的用户协议腾讯和第三方对可能出现的纠纷在法律规定和约定的范围内各自承担责任。</div>
+					<div class="eula_paragraph">7.7.2 因用户使用本软件或要腾讯提供特定服务时，本软件可能会调用第三方系统或者通过第三方支持用户的使用或访问，使用或访问的结果由该第三方提供腾讯不保证通过第三方系统提供的服务及内容或支持实现的结果的安全性、准确性、有效性及其他不确定的风险，由此若引发的任何争议及损害，腾讯无关腾讯不承担任何责任。</div>
+					<div class="eula_paragraph">
+						<div>八、【用户行为规范】</div>
+						<div>8.1 【信息内容规范】</div>
+					</div>
+					<div class="eula_paragraph">您在使用本服务时不得利用本服务从事以下行为，包括但不限于：</div>
+					<div class="eula_paragraph">8.1.1 发布、传送、传播、储存违反国家法律、危害国家安全统一、社会稳定、公序良俗、社会公德以及侮辱、诽谤、淫秽、暴力的内容；</div>
+					<div class="eula_paragraph">8.1.2 发布、传送、传播、储存侵害他人名誉权、肖像权、知识产权、商业秘密等合法权利的内容；</div>
+					<div class="eula_paragraph">8.1.3 虚构事实、隐瞒真相以误导、欺骗他人；</div>
+					<div class="eula_paragraph">8.1.4 发表、传送、传播广告信息及垃圾信息；</div>
+					<div class="eula_paragraph">8.1.5 从事其他违反法律法规、政策及公序良俗、社会公德等的行为。</div>
+					<div class="eula_paragraph">8.2 【软件使用规范】</div>
+					<div class="eula_paragraph">除非法律允许腾讯书面许可，您不得从事下列行为：</div>
+					<div class="eula_paragraph">8.2.1 删除本软件及其副本上关于著作权的信息；</div>
+					<div class="eula_paragraph">8.2.2 对本软件进行反向工程、反向汇编、反向编译，或者以其他方式尝试发现本软件的源代码；</div>
+					<div class="eula_paragraph">8.2.3 腾讯拥有知识产权的内容进行使用、出租、出借、复制、修改、链接、转载、汇编、发表、出版、建立镜像站点等；</div>
+					<div class="eula_paragraph">8.2.4 对本软件或者本软件运行过程中释放到任何终端内存中的数据、软件运行过程中客户端与服务器端的交互数据，以及本软件运行所必需的系统数据，进行复制、修改、增加、删除、挂接运行或创作任何衍生作品，形式包括但不限于使用插件、外挂或腾讯经授权的第三方工具/服务接入本软件和相关系统；</div>
+					<div class="eula_paragraph">8.2.5 通过修改或伪造软件运行中的指令、数据，增加、删减、变动软件的功能或运行效果，或者将用于上述用途的软件、方法进行运营或向公众传播，无论这些行为是否为商业目的；</div>
+					<div class="eula_paragraph">8.2.6 通过腾讯开发、授权的第三方软件、插件、外挂、系统，登录或使腾讯软件及服务，或制作、发布、传播上述工具；</div>
+					<div class="eula_paragraph">8.2.7 自行或者授权他人、第三方软件对本软件及其组件、模块、数据进行干扰；</div>
+					<div class="eula_paragraph">8.2.8 通过任何手段腾讯提供的服务用于本协议之外的目的；</div>
+					<div class="eula_paragraph">8.2.9 其他未腾讯明示授权的行为；</div>
+					<div class="eula_paragraph">8.2.10 其他违反法律法规、政策的行为。</div>
+					<div class="eula_paragraph">8.3 【对自己行为负责】</div>
+					<div class="eula_paragraph">您充分了解并同意，您必须为自己使用本软件及服务下的一切行为负责腾讯不对您使用本软件及服务的结果的安全性、正确性、及时性、完整性、实用性等作出任何保证，您必须对您使用本软件及服务所查询的结果自行加以判断，并承担因使用内容而引起的所有风险腾讯无法且不会对因前述风险而导致的任何损失或损害承担责任。</div>
+					<div class="eula_paragraph">8.4【违约处理】</div>
+					<div class="eula_paragraph">8.4.1您理解并同意，</div>
+					<div class="eula_paragraph">8.4.2您理解并同意，因您违反本协议或相关服务条款的规定，导致或产生第三方主张的任何索赔、要求或损失，您应当独立承担责任腾讯因此遭受损失的，您也应当一并赔偿。</div>
+					<div class="eula_paragraph">
+						<div>九、【知识产权声明】</div>
+						<div>9.1腾讯是本软件的知识产权权利人。本软件的一切著作权、商标权、专利权、商业秘密等知识产权，以及与本软件相关的所有信息内容（包括但不限于文字、图片、音频、视频、图表、界面设计、版面框架、有关数据或电子文档等）均受中华人民共和国法律法规和相应的国际条约保护腾讯享有上述知识产权，但相关权利人依照法律规定应享有的权利除外。</div>
+					</div>
+					<div class="eula_paragraph">9.2 未腾讯或相关权利人书面同意，您不得为任何商业或非商业目的自行或许可任何第三方实施、利用、转让上述知识产权。</div>
+					<div class="eula_paragraph">
+						<div>十、【终端安全责任】</div>
+						<div>10.1 您理解并同意，本软件同大多数互联网软件一样，可能会受多种因素影响（包括但不限于用户原因、网络服务质量、社会环境等）；也可能会受各种安全问题的侵扰（包括但不限于他人非法利用用户资料，进行现实中的骚扰；用户下载安装的其他软件或访问的其他网站中可能含有病毒、木马程序或其他恶意程序，威胁您的移动终端设备和数据的安全，继而影响本软件的正常使用等）。因此，您应加强信息安全及个人信息的保护意识，注意密码保护，以免遭受损失。</div>
+					</div>
+					<div class="eula_paragraph">10.2 您不得制作、发布、使用、传播用于窃取QQ号码及他人个人信息、财产的恶意程序。</div>
+					<div class="eula_paragraph">10.3 维护软件安全与正常使用腾讯和您的共同责任腾讯将按照行业标准合理审慎地采取必要技术措施保护您移动终端设备的信息和数据安全，但是您承认和同腾讯不能就此提供任何保证。</div>
+					<div class="eula_paragraph">
+						<div>十一、【第三方软件或技术】</div>
+						<div>11.1 本软件可能会使用第三方软件或技术（包括本软件可能使用的开源代码和公共领域代码等，下同），这种使用已经获得合法授权。</div>
+					</div>
+					<div class="eula_paragraph">11.2 本软件如果使用了第三方的软件或技术，腾讯将按照相关法规或约定，对相关的协议或其他文件，可能通过本协议附件、在本软件安装包特定文件夹中打包等形式进行展示，它们可能会以“软件使用许可协议”、“授权协议”、“开源代码许可证”或其他形式来表达。前述通过各种形式展现的相关协议或其他文件，均是本协议不可分割的组成部分，与本协议具有同等的法律效力，您应当遵守这些要求。如果您没有遵守这些要求，该第三方或者国家机关可能会对您提起诉讼、罚款或采取其他制裁措施，并要腾讯给予协助，您应当自行承担法律责任。</div>
+					<div class="eula_paragraph">11.3 如因本软件使用的第三方软件或技术引发的任何纠纷，应由该第三方负责解决腾讯不承担任何责任腾讯不对第三方软件或技术提供客服支持，若您需要获取支持，请与第三方联系。</div>
+					<div class="eula_paragraph">
+						<div>十二、【其他】</div>
+						<div>12.1 腾讯有权在必要时修改本协议条款。您可以在本软件的最新版本中查阅相关协议条款。本协议条款变更后，如果您继续使用本软件，即视为您已接受修改后的协议。如果您不接受修改后的协议，应当停止使用本软件。</div>
+					</div>
+					<div class="eula_paragraph">12.2 本协议签订地为中华人民共和国广东省深圳市南山区。</div>
+					<div class="eula_paragraph">12.3 本协议的成立、生效、履行、解释及纠纷解决，适用中华人民共和国大陆地区法律（不包括冲突法）。</div>
+					<div class="eula_paragraph">12.4 若您腾讯之间发生任何纠纷或争议，首先应友好协商解决；协商不成的，您同意将纠纷或争议提交本协议签订地有管辖权的人民法院管辖。</div>
+					<div class="eula_paragraph">12.5 腾讯对不可抗力导致的不能提供服务不承担任何法律责任。不可抗力情形包括但不限于：自然灾害、法律法规或政府行为的变更、境内外基础电信运营商的故障、计算机或互联网技术缺陷、计算机病毒、黑客攻击等。发生不可抗力后腾讯将按日折算向您退还未实际使用的服务费。</div>
+					<div class="eula_paragraph">12.6 本协议所有条款的标题仅为阅读方便，本身并无实际涵义，不能作为本协议涵义解释的依据。</div>
+					<div class="eula_paragraph">12.7 本协议条款无论因何种原因部分无效或不可执行，其余条款仍有效，对双方具有约束力。（正文完）</div>
+					<div class="eula_paragraph">腾讯公司</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

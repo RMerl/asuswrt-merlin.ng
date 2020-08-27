@@ -2,11 +2,40 @@
 #include<stdlib.h>
 #include"data.h"
 
+/* smartsync_api/api.c */
+extern int s_delete(char *herf,int index, char *delete_ids, int type);
+extern int s_browse_to_tree(char *parenthref, char *id, Server_TreeNode *node, int index,int type);
+extern int s_upload_file(char *filename,char *serverpath,int flag,int index,int type);
+extern int s_download(CloudFile *filetmp, char *fullname,char *filename,int index,int type);
+extern int s_create_folder(char *localpath,char *foldername,char *newfolderid, int index, int i,int type);
+extern int s_move(char *oldname,char *newname,int index,int is_changed_time,char *newname_r,int type);
+extern int s_browse_to_tree(char *parenthref, char *id, Server_TreeNode *node, int index,int type);
+/* smartsync_api/google.c */
+extern int upload_serverlist_(int index,char *fullname_t,char *serverpath,char *newfolderid);
+extern int parse_create_folder(char *filename);
+extern char *cJSON_parse_name(cJSON *json);
+extern time_t cJSON_printf_mtime(cJSON *json);
+extern int  cJSON_printf_account_info(cJSON *json);
+extern int newer_file(char *id, char *localpath,int index,int is_init,int rule);
+extern void show(queue_entry_t pTemp);
+extern time_t api_getmtime(char *id, char *phref,cJSON *(*cmd_data)(char *filename));
+extern int api_accout_info();
+extern int api_refresh_token();
+
+/* this file */
+int deal_dragfolder_to_socketlist(char *dir,int index);
+int sync_local_with_server(Server_TreeNode *treenode,int(* sync_fun)(Server_TreeNode *,Browse*,Local*,int),int index);
+int add_all_download_only_dragfolder_socket_list(const char *dir,int index);
+#ifdef NVRAM_
+int write_to_nvram(char *contents,char *nv_name);
+#endif
+
+
 #define MYPORT 3573
 #define INOTIFY_PORT 3678
 #define BACKLOG 100 /* max listen num*/
 int no_config;
-extern int exit_loop = 0;
+int exit_loop = 0;	//external use
 int stop_progress;
 char username[256];
 char password[256];

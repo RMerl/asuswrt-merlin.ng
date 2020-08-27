@@ -3,7 +3,7 @@ include ../version.mak
 #RTSRCBASE=../../..
 PJBASE=../pjproject-1.12
 RTSHAREDBASE=$(TOP)/shared
-RTNVARMBASE=$(TOP)/nvram$(BCMEX)$(EX7)
+RTNVARMBASE=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 UMEMBASE=../umem-1.0.1
 UDTBASE=../udt
 LIB_UDT=udt
@@ -107,7 +107,7 @@ android-lib: main.cpp $(OBJS)
 ifeq ($(wildcard ./*.cpp),)
 #For prebuild on router platform. Don't remove it.
 linux-lib:
-	-cp -f $(TOP)/asusnatnl/natnl/prebuild$(BCMEX)$(EXHND)/libasusnatnl.so libasusnatnl.so
+	-cp -f $(TOP)/asusnatnl/natnl/prebuild/$(BUILD_NAME)/libasusnatnl.so libasusnatnl.so
 else
 linux-lib: main.cpp $(OBJS)
 	$(CXX) -shared -o libasusnatnl.so $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(OBJS) $(LDLIBS)

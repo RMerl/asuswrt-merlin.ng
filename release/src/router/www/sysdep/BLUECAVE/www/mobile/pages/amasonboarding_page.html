@@ -1,0 +1,99 @@
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">AiMesh</div>
+			<div class="titleSub"><#AiMesh_Node#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div id="title" class="pageDesc onboarding_unit">
+			<#AiMesh_Node_AddConfirm#>
+		</div>
+		<div class="aimesh_icon onboarding"></div>
+		<div class="aimesh_info"></div>
+		<div style="clear:both;"></div>
+
+		<div id="result" class="pageDesc onboarding_unit"></div>
+
+		<div id="weak" class="pageDesc text_yellow_italic onboarding_unit">
+			<#AiMesh_info_weak#>
+			<br>
+			<#AiMesh_FindNode_Not_advA4#>
+		</div>
+
+		<div id="loading" class="onboarding_unit">
+			<div class="loading-container">
+				<div class="loadingAnimation"></div>
+				<div class="processText">100 %</div>
+			</div>
+		</div>
+
+		<div id="wpa3_hint" class="pageDesc onboarding_unit">
+			<#AiMesh_confirm_msg11#>
+			<br>
+			<#AiMesh_confirm_msg12#>
+		</div>
+
+		<!-- Action Button -->
+		<div id="controlBtn_apply" class="onboarding_unit">
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick='goTo.amasearch();'><#AiMesh_Choose_Another_Node#></div>
+				<div class="desktop_applyBtn" onclick='apply.amasonboarding();'><#CTL_Add_enrollee#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr style="height:102px;text-align:center">
+						<td class="mobileAbort" style="width:50%;" onclick='goTo.amasearch();'>
+							<div class="mobile_abortBtn"><#AiMesh_Choose_Another_Node#></div>
+						</td>
+						<td class="mobileApply" onclick='apply.amasonboarding();'>
+							<div class="mobile_applyBtn"><#CTL_Add_enrollee#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+		<div id="controlBtn_result" class="onboarding_unit">
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
+				<div class="desktop_applyBtn resultBtn" onclick='goTo.amasearch();'><#AiMesh_Choose_Another_Node#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr style="height:102px;text-align:center">
+						<td class="mobileAbort" style="width:50%;" onclick='abort.amasbundle();'>
+							<div class="mobile_abortBtn"><#CTL_finished#></div>
+						</td>
+						<td class="mobileApply" onclick='goTo.amasearch();'>
+							<div class="mobile_applyBtn resultBtn"><#AiMesh_Choose_Another_Node#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		
+	</div>
+</div>
+<div class='footerPadding'></div>

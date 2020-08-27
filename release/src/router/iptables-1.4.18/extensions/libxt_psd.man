@@ -1,0 +1,19 @@
+.PP
+Attempt to detect TCP and UDP port scans. This match was derived from
+Solar Designer's scanlogd.
+.TP
+\fB\-\-psd\-weight\-threshold\fP \fIthreshold\fP
+Total weight of the latest TCP/UDP packets with different
+destination ports coming from the same host to be treated as port
+scan sequence.
+.TP
+\fB\-\-psd\-delay\-threshold\fP \fIdelay\fP
+Delay (in hundredths of second) for the packets with different
+destination ports coming from the same host to be treated as
+possible port scan subsequence.
+.TP
+\fB\-\-psd\-lo\-ports\-weight\fP \fIweight\fP
+Weight of the packet with privileged (<=1024) destination port.
+.TP
+\fB\-\-psd\-hi\-ports\-weight\fP \fIweight\fP
+Weight of the packet with non-priviliged destination port.

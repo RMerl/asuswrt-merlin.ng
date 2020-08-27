@@ -60,7 +60,7 @@ SUBSYSTEM == misc, DEVICENAME ~~ ^(tun|tap)$, DEVPATH is set, ACTION == add {
 }
 
 SUBSYSTEM == bluetooth, DEVICENAME == hci0, ACTION == add {
-	exec sh -c "nvram get x_Setting | grep -q 1 || start_bluetooth_service" ;
+	exec sh -c "touch /tmp/plug_bluetooth; nvram get x_Setting | grep -q 1 || start_bluetooth_service" ;
 }
 
 SUBSYSTEM == dump, ACTION == add {

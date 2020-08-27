@@ -147,6 +147,8 @@ extern int InitPeer(
 
 #endif
 
+extern int util_copy_str(char* src, char** dst);
+extern void GetNatCfg(struct natnl_config* cfg);
 extern int DeletePeer();
 extern int nat_sdk_deinit();
 extern int nat_sdk_init(int *ue, int do_update_profile);

@@ -23,6 +23,7 @@
 #include <sys/vfs.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 
 #include <shared.h>
 

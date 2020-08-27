@@ -23,6 +23,20 @@
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<style>
+.MainContent{
+	background-color: #4D595D;
+	width: 99%;
+	-webkit-border-radius: 3px;
+	-moz-border-radius: 3px;
+	border-radius:3px;
+}
+
+.nohover:hover{
+	background-color: #293438;
+	*background-color: #293438;
+}
+</style>
 <script>
 window.onresize = function() {
 	if(document.getElementById("folderTree_panel").style.display == "block") {
@@ -30,8 +44,25 @@ window.onresize = function() {
 	}
 } 
 
+
 function initial(){
-	show_menu();
+
+	if(re_mode == "1"){
+		$("#FormTitle").addClass("perNode_MainContent");
+		$("#returnBtn").addClass("perNode_returnBtn");
+		$("#apply_btn").addClass("perNode_apply_gen");
+		show_loading_obj();
+	}
+	else{
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("FormTitle MainContent");
+		$("#returnBtn").addClass("returnBtn");
+		$("#apply_btn").addClass("apply_gen");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	//	https://www.asus.com/support/FAQ/1004458
 	httpApi.faqURL("1011283", function(url){document.getElementById("faq").href=url;});
 	httpApi.faqURL("1004458", function(url){document.getElementById("faq2").href=url;});
@@ -124,8 +155,9 @@ function show_partition(){
 			}
 		}
 
-		if(mounted_partition == 0)
-			htmlcode += '<tr height="300px"><td colspan="2"><span class="app_name" style="line-height:100%"><#no_usb_found#></span></td></tr>\n';
+		if(mounted_partition == 0){
+				htmlcode += '<tr height="300px"><td colspan="2" class="nohover"><span class="app_name" style="line-height:100%"><#no_usb_found#></span></td></tr>\n';
+		}
 
 		document.getElementById("partition_div").innerHTML = htmlcode;
 	});	
@@ -215,10 +247,9 @@ function applyRule(){
 <input type="hidden" name="timemachine_enable" value="<% nvram_get("timemachine_enable"); %>">
 <input type="hidden" name="tm_device_name" value="<% nvram_get("tm_device_name"); %>">
 
-<table class="content" align="center" cellpadding="0" cellspacing="0">
+<table id="content_table" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>
-	
 	<!--=====Beginning of Main Menu=====-->
 	<td valign="top" width="202">
 	  <div id="mainMenu"></div>
@@ -228,112 +259,99 @@ function applyRule(){
 	<td valign="top">
 	<div id="tabMenu" class="submenuBlock"></div>
 		<!--===================================Beginning of Main Content===========================================-->
-	<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-	<tr>
-		<td align="left" valign="top">
-	  <table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle" style="-webkit-border-radius: 3px;-moz-border-radius: 3px;border-radius:3px;">
-		<tbody>
-		<tr>
-			<td bgcolor="#4D595D" valign="top" height="680px">
-				<div>&nbsp;</div>
-				<div style="width:730px">
-					<table width="730px">
+		<div id="FormTitle" style="display: none;">
+			<table  border="0" cellpadding="5" cellspacing="0">
+				<tbody>
+				<tr>
+					<td>
+					<div style="width: 99%; margin-top: 30px; margin-bottom: 5px;">
+						<span class="formfonttitle"><#TimeMach#></span>
+						<span id="returnBtn">
+							<img onclick="go_setting('/APP_Installation.asp')"  title="Back to USB Extension" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+						</span>
+					</div>
+					<div id="splitLine" class="splitLine"></div>
+					<div class="formfontdesc" style="line-height:20px;font-style:italic;font-size: 14px; margin-top: 10px;">
+						<table>
+							<tr>
+								<td>
+									<img src="/images/New_ui/USBExt/time_machine_banner.png">
+								</td>
+								<td>
+									1. <#TimeMach_enable#><br>
+									2. <#TimeMach_target#> <br>
+									3. <#TimeMach_usage_limit#><br>
+									4. <#TimeMach_backup#> ( <a id="faq2" href="" target="_blank" style="text-decoration:underline;"><#TimeMach_AppleURL#></a> )<br>
+									5. <a id="faq" href="" target="_blank" style="text-decoration:underline;"><#TimeMach_FAQ#></a><br>
+									<span style="color:#FC0">
+										* <#TimeMach_recommand1#> <br>
+										* <#TimeMach_recommand2#> <br>
+										* <#TimeMach_recommand3#>
+									</span>
+								</td>
+							</tr>
+						</table>
+					</div>
+
+					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:8px">
+						<thead>
 						<tr>
-							<td align="left">
-								<span class="formfonttitle"><#TimeMach#></span>
+							<td colspan="2"><#t2BC#></td>
+						</tr>
+						</thead>
+						<tr>
+							<th><#TimeMach_enable#></th>
+							<td>
+								<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_timemachine_enable"></div>
+								<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+								<script type="text/javascript">
+									$('#radio_timemachine_enable').iphoneSwitch('<% nvram_get("timemachine_enable"); %>',
+										 function() {
+											document.form.timemachine_enable.value = "1";
+											$("#backupPath_tr").fadeIn(500);
+											$("#volSize_tr").fadeIn(500);
+										 },
+										 function() {
+											document.form.timemachine_enable.value = "0";
+											$("#backupPath_tr").fadeOut(300);
+											$("#volSize_tr").fadeOut(300);
+										 }
+									);
+								</script>
+								</div>
+
 							</td>
-							<td align="right">
-								<img onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;position:absolute;margin-left:-20px;margin-top:-30px;" title="Back to USB Extension" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+						</tr>
+						<tr id="backupPath_tr">
+							<th><#TimeMach_backuppath#></a></th>
+							<td>
+								<input class="button_gen" onclick="selPartition()" type="button" value="<#Select_btn#>"/>
+								<span id="tmPath" style="font-family: Lucida Console;"></span>
+							</td>
+						</tr>
+						<tr id="volSize_tr">
+							<th><#TimeMach_vol_size#></a></th>
+							<td>
+								<input id="tm_vol_size" name="tm_vol_size" maxlength="5" class="input_6_table" type="text" maxLength="8" value="<% nvram_get("tm_vol_size"); %>" onKeyPress="return validator.isNumber(this,event);" placeholder="0" autocorrect="off" autocapitalize="off"/> GB (0: <#Limitless#>)
+								&nbsp;<span id="maxVolSize"></span>
 							</td>
 						</tr>
 					</table>
-				</div>
-				<div style="margin:5px;" class="splitLine"></div>
-				<div class="formfontdesc" style="line-height:20px;font-style:italic;font-size: 14px;">
-					<table>
-						<tr>
-							<td>
-								<img src="/images/New_ui/USBExt/time_machine_banner.png">
-							</td>
-							<td>
-								1. <#TimeMach_enable#><br>
-								2. <#TimeMach_target#> <br>
-								3. <#TimeMach_usage_limit#><br>
-								4. <#TimeMach_backup#> ( <a id="faq2" href="" target="_blank" style="text-decoration:underline;"><#TimeMach_AppleURL#></a> )<br>								
-								5. <a id="faq" href="" target="_blank" style="text-decoration:underline;"><#TimeMach_FAQ#></a><br>
-								<span style="color:#FC0">
-									* <#TimeMach_recommand1#> <br>
-									* <#TimeMach_recommand2#> <br>
-									* <#TimeMach_recommand3#>
-								</span>
-							</td>
-						</tr>
-					</table>
-				</div>			  
 
-			  <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="margin-top:8px">
-					<thead>
-					<tr>
-						<td colspan="2"><#t2BC#></td>
-					</tr>
-					</thead>							
-
-					<tr>
-						<th><#TimeMach_enable#></th>
-						<td>
-							<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_timemachine_enable"></div>
-							<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
-							<script type="text/javascript">
-								$('#radio_timemachine_enable').iphoneSwitch('<% nvram_get("timemachine_enable"); %>', 
-									 function() {
-										document.form.timemachine_enable.value = "1";
-										$("#backupPath_tr").fadeIn(500);
-										$("#volSize_tr").fadeIn(500);
-									 },
-									 function() {
-										document.form.timemachine_enable.value = "0";
-										$("#backupPath_tr").fadeOut(300);
-										$("#volSize_tr").fadeOut(300);
-									 }
-								);
-							</script>			
-							</div>	
-
-						</td>
-					</tr>
-
-					<tr id="backupPath_tr">
-						<th><#TimeMach_backuppath#></a></th>
-						<td>
-							<input class="button_gen" onclick="selPartition()" type="button" value="<#Select_btn#>"/>
-							<span id="tmPath" style="font-family: Lucida Console;"></span>
-		   			</td>
-					</tr>
-					<tr id="volSize_tr">
-						<th><#TimeMach_vol_size#></a></th>
-						<td>
-							<input id="tm_vol_size" name="tm_vol_size" maxlength="5" class="input_6_table" type="text" maxLength="8" value="<% nvram_get("tm_vol_size"); %>" onKeyPress="return validator.isNumber(this,event);" placeholder="0" autocorrect="off" autocapitalize="off"/> GB (0: <#Limitless#>)
-							&nbsp;<span id="maxVolSize"></span>
-						</td>
-					</tr>
-				</table>	
-	
-				<div class="apply_gen">
-					<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
-				</div>
-			</td>
-		</tr>
-		</tbody>	
-	  </table>
-		</td>
-	</tr>
-	</table>				
+					<div id="apply_btn">
+						<input class="button_gen" onclick="applyRule()" type="button" value="<#CTL_apply#>"/>
+					</div>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+		</div>
 			<!--===================================End of Main Content===========================================-->
 	</td>
   <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
-</form>					
+</form>
 
 <div id="footer"></div>
 </body>

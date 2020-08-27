@@ -2,7 +2,14 @@
 #define __WS_API_H__
 
 #define TRANSFER_TYPE		"https://"
+
+#ifdef RTCONFIG_ACCOUNT_LINKING
+//- for test
+#define SERVER 				"aae-spweb.asuscomm.com"
+#else
 #define SERVER 				"aae-spweb-vx.asuscloud.com"
+#endif
+
 //#define SERVER 				"54.179.149.151"
 #define LOGIN_SERVER 		"aae-sgweb001-1.asuscomm.com"
 #define GET_SERVICE_AREA	"/aae/getservicearea"

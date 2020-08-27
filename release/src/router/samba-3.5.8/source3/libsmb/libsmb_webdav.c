@@ -2246,6 +2246,12 @@ smbc_list_fn(const char *name,
 	}
 }
 
+
+extern int net_share_enum_rpc(
+		struct cli_state *cli,
+		void (*fn)(const char *name, uint32 type, const char *comment, void *state),
+		void *state);
+
 SMBCFILE *smbc_cli_opendir2(const char *fname)
 {
 fprintf(stderr, "enter smbc_cli_opendir2..with fname=[%s]\n", fname);

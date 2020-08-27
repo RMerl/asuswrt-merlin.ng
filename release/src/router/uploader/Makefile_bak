@@ -1,0 +1,146 @@
+
+# pc - system lib
+#CFLAGS = -I/usr/include -I/usr/include/libxml2/ -I/usr/include/libical -I/usr/include/openssl -I/usr/include/json/ -I.
+
+
+# pc - 3-party lib
+#CFLAGS = -I/home/markcool/asusnatnl/apps/aaews/include/libxml2/ -I/home/markcool/asusnatnl/apps/aaews/include/curl/ -I/home/markcool/asusnatnl/apps/aaews/include/openssl/ -I/home/markcool/asusnatnl/apps/aaews/include/json-c/ -I/home/markcool/asusnatnl/apps/aaews/include
+
+
+# aicam brick
+#CFLAGS = -I/home/markcool/brick/toolchain_gnueabi-4.4.0_ARMv5TE_20160127/usr/arm-unknown-linux-uclibcgnueabi/sys-include -I/home/markcool/aaews/include/libxml2/ -I/home/markcool/aaews/include/libical -I/home/markcool/aaews/include/openssl -I/home/markcool/aaews/include/json-c/ -I/home/markcool/aaews/include
+
+
+# aicam smart
+#CFLAGS = -I/home/markcool/project/toolchain/rsdk-1.5.5-5281-EB-2.6.30-0.9.30.3-110714/include/ -I/home/markcool/project/asusnatnl/apps/aaews/include/libxml2/ -I/home/markcool/project/asusnatnl/apps/aaews/include/curl/ -I/home/markcool/project/asusnatnl/apps/aaews/include/openssl/ -I/home/markcool/project/asusnatnl/apps/aaews/include/json-c/ -I/home/markcool/project/asusnatnl/apps/aaews/include
+
+
+# PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/markcool/project/asuswrt/release/src-rt-6.x.4708/toolchains/hndtools-arm-linux-2.6.36-uclibc-4.5.3/bin:/home/markcool/project/asuswrt/tools/brcm/hndtools-mipsel-linux/bin:hndtools-mipsel-uclibc/bin:/opt/openwrt-gcc463.arm/bin:/opt/buildroot-gcc463/bin"
+
+
+
+
+# aicam pro
+#CFLAGS = -I/home/markcool/project/toolchain/linaro-multilib-2014.06-gcc4.9/arm-linux-gnueabihf/include/ -I/home/markcool/project/asusnatnl/apps/aaews/include/libxml2/ -I/home/markcool/project/asusnatnl/apps/aaews/include/curl/ -I/home/markcool/project/asusnatnl/apps/aaews/include/openssl/ -I/home/markcool/project/asusnatnl/apps/aaews/include/json-c/ -I/home/markcool/project/asusnatnl/apps/aaews/include
+
+
+
+# -shared -Wl,--whole-archive 
+# CFLAGS += -marm -march=armv6k -mtune=arm1136j-s -mfloat-abi=soft
+
+#CFLAGS += -msoft-float -meb 
+
+include ../common.mak
+include $(TOP)/.config
+
+
+CURL_DIR=$(TOP)/curl-7.21.7
+XML2_DIR=$(TOP)/libxml2
+OPENSSL_DIR=$(TOP)/openssl
+NVRAM_DIR=$(TOP)/nvram$(BCMEX)$(EX7)
+JSON_C_DIR=$(TOP)/json-c
+#SHARED_DIR=$(TOP)/shared
+
+
+ROUTER_LIBS=-lnvram
+#ROUTER_LIBS=-lnvram -lshared
+ROUTER_LDFLAGS=-L$(NVRAM_DIR)
+
+
+
+# CFLAGS += -D_FILE_OFFSET_BITS=64 
+
+CFLAGS += -g
+CFLAGS += -I.
+CFLAGS += -I$(CURL_DIR)/include
+CFLAGS += -I$(OPENSSL_DIR)/include
+CFLAGS += -I$(XML2_DIR)/include
+CFLAGS += -I$(JSON_C_DIR)
+CFLAGS += -I$(NVRAM_DIR)
+#CFLAGS += -I$(SRCBASE)/include
+
+
+LIBS = -lc -lcurl -lxml2 -lssl -lcrypto -ljson-c -lpthread -ldl -lm
+#LIBS = -lcurl -lssl -lcrypto -lxml2 -ljson-c -ldl -pthread -lrt $(ROUTER_LIBS) -lws -lgcc_s
+
+LDFLAGS = -L$(OPENSSL_DIR) -L$(CURL_DIR)/lib/.libs -L$(XML2_DIR)/.libs -L$(JSON_C_DIR)/.libs -L. $(ROUTER_LDFLAGS)
+
+
+#ifeq ($(RTCONFIG_SW_HW_AUTH),y)
+#CFLAGS += -I$(SW_HW_AUTH_DIR) -DSW_HW_AUTH
+#endif
+
+
+#CROSS_CMP = arm-unknown-linux-uclibcgnueabi-
+#CROSS_CMP = arm-linux-gnueabihf-
+#CROSS_CMP = mips-linux-
+#CROSS_CMP = rsdk-linux-
+
+#CC=$(CROSS_CMP)gcc
+#STRIP=$(CROSS_CMP)strip
+
+#LD = mips-linux-ld
+
+
+#ifeq ($(RTCONFIG_BCMARM),y)
+#CFLAGS += -DHAVE_TYPE_FLOAT
+#endif
+
+ifeq ($(RTCONFIG_QTN),y)
+LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client -L
+endif
+
+# aicam - 3-party lib
+# LDFLAGS += -L/home/markcool/project/asusnatnl/apps/aaews/lib
+#-L/home/markcool/project/toolchain/linaro-multilib-2014.06-gcc4.9/arm-linux-gnueabihf/libc/usr/lib/armv6k-linux-gnueabi
+
+#xml: xml.o 
+#	gcc xml.o -o xml $(CFLAGS) 
+
+#xml.o: xml.c
+#	gcc -c xml.c $(CFLAGS) 
+
+#xml: xml.o 
+#	$(CC) $^ -o $@ $(CFLAGS) 
+
+#hello: jsonP.o 
+#	$(CC) $(LDFLAGS)  $^ -o $@ $(CFLAGS) $(LIBS) 
+
+#
+
+
+all: uploader
+	$(STRIP) uploader
+
+#uploader: time_util.o log.o des.o base64encode.o base64decode.o uploader_config.o uploader.o api.o function.o list.o mem_pool.o \
+#		apiTsdbInputNoId.o  toolComposeAuthorizationHeader.o toolCurl.o  
+#		$(CC) -lgcc_s $(LDFLAGS)  $^ -o $@ $(CFLAGS) $(LIBS)
+
+
+#uploader: time_util.o log.o des.o base64encode.o base64decode.o uploader_config.o uploader.o api.o function.o list.o mem_pool.o \
+		apiTsdbInputNoId.o  toolComposeAuthorizationHeader.o toolCurl.o  
+		$(CC) -lgcc_s $(LDFLAGS)  $^ -o $@ $(CFLAGS) $(LIBS)
+
+
+
+#hello: hello.o api.o function.o list.o mem_pool.o
+#	$(CC) $(LDFLAGS)  $^ -o $@ $(CFLAGS) $(LIBS)
+#
+#hello: hello.o api2.o
+#	gcc hello.o -o hello $(CFLAGS) 
+
+#hello.o: hello.c
+#	gcc -c hello.c api2.c $(CFLAGS) 
+
+#api2: api2.o 
+#	gcc api2.o -o api2 $(CFLAGS) 
+
+#api2.o: api2.c
+#	gcc -c api2.c $(CFLAGS) 
+
+
+
+.PHONY: clean
+
+clean: 
+	rm -f *.o

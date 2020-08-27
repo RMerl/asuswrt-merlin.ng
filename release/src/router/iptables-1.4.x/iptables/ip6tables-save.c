@@ -6,7 +6,7 @@
  * This code is distributed under the terms of GNU GPL v2
  */
 #include <getopt.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>

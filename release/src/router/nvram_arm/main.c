@@ -42,6 +42,14 @@
 #define PROTECT_CHAR	'x'
 #define DEFAULT_LOGIN_DATA	"xxxxxxxx"
 
+#ifdef RTCONFIG_JFFS_NVRAM
+#define EXT_NVRAM_SPACE   0x40000
+#else
+#define EXT_NVRAM_SPACE   MAX_NVRAM_SPACE
+#endif
+
+extern int dev_nvram_getall(char *buf, int count);
+
 static int export_mode(char* mode, char* buf_ap, char* buf)
 {
 	const char **conf = NULL, **hold = NULL;
@@ -755,7 +763,7 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-	char *name, *value, buf[MAX_NVRAM_SPACE];
+	char *name, *value, buf[EXT_NVRAM_SPACE];
 	int size;
 
 	/* Skip program name */
@@ -786,14 +794,14 @@ main(int argc, char **argv)
 		} else if (!strcmp(*argv, "save")) {
 			if (*++argv)
 			{
-				nvram_getall(buf, NVRAM_SPACE);
+				nvram_getall(buf, sizeof(buf));
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				char *tmp_dnv = malloc(MAX_NVRAM_SPACE);
+				char *tmp_dnv = malloc(EXT_NVRAM_SPACE);
 				if (!tmp_dnv) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				memset(tmp_dnv, 0, MAX_NVRAM_SPACE);
+				memset(tmp_dnv, 0, sizeof(tmp_dnv));
 				nvram_dec_all(tmp_dnv, buf);
 				nvram_save_new(*argv, tmp_dnv);
 				free(tmp_dnv);
@@ -805,20 +813,21 @@ main(int argc, char **argv)
 			   !strncmp(*argv, "save_rp", 7)) {
 			char *mode = *argv;
 			if (*++argv) {
-				char *tmp_export = malloc(MAX_NVRAM_SPACE);
+				char *tmp_export = malloc(EXT_NVRAM_SPACE);
 				if (!tmp_export) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				memset(tmp_export, 0, MAX_NVRAM_SPACE);
-				nvram_getall(buf, NVRAM_SPACE);
+				memset(tmp_export, 0, sizeof(tmp_export));
+				nvram_getall(buf, sizeof(buf));
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				char *tmp_dnv = malloc(MAX_NVRAM_SPACE);
+				char *tmp_dnv = malloc(EXT_NVRAM_SPACE);
 				if (!tmp_dnv) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
+					free(tmp_export);
 					return 0;
 				}
-				memset(tmp_dnv, 0, MAX_NVRAM_SPACE);
+				memset(tmp_dnv, 0, sizeof(tmp_dnv));
 				nvram_dec_all(tmp_dnv, buf);
 				export_mode(mode, tmp_export, tmp_dnv);
 				free(tmp_dnv);
@@ -831,19 +840,19 @@ main(int argc, char **argv)
 		//Andy Chiu, 2015/06/09
 		} else if (!strncmp(*argv, "fb_save", 7)) {
 			if (*++argv) {
-				char *tmpbuf = malloc(MAX_NVRAM_SPACE);
+				char *tmpbuf = malloc(EXT_NVRAM_SPACE);
 				if (!tmpbuf) {
 					fprintf(stderr, "Can NOT alloc memory!!!");
 					return 0;
 				}
-				nvram_getall(buf, MAX_NVRAM_SPACE);
+				nvram_getall(buf, sizeof(buf));
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-				memset(tmpbuf, 0, MAX_NVRAM_SPACE);
+				memset(tmpbuf, 0, sizeof(tmpbuf));
 				nvram_dec_all(tmpbuf, buf);
 #else
-				memcpy(tmpbuf, buf, MAX_NVRAM_SPACE);
+				memcpy(tmpbuf, buf, EXT_NVRAM_SPACE);
 #endif
-				_secure_conf(tmpbuf, MAX_NVRAM_SPACE);
+				_secure_conf(tmpbuf, sizeof(tmpbuf));
 				nvram_save_new(*argv, tmpbuf);
 				free(tmpbuf);
 			}
@@ -854,13 +863,18 @@ main(int argc, char **argv)
 			system("nvram_erase");
 		} else if (!strcmp(*argv, "show") ||
 		           !strcmp(*argv, "dump")) {
-			nvram_getall(buf, sizeof(buf));
+			dev_nvram_getall(buf, sizeof(buf));
 			for (name = buf; *name; name += strlen(name) + 1)
 				puts(name);
 			size = sizeof(struct nvram_header) + (int) name - (int) buf;
 			if (**argv != 'd')
 				fprintf(stderr, "size: %d bytes (%d left)\n",
 				        size, MAX_NVRAM_SPACE - size);
+#ifdef RTCONFIG_JFFS_NVRAM
+			jffs_nvram_getall(name - buf, buf, sizeof(buf));
+			for ( ; *name; name += strlen(name) + 1)
+				puts(name);
+#endif
 		} else
 			usage();
 	}

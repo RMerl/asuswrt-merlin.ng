@@ -46,6 +46,11 @@
 #include "bcmwifi_rates.h"
 #include "wlioctl_defs.h"
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+#include <wlc_types.h>
+#include <802.11ax.h>
+#include <bcmwifi_rspec.h>
+#endif
 #include <wlutils.h>
 #include <linux/types.h>
 #include <wlscan.h>
@@ -145,7 +150,7 @@ ej_wl_sta_status(int eid, webs_t wp, char *name)
 #include <bcmparams.h>		/* for DEV_NUMIFS */
 
 /* The below macros handle endian mis-matches between wl utility and wl driver. */
-#if defined(RTCONFIG_BCM_7114) || defined(RTCONFIG_BCM7) || !defined(RTCONFIG_BCMWL6)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_BCM_7114) || !defined(RTCONFIG_BCMWL6)
 static bool g_swap = FALSE;
 #ifndef htod16
 #define htod16(i) (g_swap?bcmswap16(i):(uint16)(i))
@@ -171,15 +176,6 @@ static bool g_swap = FALSE;
 #define	MAX_STA_COUNT	128
 
 #define CHANIMSTR(a, b, c, d) ((a) ? ((b) ? c : d) : "")
-
-/* 802.11i/WPA RSN IE parsing utilities */
-typedef struct {
-	uint16 version;
-	wpa_suite_mcast_t *mcast;
-	wpa_suite_ucast_t *ucast;
-	wpa_suite_auth_key_mgmt_t *akm;
-	uint8 *capabilities;
-} rsn_parse_info_t;
 
 struct apinfo apinfos[MAX_NUMBER_OF_APINFO];
 char buf[WLC_IOCTL_MAXLEN];
@@ -349,6 +345,9 @@ static const uint8 wf_5g_160m_chans[] =
 #define WF_NUM_5G_160M_CHANS \
 	(sizeof(wf_5g_160m_chans)/sizeof(uint8))
 
+/** 80MHz channels in 6GHz band */
+#define WF_NUM_6G_80M_CHANS 14
+
 /* convert bandwidth from chanspec to MHz */
 static uint
 bw_chspec_to_mhz(chanspec_t chspec)
@@ -412,8 +411,13 @@ wf_chspec_malformed(chanspec_t chanspec)
 			uint ch1_id, ch2_id;
 
 			/* channel number in 80+80 must be in range */
+#if defined(RTCONFIG_HND_ROUTER_AX) && (!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_WIFI6E))
+			ch1_id = CHSPEC_CHAN0(chanspec);
+			ch2_id = CHSPEC_CHAN1(chanspec);
+#else
 			ch1_id = CHSPEC_CHAN1(chanspec);
 			ch2_id = CHSPEC_CHAN2(chanspec);
+#endif
 			if (ch1_id >= WF_NUM_5G_80M_CHANS || ch2_id >= WF_NUM_5G_80M_CHANS)
 				return TRUE;
 
@@ -430,8 +434,43 @@ wf_chspec_malformed(chanspec_t chanspec)
 			/* invalid bandwidth */
 			return TRUE;
 		}
+#if defined(RTCONFIG_HND_ROUTER_AX) && defined(RTCONFIG_WIFI6E)
+	} else if (CHSPEC_IS6G(chanspec)) {
+		if (CHSPEC_IS20(chanspec)) {
+			/* 6G 20MHz channel pattern [1, 5, 9 .. 233] */
+			if (CHSPEC_CHANNEL(chanspec) < CH_MIN_6G_CHANNEL ||
+				CHSPEC_CHANNEL(chanspec) > CH_MAX_6G_CHANNEL ||
+				((CHSPEC_CHANNEL(chanspec) - CH_MIN_6G_CHANNEL) % 4) != 0) {
+				return TRUE;
+			}
+		} else if (CHSPEC_IS40(chanspec)) {
+			/* 6G 40MHz channel pattern [3, 11, 19 .. 227] */
+			if (CHSPEC_CHANNEL(chanspec) < CH_MIN_6G_40M_CHANNEL ||
+				CHSPEC_CHANNEL(chanspec) > CH_MAX_6G_40M_CHANNEL ||
+				((CHSPEC_CHANNEL(chanspec) - CH_MIN_6G_40M_CHANNEL) % 8) != 0) {
+				return TRUE;
+			}
+		} else if (CHSPEC_IS80(chanspec)) {
+			/* 6G 80MHz channel pattern [7, 23, 39 .. 215] */
+			if (CHSPEC_CHANNEL(chanspec) < CH_MIN_6G_80M_CHANNEL ||
+				CHSPEC_CHANNEL(chanspec) > CH_MAX_6G_80M_CHANNEL ||
+				((CHSPEC_CHANNEL(chanspec) - CH_MIN_6G_80M_CHANNEL) % 16) != 0) {
+				return TRUE;
+			}
+		} else if (CHSPEC_IS160(chanspec)) {
+			/* 6G 160MHz channel pattern [15, 47, 79 .. 207] */
+			if (CHSPEC_CHANNEL(chanspec) < CH_MIN_6G_160M_CHANNEL ||
+				CHSPEC_CHANNEL(chanspec) > CH_MAX_6G_160M_CHANNEL ||
+				((CHSPEC_CHANNEL(chanspec) - CH_MIN_6G_160M_CHANNEL) % 32) != 0) {
+				return TRUE;
+			}
+		} else {
+			/* invalid 6G BW also excluding 80p80 */
+				return TRUE;
+		}
+#endif //RTCONFIG_HND_ROUTER_AX && RTCONFIG_WIFI6E
 	} else {
-		/* must be 2G or 5G band */
+		/* invalid band */
 		return TRUE;
 	}
 	/* side band needs to be consistent with bandwidth */
@@ -474,10 +513,18 @@ wf_chspec_ctlchan(chanspec_t chspec)
 			bw_mhz = 80;
 
 			if (sb < 4) {
+#if defined(RTCONFIG_HND_ROUTER_AX) && (!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_WIFI6E))
+				center_chan = CHSPEC_CHAN0(chspec);
+#else
 				center_chan = CHSPEC_CHAN1(chspec);
+#endif
 			}
 			else {
+#if defined(RTCONFIG_HND_ROUTER_AX) && (!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_WIFI6E))
+				center_chan = CHSPEC_CHAN1(chspec);
+#else
 				center_chan = CHSPEC_CHAN2(chspec);
+#endif
 				sb -= 4;
 			}
 
@@ -493,6 +540,47 @@ wf_chspec_ctlchan(chanspec_t chspec)
 	}
 }
 
+#if defined(RTCONFIG_HND_ROUTER_AX) && (!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_WIFI6E))
+/**
+ * This function returns the the 5GHz 80MHz center channel for the given chanspec 80MHz ID
+ *
+ * @param    chan_80MHz_id    80MHz chanspec ID
+ *
+ * @return   Return the center channel number, or 0 on error.
+ *
+ */
+static uint8
+wf_chspec_5G_id80_to_ch(uint8 chan_80MHz_id)
+{
+	if (chan_80MHz_id < WF_NUM_5G_80M_CHANS)
+		return wf_5g_80m_chans[chan_80MHz_id];
+
+	return 0;
+}
+
+/**
+ * This function returns the the 6GHz 80MHz center channel for the given chanspec 80MHz ID
+ *
+ * @param    chan_80MHz_id    80MHz chanspec ID
+ *
+ * @return   Return the center channel number, or 0 on error.
+ *
+ */
+static uint8
+wf_chspec_6G_id80_to_ch(uint8 chan_80MHz_id)
+{
+	uint8 ch = 0;
+
+	if (chan_80MHz_id < WF_NUM_6G_80M_CHANS) {
+	/* The 6GHz center channels have a spacing of 16
+	 * starting from the first 80MHz center
+	 */
+		ch = CH_MIN_6G_80M_CHANNEL + (chan_80MHz_id * 16);
+	}
+
+	return ch;
+}
+#endif
 /* given a chanspec and a string buffer, format the chanspec as a
  * string, and return the original pointer a.
  * Min buffer length must be CHANSPEC_STR_LEN.
@@ -510,9 +598,16 @@ wf_chspec_ntoa(chanspec_t chspec, char *buf)
 	band = "";
 
 	/* check for non-default band spec */
-	if ((CHSPEC_IS2G(chspec) && CHSPEC_CHANNEL(chspec) > CH_MAX_2G_CHANNEL) ||
-	    (CHSPEC_IS5G(chspec) && CHSPEC_CHANNEL(chspec) <= CH_MAX_2G_CHANNEL))
-		band = (CHSPEC_IS2G(chspec)) ? "2g" : "5g";
+	if (CHSPEC_IS2G(chspec) && CHSPEC_CHANNEL(chspec) > CH_MAX_2G_CHANNEL) {
+		band = "2g";
+	} else if (CHSPEC_IS5G(chspec) && CHSPEC_CHANNEL(chspec) <= CH_MAX_2G_CHANNEL) {
+		band = "5g";
+ 	}
+#if defined(RTCONFIG_HND_ROUTER_AX) && defined(RTCONFIG_WIFI6E)
+	else if (CHSPEC_IS6G(chspec)) {
+		band = "6g";
+	}
+#endif
 
 	/* ctl channel */
 	if (!(ctl_chan = wf_chspec_ctlchan(chspec)))
@@ -536,7 +631,11 @@ wf_chspec_ntoa(chanspec_t chspec, char *buf)
 		snprintf(buf, CHANSPEC_STR_LEN, "%s%d/%s%s", band, ctl_chan, bw, sb);
 #else
 		/* ctl sideband string instead of BW for 40MHz */
-		if (CHSPEC_IS40(chspec)) {
+		if (CHSPEC_IS40(chspec)
+#if defined(RTCONFIG_HND_ROUTER_AX) && defined(RTCONFIG_WIFI6E)
+			&& !CHSPEC_IS6G(chspec)
+#endif
+			) {
 			sb = CHSPEC_SB_UPPER(chspec) ? "u" : "l";
 			snprintf(buf, CHANSPEC_STR_LEN, "%s%d%s", band, ctl_chan, sb);
 		} else {
@@ -544,6 +643,25 @@ wf_chspec_ntoa(chanspec_t chspec, char *buf)
 		}
 #endif /* CHANSPEC_NEW_40MHZ_FORMAT */
 	} else {
+#if defined(RTCONFIG_HND_ROUTER_AX) && (!defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_WIFI6E))
+		/* 80+80 */
+		uint ch0;
+		uint ch1;
+
+		/* get the center channels for each frequency segment */
+		if (CHSPEC_IS5G(chspec)) {
+			ch0 = wf_chspec_5G_id80_to_ch(CHSPEC_CHAN0(chspec));
+			ch1 = wf_chspec_5G_id80_to_ch(CHSPEC_CHAN1(chspec));
+		} else if (CHSPEC_IS6G(chspec)) {
+			ch0 = wf_chspec_6G_id80_to_ch(CHSPEC_CHAN0(chspec));
+			ch1 = wf_chspec_6G_id80_to_ch(CHSPEC_CHAN1(chspec));
+		} else {
+			return NULL;
+		}
+
+		/* Outputs a max of CHANSPEC_STR_LEN chars including '\0'  */
+		snprintf(buf, CHANSPEC_STR_LEN, "%d/80+80/%d-%d", ctl_chan, ch0, ch1);
+#else
 		/* 80+80 */
 		uint chan1 = (chspec & WL_CHANSPEC_CHAN1_MASK) >> WL_CHANSPEC_CHAN1_SHIFT;
 		uint chan2 = (chspec & WL_CHANSPEC_CHAN2_MASK) >> WL_CHANSPEC_CHAN2_SHIFT;
@@ -554,6 +672,7 @@ wf_chspec_ntoa(chanspec_t chspec, char *buf)
 
 		/* Outputs a max of CHANSPEC_STR_LEN chars including '\0'  */
 		snprintf(buf, CHANSPEC_STR_LEN, "%d/80+80/%d-%d", ctl_chan, chan1, chan2);
+#endif
 	}
 
 	return (buf);
@@ -1325,6 +1444,7 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 	retval += websWrite(wp, "SSID: \"%s\"\n", ssidbuf);
 
 //	retval += websWrite(wp, "Mode: %s\t", capmode2str(dtoh16(bi->capability)));
+	if (!is_router_mode() && !access_point_mode())
 	retval += websWrite(wp, "RSSI: %d dBm\t", (int16)(dtoh16(bi->RSSI)));
 
 	/*
@@ -1332,6 +1452,7 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 	 * So print SNR for 109 version only.
 	 */
 	if (version == WL_BSS_INFO_VERSION) {
+		if (!is_router_mode() && !access_point_mode())
 		retval += websWrite(wp, "SNR: %d dB\t", (int16)(dtoh16(bi->SNR)));
 	}
 
@@ -1869,7 +1990,7 @@ wl_sta_info_nss(void *buf, int unit)
 		have_rateset_adv = TRUE;
 #endif
 #if (WL_STA_VER >= 7)
-	} else if (sta->ver == 7) {
+	} else if (sta->ver >= 7) {
 		sta_v7 = (sta_info_v7_t *)buf;
 		rateset_adv = (wl_rateset_args_u_t *)&sta_v7->rateset_adv;
 		have_rateset_adv = TRUE;
@@ -1897,7 +2018,7 @@ wl_sta_info_nss(void *buf, int unit)
 #if (WL_STA_VER >= 7)
 		uint16 *rs_he_mcs = NULL;
 
-		if (sta->ver == 7) {
+		if (sta->ver >= 7) {
 			rs_mcs = rateset_adv->rsv2.mcs;
 			rs_vht_mcs = rateset_adv->rsv2.vht_mcs;
 			rs_he_mcs = rateset_adv->rsv2.he_mcs;
@@ -1927,39 +2048,6 @@ wl_sta_info_nss(void *buf, int unit)
 	return 1;
 }
 #endif
-
-#define WL_BW_UNDEFINED                0
-#define WL_BW_20M              1
-#define WL_BW_40M              2
-#define WL_BW_80M              3
-#define WL_BW_160M             4
-#define WL_BW_MAX              5
-
-const char *wl_bw_str[WL_BW_MAX] = {
-       "",
-       "20MHz",
-       "40MHz",
-       "80MHz",
-       "160MHz",
-};
-
-int wl_sta_info_bw(void *buf)
-{
-#if (WL_STA_VER >= 7)
-       sta_info_t *sta = (sta_info_t *) buf;
-       uint32 tx_rspec = sta->tx_rspec;
-       uint32 rx_rspec = sta->rx_rspec;
-       uint bw_tx = 0, bw_rx = 0;
-
-       bw_tx = ((tx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
-       bw_rx = ((rx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
-
-       return max(bw_tx, bw_rx);
-#else
-       return 0;
-#endif
-}
-
 
 #define PHY_TYPE_A	0
 #define PHY_TYPE_B	1
@@ -2011,6 +2099,38 @@ int wl_sta_info_phy(void *buf, int unit)
 	}
 
 	return PHY_TYPE_B;
+}
+
+#define WL_BW_UNDEFINED                0
+#define WL_BW_20M              1
+#define WL_BW_40M              2
+#define WL_BW_80M              3
+#define WL_BW_160M             4
+#define WL_BW_MAX              5
+
+const char *wl_bw_str[WL_BW_MAX] = {
+	"",
+	"20MHz",
+	"40MHz",
+	"80MHz",
+	"160MHz",
+};
+
+int wl_sta_info_bw(void *buf)
+{
+#if (WL_STA_VER >= 7)
+	sta_info_t *sta = (sta_info_t *) buf;
+	uint32 tx_rspec = sta->tx_rspec;
+	uint32 rx_rspec = sta->rx_rspec;
+	uint bw_tx = 0, bw_rx = 0;
+
+	bw_tx = ((tx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
+	bw_rx = ((rx_rspec & WL_RSPEC_BW_MASK) >> WL_RSPEC_BW_SHIFT);
+
+	return max(bw_tx, bw_rx);
+#else
+	return 0;
+#endif
 }
 
 static int
@@ -2448,6 +2568,10 @@ wds_list:
 	ret += websWrite(wp, "%-5s%-4s",
 				"MUBF", "NSS");
 #endif
+#if (WL_STA_VER >= 7)
+	ret += websWrite(wp, "%-5s",
+				"  BW");
+#endif
 #endif
 #endif
 	ret += websWrite(wp, "%-8s%-8s%-12s\n",
@@ -2490,6 +2614,12 @@ wds_list:
 			ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
 		}
 #endif
+#if (WL_STA_VER >= 7)
+	if (sta->flags & WL_STA_SCBSTATS)
+			ret += websWrite(wp, "%4s ", wl_bw_str[wl_sta_info_bw(sta)]);
+		else
+			ret += websWrite(wp, "%5s", "");
+#endif
 #endif
 #endif
 		if (sta->flags & WL_STA_SCBSTATS)
@@ -2508,7 +2638,7 @@ wds_list:
 		ret += websWrite(wp, "\n");
 	}
 
-	for (i = 1; i < 4; i++) {
+	for (i = 1; i < wl_max_no_vifs(unit); i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((sw_mode() == SW_MODE_REPEATER)
 			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
@@ -2561,6 +2691,12 @@ wds_list:
 						((sta->vht_flags & WL_STA_MU_BEAMFORMER) || (sta->vht_flags & WL_STA_MU_BEAMFORMEE)) ? "Yes" : "No");
 					ret += websWrite(wp, "%3d ", wl_sta_info_nss(sta, unit));
 				}
+#endif
+#if (WL_STA_VER >= 7)
+				if (sta->flags & WL_STA_SCBSTATS)
+					ret += websWrite(wp, "%4s ", wl_bw_str[wl_sta_info_bw(sta)]);
+				else
+					ret += websWrite(wp, "%5s", "");
 #endif
 #endif
 #endif
@@ -2824,8 +2960,12 @@ static int ej_wl_channel_list(int eid, webs_t wp, int argc, char_t **argv, int u
 		sprintf(tmp1, "[\"%d\"]", 0);
 		goto ERROR;
 	}
-
+	
+#ifdef RTCONFIG_WIFI6E
+	for (i = 0; i < dtoh32(list->count) && i < MAXCHANNEL; i++) {
+#else
 	for (i = 0; i < dtoh32(list->count) && i < IW_MAX_FREQUENCIES; i++) {
+#endif
 		ch = dtoh32(list->element[i]);
 
 		if (i == 0)
@@ -2859,7 +2999,12 @@ ERROR:
 static int ej_wl_chanspecs(int eid, webs_t wp, int argc, char_t **argv, int unit)
 {
 	int i, retval = 0;
-	char tmp[1024], tmp1[1024], tmp2[1024], tmpx[1024], prefix[] = "wlXXXXXXXXXX_";
+#ifdef RTCONFIG_WIFI6E
+	char tmp[2048], tmp1[2048], tmp2[2048], tmpx[2048];
+#else
+	char tmp[1024], tmp1[1024], tmp2[1024], tmpx[1024];
+#endif
+	char prefix[] = "wlXXXXXXXXXX_";
 	char *name;
 	char word[256], *next;
 	int unit_max = 0, count = 0;
@@ -4715,7 +4860,7 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 			ret += websWrite(wp, "}");
 	}
 
-	for (i = 1; i < 4; i++) {
+	for (i = 1; i < wl_max_no_vifs(unit); i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((sw_mode() == SW_MODE_REPEATER)
 			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
@@ -4864,7 +5009,7 @@ static int wl_stainfo_list(int eid, webs_t wp, int argc, char_t **argv, int unit
 		ret += websWrite(wp, "]");
 	}
 
-	for (i = 1; i < 4; i++) {
+	for (i = 1; i < wl_max_no_vifs(unit); i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((sw_mode() == SW_MODE_REPEATER)
 			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
@@ -5631,6 +5776,7 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl
 	char data_buf[WLC_IOCTL_MAXLEN];
 	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
 	chanspec_t c = WL_CHANSPEC_BW_20;
+	int band;
 
 	if (nvram_match("wlscan_debug", "1"))
 		wlscan_debug = 1;
@@ -5655,7 +5801,16 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl
 	params->params.home_time = -1;
 	params->params.channel_num = 0;
 
-	c |= unit ? WL_CHANSPEC_BAND_5G : WL_CHANSPEC_BAND_2G;
+	wl_ioctl(ifname, WLC_GET_BAND, &band, sizeof(band));
+	if (band == WLC_BAND_5G)
+		c |= WL_CHANSPEC_BAND_5G;
+#ifdef RTCONFIG_WIFI6E
+	else if(band == WLC_BAND_6G)
+		c |= WL_CHANSPEC_BAND_6G;
+#endif
+	else
+		c |= WL_CHANSPEC_BAND_2G;
+
 	memset(data_buf, 0, WLC_IOCTL_MAXLEN);
 	ret = wl_iovar_getbuf(ifname, "chanspecs", &c, sizeof(chanspec_t),
 		data_buf, WLC_IOCTL_MAXLEN);
@@ -5706,7 +5861,11 @@ wl_get_scan_results_escan(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
+		if (wl_cap(unit, "bgdfs")
+#ifndef RTCONFIG_HND_ROUTER_AX
+			&& (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149)))
+#endif
+		)
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
 		{
@@ -5781,7 +5940,11 @@ wl_get_scan_results(char *ifname, chanspec_t chanspec, int ctl_ch, int ctl_ch_tm
 
 	if (chanspec != 0) {
 		dbg("restore original chanspec: %s (0x%x)\n", wf_chspec_ntoa(chanspec, chanbuf), chanspec);
-		if (wl_cap(unit, "bgdfs") && (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149))))
+		if (wl_cap(unit, "bgdfs")
+#ifndef RTCONFIG_HND_ROUTER_AX
+			&& (((ctl_ch >= 100) && (ctl_ch_tmp <= 48)) || ((ctl_ch < 100) && (ctl_ch_tmp >= 149)))
+#endif
+		)
 			wl_iovar_setint(ifname, "dfs_ap_move", chanspec);
 		else
 		{
@@ -5850,10 +6013,13 @@ wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			|| ((ctl_ch <= 48) && CHSPEC_IS160(chspec_cur))
 #endif
 		) {
-			if (!with_non_dfs_chspec(name)) {
+			if (!with_non_dfs_chspec(name))
+			{
 				dbg("%s scan rejected under DFS mode\n", name);
 				return 0;
-			} else {
+			}
+			else
+			{
 				dbg("current chanspec: %s (0x%x)\n", wf_chspec_ntoa(chspec_cur, chanbuf), chspec_cur);
 
 				chspec_tmp = (((nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4) && (ctl_ch < 100)) ? select_chspec_with_band_bw(name, 4, 3, chspec_cur) : select_chspec_with_band_bw(name, 1, 3, chspec_cur));
@@ -6072,7 +6238,11 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 
 	if (!nvram_match(strcat_r(prefix, "mode", tmp), "psta") &&
-	    !nvram_match(strcat_r(prefix, "mode", tmp), "psr"))
+            !nvram_match(strcat_r(prefix, "mode", tmp), "psr")
+#ifdef RTCONFIG_HND_ROUTER_AX
+	    && !nvram_match(strcat_r(prefix, "mode", tmp), "wet")
+#endif
+	)
 		goto PSTA_ERR;
 
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
@@ -6121,7 +6291,11 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	free(mac_list);
 PSTA_ERR:
 	if (nvram_match(strcat_r(prefix, "mode", tmp), "psta") ||
-	    nvram_match(strcat_r(prefix, "mode", tmp), "psr")) {
+	    nvram_match(strcat_r(prefix, "mode", tmp), "psr")
+#ifdef RTCONFIG_HND_ROUTER_AX
+	    || nvram_match(strcat_r(prefix, "mode", tmp), "wet")
+#endif
+	) { 
 		if (psta == 1)
 		{
 			if (psta_debug) dbg("connected\n");
@@ -6151,6 +6325,17 @@ PSTA_ERR:
 }
 #endif
 
+
+/* enable for all BCM */
+#ifdef HND_ROUTER
+const char *syslog_msg_filter[] = {
+	"net_ratelimit",
+#ifdef RTCONFIG_HND_ROUTER_AX
+	"own address as source",
+#endif
+	NULL
+};
+#endif
 
 int
 ej_wl_status_2g_array(int eid, webs_t wp, int argc, char_t **argv)

@@ -6,7 +6,7 @@ else
 	country = '<% nvram_get("wl0_country_code"); %>';
 
 var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
-var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
+var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');	
 var bw_160_support = (function(){
 	if(wl_unit == '1'){
 		for(i=0;i<_chanspecs_5g.length;i++){
@@ -24,7 +24,7 @@ var bw_160_support = (function(){
 	}
 
 	return false;
-})();	
+})();
 
 var wl1 = {
 	"channel_20m": [],
@@ -33,7 +33,6 @@ var wl1 = {
 	"channel_160m": []
 }
 
-var _chanspecs_5g =  JSON.parse('<% chanspecs_5g(); %>');
 if(band2g_support){
 	wl_info['0'] = new Object;
 	wl_info['0'].dfs_support = false;
@@ -97,7 +96,6 @@ if(wl_info.band5g_2_support){
 		"channel_160m": []
 	}
 
-	var _chanspecs_5g_2 = JSON.parse('<% chanspecs_5g_2(); %>');
 	wl_info['2'] = new Object;
 	wl_info['2'].dfs_support = (function(){
 		if(_chanspecs_5g_2.indexOf('100') != -1){
@@ -148,6 +146,7 @@ function wl_chanspec_list_change(){
 	var extend_channel = new Array();
 	var cur_extend_channel = 0;			//current extension channel
 	var channel_ori = '<% nvram_get("wl_chanspec"); %>';
+	var smart_connect = document.form.smart_connect_x.value;
 
 	if(country == ""){
 		country = prompt("The Country Code is not exist! Please enter Country Code.", "");
@@ -654,6 +653,7 @@ function wl_chanspec_list_change(){
 				else{
 					document.form.wl_channel[i] = new Option(chanspecs[i].toString().replace("/160", "").replace("/80", "").replace("u", "").replace("l", ""), chanspecs[i]);
 				}
+				
 			}
 
 			document.form.wl_channel[i].value = chanspecs[i];
@@ -718,7 +718,6 @@ function change_channel(obj){
 	var smart_connect = document.form.smart_connect_x.value;
 	cur = '<% nvram_get("wl_chanspec"); %>';
 	cur_extend_channel = cur.slice(-1);			//current control channel
-
 	if(document.form.wl_bw.value != 1){   // 20/40 MHz or 40MHz
 		if(channel_length == 12){    // 1 ~ 11
 			if(selected_channel >= 1 && selected_channel <= 4){
@@ -767,37 +766,10 @@ function change_channel(obj){
 	}
 	
 	if(band == 1 || band == 2){
-		if(band5g_11ax_support || bw_160_support){
-				if(document.form.wl_channel.value  == 0){
-					document.getElementById('dfs_checkbox').style.display = "";
-					document.form.acs_dfs.disabled = false;
-					if(document.form.wl_bw.value == 5){
-						document.form.acs_dfs_checkbox.checked = true;
-						check_DFS_support(document.form.acs_dfs_checkbox);
-						document.form.acs_dfs_checkbox.disabled = true;
-					}
-					else{
-						document.form.acs_dfs_checkbox.disabled = false;
-					}
-				}	
-				else{
-					document.getElementById('dfs_checkbox').style.display = "none";
-					document.form.acs_dfs.disabled = true;
-				}
-		}
-		else if (country == 'EU' && (based_modelid == "RT-AC66U" && wl1_dfs == "1")) {
-			if (document.form.wl_channel.value == 0) {
-				document.getElementById('dfs_checkbox').style.display = "";
-				document.form.acs_dfs.disabled = false;
-			}
-			else {
-				document.getElementById('dfs_checkbox').style.display = "none";
-				document.form.acs_dfs.disabled = true;
-			}
-		}
-		else if(country == "EU" || country == "E0"){		// for DFS channel
-			if(based_modelid == "RT-AC87U"){
-				if(document.form.wl_channel.value  == "0"){
+		if((band == 1 && (_chanspecs_5g.indexOf('56') != -1 || _chanspecs_5g.indexOf('100') != -1)) 
+		|| (band == 2 && _chanspecs_5g_2.indexOf('100') != -1)){
+			if(document.form.wl_channel.value  == 0){
+				if(based_modelid == "RT-AC87U"){
 					if(document.form.wl_bw.value == "1"){
 						document.getElementById('dfs_checkbox').style.display = "none";
 						document.form.acs_dfs.disabled = true;
@@ -817,12 +789,6 @@ function change_channel(obj){
 						document.form.acs_dfs.disabled = true;
 					}
 				}
-			}
-		}
-		else if(country == "US" && dfs_US_support){
-			if(document.form.wl_channel.value  == 0){
-				document.getElementById('dfs_checkbox').style.display = "";
-				document.form.acs_dfs.disabled = false;
 			}	
 			else{
 				document.getElementById('dfs_checkbox').style.display = "none";
@@ -845,13 +811,15 @@ function change_channel(obj){
 				}
 			}
 		}
+
+		//dwbMode_control_dfs({"band": band, "smart_connect": smart_connect});
 	}
 	else if(band == 0){
-		if(country == "EU" || country == "JP" || country == "SG" || country == "CN" || country == "UA" || country == "KR"){
+		if(wl_channel_list_2g.length == '14'){
 			if(!Qcawifi_support && !Rawifi_support){
 				if(document.form.wl_channel.value  == '0'){
 					document.getElementById('acs_ch13_checkbox').style.display = "";
-					document.form.acs_ch13.disabled = false;					
+					document.form.acs_ch13.disabled = false;			
 				}
 				else{
 					document.getElementById('acs_ch13_checkbox').style.display = "none";
@@ -860,4 +828,13 @@ function change_channel(obj){
 			}
 		}
 	}	
+}
+
+function dwbMode_control_dfs(_parm) {
+	if(dwb_info.mode && _parm.band == dwb_info.band && _parm.band != 0 && _parm.smart_connect == "1" && bw_160_support) {
+		document.getElementById('dfs_checkbox').style.display = "none";
+		document.form.acs_dfs_checkbox.checked = false;
+		check_DFS_support(document.form.acs_dfs_checkbox);
+		document.form.acs_dfs_checkbox.disabled = true;
+	}
 }

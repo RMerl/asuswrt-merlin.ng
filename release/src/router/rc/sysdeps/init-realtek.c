@@ -31,7 +31,10 @@
 #endif
 #include <wlutils.h>
 #include <bcmdevs.h>
-
+#ifdef RTCONFIG_RTL8198D
+#include "realtek.h"
+#include "flash_mtd.h"
+#endif
 #define MKNOD(name,mode,dev)	if(mknod(name,mode,dev)) perror("## mknod " name)
 
 void init_devs(void)
@@ -71,7 +74,7 @@ void rtl_configRps(void)
 }
 
 
-#if defined(RTCONFIG_REALTEK)
+#if !defined(RTCONFIG_RTL8198D)
 void init_igmpsnooping()
 {
     char command[32] = {0};
@@ -80,7 +83,7 @@ void init_igmpsnooping()
     //_dprintf("init_igmpsnooping: command = %s\n", command);
     system(command);
 }
-
+#endif
 
 /**
  * @brief      Check if the nvram value is normal.
@@ -104,7 +107,6 @@ int rtk_check_nvram_partation(void)
 	}
 	return 0;
 }
-#endif
 
 void init_switch()
 {
@@ -127,10 +129,9 @@ void init_switch()
 
 	if(strlen(nvram_safe_get("wan0_ifname")))
 		doSystem("ifconfig %s hw ether %s", nvram_safe_get("wan0_ifname"), mac_addr);
-
+#ifndef RTCONFIG_RTL8198D
 	if (!is_router_mode())
 		doSystem("echo \"2\" > /proc/hw_nat");
-#if defined(RTCONFIG_REALTEK)
 	init_igmpsnooping();
 #endif
 }
@@ -166,6 +167,9 @@ void init_syspara(void)
 #endif
 #ifdef RTCONFIG_AMAS
     init_amas_bdl();
+#endif
+#if defined(RTCONFIG_RTL8198D)
+	init_smp();
 #endif
 }
 
@@ -231,7 +235,45 @@ void generate_wl_para(int unit, int subunit)
 void stop_wds_rtk(const char* lan_ifname, const char* wif)
 {
 }
+#ifdef RTCONFIG_RTL8198D
+int get_mac_2g(unsigned char dst[])
+{
+	int bytes = 6;
+	if (FRead(dst, OFFSET_MAC_ADDR_2G, bytes) < 0) {  // ET0/WAN is same as 2.4G
+		_dprintf("%s: Fread Out of scope\n", __func__);
+		return -1;
+	}
+	if(dst[0] == 0xFF)
+		return -1;
+	return 0;
+}
 
+int get_mac_5g(unsigned char dst[])
+{
+	int bytes = 6;
+	if (FRead(dst, OFFSET_MAC_ADDR_5G, bytes) < 0) { // ET1/LAN is same as 5G
+		_dprintf("%s: Fread Out of scope\n", __func__);
+		return -1;
+	}
+	if(dst[0] == 0xFF)
+		return -1;
+	return 0;
+}
 
+#if defined(RPAC92)
+int get_mac_5g_2(unsigned char dst[])
+{
+	int bytes = 6;
+	if (FRead(dst, OFFSET_MAC_ADDR_5G_2, bytes) < 0) { // ET1/LAN is same as 5G
+		_dprintf("%s: Fread Out of scope\n", __func__);
+		return -1;
+	}
+	if(dst[0] == 0xFF)
+		return -1;
+	return 0;
+}
+#endif
+
+#endif
 
 

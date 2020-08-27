@@ -9,6 +9,10 @@ ifdef MINSIZE
 MAKE_FLAGS := MINSIZE=1
 endif
 
+ifeq ($(UCLIBC_NG),y)
+CFLAGS += -DUCLIBC_NG
+endif
+
 all clean dep depend distclean print realclean:
 	for dir in $(DIRS); do \
 		if $(MAKE) $(MAKE_FLAGS) -C $$dir $@; then \

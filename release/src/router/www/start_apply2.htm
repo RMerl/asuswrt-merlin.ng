@@ -591,6 +591,16 @@ function initial(){
 				showWlHint();
 				return;
 			}
+			else if(getflag == "finish"){
+				if(parent.document.getElementById("hidden_frame")){
+					setTimeout("parent.location.href='/qis/QIS_finish.htm';", restart_time*1000);  // Get
+				}
+				else{
+					parent.parent.showLoading(restart_time, "waiting");
+					setTimeout("showdr_advise('finish');", (restart_time+1)*1000);
+				}
+			}
+
 			if(current_page.indexOf(parent.ABS_INDEXPAGE) >= 0){
 				parent.showLoading(restart_time, "waiting");
 			}

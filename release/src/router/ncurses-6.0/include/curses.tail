@@ -101,7 +101,7 @@ extern NCURSES_EXPORT(mmask_t) mousemask (mmask_t, mmask_t *);
 extern NCURSES_EXPORT(bool)    wenclose (const WINDOW *, int, int);
 extern NCURSES_EXPORT(int)     mouseinterval (int);
 extern NCURSES_EXPORT(bool)    wmouse_trafo (const WINDOW*, int*, int*, bool);
-extern NCURSES_EXPORT(bool)    mouse_trafo (int*, int*, bool);              /* generated */
+extern NCURSES_EXPORT(bool)    mouse_trafo (int*, int*, bool);
 
 #if NCURSES_SP_FUNCS
 extern NCURSES_EXPORT(bool)    NCURSES_SP_NAME(has_mouse) (SCREEN*);

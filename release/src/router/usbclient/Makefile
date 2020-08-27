@@ -1,5 +1,5 @@
 all:
-	@cp -f prebuild$(BCMEX)$(EXHND)/usbclient usbclient
+	@cp -f prebuild/$(BUILD_NAME)/usbclient usbclient
 
 install:
 

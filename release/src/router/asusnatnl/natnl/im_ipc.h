@@ -37,7 +37,11 @@ typedef struct im_shm_data {
 #ifdef PJ_CONFIG_IPHONE
 #define IM_MSG_SIG_REQ SIGUSR2
 #else
+#ifdef __SIGRTMAX
 #define IM_MSG_SIG_REQ __SIGRTMAX
+#else
+#define IM_MSG_SIG_REQ SIGRTMAX
+#endif
 #endif
 //#define IM_MSG_SIG_RES SIGRTMIN+1
 

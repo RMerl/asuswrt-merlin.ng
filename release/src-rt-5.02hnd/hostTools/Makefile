@@ -65,6 +65,7 @@ bcmImageBuilder: bcmImageBuilder.c
 	$(CC) $(CFLAGS) -o bcmImageBuilder bcmImageBuilder.c
 version:
 	cp -f ../router/shared/version.h .
+	cp -f ../router/shared/rtconfig.h .
 ifneq ($(wildcard ./prebuilt/addvtoken),)
 addvtoken:
 	@-cp -f ./prebuilt/addvtoken .

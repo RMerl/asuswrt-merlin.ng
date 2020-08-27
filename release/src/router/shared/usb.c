@@ -21,6 +21,7 @@
 #include <sys/sysinfo.h>
 #include <sys/types.h>
 #include <linux/version.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 
 #include <bcmnvram.h>
 #include <bcmdevs.h>

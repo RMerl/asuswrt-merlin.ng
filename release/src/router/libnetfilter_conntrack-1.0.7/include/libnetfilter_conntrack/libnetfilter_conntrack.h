@@ -144,6 +144,11 @@ enum nf_conntrack_attr {
 	ATTR_SYNPROXY_ISN,			/* u32 bits */
 	ATTR_SYNPROXY_ITS,			/* u32 bits */
 	ATTR_SYNPROXY_TSOFF,			/* u32 bits */
+	//Andrew add
+	ATTR_TCP_STATE_BIT,			/* u16 bits */
+	ATTR_SCTP_STATE_BIT,			/* u16 bits */
+	ATTR_DCCP_STATE_BIT,			/* u16 bits */
+	//Andrew end
 	ATTR_MAX
 };
 

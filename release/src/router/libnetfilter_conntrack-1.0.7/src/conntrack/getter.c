@@ -384,6 +384,23 @@ static const void *get_attr_synproxy_tsoff(const struct nf_conntrack *ct)
 	return &ct->synproxy.tsoff;
 }
 
+//Andrew add
+static const void *get_attr_tcp_state_bit(const struct nf_conntrack *ct)
+{
+	return &ct->protoinfo.tcp.state_bit;
+}
+
+static const void *get_attr_sctp_state_bit(const struct nf_conntrack *ct)
+{
+	return &ct->protoinfo.sctp.state_bit;
+}
+
+static const void *get_attr_dccp_state_bit(const struct nf_conntrack *ct)
+{
+	return &ct->protoinfo.dccp.state_bit;
+}
+//Andrew end
+
 const get_attr get_attr_array[ATTR_MAX] = {
 	[ATTR_ORIG_IPV4_SRC]		= get_attr_orig_ipv4_src,
 	[ATTR_ORIG_IPV4_DST] 		= get_attr_orig_ipv4_dst,
@@ -460,4 +477,9 @@ const get_attr get_attr_array[ATTR_MAX] = {
 	[ATTR_SYNPROXY_ISN]		= get_attr_synproxy_isn,
 	[ATTR_SYNPROXY_ITS]		= get_attr_synproxy_its,
 	[ATTR_SYNPROXY_TSOFF]		= get_attr_synproxy_tsoff,
+	//Andrew add
+	[ATTR_TCP_STATE_BIT]		= get_attr_tcp_state_bit,
+	[ATTR_SCTP_STATE_BIT]		= get_attr_sctp_state_bit,
+	[ATTR_DCCP_STATE_BIT]		= get_attr_dccp_state_bit,
+	//Andrew end
 };

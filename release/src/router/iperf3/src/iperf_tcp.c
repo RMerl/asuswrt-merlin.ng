@@ -35,7 +35,11 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif
 #include <sys/time.h>
 #include <sys/select.h>
 

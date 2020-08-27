@@ -21,7 +21,7 @@
 #include <shared.h>
 #include "i2c-dev.h"
 
-#if defined(GTAXY16000) || defined(GTAX11000) || defined(GTAC2900)
+#if defined(GTAXY16000) || defined(GTAX11000) || defined(GTAC2900) || defined(GTAXE11000)
 #define	I2C_SLAVE_ADDR	0x4E
 #endif
 
@@ -97,8 +97,8 @@ aura_rgb_led(int type, RGB_LED_STATUS_T *status, int group, int from_server)
 	char rgb_cmd[255] = {0};
 	int i, ret = 0;
 	char i2c_addr[12];
-#ifdef GTAC2900
-	int y;
+#if defined(GTAC2900) || defined(GTAXE11000)
+	int y, num_of_set = 1;
 #endif
 
 	snprintf(i2c_addr, sizeof(i2c_addr), "%2x", I2C_SLAVE_ADDR);
@@ -216,8 +216,13 @@ aura_rgb_led(int type, RGB_LED_STATUS_T *status, int group, int from_server)
 				snprintf(rgb_cmd, sizeof(rgb_cmd), "i2cset -y 0 0x%02x 0x03 0x01 0x%02x i", I2C_SLAVE_ADDR, pStatus->blue);
 				ASS_DEBUG("#AURA set: %s\n", rgb_cmd);
 				system(rgb_cmd);
-#ifdef GTAC2900
+#if defined(GTAC2900) || defined(GTAXE11000)
 				//handle multiple sets RGB LEDs
+#if defined(GTAC2900)
+				num_of_set = 5;
+#elif defined(GTAXE11000)
+				num_of_set = 3;
+#endif
 				for( y = 1; y < 5; y++)
 				{
 
@@ -503,11 +508,18 @@ int check_aura_rgb_reg(void)
 	RGB_LED_STATUS_T rgb_cfg = {0};
 	RGB_LED_STATUS_T rgb_cfg_nv = { 0 };
 
-	if(nv_to_rgb("aurargb_val", &rgb_cfg_nv) == -1)
+	if (inhibit_led_on() || !nvram_get_int("aurargb_enable"))
+	{
+		memset(&rgb_cfg_nv, 0x00, sizeof(rgb_cfg_nv));
+	}
+	else if(nv_to_rgb("aurargb_val", &rgb_cfg_nv) == -1)
+	{
 		return -1;
-
-	if(rgb_cfg_nv.mode == 0)
+	}
+	else if(rgb_cfg_nv.mode == 0)
+	{
 		return -1;
+	}
 
 	for(y = 0; y < led_num; y++){
 		memset(&rgb_cfg, 0x00, sizeof(rgb_cfg));

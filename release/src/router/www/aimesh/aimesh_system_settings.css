@@ -1,0 +1,154 @@
+﻿@font-face{
+	font-family: Roboto-Regular;
+	src: url(/fonts/Roboto-Regular.ttf) format("opentype");
+}
+@font-face{
+	font-family: Roboto-Light;
+	src: url(/fonts/Roboto-Light.ttf) format("opentype");
+}
+.system_settings_bg{
+	height: 50px;
+	margin: 10px;
+	padding: 10px 0px;
+	position: relative;
+	cursor: pointer;
+}
+.system_settings_bg:hover{
+	background-color: #424E55;
+}
+.system_settings_bg:before{
+	content: "";
+	position: absolute;
+	bottom: 0px;
+	height: 2px;
+	width: 100%;
+	border-bottom: 1px solid #616E79;
+}
+.system_settings_bg > div{
+	float: left;
+}
+.system_icon{
+	background-image: url("/images/New_ui/amesh/system_icon.svg");
+	width: 50px;
+	height: 50px;
+	background-repeat: no-repeat;
+	margin-left: 10px;
+}
+.system_settings_bg.eap > .system_icon{
+	background-position: 2px 2px;
+}
+.system_settings_bg.led > .system_icon{
+	background-position: 2px -65px;
+}
+.system_settings_bg.roaming_block > .system_icon{
+	background-position: 2px -267px;
+}
+.system_settings_bg.reset > .system_icon{
+	background-position: 2px -132px;
+}
+.system_settings_bg.reboot > .system_icon{
+	background-position: 2px -200px;
+}
+.system_text{
+	height: 100%;
+	font-family: Roboto-Regular;
+	font-size: 14px;
+	color: #FFFFFF;
+	letter-spacing: 0;
+	text-align: left;
+	display: table;
+}
+.system_text > span{
+	display: table-cell;
+	vertical-align: middle;
+	padding-left: 18px;
+}
+.system_settings_bg .switch{
+	background: #2B353C;
+	border-radius: 50px;
+	width: 60px;
+	height: 30px;
+	position: relative;
+	display: inline-block;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+	top: 10px;
+	right: 20px;
+	float: right;
+}
+.system_settings_bg .switch:before{
+	border-radius: 83px;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 24px;
+	width: 24px;
+	left: 3px;
+	top: 3px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+}
+.system_settings_bg .switch.off:before{
+	background: #A4B7C3;
+}
+.system_settings_bg .switch.on:before{
+	-webkit-transform: translateX(30px);
+	-ms-transform: translateX(30px);
+	transform: translateX(30px);
+	background: #1EA2FF;
+}
+.system_settings_bg .bubble_icon{
+	background: url(/images/New_ui/amesh/cards_usage.svg) no-repeat;
+	background-size: initial;
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	position: relative;
+}
+.system_settings_bg .bubble_icon.info{
+	background-position: -99px -76px;
+	background-size: 500%;
+}
+.system_settings_bg .bubble_icon.info.eap{
+	top: 12px;
+	left: 6px;
+}
+.system_settings_bg .hover_pop_hint:hover::before{
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	border: 13px solid transparent;
+	border-bottom-color: #1c272c;
+	z-index: 510;
+	border-top: 0;
+	top: 24px;
+	left: 0px;
+}
+.system_settings_bg .hover_pop_hint_bg{
+	cursor: initial;
+	position: absolute;
+	height: auto;
+	line-height: 180%;
+	width: 540px;
+	background: #1c272c;
+	border: 1px solid #364752;
+	box-shadow: 0 2px 4px 0 rgba(0,0,0,0.20), 0 1px 4px 0 rgba(60,60,60,0.30);
+	border-radius: 4px;
+	padding: 18px;
+	font-family: Roboto-Regular, "Microsoft JhengHei";
+	font-size: 16px;
+	color: #FFFFFF;
+	z-index: 500;
+	display: none;
+}
+.system_settings_bg .hover_pop_hint_bg.eap{
+	top: 58px;
+	left: 70px;
+}
+.system_settings_bg .bubble_icon.info:hover + .hover_pop_hint_bg{
+	display: block;
+}

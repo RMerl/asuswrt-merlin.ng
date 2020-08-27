@@ -119,9 +119,10 @@ parse_options(char c, struct nf_conntrack *ct,
 	      struct nf_conntrack *exptuple, struct nf_conntrack *mask,
 	      unsigned int *flags)
 {
-	int i;
 	uint16_t port;
 	uint32_t vtag;
+	int i=0;
+	const char *delim = ",";
 
 	switch(c) {
 	case 1:
@@ -161,12 +162,38 @@ parse_options(char c, struct nf_conntrack *ct,
 		*flags |= CT_SCTP_MASK_DPORT;
 		break;
 	case 7:
+#if 1 //Andrew
+		if (strchr(optarg, ',')) {
+			char *p = NULL;
+			char *saveptr = NULL;
+			p = strtok_r(optarg, delim, &saveptr);
+			do {
+				for (i=0; i<SCTP_CONNTRACK_MAX; i++) {
+					if (strcmp(p, sctp_states[i]) == 0) {
+						nfct_set_attr_u8(ct, ATTR_SCTP_STATE, i);
+						nfct_set_attr_u16(ct, ATTR_SCTP_STATE_BIT, 1UL<<i);
+						break;
+					}
+				}
+				p = strtok_r(NULL, delim, &saveptr);
+			} while (p);
+		} else {
+			for (i=0; i<SCTP_CONNTRACK_MAX; i++) {
+				if (strcmp(optarg, sctp_states[i]) == 0) {
+					nfct_set_attr_u8(ct, ATTR_SCTP_STATE, i);
+						nfct_set_attr_u16(ct, ATTR_SCTP_STATE_BIT, 1UL<<i);
+					break;
+				}
+			}
+		}
+#else
 		for (i=0; i<SCTP_CONNTRACK_MAX; i++) {
 			if (strcmp(optarg, sctp_states[i]) == 0) {
 				nfct_set_attr_u8(ct, ATTR_SCTP_STATE, i);
 				break;
 			}
 		}
+#endif
 		if (i == SCTP_CONNTRACK_MAX)
 			exit_error(PARAMETER_PROBLEM,
 				   "unknown SCTP state `%s'", optarg);

@@ -1,0 +1,7 @@
+Name: test
+Type: hash:ip
+Revision: 4
+Header: family inet hashsize 32768 maxelem 65536
+Size in memory: 104040
+References: 0
+Number of entries: 65536

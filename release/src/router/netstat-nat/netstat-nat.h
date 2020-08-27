@@ -63,6 +63,9 @@ char *xstrdup (const char *dup);
 void ip_addresses_add(struct _ip_addresses **list, const char *dev, const char *ip);
 int ip_addresses_search(struct _ip_addresses *list, const char *ip);
 void ip_addresses_free(struct _ip_addresses **list);
+int string_search(char *string, char *search);
+int search_first_hit(char *search, char *line, char *ret);
+int search_sec_hit(char *search, char *line, char *ret);
 
 
 #define strcopy(dst, dst_size, src) \

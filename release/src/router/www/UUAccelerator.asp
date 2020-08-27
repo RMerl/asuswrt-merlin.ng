@@ -7,7 +7,7 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link rel="shortcut icon" href="images/favicon.png">
-<link rel="icon" href="images/favicon.png"><title><#Web_Title#> - <#Menu_usb_application#></title>
+<link rel="icon" href="images/favicon.png"><title><#Web_Title#> - <#UU_Accelerator#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="usp_style.css">
@@ -62,7 +62,7 @@ function uuRegister(mac){
 									<table width="730px">
 										<tr>
 											<td align="left">
-												<span class="formfonttitle">网易UU加速器</span>
+												<span class="formfonttitle"><#UU_Accelerator#></span>
 											</td>
 										</tr>
 									</table>
@@ -80,10 +80,10 @@ function uuRegister(mac){
 						<div style="width:1px;height: 120px;background-color: #929EA1"></div>
 						<div style="width:350px;margin: 0 12px;">
 							<div style="display:flex;justify-content: space-between;margin-bottom:12px;">
-								<div style="font-size: 16px;">网易UU加速器</div>
+								<div style="font-size: 16px;"><#UU_Accelerator#></div>
 								<div style="margin-right:12px;"><a href="https://uu.163.com/router/" target="_blank">FAQ</a></div>
 							</div>
-							<div style="color: #FC0;">UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！</div>
+							<div style="color: #FC0;"><#UU_Accelerator_desc#></div>
 						</div>
 						<div style="width:1px;height: 120px;background-color: #929EA1"></div>
 						<div style="margin: auto;" onclick="uuRegister(label_mac);">

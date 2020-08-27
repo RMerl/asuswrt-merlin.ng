@@ -12,6 +12,21 @@
 #ifndef TCPOPT_MD5SIG
 #	define TCPOPT_MD5SIG 19
 #endif
+#ifndef TCPOPT_MAXSEG
+# define TCPOPT_MAXSEG 2
+#endif
+#ifndef TCPOPT_WINDOW
+# define TCPOPT_WINDOW 3
+#endif
+#ifndef TCPOPT_SACK_PERMITTED
+# define TCPOPT_SACK_PERMITTED 4
+#endif
+#ifndef TCPOPT_SACK
+# define TCPOPT_SACK 5
+#endif
+#ifndef TCPOPT_TIMESTAMP
+# define TCPOPT_TIMESTAMP 8
+#endif
 
 enum {
 	O_STRIP_OPTION = 0,

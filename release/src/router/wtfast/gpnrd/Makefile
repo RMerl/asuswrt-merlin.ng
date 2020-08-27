@@ -3,15 +3,16 @@
 #
 # Copyright (C) 2014-2015, AAA Internet Publishing, Inc. (DBA WTFast)
 #
-include ../../common.mak
+
+CFLAGS += --std=c99 -Wall -Wextra -O -g
 ifneq ($(ROUTER_BUILD), y)
 CFLAGS += -pedantic-errors
 endif
 LDFLAGS += -Wl,-rpath -Wl,$(LIB)
-LIBS = -lgpnutils -lgpnclient -lrt -lshared -lnvram -lssl -lcrypto
+LIBS = -lgpnutils -lgpnclient -lrt -lssl -lcrypto -lpthread 
 
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+ifeq ($(ROUTER_BUILD), y)
+	LIBS += -lshared -lgcc_s -lnvram $(if $(RTCONFIG_HND_ROUTER),-L$(TOP)/wlcsm -lwlcsm,)
 endif
 
 SRCS = gpnrd.c
@@ -44,4 +45,14 @@ install:
 ioperf: ioperf.c
 	$(CC) -o $@ $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) $(LIBS) $<
 
+# asuswrt
+PREBUILT_SRCS = $(filter-out $(wildcard $(SRCS)),$(SRCS))
+ifneq ($(PREBUILT_SRCS),)
+include ../../common.mak
+ifeq ($(RTCONFIG_BCMARM),y)
+PREBUILT_ARCH := $(BCMEX)$(EX7)
+endif
+$(PREBUILT_SRCS:.c=.o): %.o: prebuilt$(PREBUILT_ARCH)/%.o
+	cp -f $< $@
+endif
 

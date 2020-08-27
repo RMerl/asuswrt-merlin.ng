@@ -218,8 +218,22 @@ li{
 	50% {
 		left: 220px;
 	}
-		100% {
-	left: 30px;
+	100% {
+		left: 30px;
+	}
+}
+
+.model_img{
+	width: 120px;
+	height: 142px;
+	background: url('images/Model_product.png') no-repeat;
+	background-size: 100%;
+}
+.mode_img_COD{
+	width: 120px;
+	height: 142px;
+	background: url('images/Model_product_COD.png') no-repeat;
+	background-size: 100%;
 }
 </style>
 <script type="text/javascript">
@@ -253,6 +267,7 @@ if(wans_dualwan_orig.search(" ") == -1)
 var new_lan_ip = [<% get_next_lanip(); %>][0].next_lanip;
 var header_info = [<% get_header_info(); %>];
 var location_org = header_info[0].protocol + "://" + header_info[0].host + ":" + header_info[0].port;
+var odm_support = ('<% nvram_get("rc_support"); %>'.indexOf('odm') != -1) ? true : false;
 
 function initial(){
 	var is_logined = [<% is_logined_hook(); %>][0];
@@ -260,6 +275,9 @@ function initial(){
 	var url_flag = "";
 	var html_code_notlogin = "<ul><li><#web_redirect_suggestion_admin#></li></ul>";	
 	var showtext = function(obj, str){if(obj)obj.innerHTML=str;}
+	if(odm_support){
+		$('.model_img').attr('class', 'mode_img_COD');
+	}
 
 	if(casenum == 1){
 		$("#page_title").html("<#web_redirect_reason1#>");
@@ -589,7 +607,7 @@ function detect_ppp_connect(){
 					<div style="display:table">
 						<div style="display:table-row">
 							<div style="display:table-cell">
-								<div style="width:120px;height:142px;background:url('images/Model_product.png') no-repeat;background-size:100%;"></div>
+								<div class="model_img"></div>
 							</div>
 							<div style="display:table-cell;width:300px;vertical-align:middle;position:relative">
 								<div style="width:200px;height:3px;background:#279FD9;margin-left:30px;"></div>

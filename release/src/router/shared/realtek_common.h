@@ -1,7 +1,11 @@
 #ifndef __REALTEK_COMMON_H__
 #define __REALTEK_COMMON_H__
 #include <linux/sockios.h>
+#if defined(RPAC92)
+#include "../../../src-rtk-sdk4.3.1/linux/realtek/rtl819x/linux-4.4.x/drivers/net/wireless/realtek/rtl8192cd/ieee802_mib.h"
+#else
 #include "../../../../../realtek/rtl819x/linux-3.10/drivers/net/wireless/rtl8192cd/ieee802_mib.h"
+#endif
 
 #define MAC_ADDR_LEN    6
 #define MAX_STA_NUM			64	// max support sta number
@@ -159,7 +163,11 @@ typedef struct _DOT11_SET_USERIE{
 enum {SET_IE_FLAG_INSERT=1, SET_IE_FLAG_DELETE=2, SET_IE_FLAG_CLEAR=3, SET_IE_FLAG_DELETE_WITH_OUI=4};
 
 typedef enum{
+#ifdef RTCONFIG_RTL8198D
+	DOT11_EVENT_USER_SETIE = 138
+#else
 	DOT11_EVENT_USER_SETIE = 141
+#endif
 } DOT11_EVENT;
 
 #define MACADDRLEN					6
@@ -196,4 +204,6 @@ struct dot11k_beacon_measurement_req
 extern int update_vsie(char *interface, void *data);
 extern int getmibInfo(const char *interface, void *data, int *length);
 extern int setmibInfo(const char *interface, void *data, int length);
+extern void iwpriv_set_mib_int(const char* ifname, const char* conf, int val);
+extern void iwpriv_set_mib_string(const char* ifname, const char* conf, char* val);
 #endif

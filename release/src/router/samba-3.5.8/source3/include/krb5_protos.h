@@ -1,4 +1,7 @@
 /* work around broken krb5.h on sles9 */
+#ifndef _INCLUDE_KRB5_PROTOS_H_
+#define _INCLUDE_KRB5_PROTOS_H_
+
 #ifdef SIZEOF_LONG
 #undef SIZEOF_LONG
 #endif
@@ -88,11 +91,6 @@ krb5_error_code smb_krb5_parse_name_norealm(krb5_context context,
 bool smb_krb5_principal_compare_any_realm(krb5_context context,
 					  krb5_const_principal princ1,
 					  krb5_const_principal princ2);
-int cli_krb5_get_ticket(const char *principal, time_t time_offset,
-			DATA_BLOB *ticket, DATA_BLOB *session_key_krb5,
-			uint32 extra_ap_opts, const char *ccname,
-			time_t *tgs_expire,
-			const char *impersonate_princ_s);
 krb5_error_code smb_krb5_renew_ticket(const char *ccache_string, const char *client_string, const char *service_string, time_t *expire_time);
 krb5_error_code kpasswd_err_to_krb5_err(krb5_error_code res_code);
 krb5_error_code smb_krb5_gen_netbios_krb5_address(smb_krb5_addresses **kerb_addr);
@@ -146,3 +144,10 @@ char *smb_krb5_principal_get_realm(krb5_context context,
 				   krb5_principal principal);
 #endif /* HAVE_KRB5 */
 
+int cli_krb5_get_ticket(const char *principal, time_t time_offset,
+			DATA_BLOB *ticket, DATA_BLOB *session_key_krb5,
+			uint32 extra_ap_opts, const char *ccname,
+			time_t *tgs_expire,
+			const char *impersonate_princ_s);
+
+#endif /* _INCLUDE_KRB5_PROTOS_H_ */

@@ -28,6 +28,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <stdint.h>
+#endif
 
 #include "iperf_util.h"
 

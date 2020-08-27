@@ -223,8 +223,7 @@ restart:
       tv.tv_sec = 0;
       tv.tv_usec = 1000; // 1 msec
       select(dev->fd + 1, NULL, &writefds, NULL, &tv); //sub second wait
-      /* 32767 is a magic number for no timeout */
-      if (timeout && timeout != 32767) {
+      if (timeout) {
         /* compare with actual time, as the select timeout is not that precise */
         gettimeofday(&tv_now, NULL);
 
@@ -342,11 +341,7 @@ restart:
       tv.tv_sec = 0;
       tv.tv_usec = 1000; // 1 msec
       select(dev->fd + 1, NULL, &writefds, NULL, &tv); //sub second wait
-#if 0
       if (timeout) {
-#else /* 32767 is a magic number for no timeout */
-      if (timeout && timeout != 32767) {
-#endif
         /* compare with actual time, as the select timeout is not that precise */
         gettimeofday(&tv_now, NULL);
 

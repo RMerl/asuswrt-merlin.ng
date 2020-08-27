@@ -83,12 +83,8 @@
 <div class='footerPadding'></div>
 
 <script>
-	var wl0_he_features_orig = httpApi.nvramGet(["wl0_he_features"]).wl0_he_features;
-	var enableAx = (wl0_he_features_orig != "0") ? true : false;
-
-	if (systemVariable.productid == "GT-AXY16000" || systemVariable.productid == "RT-AX89U")
-		$("#dfs_160_desc").hide();
-
+	var wl0_11ax_orig = httpApi.nvramGet(["wl0_11ax"]).wl0_11ax;
+	var enableAx = (wl0_11ax_orig != "0") ? true : false;
 	$("#Intel_dl_link")	//for string tag: QIS_ax_Ready_note_Intel
 		.attr('target', '_blank')
 		.attr('href', 'https://downloadcenter.intel.com');
@@ -104,16 +100,47 @@
 			$(this).enableCheckBox($(this).is(":checked"))
 		})
 
+	var _chanspecs_5g = (function(){
+		var temp = '<% chanspecs_5g(); %>';
+		return (temp == '') ? [] : JSON.parse(temp);
+
+	})();
+
+	var _chanspecs_5g_2 = (function(){
+		var temp = '<% chanspecs_5g_2(); %>';
+		return (temp == '') ? [] : JSON.parse(temp);
+	})();
+
+	var Bcmwifi_support = isSupport("bcmwifi");
+	var bw_160_support = (function(){
+		var count1 = 0;
+		for(i=0;i<_chanspecs_5g.length;i++){
+			if(_chanspecs_5g[i].indexOf('/160') != -1){
+				count1++;
+			}
+		}
+
+		var count2 = 0;
+		for(i=0;i<_chanspecs_5g_2.length;i++){
+			if(_chanspecs_5g_2[i].indexOf('/160') != -1){
+				count2++;
+			}
+		}
+		
+		return ((count1 != 0) || (count2 != 0)) ? true : false;
+	})();
+
+	if (Bcmwifi_support && !bw_160_support
+	|| (systemVariable.productid == "GT-AXY16000" || systemVariable.productid == "RT-AX89U")){
+		$('#dfs_160_desc').hide()
+	}
+
 	apply.axMode = function(){
 		postDataModel.insert(axModeObj);
 		if(!$("#axMode_checkbox").is(":checked")){
-			qisPostData.wl0_he_features = 0;
-			qisPostData.wl1_he_features = 0;
-			qisPostData.wl2_he_features = 0;
-		}
-
-		if(wl0_he_features_orig == qisPostData.wl0_he_features){
-			postDataModel.remove(axModeObj);
+			qisPostData.wl0_11ax = 0;
+			qisPostData.wl1_11ax = 0;
+			qisPostData.wl2_11ax = 0;
 		}
 
 		if(isSupport("boostkey")){

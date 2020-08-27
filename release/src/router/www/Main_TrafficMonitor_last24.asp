@@ -332,7 +332,7 @@ function setUnit(unit){
 					<tr>
 						<td>
 							<div style="display:flex;align-items: center;margin: 4px 0;">
-								<div><#Statistic_show_type#></div>
+								<div><#Scale#></div>
 								<div style="margin-left: 24px;">
 									<select class="input_option" id="traffic_unit" onchange="setUnit(this.value);">
 										<option value="0">KB</option>

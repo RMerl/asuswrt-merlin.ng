@@ -121,6 +121,7 @@ struct __nfct_tuple {
 union __nfct_protoinfo {
 	struct {
 		uint8_t 		state;
+		uint16_t 		state_bit;
 		struct {
 			uint8_t 	value;
 			uint8_t 	mask;
@@ -129,10 +130,12 @@ union __nfct_protoinfo {
 	} tcp;
 	struct {
 		uint8_t 		state;
+		uint16_t 		state_bit;
 		uint32_t 		vtag[__DIR_MAX];
 	} sctp;
 	struct {
 		uint8_t 		state;
+		uint16_t 		state_bit;
 		uint8_t			role;
 		uint64_t		handshake_seq;
 	} dccp;

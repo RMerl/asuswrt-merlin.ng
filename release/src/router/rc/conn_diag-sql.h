@@ -1,5 +1,5 @@
 #include <sqlite3.h>
-
+#include <pthread.h>
 
 #define RTCONFIG_UPLOADER
 
@@ -7,6 +7,7 @@
 #define DATA_TAB_NAME "diag_data"
 #define MAX_DB_SIZE 4194304 // 4MB
 #define MAX_DATA 1024
+#define MAX_DB_COUNT 2
 
 #define SYS_DIR         "/jffs/.sys"
 #define DIAG_DB_DIR     SYS_DIR"/diag_db"
@@ -23,6 +24,15 @@ enum {
 	INIT_DB_MAX
 };
 
+typedef struct _json_result json_result_t;
+struct _json_result {
+	char db_path[PATH_MAX];
+	int row_count;
+	int col_count;
+	char **result;
+	json_result_t *next;
+};
+
 #if 0
 #define	LOG_EMERG	0	/* system is unusable */
 #define	LOG_ALERT	1	/* action must be taken immediately */
@@ -36,6 +46,9 @@ enum {
 
 int diag_dbg;
 int diag_syslog;
+int diag_max_db_size;
+int diag_max_db_count;
+static pthread_mutex_t diag_db_save_lock = PTHREAD_MUTEX_INITIALIZER;
 
 #define LOG_TITLE_CHK "CHKSTA"
 #define LOG_TITLE_DIAG "CONNDIAG"
@@ -73,13 +86,18 @@ int diag_syslog;
 
 
 extern void diag_log_status();
-extern unsigned long get_ts_from_db_name(char *str);
+extern int get_ts_from_db_name(char *str, unsigned long *ts1, unsigned long *ts2);
 extern int save_data_in_sql(const char *event, char *raw);
 extern int specific_data_on_day(unsigned long specific_ts, const char *where, int *row_count, int *field_count, char ***raw);
+// Get data produced after the specific timestamp. If specific timestamp is 0, get all data of today.
 extern int get_sql_on_day(unsigned long specific_ts, const char *event, const char *node_ip, const char *node_mac,
 		int *row_count, int *field_count, char ***raw);
+// Get data produced after the specific timestamp. If specific timestamp is 0, get all data of today.
 extern int get_json_on_day(unsigned long specific_ts, const char *event, const char *node_ip, const char *node_mac,
 		int *row_count, int *field_count, char ***raw);
+extern int get_json_in_period(unsigned long start_ts, unsigned long end_ts, const char *event, const char *node_ip, const char *node_mac,
+		json_result_t **json_result);
+extern void free_json_result(json_result_t **json_result);
 extern int merge_data_in_sql(const char *dst_file, const char *src_file);
 #ifdef RTCONFIG_UPLOADER
 extern int run_upload_file_at_ts(unsigned long ts, unsigned long ts2);

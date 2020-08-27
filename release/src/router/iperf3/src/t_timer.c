@@ -28,6 +28,10 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/time.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <stdint.h>
+#endif
+
 
 #include "timer.h"
 

@@ -31,7 +31,11 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <errno.h>
+#if (defined(__GLIBC__) || defined(__UCLIBC__))
 #include <netinet/udp.h>
+#else
+#include <linux/udp.h>		//instead of <netinet/udp.h> for musl
+#endif	/* ! (__GLIBC__ || __UCLIBC__) */
 #include <netinet/ip.h>
 //#include <netpacket/packet.h>
 #include <net/ethernet.h>
@@ -43,7 +47,7 @@
 #include <shared.h>
 #include <shutils.h>
 
-#ifdef RTCONFIG_BT_CONN
+#if defined(RTCONFIG_BT_CONN) || defined(RTCONFIG_DSL_HOST)
 #define DHCP_DETECT
 #endif
 //#define DHCP_SOCKET

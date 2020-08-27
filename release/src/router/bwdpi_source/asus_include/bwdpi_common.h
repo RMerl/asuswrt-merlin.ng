@@ -76,6 +76,11 @@
 #define CATDB           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/bwdpi.cat.db" : "/tmp/bwdpi/bwdpi.cat.db"
 #define RULEV           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/rule.version" : "/tmp/bwdpi/rule.version"
 
+// module
+#define KTDTS            "/sys/module/tdts"
+#define KTDTS_UDB        "/sys/module/tdts_udb"
+#define KTDTS_UDBFW      "/sys/module/tdts_udbfw"
+
 // log and tmp file
 #define WRS_FULL_LOG    "/tmp/wrs_full.txt"
 #define VP_FULL_LOG     "/tmp/vp_full.txt"
@@ -88,11 +93,14 @@
 #define QOS_TMP         "/tmp/bwdpi/qos_rul"
 
 // node
-#if defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_SOC_IPQ8074)
 #define DEVNODE         "/dev/idp"
 #else
 #define DEVNODE         "/dev/detector"
 #endif
+
+// OOM protection
+#define IS_IDPFW()      f_exists("/dev/idpfw")
 
 // database hidden path and function path
 #define BWDPI_DB_DIR    "/jffs/.sys"
@@ -137,6 +145,7 @@ extern int get_anomaly_main(char *cmd);
 extern int get_app_patrol_main();
 
 //dpi.c
+extern int check_tdts_module_exist();
 extern int check_daulwan_mode();
 extern int tdts_check_wan_changed();
 extern void stop_dpi_engine_service(int forced);
@@ -163,6 +172,7 @@ extern void tm_eula_check();
 //dpi_support.c
 extern int dump_dpi_support(int index);
 extern void setup_dpi_support_bitmap();
+extern int model_protection();
 
 // wrs_wbl.c
 extern int WRS_WBL_GET_PATH(int bflag, char *mac, char *path, int len);

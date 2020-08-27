@@ -22,6 +22,7 @@
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <style type="text/css">
 .printerServer_table{
 	width:740px;
@@ -104,9 +105,10 @@ function showMethod(flag1, flag2){
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="current_page" value="PrinterServer.asp">
 <input type="hidden" name="next_page" value="">
-<input type="hidden" name="action_mode" value="">
-<input type="hidden" name="action_script" value="">
-<input type="hidden" name="action_wait" value="">
+<input type="hidden" name="action_mode" value="apply">
+<input type="hidden" name="action_script" value="restart_lpd;restart_u2ec;">
+<input type="hidden" name="action_wait" value="5">
+<input type="hidden" name="usb_printer" value="<% nvram_get("usb_printer"); %>">
 </form>
 
 <table class="content" align="center" cellspacing="0" style="margin:auto;">
@@ -144,14 +146,15 @@ function showMethod(flag1, flag2){
 				<div class="shadow-l">
 					<div class="shadow-r">
 						<table class="" cellspacing="0" cellpadding="0">
-							<tbody><tr valign="top">
+							<tbody>
+								<tr valign="top">
 								<td class="">
 									<div class="padding">
 										<div class="">
 											<ul class="">
 												<li>
 													<a id="faq1" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#asus_ez_print_share#> FAQ</a>&nbsp;&nbsp;
-													<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0">Download Now!</a>
+													<a href="http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Printer.zip" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FC0"><#Download_now#></a>
 												</li>
 												<li style="margin-top:10px;">
 													<a id="faq2" href="" target="_blank" style="text-decoration:underline;font-size:14px;font-weight:bolder;color:#FFF"><#LPR_print_share#> FAQ (Windows)</a>&nbsp;&nbsp;
@@ -161,11 +164,37 @@ function showMethod(flag1, flag2){
 												</li>
 											</ul>	
 										</div>	
-									<span class="article_seperator">&nbsp;</span>
-								</div>
-							</td>
-						</tr>
-					</tbody></table>													
+										<span class="article_seperator">&nbsp;</span>
+									</div>
+								</td>
+								</tr>
+								<tr>
+									<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+											<tr>
+												<th><#Network_Printer_Server#></th>
+												<td>
+												<div class="left" style="width:94px; float:left; cursor:pointer;" id="network_printer_enable"></div>
+												<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
+												<script type="text/javascript">
+													$('#network_printer_enable').iphoneSwitch(document.form.usb_printer.value,
+														function() {
+															document.form.usb_printer.value = "1";
+															showLoading();
+															document.form.submit();
+														},
+														 function() {
+															document.form.usb_printer.value = "0";
+															showLoading();
+															document.form.submit();
+														}
+													);
+												</script>
+												</div>
+												</td>
+											</tr>
+									</table>
+								</tr>
+					</tbody></table>
 				</div>
 			</div>
 		</div>

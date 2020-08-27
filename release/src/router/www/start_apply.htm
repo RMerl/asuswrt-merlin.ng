@@ -21,6 +21,9 @@ var action_wait = '<% get_parameter("action_wait"); %>';
 var group_id = '<% get_parameter("group_id"); %>';
 var getflag = '<% get_parameter("flag"); %>';
 var lan_proto = '<% get_parameter("lan_proto"); %>';
+var dsl_unit = '<% get_parameter("dsl_unit"); %>';
+var dsl_subunit = '<% get_parameter("dsl_subunit"); %>';
+var wan_unit = '<% get_parameter("wan_unit"); %>';
 
 if(tmo_support)
 	var theUrl = "cellspot.router"; 
@@ -606,7 +609,7 @@ function initial(){
 						setTimeout("delay_redirect('/qis/QIS_verify_detect.htm');", restart_time*1000);
 					return;
 				}
-				else{			
+				else{
 					parent.showLoading(restart_time, "waiting");
 					if(isWLclient()) {
 							setTimeout(getXMLAndRedirect, restart_time*1000);
@@ -629,6 +632,15 @@ function initial(){
 	else if(current_page.indexOf("AiProtection_") != -1){
 		parent.showLoading(restart_time, "waiting");
 		setTimeout(getXMLAndRedirect, restart_time*1000);
+	}
+	else if(current_page.indexOf("Advanced_DSL_Content") != -1 && getflag == "chg_pvc"){
+		setTimeout("top_delay_redirect('"+current_page+"?chg_pvc="+dsl_unit+"');", action_wait*1000);
+	}
+	else if(current_page.indexOf("Advanced_VDSL_Content") != -1 && getflag == "chg_pvc"){
+		setTimeout("top_delay_redirect('"+current_page+"?chg_pvc="+dsl_subunit+"');", action_wait*1000);
+	}
+	else if(current_page.indexOf("Advanced_WAN_Content") != -1 && getflag == "chg_pvc"){
+		setTimeout("top_delay_redirect('"+current_page+"?chg_pvc="+wan_unit+"');", action_wait*1000);
 	}
 	else if(current_page.indexOf("Feedback") != -1){
 		if(action_script == "stop_dblog")

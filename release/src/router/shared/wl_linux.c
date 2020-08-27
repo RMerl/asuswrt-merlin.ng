@@ -76,7 +76,8 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 				snprintf(buffer, sizeof(buffer), "%s: cmd=%d (errno %d)",
 					name, cmd, errno);
 			}
-			perror(buffer);
+			if (errno != EBUSY)
+				perror(buffer);
 
 			close(s);
 			return -errno;

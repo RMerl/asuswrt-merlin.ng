@@ -26,6 +26,7 @@ static char const RCSID[] =
 #include <unistd.h>
 #include <errno.h>
 #include <sys/uio.h>
+#include <string.h>
 
 
 /**********************************************************************

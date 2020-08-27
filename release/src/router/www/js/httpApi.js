@@ -9,6 +9,9 @@ var asyncData = {
 }
 
 var httpApi ={
+	"detRetryCnt_MAX": 10,
+	"detRetryCnt": this.detRetryCnt_MAX,
+
 	"nvramGetAsync": function(q){
 		if(!q.success || !q.data) return false;
 
@@ -408,8 +411,22 @@ var httpApi ={
 		){
 			retData.wanType = (iCanUsePPPoE && wanInfo.x_Setting  == "0") ? wanTypeList.pppdhcp : wanTypeList.connected;
 		}
+		else if( (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "2") ||
+				 (wanInfo.wan0_state_t    == "2" && wanInfo.wan0_sbstate_t  == "0" && wanInfo.wan0_auxstate_t == "0")
+		){
+				retData.wanType = wanTypeList.dhcp;
+		}
 		else if(wanInfo.autodet_state == ""){
 			retData.wanType = wanTypeList.check;
+			if(this.detRetryCnt > 0){
+				this.detRetryCnt --;
+			}
+			else{
+				this.startAutoDet();
+				retData.isIPConflict = false;
+				retData.isError = false;
+				this.detRetryCnt = this.detRetryCnt_MAX;
+			}
 		}
 		else if(iCanUsePPPoE){
 			retData.wanType = wanTypeList.pppoe;
@@ -422,21 +439,31 @@ var httpApi ={
 		}
 		else if(wanInfo.autodet_state == "4"){
 			if(wanInfo.wan0_auxstate_t != "1"){
-				httpApi.startAutoDet();
+				this.startAutoDet();
 				retData.wanType = wanTypeList.check;
 				retData.isIPConflict = false;
 				retData.isError = false;
-			}
-			else if(wanInfo.wan0_state_t == "4" && wanInfo.wan0_sbstate_t == "4"){
-				retData.wanType = wanTypeList.dhcp;
-				retData.isIPConflict = true;
+				this.detRetryCnt = this.detRetryCnt_MAX;
 			}
 			else{
 				retData.wanType = wanTypeList.noWan;
 			}
 		}
+		else if(wanInfo.wan0_state_t == "4" && wanInfo.wan0_sbstate_t == "4"){
+			retData.wanType = wanTypeList.dhcp;
+			retData.isIPConflict = true;
+		}
 		else{
 			retData.wanType = wanTypeList.check;
+			if(this.detRetryCnt > 0){
+				this.detRetryCnt --;
+			}
+			else{
+				this.startAutoDet();
+				retData.isIPConflict = false;
+				retData.isError = false;
+				this.detRetryCnt = this.detRetryCnt_MAX;
+			}
 		}
 
 		return retData;
@@ -620,7 +647,7 @@ var httpApi ={
 		var retData = {
 				"GAME_BOOST": {
 					"value": 3,
-					"text": "Enable GameBoost",
+					"text": "<#BoostKey_enable#>",
 					"desc": "<#BoostKey_Boost_desc#>"
 				},
 				"ACS_DFS": {
@@ -630,13 +657,13 @@ var httpApi ={
 				},
 				"LED": {
 					"value": 0,
-					"text": "LED On/Off",
-					"desc": "The LED on/off control is used to turn off all LEDs includes Aura light."
+					"text": "<#BoostKey_LED#>",
+					"desc": "<#BoostKey_LED_desc#>"
 				},
 				"AURA_RGB": {
 					"value": 2,
-					"text": "Aura RGB",
-					"desc": "Aura sync control is used to get Aura control from other ROG devices, if disabled, it will be customized Aura RGB."
+					"text": "<#BoostKey_Aura_RGB#>",
+					"desc": "<#BoostKey_Aura_RGB_desc#>"
 				}
 		};
 
@@ -647,13 +674,13 @@ var httpApi ={
 
 			retData.AURA_SHUFFLE = {
 				"value": 4,
-				"text": "Aura Shuffle",
+				"text": "<#BoostKey_AURA_Shuffle#>",
 				"desc": "<#BoostKey_AURA_Shuffle_desc#>"				
 			}
 
 			retData.GEFORCE_NOW = {
 				"value": 5,
-				"text": "GeForce Now",
+				"text": "<#BoostKey_GeForce#>",
 				"desc": "<#BoostKey_GeForce_desc#>"				
 			}
 		}
@@ -783,7 +810,7 @@ var httpApi ={
 			return;
 		}
 
-		if(modelName != "Lyra" && modelName != "Lyra_Mini" && modelName != "LyraMini" && modelName != "LYRA_VOICE" && modelName != "Lyra_Trio" && modelName != "GT-AXY16000" && modelName != "RT-AX89X")
+		if(modelName != "Lyra" && modelName != "Lyra_Mini" && modelName != "LyraMini" && modelName != "LYRA_VOICE" && modelName != "Lyra_Trio" && modelName != "GT-AXY16000" && modelName != "RT-AX89X" && modelName != "SH-AC1300")
 			return;
 
 		var isMac = function(_mac){
@@ -835,6 +862,7 @@ var httpApi ={
 			case "LYRA_VOICE":
 			case "Lyra_Mini":
 			case "LyraMini":
+			case "SH-AC1300":
 				offset = -3;
 				break;
 			case "Lyra_Trio":
@@ -1020,5 +1048,143 @@ var httpApi ={
 				value: "Check Now"
 			}))			
 			.appendTo("body").submit().remove();
+	},
+
+	"get_wl_sched": function(wl_unit, callBack){
+		var _wl_unit = "all";
+		if(wl_unit != undefined && wl_unit.toString() != "")
+			_wl_unit = wl_unit;
+
+		$.ajax({
+			url: "/get_wl_sched.cgi?unit=" + _wl_unit,
+			dataType: 'json',
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"set_wl_sched": function(postData){
+		$.ajax({
+			url: "/set_wl_sched.cgi",
+			type: "POST",
+			dataType: 'json',
+			data: JSON.stringify(postData),
+			async: true,
+			error: function(){},
+			success: function(response){}
+		});
+	},
+
+	"set_ledg" : function(postData, parmData){
+		var asyncDefault = true;
+		$.ajax({
+			url: '/set_ledg.cgi',
+			dataType: 'json',
+			data: postData,
+			async: asyncDefault,
+			error: function(){},
+			success: function(response){
+				if(parmData != undefined && parmData.callBack) parmData.callBack.call(response);
+			}
+		});
+	},
+
+	"aimesh_get_node_capability" : function(_node_info){
+		var node_capability_list = {
+			"led_control" : {
+				"value" : 1,
+				"def" : {
+					"central_led" : {"bit" : 0},
+					"lp55xx_led" : {"bit" : 1},
+					"led_on_off" : {"bit" : 2},
+					"led_brightness" : {"bit" : 3},
+					"led_aura" : {"bit" : 4}
+				}
+			},
+			"reboot_ctl" : {
+				"value" : 2,
+				"def" : {
+					"manual_reboot" : {"bit" : 0}
+				}
+			},
+			"rc_support" : {
+				"value" : 4,
+				"def" : {
+					"usb" : {"bit" : 0},
+					"guest_network" : {"bit" : 1},
+					"wpa3" : {"bit" : 2},
+					"vif_onboarding" : {"bit" : 3},
+					"sched_v2" : {"bit" : 4},
+					"wifi_radio" : {"bit" : 5}
+				}
+			},
+			"link_aggregation" : {
+				"value" : 5,
+				"def" : {
+					"lacp" : {"bit" : 0},
+				}
+			},
+			"wans_cap" : {
+				"value" : 15,
+				"def" : {
+					"wans_cap_wan" : {"bit" : 0}//Support ethernet wan or not
+				}
+			},
+			"re_reconnect" : {
+				"value" : 16,
+				"def" : {
+					"manual_reconn" : {"bit" : 0}
+				}
+			},
+			"force_roaming" : {
+				"value" : 17,
+				"def" : {
+					"manual_force_roaming" : {"bit" : 0}
+				}
+			},
+			"sta_binding_ap" : {
+				"value" : 19,
+				"def" : {
+					"manual_sta_binding" : {"bit" : 0}
+				}
+			},
+			"reset_default" : {
+				"value" : 20,
+				"def" : {
+					"manual_reset_default" : {"bit" : 0}
+				}
+			},
+			"conn_eap_mode" : {
+				"value" : 23,
+				"def" : {
+					"general_mode" : {"bit" : 0}
+				}
+			}
+		};
+		var node_capability_status = {};
+		if("capability" in _node_info) {
+			for(var type in node_capability_list) {
+				if(node_capability_list.hasOwnProperty(type)) {
+					var capability_type_idx = node_capability_list[type].value;
+					var capability_value = 0;
+					if(capability_type_idx in _node_info.capability) //check capability idx exist
+						capability_value = (_node_info.capability[capability_type_idx] == "") ? 0 : _node_info.capability[capability_type_idx];
+					else if(capability_type_idx == "15")//exception, for old FW, not have this capability
+						capability_value = 1;
+					var capability_type_def_list = node_capability_list[type].def;
+					for(var def_item in capability_type_def_list) {
+						if(capability_type_def_list.hasOwnProperty(def_item)) {
+							var def_item_bitwise = capability_type_def_list[def_item]["bit"];
+							var support = (capability_value & (1 << def_item_bitwise)) ? true : false;
+							node_capability_status[def_item] = support;
+						}
+					}
+				}
+			}
+		}
+		return node_capability_status;
 	}
 }

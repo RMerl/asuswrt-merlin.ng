@@ -7,8 +7,13 @@
 #include <stdarg.h>
 #include <dirent.h>
 #include <sys/stat.h>
-#include<signal.h>
+#include <signal.h>
+#include <ctype.h>	//isxdigit()
 #include "function.h"
+
+/* smartsync_api/google.c */
+extern void *xcalloc (size_t nmemb, size_t size);
+extern void *xmalloc (size_t size);
 
 extern char *case_conflict_name;
 extern int exit_loop;

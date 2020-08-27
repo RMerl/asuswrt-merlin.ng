@@ -109,7 +109,7 @@ int get_current_freq()
 #ifdef linux
 	struct timex txc;
 	txc.modes=0;
-	if (__adjtimex(&txc) < 0) {
+	if (adjtimex(&txc) < 0) {
 		perror("adjtimex"); exit(1);
 	}
 	return txc.freq;
@@ -126,7 +126,7 @@ int set_freq(int new_freq)
 	struct timex txc;
 	txc.modes = ADJ_FREQUENCY;
 	txc.freq = new_freq;
-	if (__adjtimex(&txc) < 0) {
+	if (adjtimex(&txc) < 0) {
 		perror("adjtimex"); exit(1);
 	}
 	return txc.freq;
@@ -535,10 +535,12 @@ int main(int argc, char *argv[]) {
 			if(fd != -1) {
 				if (!nvram_match("ntp_ready", "1")) {
 					nvram_set("ntp_ready", "1");
-#if !defined(RPAC56) && !defined(MAPAC1300) && !defined(MAPAC2200) && !defined(VZWAC1300)
-					if(nvram_contains_word("rc_support", "defpsk")){
+#if !defined(RPAC56) && !defined(MAPAC1300) && !defined(MAPAC2200) && !defined(VZWAC1300) && !defined(RTCONFIG_DSL)
+#ifndef RTCONFIG_BT_CONN
+					if(nvram_contains_word("rc_support", "defpsk") && strncmp(nvram_safe_get("territory_code"), "CT", 2)){
 						nvram_set("x_Setting", "1");
 					}
+#endif
 #endif
 					doSystem("kill -SIGTSTP `cat %s`", "/var/run/ntp.pid");
 #ifdef RTCONFIG_CFGSYNC

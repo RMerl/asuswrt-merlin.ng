@@ -205,6 +205,7 @@ case $basic_machine in
 	# Some are omitted here because they have special meanings below.
 	tahoe | i860 | ia64 | m32r | m68k | m68000 | m88k | ns32k | arc | arm \
 		| arme[lb] | armv[2345] | armv[345][lb] | pyramid | mn10200 | mn10300 | tron | a29k \
+		| aarch64 | aarch64_be \
 		| 580 | i960 | h8300 \
 		| x86 | ppcbe | mipsbe | mipsle | shbe | shle | armbe | armle \
 		| hppa | hppa1.0 | hppa1.1 | hppa2.0 | hppa2.0w | hppa2.0n \
@@ -245,6 +246,7 @@ case $basic_machine in
 	vax-* | tahoe-* | i[234567]86-* | i860-* | ia64-* | m32r-* | m68k-* | m68000-* \
 	      | m88k-* | sparc-* | ns32k-* | fx80-* | arc-* | arm-* | c[123]* \
 	      | mips-* | pyramid-* | tron-* | a29k-* | romp-* | rs6000-* \
+	      | aarch64-* | aarch64_be-* \
 	      | power-* | none-* | 580-* | cray2-* | h8300-* | h8500-* | i960-* \
 	      | xmp-* | ymp-* \
 	      | x86-* | ppcbe-* | mipsbe-* | mipsle-* | shbe-* | shle-* | armbe-* | armle-* \

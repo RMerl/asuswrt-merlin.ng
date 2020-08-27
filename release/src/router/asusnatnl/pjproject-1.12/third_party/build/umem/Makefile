@@ -1,4 +1,4 @@
-ifneq (,$(findstring -DROUTER=1, $(OS_CFALGS)))
+ifneq (,$(findstring -DROUTER=1, $(OS_CFLAGS)))
 -include ../../../../../.config
 endif
 include ../../../build.mak
@@ -68,7 +68,7 @@ CFG_TARGET := $(if $(RTCONFIG_QCA),fix-config)
 all: $(CFG_TARGET) $(TARGETS)
 
 fix-config:
-	[ ! -e $(TOOLS)/include/unistd.h ] || [ ! -n "`grep \"extern int issetugid(void);\" $(TOOLS)/include/unistd.h`" ] || \
+	[ ! -e $(TOOLS)/include/unistd.h ] || [ ! -n "`grep \"int issetugid(void);\" $(TOOLS)/include/unistd.h`" ] || \
 		sed -ie "s,/[*] #undef HAVE_ISSETUGID [*]/,#define HAVE_ISSETUGID 1," ../../umem/umem_config.h
 
 doc:

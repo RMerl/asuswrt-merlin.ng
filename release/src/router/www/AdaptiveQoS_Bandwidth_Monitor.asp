@@ -302,27 +302,6 @@ function calculate_router_traffic(traffic){
 	var angle = 0;
 	var rotate = "";
 /* angle mapping table: [0M: -123deg, 1M: -90deg, 5M: -58deg, 10M: -33deg, 20M: -1deg, 30M: 30deg, 50M: 58deg, 75M: 88deg, 100M: 122deg]*/
-	if(cookie.get('maxBandwidth') == '100'){
-		if(tx_mb > 100 || rx_mb > 100){
-			cookie.set('maxBandwidth', '1000');
-			scale = [10, 50, 100, 200, 350, 500, 750, 1000];
-			$('#upload_speed_meter_bg').attr("class", "speed-meter-1000");
-			$('#download_speed_meter_bg').attr("class", "speed-meter-1000");
-			download_maximum = 1000 * 1024;
-			upload_maximum = 1000 * 1024;
-		}
-	}
-	else if(cookie.get('maxBandwidth') == '1000'){
-		if(tx_mb > 1000 || rx_mb > 1000){
-			cookie.set('maxBandwidth', '10000');
-			scale = [500, 750, 1000, 2000, 3500, 5000, 7500, 10000];
-			$('#upload_speed_meter_bg').attr("class", "speed-meter-1000");
-			$('#download_speed_meter_bg').attr("class", "speed-meter-1000");
-			download_maximum = 10000 * 1024;
-			upload_maximum = 10000 * 1024;
-		}
-	}
-
 	if(router_traffic_old.length != 0){
 		//angle = (tx_mb - lower unit)/(upper unit - lower unit)*(degree in the range) + (degree of previous scale) + (degree of 0M)
 		document.getElementById('upload_speed').innerHTML = tx_mb.toFixed(2);

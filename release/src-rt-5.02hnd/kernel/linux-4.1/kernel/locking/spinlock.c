@@ -21,6 +21,30 @@
 #include <linux/debug_locks.h>
 #include <linux/export.h>
 
+#define CATHY_DEBUG_LOCK
+
+#ifdef CATHY_DEBUG_LOCK
+void *lock_acquire[NR_CPUS] = { NULL };
+void *lock_hold[NR_CPUS] = { NULL };
+
+#define CATHY_DEBUG_LOCK_ACQ(lock) do { lock_acquire[smp_processor_id()] = (void *)lock; } while (0);
+#define CATHY_DEBUG_LOCK_HOLD(lock) do { lock_hold[smp_processor_id()] = (void *)lock; } while (0);
+void dump_debug_lock_info(void)
+{
+	int i;
+
+	for (i = 0; i < NR_CPUS; i++) {
+		printk(KERN_ERR "lock_acquire[%d] %pS lock_hold[%d] %pS\n", i, lock_acquire[i], i, lock_hold[i]);
+	}
+}
+EXPORT_SYMBOL(dump_debug_lock_info);
+#else /* !CATHY_DEBUG_LOCK */
+#define CATHY_DEBUG_LOCK_ACQ(lock)
+#define CATHY_DEBUG_LOCK_HOLD(lock)
+void dump_debug_lock_info(void) { }
+EXPORT_SYMBOL(dump_debug_lock_info);
+#endif /* !CATHY_DEBUG_LOCK */
+
 /*
  * If lockdep is enabled then we use the non-preemption spin-ops
  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
@@ -156,7 +180,13 @@ EXPORT_SYMBOL(_raw_spin_lock);
 #ifndef CONFIG_INLINE_SPIN_LOCK_IRQSAVE
 unsigned long __lockfunc _raw_spin_lock_irqsave(raw_spinlock_t *lock)
 {
-	return __raw_spin_lock_irqsave(lock);
+	unsigned long ret;
+
+	CATHY_DEBUG_LOCK_ACQ(lock);
+	ret = __raw_spin_lock_irqsave(lock);
+	CATHY_DEBUG_LOCK_ACQ(NULL);
+	CATHY_DEBUG_LOCK_HOLD(lock);
+	return ret;
 }
 EXPORT_SYMBOL(_raw_spin_lock_irqsave);
 #endif
@@ -164,7 +194,10 @@ EXPORT_SYMBOL(_raw_spin_lock_irqsave);
 #ifndef CONFIG_INLINE_SPIN_LOCK_IRQ
 void __lockfunc _raw_spin_lock_irq(raw_spinlock_t *lock)
 {
+	CATHY_DEBUG_LOCK_ACQ(lock);
 	__raw_spin_lock_irq(lock);
+	CATHY_DEBUG_LOCK_ACQ(NULL);
+	CATHY_DEBUG_LOCK_HOLD(lock);
 }
 EXPORT_SYMBOL(_raw_spin_lock_irq);
 #endif
@@ -172,7 +205,10 @@ EXPORT_SYMBOL(_raw_spin_lock_irq);
 #ifndef CONFIG_INLINE_SPIN_LOCK_BH
 void __lockfunc _raw_spin_lock_bh(raw_spinlock_t *lock)
 {
+	CATHY_DEBUG_LOCK_ACQ(lock);
 	__raw_spin_lock_bh(lock);
+	CATHY_DEBUG_LOCK_ACQ(NULL);
+	CATHY_DEBUG_LOCK_HOLD(lock);
 }
 EXPORT_SYMBOL(_raw_spin_lock_bh);
 #endif
@@ -189,6 +225,7 @@ EXPORT_SYMBOL(_raw_spin_unlock);
 void __lockfunc _raw_spin_unlock_irqrestore(raw_spinlock_t *lock, unsigned long flags)
 {
 	__raw_spin_unlock_irqrestore(lock, flags);
+	CATHY_DEBUG_LOCK_HOLD(NULL);
 }
 EXPORT_SYMBOL(_raw_spin_unlock_irqrestore);
 #endif
@@ -197,6 +234,7 @@ EXPORT_SYMBOL(_raw_spin_unlock_irqrestore);
 void __lockfunc _raw_spin_unlock_irq(raw_spinlock_t *lock)
 {
 	__raw_spin_unlock_irq(lock);
+	CATHY_DEBUG_LOCK_HOLD(NULL);
 }
 EXPORT_SYMBOL(_raw_spin_unlock_irq);
 #endif
@@ -205,6 +243,7 @@ EXPORT_SYMBOL(_raw_spin_unlock_irq);
 void __lockfunc _raw_spin_unlock_bh(raw_spinlock_t *lock)
 {
 	__raw_spin_unlock_bh(lock);
+	CATHY_DEBUG_LOCK_HOLD(NULL);
 }
 EXPORT_SYMBOL(_raw_spin_unlock_bh);
 #endif

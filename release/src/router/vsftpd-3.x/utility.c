@@ -70,6 +70,8 @@ vsf_exit(const char* p_text)
   vsf_sysutil_exit(0);
 }
 
+extern char *nvram_xfr(const char *buf);
+
 char*
 local2remote(const char *buf)
 {

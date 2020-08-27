@@ -216,6 +216,20 @@ a{
 }
 </style>	
 <script type="text/javascript">
+var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
+var header_info = [<% get_header_info(); %>][0];
+var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
+var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
+var chdom = function(){window.location.href=domainNameUrl+"/blocking.asp"+window.location.search};
+
+(function(){
+	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
+		setTimeout(function(){
+			var s=document.createElement("script");s.type="text/javascript";s.src=domainNameUrl+"/chdom.json?hostname="+header_info.host;var h=document.getElementsByTagName("script")[0];h.parentNode.insertBefore(s,h);
+		}, 1);
+	}
+})();
+
 var bwdpi_support = ('<% nvram_get("rc_support"); %>'.search('bwdpi') == -1) ? false : true;
 var casenum = '<% get_parameter("cat_id"); %>';
 var flag = '<% get_parameter("flag"); %>';
@@ -350,7 +364,7 @@ function show_information(){
 		//code_suggestion += "<li><#block_HP_suggest1#></li>";
 		//code_suggestion += '<li><#AiProtection_sites_report_desc#><a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank"><#AiProtection_sites_report_tm#></a></li>';
 		code_suggestion += '<li>If you are not sure of this webiste, visit <a href="https://global.sitesafety.trendmicro.com/index.php" target="_blank">TrendMicro\'s Site Safety Caneter</a> for more information. You can check the safety level of a particular URL that might seem suspicious.</li>';
-		code_suggestion += "<li>If you trust this website, click <a href='http://router.asus.com/AiProtection_MaliciousSitesBlocking.asp'>here</a> to unblock (administrator credential required)</li>";
+		code_suggestion += "<li>If you trust this website, click <a id='goToSetup' style='text-decoration:underline;'>here</a> to unblock (administrator credential required)</li>";
 		code_suggestion += "</ul>";
 		document.getElementById('tm_block').style.display = "";
 		/*$("#go_btn").click(function(){
@@ -396,6 +410,16 @@ function show_information(){
 
 	document.getElementById('page_title').innerHTML = code_title;
 	document.getElementById('suggestion').innerHTML = code_suggestion;
+
+	$("#goToSetup").click(function(){
+		function setValue(key, value, days) {
+			document.cookie = key + '=' + value + '; expires=' +
+			(new Date(new Date().getTime() + ((days ? days : 14) * 86400000))).toUTCString() + '; path=/';
+		}
+
+		setValue("malware", target_info.url)
+		location.href = "/AiProtection_MaliciousSitesBlocking.asp"
+	})
 }
 </script>
 </head>

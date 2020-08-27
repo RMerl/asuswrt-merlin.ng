@@ -33,6 +33,7 @@ $(function () {
 
 wl_channel_list_2g = '<% channel_list_2g(); %>';
 wl_channel_list_5g = '<% channel_list_5g(); %>';
+wl_channel_list_5g_2 = '<% channel_list_5g_2(); %>';
 var wl_unit_value = '<% nvram_get("wl_unit"); %>';
 var wl_subunit_value = '<% nvram_get("wl_subunit"); %>';
 var wlc_band_value = '<% nvram_get("wlc_band"); %>';
@@ -40,6 +41,8 @@ var cur_control_channel = [<% wl_control_channel(); %>][0];
 var wlc0_ssid = '<% nvram_get("wlc0_ssid"); %>';
 var wlc1_ssid = '<% nvram_get("wlc1_ssid"); %>';
 var wifison_ready = httpApi.nvramGet(["wifison_ready"]).wifison_ready;
+var wl_bw_160 = '<% nvram_get("wl_bw_160"); %>';
+var enable_bw_160 = (wl_bw_160 == 1) ? true : false;
 
 function initial(){
 	show_menu();
@@ -49,6 +52,10 @@ function initial(){
             .attr('target', '_blank')
             .attr('style', 'color:#FC0;text-decoration:underline;')
             .attr('href', 'https://www.asus.com/support/FAQ/1037422/');
+	}
+
+	if(vht160_support){
+		$("#enable_160mhz").attr("checked", enable_bw_160);
 	}
 
 	wireless_mode_change(document.form.wl_nmode_x);
@@ -87,6 +94,10 @@ function initial(){
 		document.form.wl_nmode_x.remove(3); //remove "N/AC Mixed" for NON-AC router and NOT in 5G
 	}
 
+	if(vht160_support && wl_unit_value != '0'){
+		document.getElementById('enable_160_field').style.display = "";
+	}
+
 	if('<% nvram_get("wl_nmode_x"); %>' == "2")
 			inputCtrl(document.form.wl_bw, 0);
 
@@ -108,7 +119,6 @@ function initial(){
 	limit_auth_method();	
 	wl_auth_mode_change(1);
 	//mbss_display_ctrl();
-
 	if(optimizeXbox_support){
 		document.getElementById("wl_optimizexbox_span").style.display = "";
 		document.form.wl_optimizexbox_ckb.checked = ('<% nvram_get("wl_optimizexbox"); %>' == 1) ? true : false;
@@ -178,7 +188,6 @@ function initial(){
 		document.form.wl_subunit.value = 1;
 	}
 
-
 	var skip_channel_2g = '<% nvram_get("skip_channel_2g"); %>';
 	var skip_channel_5g = '<% nvram_get("skip_channel_5g"); %>';
 
@@ -206,7 +215,6 @@ function initial(){
 	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
 		var flag = '<% get_parameter("flag"); %>';		
 		var smart_connect_flag_t;
-
 		document.getElementById("smartcon_enable_field").style.display = "";
 		if(flag == '')
 			smart_connect_flag_t = '<% nvram_get("smart_connect_x"); %>';
@@ -313,7 +321,7 @@ function genBWTable(_unit){
 				bws.push(4);
 				bwsDesc.push("80+80 MHz");
 			}
-			if(vht160_support && array_160m.length/4 >= 1){
+			if(vht160_support && array_160m.length/4 >= 1 && enable_bw_160){
 				bwsDesc[0] = "20/40/80/160 MHz";
 				bws.push(5);
 				bwsDesc.push("160 MHz");
@@ -529,6 +537,10 @@ function applyRule(){
 			}
 		}
 
+		if(vht160_support){
+			document.form.wl_bw_160.value = $("#enable_160mhz").prop("checked") ? 1 : 0;
+		}
+
 		showLoading();
 		document.form.wps_config_state.value = "1";		
 		if((auth_mode == "shared" || auth_mode == "wpa" || auth_mode == "wpa2"  || auth_mode == "wpawpa2" || auth_mode == "radius" ||
@@ -546,7 +558,9 @@ function applyRule(){
 			document.form.wl_mfp.value = '2';
 		}
 		else if(auth_mode == 'psk' || auth_mode == 'psk2' || auth_mode == 'pskpsk2' || auth_mode == 'psk2sae' || auth_mode == 'wpa' || auth_mode == 'wpa2' || auth_mode == 'wpawpa2'){
-			document.form.wl_mfp.value = '1';
+			if(document.form.wl_mfp.value == '2'){
+				document.form.wl_mfp.value = '1';
+			}
 		}
 
 		if(Bcmwifi_support) {
@@ -600,7 +614,7 @@ function validForm(){
 		if(!validate_wlphrase('WLANConfig11b', 'wl_phrase_x', document.form.wl_phrase_x))
 			return false;	
 
-	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2"){ //2008.08.04 lock modified
+	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2" || auth_mode == "sae" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
 		if(is_KR_sku){
 			if(!validator.psk_KR(document.form.wl_wpa_psk))
 				return false;
@@ -676,13 +690,9 @@ function _change_wl_unit(val){
 	if (band60g_support && he_frame_support) {
 		if (document.form.wl_unit.value == '3') {
 			$("#he_mode_field").hide();
-			document.form.wl0_he_features.disabled = true;
-			document.form.wl1_he_features.disabled = true;
 		}
 		else {
 			$("#he_mode_field").show();
-			document.form.wl0_he_features.disabled = false;
-			document.form.wl1_he_features.disabled = false;
 		}
 	}
 	if(!concurrep_support && (isSwMode("re") || isSwMode("mb")) && val == wlc_band_value)
@@ -830,12 +840,12 @@ function enableSmartCon(val){
 			value = ["1", "2"];
 			add_options_x2(document.form.smart_connect_t, desc, value, val);
 		}
-		else if(based_modelid =="RT-AC3200"){
+		else if(based_modelid =="RT-AC3200" || based_modelid =="RT-AC95U"){
 			desc = ["Tri-Band Smart Connect (2.4GHz, 5GHz-1 and 5GHz-2)"];
 			value = ["1"];
 			add_options_x2(document.form.smart_connect_t, desc, value, val);
 		}
-		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE"){
+		else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE" || based_modelid == "MAP-AC1750" || based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid.substring(0,7) == "RT-AC59"){
 			desc = ["Dual-Band Smart Connect (2.4GHz and 5GHz)"];
 			value = ["1"];
 			add_options_x2(document.form.smart_connect_t, desc, value, val);
@@ -850,6 +860,11 @@ function enableSmartCon(val){
 		based_modelid == "RT-AC86U" ||
 		based_modelid == "GT-AC2900" ||
 		based_modelid == "RT-AC3100" ||
+		based_modelid == "RT-AC95U" ||
+		based_modelid == "MAP-AC1750" ||
+		based_modelid.substring(0,7) == "RT-AC59" ||
+		based_modelid == "RT-AX89U" ||
+		based_modelid == "GT-AXY16000" ||
 		based_modelid == "BLUECAVE"){
 		document.getElementById("smartcon_rule_link").style.display = "none";
 		if(val == 0){
@@ -880,7 +895,10 @@ function enableSmartCon(val){
 		regen_auto_option(document.form.wl_nmode_x);
 		document.getElementById("wl_optimizexbox_span").style.display = "none";
 		document.getElementById("wl_gmode_checkbox").style.display = "none";
-		regen_auto_option(document.form.wl_bw);
+		if (Qcawifi_support)
+			__regen_auto_option(document.form.wl_bw, 1);
+		else
+			regen_auto_option(document.form.wl_bw);
 		regen_auto_option(document.form.wl_channel);
 		regen_auto_option(document.form.wl_nctrlsb);			
 	}
@@ -889,10 +907,34 @@ function enableSmartCon(val){
 		_change_smart_connect(val);
 }
 
-function regen_auto_option(obj){
+function enable_160MHz(obj){
+	cur = '<% nvram_get("wl_bw"); %>';
+	var bws = new Array();
+	var bwsDesc = new Array();
+
+	if(obj.checked){
+		bws = [1, 0, 2, 3, 5];
+		bwsDesc = ["20/40/80/160 MHz", "20 MHz", "40 MHz", "80 MHz", "160 MHz"];
+		enable_bw_160 = true;
+	}
+	else{
+		bws = [1, 0, 2, 3];
+		bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
+		enable_bw_160 = false;
+	}
+
+	add_options_x2(document.form.wl_bw, bwsDesc, bws, cur);
+	insertExtChannelOption();
+}
+
+function __regen_auto_option(obj,val){
 	free_options(obj);
-	obj.options[0] = new Option("<#Auto#>", 0);
+	obj.options[0] = new Option("<#Auto#>", val);
 	obj.selectedIndex = 0;
+}
+
+function regen_auto_option(obj){
+	__regen_auto_option(obj,0);
 }
 
 var wl_unit = <% nvram_get("wl_unit"); %>;
@@ -947,13 +989,9 @@ function change_wl_nmode(o){
 	if (he_frame_support) {
 		if (o.value == '0' && !(band60g_support && document.form.wl_unit.value == '3')) {
 			$("#he_mode_field").show();
-			document.form.wl0_he_features.disabled = false;
-			document.form.wl1_he_features.disabled = false;
 		}
 		else {
 			$("#he_mode_field").hide();
-			document.form.wl0_he_features.disabled = true;
-			document.form.wl1_he_features.disabled = true;
 		}
 	}
 
@@ -973,13 +1011,11 @@ function change_wl_nmode(o){
 	genBWTable(wl_unit);
 }
 function he_frame_mode(obj) {
-	if (obj.value != "0") {
-		document.form.wl0_he_features.value = "3";
-		document.form.wl1_he_features.value = "7";
-	}
-	else {
-		document.form.wl0_he_features.value = "0";
-		document.form.wl1_he_features.value = "0";
+	if (obj.value == "0" && wl_unit != 0) {
+		$("#enable_160mhz")[0].checked = false
+		enable_160MHz($("#enable_160mhz")[0]);
+		document.form.acs_dfs_checkbox.checked = false;
+		document.form.acs_dfs.value = 0;
 	}
 }
 
@@ -1057,8 +1093,7 @@ function ajax_wl_channel(){
 <input type="hidden" name="AUTO_CHANNEL" value='<% nvram_get("AUTO_CHANNEL"); %>'>
 <input type="hidden" name="wl_wep_x_orig" value='<% nvram_get("wl_wep_x"); %>'>
 <input type="hidden" name="wl_optimizexbox" value='<% nvram_get("wl_optimizexbox"); %>'>
-<input type="hidden" name="wl0_he_features" value='<% nvram_get("wl0_he_features"); %>'>
-<input type="hidden" name="wl1_he_features" value='<% nvram_get("wl1_he_features"); %>'>
+<input type="hidden" name="wl_bw_160" value='<% nvram_get("wl_bw_160"); %>'>
 <input type="hidden" name="wl_subunit" value='-1'>
 <input type="hidden" name="acs_dfs" value='<% nvram_get("acs_dfs"); %>'>
 <input type="hidden" name="acs_band1" value='<% nvram_get("acs_band1"); %>'>
@@ -1120,7 +1155,7 @@ function ajax_wl_channel(){
 
 										$('#radio_smartcon_enable').iphoneSwitch( smart_connect_flag_t > 0, 
 										 function() {
-											if(based_modelid != "RT-AC5300" && based_modelid != "GT-AC5300" && based_modelid !="RT-AC3200" && based_modelid != "RT-AC88U" && based_modelid != "RT-AC86U" && based_modelid != "GT-AC2900" && based_modelid != "RT-AC3100" && based_modelid != "BLUECAVE")
+											if(based_modelid != "RT-AC5300" && based_modelid != "GT-AC5300" && based_modelid !="RT-AC3200" && based_modelid != "RT-AC88U" && based_modelid != "RT-AC86U" && based_modelid != "GT-AC2900" && based_modelid != "RT-AC3100" && based_modelid != "BLUECAVE" && based_modelid != "MAP-AC1750"  && based_modelid != "RT-AC95U" && based_modelid != "RT-AX89U" && based_modelid != "GT-AXY16000")
 												enableSmartCon(1);
 											else{
 												if(document.form.smart_connect_t.value)
@@ -1208,9 +1243,9 @@ function ajax_wl_channel(){
 					</th>
 					<td>
 						<div style="display:flex;align-items: center;">
-							<select name="he_mode" class="input_option" onChange="he_frame_mode(this);">
-								<option value="7" <% nvram_match("wl0_he_features", "7" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
-								<option value="0" <% nvram_match("wl0_he_features", "0" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
+							<select name="wl_11ax" class="input_option" onChange="he_frame_mode(this);">
+								<option value="1" <% nvram_match("wl_11ax", "1" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_button1name#></option>
+								<option value="0" <% nvram_match("wl_11ax", "0" ,"selected"); %> ><#WLANConfig11b_WirelessCtrl_buttonname#></option>
 							</select>
 							<span id="he_mode_faq" style="padding: 0 10px"><#WLANConfig11b_HE_Frame_Mode_faq#></span>
 						</div>
@@ -1224,7 +1259,8 @@ function ajax_wl_channel(){
 							<option class="content_input_fd" value="0" <% nvram_match("wl_bw", "0","selected"); %>>20 MHz</option>
 							<option class="content_input_fd" value="2" <% nvram_match("wl_bw", "2","selected"); %>>40 MHz</option>
 							<option class="content_input_fd" value="3" <% nvram_match("wl_bw", "3","selected"); %>>80 MHz</option>
-						</select>				
+						</select>
+						<span id="enable_160_field" style="display:none"><input type="checkbox" onclick="enable_160MHz(this);" id="enable_160mhz">Enable 160 MHz</span>			
 			   	</td>
 			 	</tr>			  
 			  

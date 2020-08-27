@@ -1,3 +1,6 @@
+#ifndef __PC_H__
+#define __PC_H__ 1
+
 #define MIN_DAY 1
 #define MAX_DAY 7
 
@@ -64,3 +67,4 @@ extern int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_
 extern void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern void config_pause_block_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdrop, int temp);
 extern int count_pc_rules(pc_s *pc_list, int enabled);
+#endif // #ifndef __PC_H__

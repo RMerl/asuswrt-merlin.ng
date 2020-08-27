@@ -16,6 +16,8 @@
 #define PHDDNS_REVISION	"$Revision: 32841 $$Date: 2014-04-09 10:14:34 +0800 $$Author: skyvense $"
 #define ISSPACE(x) ((x)==' '||(x)=='\r'||(x)=='\n'||(x)=='\f'||(x)=='\b'||(x)=='\t')
 
+int getch_c (void);
+
 int checkparameter(int argc,char** argv,PHGlobal *pglobal,PH_parameter *parameter)
 {
 	int i = 0,repma = 0;

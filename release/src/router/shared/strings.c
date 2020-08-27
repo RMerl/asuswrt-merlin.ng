@@ -386,6 +386,24 @@ void trim_colon(char *str)
 	}
 }
 
+void trim_char(char *str, char c)
+{
+	int in = 0;
+	int out = 0;
+
+	if (!str)
+		return;
+
+	while (str[in])
+	{
+		if (str[in] != c)
+			str[out++] = str[in];
+		in++;
+	}
+
+	str[out] = '\0';
+}
+
 void toLowerCase(char *str) {
 	char *p;
 

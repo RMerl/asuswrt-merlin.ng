@@ -20,7 +20,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdlib.h>	//malloc(), system()
 
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <shared.h>	//shared/shared.h
+#endif
 #include "globals.h"
 
 #include "statemachines.h"

@@ -32,11 +32,14 @@
 #endif
 /* shared memory / cfg_mnt / json */
 #include <sys/shm.h>
+#include <json.h>
 #include <cfg_slavelist.h>
 #include <cfg_clientlist.h>
-#include <json.h>
 /* linklist */
 #include <linklist.h>
+#ifdef RTCONFIG_LIBASUSLOG
+#include "libasuslog.h"
+#endif
 
 typedef enum __amaslib_dhcp_flag_t_
 {
@@ -51,6 +54,40 @@ typedef struct __amaslib_dhcp__t_
 	char ip[16];        /* device IP  */
 	int flag;           /* flag for checking use*/
 } AMASLIB_DHCP_T;
+
+
+#define MAX_AMASLIB_SOCKET_CLIENT  5
+
+/* DEBUG DEFINE */
+#define AMASLIB_DEBUG             "/tmp/AMASLIB_DEBUG"
+
+#ifdef RTCONFIG_LIBASUSLOG
+#define AMAS_LIB_DBG_LOG    "amas_lib.log"
+extern char *__progname;
+/*#define AMASLIB_DBG_SYSLOG(fmt,args...) \
+	if (nvram_get_int("amaslib_syslog")) { \
+		char info[1024]; \
+		time_t timep; \
+		time (&timep); \
+		snprintf(info, sizeof(info), "echo \" %.24s [AMASLIB][%s][%d][%s:(%d)]"fmt"\" >> /tmp/"AMAS_LIB_DBG_LOG, ctime(gmtime(&timep)), __progname, getpid(), __FUNCTION__, __LINE__, ##args); \
+		system(info); \
+	}*/
+#define AMASLIB_DBG_SYSLOG(fmt,args...) \
+	if (nvram_get_int("amaslib_syslog")) { \
+		asusdebuglog(LOG_INFO, AMAS_LIB_DBG_LOG, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s][%d]][%s:(%d)] "fmt, __progname, getpid(), __FUNCTION__, __LINE__, ##args); \
+	}
+#else
+#define AMASLIB_DBG_SYSLOG(fmt,args...) {}
+#endif
+
+#define AMASLIB_DBG(fmt,args...) \
+	if(f_exists(AMASLIB_DEBUG) > 0) { \
+		_dprintf("[AMASLIB][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	} \
+	AMASLIB_DBG_SYSLOG(fmt,##args)
+
+extern int AMAS_EVENT_TRIGGER(char *sta2g, char *sta5g, int flag);
+extern int is_amaslib_enabled();
 
 /* define amas usage */
 #define DHCP_TABLE     "/var/lib/misc/dnsmasq.leases"

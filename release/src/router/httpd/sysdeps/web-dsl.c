@@ -437,7 +437,11 @@ int update_dsl_iptv_variables()
 		else {
 			nvram_set("switch_stb_x", "1");
 			nvram_set("wans_lanport", "4");
+#ifdef DSL_AX82U
+			nvram_set("dsltmp_qis_reboot", "0");
+#else
 			nvram_set("dsltmp_qis_reboot", "1");
+#endif
 		}
 	}
 	else {
@@ -462,7 +466,11 @@ int update_dsl_iptv_variables()
 			nvram_set("dsl8.6_enable", "0");
 			nvram_set("dsl8.7_enable", "0");
 #endif
+#ifdef DSL_AX82U
+			nvram_set("dsltmp_qis_reboot", "0");
+#else
 			nvram_set("dsltmp_qis_reboot", "1");
+#endif
 		}
 	}
 

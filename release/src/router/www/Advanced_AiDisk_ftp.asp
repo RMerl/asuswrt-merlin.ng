@@ -51,7 +51,19 @@ var folderlist = new Array();
 var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';
 var usb_port_conflict_faq = "https://www.asus.com/support/FAQ/1037906";
 function initial(){
-	show_menu();
+	if(re_mode == "1"){
+		$("#apply_btn").addClass("perNode_apply_gen");
+		show_loading_obj();
+	}
+	else{
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("FormTitle content_bg");
+		$("#apply_btn").addClass("apply_gen");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	document.aidiskForm.protocol.value = PROTOCOL;
 	
 	if(is_KR_sku){
@@ -765,7 +777,7 @@ function switchUserType(flag){
 <input type="hidden" name="ftp_wanac" value="<% nvram_get("ftp_wanac"); %>">
 <input type="hidden" name="flag" value="">
 
-<table width="983" border="0" align="center" cellpadding="0" cellspacing="0" class="content">
+<table id="content_table" border="0" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>				
 	
@@ -777,32 +789,24 @@ function switchUserType(flag){
 	<td valign="top">
 	  <div id="tabMenu" class="submenuBlock"></div>
 	  <!--=====Beginning of Main Content=====-->
-<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
-	<tr>
-		<td valign="top">
-
-	  <table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
-
-<tbody>
-	<tr>
-		  <td bgcolor="#4D595D">
-		  <div>&nbsp;</div>
-			<div style="width:730px">
-				<table width="730px">
-					<tr>
-						<td align="left">
-							<span class="formfonttitle"><#menu5_4#> - <#menu5_4_2#></span>
-						</td>
-						<td align="right">
-							<img id='back_app_installation' onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;position:absolute;margin-left:-20px;margin-top:-30px;" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
-						</td>
-					</tr>
-				</table>
+<div id="FormTitle" align="left" border="0" cellpadding="0" cellspacing="0" style="width: 760px; display: none;">
+<table border="0" cellpadding="5" cellspacing="0">
+	<tbody>
+		<tr>
+		  <td>
+			<div style="width: 99%; margin-top: 30px; margin-bottom: 5px;">
+				<span class="formfonttitle"><#menu5_4#> - <#menu5_4_2#></span>
+				<span id="returnBtn" class="returnBtn">
+					<img onclick="go_setting('/APP_Installation.asp')" align="right" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+				</span>
 			</div>
-			<div style="margin:5px;" class="splitLine"></div>
-			<div class="formfontdesc"><#FTP_desc#></div>
-
-			<table width="740px" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+			<div id="splitLine" class="splitLine"></div>
+			<div class="formfontdesc" style="margin-top: 10px;"><#FTP_desc#></div>
+		  </td>
+		</tr>
+		<tr>
+		<td>
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 				<tr>
 				<th><#enableFTP#></th>
 					<td>
@@ -895,7 +899,7 @@ function switchUserType(flag){
 				</tr>
 			</table>
 
-			<div class="apply_gen">
+			<div id="apply_btn">
 					<input type="button" class="button_gen" value="<#CTL_apply#>" onclick="applyRule();">
 			</div>
 
@@ -938,10 +942,9 @@ function switchUserType(flag){
 					</table>
 		  		</td>
   			</tr>
-	  	</table>
-	  	<!-- The action buttons of accounts and folders.  END  The action buttons of accounts and folders.-->
-	  	
-	</div>
+			</table>
+			<!-- The action buttons of accounts and folders.  END  The action buttons of accounts and folders.-->
+			</div>
 	<!-- The table of share. END-------------------------------------------------------------------------------->
 	
 		 <!--The table of accounts and folders.       start    The table of accounts and folders. -->
@@ -973,25 +976,20 @@ function switchUserType(flag){
 		    		<!-- The right side table of folders.    End -->
           		</tr>
 	    	</table>
-	    	<!-- The table of accounts and folders.       END    The table of accounts and folders.  -->
-	    	
-	</td>
-
-
-</tr>
-</tbody>
-
+			<!-- The table of accounts and folders.       END    The table of accounts and folders.  -->
+		</td>
+		</tr>
+	</tbody>
 </table>
-	  <!-- The table of DDNS. -->
-    </td>
-  <td width="10"></td>
-  </tr>
-</table>
+</div>
+
 			</td>
     <td width="10" align="center" valign="top">&nbsp;</td>
-	</tr>
+</tr>
 </table>
-</form><div id="footer"></div>
+</form>
+
+<div id="footer"></div>
 
 <!-- mask for disabling AiDisk -->
 <div id="OverlayMask" class="popup_bg">

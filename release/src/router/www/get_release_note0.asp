@@ -16,7 +16,6 @@ function GenContent(){
 		error: function(xhr){
 			if(dead > 30){
 				$("#noteArea0").html("Fail to grab release note");
-				break;
 			}
 			else{
 				dead++;

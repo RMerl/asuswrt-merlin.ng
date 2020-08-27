@@ -135,7 +135,22 @@ function daapd_display(){
 }
 
 function initial(){
-	show_menu();
+	if(re_mode == "1"){
+		$("#FormTitle").addClass("perNode_MainContent");
+		$("#returnBtn").addClass("perNode_returnBtn");
+		$("#apply_btn").addClass("perNode_apply_gen");
+		show_loading_obj();
+	}
+	else{
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("upnp_table content_bg");
+		$("#returnBtn").addClass("returnBtn");
+		$("#apply_btn").addClass("apply_gen");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	document.aidiskForm.protocol.value = PROTOCOL;
 	initial_dir();
 	check_dir_path();
@@ -793,8 +808,7 @@ function set_dms_dir(obj){
 <input type="hidden" name="dms_dir_x" value="">
 <input type="hidden" name="dms_dir_type_x" value="">
 <input type="hidden" name="dms_dir_manual" value="<% nvram_get("dms_dir_manual"); %>">
-
-<table class="content" align="center" cellpadding="0" cellspacing="0">
+<table id="content_table" align="center" cellpadding="0" cellspacing="0">
   <tr>
 	<td width="17">&nbsp;</td>
 	
@@ -809,26 +823,20 @@ function set_dms_dir(obj){
 		<br>
 
 <!--=====Beginning of Main Content=====-->
-<div id="FormTitle" class="upnp_table content_bg" align="left" border="0" cellpadding="0" cellspacing="0">
+<div id="FormTitle" align="left" border="0" cellpadding="0" cellspacing="0" style="display: none;">
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
   <tr>
   	<td>
-				<div>
-					<table width="730px">
-						<tr>
-							<td align="left">
-								<span class="formfonttitle"><#UPnPMediaServer#></span>
-							</td>
-							<td align="right">
-								<img onclick="go_setting('/APP_Installation.asp')" align="right" style="cursor:pointer;position:absolute;margin-left:-20px;margin-top:-30px;" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
-							</td>
-						</tr>
-					</table>
-				</div>
-				<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-			<div id="upnp_desc_id" class="formfontdesc"><#upnp_Desc#></div>
-		</td>
-  </tr>  
+		<div style="width: 99%; margin-top: 30px; margin-bottom: 5px;">
+			<span class="formfonttitle"><#UPnPMediaServer#></span>
+			<span id="returnBtn">
+				<img id="returnBtn" onclick="go_setting('/APP_Installation.asp')" align="right" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+			</span>
+		</div>
+		<div id="splitLine" class="splitLine"></div>
+		<div id="upnp_desc_id" class="formfontdesc" style="margin-top: 10px;"><#upnp_Desc#></div>
+	</td>
+  </tr>
 
   <tr>
    	<td>
@@ -945,7 +953,7 @@ function set_dms_dir(obj){
 		  			<th><#DLNA_directory#></th>
         		<th><#DLNA_contenttype#></th>
         		<th><#list_add_delete#></th>
-			  	</tr>			  
+				</tr>
 			  	<tr>
 						<td width="45%">
 								<input id="PATH" type="text" class="input_30_table" value="" onclick="get_disk_tree();" autocorrect="off" autocapitalize="off" readonly="readonly"/" placeholder="<#Select_menu_default#>" >
@@ -958,12 +966,11 @@ function set_dms_dir(obj){
 						<td width="15%">
 								<input type="button" class="add_btn" onClick="addRow_Group(10);" value="">
 						</td>
-			  	</tr>		  
+				</tr>
 			  </table>
-			  <div id="dlna_path_Block"></div>
-			  
+			<div id="dlna_path_Block"></div>
       	</div>
-       <div class="apply_gen">
+		<div id="apply_btn">
            		<input type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
        </div>      	
     	</td> 
@@ -975,14 +982,13 @@ function set_dms_dir(obj){
   	</td>
   </tr>
 </table>
-
+</div>
 <!--=====End of Main Content=====-->
 		</td>
 
 		<td width="20" align="center" valign="top"></td>
 	</tr>
 </table>
-</div>
 </form>
 
 

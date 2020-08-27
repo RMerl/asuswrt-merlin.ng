@@ -1,8 +1,8 @@
 /*
  * Wireless interface translation utility functions
  *
- * Copyright (C) 2017, Broadcom. All Rights Reserved.
- * 
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
@@ -15,7 +15,10 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: wlif_utils.c 669471 2016-11-09 17:01:43Z $
+ *
+ * <<Broadcom-WL-IPTag/Open:>>
+ *
+ * $Id: wlif_utils.c 783826 2020-02-11 06:24:47Z $
  */
 
 #include <typedefs.h>
@@ -28,7 +31,6 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-
 #include <bcmparams.h>
 #include <bcmtimer.h>
 #include <bcmnvram.h>
@@ -440,6 +442,33 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 	if (osifname_to_nvifname(os_name, nv_name, sizeof(nv_name)) < 0)
 		return 0;
 
+
+	/* find for dpsta */
+	if (wl_wlif_is_psta(os_name))
+		return name;
+
+	ifnames = nvram_get("dpsta_ifnames");
+	if (ifnames && (find_in_list(ifnames, nv_name) || find_in_list(ifnames, os_name))) {
+		/* find dpsta in which bridge */
+		for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {
+			sprintf(tmptr, "br%d_ifnames", i);
+			sprintf(if_name, "br%d", i);
+			ifnames = nvram_get(tmptr);
+			if (!ifnames && !i)
+			ifnames = nvram_get("lan_ifnames");
+			ifname = if_name;
+
+			if (ifnames) {
+				/* the name in ifnames may nvifname or osifname */
+				if (find_in_list(ifnames, nv_name) ||
+					find_in_list(ifnames, os_name))
+					return ifname;
+			}
+		}
+	}
+	
+
+
 	/* find for lan */
 	for (i = 0; i < WLIFU_MAX_NO_BRIDGE; i++) {
 		if (i == 0) {
@@ -457,6 +486,7 @@ get_ifname_by_wlmac(unsigned char *mac, char *name)
 			sprintf(tmptr, "lan%d_ifname", i);
 			ifnames = nvram_get(if_name);
 			ifname = nvram_get(tmptr);
+
 			if (ifname) {
 				/* the name in ifnames may nvifname or osifname */
 				if (find_in_list(ifnames, nv_name) ||
@@ -1231,3 +1261,1401 @@ wl_wlif_get_max_nss(wl_bss_info_t *bi)
 	return nss;
 }
 #endif
+
+#if defined(CONFIG_HOSTAPD) && defined(BCA_HNDROUTER)
+#define WLIF_WPS_LED_OFFSET			0
+#define WLIF_WPS_LED_MASK			0x03L
+#define WLIF_WPS_LED_STATUS_OFFSET		8
+#define WLIF_WPS_LED_STATUS_MASK		0x0000ff00L
+#define WLIF_WPS_LED_EVENT_OFFSET		16
+#define WLIF_WPS_LED_EVENT_MASK			0x00ff0000L
+#define WLIF_WPS_LED_BLINK_OFFSET		24
+#define WLIF_WPS_LED_BLINK_MASK			0xff000000L
+
+/* WPS led states */
+#define WLIF_WPS_LED_OFF			0
+#define WLIF_WPS_LED_ON				1
+#define WLIF_WPS_LED_BLINK			2
+
+/* WPS SM State */
+#define WLIF_WPS_STATE_IDLE			0
+#define WLIF_WPS_STATE_WAITING			1
+#define WLIF_WPS_STATE_SUCC			2
+#define WLIF_WPS_STATE_TIMEOUT			3
+#define WLIF_WPS_STATE_FAIL			4
+#define WLIF_WPS_STATE_OVERLAP			5
+
+#define WLIF_WPS_EVENT_START			2
+#define WLIF_WPS_EVENT_IDLE			(WLIF_WPS_STATE_IDLE + WLIF_WPS_EVENT_START)
+#define WLIF_WPS_EVENT_WAITING			(WLIF_WPS_STATE_WAITING + WLIF_WPS_EVENT_START)
+#define WLIF_WPS_EVENT_SUCC			(WLIF_WPS_STATE_SUCC + WLIF_WPS_EVENT_START)
+#define WLIF_WPS_EVENT_TIMEOUT			(WLIF_WPS_STATE_TIMEOUT + WLIF_WPS_EVENT_START)
+#define WLIF_WPS_EVENT_FAIL			(WLIF_WPS_STATE_FAIL + WLIF_WPS_EVENT_START)
+#define WLIF_WPS_EVENT_OVERLAP			(WLIF_WPS_STATE_OVERLAP + WLIF_WPS_EVENT_START)
+
+/* Sets the wps led status */
+static void
+wl_wlif_wps_led_set(int board_fp, int led_action, int led_blink_type,
+	int led_event, int led_status)
+{
+	BOARD_IOCTL_PARMS ioctl_parms = {0};
+
+	led_action &= WLIF_WPS_LED_MASK;
+	led_action |= ((led_status << WLIF_WPS_LED_STATUS_OFFSET) & WLIF_WPS_LED_STATUS_MASK);
+	led_action |= ((led_event << WLIF_WPS_LED_EVENT_OFFSET) & WLIF_WPS_LED_EVENT_MASK);
+	led_action |= ((led_blink_type << WLIF_WPS_LED_BLINK_OFFSET) & WLIF_WPS_LED_BLINK_MASK);
+
+	ioctl_parms.result = -1;
+	ioctl_parms.string = (char *)&led_action;
+	ioctl_parms.strLen = sizeof(led_action);
+	ioctl(board_fp, BOARD_IOCTL_SET_SES_LED, &ioctl_parms);
+
+	return;
+}
+
+/* Routine for changing wps led status */
+void
+wl_wlif_wps_gpio_led_blink(int board_fp, wlif_wps_blinktype_t blinktype)
+{
+	if (board_fp <= 0) {
+		return;
+	}
+
+	switch ((int)blinktype) {
+		case WLIF_WPS_BLINKTYPE_STOP:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_OFF, 0, 0, 0);
+			break;
+
+		case WLIF_WPS_BLINKTYPE_INPROGRESS:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_BLINK,
+				kLedStateUserWpsInProgress, WLIF_WPS_EVENT_WAITING, 0);
+			break;
+
+		case WLIF_WPS_BLINKTYPE_ERROR:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_BLINK,
+				kLedStateUserWpsError, WLIF_WPS_EVENT_FAIL, 0);
+			break;
+
+		case WLIF_WPS_BLINKTYPE_OVERLAP:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_BLINK,
+				kLedStateUserWpsSessionOverLap, WLIF_WPS_EVENT_OVERLAP, 0);
+			break;
+
+		case WLIF_WPS_BLINKTYPE_SUCCESS:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_ON,
+				kLedStateOn, WLIF_WPS_EVENT_SUCC, 0);
+			break;
+
+		default:
+			wl_wlif_wps_led_set(board_fp, WLIF_WPS_LED_OFF, 0, 0, 0);
+			break;
+	}
+}
+
+/* wps gpio init fn */
+int
+wl_wlif_wps_gpio_init()
+{
+
+	int board_fp = open("/dev/brcmboard", O_RDWR);
+
+	if (board_fp <= 0) {
+		cprintf("shared: Info %s %d failed to open /dev/brcmboard\n", __func__, __LINE__);
+		return -1;
+	}
+
+	return board_fp;
+}
+
+/* wps gpio cleanup fn */
+void
+wl_wlif_wps_gpio_cleanup(int board_fp)
+{
+	if (board_fp > 0) {
+		close(board_fp);
+	}
+}
+#endif	/* CONFIG_HOSTAPD && BCA_HNDROUTER */
+
+#ifdef CONFIG_HOSTAPD
+
+#define WLIF_HAPD_DIR		"/var/run/hostapd"
+
+#ifdef MULTIAP
+/* Struct to hold the list of type wlif_bss_t */
+typedef struct wlif_bss_list {
+	int count;
+	wlif_bss_t bss[WL_MAXBSSCFG];
+} wlif_bss_list_t;
+
+// Struct to pass backhaul credentials to hostapd using cli cmd
+typedef struct wlif_bh_creds_hapd_clicmd_data {
+	char ssid[WLIF_SSID_MAX_SZ];	// SSID
+	char key[WLIF_PSK_MAX_SZ];	// PSK
+	char auth[16];			// Auth can be WPAPSK/WPA2PSK/OPEN
+	char encr[16];			// Encr	can be TKIP/CCMP/NONE
+} wlif_bh_creds_hapd_clicmd_data_t;
+
+static void wl_wlif_update_hapd_bh_creds(char *wps_ifname, char *bh_ifname);
+static int wl_wlif_fill_bh_creds_from_nvram(char *nvifname, wlif_bh_creds_hapd_clicmd_data_t *cmd);
+#endif	/* MULTIAP */
+
+// WPS Status id and code value pairs
+typedef struct wlif_wps_status {
+	wlif_wps_ui_status_code_id_t idx;
+	char *val;
+} wlif_wps_ui_status_t;
+
+
+// Array of wps ui status codes
+static wlif_wps_ui_status_t wlif_wps_ui_status_arr[] =
+{
+	{WLIF_WPS_UI_INIT, "0"},
+	{WLIF_WPS_UI_FINDING_PBC_STA, "1"},
+	{WLIF_WPS_UI_OK, "2"},
+	{WLIF_WPS_UI_ERR, "3"},
+	{WLIF_WPS_UI_TIMEOUT, "4"},
+	{WLIF_WPS_UI_PBCOVERLAP, "8"},
+	{WLIF_WPS_UI_FIND_PBC_AP, "9"},
+	{WLIF_WPS_UI_FIND_PIN_AP, "11"}
+};
+
+/* Updates the wps_proc_status nvram to reflect the wps status in wps.asp page */
+void
+wl_wlif_update_wps_ui(wlif_wps_ui_status_code_id_t idx)
+{
+	if (idx < 0 || idx >= ARRAYSIZE(wlif_wps_ui_status_arr)) {
+		return;
+	}
+
+	nvram_set("wps_proc_status", wlif_wps_ui_status_arr[idx].val);
+}
+
+/* Gets the status code from the wps_proc_status nvram value */
+int
+wl_wlif_get_wps_status_code()
+{
+	wlif_wps_ui_status_code_id_t idx = WLIF_WPS_UI_INIT;
+	char *nvval = nvram_safe_get("wps_proc_status");
+
+	if (nvval[0] == '\0') {
+		return -1;
+	}
+
+	for (idx = 0; idx < ARRAYSIZE(wlif_wps_ui_status_arr); idx++) {
+		if (!strcmp(nvval, wlif_wps_ui_status_arr[idx].val)) {
+			return idx;
+		}
+	}
+
+	return -1;
+}
+/* Saves the network credentials received from the wps session */
+static void
+wl_wlif_save_wpa_settings(char *type, char *val, wlif_wps_nw_creds_t *creds)
+{
+
+	int len = 0;
+
+	/* In wpa_supplicant config file double quotes (") being added for ssid and
+	 * psk configurations eg. ssid="BCM_TST". Before saving these values to nvrams we need to
+	 * remove the double quotes from start and end of the string.
+	 */
+	if (strstr(type, "scan_ssid")) {
+		// Do nothing.
+	} else if (strstr(type, "ssid")) {
+		len = strlen(val) > (WLIF_SSID_MAX_SZ + 1) ? WLIF_SSID_MAX_SZ + 1 : strlen(val);
+		strncpy(creds->ssid, val + 1, sizeof(creds->ssid) -1);
+		creds->ssid[len - 2 /* for " at the start and end of string */]  = '\0';
+	} else if (strstr(type, "psk")) {
+		len = strlen(val) > (WLIF_PSK_MAX_SZ + 1) ? WLIF_PSK_MAX_SZ + 1 : strlen(val);
+		strncpy(creds->nw_key, val + 1, sizeof(creds->nw_key) -1);
+		creds->nw_key[len - 2 /* for " at the start and end of string */] = '\0';
+	} else if (strstr(type, "key_mgmt")) {
+		if (strstr(val, "WPA-PSK")) {
+			creds->akm |= WLIF_WPA_AKM_PSK;
+		}
+		if (strstr(val, "WPA2-PSK")) {
+			creds->akm |= WLIF_WPA_AKM_PSK2;
+		}
+	} else if (strstr(type, "auth_alg")) {
+		if (strstr(val, "OPEN")) {
+			creds->auth_type |= WLIF_WPA_AUTH_OPEN;
+		}
+		if (strstr(val, "SHARED")) {
+			creds->auth_type |= WLIF_WPA_AUTH_SHARED;
+		}
+	} else if (strstr(type, "pairwise")) {
+		if (strstr(val, "TKIP")) {
+			creds->encr |= WLIF_WPA_ENCR_TKIP;
+		}
+		if (strstr(val, "CCMP")) {
+			creds->encr |= WLIF_WPA_ENCR_AES;
+		}
+	}
+}
+
+/* Apply the network credentials to radio interface received from the wps session */
+int
+wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
+{
+	char nv_name[WLIF_MIN_BUF] = {0};
+	char *val = "";
+	bool wps_v2 = FALSE;
+	int ret = -1;
+	char *prefix;
+	char tmp[128];
+	char pfcred[] = "wlc_";
+	char pfcred0[] = "wlc0_";
+	char pfcred1[] = "wlc1_";
+	char pfcred2[] = "wlc2_";
+	int wlif_num = num_of_wl_if();
+	int i, unit = -1;
+	char prefix2[] = "wlXXXXXXX_";
+	bool wps_configured = nvram_match("w_Setting", "1");
+
+	if (!bss || !creds) {
+		cprintf("Err: shared %s bss and credentials can not be null \n", __func__);
+		return -1;
+	}
+
+	dprintf("Info: shared %s received credentials after wps:"
+		"\nssid = [%s] \nakm = [%d] \nencr = [%d] \npsk = [%s]\n",
+		__func__, creds->ssid, creds->akm, creds->encr, creds->nw_key);
+
+	if (creds->ssid[0] == '\0' || creds->invalid) {
+		cprintf("Info: shared %s invalid credentials are provided \n", __func__);
+		return -1;
+	}
+
+	prefix = bss->nvifname;
+	wl_ioctl(bss->ifname, WLC_GET_INSTANCE, &unit, sizeof(unit));
+
+	// ssid
+	snprintf(nv_name, sizeof(nv_name), "%s_ssid", prefix);
+	//if (!nvram_match(nv_name, creds->ssid))
+	{
+		nvram_set(nv_name, creds->ssid);
+		if (!wps_configured)
+		for (i = 0; i < wlif_num; i++) {
+			if (i == unit) continue;
+			snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+			nvram_set(strcat_r(prefix2, "_ssid", tmp), creds->ssid);
+		}
+
+		if (nvram_get_int("amesh_wps_enr")) {
+			nvram_set(strcat_r(pfcred, "ssid", tmp), creds->ssid);
+			nvram_set(strcat_r(pfcred0, "ssid", tmp), creds->ssid);
+			nvram_set(strcat_r(pfcred1, "ssid", tmp), creds->ssid);
+			if (wlif_num == 3)
+			nvram_set(strcat_r(pfcred2, "ssid", tmp), creds->ssid);
+		}
+
+		ret = 0;
+	}
+
+	val = nvram_safe_get("wps_version2");
+	if (!strcmp(val, "enabled")) {
+		wps_v2 = TRUE;
+	}
+
+	// for wps version 2 force psk2 is psk1 is enabled.
+	if (wps_v2 == TRUE) {
+		if (creds->akm & WLIF_WPA_AKM_PSK) {
+			creds->akm |= WLIF_WPA_AKM_PSK2;
+		}
+		if (creds->encr & WLIF_WPA_ENCR_TKIP) {
+			creds->encr |= WLIF_WPA_ENCR_AES;
+		}
+	}
+
+	// akm
+	val = "";
+	snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+	switch (creds->akm) {
+		case WLIF_WPA_AKM_PSK:
+			val = "psk";
+		break;
+
+		case WLIF_WPA_AKM_PSK2:
+			val = "psk2";
+		break;
+
+		case (WLIF_WPA_AKM_PSK | WLIF_WPA_AKM_PSK2):
+			val = "psk psk2";
+		break;
+	}
+	//if (!nvram_match(nv_name, val))
+	{
+		nvram_set(nv_name, val);
+		if (!wps_configured)
+		for (i = 0; i < wlif_num; i++) {
+			if (i == unit) continue;
+			snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+			nvram_set(strcat_r(prefix2, "_akm", tmp), val);
+		}
+
+		switch (creds->akm) {
+			case WLIF_WPA_AKM_PSK:
+				if (nvram_get_int("amesh_wps_enr")) {
+					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk");
+					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk");
+					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk");
+					if (wlif_num == 3)
+					nvram_set(strcat_r(pfcred2, "auth_mode", tmp), "psk");
+				} else {
+					nvram_set(strcat_r(prefix, "_auth_mode_x", tmp), "psk");
+					if (!wps_configured)
+					for (i = 0; i < wlif_num; i++) {
+						if (i == unit) continue;
+						snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+						nvram_set(strcat_r(prefix2, "_auth_mode_x", tmp), "psk");
+					}
+				}
+			break;
+			case WLIF_WPA_AKM_PSK2:
+				if (nvram_get_int("amesh_wps_enr")) {
+					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk2");
+					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk2");
+					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk2");
+					if (wlif_num == 3)
+					nvram_set(strcat_r(pfcred2, "auth_mode", tmp), "psk2");
+				} else {
+					nvram_set(strcat_r(prefix, "_auth_mode_x", tmp), "psk2");
+					if (!wps_configured)
+					for (i = 0; i < wlif_num; i++) {
+						if (i == unit) continue;
+						snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+						nvram_set(strcat_r(prefix2, "_auth_mode_x", tmp), "psk2");
+					}
+				}
+			break;
+			case (WLIF_WPA_AKM_PSK | WLIF_WPA_AKM_PSK2):
+				if (nvram_get_int("amesh_wps_enr")) {
+					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "psk2");
+					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "psk2");
+					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "psk2");
+					if (wlif_num == 3)
+					nvram_set(strcat_r(pfcred2, "auth_mode", tmp), "psk2");
+				} else {
+					nvram_set(strcat_r(prefix, "_auth_mode_x", tmp), "pskpsk2");
+					if (!wps_configured)
+					for (i = 0; i < wlif_num; i++) {
+						if (i == unit) continue;
+						snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+						nvram_set(strcat_r(prefix2, "_auth_mode_x", tmp), "pskpsk2");
+					}
+				}
+			break;
+			default:
+				if (nvram_get_int("amesh_wps_enr")) {
+					nvram_set(strcat_r(pfcred, "auth_mode", tmp), "open");
+					nvram_set(strcat_r(pfcred0, "auth_mode", tmp), "open");
+					nvram_set(strcat_r(pfcred1, "auth_mode", tmp), "open");
+					if (wlif_num == 3)
+						nvram_set(strcat_r(pfcred2, "auth_mode", tmp), "open");
+				} else {
+					nvram_set(strcat_r(prefix, "_auth_mode_x", tmp), "open");
+					if (!wps_configured)
+					for (i = 0; i < wlif_num; i++) {
+						if (i == unit) continue;
+						snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+						nvram_set(strcat_r(prefix2, "_auth_mode_x", tmp), "open");
+					}
+				}
+			break;
+		}
+
+		nvram_set(strcat_r(prefix, "_wep", tmp), "0");
+		if (nvram_get_int("amesh_wps_enr")) {
+			nvram_set(strcat_r(pfcred, "wep", tmp), "0");
+			nvram_set(strcat_r(pfcred0, "wep", tmp), "0");
+			nvram_set(strcat_r(pfcred1, "wep", tmp), "0");
+			if (wlif_num == 3)
+			nvram_set(strcat_r(pfcred2, "wep", tmp), "0");
+		} else {
+			nvram_set(strcat_r(prefix, "_wep_x", tmp), "0");
+			if (!wps_configured)
+			for (i = 0; i < wlif_num; i++) {
+				if (i == unit) continue;
+				snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+				nvram_set(strcat_r(prefix2, "_wep_x", tmp), "0");
+			}
+		}
+
+		nvram_set(strcat_r(prefix, "_auth", tmp), "0");
+		if (!wps_configured)
+		for (i = 0; i < wlif_num; i++) {
+			if (i == unit) continue;
+			snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+			nvram_set(strcat_r(prefix2, "_auth", tmp), "0");
+		}
+
+		ret = 0;
+	}
+
+	// crypto
+	snprintf(nv_name, sizeof(nv_name), "%s_crypto", prefix);
+	val = "";
+	switch (creds->encr) {
+		case WLIF_WPA_ENCR_TKIP:
+			val = "tkip";
+		break;
+
+		case WLIF_WPA_ENCR_AES:
+			val = "aes";
+		break;
+
+		case (WLIF_WPA_ENCR_TKIP | WLIF_WPA_ENCR_AES):
+			val = "tkip+aes";
+		break;
+	}
+	//if (!nvram_match(nv_name, val))
+	{
+		nvram_set(nv_name, val);
+		if (!wps_configured)
+		for (i = 0; i < wlif_num; i++) {
+			if (i == unit) continue;
+			snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+			nvram_set(strcat_r(prefix2, "_crypto", tmp), val);
+		}
+
+		if (nvram_get_int("amesh_wps_enr")) {
+			if (creds->encr == (WLIF_WPA_ENCR_TKIP | WLIF_WPA_ENCR_AES))
+				val = "aes";
+
+			nvram_set(strcat_r(pfcred, "crypto", tmp), val);
+			nvram_set(strcat_r(pfcred0, "crypto", tmp), val);
+			nvram_set(strcat_r(pfcred1, "crypto", tmp), val);
+			if (wlif_num == 3)
+			nvram_set(strcat_r(pfcred2, "crypto", tmp), val);
+		}
+
+		ret = 0;
+	}
+
+	snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", prefix);
+	//if (!nvram_match(nv_name, creds->nw_key))
+	{
+		nvram_set(nv_name, creds->nw_key);
+		if (!wps_configured)
+		for (i = 0; i < wlif_num; i++) {
+			if (i == unit) continue;
+			snprintf(prefix2, sizeof(prefix2), "wl%d", i);
+			nvram_set(strcat_r(prefix2, "_wpa_psk", tmp), creds->nw_key);
+		}
+
+		if (nvram_get_int("amesh_wps_enr")) {
+			nvram_set(strcat_r(pfcred, "wpa_psk", tmp), creds->nw_key);
+			nvram_set(strcat_r(pfcred0, "wpa_psk", tmp), creds->nw_key);
+			nvram_set(strcat_r(pfcred1, "wpa_psk", tmp), creds->nw_key);
+			if (wlif_num == 3)
+			nvram_set(strcat_r(pfcred2, "wpa_psk", tmp), creds->nw_key);
+		}
+		ret = 0;
+	}
+
+	if (!ret) {
+		if (!wps_configured) {
+			nvram_set("w_Setting", "1");
+		}
+
+#ifdef RTCONFIG_HND_ROUTER_AX
+		if (nvram_get_int("amesh_wps_enr"))
+#endif
+		{
+			if (nvram_get_int("wps_enr_hw") == 1)
+				nvram_set("x_Setting", "1");
+#ifdef RTCONFIG_AMAS
+			nvram_set("obd_Setting", "1");
+#endif
+		}
+		nvram_commit();
+	}
+
+	return ret;
+}
+
+/* Parses the wpa supplicant config file to save the network credentials received from wps */
+int
+wl_wlif_parse_wpa_config_file(char *prefix, wlif_wps_nw_creds_t *creds)
+{
+	FILE *fp;
+	int sz = 0, skip = 1;
+	char buf[256], *ptr = NULL, *val = NULL;
+
+	if (!prefix || !creds) {
+		cprintf("Err: shared %s prefix and credentials can not be null \n", __func__);
+		return -1;
+	}
+
+	snprintf(buf, sizeof(buf), "/tmp/%s_wpa_supplicant.conf", prefix);
+
+	fp = fopen(buf, "r");
+	if (fp == NULL) {
+		cprintf("Err: shared %s failed to open file = [%s] \n", __func__, buf);
+		return -1;
+	}
+
+	sz = sizeof(buf) - 1;
+	while (!feof(fp)) {
+		if (fgets(buf, sz, fp)) {
+			buf[strcspn(buf, "\r\n")] = 0;
+
+			// We need to parse only network block other part we can skip.
+			if (!strcmp(buf, "network={")) {
+				skip = 0;
+				memset(creds, 0, sizeof(*creds));
+			}
+			if (!strcmp(buf, "}") && !skip) {
+				skip = 1;
+			}
+
+			if (skip) {
+				continue;
+			}
+			ptr = strtok_r(buf, "=", &val);
+			if (!ptr || !val) {
+				continue;
+			}
+			/* Since after successful wps session the network settings will be updated
+			 * to the last network block. So here we are overwriting the settings.
+			 */
+			wl_wlif_save_wpa_settings(ptr, val, creds);
+		}
+	}
+
+	fclose(fp);
+
+	return 0;
+}
+
+/* Returns configuration state of ap */
+bool
+wl_wlif_does_ap_needs_to_be_configured(char *ifname)
+{
+	char *lan_ifnames = nvram_safe_get("lan_ifnames");
+	char *lan1_ifnames = nvram_safe_get("lan1_ifnames");
+
+	if (find_in_list(lan_ifnames, ifname)) {
+		if (nvram_match("lan_wps_oob", "disabled")) {
+			return FALSE;
+		}
+	} else if (find_in_list(lan1_ifnames, ifname)) {
+		if (nvram_match("lan1_wps_oob", "disabled")) {
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
+/* Sets the AP state to configured */
+void
+wl_wlif_set_ap_as_configured(char *ifname)
+{
+	char *lan_ifnames = nvram_safe_get("lan_ifnames");
+	char *lan1_ifnames = nvram_safe_get("lan1_ifnames");
+
+	if (find_in_list(lan_ifnames, ifname)) {
+		nvram_set("lan_wps_oob", "disabled");
+	} else if (find_in_list(lan1_ifnames, ifname)) {
+		nvram_set("lan1_wps_oob", "disabled");
+	}
+
+	nvram_commit();
+}
+
+/* Saves the ap settings updated by hostapd  */
+static void
+wl_wlif_save_hapd_settings(char *type, char *val, wlif_wps_nw_creds_t *creds)
+{
+	if (!strcmp(type, "ssid")) {
+		WLIF_STRNCPY(creds->ssid, val, sizeof(creds->ssid));
+	} else if (!strcmp(type, "passphrase")) {
+		WLIF_STRNCPY(creds->nw_key, val, sizeof(creds->nw_key));
+	} else if (!strcmp(type, "key_mgmt")) {
+		if (strstr(val, "WPA-PSK")) {
+			creds->akm |= WLIF_WPA_AKM_PSK;
+		}
+		if (strstr(val, "WPA2-PSK")) {
+			creds->akm |= WLIF_WPA_AKM_PSK2;
+		}
+	} else if (!strcmp(type, "rsn_pairwise_cipher")) {
+		if (strstr(val, "TKIP")) {
+			creds->encr = WLIF_WPA_ENCR_TKIP;
+		}
+		if (strstr(val, "CCMP")) {
+			creds->encr = WLIF_WPA_ENCR_AES;
+		}
+	}
+}
+
+/* Parse hostapd config which gets updated after wps completion */
+int
+wl_wlif_parse_hapd_config(char *ifname, wlif_wps_nw_creds_t *creds)
+{
+	FILE *fp;
+	int sz = 0;
+	char cmd[WLIF_MIN_BUF], *ptr = NULL, *val = NULL;
+
+	if (!ifname || !creds) {
+		cprintf("Err: shared %s prefix and credentials can not be null \n", __func__);
+		return -1;
+	}
+
+	snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s get_config", WLIF_HAPD_DIR, ifname);
+
+	fp = popen(cmd, "r");
+	if (fp == NULL) {
+		dprintf("Err: shared %s failed to open cmd = [%s] \n", __func__, cmd);
+		return -1;
+	}
+
+	memset(creds, 0, sizeof(*creds));
+	while (!feof(fp)) {
+		char buf[WLIF_MIN_BUF] = {0};
+		sz = sizeof(buf) - 1;
+		if (fgets(buf, sz, fp)) {
+			buf[strcspn(buf, "\r\n")] = 0;
+
+			ptr = strtok_r(buf, "=", &val);
+			if (!ptr || !val) {
+				continue;
+			}
+			wl_wlif_save_hapd_settings(ptr, val, creds);
+		}
+	}
+
+	pclose(fp);
+
+	return 0;
+}
+
+// Routine to create a joinable/detached thread
+int
+wl_wlif_create_thrd(pthread_t *thread_id, wlif_thrd_func fptr, void *arg, bool is_detached)
+{
+	pthread_attr_t attr;
+	int ret = -1;
+
+	if (!fptr || !thread_id) {
+		cprintf("Err : shared %s invalid thread params \n", __func__);
+		goto exit;
+	}
+
+	if (is_detached) {
+		ret = pthread_attr_init(&attr);
+		if (ret != 0) {
+			cprintf("Err : shared %s pthread_attr_init failed \n", __func__);
+			goto exit;
+		}
+
+		ret = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+		if (ret != 0) {
+			cprintf("Err : shared %s %d shared pthread_attr_setdetachstat failed\n",
+				__func__, __LINE__);
+			pthread_attr_destroy(&attr);
+			goto exit;
+		}
+	}
+
+	if ((ret = pthread_create(thread_id, is_detached ? &attr : NULL, fptr, arg)) != 0) {
+		cprintf("Err : shared %s %d pthread_create failed \n", __func__, __LINE__);
+	}
+
+	if (is_detached) {
+		pthread_attr_destroy(&attr);
+	}
+
+exit:
+	return ret;
+}
+
+/* Invokes the hostapd/wpa_supplicant pbc cli to the provided interface.
+ * In case caller does specify any interface, first wireless interface will be taken
+ * from the lan_ifnames nvram for wps operation.
+ * If bh_ifname is non null than the backhaul credentials will be updated with the
+ * settings of bh_ifname.
+ */
+int
+wl_wlif_wps_pbc_hdlr(char *wps_ifname, char *bh_ifname)
+{
+	char cmd[WLIF_MAX_BUF];
+	char mode[WLIF_MIN_BUF] = {0};
+	char nvifname[IFNAMSIZ] = {0};
+	wlif_wps_ui_status_code_id_t status_code;
+	int ret = -1;
+
+	if (!wps_ifname) {
+		cprintf("Err: shared %s ifname can not be null\n", __func__);
+		goto end;
+	}
+
+	if (bh_ifname) {
+		cprintf("Info: shared inside %s wps ifname %s backhaul ifname %s\n",
+			__func__, wps_ifname, bh_ifname);
+	} else {
+		cprintf("Info: shared inside %s wps ifname %s\n", __func__, wps_ifname);
+	}
+
+#ifdef MULTIAP
+	if (bh_ifname) {
+		wl_wlif_update_hapd_bh_creds(wps_ifname, bh_ifname);
+	}
+#endif	/* MULTIAP */
+
+	if (osifname_to_nvifname(wps_ifname, nvifname, sizeof(nvifname))) {
+		cprintf("Err: shared %s osifname_to_nvifname failed for %s\n",
+			__func__, wps_ifname);
+		goto end;
+	}
+	snprintf(mode, sizeof(mode), "%s_mode", nvifname);
+	if (nvram_match(mode, "ap")) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s wps_pbc",
+			WLIF_HAPD_DIR, wps_ifname);
+		status_code = WLIF_WPS_UI_FINDING_PBC_STA;
+	} else {
+		snprintf(cmd, sizeof(cmd), "%s -p /var/run/"
+			"%s_wpa_supplicant -i %s wps_pbc", WPA_CLI_APP, nvifname, wps_ifname);
+		status_code = WLIF_WPS_UI_FIND_PBC_AP;
+	}
+
+	if ((ret = system(cmd)) != 0) {
+		cprintf("Err: shared %s cli cmd %s failed for interface %s in %s mode\n", __func__,
+			cmd, wps_ifname, nvram_safe_get(mode));
+	}
+
+	wl_wlif_update_wps_ui(status_code);
+end:
+	return ret;
+}
+
+// Stops the ongoing wps session for the interface provided in wps_ifname
+int
+wl_wlif_wps_stop_session(char *wps_ifname)
+{
+	char cmd[WLIF_MAX_BUF] = {0};
+	char mode[WLIF_MIN_BUF] = {0};
+	char nvifname[IFNAMSIZ] = {0};
+	int ret = -1;
+
+	if (!wps_ifname) {
+		cprintf("Err: shared %s ifname can not be null\n", __func__);
+		goto end;
+	}
+
+	if ((ret = osifname_to_nvifname(wps_ifname, nvifname, sizeof(nvifname)))) {
+		cprintf("Err: shared %s osifname_to_nvifname failed for %s ret = %d\n",
+			__func__, wps_ifname, ret);
+		goto end;
+	}
+
+	snprintf(mode, sizeof(mode), "%s_mode", nvifname);
+	if (nvram_match(mode, "ap")) {
+		snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s wps_cancel",
+			WLIF_HAPD_DIR, wps_ifname);
+	} else {
+		snprintf(cmd, sizeof(cmd), "%s -p /var/run/"
+			"%s_wpa_supplicant -i %s wps_cancel", WPA_CLI_APP, nvifname, wps_ifname);
+	}
+
+	if ((ret = system(cmd)) != 0) {
+		dprintf("Info: shared %s cli cmd %s failed for interface %s ret = %d\n", __func__,
+			cmd, wps_ifname, ret);
+	}
+	wl_wlif_update_wps_ui(WLIF_WPS_UI_INIT);
+end:
+	return ret;
+}
+
+#ifdef MULTIAP
+/* Retrieves the backhaul credentials from the nvram */
+static int
+wl_wlif_fill_bh_creds_from_nvram(char *nvifname, wlif_bh_creds_hapd_clicmd_data_t *cmd)
+{
+	char *ptr, tmp[WLIF_MIN_BUF] = {0};
+	char *next;
+	bool psk_required = FALSE, sae = FALSE;
+
+	snprintf(tmp, sizeof(tmp), "%s_wep", nvifname);
+	ptr = nvram_safe_get(tmp);
+	if (!strcmp(ptr, "enabled")) {
+		cprintf("Info: shared %s wep is enabled for %s skiping update of "
+			"backhaul credentials\n", __func__, nvifname);
+		return -1;
+	}
+
+	snprintf(tmp, sizeof(tmp), "%s_ssid", nvifname);
+	ptr = nvram_safe_get(tmp);
+	WLIF_STRNCPY(cmd->ssid, ptr, sizeof(cmd->ssid));
+
+	snprintf(tmp, sizeof(tmp), "%s_akm", nvifname);
+	ptr = nvram_safe_get(tmp);
+	foreach(tmp, ptr, next) {
+		if (!strcmp(tmp, "psk")) {
+			WLIF_STRNCPY(cmd->auth, "WPAPSK", sizeof(cmd->encr));
+			psk_required = TRUE;
+		}
+
+		if (!strcmp(tmp, "psk2")) {
+			WLIF_STRNCPY(cmd->auth, "WPA2PSK", sizeof(cmd->encr));
+			psk_required = TRUE;
+		}
+
+		if (!strcmp(tmp, "sae")) {
+			WLIF_STRNCPY(cmd->auth, "WPA2PSK", sizeof(cmd->encr));
+			sae = psk_required = TRUE;
+		}
+	}
+
+	if (psk_required) {
+		/* force crypto to CCMP for sae or sae-transition mode */
+		if (sae) {
+			WLIF_STRNCPY(cmd->encr, "CCMP", sizeof(cmd->encr));
+		} else {
+			snprintf(tmp, sizeof(tmp), "%s_crypto", nvifname);
+			ptr = nvram_safe_get(tmp);
+			if (!strcmp(ptr, "tkip")) {
+				WLIF_STRNCPY(cmd->encr, "TKIP", sizeof(cmd->encr));
+			} else if (!strcmp(ptr, "aes") || !strcmp(ptr, "tkip+aes")) {
+				WLIF_STRNCPY(cmd->encr, "CCMP", sizeof(cmd->encr));
+			} else {
+				cprintf("Info: shared %s uknown crypto type (%s) for ifname %s\n",
+					__func__, ptr, nvifname);
+				return -1;
+			}
+		}
+
+		snprintf(tmp, sizeof(tmp), "%s_wpa_psk", nvifname);
+		ptr = nvram_safe_get(tmp);
+		WLIF_STRNCPY(cmd->key, ptr, sizeof(cmd->key));
+	} else {
+		WLIF_STRNCPY(cmd->auth, "OPEN", sizeof(cmd->encr));
+		WLIF_STRNCPY(cmd->encr, "NONE", sizeof(cmd->encr));
+	}
+
+	cprintf("Info: shared inside %s bh_ssid[%s] bh_auth[%s] bh_encr[%s] bh_psk[%s]\n",
+		__func__, cmd->ssid, cmd->auth, cmd->encr, cmd->key);
+	return 0;
+}
+
+/* Updates the hostapd backhaul credentials with settings of bh_ifname by
+ * invoking hostapd wps_mapbh_config cli cmd.
+ */
+static void
+wl_wlif_update_hapd_bh_creds(char *wps_ifname, char *bh_ifname)
+{
+	wlif_bh_creds_hapd_clicmd_data_t clidata;
+	char nvifname[IFNAMSIZ] = {0};
+	char cmd[WLIF_MIN_BUF * 2] = {0};
+
+	cprintf("Info: shared inside %s wps_ifname %s bh_ifname %s\n",
+		__func__, wps_ifname, bh_ifname);
+	if (osifname_to_nvifname(bh_ifname, nvifname, sizeof(nvifname))) {
+		cprintf("Info: shared %s osifname_to_nvifname failed for %s\n",
+			__func__, bh_ifname);
+		return;
+	}
+
+	memset(&clidata, 0, sizeof(clidata));
+	if (wl_wlif_fill_bh_creds_from_nvram(nvifname, &clidata) == 0) {
+		if (clidata.key[0] != '\0') {
+			snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s wps_mapbh_config "
+				"%s %s %s %s", WLIF_HAPD_DIR, wps_ifname, clidata.ssid,
+				clidata.auth, clidata.encr, clidata.key);
+		} else {
+			snprintf(cmd, sizeof(cmd), "hostapd_cli -p %s -i %s wps_mapbh_config "
+				"%s %s %s", WLIF_HAPD_DIR, wps_ifname, clidata.ssid,
+				clidata.auth, clidata.encr);
+		}
+
+		if (system(cmd)) {
+			cprintf("Info: shared %s cli cmd %s failed for interface %s\n", __func__,
+				cmd, wps_ifname);
+		}
+	}
+}
+
+/* Fn to check whether present wps session for multiap onboarding */
+bool
+wl_wlif_is_map_onboarding(char *prefix)
+{
+	char map[WLIF_MIN_BUF] = {0}, *ptr = NULL;
+	uint16 map_val = 0;
+	bool ret;
+
+	snprintf(map, sizeof(map), "%s_map", prefix);
+	ptr = nvram_safe_get(map);
+	if (ptr[0] != '\0') {
+		map_val = (uint16)strtoul(ptr, NULL, 0);
+	}
+
+	ret = (map_val & WLIF_MAP_BHSTA_NVVAL) ? TRUE : FALSE;
+
+	return ret;
+}
+
+/* Checks whether given interface is operabe on particular channel or not */
+static bool
+wl_wlif_is_ifr_operable_on_channel(char *ifname, uint8 channel)
+{
+	wl_uint32_list_t *list = NULL;
+	uint32 buf[WL_NUMCHANNELS + 1] = {0};
+	int idx = 0;
+
+	list = (wl_uint32_list_t *)buf;
+	list->count = htod32(WL_NUMCHANNELS);
+	if (wl_ioctl(ifname, WLC_GET_VALID_CHANNELS, buf, sizeof(buf)) < 0) {
+		cprintf("Err: shared %s ifname %s get valid channels iovar is failed \n",
+			__func__, ifname);
+		goto end;
+	}
+
+	list->count = dtoh32(list->count);
+
+	for (idx = 0; idx < list->count; idx++) {
+		if (channel == list->element[idx]) {
+			return TRUE;
+		}
+	}
+
+end:
+	return FALSE;
+}
+
+/* Fn to get the channel from scanresults filtered using ssid */
+static uint8
+wl_wlif_get_channel_from_scanresults(char *ifname, char *ssid)
+{
+	wl_scan_results_t *list = NULL;
+	wl_bss_info_t *bi;
+	int idx, ret;
+	char *buf;
+	uint8 channel = 0;
+
+	buf = calloc(1, WLIF_DUMP_BUF_LEN);
+	if (buf == NULL) {
+		cprintf("Err: shared %s calloc failed for len %d\n", __func__, WLIF_DUMP_BUF_LEN);
+		return -1;
+	}
+
+	list = (wl_scan_results_t*)buf;
+	list->buflen = htod32(WLIF_DUMP_BUF_LEN);
+
+	ret = wl_ioctl(ifname, WLC_SCAN_RESULTS, list, WLIF_DUMP_BUF_LEN);
+	if (ret) {
+		dprintf("Err: shared %s ifname %s iovar call to get scan results failed ret = %d\n",
+			__func__, ifname, ret);
+		goto end;
+	}
+
+	list->count = dtoh32(list->count);
+	if (list->count == 0) {
+		dprintf("Info: shared %s ifname %s scan did not find any results for ssid %s \n",
+			__func__, ifname, ssid);
+		goto end;
+	}
+
+	bi = list->bss_info;
+	for (idx = 0; idx < list->count; idx++) {
+		if (!strcmp(ssid, (char *)bi->SSID)) {
+			channel = wf_chspec_ctlchan(dtoh16(bi->chanspec));
+			break;
+		}
+		bi = (wl_bss_info_t*)((int8*)bi + bi->length);
+	}
+
+end:
+	free(buf);
+	return channel;
+}
+
+/* Fn to issue the scan cmd */
+static int
+wl_wlif_scan(char *ifname, char *ssid)
+{
+	wl_scan_params_t* params;
+	int params_size = WL_SCAN_PARAMS_FIXED_SIZE + WL_NUMCHANNELS * sizeof(uint16);
+	int ret = 0;
+
+	params = (wl_scan_params_t*)malloc(params_size);
+	if (params == NULL) {
+		cprintf("Err: shared %s malloc of %d bytes failed for scan params\n",
+			__func__, params_size);
+		return -1;
+	}
+
+	memset(params, 0, params_size);
+	if (ssid != NULL && (strlen(ssid) < sizeof(params->ssid.SSID))) {
+		memcpy(params->ssid.SSID, ssid, sizeof(params->ssid.SSID));
+		params->ssid.SSID_len = strlen(ssid);
+	}
+
+	params->bss_type = DOT11_BSSTYPE_ANY;
+	memcpy(&params->bssid, &ether_bcast, ETHER_ADDR_LEN);
+	params->scan_type = -1;
+	params->nprobes = -1;
+	params->active_time = -1;
+	params->passive_time = -1;
+	params->home_time = -1;
+	params->channel_num = 0;
+
+	if ((ret = wl_ioctl(ifname, WLC_SCAN, params, params_size))) {
+		dprintf("Err: shared %s ifname %s scan command failed ret = %d\n",
+			__func__, ifname, ret);
+	}
+
+	free(params);
+
+	return ret;
+}
+
+// Update the ap_scan parameter for wpa-supplicant
+static void
+wl_wlif_wpa_supplicant_update_ap_scan(char *ifname, char *nvifname, int val)
+{
+	char cmd[WLIF_MIN_BUF] = {0};
+
+	if (val < 0 || val > 2) {
+		cprintf("Err: %s invalid value %d is provided for ap scan parameter\n",
+			__func__, val);
+		return;
+	}
+
+	snprintf(cmd, sizeof(cmd), "wpa_cli -p /var/run/%s_wpa_supplicant -i %s ap_scan %d",
+		nvifname, ifname, val);
+	system(cmd);
+}
+
+/* Selects the backhaul sta interface from bss list.
+ * 1: For each interface scan the backhaul ssid.
+ * 2: Fetch the channel from the scanresults.
+ * 3: Check whether the interface is operable on the channel if yes than copy it to bh_ifname.
+ */
+static void
+wl_wlif_select_bhsta_from_bsslist(wlif_bss_list_t *bss_list, char *bh_ssid,
+	char *bh_ifname, int bh_ifname_sz)
+{
+	int idx = 0;
+	uint8 channel = 0;
+
+	for (idx = 0; idx < bss_list->count; idx++) {
+		int count = 0;
+		wlif_bss_t *bss = &bss_list->bss[idx];
+		/*
+		 * Before doing wl scan set ap_scan parameter to 0 in supplicant. So that the
+		 * Supplicant avoids performing join-scan.
+		 */
+		wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname, 0);
+		while (count++ < WLIF_SCAN_TRY_COUNT) {
+			if (wl_wlif_scan(bss->ifname, bh_ssid)) {
+				continue;
+			}
+			sleep(3);	// sleep for 3 seconds before fetching the scanresults
+			channel = wl_wlif_get_channel_from_scanresults(bss->ifname, bh_ssid);
+			if (channel > 0) {
+				break;
+			}
+		}
+
+		if (channel <= 0) {
+			cprintf("Info: shared %s did not find any scanresults for ssid %s "
+				"in interface %s \n", __func__, bh_ssid, bss->ifname);
+			continue;
+		}
+		if (wl_wlif_is_ifr_operable_on_channel(bss->ifname, channel)) {
+			WLIF_STRNCPY(bh_ifname, bss->ifname, bh_ifname_sz);
+			break;
+		}
+	}
+}
+
+/* Gets the candidate multiap backhaul stations list from the list of interfaces */
+static void
+wl_wlif_map_get_candidate_bhsta_bsslist(char *list, wlif_bss_list_t *bss_list, char *skip_ifname)
+{
+	char ifname[IFNAMSIZ] = {0}, os_name[IFNAMSIZ] = {0}, tmp[WLIF_MIN_BUF] = {0};
+	char *next = NULL, *ptr = NULL;
+	char prefix[] = "wlxxxxxxxxxxxxxx_";
+
+	if (!list || !bss_list) {
+		return;
+	}
+
+	foreach(ifname, list, next) {
+		uint16 map = 0;
+		wlif_bss_t *bss;
+
+		if (bss_list->count == WL_MAXBSSCFG) {
+			continue;
+		}
+
+		if (nvifname_to_osifname(ifname, os_name, sizeof(os_name))) {
+			continue;
+		}
+
+		if (wl_probe(os_name)) {
+			continue;
+		}
+
+		if (osifname_to_nvifname(os_name, prefix, sizeof(prefix))) {
+			continue;
+		}
+
+		// Skip adding already present interface
+		if (skip_ifname && strcmp(skip_ifname, os_name) == 0) {
+			continue;
+		}
+
+		snprintf(tmp, sizeof(tmp), "%s_%s", prefix, "mode");
+		if (!nvram_match(tmp, "sta")) {
+			continue;
+		}
+
+		snprintf(tmp, sizeof(tmp), "%s_%s", prefix, "map");
+		ptr = nvram_safe_get(tmp);
+		if (ptr[0] != '\0') {
+			map = (uint16) strtoul(ptr, NULL, 0);
+		}
+		if (!(map & WLIF_MAP_BHSTA_NVVAL)) {
+			continue;
+		}
+
+		bss = &bss_list->bss[bss_list->count];
+		WLIF_STRNCPY(bss->ifname, os_name, sizeof(bss->ifname));
+		WLIF_STRNCPY(bss->nvifname, prefix, sizeof(bss->nvifname));
+		bss_list->count++;
+	}
+}
+
+/* Apply the network credentials received from wps session to the bss */
+static void
+wl_wlif_apply_map_backhaul_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
+{
+	char nv_name[WLIF_MIN_BUF] = {0};
+	char *val = "", *prefix;
+	bool wps_v2 = FALSE, sae_transition_mode = FALSE;
+
+	prefix = bss->nvifname;
+
+	/* ssid */
+	snprintf(nv_name, sizeof(nv_name), "%s_ssid", prefix);
+	nvram_set(nv_name, creds->ssid);
+
+	val = nvram_safe_get("wps_version2");
+	if (!strcmp(val, "enabled")) {
+		wps_v2 = TRUE;
+	}
+
+	/* for wps version 2 force psk2 if psk1 is provided. */
+	if (wps_v2 == TRUE) {
+		if (creds->akm & WLIF_WPA_AKM_PSK) {
+			creds->akm |= WLIF_WPA_AKM_PSK2;
+		}
+		if (creds->encr & WLIF_WPA_ENCR_TKIP) {
+			creds->encr |= WLIF_WPA_ENCR_AES;
+		}
+	}
+
+	/* akm */
+	val = "";
+	snprintf(nv_name, sizeof(nv_name), "%s_akm", prefix);
+	switch (creds->akm) {
+	case WLIF_WPA_AKM_PSK:
+		val = "psk";
+		break;
+
+	case WLIF_WPA_AKM_PSK2:
+		val = "psk2 sae";
+		sae_transition_mode = TRUE;
+		break;
+
+	case WLIF_WPA_AKM_PSK | WLIF_WPA_AKM_PSK2:
+		val = "psk psk2";
+		break;
+
+	default:
+		dprintf("Received akm %d \n", creds->akm);
+		break;
+	}
+	nvram_set(nv_name, val);
+
+	/* crypto */
+	snprintf(nv_name, sizeof(nv_name), "%s_crypto", prefix);
+	val = sae_transition_mode ? "aes" : "";	/* Force crypto to aes for sae transition mode */
+	if (!sae_transition_mode) {
+		switch (creds->encr) {
+		case WLIF_WPA_ENCR_TKIP:
+			val = "tkip";
+			break;
+
+		case WLIF_WPA_ENCR_AES:
+			val = "aes";
+			break;
+
+		case WLIF_WPA_ENCR_TKIP | WLIF_WPA_ENCR_AES:
+			val = "tkip+aes";
+			break;
+
+		default:
+			dprintf("Received encr %d \n", creds->encr);
+			break;
+		}
+	}
+	nvram_set(nv_name, val);
+
+	/* wpa-psk */
+	snprintf(nv_name, sizeof(nv_name), "%s_wpa_psk", prefix);
+	nvram_set(nv_name, creds->nw_key);
+
+	nvram_commit();
+}
+
+/* Configuration of multiap backhaul station interface from the credentials received using wps
+ * 1: Get the candidate multiap backhaul sta list from the lan_ifnames nvram.
+ * 2: From the above list select backhaul sta based on the backhaul ssid using scan results.
+ * 3: Apply the setting to the selected interface.
+ */
+int
+wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss_in, wlif_wps_nw_creds_t *creds)
+{
+	char *list = nvram_safe_get("lan_ifnames");
+	char *bh_sta_list = nvram_safe_get("map_bhsta_ifnames");
+	wlif_bss_list_t	bss_list;
+	wlif_bss_t *bss = NULL;
+	int idx = 0, ret = -1;
+	char bh_ifname[IFNAMSIZ] = {0};
+	char tmp[WLIF_MIN_BUF] = {0};
+	char *skip_ifname = NULL;
+
+	if (creds->ssid[0] == '\0') {
+		cprintf("Err: shared %s empty backhaul ssid received after wps\n", __func__);
+		return ret;
+	}
+
+	memset(&bss_list, 0, sizeof(bss_list));
+
+	// In the list add first entry for the bss where wps is performed
+	if (bss_in != NULL) {
+		bss = &bss_list.bss[bss_list.count];
+		memcpy(bss, bss_in, sizeof(*bss));
+		bss_list.count++;
+		skip_ifname = bss_in->ifname;
+	}
+
+	wl_wlif_map_get_candidate_bhsta_bsslist(list, &bss_list, skip_ifname);
+
+	/* If the backhaul STA list is present, just apply the backhaul STA credentials in all the
+	 * interfaces in the list
+	 */
+	if (strlen(bh_sta_list) > 0) {
+		cprintf("Info: shared %s apply backhaul SSID in ifnames %s\n", __func__,
+			creds->ssid, bh_sta_list);
+		for (idx = 0; idx < bss_list.count; idx++) {
+			bss = &bss_list.bss[idx];
+			if (find_in_list(bh_sta_list, bss->ifname)) {
+				// apply the settings received from wps;
+				wl_wlif_apply_map_backhaul_creds(bss, creds);
+				nvram_set("map_onboarded", "1");
+				nvram_unset("wps_on_sta");
+			} else {
+				// uneset  the map settings and change mode from sta to AP
+				nvram_unset(strcat_r(bss->nvifname, "_map", tmp));
+				nvram_set(strcat_r(bss->nvifname, "_mode", tmp), "ap");
+			}
+		}
+		ret = 0;
+	} else {
+		wl_wlif_select_bhsta_from_bsslist(&bss_list, creds->ssid, bh_ifname,
+			sizeof(bh_ifname));
+		if (bh_ifname[0] != '\0') {
+			cprintf("Info: shared %s selected backhaul station ifname "
+				" %s for backhaul ssid %s\n", __func__, bh_ifname, creds->ssid);
+			for (idx = 0; idx < bss_list.count; idx++) {
+				bss = &bss_list.bss[idx];
+				if (!strcmp(bss->ifname, bh_ifname)) {
+					// apply the settings received from wps;
+					wl_wlif_apply_map_backhaul_creds(bss, creds);
+					nvram_set("map_onboarded", "1");
+					nvram_unset("wps_on_sta");
+				} else {
+					// uneset  the map settings and change mode from sta to AP
+					nvram_set(strcat_r(bss->nvifname, "_mode", tmp), "ap");
+					nvram_unset(strcat_r(bss->nvifname, "_map", tmp));
+				}
+			}
+			ret = 0;
+		} else {
+			cprintf("Err: shared %s multiap backhaul ifname not found for "
+				"backhaul ssid = %s \n", __func__, creds->ssid);
+			// In case of failure restore ap_scan parameter to 1 in supplicant.
+			for (idx = 0; idx < bss_list.count; idx++) {
+				bss = &bss_list.bss[idx];
+				wl_wlif_wpa_supplicant_update_ap_scan(bss->ifname, bss->nvifname,
+					1);
+			}
+		}
+	}
+
+	return ret;
+}
+
+/* Returns the count of the wps timeout value for multiap onboarding based on below criteria:
+ * If wps_custom_ifnames nvram is present and there are more than 1 backhaul sta interfaces
+ * present in it. Timeout will be complete wps session timeout(120) divided by the backhaul
+ * sta count. This value can be overwritten by setting wps_map_timeout nvram.
+ */
+int
+wl_wlif_wps_map_timeout()
+{
+	int timeout = -1, count = 0;
+	char ifname[IFNAMSIZ] = {0}, *next, nvifname[IFNAMSIZ];
+	char tmp[WLIF_MIN_BUF] = {0}, *mode, *map;
+	char *list = nvram_safe_get("wps_custom_ifnames");
+	char *map_timeout = nvram_safe_get("wps_map_timeout");
+	char *multiap_mode = nvram_safe_get("multiap_mode");
+
+	if (multiap_mode[0] == '\0') {
+		goto end;
+	}
+
+	if ((list[0] == '\0') || (strtoul(multiap_mode, NULL, 0) <= 0)) {
+		goto end;
+	}
+
+	foreach(ifname, list, next) {
+		if (wl_probe(ifname)) {
+			continue;
+		}
+
+		if (osifname_to_nvifname(ifname, nvifname, sizeof(nvifname))) {
+			continue;
+		}
+
+		snprintf(tmp, sizeof(tmp), "%s_map", nvifname);
+		map = nvram_safe_get(tmp);
+
+		snprintf(tmp, sizeof(tmp), "%s_mode", nvifname);
+		mode = nvram_safe_get(tmp);
+
+		// Check mode is sta and map value is set to multiap backhaul sta
+		if (!strcmp(mode, "sta") && map[0] != '\0' &&
+			(strtoul(map, NULL, 0) == WLIF_MAP_BHSTA_NVVAL)) {
+			count++;
+		}
+	}
+
+	if (count > 1) {
+		timeout = WLIF_WPS_TIMEOUT/count;
+		if (map_timeout[0] != '\0') {
+			timeout = atoi(map_timeout);
+		}
+	}
+
+end:
+	dprintf("Info: Shared %s the multiap timeout is %d \n", __func__, timeout);
+	return timeout;
+}
+#endif	/* MULTIAP */
+#endif	/* CONFIG_HOSTAPD */

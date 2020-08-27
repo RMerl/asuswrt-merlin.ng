@@ -156,11 +156,21 @@ function initial(){
 		$('#wtfast_3').show();
 	}
 
+	if(tencent_qmacc_support){
+		$('#qmacc_1').show();
+		$('#qmacc_2').show();
+		$('#qmacc_3').show();
+	}
+
 	if(!ASUS_EULA.status("tm"))
 		ASUS_EULA.config(eula_confirm, cancel);
 
 	setTimeout("showDropdownClientList('setClientIP', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');", 500);
-	genGameList();	
+	genGameList();
+
+	if(!tencent_qmacc_support){
+
+	}
 }
 
 function sign_eula(){
@@ -662,7 +672,32 @@ function applyRule(){
 												<td>
 													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='Advanced_WTFast_Content.asp';"><#btn_go#></div>
 												</td>
-											</tr>										
+											</tr>
+											<!-- Tencent -->
+											<tr id="qmacc_1" style="margin-top: 50px; display: none;">
+												<td style="width:200px">
+													<div style="padding: 5px 0;font-size:20px;"><#Game_Boost_internet#></div>
+												</td>
+												<td colspan="2">
+													<div style="padding: 5px 10px;font-size:20px;color:#FFCC66">腾讯网游加速器</div>
+												</td>
+											</tr>
+											<tr id="qmacc_2" style="display: none;">
+												<td colspan="3">
+													<div style="width:100%;height:1px;background-color:#D30606"></div>
+												</td>
+											</tr>
+											<tr id="qmacc_3" style="display: none;">
+												<td align="center">
+													<div style="height: 85px;background-image: url('images/tencent/logo_tencent-2_line.png');background-size: 90%;background-repeat: no-repeat; background-position: center;"></div>
+												</td>
+												<td style="width:400px;height:120px;">
+													<div style="font-size:16px;color:#949393;padding-left:10px; padding-top: 5px; padding-bottom: 10px;">腾讯网游加速器——腾讯官方出品的海外网络加速工具。一机畅玩全平台游戏（PC、手游和主机），独享金融级专线，节点全球覆盖，有效解决游戏中出现的延迟、卡顿、丢包等问题，全方位满足用户在各种网络情况下的游戏体验。让你随时开黑，游戏快人一步。</div>
+												</td>
+												<td>
+													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='GameBoost_Tencent.asp';"><#btn_go#></div>
+												</td>
+											</tr>
 										</tbody>
 									</table>
 								</div>

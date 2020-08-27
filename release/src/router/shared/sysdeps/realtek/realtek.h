@@ -1,31 +1,12 @@
 #ifndef __REALTEK_H__
 #define __REALTEK_H__
-#include "../../rtconfig.h"
-//#include "../../../rc/rc.h"
 
-#include "rtl_flashmapping.h"
-
-#define BLUETOOTH_HW_SETTING_SUPPORT
-#ifdef RTCONFIG_RTK_NAND
-#ifndef CONFIG_MTD_NAND 
-#error "Check your kernel config, is CONFIG_MTD_NAND enabled?"
+#ifndef RPAC92
+#include "realtek_old.h"
+#else
+#include "rtl8198d.h"
 #endif
-#define HW_SETTING_CHECKSUM
-#define NAND_DUAL_SETTING
-#endif /* RTCONFIG_RTK_NAND */
-
-#define DYN_ROOTFS_OFFSET
-#define ASUS_TRX_FORMAT
-extern const char WIF_2G[];
-extern const char WIF_5G[];
-extern const char VXD_5G[];
-extern const char VXD_2G[];
-
-#ifdef ASUS_TRX_FORMAT
-//#define IH_MAGIC	0x27051956	/* Image Magic Number */
-#include "image.h"
-#endif
-
+#include <rtconfig.h>
 /*
  * LED/Button GPIO# definitions
  */
@@ -35,6 +16,7 @@ extern const char VXD_2G[];
 #define REALTEK_DEBUG 1
 #define DFS	1	/* for dfs */
 
+#define MIB_BUFF_MAX_SIZE 1024
 //#define RTK_DEBUG
 #ifdef RTK_DEBUG
 #define rtklog cprintf
@@ -45,9 +27,17 @@ extern const char VXD_2G[];
 #endif
 #define rtkerr cprintf
 #define rtkinfo cprintf
-/*wlan related*/
 
-#ifndef _WPS_DEF_H_
+#ifdef RPAC92
+typedef enum wlan_band{WLAN_5G=0,WLAN_5G_2=1,WLAN_2G=2}wlan_band;
+#else
+typedef enum wlan_band{WLAN_5G=0,WLAN_2G=1}wlan_band;
+#endif
+
+typedef enum { FCC=1, IC, ETSI, SPAIN, FRANCE, MKK } REG_DOMAIN_T;
+enum { WSC_AUTH_OPEN=1, WSC_AUTH_WPAPSK=2, WSC_AUTH_SHARED=4, WSC_AUTH_WPA=8, WSC_AUTH_WPA2=0x10, WSC_AUTH_WPA2PSK=0x20, WSC_AUTH_WPA2PSKMIXED=0x22 };
+enum { WSC_ENCRYPT_NONE=1, WSC_ENCRYPT_WEP=2, WSC_ENCRYPT_TKIP=4, WSC_ENCRYPT_AES=8, WSC_ENCRYPT_TKIPAES=12 };
+
 enum { 
 	CONFIG_METHOD_ETH=0x2, 
 	CONFIG_METHOD_PIN=0x4, 
@@ -68,38 +58,80 @@ enum {
 	MODE_CLIENT_UNCONFIG_REGISTRAR=6		// client unconfigured (registrar)
 };
 
-enum { WSC_AUTH_OPEN=1, WSC_AUTH_WPAPSK=2, WSC_AUTH_SHARED=4, WSC_AUTH_WPA=8, WSC_AUTH_WPA2=0x10, WSC_AUTH_WPA2PSK=0x20, WSC_AUTH_WPA2PSKMIXED=0x22 };
-enum { WSC_ENCRYPT_NONE=1, WSC_ENCRYPT_WEP=2, WSC_ENCRYPT_TKIP=4, WSC_ENCRYPT_AES=8, WSC_ENCRYPT_TKIPAES=12 };
+typedef struct {
+	const char *name;
+	unsigned char band_2G;
+	unsigned char band_5G;
+	unsigned short txpwr_lmt_index;
+} reg_domain_t;
 
+enum WIFI_REG_DOMAIN {
+	DOMAIN_FCC		= 1,
+	DOMAIN_IC		= 2,
+	DOMAIN_ETSI		= 3,
+	DOMAIN_SPAIN	= 4,
+	DOMAIN_FRANCE	= 5,
+	DOMAIN_MKK		= 6,
+	DOMAIN_ISRAEL	= 7,
+	DOMAIN_MKK1		= 8,
+	DOMAIN_MKK2		= 9,
+	DOMAIN_MKK3		= 10,
+	DOMAIN_NCC		= 11,
+	DOMAIN_RUSSIAN	= 12,
+	DOMAIN_CN		= 13,
+	DOMAIN_GLOBAL	= 14,
+	DOMAIN_WORLD_WIDE = 15,
+	DOMAIN_TEST		= 16,
+	DOMAIN_5M10M	= 17,
+	DOMAIN_SG		= 18,
+	DOMAIN_KR		= 19,
+	DOMAIN_AU		= 20,
+	DOMAIN_MAX
+};
 
+/*
+ *
+ * static const COUNTRY_IE_ELEMENT countryIEArray[]
+ * realtek/rtl819x/linux-2.6.30/drivers/net/wireless/rtl8192cd/8192cd_11h.c
+ * src-rt-6.x/router/shared/sysdeps/realtek/realtek.h
+ *
+ * the country and reg mapping in countryIEArray is not up to date.
+ *
+ */
+static const reg_domain_t reg_domain[] = {
+	{ "US", DOMAIN_FCC,  DOMAIN_FCC,  0  },
+#ifdef RPAC55
+	{ "CA", DOMAIN_IC,   DOMAIN_IC,	  5  },
+#else
+	{ "CA", DOMAIN_FCC,  DOMAIN_FCC,  3  },
 #endif
-
-typedef enum wlan_band{WLAN_5G=0,WLAN_2G=1}wlan_band;
-
-typedef struct _COUNTRY_IE_ELEMENT_ {
-    unsigned int		countryNumber;
-    unsigned char 		countryA2[3];
-	unsigned char		A_Band_Region;	//if support 5G A band? ;  0 == no support ; aBandRegion == real region domain
-	unsigned char		G_Band_Region;	//if support 2.4G G band? ;  0 == no support ; bBandRegion == real region domain
-} COUNTRY_IE_ELEMENT;
-
+	{ "EU", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
+	{ "AA", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
+	{ "TW", DOMAIN_FCC,  DOMAIN_FCC,  0  },
+	{ "SG", DOMAIN_SG,   DOMAIN_SG,   0  },
+	{ "CN", DOMAIN_CN,   DOMAIN_CN,   0  },
+	{ "KR", DOMAIN_KR,   DOMAIN_KR,   0  },
+	{ "JP", DOMAIN_MKK,  DOMAIN_MKK,  3  },
+	{ "AU", DOMAIN_AU,   DOMAIN_AU,   4  },
+	{ "IL", DOMAIN_ISRAEL, DOMAIN_ISRAEL, 2},
+};
 
 typedef enum _Capability {
-    cESS 		= 0x01,
-    cIBSS		= 0x02,
-    cPollable		= 0x04,
-    cPollReq		= 0x01,
-    cPrivacy		= 0x10,
-    cShortPreamble	= 0x20,
+	cESS 		= 0x01,
+	cIBSS		= 0x02,
+	cPollable		= 0x04,
+	cPollReq		= 0x01,
+	cPrivacy		= 0x10,
+	cShortPreamble	= 0x20,
 } Capability;
 
 typedef struct wlan_rate{
 unsigned int id;
 unsigned char rate[20];
 }WLAN_RATE_T, *WLAN_RATE_Tp;
-typedef enum { 
-	MCS0=0x80, 
-	MCS1=0x81, 
+typedef enum {
+	MCS0=0x80,
+	MCS1=0x81,
 	MCS2=0x82,
 	MCS3=0x83,
 	MCS4=0x84,
@@ -126,32 +158,32 @@ typedef enum {
 
 
 //changes in following table should be synced to VHT_MCS_DATA_RATE[] in 8812_vht_gen.c
-// 				20/40/80,	ShortGI,	MCS Rate 
-static const unsigned short VHT_MCS_DATA_RATE[3][2][30] = 
+// 				20/40/80,	ShortGI,	MCS Rate
+static const unsigned short VHT_MCS_DATA_RATE[3][2][30] =
 	{	{	{13, 26, 39, 52, 78, 104, 117, 130, 156, 156,
-			 26, 52, 78, 104, 156, 208, 234, 260, 312, 312, 
+			 26, 52, 78, 104, 156, 208, 234, 260, 312, 312,
 			 39, 78, 117, 156, 234, 312, 351, 390, 468, 520},					// Long GI, 20MHz
-			 
+
 			{14, 29, 43, 58, 87, 116, 130, 144, 173, 173,
 			 29, 58, 87, 116, 173, 231, 260, 289, 347, 347,
 			 43, 86, 130, 173, 260, 347, 390, 433, 520, 578}			},		// Short GI, 20MHz
-			 
-		{	{27, 54, 81, 108, 162, 216, 243, 270, 324, 360, 
-			 54, 108, 162, 216, 324, 432, 486, 540, 648, 720, 
+
+		{	{27, 54, 81, 108, 162, 216, 243, 270, 324, 360,
+			 54, 108, 162, 216, 324, 432, 486, 540, 648, 720,
 			 81, 162, 243, 342, 486, 648, 729, 810, 972, 1080}, 				// Long GI, 40MHz
-			 
-			{30, 60, 90, 120, 180, 240, 270, 300,360, 400, 
+
+			{30, 60, 90, 120, 180, 240, 270, 300,360, 400,
 			 60, 120, 180, 240, 360, 480, 540, 600, 720, 800,
 			 90, 180, 270, 360, 540, 720, 810, 900, 1080, 1200}			},		// Short GI, 40MHz
-			 
+
 		{	{59, 117,  176, 234, 351, 468, 527, 585, 702, 780,
-			 117, 234, 351, 468, 702, 936, 1053, 1170, 1404, 1560, 
+			 117, 234, 351, 468, 702, 936, 1053, 1170, 1404, 1560,
 			 176, 351, 527, 702, 1053, 1408, 1408, 1745, 2106, 2340}, 			// Long GI, 80MHz
-			 
-			{65, 130, 195, 260, 390, 520, 585, 650, 780, 867, 
-			 130, 260, 390, 520, 780, 1040, 1170, 1300, 1560, 1733, 
+
+			{65, 130, 195, 260, 390, 520, 585, 650, 780, 867,
+			 130, 260, 390, 520, 780, 1040, 1170, 1300, 1560, 1733,
 			 195, 390, 585, 780, 1170, 1560, 1560, 1950, 2340, 2600}	}		// Short GI, 80MHz
-			 
+
 	};
 //changes in following table should be synced to MCS_DATA_RATEStr[] in 8190n_proc.c
 static const WLAN_RATE_T rate_11n_table_20M_LONG[]={
@@ -232,7 +264,7 @@ static const WLAN_RATE_T rate_11n_table_40M_LONG[]={
 	{MCS20, 	"2430"},
 	{MCS21, 	"3240"},
 	{MCS22, 	"3645"},
-	{MCS23, 	"4050"},	
+	{MCS23, 	"4050"},
 	{0}
 };
 static const WLAN_RATE_T rate_11n_table_40M_SHORT[]={
@@ -259,14 +291,21 @@ static const WLAN_RATE_T rate_11n_table_40M_SHORT[]={
 	{MCS20, 	"2700"},
 	{MCS21, 	"3600"},
 	{MCS22, 	"4050"},
-	{MCS23, 	"4500"},	
+	{MCS23, 	"4500"},
 	{0}
 };
+
+typedef struct _COUNTRY_IE_ELEMENT_ {
+	unsigned int		countryNumber;
+	unsigned char 		countryA2[3];
+	unsigned char		A_Band_Region;	//if support 5G A band? ;  0 == no support ; aBandRegion == real region domain
+	unsigned char		G_Band_Region;	//if support 2.4G G band? ;  0 == no support ; bBandRegion == real region domain
+} COUNTRY_IE_ELEMENT;
 
 static const COUNTRY_IE_ELEMENT countryIEArray[] =
 {
 	/*
-	 format: countryNumber | CountryCode(A2) 
+	 format: countryNumber | CountryCode(A2)
 	*/
 	{8,"AL",   3, 3},   /*ALBANIA*/
 	{12,"DZ",  3, 3},  /*ALGERIA*/
@@ -295,8 +334,8 @@ static const COUNTRY_IE_ELEMENT countryIEArray[] =
 	{214,"DO", 1, 1}, /*DOMINICAN REPUBLIC*/
 	{218,"EC", 3, 3}, /*ECUADOR*/
 	{818,"EG", 3, 3}, /*EGYPT*/
-	{221,"EU", 3, 3}, /*EU*/	
-	{142,"AA", 3, 3}, /*AA*/	
+	{221,"EU", 3, 3}, /*EU*/
+	{142,"AA", 3, 3}, /*AA*/
 	{222,"SV", 3, 3}, /*EL SALVADOR*/
 	{233,"EE", 3, 3}, /*ESTONIA*/
 	{246,"FI", 3, 3}, /*FINLAND*/
@@ -398,36 +437,59 @@ static struct channel_list reg_channel_2_4g[] = {
 	/* 5M10M */		{{},0},
 	/* SG */		{{1,2,3,4,5,6,7,8,9,10,11},11},
 	/* KR */		{{1,2,3,4,5,6,7,8,9,10,11,12,13},13},
-	/* AU (Austraria) */	{{1,2,3,4,5,6,7,8,9,10,11,12,13},13},	
+	/* AU (Austraria) */	{{1,2,3,4,5,6,7,8,9,10,11,12,13},13},
 };
 
+#ifdef RPAC92
 #ifdef DFS
 static struct channel_list reg_channel_5g_full_band[] = {
-	/* FCC */		{{36,40,44,48,149,153,157,161,165},9},
-	/* IC */		{{36,40,44,48,52,56,60,64,149,153,157,161},12},
-	/* ETSI */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,132,136,140},16},
-	/* SPAIN */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
-	/* FRANCE */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
-	/* MKK */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
+	/* FCC */		{{36,40,44,48},4},
+	/* IC */		{{36,40,44,48,52,56,60,64},8},
+	/* ETSI */		{{36,40,44,48,52,56,60,64},8},
+	/* SPAIN */		{{36,40,44,48,52,56,60,64},8},
+	/* FRANCE */	{{36,40,44,48,52,56,60,64},8},
+	/* MKK */		{{36,40,44,48,52,56,60,64},8},
 	/* ISRAEL */	{{36,40,44,48,52,56,60,64},8},
 	/* MKK1 */		{{34,38,42,46},4},
 	/* MKK2 */		{{36,40,44,48},4},
-	/* MKK3 */		{{36,40,44,48,52,56,60,64},8},
-	/* NCC (Taiwan) */	{{56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},15},
-	/* RUSSIAN */	{{36,40,44,48,52,56,60,64,132,136,140,149,153,157,161,165},16},
-	/* CN */		{{36,40,44,48,52,56,60,64,149,153,157,161,165},13},
-	/* Global */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
-	/* World_wide */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
-	/* Test */		{{36,40,44,48, 52,56,60,64, 100,104,108,112, 116,120,124,128, 132,136,140,144, 149,153,157,161, 165,169,173,177}, 28},
+	/* MKK3 */		{{36,40,44,48},4},
+	/* NCC (Taiwan) */	{{56,60,64},3},
+	/* RUSSIAN */	{{36,40,44,48,52,56,60,64},8},
+	/* CN */		{{36,40,44,48,52,56,60,64},8},
+	/* Global */		{{36,40,44,48,52,56,60,64},8},
+	/* World_wide */	{{36,40,44,48,52,56,60,64},8},
+	/* Test */		{{36,40,44,48,52,56,60,64}, 8},
 	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
-	/* SG */		{{36,40,44,48,149,153,157,161,165},9},
-	/* KR */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
-	/* AU (Austraria) */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,132,136,140,149,153,157,161,165}, 21},
+	/* SG */		{{36,40,44,48},4},
+	/* KR */		{{36,40,44,48,52,56,60,64},8},
+	/* AU (Austraria) */	{{36,40,44,48,52,56,60,64}, 8},
+};
+static struct channel_list reg_channel_5g_full_band_2[] = {
+	/* FCC */		{{149,153,157,161,165},5},
+	/* IC */		{{149,153,157,161},4},
+	/* ETSI */		{{100,104,108,112,116,132,136,140},8},
+	/* SPAIN */		{{100,104,108,112,116,120,124,128,132,136,140},11},
+	/* FRANCE */	{{100,104,108,112,116,120,124,128,132,136,140},11},
+	/* MKK */		{{100,104,108,112,116,120,124,128,132,136,140},11},
+	/* ISRAEL */	{{100,104,108,112,116,120,124,128,132,136,140},11},
+	/* MKK1 */		{{},0},
+	/* MKK2 */		{{},0},
+	/* MKK3 */		{{},0},
+	/* NCC (Taiwan) */	{{100,104,108,112,116,136,140,149,153,157,161,165},12},
+	/* RUSSIAN */	{{132,136,140,149,153,157,161,165},8},
+	/* CN */		{{149,153,157,161,165},5},
+	/* Global */		{{100,104,108,112,116,136,140,149,153,157,161,165},12},
+	/* World_wide */	{{100,104,108,112,116,136,140,149,153,157,161,165},12},
+	/* Test */		{{100,104,108,112, 116,120,124,128, 132,136,140,144, 149,153,157,161, 165,169,173,177}, 20},
+	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
+	/* SG */		{{149,153,157,161,165},5},
+	/* KR */		{{100,104,108,112,116,136,140,149,153,157,161,165},12},
+	/* AU (Austraria) */	{{100,104,108,112,116,132,136,140,149,153,157,161,165}, 13},
 };
 
 static struct channel_list reg_channel_5g_not_dfs_band[] = {
-	/* FCC */		{{36,40,44,48,149,153,157,161,165},9},
-	/* IC */		{{36,40,44,48,149,153,157,161},8},
+	/* FCC */		{{36,40,44,48},4},
+	/* IC */		{{36,40,44,48},4},
 	/* ETSI */		{{36,40,44,48},4},
 	/* SPAIN */		{{36,40,44,48},4},
 	/* FRANCE */	{{36,40,44,48},4},
@@ -436,16 +498,39 @@ static struct channel_list reg_channel_5g_not_dfs_band[] = {
 	/* MKK1 */		{{34,38,42,46},4},
 	/* MKK2 */		{{36,40,44,48},4},
 	/* MKK3 */		{{36,40,44,48},4},
-	/* NCC (Taiwan) */	{{56,60,64,149,153,157,161,165},8},
-	/* RUSSIAN */	{{36,40,44,48,149,153,157,161,165},9},
-	/* CN */		{{36,40,44,48,149,153,157,161,165},9},
-	/* Global */		{{36,40,44,48,149,153,157,161,165},9},
-	/* World_wide */	{{36,40,44,48,149,153,157,161,165},9},
-	/* Test */		{{36,40,44,48, 149,153,157,161, 165,169,173,177}, 12},
+	/* NCC (Taiwan) */	{{56,60,64},3},
+	/* RUSSIAN */	{{36,40,44,48},4},
+	/* CN */		{{36,40,44,48},4},
+	/* Global */		{{36,40,44,48},4},
+	/* World_wide */	{{36,40,44,48},4},
+	/* Test */		{{36,40,44,48,}, 4},
 	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
-	/* SG */		{{36,40,44,48,149,153,157,161,165},9},
-	/* KR */		{{36,40,44,48,149,153,157,161,165},9},
-	/* AU (Austraria) */	{{36,40,44,48,149,153,157,161,165}, 9},
+	/* SG */		{{36,40,44,48},4},
+	/* KR */		{{36,40,44,48},4},
+	/* AU (Austraria) */	{{36,40,44,48}, 4},
+};
+
+static struct channel_list reg_channel_5g_not_dfs_band_2[] = {
+	/* FCC */		{{149,153,157,161,165},5},
+	/* IC */		{{149,153,157,161},5},
+	/* ETSI */		{{100,104,108,112,116,132,136,140},8},
+	/* SPAIN */		{{100,104,108,112,116,132,136,140},8},
+	/* FRANCE */	{{100,104,108,112,116,132,136,140},8},
+	/* MKK */		{{100,104,108,112,116,132,136,140},8},
+	/* ISRAEL */	{{100,104,108,112,116,132,136,140},8},
+	/* MKK1 */		{{},0},
+	/* MKK2 */		{{},0},
+	/* MKK3 */		{{},0},
+	/* NCC (Taiwan) */	{{149,153,157,161,165},5},
+	/* RUSSIAN */	{{149,153,157,161,165},5},
+	/* CN */		{{149,153,157,161,165},5},
+	/* Global */		{{149,153,157,161,165},5},
+	/* World_wide */	{{149,153,157,161,165},5},
+	/* Test */		{{149,153,157,161, 165,169,173,177}, 8},
+	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
+	/* SG */		{{149,153,157,161,165},5},
+	/* KR */		{{149,153,157,161,165},5},
+	/* AU (Austraria) */	{{149,153,157,161,165}, 5},
 };
 #else
 
@@ -473,595 +558,99 @@ static struct channel_list reg_channel_5g_full_band[] = {
 	/* AU (Austraria) */	{{36,40,44,48,149,153,157,161,165}, 9},
 };
 #endif
-
-
-
-/*HW Setting */
-#define CMD_SET_ETHERNET			0x01
-#define CMD_SET_WIFI				0x02
-
-#define MAX_2G_CHANNEL_NUM_MIB		14
-#define MAX_5G_CHANNEL_NUM_MIB		196
-
-
-#define MAX_5G_DIFF_NUM		14
-
-#define PIN_LEN					8
-#ifdef RTCONFIG_REALTEK
-#define NUM_WLAN_INTERFACE 2
 #else
-#define NUM_WLAN_INTERFACE 1
-#endif
-#define HW_SETTING_HEADER_TAG		((char *)"H6")
-#define HW_WLAN_SETTING_OFFSET	13
-
-#define HW_SETTING_HEADER_OFFSET 	6
-#define HW_SETTING_ETHMAC_OFFSET 	1
-#define ETH_ALEN					6
-
-#define __PACK__			__attribute__ ((packed))
-
-
-typedef struct hw_wlan_setting {
-	unsigned char macAddr[6] __PACK__;
-	unsigned char macAddr1[6] __PACK__;
-	unsigned char macAddr2[6] __PACK__;
-	unsigned char macAddr3[6] __PACK__;
-	unsigned char macAddr4[6] __PACK__;
-	unsigned char macAddr5[6] __PACK__; 
-	unsigned char macAddr6[6] __PACK__; 
-	unsigned char macAddr7[6] __PACK__; 
-	unsigned char pwrlevelCCK_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__; 	
-	unsigned char pwrlevelCCK_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__; 
-	unsigned char pwrlevelHT40_1S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrlevelHT40_1S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrdiffHT40_2S[MAX_2G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrdiffHT20[MAX_2G_CHANNEL_NUM_MIB] __PACK__; 
-	unsigned char pwrdiffOFDM[MAX_2G_CHANNEL_NUM_MIB] __PACK__; 
-	unsigned char regDomain __PACK__; 	
-	unsigned char rfType __PACK__; 
-	unsigned char ledType __PACK__; // LED type, see LED_TYPE_T for definition	
-	unsigned char xCap __PACK__;	
-	unsigned char TSSI1 __PACK__;	
-	unsigned char TSSI2 __PACK__;	
-	unsigned char Ther __PACK__;	
-	unsigned char trswitch __PACK__;
-	unsigned char trswpape_C9 __PACK__;
-	unsigned char trswpape_CC __PACK__;
-	unsigned char target_pwr __PACK__;
-	unsigned char pa_type __PACK__;	
-	unsigned char Ther2 __PACK__;
-	unsigned char xCap2 __PACK__;	
-	unsigned char Reserved8 __PACK__;
-	unsigned char Reserved9 __PACK__;
-	unsigned char Reserved10 __PACK__;
-	unsigned char pwrlevel5GHT40_1S_A[MAX_5G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrlevel5GHT40_1S_B[MAX_5G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrdiff5GHT40_2S[MAX_5G_CHANNEL_NUM_MIB] __PACK__; 
-	unsigned char pwrdiff5GHT20[MAX_5G_CHANNEL_NUM_MIB] __PACK__;	
-	unsigned char pwrdiff5GOFDM[MAX_5G_CHANNEL_NUM_MIB] __PACK__;
-
-	
-	unsigned char wscPin[PIN_LEN+1] __PACK__;	
-
-#if 1
-	unsigned char pwrdiff_20BW1S_OFDM1T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW2S_20BW2S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM2T_CCK2T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_4OFDM3T_CCK3T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_A[MAX_5G_DIFF_NUM] __PACK__;
-
-
-	unsigned char pwrdiff_20BW1S_OFDM1T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW2S_20BW2S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM2T_CCK2T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM3T_CCK3T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_B[MAX_5G_DIFF_NUM] __PACK__;
-#if defined(RPAC68U)
-	unsigned char pwrdiff_20BW1S_OFDM1T_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW2S_20BW2S_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM2T_CCK2T_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_4OFDM3T_CCK3T_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_C[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_C[MAX_5G_DIFF_NUM] __PACK__;
-
-	unsigned char pwrdiff_20BW1S_OFDM1T_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW2S_20BW2S_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM2T_CCK2T_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM3T_CCK3T_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_D[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_D[MAX_5G_DIFF_NUM] __PACK__;
-
-	unsigned char pwrlevelCCK_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrlevelCCK_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrlevelHT40_1S_C[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrlevelHT40_1S_D[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrlevel5GHT40_1S_C[MAX_5G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrlevel5GHT40_1S_D[MAX_5G_CHANNEL_NUM_MIB] __PACK__;
-#endif	
-#endif
-
-} HW_WLAN_SETTING_T, *HW_WLAN_SETTING_Tp;
-typedef struct hw_wlan_ac_setting{
-	unsigned char pwrdiff_20BW1S_OFDM1T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW2S_20BW2S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM2T_CCK2T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_4OFDM3T_CCK3T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_A[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_A[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_A[MAX_5G_DIFF_NUM] __PACK__;
-
-
-	unsigned char pwrdiff_20BW1S_OFDM1T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW3S_20BW3S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM3T_CCK3T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_40BW4S_20BW4S_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-	unsigned char pwrdiff_OFDM4T_CCK4T_B[MAX_2G_CHANNEL_NUM_MIB] __PACK__;
-
-	unsigned char pwrdiff_5G_20BW1S_OFDM1T_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW2S_20BW2S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW3S_20BW3S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_40BW4S_20BW4S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_RSVD_OFDM4T_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW1S_160BW1S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW2S_160BW2S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW3S_160BW3S_B[MAX_5G_DIFF_NUM] __PACK__;
-	unsigned char pwrdiff_5G_80BW4S_160BW4S_B[MAX_5G_DIFF_NUM] __PACK__;
-}HW_WLAN_AC_SETTING_T, *HW_WLAN_AC_SETTING_Tp;
-typedef struct hw_setting {
-	unsigned char boardVer __PACK__;	// h/w board version
-	unsigned char nic0Addr[6] __PACK__;
-	unsigned char nic1Addr[6] __PACK__;
-	HW_WLAN_SETTING_T wlan[NUM_WLAN_INTERFACE];
-	unsigned char countryCode[6] __PACK__;
-	unsigned char territoryCode[8] __PACK__;
-	unsigned char modelName[16] __PACK__;
-    unsigned char amas_bdl __PACK__;
-} HW_SETTING_T, *HW_SETTING_Tp;
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-typedef struct bluetooth_hw_setting {
-	unsigned char btAddr[6] __PACK__;
-	unsigned char txPowerIdx[6] __PACK__;
-	unsigned char thermalVal __PACK__;
-	unsigned char antennaS0 __PACK__;
-	unsigned char antennaS1 __PACK__;
-	unsigned char xtalCapValue __PACK__;
-} BLUETOOTH_HW_SETTING_T, *BLUETOOTH_HW_SETTING_Tp;
-#endif
-#define TAG_LEN					2
-#define SIGNATURE_LEN			4
-#define HW_SETTING_VER			3	// hw setting version
-
-#define FW_HEADER_WITH_ROOT	((char *)"cr6c")
-#define ROOT_HEADER			((char *)"r6cr")
-
-
-#define DWORD_SWAP(v) ( (((v&0xff)<<24)&0xff000000) | ((((v>>8)&0xff)<<16)&0xff0000) | \
-				((((v>>16)&0xff)<<8)&0xff00) | (((v>>24)&0xff)&0xff) )
-#define WORD_SWAP(v) ((unsigned short)(((v>>8)&0xff) | ((v<<8)&0xff00)))
-
-/* Firmware image file header */
-typedef struct img_header {
-	unsigned char signature[SIGNATURE_LEN];
-	unsigned int startAddr;
-	unsigned int burnAddr;
-	unsigned int len;
-}__PACK__ IMG_HEADER_T, *IMG_HEADER_Tp;
-
-
-/* Config file header */
-typedef struct param_header {
-	unsigned char signature[SIGNATURE_LEN] __PACK__;  // Tag + version
-	unsigned short len __PACK__;
-} PARAM_HEADER_T, *PARAM_HEADER_Tp;
-
-#ifdef CONFIG_MTD_NAND
-#define FLASH_DEVICE_NAME		("/hw_setting/hw.bin")
-#define FLASH_DEVICE_NAME1		("/hw_setting/hw1.bin")
-#else
-#define FLASH_DEVICE_NAME		("/dev/mtdblock0")
-#define FLASH_DEVICE_NAME1		("/dev/mtdblock1")
-#endif
-
-#if 1 /* Don't use hardcode offset, refer rtl_flashmapping.h */
-#define HW_SETTING_OFFSET  CONFIG_RTL_HW_SETTING_OFFSET
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-#define BLUETOOTH_HW_SETTING_OFFSET  HW_SETTING_OFFSET+0x1000
-#endif
-#define CODE_IMAGE_OFFSET  CONFIG_RTL_LINUX_IMAGE_OFFSET
-#else
-#define HW_SETTING_OFFSET  0x20000
-#define CODE_IMAGE_OFFSET	0x30000
-#endif
-#define RTK_HW_MIB_ITEM(name)  #name,((unsigned long)(long *)&(((HW_SETTING_T *)0)->name)),sizeof(((HW_SETTING_T *)0)->name)
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-#define RTK_BLUETOOTH_HW_MIB_ITEM(name)        #name,((unsigned long)(long *)&(((BLUETOOTH_HW_SETTING_T *)0)->name)),sizeof(((BLUETOOTH_HW_SETTING_T *)0)->name)
-#endif
-#define RTK_HW_WLAN_MIB_ITEM(name)     #name,((unsigned long)(long *)&(((HW_WLAN_SETTING_T *)0)->name)),sizeof(((HW_WLAN_SETTING_T *)0)->name)
-
-#define MIB_BUFF_MAX_SIZE 1024
-
-typedef enum {
-	BYTE_T,
-	STRING_T,
-	BYTE_ARRAY_T,
-	WLAN_T
-} MIB_TYPE_T;
-
-typedef struct _hw_mib_info{
-	char name[64];
-	unsigned int offset;
-	unsigned int size;
-	MIB_TYPE_T type;
-} HW_MIB_INFO_T, *HW_MIB_INFO_Tp;
-static const HW_MIB_INFO_T hw_wlan_mib[]={
-	//offset from HW_WLAN_SETTING_T begin
-	//              name,   offset  size            type
-	{RTK_HW_WLAN_MIB_ITEM(macAddr),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr1),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr2),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr3),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr4),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr5),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr6),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(macAddr7),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelCCK_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelCCK_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelHT40_1S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelHT40_1S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiffHT40_2S),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiffHT20),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiffOFDM),BYTE_ARRAY_T},
-		
-	{RTK_HW_WLAN_MIB_ITEM(regDomain),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(rfType),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(ledType),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(xCap),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(TSSI1),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(TSSI2),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(Ther),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(trswitch),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(trswpape_C9),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(trswpape_CC),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(target_pwr),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(pa_type),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(Ther2),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(xCap2),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(Reserved8),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(Reserved9),BYTE_T},
-	{RTK_HW_WLAN_MIB_ITEM(Reserved10),BYTE_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevel5GHT40_1S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevel5GHT40_1S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff5GHT40_2S),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff5GHT20),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff5GOFDM),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(wscPin),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_20BW1S_OFDM1T_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW2S_20BW2S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM2T_CCK2T_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW3S_20BW3S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_4OFDM3T_CCK3T_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW4S_20BW4S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM4T_CCK4T_A),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_20BW1S_OFDM1T_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW2S_20BW2S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW3S_20BW3S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW4S_20BW4S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_RSVD_OFDM4T_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW1S_160BW1S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW2S_160BW2S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW3S_160BW3S_A),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW4S_160BW4S_A),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_20BW1S_OFDM1T_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW2S_20BW2S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM2T_CCK2T_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW3S_20BW3S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM3T_CCK3T_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW4S_20BW4S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM4T_CCK4T_B),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_20BW1S_OFDM1T_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW2S_20BW2S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW3S_20BW3S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW4S_20BW4S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_RSVD_OFDM4T_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW1S_160BW1S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW2S_160BW2S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW3S_160BW3S_B),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW4S_160BW4S_B),BYTE_ARRAY_T},
-#if defined(RPAC68U)
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_20BW1S_OFDM1T_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW2S_20BW2S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM2T_CCK2T_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW3S_20BW3S_C),BYTE_ARRAY_T},
-		{RTK_HW_WLAN_MIB_ITEM(pwrdiff_4OFDM3T_CCK3T_C),BYTE_ARRAY_T},
-		{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW4S_20BW4S_C),BYTE_ARRAY_T},
-		{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM4T_CCK4T_C),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_20BW1S_OFDM1T_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW2S_20BW2S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW3S_20BW3S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW4S_20BW4S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_RSVD_OFDM4T_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW1S_160BW1S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW2S_160BW2S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW3S_160BW3S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW4S_160BW4S_C),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_20BW1S_OFDM1T_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW2S_20BW2S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM2T_CCK2T_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW3S_20BW3S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM3T_CCK3T_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_40BW4S_20BW4S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_OFDM4T_CCK4T_D),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_20BW1S_OFDM1T_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW2S_20BW2S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW3S_20BW3S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_40BW4S_20BW4S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_RSVD_OFDM4T_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW1S_160BW1S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW2S_160BW2S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW3S_160BW3S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrdiff_5G_80BW4S_160BW4S_D),BYTE_ARRAY_T},
-               
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelCCK_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelCCK_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelHT40_1S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevelHT40_1S_D),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevel5GHT40_1S_C),BYTE_ARRAY_T},
-	{RTK_HW_WLAN_MIB_ITEM(pwrlevel5GHT40_1S_D),BYTE_ARRAY_T},
-#endif
-	{0},
+#ifdef DFS
+static struct channel_list reg_channel_5g_full_band[] = {
+	/* FCC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* IC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* ETSI */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,132,136,140},16},
+	/* SPAIN */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
+	/* FRANCE */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
+	/* MKK */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,120,124,128,132,136,140},19},
+	/* ISRAEL */	{{36,40,44,48,52,56,60,64},8},
+	/* MKK1 */		{{34,38,42,46},4},
+	/* MKK2 */		{{36,40,44,48},4},
+	/* MKK3 */		{{36,40,44,48,52,56,60,64},8},
+	/* NCC (Taiwan) */	{{56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},15},
+	/* RUSSIAN */	{{36,40,44,48,52,56,60,64,132,136,140,149,153,157,161,165},16},
+	/* CN */		{{36,40,44,48,52,56,60,64,149,153,157,161,165},13},
+	/* Global */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
+	/* World_wide */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
+	/* Test */		{{36,40,44,48, 52,56,60,64, 100,104,108,112, 116,120,124,128, 132,136,140,144, 149,153,157,161, 165,169,173,177}, 28},
+	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
+	/* SG */		{{36,40,44,48,149,153,157,161,165},9},
+	/* KR */		{{36,40,44,48,52,56,60,64,100,104,108,112,116,136,140,149,153,157,161,165},20},
+	/* AU (Austraria) */	{{36,40,44,48,52,56,60,64,100,104,108,112,116,132,136,140,149,153,157,161,165}, 21},
 };
 
-static const HW_MIB_INFO_T hw_mib[]={
-	{RTK_HW_MIB_ITEM(boardVer),BYTE_T},
-	{RTK_HW_MIB_ITEM(nic0Addr),BYTE_ARRAY_T},
-	{RTK_HW_MIB_ITEM(nic1Addr),BYTE_ARRAY_T},
-	{RTK_HW_MIB_ITEM(wlan),WLAN_T},
-	{RTK_HW_MIB_ITEM(countryCode),BYTE_ARRAY_T},
-	{RTK_HW_MIB_ITEM(territoryCode),BYTE_ARRAY_T},
-	{RTK_HW_MIB_ITEM(modelName),STRING_T},
-	{0},
+static struct channel_list reg_channel_5g_not_dfs_band[] = {
+	/* FCC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* IC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* ETSI */		{{36,40,44,48},4},
+	/* SPAIN */		{{36,40,44,48},4},
+	/* FRANCE */	{{36,40,44,48},4},
+	/* MKK */		{{36,40,44,48},4},
+	/* ISRAEL */	{{36,40,44,48},4},
+	/* MKK1 */		{{34,38,42,46},4},
+	/* MKK2 */		{{36,40,44,48},4},
+	/* MKK3 */		{{36,40,44,48},4},
+	/* NCC (Taiwan) */	{{56,60,64,149,153,157,161,165},8},
+	/* RUSSIAN */	{{36,40,44,48,149,153,157,161,165},9},
+	/* CN */		{{36,40,44,48,149,153,157,161,165},9},
+	/* Global */		{{36,40,44,48,149,153,157,161,165},9},
+	/* World_wide */	{{36,40,44,48,149,153,157,161,165},9},
+	/* Test */		{{36,40,44,48, 149,153,157,161, 165,169,173,177}, 12},
+	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
+	/* SG */		{{36,40,44,48,149,153,157,161,165},9},
+	/* KR */		{{36,40,44,48,149,153,157,161,165},9},
+	/* AU (Austraria) */	{{36,40,44,48,149,153,157,161,165}, 9},
 };
-
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-static const HW_MIB_INFO_T bluetooth_hw_mib[]={
-	{RTK_BLUETOOTH_HW_MIB_ITEM(btAddr),BYTE_ARRAY_T},
-	{RTK_BLUETOOTH_HW_MIB_ITEM(txPowerIdx),BYTE_ARRAY_T},
-	{RTK_BLUETOOTH_HW_MIB_ITEM(thermalVal),BYTE_T},
-	{RTK_BLUETOOTH_HW_MIB_ITEM(antennaS0),BYTE_T},
-	{RTK_BLUETOOTH_HW_MIB_ITEM(antennaS1),BYTE_T},
-	{RTK_BLUETOOTH_HW_MIB_ITEM(xtalCapValue),BYTE_T},               
-	{0},
-};
-#endif
-static int flash_get_mib_info(
-		char* name,//input
-		unsigned int *offset,unsigned int *size,MIB_TYPE_T *type//output
-	)
-{
-	int i=0;
-	int wlan_offset=0;
-	unsigned int hw_offset=HW_SETTING_OFFSET+sizeof(PARAM_HEADER_T);
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-	unsigned int bluetooth_offset=BLUETOOTH_HW_SETTING_OFFSET+sizeof(PARAM_HEADER_T);
-#endif
-	if(!name||!offset||!size||!type) {
-		fprintf(stderr,"invlid null input!%s\n",__FUNCTION__);
-		return -1;
-	}
-	for(i=0;hw_mib[i].name[0];i++){
-		if(strcmp(name,hw_mib[i].name)==0){
-			*offset=hw_mib[i].offset+hw_offset;
-			*size=hw_mib[i].size;
-			*type=hw_mib[i].type;
-			return 0;
-		}
-	}
-
-	if(strncmp(name,"wlan",4)==0 && name[4]){
-		int wlan_idx=name[4]-'0';
-		if(wlan_idx>=NUM_WLAN_INTERFACE){
-			fprintf(stderr,"invalid wlan idx! max %d\n",NUM_WLAN_INTERFACE-1);
-			return -1;
-		}
-		wlan_offset=((unsigned long)(long *)&(((HW_SETTING_T *)0)->wlan));              
-		wlan_offset+=wlan_idx*sizeof(HW_WLAN_SETTING_T);
-		name+=6;//wlan0_[realName]
-
-		for(i=0;hw_wlan_mib[i].name[0];i++){
-			if(strcmp(name,hw_wlan_mib[i].name)==0){
-				*offset=hw_wlan_mib[i].offset+hw_offset+wlan_offset;
-				*size=hw_wlan_mib[i].size;
-				*type=hw_wlan_mib[i].type;
-				return 0;
-			}
-		}
-	}
-#ifdef BLUETOOTH_HW_SETTING_SUPPORT
-	if(strncmp(name,"bluetooth_",10)==0){   
-		name+=10;//bluetooth_[realName]
-		for(i=0;bluetooth_hw_mib[i].name[0];i++){
-			if(strcmp(name,bluetooth_hw_mib[i].name)==0){
-				*offset=bluetooth_hw_mib[i].offset+bluetooth_offset;
-				*size=bluetooth_hw_mib[i].size;
-				*type=bluetooth_hw_mib[i].type;
-				return 0;
-			}
-		}
-	}
-#endif
-	fprintf(stderr,"can't find the mib %s!\n",name);
-	return -1;
-}
-
-/* Do checksum and verification for configuration data */
-#ifndef WIN32
-static inline unsigned char CHECKSUM(unsigned char *data, int len)
 #else
-__inline unsigned char CHECKSUM(unsigned char *data, int len)
-#endif
-{
-	int i;
-	unsigned char sum=0;
 
-	for (i=0; i<len; i++)
-		sum += data[i];
-
-	sum = ~sum + 1;
-	return sum;
-}
-#define CHECKSUM_LEN_MAX 0x800000
-#ifndef WIN32
-static inline int CHECKSUM_OK(unsigned char *data, int len)
-#else
-__inline int CHECKSUM_OK(unsigned char *data, int len)
-#endif
-{
-	int i;
-	unsigned char sum=0;
-
-	if(len<0||len>CHECKSUM_LEN_MAX)
-		return 0;
-	for (i=0; i<len; i++)
-		sum += data[i];
-
-	if (sum == 0)
-		return 1;
-	else
-		return 0;
-}
-
-typedef enum { FCC=1, IC, ETSI, SPAIN, FRANCE, MKK } REG_DOMAIN_T;
-
-void rtl_configRps(void);
-
-#if 1 //copy from drivers/net/wireless/rtl8192cd/wifi.h
-enum WIFI_REG_DOMAIN {
-	DOMAIN_FCC		= 1,
-	DOMAIN_IC		= 2,
-	DOMAIN_ETSI		= 3,
-	DOMAIN_SPAIN	= 4,
-	DOMAIN_FRANCE	= 5,
-	DOMAIN_MKK		= 6,
-	DOMAIN_ISRAEL	= 7,
-	DOMAIN_MKK1		= 8,
-	DOMAIN_MKK2		= 9,
-	DOMAIN_MKK3		= 10,
-	DOMAIN_NCC		= 11,
-	DOMAIN_RUSSIAN	= 12,
-	DOMAIN_CN		= 13,
-	DOMAIN_GLOBAL	= 14,
-	DOMAIN_WORLD_WIDE = 15,
-	DOMAIN_TEST		= 16,
-	DOMAIN_5M10M	= 17,
-	DOMAIN_SG		= 18,
-	DOMAIN_KR		= 19,
-	DOMAIN_AU		= 20,
-	DOMAIN_MAX
+// Exclude DFS channels
+static struct channel_list reg_channel_5g_full_band[] = {
+	/* FCC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* IC */		{{36,40,44,48,149,153,157,161,165},9},
+	/* ETSI */		{{36,40,44,48},4},
+	/* SPAIN */		{{36,40,44,48},4},
+	/* FRANCE */	{{36,40,44,48},4},
+	/* MKK */		{{36,40,44,48},4},
+	/* ISRAEL */	{{36,40,44,48},4},
+	/* MKK1 */		{{34,38,42,46},4},
+	/* MKK2 */		{{36,40,44,48},4},
+	/* MKK3 */		{{36,40,44,48},4},
+	/* NCC (Taiwan) */	{{56,60,64,149,153,157,161,165},8},
+	/* RUSSIAN */	{{36,40,44,48,149,153,157,161,165},9},
+	/* CN */		{{36,40,44,48,149,153,157,161,165},9},
+	/* Global */		{{36,40,44,48,149,153,157,161,165},9},
+	/* World_wide */	{{36,40,44,48,149,153,157,161,165},9},
+	/* Test */		{{36,40,44,48, 52,56,60,64, 100,104,108,112, 116,120,124,128, 132,136,140,144, 149,153,157,161, 165,169,173,177}, 28},
+	/* 5M10M */		{{146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170}, 25},
+	/* SG */		{{36,40,44,48,149,153,157,161,165},9},
+	/* KR */		{{36,40,44,48,149,153,157,161,165},9},
+	/* AU (Austraria) */	{{36,40,44,48,149,153,157,161,165}, 9},
 };
 #endif
+#endif
 
-int checkheaderend;
+extern const char WIF_2G[];
+extern const char WIF_5G[];
+extern const char VXD_5G[];
+extern const char VXD_2G[];
 
-typedef struct {
-	const char *name;
-	unsigned char band_2G;
-	unsigned char band_5G;
-	unsigned short txpwr_lmt_index;
-} reg_domain_t;
-
-/*
- *
- * static const COUNTRY_IE_ELEMENT countryIEArray[]
- * realtek/rtl819x/linux-2.6.30/drivers/net/wireless/rtl8192cd/8192cd_11h.c
- * src-rt-6.x/router/shared/sysdeps/realtek/realtek.h
- *
- * the country and reg mapping in countryIEArray is not up to date.
- *
- */
-static const reg_domain_t reg_domain[] = {
-	{ "US", DOMAIN_FCC,  DOMAIN_FCC,  0  },
-#ifdef RPAC55
-	{ "CA", DOMAIN_IC,   DOMAIN_IC,	  5  },
+extern int get_mac_2g(unsigned char dst[]);
+extern int get_mac_5g(unsigned char dst[]);
+extern int get_mac_5g_2(unsigned char dst[]);
+extern int get_regdomain_from_countrycode(char* country_code, int unit);
+extern int hex_to_string(unsigned char *hex,char *str,int len);
+extern void assign_diff_AC(unsigned char* pMib, unsigned char* pVal);
+#ifdef RTCONFIG_RTL8198D
+extern void assign_diff_AC_hex_to_string(unsigned char* pmib,char* str);
 #else
-	{ "CA", DOMAIN_FCC,  DOMAIN_FCC,  3  },
+extern void assign_diff_AC_hex_to_string(unsigned char* pmib,char* str,int len);
 #endif
-	{ "EU", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
-	{ "AA", DOMAIN_ETSI, DOMAIN_ETSI, 0  },
-	{ "TW", DOMAIN_FCC,  DOMAIN_FCC,  0  },
-	{ "SG", DOMAIN_SG,   DOMAIN_SG,   0  },
-	{ "CN", DOMAIN_CN,   DOMAIN_CN,   0  },
-	{ "KR", DOMAIN_KR,   DOMAIN_KR,   0  },
-	{ "JP", DOMAIN_MKK,  DOMAIN_MKK,  3  },
-	{ "AU", DOMAIN_AU,   DOMAIN_AU,   4  },
-    { "IL", DOMAIN_ISRAEL, DOMAIN_ISRAEL, 2},
-};
-#ifdef RTCONFIG_AMAS
-void wait_connection_finished(char *ifname);
+void start_wlc_connect(int band);
+void stop_wlc_connect(int band);
+int get_wlan_status(int band);
+void set_wlan_status(int band, int enable);
 #endif
-#endif/*__REALTEK_H__*/

@@ -35,6 +35,10 @@
 #include <shutils.h>
 #include <rc.h>
 
+#ifdef RTCONFIG_AMAS
+#include <amas-utils.h>
+#endif
+
 /* Support for Domain Search List */
 #undef DHCP_RFC3397
 
@@ -56,7 +60,7 @@ bin2hex(char *dest, size_t size, const void *src, size_t n)
 	return dptr - dest;
 }
 
-#ifdef RTCONFIG_TR069
+#if defined(RTCONFIG_TR069) || (defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK))
 /* returns:
  *  NULL on NULL value or alloc error
  *  binary representation of hex value on success
@@ -140,8 +144,8 @@ struct opt_hdr {
 	unsigned char data[0];
 } __attribute__ ((__packed__));
 
-#ifdef RTCONFIG_TR069
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR069) || (defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK))
+#if defined(RTCONFIG_TR181) || (defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK))
 static struct viopt_hdr *
 viopt_get(const void *buf, size_t size, unsigned int entnum)
 {
@@ -184,6 +188,7 @@ opt_get(const void *buf, size_t size, unsigned char id)
 	return NULL;
 }
 
+#ifdef RTCONFIG_TR069
 static char
 *stropt(const struct opt_hdr *opt, char *buf)
 {
@@ -206,6 +211,7 @@ opt_add(const void *buf, size_t size, unsigned char id, void *data, unsigned cha
 
 	return 0;
 }
+#endif
 #endif
 #endif
 
@@ -312,7 +318,7 @@ bound(int renew)
 #if defined(RTCONFIG_PORT_BASED_VLAN) || defined(RTCONFIG_TAGGED_BASED_VLAN)
 	char ip_mask[sizeof("192.168.100.200/255.255.255.255XXX")];
 #endif
-#ifdef RTCONFIG_TR069
+#if defined(RTCONFIG_TR069) || (defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK))
 	size_t size = 0;
 #endif
 #if defined(RTCONFIG_USB_MODEM) && defined(RTCONFIG_INTERNAL_GOBI)
@@ -471,6 +477,26 @@ bound(int renew)
 		free(value);
 	}
 #endif
+#endif
+
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PRELINK)
+	if (nvram_match("x_Setting", "0")) {
+		int verified = 0;
+		if ((value = hex2bin(getenv("opt125"), &size))) {
+			struct viopt_hdr *viopt;
+			struct opt_hdr *hash_bundle_key_opt;
+			if ((viopt = viopt_get(value, size, htonl(2623))) &&
+			    (hash_bundle_key_opt = opt_get(viopt->data, viopt->len, 123)) && hash_bundle_key_opt->len == 20) {
+				verified = amas_verify_hash_bundle_key(hash_bundle_key_opt->data, &verified) == AMAS_RESULT_SUCCESS &&
+					   verified == 1;
+			}
+			free(value);
+		}
+		nvram_set("amas_bdl_wanstate", verified ? "1" : "2");
+#if defined(RTCONFIG_BT_CONN)
+		ble_rename_ssid();
+#endif
+	}
 #endif
 
 	// check if the ipaddr is safe to apply
@@ -645,12 +671,14 @@ leasefail(void)
 int
 udhcpc_wan(int argc, char **argv)
 {
-	_dprintf("%s:: %s\n", __FUNCTION__, argv[1] ? : "");
-
 	run_custom_script("dhcpc-event", 0, argv[1], NULL);
 
-	if (!argv[1])
+	if(argv[1] && !strstr(argv[1], "leasefail"))
+		_dprintf("%s:: %s\n", __func__, argv[1]);
+	if (!argv[1]){
+		_dprintf("%s::\n", __func__);
 		return EINVAL;
+	}
 	else if (strstr(argv[1], "deconfig"))
 		return deconfig(0);
 	else if (strstr(argv[1], "bound"))

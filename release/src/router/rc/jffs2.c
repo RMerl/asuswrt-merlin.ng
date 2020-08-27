@@ -86,13 +86,31 @@ unsigned int get_root_type(void)
 		case MODEL_RTN11P_B1:
 		case MODEL_RPAC53:
 		case MODEL_RPAC55:
+		case MODEL_RPAC92:
 		case MODEL_RTN19:
 		case MODEL_RTAC59U:
 		case MODEL_MAPAC1750:
+		case MODEL_RTAC59CD6R:
+		case MODEL_RTAC59CD6N:
 			return 0x73717368;      /* squashfs */
 		case MODEL_GTAC5300:
 		case MODEL_RTAC86U:
+		case MODEL_RTAX88U:
+		case MODEL_GTAX11000:
+		case MODEL_RTAX92U:
+		case MODEL_RTAX95Q:
+		case MODEL_RTAX56_XD4:
+		case MODEL_RTAX58U:
+		case MODEL_RTAX55:
+		case MODEL_RTAX56U:
+		case MODEL_GTAXE11000:
 			return 0x24051905;      /* ubifs */
+		case MODEL_DSLAX82U:
+		{
+			struct statfs sf;
+			statfs("/", &sf);
+			return sf.f_type;
+		}
 	}
 #ifdef HND_ROUTER
 	return 0x24051905;      /* ubifs */
@@ -355,7 +373,7 @@ void start_jffs2(void)
 	jffs2_fail = 0;
 
 
-#ifdef HND_ROUTER
+#if defined(HND_ROUTER) || defined(DSL_AC68U)
 #ifdef RTCONFIG_JFFS_NVRAM
 	system("rm -rf /jffs/nvram_war");
 	jffs_nvram_init();

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="248" height="48" viewBox="0 0 248 48">
+  <defs>
+    <rect id="speed_default-a" width="240" height="42" x="4" y="3" rx="21"/>
+  </defs>
+  <g fill="none" fill-rule="evenodd" opacity=".5">
+    <use fill="#00A1FF" xlink:href="#speed_default-a"/>
+    <use fill="#000" fill-opacity=".7" xlink:href="#speed_default-a"/>
+    <use fill="#FFF" fill-opacity=".03" xlink:href="#speed_default-a"/>
+  </g>
+</svg>

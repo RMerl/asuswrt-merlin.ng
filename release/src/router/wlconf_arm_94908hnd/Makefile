@@ -23,7 +23,7 @@ CFLAGS  += -Os
 else
 CFLAGS  += -O2
 endif
-LDFLAGS	+= -L$(TOP)/nvram${BCMEX}${EX7} -lnvram ${EXTRA_NV_LDFLAGS} -L$(TOP)/shared -lshared
+LDFLAGS	+= -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram ${EXTRA_NV_LDFLAGS} -L$(TOP)/shared -lshared
 LDFLAGS += -lgcc_s
 
 ifeq ($(RTCONFIG_QTN),y)

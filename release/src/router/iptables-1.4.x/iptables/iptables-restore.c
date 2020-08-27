@@ -6,7 +6,7 @@
  */
 
 #include <getopt.h>
-#include <sys/errno.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>

@@ -47,6 +47,7 @@
 #include <stdio.h>	    // for printf, etc.
 #include <sys/time.h>
 #include <time.h>
+#include <sys/types.h>		// unit
 
 /* define TIMER_PROFILE to enable code which guages how accurate the timer functions are.
  * For each expiring timer the code will print the expected time interval and the actual time

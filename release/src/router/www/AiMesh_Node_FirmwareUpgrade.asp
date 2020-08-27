@@ -52,12 +52,19 @@
 	text-align: left;
 	font-weight: bolder;
 }
-.AiMesh_fw_loading {
+.AiMesh_fw_upload_bg {
 	position: absolute;
 	right: 0;
 	top: 0;
 	left: 0;
 	bottom: 0;
+	margin: auto;
+	width: 80%;
+	height: 90%;
+}
+.AiMesh_fw_loading {
+	position: relative;
+	top: 20%;
 	margin: auto;
 }
 .fw_upload_button {
@@ -292,7 +299,7 @@ function open_AiMesh_node_fw_upgrade() {
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="update" disabled>
 <input type="hidden" name="upload" disabled>
-<div class='AiMesh_fw_loading' style='width:80%;height:90%;'>
+<div class='AiMesh_fw_upload_bg'>
 	<div class="icon_logo">
 	</div>
 	<div class="desc_container">

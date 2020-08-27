@@ -169,12 +169,14 @@ function initial(){
 		$("#security_scan_tr").hide();
 		$(".AiProtection_02").hide();
 		$(".AiProtection_03").hide();
-		$(".line_1").hide();
-		if(!isSupport("dpi_vp")){
-			$("#twoWayIPS_padding").hide();
-			$("#twoWayIPS_field").hide();
-		}
+		$(".line_1").hide();	
 		$("#tm_logo").css("margin-left", "10px");
+	}
+
+	if(!isSupport("dpi_vp")){
+		$("#twoWayIPS_padding").hide();
+		$("#twoWayIPS_field").hide();
+		$("#vp_service_field").hide();
 	}
 
 	if(document.form.wrs_protect_enable.value == '1'){
@@ -1020,7 +1022,7 @@ function shadeHandle(flag){
 								<div id="wrs_service"></div>
 							</td>
 						</tr>
-						<tr>
+						<tr id="vp_service_field">
 							<th><#AiProtection_scan_item13#> -</th>
 							<td>
 								<div id="vp_service"></div>
@@ -1442,7 +1444,7 @@ function shadeHandle(flag){
 											<input class="button_gen" type="button" onclick="show_alert_preference();" value="<#AiProtection_alert_pref#>">
 										</div>
 									</div>
-									<div style="width:135px;height:55px;margin: -10px 0 0 600px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
+									<div style="width:96px;height:44px;margin: 10px 0 0 600px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 								</td>
 							</tr>
 							</tbody>

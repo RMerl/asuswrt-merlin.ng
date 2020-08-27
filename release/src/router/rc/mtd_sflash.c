@@ -175,6 +175,7 @@ mtd_unlock(const char *mtdname)
 	return -1;		//1: fail
 }
 
+#ifndef RTCONFIG_URLFW
 static char *
 base64enc(const char *p, char *buf, int len)
 {
@@ -319,6 +320,7 @@ int http_get(const char *server, char *buf, size_t count, off_t offset)
 {
         return wget(METHOD_GET, server, buf, count, offset);
 }
+#endif /* !RTCONFIG_URLFW */
 
 /*
  * Write a file to an MTD device
@@ -343,10 +345,19 @@ mtd_write(const char *path, const char *mtd)
 	int ret = -1;
 	
 	/* Examine TRX header */
+#ifdef RTCONFIG_URLFW
+	if ((fp = url_fopen(path, "rb")))
+		count = safe_fread(&trx, 1, sizeof(struct trx_header), fp);
+	else {
+		fprintf(stderr, "%s: Can't open path\n", path);
+		goto fail;
+	}
+#else /* !RTCONFIG_URLFW */
 	if ((fp = fopen(path, "r")))
 		count = safe_fread(&trx, 1, sizeof(struct trx_header), fp);
 	else
 		count = http_get(path, (char *) &trx, sizeof(struct trx_header), 0);
+#endif /* !RTCONFIG_URLFW */
 	if (count < sizeof(struct trx_header)) {
 		_dprintf("%s: File is too small (%ld bytes)\n", path, count);
 		goto fail;
@@ -407,10 +418,14 @@ mtd_write(const char *path, const char *mtd)
 			count = off = sizeof(struct trx_header);
 			memcpy(buf, &trx, sizeof(struct trx_header));
 		}
+#ifdef RTCONFIG_URLFW
+		count += safe_fread(&buf[off], 1, len - off, fp);
+#else /* !RTCONFIG_URLFW */
 		if (fp)
 			count += safe_fread(&buf[off], 1, len - off, fp);
 		else
 			count += http_get(path, &buf[off], len - off, erase_info.start + off);
+#endif /* !RTCONFIG_URLFW */
 		if (count < len) {
 			_dprintf("%s: Truncated file (actual %ld expect %ld)\n", path,
 				count - off, len - off);

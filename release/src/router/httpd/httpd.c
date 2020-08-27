@@ -69,8 +69,10 @@ typedef unsigned int __u32;   // 1225 ham
 #include <bcmnvram.h>	//2008.08 magic
 #include <arpa/inet.h>	//2008.08 magic
 
+#if defined(__GLIBC__) || defined(__UCLIBC__)		//musl doesn't have error.h
 #include <error.h>
-#include <sys/signal.h>
+#endif	/* __GLIBC__||__UCLIBC__ */
+#include <signal.h>
 #include <sys/wait.h>
 #include <shared.h>
 #include <shutils.h>
@@ -265,7 +267,7 @@ time_t login_timestamp=0; // the timestamp of the logined ip
 time_t login_timestamp_tmp=0; // the timestamp of the current session.
 time_t last_login_timestamp=0; // the timestamp of the current session.
 unsigned int login_ip_tmp=0; // the ip of the current session.
-usockaddr login_usa_tmp = {0};
+usockaddr login_usa_tmp = {{0}};
 unsigned int login_try=0;
 unsigned int last_login_ip = 0;	// the last logined ip 2008.08 magic
 //Add by Andy for handle the login block mechanism by LAN/WAN
@@ -1228,6 +1230,9 @@ handle_request(void)
 				last_login_timestamp = 0;
 				lock_flag &= ~(LOCK_LOGIN_LAN);
 				login_error_status = 0;
+#ifdef RTCONFIG_CAPTCHA
+				login_fail_num = 0;
+#endif
 			}else{
 				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == LOGINLOCK)|| strstr(url, ".png")){
 				}else{
@@ -1244,6 +1249,9 @@ handle_request(void)
 				last_login_timestamp_wan= 0;
 				lock_flag &= ~(LOCK_LOGIN_WAN);
 				login_error_status = 0;
+#ifdef RTCONFIG_CAPTCHA
+				login_fail_num = 0;
+#endif
 			}else{
 				if((strncmp(file, "Main_Login.asp", 14)==0 && login_error_status == LOGINLOCK)|| strstr(url, ".png")){
 				}else{
@@ -1298,6 +1306,9 @@ handle_request(void)
 				}
 			}
 			if (handler->auth) {
+#if defined(RTAX82U) || defined(DSL_AX82U)
+				switch_ledg(LEDG_QIS_FINISH);
+#endif
 				if ((mime_exception&MIME_EXCEPTION_NOAUTH_FIRST)&&!x_Setting) {
 					//skip_auth=1;
 				}
@@ -1309,7 +1320,8 @@ handle_request(void)
 #endif
 #ifdef RTCONFIG_AMAS
 				//RD can do firmware upgrade, if re_upgrade set to 1.
-				else if(!fromapp && nvram_match("re_mode", "1") && nvram_get_int("re_upgrade") == 0 && !check_AiMesh_whitelist(file)){
+				else if(!fromapp && (nvram_match("re_mode", "1") || nvram_match("disable_ui", "1")) &&
+					nvram_get_int("re_upgrade") == 0 && !check_AiMesh_whitelist(file)){
 					snprintf(inviteCode, sizeof(inviteCode), "<meta http-equiv=\"refresh\" content=\"0; url=message.htm\">\r\n");
 					send_page( 200, "OK", (char*) 0, inviteCode, 0);
 					return;
@@ -1392,12 +1404,12 @@ handle_request(void)
 				}
 #elif defined(vxworks)
 				flags = 1;
-				if (ioctl(fileno(conn_fp), FIONBIO, (int) &flags) != -1) {
+				if (ioctl(fileno(conn_fp), FIONBIO, (long) &flags) != -1) {
 					/* Read up to two more characters */
 					if (fgetc(conn_fp) != EOF)
 						(void)fgetc(conn_fp);
 					flags = 0;
-					ioctl(fileno(conn_fp), FIONBIO, (int) &flags);
+					ioctl(fileno(conn_fp), FIONBIO, (long) &flags);
 				}
 #endif
 			}
@@ -1577,8 +1589,9 @@ int is_auth(void)
 
 int is_firsttime(void)
 {
-#if defined(RTAC58U)
-	if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+#if defined(RTAC58U) || defined(RTAC59U) || defined(RTAX58U) || defined(RTAX56U)
+	if (!strncmp(nvram_safe_get("territory_code"), "CX/01", 5)
+	 || !strncmp(nvram_safe_get("territory_code"), "CX/05", 5))
 		return 0;
 	else
 #endif
@@ -1618,9 +1631,9 @@ char *config_model_name(char *source, char *find,  char *rep){
        result_t = (char*)realloc(result, length * sizeof(char));
        if(result_t == NULL){
        	free(result);
-       	return NULL;
-       }else
-       	result = result_t;
+         	return NULL;
+         }else
+         	result = result_t;
        strcat(result, rep);
        gap+=rep_L;
 
@@ -1730,7 +1743,6 @@ load_dictionary (char *lang, pkw_t pkw)
 		strcpy(pkw->buf, dyn_dict_buf_new);
 		free(dyn_dict_buf_new);
 	}
-
 #else
 	pkw->buf = (char *) (q = malloc (dict_size));
 
@@ -2157,8 +2169,8 @@ int main(int argc, char **argv)
 		while ((count = select(max_fd + 1, &rfds, NULL, NULL, &tv)) < 0 && errno == EINTR)
 			continue;
 		if (count < 0) {
-			perror("select");
 			HTTPD_DBG("count = %d : return\n", count);
+			perror("select");
 			return errno;
 		}
 
@@ -2174,16 +2186,16 @@ int main(int argc, char **argv)
 
 			item = malloc(sizeof(*item));
 			if (item == NULL) {
-				perror("malloc");
 				HTTPD_DBG("malloc fail\n");
+				perror("malloc");
 				return errno;
 			}
 			sz = sizeof(item->usa);
 			while ((item->fd = accept(listen_fd[i], &item->usa.sa, &sz)) < 0 && errno == EINTR)
 				continue;
 			if (item->fd < 0) {
-				perror("accept");
 				HTTPD_DBG("item->fd = %d (<0): continue\n", item->fd);
+				perror("accept");
 				free(item);
 				continue;
 			}
@@ -2270,6 +2282,10 @@ int main(int argc, char **argv)
 			continue;
 		shutdown(listen_fd[i], 2);
 		close(listen_fd[i]);
+
+#ifdef RTCONFIG_HTTPS
+		if (do_ssl) mssl_ctx_free();
+#endif
 	}
 
 	return 0;

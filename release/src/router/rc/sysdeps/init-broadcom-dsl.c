@@ -130,13 +130,16 @@ void init_switch_dsl()
 }
 
 void config_switch_dsl_set_dsl()
-{	
+{
 	char buf[8];
-	snprintf(buf, sizeof(buf), "0x%04x", DSL_WAN_VID);	
-	eval("et", "robowr", "0x05", "0x83", "0x0021");
-	eval("et", "robowr", "0x05", "0x81", buf);	//Andy Chiu, 2016/04/11. modify 
-	eval("et", "robowr", "0x05", "0x80", "0x0000");
-	eval("et", "robowr", "0x05", "0x80", "0x0080");
+	int x;
+	for(x = 0; x < MAX_PVC; x++) {
+		snprintf(buf, sizeof(buf), "0x%04x", (DSL_WAN_VID + x));
+		eval("et", "robowr", "0x05", "0x83", "0x0021");
+		eval("et", "robowr", "0x05", "0x81", buf);	//Andy Chiu, 2016/04/11. modify 
+		eval("et", "robowr", "0x05", "0x80", "0x0000");
+		eval("et", "robowr", "0x05", "0x80", "0x0080");
+	}
 }
 
 void config_switch_dsl_set_iptv(int stbport)
@@ -247,7 +250,7 @@ void config_switch_dsl()
 		dbG("STB port: %d\n", stbport);
 
 #ifdef RTCONFIG_DUALWAN
-		if (get_dualwan_primary()==WANS_DUALWAN_IF_DSL)
+		if (get_dualwan_primary()==WANS_DUALWAN_IF_DSL || get_dualwan_secondary()==WANS_DUALWAN_IF_DSL)
 			config_switch_dsl_set_dsl();
 		if (get_dualwan_primary()==WANS_DUALWAN_IF_LAN || get_dualwan_secondary()==WANS_DUALWAN_IF_LAN)
 			config_switch_dsl_set_lan();
@@ -258,4 +261,3 @@ void config_switch_dsl()
 #endif
 	}
 }
-

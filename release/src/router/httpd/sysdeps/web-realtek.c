@@ -990,7 +990,6 @@ dump_rtk_bss_info(int band,int eid, webs_t wp, int argc, char_t **argv, bss_info
 	int retval = 0;
 
 	wl_format_ssid(ssidbuf, bss->ssid, strlen(bss->ssid));
-//cprintf("%s:%d\n",__FUNCTION__,__LINE__);
 	retval += websWrite(wp, "SSID: \"%s\"\n", ssidbuf);
 
 	switch(bss->state) 
@@ -1662,6 +1661,13 @@ ej_wl_channel_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 	return ej_wl_channel_list(eid, wp, argc, argv, 1);
 }
 
+int
+ej_wl_channel_list_5g_2(int eid, webs_t wp, int argc, char_t **argv)
+{
+
+	return ej_wl_channel_list(eid, wp, argc, argv, 2);
+}
+
 #define	WL_IW_RSSI_NO_SIGNAL	-91	/* NDIS RSSI link quality cutoffs */
 #define	MAX_STA_COUNT	128
 static int ej_wl_rssi(int eid, webs_t wp, int argc, char_t **argv, int unit)
@@ -1779,14 +1785,12 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #endif
 		)
 		{
-			sprintf(name_vif, "wl%d-vxd", unit);
-			name = name_vif;
+			name = get_staifname(unit);
 		//	cprintf("%s:%d name=%s\n",__FUNCTION__,__LINE__,name);
 		}
 		else
 #endif
 	name = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
-	//cprintf("%s:%d name=%s\n",__FUNCTION__,__LINE__,name);
 	wl_ioctl(name, WLC_GET_INSTANCE, &unit_cur, sizeof(unit_cur));
 	//cprintf("%s:%d unit_cur=%d %p\n",__FUNCTION__,__LINE__,unit_cur,&unit_cur);
 	if (wl_ioctl(name, WLC_GET_RATE, &rate, sizeof(int)))
@@ -1834,6 +1838,14 @@ ej_wl_rate_5g(int eid, webs_t wp, int argc, char_t **argv)
 	return ej_wl_rate(eid, wp, argc, argv, 1);
 }
 
+#ifdef RPAC92
+int
+ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv)
+{
+
+	return ej_wl_rate(eid, wp, argc, argv, 2);
+}
+#endif
 // Defined in wsc/src/wsc.h
 enum {  NOT_USED=-1,
 		PROTOCOL_START=0, PROTOCOL_PBC_OVERLAPPING=1,

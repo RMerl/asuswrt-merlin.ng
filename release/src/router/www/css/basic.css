@@ -39,7 +39,7 @@
 .border-container{
     width: 769px; 
     position: relative;
-    margin: 10px auto 20px auto;
+    margin-bottom: 20px;
     border: 1px solid #5C0C0B;
     border-top-left-radius: 18px;
     border-top-right-radius: 8px;

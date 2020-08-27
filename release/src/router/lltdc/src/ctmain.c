@@ -38,6 +38,7 @@ extern void  packetio_send_query(uint16_t seqnum, etheraddr_t* pDst);
 extern void  packetio_send_emit(uint16_t thisSeqNum, etheraddr_t* pDst, uint16_t emiteeCnt);
 extern void  packetio_send_charge(uint16_t thisSeqNum, etheraddr_t* pDst);
 extern void  packetio_send_reset(etheraddr_t* pDst);
+extern void  packetio_send_query_large_tlv(uint16_t thisSeqNum, etheraddr_t* pDst);
 
 void (*testFcn)(void* state);
 

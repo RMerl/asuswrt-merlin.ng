@@ -24,7 +24,9 @@
  * This code is distributed under a BSD style license, see the LICENSE file
  * for complete information.
  */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #define __USE_GNU
 
 #include "iperf_config.h"
@@ -47,7 +49,11 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sys/mman.h>

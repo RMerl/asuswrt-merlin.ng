@@ -54,7 +54,8 @@ static struct {
 	unsigned long time;
 	unsigned long next;
 } timers;
-struct timer_entry *timerx, *alrm_timer;
+struct timer_entry *timerx;
+struct task_table *TT;
 
 unsigned int now_sigs, task_mask;
 int max_timeout=0;
@@ -250,18 +251,6 @@ void purge_timers(void)
 
 /* signal handlers */
 
-void dump_nowsigs(int sigs, char *str)
-{
-	int i;
-
-	_dprintf("%s::\n", str);
-	for(i=1; i<32; ++i) {
-		if(sigs & 1<<i)
-			printf("[%d] ", i);
-	}
-	printf("\nend\n");
-}
-
 void mark_sig(int sig)
 {
 	if(sig > 31)	return;
@@ -288,6 +277,17 @@ void take_sig_tasks(struct task_table *tt)
 	}
 }
 
+struct timer_entry* timer_of_sig(int sig)
+{
+	struct task_table *tp = TT;
+ 
+	for(; tp; tp++) {
+		if(tp->sig == sig)
+			return tp->timer;
+	}
+	return NULL;
+}
+
 void tasks_run(struct task_table *tt, int num, int _max_timeout)
 {
 	int i;
@@ -296,6 +296,7 @@ void tasks_run(struct task_table *tt, int num, int _max_timeout)
 
 	if(!tt)  return;
 
+	TT = tt;
 	init_timers();
 	now_sigs = 0;
 	task_mask = 0;
@@ -315,11 +316,9 @@ void tasks_run(struct task_table *tt, int num, int _max_timeout)
 		}
 
 		if(tt[i].sig == SIGALRM) {
-			alrm_timer = tt[i].timer;
 			signal(tt[i].sig, SIG_IGN);
-			if(tt[i].fire_time <= 0)
-				tt[i].fire_time = 10*TIMER_HZ;
-			mod_timer(tt[i].timer, tt[i].fire_time);
+			if(tt[i].fire_time)
+				mod_timer(tt[i].timer, tt[i].fire_time);
 		} else {
 			if(tt[i].tfunc) {
 				task_mask |= 1<<tt[i].sig;

@@ -42,7 +42,7 @@
 #include <wlscan.h>
 
 
-#include "../../shared/sysdeps/realtek/realtek.h"
+#include "realtek.h"
 
 
 /*
@@ -111,41 +111,113 @@ int start_wps_pin_method(WPS_MODE mode,char* pin)
 	}
 	if(mode == WPS_MODE_CLIENT)
 	{
-		if (sw_mode() == SW_MODE_AP && nvram_get_int("wlc_psta") == 1) { // media bridge mode.
+		if (mediabridge_mode()) { // media bridge mode.
 #ifdef RTCONFIG_CONCURRENTREPEATER
-			doSystem("iwpriv wl0 set_mib pin=%s",pin);
-			doSystem("iwpriv wl1 set_mib pin=%s",pin);
+			iwpriv_set_mib_string(get_wififname(0), "pin", pin);
+			iwpriv_set_mib_string(get_wififname(1), "pin", pin);
+#ifdef RTCONFIG_HAS_5G_2
+			iwpriv_set_mib_string(get_wififname(2), "pin", pin);
+#endif
 #else
 			wps_band = nvram_get_int("wlc_band");
-			doSystem("iwpriv wl%d set_mib pin=%s",wps_band,pin);
+			iwpriv_set_mib_string(get_wififname(wps_band), "pin", pin);
 #endif
-		}
-		else {
+		} else {
 #ifdef RTCONFIG_CONCURRENTREPEATER
-			doSystem("iwpriv wl0-vxd set_mib pin=%s",pin);
-			doSystem("iwpriv wl1-vxd set_mib pin=%s",pin);
+			iwpriv_set_mib_string(get_staifname(0), "pin", pin);
+			iwpriv_set_mib_string(get_staifname(1), "pin", pin);
+#ifdef RTCONFIG_HAS_5G_2
+			iwpriv_set_mib_string(get_staifname(2), "pin", pin);
+#endif
 #else
 			wps_band = nvram_get_int("wlc_band");
-			doSystem("iwpriv wl%d-vxd set_mib pin=%s",wps_band,pin);
+			iwpriv_set_mib_string(get_staifname(wps_band), "pin", pin);
 #endif
 		}
-	}
-	else
-	{
+	} else {
 		multi_band = nvram_get_int("wps_multiband");
 		wps_band = nvram_get_int("wps_band_x");
 		if(multi_band == 1)
 		{
-			doSystem("iwpriv wl0 set_mib pin=%s",pin);
-			doSystem("iwpriv wl1 set_mib pin=%s",pin);
-		}
-		else
-		{
-			doSystem("iwpriv wl%d set_mib pin=%s",wps_band,pin);
+			iwpriv_set_mib_string(get_wififname(0), "pin", pin);
+			iwpriv_set_mib_string(get_wififname(1), "pin", pin);
+#ifdef RTCONFIG_HAS_5G_2
+			iwpriv_set_mib_string(get_wififname(2), "pin", pin);
+#endif
+		} else {
+			iwpriv_set_mib_string(get_wififname(wps_band), "pin", pin);
 		}
 	}
 	return 0;
 }
+#ifdef RTCONFIG_RTL8198D
+int start_wps_pbc_method(WPS_MODE mode) {
+
+	char *wl2g = NULL;
+	char *wl5g = NULL;
+	char *wl5g2 = NULL;
+
+	int multi_band = 0, wps_band = 0;
+	int fd;
+#ifdef RTCONFIG_AMAS
+	/*	nvram wps_amas_enrollee indicate that the wps request send
+	 *	from "obd". And it will set wps as enrollee.
+	 */
+		if(nvram_get_int("wps_amas_enrollee") == 1) {
+		/*	AiMesh use 2G for connect with CAP in onboarding */
+			wl2g = get_staifname(0);
+			eval("ifconfig", wl2g, "up");
+			eval("wscd", "-sig_pbc", wl2g);
+			nvram_set_int("led_status", LED_AP_WPS_START);
+			return 1;
+		} else
+#endif
+	if(repeater_mode()) {
+		wl2g = get_staifname(0);
+		wl5g = get_staifname(1);
+#ifdef RTCONFIG_HAS_5G_2
+		wl5g2 = get_staifname(2);
+#endif
+	} else if(mediabridge_mode()) {
+		wl2g = get_wififname(0);
+		wl5g = get_wififname(1);
+#ifdef RTCONFIG_HAS_5G_2
+		wl5g2 = get_wififname(2);
+#endif
+	} else {//else and ap mode
+		wl2g = get_wififname(0);
+		wl5g = get_wififname(1);
+#ifdef RTCONFIG_HAS_5G_2
+		wl5g2 = get_wififname(2);
+#endif
+	}
+
+	eval("ifconfig", wl2g, "up");
+	eval("ifconfig", wl5g, "up");
+#ifdef RTCONFIG_HAS_5G_2
+	eval("ifconfig", wl5g2, "up");
+#endif
+	if(access_point_mode()) {
+		multi_band = nvram_get_int("wps_multiband");
+		wps_band = nvram_get_int("wps_band_x"); //012
+		if(multi_band == 0) {
+			if(wps_band == 0) {
+				fd = creat("/var/wps_start_interface2", O_CREAT);
+				if(fd > 0) close(fd);
+			} else if(wps_band == 1) {
+				fd = creat("/var/wps_start_interface1", O_CREAT);
+				if(fd > 0) close(fd);
+			} else if(wps_band == 2) {
+				fd = creat("/var/wps_start_interface0", O_CREAT);
+				if(fd > 0) close(fd);
+			}
+		}
+	}
+	eval("wscd", "-sig_pbc", wl2g, wl5g, wl5g2);
+	nvram_set_int("led_status", LED_AP_WPS_START);
+	return 1;
+}
+#else
 int start_wps_pbc_method(WPS_MODE mode)
 {
 	FILE* fp;
@@ -272,6 +344,7 @@ int start_wps_pbc_method(WPS_MODE mode)
 
 	return 0;
 }
+#endif
 int
 start_wps_method(void)
 {
@@ -295,10 +368,11 @@ start_wps_method(void)
 	 */
 	if(nvram_get_int("wps_amas_enrollee") == 1) {
 	/*	AiMesh use 2G for connect with CAP in onboarding */
+#ifdef RPAC55
 		eval("iwpriv", "wl0-vxd", "set_mib","wsc_enable=1");
 		eval("ifconfig", "wl0-vxd", "down");
 		eval("ifconfig", "wl0-vxd", "up");
-
+#endif
 		start_wps_pbc_method(WPS_MODE_CLIENT);
 
 	} else
@@ -306,32 +380,24 @@ start_wps_method(void)
 	if(sw_mode == SW_MODE_REPEATER && wlc_express == 0)
 	{
 #ifdef RTCONFIG_CONCURRENTREPEATER
-		eval("iwpriv", "wl0-vxd", "set_mib","wsc_enable=1");
-		eval("ifconfig", "wl0-vxd", "down");
-		eval("ifconfig", "wl0-vxd", "up");
+		//eval("ifconfig", get_staifname(0), "down");
+		eval("ifconfig", get_staifname(0), "up");
 
-		eval("iwpriv", "wl1-vxd", "set_mib","wsc_enable=1");
-		eval("ifconfig", "wl1-vxd", "down");
-		eval("ifconfig", "wl1-vxd", "up");
+		//eval("ifconfig", get_staifname(1), "down");
+		eval("ifconfig", get_staifname(1), "up");
+#ifdef RTCONFIG_HAS_5G_2
+		//eval("ifconfig", get_staifname(2), "down");
+		eval("ifconfig", get_staifname(2), "up");
+#endif
 #else
 		wps_band = nvram_get_int("wlc_band");
-		if(wps_band == 0)
-		{
-			eval("iwpriv", "wl0-vxd", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl0-vxd", "down");
-			eval("ifconfig", "wl0-vxd", "up");
-		}
-		else if(wps_band == 1)
-		{
-			eval("iwpriv", "wl1-vxd", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl1-vxd", "down");
-			eval("ifconfig", "wl1-vxd", "up");
-		}
+		//eval("ifconfig", get_staifname(wps_band), "down");
+		eval("ifconfig", get_staifname(wps_band), "up");
 #endif
 		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0)
 		{
 			rtklog("%s PIN method\n",__FUNCTION__);
-			start_wps_pin_method(WPS_MODE_CLIENT,wps_sta_pin);
+			start_wps_pin_method(WPS_MODE_CLIENT, wps_sta_pin);
 		}
 		else
 		{
@@ -341,76 +407,39 @@ start_wps_method(void)
 	}
 #ifdef RTCONFIG_CONCURRENTREPEATER
 	else if (sw_mode == SW_MODE_REPEATER && wlc_express != 0) {
-		if (wlc_express == 1) {
-			eval("iwpriv", "wl0", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl0", "down");
-			eval("ifconfig", "wl0", "up");
-		}
-		else {
-			eval("iwpriv", "wl1", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl1", "down");
-			eval("ifconfig", "wl1", "up");
-		}
-		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0)
-		{
-			rtklog("%s PIN method\n",__FUNCTION__);
-			start_wps_pin_method(WPS_MODE_CLIENT,wps_sta_pin);
-		}
-		else
-		{
-			rtklog("%s PBC method\n",__FUNCTION__);	
+
+		eval("ifconfig", get_staifname(wlc_express-1), "up");
+		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0) {
+			start_wps_pin_method(WPS_MODE_CLIENT, wps_sta_pin);
+		} else {
 			start_wps_pbc_method(WPS_MODE_CLIENT);
 		}
 	}
 #endif
-	else if (sw_mode == SW_MODE_AP && nvram_get_int("wlc_psta") == 1) {
+	else if (mediabridge_mode()) {
 #ifdef RTCONFIG_CONCURRENTREPEATER
-		eval("iwpriv", "wl0", "set_mib","wsc_enable=1");
-		eval("ifconfig", "wl0", "down");
-		eval("ifconfig", "wl0", "up");
-
-		eval("iwpriv", "wl1", "set_mib","wsc_enable=1");
-		eval("ifconfig", "wl1", "down");
-		eval("ifconfig", "wl1", "up");
+		eval("ifconfig", get_wififname(0), "up");
+		eval("ifconfig", get_wififname(1), "up");
+#ifdef RTCONFIG_HAS_5G_2
+		eval("ifconfig", get_wififname(2), "up");
+#endif
 #else
 		wps_band = nvram_get_int("wlc_band");
-		if(wps_band == 0)
-		{
-			eval("iwpriv", "wl0", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl0", "down");
-			eval("ifconfig", "wl0", "up");
-		}
-		else if(wps_band == 1)
-		{
-			eval("iwpriv", "wl1", "set_mib","wsc_enable=1");
-			eval("ifconfig", "wl1", "down");
-			eval("ifconfig", "wl1", "up");
-		}
+		eval("ifconfig", get_wififname(wps_band), "up");
 #endif
-		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0)
-		{
-			rtklog("%s PIN method\n",__FUNCTION__);
-			start_wps_pin_method(WPS_MODE_CLIENT,wps_sta_pin);
-		}
-		else
-		{
-			rtklog("%s PBC method\n",__FUNCTION__);	
+		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0) {
+			start_wps_pin_method(WPS_MODE_CLIENT, wps_sta_pin);
+		} else {
 			start_wps_pbc_method(WPS_MODE_CLIENT);
 		}
-	}
-	else
-	{
-		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0)
-		{
-			rtklog("%s PIN method\n",__FUNCTION__);
-			start_wps_pin_method(WPS_MODE_AP,wps_sta_pin);
-		}
-		else
-		{
-			rtklog("%s PBC method\n",__FUNCTION__);	
+	} else {
+		if(strlen(wps_sta_pin) && strcmp(wps_sta_pin, "00000000") && wl_wpsPincheck(wps_sta_pin) == 0) {
+			start_wps_pin_method(WPS_MODE_AP, wps_sta_pin);
+		} else {
 			start_wps_pbc_method(WPS_MODE_AP);
 		}
 	}
+
 	sleep(3); //Wait for update tmp/wscd_status
 	if (nvram_match("wps_restart", "1")) {
 		sleep(2); // Because wscd restart, so need more wait time.
@@ -437,8 +466,14 @@ stop_wps_method(void)
 	doSystem(cmd);
 
 #ifdef RTCONFIG_CONCURRENTREPEATER
+#ifdef RPAC92
+	doSystem("echo wlan2-vxd > /tmp/wscd_cancel");
+	doSystem("echo -1 > /tmp/wscd_status");
+	nvram_set_int("led_status", LED_WPS_FAIL);
+#else
 	doSystem("echo 1 > /var/pbc_state1_cancel");
 	doSystem("echo 1 > /var/pbc_state2_cancel");
+#endif
 #else
 	int wlc_band = nvram_get_int("wlc_band");
 	if(wlc_band == 0)
@@ -477,10 +512,19 @@ stop_wps_method(void)
 #ifdef RTCONFIG_CONCURRENTREPEATER
 	/* If wlc ssid is not be set, don't set up it in repeater mode. */
 	if (repeater_mode() && nvram_get_int("wlc_express") == 0) {
+#ifdef RPAC92
+		if (!rtk_chk_wlc_ssid(VXD_2G))
+			eval("ifconfig", "wlan2-vxd", "down");
+		if (!rtk_chk_wlc_ssid(VXD_5G))
+			eval("ifconfig", "wlan1-vxd", "down");
+		if (!rtk_chk_wlc_ssid(VXD_5G2))
+			eval("ifconfig", "wlan0-vxd", "down");
+#else
 		if (!rtk_chk_wlc_ssid(VXD_2G))
 			eval("ifconfig", "wl0-vxd", "down");
 		if (!rtk_chk_wlc_ssid(VXD_5G))
 			eval("ifconfig", "wl1-vxd", "down");
+#endif
 	}
 #endif
 

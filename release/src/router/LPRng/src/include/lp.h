@@ -475,6 +475,14 @@ EXTERN int User_is_authuser_DYN;	/* set user to be authentication user value */
 EXTERN char* Xlate_incoming_format_DYN;	/* translate format ids on incoming jobs */
 EXTERN char* Xlate_format_DYN;	/* translate format ids on outgoing jobs */
 
+extern void check_prn_status(char *status_prn, char *cliadd_prn); //Added by Jiahao
+extern void processReq_Raw(int fd); //Added by Jiahao
+extern void processReq_LPR(int talk, int ignore_busy);
+extern void send_ack_packet(int *talk, int ack);
+extern int check_par_usb_prn();//JY: 20031104 change to int from void
+extern int get_queue_name(char *input);
+extern int Link_file_read_test(char *host, int *sock, int readtimeout, int writetimeout, int fd, double *count, int *ack);
+
 #if defined(DMALLOC)
 #  include <dmalloc.h>
 extern int dmalloc_outfile;

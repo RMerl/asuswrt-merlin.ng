@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>	//umask()
 
 #include "daapd.h"
 #include "err.h"

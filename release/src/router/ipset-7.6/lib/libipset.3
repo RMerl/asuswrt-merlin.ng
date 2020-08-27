@@ -1,0 +1,242 @@
+.\" Man page written by Jozsef Kadlecsik <kadlec@netfilter.org>
+.\" 
+.\" This program is free software; you can redistribute it and/or modify
+.\" it under the terms of the GNU General Public License as published by
+.\" the Free Software Foundation; either version 2 of the License, or
+.\" (at your option) any later version.
+.\" 
+.\" This program is distributed in the hope that it will be useful,
+.\" but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\" MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\" GNU General Public License for more details.
+.\" 
+.\" You should have received a copy of the GNU General Public License
+.\" along with this program; if not, write to the Free Software
+.\" Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.TH libipset 3 "Oct 16, 2018" "Jozsef Kadlecsik" ""
+.SH NAME
+libipset \- A library for using ipset
+.SH SYNOPSIS
+.nf
+#include <libipset/ipset.h>
+.sp
+void ipset_load_types(void)
+.sp
+struct ipset * ipset_init(void)
+int ipset_parse_argv(struct ipset *ipset, int argc, char *argv[])
+.sp
+int ipset_parse_line(struct ipset *ipset, char *line)
+.sp
+int ipset_parse_stream(struct ipset *ipset, FILE *f)
+.sp
+int ipset_fini(struct ipset *ipset)
+.sp
+int ipset_custom_printf(struct ipset *ipset,
+			ipset_custom_errorfn custom_error,
+			ipset_standard_errorfn standard_error,
+			ipset_print_outfn outfn,
+			void *p)
+.sp
+struct ipset_session * ipset_session(struct ipset *ipset)
+.sp
+int ipset_session_full_io(struct ipset_session *session,
+			  const char *filename,
+			  enum ipset_io_type what)
+.sp
+int ipset_session_normal_io(struct ipset_session *session,
+			    const char *filename,
+			    enum ipset_io_type what)
+.sp
+FILE * ipset_session_io_stream(struct ipset_session *session,
+			       enum ipset_io_type what)
+.sp
+int ipset_session_io_close(struct ipset_session *session,
+			   enum ipset_io_type what)
+.SH DESCRIPTION
+libipset provides a library interface to 
+.BR ipset(8). 
+The integer return valued functions return 0 on success and a negative
+value on failure.
+.TP 
+ipset_load_types
+Loads in the supported ipset types in the library and make them
+available for the ipset interface.
+
+.TP
+ipset_init
+Initializes the ipset interface: allocates and initializes the required
+internal structures, opens up the netlink channel. The function returns
+the library interface structure of type
+.B
+struct ipset *
+or
+.B NULL
+on failure.
+
+.TP
+ipset_parse_argv
+Parses the
+.B argc
+length of array of strings
+.B argv 
+with the already initialized
+.B
+ipset
+library structure.
+If the command is successfully parsed, it is then submitted to the kernel
+to execute. In the case of error, the textual error message is printed
+and a negative number is returned.
+
+.TP
+ipset_parse_line
+Parses the string
+.B line
+with the already initialized
+.B
+ipset
+library structure. The line is supposed to contain
+a single ipset command in restore format. If the command is successfully
+parsed, it is then submitted to the kernel to execute. In the case of
+error, the textual error message is printed and a negative number is
+returned. 
+
+.TP
+ipset_parse_stream
+Parses the stream
+.B f
+with the already initialized
+.B
+ipset
+library structure. The stream may contain multiple newline
+separated ipset commands in restore format. The commands are parsed
+and then submitted to the kernel in batches for efficiecy. In the case of
+error, the textual error message is printed and a negative number is
+returned. 
+
+.TP
+ipset_fini
+Closes the netlink channel, closes opened streams and releases allocated
+structures holding by the
+.B ipset
+library structure. 
+
+.PP
+The following functions makes possible to customize the interface.
+.TP
+ipset_custom_printf
+Sets or resets the print functions for the
+.B
+ipset
+library structure, where
+.B
+custom_error
+is the custom error print function for the internal library errors,
+.B
+standard_error
+is the print function for the netlink/kernel related errors and
+.B
+outfn
+is the output function to print the result of list/save commands.
+The
+.B
+p
+pointer makes possible to pass arbitrary structure to the custom
+print functions. If
+.B
+NULL
+is passed instead of a function pointer, the default print function
+is set for the given task. If any of the print functions is non-default,
+then the
+.I
+version,
+.I
+help,
+.I
+interactive
+ipset commands are ignored.
+
+.TP
+ipset_session
+The function returns the session structure
+of the
+.B
+ipset
+library structure, in order to manipulate the IO parameters.
+
+.TP
+ipset_session_full_io
+You can control the full IO, i.e. input (restore) and output (save)
+separatedly by the function. The
+.B
+session
+parameter is the session structure of the library interface,
+.B
+filename
+is the filename you want to use for input or output
+and
+.B
+what
+tells the function you want to set input or output file.
+If there's an already opened file for the given IO mode, it is closed.
+The function returns an error if normal mode is in use. If
+.B
+NULL
+is passed instead of a filename, already opened file is closed
+and the normal stream is set for the given IO mode (stdin for input,
+stdout for output). Input/output files can be set separatedly.
+
+.TP
+ipset_session_normal_io
+You can control the normal IO, which corresponds to the interface
+provided by
+.B
+ipset(8)
+itself.
+.B
+session
+parameter is the session structure of the library interface,
+.B
+filename
+is the filename you want to use for input or output
+and
+.B
+what
+tells the function you want to set input or output file.
+If there's an already opened file for input/output, it is closed.
+The function returns an error if full mode is in use. If
+.B
+NULL
+is passed instead of a filename, already opened file is closed
+and the normal stream is set for the given IO mode (stdin for input,
+stdout for output). Input/output files cannot be set separatedly.
+
+.TP
+ipset_session_io_stream
+The function returns the stream set for the
+.B
+session
+where
+.B
+what
+tells the function you want to get the input or the output stream.
+
+.TP
+ipset_session_io_close
+The function closes the stream for the
+.B
+session
+where
+.B
+what
+tells the function you want to close the input or the output
+stream. After closing, the standard streams are set: stdin for input,
+stdout for output.
+
+.SH AUTHORS
+ipset/libipset was designed and written by Jozsef Kadlecsik.
+
+.SH SEE ALSO
+.BR ipset(8),
+.br
+/usr/include/libipset/ipset.h
+/usr/include/libipset/session.h

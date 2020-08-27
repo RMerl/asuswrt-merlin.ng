@@ -30,7 +30,11 @@
 #define PERMISSION 		"1"
 #define NAT_JSON		"{\"nattype\":\"%d\"}"
 #define	ASUS_DEVICE_NAME	"ASUS-Router"
+#ifdef RTCONFIG_ACCOUNT_LINKING
+#define ASUS_DEVICE_SERVICE	"1004"
+#else
 #define ASUS_DEVICE_SERVICE	"1001"
+#endif
 //#define AICLOID_LEAST_VER	"2.1.0.0"
 //#define AIHOME_LEAST_VER	"1.0.0.2.29"
 #define ASUS_DEVICE_DESC	"{\"public\":\"0\", \"name\":\"%s\", \"tnlver\":\"%s\", \"AiHOMEAPILevel\":\"%d\", \"aae_enable\":\"%d\", \"fwver\":\"%s\", \"modelname\":\"%s\"}"
@@ -44,11 +48,6 @@
 #define APILEVEL_STATUS_APILEVEL_NOT_SUPPORT   "1"
 #define APILEVEL_STATUS_FW_VERSION_NOT_SUPPORT "2"
 #define APILEVEL_STATUS_END_OF_LIFE            "3"
-
-// The retry related definition for DM login and aaews running.
-#define RETRY_MAX_TIMES 4
-#define RETRY_DELAY_BASE_SECONDS 30 //seconds
-#define MAX_REG_DELAYED_SECONDS 300 //seconds
 
 #define my_memcpy(dst, src, dst_len, src_len) {memcpy(dst, src, dst_len < src_len ? dst_len : src_len);}
 

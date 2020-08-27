@@ -1,5 +1,5 @@
  /*
- * Copyright 2017, ASUSTeK Inc.
+ * Copyright 2020, ASUSTeK Inc.
  * All Rights Reserved.
  *
  * THIS SOFTWARE IS OFFERED "AS IS", AND ASUS GRANTS NO WARRANTIES OF ANY
@@ -13,7 +13,7 @@
 	feature implement:
 	1. traditaional qos
 	2. bandwdith limiter (also for guest network)
-	3. facebook wifi
+	3. facebook wifi     (already EOL in the end of 2017)
 
 	NOTE:
 	qos mark bit 8~31 : TrendMicro adaptive qos usage, so ASUS only can use bit 0~7 for different applications
@@ -81,6 +81,84 @@ static unsigned int ipv6_qos_applied = 0;
 
 int etable_flag = 0;
 int manual_return = 0;
+
+#ifdef RTCONFIG_AMAS_WGN
+static void WGN_ifname(int i, int j, char *wl_if)
+{
+	if (nvram_get_int("re_mode") == 1) {
+		char prefix[128] = {0};
+		char tmp[128] = {0};
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", i, j);
+		sprintf(wl_if, "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+
+		QOSDBG(" wl_if=%s, prefix=%s, tmp=%s\n", wl_if, prefix, tmp);
+	return;
+	}
+	else {
+		get_wlxy_ifname(i, j, wl_if);
+		return;
+	}
+}
+
+static void WGN_subnet(const char *wgn, char *net, int len)
+{
+	char *buf = NULL, *g = NULL, *p = NULL;
+	char *wif = NULL, *sub = NULL;
+
+	g = buf = strdup(nvram_safe_get("wgn_brif_rulelist"));
+	while (g) {
+	if ((p = strsep(&g, "<")) == NULL) break;
+		if ((vstrsep(p, ">", &wif, &sub)) != 2) continue;
+		if (!strcmp(wgn, wif)) {
+			snprintf(net, len, "%s", sub);
+			break;
+		}
+	}
+	if (buf) free(buf);
+	QOSDBG(" wgn=%s, net=%s, sub=%s\n", wgn, net, sub);
+}
+
+static void add_iptables_AMAS_WGN(FILE *fn, const char *action)
+{
+	/* Setup guest network's ebtables rules */
+	int  guest_mark = GUEST_INIT_MARKNUM;
+	char wl[128] = {0}, wlv[128] = {0}, tmp[128] = {0}, *next = NULL, *next2 = NULL;
+	char prefix[32] = {0};
+	char mssid_mark[4] = {0};
+	char wl_ifname[IFNAMSIZ] = {0};
+	char *wl_if = wl_ifname;
+	int  i = 0;
+	int  j = 1;
+	char *wgn = NULL;
+	char net[20] = {0};
+
+	/*
+	example:
+	iptables -t mangle -A PREROUTING -s 192.168.102.1/24 -j MARK --set-mark 0xa
+	iptables -t mangle -A PREROUTING -s 192.168.102.1/24 -j RETURN
+	*/
+
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+
+			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
+			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
+				wgn = nvram_safe_get(strcat_r(wlv, "_brif", tmp));
+				WGN_subnet(wgn, net, sizeof(net));
+				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
+				if (!strcmp(net, "")) continue;
+				fprintf(fn, "-A PREROUTING -s %s -j %s %s\n", net, action, mssid_mark);
+				fprintf(fn, "-A PREROUTING -s %s -j RETURN\n", net);
+				guest_mark++;
+			} //bss_enabled
+			j++;
+		}
+		i++; j = 1;
+	}
+}
+#endif
 
 /* In load-balance mode, redirect TX of each WAN interface to
  * imq0 interface and limit TX speed of imq0 interface instead
@@ -333,13 +411,14 @@ static unsigned calc(unsigned bw, unsigned pct)
 	return (n < 2) ? 2 : n;
 }
 
-#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 void del_EbtablesRules(void)
 {
 	/* Flush all rules in nat table of ebtable*/
 	eval("ebtables", "-t", "nat", "-F");
 	etable_flag = 0;
 }
+
+#ifdef CONFIG_BCMWL5 // TODO: it is only for the case, eth0 as wan, vlanx as lan
 
 #if defined(RTCONFIG_FBWIFI)
 static void set_fbwifi_mark(void)
@@ -488,6 +567,44 @@ void remove_iptables_rules(int ipv6, const char *filename, char *flush_chains, c
 		}
 		fclose(fn);
 	}
+}
+
+void add_EbtablesRules_BW()
+{
+	if(etable_flag == 1) return;
+
+	/* Setup guest network's ebtables rules */
+	int  guest_mark = GUEST_INIT_MARKNUM;
+	char wl[128], wlv[128], tmp[128], *next, *next2;
+	char prefix[32];
+	char mssid_mark[4];
+	char wl_ifname[IFNAMSIZ];
+	char *wl_if = wl_ifname;
+	int  i = 0;
+	int  j = 1;
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+
+			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
+			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
+				WGN_ifname(i, j, wl_if);
+				if (!strcmp(wl_if, "")) continue;
+				snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
+				eval("ebtables", "-t", "nat", "-D", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				eval("ebtables", "-t", "nat", "-D", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				eval("ebtables", "-t", "nat", "-A", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				eval("ebtables", "-t", "nat", "-A", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
+				guest_mark++;
+			} //bss_enabled
+			j++;
+		}
+		i++; j = 1;
+	}
+
+	etable_flag = 1;
+	QOSDBG("[BWLIT_GUEST] Create ebtables rules done.\n");
 }
 
 void del_iQosRules(void)
@@ -1336,7 +1453,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	char *action = NULL, *wan;
 	int r, lock, unit;
 	int class = 0;
-	char wl_ifname[IFNAMSIZ], imq_if[IFNAMSIZ];
+	char imq_if[IFNAMSIZ];
 	char act_buf[sizeof("CONNMARK --set-return X/0xXXXXXXX")], *acts[2] = { act_buf , "RETURN" };
 
 	del_iQosRules(); // flush related rules in mangle table
@@ -1474,6 +1591,11 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	}
 #endif
 
+#ifdef RTCONFIG_AMAS_WGN
+	// AMAS RE mode
+	if (nvram_get_int("re_mode") == 1) add_iptables_AMAS_WGN(fn, action);
+#endif
+
 	fprintf(fn, "COMMIT\n");
 	fclose(fn);
 	chmod(mangle_fn, 0700);
@@ -1481,35 +1603,7 @@ static int add_bandwidth_limiter_rules(char *pcWANIF)
 	QOSDBG("[BWLIT] Create iptables rules done.\n");
 	
 	/* Setup guest network's ebtables rules */
-	int  guest_mark = GUEST_INIT_MARKNUM;
-	char wl[128], wlv[128], tmp[128], *next, *next2;
-	char mssid_mark[4];
-	char *wl_if = wl_ifname;
-	int  i = 0;
-	int  j = 1;
-	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
-		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
-		snprintf(prefix, sizeof(prefix), "wl%d_", i);
-		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
-			if (!nvram_pf_get_int(wlv, "_bss_enabled") ||
-			    !nvram_pf_get_int(wlv, "_bw_enabled")) {
-				j++;
-				continue;
-			}
-			get_wlxy_ifname(i, j, wl_if);
-			snprintf(mssid_mark, sizeof(mssid_mark), "%d", guest_mark);
-
-			eval("ebtables", "-t", "nat", "-D", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-			eval("ebtables", "-t", "nat", "-D", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-			eval("ebtables", "-t", "nat", "-A", "PREROUTING",  "-i", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-			eval("ebtables", "-t", "nat", "-A", "POSTROUTING", "-o", wl_if, "-j", "mark", "--set-mark", mssid_mark, "--mark-target", "ACCEPT");
-			guest_mark++;
-			j++;
-		}
-		i++; j = 1;
-	}
-
-	QOSDBG("[BWLIT_GUEST] Create ebtables rules done.\n");
+	add_EbtablesRules_BW();
 	file_unlock(lock);
 
 	return 0;
@@ -1849,6 +1943,146 @@ int add_iQosRules(char *pcWANIF)
 	return status;
 }
 
+#ifdef RTCONFIG_AMAS_WGN
+static int start_bandwidth_limiter_AMAS_WGN(void)
+{
+	FILE *f = NULL;
+	char wl_ifname[IFNAMSIZ];
+
+	if ((f = fopen(qosfn, "w")) == NULL) return -2;
+
+	/* Start Function */
+	fprintf(f,
+		"#!/bin/sh\n"
+		"SFQ=\"sfq perturb 10\"\n"
+		"\n"
+		"start()\n"
+		"{\n"
+	);
+
+	// init guest 3: ~ 14: (12 guestnetwork), start number = 3
+	guest = 3;
+	int  guest_mark = GUEST_INIT_MARKNUM;
+	char wl[128], wlv[128], tmp[128], *next, *next2;
+	char prefix[32];
+	char *wl_if = wl_ifname;
+	int  i = 0;
+	int  j = 1;
+
+	/* Loop */
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+			if (!nvram_pf_get_int(wlv, "_bss_enabled") ||
+			    !nvram_pf_get_int(wlv, "_bw_enabled")) {
+				j++;
+				continue;
+			}
+			WGN_ifname(i, j, wl_if);
+			QOSDBG("[BWLIT_GUEST] Processor [%s] Interface \n", wl_if);
+			if (!strcmp(wl_if, "")) continue;
+
+			fprintf(f, "\n"
+				   "\ttc qdisc del dev %s root 2>/dev/null\n", wl_if);
+			fprintf(f, "\tGUEST%d%d=%s\n", i, j, wl_if);
+			fprintf(f, "\tTQA%d%d=\"tc qdisc add dev $GUEST%d%d\"\n", i, j, i, j);
+			fprintf(f, "\tTCA%d%d=\"tc class add dev $GUEST%d%d\"\n", i, j, i, j);
+			fprintf(f, "\tTFA%d%d=\"tc filter add dev $GUEST%d%d\"\n", i, j, i, j); // 5
+			fprintf(f, "\n"
+				   "\t$TQA%d%d root handle %d: htb default %d\n", i, j, guest, guest_mark);
+			fprintf(f, "\t$TCA%d%d parent %d: classid %d:1 htb rate %skbit\n", i, j, guest, guest, nvram_pf_safe_get(wlv, "_bw_dl")); //7
+			fprintf(f, "\n"
+				   "\t$TCA%d%d parent %d:1 classid %d:%d htb rate 1kbit ceil %skbit prio %d\n", i, j, guest, guest, guest_mark, nvram_pf_safe_get(wlv, "_bw_dl"), guest_mark);
+			fprintf(f, "\t$TQA%d%d parent %d:%d handle %d: $SFQ\n", i, j, guest, guest_mark, guest_mark);
+			fprintf(f, "\t$TFA%d%d parent %d: prio %d protocol ip u32 match mark %d 0x%x flowid %d:%d\n", i, j, guest, guest_mark, guest_mark, QOS_MASK, guest, guest_mark); // 10
+			QOSDBG("[BWLIT_GUEST] create %s bandwidth limiter, qdisc=%d, class=%d\n", wl_if, guest, guest_mark);
+
+			guest++; // add guest 3: ~ 14: (12 guestnetwork)
+			guest_mark++;
+			j++;
+		}
+		i++; j = 1;
+	}
+	
+	/* Stop Function */
+	fprintf(f,
+		"}\n\n"
+		"stop()\n"
+		"{\n"
+		/* Flush ebtables */
+		"\t#ebtables -t nat -F\n\n"
+		);
+
+	/* Loop */
+	i = 0; j = 1;
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
+			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
+				wl_if = wl_ifname;
+				WGN_ifname(i, j, wl_if);
+				if (!strcmp(wl_if, "")) continue;
+				fprintf(f, "\ttc qdisc del dev %s root 2>/dev/null\n", wl_if);
+			}
+			j++;
+		}
+		i++; j = 1;
+	}
+	
+	/* Show Function */
+	fprintf(f,
+		"}\n\n"
+		"show()\n"
+		"{\n"
+		);
+
+	/* Loop */
+	i = 0; j = 1;
+	foreach(wl, nvram_safe_get("wl_ifnames"), next) {
+		SKIP_ABSENT_BAND_AND_INC_UNIT(i);
+		snprintf(prefix, sizeof(prefix), "wl%d_", i);
+		foreach(wlv, nvram_safe_get(strcat_r(prefix, "vifnames", tmp)), next2) {
+			if(nvram_get_int(strcat_r(wlv, "_bss_enabled", tmp)) && 
+			   nvram_get_int(strcat_r(wlv, "_bw_enabled" , tmp))) {
+				wl_if = wl_ifname;
+				WGN_ifname(i, j, wl_if);
+				if (!strcmp(wl_if, "")) continue;
+				fprintf(f, "\ttc -s -d class ls dev %s\n", wl_if);
+			}
+			j++;
+		}
+		i++; j = 1;
+	}
+	
+	/* Main Funtion */
+	fprintf(f,
+		"}\n\n"
+		"if [ $# != 1 ]; then\n"
+		"\techo \"Usage: $0 start/stop/restart\"\n"
+		"else\n"
+		"\tif [ $1 = \"start\" ]; then\n"
+		"\t\tstart\n"
+		"\telif [ $1 = \"stop\" ]; then\n"
+		"\t\tstop\n"
+		"\telif [ $1 = \"restart\" ]; then\n"
+		"\t\tstop\n"
+		"\t\tstart\n"
+		"\tfi\n"
+		"fi\n"
+		);
+
+	fclose(f);
+	chmod(qosfn, 0700);
+	eval((char *)qosfn, "start");
+	QOSDBG("[BWLIT_RE] Execute Bandwidth Limiter Done.\n");
+
+	return 0;
+}
+#endif
+
 int start_iQos(void)
 {
 	int status = 0, qos_type = nvram_get_int("qos_type");
@@ -1866,7 +2100,14 @@ int start_iQos(void)
 		return -1;
 	case 2:
 		/* Bandwidthh limiter */
-		status = start_bandwidth_limiter();
+		// AMAS non-RE mode
+		if (nvram_get_int("re_mode") == 0)
+			status = start_bandwidth_limiter();
+#ifdef RTCONFIG_AMAS_WGN
+		// AMAS RE mode
+		if (nvram_get_int("re_mode") == 1)
+			status = start_bandwidth_limiter_AMAS_WGN();
+#endif
 		break;
 	default:
 		/* Unknown QoS type */

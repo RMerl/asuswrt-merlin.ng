@@ -91,6 +91,31 @@ void init_devs(void)
 	}
 }
 
+int is_if_up(char *ifname)
+{
+    int s;
+    struct ifreq ifr;
+
+    /* Open a raw socket to the kernel */
+    if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0) return -1;
+
+    /* Set interface name */
+    strlcpy(ifr.ifr_name, ifname, IFNAMSIZ);
+
+    /* Get interface flags */
+    if (ioctl(s, SIOCGIFFLAGS, &ifr) < 0) {
+        fprintf(stderr, "SIOCGIFFLAGS error\n");
+    } else {
+        if (ifr.ifr_flags & IFF_UP) {
+            fprintf(stderr, "%s is up\n", ifname);
+            close(s);
+            return 1;
+        }
+    }
+    close(s);
+    return 0;
+}
+
 //void init_gpio(void)
 //{
 //	ralink_gpio_init(0, GPIO_DIR_OUT); // Power
@@ -727,6 +752,13 @@ void config_switch()
 				__setup_vlan(3, 0, 0x00000210);
 #endif
 			}
+				else if (!strcmp(nvram_safe_get("switch_wantag"), "starhub")) {
+					//skip setting any lan port to IPTV port.
+					system("rtkswitch 38 0");
+#if defined(RTCONFIG_RALINK_MT7620) || defined(RTCONFIG_RALINK_MT7621)
+					__setup_vlan(2, 0, 0x02100210);
+#endif
+				}
 #endif
 				else if (!strcmp(nvram_safe_get("switch_wantag"), "meo")) {
 					system("rtkswitch 40 1");			/* admin all frames on all ports */
@@ -927,6 +959,70 @@ switch_exist(void)
 
 void init_wl(void)
 {
+	unsigned char buffer[16];
+	unsigned char *dst;
+	char tmpStr1[16];
+	char tmpStr2[24];
+	char tmpStr3[24];
+	int i;
+
+	memset(tmpStr1, 0, sizeof(tmpStr1));
+	memset(tmpStr2, 0, sizeof(tmpStr2));
+	memset(tmpStr3, 0, sizeof(tmpStr3));
+	dst = buffer;
+	memset(buffer, 0, sizeof(buffer));
+	memset(dst, 0, MAX_REGSPEC_LEN+1);
+	
+	if(FRead(dst, REGSPEC_ADDR, MAX_REGSPEC_LEN) < 0)
+	{
+		_dprintf("READ REGSPEC_ADDR ERROR\n");
+	}
+	else
+	{
+		for(i = 0; i < MAX_REGSPEC_LEN && dst[i] != '\0'; i++) {
+			if (dst[i] == 0xff)
+			{
+				dst[i] = '\0';
+				break;
+			}
+		}
+	}
+	sprintf(tmpStr1, "regspec=%s", dst);
+	
+	memset(dst, 0, MAX_REGDOMAIN_LEN+1);
+	if(FRead(dst, REG2G_EEPROM_ADDR, MAX_REGDOMAIN_LEN) < 0)
+	{
+		_dprintf("READ REG2G_EEPROM_ADDR ERROR\n");
+	}
+	else
+	{
+		for(i = 0; i < MAX_REGDOMAIN_LEN && dst[i] != '\0'; i++) {
+			if (dst[i] == 0xff)
+			{
+				dst[i] = '\0';
+				break;
+			}
+		}
+	}
+	sprintf(tmpStr2, "regspec_2g=%s", dst);
+
+	memset(dst, 0, MAX_REGDOMAIN_LEN+1);
+	if(FRead(dst, REG5G_EEPROM_ADDR, MAX_REGDOMAIN_LEN) < 0)
+	{
+		_dprintf("READ REG5G_EEPROM_ADDR ERROR\n");
+	}
+	else
+	{
+		for(i = 0; i < MAX_REGDOMAIN_LEN && dst[i] != '\0'; i++) {
+			if (dst[i] == 0xff)
+			{
+				dst[i] = '\0';
+				break;
+			}
+		}
+	}
+	sprintf(tmpStr3, "regspec_5g=%s", dst);
+
 	if (!module_loaded("rt2860v2_ap"))
 		modprobe("rt2860v2_ap");
 #if defined (RTCONFIG_WLMODULE_RT3090_AP)
@@ -946,7 +1042,7 @@ void init_wl(void)
 
 #if defined (RTCONFIG_WLMODULE_MT7628_AP)
 	if (!module_loaded("mt_wifi_7628"))
-		modprobe("mt_wifi_7628");
+		modprobe("mt_wifi_7628", tmpStr1, tmpStr2, tmpStr3);
 #endif
 
 #if defined (RTCONFIG_WLMODULE_RLT_WIFI)
@@ -971,9 +1067,9 @@ void init_wl(void)
 #endif
 
 #if defined (RTCONFIG_WLMODULE_MT7663E_AP)
-system("dd if=/dev/mtdblock2 of=/lib/firmware/e2p bs=65535 skip=0 count=1");
+	system("dd if=/dev/mtdblock2 of=/lib/firmware/e2p bs=65535 skip=0 count=1");
 	if (!module_loaded("mt_wifi_7663"))
-		modprobe("mt_wifi_7663");
+		modprobe("mt_wifi_7663", tmpStr1, tmpStr2, tmpStr3);
 #endif
 
 
@@ -996,10 +1092,14 @@ void fini_wl(void)
 	if (module_loaded("MT7610_ap"))
 		modprobe_r("MT7610_ap");
 #endif
+
 #if defined (RTCONFIG_WLMODULE_MT7628_AP)
+#if !defined(RTAC1200V2)
 	if (module_loaded("mt_wifi_7628"))
 		modprobe_r("mt_wifi_7628");
 #endif
+#endif
+
 #if defined (RTCONFIG_WLMODULE_RLT_WIFI)
 	if (module_loaded("rlt_wifi"))
 	{   
@@ -1033,9 +1133,12 @@ void fini_wl(void)
 #endif
 
 #if defined (RTCONFIG_WLMODULE_MT7663E_AP)
+#if !defined(RTAC1200V2)
 	if (module_loaded("mt_wifi_7663"))
 		modprobe_r("mt_wifi_7663");
 #endif
+#endif
+
 
 	if (module_loaded("rt2860v2_ap"))
 		modprobe_r("rt2860v2_ap");
@@ -1414,14 +1517,26 @@ void init_syspara(void)
 		}
 		else if (strcmp(dst, "5G_BAND14") == 0)
 			nvram_set("wl1_country_code", "US");
+		else if (strcmp(dst, "5G_BAND12") == 0)
+			nvram_set("wl1_country_code", "IL");
 		else if (strcmp(dst, "5G_BAND24") == 0)
 			nvram_set("wl1_country_code", "TW");
 		else if (strcmp(dst, "5G_BAND4") == 0)
 			nvram_set("wl1_country_code", "CN");
 		else if (strcmp(dst, "5G_BAND124") == 0)
 			nvram_set("wl1_country_code", "IN");
+		else if (strcmp(dst, "5G_BAND12") == 0)	{
+			nvram_set("wl1_country_code", "IL");
+#ifdef RTCONFIG_RALINK_DFS
+			nvram_set("wl1_IEEE80211H", "1");
+#endif	/* RTCONFIG_RALINK_DFS */
+		}
 		else if (strcmp(dst, "5G_ALL") == 0)	{
+#if defined(RTAC85P)
+			nvram_set("wl1_country_code", "RU");
+#else
 			nvram_set("wl1_country_code", "DB");
+#endif
 #ifdef RTCONFIG_RALINK_DFS
 			nvram_set("wl1_IEEE80211H", "1");
 #endif	/* RTCONFIG_RALINK_DFS */
@@ -1658,7 +1773,7 @@ void generate_wl_para(int unit, int subunit)
 {
 }
 
-#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2)  || defined(RTAC54U) || defined(RTAC1200GA1) || defined(RTAC53) 
+#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2)  || defined(RTAC54U) || defined(RTAC1200GA1)  || defined(RTAC1200GU) || defined(RTAC53) || defined(RTAC85U) || defined(RTN800HP) || defined(RTACRH26)
 #define HW_NAT_WIFI_OFFLOADING		(0xFF00)
 #define HW_NAT_DEVNAME			"hwnat0"
 static void adjust_hwnat_wifi_offloading(void)
@@ -1672,7 +1787,7 @@ static void adjust_hwnat_wifi_offloading(void)
 			enable_hwnat_wifi = 0;
 	}
 	
-#if defined (RTCONFIG_WLMODULE_MT7615E_AP)
+#if defined (RTCONFIG_WLMODULE_MT7615E_AP) && !defined(RTCONFIG_MTK_8021XD3000)
 		if (get_ipv6_service() == IPV6_PASSTHROUGH)
 				enable_hwnat_wifi = 0;
 		doSystem("iwpriv ra0 set wifi_hwnat=%d", enable_hwnat_wifi);	
@@ -1688,7 +1803,7 @@ static void adjust_hwnat_wifi_offloading(void)
 		_dprintf("ioctl error. errno %d (%s)\n", errno, strerror(errno));
 
 	close(fd);
-#endif	
+#endif
 }
 #else
 static inline void adjust_hwnat_wifi_offloading(void) { }
@@ -1722,7 +1837,7 @@ void reinit_hwnat(int unit)
 	if (nvram_get_int("qos_enable") == 1)
 		act = 0;
 
-#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC53) 
+#if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1)  || defined(RTAC1200GU) || defined(RTAC53) || defined(RTAC85U) || defined(RTN800HP) || defined(RTACRH26)
 	if (act > 0 && !nvram_match("switch_wantag", "none") && !nvram_match("switch_wantag", ""))
 		act = 0;
 #endif
@@ -1909,6 +2024,7 @@ set_wan_tag(char *interface) {
 	{
 		int iptv_vid, voip_vid, iptv_prio, voip_prio, switch_stb;
 		int mang_vid, mang_prio;
+		char iptv_prio_str[4] = "4";
 
 		iptv_vid  = nvram_get_int("switch_wan1tagid") & 0x0fff;
 		voip_vid  = nvram_get_int("switch_wan2tagid") & 0x0fff;
@@ -1937,7 +2053,8 @@ set_wan_tag(char *interface) {
 				__setup_vlan(iptv_vid, iptv_prio, 0x00000210);	/* config WAN & WAN_MAC port */
 
 				if (iptv_prio) { /* config priority */
-					eval("vconfig", "set_egress_map", wan_dev, "0", (char *)iptv_prio);
+					snprintf(iptv_prio_str, sizeof(iptv_prio_str), "%d", iptv_prio);
+					eval("vconfig", "set_egress_map", wan_dev, "0", iptv_prio_str);
 				}
 			}
 		}

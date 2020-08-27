@@ -631,6 +631,21 @@ Rog Device      36
 	height: 95px;
 	padding-top: 10px;
 	cursor:pointer;
+	position: relative;
+}
+.client_bind_icon:before{
+	position: absolute;
+	content: "";
+	width: 24px;
+	height: 24px;
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-size: 800%;
+	background-repeat: no-repeat;
+	top: -6px;
+	right: -12px;
+	border-radius: 50%;
+	background-color: #475a5f;
+	background-position: 4px -87px;
 }
 .clientlist_viewlist {
 	position: absolute;
@@ -911,7 +926,6 @@ Rog Device      36
 	float: left;
 	width: 99%;
 	margin-bottom: 30px;
-	margin-top: -7px;
 }
 .nav ul{
 	margin: 0;

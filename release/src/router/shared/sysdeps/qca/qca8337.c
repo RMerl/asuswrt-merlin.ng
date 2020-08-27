@@ -67,6 +67,17 @@ enum {
 	P6_PORT=6,
 	P7_PORT=6,
 };
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+enum {
+	P0_PORT=0,
+	LAN1_PORT=3,
+	LAN2_PORT=1,
+	LAN3_PORT=4,
+	LAN4_PORT=3,	/* unused */
+	WAN_PORT=2,
+	P6_PORT=6,
+	P7_PORT=6,
+};
 #elif defined(RTN19) // QCN5502 ESW
 enum {
 	P0_PORT=0,
@@ -103,6 +114,16 @@ static const int lan_wan_partition[9][NR_WANLAN_PORT] = {
 	{0,1,0,1,1}, //WLWLL
 	{0,0,0,1,1}, //WWWLL
 	{0,0,0,1,1}, //WWWLL
+	{1,1,1,1,1}  //ALL
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+	/* W, L1, L2, L3, X */
+	{0,1,1,1,1}, //WLLLL
+	{0,0,1,1,1}, //WWLLL
+	{0,1,0,1,1}, //WLWLL
+	{0,1,1,0,1}, //WLLWL
+	{0,1,1,0,1}, //WLLWL
+	{0,0,0,1,1}, //WWWLL
+	{0,1,0,0,1}, //WLWWL
 	{1,1,1,1,1}  //ALL
 #else
 	/* W, L1, L2, L3, L4 */
@@ -163,6 +184,17 @@ static int switch_port_mapping[] = {
 	//IPTV (VoIP & STB) use LAN3 but only LAN4 or WAN to be real port in Lyra_Trio
 	LAN4_PORT,	//0000 0000 0001 LAN4
 	LAN4_PORT,	//0000 0000 0010 LAN3 (convert to LAN4)
+	LAN2_PORT,	//0000 0000 0100 LAN2
+	LAN1_PORT,	//0000 0000 1000 LAN1
+	WAN_PORT,	//0000 0001 0000 WAN
+	P7_PORT,	//0000 0010 0000 -
+	P7_PORT,	//0000 0100 0000 -
+	P7_PORT,	//0000 1000 0000 -
+	SGMII_PORT,	//0001 0000 0000 RGMII LAN
+	RGMII_PORT,	//0010 0000 0000 RGMII WAN
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+	LAN3_PORT,	//0000 0000 0001 LAN4 (convert to LAN3)
+	LAN2_PORT,	//0000 0000 0010 LAN3 (convert to LAN2)
 	LAN2_PORT,	//0000 0000 0100 LAN2
 	LAN1_PORT,	//0000 0000 1000 LAN1
 	WAN_PORT,	//0000 0001 0000 WAN
@@ -730,6 +762,41 @@ static void config_qca8337_LANWANPartition(int type)
 	eval("swconfig", "dev", MII_IFNAME, "set", "apply"); // apply changes
 }
 
+static void get_qca8337_Port_Speed(unsigned int port_mask, unsigned int *speed)
+{
+	int i, v = -1, t;
+	unsigned int m;
+
+	if(speed == NULL)
+		return;
+
+	m = port_mask & WANLANPORTS_MASK;
+	for (i = 0; m; ++i, m >>= 1) {
+		if (!(m & 1))
+			continue;
+
+		get_qca8337_port_info(i, NULL, (unsigned int*) &t);
+		t &= 0x3;
+		if (t > v)
+			v = t;
+	}
+
+	switch (v) {
+	case 0x0:
+		*speed = 10;
+		break;
+	case 0x1:
+		*speed = 100;
+		break;
+	case 0x2:
+		*speed = 1000;
+		break;
+	default:
+		*speed = 0;
+		_dprintf("%s: invalid speed!\n", __func__);
+	}
+}
+
 static void get_qca8337_WAN_Speed(unsigned int *speed)
 {
 	int i, v = -1, t;
@@ -963,7 +1030,12 @@ static void create_Vlan(int bitmask)
 
 	if (mbr & 0x200) {	//Internet && WAN port
 		char pvid[8];
-		qca8337_vlan_set(2, vid, prio, mbr_qca, untag_qca);
+#ifdef RTCONFIG_MULTICAST_IPTV
+		if (!strcmp(nvram_safe_get("switch_wantag"), "movistar"))
+			qca8337_vlan_set(-1, vid, prio, mbr_qca, untag_qca);
+		else
+#endif
+			qca8337_vlan_set(2, vid, prio, mbr_qca, untag_qca);
 		snprintf(pvid, sizeof(pvid), "%d", vid);
 		eval("swconfig", "dev", MII_IFNAME, "port", "set", "pvid", pvid);
 	}
@@ -1215,6 +1287,12 @@ void ATE_port_status(void)
 	snprintf(buf, sizeof(buf), "W=%C;L=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X');
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+	snprintf(buf, sizeof(buf), "W0=%C;L1=%C;L2=%C;L3=%C;",
+		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
+		(pS.link[1] == 1) ? (pS.speed[1] == 2) ? 'G' : 'M': 'X',
+		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X',
+		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X');
 #elif defined(RTN19)
 	snprintf(buf, sizeof(buf), "W0=%C;L1=%C;L2=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
@@ -1304,3 +1382,13 @@ void usage(char *cmd)
 	exit(0);
 }
 #endif
+
+unsigned int
+rtkswitch_Port_phyLinkRate(unsigned int port_mask)
+{
+	unsigned int speed = 0;
+
+	get_qca8337_Port_Speed(port_mask, &speed);
+
+	return speed;
+}

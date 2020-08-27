@@ -815,7 +815,7 @@ function showIPSecClients(profileName, e) {
 
 									<div id="ipsec_main_setting">
 										<div class="formfontdesc" style="margin-top:8px;">
-											How to setup IPSec VPN client
+											<#vpn_ipsec_setup#>
 											<br>
 											<ol>
 												<li><a id="faq_windows" href="" target="_blank" style="text-decoration:underline;">Windows</a></li>
@@ -843,7 +843,7 @@ function showIPSecClients(profileName, e) {
 											<tr class="tr_general">
 												<th><#vpn_ipsec_PreShared_Key#></th>
 												<td>
-													<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="text" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
+													<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
 												</td>
 											</tr>
 											<tr class="tr_advanced">

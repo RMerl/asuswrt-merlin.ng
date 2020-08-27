@@ -24,7 +24,11 @@
 #ifndef _httpd_h_
 #define _httpd_h_
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
+
+#include <time.h>
 
 #include <arpa/inet.h>
 #include <errno.h>
@@ -38,8 +42,10 @@
 
 #define DEFAULT_LOGIN_MAX_NUM	5
 
+#ifdef RTCONFIG_CAPTCHA
 /* Limit of login failure. If the number of login failure excceds this limit, captcha will show. */
 #define CAPTCHA_MAX_LOGIN_NUM   2
+#endif
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
@@ -121,10 +127,13 @@ struct iptv_profile {
         char *ttl_inc_enable;
 };
 
+#ifdef RTCONFIG_ODMPID
 struct REPLACE_PRODUCTID_S {
         char *org_name;
         char *replace_name;
+        char *p_lang;
 };
+#endif
 
 #define MIME_EXCEPTION_NOAUTH_ALL 	1<<0
 #define MIME_EXCEPTION_NOAUTH_FIRST	1<<1
@@ -330,6 +339,13 @@ extern struct ej_handler ej_handlers[];
 #define LOCK_LOGIN_LAN 	0x01
 #define LOCK_LOGIN_WAN 	0x02
 
+#if defined(RTAX82U) || defined(DSL_AX82U)
+enum {
+        LEDG_QIS_RUN = 1,
+        LEDG_QIS_FINISH
+};
+#endif
+
 #ifdef vxworks
 #define fopen(path, mode)	tar_fopen((path), (mode))
 #define fclose(fp)		tar_fclose((fp))
@@ -420,6 +436,7 @@ extern int ej_wps_info_2g(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wps_info(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit);
 extern int ej_wl_status_2g_array(int eid, webs_t wp, int argc, char_t **argv);
+extern const char *syslog_msg_filter[];
 
 /* web.c/web-*.c */
 extern char referer_host[64];
@@ -494,7 +511,14 @@ extern void do_set_fw_path_cgi(char *url, FILE *stream);
 #if defined(RTCONFIG_AMAZON_WSS)
 extern void amazon_wss_enable(char *wss_enable, char *do_rc);
 #endif
+#ifdef RTCONFIG_ACCOUNT_LINKING
+extern void do_get_eptoken_cgi(char *url, FILE *stream);
+#endif
 #ifdef RTCONFIG_CAPTCHA
+extern unsigned int login_fail_num;
 extern int is_captcha_match(char *catpch);
+#endif
+#if defined(RTAX82U) || defined(DSL_AX82U)
+extern void switch_ledg(int action);
 #endif
 #endif /* _httpd_h_ */

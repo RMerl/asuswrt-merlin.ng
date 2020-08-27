@@ -39,10 +39,19 @@
 #define MAP_FAILED (-1)
 #endif
 //#define RTK_TEST
+#ifdef RTCONFIG_RTL8198D
+const char WIF_5G[]	 = "wlan1";
+const char WIF_5G2[] = "wlan0";
+const char WIF_2G[]  = "wlan2";
+const char VXD_5G[]	 = "wlan1-vxd";
+const char VXD_5G2[] = "wlan0-vxd";
+const char VXD_2G[]  = "wlan2-vxd";
+#else
 const char WIF_5G[]	= "wl1";
 const char WIF_2G[]	= "wl0";
 const char VXD_5G[]	= "wl1-vxd";
 const char VXD_2G[]	= "wl0-vxd";
+#endif
 #define TXPWR_THRESHOLD_1	25
 #define TXPWR_THRESHOLD_2	50
 #define TXPWR_THRESHOLD_3	88
@@ -102,7 +111,6 @@ int getPid_fromFile(char *file_name)
 	
 	return result;
 }
-
 int rtk_get_channel_list_via_country(char* country_code,char* list,wlan_band band)
 {
 	rtklog("%s\n",__FUNCTION__);
@@ -148,6 +156,33 @@ int rtk_get_channel_list_via_country(char* country_code,char* list,wlan_band ban
 					}					
 				}
 			}
+#ifdef RPAC92
+			else if(band == WLAN_5G_2)
+			{
+				regDomain = countryIEArray[i].A_Band_Region;
+				rtklog("regDomain:%d\n",regDomain);
+				if (regDomain == DOMAIN_ETSI || regDomain == DOMAIN_MKK || nvram_contains_word("rc_support", "dfs"))
+				{ 
+					for(j=0;j<reg_channel_5g_full_band_2[regDomain-1].len;j++)
+					{
+						memset(tmp,0,sizeof(tmp));
+						sprintf(tmp,"%d",reg_channel_5g_full_band_2[regDomain-1].channel[j]);
+						strcat(list,tmp);
+						if(j != reg_channel_5g_full_band_2[regDomain-1].len - 1)
+							strcat(list,",");
+					}
+				} else {
+					for(j=0;j<reg_channel_5g_not_dfs_band_2[regDomain-1].len;j++)
+					{
+						memset(tmp,0,sizeof(tmp));
+						sprintf(tmp,"%d",reg_channel_5g_not_dfs_band_2[regDomain-1].channel[j]);
+						strcat(list,tmp);
+						if(j != reg_channel_5g_not_dfs_band_2[regDomain-1].len - 1)
+							strcat(list,",");
+					}					
+				}
+			}
+#endif
 			else if(band == WLAN_2G)
 			{
 				regDomain = countryIEArray[i].G_Band_Region;
@@ -178,7 +213,11 @@ int rtk_web_get_channel_list(char* country_code,wl_uint32_list_t *list,wlan_band
 	{
 		return ret;
 	}
+#ifdef RPAC92
+	if(band !=0 && band != 1 && band !=2)
+#else
 	if(band !=0 && band != 1)
+#endif
 	{
 		return ret;
 	}
@@ -211,15 +250,28 @@ int rtk_web_get_channel_list(char* country_code,wl_uint32_list_t *list,wlan_band
 					//cprintf(" %d",list->element[j]);
 				}
 			}
+#ifdef RPAC92
+			else if(band == WLAN_5G_2)
+			{
+				regDomain = countryIEArray[i].A_Band_Region;
+				//cprintf("regDomain:%d\n",regDomain);
+				list->count=reg_channel_5g_full_band_2[regDomain-1].len;
+				for(j=0;j<reg_channel_5g_full_band_2[regDomain-1].len;j++)
+				{
+					list->element[j]=reg_channel_5g_full_band_2[regDomain-1].channel[j];	
+				//	cprintf(" %d",list->element[j]);
+				}
+			}
+#endif
 			ret = 0;
 			break;
 		}
 	}
 	return ret;
 }
-
 void read_hw_setting_offset(void) 
 {
+#if !defined(RPAC92)
 	FILE *hwpart_proc;
 	hwpart_proc = fopen ( "/proc/flash/hwpart", "r" );
 	if ( hwpart_proc != NULL )
@@ -237,11 +289,13 @@ void read_hw_setting_offset(void)
 		 fclose(hwpart_proc);		 
 		 rtk_printf("read_hw_setting_offset = %x \n",hw_setting_offset);
 	}
+#endif
 }
 
 #ifdef HW_SETTING_CHECKSUM
 void restore_setting(void)
 {
+#if !defined(RPAC92)
 	int fh, hwconf_len = sizeof(HW_SETTING_T);
 	unsigned char *data = malloc(hwconf_len+1);// one byte for checksum
 
@@ -275,6 +329,7 @@ void restore_setting(void)
 
 	free(data);
 	close(fh);
+#endif
 }
 #endif /* HW_SETTING_CHECKSUM */
 
@@ -283,7 +338,6 @@ int rtk_flash_read(char *buf, int offset, int len)
 	rtklog("%s\n",__FUNCTION__);
 	int fh;
 	int ok=1;
-
 #ifdef HW_SETTING_CHECKSUM
 	restore_setting();
 #endif
@@ -315,6 +369,7 @@ int rtk_flash_write(char *buf, int offset, int len)
 	rtklog("%s\n",__FUNCTION__);
 	int fh;
 	int ok=1;
+
 #ifdef CONFIG_MTD_NAND
 	fh = open(FLASH_DEVICE_NAME, O_RDWR|O_CREAT);
 #else
@@ -365,12 +420,12 @@ int rtk_flash_write(char *buf, int offset, int len)
 		}
 	}
 #endif
-
 	return ok;
 }
 
 int read_hw_setting(char *buf)
 {
+#if !defined(RPAC92)
 	PARAM_HEADER_T header;
 	if(rtk_flash_read(&header,HW_SETTING_OFFSET,sizeof(PARAM_HEADER_T))==0){
 		rtklog("Read wlan hw setting header failed\n");
@@ -384,9 +439,11 @@ int read_hw_setting(char *buf)
 		rtklog("Read wlan hw setting to memory failed\n");
 		return -1;
 	}
+#endif
 	return 0;
 }
 
+#if !defined(RPAC92)
 int read_hw_setting_length()
 {
 	PARAM_HEADER_T header;
@@ -402,72 +459,9 @@ int read_hw_setting_length()
 	len = header.len;
 	return len;
 }
-
-static int hex_to_string(unsigned char *hex,char *str,int len)
-{
-	int i;
-	char *d,*s;
-	const static char hexdig[] = "0123456789abcdef";
-	if(hex == NULL||str == NULL)
-		return -1;
-	d = str;
-	s = hex;
-	
-	for(i = 0;i < len;i++,s++){
-		*d++ = hexdig[(*s >> 4) & 0xf];
-		*d++ = hexdig[*s & 0xf];
-	}
-	*d = 0;
-	return 0;
-}
-#if defined(CONFIG_RTL_11AC_SUPPORT)
-
-#define B1_G1	40
-#define B1_G2	48
-
-#define B2_G1	56
-#define B2_G2	64
-
-#define B3_G1	104
-#define B3_G2	112
-#define B3_G3	120
-#define B3_G4	128
-#define B3_G5	136
-#define B3_G6	144
-
-#define B4_G1	153
-#define B4_G2	161
-#define B4_G3	169
-#define B4_G4	177
-
-void assign_diff_AC(unsigned char* pMib, unsigned char* pVal)
-{
-	int x=0, y=0;
-
-	memset((pMib+35), pVal[0], (B1_G1-35));
-	memset((pMib+B1_G1), pVal[1], (B1_G2-B1_G1));
-	memset((pMib+B1_G2), pVal[2], (B2_G1-B1_G2));
-	memset((pMib+B2_G1), pVal[3], (B2_G2-B2_G1));
-	memset((pMib+B2_G2), pVal[4], (B3_G1-B2_G2));
-	memset((pMib+B3_G1), pVal[5], (B3_G2-B3_G1));
-	memset((pMib+B3_G2), pVal[6], (B3_G3-B3_G2));
-	memset((pMib+B3_G3), pVal[7], (B3_G4-B3_G3));
-	memset((pMib+B3_G4), pVal[8], (B3_G5-B3_G4));
-	memset((pMib+B3_G5), pVal[9], (B3_G6-B3_G5));
-	memset((pMib+B3_G6), pVal[10], (B4_G1-B3_G6));
-	memset((pMib+B4_G1), pVal[11], (B4_G2-B4_G1));
-	memset((pMib+B4_G2), pVal[12], (B4_G3-B4_G2));
-	memset((pMib+B4_G3), pVal[13], (B4_G4-B4_G3));
-
-}
-void assign_diff_AC_hex_to_string(unsigned char* pmib,char* str,int len)
-{
-	char mib_buf[MAX_5G_CHANNEL_NUM_MIB];
-	memset(mib_buf,0,sizeof(mib_buf));
-	assign_diff_AC(mib_buf, pmib);
-	hex_to_string(mib_buf,str,MAX_5G_CHANNEL_NUM_MIB);
-}
 #endif
+
+#if !defined(RPAC92)
 
 int set_led_type(HW_WLAN_SETTING_Tp phw)
 {
@@ -947,7 +941,7 @@ int set_tx_calibration(HW_WLAN_SETTING_Tp phw,char* interface,int txpower)
 #endif //end #if 1
 	
 #ifdef CONFIG_RTL_92D_SUPPORT
-#if defined(RPAC68U) || defined(RPAC55)
+#if defined(RPAC68U) || defined(RPAC55) || defined(RPAC92)
 	hex_to_string(phw->pwrdiff5GHT40_2S,p,MAX_5G_CHANNEL_NUM_MIB);
 	sprintf(tmpbuff,"iwpriv %s set_mib pwrdiff5GHT40_2S=%s",interface,p);
 	system(tmpbuff);
@@ -1028,7 +1022,6 @@ int set_tx_calibration(HW_WLAN_SETTING_Tp phw,char* interface,int txpower)
 #endif
 	return 0;
 }
-
 
 int set_wifi_mac(char* buf)
 {
@@ -1121,6 +1114,7 @@ int set_ethernet_mac(char* buf)
     system(tmpbuff);
 
 }
+#endif
 /*********************************************************************/
 
 #define GPIOLIB_DIR     "/sys/class/gpio"
@@ -1251,6 +1245,11 @@ uint32_t get_gpio(uint32_t gpio)
 	char path[PATH_MAX], value[10];
 	btn_rst_gpio = nvram_get_int("btn_rst_gpio");
 	btn_wps_gpio = nvram_get_int("btn_wps_gpio");
+#ifdef RPAC92
+		sprintf(path, "%s/gpio%d/value", GPIOLIB_DIR, gpio);
+		f_read_string(path, value, sizeof(value));
+		return atoi(value);
+#else
 #ifdef RPAC68U
 	if(gpio == (btn_rst_gpio & 0xff))
 	{
@@ -1304,6 +1303,7 @@ uint32_t get_gpio(uint32_t gpio)
 		ret  = 1;
 	}
 	return ret;
+#endif
 }
 
 
@@ -1391,6 +1391,31 @@ uint32_t get_phy_status(uint32_t portmask)
 #endif		
 }
 
+#ifdef RPAC92
+uint32_t rtkswitch_wanPort_phyStatus(uint32_t wan_unit)
+{
+	FILE *fp;
+	char out[64], output[64] = "";
+	char *b;
+	char phystatus[5][4];
+	int i;
+
+	system("echo 'physt 1' > /proc/asus_ate");
+	fp = popen("cat /proc/asus_ate", "r");
+	if (fp) {
+		fgets(out, sizeof(out),fp);
+		pclose(fp);
+	}
+
+	for (i = 0, b = strtok(out, ";"); b != NULL; b = strtok(NULL, ";"), i++)
+		snprintf(phystatus[i], sizeof(phystatus[i])/sizeof(char) - 1, "%s", index(b, '=')+1);
+	
+	if(!strcmp(phystatus[1],"X"))
+		return 0;
+	else if(!strcmp(phystatus[1],"G") || !strcmp(phystatus[1],"M"))
+		return 1;
+}
+#else
 uint32_t rtkswitch_wanPort_phyStatus(uint32_t wan_unit)
 {
 	char tmp[32], prefix[] = "wanXXXXXXXXXX_";
@@ -1412,6 +1437,7 @@ uint32_t rtkswitch_wanPort_phyStatus(uint32_t wan_unit)
 	else
 		return 0;
 }
+#endif
 
 void rtl_init_qos_patch( void)
 {
@@ -1615,10 +1641,12 @@ void set_radio(int on, int unit, int subunit)
 		doSystem("iwpriv %s set_mib func_off=%d", ifname, on?0:1);
 		if (!on && subunit == 0) // root ap only.
 			doSystem("iwpriv %s del_sta all", ifname); // kick all STA.
+#ifndef RTCONFIG_RTL8198D
 		if (unit == 0)/* for 2.4G led */
 			doSystem("echo 'led %d 255' > /proc/asus_ate", on ? 3: 0);	/* 0 is for off, 3 is for on, 255 is do nothing */
 		else if (unit == 1) 	/* for 5G led */
 			doSystem("echo 'led 255 %d' > /proc/asus_ate", on ? 3: 0);
+#endif
 	}
 }
 
@@ -2271,7 +2299,7 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 			int status=0;
 			if(getWlSiteSurveyRequest(name,&status)<0)
 			{
-				rtk_printf("%s getWlSiteSurveyRequest fail!\n",name);
+				_dprintf("%s getWlSiteSurveyRequest fail!\n",name);
 				return -1;
 			}
 			//cprintf("%s:%d status=%d\n",__FUNCTION__,__LINE__,status);
@@ -2411,7 +2439,6 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 					strcpy(countryCode,DEF_COUNTRY_CODE);
 					nvram_set(strcat_r(prefix, "country_code", tmp),DEF_COUNTRY_CODE);
 				}
-				
 				if(rtk_web_get_channel_list(countryCode,(wl_uint32_list_t *)buf,WLAN_2G)!=0)
 				{
 					return -1;
@@ -2429,6 +2456,20 @@ wl_ioctl(char *name, int cmd, void *buf, int len)
 					return -1;
 				}
 			}
+#ifdef RPAC92
+			snprintf(prefix, sizeof(prefix), "wl%d_", 2);
+			ifname = nvram_safe_get(strcat_r(prefix, "ifname", tmp));
+			if(strcmp(ifname,name)==0)
+			{
+				strncpy(countryCode, nvram_safe_get(strcat_r(prefix, "country_code", tmp)), 2);
+				if(!countryCode[0])
+					strcpy(countryCode,"CN");
+				if(rtk_web_get_channel_list(countryCode,(wl_uint32_list_t *)buf,WLAN_5G_2)!=0)
+				{
+					return -1;
+				}
+			}
+#endif
 			break;
 		}
 		case WLC_GET_INSTANCE:
@@ -2679,13 +2720,31 @@ int get_channel_list_via_driver(int unit, char *buffer, int len)
     length = sizeof(tmp);
 
     getmibInfo(get_wififname(unit), tmp, &length);
-    int i = (int)*tmp;
 
+#if defined(RPAC92)
+	int i = (int)(*(int*)tmp);
+#else		
+	int i = (int)*tmp;
+#endif
+#if defined(RPAC92)
+    if(unit==2 && i>0 && i<DOMAIN_MAX)
+    {
+        num = (len < reg_channel_5g_full_band_2[i-1].len)?len:reg_channel_5g_full_band_2[i-1].len;
+        memcpy(buffer, reg_channel_5g_full_band_2[i-1].channel, num);
+    }
+    else if(unit==1 && i>0 && i<DOMAIN_MAX)
+    {
+        num = (len < reg_channel_5g_full_band[i-1].len)?len:reg_channel_5g_full_band[i-1].len;
+        memcpy(buffer, reg_channel_5g_full_band[i-1].channel, num);
+    } 
+#else
     if(unit > 0 && i>0 && i<DOMAIN_MAX)
     {
         num = (len < reg_channel_5g_full_band[i-1].len)?len:reg_channel_5g_full_band[i-1].len;
         memcpy(buffer, reg_channel_5g_full_band[i-1].channel, num);
-    } else if(unit == 0 && i>0 && i<DOMAIN_MAX)
+    } 
+#endif
+    else if(unit == 0 && i>0 && i<DOMAIN_MAX)
     {
         num = (len < reg_channel_2_4g[i-1].len)?len:reg_channel_2_4g[i-1].len;
         memcpy(buffer, reg_channel_2_4g[i-1].channel, num);
@@ -2696,7 +2755,11 @@ int get_channel_list_via_driver(int unit, char *buffer, int len)
 
 char *get_wififname(int band)
 {
-	const char *wif[] = { WIF_2G, WIF_5G };
+	const char *wif[] = { WIF_2G, WIF_5G
+#if defined(RPAC92)
+					,WIF_5G2
+#endif
+						};
 	if (band < 0 || band >= ARRAY_SIZE(wif)) {
 		rtk_printf("%s: Invalid wl%d band!\n", __func__, band);
 		band = 0;
@@ -2706,7 +2769,12 @@ char *get_wififname(int band)
 
 char *get_staifname(int band)
 {
-	const char *sta[] = { VXD_2G, VXD_5G };
+	const char *sta[] = { VXD_2G, VXD_5G
+#if defined(RPAC92)
+						,VXD_5G2
+#endif
+
+						};
 	if (band < 0 || band >= ARRAY_SIZE(sta)) {
 		dbg("%s: Invalid wl%d band!\n", __func__, band);
 		band = 0;
@@ -2732,7 +2800,11 @@ int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb) {
 	snprintf(tmp, sizeof(tmp), "use40M");
 	length = sizeof(tmp);
 	getmibInfo(ifname, tmp, &length);
+#if defined(RPAC92)
+	switch((int)(*(int*)tmp)) {
+#else
 	switch((int)(*tmp)) {
+#endif
 	case 0:
 		*bw = 20;
 		break;
@@ -2749,7 +2821,11 @@ int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb) {
 	snprintf(tmp, sizeof(tmp), "2ndchoffset");
 	length = sizeof(tmp);
 	getmibInfo(ifname, tmp, &length);
+#if defined(RPAC92)
+	switch((int)(*(int*)tmp)) {
+#else
 	switch((int)(*tmp)) {
+#endif
 	case 1:
 		*nctrlsb = 1;
 		break;
@@ -2863,4 +2939,46 @@ int get_radar_channel_num(const char *ifname, int *num){
     }
     close( skfd );
     return *num;
+}
+
+int get_regdomain_from_countrycode(char* country_code, int unit) {
+	int i = 0, num = 0;
+	int regDomain = 0;
+	num = sizeof(countryIEArray)/sizeof(COUNTRY_IE_ELEMENT);
+	while(i<num) {
+		if(strcmp(country_code,countryIEArray[i].countryA2) == 0)
+			break;
+		i++;
+	}
+	if(i >= num) {
+		return regDomain;
+	}
+	switch(unit) {
+	case WL_2G_BAND:
+		regDomain = countryIEArray[i].G_Band_Region;
+		break;
+	case WL_5G_BAND:
+#ifdef RPAC92
+	case WL_5G_2_BAND:
+#endif
+		regDomain = countryIEArray[i].A_Band_Region;
+		break;
+	default:
+		break;
+	}
+	return regDomain;
+}
+
+
+void iwpriv_set_mib_int(const char* ifname, const char* conf, int val) {
+	char tmp[32]="\0";
+	snprintf(tmp, sizeof(tmp), "%s=%d", conf, val);
+	_dprintf("ioctl cmd iwpriv %s %s\n", ifname, tmp);
+	setmibInfo(ifname, tmp, sizeof(tmp));
+}
+void iwpriv_set_mib_string(const char* ifname, const char* conf, char* val) {
+	char tmp[640]="\0";
+	snprintf(tmp, sizeof(tmp), "%s=%s", conf, val);
+	_dprintf("ioctl cmd iwpriv %s %s\n", ifname, tmp);
+	setmibInfo(ifname, tmp, sizeof(tmp));
 }

@@ -1251,6 +1251,11 @@ struct libusb_transfer {
 	/** Data buffer */
 	unsigned char *buffer;
 
+#ifdef ASUS_U2EC
+	/** Maximum block size for splitting large bulk transfers **/
+	int bulk_buffer_len;
+#endif
+
 	/** Number of isochronous packets. Only used for I/O with isochronous
 	 * endpoints. Must be non-negative. */
 	int num_iso_packets;
@@ -1771,6 +1776,12 @@ int LIBUSB_CALL libusb_control_transfer(libusb_device_handle *dev_handle,
 int LIBUSB_CALL libusb_bulk_transfer(libusb_device_handle *dev_handle,
 	unsigned char endpoint, unsigned char *data, int length,
 	int *actual_length, unsigned int timeout);
+
+#ifdef ASUS_U2EC
+int LIBUSB_CALL libusb_bulk_transfer_sp(libusb_device_handle *dev_handle,
+	unsigned char endpoint, unsigned char *data, int length,
+	int *actual_length, unsigned int timeout, int max_rw);
+#endif
 
 int LIBUSB_CALL libusb_interrupt_transfer(libusb_device_handle *dev_handle,
 	unsigned char endpoint, unsigned char *data, int length,

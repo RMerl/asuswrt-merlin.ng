@@ -17,9 +17,11 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+#include <string.h>
+#include <glib/glib.h>
+#include <gio/gio.h>
 
 #include "config.h"
-
 #include <errno.h>
 #include <unistd.h>
 

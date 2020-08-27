@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <typedefs.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 #include <bcmnvram.h>
 #include <sys/ioctl.h>
 #include <qca.h>
@@ -34,12 +35,12 @@ typedef unsigned int	u_int;
 
 struct ieee80211_channel {
     u_int16_t       ic_freq;        /* setting in Mhz */
-#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QSDK10CS)
     u_int64_t       ic_flags;       /* see below */
 #else
     u_int32_t       ic_flags;       /* see below */
 #endif
-#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QSDK10CS)
     u_int16_t        ic_flagext;     /* see below */
 #else
     u_int8_t        ic_flagext;     /* see below */
@@ -92,7 +93,11 @@ const char STA_5G[] = "sta1";
 const char STA_2G[] = "sta0";
 const char VPHY_5G[] = "wifi1";
 const char VPHY_2G[] = "wifi0";
+#if defined(RTCONFIG_CFG80211)
+const char WSUP_DRV[] = "nl80211";
+#else
 const char WSUP_DRV[] = "athr";
+#endif
 const char BR_GUEST[] = "brg0";
 const char WIF_5G_BH[] = "ath101";
 const char APMODE_BRGUEST_IP[]="192.168.55.1";
@@ -114,6 +119,13 @@ const char STA_5G[] = "sta1";
 const char STA_2G[] = "sta0";
 const char VPHY_5G[] = "wifi1";
 const char VPHY_2G[] = "wifi0";
+#elif defined(RTCONFIG_SOC_IPQ60XX) // imply RTCONFIG_WIFI_QCN5024_QCN5054
+const char WIF_5G[] = "ath0";
+const char WIF_2G[] = "ath1";
+const char STA_5G[] = "sta0";
+const char STA_2G[] = "sta1";
+const char VPHY_5G[] = "wifi0";
+const char VPHY_2G[] = "wifi1";
 #else
 /* BRT-AC828, RT-AC88S */
 const char WIF_5G[] = "ath1";
@@ -123,7 +135,11 @@ const char STA_2G[] = "sta0";
 const char VPHY_5G[] = "wifi1";
 const char VPHY_2G[] = "wifi0";
 #endif
+#if defined(RTCONFIG_CFG80211)
+const char WSUP_DRV[] = "nl80211";
+#else
 const char WSUP_DRV[] = "athr";
+#endif
 #else
 #error Define WiFi 2G/5G interface name!
 #endif
@@ -141,7 +157,7 @@ const char VPHY_5G2[] = "xxx";
 #if defined(RTCONFIG_WIGIG)
 const char WIF_60G[] = "wlan0";
 const char STA_60G[] = "wlan0";
-const char VPHY_60G[] = "phy0";
+const char VPHY_60G[] = "phy2";
 const char WSUP_DRV_60G[] = "nl80211";
 #else
 const char WIF_60G[] = "xxx";
@@ -377,7 +393,7 @@ void set_radio(int on, int unit, int subunit)
 		if (on) {
 			snprintf(conf_path, sizeof(conf_path), "/etc/Wireless/conf/hostapd_%s.conf", wds_iface);
 			snprintf(entropy_path, sizeof(entropy_path), "/var/run/entropy_%s.bin", wds_iface);
-			eval("hostapd", "-d", "-B", conf_path, "-P", pid_path, "-e", entropy_path);
+			eval("hostapd", "-d", "-B", "-P", pid_path, "-e", entropy_path, conf_path);
 		} else {
 			kill_pidfile(pid_path);
 		}
@@ -1122,6 +1138,47 @@ int get_channel_list_via_country(int unit, const char *country_code,
 	return (p - buffer);
 }
 
+#ifdef RTCONFIG_BONDING_WAN
+/** Return speed of a bonding interface.
+ * @bond_if:	name of bonding interface. LAN bond_if = bond0; WAN bond_if = bond1.
+ * @return:
+ *  <= 0	error
+ *  otherwise	link speed
+ */
+int get_bonding_speed(char *bond_if)
+{
+	int speed;
+	char confbuf[sizeof(SYS_CLASS_NET) + IFNAMSIZ + sizeof("/speedXXXXXX")];
+	char buf[32] = { 0 };
+
+	snprintf(confbuf, sizeof(confbuf), SYS_CLASS_NET "/%s/speed", bond_if);
+	if (f_read_string(confbuf, buf, sizeof(buf)) <= 0)
+		return 0;
+
+	speed = safe_atoi(buf);
+	if (speed <= 0)
+		speed = 0;
+
+	return speed;
+}
+
+/** Return link speed of a bonding slave port if it's connected or 0 if it's disconnected.
+ * @port:	0: WAN, 1~8: LAN1~8, 30: 10G base-T (RJ-45), 31: 10G SFP+
+ * @return:
+ *  <= 0:	disconnected
+ *  otherwise:	link speed
+ */
+int get_bonding_port_status(int port)
+{
+	int ret = 0;
+
+	if (__get_bonding_port_status)
+		ret = __get_bonding_port_status(port);
+
+	return ret;
+}
+#endif /* RTCONFIG_BONDING_WAN */
+
 #ifdef RTCONFIG_POWER_SAVE
 #define SYSFS_CPU	"/sys/devices/system/cpu"
 #define CPUFREQ		"cpufreq"
@@ -1490,14 +1547,34 @@ char *get_vphyifname(int band)
 }
 
 #ifdef RTCONFIG_HAS_5G_2
-const char *get_5ghigh_ifname(int *unit)
+const char *get_5ghigh_ifname(int unit)
 {
-	if(unit != NULL)
-		*unit = 1;
-	return WIF_5G;
+	return get_wififname(swap_5g_band(unit));
 }
 #endif
 
+/**
+ * Return band if @ifname is STA interface name and the band is supported.
+ * @return:
+ * 	-1:	@ifname is not STA interface name
+ * 	band:	@ifname is STA interface.
+ *  otherwise:	not defined.
+ */
+int get_sta_ifname_unit(const char *ifname)
+{
+	int band;
+	const char *sta[] = { STA_2G, STA_5G, STA_5G2 };
+
+	if (!ifname)
+		return -1;
+	for (band = 0; band < min(MAX_NR_WL_IF, ARRAY_SIZE(sta)); ++band) {
+		SKIP_ABSENT_BAND(band);
+
+		if (!strncmp(ifname, sta[band], strlen(sta[band])))
+			return band;
+	}
+	return -1;
+}
 
 /**
  * Return true if @ifname is main/guest VAP interface name and the band is supported.
@@ -1678,19 +1755,14 @@ int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *sign
 		return -2;
 
 	*status = stats.status;
-	if(quality) {
-		if(stats.qual.updated & IW_QUAL_QUAL_INVALID)
-			*quality = 0;
-		else
+	if(quality && !(stats.qual.updated & IW_QUAL_QUAL_INVALID)) {
 			*quality = stats.qual.qual;
 		if(update)
 			*update |= (stats.qual.updated & 1);
 	}
 
-	if(signal) {
-		if(stats.qual.updated & IW_QUAL_LEVEL_INVALID)
-			*signal = 0;
-		else if(stats.qual.updated & IW_QUAL_RCPI) {
+	if(signal && !(stats.qual.updated & IW_QUAL_LEVEL_INVALID)) {
+		if(stats.qual.updated & IW_QUAL_RCPI) {
 			double    rcpivalue = (stats.qual.level / 2.0) - 110.0;
 			*signal = (int) rcpivalue;
 		}
@@ -1699,14 +1771,15 @@ int get_wl_status_ioctl(const char *ifname, int *status, int *quality, int *sign
 			if(*signal >= 64)
 				*signal -= 0x100;	/* convert from unsigned to signed */
 		}
+		if(*signal >= 0)
+			*signal = -1;
+
 		if(update)
 			*update |= (stats.qual.updated & 2);
 	}
 
-	if(noise) {
-		if(stats.qual.updated & IW_QUAL_NOISE_INVALID)
-			*noise = 0;
-		else if(stats.qual.updated & IW_QUAL_RCPI) {
+	if(noise && !(stats.qual.updated & IW_QUAL_NOISE_INVALID)) {
+		if(stats.qual.updated & IW_QUAL_RCPI) {
 			double    rcpivalue = (stats.qual.level / 2.0) - 110.0;
 			*noise = (int) rcpivalue;
 		}
@@ -1776,6 +1849,8 @@ int get_wl_status_proc(const char *ifname, int *status, int *quality, int *signa
 		value = strtoul(p1, &p2, 0);
 		if(signal) {
 			*signal = value;
+			if(*signal >= 0)
+				*signal = -1;
 			if(update && *p2 == '.') {
 				p2++;
 				*update |= 2;
@@ -1929,6 +2004,10 @@ int create_vap(char *ifname, int unit, char *mode)
 	dbG("\ncreate a wifi node %s from %s\n", ifname, vphy);
 	_eval(wlanargv, NULL, 0, NULL);
 #endif
+#if defined(RTCONFIG_CFG80211)
+	if (!strcmp(mode, "sta"))
+		eval("iw", "dev", ifname, "set", "4addr", "on");
+#endif
 
 	return 0;
 }
@@ -2077,6 +2156,33 @@ int get_channel_list(const char *ifname, int ch_list[], int size)
 	return size;
 }
 
+int has_dfs_channel(void)
+{
+	char word[8], *next;
+	int has_dfs_channel = 0;
+	int i;
+
+	foreach (word, nvram_safe_get("wl_ifnames"), next) {
+		char buf[256], *p = buf;
+		int ch_list[32];
+		int ret;
+
+		ret = get_channel_list(word, ch_list, ARRAY_SIZE(ch_list));
+		for(i = 0; i < ret; i++) {
+			if(is_dfs_channel(ch_list[i]))
+				has_dfs_channel++;
+			p += sprintf(p, "%s%d", i?",":"", ch_list[i]);
+		}
+		p = '\0';
+//		_dprintf("# get_channel_list(%s) ret(%d) ch_list(%s) has_dfs_channel(%d)\n", word, ret, buf, has_dfs_channel);
+	}
+	if(has_dfs_channel)
+		nvram_set_int("has_dfs_channel", has_dfs_channel);
+	else
+		nvram_unset("has_dfs_channel");
+	return has_dfs_channel;
+}
+
 /* dfs channel data from radartool */
 #ifndef IEEE80211_CHAN_MAX
 #define IEEE80211_CHAN_MAX      1023
@@ -2103,6 +2209,9 @@ int get_radar_channel_list(const char *vphy, int radar_list[], int size)
 
 	if(vphy == NULL || radar_list == NULL || size < 0)
 		return -1;
+
+	if (!strcmp(vphy, VPHY_2G) || !strcmp(vphy, VPHY_60G))
+		return 0;
 
 	unlink(dfs_file);
 	doSystem("radartool -i %s getnol %s", vphy, dfs_file);
@@ -2289,20 +2398,38 @@ void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
 	get_wpa_ctrl_sk(band, ctrl_sk, sizeof(ctrl_sk));
 	sta = get_staifname(band);
 	if (chk_reply) {
+#if defined(RTCONFIG_QCN550X) // now only qca95xx.mesh/qca-hostap implement scan_events
+		if (strcmp(cmd, "scan") == 0) {
+			eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, (char*) cmd); // just issue scan command & wait scan_events
+			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s scan_events", ctrl_sk, sta);
+			timeout = QUERY_WPA_STATE_TIMEOUT;
+			while (strcmp(wpa_cli_reply(fcmd, reply), "YES") && timeout--) {
+				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
+				sleep(1);
+			};
+		} else { // original code
+			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s %s", ctrl_sk, sta, cmd);
+			while (strcmp(wpa_cli_reply(fcmd, reply), "OK") && timeout--) {
+				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
+				sleep(1);
+			};
+		}
+#else
 		snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s %s", ctrl_sk, sta, cmd);
 		while (strcmp(wpa_cli_reply(fcmd, reply), "OK") && timeout--) {
-			//dbg("%s: reply [%s] ...(%d/%d)\n", __func__, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
+			//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_CLI_REPLY_TIMEOUT);
 			sleep(1);
 		};
 
 		if (strcmp(cmd, "scan") == 0) {
 			snprintf(fcmd, sizeof(fcmd), "/usr/bin/wpa_cli -p %s -i %s status | grep wpa_state=", ctrl_sk, sta);
 			timeout = QUERY_WPA_STATE_TIMEOUT;
-			while (strcmp(wpa_cli_reply(fcmd, reply), "wpa_state=INACTIVE") && timeout--) {
-				//dbg("%s: reply [%s] ...(%d/%d)\n", __func__, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
+			while (!strcmp(wpa_cli_reply(fcmd, reply), "wpa_state=SCANNING") && timeout--) {
+				//dbg("%s(%d): reply [%s] ...(%d/%d)\n", __func__, band, reply, timeout, QUERY_WPA_STATE_TIMEOUT);
 				sleep(1);
 			};
 		}
+#endif
 	}
 	else
 		eval("/usr/bin/wpa_cli", "-p", ctrl_sk, "-i", sta, (char*) cmd);
@@ -2332,7 +2459,11 @@ void set_maclist_mode(char *ifname, int mode)
 #ifdef RTCONFIG_WIFI_SON
 	if (nvram_match("wifison_ready", "1"))
 		sec = "_sec";
-#endif // WIFI_SON
+#endif
+#ifdef RTCONFIG_QCA_LBD
+	if (nvram_match("smart_connect_x", "1"))
+		sec = "_sec";
+#endif
 	sprintf(qca_maccmd, "%s%s", QCA_MACCMD, sec);
 
 	if (mode < 0 || mode > 3)
@@ -2353,7 +2484,11 @@ void set_maclist_add_kick(char *ifname, int mode, char *sta_addr)
 #ifdef RTCONFIG_WIFI_SON
 	if (nvram_match("wifison_ready", "1"))
 		sec = "_sec";
-#endif // WIFI_SON
+#endif
+#ifdef RTCONFIG_QCA_LBD
+	if (nvram_match("smart_connect_x", "1"))
+		sec = "_sec";
+#endif
 	snprintf(qca_addmac, sizeof(qca_addmac), "%s%s", QCA_ADDMAC, sec);
 
 	eval(IWPRIV, ifname, qca_addmac, sta_addr);
@@ -2373,7 +2508,11 @@ void set_maclist_del_kick(char *ifname, int mode, char *sta_addr)
 #ifdef RTCONFIG_WIFI_SON
 	if (nvram_match("wifison_ready", "1"))
 		sec = "_sec";
-#endif // WIFI_SON
+#endif
+#ifdef RTCONFIG_QCA_LBD
+	if (nvram_match("smart_connect_x", "1"))
+		sec = "_sec";
+#endif
 	snprintf(qca_delmac, sizeof(qca_delmac), "%s%s", QCA_DELMAC, sec);
 
 	eval(IWPRIV, ifname, qca_delmac, sta_addr);
@@ -2417,7 +2556,11 @@ void set_macfilter_unit(int unit, int subnet, FILE *fp)
 #ifdef RTCONFIG_WIFI_SON
 	if (nvram_match("wifison_ready", "1"))
 		sec = "_sec";
-#endif // WIFI_SON
+#endif
+#ifdef RTCONFIG_QCA_LBD
+	if (nvram_match("smart_connect_x", "1"))
+		sec = "_sec";
+#endif
 	sprintf(qca_mac, "%s%s", QCA_MACCMD, sec);
 
 	p = nvram_get(strcat_r(prefix, "macmode", tmp));

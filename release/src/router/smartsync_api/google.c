@@ -1,7 +1,7 @@
 #include "google.h"
 #include "data.h"
 #include "cJSON.h"
-
+#include <ctype.h>	//isdigit()
 
 int exit_loop = 0;
 char rootid[64] = {0};
@@ -12,6 +12,17 @@ char delete_id[64] = "\0";
 
 void updata_socket_list(char *temp_name,char *new_name,int i);
 void deal_big_low_conflcit(char *server_conflict_name,char *oldname,char *newname,char *newname_r,int index);
+int api_accout_info();
+int  cJSON_printf_account_info(cJSON *json);
+int is_server_exist(char *path,char *temp_name,char *URL, int index);
+int api_metadata_one(char *parentref, char *phref,cJSON *(*cmd_data)(char *filename), char *URL,int index);
+int get_metadata(char *parentref, char *id, proc_pt cmd_data,CloudFile *FolderTmp, int i);
+int main_batch();
+int api_rename(CloudFile *FolderTmp,char *newname,int index,int is_changed_time,char *newname_r);
+int api_refresh_token();
+int dragfolder(char *dir,int index);
+int dragfolder_old_dir(char *dir,int index,char *old_dir);
+extern int s_move(char *oldname,char *newname,int index,int is_changed_time,char *newname_r,int type);
 /****************list.c******************/
 int test_if_dir(const char *dir){
     DIR *dp = opendir(dir);

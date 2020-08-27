@@ -38,6 +38,8 @@
 #ifndef _PPP_DEFS_H_
 #define _PPP_DEFS_H_
 
+#include <time.h>	//musl: error: unknown type name 'time_t'
+
 /*
  * The basic PPP frame.
  */

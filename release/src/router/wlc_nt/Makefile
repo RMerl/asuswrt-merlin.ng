@@ -4,7 +4,7 @@ include ../common.mak
 CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Werror -fPIC
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
 CFLAGS	+= -s -O2
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
 
 ifeq ($(HND_ROUTER),y)
@@ -40,8 +40,8 @@ vpath %.c $(SRCBASE)/shared $(WLAN_ComponentSrcDirs)
 
 ifeq ($(wildcard $(SRCBASE)/router/wlc_nt/*.c),)
 all:
-	-cp -f prebuild$(BCMEX)$(EXHND)/wlc_nt ./
-	-cp -f prebuild$(BCMEX)$(EXHND)/libwlc_nt_client.so ./
+	-cp -f prebuild/$(BUILD_NAME)/wlc_nt ./
+	-cp -f prebuild/$(BUILD_NAME)/libwlc_nt_client.so ./
 else
 all: wlc_nt libwlc_nt_client.so
 endif

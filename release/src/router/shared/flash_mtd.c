@@ -16,14 +16,18 @@
 #include <mtd/mtd-user.h>
 #elif defined(RTCONFIG_LANTIQ)
 #include <mtd/mtd-user.h>
+#elif defined(RTCONFIG_REALTEK)
+#include <mtd/mtd-user.h>
+#include <mtd/mtd-abi.h>
 #elif defined(LINUX26)
 #include <linux/compiler.h>
 #include <mtd/mtd-user.h>
 #else
 #include <linux/mtd/mtd.h>
 #endif
-
+#ifndef RTCONFIG_REALTEK
 #include "mtd-abi.h"
+#endif
 #include "flash_mtd.h"
 
 #if defined(RTCONFIG_RALINK)
@@ -34,6 +38,8 @@
 #include "alpine.h"
 #elif defined(RTCONFIG_LANTIQ)
 #include "lantiq.h"
+#elif defined(RTCONFIG_REALTEK)
+#include "sysdeps/realtek/realtek.h"
 #else
 #error unknown platform
 #endif

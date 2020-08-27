@@ -9,7 +9,7 @@ diff -ur ./mtd-utils-20090606/recv_image.c ./mtd-utils-20090606-new/recv_image.c
  #include <netdb.h>
  #include <stdlib.h>
  #include <string.h>
-diff -ur mtd-utils-20090606.orig/Makefile mtd-utils-20090606/Makefile
+diff -ur ./mtd-utils-20090606.orig/Makefile ./mtd-utils-20090606/Makefile
 --- ./mtd-utils-20090606.orig/Makefile	2009-06-05 09:41:47.000000000 -0700
 +++ ./mtd-utils-20090606/Makefile	2015-08-20 03:29:53.402360707 -0700
 @@ -15,7 +15,6 @@
@@ -21,7 +21,29 @@ diff -ur mtd-utils-20090606.orig/Makefile mtd-utils-20090606/Makefile
  
  SYMLINKS =
 
-diff -ur mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.c
+diff -purN ./mtd-utils-20090606.orig/mkfs.jffs2.c ./mtd-utils-20090606/mkfs.jffs2.c
+--- ./mtd-utils-20090606.orig/mkfs.jffs2.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/mkfs.jffs2.c	2020-06-16 19:14:01.413829608 +0800
+@@ -74,6 +74,7 @@
+ #undef crc32
+ #include "crc32.h"
+ #include "rbtree.h"
++#include <sys/sysmacros.h>
+ 
+ /* Do not use the weird XPG version of basename */
+ #undef basename
+diff -purN ./mtd-utils-20090606.orig/mkfs.ubifs/devtable.c ./mtd-utils-20090606/mkfs.ubifs/devtable.c
+--- ./mtd-utils-20090606.orig/mkfs.ubifs/devtable.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/mkfs.ubifs/devtable.c	2020-06-16 19:23:16.967082829 +0800
+@@ -44,6 +44,7 @@
+  * for more information about what the device table is.
+  */
+ 
++#include <sys/sysmacros.h>
+ #include "mkfs.ubifs.h"
+ #include "hashtable/hashtable.h"
+ #include "hashtable/hashtable_itr.h"
+diff -ur ./mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.c
 --- ./mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c
 +++ ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.c
 @@ -33,18 +33,6 @@
@@ -43,7 +65,7 @@ diff -ur mtd-utils-20090606.org/mkfs.ubifs/hashtable/hashtable_itr.c mtd-utils-2
  
  /*****************************************************************************/
  /* advance - advance the iterator to the next element
-diff -ur mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.h
+diff -ur ./mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.h
 --- ./mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h
 +++ ./mtd-utils-20090606/mkfs.ubifs/hashtable/hashtable_itr.h
 @@ -28,7 +28,7 @@
@@ -64,69 +86,60 @@ diff -ur mtd-utils-20090606_orig/mkfs.ubifs/hashtable/hashtable_itr.h mtd-utils-
  hashtable_iterator_value(struct hashtable_itr *i)
  {
      return i->e->v;
-diff -ur mtd-utils-20090606.orig/mkfs.jffs2.c ./mtd-utils-20090606/mkfs.jffs2.c
---- ./mtd-utils-20090606.orig/mkfs.jffs2.c        2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/mkfs.jffs2.c     2019-04-14 07:24:58.857349884 +0000
-@@ -51,6 +51,7 @@
- #include <sys/types.h>
- #include <stdio.h>
- #include <sys/stat.h>
+diff -purN ./mtd-utils-20090606.orig/mkfs.ubifs/mkfs.ubifs.c ./mtd-utils-20090606/mkfs.ubifs/mkfs.ubifs.c
+--- ./mtd-utils-20090606.orig/mkfs.ubifs/mkfs.ubifs.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/mkfs.ubifs/mkfs.ubifs.c	2020-06-16 19:31:18.265064661 +0800
+@@ -20,6 +20,9 @@
+  *          Zoltan Sogor
+  */
+ 
++#define _GNU_SOURCE
 +#include <sys/sysmacros.h>
++#include <sys/types.h>
+ #include "mkfs.ubifs.h"
+ 
+ #define PROGRAM_VERSION "1.3"
+diff -purN ./mtd-utils-20090606.orig/ubi-utils/old-utils/src/libubi.c ./mtd-utils-20090606/ubi-utils/old-utils/src/libubi.c
+--- ./mtd-utils-20090606.orig/ubi-utils/old-utils/src/libubi.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/ubi-utils/old-utils/src/libubi.c	2020-06-16 19:21:53.065911676 +0800
+@@ -30,6 +30,7 @@
+ #include <errno.h>
  #include <unistd.h>
- #include <sys/mman.h>
- #include <fcntl.h>
-diff -ur mtd-utils-20090606.orig/mkfs.ubifs/mkfs.ubifs.h ./mtd-utils-20090606/mkfs.ubifs/mkfs.ubifs.h
---- ./mtd-utils-20090606.orig/mkfs.ubifs/mkfs.ubifs.h     2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/mkfs.ubifs/mkfs.ubifs.h  2019-04-14 07:24:58.860683215 +0000
-@@ -39,6 +39,7 @@
- #include <getopt.h>
- #include <sys/types.h>
- #include <sys/stat.h>
-+#include <sys/sysmacros.h>
  #include <sys/ioctl.h>
- #include <fcntl.h>
- #include <dirent.h>
-diff -ur mtd-utils-20090606.orig/ubi-utils/old-utils/src/libubi.c ./mtd-utils-20090606/ubi-utils/old-utils/src/libubi.c
---- ./mtd-utils-20090606.orig/ubi-utils/old-utils/src/libubi.c    2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/ubi-utils/old-utils/src/libubi.c 2019-04-14 07:24:58.880683200 +0000
-@@ -25,6 +25,7 @@
- #include <string.h>
- #include <fcntl.h>
- #include <sys/stat.h>
 +#include <sys/sysmacros.h>
- #include <sys/types.h>
- #include <dirent.h>
- #include <errno.h>
-diff -ur mtd-utils-20090606.orig/ubi-utils/src/libmtd.c ./mtd-utils-20090606/ubi-utils/src/libmtd.c
---- ./mtd-utils-20090606.orig/ubi-utils/src/libmtd.c      2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/ubi-utils/src/libmtd.c   2019-04-14 07:24:58.884016531 +0000
-@@ -30,6 +30,7 @@
- #include <dirent.h>
- #include <sys/types.h>
- #include <sys/stat.h>
-+#include <sys/sysmacros.h>
- #include <sys/ioctl.h>
- #include <mtd/mtd-user.h>
-
-diff -ur mtd-utils-20090606.orig/ubi-utils/src/libmtd_legacy.c ./mtd-utils-20090606/ubi-utils/src/libmtd_legacy.c
---- ./mtd-utils-20090606.orig/ubi-utils/src/libmtd_legacy.c       2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/ubi-utils/src/libmtd_legacy.c    2019-04-14 07:24:58.884016531 +0000
-@@ -30,6 +30,7 @@
- #include <errno.h>
- #include <sys/types.h>
- #include <sys/stat.h>
-+#include <sys/sysmacros.h>
- #include <sys/ioctl.h>
- #include <mtd/mtd-user.h>
-
-diff -ur mtd-utils-20090606.orig/ubi-utils/src/libubi.c ./mtd-utils-20090606/ubi-utils/src/libubi.c
---- ./mtd-utils-20090606.orig/ubi-utils/src/libubi.c      2009-06-05 16:41:47.000000000 +0000
-+++ ./mtd-utils-20090606/ubi-utils/src/libubi.c   2019-04-14 07:24:58.887349862 +0000
-@@ -29,6 +29,7 @@
  #include <limits.h>
- #include <sys/ioctl.h>
+ #include "libubi.h"
+ #include "libubi_int.h"
+diff -purN ./mtd-utils-20090606.orig/ubi-utils/src/libmtd.c ./mtd-utils-20090606/ubi-utils/src/libmtd.c
+--- ./mtd-utils-20090606.orig/ubi-utils/src/libmtd.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/ubi-utils/src/libmtd.c	2020-06-16 19:19:25.226990941 +0800
+@@ -32,6 +32,7 @@
  #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <mtd/mtd-user.h>
 +#include <sys/sysmacros.h>
- #include <sys/types.h>
+ 
+ #include <libmtd.h>
+ #include "libmtd_int.h"
+diff -purN ./mtd-utils-20090606.orig/ubi-utils/src/libmtd_legacy.c ./mtd-utils-20090606/ubi-utils/src/libmtd_legacy.c
+--- ./mtd-utils-20090606.orig/ubi-utils/src/libmtd_legacy.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/ubi-utils/src/libmtd_legacy.c	2020-06-16 19:20:41.767766233 +0800
+@@ -32,6 +32,7 @@
+ #include <sys/stat.h>
+ #include <sys/ioctl.h>
+ #include <mtd/mtd-user.h>
++#include <sys/sysmacros.h>
+ 
+ #include <libmtd.h>
+ #include "libmtd_int.h"
+diff -purN ./mtd-utils-20090606.orig/ubi-utils/src/libubi.c ./mtd-utils-20090606/ubi-utils/src/libubi.c
+--- ./mtd-utils-20090606.orig/ubi-utils/src/libubi.c	2009-06-06 00:41:47.000000000 +0800
++++ ./mtd-utils-20090606/ubi-utils/src/libubi.c	2020-06-16 19:18:14.259644442 +0800
+@@ -33,6 +33,7 @@
  #include <libubi.h>
  #include "libubi_int.h"
+ #include "common.h"
++#include <sys/sysmacros.h>
+ 
+ #define PROGRAM_NAME "libubi"
+ 

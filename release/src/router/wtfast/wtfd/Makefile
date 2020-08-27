@@ -4,15 +4,10 @@
 # Copyright (c) 2014, AAA Internet Publishing, Inc. (DBA WTFast)
 #
 
-include ../../common.mak
-LIBS = -lev -lwtf -lgpnutils -lssl -lcrypto -lm -lcurl
-
+LIBS = -lev -lwtf -lgpnutils -lssl -lcrypto -lm -lcurl -lpthread
 
 ifeq ($(ROUTER_BUILD), y)
-	LIBS += -lshared -lgcc_s -lnvram
-ifeq ($(RTCONFIG_AMAS),y)
-LIBS += -L$(TOP)/json-c/.libs -ljson-c
-endif	
+	LIBS += -lshared -lgcc_s -lnvram $(if $(RTCONFIG_HND_ROUTER),-L$(TOP)/wlcsm -lwlcsm,)
 endif
 
 LDFLAGS += -Wl,-rpath -Wl,$(LIB)
@@ -49,3 +44,14 @@ testping:
 
 testy: main.c
 	gcc -g main.c  -lwtf   -o testy
+
+# asuswrt
+PREBUILT_SRCS = $(filter-out $(wildcard $(SRCS)),$(SRCS))
+ifneq ($(PREBUILT_SRCS),)
+include ../../common.mak
+ifeq ($(RTCONFIG_BCMARM),y)
+PREBUILT_ARCH := $(BCMEX)$(EX7)
+endif
+$(PREBUILT_SRCS:.c=.o): %.o: prebuilt$(PREBUILT_ARCH)/%.o
+	cp -f $< $@
+endif

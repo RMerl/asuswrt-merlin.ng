@@ -442,7 +442,7 @@ static unsigned int getAPChannelbyIWInfo(const char *ifname)
 	/* Example: /sys/kernel/debug/ieee80211/phy0/wil6210/freq
 	 * Freq = 60480
 	 */
-	r = f_read_string("/sys/kernel/debug/ieee80211/phy0/wil6210/freq", buf, sizeof(buf));
+	r = f_read_string("/sys/kernel/debug/ieee80211/phy2/wil6210/freq", buf, sizeof(buf));
 	if (r < strlen("Freq = xxxxx"))
 		return 0;
 
@@ -1882,7 +1882,7 @@ static int wl_scan(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	dbg("Please wait...");
 #if defined(RTCONFIG_QCA_LBD)
-	if (nvram_match("qca_lbd_enable", "1") && pids("lbd")) {
+	if (nvram_match("smart_connect_x", "1") && pids("lbd")) {
 		eval("rc", "rc_service", "stop_qca_lbd");
 		restart_lbd = 1;
 	}
@@ -2085,8 +2085,9 @@ bypass:
 	if (country_code == NULL || strlen(country_code) != 2) return retval;
 
 	//try getting channel list via wifi driver first
-#if defined(RTAC58U)
-	if (unit == 0 && !strncmp(nvram_safe_get("territory_code"), "CX", 2))
+#if defined(RTAC58U) || defined(RTAC59U)
+	if (unit == 0 && (!strncmp(nvram_safe_get("territory_code"), "CX/01", 5)
+		       || !strncmp(nvram_safe_get("territory_code"), "CX/05", 5)))
 		retval += websWrite(wp, "[1,2,3,4,5,6,7,8,9,10,11]");
 	else
 #endif
@@ -2221,7 +2222,7 @@ ej_wl_rate_5g_2(int eid, webs_t wp, int argc, char_t **argv)
 static struct nat_accel_kmod_s {
 	char *kmod_name;
 } nat_accel_kmod[] = {
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined (RTCONFIG_SOC_IPQ60XX)
 	{ "ecm" },
 #elif defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X) || defined(RTCONFIG_SOC_IPQ40XX)
 	{ "shortcut_fe" },
@@ -2306,3 +2307,11 @@ ej_wl_auth_psta(int eid, webs_t wp, int argc, char_t **argv)
 	return retval;
 }
 #endif
+
+const char *syslog_msg_filter[] = {
+	"net_ratelimit",
+#if defined(RTCONFIG_SOC_IPQ8074)
+	"[AUTH] vap", "[MLME] vap", "[ASSOC] vap", "[INACT] vap", "LBDR ",
+#endif
+	NULL
+};

@@ -285,7 +285,7 @@ _check__lib_log_message(){
 	if [ "$action" == "Installing" ] || [ "$action" == "Configuring" ]; then
 		target=`echo $got_log |awk '{print $2}'`
 	elif [ "$action" == "Downloading" ]; then
-		target=`echo $got_log |awk '{print $2}' |awk '{FS="/"; print $NF}' |awk '{FS="_"; print $1}'`
+		target=`echo $got_log |awk '{print $2}' |awk 'BEGIN{FS="/"}{print $NF}' |awk 'BEGIN{FS="_"}{print $1}'`
 	elif [ "$action" == "Successfully" ]; then
 		target="terminated"
 	elif [ "$action" == "update-alternatives:" ]; then
@@ -311,7 +311,7 @@ _check__lib_log_message(){
 # $1: package name (all path), $2: ipkg log file.
 _log_lib_ipkg_install(){
 
-	package_deps=`echo "$1"|awk '{FS="/"; print $NF}'|awk '{FS="_";printf $1}'`
+	package_deps=`echo "$1"|awk 'BEGIN{FS="/"}{print $NF}'|awk 'BEGIN{FS="_"}{printf $1}'`
 	nvram set apps_depend_action="$package_deps"
 	nvram set apps_depend_action_target="Installing"
 	
@@ -773,7 +773,7 @@ for file in $target_file; do
 	install_log=$APPS_INSTALL_PATH/ipkg_log.txt
 	#2016.7.5 sherry add install dependent lib{
 	if [ $apps_new_arm -eq 1 ]; then 
-		file_tmp=`echo "$file"|awk '{FS="/"; print $NF}'|awk '{FS="_";printf $1}'`
+		file_tmp=`echo "$file"|awk 'BEGIN{FS="/"}{print $NF}'|awk 'BEGIN{FS="_"}{printf $1}'`
 		base_library=`/usr/sbin/app_get_field.sh $file_tmp Depends 2 |sed 's/,/ /g'`
 		nvram set apps_depend_do="$base_library"
 		lib_install_log=$APPS_INSTALL_PATH/lib_ipkg_log.txt

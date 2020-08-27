@@ -74,6 +74,7 @@ function LoadingProgress(seconds){
 }
 
 function showLoading(seconds, flag){
+
 	if(window.scrollTo)
 		window.scrollTo(0,0);
 
@@ -118,7 +119,12 @@ function showLoading(seconds, flag){
 	blockmarginTop= winHeight*0.3	
 	
 	document.getElementById("loadingBlock").style.marginTop = blockmarginTop+"px";
-	document.getElementById("loadingBlock").style.marginLeft = blockmarginLeft+"px";
+	if(re_mode == "1"){
+		document.getElementById("loadingBlock").style.left = "50%";
+		document.getElementById("loadingBlock").style.marginLeft = "-200px";
+	}
+	else
+		document.getElementById("loadingBlock").style.marginLeft = blockmarginLeft+"px";
 
 	document.getElementById("Loading").style.width = winW+"px";
 	document.getElementById("Loading").style.height = winH+"px";
@@ -199,6 +205,8 @@ function hideLoading(flag){
 	document.getElementById("Loading").style.visibility = "hidden";
 	htmlbodyforIE = document.getElementsByTagName("html");  //this both for IE&FF, use "html" but not "body" because <!DOCTYPE html PUBLIC.......>
 	htmlbodyforIE[0].style.overflow = "";	  //hidden the Y-scrollbar for preventing from user scroll it.
+	document.getElementById("Loading").style.width = "initial";
+	document.getElementById("Loading").style.height = "initial";
 }             
 
 function dr_advise(){

@@ -33,6 +33,8 @@
 #include <errno.h>
 #include "pppd.h"
 #include "pppcrypt.h"
+#include <stdlib.h>	//setkey()
+#include <unistd.h>	//encrypt()
 
 static u_char
 Get7Bits(input, startBit)

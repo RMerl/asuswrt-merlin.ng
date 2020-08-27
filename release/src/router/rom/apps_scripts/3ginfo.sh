@@ -163,7 +163,7 @@ ps
 
 echo ">"
 echo "brctl show >"
-/usr/sbin/brctl show
+brctl show
 
 echo ">"
 echo "ATE Get_WanLanStatus >"

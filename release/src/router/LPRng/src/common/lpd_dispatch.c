@@ -46,6 +46,8 @@
 #include "lpd_dispatch.h"
 
 #include <bcmnvram.h>
+extern int file_lock(const char *tag);	//in shared.h but conflicting types for 'connect_timeout'
+extern void file_unlock(int lockfd);	//in shared.h but conflicting types for 'connect_timeout'
 
 //extern char busy;
 

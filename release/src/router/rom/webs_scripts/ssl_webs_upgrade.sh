@@ -61,7 +61,7 @@ fi
 
 # fw/rsa file
 firmware_file=`echo $get_productid`_`nvram get webs_state_info`_un.zip
-firmware_rsasign=`echo $get_productid`_`nvram get webs_state_info`_rsa.zip
+firmware_rsasign=`echo $get_productid`_`nvram get webs_state_info`_rsa`nvram get live_update_rsa_ver`.zip
 
 #for small size fw to increase free
 small_fw_update=`nvram show | grep rc_support | grep small_fw`

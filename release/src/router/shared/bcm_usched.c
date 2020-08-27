@@ -1,12 +1,12 @@
 /*
  * Broadcom micro scheduler library definitions
  *
- * Copyright (C) 2016, Broadcom. All Rights Reserved.
- * 
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
+ *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
  * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
  * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_usched.c 647940 2016-07-08 10:38:09Z $
+ * $Id: bcm_usched.c 783930 2020-02-13 03:19:33Z $
  */
 
 #include <stdio.h>
@@ -36,6 +36,8 @@
 
 /* This will be the default timeout for select call if there is no timers present */
 #define USCHED_TIEMOUT_DEFAULT	5 /* In seconds */
+/* This will be the default timeout for select if there is any immediate timer timeout */
+#define USCHED_TIMEOUT_FDS	1000 /* In microseconds */
 
 /* If FD_COPY is not defined, use our own copy to copy the fd_set */
 #ifndef FD_COPY
@@ -127,7 +129,6 @@ typedef struct usched_handle {
 
 unsigned int g_bcm_usched_debug_level;
 
-
 /* Gets the config val from NVARM, if not found applies the default value */
 uint16
 bcm_usched_get_config_val_int(const char *c, uint16 def)
@@ -139,7 +140,7 @@ bcm_usched_get_config_val_int(const char *c, uint16 def)
 	val = nvram_safe_get(c);
 	if (val)
 		ret = strtoul(val, NULL, 0);
-#endif
+#endif // endif
 	return ret;
 }
 
@@ -456,8 +457,8 @@ bcm_usched_process_timers(usched_handle_t *hdl)
 		} else {
 			/* Update the remove_flag to 1 to indicate for deletion */
 			curr->remove_flag = 1;
-			USCHED_DEBUG("Timer not repetitive Setting remove_flag arg[%p] cb[%p]\n",
-				curr->arg, curr->cbfn);
+			USCHED_DEBUG("Timer not repetitive Setting remove_flag cb[%p]\n",
+				curr->cbfn);
 		}
 	}
 
@@ -534,9 +535,8 @@ bcm_usched_process_fds_and_timers(usched_handle_t *hdl)
 	USCHED_PRINT_TIMEVAL("Timeout for select", &tv);
 	/* If there is no timeout set, then its time to process timers */
 	if (!timerisset(&tv)) {
-		/* Now check for the timers which are expired */
-		bcm_usched_process_timers(hdl);
-		return;
+		/* but still give, 1 Millisecond opportunity for the socket descriptors */
+		tv.tv_usec = USCHED_TIMEOUT_FDS;
 	}
 
 	/* Initialize the FD sets */
@@ -576,11 +576,10 @@ bcm_usched_process_fds_and_timers(usched_handle_t *hdl)
 }
 
 /* Initializes the library */
+static usched_handle_t *usched_new_hdl = NULL;
 bcm_usched_handle*
 bcm_usched_init()
 {
-	static usched_handle_t *usched_new_hdl = NULL;
-
 	if (usched_new_hdl != NULL) {
 		usched_new_hdl->ref_count++;
 		USCHED_DEBUG("USCHED is already initialized. Increasing the reference count[%d]\n",
@@ -636,7 +635,7 @@ bcm_usched_deinit(bcm_usched_handle *handle)
 	/* Free handle */
 	free(hdl);
 	hdl = NULL;
-
+	usched_new_hdl = NULL;
 	USCHED_DEBUG("Deinitialized successfully\n");
 
 	return BCM_USCHEDE_OK;
@@ -644,7 +643,7 @@ bcm_usched_deinit(bcm_usched_handle *handle)
 
 /* create the new timer */
 BCM_USCHED_STATUS
-bcm_usched_add_timer(bcm_usched_handle *hdl, unsigned long interval, short int repeat_flag,
+bcm_usched_add_timer(bcm_usched_handle *hdl, unsigned long long interval, short int repeat_flag,
 	bcm_usched_timerscbfn *cbfn, void *arg)
 {
 	usched_timers_t *new = NULL;
@@ -757,13 +756,15 @@ bcm_usched_remove_timer(bcm_usched_handle *handle, bcm_usched_timerscbfn *cbfn, 
 		item_p = dll_next_p(item_p)) {
 		usched_timers_t *tmp = (usched_timers_t*)item_p;
 
-		if ((tmp->cbfn == cbfn) && (tmp->arg == arg)) {
+		if ((tmp->cbfn == cbfn) && (tmp->arg == arg) && (!tmp->remove_flag)) {
 			tmp->remove_flag = 1;
 			USCHED_DEBUG("Setting remove flag for timer arg[%p] cb[%p]\n",
 				tmp->arg, tmp->cbfn);
 			return BCM_USCHEDE_OK;
 		}
 	}
+
+        USCHED_ERROR("Timer Not Found arg[%p] cb[%p]\n", arg, cbfn);
 
 	return BCM_USCHEDE_NOT_FOUND;
 }
@@ -792,7 +793,8 @@ bcm_usched_remove_fd_schedule(bcm_usched_handle *handle, int fd)
 		item_p = dll_next_p(item_p)) {
 		usched_fds_t *tmp = (usched_fds_t*)item_p;
 
-		if (tmp->fd == fd) {
+		/* check if the FD is same and also check only if the remove_flag is not set */
+		if ((tmp->fd == fd) && !(tmp->remove_flag)) {
 			tmp->remove_flag = 1;
 			USCHED_DEBUG("Setting remove flag for FD[%d]\n", tmp->fd);
 			return BCM_USCHEDE_OK;

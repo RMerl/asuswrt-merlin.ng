@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <limits.h>	//UINT_MAX
 
 #include "globals.h"
 

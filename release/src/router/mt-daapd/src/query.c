@@ -3,8 +3,11 @@
 #endif
 
 #include <stdlib.h>
+#define _GNU_SOURCE	//strcasestr()
 #include <string.h>
 #include <stdio.h>
+#include <ctype.h>	//isalpha(), isdigit()
+#include <ctype.h>	//tolower()
 
 #include "err.h"
 #include "query.h"

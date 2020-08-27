@@ -300,4 +300,3 @@ void config_switch_dsl()
 #endif
 	}
 }
-

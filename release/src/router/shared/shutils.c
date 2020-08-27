@@ -51,7 +51,9 @@
 
 /* Linux specific headers */
 #ifdef linux
+#if (defined(__GLIBC__) || defined(__UCLIBC__))
 #include <error.h>
+#endif
 #include <termios.h>
 #include <sys/time.h>
 //#include <net/ethernet.h>
@@ -390,7 +392,7 @@ EXIT:
 	_exit(errno);
 }
 
-static int get_cmds_size(char **cmds)
+static int get_cmds_size(char *const *cmds)
 {
         int i=0;
         for(; cmds[i]; ++i);
@@ -431,6 +433,27 @@ int _cpu_eval(int *ppid, char *cmds[])
         for(; cmds[n]; cpucmd[ncmds++]=cmds[n++]);
 
         return _eval(cpucmd, NULL, 0, ppid);;
+}
+
+int _cpu_mask_eval(char *const argv[], const char *path, int timeout, int *ppid, unsigned int mask)
+{
+	int maxn = get_cmds_size(argv) + 2;
+	char *cpuargv[maxn];
+	int argc = 0;
+	int i;
+	char mask_str[16] = {0};
+
+	for (i = 0;i < maxn; i++)
+		cpuargv[i] = NULL;
+
+	cpuargv[argc++] = "taskset";
+	snprintf(mask_str, sizeof(mask_str), "0x%x", mask);
+	cpuargv[argc++] = mask_str;
+	for(i = 0; argv[i]; i++)
+		cpuargv[argc++] = argv[i];
+
+	//_dprintf("\n=====\n"); for(i = 0; cpuargv[i]; i++) _dprintf("%s ", cpuargv[i]); _dprintf("\n=====\n");
+	return _eval(cpuargv, path, timeout, ppid);
 }
 
 /*
@@ -562,6 +585,45 @@ get_pid_by_name(char *name)
 	closedir(dir);
 
 	return pid;
+}
+
+pid_t
+get_pid_by_thrd_name(char *name)
+{
+        pid_t           pid = -1;
+        DIR             *dir;
+        struct dirent   *next;
+        int cmp = 0;
+        if ((dir = opendir("/proc")) == NULL) {
+                perror("Cannot open /proc");
+                return -1;
+        }
+
+        while ((next = readdir(dir)) != NULL) {
+                FILE *fp;
+                char filename[256];
+                char buffer[256];
+
+                /* If it isn't a number, we don't want it */
+                if (!isdigit(*next->d_name))
+                        continue;
+                sprintf(filename, "/proc/%s/comm", next->d_name);
+                fp = fopen(filename, "r");
+                if (!fp) {
+                        continue;
+                }
+                buffer[0] = '\0';
+                fgets(buffer, 256, fp);
+                fclose(fp);
+
+                if (!(cmp = strncmp(name, buffer, strlen(name)))) {
+                        pid = strtol(next->d_name, NULL, 0);
+                        break;
+                }
+        }
+
+        closedir(dir);
+        return pid;
 }
 
 /*
@@ -2342,3 +2404,223 @@ int arpcache(char *tgmac, char *tgip)
 	return 0;
 }
 
+/* In the space-separated/null-terminated list(haystack), try to
+ * locate the string "needle" and get the next string from it
+ * if required, do a circular search as well
+ * if "needle" is NULL, get the first string in the list
+ */
+char *
+find_next_in_list(const char *haystack, const char *needle, char *nextstr, int nextstrlen)
+{
+        const char *ptr = haystack;
+        int needle_len = 0;
+        int haystack_len = 0;
+        int len = 0;
+
+        if (!haystack || !needle || !nextstr || !*haystack)
+                return NULL;
+
+        if (!*needle) {
+                goto found_next;
+        }
+
+        needle_len = strlen(needle);
+        haystack_len = strlen(haystack);
+
+        while (*ptr != 0 && ptr < &haystack[haystack_len])
+        {
+                /* consume leading spaces */
+                ptr += strspn(ptr, " ");
+
+                /* what's the length of the next word */
+                len = strcspn(ptr, " ");
+
+                if ((needle_len == len) && (!strncmp(needle, ptr, len))) {
+
+                        ptr += len;
+
+                        if (!(*ptr != 0 && ptr < &haystack[haystack_len])) {
+                                ptr = haystack;
+                        } else {
+                                /* consume leading spaces */
+                                ptr += strspn(ptr, " ");
+                        }
+
+found_next:
+                        /* what's the length of the next word */
+                        len = strcspn(ptr, " ");
+
+                        /* copy next value in nextstr */
+                        memset(nextstr, 0, nextstrlen);
+                        strncpy(nextstr, ptr, len);
+
+                        return (char*) ptr;
+                }
+
+                ptr += len;
+        }
+        return NULL;
+}
+
+#ifdef CONFIG_BCMWL5
+void retrieve_static_maclist_from_nvram(int idx,struct maclist *maclist,int maclist_buf_size)
+{
+	char prefix[16]={0};
+	struct ether_addr *ea;
+	char *buf = maclist;
+	char tmp[100];
+	char var[80], *next;
+	unsigned char sta_ea[6] = {0};
+	char *nv, *nvp, *b;
+#ifdef RTCONFIG_AMAS
+	char mac2g[32], mac5g[32], *next_mac;
+	char *reMac, *maclist2g, *maclist5g, *timestamp;
+	char stamac2g[18] = {0};
+	char stamac5g[18] = {0};
+#endif
+
+	if(!maclist) return;
+
+#ifdef RTCONFIG_AMAS
+	if (nvram_get_int("re_mode") == 1)
+		snprintf(prefix, sizeof(prefix), "wl%d.1_", idx);
+	else
+#endif
+	snprintf(prefix,16,"wl%d_",idx);
+
+#ifdef RTCONFIG_AMAS
+	if (nvram_get("cfg_relist"))
+	{
+		if (nvram_get_int("re_mode") == 1) {
+			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			if (nv) {
+				while ((b = strsep(&nvp, "<")) != NULL) {
+					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
+						continue;
+					/* first mac for sta 2g of dut */
+					foreach_44 (mac2g, maclist2g, next_mac)
+						break;
+					/* first mac for sta 5g of dut */
+					foreach_44 (mac5g, maclist5g, next_mac)
+						break;
+
+					if (strcmp(reMac, get_lan_hwaddr()) == 0) {
+						snprintf(stamac2g, sizeof(stamac2g), "%s", mac2g);
+						//dbg("dut 2g sta (%s)\n", stamac2g);
+						snprintf(stamac5g, sizeof(stamac5g), "%s", mac5g);
+						//dbg("dut 5g sta (%s)\n", stamac5g);
+						break;
+					}
+				}
+				free(nv);
+			}
+		}
+	}
+#endif
+
+	maclist->count = 0;
+	if (!nvram_match(strcat_r(prefix, "macmode", tmp), "disabled")) {
+		memset(maclist, 0, sizeof(maclist_buf_size));
+		ea = &(maclist->ea[0]);
+
+		nv = nvp = strdup(nvram_safe_get(strcat_r(prefix, "maclist_x", tmp)));
+		if (nv) {
+			while ((b = strsep(&nvp, "<")) != NULL) {
+				if (strlen(b) == 0) continue;
+
+#ifdef RTCONFIG_AMAS
+				if(nvram_match(strcat_r(prefix, "macmode", tmp), "allow")){
+					if (nvram_get_int("re_mode") == 1) {
+						if (strcmp(b, stamac2g) == 0 ||
+							strcmp(b, stamac5g) == 0)
+							continue;
+					}
+				}
+#endif
+				//dbg("maclist sta (%s) in %s\n", b, wlif_name);
+				ether_atoe(b, sta_ea);
+				memcpy(ea, sta_ea, sizeof(struct ether_addr));
+				maclist->count++;
+				ea++;
+			}
+			free(nv);
+		}
+#ifdef RTCONFIG_AMAS
+		if (nvram_match(strcat_r(prefix, "macmode", tmp), "allow"))
+		{
+			nv = nvp = strdup(nvram_safe_get("cfg_relist"));
+			if (nv) {
+				while ((b = strsep(&nvp, "<")) != NULL) {
+					if ((vstrsep(b, ">", &reMac, &maclist2g, &maclist5g, &timestamp) != 4))
+						continue;
+
+					if (strcmp(reMac, get_lan_hwaddr()) == 0)
+						continue;
+
+					if (idx == 0) {
+						foreach_44 (mac2g, maclist2g, next_mac) {
+							if (check_re_in_macfilter(idx, mac2g))
+								continue;
+							//dbg("relist sta (%s) in %s\n", mac2g, wlif_name);
+							ether_atoe(mac2g, sta_ea);
+							memcpy(ea, sta_ea, sizeof(struct ether_addr));
+							maclist->count++;
+							ea++;
+						}
+					}
+					else
+					{
+						foreach_44 (mac5g, maclist5g, next_mac) {
+							if (check_re_in_macfilter(idx, mac5g))
+								continue;
+							//dbg("relist sta (%s) in %s\n", mac5g, wlif_name);
+							ether_atoe(mac5g, sta_ea);
+							memcpy(ea, sta_ea, sizeof(struct ether_addr));
+							maclist->count++;
+							ea++;
+						}
+					}
+				}
+				free(nv);
+			}
+		}
+#endif
+
+	}
+}
+#endif
+
+/* Compare two space-separated/null-terminated lists(str1 and str2)
+ * NOTE : The individual names in the list should not exceed NVRAM_MAX_VALUE_LEN
+ *
+ * @param      str1    space-separated/null-terminated list
+ * @param      str2    space-separated/null-terminated list
+ *
+ * @return     0 if both strings are same else return -1
+ */
+int
+compare_lists(char *str1, char *str2)
+{
+       char name[NVRAM_MAX_VALUE_LEN + 1], *next_str;
+
+       /* Check for arg and len */
+       if (!str1 || !str2 || (strlen(str1) != strlen(str2))) {
+               return -1;
+       }
+
+       /* First check whether each element in str1 list is present in str2's list */
+       foreach(name, str1, next_str) {
+               if (find_in_list(str2, name) == NULL) {
+                       return -1;
+               }
+       }
+
+       /* Now check whether each element in str2 list is present in str1's list */
+       foreach(name, str2, next_str) {
+               if (find_in_list(str1, name) == NULL) {
+                       return -1;
+               }
+       }
+
+       return 0;
+}

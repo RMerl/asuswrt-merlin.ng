@@ -26,11 +26,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>	//time()
 #include "playlist.h"
 
 #define YYERROR_VERBOSE 1
 
 extern int yyerror(char *msg);
+extern int yylex(void);
 
 /* Forwards */
 

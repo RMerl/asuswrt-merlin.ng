@@ -68,42 +68,13 @@ function QKinternettype_load_body(){
 
 		if (dsl_support) {
 			document.getElementById("prev_btn").style.display = "none";
-			var detect_status = "<% nvram_get("dsltmp_autodet_state"); %>";	
-			var wan_type = "<% nvram_get("dsltmp_autodet_wan_type"); %>";
-			var dslx_annex_state = "<% nvram_get("dslx_annex"); %>";
-
-			if(detect_status == "up" && wan_type == "PTM"){
-				document.form.next_page.value = "/qis/QIS_PTM_manual_setting.htm"; 
-			}
-			else if(detect_status == "up" && wan_type == "ATM" && (dslx_annex_state == 5 || dslx_annex_state == 6)){
-				document.form.next_page.value = "/qis/QIS_manual_setting.htm"; 
-			}
-			else if ( (detect_status == "Detecting") || (detect_status == "wait_for_init") || 
-				(detect_status == "init") || (detect_status == "initializing") || 
-				(detect_status == "up") || (detect_status == "wait") || (detect_status == "down")) {
-				document.form.next_page.value = "/qis/QIS_detect.htm";
-			}
-			else if ( (detect_status == "pppoe") || (detect_status == "pppoa") ) { //1:PPPoE, 2:PPPoA
-				document.form.next_page.value = "/qis/QIS_ppp_cfg.htm";
-			}
-			else if ( detect_status == "dhcp") { //2:MER
-				document.form.next_page.value = "/qis/QIS_mer_cfg.htm";		
-			}
-			else if ( detect_status == "Fail") {
-				document.form.next_page.value = "/qis/QIS_manual_setting.htm";				
-			}
-			else {
-				if(parent.based_modelid == "DSL-AC68U")
-					document.form.next_page.value = "/qis/QIS_detect.htm";
-				else
-					document.form.next_page.value = "/qis/QIS_manual_setting.htm";				
-			}
+			document.form.next_page.value = "/qis/QIS_detect.htm";
 		}
 	}
 	
 	document.form.http_username.value= accounts[0];	
 
-	if(parent.based_modelid == "DSL-AC68U"){	//dsl detect trigger, MODELDEP : DSL-AC68U
+	if(parent.based_modelid == "DSL-AC68U" || parent.based_modelid == "DSL-AX82U"){	//dsl detect trigger, MODELDEP : DSL-AC68U
 		var RetryCountDown_fail = 5;
 		update_dsl_info();
 	}

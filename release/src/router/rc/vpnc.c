@@ -85,6 +85,9 @@ start_vpnc(void)
 	else
 		return 0;
 
+	/* shut down previous instance if any */
+	stop_vpnc();
+
 #ifdef HND_ROUTER
 	/* workaround for ppp packets are dropped by fc GRE learning when pptp server / client enabled */
 	if (nvram_match("fc_disable", "0") &&
@@ -95,9 +98,6 @@ start_vpnc(void)
 		eval("fc", "config", "--gre", "0");
 	}
 #endif
-
-	/* shut down previous instance if any */
-	stop_vpnc();
 
 	/* unset vpnc_dut_disc */
 	nvram_unset(strcat_r(prefix, "dut_disc", tmp));

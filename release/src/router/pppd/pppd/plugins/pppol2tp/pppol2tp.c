@@ -36,6 +36,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <signal.h>
+#include <arpa/inet.h>	//inet_ntoa()
 #include <linux/version.h>
 #include <linux/sockios.h>
 #ifndef aligned_u64

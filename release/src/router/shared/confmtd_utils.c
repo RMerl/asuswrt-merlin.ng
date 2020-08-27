@@ -350,3 +350,44 @@ fail:
 
 	return ret;
 }
+#if 0
+/* To pass required information to restart the service in case
+ * it is in a bad state or killed. Service restart is handled by
+ * debug_monitor service. Arguments to be passed are process id,
+ * command count, servce commands and dependent_services.
+ */
+void
+dm_register_app_restart_info(int pid, int argc, char **argv,
+               char *dependent_services)
+{
+	char buf[16];
+	FILE *fp;
+	DIR *dir;
+	int i;
+	dir = opendir("/tmp/dm");
+	if (!dir) {
+		printf("dm directory may not exist\n");
+		if (mkdir("/tmp/dm", 0777)) {
+			printf("Unable to create dm directory\n");
+			return;
+		}
+	} else {
+		closedir(dir);
+	}
+	snprintf(buf, sizeof(buf), "/tmp/dm/%d", pid);
+	fp = fopen(buf, "w");
+	if (!fp) {
+		printf("Unable to open file %s\n", argv[0]);
+	} else {
+		if (dependent_services) {
+			fprintf(fp, "%s\n", dependent_services);
+		} else {
+			fprintf(fp, "\n");
+		}
+		for (i = 0; i < argc; i++) {
+			fprintf(fp, "%s ", argv[i]);
+		}
+	}
+	fclose(fp);
+}
+#endif

@@ -1,0 +1,169 @@
+.TH NTFSCK 8 "January 2017" "Tuxera NTFS Utilities 3017.7.18.13"
+.SH NAME
+ntfsck \- check and repair an NTFS file system 
+.SH SYNOPSIS
+.B ntfsck
+[\fIoptions\fR] \fIdevice 
+.SH DESCRIPTION
+.B ntfsck
+will check and repair an NTFS file system located on
+.IR device
+or an NTFS image file.
+.SH OPTIONS
+Below is a summary of all the options that
+.B ntfsck
+accepts. Nearly all options have two equivalent names. The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+Any single letter options, that don't take an argument, can be combined into a
+single command, e.g.
+.B \-fv
+is equivalent to
+.BR "\-f \-v" .
+Long named options can be abbreviated to any unique prefix of their name.
+.TP
+\fB\-a\fR, \fB\-\-automatic\-repair\fR
+Repair the volume if it appears to be in need of a repair. This options makes
+.B ntfsck
+exit immediately if the volume appears to be in order (no dirty flag set,
+logfile clean, no hibernated Windows session, ...), but otherwise a full repair
+is performed.  Note that volume is considered dirty if either one or more of
+follwing is true a) dirty flag set b) logfile clean c) hibernated windows volume.
+.TP
+\fB\-c\fR, \fB\-\-fast\-check\fR
+Check if volume is dirty then exit. If the volume is dirty then the
+exit value will be 100. If used with
+\fB\-m\fR/\fB\-\-mount\-check-only\fR then also repairs any issues
+which prevent volume from being mounted. Read the definition of dirty volume
+from \fB\-a\fR/\fB\-\-automatic\-repair\fR option.
+.TP
+\fB\-m\fR, \fB\-\-mount\-check\-only\fR
+Check if volume can be mounted safely and if volume can be mounted
+then exit. If volume cannot be mounted then fix it and exit. Also
+works if used with \fB\-c\fR/\fB\-\-fast\-check\fR.
+.TP
+\fB\-s\fR, \fB\-\-simulate\fR
+Simulate repair of the volume. This option caches all the changes made by ntfsck
+in memory and never writes to the device. This can be done with a
+write-protected volume to check what changes ntfsck would make if it would be
+able to write to it. Exit value will be the same as you'd expect during a normal
+repair.
+.TP
+\fB\-P\fR, \fB\-\-no\-progress\-bar\fR
+Don't show progress bars.
+.TP
+\fB\-C\fR, \fB\-\-no\-alloc\-check\fR
+Don't check cluster allocations. This option speeds up 
+.B ntfsck.
+Use this option with caution.
+.TP
+\fB\-O\fR, \fB\-\-no\-orpan\-check\fR
+Don't check for orphaned files. This option speeds up 
+.B ntfsck.
+.TP
+\fB\-M\fR, \fB\-\-no\-mft\-scan\fR
+Don't scan $MFT.
+\fB\-S\fR, \fB\-\-no\-sync\fR
+Don't sync NTFS metadata before exit. This option speeds up 
+.B ntfsck
+however it's safe to use only if device is not removed/ejected.
+.TP
+\fB\-F\fR, \fB\-\-file\fR FILE
+Check and repair FILE only. FILE is absolute path to a file or directory.
+.TP
+\fB\-i\fR, \fB\-\-inode\fR NUMBER
+Correct inode NUMBER only and its children.
+.TP
+\fB\-t\fR, \fB\-\-timeout\fR SECONDS
+Timeout in seconds before ntfsck will abort the volume check/repair. If
+specified, this sets an upper limit on the execution time of ntfsck. After the
+timeout occurs, ntfsck will clear all its pending tasks and return as soon as
+possible.
+.br
+As a special case, a timeout value of 0 means that there is no
+timeout, i.e. it is equivalent to not specifying the timeout option at
+all.
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+This will override some sensible defaults. Use this option with caution.
+.TP
+\fB\-D\fR, \fB\-\-delete-crosslinked\fR
+Delete cross linked clusters.
+.TP
+\fB\-b\fR, \fB\-\-crosslinked-check\fR
+Run crosslinked check. Remember without this option we will see cross
+linked messages i.e. information regarding cross linked clusters will
+always appear in the output. It is disabled by default because resolving
+cross-links without data loss means moving clusters around which may take extra
+time if number of cross-linked clusters is high. If ntfsck with this option is
+run periodically then it can be switched on.
+.TP
+\fB\-e\fR, \fB\-\-delete-crosslinked-if-no-space\fR
+Delete cross linked clusters in case ntfsck cannot resolve them by moving to
+empty space.
+.TP
+\fB\-w\fR, \fB\-\-mem\fR NUMBER
+Set memory limit in system (in MB). This is useful for running ntfsck
+in systems with low memory, and when user already knows the minimum
+available memory which should be available. Chances of failure because
+of low memory are reduced but not entirely removed. This can
+still result in failure if required memory at certain stage in check
+increases, and system really has nothing available at that point in time.
+Chances of that happening are very less though. One disadvantage of not
+having enough memory is that for large storage devices, ntfsck would take
+more time to run.
+.TP
+\fB\-u\fR, \fB\-\-automatic-mem\fR
+Same as \-\-mem but this time user doesn't mention available memory
+and instead ntfsck tries to automatically detect it. Note that this
+option also has similar limitations as mentioned in \-\-mem option
+above description.
+.TP
+\fB\-p\fR, \fB\-\-playlog\fR
+Play NTFS Journal if volume is dirty, needs a journal replay and $LogFile
+isn't corrupt. In case $LogFile is corrupt reset it or if we encounter
+specification changes or un-supported actions then also reset it.
+.TP
+\fB\-r\fR, \fB\-\-replay\fR
+Same as \-\-playlog but doesn't invoke fsck run after journal has
+been played.
+.TP
+\fB\-B\fR, \fB\-\-progress-fd\fR
+This option is similar to '-C fd' in e2fsck. It causes fsck to write
+progress of ntfsck to specified file descriptor. If file descriptor is
+negative, then progress is suppressed and can only be enabled by
+sending SIGUSR1 signal. Once this signal arrives absolute value of
+input is used as file descriptor. SIGUSR2 signal can be used to stop
+progress information being written to file descriptor.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show a list of options with a brief description of each one.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Show the version number of
+.BR ntfsck .
+.SH EXIT CODE
+The exit code returned by
+.B ntfsck
+is one of the followings:
+.br
+\       0\      \-\ No errors or file system was successfully repaired
+.br
+\       1\      \-\ File system errors could not be corrected
+.br
+\       23\     \-\ Volume is read-only 
+.br
+\       100\    \-\ Volume is dirty, needs check (\-\-fast-check was used) 
+.br
+.SH BUGS
+If you find a bug please send an email describing the problem to
+ntfs-support@tuxera.com. 
+.SH AVAILABILITY
+.B ntfsck
+is part of the
+.B Tuxera NTFS
+package.
+.SH SEE ALSO
+.BR mkntfs (8)

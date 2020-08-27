@@ -4,13 +4,8 @@ CFLAGS	= -Os -Wall $(EXTRACFLAGS) -fPIC
 LIBS = 
 LDFLAGS	= 
 
-ifeq ($(RTCONFIG_OPENSSL11),y)
-CFLAGS  += -I$(TOP)/openssl-1.1/include
-LIBS += -L$(TOP)/openssl-1.1 -lssl -lcrypto
-else
-CFLAGS	+= -I$(TOP)/openssl/include
-LIBS += -L$(TOP)/openssl -lssl -lcrypto
-endif
+CFLAGS	+= -I$(TOP)/openssl/include -I$(TOP)/shared
+LIBS += -L$(TOP)/openssl -lssl -lcrypto $(if $(RTCONFIG_OPENSSL11),-lpthread,)
 
 ifneq ($(RTCONFIG_BCMARM),y)
 LIBS += -lpthread

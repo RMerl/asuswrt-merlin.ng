@@ -108,14 +108,6 @@ function initial(){
 	reset_NM_height();
 }
 
-function convRSSI(val){
-	val = parseInt(val);
-	if(val >= -50) return 4;
-	else if(val >= -80)	return Math.ceil((24 + ((val + 80) * 26)/10)/25);
-	else if(val >= -90)	return Math.ceil((((val + 90) * 26)/10)/25);
-	else return 1;
-}
-
 function drawClientList(tab){
 	var clientHtml = '<table width="100%" cellspacing="0" align="center"><tbody><tr><td>';
 	var clientHtmlTd = '';
@@ -224,7 +216,7 @@ function drawClientList(tab){
 			connectModeTip = "<#tm_wired#>";
 		}
 		else {
-			rssi_t = convRSSI(clientObj.rssi);
+			rssi_t = client_convRSSI(clientObj.rssi);
 			switch (rssi_t) {
 				case 1:
 					connectModeTip = "<#Radio#>: <#PASS_score1#>\n";

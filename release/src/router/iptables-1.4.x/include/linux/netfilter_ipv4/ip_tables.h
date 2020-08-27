@@ -16,6 +16,7 @@
 #define _IPTABLES_H
 
 #include <linux/types.h>
+#include <sys/types.h>
 
 #include <linux/netfilter_ipv4.h>
 

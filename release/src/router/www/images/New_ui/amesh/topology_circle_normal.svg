@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="84px" height="84px" viewBox="0 0 84 84" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>circle-normal</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <circle id="path-1" cx="36" cy="36" r="36"></circle>
+        <filter x="-12.5%" y="-12.5%" width="125.0%" height="125.0%" filterUnits="objectBoundingBox" id="filter-2">
+            <feMorphology radius="1.5" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1.5" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.107537535   0 0 0 0 0.12120786   0 0 0 0 0.129019475  0 0 0 0.22 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="23.9654293%" y1="24.0369614%" x2="71.5778133%" y2="72.1239263%" id="linearGradient-3">
+            <stop stop-color="#43515A" offset="0%"></stop>
+            <stop stop-color="#6E8B9C" offset="51.6390414%"></stop>
+            <stop stop-color="#4C5C66" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-4" cx="36" cy="36" r="30"></circle>
+        <filter x="-10.0%" y="-10.0%" width="120.0%" height="120.0%" filterUnits="objectBoundingBox" id="filter-5">
+            <feMorphology radius="1" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feGaussianBlur stdDeviation="1" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.2   0 0 0 0 0.243137255   0 0 0 0 0.270588235  0 0 0 0.1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="-4.50575087%" y1="11.4203559%" x2="100%" y2="92.4975212%" id="linearGradient-6">
+            <stop stop-color="#134785" offset="0%"></stop>
+            <stop stop-color="#41BBFE" offset="46.2879335%"></stop>
+            <stop stop-color="#1A8E8D" offset="100%"></stop>
+        </linearGradient>
+        <circle id="path-7" cx="36" cy="36" r="36"></circle>
+        <filter x="-31.2%" y="-31.2%" width="162.5%" height="162.5%" filterUnits="objectBoundingBox" id="filter-8">
+            <feMorphology radius="2.5" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feMorphology radius="3" operator="erode" in="SourceAlpha" result="shadowInner"></feMorphology>
+            <feOffset dx="0" dy="0" in="shadowInner" result="shadowInner"></feOffset>
+            <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"></feComposite>
+            <feGaussianBlur stdDeviation="6" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="0%" y1="0%" x2="101.999998%" y2="100.999999%" id="linearGradient-9">
+            <stop stop-color="#45505E" offset="0%"></stop>
+            <stop stop-color="#CDEBFF" offset="51.0478252%"></stop>
+            <stop stop-color="#45505E" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="metarials" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="AiMesh-2.0_0701" transform="translate(-968.000000, -2472.000000)">
+            <g id="circle" transform="translate(968.000000, 2472.000000)">
+                <g id="nomal" transform="translate(6.000000, 6.000000)">
+                    <g id="Group">
+                        <g id="Oval">
+                            <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                            <use fill="#46535C" fill-rule="evenodd" xlink:href="#path-1"></use>
+                        </g>
+                        <g id="Oval">
+                            <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-4"></use>
+                            <use fill="url(#linearGradient-3)" fill-rule="evenodd" xlink:href="#path-4"></use>
+                        </g>
+                    </g>
+                    <g id="Oval">
+                        <use fill="black" fill-opacity="1" filter="url(#filter-8)" xlink:href="#path-7"></use>
+                        <use stroke="url(#linearGradient-6)" stroke-width="1" xlink:href="#path-7"></use>
+                    </g>
+                    <circle id="Oval" stroke="url(#linearGradient-9)" cx="36" cy="36" r="29.5"></circle>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

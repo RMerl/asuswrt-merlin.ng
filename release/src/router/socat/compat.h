@@ -666,6 +666,10 @@ typedef int sig_atomic_t;
 #  define NETDB_INTERNAL h_NETDB_INTERNAL
 #endif
 
+#if !defined(NETDB_INTERNAL)
+#  define NETDB_INTERNAL (-1)
+#endif
+
 #ifndef INET_ADDRSTRLEN
 #  define INET_ADDRSTRLEN sizeof(struct sockaddr_in)
 #endif

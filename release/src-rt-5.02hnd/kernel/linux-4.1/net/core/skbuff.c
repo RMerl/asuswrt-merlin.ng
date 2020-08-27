@@ -864,6 +864,19 @@ static void skb_free_head(struct sk_buff *skb)
 		kfree(skb->head);
 }
 
+static void hex_dump(const unsigned char *buf, int len)
+{
+	size_t i;
+
+	printk("buf %p len %d\n", buf, len);
+	for (i = 0; i < len; i++) {
+		if (i && !(i % 16))
+			printk("\n");
+		printk("%02x ", *(buf + i));
+	}
+	printk("\n");
+}
+
 static void skb_release_data(struct sk_buff *skb)
 {
 	struct skb_shared_info *shinfo = skb_shinfo(skb);
@@ -873,6 +886,15 @@ static void skb_release_data(struct sk_buff *skb)
 	    atomic_sub_return(skb->nohdr ? (1 << SKB_DATAREF_SHIFT) + 1 : 1,
 			      &shinfo->dataref))
 		return;
+
+#if 1 //cathy debug
+	if (!virt_addr_valid(shinfo)) {
+		printk("%s: skb %p head %p end %p data %p tail %p len %d hook %pS flags 0x%x\n",
+			__FUNCTION__, skb, skb->head, skb_end_pointer(skb), skb->data, skb_tail_pointer(skb), skb->len,
+			skb->recycle_hook, skb->recycle_flags);
+		hex_dump(skb->head, skb_end_offset(skb));
+	}
+#endif
 
 	for (i = 0; i < shinfo->nr_frags; i++)
 		__skb_frag_unref(&shinfo->frags[i]);

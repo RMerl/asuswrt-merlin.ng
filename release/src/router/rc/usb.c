@@ -33,6 +33,7 @@
 #include <disk_io_tools.h>
 #include <disk_share.h>
 #include <disk_initial.h>
+#include <limits.h>		//PATH_MAX, LONG_MIN, LONG_MAX
 
 char *usb_dev_file = "/proc/bus/usb/devices";
 
@@ -109,6 +110,9 @@ start_lpd()
 		return;
 #endif
 
+	if (!nvram_get_int("usb_printer"))
+		return;
+
 	if (!pids("lpd"))
 	{
 		unlink("/var/run/lpdparent.pid");
@@ -150,6 +154,9 @@ start_u2ec()
 	if (!hw_usb_cap())
 		return;
 #endif
+
+	if (!nvram_get_int("usb_printer"))
+		return;
 
 	if (!pids("u2ec"))
 	{
@@ -237,20 +244,33 @@ fill_smbpasswd_input_file(const char *passwd)
 
 void add_usb_host_module(void)
 {
-#if defined(HND_ROUTER)
-	tweak_usb_affinity(1);
-#endif
 #if defined(RTCONFIG_USB_XHCI)
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	char *u3_param = "u3intf=0";
 #endif
 #endif
+#if defined(RTAX89U) || defined(GTAXY16000)
+	int pwr_off = 0;
+#endif
+#ifndef RTCONFIG_HND_ROUTER
 	char param[32];
 	int i;
+#else
+	tweak_usb_affinity(1);
+#endif
 
 #ifdef RTAC68U
 	if (!hw_usb_cap())
 		return;
+#endif
+
+#if defined(RTAX89U) || defined(GTAXY16000)
+	if (!module_loaded(USB30_MOD)) {
+		logmessage("USB", "Turn off USB power.");
+		pwr_off = 1;
+		led_control(PWR_USB, LED_OFF);
+		led_control(PWR_USB2, LED_OFF);
+	}
 #endif
 
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,2,0)
@@ -258,9 +278,17 @@ void add_usb_host_module(void)
 #endif
 	modprobe(USBCORE_MOD);
 
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if(nvram_get_int("usb_usb3") == 1)
+		eval("insmod", "bcm_usb", "usb3_enable=1");
+	else
+		eval("insmod", "bcm_usb", "usb3_enable=0");
+#endif
+
 #if defined(RTCONFIG_USB_XHCI)
 	load_kmods(PRE_XHCI_KMODS);
 #if defined(RTN65U) || defined(RTCONFIG_QCA) || defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
+	if (nvram_get_int("usb_usb3") == 1)
 		u3_param = "u3intf=1";
 #if !defined(RTCONFIG_SOC_IPQ40XX)
 	modprobe(USB30_MOD, u3_param);
@@ -275,9 +303,14 @@ void add_usb_host_module(void)
 	modprobe(USB30_MOD);
 #else
 	if (nvram_get_int("usb_usb3") == 1) {
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe(USB30_MOD);
-#ifdef HND_ROUTER
 		modprobe("xhci-plat-hcd");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("xhci-pci");
+#endif
+#else
+		modprobe(USB30_MOD);
 #endif
 	}
 #endif
@@ -288,13 +321,18 @@ void add_usb_host_module(void)
 #if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
 		modprobe(USB20_MOD);
 #else
+#ifdef RTCONFIG_HND_ROUTER
+		modprobe(USB20_MOD);
+		modprobe("ehci-platform");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("ehci-pci");
+#endif
+#else
 		i = nvram_get_int("usb_irq_thresh");
 		if ((i < 0) || (i > 6))
 			i = 0;
 		sprintf(param, "log2_irq_thresh=%d", i);
 		modprobe(USB20_MOD, param);
-#ifdef HND_ROUTER
-		modprobe("ehci-platform");
 #endif
 #endif
 	}
@@ -305,9 +343,14 @@ void add_usb_host_module(void)
 		modprobe(USBUHCI_MOD);
 	}
 	if (nvram_get_int("usb_ohci") == 1) {
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe(USBOHCI_MOD);
-#ifdef HND_ROUTER
 		modprobe("ohci-platform");
+#ifdef RTCONFIG_HND_ROUTER_AX
+		modprobe("ohci-pci");
+#endif
+#else
+		modprobe(USBOHCI_MOD);
 #endif
 	}
 #endif
@@ -317,15 +360,16 @@ void add_usb_host_module(void)
 #if defined(RTCONFIG_USB_XHCI)
 	modprobe(USB30_MOD, u3_param);
 
+#if !defined(RTCONFIG_QSDK10CS) /*DK SPF10*/
 	/* workaround for some USB dongle */
 	modprobe_r(USB_DWC3_IPQ);
 	modprobe(USB_DWC3_IPQ);
+#endif /* RTCONFIG_QSDK10CS */
 #endif
 #endif
 
-#ifdef HND_ROUTER
+#if defined(RTCONFIG_HND_ROUTER) && !defined(RTCONFIG_HND_ROUTER_AX)
 	if(!nvram_get_int("usb_usb3")){
-		modprobe(USB30_MOD);
 		modprobe("xhci-plat-hcd");
 	}
 
@@ -334,6 +378,14 @@ void add_usb_host_module(void)
 	if(!nvram_get_int("usb_usb3")){
 		modprobe_r("xhci-plat-hcd");
 		modprobe_r(USB30_MOD);
+	}
+#endif
+
+#if defined(RTAX89U) || defined(GTAXY16000)
+	if (pwr_off) {
+		led_control(PWR_USB, LED_ON);
+		led_control(PWR_USB2, LED_ON);
+		logmessage("USB", "Turn on USB power.");
 	}
 #endif
 }
@@ -638,10 +690,14 @@ void start_usb(int mode)
 
 #if defined(RTCONFIG_SOC_IPQ40XX)
 	_dprintf("insmod dakota usb module....\n");
+#if defined(RTCONFIG_QSDK10CS) /*DK SPF10*/
+	load_kmods(PRE_XHCI_KMODS);
+#else
 	modprobe(USB_PHY1);
 	modprobe(USB_PHY2);
 	modprobe(USB_DWC3_IPQ);
 	modprobe(USB_DWC3);
+#endif /* RTCONFIG_QSDK10CS */
 #endif
 
 	tune_bdflush();
@@ -689,6 +745,9 @@ void start_usb(int mode)
 			modprobe(SD_MOD);
 			modprobe(SG_MOD);
 			modprobe(USBSTORAGE_MOD);
+#ifdef RTCONFIG_HND_ROUTER_AX
+			modprobe(UAS_MOD);
+#endif
 
 			if (nvram_get_int("usb_fs_ext3")) {
 #ifdef LINUX26
@@ -786,7 +845,7 @@ void start_usb(int mode)
 		modprobe("btusb");
 		modprobe("ath3k");
 #endif	/* RTCONFIG_BT_CONN */
-#ifdef HND_ROUTER
+#ifdef RTCONFIG_HND_ROUTER
 		modprobe("btusbdrv");
 #endif
 	}
@@ -795,10 +854,14 @@ void start_usb(int mode)
 #ifdef RTCONFIG_SOC_IPQ40XX
 void remove_dakota_usb_modules(void)
 {
+#if defined(RTCONFIG_QSDK10CS) /*DK SPF10*/
+	remove_kmods(PRE_XHCI_KMODS);
+#else
 	modprobe_r(USB_DWC3);
 	modprobe_r(USB_DWC3_IPQ);
 	modprobe_r(USB_PHY2);
 	modprobe_r(USB_PHY1);
+#endif /* RTCONFIG_QSDK10CS */
 }
 #endif
 
@@ -895,6 +958,9 @@ void remove_usb_storage_module(void)
 	modprobe_r("nls_cp950");
 #endif
 #endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	modprobe_r(UAS_MOD);
+#endif
 	modprobe_r(USBSTORAGE_MOD);
 	modprobe_r(SG_MOD);
 	modprobe_r(SD_MOD);
@@ -916,7 +982,7 @@ void remove_usb_led_module(void)
 
 void remove_usb_host_module(void)
 {
-#ifndef HND_ROUTER
+#ifndef RTCONFIG_HND_ROUTER
 	modprobe_r(USBOHCI_MOD);
 	modprobe_r(USBUHCI_MOD);
 	modprobe_r(USB20_MOD);
@@ -929,7 +995,7 @@ void remove_usb_host_module(void)
 	modprobe_r(USB30_MOD);
 	remove_kmods(PRE_XHCI_KMODS);
 #endif
-#else  // HND_ROUTER
+#else  // RTCONFIG_HND_ROUTER
 	tweak_usb_affinity(0);
 #endif
 
@@ -1066,7 +1132,7 @@ void stop_usb(int f_force)
 
 	remove_usb_led_module();
 
-#ifndef HND_ROUTER
+#ifndef RTCONFIG_HND_ROUTER
 	if (disabled || nvram_get_int("usb_ohci") != 1 || f_force) modprobe_r(USBOHCI_MOD);
 	if (disabled || nvram_get_int("usb_uhci") != 1 || f_force) modprobe_r(USBUHCI_MOD);
 	if (disabled || nvram_get_int("usb_usb2") != 1 || f_force) modprobe_r(USB20_MOD);
@@ -1101,7 +1167,7 @@ void stop_usb(int f_force)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
 #endif	/* RTCONFIG_BT_CONN */
-#if defined(RTCONFIG_USB_XHCI) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_USB_XHCI) && !defined(RTCONFIG_HND_ROUTER)
 #if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
 		modprobe_r("dwc3-ipq");
 		modprobe_r("udc-core");
@@ -1125,7 +1191,7 @@ void stop_usb(int f_force)
 #ifdef RTCONFIG_SOC_IPQ40XX
 	if(disabled)remove_dakota_usb_modules();
 #endif
-#endif // HND_ROUTER
+#endif // RTCONFIG_HND_ROUTER
 }
 
 #ifdef RTCONFIG_ERPTEST
@@ -1724,11 +1790,13 @@ _dprintf("%s: stop_cloudsync.\n", __func__);
 	}
 #endif
 
+#ifdef RTCONFIG_DSL
 #ifdef RTCONFIG_DSL_TCLINUX
 	if(nvram_match("dslx_diag_enable", "1") && nvram_match("dslx_diag_state", "1")) {
 		eval("req_dsl_drv", "runtcc");
 		eval("req_dsl_drv", "dumptcc");
 	}
+#endif
 	nvram_set("dsltmp_diag_log_path", "");
 #endif
 
@@ -2097,7 +2165,7 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 #ifdef RTCONFIG_USB_SWAP
 			start_usb_swap(mountpoint);
 #endif
-#ifdef RTCONFIG_DSL_TCLINUX
+#ifdef RTCONFIG_DSL
 		if(ret == MOUNT_VAL_RW) {
 			if(nvram_match("dsltmp_diag_log_path", "")) {
 				nvram_set("dsltmp_diag_log_path", mountpoint);
@@ -2457,9 +2525,9 @@ void hotplug_usb(void)
 	device = path_to_name(devpath);
 	if (!device)
 		return;
-	if ((strncmp(device, "sd", 2) != 0 &&
+	if ((strncmp(device, "sd", 2) != 0
 #ifdef RTCONFIG_USB_CDROM
-	     strncmp(device, "sr", 2) != 0
+	    && strncmp(device, "sr", 2) != 0
 #endif
 	    ) || !isdigit(device[strlen(device) - 1])) { // partition must end on digit
 		//_dprintf("no device\n");
@@ -3117,7 +3185,7 @@ static void kill_samba(int sig)
 	}
 }
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 void enable_gro(int interval)
 {
 	char *argv[3] = {"echo", "", NULL};
@@ -3194,8 +3262,11 @@ start_samba(void)
 	int acc_num;
 	char cmd[256];
 #if defined(SMP)
-	char *cpu_list = nvram_get("usb_user_core");
+	char cpu_list[4];
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
+#ifndef RTCONFIG_BCMARM
+	char *cpu_list_manual = nvram_get("usb_user_core");
+#endif
 	int cpu_num = sysconf(_SC_NPROCESSORS_CONF);
 	int taskset_ret = -1;
 #endif
@@ -3220,7 +3291,7 @@ start_samba(void)
 		return;
 	}
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
 	enable_gro(2);
 #else
@@ -3237,7 +3308,7 @@ start_samba(void)
 #endif
 #endif
 
-#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_HND_ROUTER)
 	tweak_smp_affinity(1);
 #endif
 
@@ -3365,15 +3436,20 @@ start_samba(void)
 
 #if defined(SMP) && !defined(HND_ROUTER)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
-#if 0
-	if(cpu_num > 1)
-		taskset_ret = cpu_eval(NULL, "1", "ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");
-	else
-		taskset_ret = eval("ionice", "-c1", "-n0", smbd_cmd, "-D", "-s", "/etc/smb.conf");
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710)
+	taskset_ret = -1;
 #else
 	if(!nvram_match("stop_taskset", "1")){
-		if(cpu_num > 1 && cpu_list)
+		if(cpu_num > 1)
+		{
+#ifndef RTCONFIG_BCMARM
+			if (cpu_list_manual)
+				snprintf(cpu_list, sizeof(cpu_list), "%s", cpu_list_manual);
+			else
+#endif
+				snprintf(cpu_list, sizeof(cpu_list), "%d", cpu_num - 1);
 			taskset_ret = cpu_eval(NULL, cpu_list, smbd_cmd, "-D", "-s", "/etc/smb.conf");
+		}
 		else
 			taskset_ret = eval(smbd_cmd, "-D", "-s", "/etc/smb.conf");
 	}
@@ -3414,7 +3490,7 @@ void stop_samba(int force)
 
 	logmessage("Samba Server", "smb daemon is stopped");
 
-#if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_HND_ROUTER)
 	tweak_smp_affinity(0);
 #endif
 
@@ -3424,7 +3500,7 @@ void stop_samba(int force)
 #endif
 #endif
 
-#if defined(RTCONFIG_GROCTRL) && !defined(HND_ROUTER)
+#if defined(RTCONFIG_GROCTRL) && !defined(RTCONFIG_HND_ROUTER)
 	enable_gro(0);
 #endif
 }
@@ -4026,12 +4102,14 @@ ifdef RTCONFIG_TUNNEL
 
 	/* WebDav SSL support */
 	//write_webdav_server_pem();
+#ifdef RTCONFIG_HTTPS
 	if(f_size(LIGHTTPD_CERTKEY) != f_size(HTTPD_KEY) + f_size(HTTPD_CERT))
 	{
 		char buf[256];
 		snprintf(buf, sizeof(buf), "cat %s %s > %s", HTTPD_KEY, HTTPD_CERT, LIGHTTPD_CERTKEY);
 		system(buf);
 	}
+#endif	/* RTCONFIG_HTTPS */
 
 	/* write WebDav configure file*/
 	system("/sbin/write_webdav_conf");
@@ -5548,6 +5626,7 @@ void webdav_account_default(void)
 	int right;
 	char new[256];
 	int i;
+	char *p;
 
 	nv = nvp = strdup(nvram_safe_get("acc_list"));
 	i = 0;
@@ -5555,13 +5634,14 @@ void webdav_account_default(void)
 
 	if(nv) {
 		i=0;
+		p = new;
 		while ((b = strsep(&nvp, "<")) != NULL) {
 			if((vstrsep(b, ">", &accname, &accpasswd) != 2)) continue;
 
 			right = find_webdav_right(accname);
 
-			if(i==0) sprintf(new, "%s>%d", accname, right);
-			else sprintf(new, "%s<%s>%d", new, accname, right);
+			if(i==0) p += sprintf(p, "%s>%d", accname, right);
+			else p += sprintf(p, "<%s>%d", accname, right);
 			i++;
 		}
 		free(nv);

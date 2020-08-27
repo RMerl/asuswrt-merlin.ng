@@ -508,7 +508,7 @@ fprintf(stderr, "3. NET_CMD_ID_MANU_CMD:\n");
 				(unsigned char)phdr_ex->MacAddress[5]
 				);
 		     nvram_set("bs_mac", cmdstr);
-		     sprintf(cmdstr, "Set MAC %s", cmdstr);
+		     sprintf(cmdstr, "Set MAC %s", nvram_safe_get("bs_mac"));
 		     syslog(LOG_NOTICE, cmdstr);
 		     sendInfo(sockfd, pdubuf_res, send_port);
 		     return pdubuf_res;

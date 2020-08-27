@@ -9,7 +9,7 @@ ARCH=MIPS
 endif
 
 all: pjproject-1.12/stamp-h1-$(ARCH)
-	$(MAKE) -C pjproject-1.12
+	$(MAKE) -C pjproject-1.12 UCLIBC_NG=$(UCLIBC_NG)
 	$(MAKE) -C udt os=LINUX arch=$(ARCH)
 	$(MAKE) -C natnl linux-lib router=yes RTCONFIG_SW_HW_AUTH=$(RTCONFIG_SW_HW_AUTH)
 #	$(MAKE) -C natnl/msvc_prjs/asusnatnl_test

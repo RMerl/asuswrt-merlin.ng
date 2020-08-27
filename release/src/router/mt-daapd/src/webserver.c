@@ -43,6 +43,7 @@
 
 #include "err.h"
 #include "webserver.h"
+#include "configfile.h"	//config_set_status()
 
 /*
  * Defines

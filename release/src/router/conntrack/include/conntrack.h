@@ -10,7 +10,8 @@
 #include <netinet/in.h>
 
 #define NUMBER_OF_CMD   19
-#define NUMBER_OF_OPT   29
+//#define NUMBER_OF_OPT   29
+#define NUMBER_OF_OPT   30 //Andrew
 
 struct ctproto_handler {
 	struct list_head 	head;

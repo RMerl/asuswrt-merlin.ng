@@ -1,0 +1,5 @@
+config NETFILTER_ASUS_FILTER
+        tristate  'support ASUS network/conntrack filter'
+		depends on NET && INET && NETFILTER
+        help
+          support ASUS network/conntrack filter.

@@ -1,0 +1,10 @@
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name:		libiptc
+Description:	iptables v4/v6 ruleset ADT and kernel interface
+Version:	@PACKAGE_VERSION@
+Requires:	libip4tc libip6tc

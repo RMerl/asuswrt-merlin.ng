@@ -13,6 +13,8 @@
 #define COMMON_IFTTT_DEBUG                     "/tmp/IFTTT_ALEXA"
 #define COMMON_IFTTT_LOG_FILE                  "/tmp/IFTTT_ALEXA.log"
 
+extern int isFileExist(char *fname);
+
 #define IFTTT_DEBUG(fmt,args...) \
 	if(isFileExist(COMMON_IFTTT_DEBUG) > 0) { \
 		Debug2File(COMMON_IFTTT_LOG_FILE, "[Tunnel][%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \

@@ -31,7 +31,15 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <errno.h>
+#if (defined(__GLIBC__) || defined(__UCLIBC__))
 #include <netinet/udp.h>
+#include <net/ppp_defs.h>
+#include <net/if_ppp.h>
+#else
+#include <linux/udp.h>		//instead of <netinet/udp.h>
+#include <linux/ppp_defs.h>
+#include <linux/if_ppp.h>
+#endif	/* ! (__GLIBC__ || __UCLIBC__) */
 #include <netinet/ip.h>
 //#include <netpacket/packet.h>
 #include <net/ethernet.h>
@@ -40,8 +48,6 @@
 #include <sys/uio.h>
 #include <fcntl.h>
 #include <sys/cdefs.h>
-#include <net/ppp_defs.h>
-#include <net/if_ppp.h>
 #include <linux/if_ether.h>
 //#include <netinet/if_ether.h>
 #include <ctype.h>

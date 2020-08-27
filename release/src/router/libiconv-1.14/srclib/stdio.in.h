@@ -696,7 +696,11 @@ _GL_CXXALIASWARN (gets);
 /* It is very rare that the developer ever has full control of stdin,
    so any use of gets warrants an unconditional warning.  Assume it is
    always declared, since it is required by C89.  */
+#if defined(__GLIBC__) && !defined(__UCLIBC__)
+#if !__GLIBC_PREREQ(2, 16)
 _GL_WARN_ON_USE (gets, "gets is a security hole - use fgets instead");
+#endif
+#endif /* (__GLIBC__ && ! __UCLIBC__) */
 #endif
 #endif
 

@@ -1,0 +1,20 @@
+{
+"fwver": "0.47.1.23",
+"tcode": "US/01",
+"sn" : "", 
+"apilevel": "2",
+"recordplan": "default",
+"privateip": "192.168.31.242",
+"macaddr":"78:DA:38:AE:55:2A"
+}
+
+//{
+//"fwver": "0.13.0.17",
+//"tcode": "US/01",
+//"sn" : "", 
+//"apilevel": "2",
+//"recordplan": "default",
+//"privateip": "192.168.31.242",
+//"macaddr":"00:00:0F:A3:00:20"
+//"macaddr":"78:DA:38:AE:53:DB"
+//}

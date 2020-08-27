@@ -95,7 +95,12 @@ function cal_panel_block(obj, multiple) {
 		}
 	}
 
-	document.getElementById(obj).style.marginLeft = blockmarginLeft + "px";
+	if(re_mode == "1"){
+		document.getElementById(obj).style.left = "50%";
+		document.getElementById(obj).style.marginLeft = "-250px";
+	}
+	else
+		document.getElementById(obj).style.marginLeft = blockmarginLeft + "px";
 }
 
 function adjust_TM_eula_height(_objID) {

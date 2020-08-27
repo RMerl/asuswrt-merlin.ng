@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24" height="24" viewBox="0 0 24 24">
+  <defs>
+    <rect id="more-b" width="23" height="7" x=".5" y="8" rx="3.5"/>
+    <filter id="more-a" width="130.4%" height="200%" x="-15.2%" y="-35.7%" filterUnits="objectBoundingBox">
+      <feMorphology in="SourceAlpha" operator="dilate" radius=".5" result="shadowSpreadOuter1"/>
+      <feOffset dy="1" in="shadowSpreadOuter1" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation=".5"/>
+      <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"/>
+      <feColorMatrix in="shadowBlurOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.08 0"/>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd">
+    <use fill="#000" filter="url(#more-a)" xlink:href="#more-b"/>
+    <use fill="#000" fill-opacity=".3" xlink:href="#more-b"/>
+    <path fill="#FFF" d="M12.5,9.5 C13.05,9.5 13.5,9.05 13.5,8.5 C13.5,7.95 13.05,7.5 12.5,7.5 C11.95,7.5 11.5,7.95 11.5,8.5 C11.5,9.05 11.95,9.5 12.5,9.5 L12.5,9.5 Z M12.5,10.5 C11.95,10.5 11.5,10.95 11.5,11.5 C11.5,12.05 11.95,12.5 12.5,12.5 C13.05,12.5 13.5,12.05 13.5,11.5 C13.5,10.95 13.05,10.5 12.5,10.5 L12.5,10.5 Z M12.5,13.5 C11.95,13.5 11.5,13.95 11.5,14.5 C11.5,15.05 11.95,15.5 12.5,15.5 C13.05,15.5 13.5,15.05 13.5,14.5 C13.5,13.95 13.05,13.5 12.5,13.5 L12.5,13.5 Z" transform="rotate(-90 12.5 11.5)"/>
+  </g>
+</svg>

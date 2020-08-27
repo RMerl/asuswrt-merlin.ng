@@ -53,6 +53,7 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <time.h>
+#include <syslog.h>
 #ifdef HAVE_ARPA_INET_H
 #include <arpa/inet.h>
 #endif
@@ -275,6 +276,9 @@ enum ct_options {
 
 	CT_OPT_REPL_ZONE_BIT	= 28,
 	CT_OPT_REPL_ZONE	= (1 << CT_OPT_REPL_ZONE_BIT),
+
+	CT_OPT_LOG_BIT		= 29,
+	CT_OPT_LOG		= (1 << CT_OPT_LOG_BIT),
 };
 /* If you add a new option, you have to update NUMBER_OF_OPT in conntrack.h */
 
@@ -314,7 +318,30 @@ static const char *optflags[NUMBER_OF_OPT] = {
 	[CT_OPT_DEL_LABEL_BIT]	= "label-del",
 	[CT_OPT_ORIG_ZONE_BIT]	= "orig-zone",
 	[CT_OPT_REPL_ZONE_BIT]	= "reply-zone",
+	[CT_OPT_LOG_BIT]	= "log",
 };
+
+/*
+ * name: the name of the long option.
+ * has_arg: 0: no_argument if the option does not take an argument;
+ *          1: required_argument if the option requires an argument;
+ *          2: optional_argument if the option takes an optional argument.
+ * flag: specifies how results are returned for a long option.
+ *       If flag is NULL, then getopt_long() returns val.
+ *       (For example, the calling program may set val to the equivalent short option character.)
+ *       Otherwise, getopt_long() returns 0, and flag points to a variable which is set to val
+ *       if the option is found, but left unchanged if the option is not found.
+ * val: the value to return, or to load into the variable pointed to by flag.
+ */
+
+/*
+struct option {
+	const char *name;
+	int	  has_arg;
+	int	  *flag;
+	int	  val;
+};
+*/
 
 static struct option original_opts[] = {
 	{"dump", 2, 0, 'L'},
@@ -359,12 +386,13 @@ static struct option original_opts[] = {
 	{"label-del", 2, 0, '>'},
 	{"orig-zone", 1, 0, '('},
 	{"reply-zone", 1, 0, ')'},
+	{"log", 1, 0, 'v'}, //Andrew
 	{0, 0, 0, 0}
 };
 
 static const char *getopt_str = ":L::I::U::D::G::E::F::hVs:d:r:q:"
 				"p:t:u:e:a:z[:]:{:}:m:i:f:o:n::"
-				"g::c:b:C::Sj::w:l:<:>::(:):";
+				"g::c:b:C::Sj::w:l:<:>::(:):v:";
 
 /* Table of legal combinations of commands and options.  If any of the
  * given commands make an option legal, that option is legal (applies to
@@ -379,26 +407,26 @@ static const char *getopt_str = ":L::I::U::D::G::E::F::hVs:d:r:q:"
 static char commands_v_options[NUMBER_OF_CMD][NUMBER_OF_OPT] =
 /* Well, it's better than "Re: Linux vs FreeBSD" */
 {
-          /*   s d r q p t u z e [ ] { } a m i f n g o c b j w l < > ( ) */
-/*CT_LIST*/   {2,2,2,2,2,0,2,2,0,0,0,2,2,0,2,0,2,2,2,2,2,0,2,2,2,0,0,2,2},
-/*CT_CREATE*/ {3,3,3,3,1,1,2,0,0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,2,0,2,0,2,2},
-/*CT_UPDATE*/ {2,2,2,2,2,2,2,0,0,0,0,2,2,0,2,2,2,2,2,2,0,0,0,0,2,2,2,0,0},
-/*CT_DELETE*/ {2,2,2,2,2,2,2,0,0,0,0,2,2,0,2,2,2,2,2,2,0,0,0,2,2,0,0,2,2},
-/*CT_GET*/    {3,3,3,3,1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,2,0,0,0,0},
-/*CT_FLUSH*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*CT_EVENT*/  {2,2,2,2,2,0,0,0,2,0,0,2,2,0,2,0,0,2,2,2,2,2,2,2,2,0,0,2,2},
-/*VERSION*/   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*HELP*/      {0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_LIST*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0,0},
-/*EXP_CREATE*/{1,1,2,2,1,1,2,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_DELETE*/{1,1,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_GET*/   {1,1,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_FLUSH*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_EVENT*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0},
-/*CT_COUNT*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_COUNT*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*CT_STATS*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
-/*EXP_STATS*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+          /*   s d r q p t u z e [ ] { } a m i f n g o c b j w l < > ( ) v*/
+/*CT_LIST*/   {2,2,2,2,2,0,2,2,0,0,0,2,2,0,2,0,2,2,2,2,2,0,2,2,2,0,0,2,2,0},
+/*CT_CREATE*/ {3,3,3,3,1,1,2,0,0,0,0,0,0,2,2,0,0,2,2,0,0,0,0,2,0,2,0,2,2,0},
+/*CT_UPDATE*/ {2,2,2,2,2,2,2,0,0,0,0,2,2,0,2,2,2,2,2,2,0,0,0,0,2,2,2,0,0,0},
+/*CT_DELETE*/ {2,2,2,2,2,2,2,0,0,0,0,2,2,0,2,2,2,2,2,2,0,0,0,2,2,0,0,2,2,0},
+/*CT_GET*/    {3,3,3,3,1,0,0,0,0,0,0,0,0,0,0,2,0,0,0,2,0,0,0,0,2,0,0,0,0,0},
+/*CT_FLUSH*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*CT_EVENT*/  {2,2,2,2,2,0,0,0,2,0,0,2,2,0,2,0,0,2,2,2,2,2,2,2,2,0,0,2,2,2},
+/*VERSION*/   {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*HELP*/      {0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_LIST*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,2,0,0,0,0,0,0,0,0,0,0},
+/*EXP_CREATE*/{1,1,2,2,1,1,2,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_DELETE*/{1,1,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_GET*/   {1,1,2,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_FLUSH*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_EVENT*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0},
+/*CT_COUNT*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_COUNT*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*CT_STATS*/  {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
+/*EXP_STATS*/ {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0},
 };
 
 static const int cmd2type[][2] = {
@@ -435,6 +463,7 @@ static const int opt2type[] = {
 	['>']	= CT_OPT_DEL_LABEL,
 	['(']	= CT_OPT_ORIG_ZONE,
 	[')']	= CT_OPT_REPL_ZONE,
+	['v']	= CT_OPT_LOG,
 };
 
 static const int opt2maskopt[] = {
@@ -571,6 +600,7 @@ static const char usage_parameters[] =
 	"  -b, --buffer-size\t\tNetlink socket buffer size\n"
 	"  --mask-src ip\t\t\tSource mask address\n"
 	"  --mask-dst ip\t\t\tDestination mask address\n"
+	"  --log logfile\t\t\tFile to log\n"
 	;
 
 #define OPTION_OFFSET 256
@@ -590,6 +620,8 @@ static LIST_HEAD(proto_list);
 static unsigned int options;
 static struct nfct_labelmap *labelmap;
 static int filter_family;
+static FILE *log_fp = NULL;
+static char log_file[256] = "";
 
 void register_proto(struct ctproto_handler *h)
 {
@@ -812,7 +844,7 @@ err2str(int err, enum ct_command command)
 	  { { CT_LIST, ENOTSUPP, "function not implemented" },
 	    { 0xFFFF, EINVAL, "invalid parameters" },
 	    { CT_CREATE, EEXIST, "Such conntrack exists, try -U to update" },
-	    { CT_CREATE|CT_GET|CT_DELETE, ENOENT, 
+	    { CT_CREATE|CT_GET|CT_DELETE, ENOENT,
 		    "such conntrack doesn't exist" },
 	    { CT_CREATE|CT_GET, ENOMEM, "not enough memory" },
 	    { CT_GET, EAFNOSUPPORT, "protocol not supported" },
@@ -1384,12 +1416,104 @@ nfct_filter(struct nf_conntrack *obj, struct nf_conntrack *ct)
 	return 0;
 }
 
+static FILE*
+create_log_file(const char *fn)
+{
+	return fopen(fn, "w+");
+}
+
+static void
+close_log_file(FILE *fp)
+{
+	if (fp)
+		fclose(fp);
+	fp = NULL;
+}
+
+#define ROTATE_COUNT 6
+static void
+rotate_log_file(const char *fn)
+{
+	int i;
+	struct stat sb;
+	char from[80] = {};
+	char to[80] = {};
+
+	for (i = ROTATE_COUNT; i>0; ) {
+		i--;
+
+		sprintf(from, "%s.%d", fn, i);
+		sprintf(to, "%s.%d", fn, i+1);
+
+		if (stat(from, &sb) == 0) {
+			if (S_ISREG(sb.st_mode) == 0)
+				continue;
+		} else {
+			continue;
+		}
+		rename(from, to);
+	}
+
+	sprintf(from, "%s", fn);
+	sprintf(to, "%s.0", fn);
+
+	rename(from, to);
+}
+
 static int counter;
 static int dump_xml_header_done = 1;
 
-static void __attribute__((noreturn))
+//static void __attribute__((noreturn))
+static void
 event_sighandler(int s)
 {
+#if 1 //Andrew
+	switch (s) {
+	case SIGUSR1: //kill -SIGUSR1
+		//perform log file rotation
+	if (dump_xml_header_done == 0) {
+			if (options & CT_OPT_LOG && log_fp) {
+				fprintf(log_fp, "</conntrack>\n");
+				fflush(log_fp);
+
+				//write to remote syslog server
+				syslog(LOG_INFO, "</conntrack>");
+			} else {
+		printf("</conntrack>\n");
+		fflush(stdout);
+	}
+		}
+
+		if (options & CT_OPT_LOG && log_fp) {
+			close_log_file(log_fp);
+			rotate_log_file(log_file);
+			create_log_file(log_file);
+		}
+		break;
+
+	case SIGTERM: //kill -SIGTERM
+	case SIGINT: //kill -SIGINT
+		if (dump_xml_header_done == 0) {
+			if (options & CT_OPT_LOG && log_fp) {
+				fprintf(log_fp, "</conntrack>\n");
+				fflush(log_fp);
+			} else {
+				printf("</conntrack>\n");
+				fflush(stdout);
+			}
+			fprintf(stderr, "%s v%s (conntrack-tools): ", PROGNAME, VERSION);
+			fprintf(stderr, "%d flow events have been shown.\n", counter);
+		}
+		nfct_close(cth);
+		if (options & CT_OPT_LOG && log_fp)
+			close_log_file(log_fp);
+		exit(0);
+
+	default:
+		break;
+	}
+
+#else
 	if (dump_xml_header_done == 0) {
 		printf("</conntrack>\n");
 		fflush(stdout);
@@ -1398,7 +1522,10 @@ event_sighandler(int s)
 	fprintf(stderr, "%s v%s (conntrack-tools): ", PROGNAME, VERSION);
 	fprintf(stderr, "%d flow events have been shown.\n", counter);
 	nfct_close(cth);
+	if (options & CT_OPT_LOG && log_fp) //Andrew
+		close_log_file(log_fp);
 	exit(0);
+#endif
 }
 
 static void __attribute__((noreturn))
@@ -1412,6 +1539,8 @@ exp_event_sighandler(int s)
 	fprintf(stderr, "%s v%s (conntrack-tools): ", PROGNAME, VERSION);
 	fprintf(stderr, "%d expectation events have been shown.\n", counter);
 	nfct_close(cth);
+	if (options & CT_OPT_LOG && log_fp) //Andrew
+		close_log_file(log_fp);
 	exit(0);
 }
 
@@ -1423,6 +1552,10 @@ static int event_cb(enum nf_conntrack_msg_type type,
 	struct nf_conntrack *obj = data;
 	unsigned int op_type = NFCT_O_DEFAULT;
 	unsigned int op_flags = 0;
+
+	time_t now;
+	struct tm *info;
+	char t_str[20];
 
 	if (nfct_filter(obj, ct))
 		return NFCT_CB_CONTINUE;
@@ -1452,9 +1585,25 @@ static int event_cb(enum nf_conntrack_msg_type type,
 
 	nfct_snprintf_labels(buf, sizeof(buf), ct, type, op_type, op_flags, labelmap);
 
+	time(&now);
+	info = localtime(&now);
+	strftime(t_str, sizeof(t_str), "%b %d %H:%M:%S", info);
+
+#if 1 //Andrew
+	if (options & CT_OPT_LOG && log_fp) {
+		fprintf(log_fp, "%s %s\n", t_str, buf);
+		fflush(log_fp);
+
+		//write to remote syslog server
+		syslog(LOG_INFO, "%s", buf);
+	} else {
+		printf("%s\n", buf);
+		fflush(stdout);
+	}
+#else
 	printf("%s\n", buf);
 	fflush(stdout);
-
+#endif
 	counter++;
 
 	return NFCT_CB_CONTINUE;
@@ -1468,6 +1617,10 @@ static int dump_cb(enum nf_conntrack_msg_type type,
 	struct nf_conntrack *obj = data;
 	unsigned int op_type = NFCT_O_DEFAULT;
 	unsigned int op_flags = 0;
+
+	time_t now;
+	struct tm *info;
+	char t_str[20];
 
 	if (nfct_filter(obj, ct))
 		return NFCT_CB_CONTINUE;
@@ -1488,8 +1641,24 @@ static int dump_cb(enum nf_conntrack_msg_type type,
 		op_flags |= NFCT_OF_ID;
 
 	nfct_snprintf_labels(buf, sizeof(buf), ct, NFCT_T_UNKNOWN, op_type, op_flags, labelmap);
-	printf("%s\n", buf);
 
+	time(&now);
+	info = localtime(&now);
+	strftime(t_str, sizeof(t_str), "%b %d %H:%M:%S", info);
+
+#if 1 //Andrew
+	if (options & CT_OPT_LOG && log_fp) {
+		fprintf(log_fp, "%s %s\n", t_str, buf);
+		fflush(log_fp);
+
+		//write to remote syslog server
+		syslog(LOG_INFO, "%s", buf);
+	} else {
+		printf("%s\n", buf);
+	}
+#else
+	printf("%s\n", buf);
+#endif
 	counter++;
 
 	return NFCT_CB_CONTINUE;
@@ -1504,6 +1673,10 @@ static int delete_cb(enum nf_conntrack_msg_type type,
 	struct nf_conntrack *obj = data;
 	unsigned int op_type = NFCT_O_DEFAULT;
 	unsigned int op_flags = 0;
+
+	time_t now;
+	struct tm *info;
+	char t_str[20];
 
 	if (nfct_filter(obj, ct))
 		return NFCT_CB_CONTINUE;
@@ -1522,7 +1695,24 @@ static int delete_cb(enum nf_conntrack_msg_type type,
 		op_flags |= NFCT_OF_ID;
 
 	nfct_snprintf(buf, sizeof(buf), ct, NFCT_T_UNKNOWN, op_type, op_flags);
+
+	time(&now);
+	info = localtime(&now);
+	strftime(t_str, sizeof(t_str), "%b %d %H:%M:%S", info);
+
+#if 1 //Andrew
+	if (options & CT_OPT_LOG && log_fp) {
+		fprintf(log_fp, "%s %s\n", t_str, buf);
+		fflush(log_fp);
+
+		//write to remote syslog server
+		syslog(LOG_INFO, "%s", buf);
+	} else {
+		printf("%s\n", buf);
+	}
+#else
 	printf("%s\n", buf);
+#endif
 
 	counter++;
 
@@ -1537,6 +1727,10 @@ static int print_cb(enum nf_conntrack_msg_type type,
 	unsigned int op_type = NFCT_O_DEFAULT;
 	unsigned int op_flags = 0;
 
+	time_t now;
+	struct tm *info;
+	char t_str[20];
+
 	if (output_mask & _O_XML)
 		op_type = NFCT_O_XML;
 	if (output_mask & _O_EXT)
@@ -1545,8 +1739,24 @@ static int print_cb(enum nf_conntrack_msg_type type,
 		op_flags |= NFCT_OF_ID;
 
 	nfct_snprintf_labels(buf, sizeof(buf), ct, NFCT_T_UNKNOWN, op_type, op_flags, labelmap);
-	printf("%s\n", buf);
 
+	time(&now);
+	info = localtime(&now);
+	strftime(t_str, sizeof(t_str), "%b %d %H:%M:%S", info);
+
+#if 1 //Andrew
+	if (options & CT_OPT_LOG && log_fp) {
+		fprintf(log_fp, "%s %s\n", t_str, buf);
+		fflush(log_fp);
+
+		//write to remote syslog server
+		syslog(LOG_INFO, "%s", buf);
+	} else {
+		printf("%s\n", buf);
+	}
+#else
+	printf("%s\n", buf);
+#endif
 	return NFCT_CB_CONTINUE;
 }
 
@@ -2279,7 +2489,7 @@ int main(int argc, char *argv[])
 {
 	int c, cmd;
 	unsigned int type = 0, event_mask = 0, l4flags = 0, status = 0;
-	int res = 0, partial;
+	int res = 0, partial = -10;
 	size_t socketbuffersize = 0;
 	int family = AF_UNSPEC;
 	int protonum = 0;
@@ -2515,6 +2725,15 @@ int main(int argc, char *argv[])
 			exit_error(PARAMETER_PROBLEM,
 				   "option `%s' requires an "
 				   "argument", argv[optind-1]);
+			break;
+		case 'v': //Andrew
+			options |= CT_OPT_LOG;
+			log_fp = create_log_file(optarg);
+			if (log_fp == NULL)
+				exit_error(OTHER_PROBLEM,
+				   "Can't open file `%s' to log", optarg);
+			strcpy(log_file, optarg);
+			break;
 		case '?':
 			exit_error(PARAMETER_PROBLEM,
 				   "unknown option `%s'", argv[optind-1]);
@@ -2813,6 +3032,7 @@ int main(int argc, char *argv[])
 
 		signal(SIGINT, event_sighandler);
 		signal(SIGTERM, event_sighandler);
+		signal(SIGUSR1, event_sighandler);
 		nfct_callback_register(cth, NFCT_T_ALL, event_cb, tmpl.ct);
 		res = nfct_catch(cth);
 		if (res == -1) {

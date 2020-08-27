@@ -23,7 +23,7 @@
 
 #if 1
 #define ETHER_ADDRESS_LEN 6
-#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK)
+#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_REALTEK) || defined(RTCONFIG_RALINK)
 #define OUI_LEN 3
 #define VS_ID 221
 #else
@@ -94,7 +94,6 @@ struct scanned_bss {
 	unsigned char RSSI;
 };
 
-
 // sysdeps prototype
 int obd_init();
 void obd_final(int clean_vsie);
@@ -107,6 +106,10 @@ void obd_del_probe_req_vsie(int unit, int len, unsigned char *ie_data);
 
 void obd_led_blink();
 void obd_led_off();
+
+#ifdef RTCONFIG_PRELINK
+void obd_save_prelink_profile();
+#endif
 
 #endif //#if defined(RTCONFIG_AMAS)
 

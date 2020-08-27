@@ -239,8 +239,10 @@ function initial(){
 	var mac = cookie.get("time_scheduling_mac");
 	if(mac != "" && mac != null) {
 		var idx = MULTIFILTER_MAC_row.indexOf(mac);
-		gen_lantowanTable(idx);
-		window.location.hash = "edit_time_anchor";                   
+		if(idx != -1){
+			gen_lantowanTable(idx);
+			window.location.hash = "edit_time_anchor";
+		}
 		cookie.unset("time_scheduling_mac");
 	}
 }

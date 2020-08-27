@@ -1,0 +1,123 @@
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain">AiMesh</div>
+			<div class="titleSub"><#AiMesh_FindNode#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div id="searching" class="search_unit">
+			<div class="pageDesc">
+				<#AiMesh_FindNode_Desc#>
+			</div>
+			<div class="cssload-bellContainer">
+				<div class="cssload-bell">
+					<div class="cssload-circle">
+						<div class="cssload-inner"></div>
+					</div>
+					<div class="cssload-circle">
+						<div class="cssload-inner"></div>
+					</div>
+					<div class="cssload-circle">
+						<div class="cssload-inner"></div>
+					</div>
+					<div class="cssload-circle">
+						<div class="cssload-inner"></div>
+					</div>
+					<div class="cssload-circle">
+						<div class="cssload-inner"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="search_empty" class="search_unit" style="display:none;">
+			<div class="pageDesc">
+				<#AiMesh_FindNode_Not#>
+			</div>
+			<div class="pageDesc">
+				<#AiMesh_FindNode_Not_advA#>
+				<ol>
+					<li style="">
+						<#AiMesh_FindNode_Not_advA1#>
+					</li>
+					<li style="">
+						<#AiMesh_FindNode_Not_advA2#>
+					</li>
+					<li style="">
+						<#AiMesh_FindNode_Not_advA3#>
+					</li>
+					<li style="">
+						<#AiMesh_FindNode_Not_advA4#>
+					</li>
+				</ol>
+			</div>
+		</div>
+
+		<div id="search_list" class="search_unit" class="selectorTopContainer" style="display:none;">
+			<div class="pageDesc">
+				<#AiMesh_FindNode_Desc#>
+			</div>
+			<div id="onboardinglist"></div>
+		</div>
+
+		<div id="controlBtn_empty" class="search_unit" style="display:none;">
+			<!-- Action Button -->
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick='abort.amasbundle();'><#CTL_finished#></div>
+				<div class="desktop_applyBtn" onclick='goTo.amasearch();'><#QKSet_detect_freshbtn#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr style="height:102px;text-align:center">
+						<td class="mobileAbort" style="width:50%;" onclick='abort.amasbundle();'>
+							<div class="mobile_abortBtn"><#CTL_finished#></div>
+						</td>
+						<td class="mobileApply" onclick='goTo.amasearch();'>
+							<div class="mobile_applyBtn"><#QKSet_detect_freshbtn#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+
+		<div id="controlBtn_list" class="search_unit" style="display:none;">
+			<!-- Action Button -->
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" onclick='abort.amasearch();'><#CTL_prev#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr style="height:102px;text-align:center">
+						<td class="mobileAbort" style="width:50%;" onclick='abort.amasearch();'>
+							<div class="mobile_abortBtn"><#CTL_prev#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		
+	</div>
+</div>
+<div class='footerPadding'></div>

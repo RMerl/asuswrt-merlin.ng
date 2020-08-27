@@ -122,6 +122,7 @@
 #include <linux/ppp_defs.h>
 #include <linux/if_ppp.h>
 
+#include <rtconfig.h>
 #include "pppd.h"
 #include "fsm.h"
 #include "ipcp.h"
@@ -146,6 +147,9 @@
 #endif
 
 #ifdef INET6
+#if defined(RTCONFIG_MUSL_LIBC)
+#include <linux/ipv6_route.h>			//musl struct in6_rtmsg
+#endif
 #ifndef _LINUX_IN6_H
 /*
  *    This is in linux/include/net/ipv6.h.

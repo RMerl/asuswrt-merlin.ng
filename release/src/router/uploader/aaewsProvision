@@ -1,0 +1,30 @@
+{
+"timeStamp":"2017-01-01 00:07:34",
+"account":"aicambattery@asus.com",
+"password":"aicamtest",
+"token":"Q8UI_P533lNaWB_OfM4QZYHJJtamkSXfR5B5tMwrfzDFz0CYVe6EkuPXdMm1evBaywfaurbVqU9tJv7xReTvhg",
+"tokenExpireTime":"259200",
+"refreshToken":"",
+"deviceName":"AiCam",
+"timeZone":"+08:00"
+}
+
+
+//{
+//"account":"cheni_shen@asus.com",
+//"password":"cheni.shen.asus",
+//"account":"cheni_shen@asus.com",
+//"password":"cheni.shen.asus",
+//"account":"a1a@asus.com",
+//"password":"1231231234",
+//"account":"AWS001stg@aws-q.com",
+//"password":"70538068",
+//"timeStamp":"1970-01-01 00:01:35",
+//"account":"myvpntwo@gmail.com",
+//"password":"markcool66",
+//"token":"uWvCx8OTdx6mq9rxXtgmLP2ZKmkJsMl-oxoz-gTBOBHY8yN3tU9lQxjfCvqU4qRxXUwhxnSFZjrbW5WigpI7Fg",
+//"tokenExpireTime":"259200",
+//"refreshToken":"gnNT7cgSOoYLPumIStdofx4PNgLai84cGHYt9wZtwR4heYkTOs6HrzfPxswwimXtafT6GvArWvjXCpaG7g5jig",
+//"deviceName":"",
+//"timeZone":"1970-01-01 00:01:36"
+//}

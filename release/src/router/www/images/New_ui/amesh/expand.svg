@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="158px" height="17px" viewBox="0 0 158 17" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>ic-next</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M44.5332031,1 L100.808594,1 L94.601057,8.59440577 C92.3219697,11.3826798 88.9111418,13 85.3099322,13 L60.456577,13 C56.9896548,13 53.6921545,11.5005779 51.4132675,8.88787371 L44.5332031,1 Z" id="path-1"></path>
+        <filter x="-0.9%" y="-4.2%" width="101.8%" height="116.7%" filterUnits="objectBoundingBox" id="filter-2">
+            <feOffset dx="0" dy="1" in="SourceAlpha" result="shadowOffsetOuter1"></feOffset>
+            <feColorMatrix values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.08 0" type="matrix" in="shadowOffsetOuter1"></feColorMatrix>
+        </filter>
+        <linearGradient x1="11.4026521%" y1="0%" x2="86.2111945%" y2="0%" id="linearGradient-3">
+            <stop stop-color="#36444C" offset="0%"></stop>
+            <stop stop-color="#334550" offset="49.0578677%"></stop>
+            <stop stop-color="#36444C" offset="100%"></stop>
+        </linearGradient>
+        <path d="M0.725585937,1 L149.5,1" id="path-4"></path>
+        <filter x="-4.2%" y="-250.0%" width="108.5%" height="700.0%" filterUnits="objectBoundingBox" id="filter-5">
+            <feMorphology radius="0.5" operator="dilate" in="SourceAlpha" result="shadowSpreadOuter1"></feMorphology>
+            <feOffset dx="0" dy="1" in="shadowSpreadOuter1" result="shadowOffsetOuter1"></feOffset>
+            <feMorphology radius="1" operator="erode" in="SourceAlpha" result="shadowInner"></feMorphology>
+            <feOffset dx="0" dy="1" in="shadowInner" result="shadowInner"></feOffset>
+            <feComposite in="shadowOffsetOuter1" in2="shadowInner" operator="out" result="shadowOffsetOuter1"></feComposite>
+            <feGaussianBlur stdDeviation="2" in="shadowOffsetOuter1" result="shadowBlurOuter1"></feGaussianBlur>
+            <feColorMatrix values="0 0 0 0 0.171465354   0 0 0 0 0.226593668   0 0 0 0 0.258095562  0 0 0 1 0" type="matrix" in="shadowBlurOuter1"></feColorMatrix>
+        </filter>
+    </defs>
+    <g id="materials" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="ic-all-collect" transform="translate(-644.000000, -2279.000000)">
+            <g id="Group-33" transform="translate(647.000000, 2282.000000)">
+                <g id="Rectangle">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-2)" xlink:href="#path-1"></use>
+                    <use fill="#2B3840" fill-rule="evenodd" xlink:href="#path-1"></use>
+                </g>
+                <g id="Line-5" stroke-linecap="square">
+                    <use fill="black" fill-opacity="1" filter="url(#filter-5)" xlink:href="#path-4"></use>
+                    <use stroke="url(#linearGradient-3)" stroke-width="1" xlink:href="#path-4"></use>
+                </g>
+                <polyline id="Path-2" stroke="#7F8FA4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" points="69.0161133 6 73 9.95068359 77.0004883 6"></polyline>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <signal.h>     /* for singal handle */
+#include <stdlib.h>	// exit()
 #include "phkey.h"
 #include "phruncall.h"
 #include "phupdate.h"

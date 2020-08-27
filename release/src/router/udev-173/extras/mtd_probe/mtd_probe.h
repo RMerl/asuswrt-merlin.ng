@@ -17,6 +17,8 @@
  * Boston, MA  02110-1301  USA
  */
 
+#include <sys/types.h>
+#include <limits.h>
 #include <mtd/mtd-user.h>
 
 /* Full oob structure as written on the flash */

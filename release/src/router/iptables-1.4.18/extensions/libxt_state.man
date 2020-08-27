@@ -1,0 +1,8 @@
+The "state" extension is a subset of the "conntrack" module.
+"state" allows access to the connection tracking state for this packet.
+.TP
+[\fB!\fP] \fB\-\-state\fP \fIstate\fP
+Where state is a comma separated list of the connection states to match. Only a
+subset of the states unterstood by "conntrack" are recognized: \fBINVALID\fP,
+\fBESTABLISHED\fP, \fBNEW\fP, \fBRELATED\fP or \fBUNTRACKED\fP. For their
+description, see the "conntrack" heading in this manpage.

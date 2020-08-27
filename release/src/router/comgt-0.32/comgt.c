@@ -30,7 +30,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#if defined(__linux__) && (defined(__GLIBC__) || defined(__UCLIBC__))
 #include <termio.h>
+#else
+#include <termios.h>
+#define termio termios
+#endif
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>

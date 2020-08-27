@@ -21,6 +21,7 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 #pull_arrow{
  	float:center;
@@ -195,6 +196,55 @@ function addRow(obj, upper){
 		}		
 	}		
 	
+	if(isSupport("amas") && isSupport("force_roaming") && isSupport("sta_ap_bind")) {
+		var client_bind_count_status = function(){
+			var status = {"wl_maclist_max_count":0, "sta_binding_count":0, "allow_maximum":64};
+			var sta_binding_list = decodeURIComponent(httpApi.nvramCharToAscii(["sta_binding_list"], true).sta_binding_list);
+			var each_node_rule = sta_binding_list.split("<");
+			$.each(each_node_rule, function(index, value){
+				if(value != ""){
+					var node_client_rule = value.split(">");
+					var node_mac = "";
+					$.each(node_client_rule, function(index, value){
+						switch(index){
+							case 2://client list
+								var each_client = value.split("|");
+								$.each(each_client, function(index, value){
+									status.sta_binding_count++;
+								});
+								break;
+						}
+					});
+				}
+			});
+			for(var i = 0; i < wl_info.wl_if_total; i += 1) {
+				var wl_maclist_x = httpApi.nvramGet(["wl" + i + "_maclist_x"])["wl" + i + "_maclist_x"];
+				status["wl" + i + "_count"] = 0;
+				if(wl_maclist_x != "") {
+					var temp_count = (wl_maclist_x.split('&#60').length) - 1;
+					status.wl_maclist_max_count = Math.max(temp_count, status.wl_maclist_max_count);
+					status["wl" + i + "_count"] = temp_count;
+				}
+			}
+			var cfg_re_maxnum = httpApi.hookGet("get_onboardingstatus", true).cfg_re_maxnum;
+			if(cfg_re_maxnum != undefined)
+				status.allow_maximum = status.allow_maximum - (cfg_re_maxnum * 2);//bcm need double.
+
+			return status;
+		};
+		var client_bind_status = client_bind_count_status();
+		var current_rule_count = Object.keys(manually_maclist_list_array).length;
+		if((client_bind_status.sta_binding_count + current_rule_count) >= client_bind_status.allow_maximum) {
+			var hint = "<#AiMesh_Binding_Rule_Maxi#>";
+			hint += "\n";
+			hint += "<#AiMesh_Binding_Rule_Count#>".replace("#RULECOUNT", client_bind_status.sta_binding_count);
+			hint += "\n";
+			hint += "<#AiMesh_Delete_Unused_Rule#>";
+			alert(hint);
+			return false;
+		}
+	}
+
 	if(clientList[mac]) {
 		manually_maclist_list_array[mac] = (clientList[mac].nickName == "") ? clientList[mac].name : clientList[mac].nickName;
 	}

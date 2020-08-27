@@ -23,7 +23,7 @@ ebt_u_table table =
 	.help		= print_help,
 };
 
-void _init(void)
+__attribute__((constructor)) static void extension_init(void)
 {
 	ebt_register_table(&table);
 }

@@ -19,9 +19,9 @@
 
 include $(TOP)/.config
 
-CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -I$(LINUXDIR)/include -I$(TOP)/$(BUSYBOX_DIR)
+CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/../components/shared -I$(SRCBASE)/../components/wlioctl/include -I$(SRCBASE)/../components/proto/include -I$(SRCBASE)/common/include -I$(LINUXDIR)/include -I$(TOP)/$(BUSYBOX_DIR)
 
-LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
+LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(PLATFORMDIR)/install/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
 LDFLAGS += -L$(TOP)/shared -L$(PLATFORMDIR)/install/shared/usr/lib -lshared
 LDFLAGS += -lgcc_s
 
@@ -34,7 +34,7 @@ OBJS := dhd_monitor.o
 
 ifeq ($(wildcard $(SRCBASE)/router/dhd_monitor/*.c),)
 all:
-	-cp -f prebuilt$(EXHND)/dhd_monitor dhd_monitor
+	-cp -f prebuilt/$(BUILD_NAME)/dhd_monitor dhd_monitor
 else
 all: dhd_monitor
 endif
@@ -49,7 +49,7 @@ install: all
 
 ifeq ($(wildcard $(SRCBASE)/router/dhd_monitor/*.c),)
 dhd_monitor:
-	-cp -f prebuilt$(EXHND)/dhd_monitor dhd_monitor
+	-cp -f prebuilt/$(BUILD_NAME)/dhd_monitor dhd_monitor
 else
 dhd_monitor: $(OBJS)
 	$(CC) -o $@ $(OBJS) $(LDFLAGS)

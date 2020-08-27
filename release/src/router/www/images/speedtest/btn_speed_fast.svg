@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="248" height="48" viewBox="0 0 248 48">
+  <defs>
+    <linearGradient id="speed_fast-c" x1="108.392%" x2="108.392%" y1="-34.399%" y2="110.293%">
+      <stop offset="0%" stop-opacity=".1"/>
+      <stop offset="62.218%" stop-opacity=".8"/>
+      <stop offset="100%"/>
+    </linearGradient>
+    <linearGradient id="speed_fast-d" x1="100%" x2="100%" y1="2.221%" y2="97.671%">
+      <stop offset="0%" stop-color="#0016CD"/>
+      <stop offset="51.441%" stop-color="#001CFF"/>
+      <stop offset="100%" stop-color="#0016CD"/>
+    </linearGradient>
+    <rect id="speed_fast-b" width="240" height="42" x="0" y="0" rx="21"/>
+    <filter id="speed_fast-a" width="110.4%" height="159.5%" x="-5.2%" y="-32.1%" filterUnits="objectBoundingBox">
+      <feOffset dy="1" in="SourceAlpha" result="shadowOffsetOuter1"/>
+      <feGaussianBlur in="shadowOffsetOuter1" result="shadowBlurOuter1" stdDeviation="1"/>
+      <feComposite in="shadowBlurOuter1" in2="SourceAlpha" operator="out" result="shadowBlurOuter1"/>
+      <feColorMatrix in="shadowBlurOuter1" result="shadowMatrixOuter1" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.3 0"/>
+      <feOffset dy="-1" in="SourceAlpha" result="shadowOffsetOuter2"/>
+      <feGaussianBlur in="shadowOffsetOuter2" result="shadowBlurOuter2" stdDeviation="4"/>
+      <feComposite in="shadowBlurOuter2" in2="SourceAlpha" operator="out" result="shadowBlurOuter2"/>
+      <feColorMatrix in="shadowBlurOuter2" result="shadowMatrixOuter2" values="0 0 0 0 0   0 0 0 0 0   0 0 0 0 0  0 0 0 0.1 0"/>
+      <feMerge>
+        <feMergeNode in="shadowMatrixOuter1"/>
+        <feMergeNode in="shadowMatrixOuter2"/>
+      </feMerge>
+    </filter>
+  </defs>
+  <g fill="none" fill-rule="evenodd" transform="translate(4 3)">
+    <use fill="#000" filter="url(#speed_fast-a)" xlink:href="#speed_fast-b"/>
+    <use fill="#0722FF" xlink:href="#speed_fast-b"/>
+    <use fill="#000" fill-opacity=".4" xlink:href="#speed_fast-b"/>
+    <rect width="239" height="41" x=".5" y=".5" fill="url(#speed_fast-c)" fill-opacity=".3" stroke="url(#speed_fast-d)" stroke-linejoin="square" rx="20.5"/>
+  </g>
+</svg>

@@ -29,6 +29,9 @@
 #define GLOBAL_I_INI		GLOBAL_INI_TOPDIR "/internal/global_i.ini"
 #define QCA8074_I_INI		GLOBAL_INI_TOPDIR "/internal/QCA8074_i.ini"
 #define QCA8074V2_I_INI		GLOBAL_INI_TOPDIR "/internal/QCA8074V2_i.ini"
+#if defined(RTCONFIG_SOC_IPQ60XX)
+#define QCA6018_I_INI		GLOBAL_INI_TOPDIR "/internal/QCA6018_i.ini"
+#endif
 #define CNSS2_SYSFS_COLDBOOT	"/sys/module/cnss2/parameters/cold_boot_support"
 #define CNSS2_SYSFS_DAEMON	"/sys/module/cnss2/parameters/daemon_support"
 
@@ -44,6 +47,11 @@
 
 #define NAWDS_SH_FMT	"/etc/Wireless/sh/nawds_%s.sh"
 
+#if defined(RTCONFIG_GLOBAL_INI)
+#define WLFW_CAL_01_BIN			"/data/vendor/wifi/wlfw_cal_01.bin"	/* SPF10 or above */
+#else
+#define WLFW_CAL_01_BIN			"/data/misc/wifi/wlfw_cal_01.bin"
+#endif
 
 extern const char WIF_2G[];
 extern const char WIF_5G[];
@@ -371,7 +379,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define ETH2_MAC_OFFSET			0x9006	/* 5G2 EEPROM */
 #endif
 
-#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_SOC_IPQ60XX)
 #define ETH0_MAC_OFFSET			0x1014	/* 2G+5G EEPROM, second set of MAC address. */
 #define ETH1_MAC_OFFSET			0x100E	/* 2G+5G EEPROM, first set of MAC address. */
 
@@ -389,7 +397,11 @@ enum ASUS_IOCTL_SUBCMD {
  * ASUSWRT parameters in 0x40000 ~ (0x40000 + 0x1000 - 1) on QCN50X4
  * Wi-Fi  platform.
  */
+#if defined(RTCONFIG_SOC_IPQ60XX)
+#define FTRY_PARM_SHIFT			(0xF000)
+#else // IPQ60XX
 #define FTRY_PARM_SHIFT			(0x40000)
+#endif // IPQ60XX
 #else
 #define FTRY_PARM_SHIFT			(0)
 #endif
@@ -445,7 +457,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define	QC98XX_EEPROM_SIZE_LARGEST	12064 // sync with driver
 #define	QC98XX_EEPROM_MAC_OFFSET	(OFFSET_MAC_ADDR & 0xFFF) // 6
 
-#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+#elif defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_SOC_IPQ60XX)
 /* Because 2G and 5G share same EEPROM, only one MAC address is defined in EEPROM,
  * and ath0 of GT-AXY16000 is 5G.  Save 2G MAC address at GMAC0 MAC address space, out
  * of EEPROM, and assume MAC address in EEPROM as 5G MAC address.  2G MAC address
@@ -453,7 +465,11 @@ enum ASUS_IOCTL_SUBCMD {
  */
 #define OFFSET_MAC_ADDR_2G		(MTD_FACTORY_BASE_ADDRESS + ETH0_MAC_OFFSET)	/* GMAC0 MAC address, out of EEPROM */
 #define OFFSET_MAC_ADDR			(MTD_FACTORY_BASE_ADDRESS + ETH1_MAC_OFFSET)	/* MAC address in 2G+5G EEPROM */
+#if defined(RTCONFIG_SOC_IPQ60XX)
+#define	QCN50X4_EEPROM_SIZE		65536
+#else
 #define	QCN50X4_EEPROM_SIZE		131072
+#endif
 
 #else
 #error Define EEPROM offset and size
@@ -589,10 +605,16 @@ enum ASUS_IOCTL_SUBCMD {
 #define MII_IFNAME	"switch0"
 #elif defined(RTCONFIG_QCA953X) || defined(RTCONFIG_SOC_IPQ40XX)
 #define MII_IFNAME	"eth1"
+#elif defined(RTCONFIG_SOC_IPQ60XX)
+#define MII_IFNAME	"eth0"
 #else
 #error Define MII_IFNAME interface!
 #endif
 
+#if defined(RTCONFIG_SOC_IPQ8074)
+#define UNSQUASHFS	"/usr/sbin/unsquashfs"
+#define SQUASHFS_ROOT	"/tmp/.squashfs-root"
+#endif	/* RTCONFIG_SOC_IPQ8074 */
 
 unsigned long task_mask;
 
@@ -634,7 +656,7 @@ typedef struct {
 #define BD_5G_PREFIX	BD_2G_PREFIX
 #define BD_5G_CHIP_DIR	BD_2G_CHIP_DIR
 #define BD_5G_HW_DIR	BD_2G_HW_DIR
-#elif defined(RTAC58U) || defined(VZWAC1300) || defined(RT4GAC53U)
+#elif defined(RTAC58U) || defined(VZWAC1300) || defined(SHAC1300) || defined(RT4GAC53U)
 #define BD_2G_PREFIX	"boardData_1_0_IPQ4019_Y9803_wifi0"
 #define BD_5G_PREFIX	"boardData_1_0_IPQ4019_Y9803_wifi1"
 #define BD_2G_CHIP_DIR	"IPQ4019"
@@ -679,6 +701,10 @@ typedef struct {
 #define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_Y9690"
 #define BD_5G_CHIP_DIR	"QCA9888"
 #define BD_5G_HW_DIR	"hw.2"
+#elif defined(RTAC59_CD6R) || defined(RTAC59_CD6N)
+#define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_YA105"
+#define BD_5G_CHIP_DIR	"QCA9888"
+#define BD_5G_HW_DIR	"hw.2"
 #elif defined(RPAC51)
 #define BD_5G_PREFIX	"boardData_2_0_QCA9888_5G_Y9484"
 #define BD_5G_CHIP_DIR	"QCA9888"
@@ -698,8 +724,13 @@ extern int swap_5g_band(int band);
 #endif
 
 /* qca.c */
+#if defined(RTCONFIG_SOC_IPQ8074)
 extern unsigned char get_soc_version_major(void);
+#else
+static inline unsigned char get_soc_version_major(void) { return 0; }
+#endif
 extern int get_parameter_from_ini_file(const char *param_name, char *param_val, size_t param_val_size, const char *ini_fn);
+extern int get_board_or_default_parameter_from_ini_file(const char *board_name, const char *param_name, char *param_val, size_t param_val_size, const char *ini_fn);
 extern int get_integer_parameter_from_ini_file(const char *param_name, int *param_val, const char *ini_fn);
 extern int get_channf(int band, const char *ifname);
 extern int __get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, int (*handler)(const WLANCONFIG_LIST *rptr, void *arg), void *arg);

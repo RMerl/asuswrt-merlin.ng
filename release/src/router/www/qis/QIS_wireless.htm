@@ -5,12 +5,29 @@
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
 <link type="text/css" rel="stylesheet" href="/form_style.css">
+<link type="text/css" rel="stylesheet" href="/css/icon.css">
 <script type="text/javascript" src="/qis/QISMobilePlugin.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<style>
+.icon_eye_open{
+	width:30px;
+	height:30px;
+	background-size: 20px;
+	display:table-cell;
+	float:left;
+}
+.icon_eye_close{
+	width:30px;
+	height:30px;
+	background-size: 20px;
+	display:table-cell;
+	float:left;
+}
+</style>
 <script>
 var wanstate = -1;
 var wansbstate = -1;
@@ -201,6 +218,8 @@ function QKWireless_load_body(){
 			parent.document.start_update.submit();
 		}, 100);
 	}
+
+	$(".secureInput").click(checkPasswd);
 }
 
 function check_wan_state(){
@@ -1312,6 +1331,15 @@ function detect_LANStatus(_flag){
 		}
 	});
 }
+
+function checkPasswd($obj){
+	var targetObj = $(this);
+	targetObj.toggleClass("icon_eye_close").toggleClass("icon_eye_open");
+
+	$.each( targetObj.attr("for").split(" "), function(i, val){
+		$("#"+val).prop("type", (function(){return targetObj.hasClass("icon_eye_close") ? "password" : "text";}()));
+	});
+}
 </script>
 </head>
 
@@ -1433,7 +1461,7 @@ function detect_LANStatus(_flag){
 				</div>
 				<div class="row_end">
 					<label>Key</label>
-					<input id="wl0_wpa_psk_m" name="wl0_wpa_psk_m" type="text" onBlur="switchType(this, false);" onFocus="switchType(this, true);" placeholder="<#Network_key#>" maxlength="64" autocapitalize="off" autocomplete="off">	
+					<input id="wl0_wpa_psk_m" name="wl0_wpa_psk_m" type="text" onBlur="switchType(this, false);" onFocus="switchType(this, true);" placeholder="<#Network_key#>" maxlength="64" autocapitalize="off" autocomplete="off">
 				</div>
 	</fieldset>	
 	<br />
@@ -1532,7 +1560,7 @@ function detect_LANStatus(_flag){
 	<tr id="wl_unit_field_0">
 		<th width="160"><span onmouseout="return nd();" onclick="openHint(0, 23);" style="cursor:help;"><#PPPConnection_Password_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span></th>
 		<td class="QISformtd">
-			<input id="wl0_wpa_psk" name="wl0_wpa_psk" type="password" tabindex="4" onBlur="switchType(this, false);" onFocus="switchType(this, true);" value="<% nvram_char_to_ascii("WLANConfig11b", "wl0_wpa_psk"); %>" onkeyup="Sync_2ghz(2);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+			<div style="float: left;"><input id="wl0_wpa_psk" name="wl0_wpa_psk" type="password" tabindex="4" value="<% nvram_char_to_ascii("WLANConfig11b", "wl0_wpa_psk"); %>" onkeyup="Sync_2ghz(2);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off"/></div><div class="secureInput icon_eye_close" for="wl0_wpa_psk"></div>
 		</td>
 	</tr>
 	<tr id="wl_unit_field_1">
@@ -1550,7 +1578,7 @@ function detect_LANStatus(_flag){
 	<tr id="wl_unit_field_3">
 		<th width="160"><span onmouseout="return nd();" onclick="openHint(0, 23);" style="cursor:help;"><#PPPConnection_Password_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span></th>
 		<td class="QISformtd">
-			<input id="wl1_wpa_psk" name="wl1_wpa_psk" type="password" tabindex="7" onBlur="switchType(this, false);" onFocus="switchType(this, true);" value="<% nvram_char_to_ascii("WLANConfig11b", "wl1_wpa_psk"); %>" onkeyup="Sync_2ghz(5);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off"/>
+			<div style="float: left;"><input id="wl1_wpa_psk" name="wl1_wpa_psk" type="password" tabindex="7" value="<% nvram_char_to_ascii("WLANConfig11b", "wl1_wpa_psk"); %>" onkeyup="Sync_2ghz(5);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off" autocorrect="off" autocapitalize="off"/></div><div class="secureInput icon_eye_close" for="wl1_wpa_psk"></div>
 		</td>
 	</tr>
 	<tr id="wl_unit_field_4" style="display:none;">
@@ -1568,7 +1596,7 @@ function detect_LANStatus(_flag){
 	<tr id="wl_unit_field_6" style="display:none;">
 		<th width="160"><span onmouseout="return nd();" onclick="openHint(0, 23);" style="cursor:help;"><#PPPConnection_Password_itemname#><img align="right" style="cursor:pointer;margin-top:-14px\9;" src="/images/New_ui/helpicon.png"></span></th>
 		<td class="QISformtd">
-			<input id="wl2_wpa_psk" name="wl2_wpa_psk" tabindex="10" type="password" onBlur="switchType(this, false);" onFocus="switchType(this, true);" value="<% nvram_char_to_ascii("WLANConfig11b", "wl2_wpa_psk"); %>" onkeyup="Sync_5ghz(5);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off"  autocorrect="off" autocapitalize="off"/>
+			<div style="float: left;"><input id="wl2_wpa_psk" name="wl2_wpa_psk" tabindex="10" type="password" value="<% nvram_char_to_ascii("WLANConfig11b", "wl2_wpa_psk"); %>" onkeyup="Sync_5ghz(5);" style="height:25px;" class="input_32_table" maxlength="64" autocomplete="off"  autocorrect="off" autocapitalize="off"/></div><div class="secureInput icon_eye_close" for="wl2_wpa_psk"></div>
 		</td>
 	</tr>	
 </table>

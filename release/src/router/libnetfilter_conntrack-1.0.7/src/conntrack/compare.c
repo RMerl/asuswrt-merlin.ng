@@ -353,27 +353,48 @@ cmp_status(const struct nf_conntrack *ct1,
 }
 
 static int 
-cmp_tcp_state(const struct nf_conntrack *ct1,
-	      const struct nf_conntrack *ct2,
+cmp_tcp_state(const struct nf_conntrack *ct1, //obj = tmpl.ct
+	      const struct nf_conntrack *ct2,     //ct candidate
 	      unsigned int flags)
 {
+#if 1
+	uint16_t bit1 = ct1->protoinfo.tcp.state_bit;
+	uint16_t bit2 = 1UL << ct2->protoinfo.tcp.state;
+
+	return bit1 & bit2;
+#else
 	return (ct1->protoinfo.tcp.state == ct2->protoinfo.tcp.state);
+#endif
 }
 
 static int 
-cmp_sctp_state(const struct nf_conntrack *ct1,
-	       const struct nf_conntrack *ct2,
+cmp_sctp_state(const struct nf_conntrack *ct1, //obj = tmpl.ct
+	       const struct nf_conntrack *ct2,     //ct candidate
 	       unsigned int flags)
 {
+#if 1
+	uint16_t bit1 = ct1->protoinfo.sctp.state_bit;
+	uint16_t bit2 = 1UL << ct2->protoinfo.sctp.state;
+
+	return bit1 & bit2;
+#else
 	return (ct1->protoinfo.sctp.state == ct2->protoinfo.sctp.state);
+#endif
 }
 
 static int
-cmp_dccp_state(const struct nf_conntrack *ct1,
-	       const struct nf_conntrack *ct2,
+cmp_dccp_state(const struct nf_conntrack *ct1, //obj = tmpl.ct
+	       const struct nf_conntrack *ct2,     //ct candidate
 	       unsigned int flags)
 {
+#if 1
+	uint16_t bit1 = ct1->protoinfo.dccp.state_bit;
+	uint16_t bit2 = 1UL << ct2->protoinfo.dccp.state;
+
+	return bit1 & bit2;
+#else
 	return (ct1->protoinfo.dccp.state == ct2->protoinfo.dccp.state);
+#endif
 }
 
 static int

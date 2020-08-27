@@ -93,9 +93,12 @@ helpcontent[5] = new Array("",
 							 "<#LANHostConfig_x_WINSServer_itemdesc#>",
 							 "<#LANHostConfig_ManualDHCPEnable_itemdesc#>",
 							 "<#LANHostConfig_ManualDHCPMacaddr_itemdesc#>",
-							 "<#LANHostConfig_ManualDHCPMulticast_itemdesc#>",
+							 "<#LANHostConfig_ManualDHCPMulticast_itemdesc#>",	//11
 							 "<#LANHostConfig_ManualDHCPSTB_itemdesc#>",
-							 "<#LANHostConfig_x_DDNSHostNames_itemdesc#>");
+							 "<#LANHostConfig_x_DDNSHostNames_itemdesc#>",
+							 "<#RouterConfig_IGMPver_itemname#>",
+							 "<#RouterConfig_MLDver_itemname#>",
+							 "Enable Fast Leave");
 helpcontent[6] = new Array("",
 						   "<#RHELP_desc4#>",
 						   "<#RHELP_desc5#>",
@@ -180,7 +183,8 @@ helpcontent[11] = new Array("",
 							"For destination IP address, you can:<br/>(a) enter a specific IP address, such as \"192.168.1.2\"<br/>(b) enter IP addresses within one subnet or within the same IP pool, such as \"192.168.1.0/24\"",	/* untranslated */
 							"<#System_Allow_Specified_IP#>",
 							"<#usb_HDD_Hibernation_Desc#>",
-							"If there is no client connection for more than 1 minute, the PLC will enter sleep mode (power saving). The PLC will not wake up until the client connects. (It takes about ten seconds to wake up the PLC)");	/* untranslated */
+							"If there is no client connection for more than 1 minute, the PLC will enter sleep mode (power saving). The PLC will not wake up until the client connects. (It takes about ten seconds to wake up the PLC)", /* untranslated */
+							"Enable Login CAPTCHA is to ensure only human users to pass through and prevent brute force login attack."); /* untranslated */
 //Log
 helpcontent[12] = new Array("",
 							"<#General_x_SystemUpTime_itemdesc#>",
@@ -235,7 +239,6 @@ helpcontent[19] = new Array("",
 							);
 // QoS
 helpcontent[20] = new Array("",
-							"",
 							'<#EzQoS_bandwidth_note1#>',
 							"<#min_bound_desc#>",
 							"<#max_bound_desc#>",

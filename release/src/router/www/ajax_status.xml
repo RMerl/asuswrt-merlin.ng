@@ -69,4 +69,7 @@
   <diag>diag_dblog_remaining=<% nvram_get("dblog_remaining"); %></diag>
   <wan>wlc2_state=<% nvram_get("wlc2_state"); %></wan>
   <wan>le_restart_httpd=<% nvram_get("le_restart_httpd"); %></wan>
+  <wanbonding>wan_bonding_speed=<% wan_bonding_speed(); %></wanbonding>
+  <wanbonding>wan_bonding_p1_status=<% wan_bonding_p1_status(); %></wanbonding>
+  <wanbonding>wan_bonding_p2_status=<% wan_bonding_p2_status(); %></wanbonding>
 </devicemap>

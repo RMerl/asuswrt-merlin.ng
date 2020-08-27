@@ -526,54 +526,56 @@ void rc_strongswan_conf_set()
 	char *user;
 	int rc;
 
+	fp = fopen("/etc/strongswan.conf", "w");
+	if (fp == NULL)
+		return;
+
 	user = nvram_safe_get("http_username");
 	if (*user == '\0')
 		user = "admin";
 
-    rc = pre_ipsec_samba_prof_set();
-//DBG(("ipsec_samba#\n"));
-    fp = fopen("/tmp/etc/strongswan.conf", "w");
-    fprintf(fp, "# strongswan.conf - strongSwan configuration file\n#\n"
-                "# Refer to the strongswan.conf(5) manpage for details\n#\n"
-                "# Configuration changes should be made in the included files"
-                "\ncharon {\n\n"
-                "  user = %s\n"
-                "  threads = %d\n"
-                "  send_vendor_id = yes\n"
-                "  interfaces_ignore = %s\n"
-                "  starter { load_warning = no }\n\n"
-                "  load_modular = yes\n\n"
-                "  i_dont_care_about_security_and_use_aggressive_mode_psk = yes\n\n"
-                "  plugins {\n    include strongswan.d/charon/*.conf\n  }\n"
-                "  filelog {\n      charon {\n"
-		"        path = /var/log/strongswan.charon.log\n"
-                "        time_format = %%b %%e %%T\n        default = %d\n"
-                "        append = no\n        flush_line = yes\n"
-                "     }\n  }\n",
-                user,
-                nvram_get_int("ipsec_threads_num"), nvram_safe_get("lan_ifname"), nvram_get_int("ipsec_log_level"));
-    if(0 != rc){
-        if(('n' != samba_prof.dns1[0]) && ('\0' != samba_prof.dns1[0])){
-            fprintf(fp,"\n  dns1=%s\n", samba_prof.dns1);
-        }
-        if(('n' != samba_prof.dns2[0]) && ('\0' != samba_prof.dns2[0])){
-            fprintf(fp,"  dns2=%s\n", samba_prof.dns2);
-        }
-        if(('n' != samba_prof.nbios1[0]) && ('\0' != samba_prof.nbios1[0])){
-            fprintf(fp,"\n\n  nbns1=%s\n", samba_prof.nbios1);
-        }
-        if(('n' != samba_prof.nbios2[0]) && ('\0' != samba_prof.nbios2[0])){
-            fprintf(fp,"  nbns2=%s\n", samba_prof.nbios2);
-        }
-    }
-    fprintf(fp, "\n}#the end of the Charon {\n\n");
-    if(NULL != fp){
-        fclose(fp);
-        run_postconf("strongswan","/etc/strongswan.conf");
-    }
-/*DBG(("[%d]strongswan.conf:\n dns1:%s\n dns2:%s\n wins1=%s\n wins2=%s\n",
-      rc, samba_prof.dns1, samba_prof.dns2, samba_prof.nbios1, samba_prof.nbios2));*/
-    return;
+	fprintf(fp,
+		"charon {\n"
+		"	user = %s\n"
+		"	threads = %d\n"
+		"	send_vendor_id = yes\n"
+		"	interfaces_ignore = %s\n"
+		"	starter { load_warning = no }\n"
+		"	load_modular = yes\n"
+		"	i_dont_care_about_security_and_use_aggressive_mode_psk = yes\n"
+		"	plugins {\n"
+		"		include strongswan.d/charon/*.conf\n"
+		"	}\n"
+		"	filelog {\n"
+		"		charon {\n"
+		"			path = /var/log/strongswan.charon.log\n"
+		"			time_format = %%b %%e %%T\n"
+		"			default = %d\n"
+		"			append = no\n"
+		"			flush_line = yes\n"
+		"		}\n"
+		"	}\n",
+		user,
+		nvram_get_int("ipsec_threads_num") ? : 8,
+		nvram_safe_get("lan_ifname"),
+		nvram_get_int("ipsec_log_level") ? : 1);
+
+	rc = pre_ipsec_samba_prof_set();
+	if (rc != 0) {
+		if (('n' != samba_prof.dns1[0]) && ('\0' != samba_prof.dns1[0]))
+			fprintf(fp,"	dns1=%s\n", samba_prof.dns1);
+		if (('n' != samba_prof.dns2[0]) && ('\0' != samba_prof.dns2[0]))
+			fprintf(fp,"	dns2=%s\n", samba_prof.dns2);
+		if (('n' != samba_prof.nbios1[0]) && ('\0' != samba_prof.nbios1[0]))
+			fprintf(fp,"	nbns1=%s\n", samba_prof.nbios1);
+		if (('n' != samba_prof.nbios2[0]) && ('\0' != samba_prof.nbios2[0]))
+			fprintf(fp,"	nbns2=%s\n", samba_prof.nbios2);
+	}
+
+	fprintf(fp, "}\n");
+	fclose(fp);
+
+	run_postconf("strongswan","/etc/strongswan.conf");
 }
 
 void rc_ipsec_ca2ipsecd_cp(FILE *fp, uint32_t idx)
@@ -976,41 +978,49 @@ void rc_ipsec_ca_init( )
 
 void rc_ipsec_conf_default_init()
 {
-    FILE *fp = NULL;
-    fp = fopen("/tmp/etc/ipsec.conf", "w");
-    fprintf(fp, "# /etc/ipsec.conf\n"
-                "config setup\n\n\n"
-                "conn %%default\n"
-                "  ikelifetime=60m\n"
-                "  keylife=20m\n"
-                "  rekeymargin=3m\n"
-                "  keyingtries=1\n"
-                "  keyexchange=ike\n\n");
-    if(NULL != fp){
-        fclose(fp);
-    }
-    return;
+	FILE *fp;
+
+	fp = fopen("/etc/ipsec.conf", "w");
+	if (fp == NULL)
+		return;
+
+	/* default */
+	fprintf(fp,
+		"config setup\n"
+		"conn %%default\n"
+		"	ikelifetime=60m\n"
+		"	keylife=20m\n"
+		"	rekeymargin=3m\n"
+		"	keyingtries=1\n"
+		"	keyexchange=ike\n"
+		"\n");
+
+	fclose(fp);
 }
 
 void rc_ipsec_psk_xauth_rw_init()
 {
-    FILE *fp = NULL;
-    fp = fopen("/tmp/etc/ipsec.conf", "a+w");
-    fprintf(fp,"#also supports iOS PSK and Shrew on Windows\n"
-                "conn android_xauth_psk\n"
-                "  keyexchange=ikev1\n"
-                "  left=%%defaultroute\n"
-                "  leftauth=psk\n"
-                "  leftsubnet=0.0.0.0/0\n"
-                "  right=%%any\n"
-                "  rightauth=psk\n"
-                "  rightauth2=xauth\n"
-                "  rightsourceip=10.2.1.0/24\n"
-                "  auto=add\n\n");
-    if(NULL != fp){
-        fclose(fp);
-    }
-    return;
+	FILE *fp;
+
+	fp = fopen("/etc/ipsec.conf", "a+w");
+	if (fp == NULL)
+		return;
+
+	/* also supports iOS PSK and Shrew on Windows */
+	fprintf(fp,
+		"conn android_xauth_psk\n"
+		"	keyexchange=ikev1\n"
+		"	left=%%defaultroute\n"
+		"	leftauth=psk\n"
+		"	leftsubnet=0.0.0.0/0\n"
+		"	right=%%any\n"
+		"	rightauth=psk\n"
+		"	rightauth2=xauth\n"
+		"	rightsourceip=10.2.1.0/24\n"
+		"	auto=add\n"
+		"\n");
+
+	fclose(fp);
 }
 
 void rc_ipsec_secrets_set()
@@ -1503,14 +1513,6 @@ void rc_ipsec_config_init(void)
     //rc_ipsec_ca_import();
     return;
 }
-void rc_set_ipsec_stack_block_size(void)
-{
-	char command[64];
-	if(NULL != nvram_safe_get("ipsec_stack_block_size")){
-		snprintf(command, sizeof(command), "echo \"%s\" > /tmp/ipsec_stack_block_size", nvram_safe_get("ipsec_stack_block_size"));
-		system(command);
-	}
-}
 #if 0
 static int cur_bitmap_en_scan()
 {
@@ -1949,8 +1951,10 @@ void rc_ipsec_set(ipsec_conn_status_t conn_status, ipsec_prof_type_t prof_type)
 	char *local_subnet, *local_subnet_total;
 	int prof_i = 0, is_duplicate = 0;
 	char tmpStr[20];
+/* moved to firewall
 	int isakmp_port = nvram_get_int("ipsec_isakmp_port");
 	int nat_t_port = nvram_get_int("ipsec_nat_t_port");
+*/
 
 	argv[0] = "/bin/sh";
 	argv[1] = FILE_PATH_IPSEC_SH;

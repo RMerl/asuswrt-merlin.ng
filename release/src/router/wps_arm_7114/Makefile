@@ -27,10 +27,8 @@ include $(TOP)/.config
 # linux kernel config
 include $(LINUXDIR)/.config
 
-ifneq ($(HND_ROUTER),)
 # 4.1 kernel config does not have these so force it to APSTA to enable all functionality
 CONFIG_WL_USE_APSTA=y
-endif
 
 export WPSSRC = $(SRCBASE)/wps
 
@@ -102,10 +100,8 @@ CFLAGS += -I$(SRCBASE)/include ${WLAN_StdIncPathA} -I$(SRCBASE)/common/include -
 	-I$(SRCBASE)/router/shared -I$(SRCBASE)/wps/brcm_apps/include	\
 	-I$(SRCBASE)/include/bcmcrypto ${WLAN_ComponentIncPath}
 
-ifneq ($(HND_ROUTER),)
 CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
 CFLAGS += -I$(INC_BRCMSHARED_PUB_PATH)/$(BRCM_BOARD)
-endif
 
 LDFLAGS += -lgcc_s
 

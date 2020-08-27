@@ -27,6 +27,7 @@
 #include <errno.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <sys/sysmacros.h>
 
 #include "ioconf.h"
 #include "common.h"

@@ -10,6 +10,9 @@ on whether they contain certain headers */
 #include <netdb.h>
 #include <xtables.h>
 #include <linux/netfilter_ipv6/ip6t_ipv6header.h>
+#ifndef IPPROTO_HOPOPTS
+# define IPPROTO_HOPOPTS 0
+#endif
 
 enum {
 	O_HEADER = 0,

@@ -9,6 +9,7 @@
 #include <sys/reboot.h>
 #include <sys/klog.h>
 #include <arpa/inet.h>
+#include <string.h>
 #include <bcmnvram.h>
 #include <rc.h>
 #include <shutils.h>
@@ -22,33 +23,41 @@
 extern void get_country_code_from_rc(char* country_code);
 extern struct nvram_tuple router_defaults[];
 
-
 // from in.h
 #define IN_CLASSB_NET           0xffff0000
 #define IN_CLASSB_HOST          (0xffffffff & ~IN_CLASSB_NET)
 // from net.h
 #define LINKLOCAL_ADDR	0xa9fe0000
 
+#ifdef DSL_AC68U
+#define ETH_WAN_BASE_IFNAME     "eth0"
+#define ETH_WAN_IFNAME_PREFIX   "vlan"
+#elif defined(DSL_N55U) || defined(DSL_N55U_B)
+#define ETH_WAN_BASE_IFNAME     "eth2.1"
+#define ETH_WAN_IFNAME_PREFIX   "eth2.1."
+#endif
+
 // from zcip.c and revised
 // Pick a random link local IP address on 169.254/16, except that
 // the first and last 256 addresses are reserved.
-void pick_a_random_ipv4(char* buf_ip)
+void pick_a_random_ipv4(char* buf_ip, size_t len)
 {
 	unsigned tmp;
 	unsigned int tmp_ip;
 
 	do {
-		tmp = rand() & IN_CLASSB_HOST;
+		f_read("/dev/urandom", &tmp, sizeof(unsigned));
+		tmp &= IN_CLASSB_HOST;
 	} while (tmp > (IN_CLASSB_HOST - 0x0200));
 	tmp_ip = (LINKLOCAL_ADDR + 0x0100) + tmp;
-	sprintf(buf_ip,"%d.%d.%d.%d",tmp_ip>>24,(tmp_ip>>16)&0xff,(tmp_ip>>8)&0xff,tmp_ip&0xff);
+	snprintf(buf_ip, len, "%d.%d.%d.%d",tmp_ip>>24,(tmp_ip>>16)&0xff,(tmp_ip>>8)&0xff,tmp_ip&0xff);
 }
 
 
 //find the wan setting from WAN List and convert to 
 //wan_xxx for original rc flow.
 
-void convert_dsl_config_num()
+static void convert_dsl_config_num()
 {
 	int config_num = 0;
 	if(nvram_match("dslx_transmode", "atm")) {
@@ -75,8 +84,148 @@ void convert_dsl_config_num()
 	nvram_set_int("dslx_config_num", config_num);
 }
 
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+static void _convert_old_dslx()
+{
+	char *dsl_prefix = nvram_match("dslx_transmode", "ptm") ? "dsl8_" : "dsl0_";
+	char *dslx_prefix = "dslx_";
+	char tmp[64] = {0};
+	char *attr[] = {
+		"enable", "nat", "upnp_enable", "link_enable",
+		"DHCPClient", "ipaddr", "netmask", "gateway",
+		"dnsenable", "dns1", "dns2",
+		"pppoe_username", "pppoe_passwd", "pppoe_auth", "pppoe_idletime",
+		"pppoe_mtu", "pppoe_mru", "pppoe_service", "pppoe_ac",
+		"pppoe_hostuniq", "pppoe_options",
+		"hwaddr"
+		, NULL };
+	int i = 0;
+
+	if (nvram_get_int("x_Setting") == 0)
+		return;
+
+	//tmp flag till new QIS implemented.
+	if (nvram_get_int("dslx_converted"))
+		return;
+
+	while(attr[i])
+	{
+		if (nvram_pf_get(dslx_prefix, attr[i]))
+		{
+			nvram_pf_set(dsl_prefix, attr[i], nvram_pf_safe_get(dslx_prefix, attr[i]));
+			nvram_unset(strcat_r(dslx_prefix, attr[i], tmp));
+		}
+		i++;
+	}
+
+	nvram_set("dslx_converted", "1");
+}
+
+static void convert_dsl_wan()
+{
+	char wan_prefix[16] = {0};
+	char dsl_prefix[16] = {0};
+	char dsl_proto[16] = {0};
+	int wan_base_unit = WAN_UNIT_FIRST;
+	int i = 0;
+	int isPTM = nvram_match("dslx_transmode","ptm") ? 1 : 0;
+
+#ifdef RTCONFIG_DUALWAN
+	if (get_dualwan_primary() == WANS_DUALWAN_IF_DSL)
+		wan_base_unit = WAN_UNIT_FIRST;
+	else if (get_dualwan_secondary() == WANS_DUALWAN_IF_DSL)
+		wan_base_unit = WAN_UNIT_SECOND;
+	else
+		return;
+#endif
+
+	// for old config
+	_convert_old_dslx();
+
+	for(i = 0; i < MAX_PVC; i++)
+	{
+		if(i)
+		{
+			snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_",
+				get_ms_wan_unit(wan_base_unit, i));
+			if (isPTM)
+				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl8.%d_", i);
+			else
+				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl%d_", i);
+		}
+		else
+		{
+			snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", wan_base_unit);
+			if (isPTM)
+				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl8_");
+			else
+				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl0_");
+		}
+
+		//skip if disable to save nvram usage
+		if (nvram_pf_get_int(dsl_prefix, "enable"))
+			nvram_pf_set(wan_prefix, "enable", "1");
+		else {
+			nvram_pf_set(wan_prefix, "enable", "0");
+			continue;
+		}
+
+		nvram_pf_set(wan_prefix, "nat_x", nvram_pf_safe_get(dsl_prefix, "nat"));
+		nvram_pf_set(wan_prefix, "upnp_enable", nvram_pf_safe_get(dsl_prefix, "upnp_enable"));
+		nvram_pf_set(wan_prefix, "dhcpenable_x", nvram_pf_safe_get(dsl_prefix, "DHCPClient"));
+		nvram_pf_set(wan_prefix, "ipaddr_x", nvram_pf_safe_get(dsl_prefix, "ipaddr"));
+		nvram_pf_set(wan_prefix, "netmask_x", nvram_pf_safe_get(dsl_prefix, "netmask"));
+		nvram_pf_set(wan_prefix, "gateway_x", nvram_pf_safe_get(dsl_prefix, "gateway"));
+		nvram_pf_set(wan_prefix, "dnsenable_x", nvram_pf_safe_get(dsl_prefix, "dnsenable"));
+		nvram_pf_set(wan_prefix, "dns1_x", nvram_pf_safe_get(dsl_prefix, "dns1"));
+		nvram_pf_set(wan_prefix, "dns2_x", nvram_pf_safe_get(dsl_prefix, "dns2"));
+		nvram_pf_set(wan_prefix, "pppoe_username", nvram_pf_safe_get(dsl_prefix, "pppoe_username"));
+		nvram_pf_set(wan_prefix, "pppoe_passwd", nvram_pf_safe_get(dsl_prefix, "pppoe_passwd"));
+		nvram_pf_set(wan_prefix, "pppoe_auth", nvram_pf_safe_get(dsl_prefix, "pppoe_auth"));
+		nvram_pf_set(wan_prefix, "pppoe_idletime", nvram_pf_safe_get(dsl_prefix, "pppoe_idletime"));
+		nvram_pf_set(wan_prefix, "pppoe_mtu", nvram_pf_safe_get(dsl_prefix, "pppoe_mtu"));
+		nvram_pf_set(wan_prefix, "pppoe_mru", nvram_pf_safe_get(dsl_prefix, "pppoe_mru"));
+		nvram_pf_set(wan_prefix, "pppoe_service", nvram_pf_safe_get(dsl_prefix, "pppoe_service"));
+		nvram_pf_set(wan_prefix, "pppoe_ac", nvram_pf_safe_get(dsl_prefix, "pppoe_ac"));
+		nvram_pf_set(wan_prefix, "pppoe_hostuniq", nvram_pf_safe_get(dsl_prefix, "pppoe_hostuniq"));
+		nvram_pf_set(wan_prefix, "pppoe_options", nvram_pf_safe_get(dsl_prefix, "pppoe_options"));
+		nvram_pf_set(wan_prefix, "hwaddr", nvram_pf_safe_get(dsl_prefix, "hwaddr"));
+		nvram_pf_set(wan_prefix, "mtu", nvram_pf_safe_get(dsl_prefix, "mtu"));
+
+		snprintf(dsl_proto, sizeof(dsl_proto), "%s", nvram_pf_safe_get(dsl_prefix, "proto"));
+		if (!strcmp(dsl_proto, "pppoe") || !strcmp(dsl_proto, "pppoa"))
+		{
+			nvram_pf_set(wan_prefix, "dhcpenable_x", "1");
+			nvram_pf_set(wan_prefix, "vpndhcp", "0");
+			nvram_pf_set(wan_prefix, "proto", "pppoe");
+		}
+		else if (!strcmp(dsl_proto, "bridge"))
+		{
+			nvram_pf_set(wan_prefix, "nat_x", "0");
+			nvram_pf_set(wan_prefix, "proto", "bridge");
+		}
+		else if (!strcmp(dsl_proto, "mer"))
+		{
+			if (nvram_pf_match(dsl_prefix, "DHCPClient","1"))
+				nvram_pf_set(wan_prefix, "proto", "dhcp");
+			else
+				nvram_pf_set(wan_prefix, "proto", "static");
+		}
+		else if (!strcmp(dsl_proto, "ipoa"))
+		{
+			nvram_pf_set(wan_prefix, "proto", "static");
+		}
+		else
+		{
+			nvram_pf_set(wan_prefix, "proto", dsl_proto);
+		}
+	}
+	nvram_commit();
+}
+
+#else
 /* Paul modify 2013/1/23 */
-void convert_dsl_wan()
+static void convert_dsl_wan()
 {
 	int conv_dsl_to_wan0 = 0;
 
@@ -147,12 +296,14 @@ void convert_dsl_wan()
 			}
 			else if (nvram_match("dsl8_proto","bridge")) {
 				nvram_set("wan0_nat_x","0");
-				nvram_set("wan0_proto","dhcp");
+				nvram_set("wan0_proto","bridge");
 			}
 			else if (nvram_match("dsl8_proto","dhcp")) {
 				nvram_set("wan0_proto",nvram_safe_get("dsl8_proto"));
 			}
 			nvram_set("wan_proto",nvram_safe_get("wan0_proto"));
+
+			nvram_set("wan0_mtu",nvram_safe_get("dsl8_mtu"));
 		}
 		else {
 			if (nvram_match("dsl0_proto","pppoe") || nvram_match("dsl0_proto","pppoa")) {
@@ -169,7 +320,7 @@ void convert_dsl_wan()
 				nvram_set("wan0_nat_x","0");
 
 				/* Paul add 2012/7/13, for Bridge connection type wan0_proto set to dhcp, and dsl_proto set as bridge */
-				nvram_set("wan0_proto","dhcp");
+				nvram_set("wan0_proto","bridge");
 				nvram_set("dsl_proto","bridge");
 			}
 			else if (nvram_match("dsl0_proto","mer")) {
@@ -181,11 +332,15 @@ void convert_dsl_wan()
 				}
 			}
 			nvram_set("wan_proto",nvram_safe_get("wan0_proto"));
+
+			nvram_set("wan0_mtu",nvram_safe_get("dsl0_mtu"));
 		}
 	}
 	nvram_commit();
 }
+#endif
 
+#ifdef RTCONFIG_DSL_TCLINUX
 static int check_if_route_exist(char *iface, char *dest, char *mask)
 {
 	FILE *f;
@@ -225,14 +380,14 @@ static int check_if_route_exist(char *iface, char *dest, char *mask)
 
 static void check_and_set_comm_if(void)
 {
-#ifndef RTCONFIG_RALINK
+#ifdef RTCONFIG_BCM4708
 	const char *ipaddr;
 	char buf_ip[32];
 
 	ipaddr = getifaddr("vlan2", AF_INET, GIF_PREFIXLEN);
 	//_dprintf("%s: %s\n", __func__, ipaddr);
 	if(!ipaddr || (ipaddr && strncmp("169.254", ipaddr, 7))) {
-		pick_a_random_ipv4(buf_ip);
+		pick_a_random_ipv4(buf_ip, sizeof(buf_ip));
 		ifconfig("vlan2", IFUP, buf_ip, "255.255.0.0");
 	}
 
@@ -240,7 +395,7 @@ static void check_and_set_comm_if(void)
 		route_add("vlan2", 0, "169.254.0.1", "0.0.0.0", "255.255.255.255");
 #endif
 }
-
+#endif
 
 void remove_dsl_autodet(void)
 {
@@ -266,20 +421,19 @@ void remove_dsl_autodet(void)
 }
 
 
-void dsl_configure(int req)
+void dsl_wan_config(int req)
 {
-	if (req == 0)
+	switch(req)
 	{
+	case 0:	///default
 		convert_dsl_config_num();
-	}
+		break;
 
-	if (req == 1)
-	{
+	case 1:	///start_wan (boot up)
 		convert_dsl_wan();
-	}
+		break;
 
-	if (req == 2)
-	{
+	case 2:	///service dslwan_if
 #ifdef RTCONFIG_DSL_TCLINUX
 		eval("req_dsl_drv", "rmvlan", nvram_safe_get("dslx_rmvlan"));
 
@@ -292,15 +446,20 @@ void dsl_configure(int req)
 		}
 #endif
 		convert_dsl_config_num();
-		eval("req_dsl_drv", "reloadpvc");
+		config_xtm(); //pvc interface
 		convert_dsl_wan();
+		break;
+
+	default:
+		_dprintf("%s:%d: req %d undefined\n", __FUNCTION__, __LINE__, req);
+		break;
 	}
 }
 
 void
 dsl_defaults(void)
 {
-#ifndef RTCONFIG_DSL_TCLINUX
+#if !defined(RTCONFIG_DSL_TCLINUX) && defined(RTCONFIG_DSL_REMOTE)
 	struct nvram_tuple *t;
 	char prefix[]="dslXXXXXX_", tmp[100];
 	int unit;
@@ -326,8 +485,22 @@ dsl_defaults(void)
 	eval("dd", "if=/dev/mtd3", "of=/tmp/trx_hdr.bin", "count=1");
 #endif
 
-	dsl_configure(0);
+	dsl_wan_config(0);
 }
+
+#if defined(RTCONFIG_DSL_REMOTE)
+#ifdef RTCONFIG_RALINK
+// a workaround handler, can be removed after bug found
+void init_dsl_before_start_wan(void)
+{
+	// eth2 could not start up in original initialize routine
+	// it must put eth2 start-up code here
+	dbG("enable eth2 and power up all LAN ports\n");
+	eval("ifconfig", "eth2", "up");
+	eval("rtkswitch", "14");
+	eval("brctl", "addif", "br0", "eth2.2");
+}
+#endif
 
 void start_dsl()
 {
@@ -338,7 +511,6 @@ void start_dsl()
 
 	char *argv_tp_init[] = {"tp_init", NULL};
 	int pid;
-	char buf_ip[32];
 	
 	mkdir("/tmp/adsl", S_IRUSR | S_IWUSR | S_IXUSR);
 
@@ -346,11 +518,12 @@ void start_dsl()
 	 * So let this value be the default which is 0, the kernel will estimate the amount of free memory left when userspace requests more memory. */
 	//f_write_string("/proc/sys/vm/overcommit_memory", "2", 0, 0);
 
+	/// host daemon
 #ifdef RTCONFIG_DSL_TCLINUX
 	check_and_set_comm_if();
 #endif
 
-#ifndef RTCONFIG_DSL_TCLINUX
+#ifdef RTCONFIG_RALINK
 #ifdef RTCONFIG_DUALWAN
 	if (get_dualwan_secondary()==WANS_DUALWAN_IF_NONE)
 	{
@@ -370,48 +543,11 @@ void start_dsl()
 
 	/// host interface
 	convert_dsl_config_num();
+	config_host_interface();
+	config_stb_bridge();
+
+#ifdef RTCONFIG_RALINK
 	int config_num = nvram_get_int("dslx_config_num");
-
-	// IPTV
-	if (nvram_match("x_Setting", "1") && config_num > 1)
-	{
-		int x;
-		char wan_if[9];
-		char wan_num[2];
-
-		eval("brctl", "addbr", "br1");
-		for(x=2; x<=config_num; x++) {
-			sprintf(wan_num, "%d", x);
-#ifdef RTCONFIG_RALINK
-			snprintf(wan_if, sizeof(wan_if), "eth2.1.%d", x);
-			eval("vconfig", "add", "eth2.1", wan_num);
-#else
-			/* create IPTV PVC interface and begin from eth0.3881 */
-			sprintf(wan_num, "%d", (DSL_WAN_VID + x -1));
-			sprintf(wan_if, "vlan%s", wan_num);
-			eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
-			eval("vconfig", "add", "eth0", wan_num);
-			//Set switch
-			sprintf(wan_num, "0x%04x", (DSL_WAN_VID + x -1));
-			eval("et", "robowr", "0x05", "0x83", "0x0021");
-			eval("et", "robowr", "0x05", "0x81", wan_num);
-			eval("et", "robowr", "0x05", "0x80", "0x0000");
-			eval("et", "robowr", "0x05", "0x80", "0x0080");
-#endif
-			eval("ifconfig", wan_if, "up");
-			eval("brctl", "addif", "br1", wan_if);
-		}
-#ifdef RTCONFIG_RALINK
-		eval("brctl", "addif", "br1", "eth2.3");
-#else
-		eval("brctl", "addif", "br1", "vlan3");
-#endif
-		// it needs assign a IPv4 address to enable packet forwarding
-		pick_a_random_ipv4(buf_ip);
-		eval("ifconfig", "br1", "up");
-		eval("ifconfig", "br1", buf_ip);		
-	}
-#ifndef RTCONFIG_DSL_TCLINUX
 	// auto detection
 	if (nvram_match("x_Setting", "0") && config_num == 0)
 	{
@@ -434,8 +570,9 @@ void start_dsl()
 		get_country_code_from_rc(country_value);
 		_eval(argv_auto_det, NULL, 0, &pid);
 	}
-#endif	//nRTCONFIG_DSL_TCLINUX
+#endif	//RTCONFIG_RALINK
 
+	/// xDSL diagnostic
 #ifdef RTCONFIG_DSL_TCLINUX
 	if(nvram_match("dslx_diag_enable", "1") && nvram_match("dslx_diag_state", "1"))
 		start_dsl_diag();
@@ -451,14 +588,495 @@ void stop_dsl()
 	eval("adslate", "quitdrv");
 }
 
-// a workaround handler, can be removed after bug found
-void init_dsl_before_start_wan(void)
+#elif defined(RTCONFIG_DSL_HOST)
+
+void get_atm_param(XTM_PARAM* p, int idx)
 {
-	// eth2 could not start up in original initialize routine
-	// it must put eth2 start-up code here
-	dbG("enable eth2 and power up all LAN ports\n");
-	eval("ifconfig", "eth2", "up");
-	eval("rtkswitch", "14");
-	eval("brctl", "addif", "br0", "eth2.2");
+	char prefix[8] = {0};
+
+	snprintf(prefix, sizeof(prefix), "dsl%d_", idx);
+	p->enable = nvram_pf_get_int(prefix, "enable");
+	p->vpi = nvram_pf_get_int(prefix, "vpi");
+	p->vci = nvram_pf_get_int(prefix, "vci");
+	p->encap = nvram_pf_get_int(prefix, "encap");
+	p->svc_cat = nvram_pf_get_int(prefix, "svc_cat");
+	p->pcr = nvram_pf_get_int(prefix, "pcr");
+	p->scr = nvram_pf_get_int(prefix, "scr");
+	p->mbs = nvram_pf_get_int(prefix, "mbs");
+	snprintf(p->proto, sizeof(p->proto), nvram_pf_safe_get(prefix, "proto"));
+	p->dot1q = nvram_pf_get_int(prefix, "dot1q");
+	p->vid = nvram_pf_get_int(prefix, "vid");
+	p->dot1p = nvram_pf_get_int(prefix, "dot1p");
+	p->total_config = nvram_get_int("dslx_config_num");
 }
 
+void get_ptm_param(XTM_PARAM* p, int idx)
+{
+	char prefix[8] = {0};
+
+	if(idx)
+		snprintf(prefix, sizeof(prefix), "dsl8.%d_", idx);
+	else
+		snprintf(prefix, sizeof(prefix), "dsl8_");
+	p->enable = nvram_pf_get_int(prefix, "enable");
+	snprintf(p->proto, sizeof(p->proto), nvram_pf_safe_get(prefix, "proto"));
+	p->dot1q = nvram_pf_get_int(prefix, "dot1q");
+	p->vid = nvram_pf_get_int(prefix, "vid");
+	p->dot1p = nvram_pf_get_int(prefix, "dot1p");
+	p->total_config = nvram_get_int("dslx_config_num");
+}
+
+void get_xdsl_param(XDSL_PARAM* p)
+{
+	p->mod = nvram_get_int("dslx_modulation");
+	if (p->mod >= DSL_MOD_MAX)
+		p->mod = DSL_MOD_AUTO;
+	p->annex = nvram_get_int("dslx_annex");
+	if (p->annex >= DSL_ANNEX_MAX)
+		p->annex = DSL_ANNEX_ALM;
+	p->sra = nvram_get_int("dslx_sra");
+	p->bitswap = nvram_get_int("dslx_bitswap");
+	p->ginp = nvram_get_int("dslx_ginp");
+	p->snrm = nvram_get_int("dslx_snrm_offset");
+	p->vdsl_profile = nvram_get_int("dslx_vdsl_profile");
+	if (p->vdsl_profile >= VDSL_PROFILE_MAX)
+		p->vdsl_profile = VDSL_PROFILE_ALL;
+}
+
+void start_dsl()
+{
+	mkdir("/tmp/adsl", S_IRUSR | S_IWUSR | S_IXUSR);
+
+	/// xDSL driver, settings ..
+	config_xdsl();
+
+	/// xDSL interface
+	config_xtm();
+
+	/// lan wan bridge for some iptv case
+	config_stb_bridge();
+
+	///
+	system("dsld&");
+
+	/// TODO: xDSL diagnostic
+}
+
+void stop_dsl()
+{
+}
+
+#endif
+
+int get_dsl_prefix_by_wan_unit(int wan_unit, char *prefix, size_t len)
+{
+	int ret = -1;
+	int isPTM = nvram_match("dslx_transmode","ptm") ? 1 : 0;
+
+	if (wan_unit < WAN_UNIT_MAX)
+	{
+#ifdef RTCONFIG_DUALWAN
+		if (get_dualwan_by_unit(wan_unit) != WANS_DUALWAN_IF_DSL)
+			ret = -1;
+		else
+#endif
+		{
+			if (isPTM)
+				snprintf(prefix, len, "dsl8_");
+			else
+				snprintf(prefix, len, "dsl0_");
+			ret = 0;
+		}
+	}
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+	else if(wan_unit > WAN_UNIT_MULTISRV_BASE)
+	{
+		int srv_unit = get_ms_idx_by_wan_unit(wan_unit);
+#ifdef RTCONFIG_DUALWAN
+		int dw_unit = get_ms_base_unit(wan_unit);
+		if (get_dualwan_by_unit(dw_unit) != WANS_DUALWAN_IF_DSL)
+			ret = -1;
+		else
+#endif
+		{
+			if (isPTM)
+				snprintf(prefix, len, "dsl8.%d_", srv_unit);
+			else
+				snprintf(prefix, len, "dsl%d_", srv_unit);
+			ret = 0;
+		}
+	}
+#endif
+
+	return (ret);
+}
+
+void config_xdsl()
+{
+	if (nvram_get_int("dslx_diag_state") == 1 && nvram_get_int("success_start_service") == 1)
+	{
+		nvram_set("dsltmp_diag_confxdsl", "1");
+		return;
+	}
+
+#if defined(RTCONFIG_DSL_REMOTE)
+	eval("req_dsl_drv", "dslsetting");
+
+#elif defined(RTCONFIG_DSL_HOST)
+#ifdef RTCONFIG_DSL_BCM
+	XDSL_PARAM xparam;
+	memset(&xparam, 0, sizeof(xparam));
+	get_xdsl_param(&xparam);
+	set_xdsl_settings(&xparam);
+#endif //RTCONFIG_DSL_BCM
+
+	if (nvram_get_int("success_start_service"))
+		nvram_set("dsltmp_syncloss_apply", "1");
+#endif
+}
+
+#ifdef RTCONFIG_DSL_REMOTE
+void config_host_interface()
+{
+	char buf[16] = {0};
+	char name[16] = {0};
+	int base_wan_unit = WAN_UNIT_FIRST;
+	int i;
+	int mr_mswan_idx = nvram_get_int("mr_mswan_idx");
+	int real_mr_mswan_idx = 0;
+
+#ifdef RTCONFIG_DUALWAN
+	if (get_dualwan_primary() == WANS_DUALWAN_IF_DSL)
+		base_wan_unit = WAN_UNIT_FIRST;
+	else if (get_dualwan_secondary() == WANS_DUALWAN_IF_DSL)
+		base_wan_unit = WAN_UNIT_SECOND;
+	else
+		return;
+#else
+	base_wan_unit = WAN_UNIT_FIRST;
+#endif
+
+#if 0
+	//remove all virtual interface
+	for (i = 0; i < MAX_PVC; i++)
+	{
+		snprintf(buf, sizeof(buf), "vlan%d", DSL_WAN_VID + i);
+		eval("vconfig", "rem", buf);
+		usleep(100000);
+	}
+#endif
+
+	// add virtual interface
+#ifdef DSL_AC68U
+	eval("vconfig", "set_name_type", "VLAN_PLUS_VID_NO_PAD");
+#elif defined(DSL_N55U) || defined(DSL_N55U_B)
+	eval("vconfig", "set_name_type", "DEV_PLUS_VID_NO_PAD");
+#endif
+	if (nvram_match("dslx_transmode", "atm"))
+	{
+		for (i = 0; i < MAX_PVC; i++)
+		{
+			snprintf(buf, sizeof(buf), "dsl%d_enable", i);
+			if (nvram_get_int(buf) == 0)
+				continue;
+			snprintf(buf, sizeof(buf), "%d", DSL_WAN_VID + i);
+			eval("vconfig", "add", ETH_WAN_BASE_IFNAME, buf);
+			snprintf(buf, sizeof(buf), "%s%d", ETH_WAN_IFNAME_PREFIX, DSL_WAN_VID + i);
+			snprintf(name, sizeof(name), "wan%d_ifname", get_ms_wan_unit(base_wan_unit, i));
+			nvram_set(name, buf);
+
+			if (i == mr_mswan_idx && base_wan_unit == WAN_UNIT_FIRST)
+				real_mr_mswan_idx = mr_mswan_idx;
+		}
+	}
+	else
+	{
+		for (i = 0; i < MAX_PVC; i++)
+		{
+			if (i)
+				snprintf(buf, sizeof(buf), "dsl8.%d_enable", i);
+			else
+				snprintf(buf, sizeof(buf), "dsl8_enable");
+			if (nvram_get_int(buf) == 0)
+				continue;
+			snprintf(buf, sizeof(buf), "%d", DSL_WAN_VID + i);
+			eval("vconfig", "add", ETH_WAN_BASE_IFNAME, buf);
+			snprintf(buf, sizeof(buf), "vlan%d", DSL_WAN_VID + i);
+			snprintf(name, sizeof(name), "wan%d_ifname", get_ms_wan_unit(base_wan_unit, i));
+			nvram_set(name, buf);
+
+			if (i == mr_mswan_idx && base_wan_unit == WAN_UNIT_FIRST)
+				real_mr_mswan_idx = mr_mswan_idx;
+		}
+	}
+
+	// Only WAN_UNIT_FIRST for igmp/udp proxy by definition, not configurable.
+	if (base_wan_unit == WAN_UNIT_FIRST)
+	{
+		snprintf(buf, sizeof(buf), "wan%d_ifname", get_ms_wan_unit(base_wan_unit, real_mr_mswan_idx));
+		nvram_set("iptv_ifname", nvram_safe_get(buf));
+	}
+}
+#endif
+
+void config_xtm()
+{
+#if defined(RTCONFIG_DSL_REMOTE)
+	eval("req_dsl_drv", "reloadpvc");
+	config_host_interface();
+
+#elif defined(RTCONFIG_DSL_HOST)
+#ifdef RTCONFIG_DSL_BCM
+	int i = 0;
+	MSWAN_PARAM mparam;
+	XTM_PARAM xparam;
+	char dsl_prefix[16] = {0};
+	int mr_mswan_idx = nvram_get_int("mr_mswan_idx");
+	int real_mr_mswan_idx = 0;
+	char wan_ifnames[32] = {0};
+	char *p = NULL;
+
+	eval("xtmctl", "start");
+
+	set_xtm_intf();
+
+	if(!nvram_match("dsltmp_adslsyncsts", "up"))
+		return;
+
+	memset(&mparam, 0, sizeof(mparam));
+
+#ifdef RTCONFIG_DUALWAN
+	if (get_dualwan_primary() == WANS_DUALWAN_IF_DSL)
+		mparam.base_wan_unit = WAN_UNIT_FIRST;
+	else if (get_dualwan_secondary() == WANS_DUALWAN_IF_DSL)
+		mparam.base_wan_unit = WAN_UNIT_SECOND;
+	else
+		return;
+#else
+	mparam.base_wan_unit = WAN_UNIT_FIRST;
+#endif
+
+	clean_mswan_vitf(mparam.base_wan_unit);
+
+	// check mr_mswan_idx is enabled.
+	// Only WAN_UNIT_FIRST for igmp proxy by definition, not configurable.
+	if (mparam.base_wan_unit == WAN_UNIT_FIRST)
+	{
+		if (nvram_match("dslx_transmode", "atm"))
+		{
+			for (i = 0; i < MAX_PVC; i++)
+			{
+				snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl%d_", i);
+				if (nvram_pf_get_int(dsl_prefix, "enable"))
+				{
+					if (i == mr_mswan_idx)
+						real_mr_mswan_idx = mr_mswan_idx;
+				}
+			}
+		}
+		else
+		{
+			for (i = 0; i < MAX_PVC; i++)
+			{
+				if (i)
+					snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl8.%d_", i);
+				else
+					snprintf(dsl_prefix, sizeof(dsl_prefix), "dsl8_");
+				if (nvram_pf_get_int(dsl_prefix, "enable"))
+				{
+					if (i == mr_mswan_idx)
+						real_mr_mswan_idx = mr_mswan_idx;
+				}
+			}
+		}
+	}
+
+	if(nvram_match("dslx_transmode", "atm"))
+	{
+		for(i = 0; i < MAX_PVC; i++)
+		{
+			memset(&xparam, 0, sizeof(xparam));
+			get_atm_param(&xparam, i);
+			if(xparam.enable)
+			{
+				set_atm_tdte(&xparam, i);
+				set_atm_conn(&xparam, i);
+
+				if (!strcmp(xparam.proto, "pppoa") || !strcmp(xparam.proto, "ipoa"))
+				{
+					char wan_prefix[16] = {0};
+					snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", get_ms_wan_unit(mparam.base_wan_unit, i));
+					nvram_pf_set(wan_prefix, "ifname", xparam.phy_ifname);
+					continue;
+				}
+
+				// virtual interface
+				mparam.unit = i;
+				mparam.enable = xparam.enable;
+				strlcpy(mparam.proto, xparam.proto, sizeof(mparam.proto));
+				mparam.dot1q = xparam.dot1q;
+				mparam.vid = xparam.vid;
+				mparam.dot1p = xparam.dot1p;
+				mparam.total_config = xparam.total_config;
+				strlcpy(mparam.base_ifname, xparam.phy_ifname, sizeof(mparam.base_ifname));
+				if (mparam.base_wan_unit == WAN_UNIT_FIRST && i == real_mr_mswan_idx)
+					mparam.mcast = 1;
+				else
+					mparam.mcast = 0;
+
+				set_mswan_vitf(&mparam);
+			}
+		}
+
+		// update wan_ifnames to atm
+		nvram_safe_get_r("wan_ifnames", wan_ifnames, sizeof(wan_ifnames));
+		p = strstr(wan_ifnames, DSL_WAN_PTM_IF);
+		if (p)
+		{
+			strlcpy(p, DSL_WAN_ATM_IF, sizeof(wan_ifnames));
+			nvram_set("wan_ifnames", wan_ifnames);
+		}
+	}
+	else //PTM
+	{
+		for(i = 0; i < MAX_PVC; i++)
+		{
+			memset(&xparam, 0, sizeof(xparam));
+			get_ptm_param(&xparam, i);
+			if(xparam.enable)
+			{
+				set_ptm_conn(&xparam, i);
+
+				// virtual interface
+				mparam.unit = i;
+				mparam.enable = xparam.enable;
+				strlcpy(mparam.proto, xparam.proto, sizeof(mparam.proto));
+				mparam.dot1q = xparam.dot1q;
+				mparam.vid = xparam.vid;
+				mparam.dot1p = xparam.dot1p;
+				mparam.total_config = xparam.total_config;
+				strlcpy(mparam.base_ifname, xparam.phy_ifname, sizeof(mparam.base_ifname));
+				if (mparam.base_wan_unit == WAN_UNIT_FIRST && i == real_mr_mswan_idx)
+					mparam.mcast = 1;
+				else
+					mparam.mcast = 0;
+
+				set_mswan_vitf(&mparam);
+			}
+		}
+
+		// update wan_ifnames to ptm
+		nvram_safe_get_r("wan_ifnames", wan_ifnames, sizeof(wan_ifnames));
+		p = strstr(wan_ifnames, DSL_WAN_ATM_IF);
+		if (p)
+		{
+			strlcpy(p, DSL_WAN_PTM_IF, sizeof(wan_ifnames));
+			nvram_set("wan_ifnames", wan_ifnames);
+		}
+	}
+#endif //RTCONFIG_DSL_BCM
+#endif
+}
+
+void config_stb_bridge()
+{
+	int s;
+	struct ifreq ifr;
+	char br_ifname[16] = {STB_BR_IF};
+	char lan_ifname[16] = {0};
+	int stbport = atoi(nvram_safe_get("switch_stb_x"));
+
+	snprintf(lan_ifname, sizeof(lan_ifname), "%s", nvram_safe_get("lan_ifname"));
+
+	if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0)
+		return;
+
+	// check bridge exist
+	strncpy(ifr.ifr_name, br_ifname, IFNAMSIZ);
+	if (ioctl(s, SIOCGIFFLAGS, &ifr))
+	{
+		char buf_ip[16] = {0};
+
+		eval("brctl", "addbr", br_ifname);
+		pick_a_random_ipv4(buf_ip, sizeof(buf_ip));
+		ifconfig(br_ifname, IFUP, buf_ip, "255.255.0.0");
+#ifdef RTCONFIG_DSL_BCM
+		eval("bcmmcastctl", "mode", "-i", br_ifname, "-p" , "1", "-m", "0");
+		eval("bcmmcastctl", "mode", "-i", br_ifname, "-p" , "2", "-m", "0");
+#endif
+	}
+	close(s);
+
+	// move stb port to target bridge
+	switch(get_model())
+	{
+		case MODEL_DSLAX82U:
+		{
+			switch(stbport)
+			{
+			case 1:
+				eval("brctl", "delif", lan_ifname, "eth3");
+				eval("brctl", "addif", br_ifname, "eth3");
+				break;
+			case 2:
+				eval("brctl", "delif", lan_ifname, "eth2");
+				eval("brctl", "addif", br_ifname, "eth2");
+				break;
+			case 3:
+				eval("brctl", "delif", lan_ifname, "eth1");
+				eval("brctl", "addif", br_ifname, "eth1");
+				break;
+			case 4:
+				eval("brctl", "delif", lan_ifname, "eth0");
+				eval("brctl", "addif", br_ifname, "eth0");
+				break;
+			case 5:
+				eval("brctl", "delif", lan_ifname, "eth3");
+				eval("brctl", "addif", br_ifname, "eth3");
+				eval("brctl", "delif", lan_ifname, "eth2");
+				eval("brctl", "addif", br_ifname, "eth2");
+				break;
+			case 6:
+				eval("brctl", "delif", lan_ifname, "eth1");
+				eval("brctl", "addif", br_ifname, "eth1");
+				eval("brctl", "delif", lan_ifname, "eth0");
+				eval("brctl", "addif", br_ifname, "eth0");
+				break;
+			default:
+				eval("brctl", "delif", br_ifname, "eth0");
+				eval("brctl", "delif", br_ifname, "eth1");
+				eval("brctl", "delif", br_ifname, "eth2");
+				eval("brctl", "delif", br_ifname, "eth3");
+				eval("brctl", "addif", lan_ifname, "eth0");
+				eval("brctl", "addif", lan_ifname, "eth1");
+				eval("brctl", "addif", lan_ifname, "eth2");
+				eval("brctl", "addif", lan_ifname, "eth3");
+				break;
+			}
+			break;
+		}
+		case MODEL_DSLAC68U:
+		{
+			eval("brctl", "addif", br_ifname, "vlan3");
+			break;
+		}
+		case MODEL_DSLN55U:
+		{
+			eval("brctl", "addif", br_ifname, "eth2.3");
+			break;
+		}
+	}
+
+}
+
+void config_wan_bridge(char *br_ifname, char *wan_ifname, int add)
+{
+	if (br_ifname && wan_ifname)
+	{
+		if (add)
+			eval("brctl", "addif", br_ifname, wan_ifname);
+		else
+			eval("brctl", "delif", br_ifname, wan_ifname);
+	}
+
+}

@@ -8,7 +8,7 @@ include $(TOP)/.config
 CURL_DIR=$(TOP)/curl-7.21.7
 XML2_DIR=$(TOP)/libxml2
 OPENSSL_DIR=$(TOP)/openssl
-NVRAM_DIR=$(TOP)/nvram$(BCMEX)$(EX7)
+NVRAM_DIR=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 JSON_C_DIR=$(TOP)/json-c
 SHARED_DIR=$(TOP)/shared
 WB_DIR=$(TOP)/wb
@@ -35,8 +35,8 @@ WSLIB_OBJS := $(WS_SOURCES:%.c=$(OUTPUT)/%.o)
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 all:
-	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/aaews aaews
-	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/mastiff mastiff
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaews aaews
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/mastiff mastiff
 else
 all: $(WSLIB) $(TARGET)
 endif
@@ -92,7 +92,7 @@ endif
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -DPTHREAD_STACK_SIZE=0x51200
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -105,7 +105,7 @@ endif
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 $(DOG):
-	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/mastiff mastiff
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/mastiff mastiff
 else
 $(DOG): $(DOG).o nat_nvram.o  ws_caller.o nw_util.o natapi.o $(WSLIB_OBJS) info_report.o
 	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^ 
@@ -115,7 +115,7 @@ aicam:$(TARGET)
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 router:
-	-cp -f $(TOP)/aaews/prebuild$(BCMEX)$(EXHND)/aaews aaews
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaews aaews
 else
 router: $(WSLIB) $(TARGET) $(DOG)
 endif

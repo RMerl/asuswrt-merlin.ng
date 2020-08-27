@@ -861,11 +861,17 @@ static void config_mt7628_esw_LANWANPartition(int type)
 		mt7628_reg_write(REG_ESW_POC2, 0xff3f);
 		set_Vlan_untag(0, lan_mask);
 		set_Vlan_untag(1, wan_mask);
+#if defined(RTCONFIG_DUALWAN)
+		set_Vlan_untag(2, wans_lan_mask);
+#endif
 	}
 	else {
 		mt7628_reg_write(REG_ESW_POC2, 0xff7f);
 		set_Vlan_untag(0, lan_mask);
 		set_Vlan_untag(1, wan_mask);
+#if defined(RTCONFIG_DUALWAN)
+		set_Vlan_untag(2, wans_lan_mask);
+#endif
 	}
 #if 0
 	//LAN/WAN ports as security mode

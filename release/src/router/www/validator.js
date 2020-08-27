@@ -293,7 +293,7 @@ var validator = {
 	integer: function(_val){
 		var obj_value = _val;
 		var re = new RegExp("[^0-9]+","gi");
-
+		
 		if(re.test(obj_value))
 			return false;
 		else

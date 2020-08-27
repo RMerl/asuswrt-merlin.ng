@@ -6,6 +6,7 @@
 #include <fcntl.h>
 #include <syslog.h>
 #include <regex.h>
+#include <ctype.h>	//isspace()
 
 #define SYSLOG_TYPE     1
 #define FILE_TYPE       2

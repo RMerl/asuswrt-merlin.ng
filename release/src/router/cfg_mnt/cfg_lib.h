@@ -15,6 +15,7 @@ typedef struct _avbl_chanspec_t
 
 extern int send_cfgmnt_event(char *msg);
 extern int get_chanspec_info(AVBL_CHANSPEC_T *avblChannel);
+extern int send_event_to_roamast(char *data);
 
 #endif /* __CFG_LIB_H__ */
 /* End of cfg_lib.h */

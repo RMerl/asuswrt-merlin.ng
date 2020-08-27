@@ -949,7 +949,11 @@ static void config_mt7621_esw_LANWANPartition(int type)
 #elif defined(RTCONFIG_RALINK_MT7621)
 	mt7621_vlan_set(0, 1, portmap, 0);
 #endif	
-	if (sw_mode == SW_MODE_ROUTER) {
+	if (sw_mode == SW_MODE_ROUTER
+#ifdef RTCONFIG_AMAS
+		|| (sw_mode == SW_MODE_AP && nvram_match("re_mode", "1"))
+#endif
+	) {
 		switch (wanscap_wanlan) {
 		case WANSCAP_WAN | WANSCAP_LAN:
 #if defined(RTCONFIG_RALINK_MT7620)

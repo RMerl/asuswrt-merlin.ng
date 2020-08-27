@@ -2,7 +2,7 @@ include ../common.mak
 
 CFLAGS += -I. -I$(TOP)/shared$(RPEX) -I$(SRCBASE)/include
 ifneq ($(BUILD_NAME),RP-AC56)
-LDFLAGS += -L$(TOP)/nvram -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -lnvram
 endif
 LDFLAGS +=-L$(TOP)/shared$(RPEX) -lshared
 

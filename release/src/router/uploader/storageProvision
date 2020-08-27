@@ -1,0 +1,17 @@
+{
+	"dataStoragePath":"/tmp/router/",
+	"timeStamp":"2016-01-14 17:10:19",
+	"alarmAccount":"",
+	"alarmToken":"",
+	"alarmStorageType":"asus",
+	"alarmStorageQuota":"0",
+	"alarmAppNotification":"on",
+	"alarmEmailNotificaiton":"on",
+	"recordAccount":"",
+	"recordToken":"",
+	"recordStorageType":"sd+asus", //aicloud",  sd+asus , sd + aicloud, sd+google
+	"recordStorageURL":"",
+	"recordStorageQuota":"",
+	"recordStoragePath":"",
+	"recordStoragePrivateIP": ""
+}

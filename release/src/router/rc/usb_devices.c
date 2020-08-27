@@ -3436,6 +3436,11 @@ int asus_lp(const char *device_name, const char *action)
 		return 0;
 	}
 
+	if (!nvram_get_int("usb_printer")) {
+		usb_dbg("(%s): printer support is disabled.\n", device_name);
+		return 0;
+	}
+
 	if(get_device_type_by_device(device_name) != DEVICE_TYPE_PRINTER){
 		usb_dbg("(%s): The device is not a printer.\n", device_name);
 		return 0;

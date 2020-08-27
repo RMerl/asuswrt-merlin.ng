@@ -27,6 +27,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style>
+*{
+	box-sizing: content-box;
+}
 .QISform_wireless{
 	width:600px;
 	font-size:12px;
@@ -292,8 +295,6 @@ var overhead_presets = [["0", "0", ""],
 			["1", "32", "PPPoE VC/Mux"],
 			["1", "40", "PPPoE LLC/Snap"]];
 
-var adaptiveqos_support = isSupport("adaptive_qos");
-
 if(geforceNow_support){
 	var orig_nvgfn_enable = httpApi.nvramGet(["nvgfn_enable"], true).nvgfn_enable;
 }
@@ -485,6 +486,12 @@ function initial(){
 
 	if((isFirefox || isOpera) && document.getElementById("FormTitle"))
 		document.getElementById("FormTitle").className = "FormTitle";
+
+	if(!adaptiveqos_support){
+		$('#qos_desc').html('<#EzQoS_desc_QoS#>');
+		$('label[for="trad_type"]').html('<#EzQoS_type_QoS#>')
+		$('#bandwidth_setting_tr').hide();
+	}
 }
 
 function device_object(name, mac, type, type_name, description, group_array){
@@ -542,7 +549,7 @@ function init_changeScale(){
 	var upload = document.form.qos_obw.value;
 	var download = document.form.qos_ibw.value;
 
-	if(based_modelid == "DSL-AC68U"		//MODELDEP: DSL-AC68U
+	if(dsl_support		//MODELDEP: DSL-AC68U,DSLAC68R,DSL-AX82U
 	&& wans_dualwan_orig.search("dsl") >= 0 && dsllink_statusstr == "Connected"
 	&& ((upload == "" || upload == "0") && (download == "" || download == "0"))){
 
@@ -689,7 +696,7 @@ function validForm(){
 		}
 		else{		//Bandwidth Limiter
 			if(document.form.PC_devicename.value != ""){
-				alert("You must press add icon to add a new rule first.");	//untranslated
+				alert("<#JS_add_rule#>");
 				return false;
 			}
 
@@ -1684,7 +1691,7 @@ function change_scheduler(value){
 														<#EzQoS_desc#>
 														<ul>
 															<li id="function_int_desc"><#EzQoS_desc_Adaptive#></li>
-															<li><#EzQoS_desc_Traditional#></li>
+															<li id="qos_desc"><#EzQoS_desc_Traditional#></li>
 															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
 														</ul>
 														<#EzQoS_desc_note#>
@@ -1737,8 +1744,8 @@ function change_scheduler(value){
 																document.getElementById('qos_type_tr').style.display = "";
 																if(adaptiveqos_support){
 																	document.getElementById('qos_enable_hint').style.display = "";
-																	change_qos_type(document.form.qos_type_orig.value);
 																}
+																change_qos_type(document.form.qos_type_orig.value);
 															 },
 															 function() {
 																document.form.qos_enable.value = "0";

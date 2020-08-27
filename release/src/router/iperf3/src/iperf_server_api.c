@@ -44,7 +44,11 @@
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 #endif
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif
 #include <sys/time.h>
 #include <sys/resource.h>
 #include <sched.h>

@@ -986,6 +986,7 @@ get_machine_name(void *data)
 
     int ret;
     struct utsname unamebuf;
+    extern char *get_productid(void);	/* include shared.h would redefine IFF_UP ... */
     char* machine_name = strlen(get_productid()) ? get_productid() : "ASUS Router";
 
     /* use uname() to get the system's hostname */

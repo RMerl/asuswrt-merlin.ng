@@ -485,6 +485,26 @@ set_attr_synproxy_tsoff(struct nf_conntrack *ct, const void *value, size_t len)
 	ct->synproxy.tsoff = *((uint32_t *) value);
 }
 
+//Andrew add
+static void
+set_attr_tcp_state_bit(struct nf_conntrack *ct, const void *value, size_t len)
+{
+	ct->protoinfo.tcp.state_bit = *((uint16_t *) value);
+}
+
+static void
+set_attr_sctp_state_bit(struct nf_conntrack *ct, const void *value, size_t len)
+{
+	ct->protoinfo.sctp.state_bit = *((uint16_t *) value);
+}
+
+static void
+set_attr_dccp_state_bit(struct nf_conntrack *ct, const void *value, size_t len)
+{
+	ct->protoinfo.dccp.state_bit = *((uint16_t *) value);
+}
+//Andrew end
+
 static void
 set_attr_do_nothing(struct nf_conntrack *ct, const void *value, size_t len) {}
 
@@ -564,4 +584,9 @@ const set_attr set_attr_array[ATTR_MAX] = {
 	[ATTR_SYNPROXY_ISN]	= set_attr_synproxy_isn,
 	[ATTR_SYNPROXY_ITS]	= set_attr_synproxy_its,
 	[ATTR_SYNPROXY_TSOFF]	= set_attr_synproxy_tsoff,
+	//Andrew add
+	[ATTR_TCP_STATE_BIT]	= set_attr_tcp_state_bit,
+	[ATTR_SCTP_STATE_BIT]	= set_attr_sctp_state_bit,
+	[ATTR_DCCP_STATE_BIT]	= set_attr_dccp_state_bit,
+	//Andrew end
 };

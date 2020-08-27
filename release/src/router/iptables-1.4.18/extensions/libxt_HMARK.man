@@ -1,0 +1,60 @@
+Like MARK, i.e. set the fwmark, but the mark is calculated from hashing
+packet selector at choice. You have also to specify the mark range and,
+optionally, the offset to start from. ICMP error messages are inspected
+and used to calculate the hashing.
+.PP
+Existing options are:
+.TP
+\fB\-\-hmark\-tuple\fP tuple\fI\fP
+Possible tuple members are:
+.B src
+meaning source address (IPv4, IPv6 address),
+.B dst
+meaning destination address (IPv4, IPv6 address),
+.B sport
+meaning source port (TCP, UDP, UDPlite, SCTP, DCCP),
+.B dport
+meaning destination port (TCP, UDP, UDPlite, SCTP, DCCP),
+.B spi
+meaning Security Parameter Index (AH, ESP), and
+.B ct
+meaning the usage of the conntrack tuple instead of the packet selectors.
+.TP
+\fB\-\-hmark\-mod\fP \fIvalue (must be > 0)\fP
+Modulus for hash calculation (to limit the range of possible marks)
+.TP
+\fB\-\-hmark\-offset\fP \fIvalue\fP
+Offset to start marks from.
+.TP
+For advanced usage, instead of using \-\-hmark\-tuple, you can specify custom
+prefixes and masks:
+.TP
+\fB\-\-hmark\-src\-prefix\fP \fIcidr\fP
+The source address mask in CIDR notation.
+.TP
+\fB\-\-hmark\-dst\-prefix\fP \fIcidr\fP
+The destination address mask in CIDR notation.
+.TP
+\fB\-\-hmark\-sport\-mask\fP \fIvalue\fP
+A 16 bit source port mask in hexadecimal.
+.TP
+\fB\-\-hmark\-dport\-mask\fP \fIvalue\fP
+A 16 bit destination port mask in hexadecimal.
+.TP
+\fB\-\-hmark\-spi\-mask\fP \fIvalue\fP
+A 32 bit field with spi mask.
+.TP
+\fB\-\-hmark\-proto\-mask\fP \fIvalue\fP
+An 8 bit field with layer 4 protocol number.
+.TP
+\fB\-\-hmark\-rnd\fP \fIvalue\fP
+A 32 bit random custom value to feed hash calculation.
+.PP
+\fIExamples:\fP
+.PP
+iptables \-t mangle \-A PREROUTING \-m conntrack \-\-ctstate NEW
+ \-j HMARK \-\-hmark-tuple ct,src,dst,proto \-\-hmark-offset 10000
+\-\-hmark\-mod 10 \-\-hmark\-rnd 0xfeedcafe
+.PP
+iptables \-t mangle \-A PREROUTING -j HMARK \-\-hmark\-offset 10000
+\-\-hmark-tuple src,dst,proto \-\-hmark-mod 10 \-\-hmark\-rnd 0xdeafbeef

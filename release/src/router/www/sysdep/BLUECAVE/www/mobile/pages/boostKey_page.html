@@ -54,7 +54,6 @@
 					var boostKey_support = httpApi.boostKey_support();
 					var turbo_mode = httpApi.nvramGet(["turbo_mode"]).turbo_mode;
 					var matchFlag = false;
-
 					turbo_mode = (turbo_mode == "") ? "0" : turbo_mode;
 
 					for(var i in boostKey_support){

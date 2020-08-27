@@ -8,9 +8,10 @@ ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 CFLAGS += -I$(TOP)/openssl/include
-LDFLAGS += $(EXTRALDFLAGS) -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
+LDFLAGS += $(EXTRALDFLAGS) -L$(TOP)/shared -lshared
+LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -lcrypt
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
 
 
 INSTALL = install
@@ -19,7 +20,7 @@ OBJS = letsencrypt_config.o letsencrypt_control.o letsencrypt_utils.o
 
 ifeq ($(wildcard ./*.c),)
 all:
-	cp -f ./prebuild$(BCMEX)$(EXHND)/libletsencrypt.so .
+	cp -f ./prebuild/$(BUILD_NAME)/libletsencrypt.so .
 else
 all: libletsencrypt.so
 endif

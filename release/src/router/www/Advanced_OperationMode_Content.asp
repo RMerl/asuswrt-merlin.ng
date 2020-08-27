@@ -286,6 +286,11 @@ function initial(){
 		document.getElementById("mbMode").style.display = "none";
 		document.getElementById("sw_mode4_radio").disabled = true;
 	}
+
+	if(isSupport("noAP")){
+		$("#apMode").hide();
+		$("#sw_mode3_radio").attr("disabled", true);
+	}
 }
 
 function restore_wl_config(prefix){

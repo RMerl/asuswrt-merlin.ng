@@ -40,18 +40,18 @@ endif
 	CFLAGS = -DSUPPORT_LPRng
 	CFLAGS += -I. -I$(TOP)/shared
 	CFLAGS += -I$(TOP)/kernel_header/include -I$(SRCBASE)/include
-#	CFLAGS += -I$(TOP)/libusb/libusb
-	CFLAGS += -I$(TOP)/libusb-0.1.12
+	CFLAGS += -I$(TOP)/libusb/libusb -DASUS_U2EC
+#	CFLAGS += -I$(TOP)/libusb-0.1.12
 	LDFLAGS = -lpthread -ldl
-#	LDFLAGS += -L$(TOP)/libusb10/libusb/.libs -lusb-1.0
-#	LDFLAGS += -L$(TOP)/libusb/libusb/.libs -lusb
-	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -l:libusb.a
+	LDFLAGS += -L$(TOP)/libusb10/libusb/.libs -lusb-1.0
+	LDFLAGS += -L$(TOP)/libusb/libusb/.libs -lusb
+#	LDFLAGS += -L$(TOP)/libusb-0.1.12/.libs -l:libusb.a
 	LDFLAGS += -L$(TOP)/shared -lshared
-	LDFLAGS += -L$(TOP)/nvram${BCMEX}$(EX7) -lnvram
+	LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}$(EX7) -lnvram
 #endif
 
 ifeq ($(HND_ROUTER),y)
-LDFLAGS += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -74,9 +74,9 @@ CFLAGS += -Wall -I.
 CFLAGS += $(DEBFLAGS)
 
 
-ifneq ($(wildcard ./prebuild$(BCMEX)$(EXHND)),)
+ifneq ($(wildcard ./prebuild/$(BUILD_NAME)),)
 $(PROG):
-	cp prebuild$(BCMEX)$(EXHND)/$(PROG) .
+	cp prebuild/$(BUILD_NAME)/$(PROG) .
 else
 $(PROG): $(OBJS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)

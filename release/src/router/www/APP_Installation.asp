@@ -69,6 +69,19 @@
 	width: 80px;
 	height: 80px;
 }
+
+.perNode_app_table{
+	width: 740px;
+	position: absolute;
+	left: 50%;
+	margin-top: 30px;
+	margin-left: -370px;
+}
+
+.perNode_nohover:hover{
+	background-color: #21333e;
+	*background-color: #21333e;
+}
 </style>
 <script>
 var apps_array = <% apps_info("asus"); %>;
@@ -99,33 +112,53 @@ var wan_unit_orig = '<% nvram_get("wan_unit"); %>';
 var fileflex_text = "<#FileFlex_desc0#>";
 
 function initial(){
-	show_menu();
-
 	default_apps_array = [["AiDisk", "aidisk.asp", "<#AiDiskWelcome_desp1#>", "Aidisk_png", ""],
 			["<#Servers_Center#>", "mediaserver.asp", "<#UPnPMediaServer_Help#>", "server_png", ""],
 			["<#Network_Printer_Server#>", "PrinterServer.asp", "<#Network_Printer_desc#>", "PrinterServer_png", ""],
 			["3G/4G", "Advanced_Modem_Content.asp", "<#HSDPAConfig_hsdpa_enable_hint1#>", "modem_png", ""],
 			["<#TimeMach#>", "Advanced_TimeMachine.asp", "<#TimeMach_enable_hint#>", "TimeMachine_png", "1.0.0.1"]];
-	
+
+	if(re_mode == "1"){
+		$("#FormTitle").addClass("perNode_app_table");
+		default_apps_array[1][1] = "";
+		$(".submenuBlock").css("margin-top", "initial");
+	}
+	else{
+		$("#content_table").addClass("content");
+		$("#FormTitle").addClass("app_table app_table_usb");
+		show_menu();
+	}
+
+	$("#FormTitle").css("display", "");
+
 	if(!media_support){
 		default_apps_array[1][1] = "Advanced_AiDisk_samba.asp";
 		default_apps_array[1].splice(2,1,"<#MediaServer_Help#>");
 	}
-	
-	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || noaidisk_support)
-		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("AiDisk")[0]);
 
-	if(!printer_support || noprinter_support)
-		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
+	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || re_mode == "1" || noaidisk_support){
+		if(default_apps_array.getIndexByValue2D("AiDisk") != -1)
+			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("AiDisk")[0]);
+	}
 
-	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || !modem_support || nomodem_support || based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U")
-		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("3G/4G")[0]);
+	if(!printer_support || noprinter_support || re_mode == "1"){
+		if(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>") != -1)
+			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#Network_Printer_Server#>")[0]);
+	}
 
-	if(!timemachine_support)
-		default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#TimeMach#>")[0]);
+	if(sw_mode == 2 || sw_mode == 3 || sw_mode == 4 || re_mode == "1" || !modem_support  || nomodem_support ||
+		based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" ||based_modelid == "4G-AC68U"){
+		if(default_apps_array.getIndexByValue2D("3G/4G") != -1)
+			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("3G/4G")[0]);
+	}
+
+	if(!timemachine_support){
+		if(default_apps_array.getIndexByValue2D("<#TimeMach#>") != -1)
+			default_apps_array = default_apps_array.del(default_apps_array.getIndexByValue2D("<#TimeMach#>")[0]);
+	}
 
 	trNum = default_apps_array.length;
-	
+
 	if(_apps_action == '' && 
 		(apps_state_upgrade == 4 || apps_state_upgrade == "") && 
 		(apps_state_enable == 2 || apps_state_enable == "") &&
@@ -432,7 +465,8 @@ function check_appstate(){
 
 var trNum;
 function show_apps(){
-	document.getElementById("usbHint").innerHTML = "<#remove_usb_hint#>";
+	if(re_mode != "1")
+		document.getElementById("usbHint").innerHTML = "<#remove_usb_hint#>";
 
 	var counter = 0;
 	appnum = 0;
@@ -484,7 +518,7 @@ function show_apps(){
 		}
 	}
 
-	if(!fileflex_support){
+	if(!fileflex_support || re_mode == "1"){
 		var fileflex_idx = apps_array.getIndexByValue2D("fileflex");
 		if(fileflex_idx[1] != -1 && fileflex_idx != -1)
 			apps_array.splice(fileflex_idx[0], 1);
@@ -513,8 +547,12 @@ function show_apps(){
 			console.log("2 need to change wan unit!");
 			htmlcode += '<div class="app_name"><a style="text-decoration: underline; cursor:pointer;" onclick="go_modem_page('+usb_index+');">'+ default_apps_array[i][0] + '</a></div>\n';
 		}
-		else
-			htmlcode += '<div class="app_name"><a style="text-decoration: underline;" href="' + default_apps_array[i][1] + '">' + default_apps_array[i][0] + '</a></div>\n';
+		else{
+			if(default_apps_array[i][1] != "")
+				htmlcode += '<div class="app_name"><a style="text-decoration: underline;" href="' + default_apps_array[i][1] + '">' + default_apps_array[i][0] + '</a></div>\n';
+			else
+				htmlcode += '<div class="app_name">' + default_apps_array[i][0] + '</div>\n';
+		}
 		if(i ==3){
 			htmlcode += '<div class="app_desc">' + default_apps_array[i][2] + ' <a href="https://www.asus.com/event/networks_3G4G_support/" target="_blank" style="text-decoration:underline;"><#Support#></a></div>\n';
 		}
@@ -664,7 +702,7 @@ function show_apps(){
 			else
 				htmlcode += '<span class="app_action" onclick="apps_form(\'enable\',\''+ apps_array[i][0] +'\',\'yes\');"><#WLANConfig11b_WirelessCtrl_button1name#></span>\n';
 
-			if(sw_mode == 3 || document.getElementById("connect_status").className == "connectstatuson")
+			if(sw_mode == 3 || link_internet == "2")
 				htmlcode += '<span class="app_action" onclick="apps_form(\'update\',\''+ apps_array[i][0] +'\',\'\');">Check update</span>\n';	/* untranslated */
 	
 			if(apps_array[i][0] == "downloadmaster"){
@@ -675,7 +713,7 @@ function show_apps(){
 
 			if(	cookie.get("apps_last") == apps_array[i][0] &&
 					hasNewVer(apps_array[i]) && 
-					(sw_mode == 3 || document.getElementById("connect_status").className == "connectstatuson"))
+					(sw_mode == 3 || link_internet == "2"))
 				htmlcode += '</div><div style="color:#FC0;margin-top:10px;"><span class="app_action" onclick="apps_form(\'upgrade\',\''+ apps_array[i][0] +'\',\'\');"><#update_available#></span>\n';	
 			else if(cookie.get("apps_last") == apps_array[i][0])
 				htmlcode += "</div><div style=\"color:#FC0;margin-top:10px;margin-left:10px;\"><span class=\"app_no_action\" onclick=\"\">The version is up-to-date.</span>\n";	/* untranslated */				                   
@@ -705,6 +743,29 @@ function show_apps(){
 	stoppullstate = 1;
 	cookie.set("hwaddr", '<% nvram_get("lan_hwaddr"); %>', 1000);
 	cookie.set("apps_last", "", 1000);
+
+	if(re_mode == "1"){
+		if($("#upnp_link").length > 0){
+			$("#upnp_link").attr({
+				"style": "color: #FFCC00; text-decoration:underline;",
+				"href": "/mediaserver.asp",
+			});
+		}
+
+		if($("#ftp_link").length > 0){
+			$("#ftp_link").attr({
+				"style": "color: #FFCC00; text-decoration:underline;",
+				"href": "/Advanced_AiDisk_ftp.asp"
+			});
+		}
+
+		if($("#samba_link").length > 0){
+			$("#samba_link").attr({
+				"style": "color: #FFCC00; text-decoration:underline;",
+				"href": "/Advanced_AiDisk_samba.asp"
+			});
+		}
+	}
 	//re-turn FormTitle height
 	if($("#FormTitle > table").height() > $("#FormTitle").height())
 		$("#FormTitle").height($("#FormTitle > table").height());
@@ -798,8 +859,12 @@ function show_partition(){
 			}
 		}
 
-		if(mounted_partition == 0)
-			htmlcode += '<tr height="360px"><td colspan="2" class="nohover"><span class="app_name" style="line-height:100%"><#no_usb_found#></span></td></tr>\n';
+		if(mounted_partition == 0){
+			if(re_mode == "1")
+				htmlcode += '<tr height="360px"><td colspan="2" class="perNode_nohover"><span class="app_name" style="line-height:100%"><#no_usb_found#></span></td></tr>\n';
+			else
+				htmlcode += '<tr height="360px"><td colspan="2" class="nohover"><span class="app_name" style="line-height:100%"><#no_usb_found#></span></td></tr>\n';
+		}
 
 		document.getElementById("partition_div").innerHTML = htmlcode;
 		document.getElementById("usbHint").innerHTML = "<#DM_Install_partition#> :";
@@ -905,7 +970,7 @@ function loginAcc(){
 <input type="hidden" name="action_wait" value="">
 </form>
 
-<table class="content" align="center" cellspacing="0" style="margin:auto;">
+<table id="content_table" align="center" cellspacing="0" style="margin:auto;">
   <tr>
 	<td width="17">&nbsp;</td>
 	
@@ -919,32 +984,25 @@ function loginAcc(){
 		<div id="tabMenu" class="submenuBlock"></div>
 		<br>
 <!--=====Beginning of Main Content=====-->
-<div class="app_table app_table_usb" id="FormTitle">
+<div id="FormTitle" style="display:none;">
 <table>
-
   <tr>
-  	<td class="formfonttitle">
-				<div style="width:730px">
-					<table width="730px">
-						<tr>
-							<td align="left">
-								<span class="formfonttitle"><#Menu_usb_application#></span>
-							</td>
-							<td>
-								<img id="return_btn" onclick="reloadAPP();" align="right" style="cursor:pointer;position:absolute;margin-left:-30px;margin-top:-25px;" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
-							</td>
-						</tr>
-					</table>
-				</div>
-		</td>
+	<td>
+		<div style="margin-top: 10px;">
+			<span class="formfonttitle" style="font-size: 18px;"><#Menu_usb_application#></span>
+			<span style="float:right;">
+			<img id="return_btn" onclick="reloadAPP();" align="right" style="cursor:pointer;position:absolute;margin-left:-40px;margin-top:-25px; display:none;" title="<#Menu_usb_application#>" src="/images/backprev.png" onMouseOver="this.src='/images/backprevclick.png'" onMouseOut="this.src='/images/backprev.png'">
+			</span>
+		</div>
+	</td>
   </tr> 
   <tr>
-  	<td><div class="splitLine"></div></td>
+	<td><div id="splitLine1" class="splitLine"></div></td>
   </tr>
   <tr>
 		<td>
-			<div class="formfontdesc" id="usbHint"><#remove_usb_hint#></div>
-		</td> 
+			<div class="formfontdesc" id="usbHint"></div>
+		</td>
   </tr>
 
   <tr>
@@ -970,7 +1028,7 @@ function loginAcc(){
 					</tr>		
 				</table>
 			<br/>
-			<div class="splitLine"></div>
+			<div id="splitLine2" class="splitLine"></div>
 			<table class="" cellspacing="0" cellpadding="0">
 				<tbody>
 					<tr valign="top">

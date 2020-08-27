@@ -362,7 +362,7 @@ static struct ebt_u_match arp_match =
 	.extra_ops	= opts,
 };
 
-void _init(void)
+__attribute__((constructor)) static void extension_init(void)
 {
 	ebt_register_match(&arp_match);
 }

@@ -37,7 +37,7 @@ if [ "$(nvram get wans_mode)" = "lb" ] ; then
 		nvram set ${prefix}realip_ip=$result
 
 		wan=`echo $prefix|sed -e "s,_,,"`
-		[ -z "$result" ] && echo "$wan failed." || echo "$wan external IP is $result."
+		[ -z "$result" ] && echo "$wan failed." || echo "$wan external IP is $result"
 	done
 else
 	for prefix in $prefixes; do
@@ -65,5 +65,5 @@ else
 	nvram set ${prefix}realip_state=$state
 	nvram set ${prefix}realip_ip=$result
 
-	[ -z "$result" ] && echo "Failed." || echo "External IP is $result."
+	[ -z "$result" ] && echo "Failed." || echo "External IP is $result"
 fi

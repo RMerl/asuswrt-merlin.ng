@@ -939,7 +939,7 @@ OTSExchange(int auth, int encrypt)
 	int i;
 	char SSID[32+1];
 	char Key[64+1];
-
+	char *p = sharedkeystr;
 
 //	printf("OTSExchange\n");
 
@@ -962,7 +962,7 @@ OTSExchange(int auth, int encrypt)
 	sharedkeystr[0] = 0;
 	for(i=0;i<MAX_DHKEY_LEN;i++)
 	{
-		 sprintf(sharedkeystr, "%s%02X", sharedkeystr, (unsigned char )sharedkey[i]);
+		 p += sprintf(p, "%02X", (unsigned char )sharedkey[i]);
 	}
 
 	tw = (TEMP_WIRELESS *) sharedkeystr;

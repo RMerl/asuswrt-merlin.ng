@@ -1,128 +1,29 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<!DOCTYPE html>
+<html>
 <head>
-<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
-<meta HTTP-EQUIV="Expires" CONTENT="-1">
-<link rel="shortcut icon" href="images/favicon.png">
-<link rel="icon" href="images/favicon.png">
-<title></title>
-<link href="/NM_style.css" rel="stylesheet" type="text/css" />
-<link href="/form_style.css" rel="stylesheet" type="text/css" />
-<link href="/js/table/table.css" rel="stylesheet" type="text/css" >
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/table/table.js"></script>
-<style type="text/css">
-.title{
-	font-size:16px;
-	text-align:center;
-	font-weight:bolder;
-	margin-bottom:5px;
-}
-
-.ram_table{
-	height:30px;
-	text-align:center;
-}
-
-.ram_table td{
-	width:33%;
-}
-
-.loading_bar{
-	width:150px;
-}
-
-.loading_bar > div{
-	margin-left:5px;
-	background-color:black;
-	border-radius:15px;
-	padding:2px;
-}
-
-.status_bar{
-	height:12px;
-	border-radius:15px;
-}
-
-#ram_bar{
-	background-color:#0096FF;
-}
-
-#tx_bar{
-	background-color:#0096FF;
-}
-
-#rx_bar{
-	background-color:#FF9000;
-}
-
-#cpu0_bar{
-	background-color:#FF9000;	
-}
-
-#cpu1_bar{
-	background-color:#3CF;
-}
-
-#cpu2_bar{
-	background-color:#FC0;
-}
-
-#cpu3_bar{
-	background-color:#FF44FF;
-}
-
-.percentage_bar{
-	width:60px;
-	text-align:center;
-}
-
-.cpu_div{
-	margin-top:-5px;
-}
-
-.status_bar{
-  -webkit-transition: all 0.5s ease-in-out;
-  -moz-transition: all 0.5s ease-in-out;
-  -o-transition: all 0.5s ease-in-out;
-  transition: all 0.5s ease-in-out;
-
-}
-.tableApi_table th {
-	height: 20px;
-}
-.data_tr {
-	height: 30px;
-}
-</style>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=11;IE=Edge">
+	<meta http-equiv="Pragma" CONTENT="no-cache">
+	<meta http-equiv="Expires" CONTENT="-1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="images/favicon.png">
+	<title><#menu1#> - <#Status_Str#></title>
+	<link rel="stylesheet" href="../NM_style.css" type="text/css">
+	<link rel="stylesheet" href="../form_style.css" type="text/css">
+	<link rel="stylesheet" href="../css/networkMap.css" type="text/css">
+	<script src="../js/jquery.js" type="text/javascript"></script>
+	<script src="../js/httpApi.js" type="text/javascript"></script>
+	<script src="../state.js" type="text/javascript"></script>
+	<script src="../js/device.js" type="text/javascript"></script>
+	<script src="../calendar/jquery-ui.js"  type="text/javascript"></script>
 <script>
-if(parent.location.pathname.search("index") === -1) top.location.href = "../"+'<% networkmap_page(); %>';
 
 /*Initialize array*/
 var cpu_info_old = new Array();
 var core_num = '<%cpu_core_num();%>';
-var cpu_usage_array = new Array();
 var array_size = 46;
-for(i=0;i<core_num;i++){
-	cpu_info_old[i] = {
-		total:0,
-		usage:0
-	}
-	
-	cpu_usage_array[i] = new Array();
-	for(j=0;j<array_size;j++){
-		cpu_usage_array[i][j] = 101;
-	}
-}
-var ram_usage_array = new Array(array_size);
-for(i=0;i<array_size;i++){
-	ram_usage_array[i] = 101;
-}
-/*End*/
+var cpu_usage_array = new Array();
+var ram_usage_array = new Array();
 
 var last_rx = 0;
 var last_tx = 0;
@@ -134,356 +35,194 @@ var qos_enable = "<% nvram_get("qos_enable"); %>";
 var qos_ibw = "<% nvram_get("qos_ibw"); %>";
 var qos_obw = "<% nvram_get("qos_obw"); %>";
 
-function initial(){
-	generate_cpu_field();
-	if((parent.sw_mode == 2 || parent.sw_mode == 4) && '<% nvram_get("wlc_band"); %>' == '<% nvram_get("wl_unit"); %>')
-		document.form.wl_subunit.value = 1;
-	else
-		document.form.wl_subunit.value = -1;
-
-	if(wifison_ready == "1" && parent.sw_mode == "1"){
-		document.getElementById("t0").style.display = "";
-		document.getElementById("span0").innerHTML = "<#tm_wireless#>";
-	}
-	else{
-		if(parent.band5g_support){
-			document.getElementById("t0").style.display = "";
-			document.getElementById("t1").style.display = "";
-
-			if(parent.wl_info.band5g_2_support)
-				tab_reset(0);
-
-			if(parent.wl_info.band60g_support)
-				tab_reset(0);
-
-			if(parent.smart_connect_support && (parent.isSwMode("rt") || parent.isSwMode("ap")))
-				change_smart_connect('<% nvram_get("smart_connect_x"); %>');
-			
-			// disallow to use the other band as a wireless AP
-			if(parent.sw_mode == 4 && !localAP_support){
-				for(var x=0; x<parent.wl_info.wl_if_total;x++){
-					if(x != '<% nvram_get("wlc_band"); %>')
-						document.getElementById('t'+parseInt(x)).style.display = 'none';
-				}
-			}
-		}
-		else{
-			document.getElementById("t0").style.display = "";
-		}
-	}
-
-	if(parent.wlc_express == '1' && parent.sw_mode == '2'){
-		document.getElementById("t0").style.display = "none";
-	}
-	else if(parent.wlc_express == '2' && parent.sw_mode == '2'){
-		document.getElementById("t1").style.display = "none";
-	}
-
-	detect_CPU_RAM();
-
-	if(!lyra_hide_support)
-		get_ethernet_ports();
-
-	var table_height = document.getElementById("rt_table").clientHeight;
-	if(table_height != "0" || table_height != "")
-		set_NM_height(table_height);
-	else {
-		document.body.style.overflow = "hidden";
-		var errorCount = 0;
-		var readyStateCheckInterval = setInterval(function() {
-			table_height = document.getElementById("rt_table").clientHeight;
-			if (table_height != "0" || table_height != "") {
-				clearInterval(readyStateCheckInterval);
-				set_NM_height(table_height);
-			}
-			else {
-				if(errorCount > 5) {
-					clearInterval(readyStateCheckInterval);
-					table_height = parent.document.getElementById("NM_table").style.height;
-					set_NM_height(table_height);
-				}
-				errorCount++;
-			}
+var color_table = ["#c6dafc", "#7baaf7", "#4285f4", "#3367d6"];
+var led_table = ["<#btn_disable#>", "<#Priority_Level_3#>", "<#Medium#>", "<#High#>"];
+$(document).ready(function(){
+	if(system.INTELplatform){
+		register_event();
+		var ledLv = httpApi.nvramGet(["bc_ledLv"]).bc_ledLv;
+		translated_value = Math.round(100*(ledLv/3));
+		setTimeout(function(){
+			document.getElementById('slider').children[0].style.width = translated_value + "%";
+			document.getElementById('slider').children[1].style.left = translated_value + "%";
 		}, 10);
+		$("#color_pad").html(led_table[ledLv]);
+		$("#slider .ui-slider-range").css("background-color", color_table[ledLv]);
+		$("#slider .ui-slider-handle").css("border-color", color_table[ledLv]);
+		$('#led_field').show();
 	}
 
-	if (qos_enable > 0 && qos_ibw > 0 && qos_obw > 0) {
-		max_rx = qos_ibw * 1024 / 8;
-		max_tx = qos_obw * 1024 / 8;
-	}
+	getVariable();
+	genElement();
+
+	initiailzeParameter();
+	genCPUElement();
+	genRAMElement();
+	genNETelement();
+	get_ethernet_ports();
+	detect_CPU_RAM();
 	update_traffic();
+	if(isSupport("ledg")){
+		$("#light_effect_tab").show();
+	}  
+});
+
+var nvram = new Object();
+var variable = new Object();
+function getVariable(){
+	var _array = new Array('sw_mode', 'lan_ipaddr_t', 'lan_ipaddr', 'secret_code', 'serial_no');
+	var _element = new Array();
+	if(system.band2gSupport){
+		_element = ['wl0_hwaddr'];
+		_array.push.apply(_array, _element);
+	}
+
+	if(system.band5gSupport){
+		_element = ['wl1_hwaddr'];
+		_array.push.apply(_array, _element);
+	}
+
+	if(system.band5g2Support){
+		_element = ['wl2_hwaddr'];
+		_array.push.apply(_array, _element);
+	}
+
+	if(system.band60gSupport){
+		_element = ['wl3_hwaddr'];
+		_array.push.apply(_array, _element);
+	}
+
+	if(system.yadnsSupport){
+		_element = ['yadns_enable_x', 'yadns_mode'];
+		_array.push.apply(_array, _element);
+	}
+	
+	nvram = httpApi.nvramGet(_array);
+	nvram['lan_hwaddr'] = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+	if(system.yadnsSupport){
+		//nvram['yadns_clients'] = (httpApi.hookGet('yadns_clients')) ? httpApi.hookGet('yadns_clients') : '';
+		nvram['yadns_clients'] = [ <% yadns_clients(); %> ];
+	}
+ 	variable = Object.assign(variable, nvram);
 }
 
-function tabclickhandler(wl_unit){
-	if(wl_unit == "status"){
-		location.href = "router_status.asp";
+function genElement(){
+	var code = '';
+	if(system.INTELplatform){
+		code += '<div class="info-title"><#LED_Brightness#></div>';
+		code += '<div class="display-flex flex-a-center led-container">';
+		code += '<div id="slider"></div>';
+		code += '<div id="color_pad"></div>';
+		code += '</div>';
+
+		$('#led_field').html(code);
+		code = '';	// initialize
 	}
-/*	else if (wl_unit == "compatibility") {
-		location.href = "compatibility.asp";
-	}*/
+
+	// LAN IP
+	var _lanIP = (variable.lan_ipaddr_t == '') ? variable.lan_ipaddr : variable.lan_ipaddr_t;
+	code += '<div class="info-block"><div class="info-title"><#LAN_IP#></div><div class="info-content">'+ _lanIP +'</div></div>';
+
+	// PIN CODE
+	code += '<div class="info-block"><div class="info-title"><#PIN_code#></div><div class="info-content">'+ variable.secret_code +'</div></div>';
+
+	// Serial Number
+	if(variable.serial_no != ''){
+		code += '<div class="info-block"><div class="info-title"><#Serial_Number#></div><div class="info-content">'+ variable.serial_no +'</div></div>';
+	}
+
+	// MAC Address
+	code += '<div class="info-block"><div class="info-title">LAN <#MAC_Address#></div><div class="info-content">'+ variable.lan_hwaddr +'</div></div>';
+	if(system.band2gSupport){
+		code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
+	}
+
+	if(system.triBandSupport){
+		code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
+		code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
+	}
 	else{
-		if((parent.sw_mode == 2 || parent.sw_mode == 4) && '<% nvram_get("wlc_band"); %>' == wl_unit)
-			document.form.wl_subunit.value = 1;
-		else
-			document.form.wl_subunit.value = -1;
-
-		if(parent.wlc_express != '0' && parent.wlc_express != '')
-			document.form.wl_subunit.value = 1;
-
-		document.form.wl_unit.value = wl_unit;
-		document.form.current_page.value = "device-map/router.asp?time=" + Math.round(new Date().getTime()/1000);
-		FormActions("/apply.cgi", "change_wl_unit", "", "");
-		document.form.target = "hidden_frame";
-		document.form.submit();
+		code += '<div class="info-block"><div class="info-title">5 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
 	}
-}
 
-function render_RAM(total, free, used){
-	var used_percentage = total_MB = free_MB = used_MB = 0;
-	total_MB = Math.round(total/1024);
-	free_MB = Math.round(free/1024);
-	used_MB = Math.round(used/1024);
-	
-	$("#ram_total_info").html(total_MB + "MB");
-	$("#ram_free_info").html(free_MB + "MB");
-	$("#ram_used_info").html(used_MB + "MB");
-
-	used_percentage = Math.round((used/total)*100);
-	$("#ram_bar").css("width", used_percentage +"%");
-	$("#ram_quantification").html(used_percentage +"%");
-}
-
-function render_CPU(cpu_info_new){
-	var pt = "";
-	var percentage = total_diff = usage_diff = 0;
-	var length = Object.keys(cpu_info_new).length;
-
-	for(i=0;i<length;i++){
-		pt = "";
-		total_diff = (cpu_info_old[i].total == 0)? 0 : (cpu_info_new["cpu"+i].total - cpu_info_old[i].total);
-		usage_diff = (cpu_info_old[i].usage == 0)? 0 : (cpu_info_new["cpu"+i].usage - cpu_info_old[i].usage);
-		
-		if(total_diff == 0)
-			percentage = 0;
-		else	
-			percentage = parseInt(100*usage_diff/total_diff);
-	
-		$("#cpu"+i+"_bar").css("width", percentage +"%");
-		$("#cpu"+i+"_quantification").html(percentage +"%");
-		cpu_usage_array[i].push(100 - percentage);
-		cpu_usage_array[i].splice(0,1);
-		for(j=0;j<array_size;j++){
-			pt += j*6 +","+ cpu_usage_array[i][j] + " ";	
-		}
-
-		document.getElementById('cpu'+i+'_graph').setAttribute('points', pt);
-		cpu_info_old[i].total = cpu_info_new["cpu"+i].total;
-		cpu_info_old[i].usage = cpu_info_new["cpu"+i].usage;
+	if(system.band60gSupport){
+		code += '<div class="info-block"><div class="info-title">LAN <#MAC_Address#></div><div class="info-content">'+ variable.wl3_hwaddr +'</div></div>';
 	}
-}
 
-function detect_CPU_RAM(){
-	if(parent.isIE8){
-		require(['/require/modules/makeRequest.js'], function(makeRequest){
-			makeRequest.start('/cpu_ram_status.asp', function(xhr){				
-				render_CPU(cpuInfo);
-				render_RAM(memInfo.total, memInfo.free, memInfo.used);
-				setTimeout("detect_CPU_RAM();", 2000);
-			}, function(){});
-		});
-	}
-	else{
-		$.ajax({
-	    	url: '/cpu_ram_status.asp',
-	    	dataType: 'script',
-	    	error: detect_CPU_RAM,
-	    	success: function(data){			
-				render_CPU(cpuInfo);
-				render_RAM(memInfo.total, memInfo.free, memInfo.used);
-				setTimeout("detect_CPU_RAM();", 2000);
+	$('#hw_information_field').html(code);
+
+	//YADEX DNS
+	if(system.yadnsSupport &&　parent.sw_mode == 1){
+		code = '';
+		var yadns_enable = variable.yadns_enable_x;
+		var yadns_mode = variable.yadns_mode;
+		var yadns_clients = variable.yadns_clients;
+		var mode = (yadns_enable != '0') ? yadns_mode : 4;
+		var modeDesc = ['<#YandexDNS_mode0#>', '<#YandexDNS_mode1#>', '<#YandexDNS_mode2#>', '', '<#btn_Disabled#>'];
+		code += '<div class="division-block"><#YandexDNS#></div>';
+		code += '<div class="info-block"><div class="info-content">' + modeDesc[mode] +'</div></div>';
+		for(var i=0; i<3; i++){
+			if(yadns_enable != 0 && i != mode && yadns_clients[i]){
+				code += '<div class="info-block">';
+				code += '<div class="info-title">'+ modeDesc[i] +'</div>';
+				code += '<div class="info-content"><#Full_Clients#> '+ yadns_clients[i] +'</div>';
+				code += '</div>';
 			}
-		});
-	}
-}
-
-function tab_reset(v){
-	var tab_array1 = document.getElementsByClassName("tab_NW");
-	var tab_array2 = document.getElementsByClassName("tabclick_NW");
-	var tab_width = Math.floor(270/(parent.wl_info.wl_if_total+1));
-
-	var i = 0;
-	while(i < tab_array1.length){
-		tab_array1[i].style.width = tab_width + 'px';
-		tab_array1[i].style.display = "";
-		i++;
-	}
-	
-	if(typeof tab_array2[0] != "undefined"){
-		tab_array2[0].style.width=tab_width+'px';
-		tab_array2[0].style.display = "";
-	}
-	
-	if(v == 0){
-		document.getElementById("span0").innerHTML = "2.4GHz";
-		if(parent.wl_info.band5g_2_support){
-			document.getElementById("span1").innerHTML = "5GHz-1";
-			document.getElementById("span2").innerHTML = "5GHz-2";
-		}else{
-			document.getElementById("span1").innerHTML = "5GHz";
-			document.getElementById("t2").style.display = "none";
 		}
 
-		if(!parent.wl_info.band60g_support){
-			document.getElementById("t3").style.display = "none";
-		}		
-	}else if(v == 1){	//Smart Connect
-		if(isSupport("triband") && dwb_info.mode) {
-			document.getElementById("span0").innerHTML = "2.4GHz and 5GHz-1";
-			document.getElementById("span2").innerHTML = "5GHz-2";
-			document.getElementById("t3").style.display = "none";
-			document.getElementById("t1").style.display = "none";
-			document.getElementById("t0").style.width = "142px";
-			document.getElementById("span0").style.padding = "5px 0px 0px 8px";
-		}
-		else {
-			if(based_modelid == "RT-AC5300" || based_modelid == "RT-AC3200" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U")
-				document.getElementById("span0").innerHTML = "2.4GHz, 5GHz-1 and 5GHz-2";
-			else if(based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "AC2900" || based_modelid == "RT-AC3100" || based_modelid == "BLUECAVE")
-				document.getElementById("span0").innerHTML = "2.4GHz and 5GHz";
-
-			document.getElementById("t1").style.display = "none";
-			document.getElementById("t2").style.display = "none";
-			document.getElementById("t3").style.display = "none";
-			document.getElementById("t0").style.width = (tab_width*parent.wl_info.wl_if_total+10) +'px';
+		$('#yadns_field').html(code);
+		if(!system.yadnsHideQIS || yadns_enable != 0){
+			$('#yadns_field').show();
 		}
 	}
-	else if(v == 2){ //5GHz Smart Connect
-		document.getElementById("span0").innerHTML = "2.4GHz";
-		document.getElementById("span1").innerHTML = "5GHz-1 and 5GHz-2";
-		document.getElementById("t3").style.display = "none";
-		document.getElementById("t2").style.display = "none";	
-		document.getElementById("t1").style.width = "143px";
-		document.getElementById("span1").style.padding = "5px 4px 5px 7px";
-	}
 }
 
-function change_smart_connect(v){
-	switch(v){
-		case '0':
-			tab_reset(0);	
-			break;
-		case '1': 
-			tab_reset(1);
-			break;
-		case '2': 
-			tab_reset(2);
-			break;
-	}
-}
-
-function generate_cpu_field(){
-	var code = "";
-	for(i=0;i<core_num;i++){
-		code += "<tr><td><div class='cpu_div'><table>";
-		code += "<tr><td><div><table>";
-		code += "<tr>";		
-		code += "<td class='loading_bar' colspan='2'>";
-		code += "<div>";
-		code += "<div id='cpu"+i+"_bar' class='status_bar'></div>";
-		code += "</div>";
-		code += "</td>";	
-		code += "<td>";
-		code += "<div><#Status_Core#> "+parseInt(i+1)+"</div>";
-		code += "</td>";		
-		code += "<td class='percentage_bar'>";
-		code += "<div id='cpu"+i+"_quantification'>0%</div>";
-		code += "</td>";		
-		code += "</tr>";
-		code += "</table></div></td></tr>";
-		code += "</table></div></td></tr>";
-
-		document.getElementById('cpu'+i+'_graph').style.display = "";
-	}
-
-	if(parent.getBrowser_info().ie == "9.0" || parent.getBrowser_info().ie == "8.0")
-		document.getElementById('cpu_field').outerHTML = code;
-	else
-		document.getElementById('cpu_field').innerHTML = code;
-}
-
-function get_ethernet_ports() {
-	$.ajax({
-		url: '/ajax_ethernet_ports.asp',
-		async: false,
-		dataType: 'script',
-		error: function(xhr) {
-			setTimeout("get_ethernet_ports();", 1000);
-		},
-		success: function(response) {
-			var wanLanStatus = get_wan_lan_status["portSpeed"];
-			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
-			//parse nvram to array
-			var parseStrToArray = function(_array) {
-				var speedMapping = new Array();	
-				speedMapping["M"] = "100 Mbps";
-				speedMapping["G"] = "1 Gbps";
-				speedMapping["Q"] = "2.5 Gbps";
-				speedMapping["F"] = "5 Gbps";
-				speedMapping["T"] = "10 Gbps";
-				speedMapping["X"] = "<#Status_Unplugged#>";
-				
-				var parseArray = [];
-				for (var prop in _array) {
-					if (_array.hasOwnProperty(prop)) {
-						var newRuleArray = new Array();
-						var port_name = prop;
-						if(wanCount != undefined) {
-							if(port_name.substr(0, 3) == "WAN") {
-								if(parseInt(wanCount) > 1) {
-									var port_idx = port_name.split(" ");
-									if (port_idx.length >= 2)
-										port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
-									else
-										port_name = "WAN";
-								}
-								else {
-									port_name = "WAN";
-								}
-							}
-						}
-
-						newRuleArray.push(port_name);
-						newRuleArray.push(speedMapping[_array[prop]]);
-						parseArray.push(newRuleArray);
-					}
-				}
-				return parseArray;
-			};
-
-			//set table Struct
-			var tableStruct = {
-				data: parseStrToArray(wanLanStatus),
-				container: "tableContainer",
-				header: [ 
-					{
-						"title" : "<#Status_Ports#>",
-						"width" : "50%"
-					},
-					{
-						"title" : "<#Status_Str#>",
-						"width" : "50%"
-					}
-				]
+function register_event(){
+	$(function() {
+		$( "#slider" ).slider({
+			orientation: "horizontal",
+			range: "min",
+			min: 1,
+			max: 4,
+			value: 4,
+			slide:function(event, ui){
+				$("#color_pad").html(led_table[ui.value-1]);
+				$("#slider .ui-slider-range").css("background-color", color_table[ui.value-1]);
+				$("#slider .ui-slider-handle").css("border-color", color_table[ui.value-1]);
+			},
+			stop:function(event, ui){
+				set_led(ui.value);	  
 			}
-
-			if(tableStruct.data.length) {
-				$("#tr_ethernet_ports").css("display", "");
-				tableApi.genTableAPI(tableStruct);
-			}
-
-			setTimeout("get_ethernet_ports();", 3000);
-		}
+		}); 
 	});
+}
+
+function set_led(value){
+	var obj = {
+		"action_mode": "apply",
+		"rc_service": "reset_led",
+	}
+
+	obj.bc_ledLv = value - 1;
+	httpApi.nvramSet(obj);
+}
+
+function initiailzeParameter(){
+	for(i=0;i<core_num;i++){
+		cpu_info_old[i] = {
+			total:0,
+			usage:0
+		}
+		
+		cpu_usage_array[i] = new Array();
+		for(j=0;j<array_size;j++){
+			cpu_usage_array[i][j] = 101;
+		}
+	}
+
+	for(i=0;i<array_size;i++){
+		ram_usage_array[i] = 101;
+	}
 }
 
 function update_traffic() {
@@ -537,8 +276,8 @@ function update_traffic() {
 			}
 		}
 
-		document.getElementById('rx-current').innerHTML = adjust_unit(diff_rx);
-		document.getElementById('tx-current').innerHTML = adjust_unit(diff_tx);
+		$("#rx_quantification").html(adjust_unit(diff_rx));
+		$("#tx_quantification").html(adjust_unit(diff_tx));
 
 		if (diff_rx > max_rx)
 			max_rx = diff_rx;
@@ -568,233 +307,301 @@ function adjust_unit(value) {
 	return value.toFixed(2) + unit;
 }
 
+function detect_CPU_RAM(){
+	if(parent.isIE8){
+		require(['/require/modules/makeRequest.js'], function(makeRequest){
+			makeRequest.start('/cpu_ram_status.asp', function(xhr){				
+				render_CPU(cpuInfo);
+				render_RAM(memInfo.total, memInfo.free, memInfo.used);
+				setTimeout("detect_CPU_RAM();", 2000);
+			}, function(){});
+		});
+	}
+	else{
+		$.ajax({
+	    	url: '/cpu_ram_status.asp',
+	    	dataType: 'script',
+	    	error: detect_CPU_RAM,
+	    	success: function(data){
+				var render_CPU = function(cpu_info_new){
+					var pt = "";
+					var percentage = total_diff = usage_diff = 0;
+					var length = Object.keys(cpu_info_new).length;
+
+					for(i=0;i<length;i++){
+						pt = "";
+						total_diff = (cpu_info_old[i].total == 0)? 0 : (cpu_info_new["cpu"+i].total - cpu_info_old[i].total);
+						usage_diff = (cpu_info_old[i].usage == 0)? 0 : (cpu_info_new["cpu"+i].usage - cpu_info_old[i].usage);
+
+						percentage = (total_diff == 0) ? 0 : parseInt(100*usage_diff/total_diff);
+						$("#cpu"+i+"_bar").css("width", percentage +"%");
+						$("#cpu"+i+"_quantification").html(percentage +"%");
+						cpu_usage_array[i].push(100 - percentage);
+						cpu_usage_array[i].splice(0,1);
+						for(j=0;j<array_size;j++){
+							pt += j*6 +","+ cpu_usage_array[i][j] + " ";	
+						}
+
+						document.getElementById('cpu'+i+'_graph').setAttribute('points', pt);
+						cpu_info_old[i].total = cpu_info_new["cpu"+i].total;
+						cpu_info_old[i].usage = cpu_info_new["cpu"+i].usage;
+					}
+				}
+
+				var render_RAM = function(memory){
+					var pt = "";
+					var used_percentage = total_MB = free_MB = used_MB = 0;
+					total_MB = Math.round(memory.total/1024);
+					free_MB = Math.round(memory.free/1024);
+					used_MB = Math.round(memory.used/1024);
+					
+					$("#ram_total_info").html(total_MB + " MB");
+					$("#ram_free_info").html(free_MB + " MB");
+					$("#ram_used_info").html(used_MB + " MB");
+
+					used_percentage = Math.round((memory.used/memory.total)*100);
+					$("#ram_bar").css("width", used_percentage + "%");
+					$("#ram_quantification").html(used_percentage + "%");
+					ram_usage_array.push(100 - used_percentage);
+					ram_usage_array.splice(0,1);
+					for(i=0;i<array_size;i++){
+						pt += i*6 +","+ ram_usage_array[i] + " ";
+					}
+
+//					document.getElementById('ram_graph').setAttribute('points', pt);
+				}		
+
+				render_CPU(cpuInfo);
+				render_RAM(memInfo);
+				setTimeout("detect_CPU_RAM();", 2000);
+			}
+		});
+	}
+}
+
+function genCPUElement(){
+	var code = '<div class="division-block"><#Status_CPU#></div>';
+	code += '<div>';
+	for(i=0;i<core_num;i++){
+		code += '<div class="display-flex flex-a-center info-block">';
+		code += '<div class="bar-container">';
+		code += '<div id="cpu'+ i +'_bar" class="core-color-container core-color-'+ i +'"></div>';
+		code += '</div>';
+		code += '<div class="bar-text-width bar-text">Core '+ parseInt(i+1) +'</div>';
+		code += '<div id="cpu'+ i +'_quantification" class="bar-text-width bar-text-percent"></div>';
+		code += '</div>';
+	}
+
+	code += '</div>';
+
+	code += '<svg class="svg-block" width="100%" height="100px">';
+	code += '<g>';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="0%" x2="100%" y2="0%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%" x2="100%" y2="25%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%" x2="100%" y2="50%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%" x2="100%" y2="75%" />';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />';
+	code += '</g>';
+	code += '<g>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">0%</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">50%</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100%</text>';	
+	code += '</g>';
+	code += '<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="0"   y1="0%" x2="0"   y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="11%"  y1="0%" x2="11%"  y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="22%"  y1="0%" x2="22%"  y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="33%"  y1="0%" x2="33%"  y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="44%" y1="0%" x2="44%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="55%" y1="0%" x2="55%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="66%" y1="0%" x2="66%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="77%" y1="0%" x2="77%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="88%" y1="0%" x2="88%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="100%" y1="0%" x2="100%" y2="100%" />';
+	for(i=0;i<core_num;i++){
+		code += '<polyline id="cpu'+ i +'_graph" class="svg-line core-fill-color-'+ i +'" points=""></polyline>';
+	}
+
+	code += '</svg>';
+	$('#cpu_field').html(code);
+}
+
+function genRAMElement(){
+	var code = '<div class="division-block"><#Status_RAM#></div>';
+	code += '<div>';
+	code += '<div>';
+	code += '<div class="display-flex flex-a-center ram-content">';
+	code += '<div class="ram-text-width"><#Status_Used#></div>';
+	code += '<div class="ram-text-width"><#Status_Free#></div>';
+	code += '<div class="ram-text-width"><#Status_Total#></div>';
+	code += '</div>';	
+	code += '<div class="display-flex flex-a-center ram-content">';
+	code += '<div id="ram_used_info" class="ram-text-width"></div>';
+	code += '<div id="ram_free_info" class="ram-text-width"></div>';
+	code += '<div id="ram_total_info" class="ram-text-width"></div>';
+	code += '</div>';
+	code += '</div>';
+	code += '<div class="display-flex flex-a-center info-block">';
+	code += '<div class="bar-container">';
+	code += '<div id="ram_bar" class="core-color-container ram-color"></div>';
+	code += '</div>';
+	code += '<div class="bar-text-width bar-text"></div>';
+	code += '<div id="ram_quantification" class="bar-text-width bar-text-percent"></div>';
+	code += '</div>';
+	code += '</div>';
+/*
+	code += '<svg class="svg-block" width="100%" height="100px">';
+	code += '<g>';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="0%" x2="100%" y2="0%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%" x2="100%" y2="25%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%" x2="100%" y2="50%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%" x2="100%" y2="75%" />';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />';
+	code += '</g>';
+	code += '<g>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">0%</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">50%</text>';
+	code += '<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100%</text>';	
+	code += '</g>';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(0,0,121)" x1="0" y1="0%" x2="0" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="11%" y1="0%" x2="11%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="22%" y1="0%" x2="22%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="33%" y1="0%" x2="33%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="44%" y1="0%" x2="44%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="55%" y1="0%" x2="55%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="66%" y1="0%" x2="66%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="77%" y1="0%" x2="77%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="88%" y1="0%" x2="88%" y2="100%" />';
+	code += '<line stroke-width="1" stroke-opacity="1" stroke="rgb(0,0,121)"   x1="100%" y1="0%" x2="100%" y2="100%" />';
+	code += '<polyline id="ram_graph" class="svg-line ram-fill-color" points="">';
+	code += '</svg>';
+*/
+	$('#ram_field').html(code);
+}
+
+function genNETelement() {
+	var code = '<div class="division-block">Internet Traffic</div>';
+	code += '<div>';
+	code += '<div>';
+	code += '<div class="display-flex flex-a-center info-block">';
+	code += '<div class="bar-container">';
+	code += '<div id="rx_bar" class="core-color-container rx-color"></div>';
+	code += '</div>';
+	code += '<div class="bar-text bar-text-net">DL</div>';
+	code += '<div id="rx_quantification" class="bar-text-percent bar-text-percent-net">-- KB/s</div>';
+	code += '</div>';
+
+	code += '<div class="display-flex flex-a-center info-block">';
+	code += '<div class="bar-container">';
+	code += '<div id="tx_bar" class="core-color-container tx-color"></div>';
+	code += '</div>';
+	code += '<div class="bar-text bar-text-net">UL</div>';
+	code += '<div id="tx_quantification" class="bar-text-percent bar-text-percent-net">-- KB/s</div>';
+	code += '</div>';
+
+	$('#net_field').html(code);
+}
+
+function get_ethernet_ports() {
+	$.ajax({
+		url: '/ajax_ethernet_ports.asp',
+		async: false,
+		dataType: 'script',
+		error: function(xhr) {
+			setTimeout("get_ethernet_ports();", 1000);
+		},
+		success: function(response) {
+			var wanLanStatus = get_wan_lan_status["portSpeed"];
+			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
+			//parse nvram to array
+			var parseStrToArray = function(_array) {
+				var speedMapping = {
+					'M': '100 Mbps',
+					'G': '1 Gbps',
+					'Q': '2.5 Gbps',
+					'F': '5 Gbps',
+					'T': '10 Gbps',
+					'X': '<#Status_Unplugged#>'
+				};	
+
+				var parseArray = [];
+				for (var prop in _array) {
+					if (_array.hasOwnProperty(prop)) {
+						var newRuleArray = new Array();
+						var port_name = prop;
+						if(wanCount != undefined) {
+							if(port_name.substr(0, 3) == "WAN") {
+								if(parseInt(wanCount) > 1) {
+									var port_idx = port_name.split(" ");
+									port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
+								}
+								else {
+									port_name = "WAN";
+								}
+							}
+						}
+
+						newRuleArray.push(port_name);
+						newRuleArray.push(speedMapping[_array[prop]]);
+						parseArray.push(newRuleArray);
+					}
+				}
+				return parseArray;
+			};
+
+			if(!Object.keys(wanLanStatus).length){
+				$('#phy_ports').hide();
+				return;
+			}
+
+			wanLanStatus = parseStrToArray(wanLanStatus);
+			var code = '<div class="division-block"><#Status_Ethernet_Ports#></div>';
+			code += '<div>';
+			code += '<div class="display-flex flex-a-center table-header">';
+			code += '<div class="port-block-width table-content"><#Status_Ports#></div>';
+			code += '<div class="port-block-width table-content"><#Status_Str#></div>';
+			code += '</div>';
+			for(var i=0; i<wanLanStatus.length; i++){
+				code += '<div class="display-flex flex-a-center table-body">';
+				code += '<div class="port-block-width table-content table-content-first">'+ wanLanStatus[i][0] +'</div>';
+				code += '<div class="port-block-width table-content">'+ wanLanStatus[i][1] +'</div>';
+				code += '</div>';	
+			}
+			
+			code += '</div>';
+			$('#phy_ports').html(code);
+			setTimeout("get_ethernet_ports();", 3000);
+		}
+	});
+}
+
+function switchTab(id){
+	var obj = {
+		'wireless_tab': 'router.asp',
+		'status_tab': 'router_status.asp',
+		'light_effect_tab': 'router_light_effect.asp'
+	}
+	var path = window.location.pathname.split('/').pop();
+	var targetPath = obj[id];
+	if(targetPath == path){return false;}
+
+	location.href = targetPath;
+}
 </script>
 </head>
-<body class="statusbody" onload="initial();">
-<iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
-<form method="post" name="form" id="form" action="/start_apply2.htm">
-<input type="hidden" name="current_page" value="device-map/router_status.asp">
-<input type="hidden" name="next_page" value="">
-<input type="hidden" name="action_mode" value="">
-<input type="hidden" name="action_script" value="">
-<input type="hidden" name="action_wait" value="">
-<input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="wl_unit" value="<% nvram_get("wl_unit"); %>">
-<input type="hidden" name="wl_subunit" value="-1">
-
-<table border="0" cellpadding="0" cellspacing="0" id="rt_table">
-<tr>
-	<td>		
-		<table width="100px" border="0" align="left" style="margin-left:8px;" cellpadding="0" cellspacing="0">
-			<td>
-				<div id="t0" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(0)">
-					<span id="span0" style="cursor:pointer;font-weight: bolder;">2.4GHz</span>
-				</div>
-			</td>
-			<td>
-				<div id="t1" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(1)">
-					<span id="span1" style="cursor:pointer;font-weight: bolder;">5GHz</span>
-				</div>
-			</td>
-			<td>
-				<div id="t2" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(2)">
-					<span id="span2" style="cursor:pointer;font-weight: bolder;">5GHz-2</span>
-				</div>
-			</td>
-			<td>
-				<div id="t3" class="tab_NW" align="center" style="font-weight: bolder;display:none; margin-right:2px;" onclick="tabclickhandler(3)">
-					<span id="span3" style="cursor:pointer;font-weight: bolder;">60GHz</span>
-				</div>
-			</td>
-			<!--td>
-				<div id="t_compatibility" class="tab_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('compatibility')">
-					<span style="cursor:pointer;font-weight: bolder;">Compatibility</span>
-				</div>
-			</td-->
-			<td>
-				<div id="t_status" class="tabclick_NW" align="center" style="font-weight: bolder; margin-right:2px;" onclick="tabclickhandler('status')">
-					<span id="span_status" style="cursor:pointer;font-weight: bolder;"><#Status_Str#></span>
-				</div>
-			</td>
-		</table>
-	</td>
-</tr>
-
-<tr>
-	<td>
-                <table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="net" style="margin: 0px 8px;">
-			<tr>
-				<td colspan="3">
-					<div class="title">Internet Traffic</div>
-					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
-				</td>
-			</tr>
-			<tr>
-				<td class="loading_bar">
-					<div>
-						<div id="rx_bar" class="status_bar"></div>
-					</div>
-				</td>
-				<td>
-					<div>Down:</div>
-				</td>
-				<td style="text-align:right;padding-right:10px;">
-					<div id="rx-current">-- KB/s</div>
-				</td>
-			</tr>
-			<tr>
-				<td class="loading_bar">
-					<div>
-						<div id="tx_bar" class="status_bar"></div>
-					</div>
-				</td>
-				<td>
-					<div>Up:</div>
-				</td>
-				<td style="text-align:right;padding-right:10px;">
-					<div id="tx-current">-- KB/s</div>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="3" style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
-			</tr>
-		</table>
-	</td>
-</tr>
-
-<tr>
-	<td>
-		<div>
-		<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" id="cpu" style="margin: 0px 8px;">
-			<tr>
-				<td >
-					<div class="title"><#Status_CPU#></div>
-					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
-				</td>
-			</tr >
-			<tr>
-				<td>
-					<table id="cpu_field"></table>
-				</td>
-			</tr>
-			
-			<tr style="height:100px;" class="IE8HACK">
-				<td colspan="3">
-					<div style="margin:0px 11px 0px 11px;background-color:black;">
-						<svg width="270px" height="100px">
-							<g>
-								<line stroke-width="1" stroke-opacity="1"   stroke="rgb(255,255,255)" x1="0" y1="0%"   x2="100%" y2="0%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="25%"  x2="100%" y2="25%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="50%"  x2="100%" y2="50%" />
-								<line stroke-width="1" stroke-opacity="0.2" stroke="rgb(255,255,255)" x1="0" y1="75%"  x2="100%" y2="75%" />
-								<line stroke-width="1" stroke-opacity="1"   stroke="rgb(255,255,255)" x1="0" y1="100%" x2="100%" y2="100%" />
-							</g>							
-							<g>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="98%">0%</text>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="55%">50%</text>
-								<text font-family="Verdana" fill="#FFFFFF" font-size="8" x="0" y="11%">100%</text>
-							</g>							
-							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="0"   y1="0%" x2="0"   y2="100%" id="tick1" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="30"  y1="0%" x2="30"  y2="100%" id="tick2" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="60"  y1="0%" x2="60"  y2="100%" id="tick3" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="90"  y1="0%" x2="90"  y2="100%" id="tick4" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="120" y1="0%" x2="120" y2="100%" id="tick5" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="150" y1="0%" x2="150" y2="100%" id="tick6" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="180" y1="0%" x2="180" y2="100%" id="tick7" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="210" y1="0%" x2="210" y2="100%" id="tick8" />
-							<line stroke-width="1" stroke-opacity="0.3" stroke="rgb(40,255,40)" x1="240" y1="0%" x2="240" y2="100%" id="tick9" />						
-							<line stroke-width="1" stroke-opacity="1"   stroke="rgb(0,0,121)"   x1="270" y1="0%" x2="270" y2="100%" id="tick10" />
-
-							<polyline id="cpu0_graph" style="fill:none;stroke:#FF9000;stroke-width:1;width:200px;"  points=""></polyline>
-							<polyline id="cpu1_graph" style="fill:none;stroke:#3CF;stroke-width:1;width:200px;display:none;"  points=""></polyline>
-							<polyline id="cpu2_graph" style="fill:none;stroke:#FC0;stroke-width:1;width:200px;display:none;"  points=""></polyline>
-							<polyline id="cpu3_graph" style="fill:none;stroke:#FF44FF;stroke-width:1;width:200px;display:none;"  points=""></polyline>
-						</svg>
-					</div>
-				</td>
-			</tr>			
-			<tr>
-				<td style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
-			</tr>
- 		</table>
-		</div>
-  	</td>
-</tr>
-
-<tr>
-	<td> 
-		<div>
-			<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" style="margin: 0px 8px;">	
-			<tr>
-				<td colspan="3">		
-					<div class="title"><#Status_RAM#></div>
-					<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
-				</td>
-			</tr>
-			<tr class="ram_table">
-				<td>
-					<div><#Status_Used#></div>	  			
-					<div id="ram_used_info"></div>	
-				</td>
-				<td>
-					<div><#Status_Free#></div>
-					<div id="ram_free_info"></div>	  			
-				</td>
-				<td>
-					<div><#Status_Total#></div>	  			
-					<div id="ram_total_info"></div>	  			
-				</td>
-			</tr>  
-			<tr>
-				<td colspan="3">
-					<div>
-						<table>
-							<tr>
-								<td class="loading_bar" colspan="2">
-									<div>
-										<div id="ram_bar" class="status_bar"></div>				
-									</div>
-								</td>
-								<td>
-									<div style="width:39px;"></div>
-								</td>
-								<td class="percentage_bar">
-									<div id="ram_quantification">0%</div>
-								</td>
-							</tr>
-						</table>
-					</div>
-				</td>
-			</tr>
-			</table>
-		</div>
-	</td>
-</tr>
-<tr id="tr_ethernet_ports" style="display:none;">
-	<td> 
-		<div>
-			<table width="96%" border="1" align="center" cellpadding="4" cellspacing="0" class="table1px" style="margin: 0px 8px;">	
-				<tr>
-					<td style="border-bottom:5px #2A3539 solid;padding:0px 10px 5px 10px;"></td>
-				</tr>
-				<tr>
-					<td>
-						<div class="title"><#Status_Ethernet_Ports#></div>
-						<div style="margin-top: 5px;*margin-top:-70px;" class="line_horizontal"></div>
-					</td>
-				</tr>
-				<tr>
-					<td>
-						<div style="overflow-x:hidden;height:190px;">
-							<div id="tableContainer" style="margin-top:-10px;"></div>
-						</div>
-					</td>
-				</tr>
-			</table>
-		</div>
-	</td>
-</tr>
-</table>			
-</form>
+<body>
+<div class="main-block">
+	<div class="display-flex flex-a-center">
+		<div id="wireless_tab" class="tab-block" onclick="switchTab(this.id)"><#menu5_1#></div>
+		<div id="status_tab" class="tab-block tab-click" onclick="switchTab(this.id)"><#Status_Str#></div>
+		<div id="light_effect_tab" class="tab-block"style="display:none;" onclick="switchTab(this.id)">Aura RGB</div><!-- untranslated -->
+	</div>
+	<div id="net_field" class="unit-block"></div>
+	<div id="cpu_field" class="unit-block"></div>
+	<div id="ram_field" class="unit-block"></div>
+	<div id="phy_ports" class="unit-block"></div>
+	<div id="led_field" class="unit-block" style="display:none"></div>
+	<div id='hw_information_field' class="unit-block"></div>
+	<div id="yadns_field" class="unit-block" style="display:none"></div>
+</div>
 </body>
 </html>

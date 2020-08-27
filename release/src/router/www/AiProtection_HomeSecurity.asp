@@ -166,7 +166,7 @@ function initial(){
 						</tr>  
 					</table>
 
-					<div style="width:135px;height:55px;position:absolute;bottom:5px;right:5px;background-image:url('images/New_ui/tm_logo_power.png');"></div>
+					<div style="width:96px;height:44px;position:absolute;bottom:5px;right:5px;background-image:url('images/New_ui/TrendMirco_logo.svg');background-size: 100%;"></div>
 				</div>
 		<!--=====End of Main Content=====-->
 			</td>

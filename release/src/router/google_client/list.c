@@ -9,6 +9,9 @@
 #include <unistd.h>
 #include"data.h"
 
+int s_download(CloudFile *filetmp, char *fullname,char *filename,int index,int type);	// in smartsync_api/api.c
+
+
 extern int exit_loop;
 void replace_char_in_str(char *str,char newchar,char oldchar){
 

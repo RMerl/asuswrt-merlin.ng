@@ -7,7 +7,7 @@ PROGS = libasuslog.so
 CFLAGS += -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
-LDFLAGS_SO = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared 
+LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared 
 ifeq ($(HND_ROUTER),y)
 LDFLAGS_SO += -lpthread -lgcc_s
 endif
@@ -27,7 +27,7 @@ endif
 
 ifeq ($(wildcard $(TOP)/libasuslog/*.c),)
 all:
-	-cp -f $(TOP)/libasuslog/prebuild$(BCMEX)$(EXHND)/libasuslog.so libasuslog.so
+	-cp -f $(TOP)/libasuslog/prebuild/$(BUILD_NAME)/libasuslog.so libasuslog.so
 else
 all: $(PROGS)
 endif

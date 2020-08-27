@@ -18,7 +18,7 @@ function GenContent(){
 		timeout: 1500,
 		error: function(xhr){
 			if(dead > 30){
-				break;
+				$("#amas_release_note").html("Fail to grab release note");
 			}
 			else{
 				dead++;
@@ -34,6 +34,9 @@ function GenContent(){
 					.html(content)
 					.css("display", "");
 			}
+			else{
+				$("#amas_release_note").html("Fail to grab release note");
+			}
 		}
 	});
 }
@@ -42,6 +45,6 @@ function GenContent(){
 <body onload="reSize();">
 <textarea id="amas_release_note" cols='63' rows='18' wrap='normal' readonly='readonly' style='width:98%; font-family:Courier New, Courier, mono; font-size:13px;color:#FFFFFF;background-color:rgb(43, 55, 59); word-wrap:normal; border:0px; display:none;'>
 </textarea>
-<textarea id="amas_relese_note_hint" cols='63' rows='18' wrap='normal' readonly='readonly' style='width:98%; font-family:Courier New, Courier, mono; font-size:13px;color:#FFFFFF;background-color:rgb(43, 55, 59); word-wrap:normal; border:0px; '>Loading release note, please wait…</textarea><!--untranslated-->
+<textarea id="amas_release_note_hint" cols='63' rows='18' wrap='normal' readonly='readonly' style='width:98%; font-family:Courier New, Courier, mono; font-size:13px;color:#FFFFFF;background-color:rgb(43, 55, 59); word-wrap:normal; border:0px; '>Loading release note, please wait…</textarea><!--untranslated-->
 </body>
 </html>

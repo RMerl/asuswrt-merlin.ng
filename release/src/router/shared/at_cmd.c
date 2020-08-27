@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <sys/file.h>
+#include <fcntl.h>		//open(), O_CREAT, O_RDWR
 
 #include "shared.h"
 #include "bcmnvram.h"

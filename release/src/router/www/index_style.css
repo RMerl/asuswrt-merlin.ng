@@ -877,8 +877,16 @@ width:122px;
 	background: url(images/New_ui/icon_indexes.png);
 	background-position: 0px 0px;
 }
+.menu_AiMesh{
+	background: url(images/New_ui/icon_AiMesh.png);
+}
 .menu_OpenNAT{
 	background: url(images/New_ui/open_NAT.svg);
+	background-size: 100%;
+	background-repeat: no-repeat;
+}
+.menu_TencentAcceleration{
+	background: url(images/New_ui/logo_tencent.svg);
 	background-size: 100%;
 	background-repeat: no-repeat;
 }

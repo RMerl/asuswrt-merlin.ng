@@ -512,7 +512,9 @@ void vpnc_del_firewall_rule(const int vpnc_idx, const char *vpnc_ifname)
 void
 vpnc_down(const int vpnc_idx, char *vpnc_ifname)
 {
-	int unit;
+	int unit, default_wan;
+	char tmp[100], vpnc_prefix[] = "vpncXXXX_", wan_prefix[] = "wanXXXXXXXXXX_";
+	char *wan_ifname = NULL, *wan_proto = NULL;
 
 	if(!vpnc_ifname)
 		return;

@@ -314,8 +314,10 @@ int usb_get_descriptor(usb_dev_handle *udev, unsigned char type,
 /* <arch>.c */
 int usb_bulk_write(usb_dev_handle *dev, int ep, const char *bytes, int size,
 	int timeout);
+#ifdef ASUS_U2EC
 int usb_bulk_write_sp(usb_dev_handle *dev, int ep, const char *bytes, int size,
 	int timeout, int *actual_length, int max_rw);
+#endif
 int usb_bulk_read(usb_dev_handle *dev, int ep, char *bytes, int size,
 	int timeout);
 int usb_interrupt_write(usb_dev_handle *dev, int ep, const char *bytes,

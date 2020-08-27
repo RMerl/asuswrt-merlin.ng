@@ -1,0 +1,308 @@
+﻿<script>
+function initial_system_settings() {
+	popupHint.init();
+
+	if(isSupport("amas_eap")){
+		var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
+		if(amas_eap_bhmode == "0")
+			$(".system_settings_bg.eap .switch").addClass("off");
+		else
+			$(".system_settings_bg.eap .switch").addClass("on");
+
+		$(".system_settings_bg.eap .switch").unbind("click");
+		$(".system_settings_bg.eap .switch").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+
+			$(".system_settings_bg.eap .switch").toggleClass("off on").promise().done(function(){
+				var switch_status = $(".system_settings_bg.eap .switch").hasClass("on");
+				if(switch_status){
+					popupHint.show_hint();
+					var hint = "";
+					hint += $("<span>").css("color", "#FC0").html("<#AiMesh_Ethernet_Backhaul_Mode_Confirm#>")[0].outerHTML;
+					hint += "<br>";
+					hint += "<#AiMesh_Ethernet_Backhaul_Mode_Confirm01#>";
+					hint += "<br><br>";
+					hint += "* <#AiMesh_Ethernet_Backhaul_Mode_Confirm02#>";
+					var not_support_list = check_not_support_nodes("general_mode");
+					if(not_support_list != "") {
+						hint += "<br><br>";
+						var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#><br>#MODELLIST<br><#AiMesh_Modellist_Not_Support_Feature02#> <#AiMesh_Modellist_Not_Support_Feature03#> ".replace("#MODELLIST", not_support_list);
+							hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+					}
+					popupHint.set_text(hint);
+					popupHint.set_btn_ok(function(){
+						showLoading(15);
+						httpApi.nvramSet({
+							"amas_eap_bhmode" : "3100",
+							"action_mode" : "apply",
+							"rc_service" : "restart_wireless"
+						}, function(){
+							setTimeout(function(){
+								if(typeof jstree_refresh == "function")
+									jstree_refresh();
+							},1000);
+						}());
+						$("#AiMesh_Topology #manage_block").find(".manage_conn_priority #conn_priority_select").attr("disabled", true);
+					});
+					popupHint.set_btn_cancel(function(){
+						$(".system_settings_bg.eap .switch").toggleClass("off on");
+					});
+				}
+				else{
+					showLoading(15);
+					httpApi.nvramSet({
+						"amas_eap_bhmode" : "0",
+						"action_mode" : "apply",
+						"rc_service" : "restart_wireless"
+					}, function(){
+						setTimeout(function(){
+							if(typeof jstree_refresh == "function")
+								jstree_refresh();
+						},1000);
+					}());
+					$("#AiMesh_Topology #manage_block").find(".manage_conn_priority #conn_priority_select").attr("disabled", false);
+				}
+			});
+		});
+	}
+	else
+		$(".system_settings_bg.eap").hide();
+
+	$(".system_settings_bg.led").hide();
+
+	$(".system_settings_bg.roaming_block").unbind("click");
+	$(".system_settings_bg.roaming_block").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		location.href = "/Advanced_Roaming_Block_Content.asp";
+	});
+
+	$(".system_settings_bg.reset").unbind("click");
+	$(".system_settings_bg.reset").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		recovery_eap_status();
+		popupHint.show_hint();
+		var reboot_time = eval("<% get_default_reboot_time(); %>");
+		var reboot_minutes = Math.ceil(reboot_time / 60);
+		var hint = "";
+		var not_support_list = check_not_support_nodes("manual_reset_default");
+		if(not_support_list == "") {
+			hint += "<#AiMesh_System_Reset_Default_Hint#><#AiMesh_A_Few_Minutes_Complete#>";
+			hint += "<br>";
+			hint += "<#Setting_factorydefault_hint2#>";
+		}
+		else {
+			hint += "<#AiMesh_System_Reset_Default_Hint01#>".replace("#MINUTES", reboot_minutes);
+			hint += "<br>";
+			hint += "<#Setting_factorydefault_hint2#>";
+			hint += "<br><br>";
+			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reset_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
+			hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+		}
+		var lan_ipaddr = httpApi.nvramGet(["lan_ipaddr"]).lan_ipaddr;
+		var lan_ipaddr_ori = '<% nvram_default_get("lan_ipaddr"); %>';
+		if(lan_ipaddr != lan_ipaddr_ori){
+			hint += "<br><br>";
+			hint += $("<span>").css("color", "#FC0").html("* <#Setting_factorydefault_iphint#>".replace("192.168.1.1", lan_ipaddr_ori).replace("\n", '<br>'))[0].outerHTML;
+		}
+		popupHint.set_text(hint);
+		popupHint.set_btn_ok(function(){
+			showLoading(reboot_time);
+			httpApi.nvramSet({"action_mode": "reset_default"});
+			setTimeout(function(){
+				var interval_isAlive = setInterval(function(){
+					httpApi.isAlive("", lan_ipaddr_ori, function(){ clearInterval(interval_isAlive); location.href = "/";});
+				}, 2000);
+			}, 5000);
+		});
+		popupHint.set_btn_cancel();
+	});
+
+	$(".system_settings_bg.reboot").unbind("click");
+	$(".system_settings_bg.reboot").click(function(e){
+		e = e || event;
+		e.stopPropagation();
+		recovery_eap_status();
+		popupHint.show_hint();
+		var reboot_time = eval("<% get_default_reboot_time(); %>");
+		var reboot_minutes = Math.ceil(reboot_time / 60);
+		var hint = "";
+		var not_support_list = check_not_support_nodes("manual_reboot");
+		if(not_support_list == "")
+			hint = "<#AiMesh_System_Reboot_Hint#><#AiMesh_A_Few_Minutes_Complete#><br><#Setting_factorydefault_hint2#>";
+		else {
+			hint += "Rebooting the router will cause all connected devices to lose the Internet connectivity and it takes around #MINUTES minutes. All devices will be reconnected again while the reboot completed.".replace("#MINUTES", reboot_minutes);/* untranslated */
+			hint += "<br>";
+			hint += "<#Setting_factorydefault_hint2#>";
+			hint += "<br><br>";
+			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reboot_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
+			hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+		}
+		popupHint.set_text(hint);
+		popupHint.set_btn_ok(function(){
+			showLoading(reboot_time);
+			httpApi.nvramSet({"action_mode": "device_reboot"});
+			var lan_ipaddr = httpApi.nvramGet(["lan_ipaddr"]).lan_ipaddr;
+			setTimeout(function(){
+				var interval_isAlive = setInterval(function(){
+					httpApi.isAlive("", lan_ipaddr, function(){ clearInterval(interval_isAlive); location.href = "/";});
+				}, 2000);
+			}, 5000);
+		});
+		popupHint.set_btn_cancel();
+	});
+}
+var popupHint = {
+	"init" : function(){
+		var $popupHint = $("<div>");
+		$popupHint.appendTo($(".popup_hint_component"));
+		$("#popup_hint_component").after($popupHint);
+		$popupHint.addClass("popup_hint_component popup_hint_bg");
+		$popupHint.attr({"id":"popup_hint_bg", "onselectstart":"false"});
+
+		$("<div>").addClass("hint_text").appendTo($popupHint);
+
+		var $action_bg = $("<div>").addClass("action_bg").appendTo($popupHint);
+		var $action_cancel = $("<input/>").attr({"id":"action_cancel", "type":"button", "value":"<#CTL_Cancel#>"}).addClass("button_gen");
+		var $action_ok = $("<input/>").attr({"id":"action_ok", "type":"button", "value":"<#CTL_ok#>"}).addClass("button_gen");
+		$action_bg.append($action_cancel).append($action_ok);
+	},
+	"show_hint" : function(){
+		$(".popup_hint_component").fadeIn();
+		adjust_panel_block_top("popup_hint_bg", 100);
+	},
+	"set_text" : function(_text){
+		$(".popup_hint_component .hint_text").html(_text);
+	},
+	set_btn_ok : function(_fun){
+		$(".popup_hint_component .action_bg #action_ok").show();
+		$(".popup_hint_component .action_bg #action_ok").unbind("click");
+		$(".popup_hint_component .action_bg #action_ok").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if(_fun)
+				_fun();
+			$(".popup_hint_component").fadeOut();
+		});
+	},
+	set_btn_cancel : function(_fun){
+		$(".popup_hint_component .action_bg #action_cancel").show();
+		$(".popup_hint_component .action_bg #action_cancel").unbind("click");
+		$(".popup_hint_component .action_bg #action_cancel").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			if(_fun)
+				_fun();
+			$(".popup_hint_component").fadeOut();
+		});
+	},
+	"hide_btn" : function(_type){
+		$(".popup_hint_component .action_bg #action_" + _type + "").hide();
+	}
+};
+function check_not_support_nodes(_feature) {
+	var transform_location = function(_node_info, _isReNode){
+		var location_array = [
+		{value:"Home",text:"<#AiMesh_NodeLocation01#>"}, {value:"Living Room",text:"<#AiMesh_NodeLocation02#>"}, {value:"Dining Room",text:"<#AiMesh_NodeLocation03#>"},
+		{value:"Bedroom",text:"<#AiMesh_NodeLocation04#>"}, {value:"Office",text:"<#AiMesh_NodeLocation05#>"}, {value:"Stairwell",text:"<#AiMesh_NodeLocation06#>"},
+		{value:"Hall",text:"<#AiMesh_NodeLocation07#>"}, {value:"Kitchen",text:"<#AiMesh_NodeLocation08#>"}, {value:"Attic",text:"<#AiMesh_NodeLocation09#>"},
+		{value:"Basement",text:"<#AiMesh_NodeLocation10#>"}, {value:"Yard",text:"<#AiMesh_NodeLocation11#>"}, {value:"Master Bedroom",text:"<#AiMesh_NodeLocation12#>"},
+		{value:"Guest Room",text:"<#AiMesh_NodeLocation13#>"}, {value:"Kids Room",text:"<#AiMesh_NodeLocation14#>"}, {value:"Study Room",text:"<#AiMesh_NodeLocation15#>"},
+		{value:"Hallway",text:"<#AiMesh_NodeLocation16#>"}, {value:"Walk-in Closet",text:"<#AiMesh_NodeLocation17#>"}, {value:"Bathroom",text:"<#AiMesh_NodeLocation18#>"},
+		{value:"Second Floor",text:"<#AiMesh_NodeLocation19#>"}, {value:"Third Floor",text:"<#AiMesh_NodeLocation20#>"}, {value:"Storage",text:"<#AiMesh_NodeLocation21#>"},
+		{value:"Balcony",text:"<#AiMesh_NodeLocation22#>"}, {value:"Meeting Room",text:"<#AiMesh_NodeLocation23#>"}, {value:"Garage",text:"<#AiMesh_NodeLocation25#>"},
+		{value:"Custom",text:"<#AiMesh_NodeLocation24#>"}];
+		var result = "<#AiMesh_NodeLocation01#>";
+		var location = "Home";
+		if(_isReNode){
+			if("config" in _node_info) {
+				if("misc" in _node_info.config) {
+					if("cfg_alias" in _node_info.config.misc) {
+						if(_node_info.config.misc.cfg_alias != "")
+							location = _node_info.config.misc.cfg_alias;
+					}
+				}
+			}
+		}
+		else{
+			var alias = _node_info.alias;
+			if(alias != _node_info.mac)
+				location = alias;
+		}
+		var specific_location = location_array.filter(function(item, index, _array){
+			return (item.value == location);
+		})[0];
+		if(specific_location != undefined){
+			result = specific_location.text;
+		}
+		else{
+			result = location;
+		}
+		return result;
+	};
+	var not_support_list = "";
+	var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist");
+	get_cfg_clientlist.forEach(function(item, index, array){
+		var isReNode = (index == 0) ? false : true;
+		var node_capability = httpApi.aimesh_get_node_capability(item);
+		if(item.online == "0" || (!node_capability[_feature] && _feature != "manual_reset_default")) {
+			if(not_support_list != "")
+				not_support_list += ", ";
+			if(item.ui_model_name == undefined || item.ui_model_name == "")
+				not_support_list += item.model_name;
+			else
+				not_support_list += item.ui_model_name;
+			not_support_list += " (" + transform_location(item, isReNode) + ")";
+		}
+	});
+	return not_support_list;
+};
+function recovery_eap_status() {
+	if(isSupport("amas_eap")){
+		var amas_eap_bhmode = httpApi.nvramGet(["amas_eap_bhmode"]).amas_eap_bhmode;
+		var switch_status = $(".system_settings_bg.eap .switch").hasClass("on");
+		if(amas_eap_bhmode == "0" && switch_status)
+			$(".system_settings_bg.eap .switch").toggleClass("off on");
+	}
+}
+$(document).ready(initial_system_settings);
+</script>
+<div class="system_settings_bg eap">
+	<div class="system_icon"></div>
+	<div class="system_text">
+		<span><#AiMesh_Ethernet_Backhaul_Mode#></span>
+		<div id="system_settings_eap_hint" class="bubble_icon info eap hover_pop_hint"></div>
+		<div class="hover_pop_hint_bg eap">
+			<#AiMesh_Ethernet_Backhaul_Mode_Hint#>
+			<br>
+			<span style="color:#FC0"><#AiMesh_Ethernet_Backhaul_Mode_Confirm#></span>
+			<#AiMesh_Ethernet_Backhaul_Mode_Confirm01#>
+		</div>
+	</div>
+	<div class="switch"></div>
+</div>
+
+<div class="system_settings_bg led">
+	<div class="system_icon"></div>
+	<div class="system_text"><span>System LED control</span></div><!-- untranslated -->
+	<div class="switch"></div>
+</div>
+
+<div class="system_settings_bg roaming_block">
+	<div class="system_icon"></div>
+	<div class="system_text"><span><#WiFi_Roaming_Block_List#></span></div>
+</div>
+
+<div class="system_settings_bg reset">
+	<div class="system_icon"></div>
+	<div class="system_text"><span><#AiMesh_System_Reset_Default#></span></div>
+</div>
+
+<div class="system_settings_bg reboot">
+	<div class="system_icon"></div>
+	<div class="system_text"><span><#AiMesh_System_Reboot#></span></div>
+</div>
+
+<div class="popup_hint_component"></div>

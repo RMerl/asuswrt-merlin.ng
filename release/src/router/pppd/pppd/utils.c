@@ -51,6 +51,7 @@
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <paths.h>	//musl _PATH_VARRUN
 #ifdef SVR4
 #include <sys/mkdev.h>
 #endif

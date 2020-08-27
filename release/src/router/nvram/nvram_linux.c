@@ -16,7 +16,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#if (defined(__GLIBC__) || defined(__UCLIBC__))
 #include <error.h>
+#endif	/* (__GLIBC__ || __UCLIBC__) */
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
@@ -90,7 +92,7 @@ unsigned int get_nvram_space(void)
 	return nvram_space;
 }
 
-#ifdef RTCONFIG_REALTEK
+#if defined(RTCONFIG_REALTEK) && !defined(RPAC92)
 int get_rtk_mac_offset(const char *name)
 {
 	int offset = HW_SETTING_OFFSET+sizeof(PARAM_HEADER_T);
@@ -148,7 +150,7 @@ char *nvram_get(const char *name)
 	char *value;
 	size_t count = strlen(name) + 1;
 	unsigned long *off = (unsigned long *)tmp;
-#ifdef RTCONFIG_REALTEK
+#if defined(RTCONFIG_REALTEK) && !defined(RPAC92)
 	if(strncmp(name,"rtk_mac",strlen("rtk_mac"))==0)
 	{
 		unsigned char tmpMac[6]={0};
@@ -242,7 +244,7 @@ static int _nvram_set(const char *name, const char *value)
 	char tmp[100];
 	char *buf = tmp;
 	int ret;
-#ifdef RTCONFIG_REALTEK
+#if defined(RTCONFIG_REALTEK) && !defined(RPAC92)
 	if(strncmp(name,"rtk_mac",strlen("rtk_mac"))==0)
 	{
 		int offset=get_rtk_mac_offset(name);

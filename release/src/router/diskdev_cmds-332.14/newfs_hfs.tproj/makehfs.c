@@ -37,7 +37,9 @@
 #endif
 #include <sys/errno.h>
 #include <sys/stat.h>
+#if defined(__GLIBC__) || defined(__UCLIBC__)
 #include <sys/sysctl.h>
+#endif
 #if !LINUX
 #include <sys/vmmeter.h>
 #endif

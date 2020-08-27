@@ -18,9 +18,9 @@ endif
 CFLAGS += -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
-LDFLAGS_SO = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
+LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
 ifeq ($(HND_ROUTER),y)
-LDFLAGS_SO += -L$(TOP)/wlcsm -lwlcsm
+LDFLAGS_SO += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 LDFLAGS_SO += -lgcc_s
 endif
 LDFLAGS += $(LDFLAGS_SO) -L. -ldisk

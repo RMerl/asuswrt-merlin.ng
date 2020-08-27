@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>	//read(), close()
 
 #ifdef __WATCOMC__
 #ifndef __LINUX__

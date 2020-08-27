@@ -47,6 +47,13 @@ ppp_ifunit(char *ifname)
 		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
 			return unit;
 	}
+#ifdef RTCONFIG_MULTISERVICE_WAN
+	for (unit = WAN_UNIT_FIRST_MULTISRV_START; unit < WAN_UNIT_MULTISRV_MAX; unit++) {
+		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+		if (nvram_match(strcat_r(prefix, "pppoe_ifname", tmp), ifname))
+			return unit;
+	}
+#endif
 
 	return -1;
 }

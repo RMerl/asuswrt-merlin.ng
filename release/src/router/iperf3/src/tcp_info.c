@@ -48,7 +48,11 @@
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#if !(defined(__GLIBC__) || defined(__UCLIBC__))
+#include <linux/tcp.h>
+#else
 #include <netinet/tcp.h>
+#endif
 #include <string.h>
 #include <netinet/in.h>
 #include <errno.h>

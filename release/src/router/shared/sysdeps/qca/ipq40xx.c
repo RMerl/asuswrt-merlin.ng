@@ -58,7 +58,7 @@ enum {
 	LAN4_PORT=4,
 	WAN_PORT=5,
 	P6_PORT=5,
-#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#elif defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300)
 	CPU_PORT=0,
 	LAN1_PORT=1,
 	LAN2_PORT=2,
@@ -150,7 +150,7 @@ const int lan_id_to_port_mapping[NR_WANLAN_PORT] = {
 	LAN4_PORT,
 };
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) /* for Lyra */
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300) /* for Lyra */
 /* this table is mapping to lan_id_to_port_mapping */
 static const int skip_ports[NR_WANLAN_PORT] = {
 	0,  /* WAN_PORT */
@@ -928,7 +928,7 @@ void reset_qca_switch(void)
 	f_write_string("/sys/class/net/eth1/queues/rx-2/rps_flow_cnt", "256", 0, 0);
 	f_write_string("/sys/class/net/eth1/queues/rx-3/rps_flow_cnt", "256", 0, 0);
 	f_write_string("/proc/sys/net/core/rps_sock_flow_entries", "1024", 0, 0);
-#if defined(VZWAC1300)
+#if defined(VZWAC1300) || defined(SHAC1300)
 	eval("ssdk_sh", "debug", "phy", "set", "5", "0xB", "0x000a"); // decrease PHY NOISE, Arcadyan request
 #endif
 }
@@ -1439,7 +1439,7 @@ void ATE_port_status(void)
 #else
 	sprintf(buf, "W0=%C;L1=%C;L2=%C;L3=%C;L4=%C;",
 		(pS.link[0] == 1) ? (pS.speed[0] == 2) ? 'G' : 'M': 'X',
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300)
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X',
 		'X',
 		'X',
@@ -1449,7 +1449,7 @@ void ATE_port_status(void)
 		(pS.link[2] == 1) ? (pS.speed[2] == 2) ? 'G' : 'M': 'X',
 		(pS.link[3] == 1) ? (pS.speed[3] == 2) ? 'G' : 'M': 'X',
 		(pS.link[4] == 1) ? (pS.speed[4] == 2) ? 'G' : 'M': 'X'
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || SHAC1300 */
 		);
 #endif
 	puts(buf);
@@ -1516,12 +1516,12 @@ int detwan_set_def_vid(const char *ifname, int setVid, int needTagged, int avoid
 				int new_vid;
 				new_vid = detwan_set_def_vid(ipq40xx_net[i].ifname, 0, 0, setVid);
 
-#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300)
+#if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300)
 				if (IPTV_ports_cnt() >= 2)
 				{
 					doSystem("ssdk_sh vlan entry del %d", new_vid);	/* remove new vid (NOT USED) */
 				}
-#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 */
+#endif	/* MAPAC1300 || MAPAC2200 || VZWAC1300 || SHAC1300 */
 			}
 		}
 	}
@@ -1615,3 +1615,13 @@ void usage(char *cmd)
 	exit(0);
 }
 #endif
+
+unsigned int
+rtkswitch_Port_phyLinkRate(unsigned int port_mask)
+{
+	unsigned int speed = 0;
+
+	get_ipq40xx_Port_Speed(port_mask, &speed);
+
+	return speed;
+}

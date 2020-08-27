@@ -29,6 +29,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/file.h>
 
 #include <shared.h>
 #include <typedefs.h>
@@ -39,6 +40,61 @@
 /* Globals */
 static int nvram_fd = -1;
 static char *nvram_buf = NULL;
+static int lock_fd = -1;
+
+
+#define LOCK_FILE	"/var/nvram.lock"
+#define MAX_LOCK_WAIT	10
+
+static int _lock()
+{
+	lock_fd = open(LOCK_FILE,O_WRONLY|O_CREAT,0644);
+	if (lock_fd < 0){
+		perror("open");
+		return 0;
+	}
+	if (flock(lock_fd, LOCK_EX) < 0) {
+		perror("flock");
+		close(lock_fd);
+		return 0;
+	}
+	return 1;
+}
+
+static int _unlock()
+{
+	if (close(lock_fd) < 0) {
+		perror("close");
+		return 0;
+	}
+	return 1;
+}
+
+static int _nvram_lock()
+{
+	int i=0;
+
+	while (i++ < MAX_LOCK_WAIT) {
+		if(_lock())
+			return 1;
+		else
+			usleep(500000);
+	}
+	return 0;
+}
+
+static int _nvram_unlock()
+{
+	int i=0;
+
+	while (i++ < MAX_LOCK_WAIT) {
+		if(_unlock())
+			return 1;
+		else
+			usleep(500000);
+	}
+	return 0;
+}
 
 int
 nvram_init(void *unused)
@@ -67,7 +123,7 @@ err:
 }
 
 char *
-nvram_get(const char *name)
+dev_nvram_get(const char *name)
 {
 	size_t count = strlen(name) + 1;
 	char tmp[100], *value;
@@ -100,8 +156,28 @@ nvram_get(const char *name)
 	return value;
 }
 
+char *
+nvram_get(const char *name)
+{
+#ifdef RTCONFIG_JFFS_NVRAM
+	if (large_nvram(name)) {
+		char *ret = NULL;
+
+		if (!_nvram_lock())
+			return NULL;
+
+		ret = jffs_nvram_get(name);
+
+		_nvram_unlock();
+
+		return ret;
+	}
+#endif
+	return dev_nvram_get(name);
+}
+
 int
-nvram_getall(char *buf, int count)
+dev_nvram_getall(char *buf, int count)
 {
 	int ret;
 
@@ -121,6 +197,35 @@ nvram_getall(char *buf, int count)
 		perror(PATH_DEV_NVRAM);
 
 	return (ret == count) ? 0 : ret;
+}
+
+int
+nvram_getall(char *buf, int count)
+{
+#ifdef RTCONFIG_JFFS_NVRAM
+	int len;
+	char *name;
+
+	if(count < MAX_NVRAM_SPACE)
+		return -1;
+
+	dev_nvram_getall(buf, MAX_NVRAM_SPACE);
+
+	for (name = buf; *name; name += strlen(name) + 1)
+		;
+	len = name - buf;
+
+	if (!_nvram_lock())
+		return -1;
+
+	len = jffs_nvram_getall(len, buf, count);
+
+	_nvram_unlock();
+
+	return len;
+#else
+	return dev_nvram_getall(buf, count);
+#endif
 }
 
 static char *nvram_xfr_buf = NULL;
@@ -157,8 +262,8 @@ nvram_xfr(const char *buf)
         }
 }
 
-static int
-_nvram_set(const char *name, const char *value)
+int
+dev_nvram_set(const char *name, const char *value)
 {
 	size_t count = strlen(name) + 1;
 	char tmp[100], *buf = tmp;
@@ -185,6 +290,8 @@ _nvram_set(const char *name, const char *value)
 
 	if (ret < 0)
 		perror(PATH_DEV_NVRAM);
+	else if (!strncmp(name, "asuscfeA", 8))
+		printf("Success\n");
 
 	if (buf != tmp)
 		free(buf);
@@ -195,13 +302,29 @@ _nvram_set(const char *name, const char *value)
 int
 nvram_set(const char *name, const char *value)
 {
-	return _nvram_set(name, value);
+#ifdef RTCONFIG_JFFS_NVRAM
+	if (large_nvram(name)) {
+		int ret = 0;
+		if (!_nvram_lock()) {
+			ret = -1;
+			goto fail_set;
+		}
+
+		ret = jffs_nvram_set(name, value);
+
+fail_set:
+		_nvram_unlock();
+
+		return ret;
+	}
+#endif
+	return dev_nvram_set(name, value);
 }
 
 int
 nvram_unset(const char *name)
 {
-	return _nvram_set(name, NULL);
+	return dev_nvram_set(name, NULL);
 }
 
 int
@@ -219,7 +342,10 @@ nvram_commit(void)
         fp = fopen("/var/log/commit_ret", "w");
 
 	if ((ret = nvram_init(NULL)))
+	{
+		fclose(fp);
 		return ret;
+	}
 
 	ret = ioctl(nvram_fd, NVRAM_MAGIC, NULL);
 

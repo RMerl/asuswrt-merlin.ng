@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <sys/types.h>
 #include <sys/file.h>
+#include <limits.h>		//PATH_MAX
 #include "shutils.h"
 #include "shared.h"
 

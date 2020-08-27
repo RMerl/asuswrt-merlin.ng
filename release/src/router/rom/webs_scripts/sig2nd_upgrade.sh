@@ -13,7 +13,7 @@ update_url=`cat /tmp/update_url`
 #update_url="http://192.168.123.198"
 
 sig_file=`nvram get SKU`_`nvram get sig_state_info`_un.zip
-sig_rsasign=`nvram get SKU`_`nvram get sig_state_info`_rsa.zip
+sig_rsasign=`nvram get SKU`_`nvram get sig_state_info`_rsa`nvram get live_update_rsa_ver`.zip
 
 echo "---- sig upgrade start: ----" > /tmp/sig_upgrade.log
 echo "$sig_file" >> /tmp/sig_upgrade.log

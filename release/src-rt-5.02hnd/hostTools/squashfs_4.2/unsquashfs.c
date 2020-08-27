@@ -22,6 +22,7 @@
  * unsquashfs.c
  */
 
+#include <sys/sysmacros.h>
 #include "unsquashfs.h"
 #include "squashfs_swap.h"
 #include "squashfs_compat.h"

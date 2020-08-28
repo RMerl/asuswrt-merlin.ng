@@ -29,9 +29,9 @@ RSYNC_TREE=y
 #BAC56=y
 
 BAC68=y
-BAC87=y
+#BAC87=y
 
-BAC3200=y
+#BAC3200=y
 
 BAC88=y
 BAC3100=y
@@ -132,7 +132,7 @@ if [ "$BAC56" = "y" ]; then
 	clean_tree amng.ac56 release/src-rt-6.x.4708 rt-ac56u master
 fi
 if [ "$BAC68" = "y" ]; then
-	clean_tree amng.ac68 release/src-rt-6.x.4708 rt-ac68u mainline
+	clean_tree amng.ac68 release/src-rt-6.x.4708 rt-ac68u master
 fi
 if [ "$BAC87" = "y" ]; then
 	clean_tree amng.ac87 release/src-rt-6.x.4708 rt-ac87u 384.13_x
@@ -141,25 +141,25 @@ if [ "$BAC3200" = "y" ]; then
 	clean_tree amng.ac3200 release/src-rt-7.x.main/src rt-ac3200 384.13_x
 fi
 if [ "$BAC3100" = "y" ]; then
-	clean_tree amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 mainline
+	clean_tree amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 master
 fi
 if [ "$BAC88" = "y" ]; then
-	clean_tree amng.ac88 release/src-rt-7.14.114.x/src rt-ac88u mainline
+	clean_tree amng.ac88 release/src-rt-7.14.114.x/src rt-ac88u master
 fi
 if [ "$BAC5300" = "y" ]; then
-	clean_tree amng.ac5300 release/src-rt-7.14.114.x/src rt-ac5300 mainline
+	clean_tree amng.ac5300 release/src-rt-7.14.114.x/src rt-ac5300 master
 fi
 if [ "$BAC86" = "y" ]; then
-	clean_tree amng.ac86 release/src-rt-5.02hnd rt-ac86u mainline
+	clean_tree amng.ac86 release/src-rt-5.02hnd rt-ac86u master
 fi
 if [ "$BAX88" = "y" ]; then
-	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u ax
+	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u master
 fi
 if [ "$BAX58" = "y" ]; then
-	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u ax
+	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u master
 fi
 if [ "$BAX56" = "y" ]; then
-	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u ax
+	clean_tree amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u master
 fi
 
 echo "--- $(date +%R) - All trees ready!"

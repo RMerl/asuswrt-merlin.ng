@@ -1,0 +1,28 @@
+#!/bin/sh
+
+mkdir prebuild
+cd prebuild
+
+#mkdir arm
+#mkdir arm_7
+#mkdir arm_7114
+#mkdir arm_94908hnd
+mkdir arm_axhnd
+mkdir arm_6750hnd
+
+mv ../prebuild_arm arm
+mv ../prebuild_arm_7 arm_7
+mv ../prebuild_arm_7114 arm_7114
+mv ../prebuild_arm_94908hnd arm_94908hnd
+
+ln -s arm RT-AC68U
+ln -s arm RT-AC87U
+ln -s arm_7 RT-AC3200
+ln -s arm_7114 RT-AC88U
+ln -s arm_7114 RT-AC3100
+ln -s arm_7114 RT-AC5300
+ln -s arm_94908hnd RT-AC86U
+ln -s arm_axhnd RT-AX88U
+ln -s arm_6750hnd RT-AX56U
+ln -s arm_6750hnd RT-AX58U
+

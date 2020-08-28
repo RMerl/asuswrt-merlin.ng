@@ -1575,7 +1575,9 @@ extern void timecheck(void);
 #ifdef RTCONFIG_DSL_HOST
 extern void led_DSLWAN(int force_update);
 #endif
+#ifdef RTCONFIG_MERLINUPDATE
 extern void auto_firmware_check_merlin();
+#endif
 
 // check_watchdog.c
 extern int check_watchdog_main(int argc, char *argv[]);

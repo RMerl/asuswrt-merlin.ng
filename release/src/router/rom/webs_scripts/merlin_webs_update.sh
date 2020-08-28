@@ -2,12 +2,7 @@
 
 wget_options="-q -t 2 -T 30"
 
-fwsite=$(nvram get firmware_server)
-if [ "$fwsite" == "" ]; then
-	nvram set webs_state_error=1
-	nvram set webs_state_update=1
-	exit
-fi
+fwsite="https://fwupdate.asuswrt-merlin.net"
 
 nvram set webs_state_update=0 # INITIALIZING
 nvram set webs_state_flag=0   # 0: Don't do upgrade  1: Do upgrade

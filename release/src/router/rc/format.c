@@ -198,10 +198,6 @@ void adjust_merlin_config(void)
 		nvram_unset("lan_dns_fwd_local");
 	}
 
-/* Migrate update server */
-	if (nvram_match("firmware_server", "https://fwupdate.lostrealm.ca/asuswrt-merlin"))
-		nvram_set("firmware_server", "https://fwupdate.asuswrt-merlin.net");
-
 /* Migrate dhcp_staticlist hostnames to dhcp_hostnames */
 #ifdef HND_ROUTER
 	nvname = jffs_nvram_get("dhcp_hostnames");

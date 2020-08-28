@@ -8835,7 +8835,7 @@ wdp:
 #endif
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 	auto_firmware_check();
-#else
+#elif RTCONFIG_MERLINUPDATE
 	auto_firmware_check_merlin();
 #endif
 #ifdef RTCONFIG_BWDPI
@@ -9114,6 +9114,7 @@ int wdg_monitor_main(int argc, char *argv[])
 #endif
 
 
+#ifdef RTCONFIG_MERLINUPDATE
 // Asuswrt-Merlin's code, without the auto-upgrade and debug logging
 void auto_firmware_check_merlin()
 {
@@ -9185,3 +9186,4 @@ void auto_firmware_check_merlin()
 		}
 	}
 }
+#endif

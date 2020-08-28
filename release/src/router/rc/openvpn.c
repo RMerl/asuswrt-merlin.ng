@@ -16,10 +16,7 @@
  *
  */
 
-/* RC OpenVPN code for Asuswrt-Merlin.
-   This also Contains SSL routines which can't be moved to libvpn
-   yet.
-*/
+/* RC OpenVPN code for Asuswrt-Merlin. */
 
 #include "rc.h"
 
@@ -30,12 +27,6 @@
 
 #include <openvpn_config.h>
 #include <openvpn_control.h>
-
-#include <openssl/ssl.h>
-#include <openssl/bio.h>
-#include <openssl/pem.h>
-#include <openssl/x509.h>
-#include <openssl/x509_vfy.h>
 
 void ovpn_process_eas(int start);
 
@@ -117,8 +108,6 @@ void start_ovpn_client(int unit) {
 		return;
 	}
 
-//	logmessage("openvpn", "Setting up OpenVPN client %d...", unit);
-
 	update_ovpn_status(OVPN_TYPE_CLIENT, unit, OVPN_STS_INIT, OVPN_ERRNO_NONE);
 
 	// Retrieve instance configuration
@@ -171,8 +160,6 @@ void start_ovpn_server(int unit) {
 		return;
 	}
 
-//	logmessage("openvpn", "Setting up OpenVPN server %d...", unit);
-
 	if ((pidof(&buffer[6])) >= 0) {
 		logmessage("openvpn", "OpenVPN client %d start attempt - already running.", unit);
 		return;
@@ -199,20 +186,8 @@ void start_ovpn_server(int unit) {
 	// Write config files
 	ovpn_write_server_config(sconf, unit);
 
-	// TODO: move to libvpn once that library is linked against OpenSSL
-	if (sconf->auth_mode == OVPN_AUTH_TLS) {
-		// Client key and certificate - if not using user-only authentication
-		// Pre-validate
-		if (!(sconf->userauth && sconf->useronly))
-			valid = ovpn_is_clientcert_valid(unit);
-		else
-			valid = 1;
-		// DH
-		ovpn_write_dh(sconf, unit);
-	}
-
 	// Write key/certs
-	ovpn_write_server_keys(sconf, unit, valid);
+	ovpn_write_server_keys(sconf, unit);
 
 	// Format client file so Windows Notepad can edit it
 	sprintf(buffer, "/etc/openvpn/server%d/client.ovpn", unit);
@@ -241,8 +216,6 @@ void start_ovpn_server(int unit) {
 	ovpn_setup_server_watchdog(sconf, unit);
 
 	free(sconf);
-
-//	logmessage("openvpn", "OpenVPN server %d launch completed.", unit);
 }
 
 
@@ -317,93 +290,6 @@ void stop_ovpn_server(int unit) {
 //	logmessage("openvpn", "OpenVPN server %d stopped.", unit);
 }
 
-
-int ovpn_is_clientcert_valid(int unit) {
-	int valid = 0;
-	char buffer[64], buffer2[8000], cafile[64];
-	BIO *certbio = NULL;
-	X509 *cert = NULL;
-	X509_STORE *store = NULL;
-	X509_STORE_CTX *vrfy_ctx = NULL;
-
-	/*
-	   See if stored client cert was signed with our stored CA.  If not, it means
-	   the CA was changed by the user and the current client crt/key no longer match,
-	   so we should not insert them in the exported client ovpn file.
-	*/
-
-	if (!ovpn_key_exists(OVPN_TYPE_SERVER, unit, OVPN_SERVER_CLIENT_KEY)) return 0;
-
-	OpenSSL_add_all_algorithms();
-
-	get_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_CLIENT_CERT, buffer2, sizeof(buffer2));
-	if ((certbio = BIO_new(BIO_s_mem())) ) {
-		if ((store = X509_STORE_new())) {
-			if ((vrfy_ctx = X509_STORE_CTX_new())) {
-				BIO_puts(certbio, buffer2);
-				if ((cert = PEM_read_bio_X509(certbio, NULL, 0, NULL))) {	// client cert
-					snprintf(cafile, sizeof(cafile), "%s/%s", OVPN_FS_PATH, get_ovpn_filename(OVPN_TYPE_SERVER, unit, OVPN_SERVER_CA, buffer, sizeof(buffer)));
-					if (X509_STORE_load_locations(store, cafile, NULL) == 1) {	// CA cert
-						X509_STORE_CTX_init(vrfy_ctx, store, cert, NULL);
-						valid = X509_verify_cert(vrfy_ctx);
-					}
-					X509_free(cert);
-				}
-				X509_STORE_CTX_free(vrfy_ctx);
-			}
-			X509_STORE_free(store);
-		}
-		BIO_free_all(certbio);
-	}
-	EVP_cleanup();
-
-	//logmessage("openvpn", "Valid crt = %d", valid);
-
-	return valid;
-}
-
-
-/* Validate and generate or copy DH */
-void ovpn_write_dh(ovpn_sconf_t *sconf, int unit) {
-	FILE *fp;
-	char buffer[256];
-	char buffer2[8000];
-	int len = 0;
-	DH *dhparams = NULL;
-
-	get_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_DH, buffer2, sizeof(buffer2));
-	if (*buffer2) {
-		if (!strncmp(buffer2, "none", 4)) {
-			len = 2048;	// Don't validate, we don't use it
-		} else {
-			fp = fopen(ovpn_get_runtime_filename(OVPN_TYPE_SERVER, unit, OVPN_SERVER_DH, buffer, sizeof(buffer)), "w+");
-			if (fp) {
-				chmod(buffer, S_IRUSR|S_IWUSR);
-				fprintf(fp, "%s", buffer2);
-				fflush(fp);
-				rewind(fp);
-
-				dhparams = PEM_read_DHparams(fp, NULL, 0, NULL);
-				if (dhparams) {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
-					len = DH_bits(dhparams);
-#else
-					len = BN_num_bits(dhparams->p);
-#endif
-					OPENSSL_free(dhparams);
-				}
-				if ((len != 0) && (len < 1024))
-					logmessage("openvpn","WARNING: DH for server %d is too weak (%d bit, must be at least 1024 bit). Using a pre-generated 2048-bit PEM.", unit, len);
-			}
-			fclose(fp);
-		}
-	}
-
-	if (len < 1024) {	// Provide a 2048-bit PEM, from RFC 3526.
-		set_ovpn_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_DH, NULL, "/etc/ssl/certs/dh2048.pem");
-		ovpn_write_key(OVPN_TYPE_SERVER, unit, OVPN_SERVER_DH);
-	}
-}
 
 void start_ovpn_eas() {
 	ovpn_process_eas(1);

@@ -10,6 +10,9 @@ endif
 LDFLAGS += $(EXTRALDFLAGS) -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
 LDFLAGS += -lcrypt
 
+CFLAGS += -I$(TOP)/openssl/include
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
+
 INSTALL = install
 
 OBJS = openvpn_config.o openvpn_control.o openvpn_setup.o

@@ -1861,8 +1861,6 @@ extern void create_ovpn_passwd();
 // openvpn.c
 extern void start_ovpn_client(int unit);
 extern void start_ovpn_server(int unit);
-extern void ovpn_write_dh(ovpn_sconf_t *sconf, int unit);
-extern int ovpn_is_clientcert_valid(int unit);
 extern void start_ovpn_eas(void);
 extern void stop_ovpn_eas(void);
 extern void stop_ovpn_client(int unit);

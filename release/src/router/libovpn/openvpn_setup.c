@@ -758,11 +758,7 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 			fp = fopen(buffer, "w");
 			if(fp) {
 				fprintf(fp, "#!/bin/sh\n");
-#ifdef RTCONFIG_OPENSSL11
-				fprintf(fp, "export OPENSSL=\"openssl11\"\n");
-#else
 				fprintf(fp, "export OPENSSL=\"openssl\"\n");
-#endif
 				fprintf(fp, "export GREP=\"grep\"\n");
 				fprintf(fp, "export KEY_CONFIG=\"/rom/easy-rsa/openssl-1.0.0.cnf\"\n");
 				fprintf(fp, "export KEY_DIR=\"/etc/openvpn/server%d\"\n", unit);

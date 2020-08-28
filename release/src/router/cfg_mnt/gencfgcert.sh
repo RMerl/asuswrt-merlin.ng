@@ -1,12 +1,7 @@
 #!/bin/sh
 SECS=1262278080
 
-if [ -f /usr/sbin/openssl11 ]
-then
-	OPENSSL=/usr/sbin/openssl11
-else
-	OPENSSL=/usr/sbin/openssl
-fi
+OPENSSL=/usr/sbin/openssl
 
 cd /etc
 mkdir cfg_mnt

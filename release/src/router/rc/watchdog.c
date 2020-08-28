@@ -6143,7 +6143,7 @@ void regular_ddns_check(void)
 		return;
 
 	// Only check nvram IP for internal IP check mode
-	if (nvram_get_int("ddns_ipcheck") == 0) {
+	if (nvram_get_int("ddns_realip_x") == 0) {
 		snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 		ip_addr.s_addr = *(unsigned long *)hostinfo -> h_addr_list[0];
 		//_dprintf("%s ?= %s\n", nvram_pf_get(prefix, "ipaddr"), inet_ntoa(ip_addr));

@@ -100,7 +100,7 @@ void adjust_merlin_config(void)
 		}
 	}
 
-/* Migrate "remote gateway" and "push lan" to "client_access" */
+/* Migrate "remote gateway" and "push lan" to "client_access" (384.5) */
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
 		sprintf(varname_ori, "vpn_server%d_rgw", unit);
 
@@ -152,7 +152,7 @@ void adjust_merlin_config(void)
 		nvram_set("dev_fail_reboot", "1");
 	}
 
-/* Remove discontinued DNSFilter services */
+/* Remove discontinued DNSFilter services (384.7) */
 #ifdef RTCONFIG_DNSFILTER
 	globalmode = nvram_get_int("dnsfilter_mode");
 	if (globalmode == DNSF_SRV_NORTON1 || globalmode == DNSF_SRV_NORTON2 || globalmode == DNSF_SRV_NORTON3)
@@ -265,6 +265,12 @@ void adjust_merlin_config(void)
 		if (nv) free(nv);
 		if (newstr) free(newstr);
 		if (hostnames) free(hostnames);
+	}
+
+/* Migrade DDNS external IP check (386.1) */
+	if(!nvram_is_empty("ddns_ipcheck")) {
+		nvram_set("ddns_realip_x", nvram_get("ddns_ipcheck"));
+		nvram_unset("ddns_ipcheck");
 	}
 }
 

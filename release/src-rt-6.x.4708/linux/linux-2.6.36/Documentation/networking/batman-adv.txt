@@ -1,5 +1,3 @@
-[state: 12-06-2010]
-
 BATMAN-ADV
 ----------
 
@@ -18,6 +16,7 @@ Batman advanced was implemented as a Linux kernel driver  to  re-
 duce the overhead to a minimum. It does not depend on any (other)
 network driver, and can be used on wifi as well as ethernet  lan,
 vpn,  etc ... (anything with ethernet-style layer 2).
+
 
 CONFIGURATION
 -------------
@@ -66,16 +65,24 @@ To deactivate an interface you have  to  write  "none"  into  its
 All  mesh  wide  settings  can be found in batman's own interface
 folder:
 
-#  ls  /sys/class/net/bat0/mesh/
-#  aggregate_ogm   originators        transtable_global  vis_mode
-#  orig_interval   transtable_local   vis_data
+# ls /sys/class/net/bat0/mesh/
+#aggregated_ogms        distributed_arp_table  gw_sel_class    orig_interval
+#ap_isolation           fragmentation          hop_penalty     routing_algo
+#bonding                gw_bandwidth           isolation_mark  vlan0
+#bridge_loop_avoidance  gw_mode                log_level
 
+There is a special folder for debugging information:
+
+# ls /sys/kernel/debug/batman_adv/bat0/
+# bla_backbone_table  log                 transtable_global
+# bla_claim_table     originators         transtable_local
+# gateways            socket
 
 Some of the files contain all sort of status information  regard-
 ing  the  mesh  network.  For  example, you can view the table of
 originators (mesh participants) with:
 
-# cat /sys/class/net/bat0/mesh/originators
+# cat /sys/kernel/debug/batman_adv/bat0/originators
 
 Other files allow to change batman's behaviour to better fit your
 requirements.  For instance, you can check the current originator
@@ -83,7 +90,7 @@ interval (value in milliseconds which determines how often batman
 sends its broadcast packets):
 
 # cat /sys/class/net/bat0/mesh/orig_interval
-# status: 1000
+# 1000
 
 and also change its value:
 
@@ -108,59 +115,17 @@ The "bat0" interface can be used like any  other  regular  inter-
 face.  It needs an IP address which can be either statically con-
 figured or dynamically (by using DHCP or similar services):
 
-# NodeA: ifconfig bat0 192.168.0.1
-# NodeB: ifconfig bat0 192.168.0.2
+# NodeA: ip link set up dev bat0
+# NodeA: ip addr add 192.168.0.1/24 dev bat0
+
+# NodeB: ip link set up dev bat0
+# NodeB: ip addr add 192.168.0.2/24 dev bat0
 # NodeB: ping 192.168.0.1
 
 Note:  In  order to avoid problems remove all IP addresses previ-
 ously assigned to interfaces now used by batman advanced, e.g.
 
-# ifconfig eth0 0.0.0.0
-
-
-VISUALIZATION
--------------
-
-If you want topology visualization, at least one mesh  node  must
-be configured as VIS-server:
-
-# echo "server" > /sys/class/net/bat0/mesh/vis_mode
-
-Each  node  is  either configured as "server" or as "client" (de-
-fault: "client").  Clients send their topology data to the server
-next to them, and server synchronize with other servers. If there
-is no server configured (default) within the  mesh,  no  topology
-information   will  be  transmitted.  With  these  "synchronizing
-servers", there can be 1 or more vis servers sharing the same (or
-at least very similar) data.
-
-When  configured  as  server,  you can get a topology snapshot of
-your mesh:
-
-# cat /sys/class/net/bat0/mesh/vis_data
-
-This raw output is intended to be easily parsable and convertable
-with  other tools. Have a look at the batctl README if you want a
-vis output in dot or json format for instance and how those  out-
-puts could then be visualised in an image.
-
-The raw format consists of comma separated values per entry where
-each entry is giving information about a  certain  source  inter-
-face.  Each  entry can/has to have the following values:
--> "mac" - mac address of an originator's source interface
-           (each line begins with it)
--> "TQ mac  value"  -  src mac's link quality towards mac address
-                       of a neighbor originator's interface which
-                       is being used for routing
--> "HNA mac" - HNA announced by source mac
--> "PRIMARY" - this  is a primary interface
--> "SEC mac" - secondary mac address of source
-               (requires preceding PRIMARY)
-
-The TQ value has a range from 4 to 255 with 255 being  the  best.
-The HNA entries are showing which hosts are connected to the mesh
-via bat0 or being bridged into the mesh network.  The PRIMARY/SEC
-values are only applied on primary interfaces
+# ip addr flush dev eth0
 
 
 LOGGING/DEBUGGING
@@ -181,32 +146,33 @@ enabled when compiling the batman-adv module. When building  bat-
 man-adv  as  part of kernel, use "make menuconfig" and enable the
 option "B.A.T.M.A.N. debugging".
 
+Those additional  debug messages can be accessed  using a special
+file in debugfs
+
+# cat /sys/kernel/debug/batman_adv/bat0/log
+
 The additional debug output is by default disabled. It can be en-
-abled  either  at kernel modules load time or during run time. To
-enable debug output at module load time, add the module parameter
-debug=<value>.  <value> can take one of four values.
+abled  during run time. Following log_levels are defined:
 
 0 - All  debug  output  disabled
 1 - Enable messages related to routing / flooding / broadcasting
-2 - Enable route or hna added / changed / deleted
-3 - Enable all messages
+2 - Enable messages related to route added / changed / deleted
+4 - Enable messages related to translation table operations
+8 - Enable messages related to bridge loop avoidance
+16 - Enable messaged related to DAT, ARP snooping and parsing
+31 - Enable all messages
 
-e.g.
+The debug output can be changed at runtime  using  the  file
+/sys/class/net/bat0/mesh/log_level. e.g.
 
-# modprobe batman-adv debug=2
+# echo 6 > /sys/class/net/bat0/mesh/log_level
 
-will load the module and enable debug messages for when routes or
-HNAs change.
+will enable debug messages for when routes change.
 
-The debug output can also be changed at runtime  using  the  file
-/sys/module/batman-adv/parameters/debug. e.g.
+Counters for different types of packets entering and leaving the
+batman-adv module are available through ethtool:
 
-# echo 2 > /sys/module/batman-adv/parameters/debug
-
-enables debug messages for when routes or HNAs
-
-The  debug  output  is sent to the kernel logs. So try dmesg, lo-
-gread, etc to see the debug messages.
+# ethtool --statistics bat0
 
 
 BATCTL
@@ -230,11 +196,10 @@ CONTACT
 Please send us comments, experiences, questions, anything :)
 
 IRC:            #batman   on   irc.freenode.org
-Mailing-list:   b.a.t.m.a.n@open-mesh.net (optional  subscription
+Mailing-list:   b.a.t.m.a.n@open-mesh.org (optional  subscription
           at https://lists.open-mesh.org/mm/listinfo/b.a.t.m.a.n)
 
 You can also contact the Authors:
 
-Marek  Lindner  <lindner_marek@yahoo.de>
-Simon  Wunderlich  <siwu@hrz.tu-chemnitz.de>
-
+Marek  Lindner  <mareklindner@neomailbox.ch>
+Simon  Wunderlich  <sw@simonwunderlich.de>

@@ -573,35 +573,37 @@ int
 nvram_set(const char *name, const char *value)
 {
 	unsigned long flags;
-	int ret;
+	int ret = 0;
 	struct nvram_header *header;
 
 	spin_lock_irqsave(&nvram_lock, flags);
 #ifdef CFE_UPDATE //write back to default sector as well, Chen-I
-        if(strncmp(name, CFE_NVRAM_PREFIX, strlen(CFE_NVRAM_PREFIX))==0)
-        {
-                if(strcmp(name, CFE_NVRAM_COMMIT)==0)
+	if(strncmp(name, CFE_NVRAM_PREFIX, strlen(CFE_NVRAM_PREFIX))==0)
+	{
+		if(strcmp(name, CFE_NVRAM_COMMIT)==0)
 		{
 #ifdef CONFIG_MTD_NFLASH
 			spin_unlock_irqrestore(&nvram_lock, flags);
 			return cfe_commit();
 #else
-			cfe_commit();
+			ret = cfe_commit();
 #endif
 		}
-                else if(strcmp(name, "asuscfe_dump") == 0)
-                        ret = cfe_dump();
-                else if(strcmp(name, CFE_NVRAM_WATCHDOG)==0)
-                {
-                        bcm947xx_watchdog_disable();
-                }
-                else
-                {
-                        cfe_update(name+strlen(CFE_NVRAM_PREFIX), value);
-                        _nvram_set(name+strlen(CFE_NVRAM_PREFIX), value);
-                }
-        }
-        else
+		else if(strcmp(name, "asuscfe_dump") == 0)
+			ret = cfe_dump();
+		else if(strcmp(name, CFE_NVRAM_WATCHDOG)==0)
+		{
+			bcm947xx_watchdog_disable();
+			ret = 0;
+		}
+		else
+		{
+			ret = cfe_update(name+strlen(CFE_NVRAM_PREFIX), value);
+			if(ret ==0)
+				ret = _nvram_set(name+strlen(CFE_NVRAM_PREFIX), value);
+		}
+	}
+	else
 #endif
 	if ((ret = _nvram_set(name, value))) {
 		printk( KERN_INFO "nvram: consolidating space!\n");

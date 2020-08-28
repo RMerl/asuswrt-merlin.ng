@@ -2348,6 +2348,9 @@ et_ctf_filter(etc_info_t *etc, void *p, int32 offset)
 		case HTON16(ETHER_TYPE_IPV6):
 			ip6 = (struct ipv6_hdr *)(data + ETHER_HDR_LEN);
 			break;
+		case HTON16(ETHER_TYPE_ARP):
+			PKTSETSKIPCT(etc->osh, p);
+			ET_ERROR(("et: ARP skip ctf!\n"));
 		default:
 			return FALSE;
 	}

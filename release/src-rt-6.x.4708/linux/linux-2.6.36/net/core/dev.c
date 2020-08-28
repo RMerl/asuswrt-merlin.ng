@@ -2904,6 +2904,17 @@ ncls:
 	/* Handle special case of bridge or macvlan */
 	rx_handler = rcu_dereference(skb->dev->rx_handler);
 	if (rx_handler) {
+		/* Handle non-accelerated VLAN tag first */
+		if (skb->protocol == htons(ETH_P_8021Q)) {
+			struct vlan_hdr *vhdr = (struct vlan_hdr *)skb->data;
+			u16 vlan_id;
+
+			if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
+				goto bypass;
+			vlan_id = ntohs(vhdr->h_vlan_TCI) & VLAN_VID_MASK;
+			if (vlan_id && vlan_find_dev(skb->dev, vlan_id))
+				goto tagged;
+		}
 		if (pt_prev) {
 			ret = deliver_skb(skb, pt_prev, orig_dev);
 			pt_prev = NULL;
@@ -2913,6 +2924,7 @@ ncls:
 			goto out;
 	}
 
+tagged:
 	/*
 	 * Make sure frames received on VLAN interfaces stacked on
 	 * bonding interfaces still make their way to any base bonding

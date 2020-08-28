@@ -95,6 +95,7 @@ struct net_device *__find_vlan_dev(struct net_device *real_dev, u16 vlan_id)
 
 	return NULL;
 }
+EXPORT_SYMBOL(__find_vlan_dev);
 
 static void vlan_group_free(struct vlan_group *grp)
 {

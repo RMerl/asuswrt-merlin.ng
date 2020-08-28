@@ -1,7 +1,6 @@
-/*
- * Copyright (C) 2007-2010 B.A.T.M.A.N. contributors:
+/* Copyright (C) 2007-2015 B.A.T.M.A.N. contributors:
  *
- * Marek Lindner, Simon Wunderlich
+ * Marek Lindner, Simon Wunderlich, Antonio Quartulli
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of version 2 of the GNU General Public
@@ -13,33 +12,51 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301, USA
- *
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  */
 
 #ifndef _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
 #define _NET_BATMAN_ADV_TRANSLATION_TABLE_H_
 
-#include "types.h"
+#include "main.h"
 
-int hna_local_init(void);
-void hna_local_add(uint8_t *addr);
-void hna_local_remove(uint8_t *addr, char *message);
-int hna_local_fill_buffer(unsigned char *buff, int buff_len);
-int hna_local_seq_print_text(struct seq_file *seq, void *offset);
-void hna_local_free(void);
-int hna_global_init(void);
-void hna_global_add_orig(struct orig_node *orig_node, unsigned char *hna_buff,
-			 int hna_buff_len);
-int hna_global_seq_print_text(struct seq_file *seq, void *offset);
-void hna_global_del_orig(struct orig_node *orig_node, char *message);
-void hna_global_free(void);
-struct orig_node *transtable_search(uint8_t *addr);
+#include <linux/types.h>
 
-extern spinlock_t hna_local_hash_lock;
-extern struct hashtable_t *hna_local_hash;
-extern atomic_t hna_local_changed;
+struct net_device;
+struct seq_file;
+
+int batadv_tt_init(struct batadv_priv *bat_priv);
+bool batadv_tt_local_add(struct net_device *soft_iface, const u8 *addr,
+			 unsigned short vid, int ifindex, u32 mark);
+u16 batadv_tt_local_remove(struct batadv_priv *bat_priv,
+			   const u8 *addr, unsigned short vid,
+			   const char *message, bool roaming);
+int batadv_tt_local_seq_print_text(struct seq_file *seq, void *offset);
+int batadv_tt_global_seq_print_text(struct seq_file *seq, void *offset);
+void batadv_tt_global_del_orig(struct batadv_priv *bat_priv,
+			       struct batadv_orig_node *orig_node,
+			       s32 match_vid, const char *message);
+int batadv_tt_global_hash_count(struct batadv_priv *bat_priv,
+				const u8 *addr, unsigned short vid);
+struct batadv_orig_node *batadv_transtable_search(struct batadv_priv *bat_priv,
+						  const u8 *src, const u8 *addr,
+						  unsigned short vid);
+void batadv_tt_free(struct batadv_priv *bat_priv);
+bool batadv_is_my_client(struct batadv_priv *bat_priv, const u8 *addr,
+			 unsigned short vid);
+bool batadv_is_ap_isolated(struct batadv_priv *bat_priv, u8 *src, u8 *dst,
+			   unsigned short vid);
+void batadv_tt_local_commit_changes(struct batadv_priv *bat_priv);
+bool batadv_tt_global_client_is_roaming(struct batadv_priv *bat_priv,
+					u8 *addr, unsigned short vid);
+bool batadv_tt_local_client_is_roaming(struct batadv_priv *bat_priv,
+				       u8 *addr, unsigned short vid);
+void batadv_tt_local_resize_to_mtu(struct net_device *soft_iface);
+bool batadv_tt_add_temporary_global_entry(struct batadv_priv *bat_priv,
+					  struct batadv_orig_node *orig_node,
+					  const unsigned char *addr,
+					  unsigned short vid);
+bool batadv_tt_global_is_isolated(struct batadv_priv *bat_priv,
+				  const u8 *addr, unsigned short vid);
 
 #endif /* _NET_BATMAN_ADV_TRANSLATION_TABLE_H_ */

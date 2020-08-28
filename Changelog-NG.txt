@@ -1,5 +1,27 @@
-Asuswrt-Merlin 384/NG Changelog
+Asuswrt-Merlin 386/NG Changelog
 ===============================
+
+386.1 (xx-xx-xxxx)
+  Switched to the new 386 codebase.  Models are going to
+  gradually be re-added to this new code base.
+  386 introduces AiMesh 2.0, finalizes the move to
+  OpenSSL 1.1.1 firmware-wide, adds a new speedtest
+  (powered by Ookla).  For more details, please refer
+  to Asus's own release notes.
+
+  - NOTE: For developers, note that firmware code is
+          once again back on the master branch, with
+          both mainline and ax being reunified again.
+
+  - UPDATED: Merged GPL 386_39179 (beta GPL from Asus).
+  - UPDATED: Merged 386_39179 binary blobs for RT-AC86U,
+             RT-AC68U.
+  - CHANGED: firmware update checks are no longer using the
+             server address stored in nvram, for security
+             purposes.  Devs who were using that nvram
+             should instead edit the webs_scripts/* to
+             use their own URL.
+
 
 384.19 (14-Aug-2020)
   - NOTE: Due to flash partitioning changes done by Asus, it is

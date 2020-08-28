@@ -41,24 +41,18 @@ Fully supported devices:
  * RT-AX56U
  * RT-AX58U & RT-AX3000
 
-Limited support:
- * RT-AC87U
- * RT-AC3200
-
-
 No longer supported:
  * RT-N16
  * RT-N66U
  * RT-AC66U
  * RT-AC56U
+ * RT-AC87U
+ * RT-AC3200
 
 NOTE: all the "R" versions (for example RT-N66R) are the same as their 
 "U" counterparts, they are just different packages aimed at large 
 retailers.  The firmware is 100% compatible with both U and R versions 
 of the routers.  Same with the "W" variants that are simply white.
-
-The legacy 380.xx branch is no longer being actively developed.
-Support for the RT-N66U and RT-AC66U has been dropped.
 
 
 
@@ -82,14 +76,12 @@ System:
    - SNMP support (except for HND devices)
    - Nano text editor (for more user-friendly script editing)
    - NTP daemon, which can synchronize your client devices
-   - TLS 1.3 support for some services (OpenSSL 1.1.1)
 
 
 Disk sharing:
    - Enable/disable the use of shorter share names
    - NFS sharing (through webui)
    - Allow or disable WAN access to the FTP server
-   - Updated Samba version (3.6), with SMB2.0 support
    - TLS support for the FTP server
 
 
@@ -116,7 +108,7 @@ Networking:
    - Detailed wireless troubleshooting information (HND devices
      only)
    - Modern DDNS client (In-a-Dyn), with HTTPS support
-   - DNS-over-TLS support
+   - DNS-over-TLS
    - Redirect NTP client queries to the router's own NTP daemon
    - WS-Discovery support (alternative to SMBv1 network discovery)
 
@@ -134,30 +126,12 @@ Web interface:
    - Advanced Wireless client list display, including automated refresh
    - Redesigned layout of the various System Log sections
    - Editable fields for some pages
-   - User-provided SSL certificate
    - Advanced traffic classification report
 
 
-Some features that first appeared in Asuswrt-Merlin have since been 
-integrated/enabled/re-implemented in the official firmware:
-
-- HTTPS webui
-- Turning WPS button into a radio on/off toggle
-- Use shorter share names (folder name only)
-- WakeOnLan web interface (with user-entered preset targets)
-- clickable MACs on the client list for lookup in the OUI database
-- Display active/tracked network connections
-- VPN client connection state report
-- OpenVPN client and server
-- Configurable IPv6 firewall
-- Persistent JFFS partition
-- The various MAC/IP selection pulldowns will also display hostnames
-  when possible instead of just NetBIOS names
-- SSHD
-- Improved compatibility with 3TB+ and Advanced Format HDDs
-- Display the Ethernet port states
-- Disk spindown after user-configurable inactivity timeout
-
+Note that a number of features which first appeared in Asuswrt-Merlin
+have since been integrated/implemented in the official firmware, such
+as OpenVPN support.
 
 
 Installation

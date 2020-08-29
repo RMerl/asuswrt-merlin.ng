@@ -1,1 +1,0 @@
-SUBDIRS = genl netfilter rtnl

@@ -8,7 +8,7 @@ use FindBin qw($Bin);
 use lib "$Bin";
 use lib "$Bin/../PerlLib";
 use parent qw(BRCM::SBI_UTIL);
-use BRCM::SBI;
+use BRCM::SBI_DEP;
 use gen_keystore;
 use File::stat;
 use Getopt::Long;
@@ -111,7 +111,7 @@ sub gen_keystore {
 	my $kst_obj = gen_keystore->new($sec_arg{'byteorder'},$arg->{'sec_arch'}); 
     	$kst_obj->build(\%sec_arg, $image, nrmz($arg->{'cred_dir'}));
 	my %data = ("keystore"=>$self->f2var($image));
-	$self->run_shell("rm -f $image");
+	#$self->run_shell("rm -f $image");
 	return \%data;
 }
 
@@ -120,7 +120,7 @@ sub gen_sbi {
 	my ($arg, $chip, $in, $workdir) = @_;
 	my $sbi = "$workdir/.sbi.mfg.$$";
 	my $ubi = "$workdir/.sbi.unsec.$$";
-	my $sbi_lib = BRCM::SBI->new( {'sec_mode' => "UNSEC",
+	my $sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "UNSEC",
 				'chip'=>$chip,
 				'sec_arch'=>"GEN3",
 				'out' => $ubi,
@@ -130,7 +130,7 @@ sub gen_sbi {
 	if ( ! (-e $ubi) ) {
 		die "The file $sbi was not successfully created. Exiting.";
 	}
-	$sbi_lib = BRCM::SBI->new( {'sec_mode' => "MFG",
+	$sbi_lib = BRCM::SBI_DEP->new( {'sec_mode' => "MFG",
 				'chip'=>$chip,
 				'sec_arch'=>"GEN3",
 				'out' => $sbi,

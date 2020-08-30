@@ -67,4 +67,17 @@ void bcm_iqctl_print_key( iqctl_data_t *iq );
 int bcm_iqctl_dump_porttbl_kernel_mode( void );
 int bcm_iqctl_flush( void );
 
+/* the old APIs. remain here for backward compatibility */
+int bcm_iqctl_add_port( iqctl_proto_t proto, int dport, iqctl_ent_t ent, 
+        iqctl_prio_t prio );
+int bcm_iqctl_rem_port( iqctl_proto_t proto, int dport, iqctl_ent_t ent );
+int bcm_iqctl_get_port( iqctl_proto_t proto, int dport, iqctl_ent_t *ent_p,
+        iqctl_prio_t *prio_p );
+
+int bcm_iqctl_dump_porttbl( iqctl_proto_t proto );
+int bcm_iqctl_flush_porttbl( iqctl_proto_t proto, iqctl_ent_t ent );
+
+int bcm_iqctl_set_defaultprio( iqctl_prototype_t prototype, int protoval, iqctl_prio_t prio );
+int bcm_iqctl_rem_defaultprio( iqctl_prototype_t prototype, int protoval );
+
 #endif /* _IQCTL_API_H_ */

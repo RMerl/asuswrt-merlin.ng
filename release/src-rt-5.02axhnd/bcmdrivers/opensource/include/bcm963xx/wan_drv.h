@@ -73,7 +73,7 @@ int wan_serdes_config(serdes_wan_type_t wan_type);
 serdes_wan_type_t wan_serdes_type_get(void);
 void wan_prbs_gen(uint32_t enable, int enable_host_tracking, int mode, serdes_wan_type_t wan_type, bdmf_boolean *valid);
 void wan_prbs_status(bdmf_boolean *valid, uint32_t *errors);
-void pll_ppm_adj_FracN_10G(uint8_t mode, int16_t ppm_target);
+void pll_ppm_adj_FracN_10G(uint8_t mode, int16_t ppm_target, bool pll_adj_en);
 
 //WAN TYPES
 #define     GPON_2_1    0x1

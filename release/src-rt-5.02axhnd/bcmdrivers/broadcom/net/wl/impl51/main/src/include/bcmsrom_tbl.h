@@ -1,7 +1,7 @@
 /*
  * Table that encodes the srom formats for PCI/PCIe NICs.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsrom_tbl.h 765231 2018-06-25 16:12:30Z $
+ * $Id: bcmsrom_tbl.h 775038 2019-05-16 02:05:01Z $
  */
 
 #ifndef	_bcmsrom_tbl_h_
@@ -896,8 +896,15 @@ static const sromvar_t BCMATTACHDATA(pci_sromvars)[] = {
 	{"pdoffset80in160m5gcore3", 0xfffc0000, 0,	SROM18_PDOFFSET80IN160M5GCORE3, 0xffff},
 	{"pdoffset80in160m5gcore3_1", 0xfffc0000, 0, SROM18_PDOFFSET80IN160M5GCORE3_1,  0xffff},
 	{"low_adc_rate_en", 0xfffc0000,	0,	SROM18_LOW_ADC_RATE_EN,	0x0003},
-	{"olpc_thresh2g", 0xfffc0000,	SRFL_PRSIGN,	SROM18_OLPC_2G5G_TH,	0x001f},
-	{"olpc_thresh5g", 0xfffc0000,	SRFL_PRSIGN,	SROM18_OLPC_2G5G_TH,	0x03e0},
+	{"ppr_backoff_2g", 0xfffc0000,	0,	SROM18_LOW_ADC_RATE_EN,	0x000c},
+	{"ppr_backoff_5g", 0xfffc0000,	0,	SROM18_LOW_ADC_RATE_EN,	0x0030},
+	{"dssf_dis_ch138", 0xfffc0000,	0,	SROM18_LOW_ADC_RATE_EN,	0x0040},
+	{"olpc_2g_th",	0xfffc0000,	SRFL_PRSIGN,	SROM18_OLPC_2G5G_TH,	0x001f},
+	{"olpc_5g_th",	0xfffc0000,	SRFL_PRSIGN,	SROM18_OLPC_2G5G_TH,	0x03e0},
+	{"coex_gpioctrl_0", 0xfffc0000,	0,	SROM18_COEX_GPIOCTRL_0,	0xffff},
+	{"coex_gpioctrl_1", 0xfffc0000,	0,	SROM18_COEX_GPIOCTRL_1,	0xffff},
+	{"coex_gpioctrl_2", 0xfffc0000,	0,	SROM18_COEX_GPIOCTRL_2,	0xffff},
+	{"coex_gpioctrl_3", 0xfffc0000,	0,	SROM18_COEX_GPIOCTRL_3,	0xffff},
 
 	{NULL,		0,		0,		0,			0}
 };
@@ -1320,7 +1327,10 @@ typedef struct {
 	uint8	len;		/* Length field of the tuple, note that it includes the
 				 * subtag name (1 byte): 1 + tuple content length
 				 */
-	const char *params;
+	const char *params;	/* Each param is in this form: length(1 byte ascii) + var name
+				 * XXX Note that the order here has to match the parsing
+				 * order in parsecis() in src/shared/bcmsrom.c
+				 */
 } cis_tuple_t;
 
 #define OTP_RAW		(0xff - 1)	/* Reserved tuple number for wrvar Raw input */
@@ -1371,7 +1381,6 @@ static const cis_tuple_t cis_hnbuvars[] = {
 	{HNBU_RDLSN,		0xffffffff, 3, "2rdlsn"},
 	{HNBU_BOARDTYPE,	0xffffffff, 3, "2boardtype"},
 	{HNBU_LEDDC,		0xffffffff, 3, "2leddc"},
-	{HNBU_RDLRNDIS,		0xffffffff, 2, "1rdlndis"},
 	{HNBU_CHAINSWITCH,	0xffffffff, 5, "1txchain 1rxchain 2antswitch"},
 	{HNBU_REGREV,		0xffffffff, 3, "2regrev"},
 	{HNBU_FEM,		0x000007fe, 5, "0antswctl2g 0triso2g 0pdetrange2g 0extpagain2g "

@@ -1,7 +1,7 @@
 /*
  * BCM43XX Sonics SiliconBackplane PCMCIA core hardware definitions.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sbpcmcia.h 705961 2017-06-20 02:56:05Z $
+ * $Id: sbpcmcia.h 767090 2018-08-28 05:58:43Z $
  */
 
 #ifndef	_SBPCMCIA_H
@@ -118,7 +118,9 @@
 
 #define CIS_SIZE_SW_1180B	1180	/* Maximum s/w sub region size for 4366B0/B1 */
 #define CIS_SIZE_SW_1628B	1628	/* Maximum s/w sub region size for 4366C0/E0 */
-#define CIS_SIZE_SW_1443B	1443	/* Maximum s/w sub region size for 43684A0 */
+#define CIS_SIZE_SW_1438B	1438	/* Maximum s/w sub region size for 43684A0 */
+#define CIS_SIZE_SW_1436B	1436	/* Maximum s/w sub region size for 43684B0 */
+#define CIS_SIZE_SW_1172B	1172	/* Maximum s/w sub region size for 6710A0 */
 
 /* CIS tuple length field max */
 #define CIS_TUPLE_LEN_MAX	0xff
@@ -404,6 +406,10 @@
 #define HNBU_ACPA_BW40_4X4C3	0x9f
 #define HNBU_ACPA_BW80_4X4C3	0xa0
 #define HNBU_ACPA_CCK_C1	0xa1	/* ACPHY PA trimming parameters: CCK */
+
+/* XXX IMPORTANT XXX
+ * Please update CisTuples twiki page when you define new tuples
+ */
 
 #endif /* !defined(LINUX_POSTMOGRIFY_REMOVAL) */
 

@@ -279,6 +279,8 @@ rr_weight_t g_dma_rr_weight[BBH_ID_NUM][2] = {
          { {DMA_RR_WEIGHT_RX_BBH_PON_VALUE, DMA_RR_WEIGHT_TX_BBH_PON_VALUE},
            {SDMA_RR_WEIGHT_RX_BBH_PON_VALUE, SDMA_RR_WEIGHT_TX_BBH_PON_VALUE} } };
 
+uint32_t g_extra_dqm_tokens = 0;
+
 static uint8_t calculate_buffers_offset(uint8_t dma_num, uint8_t periphreal_num)
 {
     uint8_t j, offset = 0;
@@ -475,6 +477,11 @@ static void ubus_bridge_init(void)
     ag_drv_ubus_mstr_hyst_ctrl_set(UBUS_MSTR_ID_0, UBUS_MSTR_CMD_SPCAE, UBUS_MSTR_DATA_SPCAE);
 }
 
+uint32_t fpm_get_dqm_extra_fpm_tokens(void)
+{
+    return g_extra_dqm_tokens;
+}
+
 static int fpm_init(void)
 {
     bdmf_error_t rc;
@@ -485,7 +492,9 @@ static int fpm_init(void)
 
     drv_fpm_init(p_dpi_cfg->rdp_ddr_pkt_base_virt, p_dpi_cfg->fpm_buf_size);
 
-    rc = ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD, FPM_XOFF_THRESHOLD);
+    g_extra_dqm_tokens = FPM_EXTRA_TOKENS_FOR_DQM;
+
+    rc = ag_drv_fpm_pool1_xon_xoff_cfg_set(FPM_XON_THRESHOLD + g_extra_dqm_tokens, FPM_XOFF_THRESHOLD + g_extra_dqm_tokens);
     rc = rc ? rc : ag_drv_fpm_init_mem_set(1);
 
     /* polling until reset is finished */
@@ -1660,7 +1669,7 @@ static int qm_init(void)
     rnr_group_cfg.pd_fifo_size = qm_pd_fifo_size_2;
     rnr_group_cfg.upd_fifo_size = qm_update_fifo_size_8;
 
-    rnr_group_cfg.rnr_task = IMAGE_2_IMAGE_2_DHD_MCAST_THREAD_NUMBER;
+    rnr_group_cfg.rnr_task = IMAGE_2_IMAGE_2_DHD_MCAST_UPDATE_FIFO_THREAD_NUMBER;
 
     rnr_group_cfg.rnr_bb_id = get_runner_idx(dhd_tx_post_runner_image);
     rnr_group_cfg.rnr_enable = 1;

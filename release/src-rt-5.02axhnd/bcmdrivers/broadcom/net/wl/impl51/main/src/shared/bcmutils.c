@@ -1,7 +1,7 @@
 /*
  * Driver O/S-independent utility routines
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.c 737919 2017-12-25 07:06:01Z $
+ * $Id: bcmutils.c 778392 2019-08-30 03:08:05Z $
  */
 
 #include <bcm_cfg.h>
@@ -58,7 +58,7 @@
 #define ASSERT(exp)
 #endif /* WL_UNITTEST */
 
-#if defined(_WIN32) || defined(NDIS) || defined(_CFE_)
+#if defined(_CFE_)
 /* Debatable */
 #include <bcmstdlib.h>
 #endif // endif
@@ -75,6 +75,8 @@
 #ifdef BCMPERFSTATS
 #include <bcmperf.h>
 #endif // endif
+
+#define BCM_IFNAMSIZ		16
 
 #ifdef CUSTOM_DSCP_TO_PRIO_MAPPING
 #define CUST_IPV4_TOS_PREC_MASK 0x3F
@@ -130,8 +132,8 @@ getvar_internal(char *vars, const char *name)
 	if (!name)
 		return NULL;
 
-	len = strlen(name);
-	if (len == 0)
+	len = strnlen(name, NVRAM_MAX_PARAM_LEN);
+	if (len == 0 || len == NVRAM_MAX_PARAM_LEN)
 		return NULL;
 
 	/* first look in vars[] */
@@ -507,15 +509,15 @@ pkttotlen(osl_t *osh, void *p)
 	total = 0;
 	for (; p; p = PKTNEXT(osh, p)) {
 		len = PKTLEN(osh, p);
-
 		total += len;
+
 #ifdef BCMLFRAG
 		if (BCMLFRAG_ENAB()) {
 			if (PKTISFRAG(osh, p)) {
 				total += PKTFRAGTOTLEN(osh, p);
 			}
 		}
-#endif // endif
+#endif /* BCMLFRAG */
 	}
 
 	return (total);
@@ -531,6 +533,20 @@ pktlast(osl_t *osh, void *p)
 	return (p);
 }
 
+/* Dequeue packet from tail of chained packet list [marked by lb->next] */
+void*
+pktchain_deq_tail(osl_t *osh, void *p)
+{
+	void* prev_p = p;
+	ASSERT(p);
+
+	for (; PKTNEXT(osh, p); prev_p = p, p = PKTNEXT(osh, p))
+	;
+
+	PKTSETNEXT(osh, prev_p, NULL);
+	return (p);
+
+}
 /* count segments of a chained packet */
 uint BCMFASTPATH
 pktsegcnt(osl_t *osh, void *p)
@@ -1482,17 +1498,6 @@ bcm_iovar_lencheck(const bcm_iovar_t *vi, void *arg, int len, bool set)
  * with savings in not having to use an indirect access, had it been dynamically
  * allocated.
  */
-#if defined(DONGLEBUILD)
-#define BCM_MWBMAP_USE_CNTSETBITS		/* runtime count set bits */
-#if defined(BCMHWA) && defined(HWA_PKT_MACRO)
-#define BCM_MWBMAP_ITEMS_MAX	(10 * 1024)
-#else
-#define BCM_MWBMAP_ITEMS_MAX	(4 * 1024)
-#endif // endif
-#else  /* ! DONGLEBUILD */
-#define BCM_MWBMAP_ITEMS_MAX    (64 * 1024)  /* May increase to 64K */
-#endif /*   DONGLEBUILD */
-
 #define BCM_MWBMAP_BITS_WORD    (NBITS(uint32))
 #define BCM_MWBMAP_WORDS_MAX    (BCM_MWBMAP_ITEMS_MAX / BCM_MWBMAP_BITS_WORD)
 #define BCM_MWBMAP_WDMAP_MAX    (BCM_MWBMAP_WORDS_MAX / BCM_MWBMAP_BITS_WORD)
@@ -1546,7 +1551,7 @@ BCMATTACHFN(bcm_mwbmap_init)(osl_t *osh, uint32 items_max)
 	/* Implementation Constraint: Uses 32bit word bitmap */
 	MWBMAP_ASSERT(BCM_MWBMAP_BITS_WORD == 32U);
 	MWBMAP_ASSERT(BCM_MWBMAP_SHIFT_OP == 5U);
-	MWBMAP_ASSERT(ISPOWEROF2(BCM_MWBMAP_ITEMS_MAX));
+	// MWBMAP_ASSERT(ISPOWEROF2(BCM_MWBMAP_ITEMS_MAX));
 	MWBMAP_ASSERT((BCM_MWBMAP_ITEMS_MAX % BCM_MWBMAP_BITS_WORD) == 0U);
 
 	ASSERT(items_max <= BCM_MWBMAP_ITEMS_MAX);
@@ -2968,35 +2973,6 @@ ether_isnulladdr(const void *ea)
 
 #endif /* DONGLEBUILD */
 
-#if defined(CONFIG_USBRNDIS_RETAIL) || defined(NDIS_MINIPORT_DRIVER)
-/* registry routine buffer preparation utility functions:
- * parameter order is like strncpy, but returns count
- * of bytes copied. Minimum bytes copied is null char(1)/wchar(2)
- */
-ulong
-wchar2ascii(char *abuf, ushort *wbuf, ushort wbuflen, ulong abuflen)
-{
-	ulong copyct = 1;
-	ushort i;
-
-	if (abuflen == 0)
-		return 0;
-
-	/* wbuflen is in bytes */
-	wbuflen /= sizeof(ushort);
-
-	for (i = 0; i < wbuflen; ++i) {
-		if (--abuflen == 0)
-			break;
-		*abuf++ = (char) *wbuf++;
-		++copyct;
-	}
-	*abuf = '\0';
-
-	return copyct;
-}
-#endif /* CONFIG_USBRNDIS_RETAIL || NDIS_MINIPORT_DRIVER */
-
 #ifdef BCM_OBJECT_TRACE
 
 #define BCM_OBJECT_MERGE_SAME_OBJ	0
@@ -3899,6 +3875,17 @@ bcm_next_tlv(const  bcm_tlv_t *elt, int *buflen)
 bcm_tlv_t *
 bcm_parse_tlvs(const void *buf, int buflen, uint key)
 {
+	return bcm_parse_tlvs_ext(buf, buflen, key, -1);
+}
+
+/* Extends bcm_parse_tlvs() to look-up ext_key (first octet of variable lenvth
+ * value) when the key is 255.
+ * When not matching ext_key, pass special value -1.
+ * Pass non-negative ext_key only when the key is 255.
+ */
+bcm_tlv_t *
+bcm_parse_tlvs_ext(const void *buf, int buflen, uint key, int ext_key)
+{
 	const bcm_tlv_t *elt;
 	int totlen;
 
@@ -3910,14 +3897,21 @@ bcm_parse_tlvs(const void *buf, int buflen, uint key)
 	/* find tagged parameter */
 	while (totlen >= TLV_HDR_LEN) {
 		int len = elt->len;
-
 		/* validate remaining totlen */
 		if ((elt->id == key) && (totlen >= (int)(len + TLV_HDR_LEN))) {
-		GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST();
-		return (bcm_tlv_t *)(elt);
-		GCC_DIAGNOSTIC_POP();
+			/*
+			 * for key == 255, data[0] holds ext_key
+			 *
+			 * if ext_key == -1 or key != 255, main tag id match is enough
+			 * else match ext_key in data[0] also
+			 */
+			if (ext_key == -1 || key != 255 ||
+					(len > 0 && elt->data[0] == ext_key)) {
+				GCC_DIAGNOSTIC_PUSH_SUPPRESS_CAST();
+				return (bcm_tlv_t *)(elt);
+				GCC_DIAGNOSTIC_POP();
+			}
 		}
-
 		elt = (const bcm_tlv_t*)((const uint8*)elt + (len + TLV_HDR_LEN));
 		totlen -= (len + TLV_HDR_LEN);
 	}
@@ -5018,7 +5012,7 @@ setbits(uint8 *addr, uint size, uint stbit, uint nbits, uint32 val)
 	if (fbyte == lbyte) {
 		mask = ((1 << nbits) - 1) << fbit;
 		addr[fbyte] &= ~mask;
-		addr[fbyte] |= (uint8)(val << fbit);
+		addr[fbyte] |= ((uint8)(val << fbit)) & mask;
 		return;
 	}
 
@@ -5036,7 +5030,7 @@ setbits(uint8 *addr, uint size, uint stbit, uint nbits, uint32 val)
 	if (rbits > 0) {
 		mask = (1 << rbits) - 1;
 		addr[lbyte] &= ~mask;
-		addr[lbyte] |= (uint8)(val >> (nbits - rbits));
+		addr[lbyte] |= ((uint8)(val >> (nbits - rbits))) & mask;
 		lbyte --;	/* last full byte */
 	}
 
@@ -5311,4 +5305,224 @@ BCMATTACHFN(verify_array_values)(uint8 *array, int array_size,
 		}
 	}
 	return ret;
+}
+
+/*
+ * Search a string backwards for a set of characters
+ * This is the reverse version of strspn()
+ *
+ * @param	s	string to search backwards
+ * @param	accept	set of chars for which to search
+ * @return	number of characters in the trailing segment of s
+ *		which consist only of characters from accept.
+ */
+size_t
+bcm_sh_strrspn(const char *s, const char *accept)
+{
+	const char *p;
+	size_t accept_len = strlen(accept);
+	int i;
+
+	if (s[0] == '\0')
+		return 0;
+
+	p = s + strlen(s);
+	i = 0;
+
+	do {
+		p--;
+		if (memchr(accept, *p, accept_len) == NULL)
+			break;
+		i++;
+	} while (p != s);
+
+	return i;
+}
+
+/*
+ * Parse the unit and subunit from an interface string such as wlXX or wlXX.YY
+ *
+ * @param	ifname	interface string to parse
+ * @param	unit	pointer to return the unit number, may pass NULL
+ * @param	subunit	pointer to return the subunit number, may pass NULL
+ * @return	Returns 0 if the string ends with digits or digits.digits, -1 otherwise.
+ *		If ifname ends in digits.digits, then unit and subuint are set
+ *		to the first and second values respectively. If ifname ends
+ *		in just digits, unit is set to the value, and subunit is set
+ *		to -1. On error both unit and subunit are -1. NULL may be passed
+ *		for unit and/or subuint to ignore the value.
+ */
+int
+bcm_get_ifname_unit(const char* ifname, int *unit, int *subunit)
+{
+	const char digits[] = "0123456789";
+	char str[64];
+	char *p;
+	size_t ifname_len = strlen(ifname);
+	size_t len;
+	unsigned long val;
+
+	if (unit)
+		*unit = -1;
+	if (subunit)
+		*subunit = -1;
+
+	if (ifname_len + 1 > sizeof(str))
+		return -1;
+
+	strncpy(str, ifname, BCM_IFNAMSIZ);
+
+	/* find the trailing digit chars */
+	len = bcm_sh_strrspn(str, digits);
+
+	/* fail if there were no trailing digits */
+	if (len == 0)
+		return -1;
+
+	/* point to the beginning of the last integer and convert */
+	p = str + (ifname_len - len);
+	val = bcm_strtoul(p, NULL, 10);
+
+	/* if we are at the beginning of the string, or the previous
+	 * character is not a '.', then we have the unit number and
+	 * we are done parsing
+	 */
+	if (p == str || p[-1] != '.') {
+		if (unit)
+			*unit = val;
+		return 0;
+	} else {
+		if (subunit)
+			*subunit = val;
+	}
+
+	/* chop off the '.NNN' and get the unit number */
+	p--;
+	p[0] = '\0';
+
+	/* find the trailing digit chars */
+	len = bcm_sh_strrspn(str, digits);
+
+	/* fail if there were no trailing digits */
+	if (len == 0)
+		return -1;
+
+	/* point to the beginning of the last integer and convert */
+	p = p - len;
+	val = bcm_strtoul(p, NULL, 10);
+
+	/* save the unit number */
+	if (unit)
+		*unit = val;
+
+	return 0;
+}
+
+/**
+ * Advance a const tlv buffer pointer and length up to the given tlv element pointer
+ * 'elt'.  The function checks that elt is a valid tlv; the elt pointer and data
+ * are all in the range of the buffer/length.
+ *
+ * @param elt      pointer to a valid bcm_tlv_t in the buffer
+ * @param buffer   pointer to a tlv buffer
+ * @param buflen   length of the buffer in bytes
+ *
+ * On return, if elt is not a tlv in the buffer bounds, the *buffer parameter
+ * will be set to NULL and *buflen parameter will be set to zero.  Otherwise,
+ * *buffer will point to elt, and *buflen will have been adjusted by the the
+ * difference between *buffer and elt.
+ */
+void
+bcm_tlv_buffer_advance_to(const bcm_tlv_t *elt, const uint8 **buffer, uint *buflen)
+{
+	uint new_buflen;
+	const uint8 *new_buffer;
+
+	/* model the input length value as a tainted and negative sink so
+	 * Coverity will complain about unvalidated or possibly length values
+	 */
+	COV_TAINTED_DATA_SINK(*buflen);
+	COV_NEG_SINK(*buflen);
+
+	new_buffer = (const uint8*)elt;
+
+	/* make sure the input buffer pointer is non-null, that (buffer + buflen) does not wrap,
+	 * and that the elt pointer is in the range of [buffer, buffer + buflen]
+	 */
+	if ((*buffer != NULL) &&
+	    ((uintptr)*buffer < ((uintptr)*buffer + *buflen)) &&
+	    (new_buffer >= *buffer) &&
+	    (new_buffer < (*buffer + *buflen))) {
+		/* delta between buffer and new_buffer is <= *buflen, so truncating cast to uint
+		 * from ptrdiff is ok
+		 */
+		uint delta = (uint)(new_buffer - *buffer);
+
+		/* New buffer length is old len minus the delta from the buffer start to elt.
+		 * The check just above guarantees that the subtractions does not underflow.
+		 */
+		new_buflen = *buflen - delta;
+
+		/* validate current elt */
+		if (bcm_valid_tlv(elt, new_buflen)) {
+			/* All good, so update the input/output parameters */
+			*buffer = new_buffer;
+			*buflen = new_buflen;
+			return;
+		}
+	}
+
+	/* something did not check out, clear out the buffer info */
+	*buffer = NULL;
+	*buflen = 0;
+
+	return;
+}
+
+/**
+ * Advance a const tlv buffer pointer and length past the given tlv element pointer
+ * 'elt'.  The function checks that elt is a valid tlv; the elt pointer and data
+ * are all in the range of the buffer/length.  The function also checks that the
+ * remaining buffer starts with a valid tlv.
+ *
+ * @param elt      pointer to a valid bcm_tlv_t in the buffer
+ * @param buffer   pointer to a tlv buffer
+ * @param buflen   length of the buffer in bytes
+ *
+ * On return, if elt is not a tlv in the buffer bounds, or the remaining buffer
+ * following the elt does not begin with a tlv in the buffer bounds, the *buffer
+ * parameter will be set to NULL and *buflen parameter will be set to zero.
+ * Otherwise, *buffer will point to the first byte past elt, and *buflen will
+ * have the remaining buffer length.
+ */
+void
+bcm_tlv_buffer_advance_past(const bcm_tlv_t *elt, const uint8 **buffer, uint *buflen)
+{
+	/* Start by advancing the buffer up to the given elt */
+	bcm_tlv_buffer_advance_to(elt, buffer, buflen);
+
+	/* if that did not work, bail out */
+	if (*buflen == 0) {
+		return;
+	}
+
+#if defined(__COVERITY__)
+	/* The elt has been verified by bcm_tlv_buffer_advance_to() to be a valid element,
+	 * so its elt->len is in the bounds of the buffer. The following check prevents
+	 * Coverity from flagging the (elt->data + elt->len) statement below as using a
+	 * tainted elt->len to index into array 'elt->data'.
+	 */
+	if (elt->len > *buflen) {
+		return;
+	}
+#endif /* __COVERITY__ */
+
+	/* We know we are advanced up to a good tlv.
+	 * Now just advance to the following tlv.
+	 */
+	elt = (const bcm_tlv_t*)(elt->data + elt->len);
+
+	bcm_tlv_buffer_advance_to(elt, buffer, buflen);
+
+	return;
 }

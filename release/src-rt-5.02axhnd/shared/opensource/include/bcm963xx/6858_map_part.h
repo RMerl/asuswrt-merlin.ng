@@ -1902,6 +1902,24 @@ typedef struct Misc {
 
 #define USIM_CTRL           &MISC->miscUSIMCtrl
 
+typedef struct Rng {
+   uint32 ctrl0;                 /* 0x00 */
+   uint32 rngSoftReset;          /* 0x04 */
+   uint32 rbgSoftReset;          /* 0x08 */
+   uint32 totalBitCnt;           /* 0x0c */
+   uint32 totalBitCntThreshold;  /* 0x10 */
+   uint32 revId;                 /* 0x14 */
+   uint32 intStatus;             /* 0x18 */
+#define RNG_INT_STATUS_NIST_FAIL       (0x1<<5)
+#define RNG_INT_STATUS_FIFO_FULL       (0x1<<2)
+   uint32 intEn;                 /* 0x1c */
+   uint32 rngFifoData;           /* 0x20 */
+   uint32 fifoCnt;               /* 0x24 */
+   uint32 perm;                  /* 0x28 */
+} Rng;
+
+#define RNG ((volatile Rng * const) RNG_BASE)
+
 /*
 ** High-Speed SPI Controller
 */

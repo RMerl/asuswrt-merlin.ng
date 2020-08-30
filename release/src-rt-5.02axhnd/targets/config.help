@@ -113,6 +113,10 @@ BCM_SPEEDYGET
     Enable accelerated wget HTTP /GET mode for speed testing
 END
 
+BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG
+   Build image without BCMINTERNAL or BCMDBG defined ("external-ish").
+END
+
 BUILD_DM_TR104_V2
    TR104V2: Use TR104 Issue 2 data model.
 END
@@ -159,4 +163,15 @@ BUILD_CFE_ALLOW_NONSEC_SOTP_ACCESS
    SOTP.  
 END
 
+BUILD_MAP
+   Build with or without MAP-T and MAP-E Technologies for IPv6.
+END
+
+BUILD_HND_MFG
+   Build a Wireless driver with additional debug support for manufacturing
+END
+
+BUILD_BCM_WLAN_NO_MFGBIN
+   Build an image without containing wlan mfgtest binaries in the image.
+END
 

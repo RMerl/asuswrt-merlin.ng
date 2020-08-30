@@ -2559,8 +2559,10 @@ int getBootLine(int setdef)
         curPtr = strchr(curPtr, '='); 
         if (curPtr) { // found '=' and get the param.
             dPtr = strchr(curPtr, ' ');   // find param. delimiter ' '
-            memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
-            memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            if (dPtr) {
+                memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
+                memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            }
             // move to next param.
             curPtr = dPtr;  
         }
@@ -2596,8 +2598,10 @@ int getBootLine(int setdef)
         curPtr = strchr(curPtr, '='); 
         if (curPtr) { // found '=' and get the param.
             dPtr = strchr(curPtr, ' ');   // find param. deliminator ' '
-            memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
-            memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            if (dPtr) {
+                memset(gBootParam[i].parameter, 0, MAX_PROMPT_LEN);
+                memcpy(gBootParam[i].parameter, curPtr+1, dPtr-curPtr-1);
+            }
             // move to next param.
             curPtr = dPtr;  
         }
@@ -2810,7 +2814,7 @@ int changeDDRConfig(void)
 #endif
 
 #if defined(_BCM963138_) || defined(_BCM963148_) || defined (_BCM94908_) || defined(_BCM96848_) \
-    || defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_)
+    || defined(_BCM963158_) || defined(_BCM96846_) || defined(_BCM96856_) || defined(_BCM947189_)
 // check nvram feature set for 'feature'
 // no features set if nvram is corrupt or erased
 int nvFeatureGet(int feature)
@@ -2877,7 +2881,7 @@ int validateMemoryConfig(const NVRAM_DATA* nv, unsigned int *memcfg)
     return 0;
 }
 
-#if !defined(_BCM96846_)
+#if !defined(_BCM96846_) && !defined(_BCM947189_)
 void wait_biu_pll_lock(int bpcmaddr)
 {
     PLL_STAT_REG stat_reg;

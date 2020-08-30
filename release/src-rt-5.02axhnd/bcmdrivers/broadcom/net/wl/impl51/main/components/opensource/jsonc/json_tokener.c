@@ -53,6 +53,7 @@ static const char* json_null_str = "null";
 static const char* json_true_str = "true";
 static const char* json_false_str = "false";
 
+// XXX after v0.10 this array will become static:
 const char* json_tokener_errors[] = {
   "success",
   "continue",

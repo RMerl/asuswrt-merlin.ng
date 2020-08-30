@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -42,6 +42,7 @@ typedef struct psta_if_api {
 } psta_if_api_t;
 
 extern psta_if_t *dpsta_register(uint32 unit, psta_if_api_t *inst);
+extern int32 dpsta_unregister(uint32 unit);
 extern int32 dpsta_recv(void *p);
 
 #endif /* _DPSTA_H_ */

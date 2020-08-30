@@ -3,7 +3,7 @@
  *
  * Despite its file name, OTP contents is also parsed in this file.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsrom.c 742769 2018-01-23 15:23:27Z $
+ * $Id: bcmsrom.c 779831 2019-10-08 13:52:16Z $
  */
 
 /*
@@ -100,6 +100,10 @@ static uint8* srom_offset(si_t *sih, void *curmap)
 		return NULL;
 
 #if !defined(DSLCPE_WOMBO)
+	/* XXX: DSLCPE builds use variable SI_ENUM_BASE_DEFAULT, so need access to sii here.
+	 * Furthermore, below check doesn't seem necessary for them so compile it out completely for
+	 * now.
+	 */
 	if (BUSTYPE(sih->bustype) == SI_BUS)
 		return (uint8 *)((uintptr)SI_ENUM_BASE(sih) + CC_SROM_OTP);
 #endif // endif
@@ -145,7 +149,7 @@ static int initvars_cis_pcmcia(si_t *sih, osl_t *osh, char **vars, uint *count);
 #endif /* !defined(BCMDONGLEHOST) */
 #if !defined(BCMUSBDEV_ENABLED) && !defined(BCMSDIODEV_ENABLED) && \
 	!defined(BCMDONGLEHOST) && !defined(BCMPCIEDEV_ENABLED)
-static int initvars_flash_si(si_t *sih, char **vars, uint *count);
+static int initvars_si(si_t *sih, char **vars, uint *count);
 #endif // endif
 #if !defined(BCMDONGLEHOST)
 #ifdef BCMSPI
@@ -169,7 +173,7 @@ static uint16 srom_cc_cmd(si_t *sih, osl_t *osh, void *ccregs, uint32 cmd, uint 
 
 #if !defined(BCMDONGLEHOST)
 static int initvars_table(osl_t *osh, char *start, char *end, char **vars, uint *count);
-static int initvars_flash(si_t *sih, osl_t *osh, char **vp, uint len);
+static int initvars(si_t *sih, osl_t *osh, char **vp, uint len);
 int dbushost_initvars_flash(si_t *sih, osl_t *osh, char **base, uint len);
 static int get_max_cis_size(si_t *sih);
 #endif /* !defined(BCMDONGLEHOST) */
@@ -187,161 +191,6 @@ uint16 BCMATTACHDATA(caldata_array)[SROM_MAX/2];
 
 #if defined(BCMUSBDEV)
 #if defined(BCMUSBDEV_BMAC) || defined(BCM_BMAC_VARS_APPEND)
-static char BCMATTACHDATA(defaultsromvars_43234usb)[] =
-	"vendid=0x14e4\0"
-	"subvendid=0x0a5c\0"
-	"subdevid=0xbdc\0"
-	"macaddr=00:90:4c:03:21:23\0"
-	"cctl=0\0"
-	"ccode=US\0"
-	"regrev=0x0\0"
-	"ledbh0=0x82\0"
-	"ledbh1=0xff\0"
-	"ledbh2=0xff\0"
-	"ledbh3=0xff\0"
-	"leddc=0x0\0"
-	"aa2g=0x2\0"
-	"aa5g=0x2\0"
-	"ag0=0x2\0"
-	"ag1=0x2\0"
-	"ag2=0x2\0"
-	"ag3=0xff\0"
-	"txchain=0x2\0"
-	"rxchain=0x2\0"
-	"antswitch=0\0"
-	"sromrev=8\0"
-	"devid=0x4346\0"
-	"boardrev=0x1403\0"
-	"boardflags=0x200\0"
-	"boardflags2=0x2000\0"
-	"boardtype=0x0521\0"
-	"tssipos2g=0x1\0"
-	"extpagain2g=0x2\0"
-	"pdetrange2g=0x2\0"
-	"triso2g=0x3\0"
-	"antswctl2g=0x0\0"
-	"tssipos5g=0x1\0"
-	"extpagain5g=0x2\0"
-	"pdetrange5g=0x2\0"
-	"triso5g=0x3\0"
-	"antswctl5g=0x0\0"
-	"ofdm2gpo=0x0\0"
-	"ofdm5gpo=0x0\0"
-	"ofdm5glpo=0x0\0"
-	"ofdm5ghpo=0x0\0"
-	"mcs2gpo0=0x0\0"
-	"mcs2gpo1=0x0\0"
-	"mcs2gpo2=0x0\0"
-	"mcs2gpo3=0x0\0"
-	"mcs2gpo4=0x4444\0"
-	"mcs2gpo5=0x4444\0"
-	"mcs2gpo6=0x4444\0"
-	"mcs2gpo7=0x4444\0"
-	"mcs5gpo4=0x2222\0"
-	"mcs5gpo5=0x2222\0"
-	"mcs5gpo6=0x2222\0"
-	"mcs5gpo7=0x2222\0"
-	"mcs5glpo4=0x2222\0"
-	"mcs5glpo5=0x2222\0"
-	"mcs5glpo6=0x2222\0"
-	"mcs5glpo7=0x2222\0"
-	"mcs5ghpo4=0x2222\0"
-	"mcs5ghpo5=0x2222\0"
-	"mcs5ghpo6=0x2222\0"
-	"mcs5ghpo7=0x2222\0"
-	"maxp2ga0=0x42\0"
-	"itt2ga0=0x20\0"
-	"itt5ga0=0x3e\0"
-	"pa2gw0a0=0xFF21\0"
-	"pa2gw1a0=0x13B7\0"
-	"pa2gw2a0=0xFB44\0"
-	"maxp5ga0=0x3E\0"
-	"maxp5gha0=0x3a\0"
-	"maxp5gla0=0x3c\0"
-	"pa5gw0a0=0xFEB2\0"
-	"pa5gw1a0=0x1570\0"
-	"pa5gw2a0=0xFAD6\0"
-	"pa5glw0a0=0xFE64\0"
-	"pa5glw1a0=0x13F7\0"
-	"pa5glw2a0=0xFAF6\0"
-	"pa5ghw0a0=0xFEAB\0"
-	"pa5ghw1a0=0x15BB\0"
-	"pa5ghw2a0=0xFAC6\0"
-	"maxp2ga1=0x42\0"
-	"itt2ga1=0x20\0"
-	"itt5ga1=0x3e\0"
-	"pa2gw0a1=0xFF17\0"
-	"pa2gw1a1=0x13C4\0"
-	"pa2gw2a1=0xFB3C\0"
-	"maxp5ga1=0x3E\0"
-	"maxp5gha1=0x3a\0"
-	"maxp5gla1=0x3c\0"
-	"pa5gw0a1=0xFE6F\0"
-	"pa5gw1a1=0x13CC\0"
-	"pa5gw2a1=0xFAF8\0"
-	"pa5glw0a1=0xFE87\0"
-	"pa5glw1a1=0x14BE\0"
-	"pa5glw2a1=0xFAD6\0"
-	"pa5ghw0a1=0xFE68\0"
-	"pa5ghw1a1=0x13E9\0"
-	"pa5ghw2a1=0xFAF6\0"
-	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_43235usb)[] =
-	"vendid=0x14e4\0"
-	"subvendid=0x0a5c\0"
-	"subdevid=0xbdc\0"
-	"macaddr=00:90:4c:05:30:01\0"
-	"ccode=US\0"
-	"regrev=0x0\0"
-	"ledbh0=0x82\0"
-	"ledbh1=0xff\0"
-	"ledbh2=0xff\0"
-	"ledbh3=0xff\0"
-	"leddc=0x0\0"
-	"aa2g=0x3\0"
-	"ag0=0x2\0"
-	"ag1=0x2\0"
-	"ag2=0xff\0"
-	"ag3=0xff\0"
-	"txchain=0x3\0"
-	"rxchain=0x3\0"
-	"antswitch=0\0"
-	"sromrev=8\0"
-	"devid=0x4347\0"
-	"boardrev=0x1113\0"
-	"boardflags=0x200\0"
-	"boardflags2=0x0\0"
-	"boardtype=0x0571\0"
-	"tssipos2g=0x1\0"
-	"extpagain2g=0x2\0"
-	"pdetrange2g=0x2\0"
-	"triso2g=0x3\0"
-	"antswctl2g=0x0\0"
-	"antswctl5g=0x0\0"
-	"ofdm2gpo=0x0\0"
-	"mcs2gpo0=0x0\0"
-	"mcs2gpo1=0x0\0"
-	"mcs2gpo2=0x0\0"
-	"mcs2gpo3=0x0\0"
-	"mcs2gpo4=0x2222\0"
-	"mcs2gpo5=0x2222\0"
-	"mcs2gpo6=0x2222\0"
-	"mcs2gpo7=0x4444\0"
-	"maxp2ga0=0x42\0"
-	"itt2ga0=0x20\0"
-	"pa2gw0a0=0xFF00\0"
-	"pa2gw1a0=0x143C\0"
-	"pa2gw2a0=0xFB27\0"
-	"maxp2ga1=0x42\0"
-	"itt2ga1=0x20\0"
-	"pa2gw0a1=0xFF22\0"
-	"pa2gw1a1=0x142E\0"
-	"pa2gw2a1=0xFB45\0"
-	"tempthresh=120\0"
-	"temps_period=5\0"
-	"temp_hysteresis=5\0"
-	"END\0";
 
 static char BCMATTACHDATA(defaultsromvars_4350usb)[] =
 	"sromrev=11\0"
@@ -511,109 +360,6 @@ static char BCMATTACHDATA(defaultsromvars_4350usb)[] =
 	"tx_duty_cycle_ofdm_80_5g=61\0"
 	"tx_duty_cycle_thresh_80_5g=468\0"
 	"otpimagesize=484\0"
-	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_43236usb)[] =
-	"vendid=0x14e4\0"
-	"subvendid=0x0a5c\0"
-	"subdevid=0xbdc\0"
-	"macaddr=00:90:4c:03:21:23\0"
-	"cctl=0\0"
-	"ccode=US\0"
-	"regrev=0x0\0"
-	"ledbh0=0x82\0"
-	"ledbh1=0xff\0"
-	"ledbh2=0xff\0"
-	"ledbh3=0xff\0"
-	"leddc=0x0\0"
-	"aa2g=0x3\0"
-	"aa5g=0x3\0"
-	"ag0=0x2\0"
-	"ag1=0x2\0"
-	"ag2=0x2\0"
-	"ag3=0xff\0"
-	"txchain=0x3\0"
-	"rxchain=0x3\0"
-	"antswitch=0\0"
-	"sromrev=8\0"
-	"devid=0x4346\0"
-	"boardrev=0x1532\0"
-	"boardflags=0x200\0"
-	"boardflags2=0x2000\0"
-	"boardtype=0x0521\0"
-	"tssipos2g=0x1\0"
-	"extpagain2g=0x2\0"
-	"pdetrange2g=0x2\0"
-	"triso2g=0x3\0"
-	"antswctl2g=0x0\0"
-	"tssipos5g=0x1\0"
-	"extpagain5g=0x2\0"
-	"pdetrange5g=0x2\0"
-	"triso5g=0x3\0"
-	"antswctl5g=0x0\0"
-	"ofdm2gpo=0x33333333\0"
-	"ofdm5gpo=0x0\0"
-	"ofdm5glpo=0x0\0"
-	"ofdm5ghpo=0x0\0"
-	"mcs2gpo0=0x3333\0"
-	"mcs2gpo1=0x3333\0"
-	"mcs2gpo2=0x3333\0"
-	"mcs2gpo3=0x3333\0"
-	"mcs2gpo4=0x5555\0"
-	"mcs2gpo5=0x5555\0"
-	"mcs2gpo6=0x5555\0"
-	"mcs2gpo7=0x5555\0"
-	"mcs5gpo4=0x2222\0"
-	"mcs5gpo5=0x2222\0"
-	"mcs5gpo6=0x2222\0"
-	"mcs5gpo7=0x2222\0"
-	"mcs5glpo4=0x2222\0"
-	"mcs5glpo5=0x2222\0"
-	"mcs5glpo6=0x2222\0"
-	"mcs5glpo7=0x2222\0"
-	"mcs5ghpo4=0x2222\0"
-	"mcs5ghpo5=0x2222\0"
-	"mcs5ghpo6=0x2222\0"
-	"mcs5ghpo7=0x2222\0"
-	"maxp2ga0=0x48\0"
-	"itt2ga0=0x20\0"
-	"itt5ga0=0x3e\0"
-	"pa2gw0a0=0xFFD8\0"
-	"pa2gw1a0=0x171C\0"
-	"pa2gw2a0=0xFB14\0"
-	"maxp5ga0=0x3e\0"
-	"maxp5gha0=0x3a\0"
-	"maxp5gla0=0x3c\0"
-	"pa5gw0a0=0xFE88\0"
-	"pa5gw1a0=0x141C\0"
-	"pa5gw2a0=0xFB17\0"
-	"pa5glw0a0=0xFE8C\0"
-	"pa5glw1a0=0x1493\0"
-	"pa5glw2a0=0xFAFC\0"
-	"pa5ghw0a0=0xFE86\0"
-	"pa5ghw1a0=0x13CC\0"
-	"pa5ghw2a0=0xFB20\0"
-	"maxp2ga1=0x48\0"
-	"itt2ga1=0x20\0"
-	"itt5ga1=0x3e\0"
-	"pa2gw0a1=0x0020\0"
-	"pa2gw1a1=0x1791\0"
-	"pa2gw2a1=0xFB5F\0"
-	"maxp5ga1=0x3e\0"
-	"maxp5gha1=0x3a\0"
-	"maxp5gla1=0x3c\0"
-	"pa5gw0a1=0xFE7E\0"
-	"pa5gw1a1=0x1399\0"
-	"pa5gw2a1=0xFB27\0"
-	"pa5glw0a1=0xFE82\0"
-	"pa5glw1a1=0x13F3\0"
-	"pa5glw2a1=0xFB14\0"
-	"pa5ghw0a1=0xFE96\0"
-	"pa5ghw1a1=0x13BF\0"
-	"pa5ghw2a1=0xFB30\0"
-	"tempthresh=120\0"
-	"temps_period=5\0"
-	"temp_hysteresis=5\0"
 	"END\0";
 
 static char BCMATTACHDATA(defaultsromvars_4360usb)[] =
@@ -1008,53 +754,6 @@ static char BCMATTACHDATA(defaultsromvars_4360)[] =
 "pa5ga2=0xff2d,0x144a,0xfd63,0xff35,0x15d7,0xfd3b,0xff35,0x1668,0xfd2f,0xff31,0x1664,0xfd27\0"
 	"END\0";
 
-static char BCMATTACHDATA(defaultsromvars_4335)[] =
-	"sromrev=11\0"
-	"boardrev=0x1104\0"
-	"boardtype=0x0647\0"
-	"boardflags=0x10401001\0"
-	"boardflags2=0x0\0"
-	"boardflags3=0x0\0"
-	"macaddr=00:90:4c:c5:43:55\0"
-	"ccode=0\0"
-	"regrev=0\0"
-	"antswitch=0\0"
-	"tworangetssi2g=0\0"
-	"tworangetssi5g=0\0"
-	"femctrl=4\0"
-	"pcieingress_war=15\0"
-	"vendid=0x14e4\0"
-	"devid=0x43ae\0"
-	"manfid=0x2d0\0"
-	"#prodid=0x052e\0"
-	"nocrc=1\0"
-	"xtalfreq=40000\0"
-	"extpagain2g=1\0"
-	"pdetrange2g=2\0"
-	"extpagain5g=1\0"
-	"pdetrange5g=2\0"
-	"rxgains2gelnagaina0=3\0"
-	"rxgains2gtrisoa0=3\0"
-	"rxgains2gtrelnabypa0=1\0"
-	"rxgains5gelnagaina0=3\0"
-	"rxgains5gtrisoa0=4\0"
-	"rxgains5gtrelnabypa0=1\0"
-	"pdgain5g=10\0"
-	"pdgain2g=10\0"
-	"rxchain=1\0"
-	"txchain=1\0"
-	"aa2g=1\0"
-	"aa5g=1\0"
-	"tssipos5g=1\0"
-	"tssipos2g=1\0"
-	"pa2ga0=0x0,0x0,0x0\0"
-	"pa5ga0=-217,5493,-673\0"
-	"tssifloor2g=0x3ff\0"
-	"tssifloor5g=0x3ff,0x3ff,0x3ff,0x3ff\0"
-	"pdoffset40ma0=0\0"
-	"pdoffset80ma0=0\0"
-	"END\0";
-
 #endif // endif
 #endif /* !defined(BCMDONGLEHOST) */
 
@@ -1125,271 +824,6 @@ static char BCMATTACHDATA(defaultsromvars_wltest)[] =
 	"bw40po=4\0"
 	"bwduppo=0\0"
 	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_4345)[] =
-	"sromrev=11\0"
-	"vendid=0x14e4\0"
-	"devid=0x43ab\0"
-	"manfid=0x2d0\0"
-	"prodid=0x052e\0"
-	"macaddr=00:90:4c:c5:12:38\0"
-	"nocrc=1\0"
-	"boardtype=0x687\0"
-	"boardrev=0x1104\0"
-	"xtalfreq=37400\0"
-	"boardflags=0x0\0"
-	"boardflags2=0x0\0"
-	"boardflags3=0x0\0"
-	"rxgains2gelnagaina0=0\0"
-	"rxgains2gtrisoa0=0\0"
-	"rxgains2gtrelnabypa0=0\0"
-	"rxgains5gelnagaina0=0\0"
-	"rxgains5gtrisoa0=0\0"
-	"rxgains5gtrelnabypa0=0\0"
-	"pdgain5g=0\0"
-	"pdgain2g=0\0"
-	"rxchain=1\0"
-	"txchain=1\0"
-	"aa2g=1\0"
-	"aa5g=1\0"
-	"tssipos5g=1\0"
-	"tssipos2g=1\0"
-	"femctrl=0\0"
-	"pa2ga0=-228,3230,-453\0"
-	"pa5ga0=-218,4514,-665,-162,4750,-642,-130,4995,-640,-80,5144,-607\0"
-	"pdoffset40ma0=0\0"
-	"pdoffset80ma0=0\0"
-	"extpagain5g=3\0"
-	"extpagain2g=3\0"
-	"maxp2ga0=0x48\0"
-	"itt2ga0=0x20\0"
-	"itt5ga0=0x3e\0"
-	"pa2gw0a0=0xfe7f\0"
-	"pa2gw1a0=0x15d9\0"
-	"pa2gw2a0=0xfac6\0"
-	"maxp5ga0=0x3c\0"
-	"maxp5gha0=0x3c\0"
-	"maxp5gla0=0x3c\0"
-	"cckbw202gpo=0\0"
-	"cckbw20ul2gpo=0\0"
-	"mcsbw202gpo=2571386880\0"
-	"mcsbw402gpo=2571386880\0"
-	"swctrlmap_2g=0x00000004,0x00000002,0x00000002,0x000000,0x000\0"
-	"swctrlmap_5g=0x00000016,0x00000032,0x00000032,0x000000,0x000\0"
-	"swctrlmapext_5g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"swctrlmapext_2g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_4349)[] =
-	"sromrev=11\0"
-	"boardrev=0x1101\0"
-	"boardflags=0x10081201\0"
-	"boardflags2=0x00000000\0"
-	"boardtype=0x074c\0"
-	"btc_mode=1\0"
-	"boardflags3=0x08000186\0"
-	"macaddr=00:90:4c:13:80:01\0"
-	"ccode=0\0"
-	"devid=0x43ef\0"
-	"regrev=0\0"
-	"aa2g=3\0"
-	"aa5g=3\0"
-	"agbg0=2\0"
-	"agbg1=2\0"
-	"aga0=2\0"
-	"aga1=2\0"
-	"rxchain=3\0"
-	"txchain=3\0"
-	"antswitch=0\0"
-	"extpagain2g=2\0"
-	"extpagain5g=2\0"
-	"pdgain2g=0\0"
-	"tworangetssi2g=0\0"
-	"femctrl=14\0"
-	"pdgain5g=0\0"
-	"tworangetssi5g=0\0"
-	"tempthresh=255\0"
-	"tempoffset=255\0"
-	"rawtempsense=0x1ff\0"
-	"xtalfreq=37400\0"
-	"phycal_tempdelta=15\0"
-	"temps_period=15\0"
-	"temps_hysteresis=15\0"
-	"pdoffset40ma0=0x0000\0"
-	"pdoffset40ma1=0x0000\0"
-	"pdoffset80ma0=0x0000\0"
-	"pdoffset80ma1=0x0000\0"
-	"subband5gver=0x4\0"
-	"cckbw202gpo=0\0"
-	"cckbw20ul2gpo=0\0"
-	"mcsbw202gpo=0xEC888222\0"
-	"mcsbw402gpo=0xEC888222\0"
-	"dot11agofdmhrbw202gpo=0x6622\0"
-	"ofdmlrbw202gpo=0x0000\0"
-	"mcsbw205glpo=0xCA666000\0"
-	"mcsbw405glpo=0xCA666000\0"
-	"mcsbw805glpo=0xEA666000\0"
-	"mcsbw1605glpo=0\0"
-	"mcsbw205gmpo=0xCA666000\0"
-	"mcsbw405gmpo=0xCA666000\0"
-	"mcsbw805gmpo=0xEA666000\0"
-	"mcsbw1605gmpo=0\0"
-	"mcsbw205ghpo=0xCA666000\0"
-	"mcsbw405ghpo=0xCA666000\0"
-	"mcsbw805ghpo=0xEA666000\0"
-	"mcsbw1605ghpo=0\0"
-	"mcslr5glpo=0x0000\0"
-	"mcslr5gmpo=0x0000\0"
-	"mcslr5ghpo=0x0000\0"
-	"sb20in40hrpo=0x0\0"
-	"sb20in80and160hr5glpo=0x0\0"
-	"sb40and80hr5glpo=0x0\0"
-	"sb20in80and160hr5gmpo=0x0\0"
-	"sb40and80hr5gmpo=0x0\0"
-	"sb20in80and160hr5ghpo=0x0\0"
-	"sb40and80hr5ghpo=0x0\0"
-	"sb20in40lrpo=0x0\0"
-	"sb20in80and160lr5glpo=0x0\0"
-	"sb40and80lr5glpo=0x0\0"
-	"sb20in80and160lr5gmpo=0x0\0"
-	"sb40and80lr5gmpo=0x0\0"
-	"sb20in80and160lr5ghpo=0x0\0"
-	"sb40and80lr5ghpo=0x0\0"
-	"dot11agduphrpo=0x0\0"
-	"dot11agduplrpo=0x0\0"
-	"maxp2ga0=66\0"
-	"pa2ga0=-200,6574,-787\0"
-	"rxgains5gmelnagaina0=3\0"
-	"rxgains5gmtrisoa0=6\0"
-	"rxgains5gmtrelnabypa0=1\0"
-	"rxgains5ghelnagaina0=3\0"
-	"rxgains5ghtrisoa0=6\0"
-	"rxgains5ghtrelnabypa0=1\0"
-	"rxgains2gelnagaina0=3\0"
-	"rxgains2gtrisoa0=7\0"
-	"rxgains2gtrelnabypa0=1\0"
-	"rxgains5gelnagaina0=3\0"
-	"rxgains5gtrisoa0=6\0"
-	"rxgains5gtrelnabypa0=1\0"
-	"maxp5ga0=66,66,66,66\0"
-	"pa5ga0=-188,7017,-856,-179,7263,-880,-178,7255,-877,-176,7243,-876\0"
-	"maxp2ga1=66\0"
-	"pa2ga1=-201,6623,-796\0"
-	"rxgains5gmelnagaina1=3\0"
-	"rxgains5gmtrisoa1=6\0"
-	"rxgains5gmtrelnabypa1=1\0"
-	"rxgains5ghelnagaina1=3\0"
-	"rxgains5ghtrisoa1=6\0"
-	"rxgains5ghtrelnabypa1=1\0"
-	"rxgains2gelnagaina1=3\0"
-	"rxgains2gtrisoa1=7\0"
-	"rxgains2gtrelnabypa1=1\0"
-	"rxgains5gelnagaina1=3\0"
-	"rxgains5gtrisoa1=6\0"
-	"rxgains5gtrelnabypa1=1\0"
-	"maxp5ga1=66,66,66,66\0"
-	"ltecxfnsel=0x44\0"
-	"ltecxgcigpio=0x04\0"
-	"ltecxmux=0\0"
-	"ltecxpadnum=0x0504\0"
-	"manfid=0x2d0\0"
-	"nocrc=1\0"
-	"pa5gbw4080a0=-185,7697,-940,-195,7387,-909,-189,7549,-923,-171,8024,-964\0"
-	"pa5gbw4080a1=-187,7363,-902,-191,7331,-901,-191,7345,-899,-190,7357,-896 \0"
-	"paparambwver=3\0"
-	"swctrlmap_2g=0x00000000,0x28280000,0x20200000,0x404000,0x13f\0"
-	"swctrlmap_5g=0x00000404,0x12120000,0x02020000,0x000000,0x13f\0"
-	"swctrlmapext_2g=0x00000101,0x00000000,0x00000000,0x000000,0x001\0"
-	"swctrlmapext_5g=0x00000000,0x00000000,0x00000000,0x000000,0x001\0"
-	"tssipos2g=1\0"
-	"tssipos5g=1\0"
-	"vendid=0x14e4\0"
-	"otpimagesize=502\0"
-	"pa5ga1=-182,7084,-862,-182,7081,-860,-181,7139,-863,-188,6998,-853\0"
-	"btc_params82=0x1a0\0"
-	"btcdyn_btrssi_hyster=2\0"
-	"btcdyn_default_btc_mode=5\0"
-	"btcdyn_dflt_dsns_level=0\0"
-	"btcdyn_dsns_row0=5,0,0,-70,-70\0"
-	"btcdyn_dsns_rows=1\0"
-	"btcdyn_flags=0x7\0"
-	"btcdyn_high_dsns_level=2\0"
-	"btcdyn_low_dsns_level=0\0"
-	"btcdyn_mid_dsns_level=7\0"
-	"btcdyn_msw_row0=1,8,0,-40,-100\0"
-	"btcdyn_msw_row1=1,4,0,-50,-100\0"
-	"btcdyn_msw_row2=1,0,0,-65,-100\0"
-	"btcdyn_msw_row3=1,-4,0,-70,-100\0"
-	"btcdyn_msw_rows=4\0"
-	"cckdigfilttype=4\0"
-	"cckpwroffset0=0\0"
-	"cckpwroffset1=0\0"
-	"muxenab=1\0"
-	"pa2gccka0=-220,6631,-810\0"
-	"pa2gccka1=-216,6809,-829\0"
-	"rssi_delta_2g_c0=2,2,2,2\0"
-	"rssi_delta_2g_c1=1,1,1,1\0"
-	"rssi_delta_5gh_c0=1,1,2,2,4,4\0"
-	"rssi_delta_5gh_c1=1,1,2,2,4,4\0"
-	"rssi_delta_5gl_c0=1,1,2,2,4,4\0"
-	"rssi_delta_5gl_c1=1,1,2,2,4,4\0"
-	"rssi_delta_5gml_c0=1,1,2,2,4,4\0"
-	"rssi_delta_5gml_c1=1,1,2,2,4,4\0"
-	"rssi_delta_5gmu_c0=1,1,2,2,4,4\0"
-	"rssi_delta_5gmu_c1=1,1,2,2,4,4\0"
-	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_4345b0)[] =
-	"sromrev=11\0"
-	"vendid=0x14e4\0"
-	"devid=0x43ab\0"
-	"manfid=0x2d0\0"
-	"prodid=0x069b\0"
-	"macaddr=00:90:4c:c5:12:38\0"
-	"nocrc=1\0"
-	"boardtype=0x69b\0"
-	"boardrev=0x1120\0"
-	"xtalfreq=37400\0"
-	"boardflags=0x10001001\0"
-	"boardflags2=0x0\0"
-	"boardflags3=0x00000100\0"
-	"rxgains2gelnagaina0=1\0"
-	"rxgains2gtrisoa0=4\0"
-	"rxgains2gtrelnabypa0=0\0"
-	"rxgains5gelnagaina0=3\0"
-	"rxgains5gtrisoa0=5\0"
-	"rxgains5gtrelnabypa0=0\0"
-	"pdgain5g=2\0"
-	"pdgain2g=2\0"
-	"rxchain=1\0"
-	"txchain=1\0"
-	"aa2g=1\0"
-	"aa5g=1\0"
-	"tssipos5g=1\0"
-	"tssipos2g=1\0"
-	"femctrl=0\0"
-	"pa2ga0=-202,6212,-784\0"
-	"pa5ga0=-104,6044,-676,-96,6104,-676,-82,6122,-674,-60,6190,-672\0"
-	"pdoffset40ma0=0\0"
-	"pdoffset80ma0=0\0"
-	"extpagain5g=3\0"
-	"extpagain2g=3\0"
-	"maxp2ga0=0x42\0"
-	"maxp5ga0=0x42,0x42,0x42,0x42\0"
-	"mcsbw205glpo=0x43100000\0"
-	"mcsbw205gmpo=0x43100000\0"
-	"mcsbw205ghpo=0x43100000\0"
-	"mcsbw405glpo=0x43100000\0"
-	"mcsbw405gmpo=0x43100000\0"
-	"mcsbw405ghpo=0x43100000\0"
-	"mcsbw805glpo=0x43100000\0"
-	"mcsbw805gmpo=0x43100000\0"
-	"mcsbw805ghpo=0x43100000\0"
-	"swctrlmap_2g=0x00000004,0x000a0000,0x00020000,0x010a02,0x1ff\0"
-	"swctrlmap_5g=0x00000010,0x00600000,0x00200000,0x010a02,0x2f4\0"
-	"swctrlmapext_5g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"swctrlmapext_2g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"muxenab=1\0";
 
 static char BCMATTACHDATA(defaultsromvars_4350)[] =
 	"sromrev=11\0"
@@ -1651,149 +1085,6 @@ static char BCMATTACHDATA(defaultsromvars_4350c0)[] =
 	"temps_hysteresis=15\0"
 	"swctrlmap_5g=0x00000101,0x06060000,0x02020000,0x000000,0x047\0"
 	"swctrlmap_2g=0x00000808,0x30300000,0x20200000,0x803000,0x0ff\0"
-	"swctrlmapext_5g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"swctrlmapext_2g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
-	"rssi_delta_2g_c0=0,0,0,0\0"
-	"rssi_delta_2g_c1=0,0,0,0\0"
-	"rssi_delta_5gh_c0=0,0,0,0,0,0\0"
-	"rssi_delta_5gh_c1=0,0,0,0,0,0\0"
-	"rssi_delta_5gmu_c0=0,0,0,0,0,0\0"
-	"rssi_delta_5gmu_c1=0,0,0,0,0,0\0"
-	"rssi_delta_5gml_c0=0,0,0,0,0,0\0"
-	"rssi_delta_5gml_c1=0,0,0,0,0,0\0"
-	"rssi_delta_5gl_c0=0,0,0,0,0,0\0"
-	"rssi_delta_5gl_c1=0,0,0,0,0,0\0"
-	"rstr_rxgaintempcoeff2g=57\0"
-	"rstr_rxgaintempcoeff5gl=57\0"
-	"rstr_rxgaintempcoeff5gml=57\0"
-	"rstr_rxgaintempcoeff5gmu=57\0"
-	"rstr_rxgaintempcoeff5gh=57\0"
-	"rssi_cal_rev=0\0"
-	"END\0";
-
-static char BCMATTACHDATA(defaultsromvars_4354a1)[] =
-	"sromrev=11\0"
-	"boardrev=0x1132\0"
-	"boardtype=0x0707\0"
-	"boardflags=0x02400201\0"
-	"boardflags2=0x00802000\0"
-	"boardflags3=0x4008010a\0"
-	"macaddr=00:90:4c:14:b0:01\0"
-	"ccode=0\0"
-	"regrev=0\0"
-	"antswitch=0\0"
-	"pdgain5g=4\0"
-	"pdgain2g=4\0"
-	"tworangetssi2g=0\0"
-	"tworangetssi5g=0\0"
-	"paprdis=0\0"
-	"femctrl=10\0"
-	"vendid=0x14e4\0"
-	"devid=0x43a3\0"
-	"manfid=0x2d0\0"
-	"nocrc=1\0"
-	"otpimagesize=502\0"
-	"xtalfreq=37400\0"
-	"rxgains2gelnagaina0=0\0"
-	"rxgains2gtrisoa0=7\0"
-	"rxgains2gtrelnabypa0=0\0"
-	"rxgains5gelnagaina0=0\0"
-	"rxgains5gtrisoa0=11\0"
-	"rxgains5gtrelnabypa0=0\0"
-	"rxgains5gmelnagaina0=0\0"
-	"rxgains5gmtrisoa0=13\0"
-	"rxgains5gmtrelnabypa0=0\0"
-	"rxgains5ghelnagaina0=0\0"
-	"rxgains5ghtrisoa0=12\0"
-	"rxgains5ghtrelnabypa0=0\0"
-	"rxgains2gelnagaina1=0\0"
-	"rxgains2gtrisoa1=7\0"
-	"rxgains2gtrelnabypa1=0\0"
-	"rxgains5gelnagaina1=0\0"
-	"rxgains5gtrisoa1=10\0"
-	"rxgains5gtrelnabypa1=0\0"
-	"rxgains5gmelnagaina1=0\0"
-	"rxgains5gmtrisoa1=11\0"
-	"rxgains5gmtrelnabypa1=0\0"
-	"rxgains5ghelnagaina1=0\0"
-	"rxgains5ghtrisoa1=11\0"
-	"rxgains5ghtrelnabypa1=0\0"
-	"rxchain=3\0"
-	"txchain=3\0"
-	"aa2g=3\0"
-	"aa5g=3\0"
-	"agbg0=2\0"
-	"agbg1=2\0"
-	"aga0=2\0"
-	"aga1=2\0"
-	"tssipos2g=1\0"
-	"extpagain2g=2\0"
-	"tssipos5g=1\0"
-	"extpagain5g=2\0"
-	"tempthresh=255\0"
-	"tempoffset=255\0"
-	"rawtempsense=0x1ff\0"
-	"pa2ga0=-147,6192,-705\0"
-	"pa2ga1=-161,6041,-701\0"
-	"pa5ga0=-194,6069,-739,-188,6137,-743,-185,5931,-725,-171,5898,-715\0"
-	"pa5ga1=-190,6248,-757,-190,6275,-759,-190,6225,-757,-184,6131,-746\0"
-	"subband5gver=0x4\0"
-	"pdoffsetcckma0=0x4\0"
-	"pdoffsetcckma1=0x4\0"
-	"pdoffset40ma0=0x0000\0"
-	"pdoffset80ma0=0x0000\0"
-	"pdoffset40ma1=0x0000\0"
-	"pdoffset80ma1=0x0000\0"
-	"maxp2ga0=74\0"
-	"maxp5ga0=74,74,74,74\0"
-	"maxp2ga1=74\0"
-	"maxp5ga1=74,74,74,74\0"
-	"cckbw202gpo=0x0000\0"
-	"cckbw20ul2gpo=0x0000\0"
-	"mcsbw202gpo=0x99644422\0"
-	"mcsbw402gpo=0x99644422\0"
-	"dot11agofdmhrbw202gpo=0x6666\0"
-	"ofdmlrbw202gpo=0x0022\0"
-	"mcsbw205glpo=0x88766663\0"
-	"mcsbw405glpo=0x88666663\0"
-	"mcsbw805glpo=0xbb666665\0"
-	"mcsbw205gmpo=0xd8666663\0"
-	"mcsbw405gmpo=0x88666663\0"
-	"mcsbw805gmpo=0xcc666665\0"
-	"mcsbw205ghpo=0xdc666663\0"
-	"mcsbw405ghpo=0xaa666663\0"
-	"mcsbw805ghpo=0xdd666665\0"
-	"mcslr5glpo=0x0000\0"
-	"mcslr5gmpo=0x0000\0"
-	"mcslr5ghpo=0x0000\0"
-	"sb20in40hrpo=0x0\0"
-	"sb20in80and160hr5glpo=0x0\0"
-	"sb40and80hr5glpo=0x0\0"
-	"sb20in80and160hr5gmpo=0x0\0"
-	"sb40and80hr5gmpo=0x0\0"
-	"sb20in80and160hr5ghpo=0x0\0"
-	"sb40and80hr5ghpo=0x0\0"
-	"sb20in40lrpo=0x0\0"
-	"sb20in80and160lr5glpo=0x0\0"
-	"sb40and80lr5glpo=0x0\0"
-	"sb20in80and160lr5gmpo=0x0\0"
-	"sb40and80lr5gmpo=0x0\0"
-	"sb20in80and160lr5ghpo=0x0\0"
-	"sb40and80lr5ghpo=0x0\0"
-	"dot11agduphrpo=0x0\0"
-	"dot11agduplrpo=0x0\0"
-	"phycal_tempdelta=255\0"
-	"temps_period=15\0"
-	"temps_hysteresis=15\0"
-	"AvVmid_c0=2,140,2,145,2,145,2,145,2,145\0"
-	"AvVmid_c1=2,140,2,145,2,145,2,145,2,145\0"
-	"AvVmid_c2=0,0,0,0,0,0,0,0,0,0\0"
-	"rssicorrnorm_c0=4,4\0"
-	"rssicorrnorm_c1=4,4\0"
-	"rssicorrnorm5g_c0=1,2,3,1,2,3,6,6,8,6,6,8\0"
-	"rssicorrnorm5g_c1=1,2,3,2,2,2,7,7,8,7,7,8\0"
-	"swctrlmap_5g=0x00000202,0x00000101,0x00000202,0x000000,0x08f\0"
-	"swctrlmap_2g=0x00004040,0x00001010,0x00004040,0x200010,0x0ff\0"
 	"swctrlmapext_5g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
 	"swctrlmapext_2g=0x00000000,0x00000000,0x00000000,0x000000,0x000\0"
 	"rssi_delta_2g_c0=0,0,0,0\0"
@@ -2771,6 +2062,338 @@ static char BCMATTACHDATA(defaultsromvars_4347)[] =
 	"powoffs2gtna0=1,3,3,1,0,0,1,2,2,2,1,1,0,0\0"
 	"powoffs2gtna1=-1,1,1,1,0,0,1,2,3,2,2,0,0,0\0"
 	"END\0";
+
+/**
+ * The contents of this array is a first attempt, is likely incorrect for 6710, needs to be
+ * edited in a later stage.
+ */
+static char BCMATTACHDATA(defaultsromvars_6710)[] =
+	"sromrev=18\0"
+	"subvid=0x14e4\0"
+	"vendid=0x14e4\0"
+	"devid=0x6710\0" /* 43684 802.11ax 2G/5G dualband device */
+	"boardtype=0x0\0"
+	"boardrev=0x1101\0"
+	"boardflags=0x10001000\0"
+	"boardflags2=0x0\0"
+	"boardflags3=0x0\0"
+	"boardflags4=0x0\0"
+	"boardnum=1\0"
+	"macaddr=00:90:4c:1b:00:01\0"
+	"ccode=0x0\0"
+	"regrev=0\0"
+	"aa2g=0x7\0"
+	"aa5g=0x7\0"
+	"agbg0=133\0"
+	"agbg1=133\0"
+	"agbg2=133\0"
+	"aga0=71\0"
+	"aga1=71\0"
+	"aga2=71\0"
+	"txchain=0x7\0"
+	"rxchain=0x7\0"
+	"antswitch=0\0"
+	"tssiposslope2g=1\0"
+	"epagain2g=0\0"
+	"pdgain2g=0\0"
+	"tworangetssi2g=0\0"
+	"papdcap2g=0\0"
+	"femctrl=2\0"
+	"tssiposslope5g=1\0"
+	"epagain5g=0\0"
+	"pdgain5g=0\0"
+	"tworangetssi5g=0\0"
+	"papdcap5g=0\0"
+	"gainctrlsph=0\0"
+	"tempthresh=255\0"
+	"tempoffset=255\0"
+	"rawtempsense=0x1ff\0"
+	"measpower=0\0"
+	"tempsense_slope=0xff\0"
+	"tempcorrx=0x3f\0"
+	"tempsense_option=0x3\0"
+	"xtalfreq=54000\0"
+	"phycal_tempdelta=40\0"
+	"temps_period=1\0"
+	"temps_hysteresis=5\0"
+	"measpower1=0\0"
+	"measpower2=0\0"
+	"pdoffset2gcck=0\0"
+	"pdoffsetcck20m=0\0"
+	"pdoffset20in40m2g=0\0"
+	"pdoffset20in40m5gb0=0\0"
+	"pdoffset20in40m5gb1=0\0"
+	"pdoffset20in40m5gb2=0\0"
+	"pdoffset20in40m5gb3=0\0"
+	"pdoffset20in40m5gb4=0\0"
+	"pdoffset40in80m5gb0=0\0"
+	"pdoffset40in80m5gb1=0\0"
+	"pdoffset40in80m5gb2=0\0"
+	"pdoffset40in80m5gb3=0\0"
+	"pdoffset40in80m5gb4=0\0"
+	"pdoffset20in80m5gb0=0\0"
+	"pdoffset20in80m5gb1=0\0"
+	"pdoffset20in80m5gb2=0\0"
+	"pdoffset20in80m5gb3=0\0"
+	"pdoffset20in80m5gb4=0\0"
+	"pdoffset20in40m2gcore3=0\0"
+	"pdoffset20in40m5gcore3=0\0"
+	"pdoffset20in40m5gcore3_1=0\0"
+	"pdoffset40in80m5gcore3=0\0"
+	"pdoffset40in80m5gcore3_1=0\0"
+	"pdoffset20in80m5gcore3=0\0"
+	"pdoffset20in80m5gcore3_1=0\0"
+	"subband5gver=0x5\0"
+	"mcs1024qam2gpo=0\0"
+	"mcs1024qam5glpo=0\0"
+	"mcs1024qam5gmpo=0\0"
+	"mcs1024qam5ghpo=0\0"
+	"mcs1024qam5gx1po=0\0"
+	"mcs1024qam5gx2po=0\0"
+	"mcs8poexp=0\0"
+	"mcs9poexp=0\0"
+	"mcs10poexp=0\0"
+	"mcs11poexp=0\0"
+	"ulbpproffs2g=0\0"
+	"ulbpproffs5gb0=0\0"
+	"ulbpproffs5gb1=0\0"
+	"ulbpproffs5gb2=0\0"
+	"ulbpproffs5gb3=0\0"
+	"ulbpproffs5gb4=0\0"
+	"ulbpdoffs2ga0=0\0"
+	"ulbpdoffs5gb0a0=0\0"
+	"ulbpdoffs5gb1a0=0\0"
+	"ulbpdoffs5gb2a0=0\0"
+	"ulbpdoffs5gb3a0=0\0"
+	"ulbpdoffs5gb4a0=0\0"
+	"ulbpdoffs2ga1=0\0"
+	"ulbpdoffs5gb0a1=0\0"
+	"ulbpdoffs5gb1a1=0\0"
+	"ulbpdoffs5gb2a1=0\0"
+	"ulbpdoffs5gb3a1=0\0"
+	"ulbpdoffs5gb4a1=0\0"
+	"ulbpdoffs2ga2=0\0"
+	"ulbpdoffs5gb0a2=0\0"
+	"ulbpdoffs5gb1a2=0\0"
+	"ulbpdoffs5gb2a2=0\0"
+	"ulbpdoffs5gb3a2=0\0"
+	"ulbpdoffs5gb4a2=0\0"
+	"ulbpdoffs2ga3=0\0"
+	"ulbpdoffs5gb0a3=0\0"
+	"ulbpdoffs5gb1a3=0\0"
+	"ulbpdoffs5gb2a3=0\0"
+	"ulbpdoffs5gb3a3=0\0"
+	"ulbpdoffs5gb4a3=0\0"
+	"cckbw202gpo=0\0"
+	"cckbw20ul2gpo=0\0"
+	"mcsbw202gpo=0\0"
+	"mcsbw402gpo=0\0"
+	"dot11agofdmhrbw202gpo=0\0"
+	"ofdmlrbw202gpo=0\0"
+	"mcsbw205glpo=0\0"
+	"mcsbw405glpo=0\0"
+	"mcsbw805glpo=0\0"
+	"mcsbw1605glpo=0\0"
+	"mcsbw205gmpo=0\0"
+	"mcsbw405gmpo=0\0"
+	"mcsbw805gmpo=0\0"
+	"mcsbw1605gmpo=0\0"
+	"mcsbw205ghpo=0\0"
+	"mcsbw405ghpo=0\0"
+	"mcsbw805ghpo=0\0"
+	"mcsbw1605ghpo=0\0"
+	"mcsbw205gx1po=0\0"
+	"mcsbw405gx1po=0\0"
+	"mcsbw805gx1po=0\0"
+	"mcsbw1605gx1po=0\0"
+	"mcsbw205gx2po=0\0"
+	"mcsbw405gx2po=0\0"
+	"mcsbw805gx2po=0\0"
+	"mcsbw1605gx2po=0\0"
+	"mcslr5glpo=0\0"
+	"mcslr5gmpo=0\0"
+	"mcslr5ghpo=0\0"
+	"mcslr5gx1po=0\0"
+	"mcslr5gx2po=0\0"
+	"sb20in40hrpo=0\0"
+	"sb20in40lrpo=0\0"
+	"sb20in40hrlrpox=0\0"
+	"dot11agduphrpo=0\0"
+	"dot11agduplrpo=0\0"
+	"dot11agduphrlrpox=0\0"
+	"sb40and80hr5glpo=0\0"
+	"sb40and80hr5gmpo=0\0"
+	"sb40and80hr5ghpo=0\0"
+	"sb40and80hr5gx1po=0\0"
+	"sb40and80hr5gx2po=0\0"
+	"sb20in80and160hr5glpo=0\0"
+	"sb20in80and160hr5gmpo=0\0"
+	"sb20in80and160hr5ghpo=0\0"
+	"sb20in80and160hr5gx1po=0\0"
+	"sb20in80and160hr5gx2po=0\0"
+	"sb40and80lr5glpo=0\0"
+	"sb40and80lr5gmpo=0\0"
+	"sb40and80lr5ghpo=0\0"
+	"sb40and80lr5gx1po=0\0"
+	"sb40and80lr5gx2po=0\0"
+	"sb20in80and160lr5glpo=0\0"
+	"sb20in80and160lr5gmpo=0\0"
+	"sb20in80and160lr5ghpo=0\0"
+	"sb20in80and160lr5gx1po=0\0"
+	"sb20in80and160lr5gx2po=0\0"
+	"pcieingress_war=15\0"
+	"sar2g=18\0"
+	"sar5g=15\0"
+	"noiselvl2ga0=31\0"
+	"noiselvl2ga1=31\0"
+	"noiselvl2ga2=31\0"
+	"noiselvl2ga3=31\0"
+	"noiselvl5ga0=31,31,31,31\0"
+	"noiselvl5ga1=31,31,31,31\0"
+	"noiselvl5ga2=31,31,31,31\0"
+	"noiselvl5ga3=31,31,31,31\0"
+	"rxgainerr2ga0=63\0"
+	"rxgainerr2ga1=31\0"
+	"rxgainerr2ga2=31\0"
+	"rxgainerr2ga3=31\0"
+	"rxgainerr5ga0=63,63,63,63\0"
+	"rxgainerr5ga1=31,31,31,31\0"
+	"rxgainerr5ga2=31,31,31,31\0"
+	"rxgainerr5ga3=31,31,31,31\0"
+	"rxgains5gmelnagaina0=7\0"
+	"rxgains5gmelnagaina1=7\0"
+	"rxgains5gmelnagaina2=7\0"
+	"rxgains5gmelnagaina3=7\0"
+	"rxgains5gmtrisoa0=15\0"
+	"rxgains5gmtrisoa1=15\0"
+	"rxgains5gmtrisoa2=15\0"
+	"rxgains5gmtrisoa3=15\0"
+	"rxgains5gmtrelnabypa0=1\0"
+	"rxgains5gmtrelnabypa1=1\0"
+	"rxgains5gmtrelnabypa2=1\0"
+	"rxgains5gmtrelnabypa3=1\0"
+	"rxgains5ghelnagaina0=7\0"
+	"rxgains5ghelnagaina1=7\0"
+	"rxgains5ghelnagaina2=7\0"
+	"rxgains5ghelnagaina3=7\0"
+	"rxgains5ghtrisoa0=15\0"
+	"rxgains5ghtrisoa1=15\0"
+	"rxgains5ghtrisoa2=15\0"
+	"rxgains5ghtrisoa3=15\0"
+	"rxgains5ghtrelnabypa0=1\0"
+	"rxgains5ghtrelnabypa1=1\0"
+	"rxgains5ghtrelnabypa2=1\0"
+	"rxgains5ghtrelnabypa3=1\0"
+	"maxp2ga0=84\0"
+	"maxp5gb0a0=72\0"
+	"maxp5gb1a0=72\0"
+	"maxp5gb2a0=72\0"
+	"maxp5gb3a0=72\0"
+	"maxp5gb4a0=72\0"
+	"maxp2ga1=84\0"
+	"maxp5gb0a1=72\0"
+	"maxp5gb1a1=72\0"
+	"maxp5gb2a1=72\0"
+	"maxp5gb3a1=72\0"
+	"maxp5gb4a1=72\0"
+	"maxp2ga2=84\0"
+	"maxp5gb0a2=72\0"
+	"maxp5gb1a2=72\0"
+	"maxp5gb2a2=72\0"
+	"maxp5gb3a2=72\0"
+	"maxp5gb4a2=72\0"
+	"maxp2ga3=84\0"
+	"maxp5gb0a3=72\0"
+	"maxp5gb1a3=72\0"
+	"maxp5gb2a3=72\0"
+	"maxp5gb3a3=72\0"
+	"maxp5gb4a3=72\0"
+	"rxgains2gelnagaina0=4\0"
+	"rxgains2gtrisoa0=7\0"
+	"rxgains2gtrelnabypa0=1\0"
+	"rxgains5gelnagaina0=2\0"
+	"rxgains5gtrisoa0=6\0"
+	"rxgains5gtrelnabypa0=1\0"
+	"rxgains2gelnagaina1=4\0"
+	"rxgains2gtrisoa1=7\0"
+	"rxgains2gtrelnabypa1=1\0"
+	"rxgains5gelnagaina1=2\0"
+	"rxgains5gtrisoa1=6\0"
+	"rxgains5gtrelnabypa1=1\0"
+	"rxgains2gelnagaina2=4\0"
+	"rxgains2gtrisoa2=7\0"
+	"rxgains2gtrelnabypa2=1\0"
+	"rxgains5gelnagaina2=2\0"
+	"rxgains5gtrisoa2=6\0"
+	"rxgains5gtrelnabypa2=1\0"
+	"rxgains2gelnagaina3=4\0"
+	"rxgains2gtrisoa3=7\0"
+	"rxgains2gtrelnabypa3=1\0"
+	"rxgains5gelnagaina3=2\0"
+	"rxgains5gtrisoa3=6\0"
+	"rxgains5gtrelnabypa3=1\0"
+	"pa5ga0=0x1ab9,0xc3bb,0xfe1a,0x0,0x1af7,0xc324,0xfe74,0x0,0x1b39,0xc23c,"
+	"0xff2b,0x0,0x1b72,0xc198,0xff9d,0x0,0x1b8c,0xc2ad,0xff24,0x0\0"
+	"pa5g40a0=0x1b7b,0xd218,0xf58a,0x0,0x1b98,0xd17b,0xf5e4,0x0,0x1bfb,0xcfee,"
+	"0xf6d2,0x0,0x1c01,0xd08d,0xf6c3,0x0,0x1bf7,0xd26a,0xf5ff,0x0\0"
+	"pa5g80a0=0x1ae9,0xcddb,0xf8a0,0x0,0x1afd,0xcdf8,0xf883,0x0,0x1b45,0xccdc,"
+	"0xf956,0x0,0x1b44,0xcea2,0xf8c3,0x0,0x1b95,0xcd47,0xf95e,0x0\0"
+	"pa5ga1=0x1a80,0xc2d0,0xff08,0x0,0x1aa0,0xc27f,0xff42,0x0,0x1afb,0xc208,"
+	"0xffdd,0x0,0x1b24,0xc255,0xffcd,0x0,0x1b5c,0xc214,0x0,0x0\0"
+	"pa5g40a1=0x1b31,0xd1ab,0xf630,0x0,0x1b52,0xd095,0xf6ce,0x0,0x1ba3,0xd071,"
+	"0xf735,0x0,0x1bd1,0xd066,0xf746,0x0,0x1bf2,0xd0e2,0xf711,0x0\0"
+	"pa5g80a1=0x1aa6,0xcd0b,0xf97e,0x0,0x1abb,0xcc7d,0xf9e5,0x0,0x1af5,0xccdb,"
+	"0xf9e0,0x0,0x1b32,0xcd75,0xf9b0,0x0,0x1b45,0xcde6,0xf977,0x0\0"
+	"pa5ga2=0x1b1e,0xc1ba,0xff54,0x0,0x1b2c,0xc18c,0xff76,0x0,0x1b51,0xc204,"
+	"0xff7f,0x0,0x1b79,0xc1ed,0xffa1,0x0,0x1bc2,0xc17b,0xffe0,0x0\0"
+	"pa5g40a2=0x1bba,0xd163,0xf602,0x0,0x1be0,0xd020,0xf6ac,0x0,0x1c0f,0xd04b,"
+	"0xf6da,0x0,0x1c25,0xd07b,0xf6db,0x0,0x1c28,0xd232,0xf623,0x0\0"
+	"pa5g80a2=0x1b16,0xcd7d,0xf8f5,0x0,0x1b07,0xce18,0xf8c8,0x0,0x1b50,0xcd30,"
+	"0xf963,0x0,0x1b72,0xce09,0xf931,0x0,0x1ba0,0xcd76,0xf969,0x0\0"
+	"pa5ga3=0x1b1e,0xc1ba,0xff54,0x0,0x1b2c,0xc18c,0xff76,0x0,0x1b51,0xc204,"
+	"0xff7f,0x0,0x1b79,0xc1ed,0xffa1,0x0,0x1bc2,0xc17b,0xffe0,0x0\0"
+	"pa5g40a3=0x1bba,0xd163,0xf602,0x0,0x1be0,0xd020,0xf6ac,0x0,0x1c0f,0xd04b,"
+	"0xf6da,0x0,0x1c25,0xd07b,0xf6db,0x0,0x1c28,0xd232,0xf623,0x0\0"
+	"pa5g80a3=0x1b16,0xcd7d,0xf8f5,0x0,0x1b07,0xce18,0xf8c8,0x0,0x1b50,0xcd30,"
+	"0xf963,0x0,0x1b72,0xce09,0xf931,0x0,0x1ba0,0xcd76,0xf969,0x0\0"
+	"pa2ga0=0x1c9b,0xbef2,0x0,0xba7\0"
+	"pa2g40a0=0x1c9b,0xbef2,0x0,0xba7\0"
+	"pa2ga1=0x1c3f,0xbec6,0x0,0x0\0"
+	"pa2g40a1=0xffff,0xffff,0xffff,0xffff\0"
+	"pa2ga2=0x1d05,0xbe32,0x0,0xaf2\0"
+	"pa2g40a2=0xffff,0xffff,0xffff,0xffff\0"
+	"pa2ga3=0x1d05,0xbe32,0x0,0xaf2\0"
+	"pa2g40a3=0xffff,0xffff,0xffff,0xffff\0"
+	"rpcal2g=0\0"
+	"rpcal5gb0=0\0"
+	"rpcal5gb1=0\0"
+	"rpcal5gb2=0\0"
+	"rpcal5gb3=0\0"
+	"rpcal5gb4=0\0"
+	"rpcal2gcore3=0\0"
+	"rpcal5gb0core3=0\0"
+	"rpcal5gb1core3=0\0"
+	"rpcal5gb2core3=0\0"
+	"rpcal5gb3core3=0\0"
+	"swctrlmap4_cfg=0x1\0"
+	"swctrlmap4_TX2g_fem3to0=0x36bd\0"
+	"swctrlmap4_RX2g_fem3to0=0x0080\0"
+	"swctrlmap4_RXByp2g_fem3to0=0x24a4\0"
+	"swctrlmap4_misc2g_fem3to0=0x24a4\0"
+	"swctrlmap4_TX5g_fem3to0=0x7ebd\0"
+	"swctrlmap4_RX5g_fem3to0=0x4880\0"
+	"swctrlmap4_RXByp5g_fem3to0=0x6ca4\0"
+	"swctrlmap4_misc5g_fem3to0=0x6ca4\0"
+	"swctrlmap4_TX2g_fem7to4=0\0"
+	"swctrlmap4_RX2g_fem7to4=0\0"
+	"swctrlmap4_RXByp2g_fem7to4=0\0"
+	"swctrlmap4_misc2g_fem7to4=0\0"
+	"swctrlmap4_TX5g_fem7to4=0\0"
+	"swctrlmap4_RX5g_fem7to4=0\0"
+	"swctrlmap4_RXByp5g_fem7to4=0\0"
+	"swctrlmap4_misc5g_fem7to4=0\0"
+	"END\0";
+
 #endif // endif
 #endif /* !defined(BCMDONGLEHOST) */
 
@@ -2872,10 +2495,14 @@ BCMATTACHFN(varbuf_append)(varbuf_t *b, const char *fmt, ...)
 /**
  * Initialize local vars from the right source for this platform. Called from siutils.c.
  *
- * vars - pointer to a to-be created pointer area for "environment" variables. Some callers of this
- *        function set 'vars' to NULL, in that case this function will prematurely return.
+ * @param[out] vars pointer to a to-be created pointer area for nvram variable name/value pairs.
+ *             Some callers of this function set 'vars' to NULL, in that case this function will
+ *             prematurely return.
  *
- * Return 0 on success, nonzero on error.
+ * @return    0 on success, nonzero on error.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
  */
 int
 BCMATTACHFN(srom_var_init)(si_t *sih, uint bustype, void *curmap, osl_t *osh,
@@ -2962,10 +2589,8 @@ srom_read(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 	if ((BUSTYPE(bustype) == SI_BUS) &&
 		(BCM43602_CHIP(sih->chip) ||
 		(BCM4365_CHIP(sih->chip)) ||
-		(CHIPID(sih->chip) == BCM4364_CHIP_ID) ||
 		(BCM4369_CHIP(sih->chip)) ||
 		(BCM4347_CHIP(sih->chip)) ||
-		(BCM4355_CHIP(sih->chip)) ||
 		(BCM43684_CHIP(sih->chip)))) {
 		/* building firmware for chips with a PCIe interface and internal SI bus */
 #else
@@ -2990,7 +2615,6 @@ srom_read(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 			BCM4365_CHIP(sih->chip) ||
 			(BCM4347_CHIP(sih->chip)) ||
 			BCM43684_CHIP(sih->chip) ||
-			BCM4355_CHIP(sih->chip) ||
 			(BCM4369_CHIP(sih->chip))))) {
 			if (otp_read_pci(osh, sih, buf, nbytes))
 				return 1;
@@ -3305,8 +2929,6 @@ srom_write(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 	if ((BUSTYPE(bustype) == SI_BUS) &&
 		(BCM43602_CHIP(sih->chip) ||
 		(BCM4365_CHIP(sih->chip)) ||
-		(CHIPID(sih->chip) == BCM4364_CHIP_ID) ||
-		(BCM4355_CHIP(sih->chip)) ||
 		(BCM4369_CHIP(sih->chip)) ||
 		(BCM4347_CHIP(sih->chip)) ||
 		BCM43684_CHIP(sih->chip))) {
@@ -3335,7 +2957,7 @@ srom_write(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 		}
 
 		if (BCM4365_CHIP(sih->chip) ||
-			BCM43684_CHIP(sih->chip)) {
+			BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip)) {
 			si_srom_clk_set(sih); /* corrects srom clock frequency */
 		}
 
@@ -3488,7 +3110,7 @@ srom_write_short(si_t *sih, uint bustype, void *curmap, osl_t *osh,
 		}
 
 		if (BCM4365_CHIP(sih->chip) ||
-			BCM43684_CHIP(sih->chip)) {
+			BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip)) {
 			si_srom_clk_set(sih); /* corrects srom clock frequency */
 		}
 
@@ -3859,7 +3481,6 @@ static const char BCMATTACHDATA(vstr_cckpo)[] = "cckpo=0x%x";
 static const char BCMATTACHDATA(vstr_ofdmpo)[] = "ofdmpo=0x%x";
 static const char BCMATTACHDATA(vstr_rdlid)[] = "rdlid=0x%x";
 #ifdef BCM_BOOTLOADER
-static const char BCMATTACHDATA(vstr_rdlrndis)[] = "rdlrndis=%d";
 static const char BCMATTACHDATA(vstr_rdlrwu)[] = "rdlrwu=%d";
 static const char BCMATTACHDATA(vstr_rdlsn)[] = "rdlsn=%d";
 #endif /* BCM_BOOTLOADER */
@@ -4103,6 +3724,18 @@ static const char BCMATTACHDATA(vstr_end)[] = "END\0";
 #endif /* BCMUSBDEV_BMAC || BCM_BMAC_VARS_APPEND */
 
 uint8 patch_pair = 0;
+/*
+ * "The sprom" in PCMCIA cards is simply the standard PCMCIA
+ * CIS (Card Information Structure); so we have to parse the
+ * CIS and extract from it into name=value pairs the information
+ * we need: the mac address is a standard tuple; plus we add
+ * vendor specific tuples for chip/revision ids, board revision,
+ * country code lock, PA parameters and OEM space.
+ * XXX: Should check a crc (there is a crc tuple that we could add).
+ * XXX: BCMATTACHFN if not WLTEST, use a separate macro for this
+ *
+ * Return 0 on success, nonzero on error.
+ */
 
 /* For dongle HW, accept partial calibration parameters */
 #if defined(BCMUSBDEV) || defined(BCMDONGLEHOST)
@@ -4151,8 +3784,12 @@ BCMATTACHFN(get_max_cis_size)(si_t *sih)
 	void *oh;
 
 	if (sih) {
-		if (sih->ccrev >= 61)
-			max_cis_size = CIS_SIZE_SW_1443B;
+		if (sih->ccrev >= 129)
+			max_cis_size = CIS_SIZE_SW_1172B;
+		else if (sih->ccrev >= 66)
+			max_cis_size = CIS_SIZE_SW_1436B;
+		else if (sih->ccrev >= 61)
+			max_cis_size = CIS_SIZE_SW_1438B;
 		else if (sih->ccrev >= 58)
 			max_cis_size = CIS_SIZE_SW_1628B;
 		else if (sih->ccrev >= 53)
@@ -4726,7 +4363,6 @@ BCMATTACHFN(srom_parsecis)(si_t *sih, osl_t *osh, uint8 *pcis[], uint ciscnt, ch
 
 #ifdef BCM_BOOTLOADER
 				case HNBU_RDLRNDIS:
-					varbuf_append(&b, vstr_rdlrndis, cis[i + 1]);
 					break;
 
 				case HNBU_RDLRWU:
@@ -6567,6 +6203,11 @@ srom_cc_cmd(si_t *sih, osl_t *osh, void *ccregs, uint32 cmd, uint wordoff, uint1
 
 #define CC_SROM_SHADOW_WSIZE	512	/* 0x800 - 0xC00 */
 
+/**
+ * Read in and validate sprom.
+ * Return 0 on success, nonzero on error.
+ * XXX Returns success on an SPROM containing only ones, unclear if this is intended.
+ */
 static int
 sprom_read_pci(osl_t *osh, si_t *sih, uint16 *sprom, uint wordoff, uint16 *buf, uint nwords,
 	bool check_crc)
@@ -6595,7 +6236,7 @@ sprom_read_pci(osl_t *osh, si_t *sih, uint16 *sprom, uint wordoff, uint16 *buf, 
 	}
 
 	if (BCM4365_CHIP(sih->chip) ||
-		BCM43684_CHIP(sih->chip)) {
+		BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip)) {
 		si_srom_clk_set(sih); /* corrects srom clock frequency */
 	}
 
@@ -6632,7 +6273,19 @@ sprom_read_pci(osl_t *osh, si_t *sih, uint16 *sprom, uint wordoff, uint16 *buf, 
 
 			if ((wordoff + i) >= sprom_num_words) {
 				buf[i] = 0xffff;
-			} else if ((wordoff + i) >= CC_SROM_SHADOW_WSIZE) {
+			} else if (((wordoff + i) >= CC_SROM_SHADOW_WSIZE) ||
+#ifndef DONGLEBUILD
+					/*
+					 * In NIC mode, the read needs to be done in indirect mode.
+					 * A direct read can take over 60,000 cycles which can cause
+					 * the UBUS transaction ID to roll over if there are 256
+					 * other requests that come in in the meantime. This hangs
+					 * the bus at bootup.
+					 */
+					TRUE) {
+#else
+					FALSE) {
+#endif // endif
 				/* Srom shadow region in chipcommon is only 512 words
 				 * use indirect access for Srom beyond 512 words
 				 */
@@ -6686,7 +6339,6 @@ error:
 		/* Restore config after reading SROM */
 		si_chipcontrl_restore(sih, ccval);
 	}
-
 	return err;
 }
 
@@ -6861,25 +6513,33 @@ BCMATTACHFN(initvars_table)(osl_t *osh, char *start, char *end, char **vars, uin
 int
 BCMATTACHFN(dbushost_initvars_flash)(si_t *sih, osl_t *osh, char **base, uint len)
 {
-	return initvars_flash(sih, osh, base, len);
+	return initvars(sih, osh, base, len);
 }
 
 /**
- * Find variables with <devpath> from flash. 'base' points to the beginning
- * of the table upon enter and to the end of the table upon exit when success.
+ * Copies a subset of all nvram variables from a source (which can be flash, or an external nvram
+ * store) to a caller-allocated buffer. Assumes that every nvram variable in this source is
+ * prefixed, either with a 'long' or 'compact' prefix. Only nvram variables whoes prefix matches the
+ * current device/slice are copied into the caller-allocated buffer.
  * Return 0 on success, nonzero on error.
+ *
+ * @param[out] base  Caller allocated buffer that will contain the filtered nvram variable/value
+ *                   pairs.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
  */
 static int
-BCMATTACHFN(initvars_flash)(si_t *sih, osl_t *osh, char **base, uint len)
+BCMATTACHFN(initvars)(si_t *sih, osl_t *osh, char **base, uint len)
 {
 	char *vp = *base;
-	char *flash;
+	char *flash; /** temporary malloc'ed buffer */
 	int err;
 	char *s;
 	uint l, dl, copy_len;
 	char devpath[SI_DEVPATH_BUFSZ], devpath_pcie[SI_DEVPATH_BUFSZ];
-	char coded_name[SI_DEVPATH_BUFSZ] = {0};
-	int path_len, coded_len, devid_len, pcie_path_len;
+	char compact_prefix[SI_DEVPATH_BUFSZ] = {0};
+	int path_len, compact_len, devid_len, pcie_path_len;
 
 	/* allocate memory and read in flash */
 	/* freed in same function */
@@ -6898,33 +6558,35 @@ BCMATTACHFN(initvars_flash)(si_t *sih, osl_t *osh, char **base, uint len)
 	} else
 		pcie_path_len = 0;
 
-	/* create coded devpath prefix */
-	si_coded_devpathvar(sih, coded_name, sizeof(coded_name), "devid");
+	/* create compact devpath prefix (eg '0:varname=...' instead of 'sb/0/varname=...') */
+	si_compact_devpathvar(sih, compact_prefix, sizeof(compact_prefix), "devid");
 
-	/* coded_name now is 'xx:devid, eat ending 'devid' */
+	/* compact_prefix now is 'xx:devid, eat ending 'devid' */
 	/* to be 'xx:' */
 	devid_len = strlen("devid");
-	coded_len = strlen(coded_name);
-	if (coded_len > devid_len) {
-		coded_name[coded_len - devid_len] = '\0';
-		coded_len -= devid_len;
+	compact_len = strlen(compact_prefix);
+	if (compact_len > devid_len) {
+		compact_prefix[compact_len - devid_len] = '\0';
+		compact_len -= devid_len;
 	}
 	else
-		coded_len = 0;
+		compact_len = 0;
 
-	/* grab vars with the <devpath> prefix or <coded_name> previx in name */
-	for (s = flash; s && *s; s += l + 1) {
+	/* make sure strlen never reads beyond the buffer */
+	flash[MAX_NVRAM_SPACE - 1] = 0;
+
+	/* grab vars with the <devpath> prefix or <compact_prefix> prefix in name */
+	for (s = flash; (s < flash + MAX_NVRAM_SPACE) && *s; s += l + 1) {
 		l = strlen(s);
 
-		/* skip non-matching variable */
 		if (strncmp(s, devpath, path_len) == 0)
-			dl = path_len;
+			dl = path_len; /* nvram variable uses 'long' prefix */
 		else if (pcie_path_len && strncmp(s, devpath_pcie, pcie_path_len) == 0)
 			dl = pcie_path_len;
-		else if (coded_len && strncmp(s, coded_name, coded_len) == 0)
-			dl = coded_len;
+		else if (compact_len && strncmp(s, compact_prefix, compact_len) == 0)
+			dl = compact_len; /* nvram variable uses 'compact' prefix */
 		else
-			continue;
+			continue; /* skip non-matching nvram variable */
 
 		/* is there enough room to copy? */
 		copy_len = l - dl + 1;
@@ -6937,6 +6599,10 @@ BCMATTACHFN(initvars_flash)(si_t *sih, osl_t *osh, char **base, uint len)
 		strncpy(vp, &s[dl], copy_len);
 		vp += copy_len;
 		len -= copy_len;
+	}
+
+	if (s >= flash + MAX_NVRAM_SPACE) {
+		BS_ERROR(("Nvram was not terminated with double zeroes.\n"));
 	}
 
 	/* add null string as terminator */
@@ -6958,11 +6624,19 @@ exit:
 	!defined(BCMPCIEDEV_ENABLED)
 #if !defined(BCMDONGLEHOST)
 /**
- * Initialize nonvolatile variable table from flash.
+ * Initialize nonvolatile variable table from an nvram source (like flash, or external nvram).
  * Return 0 on success, nonzero on error.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
+ */
+/* XXX no needs to load the nvram variables from the flash for dongles.
+ * These variables are mainly for supporting SROM-less devices although
+ * we can use the same machenism to support configuration of multiple
+ * cores of the same type.
  */
 static int
-BCMATTACHFN(initvars_flash_si)(si_t *sih, char **vars, uint *count)
+BCMATTACHFN(initvars_si)(si_t *sih, char **vars, uint *count)
 {
 	osl_t *osh = si_osh(sih);
 	char *vp, *base;
@@ -6977,8 +6651,9 @@ BCMATTACHFN(initvars_flash_si)(si_t *sih, char **vars, uint *count)
 	if (!vp)
 		return BCME_NOMEM;
 
-	if ((err = initvars_flash(sih, osh, &vp, MAXSZ_NVRAM_VARS)) == 0)
+	if ((err = initvars(sih, osh, &vp, MAXSZ_NVRAM_VARS)) == 0) {
 		err = initvars_table(osh, base, vp, vars, count);
+	}
 
 	MFREE(osh, base, MAXSZ_NVRAM_VARS);
 
@@ -7313,7 +6988,7 @@ BCMATTACHFN(_initvars_srom_pci)(uint8 sromrev, uint16 *srom, uint off, varbuf_t 
 					} else {	/* a0 */
 						bw160_shift = 0;
 					}
-					bw160_antoff = (p * 20);
+					bw160_antoff = (p * SROM18_PA_OFFSET_ANT);
 				} else {
 					bw160_shift = 0;
 					bw160_antoff = 0;
@@ -7440,6 +7115,7 @@ BCMATTACHFN(_initvars_srom_pci_caldata)(si_t *sih, uint16 *srom, uint32 sromrev)
 	}
 	return err;
 }
+
 /**
  * Initialize nonvolatile variable table from sprom, or OTP when SPROM is not available, or
  * optionally a set of 'defaultsromvars' (compiled-in) variables when both OTP and SPROM bear no
@@ -7448,6 +7124,9 @@ BCMATTACHFN(_initvars_srom_pci_caldata)(si_t *sih, uint16 *srom, uint32 sromrev)
  * On success, a buffer containing var/val pairs is allocated and returned in params vars and count.
  *
  * Return 0 on success, nonzero on error.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
  */
 static int
 BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count)
@@ -7464,6 +7143,14 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 	uint16 cal_wordoffset;
 #endif // endif
 
+#if defined(DONGLEBUILD) && defined(BCMHOSTVARS) && defined(BCMHOSTVARS_OVERRIDE_SROM)
+	if ((_varsz != 0) && (_vars != NULL)) {
+		BS_ERROR(("%s: external nvram is present, size %d, skip SROM.\n",
+			__FUNCTION__, _varsz));
+		return err;
+	}
+#endif /* DONGLEBUILD && BCMHOSTVARS && BCMHOSTVARS_OVERRIDE_SROM */
+
 	/*
 	 * Apply CRC over SROM content regardless SROM is present or not, and use variable
 	 * <devpath>sromrev's existance in flash to decide if we should return an error when CRC
@@ -7478,9 +7165,9 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 
 	sromwindow = (uint16 *)srom_offset(sih, curmap);
 	if (si_is_sprom_available(sih)) {
-		if (ISSIM_ENAB(sih) && BCM43684_CHIP(sih->chip)) {
+		if (ISSIM_ENAB(sih) && (BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip))) {
 			/* Skip srom read in Veloce to save time */
-			BS_ERROR(("skip srom read in 43684 veloce development\n"));
+			BS_ERROR(("skip srom read in 43684/6710 veloce development\n"));
 			err = 1;
 		} else {
 			err = sprom_read_pci(osh, sih, sromwindow, 0, srom, SROM_SIGN_MINWORDS + 1,
@@ -7595,6 +7282,13 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 
 /* BCMHOSTVARS is enabled only if WLTEST is enabled or BCMEXTNVM is enabled */
 #if defined(BCMHOSTVARS)
+		/*
+		 * XXX: CRC failed on srom, so if the device is using OTP
+		 * and if OTP is not programmed use the default variables.
+		 * for 4311 A1 there is no signature to indicate that OTP is
+		 * programmed, so can't really verify the OTP is unprogrammed
+		 * or a bad OTP.
+		*/
 		val = OSL_PCI_READ_CONFIG(osh, PCI_SPROM_CONTROL, sizeof(uint32));
 		if ((si_is_sprom_available(sih) && srom[0] == 0xffff) ||
 #ifdef BCMQT
@@ -7603,29 +7297,19 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 			(val & SPROM_OTPIN_USE)) {
 			vp = base = mfgsromvars;
 
+			/* XXX For windows internal/wltest driver, a .nvm file with default
+			 * nvram parameters is downloaded from the file system (in src/wl/sys:
+			 * wl_readconfigdata()).
+			 * Only when we cannot download default vars from the file system, use
+			 * defaultsromvars_wltest as default
+			 */
 			if (defvarslen == 0) {
 				BS_ERROR(("No nvm file, use generic default (for programming"
 					" SPROM/OTP only)\n"));
 
-				if ((CHIPID(sih->chip) == BCM43569_CHIP_ID) ||
-					(CHIPID(sih->chip) == BCM43570_CHIP_ID) ||
-					(CHIPID(sih->chip) == BCM4358_CHIP_ID)) {
+				if (CHIPID(sih->chip) == BCM43570_CHIP_ID) {
 					defvarslen = srom_vars_len(defaultsromvars_4350c0);
 					bcopy(defaultsromvars_4350c0, vp, defvarslen);
-				} else if (BCM4350_CHIP(sih->chip))  {
-					defvarslen = srom_vars_len(defaultsromvars_4350);
-					bcopy(defaultsromvars_4350, vp, defvarslen);
-				} else if (CHIPID(sih->chip) == BCM4335_CHIP_ID) {
-					defvarslen = srom_vars_len(defaultsromvars_4335);
-					bcopy(defaultsromvars_4335, vp, defvarslen);
-				} else if (CHIPID(sih->chip) == BCM4345_CHIP_ID) {
-					if (CHIPREV(sih->chiprev) <= 3) {
-						defvarslen = srom_vars_len(defaultsromvars_4345);
-						bcopy(defaultsromvars_4345, vp, defvarslen);
-					} else {
-						defvarslen = srom_vars_len(defaultsromvars_4345b0);
-						bcopy(defaultsromvars_4345b0, vp, defvarslen);
-					}
 				} else if (BCM4365_CHIP(sih->chip)) {
 					defvarslen = srom_vars_len(defaultsromvars_4366);
 					bcopy(defaultsromvars_4366, vp, defvarslen);
@@ -7642,6 +7326,9 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 				} else if (BCM4347_CHIP(sih->chip)) {
 					defvarslen = srom_vars_len(defaultsromvars_4347);
 					bcopy(defaultsromvars_4347, vp, defvarslen);
+				} else if (BCM6710_CHIP(sih->chip)) {
+					defvarslen = srom_vars_len(defaultsromvars_6710);
+					bcopy(defaultsromvars_6710, vp, defvarslen);
 				} else {
 					defvarslen = srom_vars_len(defaultsromvars_wltest);
 					bcopy(defaultsromvars_wltest, vp, defvarslen);
@@ -7661,22 +7348,14 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 			(CHIPID(sih->chip) == BCM43460_CHIP_ID) ||
 			BCM4365_CHIP(sih->chip) ||
 			BCM43684_CHIP(sih->chip) ||
+			BCM6710_CHIP(sih->chip) ||
 			(CHIPID(sih->chip) == BCM4352_CHIP_ID) ||
 			BCM43602_CHIP(sih->chip) ||
-			BCM4350_CHIP(sih->chip) ||
-			BCM4349_CHIP(sih->chip)) {
+			BCM4350_CHIP(sih->chip)) {
 
 			base = vp = mfgsromvars;
 
-			if ((CHIPID(sih->chip) == BCM4360_CHIP_ID) ||
-			    (CHIPID(sih->chip) == BCM43460_CHIP_ID) ||
-			    BCM4365_CHIP(sih->chip) ||
-			    BCM43684_CHIP(sih->chip) ||
-			    (CHIPID(sih->chip) == BCM4352_CHIP_ID) ||
-			    BCM43602_CHIP(sih->chip))
-				BS_ERROR(("4360 BOOT w/o SPROM or OTP\n"));
-			else
-				BS_ERROR(("BOOT w/o SPROM or OTP\n"));
+			BS_ERROR(("BOOT w/o SPROM or OTP\n"));
 
 			if (defvarslen == 0) {
 				if (BCM43602_CHIP(sih->chip)) {
@@ -7697,53 +7376,21 @@ BCMATTACHFN(initvars_srom_pci)(si_t *sih, void *curmap, char **vars, uint *count
 						defvarslen = srom_vars_len(defaultsromvars_4350c0);
 						bcopy(defaultsromvars_4350c0, vp, defvarslen);
 					}
-				} else if (BCM4349_CHIP(sih->chip))  {
-					defvarslen = srom_vars_len(defaultsromvars_4349);
-					bcopy(defaultsromvars_4349, vp, defvarslen);
 				} else if ((sih->chip == BCM4360_CHIP_ID) ||
 						(sih->chip == BCM4352_CHIP_ID)) {
 					defvarslen = srom_vars_len(defaultsromvars_4360);
 					bcopy(defaultsromvars_4360, vp, defvarslen);
-				} else if ((CHIPID(sih->chip) == BCM43569_CHIP_ID) ||
-					(CHIPID(sih->chip) == BCM43570_CHIP_ID) ||
-					(CHIPID(sih->chip) == BCM4358_CHIP_ID)) {
+				} else if (CHIPID(sih->chip) == BCM43570_CHIP_ID) {
 					defvarslen = srom_vars_len(defaultsromvars_4350c0);
 					bcopy(defaultsromvars_4350c0, vp, defvarslen);
-				} else if (CHIPID(sih->chip) == BCM4354_CHIP_ID) {
-					if (CHIPREV(sih->chiprev) >= 1) {
-						defvarslen = srom_vars_len(defaultsromvars_4354a1);
-						bcopy(defaultsromvars_4354a1, vp, defvarslen);
-					} else {
-						defvarslen = srom_vars_len(defaultsromvars_4350c0);
-						bcopy(defaultsromvars_4350c0, vp, defvarslen);
-					}
+				} else if (BCM6710_CHIP(sih->chip)) {
+					defvarslen = srom_vars_len(defaultsromvars_6710);
+					bcopy(defaultsromvars_6710, vp, defvarslen);
 				} else {
 					defvarslen = srom_vars_len(defaultsromvars_4331);
 					bcopy(defaultsromvars_4331, vp, defvarslen);
 				}
 			}
-			vp += defvarslen;
-			*vp++ = '\0';
-			goto varsdone;
-		} else if (CHIPID(sih->chip) == BCM4335_CHIP_ID) {
-			base = vp = mfgsromvars;
-
-			defvarslen = srom_vars_len(defaultsromvars_4335);
-			bcopy(defaultsromvars_4335, vp, defvarslen);
-
-			vp += defvarslen;
-			*vp++ = '\0';
-			goto varsdone;
-		} else if (CHIPID(sih->chip) == BCM4345_CHIP_ID) {
-			base = vp = mfgsromvars;
-			if (CHIPREV(sih->chiprev) <= 3) {
-				defvarslen = srom_vars_len(defaultsromvars_4345);
-				bcopy(defaultsromvars_4345, vp, defvarslen);
-			} else {
-				defvarslen = srom_vars_len(defaultsromvars_4345b0);
-				bcopy(defaultsromvars_4345b0, vp, defvarslen);
-			}
-
 			vp += defvarslen;
 			*vp++ = '\0';
 			goto varsdone;
@@ -7786,7 +7433,7 @@ varscont:
 
 	/* read variables from flash */
 	if (flash) {
-		if ((err = initvars_flash(sih, osh, &vp, MAXSZ_NVRAM_VARS)))
+		if ((err = initvars(sih, osh, &vp, MAXSZ_NVRAM_VARS)))
 			goto errout;
 		goto varsdone;
 	}
@@ -7841,7 +7488,7 @@ errout:
 
 	MFREE(osh, srom, SROM_MAX);
 	return err;
-}
+} /* initvars_srom_pci */
 
 /**
  * initvars_cis_pci() parses OTP CIS. This is specifically for PCIe full dongle that has SROM
@@ -7953,6 +7600,9 @@ BCMATTACHFN(initvars_cis_pcmcia)(si_t *sih, osl_t *osh, char **vars, uint *count
 		return (-2);
 
 	if (sih->buscorerev == 1) {
+		/* PR20340 WAR - XXX - WAR won't intend to work for the systems, such as
+		 * Windows, which read CIS data from attribute memory directly
+		 */
 		if (srom_read(sih, PCMCIA_BUS, (void *)NULL, osh, 0, data_sz, (uint16 *)cis,
 		              TRUE)) {
 			MFREE(osh, cis, data_sz);
@@ -7983,34 +7633,21 @@ BCMATTACHFN(initvars_cis_spi)(si_t *sih, osl_t *osh, char **vars, uint *count)
 	uint8 *cis;
 	int rc;
 
-#ifdef NDIS
-	uint8 cisd[SBSDIO_CIS_SIZE_LIMIT];
-	cis = (uint8*)cisd;
-#else
 	/* freed in same function */
 	if ((cis = MALLOC_NOPERSIST(osh, SBSDIO_CIS_SIZE_LIMIT)) == NULL) {
 		return -1;
 	}
-#endif /* NDIS */
 
 	bzero(cis, SBSDIO_CIS_SIZE_LIMIT);
 
 	if (bcmsdh_cis_read(NULL, SDIO_FUNC_1, cis, SBSDIO_CIS_SIZE_LIMIT) != 0) {
-#ifdef NDIS
-		/* nothing to do */
-#else
 		MFREE(osh, cis, SBSDIO_CIS_SIZE_LIMIT);
-#endif /* NDIS */
 		return -2;
 	}
 
 	rc = srom_parsecis(sih, osh, &cis, SDIO_FUNC_1, vars, count);
 
-#ifdef NDIS
-	/* nothing to do here */
-#else
 	MFREE(osh, cis, SBSDIO_CIS_SIZE_LIMIT);
-#endif // endif
 
 	return (rc);
 }
@@ -8119,26 +7756,7 @@ BCMATTACHFN(initvars_srom_si_usbdriver)(si_t *sih, osl_t *osh, char **vars, uint
 	base = fakevars = NULL;
 	len = 0;
 	switch (CHIPID(sih->chip)) {
-		case BCM43236_CHIP_ID: case BCM43235_CHIP_ID:  case BCM43238_CHIP_ID:
-		case BCM43234_CHIP_ID:
-			/* check against real chipid instead of compile time flag */
-			if (CHIPID(sih->chip) == BCM43234_CHIP_ID) {
-				fakevars = defaultsromvars_43234usb;
-			} else if (CHIPID(sih->chip) == BCM43235_CHIP_ID) {
-				fakevars = defaultsromvars_43235usb;
-			} else
-				fakevars = defaultsromvars_43236usb;
-			break;
-
-		case BCM4350_CHIP_ID:
-		case BCM4354_CHIP_ID:
-		case BCM43556_CHIP_ID:
-		case BCM43558_CHIP_ID:
-		case BCM43566_CHIP_ID:
-		case BCM43568_CHIP_ID:
-		case BCM43569_CHIP_ID:
 		case BCM43570_CHIP_ID:
-		case BCM4358_CHIP_ID:
 			fakevars = defaultsromvars_4350usb;
 			break;
 
@@ -8297,7 +7915,7 @@ BCMATTACHFN(initvars_srom_si_bl)(si_t *sih, osl_t *osh, void *curmap, char **var
 	}
 
 	return BCME_OK;
-}
+} /* initvars_srom_si_bl */
 #endif	/* #ifdef BCM_DONGLEVARS */
 
 /**
@@ -8305,6 +7923,9 @@ BCMATTACHFN(initvars_srom_si_bl)(si_t *sih, osl_t *osh, void *curmap, char **var
  * an active USB interface. It is called only for bus types SI_BUS and JTAG_BUS, and only for CIS
  * format in SPROM and/or OTP. Reads OTP or SPROM (bootloader only) and appends parsed contents to
  * caller supplied var/value pairs.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
  */
 static int
 BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, uint *varsz)
@@ -8323,21 +7944,11 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 #if defined(BCMUSBDEV_BMAC) || defined(BCM_BMAC_VARS_APPEND)
 	/* read OTP or use faked var array */
 	switch (CHIPID(sih->chip)) {
-		case BCM43236_CHIP_ID:  case BCM43235_CHIP_ID:  case BCM43238_CHIP_ID:
-		case BCM43234_CHIP_ID:
 		case BCM4360_CHIP_ID:
 		case BCM43460_CHIP_ID:
 		case BCM43526_CHIP_ID:
 		case BCM4352_CHIP_ID:
-		case BCM4350_CHIP_ID:
-		case BCM4354_CHIP_ID:
-		case BCM43556_CHIP_ID:
-		case BCM43558_CHIP_ID:
-		case BCM43566_CHIP_ID:
-		case BCM43568_CHIP_ID:
-		case BCM43569_CHIP_ID:
 		case BCM43570_CHIP_ID:
-		case BCM4358_CHIP_ID:
 		case BCM53573_CHIP_GRPID:
 		if (BCME_OK != initvars_srom_si_usbdriver(sih, osh, vars, varsz)) /* OTP only */
 			goto exit;
@@ -8364,20 +7975,12 @@ exit:
 
 	/* return OK so the driver will load & use defaults if bad srom/otp */
 	return BCME_OK;
-}
+} /* initvars_srom_si */
 
 #elif defined(BCMSDIODEV_ENABLED)
 
 #ifdef BCM_DONGLEVARS
-static uint8 BCMATTACHDATA(defcis4335)[] = { 0x20, 0x4, 0xd0, 0x2, 0x24, 0x43, 0xff, 0xff };
 static uint8 BCMATTACHDATA(defcis4350)[] = { 0x20, 0x4, 0xd0, 0x2, 0x50, 0x43, 0xff, 0xff };
-static uint8 BCMATTACHDATA(defcis43430)[] = { 0x20, 0x4, 0xd0, 0x2, 0xa6, 0xa9, 0xff, 0xff };
-static uint8 BCMATTACHDATA(defcis43018)[] = { 0x20, 0x4, 0xd0, 0x2, 0x0a, 0xa8, 0xff, 0xff };
-
-static uint8 BCMATTACHDATA(defcis4349)[] = { 0x20, 0x4, 0xd0, 0x2, 0x49, 0x43, 0xff, 0xff };
-static uint8 BCMATTACHDATA(defcis4355)[] = { 0x20, 0x4, 0xd0, 0x2, 0x55, 0x43, 0xff, 0xff };
-static uint8 BCMATTACHDATA(defcis4359)[] = { 0x20, 0x4, 0xd0, 0x2, 0x59, 0x43, 0xff, 0xff };
-static uint8 BCMATTACHDATA(defcis4364)[] = { 0x20, 0x4, 0xd0, 0x2, 0x64, 0x43, 0xff, 0xff };
 static uint8 BCMATTACHDATA(defcis4369)[] = { 0x20, 0x4, 0xd0, 0x2, 0x64, 0x43, 0xff, 0xff };
 static uint8 BCMATTACHDATA(defcis4347)[] = { 0x20, 0x4, 0xd0, 0x2, 0x47, 0x43, 0xff, 0xff };
 
@@ -8418,25 +8021,9 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 
 	/* Initialize default and cis format count */
 	switch (CHIPID(sih->chip)) {
-	case BCM4335_CHIP_ID: ciss = 1; defcis = defcis4335; hdrsz = 4; break;
-	case BCM4345_CHIP_ID: ciss = 1; defcis = defcis4335; hdrsz = 4; break;
-	case BCM4349_CHIP_ID: ciss = 1; defcis = defcis4349; hdrsz = 4; break;
-	case BCM4355_CHIP_ID: ciss = 1; defcis = defcis4355; hdrsz = 4; break;
-	case BCM4359_CHIP_ID: ciss = 1; defcis = defcis4359; hdrsz = 4; break;
-	case BCM43430_CHIP_ID: ciss = 1; defcis = defcis43430; hdrsz = 4; break;
-	case BCM43018_CHIP_ID: ciss = 1; defcis = defcis43018; hdrsz = 4; break;
-	case BCM4364_CHIP_ID: ciss = 1; defcis = defcis4364; hdrsz = 4; break;
 	case BCM4369_CHIP_GRPID: ciss = 1; defcis = defcis4369; hdrsz = 4; break;
 	case BCM4347_CHIP_GRPID: ciss = 1; defcis = defcis4347; hdrsz = 4; break;
-	case BCM4350_CHIP_ID:
-	case BCM4354_CHIP_ID:
-	case BCM43556_CHIP_ID:
-	case BCM43558_CHIP_ID:
-	case BCM43566_CHIP_ID:
-	case BCM43568_CHIP_ID:
-	case BCM43569_CHIP_ID:
-	case BCM43570_CHIP_ID:
-	case BCM4358_CHIP_ID: ciss = 1; defcis = defcis4350; hdrsz = 4; break;
+	case BCM43570_CHIP_ID: ciss = 1; defcis = defcis4350; hdrsz = 4; break;
 	default:
 		BS_ERROR(("%s: Unknown chip 0x%04x\n", __FUNCTION__, CHIPID(sih->chip)));
 		return BCME_ERROR;
@@ -8467,6 +8054,9 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 		sz = srom_size(sih, osh) << 1;
 		break;
 	case CIS_OTP:
+		/* XXX: Note that for *this* type of OTP -- which otp_read_region()
+		 * can operate on -- otp_size() returns bytes, not words.
+		 */
 		if (((oh = otp_init(sih)) != NULL) && (otp_status(oh) & OTPS_GUP_HW))
 			sz = otp_size(oh);
 		break;
@@ -8540,6 +8130,7 @@ exit:
 	/* return OK so the driver will load & use defaults if bad srom/otp */
 	return BCME_OK;
 } /* initvars_srom_si */
+
 #else /* BCM_DONGLEVARS */
 
 /**
@@ -8559,6 +8150,13 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 
 /* No initvars_srom_si() defined for PCIe full-dongle except for 4349.  */
 
+/**
+ * initvars_srom_si() is defined multiple times in this file. This is the variant for chips with an
+ * active PCIe interface *and* that use OTP for NVRAM storage.
+ *
+ * On success, a buffer containing var/val values has been allocated in parameter 'vars'.
+ * XXX: put an ifdef where if the host wants the dongle wants to parse sprom or not
+ */
 static int
 BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, uint *varsz)
 {
@@ -8603,15 +8201,20 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 	return BCME_OK;
 #endif /* BCM_DONGLEVARS */
 }
+
 #else /* !BCMUSBDEV && !BCMSDIODEV  && !BCMPCIEDEV */
 
 #ifndef BCMDONGLEHOST
 
 /**
- * initvars_srom_si() is defined multiple times in this file. This is the variant for:
- * !BCMDONGLEHOST && !BCMUSBDEV && !BCMSDIODEV && !BCMPCIEDEV
- * So this function is defined for PCI (not PCIe) builds that are also non DHD builds.
- * On success, a buffer containing var/val values has been allocated in parameter 'vars'.
+ * initvars_srom_si() is defined multiple times in this file. This is the variant for a NIC driver
+ * (!BCMDONGLEHOST && !BCMUSBDEV && !BCMSDIODEV && !BCMPCIEDEV).
+ *
+ * On success, a buffer containing var/val values has been allocated in parameter 'vars'. This
+ * buffer only contains nvram variables whoes device prefix matched the current device/slice.
+ *
+ * Prerequisites:
+ * - The CC core has been selected
  */
 static int
 BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, uint *varsz)
@@ -8619,7 +8222,7 @@ BCMATTACHFN(initvars_srom_si)(si_t *sih, osl_t *osh, void *curmap, char **vars, 
 	/* Search flash nvram section for srom variables */
 	BCM_REFERENCE(osh);
 	BCM_REFERENCE(curmap);
-	return initvars_flash_si(sih, vars, varsz);
+	return initvars_si(sih, vars, varsz);
 } /* initvars_srom_si */
 #endif /* !BCMDONGLEHOST */
 #endif // endif

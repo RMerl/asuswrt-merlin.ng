@@ -1,7 +1,7 @@
 #
 # Linux acsd Makefile
 #
-# Copyright 2018 Broadcom
+# Copyright 2019 Broadcom
 #
 # This program is the proprietary software of Broadcom and/or
 # its licensors, and may only be used, duplicated, modified or distributed
@@ -42,7 +42,7 @@
 # OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
 # NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
 #
-# $Id: Makefile 733253 2017-11-27 07:16:14Z $
+# $Id: Makefile 768736 2018-10-23 21:53:02Z $
 #
 
 WLAN_ComponentsInUse += bcmwifi math
@@ -56,7 +56,7 @@ CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,
 CFLAGS	+= -s -O2 -fno-strict-aliasing
 CFLAGS  += -DWL11AC_80P80 -DWL11AC_160
 LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
-LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -lpthread
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 LDFLAGS += $(EXTRA_LDFLAGS)
 

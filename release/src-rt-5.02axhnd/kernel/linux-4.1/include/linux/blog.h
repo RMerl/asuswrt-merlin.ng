@@ -7,7 +7,20 @@
 /* Blog.h and Blog.c for Linux OS */
 /*--------------------------------*/
 
-#define CATHY_PPTP_DL_ACC
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#define TIMER_FUNCTION_TIMEOUT (2 * HZ)
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG */
+
+#ifdef TIMER_FUNCTION_TIMEOUT
+#define TIMER_FUNCTION_TIMEOUT_MAGIC (0x1234abcd)
+#define BLOG_TIMEOUT_DEFER_PERIOD (5 * HZ)
+
+struct _timer_function_timeout {
+	unsigned int magic;
+	unsigned long expire;
+	unsigned long data;
+};
+#endif /* TIMER_FUNCTION_TIMEOUT */
 
 /* 
 * <:copyright-BRCM:2003:DUAL/GPL:standard
@@ -312,6 +325,8 @@ struct fkbuff;                          /* linux/nbuff.h                      */
 #define BLOG_NAT_TCP_DEFAULT_IDLE_TIMEOUT (2400 *HZ)
 #define BLOG_NAT_UDP_DEFAULT_IDLE_TIMEOUT (300 *HZ)
 
+#define BLOG_NAT_TCP_GENERIC_IDLE_TIMEOUT (125 *HZ)
+
 extern uint32_t blog_nat_tcp_def_idle_timeout;
 extern uint32_t blog_nat_udp_def_idle_timeout;
 extern uint32_t blog_nat_udp_def_idle_timeout_stream;
@@ -363,7 +378,7 @@ extern int blog_ct_get_stats( const void *ct, uint32_t blog_key, uint32_t dir,
         BlogFcStats_t * stats);
 extern int blog_ct_push_stats(void );
 
-typedef int (*blog_xtm_get_tx_chan_t)(void *dev_p, int channel, unsigned mark);
+typedef int (*blog_xtm_get_tx_chan_t)(void *dev_p, int channel, unsigned mark, int is_blog_mark);
 extern blog_xtm_get_tx_chan_t blog_xtm_get_tx_chan_fn;
 
 typedef unsigned long (*blog_eth_get_tx_mark_t)(void *dev_p, int priority, unsigned long mark);
@@ -856,6 +871,7 @@ typedef enum {
     BLOG_DECL(blog_skip_reason_bond)
     BLOG_DECL(blog_skip_reason_map_tcp)
     BLOG_DECL(blog_skip_reason_blog)
+    BLOG_DECL(blog_skip_reason_l2_local_termination)
     BLOG_DECL(blog_skip_reason_max)
 } blog_skip_reason_t;
 
@@ -886,8 +902,9 @@ typedef struct {
 typedef struct blog_ctx {
     uint32_t  blog_total;
     uint32_t  blog_avail;
-    uint32_t  blog_fails;
+    uint32_t  blog_mem_fails;
     uint32_t  blog_extends;
+    uint32_t  blog_extend_fails;
     blog_info_stats_t  info_stats;
     blog_skip_reason_t blog_skip_stats_table[blog_skip_reason_max];
     blog_free_reason_t blog_free_stats_table[blog_free_reason_max];
@@ -1206,8 +1223,9 @@ typedef struct {
     union {
         struct {
             BE_DECL(
-                uint32_t         unused      : 7; 
-                uint32_t         PASS_THRU   : 1; 
+                uint32_t         unused      : 6;
+                uint32_t         MAPE        : 1;
+                uint32_t         PASS_THRU   : 1;
 
                 uint32_t         unused1     : 1;
                 uint32_t         GREoESP     : 1; 
@@ -1262,8 +1280,9 @@ typedef struct {
                 uint32_t         GREoESP     : 1;
                 uint32_t         unused1     : 1;
 
-                uint32_t         PASS_THRU   : 1; 
-                uint32_t         unused      : 7; 
+                uint32_t         PASS_THRU   : 1;
+                uint32_t         MAPE        : 1;
+                uint32_t         unused      : 6;
             )
         }               bmap;/* as per order of BlogEncap_t enums declaration */
         uint32_t        hdrs;
@@ -1541,6 +1560,8 @@ typedef struct blogTuple_t BlogTuple_t;
 #define RX_L2TP(b)       ((b)->rx.info.bmap.L2TP)
 #define TX_L2TP(b)       ((b)->tx.info.bmap.L2TP)
 
+#define TX_IPV6_MAPE(b)       ((b)->tx.info.bmap.MAPE)
+
 #define PKT_IPV6_GET_TOS_WORD(word)       \
    ((ntohl(word) & 0x0FF00000) >> 20)
 
@@ -1601,6 +1622,14 @@ struct blogTupleV6_t {
         };
         uint32_t   word2;
     };
+    
+    union {      
+        struct {
+            uint8_t nextHdr; uint8_t hdrLen; uint16_t data16;
+            uint32_t data32;
+        };
+        uint64_t ip6_ExtHdr;
+    }; 
 
 } ____cacheline_aligned;
 typedef struct blogTupleV6_t BlogTupleV6_t;
@@ -1814,12 +1843,7 @@ union blogHash_t {
         union {
             struct {
                 uint8_t  tcp_pure_ack : 1;
-#ifdef CATHY_PPTP_DL_ACC
-		uint8_t grerx_ackIe   : 1;
-		uint8_t  unused       : 6;
-#else
                 uint8_t  unused       : 7;
-#endif
             };
             uint8_t ext_match;
         };
@@ -1981,15 +2005,26 @@ typedef struct blogRnr_t BlogRnr_t;
 #define BLOG_TCPACK_IPV4_LEN   64   /* IPv4 total len value for pure TCP ACK  */
 #define BLOG_TCPACK_IPV6_LEN   32   /* IPv6 len value for pure TCP ACK        */
 #define BLOG_TCPACK_MAX_COUNT   4   /* max # of back-to-back TCP ACKs received
-                                       after which the ACK flow is prioritized */
+				       after which the ACK flow is prioritized */
+#if !defined(CONFIG_BCM_PON)								   
 #define BLOG_TCPACK_ETH_PRIO    1
 #define BLOG_TCPACK_XTM_PRIO    1   /* TCP ACK packets will be sent to priority 1
                                        queue. If the queue does not exist,
                                        packets will be sent to the default queue,
                                        which is the first queue configured for
                                        the interface. */
+#else
+#define BLOG_TCPACK_ETH_PRIO    0
+#define BLOG_TCPACK_XTM_PRIO    0
+#endif
 
 #define MAX_NUM_VLAN_TAG        2
+
+/* Blog ingress priority derived from IQOS */
+typedef enum  {
+    BLOG_DECL(BLOG_IQ_PRIO_LOW)
+    BLOG_DECL(BLOG_IQ_PRIO_HIGH)
+} BlogIqPrio_t;
 
 /*
  *------------------------------------------------------------------------------
@@ -2588,13 +2623,8 @@ extern void blog_gre_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #define BLOG_PPTP_RCV_CHKSUM_ERR         -3
 #define BLOG_PPTP_RCV_OOS_LT             -4
 #define BLOG_PPTP_RCV_OOS_GT             -5
-#ifdef CATHY_PPTP_DL_ACC
-extern int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto,
-                          uint32_t *rcv_pktSeq, uint32_t *rcv_pktAck);
-#else
 extern int blog_pptp_rcv( struct fkbuff *fkb_p, uint32_t h_proto, 
                           uint32_t *rcv_pktSeq);
-#endif
 extern void blog_pptp_xmit( struct sk_buff *skb_p, uint32_t h_proto );
 #endif
 

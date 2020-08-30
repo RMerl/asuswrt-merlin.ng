@@ -74,6 +74,9 @@ struct seq_file;
 struct gpio_chip {
 	const char		*label;
 	struct device		*dev;
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	struct device		*parent;
+#endif
 	struct module		*owner;
 	struct list_head        list;
 
@@ -110,6 +113,22 @@ struct gpio_chip {
 	bool			can_sleep;
 	bool			irq_not_threaded;
 	bool			exported;
+
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+#if IS_ENABLED(CONFIG_GPIO_GENERIC)
+	unsigned long (*read_reg)(void __iomem *reg);
+	void (*write_reg)(void __iomem *reg, unsigned long data);
+	unsigned long (*pin2mask)(struct gpio_chip *gc, unsigned int pin);
+	void __iomem *reg_dat;
+	void __iomem *reg_set;
+	void __iomem *reg_clr;
+	void __iomem *reg_dir;
+	int bgpio_bits;
+	spinlock_t bgpio_lock;
+	unsigned long bgpio_data;
+	unsigned long bgpio_dir;
+#endif
+#endif
 
 #ifdef CONFIG_GPIOLIB_IRQCHIP
 	/*
@@ -159,6 +178,28 @@ void gpiochip_unlock_as_irq(struct gpio_chip *chip, unsigned int offset);
 
 struct gpio_chip *gpiod_to_chip(const struct gpio_desc *desc);
 
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+struct bgpio_pdata {
+        const char *label;
+        int base;
+        int ngpio;
+};
+#if IS_ENABLED(CONFIG_GPIO_GENERIC)
+
+int bgpio_init(struct gpio_chip *gc, struct device *dev,
+	       unsigned long sz, void __iomem *dat, void __iomem *set,
+	       void __iomem *clr, void __iomem *dirout, void __iomem *dirin,
+	       unsigned long flags);
+
+#define BGPIOF_BIG_ENDIAN               BIT(0)
+#define BGPIOF_UNREADABLE_REG_SET       BIT(1) /* reg_set is unreadable */
+#define BGPIOF_UNREADABLE_REG_DIR       BIT(2) /* reg_dir is unreadable */
+#define BGPIOF_BIG_ENDIAN_BYTE_ORDER    BIT(3)
+#define BGPIOF_READ_OUTPUT_REG_SET      BIT(4) /* reg_set stores output value */
+#define BGPIOF_NO_OUTPUT                BIT(5) /* only input */
+
+#endif
+#endif
 #ifdef CONFIG_GPIOLIB_IRQCHIP
 
 void gpiochip_set_chained_irqchip(struct gpio_chip *gpiochip,

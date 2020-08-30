@@ -18,9 +18,9 @@ projects/WL4908/firmware_bin/runner_fw_d.c
 # Common Firmware and RDD headers
 firmware/dhd_offload/dhd_defs.h
 firmware/dhd_offload/rdd_dhd_helper_common.h
-firmware/dhd_offload/rdp/rdd_dhd_helper.h
-firmware/dhd_offload/rdp/rdd_dhd_helper.c
-firmware/dhd_offload/rdp/rdd_dhd_helper_shell.c
+projects/DSL_63138/drivers/rdd/rdd_dhd_helper.h
+projects/DSL_63138/drivers/rdd/rdd_dhd_helper.c
+projects/DSL_63138/drivers/rdd/rdd_dhd_helper_shell.c
 firmware/dhd_offload/rdp/rdd_wlan_mcast.c
 firmware/dhd_offload/rdp/rdd_wlan_mcast.h
 firmware/dhd_offload/rdd_wlan_mcast_common.c

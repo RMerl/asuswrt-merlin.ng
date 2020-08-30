@@ -1,7 +1,7 @@
 /*
  * BCM43XX PCIE core hardware definitions.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: pcie_core.h 756372 2018-04-09 03:21:52Z $
+ * $Id: pcie_core.h 774881 2019-05-09 12:24:28Z $
  */
 #ifndef	_PCIE_CORE_H
 #define	_PCIE_CORE_H
@@ -79,79 +79,8 @@ typedef struct pcie_doorbell {
 	uint32		dev2host_1;
 } pcie_doorbell_t;
 
-/* Flow Ring Manager */
-#define IFRM_FR_IDX_MAX		64
-
-/* Just use FRG0 ~ 8, total 9 groups. HW can support up to 16 groups */
-#define IFRM_FR_GID_MAX		9
-#define IFRM_FR_GID_MAX_CAP	16
-
-#define IFRM_FR_DEV_MAX		1
-#define IFRM_FR_DEV_MAX_CAP	8
-
-#define IFRM_FR_TID_MAX		8
-
-#define IFRM_FR_DEV_VALID	1
-
-#define IFRM_VEC_REG_BITS	32
-
-#define IFRM_FR_PER_VECREG			4
-#define IFRM_FR_PER_VECREG_SHIFT	2
-#define IFRM_FR_PER_VECREG_MASK		((0x1 << IFRM_FR_PER_VECREG_SHIFT) - 1)
-
-#define IFRM_VEC_BITS_PER_FR	(IFRM_VEC_REG_BITS/IFRM_FR_PER_VECREG)
-#define IFRM_SDV_OFFSET_PER_FRG	(IFRM_FR_IDX_MAX/IFRM_VEC_REG_BITS)
-
-/* IFRM_DEV_0 : d11AC, IFRM_DEV_1 : d11AD */
-#define IFRM_DEV_0	0
-
-#define IFRM_TIDMASK 0xffffffff
-
-/* ifrm_ctrlst register */
-#define IFRM_EN (1<<0)
-#define IFRM_BUFF_INIT_DONE (1<<1)
-
-/* ifrm_ctrlst1 and  ifrm_ctrlst2 register */
-#define IFRM_COMPARE_EN_ALL	MAXBITVAL(IFRM_FR_GID_MAX)
-#define IFRM_INIT_DV_ALL	IFRM_COMPARE_EN_ALL
-
-/* ifrm_msk_arr.addr, ifrm_tid_arr.addr register */
-#define IFRM_ADDR_SHIFT 0
-#define IFRM_FRG_ID_SHIFT 8
-
-/* ifrm_vec.diff_lat register */
-#define IFRM_DV_LAT			(1<<0)
-#define IFRM_DV_LAT_DONE	(1<<1)
-#define IFRM_SDV_OFFSET_SHIFT	4
-#define IFRM_SDV_FRGID_SHIFT	8
-#define IFRM_VECSTAT_MASK		0x3
-#define IFRM_VEC_MASK			0xff
-
-#define IFRM_INTSTAT_EXPAND	3
-#define IFRM_FR_PER_INTSREG	4
-
 /* HMAP Windows */
 #define HMAP_MAX_WINDOWS	8
-
-/* idma frm array */
-typedef struct pcie_ifrm_array {
-	uint32		addr;
-	uint32		data;
-} pcie_ifrm_array_t;
-
-/* idma frm vector */
-typedef struct pcie_ifrm_vector {
-	uint32		diff_lat;
-	uint32		sav_tid;
-	uint32		sav_diff;
-	uint32		PAD[1];
-} pcie_ifrm_vector_t;
-
-/* idma frm interrupt */
-typedef struct pcie_ifrm_intr {
-	uint32		intstat;
-	uint32		intmask;
-} pcie_ifrm_intr_t;
 
 /* HMAP window register set */
 typedef struct pcie_hmapwindow {
@@ -269,7 +198,7 @@ typedef volatile struct sbpcieregs {
 			uint32	h2d_intmask_1;	/* 0x40c */
 			uint32	d2h_intstat_1;	/* 0x410 */
 			uint32	d2h_intmask_1;	/* 0x414 */
-			uint32	PAD[2];			/* 0x418 - 0x41C */
+			uint32	PAD[2];		/* 0x418 - 0x41C */
 			uint32	d2h_intrlazy_2; /* 0x420 */
 			uint32	h2d_intrlazy_2; /* 0x424 */
 			uint32	h2d_intstat_2;	/* 0x428 */
@@ -280,23 +209,9 @@ typedef volatile struct sbpcieregs {
 			uint32	h2d_frg_intstat_2;	/* 0x438 */
 			uint32	h2d_frg_intmask_2;	/* 0x43c */
 
-			uint32	PAD[8];		/* 0x440 - 0x45F */
-			uint32	ifrm_ctrlst;	/* 0x460 */
-			uint32	PAD[1];			/* 0x464 */
-			pcie_ifrm_array_t	ifrm_msk_arr;	/* 0x468 - 0x46F */
-			pcie_ifrm_array_t	ifrm_tid_arr[IFRM_FR_DEV_VALID];
-				/* 0x470 - 0x474 */
-			uint32	ifrm_ctrlst1;	/* 0x478 */
-			uint32	ifrm_ctrlst2;	/* 0x47c */
-			pcie_ifrm_vector_t	ifrm_vec[IFRM_FR_DEV_MAX];
-				/* 0x480 - 0x48F */
-			uint32	PAD[28];	/* 0x490 - 0x4FF */
-			pcie_ifrm_intr_t	ifrm_intr[IFRM_FR_DEV_MAX];
-				/* 0x500 - 0x504 */
-			uint32	ifrm_intstat_expand[IFRM_INTSTAT_EXPAND];
-				/* 0x508 - 0x510 */
-			uint32	PAD[11];	/* 0x514 - 0x53F */
-				/* HMAP regs for PCIE corerev >= 24  [0x540 - 0x5DF] */
+			uint32	PAD[64];	/* IFRM register area : 0x440 - 0x53F */
+
+			/* HMAP regs for PCIE corerev >= 24  [0x540 - 0x5DF] */
 			pcie_hmapwindow_t	hmapwindow[HMAP_MAX_WINDOWS];	/* 0x540 - 0x5BF */
 			pcie_hmapviolation_t hmapviolation;	/* 0x5C0 - 0x5CF */
 			uint32 hmap_window_config;	/* 0x5D0 */
@@ -685,6 +600,8 @@ typedef volatile struct sbpcieregs {
 #define PCIE_CAP_DEVCTRL_MPS_256B	1	/* 256 Byte */
 #define PCIE_CAP_DEVCTRL_MPS_512B	2	/* 512 Byte */
 #define PCIE_CAP_DEVCTRL_MPS_1024B	3	/* 1024 Byte */
+#define PCIE_CAP_DEVCTRL_MPS_2048B	4	/* 2048 Byte */
+#define PCIE_CAP_DEVCTRL_MPS_4096B	5	/* 4096 Byte */
 
 #define PCIE_ASPM_ENAB			3	/* ASPM L0s & L1 in linkctrl */
 #define PCIE_ASPM_L1_ENAB		2	/* ASPM L0s & L1 in linkctrl */
@@ -964,6 +881,7 @@ typedef volatile struct sbpcieregs {
 void pcie_watchdog_reset(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs);
 void pcie_serdes_iddqdisable(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs);
 void pcie_coherent_accenable(osl_t *osh, si_t *sih);
+void pcie_getdevctl(osl_t *osh, si_t *sih, uint32 *devctl);
 #endif /* BCMDRIVER */
 
 /* DMA intstatus and intmask */

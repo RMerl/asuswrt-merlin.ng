@@ -3,7 +3,7 @@
  * This file housing the functions use by
  * wl driver.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  *
  * <<Broadcom-WL-IPTag/Open:>>
- * $Id: bcmwifi_radiotap.c 741227 2018-01-16 09:36:45Z $
+ * $Id: bcmwifi_radiotap.c 770749 2019-01-02 06:03:35Z $
  */
 
 #include <bcmutils.h>
@@ -51,8 +51,8 @@ const struct rtap_field rtap_parse_info[] = {
 	{3, 1}, /* 19: IEEE80211_RADIOTAP_MCS */
 	{8, 4}, /* 20: IEEE80211_RADIOTAP_AMPDU_STATUS */
 	{12, 2}, /* 21: IEEE80211_RADIOTAP_VHT */
-	{0, 0}, /* 22: */
-	{0, 0}, /* 23: */
+	{12, 8}, /* 22: IEEE80211_RADIOTAP_TIMESTAMP */
+	{12, 2}, /* 23: IEEE80211_RADIOTAP_HE */
 	{0, 0}, /* 24: */
 	{0, 0}, /* 25: */
 	{0, 0}, /* 26: */
@@ -905,7 +905,7 @@ wl_radiotap_rx_vht(struct dot11_header *mac_header, wl_rxsts_t *rxsts, wl_radiot
 	rtvht->vht_group_id = rxsts->gid;
 	rtvht->vht_partial_aid = HTOL16(rxsts->aid);
 
-	rtvht->ampdu_flags = 0;
+	rtvht->ampdu_flags = IEEE80211_RADIOTAP_AMPDU_LAST_KNOWN;
 	rtvht->ampdu_delim_crc = 0;
 
 	rtvht->ampdu_ref_num = rxsts->ampdu_counter;
@@ -924,9 +924,11 @@ wl_radiotap_rx_he(struct dot11_header *mac_header, wl_rxsts_t *rxsts, wl_radiota
 	uint16 channel_flags;
 	uint8 flags;
 	uint16 rtap_len;
-	uint32 ul_dl, beamchange, dcm, gi, ltf, bw, ldpc_extsym, stbc, fec, txbf;
-	uint32 ped, txop, doppler, nsts, format, midamble;
-	midamble = 0;
+	uint32 ul_dl = 0, beamchange = 0, dcm = 0, gi = 0, ltf = 0;
+	uint32 bw = 0, ldpc_extsym = 0, stbc = 0, fec = 0, txbf = 0;
+	uint32 spatial_reuse = 0, spatial_reuse2 = 0, spatial_reuse3 = 0, spatial_reuse4 = 0;
+	uint32 bss_color = 0, ped = 0, txop = 0, doppler = 0;
+	uint32 he_format = 0, midamble = 0, giltf = 0;
 
 	rtap_len = sizeof(wl_radiotap_he_t);
 	channel_frequency = (uint16)wl_radiotap_rx_channel_frequency(rxsts);
@@ -949,64 +951,139 @@ wl_radiotap_rx_he(struct dot11_header *mac_header, wl_rxsts_t *rxsts, wl_radiota
 	rthe->noise = (int8)rxsts->noise;
 	rthe->antenna = (uint8)rxsts->antenna;
 
-	format = (rxsts->sig_a1 & 0x1) ? IEEE80211_RADIOTAP_HE_SU : IEEE80211_RADIOTAP_HE_TRIG;
+	he_format = (rxsts->nfrmtype & WL_RXS_NFRM_HE_EXT_MASK) >> WL_RXS_NFRM_HE_EXT_SHIFT;
 
-	rthe->data1 = (format |
-		IEEE80211_RADIOTAP_HE_HAVE_BSS_COLOR |
-		IEEE80211_RADIOTAP_HE_HAVE_BEAM_CHANGE |
-		IEEE80211_RADIOTAP_HE_HAVE_UL_DL |
-		IEEE80211_RADIOTAP_HE_HAVE_MCS |
-		IEEE80211_RADIOTAP_HE_HAVE_DCM |
-		IEEE80211_RADIOTAP_HE_HAVE_BW |
-		IEEE80211_RADIOTAP_HE_HAVE_LTF);
+	/* set Radiotap KNOWN bit */
+	switch (he_format) {
+		case HE_PPDU_SU:
+		case HE_PPDU_ERSU:
+			rthe->data1 = (he_format |
+				IEEE80211_RADIOTAP_HE_HAVE_BSS_COLOR |
+				IEEE80211_RADIOTAP_HE_HAVE_BEAM_CHANGE |
+				IEEE80211_RADIOTAP_HE_HAVE_UL_DL |
+				IEEE80211_RADIOTAP_HE_HAVE_MCS |
+				IEEE80211_RADIOTAP_HE_HAVE_DCM |
+				IEEE80211_RADIOTAP_HE_HAVE_BSS_COLOR |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE |
+				IEEE80211_RADIOTAP_HE_HAVE_CODING |
+				IEEE80211_RADIOTAP_HE_HAVE_LDPC_EXTSYM |
+				IEEE80211_RADIOTAP_HE_HAVE_STBC |
+				IEEE80211_RADIOTAP_HE_HAVE_BW |
+				IEEE80211_RADIOTAP_HE_HAVE_DOPPLER);
+			rthe->data2 = (IEEE80211_RADIOTAP_HE_HAVE_PRI_SEC_80M |
+				IEEE80211_RADIOTAP_HE_HAVE_GI |
+				IEEE80211_RADIOTAP_HE_HAVE_LTF |
+				IEEE80211_RADIOTAP_HE_HAVE_FEC |
+				IEEE80211_RADIOTAP_HE_HAVE_TXBF |
+				IEEE80211_RADIOTAP_HE_HAVE_PED |
+				IEEE80211_RADIOTAP_HE_HAVE_TXOP);
+			break;
+		case HE_PPDU_MU:
+			rthe->data1 = (he_format |
+				IEEE80211_RADIOTAP_HE_HAVE_UL_DL |
+				IEEE80211_RADIOTAP_HE_HAVE_MCS |
+				IEEE80211_RADIOTAP_HE_HAVE_DCM |
+				IEEE80211_RADIOTAP_HE_HAVE_BSS_COLOR |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE |
+				IEEE80211_RADIOTAP_HE_HAVE_LDPC_EXTSYM |
+				IEEE80211_RADIOTAP_HE_HAVE_STBC |
+				IEEE80211_RADIOTAP_HE_HAVE_BW |
+				IEEE80211_RADIOTAP_HE_HAVE_DOPPLER);
+			rthe->data2 = (
+				IEEE80211_RADIOTAP_HE_HAVE_GI |
+				IEEE80211_RADIOTAP_HE_HAVE_LTF |
+				IEEE80211_RADIOTAP_HE_HAVE_TXOP |
+				IEEE80211_RADIOTAP_HE_HAVE_FEC |
+				IEEE80211_RADIOTAP_HE_HAVE_PED |
+				IEEE80211_RADIOTAP_HE_HAVE_RU_ALLOC_OFFSET);
+			break;
+		case HE_PPDU_TB:
+			rthe->data1 = (he_format |
+				IEEE80211_RADIOTAP_HE_HAVE_BSS_COLOR |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE2 |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE3 |
+				IEEE80211_RADIOTAP_HE_HAVE_SPTL_REUSE4 |
+				IEEE80211_RADIOTAP_HE_HAVE_BW);
+			rthe->data2 = IEEE80211_RADIOTAP_HE_HAVE_TXOP;
+			break;
+	}
 
-	rthe->data2 = (IEEE80211_RADIOTAP_HE_HAVE_GI |
-		IEEE80211_RADIOTAP_HE_HAVE_LTF |
-		IEEE80211_RADIOTAP_HE_HAVE_PED |
-		IEEE80211_RADIOTAP_HE_HAVE_TXOP);
+	switch (he_format) {
+		case HE_PPDU_SU:
+		case HE_PPDU_ERSU:
+			beamchange = (rxsts->sig_a1 & HE_SIGA_BEAM_CHANGE_PLCP0) >>
+				HESU_SIGA_BEAM_CHANGE_SHIFT;
+			ul_dl = HESU_SIGA_UL_DL(rxsts->sig_a1);
+			dcm = HESU_SIGA_DCM(rxsts->sig_a1);
+			bss_color = HE_SIGA_BSS_COLOR(rxsts->sig_a1, he_format);
+			spatial_reuse = HE_SIGA_SPATIAL_REUSE(rxsts->sig_a1, he_format);
+			bw = HE_SIGA_BW(rxsts->sig_a1, he_format);
+			txop = HE_SIGA2_TXOP(rxsts->sig_a2);
+			ldpc_extsym = HESU_SIGA2_LDPC_EXTSYM(rxsts->sig_a2);
+			stbc = HESU_SIGA2_STBC(rxsts->sig_a2);
+			txbf = (rxsts->sig_a2 >> HESU_SIGA2_TXBF_SHIFT) & 0x1;
+			fec = HESU_SIGA2_FEC(rxsts->sig_a2);
+			ped = HESU_SIGA2_PED(rxsts->sig_a2);
+			doppler = HESU_SIGA2_DOPPLER(rxsts->sig_a2);
+			giltf = HESU_SIGA_GILTF(rxsts->sig_a1);
+			break;
+		case HE_PPDU_MU:
+			ul_dl = HEMU_SIGA_UL_DL(rxsts->sig_a1);
+			//todo : dcm for SIGB
+			bss_color = HE_SIGA_BSS_COLOR(rxsts->sig_a1, he_format);
+			spatial_reuse = HE_SIGA_SPATIAL_REUSE(rxsts->sig_a1, he_format);
+			bw = HE_SIGA_BW(rxsts->sig_a1, he_format);
+			//to do ....
+			doppler = HEMU_SIGA2_DOPPLER(rxsts->sig_a2);
+			txop = HE_SIGA2_TXOP(rxsts->sig_a2);
+			ldpc_extsym = HEMU_SIGA2_LDPC_EXTSYM(rxsts->sig_a2);
+			stbc = HEMU_SIGA2_STBC(rxsts->sig_a2);
+			fec = HEMU_SIGA2_FEC(rxsts->sig_a2);
+			ped = HEMU_SIGA2_PED(rxsts->sig_a2);
+			giltf = HEMU_SIGA_GILTF(rxsts->sig_a1);
+			break;
+		case HE_PPDU_TB:
+			bss_color = HE_SIGA_BSS_COLOR(rxsts->sig_a1, he_format);
+			spatial_reuse = HE_SIGA_SPATIAL_REUSE(rxsts->sig_a1, he_format);
+			spatial_reuse2 = HETB_SIGA_SPATIAL_REUSE2(rxsts->sig_a1);
+			spatial_reuse3 = HETB_SIGA_SPATIAL_REUSE3(rxsts->sig_a1);
+			spatial_reuse4 = HETB_SIGA_SPATIAL_REUSE4(rxsts->sig_a1);
+			bw = HE_SIGA_BW(rxsts->sig_a1, he_format);
+			txop = HE_SIGA2_TXOP(rxsts->sig_a2);
+			break;
+	}
 
-	bw = (rxsts->sig_a1 & HE_SIGA_BW_MASK)>> HE_SIGA_BW_SHIFT;
-	ul_dl = (rxsts->sig_a1 >> HE_SIGA_UL_DL_SHIFT) & 0x1;
-	beamchange = (rxsts->sig_a1 & HE_SIGA_BEAM_CHANGE_PLCP0) >> HE_SIGA_BEAM_CHANGE_SHIFT;
-	dcm = (rxsts->sig_a1 >> HE_SIGA_DCM_SHIFT) & 0x1;
-	ldpc_extsym = (rxsts->sig_a2 >> HE_SIGA2_LDPC_EXTSYM_SHIFT) & 0x1;
-	stbc = (rxsts->sig_a2 >> HE_SIGA2_STBC_SHIFT) & 0x1;
-	fec = (rxsts->sig_a2 & HE_SIGA2_FEC_MASK) >> HE_SIGA2_FEC_SHIFT;
-	txbf = (rxsts->sig_a2 >> HE_SIGA2_TXBF_SHIFT) & 0x1;
-	ped = (rxsts->sig_a2 >> HE_SIGA2_PED_SHIFT) & 0x1;
-	txop = rxsts->sig_a2 & HE_SIGA2_TXOP_MASK;
-	doppler = (rxsts->sig_a2 >> HE_SIGA2_DOPPLER_SHIFT) & 0x1;
-
-	nsts = (rxsts->sig_a1 & HE_SIGA_NSTS_MASK) >> HE_SIGA_NSTS_SHIFT;
-	if (doppler) {
+	if ((doppler) && (he_format == HE_PPDU_SU || he_format == HE_PPDU_ERSU)) {
 		/* doppler = 1 */
 		rthe->data2 = rthe->data2 | IEEE80211_RADIOTAP_HE_HAVE_MIDAMBLE;
-		midamble = nsts & 0x4;
-		nsts = (nsts & 0x3);
+		midamble = (((rxsts->sig_a1 & HE_SIGA_NSTS_MASK) >> HE_SIGA_NSTS_SHIFT) & 0x4);
 	}
-	nsts ++;
 
-	switch ((rxsts->sig_a1 & HE_SIGA_CPLTF_MASK) >> HE_SIGA_CPLTF_SHIFT) {
-		case HE_LTF_2_GI_0_8us:
-			ltf = IEEE80211_RADIOTAP_HE_LTF_2x;
-			gi = IEEE80211_RADIOTAP_HE_GI_0_8us;
-			break;
-		case HE_LTF_2_GI_1_6us:
-			ltf = IEEE80211_RADIOTAP_HE_LTF_2x;
-			gi = IEEE80211_RADIOTAP_HE_GI_1_6us;
-			break;
-		case HE_LTF_4_GI_3_2us:
-			ltf = IEEE80211_RADIOTAP_HE_LTF_4x;
-			gi = IEEE80211_RADIOTAP_HE_GI_3_2us;
-			if (dcm && stbc)
+	if (he_format != HE_PPDU_TB) {
+		switch (giltf) {
+			case HE_LTF_1_GI_1_6us:
+				ltf = IEEE80211_RADIOTAP_HE_LTF_SIZE_1x;
 				gi = IEEE80211_RADIOTAP_HE_GI_0_8us;
-			break;
-		default:
-			ltf = IEEE80211_RADIOTAP_HE_LTF_1x;
-			gi = IEEE80211_RADIOTAP_HE_GI_0_8us;
+				break;
+			case HE_LTF_2_GI_0_8us:
+				ltf = IEEE80211_RADIOTAP_HE_LTF_SIZE_2x;
+				gi = IEEE80211_RADIOTAP_HE_GI_0_8us;
+				break;
+			case HE_LTF_2_GI_1_6us:
+				ltf = IEEE80211_RADIOTAP_HE_LTF_SIZE_2x;
+				gi = IEEE80211_RADIOTAP_HE_GI_1_6us;
+				break;
+			case HE_LTF_4_GI_3_2us:
+				ltf = IEEE80211_RADIOTAP_HE_LTF_SIZE_4x;
+				gi = IEEE80211_RADIOTAP_HE_GI_3_2us;
+				if (dcm && stbc)
+					gi = IEEE80211_RADIOTAP_HE_GI_0_8us;
+				break;
+		}
 	}
 
-	rthe->data3 = ((rxsts->sig_a1 & HE_SIGA_BSS_COLOR_MASK) >> HE_SIGA_BSS_COLOR_SHIFT |
+	rthe->data3 = (bss_color |
 		beamchange << IEEE80211_RADIOTAP_HE_BEAM_CHANGE_SHIFT |
 		ul_dl << IEEE80211_RADIOTAP_HE_UL_DL_SHIFT |
 		rxsts->mcs << IEEE80211_RADIOTAP_HE_MCS_SHIFT |
@@ -1015,7 +1092,23 @@ wl_radiotap_rx_he(struct dot11_header *mac_header, wl_rxsts_t *rxsts, wl_radiota
 		ldpc_extsym << IEEE80211_RADIOTAP_HE_LDPC_EXTSYM_SHIFT |
 		stbc << IEEE80211_RADIOTAP_HE_STBC_SHIFT);
 
-	rthe->data4 = 0;
+	switch (he_format) {
+		case HE_PPDU_SU:
+		case HE_PPDU_ERSU:
+			rthe->data4 = spatial_reuse;
+			break;
+		case HE_PPDU_MU:
+			rthe->data4 = (spatial_reuse |
+				((rxsts->aid & IEEE80211_RADIOTAP_HE_STA_ID_MASK) <<
+					IEEE80211_RADIOTAP_HE_STA_ID_SHIFT));
+			break;
+		case HE_PPDU_TB:
+			rthe->data4 = (spatial_reuse << IEEE80211_RADIOTAP_HE_SPTL_REUSE_SHIFT |
+				spatial_reuse2 << IEEE80211_RADIOTAP_HE_SPTL_REUSE2_SHIFT |
+				spatial_reuse3 << IEEE80211_RADIOTAP_HE_SPTL_REUSE3_SHIFT |
+				spatial_reuse4 << IEEE80211_RADIOTAP_HE_SPTL_REUSE4_SHIFT);
+			break;
+	}
 	rthe->data5 = (bw |
 		gi << IEEE80211_RADIOTAP_HE_GI_SHIFT |
 		ltf << IEEE80211_RADIOTAP_HE_LTF_SHIFT |
@@ -1023,9 +1116,27 @@ wl_radiotap_rx_he(struct dot11_header *mac_header, wl_rxsts_t *rxsts, wl_radiota
 		txbf << IEEE80211_RADIOTAP_HE_TXBF_SHIFT |
 		ped << IEEE80211_RADIOTAP_HE_PED_SHIFT);
 
-	rthe->data6 = ((nsts & IEEE80211_RADIOTAP_HE_NSTS_MASK) |
+	if ((he_format == HE_PPDU_MU) && !HEMU_SIGA_SIGB_COMPRESSION(rxsts->sig_a1)) {
+		rthe->data5 |= HEMU_SIGA2_NUM_LTF(rxsts->sig_a2) <<
+			IEEE80211_RADIOTAP_HE_NUM_LTF_SHIFT;
+	}
+
+	rthe->data6 = ((rxsts->nss & IEEE80211_RADIOTAP_HE_NSTS_MASK) |
 		doppler << IEEE80211_RADIOTAP_HE_DOPPLER_SHIFT |
 		txop << IEEE80211_RADIOTAP_HE_TXOP_SHIFT |
 		midamble << IEEE80211_RADIOTAP_HE_MIDAMBLE_SHIFT);
+
+	rthe->ampdu_flags = (IEEE80211_RADIOTAP_AMPDU_EOF_KNOWN |
+		IEEE80211_RADIOTAP_AMPDU_LAST_KNOWN);
+	rthe->ampdu_ref_num = rxsts->ampdu_counter;
+	if (!(rxsts->nfrmtype & WL_RXS_NFRM_AMPDU_FIRST) &&
+		!(rxsts->nfrmtype & WL_RXS_NFRM_AMPDU_SUB)) {
+		rthe->ampdu_flags |= IEEE80211_RADIOTAP_AMPDU_IS_LAST;
+		// rxsts->ampdu_counter++;
+	}
+	/* S-MPDU */
+	if (rxsts->nfrmtype & WL_RXS_NFRM_SMPDU)
+		rthe->ampdu_flags |= IEEE80211_RADIOTAP_AMPDU_EOF;
+
 	return 0;
 }

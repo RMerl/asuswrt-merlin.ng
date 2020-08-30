@@ -814,6 +814,79 @@ static int rdpa_user_port_is_empty_get(rdpa_ioctl_cmd_t *pa)
 	return 0;
 }
 
+static int rdpa_user_port_mac_get(rdpa_ioctl_cmd_t *pa)
+{
+	bdmf_mac_t  parm;
+
+	BDMF_TRACE_DBG("inside port_user_mac_get\n");
+
+	if ((pa->ret = rdpa_port_mac_get(pa->mo, &parm)))
+	{
+		BDMF_TRACE_DBG("rdpa_port_mac_get failed, ret:%d\n", pa->ret);
+	}
+
+	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_mac_t )))
+	{
+		BDMF_TRACE_ERR("failed to copy to user\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int rdpa_user_port_mac_set(rdpa_ioctl_cmd_t *pa)
+{
+	bdmf_mac_t  parm;
+
+	BDMF_TRACE_DBG("inside port_user_mac_set\n");
+
+	if (copy_from_user((void *)&parm, (void *)(long)pa->ptr, sizeof(bdmf_mac_t )))
+	{
+		BDMF_TRACE_ERR("failed to copy from user\n");
+		return -1;
+	}
+
+	if ((pa->ret = rdpa_port_mac_set(pa->mo, &parm)))
+	{
+		BDMF_TRACE_DBG("rdpa_port_mac_set failed, ret:%d\n", pa->ret);
+	}
+
+	return 0;
+}
+
+static int rdpa_user_port_pkt_size_stat_en_get(rdpa_ioctl_cmd_t *pa)
+{
+	bdmf_boolean parm;
+
+	BDMF_TRACE_DBG("inside port_user_pkt_size_stat_en_get\n");
+
+	if ((pa->ret = rdpa_port_pkt_size_stat_en_get(pa->mo, &parm)))
+	{
+		BDMF_TRACE_DBG("rdpa_port_pkt_size_stat_en_get failed, ret:%d\n", pa->ret);
+	}
+
+	if (copy_to_user((void *)(long)pa->ptr, (void *)&parm, sizeof(bdmf_boolean)))
+	{
+		BDMF_TRACE_ERR("failed to copy to user\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+static int rdpa_user_port_pkt_size_stat_en_set(rdpa_ioctl_cmd_t *pa)
+{
+
+	BDMF_TRACE_DBG("inside port_user_pkt_size_stat_en_set\n");
+
+	if ((pa->ret = rdpa_port_pkt_size_stat_en_set(pa->mo, (bdmf_boolean)(long)pa->parm)))
+	{
+		BDMF_TRACE_DBG("rdpa_port_pkt_size_stat_en_set failed, ret:%d\n", pa->ret);
+	}
+
+	return 0;
+}
+
 long rdpa_port_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 {
 	int ret;
@@ -993,6 +1066,22 @@ long rdpa_port_ag_ioctl(unsigned int op, rdpa_ioctl_cmd_t *pa)
 
 		case RDPA_PORT_IS_EMPTY_GET:
 			ret = rdpa_user_port_is_empty_get(pa);
+			break;
+
+		case RDPA_PORT_MAC_GET:
+			ret = rdpa_user_port_mac_get(pa);
+			break;
+
+		case RDPA_PORT_MAC_SET:
+			ret = rdpa_user_port_mac_set(pa);
+			break;
+
+		case RDPA_PORT_PKT_SIZE_STAT_EN_GET:
+			ret = rdpa_user_port_pkt_size_stat_en_get(pa);
+			break;
+
+		case RDPA_PORT_PKT_SIZE_STAT_EN_SET:
+			ret = rdpa_user_port_pkt_size_stat_en_set(pa);
 			break;
 
 		default:

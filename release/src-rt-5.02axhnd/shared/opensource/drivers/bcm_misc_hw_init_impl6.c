@@ -165,7 +165,7 @@ static void bcm_misc_hw_xmii_pads_init(void)
 
         pin_num = Muxinfo[i] & BP_PINMUX_PIN_MASK;
         tp_data = 0;
-        tp_data |= (6 << 12);
+        tp_data |= (3 << 12); /* 8mA */
         tp_data |= (((pin_num >= 48) ? 1 : 0) << 16);
 
         bcm_set_padctrl((Muxinfo[i] & BP_PINMUX_PIN_MASK), tp_data);

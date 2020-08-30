@@ -37,9 +37,10 @@
  */
 
 //#define _MAKO_A0_ 
-#define _ORCA_A0_
+//#define _ORCA_A0_
 #define _ORCA_B0_
-#define _BFIN_A0_ 
+//#define _BFIN_A0_ 
+#define _BFIN_B0_ 
 
 #include "phy_drv.h"
 
@@ -61,28 +62,35 @@ struct phy_desc_s {
     uint32_t map;
 };
 
-#if defined(_MAKO_A0_) || defined(_ORCA_A0_) || defined(_ORCA_B0_)
-static int load_848xx(phy_desc_t *phy);
+#if defined(_MAKO_A0_)
+static int load_8486x(phy_desc_t *phy);
 #endif
-#if defined(_BFIN_A0_)
+#if defined(_ORCA_A0_) || defined(_ORCA_B0_)
+static int load_8488x(phy_desc_t *phy);
+#endif
+#if defined(_BFIN_A0_) || defined(_BFIN_B0_) 
 static int load_5499x(phy_desc_t *phy);
 #endif
 
 #ifdef _MAKO_A0_
 #include "bcm8486x_a0_firmware.h"
-firmware_t mako_a0 = { bcm8486x_a0_version, bcm8486x_a0_firmware, sizeof(bcm8486x_a0_firmware), &load_848xx };
+firmware_t mako_a0 = { bcm8486x_a0_version, bcm8486x_a0_firmware, sizeof(bcm8486x_a0_firmware), &load_8486x };
 #endif
 #ifdef _ORCA_A0_
 #include "bcm8488x_a0_firmware.h"
-firmware_t orca_a0 = { bcm8488x_a0_version, bcm8488x_a0_firmware, sizeof(bcm8488x_a0_firmware), &load_848xx };
+firmware_t orca_a0 = { bcm8488x_a0_version, bcm8488x_a0_firmware, sizeof(bcm8488x_a0_firmware), &load_8488x };
 #endif
 #ifdef _ORCA_B0_
 #include "bcm8488x_b0_firmware.h"
-firmware_t orca_b0 = { bcm8488x_b0_version, bcm8488x_b0_firmware, sizeof(bcm8488x_b0_firmware), &load_848xx };
+firmware_t orca_b0 = { bcm8488x_b0_version, bcm8488x_b0_firmware, sizeof(bcm8488x_b0_firmware), &load_8488x };
 #endif
 #ifdef _BFIN_A0_ 
 #include "bcm5499x_a0_firmware.h"
 firmware_t bfin_a0 = { bcm5499x_a0_version, bcm5499x_a0_firmware, sizeof(bcm5499x_a0_firmware), &load_5499x };
+#endif
+#ifdef _BFIN_B0_ 
+#include "bcm5499x_b0_firmware.h"
+firmware_t bfin_b0 = { bcm5499x_b0_version, bcm5499x_b0_firmware, sizeof(bcm5499x_b0_firmware), &load_5499x };
 #endif
 
 static phy_desc_t phy_desc[] = {
@@ -130,12 +138,30 @@ static phy_desc_t phy_desc[] = {
     { 0x3590, 0x50d0, "54991H  A0", &bfin_a0 },
     { 0x3590, 0x50f0, "54994H  A0", &bfin_a0 },
 #endif
+#ifdef _BFIN_B0_ 
+    { 0x3590, 0x5091, "84891   B0", &bfin_b0 },
+    { 0x3590, 0x5095, "54991   B0", &bfin_b0 },
+    { 0x3590, 0x5099, "54991E  B0", &bfin_b0 },
+    { 0x3590, 0x5081, "84891L  B0", &bfin_b0 },
+    { 0x3590, 0x5085, "54991L  B0", &bfin_b0 },
+    { 0x3590, 0x5089, "54991EL B0", &bfin_b0 },
+    { 0x3590, 0x50a1, "84892   B0", &bfin_b0 },
+    { 0x3590, 0x50a5, "54992   B0", &bfin_b0 },
+    { 0x3590, 0x50a9, "54992E  B0", &bfin_b0 },
+    { 0x3590, 0x50b1, "84894   B0", &bfin_b0 },
+    { 0x3590, 0x50b5, "54994   B0", &bfin_b0 },
+    { 0x3590, 0x50b9, "54994E  B0", &bfin_b0 },
+    { 0x3590, 0x50d1, "54991H  B0", &bfin_b0 },
+    { 0x3590, 0x50f1, "54994H  B0", &bfin_b0 },
+#endif
+
 };
 
 static uint32_t enabled_phys;
 
 #define BUS_WRITE(a, b, c, d)       if ((ret = _bus_write(a, b, c, d))) goto Exit;
 #define BUS_WRITE_ALL(a, b, c, d)   if ((ret = _bus_write_all(a, b, c, d))) goto Exit;
+#define BUS_WRITE_AND_VERIFY_ALL(a, b, c, d, e)   if ((ret = _bus_write_and_verify_all(a, b, c, d, e))) goto Exit;
 
 #define PHY_READ(a, b, c, d)        if ((ret = phy_bus_c45_read(a, b, c, d))) goto Exit;
 #define PHY_WRITE(a, b, c, d)       if ((ret = phy_bus_c45_write(a, b, c, d))) goto Exit;
@@ -158,7 +184,7 @@ static uint32_t enabled_phys;
 #define CMD_SET_SUB_LF_RF                           0x8011
 #define CMD_READ_INDIRECT_GPHY_REG_BITS             0x8014
 #define CMD_WRITE_INDIRECT_GPHY_REG_BITS            0x8015
-#define CMD_GET_XFI_2P5G_5G_MODE                    0x8016	
+#define CMD_GET_XFI_2P5G_5G_MODE                    0x8016
 #define CMD_SET_XFI_2P5G_5G_MODE                    0x8017
 #define CMD_GET_TWO_PAIR_1G_MODE                    0x8018
 #define CMD_SET_TWO_PAIR_1G_MODE                    0x8019
@@ -203,6 +229,13 @@ static uint32_t enabled_phys;
 #define CMD_COMPLETE_PASS                           0x0004
 #define CMD_COMPLETE_ERROR                          0x0008
 #define CMD_SYSTEM_BUSY                             0xBBBB
+
+/* Fixups for 5499x phys */
+#define ID1_5499X                                   0x35900000
+#define ID1_MASK                                    0xffff0000
+#define SUPER_I_DEFAULT                             (1<<15)
+#define SUPER_I_BLACKFIN                            (1<<8)
+#define CHANGE_STRAP_STATUS                         (1<<1)
 
 static int _wait_for_cmd_ready(phy_dev_t *phy_dev)
 { 
@@ -249,7 +282,7 @@ Exit:
 }
 
 static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, uint16_t *data2, uint16_t *data3, uint16_t *data4, uint16_t *data5)
-{	 
+{
     int ret;
     uint16_t cmd_status = 0;
 
@@ -257,12 +290,12 @@ static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, u
     if ((ret = _wait_for_cmd_ready(phy_dev)))
         goto Exit;
 
-	switch (cmd_code)
+    switch (cmd_code)
     {
     case CMD_SET_PAIR_SWAP:
     case CMD_SET_1588_ENABLE:
     case CMD_SET_SHORT_REACH_MODE_ENABLE:
-    case CMD_SET_EEE_MODE:		
+    case CMD_SET_EEE_MODE:
     case CMD_SET_EMI_MODE_ENABLE:
     case CMD_SET_SERDES_KR_MODE_ENABLE:
     case CMD_CLEAR_SUB_LF_RF:
@@ -304,7 +337,7 @@ static int cmd_handler(phy_dev_t *phy_dev, uint16_t cmd_code, uint16_t *data1, u
     case CMD_GET_PAIR_SWAP:
     case CMD_GET_1588_ENABLE:
     case CMD_GET_SHORT_REACH_MODE_ENABLE:
-    case CMD_GET_EEE_MODE:		
+    case CMD_GET_EEE_MODE:
     case CMD_GET_EMI_MODE_ENABLE:
     case CMD_GET_SERDES_KR_MODE_ENABLE:
     case CMD_GET_SUB_LF_RF_STATUS:
@@ -399,6 +432,19 @@ Exit:
     return ret;
 }
 
+static int _phy_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)
+{
+    int ret;
+    uint16_t phyid1, phyid2;
+
+    PHY_READ(phy_dev, 0x01, 0x0002, &phyid1);
+    PHY_READ(phy_dev, 0x01, 0x0003, &phyid2);
+
+    *phyid = phyid1 << 16 | phyid2;
+Exit:
+    return ret;
+}
+
 static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
     uint16_t val;
@@ -450,7 +496,7 @@ static int _phy_force_auto_mdix_set(phy_dev_t *phy_dev, int enable)
 
     PHY_READ(phy_dev, 0x07, 0x902f, &val);
     
-	if (enable)
+    if (enable)
         val |= (1 << 9); /* Auto-MDIX enabled */
     else
         val &= ~(1 << 9); /* Auto-MDIX disabled */
@@ -483,8 +529,19 @@ static int _phy_pair_swap_set(phy_dev_t *phy_dev, int enable)
 {
     int ret;
     uint16_t data;
+#ifdef EXT_BCM84880
+    uint32_t phyid;
 
-	if (enable)
+    _phy_phyid_get(phy_dev, &phyid);
+    if ((phyid & ID1_MASK) == ID1_5499X) {
+       enable = 1;
+       phy_dev->swap_pair = 1;
+       phy_dev->led_mode = 0;
+       printk("### PHY: 5499X series, enable pair swap! ###\n");
+    }
+#endif
+
+    if (enable)
         data = 0x1b;
     else
         data = 0xe4;
@@ -515,7 +572,7 @@ static int _phy_apd_get(phy_dev_t *phy_dev, int *enable)
     uint16_t val;
 
     PHY_READ(phy_dev, 0x07, 0x901a, &val);
-	*enable = val & (1 << 5) ? 1 : 0; /* Auto power-down mode enabled */
+    *enable = val & (1 << 5) ? 1 : 0; /* Auto power-down mode enabled */
 
 Exit:
     return ret;
@@ -529,16 +586,16 @@ static int _phy_apd_set(phy_dev_t *phy_dev, int enable)
     /* Auto-Power Down */
     PHY_READ(phy_dev, 0x07, 0x901a, &val);
 
-	if (enable)
+    if (enable)
     {
         val |= (1 << 5); /* Auto power-down mode enabled */
         val |= (1 << 8); /* Enable energy detect single link pulse */
-	}
+    }
     else
     {
         val &= ~(1 << 5); /* Auto power-down mode disabled */
         val &= ~(1 << 8); /* Disable energy detect single link pulse */
-	}
+    }
 
     PHY_WRITE(phy_dev, 0x07, 0x901a, val);
 
@@ -923,16 +980,65 @@ Exit:
     return ret;
 }
 
-static int _phy_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)
+static int _phy_pair_isolate_5499x(phy_dev_t *phy_dev, int isolate)
 {
     int ret;
-    uint16_t phyid1, phyid2;
+    uint16_t data;
 
-    PHY_READ(phy_dev, 0x01, 0x0002, &phyid1);
-    PHY_READ(phy_dev, 0x01, 0x0003, &phyid2);
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401c, &data);
 
-    *phyid = phyid1 << 16 | phyid2;
+    if (isolate)
+        data |= SUPER_I_BLACKFIN;
+    else
+        data &= ~SUPER_I_BLACKFIN;
 
+    PHY_WRITE(phy_dev, 0x1e, 0x401c, data);
+
+    return 0;
+Exit:
+    return ret;
+}
+static int _phy_pair_isolate_default(phy_dev_t *phy_dev, int isolate)
+{
+    int ret;
+    uint16_t data;
+
+    /* Read the status register */
+    PHY_READ(phy_dev, 0x1e, 0x401a, &data);
+
+    if (isolate)
+        data |= SUPER_I_DEFAULT;
+    else
+        data &= ~SUPER_I_DEFAULT;
+
+    PHY_WRITE(phy_dev, 0x1e, 0x401a, data);
+
+    return 0;
+Exit:
+    return ret;
+}
+static int _phy_pair_isolate(phy_dev_t *phy_dev, int isolate)
+{
+    int ret, i = 0;
+    uint16_t data;
+    uint32_t phyid;
+
+    _phy_phyid_get(phy_dev, &phyid);
+
+    if ((phyid & ID1_MASK) == ID1_5499X)
+        ret = _phy_pair_isolate_5499x(phy_dev, isolate);
+    else
+        ret = _phy_pair_isolate_default(phy_dev, isolate);
+
+    if (ret)
+        goto Exit;
+    do {
+        udelay(1000);
+        PHY_READ(phy_dev, 0x1e, 0x400e, &data);
+    } while (i-- && (data & CHANGE_STRAP_STATUS));
+
+    return 0;
 Exit:
     return ret;
 }
@@ -1079,15 +1185,78 @@ static int _bus_write_all(uint32_t phy_map, uint16_t dev, uint16_t reg, uint16_t
     return 0;
 }
 
-#if defined(_MAKO_A0_) || defined(_ORCA_A0_) || defined(_ORCA_B0_)
-static int load_848xx(phy_desc_t *phy)
+static int _bus_write_and_verify_all(uint32_t phy_map, uint16_t dev, uint16_t reg, uint16_t val, uint32_t mask)
 {
-    int i, cnt, step, ret;
-    uint32_t phy_map, *firmware_data, firmware_size;
+    int ret;
+    uint32_t i, j;
+    uint16_t _val;
+
+    for (i = 0; i < 32; i++)
+    {
+        if (!(phy_map & (1 << i)))
+            continue;
+
+                j = 1000;
+                do
+                {
+                    udelay(1000);
+                    if ((ret = _bus_write(i, dev, reg, val)))
+                        return ret;
+                
+                    if ((ret = _bus_read(i, dev, reg, &_val)))
+                        return ret;
+            } while (((_val & 0xffff) != val) && j--);
+            
+            if (j == 0)
+            {
+                printk("MDIO Bus Write and Verify is failed \n");
+                return -1;
+            }
+    }
+
+    return 0;
+}
+
+static int phy_count (uint32_t phy_map)
+{
+    int cnt;
+    for (cnt = 0; phy_map != 0; phy_map &= (phy_map - 1))
+        cnt++;
+
+    return cnt;
+}
+
+static uint32_t get_base_phy_addr(uint32_t phy_map)
+{
+    int flag = 1;
+    int cnt = 0;
+    while ((flag & phy_map) == 0)
+        {
+            flag <<= 1;
+            cnt ++;
+        }
+    
+    return cnt;
+}
+
+static uint32_t bcast_phy_map(uint32_t phy_map)
+{
+    return (phy_map & ~(1 << get_base_phy_addr(phy_map)));
+}
+
+#if defined(_MAKO_A0_)
+static int load_8486x(phy_desc_t *phy)
+{
+    int i, cnt, step, ret, base_phy_addr, phy_cnt;
+    uint32_t phy_map, *firmware_data, firmware_size, b_phy_map;
 
     printk("Firmware version: %s\n", phy->firmware->version);
 
     phy_map = phy->map;
+    base_phy_addr = get_base_phy_addr(phy_map); /* select the min PHY address for broadcast operation */
+    b_phy_map = bcast_phy_map(phy_map); /* phy map for broadcast configuration - exclude the min PHY address */
+    phy_cnt = phy_count(phy_map);
+
     firmware_data = phy->firmware->data;
     firmware_size = phy->firmware->size;
 
@@ -1097,11 +1266,13 @@ static int load_848xx(phy_desc_t *phy)
     /* Download firmware with broadcast mode to up to 32 phys, according to the phy map */
     printk("Loading firmware into phys: map=0x%x\n", phy_map);
 
-    /* 1. Turn on broadcast mode to accept write operations for addr = 0 */
-    printk("Turn on broadcast mode to accept write operations\n");
-
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4117, 0xf003);
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4107, 0x0401);
+    /* 1. If more than one PHY, turn on broadcast mode to accept write operations for addr = base_phy_addr */
+    if (phy_cnt > 1)
+    {
+        printk("Turn on broadcast mode to accept write operations\n");
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4107, 0x0401 | ((base_phy_addr & 0x1f) << 5));
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4117, 0xf001);
+    }
 
     /* 2. Halt the BCM848XX processors operation */
     printk("Halt the phys processors operation\n");
@@ -1111,98 +1282,98 @@ static int load_848xx(phy_desc_t *phy)
     BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x017c);
     BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x0040);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xc300);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0010);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xc300);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0010);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x1018);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xe59f);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x1018);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xe59f);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0004);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x1f11);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xee09);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0004);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x1f11);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xee09);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0008);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xe3a0);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0008);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xe3a0);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x000c);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x1806);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xe3a0);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x000c);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x1806);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xe3a0);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0010);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0002);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xe8a0);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0010);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0002);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xe8a0);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0014);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0001);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xe150);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0014);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0001);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xe150);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0018);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0xfffc);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x3aff);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0018);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0xfffc);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0x3aff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x001c);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0xfffe);
-    BUS_WRITE(0, 0x01, 0xa81c, 0xeaff);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x001c);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0xfffe);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0xeaff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa819, 0x0020);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xffff);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0021);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0004);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0020);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xffff);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0021);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0x0004);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
     BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x0000);
 
     /* 3. Upload the firmware into the on-chip memory of the devices */
     printk("Upload the firmware into the on-chip memory\n");
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0038);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
 
     for (i = 0; i < cnt; i++)
     {
-        BUS_WRITE(0, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
-        BUS_WRITE(0, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
             printk("\r%d%%", i / step);
     }
     printk("\n");
 
-    BUS_WRITE(0, 0x01, 0xa817, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81a, 0xc300);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0xc300);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81b, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81c, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0009);
 
     /* 4. Reset the processors to start execution of the code in the on-chip memory */
     printk("Reset the processors to start execution of the code in the on-chip memory\n");
 
-    BUS_WRITE(0, 0x01, 0xa008, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa008, 0x0000);
     BUS_WRITE_ALL(phy_map, 0x1e, 0x8004, 0x5555);
-    BUS_WRITE(0, 0x01, 0x0000, 0x8000);
+    BUS_WRITE(base_phy_addr, 0x01, 0x0000, 0x8000);
 
     /* 5. Verify that the processors are running */
     printk("Verify that the processors are running: ");
@@ -1231,7 +1402,6 @@ static int load_848xx(phy_desc_t *phy)
     } while ((ret != phy_map) && i--);
 
     printk("%s\n", ret != phy_map ? "Failed" : "OK");
-
 
     ret = ret != phy_map;
     if (ret)
@@ -1244,15 +1414,19 @@ Exit:
 }
 #endif
 
-#if defined(_BFIN_A0_)
-static int load_5499x(phy_desc_t *phy)
+#if defined(_ORCA_A0_) || defined(_ORCA_B0_)
+static int load_8488x(phy_desc_t *phy)
 {
-    int i, cnt, step, ret;
-    uint32_t phy_map, *firmware_data, firmware_size;
+    int i, cnt, step, ret, base_phy_addr, phy_cnt;
+    uint32_t phy_map, *firmware_data, firmware_size, b_phy_map;
 
     printk("Firmware version: %s\n", phy->firmware->version);
 
     phy_map = phy->map;
+    base_phy_addr = get_base_phy_addr(phy_map); /* select the min PHY address for broadcast operation */
+    b_phy_map = bcast_phy_map(phy_map); /* phy map for broadcast configuration - exclude the min PHY address */
+    phy_cnt = phy_count(phy_map);
+
     firmware_data = phy->firmware->data;
     firmware_size = phy->firmware->size;
 
@@ -1262,76 +1436,59 @@ static int load_5499x(phy_desc_t *phy)
     /* Download firmware with broadcast mode to up to 32 phys, according to the phy map */
     printk("Loading firmware into phys: map=0x%x\n", phy_map);
 
-    /* 1. Turn on broadcast mode to accept write operations for addr = 0 */
-    printk("Turn on broadcast mode to accept write operations\n");
-
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4107, 0x0401);
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4117, 0xf001);
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x8114, 0xffff);
-
-    /* 2. Halt the BCM6499X processors operation */
+    /* 1. Halt the BCM848XX processors operation */
     printk("Halt the phys processors operation\n");
 
     BUS_WRITE_ALL(phy_map, 0x1e, 0x418c, 0x0000);
     BUS_WRITE_ALL(phy_map, 0x1e, 0x4188, 0x48f0);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x017c);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4186, 0x8000);
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf400);
-    BUS_WRITE(0, 0x01, 0xa819, 0x3000);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0121);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
+    BUS_WRITE_AND_VERIFY_ALL(phy_map, 0x1e, 0x4181, 0x0040, 0xffff);
 
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x80a6, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4186, 0x8000);
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf603);
-    BUS_WRITE(0, 0x01, 0xa819, 0x4020);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0005);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa819, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81a, 0xc300);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81b, 0x0001);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81c, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa817, 0x0009);
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf602);
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x8000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0005);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4181, 0x0000);
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf603);
-    BUS_WRITE(0, 0x01, 0xa819, 0x4020);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0005);
-
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4107, 0x0401);
-    BUS_WRITE_ALL(phy_map, 0x1e, 0x4117, 0xf001);
+    /* 2. If more than one PHY, turn on broadcast mode to accept write operations for addr = base_phy_addr */
+    if (phy_cnt > 1)
+    {
+        printk("Turn on broadcast mode to accept write operations\n");
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4107, 0x0401 | ((base_phy_addr & 0x1f) << 5));
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4117, 0xf001);
+    }
 
     /* 3. Upload the firmware into the on-chip memory of the devices */
     printk("Upload the firmware into the on-chip memory\n");
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf790);
-    BUS_WRITE(0, 0x01, 0xa819, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0038);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
 
     for (i = 0; i < cnt; i++)
     {
-        BUS_WRITE(0, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
-        BUS_WRITE(0, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
 
         if (i == i / step * step)
             printk("\r%d%%", i / step);
     }
     printk("\n");
 
-    BUS_WRITE(0, 0x01, 0xa817, 0x0000);
-
     /* 4. Reset the processors to start execution of the code in the on-chip memory */
     printk("Reset the processors to start execution of the code in the on-chip memory\n");
 
-    BUS_WRITE(0, 0x01, 0xa81a, 0xf000);
-    BUS_WRITE(0, 0x01, 0xa819, 0x3000);
-    BUS_WRITE(0, 0x01, 0xa81c, 0x0000);
-    BUS_WRITE(0, 0x01, 0xa81b, 0x0020);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0009);
-    BUS_WRITE(0, 0x01, 0xa817, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa008, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x8004, 0x5555);
+    BUS_WRITE(base_phy_addr, 0x1, 0x8003, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0x0000, 0x8000);
 
     /* 5. Verify that the processors are running */
     printk("Verify that the processors are running: ");
@@ -1361,6 +1518,132 @@ static int load_5499x(phy_desc_t *phy)
 
     printk("%s\n", ret != phy_map ? "Failed" : "OK");
 
+    ret = ret != phy_map;
+    if (ret)
+        goto Exit;
+
+    printk("Firmware loading completed successfully\n\n");
+
+Exit:
+    return ret;
+}
+#endif
+
+#if defined(_BFIN_A0_) || defined(_BFIN_B0_)
+static int load_5499x(phy_desc_t *phy)
+{
+    int i, cnt, step, ret, base_phy_addr, phy_cnt;
+    uint32_t phy_map, *firmware_data, firmware_size, b_phy_map;
+
+    printk("Firmware version: %s\n", phy->firmware->version);
+
+    phy_map = phy->map;
+    base_phy_addr = get_base_phy_addr(phy_map); /* select the min PHY address for broadcast operation */
+    b_phy_map = bcast_phy_map(phy_map); /* phy map for broadcast configuration - exclude the min PHY address */
+    phy_cnt = phy_count(phy_map);
+    firmware_data = phy->firmware->data;
+    firmware_size = phy->firmware->size;
+
+    cnt = firmware_size / sizeof(uint32_t);
+    step = cnt / 100;
+
+    /* Download firmware with broadcast mode to up to 32 phys, according to the phy map */
+    printk("Loading firmware into phys: map=0x%x\n", phy_map);
+
+    /* 1. Halt the BCM6499X processors operation */
+    printk("Halt the phys processors operation\n");
+
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4110, 0x0001);
+
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x418c, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4188, 0x48f0);
+
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81a, 0xf000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa819, 0x3000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81c, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81b, 0x0121);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa817, 0x0009);
+
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x80a6, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x1, 0xa010, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x1, 0x0000, 0x8000);
+
+    udelay(1000);
+    BUS_WRITE_ALL(phy_map, 0x1e, 0x4110, 0x0001);
+    udelay(1000);
+
+    /* 2. If more than one PHY, turn on broadcast mode to accept write operations for addr = base_phy_addr */
+    if (phy_cnt > 1)
+    {
+        printk("Turn on broadcast mode to accept write operations\n");
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4107, 0x0401 | ((base_phy_addr & 0x1f) << 5));
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4117, 0xf001);
+    }
+
+    /* 3. Upload the firmware into the on-chip memory of the devices */
+    printk("Upload the firmware into the on-chip memory\n");
+
+    BUS_WRITE(base_phy_addr, 0x01, 0xa81a, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa819, 0x0000);
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0038);
+
+    for (i = 0; i < cnt; i++)
+    {
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81c, firmware_data[i] >> 16); /* upper 16 bits */
+        BUS_WRITE(base_phy_addr, 0x01, 0xa81b, firmware_data[i] & 0xffff); /* lower 16 bits */
+
+        if (i == i / step * step)
+            printk("\r%d%%", i / step);
+    }
+    printk("\n");
+
+    BUS_WRITE(base_phy_addr, 0x01, 0xa817, 0x0000);
+
+    /* 4. Disable broadcast if phy cnt > 1 */
+    if (phy_cnt > 1)
+    {
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4107, 0x0000);
+        BUS_WRITE_ALL(b_phy_map, 0x1e, 0x4117, 0x0000);
+    }
+
+    /* 5. Reset the processors to start execution of the code in the on-chip memory */
+    printk("Reset the processors to start execution of the code in the on-chip memory\n");
+
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81a, 0xf000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa819, 0x3000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81c, 0x0000);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa81b, 0x0020);
+    BUS_WRITE_ALL(phy_map, 0x01, 0xa817, 0x0009);
+
+    udelay(2000);
+    
+    /* 6. Verify that the processors are running */
+    printk("Verify that the processors are running: ");
+
+    i = 1000;
+    do
+    {
+        udelay(2000);
+        ret  = _bus_read_all(phy_map, 0x01, 0x0000, 0x2040, 0xffff);
+    } while ((ret != phy_map) && i--);
+
+    printk("%s\n", ret != phy_map ? "Failed" : "OK");
+
+    ret = ret != phy_map;
+    if (ret)
+        goto Exit;
+
+    /* 7. Verify that the firmware has been loaded into the on-chip memory with a good CRC */
+    printk("Verify that the firmware has been loaded with good CRC: ");
+
+    i = 1000;
+    do 
+    {
+        udelay(2000);
+        ret  = _bus_read_all(phy_map, 0x1e, 0x400d, 0x4000, 0xc000);
+    } while ((ret != phy_map) && i--);
+
+    printk("%s\n", ret != phy_map ? "Failed" : "OK");
 
     ret = ret != phy_map;
     if (ret)
@@ -1469,4 +1752,6 @@ phy_drv_t phy_drv_ext3 =
     .dev_add = _phy_dev_add,
     .dev_del = _phy_dev_del,
     .drv_init = _phy_drv_init,
+    .pair_swap_set = _phy_pair_swap_set,
+    .isolate_phy = _phy_pair_isolate,
 };

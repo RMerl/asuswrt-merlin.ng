@@ -31,17 +31,27 @@ written consent.
 #include <linux/delay.h>
 #include <linux/bcm_log.h>
 #include <bcm_map_part.h>
+#include "pmd.h"
 #include "board.h"
 #include "wan_drv.h"
 #include "opticaldet.h"
 #include "rdpa_types.h"
+#include "bcmsfp_i2c.h"
 
 
-#define SENSE_RESULT_TRUE  (1)
-#define SENSE_RESULT_FALSE (0)
+static int get_optics_type(uint16_t *optics_type);
+static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm);
 
 
-#if defined(CONFIG_BCM_PON_WAN_TYPE_AUTO_DETECT)
+#define SENSE_RESULT_TRUE       (1)
+#define SENSE_RESULT_FALSE      (0)
+#define SKIP_SENSING_WAN_TYPE   (1)
+#define KEEP_SENSING_WAN_TYPE   (0)
+
+static int configure_pmd_wan_type(uint16_t optics_type, PMD_WAN_TYPES new_pmd_wan_type);
+
+static get_non_brcm_pmd_supported_wan_type_bm   get_non_brcm_pmd_supported_wan_type_bm_cb = NULL;
+static configure_non_brcm_pmd_wan_type          configure_non_brcm_pmd_wan_type_cb = NULL;
 
 #if defined(CONFIG_BCM96858)
 #define GET_GPON_REG_ADDRESS(physical_address) ( (unsigned int *)( (physical_address) - GPON_PHYS_BASE + bcm_io_block_address[GPON_IDX] ) )
@@ -52,7 +62,7 @@ written consent.
 #define SLEEP_IN_MILI_SECONDS      (  50)
 #define LONG_SLEEP_IN_MILI_SECONDS (1500)
 
-static int is_gpon_lof_synced(void)
+static int is_gpon_lof_synced(uint16_t optics_type)
 {
 #if defined(CONFIG_BCM96858)
 #define GPON_RCVR_STATUS_REG_ADDRESS            (0x80150000)
@@ -70,7 +80,10 @@ static int is_gpon_lof_synced(void)
 #define GPON_RCVR_CONFIG_LOF_ALPHA_SHIFT        (         4)
 #define GPON_RCVR_CONFIG_LOF_ALPHA              (         1)
 #define GPON_RCVR_CONFIG_LOF_PARAMS_CLEAR_MASK  (     ~0xFF)
-    unsigned int reg_value, *reg_address, is_sensed;
+    unsigned int ret, reg_value, *reg_address, is_sensed;
+
+    ret = configure_pmd_wan_type(optics_type, PMD_GPON_2_1_WAN);
+    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
     wan_serdes_config(SERDES_WAN_TYPE_GPON);
 
@@ -121,7 +134,7 @@ static int is_gpon_lof_synced(void)
 #define XPCSRX_RST_ACTIVE_LOW_RESET     (         0)
 #define XPCSRX_FRAMER_CTL_DISABLE_VALUE (0x00000090)
 
-static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
+static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type)
 {
 #define EPON_TOP_LIF_RST_CLR            (         2)
 #define EPON_TOP_CONTROL_2G_DS_MODE     (         4)
@@ -134,6 +147,24 @@ static int is_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 
     unsigned int reg_value, *reg_address, is_sensed;
     char *wan_type_string;
+    int ret;
+
+    switch (wan_type)
+    {
+        case SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1:
+            ret = configure_pmd_wan_type(optics_type, PMD_EPON_2_1_WAN);
+            break;
+        case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
+            ret = configure_pmd_wan_type(optics_type, PMD_EPON_1_1_WAN);
+            break;
+        case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
+            ret = configure_pmd_wan_type(optics_type, PMD_GBE_1_1_WAN);
+            break;
+        default:
+            ret = KEEP_SENSING_WAN_TYPE;
+    }
+
+    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
     reg_address = (unsigned int *)(EPON_TOP_RESET_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = EPON_TOP_RESET_ALL;
@@ -219,7 +250,7 @@ static void disable_10g_epon_ae_mac(void)
     *reg_address = EPON_TOP_RESET_ALL;
 }
 
-static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
+static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type)
 {
 #if defined(CONFIG_BCM96858)
 #define XPCSRX_RAM_ECC_INT_STAT_REG_ADDRESS     (0x80143108)
@@ -248,6 +279,18 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 
     unsigned int reg_value, *reg_address, is_sensed;
     char *wan_type_string;
+    int ret;
+
+    switch (wan_type)
+    {
+        case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
+            ret = configure_pmd_wan_type(optics_type, PMD_EPON_10_1_WAN);
+            break;
+        default:
+            ret = KEEP_SENSING_WAN_TYPE;
+    }
+
+    if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
 
     reg_address = (unsigned int *)(EPON_TOP_RESET_REG_ADDRESS - EPON_PHYS_BASE + bcm_io_block_address[EPON_IDX]);
     *reg_address = EPON_TOP_RESET_ALL;
@@ -356,7 +399,7 @@ static int is_10g_epon_ae_in_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 }
 
 
-static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
+static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type)
 {
 #if defined(CONFIG_BCM96858)
 #define NGPON_RX_GEN_RCVRSTAT_REG_ADDRESS           (0x80160000)
@@ -384,10 +427,14 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
 
     unsigned int reg_value, *reg_address, is_sensed, mac_mode;
     char *wan_type_string;
+    int ret;
 
     switch (wan_type)
     {
         case SUPPORTED_WAN_TYPES_BIT_XGPON:
+            ret = configure_pmd_wan_type(optics_type, PMD_XGPON1_10_2_WAN);
+            if (SKIP_SENSING_WAN_TYPE == ret) return SENSE_RESULT_FALSE;
+
             mac_mode = GPON_RX_GEN_RCVRCFG_MAC_MODE_NGPON2_2_5G;
             wan_serdes_config(SERDES_WAN_TYPE_XGPON_10G_2_5G);
             wan_type_string = "XGPON";
@@ -452,32 +499,53 @@ static int is_10g_itu_pon_frame_sync(SUPPORTED_WAN_TYPES_BITMAP wan_type)
     return is_sensed;
 }
 #endif
-#endif
 
 
-static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type)
+static int configure_pmd_wan_type(uint16_t optics_type, PMD_WAN_TYPES new_pmd_wan_type)
+{
+    int rc;
+    
+    if (BCM_I2C_PON_OPTICS_TYPE_NON_BRCM_PMD == optics_type)
+    {
+        configure_non_brcm_pmd_wan_type_cb(new_pmd_wan_type);
+        return KEEP_SENSING_WAN_TYPE;        
+    }
+
+    if (BCM_I2C_PON_OPTICS_TYPE_PMD != optics_type)
+    {
+        return KEEP_SENSING_WAN_TYPE;
+    }
+    
+    rc = pmd_dev_reconfigure_wan_type(new_pmd_wan_type);
+    if (rc)
+    {
+        return SKIP_SENSING_WAN_TYPE;
+    }
+    
+    return KEEP_SENSING_WAN_TYPE;
+}
+
+
+static int is_specific_wan_type_sensed(SUPPORTED_WAN_TYPES_BITMAP wan_type, uint16_t optics_type)
 {
     switch (wan_type)
     {
-#if defined(CONFIG_BCM_PON_WAN_TYPE_AUTO_DETECT)
         case SUPPORTED_WAN_TYPES_BIT_GPON:
-            return is_gpon_lof_synced();
+            return is_gpon_lof_synced(optics_type);
         case SUPPORTED_WAN_TYPES_BIT_TURBO_EPON_2_1:
-        case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:        
+        case SUPPORTED_WAN_TYPES_BIT_EPON_1_1:
         case SUPPORTED_WAN_TYPES_BIT_AE_1_1:
-            return is_epon_ae_in_sync(wan_type);
-
+            return is_epon_ae_in_sync(wan_type, optics_type);
 #if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96856)
         case SUPPORTED_WAN_TYPES_BIT_EPON_10_10:
-        case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:        
+        case SUPPORTED_WAN_TYPES_BIT_EPON_10_1:
         case SUPPORTED_WAN_TYPES_BIT_AE_10_10:
-            return is_10g_epon_ae_in_sync(wan_type);
-        case SUPPORTED_WAN_TYPES_BIT_XGPON:            
+            return is_10g_epon_ae_in_sync(wan_type, optics_type);
+        case SUPPORTED_WAN_TYPES_BIT_XGPON:
         case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_25:
         case SUPPORTED_WAN_TYPES_BIT_NGPON2_10_10:
         case SUPPORTED_WAN_TYPES_BIT_XGSPON:
-            return is_10g_itu_pon_frame_sync(wan_type);
-#endif
+            return is_10g_itu_pon_frame_sync(wan_type, optics_type);
 #endif
         default:
             BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: Can't detect 0x%x WAN type\n", wan_type);
@@ -494,13 +562,13 @@ static int is_only_single_wan_type_bit_set_in_bitmap(SUPPORTED_WAN_TYPES_BITMAP 
 {
     return (supported_wan_type_bit == supported_wan_type_bm);
 }
-static int should_set_wan_type_in_scratchpad(SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bit, SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm)
+static int should_set_wan_type_in_scratchpad(SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bit, SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm, uint16_t optics_type)
 {
     if (!is_wan_type_bit_set_in_bitmap(supported_wan_type_bit, supported_wan_type_bm))
         return SENSE_RESULT_FALSE;
     if (is_only_single_wan_type_bit_set_in_bitmap(supported_wan_type_bit, supported_wan_type_bm))
         return SENSE_RESULT_TRUE;
-    if (is_specific_wan_type_sensed(supported_wan_type_bit))
+    if (is_specific_wan_type_sensed(supported_wan_type_bit, optics_type))
         return SENSE_RESULT_TRUE;
 
     return SENSE_RESULT_FALSE;
@@ -509,29 +577,29 @@ static int should_set_wan_type_in_scratchpad(SUPPORTED_WAN_TYPES_BITMAP supporte
 
 rdpa_wan_type try_wan_type_sensing(void)
 {
-    int res, bus;
+    int ret;
     SUPPORTED_WAN_TYPES_BITMAP supported_wan_type_bm;
+    uint16_t optics_type;
 
-#define SHOULD_SET_WAN_TYPE_IN_SCRATCHPAD(wan_type_bit) should_set_wan_type_in_scratchpad(wan_type_bit, supported_wan_type_bm)
+    ret = get_optics_type(&optics_type);
+    if (ret)
+    {
+        return rdpa_wan_none;
+    }
+
+    ret = get_supported_wan_type_bm(&supported_wan_type_bm);
+    if (OPTICALDET_SUCCESS != ret)
+    {
+        return rdpa_wan_none;
+    }
+    BCM_LOG_DEBUG(BCM_LOG_ID_WANTYPEDET, "supported_wan_type_bm = 0x%x\n", supported_wan_type_bm);
+
+#define SHOULD_SET_WAN_TYPE_IN_SCRATCHPAD(wan_type_bit) should_set_wan_type_in_scratchpad(wan_type_bit, supported_wan_type_bm, optics_type)
 #define SET_SCRATCHPAD_RETURN_WAN_NONE_ON_ERROR(token, value) do    \
     {                                                               \
         if (kerSysScratchPadSet(token, value, strlen(value)))       \
             return rdpa_wan_none;                                   \
     } while (0)
-
-    res = opticaldet_get_xpon_i2c_bus_num(&bus);
-    if (OPTICALDET_SUCCESS != res)
-    {
-        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: Can't get optical device i2c bus number\n");
-        return rdpa_wan_none;
-    }
-    res = trx_get_supported_wan_type_bm(bus, &supported_wan_type_bm);
-    if (OPTICALDET_SUCCESS != res)
-    {
-        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: No optical device detection\n");
-        return rdpa_wan_none;
-    }
-    BCM_LOG_DEBUG(BCM_LOG_ID_WANTYPEDET, "supported_wan_type_bm = 0x%x\n", supported_wan_type_bm);
 
     if (SHOULD_SET_WAN_TYPE_IN_SCRATCHPAD(SUPPORTED_WAN_TYPES_BIT_GPON))
     {
@@ -613,3 +681,57 @@ rdpa_wan_type try_wan_type_sensing(void)
     BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: Can't detect any supported WAN type at MAC layer\n");
     return rdpa_wan_none;
 }
+
+
+static int get_optics_type(uint16_t *optics_type)
+{
+    int ret;
+
+    if (get_non_brcm_pmd_supported_wan_type_bm_cb || configure_non_brcm_pmd_wan_type_cb)
+    {
+        *optics_type = BCM_I2C_PON_OPTICS_TYPE_NON_BRCM_PMD;
+        return OPTICALDET_SUCCESS;
+    }
+
+    ret = bcm_i2c_pon_optics_type_get(optics_type);
+    if (ret)
+    {
+        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: The PMD board profile is not configured and the optics type cannot be determined\n");
+    }
+
+    return ret;
+}
+
+
+static int get_supported_wan_type_bm(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm)
+{
+    int ret, bus;
+
+    if (get_non_brcm_pmd_supported_wan_type_bm_cb)
+    {
+        get_non_brcm_pmd_supported_wan_type_bm_cb(wan_type_bm);
+        return OPTICALDET_SUCCESS;
+    }
+
+    ret = opticaldet_get_xpon_i2c_bus_num(&bus);
+    if (OPTICALDET_SUCCESS != ret)
+    {
+        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: Can't get optical device i2c bus number\n");
+        return ret;
+    }
+    ret = trx_get_supported_wan_type_bm(bus, wan_type_bm);
+    if (OPTICALDET_SUCCESS != ret)
+    {
+        BCM_LOG_ERROR(BCM_LOG_ID_WANTYPEDET, "Error: No optical device detection\n");
+    }
+
+    return ret;
+}
+
+
+void register_non_brcm_pmd(get_non_brcm_pmd_supported_wan_type_bm get_bitmap_callback, configure_non_brcm_pmd_wan_type configure_callback)
+{
+    get_non_brcm_pmd_supported_wan_type_bm_cb = get_bitmap_callback;
+    configure_non_brcm_pmd_wan_type_cb = configure_callback;
+}
+EXPORT_SYMBOL(register_non_brcm_pmd);

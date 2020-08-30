@@ -2240,34 +2240,14 @@ static int nandflash_read_page(PCFE_NAND_CHIP pchip, unsigned long start_addr,
     if( len <= pchip->chip_block_size )
     {
         UINT32 page_addr = start_addr & ~(pchip->chip_page_size - 1);
-        UINT32 offset = start_addr - page_addr;
-        UINT32 size = pchip->chip_page_size - offset;
         UINT32 index = 0;
         UINT32 subpage;
-#if defined(NAC_PREFETCH_EN) 
-        unsigned int acc_save=0, acc;
-#endif
-
-        if(size > len)
-            size = len;
+        INT32 length = len;
 
         do
         {
-#if defined(NAC_PREFETCH_EN) 
-            /* On some platforms, specifically on 963148 the subpage read results into invalid data read
-               so if the data read is from a subpage and not entire page, disable the prefetch, and enable it
-               again after reading the subpage
-            */
-            if( (NAND-> NandAccControl & NAC_PREFETCH_EN) && len+offset < pchip->chip_page_size)
-            {
-                acc_save=acc=NAND->NandAccControl;
-                acc &= ~NAC_PREFETCH_EN;
-                NAND->NandAccControl=acc;
-            }
-#endif
-
-            for( subpage = (offset & ~(CTRLR_CACHE_SIZE - 1)), ret = FLASH_API_OK; subpage < pchip->chip_page_size &&
-                 ret == FLASH_API_OK && len; subpage += CTRLR_CACHE_SIZE)
+            for( subpage = 0, ret = FLASH_API_OK; (subpage < pchip->chip_page_size) &&
+                 (ret == FLASH_API_OK); subpage += CTRLR_CACHE_SIZE)
             {
                 /* clear interrupts, so we can check later for ECC errors */
 #if !defined(_BCM963268_) && !defined(_BCM96838_)
@@ -2307,28 +2287,33 @@ static int nandflash_read_page(PCFE_NAND_CHIP pchip, unsigned long start_addr,
                         }
                     }
 
-                    if( ret == FLASH_API_OK )
-                    {
-                            UINT32 copy_size = CTRLR_CACHE_SIZE;
+                    if( (ret == FLASH_API_OK) && (start_addr < (page_addr + subpage + CTRLR_CACHE_SIZE)) && ((start_addr + len) > page_addr + subpage) )
+                    { // copy from cache only if buffer is within the subpage
+                        UINT32 copy_size, offset;
 
-                            if ( offset )
-                            {
-                                offset -= subpage;
-                                copy_size = CTRLR_CACHE_SIZE - offset;
-                            }
-
-                            if (copy_size > len)
-                                copy_size = len;
-
-                            nandflash_copy_from_cache(&buffer[index], offset, copy_size);
-
-                            index += copy_size;
-                            len -= copy_size;
+                        if ( start_addr <= page_addr + subpage )
+                        {
                             offset = 0;
-                    }
-                    else
-                    {
-                        break;
+
+                            if ( (start_addr + len) >= (page_addr + subpage + CTRLR_CACHE_SIZE) )
+                                copy_size = CTRLR_CACHE_SIZE;
+                            else
+                                copy_size = (start_addr + len) - (page_addr + subpage);
+                        }
+                        else
+                        { // start_addr > page_addr + subpage
+                            offset = start_addr - (page_addr + subpage);
+
+                            if ( (start_addr + len) >= (page_addr + subpage + CTRLR_CACHE_SIZE) )
+                                copy_size = page_addr + subpage + CTRLR_CACHE_SIZE - start_addr;
+                            else
+                                copy_size = start_addr + len - start_addr;
+                        }
+
+                        nandflash_copy_from_cache(&buffer[index], offset, copy_size);
+
+                        index += copy_size;
+                        length -= copy_size;
                     }
                 }
             }
@@ -2337,20 +2322,8 @@ static int nandflash_read_page(PCFE_NAND_CHIP pchip, unsigned long start_addr,
                 break;
 
             page_addr += pchip->chip_page_size;
-            if(len > pchip->chip_page_size)
-                size = pchip->chip_page_size;
-            else
-                size = len;
-        } while(len);
-#if defined(NAC_PREFETCH_EN) 
-        if((acc_save & NAC_PREFETCH_EN))
-        {
-            /* turn on again prefetch bit for performance*/
-            acc=NAND->NandAccControl;
-            acc |= NAC_PREFETCH_EN;
-            NAND->NandAccControl=acc;
-        }
-#endif
+
+        } while(length);
     }
 
     return( ret ) ;

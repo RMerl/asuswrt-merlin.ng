@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA receive routines.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_rx.c 765082 2018-06-18 10:33:15Z $
+ * $Id: hnddma_rx.c 775299 2019-05-27 10:08:55Z $
  */
 
 /**
@@ -54,8 +54,12 @@
 #endif // endif
 
 #if !defined(OSL_CACHE_COHERENT)
-#if defined(BCM47XX_CA9) || defined(STB) || defined(STB_SOC_WIFI)
-#define OSL_CACHE_DBL_INV_WAR
+/* XXX JIRA: SWWLAN-23796: Double invalidation ACP WAR Cortex-A9
+ * ARM HW prefetcher is enabled and can prefetch, so need to invalidate on Rx
+ */
+#if defined(BCM47XX_CA9) || defined(STB) || defined(STB_SOC_WIFI) || \
+	defined(BCA_HNDROUTER)
+#define OSL_CACHE_INV_RX
 #endif // endif
 #endif  /* ! OSL_CACHE_COHERENT */
 
@@ -75,7 +79,7 @@ static bool dma_splitrxfill(dma_info_t *di);
 #ifdef BULKRX_PKTLIST
 #ifdef STS_FIFO_RXEN
 static void *_dma_getnext_sts_rxlist(dma_info_t *di, bool forceall);
-static void *_dma_sts_rx(dma_info_t *di);
+static void _dma_sts_rx(dma_info_t *di, rx_list_t *rx_sts_list);
 #endif // endif
 static void *_dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall);
 #endif /* BULKRX_PKTLIST */
@@ -114,6 +118,12 @@ dma_sts_rxfill(hnddma_t *dmah)
 	uint n;
 	uint i;
 	dmaaddr_t pa;
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
+
 	bool ring_empty;
 	sts_buff_t *tail = NULL;
 	uint dpp = 1; /* dpp - descriptors per packet */
@@ -160,8 +170,14 @@ dma_sts_rxfill(hnddma_t *dmah)
 
 		*(uint32 *)(STSBUF_DATA(p)) = 0;
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+		paddr = SECURE_DMA_MAP(di->osh, STSBUF_DATA(p), di->rxbufsize, DMA_RX,
+			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+		ULONGTOPHYSADDR(paddr, pa);
+#else
 		pa = SECURE_DMA_MAP(di->osh, STSBUF_DATA(p), di->rxbufsize, DMA_RX,
 			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+#endif /* BCMDMA64OSL */
 #else
 #if !defined(OSL_CACHE_COHERENT)
 		pa = DMA_MAP(di->osh, STSBUF_DATA(p), di->rxbufsize, DMA_RX, NULL, NULL);
@@ -229,8 +245,8 @@ dma_sts_rxfill(hnddma_t *dmah)
  * !! sts rx entry routine
  * returns a pointer to the list of next frame/frames received, or NULL if there are no more
  */
-static void *BCMFASTPATH
-_dma_sts_rx(dma_info_t *di)
+static void BCMFASTPATH
+_dma_sts_rx(dma_info_t *di, rx_list_t *rx_sts_list)
 {
 	sts_buff_t *head, *head0;
 	uint len;
@@ -251,6 +267,10 @@ _dma_sts_rx(dma_info_t *di)
 #else  /* !__mips__ && !BCM47XX_CA9 */
 		{
 			int read_count = 0;
+			/* PR77137 DMA(Bug) on some chips seems to declare that the
+			 * packet is ready, but the packet length is not updated
+			 * (by DMA) by the time we are here
+			 */
 			for (read_count = 200; read_count; read_count--) {
 				len = ltoh16(*(uint16 *)(data));
 				if (len != 0)
@@ -289,30 +309,30 @@ _dma_sts_rx(dma_info_t *di)
 			ASSERT(0);
 		}
 
-#if defined(OSL_CACHE_DBL_INV_WAR)
+#if defined(OSL_CACHE_INV_RX)
 		DMA_MAP(di->osh, STSBUF_DATA(head), STSBUF_LEN(head), DMA_RX, head, NULL);
 #endif // endif
+		rx_sts_list->rxfifocnt++;
 		prev = head;
 		head = STSBUF_LINK(head);
 	} /* End While() */
 
-	return (head0);
+	rx_sts_list->rx_head = head0;
+	rx_sts_list->rx_tail = prev;
 }
 
-void *BCMFASTPATH
-dma_sts_rx(hnddma_t *dmah)
+void BCMFASTPATH
+dma_sts_rx(hnddma_t *dmah, rx_list_t *rx_sts_list)
 {
 	dma_info_t *di = DI_INFO(dmah);
-	void *sts_head;
 
-	sts_head = _dma_sts_rx(di);
-	return sts_head;
+	_dma_sts_rx(di, rx_sts_list);
 }
 
 #endif /* STS_FIFO_RXEN */
 
-void * BCMFASTPATH
-dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
+void BCMFASTPATH
+dma_rx(hnddma_t *dmah, rx_list_t *rx_list, rx_list_t *rx_sts_list, uint nbound)
 {
 	dma_info_t *di = DI_INFO(dmah);
 
@@ -322,7 +342,7 @@ dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
 	int resid = 0;
 #if defined(D11_SPLIT_RX_FD)
 	uint tcm_maxsize = 0;		/* max size of tcm descriptor */
-#endif // endif
+#endif /* D11_SPLIT_RX_FD */
 	void *data, *free_p;
 	uint rxoffset;
 
@@ -350,6 +370,10 @@ dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
 #else  /* !__mips__ && !BCM47XX_CA9 */
 		{
 			int read_count = 0;
+			/* PR77137 DMA(Bug) on some chips seems to declare that the
+			 * packet is ready, but the packet length is not updated
+			 * (by DMA) by the time we are here
+			 */
 			for (read_count = 200; read_count; read_count--) {
 				len = ltoh16(*(uint16 *)(data));
 				if (len != 0)
@@ -462,6 +486,10 @@ dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
 
 				pkt_len = MIN(resid, (int)di->rxbufsize);
 #if defined(D11_SPLIT_RX_FD)
+				/* For split rx case LCL packet length should
+				 * not be more than tcm_maxsize.
+				 * XXX: multi buffer case is not handled
+				 */
 				if (di->sep_rxhdr)
 					PKTSETLEN(di->osh, p, MIN(pkt_len, tcm_maxsize));
 				else
@@ -496,34 +524,43 @@ dma_rx(hnddma_t *dmah, void **sts_head, uint nbound)
 #endif /* BCMDBG */
 			if ((di->hnddma.dmactrlflags & DMA_CTRL_RXMULTI) == 0) {
 				DMA_ERROR(("%s: dma_rx: bad frame length (%d)\n", di->name, len));
-				free_p = head;
-				if (prev != NULL) {
-					head = PKTLINK(free_p);
-					PKTSETLINK(prev, head);
-				} else {
-					head0 = head = PKTLINK(free_p);
+
+#if defined(BCMPCIEDEV) && (defined(STS_FIFO_RXEN) || defined(WLC_OFFLOADS_RXSTS))
+				if (BCMPCIEDEV_ENAB()) {
+					/* XXX: RB:157255 - Drop rx frames exceeding the len of
+					 * rxbufsize after processing corresponding phyrxstatus
+					 * in FD mode
+					 */
+					di->hnddma.rxgiants++;
+				} else
+#endif /* BCMPCIEDEV && (STS_FIFO_RXEN || WLC_OFFLOADS_RXSTS) */
+				{
+					free_p = head;
+					if (prev != NULL) {
+						head = PKTLINK(free_p);
+						PKTSETLINK(prev, head);
+					} else {
+						head0 = head = PKTLINK(free_p);
+					}
+					PKTSETLINK(free_p, NULL);
+					PKTFREE(di->osh, free_p, FALSE);
+					di->hnddma.rxgiants++;
+					continue;
 				}
-				PKTSETLINK(free_p, NULL);
-				PKTFREE(di->osh, free_p, FALSE);
-				di->hnddma.rxgiants++;
-				continue;
 			}
 		}
-
-#if defined(OSL_CACHE_DBL_INV_WAR)
-		DMA_MAP(di->osh, PKTDATA(di->osh, head), PKTLEN(di->osh, head), DMA_RX, head, NULL);
-#endif // endif
+		rx_list->rxfifocnt++;
 		prev = head;
 		head = PKTLINK(head);
 	} /* End While() */
 
 #ifdef STS_FIFO_RXEN
-	if (di->sts_di && sts_head) {
-		*sts_head = _dma_sts_rx(di->sts_di);
+	if (di->sts_di && rx_sts_list) {
+		_dma_sts_rx(di->sts_di, rx_sts_list);
 	}
 #endif // endif
-
-	return (head0);
+	rx_list->rx_head = head0;
+	rx_list->rx_tail = prev;
 }
 #else
 /**
@@ -542,12 +579,12 @@ dma_rx(hnddma_t *dmah)
 	dma_info_t *di = DI_INFO(dmah);
 
 	void *p, *head, *tail;
-	uint len;
-	uint pkt_len;
+	uint len = 0;
+	uint pkt_len = 0;
 	int resid = 0;
 #if defined(D11_SPLIT_RX_FD)
 	uint tcm_maxsize = 0;		/* max size of tcm descriptor */
-#endif // endif
+#endif /* D11_SPLIT_RX_FD */
 	void *data;
 
 next_frame:
@@ -576,6 +613,10 @@ next_frame:
 #else  /* !__mips__ && !BCM47XX_CA9 */
 	{
 	int read_count = 0;
+	/* PR77137 DMA(Bug) on some chips seems to declare that the
+	 * packet is ready, but the packet length is not updated
+	 * (by DMA) by the time we are here
+	 */
 	for (read_count = 200; read_count; read_count--) {
 		len = ltoh16(*(uint16 *)(data));
 		if (len != 0)
@@ -651,6 +692,10 @@ next_frame:
 				PKTSETNEXT(di->osh, tail, p);
 				pkt_len = MIN(resid, (int)di->rxbufsize);
 #if defined(D11_SPLIT_RX_FD)
+				/* For split rx case LCL packet length should
+				 * not be more than tcm_maxsize.
+				 * XXX: multi buffer case is not handled
+				 */
 				if (di->sep_rxhdr)
 					PKTSETLEN(di->osh, p, MIN(pkt_len, tcm_maxsize));
 				else
@@ -676,6 +721,10 @@ next_frame:
 				PKTSETNEXT(di->osh, tail, p);
 				pkt_len = MIN(resid, (int)di->rxbufsize);
 #if defined(D11_SPLIT_RX_FD)
+				/* For split rx case LCL packet length should
+				 * not be more than tcm_maxsize.
+				 * XXX: multi buffer case is not handled
+				 */
 				if (di->sep_rxhdr)
 					PKTSETLEN(di->osh, p, MIN(pkt_len, tcm_maxsize));
 				else
@@ -714,10 +763,6 @@ next_frame:
 	}
 
 ret:
-#if defined(OSL_CACHE_DBL_INV_WAR)
-	DMA_MAP(di->osh, PKTDATA(di->osh, head), PKTLEN(di->osh, head), DMA_RX, head, NULL);
-#endif // endif
-
 	return (head);
 }
 #endif /* BULKRX_PKTLIST */
@@ -743,6 +788,11 @@ dma_rxfill(hnddma_t *dmah)
 	uint n;
 	uint i;
 	dmaaddr_t pa;
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 	uint extra_offset = 0, extra_pad = 0;
 	bool ring_empty;
 #ifdef BULKRX_PKTLIST
@@ -795,6 +845,7 @@ dma_rxfill(hnddma_t *dmah)
 			dpp = 1; /* TCM + (HOST breakup) */
 			plen = MAXRXBUFSZ - plen;
 		}
+
 		dpp += CEIL(plen, D11RX_WAR_MAX_BUF_SIZE);
 	}
 
@@ -883,6 +934,11 @@ dma_rxfill(hnddma_t *dmah)
 #ifdef CTFMAP
 		/* mark as ctf buffer for fast mapping */
 		if (CTF_ENAB(kcih)) {
+			/* XXX At this point we don't know how much header room is
+			 * reserved for the user (wl in particular) so we can't
+			 * assert here.
+			ASSERT((((uint32)PKTDATA(di->osh, p)) & 31) == 0);
+			*/
 			PKTSETCTF(di->osh, p);
 		}
 #endif /* CTFMAP */
@@ -925,8 +981,14 @@ dma_rxfill(hnddma_t *dmah)
 			bzero(&di->rxp_dmah[rxout], sizeof(hnddma_seg_map_t));
 
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+		paddr = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
+			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+		ULONGTOPHYSADDR(paddr, pa);
+#else
 		pa = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
 			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+#endif /* BCMDMA64OSL */
 #else
 		pa = DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX, p,
 			&di->rxp_dmah[rxout]);
@@ -935,16 +997,22 @@ dma_rxfill(hnddma_t *dmah)
 #else  /* ! SGLIST_RX_SUPPORT */
 
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+		paddr = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
+			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+		ULONGTOPHYSADDR(paddr, pa);
+#else
 		pa = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
 			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+#endif /* BCMDMA64OSL */
 #else
 
-#if defined(BCM_NBUFF_PKT_BPM) && defined(BCM_NBUFF_PKT_BPM_COHERENCY)
-		pa = DMA_MAP(di->osh, PKTDATA(di->osh, p), 64, DMA_RX, p, NULL);
+#if defined(BCM_NBUFF_PKT_BPM)
+		pa = (dmaaddr_t)VIRT_TO_PHYS(PKTDATA(di->osh, p));
 #else
 		pa = DMA_MAP(di->osh, PKTDATA(di->osh, p),
 		             di->rxbufsize, DMA_RX, p, NULL);
-#endif /* ! (BCM_NBUFF_PKT_BPM && BCM_NBUFF_PKT_BPM_COHERENCY) */
+#endif /* ! BCM_NBUFF_PKT_BPM */
 
 #endif /* ! BCM_SECURE_DMA */
 #endif /* ! SGLIST_RX_SUPPORT */
@@ -989,7 +1057,7 @@ dma_rxfill(hnddma_t *dmah)
 
 #if defined(D11_SPLIT_RX_FD)
 		if (!di->sep_rxhdr)
-#endif // endif
+#endif /* D11_SPLIT_RX_FD */
 		{
 			/* reset flags for each descriptor */
 			flags = D64_CTRL1_SOF;
@@ -1264,7 +1332,7 @@ dma64_dd_upd(dma_info_t *di, dma64dd_t *ddring, dmaaddr_t pa, uint outidx, uint3
 	SECURE_DMA_DD_MAP(di->osh, (void *)(((uint)(&ddring[outidx])) & ~0x1f), 32,
 		DMA_TX, NULL, NULL);
 #else
-	DMA_MAP(di->osh, (void *)(((uint)(&ddring[outidx])) & ~0x1f), 32,
+	DMA_MAP(di->osh, (void *)(((unsigned long long)(&ddring[outidx])) & ~0x1f), 32,
 		DMA_TX, NULL, NULL);
 #endif /* BCM_SECURE_DMA */
 #endif /* BCM47XX_CA9 && !BULK_DESCR_FLUSH */
@@ -1311,6 +1379,11 @@ dma_getnextrxp(hnddma_t *dmah, bool forceall)
 	defined(BCA_HNDROUTER))) || defined(BCM_SECURE_DMA)
 	dmaaddr_t pa;
 #endif // endif
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 	if ((di->nrxd == 0) || DMA_CTRL_IS_HWA_RX(di))
 		return (NULL);
 
@@ -1385,8 +1458,14 @@ nextframe:
 	/* clear this packet from the descriptor ring */
 #if !defined(OSL_CACHE_COHERENT)
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	PHYSADDRTOULONG(pa, paddr);
+	SECURE_DMA_UNMAP(di->osh, paddr, di->rxbufsize, DMA_RX, NULL, NULL,
+		&di->sec_cma_info_rx, 0);
+#else
 	SECURE_DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL,
 		&di->sec_cma_info_rx, 0);
+#endif /* BCMDMA64OSL */
 #else
 	DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, rxp, &di->rxp_dmah[i]);
 #endif /* BCM_SECURE_DMA */
@@ -1415,7 +1494,11 @@ _dma_getnext_sts_rxlist(dma_info_t *di, bool forceall)
 	uint16 i, curr, dpp;
 	sts_buff_t **head, **tail, *head0, *tail0;
 	dmaaddr_t pa;
-
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 	if (di->nrxd == 0)
 		return (NULL);
 
@@ -1460,11 +1543,18 @@ _dma_getnext_sts_rxlist(dma_info_t *di, bool forceall)
 		/* clear this packet from the descriptor ring */
 #if !defined(OSL_CACHE_COHERENT)
 #ifdef BCM_SECURE_DMA
-		SECURE_DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL,
+#ifdef BCMDMA64OSL
+		PHYSADDRTOULONG(pa, paddr);
+		SECURE_DMA_UNMAP(di->osh, paddr, di->rxbufsize, DMA_RX, NULL, NULL,
 		    &di->sec_cma_info_rx, 0);
 #else
+		SECURE_DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL,
+			&di->sec_cma_info_rx, 0);
+
+#endif /* BCMDMA64OSL */
+#else
 		DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL);
-#endif // endif
+#endif /* BCM_SECURE_DMA */
 #endif /* OSL_CACHE_COHERENT */
 
 		/* NEXTRXD */
@@ -1490,9 +1580,14 @@ _dma_getnext_sts_rxlist(dma_info_t *di, bool forceall)
 static void * BCMFASTPATH
 _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 {
-	uint16 i, curr, nproc;
-	void **head, **tail, *head0, *tail0;
+	uint16 i, curr, nproc = 0;
+	void **head = NULL, **tail = NULL, *head0 = NULL, *tail0 = NULL;
 	dmaaddr_t pa;
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 
 	BCM_REFERENCE(pa);
 	if ((di->nrxd == 0) || DMA_CTRL_IS_HWA_RX(di))
@@ -1511,7 +1606,7 @@ _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 		head = &di->linked_di->dma_rx_pkt_list.head_pkt;
 		tail = &di->linked_di->dma_rx_pkt_list.tail_pkt;
 	} else
-#endif // endif
+#endif /* D11_SPLIT_RX_FD */
 	{
 		head = &di->dma_rx_pkt_list.head_pkt;
 		tail = &di->dma_rx_pkt_list.tail_pkt;
@@ -1522,14 +1617,10 @@ _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 		curr = di->rxout;
 	} else {
 		/* Number of DMA descr to process */
-		if (i == di->rs0cd) {
-			curr = (uint16)B2I(((R_REG(di->osh,
-				&di->d64rxregs->status0) & D64_RS0_CD_MASK) -
-				di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
-			di->rs0cd = curr;
-		} else {
-			curr = di->rs0cd;
-		}
+		curr = (uint16)B2I(((R_REG(di->osh,
+			&di->d64rxregs->status0) & D64_RS0_CD_MASK) -
+			di->rcvptrbase) & D64_RS0_CD_MASK, dma64dd_t);
+		di->rs0cd = curr;
 
 		nproc = NRXDACTIVE(i, curr);
 #if defined(D11_SPLIT_RX_FD)
@@ -1555,6 +1646,10 @@ _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 
 	head0 = *head;
 	tail0 = NULL;
+	/* XXX : avoid this traversal of the pkt list for cache coherent platforms
+	   as we are only doing dma_unmap in the loop;
+	   'i' access after the loop would then need to be taken care of
+	*/
 	while (i != curr) {
 #if defined(D11_SPLIT_RX_FD)
 		if (di->sep_rxhdr) {
@@ -1566,7 +1661,7 @@ _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 				continue;
 			}
 		}
-#endif // endif
+#endif /* D11_SPLIT_RX_FD */
 		tail0 = *head;
 		*head = PKTLINK(*head);
 #ifndef DONGLEBUILD
@@ -1577,14 +1672,20 @@ _dma_getnext_rxlist(dma_info_t *di, uint nbound, bool forceall)
 		/* clear this packet from the descriptor ring */
 #if !defined(OSL_CACHE_COHERENT)
 #ifdef BCM_SECURE_DMA
-		SECURE_DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL,
+#ifdef BCMDMA64OSL
+		PHYSADDRTOULONG(pa, paddr);
+		SECURE_DMA_UNMAP(di->osh, paddr, di->rxbufsize, DMA_RX, NULL, NULL,
 			&di->sec_cma_info_rx, 0);
 #else
+		SECURE_DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, NULL, NULL,
+			&di->sec_cma_info_rx, 0);
+#endif /* BCMDMA64OSL */
+#else
 		DMA_UNMAP(di->osh, pa, di->rxbufsize, DMA_RX, tail0, &di->rxp_dmah[i]);
-#endif // endif
+#endif /* BCM_SECURE_DMA */
 #endif  /* ! OSL_CACHE_COHERENT */
 
-#endif /* DONGLEBUILD */
+#endif /* ! DONGLEBUILD */
 		/* NEXTRXD */
 		i = NEXTRXD(i);
 	}
@@ -1652,9 +1753,9 @@ dma_splitrxfill(dma_info_t *di)
 	uint n;
 	uint i;
 	dmaaddr_t pa;
-	uint extra_offset = 0, extra_pad = 0;
 	bool ring_empty;
 	uint pktlen;
+	uint extra_offset = 0, extra_pad = 0;
 	dma64addr_t pa64 = { .low_addr = 0, .high_addr = 0 };
 	uint alignment_req = (di->hnddma.dmactrlflags & DMA_CTRL_RX_ALIGN_8BYTE) ?
 				8 : 1;	/* MUST BE POWER of 2 */
@@ -1682,11 +1783,11 @@ dma_splitrxfill(dma_info_t *di)
 	n = MIN(di->nrxpost - NRXDACTIVE(rxin1, rxout1),
 		di->linked_di->nrxpost - NRXDACTIVEPERHANDLE(rxin2, rxout2, di->linked_di));
 
+	if (di->rxbufsize > BCMEXTRAHDROOM)
+		extra_offset = di->rxextrahdrroom;
 	/* Assert that both DMA engines have same pktpools */
 	ASSERT(di->pktpool == di->linked_di->pktpool);
 
-	if (di->rxbufsize > BCMEXTRAHDROOM)
-		extra_offset = di->rxextrahdrroom;
 #ifdef BULKRX_PKTLIST
 	if (DMA_BULKRX_PATH(di))
 		tail = di->dma_rx_pkt_list.tail_pkt;
@@ -1789,6 +1890,7 @@ dma_splitrxfill(dma_info_t *di)
 			flags = D64_CTRL1_EOT;
 
 		dma64_dd_upd(di, di->rxd64, pa, rxout1, &flags, pktlen);
+
 		rxout1 = NEXTRXD(rxout1);		/* update rxout */
 
 		/* Now program host descriptor */
@@ -1819,6 +1921,7 @@ dma_splitrxfill(dma_info_t *di)
 		/* load the descriptor */
 		dma64_dd_upd_64_from_params(di->linked_di, di->linked_di->rxd64, pa64, rxout2,
 			&flags, pktlen);
+
 		rxout2 = NEXTRXD(rxout2);	/* update rxout */
 	}
 

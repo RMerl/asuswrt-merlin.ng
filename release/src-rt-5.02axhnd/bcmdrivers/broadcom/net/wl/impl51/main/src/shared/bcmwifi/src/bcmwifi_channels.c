@@ -3,7 +3,7 @@
  * Contents are wifi-specific, used by any kernel or app-level
  * software that might want wifi things as it grows.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_channels.c 765291 2018-06-27 18:49:12Z $
+ * $Id: bcmwifi_channels.c 777905 2019-08-14 16:33:53Z $
  */
 
 #include <bcm_cfg.h>
@@ -35,17 +35,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+/* XXX Why isn't ASSERT always available as part of a non BCMDRIVER build?
+ * It seems like there ought to be a non BCMDRIVER osl.
+ */
 #ifndef ASSERT
 #define ASSERT(exp)
 #endif // endif
 #endif /* BCMDRIVER */
 
 #include <bcmwifi_channels.h>
-
-#if defined(WIN32) && (defined(BCMDLL) || defined(WLMDLL))
-#include <bcmstdlib.h> 	/* For wl/exe/GNUmakefile.brcm_wlu and GNUmakefile.wlm_dll */
-#endif // endif
-
 #include <802.11.h>
 
 /* Definitions for D11AC capable Chanspec type */
@@ -153,7 +151,7 @@ static const uint8 wf_chspec_bw_mhz[] =
 
 /* 40MHz channels in 5GHz band */
 static const uint8 wf_5g_40m_chans[] =
-{38, 46, 54, 62, 102, 110, 118, 126, 134, 142, 151, 159};
+{38, 46, 54, 62, 102, 110, 118, 126, 134, 142, 151, 159, 167};
 #define WF_NUM_5G_40M_CHANS \
 	(sizeof(wf_5g_40m_chans)/sizeof(uint8))
 
@@ -781,10 +779,10 @@ wf_chspec_valid(chanspec_t chanspec)
 				}
 
 				if (i == num_ch) {
-					/* check for channel 165 which is not the side band
+					/* check for channel 173 which is not the side band
 					 * of 40MHz 5G channel
 					 */
-					if (chspec_ch == 165)
+					if (chspec_ch == 173)
 						i = 0;
 
 					/* check for legacy JP channels on failure */
@@ -911,8 +909,27 @@ wf_channel2chspec(uint ctl_ch, uint bw)
 	chspec |= bw;
 
 	if (bw == WL_CHANSPEC_BW_40) {
+		/* 2G 40MHz is a special case; channel_to_sb() works for 5G only */
+		if (ctl_ch <= CH_MAX_2G_CHANNEL) {
+			/* In 2.4GHz, ctl_ch 5, 6 & 7 can be used as both lower and upper sb.
+			 * For such ambiguous cases, lower is chosen by default here.
+			 * Japan center channels 10 and 11 are used in upper SB context only.
+			 */
+			const uint8 ctl2cent[] = {3, 4, 5, 6, 7, 8, 9, 6, 7, 8, 9, 10, 11};
+			const uint8 len_c2c = sizeof(ctl2cent) / sizeof(ctl2cent[0]);
+			uint8 cent;
+			if (ctl_ch < 1 || ctl_ch > len_c2c) {
+				return 0;
+			}
+			cent = ctl2cent[ctl_ch - 1];
+			chspec |= cent;
+			chspec |= (ctl_ch < cent ?
+					WL_CHANSPEC_CTL_SB_LOWER : WL_CHANSPEC_CTL_SB_UPPER);
+			return chspec;
+		} else {
 		center_ch = wf_5g_40m_chans;
 		num_ch = WF_NUM_5G_40M_CHANS;
+		}
 		bw = 40;
 	} else if (bw == WL_CHANSPEC_BW_80) {
 		center_ch = wf_5g_80m_chans;

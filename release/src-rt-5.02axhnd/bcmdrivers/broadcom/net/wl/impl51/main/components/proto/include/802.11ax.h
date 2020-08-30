@@ -2,7 +2,7 @@
  * Basic types and constants relating to 802.11ax/HE STA
  * This is a portion of 802.11ax definition. The rest are in 802.11.h.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ax.h 765619 2018-07-11 01:02:08Z $
+ * $Id: 802.11ax.h 773486 2019-03-21 11:40:40Z $
  */
 
 #ifndef _802_11ax_h_
@@ -41,11 +41,7 @@
  */
 
 /* HE MAC Capabilities Information field (figure 9-589ck) */
-#if defined HE_SPEC_2_3	|| defined HE_SPEC_3_0
 #define HE_MAC_CAP_INFO_SIZE	6
-#else
-#define HE_MAC_CAP_INFO_SIZE	5
-#endif /* HE_SPEC_2_3 || defined HE_SPEC_3_0 */
 typedef uint8 he_mac_cap_t[HE_MAC_CAP_INFO_SIZE];
 
 /* bit position and field width */
@@ -132,13 +128,7 @@ typedef uint8 he_mac_cap_t[HE_MAC_CAP_INFO_SIZE];
 #define HTC_HE_CTLID_CCI				0x6
 
 /* HE PHY Capabilities Information field (figure 9-589cl) */
-#if defined HE_SPEC_3_0
 #define HE_PHY_CAP_INFO_SIZE				11
-#elif defined HE_SPEC_2_3
-#define HE_PHY_CAP_INFO_SIZE				10
-#else
-#define HE_PHY_CAP_INFO_SIZE				9
-#endif  /* HE_SPEC_2_3 || defined HE_SPEC_3_0 */
 typedef uint8 he_phy_cap_t[HE_PHY_CAP_INFO_SIZE];
 
 /* bit position and field width */
@@ -299,8 +289,11 @@ typedef uint8 he_phy_cap_t[HE_PHY_CAP_INFO_SIZE];
 #define HE_PHY_CH_WIDTH_5G_80		0x02
 #define HE_PHY_CH_WIDTH_5G_160		0x04
 #define HE_PHY_CH_WIDTH_5G_80P80	0x08
+#define HE_PHY_CH_WIDTH_2G_242TONE	0x10
+#define HE_PHY_CH_WIDTH_5G_242TONE	0x20
+/* Keep next bits for TWIG build. Needs updating later once removed there */
 #define HE_PHY_CH_WIDTH_2G_40_RU	0x10
-#define HE_PHY_CH_WIDTH_5G_80_RU	0x08
+#define HE_PHY_CH_WIDTH_5G_80_RU	0x20
 
 /* b8-b11: Preamble puncturing Rx */
 #define HE_PHY_PREAMBLE_PUNC_RX_0	0x1
@@ -381,6 +374,41 @@ BWL_PRE_PACKED_STRUCT struct he_muedca_ie {
 
 typedef struct he_muedca_ie he_muedca_ie_t;
 
+/* Figure 9-768p - SR Control field format */
+#define HE_SR_CONTROL_SRP_DISALLOWED_IDX			0
+#define HE_SR_CONTROL_SRP_DISALLOWED_FSZ			1
+#define HE_SR_CONTROL_NON_SRG_OBSS_PD_SR_DISALLOWED_IDX		1
+#define HE_SR_CONTROL_NON_SRG_OBSS_PD_SR_DISALLOWED_FSZ		1
+#define HE_SR_CONTROL_NON_SRG_OFFSET_PRESENT_IDX		2
+#define HE_SR_CONTROL_NON_SRG_OFFSET_PRESENT_FSZ		1
+#define HE_SR_CONTROL_SRG_INFORMATION_PRESENT_IDX		3
+#define HE_SR_CONTROL_SRG_INFORMATION_PRESENT_FSZ		1
+#define HE_SR_CONTROL_HESIGA_SPATIAL_REUSE_VALUE15_ALLOWED_IDX	4
+#define HE_SR_CONTROL_HESIGA_SPATIAL_REUSE_VALUE15_ALLOWED_FSZ	1
+
+/* 9.4.2.245 HE Spatial Reuse Parameter Set element */
+BWL_PRE_PACKED_STRUCT struct he_spatial_reuse_ie {
+	uint8 id;
+	uint8 len;
+	uint8 id_ext;
+	uint8 sr_control;
+} BWL_POST_PACKED_STRUCT;
+
+typedef struct he_spatial_reuse_ie he_spatial_reuse_ie_t;
+
+/* After HE Spatial reuse two sub parameters can be added. first type for Non-SRG Offset Present: */
+typedef uint8 non_srg_obss_pd_max_offset_t;
+
+/* HE Spatial Reuse Parameter Set element sub fields - when SRG Information Present is 1: */
+BWL_PRE_PACKED_STRUCT struct he_spatial_reuse_sub_ie {
+	uint8 srg_obss_pd_min_offset;
+	uint8 srg_obss_pd_max_offset;
+	uint8 srg_bss_color_bitmap[8];
+	uint8 srg_partial_bssid_bitmap[8];
+} BWL_POST_PACKED_STRUCT;
+
+typedef struct he_spatial_reuse_sub_ie he_spatial_reuse_sub_ie_t;
+
 /* HE Color Change Announcement element */
 BWL_PRE_PACKED_STRUCT struct he_colorchange_ie {
 	uint8 id;
@@ -391,6 +419,26 @@ BWL_PRE_PACKED_STRUCT struct he_colorchange_ie {
 } BWL_POST_PACKED_STRUCT;
 
 typedef struct he_colorchange_ie he_colorchange_ie_t;
+
+/* New approach: different define for SU/MU/TB. Need to be cleaned up */
+#define HE_SIGA_MCS_MASK			0x00000078
+#define HE_SIGA_BEAM_CHANGE_SHIFT	1
+#define HE_SIGA_UL_DL_SHIFT			2
+#define HE_SIGA_MCS_SHIFT			3
+#define HE_SIGA_DCM_SHIFT			7
+#define HE_SIGA_BSS_COLOR_MASK		0x00003F00
+#define HE_SIGA_BSS_COLOR_SHIFT		8
+#define HE_SIGA_BW_MASK				0x00180000
+#define HE_SIGA_BW_SHIFT			19
+#define HE_SIGA2_FEC_MASK			0x00001800
+#define HE_SIGA2_LDPC_EXTSYM_SHIFT	8
+#define HE_SIGA2_STBC_SHIFT			9
+#define HE_SIGA2_TXBF_SHIFT			10
+#define HE_SIGA2_FEC_SHIFT			11
+#define HE_SIGA2_PED_SHIFT			13
+#define HE_SIGA2_DOPPLER_SHIFT		15
+#define HE_SIGA_CPLTF_MASK			0x00600000
+#define HE_SIGA_CPLTF_SHIFT			21
 
 /* For HE SIG A : PLCP0 bit fields [assuming 32bit plcp] */
 #define HE_SIGA_MASK			0x03FFFFFF
@@ -407,35 +455,122 @@ typedef struct he_colorchange_ie he_colorchange_ie_t;
 #define HE_SIGA_BEAMFORM_ENABLE		0x00000010
 #define HE_SIGA_RESERVED_PLCP1		0x00000100
 
+#define HE_PPDU_SU		0
+#define HE_PPDU_ERSU	1
+#define HE_PPDU_MU		2
+#define HE_PPDU_TB		3
+
 /* For HE SIG A : PLCP0 bit shifts/masks/vals */
-#define HE_SIGA_MCS_MASK		0x00000078
-#define HE_SIGA_BEAM_CHANGE_SHIFT	1
-#define HE_SIGA_UL_DL_SHIFT		2
-#define HE_SIGA_MCS_SHIFT		3
-#define HE_SIGA_DCM_SHIFT		7
-#define HE_SIGA_BSS_COLOR_MASK	0x00003F00
-#define HE_SIGA_BSS_COLOR_SHIFT	8
-#define HE_SIGA_BW_MASK			0x00180000
-#define HE_SIGA_BW_SHIFT		19
+#define HESU_SIGA_BEAM_CHANGE_SHIFT	1
+#define HESU_SIGA_UL_DL_SHIFT		2
+#define HESU_SIGA_UL_DL(siga)		((siga >> HESU_SIGA_UL_DL_SHIFT) & 0x1)
+#define HEMU_SIGA_UL_DL_SHIFT		0
+#define HEMU_SIGA_UL_DL(siga)		((siga >> HEMU_SIGA_UL_DL_SHIFT) & 0x1)
+#define HESU_SIGA_MCS_MASK		0x00000078
+#define HESU_SIGA_MCS_SHIFT		3
+#define HESU_SIGA_MCS(siga)		((siga & HESU_SIGA_MCS_MASK) >> HESU_SIGA_MCS_SHIFT)
+#define HESU_SIGA_DCM_SHIFT		7
+#define HESU_SIGA_DCM(siga)		((siga >> HESU_SIGA_DCM_SHIFT) & 0x1)
+
+#define HESU_SIGA_BSS_COLOR_MASK	0x00003F00
+#define HEMU_SIGA_BSS_COLOR_MASK	0x000007E0
+#define HETB_SIGA_BSS_COLOR_MASK	0x0000007E
+#define HESU_SIGA_BSS_COLOR_SHIFT	8
+#define HEMU_SIGA_BSS_COLOR_SHIFT	5
+#define HETB_SIGA_BSS_COLOR_SHIFT	1
+#define HE_SIGA_BSS_COLOR_MASK_(he_format) \
+	((he_format == HE_PPDU_MU) ? HEMU_SIGA_BSS_COLOR_MASK : \
+	(he_format == HE_PPDU_TB) ? HETB_SIGA_BSS_COLOR_MASK : \
+	HESU_SIGA_BSS_COLOR_MASK)
+#define HE_SIGA_BSS_COLOR_SHIFT_(he_format) \
+	((he_format == HE_PPDU_MU) ? HEMU_SIGA_BSS_COLOR_SHIFT : \
+	(he_format == HE_PPDU_TB) ? HETB_SIGA_BSS_COLOR_SHIFT : \
+	HESU_SIGA_BSS_COLOR_SHIFT)
+#define HE_SIGA_BSS_COLOR(siga, he_format) \
+	((siga & HE_SIGA_BSS_COLOR_MASK_(he_format)) >> HE_SIGA_BSS_COLOR_SHIFT_(he_format))
+#define HEMU_SIGA_SPATIAL_REUSE_SHIFT	11
+#define HETB_SIGA_SPATIAL_REUSE_SHIFT	7
+#define HESU_SIGA_SPATIAL_REUSE_SHIFT	15
+#define HE_SIGA_SPATIAL_REUSE_SHIFT(he_format) \
+	((he_format == HE_PPDU_MU) ? HEMU_SIGA_SPATIAL_REUSE_SHIFT : \
+	(he_format == HE_PPDU_TB) ? HETB_SIGA_SPATIAL_REUSE_SHIFT : \
+	HESU_SIGA_SPATIAL_REUSE_SHIFT)
+#define HE_SIGA_SPATIAL_REUSE(siga, he_format)	\
+	((siga >> HE_SIGA_SPATIAL_REUSE_SHIFT(he_format)) & 0xf)
+#define HETB_SIGA_SPATIAL_REUSE2_SHIFT	11
+#define HETB_SIGA_SPATIAL_REUSE3_SHIFT	15
+#define HETB_SIGA_SPATIAL_REUSE4_SHIFT	19
+#define HETB_SIGA_SPATIAL_REUSE2(siga)	((siga >> HETB_SIGA_SPATIAL_REUSE2_SHIFT) & 0xf)
+#define HETB_SIGA_SPATIAL_REUSE3(siga)	((siga >> HETB_SIGA_SPATIAL_REUSE3_SHIFT) & 0xf)
+#define HETB_SIGA_SPATIAL_REUSE4(siga)	((siga >> HETB_SIGA_SPATIAL_REUSE4_SHIFT) & 0xf)
+
+#define HESU_SIGA_BW_MASK		0x00180000
+#define HESU_SIGA_BW_SHIFT		19
+#define HEMU_SIGA_BW_MASK		0x00038000
+#define HEMU_SIGA_BW_SHIFT		15
+#define HETB_SIGA_BW_MASK		0x03000000
+#define HETB_SIGA_BW_SHIFT		24
+#define HE_SIGA_BW_MASK_(he_format) \
+	((he_format == HE_PPDU_MU) ? HEMU_SIGA_BW_MASK : \
+	(he_format == HE_PPDU_TB) ? HETB_SIGA_BW_MASK : HESU_SIGA_BW_MASK)
+#define HE_SIGA_BW_SHIFT_(he_format) \
+	((he_format == HE_PPDU_MU) ? HEMU_SIGA_BW_SHIFT : \
+	(he_format == HE_PPDU_TB) ? HETB_SIGA_BW_SHIFT : HESU_SIGA_BW_SHIFT)
+#define HE_SIGA_BW(siga, he_format) \
+	((siga & HE_SIGA_BW_MASK_(he_format)) >> HE_SIGA_BW_SHIFT_(he_format))
+
 #define HE_SIGA_NSTS_MASK		0x03800000
 #define HE_SIGA_NSTS_SHIFT		23
 #define HE_SIGA2_MASK			0x03FFFFFF
-#define HE_SIGA2_TXOP_MASK		0x0000007F
-#define HE_SIGA2_FEC_MASK		0x00001800
-#define HE_SIGA2_LDPC_EXTSYM_SHIFT	8
-#define HE_SIGA2_STBC_SHIFT		9
-#define HE_SIGA2_TXBF_SHIFT		10
-#define HE_SIGA2_FEC_SHIFT		11
-#define HE_SIGA2_PED_SHIFT		13
-#define HE_SIGA2_DOPPLER_SHIFT		15
+#define HE_SIGA2_TXOP_MASK		0x0000007F	/** The same define for HESU,
+								HEMU and HETB
+								*/
+#define HE_SIGA2_TXOP(siga2)		(siga2 & HE_SIGA2_TXOP_MASK)
+
+#define HESU_SIGA2_LDPC_EXTSYM_SHIFT	8
+#define HESU_SIGA2_LDPC_EXTSYM(siga2)	((siga2 >> HESU_SIGA2_LDPC_EXTSYM_SHIFT) & 0x1)
+#define HEMU_SIGA2_LDPC_EXTSYM_SHIFT	11
+#define HEMU_SIGA2_LDPC_EXTSYM(siga2)	((siga2 >> HEMU_SIGA2_LDPC_EXTSYM_SHIFT) & 0x1)
+#define HESU_SIGA2_STBC_SHIFT		9
+#define HESU_SIGA2_STBC(siga2)		((siga2 >> HESU_SIGA2_STBC_SHIFT) & 0x1)
+#define HEMU_SIGA2_STBC_SHIFT		12
+#define HEMU_SIGA2_STBC(siga2)		((siga2 >> HEMU_SIGA2_STBC_SHIFT) & 0x1)
+
+#define HESU_SIGA2_TXBF_SHIFT		10
+#define HESU_SIGA2_FEC_MASK		0x00001800
+#define HESU_SIGA2_FEC_SHIFT		11
+#define HESU_SIGA2_FEC(siga2)		((siga2 & HESU_SIGA2_FEC_MASK) >> HESU_SIGA2_FEC_SHIFT)
+#define HESU_SIGA2_PED_SHIFT		13
+#define HESU_SIGA2_PED(siga2)		((siga2 >> HESU_SIGA2_PED_SHIFT) & 0x1)
+#define HESU_SIGA2_DOPPLER_SHIFT	15
+#define HESU_SIGA2_DOPPLER(siga2)	((siga2 >> HESU_SIGA2_DOPPLER_SHIFT) & 0x1)
+
+#define HEMU_SIGA2_FEC_MASK		0x00006000
+#define HEMU_SIGA2_FEC_SHIFT		13
+#define HEMU_SIGA2_FEC(siga2)		((siga2 & HEMU_SIGA2_FEC_MASK) >> HEMU_SIGA2_FEC_SHIFT)
+#define HEMU_SIGA2_PED_SHIFT		15
+#define HEMU_SIGA2_PED(siga2)		((siga2 >> HEMU_SIGA2_PED_SHIFT) & 0x1)
+#define HEMU_SIGA2_DOPPLER_SHIFT	25
+#define HEMU_SIGA2_DOPPLER(siga2)	((siga2 >> HEMU_SIGA2_DOPPLER_SHIFT) & 0x1)
+
+#define HEMU_SIGA2_NUM_LTF_SHIFT	8
+#define HEMU_SIGA2_NUM_LTF_MASK		0x000000700
+#define HEMU_SIGA2_NUM_LTF(siga2)	\
+	((siga2 & HEMU_SIGA2_NUM_LTF_MASK) >> HEMU_SIGA2_NUM_LTF_SHIFT)
+#define HEMU_SIGA_SIGB_COMPRESSION_SHIFT	22
+#define HEMU_SIGA_SIGB_COMPRESSION(siga)	((siga >> HEMU_SIGA_SIGB_COMPRESSION_SHIFT) & 0x1)
 
 #define HE_SIGA_20MHZ_VAL		0x00000000
 #define HE_SIGA_40MHZ_VAL		0x00080000
 #define HE_SIGA_80MHZ_VAL		0x00100000
 #define HE_SIGA_160MHZ_VAL		0x00180000
 
-#define HE_SIGA_CPLTF_MASK		0x00600000
-#define HE_SIGA_CPLTF_SHIFT		21
+#define HESU_SIGA_GILTF_MASK		0x00600000
+#define HESU_SIGA_GILTF_SHIFT		21
+#define HESU_SIGA_GILTF(siga)		((siga & HESU_SIGA_GILTF_MASK) >> HESU_SIGA_GILTF_SHIFT)
+#define HEMU_SIGA_GILTF_MASK		0x01800000
+#define HEMU_SIGA_GILTF_SHIFT		23
+#define HEMU_SIGA_GILTF(siga)		((siga & HEMU_SIGA_GILTF_MASK) >> HEMU_SIGA_GILTF_SHIFT)
 
 #define HE_SIGA_2x_LTF_GI_0_8us_VAL	0x00200000
 #define HE_SIGA_2x_LTF_GI_1_6us_VAL	0x00400000
@@ -477,15 +612,10 @@ typedef struct he_colorchange_ie he_colorchange_ie_t;
 /**
  * HE Operation IE (IEEE Draft P802.11ax D3.0 9.4.2.238)
  */
-#if defined HE_SPEC_2_3	|| defined HE_SPEC_3_0
 #define HE_OP_PARAMS_SIZE		3
-#else
-#define HE_OP_PARAMS_SIZE		4
-#endif  /* HE_SPEC_2_3 || defined HE_SPEC_3_0 */
 typedef uint8 he_op_parms_t[HE_OP_PARAMS_SIZE];
 
 /* bit position and field width */
-#if defined HE_SPEC_2_3	|| defined HE_SPEC_3_0
 #define HE_OP_DEF_PE_DUR_IDX			0	/* Default PE Duration */
 #define HE_OP_DEF_PE_DUR_FSZ			3
 #define HE_OP_TWT_REQD_IDX			3	/* TWT Required */
@@ -498,26 +628,8 @@ typedef uint8 he_op_parms_t[HE_OP_PARAMS_SIZE];
 #define HE_OP_CO_LOCATED_BSS_FSZ		1
 #define HE_OP_ER_SU_DISABLE_IDX			16	/* ER SU Disable */
 #define HE_OP_ER_SU_DISABLE_FSZ			1
-#else
-#define HE_OP_BSS_COLOR_IDX			0	/* BSS Color */
-#define HE_OP_BSS_COLOR_FSZ			6
-#define HE_OP_DEF_PE_DUR_IDX			6	/* Default PE Duration */
-#define HE_OP_DEF_PE_DUR_FSZ			3
-#define HE_OP_TWT_REQD_IDX			9	/* TWT Required */
-#define HE_OP_TWT_REQD_FSZ			1
-#define HE_OP_HE_DUR_RTS_THRESH_IDX		10	/* TXOP Duration RTS Threshold */
-#define HE_OP_HE_DUR_RTS_THRESH_FSZ		10
-#define HE_OP_PART_BSS_COLOR_IDX		20	/* Partial BSS Color */
-#define HE_OP_PART_BSS_COLOR_FSZ		1
-#define HE_OP_VHT_OP_INFO_PRESENT_IDX		21	/* VHT Operation Information Present */
-#define HE_OP_VHT_OP_INFO_PRESENT_FSZ		1
-#define HE_OP_MULTI_BSSID_AP_IDX		28	/* Multiple BSSID AP */
-#define HE_OP_MULTI_BSSID_AP_FSZ		1
-#define HE_OP_TX_BSSID_IDX			29	/* TX BSSID Indicator */
-#define HE_OP_TX_BSSID_FSZ			1
-#define HE_OP_DISABLE_BSSCOLOR_IDX		30	/* BSS Color Disabled */
-#define HE_OP_DISABLE_BSSCOLOR_FSZ		1
-#endif  /* HE_SPEC_2_3 || defined HE_SPEC_3_0 */
+#define HE_OP_6G_OP_IE_PRESENT_IDX		17	/* 6 GHz Operation Information Present */
+#define HE_OP_6G_OP_IE_PRESENT_FSZ		1
 
 /* BSS Color Information field (Figure 9-589cs) */
 #define HE_OP_BSS_COLOR_IDX			0	/* BSS Color */
@@ -535,9 +647,7 @@ BWL_PRE_PACKED_STRUCT struct he_op_ie {
 	uint8 len;
 	uint8 id_ext;
 	he_op_parms_t parms;
-#if defined HE_SPEC_2_3	|| defined HE_SPEC_3_0
 	he_bss_color_info_t color;
-#endif  /* HE_SPEC_2_3 || defined HE_SPEC_3_0 */
 	uint16 basic_mcs_nss_set;
 } BWL_POST_PACKED_STRUCT;
 
@@ -622,6 +732,19 @@ typedef uint8 he_trig_usrinfo_typedep_set_t[HE_TRIG_USRINFO_TYPEDEP_SZ];
 #define HE_TRIG_TYPE_MU_BAR_FRM			2	/* MU-BAR frame */
 #define HE_TRIG_TYPE_MU_RTS__FRM		3	/* MU-RTS frame */
 #define HE_TRIG_TYPE_BSR_FRM			4	/* Buffer status report poll */
+
+/* dot11 ax definitions for HETB frame */
+#define DOT11_HETB_1XLTF_1U6S_GI	0
+#define DOT11_HETB_2XLTF_1U6S_GI	1
+#define DOT11_HETB_4XLTF_3U2S_GI	2
+#define DOT11_HETB_RSVD_LTF_GI		3
+
+#define DOT11_HETB_1XHELTF_NLTF		0
+#define DOT11_HETB_2XHELTF_NLTF		1
+#define DOT11_HETB_4XHELTF_NLTF		2
+#define DOT11_HETB_6XHELTF_NLTF		3
+#define DOT11_HETB_8XHELTF_NLTF		4
+#define DOT11_HETB_RSVD_NLTF		5
 
 /* HE Timing related parameters (802.11ax D0.5 Table: 26.9 */
 #define HE_T_LEG_STF			8

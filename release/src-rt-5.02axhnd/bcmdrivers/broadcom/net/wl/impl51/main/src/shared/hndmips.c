@@ -1,7 +1,7 @@
 /*
  * BCM47XX Sonics SiliconBackplane MIPS core routines
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -256,6 +256,15 @@ BCMATTACHFN(si_mips_init)(si_t *sih, uint shirqmap)
 	if (sih->ccrev < 9)
 		W_REG(osh, &cc->flash_waitcount, tmp);
 
+	/* PR14142 Change timing of pcmcia also because
+	 * it gets used for "idle" cycles.  chipc corerev < 9
+	 */
+	/*
+	 * PR25536 Generate a NMI to the mips core, as this would prevent(mask)
+	 * the next NMI PR25443..
+	 * specific check for 5350 and chiprev 0..5350 a0, a1, a2 report the chiprev as 0
+	 * PR25538
+	 */
 	if ((sih->ccrev < 9) ||
 	    ((CHIPID(sih->chip) == BCM5350_CHIP_ID) && CHIPREV(sih->chiprev) == 0)) {
 		W_REG(osh, &cc->pcmcia_memwait, tmp);
@@ -672,6 +681,10 @@ BCMINITFN(si_mips_setclock)(si_t *sih, uint32 mipsclock, uint32 siclock, uint32 
 		0x05000100, 11, 0x0aaa0555, 8 /* ratio  4/8 */, 0x00aa0055 },
 		{ 300000000, 150000000, 60000000, 0x0803, 0x01000100, 0x01020200, 0x01010100,
 		0x05000100, 11, 0x0aaa0555, 8 /* ratio  4/8 */, 0x00aa0055 },
+		/*
+		 * XXX The following clock freqs won't work on non chipc rev. 15
+		 * without proper ratio_cfg and ratio_parm.
+		 */
 		{ 330000000, 132000000, 33000000, 0x0903, 0x01000200, 0x00020200, 0x01010100,
 		0x05000100, 0, 0, 10 /* ratio 4/10 */, 0x02520129 },
 		{ 330000000, 146666666, 33000000, 0x0903, 0x01010000, 0x00020200, 0x01010100,
@@ -1208,6 +1221,15 @@ out:
 void
 hnd_cpu_reset(si_t *sih)
 {
+	/*
+	 * Switch the MIPS to async mode before setting the
+	 * watchdog register; once set, wait for the reset.
+	 *
+	 * This is done purely as a workaround for system hangs
+	 * that occur during soft reboot from CFE and Linux on
+	 * the 4785 when running at clock frequencies other than
+	 * the default.
+	 */
 	if (CHIPID(sih->chip) == BCM4785_CHIP_ID)
 		MTC0(C0_BROADCOM, 4, (1 << 22));
 	si_watchdog(sih, 1);

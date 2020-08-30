@@ -136,6 +136,9 @@ struct bond_params {
 	int packets_per_slave;
 	int tlb_dynamic_lb;
 	struct reciprocal_value reciprocal_packets_per_slave;
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+	int async_linkspeed;
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
 };
 
 struct bond_parm_tbl {

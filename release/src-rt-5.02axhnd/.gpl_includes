@@ -1,2 +1,3 @@
 release/src/router/bcm_flashutil/bcm_flashutil.h
 release/src/router/nt_center/lib/*.h
+release/src-rt-5.02axhnd/bcmdrivers/broadcom/net/wl/impl51/sys/components/apps/hspot/router/hspot_ap/*

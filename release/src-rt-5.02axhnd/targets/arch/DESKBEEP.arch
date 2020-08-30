@@ -39,14 +39,12 @@
 -WLSETUP_WPS=y
 -# WLSETUP_none is not set
 -BUILD_WPS_BTN=dynamic
--BUILD_LLTD=dynamic
 -BUILD_WSC=dynamic
 -BUILD_NVRAM=dynamic
 +# BUILD_NAS is not set
 +# WLSETUP_WPS is not set
 +WLSETUP_none=y
 +BUILD_WPS_BTN=
-+BUILD_LLTD=
 +BUILD_WSC=
 +# BUILD_NVRAM is not set
  # BRCM_DRIVER_WIRELESS_USBAP is not set

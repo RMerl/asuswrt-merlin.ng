@@ -44,16 +44,16 @@
 #define RDPA_DHD_HELPER_MIXED_CWI64_CWI32_MSGFORMAT_SUPPORT
 #define RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT
 
-
 #if !defined(__OREN__)
+#define RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT
+#define RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
+#define RDPA_DHD_TX_POST_PHY_RING_SIZE 512
 #define RDPA_DHD_HELPER_FEATURE_HWA_WAKEUP_SUPPORT
 #endif
 
 #if defined(XRDP)
-#define RDPA_DHD_HELPER_FEATURE_BACKUP_QUEUE_SUPPORT
 #define DHD_MAX_SSID_NUM 16
 typedef uint32_t rdpa_dhd_ssid_tx_dropped_t[DHD_MAX_SSID_NUM];
-#define RDPA_DHD_TX_POST_PHY_RING_SIZE 512
 #else
 #define DHD_MAX_SSID_NUM 8
 #endif
@@ -204,6 +204,17 @@ typedef struct
     uint32_t cpu_port;
     uint8_t exception_rxq;
 } rdpa_dhd_cpu_data_t;
+
+typedef union
+{
+    uint32_t u32;
+    struct {
+        uint32_t flowring_idx   :16;
+        uint32_t read_idx       :10;
+        uint32_t read_idx_valid :1;
+        uint32_t reserved       :5;
+    };
+} rdpa_dhd_ffd_data_t;
 
 /** @} end of dhd_heler Doxygen group */
 

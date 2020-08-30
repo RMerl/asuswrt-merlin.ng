@@ -125,7 +125,6 @@ export LANGUAGE LC_ALL
 
 $lt_unset CDPATH
 
-# Work around backward compatibility issue on IRIX 6.5. On IRIX 6.4+, sh
 # is ksh but when the shell is invoked as "sh" and the current value of
 # the _XPG environment variable is not equal to 1 (one), the special
 # positional parameter $0, within a function call, is the name of the
@@ -443,7 +442,6 @@ func_verbose ()
 
     # A bug in bash halts the script if the last line of a function
     # fails when set -e is in force, so we need another command to
-    # work around that:
     :
 }
 
@@ -4034,7 +4032,6 @@ func_exec_program ()
     $shlibpath_var=\"$temp_rpath\$$shlibpath_var\"
 
     # Some systems cannot cope with colon-terminated $shlibpath_var
-    # The second colon is a workaround for a bug in BeOS R4 sed
     $shlibpath_var=\`\$ECHO \"\$$shlibpath_var\" | $SED 's/::*\$//'\`
 
     export $shlibpath_var
@@ -5025,7 +5022,6 @@ func_mode_link ()
       # flag for every libtool invocation.
       # allow_undefined=no
 
-      # FIXME: Unfortunately, there are problems with the above when trying
       # to make a dll which has undefined symbols, in which case not
       # even a static library is built.  For now, we need to specify
       # -no-undefined on the libtool link line when we can be certain
@@ -5407,7 +5403,6 @@ func_mode_link ()
 	;;
 
       -allow-undefined)
-	# FIXME: remove this flag sometime in the future.
 	func_fatal_error "\`-allow-undefined' must not be used because it is the default"
 	;;
 
@@ -6030,7 +6025,6 @@ func_mode_link ()
       # The preopen pass in lib mode reverses $deplibs; put it back here
       # so that -L comes before libs that need it for instance...
       if test "$linkmode,$pass" = "lib,link"; then
-	## FIXME: Find the place where the list is rebuilt in the wrong
 	##        order, and fix it there properly
         tmp_deplibs=
 	for deplib in $deplibs; do
@@ -7054,7 +7048,6 @@ func_mode_link ()
 	  eval tmp_libs=\"\$$var\"
 	  new_libs=
 	  for deplib in $tmp_libs; do
-	    # FIXME: Pedantically, this is the right thing to do, so
 	    #        that some nasty dependency loop isn't accidentally
 	    #        broken:
 	    #new_libs="$deplib $new_libs"
@@ -7957,7 +7950,6 @@ EOF
       # Test again, we may have decided not to build it any more
       if test "$build_libtool_libs" = yes; then
 	# Remove ${wl} instances when linking with ld.
-	# FIXME: should test the right _cmds variable.
 	case $archive_cmds in
 	  *\$LD\ *) wl= ;;
         esac
@@ -8147,7 +8139,6 @@ EOF
 	if test "X$skipped_export" != "X:" && test -n "$orig_export_symbols"; then
 	  # The given exports_symbols file has to be filtered, so filter it.
 	  func_verbose "filter symbol list for \`$libname.la' to tag DATA exports"
-	  # FIXME: $output_objdir/$libname.filter potentially contains lots of
 	  # 's' commands which not all seds can handle. GNU sed should be fine
 	  # though. Also, the filter scales superlinearly with the number of
 	  # global variables. join(1) would be nice here, but unfortunately
@@ -8396,7 +8387,6 @@ EOF
 	    if test -n "$orig_export_symbols"; then
 	      # The given exports_symbols file has to be filtered, so filter it.
 	      func_verbose "filter symbol list for \`$libname.la' to tag DATA exports"
-	      # FIXME: $output_objdir/$libname.filter potentially contains lots of
 	      # 's' commands which not all seds can handle. GNU sed should be fine
 	      # though. Also, the filter scales superlinearly with the number of
 	      # global variables. join(1) would be nice here, but unfortunately
@@ -9447,7 +9437,6 @@ func_mode_uninstall ()
 	      # Do each command in the old_postuninstall commands.
 	      func_execute_cmds "$old_postuninstall_cmds" 'test "$rmforce" = yes || exit_status=1'
 	    fi
-	    # FIXME: should reinstall the best remaining shared library.
 	    ;;
 	  esac
 	fi

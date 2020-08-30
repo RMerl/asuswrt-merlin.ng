@@ -49,5 +49,6 @@ extern int wfd_bind(struct net_device *wl_dev_p,
 extern void wfd_unbind(int wfd_idx, enumWFD_WlFwdHookType hook_type);
 extern int wfd_registerdevice(uint32_t wfd_idx, int ifidx, struct net_device *dev);
 extern int wfd_unregisterdevice(uint32_t wfd_idx, int ifidx);
+extern struct net_device *wfd_dev_by_id_get(uint32_t radio_id, uint32_t if_id);
 #endif
 

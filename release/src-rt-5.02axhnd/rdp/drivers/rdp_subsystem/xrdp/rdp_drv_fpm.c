@@ -141,7 +141,7 @@ bdmf_error_t drv_fpm_free_buffer(uint32_t packet_len, uint32_t buff_num)
 {
 #ifndef RDP_SIM  
     bdmf_boolean token_valid = 1;
-    bdmf_boolean ddr_pool = (buff_num >> 16) & 1;
+    bdmf_boolean ddr_pool = 0;
     uint32_t token_index = buff_num & 0xFFFF;
     bdmf_error_t rc = 0;
 

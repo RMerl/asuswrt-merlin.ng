@@ -100,6 +100,7 @@ typedef struct phy_serdes_s {
     int phy_type;
     int used;
     int power_mode;
+    int power_admin_on;
     int sfp_status;
     serdes_status_t serdes_status;
     serdes_sfp_type_t sfp_module_type;

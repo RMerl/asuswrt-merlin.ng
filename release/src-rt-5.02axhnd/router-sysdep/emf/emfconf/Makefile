@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -26,8 +26,7 @@ STRIP = $(CROSS)strip
 
 ALL_OBJS = emfu.o emfu_linux.o
 
-CCFLAGS = -Os -Wall -I$(SRCBASE)/include ${WLAN_StdIncPathA} ${WLAN_ComponentIncPathA} -I$(SRCBASE)/common/include -I$(TOP)/shared
-CCFLAGS += -I../../shared/ -I../../bcmdrv/include/emf/emf
+CCFLAGS = -Os -Wall -I$(SRCBASE)/include ${WLAN_StdIncPathA} ${WLAN_ComponentIncPathA} -I$(SRCBASE)/common/include -I$(SRCBASE_ROUTER)/shared
 
 ifneq ($(wildcard ./prebuilt),)
 all:

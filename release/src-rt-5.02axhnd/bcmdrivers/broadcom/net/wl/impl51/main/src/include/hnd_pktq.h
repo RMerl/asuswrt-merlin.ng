@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.h 758228 2018-04-18 05:58:00Z $
+ * $Id: hnd_pktq.h 773806 2019-04-01 13:17:30Z $
  */
 
 #ifndef _hnd_pktq_h_
@@ -65,6 +65,7 @@ typedef struct pktq_prec {
 	uint16 stall_count;    /**< # seconds since no packets are dequeued  */
 	uint16 dequeue_count;  /**< # of packets dequeued in last 1 second */
 	uint16 tbr_pkts;       /**< # of to be release packets in last evaluation */
+	uint16 skip_cnt;
 } pktq_prec_t;
 
 #ifdef PKTQ_LOG
@@ -230,13 +231,13 @@ extern bool spktq_full(struct spktq *spq);
 #define spktqdeinit(spq)		spktq_deinit((spq))
 #define spktqavail(spq)			spktq_avail((spq))
 #define spktqfull(spq)			spktq_full((spq))
-#if defined(WLAMPDU_MAC) && defined(PROP_TXSTATUS)
+#if defined(PROP_TXSTATUS)
 #define spktqfilter(spq, fltr, fltr_ctx, defer, defer_ctx, flush, flush_ctx) \
 	spktq_filter((spq), (fltr), (fltr_ctx), (defer), (defer_ctx), (flush), (flush_ctx), NULL)
 #else
 #define spktqfilter(spq, fltr, fltr_ctx, defer, defer_ctx, flush, flush_ctx) \
 	spktq_filter((spq), (fltr), (fltr_ctx), (defer), (defer_ctx), (flush), (flush_ctx))
-#endif /* defined(WLAMPDU_MAC) && defined(PROP_TXSTATUS) */
+#endif /* PROP_TXSTATUS */
 extern bool pktq_init(struct pktq *pq, int num_prec, int max_pkts);
 extern bool pktq_deinit(struct pktq *pq);
 extern bool spktq_init(struct spktq *spq, int max_pkts);

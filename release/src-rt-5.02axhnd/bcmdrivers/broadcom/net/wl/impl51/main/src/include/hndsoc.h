@@ -1,7 +1,7 @@
 /*
  * Broadcom HND chip & on-chip-interconnect-related definitions.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndsoc.h 765675 2018-07-12 13:59:09Z $
+ * $Id: hndsoc.h 776902 2019-07-12 12:40:41Z $
  */
 
 #ifndef	_HNDSOC_H
@@ -54,6 +54,9 @@
 #ifndef SI_WRAP_BASE_DEFAULT
 #define SI_WRAP_BASE_DEFAULT		0x18100000	/* Wrapper space base */
 #endif // endif
+
+#define BCM47622_DEV_A_PHYS_ADDR 0x85000000     /**< 1st wlan embedded dev addr, cpu perspective */
+#define BCM47622_DEV_B_PHYS_ADDR 0x86000000     /**< 2nd wlan embedded dev addr, cpu perspective */
 
 /** new(er) chips started locating their chipc core at a different BP address than 0x1800_0000 */
 #ifdef DONGLEBUILD
@@ -165,6 +168,8 @@
 
 #define	SI_BCM53573_LOCKED_CPUPLL	0x1
 
+#define	UBUS_BRIDGE_ID		0x90
+
 /* APB bridge code */
 #define	APB_BRIDGE_ID		0x135		/* APB Bridge 0, 1, etc. */
 
@@ -238,7 +243,7 @@
 #define SYSMEM_CORE_ID		0x849		/* System memory core */
 #define HUB_CORE_ID		0x84b           /* Hub core ID */
 #define HWA_CORE_ID		0x851		/* HWA core ID */
-#define AVS_CORE_ID		0x853		/* AVS core ID */
+#define AVS_CORE_ID		0x853		/* AVS code ID */
 
 #define APB_BRIDGE_CORE_ID	0x135		/* APB bridge core ID */
 #define AXI_CORE_ID		0x301		/* AXI/GPV core ID */

@@ -419,6 +419,11 @@ getaddrinfo(hostname, servname, hints, res)
 			cur = cur->ai_next;
 	}
 
+	/*
+	 * XXX
+	 * If numreic representation of AF1 can be interpreted as FQDN
+	 * representation of AF2, we need to think again about the code below.
+	 */
 	if (sentinel.ai_next)
 		goto good;
 
@@ -628,6 +633,16 @@ explore_fqdn(pai, hostname, servname, res)
 			GET_AI(cur->ai_next, afd, ap);
 			GET_PORT(cur->ai_next, servname);
 		} else {
+			/*
+			 * if AI_CANONNAME and if reverse lookup
+			 * fail, return ai anyway to pacify
+			 * calling application.
+			 *
+			 * XXX getaddrinfo() is a name->address
+			 * translation function, and it looks
+			 * strange that we do addr->name
+			 * translation here.
+			 */
 			get_name(ap, afd, &cur->ai_next,
 				ap, pai, servname);
 		}
@@ -675,6 +690,10 @@ explore_null(pai, hostname, servname, res)
 	sentinel.ai_next = NULL;
 	cur = &sentinel;
 
+	/*
+	 * filter out AFs that are not supported by the kernel
+	 * XXX errno?
+	 */
 	s = socket(pai->ai_family, SOCK_DGRAM, 0);
 	if (s < 0) {
 		if (errno != EMFILE)
@@ -692,9 +711,15 @@ explore_null(pai, hostname, servname, res)
 
 	if (pai->ai_flags & AI_PASSIVE) {
 		GET_AI(cur->ai_next, afd, afd->a_addrany);
+		/* xxx meaningless?
+		 * GET_CANONNAME(cur->ai_next, "anyaddr");
+		 */
 		GET_PORT(cur->ai_next, servname);
 	} else {
 		GET_AI(cur->ai_next, afd, afd->a_loopback);
+		/* xxx meaningless?
+		 * GET_CANONNAME(cur->ai_next, "localhost");
+		 */
 		GET_PORT(cur->ai_next, servname);
 	}
 	cur = cur->ai_next;
@@ -768,6 +793,16 @@ explore_numeric(pai, hostname, servname, res)
 				GET_AI(cur->ai_next, afd, pton);
 				GET_PORT(cur->ai_next, servname);
 			} else {
+				/*
+				 * if AI_CANONNAME and if reverse lookup
+				 * fail, return ai anyway to pacify
+				 * calling application.
+				 *
+				 * XXX getaddrinfo() is a name->address
+				 * translation function, and it looks
+				 * strange that we do addr->name
+				 * translation here.
+				 */
 				get_name(pton, afd, &cur->ai_next,
 					pton, pai, servname);
 			}

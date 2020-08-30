@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA transmit routines.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_tx.c 764693 2018-05-29 15:43:56Z $
+ * $Id: hnddma_tx.c 773199 2019-03-14 14:36:42Z $
  */
 
 /**
@@ -177,6 +177,11 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 	uint16 txout;
 	uint32 flags = 0;
 	dmaaddr_t pa;
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+	dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
 	bool war;
 
 	DMA_TRACE(("%s: dma_txfast\n", di->name));
@@ -238,6 +243,18 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 #endif // endif
 
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+		if (DMASGLIST_ENAB) {
+			bzero(&di->txp_dmah[txout], sizeof(hnddma_seg_map_t));
+			paddr = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, p,
+				&di->txp_dmah[txout], &di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+			ULONGTOPHYSADDR(paddr, pa);
+		} else {
+			paddr = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, NULL, NULL,
+				&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+			ULONGTOPHYSADDR(paddr, pa);
+		}
+#else
 		if (DMASGLIST_ENAB) {
 			bzero(&di->txp_dmah[txout], sizeof(hnddma_seg_map_t));
 			pa = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, p,
@@ -246,6 +263,7 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 			pa = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, NULL, NULL,
 				&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
 		}
+#endif /* BCMDMA64OSL */
 #else  /* ! BCM_SECURE_DMA */
 #if defined(OSL_CACHE_COHERENT)
 		pa = (dmaaddr_t)VIRT_TO_PHYS(data);
@@ -303,7 +321,7 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 			if (txout == (di->ntxd - 1))
 				flags |= D64_CTRL1_EOT;
 
-			if (di->burstsize_ctrl || (CHIPID(di->sih->chip) == BCM7271_CHIP_ID))
+			if (di->burstsize_ctrl)
 				flags |= D64_CTRL1_NOTPCIE;
 
 			if (DMASGLIST_ENAB) {
@@ -646,7 +664,7 @@ dma_txdesc(hnddma_t *dmah, dma64dd_t *dd, bool commit)
 		goto outoftxd;
 
 	/* fill in remaining bits in ctrl1 */
-	if (di->burstsize_ctrl || (CHIPID(di->sih->chip) == BCM7271_CHIP_ID))
+	if (di->burstsize_ctrl)
 		dd->ctrl1 |= D64_CTRL1_NOTPCIE;
 
 	/* dongle aqm desc need to have CO as the SOFD buffer comes from local
@@ -841,6 +859,9 @@ dma_bulk_txcomplete(hnddma_t *dmah, uint16 ncons, uint16 *nproc,
 			 */
 			end = DMA_GET_INDEX(di->osh, current_pkt);
 #ifdef BULK_PKTLIST_DEBUG
+			/* XXX shadow array consistency check
+			 * Goes away once shadow array is removed
+			 */
 			ASSERT(current_pkt == di->txp[end]);
 #endif // endif
 			/* lbuf/sk_buff field used for dma index has to be zeroed out
@@ -869,6 +890,10 @@ dma_bulk_txcomplete(hnddma_t *dmah, uint16 ncons, uint16 *nproc,
 	di->txin = end;
 
 	{
+		/* XXX Cleanup txp shadow array.
+		 * This goes away once the shadow array is removed.
+		 * Prevents unwanted crashes in the code in the meantime
+		 */
 		uint16 i;
 		for (i = start; i != end; i = NEXTTXD(i))
 		{
@@ -966,13 +991,19 @@ _dma_getnexttxp(dma_info_t *di, txd_range_t range)
 #if (!defined(__mips__) && !(defined(BCM47XX_CA9) || defined(STB) || \
 	defined(BCA_HNDROUTER))) || defined(BCM_SECURE_DMA)
 		dmaaddr_t pa;
+#ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+		dma_addr_t paddr;
+#endif /* BCMDMA64OSL */
+#endif /* BCM_SECURE_DMA */
+
 		uint size;
 
 		PHYSADDRLOSET(pa, (BUS_SWAP32(R_SM(&di->txd64[i].addrlow)) -
 				di->dataoffsetlow));
 		PHYSADDRHISET(pa, (BUS_SWAP32(R_SM(&di->txd64[i].addrhigh)) -
 				di->dataoffsethigh));
-#endif // endif
+#endif /* !defined(__mips__) && !(defined(BCM47XX_CA9) || defined(STB) || defined(BCA_HNDROUTER)) */
 
 		if (DMASGLIST_ENAB) {
 			map = &di->txp_dmah[i];
@@ -1013,8 +1044,14 @@ _dma_getnexttxp(dma_info_t *di, txd_range_t range)
 			}
 		}
 #ifdef BCM_SECURE_DMA
+#ifdef BCMDMA64OSL
+			PHYSADDRTOULONG(pa, paddr);
+			SECURE_DMA_UNMAP(di->osh, paddr, size, DMA_TX,
+				NULL, NULL, &di->sec_cma_info_tx, 0);
+#else
 			SECURE_DMA_UNMAP(di->osh, pa, size, DMA_TX,
-					NULL, NULL, &di->sec_cma_info_tx, 0);
+				NULL, NULL, &di->sec_cma_info_tx, 0);
+#endif /* BCMDMA64OSL */
 #else
 #if !defined(OSL_CACHE_COHERENT)
 #if (!defined(__mips__) && !(defined(BCM47XX_CA9) || defined(STB) || \
@@ -1214,7 +1251,7 @@ dma64_txfast_lfrag(dma_info_t *di, void *p0, bool commit)
 				flags |= D64_CTRL1_SOF;
 			if (txout == (di->ntxd - 1))
 				flags |= D64_CTRL1_EOT;
-			if (di->burstsize_ctrl || (CHIPID(di->sih->chip) == BCM7271_CHIP_ID))
+			if (di->burstsize_ctrl)
 				flags |= D64_CTRL1_NOTPCIE;
 
 			if ((j == nsegs) && (ftot == 0) && (next == NULL))

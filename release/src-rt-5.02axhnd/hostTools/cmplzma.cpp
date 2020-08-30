@@ -354,7 +354,7 @@ int main (int argc, char **argv)
 {
     FILE *hInput = NULL, *hOutput = NULL;
     struct stat StatBuf;
-    char inputElfFile[256], inputBinFile[256], lzmaFile[256], outputFile[256], segment[16];
+    char inputElfFile[256], inputBinFile[256], lzmaFile[256+5], outputFile[256], segment[16];
     char binpath[256], cmd[1024];
     unsigned char *data;
     char *encryptCmd = NULL;

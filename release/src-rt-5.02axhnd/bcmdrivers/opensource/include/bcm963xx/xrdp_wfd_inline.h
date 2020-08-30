@@ -208,6 +208,7 @@ static inline void wfd_mcast_forward(void **packets, uint32_t count, wfd_object_
     uint32_t ifid, i;
     void *nbuf = NULL;
     int orig_packet_used;
+    uint16_t _ssid_vector;
 
     for (i = 0; i < count; i++)
     {
@@ -215,6 +216,8 @@ static inline void wfd_mcast_forward(void **packets, uint32_t count, wfd_object_
             ((struct sk_buff *)packets[i])->wl.mcast.ssid_vector;
 
         orig_packet_used = 0;
+        _ssid_vector = ssid_vector;
+
         while (ssid_vector)
         {
             ifid = __ffs(ssid_vector);
@@ -230,16 +233,14 @@ static inline void wfd_mcast_forward(void **packets, uint32_t count, wfd_object_
             wfd_p->count_rx_queue_packets++;
             wfd_p->wl_mcast_packets++;
 
+            if (is_fkb) continue;
+
             if (ssid_vector) /* To prevent (last/the only) ssid copy */
             {
-                if (is_fkb)
-                    nbuf = fkb_clone(packets[i]);
-                else
-                    nbuf = skb_copy(packets[i], GFP_ATOMIC);
-
+                nbuf = skb_copy(packets[i], GFP_ATOMIC);
                 if (!nbuf)
                 {
-                    printk("%s %s: Failed to clone %ckb\n", __FILE__, __FUNCTION__, is_fkb ? 'f':'s');
+                    printk("%s %s: Failed to clone skb\n", __FILE__, __FUNCTION__);
                     nbuff_free(packets[i]);
                     return;
                 }
@@ -252,8 +253,14 @@ static inline void wfd_mcast_forward(void **packets, uint32_t count, wfd_object_
 
             (void)wfd_p->wfd_mcastHook(wfd_p->wl_radio_idx, (unsigned long)nbuf, (unsigned long)wfd_p->wl_if_dev[ifid]);
         }
+
+        if(is_fkb) {
+            (void)wfd_p->wfd_mcastHook(wfd_p->wl_radio_idx, (unsigned long)packets[i], (unsigned long)&_ssid_vector);
+            orig_packet_used = 1;
+        }
+
         if (unlikely(!orig_packet_used))
-            nbuff_free(packets[i]);
+                nbuff_free(packets[i]);
     }
 }
 

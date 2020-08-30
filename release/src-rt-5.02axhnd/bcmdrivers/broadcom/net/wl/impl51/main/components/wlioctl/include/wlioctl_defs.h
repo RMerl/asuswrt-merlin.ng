@@ -4,7 +4,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl_defs.h 765606 2018-07-10 09:22:20Z $
+ * $Id: wlioctl_defs.h 777802 2019-08-12 05:29:38Z $
  */
 
 #ifndef wlioctl_defs_h
@@ -30,6 +30,11 @@
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
 
 #ifdef EFI
+/* XXX
+ * This is the Broadcom-specific guid selector for IOCTL handler in Apple 80211 Protocol
+ * define for EFI. However, we use last 4 nibbles to communicate 'cmd' from tool to
+ * driver.
+ */
 #define BCMWL_IOCTL_GUID \
 	{0xB4910A35, 0x88C5, 0x4328, { 0x90, 0x08, 0x9F, 0xB2, 0x00, 0x00, 0x0, 0x0 } }
 #endif /* EFI */
@@ -39,6 +44,12 @@
 #define D11AC_IOTYPES
 
 #ifndef USE_NEW_RSPEC_DEFS
+/* XXX - Remove when no referencing branches exist.
+ * These macros will be used only in older branches (prior to K branch).
+ * Wl layer in newer branches and trunk use those defined in bcmwifi_rspec.h.
+ * Non-wl layer in newer branches and trunk may use these as well
+ * until they are removed.
+ */
 /* WL_RSPEC defines for rate information */
 #define WL_RSPEC_RATE_MASK		0x000000FF      /* rate or HT MCS value */
 #define WL_RSPEC_HE_MCS_MASK		0x0000000F      /* HE MCS value */
@@ -167,6 +178,8 @@
 #define WL_STA_DWDS		0x02000000	/* DWDS active */
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 #define WL_WDS_LINKUP		WL_STA_WDS_LINKUP	/* deprecated */
+#define WL_STA_RRM_CAP         0x10000000	/* RRM CAP */
+#define WL_STA_RRM_BCN_PASSIVE_CAP 0x20000000	/* Beacon Passive Measurement CAP */
 
 /* STA HT cap fields */
 #define WL_STA_CAP_LDPC_CODING		0x0001	/* Support for rx of LDPC coded pkts */
@@ -236,6 +249,12 @@
 #define WL_BSSTYPE_MESH  3
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 /* Bitmask for scan_type */
+/* XXX Reserved flag precludes the use of 0xff for scan_type which is
+ * interpreted as default for backward compatibility.
+ * Low priority scan uses currently reserved bit,
+ * this should be changed as scan_type extended.
+ * So, reserved flag definition removed.
+ */
 #define WL_SCANFLAGS_PASSIVE	0x01	/* force passive scan */
 #define WL_SCANFLAGS_LOW_PRIO	0x02	/* Low priority scan */
 #define WL_SCANFLAGS_PROHIBITED	0x04	/* allow scanning prohibited channels */
@@ -413,7 +432,6 @@
 #define CRYPTO_ALGO_AES_OCB_MSDU	5
 #define CRYPTO_ALGO_AES_OCB_MPDU	6
 #define CRYPTO_ALGO_NALG		7
-
 #define CRYPTO_ALGO_SMS4		11
 #define CRYPTO_ALGO_PMK			12	/* for 802.1x supp to set PMK before 4-way */
 #define CRYPTO_ALGO_BIP			13  /* 802.11w BIP (aes cmac) */
@@ -514,6 +532,9 @@
 #define WPA2_AUTH_FILS_SHA256	0x10000 /* FILS with SHA256 key derivation */
 #define WPA2_AUTH_FILS_SHA384	0x20000 /* FILS with SHA384 key derivation */
 #define WPA2_AUTH_IS_FILS(auth) ((auth) & (WPA2_AUTH_FILS_SHA256 | WPA2_AUTH_FILS_SHA384))
+#define WPA3_AUTH_SAE_PSK       0x40000 /* SAE with 4-way handshake */
+#define WPA3_AUTH_SAE_FBT       0x80000 /* SAE with FT */
+#define WPA3_AUTH_DPP           0x100000 /* DPP */
 
 /* WPA2_AUTH_SHA256 not used anymore. Just kept here to avoid build issue in DINGO */
 #define WPA2_AUTH_SHA256	0x8000
@@ -865,7 +886,19 @@
 #define WLC_DUMP_RATESET			322
 #define WLC_ECHO				323
 #define WLC_GET_DWDSLIST			324
-#define WLC_LAST				325
+#define WLC_SCB_AUTHENTICATE                    325
+#define WLC_CURRENT_TXCTRL			326
+#define WLC_SCB_ASSOCIATE			327
+#define WLC_LAST				328	/* XXX The last ioctl. Also push this
+							 * number when adding new ioctls
+							 */
+/* XXX
+ * Minor kludge alert:
+ * Duplicate a few definitions that irelay requires from epiioctl.h here
+ * so caller doesn't have to include this file and epiioctl.h .
+ * If this grows any more, it would be time to move these irelay-specific
+ * definitions out of the epiioctl.h and into a separate driver common file.
+ */
 #ifndef EPICTRL_COOKIE
 #define EPICTRL_COOKIE		0xABADCEDE
 #endif // endif
@@ -927,9 +960,16 @@
 #define WL_AUTH_OPEN_SYSTEM		0	/* d11 open authentication */
 #define WL_AUTH_SHARED_KEY		1	/* d11 shared authentication */
 #define WL_AUTH_OPEN_SHARED		2	/* try open, then shared if open failed w/rc 13 */
+#define WL_AUTH_SAE_KEY			3	/* d11 sae authentication */
 #define WL_AUTH_FILS_SHARED		4	/* d11 fils shared key authentication */
 #define WL_AUTH_FILS_SHARED_PFS		5	/* d11 fils shared key w/ pfs authentication */
 #define WL_AUTH_FILS_PUBLIC		6	/* d11 fils public key authentication */
+/* xxx: Some branch use different define for WL_AUTH_OPEN_SHARED
+ * for example, PHOENIX2 Branch defined WL_AUTH_OPEN_SHARED as 3
+ * But other branch defined WL_AUTH_OPEN_SHARED as 2
+ * if it is mismatch, WEP association can be failed.
+ * More information - RB:5320
+ */
 
 /* a large TX Power as an init value to factor out of MIN() calculations,
  * keep low enough to fit in an int8, units are .25 dBm
@@ -1148,7 +1188,9 @@
 #define ACPHY_HWACI_MITIGATION 16         /* bit 4 */
 #define ACPHY_LPD_PREEMPTION 32           /* bit 5 */
 #define ACPHY_HWOBSS_MITIGATION 64        /* bit 6 */
-#define ACPHY_ACI_MAX_MODE 127
+#define ACPHY_ACI_ELNABYPASS 128          /* bit 7 */
+#define ACPHY_MCLIP_ACI_MIT 256           /* bit 8 */
+#define ACPHY_ACI_MAX_MODE 511
 
 /* AP environment */
 #define AP_ENV_DETECT_NOT_USED		0 /* We aren't using AP environment detection */
@@ -1243,6 +1285,8 @@
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 #define WL_TX_POWER_F_UNIT_QDBM		0x100
 #define WL_TX_POWER_F_TXCAP		0x200
+#define WL_TX_POWER_F_HE		0x400
+#define WL_TX_POWER_F_HE_RU		0x800	/* UL-OFDMA */
 /* Message levels */
 #define WL_ERROR_VAL		0x00000001
 #define WL_TRACE_VAL		0x00000002
@@ -1256,26 +1300,24 @@
 #define WL_PRUSR_VAL		0x00000200
 #define WL_PS_VAL		0x00000400
 #define WL_TXPWR_VAL		0x00000000	/* retired in TOT on 6/10/2009 */
-#define WL_MODE_SWITCH_VAL	0x00000800 /* Using retired TXPWR val */
-#define WL_PORT_VAL		0x00001000
+#define WL_MODE_SWITCH_VAL	0x00000800	/* Using retired TXPWR val */
+#define WL_G_IOV_VAL		0x00001000	/** msglevel +g_iov prints getting of iovar/ioctl */
 #define WL_DUAL_VAL		0x00002000
 #define WL_WSEC_VAL		0x00004000
 #define WL_WSEC_DUMP_VAL	0x00008000
 #define WL_LOG_VAL		0x00010000
-#define WL_NRSSI_VAL		0x00000000	/* retired in TOT on 6/10/2009 */
-#define WL_BCNTRIM_VAL		0x00020000	/* Using retired NRSSI VAL */
+#define WL_BCNTRIM_VAL		0x00020000
 #define WL_LOFT_VAL		0x00000000	/* retired in TOT on 6/10/2009 */
-#define WL_PFN_VAL		0x00040000 /* Using retired LOFT_VAL */
+#define WL_PFN_VAL		0x00040000	/* Using retired LOFT_VAL */
 #define WL_REGULATORY_VAL	0x00080000
-#define WL_CSA_VAL		0x00080000  /* Reusing REGULATORY_VAL due to lackof bits */
+#define WL_CSA_VAL		0x00080000	/* Reusing REGULATORY_VAL due to lackof bits */
 #define WL_TAF_VAL		0x00100000
 #define WL_RADAR_VAL		0x00000000	/* retired in TOT on 6/10/2009 */
 #define WL_WDI_VAL		0x00200000	/* Using retired WL_RADAR_VAL VAL */
 #define WL_MPC_VAL		0x00400000
 #define WL_APSTA_VAL		0x00800000
 #define WL_DFS_VAL		0x01000000
-#define WL_BA_VAL		0x00000000	/* retired in TOT on 6/14/2010 */
-#define WL_MUMIMO_VAL		0x02000000      /* Using retired WL_BA_VAL */
+#define WL_MUMIMO_VAL		0x02000000
 #define WL_ACI_VAL		0x04000000
 #define WL_PRMAC_VAL		0x04000000
 #define WL_MBSS_VAL		0x04000000
@@ -1283,16 +1325,14 @@
 #define WL_AMSDU_VAL		0x10000000
 #define WL_AMPDU_VAL		0x20000000
 #define WL_FFPLD_VAL		0x40000000
-#define WL_ROAM_EXP_VAL		0x80000000
+#define WL_TWT_VAL		0x80000000
 
 /* wl_msg_level is full. For new bits take the next one and AND with
  * wl_msg_level2 in wl_dbg.h
  */
 #define WL_DPT_VAL		0x00000001
-/* re-using WL_DPT_VAL */
-/* re-using WL_MESH_VAL */
-#define WL_NATOE_VAL		0x00000001
-#define WL_MESH_VAL		0x00000001
+#define WL_NATOE_VAL		0x00000001	/* re-using WL_DPT_VAL */
+#define WL_MESH_VAL		0x00000001	/* re-using WL_DPT_VAL */
 #define WL_SCAN_VAL		0x00000002
 #define WL_WOWL_VAL		0x00000004
 #define WL_COEX_VAL		0x00000008
@@ -1304,39 +1344,30 @@
 #define WL_P2P_VAL		0x00000200
 #define WL_ITFR_VAL		0x00000400
 #define WL_MCHAN_VAL		0x00000800
-#define WL_TDLS_VAL		0x00001000
+#define WL_TDLS_VAL		0x00001000	/**< Tunneled Direct Link Setup */
 #define WL_MCNX_VAL		0x00002000
-#define WL_PROT_VAL		0x00004000
-#define WL_PSTA_VAL		0x00008000
-#define WL_TSO_VAL		0x00010000
-#define WL_TRF_MGMT_VAL		0x00020000
-#define WL_LPC_VAL	        0x00040000
-#define WL_MAC_VAL		0x00040000 /* reuse - no WL_LPC() definitions */
+#define WL_PROT_VAL		0x00004000	/**< Wifi protection */
+#define WL_PSTA_VAL		0x00008000	/**< Proxy-STA */
+#define WL_TSO_VAL		0x00010000	/**< TCP Segmentation/Checksumming Offload */
+#define WL_TRF_MGMT_VAL		0x00020000	/**< WL_TRAFFIC_THRESH */
+#define WL_MAC_VAL		0x00040000
 #define WL_L2FILTER_VAL		0x00080000
 #define WL_TXBF_VAL		0x00100000
 #define WL_P2PO_VAL		0x00200000
+#define WL_CFG80211_VAL		0x00200000
 #define WL_TBTT_VAL		0x00400000
 #define WL_FBT_VAL		0x00800000
-#define WL_RRM_VAL		0x00800000 /* reuse */
+#define WL_RRM_VAL		0x00800000	/* reuse */
 #define WL_MQ_VAL		0x01000000
-
-/* This level is currently used in Phoenix2 only */
-#define WL_SRSCAN_VAL		0x02000000
-#define WL_AIRIQ_VAL            0x02000000 /* reuse */
-
+#define WL_AIRIQ_VAL            0x02000000
 #define WL_WNM_VAL		0x04000000
-/* re-using WL_WNM_VAL for MBO */
-#define WL_MBO_VAL		0x04000000
-#ifdef WLAWDL
-#define WL_AWDL_VAL		0x08000000
-#endif /* WLAWDL */
+#define WL_MBO_VAL		0x04000000	/* re-using WL_WNM_VAL for MBO */
+#define WL_S_IOV_VAL		0x08000000	/** msglevel +s_iov prints setting of iovar/ioctl */
 #define WL_PWRSEL_VAL		0x10000000
 #define WL_NET_DETECT_VAL	0x20000000
-#define WL_OCE_VAL		0x20000000 /* reuse */
-#define WL_FILS_VAL		0x20000000 /* reuse */
+#define WL_OCE_VAL		0x20000000	/* reuse */
+#define WL_FILS_VAL		0x20000000	/* reuse */
 #define WL_PCIE_VAL		0x40000000
-#define WL_PMDUR_VAL	0x80000000
-
 /* use top-bit for WL_TIME_STAMP_VAL because this is a modifier
  * rather than a message-type of its own
  */
@@ -1372,7 +1403,8 @@
 #define WL_LED_WI6		22
 #define WL_LED_WI7		23
 #define WL_LED_WI8		24
-#define	WL_LED_NUMBEHAVIOR	25
+#define WL_LED_WI9		25		/* wlan indicator 9 mode (radio and activity) */
+#define	WL_LED_NUMBEHAVIOR	26
 
 /* led behavior numeric value format */
 #define	WL_LED_BEH_MASK		0x3f		/* behavior mask */
@@ -1456,15 +1488,49 @@
 #define WL_BTC_4WIRE		4	/* use 4-wire BTC */
 
 /* BTC flags: BTC configuration that can be set by host */
-#define WL_BTC_FLAG_PREMPT               (1 << 0)
-#define WL_BTC_FLAG_BT_DEF               (1 << 1)
-#define WL_BTC_FLAG_ACTIVE_PROT          (1 << 2)
-#define WL_BTC_FLAG_SIM_RSP              (1 << 3)
-#define WL_BTC_FLAG_PS_PROTECT           (1 << 4)
-#define WL_BTC_FLAG_SIM_TX_LP	         (1 << 5)
-#define WL_BTC_FLAG_ECI                  (1 << 6)
-#define WL_BTC_FLAG_LIGHT                (1 << 7)
-#define WL_BTC_FLAG_PARALLEL             (1 << 8)
+#define WL_BTC_FLAG_PREMPT      (1 << 0) /* enable bluetooth check during tx */
+#define WL_BTC_FLAG_BT_DEF      (1 << 1) /* BT wins when competing for non-priority transaction */
+#define WL_BTC_FLAG_ACTIVE_PROT (1 << 2) /* use active BTCX protection */
+#define WL_BTC_FLAG_SIM_RSP     (1 << 3) /* allow limited low power tx when BT is active */
+#define WL_BTC_FLAG_PS_PROTECT  (1 << 4) /* use PS mode to protect BT activity */
+#define WL_BTC_FLAG_SIM_TX_LP   (1 << 5) /* use low power for simultaneous tx responses */
+#define WL_BTC_FLAG_ECI         (1 << 6) /* enable BTCX ECI interface */
+#define WL_BTC_FLAG_LIGHT       (1 << 7) /* light coex mode: off txpu only for critical BT */
+#define WL_BTC_FLAG_PARALLEL    (1 << 8) /* BT and WLAN run in parallel */
+
+/* BTC task definitions for "btc_task" iovar */
+#define BTCX_TASK_UNKNOWN	0
+#define BTCX_TASK_ACL		1
+#define BTCX_TASK_SCO		2
+#define BTCX_TASK_ESCO		3
+#define BTCX_TASK_A2DP		4
+#define BTCX_TASK_SNIFF		5
+#define BTCX_TASK_PSCAN		6
+#define BTCX_TASK_ISCAN		7
+#define BTCX_TASK_PAGE		8
+#define BTCX_TASK_INQUIRY	9
+#define BTCX_TASK_MSS		10
+#define BTCX_TASK_PARK		11
+#define BTCX_TASK_RSSISCAN	12
+#define BTCX_TASK_ISCAN_SCO	13
+#define BTCX_TASK_PSCAN_SCO	14
+#define BTCX_TASK_TPOLL		15
+#define BTCX_TASK_SACQ		16
+#define BTCX_TASK_SDATA		17
+#define BTCX_TASK_RS_LISTEN	18
+#define BTCX_TASK_RS_BURST	19
+#define BTCX_TASK_BLE_ADV	20
+#define BTCX_TASK_BLE_SCAN	21
+#define BTCX_TASK_BLE_INIT	22
+#define BTCX_TASK_BLE_CONN	23
+#define BTCX_TASK_LMP		24
+#define BTCX_TASK_ESCO_RETRAN	25
+#define BTCX_TASK_MULTIHID	30
+#define BTCX_TASK_LOCAL_DEFNS	64
+#define BTCX_TASK_LEA_1o1	(BTCX_TASK_LOCAL_DEFNS+2)
+#define BTCX_TASK_LEA_1o2	(BTCX_TASK_LOCAL_DEFNS+3)
+#define BTCX_TASK_LEA_2o2	(BTCX_TASK_LOCAL_DEFNS+4)
+#define BTCX_TASK_MAX		(BTCX_TASK_LOCAL_DEFNS+5)
 
 /* maximum channels returned by the get valid channels iovar */
 #define WL_NUMCHANNELS		64
@@ -1708,7 +1774,8 @@
 #define APCS_NONACSD		6
 #define APCS_DFS_REENTRY	7
 #define APCS_TXFAIL		8
-#define APCS_MAX		9
+#define APCS_ZDFS		9
+#define APCS_MAX		10
 
 /* number of ACS record entries */
 #define CHANIM_ACS_RECORD			10
@@ -1724,8 +1791,7 @@
 #define CCASTATS_GDTXDUR        7
 #define CCASTATS_BDTXDUR        8
 
-#define CCASTATS_MYRX      9
-#define CCASTATS_MAX    10
+#define CCASTATS_MAX    9
 
 #define WL_CHANIM_COUNT_ALL            0xff
 #define WL_CHANIM_COUNT_ONE            0x1
@@ -2293,6 +2359,7 @@
 #define WL_MONPROMISC_PROMISC 0x0001
 #define WL_MONPROMISC_CTRL 0x0002
 #define WL_MONPROMISC_FCS 0x0004
+#define WL_MONPROMISC_HETB 0x0008
 
 /* TCP Checksum Offload defines */
 #define TOE_TX_CSUM_OL		0x00000001
@@ -2331,5 +2398,16 @@
 /* IOV AWD DATA */
 #define AWD_DATA_JOIN_INFO	0
 #define AWD_DATA_VERSION_V1	1
+
+#define WL_FRAME_TYPE_CCK 0
+#define WL_FRAME_TYPE_11AG 1
+#define WL_FRAME_TYPE_HT 2
+#define WL_FRAME_TYPE_VHT 3
+#define WL_FRAME_TYPE_HE 4
+
+#define WL_HE_FORMAT_SU 0
+#define WL_HE_FORMAT_ER 1
+#define WL_HE_FORMAT_MU 2
+#define WL_HE_FORMAT_TRI 3
 
 #endif /* wlioctl_defs_h */

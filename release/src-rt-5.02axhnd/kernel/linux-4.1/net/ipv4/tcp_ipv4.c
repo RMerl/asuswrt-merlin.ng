@@ -1937,7 +1937,11 @@ process:
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
 	/* TODO can we move this deeper into TCP stack */
 
-	if( (sk && sk->sk_state == TCP_ESTABLISHED) && skb->blog_p &&
+   if(skb->blog_p && skb->blog_p->l2_mode)
+   {
+      blog_skip(skb,blog_skip_reason_l2_local_termination);
+   }
+   else if( (sk && sk->sk_state == TCP_ESTABLISHED) && skb->blog_p &&
 		( skb->blog_p->rx.info.phyHdrType == BLOG_ENETPHY
 		|| skb->blog_p->rx.info.phyHdrType == BLOG_EPONPHY
 		|| skb->blog_p->rx.info.phyHdrType == BLOG_GPONPHY) )

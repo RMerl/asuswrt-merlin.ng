@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Broadcom
+ * Copyright 2019 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -48,7 +48,9 @@
 
 #ifndef _EMFC_H_
 #define _EMFC_H_
-
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+#include <bcmipv6.h>
+#endif // endif
 #define MFDB_HASHT_SIZE         8
 #define MFDB_MGRP_HASH(m)       ((((m) >> 24) + ((m) >> 16) + \
 				  ((m) >> 8) + ((m) & 0xff)) & 7)
@@ -69,7 +71,14 @@
 typedef struct emfc_mgrp
 {
 	clist_head_t     mgrp_hlist;    /* Multicast Groups hash list */
-	uint32           mgrp_ip;       /* Multicast Group IP Address */
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+	union {
+		uint32				mgrp_ip;	/* Multicast Group IP Address */
+		struct ipv6_addr	mgrp_ipv6;	/* Multicast Group IP Address */
+	};
+#else
+	uint32			 mgrp_ip;		/* Multicast Group IP Address */
+#endif // endif
 	clist_head_t     mi_head;       /* List head of interfaces */
 } emfc_mgrp_t;
 
@@ -78,9 +87,10 @@ typedef struct emfc_mgrp
  */
 typedef struct emfc_mhif
 {
-	struct emfc_mhif *next;         /* Multicast host i/f prev and next */
+	struct emfc_mhif *prev,*next;   /* Multicast host i/f prev and next */
 	void             *mhif_ifp;     /* Interface pointer */
 	uint32           mhif_data_fwd; /* Number of MCASTs sent on the i/f */
+	uint32           mhif_ref;      /* Ref count of updates */
 } emfc_mhif_t;
 
 typedef struct emfc_mi
@@ -125,12 +135,28 @@ typedef struct emfc_info
 	emf_stats_t      stats;         /* Multicast frames statistics */
 	emfc_snooper_t	 *snooper;	/* IGMP Snooper data */
 	emfc_wrapper_t   wrapper;       /* EMFC wrapper info  */
-	bool		 emf_enable;	/* Enable/Disable EMF */
-	bool		 mc_data_ind;	/* Indicate mcast data frames */
+	bool			 emf_enable;	/* Enable/Disable EMF */
+	bool			 mc_data_ind;	/* Indicate mcast data frames */
 	osl_lock_t       iflist_lock;   /* Lock for UFFP list access */
 	emfc_iflist_t    *iflist_head;  /* UFFP list head */
+
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+	osl_lock_t		 fdb_lock_ipv6;			/* Lock for FDB access */
+	clist_head_t	 mgrp_fdb_ipv6[MFDB_HASHT_SIZE];
+	emfc_mhif_t		 *mhif_head_ipv6;		/* Multicast Host interface list */
+	struct ipv6_addr mgrp_cache_ipv6_addr;	/* ipv6 cached address */
+	emfc_mgrp_t		 *mgrp_cache_ipv6_grp;	/* Multicast Group cached entry */
+	emf_stats_t		  stats_ipv6;			/* Multicast frames statistics */
+#endif // endif
 } emfc_info_t;
 
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+#define MFDB_MGRP_HASH_IPV6(m)		\
+	((((m).s6_addr32[0])+((m).s6_addr32[1])+((m).s6_addr32[2])+((m).s6_addr32[3])) &7)
+#define EMFC_STATS_INCR_IPV6(emfc, member) (((emfc)->stats_ipv6.member)++)
+extern emfc_info_t *emfc_instance_find(char *inst_id);
+#else
 static emfc_mgrp_t *emfc_mfdb_group_find(emfc_info_t *emfc, uint32 mgrp_ip);
+#endif // endif
 
 #endif /* _EMFC_H_ */

@@ -237,6 +237,9 @@ void ip_options_fragment(struct sk_buff *skb)
 	opt->ts_needaddr = 0;
 	opt->ts_needtime = 0;
 }
+#if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
+EXPORT_SYMBOL(ip_options_fragment);
+#endif
 
 /* helper used by ip_options_compile() to call fib_compute_spec_dst()
  * at most one time.

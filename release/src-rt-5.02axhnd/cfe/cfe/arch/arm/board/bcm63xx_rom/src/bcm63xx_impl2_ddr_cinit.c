@@ -68,7 +68,7 @@
 
 #define SHMOO_TEST_SIZE               131072    /*128KB */
 
-#if defined(_BCM94908_) || defined(_BCM963158_)
+#if defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96858_)
 #define MEMSTRT_UNSCRAM_WINDOW_SIZE    (0) /* Size in bytes, of unscrambled region at start of DRAM */
 #define MEMEND_UNSCRAM_WINDOW_SIZE     (0) /* Size in bytes, of unscrambled region at end of DRAM */
 #endif
@@ -95,7 +95,7 @@ static void cfg_map_addr_bits_to_row_col_ba(void);
 
 extern mcbindex MCB[];
 static mcbindex* memc_get_mcb(uint32_t memcfg);
-#if defined(_BCM94908_) || defined(_BCM963158_)
+#if defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96858_)
 static int memc_waitfor_scrambler_status(uint32_t status);
 static int memc_setup_scrambler(uint32_t memsize_Mbit);
 #endif
@@ -502,7 +502,7 @@ static void memc_print_cfg(void)
 }
 #endif
 
-#if defined(_BCM94908_) || defined(_BCM963158_)
+#if defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96858_)
 static int memc_init_rng_seed(uint32_t* seed)
 {
     int timeout = 0, i = 0;
@@ -1187,7 +1187,7 @@ int ddr_init(uint32_t mcb_selector, uint32_t memcfg_from_flash)
 #endif
     }
 
-#if defined(_BCM94908_) || defined(_BCM963158_)
+#if defined(_BCM94908_) || defined(_BCM963158_) || defined(_BCM96858_)
     memc_setup_scrambler(memc_dram_profile.total_size_Mbits);
 #endif
 

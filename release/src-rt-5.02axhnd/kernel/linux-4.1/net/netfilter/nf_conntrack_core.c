@@ -520,69 +520,29 @@ static void death_by_timeout(unsigned long ul_conntrack)
 }
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
-void __nf_ct_time(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
-{
-	/* Cases:
-	* a) conn has been active, prev_idle = 0, idle_jiffies = 0
-	* b) conn becomes idle,  prev_idle = 0, idle_jiffies != 0
-	* c) conn becomes idle in prev timeout and then becomes active again.
-	*    prev_idle = 0, and idle_jiffies != 0.
-	* d) conn was idle in prev timeout and is still idle.
-	*    prev_idle != 0, and idle_jiffies != 0.
-	*
-	*    In the first three cases (a) to (c), timer should be restarted
-	*    after adjustment for idle_jiffies.
-	*
-	*    In the last case (d), on expiry it is time to destroy the conn.
-	*
-	* e) the udp conntrack timeout is set to less than flow cache interval(120 sec)
-	*/
-  
-	if ( nf_ct_protonum(ct) == IPPROTO_UDP && ct->prev_idle)   /* handle case (e) */
-	{
-		if( ct_time_p->idle_jiffies < ct_time_p->extra_jiffies) 
-		{
-			unsigned long newtime_1;
-			ct->prev_timeout.expires = ct->timeout.expires;
-			newtime_1= ct->timeout.expires + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-			mod_timer(&ct->timeout, newtime_1);
-			ct->prev_idle = ct_time_p->idle_jiffies;
-		} else {
-			del_timer(&ct->timeout);
-
-			death_by_timeout((unsigned long) ct);
-		}
-	} else if ((!ct->prev_idle) || (!ct_time_p->idle_jiffies)) {
-		unsigned long newtime;
-
-		ct->prev_timeout.expires = ct->timeout.expires;
-		if (ct_time_p->extra_jiffies == 0) {
-			if (ct_time_p->proto == IPPROTO_TCP && (ct->proto.tcp.state != TCP_CONNTRACK_ESTABLISHED))
-				goto DELT;
-			else {
-				if (ct_time_p->idle_jiffies == 0)
-					newtime= jiffies + BLOG_NAT_UDP_DEFAULT_IDLE_TIMEOUT;
-				else
-					goto DELT;
-			}
-		}
-		else
-			newtime= jiffies + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-		mod_timer(&ct->timeout, newtime);
-		ct->prev_idle = ct_time_p->idle_jiffies;
-	} else {
-DELT:
-		del_timer(&ct->timeout);
-
-		death_by_timeout((unsigned long) ct);
-	}
-}
+#ifdef TIMER_FUNCTION_TIMEOUT
+extern void monitor_timer_fn_register(void (*fn)(unsigned long));
+#endif /* TIMER_FUNCTION_TIMEOUT */
 
 static void blog_death_by_timeout(unsigned long ul_conntrack)
 {
 	struct nf_conn *ct = (void *)ul_conntrack;
 	BlogCtTime_t ct_time;
 	uint32_t ct_blog_key = 0;
+#ifdef TIMER_FUNCTION_TIMEOUT
+	static unsigned long defer = BLOG_TIMEOUT_DEFER_PERIOD;
+	struct _timer_function_timeout *to = (void *)ul_conntrack;
+
+	if (to->magic == TIMER_FUNCTION_TIMEOUT_MAGIC) {
+		ct = (void *)(to->data);
+
+		if ((to->expire > 0) && time_after(jiffies, to->expire)) {
+			defer = (defer + HZ) % BLOG_TIMEOUT_DEFER_PERIOD;
+			mod_timer(&ct->timeout, (jiffies + HZ + defer));
+			return;
+		}
+	}
+#endif /* TIMER_FUNCTION_TIMEOUT */
 
 	memset(&ct_time, 0, sizeof(ct_time));
 	blog_lock();
@@ -596,29 +556,49 @@ static void blog_death_by_timeout(unsigned long ul_conntrack)
 	}
 	blog_unlock();
 
+	/* Normally we should delete the connection when we are here, but 
+	 * if this connection is accelerated, we may need to rearm the
+	 * timer based on how long the connection has been idle, 
+	 * in accelerator.
+	 */ 
 	if (ct_time.flags.valid && ct_blog_key)
-		__nf_ct_time(ct, &ct_time);
-	else {
-		del_timer(&ct->timeout);
-
-		death_by_timeout((unsigned long) ct);
+	{
+		signed long newtime = ct_time.extra_jiffies - ct_time.idle_jiffies;
+		/* make sure we have atleast HZ jiffies to re-arm the timer 
+		 * as sometimes extra_fiffies can be less than idle_jiffies 
+		 */
+		if(newtime > HZ){
+			ct->prev_timeout.expires = ct->timeout.expires;
+			mod_timer(&ct->timeout, jiffies + newtime);
+			return;
+		}
 	}
+
+	death_by_timeout((unsigned long) ct);
 }
 
 void __nf_ct_time_update(struct nf_conn *ct, BlogCtTime_t *ct_time_p)
 {
-	unsigned long newtime;
 
 	if (!timer_pending(&ct->timeout))
 		return;
 
 	if (ct->blog_key[BLOG_PARAM1_DIR_ORIG] != BLOG_KEY_FC_INVALID ||
-	    ct->blog_key[BLOG_PARAM1_DIR_REPLY] != BLOG_KEY_FC_INVALID) {
+			ct->blog_key[BLOG_PARAM1_DIR_REPLY] != BLOG_KEY_FC_INVALID) {
+
+		signed long newtime = ct_time_p->extra_jiffies - ct_time_p->idle_jiffies;
+
 		ct->prev_idle = 0;
 
-		newtime = jiffies + (ct_time_p->extra_jiffies - ct_time_p->idle_jiffies);
-		ct->prev_timeout.expires = jiffies;
-		mod_timer_pending(&ct->timeout, newtime);
+		/* to avoid triggering the timer immediately,
+		 * add altleast 1 HZ  when modifying the timer
+		 */
+		if(newtime < HZ)
+			newtime = HZ;
+		
+		/*TODO remove this prev_timeout */
+		ct->prev_timeout.expires = ct->timeout.expires;
+		mod_timer_pending(&ct->timeout, jiffies + newtime);
 	}
 }
 #endif
@@ -1366,10 +1346,13 @@ __nf_conntrack_alloc(struct net *net, u16 zone,
 				ct->iq_prio = IQOS_PRIO_LOW;
 		}
 	} else {
-		ct->iq_prio = blog_iq(skb);
+		ct->iq_prio = (blog_iq(skb) == BLOG_IQ_PRIO_HIGH) ? IQOS_PRIO_HIGH : IQOS_PRIO_LOW;
 	}
 	ct->prev_timeout.expires = jiffies;
 
+#ifdef TIMER_FUNCTION_TIMEOUT
+	monitor_timer_fn_register(blog_death_by_timeout);
+#endif /* TIMER_FUNCTION_TIMEOUT */
 	/* Don't set timer yet: wait for confirmation */
 	setup_timer(&ct->timeout, blog_death_by_timeout, (unsigned long)ct);
 #else

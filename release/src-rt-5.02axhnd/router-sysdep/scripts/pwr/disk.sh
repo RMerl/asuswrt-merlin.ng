@@ -3,7 +3,7 @@
 # list of SATA/AHCI and usb modules (watch out depends)
 # in targets/fs.src/etc/init.d/bcm-base-drivers.list
 mod='btusbdrv uas usb-storage usblp xhci-plat-hcd xhci-hcd '
-mod=$mod'ohci-platform ohci-hcd ehci-platform ehci-hcd usbcore usb-common '
+mod=$mod'ohci-platform ohci-pci ohci-hcd ehci-platform ehci-pci ehci-hcd usbcore usb-common '
 mod=$mod'ahci_platform libahci_platform ahci libahci libata '
 mod=$mod'bcm_usb bcm_sata '
 

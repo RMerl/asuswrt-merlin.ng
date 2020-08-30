@@ -3,7 +3,7 @@
  *     export functions to client drivers
  *     abstract OS and BUS specific details of SDIO
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsdh.h 690946 2017-03-20 05:24:19Z $
+ * $Id: bcmsdh.h 774649 2019-05-01 13:45:54Z $
  */
 
 /**
@@ -46,11 +46,6 @@ extern const uint bcmsdh_msglevel;
 typedef struct bcmsdh_info bcmsdh_info_t;
 typedef void (*bcmsdh_cb_fn_t)(void *);
 
-#if defined(NDIS) && (NDISVER >= 0x0630) && defined(BCMDONGLEHOST)
-extern bcmsdh_info_t *bcmsdh_attach(osl_t *osh, void *cfghdl,
-	void **regsva, uint irq, shared_info_t *sh);
-#else
-
 #if defined(BT_OVER_SDIO)
 typedef enum {
 	NO_HANG_STATE		= 0,
@@ -74,7 +69,6 @@ struct bcmsdh_info
 	void	*os_cxt;        /* Pointer to per-OS private data */
 	bool	force_sbwad_calc; /* forces calculation of sbwad instead of using cached value */
 };
-#endif /* defined(NDIS) && (NDISVER >= 0x0630) && defined(BCMDONGLEHOST) */
 
 /* Detach - freeup resources allocated in attach */
 extern int bcmsdh_detach(osl_t *osh, void *sdh);
@@ -192,6 +186,11 @@ extern int bcmsdh_stop(void *sdh);
 /* Wait system lock free */
 extern int bcmsdh_waitlockfree(void *sdh);
 
+/* XXX Bogosity alert. This should only know about devids gleaned through
+ * the standard CIS (versus some client dependent method), and we already
+ * have an interface for the CIS.
+ * Remove me.
+ */
 /* Returns the "Device ID" of target device on the SDIO bus. */
 extern int bcmsdh_query_device(void *sdh);
 

@@ -1,7 +1,7 @@
 #
 # 802.1x Authenticator (Network Access Server) Embedded Linux Build Makefile
 #
-# Copyright 2018 Broadcom
+# Copyright 2019 Broadcom
 #
 # This program is the proprietary software of Broadcom and/or
 # its licensors, and may only be used, duplicated, modified or distributed
@@ -42,7 +42,7 @@
 # OR U.S. $1, WHICHEVER IS GREATER. THESE LIMITATIONS SHALL APPLY
 # NOTWITHSTANDING ANY FAILURE OF ESSENTIAL PURPOSE OF ANY LIMITED REMEDY.
 #
-# $Id: Makefile 694517 2017-04-13 06:05:10Z $
+# $Id: Makefile 768736 2018-10-23 21:53:02Z $
 #
 
 include ../../.config
@@ -75,7 +75,7 @@ CFLAGS += -I$(TOP_PLATFORM)/eapd${BCMEX}$(EX7)
 CFLAGS += -I$(SRCBASE_ROUTER)/nas${BCMEX}$(EX7)/nas_fbt
 
 LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(INSTALLDIR)/nvram/usr/lib -lnvram ${EXTRA_NV_LDFLAGS}
-LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -lpthread
 LDFLAGS += -L$(TOP)/libbcmcrypto -L$(INSTALLDIR)/libbcmcrypto/usr/lib -lbcmcrypto
 LDFLAGS += -lgcc_s
 

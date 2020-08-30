@@ -54,6 +54,7 @@ CmsRet devCtl_xtmUninitializeTrace(void);
 CmsRet devCtl_xtmReInitializeTrace(void);
 CmsRet devCtl_xtmGetTrafficDescrTableTrace(void);
 CmsRet devCtl_xtmConfigTrace(void);
+CmsRet devCtl_xtmManageThresholdTrace(void);
 CmsRet devCtl_xtmSetTrafficDescrTableTrace(void);
 CmsRet devCtl_xtmGetInterfaceCfgTrace(void);
 CmsRet devCtl_xtmSetInterfaceCfgTrace(void);

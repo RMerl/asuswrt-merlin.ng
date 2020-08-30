@@ -95,6 +95,10 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 	struct mm_struct *mm = vma->vm_mm;
 	pte_t *old_pte, *new_pte, pte;
 	spinlock_t *old_ptl, *new_ptl;
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	bool force_flush = false;
+	unsigned long len = old_end - old_addr;
+#endif //if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 
 	/*
 	 * When need_rmap_locks is true, we take the i_mmap_rwsem and anon_vma
@@ -141,12 +145,31 @@ static void move_ptes(struct vm_area_struct *vma, pmd_t *old_pmd,
 		if (pte_none(*old_pte))
 			continue;
 		pte = ptep_get_and_clear(mm, old_addr, old_pte);
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+		/*
+		 * If we are remapping a valid PTE, make sure
+		 * to flush TLB before we drop the PTL for the PTE.
+		 *
+		 * NOTE! Both old and new PTL matter: the old one
+		 * for racing with page_mkclean(), the new one to
+		 * make sure the physical page stays valid until
+		 * the TLB entry for the old mapping has been
+		 * flushed.
+		 */
+		if (pte_present(pte))
+			force_flush = true;
+#endif //#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+
 		pte = move_pte(pte, new_vma->vm_page_prot, old_addr, new_addr);
 		pte = move_soft_dirty_pte(pte);
 		set_pte_at(mm, new_addr, new_pte, pte);
 	}
 
 	arch_leave_lazy_mmu_mode();
+#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
+	if (force_flush)
+		flush_tlb_range(vma, old_end - len, old_end);
+#endif //#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 	if (new_ptl != old_ptl)
 		spin_unlock(new_ptl);
 	pte_unmap(new_pte - 1);
@@ -166,7 +189,9 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 {
 	unsigned long extent, next, old_end;
 	pmd_t *old_pmd, *new_pmd;
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 	bool need_flush = false;
+#endif //#if defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 	unsigned long mmun_start;	/* For mmu_notifiers */
 	unsigned long mmun_end;		/* For mmu_notifiers */
 
@@ -205,7 +230,9 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 					anon_vma_unlock_write(vma->anon_vma);
 			}
 			if (err > 0) {
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 				need_flush = true;
+#endif
 				continue;
 			} else if (!err) {
 				split_huge_page_pmd(vma, old_addr, old_pmd);
@@ -222,10 +249,14 @@ unsigned long move_page_tables(struct vm_area_struct *vma,
 			extent = LATENCY_LIMIT;
 		move_ptes(vma, old_pmd, old_addr, old_addr + extent,
 			  new_vma, new_pmd, new_addr, need_rmap_locks);
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 		need_flush = true;
+#endif
 	}
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 	if (likely(need_flush))
 		flush_tlb_range(vma, old_end-len, old_addr);
+#endif
 
 	mmu_notifier_invalidate_range_end(vma->vm_mm, mmun_start, mmun_end);
 

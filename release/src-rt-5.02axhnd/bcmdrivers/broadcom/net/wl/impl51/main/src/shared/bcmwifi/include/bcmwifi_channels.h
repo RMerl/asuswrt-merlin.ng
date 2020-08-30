@@ -3,7 +3,7 @@
  * This header file housing the define and function prototype use by
  * both the wl driver, tools & Apps.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_channels.h 753708 2018-03-22 18:36:02Z $
+ * $Id: bcmwifi_channels.h 771488 2019-01-29 11:20:56Z $
  */
 
 #ifndef	_bcmwifi_channels_h_
@@ -59,6 +59,9 @@ typedef struct {
 
 #define CHSPEC_CTLOVLP(sp1, sp2, sep)	\
 	(ABS(wf_chspec_ctlchan(sp1) - wf_chspec_ctlchan(sp2)) < (sep))
+
+#define CHSPEC_CHNLOVLP(sp1, sp2, sep) \
+	(ABS(CHSPEC_CHANNEL(sp1) - CHSPEC_CHANNEL(sp2)) <= (sep))
 
 /* All builds use the new 11ac ratespec/chanspec */
 #undef  D11AC_IOTYPES
@@ -168,6 +171,7 @@ typedef struct {
 #define CHSPEC_CHAN2(chspec)	((chspec) & WL_CHANSPEC_CHAN2_MASK) >> WL_CHANSPEC_CHAN2_SHIFT
 #define CHSPEC_BAND(chspec)		((chspec) & WL_CHANSPEC_BAND_MASK)
 #define CHSPEC_CTL_SB(chspec)	((chspec) & WL_CHANSPEC_CTL_SB_MASK)
+#define CHSPEC_SB(chspec)	((chspec) & WL_CHANSPEC_CTL_SB_MASK) >> WL_CHANSPEC_CTL_SB_SHIFT
 #define CHSPEC_BW(chspec)		((chspec) & WL_CHANSPEC_BW_MASK)
 
 #ifdef WL11N_20MHZONLY

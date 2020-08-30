@@ -1,0 +1,8 @@
+# Whitelist for PHY_TWIG_17_100_25_15
+# 
+# Please add new items at the bottom.
+#
+# Gain approval from you manager before editing this file.
+#
+JIRA:BCAWLAN-202985 Change 3to4 spatial expansion CSD to [ 0 3 1 5]
+JIRA:BCAWLAN-203052 enable TSSI adc clk depends on txchain

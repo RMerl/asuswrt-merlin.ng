@@ -989,6 +989,9 @@ int cfg80211_change_iface(struct cfg80211_registered_device *rdev,
 			if (dev->ieee80211_ptr->use_4addr)
 				break;
 			/* fall through */
+#if defined(CONFIG_BCM_KF_WL) && defined(CONFIG_BCM_HOSTAPD)
+			break;
+#endif /* CONFIG_BCM_KF_WL && CONFIG_BCM_HOSTAPD */
 		case NL80211_IFTYPE_OCB:
 		case NL80211_IFTYPE_P2P_CLIENT:
 		case NL80211_IFTYPE_ADHOC:

@@ -639,9 +639,18 @@ struct net_device *bcmfc_br_fdbdev_get(void *br,
 {
 	struct net_bridge_fdb_entry *fdb;
 
+	if (unlikely(!br || !addr)) {
+		printk("%s: br %p addr %p\n", __FUNCTION__, br, addr);
+		return NULL;
+	}
+
 	rcu_read_lock();
 	hlist_for_each_entry_rcu(fdb,
 		&((struct net_bridge *)br)->hash[br_mac_hash(addr, vid)], hlist) {
+		if (unlikely(!fdb)) {
+			printk("%s: fdb is null\n", __FUNCTION__);
+			continue;
+		}
 		if (ether_addr_equal(fdb->addr.addr, addr) &&
 		    fdb->vlan_id == vid) {
 			rcu_read_unlock();
@@ -996,6 +1005,22 @@ void br_fdb_update(struct net_bridge *br, struct net_bridge_port *source,
 				if (unlikely(added_by_user))
 					fdb->added_by_user = 1;
 				fdb_notify(br, fdb, RTM_NEWNEIGH);
+#if defined(CONFIG_BCM_KF_NETFILTER)
+				/* In case of new MAC - let ethernet driver clear switch ARL */
+				if (fdb->dst) {
+					bcmFun_t *ethswClearArlFun;
+					/* Get the switch clear ARL function pointer */
+					ethswClearArlFun =  bcmFun_get(BCM_FUN_IN_ENET_CLEAR_ARL_ENTRY);
+					if ( ethswClearArlFun ) {
+						struct net_device *dev = fdb->dst->dev;
+
+						while( !netdev_path_is_root(dev) )  // find root device
+							dev = netdev_path_next_dev(dev);
+						if (!(dev->priv_flags & IFF_EXT_SWITCH))    // clear if root device is not on ext_switch
+							ethswClearArlFun((void*)addr);
+					}
+				}
+#endif /* CONFIG_BCM_KF_NETFILTER */
 
 #if defined(CONFIG_BCM_KF_BRIDGE_MAC_FDB_LIMIT) && defined(CONFIG_BCM_BRIDGE_MAC_FDB_LIMIT)
 				fdb_limit_update(br, source, 1);

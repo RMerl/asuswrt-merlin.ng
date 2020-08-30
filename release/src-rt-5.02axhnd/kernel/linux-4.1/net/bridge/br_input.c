@@ -143,6 +143,11 @@ static void br_do_proxy_arp(struct sk_buff *skb, struct net_bridge *br,
 	}
 }
 
+#if defined(CONFIG_BCM_KF_WL)
+//  ETHER_TYPE_BRCM 0x886c, ETHER_TYPE_802_1X 0x888e, ETHER_TYPE_802_1X_PREAUTH 0x88c7
+#define WL_AUTH_PROTOCOLS(proto)    ((proto)==htons(0x886c)||(proto)==htons(0x888e)||(proto)==htons(0x88c7))
+#endif
+
 /* note: already called with rcu_read_lock */
 int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 {
@@ -155,7 +160,11 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 	bool unicast = true;
 	u16 vid = 0;
 
+#if defined(CONFIG_BCM_KF_WL)
+	if (!p || (p->state == BR_STATE_DISABLED && !WL_AUTH_PROTOCOLS(skb->protocol)))
+#else
 	if (!p || p->state == BR_STATE_DISABLED)
+#endif
 		goto drop;
 
 	if (!br_allowed_ingress(p->br, nbp_get_vlan_info(p), skb, &vid))
@@ -186,13 +195,9 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 	    br_multicast_rcv(br, p, skb, vid))
 		goto drop;
 
-#if defined(CONFIG_BCM_KF_WL)
-	if ((p->state == BR_STATE_LEARNING) &&
-	    (skb->protocol != htons(0x886c) /*ETHER_TYPE_BRCM*/) &&
-	    (skb->protocol != htons(0x888e) /*ETHER_TYPE_802_1X*/) &&
-	    (skb->protocol != htons(0x88c7) /*ETHER_TYPE_802_1X_PREAUTH*/))
-#else
 	if (p->state == BR_STATE_LEARNING)
+#if defined(CONFIG_BCM_KF_WL)
+      if (!WL_AUTH_PROTOCOLS(skb->protocol))
 #endif
 		goto drop;
 
@@ -283,7 +288,6 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 		if ((dst != NULL) && (dst->dst != NULL) && (!dst->is_local)) {
 #if defined(CONFIG_BCM_KF_WL)
 			u8 from_wl_to_switch=0, from_switch_to_wl=0, from_wlan_to_wlan=0;
-			struct net_device *root_dst_dev_p = dst->dst->dev;
 			BlogPhy_t srcPhyType, dstPhyType;
 			uint32_t chainIdx;
 			uint16_t dst_dev_has_vlan = 0;
@@ -297,14 +301,9 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 			srcPhyType = BLOG_GET_PHYTYPE(src->dst->dev->path.hw_port_type);
 			dstPhyType = BLOG_GET_PHYTYPE(dst->dst->dev->path.hw_port_type);
 
-
 			if ((srcPhyType == BLOG_WLANPHY) &&
 			    (dstPhyType == BLOG_ENETPHY)) {
 				from_wl_to_switch = 1;
-				while (!netdev_path_is_root(root_dst_dev_p) &&
-				       (root_dst_dev_p->priv_flags & IFF_BCM_VLAN)) {
-					root_dst_dev_p = netdev_path_next_dev(root_dst_dev_p);
-				}
 			} else if ((srcPhyType == BLOG_ENETPHY || srcPhyType == BLOG_XTMPHY ||
  				srcPhyType == BLOG_EPONPHY || srcPhyType == BLOG_GPONPHY) &&
  				(dstPhyType == BLOG_WLANPHY) &&
@@ -313,7 +312,7 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 				from_switch_to_wl = 1;
    			}
 
-#if defined (CONFIG_BCM_DHD_RUNNER) && defined (CONFIG_BCM_WIFI_FORWARDING_DRV_MODULE)
+#if defined (CONFIG_BCM_DHD_RUNNER) && defined (CONFIG_BCM_WIFI_FORWARDING_DRV_MODULE) || defined(CONFIG_BCM947189)
 			else if((srcPhyType == BLOG_WLANPHY) && (dstPhyType == BLOG_WLANPHY))
 				from_wlan_to_wlan = 1;
 #endif
@@ -324,22 +323,25 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 			    int len = strlen(dst->dst->dev->name);
 			    dst_dev_has_vlan = 1;
 
-			    /* Check dev is default LAN side VLAN (for ex:eth1.0 or eth2.0) 
-                               that doesn't add/remove VLAN tag. So still create PKTC for it. */
+			    /* WLAN Rx: Check dev is default LAN side VLAN (for ex:eth1.0 or eth2.0) 
+                               that doesn't add/remove VLAN tag. So still create PKTC for it. 
+			       WLAN Tx: Allow to create PKTC as VLAN tag modifications are performed by the accelerator(fcache/fap/runner).
+			    */
 
 			    if ((!(dst->dst->dev->priv_flags & IFF_WANDEV)) && (len > 3))
 			    {
-				if( (dst->dst->dev->name[len-2] == '.') && (dst->dst->dev->name[len-1] == '0') )
-				{
-				   dst_dev_has_vlan = 0;
-				}
+					if (( from_wl_to_switch && (dst->dst->dev->name[len-2] == '.') && (dst->dst->dev->name[len-1] == '0') )
+						|| from_switch_to_wl )
+					{
+						dst_dev_has_vlan = 0;
+					}
 			    }
 			}
 
 			if ((from_wl_to_switch || from_switch_to_wl || from_wlan_to_wlan) &&
 			    !(dst->dst->dev->priv_flags & IFF_WANDEV) &&
-			    !(dst_dev_has_vlan) &&
-			    netdev_path_is_root(root_dst_dev_p)) {
+			    !(dst_dev_has_vlan)) {
+
 			/* Also check for non-WAN cases.
 			 * For the Rx direction, VLAN cases are allowed as long 
 			 * as the packets are untagged.
@@ -353,11 +355,23 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 			 * created on wl device when LAN_VLAN flag is enabled 
 			 * in the build.
 			 *
-			 * The netdev_path_is_root() check makes sure that we 
+			 * Get the root dest device and make sure that we 
 			 * are always transmitting to a root device */
+
+				struct net_device *root_dst_dev_p = dst->dst->dev;
+				/* Get the root destination device */
+				while (!netdev_path_is_root(root_dst_dev_p)) {
+					root_dst_dev_p = netdev_path_next_dev(root_dst_dev_p);
+				}
  
-			/* Update chaining table for DHD on the wl to switch direction only */
-				if ((from_wl_to_switch) && (dhd_pktc_req_hook != NULL)) {
+				/* Update chaining table for DHD on the wl to switch direction only */
+				if ( (    from_wl_to_switch
+#if defined(CONFIG_BCM947189)
+  			   	      || from_wlan_to_wlan
+#endif
+				    )
+				    && (dhd_pktc_req_hook != NULL)) 
+				{
 					dhd_pktc_req_hook(PKTC_TBL_UPDATE,
 								     (unsigned long)&(dst->addr.addr[0]),
 								     (unsigned long)root_dst_dev_p, 0);
@@ -373,16 +387,16 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 					 * chainEntry->tx_dev will always be NOT 
 					 * NULL as we just added that above */
 					if (skb->blog_p != NULL) 
-                    {
-                        if (from_switch_to_wl || from_wlan_to_wlan)
-                        {
-                            skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en = 1;
+					{
+						if (from_switch_to_wl || from_wlan_to_wlan)
+						{
+							skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en = 1;
 
-                          /* in case of flow from WLAN to WLAN the flow will
-                           *  be open in Runner only if is_rx_hw_acc_en in DHD
-                          */
-                            if(from_wlan_to_wlan && (0 == skb->blog_p->rnr.is_rx_hw_acc_en))
-                                skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en = 0; 
+							/* in case of flow from WLAN to WLAN the flow will
+							 *  be open in Runner only if is_rx_hw_acc_en in DHD
+							 */
+							if (from_wlan_to_wlan && (0 == skb->blog_p->rnr.is_rx_hw_acc_en))
+								skb->blog_p->wfd.nic_ucast.is_tx_hw_acc_en = 0; 
 
 							skb->blog_p->wfd.nic_ucast.is_chain = 1;
 							skb->blog_p->wfd.nic_ucast.wfd_idx = ((chainIdx & PKTC_WFD_IDX_BITMASK) >> PKTC_WFD_IDX_BITPOS);
@@ -532,10 +546,7 @@ forward:
 #endif
 
 #if defined(CONFIG_BCM_KF_WL)
-	if (( (skb->protocol == htons(0x886c) /*ETHER_TYPE_BRCM*/) ||
-	       (skb->protocol == htons(0x888e) /*ETHER_TYPE_802_1X*/) ||
-	       (skb->protocol == htons(0x88c7) /*ETHER_TYPE_802_1X_PREAUTH*/) ) &&
-	    (p->state != BR_STATE_FORWARDING) && (p->state != BR_STATE_DISABLED)) {
+    if ((p->state != BR_STATE_FORWARDING) && WL_AUTH_PROTOCOLS(skb->protocol)) {
 		/* force to forward brcm_type event packet */
 		NF_HOOK(NFPROTO_BRIDGE, NF_BR_PRE_ROUTING, NULL, skb, skb->dev, NULL,
 			br_handle_frame_finish);

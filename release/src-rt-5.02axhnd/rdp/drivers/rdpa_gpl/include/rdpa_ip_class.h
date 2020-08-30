@@ -161,6 +161,7 @@ typedef struct _rdpa_ip_flow_result_t {
     uint8_t gre_tunnel_idx;                    /**< index of tunnel described in GRE_Tunnels table */
     uint8_t is_tcpspdtest;                     /**< is_tcpspdtest */
     uint32_t pathstat_idx;                     /**< index path for statistics  */
+    uint16_t max_pkt_len;                      /**< Max packet size according to Egress Port MTU */
 } rdpa_ip_flow_result_t;
 
 /** 5-tuple based IP flow classification info (key + result).\n

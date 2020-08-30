@@ -1,0 +1,49 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use bytes;
+####
+#### This currently assembles images for GEN3 devices with puresqubi ONLY
+####
+unless ( $ENV{SECURE_BOOT_ARCH} eq 'GEN3' ) {
+    die "Not supported $ENV{SECURE_BOOT_ARCH}";
+}
+
+sub shell {
+
+    #if (defined $_[1]) {
+    print "$_[0]\n";
+
+    #}
+    my $res = `$_[0]`;
+    ( $? == 0 ) or die "ERROR: $!";
+    print "$res";
+    return $res;
+}
+
+
+##
+#
+# prepare wkspace:
+#
+shell("mkdir -p $ENV{WDIR}/head $ENV{WDIR}/bootfs");
+shell("cp -f $ENV{CFE_ROM} $ENV{WDIR}/$ENV{CFE_ROM_BN}");
+if ( (defined $ENV{SECURE_BOOT_TURNKEY}) && ($ENV{SECURE_BOOT_TURNKEY} eq "y")) { 
+     shell("cp -f $ENV{CFE_ROM_TK} $ENV{WDIR}/$ENV{CFE_ROM_TK_BN}");
+     shell("cp -f $ENV{CFE_ROM_TK} $ENV{WDIR}/head/");
+} else {
+     shell("cp -f $ENV{CFE_ROM} $ENV{WDIR}/head/");
+}
+shell("cp -fr $ENV{TARGET_BOOTFS}/* $ENV{WDIR}/bootfs");
+shell("cp -f $ENV{CFE_RAM} $ENV{WDIR}/bootfs/cferam.000");
+if ( (defined $ENV{BUILD_SECURE_BOOT}) && ($ENV{BUILD_SECURE_BOOT} eq 'y' )) {
+    shell("cp -f $ENV{CFE_RAM} $ENV{WDIR}/bootfs/secram.000");
+    if (defined $ENV{IMG_MODE}) {
+       shell("cp -f $ENV{CFE_RAM} $ENV{WDIR}/bootfs/secmfg.000");
+    }
+}
+if ( -e "$ENV{BUILD_DIR}/secureos/optee/optee.lz" ) {
+     shell("cp -f $ENV{BUILD_DIR}/secureos/optee/*.lz  $ENV{WDIR}/bootfs");
+     shell("cp -f $ENV{BUILD_DIR}/secureos/optee/*.dtb $ENV{WDIR}/bootfs");
+}

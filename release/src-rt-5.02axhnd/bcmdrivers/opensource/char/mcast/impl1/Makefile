@@ -16,7 +16,7 @@ endif
 
 obj-$(CONFIG_BCM_MCAST) += bcmmcast.o
 
-EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD)
+EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/$(BRCM_BOARD) -I$(KERNEL_DIR)/net/bridge
 EXTRA_CFLAGS += -Werror -Wfatal-errors
 
 clean:

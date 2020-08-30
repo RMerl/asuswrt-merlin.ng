@@ -4,7 +4,7 @@
  * See
  * RFC 2284: PPP Extensible Authentication Protocol (EAP)
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: eap.h 753242 2018-03-20 21:52:45Z $
+ * $Id: eap.h 774214 2019-04-16 07:03:49Z $
  */
 
 #ifndef _eap_h_

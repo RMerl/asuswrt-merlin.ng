@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2017, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
 #
 # <<Broadcom-WL-IPTag/Open:>>
 #
-# $Id: Makefile 697058 2017-05-02 01:10:42Z $
+# $Id: Makefile 775415 2019-05-29 18:14:36Z $
 #
 
 CROSS =
@@ -26,8 +26,9 @@ STRIP = $(CROSS)strip
 
 ALL_OBJS = igsu.o igsu_linux.o
 
-CCFLAGS = -Os -Wall -I$(SRCBASE)/include ${WLAN_StdIncPathA} ${WLAN_ComponentIncPathA} -I$(SRCBASE)/common/include -I$(TOP)/shared
-CCFLAGS += -I../../bcmdrv/include/emf/igs
+CCFLAGS = -Os -Wall -I$(SRCBASE)/include ${WLAN_StdIncPathA} ${WLAN_ComponentIncPathA} -I$(SRCBASE)/common/include -I$(SRCBASE_ROUTER)/shared
+
+CCFLAGS += $(USR_CFLAGS)
 
 ifneq ($(wildcard ./prebuilt),)
 all:

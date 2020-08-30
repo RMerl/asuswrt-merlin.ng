@@ -297,6 +297,12 @@ do_clear_marker:
 	adrl	r0,startup		/* r0: source start address */
 	ldr	r1,=startup		/* r1: target address */
 	sub	BOOTOFFSET, r0, r1	/* r11 is bootoffst */
+
+	/* do memory alias test to detect the ddr size */
+	CALLINIT(=mem_size)
+	lsr	r0, r0, #20		/* memory size in Mbytes */
+	ldr	r1, =MEM_SIZE_REG
+	str	r0, [r1]
 #endif
 	SETLEDS('C','P','U','0')
 
@@ -391,7 +397,7 @@ call_c_main:
 	SETLEDS('M','A','I','N')
 #if !defined(CFG_RAMAPP)
 #if defined(_BCM96846_)
-    mov r0,#143
+	mov r0,#143
 #else
 	/* cfe rom build for internal mem now 512KB */
 	mov	r0,#512			/* memory size in Kbytes */
@@ -403,12 +409,12 @@ call_c_main:
 	lsl	r0, r0, r2		/* hardcode 64 MB */
 #else
 #if defined(_BCM96846_)
-    ldr     r1, =MEMC_BASE
-    ldr     r2, [r1, #MEMC_GLB_FSBL_STATE]
-    and     r2, #MEMC_GLB_FSBL_DRAM_SIZE_MASK
-    add     r2, #10                  /* memory size in Kbytes */
-    mov     r0, #1
-    lsl     r0, r0, r2
+	ldr     r1, =MEMC_BASE
+	ldr     r2, [r1, #MEMC_GLB_FSBL_STATE]
+	and     r2, #MEMC_GLB_FSBL_DRAM_SIZE_MASK
+	add     r2, #10                  /* memory size in Kbytes */
+	mov     r0, #1
+	lsl     r0, r0, r2
 #elif !defined(_BCM947189_)
 	ldr     r1, =MEMC_BASE 
 	ldr     r2, [r1, #MEMC_GLB_GCFG]
@@ -417,9 +423,9 @@ call_c_main:
 	mov     r0, #1
 	lsl     r0, r0, r2
 #else
-	/* mem_size returns the memory sizes in bytes in r0 */
-	CALLINIT(=mem_size)
-	lsr	r0,r0,#10		/* memory size in Kbytes */
+	ldr	r1, =MEM_SIZE_REG
+	ldr	r0, [r1]		/* memory size in Mbytes */
+	lsl	r0, r0,#10		/* memory size in Kbytes */
 #endif
 #endif
 #endif
@@ -505,6 +511,9 @@ main:
 
 gorelo:	nop
 	mov     BOOTOFFSET, #0      /* no longer running at offset */
+
+	CALLINIT(=armv7_mmu_update) /* update mmu for entry that does not need XIP support */ 
+
     	LOADREL(r0,=rel_version)
     	CALLINIT(=board_puts)
 #endif

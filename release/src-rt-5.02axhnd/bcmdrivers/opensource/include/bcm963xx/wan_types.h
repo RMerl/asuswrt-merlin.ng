@@ -52,4 +52,20 @@ typedef enum
 
 typedef uint32_t SUPPORTED_WAN_TYPES_BITMAP;
 
+
+typedef enum
+{
+    PMD_EPON_1_1_WAN,
+    PMD_EPON_2_1_WAN,
+    PMD_GPON_2_1_WAN,
+    PMD_GBE_1_1_WAN,
+    PMD_XGPON1_10_2_WAN,
+    PMD_EPON_10_1_WAN,
+    PMD_AUTO_DETECT_WAN, /* gpon, epon auto detect */
+} PMD_WAN_TYPES;
+
+
+typedef void (*get_non_brcm_pmd_supported_wan_type_bm)(SUPPORTED_WAN_TYPES_BITMAP *wan_type_bm);
+typedef void (*configure_non_brcm_pmd_wan_type)(PMD_WAN_TYPES new_pmd_wan_type);
+
 #endif /* WAN_TYPES_H_INCLUDED */

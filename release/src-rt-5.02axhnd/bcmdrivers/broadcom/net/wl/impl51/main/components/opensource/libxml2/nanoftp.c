@@ -518,6 +518,17 @@ xmlNanoFTPFreeCtxt(void * ctx) {
     xmlFree(ctxt);
 }
 
+/**
+ * xmlNanoFTPParseResponse:
+ * @buf:  the buffer containing the response
+ * @len:  the buffer length
+ *
+ * Parsing of the server answer, we just extract the code.
+ *
+ * returns 0 for errors
+ *     +XXX for last line of response
+ *     -XXX for response to be continued
+ */
 static int
 xmlNanoFTPParseResponse(char *buf, int len) {
     int val = 0;

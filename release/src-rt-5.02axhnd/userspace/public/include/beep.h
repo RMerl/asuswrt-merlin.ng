@@ -231,6 +231,7 @@ typedef struct
    char    name[BEEP_PKG_NAME_LEN_MAX];
    char    version[BEEP_PKG_BEEP_VER_LEN_MAX];
    char    vendor[BEEP_PKG_VENDOR_LEN_MAX];
+   SpdRet  retCode;
 } BeepEeShutdownEvent_t;
 
 typedef struct
@@ -238,6 +239,7 @@ typedef struct
    char    name[BEEP_PKG_NAME_LEN_MAX];
    char    version[BEEP_PKG_BEEP_VER_LEN_MAX];
    char    vendor[BEEP_PKG_VENDOR_LEN_MAX];
+   SpdRet  retCode;
 } BeepEeUpgradeEvent_t;
 
 /** Debug log for storing various ModSw operations. */

@@ -1211,6 +1211,17 @@ void bcm_mcast_netlink_send_igmp_purge_entry(bcm_mcast_ifdata *pif,
     return;
 } /* bcm_mcast_netlink_send_igmp_purge_entry */
 
+void bcm_mcast_netlink_send_query_trigger(int rep_ifi)
+{
+    t_BCM_MCAST_QUERY_TRIGGER query_trigger;
+
+    query_trigger.rep_ifi = rep_ifi;
+
+    bcm_mcast_netlink_send(0, BCM_MCAST_MSG_QUERY_TRIGGER, &query_trigger, sizeof(query_trigger));
+
+    return;
+} /* bcm_mcast_netlink_send_query_trigger */
+
 typedef int (*process_rcv_func)(struct nlmsghdr *nlh, unsigned char *pdata);
 process_rcv_func bcm_mcast_netlink_dispatch[BCM_MCAST_NR_MSGTYPES] =
 {

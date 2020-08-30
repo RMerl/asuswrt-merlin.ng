@@ -146,7 +146,8 @@ int fcCtlResetStats(void);
 #define FCACHE_CONFIG_OPT_ACCEL_MODE        8       /* Acceleration mode values     */
 #define FCACHE_CONFIG_OPT_TCP_ACK_MFLOWS    9     /* TCP Ack Prioritization       */
 #define FCACHE_CONFIG_OPT_HW_ACCEL          10      /* HW Acceleration en/disable   */
-#define FCACHE_CONFIG_OPT_MAX               11       
+#define FCACHE_CONFIG_OPT_SW_DEFER  11       /* Set pkt SW deferral rate value*/
+#define FCACHE_CONFIG_OPT_MAX       12       
 
 #define FCACHE_DUMP_OPT_FLOW_INFO   1       /* Dump flow info               */
 

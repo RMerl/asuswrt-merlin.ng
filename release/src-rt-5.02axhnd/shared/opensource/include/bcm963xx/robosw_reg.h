@@ -170,7 +170,7 @@ typedef struct RoboSwitch {
 #define ImpRgmiiCtrl_Mode_MII       0x10
 #define ImpRgmiiCtrl_Mode_GMII      0x30
 #define ImpRgmiiCtrl_Mode_Mask      0x30
-#define ImpRgmiiCtrl_DLL_IQQD       0x04
+#define ImpRgmiiCtrl_DLL_IDDQ       0x04
 #define ImpRgmiiCtrl_DLL_RXC_Bypass 0x02
 #define ImpRgmiiCtrl_Timing_Sel     0x01
 

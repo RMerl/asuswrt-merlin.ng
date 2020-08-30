@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: typedefs.h 712601 2017-07-25 12:01:48Z $
+ * $Id: typedefs.h 774649 2019-05-01 13:45:54Z $
  */
 
 #ifndef _TYPEDEFS_H_
@@ -60,15 +60,6 @@
 #ifndef TRUE
 #define TRUE	true
 #endif // endif
-
-#else	/* ! __cplusplus */
-
-#if defined(_WIN32)
-
-#define TYPEDEF_BOOL
-typedef	unsigned char	bool;			/* consistent w/BOOL */
-
-#endif /* _WIN32 */
 
 #endif	/* ! __cplusplus */
 
@@ -150,9 +141,8 @@ typedef unsigned __int64 uint64;
 #endif	/* __KERNEL__ */
 #endif	/* linux && !EFI */
 
-#if !defined(linux) && !defined(_WIN32) && !defined(_CFE_) && !defined(_RTE_) && \
-	!defined(_MINOSL_) && !defined(__DJGPP__) && !defined(__BOB__) && \
-	!defined(TARGETOS_nucleus) && !defined(EFI)
+#if !defined(linux) && !defined(_CFE_) && !defined(_RTE_) && !defined(_MINOSL_) && \
+	!defined(__DJGPP__) && !defined(__BOB__) && !defined(TARGETOS_nucleus) && !defined(EFI)
 #define TYPEDEF_UINT
 #define TYPEDEF_USHORT
 #endif // endif
@@ -176,8 +166,8 @@ typedef unsigned __int64 uint64;
 
 #endif /* __ICL */
 
-#if !defined(_WIN32) && !defined(_CFE_) && !defined(_RTE_) && !defined(_MINOSL_) && \
-	!defined(__DJGPP__) && !defined(__BOB__) && !defined(TARGETOS_nucleus) && !defined(EFI)
+#if !defined(_CFE_) && !defined(_RTE_) && !defined(_MINOSL_) && !defined(__DJGPP__) && \
+	!defined(__BOB__) && !defined(TARGETOS_nucleus) && !defined(EFI)
 
 /* pick up ushort & uint from standard types.h */
 #if defined(linux) && defined(__KERNEL__)
@@ -195,10 +185,9 @@ typedef unsigned __int64 uint64;
 
 #endif /* linux && __KERNEL__ */
 
-#endif /* !_WIN32 && !PMON && !_CFE_ && !_RTE_  && !_MINOSL_ && !__DJGPP__ */
+#endif /* !PMON && !_CFE_ && !_RTE_  && !_MINOSL_ && !__DJGPP__ */
 
-/* use the default typedefs in the next section of this file */
-#define USE_TYPEDEF_DEFAULTS
+/* use the default typedefs in the next section of this file */#define USE_TYPEDEF_DEFAULTS
 
 #endif /* SITE_TYPEDEFS */
 

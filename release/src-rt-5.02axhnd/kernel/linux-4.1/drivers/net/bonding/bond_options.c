@@ -70,6 +70,10 @@ static int bond_option_slaves_set(struct bonding *bond,
 				  const struct bond_opt_value *newval);
 static int bond_option_tlb_dynamic_lb_set(struct bonding *bond,
 				  const struct bond_opt_value *newval);
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+static int bond_option_async_linkspeed_set(struct bonding *bond,
+				     const struct bond_opt_value *newval);
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
 
 
 static const struct bond_opt_value bond_mode_tbl[] = {
@@ -185,6 +189,14 @@ static const struct bond_opt_value bond_tlb_dynamic_lb_tbl[] = {
 	{ "on",  1,  BOND_VALFLAG_DEFAULT},
 	{ NULL,  -1, 0}
 };
+
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+static const struct bond_opt_value bond_async_linkspeed_tbl[] = {
+	{ "off", BOND_ASYNC_LINKSPEED_OFF, BOND_VALFLAG_DEFAULT},
+	{ "on",  BOND_ASYNC_LINKSPEED_ON,  0},
+	{ NULL,  -1,                    0},
+};
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
 
 static const struct bond_option bond_opts[BOND_OPT_LAST] = {
 	[BOND_OPT_MODE] = {
@@ -379,6 +391,16 @@ static const struct bond_option bond_opts[BOND_OPT_LAST] = {
 		.values = bond_tlb_dynamic_lb_tbl,
 		.flags = BOND_OPTFLAG_IFDOWN,
 		.set = bond_option_tlb_dynamic_lb_set,
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+	},
+	[BOND_OPT_ASYNC_LINKSPEED] = {
+		.id = BOND_OPT_ASYNC_LINKSPEED,
+		.name = "async_linkspeed",
+		.desc = "Enable Aggregation of links of different data rates is not prohibited nor required by 802.1ax.",
+		.unsuppmodes = BOND_MODE_ALL_EX(BIT(BOND_MODE_8023AD)),
+		.values = bond_async_linkspeed_tbl,
+		.set = bond_option_async_linkspeed_set
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
 	}
 };
 
@@ -1349,3 +1371,15 @@ static int bond_option_tlb_dynamic_lb_set(struct bonding *bond,
 
 	return 0;
 }
+
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+static int bond_option_async_linkspeed_set(struct bonding *bond,
+				     const struct bond_opt_value *newval)
+{
+	netdev_info(bond->dev, "Setting ad_select to %s (%llu)\n",
+		    newval->string, newval->value);
+	bond->params.async_linkspeed = newval->value;
+
+	return 0;
+}
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */

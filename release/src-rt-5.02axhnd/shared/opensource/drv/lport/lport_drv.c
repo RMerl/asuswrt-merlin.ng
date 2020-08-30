@@ -339,7 +339,7 @@ static int msbus_init(lport_init_s *init_params)
                 {
                     mab_cntrl.xgmii_rx_rst = 0x0;
                     mab_cntrl.xgmii_tx_rst = 0x0;
-                    wrr.p4_weight = 2;
+                    wrr.p4_weight = 3;
                 }
                 else
                 {
@@ -357,8 +357,8 @@ static int msbus_init(lport_init_s *init_params)
                 }
             }
         }
-        /*Set Arbitration to TDM mode*/
-        wrr.arb_mode = 1;
+
+        wrr.arb_mode = 0;
         rc = rc ? rc : ag_drv_lport_mab_tx_wrr_ctrl_set(i, &wrr);
         rc = rc ? rc : ag_drv_lport_mab_cntrl_set(i , &mab_cntrl);
     }

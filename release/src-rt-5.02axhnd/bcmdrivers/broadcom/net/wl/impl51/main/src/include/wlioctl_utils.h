@@ -1,7 +1,7 @@
 /*
  * Custom OID/ioctl related helper functions.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -46,6 +46,9 @@ extern const char * wl_get_reinit_rc_name(int rc);
 		((const wl_cnt_info_t *)cntbuf)->datalen, WL_CNT_XTLV_WLC,		\
 		NULL, BCM_XTLV_OPTION_ALIGN32)
 
+/* XXX: We keep adding new counters, so give warning in case we exceed the ioctl buf len
+ * and need to move on to larger ioctl length in the future.
+ */
 #define CHK_CNTBUF_DATALEN(cntbuf, ioctl_buflen) do {					\
 	if (((wl_cnt_info_t *)cntbuf)->datalen +			\
 		OFFSETOF(wl_cnt_info_t, data) > ioctl_buflen)	\

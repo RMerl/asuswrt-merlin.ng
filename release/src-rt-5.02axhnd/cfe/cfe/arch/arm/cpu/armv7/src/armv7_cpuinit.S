@@ -144,28 +144,28 @@ END(armv7_change_to_nonsecure)
 
 FUNC(armv7_cpuinit)
 	
-    mov	ip, lr		/* persevere link reg across call */
+	mov	ip, lr		/* persevere link reg across call */
 
 #if defined(_BCM96846_)
-    mrc p15, 0, r0, c1, c0, 0       // Read CP15 System Control register
-    bic r0, r0, #CR_I               // Clear I bit 12 to disable I Cache
-    bic r0, r0, #CR_C               // Clear C bit  2 to disable D Cache
-    bic r0, r0, #CR_M               // Clear M bit  0 to disable MMU
-    bic r0, r0, #CR_Z               // Clear Z bit 11 to disable branch prediction
-    bic r0, r0, #CR_A               // Clear A bit: disable strict alignment
-    orr r0, r0, #CR_V               // Set V bit: high vectors (0xffff0000)
-    mcr p15, 0, r0, c1, c0, 0       // Write value back to CP15 System Control register
-    isb
+	mrc	p15, 0, r0, c1, c0, 0       // Read CP15 System Control register
+	bic	r0, r0, #CR_I               // Clear I bit 12 to disable I Cache
+	bic	r0, r0, #CR_C               // Clear C bit  2 to disable D Cache
+	bic	r0, r0, #CR_M               // Clear M bit  0 to disable MMU
+	bic	r0, r0, #CR_Z               // Clear Z bit 11 to disable branch prediction
+	bic	r0, r0, #CR_A               // Clear A bit: disable strict alignment
+	orr	r0, r0, #CR_V               // Set V bit: high vectors (0xffff0000)
+	mcr	p15, 0, r0, c1, c0, 0       // Write value back to CP15 System Control register
+	isb
 
-    /* Enable SMP before cache enabled, for Cortex-A7 series core */
-    mrc p15,0,r1,c1,c0,1
-    orr r1,r1,#(1<<6)
-    mcr p15,0,r1,c1,c0,1
+	/* Enable SMP before cache enabled, for Cortex-A7 series core */
+	mrc	p15,0,r1,c1,c0,1
+	orr	r1,r1,#(1<<6)
+	mcr	p15,0,r1,c1,c0,1
  
-    mov	r0,#0
-    mcr	p15,0,r0,c8,c7,0		/* Invalidate TLB */
-    mcr	p15,0,r0,c7,c5,6        /* Invalidate entire branch predictor array */
-    isb
+	mov	r0,#0
+	mcr	p15,0,r0,c8,c7,0		/* Invalidate TLB */
+	mcr	p15,0,r0,c7,c5,6        /* Invalidate entire branch predictor array */
+	isb
 #else
 	mov	r0,#0
 	mcr	p15,0,r0,c8,c7,0		/* Invalidate TLB */
@@ -190,8 +190,8 @@ FUNC(armv7_cpuinit)
 	mcr	p15,0,r1,c1,c0,1
 #endif
 #endif
-    mov	lr, ip		/* restore link */
-    mov	pc, lr
+	mov	lr, ip		/* restore link */
+	mov	pc, lr
 	
 END(armv7_cpuinit)
 
@@ -211,13 +211,13 @@ END(armv7_cpuinit)
     ********************************************************************* */
 FUNC(armv7_enable_branch_predictor)
 
-    mrc p15, 0, r0, c1, c0, 0     // Read CP15 System Control register
-    orr r0, r0, #CR_Z             // Set Z bit: enable program flow prediction
-    orr r0, r0, #CR_A             // Set A bit: enable strict alignment
-    mcr p15, 0, r0, c1, c0, 0     // Write CP15 System Control register
-    isb
+	mrc	p15, 0, r0, c1, c0, 0     // Read CP15 System Control register
+	orr	r0, r0, #CR_Z             // Set Z bit: enable program flow prediction
+	orr	r0, r0, #CR_A             // Set A bit: enable strict alignment
+	mcr	p15, 0, r0, c1, c0, 0     // Write CP15 System Control register
+	isb
 
-    mov pc, lr
+	mov	pc, lr
 
 END(armv7_enable_branch_predictor)
 
@@ -238,15 +238,15 @@ END(armv7_enable_branch_predictor)
     ********************************************************************* */	
 FUNC(armv7_enable_mmu)
 
-    mrc     p15, 0, r0, c1, c0, 0     // Read CP15 System Control register
+	mrc	p15, 0, r0, c1, c0, 0     // Read CP15 System Control register
 #if defined(_BCM96846_)
-    bic     r0, r0, #CR_I             // Clear I bit 12 to disable I Cache
-    bic     r0, r0, #CR_D             // Clear C bit  2 to disable D Cache
-    bic     r0, r0, #CR_A             // Clear A bit  1 to disable strict alignment fault checking
+	bic	r0, r0, #CR_I             // Clear I bit 12 to disable I Cache
+	bic	r0, r0, #CR_D             // Clear C bit  2 to disable D Cache
+	bic	r0, r0, #CR_A             // Clear A bit  1 to disable strict alignment fault checking
 #endif
-    orr     r0, r0, #CR_M             // Set M bit 0 to enable MMU
-    mcr     p15, 0, r0, c1, c0, 0     // Write CP15 System Control register
-    isb
+	orr	r0, r0, #CR_M             // Set M bit 0 to enable MMU
+	mcr	p15, 0, r0, c1, c0, 0     // Write CP15 System Control register
+	isb
 
 	mov	pc, lr
 	
@@ -310,7 +310,7 @@ FUNC(armv7_l1cache_on)
 	bl	armv7_l1cache_enable_d
 	
 	ldmfd	sp!, {r0-r11, lr}
-	mov pc, lr
+	mov	pc, lr
 END(armv7_l1cache_on)
 
 FUNC(armv7_l1cache_off)
@@ -328,7 +328,7 @@ FUNC(armv7_l1cache_off)
 	
 
 	ldmfd	sp!, {r0-r11, lr}
-	mov pc, lr
+	mov	pc, lr
 END(armv7_l1cache_off)
 
 
@@ -373,5 +373,5 @@ END(armv7_enable_tick)
     ********************************************************************* */
 FUNC(_getticks)
 	mrc	p15,0,r0,c9,c13,0
-	bx	lr
+	mov	pc, lr
 END(_getticks)

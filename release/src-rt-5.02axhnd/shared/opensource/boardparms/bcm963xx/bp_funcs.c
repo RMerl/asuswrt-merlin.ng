@@ -967,7 +967,8 @@ static bp_pinmux_defs_t g_pinmux_defs_0[] = {
   { bp_usLinkLed, 4, 30, 30|BP_PINMUX_VAL_3 | BP_PINMUX_HWLED },
   { bp_usLinkLed, 3, 21, 21|BP_PINMUX_VAL_3 | BP_PINMUX_HWLED }, //Port 3 on Runner is the WAN port
   { bp_usLinkLed, 3, 31, 31|BP_PINMUX_VAL_3 | BP_PINMUX_HWLED }, //Port 3 on Runner is the WAN port
-  { bp_usLinkLed, 3, 30, 30|BP_PINMUX_VAL_2 | BP_PINMUX_HWLED | BP_PINMUX_OPTLED_NUM(31) }, 
+  { bp_usLinkLed, 3, 20, 20|BP_PINMUX_VAL_1 | BP_PINMUX_HWLED | BP_PINMUX_OPTLED_NUM(21) }, //Port 3 on Runner is the WAN port
+  { bp_usLinkLed, 3, 30, 30|BP_PINMUX_VAL_2 | BP_PINMUX_HWLED | BP_PINMUX_OPTLED_NUM(31) }, //Port 3 on Runner is the WAN port
   { bp_usGpioLedAggregateLnk, -1, 12, 12|BP_PINMUX_VAL_3 | BP_PINMUX_HWLED }, //Aggregate link LED
   { bp_usGpioLedAggregateLnk, -1, 0, 0|BP_PINMUX_VAL_2 | BP_PINMUX_HWLED | BP_PINMUX_OPTLED_NUM(12) }, 
   { bp_usGpioLedAggregateAct, -1, 13, 13|BP_PINMUX_VAL_3 | BP_PINMUX_HWLED }, //Aggregate activity LED
@@ -8800,6 +8801,8 @@ int BpGetLedsAdvancedInfo(LEDS_ADVANCED_INFO *pLedsInfo)
                             ++pPhyId;
                             break;
                         case bp_ulPortFlags:
+                        case bp_usOamIndex:
+                        case bp_ucPhyDevName:
                             /* skip phy related parameters */
                             ++pPhyId;
                             break;

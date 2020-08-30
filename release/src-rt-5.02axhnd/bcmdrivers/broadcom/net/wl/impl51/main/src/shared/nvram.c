@@ -1,7 +1,7 @@
 /*
  * NVRAM variable manipulation (common)
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: nvram.c 668357 2016-11-03 03:23:06Z $
+ * $Id: nvram.c 768081 2018-10-04 05:47:53Z $
  */
 
 #include <typedefs.h>
@@ -281,13 +281,15 @@ _nvram_getall(char *buf, int count)
 }
 
 /* Regenerate NVRAM. Should be locked. */
+/* XXX: not marking as RECLAIMTEXT allows this fucntion to be fc-sectioned out when not referenced
+ */
 int
 BCMINITFN(_nvram_commit)(struct nvram_header *header)
 {
 	char *init, *config, *refresh, *ncdl;
 	char *ptr, *end;
 	int i;
-	struct nvram_tuple *t;
+	struct nvram_tuple *t, *next;
 	char *nvram_space_str = _nvram_get("nvram_space");
 	unsigned long l_nvram_space = DEF_NVRAM_SPACE;
 
@@ -341,8 +343,14 @@ BCMINITFN(_nvram_commit)(struct nvram_header *header)
 	/* Set new CRC8 */
 	header->crc_ver_init |= nvram_calc_crc(header);
 
-	/* Reinitialize hash table */
-	return nvram_rehash(header);
+	/* Free dead table */
+	for (t = nvram_dead; t; t = next) {
+		next = t->next;
+		_nvram_free(t);
+	}
+	nvram_dead = NULL;
+
+	return 0;
 }
 
 /* Initialize hash table. Should be locked. */

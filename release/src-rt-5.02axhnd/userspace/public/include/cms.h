@@ -206,6 +206,7 @@ typedef enum
    CMSRET_DELETE_USER_ERROR = 9866, /**< Delete user error. */
    CMSRET_USER_NOT_FOUND = 9867,    /**<User not found. */
    CMSRET_SET_BUSGATE_POLICY_ERROR = 9868,   /**<Set busgate policy error. */
+   CMSRET_OPERATION_IN_PROCESS = 9869,    /**<Operation is still in process. */
 } CmsRet;
 
 

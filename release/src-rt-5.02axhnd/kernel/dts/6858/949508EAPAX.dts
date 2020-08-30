@@ -1,5 +1,29 @@
 #include "96858.dts"
 
+/ {
+	ubus@ff800000 {
+		/* actual count 62 GPIOs */
+		gpio1: gpio-controller@0xff800504 {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x0 0x504 0x0 0x4>, <0x0 0x524 0x0 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+		gpio0: gpio-controller@0xff800500 {
+			compatible = "brcm,bcm6345-gpio";
+			reg-names = "dirout", "dat";
+			reg = <0x0 0x500 0x0 0x4>, <0x0 0x520 0x0 0x4>;
+			ngpios = <32>;
+
+			#gpio-cells = <2>;
+			gpio-controller;
+		};
+	};
+};
+
 &hsspi {
       flash: mt25@0 {
       status = "okay";

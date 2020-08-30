@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_pkt.c 765948 2018-07-20 05:22:34Z $
+ * $Id: linux_pkt.c 775299 2019-05-27 10:08:55Z $
  */
 
 #include <typedefs.h>
@@ -61,23 +61,25 @@ void* wifi_platform_prealloc(void *adapter, int section, unsigned long size);
 #define OSL_PKTTAG_CLEAR(p) \
 do { \
 	struct sk_buff *s = (struct sk_buff *)(p); \
-	ASSERT(OSL_PKTTAG_SZ == 40); \
+	ASSERT(OSL_PKTTAG_SZ == 48); \
 	*(uint32 *)(&s->cb[4]) = 0; \
 	*(uint32 *)(&s->cb[8]) = 0; *(uint32 *)(&s->cb[12]) = 0; \
 	*(uint32 *)(&s->cb[16]) = 0; *(uint32 *)(&s->cb[20]) = 0; \
 	*(uint32 *)(&s->cb[24]) = 0; *(uint32 *)(&s->cb[28]) = 0; \
 	*(uint32 *)(&s->cb[32]) = 0; *(uint32 *)(&s->cb[36]) = 0; \
+	*(uint32 *)(&s->cb[40]) = 0; *(uint32 *)(&s->cb[44]) = 0; \
 } while (0)
 #else
 #define OSL_PKTTAG_CLEAR(p) \
 do { \
 	struct sk_buff *s = (struct sk_buff *)(p); \
-	ASSERT(OSL_PKTTAG_SZ == 40); \
+	ASSERT(OSL_PKTTAG_SZ == 48); \
 	*(uint32 *)(&s->cb[0]) = 0; *(uint32 *)(&s->cb[4]) = 0; \
 	*(uint32 *)(&s->cb[8]) = 0; *(uint32 *)(&s->cb[12]) = 0; \
 	*(uint32 *)(&s->cb[16]) = 0; *(uint32 *)(&s->cb[20]) = 0; \
 	*(uint32 *)(&s->cb[24]) = 0; *(uint32 *)(&s->cb[28]) = 0; \
 	*(uint32 *)(&s->cb[32]) = 0; *(uint32 *)(&s->cb[36]) = 0; \
+	*(uint32 *)(&s->cb[40]) = 0; *(uint32 *)(&s->cb[44]) = 0; \
 } while (0)
 #endif /* BCM_OBJECT_TRACE */
 
@@ -186,6 +188,15 @@ osl_alloc_skb(osl_t *osh, unsigned int len)
 
 #ifdef CTFPOOL
 
+/* XXX For RXNOCOPY config in bmac high driver (used in usbap). PKTGET could be done in top half.
+ * Therefore, we need spin_lock_irqsave() instead of spin_lock_bh().
+ *
+ * Note that only having CTFPOOL_SPINLOCK defined in wl_high.o is not sufficient to protect its
+ * ctfpool. wl_high.o's ctfpool packets needs to be freed in wl or et driver (which calls to hnd.o).
+ * Therefore, CTFPOOL_SPINLOCK is defined in CFLAGS (in linux/linux/Makefile) so both hnd.o and
+ * wl_high.o will have it.
+ *
+ */
 #ifdef CTFPOOL_SPINLOCK
 #define CTFPOOL_LOCK(ctfpool, flags)	spin_lock_irqsave(&(ctfpool)->lock, flags)
 #define CTFPOOL_UNLOCK(ctfpool, flags)	spin_unlock_irqrestore(&(ctfpool)->lock, flags)
@@ -514,18 +525,12 @@ struct sk_buff * BCMFASTPATH
 osl_pkt_tonative(osl_t *osh, void *pkt)
 {
 	struct sk_buff *nskb;
-#ifdef BCMDBG_CTRACE
 	struct sk_buff *nskb1, *nskb2;
-#endif // endif
-
-	if (OSH_PUB(osh).pkttag)
-		OSL_PKTTAG_CLEAR(pkt);
 
 	/* Decrement the packet counter */
 	for (nskb = (struct sk_buff *)pkt; nskb; nskb = nskb->next) {
 		atomic_sub(PKTISCHAINED(nskb) ? PKTCCNT(nskb) : 1, &osh->cmn->pktalloced);
 
-#ifdef BCMDBG_CTRACE
 		for (nskb1 = nskb; nskb1 != NULL; nskb1 = nskb2) {
 			if (PKTISCHAINED(nskb1)) {
 				nskb2 = PKTCLINK(nskb1);
@@ -533,9 +538,14 @@ osl_pkt_tonative(osl_t *osh, void *pkt)
 				nskb2 = NULL;
 			}
 
+			/* clear pkttag inside pkt list */
+			if (OSH_PUB(osh).pkttag)
+				OSL_PKTTAG_CLEAR(nskb1);
+
+#ifdef BCMDBG_CTRACE
 			DEL_CTRACE(osh, nskb1);
-		}
 #endif /* BCMDBG_CTRACE */
+		}
 	}
 	return (struct sk_buff *)pkt;
 }
@@ -556,9 +566,6 @@ osl_pkt_frmnative(osl_t *osh, void *pkt)
 	struct sk_buff *nskb;
 	unsigned long pktalloced = 0;
 
-	if (OSH_PUB(osh).pkttag)
-		OSL_PKTTAG_CLEAR(pkt);
-
 	/* walk the PKTCLINK() list */
 	for (cskb = (struct sk_buff *)pkt;
 	     cskb != NULL;
@@ -569,6 +576,10 @@ osl_pkt_frmnative(osl_t *osh, void *pkt)
 
 			/* Increment the packet counter */
 			pktalloced++;
+
+			/* clear pkttag inside pkt list */
+			if (OSH_PUB(osh).pkttag)
+				OSL_PKTTAG_CLEAR(nskb);
 
 			/* clean the 'prev' pointer
 			 * Kernel 3.18 is leaving skb->prev pointer set to skb
@@ -702,6 +713,9 @@ linux_pktfree(osl_t *osh, void *p, bool send)
 		nbuff_free((pNBuff_t)p);
 	} else {
 #endif // endif
+	struct sk_buff *skbfreelist;
+
+	skbfreelist = NULL;
 
 	if (osh == NULL)
 		return;
@@ -717,13 +731,13 @@ linux_pktfree(osl_t *osh, void *p, bool send)
 			OSH_PUB(osh).rx_fn(OSH_PUB(osh).rx_ctx, p);
 		}
 	}
-#ifdef STS_FIFO_RXEN
+#if defined(STS_FIFO_RXEN) || defined(WLC_OFFLOADS_RXSTS)
 	for (nskb = skb; nskb; nskb = PKTNEXT(osh, nskb)) {
 		if (OSH_PUB(osh).stsbuf_free_cb_fn) {
 			OSH_PUB(osh).stsbuf_free_cb_fn(OSH_PUB(osh).stsbuf_free_cb_ctx, nskb);
 		}
 	}
-#endif // endif
+#endif /* STS_FIFO_RXEN || WLC_OFFLOADS_RXSTS */
 
 	PKTDBG_TRACE(osh, (void *) skb, PKTLIST_PKTFREE);
 
@@ -746,7 +760,13 @@ linux_pktfree(osl_t *osh, void *p, bool send)
 	/* perversion: we use skb->next to chain multi-skb packets */
 	while (skb) {
 		nskb = skb->next;
-		skb->next = NULL;
+
+		if (BCM_SKB_FREE_OFFLOAD_ENAB(osh)) {
+			skb->next = skbfreelist;
+			skbfreelist = skb;
+		} else {
+			skb->next = NULL;
+		}  /*  BCM_SKB_FREE_OFFLOAD_ENAB */
 
 #ifdef BCMDBG_CTRACE
 		DEL_CTRACE(osh, skb);
@@ -771,7 +791,7 @@ linux_pktfree(osl_t *osh, void *p, bool send)
 			osl_pktfastfree(osh, skb);
 		} else
 #endif // endif
-		{
+		if (!BCM_SKB_FREE_OFFLOAD_ENAB(osh)) {
 			if (skb->destructor) {
 				/* cannot kfree_skb() on hard IRQ (net/core/skbuff.c) if
 				 * destructor exists
@@ -790,6 +810,12 @@ next_skb:
 		atomic_dec(&osh->cmn->pktalloced);
 		skb = nskb;
 	}
+
+#ifdef BCM_SKB_FREE_OFFLOAD
+	if (BCM_SKB_FREE_OFFLOAD_ENAB(osh)) {
+		dev_kfree_skb_thread_bulk(skbfreelist);
+	} /* BCM_SKB_FREE_OFFLOAD */
+#endif // endif
 
 #ifdef BCM_BLOG
 	} /* endif IS_FKBUFF_PTR */
@@ -1317,6 +1343,12 @@ osl_pkt_orphan_partial(struct sk_buff *skb)
 		return;
 
 	if (unlikely(!p_tcp_wfree)) {
+		/* XXX: this is a hack to get tcp_wfree pointer since it's not
+		 * exported. There are two possible call back function pointer
+		 * stored in skb->destructor: tcp_wfree and sock_wfree.
+		 * This expansion logic should only apply to TCP traffic which
+		 * uses tcp_wfree as skb destructor
+		 */
 		char sym[KSYM_SYMBOL_LEN];
 		sprint_symbol(sym, (unsigned long)skb->destructor);
 		sym[9] = 0;

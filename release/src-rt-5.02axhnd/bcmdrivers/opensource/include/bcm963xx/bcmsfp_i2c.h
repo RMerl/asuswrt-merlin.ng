@@ -78,6 +78,8 @@
 #define SFP_STATUS_INVALID      -1
 #define SFP_STATUS_REMOVED      0
 #define SFP_STATUS_INSERTED     1
+#define SFP_STATUS_PROBING      2
+#define SFP_STATUS_ERROR        3
 
 /****************************************************************************/
 /* Writes count number of bytes from buf on to the I2C bus                  */
@@ -155,8 +157,9 @@ int bcm_i2c_sfp_unregister_notifier(struct notifier_block* nb);
 /* PON Optics Type Settings */
 int bcm_i2c_pon_optics_type_get(unsigned short *pusValue);
 #endif
-#define BCM_I2C_PON_OPTICS_TYPE_LEGACY 0
-#define BCM_I2C_PON_OPTICS_TYPE_PMD    1
+#define BCM_I2C_PON_OPTICS_TYPE_LEGACY          0
+#define BCM_I2C_PON_OPTICS_TYPE_PMD             1
+#define BCM_I2C_PON_OPTICS_TYPE_NON_BRCM_PMD    2
 
 #define BCM_I2C_PROC_DIR "driver/bcm_i2c_pon_optics_type"
 

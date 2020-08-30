@@ -35,6 +35,7 @@ int bcm_mcast_netlink_send_skb(struct sk_buff *skb, int msg_type);
 void bcm_mcast_netlink_send_igmp_purge_entry(bcm_mcast_ifdata *pif,
                                              t_igmp_grp_entry *igmp_entry, 
                                              t_igmp_rep_entry *rep_entry);
+void bcm_mcast_netlink_send_query_trigger(int rep_ifi);
 void bcm_mcast_notify_event(int event, int proto, void *grp_entry, void *rep_entry);
 
 __init int bcm_mcast_netlink_init(void);

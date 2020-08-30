@@ -35,6 +35,11 @@ static int nbErrors = 0;
 static void fill_strings(void) {
     int i, j, k;
 
+    /*
+     * That's a bit nasty but the output is fine and it doesn't take hours
+     * there is a small but sufficient number of duplicates, and we have
+     * ":xxx" and full QNames in the last NB_STRINGS_NS values
+     */
     for (i = 0; seeds1[i] != NULL; i++) {
         strings1[i] = xmlStrdup((const xmlChar *) seeds1[i]);
 	if (strings1[i] == NULL) {

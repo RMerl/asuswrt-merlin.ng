@@ -46,6 +46,7 @@ drv-rc3-install:
 	    | sed -e 's/HNDROUTER=_set_by_buildFS_/HNDROUTER=$(BUILD_BRCM_HNDROUTER)/'  \
 	    | sed -e 's/CPEROUTER=_set_by_buildFS_/CPEROUTER=$(BUILD_BRCM_CPEROUTER)/'  \
 	    | sed -e 's,PROD_FW_PATH=_set_by_buildFS_,PROD_FW_PATH="${FDIMGPATH}",'  \
+	    | sed -e 's/BRCM_CHIP=_set_by_buildFS_/BRCM_CHIP=$(BRCM_CHIP)/'  \
 	    > ${INSTALL_DIR}/etc/init.d/$${f:3} ; \
 	  chmod +x ${INSTALL_DIR}/etc/init.d/$${f:3} ;  ln -fs ../init.d/$${f:3} ${INSTALL_DIR}/etc/rc3.d/$$s; \
 	done

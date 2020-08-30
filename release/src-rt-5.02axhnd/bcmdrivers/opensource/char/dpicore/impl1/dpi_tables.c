@@ -35,6 +35,8 @@
 #include <linux/seq_file.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/etherdevice.h>
+#include <net/netfilter/nf_conntrack.h>
 
 #include <linux/dpi.h>
 
@@ -72,12 +74,15 @@ struct dpi_dev *dpi_dev_find_or_alloc(uint8_t *mac)
 	struct dpi_dev *entry;
 	uint32_t val = *((uint32_t *) &mac[0]) ^ *((uint16_t *) &mac[4]);
 
+	if (is_zero_ether_addr(mac))
+		return NULL;
+
 	spin_lock_bh(&dev_table.lock);
 
 	/* search for existing entry */
 	h = &dev_table.list[hash_min(val, DEV_TABLE_BITS)];
 	hlist_for_each_entry(entry, h, node) {
-		if (memcmp(entry->mac, mac, sizeof(entry->mac)) == 0)
+		if (ether_addr_equal(entry->mac, mac))
 			goto out;
 	}
 

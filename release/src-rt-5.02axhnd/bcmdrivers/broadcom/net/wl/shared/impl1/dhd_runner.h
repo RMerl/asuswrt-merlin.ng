@@ -122,6 +122,7 @@ typedef enum dhd_runner_ops
 	H2R_TXSTS_CONFIG_NOTIF, /* Host notifies Runner to send nonaccpkt TXSTS */
 	H2R_MSGRING_FORMAT_NOTIF, /* Host notifies Runner message ring format and size */
 	H2R_RXPOST_REINIT_NOTIF,  /* Host notifies Runner to re-initialize RxPost buffers */
+	H2R_PCIE_IPC_CAP1_NOTIF,  /* Host notifies DoR IPC Capabilities1 (mask, *cap) */
 
 	/* Host DHD to Runner Requests (H ---> R) */
 	H2R_IDX_BUF_RD_REQUEST, /* Host requests Runner to read DMA index buffer */
@@ -180,6 +181,7 @@ typedef struct dhd_helper_feat {
 	uint32 msgringformat:3;           /* msg ring formats */
 	uint32 bkupq:1;                   /* Runner backup queues */
 	uint32 hwawkup:1;                 /* ARM-HWA format to wake up dongle */
+	uint32 ffrd:1;                    /* fast flow ring delete support */
 } dhd_helper_feat_t;
 
 /* buffer structure used for DHD_RNR_IOVAR_RNR_STATUS */

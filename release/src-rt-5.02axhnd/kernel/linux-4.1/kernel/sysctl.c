@@ -193,6 +193,11 @@ static int proc_dostring_coredump(struct ctl_table *table, int write,
 		void __user *buffer, size_t *lenp, loff_t *ppos);
 #endif
 
+#ifdef CRASHLOG
+static int proc_dostring_crashlogsave(struct ctl_table *table, int write,
+		  void __user *buffer, size_t *lenp, loff_t *ppos);
+#endif
+
 #ifdef CONFIG_MAGIC_SYSRQ
 /* Note: sysrq code uses it's own private copy */
 static int __sysrq_enabled = CONFIG_MAGIC_SYSRQ_DEFAULT_ENABLE;
@@ -468,6 +473,31 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+#ifdef CRASHLOG
+	{
+		.procname	= "crashlog_enable",
+		.data		= &crashlog_enable,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
+	},
+	{
+		.procname	= "crashlog_filename",
+		.data		= crashlog_filename,
+		.maxlen		= SYSCTL_CRASHLOG_FILENAME_LEN,
+		.mode		= 0644,
+		.proc_handler	= proc_dostring_crashlogsave,
+	},
+	{
+		.procname	= "crashlog_mtd",
+		.data		= crashlog_mtd,
+		.maxlen		= SYSCTL_CRASHLOG_MTD_LEN,
+		.mode		= 0644,
+		.proc_handler	= proc_dostring,
+	},
+	
+#endif
+
 #ifdef CONFIG_COREDUMP
 	{
 		.procname	= "core_uses_pid",
@@ -2801,7 +2831,21 @@ int proc_doulongvec_ms_jiffies_minmax(struct ctl_table *table, int write,
 
 
 #endif /* CONFIG_PROC_SYSCTL */
+#ifdef CRASHLOG
+static int proc_dostring_crashlogsave(struct ctl_table *table, int write,
+		  void __user *buffer, size_t *lenp, loff_t *ppos);
 
+static int proc_dostring_crashlogsave(struct ctl_table *table, int write,
+		  void __user *buffer, size_t *lenp, loff_t *ppos)
+{
+	int error = proc_dostring(table, write, buffer, lenp, ppos);
+	if (!error && crashlog_filename[0]) {
+		printk("proc_dostring_crashlogsave:  crash log filename is %s\n", crashlog_filename);
+		crashFileSet(crashlog_filename);
+	}
+	return error;
+}
+#endif
 /*
  * No sense putting this after each symbol definition, twice,
  * exception granted :-)

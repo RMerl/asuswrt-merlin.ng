@@ -29,13 +29,17 @@
 
 #include <linux/kernel.h>
 #include <linux/types.h>
+#include <linux/percpu.h>
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/if_ether.h>
+#include <linux/etherdevice.h>
 #include <linux/netfilter_ipv6.h>
 #include <linux/netlink.h>
 #include <linux/udp.h>
+#include <net/dst.h>
+#include <net/neighbour.h>
 #include <net/netfilter/nf_conntrack_acct.h>
 #include <net/netfilter/nf_conntrack_ecache.h>
 
@@ -105,6 +109,7 @@ static struct nf_hook_ops hooks[] __read_mostly = {
 static struct sock *nl_sk;
 static struct dpi_hooks dpi_hooks;
 static int dpi_max_pkt = DPI_DEFAULT_MAX_PKT;
+static DEFINE_PER_CPU(tdts_pkt_parameter_t, pkt_params);
 
 
 /* ----- local functions ----- */
@@ -146,10 +151,14 @@ static int dir_downstream(struct nf_conn *ct, int dir)
 static int calculate_lookup_flags(struct sk_buff *skb, struct nf_conn *ct,
 				  unsigned long flags, int lookup_flags)
 {
-	int dir = CTINFO2DIR(skb->nfctinfo);
+	struct ethhdr *h = eth_hdr(skb);
+
+	/* don't classify packets which have no source MAC */
+	if (!skb_mac_header_was_set(skb) || is_zero_ether_addr(h->h_source))
+		return 0;
 
 	/* don't classify WAN-side devices */
-	if (dir_downstream(ct, dir))
+	if (is_wan_dev(skb))
 		lookup_flags &= ~SW_DEVID;
 
 	if (!ct)
@@ -171,11 +180,10 @@ out:
 }
 
 static void update_classification_stats(struct sk_buff *skb,
+					unsigned long old_flags,
 					unsigned long flags,
 					int classified)
 {
-	unsigned long old_flags = nfct(skb) ? dpi_info(skb).flags : 0;
-
 	/* if we have newly changed a classification status, save results */
 	flags ^= old_flags;
 
@@ -203,16 +211,39 @@ static void update_classification_stats(struct sk_buff *skb,
 static struct dpi_dev *dpi_classify_device(struct dpi_dev *dev,
 					   struct sk_buff *skb,
 					   tdts_pkt_parameter_t *pkt_param,
-					   unsigned long *flags)
+					   unsigned long *flags,
+					   int lookup_flags)
 {
-	dpi_stats.devs.lookups++;
+	const struct dst_entry *dst = skb_dst(skb);
+	struct neighbour *n = NULL;
 
 	/* find or allocate device info */
 	if (!dev) {
-		dev = dpi_dev_find_or_alloc(eth_hdr(skb)->h_source);
+		/*
+		 * For LAN-initiated flows, use the source MAC.
+		 * For WAN-initiated flows, we have to try a neighbour lookup
+		 * from the destination IP to find a appropriate MAC.
+		 */
+		if (!is_wan_dev(skb)) {
+			dev = dpi_dev_find_or_alloc(eth_hdr(skb)->h_source);
+		} else {
+			rcu_read_lock_bh();
+			if (dst)
+				n = dst_neigh_lookup_skb(dst, skb);
+			if (n && (n->nud_state & NUD_VALID))
+				dev = dpi_dev_find_or_alloc(n->ha);
+			rcu_read_unlock_bh();
+			if (n)
+				neigh_release(n);
+		}
 		if (!dev)
 			return NULL;
 	}
+
+	if (!(lookup_flags & SW_DEVID))
+		return dev;
+
+	dpi_stats.devs.lookups++;
 
 	/* if device is already classified, we're done */
 	if (dev->classified)
@@ -244,9 +275,13 @@ done:
 static struct dpi_app *dpi_classify_app(struct dpi_app *app,
 					struct sk_buff *skb,
 					tdts_pkt_parameter_t *pkt_param,
-					unsigned long *flags)
+					unsigned long *flags,
+					int lookup_flags)
 {
 	uint32_t app_id;
+
+	if (!(lookup_flags & SW_APP))
+		return app;
 
 	dpi_stats.apps.lookups++;
 
@@ -312,11 +347,15 @@ static struct dpi_app *dpi_classify_app(struct dpi_app *app,
 static struct dpi_url *dpi_classify_url(struct dpi_url *url,
 					struct sk_buff *skb,
 					tdts_pkt_parameter_t *pkt_param,
-					unsigned long *flags)
+					unsigned long *flags,
+					int lookup_flags)
 {
 #ifdef DPI_URL_RECORD
 	char *hostname;
 	int len;
+
+	if (!(lookup_flags & SW_URL_QUERY))
+		return url;
 
 	dpi_stats.urls.lookups++;
 
@@ -386,13 +425,11 @@ static void dpi_stop_classification(struct sk_buff *skb, unsigned long *flags)
 						 (uint8_t*) &ipv6_hdr(skb)->daddr,
 						 ntohs(tcp_hdr(skb)->source),
 						 ntohs(tcp_hdr(skb)->dest));
-
-	/* update userspace */
-	send_nfct_update(skb);
 }
 
 static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 {
+	tdts_pkt_parameter_t *pkt_param;
 	struct nf_conn *ct = nfct(skb);
 	struct nf_conn *ct_master = ct ? ct->master : NULL;
 	struct dpi_appinst *appinst = NULL;
@@ -400,7 +437,7 @@ static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 	struct dpi_app *app = NULL;
 	struct dpi_url *url = NULL;
 	unsigned long flags = 0;
-	tdts_pkt_parameter_t pkt_param;
+	unsigned long old_flags;
 	int nfct_update = 0;
 
 	/* populate classification data based on the conntrack entry */
@@ -422,13 +459,14 @@ static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 			nfct_update = 1;
 		}
 	}
+	old_flags = flags;
 
 	if (test_bit(DPI_CLASSIFICATION_STOP_BIT, &flags))
-		return;
+		goto out;
 
 	lookup_flags = calculate_lookup_flags(skb, ct, flags, lookup_flags);
 	if (!lookup_flags)
-		return;
+		goto out;
 
 	/* if we have classified too many packets, ignore further */
 	if (pkt_count(ct) > dpi_max_pkt) {
@@ -436,29 +474,33 @@ static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 			 ct, dpi_max_pkt, flags);
 
 		/* save stats and stop classification */
-		update_classification_stats(skb, flags, 0);
+		update_classification_stats(skb, old_flags, flags, 0);
 
 		dpi_stop_classification(skb, &flags);
-		return;
+		ct->dpi.flags = flags;
+		nfct_update = 1;
+		goto out;
 	}
 
 	/* classify packet */
+	pkt_param = &get_cpu_var(pkt_params);
 	dpi_stats.total_lookups++;
-	tdts_init_pkt_parameter(&pkt_param, lookup_flags, 0);
+	tdts_init_pkt_parameter(pkt_param, lookup_flags, 0);
 	pr_debug("ct<%p> flags<%lx> lookup<%x> pktcnt<%lld>\n",
 		 ct, flags, lookup_flags, pkt_count(ct));
-	if (tdts_shell_dpi_l3_skb(skb, &pkt_param)) {
-		pr_err("unable to scan packet\n");
+	if (tdts_shell_dpi_l3_skb(skb, pkt_param)) {
+		if (pkt_param->results.pkt_decoder_verdict == -1)
+			dpi_stats.engine_errors++;
+		put_cpu_var(pkt_params);
 		return;
 	}
 
 	/* handle classification results based on our lookup flags */
-	if (lookup_flags & SW_DEVID)
-		dev = dpi_classify_device(dev, skb, &pkt_param, &flags);
-	if (lookup_flags & SW_APP)
-		app = dpi_classify_app(app, skb, &pkt_param, &flags);
-	if (lookup_flags & SW_URL_QUERY)
-		url = dpi_classify_url(url, skb, &pkt_param, &flags);
+	dev = dpi_classify_device(dev, skb, pkt_param, &flags, lookup_flags);
+	app = dpi_classify_app(app, skb, pkt_param, &flags, lookup_flags);
+	url = dpi_classify_url(url, skb, pkt_param, &flags, lookup_flags);
+
+	put_cpu_var(pkt_params);
 
 	/* reset appinst if app is reclassified */
 	if (appinst) {
@@ -479,9 +521,10 @@ static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 		ct->dpi.dev	= dev;
 		ct->dpi.app	= app;
 		ct->dpi.url	= url;
+		ct->dpi.flags	= flags;
 	}
 
-	update_classification_stats(skb, flags, 1);
+	update_classification_stats(skb, old_flags, flags, 1);
 
 	/* if we have not yet identified everything, skip accelerating */
 	if (ct) {
@@ -496,9 +539,13 @@ static void dpi_classify(struct sk_buff *skb, int lookup_flags)
 	    test_bit(DPI_DEVID_STOP_CLASSIFY_BIT, &flags) &&
 	    test_bit(DPI_URL_STOP_CLASSIFY_BIT, &flags)) {
 		dpi_stop_classification(skb, &flags);
-		return;
+		if (ct)
+			ct->dpi.flags = flags;
+		nfct_update = 1;
+		goto out;
 	}
 
+out:
 	/* update userspace */
 	if (nfct_update)
 		send_nfct_update(skb);
@@ -858,6 +905,7 @@ static int dpi_stat_seq_show(struct seq_file *s, void *v)
 	seq_printf(s, "appinsts identified: %u\n", dpi_stats.appinst_count);
 	seq_printf(s, "    urls identified: %u\n", dpi_stats.url_count);
 	seq_printf(s, "    packets blocked: %llu\n", dpi_stats.blocked_pkts);
+	seq_printf(s, "      engine errors: %u\n", dpi_stats.engine_errors);
 	return 0;
 }
 static int dpi_stat_open(struct inode *inode, struct file *file)

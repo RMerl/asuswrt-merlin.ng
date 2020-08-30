@@ -95,6 +95,7 @@ struct dpi_stats {
 	uint32_t dev_count;
 	uint32_t appinst_count;
 	uint32_t url_count;
+	uint32_t engine_errors;
 	uint64_t blocked_pkts;
 };
 

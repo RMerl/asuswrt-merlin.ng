@@ -536,6 +536,10 @@ static uint32_t get_next_bn(uint32_t bn)
     else
         BDMF_TRACE_DBG(" ### BN_NULL (0x%x)\n", next_rply.next_bn);
 
+    if (next_rply.mcnt_val != 0)
+    {
+      RDD_BTRACE("bn: %d, mcast value: %d\n", bn, next_rply.mcnt_val);
+    }
     return next_bn;
 }
 
@@ -570,9 +574,17 @@ int drv_sbpm_cli_scan_bn_lists(bdmf_session_handle session, bdmfmon_cmd_parm_t p
         {
             if (count >= MAX_NUM_OF_SBPMS)
             {
-                bdmf_trace("Overrun when testing BN %d (part of %d). BUG?\n", curr_bn, bn);
-                rc = BDMF_ERR_INTERNAL;
-                goto exit;
+               bdmf_trace("\n\nOverrun when testing BN %d (part of %d). BUG?\n", curr_bn, bn);
+               for (next_bn = bn, i = 0; i<15;i++)
+               {
+                bdmf_trace("%d ", next_bn);
+                next_bn = bn_next[next_bn];
+                if (next_bn != SBPM_INVALID_BUFFER_NUMBER)
+                    bdmf_trace("=> ");
+               }
+               bdmf_trace("\n\n");
+               rc = BDMF_ERR_INTERNAL;
+               goto exit;
             }
 
             next_bn = get_next_bn(curr_bn);

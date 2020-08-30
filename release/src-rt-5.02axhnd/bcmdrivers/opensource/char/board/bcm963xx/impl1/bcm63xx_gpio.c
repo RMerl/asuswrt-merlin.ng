@@ -89,7 +89,7 @@ void kerSysSetGpioStateLocked(unsigned short bpGpio, GPIO_STATE_t state)
 
 #if defined(CONFIG_BCM963268) 
     /* Take over high GPIOs from WLAN block */
-    if ((bpGpio & BP_GPIO_NUM_MASK) > 31)
+    if ((bpGpio & BP_GPIO_NUM_MASK) > 35)
         GPIO->GPIOCtrl |= GPIO_NUM_TO_MASK(bpGpio - 32);
 #endif
 
@@ -160,7 +160,7 @@ int kerSysSetGpioDirInput(unsigned short bpGpio)
 
 #if defined(CONFIG_BCM963268) 
     /* Take over high GPIOs from WLAN block */
-    if ((bpGpio & BP_GPIO_NUM_MASK) > 31)
+    if ((bpGpio & BP_GPIO_NUM_MASK) > 35)
         GPIO->GPIOCtrl |= GPIO_NUM_TO_MASK(bpGpio - 32);
 #endif
 

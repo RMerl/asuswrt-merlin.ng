@@ -1,7 +1,7 @@
 /*
  * bcmevent read-only data shared by kernel or app layers
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.c 758241 2018-04-18 07:43:37Z $
+ * $Id: bcmevent.c 774680 2019-05-02 12:46:25Z $
  */
 
 #include <typedefs.h>
@@ -38,6 +38,9 @@ typedef struct {
 /* Use the actual name for event tracing */
 #define BCMEVENT_NAME(_event) {(_event), #_event}
 
+/* XXX - this becomes static data when all code is changed to use
+ * the bcmevent_get_name() API
+ */
 static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_SET_SSID),
 	BCMEVENT_NAME(WLC_E_JOIN),
@@ -98,19 +101,8 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_RX),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_COMPLETE),
-#if defined(NDIS)
 	BCMEVENT_NAME(WLC_E_PRE_ASSOC_IND),
 	BCMEVENT_NAME(WLC_E_PRE_REASSOC_IND),
-	BCMEVENT_NAME(WLC_E_CHANNEL_ADOPTED),
-	BCMEVENT_NAME(WLC_E_AP_STARTED),
-	BCMEVENT_NAME(WLC_E_DFS_AP_STOP),
-	BCMEVENT_NAME(WLC_E_DFS_AP_RESUME),
-	BCMEVENT_NAME(WLC_E_ASSOC_IND_NDIS),
-	BCMEVENT_NAME(WLC_E_REASSOC_IND_NDIS),
-	BCMEVENT_NAME(WLC_E_ACTION_FRAME_RX_NDIS),
-	BCMEVENT_NAME(WLC_E_AUTH_REQ),
-	BCMEVENT_NAME(WLC_E_IBSS_COALESCE),
-#endif /* #if defined(NDIS) */
 	BCMEVENT_NAME(WLC_E_ESCAN_RESULT),
 	BCMEVENT_NAME(WLC_E_ACTION_FRAME_OFF_CHAN_COMPLETE),
 #ifdef WLP2P
@@ -193,6 +185,8 @@ static const bcmevent_name_str_t bcmevent_names[] = {
 	BCMEVENT_NAME(WLC_E_SDB_TRANSITION),
 	BCMEVENT_NAME(WLC_E_PFN_SCAN_BACKOFF),
 	BCMEVENT_NAME(WLC_E_PFN_BSSID_SCAN_BACKOFF),
+	BCMEVENT_NAME(WLC_E_PRE_ASSOC_RSEP_IND),
+	BCMEVENT_NAME(WLC_E_WNM_ERR),
 };
 
 const char *bcmevent_get_name(uint event_type)

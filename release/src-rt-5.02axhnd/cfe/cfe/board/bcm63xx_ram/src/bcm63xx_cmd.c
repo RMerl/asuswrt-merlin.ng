@@ -1617,6 +1617,8 @@ static int bootNandImage(void)
                 state = BOOT_SET_NEW_IMAGE;
         }
 
+        bootInfo.bootPartition = state; 
+
         if( state == BOOT_SET_NEW_IMAGE )
         {
             bootImgA = BOOTED_NEW_IMAGE;
@@ -4188,9 +4190,9 @@ extern queue_t cfe_devices;
 
 static int ui_cmd_emmc_gpt_fmt(ui_cmdline_t *cmd,int argc,char *argv[])
 {
-    int bootfs_size, rootfs_size;
-    int misc1_size, misc2_size, misc3_size, misc4_size;
-    int data_size;
+    unsigned int bootfs_size, rootfs_size;
+    unsigned int misc1_size, misc2_size, misc3_size, misc4_size;
+    unsigned int data_size;
 
     if( argc != 7 )
     {
@@ -4198,13 +4200,13 @@ static int ui_cmd_emmc_gpt_fmt(ui_cmdline_t *cmd,int argc,char *argv[])
        return 0;
     }
 
-    bootfs_size = atoi(cmd_getarg(cmd,0));    
-    rootfs_size = atoi(cmd_getarg(cmd,1));
-    data_size  = atoi(cmd_getarg(cmd,2));
-    misc1_size  = atoi(cmd_getarg(cmd,3));
-    misc2_size  = atoi(cmd_getarg(cmd,4));
-    misc3_size  = atoi(cmd_getarg(cmd,5));
-    misc4_size  = atoi(cmd_getarg(cmd,6));
+    bootfs_size = (unsigned int)atoi(cmd_getarg(cmd,0));    
+    rootfs_size = (unsigned int)atoi(cmd_getarg(cmd,1));
+    data_size  =  (unsigned int)atoi(cmd_getarg(cmd,2));
+    misc1_size  = (unsigned int)atoi(cmd_getarg(cmd,3));
+    misc2_size  = (unsigned int)atoi(cmd_getarg(cmd,4));
+    misc3_size  = (unsigned int)atoi(cmd_getarg(cmd,5));
+    misc4_size  = (unsigned int)atoi(cmd_getarg(cmd,6));
 
     if(bootfs_size <= 0)
     {
@@ -5162,7 +5164,7 @@ void bcm63xx_run_ex(int breakIntoCfe, int skip_check_memcfg, int autorun)
 
     printSysInfo();
 #if defined(_BCM963138_) || defined(_BCM963148_) || defined(_BCM94908_) || defined(_BCM963158_) || \
-    defined(_BCM96846_) || defined(_BCM96856_)
+    defined(_BCM96846_) || defined(_BCM96856_) || defined(_BCM947189_)
     {
        unsigned int memcfg;
        if (skip_check_memcfg == 0 && validateMemoryConfig(NVRAM_RP, &memcfg)) {
@@ -5208,10 +5210,10 @@ void bcm63xx_run_ex(int breakIntoCfe, int skip_check_memcfg, int autorun)
 #endif
 
 #ifdef BCM_OPTEE
-	/* Run OPTEE, drop to interactive console if failed */
-	if (optee_init() == -1) {
-		breakIntoCfe = 1;
-	}
+    /* Run OPTEE, drop to interactive console if failed */
+    if (optee_init() == -1) {
+       breakIntoCfe = 1;
+    }
 #endif
 
 	if (!breakIntoCfe && autorun && runDelay(bootInfo.bootDelay)) {

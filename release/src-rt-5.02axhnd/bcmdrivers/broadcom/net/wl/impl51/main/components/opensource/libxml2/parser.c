@@ -1312,6 +1312,64 @@ xmlCleanSpecialAttr(xmlParserCtxtPtr ctxt)
     return;
 }
 
+/**
+ * xmlCheckLanguageID:
+ * @lang:  pointer to the string value
+ *
+ * Checks that the value conforms to the LanguageID production:
+ *
+ * NOTE: this is somewhat deprecated, those productions were removed from
+ *       the XML Second edition.
+ *
+ * [33] LanguageID ::= Langcode ('-' Subcode)*
+ * [34] Langcode ::= ISO639Code |  IanaCode |  UserCode
+ * [35] ISO639Code ::= ([a-z] | [A-Z]) ([a-z] | [A-Z])
+ * [36] IanaCode ::= ('i' | 'I') '-' ([a-z] | [A-Z])+
+ * [37] UserCode ::= ('x' | 'X') '-' ([a-z] | [A-Z])+
+ * [38] Subcode ::= ([a-z] | [A-Z])+
+ *
+ * The current REC reference the sucessors of RFC 1766, currently 5646
+ *
+ * http://www.rfc-editor.org/rfc/rfc5646.txt
+ * langtag       = language
+ *                 ["-" script]
+ *                 ["-" region]
+ *                 *("-" variant)
+ *                 *("-" extension)
+ *                 ["-" privateuse]
+ * language      = 2*3ALPHA            ; shortest ISO 639 code
+ *                 ["-" extlang]       ; sometimes followed by
+ *                                     ; extended language subtags
+ *               / 4ALPHA              ; or reserved for future use
+ *               / 5*8ALPHA            ; or registered language subtag
+ *
+ * extlang       = 3ALPHA              ; selected ISO 639 codes
+ *                 *2("-" 3ALPHA)      ; permanently reserved
+ *
+ * script        = 4ALPHA              ; ISO 15924 code
+ *
+ * region        = 2ALPHA              ; ISO 3166-1 code
+ *               / 3DIGIT              ; UN M.49 code
+ *
+ * variant       = 5*8alphanum         ; registered variants
+ *               / (DIGIT 3alphanum)
+ *
+ * extension     = singleton 1*("-" (2*8alphanum))
+ *
+ *                                     ; Single alphanumerics
+ *                                     ; "x" reserved for private use
+ * singleton     = DIGIT               ; 0 - 9
+ *               / %x41-57             ; A - W
+ *               / %x59-5A             ; Y - Z
+ *               / %x61-77             ; a - w
+ *               / %x79-7A             ; y - z
+ *
+ * it sounds right to still allow Irregular i-xxx IANA and user codes too
+ * The parser below doesn't try to cope with extension or privateuse
+ * that could be added but that's not interoperable anyway
+ *
+ * Returns 1 if correct 0 otherwise
+ **/
 int
 xmlCheckLanguageID(const xmlChar * lang)
 {

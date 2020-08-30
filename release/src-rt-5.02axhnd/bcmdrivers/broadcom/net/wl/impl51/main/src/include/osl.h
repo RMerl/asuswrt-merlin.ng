@@ -1,7 +1,7 @@
 /*
  * OS Abstraction Layer
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: osl.h 764693 2018-05-29 15:43:56Z $
+ * $Id: osl.h 774649 2019-05-01 13:45:54Z $
  */
 
 #ifndef _osl_h_
@@ -47,7 +47,7 @@ enum {
 #elif defined DONGLEBUILD
 #define OSL_PKTTAG_SZ 32 /* Size of PktTag */
 #else
-#define OSL_PKTTAG_SZ 40 /* Size of PktTag */
+#define OSL_PKTTAG_SZ 48 /* Size of PktTag */
 #endif // endif
 
 /* Drivers use PKTFREESETCB to register a callback function when a packet is freed by OSL */
@@ -114,8 +114,6 @@ MAKE_PREFETCH_RANGE_FN(PREF_STORE_RETAINED)
 #elif defined(linux)
 #include <linux_osl.h>
 #include <linux_pkt.h>
-#elif defined(NDIS)
-#include <ndis_osl.h>
 #elif defined(_CFE_) /* router boot loader */
 #include <cfe_osl.h>
 #elif defined(_RTE_)
@@ -300,6 +298,9 @@ do { \
 #endif // endif
 #ifndef PKTRESETRXFRAG
 #define PKTRESETRXFRAG(osh, lb)		BCM_REFERENCE(osh)
+#endif // endif
+#ifndef PKTISPKTFETCHED
+#define PKTISPKTFETCHED(osh, lb)	(0)
 #endif // endif
 
 /* TX FRAG */

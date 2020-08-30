@@ -158,6 +158,18 @@ CmsRet devCtl_xtmReInitialize(void);
  */
 CmsRet devCtl_xtmConfig( PXTM_CONFIGURATION_PARMS pConfigParms );
 
+/**Manage thresholds/mode in XTM driver
+ *
+ * This function is called to pass thresholds used per DSL mode of operation in 
+ * the XTM driver. 
+ *
+ * @param pThresholdParms (IN) - A pointer to 
+ *                  XTM_THRESHOLD_PARMS.
+ *
+ * @return CmsRet enum.
+ */
+
+CmsRet devCtl_xtmManageThreshold( PXTM_THRESHOLD_PARMS pThresholdParms );
 
 /** Get XTM traffic descriptor table
  *
@@ -370,8 +382,6 @@ CmsRet devCtl_xtmDeleteNetworkDevice( PXTM_ADDR pConnAddr );
  * @return CmsRet enum.
  */
 CmsRet devCtl_xtmGetBondingInfo ( PXTM_BOND_INFO pBondInfo ) ;
-
-CmsRet devCtl_xtmGetErrorStatistics( PXTM_ERROR_STATS pErrStats );
 
 #endif /* __DEVCTL_XTM_H__ */
 

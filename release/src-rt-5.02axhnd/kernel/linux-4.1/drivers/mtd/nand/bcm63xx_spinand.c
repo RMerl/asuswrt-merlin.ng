@@ -110,6 +110,7 @@ struct SpiNandChip
     unsigned short chip_page_shift;
     unsigned short chip_num_planes;
     unsigned long chip_die_sel;
+    unsigned char chip_ecc; // ECC bits
     unsigned char chip_ecc_corr; // threshold to fix correctable bits
     unsigned char chip_ecc_enh; // enhanced bad bit detection by chip
     unsigned char chip_subpage_shift; // 2^ shift amount based on number of subpages, typically 4
@@ -134,6 +135,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_gigadevice_2k_A,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -152,6 +154,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_gigadevice_2k_A,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -170,8 +173,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_gigadevice_2k_B,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
-        .chip_ecc_enh = 0x10, // enhanced bad bit detection by chip (6/8)
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip (6/8)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -188,8 +192,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_gigadevice_2k_B,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
-        .chip_ecc_enh = 0x10, // enhanced bad bit detection by chip (6/8)
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip (6/8)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -206,8 +211,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 4096 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_gigadevice_4k,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
-        .chip_ecc_enh = 0x10, // enhanced bad bit detection by chip (6/8)
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip (6/8)
         .chip_subpage_shift = 3, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -224,6 +230,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -242,6 +249,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -260,6 +268,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 4096, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -278,6 +287,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (3/4)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -296,6 +306,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -314,6 +325,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0x10000000, // 2Gb cutoff
         .chip_total_size = 64 * 2048 * 4096, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -332,6 +344,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_esmt,
+        .chip_ecc = 1, // ECC bits
         .chip_ecc_corr = 1, // threshold to fix correctable bits (1/1)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -350,6 +363,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 1, // ECC bits
         .chip_ecc_corr = 1, // threshold to fix correctable bits (1/1)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -368,6 +382,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0x8000000, // 1Gb cutoff
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 1, // ECC bits
         .chip_ecc_corr = 1, // threshold to fix correctable bits (1/1)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -386,8 +401,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_mxic,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
-        .chip_ecc_enh = 3, // enhanced bad bit detection by chip
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -404,8 +420,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_mxic,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
-        .chip_ecc_enh = 3, // enhanced bad bit detection by chip
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -422,8 +439,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
-        .chip_ecc_enh = 0x60, // enhanced bad bit detection by chip
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip, must do this for Toshiba because ECC is not visible when enabled
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -440,8 +458,9 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 2048, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_toshiba_micron_ab,
+        .chip_ecc = 8, // ECC bits
         .chip_ecc_corr = 6, // threshold to fix correctable bits (6/8)
-        .chip_ecc_enh = 0x60, // enhanced bad bit detection by chip
+        .chip_ecc_enh = 1, // enhanced bad bit detection by chip, must do this for Toshiba because ECC is not visible when enabled
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
     },
     {
@@ -458,6 +477,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_etron,
+        .chip_ecc = 4, // ECC bits
         .chip_ecc_corr = 3, // threshold to fix correctable bits (3/4)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -476,6 +496,7 @@ static struct SpiNandChip SpiDevInfo[] =
         .chip_die_sel = 0,
         .chip_total_size = 64 * 2048 * 1024, // chip_block_size x chip_num_blocks
         .ecclayout = &spinand_oob_micron_aa,
+        .chip_ecc = 1, // ECC bits
         .chip_ecc_corr = 1, // threshold to fix correctable bits (1/?)
         .chip_ecc_enh = 0, // enhanced bad bit detection by chip (none)
         .chip_subpage_shift = 2, // 2^ shift amount based on number of subpages (4)
@@ -765,10 +786,14 @@ static int count_bits(unsigned char * buf1, unsigned char * buf2, int len)
  * Description  : Reads up to a NAND block of pages into the specified buffer.
  * Returns      : FLASH_API_OK or FLASH_API_ERROR or FLASH_API_CORR
  ***************************************************************************/
+int bit_flips;
+
 static int spi_nand_read_page(unsigned long page_addr, unsigned int page_offset, unsigned char *buffer, int len)
 {
     int status = FLASH_API_OK;
 	unsigned char buf[4];
+
+    bit_flips = 0;
 
     if ((page_offset + len) > (pchip->chip_page_size + pchip->chip_spare_size)) // check to see if reading within page/OOB boundary
     {
@@ -819,21 +844,23 @@ static int spi_nand_read_page(unsigned long page_addr, unsigned int page_offset,
 
     if(status == FLASH_API_CORR)
     { // count bad bits to see if we exceed threshold
+        bit_flips = 1; // there's at least 1 bit flip when we have a correctable status
+
         if(pchip->chip_ecc_enh)
         { // chip has enhanced bad bit detection
-            if (
-                 ( (pchip->chip_device_id[0] == GIGADEVPART) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_AUX) & STAT_ECC_MASK1) < pchip->chip_ecc_enh) ) || 
-                 ( (pchip->chip_device_id[0] == MACRONIXPART) && ( (spi_nand_get_cmd(FLASH_SREAD, 0) & STAT_ECC_MASK2) < pchip->chip_ecc_enh) ) ||
-                 ( (pchip->chip_device_id[0] == TOSHIBAPART) && ( (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_ENH) & STAT_ECC_MASK3) < pchip->chip_ecc_enh) )
-               )
-                status = FLASH_API_OK;
+            if (pchip->chip_device_id[0] == GIGADEVPART)
+                bit_flips = ((spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_AUX) & STAT_ECC_MASK1) >> 4) | 0x4;
+            else if (pchip->chip_device_id[0] == MACRONIXPART)
+                bit_flips = spi_nand_get_cmd(FLASH_SREAD, 0) & STAT_ECC_MASK2;
+            else if (pchip->chip_device_id[0] == TOSHIBAPART)
+                bit_flips = (spi_nand_get_cmd(FLASH_GFEAT, FEATURE_STAT_ENH) & STAT_ECC_MASK3) >> 4;
         }
 #if defined(COUNT_BAD_BITS)
-        else if (pchip->chip_ecc_corr != 1) // If correctable and threshold is 1 bit then we are already at correctable threshold, no need to check
+        else if (pchip->chip_ecc_corr != 1) // If correctable status and threshold is 1 bit no need to check we are already at correctable reporting threshold
         {
 			unsigned char *buf_ecc = kmalloc(sizeof(unsigned char) * (pchip->chip_page_size + pchip->chip_spare_size), GFP_ATOMIC);
 			unsigned char *buf_noecc = kmalloc(sizeof(unsigned char) * (pchip->chip_page_size + pchip->chip_spare_size), GFP_ATOMIC);
-            int i, size, count, worst = 0;
+            int i, size, count;
 			
 			if((NULL == buf_ecc) || (NULL == buf_noecc))
 			{
@@ -879,17 +906,18 @@ static int spi_nand_read_page(unsigned long page_addr, unsigned int page_offset,
                 if(pchip->chip_page_size != pchip->chip_ecc_offset)
                     count += count_bits(buf_ecc + pchip->chip_ecc_offset + (size * i), buf_noecc + pchip->chip_ecc_offset + (size * i), size);
 
-                if (count > worst)
-                    worst = count;
+                if (count > bit_flips)
+                    bit_flips = count;
             }
 
-            if (worst < pchip->chip_ecc_corr)
-                status = FLASH_API_OK;
-			
 			kfree(buf_ecc);
 			kfree(buf_noecc);			
         }
 #endif // COUNT_BAD_BITS
+
+       if (bit_flips < pchip->chip_ecc_corr)
+          status = FLASH_API_OK;
+
     }
 
     return(status);
@@ -1555,6 +1583,7 @@ static int bcm63xx_init_size(struct mtd_info *mtd, struct nand_chip *chip, unsig
         for (i = 0; i < SPI_NAND_ID_LENGTH; i++)
             printk("%x", pchip->chip_device_id[i]);
         printk("\n");
+        printk("   ecc          = %x/%x bits\n", pchip->chip_ecc_corr, pchip->chip_ecc);
         printk("   page size    = 0x%x (%d) bytes\n", pchip->chip_page_size, pchip->chip_page_size);
         printk("   block size   = 0x%x (%d) bytes\n", pchip->chip_block_size, pchip->chip_block_size);
         printk("   total blocks = 0x%x (%d)\n", pchip->chip_num_blocks, pchip->chip_num_blocks);
@@ -1601,6 +1630,16 @@ static int bcm63xx_block_markbad(struct mtd_info *mtd, loff_t ofs)
     spin_unlock(&chip_lock);
 
     return(ret);
+}
+
+static int bcm63xx_ecc_calculate(struct mtd_info *mtd, const unsigned char *buf, unsigned char *code)
+{ // dummy function, ecc calculation was already completed during the read
+    return 0;
+}
+
+static int bcm63xx_bit_flips(struct mtd_info *mtd, uint8_t *p, uint8_t *ecc_code, uint8_t *ecc_calc)
+{
+    return bit_flips;
 }
 
 static void bcm63xx_select(struct mtd_info *mtd, int chip)
@@ -1681,7 +1720,10 @@ void bcmspinand_probe(struct mtd_info * mtd)
 
     nand->ecc.size = pchip->chip_page_size;
     nand->ecc.bytes = 0;
-    nand->ecc.strength = 0;
+    nand->ecc.steps = 1; // must set to something otherwise nand_read_page_hwecc won't report ecc flipped bits
+    nand->ecc.strength = pchip->chip_ecc;
+    mtd->ecc_strength = pchip->chip_ecc;
+    mtd->bitflip_threshold = pchip->chip_ecc_corr;
     nand->ecc.layout = pchip->ecclayout;
     nand->page_shift = pchip->chip_page_shift;
     nand->phys_erase_shift = pchip->chip_block_shift;
@@ -1694,7 +1736,10 @@ void bcmspinand_probe(struct mtd_info * mtd)
     nand->chip_delay = 0;
     nand->read_byte = bcm63xx_read_byte;
     nand->read_buf = bcm63xx_read_buf;
-    nand->ecc.mode = NAND_ECC_NONE;
+    nand->ecc.mode = NAND_ECC_HW;
+    nand->ecc.correct = bcm63xx_bit_flips;
+    nand->ecc.calculate = bcm63xx_ecc_calculate;
+    nand->ecc.hwctl = bcm63xx_select;
 
     nand->select_chip = bcm63xx_select;
     nand->write_buf  = bcm63xx_write;

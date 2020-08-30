@@ -254,7 +254,7 @@ static int port_lport_stats_get(mac_dev_t *mac_dev, mac_stats_t *mac_stats)
     mac_stats->rx_frame_256_511 = rx_stats.GRX511;
     mac_stats->rx_frame_512_1023 = rx_stats.GRX1023;
     mac_stats->rx_frame_1024_1518 = rx_stats.GRX1518;
-    mac_stats->rx_frame_1519_mtu = rx_stats.GRX1522 + rx_stats.GRX2047 + rx_stats.GRX4095 +
+    mac_stats->rx_frame_1519_mtu = rx_stats.GRX2047 + rx_stats.GRX4095 +
         rx_stats.GRX9216 + rx_stats.GRX16383;
     mac_stats->rx_multicast_packet = rx_stats.GRXMCA;
     mac_stats->rx_broadcast_packet = rx_stats.GRXBCA;

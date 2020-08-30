@@ -288,6 +288,9 @@ config BCM_CSO
 config BCM_PKTRUNNER_MCAST_DNAT
 	bool "Runner MCAST_DNAT Support "
 
+config BCM_PKTRUNNER_WAR_SKIP_TUN
+	bool "Runner workaround to skip TUN device"
+
 config BCM_CMDLIST
 	tristate "Support for Command List Driver"
 
@@ -836,7 +839,7 @@ config BCM_DPI_QOS_CPU
 	depends on BCM_DPI
 
 config BCM_MAP
-	tristate "Support for MAP-T"
+	tristate "Support for MAP-T MAP-E"
 
 config BCM_BOARD_IMPL
 	int "Implementation index for Board"
@@ -1253,6 +1256,11 @@ config BCM_WFD_RATE_LIMITER
     depends on BCM_WIFI_FORWARDING_DRV
     default n
 
+config BCM_WLAN_REMOVE_INTERNAL_DEBUG
+	bool "Build Image without WLAN Internal/Bcmdbg"
+	depends on BCM_WLAN
+	default n
+
 config BCM_NETXL
 	tristate 'Support for NetXL forwarding driver'
 	help
@@ -1476,6 +1484,11 @@ config HND_WL
 	bool "No HHD WL"
 	default n
 
+config DUMP_PREV_OOPS_MSG
+	bool "Dump previous kernel oops message"
+	depends on PRINTK
+	default n
+
 config BCM_ARM_CPUIDLE
 	bool "Cpuidle driver for BCM ARM and ARM64 chips"
 	depends on CPU_IDLE
@@ -1565,6 +1578,10 @@ config BCM_WLCSM_DEBUG
 
 config BCM_AIRIQ
 	bool "AirIQ support"
+	default n
+
+config BCM_HOSTAPD
+	bool "HOSTAPD support"
 	default n
 
 config BCM_NETFILTER_REGARDLESS_DROP_NO_ACCEL_FIRST

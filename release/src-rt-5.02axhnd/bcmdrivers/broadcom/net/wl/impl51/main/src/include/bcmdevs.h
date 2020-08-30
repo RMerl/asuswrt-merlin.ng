@@ -1,7 +1,7 @@
 /*
  * Broadcom device-specific manifest constants.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdevs.h 765231 2018-06-25 16:12:30Z $
+ * $Id: bcmdevs.h 779729 2019-10-04 20:43:14Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -149,7 +149,6 @@
 #define BCM43909_D11AC5G_ID	0x43d2		/* 43909 802.11ac 5G device */
 #endif /* DEPRECATED */
 /* DEPRECATED but used */
-#define BCM43XX_D11_DEV		0x4300		/* 43xx 802.11ac/n/ag device prefix */
 #define	BCM4306_D11G_ID		0x4320		/* 4306 802.11g */
 #define	BCM4306_D11A_ID		0x4321		/* 4306 802.11a */
 #define	BCM4306_D11DUAL_ID	0x4324		/* 4306 dual A+B */
@@ -165,6 +164,9 @@
 #define BCM4331_D11N2G_ID	0x4332		/* 4331 802.11n 2.4Ghz band id */
 #define BCM4331_D11N5G_ID	0x4333		/* 4331 802.11n 5Ghz band id */
 /* DEPRECATED */
+#define BCM43XX_D11DEV_MASK	0x4300		/**< MASK for 43xx 802.11ac/n/ag devices */
+#define BCM44XX_D11DEV_MASK	0x4400		/**< MASK for BCA 44xx 802.11ac/ax devices */
+#define BCM67XX_D11DEV_MASK	0x6700		/**< MASK for BCA 67xx 802.11ax devices */
 
 #define BCM43236_D11N_ID	0x4346		/* 43236 802.11n dualband device */
 #define BCM43236_D11N2G_ID	0x4347		/* 43236 802.11n 2.4GHz device */
@@ -290,7 +292,6 @@
 #define BCM4367_D11AC2G_ID	0x4423
 #define BCM4367_D11AC5G_ID	0x4424
 
-#define BCM43684_D11AX_DEVID_MASK 0x4400	/* 43684 802.11ax device ID mask */
 #define BCM43684_D11AX_ID	0x4429		/**< 43684 802.11ax dualband device */
 #define BCM43684_D11AX2G_ID	0x442a		/**< 43684 802.11ax 2G device */
 #define BCM43684_D11AX5G_ID	0x442b		/**< 43684 802.11ax 5G device */
@@ -317,6 +318,14 @@
 #define BCM4373_D11AC_ID	0x4418          /* 4373 802.11ac dualband device */
 #define BCM4373_D11AC2G_ID	0x4419          /* 4373 802.11ac 2.4G device */
 #define BCM4373_D11AC5G_ID	0x441a          /* 4373 802.11ac 5G device */
+
+#define BCM6710_D11AX_ID	0x4493		/**< 6710 802.11ax dualband device */
+#define BCM6710_D11AX2G_ID	0x4494		/**< 6710 802.11ax 2G device */
+#define BCM6710_D11AX5G_ID	0x4495		/**< 6710 802.11ax 5G device */
+
+#define BCM6878_D11AC_ID	0x6878		/**< 6878 802.11ax dualband device */
+#define BCM6878_D11AC2G_ID	0x4496		/**< 6878 802.11ax 2G device */
+#define BCM6878_D11AC5G_ID	0x4497		/**< 6878 802.11ax 5G device */
 
 #define	BCMGPRS_UART_ID		0x4333		/* Uart id used by 4306/gprs card */
 #define	BCMGPRS2_UART_ID	0x4344		/* Uart id used by 4306/gprs card */
@@ -370,13 +379,19 @@
 #define PCIXX21_SDIOH_ID	0x803c		/* TI PCI xx21 Standard Host Controller */
 #define R5C822_SDIOH_ID		0x0822		/* Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host */
 #define JMICRON_SDIOH_ID	0x2381		/* JMicron Standard SDIO Host Controller */
-#define EMBEDDED_2x2AX_ID	0xf6ca		/**< 63178 802.11ax dualband device */
-#define EMBEDDED_2x2AX_2G_ID	0xba06		/**< 47622 802.11ax 2.4G band device */
-#define EMBEDDED_2x2AX_5G_ID	0xba07		/**< 47622 802.11ax 5G band device */
+#define EMBEDDED_2x2AX_ID	0xf6ca		/**< 63178 2x2 802.11ax embedded dualband device */
+#define EMBEDDED_2x2AX_DEV2G_ID	0x4491		/**< 802.11ax 2x2 embedded 2.4G band device */
+#define EMBEDDED_2x2AX_DEV5G_ID	0x4492		/**< 802.11ax 2x2 embedded 5G band device */
 
+/*
+* XXX: specifically using these dedicated values, as we have boards programmed at the customer
+* with device ID 0x43AB...so figuring the device ID with least bit changes
+*/
 #define BCM43452_D11AC_ID	0x47ab		/* 43452 802.11ac dualband device */
 #define BCM43452_D11AC2G_ID	0x47ac		/* 43452 802.11ac 2.4G device */
 #define BCM43452_D11AC5G_ID	0x47ad		/* 43452 802.11ac 5G device */
+
+#define	BCM43227_CHIP_ID	43227		/* 43227 chipcommon chipid */
 
 /* Chip IDs */
 #ifdef DEPRECATED /* These products have been deprecated */
@@ -400,7 +415,6 @@
 #define	BCM43224_CHIP_ID	43224		/* 43224 chipcommon chipid */
 #define	BCM43225_CHIP_ID	43225		/* 43225 chipcommon chipid */
 #define	BCM43226_CHIP_ID	43226		/* 43226 chipcommon chipid */
-#define	BCM43227_CHIP_ID	43227		/* 43227 chipcommon chipid */
 #define	BCM43228_CHIP_ID	43228		/* 43228 chipcommon chipid */
 #define	BCM43231_CHIP_ID	43231		/* 43231 chipcommon chipid (OTP chipid) */
 #define	BCM43237_CHIP_ID	43237		/* 43237 chipcommon chipid */
@@ -430,6 +444,7 @@
 /* DEPRECATED but still referenced in components - start */
 #define	BCM47162_CHIP_ID	47162		/* 47162 chipcommon chipid */
 #define	BCM5354_CHIP_ID		0x5354		/* 5354 chipcommon chipid */
+#define BCM5357_CHIP_ID         0x5357          /* 5357 chipcommon chipid */
 /* DEPRECATED but still referenced in components - end */
 
 #define	BCM43217_CHIP_ID	43217		/* 43217 chip id (OTP chipid) */
@@ -537,11 +552,13 @@
 #define CASE_BCM4367_CHIP		case BCM4367_CHIP_ID
 #define BCM4367_CHIP(chipid)	(CHIPID(chipid) == BCM4367_CHIP_ID)
 
+#define BCM4363_CHIP_ID		0x4363		/* 4363 chipcommon chipid */
 #define BCM4365_CHIP_ID		0x4365		/* 4365 chipcommon chipid */
 #define BCM4366_CHIP_ID		0x4366		/* 4366 chipcommon chipid */
 #define BCM43664_CHIP_ID	43664		/* 4366E chipcommon chipid */
 #define BCM43666_CHIP_ID	43666		/* 4365E chipcommon chipid */
 #define BCM4365_CHIP(chipid)	((CHIPID(chipid) == BCM4365_CHIP_ID) || \
+				(CHIPID(chipid) == BCM4363_CHIP_ID) || \
 				(CHIPID(chipid) == BCM4366_CHIP_ID) || \
 				(CHIPID(chipid) == BCM43664_CHIP_ID) || \
 				(CHIPID(chipid) == BCM43666_CHIP_ID))
@@ -588,16 +605,21 @@
 				((devid) == BCM47189_D11AC2G_ID) || \
 				((devid) == BCM47189_D11AC5G_ID))
 
+/* BCA embedded AX core found in multiple devices */
 #define BCM63178_CHIP_ID	0xf6ca		/* == 'd63178 */
-#define BCM63622_CHIP_ID	0xf886		/* == 'd63622 */
+#define BCM47622_CHIP_ID	0xba06		/* == 'd47622 */
 #define EMBEDDED_2x2AX_CORE(chipid)	((CHIPID(chipid) == BCM63178_CHIP_ID) || \
-					(CHIPID(chipid) == BCM63622_CHIP_ID))
+					(CHIPID(chipid) == BCM47622_CHIP_ID))
 #define CASE_EMBEDDED_2x2AX_CORE	case BCM63178_CHIP_ID: \
-					case BCM63622_CHIP_ID
+					case BCM47622_CHIP_ID
 
-#define BCM67XX_D11AX_DEV	0x6700
 #define BCM6710_CHIP_ID		0x6710		/* 6710 chipcommon chipid */
 #define BCM6710_CHIP(chipid)	((CHIPID(chipid) == BCM6710_CHIP_ID))
+#define CASE_BCM6710_CHIP	case BCM6710_CHIP_ID
+
+#define BCM6878_CHIP_ID		0x6878		/* 6878 chipcommon chipid */
+#define BCM6878_CHIP(chipid)	((CHIPID(chipid) == BCM6878_CHIP_ID))
+#define CASE_BCM6878_CHIP	case BCM6878_CHIP_ID
 
 #define	BCM7271_CHIP_ID		0x05c9		/* 7271 chipcommon chipid */
 #define BCM7271_CHIP(chipid)	((CHIPID(chipid) == BCM7271_CHIP_ID))
@@ -712,7 +734,9 @@
 #define BFL2_DAC_SPUR_IMPROVEMENT 0x00008000       /* Reducing DAC Spurs */
 #define BFL2_GPLL_WAR2	        0x00010000  /* Flag to widen G-band PLL loop b/w */
 #define BFL2_REDUCED_PA_TURNONTIME 0x00010000  /* Flag to reduce PA turn on Time */
-#define BFL2_IPALVLSHIFT_3P3    0x00020000
+#define BFL2_IPALVLSHIFT_3P3    0x00020000  /* Flag to Activate the PR 74115 PA Level Shift
+					     * Workaround where the gpaio pin is connected to 3.3V
+					     */
 #define BFL2_INTERNDET_TXIQCAL  0x00040000  /* Use internal envelope detector for TX IQCAL */
 #define BFL2_XTALBUFOUTEN       0x00080000  /* Keep the buffered Xtal output from radio on */
 				/* Most drivers will turn it off without this flag */
@@ -799,7 +823,7 @@
 #define BFL3_AVVMID_FROM_NVRAM_SHIFT   30   /* Read Av Vmid from NVRAM  */
 #define BFL3_VLIN_EN_FROM_NVRAM_SHIFT   31   /* Enable Vlin  from NVRAM  */
 
-/* boardflags4 for SROM12/SROM13 */
+/* boardflags4 for SROM12/SROM13/SROM18 */
 #define BFL4_SROM12_4dBPAD      (1 << 0)   /* To distinguigh between normal and 4dB pad board */
 #define BFL4_SROM12_2G_DETTYPE      (1 << 1)   /* Determine power detector type for 2G */
 #define BFL4_SROM12_5G_DETTYPE      (1 << 2)   /* Determine power detector type for 5G */
@@ -807,12 +831,19 @@
 #define BFL4_SROM13_CCK_SPUR_EN     (1 << 4)   /* using cck spur reduction setting in 4366 */
 #define BFL4_SROM13_1P5V_CBUCK		(1 << 7)   /* using 1.5V cbuck board in 4366 */
 #define BFL4_SROM13_EN_SW_TXRXCHAIN_MASK (1 << 8)   /* Enable/disable bit for sw chain mask */
-#define BFL4_SROM18_CCK_PAPARAM_EN (1 << 16)   /* Enable/disable bit for sw chain mask */
-#define BFL4_SROM18_OLPC_THRESH_EN	(1 << 17)  /* Enable bit for olpc_2g5g_th */
+#define BFL4_SROM13_CORE3_P1C       (1 << 9)   /* Enable/disable bit for core-3 as +1 scan core */
+#define BFL4_SROM18_CCK_PAPARAM_EN   (1 << 16)   /* Enable/disable bit for sw chain mask */
+#define BFL4_SROM18_OLPC_THRESH_EN	 (1 << 17)  /* Enable bit for olpc_2g5g_th */
+#define BFL4_SROM18_TXPWR_CAP_EN     (1 << 18)   /* bit to enable TXPWR_CAP as default */
+#define BFL4_SROM18_ELNABYP_ON_W0_2G (1 << 19)  /* Bypass elna based on w0 (high-pwr signals) */
+#define BFL4_SROM18_ELNABYP_ON_W0_5G (1 << 20)  /* Bypass elna based on w0 (high-pwr signals) */
+#define BFL4_SROM18_PAPDCCK_DISABLE (1 << 21)  /* Bypass CCKPAPD compensation */
 
 #define BFL4_4364_HARPOON 0x0100   /* Harpoon module 4364 */
 #define BFL4_4364_GODZILLA 0x0200   /* Godzilla module 4364 */
 #define BFL4_BTCOEX_OVER_SECI	0x00000400 /* Enable btcoex over gci seci */
+
+#define BFL4_DIS_1024QAM 0x0800
 
 /* papd params */
 #define PAPD_TX_ATTN_2G 0xFF
@@ -838,8 +869,15 @@
 #define PAPD_CALREF_DB_5G_SHIFT 8
 
 /* board specific GPIO assignment, gpio 0-3 are also customer-configurable led */
-#define	BOARD_GPIO_BTC3W_IN	0x850	/* bit 4 is RF_ACTIVE, bit 6 is STATUS, bit 11 is PRI */
-#define	BOARD_GPIO_BTC3W_OUT	0x020	/* bit 5 is TX_CONF */
+/* BOARD_GPIO_SW_BTC values have corresponding nvram overrides */
+#define	BOARD_GPIO_SW_MAX_VAL	16	/* bit pos stored in 16-bit ucode reg for now */
+#define	BOARD_GPIO_NUM_GPIOS	3	/* number of sw-controlled GPIOs supported */
+#define	BOARD_GPIO_SW_BTC_STAT	0x01	/* gpio 0, sw coex, bt status default gpio num */
+#define	BOARD_GPIO_SW_BTC_WLAN	0x02	/* gpio 1, sw coex, wlan active/TX_CONF default gpio num */
+#define	BOARD_GPIO_SW_BTC_BT	0x03	/* gpio 2, sw coex, bt active default gpio num */
+#define	BOARD_GPIO_SW_BTC_DEFMASK	((1 << (BOARD_GPIO_SW_BTC_BT - 1)) |\
+					 (1 << (BOARD_GPIO_SW_BTC_STAT - 1)) |\
+					 (1 << (BOARD_GPIO_SW_BTC_WLAN - 1)))
 #define	BOARD_GPIO_BTCMOD_IN	0x010	/* bit 4 is the alternate BT Coexistence Input */
 #define	BOARD_GPIO_BTCMOD_OUT	0x020	/* bit 5 is the alternate BT Coexistence Out */
 #define	BOARD_GPIO_BTC_IN	0x080	/* bit 7 is BT Coexistence Input */

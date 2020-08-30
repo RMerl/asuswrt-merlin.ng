@@ -33,6 +33,7 @@
 #include "cfe_timer.h"
 #include "cfe.h"
 #include "bcm_map.h"
+#include "bcm63xx_auth.h"
 #include "bcm_hwdefs.h"
 #include "bcmTag.h"
 #include "dev_bcm63xx_flash.h"
@@ -132,6 +133,7 @@ static int write_nvram_data( PNVRAM_DATA pNvramData );
 static int get_nvram_offset( char * cfe_start_addr );
 static int emmc_delete_cfe_devs(int emmcPhysPartAttr, emmcflash_probe_t *femmcprobe);
 static int emmc_erase_phys_part(int emmcPhysPartAttr);
+static uint64_t emmc_get_part_size(char * flashdev);
 static int enable_emmc_flash( uint64_t *emmc_flash_size, uint8_t boot_mode );
 static uint64_t enable_emmc_logicalpartition( emmcflash_logicalpart_spec_t *EmmcPartition, emmcflash_probe_t *femmcprobe, int attr, uint8_t num_parts );
 static void ui_emmc_dumphex( unsigned char *pAddr, unsigned int offset, int nLen, int sz );
@@ -152,8 +154,11 @@ static int read_cferom_version( char * version )
     int ret = 0;
     int fh = 0;
     int cfe_ver_offset = 0;
+    uint64_t image_offset;
     char flash_dev[] = EMMC_CFE_PNAME_CFE;
 #if !defined(_BCM963138_) 
+    int i;
+    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_CFE);
     char temp_buf[sizeof(SbiAuthHdrBeginning)+BTRM_SBI_UNAUTH_HDR_MAX_SIZE];
 #endif    
 
@@ -173,17 +178,42 @@ static int read_cferom_version( char * version )
 #if defined(_BCM963138_) 
     /* Find the offset to the cfe version string, for Gen2 images offset is fixed */
     cfe_ver_offset = get_nvram_offset(0) - CFE_VERSION_REL_OFFSET;
+    image_offset = IMAGE_OFFSET;
 #else
-    /* Read full unauthhdr plus beginning of authhdr */
-    ret = cfe_readblk(fh,
-                    IMAGE_OFFSET,
+    /* Read full unauthhdr plus beginning of authhdr, search at every 1k boundary */
+    for( i=0; i < cferom_partition_size/1024; i++ )
+    {
+        ret = cfe_readblk(fh,
+                    i*1024,
                     (unsigned char*)temp_buf,
                     (sizeof(SbiAuthHdrBeginning)+BTRM_SBI_UNAUTH_HDR_MAX_SIZE));
+
+        if (ret < 0)
+            break;
+
+        if (((SbiUnauthHdrBeginning*)temp_buf)->magic_1 == BTRM_SBI_UNAUTH_MGC_NUM_1)
+        {
+           if (((SbiUnauthHdrBeginning*)temp_buf)->magic_2 == BTRM_SBI_UNAUTH_MGC_NUM_2)
+           {
+               /* We found a cferom */
+               image_offset = i*1024;
+               break;
+           }
+        }
+    }
 
     if (ret < 0)
     {
         printf("eMMC ioctl error\n");
-        ret = CFE_ERR_IOERR;
+        cfe_close(fh);
+        return(CFE_ERR_IOERR);
+    }
+    
+    if ( i==cferom_partition_size/1024 )
+    {
+        printf("eMMC could not find cferom\n");
+        cfe_close(fh);
+        return(CFE_ERR_IOERR);
     }
 
     /* Find the offset to the cfe version string */
@@ -192,7 +222,7 @@ static int read_cferom_version( char * version )
 
     /* Read the cfe version string */
     ret = cfe_readblk(fh,
-                    cfe_ver_offset + IMAGE_OFFSET,
+                    cfe_ver_offset + image_offset,
                     (unsigned char*)version,
                     (CFE_VERSION_MARK_SIZE+CFE_VERSION_SIZE));
 
@@ -201,7 +231,7 @@ static int read_cferom_version( char * version )
     if (ret < 0)
     {
         printf("eMMC ioctl error\n");
-        ret = CFE_ERR_IOERR;
+        return(CFE_ERR_IOERR);
     }
     else
         ret = CFE_OK;
@@ -710,7 +740,15 @@ static uint64_t enable_emmc_logicalpartition_from_gpt( cfe_gpt_probe_t * fgptpro
     uint8_t     i;
     uint64_t    fp_size=0;
 
-    emmc_delete_cfe_devs(attr, femmcprobe); 
+    emmc_delete_cfe_devs(attr, femmcprobe);
+
+    /* Sanity Check */
+    if( fgptprobe->num_parts > EMMC_MAX_DATA_PARTS )
+    {
+        printf("Cant create %d logical partitions! Max paritition count = %d\n", fgptprobe->num_parts, EMMC_MAX_DATA_PARTS );
+        printf("Will restrict CFE visible partition count to %d to allow recovery\n", EMMC_MAX_DATA_PARTS );
+	fgptprobe->num_parts = EMMC_MAX_DATA_PARTS;
+    }
     
     for( i=0; i < fgptprobe->num_parts; i++ )
     {
@@ -1080,7 +1118,7 @@ static int emmc_check_image_size( PFILE_TAG pTag)
     int ret = CFE_ERR;
     uint64_t bootfs_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1));
     uint64_t rootfs_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
-    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
+    uint64_t cferom_partition_size = emmc_get_part_size(EMMC_CFE_PNAME_CFE);
     uint64_t mdata_partition_size  = emmc_get_part_size(EMMC_CFE_PNAME_MDATA(1, 1));
 
     if (   atoi(pTag->cfeLen)    <= cferom_partition_size
@@ -1415,7 +1453,7 @@ int emmc_boot_os_image(int imageNum)
     int len = 4 * emmcBlkSize;
     
     unsigned char *image = (unsigned char *) buf + len;
-    unsigned int  image_hdr_size = 0, image_sig_size = SEC_S_SIGNATURE;
+    unsigned int  image_hdr_size = 0, image_sig_size = 0, image_size;
     char          brcmMagic[] = {'B','R','C','M'};    
     int ret = -1;
     int bootImg;
@@ -1428,41 +1466,86 @@ int emmc_boot_os_image(int imageNum)
 
     memset((unsigned char *) &la, 0x0, sizeof(la));
     la.la_flags = LA_DEFAULT_FLAGS;
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+    if (load_hash_block(0,0) != 0)
+        die();
+#endif // CONFIG_CFE_SUPPORT_HASH_BLOCK
 
 #if defined(_BCM963268_) || defined(_BCM96838_) || defined(_BCM963381_) || \
 defined(_BCM963138_) || defined(_BCM963148_) || defined (_BCM963158_) || \
 defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
+#ifndef CONFIG_CFE_SUPPORT_HASH_BLOCK
     if (bcm_otp_is_boot_secure()) {
 #if (SEC_S_SIGNATURE&3) != 0
 #error "SEC_S_SIGNATURE must be 4 byte aligned"   
 #endif  
-          if( (ret = load_file_from_next_bootfs( NAND_FLASH_BOOT_SIG_NAME, (char *)image, &bootImg, 
+          if( (image_sig_size = load_file_from_next_bootfs( NAND_FLASH_BOOT_SIG_NAME, (char *)image, &bootImg, 
                          &imageNum, &parse_emmc_bootfs )) < 0 ) {
               printf("Unable to load signature !\n");
-              return ret;
+              return image_sig_size;
           }
-          /* magically discovered size of the signature: was it difficult to return an object size?*/
+          if (SEC_S_SIGNATURE != image_sig_size) 
+          {
+              printf("Image is corrupt %s\n",NAND_FLASH_BOOT_SIG_NAME);
+              return -1;
+          }
           image += image_sig_size; 
     }
+#endif // !CONFIG_CFE_SUPPORT_HASH_BLOCK
 #endif
-    /* Try and load kernel from partition */
-    if( (ret = load_file_from_next_bootfs( fname_lz, (char *)image, &bootImg, 
-            &imageNum, &parse_emmc_bootfs )) < 0 )
-    {
-        printf("Unable to load kernel image!\n");
-        return ret;
-    }
 
+    /* Try and load kernel from partition */
+#ifdef USE_LZ4_DECOMPRESSOR
+    if( (image_size = load_file_from_next_bootfs( fname_lz4, (char *)image, &bootImg, 
+            &imageNum, &parse_emmc_bootfs )) < 0 )
+#endif        
+    {
+        if( (image_size = load_file_from_next_bootfs( fname_lz, (char *)image, &bootImg, 
+                &imageNum, &parse_emmc_bootfs )) < 0 )
+        {
+            printf("Unable to load kernel image!\n");
+            return image_size;
+        }
+    }
+#ifdef CONFIG_CFE_SUPPORT_HASH_BLOCK
+    if (hash_block_start) {
+        unsigned char hash[SHA256_S_DIGEST8];
+        int ret;
+        unsigned int content_len;
+        // printf("look for hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+        // printf("start of hash block %x %x %x %x\n",hash_block_start[0],hash_block_start[1],hash_block_start[2],hash_block_start[3]);
+        ret = find_boot_hash(&content_len, hash, hash_block_start, NAND_FLASH_BOOT_IMAGE_LZ); // FIXME -- LZ4 not supported
+        if (ret == 0)  {
+            printf("failed to find hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+            die();
+        } else {
+            printf("got hash for %s\n",NAND_FLASH_BOOT_IMAGE_LZ);
+           if (sec_verify_sha256((uint8_t const*)image, image_size, (const uint8_t *)hash)) {
+               printf("Kernel Digest failed\n");
+               die();
+           } else {
+               printf("Kernel Digest OK\n");
+           }
+
+        }
+
+    }
+#endif // CONFIG_CFE_SUPPORT_HASH_BLOCK
     /* If we are booting from a specified or only image
      * we store the index in a global variable. This variable
      * will be used in the dtb retrieval function to bypass 
      * the image search and speed things up */
     if( bootImg == BOOTED_ONLY_IMAGE )
         boot_only_img_idx = imageNum;
+
+    /* Suffice to mention that there's no way 
+       to tell what endianness was used for the image header...  */
     memcpy(&image_hdr, image, sizeof(image_hdr)); 
     /* leagacy adjustments:
-          new image format contains broadcom signature and uncompressed length.*/
+       new image format contains broadcom signature and uncompressed length.*/
     image_hdr_size = (image_hdr.magic == *(uint32_t*)brcmMagic)? sizeof(image_hdr) : sizeof(image_hdr)-sizeof(uint32_t);
+    image += image_hdr_size;
+
 #if defined(CONFIG_ARM) || defined(CONFIG_ARM64)
     /* ARM linux kernel compiled for virtual address at 0xc0008000,
        convert to physical address for CFE */
@@ -1472,12 +1555,12 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
     la.la_address = (long)image_hdr.la;
     la.la_entrypt = (long)image_hdr.entrypt;
 #endif
-    image += image_hdr_size;
 
 #if defined(_BCM963268_) || defined(_BCM96838_) || defined(_BCM963381_) || \
 defined(_BCM963138_) || defined(_BCM963148_) || defined (_BCM963158_) || \
 defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
-    if (bcm_otp_is_boot_secure()) {
+    // only use this secure boot authentication if hash_block was not already checked
+    if (!hash_block_start && (bcm_otp_is_boot_secure())) {
           char *sig_obj = NULL;
           Booter1AuthArgs authArgs;
           /* Authenticate vmlinux */
@@ -1499,13 +1582,13 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
 
 #ifdef USE_LZ4_DECOMPRESSOR
     if (image_hdr.len_uncomp) {           
-        ret = LZ4_decompress_fast((const char *)image, (char *)la.la_address, image_hdr.len_uncomp) != image_hdr.len;
-    }
-    else
+        ret = LZ4_decompress_fast((const char *)image, (char *)(void*)la.la_address, image_hdr.len_uncomp) != image_hdr.len;
+    } else
 #endif
     {
-        ret = decompressLZMA(image, image_hdr.len, (unsigned char*)la.la_address, 23*1024*1024) < 0;
+        ret = decompressLZMA((unsigned char*)image, image_hdr.len, (unsigned char*)la.la_address, (RAMAPP_TEXT - la.la_address)) < 0;
     }
+
     if (ret) 
         printf("Failed to decompress %s image.  ret = %d Corrupted image?\n",image_hdr.len_uncomp? "LZ4":"LZMA",ret);
     else
@@ -1549,37 +1632,31 @@ defined(_BCM94908_) || defined(_BCM96858_) || defined(_BCM96856_)
 
 int emmc_dump_gpt_dataPhysPart(void)
 {
-    uint64_t bootfs_size, rootfs_size, data_size, misc1_size, misc2_size, misc3_size, misc4_size;
+    uint64_t bootfs_sizeKb, rootfs_sizeKb, data_sizeKb, misc1_sizeKb, misc2_sizeKb, misc3_sizeKb, misc4_sizeKb;
 
-    bootfs_size = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1));
-    rootfs_size = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1));
-    data_size   = emmc_get_part_size(EMMC_CFE_PNAME_DATA     );
-    misc1_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(1)  );
-    misc2_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(2)  );
-    misc3_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(3)  );
-    misc4_size  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(4)  );
+    bootfs_sizeKb = emmc_get_part_size(EMMC_CFE_PNAME_BOOTFS(1))/1024;
+    rootfs_sizeKb = emmc_get_part_size(EMMC_CFE_PNAME_ROOTFS(1))/1024;
+    data_sizeKb   = emmc_get_part_size(EMMC_CFE_PNAME_DATA     )/1024;
+    misc1_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(1)  )/1024;
+    misc2_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(2)  )/1024;
+    misc3_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(3)  )/1024;
+    misc4_sizeKb  = emmc_get_part_size(EMMC_CFE_PNAME_MISC(4)  )/1024;
     
     printf("emmc format command for current partition configuration:\n");
     printf("emmcfmtgpt bootfsKB rootfsKB dataKB misc1KB misc2KB misc3KB misc4KB\n");
-    printf("emmcfmtgpt %d %d %d %d %d %d %d\n",
-                                                bootfs_size/1024, 
-    						rootfs_size/1024, 
-    						data_size/1024, 
-						misc1_size/1024,
-						misc2_size/1024, 
-						misc3_size/1024, 
-						misc4_size/1024);
+    printf("emmcfmtgpt %llu %llu %llu %llu %llu %llu %llu\n", bootfs_sizeKb, rootfs_sizeKb, 
+        data_sizeKb, misc1_sizeKb, misc2_sizeKb, misc3_sizeKb, misc4_sizeKb);
     return 0;
 }
 
-int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_sizekb,
-                    int misc1_sizekb, int misc2_sizekb, int misc3_sizekb, int misc4_sizekb) 
+int emmc_format_gpt_dataPhysPart(unsigned int bootfs_sizekb, unsigned int rootfs_sizekb, unsigned int data_sizekb,
+                    unsigned int misc1_sizekb, unsigned int misc2_sizekb, unsigned int misc3_sizekb, unsigned int misc4_sizekb) 
 {
     int                 res = 0;
     emmcflash_probe_t   *femmcprobe = NULL;
+    emmcflash_logicalpart_spec_t * newPart = NULL;
     int emmcPhysPartAttr = EMMC_PART_DATA;
     uint8_t num_parts    = 0;
-    emmcflash_logicalpart_spec_t newPart [EMMC_MAX_DATA_PARTS];
     uint8_t             j;
 
     cfe_gpt_probe_t * pemmcdatagptprobe = (cfe_gpt_probe_t *)KMALLOC( sizeof(cfe_gpt_probe_t), 0 );
@@ -1598,86 +1675,99 @@ int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_
 
     //--------------------------------------------
     // [Step 2-1] Define new partitions
+    newPart = (emmcflash_logicalpart_spec_t*)KMALLOC( sizeof(emmcflash_logicalpart_spec_t)*EMMC_MAX_DATA_PARTS, 0 ); 
+
+    if (!newPart) {
+        printf("Failed to allocate memory for new partitions!\n"); 
+        return -1;
+    }
     
     /* clear partition table */
     memset(newPart, 0, sizeof(newPart));
 
     /* Add primary  gpt hdr partition */
-    newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
     strcpy(newPart[num_parts].fp_name, PRIMARY_GPT_HDR_PART_NAME);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
 
     /* Add NVRAM partition */
-    newPart[num_parts].fp_size = EMMC_DFLT_NVRAM_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)EMMC_DFLT_NVRAM_SIZE;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_NVRAM);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
 
     /* Add bootfs, rootfs and metadata partitions */
     for(j=0; j<EMMC_NUM_IMGS; j++ )
     {
-        newPart[num_parts].fp_size = bootfs_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)bootfs_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_BOOTFS(1):EMMC_PNAME_STR_BOOTFS(2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = rootfs_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)rootfs_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_ROOTFS(1):EMMC_PNAME_STR_ROOTFS(2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+        newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_MDATA(1,1):EMMC_PNAME_STR_MDATA(2,1)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
         
-        newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+        newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
         strcpy(newPart[num_parts].fp_name, (!j?EMMC_PNAME_STR_MDATA(1,2):EMMC_PNAME_STR_MDATA(2,2)));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     /* Add data partition */
-    newPart[num_parts].fp_size = data_sizekb * 1024;
+    newPart[num_parts].fp_size = (uint64_t)data_sizekb * 1024;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_DATA);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     
     /* Add misc partitions */
     if( misc1_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc1_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc1_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(1));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc2_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc2_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc2_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(2));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc3_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc3_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc3_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(3));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     if( misc4_sizekb > 0 )
     {
-        newPart[num_parts].fp_size = misc4_sizekb * 1024;
+        newPart[num_parts].fp_size = (uint64_t)misc4_sizekb * 1024;
         strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_MISC(4));
         newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     }
 
     /* Add unallocated  partition */
-    newPart[num_parts].fp_size = PARTITION_SIZE_FILL_FLASH;
+    newPart[num_parts].fp_size = (uint64_t)PARTITION_SIZE_FILL_FLASH;
     strcpy(newPart[num_parts].fp_name, EMMC_PNAME_STR_UNALLOC);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
     
     /* Add backup gpt hdr partition */
-    newPart[num_parts].fp_size = CFE_GPT_PRIMRY_SIZE;
+    newPart[num_parts].fp_size = (uint64_t)CFE_GPT_PRIMRY_SIZE;
     strcpy(newPart[num_parts].fp_name, BACKUP_GPT_HDR_PART_NAME);
     newPart[num_parts++].fp_partition = EMMC_PART_DATA;
-    
+
+    /* Sanity Check */
+    if( num_parts > EMMC_MAX_DATA_PARTS )
+    {
+        printf("\n\n !!! eMMC GPT re-partitioning Failed, too many new partitions %d > %d!!! \n\n", num_parts, EMMC_MAX_DATA_PARTS);
+        res = CFE_ERR;
+    }
+
     /* Create CFE logical partitions */
-    if( enable_emmc_logicalpartition( newPart, femmcprobe, emmcPhysPartAttr, num_parts ) )
+    if( (res != CFE_ERR) && enable_emmc_logicalpartition( newPart, femmcprobe, emmcPhysPartAttr, num_parts ) )
     {
         /* Create GPT partitions */
         res = enable_emmc_gpt( pemmcdatagptprobe, femmcprobe, EMMC_PART_DATA, num_parts, 1);
@@ -1690,7 +1780,8 @@ int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_
     {
         printf("eMMC Logical CFE re-partitioning failed!");
     }
-        
+
+    KFREE(newPart);
     KFREE(pemmcdatagptprobe);
     KFREE(femmcprobe);
     
@@ -1748,6 +1839,7 @@ int emmc_flash_image( PFILE_TAG pTag, uint8_t *imagePtr )
 {
     int cfeSize;
     uint32_t cfeAddr, rootfsAddr, bootfsAddr, mdataAddr, bootfsSize, rootfsSize;
+    uint64_t nvram_offset;
     int status = CFE_ERR; 
     int new_idx = 0;
     int update_nvram = 0;
@@ -1814,7 +1906,14 @@ int emmc_flash_image( PFILE_TAG pTag, uint8_t *imagePtr )
             goto err_out;
 
         /* Get pointer to new embedded NVRAM data - have to redo this when nvram is nolonger embedded in image */
-        tmpNvramData = (NVRAM_DATA *)((char*)imagePtr + cfeAddr + get_nvram_offset((char*)(imagePtr + cfeAddr)));
+        nvram_offset = get_nvram_offset((char*)(imagePtr + cfeAddr));
+        if( nvram_offset < cfeSize )
+            tmpNvramData = (NVRAM_DATA *)((char*)imagePtr + cfeAddr + nvram_offset);
+        else
+        {
+            printf("Error: Cannot find NVRAM in new Image!\n");
+            goto err_out;
+        }
 
         /* If current NVRAM is invalid, then this means that eMMC was erased
          * We therefore force the new image to be written to first image 

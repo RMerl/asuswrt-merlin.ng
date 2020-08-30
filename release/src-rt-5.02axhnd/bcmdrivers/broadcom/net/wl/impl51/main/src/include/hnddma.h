@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA engine SW interface
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma.h 764877 2018-06-07 12:00:51Z $
+ * $Id: hnddma.h 774125 2019-04-11 04:15:49Z $
  */
 
 #ifndef	_hnddma_h_
@@ -37,7 +37,7 @@
 typedef const struct hnddma_pub hnddma_t;
 #endif /* _hnddma_pub_ */
 
-#if (defined(BCM47XX_CA9) || defined(STB) || defined(BCA_HNDROUTER))
+#if defined(BCM47XX_CA9) || defined(STB) || defined(BCA_HNDROUTER)
 /* Enable/Disable Bulk Descriptor Flushing optimization */
 #define BULK_DESCR_FLUSH
 #endif // endif
@@ -106,12 +106,18 @@ extern bool dma_rxstopped(hnddma_t *dmah);
 extern void dma_rxenable(hnddma_t *dmah);
 extern bool dma_rxenabled(hnddma_t *dmah);
 #ifdef BULKRX_PKTLIST
+typedef struct rx_list {
+		void *rx_head;
+		void *rx_tail;
+		uint32 rxfifocnt;
+} rx_list_t;
 #ifdef STS_FIFO_RXEN
-extern void *dma_sts_rx(hnddma_t *dmah);
+extern void dma_sts_rx(hnddma_t *dmah, rx_list_t *rx_sts_list);
 extern void dma_sts_rxreclaim(hnddma_t *dmah);
 extern bool dma_sts_rxfill(hnddma_t *dmah);
 #endif // endif
-extern void *dma_rx(hnddma_t *dmah, void **sts_head, uint nbound);
+extern void dma_rx(hnddma_t *dmah, rx_list_t *rx_list,
+		rx_list_t *rx_sts_list, uint nbound);
 #else
 extern void *dma_rx(hnddma_t *dmah);
 #endif /* BULKRX_PKTLIST */

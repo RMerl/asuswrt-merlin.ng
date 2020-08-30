@@ -1062,6 +1062,7 @@ if [ "$BRCM_DRIVER_WIRELESS" = "y" -o "$BRCM_DRIVER_WIRELESS" = "m" ]; then
   bool 'Wireless HSPOT V2.0' BUILD_WLHSPOT
   bool 'WiFi Blanket' BUILD_WBD
   bool 'WiFi Insight' BUILD_WLVISUALIZATION
+  bool 'AIRIQ support' BUILD_BRCM_AIRIQ
   bool 'Unified Wireless Mangager' BUILD_UNIFIED_WLMNGR
   bool 'BCA_CPEROUTER compile' BUILD_BRCM_CPEROUTER 
 
@@ -1073,16 +1074,17 @@ if [ "$BRCM_DRIVER_WIRELESS" = "y" -o "$BRCM_DRIVER_WIRELESS" = "m" ]; then
 
   if [ "$WLSETUP_WPS" = "y" ]; then
     define_string BUILD_WPS_BTN "dynamic"
-    define_string BUILD_LLTD    "dynamic"
     define_string BUILD_WSC     "dynamic"
   else
     define_string BUILD_WPS_BTN ""
-    define_string BUILD_LLTD    ""
     define_string BUILD_WSC     ""
   fi
 
   tristate2 'NVRAM emulation' BUILD_NVRAM
 
+  bool 'Build HND Mfg image' BUILD_HND_MFG
+  bool 'Build image without wlan mfg binaries' BUILD_BCM_WLAN_NO_MFGBIN
+  bool 'Build NO internal/debug image' BUILD_BCM_WLAN_REMOVE_INTERNAL_DEBUG
 fi
 if [ "$LINUX_DRIVER_USB_HOST" = "y" -o "$LINUX_DRIVER_USB_HOST" = "m" ]; then
     dep_tristate '    USB Dongle Wireless'  BRCM_DRIVER_WIRELESS_USBAP $LINUX_KERNEL_USB_DEVICEFS
@@ -1469,7 +1471,7 @@ if [ "$BUILD_DPI" = "y" ]; then
   fi
 fi
 
-bool 'Enable MAP-T support' BUILD_MAP
+bool 'Enable MAP-T MAP-E' BUILD_MAP
 if [ "$BUILD_MAP" = "y" ]; then
   define_tristate BRCM_DRIVER_MAP "m"
 fi
@@ -1685,15 +1687,13 @@ if [ "$BUILD_MODSW_EE" = y ]; then
   fi  
   bool '  Enable Broadcom Example Execution Env (EE)' BUILD_MODSW_EXAMPLEEE
   bool '  Enable OpenWRT Execution Env (EE)' BUILD_MODSW_OPENWRTEE
-  if [ "$BRCM_63148" = "y" ]; then
-    bool '  Enable Docker Execution Env (EE)' BUILD_MODSW_DOCKEREE
-    if [ "$BUILD_MODSW_DOCKEREE" = y ]; then
-      # The IP address and mask defined by the following config option will
-      # be used as the value for the input argument "bip" when launching
-      # dockerd. Please refer to the following URL for more details:
-      # https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0/'
-      string "docker0 IP Address/Mask" BUILD_MODSW_DOCKEREE_BR_IP
-    fi
+  bool '  Enable Docker Execution Env (EE)' BUILD_MODSW_DOCKEREE
+  if [ "$BUILD_MODSW_DOCKEREE" = y ]; then
+    # The IP address and mask defined by the following config option will
+    # be used as the value for the input argument "bip" when launching
+    # dockerd. Please refer to the following URL for more details:
+    # https://docs.docker.com/engine/userguide/networking/default_network/custom-docker0/'
+    string "docker0 IP Address/Mask" BUILD_MODSW_DOCKEREE_BR_IP
   fi
 fi
 
@@ -2135,7 +2135,8 @@ bool 'wget speed test' BCM_SPEEDYGET
 
 bool 'Openvswitch' BUILD_OPENVSWITCH
 
-bool 'AIRIQ support' BUILD_BRCM_AIRIQ
+
+bool 'HOSTAPD support' BUILD_BRCM_HOSTAPD
 
 if [ "$BRCM_63138" = "y" -o "$BRCM_63158" = "y" -o "$BRCM_63148" = "y" -o "$BRCM_6856" = "y" ]; then
   bool 'ASOC_Sound Card Support' BUILD_BCM_ASOC_AUDIO

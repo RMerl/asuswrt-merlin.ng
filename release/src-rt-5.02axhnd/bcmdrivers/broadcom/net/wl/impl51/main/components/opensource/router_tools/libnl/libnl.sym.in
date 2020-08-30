@@ -1,0 +1,9 @@
+libnl_@MAJ_VERSION@ {
+global:
+	*;
+local:
+	_nl_socket_generate_local_port_no_release;
+	_nl_socket_is_local_port_unspecified;
+	_nl_socket_used_ports_release_all;
+	_nl_socket_used_ports_set;
+};

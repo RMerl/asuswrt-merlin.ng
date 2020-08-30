@@ -831,6 +831,8 @@ static inline void wfd_fwd_mcast(void *nkb_p, wfd_object_t *wfd_p, uint16_t ssid
 {
     uint32_t wl_if_index;
     void *nkbC_p = NULL;
+    /* save ssid_vector value */
+    int16_t _ssid_vector = ssid_vector;
 
     while (ssid_vector)
     {
@@ -854,23 +856,18 @@ static inline void wfd_fwd_mcast(void *nkb_p, wfd_object_t *wfd_p, uint16_t ssid
         wfd_p->count_rx_queue_packets++;
         wfd_p->wl_mcast_packets++;
 
+        /* for fkb, it only valide the device here, registered handler will handle the others */
+        if(is_fkb) continue;
+
         if (ssid_vector) /* To prevent (last/the only) ssid copy */
         {
-            if (is_fkb)
-            {
-                /* clone fkb */
-                nkbC_p = fkb_clone(nkb_p);
-            }
-            else
-            {
                 /* skb copy */
                 nkbC_p = skb_copy(nkb_p, GFP_ATOMIC);
-            }
 
             if (!nkbC_p)
             {
-                printk("%s %s: Failed to clone %ckb\n", __FILE__, __FUNCTION__, is_fkb ? 'f':'s');
-                wfd_nkb_free(nkb_p, is_fkb);
+                printk("%s %s: Failed to clone skb\n", __FILE__, __FUNCTION__);
+                nbuff_free(nkb_p);
                 return;
             }
         }
@@ -882,6 +879,9 @@ static inline void wfd_fwd_mcast(void *nkb_p, wfd_object_t *wfd_p, uint16_t ssid
         (void)wfd_p->wfd_mcastHook(wfd_p->wl_radio_idx, (unsigned long)nkbC_p, (unsigned long)wfd_p->wl_if_dev[wl_if_index]);
     }
 
+	if(is_fkb)
+		(void)wfd_p->wfd_mcastHook(wfd_p->wl_radio_idx, (unsigned long)nkb_p, (unsigned long)&_ssid_vector);
+	
     /* Done with mcast fwding */
 }
 

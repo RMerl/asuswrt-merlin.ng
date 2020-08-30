@@ -43,7 +43,7 @@
 #define PSRAM_INDEX	 5
 #if defined WL4908
 #define NUMBER_OF_SEGMENTS	 6
-#define NUMBER_OF_TABLES	 455
+#define NUMBER_OF_TABLES	 480
  #endif
 
 #endif /* __RDD_RUNNER_REG_DUMP_ADDRS_H__ */

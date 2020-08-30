@@ -241,18 +241,24 @@ static __be16 lookup_mapping_port(struct nf_conn *ct,
 	struct nf_conn_help *help = nfct_help(ct);
 	struct nf_conntrack_expect *exp;
 	struct nf_conn *child;
+	__be16 proto_all;
 
+	spin_lock_bh(&nf_conntrack_expect_lock);
 	/* Lookup existing expects */
 	pr_debug("nf_nat_rtsp: looking up existing expectations...\n");
 	hlist_for_each_entry(exp, &help->expectations, lnode) {
 		if (exp->tuple.dst.u.udp.port == port) {
 			pr_debug("nf_nat_rtsp: found port %hu mapped from "
-				 "%hu\n",
-			       	 ntohs(exp->tuple.dst.u.udp.port),
-			       	 ntohs(exp->saved_proto.all));
-			return exp->saved_proto.all;
+					"%hu\n",
+					ntohs(exp->tuple.dst.u.udp.port),
+					ntohs(exp->saved_proto.all));
+
+			proto_all = exp->saved_proto.all;
+			spin_unlock_bh(&nf_conntrack_expect_lock);
+			return proto_all;
 		}
 	}
+	spin_unlock_bh(&nf_conntrack_expect_lock);
 
 	/* Lookup existing connections */
 	pr_debug("nf_nat_rtsp: looking up existing connections...\n");

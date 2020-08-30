@@ -4,7 +4,7 @@ use warnings;
 use bytes;
 use FindBin qw($Bin);
 use lib "$Bin/../PerlLib";
-use BRCM::SBI;
+use BRCM::SBI_DEP;
 use Getopt::Long;
 
 #use warning;
@@ -52,7 +52,7 @@ sub run {
     #Gen2 related parms
     $args{'max_size'} = _unqt($max_size);
     $args{'in1'}      = _unqt($in1);
-    my $sbi_lib = BRCM::SBI->new( \%args );
+    my $sbi_lib = BRCM::SBI_DEP->new( \%args );
     $sbi_lib->build();
 }
 run();

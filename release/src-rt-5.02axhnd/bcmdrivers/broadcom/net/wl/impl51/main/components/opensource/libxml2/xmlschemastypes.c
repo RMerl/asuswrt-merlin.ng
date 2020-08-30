@@ -5150,6 +5150,9 @@ xmlSchemaValidateLengthFacetInternal(xmlSchemaFacetPtr facet,
 	    case XML_SCHEMAS_NAME:
 	    case XML_SCHEMAS_NCNAME:
 	    case XML_SCHEMAS_ID:
+		/*
+		* FIXME: What exactly to do with anyURI?
+		*/
 	    case XML_SCHEMAS_ANYURI:
 		if (value != NULL)
 		    len = xmlSchemaNormLen(value);

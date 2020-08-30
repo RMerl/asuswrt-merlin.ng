@@ -57,6 +57,8 @@ extern "C"
 #define TOTAL_DYNAMIC_FPM                   61000           /* ( 2 (FPM per DQM) * ( 287 (no. of queues) + 16 (prefetch) ) + 
                                                                ( 64K (maximal number of PDs in Queue) / (2K / 16) number of PDs in FPM) ) * 4(2K allocation )
                                                                = 4472 FPMs (basic size of 512). Worst case DQM FPM allocation.  */
+#define FPM_EXTRA_TOKENS_FOR_DQM            (4 * 1024)
+
 
 void drv_fpm_init(void *virt_base, unsigned int fpm_buf_size);
 

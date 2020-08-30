@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.h 763331 2018-05-18 05:45:31Z $
+ * $Id: linux_osl.h 771835 2019-02-08 18:15:49Z $
  */
 
 #ifndef _linux_osl_h_
@@ -132,6 +132,9 @@ extern uint osl_pcie_domain(osl_t *osh);
 extern uint osl_pcie_bus(osl_t *osh);
 extern struct pci_dev *osl_pci_device(osl_t *osh);
 
+#define OSL_PCIE_MPS_LIMIT(osh, devctl_offset, mps)	osl_pcie_mps_limit(osh, devctl_offset, mps)
+extern void osl_pcie_mps_limit(osl_t *osh, uint devctl_offset, uint mps);
+
 #define OSL_ACP_COHERENCE		(1<<1L)
 #define OSL_FWDERBUF			(1<<2L)
 
@@ -152,6 +155,9 @@ typedef struct {
 	void *rx_ctx;
 	void (*stsbuf_free_cb_fn)(void *stsbuf_free_cb_ctx, void *p);
 	void *stsbuf_free_cb_ctx;
+#ifdef BCM_SKB_FREE_OFFLOAD
+    bool skb_free_offload;
+#endif // endif
 } osl_pubinfo_t;
 
 #ifdef BCM_NBUFF_WLMCAST
@@ -238,6 +244,7 @@ extern void osl_dma_free_consistent(osl_t *osh, void *va, uint size, dmaaddr_t p
 	osl_dma_unmap((osh), (pa), (size), (direction))
 extern void osl_dma_flush(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *txp_dmah);
+extern void osl_dma_sync(osl_t *osh, dmaaddr_t pa, uint size, int direction);
 extern dmaaddr_t osl_dma_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *txp_dmah);
 extern void osl_dma_unmap(osl_t *osh, dmaaddr_t pa, uint size, int direction);
@@ -256,12 +263,20 @@ extern void * osl_virt_to_phys(void * va);
 
 #define OSL_SMP_WMB()	smp_wmb()
 
+#if defined(CONFIG_BCM_GLB_COHERENCY)
+/* Compile time macro OSL_CACHE_COHERENT, instead of OSL_ARCH_IS_COHERENT() */
+#define OSL_CACHE_COHERENT    1
+#define ACP_WAR_ENAB()        0
+#define ACP_WIN_LIMIT          (~0ULL)    /* entire memory */
+#define arch_is_coherent()     1
+#else /* !CONFIG_BCM_GLB_COHERENCY */
 #if defined(BCA_HNDROUTER) && defined(__ARM_ARCH_7A__)
 /* ACP definitions for 47189 + Linux-4.1 */
 #define ACP_WAR_ENAB()	0		/* Do not need this WAR for 47189 b1 */
 #define ACP_WIN_LIMIT	0xff	/* Added to passthrough the compilation */
 #define arch_is_coherent()	0
 #endif /* BCA_HNDROUTER && __ARM_ARCH_7A__ */
+#endif /* !CONFIG_BCM_GLB_COHERENCY */
 
 /* API for CPU relax */
 extern void osl_cpu_relax(void);
@@ -271,11 +286,6 @@ extern void osl_preempt_disable(osl_t *osh);
 extern void osl_preempt_enable(osl_t *osh);
 #define OSL_DISABLE_PREEMPTION(osh)	osl_preempt_disable(osh)
 #define OSL_ENABLE_PREEMPTION(osh)	osl_preempt_enable(osh)
-
-#ifdef CONFIG_BCM_GLB_COHERENCY
-/* Compile time macro OSL_CACHE_COHERENT, instead of OSL_ARCH_IS_COHERENT() */
-#define OSL_CACHE_COHERENT 1
-#endif /* CONFIG_BCM_GLB_COHERENCY */
 
 #if defined(__mips__) || (!defined(DHD_USE_COHERENT_MEM_FOR_RING) && \
 	defined(__ARM_ARCH_7A__)) || defined(STB_SOC_WIFI) || (defined(BCA_HNDROUTER) && \
@@ -688,6 +698,9 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 /* Because the non BINOSL implemenation of the PKT OSL routines are macros (for
  * performance reasons),  we need the Linux headers.
  */
+/* XXX REVISIT  Is there a more specific header file we should be including for the
+ * struct/definitions we need? johnvb
+ */
 #include <linuxver.h>		/* use current 2.4.x calling conventions */
 
 #else	/* BINOSL */
@@ -816,6 +829,10 @@ extern void osl_reg_unmap(void *va);
 extern uint32 osl_rand(void);
 
 #ifdef CTFMAP
+/* XXX hndctf.h includes bcmutils.h so it needs to be after BCMDBG_PKT stuffs,
+ * which has the definition of BCMDBG_PTRACE in it. Otherwise bcmutuils.h won't
+ * see BCMDBG_PTRACE it wants.
+ */
 #include <ctf/hndctf.h>
 #define	CTFMAPSZ	320
 #define	DMA_MAP(osh, va, size, direction, p, dmah) \
@@ -844,9 +861,13 @@ extern uint32 osl_rand(void);
 #define	_DMA_MAP(osh, va, size, direction, p, dmah)	BCM_REFERENCE(osh)
 #endif // endif
 
+#define	DMA_SYNC(osh, pa, size, direction)		BCM_REFERENCE(osh)
+
 #else /* CTFMAP */
 #define	DMA_FLUSH(osh, va, size, direction, p, dmah) \
 	osl_dma_flush((osh), (va), (size), (direction), (p), (dmah))
+#define	DMA_SYNC(osh, pa, size, direction) \
+	osl_dma_sync((osh), (pa), (size), (direction))
 #if !defined(BCM_SECURE_DMA)
 #define DMA_MAP(osh, va, size, direction, p, dmah) \
 	osl_dma_map((osh), (va), (size), (direction), (p), (dmah))
@@ -871,6 +892,14 @@ extern uint32 osl_rand(void);
 #endif /* CTFMAP */
 
 #else /* ! BCMDRIVER */
+
+/* XXX  Non BCMDRIVER code "OSL".
+ *   There are only a very limited number of OSL API's made available here:
+ *     mem*'s, str*'s, b*'s, *printf's, MALLOC/MFREE and ASSERT.  All others are
+ *   missing.  This doesn't really seem like an OSL implementation.  I am wondering
+ *   if non BCMDRIVER code should be using a different header file defined for that
+ *   purpose.  johnvb.
+ */
 
 /* ASSERT */
 	#define ASSERT(exp)	do {} while (0)
@@ -924,22 +953,28 @@ extern void bzero(void *b, size_t len);
 #define	SECURE_DMA_BUFFS_IS_AVAIL(osh) \
 	osl_sec_dma_buffs_is_avail((osh))
 
+#define	SECURE_DMA_RX_BUFFS_IS_AVAIL(osh) \
+	osl_sec_dma_rx_buffs_is_avail((osh))
+
+#define	SECURE_DMA_RXCTL_BUFFS_IS_AVAIL(osh) \
+	osl_sec_dma_rxctl_buffs_is_avail((osh))
+
 typedef struct sec_cma_info {
 	struct sec_mem_elem *sec_alloc_list;
 	struct sec_mem_elem *sec_alloc_list_tail;
 } sec_cma_info_t;
 
 /*
- * Total SECDMA memory Reserved is 20M.
+ * Total SECDMA memory Reserved is 40M.
  * This secdma memory will be used by both CMA_DMA_DATA_MEMBLOCK and CMA_DMA_DESC_MEMBLOCK
- * CMA_DMA_DESC_MEMBLOCK size	= (0x6000 * 279) + 0x100000 = Apprximately 8M
- * CMA_DMA_DATA_MEMBLOCK	= 20M - CMA_DMA_DESC_MEMBLOCK = 12M
- * Total 4K buffers		= CMA_DMA_DATA_MEMBLOCK/CMA_BUFSIZE_4K = 3072.
+ * CMA_DMA_DESC_MEMBLOCK size	= (0x6000 * 340) + 0x100000 = Apprximately 9M
+ * CMA_DMA_DATA_MEMBLOCK	= 20M - CMA_DMA_DESC_MEMBLOCK = 31M
+ * Total 4K buffers		= CMA_DMA_DATA_MEMBLOCK/CMA_BUFSIZE_4K = 7936.
  *
  * Now All Avaibale 4K buffers are divided in to 3 pools as below.
- * RXBUF POST Pool		= CMA_RXCTRL_BUFNUM  4K Buffers = 512
+ * RXBUF POST Pool		= CMA_RXBUF_BUFNUM  4K Buffers = 2048
  * RXCTR_BUF_POST POST Pool	= RXCTR_BUF_POST  8K Buffers = 64
- * TXBUF Pool (CMA_TXBUF_BUFNUM)= 3072 - (64*2) - 512 = 2432
+ * TXBUF Pool (CMA_TXBUF_BUFNUM)= 7936 - (64*2) - 2048 = 5760
  */
 
 #define CMA_BUFSIZE_8K	8192
@@ -952,17 +987,32 @@ typedef struct sec_cma_info {
 #define CMA_RXCTR_BUF_POST	2
 
 #define	CMA_RXCTRL_BUFNUM	64	/* 8K buffer count(pool) for RXCTRL Buffers */
-#define	CMA_RXBUF_BUFNUM	512	/* 4K buffer count(pool) RXBUF Post */
+#define	CMA_RXBUF_BUFNUM	2048	/* 4K buffer count(pool) RXBUF Post */
 
-#define	CMA_TXBUF_BUFNUM		2432 /* 4K buffer count(pool) for TXBUF_POST */
+#define	CMA_TXBUF_BUFNUM	5760 /* 4K buffer count(pool) for TXBUF_POST */
 #define SEC_CMA_COHERENT_BLK	0x6000 /* 24576 */
 
 #ifdef HTXHDR
 #define SEC_CMA_COHERENT_BLK_EX 0x100000 /* 1MB, for HTXHDR scratch_buf (772 KB) */
-#define SEC_CMA_COHERENT_MAX  (278+1) /* 1 last node is for HTXHDR scratch_buf (772 KB) */
+#define SEC_CMA_COHERENT_MAX  (340+1) /* 1 last node is for HTXHDR scratch_buf (772 KB) */
 #else
 #define SEC_CMA_COHERENT_BLK_EX 0
-#define SEC_CMA_COHERENT_MAX (278)
+/*
+ * This includes all the rings and other allocations as well :
+ * Max txflows(MAX_DHD_TX_FLOWS)	= 320
+ * h2dctrl				= 1
+ * d2hctrl				= 1
+ * h2drxp				= 4 (with 43684, it can grow up to 4)
+ * d2htxctrl				= 1
+ * d2hrxcpl				= 4 (with 43684, it can be upto 4)
+ * dma read/write indices allocations	= 5
+ * IOCTL response buffer		= 1
+ * IOCTL request buffer			= 1
+ * DHDHDR				= 1
+ * host_bus_throughput_buf		= 1
+ * Total				= 340
+ */
+#define SEC_CMA_COHERENT_MAX (340)
 #endif /* HTXHDR */
 
 #define CMA_DMA_DESC_MEMBLOCK	((SEC_CMA_COHERENT_BLK * SEC_CMA_COHERENT_MAX) \
@@ -987,6 +1037,9 @@ typedef struct sec_mem_elem {
 } sec_mem_elem_t;
 
 extern bool osl_sec_dma_buffs_is_avail(osl_t *osh);
+extern bool osl_sec_dma_rx_buffs_is_avail(osl_t *osh);
+extern bool osl_sec_dma_rxctl_buffs_is_avail(osl_t *osh);
+
 extern dma_addr_t osl_sec_dma_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *dmah, void *ptr_cma_info, uint offset, uint buftype);
 extern dma_addr_t osl_sec_dma_dd_map(osl_t *osh, void *va, uint size, int direction, void *p,
@@ -1022,5 +1075,16 @@ typedef struct sk_buff_head PKT_LIST;
 #define PKTLIST_UNLINK(x, y)	skb_unlink((struct sk_buff *)(y), (struct sk_buff_head *)(x))
 #define PKTLIST_FINI(osh, x)	({BCM_REFERENCE(osh); skb_queue_purge((struct sk_buff_head *)(x));})
 #endif /* BCM_NBUFF */
+
+#ifdef BCA_HNDROUTER
+extern void osl_adjust_mac(unsigned int instance_id,char *mac); /* for NIC */
+extern int osl_nvram_vars_adjust_mac(unsigned int instance_id, char *memblock, uint* len);
+#endif // endif
+
+#ifdef BCM_SKB_FREE_OFFLOAD
+#define	BCM_SKB_FREE_OFFLOAD_ENAB(osh)	OSH_PUB(osh).skb_free_offload
+#else
+#define	BCM_SKB_FREE_OFFLOAD_ENAB(osh)	(0)
+#endif // endif
 
 #endif	/* _linux_osl_h_ */

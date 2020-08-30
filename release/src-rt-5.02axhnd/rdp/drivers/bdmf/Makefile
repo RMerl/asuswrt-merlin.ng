@@ -62,13 +62,12 @@ ifeq ("$(CONFIG_SYSTEM)", "linux")
 	EXTRA_CFLAGS = -Werror $(INC_RDP_FLAGS) $(EXTRA_INCLUDES) $(EXTRA_DEFINES) $(PROJ_DEFS)
 	SYSTEM_OBJS += system/linux/bdmf_chrdev.o
 	obj-$(CONFIG_BCM_BDMF) = bdmf.o
-ifneq ($(PREBUILT_EXTRAMOD),1)
+ifneq ($(PREBUILT_EXTRAMOD),1)	
 	bdmf-objs = $(OBJS)
 else
 	bdmf-objs := bdmf$(PRBM_EXT).o
 endif
 	EXTRA_DEFINES += -DBDMF_SYSTEM_LINUX
-
 	REMOTE_SHELL_CFLAGS += -DBDMF_SYSTEM_LINUX
 	REMOTE_SHELL_CC = $(CROSS)gcc
 	REMOTE_SHELL_DEPS += $(BDMFDIR)/system/$(CONFIG_SYSTEM)/bdmf_chrdev.h

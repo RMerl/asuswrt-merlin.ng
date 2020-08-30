@@ -104,7 +104,7 @@ static int add_del_if(struct net_bridge *br, int ifindex, int isadd)
 
 #if defined(CONFIG_BCM_KF_BRIDGE_PORT_ISOLATION)
 	rcu_read_lock();
-	br_dev_notify_if_change(&br->dev->name[0]);
+    br_dev_notify_if_change(br->dev, dev, isadd);
 	rcu_read_unlock();
 #endif
 	return ret;

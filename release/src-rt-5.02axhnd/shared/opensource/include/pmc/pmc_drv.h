@@ -1560,6 +1560,7 @@ void pmc_reset(void);
 void pmc_initmode(void);
 int get_pmc_boot_param(unsigned boot_option, unsigned *boot_param);
 void pmc_log(int log_type);
+void pmc_log_dump(void);
 #if !(defined(_BCM96838_) || defined(CONFIG_BCM96838))
 int GetRevision(unsigned int *change, unsigned int *revision);
 int GetPVT(int sel, int island, int *value);

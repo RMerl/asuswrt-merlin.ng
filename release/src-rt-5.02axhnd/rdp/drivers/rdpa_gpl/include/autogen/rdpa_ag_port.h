@@ -54,19 +54,21 @@ typedef enum {
     rdpa_port_attr_sa_limit = 5, /* sa_limit : RW : aggregate port_sa_limit(rdpa_port_sa_limit_t) : SA limit configuration */
     rdpa_port_attr_def_flow = 6, /* def_flow : RW : aggregate classification_result(rdpa_ic_result_t ) : DS default flow classification. Wifi: last default flow w */
     rdpa_port_attr_stat = 7, /* stat : RW : aggregate port_stat(rdpa_port_stat_t) : Port statistics */
-    rdpa_port_attr_flow_control = 9, /* flow_control : RW : aggregate port_flow_control(rdpa_port_flow_ctrl_t) : The port flow control */
-    rdpa_port_attr_ingress_rate_limit = 10, /* ingress_rate_limit : RW : aggregate port_ingress_rate_limit(rdpa_port_ingress_rate_limit_t) : Port ingress rate limiting */
-    rdpa_port_attr_mirror_cfg = 11, /* mirror_cfg : RW : aggregate port_mirror_cfg(rdpa_port_mirror_cfg_t) : Port mirroring configuration */
-    rdpa_port_attr_vlan_isolation = 12, /* vlan_isolation : RW : aggregate vlan_isolation(rdpa_port_vlan_isolation_t) : LAN port VLAN isolation control */
-    rdpa_port_attr_transparent = 13, /* transparent : RW : bool : LAN port transparent control */
-    rdpa_port_attr_loopback = 14, /* loopback : RW : aggregate port_loopback_conf(rdpa_port_loopback_t) : Port loopbacks */
-    rdpa_port_attr_mtu_size = 15, /* mtu_size : RW : number : Port MTU */
-    rdpa_port_attr_cpu_obj = 16, /* cpu_obj : RW : object : CPU object for exception/forwarding-through-cpu packets */
-    rdpa_port_attr_cpu_meter = 17, /* cpu_meter : RW : number : Index of per-port CPU meter */
-    rdpa_port_attr_ingress_filter = 18, /* ingress_filter : RWF : aggregate[(rdpa_filter)] filter_ctrl(rdpa_filter_ctrl_t) : Ingress filter configuration per Port object */
-    rdpa_port_attr_protocol_filters = 19, /* protocol_filters : RW : enum_mask : Protocol Filters define allowed traffic type */
-    rdpa_port_attr_enable = 20, /* enable : RW : bool : Enable object */
-    rdpa_port_attr_is_empty = 21, /* is_empty : R : bool : check if PORT is empty  */
+    rdpa_port_attr_flow_control = 10, /* flow_control : RW : aggregate port_flow_control(rdpa_port_flow_ctrl_t) : The port flow control */
+    rdpa_port_attr_ingress_rate_limit = 11, /* ingress_rate_limit : RW : aggregate port_ingress_rate_limit(rdpa_port_ingress_rate_limit_t) : Port ingress rate limiting */
+    rdpa_port_attr_mirror_cfg = 12, /* mirror_cfg : RW : aggregate port_mirror_cfg(rdpa_port_mirror_cfg_t) : Port mirroring configuration */
+    rdpa_port_attr_vlan_isolation = 13, /* vlan_isolation : RW : aggregate vlan_isolation(rdpa_port_vlan_isolation_t) : LAN port VLAN isolation control */
+    rdpa_port_attr_transparent = 14, /* transparent : RW : bool : LAN port transparent control */
+    rdpa_port_attr_loopback = 15, /* loopback : RW : aggregate port_loopback_conf(rdpa_port_loopback_t) : Port loopbacks */
+    rdpa_port_attr_mtu_size = 16, /* mtu_size : RW : number : Port MTU */
+    rdpa_port_attr_cpu_obj = 17, /* cpu_obj : RW : object : CPU object for exception/forwarding-through-cpu packets */
+    rdpa_port_attr_cpu_meter = 18, /* cpu_meter : RW : number : Index of per-port CPU meter */
+    rdpa_port_attr_ingress_filter = 19, /* ingress_filter : RWF : aggregate[(rdpa_filter)] filter_ctrl(rdpa_filter_ctrl_t) : Ingress filter configuration per Port object */
+    rdpa_port_attr_protocol_filters = 20, /* protocol_filters : RW : enum_mask : Protocol Filters define allowed traffic type */
+    rdpa_port_attr_enable = 21, /* enable : RW : bool : Enable object */
+    rdpa_port_attr_is_empty = 22, /* is_empty : R : bool : check if PORT is empty  */
+    rdpa_port_attr_mac = 23, /* mac : RW : ether_addr : PORT MAC address  */
+    rdpa_port_attr_pkt_size_stat_en = 24, /* pkt_size_stat_en : RW : bool : Enable debug statistics */
 } rdpa_port_attr_types;
 
 extern int (*f_rdpa_port_get)(rdpa_if index_, bdmf_object_handle *pmo);
@@ -711,6 +713,66 @@ static inline int rdpa_port_is_empty_get(bdmf_object_handle mo_, bdmf_boolean *i
     _rc_ = bdmf_attr_get_as_num(mo_, rdpa_port_attr_is_empty, &_nn_);
     *is_empty_ = (bdmf_boolean)_nn_;
     return _rc_;
+}
+
+
+/** Get port/mac attribute.
+ *
+ * Get PORT MAC address .
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[out]  mac_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_mac_get(bdmf_object_handle mo_, bdmf_mac_t * mac_)
+{
+    return bdmf_attr_get_as_buf(mo_, rdpa_port_attr_mac, mac_, sizeof(*mac_));
+}
+
+
+/** Set port/mac attribute.
+ *
+ * Set PORT MAC address .
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in]   mac_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_mac_set(bdmf_object_handle mo_, const bdmf_mac_t * mac_)
+{
+    return bdmf_attr_set_as_buf(mo_, rdpa_port_attr_mac, mac_, sizeof(*mac_));
+}
+
+
+/** Get port/pkt_size_stat_en attribute.
+ *
+ * Get Enable debug statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[out]  pkt_size_stat_en_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_pkt_size_stat_en_get(bdmf_object_handle mo_, bdmf_boolean *pkt_size_stat_en_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_port_attr_pkt_size_stat_en, &_nn_);
+    *pkt_size_stat_en_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set port/pkt_size_stat_en attribute.
+ *
+ * Set Enable debug statistics.
+ * \param[in]   mo_ port object handle or mattr transaction handle
+ * \param[in]   pkt_size_stat_en_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_port_pkt_size_stat_en_set(bdmf_object_handle mo_, bdmf_boolean pkt_size_stat_en_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_port_attr_pkt_size_stat_en, pkt_size_stat_en_);
 }
 
 /** @} end of port Doxygen group */

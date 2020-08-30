@@ -87,6 +87,7 @@ typedef enum bcm_mcast_msgtype
     BCM_MCAST_MSG_MLD_DROP_GROUP,
     BCM_MCAST_MSG_SET_TIMEOUT,
     BCM_MCAST_MSG_BLOG_ENABLE,
+    BCM_MCAST_MSG_QUERY_TRIGGER,
     BCM_MCAST_MSG_MAX
 } t_BCM_MCAST_MSGTYPES;
 #define BCM_MCAST_NR_MSGTYPES (BCM_MCAST_MSG_MAX - BCM_MCAST_MSG_BASE)
@@ -129,6 +130,11 @@ typedef struct bcm_mcast_igmp_purge_entry
     unsigned short            tci;
     unsigned char             rep_proto_ver;
 } t_BCM_MCAST_IGMP_PURGE_ENTRY;
+
+typedef struct bcm_mcast_query_trigger
+{
+    int                       rep_ifi;
+} t_BCM_MCAST_QUERY_TRIGGER;
 
 typedef struct bcm_mcast_igmp_purge_reporter 
 {

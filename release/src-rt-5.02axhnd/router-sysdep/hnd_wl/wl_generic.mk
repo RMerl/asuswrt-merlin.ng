@@ -1,5 +1,5 @@
 #
-# Generic portion of the Broadcom wl driver makefile
+# Generic portion of the Broadcom wl NIC driver makefile
 #
 # input: O_TARGET, CONFIG_WL_CONF and wl_suffix
 # output: obj-m, obj-y
@@ -54,6 +54,9 @@ endif
     KBUILD_CFLAGS += -I../../router-sysdep/bcmdrv/include
     KBUILD_CFLAGS += -DBCMDRIVER -Dlinux
     KBUILD_CFLAGS += -DBCA_HNDROUTER
+    #cathy enable BCMDBG
+#    KBUILD_CFLAGS += -g -DBCMDBG -DBCMDBG_DUMP
+
 ifeq ($(CMWIFI),)
     KBUILD_CFLAGS += -Wno-error=date-time
 endif
@@ -66,10 +69,25 @@ endif
     ifdef CONFIG_CR4_OFFLOAD
         WLOFFLD=1
     endif
+    ifdef RTCONFIG_BCMARM
+        MFP=1
+    endif
+    ifdef RTCONFIG_BRCM_HOSTAPD
+        WL_AP_CFG80211=1
+        WL_SAE=1
+    endif
     include $(WLCFGDIR)/$(WLCONFFILE)
 
     # Disable ROUTER_COMA in ARM router for now.
     ROUTER_COMA=0
+
+#ifdef BCMOTP
+    # define the BCMOTP_SHARED_SYMBOLS_USE flag to NOT pick up the bcmotp.c file from wl.mk
+    # for just adding BCMNVRAMR and BCMNVRAMW to the compile flag
+    ifeq ($(BCMOTP),1)
+	BCMOTP_SHARED_SYMBOLS_USE=1
+    endif
+#endif // endif
 
     ifeq ($(WLAUTOD11SHM),1)
         # Include makefile to build d11 shm files
@@ -102,7 +120,7 @@ endif
 
     include $(WLCFGDIR)/wl.mk
 
-    WLAN_ComponentsInUse := accel awd bcmwifi bcmcrypto ppr olpc keymgmt iocv dump hal phy msch chctx math
+    WLAN_ComponentsInUse := accel avs awd bcmwifi bcmcrypto ppr olpc keymgmt iocv dump hal phy msch chctx math
     WLAN_ComponentsInUse += phymods  # old name of phy, preserved for compatibility
     ifeq ($(WLCLMAPI),1)
         WLAN_ComponentsInUse += clm clm-api
@@ -197,14 +215,27 @@ endif
     endif
 
     ifeq ($(strip $(WL_NIC_RUNNER)), 1)
-    ifneq ($(strip $(CONFIG_BCM_WIFI_FORWARDING_DRV)),)
+        ifneq ($(strip $(CONFIG_BCM_WIFI_FORWARDING_DRV)),)
+            WLWFD := 1
+        endif
+        ifneq ($(strip $(CONFIG_BCM_ARCHER_WLAN)),)
+            # Archer WLAN (implements WiFi Forwarding Driver)
+            WLWFD := 1
+            EXTRA_CFLAGS += -DBCM_AWL
+            WLFILES_SRC += ../../shared/impl1/wl_awl.c
+        endif
+
+        ifeq ($(strip $(WLWFD)), 1)
 		EXTRA_CFLAGS += -DBCM_WFD
 		EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
-        ifneq ($(strip $(BCM_PKTFWD)),)
-			EXTRA_CFLAGS += -DBCM_PKTFWD
+        ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
+			EXTRA_CFLAGS += -DBCM_PKTFWD -DWL_PKTQUEUE_RXCHAIN
 			WLFILES_SRC += ../../shared/impl1/wl_pktfwd.c
         else
 			WLFILES_SRC += ../../shared/impl1/wl_pktc.c
+        endif
+        ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
+			EXTRA_CFLAGS += -DBCM_EAPFWD
         endif
 		WLFILES_SRC += ../../shared/impl1/wl_wfd.c
 		WLFILES_SRC += ../../shared/impl1/wl_thread.c
@@ -221,10 +252,26 @@ endif
 	WLFILES_SRC += ../../shared/impl1/wl_nbuff.c
     endif
 
+    # packet chaining 16-bit chain index support
+    ifneq ($(strip $(CONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT)),)
+        EXTRA_CFLAGS += -DCONFIG_BCM_WLAN_16BIT_STATION_CHAIN_IDX_SUPPORT
+    endif
+
+    # speed service
+    ifneq ($(strip $(BCA_CPEROUTER)),)
+    # Always compile in due to binary compatibility issue
+        WLFILES_SRC += ../../shared/impl1/wl_spdsvc.c
+    endif
+
     ifeq ($(CMWIFI),)
         EXTRA_CFLAGS += -DBULK_PKTLIST
     endif
     EXTRA_CFLAGS += -DSTS_FIFO_RXEN
+
+    # broadcom serial LED Controller, used when WLLED is defined
+    ifneq ($(strip $(CONFIG_BCM_WLCLED)),)
+        EXTRA_CFLAGS += -DWLLED_CLED
+    endif
 
     # Write the EXTRA_CFLAGS to a file.
     $(info ### EXTRA_CFLAGS is $(EXTRA_CFLAGS))
@@ -238,6 +285,12 @@ endif
     # wl-objs is for linking to wl.o
     $(TARGET)-objs := $(WLCONF_O) $(WL_OBJS)
     obj-$(CONFIG_BCM_WLAN) := $(TARGET).o
+
+ifeq ($(CONFIG_ARM64),)
+# 32 bits NIC driver size reduction, makes use of gcc/ld unused symbol collect capability
+KBUILD_CFLAGS += -fdata-sections -ffunction-sections
+LDFLAGS += --gc-sections --print-gc-sections --entry=fake_main --script=$(WLSRC_BASE)/shared/linux.module.arm.lds
+endif
 
 else # SRCBASE/wl/sys doesn't exist
 
@@ -256,7 +309,19 @@ endif
 
 UPDATESH   := $(WLCFGDIR)/diffupdate.sh
 
-WLTUNEFILE ?= wltunable_lx_router.h
+ifneq (,$(filter "y","$(CONFIG_BCM947622)" "$(CONFIG_BCM963178)"))
+	ifeq ($(BUILD_HND_EAP),y)
+		WLTUNEFILE := wltunable_lx_47622_eap.h
+	else
+		WLTUNEFILE := wltunable_lx_63178.h
+	endif
+else ifneq (,$(filter "y","$(CONFIG_BCM947189)" "$(CONFIG_BCM953573)"))
+	WLTUNEFILE := wltunable_lx_47189.h
+else ifneq (,$(filter "y","$(CONFIG_BCM96878)" "$(CONFIG_BCM96846)"))
+	WLTUNEFILE := wltunable_lx_6878.h
+else
+	WLTUNEFILE := wltunable_lx_router.h
+endif
 
 $(obj)/$(WLCONF_O): $(obj)/$(WLCONF_H) $(D11SHM_TARGET) $(AUTOREGS_TARGET) FORCE
 

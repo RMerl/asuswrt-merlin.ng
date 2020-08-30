@@ -122,6 +122,8 @@ loop:
       t = h->type ;
 
       /* catch only messages with type = 0xcf00 or 0x8f01 corrsponding to ss7 messages*/
+      /* XXX = why not use API_MSG_TX_REQ for 0xcf00 and API_MSG_RX_IND
+       * for 0x8f01? */
       if ((t != 0xcf00) && (t != 0x8f01)) {
         relm(h);
         goto loop ;

@@ -1,8 +1,8 @@
 /******************************************************************************
- *  
+ *
 <:copyright-BRCM:2015:DUAL/GPL:standard
 
-   Copyright (c) 2015 Broadcom 
+   Copyright (c) 2015 Broadcom
    All Rights Reserved
 
 Unless you and Broadcom execute a separate written software license
@@ -36,11 +36,13 @@ extern "C" {
 #endif
 
 /*!\file cms_actionlog.h
- * \brief Public header file for Broadcom DSL CPE Management System Action 
+ * \brief Public header file for Broadcom CPE Management System Action
  *  Logging API.
  * Applications which need to call action logging API functions must
  * include this file.
  */
+
+#define CAL_LOG_FILE    "/var/cal.log"
 
 /*!\enum CmsLogDestination
  * \brief identifiers for message logging destinations.
@@ -66,10 +68,26 @@ typedef enum
 #define calLog_library(args...)  callog_log((CmsActionLogSrc)LOG_SRC_LIBRARY, args)
 #define calLog_shell(args...) callog_log((CmsActionLogSrc)LOG_SRC_COMMAND, args)
 #else
-#define calLog_library(args...) 
+#define calLog_library(args...)
 #define calLog_shell(args...)
 #endif
 
+
+static inline void printlog( const char *buf )
+{
+   FILE *fd = fopen(CAL_LOG_FILE, "a+");
+
+   if (fd == NULL)
+   {
+      fprintf(stderr, "callog error: cannot open %s", CAL_LOG_FILE);
+      fflush(stderr);
+   }
+   else
+   {
+      fprintf(fd, "%s", buf);
+      fclose(fd);
+   }
+}
 
 /** Internal action log function; do not call this function directly.
  *
@@ -80,7 +98,28 @@ typedef enum
  * @param pFmt (IN) The message string.
  *
  */
-void callog_log(CmsActionLogSrc src, const char *pFmt, ...);
+static inline void callog_log(CmsActionLogSrc src __attribute__((unused)),
+  const char *pFmt, ... )
+{
+   va_list              ap;
+   char buf[MAX_ACTIONLOG_LINE_LENGTH] = {0};
+   int len=0, maxLen;
+
+   maxLen = sizeof(buf);
+
+   va_start(ap, pFmt);
+
+   if (len < maxLen)
+   {
+      maxLen -= len;
+      vsnprintf(&buf[len], maxLen, pFmt, ap);
+   }
+
+   printlog(buf);
+
+   va_end(ap);
+}
+
 
 #if defined __cplusplus
 };

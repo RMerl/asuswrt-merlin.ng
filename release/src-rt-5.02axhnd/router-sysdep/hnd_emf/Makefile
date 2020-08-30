@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom EMF Layer
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -49,6 +49,10 @@ ifeq ($(REBUILD_EMF_MODULE),1)
 
 EMF_OBJS := $(EMFCSRCDIR)/emfc.o        $(EMFSRCDIR)/emf_linux.o
 
+ifeq ($(BUILD_NBUFF_WLMCAST_IPV6),y)
+EMF_OBJS += $(EMFCSRCDIR)/emfc_ipv6.o
+endif
+
 ifeq ($(CONFIG_BUZZZ_FUNC),y)
 subdir-ccflags-y += -O0 -fno-inline -finstrument-functions
 endif # CONFIG_BUZZZ_FUNC
@@ -63,6 +67,8 @@ ifneq ($(wildcard $(src)/$(EMFSRCDIR)),)
     EXTRA_CFLAGS += -DBCMDRIVER -DBCA_HNDROUTER
     emf-objs := $(EMF_OBJS)
 endif
+
+-include $(SRCBASE_ROUTER)/hnd/Makefile.shared
 
 obj-$(CONFIG_BCM_WLAN) := emf.o
 

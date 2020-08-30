@@ -26,6 +26,7 @@
 #define _BDMF_SYSTEM_COMMON_H_
 
 /* Linux header files referenced */
+#include <linux/time.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/types.h>
@@ -93,10 +94,15 @@ static inline void *bdmf_calloc(size_t size)
     return p;
 }
 
-/** Release memory block allocated by
- * bdmf_alloc() or bdmf_calloc()
- * \param[in]   p   memory block pointer
+/** get time of day
+ * \param[out]   tv   pointer to get timeval
  */
+
+static inline void bdmf_gettimeofday(struct timeval *tv)
+{
+	do_gettimeofday(tv);
+}
+
 void bdmf_free(void *p);
 
 /** Allocate uncached memory

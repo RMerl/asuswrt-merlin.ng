@@ -5,9 +5,9 @@
  * JTAG, 0/1/2 UARTs, clock frequency control, a watchdog interrupt timer,
  * GPIO interface, extbus, and support for serial and parallel flashes.
  *
- * $Id: sbchipc.h 742769 2018-01-23 15:23:27Z $
+ * $Id: sbchipc.h 766806 2018-08-15 09:09:00Z $
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -485,6 +485,11 @@ typedef volatile struct {
 	uint32	nand_ctrl_config;
 	uint32	nand_ctrl_status;
 #endif /* CCNFLASH_SUPPORT */
+	/* XXX:Note: there is a clash between GCI and NFLASH. So,
+	* we decided to  have it like below. the functions accessing following
+	* have to be protected with NFLASH_SUPPORT. The functions will
+	* assert in case the clash happens.
+	*/
 	uint32  gci_corecaps0; /* GCI starting at 0xC00 */
 	uint32  gci_corecaps1;
 	uint32  gci_corecaps2;
@@ -2412,6 +2417,24 @@ created for 4369
 #define RES2x2AX_RADIO_PU			9
 #define RES2x2AX_MACPHY_CLK_AVAIL		10
 
+/* 6710 PMU resources */
+#define RES6710_REGULATOR_PU			0
+#define RES6710_XTAL_PU				1
+#define RES6710_XTAL_STABLE			2
+#define RES6710_PCIE_LDO_BG_PU			3
+#define RES6710_PCIE_LDO_PU			4
+#define RES6710_WL_CORE_RDY			5
+#define RES6710_ILP_REQ				6
+#define RES6710_BB_PLL_LDO_PU			7
+#define RES6710_BB_PLL_PU			8
+#define RES6710_ALP_AVAIL			9
+#define RES6710_HT_AVAIL			10
+#define RES6710_RADIO_BG_PU			11
+#define RES6710_MINI_PMU_PU			12
+#define RES6710_RADIO_PU			13
+#define RES6710_MACPHY_CLK_AVAIL		14
+#define RES6710_LVM_DIS				15
+
 /* 7271 PMU resources */
 #define RES7271_REGULATOR_PU		0
 #define RES7271_WL_CORE_RDY			1
@@ -3437,6 +3460,10 @@ created for 4369
 /* 4350C0 USB PACKAGE using raw_sprom_present to indicate 40mHz xtal */
 #define CST4350_PKG_USB_40M(cs)		(cs & CST4350_RAW_SPROM_PRESENT)
 
+/*
+ * XXX 4350a0 WLCSP package  chipstatus shows wrong mode.
+ * use raw strap mode from host_ifc
+*/
 #define CST4350_CHIPMODE_SDIOD(cs)	(CST4350_IFC_MODE(cs) == (CST4350_IFC_MODE_SDIOD))
 #define CST4350_CHIPMODE_USB20D(cs)	((CST4350_IFC_MODE(cs)) == (CST4350_IFC_MODE_USB20D))
 #define CST4350_CHIPMODE_HSIC20D(cs)	(CST4350_IFC_MODE(cs) == (CST4350_IFC_MODE_HSIC20D))

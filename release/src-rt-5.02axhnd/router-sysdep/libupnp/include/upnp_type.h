@@ -1,8 +1,8 @@
 /*
  * Broadcom UPnP library type defintions
  *
- * Copyright 2017 Broadcom
- * 
+ * Copyright 2019 Broadcom
+ *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
  * pursuant to the terms and conditions of a separate, written license
@@ -14,15 +14,15 @@
  * AUTHORIZED LICENSE, THEN YOU HAVE NO RIGHT TO USE THIS SOFTWARE IN ANY
  * WAY, AND SHOULD IMMEDIATELY NOTIFY BROADCOM AND DISCONTINUE ALL USE OF
  * THE SOFTWARE.
- * 
+ *
  * Except as expressly set forth in the Authorized License,
- * 
+ *
  * 1. This program, including its structure, sequence and organization,
  * constitutes the valuable trade secrets of Broadcom, and you shall use
  * all reasonable efforts to protect the confidentiality thereof, and to
  * use this information only in connection with your use of Broadcom
  * integrated circuit products.
- * 
+ *
  * 2. TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE SOFTWARE IS PROVIDED
  * "AS IS" AND WITH ALL FAULTS AND BROADCOM MAKES NO PROMISES,
  * REPRESENTATIONS OR WARRANTIES, EITHER EXPRESS, IMPLIED, STATUTORY, OR
@@ -32,7 +32,7 @@
  * ACCURACY OR COMPLETENESS, QUIET ENJOYMENT, QUIET POSSESSION OR
  * CORRESPONDENCE TO DESCRIPTION. YOU ASSUME THE ENTIRE RISK ARISING
  * OUT OF USE OR PERFORMANCE OF THE SOFTWARE.
- * 
+ *
  * 3. TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL
  * BROADCOM OR ITS LICENSORS BE LIABLE FOR (i) CONSEQUENTIAL, INCIDENTAL,
  * SPECIAL, INDIRECT, OR EXEMPLARY DAMAGES WHATSOEVER ARISING OUT OF OR
@@ -61,12 +61,12 @@ extern "C" {
 #if !defined(OK) || !defined(ERROR)
 #define OK     0
 #define ERROR -1
-#endif
+#endif // endif
 
 #if !defined(TRUE) || !defined(FALSE)
 #define TRUE   1
 #define FALSE  0
-#endif
+#endif // endif
 
 /* Forward definition */
 typedef struct upnp_tlv         UPNP_TLV;

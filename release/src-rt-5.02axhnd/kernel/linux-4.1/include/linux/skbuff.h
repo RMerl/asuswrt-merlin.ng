@@ -181,9 +181,10 @@ struct iov_iter;
 struct napi_struct;
 
 #if defined(CONFIG_BCM_KF_MAP)
-#define MAPT_FORWARD_NONE	0
-#define MAPT_FORWARD_MODE1	1
-#define MAPT_FORWARD_MODE2	2
+#define MAP_FORWARD_NONE	0
+#define MAP_FORWARD_MODE1	1
+#define MAP_FORWARD_MODE2	2
+#define MAP_FORWARD_MODE3	3 /* MAP-E Pre-Fragmentation */
 #endif
 
 #if defined(CONFIG_BCM_KF_NBUFF)
@@ -914,10 +915,10 @@ struct sk_buff {
 	__u8			inner_protocol_type:1;
 	__u8			remcsum_offload:1;
 #if defined(CONFIG_BCM_KF_MAP) && (defined(CONFIG_BCM_MAP) || defined(CONFIG_BCM_MAP_MODULE))
-	__u8			mapt_forward:2;
-	__u8			mapt_mf:1;
-	__u32			mapt_offset;
-	__u32			mapt_id;
+	__u8			map_forward:2;
+	__u8			map_mf:1;
+	__u32			map_offset;
+	__u32			map_id;
 #endif
 	/* 3 or 5 bit hole */
 #if defined(CONFIG_IMQ) || defined(CONFIG_IMQ_MODULE)

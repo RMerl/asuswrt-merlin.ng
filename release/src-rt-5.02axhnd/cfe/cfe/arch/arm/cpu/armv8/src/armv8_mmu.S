@@ -346,10 +346,8 @@ mem_dev_table:
 	mem_dev_table_entry(PERF_BASE, PERF_BASE, PERF_SIZE, ATTR_DEVICE)
 	mem_dev_table_entry(PERF1_BASE, PERF1_BASE, PERF1_SIZE, ATTR_DEVICE)
 	
-	/* SPI and NAND direct access window */
-	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_CACHED_RO_MEM)
-	mem_dev_table_entry(NANDFLASH_BASE, NANDFLASH_BASE, NANDFLASH_SIZE, ATTR_CACHED_RO_MEM)
-	
+	/* SPI direct access window */
+	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_DEVICE)
 #else
 	/* peripheral SRAM for security credential */ 
 	mem_dev_table_entry(PERF_SRAM_BASE, PERF_SRAM_BASE, PERF_SRAM_SIZE, ATTR_DEVICE)
@@ -437,9 +435,8 @@ mem_dev_table:
 	mem_dev_table_entry(PERF_BASE, PERF_BASE, PERF_SIZE, ATTR_DEVICE)
 	mem_dev_table_entry(PERF1_BASE, PERF1_BASE, PERF1_SIZE, ATTR_DEVICE)
 
-	/* SPI and NAND direct access window */
-	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_CACHED_RO_MEM)
-	mem_dev_table_entry(NANDFLASH_BASE, NANDFLASH_BASE, NANDFLASH_SIZE, ATTR_CACHED_RO_MEM)
+	/* SPI direct access window */
+	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_DEVICE)
 #else
 	/* DDR entries for cache and uncached virtual address, total size is a placehold
 	   and will be filled in at run time  */
@@ -539,10 +536,8 @@ mem_dev_table:
 	mem_dev_table_entry(PERF_BASE, PERF_BASE, PERF_SIZE, ATTR_DEVICE)
 	mem_dev_table_entry(PERF1_BASE, PERF1_BASE, PERF1_SIZE, ATTR_DEVICE)
 
-	/* SPI and NAND direct access window */
-	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_CACHED_RO_MEM)
-	mem_dev_table_entry(NANDFLASH_BASE, NANDFLASH_BASE, NANDFLASH_SIZE, ATTR_CACHED_RO_MEM)
-
+	/* SPI direct access window */
+	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_DEVICE)
 #else
 
 	/* cfe ram */
@@ -610,9 +605,8 @@ mem_dev_table:
         /* For credentials */
 	mem_dev_table_entry(PERF_SRAM_BASE, PERF_SRAM_BASE, PERF_SRAM_SIZE, ATTR_DEVICE)
 
-	/* SPI and NAND direct access window */
-	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_CACHED_RO_MEM)
-	mem_dev_table_entry(NANDFLASH_BASE, NANDFLASH_BASE, NANDFLASH_SIZE, ATTR_CACHED_RO_MEM)
+	/* SPI direct access window */
+	mem_dev_table_entry(SPIFLASH_BASE, SPIFLASH_BASE, SPIFLASH_SIZE, ATTR_DEVICE)
 #else   /* cfe ram */
 	/* DDR entries for cache and uncached virtual address, total size is a placehold
 	   and will be filled in at run time  */
@@ -624,10 +618,6 @@ mem_dev_table:
 	/* peripheral SRAM for security credential */ 
 	mem_dev_table_entry(PERF_SRAM_BASE, PERF_SRAM_BASE, PERF_SRAM_SIZE, ATTR_DEVICE)
 
-	/* LMEM for network driver  */
-	mem_dev_table_entry(DSLLMEM_BASE, DSLLMEM_BASE, 0xa0000, ATTR_CACHED_MEM)
-	mem_dev_table_entry(DSLLMEM_BASE|VA_FLAGS_NONCACHE_MEM, DSLLMEM_BASE, 0xa0000, ATTR_NONCACHED_MEM)
-	
 	/* MEMC and DDR PHY control registers */
 	mem_dev_table_entry(MEMC_BASE, MEMC_BASE, MEMC_SIZE, ATTR_DEVICE)
 
@@ -682,7 +672,7 @@ FUNC(armv8_mmuinit)
 	orr	w1, w1, #2      /* enable the map */
 	str	w1, [x0, MEMC_SRAM_REMAP_CONTROL] ;
 
-    ldr w1, [x0, MEMC_SRAM_REMAP_CONTROL]
+	ldr	w1, [x0, MEMC_SRAM_REMAP_CONTROL]
 	dmb	ish
 #endif
 #endif

@@ -26,6 +26,7 @@ typedef struct _cfe_rom_media_params
 	/* shared resources */
 	int       boot_secure;
 	char      boot_file_hash[SHA256_S_DIGEST8]  __attribute__ ((aligned (4)));
+	int       boot_file_hash_valid;
 	int       boot_file_flags;
 	char      boot_file_name[CFE_BOOT_FILE_NAME_MAX_LENGTH];
 	char      hash_file_name[CFE_BOOT_FILE_NAME_MAX_LENGTH];

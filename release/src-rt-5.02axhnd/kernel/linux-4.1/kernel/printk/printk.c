@@ -47,6 +47,10 @@
 #include <linux/ctype.h>
 #include <linux/uio.h>
 
+#include <linux/fs.h>
+#include <asm/segment.h>
+#include <linux/buffer_head.h>
+
 #include <asm/uaccess.h>
 
 #define CREATE_TRACE_POINTS
@@ -268,6 +272,113 @@ static char __log_buf[__LOG_BUF_LEN] __aligned(LOG_ALIGN);
 static char *log_buf = __log_buf;
 static u32 log_buf_len = __LOG_BUF_LEN;
 
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+#define IS_FILE_OPEN_ERR(_fd)	((_fd == NULL) || IS_ERR((_fd)))
+static int save_oopsmsg = 0;
+
+struct file* file_open(const char* path, int flags, int rights) {
+	struct file* filp = NULL;
+	mm_segment_t oldfs;
+	int err = 0;
+
+	oldfs = get_fs();
+	set_fs(get_ds());
+	filp = filp_open(path, flags, rights);
+	set_fs(oldfs);
+
+	if (IS_ERR(filp)) {
+		err = PTR_ERR(filp);
+		return NULL;
+	}
+
+	return filp;
+}
+
+void file_close(struct file* file) {
+	filp_close(file, NULL);
+}
+
+int file_read(struct file* file, unsigned long long offset, unsigned char* data, unsigned int size) {
+	mm_segment_t oldfs;
+	int ret;
+
+	oldfs = get_fs();
+	set_fs(get_ds());
+	ret = vfs_read(file, data, size, &offset);
+	set_fs(oldfs);
+
+	return ret;
+}
+
+int file_write(struct file* file, unsigned long long offset, unsigned char* data, unsigned int size) {
+	mm_segment_t oldfs;
+	int ret;
+
+	oldfs = get_fs();
+	set_fs(get_ds());
+	ret = vfs_write(file, data, size, &offset);
+	set_fs(oldfs);
+
+	return ret;
+}
+
+void enable_oopsbuf(int onoff)
+{
+	save_oopsmsg = !!onoff;
+}
+
+static void copy_to_oopsbuf(const char *text, u16 text_len)
+{
+	char *fileName = NULL;
+	struct file* file;
+
+	if (!save_oopsmsg)
+		return;
+
+	fileName = "/jffs/oops";
+	file = file_open(fileName, O_WRONLY|O_CREAT|O_APPEND, 0);
+        if (IS_FILE_OPEN_ERR(file))
+        {
+                return;
+        }
+        else
+        {
+		file_write(file, 0, (unsigned char*) text, text_len);
+	}
+
+	file_close(file);
+}
+
+void dump_previous_oops(void)
+{
+	char *fileName = NULL;
+	struct file* file;
+	int ret, i;
+	char buf[1024];
+	unsigned long long offset = 0;
+
+        fileName = "/jffs/oops";
+	file = file_open(fileName, O_RDONLY, 0);
+        if (IS_FILE_OPEN_ERR(file))
+        {
+                return;
+        }
+        else
+	{
+		printk("_ Reboot message ... _______________________________________________________\n");
+		while ((ret = file_read(file, offset, buf, sizeof(buf)))) {
+			offset += ret;
+			for (i = 0; i < ret; i++)
+				printk("%c", buf[i]);
+		}
+		printk("\n____________________________________________________________________________\n");
+	}
+
+	file_close(file);
+}
+EXPORT_SYMBOL(dump_previous_oops);
+#endif //End of CONFIG_DUMP_PREV_OOPS_MSG
+
 /* Return log buffer address */
 char *log_buf_addr_get(void)
 {
@@ -439,9 +550,15 @@ static int log_store(int facility, int level,
 	/* fill message */
 	msg = (struct printk_log *)(log_buf + log_next_idx);
 	memcpy(log_text(msg), text, text_len);
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+	copy_to_oopsbuf(text, text_len);
+#endif
 	msg->text_len = text_len;
 	if (trunc_msg_len) {
 		memcpy(log_text(msg) + text_len, trunc_msg, trunc_msg_len);
+#ifdef CONFIG_DUMP_PREV_OOPS_MSG
+		copy_to_oopsbuf(trunc_msg, trunc_msg_len);
+#endif
 		msg->text_len += trunc_msg_len;
 	}
 	memcpy(log_dict(msg), dict, dict_len);
@@ -1395,6 +1512,10 @@ static void call_console_drivers(int level, const char *text, size_t len)
 	struct console *con;
 
 	trace_console_rcuidle(text, len);
+#ifdef CRASHLOG
+	if (crashlog_enable)
+		crashLogText(text, len);
+#endif
 
 	if (level >= console_loglevel && !ignore_loglevel)
 		return;
@@ -2199,6 +2320,13 @@ out:
 	raw_spin_unlock_irqrestore(&logbuf_lock, flags);
 }
 
+#define PROCESS_CONSOLE_UNLOCK_TIMEOUT (10)	/* msec */
+
+#ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
+static unsigned long process_console_unlock_timeout = PROCESS_CONSOLE_UNLOCK_TIMEOUT;
+#endif /* PROCESS_CONSOLE_UNLOCK_TIMEOUT */
+
+
 /**
  * console_unlock - unlock the console system
  *
@@ -2220,6 +2348,10 @@ void console_unlock(void)
 	unsigned long flags;
 	bool wake_klogd = false;
 	bool do_cond_resched, retry;
+#ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
+	unsigned long expire = jiffies + msecs_to_jiffies(process_console_unlock_timeout);
+	bool abort = false;
+#endif /* PROCESS_CONSOLE_UNLOCK_TIMEOUT */
 
 	if (console_suspended) {
 		up_console_sem();
@@ -2247,9 +2379,6 @@ again:
 		size_t len;
 		int level;
 
-#ifdef CONFIG_BCM_KF_PRINTK_INT_ENABLED
-		touch_nmi_watchdog();
-#endif
 		raw_spin_lock_irqsave(&logbuf_lock, flags);
 		if (seen_seq != log_next_seq) {
 			wake_klogd = true;
@@ -2268,6 +2397,13 @@ again:
 			len = 0;
 		}
 skip:
+#ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
+		if (process_console_unlock_timeout && time_after(jiffies, expire)) {
+			abort = true;
+			break;
+		}
+#endif /* PROCESS_CONSOLE_UNLOCK_TIMEOUT */
+
 		if (console_seq == log_next_seq)
 			break;
 
@@ -2319,6 +2455,13 @@ skip:
 
 	up_console_sem();
 
+#ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
+	if (abort) {
+		local_irq_restore(flags);
+		goto skip_retry;
+	}
+#endif /* PROCESS_CONSOLE_UNLOCK_TIMEOUT */
+
 	/*
 	 * Someone could have filled up the buffer again, so re-check if there's
 	 * something to flush. In case we cannot trylock the console_sem again,
@@ -2331,6 +2474,10 @@ skip:
 
 	if (retry && console_trylock())
 		goto again;
+
+#ifdef PROCESS_CONSOLE_UNLOCK_TIMEOUT
+skip_retry:
+#endif /* PROCESS_CONSOLE_UNLOCK_TIMEOUT */
 
 	if (wake_klogd)
 		wake_up_klogd();

@@ -9,6 +9,7 @@
  * BCM_BUZZZ_CYCLES_PER_USEC : Specify Processor speed
  * BCM_BUZZZ_LOG_BUFSIZE     : Specify log buffer size
  * BCM_BUZZZ_TRACING_LEVEL   : Specify tracing level
+ * BCM_BUZZZ_KPI_LEVEL       : Specify KPI instrumentation level
  *
  * As a cortex-a7 is used for several chips running at different Mhz, use ram.mk
  *
@@ -32,7 +33,7 @@
  *    __ARM_ARCH_7A__ CA9: not reqd for dongle, uses ARMv7 apis as in CA7
  *
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -49,7 +50,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_buzzz.h 732969 2017-11-22 16:24:02Z $
+ * $Id: bcm_buzzz.h 771798 2019-02-07 23:15:05Z $
  *
  * vim: set ts=4 noet sw=4 tw=80:
  * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
@@ -65,10 +66,12 @@
 #undef BCM_BUZZZ_4ARGS
 #endif // endif
 
+// #define BCM_BUZZZ_STREAMING_BUILD
+#define BCM_BUZZZ_STREAMING_FILE        "/var/buzzz.log"
+
 #if defined(BCM_BUZZZ)
 
 /* Buzzz Streaming to Host only verified for Dongle Cortex A7 with ThreadX */
-/* #define BCM_BUZZZ_STREAMING_BUILD */
 
 #define BCM_BUZZZ_COUNTERS_MAX          (8)
 
@@ -167,7 +170,7 @@
  *
  * Please check each Cortex-A# TRM for more event definitions.
  */
-#define BCM_BUZZZ_ARMV7_SWINC_EVT		(0x00)	/* Software increment */
+#define BCM_BUZZZ_ARMV7_SWINC_EVT       (0x00)  /* Software increment */
 #define BCM_BUZZZ_ARMV7_ICACHEMISS_EVT  (0x01)  /* Intruction cache miss */
 #define BCM_BUZZZ_ARMV7_DCACHEMISS_EVT  (0x03)  /* L1 Data cache miss */
 #define BCM_BUZZZ_ARMV7_DCACHEACC_EVT   (0x04)  /* L1 data cache access */
@@ -215,6 +218,7 @@
 #define BCM_BUZZZ_CYCLES_PER_USEC       (CYCLES_PER_USEC)
 #define BCM_BUZZZ_LOG_BUFSIZE           (8 * 4 * 1024) /* min 4K, 16Kmultiple */
 #define BCM_BUZZZ_TRACING_LEVEL         (3)            /* Buzzz tracing level */
+#define BCM_BUZZZ_KPI_LEVEL             (3)            /* Buzzz KPI level */
 #define BCM_BUZZZ_COUNTERS              (4)            /* 4 PMU counters */
 #endif /* ! CA7 */
 
@@ -223,79 +227,6 @@
 #endif // endif
 
 #endif /* __ARM_ARCH_7A__ */
-
-#ifdef BCM_BUZZZ_STREAMING_BUILD
-
-/*
- * Host and Dongle buzzz streaming mode uses this configuration.
- *
- * Host allocates a total of 32 MBytes, in 8 segments of 4 MBytes each.
- * Dongle uses a 16 Kbyte trace buffer (dual buffer mode).
- * 256 buzzz log buffers, each of 16 KBytes, fit into one 4 Mbyte host segment.
- * 1024 buzzz logs, each of 16 Bytes, fit into one 16 Kbyte buzzz log buffer.
- */
-
-typedef union bcm_buzzz_log
-{
-#if defined(BCM_BUZZZ_FUNC)
-	uint32          u32[2];
-	struct {
-		struct {
-			uint8   id;     /* eventid : max 255, around 32 in use */
-			uint8   args;   /* number of arguments logged */
-			uint16  arg2;   /* last arg2 is ONLY 16 bits ! */
-		};
-		uint32      arg1;   /* caller or arg1 for user logging */
-	};
-#else  /* ! BCM_BUZZZ_FUNC */
-	uint32          u32[4];
-	struct {
-		struct {
-			uint8   id;     /* eventid : max 255, around 32 in use */
-			uint8   args;   /* number of arguments logged */
-			uint16  arg3;   /* last arg3 is ONLY 16 bits ! */
-		};
-		uint32      cycctr; /* cycle counter */
-		uint32      arg1;   /* 32 bit arg0 */
-		uint32      arg2;   /* 32 bit arg1 */
-	};
-#endif /* ! BCM_BUZZZ_FUNC */
-} bcm_buzzz_log_t;
-
-#define BCM_BUZZZ_DNGLMEM_SIZE      (2 * 4 * 1024)     /* 8 KBytes buffer */
-
-#define BCM_BUZZZ_HOSTMEM_TOTSZ     (32 * 1024 * 1024) /* 32 MBytes total */
-#define BCM_BUZZZ_HOSTMEM_SEGSZ     (4  * 1024 * 1024) /*  4 MBytes segment */
-
-#define BCM_BUZZZ_SEGMENTS  (BCM_BUZZZ_HOSTMEM_TOTSZ / BCM_BUZZZ_HOSTMEM_SEGSZ)
-
-/** BUZZZ Streaming mode state for host buffer segments in use */
-typedef struct bcm_buzzz_ctx
-{
-	uint32          log;        /* pointer to log buffer */
-	uint32          cur;        /* pointer to next log entry */
-	uint32          end;        /* pointer to end of log buffer */
-} bcm_buzzz_ctx_t;
-
-/** BUZZZ Streaming mode state */
-typedef struct bcm_buzzz        /* pointers not permissible in this structure */
-{
-	uint8           status;     /* current logging status */
-	uint8           in_dma;     /* num dma in progress */
-	uint16          overflows;  /* number of overflows of dngl log buffers */
-
-	uint32          cur_ctx_ptr; /* pointer to current context */
-	bcm_buzzz_ctx_t ctx[2];     /* dual logging context */
-
-	uint32          seg_index;
-	uint32          seg_offset;
-	uint32          seg_haddr32[BCM_BUZZZ_SEGMENTS];
-} bcm_buzzz_t;
-
-/* Callback invoked by pcie bus layer on DMA complete */
-void bcm_buzzz_d2h_done(uint32 copy_len, uint32 index, uint32 offset);
-
-#endif /* BCM_BUZZZ_STREAMING_BUILD */
 
 /*
  * +----------------------------------------------------------------------------
@@ -394,7 +325,13 @@ typedef union bcm_buzzz_arg0
 	uint32 u32;
 	bcm_buzzz_klog_t klog;
 } bcm_buzzz_arg0_t;
-#endif /* ! BCM_BUZZZ_STREAMING_BUILD */
+
+#else /* BCM_BUZZZ_STREAMING_BUILD */
+
+/* Callback invoked by pcie bus layer on DMA complete */
+void bcm_buzzz_d2h_done(uint32 copy_len, uint32 index, uint32 offset);
+
+#endif /* BCM_BUZZZ_STREAMING_BUILD */
 
 typedef enum bcm_buzzz_ctrl {
 	BCM_BUZZZ_START_COMMAND = 1,
@@ -413,7 +350,87 @@ typedef union bcm_buzzz_cm3_cnts { /* Pack 8 bit CM3 counters */
 	};
 } bcm_buzzz_cm3_cnts_t;
 
+#endif /* BCM_BUZZZ */
+
+#ifdef BCM_BUZZZ_STREAMING_BUILD
+/*
+ * Host and Dongle buzzz streaming mode uses this configuration.
+ *
+ * Host allocates a total of 32 MBytes, in 8 segments of 4 MBytes each.
+ * Dongle uses a 16 Kbyte trace buffer (dual buffer mode).
+ * 256 buzzz log buffers, each of 16 KBytes, fit into one 4 Mbyte host segment.
+ * 1024 buzzz logs, each of 16 Bytes, fit into one 16 Kbyte buzzz log buffer.
+ *
+ * Layout shared between dongle firmware, dhd and desktop application.
+ */
+
+typedef union bcm_buzzz_log
+{
+#if defined(BCM_BUZZZ_FUNC)
+	uint32          u32[2];
+	struct {
+		struct {
+			uint8   id;     /* eventid : max 255, around 32 in use */
+			uint8   args;   /* number of arguments logged */
+			uint16  arg2;   /* last arg2 is ONLY 16 bits ! */
+		};
+		uint32      arg1;   /* caller or arg1 for user logging */
+	};
+#else  /* ! BCM_BUZZZ_FUNC */
+	uint32          u32[4];
+	struct {
+		struct {
+			uint8   id;     /* eventid : max 255, around 32 in use */
+			uint8   args;   /* number of arguments logged */
+			uint16  arg3;   /* last arg3 is ONLY 16 bits ! */
+		};
+		uint32      cycctr; /* cycle counter */
+		uint32      arg1;   /* 32 bit arg0 */
+		uint32      arg2;   /* 32 bit arg1 */
+	};
+#endif /* ! BCM_BUZZZ_FUNC */
+} bcm_buzzz_log_t;
+
+#define BCM_BUZZZ_DNGLMEM_SIZE      (2 * 4 * 1024)     /* 8 KBytes buffer */
+
+#define BCM_BUZZZ_HOSTMEM_TOTSZ     (32 * 1024 * 1024) /* 32 MBytes total */
+#define BCM_BUZZZ_HOSTMEM_SEGSZ     (4  * 1024 * 1024) /*  4 MBytes segment */
+
+#define BCM_BUZZZ_SEGMENTS  (BCM_BUZZZ_HOSTMEM_TOTSZ / BCM_BUZZZ_HOSTMEM_SEGSZ)
+
+/** BUZZZ Streaming mode state for host buffer segments in use */
+typedef struct bcm_buzzz_ctx
+{
+	uint32          log;        /* pointer to log buffer */
+	uint32          cur;        /* pointer to next log entry */
+	uint32          end;        /* pointer to end of log buffer */
+} bcm_buzzz_ctx_t;
+
+/** BUZZZ Streaming mode state */
+typedef struct bcm_buzzz        /* pointers not permissible in this structure */
+{
+	uint8           status;     /* current logging status */
+	uint8           in_dma;     /* num dma in progress */
+	uint16          overflows;  /* number of overflows of dngl log buffers */
+
+	uint32          cur_ctx_ptr; /* pointer to current context */
+	bcm_buzzz_ctx_t ctx[2];     /* dual logging context */
+
+	uint32          fwid;
+
+	uint32          seg_index;
+	uint32          seg_offset;
+	uint32          seg_haddr32[BCM_BUZZZ_SEGMENTS];
+} bcm_buzzz_t;
+
+#endif /* BCM_BUZZZ_STREAMING_BUILD */
+
 /* bcm_buzzz dump color highlighting */
+#if defined(BCM_BUZZZ_EXE)
+#define _CLR_(x) ""
+#else
+#define _CLR_(x) x
+#endif // endif
 #undef  _R_
 #undef  _B_
 #undef  _C_
@@ -422,14 +439,14 @@ typedef union bcm_buzzz_cm3_cnts { /* Pack 8 bit CM3 counters */
 #undef  _H_
 #undef  _N_
 #undef  _FAIL_
-/* _B_ Blue, _C_ Cyan, _G_ Green, _M_ Magenta, _H_ Red_on_Black,  */
-#define _R_     "\e[0;31m"
-#define _B_     "\e[0;34m"
-#define _C_     "\e[0;38m"
-#define _G_     "\e[0;32m"
-#define _M_     "\e[0;35m"
-#define _H_     "\e[0;31m;40m"
-#define _N_     "\e[0m"
+/* _R_ Red, _B_ Blue, _C_ Cyan, _G_ Green, _M_ Magenta, _H_ Red_on_Black  */
+#define _R_     _CLR_("\e[0;31m")
+#define _B_     _CLR_("\e[0;34m")
+#define _C_     _CLR_("\e[0;38m")
+#define _G_     _CLR_("\e[0;32m")
+#define _M_     _CLR_("\e[0;35m")
+#define _H_     _CLR_("\e[0;31m;40m")
+#define _N_     _CLR_("\e[0m")
 #define _FAIL_  _H_ " === FAILURE ===" _N_
 
 /*
@@ -474,8 +491,8 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 	BUZZZ_KLOG(HND_CPUUTIL_EPOCH)           // 1
 	BUZZZ_KLOG(HND_CPUUTIL_TRANS)           // 5
 
-	BUZZZ_KLOG(HND_DIE)	                    // 1
-	BUZZZ_KLOG(HND_TRAP)	                // 1
+	BUZZZ_KLOG(HND_DIE)                     // 1
+	BUZZZ_KLOG(HND_TRAP)                    // 1
 	BUZZZ_KLOG(HND_ASSERT)                  // 1
 	BUZZZ_KLOG(HND_DELAY)                   // 4
 	BUZZZ_KLOG(HND_MALLOC)                  // 4
@@ -504,11 +521,20 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 	BUZZZ_KLOG(THREADX_EVT_ISR_RTN)         // 5
 	BUZZZ_KLOG(THREADX_SCHED_THREAD)        // 3
 
-	BUZZZ_KLOG__LAST_EVT
+	BUZZZ_KLOG(KPI_PKT_MAC_RXFIFO)          // 1
+	BUZZZ_KLOG(KPI_PKT_BUS_RXCMPL)          // 1
+	BUZZZ_KLOG(KPI_PKT_BUS_RXBMRC)          // 3
+	BUZZZ_KLOG(KPI_PKT_BUS_RXDROP)          // 3
+	BUZZZ_KLOG(KPI_PKT_BUS_TXPOST)          // 1
+	BUZZZ_KLOG(KPI_PKT_MAC_TXMPDU)          // 1
+	BUZZZ_KLOG(KPI_PKT_MAC_TXMSDU)          // 1
+	BUZZZ_KLOG(KPI_PKT_MAC_TXSTAT)          // 1
+	BUZZZ_KLOG(KPI_PKT_BUS_TXCMPL)          // 1
+	BUZZZ_KLOG(KPI_PKT_BUS_TXSUPP)          // 3
+
+	BUZZZ_KLOG__LAST_EVENT
 
 } bcm_buzzz_KLOG_dpid_t;
-
-#endif /* BCM_BUZZZ */
 
 /*
  * All format strings must be listed in the same sequence (comma seperated) as
@@ -518,59 +544,72 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
  * log the return address using (uint32)__builtin_return_address(0). A script
  * such as buzzz_sym.pl may then be used to convert all instruction addresses
  * to their symbol-names using the corresponding rtecdc.map.
- *     buzzz_smp.pl -m <rtecdc.map> -i <logfile> -o <outfile>
+ *     buzzz_sym.pl -m <rtecdc.map> -i <logfile> -o <outfile>
  *
  * Likewise, any function pointer may be logged with a corresponding "fn[@%08x]"
  */
 #define BCM_BUZZZ_FMT_STRINGS                                                  \
 {                                                                              \
-	"START_EVT",                          /* START_EVT */                      \
-	"SWAP_EVT",                           /* SWAP_EVT */                       \
+	"START_EVT",                                      /* START_EVT */          \
+	"SWAP_EVT seg index<%u> offset<%u>",              /* SWAP_EVT */           \
 	                                                                           \
-	"=> [@%08x]",                         /* FUNC_ENT */                       \
-	"<= [@%08x]",                         /* FUNC_EXT */                       \
-	"line #%u",                           /* FUNC_LINE */                      \
+	"=> [@%08x]",                                     /* FUNC_ENT */           \
+	"<= [@%08x]",                                     /* FUNC_EXT */           \
+	"line #%u",                                       /* FUNC_LINE */          \
 	                                                                           \
-	"mode %u",                            /* MODE */                           \
-	"buzzz_log0",                         /* BUZZZ_0 */                        \
-	"buzzz_log1 arg<%u>",                 /* BUZZZ_1 */                        \
-	"buzzz_log2 arg<%u:%u>",              /* BUZZZ_2 */                        \
-	"buzzz_log3 arg<%u:%u:%u>",           /* BUZZZ_3 */                        \
-	"buzzz_log4 arg<%u:%u:%u:%u>",        /* BUZZZ_4 */                        \
+	"MHz<%u> FWID<0x%x>",                             /* MODE */               \
+	"buzzz_log0",                                     /* BUZZZ_0 */            \
+	"buzzz_log1 arg<%u>",                             /* BUZZZ_1 */            \
+	"buzzz_log2 arg<%u:%u>",                          /* BUZZZ_2 */            \
+	"buzzz_log3 arg<%u:%u:%u>",                       /* BUZZZ_3 */            \
+	"buzzz_log4 arg<%u:%u:%u:%u>",                    /* BUZZZ_4 */            \
 	                                                                           \
 	/* HND THREADX: with color formatting */                                   \
-	_G_ "CPUUTIL epoch %u" _N_,           /* HND_CPUUTIL_EPOCH */              \
-	_G_ "CPUUTIL trans fn[@%08x] %u" _N_, /* HND_CPUUTIL_TRANS */              \
+	_G_ "CPUUTIL epoch %u" _N_,                       /* HND_CPUUTIL_EPOCH */  \
+	_G_ "CPUUTIL trans fn[@%08x] %u" _N_,             /* HND_CPUUTIL_TRANS */  \
 	                                                                           \
-	_H_ ":::die ra[@%08x]" _N_,           /* HND_DIE */                        \
-	_H_ ":::trap pc[@%08x] type<%d>" _N_, /* HND_TRAP */                       \
-	_H_ ":::assert ra[@%08x] line<%d>" _N_, /* HND_ASSERT */                   \
-	_B_ ":::delay ra[@%08x] usec<%d>" _N_, /* HND_DELAY */                     \
-	_B_ ":::malloc ra[@%08x] size<%d>" _N_, /* HND_MALLOC */                   \
-	_B_ ":::free ra[@%08x]" _N_,          /* HND_FREE */                       \
-	_B_ ":::so_malloc ra[@%08x] size<%d>" _N_, /* HND_SO_MALLOC */             \
-	_B_ ":::so_free ra[@%08x]" _N_,       /* HND_SO_FREE */                    \
-	_B_ ":::sched fn[@%08x] delay<%u>" _N_, /* HND_SCHED_WORK */               \
-	_M_ "   >>> WORK fn[@%08x]" _N_,      /* HND_WORK_ENT */                   \
-	_M_ "   <<< WORK" _N_,                /* HND_WORK_RTN */                   \
-	_M_ "     >> DPC fn[@%08x]" _N_,      /* HND_DPC_ENT */                    \
-	_M_ "     << DPC" _N_,                /* HND_DPC_RTN */                    \
-	_M_ "   <<<< DPC ERROR" _N_,          /* HND_DPC_RTN_ERR */                \
-	_M_ "    >>> TMR fn[@%08x]" _N_,      /* HND_TMR_ENT */                    \
-	_M_ "    <<< TMR" _N_,                /* HND_TMR_RTN */                    \
-	_B_ ":::tmr_create ra[@%08x]" _N_,    /* HND_TMR_CRT */                    \
-	_B_ ":::tmr_delete ra[@%08x]" _N_,    /* HND_TMR_DEL */                    \
-	_B_ ":::tmr_start ra[@%08x]" _N_,     /* HND_TMR_BGN */                    \
-	_B_ ":::tmr_stop ra[@%08x]" _N_,      /* HND_TMR_END */                    \
+	_H_ ":::die ra[@%08x]" _N_,                       /* HND_DIE */            \
+	_H_ ":::trap pc[@%08x] type<%d>" _N_,             /* HND_TRAP */           \
+	_H_ ":::assert ra[@%08x] line<%d>" _N_,           /* HND_ASSERT */         \
+	_B_ ":::delay ra[@%08x] usec<%d>" _N_,            /* HND_DELAY */          \
+	_B_ ":::malloc ra[@%08x] size<%d>" _N_,           /* HND_MALLOC */         \
+	_B_ ":::free ra[@%08x]" _N_,                      /* HND_FREE */           \
+	_B_ ":::so_malloc ra[@%08x] size<%d>" _N_,        /* HND_SO_MALLOC */      \
+	_B_ ":::so_free ra[@%08x]" _N_,                   /* HND_SO_FREE */        \
+	_B_ ":::sched fn[@%08x] delay<%u>" _N_,           /* HND_SCHED_WORK */     \
+	_M_ "   >>> WORK fn[@%08x]" _N_,                  /* HND_WORK_ENT */       \
+	_M_ "   <<< WORK" _N_,                            /* HND_WORK_RTN */       \
+	_M_ "    >> DPC fn[@%08x]" _N_,                   /* HND_DPC_ENT */        \
+	_M_ "    << DPC" _N_,                             /* HND_DPC_RTN */        \
+	_M_ "  <<<< DPC ERROR" _N_,                       /* HND_DPC_RTN_ERR */    \
+	_M_ "   >>> TMR fn[@%08x]" _N_,                   /* HND_TMR_ENT */        \
+	_M_ "   <<< TMR" _N_,                             /* HND_TMR_RTN */        \
+	_B_ ":::tmr_create ra[@%08x]" _N_,                /* HND_TMR_CRT */        \
+	_B_ ":::tmr_delete ra[@%08x]" _N_,                /* HND_TMR_DEL */        \
+	_B_ ":::tmr_start ra[@%08x]" _N_,                 /* HND_TMR_BGN */        \
+	_B_ ":::tmr_stop ra[@%08x]" _N_,                  /* HND_TMR_END */        \
 	                                                                           \
-	_G_ ":::idle loop" _N_,               /* THREADX_IDLE */                   \
-	_R_ "  >>>> CPU ISR int<0x%08x>" _N_, /* THREADX_CPU_ISR_ENT */            \
-	_R_ "  <<<< CPU ISR" _N_,             /* THREADX_CPU_ISR_RTN */            \
-	_R_ "   >>> ISR fn[@%08x]" _N_,       /* THREADX_ISR_ENT */                \
-	_R_ "   <<< ISR" _N_,                 /* THREADX_ISR_RTN */                \
-	_R_ "    >> EISR fn[@%08x] evt<%d>" _N_, /* THREADX_EVT_ISR_ENT */         \
-	_R_ "    << EISR" _N_,                /* THREADX_EVT_ISR_RTN */            \
-	_M_ "     ! SCHED thread-%c::%u" _N_, /* THREADX_SCHED_THREAD */           \
+	_G_ ":::idle loop" _N_,                         /* THREADX_IDLE */         \
+	_R_ "  >>>> CPU ISR int<0x%08x>" _N_,           /* THREADX_CPU_ISR_ENT */  \
+	_R_ "  <<<< CPU ISR" _N_,                       /* THREADX_CPU_ISR_RTN */  \
+	_R_ "   >>> ISR fn[@%08x]" _N_,                 /* THREADX_ISR_ENT */      \
+	_R_ "   <<< ISR" _N_,                           /* THREADX_ISR_RTN */      \
+	_R_ "    >> EISR fn[@%08x] evt<%d>" _N_,        /* THREADX_EVT_ISR_ENT */  \
+	_R_ "    << EISR" _N_,                          /* THREADX_EVT_ISR_RTN */  \
+	_M_ "     ! SCHED thread-%c::%u" _N_,           /* THREADX_SCHED_THREAD */ \
+	                                                                           \
+	                                                                           \
+	_C_ "       MAC_RXFIFO pkt<0x%08x>" _N_,          /* KPI_PKT_MAC_RXFIFO */ \
+	_C_ "       BUS_RXCMPL pkt<0x%08x>" _N_,          /* KPI_PKT_BUS_RXCMPL */ \
+	_C_ "       BUS_RXBMRC pkt<0x%08x>" _N_,          /* KPI_PKT_BUS_RXBMRC */ \
+	_C_ "       BUS_RXDROP pkt<0x%08x>" _N_,          /* KPI_PKT_BUS_RXDROP */ \
+	_C_ "       BUS_TXPOST pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXPOST */ \
+	_C_ "       MAC_TXMPDU pkt<0x%08x> fifo<%u>" _N_, /* KPI_PKT_MAC_TXMPDU */ \
+	_C_ "       MAC_TXMSDU pkt<0x%08x> fifo<%u>" _N_, /* KPI_PKT_MAC_TXMSDU */ \
+	_C_ "       MAC_TXSTAT ncons<%u> fifo<%u>" _N_,   /* KPI_PKT_MAC_TXSTAT */ \
+	_C_ "       BUS_TXCMPL pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXCMPL */ \
+	_C_ "       BUS_TXSUPP pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXSUPP */ \
+	                                                                           \
 	                                                                           \
 	"LAST_EVENT"                                                               \
 }
@@ -625,6 +664,55 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #endif  /* ! BCM_BUZZZ_TRACING_LEVEL >= 5 */
 
 /*
+ * BUZZZ datapath KPI instrumentation in addition to default Threadx and RTOS
+ * Assumes all HWA blocks are enabled
+ */
+
+#if defined(BCM_BUZZZ_KPI_LEVEL) && (BCM_BUZZZ_KPI_LEVEL > 0)
+#define BCM_BUZZZ_KPI_PKT_LEVEL         (3)
+#define BCM_BUZZZ_KPI_QUE_LEVEL         (0)            /* not supported yet */
+#else
+#define BCM_BUZZZ_KPI_PKT_LEVEL         (0)
+#define BCM_BUZZZ_KPI_QUE_LEVEL         (0)
+#endif /* BCM_BUZZZ_KPI_LEVEL */
+
+#if (BCM_BUZZZ_KPI_PKT_LEVEL >= 1)
+#define BUZZZ_KPI_PKT1(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 1 */
+#define BUZZZ_KPI_PKT1(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 1 */
+
+#if (BCM_BUZZZ_KPI_PKT_LEVEL >= 2)
+#define BUZZZ_KPI_PKT2(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 2 */
+#define BUZZZ_KPI_PKT2(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 2 */
+
+#if (BCM_BUZZZ_KPI_PKT_LEVEL >= 3)
+#define BUZZZ_KPI_PKT3(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 3 */
+#define BUZZZ_KPI_PKT3(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_PKT_LEVEL >= 3 */
+
+#if (BCM_BUZZZ_KPI_QUE_LEVEL >= 1)
+#define BUZZZ_KPI_QUE1(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 1 */
+#define BUZZZ_KPI_QUE1(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 1 */
+
+#if (BCM_BUZZZ_KPI_QUE_LEVEL >= 2)
+#define BUZZZ_KPI_QUE2(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 2 */
+#define BUZZZ_KPI_QUE2(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 2 */
+
+#if (BCM_BUZZZ_KPI_QUE_LEVEL >= 3)
+#define BUZZZ_KPI_QUE3(ID, N, ARG...) bcm_buzzz_log ##N(BUZZZ_KLOG__ ##ID, ##ARG)
+#else   /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 3 */
+#define BUZZZ_KPI_QUE3(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
+#endif  /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 3 */
+
+/*
  * BUZZZ exported APIs that default to noop when BCM_BUZZZ is not defined
  */
 #if defined(BCM_BUZZZ)
@@ -644,13 +732,13 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #define BUZZZ_LOCK_DECLARE              TX_INTERRUPT_SAVE_AREA
 #define BUZZZ_LOCK_INT                  TX_DISABLE
 #define BUZZZ_UNLOCK_INT                TX_RESTORE
-#else  /* ! BCM_BUZZZ_THREADX */
+#else   /* ! BCM_BUZZZ_THREADX */
 #define BUZZZ_LOCK_DECLARE
 #define BUZZZ_LOCK_INT                  BCM_BUZZZ_NULL_STMT
 #define BUZZZ_UNLOCK_INT                BCM_BUZZZ_NULL_STMT
-#endif /* ! BCM_BUZZZ_THREADX */
+#endif  /* ! BCM_BUZZZ_THREADX */
 
-#else	/* ! BCM_BUZZZ */
+#else   /* ! BCM_BUZZZ */
 
 #define BCM_BUZZZ_INIT(shared)          BCM_BUZZZ_NULL_STMT
 #define BCM_BUZZZ_CONFIG(ctr_sel)       BCM_BUZZZ_NULL_STMT
@@ -666,7 +754,7 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #define BUZZZ_LOCK_INT                  BCM_BUZZZ_NULL_STMT
 #define BUZZZ_UNLOCK_INT                BCM_BUZZZ_NULL_STMT
 
-#endif	/* ! BCM_BUZZZ */
+#endif  /* ! BCM_BUZZZ */
 
 #define BCM_BUZZZ_NOINSTR_FUNC          __attribute__ ((no_instrument_function))
 

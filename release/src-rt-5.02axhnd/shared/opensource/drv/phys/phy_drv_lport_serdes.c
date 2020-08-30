@@ -42,7 +42,7 @@
 #include "serdes_access.h"
 #include "lport_drv.h"
 
-static uint32_t enabled_ports;
+static uint32_t enabled_ports = 0xffffffff;
 
 static int _phy_power_get(phy_dev_t *phy_dev, int *enable)
 {
@@ -144,28 +144,49 @@ static int _phy_caps_get(phy_dev_t *phy_dev, int caps_type, uint32_t *pcaps)
     case LPORT_RATE_10MB: /* 10M */
         caps |= PHY_CAP_10_HALF | PHY_CAP_10_FULL;
         break;
-
     case LPORT_RATE_100MB: /* 100Mbps */
         caps |= PHY_CAP_100_HALF | PHY_CAP_100_FULL;
         break;
-
     case LPORT_RATE_1000MB: /* 1000Mbps */
         caps |= PHY_CAP_1000_HALF | PHY_CAP_1000_FULL;
         break;
-
     case LPORT_RATE_2500MB: /* 2500Mbps */
         caps |= PHY_CAP_2500;
         break;
-
     case LPORT_RATE_10G: /* 5000/10000Mbps */
         caps |= PHY_CAP_10000;
         break;
-
     default:
         break;
     }
 
+    if (phy_dev->pause_rx && phy_dev->pause_tx)
+        caps |= PHY_CAP_PAUSE;
+    else if (phy_dev->pause_rx)
+        caps |= PHY_CAP_PAUSE | PHY_CAP_PAUSE_ASYM;
+    else if (phy_dev->pause_tx)
+        caps |= PHY_CAP_PAUSE_ASYM;
+
     *pcaps = caps;
+    return 0;
+}
+
+static int _phy_caps_set(phy_dev_t *phy_dev, uint32_t caps)
+{
+    phy_dev->link = 0;
+    phy_dev->pause_rx = 0; 
+    phy_dev->pause_tx = 0; 
+
+    if (caps & PHY_CAP_PAUSE)
+    {
+        phy_dev->pause_rx = 1; 
+        phy_dev->pause_tx = (caps & PHY_CAP_PAUSE_ASYM) ? 0 : 1;
+    }
+    else if (caps & PHY_CAP_PAUSE_ASYM)
+    {
+        phy_dev->pause_tx = 1; 
+    }
+
     return 0;
 }
 
@@ -182,5 +203,6 @@ phy_drv_t phy_drv_lport_serdes =
     .power_set = _phy_power_set,
     .read_status = _phy_read_status,
     .caps_get = _phy_caps_get,
+    .caps_set = _phy_caps_set,
     .init = _phy_init,
 };

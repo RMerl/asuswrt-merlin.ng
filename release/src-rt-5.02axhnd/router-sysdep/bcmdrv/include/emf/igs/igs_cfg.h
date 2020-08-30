@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,11 +16,15 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
+ * $Id: igs_cfg.h $
  */
 
 #ifndef _IGS_CFG_H_
 #define _IGS_CFG_H_
 
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+#include <bcmipv6.h>
+#endif // endif
 #define SUCCESS                     0
 #define FAILURE                     -1
 
@@ -32,6 +36,10 @@
 #define IGSCFG_CMD_IGSDB_LIST       4
 #define IGSCFG_CMD_RTPORT_LIST      5
 #define IGSCFG_CMD_IGS_STATS        6
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+#define IGSCFG_CMD_IGSDB_LIST_IPV6	7
+#define IGSCFG_CMD_IGS_STATS_IPV6	8
+#endif // endif
 
 #define IGSCFG_OPER_TYPE_GET        1
 #define IGSCFG_OPER_TYPE_SET        2
@@ -57,8 +65,19 @@ typedef struct igs_cfg_sdb_list
 	uint32  num_entries;              /* Num of entries in IGSDB */
 	struct sdb_entry
 	{
-		uint32 mgrp_ip;           /* Multicast group address */
-		uint32 mh_ip;             /* Member IP address */
+#ifdef BCM_NBUFF_WLMCAST_IPV6
+		union {
+			uint32 mgrp_ip;			  /* Multicast group address */
+			struct ipv6_addr mgrp_ipv6;
+		};
+		union {
+			uint32 mh_ip;			  /* Member IP address */
+			struct ipv6_addr mh_ipv6;
+		};
+#else
+		uint32 mgrp_ip;			  /* Multicast group address */
+		uint32 mh_ip;			  /* Member IP address */
+#endif // endif
 		uint8  if_name[16];       /* Interface member is present */
 	} sdb_entry[0];
 } igs_cfg_sdb_list_t;
@@ -91,6 +110,7 @@ typedef struct igs_stats
 	uint32  igmp_frames_sentup;       /* IGMP membership reports seen */
 	uint32  igmp_mcast_groups;        /* Current total of mcast groups */
 	uint32  igmp_mcast_members;       /* Current total of mcast members */
+	uint32  igmp_missed_report_to;    /* Missed membership report TO count */
 } igs_stats_t;
 
 extern void igs_cfg_request_process(igs_cfg_request_t *cfg);

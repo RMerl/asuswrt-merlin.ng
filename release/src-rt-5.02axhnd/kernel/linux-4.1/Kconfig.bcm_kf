@@ -579,3 +579,7 @@ config BCM_KF_MIPS_4350
 	bool
 	default y
 
+config BCM_KF_CFG80211_BACKPORT
+	bool
+	default y
+

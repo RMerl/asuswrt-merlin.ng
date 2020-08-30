@@ -370,7 +370,7 @@ static struct nf_conntrack_helper ipsec __read_mostly = {
    .tuple.src.l3num = AF_INET,
    .tuple.dst.protonum = IPPROTO_UDP,
    .tuple.src.u.udp.port = __constant_htons(IPSEC_PORT),
-
+   .data_len = sizeof(struct nf_ct_ipsec_master),
    .help = conntrack_ipsec_help,
    .destroy = ipsec_destroy,
    .expect_policy		= &ipsec_exp_policy,

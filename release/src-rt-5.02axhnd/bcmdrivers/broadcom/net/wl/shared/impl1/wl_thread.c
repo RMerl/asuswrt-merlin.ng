@@ -65,6 +65,9 @@ call_usermodehelper_taskset(int pid, int processor_id)
 		return -1;
 	}
 	rc = call_usermodehelper(USER_TASKSET_CMD, argv, envp, UMH_WAIT_PROC);
+	if (rc)
+		printk(KERN_WARNING "wl: cannot use %s command\n", USER_TASKSET_CMD);
+
 	return rc;
 }
 

@@ -118,6 +118,9 @@ phy_dev_t *bp_parse_phy_dev(const EMAC_PORT_INFO *port_info)
 #ifdef EXT_BCM53134
     phy_dev->resetGpio = port_info->phyReset;
 #endif
+#ifdef EXT_BCM84880
+    phy_dev->led_mode = 1;
+#endif
     bp_parse_port_flags(port_info, phy_dev);
     bp_parse_phy_driver(port_info, phy_dev->phy_drv);
     bp_parse_phy_ext(port_info, phy_dev);

@@ -1263,6 +1263,7 @@ void apply_ubus_credit_each_master(int master)
     }
     return;
 }
+#ifndef _CFE_
 static void apply_ubus_credit(void) 
 {
     /* this function only apply the master that is powered on by default */
@@ -1275,6 +1276,7 @@ static void apply_ubus_credit(void)
 
     return;
 }
+#endif
 #endif
 
 #if defined(_BCM96858_)
@@ -1443,7 +1445,9 @@ void bcm_ubus_config(void)
     create_ubus_proc();
 #endif
 #if defined(CONFIG_BCM963158) || defined(CONFIG_BCM96858)
+#ifndef _CFE_
     apply_ubus_credit();
+#endif
 #endif
 #if defined(_BCM96858_)
     ubus_master_rte_cfg();

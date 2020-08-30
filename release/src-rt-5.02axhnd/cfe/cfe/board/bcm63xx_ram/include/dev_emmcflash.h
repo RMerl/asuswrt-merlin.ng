@@ -1198,7 +1198,7 @@ typedef struct emmcflash_probe_t {
     int                 flash_part_attr;    /* EMMC_PART_ACCESS_ATTR physical partition type */
     int                 flash_nparts;       /* All logical paritions. Zero means not partitioned. */
     uint64_t            flash_log_size;     /* total size of logical partitions */
-    emmcflash_logicalpart_spec_t    flash_part_spec[EMMC_FLASH_MAX_PARTITIONS];
+    emmcflash_logicalpart_spec_t    flash_part_spec[EMMC_FLASH_MAX_LOGICAL_PARTS];
     
     /* The following are used for whacky, weird flashes */
     int             (*flash_ioctl_hook)(cfe_devctx_t *ctx,iocb_buffer_t *buffer);
@@ -1227,7 +1227,7 @@ struct emmcflashdev_s {
     emmcflash_probe_t   fd_probe;        /* probe information from 'Bcm97xxx_devs.c' */
     /* Property parameters for usage */ 
     uint8_t         *fd_sectorbuffer;   /* sector copy buffer for read/write */
-    emmcflash_cfepart_cfg_t fd_part_cfg[EMMC_FLASH_MAX_PARTITIONS];    /* To attach device */
+    emmcflash_cfepart_cfg_t fd_part_cfg[EMMC_FLASH_MAX_LOGICAL_PARTS];    /* To attach device */
     uint64_t        fd_pttlsize;        /* Physical total size of all partition in eMMC */
     uint64_t        fd_lttlsize;        /* Logical total size of all partition in eMMC which CFE uses. */
 };
@@ -1284,8 +1284,8 @@ int emmc_erase_img( int img_num , int erase_cferom_nvram);
 int emmc_dump_bootfs(char * flashdev, char * filename);
 int emmc_format_gpt_parts( int emmcPhysPartAttr );
 int emmc_dump_gpt_dataPhysPart(void);
-int emmc_format_gpt_dataPhysPart(int bootfs_sizekb, int rootfs_sizekb, int data_sizekb,
-                    int misc1_sizekb, int misc2_sizekb, int misc3_sizekb, int misc4_sizekb);
+int emmc_format_gpt_dataPhysPart(unsigned int bootfs_sizekb, unsigned int rootfs_sizekb, unsigned int data_sizekb,
+                    unsigned int misc1_sizekb, unsigned int misc2_sizekb, unsigned int misc3_sizekb, unsigned int misc4_sizekb);
 void emmc_allow_img_update_repartitions(int val);
 int emmc_get_img_update_repart_web_var( char * var_value, int * length );
 

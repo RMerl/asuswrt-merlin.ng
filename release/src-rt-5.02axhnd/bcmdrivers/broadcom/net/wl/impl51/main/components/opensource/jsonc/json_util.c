@@ -151,6 +151,11 @@ int json_parse_double(const char *buf, double *retval)
   return (sscanf(buf, "%lf", retval)==1 ? 0 : 1);
 }
 
+/*
+ * Not all implementations of sscanf actually work properly.
+ * Check whether the one we're currently using does, and if
+ * it's broken, enable the workaround code.
+ */
 static void sscanf_is_broken_test()
 {
 	int64_t num64;

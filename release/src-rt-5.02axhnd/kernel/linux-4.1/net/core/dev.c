@@ -151,6 +151,14 @@
 #include "linux/bcm_log.h"
 #endif
 
+#if defined(CONFIG_BCM_KF_NETFILTER) && defined(CONFIG_BLOG)
+#define PROCESS_BACKLOG_TIMEOUT (2 * HZ)
+#endif /* CONFIG_BCM_KF_NETFILTER && CONFIG_BLOG*/
+
+#ifdef PROCESS_BACKLOG_TIMEOUT
+static unsigned long process_backlog_timeout = PROCESS_BACKLOG_TIMEOUT;
+#endif /* PROCESS_BACKLOG_TIMEOUT */
+
 int bcm_iqos_enable_g = 0;
 EXPORT_SYMBOL(bcm_iqos_enable_g);
 
@@ -1998,7 +2006,7 @@ again:
 
 		if (skb_network_header(skb2) < skb2->data ||
 		    skb_network_header(skb2) > skb_tail_pointer(skb2)) {
-			net_crit_ratelimited("protocol %04x is buggy, dev %s\n",
+			net_info_ratelimited("protocol %04x is buggy, dev %s\n",
 					     ntohs(skb2->protocol),
 					     dev->name);
 			skb_reset_network_header(skb2);
@@ -2530,6 +2538,49 @@ update_list:
 	return 0;
 }
 
+static ssize_t skb_free_thread_proc_rd_func(struct file *filep, char __user *page, size_t count, loff_t *offset)
+{
+	int len = 0;
+
+	if( *offset != 0)
+		return 0;
+
+	len += sprintf(page, "skb_completion_queue_cnt %d \n", skb_completion_queue_cnt);
+
+	*offset = len;
+
+	return len;
+
+} /* skb_free_thread_proc_rd_func */
+
+static const struct file_operations skb_free_thread_stats_fops = {
+       .owner  = THIS_MODULE,
+       .read   = skb_free_thread_proc_rd_func,
+};
+
+static struct proc_dir_entry *skb_free_thread_proc_directory, *skb_free_thread_proc_file_conf;
+
+static int skb_free_thread_proc_init(void)
+{
+    skb_free_thread_proc_directory = proc_mkdir("skb_free_thread", NULL) ;
+
+    if (!skb_free_thread_proc_directory) goto fail_dir ;
+
+    if ((skb_free_thread_proc_file_conf = proc_create("skb_free_thread/stats", 0644, NULL, &skb_free_thread_stats_fops)) == NULL) {
+        goto fail_entry;
+    }
+
+    return (0) ;
+
+fail_entry:
+    printk("%s %s: Failed to create proc entry in skb_free_thread\n", __FILE__, __FUNCTION__);
+    remove_proc_entry("skb_free_thread" ,NULL); /* remove already registered directory */
+
+fail_dir:
+    printk("%s %s: Failed to create directory skb_free_thread\n", __FILE__, __FUNCTION__) ;
+    return (-EIO) ;
+} /* skb_free_thread_proc_init */
+
 #ifndef SZ_32M
 #define SZ_32M		0x02000000
 #endif
@@ -2569,6 +2620,13 @@ struct task_struct *create_skb_free_task(void)
 		return NULL;
 	}
 
+	/* Initialize the proc interface for debugging information */
+    if (skb_free_thread_proc_init()!=0)
+    {
+        printk("\n%s %s: skb_free_thread_proc_init() failed\n", __FILE__, __FUNCTION__) ;
+        return NULL;
+    }
+
 	param.sched_priority = BCM_RTPRIO_DATA_CONTROL;
 	sched_setscheduler(tsk, SCHED_RR, &param);
 	wake_up_process(tsk);
@@ -2598,6 +2656,38 @@ void dev_kfree_skb_thread(struct sk_buff *skb)
 	}
 }
 EXPORT_SYMBOL(dev_kfree_skb_thread);
+
+/* bulk queue the skb so it can be freed in thread context
+ * note: this thread is not binded to any cpu,and we rely on scheduler to
+ * run it on cpu with less load
+ */
+void dev_kfree_skb_thread_bulk(struct sk_buff *skb)
+{
+	unsigned long flags;
+	struct sk_buff *skbfreelistend;
+	unsigned int skbcnt = 1;
+
+	/* locate last skb of the supplied skb list */
+	skbfreelistend = skb;
+	while (skbfreelistend->next != NULL) {
+		skbfreelistend = skbfreelistend->next;
+		/* +1 for first skb already done during init */
+		skbcnt++;
+	}
+
+	if (atomic_dec_and_test(&skb->users)) {
+		spin_lock_irqsave(&skbfree_lock, flags);
+		skbfreelistend->next = skb_completion_queue;
+		skb_completion_queue = skb;
+		skb_completion_queue_cnt += skbcnt;
+		spin_unlock_irqrestore(&skbfree_lock, flags);
+
+		if ((skb_free_task->state != TASK_RUNNING) &&
+				(skb_completion_queue_cnt >= skb_free_start_budget))
+			wake_up_process(skb_free_task);
+	}
+}
+EXPORT_SYMBOL(dev_kfree_skb_thread_bulk);
 
 #include <linux/gbpm.h>
 /* NOTE: gbpm_fap_evt_hook_g is not part of gbpm_g */
@@ -4956,6 +5046,9 @@ static int process_backlog(struct napi_struct *napi, int quota)
 	int work = 0;
 	struct softnet_data *sd = container_of(napi, struct softnet_data, backlog);
 
+#ifdef PROCESS_BACKLOG_TIMEOUT
+	unsigned long expire = jiffies + process_backlog_timeout;
+#endif /* PROCESS_BACKLOG_TIMEOUT */
 	/* Check if we have pending ipi, its better to send them now,
 	 * not waiting net_rx_action() end.
 	 */
@@ -4976,6 +5069,14 @@ static int process_backlog(struct napi_struct *napi, int quota)
 			rcu_read_unlock();
 			local_irq_disable();
 			input_queue_head_incr(sd);
+
+#ifdef PROCESS_BACKLOG_TIMEOUT
+			if (process_backlog_timeout && time_after(jiffies, expire)) {
+				local_irq_enable();
+				return quota;
+			}
+#endif /* PROCESS_BACKLOG_TIMEOUT */
+
 			if (++work >= quota) {
 				local_irq_enable();
 				return work;
@@ -8243,6 +8344,11 @@ static int __init net_dev_init(void)
 #if (defined(CONFIG_BCM_KF_FAP_GSO_LOOPBACK) && defined(CONFIG_BCM_FAP_GSO_LOOPBACK))
 	bcm_gso_loopback_devs_init();
 #endif
+
+#ifdef PROCESS_BACKLOG_TIMEOUT
+	printk("%s: process_backlog_timeout virt addr 0x%p\n",
+		__FUNCTION__, &process_backlog_timeout);
+#endif /* PROCESS_BACKLOG_TIMEOUT */
 	rc = 0;
 out:
 	return rc;
@@ -8379,4 +8485,26 @@ EXPORT_SYMBOL(bcm_vlan_handle_frame_hook);
 #if defined(CONFIG_BCM_KF_TMS) && defined(CONFIG_BCM_TMS_MODULE)
 EXPORT_SYMBOL(bcm_1ag_handle_frame_check_hook);
 EXPORT_SYMBOL(bcm_3ah_handle_frame_check_hook);
+#endif
+
+#ifdef CONFIG_BCM_PKTRUNNER_WAR_SKIP_TUN
+int notifier_match_netdev(void *nl, void *v, char *dev_name_prefix, int prefix_size)
+{
+	struct netdev_notifier_info *info;
+
+	if (nl != &netdev_chain.head)
+		return 0;
+
+	info = (struct netdev_notifier_info *)v;
+	if (info && info->dev) {
+		//printk("%s: dev name %s\n", __FUNCTION__, info->dev->name);
+		if (!strncmp(info->dev->name, dev_name_prefix, prefix_size)) {
+			//printk("%s: dev name %s matched\n",  __FUNCTION__, info->dev->name);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+EXPORT_SYMBOL(notifier_match_netdev);
 #endif

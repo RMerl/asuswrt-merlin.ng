@@ -4,7 +4,7 @@
  * Code to operate on PCI/E core, in NIC or BMAC high driver mode. Note that this file is not used
  * in firmware builds.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: nicpci.c 749931 2018-03-02 21:18:17Z $
+ * $Id: nicpci.c 773199 2019-03-14 14:36:42Z $
  */
 
 #include <bcm_cfg.h>
@@ -143,14 +143,15 @@ pcicore_init(si_t *sih, osl_t *osh, volatile void *regs)
 		pi->pciecap_devctrl2_offset = cap_ptr + PCIE_CAP_DEVCTRL2_OFFSET;
 		/* Clear SurvivePerst with 4365 for now */
 		if (pi->sih->buscorerev == 0xf || pi->sih->buscorerev == 0x14 ||
+			pi->sih->buscorerev == 0x16 ||
 			/* EAP: Also clear for NIC 43570, which has no srom.
 			 * Compare vs chip number since numerous spins were made
 			 * with different buscorerevs
 			 */
 			(CHIPID(pi->sih->chip) == BCM43570_CHIP_ID) ||
 			/* EAP: Force clear for NIC 43684/94 chips */
-			(CHIPID(pi->sih->chip) == BCM43684_CHIP_ID) ||
-			pi->sih->buscorerev == 0x16) {
+			BCM43684_CHIP(pi->sih->chip) ||
+			BCM6710_CHIP(pi->sih->chip)) {
 			AND_REG(osh, (&pi->regs.pcieregs->control), ~PCIE_SPERST);
 			dummy = R_REG(osh, &pi->regs.pcieregs->control);
 			BCM_REFERENCE(dummy);
@@ -281,6 +282,10 @@ pcie_readreg(si_t *sih, sbpcieregs_t *pcieregs, uint addrtype, uint offset)
 				break;
 
 			case PCIE_CONFIGREGS:
+				/* XXX: For internal registers caller to make sure offset
+				 * is in the right format.
+				 * offset = func_num << 13 | protocol_layer << 11 | offset
+				 */
 				W_REG(osh, (&pcieregs->configaddr), offset);
 				(void)R_REG(osh, (&pcieregs->configaddr));
 				retval = R_REG(osh, &(pcieregs->configdata));
@@ -323,6 +328,10 @@ pcie_writereg(si_t *sih, sbpcieregs_t *pcieregs, uint addrtype, uint offset, uin
 				break;
 
 			case PCIE_CONFIGREGS:
+				/* XXX: For internal registers caller to make sure offset
+				 * is in the right format.
+				 * offset = func_num << 13 | protocol_layer << 11 | offset
+				 */
 				W_REG(osh, (&pcieregs->configaddr), offset);
 				W_REG(osh, (&pcieregs->configdata), val);
 				break;
@@ -635,6 +644,13 @@ pcie_ltrenable(void *pch, uint32 mask, uint32 val)
 		return 0;
 }
 
+/* JIRA:SWWLAN-28745
+    val and return value:
+	0  Disabled
+	1  Enable using Message signaling[Var A]
+	2  Enable using Message signaling[Var B]
+	3  Enable using WAKE# signaling
+*/
 uint8
 pcie_obffenable(void *pch, uint32 mask, uint32 val)
 {
@@ -765,6 +781,10 @@ pcie_clkreq_upd(pcicore_info_t *pi, uint state)
 			si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, chipcontrol_data),
 			           ~0x40, 0);
 		} else if (pi->pcie_pr42767) {
+			/* When the driver going down, enable clkreq if PR42767 has been applied.
+			 * Also, adjust the state as system could hibernate, so Serdes PLL WAR is
+			 * a must before doing this
+			 */
 			pcie_clkreq((void *)pi, 1, 1);
 		}
 		break;
@@ -1011,6 +1031,10 @@ pcie_set_LTRvals(osl_t *osh, pcicore_info_t *pi)
 	W_REG(osh, &pcieregs->configdata, pi->pcie_ltr2_regval);
 }
 
+/**
+ * XXX HW problem: LTR message may not be sent to the host despite the ARM requesting so. Problem
+ * occurred on power up and when device transitioned from D3 into a higher power state.
+ */
 void
 pcie_hw_L1SS_war(void *pch)
 {
@@ -1050,6 +1074,10 @@ pcie_hw_L1SS_war(void *pch)
 	}
 }
 
+/**
+ * XXX HW problem: LTR message may not be sent to the host despite the ARM requesting so. Problem
+ * occurred on power up and when device transitioned from D3 into a higher power state.
+ */
 void
 pcie_hw_LTR_war(void *pch)
 {
@@ -1059,6 +1087,10 @@ pcie_hw_LTR_war(void *pch)
 	sbpcieregs_t *pcieregs = pi->regs.pcieregs;
 	uint32 devstsctr2;
 
+	/* XXX: HW JIRA: HW4345-846, only apply to >= 4350C0
+	 * XXX: HW JIRA: CRWLPCIEGEN2-170, applies to PCIeG2 rev 2, 3,
+	 * 4, 5, 6, 7, 8, 9, 11, 12, 13
+	 */
 	if (sih->buscoretype != PCIE2_CORE_ID || sih->buscorerev < 2 || sih->buscorerev == 10 ||
 	    sih->buscorerev > 13)
 		return;
@@ -1128,6 +1160,9 @@ pciedev_prep_D3(void *pch, bool enter_D3)
 	}
 }
 
+/* XXX: there were 2 WARS for the HW WAR CRWLPCIEGEN2_162..enable
+ * WAR2_HWJIRA_CRWLPCIEGEN2_162
+ */
 #define WAR2_HWJIRA_CRWLPCIEGEN2_162
 
 /* enable the WAR for CRWLPCIEGEN2_160, this uses the knowledge of existing war for 162  */
@@ -1165,6 +1200,9 @@ pciedev_crwlpciegen2(void *pch)
 #endif /* WAR2_HWJIRA_CRWLPCIEGEN2_162 */
 }
 
+/*
+ * XXX: SW WAR for CRWLPCIEGEN2-117
+ */
 static void
 pciedev_crwlpciegen2_117(void *pch)
 {
@@ -1173,10 +1211,18 @@ pciedev_crwlpciegen2_117(void *pch)
 	osl_t *osh = si_osh(sih);
 	sbpcieregs_t *pcieregs = pi->regs.pcieregs;
 
+	/* XXX apply WAR for PCIe corerev 9 & 13 only
+	 * Cfg clk is needed to send PME message, using pcie_pipe_Iddq to
+	 * shut off refclk pad does not give enough TL clks to switch CFG
+	 * clk to ALP
+	 */
 	if ((sih->buscorerev == 9) || (sih->buscorerev == 13))
 		OR_REG(osh, &pcieregs->control, PCIE_PipeIddqDisable1);
 }
 
+/*
+ * XXX: SW WAR for CRWLPCIEGEN2-180
+ */
 static void
 pciedev_crwlpciegen2_180(void *pch)
 {
@@ -1202,6 +1248,10 @@ pciedev_crwlpciegen2_182(void *pch)
 	sbpcieregs_t *pcieregs = pi->regs.pcieregs;
 
 	if (PCIE_GEN2(pi->sih) && sih->buscorerev >= 2 && sih->buscorerev <= 13) {
+		/* XXX Send a fake mailbox interrupt so that we never miss
+		 * a real mailbox interrupt from host. This is not a real fix.
+		 * Till we have the real fix, this stays.
+		 */
 		W_REG(osh, &pcieregs->configaddr, PCISBMbx);
 		W_REG(osh, &pcieregs->configdata, 1 << 0);
 	}
@@ -1216,6 +1266,12 @@ pciedev_reg_pm_clk_period(void *pch)
 	sbpcieregs_t *pcieregs = pi->regs.pcieregs;
 	uint32 alp_KHz, pm_value;
 
+	/* XXX: CRWLPCIEGEN2-171
+	 * XXX: set REG_PM_CLK_PERIOD to the right value
+	 * XXX: default value is not conservative enough..usually set to period of Xtal freq
+	 * XXX: HW folks want us to set this to half of that
+	 * XXX: (1000000 / xtalfreq_in_kHz) * 2
+	 */
 	if (sih->buscorerev <= 13) {
 		alp_KHz = (si_pmu_alp_clock(sih, osh) / 1000);
 		pm_value =  (1000000 * 2) / alp_KHz;
@@ -1244,6 +1300,11 @@ pcie_power_save_upd(pcicore_info_t *pi, bool is_up)
 
 	if (!pi->pcie_power_save)
 		return;
+
+	/* XXX - do not disable clock switching when the Serdes pll is powered down
+	 * due to the data corruption issue when reading srom. only give 0.4mA current
+	 * saving back from 8mA total saving in pcie power save mode
+	 */
 
 	if ((sih->buscorerev >= 15) && (sih->buscorerev <= 20)) {
 
@@ -1423,6 +1484,13 @@ pcie_set_error_injection(void *pch, uint32 mode)
 		pcie_writereg(pch, pcieregs, PCIE_CONFIGREGS, PCIECFGREG_REG_PHY_CTL7, 0x2c031);
 }
 
+/* PR 116284
+ * set L1 substate
+ * param: substate 0: disable,
+ *		   1: enable L1.2,
+ *		   2: enable L1.1,
+ *		   3: enable L1.2 and L1.1
+ */
 void
 pcie_set_L1substate(void *pch, uint32 substate)
 {
@@ -1455,6 +1523,13 @@ pcie_set_L1substate(void *pch, uint32 substate)
 	OSL_PCI_WRITE_CONFIG(pi->osh, PCIECFGREG_PML1_SUB_CTRL1, sizeof(uint32), data);
 }
 
+/* PR 116284
+ * get L1 substate
+ * return 0: disabled,
+ *	  1: L1.2 enabled,
+ *	  2: L1.1 enabled,
+ *	  3: L1.2 and L1.1 enabled
+ */
 uint32
 pcie_get_L1substate(void *pch)
 {
@@ -1502,7 +1577,6 @@ BCMATTACHFN(pcicore_attach)(void *pch, char *pvars, int state)
 		    BCM4350_CHIP(sih->chip) ||
 		    BCM43602_CHIP(sih->chip) ||
 		    (BCM4352_CHIP_ID == CHIPID(sih->chip)) ||
-		    (BCM4335_CHIP_ID == CHIPID(sih->chip)) ||
 			0)
 			pi->pcie_reqsize = PCIE_CAP_DEVCTRL_MRRS_1024B;
 
@@ -1641,6 +1715,10 @@ pcicore_sleep(void *pch)
 	if (!PCIEGEN1_ASPM(pi->sih))
 		return;
 
+	/* PR43448: Clear ASPM L1 when going to sleep as while coming out of standby/sleep,
+	 * ASPM L1 should not be accidentally enabled before driver has a chance to apply
+	 * the WAR
+	 */
 	w = OSL_PCI_READ_CONFIG(pi->osh, pi->pciecap_lcreg_offset, sizeof(uint32));
 	w &= ~PCIE_CAP_LCREG_ASPML1;
 	OSL_PCI_WRITE_CONFIG(pi->osh, pi->pciecap_lcreg_offset, sizeof(uint32), w);
@@ -1787,6 +1865,11 @@ pcicore_pmeclr(void *pch)
 	OSL_PCI_WRITE_CONFIG(pi->osh, pi->pmecap_offset + PME_CSR_OFFSET, sizeof(uint32), w);
 }
 
+/**
+ * WAR for PR5730: If the latency value is zero set it to 0x20, which exceeds the PCI burst
+ * size; this is only seen on certain Ricoh controllers, and only on Vista, and should
+ * only be applied to 4321 single/dualband cardbus cards for now
+ */
 static void
 pcicore_fixlatencytimer(pcicore_info_t* pch, uint8 timer_val)
 {

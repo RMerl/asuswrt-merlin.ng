@@ -1,7 +1,7 @@
 #
 # Broadcom Linux Router Makefile
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
 #
 # <<Broadcom-WL-IPTag/Open:>>
 #
-# $Id: Makefile 747116 2018-02-15 11:07:33Z $
+# $Id: Makefile 768738 2018-10-23 22:21:02Z $
 #
 
 #Linux Makefile
@@ -42,7 +42,7 @@ endif
 # trunk uses bcmcrypto component
 CFLAGS += -DBCMCRYPTO_COMPONENT
 
-LDFLAGS	+= -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm $(EXTRA_LDFLAGS)
+LDFLAGS	+= -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm $(EXTRA_LDFLAGS) -lpthread
 
 vpath %.c $(SRCBASE)/../components/apps/cevent_app $(SRCBASE)/shared
 
@@ -66,12 +66,18 @@ ca_be_str.c:
 	"`echo '#include <bcmevent.h>' | $(CC) -M $(CFLAGS) -xc - | \
 	grep bcmevent.h | head -1`" $@
 
+ifneq ($(PREBUILT_BCMBIN),1)
 ceventd: $(CEVENTD_OBJS) ceventd.h
 	$(CC) $(CFLAGS) $^ -o $@  $(LDFLAGS)
 
 ceventc: $(CEVENTC_OBJS) ceventc.h
 	$(CC) $(CFLAGS) $^ -o $@  $(LDFLAGS)
-
+else
+ceventd:
+	cp -f $(SRCBASE)/../components/apps/cevent_app/$(PRBM_DIR)/$@ ./
+ceventc:
+	cp -f $(SRCBASE)/../components/apps/cevent_app/$(PRBM_DIR)/$@ ./	
+endif
 ceventd-install: ceventd
 	install -d $(INSTALLDIR)/bin
 	install ceventd $(INSTALLDIR)/bin

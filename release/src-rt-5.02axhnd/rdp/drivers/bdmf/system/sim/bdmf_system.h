@@ -34,6 +34,7 @@
 #include <ctype.h>
 #include <stddef.h>
 #include <signal.h>
+#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
@@ -113,6 +114,11 @@ static inline void *bdmf_calloc(size_t size)
     if (p)
         memset(p, 0, size);
     return p;
+}
+
+static inline void bdmf_gettimeofday(struct timeval *tv)
+{
+	gettimeofday(tv, NULL);
 }
 
 static inline void bdmf_free(void *p)

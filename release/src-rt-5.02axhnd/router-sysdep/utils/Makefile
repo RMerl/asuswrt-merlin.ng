@@ -46,7 +46,6 @@ CFLAGS  += -Os
 else
 CFLAGS  += -O2
 endif
-CFLAGS += -DBCMINTERNAL -DBCMDBG
 
 CFLAGS += -DLINUX -I$(SRCBASE)/wl/exe
 
@@ -101,7 +100,7 @@ endif
 endif
 
 LDFLAGS += -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram ${EXTRA_NV_LDFLAGS}
-LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared
+LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -lpthread
 LDFLAGS += -lgcc_s
 
 ifeq ($(RTCONFIG_QTN),y)

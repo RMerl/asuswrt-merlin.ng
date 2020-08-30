@@ -692,6 +692,22 @@ static ssize_t bonding_show_packets_per_slave(struct device *d,
 static DEVICE_ATTR(packets_per_slave, S_IRUGO | S_IWUSR,
 		   bonding_show_packets_per_slave, bonding_sysfs_store_option);
 
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+static ssize_t bonding_show_async_linkspeed(struct device *d,
+				 struct device_attribute *attr,
+				 char *buf)
+{
+	struct bonding *bond = to_bond(d);
+	const struct bond_opt_value *val;
+
+	val = bond_opt_get_val(BOND_OPT_ASYNC_LINKSPEED, bond->params.async_linkspeed);
+
+	return sprintf(buf, "%s %d\n", val->string, bond->params.async_linkspeed);
+}
+static DEVICE_ATTR(async_linkspeed, S_IRUGO | S_IWUSR,
+		   bonding_show_async_linkspeed, bonding_sysfs_store_option);
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
+
 static struct attribute *per_bond_attrs[] = {
 	&dev_attr_slaves.attr,
 	&dev_attr_mode.attr,
@@ -725,6 +741,9 @@ static struct attribute *per_bond_attrs[] = {
 	&dev_attr_lp_interval.attr,
 	&dev_attr_packets_per_slave.attr,
 	&dev_attr_tlb_dynamic_lb.attr,
+#if defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING)
+	&dev_attr_async_linkspeed.attr,
+#endif /* defined(CONFIG_BCM_KF_KBONDING) && defined(CONFIG_BCM_KERNEL_BONDING) */
 	NULL,
 };
 

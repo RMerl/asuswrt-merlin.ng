@@ -1,7 +1,7 @@
 /*
  * Broadcom 53xx RoboSwitch device driver.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -106,7 +106,14 @@
 #define REG_CTRL_MODE	0x0B	/* Switch Mode register */
 #define REG_CTRL_MIIPO	0x0E	/* 5325: MII Port Override register */
 #define REG_CTRL_PWRDOWN 0x0F   /* 5325: Power Down Mode register */
+#define REG_CTRL_RSV_MCAST_CTRL	0x2f   /* Reserved Multicast Register */
 #define REG_CTRL_SRST	0x79	/* Software reset control register */
+
+/* Management/Mirroring Registers */
+#define REG_MMR_ATCR    0x06    /* Aging Time Control register */
+#define REG_MMR_MCCR    0x10    /* Mirror Capture Control register */
+#define REG_MMR_IMCR    0x12    /* Ingress Mirror Control register */
+#define REG_MMR_IMMAC	0x16    /* Ingress Mirror MAC address register */
 
 /* Management Page registers */
 #define REG_MGMT_CFG	0x00
@@ -1198,6 +1205,10 @@ bcm_robo_attach(si_t *sih, void *h, char *vars, miird_f miird, miiwr_f miiwr)
 		}
 
 		if (tmp != 0xffff) {
+			/*
+			 * XXX Reading the register multiple times does return correct
+			 * device id all the time on 539x !?
+			 */
 			do {
 				rc = mii_rreg(robo, PAGE_MMR, REG_DEVICE_ID,
 				              &robo->devid, sizeof(uint16));
@@ -2115,6 +2126,10 @@ vlan_setup:
 	}
 
 	if (robo->devid == DEVID5325) {
+		/*
+		 * FIXME: do we need to do this when prio re-map feature
+		 *        (bit[7] of page 0x34 addr 2) is disabled (0)???
+		 */
 		/* setup priority mapping - applies to tagged ingress frames */
 		/* Priority Re-map Register (Page 0x34, Address 0x20-0x23) */
 		val32 = ((0 << 0) |	/* 0 -> 0 */
@@ -2166,12 +2181,28 @@ vlan_setup:
 	return 0;
 }
 
+#define RSV_MCAST_CTRL_EN_MUL_1	1 /* RSV_MCAST_CTRL_EN_MUL_ bit 1 for 01:80:C2:00:00:02 - 0F */
+#define RSV_MCAST_CTRL_EN_MUL_3	3 /* RSV_MCAST_CTRL_EN_MUL_ bit 3 for 01:80:C2:00:00:11 - 1F */
+
+static void
+bcm_robo_config_mcast(robo_info_t *robo)
+{
+	uint8 val8 = 0;
+
+	/* IMP0 Control Register (Page 0, Address 0x2f) */
+	robo->ops->read_reg(robo, PAGE_CTRL, REG_CTRL_RSV_MCAST_CTRL, &val8, sizeof(val8));
+	val8 &= (~((1 << RSV_MCAST_CTRL_EN_MUL_1) | (1 << RSV_MCAST_CTRL_EN_MUL_3)));
+	robo->ops->write_reg(robo, PAGE_CTRL, REG_CTRL_RSV_MCAST_CTRL, &val8, sizeof(val8));
+}
+
 /* Enable switching/forwarding */
 int
 bcm_robo_enable_switch(robo_info_t *robo)
 {
 	int i, max_port_ind, ret = 0;
 	uint8 val8;
+	uint16 val16;
+	uint8 im_mac[6] = {0x13, 0x00, 0x00, 0xC2, 0x80, 0x01};
 
 	/* Enable management interface access */
 	if (robo->ops->enable_mgmtif)
@@ -2311,6 +2342,34 @@ bcm_robo_enable_switch(robo_info_t *robo)
 				robo->ops->write_reg(robo, PAGE_CTRL, REG_CTRL_IMP,
 					&val8, sizeof(val8));
 
+				/* XXX: Packets with DA as 1905 Reserved Multicast addr
+				 * 01:80:C2:00:00:13 are not recieved by IMP port in Managed mode
+				 * Configuring IMP port as mirror port with rule to recieve packets
+				 * with DA - 01:80:C2:00:00:13
+				 */
+				val16 =
+					(1 << 15) |	/* MIR_EN Enable mirroring */
+					(8 << 0);	/* SMIR_CAP_PORT Configuring IMP port
+							 * as Mirror capture port
+							 */
+				/* Mirror Capture Control Regiter (Page 2, Address 0x10) */
+				robo->ops->write_reg(robo, PAGE_MMR, REG_MMR_MCCR,
+					&val16, sizeof(val16));
+				val16 =
+					(1 << 14) |	/* IN_MIT_FLTR Mirror frames with DA */
+					(0xBE << 0);	/* IN_MIR_MSK: Ingress frames ports 1-5,7 */
+
+				/* Ingress Mirror Control Register (Page 2, Address 0x12) */
+				robo->ops->write_reg(robo, PAGE_MMR, REG_MMR_IMCR,
+					&val16, sizeof(val16));
+
+				/* Ingress Mirror MAC Register (Page 2, Address 0x16) */
+				robo->ops->write_reg(robo, PAGE_MMR, REG_MMR_IMMAC,
+					im_mac, ETHER_ADDR_LEN);
+
+				/* For multicast layer2 forwarding - 01-80-c2-00-00- 13/0e */
+				bcm_robo_config_mcast(robo);
+
 				/* Global Management Configuration Register (Page 2, Address 0x0) */
 				val8 = 0;
 				robo->ops->read_reg(robo, PAGE_MMR, REG_MGMT_CFG,
@@ -2412,6 +2471,9 @@ bcm_robo_enable_switch(robo_info_t *robo)
 					(1 << 0);	/* LINK_STS: Link up */
 				robo->ops->write_reg(robo, PAGE_CTRL, REG_CTRL_PORT0_GMIIPO + i,
 					&val8, sizeof(val8));
+
+				/* For multicast layer2 forwarding - 01-80-c2-00-00- 13/0e */
+				bcm_robo_config_mcast(robo);
 			}
 			break;
 		}

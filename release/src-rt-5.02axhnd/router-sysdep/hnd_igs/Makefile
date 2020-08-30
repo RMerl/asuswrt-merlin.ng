@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom IGS Layer
 #
-# Copyright (C) 2018, Broadcom. All Rights Reserved.
+# Copyright (C) 2019, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -49,6 +49,11 @@ ifeq ($(REBUILD_IGS_MODULE),1)
 
 IGS_OBJS := $(IGSCSRCDIR)/igsc.o $(IGSCSRCDIR)/igsc_sdb.o $(IGSSRCDIR)/igs_linux.o \
 	    $(IGSCSRCDIR)/osl_linux.o
+
+ifeq ($(BUILD_NBUFF_WLMCAST_IPV6),y)
+IGS_OBJS += $(IGSCSRCDIR)/igsc_ipv6.o $(IGSCSRCDIR)/igsc_sdb_ipv6.o
+endif
+
 # Search for sources under src/router/emf/igs
 ifneq ($(wildcard $(src)/$(IGSSRCDIR)),)
     EXTRA_CFLAGS += -I$(SRCBASE_ROUTER)/emf$(BCMEX7)/igs -I$(SRCBASE_ROUTER)/emf$(BCMEX7)/emf
@@ -59,6 +64,8 @@ ifneq ($(wildcard $(src)/$(IGSSRCDIR)),)
     EXTRA_CFLAGS += -DBCMDRIVER -DBCA_HNDROUTER
     igs-objs := $(IGS_OBJS)
 endif
+
+-include $(SRCBASE_ROUTER)/hnd/Makefile.shared
 
 obj-$(CONFIG_BCM_WLAN) := igs.o
 

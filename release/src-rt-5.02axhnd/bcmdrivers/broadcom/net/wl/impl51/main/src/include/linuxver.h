@@ -2,7 +2,7 @@
  * Linux-specific abstractions to gain some independence from linux kernel versions.
  * Pave over some 2.2 versus 2.4 versus 2.6 kernel differences.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,12 +19,21 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linuxver.h 760861 2018-05-03 20:16:38Z $
+ * $Id: linuxver.h 774515 2019-04-26 10:12:02Z $
  */
 
 #ifndef _linuxver_h_
 #define _linuxver_h_
 
+/*
+ * The below pragmas are added as workaround for errors caused by update
+ * of gcc version to 4.8.2. GCC 4.6 adds -Wunused-but-set-variable and
+ * -Wunused-but-set-parameter to -Wall, for some configurations those
+ * warnings are produced in linux kernel. So for now the below pragmas
+ * disable the offending warnings. Permanent solution is to use -isystem
+ * but there is a performance problem with this change on RHEL5 servers
+ *
+ */
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 6)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-but-set-variable"
@@ -106,6 +115,12 @@
 #endif // endif
 #endif	/* LINUX_VERSION_CODE > KERNEL_VERSION(2, 5, 41) */
 
+/*
+ * TODO:
+ * XXX: daemonize() API is deprecated from kernel-3.8 onwards. More debugging
+ *      has to be done whether this can cause any issue in case, if driver is
+ *      loaded as a module from userspace.
+ */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0))
 #define DAEMONIZE(a)	do { \
 		allow_signal(SIGKILL);	\
@@ -828,5 +843,46 @@ static inline int __my_kernel_write(struct file *f, void *buf, size_t len, loff_
 #define kernel_read	__my_kernel_read
 #define kernel_write	__my_kernel_write
 #endif /* LINUX_VERSION_CODE < KERNEL_VERSION(4, 14, 0) */
+
+/* struct netdev_ops::ndo_get_stats64 return changed to void in v4.11 */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 11, 0))
+#define STATS64_RETURN_TYPE	struct rtnl_link_stats64*
+#define RETURN_STATS64(_stats)	return (_stats)
+#else
+#define STATS64_RETURN_TYPE	void
+#define RETURN_STATS64(_stats)	return
+#endif /* KERNEL_VERSION < 4.11 */
+
+static inline
+void wl_netdev_set_free_netdev(struct net_device *net)
+{
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
+	net->destructor = free_netdev;
+#else
+	net->needs_free_netdev = true;
+#endif // endif
+}
+
+static inline
+void wl_netdev_set_destructor(struct net_device *net,
+	void (*des)(struct net_device *net))
+{
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4, 12, 0)
+	net->destructor = des;
+#else
+	net->priv_destructor = des;
+	net->needs_free_netdev = true;
+#endif // endif
+}
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 0, 0)
+/* Our STATIC_ASSERT uses variable-length array which is banned */
+#ifndef STATIC_ASSERT
+#warning "inclusion issue as STATIC_ASSERT is not defined here"
+#else
+#undef STATIC_ASSERT
+#endif /* !STATIC_ASSERT */
+#define STATIC_ASSERT(expr)	BUILD_BUG_ON(!(expr))
+#endif /* KERNEL_VERSION >= 5.0 */
 
 #endif /* _linuxver_h_ */

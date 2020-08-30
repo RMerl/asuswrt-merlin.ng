@@ -100,6 +100,7 @@ typedef enum
     }
 
 #define ANY_VID                          0xFFFF
+#define DUMMY_MAX_PKT_LEN                0xFFFF
 
 typedef struct
 {
@@ -112,7 +113,7 @@ void rdd_rx_default_flow_init(void);
 void rdd_rx_flow_exception_cfg(uint32_t flow_index, bdmf_boolean exception);
 void rdd_rx_flow_del(uint32_t flow_index);
 uint32_t rdd_rx_flow_cntr_id_get(uint32_t flow_index);
-uint32_t rdd_rx_flow_params_get(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *rx_flow_entry_ptr);
+uint32_t rdd_rx_flow_entry_get(uint32_t flow_index, RDD_RX_FLOW_ENTRY_DTS *rx_flow_entry_ptr);
 void rdd_rx_default_flow_cfg(uint32_t flow_index, uint16_t ctx_index, rdd_ic_context_t *context);
 void rdd_rx_default_flow_context_get(uint32_t flow_index, RDD_RULE_BASED_CONTEXT_ENTRY_DTS *entry);
 uint32_t rdd_rx_default_flow_cntr_id_get(uint32_t entry_index);
@@ -120,7 +121,9 @@ void rdd_rx_mirroring_cfg(rdd_rdd_vport vport, bdmf_boolean control);
 void rdd_rx_mirroring_direct_cfg(bdmf_boolean control);
 void rdd_loopback_cfg(rdd_rdd_vport vport, bdmf_boolean control);
 void rdd_loopback_queue_set(rdd_rdd_vport vport, uint32_t queue_id);
+void rdd_loopback_wan_flow_set(uint32_t flow);
 void rdd_ingress_qos_drop_miss_ratio_set(uint32_t drop_miss_ratio);
+void rdd_ingress_qos_wan_untagged_priority_set(bdmf_boolean wan_untagged_priority);
 
 /* TX APIs*/
 void rdd_tm_flow_cntr_cfg(uint32_t cntr_entry, uint32_t cntr_id);
@@ -129,6 +132,7 @@ void rdd_fpm_pool_number_mapping_cfg(uint16_t fpm_base_token_size);
 void rdd_full_flow_cache_cfg(bdmf_boolean control);
 void rdd_drop_precedence_cfg(rdpa_traffic_dir dir, uint16_t eligibility_vector);
 void rdd_rate_limit_overhead_cfg(uint8_t  xi_rate_limit_overhead);
+void rdd_max_pkt_len_table_init(void);
 #ifndef _CFE_
 void rdd_multicast_filter_cfg(rdpa_mcast_filter_method mcast_prefix_filter);
 void rdd_iptv_status_cfg(bdmf_boolean iptv_status);
@@ -139,7 +143,7 @@ bdmf_boolean rdd_ecn_remark_enable_get(void);
 
 
 /* RX APIs*/
-void rdd_rx_flow_cfg(uint32_t flow_index, rdd_flow_dest destination, rdd_rdd_vport vport, uint32_t cntr_id);
+void rdd_rx_flow_entry_set(uint32_t flow_index,  RDD_RX_FLOW_ENTRY_DTS *rx_flow_entry_ptr);
 void rdd_mac_type_cfg(rdd_mac_type wan_mac_type);
 
 /* TX APIs*/

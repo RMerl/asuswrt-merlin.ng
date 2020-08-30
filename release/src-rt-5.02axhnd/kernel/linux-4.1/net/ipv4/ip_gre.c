@@ -728,6 +728,9 @@ static void ipgre_tap_setup(struct net_device *dev)
 	dev->netdev_ops		= &gre_tap_netdev_ops;
 	dev->priv_flags 	|= IFF_LIVE_ADDR_CHANGE;
 	ip_tunnel_setup(dev, gre_tap_net_id);
+#if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
+	dev->blog_stats_flags |= BLOG_DEV_STAT_FLAG_INCLUDE_ALL;
+#endif
 }
 
 static int ipgre_newlink(struct net *src_net, struct net_device *dev,

@@ -100,7 +100,7 @@ $(EXE):
 	-cp -f $(SRCBASE)/router-sysdep/mcpd/prebuilt/mcpd mcpd
 else
 $(EXE): $(OBJS) 
-	$(CC) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) -Wl,-rpath,$(CMS_LIB_RPATH) $(CMS_LIB_PATH) $(LIBS)
 endif
 
 

@@ -340,7 +340,9 @@ int rdd_cpu_tx_send_message(rdd_cpu_tx_message_type_t msg_type, rdd_runner_index
         {
             RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DHD_MSG_TYPE_WRITE(parameter_1, cpu_tx_descriptor_ptr);
             RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_FLOW_RING_ID_WRITE((parameter_2 & ~0xc000), cpu_tx_descriptor_ptr);
-            RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE(parameter_2 >> 14, cpu_tx_descriptor_ptr);
+            RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_RADIO_IDX_WRITE((parameter_2 >> 14) & 0x3, cpu_tx_descriptor_ptr);
+            RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_VALID_WRITE((parameter_2 >> 31) & 0x1, cpu_tx_descriptor_ptr);
+            RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_READ_IDX_WRITE((parameter_2 >> 16) & 0x3FF, cpu_tx_descriptor_ptr);
             RDD_CPU_TX_DHD_MESSAGE_DESCRIPTOR_DISABLED_WRITE(parameter_3, cpu_tx_descriptor_ptr);
             break;
         }

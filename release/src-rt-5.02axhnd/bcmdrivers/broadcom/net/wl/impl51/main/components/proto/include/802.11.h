@@ -1,7 +1,7 @@
 /*
  * Fundamental types and constants relating to 802.11
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11.h 765525 2018-07-06 08:24:04Z $
+ * $Id: 802.11.h 777236 2019-07-24 13:51:48Z $
  */
 
 #ifndef _802_11_H_
@@ -1338,6 +1338,8 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 						 * frame policy violation
 						 */
 
+#define DOT11_SC_INSUFFICIENT_BANDWIDTH	33	/* Insufficient Bandwidth */
+#define DOT11_SC_POOR_CHAN_CONDITION	34	/* Bad channel condition */
 #define	DOT11_SC_DECLINED		37	/* request declined */
 #define	DOT11_SC_INVALID_PARAMS		38	/* One or more params have invalid values */
 #define DOT11_SC_INVALID_PAIRWISE_CIPHER	42 /* invalid pairwise cipher */
@@ -1442,13 +1444,15 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 #define DOT11_MNG_BSS_AVAL_ADMISSION_CAP_ID	67	/* 11k bss aval admission cap id */
 #define DOT11_MNG_BSS_AC_ACCESS_DELAY_ID	68	/* 11k bss AC access delay id */
 #define DOT11_MNG_WAPI_ID			68	/* d11 management WAPI id */
-#define DOT11_MNG_TIME_ADVERTISE_ID	69	/* 11p time advertisement */
-#define DOT11_MNG_RRM_CAP_ID		70	/* 11k radio measurement capability */
+#define DOT11_MNG_TIME_ADVERTISE_ID		69	/* 11p time advertisement */
+#define DOT11_MNG_RRM_CAP_ID			70	/* 11k radio measurement capability */
 #define DOT11_MNG_MULTIPLE_BSSID_ID		71	/* 11k multiple BSSID id */
-#define	DOT11_MNG_HT_BSS_COEXINFO_ID		72	/* d11 mgmt OBSS Coexistence INFO */
-#define	DOT11_MNG_HT_BSS_CHANNEL_REPORT_ID	73	/* d11 mgmt OBSS Intolerant Channel list */
-#define	DOT11_MNG_HT_OBSS_ID			74	/* d11 mgmt OBSS HT info */
+#define DOT11_MNG_HT_BSS_COEXINFO_ID		72	/* d11 mgmt OBSS Coexistence INFO */
+#define DOT11_MNG_HT_BSS_CHANNEL_REPORT_ID	73	/* d11 mgmt OBSS Intolerant Channel list */
+#define DOT11_MNG_HT_OBSS_ID			74	/* d11 mgmt OBSS HT info */
 #define DOT11_MNG_MMIE_ID			76	/* d11 mgmt MIC IE */
+#define DOT11_MNG_NONTRANS_BSSID_CAP_ID		83	/* d11 Nontransmitted BSSID Capability */
+#define DOT11_MNG_MULTIPLE_BSSID_IDX_ID		85	/* d11 Multiple BSSID-Index */
 #define DOT11_MNG_FMS_DESCR_ID			86	/* 11v FMS descriptor */
 #define DOT11_MNG_FMS_REQ_ID			87	/* 11v FMS request id */
 #define DOT11_MNG_FMS_RESP_ID			88	/* 11v FMS response id */
@@ -1660,12 +1664,14 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 #define DOT11_EXT_CAP_TIMBC			18
 /* BSS Transition Management support bit position */
 #define DOT11_EXT_CAP_BSSTRANS_MGMT		19
+/* Multiple BSSID */
+#define DOT11_EXT_CAP_MBSSID			22
 /* Direct Multicast Service */
 #define DOT11_EXT_CAP_DMS			26
 /* Interworking support bit position */
 #define DOT11_EXT_CAP_IW			31
 /* QoS map support bit position */
-#define DOT11_EXT_CAP_QOS_MAP		32
+#define DOT11_EXT_CAP_QOS_MAP			32
 /* service Interval granularity bit position and mask */
 #define DOT11_EXT_CAP_SI			41
 #define DOT11_EXT_CAP_SI_MASK			0x0E
@@ -1675,28 +1681,36 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 #define DOT11_EXT_CAP_WNM_NOTIF			46
 /* Operating mode notification - VHT (11ac D3.0 - 8.4.2.29) */
 #define DOT11_EXT_CAP_OPER_MODE_NOTIF		62
+/* Bit 63 - 64
+ * Indicates the maximum number of MSDUs in an A-MSDU that the STA is able to
+ * receive from a VHT STA:
+ * Set to 0 to indicate that no limit applies. (Bit64 = 0, Bit63 = 0)
+ * Set to 1 for 32. (Bit64 = 0, Bit63 = 1)
+ * Set to 2 for 16. (Bit64 = 1, Bit63 = 0)
+ * Set to 3 for 8. (Bit64 = 1, Bit63 = 1)
+ * Reserved if A-MSDU is not supported or if the STA is not an HT STA.
+*/
+#define DOT11_EXT_CAP_NUM_MSDU			63
+
 /* Fine timing measurement - D3.0 */
 #define DOT11_EXT_CAP_FTM_RESPONDER		70
 #define DOT11_EXT_CAP_FTM_INITIATOR		71 /* tentative 11mcd3.0 */
 #define DOT11_EXT_CAP_FILS			72 /* FILS Capability */
 /* TWT support */
-#define DOT11_EXT_CAP_TWT_REQUESTER		75
-#define DOT11_EXT_CAP_TWT_RESPONDER		76
+#define DOT11_EXT_CAP_TWT_REQUESTER		77
+#define DOT11_EXT_CAP_TWT_RESPONDER		78
+/* Multiple BSSID support, Complete List of NonTxBSSID Profiles (11ax D4.0) */
+#define DOT11_EXT_CAP_COMPLETE_NONTXBSSID_PROF	80
+
 /* TODO: Update DOT11_EXT_CAP_MAX_IDX to reflect the highest offset.
  * Note: DOT11_EXT_CAP_MAX_IDX must only be used in attach path.
  *       It will cause ROM invalidation otherwise.
+ * Note: This is highest bit index + 1, as bits counting start at 0.
  */
-#define DOT11_EXT_CAP_MAX_IDX	76
+#define DOT11_EXT_CAP_MAX_IDX			81
 
-#ifdef WL_FTM
-#define DOT11_EXT_CAP_MAX_BIT_IDX		95	/* !!!update this please!!! */
-#else
-#define DOT11_EXT_CAP_MAX_BIT_IDX		62	/* !!!update this please!!! */
-#endif // endif
-/* extended capability */
-#ifndef DOT11_EXTCAP_LEN_MAX
-#define DOT11_EXTCAP_LEN_MAX ((DOT11_EXT_CAP_MAX_BIT_IDX + 8) >> 3)
-#endif // endif
+#define DOT11_EXTCAP_LEN_MAX			((DOT11_EXT_CAP_MAX_IDX + 7) >> 3)
+
 BWL_PRE_PACKED_STRUCT struct dot11_extcap {
 	uint8 extcap[DOT11_EXTCAP_LEN_MAX];
 } BWL_POST_PACKED_STRUCT;
@@ -1831,6 +1845,8 @@ typedef struct dot11_oper_mode_notif_ie dot11_oper_mode_notif_ie_t;
 #define DOT11_PUB_ACTION_GAS_CB_REQ	12	/* GAS Comeback Request */
 #define DOT11_PUB_ACTION_FTM_REQ	32		/* FTM request */
 #define DOT11_PUB_ACTION_FTM		33		/* FTM measurement */
+#define DOT11_PUB_ACTION_FTM_REQ_TRIGGER_START	1u	/* FTM request start trigger */
+#define DOT11_PUB_ACTION_FTM_REQ_TRIGGER_STOP	0u	/* FTM request stop trigger */
 
 /* Block Ack action types */
 #define DOT11_BA_ACTION_ADDBA_REQ	0	/* ADDBA Req action frame type */
@@ -2779,6 +2795,7 @@ typedef struct dot11_rrm_cap_ie dot11_rrm_cap_ie_t;
 #endif /* WL11K_AP */
 #define DOT11_RRM_CAP_CIVIC_LOC_ENAB		(1 << (DOT11_RRM_CAP_CIVIC_LOC - 32))
 #define DOT11_RRM_CAP_IDENT_LOC_ENAB		(1 << (DOT11_RRM_CAP_IDENT_LOC - 32))
+#define DOT11_RRM_CAP_FTM_RANGE_ENAB		(1 << (DOT11_RRM_CAP_FTM_RANGE - 32))
 #else
 #define DOT11_RRM_CAP_LINK_ENAB			0
 #define DOT11_RRM_CAP_FM_ENAB			0
@@ -2793,6 +2810,7 @@ typedef struct dot11_rrm_cap_ie dot11_rrm_cap_ie_t;
 #define DOT11_RRM_CAP_MPTI_ENAB			0
 #define DOT11_RRM_CAP_CIVIC_LOC_ENAB		0
 #define DOT11_RRM_CAP_IDENT_LOC_ENAB		0
+#define DOT11_RRM_CAP_FTM_RANGE_ENAB		0
 #endif /* WL11K_ALL_MEAS */
 #ifdef WL11K_NBR_MEAS
 #define DOT11_RRM_CAP_NEIGHBOR_REPORT_ENAB	(1 << DOT11_RRM_CAP_NEIGHBOR_REPORT)
@@ -3487,6 +3505,7 @@ typedef struct dot11_ngbr_bss_term_dur_se dot11_ngbr_bss_term_dur_se_t;
 #define DOT11_NGBR_BSS_TERM_DUR_SE_LEN	10
 
 /* Neighbor Report BSSID Information Field */
+#define DOT11_NGBR_BI_REACHABILTY_NOTR	0x0001
 #define DOT11_NGBR_BI_REACHABILTY_UNKN	0x0002
 #define DOT11_NGBR_BI_REACHABILTY	0x0003
 #define DOT11_NGBR_BI_SEC		0x0004
@@ -3772,6 +3791,19 @@ typedef struct d11cnt {
 
 #define BRCM_PROP_OUI		"\x00\x90\x4C"
 
+/* xxx Broadcom Proprietary OUI type list. Please update below twiki page when adding a new type.
+ * xxx Twiki http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/WlBrcmPropIE
+ */
+/* xxx The following BRCM_PROP_OUI types are currently in use (defined in
+ * relevant subsections). Each of them will be in a separate proprietary(221) IE
+ * #define RWL_WIFI_DEFAULT		0
+ * #define SES_VNDR_IE_TYPE		1   (defined in src/ses/shared/ses.h)
+ * #define VHT_FEATURES_IE_TYPE  		4
+ * #define RWL_WIFI_FIND_MY_PEER		9
+ * #define RWL_WIFI_FOUND_PEER		10
+ * #define PROXD_IE_TYPE			11
+ */
+
 #define BRCM_FTM_IE_TYPE			14
 
 /* #define HT_CAP_IE_TYPE			51
@@ -3801,6 +3833,10 @@ enum {
 	BRCM_FTM_VS_INITIATOR_RPT_SUBTYPE = 1,	/* FTM Initiator Report */
 	BRCM_FTM_VS_COLLECT_SUBTYPE = 2,	/* FTM Collect debug protocol */
 };
+
+/* xxx Action frame type for ULB
+ * #define BRCM_ULB_AF_TYPE		15
+ */
 
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
 /*
@@ -3891,6 +3927,11 @@ typedef	struct brcm_ie brcm_ie_t;
 #define BRF_PROP_11N_MCS	0x10	/* re-use afterburner bit */
 #define BRF_MEDIA_CLIENT	0x20	/* re-use afterburner bit to indicate media client device */
 
+/**
+ * xxx Support for Broadcom proprietary HT MCS rates. Re-uses afterburner bits since
+ * afterburner is not used anymore. Checks for BRF_ABCAP to stay compliant with 'old'
+ * images in the field.
+ */
 #define GET_BRF_PROP_11N_MCS(brcm_ie) \
 	(!((brcm_ie)->flags & BRF_ABCAP) && ((brcm_ie)->flags & BRF_PROP_11N_MCS))
 
@@ -4466,6 +4507,8 @@ typedef struct vht_features_ie_hdr vht_features_ie_hdr_t;
 #define WPA2_OUI_LEN		3		/* WPA2 OUI length */
 #define WPA2_VERSION		1		/* WPA2 version */
 #define WPA2_VERSION_LEN	2		/* WAP2 version length */
+#define WPA3_OUI               "\x50\x6F\x9A"   /* WPA3 OUI */
+#define WPA3_OUI_LEN		3		/* WPA3 OUI length */
 
 /* ************* WPS definitions. ************* */
 #define WPS_OUI			"\x00\x50\xF2"	/* WPS OUI */
@@ -4521,8 +4564,11 @@ typedef struct vht_features_ie_hdr vht_features_ie_hdr_t;
 #define RSN_AKM_SHA256_1X	5	/* SHA256 key derivation, using 802.1X */
 #define RSN_AKM_SHA256_PSK	6	/* SHA256 key derivation, using Pre-shared Key */
 #define RSN_AKM_TPK		7	/* TPK(TDLS Peer Key) handshake */
+#define RSN_AKM_SAE_PSK		8	/* AKM for SAE with 4-way handshake */
+#define RSN_AKM_SAE_FBT		9	/* AKM for SAE with FBT */
 #define RSN_AKM_FILS_SHA256	14	/* SHA256 key derivation, using FILS */
 #define RSN_AKM_FILS_SHA384	15	/* SHA384 key derivation, using FILS */
+#define RSN_AKM_DPP		2       /* DPP */
 
 /* OSEN authenticated key managment suite */
 #define OSEN_AKM_UNSPECIFIED	RSN_AKM_UNSPECIFIED	/* Over 802.1x */
@@ -4619,6 +4665,19 @@ BWL_PRE_PACKED_STRUCT struct dot11_gtk_ie {
 	uint8 data[1];
 } BWL_POST_PACKED_STRUCT;
 typedef struct dot11_gtk_ie dot11_gtk_ie_t;
+
+/** IGTK ie */
+BWL_PRE_PACKED_STRUCT struct dot11_igtk_ie {
+	uint8 sub_id;
+	uint8 len;
+	uint16 key_id;
+	uint8 pn[6];
+	uint8 key_len;
+	uint8 key[16];
+} BWL_POST_PACKED_STRUCT;
+typedef struct dot11_igtk_ie dot11_igtk_ie_t;
+
+#define DOT11_IGTK_LEN 25	/* Fixed length */
 
 /** Management MIC ie */
 BWL_PRE_PACKED_STRUCT struct mmic_ie {
@@ -5034,6 +5093,17 @@ BWL_PRE_PACKED_STRUCT struct dot11_ftm_vs_ie {
 } BWL_POST_PACKED_STRUCT;
 typedef struct dot11_ftm_vs_ie dot11_ftm_vs_ie_t;
 
+/* same as payload of dot11_ftm_vs_ie.
+* This definition helps in having struct access
+* of pay load while building FTM VS IE from other modules(NAN)
+*/
+BWL_PRE_PACKED_STRUCT struct dot11_ftm_vs_ie_pyld {
+	uint8 sub_type;					/* BRCM_FTM_IE_TYPE (or Customer) */
+	uint8 version;
+	ftm_vs_tlv_t	tlvs[1];
+} BWL_POST_PACKED_STRUCT;
+typedef struct dot11_ftm_vs_ie_pyld dot11_ftm_vs_ie_pyld_t;
+
 /* ftm vs api version */
 #define BCM_FTM_VS_PARAMS_VERSION 0x01
 
@@ -5045,7 +5115,8 @@ enum {
 	FTM_VS_TLV_SEC_PARAMS = 3,		/* security parameters (in either) */
 	FTM_VS_TLV_SEQ_PARAMS = 4,		/* toast parameters (FTM_REQ, BRCM proprietary) */
 	FTM_VS_TLV_MF_BUF = 5,			/* multi frame buffer - may span ftm vs ie's */
-	FTM_VS_TLV_TIMING_PARAMS = 6            /* timing adjustments */
+	FTM_VS_TLV_TIMING_PARAMS = 6,            /* timing adjustments */
+	FTM_VS_TLV_MF_STATS_BUF = 7		/* multi frame statistics buffer */
 	/* add additional types above */
 };
 

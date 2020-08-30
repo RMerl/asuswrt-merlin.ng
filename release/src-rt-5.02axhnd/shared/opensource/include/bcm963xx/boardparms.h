@@ -1252,6 +1252,23 @@ enum pmd_polarity
 #define BP_DDR_CONFIG_DEBUG             (1 << 30)
 #define BP_DDR_CONFIG_OVERRIDE          (1 << 31)
 
+#if defined(_BCM947189_) || defined(CONFIG_BCM947189)
+/*only meaningful for 47189*/
+/*ddr enable half TREF */
+#define BP_DDR_HALF_TREF_MASK           0x100000
+#define BP_DDR_HALF_TREF_SHIFT          20
+#define BP_DDR_HALF_TREF                (1 << BP_DDR_HALF_TREF_SHIFT)
+
+/*ddr rRFC */
+#define BP_DDR_TRFC_MASK                0xe00000
+#define BP_DDR_TRFC_SHIFT               21
+#define BP_DDR_TRFC_90NS                (1 << BP_DDR_TRFC_SHIFT) 
+#define BP_DDR_TRFC_110NS               (2 << BP_DDR_TRFC_SHIFT) 
+#define BP_DDR_TRFC_160NS               (3 << BP_DDR_TRFC_SHIFT) 
+#define BP_DDR_TRFC_260NS               (4 << BP_DDR_TRFC_SHIFT) 
+#define BP_DDR_TRFC_350NS               (5 << BP_DDR_TRFC_SHIFT) 
+#endif
+
 #define BP_MAX_ATTACHED_PORTS          16
 
 #define BP_BTN_ID_NONE              0xFF

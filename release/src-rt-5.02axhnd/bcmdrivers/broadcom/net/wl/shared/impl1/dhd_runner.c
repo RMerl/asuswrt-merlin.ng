@@ -55,8 +55,7 @@
 #include <wlan_shared_defs.h>
 
 #if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
-#include <linux/bcm_log.h>
-#include <spdsvc_defs.h>
+#include <bcm_spdsvc.h>
 static bcmFun_t *dhd_runner_spdsvc_transmit = NULL;
 #endif
 
@@ -350,8 +349,8 @@ const char *dhd_flowring_policy_id_str[] = {"global", "intfidx", "clients",
 	"aclist", "maclist", "dot11ac" };
 
 #define DHD_RNR_TXPOST_MAX_ITEM              2048
-/* Default physical flow ring size when runner backup queues are enabled */
-#define DHD_RNR_TXPOST_PHY_RING_SIZE         512
+/* Default physical flow ring size when runner backup queues are enabled - per access category*/
+const uint16 dhd_flowring_phy_ring_size_defaults[] = { 512, 1024, 512, 512, 512 };
 
 #define DHD_RNR_TXPOST_AC_BK_MAX_ITEM        (DHD_RNR_TXPOST_MAX_ITEM / 2)
 #define DHD_RNR_TXPOST_AC_BE_MAX_ITEM        (DHD_RNR_TXPOST_MAX_ITEM)
@@ -501,6 +500,10 @@ typedef struct dhd_runner_flowmgr
 #if defined(RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT)
 #define RNR_DHD_HLPR_MSGRINGFRMT
 #endif /* RDPA_DHD_HELPER_FEATURE_MSGFORMAT_SUPPORT */
+
+#if defined(RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT)
+#define RNR_DHD_HLPR_FFRD
+#endif /*  RDPA_DHD_HELPER_FEATURE_FAST_FLOWRING_DELETE_SUPPORT */
 
 #if defined(MSGBUF_WI_COMPACT) && defined(RNR_DHD_HLPR_MSGRINGFRMT)
 /*
@@ -722,7 +725,7 @@ dhd_runner_iovar_fn_t * dhd_rnr_iovar_table[DHD_RNR_MAX_IOVARS][2] = {
 	},
 };
 
-static int dhd_rnr_mcast_obj_ref_cnt = 0;
+static int dhd_rnr_mcast_obj_ref_cnt = -1;
 
 /*
  * +----------------------------------------------------------------------------
@@ -968,9 +971,9 @@ static int dhd_runner_skb_get(dhd_runner_hlp_t *dhd_hlp, rdpa_cpu_port port,
 {
 	int rc;
 
-#if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)   
-    uint32_t flow_key = 0;
-    fc_class_ctx_t fc_key;
+#if defined(CONFIG_BCM_FCACHE_CLASSIFICATION_BYPASS)
+	uint32_t flow_key = 0;
+	fc_class_ctx_t fc_key;
 #endif
 
 	rc = rdpa_cpu_packet_get(port, queue, info);
@@ -1956,16 +1959,18 @@ dhd_runner_init(dhd_runner_hlp_t *dhd_hlp, struct pci_dev *pci_dev)
 
 	dhd_hlp->dhd_mcast_obj = NULL;
 	rc = rdpa_wlan_mcast_get(&(dhd_hlp->dhd_mcast_obj));
-	if (rc)
+	if (rc && dhd_rnr_mcast_obj_ref_cnt < 0)
 	{
 	    /* Create one mcast object for all radios */
 	    rc = bdmf_new_and_set(rdpa_wlan_mcast_drv(), NULL, wlan_mcast_attrs,
 	        &dhd_hlp->dhd_mcast_obj);
 	    if (rc)
 	        DHD_ERROR(("%s: MCAST HANDLER FAILURE  %d\n", __FUNCTION__, rc));
+	    else
+	        dhd_rnr_mcast_obj_ref_cnt = 0;
 	}
 
-	if (!rc) {
+	if (!rc && (dhd_rnr_mcast_obj_ref_cnt >= 0)) {
 	    dhd_rnr_mcast_obj_ref_cnt++;
 	}
 
@@ -2127,6 +2132,10 @@ dhd_helper_attach(dhd_runner_hlp_t *dhd_hlp, void *dhd)
 	dhd_hlp->rnr_sup_feat.hwawkup = 1;
 #endif /* RNR_DHD_HLPR_HWA_WAKEUP */
 
+#if defined(RNR_DHD_HLPR_FFRD)
+	dhd_hlp->rnr_sup_feat.ffrd = 1;
+#endif /* RNR_DHD_HLPR_FFRD */
+
 	return 0;
 }
 
@@ -2141,11 +2150,13 @@ dhd_helper_detach(dhd_runner_hlp_t *dhd_hlp)
 	    bdmf_destroy(dhd_hlp->dhd_helper_obj);
 
 	if (dhd_hlp->dhd_mcast_obj) {
-	    if (dhd_rnr_mcast_obj_ref_cnt == 1) {
-	        bdmf_destroy(dhd_hlp->dhd_mcast_obj);
+	    if (dhd_rnr_mcast_obj_ref_cnt > 0) {
+	        if (dhd_rnr_mcast_obj_ref_cnt == 1) {
+	            bdmf_destroy(dhd_hlp->dhd_mcast_obj);
+	        }
+	        dhd_rnr_mcast_obj_ref_cnt--;
 	    }
 	    dhd_hlp->dhd_mcast_obj = NULL;
-	    dhd_rnr_mcast_obj_ref_cnt--;
 	}
 }
 
@@ -3103,10 +3114,28 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	        break;
 
 	    /* Host notifies Runner to flush a flowring */
-	    case H2R_FLRING_FLUSH_NOTIF: /* arg1:flowid [2..N] */
-	        DHD_TRACE(("H2R_FLRING_FLUSH_NOTIF flowring<%d>\n", (int)arg1));
+	    case H2R_FLRING_FLUSH_NOTIF: /* arg1:flowid [2..N] arg2:rd_idx [0..0xfffe, 0xffff] */
+	        DHD_TRACE(("H2R_FLRING_FLUSH_NOTIF flowring<%d> data<0x%x>\n",
+	            (int)arg1, (uint16)arg2));
 
-	        rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, arg1);
+#if defined(RNR_DHD_HLPR_FFRD)
+	        {
+	            rdpa_dhd_ffd_data_t data;
+
+	            data.flowring_idx = arg1;
+	            data.read_idx = arg2;
+	            data.read_idx_valid = (arg2 < 0xFFFF) ? 1 : 0;
+	            rc = rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, (bdmf_number)data.u32);
+	        }
+#else /* !RNR_DHD_HLPR_FFRD */
+	        rc = rdpa_dhd_helper_flush_set(dhd_hlp->dhd_helper_obj, arg1);
+#endif /* !RNR_DHD_HLPR_FFRD */
+
+	        if (rc != 0) {
+	            DHD_ERROR(("dor%d rdpa_dhd_helper_flush_set(0x%p, %d) returned %d\r\n",
+	                dhd_hlp->dhd->unit, &dhd_hlp->dhd_helper_obj, (int)arg1, rc));
+	            return BCME_ERROR;
+	        }
 	        break;
 
 	    /* Host notifies Runner to configure aggregation */
@@ -3304,6 +3333,41 @@ dhd_runner_notify(struct dhd_runner_hlp *dhd_hlp,
 	                    dhd_hlp->dhd->unit, dhd_hlp->dhd_init_cfg.flow_ring_format);
 	            }
 #endif /* RNR_DHD_HLPR_MSGRINGFRMT */
+	        }
+	        break;
+
+	    /*
+	     * Host notifies Runner of PCIE IPC Capabilities (DHD) for negotiation
+	     *
+	     * arg1 (in):     Host Capabilities1 mask (uint32)
+	     * arg2 (in/out): Pointer to DHD capabilities1 (in) DoR capabilities1 (out)
+	     *
+	     * Parse for the dependant capabilities and enable corresponding features if runner
+	     * support them. Send back all the enabled capabilities supported by DoR
+	     *
+	     * Note: Currently fast flow ring delete cap is supported, can be exteneded to others
+	     *       in future.
+	     */
+	    case H2R_PCIE_IPC_CAP1_NOTIF:
+	        DHD_TRACE(("H2R_PCIE_IPC_CAP1_NOTIF cap_mask <0x%x> cap <0x%x>\n",
+	            (uint32)arg1, *(uint32*)arg2));
+	        if (arg1) {
+	            uint32 hcap = arg1 & (*(uint32*)arg2);
+	            uint32 rcap = 0;
+
+	            if (hcap) {
+#if defined(PCIE_IPC_HCAP1_FAST_DELETE_RING)
+	                if (hcap & PCIE_IPC_HCAP1_FAST_DELETE_RING) {
+	                    if (dhd_hlp->rnr_sup_feat.ffrd) {
+	                        dhd_hlp->rnr_en_feat.ffrd = 1;
+	                        rcap |= PCIE_IPC_HCAP1_FAST_DELETE_RING;
+	                    }
+	                }
+#endif /* PCIE_IPC_HCAP1_FAST_DELETE_RING */
+	            }
+
+	            /* return the dor capabilities back */
+	            *(uint32*)arg2 = rcap;
 	        }
 	        break;
 
@@ -3579,12 +3643,10 @@ bkupq:
 
 #if defined(RNR_DHD_HLPR_BKUPQUEUE)
 	{
+        /* If nvram profile set dhd?_rnr_flowring_physize, then that overrides the defaults */
+        /* Exit from this section with phy_ring_size set to 0 means use the defaults */
 	    int size;
-
-	    phy_ring_size = DHD_RNR_TXPOST_PHY_RING_SIZE;
-
 	    length = dhd_runner_key_get(radio_idx, DHD_RNR_KEY_PHY_RING_SIZE, buff, sizeof(buff));
-
 	    if (length != 0) {
 
 	        sscanf(buff, "%d", &size);
@@ -3592,14 +3654,6 @@ bkupq:
 	            /* valid physical ring size setting in nvram */
 	            /* Enable backup queues */
 	            dhd_hlp->rnr_en_feat.bkupq = 1;
-
-	            /* cap the size to profile's least size */
-	            for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
-	                if (profile->items[ac] >= size)
-	                    continue;
-	                size = profile->items[ac];
-	                RLOG("%s: Adjust phy_ring_size to %d\r\n", __FUNCTION__, size);
-	            }
 	            phy_ring_size = size;
 	        } else {
 	            dhd_hlp->rnr_en_feat.bkupq = 0;
@@ -3609,7 +3663,19 @@ bkupq:
 #endif /* RNR_DHD_HLPR_BKUPQUEUE */
 
 	for (ac = wme_ac_bk; ac <= wme_ac_max; ac++) {
-	    flowmgr->phy_items[ac] = DHD_RNR_BKUPQ(dhd_hlp) ? phy_ring_size : profile->items[ac];
+		if (DHD_RNR_BKUPQ(dhd_hlp)) {
+            int local_ring_phy_size = phy_ring_size ? phy_ring_size : dhd_flowring_phy_ring_size_defaults[ac];
+            if (local_ring_phy_size <= profile->items[ac]) {
+                flowmgr->phy_items[ac] = local_ring_phy_size;
+            }
+            else {
+                flowmgr->phy_items[ac] = profile->items[ac];
+                RLOG("%s: Adjust phy_ring_size for %s to %d\r\n", __FUNCTION__, dhd_wme_ac_str[ac], profile->items[ac]);
+            }
+		}
+		else {
+			flowmgr->phy_items[ac] = profile->items[ac];
+		}
 	}
 
 	RLOG("%s: N+M profile = %1d %02d:%04d/%04d %02d:%04d/%04d"
@@ -4499,7 +4565,7 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 
 	/* Status */
 	bcm_bprintf(b, "\nDHD Runner: \n");
-	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s\n",
+	bcm_bprintf(b, "  Status     : %s %s %s %s %s %s %s %s %s\n",
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, rxoffl),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, txcmpl2host),
@@ -4507,7 +4573,8 @@ dhd_runner_iovar_dump(dhd_runner_hlp_t *dhd_hlp, char *buff,
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, lbraggr),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, msgringformat),
 	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, bkupq),
-	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, hwawkup));
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, hwawkup),
+	    RNR_DHD_HLPR_FEATURE_STS_STRING(dhd_hlp, ffrd));
 	bcm_bprintf(b, "             : cpuqdpc %d\n", dhd_hlp->proc_cpuq_in_dpc);
 
 	/* Profile */

@@ -590,7 +590,10 @@ void clk_divide_50mhz_to_25mhz(void)
 
     ret = ReadBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(xtal_control), &data);
     if (ret)
+    {
         printk("Failed to ReadBPCMRegister CHIP_CLKRST block CLKRST_XTAL_CNTL. Error=%d\n", ret);
+        return;
+    }
 
     /* Divide clock by 2. From 50mhz to 25mhz */
     data |= (0x1<<24);
@@ -601,6 +604,31 @@ void clk_divide_50mhz_to_25mhz(void)
 }
 #ifndef _CFE_
 EXPORT_SYMBOL(clk_divide_50mhz_to_25mhz);
+#endif
+#endif
+
+#if defined(CONFIG_BCM96858) || defined(CONFIG_BCM96846) || defined(CONFIG_BCM96856)
+#define CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV (17)
+void disable_25mhz_clk_to_pmd(void)
+{
+    uint32 data;
+    int ret;
+
+    ret = ReadBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(xtal_control), &data);
+    if (ret)
+    {
+        printk("Failed to ReadBPCMRegister CHIP_CLKRST block CLKRST_XTAL_CNTL. Error=%d\n", ret);
+        return;
+    }
+
+    data |= (0x1 << CLOCK_RESET_XTAL_CONTROL_BIT_PD_DRV);
+
+    ret = WriteBPCMRegister(PMB_ADDR_CHIP_CLKRST, CLKRSTBPCMRegOffset(xtal_control), data);
+    if (ret)
+        printk("Failed to writeBPCMRegister CHIP_CLKRST block CLKRST_XTAL_CNTL. Error=%d\n", ret);
+}
+#ifndef _CFE_
+EXPORT_SYMBOL(disable_25mhz_clk_to_pmd);
 #endif
 #endif
 

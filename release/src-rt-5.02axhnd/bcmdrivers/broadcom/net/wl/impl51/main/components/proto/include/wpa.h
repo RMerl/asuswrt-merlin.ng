@@ -1,7 +1,7 @@
 /*
  * Fundamental types and constants relating to WPA
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wpa.h 677908 2017-01-05 18:59:06Z $
+ * $Id: wpa.h 774214 2019-04-16 07:03:49Z $
  */
 
 #ifndef _proto_wpa_h_
@@ -108,6 +108,36 @@ typedef BWL_PRE_PACKED_STRUCT struct
 	wpa_pmkid_t list[1];
 } BWL_POST_PACKED_STRUCT wpa_pmkid_list_t;
 
+/* WPA rsn cap */
+typedef	BWL_PRE_PACKED_STRUCT struct
+{
+	uint16 cap;
+} BWL_POST_PACKED_STRUCT wpa_rsncap_t;
+
+/* WPA akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_akm_cap_t;
+
+/* WPA unicast, akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_ucast_t ucast;
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_ucast_akm_cap_t;
+
+/* WPA multicast, unicast, akm suite and rsn cap */
+typedef BWL_PRE_PACKED_STRUCT struct
+{
+	wpa_suite_mcast_t mcast;
+	wpa_suite_ucast_t ucast;
+	wpa_suite_ucast_t akm;
+	wpa_rsncap_t  rsn_cap;
+} BWL_POST_PACKED_STRUCT wpa_def_suite_t;
+
 /* WPA cipher suites */
 #define WPA_CIPHER_NONE		0	/* None */
 #define WPA_CIPHER_WEP_40	1	/* WEP (40-bit) */
@@ -117,7 +147,6 @@ typedef BWL_PRE_PACKED_STRUCT struct
 #define WPA_CIPHER_WEP_104	5	/* WEP (104-bit) */
 #define WPA_CIPHER_BIP		6	/* WEP (104-bit) */
 #define WPA_CIPHER_TPK		7	/* Group addressed traffic not allowed */
-
 #define WPA_CIPHER_AES_GCM	8	/* AES (GCM) */
 #define WPA_CIPHER_AES_GCM256	9	/* AES (GCM256) */
 

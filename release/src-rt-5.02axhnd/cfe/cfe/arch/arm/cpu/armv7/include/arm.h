@@ -162,38 +162,6 @@ var:	.word	val
 #define CR_AFE	(1 << 29)	/* Access flag enable			*/
 #define CR_TE	(1 << 30)	/* Thumb exception enable		*/
 
-/*  MMU and TT (Translation Tables) definitions 
-
-   WBWA == Write-Back, Write-Allocate
-   WBNWA == Write-Back, No Write-Allocate
-   WTNWA == Write-Through, No Write-Allocate
-   NC == Non-Cacheable
-   SO == Strongly-Ordered
-   SD == Sharable-Device
-   NSD == Non-Sharable-Device
-*/
-  
-#define DESC_DOMAIN(x)          ((x << 5) & 0x000001E0)
-
-// section descriptor definitions
-#define SECTION_AP  0xc00
-#define SECTION_SHAREABLE       (1 << 16)
-#define SECTION_SUPER_DESC      (1 << 18)
-#define SECTION_DESC_NS         (1 << 19) 
-// TEX[2] = 1
-#define SECTION_OUTER_NC_INNER_WBWA         0x00004006
-#define SECTION_OUTER_WBNWA_INNER_WBWA      0x00007006
-#define SECTION_OUTER_WTNWA_INNER_WBWA      0x00006006
-#define SECTION_OUTER_WBWA_INNER_NC         0x00005002
-// TEX[2] = 0, OUTER & INNER are same all the time
-#define SECTION_OUTER_WBWA_INNER_WBWA       0x0000100E
-#define SECTION_OUTER_NSD_INNER_NSD         0x00002002
-#define SECTION_OUTER_NC_INNER_NC           0x00001002
-#define SECTION_OUTER_WTNWA_INNER_WTNWA     0x0000000A
-#define SECTION_OUTER_WBNWA_INNER_WBNWA     0x0000000E
-#define SECTION_OUTER_SO_INNER_SO           0x00000002
-#define SECTION_OUTER_SD_INNER_SD           0x00000006
-
 #define isb() __asm__ __volatile__ ("isb")
 #define nop() __asm__ __volatile__("mov\tr0,r0\t@ nop\n\t")
 

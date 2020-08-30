@@ -46,7 +46,7 @@
 
 #define BLOG_RULE_VERSION      "v1.0"
 
-#define BLOG_RULE_VLAN_TAG_MAX  2
+#define BLOG_RULE_VLAN_TAG_MAX  3
 
 #define BLOG_RULE_ACTION_MAX    16
 

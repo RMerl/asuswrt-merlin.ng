@@ -115,6 +115,7 @@ typedef enum
     RDPA_IC_TYPE_QOS,     /**< Classification type QoS */
     RDPA_IC_TYPE_GENERIC_FILTER, /**< Classification type Generic Filter */
     RDPA_IC_TYPE_IP_FLOW = RDPA_IC_TYPE_GENERIC_FILTER,
+    RDPA_IC_TYPE_NUM = RDPA_IC_TYPE_GENERIC_FILTER,
 } rdpa_ic_type;
 
 /** Ingress classification rule type */
@@ -195,6 +196,7 @@ typedef enum
     rdpa_ic_act_none, /**< action none */
     rdpa_ic_act_service_q, /**< action service queue */
     rdpa_ic_act_cpu_mirroring, /**< action cpu_mirroring */
+    rdpa_ic_act_ttl  /**< action ttl \XRDP_LIMITED */
 }
 rdpa_ic_action;
 

@@ -292,6 +292,7 @@ clean:
 	if [ -e $(XZ_DIR)/Makefile ]; then $(MAKE) -C $(XZ_DIR) distclean; fi
 	$(MAKE) -C $(SECBT_DIR) clean
 	if [ -e $(LzmaAlone)/makefile.gcc ]; then $(MAKE) -C $(LzmaAlone) -f makefile.gcc clean; fi
+	find lzma457 -type f ! -name comp.cc -exec rm '-f' '{}' \;
 	$(MAKE) -C libcreduction clean
 	rm -rf  $(MTD_UTILS_DIR) 
 	rm -rf  mtd-utils-20090606 # simplify migration from older version

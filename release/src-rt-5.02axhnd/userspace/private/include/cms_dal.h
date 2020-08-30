@@ -2139,8 +2139,9 @@ CmsRet dal4in6Tunnel_add_dev2(const char* tunnelName, const char *mechanism, con
 #endif
 
 
-/** add MAP-T Interface.
+/** add MAP-T/MAP-E Interface.
  *
+ * @param mechanism      (IN) transport mode
  * @param wanIntf        (IN) associated WAN interface
  * @param lanIntf        (IN) associated LAN interface
  * @param dynamic        (IN) static or dynamic tunnel
@@ -2153,19 +2154,20 @@ CmsRet dal4in6Tunnel_add_dev2(const char* tunnelName, const char *mechanism, con
  *
  * @return CmsRet enum.
  */
-CmsRet dalMapt_add_dev2(const char *wanIntf, const char *lanIntf,
-                        UBOOL8 dynamic, const char *BRPrefix,
-                        const char *ipv6Prefix, const char *ipv4Prefix,
-                        UINT32 psidOffset, UINT32 psidLen, UINT32 psid);
+CmsRet dalMap_add_dev2(const char* mechanism, const char *wanIntf, const char *lanIntf,
+                       UBOOL8 dynamic, const char *BRPrefix,
+                       const char *ipv6Prefix, const char *ipv4Prefix,
+                       UINT32 psidOffset, UINT32 psidLen, UINT32 psid);
 
 
-/** delete a MAP-T entry.
+/** delete a MAP-T/MAP-E entry.
  *
  * @param wanIntf       (IN) associated WAN
+ * @param mode          (IN) transport mode
  *
  * @return CmsRet enum.
  **/
-CmsRet dalMapt_delete_dev2(const char* wanIntf);
+CmsRet dalMap_delete_dev2(const char* wanIntf, const char* mode);
 
 
 /** add a delegated address entry and only called by ssk.

@@ -74,6 +74,7 @@ typedef enum {
 
 bdmf_error_t drv_policer_group_init(void);
 bdmf_error_t drv_cnpl_policer_set(policer_cfg_t* policer_cfg);
+bdmf_error_t drv_cnpl_policer_clr(policer_cfg_t* policer_cfg);
 
 static inline void drv_cnpl_policer_max_cbs_get(policer_rate_size_t commited_rate, uint32_t* max_committed_burst_byte_size)
 {

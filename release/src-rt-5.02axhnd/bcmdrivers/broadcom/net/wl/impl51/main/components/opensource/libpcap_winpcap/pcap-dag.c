@@ -670,6 +670,11 @@ static int dag_activate(pcap_t* handle)
 
 #endif /* HAVE_DAG_STREAMS_API */
 
+        /* XXX Not calling dag_configure() to set slen; this is unsafe in
+	 * multi-stream environments as the gpp config is global.
+         * Once the firmware provides 'per-stream slen' this can be supported
+	 * again via the Config API without side-effects */
+
 #ifdef HAVE_DAG_STREAMS_API
 	if(dag_start_stream(handle->fd, handle->md.dag_stream) < 0) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "dag_start_stream %s: %s\n", device, pcap_strerror(errno));
@@ -916,6 +921,12 @@ dag_set_datalink(pcap_t *p, int dlt)
 static int
 dag_setnonblock(pcap_t *p, int nonblock, char *errbuf)
 {
+	/*
+	 * Set non-blocking mode on the FD.
+	 * XXX - is that necessary?  If not, don't bother calling it,
+	 * and have a "dag_getnonblock()" function that looks at
+	 * "p->md.dag_offset_flags".
+	 */
 	if (pcap_setnonblock_fd(p, nonblock, errbuf) < 0)
 		return (-1);
 #ifdef HAVE_DAG_STREAMS_API

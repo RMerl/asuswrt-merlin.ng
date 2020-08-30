@@ -4,7 +4,7 @@
  *
  * SDIO core support 1bit, 4 bit SDIO mode as well as SPI mode.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -127,6 +127,9 @@
 #define SBSDIO_Rev8_ALP_AVAIL		0x80
 #define SBSDIO_CSR_MASK			0x1F
 
+/* WAR for PR 40695: determine HT/ALP regardless of actual bit order.  Need to use
+ * before we know corerev.  (Can drop if all supported revs have same bit order.)
+ */
 #define SBSDIO_AVBITS			(SBSDIO_HT_AVAIL | SBSDIO_ALP_AVAIL)
 #define SBSDIO_ALPAV(regval)		((regval) & SBSDIO_AVBITS)
 #define SBSDIO_HTAV(regval)		(((regval) & SBSDIO_AVBITS) == SBSDIO_AVBITS)

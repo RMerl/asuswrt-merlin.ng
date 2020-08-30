@@ -2,7 +2,7 @@
  * Broadcom SiliconBackplane SDIO/PCMCIA hardware-specific
  * device core support
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sbsdpcmdev.h 616398 2016-02-01 09:37:52Z $
+ * $Id: sbsdpcmdev.h 774649 2019-05-01 13:45:54Z $
  */
 
 #ifndef	_sbsdpcmdev_h_
@@ -297,11 +297,6 @@ typedef volatile struct {
 
 /* HW frame tag */
 #define SDPCM_FRAMETAG_LEN	4	/* HW frametag: 2 bytes len, 2 bytes check val */
-
-#if !defined(NDISVER) || (NDISVER < 0x0630)
 #define SDPCM_HWEXT_LEN	8
-#else
-#define SDPCM_HWEXT_LEN	0
-#endif /* !defined(NDISVER) || (NDISVER < 0x0630) */
 
 #endif	/* _sbsdpcmdev_h_ */

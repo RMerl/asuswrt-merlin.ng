@@ -734,6 +734,11 @@ typedef struct _trio_userdef_t {
 
 static TRIO_CONST char rcsid[] = "@(#)$Id$";
 
+/*
+ * Need this to workaround a parser bug in HP C/iX compiler that fails
+ * to resolves macro definitions that includes type 'long double',
+ * e.g: va_arg(arg_ptr, long double)
+ */
 #if defined(TRIO_PLATFORM_MPEIX)
 static TRIO_CONST trio_long_double_t ___dummy_long_double = 0;
 #endif // endif
@@ -2583,6 +2588,9 @@ TRIO_ARGS5((self, wstring, flags, width, precision),
  *  of the conversion between floating-point internal representations
  *  and string representations performed by the libray routine in
  *  <stdio.h>"
+ */
+/* FIXME: handle all instances of constant long-double number (L)
+ *   and *l() math functions.
  */
 TRIO_PRIVATE void
 TrioWriteDouble
@@ -4972,6 +4980,13 @@ TRIO_ARGS2((ref, pointer),
     }
   else
     {
+      /*
+       * The subtraction of the null pointer is a workaround
+       * to avoid a compiler warning. The performance overhead
+       * is negligible (and likely to be removed by an
+       * optimizing compiler). The (char *) casting is done
+       * to please ANSI C++.
+       */
       number = (trio_uintmax_t)((char *)pointer - (char *)0);
       /* Shrink to size of pointer */
       number &= (trio_uintmax_t)-1;
@@ -5132,6 +5147,12 @@ TrioGetCollation(TRIO_NOARGS)
 }
 #endif // endif
 
+/*************************************************************************
+ * TrioGetCharacterClass
+ *
+ * FIXME:
+ *  multibyte
+ */
 TRIO_PRIVATE int
 TrioGetCharacterClass
 TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
@@ -5221,6 +5242,11 @@ TRIO_ARGS4((format, indexPointer, flagsPointer, characterclass),
 	  switch (format[index + 1])
 	    {
 	    case QUALIFIER_DOT: /* Collating symbol */
+	      /*
+	       * FIXME: This will be easier to implement when multibyte
+	       * characters have been implemented. Until now, we ignore
+	       * this feature.
+	       */
 	      for (i = index + 2; ; i++)
 		{
 		  if (format[i] == NIL)
@@ -5720,6 +5746,11 @@ TRIO_ARGS4((self, target, flags, width),
 }
 #endif /* TRIO_WIDECHAR */
 
+/*************************************************************************
+ * TrioReadGroup
+ *
+ * FIXME: characterclass does not work with multibyte characters
+ */
 TRIO_PRIVATE BOOLEAN_T
 TrioReadGroup
 TRIO_ARGS5((self, target, characterclass, flags, width),
@@ -5752,6 +5783,13 @@ TRIO_ARGS5((self, target, characterclass, flags, width),
   return TRUE;
 }
 
+/*************************************************************************
+ * TrioReadDouble
+ *
+ * FIXME:
+ *  add long double
+ *  handle base
+ */
 TRIO_PRIVATE BOOLEAN_T
 TrioReadDouble
 TRIO_ARGS4((self, target, flags, width),
@@ -5956,6 +5994,10 @@ TRIO_ARGS3((self, target, flags),
 		     POINTER_WIDTH,
 		     BASE_HEX))
     {
+      /*
+       * The strange assignment of number is a workaround for a compiler
+       * warning
+       */
       if (target)
 	*target = (char *)0 + number;
       return TRUE;

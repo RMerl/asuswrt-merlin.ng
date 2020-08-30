@@ -2,7 +2,7 @@
  * Dongle BUS interface Abstraction layer
  *   target serial buses like USB, SDIO, SPI, etc.
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dbus.h 686618 2017-02-23 07:20:43Z $
+ * $Id: dbus.h 774649 2019-05-01 13:45:54Z $
  */
 
 #ifndef __DBUS_H__
@@ -82,6 +82,25 @@ enum {
 #define DBUS_TX_RETRY_LIMIT		3		/* retries for failed txirb */
 #define DBUS_TX_TIMEOUT_INTERVAL	250		/* timeout for txirb complete, in ms */
 
+/*
+ * The max TCB/RCB data buffer size
+ * With USB RPC aggregation on,
+ *   rx buffer has to be a single big chunk memory due to dongle->host aggregation
+ *     Upper layer has to do byte copy to deaggregate the buffer to satisfy WL driver
+ *       one buffer per pkt requirement
+ *     Windows Vista may be able to use MDL to workaround this requirement
+ *   tx buffer has to copy over RPC buffer since they are managed in different domain
+ *     Without copy, DBUS and RPC has to break the encapsulation, which is not implemented
+ *     RPC aggregated buffer arrives as a chained buffers. bypte copy needs to traverse the chain
+ *     to form one continuous USB irb.
+ *   These buffer size must accomodate the MAX rpc agg size in both direction
+ *   #define BCM_RPC_TP_DNGL_AGG_MAX_BYTE
+ *   #define BCM_RPC_TP_HOST_AGG_MAX_BYTE
+ * Without USB RPC aggregation, these buffer size can be smaller like normal 2K
+ *  to fit max tcp pkt(ETH_MAX_DATA_SIZE) + d11/phy/rpc/overhead
+ *
+ * The number of buffer needed is upper layer dependent. e.g. rpc defines BCM_RPC_TP_DBUS_NTXQ
+ */
 #define DBUS_BUFFER_SIZE_TX	32000
 #define DBUS_BUFFER_SIZE_RX	24000
 
@@ -293,8 +312,6 @@ typedef struct dbus_pub {
 /*
  * FIX: Is there better way to pass OS/Host handles to DBUS but still
  *      maintain common interface for all OS??
- * Under NDIS, param1 needs to be MiniportHandle
- *  For NDIS60, param2 is WdfDevice
  * Under Linux, param1 and param2 are NULL;
  */
 extern int dbus_register(int vid, int pid, probe_cb_t prcb, disconnect_cb_t discb, void *prarg,
@@ -430,6 +447,19 @@ extern void dbus_release_fw_nvfile(void *firmware);
 #endif  /* #if defined(BCM_REQUEST_FW) */
 
 #if defined(EHCI_FASTPATH_TX) || defined(EHCI_FASTPATH_RX)
+/* XXX
+ * Include file for the ECHI fastpath optimized USB
+ * Practically all the lines below have equivalent in some structures in other include (or even
+ * source) files This violates all kind of structure and layering, but cutting through layers is
+ * what the optimization is about. The definitions are NOT literally borrowed from any GPLd code;
+ * the file is intended to be GPL-clean
+ *
+ * Note that while some resemblance between this code and GPLd code in Linux might exist, it is
+ * due to the common sibling. See FreeBSD: head/sys/dev/usb/controller/ehci.h for the source of
+ * inspiration :-)
+ *
+ * The code assumes little endian throughout
+ */
 
 #if !defined(linux)
 #error "EHCI fastpath is for Linux only."

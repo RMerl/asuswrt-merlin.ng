@@ -221,6 +221,17 @@ pcap_findalldevs(pcap_if_t **alldevsp, char *errbuf)
 			dstaddr_size = 0;
 		}
 
+		/*
+		 * If this entry has a colon followed by a number at
+		 * the end, we assume it's a logical interface.  Those
+		 * are just the way you assign multiple IP addresses to
+		 * a real interface on Linux, so an entry for a logical
+		 * interface should be treated like the entry for the
+		 * real interface; we do that by stripping off the ":"
+		 * and the number.
+		 *
+		 * XXX - should we do this only on Linux?
+		 */
 		p = strchr(ifa->ifa_name, ':');
 		if (p != NULL) {
 			/*

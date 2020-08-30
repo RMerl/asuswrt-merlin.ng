@@ -214,7 +214,7 @@
 #define DOCKEREE_NAME     "Docker"
 #define DOCKEREE_TYPE     "Docker Daemon"
 #define DOCKEREE_VENDOR   "Docker"
-#define DOCKEREE_VERSION  "17.03.1-ce"
+#define DOCKEREE_VERSION  "18.03.1-ce"
 
 /* 
  * Folder where docker images are being stored.  

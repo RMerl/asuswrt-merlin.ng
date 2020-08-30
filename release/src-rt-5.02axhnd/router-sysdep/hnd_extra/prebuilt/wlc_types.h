@@ -1,7 +1,7 @@
 /*
  * Forward declarations for commonly used wl driver structs
  *
- * Copyright (C) 2018, Broadcom. All Rights Reserved.
+ * Copyright (C) 2019, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_types.h 764693 2018-05-29 15:43:56Z $
+ * $Id: wlc_types.h 775299 2019-05-27 10:08:55Z $
  */
 
 #ifndef _wlc_types_h_
@@ -72,6 +72,7 @@ typedef struct ampdu_tx_info ampdu_tx_info_t;
 typedef struct ampdu_rx_info ampdu_rx_info_t;
 typedef struct wlc_ratesel_info wlc_ratesel_info_t;
 typedef struct ratesel_info ratesel_info_t;
+typedef struct wl_fips_info wl_fips_info_t;
 typedef struct wlc_ap_info wlc_ap_info_t;
 typedef struct cs_info cs_info_t;
 typedef struct wlc_scan_info wlc_scan_info_t;
@@ -94,7 +95,6 @@ typedef struct mchan_info mchan_info_t;
 typedef struct wowl_info wowl_info_t;
 typedef struct wowlpf_info wowlpf_info_t;
 typedef struct antsel_info antsel_info_t;
-typedef struct bmac_pmq bmac_pmq_t;
 typedef struct wmf_info wmf_info_t;
 typedef struct wlc_rrm_info wlc_rrm_info_t;
 typedef struct rm_info rm_info_t;
@@ -207,8 +207,6 @@ typedef struct wlc_nan_info wlc_nan_info_t;
 
 typedef struct wlc_wds_info wlc_wds_info_t;
 typedef struct okc_info okc_info_t;
-typedef struct wlc_aibss_info wlc_aibss_info_t;
-typedef struct wlc_ipfo_info wlc_ipfo_info_t;
 typedef struct wlc_stats_info wlc_stats_info_t;
 
 typedef struct wlc_pps_info wlc_pps_info_t;
@@ -275,7 +273,6 @@ typedef struct wl_shub_info wl_shub_info_t;
 typedef struct wlc_lq_info wlc_lq_info_t;
 typedef struct chanim_info chanim_info_t;
 
-typedef struct wlc_mesh_info wlc_mesh_info_t;
 typedef struct wlc_wlfc_info wlc_wlfc_info_t;
 
 typedef struct wlc_frag_info wlc_frag_info_t;
@@ -316,9 +313,7 @@ typedef struct wlc_ndis_info wlc_ndis_info_t;
 typedef struct wlc_join_pref wlc_join_pref_t;
 
 typedef struct wlc_scan_utils wlc_scan_utils_t;
-#ifdef ACKSUPR_MAC_FILTER
 typedef struct wlc_addrmatch_info wlc_addrmatch_info_t;
-#endif /* ACKSUPR_MAC_FILTER */
 
 typedef struct cca_chan_qual cca_chan_qual_t;
 
@@ -356,8 +351,6 @@ typedef struct wlc_stf_arb_mps_info wlc_stf_arb_mps_info_t;
 
 typedef struct wlc_tsync wlc_tsync_t;
 
-typedef struct wlc_fragdur_info wlc_fragdur_info_t;
-
 typedef struct wlc_mbo_info wlc_mbo_info_t;
 
 typedef struct wlc_rx_hc wlc_rx_hc_t;
@@ -372,7 +365,7 @@ typedef struct wlc_mbo_oce_info wlc_mbo_oce_info_t;
 
 typedef struct wlc_esp_info wlc_esp_info_t;
 
-typedef sta_info_v7_t sta_info_t;
+typedef sta_info_v8_t sta_info_t;
 
 typedef struct wl_roam_prof_band_v2 wl_roam_prof_band_t;
 typedef struct wl_roam_prof_v2 wl_roam_prof_t;
@@ -391,6 +384,8 @@ typedef struct wlc_leakyapstats_info_v1 wlc_leakyapstats_info_t;
 typedef struct wlc_chctx_info wlc_chctx_info_t;
 
 typedef struct wlc_rpsnoa_info wlc_rpsnoa_info_t;
+
+typedef struct wlc_pmq_info wlc_pmq_info_t;
 
 /* Inteface version mapping for versioned pfn structures */
 #undef PFN_SCANRESULT_VERSION
@@ -499,17 +494,18 @@ typedef wl_gscan_result_v2_1_t wl_gscan_result_t;
 typedef uint8 wlc_mbsp_sel_t;
 typedef uint8 dot11_mbsp_sel_t;
 
-#if defined(WL_AIR_IQ)
 typedef struct airiq_info airiq_info_t;
-#endif // endif
+typedef struct wlc_rx_report_info wlc_rx_report_info_t;
 
 typedef struct wl_gas_info wl_gas_info_t;
 typedef struct wl_eventq_info wl_eventq_info_t;
 
-#ifndef BME_INFO_T
-#define BME_INFO_T
-struct bme_info_s;
 typedef struct bme_info_s bme_info_t;
-#endif /* BME_INFO_T */
+typedef struct wlc_offload_s wlc_offload_t;
+
+typedef struct wlc_deauth_send_cbargs wlc_deauth_send_cbargs_t;
+typedef struct wlc_macreq_info wlc_macreq_info_t;
+typedef struct wlc_txcfg_info wlc_txcfg_info_t;
+typedef struct wlc_fifo_info wlc_fifo_info_t;
 
 #endif	/* _wlc_types_h_ */

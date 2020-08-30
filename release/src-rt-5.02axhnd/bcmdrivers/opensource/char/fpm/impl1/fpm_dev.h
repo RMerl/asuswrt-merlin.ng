@@ -55,6 +55,7 @@
 
 extern struct fpmdev *fpm;
 extern spinlock_t fpm_reg_lock;
+extern unsigned long isr_timer_period;
 
 static inline u32 fpm_reg_read(u32 *reg)
 {

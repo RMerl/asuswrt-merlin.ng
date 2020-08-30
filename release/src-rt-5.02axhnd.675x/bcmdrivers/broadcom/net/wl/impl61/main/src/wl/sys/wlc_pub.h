@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_pub.h 777291 2019-07-25 22:58:30Z $
+ * $Id: wlc_pub.h 778367 2019-08-29 12:43:32Z $
  */
 
 #ifndef _wlc_pub_h_

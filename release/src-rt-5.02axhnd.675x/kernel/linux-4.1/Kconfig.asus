@@ -1,0 +1,19 @@
+menu "ASUSWRT"
+
+choice
+	prompt "Choose Product"
+	depends on BT
+	help
+	   Choose product
+
+config RTAX95Q
+	bool "RTAX95Q"
+	default n
+
+config RTAX56_XD4
+	bool "RTAX56_XD4"
+	default n
+
+endchoice
+
+endmenu # "ASUSWRT"

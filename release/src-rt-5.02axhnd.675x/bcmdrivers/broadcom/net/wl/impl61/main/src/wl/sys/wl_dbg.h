@@ -90,7 +90,7 @@ extern int osl_wificc_logDebugIf(uint64_t flags, const char *fmt, ...);
 #define WL_PRINT(args)		do { WIFICC_LOGDEBUG(args); osl_printf args; } while (0)
 #define RELEASE_PRINT(args)	do { WL_PRINT(args); IO8Log args; } while (0)
 #else
-#define WL_PRINT(args)		do { WL_TIMESTAMP(); printf args; } while (0)
+#define WL_PRINT(args)		do { if (wl_msg_level & WL_ERROR_VAL) { WL_TIMESTAMP(); printf args;} } while (0)
 #endif /* defined(MACOSX) && (VERSION_MAJOR > 9) */
 
 #if defined(EVENT_LOG_COMPILE) && defined(WLMSG_SRSCAN)
@@ -149,7 +149,7 @@ extern int osl_wificc_logDebugIf(uint64_t flags, const char *fmt, ...);
 #define	WL_TMP(args)		do {if (wl_msg_level & WL_TMP_VAL) WL_PRINT(args);} while (0)
 #define	WL_OID(args)		do {if (wl_msg_level & WL_OID_VAL) WL_PRINT(args);} while (0)
 #define	WL_RATE(args)		do {if (wl_msg_level & WL_RATE_VAL) WL_PRINT(args);} while (0)
-#define WL_ASSOC(args)		do {if (wl_msg_level & WL_ASSOC_VAL) WL_PRINT(args); \
+#define WL_ASSOC(args)		do {if (wl_msg_level & WL_ASSOC_VAL) { WL_TIMESTAMP(); printf args; } \
 					else WIFICC_LOGDEBUG(args);} while (0)
 #define	WL_PRUSR(m, b, n)	do {if (wl_msg_level & WL_PRUSR_VAL) prhex(m, b, n);} while (0)
 #define WL_PS(args)		do {if (wl_msg_level & WL_PS_VAL) WL_PRINT(args);} while (0)

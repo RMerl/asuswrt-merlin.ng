@@ -161,6 +161,7 @@ void brcm_add_ft_ds_sta(struct wpa_state_machine *sm,
 		return;
 	}
 
+	memcpy(resp_ies, "fbt_ds_add_sta", cmd_len);
 	ft_authresp = (wlc_fbt_auth_resp_t *) (resp_ies + cmd_len);
 	memcpy(ft_authresp->macaddr, addr, ETHER_ADDR_LEN);
 	memcpy(ft_authresp->pmk_r1_name, sm->pmk_r1_name, WPA_PMK_NAME_LEN);

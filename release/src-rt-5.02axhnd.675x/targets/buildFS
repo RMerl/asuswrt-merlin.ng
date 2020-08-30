@@ -417,6 +417,19 @@ $BUSYBOX_DIR/examples/depmod.pl -k $LINUXDIR/vmlinux -b $INSTALL_DIR/../fs/lib/m
 mkdir -p ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
 cp ${HND_SRC}/bcmdrivers/broadcom/net/wl/impl${BCM_WLIMPL}/sys/src/dongle/bin/43684b0/rtecdc.bin ${TARGET_FS}/rom/etc/wlan/dhd/43684b0
 
+if [ "$BUILD_NAME" == "RT-AX55" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/bcm_usb.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/extra/dhd.ko
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/scsi
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/4.1.52/kernel/drivers/usb
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/dhd/43684b0
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/MAP-AX6600.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
+fi
+
 # strip userspace binaries is sstrip is "enabled"
 # sstrip is set to /bin/touch if BUILD_GDBSERVER=y
 if [ "$SSTRIP" != "/bin/touch" ]; then

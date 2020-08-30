@@ -158,6 +158,8 @@ wl_stats () {
     display_cmd_op "RATE: wl -i $IFNAME rate" "$WLCMD -i $IFNAME rate"
     display_cmd_op "BAND: wl -i $IFNAME band" "$WLCMD -i $IFNAME band"
     display_cmd_op "SCAN RESULTS: wl -i $IFNAME scanresults" "$WLCMD -i $IFNAME scanresults"
+    display_cmd_op "MACMODE DUMP: wl -i $IFNAME macmode" "$WLCMD -i $IFNAME macmode"
+    display_cmd_op "MAC DUMP: wl -i $IFNAME mac" "$WLCMD -i $IFNAME mac"
 }
 
 dhd_stats () {

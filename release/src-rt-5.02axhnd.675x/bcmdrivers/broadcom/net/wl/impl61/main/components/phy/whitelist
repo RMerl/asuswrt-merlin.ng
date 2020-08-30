@@ -70,3 +70,41 @@ JIRA:BCAWLAN-210531 [EAP] [Proxd] [phy] Fixes for Handling subband cases
 JIRA:BCAWLAN-210381 [6878] Enable and configure packet preemption
 JIRA:BCAWLAN-210398 [EAP] Skipping assert when FIPS capable SU ucode is loaded
 JIRA:BCAWLAN-210616 [43684] Un-phydeaf before unsuspend mac for transmitting pkt
+JIRA:BCAWLAN-210553 Add Support for ch 167/40 (1 of 2 - PHY)
+JIRA:BCAWLAN-210787 Stop phycal if edcrs is high to pass EU ETSI
+JIRA:BCAWLAN-208103 [63178] Bring-up implicit beamforming
+JIRA:BCAWLAN-210142 [6878] Update PAPD loopback settings - remove board dependency
+JIRA:BCAWLAN-210141 [6878] Update 5GHz mid subband TX tuning for mixer and PAD
+JIRA:BCAWLAN-210677 [6878] Fix 5GHz eTSSI driver code for core A1
+JIRA:BCAWLAN-210552 [6878] Enable LESI
+JIRA:BCAWLAN-210812 [6878] add REV128 into code flow to initialize ACI gain tables to normal gain table values
+JIRA:BCAWLAN-210884 [6878] Remove hack to keep both Rx cores on
+JIRA:BCAWLAN-210818 [6878] Enable and configure mclip ACI
+JIRA:BCAWLAN-211228 Fix out of bounds on stack in phy_ac_fill_estpwrshft_table (KASAN)
+JIRA:BCAWLAN-210710 Fix out of bounds stack/memory write in phy_utils_read_phytable (KASAN)
+JIRA:BCAWLAN-210631 [6878] PER floor observed when LESI is enabled
+JIRA:BCAWLAN-211311 [6878] Enable LESI by default
+JIRA:BCAWLAN-211524 6755 5G : Channels 165l 169u : assertion "index &lt; tbl_len" failed: file "phy_ac_radio.c", line 5936
+JIRA:BCAWLAN-211515 Disable MU BFE cap for 6878
+JIRA:BCAWLAN-210737 2G 20in40 mcs10/11 curpower dump error
+JIRA:BCAWLAN-211605 43684 fix incorrect check condition for radar detected pulse width
+JIRA:BCAWLAN-211620 KASan: out of bounds access in phy_utils_write_phytable_ext
+JIRA:BCAWLAN-211567 KASan: out of bounds access in phy_utils_read_phytable_ext
+JIRA:BCAWLAN-211027 43684 improve BW40/80 FCC-5 detection rate on Atlas 2G plus1core
+JIRA:BCAWLAN-211030 43684 revert phy_ac_chanmgr_get_val_sc_chspec in phy_radar_init_st to avoid NULL pointer dereference
+JIRA:BCAWLAN-211096 43684 Atlas 2Gp5G BW40/80 FCC-5 detection improvement
+JIRA:BCAWLAN-211752 [6878] Use PAPD through AuxGM without bypass for 2GHz
+JIRA:BCAWLAN-211307 [63178/47622] added 2418000 to spur canceler map for rev 51
+JIRA:BCAWLAN-211860 [6878] 2GHz PAPD: 15x15 chip uses auxgm_bypass off, 21x21 chip uses auxgm_bypass on
+JIRA:BCAWLAN-211348 [63178][47622] Speed up PAPD cal
+JIRA:BCAWLAN-211942 UTF : 6755 : High PER is seen with NSS2 rates
+JIRA:BCAWLAN-211467 EAP: PHY: Revert cores passed to math_cmplx_computedB
+JIRA:BCAWLAN-212161 enabling PD OFFSETs,intended use is 20in40CCK.
+JIRA:BCAWLAN-211929 Power control for Multimode 2 picks cck params in 80MHz
+JIRA:BCAWLAN-206985 [63178] Bring up MU-MIMO STA
+JIRA:BCAWLAN-212152 [63178] Bring up MU-MIMO - phy part
+JIRA:BCAWLAN-211373 remove idle tssi measurement in wlc_phy_txpwrctrl_pwr_setup_srom12_acphy, and fix idle tssi measurement in wlc_chanmgr.c
+JIRA:BCAWLAN-209909 [63178/47622] changed lna1_bypass gain by 2dB for rev 51
+JIRA:BCAWLAN-212300 [63178] Revert MU-MIMO STA port from twig 17.10.99
+JIRA:BCAWLAN-209875 [6878A1] Introducing 4 PA Params in SROM 11 using NVRAM
+JIRA:BCAWLAN-209889 [6878] Start with zero LOFT comp co-efficient for auxiliary TXIQ LO cal

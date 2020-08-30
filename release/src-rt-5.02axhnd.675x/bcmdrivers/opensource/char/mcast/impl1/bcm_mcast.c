@@ -241,7 +241,7 @@ static int bcm_mcast_fill_pkt_info(bcm_mcast_ifdata *pif, struct sk_buff *skb, v
          if (mcast_ctrl->igmp_admission)
          {
             pinfo->packetIndex = bcm_mcast_igmp_admission_queue(pif, skb);
-            queued = 1;
+            queued = (pinfo->packetIndex < 0) ? -1 : 1;
          }
          break;
       }
@@ -254,7 +254,7 @@ static int bcm_mcast_fill_pkt_info(bcm_mcast_ifdata *pif, struct sk_buff *skb, v
          if (mcast_ctrl->mld_admission)
          {
             pinfo->packetIndex = bcm_mcast_mld_admission_queue(pif, skb);
-            queued = 1;
+            queued = (pinfo->packetIndex < 0) ? -1 : 1;
          }
          break;
       }

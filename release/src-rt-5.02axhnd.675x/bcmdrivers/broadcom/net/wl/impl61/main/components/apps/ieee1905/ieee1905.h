@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: ieee1905.h 776889 2019-07-12 08:07:32Z $
+ * $Id: ieee1905.h 779928 2019-10-10 07:30:14Z $
  */
 
 #ifndef __IEEE1905_H__
@@ -938,6 +938,16 @@ typedef void ieee1905_ap_auto_config_search_sent();
  */
 typedef void ieee1905_set_bh_sta_params(t_i5_bh_sta_cmd cmd);
 
+/** @brief Callback to inform the DFS status update on the operating channel of an interface
+ *
+ * @param i5_ifr      Interface for which the DFS update has happened
+ * @param old_flags   Old value of flags of type I5_FLAG_IFR_XXX before updating it
+ * @param new_flags   New value of flags of type I5_FLAG_IFR_XXX after updating it
+ *
+ */
+typedef void ieee1905_operating_channel_dfs_update(i5_dm_interface_type *i5_ifr,
+  unsigned char old_flags, unsigned char new_flags);
+
 typedef struct ieee1905_call_bks {
   ieee1905_device_init *device_init;
   ieee1905_device_deinit *device_deinit;
@@ -979,6 +989,7 @@ typedef struct ieee1905_call_bks {
   ieee1905_ap_auto_config_resp	*ap_auto_config_resp;
   ieee1905_ap_auto_config_search_sent	*ap_auto_config_search_sent;
   ieee1905_set_bh_sta_params *set_bh_sta_params;
+  ieee1905_operating_channel_dfs_update *operating_channel_dfs_update;
 } ieee1905_call_bks_t;
 
 #endif /* MULTIAP */

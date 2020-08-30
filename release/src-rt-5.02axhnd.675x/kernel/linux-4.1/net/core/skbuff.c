@@ -1161,7 +1161,11 @@ struct sk_buff *skb_xlate_dp(struct fkbuff * fkb_p, uint8_t *dirty_p)
 	skb_set_tail_pointer(skb_p, fkb_p->len);
 	/* FIXME!! check whether this has to do with the cache line size
 	 * make sure skb buf ends at 16 bytes boudary */
-	skb_p->end = skb_p->tail + (0x10 - (((uintptr_t)skb_tail_pointer(skb_p)) & 0xf)); 
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+	skb_p->end = (skb_p->data - skb_p->head) + datalen;
+#else
+	skb_p->end = skb_p->data + datalen;
+#endif
 
 #if defined (CONFIG_BCM_KF_BPM_BUF_TRACKING)
 	GBPM_INC_REF(skb_p->data);

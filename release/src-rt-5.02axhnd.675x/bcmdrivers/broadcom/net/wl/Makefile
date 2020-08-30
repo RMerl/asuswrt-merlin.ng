@@ -85,14 +85,14 @@ bcm_headers_install:
 				$(ALLSRCBASE)/main/components/router/hnd/hnd_mfgtest.ko_saved-$(BRCM_CHIP)-$(ORIG_PROFILE_ARCH); \
 		fi ; \
 		if ls $(ALLSRCBASE)/sys/src/dongle/bin/*/rtecdc.bin >& /dev/null; then \
-			if [ -d $(ALLSRCBASE)/43684 ] && [ -d $(INSTALL_DIR)/etc/wlan/dhd/mfg ]; then \
+			if ([ -d $(ALLSRCBASE)/43684 ] || [ -d $(ALLSRCBASE)/main/src/dongle ]) && [ -d $(INSTALL_DIR)/etc/wlan/dhd/mfg ]; then \
 				echo "with dongle src, copying generated rtecdc.bin to mfg/rtecdc.bin in fs as well as prebuilt."; \
 				cp -vrf $(ALLSRCBASE)/sys/src/dongle/bin/* \
 					$(INSTALL_DIR)/etc/wlan/dhd/mfg/; \
 				cp -vrf $(ALLSRCBASE)/sys/src/dongle/bin/* \
 					$(ALLSRCBASE)/sys/src/dongle/mfg/; \
 			fi ; \
-			if test ! -d $(ALLSRCBASE)/43684; then \
+			if [ ! -d $(ALLSRCBASE)/43684 ] && [ ! -d $(ALLSRCBASE)/main/src/dongle ]; then \
 				echo "no dongle src, copying prebuilt mfgtest rtecdc.bin to fs."; \
 				mkdir -p $(INSTALL_DIR)/etc/wlan/dhd; \
 				cp -vrf $(ALLSRCBASE)/sys/src/dongle/mfg/* \

@@ -83,7 +83,7 @@ int i5GlueIsCreateVLANS();
 /* Delete VLAN interface from the list */
 void i5GlueDeleteVlanIfr(char *ifname);
 /* For an interface create VLAN interfaces */
-void i5GlueCreateVLAN(char *ifname);
+void i5GlueCreateVLAN(char *ifname, int isWireless);
 /* Checks whether the ifname is Virtual VLAN interface or not. If yes, then it stores the
  * real_ifname argument with the primary ifname from which the VLAN interface is created
  */

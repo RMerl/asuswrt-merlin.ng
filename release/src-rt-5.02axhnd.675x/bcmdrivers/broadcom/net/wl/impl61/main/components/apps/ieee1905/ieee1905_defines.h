@@ -45,7 +45,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: ieee1905_defines.h 775320 2019-05-28 05:01:46Z $
+ * $Id: ieee1905_defines.h 779928 2019-10-10 07:30:14Z $
  */
 
 #ifndef _IEEE1905_DEFINES_H_
@@ -132,7 +132,7 @@
 #define I5_RADIO_CAP_SIZE			512
 #define I5_MAX_REGCLASS				256
 #define IEEE1905_80211_CHAN_PER_REGCLASS	13
-#define IEEE1905_MAX_RCCHANNELS			30
+#define IEEE1905_MAX_RCCHANNELS			15
 
 #define I5_DM_LINK_METRIC_UPDATE_TX     0x01
 #define I5_DM_LINK_METRIC_UPDATE_RX     0x02

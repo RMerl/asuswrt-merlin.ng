@@ -2583,20 +2583,21 @@ void i5MessagePacketReceive(i5_socket_type *psock, i5_packet_type *ppkt)
         i5LlItemAdd(pmsg, pmsg->ppkt, ppkt);
         pmsg->psock = psock;
         pmsg->ppkt = ppkt;
+	i5MessageDumpHex(ppkt, I5_MESSAGE_DIR_RX, psock);
         if (i5MessageMatch(peh->h_source, message_identifier, message_type) == NULL) {
           i5TraceInfo("RELAYING!\n");
           i5MessageRelayMulticastSend(pmsg, pmsg->psock, peh->h_source);
         }
         else {
           i5TraceInfo("NOT RELAYING ==-\n");
-          i5PacketFree(ppkt);
+          i5MessageFree(pmsg);
         }
       }
       else {
         i5TraceInfo("dropping unknown message\n");
+	i5MessageDumpHex(ppkt, I5_MESSAGE_DIR_RX, psock);
         i5PacketFree(ppkt);
       }
-      i5MessageDumpHex(ppkt, I5_MESSAGE_DIR_RX, psock);
       return;
     }
 

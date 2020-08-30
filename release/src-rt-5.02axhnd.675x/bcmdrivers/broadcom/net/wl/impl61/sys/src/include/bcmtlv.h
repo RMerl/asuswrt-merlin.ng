@@ -82,6 +82,8 @@ bcm_tlv_t *bcm_next_tlv(const  bcm_tlv_t *elt, int *buflen);
 /* find the tlv for a given id */
 bcm_tlv_t *bcm_parse_tlvs(const  void *buf, int buflen, uint key);
 
+/* find the tlv for a given ext id */
+bcm_tlv_t *bcm_parse_tlvs_ext(const  void *buf, int buflen, uint key, int key_ext);
 /*
  * Traverse tlvs and return pointer to the first tlv that
  * matches the key. Return NULL if not found or tlv len < min_bodylen

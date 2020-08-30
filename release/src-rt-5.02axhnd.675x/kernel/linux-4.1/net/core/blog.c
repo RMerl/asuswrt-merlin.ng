@@ -596,7 +596,6 @@ const char *str_blog_skip_reason[blog_skip_reason_max] =
     BLOG_ARY_INIT(blog_skip_reason_ct_tcp_state_not_est)
     BLOG_ARY_INIT(blog_skip_reason_ct_tcp_state_ignore)
     BLOG_ARY_INIT(blog_skip_reason_ct_status_donot_blog)
-    BLOG_ARY_INIT(blog_skip_reason_nf_xt_mark)
     BLOG_ARY_INIT(blog_skip_reason_nf_xt_skiplog)
     BLOG_ARY_INIT(blog_skip_reason_nf_ebt_skiplog)
     BLOG_ARY_INIT(blog_skip_reason_scrub_pkt)
@@ -2776,8 +2775,6 @@ BlogAction_t _blog_emit( void * nbuff_p, void * dev_p,
             rfc2684HdrLength[BLOG_GET_PHYLEN(phyHdr)],
             blogHash.match );
 
-		if (skb_p->priority && net_ratelimit())
-			printk(KERN_DEBUG "%s, blogp = 0x%x\n", __FUNCTION__, blog_p->priority);
         action = blog_tx_hook_g( skb_p, (void*)skb_p->dev,
                                  encap, blogHash.match );
 

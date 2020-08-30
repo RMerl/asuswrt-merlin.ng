@@ -330,6 +330,10 @@ void die(const char *str, struct pt_regs *regs, int err)
 	unsigned long flags = oops_begin();
 	int sig = SIGSEGV;
 
+#ifdef CRASHLOG
+	crashlog_enable = 1;
+#endif
+
 	if (!user_mode(regs))
 		bug_type = report_bug(regs->ARM_pc, regs);
 	if (bug_type != BUG_TRAP_TYPE_NONE)

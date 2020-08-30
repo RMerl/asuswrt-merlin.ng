@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: ieee1905.c 776889 2019-07-12 08:07:32Z $
+ * $Id: ieee1905.c 779928 2019-10-10 07:30:14Z $
  */
 
 #include <stdio.h>
@@ -469,6 +469,8 @@ void ieee1905_register_callbacks(ieee1905_call_bks_t *incbs)
   i5_config.cbs.ap_auto_config_search_sent = incbs->ap_auto_config_search_sent;
 
   i5_config.cbs.set_bh_sta_params = incbs->set_bh_sta_params;
+
+  i5_config.cbs.operating_channel_dfs_update = incbs->operating_channel_dfs_update;
 
   /* Call the callbacks of device, interface, bss and client initialization if the initialization
    * happened before registering the callback

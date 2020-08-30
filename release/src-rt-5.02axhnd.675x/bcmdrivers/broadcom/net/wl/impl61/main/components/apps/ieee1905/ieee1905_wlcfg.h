@@ -63,6 +63,7 @@
 #define I5_WLCFG_NVRAM_WPS_BH_BSS "wps_backhaul_ifnames"
 #define I5_WLCFG_NVRAM_WPS_FH_IFNAME "wps_custom_ifnames"
 #define I5_WLCFG_NVRAM_BACKHAUL_TYPE  "multiap_backhaultype"
+#define I5_WLCFG_NVRAM_AGENT_CONFIGURED "map_agent_configured"
 #define I5_WLCFG_NVRAM_LOOPBACK       "map_lo_listen"
 
 #define I5_WLCFG_BACKHAUL_ETH   0x01

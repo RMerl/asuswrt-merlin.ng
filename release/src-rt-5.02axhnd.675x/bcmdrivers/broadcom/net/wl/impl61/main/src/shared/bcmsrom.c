@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmsrom.c 774680 2019-05-02 12:46:25Z $
+ * $Id: bcmsrom.c 779831 2019-10-08 13:52:16Z $
  */
 
 /*
@@ -6572,8 +6572,11 @@ BCMATTACHFN(initvars)(si_t *sih, osl_t *osh, char **base, uint len)
 	else
 		compact_len = 0;
 
+	/* make sure strlen never reads beyond the buffer */
+	flash[MAX_NVRAM_SPACE - 1] = 0;
+
 	/* grab vars with the <devpath> prefix or <compact_prefix> prefix in name */
-	for (s = flash; s && *s; s += l + 1) {
+	for (s = flash; (s < flash + MAX_NVRAM_SPACE) && *s; s += l + 1) {
 		l = strlen(s);
 
 		if (strncmp(s, devpath, path_len) == 0)
@@ -6596,6 +6599,10 @@ BCMATTACHFN(initvars)(si_t *sih, osl_t *osh, char **base, uint len)
 		strncpy(vp, &s[dl], copy_len);
 		vp += copy_len;
 		len -= copy_len;
+	}
+
+	if (s >= flash + MAX_NVRAM_SPACE) {
+		BS_ERROR(("Nvram was not terminated with double zeroes.\n"));
 	}
 
 	/* add null string as terminator */

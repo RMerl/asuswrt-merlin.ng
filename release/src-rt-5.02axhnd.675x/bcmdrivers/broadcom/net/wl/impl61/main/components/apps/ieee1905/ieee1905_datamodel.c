@@ -2214,6 +2214,15 @@ void i5DmDeviceFreeForBackhaulSTA(i5_dm_device_type const *parent_dev, unsigned 
     return;
   }
 
+  /* Do not remove self device */
+  if (i5_device_to_rm == i5DmGetSelfDevice()) {
+    i5Trace("Do Not remove self device. STA["I5_MAC_DELIM_FMT"] Associated to "
+      "Device["I5_MAC_DELIM_FMT"]. STA Interface present in SelfDevice["I5_MAC_DELIM_FMT"]\n",
+      I5_MAC_PRM(bSTA_mac), I5_MAC_PRM(parent_dev->DeviceId),
+      I5_MAC_PRM(i5_device_to_rm->DeviceId));
+    return;
+  }
+
   /* Check if Device to Remove is connected to Parent by any other backhaul except Backhaul STA */
   neighbor = i5Dm1905FindNeighborOtherThanRemoteInterface(parent_dev,
     i5_device_to_rm->DeviceId, bSTA_mac);
@@ -3258,6 +3267,66 @@ int i5DmIsChannelValidInRC(unsigned char channel, unsigned char rc)
   }
 
   return 0;
+}
+
+/* Update the DFS status of the current operating channel from channel preference report */
+void i5DmUpdateDFSStatusFromChannelPreference(i5_dm_interface_type *ifr)
+{
+  int i, j, found = 0;
+  ieee1905_chan_pref_rc_map_array *cp;
+  uint8 channel, old_flags;
+
+  if (!ifr && ifr->chanspec == 0) {
+    i5Trace("For IFR["I5_MAC_DELIM_FMT"] Chanspec not updated yet\n", I5_MAC_PRM(ifr->InterfaceId));
+    return;
+  }
+
+  cp = &ifr->ChanPrefs;
+  channel = CHSPEC_CHANNEL(ifr->chanspec);
+  old_flags = ifr->flags;
+  i5Trace("For IFR["I5_MAC_DELIM_FMT"] RClass[%d] Channel[%d] Chanspec[%x] Flags[%x]\n",
+    I5_MAC_PRM(ifr->InterfaceId), ifr->opClass, channel, ifr->chanspec, ifr->flags);
+
+  /* For each regulatory class in the channel preference report */
+  for (i = 0; i < cp->rc_count; i++) {
+    if (ifr->opClass != cp->rc_map[i].regclass) {
+      continue;
+    }
+
+    if (cp->rc_map[i].count == 0) {
+      continue;
+    }
+
+    /* For each channel in the regulatory class */
+    for (j = 0; j < cp->rc_map[i].count; j++) {
+      if (channel == cp->rc_map[i].channel[j]) {
+        /* Update the DFS status based on reason code */
+        if (cp->rc_map[i].reason == I5_REASON_DFS_PASSIVE) {
+          ifr->flags |= I5_FLAG_IFR_CAC_PENDING;
+          i5Trace("For IFR["I5_MAC_DELIM_FMT"] OldFlags[%x] Flags[%x], CAC pending\n",
+            I5_MAC_PRM(ifr->InterfaceId), old_flags, ifr->flags);
+        } else if (cp->rc_map[i].reason == I5_REASON_DFS_CAC_COMPLETE){
+          ifr->flags &= ~I5_FLAG_IFR_CAC_PENDING;
+          i5Trace("For IFR["I5_MAC_DELIM_FMT"] OldFlags[%x] Flags[%x], CAC Completed\n",
+            I5_MAC_PRM(ifr->InterfaceId), old_flags, ifr->flags);
+        }
+        found = 1;
+        break;
+      }
+    }
+    if (found) {
+      i5Trace("For IFR["I5_MAC_DELIM_FMT"] RClass[%d] Channel[%d] Found in Channel Preference\n",
+        I5_MAC_PRM(ifr->InterfaceId), ifr->opClass, channel);
+      break;
+    }
+  }
+
+  /* If there is any change inform the application */
+  if (old_flags != ifr->flags) {
+    if (i5_config.cbs.operating_channel_dfs_update) {
+      i5_config.cbs.operating_channel_dfs_update(ifr, old_flags, ifr->flags);
+    }
+  }
 }
 
 /* Copy Radio Capability */

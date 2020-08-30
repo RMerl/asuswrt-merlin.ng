@@ -60,6 +60,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <errno.h>
 #if defined(WANDEV_SUPPORT)
 #include <bcm_local_kernel_include/linux/sockios.h>
 #else
@@ -102,6 +103,9 @@ typedef struct _i5_glue_interface_name_info {
   int              flags;
 } i5_glue_interface_name_info;
 
+static void i5GlueDisableHWSTP(char *ifname);
+static void i5GlueEnableHWSTP(char *ifname);
+
 #define I5_GLUE_INTERFACE_EXACT_MATCH   (1 << 0)
 
 /* I5_GLUE_INTERFACE_EXACT_MATCH can be set in the flags field to require exact name match
@@ -111,6 +115,9 @@ typedef struct _i5_glue_interface_name_info {
  * getting created for each eth interface. So, it creates socket for both and starts recieveing
  * packet on both interfaces.
  */
+
+#define HWSTPFILE		"/tmp/hwstpstate.txt"
+
 i5_glue_interface_name_info i5GlueInterfaceList[] = {
 #if !defined(MULTIAP)
   {"eth",  I5_MEDIA_TYPE_UNKNOWN,  i5EthStatFetchIfInfo,       0 },
@@ -607,6 +614,9 @@ void i5GlueDeleteVlanIfr(char *ifname)
     if (strcmp(ifr_node->ifname, ifname) == 0) {
 
       i5GlueDeleteVLANInterface(ifname);
+      if (ifr_node->hwStpDisabled) {
+        i5GlueEnableHWSTP(ifname);
+      }
 
       /* Remove item itself from list */
       ieee1905_glist_delete(&i5_config.vlan_ifr_list, item_p);
@@ -638,6 +648,9 @@ void i5GlueDeleteAllVlanInterfaces()
     ifr_node = (i5_vlan_ifr_node*)item_p;
 
     i5GlueDeleteVLANInterface(ifr_node->ifname);
+    if (ifr_node->hwStpDisabled) {
+      i5GlueEnableHWSTP(ifr_node->ifname);
+    }
 
     i5TraceInfo("ifname[%s] Deleted from list\n", ifr_node->ifname);
     /* Remove item itself from list */
@@ -704,9 +717,10 @@ static void i5CreateSecondaryVLAN(char *ifr, unsigned short vlanid, char *bridge
 }
 
 /* For an interface create VLAN interfaces */
-void i5GlueCreateVLAN(char *ifname)
+void i5GlueCreateVLAN(char *ifname, int isWireless)
 {
   char prim_bridge[I5_MAX_IFNAME], sec_bridge[I5_MAX_IFNAME];
+  char *hwstp = NULL;
 
   /* Get the primary bridge */
   I5STRNCPY(prim_bridge, nvram_safe_get("lan_ifname"), sizeof(prim_bridge));
@@ -729,6 +743,16 @@ void i5GlueCreateVLAN(char *ifname)
   i5CreateSecondaryVLAN(ifname, i5_config.sec_vlan_id, sec_bridge, prim_bridge);
 
   i5GlueAddVlanIfr(ifname);
+  /* Disable HW STP for ehternet interface */
+  if (!isWireless) {
+    hwstp = nvram_safe_get("map_disable_hwstp");
+    if (hwstp && (hwstp[0] != '\0') && (0 == strtoul(hwstp, NULL, 0))) {
+      /* If map_disable_hwstp is set to 0 then dont disable HW STP */
+      return;
+    }
+
+    i5GlueDisableHWSTP(ifname);
+  }
 
   return;
 }
@@ -946,3 +970,83 @@ int i5GlueIsHapdEnabled()
    return nvram_match("hapd_enable", "1");
 }
 #endif	/* MULTIAP && CONFIG_HOSTAPD */
+
+static bool i5GlueisHWSTPDisabled(char *ifname)
+{
+  char cmd[512];
+  char *pbuf = NULL;
+  FILE *fp = NULL;
+
+  /* Get HW STP state for <ifname> in file */
+  snprintf(cmd, sizeof(cmd), "ethswctl -c ifstp -i %s > %s", ifname, HWSTPFILE);
+  system(cmd);
+
+  /* Open the HW STP state file */
+  fp = fopen(HWSTPFILE, "r");
+  if (!fp) {  /* validate file open for reading */
+    i5TraceError("Failed to open file %s Error: %s\n", HWSTPFILE, strerror(errno));
+    return FALSE;
+  }
+
+  /* Format of the output of ethswctl -c ifstp -i <ifname> is as below
+   * ===================================
+   * <ifname> STP state: <State>
+   * Success.
+   * ===================================
+  */
+
+  /* Read the first line of the file only and last string is stp state */
+  fgets(cmd, sizeof(cmd), fp);
+
+  pbuf = strstr(cmd, "Disabled");
+
+  fclose (fp);
+  unlink(HWSTPFILE);
+
+  if (pbuf) {
+    return TRUE;
+  }
+
+  return FALSE;
+}
+
+static void i5GlueDisableHWSTP(char *ifname)
+{
+  char cmd[512];
+  i5_vlan_ifr_node *ifr_node;
+
+  if (i5GlueisHWSTPDisabled(ifname)) {
+    i5TraceInfo("HW STP already disabled for %s\n", ifname);
+    return;
+  }
+
+  i5Trace("Disabling HW STP for %s\n", ifname);
+
+  /* Disable HW STP state for the interface */
+  snprintf(cmd, sizeof(cmd), "ethswctl -c hwstp -i %s -o disable", ifname);
+  system(cmd);
+
+  /* Enable Softswitch for the interface */
+  snprintf(cmd, sizeof(cmd), "ethswctl -c softswitch -i %s -o enable", ifname);
+  system(cmd);
+
+  ifr_node = i5GlueFindRealVlanIfr(ifname);
+  if (ifr_node) {
+    ifr_node->hwStpDisabled = TRUE;
+  }
+}
+
+static void i5GlueEnableHWSTP(char *ifname)
+{
+  char cmd[512];
+
+  i5TraceInfo("Enabling HW STP for %s\n", ifname);
+
+  /* Enable HW STP state for the interface */
+  snprintf(cmd, sizeof(cmd), "ethswctl -c hwstp -i %s -o enable", ifname);
+  system(cmd);
+
+  /* Disable Softswitch for the interface */
+  snprintf(cmd, sizeof(cmd), "ethswctl -c softswitch -i %s -o disable", ifname);
+  system(cmd);
+}

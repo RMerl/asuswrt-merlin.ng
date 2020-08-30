@@ -235,9 +235,11 @@ void bcm_common_led_setAllSoftLedsOff(void)
                     printk("off: LED %d is HW\n",led);
 #endif
                 } else {
+#if defined(_CFE_) || !defined(RTAX82U)
                     bcm_led_driver_set( gpio, 0 );
 #ifdef BCM_LED_DEBUG
                     printk("off: LED %d is OFF\n",led);
+#endif
 #endif
                   }
             }

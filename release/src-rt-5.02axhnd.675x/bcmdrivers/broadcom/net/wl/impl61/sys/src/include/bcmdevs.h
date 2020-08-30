@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdevs.h 775362 2019-05-29 05:39:37Z $
+ * $Id: bcmdevs.h 779729 2019-10-04 20:43:14Z $
  */
 
 #ifndef	_BCMDEVS_H
@@ -831,6 +831,7 @@
 #define BFL4_SROM13_CCK_SPUR_EN     (1 << 4)   /* using cck spur reduction setting in 4366 */
 #define BFL4_SROM13_1P5V_CBUCK		(1 << 7)   /* using 1.5V cbuck board in 4366 */
 #define BFL4_SROM13_EN_SW_TXRXCHAIN_MASK (1 << 8)   /* Enable/disable bit for sw chain mask */
+#define BFL4_SROM13_CORE3_P1C       (1 << 9)   /* Enable/disable bit for core-3 as +1 scan core */
 #define BFL4_SROM18_CCK_PAPARAM_EN   (1 << 16)   /* Enable/disable bit for sw chain mask */
 #define BFL4_SROM18_OLPC_THRESH_EN	 (1 << 17)  /* Enable bit for olpc_2g5g_th */
 #define BFL4_SROM18_TXPWR_CAP_EN     (1 << 18)   /* bit to enable TXPWR_CAP as default */

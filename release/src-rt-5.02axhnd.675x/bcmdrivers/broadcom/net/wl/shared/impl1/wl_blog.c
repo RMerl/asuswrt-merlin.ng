@@ -182,9 +182,6 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
         return;
     }
 
-    /* Release reference to device */
-    dev_put(dev);
-
 	switch (e->event.event_type) {
 		case WLC_E_DEAUTH:
 		case WLC_E_DEAUTH_IND:
@@ -196,8 +193,9 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			params.flush_dstmac = 1;
 			params.flush_srcmac = 1;
 			memcpy(&params.mac[0], &e->event.addr.octet[0], sizeof(e->event.addr.octet));
-			blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
-
+			blog_lock();
+			blog_notify(FLUSH, dev, (unsigned long)&params, 0);
+			blog_unlock();
 #if defined(PKTC_TBL)
 			/* mark as STA disassoc */
 			WL_ERROR(("%s: mark as DIS-associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -225,7 +223,9 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			params.flush_dstmac = 1;
 			params.flush_srcmac = 1;
 			memcpy(&params.mac[0], &e->event.addr.octet[0], sizeof(e->event.addr.octet));
-			blog_notify_async_wait(FLUSH, dev, (unsigned long)&params, 0);
+			blog_lock();	
+			blog_notify(FLUSH, dev, (unsigned long)&params, 0);
+			blog_unlock();
 #if defined(PKTC_TBL)
 			/* mark as STA assoc */
 			WL_ERROR(("%s: mark as associated. addr=%02x:%02x:%02x:%02x:%02x:%02x\n",
@@ -248,8 +248,10 @@ void wl_handle_blog_event(wl_info_t *wl, wlc_event_t *e)
 			break;
 
 		default:
-			return;
+			break;
 	}
+    /* Release reference to device */
+    dev_put(dev);
 }
 
 #endif /* BCM_BLOG */

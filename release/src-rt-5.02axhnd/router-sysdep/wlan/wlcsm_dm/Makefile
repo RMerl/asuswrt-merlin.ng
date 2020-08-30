@@ -82,18 +82,22 @@ endif
 
 regenerate:$(DM_GENERATED_FILES) $(HDRADJUST) $(BUILD_DIR)/data-model/$(DMFILE2) $(GENERATE)
 
-$(DM_GENERATED_FILES) :$(BUILD_DIR)/data-model/$(DMFILE2) $(GENERATE)  $(MAPPERFILE) $(HDRADJUST)
+$(DM_GENERATED_FILES): regenerate_dm_files
+
+regenerate_dm_files: $(BUILD_DIR)/data-model/$(DMFILE2) $(GENERATE)  $(MAPPERFILE) $(HDRADJUST)
 	-for fl in $(DM_GENERATED_FILES); do ( rm -rf $$fl; ); done
 	$(GENERATE) wlcsm $(BUILD_DIR) $(DMFILE2) $(DMFILE2)
 	$(GENERATE) wlcsm_mngr $(BUILD_DIR) $(DMFILE2) $(DMFILE2)
 	$(GENERATE) strmapper $(BUILD_DIR) $(MAPPERFILE) $(MAPPERFILE)
+	@touch $@
 
 clean: generic_clean
 	-rm -f *.o *.map *.d  *.d.*
 	-rm -rf *.so
 	-rm -rf doc
-	-for d in $(WLCSM_DM_IMPLS); do ( cd $(CURR_DIR)/dm_impls/$$d; $(MAKE) clean); done
-	
+	-rm -f regenerate_dm_files
+	-for d in $(WLCSM_DM_IMPLS); do ( if [ -e $(CURR_DIR)/dm_impls/$$d ]; then cd $(CURR_DIR)/dm_impls/$$d; $(MAKE) clean; fi; ); done
+
 dmclean: clean
 	-for fl in $(DM_GENERATED_FILES); do ( rm -rf $$fl; ); done
 	-for d in $(WLCSM_DM_IMPLS); do ( cd $(CURR_DIR)/dm_impls/$$d; $(MAKE) dmclean); done

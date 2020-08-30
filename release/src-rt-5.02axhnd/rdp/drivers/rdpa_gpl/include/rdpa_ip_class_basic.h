@@ -111,10 +111,10 @@ typedef struct {
 #if defined(DSL_63138) || defined(DSL_63148) || defined(WL4908) || defined(BCM63158)
     rdpa_if ingress_if;  /**< Ingress interface */
     uint8_t lookup_port; /**< Ingress bridge port */
-    uint8_t tcp_pure_ack;/**< TCP pure ack flow */
 #else                    /* All other platforms */
     rdpa_if ingress_if;  /**< Ingress interface */
 #endif
+    uint8_t tcp_pure_ack;/**< TCP pure ack flow */
 } rdpa_ip_flow_key_t;
 
 /** @} end of ip_class Doxygen group. */

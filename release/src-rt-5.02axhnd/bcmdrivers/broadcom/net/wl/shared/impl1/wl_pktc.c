@@ -72,7 +72,11 @@ extern uint8 osl_get_wlunit(osl_t *osh);
 typedef int (*HardStartXmitFuncP)(struct sk_buff *skb, struct net_device *dev);
 int wl_dump_pktc(wl_info_t *wl, struct bcmstrbuf *b);
 
-wl_pktc_tbl_t g_pktc_tbl[CHAIN_ENTRY_NUM] = {0};
+/*
+ * Global variables
+ */
+wl_pktc_tbl_t *g_pktc_tbl = NULL;
+uint8 g_pktc_tbl_ref_cnt = 0;     /* reference count for g_pktc_tbl */
 pktc_handle_t pktc_wldev[WLAN_DEVICE_MAX] = {0};
 
 #if (defined(CONFIG_BCM96836) || defined(CONFIG_BCM963158)) && !defined(BCM_WFD)
@@ -527,13 +531,28 @@ int32 wl_rxchainhandler(wl_info_t *wl, struct sk_buff *skb)
 		return (BCME_OK);
 	}
 exit:
-	WLCNTINCR(wl->pub->pktc_tbl->g_stats->rx_slowpath_skb);
+	if (wl->pub->pktc_tbl && wl->pub->pktc_tbl->g_stats)
+		WLCNTINCR(wl->pub->pktc_tbl->g_stats->rx_slowpath_skb);
 	return (BCME_ERROR);
 }
 
 wl_pktc_tbl_t *wl_pktc_attach(struct wl_info *wl, struct wl_if *wlif)
 {
 	wl_pktc_tbl_t *pt;
+	size_t size = sizeof(wl_pktc_tbl_t)*CHAIN_ENTRY_NUM;
+
+	/* Allocate pktc table */
+	if (g_pktc_tbl == NULL) {
+		g_pktc_tbl = (wl_pktc_tbl_t *) kmalloc(size, GFP_KERNEL);
+		if (!g_pktc_tbl) {
+			WL_ERROR(("wl%d: %s: malloc of g_pktc_tbl failed\n",
+				(wl->pub) ? wl->pub->unit:wlif->subunit, __FUNCTION__));
+			return NULL;
+		}
+		bzero((void*)g_pktc_tbl, size);
+	}
+	/* Increment pktc table reference count */
+	g_pktc_tbl_ref_cnt++;
 
 	/* init tx work queue for processing chained packets  */
 	wl->txq_txchain_dispatched = FALSE;
@@ -577,6 +596,17 @@ void wl_pktc_detach(struct wl_info *wl)
 		if (--(pt->g_stats->n_references) == 0) {
 			kfree(pt->g_stats);
 			pt->g_stats = NULL;
+		}
+	}
+
+	/* Free pktc table if there are no more interface references to the data*/
+	if (g_pktc_tbl) {
+		/* Decrement the pktc table reference count */
+		g_pktc_tbl_ref_cnt--;
+
+		if (g_pktc_tbl_ref_cnt <= 0) {
+			kfree(g_pktc_tbl);
+			g_pktc_tbl = NULL;
 		}
 	}
 
@@ -634,7 +664,7 @@ int wl_check_fdb_expired(unsigned char *addr)
 {
 	wl_pktc_tbl_t *pt;
 
-	WL_ERROR(("%s: addr=%02x:%02x:%02x:%02x:%02x:%02x\n", __FUNCTION__,
+	WL_INFORM(("%s: addr=%02x:%02x:%02x:%02x:%02x:%02x\n", __FUNCTION__,
 		addr[0], addr[1], addr[2], addr[3], addr[4], addr[5]));
 
 	pt = (wl_pktc_tbl_t *)wl_pktc_req(PKTC_TBL_GET_BY_DA, (unsigned long)addr, 0, 0);
@@ -710,13 +740,22 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 
 	switch (req_id) {
 	case PKTC_TBL_GET_BY_DA:
+		if (g_pktc_tbl == NULL)
+			return 0;
+
 		/* param0 is DA */
 		return (PKTC_TBL_FN_LOOKUP(g_pktc_tbl, (uint8_t*)param0));
 
 	case PKTC_TBL_GET_START_ADDRESS:
+		if (g_pktc_tbl == NULL)
+			return 0;
+
 		return (unsigned long)(&g_pktc_tbl[0]);
 
 	case PKTC_TBL_GET_BY_IDX:
+		if (g_pktc_tbl == NULL)
+			return 0;
+
 		/* param0 is pktc chain table index */
 		if (param0 >= CHAIN_ENTRY_NUM) {
 			printk("chain idx is out of range! (%ld)\n", param0);
@@ -776,6 +815,9 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		return pktc_tx_enabled;
 
 	case PKTC_TBL_UPDATE:
+		if (!g_pktc_tbl || !g_pktc_tbl[0].g_stats)
+			return 0;
+
 		param2 = (unsigned long)NULL;
 
 		/* param1 is tx device */
@@ -804,7 +846,7 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		 * we should not create the chain entry for it, hence pkt won't be chained and sent
 		 * to tx_dev directly but fcache. Same as wds.
 		 */
-		if ((pt->tx_dev == NULL) || (((pktc_info_t *)pt->wl_handle == NULL) &&
+		if ((pt->tx_dev == NULL) || (((pktc_info_t *)pt->wl_handle == NULL || (pktc_handle_t *)param2 == NULL) &&
 			((pt->tx_dev->priv_flags & IFF_BCM_WLANDEV) || (!strncmp(pt->tx_dev->name, "wds", 3))))) {
 			/* remove this chain entry */
 			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
@@ -831,6 +873,9 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 #endif /* BCM_WFD */
 
 	case PKTC_TBL_DELETE:
+		if (!g_pktc_tbl || !g_pktc_tbl[0].g_stats)
+			return 0;
+
 		PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 		/* update associated station numbers */
 		g_pktc_tbl[0].g_stats->total_stas = wl_pktc_get_sta_num();
@@ -847,7 +892,10 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		return 0;
 
 	case PKTC_TBL_FLUSH:
-		WL_ERROR(("pktc_tbl flush!\n"));
+		if (g_pktc_tbl == NULL)
+			return 0;
+
+		WL_INFORM(("%s: pktc_tbl flush!\n", __FUNCTION__));
 		for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
 			if (g_pktc_tbl[i].in_use)
 				wl_pktc_clear_entry(&g_pktc_tbl[i]);
@@ -855,6 +903,9 @@ unsigned long wl_pktc_req(int req_id, unsigned long param0, unsigned long param1
 		return 0;
 
 	case PKTC_TBL_SET_STA_ASSOC:
+		if (!g_pktc_tbl || !g_pktc_tbl[0].g_stats)
+			return 0;
+
 		/* param0 is STA addr, param1 is assoc status, 0: disassoc, 1: assoc, param2 is event type */
 		pt = (wl_pktc_tbl_t *)PKTC_TBL_FN_LOOKUP(g_pktc_tbl, (uint8_t*)param0);
 		if (pt != NULL) {
@@ -874,7 +925,7 @@ void wl_pktc_del(unsigned long addr)
 {
 	spin_lock_bh(&pktctbl_lock);
 	wl_pktc_req(PKTC_TBL_DELETE, addr, 0, 0);
-	if (g_pktc_tbl[0].g_stats->total_stas == 0) {
+	if (g_pktc_tbl && g_pktc_tbl[0].g_stats && (g_pktc_tbl[0].g_stats->total_stas == 0)) {
 		/* if no more wifi station associated, flush entire pktc table */
 		wl_pktc_req(PKTC_TBL_FLUSH, 0, 0, 0);
 	}
@@ -1023,6 +1074,9 @@ int wl_dump_pktc(wl_info_t *wl, struct bcmstrbuf *b)
 {
 	int i, j;
 	pktc_info_t *pktci;
+
+	if (!g_pktc_tbl || !wl->pub->pktc_tbl->g_stats)
+		return -1;
 
 	printk("FROM WLAN: \n");
 	printk("idx  dest_MAC           dest_dev   hits\n");

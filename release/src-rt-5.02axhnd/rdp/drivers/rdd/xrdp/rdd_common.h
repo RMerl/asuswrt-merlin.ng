@@ -132,6 +132,8 @@ void rdd_fpm_pool_number_mapping_cfg(uint16_t fpm_base_token_size);
 void rdd_full_flow_cache_cfg(bdmf_boolean control);
 void rdd_drop_precedence_cfg(rdpa_traffic_dir dir, uint16_t eligibility_vector);
 void rdd_rate_limit_overhead_cfg(uint8_t  xi_rate_limit_overhead);
+void rdd_tcp_ack_priority_flow_set(bdmf_boolean enable);
+bdmf_boolean rdd_tcp_ack_priority_flow_get(void);
 void rdd_max_pkt_len_table_init(void);
 #ifndef _CFE_
 void rdd_multicast_filter_cfg(rdpa_mcast_filter_method mcast_prefix_filter);

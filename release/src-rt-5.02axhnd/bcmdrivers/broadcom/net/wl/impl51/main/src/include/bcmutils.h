@@ -1,7 +1,7 @@
 /*
  * Misc useful os-independent macros and functions.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.h 776274 2019-06-24 10:52:42Z $
+ * $Id: bcmutils.h 780490 2019-10-28 17:07:24Z $
  */
 
 #ifndef	_bcmutils_h_
@@ -96,10 +96,6 @@ typedef struct bcmstrbuf {
 
 /* ** driver-only section ** */
 #ifdef BCMDRIVER
-#ifdef EFI
-/* forward declare structyre type */
-struct spktq;
-#endif // endif
 #include <osl.h>
 #include <hnd_pktq.h>
 #include <hnd_pktpool.h>
@@ -454,6 +450,7 @@ extern int bcm_get_ifname_unit(const char* ifname, int *unit, int *subunit);
 #define BCME_VCOCAL_FAIL		-66	/* VCOCAL failed */
 #define BCME_BANDLOCKED			-67	/* interface is restricted to a band */
 #define BCME_BAD_IE_DATA		-68	/* Recieved ie with invalid/bad data */
+#define BCME_NOT_ADMITTED 		-69 /* Client not admitted for OFDMA */
 #define BCME_LAST			BCME_BAD_IE_DATA
 
 #define BCME_NOTENABLED BCME_DISABLED
@@ -672,6 +669,11 @@ extern int bcm_find_fsb(uint32 num);
 #define	NBITMASK(nbits)	MAXBITVAL(nbits)
 #define MAXNBVAL(nbyte)	MAXBITVAL((nbyte) * 8)
 
+/* Number of bits in a uint16 */
+#define NUM_BITS_U16                (NBBY * sizeof(uint16))
+/* Number of uint16 required for a bitmap */
+#define BMAP_NUM_U16(sz)            ((sz) / NUM_BITS_U16)
+
 /*
  * In a bitmap of size maxbit, count number of zero bits from a given bit
  * position, upto next numbits. Return the count of zero-bits when a set
@@ -886,6 +888,9 @@ extern uint bcm_bitcount(uint8 *bitmap, uint bytelength);
 
 extern bool bcm_bprintf_bypass;
 extern int bcm_bprintf(struct bcmstrbuf *b, const char *fmt, ...);
+extern int bcm_bprintf_val_pcent(bcmstrbuf_t *b, uint32 val, uint32 pcent, int pad);
+
+#define DEFAULT_PADDING 4
 
 /* power conversion */
 extern uint16 bcm_qdbm_to_mw(uint8 qdbm);

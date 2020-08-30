@@ -47,5 +47,7 @@ int upnp_wps_device_send_wlan_event(struct upnp_wps_device_sm *sm,
 				    const struct wpabuf *msg);
 int upnp_wps_subscribers(struct upnp_wps_device_sm *sm);
 int upnp_wps_set_ap_pin(struct upnp_wps_device_sm *sm, const char *ap_pin);
-
+#ifdef CONFIG_DRIVER_BRCM
+int upnp_wps_web_listener_sock_update(struct upnp_wps_device_sm *sm, char *net_if);
+#endif	/* CONFIG_DRIVER_BRCM */
 #endif /* WPS_UPNP_H */

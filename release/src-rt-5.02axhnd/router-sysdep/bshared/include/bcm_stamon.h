@@ -1,7 +1,7 @@
 /*
  * Broadcom STA monitor include file
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_stamon.h 776892 2019-07-12 08:19:54Z $
+ * $Id: bcm_stamon.h 776562 2019-07-02 10:32:53Z $
  */
 
 #ifndef _BCM_STAMON_H_

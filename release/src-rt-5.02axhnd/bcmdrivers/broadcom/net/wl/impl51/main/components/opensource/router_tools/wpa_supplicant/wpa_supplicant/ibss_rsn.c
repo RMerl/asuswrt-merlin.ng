@@ -179,7 +179,7 @@ static void supp_cancel_auth_timeout(void *ctx)
 	wpa_printf(MSG_DEBUG, "SUPP: %s", __func__);
 }
 
-static void supp_deauthenticate(void * ctx, int reason_code)
+static void supp_deauthenticate(void * ctx, u16 reason_code)
 {
 	wpa_printf(MSG_DEBUG, "SUPP: %s (TODO)", __func__);
 }

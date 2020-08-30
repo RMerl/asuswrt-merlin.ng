@@ -3,7 +3,7 @@
  *
  * Dependencies: bcmeth.h
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmevent.h 775307 2019-05-27 12:18:31Z $
+ * $Id: bcmevent.h 780537 2019-10-29 08:58:49Z $
  *
  */
 
@@ -445,20 +445,19 @@ typedef union bcm_event_msg_u {
 #define WLC_E_WNM_BSSTRANS_QUERY	197	/* BTM query payload from STA */
 #define WLC_E_GAS_RQST_ANQP_QUERY	198	/* GAS ANQP query from unassociated STA */
 
-#define WLC_E_LAST			199
+#define WLC_E_PWR_SAVE_SYNC		199	/* Sync pm value with cfg80211 power save */
+#define WLC_E_LAST			200
 
 /* define an API for getting the string name of an event */
 extern const char *bcmevent_get_name(uint event_type);
-extern void wl_event_to_host_order(wl_event_msg_t * evt);
-extern void wl_event_to_network_order(wl_event_msg_t * evt);
 
 /* validate if the event is proper and if valid copy event header to event */
 extern int is_wlc_event_frame(void *pktdata, uint pktlen, uint16 exp_usr_subtype,
 	bcm_event_msg_u_t *out_event);
 
 /* conversion between host and network order for events */
-void wl_event_to_host_order(wl_event_msg_t * evt);
-void wl_event_to_network_order(wl_event_msg_t * evt);
+extern void wl_event_to_host_order(wl_event_msg_t * evt);
+extern void wl_event_to_network_order(wl_event_msg_t * evt);
 
 /* xxx:
  * Please do not insert/delete events in the middle causing renumbering.
@@ -633,6 +632,7 @@ typedef struct wl_event_data_if {
 	uint8 reserved;		/* bit mask (WLC_E_IF_FLAGS_XXX ) */
 	uint8 bssidx;		/* bsscfg index */
 	uint8 role;		/* see I/F role */
+	struct ether_addr peer_addr;	/* peer (WDS/DWDS Client) MAC address (if applicable) */
 } wl_event_data_if_t;
 
 /* WLC_E_NATOE event data */
@@ -671,6 +671,11 @@ typedef struct wl_event_data_rssi {
 
 /* WLC_E_IF flag */
 #define WLC_E_IF_FLAGS_BSSCFG_NOIF	0x1	/* no host I/F creation needed */
+#define WLC_E_IF_FLAGS_WDS_STA		0x2	/* WDS supplicant interface */
+#define WLC_E_IF_FLAGS_WDS_AP		0x4	/* WDS Authenticator or DWDD client interface */
+
+#define WLC_E_IF_FLAGS_LEGACY_WDS_STA	WLC_E_IF_FLAGS_WDS_STA
+#define WLC_E_IF_FLAGS_LEGACY_WDS_AP	WLC_E_IF_FLAGS_WDS_AP
 
 /* Reason codes for LINK */
 #define WLC_E_LINK_BCN_LOSS     1   /* Link down because of beacon loss */
@@ -1043,7 +1048,9 @@ typedef enum {
 	WL_CHAN_REASON_DFS_AP_MOVE_RADAR_FOUND = 2,
 	WL_CHAN_REASON_DFS_AP_MOVE_ABORTED = 3,
 	WL_CHAN_REASON_DFS_AP_MOVE_SUCCESS = 4,
-	WL_CHAN_REASON_DFS_AP_MOVE_STUNT = 5
+	WL_CHAN_REASON_DFS_AP_MOVE_STUNT = 5,
+	WL_CHAN_REASON_DFS_AP_MOVE_STUNT_SUCCESS = 6,
+	WL_CHAN_REASON_CSA_TO_DFS_CHAN_FOR_CAC_ONLY = 7 /* Support Co-ordinated CAC for MAP R2 */
 } wl_chan_change_reason_t;
 
 typedef struct wl_event_change_chan {

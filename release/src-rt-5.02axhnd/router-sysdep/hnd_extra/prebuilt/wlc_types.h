@@ -1,7 +1,7 @@
 /*
  * Forward declarations for commonly used wl driver structs
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_types.h 775299 2019-05-27 10:08:55Z $
+ * $Id: wlc_types.h 784470 2020-02-27 20:11:47Z $
  */
 
 #ifndef _wlc_types_h_
@@ -102,7 +102,7 @@ typedef struct rm_info rm_info_t;
 struct d11init;
 
 typedef struct wlc_dpc_info wlc_dpc_info_t;
-
+typedef struct wlc_txs_dyntxc_info wlc_txs_dyntxc_info_t;
 typedef struct wlc_11h_info wlc_11h_info_t;
 typedef struct wlc_tpc_info wlc_tpc_info_t;
 typedef struct wlc_csa_info wlc_csa_info_t;
@@ -180,8 +180,6 @@ typedef struct wlc_iem_info wlc_iem_info_t;
 typedef struct wlc_ier_info wlc_ier_info_t;
 typedef struct wlc_ier_reg wlc_ier_reg_t;
 
-typedef struct wlc_filter_ie_info wlc_filter_ie_info_t;
-
 typedef struct wlc_ht_info wlc_ht_info_t;
 typedef struct wlc_obss_info wlc_obss_info_t;
 typedef struct wlc_vht_info wlc_vht_info_t;
@@ -200,6 +198,8 @@ typedef struct wlc_txh_info wlc_txh_info_t;
 typedef struct wlc_staprio_info wlc_staprio_info_t;
 typedef struct wlc_stamon_info wlc_stamon_info_t;
 typedef struct wlc_monitor_info wlc_monitor_info_t;
+
+typedef struct wlc_csimon_info wlc_csimon_info_t;
 
 typedef struct wlc_debug_crash_info wlc_debug_crash_info_t;
 
@@ -332,6 +332,8 @@ typedef struct wlc_twt_info wlc_twt_info_t;
 typedef struct wlc_heb_info wlc_heb_info_t;
 
 typedef struct wlc_muscheduler_info wlc_muscheduler_info_t;
+
+typedef struct wlc_ulmu_info wlc_ulmu_info_t;
 
 typedef struct resv_info resv_info_t;
 
@@ -507,5 +509,21 @@ typedef struct wlc_deauth_send_cbargs wlc_deauth_send_cbargs_t;
 typedef struct wlc_macreq_info wlc_macreq_info_t;
 typedef struct wlc_txcfg_info wlc_txcfg_info_t;
 typedef struct wlc_fifo_info wlc_fifo_info_t;
+
+typedef struct wlc_dtpc_info wlc_dtpc_info_t;
+
+typedef struct taf_scheduler_public taf_scheduler_public_t;
+
+#ifndef BAND6G
+#define BAND6G	0
+#endif // endif
+
+/* indices to use on the bandstate array (wlc->bandstate[index]) */
+enum wlc_bandunit {
+	BAND_2G_INDEX =	0,
+	BAND_5G_INDEX,
+	BAND_6G_INDEX,
+	MAXBANDS
+};
 
 #endif	/* _wlc_types_h_ */

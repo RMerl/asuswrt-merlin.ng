@@ -1,7 +1,7 @@
 /*
  * Misc system wide definitions
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmdefs.h 774845 2019-05-08 16:56:28Z $
+ * $Id: bcmdefs.h 781829 2019-12-02 14:52:28Z $
  */
 
 #ifndef	_bcmdefs_h_
@@ -94,13 +94,42 @@
 
 /* Compile-time assert can be used in place of ASSERT if the expression evaluates
  * to a constant at compile time.
+ * GCC 4.6 adds the C11 keyword _Static_assert which has the advantage of printing
+ * an informative error message when the assertion fails.
  */
+#ifdef __GNUC__
+#if (__GNUC__ == 4 && __GNUC_MINOR__ >= 6) || (__GNUC__ > 4)
+#define __USE_C11_ASSERT
+#endif /* GCC ver >= 4.6 */
+#endif /* __GNUC__ */
+
+#ifdef __USE_C11_ASSERT
+
+#define STATIC_ASSERT(X) { _Static_assert((X), "Static assertion failure"); }
+
+#ifdef WL_REG_SIZECHECK
+#define SIZECHECK(LHS, RHS) { _Static_assert(sizeof((LHS)) == sizeof((RHS)), \
+	"Register size mismatch: need a cast?"); }
+#else
+#define SIZECHECK(LHS, RHS)
+#endif /* WL_REG_SIZECHECK */
+
+#else /* ! __USE_C11_ASSERT */
+
 #define STATIC_ASSERT(expr) { \
 	/* Make sure the expression is constant. */ \
 	typedef enum { _STATIC_ASSERT_NOT_CONSTANT = (expr) } _static_assert_e UNUSED_VAR; \
 	/* Make sure the expression is true. */ \
 	typedef char STATIC_ASSERT_FAIL[(expr) ? 1 : -1] UNUSED_VAR; \
 }
+
+#ifdef WL_REG_SIZECHECK
+#define SIZECHECK(LHS, RHS) STATIC_ASSERT(sizeof((LHS)) == sizeof((RHS)))
+#else
+#define SIZECHECK(LHS, RHS)
+#endif /* WL_REG_SIZECHECK */
+
+#endif /* __USE_C11_ASSERT */
 
 /* Reclaiming text and data :
  * The following macros specify special linker sections that can be reclaimed
@@ -299,6 +328,7 @@ extern bool bcm_postattach_part_reclaimed;
 #define USB_BUS			5	/* USB (does not support R/W REG) */
 #define SPI_BUS			6	/* gSPI target */
 #define RPC_BUS			7	/* RPC target */
+#define U_BUS			8	/* UBUS target */
 
 /* Allows size optimization for single-bus image */
 #ifdef BCMBUSTYPE
@@ -594,6 +624,7 @@ typedef struct {
 #define BCM_SBIT(NAME)              (1 << NAME##_SHIFT)
 #define BCM_TBF(val, NAME)          ((val) & NAME##_MASK)
 #define BCM_TBIT(val, NAME)         ((val) & NAME##_MASK)
+#define BCM_MASK(NAME)              (((1 << NAME##_NBITS) - 1) << NAME##_SHIFT)
 #endif /* BCM_BIT_MANIP_MACROS */
 
 #ifndef NBU32

@@ -122,6 +122,9 @@ static void do_sync_work(struct work_struct *work)
 	enable_oopsbuf(1);
 #endif
 
+#ifdef CRASHLOG
+	crashlog_enable = 1;
+#endif
 	/*
 	 * Sync twice to reduce the possibility we skipped some inodes / pages
 	 * because they were temporarily locked

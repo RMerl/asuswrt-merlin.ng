@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: typedefs.h 774649 2019-05-01 13:45:54Z $
+ * $Id: typedefs.h 777067 2019-07-18 09:28:30Z $
  */
 
 #ifndef _TYPEDEFS_H_
@@ -63,17 +63,8 @@
 
 #endif	/* ! __cplusplus */
 
-#if defined(EFI) && !defined(EFI_WINBLD)
-typedef unsigned long long int size_t;
-#endif /* EFI && !EFI_WINBLD */
-
 #if !defined(TYPEDEF_UINTPTR)
-#if defined(_WIN64) && !defined(EFI)
-/* use the Windows ULONG_PTR type when compiling for 64 bit */
-#include <basetsd.h>
-#define TYPEDEF_UINTPTR
-typedef ULONG_PTR uintptr;
-#elif defined(__LP64__)
+#if defined(__LP64__)
 #define TYPEDEF_UINTPTR
 typedef unsigned long long int uintptr;
 #endif // endif
@@ -113,7 +104,7 @@ typedef unsigned __int64 uint64;
 #define TYPEDEF_ULONG
 #endif // endif
 
-#if defined(linux) && !defined(EFI)
+#if defined(linux)
 /*
  * If this is either a Linux hybrid build or the per-port code of a hybrid build
  * then use the Linux header files to get some of the typedefs.  Otherwise, define
@@ -139,10 +130,10 @@ typedef unsigned __int64 uint64;
 #endif // endif
 #endif	/* == 2.6.18 */
 #endif	/* __KERNEL__ */
-#endif	/* linux && !EFI */
+#endif	/* linux */
 
 #if !defined(linux) && !defined(_CFE_) && !defined(_RTE_) && !defined(_MINOSL_) && \
-	!defined(__DJGPP__) && !defined(__BOB__) && !defined(TARGETOS_nucleus) && !defined(EFI)
+	!defined(__DJGPP__) && !defined(__BOB__) && !defined(TARGETOS_nucleus)
 #define TYPEDEF_UINT
 #define TYPEDEF_USHORT
 #endif // endif
@@ -167,7 +158,7 @@ typedef unsigned __int64 uint64;
 #endif /* __ICL */
 
 #if !defined(_CFE_) && !defined(_RTE_) && !defined(_MINOSL_) && !defined(__DJGPP__) && \
-	!defined(__BOB__) && !defined(TARGETOS_nucleus) && !defined(EFI)
+	!defined(__BOB__) && !defined(TARGETOS_nucleus)
 
 /* pick up ushort & uint from standard types.h */
 #if defined(linux) && defined(__KERNEL__)

@@ -2,7 +2,7 @@
  * WFA OCE Specification (Optimized Connectivity Expirience)
  * fundamental types and constants
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -62,8 +62,11 @@ typedef BWL_PRE_PACKED_STRUCT struct wifi_oce_cap_ind_attr_s {
 #define OCE_CAP_INDICATION_ATTR_SIZE (sizeof(wifi_oce_cap_ind_attr_t))
 
 /* OCE Capability Indication Control Field Values */
-#define OCE_RELEASE  0x1
-#define STA_CFON	 0x08
+#define OCE_RELEASE		0x1	/* bit 0 - bit 2 reserved */
+#define STA_CFON		0x08	/* bit 3 */
+#define OCE_11b_ONLY_AP_PRESENT	0X10	/* bit 4 */
+#define HLP_ENABLED		0X20	/* bit 5 */
+#define NON_OCE_AP_PRESENT	0X40	/* bit 6 */
 
 /* 4.2.2 OCE RSSI-Based Association Rejection Attribute */
 typedef BWL_PRE_PACKED_STRUCT struct wifi_oce_rssi_assoc_rej_attr_s {

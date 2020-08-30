@@ -1274,7 +1274,8 @@ static int wps_set_ie(struct wps_registrar *reg)
 	    wps_build_sel_pbc_reg_uuid_e(reg, beacon) ||
 	    (reg->dualband && wps_build_rf_bands(&reg->wps->dev, beacon, 0)) ||
 	    wps_build_wfa_ext(beacon, 0, auth_macs, count, 0) ||
-	    wps_build_vendor_ext(&reg->wps->dev, beacon)) {
+	    wps_build_vendor_ext(&reg->wps->dev, beacon) ||
+	    wps_build_application_ext(&reg->wps->dev, beacon)) {
 		wpabuf_free(beacon);
 		wpabuf_free(probe);
 		return -1;
@@ -1304,7 +1305,8 @@ static int wps_set_ie(struct wps_registrar *reg)
 	    wps_build_probe_config_methods(reg, probe) ||
 	    (reg->dualband && wps_build_rf_bands(&reg->wps->dev, probe, 0)) ||
 	    wps_build_wfa_ext(probe, 0, auth_macs, count, 0) ||
-	    wps_build_vendor_ext(&reg->wps->dev, probe)) {
+	    wps_build_vendor_ext(&reg->wps->dev, probe) ||
+	    wps_build_application_ext(&reg->wps->dev, probe)) {
 		wpabuf_free(beacon);
 		wpabuf_free(probe);
 		return -1;

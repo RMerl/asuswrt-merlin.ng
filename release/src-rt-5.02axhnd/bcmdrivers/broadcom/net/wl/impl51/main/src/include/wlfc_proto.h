@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlfc_proto.h 777121 2019-07-19 16:20:33Z $
+ * $Id: wlfc_proto.h 782690 2020-01-02 03:28:16Z $
  *
  */
 
@@ -121,6 +121,11 @@ typedef enum {
 #define WLFC_CTL_VALUE_LEN_MACDESC		8	/** handle, interface, MAC */
 
 #define WLFC_CTL_VALUE_LEN_MAC			1	/** MAC-handle */
+
+#define WLFC_MAC_OPEN_CLOSE_FROM_PS		1
+#define WLFC_MAC_OPEN_CLOSE_NON_PS		0
+#define WLFC_CTL_VALUE_LEN_MAC_FLAGS		2	/** MAC-handle, PS flags */
+
 #define WLFC_CTL_VALUE_LEN_RSSI			1
 
 #define WLFC_CTL_VALUE_LEN_INTERFACE		1
@@ -268,7 +273,6 @@ typedef enum {
 #define WL_SEQ_FROMDRV_SHIFT		12
 #define SET_DRV_HAS_ASSIGNED_SEQ(x)	((x) |= (WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT))
 #define RESET_DRV_HAS_ASSIGNED_SEQ(x)	((x) &= ~(WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT))
-
 #define GET_DRV_HAS_ASSIGNED_SEQ(x)	(((x) >> WL_SEQ_FROMDRV_SHIFT) & WL_SEQ_FROMDRV_MASK)
 
 #define WL_SEQ_NUM_MASK			0xfff /* allow 12 bit */
@@ -284,6 +288,36 @@ typedef enum {
 #define WL_SEQ_AMSDU_SUPPR_MASK	((WL_SEQ_FROMDRV_MASK << WL_SEQ_FROMDRV_SHIFT) | \
 				(WL_SEQ_AMSDU_MASK << WL_SEQ_AMSDU_SHIFT) | \
 				(WL_SEQ_NUM_MASK << WL_SEQ_NUM_SHIFT))
+
+#define WL_KEY_SEQ_SIZE 6
+#define WL_KEY_SEQ_INFO_SIZE 7
+#ifdef WL_REUSE_KEY_SEQ
+#define WL_KEY_SEQ_FROMWL_MASK		0x1 /* allow 1 bit */
+#define WL_KEY_SEQ_FROMWL_SHIFT		0
+#define SET_WL_HAS_ASSIGNED_KEY_SEQ(x)	((((uint8 *)(x))[6]) |= \
+		(WL_KEY_SEQ_FROMWL_MASK << WL_KEY_SEQ_FROMWL_SHIFT))
+#define RESET_WL_HAS_ASSIGNED_KEY_SEQ(x) (((((uint8 *)(x))[6])) &= \
+		~(WL_KEY_SEQ_FROMWL_MASK << WL_KEY_SEQ_FROMWL_SHIFT))
+#define GET_WL_HAS_ASSIGNED_KEY_SEQ(x)	(((((uint8 *)(x))[6]) >> \
+		WL_KEY_SEQ_FROMWL_SHIFT) & WL_KEY_SEQ_FROMWL_MASK)
+
+#define WL_KEY_SEQ_FROMDRV_MASK		0x2 /* allow 1 bit */
+#define WL_KEY_SEQ_FROMDRV_SHIFT		1
+#define SET_DRV_HAS_ASSIGNED_KEY_SEQ(x)	((((uint8 *)(x))[6]) |= \
+		(WL_KEY_SEQ_FROMDRV_MASK << WL_KEY_SEQ_FROMDRV_SHIFT))
+#define RESET_DRV_HAS_ASSIGNED_KEY_SEQ(x)	((((uint8 *)(x))[6]) &= \
+		~(WL_KEY_SEQ_FROMDRV_MASK << WL_KEY_SEQ_FROMDRV_SHIFT))
+#define GET_DRV_HAS_ASSIGNED_KEY_SEQ(x)	(((((const uint8 *)(x))[6]) >> \
+		WL_KEY_SEQ_FROMDRV_SHIFT) & WL_KEY_SEQ_FROMDRV_MASK)
+#else
+#define SET_WL_HAS_ASSIGNED_KEY_SEQ(x)
+#define RESET_WL_HAS_ASSIGNED_KEY_SEQ(x)
+#define GET_WL_HAS_ASSIGNED_KEY_SEQ(x) (0)
+
+#define SET_DRV_HAS_ASSIGNED_KEY_SEQ(x)
+#define RESET_DRV_HAS_ASSIGNED_KEY_SEQ(x)
+#define GET_DRV_HAS_ASSIGNED_KEY_SEQ(x) (0)
+#endif /* WL_REUSE_KEY_SEQ */
 
 /* 32 STA should be enough??, 6 bits; Must be power of 2 */
 #define WLFC_MAC_DESC_TABLE_SIZE	32
@@ -405,6 +439,7 @@ typedef enum {
  * Action Id to differentiate different callback to CFP layer
  */
 #define CFP_FLOWID_LINK		1
+#define CFP_FLOWID_DELINK	2
 
 /* bit 7, indicating if is TID(1) or AC(0) mapped info in tid field) */
 #define PCIEDEV_IS_AC_TID_MAP_MASK	0x80

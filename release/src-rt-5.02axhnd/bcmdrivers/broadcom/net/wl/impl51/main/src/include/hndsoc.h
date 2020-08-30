@@ -1,7 +1,7 @@
 /*
  * Broadcom HND chip & on-chip-interconnect-related definitions.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndsoc.h 776902 2019-07-12 12:40:41Z $
+ * $Id: hndsoc.h 777677 2019-08-07 05:30:04Z $
  */
 
 #ifndef	_HNDSOC_H
@@ -133,6 +133,7 @@
 #define	SI_ARM_FLASH1		0xffff0000	/* ARM Flash Region 1 */
 #define	SI_ARM_FLASH1_SZ	0x00010000	/* ARM Size of Flash Region 1 */
 #define SI_CCI400_S3_CTL_OFFSET	0x00304000	/* CCI 400 S3 SNOOP Control register offset */
+#define SI_CCI500_S1_CTL_OFFSET	0x00602000	/* CCI 500 S1 SNOOP Control register offset */
 
 #define SI_SFLASH		0x14000000
 #define SI_PCI_DMA		0x40000000	/* Client Mode sb2pcitranslation2 (1 GB) */

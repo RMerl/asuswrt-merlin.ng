@@ -867,6 +867,7 @@ static void wpa_config_write_network(FILE *f, struct wpa_ssid *ssid)
 	INT(owe_group);
 	INT(owe_only);
 	INT(multi_ap_backhaul_sta);
+	INT(ft_eap_pmksa_caching);
 #ifdef CONFIG_HT_OVERRIDES
 	INT_DEF(disable_ht, DEFAULT_DISABLE_HT);
 	INT_DEF(disable_ht40, DEFAULT_DISABLE_HT40);
@@ -1172,6 +1173,10 @@ static void wpa_config_write_global(FILE *f, struct wpa_config *config)
 		}
 	}
 #endif /* CONFIG_WPS */
+#ifdef CONFIG_DRIVER_BRCM_MAP
+	if (config->map_bh_sta)
+		fprintf(f, "map_bh_sta=%d\n", config->map_bh_sta);
+#endif  /* CONFIG_DRIVER_BRCM_MAP */
 #ifdef CONFIG_P2P
 	{
 		int i;
@@ -1513,6 +1518,8 @@ static void wpa_config_write_global(FILE *f, struct wpa_config *config)
 	if (config->p2p_interface_random_mac_addr)
 		fprintf(f, "p2p_interface_random_mac_addr=%d\n",
 			config->p2p_interface_random_mac_addr);
+	if (config->disable_btm)
+		fprintf(f, "disable_btm=1\n");
 }
 
 #endif /* CONFIG_NO_CONFIG_WRITE */

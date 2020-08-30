@@ -8,11 +8,21 @@
  */
 
 SECTIONS {
+	__ksymtab               0 : { KEEP(*(SORT(___ksymtab+*))) }
+	__ksymtab_gpl           0 : { KEEP(*(SORT(___ksymtab_gpl+*))) }
+	__ksymtab_unused        0 : { KEEP(*(SORT(___ksymtab_unused+*))) }
+	__ksymtab_unused_gpl    0 : { KEEP(*(SORT(___ksymtab_unused_gpl+*))) }
+	__ksymtab_gpl_future    0 : { KEEP(*(SORT(___ksymtab_gpl_future+*))) }
+	__ksymtab_strings : { KEEP(*(__ksymtab_strings)) }
+	___ksymtab+wl_pktfwd_lut : { KEEP(*(___ksymtab+wl_pktfwd_lut)) }
+	__kcrctab               0 : { KEEP(*(SORT(___kcrctab+*))) }
+	__kcrctab_gpl           0 : { KEEP(*(SORT(___kcrctab_gpl+*))) }
+	__kcrctab_unused        0 : { KEEP(*(SORT(___kcrctab_unused+*))) }
+	__kcrctab_unused_gpl    0 : { KEEP(*(SORT(___kcrctab_unused_gpl+*))) }
+	__kcrctab_gpl_future    0 : { KEEP(*(SORT(___kcrctab_gpl_future+*))) }
 	.alt.smp.init : { KEEP(*(.alt.smp.init)) }
 	__bug_table : { KEEP(*(__bug_table)) }
 	__param : { KEEP(*(__param)) }
-	__ksymtab_strings : { KEEP(*(__ksymtab_strings)) }
-	___ksymtab+wl_pktfwd_lut : { KEEP(*(___ksymtab+wl_pktfwd_lut)) }
 	.modinfo : { KEEP(*(.modinfo)) }
 	.ARM.exidx.text.unlikely : { *(.ARM.exidx.text.unlikely.*) }
 	.ARM.exidx.init.text : { *(.ARM.exidx.init.text) }
@@ -33,4 +43,7 @@ SECTIONS {
 	.rodata.str1.4 : { *(.rodata.str1.4) }
 	.rodata.str : { *(.rodata.str) }
 	.rodata : { *(.rodata.*) }
+	.pv_table : { KEEP(*(.pv_table)) }
+	.rel.pv_table : { KEEP(*(.rel.pv_table)) }
+	__versions : { KEEP(*(__versions)) }
 }

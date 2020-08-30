@@ -172,6 +172,9 @@ static inline int wpa_key_mgmt_cckm(int akm)
 #define WPA_PROTO_WAPI BIT(2)
 #define WPA_PROTO_OSEN BIT(3)
 
+#ifdef CONFIG_DRIVER_BRCM
+#define WPA_AUTH_ALG_NONE 0X0U
+#endif /* CONFIG_DRIVER_BRCM */
 #define WPA_AUTH_ALG_OPEN BIT(0)
 #define WPA_AUTH_ALG_SHARED BIT(1)
 #define WPA_AUTH_ALG_LEAP BIT(2)

@@ -2,7 +2,7 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: aiutils.c 773199 2019-03-14 14:36:42Z $
+ * $Id: aiutils.c 781773 2019-11-28 10:09:10Z $
  */
 #include <bcm_cfg.h>
 #include <typedefs.h>
@@ -1093,12 +1093,13 @@ static void
 _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 {
 	si_info_t *sii = SI_INFO(sih);
-#if defined(BCMDBG_ERR) || defined(UCM_CORRUPTION_WAR)
 	si_cores_info_t *cores_info = (si_cores_info_t *)sii->cores_info;
-#endif // endif
 	aidmp_t *ai;
 	volatile uint32 dummy;
 	uint loop_counter = 10;
+	bool war_enab = (cores_info->coreid[sii->curidx] == D11_CORE_ID) &&
+		(((ai_corerev(sih) >= 128) && (ai_corerev(sih) <= 132)) ||
+		(ai_corerev(sih) == 61));
 
 	ASSERT(GOODREGS(sii->curwrap));
 	ai = sii->curwrap;
@@ -1122,13 +1123,11 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 	W_REG(sii->osh, &ai->ioctrl, (bits | resetbits | SICF_FGC | SICF_CLOCK_EN));
 	dummy = R_REG(sii->osh, &ai->ioctrl);
 	BCM_REFERENCE(dummy);
-#ifdef UCM_CORRUPTION_WAR
-	if (cores_info->coreid[sii->curidx] == D11_CORE_ID) {
+	if (war_enab) {
 		/* Reset FGC */
 		OSL_DELAY(1);
 		W_REG(sii->osh, &ai->ioctrl, (dummy & (~SICF_FGC)));
 	}
-#endif /* UCM_CORRUPTION_WAR */
 	/* ensure there are no pending backplane operations */
 	SPINWAIT(((dummy = R_REG(sii->osh, &ai->resetstatus)) != 0), 300);
 
@@ -1159,21 +1158,20 @@ _ai_core_reset(si_t *sih, uint32 bits, uint32 resetbits)
 		          __FUNCTION__, cores_info->coreid[sii->curidx]));
 #endif // endif
 
-#ifdef UCM_CORRUPTION_WAR
-	/* Pulse FGC after lifting Reset */
-	W_REG(sii->osh, &ai->ioctrl, (bits | SICF_FGC | SICF_CLOCK_EN));
-#else
-	W_REG(sii->osh, &ai->ioctrl, (bits | SICF_CLOCK_EN));
-#endif /* UCM_CORRUPTION_WAR */
+	if (war_enab) {
+		/* Pulse FGC after lifting Reset */
+		W_REG(sii->osh, &ai->ioctrl, (bits | SICF_FGC | SICF_CLOCK_EN));
+	} else {
+		W_REG(sii->osh, &ai->ioctrl, (bits | SICF_CLOCK_EN));
+	}
 	dummy = R_REG(sii->osh, &ai->ioctrl);
 	BCM_REFERENCE(dummy);
-#ifdef UCM_CORRUPTION_WAR
-	if (cores_info->coreid[sii->curidx] == D11_CORE_ID) {
+
+	if (war_enab) {
 		/* Reset FGC */
 		OSL_DELAY(1);
 		W_REG(sii->osh, &ai->ioctrl, (dummy & (~SICF_FGC)));
 	}
-#endif /* UCM_CORRUPTION_WAR */
 	OSL_DELAY(1);
 
 }

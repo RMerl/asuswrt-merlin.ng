@@ -277,6 +277,7 @@ extern bool wl_pkt_drop_on_wmark(osl_t *osh, bool is_pktc);
 #if defined(PKTC_TBL)
 extern BCMFASTPATH unsigned long dhd_pktc_req(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);
 extern wl_pktc_tbl_t *dhd_pktc_attach(void *dhdp);
+extern void dhd_pktc_detach(void *dhdp);
 extern void dhd_pktc_dump(void *dhdp, void *buf);
 extern BCMFASTPATH int32 dhd_rxchainhandler(void *dhdp, struct sk_buff *skb);
 extern unsigned long (*dhd_pktc_req_hook)(int req_id, unsigned long param0, unsigned long param1, unsigned long param2);

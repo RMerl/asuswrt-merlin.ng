@@ -1,7 +1,7 @@
 /*
  * HND SiliconBackplane ARM core software interface.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndarm.h 758381 2018-04-18 19:57:04Z $
+ * $Id: hndarm.h 779771 2019-10-07 11:26:40Z $
  */
 
 #ifndef _hndarm_h_
@@ -160,11 +160,10 @@ extern bool si_arm_ovl_int(si_t *sih, uint32 pc);
 
 int32 si_arm_clockratio(si_t *sih, uint8 div);
 
-#ifndef BCM_BOOTLOADER
-#if defined(BCMDBG_LOADAVG) && (defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7A__))
-/** IntTimer generates a FIQ when it counts down to 0 */
-void hnd_cpu_loadavg_timer(si_t *sih, uint32 val);
-#endif // endif
-#endif /* BCM_BOOTLOADER */
+#if defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__)
+void hnd_arm_inttimer_init(si_t *sih);
+void hnd_arm_inttimer_set_timer(si_t *sih, uint32 ticks);
+void hnd_arm_inttimer_ack_timer(si_t *sih);
+#endif /* __ARM_ARCH_7R__ || __ARM_ARCH_7M__ */
 
 #endif /* _hndarm_h_ */

@@ -395,6 +395,7 @@ static void hapd_wps_write_creds_to_file(FILE *nconf, struct hostapd_data *hapd,
 {
 	int wpa;
 	int i;
+	int sae = 0;
 
 	fprintf(nconf, "# WPS configuration - START\n");
 
@@ -424,6 +425,15 @@ static void hapd_wps_write_creds_to_file(FILE *nconf, struct hostapd_data *hapd,
 
 	if (wpa) {
 		char *prefix;
+		if (cred->auth_type & WPS_AUTH_WPA2PSK
+			/* Sae needs credential in passphrase-form */
+			&& (cred->key_len >= 8 && cred->key_len < 64)
+			&& hapd->conf->wps_cred_add_sae) {
+			/* wpa needs to be set to 2 for transition mode (WPA2-PSK + WPA3-SAE) */
+			sae = 1;
+			wpa = 2;
+		}
+
 		fprintf(nconf, "wpa=%d\n", wpa);
 
 		fprintf(nconf, "wpa_key_mgmt=");
@@ -432,9 +442,25 @@ static void hapd_wps_write_creds_to_file(FILE *nconf, struct hostapd_data *hapd,
 			fprintf(nconf, "WPA-EAP");
 			prefix = " ";
 		}
-		if (cred->auth_type & (WPS_AUTH_WPA2PSK | WPS_AUTH_WPAPSK))
+		if (cred->auth_type & (WPS_AUTH_WPA2PSK | WPS_AUTH_WPAPSK)) {
 			fprintf(nconf, "%sWPA-PSK", prefix);
+			prefix=" ";
+		}
+		if (sae)
+			fprintf(nconf, "%sSAE", prefix);
+
 		fprintf(nconf, "\n");
+
+		/* ieee80211w may setup as 0 */
+		if (sae && hapd->conf->ieee80211w == NO_MGMT_FRAME_PROTECTION) {
+			fprintf(nconf, "ieee80211w=%d\n",
+				MGMT_FRAME_PROTECTION_OPTIONAL);
+		} else {
+			/* fill current setting */
+			fprintf(nconf, "ieee80211w=%d\n", hapd->conf->ieee80211w);
+		}
+
+		/* asumme sae_require_mfp is always set when wps_cred_add_sae set */
 
 		fprintf(nconf, "wpa_pairwise=");
 		prefix = "";
@@ -446,7 +472,7 @@ static void hapd_wps_write_creds_to_file(FILE *nconf, struct hostapd_data *hapd,
 
 			prefix = " ";
 		}
-		if (cred->encr_type & WPS_ENCR_TKIP) {
+		if (!sae && cred->encr_type & WPS_ENCR_TKIP) {
 			fprintf(nconf, "%sTKIP", prefix);
 		}
 		fprintf(nconf, "\n");
@@ -618,6 +644,7 @@ static int hapd_wps_cred_cb(struct hostapd_data *hapd, void *ctx)
 		     str_starts(buf, "wpa_pairwise=") ||
 		     str_starts(buf, "rsn_pairwise=") ||
 		     str_starts(buf, "wpa_key_mgmt=") ||
+		     str_starts(buf, "ieee80211w=") ||
 		     str_starts(buf, "wpa_passphrase="))) {
 			fprintf(nconf, "#WPS# %s", buf);
 		} else
@@ -1112,6 +1139,20 @@ static int hostapd_wps_set_vendor_ext(struct hostapd_data *hapd,
 	return 0;
 }
 
+static int hostapd_wps_set_application_ext(struct hostapd_data *hapd,
+					   struct wps_context *wps)
+{
+	wpabuf_free(wps->dev.application_ext);
+
+	if (!hapd->conf->wps_application_ext) {
+		wps->dev.application_ext = NULL;
+		return 0;
+	}
+
+	wps->dev.application_ext = wpabuf_dup(hapd->conf->wps_application_ext);
+	return wps->dev.application_ext ? 0 : -1;
+}
+
 static void hostapd_free_wps(struct wps_context *wps)
 {
 	int i;
@@ -1200,7 +1241,8 @@ int hostapd_init_wps(struct hostapd_data *hapd,
 	os_memcpy(wps->dev.pri_dev_type, hapd->conf->device_type,
 		  WPS_DEV_TYPE_LEN);
 
-	if (hostapd_wps_set_vendor_ext(hapd, wps) < 0)
+	if (hostapd_wps_set_vendor_ext(hapd, wps) < 0 ||
+	    hostapd_wps_set_application_ext(hapd, wps) < 0)
 		goto fail;
 
 	wps->dev.os_version = WPA_GET_BE32(hapd->conf->os_version);
@@ -1442,6 +1484,7 @@ void hostapd_update_wps(struct hostapd_data *hapd)
 #endif /* CONFIG_WPS_UPNP */
 
 	hostapd_wps_set_vendor_ext(hapd, hapd->wps);
+	hostapd_wps_set_application_ext(hapd, hapd->wps);
 
 	if (hapd->conf->wps_state)
 		wps_registrar_update_ie(hapd->wps->registrar);
@@ -1542,6 +1585,7 @@ static int wps_cancel(struct hostapd_data *hapd, void *ctx)
 		data->count++;
 		wps_registrar_wps_cancel(hapd->wps->registrar);
 		ap_for_each_sta(hapd, ap_sta_wps_cancel, NULL);
+		wpa_msg(hapd->msg_ctx, MSG_INFO, WPS_EVENT_CANCEL);
 	}
 
 	return 0;
@@ -1926,6 +1970,13 @@ int hostapd_wps_config_map_bh(struct hostapd_data *hapd, const char *ssid,
 	return 0;
 }
 #endif /* CONFIG_DRIVER_BRCM_MAP */
+
+#if defined(CONFIG_DRIVER_BRCM) && defined(CONFIG_WPS_UPNP)
+int hostapd_wps_upnp_ifcae_ip_changed(struct hostapd_data *hapd)
+{
+	return upnp_wps_web_listener_sock_update(hapd->wps_upnp, hapd->conf->upnp_iface);
+}
+#endif	/* CONFIG_DRIVER_BRCM && CONFIG_WPS_UPNP */
 
 #ifdef CONFIG_WPS_NFC
 

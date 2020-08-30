@@ -18,6 +18,10 @@ struct netlink_config {
 			   size_t len);
 	void (*dellink_cb)(void *ctx, struct ifinfomsg *ifi, u8 *buf,
 			   size_t len);
+#ifdef CONFIG_DRIVER_BRCM
+	void (*newaddr_cb)(void *ctx, struct ifaddrmsg *ifa, u8 *buf,
+			   size_t len);
+#endif	/* CONFIG_DRIVER_BRCM */
 };
 
 struct netlink_data * netlink_init(struct netlink_config *cfg);

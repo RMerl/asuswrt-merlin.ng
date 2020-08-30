@@ -262,8 +262,8 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 		br->dev->stats.rx_multicast_bytes += skb2->len;
 #endif
 #if !(defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG))
-	} else if ((dst = __br_fdb_get(br, dest, vid)) &&
-			dst->is_local) {
+	} else if ((p->flags & BR_ISOLATE_MODE) ||
+			((dst = __br_fdb_get(br, dest, vid)) && dst->is_local)) {
 		skb2 = skb;
 		/* Do not forward the packet since it's local. */
 		skb = NULL;
@@ -410,7 +410,7 @@ int br_handle_frame_finish(struct sock *sk, struct sk_buff *skb)
 		}
 next:
 #endif /* PKTC */
-		if ((dst != NULL) && dst->is_local) {
+		if ((p->flags & BR_ISOLATE_MODE) || ((dst != NULL) && dst->is_local)) {
 			skb2 = skb;
 			/* Do not forward the packet since it's local. */
 			skb = NULL;

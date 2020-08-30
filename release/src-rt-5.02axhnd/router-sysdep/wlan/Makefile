@@ -382,6 +382,8 @@ endif
 CFLAGS += -DDSLCPE_WLCSM_EXT
 export DSLCPE_WLCSM_EXT=1
 wlcsm_dm:
+	# "make regenerate_dm_files" first to avoid parallel compiling issue.
+	$(MAKE) -C $@ regenerate_dm_files
 	$(MAKE) -C $@ install 
 
 setuplink: 

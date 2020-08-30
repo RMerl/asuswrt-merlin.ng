@@ -2,7 +2,7 @@
  * OS Abstraction Layer Extension - the APIs defined by the "extension" API
  * are only supported by a subset of all operating systems.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: osl_ext.h 731209 2017-11-10 02:39:06Z $
+ * $Id: osl_ext.h 778425 2019-08-30 12:52:56Z $
  */
 
 #ifndef _osl_ext_h_
@@ -27,16 +27,11 @@
 
 /* ---- Include Files ---------------------------------------------------- */
 
-#if defined(TARGETOS_nucleus)
-	#include <nucleus_osl_ext.h>
-#elif defined(TARGETOS_symbian)
-	#include <e32def.h>
-	#include <symbian_osl_ext.h>
-#elif defined(THREADX)
-	#include <threadx_osl_ext.h>
+#ifdef THREADX
+#include <threadx_osl_ext.h>
 #else
-	#define OSL_EXT_DISABLED
-#endif // endif
+#define OSL_EXT_DISABLED
+#endif /* THREADX */
 
 /* Include base operating system abstraction. */
 #include <osl.h>

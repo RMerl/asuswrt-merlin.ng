@@ -1,7 +1,7 @@
 /*
  * OS Abstraction Layer
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: osl.h 774649 2019-05-01 13:45:54Z $
+ * $Id: osl.h 778968 2019-09-16 15:00:37Z $
  */
 
 #ifndef _osl_h_
@@ -42,9 +42,7 @@ enum {
 #endif /* container_of */
 #endif /* STRICT_GCC_WARNINGS */
 
-#ifdef MACOSX
-#define OSL_PKTTAG_SZ 56
-#elif defined DONGLEBUILD
+#if defined DONGLEBUILD
 #define OSL_PKTTAG_SZ 32 /* Size of PktTag */
 #else
 #define OSL_PKTTAG_SZ 48 /* Size of PktTag */
@@ -107,8 +105,6 @@ MAKE_PREFETCH_RANGE_FN(PREF_STORE_RETAINED)
 #include <dos_osl.h>
 #elif defined(PCBIOS)
 #include <pcbios_osl.h>
-#elif defined(EFI)
-#include <efi_osl.h>
 #elif defined(WL_UNITTEST)
 #include <utest_osl.h>
 #elif defined(linux)
@@ -121,8 +117,6 @@ MAKE_PREFETCH_RANGE_FN(PREF_STORE_RETAINED)
 #include <hnd_pkt.h>
 #elif defined(_MINOSL_)
 #include <min_osl.h>
-#elif defined(MACOSX)
-#include <macosx_osl.h>
 #elif defined(TARGETOS_nucleus)
 #include <nucleus_osl.h>
 #else

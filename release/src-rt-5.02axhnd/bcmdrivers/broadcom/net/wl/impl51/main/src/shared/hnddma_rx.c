@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA receive routines.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_rx.c 775299 2019-05-27 10:08:55Z $
+ * $Id: hnddma_rx.c 779929 2019-10-10 07:50:13Z $
  */
 
 /**
@@ -107,6 +107,8 @@ _dma_update_num_dd(dma_info_t *di, int *num_dd)
  */
 #ifdef BULKRX_PKTLIST
 #ifdef STS_FIFO_RXEN
+
+/* BULKRX_PKTLIST && STS_FIFO_RXEN specific function */
 bool BCMFASTPATH
 dma_sts_rxfill(hnddma_t *dmah)
 {
@@ -172,11 +174,11 @@ dma_sts_rxfill(hnddma_t *dmah)
 #ifdef BCM_SECURE_DMA
 #ifdef BCMDMA64OSL
 		paddr = SECURE_DMA_MAP(di->osh, STSBUF_DATA(p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_TXBUF_POST);
 		ULONGTOPHYSADDR(paddr, pa);
 #else
 		pa = SECURE_DMA_MAP(di->osh, STSBUF_DATA(p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_TXBUF_POST);
 #endif /* BCMDMA64OSL */
 #else
 #if !defined(OSL_CACHE_COHERENT)
@@ -232,7 +234,7 @@ dma_sts_rxfill(hnddma_t *dmah)
 #endif /* BULK_DESCR_FLUSH */
 #endif /* ! OSL_CACHE_COHERENT */
 
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(rxout, dma64dd_t)));
 
 #if defined(BULK_DESCR_FLUSH)
 	di->rxout = rxout;
@@ -244,6 +246,7 @@ dma_sts_rxfill(hnddma_t *dmah)
 /**
  * !! sts rx entry routine
  * returns a pointer to the list of next frame/frames received, or NULL if there are no more
+ * BULKRX_PKTLIST && STS_FIFO_RXEN specific function.
  */
 static void BCMFASTPATH
 _dma_sts_rx(dma_info_t *di, rx_list_t *rx_sts_list)
@@ -321,6 +324,7 @@ _dma_sts_rx(dma_info_t *di, rx_list_t *rx_sts_list)
 	rx_sts_list->rx_tail = prev;
 }
 
+/** BULKRX_PKTLIST && STS_FIFO_RXEN specific function */
 void BCMFASTPATH
 dma_sts_rx(hnddma_t *dmah, rx_list_t *rx_sts_list)
 {
@@ -331,6 +335,10 @@ dma_sts_rx(hnddma_t *dmah, rx_list_t *rx_sts_list)
 
 #endif /* STS_FIFO_RXEN */
 
+/**
+ * BULKRX_PKTLIST specific function
+ * @param[inout] rx_list  Linked list of mpdus that were received
+ */
 void BCMFASTPATH
 dma_rx(hnddma_t *dmah, rx_list_t *rx_list, rx_list_t *rx_sts_list, uint nbound)
 {
@@ -561,8 +569,10 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, rx_list_t *rx_sts_list, uint nbound)
 #endif // endif
 	rx_list->rx_head = head0;
 	rx_list->rx_tail = prev;
-}
-#else
+} /* dma_rx */
+
+#else /* BULKRX_PKTLIST */
+
 /**
  * !! rx entry routine
  * returns a pointer to the next frame received, or NULL if there are no more
@@ -572,6 +582,8 @@ dma_rx(hnddma_t *dmah, rx_list_t *rx_list, rx_list_t *rx_sts_list, uint nbound)
  *   The DMA scattering starts with normal DMA header, followed by first buffer data.
  *   After it reaches the max size of buffer, the data continues in next DMA descriptor
  *   buffer WITHOUT DMA header
+ *
+ * !BULKRX_PKTLIST specific function.
  */
 void * BCMFASTPATH
 dma_rx(hnddma_t *dmah)
@@ -971,7 +983,7 @@ dma_rxfill(hnddma_t *dmah)
 
 #if !defined(OSL_CACHE_COHERENT)
 
-#if defined(linux) && (defined(BCM47XX_CA9) || defined(STB) || defined(__mips__) || \
+#if defined(linux) && (defined(BCM47XX_CA9) || defined(__mips__) || \
 	defined(BCA_HNDROUTER))
 		DMA_MAP(di->osh, PKTDATA(di->osh, p), sizeof(uint32), DMA_TX, NULL, NULL);
 #endif // endif
@@ -983,11 +995,11 @@ dma_rxfill(hnddma_t *dmah)
 #ifdef BCM_SECURE_DMA
 #ifdef BCMDMA64OSL
 		paddr = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_RXBUF_POST);
 		ULONGTOPHYSADDR(paddr, pa);
 #else
 		pa = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_RXBUF_POST);
 #endif /* BCMDMA64OSL */
 #else
 		pa = DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX, p,
@@ -999,11 +1011,11 @@ dma_rxfill(hnddma_t *dmah)
 #ifdef BCM_SECURE_DMA
 #ifdef BCMDMA64OSL
 		paddr = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_TXBUF_POST);
 		ULONGTOPHYSADDR(paddr, pa);
 #else
 		pa = SECURE_DMA_MAP(di->osh, PKTDATA(di->osh, p), di->rxbufsize, DMA_RX,
-			NULL, NULL, &di->sec_cma_info_rx, 0, CMA_TXBUF_POST);
+			NULL, NULL, &di->sec_cma_info_rx, 0, SECDMA_TXBUF_POST);
 #endif /* BCMDMA64OSL */
 #else
 
@@ -1174,7 +1186,7 @@ dma_rxfill(hnddma_t *dmah)
 #endif /* BULK_DESCR_FLUSH */
 #endif /* ! OSL_CACHE_COHERENT */
 
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(rxout, dma64dd_t)));
 
 #if defined(BULK_DESCR_FLUSH)
 	di->rxout = rxout;
@@ -1201,6 +1213,7 @@ dma_sts_rxreclaim(hnddma_t *dmah)
 }
 #endif /* STS_FIFO_RXEN */
 
+/** Called when e.g. flushing d11 packets */
 void  BCMFASTPATH
 dma_rxreclaim(hnddma_t *dmah)
 {
@@ -1269,7 +1282,7 @@ dma_rxreclaim(hnddma_t *dmah)
 	if (POOL_ENAB(di->pktpool) && origcb == FALSE)
 		pktpool_emptycb_disable(di->pktpool, FALSE);
 #endif /* BCMPKTPOOL */
-}
+} /* dma_rxreclaim */
 
 /**
  * Initializes one tx or rx descriptor with the caller provided arguments, notably a buffer.
@@ -1326,15 +1339,11 @@ dma64_dd_upd(dma_info_t *di, dma64dd_t *ddring, dmaaddr_t pa, uint outidx, uint3
 	}
 
 #if !defined(OSL_CACHE_COHERENT)
-#if (defined(BCM47XX_CA9) || defined(STB) || defined(BCA_HNDROUTER)) && \
+#if (defined(BCM47XX_CA9) || ((defined(STB) || defined(STBAP)) && \
+	!defined(DHD_USE_COHERENT_MEM_FOR_RING)) || defined(BCA_HNDROUTER)) && \
 	!defined(BULK_DESCR_FLUSH)
-#ifdef BCM_SECURE_DMA
-	SECURE_DMA_DD_MAP(di->osh, (void *)(((uint)(&ddring[outidx])) & ~0x1f), 32,
-		DMA_TX, NULL, NULL);
-#else
 	DMA_MAP(di->osh, (void *)(((unsigned long long)(&ddring[outidx])) & ~0x1f), 32,
 		DMA_TX, NULL, NULL);
-#endif /* BCM_SECURE_DMA */
 #endif /* BCM47XX_CA9 && !BULK_DESCR_FLUSH */
 #endif /* ! OSL_CACHE_COHERENT */
 

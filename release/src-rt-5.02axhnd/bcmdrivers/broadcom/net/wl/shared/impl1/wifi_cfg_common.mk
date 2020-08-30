@@ -5,4 +5,9 @@ ifeq ($(strip $(CONFIG_BCM_WLCSM_DEBUG)),y)
 EXTRA_CFLAGS += -DWLCSM_DEBUG
 endif
 
-EXTRA_CFLAGS += -I$(WLAN_SHARED_DIR)
+# for binary compatible
+ifneq ($(strip $(BCA_CPEROUTER)),)
+EXTRA_CFLAGS += -DWLBIN_COMPAT
+endif
+
+EXTRA_CFLAGS += -I$(WLAN_SHARED_DIR) -DBCA_CPE_BSP_SHARED

@@ -53,13 +53,19 @@ struct sk_buff *wl_xlate_to_skb(struct wl_info *wl, struct sk_buff *s)
 #ifdef DSLCPE_CACHE_SMARTFLUSH
 		PKTSETDIRTYP(wl->osh, s, NULL);
 #endif
-#if defined(PKTC_TBL)
-		WLCNTINCR(wl->pub->pktc_tbl->g_stats->tx_slowpath_skb);
+#if defined(BCM_PKTFWD)
+		wl_pktfwd_stats_gp->txf_fkb_pkts++;
+#elif defined(PKTC_TBL)
+		if (wl->pub->pktc_tbl && wl->pub->pktc_tbl->g_stats)
+			WLCNTINCR(wl->pub->pktc_tbl->g_stats->tx_slowpath_skb);
 #endif
 		return s;
 	}
-#if defined(PKTC_TBL)
-	WLCNTINCR(wl->pub->pktc_tbl->g_stats->tx_slowpath_fkb);
+#if defined(BCM_PKTFWD)
+	wl_pktfwd_stats_gp->txf_fkb_pkts++;
+#elif defined(PKTC_TBL)
+	if (wl->pub->pktc_tbl && wl->pub->pktc_tbl->g_stats)
+		WLCNTINCR(wl->pub->pktc_tbl->g_stats->tx_slowpath_fkb);
 #endif
 	orig_s = s;
 	xlated_s = nbuff_xlate((pNBuff_t)s);

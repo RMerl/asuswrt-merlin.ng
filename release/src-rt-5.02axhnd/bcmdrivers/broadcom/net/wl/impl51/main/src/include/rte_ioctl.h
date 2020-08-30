@@ -1,7 +1,7 @@
 /*
  * HND Run Time Environment ioctl.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: rte_ioctl.h 775419 2019-05-29 19:55:17Z $
+ * $Id: rte_ioctl.h 783707 2020-02-06 13:20:07Z $
  */
 
 #ifndef _rte_ioctl_h_
@@ -95,6 +95,9 @@ typedef struct memuse_info {
 	uint32 max_flowring_alloc; /* max mem allocated for any flowring */
 	uint32 max_bsscfg_alloc; /* max mem allocated for any bsscfg */
 	uint32 max_scb_alloc; /* max mem allocated for any scb */
+	uint32 total_flowring_alloc; /* total memory allocated for flowrings */
+	uint32 total_bsscfg_alloc; /* total memory allocated for bsscfgs */
+	uint32 total_scb_alloc; /* total memory allocated for scbs */
 } memuse_info_t;
 
 /* For D11 DMA loopback test */

@@ -26,8 +26,7 @@ CFLAGS += $(EXTRA_CFLAGS)
 CFLAGS += -I$(abspath ../src)
 CFLAGS += -I$(abspath ../src/utils)
 CFLAGS += -I$(TOP)/openssl/include
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread
-
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lm -lssl -lpthread -L$(TOP)/libnl/lib/.libs
 -include .config
 
 ifndef CONFIG_NO_GITVER
@@ -278,10 +277,15 @@ CFLAGS += -DCONFIG_SAE
 OBJS += ../src/common/sae.o
 NEED_ECC=y
 NEED_DH_GROUPS=y
+NEED_DRAGONFLY=y
 endif
 
 ifdef CONFIG_DRIVER_BRCM_SAE_FEATURE
 CFLAGS += -DCONFIG_DRIVER_BRCM_SAE_FEATURE
+endif
+
+ifdef CONFIG_DRIVER_BRCM
+CFLAGS += -DCONFIG_DRIVER_BRCM
 endif
 
 ifdef CONFIG_DPP
@@ -677,6 +681,23 @@ CONFIG_IEEE8021X_EAPOL=y
 NEED_T_PRF=y
 endif
 
+ifdef CONFIG_EAP_TEAP
+# EAP-TEAP
+ifeq ($(CONFIG_EAP_TEAP), dyn)
+CFLAGS += -DEAP_TEAP_DYNAMIC
+EAPDYN += ../src/eap_peer/eap_teap.so
+EAPDYN += ../src/eap_common/eap_teap_common.o
+else
+CFLAGS += -DEAP_TEAP
+OBJS += ../src/eap_peer/eap_teap.o ../src/eap_peer/eap_teap_pac.o
+OBJS += ../src/eap_common/eap_teap_common.o
+endif
+TLS_FUNCS=y
+CONFIG_IEEE8021X_EAPOL=y
+NEED_T_PRF=y
+NEED_SHA384=y
+endif
+
 ifdef CONFIG_EAP_PAX
 # EAP-PAX
 ifeq ($(CONFIG_EAP_PAX), dyn)
@@ -727,6 +748,7 @@ OBJS += ../src/eap_peer/eap_pwd.o ../src/eap_common/eap_pwd_common.o
 CONFIG_IEEE8021X_EAPOL=y
 NEED_SHA256=y
 NEED_ECC=y
+NEED_DRAGONFLY=y
 endif
 
 ifdef CONFIG_EAP_EKE
@@ -743,6 +765,10 @@ NEED_DH_GROUPS=y
 NEED_DH_GROUPS_ALL=y
 NEED_SHA256=y
 NEED_AES_CBC=y
+endif
+
+ifeq ($(CONFIG_DRIVER_BRCM_WDS), y)
+CFLAGS += -DCONFIG_DRIVER_BRCM_WDS
 endif
 
 ifdef CONFIG_WPS
@@ -868,6 +894,9 @@ OBJS += ../src/pae/ieee802_1x_cp.o
 OBJS += ../src/pae/ieee802_1x_kay.o
 OBJS += ../src/pae/ieee802_1x_key.o
 OBJS += ../src/pae/ieee802_1x_secy_ops.o
+ifdef CONFIG_AP
+OBJS += ../src/ap/wpa_auth_kay.o
+endif
 endif
 
 ifdef CONFIG_IEEE8021X_EAPOL
@@ -1033,6 +1062,10 @@ ifdef CONFIG_SMARTCARD
 CFLAGS += -DCONFIG_SMARTCARD
 endif
 
+ifdef NEED_DRAGONFLY
+OBJS += ../src/common/dragonfly.o
+endif
+
 ifdef MS_FUNCS
 OBJS += ../src/crypto/ms_funcs.o
 NEED_DES=y
@@ -1045,7 +1078,8 @@ endif
 
 ifdef TLS_FUNCS
 NEED_DES=y
-# Shared TLS functions (needed for EAP_TLS, EAP_PEAP, EAP_TTLS, and EAP_FAST)
+# Shared TLS functions (needed for EAP_TLS, EAP_PEAP, EAP_TTLS, EAP_FAST, and
+# EAP_TEAP)
 OBJS += ../src/eap_peer/eap_tls_common.o
 ifndef CONFIG_FIPS
 NEED_TLS_PRF=y

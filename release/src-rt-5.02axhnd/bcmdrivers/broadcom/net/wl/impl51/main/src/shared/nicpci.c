@@ -4,7 +4,7 @@
  * Code to operate on PCI/E core, in NIC or BMAC high driver mode. Note that this file is not used
  * in firmware builds.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: nicpci.c 773199 2019-03-14 14:36:42Z $
+ * $Id: nicpci.c 778660 2019-09-06 12:21:21Z $
  */
 
 #include <bcm_cfg.h>
@@ -151,6 +151,7 @@ pcicore_init(si_t *sih, osl_t *osh, volatile void *regs)
 			(CHIPID(pi->sih->chip) == BCM43570_CHIP_ID) ||
 			/* EAP: Force clear for NIC 43684/94 chips */
 			BCM43684_CHIP(pi->sih->chip) ||
+			BCM6715_CHIP(pi->sih->chip) ||
 			BCM6710_CHIP(pi->sih->chip)) {
 			AND_REG(osh, (&pi->regs.pcieregs->control), ~PCIE_SPERST);
 			dummy = R_REG(osh, &pi->regs.pcieregs->control);
@@ -926,7 +927,7 @@ pcie_war_noplldown(pcicore_info_t *pi)
 
 	/*  clear srom shadow backdoor */
 	reg16 = &pcieregs->sprom[SRSH_BD_OFFSET];
-	W_REG(pi->osh, reg16, 0);
+	W_REG(pi->osh, reg16, (uint16)0);
 }
 
 /** Needs to happen when coming out of 'standby'/'hibernate' */

@@ -1,7 +1,7 @@
 /*
  * Driver O/S-independent utility routines
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmutils.c 778392 2019-08-30 03:08:05Z $
+ * $Id: bcmutils.c 779309 2019-09-25 03:15:04Z $
  */
 
 #include <bcm_cfg.h>
@@ -1137,7 +1137,7 @@ pktsetprio(void *pkt, bool update_vtag)
 		uint16 vlan_tag;
 		int vlan_prio, dscp_prio = 0;
 
-		evh = (struct ethervlan_header *)eh;
+		evh = (struct ethervlan_header *)pktdata;
 
 		vlan_tag = ntoh16(evh->vlan_tag);
 		vlan_prio = (int) (vlan_tag >> VLAN_PRI_SHIFT) & VLAN_PRI_MASK;
@@ -1543,7 +1543,7 @@ typedef struct bcm_mwbmap {     /* Hierarchical multiword bitmap allocator    */
 
 /* Incarnate a hierarchical multiword bitmap based small index allocator. */
 struct bcm_mwbmap *
-BCMATTACHFN(bcm_mwbmap_init)(osl_t *osh, uint32 items_max)
+bcm_mwbmap_init(osl_t *osh, uint32 items_max)
 {
 	struct bcm_mwbmap * mwbmap_p;
 	uint32 wordix, size, words, extra;
@@ -1617,7 +1617,7 @@ error1:
 
 /* Release resources used by multiword bitmap based small index allocator. */
 void
-BCMATTACHFN(bcm_mwbmap_fini)(osl_t * osh, struct bcm_mwbmap * mwbmap_hdl)
+bcm_mwbmap_fini(osl_t * osh, struct bcm_mwbmap * mwbmap_hdl)
 {
 	bcm_mwbmap_t * mwbmap_p;
 
@@ -2354,6 +2354,21 @@ bcm_bprintf(struct bcmstrbuf *b, const char *fmt, ...)
 exit:
 	va_end(ap);
 
+	return r;
+}
+
+int
+bcm_bprintf_val_pcent(bcmstrbuf_t *b, uint32 val, uint32 pcent, int pad)
+{
+	int r = 1;
+
+	if ((!val) && (!pcent)) {
+		r = bcm_bprintf(b, "%*d(0%%)  ", pad, val);
+	} else {
+		r = bcm_bprintf(b, "%*d(%d%%)", pad, val, pcent);
+		if (pcent < 10) bcm_bprintf(b, " "), r++;
+		if (pcent < 100) bcm_bprintf(b, " "), r++;
+	}
 	return r;
 }
 
@@ -4327,7 +4342,7 @@ bcm_mkiovar(const char *name, const char *data, uint datalen, char *buf, uint bu
 	strncpy(buf, name, buflen);
 
 	/* append data onto the end of the name string */
-	if (data) {
+	if (data && datalen != 0) {
 		memcpy(&buf[len], data, datalen);
 		len += datalen;
 	}

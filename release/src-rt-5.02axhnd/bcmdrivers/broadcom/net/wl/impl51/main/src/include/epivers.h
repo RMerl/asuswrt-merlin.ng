@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -27,23 +27,23 @@
 
 #define	EPI_MINOR_VERSION	10
 
-#define	EPI_RC_NUMBER		99
+#define	EPI_RC_NUMBER		121
 
-#define	EPI_INCREMENTAL_NUMBER	17
+#define	EPI_INCREMENTAL_NUMBER	2004
 
 #define	EPI_BUILD_NUMBER	0
 
-#define	EPI_VERSION		17, 10, 99, 17
+#define	EPI_VERSION		17, 10, 121, 2004
 
-#define	EPI_VERSION_NUM		0x110a6311
+#define	EPI_VERSION_NUM		0x110a797d
 
-#define EPI_VERSION_DEV		17.10.99
+#define EPI_VERSION_DEV		17.10.121
 
 /* Driver Version String, ASCII, 32 chars max */
 #ifdef WLTEST
-#define	EPI_VERSION_STR		"17.10.99.17 (r780087 WLTEST)"
+#define	EPI_VERSION_STR		"17.10.121.2004 (r786578 WLTEST)"
 #else
-#define	EPI_VERSION_STR		"17.10.99.17 (r780087)"
+#define	EPI_VERSION_STR		"17.10.121.2004 (r786578)"
 #endif // endif
 
 #endif /* _epivers_h_ */

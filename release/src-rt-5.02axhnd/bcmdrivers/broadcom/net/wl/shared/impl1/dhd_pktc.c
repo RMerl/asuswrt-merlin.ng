@@ -35,18 +35,35 @@
 #include <linux/skbuff.h>
 #include <bcmutils.h>
 #include <dngl_stats.h>
+#include <dhd_dbg.h>
 #include <dhd.h>
+#include <dhd_blog.h>
 #include <wl_pktc.h>
 
-wl_pktc_tbl_t pktc_tbl[CHAIN_ENTRY_NUM];
-pktc_handle_t pktc_wldev[WLAN_DEVICE_MAX];
+/*
+ * Global variables
+ */
+wl_pktc_tbl_t *g_pktc_tbl = NULL;
+uint8 g_pktc_tbl_ref_cnt = 0;     /* reference count for g_pktc_tbl */
+pktc_handle_t pktc_wldev[WLAN_DEVICE_MAX] = {0};
 
 wl_pktc_tbl_t *dhd_pktc_attach(void *p)
 {
-	dhd_pub_t *dhdp; 
 	wl_pktc_tbl_t *tbl;
+	dhd_pub_t *dhdp = (dhd_pub_t *)p; 
+	size_t size = sizeof(wl_pktc_tbl_t) * CHAIN_ENTRY_NUM;
 
-	dhdp = (dhd_pub_t *)p;
+	/* Allocate pktc table */
+	if (g_pktc_tbl == NULL) {
+		g_pktc_tbl = (wl_pktc_tbl_t *) kmalloc(size, GFP_KERNEL);
+		if (!g_pktc_tbl) {
+			DHD_ERROR(("%s: malloc of g_pktc_tbl failed\n", __FUNCTION__));
+			return NULL;
+		}
+		bzero((void*)g_pktc_tbl, size);
+	}
+	/* Increment pktc table reference count */
+	g_pktc_tbl_ref_cnt++;
 
 	dhd_pktc_req_hook = dhd_pktc_req;
 #if defined(BCM_BLOG)
@@ -61,6 +78,23 @@ wl_pktc_tbl_t *dhd_pktc_attach(void *p)
 	return tbl;
 }
 
+void dhd_pktc_detach(void *p)
+{
+	/* Free pktc table if there are no more interface references to the data*/
+	if (g_pktc_tbl) {
+		/* Decrement the pktc table reference count */
+		g_pktc_tbl_ref_cnt--;
+
+		if (g_pktc_tbl_ref_cnt <= 0) {
+			kfree(g_pktc_tbl);
+			g_pktc_tbl = NULL;
+		}
+	}
+#ifdef BCM_BLOG
+	fdb_check_expired_dhd_hook = NULL;
+#endif
+}
+
 /* for packet chaining */
 INLINE BCMFASTPATH 
 unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long param1, unsigned long param2 )
@@ -72,10 +106,10 @@ unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long para
 	switch (req_id) {
 	case PKTC_TBL_GET_BY_DA:
             /* param0 is DA */
-            return (PKTC_TBL_FN_LOOKUP(pktc_tbl, (uint8_t*)param0));
+            return (PKTC_TBL_FN_LOOKUP(g_pktc_tbl, (uint8_t*)param0));
 
 	case PKTC_TBL_GET_START_ADDRESS:
-            return (unsigned long)(&pktc_tbl[0]);
+            return (unsigned long)(&g_pktc_tbl[0]);
 
 	case PKTC_TBL_GET_BY_IDX:
 		/* param0 is pktc chain table index */
@@ -83,12 +117,12 @@ unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long para
 			printk("%s: chain idx is out of range! (%ld, 0x%lx)\n", __FUNCTION__, param0, param0);
 			return 0;
 		}
-		if (!(pktc_tbl[param0].in_use) || !(pktc_tbl[param0].wl_handle)) {
+		if (!(g_pktc_tbl[param0].in_use) || !(g_pktc_tbl[param0].wl_handle)) {
 			printk("Error : chain idx %ld is not in use or invalid handle 0x%lx\n",
-				param0, pktc_tbl[param0].wl_handle);
+				param0, g_pktc_tbl[param0].wl_handle);
 			return 0;
 		}
-		return (unsigned long)(&pktc_tbl[param0]);
+		return (unsigned long)(&g_pktc_tbl[param0]);
 
 	case PKTC_TBL_UPDATE:
 		param2 = (unsigned long)NULL;
@@ -101,7 +135,7 @@ unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long para
 			}
 		}
 		/* param0 is addr, param1 is dev, param2 is wl handle if any */
-		pt = (wl_pktc_tbl_t *)PKTC_TBL_FN_UPDATE(pktc_tbl, (uint8_t *)param0,
+		pt = (wl_pktc_tbl_t *)PKTC_TBL_FN_UPDATE(g_pktc_tbl, (uint8_t *)param0,
 			(struct net_device *)param1, (pktc_handle_t *)param2);
 		if ((pt == NULL) || (pt->idx >= CHAIN_ENTRY_NUM))
 			return PKTC_INVALID_CHAIN_IDX;
@@ -113,41 +147,41 @@ unsigned long dhd_pktc_req( int req_id, unsigned long param0, unsigned long para
 		if ((pt->tx_dev == NULL) || ((param2 == (unsigned long)NULL) &&
 			(!strncmp(pt->tx_dev->name, "wl", 2)))) {
 			/* remove this chain entry */
-			PKTC_TBL_FN_CLEAR(pktc_tbl, (uint8 *)param0);
+			PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 			return PKTC_INVALID_CHAIN_IDX;
 		}
 
 		return pt->idx; /* return chain index */
 		
 	case PKTC_TBL_DELETE:
-		PKTC_TBL_FN_CLEAR(pktc_tbl, (uint8 *)param0);
+		PKTC_TBL_FN_CLEAR(g_pktc_tbl, (uint8 *)param0);
 		return 0;
 
 	case PKTC_TBL_DUMP:
 		strbuf = (struct bcmstrbuf *)param0;
 		bcm_bprintf(strbuf, "\npktc dump: (rx path)\n");
 		for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
-			if (pktc_tbl[i].in_use) 
+			if (g_pktc_tbl[i].in_use) 
 			{
 				bcm_bprintf(strbuf, "[%02d] %02x:%02x:%02x:%02x:%02x:%02x, dev=%s, hits=%d\n",
-				pktc_tbl[i].idx,
-				pktc_tbl[i].ea.octet[0],
-				pktc_tbl[i].ea.octet[1],
-				pktc_tbl[i].ea.octet[2],
-				pktc_tbl[i].ea.octet[3],
-				pktc_tbl[i].ea.octet[4],
-				pktc_tbl[i].ea.octet[5],
-				(pktc_tbl[i].tx_dev == NULL) ? "NULL" : pktc_tbl[i].tx_dev->name,
-				pktc_tbl[i].hits);
+				g_pktc_tbl[i].idx,
+				g_pktc_tbl[i].ea.octet[0],
+				g_pktc_tbl[i].ea.octet[1],
+				g_pktc_tbl[i].ea.octet[2],
+				g_pktc_tbl[i].ea.octet[3],
+				g_pktc_tbl[i].ea.octet[4],
+				g_pktc_tbl[i].ea.octet[5],
+				(g_pktc_tbl[i].tx_dev == NULL) ? "NULL" : g_pktc_tbl[i].tx_dev->name,
+				g_pktc_tbl[i].hits);
 			}
 		}
 		return 0;
 
 	case PKTC_TBL_FLUSH:
-		printk("pktc_tbl flush!\n");
+		/* DHD_INFO(("%s: pktc_tbl flush!\n", __FUNCTION__)); */
 		for (i = 0; i < CHAIN_ENTRY_NUM; i++) {
-			if (pktc_tbl[i].in_use)
-				memset(&pktc_tbl[i], 0, sizeof(wl_pktc_tbl_t));
+			if (g_pktc_tbl[i].in_use)
+				memset(&g_pktc_tbl[i], 0, sizeof(wl_pktc_tbl_t));
 		}
 		return 0;
 
@@ -318,7 +352,6 @@ int32 dhd_rxchainhandler(void *p, struct sk_buff *skb)
 			{ /* wlX not support handle CHAIN XMIT yet ..*/
   			     return (BCME_ERROR);
 			}
-
 			if (pt->tx_dev->netdev_ops == NULL)
 				return (BCME_ERROR);
 			dev_xmit = (unsigned long)(pt->tx_dev->netdev_ops->ndo_start_xmit);

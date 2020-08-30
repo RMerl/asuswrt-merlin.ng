@@ -87,6 +87,9 @@ extern "C" {
 #define WPA_EVENT_BEACON_LOSS "CTRL-EVENT-BEACON-LOSS "
 /** Regulatory domain channel */
 #define WPA_EVENT_REGDOM_CHANGE "CTRL-EVENT-REGDOM-CHANGE "
+/** Channel switch started (followed by freq=<MHz> and other channel parameters)
+ */
+#define WPA_EVENT_CHANNEL_SWITCH_STARTED "CTRL-EVENT-STARTED-CHANNEL-SWITCH "
 /** Channel switch (followed by freq=<MHz> and other channel parameters) */
 #define WPA_EVENT_CHANNEL_SWITCH "CTRL-EVENT-CHANNEL-SWITCH "
 /** SAE authentication failed due to unknown password identifier */
@@ -296,6 +299,8 @@ extern "C" {
 #define WPS_EVENT_AP_SETUP_UNLOCKED "WPS-AP-SETUP-UNLOCKED "
 #define WPS_EVENT_AP_PIN_ENABLED "WPS-AP-PIN-ENABLED "
 #define WPS_EVENT_AP_PIN_DISABLED "WPS-AP-PIN-DISABLED "
+#define WPS_EVENT_PIN_ACTIVE "WPS-PIN-ACTIVE "
+#define WPS_EVENT_CANCEL "WPS-CANCEL "
 #define AP_STA_CONNECTED "AP-STA-CONNECTED "
 #define AP_STA_DISCONNECTED "AP-STA-DISCONNECTED "
 #define AP_STA_POSSIBLE_PSK_MISMATCH "AP-STA-POSSIBLE-PSK-MISMATCH "

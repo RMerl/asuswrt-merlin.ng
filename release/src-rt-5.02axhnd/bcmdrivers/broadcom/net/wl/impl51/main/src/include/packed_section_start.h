@@ -15,7 +15,7 @@
  * #include <packed_section_end.h>
  *
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -32,12 +32,8 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: packed_section_start.h 666738 2016-10-24 12:16:37Z $
+ * $Id: packed_section_start.h 777067 2019-07-18 09:28:30Z $
  */
-
-#if defined(EFI)
-#define _alignment_test_
-#endif /* EFI */
 
 #ifndef _alignment_test_
 #define _alignment_test_

@@ -1,7 +1,7 @@
 /*
  * Indices for 802.11 a/b/g/n/ac 1-3 chain symmetric transmit rates
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_rates.h 773007 2019-03-11 03:06:13Z $
+ * $Id: bcmwifi_rates.h 776848 2019-07-11 09:39:49Z $
  */
 
 #ifndef _bcmwifi_rates_h_
@@ -1269,7 +1269,8 @@ uint8 wf_get_single_stream_mcs(uint mcs);
 uint8 wf_vht_plcp_to_rspec_rate(uint8 *plcp);
 uint8 wf_he_plcp_to_rspec_rate(uint8 *plcp, uint16 ft_fmt);
 uint wf_mcs_to_rate(uint mcs, uint nss, uint bw, int sgi);
-uint wf_he_mcs_to_rate(uint mcs, uint nss, uint bw, uint gi, bool dcm);
+uint wf_he_mcs_nsd_to_rate(uint mcs, uint nss, uint nsd, uint gi, bool dcm);
+uint wf_he_mcs_to_rate(uint mcs, uint nss, uint nsd, uint gi, bool dcm);
 uint wf_mcs_to_Ndbps(uint mcs, uint nss, uint bw);
 uint wf_he_mcs_to_Ndbps(uint mcs, uint nss, uint bw, bool dcm);
 #ifdef __cplusplus

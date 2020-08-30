@@ -3,7 +3,7 @@
  * Contains PCIe related functions that are shared between different driver models (e.g. firmware
  * builds, DHD builds, BMAC builds), in order to avoid code duplication.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: pcie_core.c 767804 2018-09-26 09:54:00Z $
+ * $Id: pcie_core.c 778660 2019-09-06 12:21:21Z $
  */
 
 #include <bcm_cfg.h>
@@ -54,7 +54,7 @@
 void pcie_watchdog_reset(osl_t *osh, si_t *sih, sbpcieregs_t *sbpcieregs)
 {
 	uint32 val, i, lsc;
-	uint16 cfg_offset[] = {PCIECFGREG_STATUS_CMD, PCIECFGREG_PM_CSR,
+	uint32 cfg_offset[] = {PCIECFGREG_STATUS_CMD, PCIECFGREG_PM_CSR,
 		PCIECFGREG_MSI_CAP, PCIECFGREG_MSI_ADDR_L,
 		PCIECFGREG_MSI_ADDR_H, PCIECFGREG_MSI_DATA,
 		PCIECFGREG_LINK_STATUS_CTRL2, PCIECFGREG_RBAR_CTRL,

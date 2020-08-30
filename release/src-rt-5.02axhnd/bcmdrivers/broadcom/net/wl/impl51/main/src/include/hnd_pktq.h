@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.h 773806 2019-04-01 13:17:30Z $
+ * $Id: hnd_pktq.h 782623 2019-12-29 13:29:13Z $
  */
 
 #ifndef _hnd_pktq_h_
@@ -90,25 +90,30 @@ typedef struct {
 	uint32 ps_retry;     /**< packets retried again prior to moving power save mode */
 	uint32 suppress;     /**< packets which were suppressed and not transmitted */
 	uint32 retry_drop;   /**< packets finally dropped after retry limit */
-	uint32 max_avail;    /**< the high-water mark of the queue capacity for packets -
-	                            goes to zero as queue fills
-	                      */
 	uint32 max_used;     /**< the high-water mark of the queue utilisation for packets -
 						        increases with use ('inverse' of max_avail)
 				          */
-	uint32 queue_capacity; /**< the maximum capacity of the queue */
 	uint32 rtsfail;        /**< count of rts attempts that failed to receive cts */
-	uint32 acked;          /**< count of packets sent (acked) successfully */
-	uint32 txrate_succ;    /**< running total of phy rate of packets sent successfully */
-	uint32 txrate_main;    /**< running totoal of primary phy rate of all packets */
-	uint32 throughput;     /**< actual data transferred successfully */
-	uint32 airtime;        /**< cumulative total medium access delay in useconds */
-	uint32  _logtime;      /**< timestamp of last counter clear  */
+	uint32 acked;   /**< count of packets sent (acked) successfully index by NSS */
+	uint64 txrate_succ;    /**< running total of phy rate of packets sent successfully */
+	uint64 txrate_main;    /**< running totoal of primary phy rate of all packets */
+	uint64 throughput;     /**< actual data transferred successfully */
+	uint64 airtime;        /**< cumulative total medium access delay in useconds */
+	uint32  _logtimelo;    /**< timestamp of last counter clear  */
+	uint32  _logtimehi;
+	uint64 txbw_succ;
+	uint32 nss[4];
+	uint32 mcs[16];
+	uint32 sgi;
+#ifdef WLSQS
+	uint32 sqsv_requested;
+	uint16 sqsv_max_used;
+#endif // endif
 } pktq_counters_t;
 
 #define PKTQ_LOG_COMMON \
 	uint32			pps_time;	/**< time spent in ps pretend state */ \
-	uint32                  _prec_log;
+	uint32			_prec_log;
 
 typedef struct {
 	PKTQ_LOG_COMMON
@@ -146,6 +151,16 @@ struct spktq {
 /* fn(pkt, arg).  return true if pkt belongs to bsscfg */
 typedef bool (*ifpkt_cb_t)(void*, int);
 
+/* pktq_promote_cb(pkt). callback invoked during pkt queue normalization.
+ * Callback is reponsible for determining which packets need to be promoted to
+ * the head of the queue. E.g. during normalization suppressed packets will
+ * get promoted. Packet order within non-promoted section and promoted section
+ * are maintained after promotion.
+ * Callback handler performs any per packet operation like clearing of tags.
+ * see pktq_promote()
+ */
+typedef bool (*pktq_promote_cb_t)(void*);
+
 /* operations on a specific precedence in packet queue */
 #define pktqprec_max_pkts(pq, prec)		((pq)->q[prec].max_pkts)
 #define pktqprec_n_pkts(pq, prec)		((pq)->q[prec].n_pkts)
@@ -173,6 +188,10 @@ extern void *pktq_pdeq_with_fn(struct pktq *pq, int prec, ifpkt_cb_t fn, int arg
 extern void *pktq_pdeq_tail(struct pktq *pq, int prec);
 /** Remove a specified packet from its queue */
 extern bool pktq_pdel(struct pktq *pq, void *p, int prec);
+/** Promote packets to head of queue, using the callback for determining which
+ * packets to promote.
+ */
+extern bool pktq_promote(struct pktq *pq, pktq_promote_cb_t promote_cb);
 
 /* For single precedence queues */
 extern void *spktq_enq(struct spktq *spq, void *p);
@@ -231,13 +250,8 @@ extern bool spktq_full(struct spktq *spq);
 #define spktqdeinit(spq)		spktq_deinit((spq))
 #define spktqavail(spq)			spktq_avail((spq))
 #define spktqfull(spq)			spktq_full((spq))
-#if defined(PROP_TXSTATUS)
 #define spktqfilter(spq, fltr, fltr_ctx, defer, defer_ctx, flush, flush_ctx) \
 	spktq_filter((spq), (fltr), (fltr_ctx), (defer), (defer_ctx), (flush), (flush_ctx), NULL)
-#else
-#define spktqfilter(spq, fltr, fltr_ctx, defer, defer_ctx, flush, flush_ctx) \
-	spktq_filter((spq), (fltr), (fltr_ctx), (defer), (defer_ctx), (flush), (flush_ctx))
-#endif /* PROP_TXSTATUS */
 extern bool pktq_init(struct pktq *pq, int num_prec, int max_pkts);
 extern bool pktq_deinit(struct pktq *pq);
 extern bool spktq_init(struct spktq *spq, int max_pkts);

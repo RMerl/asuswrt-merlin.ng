@@ -1,7 +1,7 @@
 /*
  * Broadcom SiliconBackplane ARM definitions
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sbhndarm.h 687527 2017-03-01 14:15:59Z $
+ * $Id: sbhndarm.h 778679 2019-09-06 19:11:59Z $
  */
 
 #ifndef	_sbhndarm_h_
@@ -84,6 +84,7 @@
 #define ARMCM3_INTMASK_TIMER	0x1
 #define ARMCM3_INTMASK_SYSRESET	0x4
 #define ARMCM3_INTMASK_LOCKUP	0x8
+#define ARMCM3_INTSTATUS_TIMER	0x1
 
 /*
  * Overlay Support in Rev 5
@@ -186,6 +187,7 @@
 /* intmask/intstatus bits */
 #define ARMCR4_INTMASK_TIMER		(0x1)
 #define ARMCR4_INTMASK_CLOCKSTABLE	(0x20000000)
+#define ARMCR4_INTSTATUS_TIMER		(0x1)
 
 #define CHIP_SDRENABLE(sih)	(sih->boardflags2 & BFL2_SDR_EN)
 #define CHIP_TCMPROTENAB(sih)	(si_arm_sflags(sih) & SISF_TCMPROT)

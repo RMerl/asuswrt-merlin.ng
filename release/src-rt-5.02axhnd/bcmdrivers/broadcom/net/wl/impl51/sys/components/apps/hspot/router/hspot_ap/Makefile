@@ -1,6 +1,6 @@
 # Linux Makefile
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2020, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
 #test merge
 
 #SRCBASE = ../..
-ifeq ($(wildcard ./prebuilt),)
+ifneq ($(wildcard $(PASSPOINT_AP_DIR)/hspotap.c),)
 WLAN_ComponentsInUse := bcmwifi ppr olpc
 
 ifeq (2_6,$(LINUX_VERSION))
@@ -59,7 +59,7 @@ CFLAGS += -DPPR_API
 #LDFLAGS += -m32 --cref -lpthread -lrt
 #LDFLAGS += -Wl,-Map,hspotap.map
 
-LDFLAGS += -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram
+LDFLAGS += -L$(TOP_PLATFORM)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 LDFLAGS += -L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared -lpthread
 LDFLAGS += $(EXTRA_LDFLAGS)
 
@@ -216,6 +216,9 @@ endif
 ifneq ($(wildcard $(SRCBASE_SYS)/wl/exe/wluc_heb.c),)
 OBJS += wluc_heb.o
 endif
+ifneq ($(wildcard $(SRCBASE_SYS)/wl/exe/wluc_perf_utils.c),)
+OBJS += wluc_perf_utils.o
+endif
 ifneq ($(findstring WLTDLS, $(CFLAGS)),)
 OBJS += wluc_tdls.o
 endif
@@ -224,12 +227,14 @@ endif
 
 all: hspotap
 
+ifneq ($(wildcard $(PASSPOINT_AP_DIR)/hspotap.c),)
+hspotap: $(OBJS)
+	$(CC) -o $@ $^ $(LDFLAGS)
+else
 ifneq ($(wildcard ./prebuilt),)
 hspotap:
 	cp prebuilt/hspotap .
-else
-hspotap: $(OBJS)
-	$(CC) -o $@ $^ $(LDFLAGS)
+endif
 endif
 
 install: all
@@ -247,6 +252,9 @@ install: all
 	install icon_green_zxx.png $(INSTALLDIR)$(ICONPATH)
 	install icon_orange_zxx.png $(INSTALLDIR)$(ICONPATH)
 	$(STRIP) $(INSTALLDIR)/bin/hspotap
+	if [ -d ./prebuilt ]; then \
+		cp -f hspotap ./prebuilt; \
+	fi
 
 clean:
 	rm -f *.o *.map hspotap

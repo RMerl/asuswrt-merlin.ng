@@ -4,7 +4,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmmsgbuf.h 749158 2018-02-27 22:57:16Z $
+ * $Id: bcmmsgbuf.h 778387 2019-08-30 02:18:18Z $
  */
 #ifndef _bcmmsgbuf_h_
 #define	_bcmmsgbuf_h_
@@ -50,11 +50,20 @@
 #define H2DRING_INFO_BUFPOST_ITEMSIZE	H2DRING_CTRL_SUB_ITEMSIZE
 #define D2HRING_INFO_BUFCMPLT_ITEMSIZE	D2HRING_CTRL_CMPLT_ITEMSIZE
 
+#if defined(STBLINUX)
 #define H2DRING_TXPOST_MAX_ITEM			512
 #define H2DRING_RXPOST_MAX_ITEM			512
+#else /* !STBLINUX */
+#define H2DRING_TXPOST_MAX_ITEM			1024
+#define H2DRING_RXPOST_MAX_ITEM			1024
+#endif /* !STBLINUX */
 #define H2DRING_CTRL_SUB_MAX_ITEM		64
 #define D2HRING_TXCMPLT_MAX_ITEM		1024
+#if defined(STBLINUX)
 #define D2HRING_RXCMPLT_MAX_ITEM		512
+#else /* !STBLINUX */
+#define D2HRING_RXCMPLT_MAX_ITEM		1024
+#endif /* !STBLINUX */
 
 #define H2DRING_DYNAMIC_INFO_MAX_ITEM          32
 #define D2HRING_DYNAMIC_INFO_MAX_ITEM          32

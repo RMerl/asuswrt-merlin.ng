@@ -1,7 +1,7 @@
 /*
  * Linux Packet (skb) interface
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_pkt.c 775299 2019-05-27 10:08:55Z $
+ * $Id: linux_pkt.c 779324 2019-09-25 09:48:29Z $
  */
 
 #include <typedefs.h>
@@ -55,10 +55,24 @@ bcm_static_pkt_t *bcm_static_skb = 0;
 void* wifi_platform_prealloc(void *adapter, int section, unsigned long size);
 #endif /* CONFIG_DHD_USE_STATIC_BUF */
 
+#if defined(CONFIG_BCM_KF_WL) && defined(BCM_PKTFWD)
+#define OSL_PKTTAG_CLEAR(p) \
+{ \
+	struct sk_buff *s = (struct sk_buff *)(p); \
+	unsigned long long * wl_cb = (unsigned long long *)&s->wl_cb[0]; \
+	__OSL_PKTTAG_CLEAR(p); \
+	ASSERT((sizeof(s->wl_cb) == 24)); \
+	*(wl_cb + 0) = 0ULL; *(wl_cb + 1) = 0ULL; \
+	*(wl_cb + 2) = 0ULL; \
+}
+#else
+#define OSL_PKTTAG_CLEAR  __OSL_PKTTAG_CLEAR
+#endif /* CONFIG_BCM_KF_WL */
+
 /* BCM_OBJECT_TRACE - don't clear the first 4 byte that is the pkt sn */
 /* WL_EAP_PKTTAG_EXT - clear extra 8 bytes */
 #ifdef BCM_OBJECT_TRACE
-#define OSL_PKTTAG_CLEAR(p) \
+#define __OSL_PKTTAG_CLEAR(p) \
 do { \
 	struct sk_buff *s = (struct sk_buff *)(p); \
 	ASSERT(OSL_PKTTAG_SZ == 48); \
@@ -70,7 +84,7 @@ do { \
 	*(uint32 *)(&s->cb[40]) = 0; *(uint32 *)(&s->cb[44]) = 0; \
 } while (0)
 #else
-#define OSL_PKTTAG_CLEAR(p) \
+#define __OSL_PKTTAG_CLEAR(p) \
 do { \
 	struct sk_buff *s = (struct sk_buff *)(p); \
 	ASSERT(OSL_PKTTAG_SZ == 48); \

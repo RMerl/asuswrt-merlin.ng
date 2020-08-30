@@ -15,8 +15,6 @@
  *
  */
 
-#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
-
 #include <typedefs.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
@@ -38,9 +36,7 @@ static bcmFun_t *dhd_spdsvc_receive = NULL;
 void dhd_spdsvc_init(void)
 {
 	dhd_spdsvc_transmit = bcmFun_get(BCM_FUN_ID_SPDSVC_TRANSMIT);
-	BCM_ASSERT(dhd_spdsvc_transmit != NULL);
 	dhd_spdsvc_receive = bcmFun_get(BCM_FUN_ID_SPDSVC_RECEIVE);
-	BCM_ASSERT(dhd_spdsvc_receive != NULL);
 
 	return;
 }
@@ -49,32 +45,35 @@ int dhd_spdsvc_tx(dhd_pub_t *dhdp, void **pktbuf)
 {
 	int ret = 1; /* init as positive value, as BCME_OK is 0 and BCME_XXX are all negative */
 
-#if defined(BCM_DHD_RUNNER)
-	uint16 flowid = DHD_PKT_GET_FLOWID(*pktbuf);
-	flow_ring_node_t *flow_ring_node = dhd_flow_ring_node(dhdp, flowid);
-
-	if (!DHD_FLOWRING_RNR_OFFL(flow_ring_node))
-#endif /* BCM_DHD_RUNNER */
+	if (dhd_spdsvc_transmit != NULL)
 	{
-		if (IS_SKBUFF_PTR(*pktbuf))
-		{
-			struct sk_buff *skb;
-			spdsvcHook_transmit_t spdsvc_transmit;
-			if (DHDHDR_SUPPORT(dhdp) &&
-			    !(*pktbuf = nbuff_unshare((pNBuff_t)(*pktbuf)))) {
-				ret = BCME_ERROR;
-				goto exit;
-			}
-			skb = PNBUFF_2_SKBUFF(*pktbuf);
-			spdsvc_transmit.pNBuff = *pktbuf;
-			spdsvc_transmit.dev = skb->dev;
-			spdsvc_transmit.header_type = SPDSVC_HEADER_TYPE_ETH;
-			spdsvc_transmit.phy_overhead = WL_SPDSVC_OVERHEAD;
+#if defined(BCM_DHD_RUNNER)
+		uint16 flowid = DHD_PKT_GET_FLOWID(*pktbuf);
+		flow_ring_node_t *flow_ring_node = dhd_flow_ring_node(dhdp, flowid);
 
-			if (dhd_spdsvc_transmit(&spdsvc_transmit))
+		if (!DHD_FLOWRING_RNR_OFFL(flow_ring_node))
+#endif /* BCM_DHD_RUNNER */
+		{
+			if (IS_SKBUFF_PTR(*pktbuf))
 			{
-				ret = BCME_OK;
-				goto exit;
+				struct sk_buff *skb;
+				spdsvcHook_transmit_t spdsvc_transmit;
+				if (DHDHDR_SUPPORT(dhdp) &&
+				    !(*pktbuf = nbuff_unshare((pNBuff_t)(*pktbuf)))) {
+					ret = BCME_ERROR;
+					goto exit;
+				}
+				skb = PNBUFF_2_SKBUFF(*pktbuf);
+				spdsvc_transmit.pNBuff = *pktbuf;
+				spdsvc_transmit.dev = skb->dev;
+				spdsvc_transmit.header_type = SPDSVC_HEADER_TYPE_ETH;
+				spdsvc_transmit.phy_overhead = WL_SPDSVC_OVERHEAD;
+
+				if (dhd_spdsvc_transmit(&spdsvc_transmit))
+				{
+					ret = BCME_OK;
+					goto exit;
+				}
 			}
 		}
 	}
@@ -85,17 +84,21 @@ exit:
 int dhd_spdsvc_rx(struct sk_buff *skb)
 {
 	int ret = 1; /* init as positive value, as BCME_OK is 0 and BCME_XXX are all negative */
-	spdsvcHook_receive_t spdsvc_receive;
 
-	spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
-	spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
-	spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
-
-	if (dhd_spdsvc_receive(&spdsvc_receive))
+	if (dhd_spdsvc_receive != NULL)
 	{
-		ret = BCME_OK;
+		spdsvcHook_receive_t spdsvc_receive;
+
+		spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
+		spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
+		spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
+
+		if (dhd_spdsvc_receive(&spdsvc_receive))
+		{
+			ret = BCME_OK;
+			goto exit;
+		}
 	}
+exit:
 	return ret;
 }
-
-#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE */

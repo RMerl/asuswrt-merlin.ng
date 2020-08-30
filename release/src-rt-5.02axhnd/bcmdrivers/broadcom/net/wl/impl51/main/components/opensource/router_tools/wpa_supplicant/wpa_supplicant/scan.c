@@ -197,9 +197,17 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
 	if (ret) {
 		int retry = wpa_s->last_scan_req != MANUAL_SCAN_REQ &&
 			!wpa_s->beacon_rep_data.token;
+#ifdef CONFIG_DRIVER_BRCM_MAP
+		int scan_rety_time = retry ? 1 : 5;
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
 
 		if (wpa_s->disconnected)
 			retry = 0;
+#ifdef CONFIG_DRIVER_BRCM_MAP
+		if (wpa_s->wps->map_bh_sta) {
+			retry = 1;
+		}
+#endif	/* CONFIG_DRIVER_BRCM_MAP */
 
 		wpa_supplicant_notify_scanning(wpa_s, 0);
 		wpas_notify_scan_done(wpa_s, 0);
@@ -213,7 +221,12 @@ static void wpas_trigger_scan_cb(struct wpa_radio_work *work, int deinit)
 		if (retry) {
 			/* Restore scan_req since we will try to scan again */
 			wpa_s->scan_req = wpa_s->last_scan_req;
-			wpa_supplicant_req_scan(wpa_s, 1, 0);
+#ifdef CONFIG_DRIVER_BRCM_MAP
+			if (wpa_s->wps->map_bh_sta)
+				wpa_supplicant_req_scan(wpa_s, scan_rety_time, 0);
+			else
+#endif /* CONFIG_DRIVER_BRCM_MAP */
+				wpa_supplicant_req_scan(wpa_s, 1, 0);
 		} else if (wpa_s->scan_res_handler) {
 			/* Clear the scan_res_handler */
 			wpa_s->scan_res_handler = NULL;
@@ -1098,6 +1111,10 @@ static void wpa_supplicant_scan(void *eloop_ctx, void *timeout_ctx)
 		wpa_dbg(wpa_s, MSG_DEBUG,
 			"Use passive scan based on configuration");
 	} else {
+#ifdef CONFIG_DRIVER_BRCM_MAP
+		if((wpa_s->wps->map_bh_sta) && (params.num_ssids != 0))
+			goto ssid_list_set;
+#endif // endif
 		wpa_s->prev_scan_ssid = WILDCARD_SSID_SCAN;
 		params.num_ssids++;
 		wpa_dbg(wpa_s, MSG_DEBUG, "Starting AP scan for wildcard "

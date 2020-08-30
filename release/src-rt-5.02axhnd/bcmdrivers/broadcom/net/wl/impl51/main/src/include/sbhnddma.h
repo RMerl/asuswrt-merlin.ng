@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA engine HW interface
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sbhnddma.h 767290 2018-09-04 07:42:11Z $
+ * $Id: sbhnddma.h 783797 2020-02-10 20:24:41Z $
  */
 
 #ifndef	_sbhnddma_h_
@@ -164,6 +164,7 @@ typedef volatile struct {
 #define RC_PT_SHIFT	24
 #define RC_WAITCMP_MASK 0x00001000
 #define RC_WAITCMP_SHIFT 12
+#define RC_C		((uint32)1 << 26)	/**< coherent descriptor fetching */
 /* receive descriptor table pointer */
 #define	RP_LD_MASK	0xfff			/**< last valid descriptor */
 
@@ -224,11 +225,6 @@ typedef volatile struct {
 	uint32	status0;	/**< current descriptor, xmt state */
 	uint32	status1;	/**< active descriptor, xmt error */
 } dma64regs_t;
-
-typedef volatile struct {
-	dma64regs_t	tx;		/**< dma64 tx channel */
-	dma64regs_t	rx;		/**< dma64 rx channel */
-} dma64regp_t;
 
 typedef volatile struct {		/**< diag access */
 	uint32	fifoaddr;		/**< diag address */
@@ -352,6 +348,8 @@ typedef volatile struct {
 #define D64_RC_CO_SHIFT		26
 #define	D64_RC_ROEXT_MASK	0x08000000	/**< receive frame offset extension bit */
 #define	D64_RC_ROEXT_SHIFT	27
+#define D64_RC_WCPD_MASK    0x10000000	/**< WaitForComplete per Descriptor */
+#define D64_RC_WCPD_SHIFT   28
 
 /* flags for dma controller */
 #define DMA_CTRL_PEN		(1 << 0)	/**< partity enable */

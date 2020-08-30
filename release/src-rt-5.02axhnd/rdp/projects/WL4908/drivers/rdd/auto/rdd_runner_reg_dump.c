@@ -2816,23 +2816,23 @@ void dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY(bdmf_session_handle session
 
 }
 
-void dump_RDD_DEBUG_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p)
-{
-	unsigned int r;
-	bdmf_session_print(session, "  Register DEBUG_BUFFER_ENTRY\n");
-
-	MREAD_32((uint8_t *)p, r);
-	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
-	bdmf_session_print(session, "\n");
-
-}
-
 void dump_RDD_IPTV_COUNTERS_BUFFER(bdmf_session_handle session, unsigned char *p)
 {
 	unsigned int r;
 	bdmf_session_print(session, "  Register IPTV_COUNTERS_BUFFER\n");
 
 	MREAD_16((uint8_t *)p, r);
+	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
+	bdmf_session_print(session, "\n");
+
+}
+
+void dump_RDD_DEBUG_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p)
+{
+	unsigned int r;
+	bdmf_session_print(session, "  Register DEBUG_BUFFER_ENTRY\n");
+
+	MREAD_32((uint8_t *)p, r);
 	bdmf_session_print(session, "\treserved_fw_only         = 0x%08x", (unsigned int)r);
 	bdmf_session_print(session, "\n");
 

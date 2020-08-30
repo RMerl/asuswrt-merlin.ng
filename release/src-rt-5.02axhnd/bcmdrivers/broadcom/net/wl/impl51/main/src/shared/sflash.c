@@ -1,7 +1,7 @@
 /*
  * Broadcom SiliconBackplane chipcommon serial flash interface
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: sflash.c 545867 2015-04-01 22:45:19Z $
+ * $Id: sflash.c 778660 2019-09-06 12:21:21Z $
  */
 
 #include <bcm_cfg.h>
@@ -369,7 +369,7 @@ retry:		sflash_cmd(osh, cc, SFLASH_ST_WREN);
 			W_REG(osh, &cc->flashaddress, off);
 			data = GET_BYTE(buf);
 			buf++;
-			W_REG(osh, &cc->flashdata, data);
+			W_REG(osh, &cc->flashdata, (uint32)data);
 			/* Issue a page program with CSA bit set */
 			sflash_cmd(osh, cc, SFLASH_ST_CSA | SFLASH_ST_PP);
 			ret = 1;
@@ -420,7 +420,7 @@ retry:		sflash_cmd(osh, cc, SFLASH_ST_WREN);
 			W_REG(osh, &cc->flashaddress, off);
 			data = GET_BYTE(buf);
 			buf++;
-			W_REG(osh, &cc->flashdata, data);
+			W_REG(osh, &cc->flashdata, (uint32)data);
 			/* Page program */
 			sflash_cmd(osh, cc, SFLASH_ST_PP);
 		}
@@ -440,7 +440,7 @@ retry:		sflash_cmd(osh, cc, SFLASH_ST_WREN);
 		/* Write into buffer 1 */
 		for (ret = 0; (ret < (int)len) && (byte < sfl->blocksize); ret++) {
 			W_REG(osh, &cc->flashaddress, byte++);
-			W_REG(osh, &cc->flashdata, *buf++);
+			W_REG(osh, &cc->flashdata, (uint32)*buf++);
 			sflash_cmd(osh, cc, SFLASH_AT_BUF1_WRITE);
 		}
 		/* Write buffer 1 into main memory page */

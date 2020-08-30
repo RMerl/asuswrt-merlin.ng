@@ -1912,6 +1912,11 @@ int setup_mtd_parts(struct mtd_info* mtd)
         nvram.part_info[1].size = 63;
         nvram.part_info[2].size = 1;
     }
+    /* add RT-AX92U misc2 is 48 MB case */
+    else if(nvram.part_info[1].size == 48 && nvram.part_info[2].size == 0) {
+	nvram.part_info[1].size = 47;
+	nvram.part_info[2].size = 1;
+    }
 
 #endif
     // skip DATA partition

@@ -10,7 +10,7 @@ include ${BUILD_DIR}/make.common
 
 RC3:=
 BIN:=
-INIT:= pwr/pm.sh pwr/disk.sh pwr/wifi.sh 
+INIT:= pwr/pm.sh pwr/disk.sh
 
 ifeq ($(filter-out 63138 63148 63158 4908 6858,${BRCM_CHIP}),)
 INIT += pwr/switch.sh

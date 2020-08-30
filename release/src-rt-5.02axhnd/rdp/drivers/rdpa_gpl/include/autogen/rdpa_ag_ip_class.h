@@ -56,6 +56,7 @@ typedef enum {
     rdpa_ip_class_attr_fc_bypass = 7, /* fc_bypass : RW : enum_mask : FlowCache Bypass Modes */
     rdpa_ip_class_attr_key_type = 8, /* key_type : RW : enum : IP class key type */
     rdpa_ip_class_attr_pathstat = 9, /* pathstat : RF : aggregate[] rdpa_stat(rdpa_stat_t) : Ip class path entry statistics */
+    rdpa_ip_class_attr_tcp_ack_prio = 10, /* tcp_ack_prio : RW : bool : TCP pure ACK prioritization (common for L3 and L2) */
 } rdpa_ip_class_attr_types;
 
 extern int (*f_rdpa_ip_class_get)(bdmf_object_handle *pmo);
@@ -379,6 +380,38 @@ static inline int rdpa_ip_class_key_type_set(bdmf_object_handle mo_, rdpa_key_ty
 static inline int rdpa_ip_class_pathstat_get(bdmf_object_handle mo_, bdmf_index ai_, rdpa_stat_t * pathstat_)
 {
     return bdmf_attrelem_get_as_buf(mo_, rdpa_ip_class_attr_pathstat, (bdmf_index)ai_, pathstat_, sizeof(*pathstat_));
+}
+
+
+/** Get ip_class/tcp_ack_prio attribute.
+ *
+ * Get TCP pure ACK prioritization (common for L3 and L2).
+ * \param[in]   mo_ ip_class object handle or mattr transaction handle
+ * \param[out]  tcp_ack_prio_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_ip_class_tcp_ack_prio_get(bdmf_object_handle mo_, bdmf_boolean *tcp_ack_prio_)
+{
+    bdmf_number _nn_;
+    int _rc_;
+    _rc_ = bdmf_attr_get_as_num(mo_, rdpa_ip_class_attr_tcp_ack_prio, &_nn_);
+    *tcp_ack_prio_ = (bdmf_boolean)_nn_;
+    return _rc_;
+}
+
+
+/** Set ip_class/tcp_ack_prio attribute.
+ *
+ * Set TCP pure ACK prioritization (common for L3 and L2).
+ * \param[in]   mo_ ip_class object handle or mattr transaction handle
+ * \param[in]   tcp_ack_prio_ Attribute value
+ * \return 0 or error code < 0
+ * The function can be called in task context only.
+ */
+static inline int rdpa_ip_class_tcp_ack_prio_set(bdmf_object_handle mo_, bdmf_boolean tcp_ack_prio_)
+{
+    return bdmf_attr_set_as_num(mo_, rdpa_ip_class_attr_tcp_ack_prio, tcp_ack_prio_);
 }
 
 /** @} end of ip_class Doxygen group */

@@ -528,6 +528,9 @@ static int wpa_supplicant_wps_cred(void *ctx,
 #ifdef CONFIG_IEEE80211W
 			ssid->ieee80211w = MGMT_FRAME_PROTECTION_OPTIONAL;
 #endif /* CONFIG_IEEE80211W */
+#ifdef CONFIG_DRIVER_BRCM
+			ssid->auth_alg = WPA_AUTH_ALG_NONE;
+#endif // endif
 		}
 		ssid->proto = WPA_PROTO_RSN;
 		break;
@@ -1260,6 +1263,10 @@ static int wpas_wps_start_dev_pw(struct wpa_supplicant *wpa_s,
 		wpa_printf(MSG_DEBUG, "WPS: Failed to set phase1 '%s'", val);
 		return -1;
 	}
+
+	if (dev_pw_id != DEV_PW_NFC_CONNECTION_HANDOVER)
+		wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_PIN_ACTIVE);
+
 	if (wpa_s->wps_fragment_size)
 		ssid->eap.fragment_size = wpa_s->wps_fragment_size;
 	eloop_register_timeout(WPS_PBC_WALK_TIME, 0, wpas_wps_timeout,
@@ -1323,6 +1330,7 @@ int wpas_wps_cancel(struct wpa_supplicant *wpa_s)
 			wpas_clear_wps(wpa_s);
 	}
 
+	wpa_msg(wpa_s, MSG_INFO, WPS_EVENT_CANCEL);
 	wpa_s->after_wps = 0;
 
 	return 0;

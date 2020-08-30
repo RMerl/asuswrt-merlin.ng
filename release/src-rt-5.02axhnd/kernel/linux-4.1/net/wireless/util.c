@@ -88,6 +88,12 @@ int ieee80211_channel_to_frequency(int chan, enum ieee80211_band band)
 		if (chan < 5)
 			return 56160 + chan * 2160;
 		break;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	case IEEE80211_BAND_6GHZ:
+		if (chan >= 1 && chan <= 233)
+			return 5940 + chan * 5;
+		break;
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	default:
 		;
 	}
@@ -104,6 +110,10 @@ int ieee80211_frequency_to_channel(int freq)
 		return (freq - 2407) / 5;
 	else if (freq >= 4910 && freq <= 4980)
 		return (freq - 4000) / 5;
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	else if (freq >= 5945 && freq <= 7125)
+		return (freq - 5940) / 5;
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	else if (freq <= 45000) /* DMG band lower limit */
 		return (freq - 5000) / 5;
 	else if (freq >= 58320 && freq <= 64800)
@@ -142,6 +152,9 @@ static void set_mandatory_flags_band(struct ieee80211_supported_band *sband,
 	int i, want;
 
 	switch (band) {
+#ifdef CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT
+	case IEEE80211_BAND_6GHZ:
+#endif /* CONFIG_BCM_KF_NL80211_6G_BAND_SUPPORT */
 	case IEEE80211_BAND_5GHZ:
 		want = 3;
 		for (i = 0; i < sband->n_bitrates; i++) {

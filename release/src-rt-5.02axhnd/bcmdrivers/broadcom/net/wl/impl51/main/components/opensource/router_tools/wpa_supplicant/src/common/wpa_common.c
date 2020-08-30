@@ -1088,6 +1088,10 @@ static int rsn_selector_to_bitfield(const u8 *s)
 		return WPA_CIPHER_BIP_CMAC_256;
 	if (RSN_SELECTOR_GET(s) == RSN_CIPHER_SUITE_NO_GROUP_ADDRESSED)
 		return WPA_CIPHER_GTK_NOT_USED;
+#ifdef CONFIG_DRIVER_BRCM_WDS
+	if (RSN_SELECTOR_GET(s) == BRCM_CIPHER_SUITE_NO_GROUP_ADDRESSED)
+		return WPA_CIPHER_GTK_NOT_USED;
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 	return 0;
 }
 
@@ -2040,8 +2044,51 @@ u32 wpa_akm_to_suite(int akm)
 		return RSN_AUTH_KEY_MGMT_FT_FILS_SHA256;
 	if (akm & WPA_KEY_MGMT_FT_FILS_SHA384)
 		return RSN_AUTH_KEY_MGMT_FT_FILS_SHA384;
+	if (akm & WPA_KEY_MGMT_SAE)
+		return RSN_AUTH_KEY_MGMT_SAE;
+	if (akm & WPA_KEY_MGMT_FT_SAE)
+		return RSN_AUTH_KEY_MGMT_FT_SAE;
+	if (akm & WPA_KEY_MGMT_OWE)
+		return RSN_AUTH_KEY_MGMT_OWE;
+	if (akm & WPA_KEY_MGMT_DPP)
+		return RSN_AUTH_KEY_MGMT_DPP;
+	if (akm & WPA_KEY_MGMT_OSEN)
+		return RSN_AUTH_KEY_MGMT_OSEN;
 	return 0;
 }
+
+#ifdef CONFIG_DRIVER_BRCM_WDS
+int wpa_compare_wds_rsn_ie(const u8 *ie1, size_t ie1len,
+		       const u8 *ie2, size_t ie2len)
+{
+	struct wpa_ie_data ie1d, ie2d;
+
+	if (ie1 == NULL || ie2 == NULL)
+		return -1;
+
+	if (ie1len == ie2len && os_memcmp(ie1, ie2, ie1len) == 0)
+		return 0; /* identical IEs */
+
+	/*
+	 * The Group cipher in RSN IE is different between Beacon/Probe
+	 * Response and EAPOL-Key messages WDS case association. WDS
+	 * case check against GTK not used. Allow for this, but verify
+	 * that other parts of the RSN IEs are identical.
+	 */
+	if (wpa_parse_wpa_ie_rsn(ie1, ie1len, &ie1d) < 0 ||
+	    wpa_parse_wpa_ie_rsn(ie2, ie2len, &ie2d) < 0)
+		return -1;
+
+	if (ie1d.proto == ie2d.proto &&
+	    ie1d.pairwise_cipher == ie2d.pairwise_cipher &&
+	    ie2d.group_cipher == WPA_CIPHER_GTK_NOT_USED &&
+	    ie1d.key_mgmt == ie2d.key_mgmt &&
+	    ie1d.mgmt_group_cipher == ie2d.mgmt_group_cipher)
+		return 0;
+
+	return -1;
+}
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 
 int wpa_compare_rsn_ie(int ft_initial_assoc,
 		       const u8 *ie1, size_t ie1len,

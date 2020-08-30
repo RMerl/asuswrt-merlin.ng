@@ -819,6 +819,10 @@ ikoscfe:
 # Generate the credits
 #
 ############################################################################
+ifneq ($(LIVE_UPDATE_RSA),)
+KEY_PATH= $(SRCBASE)/../../../key
+endif
+
 gen_credits:
 	cd $(RELEASE_DIR); \
 	if [ -e gen_credits.pl ]; then \
@@ -826,9 +830,24 @@ gen_credits:
 	fi
 
 genrsa:
-ifneq ("$(wildcard $(SRC_ROOT)/../../buildtools/private.pem)","")
+ifneq ($(LIVE_UPDATE_RSA),)
+ifneq (,$(wildcard $(KEY_PATH)/private*.pem))
+	for f in $(KEY_PATH)/private*.pem; do \
+		rsa_idx=$$(echo $${f} | sed "s/.*\///" | sed "s/private//" | sed "s/.pem//"); \
+		$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out image/$(IMGNAME)_ubi_rsa$${rsa_idx}.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w); \
+		$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out image/$(IMGNAME)_cferom_ubi_rsa$${rsa_idx}.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w); \
+	done
+else
+ifneq (,$(wildcard $(SRC_ROOT)/../../buildtools/private.pem))
 	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w
 	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w
+endif
+endif
+else
+ifneq (,$(wildcard $(SRC_ROOT)/../../buildtools/private.pem))
+	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w
+	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w
+endif
 endif
 
 ############################################################################
@@ -1220,11 +1239,20 @@ endif
 endif
 	md5sum $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w > $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.md5
 	md5sum $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w > $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.md5
-ifneq ("$(wildcard $(SRC_ROOT)/../../buildtools/private.pem)","")
-	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w
-	openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w
-endif
 
+#	$(if $(LIVE_UPDATE_RSA), \
+#		$(if $(wildcard $(KEY_PATH)/private*.pem), \
+#			for f in $(KEY_PATH)/private*.pem; do \
+#				rsa_idx=$$(echo $${f} | sed "s/.*\///" | sed "s/private//" | sed "s/.pem//"); \
+#				$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out image/$(IMGNAME)_ubi_rsa$${rsa_idx}.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w); \
+#				$$(openssl sha1 -sign $(KEY_PATH)/private$${rsa_idx}.pem -out image/$(IMGNAME)_cferom_ubi_rsa$${rsa_idx}.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w); \
+#			done \
+#			, \
+#			[ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w; \
+#			openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w; \
+#			), \
+#			[ ! -f $(HND_SRC)/../../buildtools/private.pem ] || openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_ubi.w; \
+#			openssl sha1 -sign $(SRC_ROOT)/../../buildtools/private.pem -out image/$(IMGNAME)_cferom_ubi_rsa.zip $(HND_SRC)/targets/$(PROFILE)/$(IMGNAME)_cferom_ubi.w; )
 
 ########################
 # eMMC CFEONLY IMAGES  #

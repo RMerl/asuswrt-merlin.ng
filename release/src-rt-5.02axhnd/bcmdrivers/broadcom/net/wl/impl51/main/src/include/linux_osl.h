@@ -1,7 +1,7 @@
 /*
  * Linux OS Independent Layer
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl.h 771835 2019-02-08 18:15:49Z $
+ * $Id: linux_osl.h 784861 2020-03-06 09:05:23Z $
  */
 
 #ifndef _linux_osl_h_
@@ -132,6 +132,11 @@ extern uint osl_pcie_domain(osl_t *osh);
 extern uint osl_pcie_bus(osl_t *osh);
 extern struct pci_dev *osl_pci_device(osl_t *osh);
 
+#define OSL_PCIE_ASPM_ENABLE(osh, linkcap_offset) osl_pcie_aspm_enable(osh, linkcap_offset, TRUE)
+#define OSL_PCIE_ASPM_DISABLE(osh, linkcap_offset) osl_pcie_aspm_enable(osh, linkcap_offset, FALSE)
+
+extern void osl_pcie_aspm_enable(osl_t *osh, uint linkcap_offset, bool aspm);
+
 #define OSL_PCIE_MPS_LIMIT(osh, devctl_offset, mps)	osl_pcie_mps_limit(osh, devctl_offset, mps)
 extern void osl_pcie_mps_limit(osl_t *osh, uint devctl_offset, uint mps);
 
@@ -155,8 +160,9 @@ typedef struct {
 	void *rx_ctx;
 	void (*stsbuf_free_cb_fn)(void *stsbuf_free_cb_ctx, void *p);
 	void *stsbuf_free_cb_ctx;
+	void *bme;		/**< Byte Move Engine handler */
 #ifdef BCM_SKB_FREE_OFFLOAD
-    bool skb_free_offload;
+	bool skb_free_offload;
 #endif // endif
 } osl_pubinfo_t;
 
@@ -383,7 +389,15 @@ extern void osl_pcie_rreg(osl_t *osh, ulong addr, volatile void *v, uint size);
 extern int osl_error(int bcmerror);
 
 /* the largest reasonable packet buffer driver uses for ethernet MTU in bytes */
+#if defined(WL_EAP_AMSDU_CRYPTO_OFFLD)
+/* When this conditional is turned on and run-time configuration is enabled,
+ * host can receive frames larger than MTU size. Right now this is set to default size.
+ * This should be set to higher value for larger A-MSDU frame sizes.
+ */
+#define	PKTBUFSZ	2048
+#else
 #define	PKTBUFSZ	2048   /* largest reasonable packet buffer, driver uses for ethernet MTU */
+#endif // endif
 
 #define OSH_NULL   NULL
 
@@ -421,7 +435,7 @@ extern uint64 osl_sysuptime_us(void);
 	sizeof(*(r)) == sizeof(uint16) ? osl_readw((osh), (volatile uint16*)(r)) : \
 	osl_readl((osh), (volatile uint32*)(r)) \
 )
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	switch (sizeof(*(r))) { \
 	case sizeof(uint8):	osl_writeb((osh), (volatile uint8*)(r), (uint8)(v)); break; \
 	case sizeof(uint16):	osl_writew((osh), (volatile uint16*)(r), (uint16)(v)); break; \
@@ -540,7 +554,7 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 
 #ifdef CONFIG_64BIT
 /* writeq is defined only for 64 bit platform */
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	SELECT_BUS_WRITE(osh, \
 		switch (sizeof(*(r))) { \
 			case sizeof(uint8):	writeb((uint8)(v), (volatile uint8*)(r)); break; \
@@ -552,7 +566,7 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 	} while (0)
 
 #else /* !CONFIG_64BIT */
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	SELECT_BUS_WRITE(osh, \
 		switch (sizeof(*(r))) { \
 			case sizeof(uint8):	writeb((uint8)(v), (volatile uint8*)(r)); break; \
@@ -585,7 +599,7 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 		}), \
 		OSL_READ_REG(osh, r)) \
 )
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	SELECT_BUS_WRITE(osh, \
 		switch (sizeof(*(r))) { \
 			case sizeof(uint8):	writeb((uint8)(v), \
@@ -617,7 +631,7 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 		}), \
 		OSL_READ_REG(osh, r)) \
 )
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	SELECT_BUS_WRITE(osh, \
 		switch (sizeof(*(r))) { \
 			case sizeof(uint8):	writeb((uint8)(v), \
@@ -633,9 +647,6 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 #endif /* IL_BIGENDIAN */
 
 #endif /* OSLREGOPS */
-
-#define	AND_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) & (v))
-#define	OR_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) | (v))
 
 /* bcopy, bcmp, and bzero functions */
 #define	bcopy(src, dst, len)	memcpy((dst), (src), (len))
@@ -767,7 +778,7 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 	 sizeof(*(r)) == sizeof(uint16) ? osl_readw((volatile uint16*)(r)) : \
 	 osl_readl((volatile uint32*)(r)); \
 	 })
-#define W_REG(osh, r, v) do { \
+#define _W_REG(osh, r, v) do { \
 	BCM_REFERENCE(osh); \
 	switch (sizeof(*(r))) { \
 	case sizeof(uint8):	osl_writeb((uint8)(v), (volatile uint8*)(r)); break; \
@@ -779,11 +790,9 @@ extern void osl_writel(osl_t *osh, volatile uint32 *r, uint32 v);
 /* else added by johnvb to make sdio and jtag work with BINOSL, at least compile ... UNTESTED */
 #else
 #define R_REG(osh, r) OSL_READ_REG(osh, r)
-#define W_REG(osh, r, v) do { OSL_WRITE_REG(osh, r, v); } while (0)
+#define _W_REG(osh, r, v) do { OSL_WRITE_REG(osh, r, v); } while (0)
 #endif // endif
 
-#define	AND_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) & (v))
-#define	OR_REG(osh, r, v)		W_REG(osh, (r), R_REG(osh, r) | (v))
 extern uint8 osl_readb(volatile uint8 *r);
 extern uint16 osl_readw(volatile uint16 *r);
 extern uint32 osl_readl(volatile uint32 *r);
@@ -824,6 +833,21 @@ extern void osl_reg_unmap(void *va);
 #define	BZERO_SM(r, len)	bzero((r), (len))
 
 #endif	/* BINOSL */
+
+#define W_REG(osh, r, v) do { \
+	SIZECHECK(*(r), (v)); \
+	_W_REG(osh, r, v); \
+} while (0)
+
+#define AND_REG(osh, r, v) do { \
+	SIZECHECK(*(r), (v)); \
+	_W_REG(osh, (r), R_REG(osh, r) & (v)); \
+} while (0)
+
+#define OR_REG(osh, r, v) do { \
+	SIZECHECK(*(r), (v)); \
+	_W_REG(osh, (r), R_REG(osh, r) | (v)); \
+} while (0)
 
 #define OSL_RAND()		osl_rand()
 extern uint32 osl_rand(void);
@@ -938,68 +962,71 @@ extern void bzero(void *b, size_t len);
 #ifdef BCM_SECURE_DMA
 
 #define	SECURE_DMA_MAP(osh, va, size, direction, p, dmah, pcma, offset, buftype) \
-	osl_sec_dma_map((osh), (va), (size), (direction), (p), (dmah), (pcma), (offset), (buftype))
+	osl_secdma_map((osh), (va), (size), (direction), (p), (dmah), (pcma), (offset), (buftype))
 #define	SECURE_DMA_DD_MAP(osh, va, size, direction, p, dmah) \
-	osl_sec_dma_dd_map((osh), (va), (size), (direction), (p), (dmah))
+	osl_secdma_dd_map((osh), (va), (size), (direction), (p), (dmah))
 #define	SECURE_DMA_MAP_TXMETA(osh, va, size, direction, p, dmah, pcma) \
-	osl_sec_dma_map_txmeta((osh), (va), (size), (direction), (p), (dmah), (pcma))
+	osl_secdma_map_txmeta((osh), (va), (size), (direction), (p), (dmah), (pcma))
 #define	SECURE_DMA_UNMAP(osh, pa, size, direction, p, dmah, pcma, offset) \
-	osl_sec_dma_unmap((osh), (pa), (size), (direction), (p), (dmah), (pcma), (offset))
+	osl_secdma_unmap((osh), (pa), (size), (direction), (p), (dmah), (pcma), (offset))
 #define	SECURE_DMA_UNMAP_ALL(osh, pcma) \
-	osl_sec_dma_unmap_all((osh), (pcma))
+	osl_secdma_unmap_all((osh), (pcma))
 
 #define DMA_MAP(osh, va, size, direction, p, dmah)
 
 #define	SECURE_DMA_BUFFS_IS_AVAIL(osh) \
-	osl_sec_dma_buffs_is_avail((osh))
+	osl_secdma_buffs_is_avail((osh))
 
 #define	SECURE_DMA_RX_BUFFS_IS_AVAIL(osh) \
-	osl_sec_dma_rx_buffs_is_avail((osh))
-
+	osl_secdma_rx_buffs_is_avail((osh))
+#ifdef BCMDONGLEHOST
 #define	SECURE_DMA_RXCTL_BUFFS_IS_AVAIL(osh) \
-	osl_sec_dma_rxctl_buffs_is_avail((osh))
-
+	osl_secdma_rxctl_buffs_is_avail((osh))
+#endif /* BCMDONGLEHOST */
 typedef struct sec_cma_info {
 	struct sec_mem_elem *sec_alloc_list;
 	struct sec_mem_elem *sec_alloc_list_tail;
 } sec_cma_info_t;
 
+#define MB_1     1048576
+#define KB_8     8192
+#define KB_4     4096
+#define KB_2     2048
+#define KB_1     1024
+#define B_512    512
+
 /*
- * Total SECDMA memory Reserved is 40M.
- * This secdma memory will be used by both CMA_DMA_DATA_MEMBLOCK and CMA_DMA_DESC_MEMBLOCK
- * CMA_DMA_DESC_MEMBLOCK size	= (0x6000 * 340) + 0x100000 = Apprximately 9M
- * CMA_DMA_DATA_MEMBLOCK	= 20M - CMA_DMA_DESC_MEMBLOCK = 31M
- * Total 4K buffers		= CMA_DMA_DATA_MEMBLOCK/CMA_BUFSIZE_4K = 7936.
- *
- * Now All Avaibale 4K buffers are divided in to 3 pools as below.
- * RXBUF POST Pool		= CMA_RXBUF_BUFNUM  4K Buffers = 2048
- * RXCTR_BUF_POST POST Pool	= RXCTR_BUF_POST  8K Buffers = 64
- * TXBUF Pool (CMA_TXBUF_BUFNUM)= 7936 - (64*2) - 2048 = 5760
+ * Total SECDMA memory Reserved is 20M.
+ * This secdma memory will be used by both DMA data memory and DMA descriptor memory
+ * Data buffers are of 2K each, divided in to 3 pools as below.
+ * RXBUF POST Pool
+ * RXCTR_BUF_POST POST Pool = RXCTR_BUF_POST  8K Buffers = 64
+ * TXBUF Pool (CMA_TXBUF_BUFNUM)
  */
 
-#define CMA_BUFSIZE_8K	8192
-#define CMA_BUFSIZE_4K	4096
-#define CMA_BUFSIZE_2K	2048
-#define CMA_BUFSIZE_512	512
+#define SECDMA_DATA_BUF_SIZE KB_2
 
-#define CMA_RXBUF_POST		0
-#define CMA_TXBUF_POST		1
-#define CMA_RXCTR_BUF_POST	2
+#define SECDMA_RXBUF_POST	0
+#define SECDMA_TXBUF_POST	1
+#ifdef BCMDONGLEHOST
+#define SECDMA_RXCTR_BUF_POST	2
+#endif /* BCMDONGLEHOST */
 
-#define	CMA_RXCTRL_BUFNUM	64	/* 8K buffer count(pool) for RXCTRL Buffers */
-#define	CMA_RXBUF_BUFNUM	2048	/* 4K buffer count(pool) RXBUF Post */
+#define	SECDMA_RXCTRL_BUF_SIZE	KB_8
 
-#define	CMA_TXBUF_BUFNUM	5760 /* 4K buffer count(pool) for TXBUF_POST */
-#define SEC_CMA_COHERENT_BLK	0x6000 /* 24576 */
-
-#ifdef HTXHDR
-#define SEC_CMA_COHERENT_BLK_EX 0x100000 /* 1MB, for HTXHDR scratch_buf (772 KB) */
-#define SEC_CMA_COHERENT_MAX  (340+1) /* 1 last node is for HTXHDR scratch_buf (772 KB) */
+#ifdef BCMDONGLEHOST
+/* RXBUF for FD */
+/* != H2DRING_RXPOST_MAX_ITEM(bcmmsgbuf.h), found empirically */
+#define SECDMA_RXBUF_CNT	2048
+#define	SECDMA_RXCTRL_BUF_CNT	64	/* 8K buffer count(pool) for RXCTRL Buffers */
 #else
-#define SEC_CMA_COHERENT_BLK_EX 0
+/* RXBUF for NIC */
+#define SECDMA_RXBUF_CNT	500	/* NRXBUFPOST(stbap: WLTUNEFILE=wltunable_lx_router.h) */
+#define	SECDMA_RXCTRL_BUF_CNT	0	/* RXCTRL Buffers are used only in FD */
+#endif /* BCMDONGLEHOST */
 /*
- * This includes all the rings and other allocations as well :
- * Max txflows(MAX_DHD_TX_FLOWS)	= 320
+ * Given below is an hint of the origin of Descriptor requests:
+ * Max txflows(MAX_DHD_TX_FLOWS)	= 320(64 STA)
  * h2dctrl				= 1
  * d2hctrl				= 1
  * h2drxp				= 4 (with 43684, it can grow up to 4)
@@ -1008,48 +1035,51 @@ typedef struct sec_cma_info {
  * dma read/write indices allocations	= 5
  * IOCTL response buffer		= 1
  * IOCTL request buffer			= 1
- * DHDHDR				= 1
  * host_bus_throughput_buf		= 1
  * Total				= 340
  */
-#define SEC_CMA_COHERENT_MAX (340)
-#endif /* HTXHDR */
+#define SECDMA_MEMBLOCK_SIZE		(20 * MB_1)
+#define SECDMA_DESC_MEMBLOCK_SIZE	(6 * MB_1) /* empirically derived */
+#define SECDMA_NONDESC_MEMBLOCK_SIZE	((SECDMA_MEMBLOCK_SIZE) - (SECDMA_DESC_MEMBLOCK_SIZE))
+#define SECDMA_RXCTRL_MEMBLOCK_SIZE	((SECDMA_RXCTRL_BUF_CNT) * (SECDMA_RXCTRL_BUF_SIZE))
+#define SECDMA_DATA_MEMBLOCK_SIZE	((SECDMA_NONDESC_MEMBLOCK_SIZE) - \
+	(SECDMA_RXCTRL_MEMBLOCK_SIZE))
 
-#define CMA_DMA_DESC_MEMBLOCK	((SEC_CMA_COHERENT_BLK * SEC_CMA_COHERENT_MAX) \
-							+ (SEC_CMA_COHERENT_BLK_EX))
-#define CMA_DMA_DATA_MEMBLOCK	(CMA_BUFSIZE_4K*CMA_TXBUF_BUFNUM)
-#define CMA_DMA_RXCTRL_MEMBLOCK	(CMA_BUFSIZE_8K*CMA_RXCTRL_BUFNUM)
-#define CMA_DMA_RXBUF_POST_MEMBLOCK	(CMA_BUFSIZE_4K*CMA_RXBUF_BUFNUM)
-#define	CMA_MEMBLOCK	((CMA_DMA_DESC_MEMBLOCK + CMA_DMA_DATA_MEMBLOCK+CMA_DMA_RXCTRL_MEMBLOCK)\
-								+ (CMA_DMA_RXBUF_POST_MEMBLOCK))
+#define SECDMA_DATA_BUF_CNT		((SECDMA_DATA_MEMBLOCK_SIZE) / (SECDMA_DATA_BUF_SIZE))
+#define SECDMA_TXBUF_CNT		(SECDMA_DATA_BUF_CNT - SECDMA_RXBUF_CNT)
+#define SECDMA_TXBUF_MEMBLOCK_SIZE      ((SECDMA_TXBUF_CNT) * (SECDMA_DATA_BUF_SIZE))
+#define SECDMA_RXBUF_MEMBLOCK_SIZE      ((SECDMA_DATA_BUF_SIZE)*(SECDMA_RXBUF_CNT))
 
-#define SEC_DMA_ALIGN	(1<<16)
+/* Keep every Desc addr aligned */
+#define SECDMA_DESC_ADDR_ALIGN	(32)
+
 typedef struct sec_mem_elem {
 	size_t			size;
-	int				direction;
-	int				buftype;
-	phys_addr_t		pa_cma;     /**< physical  address */
-	void			*va;        /**< virtual address of driver pkt */
-	dma_addr_t		dma_handle; /**< bus address assign by linux */
-	void			*vac;       /**< virtual address of cma buffer */
-	struct page *pa_cma_page;	/* phys to page address */
+	int			direction;
+	int			buftype;
+	phys_addr_t		pa;		/**< physical  address */
+	void			*pkt;		/**< virtual address of driver pkt */
+	dma_addr_t		dma_handle;	/**< bus address assign by linux */
+	void			*va;		/**< virtual address of cma buffer */
+	struct page		*pa_page;	/* phys to page address */
 	struct	sec_mem_elem	*next;
 } sec_mem_elem_t;
 
-extern bool osl_sec_dma_buffs_is_avail(osl_t *osh);
-extern bool osl_sec_dma_rx_buffs_is_avail(osl_t *osh);
-extern bool osl_sec_dma_rxctl_buffs_is_avail(osl_t *osh);
+extern bool osl_secdma_buffs_is_avail(osl_t *osh);
+extern bool osl_secdma_rx_buffs_is_avail(osl_t *osh);
+#ifdef BCMDONGLEHOST
+extern bool osl_secdma_rxctl_buffs_is_avail(osl_t *osh);
+#endif /* BCMDONGLEHOST */
 
-extern dma_addr_t osl_sec_dma_map(osl_t *osh, void *va, uint size, int direction, void *p,
+extern dma_addr_t osl_secdma_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *dmah, void *ptr_cma_info, uint offset, uint buftype);
-extern dma_addr_t osl_sec_dma_dd_map(osl_t *osh, void *va, uint size, int direction, void *p,
+extern dma_addr_t osl_secdma_dd_map(osl_t *osh, void *va, uint size, int direction, void *p,
 	hnddma_seg_map_t *dmah);
-extern dma_addr_t osl_sec_dma_map_txmeta(osl_t *osh, void *va, uint size,
+extern dma_addr_t osl_secdma_map_txmeta(osl_t *osh, void *va, uint size,
   int direction, void *p, hnddma_seg_map_t *dmah, void *ptr_cma_info);
-extern void osl_sec_dma_unmap(osl_t *osh, dma_addr_t dma_handle, uint size, int direction,
+extern void osl_secdma_unmap(osl_t *osh, dma_addr_t dma_handle, uint size, int direction,
 	void *p, hnddma_seg_map_t *map, void *ptr_cma_info, uint offset);
-extern void osl_sec_dma_unmap_all(osl_t *osh, void *ptr_cma_info);
-
+extern void osl_secdma_unmap_all(osl_t *osh, void *ptr_cma_info);
 #endif /* BCM_SECURE_DMA */
 
 #if defined(BCM_NBUFF)
@@ -1086,5 +1116,8 @@ extern int osl_nvram_vars_adjust_mac(unsigned int instance_id, char *memblock, u
 #else
 #define	BCM_SKB_FREE_OFFLOAD_ENAB(osh)	(0)
 #endif // endif
+
+#define OSH_SETBME(osh, bmeh)   ((osl_pubinfo_t*)osh)->bme = (bmeh)
+#define OSH_GETBME(osh)	        ((osl_pubinfo_t*)osh)->bme
 
 #endif	/* _linux_osl_h_ */

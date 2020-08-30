@@ -57,6 +57,7 @@ CFLAGS+= -DDSLCPE_WLCONF_CMD -DBCA_CPEROUTER
 ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
 CFLAGS += -DCONFIG_HOSTAPD  
 LIBS += -lbcmcrypto -lnv2hapdcfg -L$(INSTALL_DIR)/usr/lib
+EXE += wlhostapd
 endif
 endif
 
@@ -250,6 +251,10 @@ wlmngr2: $(OBJS) wldaemon.o
 	$(CC) -o $@ wldaemon.o $(OBJS) -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
 	#$(CC) -o $@ wldaemon.o $(OBJS) -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
 
+ifneq ($(strip $(BUILD_BRCM_HOSTAPD)),)
+wlhostapd: wlhostapd.o wlsyscall.o
+	$(CC) -o $@ wlhostapd.o wlsyscall.o -s -Os -fomit-frame-pointer $(CMS_LIB_PATH) $(LIBS) -L$(LIBDIR) -L$(EXTRALIBDIR) -lc -lgcc_s 
+endif
 
 wlevt2: wlevt.o
 ifneq ($(strip $(BUILD_BRCM_CMS)),)

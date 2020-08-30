@@ -6,7 +6,7 @@
  *
  * NOTE: A ring of size N, may only hold N-1 elements.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -23,7 +23,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_ring.h 774845 2019-05-08 16:56:28Z $
+ * $Id: bcm_ring.h 783797 2020-02-10 20:24:41Z $
  */
 #ifndef __bcm_ring_included__
 #define __bcm_ring_included__
@@ -95,7 +95,7 @@
  * private L1 data cache.
  * +----------------------------------------------------------------------------
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -109,7 +109,7 @@
  * OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
- * $Id: bcm_ring.h 774845 2019-05-08 16:56:28Z $
+ * $Id: bcm_ring.h 783797 2020-02-10 20:24:41Z $
  *
  * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
  * vim: set ts=4 noet sw=4 tw=80:
@@ -161,6 +161,7 @@ typedef struct bcm_ring {     /* Ring context */
 } bcm_ring_t;
 
 static INLINE void bcm_ring_init(bcm_ring_t *ring);
+static INLINE void bcm_ring_setup(bcm_ring_t *ring, int write, int read);
 static INLINE void bcm_ring_copy(bcm_ring_t *to, bcm_ring_t *from);
 static INLINE bool bcm_ring_is_empty(bcm_ring_t *ring);
 
@@ -201,6 +202,23 @@ bcm_ring_init(bcm_ring_t *ring)
 #endif /* BCM_RING_DEBUG */
 	ring->write = 0;
 	ring->read = 0;
+}
+
+/**
+ * bcm_ring_setup - initialize a ring with specified write and read values
+ * @ring: pointer to a ring context
+ * @write: initialization write value
+ * @read: initialization read value
+ */
+static INLINE void
+bcm_ring_setup(bcm_ring_t *ring, int write, int read)
+{
+	ASSERT(ring != (bcm_ring_t *)NULL);
+#if defined(BCM_RING_DEBUG)
+	ring->self = ring;
+#endif /* BCM_RING_DEBUG */
+	ring->write = write;
+	ring->read = read;
 }
 
 /**

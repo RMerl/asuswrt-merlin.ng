@@ -5,7 +5,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -22,7 +22,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: dhdioctl.h 774649 2019-05-01 13:45:54Z $
+ * $Id: dhdioctl.h 777067 2019-07-18 09:28:30Z $
  */
 
 #ifndef _dhdioctl_h_
@@ -53,40 +53,6 @@ typedef enum {
 	DMA_XFER_IN_PROGRESS,
 	DMA_XFER_FAILED
 } dma_xfer_status_t;
-
-#ifdef EFI
-struct control_signal_ops {
-	uint32 signal;
-	uint32 val;
-};
-enum {
-	WL_REG_ON = 0,
-	DEVICE_WAKE = 1,
-	TIME_SYNC = 2
-};
-
-typedef struct wifi_properties {
-	uint8 version;
-	uint32 vendor;
-	uint32 model;
-	uint8 mac_addr[6];
-	uint32 chip_revision;
-	uint8 silicon_revision;
-	uint8 is_powered;
-	uint8 is_sleeping;
-	char module_revision[16];	/* null terminated string */
-	uint8 is_fw_loaded;
-	char  fw_filename[32];		/* null terminated string */
-	char nvram_filename[32];	/* null terminated string */
-	uint8 channel;
-	uint8 module_sn[6];
-} wifi_properties_t;
-
-#define DHD_WIFI_PROPERTIES_VERSION 0x1
-
-#define DHD_OTP_SIZE_WORDS 912
-
-#endif /* EFI */
 
 /* per-driver magic numbers */
 #define DHD_IOCTL_MAGIC		0x00444944

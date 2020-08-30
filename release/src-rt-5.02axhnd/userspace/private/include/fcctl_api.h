@@ -144,10 +144,11 @@ int fcCtlResetStats(void);
 #define FCACHE_CONFIG_OPT_MCAST_LEARN       6       /* Mcast enable/disable         */
 #define FCACHE_CONFIG_OPT_L2TP              7       /* L2TP enable/disable values   */
 #define FCACHE_CONFIG_OPT_ACCEL_MODE        8       /* Acceleration mode values     */
-#define FCACHE_CONFIG_OPT_TCP_ACK_MFLOWS    9     /* TCP Ack Prioritization       */
+#define FCACHE_CONFIG_OPT_TCP_ACK_MFLOWS    9       /* TCP Ack Prioritization       */
 #define FCACHE_CONFIG_OPT_HW_ACCEL          10      /* HW Acceleration en/disable   */
-#define FCACHE_CONFIG_OPT_SW_DEFER  11       /* Set pkt SW deferral rate value*/
-#define FCACHE_CONFIG_OPT_MAX       12       
+#define FCACHE_CONFIG_OPT_SW_DEFER          11      /* Set pkt SW deferral rate value*/
+#define FCACHE_CONFIG_OPT_4O6_FRAG          12      /* 4over6 frag support          */
+#define FCACHE_CONFIG_OPT_MAX               13       
 
 #define FCACHE_DUMP_OPT_FLOW_INFO   1       /* Dump flow info               */
 

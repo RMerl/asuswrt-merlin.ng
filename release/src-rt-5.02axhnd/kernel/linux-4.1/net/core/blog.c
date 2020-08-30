@@ -227,7 +227,7 @@ void blog_support_accel_mode(int accel_mode)
 /*TCP ACK Multi-Flow */
 blog_tcp_ack_mflows_set_t blog_tcp_ack_mflows_set_fn = NULL;
 
-#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
+#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM_XRDP)
 int blog_support_tcp_ack_mflows_g = 0; /* disable it, default is 1 */
 #else
 int blog_support_tcp_ack_mflows_g = 0;
@@ -243,7 +243,7 @@ int blog_support_get_tcp_ack_mflows(void)
  */
 void blog_support_set_tcp_ack_mflows(int enable)
 {
-#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908)
+#if defined(CONFIG_BCM963268) || defined(CONFIG_BCM963381) || defined(CONFIG_BCM963138) || defined(CONFIG_BCM963148) || defined(CONFIG_BCM94908) || defined(CONFIG_BCM_XRDP)
     if (blog_tcp_ack_mflows_set_fn)
         blog_tcp_ack_mflows_set_fn( enable );
 
@@ -323,6 +323,13 @@ void blog_support_l2tp(int config)
     }   
 
 }
+
+/*
+ * blog_support_4o6_frag_g 
+ * Exported blog_support_4o6_frag() may be used to set blog_support_4o6_frag_g.
+ */
+int blog_support_4o6_frag_g = BLOG_4O6_FRAG_ENABLE;
+void blog_support_4o6_frag(int config) { blog_support_4o6_frag_g = config; }
 
 /*
  * Traffic flow generator, keep conntrack alive during idle traffic periods
@@ -411,7 +418,6 @@ const char * strBlogRequest[BLOG_REQUEST_MAX] =
     BLOG_ARY_INIT(FLOWTRACK_KEY_GET)
     BLOG_ARY_INIT(FLOWTRACK_DSCP_GET)
     BLOG_ARY_INIT(FLOWTRACK_CONFIRMED)
-    BLOG_ARY_INIT(FLOWTRACK_ASSURED)
     BLOG_ARY_INIT(FLOWTRACK_ALG_HELPER)
     BLOG_ARY_INIT(FLOWTRACK_EXCLUDE)
     BLOG_ARY_INIT(FLOWTRACK_REFRESH)
@@ -1469,6 +1475,10 @@ static void blog_tcpack_prio( Blog_t * blog_p )
                 break;
             }
         case BLOG_ENETPHY:
+#if defined(CONFIG_BCM_XRDP)
+        case BLOG_GPONPHY:
+        case BLOG_EPONPHY:
+#endif
             {
                 /* only change priority when BLOG_TCPACK_ETH_PRIO is >0 */
                 if ( ( blog_eth_get_tx_mark_fn ) && 
@@ -1568,7 +1578,18 @@ void blog_link( BlogNetEntity_t entity_type, Blog_t * blog_p,
                     else
                         idx = BLOG_CT_PLD;
                     break;
-
+                case BLOG_PARAM2_L2TP_IPV4:
+                    if (RX_IPV4_DEL(blog_p) && (blog_p->ct_p[BLOG_CT_DEL] == NULL))                         
+                        idx = BLOG_CT_DEL;
+                    else if (RX_IPV4(blog_p))
+                    {
+                        if(blog_p->ct_p[BLOG_CT_PLD] == NULL)
+                            idx = BLOG_CT_PLD;                        
+                            
+                        if(blog_p->ct_p[BLOG_CT_PLD] != NULL && blog_p->ct_p[BLOG_CT_DEL] == NULL)
+                            idx = BLOG_CT_DEL;												
+                    }
+                    break;
                 default:
                     blog_print( "unknown param2 %u", param2 );
                     return;
@@ -1917,11 +1938,6 @@ unsigned long blog_request( BlogRequest_t request, void * net_p,
 
         case FLOWTRACK_CONFIRMED:    /* E.g. UDP connection confirmed */
             ret = test_bit( IPS_CONFIRMED_BIT,
-                            &((struct nf_conn *)net_p)->status );
-            break;
-
-        case FLOWTRACK_ASSURED:      /* E.g. TCP connection confirmed */
-            ret = test_bit( IPS_ASSURED_BIT,
                             &((struct nf_conn *)net_p)->status );
             break;
 
@@ -4611,6 +4627,10 @@ int blog_l2tp_tunnel_accelerated_g = BLOG_L2TP_DISABLE;
 int blog_support_l2tp_g = BLOG_L2TP_DISABLE; /* = CC_BLOG_SUPPORT_l2TP; */
 void blog_support_l2tp(int enable) {blog_support_l2tp_g = BLOG_L2TP_DISABLE;}
 
+int blog_support_4o6_frag_g = BLOG_4O6_FRAG_DISABLE;
+void blog_support_4o6_frag(int enable) {blog_support_4o6_frag_g = BLOG_4O6_FRAG_DISABLE;}
+
+
 /* Stub functions for Blog APIs that may be used by modules */
 Blog_t * blog_get( void ) { return BLOG_NULL; }
 void     blog_put( Blog_t * blog_p ) { return; }
@@ -4739,6 +4759,8 @@ EXPORT_SYMBOL(blog_cttime_update_fn);
 EXPORT_SYMBOL(blog_gre_tunnel_accelerated_g);
 EXPORT_SYMBOL(blog_support_gre_g);
 EXPORT_SYMBOL(blog_support_gre);
+EXPORT_SYMBOL(blog_support_4o6_frag_g);
+EXPORT_SYMBOL(blog_support_4o6_frag);
 #if defined(CONFIG_NET_IPGRE) || defined(CONFIG_NET_IPGRE_MODULE)
 EXPORT_SYMBOL(blog_gre_rcv_check_fn);
 EXPORT_SYMBOL(blog_gre_xmit_update_fn);

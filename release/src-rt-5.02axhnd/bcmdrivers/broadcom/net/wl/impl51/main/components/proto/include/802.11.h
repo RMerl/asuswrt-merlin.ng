@@ -1,7 +1,7 @@
 /*
  * Fundamental types and constants relating to 802.11
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11.h 777236 2019-07-24 13:51:48Z $
+ * $Id: 802.11.h 780627 2019-10-31 01:46:07Z $
  */
 
 #ifndef _802_11_H_
@@ -389,6 +389,18 @@ typedef struct dot11_brcm_extch dot11_brcm_extch_ie_t;
 #define DOT11_EXT_CH_LOWER	0x03	/* ext. ch. on lower sb */
 #define DOT11_EXT_CH_NONE	0x00	/* no extension ch.  */
 
+BWL_PRE_PACKED_STRUCT struct dot11_brcm_radarch {
+	uint8	id;		/* IE ID, 221, DOT11_MNG_PROPR_ID */
+	uint8	len;		/* IE length */
+	uint8	oui[3];
+	uint8	type;           /* type indicates what follows */
+	uint8	radarch[];	/* list of channels on which radar is detected */
+} BWL_POST_PACKED_STRUCT;
+typedef struct dot11_brcm_radarch dot11_brcm_radarch_ie_t;
+
+#define BRCM_RADARCH_IE_LEN	4
+#define BRCM_RADARCH_IE_TYPE	56
+
 BWL_PRE_PACKED_STRUCT struct dot11_action_frmhdr {
 	uint8	category;
 	uint8	action;
@@ -411,6 +423,16 @@ typedef struct dot11_channel_switch dot11_chan_switch_ie_t;
 /* CSA mode - 802.11h-2003 $7.3.2.20 */
 #define DOT11_CSA_MODE_ADVISORY		0	/* no DOT11_CSA_MODE_NO_TX restriction imposed */
 #define DOT11_CSA_MODE_NO_TX		1	/* no transmission upon receiving CSA frame. */
+
+/* CSA mode for AP's own specific use case. Purpose is switch to DFS
+ * channel, do CAC and return to previous channel on CAC completion.
+ *
+ * AP does not expose this mode to clients.
+ *
+ * Clients receives by default CSA_MODE_ADVISORY mode in CSA frame
+ * if not explictly stated otherwise.
+ */
+#define DOT11_CSA_PROPRIETARY_MODE_DO_CAC_AND_RETURN_TO_OLD_CHAN	100
 
 BWL_PRE_PACKED_STRUCT struct dot11_action_switch_channel {
 	uint8	category;
@@ -1484,6 +1506,7 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 #define DOT11_MNG_EXT_PREQ_ID			130	/* Mesh PREQ IE */
 #define DOT11_MNG_EXT_PREP_ID			131	/* Mesh PREP IE */
 #define DOT11_MNG_EXT_PERR_ID			132	/* Mesh PERR IE */
+#define DOT11_MNG_EXT_ADDBA_ID			159	/* ADDBA extension IE */
 #define	DOT11_MNG_VHT_CAP_ID			191	/* d11 mgmt VHT cap id */
 #define	DOT11_MNG_VHT_OPERATION_ID		192	/* d11 mgmt VHT op id */
 #define	DOT11_MNG_EXT_BSSLOAD_ID		193	/* d11 mgmt VHT extended bss load id */
@@ -1530,6 +1553,9 @@ typedef struct ccx_qfl_ie ccx_qfl_ie_t;
 #define DOT11_MNG_OPS_ID			(DOT11_MNG_ID_EXT_ID + EXT_MNG_OPS_ID)
 #define EXT_MNG_HE_BSS_LOAD_ID			47	/* HE BSS Load */
 #define DOT11_MNG_HE_BSS_LOAD_ID		(DOT11_MNG_ID_EXT_ID + EXT_MNG_HE_BSS_LOAD_ID)
+#define EXT_MNG_MAX_CHANNEL_SWITCH_TIME_ID	52	/* Max Channel Switch Time */
+#define DOT11_MNG_MAX_CHANNEL_SWITCH_TIME_ID	(DOT11_MNG_ID_EXT_ID +\
+							EXT_MNG_MAX_CHANNEL_SWITCH_TIME_ID)
 
 /* FILS and OCE ext ids */
 #define FILS_EXTID_MNG_REQ_PARAMS		2u	/* FILS Request Parameters element */
@@ -3883,6 +3909,30 @@ typedef struct multiap_ext_attr multiap_ext_attr_t;
 #define MAP_EXT_ATTR_BACKHAUL_BSS	0x40
 #define MAP_EXT_ATTR_BACKHAUL_STA	0x80
 
+/* Multi-AP Profile subelement */
+BWL_PRE_PACKED_STRUCT struct multiap_profile_se {
+	uint8 id;		/* sub element id */
+	uint8 len;		/* sub element len */
+	uint8 map_profile;	/* Multi-AP Profile field */
+} BWL_POST_PACKED_STRUCT;
+typedef struct multiap_profile_se multiap_profile_se_t;
+
+#define MAP_PROFILE_SE_ID		0x07	/* tmp subject to change as per MAP spec */
+#define MAP_PROFILE_SE_LEN		0x01
+#define MAP_PROFILE_1			0x01	/* Multi-AP Profile-1 */
+#define MAP_PROFILE_2			0x02	/* Multi-AP Profile-2 */
+
+/* Multi-AP Default 802.1Q Setting subelement */
+BWL_PRE_PACKED_STRUCT struct multiap_def_8021Q_settings_se {
+	uint8 id;		/* sub element id */
+	uint8 len;		/* sub element len */
+	uint16 prim_vlan_id;	/* Primary VLAN ID */
+} BWL_POST_PACKED_STRUCT;
+typedef struct multiap_def_8021Q_settings_se multiap_def_8021Q_settings_se_t;
+
+#define MAP_8021Q_SETTINGS_SE_ID	0x08 /* tmp subject to change as per MAP spec */
+#define MAP_8021Q_SETTINGS_SE_LEN	0x02
+
 /* MultiAP info element */
 BWL_PRE_PACKED_STRUCT struct multiap_ie {
 	uint8 id;
@@ -3893,7 +3943,7 @@ BWL_PRE_PACKED_STRUCT struct multiap_ie {
 } BWL_POST_PACKED_STRUCT;
 typedef struct multiap_ie multiap_ie_t;
 #define MAP_IE_FIXED_LEN		4
-#define MAP_IE_MAX_LEN			9	/* includes attributes, with tlv hdr */
+#define MAP_IE_MAX_LEN			16	/* includes attributes, with tlv hdr */
 /* MultiAP oui type */
 #define WFA_OUI_TYPE_MULTIAP	0x1B
 
@@ -3912,9 +3962,10 @@ BWL_PRE_PACKED_STRUCT struct brcm_ie {
 	uint8	flags;		/* misc flags */
 	uint8	flags1;		/* misc flags */
 	uint16	amsdu_mtu_pref;	/* preferred A-MSDU MTU */
+	uint8	flags2;		/* misc flags */
 } BWL_POST_PACKED_STRUCT;
 typedef	struct brcm_ie brcm_ie_t;
-#define BRCM_IE_LEN		11	/* BRCM IE length */
+#define BRCM_IE_LEN		12	/* BRCM IE length */
 #define BRCM_IE_VER		2	/* BRCM IE version */
 #define BRCM_IE_LEGACY_AES_VER	1	/* BRCM IE legacy AES version */
 
@@ -3944,6 +3995,10 @@ typedef	struct brcm_ie brcm_ie_t;
 #define BRF1_RFAWARE_DCS	0x20    /* RFAWARE dynamic channel selection (DCS) */
 #define BRF1_SOFTAP		0x40    /* Configure as Broadcom SOFTAP */
 #define BRF1_DWDS		0x80    /* DWDS capable */
+
+/* brcm_ie flags2 */
+#define BRF2_DTPC_TXCAP		0x1	/* DTPC capable */
+#define BRF2_DTPC_RXCAP		0x2	/* DTPC capable */
 
 /** Vendor IE structure */
 BWL_PRE_PACKED_STRUCT struct vndr_ie {
@@ -5161,6 +5216,15 @@ typedef struct dot11_ftm_sync_info dot11_ftm_sync_info_t;
 #define DOT11_FTM_IS_SYNC_INFO_IE(_ie) (\
 	DOT11_MNG_IE_ID_EXT_MATCH(_ie, DOT11_MNG_FTM_SYNC_INFO) && \
 	(_ie)->len == DOT11_FTM_SYNC_INFO_IE_LEN)
+
+BWL_PRE_PACKED_STRUCT struct dot11_max_channel_switch_time_ie {
+	uint8 id;		/* Extended - 255 11md D3.0  */
+	uint8 len;
+	uint8 id_ext;
+	uint8 switch_time[3];
+} BWL_POST_PACKED_STRUCT;
+typedef struct dot11_max_channel_switch_time_ie dot11_max_channel_switch_time_ie_t;
+#define DOT11_MAX_CHANNEL_SWITCH_TIME_IE_LEN		4
 
 /* 802.11u interworking access network options */
 #define IW_ANT_MASK					0x0f

@@ -33,7 +33,7 @@
  *    __ARM_ARCH_7A__ CA9: not reqd for dongle, uses ARMv7 apis as in CA7
  *
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -50,7 +50,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcm_buzzz.h 771798 2019-02-07 23:15:05Z $
+ * $Id: bcm_buzzz.h 778855 2019-09-11 20:38:52Z $
  *
  * vim: set ts=4 noet sw=4 tw=80:
  * -*- Mode: C; tab-width: 4; indent-tabs-mode: t; c-basic-offset: 4 -*-
@@ -67,7 +67,7 @@
 #endif // endif
 
 // #define BCM_BUZZZ_STREAMING_BUILD
-#define BCM_BUZZZ_STREAMING_FILE        "/var/buzzz.log"
+#define BCM_BUZZZ_STREAMING_FILE        "/tmp/buzzz.log"
 
 #if defined(BCM_BUZZZ)
 
@@ -280,6 +280,7 @@ void  bcm_buzzz_show(void);
 void  bcm_buzzz_dump(void);
 void  bcm_buzzz_start(void);
 void  bcm_buzzz_stop(void);
+void  bcm_buzzz_wrap(void);
 uint8 bcm_buzzz_status(void);
 uint8 bcm_buzzz_mode(void);
 void  bcm_buzzz_skip(uint8 skip);
@@ -410,8 +411,9 @@ typedef struct bcm_buzzz_ctx
 typedef struct bcm_buzzz        /* pointers not permissible in this structure */
 {
 	uint8           status;     /* current logging status */
-	uint8           in_dma;     /* num dma in progress */
+	uint8           wrap;       /* wrap requested */
 	uint16          overflows;  /* number of overflows of dngl log buffers */
+	int             in_dma;     /* num dma in progress */
 
 	uint32          cur_ctx_ptr; /* pointer to current context */
 	bcm_buzzz_ctx_t ctx[2];     /* dual logging context */
@@ -449,6 +451,26 @@ typedef struct bcm_buzzz        /* pointers not permissible in this structure */
 #define _N_     _CLR_("\e[0m")
 #define _FAIL_  _H_ " === FAILURE ===" _N_
 
+/*
+ * +----------------------------------------------------------------------------
+ * Subsystem Context logged in the first 8K buffer at start of trace.
+ * Last 256 eventIds in a uint16 are reserved for startup subsystem context.
+ * +----------------------------------------------------------------------------
+ */
+typedef enum bcm_buzzz_subsys
+{
+	BUZZZ_CTX_SUBSYS = 0xF0,
+	BUZZZ_RTE_SUBSYS,   /* */
+	BUZZZ_BUS_SUBSYS,	/* [ea, ring_id, rd, rd_p, wr, <cfp_flowid, max512>] */
+	BUZZZ_MAC_SUBSYS    /* [pkts, mpdus] */
+} bcm_buzzz_subsys_t;
+
+typedef struct bcm_buzzz_subsys_hdr
+{
+	uint8  id;
+	uint8  u8;
+	uint16 u16;
+} bcm_buzzz_subsys_hdr_t;
 /*
  * +----------------------------------------------------------------------------
  *
@@ -513,10 +535,10 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 	BUZZZ_KLOG(HND_TMR_END)                 // 5
 
 	BUZZZ_KLOG(THREADX_IDLE)                // 3
-	BUZZZ_KLOG(THREADX_CPU_ISR_ENT)         // 3
-	BUZZZ_KLOG(THREADX_CPU_ISR_RTN)         // 3
-	BUZZZ_KLOG(THREADX_ISR_ENT)             // 4
-	BUZZZ_KLOG(THREADX_ISR_RTN)             // 4
+	BUZZZ_KLOG(THREADX_CPU_ISR_ENT)         // 4
+	BUZZZ_KLOG(THREADX_CPU_ISR_RTN)         // 4
+	BUZZZ_KLOG(THREADX_ISR_ENT)             // 3
+	BUZZZ_KLOG(THREADX_ISR_RTN)             // 3
 	BUZZZ_KLOG(THREADX_EVT_ISR_ENT)         // 5
 	BUZZZ_KLOG(THREADX_EVT_ISR_RTN)         // 5
 	BUZZZ_KLOG(THREADX_SCHED_THREAD)        // 3
@@ -532,7 +554,14 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 	BUZZZ_KLOG(KPI_PKT_BUS_TXCMPL)          // 1
 	BUZZZ_KLOG(KPI_PKT_BUS_TXSUPP)          // 3
 
-	BUZZZ_KLOG__LAST_EVENT
+	BUZZZ_KLOG(KPI_QUE_BUS_WR_UPD)          // 1
+	BUZZZ_KLOG(KPI_QUE_BUS_RP_UPD)          // 1
+	BUZZZ_KLOG(KPI_QUE_BUS_RP_REW)          // 1
+	BUZZZ_KLOG(KPI_QUE_BUS_RD_UPD)          // 1
+	BUZZZ_KLOG(KPI_QUE_MAC_WR_UPD)          // 1
+	BUZZZ_KLOG(KPI_QUE_MAC_RD_UPD)          // 1
+
+	BUZZZ_KLOG__LAST_EVT
 
 } bcm_buzzz_KLOG_dpid_t;
 
@@ -606,9 +635,16 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 	_C_ "       BUS_TXPOST pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXPOST */ \
 	_C_ "       MAC_TXMPDU pkt<0x%08x> fifo<%u>" _N_, /* KPI_PKT_MAC_TXMPDU */ \
 	_C_ "       MAC_TXMSDU pkt<0x%08x> fifo<%u>" _N_, /* KPI_PKT_MAC_TXMSDU */ \
-	_C_ "       MAC_TXSTAT ncons<%u> fifo<%u>" _N_,   /* KPI_PKT_MAC_TXSTAT */ \
+	_C_ "       MAC_TXSTAT ncons<%u>   fifo<%u>" _N_, /* KPI_PKT_MAC_TXSTAT */ \
 	_C_ "       BUS_TXCMPL pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXCMPL */ \
 	_C_ "       BUS_TXSUPP pkt<0x%08x> ring<%u>" _N_, /* KPI_PKT_BUS_TXSUPP */ \
+	                                                                           \
+	_C_ "       BUS_WR WR<%u> ring<%u>" _N_,          /* KPI_QUE_BUS_WR_UPD */ \
+	_C_ "       BUS_RP RP<%u> ring<%u>" _N_,          /* KPI_QUE_BUS_RP_UPD */ \
+	_C_ "       BUS_RP RB<%u> ring<%u>" _N_,          /* KPI_QUE_BUS_RP_REW */ \
+	_C_ "       BUS_RD RD<%u> ring<%u>" _N_,          /* KPI_QUE_BUS_RD_UPD */ \
+	_C_ "       MAC +MPDU<%u> fifo<%u>" _N_,          /* KPI_QUE_MAC_WR_UPD */ \
+	_C_ "       MAC -MPDU<%u> fifo<%u>" _N_,          /* KPI_QUE_MAC_RD_UPD */ \
 	                                                                           \
 	                                                                           \
 	"LAST_EVENT"                                                               \
@@ -670,7 +706,7 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 
 #if defined(BCM_BUZZZ_KPI_LEVEL) && (BCM_BUZZZ_KPI_LEVEL > 0)
 #define BCM_BUZZZ_KPI_PKT_LEVEL         (3)
-#define BCM_BUZZZ_KPI_QUE_LEVEL         (0)            /* not supported yet */
+#define BCM_BUZZZ_KPI_QUE_LEVEL         (3)
 #else
 #define BCM_BUZZZ_KPI_PKT_LEVEL         (0)
 #define BCM_BUZZZ_KPI_QUE_LEVEL         (0)
@@ -712,6 +748,11 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #define BUZZZ_KPI_QUE3(ID, N, ARG...) BCM_BUZZZ_NULL_STMT
 #endif  /* ! BCM_BUZZZ_KPI_QUE_LEVEL >= 3 */
 
+#if defined(BCM_BUZZZ_KPI_QUE_LEVEL) && (BCM_BUZZZ_KPI_QUE_LEVEL > 0)
+uint8 * buzzz_bus(uint8 *buzzz_log);
+uint8 * buzzz_mac(uint8 *buzzz_log);
+#endif /* BCM_BUZZZ_KPI_QUE_LEVEL */
+
 /*
  * BUZZZ exported APIs that default to noop when BCM_BUZZZ is not defined
  */
@@ -723,6 +764,7 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #define BCM_BUZZZ_DUMP()                bcm_buzzz_dump()
 #define BCM_BUZZZ_START()               bcm_buzzz_start()
 #define BCM_BUZZZ_STOP()                bcm_buzzz_stop()
+#define BCM_BUZZZ_WRAP()                bcm_buzzz_wrap()
 #define BCM_BUZZZ_STATUS()              bcm_buzzz_status()
 #define BCM_BUZZZ_MODE()                bcm_buzzz_mode()
 #define BCM_BUZZZ_SKIP(num)             bcm_buzzz_skip(num)
@@ -746,6 +788,7 @@ typedef enum bcm_buzzz_KLOG_dpid    /* List of datapath event point ids */
 #define BCM_BUZZZ_DUMP()                BCM_BUZZZ_NULL_STMT
 #define BCM_BUZZZ_START()               BCM_BUZZZ_NULL_STMT
 #define BCM_BUZZZ_STOP()                BCM_BUZZZ_NULL_STMT
+#define BCM_BUZZZ_WRAP()                BCM_BUZZZ_NULL_STMT
 #define BCM_BUZZZ_STATUS()              BCM_BUZZZ_RET_NONE
 #define BCM_BUZZZ_MODE()                BCM_BUZZZ_RET_NONE
 #define BCM_BUZZZ_SKIP(num)             BCM_BUZZZ_NULL_STMT

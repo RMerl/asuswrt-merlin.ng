@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA engine SW interface
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma.h 774125 2019-04-11 04:15:49Z $
+ * $Id: hnddma.h 784528 2020-02-28 22:23:04Z $
  */
 
 #ifndef	_hnddma_h_
@@ -37,7 +37,7 @@
 typedef const struct hnddma_pub hnddma_t;
 #endif /* _hnddma_pub_ */
 
-#if defined(BCM47XX_CA9) || defined(STB) || defined(BCA_HNDROUTER)
+#if defined(BCM47XX_CA9) || defined(BCA_HNDROUTER)
 /* Enable/Disable Bulk Descriptor Flushing optimization */
 #define BULK_DESCR_FLUSH
 #endif // endif
@@ -130,7 +130,7 @@ extern void dma_fifoloopbackenable(hnddma_t *dmah);
 extern uintptr dma_getvar(hnddma_t *dmah, const char *name);
 extern void dma_counterreset(hnddma_t *dmah);
 extern uint dma_ctrlflags(hnddma_t *dmah, uint mask, uint flags);
-#if defined(BCMDBG)
+#if defined(BCMDBG) || defined(BCMDBG_TXSTALL)
 extern void dma_dump(hnddma_t *dmah, struct bcmstrbuf *b, bool dumpring);
 extern void dma_dumptx(hnddma_t *dmah, struct bcmstrbuf *b, bool dumpring);
 extern void dma_dumprx(hnddma_t *dmah, struct bcmstrbuf *b, bool dumpring);
@@ -147,6 +147,9 @@ extern bool dma_glom_enable(hnddma_t *dmah, uint32 val);
 extern uint dma_activerxbuf(hnddma_t *dmah);
 extern bool dma_rxidlestatus(hnddma_t *dmah);
 extern void dma_context(hnddma_t *dmah, setup_context_t fn, void *ctx);
+#if defined(PKTQ_STATUS) && defined(BULK_PKTLIST)
+extern void *dma_get_nextpkt(hnddma_t *dmah, void *pkt);
+#endif /* PKTQ_STATUS && BULK_PKTLIST */
 
 /**
  * Exported data structure (read-only)
@@ -280,55 +283,62 @@ extern int dma_bulk_txcomplete(hnddma_t *dmah, uint16 ncons, uint16 *nproc,
 		void **list_head, void **list_tail, txd_range_t range);
 #endif /* BULK_PKTLIST */
 
+/* Following M2M Request applies to PCIECORE Mem2Mem channels (not M2MCORE) */
 /* iDMA can support up to 16 Sets, so [16 Set * 2 Desc = 32] */
-#define NUM_VEC_PCIE	32
+#define PCIE_M2M_REQ_VEC_MAX	32
 
 #define XFER_FROM_LBUF	0x1
 #define XFER_TO_LBUF	0x2
 #define XFER_INJ_ERR	0x4
 
-typedef struct m2m_vec_s {
-	dma64addr_t	addr;
+/* PCIECORE Mem2Mem request is specified as a table of RX and TX <address,len>
+ * vectors, in the PCIE bus layer and passed to the hnddma layer, where the
+ * actual DMA descriptors in the Rx and Tx DMA descriptor rings are programmed.
+ */
+typedef struct pcie_m2m_vec_s {
+	dma64addr_t	addr64;
 	uint32		len;
-} m2m_vec_t;
+} pcie_m2m_vec_t;
 
-typedef struct m2m_desc_s {
+typedef struct pcie_m2m_req_s {
 	uint8		num_rx_vec;
 	uint8		num_tx_vec;
 	uint8		flags;
 	bool		commit;
-	m2m_vec_t	vec[];
-} m2m_desc_t;
+	pcie_m2m_vec_t	vec[];
+} pcie_m2m_req_t;
 
-#define INIT_M2M_DESC(desc) \
-{\
-	desc->num_rx_vec = 0;	\
-	desc->num_tx_vec = 0;	\
-	desc->flags = 0;	\
-	desc->commit = TRUE;	\
+#define PCIE_M2M_REQ_INIT(req) \
+{ \
+	(req)->num_rx_vec = 0; \
+	(req)->num_tx_vec = 0; \
+	(req)->flags = 0; \
+	(req)->commit = TRUE; \
 }
 
-#define SETUP_RX_DESC(desc, rxaddr, rxlen) \
-{\
-	ASSERT(desc->num_tx_vec == 0);	\
-	desc->vec[desc->num_rx_vec].addr = rxaddr;	\
-	desc->vec[desc->num_rx_vec].len = rxlen;	\
-	desc->num_rx_vec++;	\
+#define PCIE_M2M_REQ_RX_SETUP(req, rxaddr64, rxlen) \
+{ \
+	pcie_m2m_vec_t *vec = &((req)->vec[(req)->num_rx_vec]); \
+	ASSERT((req)->num_tx_vec == 0); \
+	vec->addr64 = rxaddr64; \
+	vec->len = rxlen; \
+	(req)->num_rx_vec++; \
 }
 
-#define SETUP_TX_DESC(desc, txaddr, txlen) \
-{\
-	desc->vec[desc->num_tx_vec + desc->num_rx_vec].addr = txaddr;	\
-	desc->vec[desc->num_tx_vec + desc->num_rx_vec].len = txlen;	\
-	desc->num_tx_vec++;	\
+#define PCIE_M2M_REQ_TX_SETUP(req, txaddr64, txlen) \
+{ \
+	pcie_m2m_vec_t *vec = &((req)->vec[(req)->num_rx_vec + (req)->num_tx_vec]); \
+	vec->addr64 = txaddr64; \
+	vec->len = txlen; \
+	(req)->num_tx_vec++; \
 }
 
-#define SETUP_XFER_FLAGS(desc, flag) \
-{\
-	desc->flags |= flag;	\
+#define PCIE_M2M_REQ_FLAGS_SETUP(req, flag) \
+{ \
+	(req)->flags |= flag; \
 }
 
-extern int dma_m2m_submit(hnddma_t *dmah, m2m_desc_t *desc, bool implicit);
+extern int pcie_m2m_req_submit(hnddma_t *dmah, pcie_m2m_req_t *m2m_req, bool implicit);
 extern void dma_chan_enable(hnddma_t *dmah, bool enable);
 
 #endif	/* _hnddma_h_ */

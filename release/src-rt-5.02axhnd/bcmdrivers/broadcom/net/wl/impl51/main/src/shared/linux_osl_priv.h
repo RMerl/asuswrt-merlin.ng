@@ -1,7 +1,7 @@
 /*
  * Private header file for Linux OS Independent Layer
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: linux_osl_priv.h 769228 2018-11-06 21:19:55Z $
+ * $Id: linux_osl_priv.h 778301 2019-08-29 01:08:49Z $
  */
 
 #ifndef _LINUX_OSL_PRIV_H_
@@ -171,31 +171,24 @@ struct osl_info {
 	struct sec_mem_elem *sec_list_base_txbuf;
 	struct sec_mem_elem *sec_list_rxbuf; /* rxbuf pool 4K each block */
 	struct sec_mem_elem *sec_list_base_rxbuf;
-	struct sec_mem_elem *sec_list_rxbufctl; /* rxctl buffer pool 8K each block */
-	struct sec_mem_elem *sec_list_base_rxbufctl;
 	phys_addr_t  contig_base;
 	void *contig_base_va;
 	phys_addr_t  contig_base_alloc;
 	void *contig_base_alloc_va;
-	phys_addr_t contig_base_alloc_coherent;
-	void *contig_base_alloc_coherent_va;
+	phys_addr_t contig_base_coherent_pa;
 	void *contig_base_coherent_va;
-	void *contig_base_alloc_txbuf_va;
-	void *contig_base_alloc_rxbufctl_va;
-	void *contig_base_alloc_rxbuf_va;
-	void  *contig_delta_va_pa;
+	void *contig_base_txbuf_va;
+#ifdef BCMDONGLEHOST
+	struct sec_mem_elem *sec_list_rxbufctl; /* rxctl buffer pool 8K each block */
+	struct sec_mem_elem *sec_list_base_rxbufctl;
+	void *contig_base_rxbufctl_va;
+#endif /* BCMDONGLEHOST */
+	void *contig_base_rxbuf_va;
+	void *contig_delta_va_pa;
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 9, 89)
-	struct page *contig_base_alloc_coherent_page;
-	struct page *contig_base_alloc_page;
-	struct page *contig_base_alloc_txbuf_page;
-	struct page *contig_base_alloc_rxbufctl_page;
-	struct page *contig_base_alloc_rxbuf_page;
+	struct page *contig_base_cma_page;
 #endif /* KERNEL_VERSION(4, 9, 89) */
-	struct {
-		phys_addr_t pa;
-		void *va;
-		bool avail;
-	} sec_cma_coherent[SEC_CMA_COHERENT_MAX];
+	uint8* secdma_coherant_pfree;
 	int stb_ext_params;
 #endif /* BCM_SECURE_DMA */
 #if defined(BCM_BACKPLANE_TIMEOUT)

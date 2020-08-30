@@ -1,6 +1,6 @@
 /*
  * prototypes for functions defined in bcmstdlib.c
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,7 +16,7 @@
  *
  *
  * <<Broadcom-WL-IPTag/Open:>>
- * $Id: bcmstdlib.h 774649 2019-05-01 13:45:54Z $:
+ * $Id: bcmstdlib.h 777067 2019-07-18 09:28:30Z $:
  */
 
 /*
@@ -53,7 +53,7 @@
  */
 #define PRINTF_BUFLEN	256
 
-#if !defined(_CFE_) && !defined(EFI)
+#if !defined(_CFE_)
 
 typedef int FILE;
 #define stdout ((FILE *)1)
@@ -95,9 +95,9 @@ extern char *strcpy(char *dest, const char *src);
 #define strcpy(dest, src)	use_strncpy_instead(dest, src)
 #endif // endif
 #define strcat(dest, src)	use_strncat_instead(dest, src)
-#endif /* !_CFE_ && !EFI */
+#endif /* !_CFE_ */
 
-#if !defined(_CFE_) || (defined(EFI) && defined(EFI_WINBLD))
+#if !defined(_CFE_)
 /* string functions */
 extern int printf(const char *fmt, ...)
 	__attribute__ ((format (__printf__, 1, 2)));
@@ -133,7 +133,7 @@ extern void *memset(void *dest, int c, size_t n);
 extern void *memcpy(void *dest, const void *src, size_t n);
 extern int memcmp(const void *s1, const void *s2, size_t n);
 
-#endif /* !_CFE_ && !EFI */
+#endif /* !_CFE_ */
 #endif   /* BWL_INTERNAL_STDLIB_SUPPORT */
 
 extern int snprintf(char *str, size_t n, char const *fmt, ...)

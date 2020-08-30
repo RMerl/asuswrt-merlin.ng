@@ -289,7 +289,7 @@ typedef enum xlif_channel_id_e
 #endif /*CFE*/
 
 /* NAT Cache default mask, include vport */
-#define NATC_KEY0_DEF_MASK  0x803fffff
+#define NATC_KEY0_DEF_MASK  0x8040ffff
 
 #ifdef __cplusplus
 }

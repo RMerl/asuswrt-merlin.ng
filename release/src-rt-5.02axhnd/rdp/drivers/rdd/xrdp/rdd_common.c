@@ -673,4 +673,20 @@ bdmf_boolean rdd_ecn_remark_enable_get(void)
 #endif
     return ecn_remark_enable;
 }
+
+void rdd_tcp_ack_priority_flow_set(bdmf_boolean enable)
+{
+    RDD_BTRACE("enable = %d\n", (int)enable);
+
+    RDD_SYSTEM_CONFIGURATION_ENTRY_TCP_PURE_ACK_FLOWS_WRITE_G(enable, RDD_SYSTEM_CONFIGURATION_ADDRESS_ARR, 0);
+}
+
+bdmf_boolean rdd_tcp_ack_priority_flow_get(void)
+{
+    bdmf_boolean enable = 0;
+
+    RDD_SYSTEM_CONFIGURATION_ENTRY_TCP_PURE_ACK_FLOWS_READ_G(enable, RDD_SYSTEM_CONFIGURATION_ADDRESS_ARR, 0);
+    return enable;
+}
+
 #endif

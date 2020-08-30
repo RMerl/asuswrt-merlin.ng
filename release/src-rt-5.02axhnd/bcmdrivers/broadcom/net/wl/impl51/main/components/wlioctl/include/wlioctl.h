@@ -6,7 +6,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl.h 779905 2019-10-09 21:01:51Z $
+ * $Id: wlioctl.h 784670 2020-03-04 03:56:56Z $
  */
 
 #ifndef _wlioctl_h_
@@ -806,6 +806,14 @@ typedef struct wl_rateset {
 	uint32	count;				/**< # rates in this set */
 	uint8	rates[WL_MAXRATES_IN_SET];	/**< rates in 500kbps units w/hi bit set if basic */
 } wl_rateset_t;
+
+#define DYNTXC_MAX_COEFNUM	5 /**< max # of dyntxc candidates */
+typedef struct wl_txs_dyntxc_info {
+	bool	enable;		/**< Configure the enable */
+	uint8	feature;	/**< Configure the supported cap */
+	uint8	subperiod_num;	/**< Configure the training period */
+	uint8	coefset;	/**< Configure the candidate coremask */
+} wl_txs_dyntxc_info_t;
 
 #define WL_VHT_CAP_MCS_MAP_NSS_MAX	8
 
@@ -1822,12 +1830,13 @@ typedef struct {
 	uint32                  rx_rspec;       /* Rate of last successful rx frame */
 	uint32                  wnm_cap;        /* wnm capabilities */
 
-	uint16                  he_flags;	/* converted he flags */
-	uint16                  PAD;
+	uint32                  he_flags;	/* converted he flags */
 	sta_vendor_oui_t        sta_vendor_oui;
 	uint8			link_bw;
 	uint32			wpauth;		/* authentication type */
 	int8			srssi;		/* smoothed rssi info */
+	uint8			twt_info;
+	uint16                  he_omi;
 
 	/* #ifdef WL_EAP_STATS */
 	uint32			tx_mgmt_pkts;	/**< # of management packets txed by driver */
@@ -1837,6 +1846,8 @@ typedef struct {
 	/* #endif WL_EAP_STATS */
 
 	uint8		rrm_capabilities[DOT11_RRM_CAP_LEN];	/* rrm capabilities of station */
+	uint8			PAD;
+	uint16			map_flags;	/* MultiAP Flags. WL_MAP_STA_XXX */
 } sta_info_v8_t;
 
 /* XXX: define to help support one version older sta_info_t from user level
@@ -1975,10 +1986,6 @@ typedef struct maclist {
 	uint32 count;			/**< number of MAC addresses */
 	struct ether_addr ea[1];	/**< variable length array of MAC addresses */
 } maclist_t;
-typedef struct bss_load {
-	uint8 chan_util;          /* channel utilization value */
-	maclist_t  maclist;
-} bss_load_t;
 
 typedef struct wds_client_info {
 	char	ifname[INTF_NAME_SIZ];	/* WDS ifname */
@@ -3345,7 +3352,8 @@ enum {
 	WL_REINIT_RC_TX_FIFO_SUSP         = 51,
 	WL_REINIT_RC_MAC_ENABLE           = 52,
 	WL_REINIT_RC_SCAN_STALLED         = 53,
-	WL_REINIT_RC_RX_DECRYPT_ERROR	  = 54,
+	WL_REINIT_RC_RX_DMA_BUF_EMPTY     = 54,
+	WL_REINIT_RC_RX_DECRYPT_ERROR     = 55,
 	WL_REINIT_RC_LAST	/* This must be the last entry */
 };
 
@@ -5094,6 +5102,12 @@ typedef struct wl_lifetime {
 	uint32 ac;	        /**< access class */
 	uint32 lifetime;    /**< Packet lifetime value in ms */
 } wl_lifetime_t;
+
+/** MUTX mpdu size admit threshold per bw */
+typedef struct wl_mutx_mpdusz_admit_thresh {
+	uint32 bw;	        /**< BW */
+	uint32 mpdusz;    /**< mpdu size threshold in Bytes */
+} wl_mutx_mpdusz_admit_thresh_t;
 
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
 /** Management time configuration */
@@ -7211,7 +7225,8 @@ typedef struct wl_pkteng_ru {
 	uint8 pe_category;	/* PE duration 0/8/16usecs  */
 	uint8 dcm;			/* dual carrier modulation */
 	uint8 mumimo_ltfmode; /* ltf mode */
-	uint8 PAD[1];		/* pad bytes to make structure occupy 4 byte aligned */
+	uint8 tgt_rssi;			/* target rssi value in encoded format */
+//	uint8 PAD[1];		/* pad bytes to make structure occupy 4 byte aligned */
 } wl_pkteng_ru_fill_t;
 typedef struct wl_trig_frame_info {
 	/* Structure versioning and structure length params */
@@ -7432,7 +7447,7 @@ typedef struct wl_action_obss_coex_req {
 #include <packed_section_start.h>
 typedef BWL_PRE_PACKED_STRUCT struct {
 	uint32 num_addrs;
-	uint8   addr_type[WL_IOV_MAC_PARAM_LEN];
+	uint8  addr_type[WL_IOV_MAC_PARAM_LEN];
 	struct ether_addr ea[WL_IOV_MAC_PARAM_LEN];
 } BWL_POST_PACKED_STRUCT wl_iov_mac_params_t;
 #include <packed_section_end.h>
@@ -7451,9 +7466,9 @@ typedef struct {
 /** Parameter block for PKTQ_LOG statistics */
 /* XXX NOTE: this structure cannot change! It is exported to wlu as a binary format
  * A new format revision number must be created if the interface changes
- * The latest is v05; previous v01...v03 are no longer supported, v04 has
- * common base with v05
+ * The latest is v06; previous v01...v04 are no longer supported
 */
+
 #define PKTQ_LOG_COUNTERS_V4 \
 	/* packets requested to be stored */ \
 	uint32 requested; \
@@ -7502,13 +7517,6 @@ typedef struct {
 	PKTQ_LOG_COUNTERS_V4
 } pktq_log_counters_v04_t;
 
-/** v5 is the same as V4 with extra parameter */
-typedef struct {
-	PKTQ_LOG_COUNTERS_V4
-	/** cumulative time to transmit */
-	uint32 airtime;
-} pktq_log_counters_v05_t;
-
 typedef struct {
 	uint8                num_prec[WL_IOV_MAC_PARAM_LEN];
 	pktq_log_counters_v04_t  counters[WL_IOV_MAC_PARAM_LEN][WL_IOV_PKTQ_LOG_PRECS];
@@ -7516,6 +7524,212 @@ typedef struct {
 	uint32               pspretend_time_delta[WL_IOV_MAC_PARAM_LEN];
 	char                 headings[];
 } pktq_log_format_v04_t;
+
+/* v5 */
+typedef struct {
+	/* packets requested to be stored */ \
+	uint32 requested;
+	/* packets stored */
+	uint32 stored;
+	/* packets saved, because a lowest priority queue has given away one packet */
+	uint32 saved;
+	/* packets saved, because an older packet from the same queue has been dropped */
+	uint32 selfsaved;
+	/* packets dropped, because pktq is full with higher precedence packets */
+	uint32 full_dropped;
+	/* packets dropped because pktq per that precedence is full */
+	uint32 dropped;
+	/* packets dropped, in order to save one from a queue of a highest priority */
+	uint32 sacrificed;
+	/* packets droped because of hardware/transmission error */
+	uint32 busy;
+	/* packets re-sent because they were not received */
+	uint32 retry;
+	/* packets retried again (ps pretend) prior to moving power save mode */
+	uint32 ps_retry;
+	/* suppressed packet count */
+	uint32 suppress;
+	/* packets finally dropped after retry limit */
+	uint32 retry_drop;
+	/* the high-water mark of the queue capacity for packets - goes to zero as queue fills */
+	uint32 max_avail;
+	/* the high-water mark of the queue utilisation for packets - ('inverse' of max_avail) */
+	uint32 max_used;
+	/* the maximum capacity of the queue */
+	uint32 queue_capacity;
+	/* count of rts attempts that failed to receive cts */
+	uint32 rtsfail;
+	/* count of packets sent (acked) successfully */
+	uint32 acked;
+	/* running total of phy rate of packets sent successfully */
+	uint32 txrate_succ;
+	/* running total of phy 'main' rate */
+	uint32 txrate_main;
+	/* actual data transferred successfully */
+	uint32 throughput;
+	/* time difference since last pktq_stats */
+	uint32 time_delta;
+	/** cumulative time to transmit */
+	uint32 airtime;
+} pktq_log_counters_v05_t;
+
+/* this is the scale factor for PHY rate for V5 */
+#define PERF_LOG_RATE_FACTOR_500   500
+
+/* v6 */
+#include <packed_section_start.h>
+typedef BWL_PRE_PACKED_STRUCT struct {
+	/* packets requested to be stored */
+	uint32 requested;
+	/* packets stored */
+	uint32 stored;
+	/* packets dropped because pktq per that precedence is full */
+	uint32 dropped;
+	/* packets droped because of hardware/transmission error */
+	uint32 busy;
+	/* packets re-sent because they were not received */
+	uint32 retry;
+	/* packets retried again (ps pretend) prior to moving power save mode */
+	uint32 ps_retry;
+	/* separate scb queue and common queue counters */
+	union {
+		/* suppressed packet count */
+		uint32 suppress;
+		/* packets dropped, because pktq is full with higher precedence packets */
+		uint32 full_dropped;
+	};
+	/* packets finally dropped after retry limit */
+	uint32 retry_drop;
+	/* the high-water mark of the queue utilisation for packets */
+	uint16 max_used;
+	/* the maximum capacity of the queue */
+	uint16 queue_capacity;
+	/* count of rts attempts that failed to receive cts */
+	uint32 rtsfail;
+	/* count of packets sent (acked) successfully */
+	uint32 acked;
+	/* running total of phy rate of packets sent successfully */
+	uint64 txrate_succ;
+	/* separate scb queue and common queue counters */
+	union {
+		/* running total of phy 'main' rate */
+		uint64 txrate_main;
+		/* packets saved, because a lowest priority queue has given away one packet */
+		uint32 saved;
+	};
+	/* actual data transferred successfully */
+	uint64 throughput;
+	/* time difference since last pktq_stats */
+	uint64 time_delta;
+	/* cumulative time to transmit */
+	uint64 airtime;
+	/* separate scb queue and common queue counters */
+	union {
+		/* running total of bandwidth used MHz */
+		uint64 bandwidth;
+		/* packets saved, because an older packet from the same queue has been dropped */
+		uint32 selfsaved;
+	};
+	/* running count of spatial stream in acked packets */
+	uint32 nss[4];
+	/* separate scb queue and common queue counters */
+	union {
+		/* total virtual packets requested in SQS */
+		uint32 sqsv_requested;
+		/* packets dropped, in order to save one from a queue of a highest priority */
+		uint32 sacrificed;
+	};
+	/* high watermark of packets requested in SQS */
+	uint16 sqsv_max_used;
+	/* bitfield lowest mcs (bits 0-4), middle mcs (bits 5-9), high mcs (bits 10-15) */
+	uint16 mcs_bitfield;
+	/* count of short guard usage */
+	uint32 sgi_count;
+	/* reserved for future use */
+	uint32 reserved;
+} BWL_POST_PACKED_STRUCT pktq_log_counters_v06_t;
+
+/* this is the scale factor for PHY rate for V6 */
+#define PERF_LOG_RATE_FACTOR_100   100
+
+enum {
+	/* flags used in response only */
+	PKTQ_LOG_PREC_MASK = (1 << 16) - 1,
+	PKTQ_LOG_AMPDU_PREC = 1 << 17,
+	PKTQ_LOG_AQM = 1 << 18,
+	PKTQ_LOG_DBG = 1 << 19,
+	PKTQ_LOG_DISPLAY_ETHERADDR = 1 << 20,
+	PKTQ_LOG_DISPLAY_TIMESTAMP = 1 << 21,
+	PKTQ_LOG_DONGLE = 1 << 22,
+	PKTQ_LOG_PS_QUEUE = 1 << 23,
+	PKTQ_LOG_SQS = 1 << 24,
+	PKTQ_LOG_SCB_QUEUE = 1 << 25,
+
+	PKTQ_LOG_DEVELOPMENT_VERSION = 1 << 29,
+
+	/* flags used in request only */
+	PKTQ_LOG_AUTO    =  1 << 31,
+	PKTQ_LOG_DEF_PREC =  1 << 30,
+	/* no reset can be shared with develop flag, as no reset is only used in the request and
+	 * the develop only used in the response
+	 */
+	PKTQ_LOG_NO_RESET = 1 << 29
+};
+
+typedef struct BWL_PRE_PACKED_STRUCT {
+	uint64 time_delta;
+	union {
+		struct {
+			uint32  reserved[32];
+		} ias;
+	};
+} BWL_POST_PACKED_STRUCT taf_log_counters_v06_t;
+
+enum {
+	MAC_LOG_MU_SU,
+	MAC_LOG_MU_VHTMU,
+	MAC_LOG_MU_HEMMU,
+	MAC_LOG_MU_HEOMU,
+	MAC_LOG_MU_HEMOM,
+	MAC_LOG_MU_MAX
+};
+
+enum {
+	MAC_LOG_MU_RU_26,
+	MAC_LOG_MU_RU_52,
+	MAC_LOG_MU_RU_106,
+	MAC_LOG_MU_RU_242,
+	MAC_LOG_MU_RU_484,
+	MAC_LOG_MU_RU_996,
+	MAC_LOG_MU_RU_2x996,
+	MAC_LOG_MU_RU_MAX
+};
+
+#define MAC_LOG_MU_MIMO_USER_MAX  4
+
+typedef struct BWL_PRE_PACKED_STRUCT {
+	uint32 count[MAC_LOG_MU_MAX];
+	uint32 ru_count[MAC_LOG_MU_RU_MAX];
+	uint32 mimo_count[MAC_LOG_MU_MIMO_USER_MAX];
+	uint32 reserved[20];
+} BWL_POST_PACKED_STRUCT mac_log_mu_counters_v06_t;
+
+#define PKTQ_LOG_V06_HEADINGS_SIZE   40
+
+typedef struct {
+	union {
+		pktq_log_counters_v06_t   pktq[WL_IOV_PKTQ_LOG_PRECS];
+		taf_log_counters_v06_t    taf[NUMPRIO];
+		mac_log_mu_counters_v06_t mu[NUMPRIO];
+	};
+	char    heading[PKTQ_LOG_V06_HEADINGS_SIZE];
+}  mac_log_counters_v06_t;
+
+#define COMPILE_ASSERT(type, arg) extern char __compile_assert_##type[(arg) ? 1 : -1];
+/* size check */
+COMPILE_ASSERT(pktq_log_counters, sizeof(mac_log_counters_v06_t) ==
+	(WL_IOV_PKTQ_LOG_PRECS*sizeof(pktq_log_counters_v06_t))+PKTQ_LOG_V06_HEADINGS_SIZE);
+#include <packed_section_end.h>
 
 typedef struct {
 	uint8                num_prec[WL_IOV_MAC_PARAM_LEN];
@@ -7526,17 +7740,32 @@ typedef struct {
 } pktq_log_format_v05_t;
 
 typedef struct {
+	uint8                num_prec[WL_IOV_MAC_PARAM_LEN];
+	uint32               timestamp;
+	uint32               counter_info[WL_IOV_MAC_PARAM_LEN];
+	uint32               reserved[WL_IOV_MAC_PARAM_LEN];
+	union {
+		uint32       pspretend_time_delta[WL_IOV_MAC_PARAM_LEN];
+		uint32       wme_ac[WL_IOV_MAC_PARAM_LEN];
+	};
+	mac_log_counters_v06_t  counters[WL_IOV_MAC_PARAM_LEN];
+} pktq_log_format_v06_t;
+
+typedef struct {
 	uint32               version;
 	wl_iov_mac_params_t  params;
 	union {
 		pktq_log_format_v04_t v04;
+		/* wl_iov_mac_extra_params_t is used in request form only, not in response */
+		wl_iov_mac_extra_params_t extra_params;
 		pktq_log_format_v05_t v05;
+		pktq_log_format_v06_t v06;
 	} pktq_log;
 } wl_iov_pktq_log_t;
 
-/* PKTQ_LOG_AUTO, PKTQ_LOG_DEF_PREC flags introduced in v05, they are ignored by v04 */
-#define PKTQ_LOG_AUTO     (1 << 31)
-#define PKTQ_LOG_DEF_PREC (1 << 30)
+/* use a 8K guide limit of iovar max size to check everything can fit */
+COMPILE_ASSERT(pktq_log_size, sizeof(wl_iov_pktq_log_t) <= 8192);
+#undef COMPILE_ASSERT
 
 typedef struct wl_pfn_macaddr_cfg_0 {
 	uint8 version;
@@ -7563,21 +7792,29 @@ typedef struct wl_pfn_macaddr_cfg {
 /*
  * SCB_BS_DATA iovar definitions start.
  */
-#define SCB_BS_DATA_STRUCT_VERSION	1
+#define SCB_BS_DATA_STRUCT_VERSION_v1	1
+#define SCB_BS_DATA_STRUCT_VERSION		2
 
 /** The actual counters maintained for each station */
 typedef struct {
 	/* The following counters are a subset of what pktq_stats provides per precedence. */
+	uint64 throughput;     /**< actual data transferred successfully */
+	uint64 txrate_succ;    /**< running total of phy rate of packets sent successfully */
+	uint64 txrate_main;    /**< running total of phy 'main' rate */
 	uint32 retry;          /**< packets re-sent because they were not received */
 	uint32 retry_drop;     /**< packets finally dropped after retry limit */
 	uint32 rtsfail;        /**< count of rts attempts that failed to receive cts */
 	uint32 acked;          /**< count of packets sent (acked) successfully */
-	uint32 txrate_succ;    /**< running total of phy rate of packets sent successfully */
-	uint32 txrate_main;    /**< running total of phy 'main' rate */
-	uint32 throughput;     /**< actual data transferred successfully */
+	uint32 ru_acked;       /**< count of packets sent (acked) successfully in RU */
+	uint32 mu_acked;       /**< count of packets sent (acked) successfully in MU */
 	uint32 time_delta;     /**< time difference since last pktq_stats */
 	uint32 airtime;        /**< cumulative total medium access delay in useconds */
+	uint32 txbw;           /* v2 only : bw in use for successfull packets */
+	uint32 txmcs;          /* v2 only : mcs in use for successfull packets */
+	uint32 txnss;          /* v2 only : nss in use for successfull packets */
 } iov_bs_data_counters_t;
+
+#define RATE_SCALE_FACTOR   100
 
 /** The structure for individual station information. */
 #include <packed_section_start.h>
@@ -7600,6 +7837,40 @@ typedef BWL_PRE_PACKED_STRUCT struct {
 enum {
 	SCB_BS_DATA_FLAG_NO_RESET = (1<<0)	/**< Do not clear the counters after reading */
 };
+
+/*
+ * SCB_BS_DATA v1 definitions for back compatibility.
+ */
+
+typedef struct {
+	/* The following counters are a subset of what pktq_stats provides per precedence. */
+	uint32 retry;          /**< packets re-sent because they were not received */
+	uint32 retry_drop;     /**< packets finally dropped after retry limit */
+	uint32 rtsfail;        /**< count of rts attempts that failed to receive cts */
+	uint32 acked;          /**< count of packets sent (acked) successfully */
+	uint32 txrate_succ;    /**< running total of phy rate of packets sent successfully */
+	uint32 txrate_main;    /**< running total of phy 'main' rate */
+	uint32 throughput;     /**< actual data transferred successfully */
+	uint32 time_delta;     /**< time difference since last pktq_stats */
+	uint32 airtime;        /**< cumulative total medium access delay in useconds */
+} iov_bs_data_counters_v1_t;
+
+#include <packed_section_start.h>
+typedef BWL_PRE_PACKED_STRUCT struct {
+	struct ether_addr	station_address;	/**< The station MAC address */
+	uint16			station_flags;		/**< Bit mask of flags, for future use. */
+	iov_bs_data_counters_v1_t	station_counters;	/**< The actual counter values */
+} BWL_POST_PACKED_STRUCT iov_bs_data_record_v1_t;
+#include <packed_section_end.h>
+
+#include <packed_section_start.h>
+typedef BWL_PRE_PACKED_STRUCT struct {
+	uint16	structure_version;	/**< Structure version number (for wl/wlu matching) */
+	uint16	structure_count;	/**< Number of iov_bs_data_record_t records following */
+	iov_bs_data_record_v1_t	structure_record[1];	/**< 0 - structure_count records */
+} BWL_POST_PACKED_STRUCT iov_bs_data_struct_v1_t;
+#include <packed_section_end.h>
+
 /*
  * SCB_BS_DATA iovar definitions end.
  */
@@ -7607,7 +7878,7 @@ enum {
 /*
  * SCB_RX_REPORT iovar definitions start.
  */
-#define SCB_RX_REPORT_DATA_STRUCT_VERSION	1
+#define SCB_RX_REPORT_DATA_STRUCT_VERSION	2
 
 /** The actual counters maintained for each station */
 typedef struct {
@@ -7622,6 +7893,8 @@ typedef struct {
 	uint32 rxbw;
 	uint32 rxmcs;
 	uint32 rxnss;
+	uint32 rxampdu_ofdma;
+	uint32 rxtones;
 } iov_rx_report_counters_t;
 
 /** The structure for individual station information. */
@@ -9533,6 +9806,13 @@ typedef struct txdelay_stats {
 	uint32  scb_cnt;        /* in:requested, out:returned */
 	scb_total_delay_stats_t scb_delay_stats[1];
 } txdelay_stats_t;
+
+#define WL_PKTQ_STATUS_VERSION 1
+typedef struct scb_pktq_status {
+	uint16  ver; /* structure  version */
+	struct  ether_addr ea;
+	uint8   pad[2];
+} scb_pktq_status_t;
 
 #define WL_TXDELAY_STATS_FIXED_SIZE \
 	(sizeof(txdelay_stats_t)+(MAX_TXDELAY_STATS_SCBS-1)*sizeof(scb_total_delay_stats_t))
@@ -13325,6 +13605,40 @@ typedef struct wlc_stamon_sta_config {
 	uint32 offchan_time;	/* Time (ms) for which off-channel STA's are monitored. */
 } wlc_stamon_sta_config_t;
 
+#define CSIMON_STACONFIG_VER    1
+#define CSIMON_CNTR_VER		1
+#define CSIMON_STACONFIG_LENGTH sizeof(wlc_csimon_sta_config_t)
+/* Note that the del/add commands are per STA whereas the disable/enable
+ * commands are for the CSIMON feature applicable to all STAs
+ */
+typedef enum wl_csimon_cfg_cmd_type {
+	CSIMON_CFG_CMD_DEL = 0,
+	CSIMON_CFG_CMD_ADD = 1,
+	CSIMON_CFG_CMD_ENB = 2,
+	CSIMON_CFG_CMD_DSB = 3,
+	CSIMON_CFG_CMD_RSTCNT = 4
+} wl_csimon_cfg_cmd_type_t;
+
+typedef struct csimon_state {
+	uint32 version;
+	uint32 length;
+	bool enabled;
+	uint32 null_frm_cnt;
+	uint32 m2mxfer_cnt;
+	uint32 ack_fail_cnt;
+	uint32 rec_ovfl_cnt;
+	uint32 xfer_fail_cnt;
+} csimon_state_t;
+
+typedef struct wlc_csimon_sta_config {
+	wl_csimon_cfg_cmd_type_t cmd;	/* 0 - delete, 1 - add */
+	struct ether_addr ea;
+	uint16	version;		/* Command structure version */
+	uint16	length;			/* Command structure length */
+	/* Time (ms) interval between successive CSI reports generated for STA */
+	uint32	monitor_interval;
+} wlc_csimon_sta_config_t;
+
 /* ifdef SR_DEBUG */
 typedef struct /* pmu_reg */{
 	uint32  pmu_control;
@@ -14604,6 +14918,7 @@ typedef enum wl_interface_type {
 	WL_INTERFACE_TYPE_P2P_GC = 5,
 	WL_INTERFACE_TYPE_P2P_DISC = 6,
 	WL_INTERFACE_TYPE_IBSS = 7,
+	WL_INTERFACE_TYPE_WDS = 8,
 	WL_INTERFACE_TYPE_MAX
 } wl_interface_type_t;
 
@@ -15438,6 +15753,7 @@ typedef struct svmp_mem {
 #define EAP_AMSDU_CRYPTO_OFFLD_CAP		(1 << 19)
 #define EAP_ALLOW_OMGMT_FRM_CAP			(1 << 20)
 #define EAP_ACK_RSSI_CAP			(1 << 21)
+#define EAP_AMPDU_RTS_RETRIES_CAP		(1 << 22)
 #define EAP_FTM_CAP				(1 << 23)
 
 // Keep in sync with above definitions
@@ -15492,9 +15808,10 @@ typedef enum
 	C_UCODE_FEAT_ALLOW_OMGMT_FRM_NBIT			= 4,
 	// Include ack RSSI in txstatus
 	C_UCODE_FEAT_ACK_RSSI_NBIT				= 5,
-	// Is EAP FTM AVB Capability present in ucode
+	// AMPDU's RTSs use SRL/LRL
+	C_FEAT_AMPDU_RTS_RETRIES_NBIT				= 6,
+	// Is EAP FTM AVB Capability present
 	C_UCODE_FEAT_FTM_NBIT					= 7
-
 } ePsmFeatureSetRegBitDefinitions2;
 
 /** IOVAR 'mu_rate' parameter. read/set mu rate for upto four users */
@@ -16294,6 +16611,7 @@ enum {
 	WL_HE_CMD_PPET = 14,
 	WL_HE_CMD_HTC = 15,
 	WL_HE_CMD_AXMODE = 16,
+	WL_HE_CMD_FRAGTX = 17,
 	WL_HE_CMD_LAST
 };
 
@@ -17081,6 +17399,11 @@ typedef struct wlc_btcx_profile_v1 {
 	wlc_btcx_chain_attr_t chain_attr[];	/* variable length array with chain attributes */
 } wlc_btcx_profile_v1_t;
 
+#define COEX_MODE_OFF  0
+#define COEX_MODE_GPIO 1
+#define COEX_MODE_GCI  2
+#define COEX_MODE_ECI  3
+
 typedef struct wlc_phy_btc_config {
 	int     mode;
 	int     wire;
@@ -17088,8 +17411,7 @@ typedef struct wlc_phy_btc_config {
 	uint32	gpio_mask;		/* Resolved GPIO Mask */
 	uint32	gpio_out;		/* Resolved GPIO out pins */
 	uint8	btc_wlan_gpio;		/* 3-wire coex, wlan active/TX_CONF GPIO num */
-	bool	sw_coex;		/* 1=non-ECI, software-based coex is active */
-	bool	eci_coex;		/* 1=ECI coex is active */
+	uint8   coex_mode;              /* one of COEX_MODE_Xxx defs above */
 } wlc_phy_btc_config_t;
 
 #define SSSR_D11_RESET_SEQ_STEPS   5
@@ -17681,31 +18003,6 @@ typedef struct {
 	uint8 bssid [6];	/* padding to get 32 bits alignment */
 } rmc_candidate_info_v1_t;
 
-#define WL_FILTER_IE_VERSION 1
-enum wl_filter_ie_options {
-	WL_FILTER_IE_CLEAR =            0,   /* allow  element id in packet.For suboption */
-	WL_FILTER_IE_SET =              1,   /* filter element id in packet.For suboption */
-	WL_FILTER_IE_LIST =             2,   /* list  element ID's.Set as option */
-	WL_FILTER_IE_CLEAR_ALL =        3,   /* clear all the element.Set as option */
-	WL_FILTER_IE_CHECK_SUB_OPTION = 4    /* check for suboptions.Set only as option */
-};
-
-typedef struct wl_filter_ie_tlv {
-	uint16 id;
-	uint16 len;			/* sub option length + pattern length */
-	uint8 data[];		/* sub option + pattern matching(OUI,type,sub-type) */
-} wl_filter_ie_tlv_t;
-
-typedef struct wl_filter_ie_iov {
-	uint16 version;				/* Structure version */
-	uint16 len;					/* Total length of the structure */
-	uint16 fixed_length;		/* Total length of fixed fields */
-	uint8 option;				/* Filter action - check for suboption */
-	uint8 pad[1];				/* Align to 4 bytes */
-	uint32 pktflag;				/* frame type */
-	uint8  tlvs[]; 				/* variable data (zero in for list ,clearall) */
-} wl_filter_ie_iov_v1_t;
-
 /* Event aggregation config */
 #define EVENT_AGGR_CFG_VERSION		1
 #define EVENT_AGGR_DISABLED			0x0
@@ -17908,11 +18205,9 @@ typedef struct wl_monitor_config_params {
 	uint8	reserved[4];	/* For future use */
 } wl_monitor_config_params_t;
 
-#define MUTX_TYPE_MASK 0x7   /* Bit 0 for VHT MU, bit 1 OFDMA MU and bit 2 HE MU */
-#define MUTX_TYPE_VHT   0
-#define MUTX_TYPE_OFDMA 1
-#define MUTX_TYPE_HE    2
-#define MUTX_TYPE_MAX   3
+/* For a specific AC, bit 0 is for VHT MU, bit is for 1 HE MU and bit 2 is for OFDMA MU */
+#define MU_AC_MASK	0x7
+#define MU_AC_MASK_SIZE 3
 
 typedef struct wl_mutx_ac_mg {
 	uint8 ac;       /* Access Class */
@@ -17961,5 +18256,54 @@ typedef struct sr_config {
 	int16	num_vals;
 	int16	val;
 } sr_config_t;
+
+/* enum for different types Multi Users technologies */
+typedef enum {
+	WL_MU_NONE	= 0, /* No MU means SU */
+	WL_MU_VHTMU	= 1, /* VHT MUMIMO */
+	WL_MU_HEMMU	= 2, /* HE MUMIMO */
+	WL_MU_DLOFDMA	= 3, /* HE Downlink OFDMA */
+	WL_MU_TWT	= 4, /* TWT */
+	WL_MU_ULOFDMA	= 5, /* Uplink OFDMA */
+	WL_MU_MAX	= 6
+} mu_type_t;
+
+#define WL_MU_TX_TYPE_MAX  (WL_MU_TWT - WL_MU_VHTMU + 1)
+#define WL_FIFO_CMD_KEYSTR_MAXLEN	20
+
+typedef struct wl_fifo_msg {
+	uint16	mutype;		/* MU TX type */
+	uint16	value;
+	char	keystr[WL_FIFO_CMD_KEYSTR_MAXLEN];
+} wl_fifo_msg_t;
+
+/** Dynamic Tx Power Control common interfaces */
+#define WL_DTPC_IOV_VERSION   (1u)
+
+typedef enum wl_dtpc_iov_v1 {
+	WL_DTPC_CMD_EN =          0x0,  /**< top control switch */
+	WL_DTPC_CMD_TXS_THRES =   0x1,  /**< txs PER threshold */
+	WL_DTPC_CMD_PROBSTEP =    0x2,  /**< step size */
+	WL_DTPC_CMD_ALPHA =       0x3,  /**< mv alpha */
+	WL_DTPC_CMD_TRIGINT =     0x4,  /**< pwr prob trigger interval */
+	WL_DTPC_CMD_HEADROOM =    0x5,  /**< power headroom */
+	WL_DTPC_CMD_TOTAL
+} wl_dtpc_iov_v1_t;
+
+/* Comment: do we ever use this structure? */
+typedef struct wl_dtpc_cfg_v1 {
+	uint16 version;              /**< version control */
+	uint16 len;                  /**< total struct length */
+	uint8 pmac[ETHER_ADDR_LEN];  /**< extention for per-scb query */
+} wl_dtpc_cfg_v1_t;
+
+#define MAX_NUM_KNOWN_RATES 640
+typedef struct wl_dtpc_cfg_headroom {
+	uint16	len;
+	uint8   max_bw;
+	uint8   max_nss;
+	uint32	rspec[MAX_NUM_KNOWN_RATES];
+	uint8	headroom[MAX_NUM_KNOWN_RATES];
+} wl_dtpc_cfg_headroom_t;
 
 #endif /* _wlioctl_h_ */

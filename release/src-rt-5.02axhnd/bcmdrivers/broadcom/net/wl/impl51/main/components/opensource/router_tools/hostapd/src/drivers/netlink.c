@@ -30,6 +30,20 @@ static void netlink_receive_link(struct netlink_data *netlink,
 	   NLMSG_PAYLOAD(h, sizeof(struct ifinfomsg)));
 }
 
+#ifdef CONFIG_DRIVER_BRCM
+static void netlink_receive_addr(struct netlink_data *netlink,
+				 void (*cb)(void *ctx, struct ifaddrmsg *ifa,
+					    u8 *buf, size_t len),
+				 struct nlmsghdr *h)
+{
+	if (cb == NULL || NLMSG_PAYLOAD(h, 0) < sizeof(struct ifaddrmsg))
+		return;
+	cb(netlink->cfg->ctx, NLMSG_DATA(h),
+	   (u8 *) NLMSG_DATA(h) + NLMSG_ALIGN(sizeof(struct ifaddrmsg)),
+	   NLMSG_PAYLOAD(h, sizeof(struct ifaddrmsg)));
+}
+#endif /* CONFIG_DRIVER_BRCM */
+
 static void netlink_receive(int sock, void *eloop_ctx, void *sock_ctx)
 {
 	struct netlink_data *netlink = eloop_ctx;
@@ -62,6 +76,12 @@ try_again:
 			netlink_receive_link(netlink, netlink->cfg->dellink_cb,
 					     h);
 			break;
+#ifdef CONFIG_DRIVER_BRCM
+		case RTM_NEWADDR:
+			netlink_receive_addr(netlink, netlink->cfg->newaddr_cb,
+					     h);
+			break;
+#endif	/* CONFIG_DRIVER_BRCM */
 		}
 
 		h = NLMSG_NEXT(h, left);
@@ -103,7 +123,11 @@ struct netlink_data * netlink_init(struct netlink_config *cfg)
 
 	os_memset(&local, 0, sizeof(local));
 	local.nl_family = AF_NETLINK;
+#ifdef CONFIG_DRIVER_BRCM
+	local.nl_groups = RTMGRP_LINK | RTMGRP_IPV4_IFADDR;
+#else
 	local.nl_groups = RTMGRP_LINK;
+#endif /* CONFIG_DRIVER_BRCM */
 	if (bind(netlink->sock, (struct sockaddr *) &local, sizeof(local)) < 0)
 	{
 		wpa_printf(MSG_ERROR, "netlink: Failed to bind netlink "

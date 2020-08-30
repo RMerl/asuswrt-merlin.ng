@@ -252,13 +252,13 @@ struct chain_node {
 #define PKTCCLRATTR(skb)        (IS_SKBUFF_PTR(skb) ? ({CHAIN_NODE(skb)->flags = CHAIN_NODE(skb)->pkts = \
                                  CHAIN_NODE(skb)->bytes = 0;}) : BCM_REFERENCE(skb))
 #define PKTCGETATTR(skb)        (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags << 29 | CHAIN_NODE(skb)->pkts << 20 | \
-                                 CHAIN_NODE(skb)->bytes) : BCM_REFERENCE(skb))
+                                 CHAIN_NODE(skb)->bytes) : ({BCM_REFERENCE(skb); 0;}))
 #define PKTCCNT(skb)            (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts) : 1)
 #define PKTCLEN(skb)            (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->bytes) : PKTLEN(skb))
-#define PKTCGETFLAGS(skb)       (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags) : BCM_REFERENCE(skb))
+#define PKTCGETFLAGS(skb)       (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags) : ({BCM_REFERENCE(skb); 0;}))
 #define PKTCSETFLAGS(skb, f)    (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags = (f)) : BCM_REFERENCE(skb))
 #define PKTCCLRFLAGS(skb)       (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags = 0) : BCM_REFERENCE(skb))
-#define PKTCFLAGS(skb)          (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags) : BCM_REFERENCE(skb))
+#define PKTCFLAGS(skb)          (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->flags) : ({BCM_REFERENCE(skb); 0;}))
 #define PKTCSETCNT(skb, c)      (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts = (c)) : BCM_REFERENCE(skb))
 #define PKTCINCRCNT(skb)        (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts++) : BCM_REFERENCE(skb))
 #define PKTCADDCNT(skb, c)      (IS_SKBUFF_PTR(skb) ? (CHAIN_NODE(skb)->pkts += (c)) : BCM_REFERENCE(skb))

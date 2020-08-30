@@ -372,6 +372,7 @@ struct wpa_cred {
 #define CFG_CHANGED_P2P_PASSPHRASE_LEN BIT(16)
 #define CFG_CHANGED_SCHED_SCAN_PLANS BIT(17)
 #define CFG_CHANGED_WOWLAN_TRIGGERS BIT(18)
+#define CFG_CHANGED_DISABLE_BTM BIT(19)
 
 /**
  * struct wpa_config - wpa_supplicant configuration data
@@ -1536,6 +1537,15 @@ struct wpa_config {
 	 */
 	int map_bh_sta;
 #endif	/* CONFIG_DRIVER_BRCM_MAP */
+
+	/**
+	 * disable_btm - Disable BSS transition management in STA
+	 * - Set to 0 to enable BSS transition management
+	 * - Set to 1 to disable BSS transition management
+	 *
+	 * By default BSS transition management is enabled
+	 */
+	int disable_btm;
 };
 
 /* Prototypes for common functions from config.c */

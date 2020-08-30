@@ -122,6 +122,7 @@ endif
 	install -m 755 nvram $(INSTALL_DIR)/bin	
 	install -m 755 libnvram.so $(INSTALL_DIR)/lib
 	install -m 755 ./scripts/hndnvram.sh $(INSTALL_DIR)/rom/rom/etc/init.d
+	install -m 755 ./scripts/wifi.sh $(INSTALL_DIR)/rom/rom/etc/init.d
 	sed -e s/KERNEL_NVRAM_FILE_NAME/$(KERNEL_NVRAM_FILE_NAME)/g ./scripts/hndnvram.sh > $(INSTALL_DIR)/rom/rom/etc/init.d/hndnvram.sh
 	(cd $(INSTALL_DIR)/rom/rom/etc/rc3.d; rm -f S40hndnvram; ln -s ../init.d/hndnvram.sh S40hndnvram)
 	install -m 755 ./scripts/hndmfg.sh $(INSTALL_DIR)/rom/rom/etc/init.d
@@ -134,7 +135,7 @@ ifneq ($(strip $(CONFIG_BCM96846)),)
 #   - 0 (no offload), 1 (offload dhd0), 2 (offload dhd1), 3 (offload dhd0)
        echo "dhd_rnr_offload_override=1" >> $(INSTALL_DIR)/etc/wlan/kernel_nvram.setting
 endif
-ifeq ($(strip $(BUILD_BRCM_HNDROUTER_ALONE)),)	
+ifeq ($(strip $(BCA_HNDROUTER)),)
 	sed -e s/KERNEL_NVRAM_FILE_NAME/$(KERNEL_NVRAM_FILE_NAME)/g ./scripts/wlnvram.sh > $(INSTALL_DIR)/rom/rom/etc/init.d/wlnvram.sh.1
 	sed -e s/LINUX_VER_STR/$(LINUX_VER_STR)/g  $(INSTALL_DIR)/rom/rom/etc/init.d/wlnvram.sh.1 > $(INSTALL_DIR)/rom/rom/etc/init.d/wlnvram.sh
 	chmod +x  $(INSTALL_DIR)/rom/rom/etc/init.d/wlnvram.sh

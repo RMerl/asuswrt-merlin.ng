@@ -168,8 +168,8 @@ void dump_RDD_FC_MCAST_PORT_CONTEXT_ENTRY(bdmf_session_handle session, unsigned 
 void dump_RDD_CONTEXT_TABLE_CONFIG(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_PARALLEL_PROCESSING_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_PARALLEL_PROCESSING_TASK_REORDER_ENTRY(bdmf_session_handle session, unsigned char *p);
-void dump_RDD_DEBUG_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_IPTV_COUNTERS_BUFFER(bdmf_session_handle session, unsigned char *p);
+void dump_RDD_DEBUG_BUFFER_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_ENQUEUE_PCI_PACKET_CONTEXT_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_FREE_SKB_INDEXES_FIFO_ENTRY(bdmf_session_handle session, unsigned char *p);
 void dump_RDD_HASH_BUFFER(bdmf_session_handle session, unsigned char *p);

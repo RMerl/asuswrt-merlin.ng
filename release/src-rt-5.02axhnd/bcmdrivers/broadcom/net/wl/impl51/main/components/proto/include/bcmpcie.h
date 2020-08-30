@@ -3,7 +3,7 @@
  * Software-specific definitions shared between device and host side
  * Explains the shared area between host and dongle
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -20,7 +20,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmpcie.h 777863 2019-08-13 22:19:53Z $
+ * $Id: bcmpcie.h 783755 2020-02-07 20:57:50Z $
  */
 
 #ifndef	_bcmpcie_h_
@@ -58,6 +58,7 @@ typedef uint32 daddr32_t;
 /* 64bit Host addresses are used by DMA engines. */
 typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 
+/* haddr64_t to/from uint32 construction without endian conversion. */
 /* Retrieve/Get the lo and hi address field without endian conversion. */
 #define HADDR64_LO(haddr64)                 ((haddr64).lo)
 #define HADDR64_HI(haddr64)                 ((haddr64).hi)
@@ -65,6 +66,17 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 /* Assign/Set the lo and hi address field without endian conversion. */
 #define HADDR64_LO_SET(haddr64, u32)        ((haddr64).lo = (u32))
 #define HADDR64_HI_SET(haddr64, u32)        ((haddr64).hi = (u32))
+
+/* haddr64_t to/from uint64 construction without endian conversion. */
+#define HADDR64_TO_U64(haddr64, haddr_u64) \
+	(haddr_u64) = (((uint64)(HADDR64_HI(haddr64))) << 32) \
+	            | (HADDR64_LO(haddr64));
+
+#define HADDR64_FROM_U64(haddr64, haddr_u64) \
+({ \
+	HADDR64_LO_SET((haddr64), (uint32)(haddr_u64)); \
+	HADDR64_HI_SET((haddr64), (uint32)((haddr_u64) >> 32)); \
+})
 
 #define HADDR64_SET(haddr64_to, haddr64_from) \
 ({ \
@@ -75,7 +87,7 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 /* PCIe IPC is LE: Perform an ltoh32 on address value retrieved */
 #define HADDR64_LO_LTOH(haddr64)            (ltoh32(HADDR64_LO(haddr64)))
 #define HADDR64_HI_LTOH(haddr64)            (ltoh32(HADDR64_HI(haddr64)))
-#define HADD64_LTOH(haddr64) \
+#define HADDR64_LTOH(haddr64) \
 ({ \
 	/* in place LTOH of both LO and HI */ \
 	HADDR64_LO_SET((haddr64), HADDR64_LO_LTOH(haddr64)); \
@@ -92,6 +104,12 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 #define HADDR64_FMT                         " haddr64 lo 0x%08x hi 0x%08x"
 #define HADDR64_VAL(haddr64)      HADDR64_LO(haddr64), HADDR64_HI(haddr64)
 #define HADDR64_VAL_LTOH(haddr64) HADDR64_LO_LTOH(haddr64), HADDR64_HI_LTOH(haddr64)
+
+#define HADDR64_ZERO(haddr64) \
+({ \
+	HADDR64_LO_SET((haddr64), 0U); \
+	HADDR64_HI_SET((haddr64), 0U); \
+})
 
 #define HADDR64_IS_ZERO(haddr64) \
 	((HADDR64_LO(haddr64) | HADDR64_HI(haddr64)) == 0U)
@@ -127,21 +145,30 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
  * DHD from KUDU must interwork with firmware from 7.35 and 10.10 that are
  * retained at legacy PCIE IPC revision 0x05. Legacy revision 0x05 is outside
  * the BCA revision space, and uses legacy structure and flags definitions.
+ *
+ * PCIe IPC: BCA Revisions will use sequence 0x81, 0x82, ...
+ *           Major number is BCA_REV and minor number is VERSION.
+ *
+ * Fields tagged as deprecated may be repurposed. Retain deprecated symbols as
+ * they may be referenced in released twigs that share PROTO_BRANCH_17_100.
+ * Use an anonymous union { uint32 deprecated_sym; uint32 repurposed_sym; };
+ *
  */
 
-#ifdef PCIE_IPC_KUDU_WIP
-/* XXX:
- * Firmware features from rev 6 and rev7 are not compatible with DHD. These
- * features will be scrubbed and possibly obsoleted if not required.
- * Currently compiled out in firmware using PCIE_IPC_KUDU_WIP.
+/**
+ * Revision History:
+ *
+ * 0x81 : BCA(Kudu) baseline
+ * 0x82 : Host Memory Extension Service
  */
-#error "PCIE IPC rev6 and rev7 are not compatible with KUDU-DHD"
-#endif /* PCIE_IPC_KUDU_WIP */
 
-/* PCIe IPC: BCA Revisions will use sequence 0x81, 0x82, ... */
-
+/** PCIe IPC: BCA Revisions will use sequence 0x81, 0x82, ... */
 #define PCIE_IPC_BCA_REV                0x80 /* msbit=1 in BCA revision base */
-#define PCIE_IPC_VERSION                1
+
+/** Makefile or chipset.mk may override PCIE_IPC_VERSION */
+#ifndef PCIE_IPC_VERSION
+#define PCIE_IPC_VERSION                2
+#endif // endif
 
 #define PCIE_IPC_REVISION               (PCIE_IPC_BCA_REV | PCIE_IPC_VERSION)
 
@@ -163,20 +190,16 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 #error "Invalid PCIE_IPC_REVISION"
 #endif // endif
 
-/* XXX:
- * Flags must be always reserved in KUDU main, before using them in release.
- */
-
 /** pcie_ipc::flags listing begin, use prefix "PCIE_IPC_FLAGS_" */
 #define PCIE_IPC_FLAGS_REVISION_MASK    0x000000FF /* Dongle IPC revision     */
 #define PCIE_IPC_FLAGS_ASSERT_BUILT     0x00000100 /* Dongle compiled +assert */
 #define PCIE_IPC_FLAGS_ASSERT           0x00000200 /* Dongle records asserts  */
 #define PCIE_IPC_FLAGS_TRAP             0x00000400 /* Dongle collects trap    */
-#define PCIE_IPC_FLAGS_IN_BRPT          0x00000800
-#define PCIE_IPC_FLAGS_SET_BRPT         0x00001000
-#define PCIE_IPC_FLAGS_PENDING_BRPT     0x00002000
-#define PCIE_IPC_FLAGS_FATAL_LOGBUF     0x00004000 /* Dongle logs fatal error */
-#define PCIE_IPC_FLAGS_EVT_SEQNUM       0x00008000 /* UART_TRANSPORT obsolete */
+#define PCIE_IPC_FLAGS_UNUSED_00000800  0x00000800
+#define PCIE_IPC_FLAGS_UNUSED_00001000  0x00001000
+#define PCIE_IPC_FLAGS_UNUSED_00002000  0x00002000
+#define PCIE_IPC_FLAGS_UNUSED_00004000  0x00004000
+#define PCIE_IPC_FLAGS_UNUSED_00008000  0x00008000
 #define PCIE_IPC_FLAGS_DMA_INDEX        0x00010000 /* Dongle DMAs all indices */
 #define PCIE_IPC_FLAGS_D2H_SYNC_SEQNUM  0x00020000 /* mod253-SeqNum chkd2hdma */
 #define PCIE_IPC_FLAGS_D2H_SYNC_XORCSUM 0x00040000 /* XOR csum based d2h sync */
@@ -199,61 +222,52 @@ typedef dma64addr_t haddr64_t; /* No 64bit alignment requirement */
 #define PCIE_IPC_DCAP1_FAST_DELETE_RING 0x00010000 /* Fast Flowring Delete    */
 #define PCIE_IPC_DCAP1_ACWI             0x00020000 /* PCIE IPC ACWI Capable   */
 #define PCIE_IPC_DCAP1_IDMA             0x00040000 /* Implicit DMA            */
-#define PCIE_IPC_DCAP1_IFRM             0x00080000 /* HW FlowRingManager      */
-#define PCIE_IPC_DCAP1_MSI_MULTI_MSG    0x00100000 /* BCMPCIE_D2H_MSI         */
-#define PCIE_IPC_DCAP1_HOSTFLOWCONTROL  0x00200000 /* TBD: Host Flow Control  */
+#define PCIE_IPC_DCAP1_HOST_MEM_EXTN    0x00080000 /* Host Memory Extn IPC    */
+#define PCIE_IPC_DCAP1_MSI_MULTI_MSG    0x00100000 /* WIP: BCMPCIE_D2H_MSI    */
+#define PCIE_IPC_DCAP1_HOSTFLOWCONTROL  0x00200000 /* WIP: Host Flow Control  */
 #define PCIE_IPC_DCAP1_HWA_RXCPL4       0x00400000 /* HWA HWA_RXCPL4          */
 #define PCIE_IPC_DCAP1_FLOWRING_TID     0x00800000 /* Ucast Flowrings per TID */
 #define PCIE_IPC_DCAP1_HWA_RXPOST_IDMA  0x01000000 /* HWA RX POST IDMA        */
-#define PCIE_IPC_DCAP1_HWA_TXCPL_IDMA   0x02000000 /* HWA HWA TXCPL IDMA      */
-#define PCIE_IPC_DCAP1_HWA_RXCPL_IDMA   0x04000000 /* HWA HWA RXCPL IDMA      */
-#define PCIE_IPC_DCAP1_HWA_TXPOST       0x08000000 /* HWA HWA TXPOST          */
-#define PCIE_IPC_DCAP1_USE_MAILBOX      0x10000000 /* WIP: MB suspend/resume  */
+#define PCIE_IPC_DCAP1_HWA_TXCPL_IDMA   0x02000000 /* HWA TXCPL IDMA          */
+#define PCIE_IPC_DCAP1_HWA_RXCPL_IDMA   0x04000000 /* HWA RXCPL IDMA          */
+#define PCIE_IPC_DCAP1_HWA_TXPOST       0x08000000 /* HWA TXPOST              */
+#define PCIE_IPC_DCAP1_HWA_PKTPGR       0x10000000 /* HWA PKTPGR              */
 #define PCIE_IPC_DCAP1_NO_OOB_DW        0x20000000 /* WIP: No device wake DS  */
 #define PCIE_IPC_DCAP1_INBAND_DS        0x40000000 /* WIP: Inband DS protocol */
 #define PCIE_IPC_DCAP1_DAR              0x80000000 /* WIP: Use DAR Registers  */
 /** pcie_ipc:dcap1 end of listing ------------------------------------------- */
 
 /** pcie_ipc:dcap2 : Dongle capabilities advertized to host "PCIE_IPC_DCAP2_" */
+#define PCIE_IPC_DCAP2_CSI_MONITOR      0x00000001 /* Ch Status Info support  */
 /** pcie_ipc:dcap2 end of listing ------------------------------------------- */
 
 /** pcie_ipc:hcap1 : Host capabillities acked to dongle "PCIE_IPC_HCAP1_"     */
 #define PCIE_IPC_HCAP1_REVISION_MASK    0x000000FF /* Host IPC Revision       */
 #define PCIE_IPC_HCAP1_ADDR64           0x00000100 /* Full 64b addressing     */
 #define PCIE_IPC_HCAP1_HW_COHERENCY     0x00000200 /* HW coherency capable    */
+#define PCIE_IPC_HCAP1_LIMIT_BL         0x00000400 /* Limit dma burst length  */
 	                                               /* Host Capabilities ACKed */
 #define PCIE_IPC_HCAP1_FAST_DELETE_RING PCIE_IPC_DCAP1_FAST_DELETE_RING
 #define PCIE_IPC_HCAP1_ACWI             PCIE_IPC_DCAP1_ACWI
 #define PCIE_IPC_HCAP1_IDMA             PCIE_IPC_DCAP1_IDMA
-#define PCIE_IPC_HCAP1_IFRM             PCIE_IPC_DCAP1_IFRM
-#define PCIE_IPC_HCAP1_MSI_MULTI_MSG    PCIE_IPC_DCAP1_MSI_MULTI_MSG
-#define PCIE_IPC_HCAP1_HOSTFLOWCONTROL  PCIE_IPC_DCAP1_HOSTFLOWCONTROL /* TBD */
+#define PCIE_IPC_HCAP1_HOST_MEM_EXTN    PCIE_IPC_DCAP1_HOST_MEM_EXTN
+#define PCIE_IPC_HCAP1_MSI_MULTI_MSG    PCIE_IPC_DCAP1_MSI_MULTI_MSG   /* WIP */
+#define PCIE_IPC_HCAP1_HOSTFLOWCONTROL  PCIE_IPC_DCAP1_HOSTFLOWCONTROL /* WIP */
 #define PCIE_IPC_HCAP1_HWA_RXCPL4       PCIE_IPC_DCAP1_HWA_RXCPL4
 #define PCIE_IPC_HCAP1_FLOWRING_TID     PCIE_IPC_DCAP1_FLOWRING_TID
 #define PCIE_IPC_HCAP1_HWA_RXPOST_IDMA  PCIE_IPC_DCAP1_HWA_RXPOST_IDMA
 #define PCIE_IPC_HCAP1_HWA_TXCPL_IDMA   PCIE_IPC_DCAP1_HWA_TXCPL_IDMA
 #define PCIE_IPC_HCAP1_HWA_RXCPL_IDMA   PCIE_IPC_DCAP1_HWA_RXCPL_IDMA
 #define PCIE_IPC_HCAP1_HWA_TXPOST       PCIE_IPC_DCAP1_HWA_TXPOST
-#define PCIE_IPC_HCAP1_USE_MAILBOX      PCIE_IPC_DCAP1_USE_MAILBOX     /* WIP */
+#define PCIE_IPC_HCAP1_HWA_PKTPGR       PCIE_IPC_DCAP1_HWA_PKTPGR
 #define PCIE_IPC_HCAP1_NO_OOB_DW        PCIE_IPC_DCAP1_NO_OOB_DW       /* WIP */
 #define PCIE_IPC_HCAP1_INBAND_DS        PCIE_IPC_DCAP1_INBAND_DS       /* WIP */
 #define PCIE_IPC_HCAP1_DAR              PCIE_IPC_DCAP1_DAR             /* WIP */
 /** pcie_ipc:hcap1 end of listing ------------------------------------------- */
 
 /** pcie_ipc:hcap2 : Host capabilities acked to dongle "PCIE_IPC_HCAP2_"      */
+#define PCIE_IPC_HCAP2_CSI_MONITOR      PCIE_IPC_DCAP2_CSI_MONITOR
 /** pcie_ipc:hcap2 end of listing ------------------------------------------- */
-
-#ifdef PCIE_IPC_KUDU_WIP
-#define PCIE_SHARED2_EXTENDED_TRAP_DATA 0x00000001 /* using flags2 in shared area */
-#define PCIE_SHARED2_TXSTATUS_METADATA  0x00000002
-#define PCIE_SHARED2_BT_LOGGING         0x00000004 /* BT logging support */
-#define PCIE_SHARED2_SNAPSHOT_UPLOAD    0x00000008 /* BT/WLAN snapshot upload */
-#define PCIE_SHARED2_SUBMIT_COUNT_WAR   0x00000010 /* submission count WAR */
-#define PCIE_SHARED2_EVENT_BUF_POOL_MAX 0x000000c0 /* event buf pool max bits */
-#define PCIE_SHARED2_EVENT_BUF_POOL_MAX_POS      6 /* max bit position */
-#define PCIE_SHARED2_D2H_D11_TX_STATUS  0x40000000 /* WAR: use compl hdr */
-#define PCIE_SHARED2_H2D_D11_TX_STATUS  0x80000000 /* unused */
-#endif /* PCIE_IPC_KUDU_WIP */
 
 /**
  * PCIE IPC includes a set of "common" and "dynamic" message rings in the H2D
@@ -457,6 +471,89 @@ typedef struct pcie_ipc_rings
 #define PCIE_IPC_RINGS_SZ           (sizeof(pcie_ipc_rings_t)) /* 128 Bytes */
 
 /**
+ * PCIE IPC Specifications of Host Memory Extension (HME):
+ * -------------------------------------------------------
+ *
+ * Host memory is treated as an extension of dongle and must NOT be accessed
+ * by host CPU complex, upon serving it to the Dongle.
+ * Dongle may access the extended memory via non hw coherent transactions.
+ * Dongle may directly access over backplane (SBTOPCIE) or utilize available
+ * DMA engines, such as, asynchronous mem2mem or synchronous BME.
+ *
+ * Host Memory Extension management is in bcmhme.h .
+ *
+ * Implementation Note:
+ * --------------------
+ * Upto 8 users may request for host memory extensions, in 4 KByte page units.
+ * Each user's host memory extension is a discrete region, whose size is
+ * bounded (4 MByte - 1 HME page unit) - Linux based DHD.
+ *
+ * Interface Note:
+ * ---------------
+ * PCIE_IPC_DCAP1_HOST_MEM_EXTN dongle capability flag in PCIE IPC revision 0x82
+ * informs DHD of HME Service. Request and Response information is handshaked
+ * using the structure pcie_ipc's fields hme_pages and host_mem_haddr64. When
+ * the HME dongle capability is not set, the host_mem<haddr64,len> tuple is used
+ * to specify a single contiguous scratch buffer to accommodate legacy users.
+ *
+ * Theory of Operation:
+ * --------------------
+ * Dongle Users request host memory region(s) in HME Page units (4 KBytes).
+ *   - pcie_ipc::hme_pages[8]     : Each user requests a discrete memory region
+ *                                  specified in HME page units. A non-zero
+ *                                  value also serves as a dongle capability
+ *                                  being enabled.
+ *
+ * DHD allocates host memory regions and advertizes a table of host memory
+ * extension physical addresses. Table address is placed in host_mem_haddr64.
+ *   - pcie_ipc::host_mem_haddr64 : Location of a table of haddr64_t describing
+ *                                  physical addresses of User extension region.
+ *                                  Host memory extension table is in host.
+ *                                  Table is indexed by HME User ID.
+ *   - pcie_ipc::host_mem_len     : Host reports the sum total bytes of all host
+ *                                  memory extensions. This is NOT the size of
+ *                                  the Table of HME addresses.
+ * In DHD, a host memory extension is represented as a dhd_dma_buf_t abstract
+ * data type. A DHD DMA Buffer is aligned onto a cacheline (or 64 Bytes) and
+ * is padded to ensure cacheline boundary. While a DHD DMA buffer may be
+ * allocated in coherent memory, the HOST CPU complex does not directly access
+ * a HME. On a fatal firmware trap, a dump of Host Memory Extensions may be
+ * introduced in DHD.
+ *
+ * Miscellaneous Caveats:
+ * ----------------------
+ * + User listing is in bcm_hme.h (abstracted from DHD)
+ * + Users HTXHDR and PKTPGR are mutually exclusive
+ * + Users PKTPGR and MACIFS are listed as discrete Users allowing individual
+ *   memory segments to grow up to HME PAGES MAX (future proofing).
+ * + Merge Users LCLPKT and PSQPKT to save host memory? Discrete Users for now.
+ * + A host memory extension may not wrap over a 32b boundary (i.e. haddr64.hi
+ *   must be the same for the entire region).
+ *   See dhd_dma_buf_t abstract data type, and dhd_dma_buf_audit().
+ *
+ */
+
+/**< Maximum HME Users supported. HME User Listing in bcm_hme.h */
+#define PCIE_IPC_HME_USERS_MAX      (8)
+
+/** HME Page Size Unit : "number of pages" is represented as an uint16.       */
+#define PCIE_IPC_HME_PAGE_SIZE      (4 * 1024) /**< 4 KBytes page units       */
+
+/** Maximum size in Bytes of a host memory extension is (4 MBytes - 4 KBytes) */
+#define PCIE_IPC_HME_BYTES_MAX      ((4 * 1024 * 1024) - PCIE_IPC_HME_PAGE_SIZE)
+
+/** Maximum size in pages of a host memory extension (1023 pages) */
+#define PCIE_IPC_HME_PAGES_MAX \
+	(PCIE_IPC_HME_BYTES_MAX / PCIE_IPC_HME_PAGE_SIZE)
+
+/** PCIE IPC Bytes to/from Pages conversion */
+#define PCIE_IPC_HME_PAGES(bytes)  ((bytes) / PCIE_IPC_HME_PAGE_SIZE)
+#define PCIE_IPC_HME_BYTES(pages)  ((pages) * PCIE_IPC_HME_PAGE_SIZE)
+
+/** PCIE IPC HME Host 4bit physical address Table Size */
+#define PCIE_IPC_HME_HADDR64_TBLSZ (sizeof(haddr64_t) * PCIE_IPC_HME_USERS_MAX)
+
+/**
  * PCIE IPC structure located in dongle's memory.
  *
  * Dongle and Host SW uses this structure to exchange information during initial
@@ -475,27 +572,34 @@ typedef struct pcie_ipc
 		uint32      assert_line;
 
 		daddr32_t   console_daddr32; /**< address of hnd_cons_t */
-		uint32      msgtrace_daddr32; /**< address of msg_trace (obsolete) */
+
+		union {
+			uint32  msgtrace_daddr32; /**< deprecated: retain symbol */
+			uint32  PAD; /**< may be repurposed */
+		};
 
 		uint32      fwid;
 
 		uint16      max_tx_pkts; /**< Max Tx packets in dongle */
 		uint16      max_rx_pkts; /**< Max Rx packets in dongle */
 
-		uint32      dma_rxoffset; /**< to be deprecated */
+		union {
+			uint32  dma_rxoffset; /**< deprecated: retain symbol */
+			uint32  PAD; /**< may be repurposed */
+		};
 
 		daddr32_t   h2d_mb_daddr32; /**< location of h2d mailbox in dongle */
 		daddr32_t   d2h_mb_daddr32; /**< location of h2d mailbox in dongle */
 
 		daddr32_t   rings_daddr32; /**< rings info and per ring mem in dongle */
 
-		/** block of host memory to serve as extension of dongle memory */
-		uint32      host_mem_len;
-		haddr64_t   host_mem_haddr64;
+		/** host memory extension(s) of dongle memory, used to be scratch mem */
+		uint32      host_mem_len; /**< sum total bytes of all HME serviced */
+		haddr64_t   host_mem_haddr64; /**< address of table of HME addresses */
 
-		uint32      PAD[3]; /* device_rings_stsblk<len,haddr64_t> deprecated */
+		uint32      PAD[3];
 
-		daddr32_t   buzzz_daddr32; /* BUZZZ structure in dongle memory */
+		daddr32_t   buzzz_daddr32; /**< BUZZZ structure in dongle memory */
 	}; /* 20 Words, 80 Bytes */
 
 	struct /* Post Rev5 PCIE IPC extension */
@@ -511,9 +615,14 @@ typedef struct pcie_ipc
 
 		uint32      host_physaddrhi; /**< fixed host hi32 address CWI */
 
-		uint32      fatal_logbuf_daddr32; /* PCIE_IPC_KUDU_WIP */
+		union {
+			uint32  fatal_logbuf_daddr32; /**< deprecated: retain symbol */
+			uint32  PAD; /**< may be repurposed */
+		};
+		uint32      PAD[2];
 
-		uint32      PAD[6]; /* future proofing */
+		uint16      hme_pages[PCIE_IPC_HME_USERS_MAX]; /**< req in HME pages */
+
 	}; /* 12 Words, 48 Bytes */
 
 } pcie_ipc_t; /* 32 Words, 128 Bytes */
@@ -634,9 +743,7 @@ typedef struct pcie_ipc
  * accelerators (2KBytes instead of 1KBytes for 512 rings), unnecessarily.
  * Internal memory in HW accelerators is extremely scarce.
  */
-#if defined(BCMPCIE_IFRM) && !defined(BCMPCIE_IFRM_DISABLED)
-typedef uint16 pcie_rw_index_t; /* 16bit WR and RD indices */
-#elif defined(PCIE_DMA_INDEX) || defined(PCIE_DMAINDEX32)
+#if defined(PCIE_DMA_INDEX) || defined(PCIE_DMAINDEX32)
 typedef uint32 pcie_rw_index_t; /* 32bit WR and RD indices */
 #elif defined(PCIE_DMAINDEX16)
 typedef uint16 pcie_rw_index_t; /* 16bit WR and RD indices */
@@ -657,6 +764,8 @@ typedef uint32 pcie_rw_index_t; /* 32bit WR and RD indices (default) */
 #define BCMPCIE_IDMA_MAX_DESC		16
 #define BCMPCIE_IDMA_H2D_MAX_DESC	BCMPCIE_IDMA_MAX_DESC-1
 
+#define PCIE_IPC_DCAP1_IFRM 0
+#define PCIE_IPC_HCAP1_IFRM 0
 #define BCMPCIE_IFRM_64_INDEX_PER_GROUP	64
 
 #endif	/* _bcmpcie_h_ */

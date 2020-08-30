@@ -1,7 +1,7 @@
 /*
  * HND generic pktq operation primitives
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnd_pktq.c 770841 2019-01-07 19:07:38Z $
+ * $Id: hnd_pktq.c 778055 2019-08-21 15:52:54Z $
  */
 
 #include <typedefs.h>
@@ -1035,6 +1035,83 @@ pktq_flush(osl_t *osh, struct pktq *pq, bool dir)
 			pktq_pflush(osh, pq, prec, dir);
 		}
 	}
+}
+
+/*
+ * For each pktq_prec in a pktq, promote packets to the head of the pktq_prec
+ * using the promote_cb.
+ * promote_cb, determines whether a packet needs to be promoted (return true).
+ * The ordering of all false and true packets within the queue are retained.
+ * promote_cb callback may not modify the PKTLINK of the packet passed to it.
+ *
+ * Caller could have suggested how many packets needed promotion across all
+ * precedences. This could be used to quickly break out.
+ */
+bool
+pktq_promote(struct pktq *pq, pktq_promote_cb_t promote_cb)
+{
+	void *pkt;
+	int prec, n_pkts, n_pkts_tot;
+	struct pktq_prec q_hi, q_lo, *pq_q;
+
+	if (HND_PKTQ_MUTEX_ACQUIRE(&pq->mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
+		return FALSE;
+
+	n_pkts_tot = (int)pq->n_pkts_tot;
+	if (n_pkts_tot == 0)
+		return FALSE;
+
+	PKTQ_PREC_ITER(pq, prec) {
+
+		pq_q = &pq->q[prec]; /* precedence queue */
+		n_pkts = pq_q->n_pkts;
+
+		if (n_pkts <= 1) {
+			if (n_pkts == 1) /* callback may perform a pkt operation */
+				promote_cb(pq_q->head);
+			continue; /* no promotion when precedence queue is empty or 1 */
+		}
+
+		q_hi.head = q_hi.tail = NULL;
+		q_lo.head = q_lo.tail = NULL;
+
+		pkt = pq_q->head;
+
+		do {  /* enqueue to tail of hi or lo precedence queue, during walk */
+			if (promote_cb(pkt)) { /* enqueue to tail of hi queue */
+				if (q_hi.head)
+					PKTSETLINK(q_hi.tail, pkt);
+				else
+					q_hi.head = pkt;
+				q_hi.tail = pkt;
+			} else {          /* enqueue to tail of lo queue */
+				if (q_lo.head)
+					PKTSETLINK(q_lo.tail, pkt);
+				else
+					q_lo.head = pkt;
+				q_lo.tail = pkt;
+			}
+		} while ((pkt = PKTLINK(pkt)) != NULL); /* traverse precedence queue */
+
+		if (q_hi.head == NULL)
+			continue; /* lo queue is exactly as original precedence queue */
+
+		/* Create precedence queue, by appending lo queue to tail of hi queue */
+		pq_q->head = q_hi.head;
+		if (q_lo.head == NULL) {
+			pq_q->tail = q_hi.tail;
+		} else {
+			PKTSETLINK(q_hi.tail, q_lo.head);
+			pq_q->tail = q_lo.tail;
+		}
+
+		PKTSETLINK(pq_q->tail, NULL);
+	}
+
+	if (HND_PKTQ_MUTEX_RELEASE(&pq->mutex) != OSL_EXT_SUCCESS)
+		return FALSE;
+
+	return TRUE;
 }
 
 /**

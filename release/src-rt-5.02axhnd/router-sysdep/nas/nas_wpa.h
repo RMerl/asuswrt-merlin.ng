@@ -119,6 +119,8 @@ typedef uint8 wpaie_buf_t[MAX_WPA_IE];
 #define KEY_LIFETIME 60
 #endif /* WLHOSTFBT */
 
+typedef unsigned int uintptr_t;
+
 /* WPA states */
 typedef enum {
 	/* authenticator states */

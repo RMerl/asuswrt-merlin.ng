@@ -1,7 +1,7 @@
 /*
  * EVENT_LOG system definitions
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: event_log.h 747577 2018-02-18 22:36:27Z $
+ * $Id: event_log.h 777067 2019-07-18 09:28:30Z $
  */
 
 #ifndef _EVENT_LOG_H_
@@ -176,7 +176,7 @@ typedef struct {
  *
  */
 
-#if !defined(EVENT_LOG_DUMPER) && !defined(DHD_EFI)
+#if !defined(EVENT_LOG_DUMPER)
 
 #ifndef EVENT_LOG_COMPILE
 

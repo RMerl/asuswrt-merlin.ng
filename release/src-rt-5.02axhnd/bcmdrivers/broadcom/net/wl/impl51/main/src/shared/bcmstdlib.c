@@ -1,7 +1,7 @@
 /*
  * stdlib support routines for self-contained images.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmstdlib.c 774680 2019-05-02 12:46:25Z $
+ * $Id: bcmstdlib.c 778603 2019-09-05 14:20:24Z $
  */
 
 /*
@@ -38,81 +38,6 @@
 #include <stdarg.h>
 #include <bcmutils.h>
 #include <bcmstdlib.h>
-
-#ifdef HND_PRINTF_THREAD_SAFE
-#include <osl.h>
-#include <osl_ext.h>
-#include <bcmstdlib_ext.h>
-
-/* mutex macros for thread safe */
-#define HND_PRINTF_MUTEX_DECL(mutex)		static OSL_EXT_MUTEX_DECL(mutex)
-#define HND_PRINTF_MUTEX_CREATE(name, mutex)	osl_ext_mutex_create(name, mutex)
-#define HND_PRINTF_MUTEX_DELETE(mutex)		osl_ext_mutex_delete(mutex)
-#define HND_PRINTF_MUTEX_ACQUIRE(mutex, msec)	osl_ext_mutex_acquire(mutex, msec)
-#define HND_PRINTF_MUTEX_RELEASE(mutex)	osl_ext_mutex_release(mutex)
-
-HND_PRINTF_MUTEX_DECL(printf_mutex);
-int in_isr_handler = 0, in_trap_handler = 0, in_fiq_handler = 0;
-
-bool
-printf_lock_init(void)
-{
-	/* create mutex for critical section locking */
-	if (HND_PRINTF_MUTEX_CREATE("printf_mutex", &printf_mutex) != OSL_EXT_SUCCESS)
-		return FALSE;
-	return TRUE;
-}
-
-bool
-printf_lock_cleanup(void)
-{
-	/* create mutex for critical section locking */
-	if (HND_PRINTF_MUTEX_DELETE(&printf_mutex) != OSL_EXT_SUCCESS)
-		return FALSE;
-	return TRUE;
-}
-
-/* returns TRUE if allowed to proceed, FALSE to discard.
-* printf from isr hook or fiq hook is not allowed due to IRQ_MODE and FIQ_MODE stack size
-* limitation. For instruction on this, check:
-* http://hwnbu-twiki.sj.broadcom.com/bin/view/Mwgroup/ThreadXPort#printf.
-*/
-static bool
-printf_lock(void)
-{
-
-	/* discard for irq or fiq context, we need to keep irq/fiq stack small. */
-	if (in_isr_handler || in_fiq_handler)
-		return FALSE;
-
-	/* allow printf in trap handler, proceed without mutex. */
-	if (in_trap_handler)
-		return TRUE;
-
-	/* if not in isr or trap, then go thread-protection with mutex. */
-	if (HND_PRINTF_MUTEX_ACQUIRE(&printf_mutex, OSL_EXT_TIME_FOREVER) != OSL_EXT_SUCCESS)
-		return FALSE;
-	else
-		return TRUE;
-}
-
-static void
-printf_unlock(void)
-{
-	if (in_isr_handler || in_fiq_handler)
-		return;
-
-	if (in_trap_handler)
-		return;
-
-	if (HND_PRINTF_MUTEX_RELEASE(&printf_mutex) != OSL_EXT_SUCCESS)
-		return;
-}
-
-#else
-#define printf_lock() (TRUE)
-#define printf_unlock()
-#endif	/* HND_PRINTF_THREAD_SAFE */
 
 #if !defined(BCMROMOFFLOAD_EXCLUDE_STDLIB_FUNCS)
 
@@ -212,6 +137,10 @@ vsnprintf(char *buf, size_t size, const char *fmt, va_list ap)
 		}
 
 		width = 0;
+		if (*iptr == '*') {
+			width = va_arg(ap, int);
+			iptr++;
+		}
 		while (*iptr && bcm_isdigit(*iptr)) {
 			width += (*iptr - '0');
 			iptr++;
@@ -406,7 +335,6 @@ memmove(void *dest, const void *src, size_t n)
 	return dest;
 }
 
-#ifndef EFI
 int
 memcmp(const void *s1, const void *s2, size_t n)
 {
@@ -479,7 +407,6 @@ strcmp(const char *s1, const char *s2)
 		return -1;
 	return 0;
 }
-#endif /* EFI */
 
 int
 strncmp(const char *s1, const char *s2, size_t n)
@@ -529,8 +456,6 @@ strrchr(const char *str, int c)
 	return DISCARD_QUAL(save, char);
 }
 
-/* Skip over functions that are being used from DriverLibrary to save space */
-#ifndef EFI
 /**
  * strlcpy - Copy a %NUL terminated string into a sized buffer
  * @dest: Where to copy the string to
@@ -596,7 +521,6 @@ strstr(const char *s, const char *substr)
 
 	return NULL;
 }
-#endif /* EFI */
 
 size_t
 strspn(const char *s, const char *accept)
@@ -687,7 +611,6 @@ strtoul(const char *cp, char **endp, int base)
 	return (result);
 }
 
-#ifndef EFI
 /* memset is not in ROM offload because it is used directly by the compiler in
  * structure assignments/character array initialization with "".
  */
@@ -881,8 +804,6 @@ memcpy(void *dest, const void *src, size_t n)
 }
 #endif /* defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7R__) */
 
-#endif /* EFI */
-
 /* a hook to send printf output to the host */
 static printf_sendup_output_fn_t g_printf_sendup_output_fn = NULL;
 static void *g_printf_sendup_output_ctx = NULL;
@@ -926,9 +847,6 @@ printf(const char *fmt, ...)
 	int count = 0, i;
 	char buffer[PRINTF_BUFLEN + 1];
 
-	if (!printf_lock())
-		return 0;
-
 #ifdef DONGLEBUILD
 	if (_rodata_overwritten == TRUE) {
 		/* Regular printf will be garbage if ROdata is overwritten. In that case,
@@ -953,15 +871,6 @@ printf(const char *fmt, ...)
 
 	for (i = 0; i < count; i++) {
 		putc(buffer[i]);
-
-		/* XXX EFI environment requires CR\LF in a printf, etc.
-		 * so unless the string has \r\n, it will not execute CR
-		 * So force it!
-		 */
-#ifdef EFI
-		if (buffer[i] == '\n')
-			putc('\r');
-#endif // endif
 	}
 
 	/* send the output up to the host */
@@ -974,13 +883,11 @@ printf(const char *fmt, ...)
 	else
 		last_nl = FALSE;
 
-	printf_unlock();
-
 	return count;
 }
 #endif /* printf */
 
-#if !defined(_CFE_) && !defined(EFI)
+#if !defined(_CFE_)
 int
 fputs(const char *s, FILE *stream /* UNUSED */)
 {
@@ -1022,28 +929,8 @@ rand(void)
 	seed = t;
 	return t;
 }
-#endif /* !_CFE_ && !EFI */
+#endif /* !_CFE_ */
 
-#if defined(EFI) && !defined(EFI_WINBLD)
-int
-puts(const char *s)
-{
-	char c;
-
-	while ((c = *s++))
-		putc(c);
-
-	putc('\n');
-
-	return 0;
-}
-
-int
-putchar(int c)
-{
-	return putc(c);
-}
-#endif /* EFI && !EFI_WINBLD */
 #endif /* BCMSTDLIB_SNPRINTF_ONLY */
 
 size_t

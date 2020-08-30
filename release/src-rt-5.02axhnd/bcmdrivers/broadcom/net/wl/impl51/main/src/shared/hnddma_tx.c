@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA transmit routines.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_tx.c 773199 2019-03-14 14:36:42Z $
+ * $Id: hnddma_tx.c 781338 2019-11-19 01:57:17Z $
  */
 
 /**
@@ -247,21 +247,21 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 		if (DMASGLIST_ENAB) {
 			bzero(&di->txp_dmah[txout], sizeof(hnddma_seg_map_t));
 			paddr = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, p,
-				&di->txp_dmah[txout], &di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+				&di->txp_dmah[txout], &di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 			ULONGTOPHYSADDR(paddr, pa);
 		} else {
 			paddr = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, NULL, NULL,
-				&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+				&di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 			ULONGTOPHYSADDR(paddr, pa);
 		}
 #else
 		if (DMASGLIST_ENAB) {
 			bzero(&di->txp_dmah[txout], sizeof(hnddma_seg_map_t));
 			pa = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, p,
-				&di->txp_dmah[txout], &di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+				&di->txp_dmah[txout], &di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 		} else {
 			pa = SECURE_DMA_MAP(di->osh, data, len, DMA_TX, NULL, NULL,
-				&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+				&di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 		}
 #endif /* BCMDMA64OSL */
 #else  /* ! BCM_SECURE_DMA */
@@ -274,7 +274,12 @@ _dma_txfast(dma_info_t *di, void *p0, bool commit)
 		{
 #if defined(BCM_NBUFF_PKT_BPM_COHERENCY) && defined(CC_BPM_SKB_POOL_BUILD)
 			uchar *dirty = PKTDIRTYP(di->osh, p);
-			if (dirty > data)
+			if (dirty && ((dirty - data) > 0) && ((dirty - data) <= len))
+				/* XXX: WAR for BCAWLAN-210771,
+				 * Sometimes, we got the invalid dirty pointer.
+				 * If we use it without checking, kernel paging request failed.
+				 * Checking the dirty value before use it as WAR.
+				 */
 				pa = DMA_MAP(di->osh, data, (dirty - data), DMA_TX, p,
 					&di->txp_dmah[txout]);
 			else
@@ -698,7 +703,8 @@ dma_txdesc(hnddma_t *dmah, dma64dd_t *dd, bool commit)
 
 	/* If commit is set, write the DMA register to inform the DMA of the new descriptor */
 	if (commit) {
-		W_REG(di->osh, &di->d64txregs->ptr, di->xmtptrbase + I2B(txout, dma64dd_t));
+		W_REG(di->osh, &di->d64txregs->ptr,
+		    (uint32)(di->xmtptrbase + I2B(txout, dma64dd_t)));
 	}
 
 	di->hnddma.txavail = di->ntxd - NTXDACTIVE(di->txin, di->txout) - 1;
@@ -1174,7 +1180,7 @@ uintptr
 dma_get_txd_addr(hnddma_t *di, uint16 idx)
 {
 	dma_info_t *ddi = DI_INFO(di);
-	return ((uintptr)(ddi->txd64 + idx));
+	return ((uintptr)(((dma64dd_t *)((uintptr)PHYSADDRLO(ddi->txdpa))) + idx));
 }
 
 /* Function to get the memory address of the buffer pointed to by the
@@ -1257,8 +1263,8 @@ dma64_txfast_lfrag(dma_info_t *di, void *p0, bool commit)
 			if ((j == nsegs) && (ftot == 0) && (next == NULL))
 				flags |= (D64_CTRL1_IOC | D64_CTRL1_EOF);
 
-				dma64_dd_upd(di, di->txd64, pa, txout,
-					&flags, len);
+			dma64_dd_upd(di, di->txd64, pa, txout,
+				&flags, len);
 #ifdef BULK_PKTLIST_DEBUG
 			ASSERT(di->txp[txout] == NULL);
 #else

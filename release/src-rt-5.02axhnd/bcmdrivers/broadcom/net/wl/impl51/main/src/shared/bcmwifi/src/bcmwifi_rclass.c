@@ -1,6 +1,6 @@
 /*
  * Common interface to channel definitions.
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -17,16 +17,23 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmwifi_rclass.c 765288 2018-06-27 14:35:39Z $
+ * $Id: bcmwifi_rclass.c 777757 2019-08-08 17:47:26Z $
  */
 
 #include <typedefs.h>
 #include <bcmdefs.h>
 #include <bcmwifi_rclass.h>
+#ifndef BCMDRIVER
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#define ASSERT(exp) assert(exp)
+#endif /* BCMDRIVER */
 
-static bcmwifi_rclass_bvec_t g_bvec = {
-	BCMWIFI_MAX_VEC_SIZE
-};
+struct g_bitvec_t {
+	uint8 len;                         /* length of bit vector array */
+	uint8 bvec[BCMWIFI_MAX_VEC_SIZE];  /* array of bits */
+} g_bvec;
 
 /* Global Operating Classes */
 
@@ -347,7 +354,7 @@ static const bcmwifi_rclass_info_t rcinfo_us[] = {
 	{32, BCMWIFI_RCLASS_CHAN_TYPE_CHAN_PRIMARY, BCMWIFI_BW_40, BCMWIFI_BAND_2G,
 	(BCMWIFI_RCLASS_FLAGS_LIC_EXMPT | BCMWIFI_RCLASS_FLAGS_PRIMARY_LOWER),
 	ARRAYSIZE(chan_set_us_2g_40l), chan_set_us_2g_40l},
-	{33, BCMWIFI_RCLASS_CHAN_TYPE_CNTR_FREQ,  BCMWIFI_BW_80, BCMWIFI_BAND_5G,
+	{33, BCMWIFI_RCLASS_CHAN_TYPE_CHAN_PRIMARY, BCMWIFI_BW_40, BCMWIFI_BAND_2G,
 	(BCMWIFI_RCLASS_FLAGS_LIC_EXMPT | BCMWIFI_RCLASS_FLAGS_PRIMARY_UPPER),
 	ARRAYSIZE(chan_set_us_2g_40u), chan_set_us_2g_40u},
 	{128, BCMWIFI_RCLASS_CHAN_TYPE_CNTR_FREQ,  BCMWIFI_BW_80, BCMWIFI_BAND_5G,
@@ -877,10 +884,77 @@ done:
 	return ret;
 }
 
-static bcmwifi_rclass_bw_t
-cspec_bw(bcmwifi_rclass_bw_t bw)
+/**
+ * Convert a regulatory operting class band value to a chanspec band value
+ *
+ * @param    band    bcmwifi_rclass_band_t value
+ *
+ * @return   Returns the corresponding chanspec_band_t value, or INVCHANSPEC on error.
+ */
+chanspec_band_t
+bcmwifi_rclass_band_rc2chspec(bcmwifi_rclass_band_t band)
 {
-	bcmwifi_rclass_bw_t cs_bw = 0;
+	chanspec_band_t cs_band = INVCHANSPEC;
+	switch (band) {
+	case BCMWIFI_BAND_2G:
+		cs_band = WL_CHANSPEC_BAND_2G;
+		break;
+	case BCMWIFI_BAND_5G:
+		cs_band = WL_CHANSPEC_BAND_5G;
+		break;
+	case BCMWIFI_BAND_6G:
+		cs_band = WL_CHANSPEC_BAND_6G;
+		break;
+	default:
+		/* should never happen */
+		ASSERT(0);
+		break;
+	}
+
+	return cs_band;
+}
+
+/**
+ * Convert a chanspec band value to a regulatory operting class band value
+ *
+ * @param    band    chanspec_band_t value, e.g. CHSPEC_BAND(chanspec)
+ *
+ * @return   Returns the corresponding bcmwifi_rclass_band_t value, or 0 on error.
+ */
+bcmwifi_rclass_band_t
+bcmwifi_rclass_band_chspec2rc(chanspec_band_t band)
+{
+	bcmwifi_rclass_band_t rc_band = 0;
+	switch (band) {
+	case WL_CHANSPEC_BAND_2G:
+		rc_band = BCMWIFI_BAND_2G;
+		break;
+	case WL_CHANSPEC_BAND_5G:
+		rc_band = BCMWIFI_BAND_5G;
+		break;
+	case WL_CHANSPEC_BAND_6G:
+		rc_band = BCMWIFI_BAND_6G;
+		break;
+	default:
+		/* should never happen */
+		ASSERT(0);
+		break;
+	}
+
+	return rc_band;
+}
+
+/**
+ * Convert a regulatory operting class bandwidth value to a chanspec bandwidth value
+ *
+ * @param    bw    bcmwifi_rclass_bw_t value
+ *
+ * @return   Returns the corresponding chanspec_bw_t value, or INVCHANSPEC on error.
+ */
+chanspec_bw_t
+bcmwifi_rclass_bw_rc2chspec(bcmwifi_rclass_bw_t bw)
+{
+	chanspec_bw_t cs_bw = INVCHANSPEC;
 	switch (bw) {
 	case BCMWIFI_BW_20:
 		cs_bw = WL_CHANSPEC_BW_20;
@@ -896,27 +970,58 @@ cspec_bw(bcmwifi_rclass_bw_t bw)
 		break;
 	default:
 		/* should never happen */
+		ASSERT(0);
 		break;
 	}
 
 	return cs_bw;
 }
 
+/**
+ * Convert a chanspec bandwidth value to a regulatory operting class bandwidth value
+ *
+ * @param    bw    chanspec bandwidth value, e.g. CHSPEC_BW(chanspec)
+ *
+ * @return   Returns the corresponding bcmwifi_rclass_bw_t value, or 0 on error.
+ */
+bcmwifi_rclass_bw_t
+bcmwifi_rclass_bw_chspec2rc(chanspec_bw_t bw)
+{
+	bcmwifi_rclass_bw_t rc_bw = 0;
+	switch (bw) {
+	case WL_CHANSPEC_BW_20:
+		rc_bw = BCMWIFI_BW_20;
+		break;
+	case WL_CHANSPEC_BW_40:
+		rc_bw = BCMWIFI_BW_40;
+		break;
+	case WL_CHANSPEC_BW_80:
+		rc_bw = BCMWIFI_BW_80;
+		break;
+	case WL_CHANSPEC_BW_160:
+		rc_bw = BCMWIFI_BW_160;
+		break;
+	default:
+		/* no support for 80+80MHz or other bandwidths */
+		break;
+	}
+
+	return rc_bw;
+}
+
 static bool
-lookup_chan_in_chan_set(const bcmwifi_rclass_info_t *entry,
-	bcmwifi_rclass_bw_t bw, uint8 chan)
+lookup_chan_in_chan_set(const bcmwifi_rclass_info_t *entry, uint8 chan)
 {
 	bool ret = FALSE;
 	uint8 idx = 0;
-	bcmwifi_rclass_bw_t entry_cspec_bw = cspec_bw(entry->bw);
 
 	for (idx = 0; idx < entry->chan_set_len; idx++) {
-		if (entry->chan_set[idx] == chan && entry_cspec_bw == bw) {
+		if (entry->chan_set[idx] == chan) {
 			ret = TRUE;
-			goto done;
+			break;
 		}
 	}
-done:
+
 	return ret;
 }
 
@@ -927,7 +1032,7 @@ done:
  *        is supported.
  * Output: rclass (op class)
  * On success return status BCME_OK.
- * On error return status BCME_UNSUPPORTED, BCME_BADARG.
+ * On error return status BCME_BADCHAN, BCME_OUTOFRANGECHAN, BCME_BADARG.
  */
 int
 bcmwifi_rclass_get_opclass(bcmwifi_rclass_type_t type, chanspec_t chanspec,
@@ -936,6 +1041,7 @@ bcmwifi_rclass_get_opclass(bcmwifi_rclass_type_t type, chanspec_t chanspec,
 	int ret = BCME_ERROR;
 	const bcmwifi_rclass_info_t *rcinfo = NULL;
 	bcmwifi_rclass_bw_t bw;
+	bcmwifi_rclass_flags_t sb = 0;
 	uint8 rct_len = 0;
 	uint8 i;
 	uint8 chan;
@@ -944,19 +1050,40 @@ bcmwifi_rclass_get_opclass(bcmwifi_rclass_type_t type, chanspec_t chanspec,
 		goto done;
 	}
 
-	bw = CHSPEC_BW(chanspec);
-
 	if (CHSPEC_IS80(chanspec) || CHSPEC_IS160(chanspec)) {
 		chan = CHSPEC_CHANNEL(chanspec);
-	} else if ((bw == WL_CHANSPEC_BW_40) || (bw == WL_CHANSPEC_BW_20)) {
-		chan = wf_chspec_ctlchan(chanspec);
+	} else if (CHSPEC_IS40(chanspec) || CHSPEC_IS20(chanspec)) {
+		chan = wf_chspec_primary20_chan(chanspec);
 	} else {
 		goto done;
 	}
 
+	/* get the reg class bandwidth we need to search for */
+	bw = bcmwifi_rclass_bw_chspec2rc(CHSPEC_BW(chanspec));
+
+	/* get the upper/lower behavior required for 40MHz channels */
+	if (CHSPEC_IS40(chanspec)) {
+		if (CHSPEC_CTL_SB(chanspec) == WL_CHANSPEC_CTL_SB_U) {
+			sb = BCMWIFI_RCLASS_FLAGS_PRIMARY_UPPER;
+		} else {
+			sb = BCMWIFI_RCLASS_FLAGS_PRIMARY_LOWER;
+		}
+	}
+
 	for (i = 0; rcinfo != NULL && i < rct_len; i++) {
 		const bcmwifi_rclass_info_t *entry = &rcinfo[i];
-		if (lookup_chan_in_chan_set(entry, bw, chan)) {
+
+		/* skip if the operating class BW does not match the chanspec */
+		if (bw != entry->bw) {
+			continue;
+		}
+
+		/* skip if a required behavior flag is not set */
+		if (sb != 0 && (entry->flags & sb) == 0) {
+			continue;
+		}
+
+		if (lookup_chan_in_chan_set(entry, chan)) {
 			*rclass = entry->rclass;
 			ret = BCME_OK;
 			goto done;
@@ -1034,7 +1161,7 @@ bcmwifi_rclass_get_chanspec_from_chan_idx(const bcmwifi_rclass_info_t *entry, ui
 		}
 	}
 
-	*cspec = (band | sb | cspec_bw(entry->bw) | chan);
+	*cspec = (band | sb | bcmwifi_rclass_bw_rc2chspec(entry->bw) | chan);
 
 done:
 	return ret;
@@ -1089,21 +1216,29 @@ bcmwifi_rclass_get_supported_opclasses(bcmwifi_rclass_type_t type,
 {
 	int ret = BCME_ERROR;
 	const bcmwifi_rclass_info_t *rct = NULL;
-	bcmwifi_rclass_bvec_t *bvec = &g_bvec;
+	bcmwifi_rclass_bvec_t *bvec;
 	uint8 rct_len = 0;
-	uint8 *vec;
-	uint8 idx = 0;
+	uint8 max = 0;
+	uint8 idx;
 
 	if ((ret = bcmwifi_rclass_get_rclass_table(type, &rct, &rct_len)) != BCME_OK) {
 		goto done;
 	}
 
+	bzero(&g_bvec, sizeof(g_bvec));
+
+	bvec = (bcmwifi_rclass_bvec_t*)&g_bvec;
 	for (idx = 0; idx < rct_len; idx++) {
-		const bcmwifi_rclass_info_t *entry = &rct[idx];
-		vec = &bvec->bvec[entry->rclass / 8];
-		*vec |= (1 << (entry->rclass % 8));
+		bcmwifi_rclass_opclass_t opclass = rct[idx].rclass;
+
+		max = MAX(max, (uint8)opclass);
+		setbit(bvec->bvec, opclass);
 	}
-	*rclass_bvec = (const bcmwifi_rclass_bvec_t *)&g_bvec;
+
+	/* returned bitvec length is bytecount to include the highest set bit */
+	bvec->len = CEIL(max, NBBY);
+
+	*rclass_bvec = bvec;
 done:
 	return ret;
 }

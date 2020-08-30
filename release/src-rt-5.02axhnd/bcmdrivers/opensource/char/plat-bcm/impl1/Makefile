@@ -26,6 +26,12 @@ obj-$(CONFIG_MIPS) += bcm_mips_setup.o
 
 obj-y += setup.o bcm_dt.o
 
+
+ifneq ($(strip $(CONFIG_BCM_WLAN)),)
+EXTRA_CFLAGS += -I. -I$(INC_BRCMDRIVER_PUB_PATH)/../char/board/$(BRCM_BOARD)/impl1
+EXTRA_CFLAGS += -DWIRELESS
+endif
+
 ifeq ($(strip $(BRCM_IKOS)),)
 obj-y += bcm_extirq.o
 endif

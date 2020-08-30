@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma.c 774125 2019-04-11 04:15:49Z $
+ * $Id: hnddma.c 784528 2020-02-28 22:23:04Z $
  */
 
 /**
@@ -781,15 +781,18 @@ _dma_ddtable_init(dma_info_t *di, uint direction, dmaaddr_t pa)
 	if (DMA_INDIRECT(di)) {
 		dma_set_indqsel((hnddma_t *)di, FALSE);
 	}
+	/* BCMDMA64OSL needed for PA's above beyond low 4GB */
+	ASSERT(sizeof(PHYSADDRLO(pa)) > sizeof(uint32) ?
+			(PHYSADDRLO(pa) >> 32) == 0 : TRUE);
 
 	if ((di->ddoffsetlow == 0) || !(PHYSADDRLO(pa) & PCI32ADDR_HIGH)) {
 		if (direction == DMA_TX) {
-			W_REG(di->osh, &di->d64txregs->addrlow, (PHYSADDRLO(pa) +
+			W_REG(di->osh, &di->d64txregs->addrlow, (uint32)(PHYSADDRLO(pa) +
 			                                         di->ddoffsetlow));
 			W_REG(di->osh, &di->d64txregs->addrhigh, (PHYSADDRHI(pa) +
 			                                          di->ddoffsethigh));
 		} else {
-			W_REG(di->osh, &di->d64rxregs->addrlow, (PHYSADDRLO(pa) +
+			W_REG(di->osh, &di->d64rxregs->addrlow, (uint32)(PHYSADDRLO(pa) +
 			                                         di->ddoffsetlow));
 			W_REG(di->osh, &di->d64rxregs->addrhigh, (PHYSADDRHI(pa) +
 			                                          di->ddoffsethigh));
@@ -805,13 +808,13 @@ _dma_ddtable_init(dma_info_t *di, uint direction, dmaaddr_t pa)
 		PHYSADDRLO(pa) &= ~PCI32ADDR_HIGH;
 
 		if (direction == DMA_TX) {
-			W_REG(di->osh, &di->d64txregs->addrlow, (PHYSADDRLO(pa) +
+			W_REG(di->osh, &di->d64txregs->addrlow, (uint32)(PHYSADDRLO(pa) +
 			                                         di->ddoffsetlow));
 			W_REG(di->osh, &di->d64txregs->addrhigh, di->ddoffsethigh);
 			SET_REG(di->osh, &di->d64txregs->control, D64_XC_AE,
 				(ae << D64_XC_AE_SHIFT));
 		} else {
-			W_REG(di->osh, &di->d64rxregs->addrlow, (PHYSADDRLO(pa) +
+			W_REG(di->osh, &di->d64rxregs->addrlow, (uint32)(PHYSADDRLO(pa) +
 			                                         di->ddoffsetlow));
 			W_REG(di->osh, &di->d64rxregs->addrhigh, di->ddoffsethigh);
 			SET_REG(di->osh, &di->d64rxregs->control, D64_RC_AE,
@@ -1365,7 +1368,7 @@ BCMATTACHFN_DMA_ATTACH(dma_ringalloc)(osl_t *osh, uint32 boundary, uint size, ui
 	return va;
 }
 
-#if defined(BCMDBG)
+#if defined(BCMDBG) || defined(BCMDBG_TXSTALL)
 static void
 dma64_dumpring(dma_info_t *di, struct bcmstrbuf *b, dma64dd_t *ring, uint start, uint end,
 	uint max_num)
@@ -1573,7 +1576,7 @@ dma_update_rxfill(hnddma_t *dmah)
 	di->rxout = PREVNRXD(rxout, n);
 
 	/* update the chip lastdscr pointer */
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(di->rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(di->rxout, dma64dd_t)));
 
 	 /* free up "n" descriptors i.e., (n/dpp) packets from bottom */
 	while (n-- > 0) {
@@ -1857,7 +1860,8 @@ dma_txrewind(hnddma_t *dmah)
 		if (flags & CTRL_EOF) {
 			/* rewind end to (i+1) */
 			W_REG(di->osh,
-			      &di->d64txregs->ptr, di->xmtptrbase + I2B(NEXTTXD(i), dma64dd_t));
+			      &di->d64txregs->ptr,
+			      (uint32)(di->xmtptrbase + I2B(NEXTTXD(i), dma64dd_t)));
 			DMA_TRACE(("ActiveIdx %d EndIdx was %d now %d\n", start, end, NEXTTXD(i)));
 			break;
 		}
@@ -2161,11 +2165,11 @@ dma_txunframed(hnddma_t *dmah, void *buf, uint len, bool commit)
 #ifdef BCM_SECURE_DMA
 #ifdef BCMDMA64OSL
 	paddr = SECURE_DMA_MAP(di->osh, buf, len, DMA_TX, NULL, NULL,
-		&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+		&di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 	ULONGTOPHYSADDR(paddr, pa);
 #else
 	pa = SECURE_DMA_MAP(di->osh, buf, len, DMA_TX, NULL, NULL,
-		&di->sec_cma_info_tx, 0, CMA_TXBUF_POST);
+		&di->sec_cma_info_tx, 0, SECDMA_TXBUF_POST);
 #endif /* BCMDMA64OSL */
 #else
 	pa = DMA_MAP(di->osh, buf, len, DMA_TX, NULL, &di->txp_dmah[txout]);
@@ -2271,7 +2275,8 @@ dma_rxfill_unframed(hnddma_t *dmah, void *buf, uint len, bool commit)
 
 	/* kick the chip */
 	if (commit) {
-		W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(rxout, dma64dd_t));
+		W_REG(di->osh, &di->d64rxregs->ptr,
+		    (uint32)(di->rcvptrbase + I2B(rxout, dma64dd_t)));
 	}
 
 	/* bump the rx descriptor index */
@@ -2768,7 +2773,7 @@ dma_rxfast(hnddma_t *dmah, dma64addr_t p, uint32 len)
 
 	di->rxavail = di->nrxd - NRXDACTIVE(di->rxin, di->rxout) - 1;
 	/* update the chip lastdscr pointer */
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(rxout, dma64dd_t)));
 	return 0;
 outofrxd:
 	di->rxavail = 0;
@@ -3012,44 +3017,47 @@ bogus:
 	return;
 }
 
+/* Given a M2M request, configure the Rx and Tx descriptors of the M2M channels
+ * in the PCIE core. Does not apply to M2MCORE
+ */
 int BCMFASTPATH
-dma_m2m_submit(hnddma_t *dmah, m2m_desc_t *desc, bool implicit)
+pcie_m2m_req_submit(hnddma_t *dmah, pcie_m2m_req_t *m2m_req, bool implicit)
 {
 	uint16 rxout, txout, num_avail;
 	uint32 save_rxd, save_txd;
-	m2m_vec_t *vec;
+	pcie_m2m_vec_t *vec;
 	uint8 num_vec, offset;
 	uint32 flags;
 
 	dma_info_t *di = DI_INFO(dmah);
 
 	num_avail = di->ntxd - NTXDACTIVE(di->txin, di->txout) - 1;
-	if (num_avail < desc->num_tx_vec) {
+	if (num_avail < m2m_req->num_tx_vec) {
 		goto outoftxd;
 	}
 
 	num_avail = di->nrxd - NRXDACTIVE(di->rxin, di->rxout) - 1;
-	if (num_avail < desc->num_rx_vec) {
+	if (num_avail < m2m_req->num_rx_vec) {
 		goto outofrxd;
 	}
 
 	rxout = di->rxout;
 
-	for (num_vec = 0; num_vec < desc->num_rx_vec; num_vec++) {
-		vec = &desc->vec[num_vec];
-		save_rxd = vec->addr.loaddr;
+	for (num_vec = 0; num_vec < m2m_req->num_rx_vec; num_vec++) {
+		vec = &m2m_req->vec[num_vec];
+		save_rxd = vec->addr64.loaddr;
 		flags = 0;
 
 		if (rxout == (di->nrxd - 1))
 			flags = D64_CTRL1_EOT;
 
-		if (desc->flags & XFER_TO_LBUF) {
-			vec->addr.loaddr = (uint32)(uintptr)PKTDATA(di->osh,
-					(void *)(uintptr)(vec->addr.loaddr));
+		if (m2m_req->flags & XFER_TO_LBUF) {
+			vec->addr64.loaddr = (uint32)(uintptr)PKTDATA(di->osh,
+					(void *)(uintptr)(vec->addr64.loaddr));
 		}
 
 		ASSERT(vec->len);
-		dma64_dd_upd_64_from_params(di, di->rxd64, vec->addr,
+		dma64_dd_upd_64_from_params(di, di->rxd64, vec->addr64,
 				rxout, &flags, vec->len);
 
 		ASSERT(di->rxp[rxout] == NULL);
@@ -3059,21 +3067,21 @@ dma_m2m_submit(hnddma_t *dmah, m2m_desc_t *desc, bool implicit)
 
 	di->rxout = rxout;
 	di->rxavail = di->nrxd - NRXDACTIVE(di->rxin, di->rxout) - 1;
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(rxout, dma64dd_t)));
 
 	txout = di->txout;
-	offset = desc->num_rx_vec;
+	offset = m2m_req->num_rx_vec;
 
-	for (num_vec = 0; num_vec < desc->num_tx_vec; num_vec++) {
-		vec = &desc->vec[num_vec + offset];
-		save_txd = vec->addr.loaddr;
+	for (num_vec = 0; num_vec < m2m_req->num_tx_vec; num_vec++) {
+		vec = &m2m_req->vec[num_vec + offset];
+		save_txd = vec->addr64.loaddr;
 		flags = 0;
 
 		if ((num_vec == 0) || implicit) {
 			flags |= D64_CTRL1_SOF;
 		}
 
-		if ((num_vec == (desc->num_tx_vec - 1)) || implicit) {
+		if ((num_vec == (m2m_req->num_tx_vec - 1)) || implicit) {
 			flags |= D64_CTRL1_EOF | D64_CTRL1_IOC;
 		}
 
@@ -3081,17 +3089,17 @@ dma_m2m_submit(hnddma_t *dmah, m2m_desc_t *desc, bool implicit)
 			flags |= D64_CTRL1_EOT;
 		}
 
-		if (desc->flags & XFER_FROM_LBUF) {
-			vec->addr.loaddr = (uint32)(uintptr)PKTDATA(di->osh,
-					(void *)(uintptr)(vec->addr.loaddr));
+		if (m2m_req->flags & XFER_FROM_LBUF) {
+			vec->addr64.loaddr = (uint32)(uintptr)PKTDATA(di->osh,
+					(void *)(uintptr)(vec->addr64.loaddr));
 		}
 
-		if (desc->flags & XFER_INJ_ERR) {
+		if (m2m_req->flags & XFER_INJ_ERR) {
 			flags &= ~(D64_CTRL1_EOF | D64_CTRL1_SOF);
 		}
 
 		ASSERT(vec->len);
-		dma64_dd_upd_64_from_params(di, di->txd64, vec->addr,
+		dma64_dd_upd_64_from_params(di, di->txd64, vec->addr64,
 			txout, &flags, vec->len);
 
 		ASSERT(di->txp[txout] == NULL);
@@ -3102,21 +3110,21 @@ dma_m2m_submit(hnddma_t *dmah, m2m_desc_t *desc, bool implicit)
 	di->txout = txout;
 	di->hnddma.txavail = di->ntxd - NTXDACTIVE(di->txin, di->txout) - 1;
 
-	if (desc->commit) {
+	if (m2m_req->commit) {
 		dma64_txcommit_local(di);
 	}
 
-	DMA_TRACE(("dma_m2m_submit: di:0x%p desc:0x%p\n", di, desc));
+	DMA_TRACE(("pcie_m2m_req_submit: di:0x%p m2m_req:0x%p\n", di, m2m_req));
 
 	return 0;
 
 outofrxd:
-	DMA_ERROR(("%s: dma_m2m_submit: out of rxds\n", di->name));
+	DMA_ERROR(("%s: pcie_m2m_req_submit: out of rxds\n", di->name));
 	di->rxavail = 0;
 	return -1;
 
 outoftxd:
-	DMA_ERROR(("%s: dma_m2m_submit: out of txds\n", di->name));
+	DMA_ERROR(("%s: pcie_m2m_req_submit: out of txds\n", di->name));
 	di->hnddma.txavail = 0;
 	di->hnddma.txnobuf++;
 	return -1;
@@ -3171,7 +3179,7 @@ dma_descptr_update(hnddma_t *dmah)
 {
 	dma_info_t *di = DI_INFO(dmah);
 
-	W_REG(di->osh, &di->d64rxregs->ptr, di->rcvptrbase + I2B(di->rxout, dma64dd_t));
+	W_REG(di->osh, &di->d64rxregs->ptr, (uint32)(di->rcvptrbase + I2B(di->rxout, dma64dd_t)));
 	dma64_txcommit_local(di);
 }
 
@@ -3240,3 +3248,20 @@ dmatx_map_pkts(hnddma_t *dmah, map_pkts_cb_fn cb, void *ctx)
 	}
 	return BCME_OK;
 }
+
+#if defined(PKTQ_STATUS) && defined(BULK_PKTLIST)
+/* Utility function to walk the DMA ring */
+void *
+dma_get_nextpkt(hnddma_t *dmah, void *pkt)
+{
+	dma_info_t *di = DI_INFO(dmah);
+	if (pkt == NULL) {
+		pkt = DMA_GET_LISTHEAD(di);
+	} else if (pkt == DMA_GET_LISTTAIL(di)) {
+		pkt = NULL;
+	} else {
+		pkt = DMA_GET_NEXTPKT(pkt);
+	}
+	return pkt;
+}
+#endif // endif

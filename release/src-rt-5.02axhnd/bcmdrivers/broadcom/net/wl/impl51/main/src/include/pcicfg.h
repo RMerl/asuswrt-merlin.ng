@@ -1,7 +1,7 @@
 /*
  * pcicfg.h: PCI configuration constants and structures.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: pcicfg.h 690133 2017-03-14 21:02:02Z $
+ * $Id: pcicfg.h 777067 2019-07-18 09:28:30Z $
  */
 
 #ifndef	_h_pcicfg_
@@ -163,11 +163,7 @@ typedef struct _pci_config_regs {
 * 0x18 as per the PCIe full dongle spec. Need to modify the values below
 * correctly at a later point of time
 */
-#ifdef DHD_EFI
-#define	PCI_CFG_BAR1		0x18
-#else
 #define	PCI_CFG_BAR1		0x14
-#endif /* DHD_EFI */
 #define	PCI_CFG_BAR2		0x18
 #define	PCI_CFG_BAR3		0x1c
 #define	PCI_CFG_BAR4		0x20
@@ -184,14 +180,6 @@ typedef struct _pci_config_regs {
 #define	PCI_CFG_DEVCTRL		0xd8
 #define PCI_CFG_TLCNTRL_5	0x814
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
-
-#ifdef EFI
-#undef PCI_CLASS_BRIDGE
-#undef PCI_CLASS_OLD
-#undef PCI_CLASS_DISPLAY
-#undef PCI_CLASS_SERIAL
-#undef PCI_CLASS_SATELLITE
-#endif /* EFI */
 
 /* Classes and subclasses */
 
@@ -492,7 +480,7 @@ typedef struct _pcie_enhanced_caphdr {
 #define	PCI_BAR0_WIN		0x80	/* backplane addres space accessed by BAR0 */
 #define	PCI_BAR1_WIN		0x84	/* backplane addres space accessed by BAR1 */
 #define	PCI_SPROM_CONTROL	0x88	/* sprom property control */
-#define	PCI_BAR1_CONTROL	0x8c	/* BAR1 region burst control */
+#define	PCI_BAR2_WIN		0x8c	/* backplane addres space accessed by BAR2 */
 #define	PCI_INT_STATUS		0x90	/* PCI and other cores interrupts */
 #define	PCI_INT_MASK		0x94	/* mask of PCI and other cores interrupts */
 #define PCI_TO_SB_MB		0x98	/* signal backplane interrupts */

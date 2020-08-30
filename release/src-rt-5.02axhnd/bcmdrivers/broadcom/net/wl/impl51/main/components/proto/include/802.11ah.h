@@ -2,7 +2,7 @@
  * Basic types and constants relating to 802.11ah standard.
  * This is a portion of 802.11ah definition. The rest are in 802.11.h.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: 802.11ah.h 776906 2019-07-12 13:37:28Z $
+ * $Id: 802.11ah.h 776824 2019-07-10 20:45:53Z $
  */
 
 #ifndef _802_11ah_h_

@@ -140,6 +140,7 @@ written consent.
 #define BLOG_HTTP_MCAST_UDP_DSTPORT 1900
 
 /* Known L4 Ports */
+#define BLOG_DNS_SERVER_PORT      53
 #define BLOG_DHCP_SERVER_PORT     67
 #define BLOG_DHCP_CLIENT_PORT     68
 

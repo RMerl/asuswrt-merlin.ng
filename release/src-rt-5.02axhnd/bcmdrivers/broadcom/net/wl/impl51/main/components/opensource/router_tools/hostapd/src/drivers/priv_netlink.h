@@ -105,4 +105,22 @@ struct rtattr
 	unsigned short rta_type;
 };
 
+#ifdef CONFIG_DRIVER_BRCM
+
+#ifndef IFA_LOCAL
+#define	IFA_LOCAL 2
+#endif // endif
+#define RTMGRP_IPV4_IFADDR	0x10
+#define RTM_NEWADDR (RTM_BASE + 4)
+
+struct ifaddrmsg
+{
+	u8 ifa_family;
+	u8 ifa_prefixlen;	/* The prefix length	*/
+	u8 ifa_flags;		/* Flag			*/
+	u8 ifa_scope;		/* Address scope	*/
+	u32 ifa_index;		/* Link index		*/
+};
+#endif	/* CONFIG_DRIVER_BRCM */
+
 #endif /* PRIV_NETLINK_H */

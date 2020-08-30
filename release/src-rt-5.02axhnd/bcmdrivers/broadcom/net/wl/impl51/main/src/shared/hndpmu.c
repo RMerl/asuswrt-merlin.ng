@@ -2,7 +2,7 @@
  * Misc utility routines for accessing PMU corerev specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hndpmu.c 777286 2019-07-25 19:43:30Z $
+ * $Id: hndpmu.c 784133 2020-02-19 21:28:51Z $
  */
 
 /**
@@ -201,6 +201,9 @@ si_pmu_callback_t g_si_pmutmr_lock_cb = NULL, g_si_pmutmr_unlock_cb = NULL;
 #define FVCO_3200	3200000	/**< 3200 MHz */
 #define FVCO_3300	3300000	/**< 3300 MHz */
 #define FVCO_3600	3600000	/**< 3600 MHz */
+#define FVCO_5760	5760000	/**< 5760 MHz */
+#define FVCO_5814	5814000	/**< 5814 MHz */
+#define FVCO_6000	6000000	/**< 6000 MHz */
 
 /* defines to make the code more readable */
 #define NO_SUCH_RESOURCE	0	/**< means: chip does not have such a PMU resource */
@@ -301,6 +304,9 @@ static rsc_per_chip_t rsc_63178 = {RES2x2AX_HT_AVAIL, RES2x2AX_MACPHY_CLK_AVAIL,
 static rsc_per_chip_t rsc_6710 = {RES6710_HT_AVAIL,  RES6710_MACPHY_CLK_AVAIL,
 		NO_SUCH_RESOURCE, NO_SUCH_RESOURCE, NO_SUCH_RESOURCE};
 
+static rsc_per_chip_t rsc_6715 = {RES6715_HT_AVAIL,  RES6715_MACPHY_CLK_AVAIL,
+		NO_SUCH_RESOURCE, NO_SUCH_RESOURCE, NO_SUCH_RESOURCE};
+
 static rsc_per_chip_t rsc_53573 = {RES53573_HT_AVAIL, RES53573_MACPHY_CLK_AVAIL,
 		NO_SUCH_RESOURCE, RES53573_OTP_PU, NO_SUCH_RESOURCE};
 
@@ -350,6 +356,9 @@ static rsc_per_chip_t* BCMRAMFN(si_pmu_get_rsc_positions)(si_t *sih)
 		break;
 	CASE_BCM6710_CHIP:
 		rsc = &rsc_6710;
+		break;
+	CASE_BCM6715_CHIP:
+		rsc = &rsc_6715;
 		break;
 	default:
 		ASSERT(0);
@@ -630,6 +639,7 @@ BCMINITFN(si_pmu_fast_pwrup_delay)(si_t *sih, osl_t *osh)
 		CASE_EMBEDDED_2x2AX_CORE:
 		CASE_BCM6878_CHIP:
 		CASE_BCM6710_CHIP:
+		CASE_BCM6715_CHIP:
 			rsc = si_pmu_get_rsc_positions(sih);
 			/* Retrieve time by reading it out of the hardware */
 			ilp = si_ilp_clock(sih);
@@ -1606,10 +1616,12 @@ void si_pmu_avbtimer_enable(si_t *sih, osl_t *osh, bool set_flag)
 		clock uses GPIOs for input, and 10 means AVB clock uses GPIOs for output
 		*/
 
-		pmu_corereg(sih, SI_CC_IDX, chipcontrol_addr,
-		           0xffffffff, 0);
-		pmu_corereg(sih, SI_CC_IDX, chipcontrol_data,
-		           0x3000, 0x2000);
+		if (set_flag) {
+			pmu_corereg(sih, SI_CC_IDX, chipcontrol_addr,
+				0xffffffff, 0);
+			pmu_corereg(sih, SI_CC_IDX, chipcontrol_data,
+				0x3000, 0x2000);
+		}
 	}
 
 	/* Return to original core */
@@ -1709,6 +1721,7 @@ si_pmu_res_masks(si_t *sih, uint32 *pmin, uint32 *pmax)
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 	CASE_BCM6710_CHIP:
+	CASE_BCM6715_CHIP:
 		min_mask = pmu_corereg(sih, SI_CC_IDX, min_res_mask, 0, 0);
 		max_mask = 0x7FFFFFFF;
 		break;
@@ -1877,6 +1890,7 @@ BCMATTACHFN(si_pmu_res_init)(si_t *sih, osl_t *osh)
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 	CASE_BCM6710_CHIP:
+	CASE_BCM6715_CHIP:
 		break;
 	case BCM4347_CHIP_GRPID:
 		if (CHIPREV(sih->chiprev) < 3) {
@@ -1911,7 +1925,7 @@ BCMATTACHFN(si_pmu_res_init)(si_t *sih, osl_t *osh)
 		         pmu_res_updown_table[pmu_res_updown_table_sz].resnum,
 		         pmu_res_updown_table[pmu_res_updown_table_sz].updown));
 		W_REG(osh, &pmu->res_table_sel,
-		      pmu_res_updown_table[pmu_res_updown_table_sz].resnum);
+		      (uint32)pmu_res_updown_table[pmu_res_updown_table_sz].resnum);
 		W_REG(osh, &pmu->res_updn_timer,
 		      pmu_res_updown_table[pmu_res_updown_table_sz].updown);
 	}
@@ -2305,6 +2319,12 @@ static const pmu1_xtaltab0_t BCMINITDATA(pmu1_xtaltab0_bcm63178_2880)[] = {
 	{0,	  0,       0,      0,     0,        0	    }
 };
 
+static const pmu1_xtaltab0_t BCMINITDATA(pmu1_xtaltab0_bcm6715_5760)[] = {
+/*	fref      xf       p1div   p2div  ndiv_int  ndiv_frac (use ndiv_p, ndiv_q for 6715) */
+	{50000,   0,       1,      1,     0x72,     0x0 }, /**< 50 Mhz xtal */
+	{0,	  0,       0,      0,     0,        0	    }
+};
+
 static const pmu1_xtaltab0_t BCMINITDATA(pmu1_xtaltab0_1938)[] = {
 	/*	fref      xf         p1div        p2div    ndiv_int  ndiv_frac */
 	{XTAL_FREQ_54MHZ,   0,       1,      1,     0x28,   0x0     },
@@ -2460,6 +2480,8 @@ BCMINITFN(si_pmu1_xtaltab0)(si_t *sih)
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 		return pmu1_xtaltab0_bcm63178_2880; /* default BBPLL output frequency is 2880 Mhz */
+	CASE_BCM6715_CHIP:
+		return pmu1_xtaltab0_bcm6715_5760;
 	default:
 		PMU_MSG(("si_pmu1_xtaltab0: Unknown chipid %s\n", bcm_chipname(sih->chip, chn, 8)));
 		break;
@@ -2497,6 +2519,8 @@ BCMINITFN(si_pmu1_xtaldef0)(si_t *sih)
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 		return &pmu1_xtaltab0_bcm63178_2880[0];
+	CASE_BCM6715_CHIP:
+		return &pmu1_xtaltab0_bcm6715_5760[0];
 	CASE_BCM43684_CHIP:
 		return &pmu1_xtaltab0_2907[0];
 	case BCM4347_CHIP_GRPID:
@@ -2614,6 +2638,8 @@ BCMINITFN(si_pmu1_pllfvco0)(si_t *sih)
 		return FVCO_960p5;
 	case BCM4369_CHIP_GRPID:
 		return FVCO_960p1;
+	CASE_BCM6715_CHIP:
+		return FVCO_5760;
 	CASE_BCM43684_CHIP:
 		return FVCO_2907;
 	CASE_EMBEDDED_2x2AX_CORE:
@@ -2643,6 +2669,8 @@ BCMINITFN(si_pmu1_pllfvco1)(si_t *sih)
 		return FVCO_1600;
 	CASE_BCM43684_CHIP:
 		return FVCO_3000;
+	CASE_BCM6715_CHIP:
+		return FVCO_6000;
 	default:
 		PMU_MSG(("si_pmu1_pllfvco1: Unknown chipid %s\n", bcm_chipname(sih->chip, chn, 8)));
 		break;
@@ -2723,6 +2751,7 @@ si_pmu_htclk_mask(si_t *sih)
 	        case BCM43666_CHIP_ID:
 		case BCM43570_CHIP_ID:
 		CASE_BCM43684_CHIP:
+		CASE_BCM6715_CHIP:
 		CASE_EMBEDDED_2x2AX_CORE:
 		CASE_BCM6878_CHIP:
 			ht_req |= PMURES_BIT(rsc->ht_start);
@@ -2768,6 +2797,7 @@ BCMATTACHFN(si_pmu_def_alp_clock)(si_t *sih, osl_t *osh)
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 	CASE_BCM6710_CHIP:
+	CASE_BCM6715_CHIP:
 		clock = 50000 * 1000;
 		break;
 	}
@@ -2968,6 +2998,7 @@ BCMATTACHFN(si_pmu_update_pllcontrol)(si_t *sih, osl_t *osh, uint32 xtal, bool u
 	case BCM43664_CHIP_ID:
 	case BCM43666_CHIP_ID:
 	CASE_BCM43684_CHIP:
+	CASE_BCM6715_CHIP:
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
 		 /* fall through */
@@ -3309,6 +3340,7 @@ si_pmu_pll_off(si_t *sih, osl_t *osh, pmuregs_t *pmu, uint32 *min_mask,
 		BCM4350_CHIP(sih->chip) ||
 		BCM53573_CHIP(sih->chip) ||
 		EMBEDDED_2x2AX_CORE(sih->chip) ||
+		BCM6715_CHIP(sih->chip) ||
 		BCM43684_CHIP(sih->chip)) {
 		/* slightly different way for 4335, but this could be applied for other chips also.
 		* If HT_AVAIL is not set, wait to see if any resources are availing HT.
@@ -3377,6 +3409,7 @@ uint32 *max_mask, uint32 *clk_ctl_st)
 		BCM4350_CHIP(sih->chip) ||
 		BCM53573_CHIP(sih->chip) ||
 		EMBEDDED_2x2AX_CORE(sih->chip) ||
+		BCM6715_CHIP(sih->chip) ||
 		BCM43684_CHIP(sih->chip)) {
 		/* slightly different way for 4335, but this could be applied for other chips also.
 		* If HT_AVAIL is not set, wait to see if any resources are availing HT.
@@ -3539,30 +3572,31 @@ BCMATTACHFN(si_pmu1_pllinit1)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uint32 xtal
 static uint32
 BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 {
-	uint32 tmp, mdiv = 1;
-	uint32 ndiv_int, ndiv_frac, p2div, p1div, fvco;
+	uint32 tmp, tmp1, mdiv = 1;
+	uint32 ndiv_int, ndiv_frac, p2div, p1div, fvco, p = 0, q = 0;
 	uint32 fref;
 #ifdef BCMDBG
 	char chn[8];
 #endif // endif
 	uint32 FVCO;	/* in [khz] units */
 
-	if (BCM4365_CHIP(sih->chip) || BCM43684_CHIP(sih->chip)) {
+	if (BCM4365_CHIP(sih->chip) || BCM43684_CHIP(sih->chip) ||
+		BCM6715_CHIP(sih->chip)) {
 		/* these chips derive CPU clock from CPU PLL instead of BB PLL */
 		FVCO = si_pmu1_pllfvco1(sih);
 	} else {
 		FVCO = si_pmu1_pllfvco0(sih);
 	}
 
-	if (BCM43602_CHIP(sih->chip) &&
-#ifdef DONGLEBUILD
-#ifdef __arm__
-	    (si_arm_clockratio(sih, 0) == 1) &&
-#endif // endif
-#endif /* DONGLEBUILD */
-		TRUE) {
+	if (BCM43602_CHIP(sih->chip)) {
 		/* CR4 running on backplane_clk */
-		return si_pmu_si_clock(sih, osh);	/* in [hz] units */
+		uint32 clock = si_pmu_si_clock(sih, osh);	/* in [hz] units */
+#if defined(DONGLEBUILD) && defined(__ARM_ARCH_7R__)
+		if (si_arm_clockratio(sih, 0) == 2) {
+			clock *= 2;				/* running at double frequency */
+		}
+#endif /* DONGLEBUILD && __ARM_ARCH_7R__ */
+		return clock;
 	}
 
 	switch (CHIPID(sih->chip)) {
@@ -3602,6 +3636,11 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 		mdiv = (tmp & PMU1_PLL0_PC1_M1DIV_MASK) >> PMU1_PLL0_PC1_M1DIV_SHIFT;
 		break; /* default backplane frequency is 240MHz */
 
+	CASE_BCM6715_CHIP: /* Uses CPU PLL instead of BB PLL to derive CPU clock */
+		tmp = si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG9, 0, 0);
+		mdiv = (tmp & PMU6715_PLL1_PC9_M1DIV_MASK) >> PMU6715_PLL1_PC9_M1DIV_SHIFT;
+		break;
+
 	case BCM4347_CHIP_GRPID:
 		tmp = si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG1, 0, 0);
 		mdiv = (tmp & PMU1_PLL0_PC1_M3DIV_MASK) >> PMU1_PLL0_PC1_M3DIV_SHIFT;
@@ -3625,6 +3664,8 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 		tmp = PMU_PLL_CTRL_REG9;
 	} else if (BCM43684_CHIP(sih->chip)) {
 		tmp = PMU_PLL_CTRL_REG10;
+	} else if (BCM6715_CHIP(sih->chip)) {
+		tmp = PMU_PLL_CTRL_REG6;
 	} else {
 		tmp = PMU1_PLL0_PLLCTL2;
 	}
@@ -3636,7 +3677,8 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 		p1div = (tmp & PMU4335_PLL0_PC2_P1DIV_MASK) >> PMU4335_PLL0_PC2_P1DIV_SHIFT;
 		ndiv_int = (tmp & PMU4335_PLL0_PC2_NDIV_INT_MASK) >>
 		           PMU4335_PLL0_PC2_NDIV_INT_SHIFT;
-	} else if (BCM4365_CHIP(sih->chip) || BCM43684_CHIP(sih->chip)) {
+	} else if (BCM4365_CHIP(sih->chip) || BCM43684_CHIP(sih->chip) ||
+		BCM6715_CHIP(sih->chip)) {
 		ndiv_int = (tmp >> 4) & 0x3ff;
 		p2div = 1;
 		p1div = (tmp & 7);
@@ -3655,6 +3697,8 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 		tmp = PMU_PLL_CTRL_REG10; /* contains CPU PLL ndiv_frac bitfield */
 	} else if (BCM43684_CHIP(sih->chip)) {
 		tmp = PMU_PLL_CTRL_REG11;
+	} else if (BCM6715_CHIP(sih->chip)) {
+		tmp = PMU_PLL_CTRL_REG7;
 	} else {
 		tmp = PMU1_PLL0_PLLCTL3;
 	}
@@ -3681,8 +3725,29 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 		fvco *= p1div;
 		fvco /= 1000;
 		fvco *= 1000;
-	} else
-	{
+	} else if (BCM6715_CHIP(sih->chip)) {
+		fref = si_pmu1_alpclk0(sih, osh, pmu) / 1000; /* [KHz] */
+
+		p = ((tmp & PMU6715_PLL1_PC7_NDIV_P_MASK) >> PMU6715_PLL1_PC7_NDIV_P_SHIFT);
+		q = ((tmp & PMU6715_PLL1_PC7_NDIV_Q_MASK) >> PMU6715_PLL1_PC7_NDIV_Q_SHIFT);
+
+		/* check i_ndiv_frac_mode_sel */
+		tmp1 = si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG8, 0, 0);
+		if (tmp1 & PMU6715_PLL1_PC8_NDIV_FRAC_MODE_SEL) {
+			/* ndiv_frac_mode_sel 1, fractional value = p/q */
+			ndiv_frac = p / q;
+			fvco = (fref * ndiv_int);
+			fvco += ((fref * p) / q);
+		} else {
+			/* ndiv_frac_mode_sel 0, fractional value= (p*2^10+q)/2^20 */
+			ndiv_frac = ((p << 10) + q) >> 20;
+			fvco =  fref * ndiv_int;
+			fvco += (fref * ((p << 10) + q)) >> 20;
+		}
+		fvco /= p1div;
+		fvco /= 1000;
+		fvco *= 1000;
+	} else {
 		ndiv_frac =
 			(tmp & PMU1_PLL0_PC3_NDIV_FRAC_MASK) >> PMU1_PLL0_PC3_NDIV_FRAC_SHIFT;
 
@@ -3700,6 +3765,11 @@ BCMINITFN(si_pmu1_cpuclk0)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 
 	PMU_MSG(("si_pmu1_cpuclk0: ndiv_int %u ndiv_frac %u p2div %u p1div %u fvco %u\n",
 	         ndiv_int, ndiv_frac, p2div, p1div, fvco));
+
+	if (BCM6715_CHIP(sih->chip)) {
+		PMU_MSG(("%s: p %u q %u mdiv %u alpclk0 %u\n", __FUNCTION__,
+			p, q, mdiv, fref));
+	}
 
 	FVCO = fvco;
 
@@ -3747,6 +3817,18 @@ BCMINITFN(si_pmu1_cpuclk0_pll2)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 #define NDIV_FRAC_3200		0x42680
 #define NDIV_FRAC_3300		0x1c746
 #define NDIV_FRAC_3600		0xab086
+#define NDIV_P_2880		0x3c
+#define NDIV_Q_2880		0x64
+#define NDIV_P_2907		0x2a
+#define NDIV_Q_2907		0x12c
+#define NDIV_P_3000		0x3fe
+#define NDIV_Q_3000		0x3ff
+#define NDIV_P_5760		0x3c
+#define NDIV_Q_5760		0x32
+#define NDIV_P_5814		0x2a
+#define NDIV_Q_5814		0x96
+#define NDIV_P_6000		0x0
+#define NDIV_Q_6000		0x2
 
 static void
 BCMATTACHFN(si_set_cpu_vcofreq_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uint32 freq)
@@ -3859,10 +3941,133 @@ BCMATTACHFN(si_set_cpu_vcofreq_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uin
 
 } /* si_set_cpu_vcofreq_43684 */
 
+static void
+BCMATTACHFN(si_set_cpu_vcofreq_6715)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uint32 freq)
+{
+	uint32 oldpmucontrol, val;
+
+	uint32 tmp, tmp1, p, q;
+	int ndiv_frac_mod_sel, change = 0;
+
+	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG7);
+	R_REG(osh, &pmu->pllcontrol_addr);
+	tmp = R_REG(osh, &pmu->pllcontrol_data);
+
+	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG8);
+	R_REG(osh, &pmu->pllcontrol_addr);
+	tmp1 = R_REG(osh, &pmu->pllcontrol_data);
+
+	ndiv_frac_mod_sel =  (tmp1 & PMU6715_PLL1_PC8_NDIV_FRAC_MODE_SEL);
+
+	p = ((tmp & PMU6715_PLL1_PC7_NDIV_P_MASK) >> PMU6715_PLL1_PC7_NDIV_P_SHIFT);
+	q = ((tmp & PMU6715_PLL1_PC7_NDIV_Q_MASK) >> PMU6715_PLL1_PC7_NDIV_Q_SHIFT);
+
+	if (!(p == NDIV_P_6000 && q == NDIV_Q_6000 && ndiv_frac_mod_sel == 1))
+		change++;
+
+	if ((!change) && (freq == FVCO_6000)) {
+		return;
+	}
+
+	/* Stop CPU PLL clock output */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL1);
+	val = R_REG(osh, &pmu->chipcontrol_data);
+	val |= (1 << 14);
+	W_REG(osh, &pmu->chipcontrol_data, val);
+	R_REG(osh, &pmu->chipcontrol_data);
+
+	switch (freq) {
+		case FVCO_2880:
+			p = NDIV_P_2880;
+			q = NDIV_Q_2880;
+			break;
+		case FVCO_2907:
+			p = NDIV_P_2907;
+			q = NDIV_Q_2907;
+			break;
+		case FVCO_3000:
+			p = NDIV_P_3000;
+			q = NDIV_Q_3000;
+			break;
+		case FVCO_5760:
+			p = NDIV_P_5760;
+			q = NDIV_Q_5760;
+			break;
+		case FVCO_5814:
+			p = NDIV_P_5814;
+			q = NDIV_Q_5814;
+			break;
+		case FVCO_6000:
+			p = NDIV_P_6000;
+			q = NDIV_Q_6000;
+			break;
+	}
+	/* Set ndiv_frac_mod_sel to 1 */
+	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG8);
+	R_REG(osh, &pmu->pllcontrol_addr);
+	tmp1 = PMU6715_PLL1_PC8_NDIV_FRAC_MODE_SEL;
+	W_REG(osh, &pmu->pllcontrol_data, tmp1);
+	R_REG(osh, &pmu->pllcontrol_data);
+
+	/* Set ndiv_p, ndiv_q  */
+	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG7);
+	R_REG(osh, &pmu->pllcontrol_addr);
+	tmp = ((p << PMU6715_PLL1_PC7_NDIV_P_SHIFT) |
+		(q << PMU6715_PLL1_PC7_NDIV_Q_SHIFT));
+	W_REG(osh, &pmu->pllcontrol_data, tmp);
+	R_REG(osh, &pmu->pllcontrol_data);
+
+	/* Set pllCntlUpdate */
+	oldpmucontrol = R_REG(osh, &pmu->pmucontrol);
+	W_REG(osh, &pmu->pmucontrol, (oldpmucontrol | (1<<10)));
+	R_REG(osh, &pmu->pmucontrol);
+
+	/* Change CPU PLL controlled by force_cpupll_pwrdn_ldo,
+	 * force_cpupll_areset and  force_cpupll_dreset
+	 */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL1);
+	R_REG(osh, &pmu->chipcontrol_addr);
+	val = R_REG(osh, &pmu->chipcontrol_data);
+	val |= (1 << 1) | (1 << 2) | (1 << 3);
+	W_REG(osh, &pmu->chipcontrol_data, val);
+	R_REG(osh, &pmu->chipcontrol_data);
+
+	/* De-Assert cpupll_i_areset */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL1);
+	R_REG(osh, &pmu->chipcontrol_addr);
+	W_REG(osh, &pmu->chipcontrol_data, (R_REG(osh, &pmu->chipcontrol_data) & ~(0x1)));
+	R_REG(osh, &pmu->chipcontrol_data);
+
+	/* wait for HqClkRequired(HR) which means XTAL will be enabled for ALP request,
+	 * or PLL/FLL will be powered up in close-loop mode for HT
+	 */
+	SPINWAIT(((si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+		& CCS_HQCLKREQ) == CCS_HQCLKREQ), PMU_MAX_TRANSITION_DLY);
+
+	/* De-Assert cpupll_i_dreset */
+	W_REG(osh, &pmu->chipcontrol_data, (R_REG(osh, &pmu->chipcontrol_data) & ~(0x2)));
+	R_REG(osh, &pmu->pllcontrol_data);
+
+	/* Enable CPU PLL clock output */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL1);
+	R_REG(osh, &pmu->chipcontrol_addr);
+	W_REG(osh, &pmu->chipcontrol_data, (R_REG(osh, &pmu->chipcontrol_data) & ~(1 << 14)));
+	R_REG(osh, &pmu->chipcontrol_data);
+
+	/* Recovery CPUPLL setting to default value */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL1);
+	R_REG(osh, &pmu->chipcontrol_addr);
+	W_REG(osh, &pmu->chipcontrol_data, (R_REG(osh, &pmu->chipcontrol_data) & ~(1 << 3)));
+	R_REG(osh, &pmu->chipcontrol_data);
+
+} /* si_set_cpu_vcofreq_6715 */
+
 #include <bcmnvram.h>
 #define CCICLK	500
+#define CCICLK_6715	750
 #ifdef BCMQT
 #define CPUCLK	500
+#define CPUCLK_6715	750
 #else /* !BCMQT */
 #define CPUCLK	1500
 #endif /* BCMQT */
@@ -3968,7 +4173,7 @@ BCMATTACHFN(si_set_cpu_clock_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 
 	/* change mdiv */
 	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG12);
-	W_REG(osh, &pmu->pllcontrol_data, mdiv);
+	W_REG(osh, &pmu->pllcontrol_data, (uint32)mdiv);
 
 	/* set pll ctrl update */
 	W_REG(osh, &pmu->pmucontrol, (R_REG(osh, &pmu->pmucontrol) | (1 << 10)));
@@ -4009,6 +4214,115 @@ BCMATTACHFN(si_set_cpu_clock_43684)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
 	ASSERT(si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0) & CCS_BP_ON_HT);
 #endif /* NO_ONTHEFLY_FREQ_CHANGE */
 } /* si_set_cpu_clock_43684 */
+
+static void
+BCMATTACHFN(si_set_cpu_clock_6715)(si_t *sih, osl_t *osh, pmuregs_t *pmu)
+{
+	uint32 val, bp_on_ht, vcofreq, cpuclk = CPUCLK, cciclk = CCICLK_6715;
+	uint32 saved_clk_st = 0, max_res_mask = 0, min_res_mask = 0;
+	uint8 ratio = 1; /* 2:1 */
+	uint8 mdiv = 2;
+	char *nvstr;
+	char *end;
+
+#ifdef BCMQT
+	cpuclk = CPUCLK_6715;
+#endif // endif
+
+	/* ARM clock speed override */
+	if ((nvstr = nvram_get("cpuclk"))) {
+		cpuclk = bcm_strtoul(nvstr, &end, 0);
+		if (*end == ',') {
+			nvstr = ++end;
+			cciclk = bcm_strtoul(nvstr, &end, 0);
+			printf("cpuclk %d  cciclk %d \n", cpuclk, cciclk);
+		}
+	}
+
+	switch (cpuclk) {
+		case 1500:
+			if (cciclk == 750) {
+				/* 2:1 */
+				ratio = 1;
+			} else if (cciclk == 500) {
+				/* 3:1 */
+				ratio = 2;
+			} else {
+				/* 4:1, 375 MHz */
+				ratio = 4;
+			}
+			vcofreq = FVCO_6000;
+			mdiv = 4;
+			break;
+
+		case 750:
+			/* 1:1 */
+			ratio = 0;
+			vcofreq = FVCO_6000;
+			mdiv = 8;
+			break;
+
+		default:
+			break;
+	}
+
+	/* check the current clock */
+	bp_on_ht = si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+		& CCS_BP_ON_HT;
+
+	if (bp_on_ht) {
+		/* Force BP on ALP  */
+		si_pmu_pll_off(sih, osh, pmu, &min_res_mask, &max_res_mask, &saved_clk_st);
+		ASSERT(si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+			& CCS_BP_ON_ALP);
+	}
+
+	si_set_cpu_vcofreq_6715(sih, osh, pmu, vcofreq);
+
+	/* change mdiv */
+	W_REG(osh, &pmu->pllcontrol_addr, PMU_PLL_CTRL_REG9);
+	R_REG(osh, &pmu->pllcontrol_addr);
+	val = R_REG(osh, &pmu->pllcontrol_data);
+	val &= ~PMU6715_PLL1_PC9_M1DIV_MASK;
+	val |= mdiv;
+	W_REG(osh, &pmu->pllcontrol_data, val);
+
+	/* set pll ctrl update */
+	W_REG(osh, &pmu->pmucontrol, (R_REG(osh, &pmu->pmucontrol) | (1 << 10)));
+
+	/* change the cpu:cci ratio */
+	W_REG(osh, &pmu->chipcontrol_addr, PMU_CHIPCTL5);
+	R_REG(osh, &pmu->chipcontrol_addr);
+	val = R_REG(osh, &pmu->chipcontrol_data);
+	val &= ~(0x3 << 17);
+	val |= (ratio << 17);
+	W_REG(osh, &pmu->chipcontrol_data, val);
+
+	PMU_MSG(("%s: cpuclk %u cciclk %u ratio %u vcofreq %u mdiv %u\n",
+		__FUNCTION__, cpuclk, cciclk, ratio, vcofreq, mdiv));
+
+	if (bp_on_ht) {
+		/* Resume BP on HT back */
+		si_pmu_pll_on(sih, osh, pmu, min_res_mask, max_res_mask, saved_clk_st);
+		ASSERT(si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+			& CCS_BP_ON_HT);
+		return;
+	}
+
+#ifdef NO_ONTHEFLY_FREQ_CHANGE
+	si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), CCS_HTAREQ, CCS_HTAREQ);
+	SPINWAIT(((si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+		& CCS_HTAVAIL) == 0), PMU_MAX_TRANSITION_DLY);
+	ASSERT(si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0) & CCS_HTAVAIL);
+
+	si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), CCS_FORCEHT, CCS_FORCEHT);
+	asm volatile("isb");
+	SPINWAIT(((si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0)
+		& CCS_BP_ON_HT) == 0), PMU_MAX_TRANSITION_DLY);
+	ASSERT(si_corereg(sih, SI_CC_IDX, OFFSETOF(chipcregs_t, clk_ctl_st), 0, 0) & CCS_BP_ON_HT);
+#endif /* NO_ONTHEFLY_FREQ_CHANGE */
+} /* si_set_cpu_clock_6715 */
+
 #endif /* defined(DONGLEBUILD) */
 
 /**
@@ -4106,6 +4420,13 @@ si_pmu_fvco_pllreg(si_t *sih, uint32 *fvco, uint32 *pllreg)
 		if (pllreg) {
 			*pllreg = ((si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG4, 0, 0) &
 				PMU1_PLL0_PC1_M4DIV_MASK) >> PMU1_PLL0_PC1_M4DIV_SHIFT);
+		}
+		break;
+	CASE_BCM6715_CHIP:
+		if (pllreg) {
+			/* dot11mac_clk */
+			*pllreg = ((si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG3, 0, 0) &
+				PMU6715_PLL0_PC3_M3DIV_MASK) >> PMU6715_PLL0_PC3_M3DIV_SHIFT);
 		}
 		break;
 	case BCM4347_CHIP_GRPID:
@@ -4740,6 +5061,11 @@ BCMATTACHFN(si_pmu_pll_init)(si_t *sih, osl_t *osh, uint xtalfreq)
 		si_set_cpu_clock_43684(sih, osh, pmu);
 #endif /* DONGLEBUILD */
 		break;
+	case BCM6715_CHIP_ID:
+#if defined(DONGLEBUILD)
+		si_set_cpu_clock_6715(sih, osh, pmu);
+#endif /* DONGLEBUILD */
+		break;
 	case BCM4347_CHIP_GRPID:
 		si_pmu1_pllinit1(sih, osh, pmu, xtalfreq); /* nvram PLL overrides + enables PLL */
 		break;
@@ -4753,7 +5079,7 @@ BCMATTACHFN(si_pmu_pll_init)(si_t *sih, osl_t *osh, uint xtalfreq)
 		break;
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
-		si_pmu_spuravoid(sih, osh, 0);
+		si_pmu_spuravoid(sih, osh, 1);
 		break;
 	default:
 		PMU_MSG(("No PLL init done for chip %s rev %d pmurev %d\n",
@@ -4833,6 +5159,7 @@ BCMINITFN(si_pmu_alp_clock)(si_t *sih, osl_t *osh)
 	CASE_BCM43684_CHIP: /* alp clk == xtal clk */
 	CASE_EMBEDDED_2x2AX_CORE:
 	CASE_BCM6878_CHIP:
+	CASE_BCM6715_CHIP:
 		clock = si_pmu1_alpclk0(sih, osh, pmu);
 		break;
 	CASE_BCM6710_CHIP:
@@ -4979,6 +5306,16 @@ BCMINITFN(si_pmu_si_clock)(si_t *sih, osl_t *osh)
 		}
 		break;
 
+	CASE_BCM6715_CHIP:
+		{ /* BP clock is derived from BB PLL, channel 1 */
+			uint32 mdiv = si_pmu_pllcontrol(sih, PMU_PLL_CTRL_REG3, 0, 0);
+			mdiv = (mdiv &
+				PMU6715_PLL0_PC3_M2DIV_MASK) >> PMU6715_PLL0_PC3_M2DIV_SHIFT;
+			ASSERT(mdiv != 0);
+			clock = si_pmu1_pllfvco0(sih) / mdiv * 1000;
+		}
+		break;
+
 	case BCM4347_CHIP_GRPID:
 		clock = si_pmu1_cpuclk0(sih, osh, pmu);
 		break;
@@ -5055,7 +5392,8 @@ BCMINITFN(si_pmu_cpu_clock)(si_t *sih, osl_t *osh)
 
 		if (BCM4365_CHIP(sih->chip) ||
 			BCM43602_CHIP(sih->chip) ||
-			BCM43684_CHIP(sih->chip))
+			BCM43684_CHIP(sih->chip) ||
+			BCM6715_CHIP(sih->chip))
 			clock = si_pmu1_cpuclk0(sih, osh, pmu);
 		else
 			clock = si_pmu5_clock(sih, osh, pmu, pll, PMU5_MAINPLL_CPU);
@@ -5097,6 +5435,7 @@ BCMINITFN(si_pmu_mem_clock)(si_t *sih, osl_t *osh)
 		!(BCM4365_CHIP(sih->chip) ||
 		(BCM4347_CHIP(sih->chip)) ||
 		BCM43684_CHIP(sih->chip) ||
+		BCM6715_CHIP(sih->chip) ||
 		BCM43602_CHIP(sih->chip) ||
 		BCM4350_CHIP(sih->chip))) {
 		uint pll = PMU4716_MAINPLL_PLL0;
@@ -5357,7 +5696,7 @@ BCMINITFN(si_pmu_res_uptime)(si_t *sih, osl_t *osh, pmuregs_t *pmu, uint8 rsrc)
 #endif /* SR_DEBUG */
 
 	/* uptime of resource 'rsrc' */
-	W_REG(osh, &pmu->res_table_sel, rsrc);
+	W_REG(osh, &pmu->res_table_sel, (uint32)rsrc);
 	if (PMUREV(sih->pmurev) >= 30)
 		uptime = (R_REG(osh, &pmu->res_updn_timer) >> 16) & 0x7fff;
 	else if (PMUREV(sih->pmurev) >= 13)
@@ -5803,6 +6142,7 @@ si_pmu_is_otp_powered(si_t *sih, osl_t *osh)
 	case BCM43664_CHIP_ID:
 	case BCM43666_CHIP_ID:
 	CASE_BCM43684_CHIP:
+	CASE_BCM6715_CHIP:
 		st = TRUE;
 		break;
 	CASE_EMBEDDED_2x2AX_CORE:
@@ -6354,6 +6694,7 @@ BCMATTACHFN(si_pmu_measure_alpclk)(si_t *sih, osl_t *osh)
 		BCM43602_CHIP(sih->chip) ||
 		BCM4350_CHIP(sih->chip) ||
 		EMBEDDED_2x2AX_CORE(sih->chip) ||
+		BCM6715_CHIP(sih->chip) ||
 		BCM43684_CHIP(sih->chip))
 		pmustat_lpo = !(R_REG(osh, &pmu->pmucontrol) & PCTL_LPO_SEL);
 	else

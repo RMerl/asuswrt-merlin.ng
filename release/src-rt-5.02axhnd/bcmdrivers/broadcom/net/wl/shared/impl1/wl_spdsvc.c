@@ -15,8 +15,6 @@
  *
  */
 
-#if (defined(CONFIG_BCM_SPDSVC) || defined(CONFIG_BCM_SPDSVC_MODULE))
-
 #include <typedefs.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
@@ -33,9 +31,7 @@ static bcmFun_t *wl_spdsvc_receive = NULL;
 void wl_spdsvc_init(void)
 {
 	wl_spdsvc_transmit = bcmFun_get(BCM_FUN_ID_SPDSVC_TRANSMIT);
-	BCM_ASSERT(wl_spdsvc_transmit != NULL);
 	wl_spdsvc_receive = bcmFun_get(BCM_FUN_ID_SPDSVC_RECEIVE);
-	BCM_ASSERT(wl_spdsvc_receive != NULL);
 
 	return;
 }
@@ -43,15 +39,19 @@ void wl_spdsvc_init(void)
 int wl_spdsvc_tx(struct sk_buff *skb, struct net_device *dev)
 {
 	int ret = -1;
-	spdsvcHook_transmit_t spdsvc_transmit;
 
-	spdsvc_transmit.pNBuff = SKBUFF_2_PNBUFF(skb);
-	spdsvc_transmit.dev = dev;
-	spdsvc_transmit.header_type = SPDSVC_HEADER_TYPE_ETH;
-	spdsvc_transmit.phy_overhead = WL_SPDSVC_OVERHEAD;
+	if (wl_spdsvc_transmit != NULL)
+	{
+		spdsvcHook_transmit_t spdsvc_transmit;
 
-	if (wl_spdsvc_transmit(&spdsvc_transmit))
-		ret = 0;
+		spdsvc_transmit.pNBuff = SKBUFF_2_PNBUFF(skb);
+		spdsvc_transmit.dev = dev;
+		spdsvc_transmit.header_type = SPDSVC_HEADER_TYPE_ETH;
+		spdsvc_transmit.phy_overhead = WL_SPDSVC_OVERHEAD;
+
+		if (wl_spdsvc_transmit(&spdsvc_transmit))
+			ret = 0;
+	}
 
 	return ret;
 }
@@ -60,17 +60,17 @@ int wl_spdsvc_tx(struct sk_buff *skb, struct net_device *dev)
 int wl_spdsvc_rx(struct sk_buff *skb)
 {
 	int ret = 1; /* init as positive value, as BCME_OK is 0 and BCME_XXX are all negative */
-	spdsvcHook_receive_t spdsvc_receive;
 
-	spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
-	spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
-	spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
-
-	if (wl_spdsvc_receive(&spdsvc_receive))
+	if (wl_spdsvc_receive != NULL)
 	{
-		ret = BCME_OK;
+		spdsvcHook_receive_t spdsvc_receive;
+
+		spdsvc_receive.pNBuff = SKBUFF_2_PNBUFF(skb);
+		spdsvc_receive.header_type = SPDSVC_HEADER_TYPE_ETH;
+		spdsvc_receive.phy_overhead = WL_SPDSVC_OVERHEAD;
+
+		if (wl_spdsvc_receive(&spdsvc_receive))
+			ret = BCME_OK;
 	}
 	return ret;
 }
-
-#endif /* CONFIG_BCM_SPDSVC || CONFIG_BCM_SPDSVC_MODULE */

@@ -1660,6 +1660,9 @@ resolve_normal_ct(struct net *net, struct nf_conn *tmpl,
 			if (protonum == IPPROTO_GRE)
 				ct_type = BLOG_PARAM2_GRE_IPV4;
 
+			if(ntohs(ct->tuplehash[IP_CT_DIR_ORIGINAL].tuple.dst.u.udp.port) == BLOG_L2TP_PORT)				
+				ct_type = BLOG_PARAM2_L2TP_IPV4;
+					
 			blog_link(FLOWTRACK, blog_ptr(skb),
 					(void*)ct, CTINFO2DIR(skb->nfctinfo), ct_type);
 		} else {

@@ -4,7 +4,7 @@
  * To be used in firmware and host apps or dhd - reducing code size,
  * duplication, and maintenance overhead.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above

@@ -49,6 +49,9 @@ WPA_CIPHER_BIP_CMAC_256)
 #define WPA_CIPHER_SUITE_NONE RSN_SELECTOR(0x00, 0x50, 0xf2, 0)
 #define WPA_CIPHER_SUITE_TKIP RSN_SELECTOR(0x00, 0x50, 0xf2, 2)
 #define WPA_CIPHER_SUITE_CCMP RSN_SELECTOR(0x00, 0x50, 0xf2, 4)
+#ifdef CONFIG_DRIVER_BRCM_WDS
+#define BRCM_CIPHER_SUITE_NO_GROUP_ADDRESSED RSN_SELECTOR(0x00, 0x10, 0x18, 0)
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 
 #define RSN_AUTH_KEY_MGMT_UNSPEC_802_1X RSN_SELECTOR(0x00, 0x0f, 0xac, 1)
 #define RSN_AUTH_KEY_MGMT_PSK_OVER_802_1X RSN_SELECTOR(0x00, 0x0f, 0xac, 2)
@@ -422,6 +425,10 @@ u32 wpa_akm_to_suite(int akm);
 int wpa_compare_rsn_ie(int ft_initial_assoc,
 		       const u8 *ie1, size_t ie1len,
 		       const u8 *ie2, size_t ie2len);
+#ifdef CONFIG_DRIVER_BRCM_WDS
+int wpa_compare_wds_rsn_ie(const u8 *ie1, size_t ie1len,
+		       const u8 *ie2, size_t ie2len);
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 int wpa_insert_pmkid(u8 *ies, size_t *ies_len, const u8 *pmkid);
 
 struct wpa_ft_ies {

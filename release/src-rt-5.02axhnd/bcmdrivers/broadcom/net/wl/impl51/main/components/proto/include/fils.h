@@ -1,6 +1,6 @@
 /*
  * Fundamental types and constants relating to FILS AUTHENTICATION
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -221,6 +221,40 @@ typedef BWL_PRE_PACKED_STRUCT struct fils_discovery_info_field {
 #define FD_INFO_IS_RSN_PRESENT(fc)			((fc & FD_INFO_RSN_IND_MASK) >> 11)
 #define FD_INFO_IS_LENGTH_PRESENT(fc)			((fc & FD_INFO_LENGTH_IND_MASK) >> 12)
 #define FD_INFO_IS_MD_PRESENT(fc)			((fc & FD_INFO_MD_IND_MASK) >> 13)
+
+#define FD_CAP_ESS_BIT_SHIFT				0
+#define FD_CAP_PRIVACY_SHIFT				1
+#define FD_CAP_BSS_CH_WIDTH_BIT_SHIFT			2
+#define FD_CAP_MAX_NSS_BIT_SHIFT			5
+#define FD_CAP_PHY_INDEX_BIT_SHIFT			10
+#define FD_CAP_FILS_MIN_RATE_BIT_SHIFT			13
+
+#define FD_CAP_BSS_CH_WIDTH_20_22_MHZ			0
+#define FD_CAP_BSS_CH_WIDTH_40_MHZ			1
+#define FD_CAP_BSS_CH_WIDTH_80_MHZ			2
+#define FD_CAP_BSS_CH_WIDTH_160_80p80_MHZ		3
+#define FD_CAP_BSS_CH_WIDTH_RESERVED			4
+
+#define FD_CAP_NSS_VAL_0				0
+#define FD_CAP_NSS_VAL_1				1
+#define FD_CAP_NSS_VAL_2				2
+#define FD_CAP_NSS_VAL_3				3
+#define FD_CAP_NSS_VAL_4				4
+#define FD_CAP_NSS_RESERVED				5
+
+#define FD_CAP_PHY_INDEX_HR_DSSS			0
+#define FD_CAP_PHY_INDEX_ERP_OFDM			1
+#define FD_CAP_PHY_INDEX_HT				2
+#define FD_CAP_PHY_INDEX_VHT				3
+#define FD_CAP_PHY_INDEX_HE				4
+#define FD_CAP_PHY_INDEX_RESERVED			5
+
+#define FD_CAP_FILS_MIN_RATE_0				0
+#define FD_CAP_FILS_MIN_RATE_1				1
+#define FD_CAP_FILS_MIN_RATE_2				2
+#define FD_CAP_FILS_MIN_RATE_3				3
+#define FD_CAP_FILS_MIN_RATE_4				4
+#define FD_CAP_FILS_MIN_RATE_RESERVED			5
 
 /* FILS Discovery Capability subfield */
 #define FD_CAP_ESS_MASK					(0x0001)

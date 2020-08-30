@@ -1,7 +1,7 @@
 #
 # Makefile for the Broadcom wl driver
 #
-# Copyright (C) 2019, Broadcom. All Rights Reserved.
+# Copyright (C) 2020, Broadcom. All Rights Reserved.
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -91,6 +91,17 @@ ifeq ($(REBUILD_DHD_MODULE),1)
 
     MODEL = $(subst -,,$(BUILD_NAME))
     KBUILD_CFLAGS += -D$(MODEL)
+ifeq ($(CONFIG_ARM64),)
+# 32 bits NIC driver size reduction, makes use of gcc/ld unused symbol collect capability
+KBUILD_CFLAGS += -fdata-sections -ffunction-sections
+TMP_STR := --gc-sections --print-gc-sections --entry=fake_main --script=$(SRCBASE)/shared/linux.module.arm.lds
+ifeq ($(CMWIFI),)
+LDFLAGS += $(TMP_STR)
+else
+# CMWIFI builds use a later Linux kernel (4.9) than DSL builds (4.1)
+KBUILD_LDFLAGS_MODULE += $(TMP_STR)
+endif
+endif
 
 else # Use prebuilt modules
 

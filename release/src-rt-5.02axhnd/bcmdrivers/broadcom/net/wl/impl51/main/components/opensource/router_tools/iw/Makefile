@@ -12,6 +12,15 @@ CC ?= "gcc"
 CFLAGS ?= -O2 -g
 CFLAGS += -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration
 
+ifeq ($(STB),1)
+LIBS += -lpthread
+LIBS += -lm
+CFLAGS += -I$(LIBNL_DIR)/include/libnl3
+LIBS += -L$(LIBNL_DIR)/lib/static
+else ifneq ($(CMWIFI),)
+CFLAGS += -I$(LIBNL_DIR)/include
+endif # STB
+
 OBJS = iw.o genl.o event.o info.o phy.o \
 	interface.o ibss.o station.o survey.o util.o ocb.o \
 	mesh.o mpath.o mpp.o scan.o reg.o version.o \

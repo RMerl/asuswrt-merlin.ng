@@ -632,6 +632,9 @@ int main(int argc, char *argv[])
 	int start_ifaces_in_sync = 0;
 	char **if_names = NULL;
 	size_t if_names_size = 0;
+#ifdef CONFIG_DPP
+	struct dpp_global_config dpp_conf;
+#endif /* CONFIG_DPP */
 
 	if (os_program_init())
 		return -1;
@@ -651,7 +654,9 @@ int main(int argc, char *argv[])
 	dl_list_init(&interfaces.eth_p_oui);
 #endif /* CONFIG_ETH_P_OUI */
 #ifdef CONFIG_DPP
-	interfaces.dpp = dpp_global_init();
+	os_memset(&dpp_conf, 0, sizeof(dpp_conf));
+	/* TODO: dpp_conf.msg_ctx? */
+	interfaces.dpp = dpp_global_init(&dpp_conf);
 	if (!interfaces.dpp)
 		return -1;
 #endif /* CONFIG_DPP */
@@ -716,7 +721,13 @@ int main(int argc, char *argv[])
 			break;
 #ifdef CONFIG_DEBUG_SYSLOG
 		case 's':
+#if 0
 			wpa_debug_syslog = 1;
+#else
+			debug++;
+			wpa_debug_level = 0;
+			wpa_debug_syslog++;
+#endif
 			break;
 #endif /* CONFIG_DEBUG_SYSLOG */
 		case 'S':

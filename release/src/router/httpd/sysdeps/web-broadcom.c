@@ -49,7 +49,8 @@
 #ifdef RTCONFIG_HND_ROUTER_AX
 #include <wlc_types.h>
 #include <802.11ax.h>
-#include <bcmwifi_rspec.h>
+//#include <bcmwifi_rspec.h>
+#define WLC_MAXRATE     108
 #endif
 #include <wlutils.h>
 #include <linux/types.h>

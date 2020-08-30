@@ -5,9 +5,9 @@
  * JTAG, 0/1/2 UARTs, clock frequency control, a watchdog interrupt timer,
  * GPIO interface, extbus, and support for serial and parallel flashes.
  *
- * $Id: sbchipc.h 766806 2018-08-15 09:09:00Z $
+ * $Id: sbchipc.h 778211 2019-08-27 07:56:59Z $
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -2161,6 +2161,28 @@ created for 4369
 #define PMU4369_PLL1_PC6_NDIV_FRAC_MASK		0xfffff000
 #define PMU4369_PLL1_PC6_NDIV_FRAC_SHIFT	12
 
+/* PLL usage in 6715 */
+#define PMU6715_PLL0_PC1_NDIV_P_MASK		0x000003ff
+#define PMU6715_PLL0_PC1_NDIV_P_SHIFT		0
+#define PMU6715_PLL0_PC1_NDIV_Q_MASK		0x000ffc00
+#define PMU6715_PLL0_PC1_NDIV_Q_SHIFT		10
+#define PMU6715_PLL0_PC3_M1DIV_MASK		0x000001ff
+#define PMU6715_PLL0_PC3_M1DIV_SHIFT		0
+#define PMU6715_PLL0_PC3_M2DIV_MASK		0x0003fe00
+#define PMU6715_PLL0_PC3_M2DIV_SHIFT		9
+#define PMU6715_PLL0_PC3_M3DIV_MASK		0x07fc0000
+#define PMU6715_PLL0_PC3_M3DIV_SHIFT		18
+#define PMU6715_PLL0_PC4_M4DIV_MASK		0x000001ff
+#define PMU6715_PLL0_PC4_M4DIV_SHIFT		0
+
+#define PMU6715_PLL1_PC7_NDIV_P_MASK		0x000003ff
+#define PMU6715_PLL1_PC7_NDIV_P_SHIFT		0
+#define PMU6715_PLL1_PC7_NDIV_Q_MASK		0x000ffc00
+#define PMU6715_PLL1_PC7_NDIV_Q_SHIFT		10
+#define PMU6715_PLL1_PC8_NDIV_FRAC_MODE_SEL	(1<<26)
+#define PMU6715_PLL1_PC9_M1DIV_MASK		0x000001ff
+#define PMU6715_PLL1_PC9_M1DIV_SHIFT		0
+
 /* 5357 Chip specific ChipControl register bits */
 #define CCTRL5357_EXTPA                 (1<<14) /* extPA in ChipControl 1, bit 14 */
 #define CCTRL5357_ANT_MUX_2o3		(1<<15) /* 2o3 in ChipControl 1, bit 15 */
@@ -2434,6 +2456,25 @@ created for 4369
 #define RES6710_RADIO_PU			13
 #define RES6710_MACPHY_CLK_AVAIL		14
 #define RES6710_LVM_DIS				15
+
+/* 6715 PMU resources */
+#define RES6715_XTAL_PU				0
+#define RES6715_XTAL_STABLE			1
+#define RES6715_PCIE_LDO_BG_PU			2
+#define RES6715_PCIE_LDO_PU			3
+#define RES6715_WL_CORE_RDY			4
+#define RES6715_ILP_REQ				5
+#define RES6715_BB_PLL_LDO_PU			6
+#define RES6715_BB_PLL_PU			7
+#define RES6715_ALP_AVAIL			8
+#define RES6715_HT_AVAIL			9
+#define RES6715_RADIO_BG_PU			10
+#define RES6715_MINI_PMU_PU			11
+#define RES6715_RADIO_PU			12
+#define RES6715_MACPHY_CLK_AVAIL		13
+#define RES6715_LVM_DIS				14
+#define RES6715_CPU_PLL_LDO_PU			15
+#define RES6715_CPU_PLL_PU			16
 
 /* 7271 PMU resources */
 #define RES7271_REGULATOR_PU		0
@@ -3319,6 +3360,7 @@ created for 4369
 #define CR4_4369_RAM_BASE                    (0x170000)
 #define CA7_4367_RAM_BASE                    (0x200000)
 #define CA7_43684_RAM_BASE                   (0x0)
+#define CA7_6715_RAM_BASE                   (0x0)
 
 /* 4335 chip OTP present & OTP select bits. */
 #define SPROM4335_OTP_SELECT	0x00000010

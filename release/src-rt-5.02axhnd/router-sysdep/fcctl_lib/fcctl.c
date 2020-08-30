@@ -238,6 +238,10 @@ int fcCtlConfig(int option, int arg1)
             }
             break;
 
+        case FCACHE_CONFIG_OPT_4O6_FRAG:
+            ret = fcDevIoctl( FCACHE_IOCTL_4O6_FRAG, -1, arg1 );
+            break;
+
         default:
             fprintf( stderr, "invalid config option <%d>\n", option );
             ret = FCACHE_ERROR;

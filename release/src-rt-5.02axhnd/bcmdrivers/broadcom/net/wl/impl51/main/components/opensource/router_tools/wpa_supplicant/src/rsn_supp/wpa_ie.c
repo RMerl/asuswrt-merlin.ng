@@ -131,6 +131,14 @@ static int wpa_gen_wpa_ie_rsn(u8 *rsn_ie, size_t rsn_ie_len,
 			   group_cipher);
 		return -1;
 	}
+
+#ifdef CONFIG_DRIVER_BRCM_WDS
+	if (strstr(sm->ifname, "wds") != 0) {
+		wpa_printf(MSG_DEBUG, "Set group addressed to BRCM for WDS sta\n");
+		suite = BRCM_CIPHER_SUITE_NO_GROUP_ADDRESSED;
+	}
+#endif /* CONFIG_DRIVER_BRCM_WDS */
+
 	RSN_SELECTOR_PUT(pos, suite);
 	pos += RSN_SELECTOR_LEN;
 
@@ -222,8 +230,14 @@ static int wpa_gen_wpa_ie_rsn(u8 *rsn_ie, size_t rsn_ie_len,
 #endif /* CONFIG_IEEE80211W */
 	if (sm->ocv)
 		capab |= WPA_CAPABILITY_OCVC;
+#ifdef CONFIG_DRIVER_BRCM_WDS
+	if (strstr(sm->ifname, "wds") == NULL) {
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 	WPA_PUT_LE16(pos, capab);
 	pos += 2;
+#ifdef CONFIG_DRIVER_BRCM_WDS
+	}
+#endif /* CONFIG_DRIVER_BRCM_WDS */
 
 	if (sm->cur_pmksa) {
 		/* PMKID Count (2 octets, little endian) */

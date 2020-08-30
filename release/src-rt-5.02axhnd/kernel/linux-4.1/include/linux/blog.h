@@ -504,11 +504,12 @@ typedef enum {
 #define BLOG_PARAM1_DIR_REPLY   1U
 #define BLOG_PARAM1_DIR_MAX     2U
 
-/* FLOWTRACK: param2 is IPv4=0, IPv6=1, GRE=2 */
+/* FLOWTRACK: param2 is IPv4=0, IPv6=1, GRE=2, L2TP=3 */
 #define BLOG_PARAM2_IPV4        0U
 #define BLOG_PARAM2_IPV6        1U
 #define BLOG_PARAM2_GRE_IPV4    2U
-#define BLOG_PARAM2_MAX         3U
+#define BLOG_PARAM2_L2TP_IPV4   3U
+#define BLOG_PARAM2_MAX         4U
 #define BLOG_CT_VER_MAX         2U
 
 /* MAP_TUPLE: param1 is US=0 or DS=1 direction */
@@ -609,7 +610,6 @@ typedef enum {
         BLOG_DECL(FLOWTRACK_KEY_GET)    /* Get Client key into Flowtracker    */
         BLOG_DECL(FLOWTRACK_DSCP_GET)   /* Get DSCP from Flow tracker:DYNDSCP */
         BLOG_DECL(FLOWTRACK_CONFIRMED)  /* Test whether session is confirmed  */
-        BLOG_DECL(FLOWTRACK_ASSURED)    /* Test whether session is assured    */
         BLOG_DECL(FLOWTRACK_ALG_HELPER) /* Test whether flow has an ALG       */
         BLOG_DECL(FLOWTRACK_EXCLUDE)    /* Clear flow candidacy by Client     */
         BLOG_DECL(FLOWTRACK_REFRESH)    /* Refresh a flow tracker             */
@@ -1074,6 +1074,18 @@ extern void blog_support_l2tp(int enable);
 #else
 #define CC_BLOG_SUPPORT_ESP        BLOG_ESP_DISABLE
 #endif
+
+/*
+ * -----------------------------------------------------------------------------
+ * Support 4o6 fragmentation enable/disable
+ * -----------------------------------------------------------------------------
+ */
+#define BLOG_4O6_FRAG_DISABLE           0
+#define BLOG_4O6_FRAG_ENABLE            1
+
+extern int blog_support_4o6_frag_g;
+extern void blog_support_4o6_frag(int enable);
+
 
 /* Traffic type */
 typedef enum {
@@ -1757,10 +1769,12 @@ struct blogL2tp_t {
 };
 typedef struct blogL2tp_t BlogL2tp_t;
 
-#define BLOG_L2TP_PPP_LEN  4
-#define BLOG_L2TP_PORT     1701
+#define BLOG_PPP_ADDR_CTL       0xFF03
+#define BLOG_L2TP_PPP_LEN       4   /* used when PPP address and control is 0xFF03 */
+#define BLOG_L2TP_PPP_LEN2      2   /* used when PPP address and control is NOT 0xFF03 */
+#define BLOG_L2TP_PORT          1701
 
-#define BLOG_PPTP_PPP_LEN  4
+#define BLOG_PPTP_PPP_LEN       4
 #define BLOG_PPTP_NOAC_PPPINFO  0X2145  /* pptp packet without ppp address control field 0xff03 */
 
 #define BLOG_ESP_SPI_LEN         4
@@ -2005,18 +2019,14 @@ typedef struct blogRnr_t BlogRnr_t;
 #define BLOG_TCPACK_IPV4_LEN   64   /* IPv4 total len value for pure TCP ACK  */
 #define BLOG_TCPACK_IPV6_LEN   32   /* IPv6 len value for pure TCP ACK        */
 #define BLOG_TCPACK_MAX_COUNT   4   /* max # of back-to-back TCP ACKs received
-				       after which the ACK flow is prioritized */
-#if !defined(CONFIG_BCM_PON)								   
+                                       after which the ACK flow is prioritized */
+								   
 #define BLOG_TCPACK_ETH_PRIO    1
 #define BLOG_TCPACK_XTM_PRIO    1   /* TCP ACK packets will be sent to priority 1
                                        queue. If the queue does not exist,
                                        packets will be sent to the default queue,
                                        which is the first queue configured for
                                        the interface. */
-#else
-#define BLOG_TCPACK_ETH_PRIO    0
-#define BLOG_TCPACK_XTM_PRIO    0
-#endif
 
 #define MAX_NUM_VLAN_TAG        2
 

@@ -2,7 +2,7 @@
  * Generic Broadcom Home Networking Division (HND) DMA module.
  * This supports the following chips: BCM42xx, 44xx, 47xx .
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: hnddma_priv.h 774125 2019-04-11 04:15:49Z $
+ * $Id: hnddma_priv.h 780343 2019-10-22 19:17:49Z $
  */
 
 #ifndef _HNDDMA_PRIV_H_
@@ -43,7 +43,7 @@
 #endif /* ERR_USE_EVENT_LOG_RA */
 
 #define	DMA_TRACE(args)
-#elif defined(BCMDBG_ERR)
+#elif defined(BCMDBG_ERR) || defined(BCMDBG_TXSTALL)
 #define	DMA_ERROR(args) if (di && (!(*di->msg_level & 1))); else printf args
 #define	DMA_TRACE(args)
 #else
@@ -195,7 +195,7 @@ typedef struct dma_info {
 	bool		addrext;	/* this dma engine supports DmaExtendedAddrChanges */
 
 	bool		indirect_dma;	/* set if Indirect DMA interface is supported */
-	uint8		q_index;	/* index of the queue */
+	uint32		q_index;	/* index of the queue */
 	uint32		q_index_mask;	/* index of the queue as a register bitmap */
 	volatile uint32	*suspreq;	/* SuspReq[x] register pointer */
 	volatile uint32	*flushreq;	/* FlushReq[x] register pointer */
@@ -385,6 +385,7 @@ STATIC INLINE uint32 parity32(uint32 data)
 
 /* Local inline copy, the macro causes inlining to happen in the dongle case */
 #define dma64_txcommit_local(di) \
-	W_REG((di)->osh, &(di)->d64txregs->ptr, (di)->xmtptrbase + I2B((di)->txout, dma64dd_t))
+	W_REG((di)->osh, &(di)->d64txregs->ptr, \
+	    (uint32)((di)->xmtptrbase + I2B((di)->txout, dma64dd_t)))
 
 #endif /* _HNDDMA_PRIV_H_ */

@@ -2169,8 +2169,8 @@ static const struct parse_data ssid_fields[] = {
 	{ INT_RANGE(ht, 0, 1) },
 	{ INT_RANGE(vht, 0, 1) },
 	{ INT_RANGE(ht40, -1, 1) },
-	{ INT_RANGE(max_oper_chwidth, VHT_CHANWIDTH_USE_HT,
-		    VHT_CHANWIDTH_80P80MHZ) },
+	{ INT_RANGE(max_oper_chwidth, CHANWIDTH_USE_HT,
+		    CHANWIDTH_80P80MHZ) },
 	{ INT(vht_center_freq1) },
 	{ INT(vht_center_freq2) },
 #ifdef IEEE8021X_EAPOL
@@ -2336,6 +2336,7 @@ static const struct parse_data ssid_fields[] = {
 	{ INT_RANGE(owe_group, 0, 65535) },
 	{ INT_RANGE(owe_only, 0, 1) },
 	{ INT_RANGE(multi_ap_backhaul_sta, 0, 1) },
+	{ INT_RANGE(ft_eap_pmksa_caching, 0, 1) },
 };
 
 #undef OFFSET
@@ -4743,6 +4744,9 @@ static const struct global_parse_data global_fields[] = {
 #ifdef CONFIG_DRIVER_BRCM_MAP
 	{ INT(map_bh_sta), 0 },
 #endif	/* CONFIG_DRIVER_BRCM_MAP */
+#ifdef CONFIG_WNM
+	{ INT_RANGE(disable_btm, 0, 1), CFG_CHANGED_DISABLE_BTM },
+#endif /* CONFIG_WNM */
 };
 
 #undef FUNC

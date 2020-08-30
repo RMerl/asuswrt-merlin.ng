@@ -84,8 +84,6 @@ void panic(const char *fmt, ...)
 	long i, i_next = 0;
 	int state = 0;
 #ifdef CRASHLOG
-	sprintf(buf, "%s", "CRASH LOG BEGINNING...\n");
-	crashLogText(buf, strlen(buf));
 	crashlog_enable = 1;
 #endif
 
@@ -410,6 +408,9 @@ void oops_enter(void)
 	do_oops_enter_exit();
 #ifdef CONFIG_DUMP_PREV_OOPS_MSG
 	enable_oopsbuf(1);
+#endif
+#ifdef CRASHLOG
+	crashlog_enable = 1;
 #endif
 }
 

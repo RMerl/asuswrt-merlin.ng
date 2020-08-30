@@ -814,6 +814,8 @@ struct eap_peer_config {
 		EXT_CERT_CHECK_GOOD,
 		EXT_CERT_CHECK_BAD,
 	} pending_ext_cert_check;
+
+	int teap_anon_dh;
 };
 
 /**

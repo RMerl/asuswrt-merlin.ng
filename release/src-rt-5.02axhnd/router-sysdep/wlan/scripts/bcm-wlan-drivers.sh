@@ -167,13 +167,12 @@ load_modules()
 
         echo "loading WLAN kernel modules ... $modules_list"
 
-        if [ -f /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko ]; then
-            insmod /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko
-        fi
-
         for module in $modules_list
         do
             case "$module" in
+                cfg80211)
+                    insmod /lib/modules/$KERNELVER/kernel/net/wireless/$module.ko
+                    ;;
                 wlemf|hnd|hnd_mfgtest|emf|igs)
                     #no module parameters
                     module_params=""
@@ -260,7 +259,11 @@ if [ ! -z "$2" ]; then
     unload_modules_list=$modules_list
 else
     if [ ! -z $CPEROUTER ]; then
-        all_wlan_modules="hnd emf igs dhd wl"
+        if [ -f /lib/modules/$KERNELVER/kernel/net/wireless/cfg80211.ko ]; then
+            all_wlan_modules="cfg80211 hnd emf igs dhd wl"
+        else
+            all_wlan_modules="hnd emf igs dhd wl"
+        fi
     else
         all_wlan_modules="wlemf dhd wl"
     fi

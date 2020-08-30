@@ -2,7 +2,7 @@
  * Misc utility routines for accessing chip-specific features
  * of the SiliconBackplane-based Broadcom chips.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -19,7 +19,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: siutils.c 777286 2019-07-25 19:43:30Z $
+ * $Id: siutils.c 784078 2020-02-18 22:14:43Z $
  */
 
 #include <bcm_cfg.h>
@@ -304,10 +304,19 @@ BCMATTACHFN(si_enum_base)(uint devid)
 		case BCM43684_D11AX_ID:
 		case BCM43684_D11AX2G_ID:
 		case BCM43684_D11AX5G_ID:
+		case BCM43684_D11AX6G_ID:
 		CASE_BCM6710_CHIP:
 		case BCM6710_D11AX_ID:
 		case BCM6710_D11AX2G_ID:
 		case BCM6710_D11AX5G_ID:
+		case BCM6710_D11AX6G_ID:
+		case BCM43692_D11AX_ID:
+		case BCM43692_D11AX2G_ID:
+		case BCM43692_D11AX5G_ID:
+		CASE_BCM6715_CHIP:
+		case BCM6715_D11AX_ID:
+		case BCM6715_D11AX2G_ID:
+		case BCM6715_D11AX5G_ID:
 			return 0x28000000; /* chips using backplane address 0x2800_0000 */
 		case BCM7271_CHIP_ID:
 		case BCM7271_D11AC_ID:
@@ -513,17 +522,19 @@ BCMATTACHFN(si_buscore_setup)(si_info_t *sii, chipcregs_t *cc, uint bustype, uin
 			OSL_OBFUSCATE_BUF(cores_info->regs[i])));
 
 		if (BUSTYPE(bustype) == SI_BUS) {
-			/* now look at the chipstatus register to figure the pacakge */
-			/* for SDIO but downloaded on PCIE dev */
 #ifdef BCMPCIEDEV_ENABLED
 			if (cid == PCIE2_CORE_ID) {
-					pcieidx = i;
-					pcierev = crev;
-					pcie = TRUE;
-					pcie_gen2 = TRUE;
+				pcieidx = i;
+				pcierev = crev;
+				pcie = TRUE;
+				pcie_gen2 = TRUE;
 			}
 #endif // endif
-
+			if (cid == UBUS_BRIDGE_ID) {
+				sii->pub.buscorerev = crev;
+				sii->pub.buscoretype = cid;
+				sii->pub.buscoreidx = i;
+			}
 		} else if (BUSTYPE(bustype) == PCI_BUS) {
 			if (cid == PCI_CORE_ID) {
 				pciidx = i;
@@ -867,6 +878,7 @@ BCMATTACHFN(si_muxenab)(si_t *sih, uint32 w)
 			chipcontrol |= CCTRL4360_UART_MODE;
 		break;
 	CASE_BCM43684_CHIP:
+	CASE_BCM6715_CHIP:
 		if (w & MUXENAB_UART) { /* 684 lacks 'super mux' so no si_gci_set_functionsel() */
 			si_gci_chipcontrol(sih, CC_GCI_CHIPCTRL_00,
 				BCM_BIT(18), BCM_BIT(18)); /* uart_mode=1 */
@@ -2250,6 +2262,11 @@ BCMATTACHFN(si_chipid_fixup)(si_t *sih)
 			sii->chipnew = sih->chip; /* save it */
 			sii->pub.chip = BCM43602_CHIP_ID; /* chip class */
 		break;
+		case BCM43692_CHIP_ID:
+		case BCM43693_CHIP_ID:
+			sii->chipnew = sih->chip; /* save it */
+			sii->pub.chip = BCM6710_CHIP_ID; /* chip class */
+		break;
 		default:
 		break;
 	}
@@ -2772,6 +2789,7 @@ BCMATTACHFN(si_doattach)(si_info_t *sii, uint devid, osl_t *osh, volatile void *
 				break;
 			CASE_EMBEDDED_2x2AX_CORE:
 			CASE_BCM6710_CHIP:
+			CASE_BCM6715_CHIP:
 				xtalfreq = 50000;
 				break;
 			case BCM43570_CHIP_ID:
@@ -3705,19 +3723,19 @@ si_backplane_access_pci(si_info_t *sii, uint addr, uint size, uint *val, bool re
 			if (read)
 				*val = R_REG(sii->osh, (volatile uint8*)r);
 			else
-				W_REG(sii->osh, (volatile uint8*)r, *val);
+				W_REG(sii->osh, (volatile uint8*)r, (uint8)*val);
 			break;
 		case sizeof(uint16) :
 			if (read)
 				*val = R_REG(sii->osh, (volatile uint16*)r);
 			else
-				W_REG(sii->osh, (volatile uint16*)r, *val);
+				W_REG(sii->osh, (volatile uint16*)r, (uint16)*val);
 			break;
 		case sizeof(uint32) :
 			if (read)
 				*val = R_REG(sii->osh, (volatile uint32*)r);
 			else
-				W_REG(sii->osh, (volatile uint32*)r, *val);
+				W_REG(sii->osh, (volatile uint32*)r, (uint32)*val);
 			break;
 		default :
 			SI_ERROR(("Invalid  size %d \n", size));
@@ -4953,6 +4971,9 @@ BCMNMIATTACHFN(si_devpath)(si_t *sih, char *path, int size)
 		} else if (EMBEDDED_2x2AX_CORE(sih->chip)) {
 			idx = (sih->enum_base == BCM47622_DEV_B_PHYS_ADDR) ? BCM47622_WLAN_DEV_B :
 			                                                     BCM47622_WLAN_DEV_A;
+		} else if (BCM6878_CHIP(sih->chip)) {
+			/* Single core SoC. Index should be 0 here */
+			idx = 0;
 		} else {
 			idx = si_coreidx(sih);
 		}
@@ -6372,7 +6393,7 @@ socram_banksize(si_info_t *sii, sbsocramregs_t *regs, uint8 idx, uint8 mem_type)
 
 	ASSERT(mem_type <= SOCRAM_MEMTYPE_DEVRAM);
 
-	W_REG(sii->osh, &regs->bankidx, bankidx);
+	W_REG(sii->osh, &regs->bankidx, (uint32)bankidx);
 	bankinfo = R_REG(sii->osh, &regs->bankinfo);
 	banksize = SOCRAM_BANKINFO_SZBASE * ((bankinfo & SOCRAM_BANKINFO_SZMASK) + 1);
 	return banksize;
@@ -6832,8 +6853,8 @@ si_socram_srmem_size(si_t *sih)
 
 	/* Calculate size from coreinfo based on rev */
 	if (corerev >= 16) {
-		uint8 i;
-		uint nb = (coreinfo & SRCI_SRNB_MASK) >> SRCI_SRNB_SHIFT;
+		uint32 i;
+		uint32 nb = (coreinfo & SRCI_SRNB_MASK) >> SRCI_SRNB_SHIFT;
 		for (i = 0; i < nb; i++) {
 			W_REG(sii->osh, &regs->bankidx, i);
 			if (R_REG(sii->osh, &regs->bankinfo) & SOCRAM_BANKINFO_RETNTRAM_MASK)
@@ -7569,7 +7590,7 @@ si_btcgpiowar(si_t *sih)
 	cc = (chipcregs_t *)si_setcore(sih, CC_CORE_ID, 0);
 	ASSERT(cc != NULL);
 
-	W_REG(sii->osh, &cc->uart0mcr, R_REG(sii->osh, &cc->uart0mcr) | 0x04);
+	W_REG(sii->osh, &cc->uart0mcr, (uint8)(R_REG(sii->osh, &cc->uart0mcr) | 0x04));
 
 	/* restore the original index */
 	si_setcoreidx(sih, origidx);
@@ -7680,7 +7701,6 @@ si_pmu_avb_clk_set(si_t *sih, osl_t *osh, bool set_flag)
 		case BCM4360_CHIP_ID:
 		case BCM4366_CHIP_ID:
 		case BCM43684_CHIP_ID:
-		case BCM63178_CHIP_ID:
 			si_pmu_avbtimer_enable(sih, osh, set_flag);
 			break;
 		default:
@@ -7847,6 +7867,7 @@ si_cis_source(si_t *sih)
 	if (BUSTYPE(sih->bustype) == PCI_BUS && (!BCM4350_CHIP(sih->chip) &&
 		!BCM43684_CHIP(sih->chip) &&
 		!BCM6710_CHIP(sih->chip) &&
+		!BCM6715_CHIP(sih->chip) &&
 		!BCM4365_CHIP(sih->chip))) {
 		return BCME_NOTFOUND;
 	}
@@ -7878,6 +7899,7 @@ si_cis_source(si_t *sih)
 	case BCM43666_CHIP_ID:
 	CASE_BCM43684_CHIP:
 	CASE_BCM6710_CHIP:
+	CASE_BCM6715_CHIP:
 	{
 		if (si_is_sprom_available(sih)) {
 			return BCME_NOTFOUND;

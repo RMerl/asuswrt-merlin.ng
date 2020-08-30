@@ -61,6 +61,12 @@ ifeq ($(CMWIFI),)
     KBUILD_CFLAGS += -Wno-error=date-time
 endif
 
+ifneq ($(CMWIFI),)
+# BCMINTERNAL and BCMDBG are getting enabled by default. Disabling here till actual fix is found.
+    NO_BCMINTERNAL := 1
+    NO_BCMDBG := 1
+endif
+
     # define OS flag to pick up wl osl file from wl.mk
     WLLX=1
     ifdef RTCONFIG_DPSTA
@@ -228,27 +234,45 @@ endif
         ifeq ($(strip $(WLWFD)), 1)
 		EXTRA_CFLAGS += -DBCM_WFD
 		EXTRA_CFLAGS += -DPKTC -DPKTC_TBL
-        ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
+
+		# Enable Fcache based WFD for 47189
+		ifeq ($(BRCM_CHIP),47189)
+			ifneq ($(strip $(BCA_CPEROUTER)),)
+				EXTRA_CFLAGS += -DCONFIG_BCM_FC_BASED_WFD
+			endif
+		endif
+
+		ifneq ($(strip $(CONFIG_BCM_PKTFWD)),)
 			EXTRA_CFLAGS += -DBCM_PKTFWD -DWL_PKTQUEUE_RXCHAIN
+			EXTRA_CFLAGS += -DWL_PKTFWD_INTRABSS
+
+			# Enable credit based Host Flow Control
+			ifneq ($(strip $(CONFIG_BCM_PKTFWD_FLCTL)),)
+				EXTRA_CFLAGS += -DBCM_PKTFWD_FLCTL
+			endif
+
 			WLFILES_SRC += ../../shared/impl1/wl_pktfwd.c
-        else
+		else
 			WLFILES_SRC += ../../shared/impl1/wl_pktc.c
-        endif
-        ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
+		endif
+
+        	ifneq ($(strip $(CONFIG_BCM_EAPFWD)),)
 			EXTRA_CFLAGS += -DBCM_EAPFWD
-        endif
+        	endif
+
 		WLFILES_SRC += ../../shared/impl1/wl_wfd.c
 		WLFILES_SRC += ../../shared/impl1/wl_thread.c
-    endif
+    	endif
 
-    ifneq ($(strip $(CONFIG_BLOG)),)
-	EXTRA_CFLAGS += -DBCM_BLOG
-	WLFILES_SRC += ../../shared/impl1/wl_blog.c
-    endif
+    	ifneq ($(strip $(CONFIG_BLOG)),)
+		EXTRA_CFLAGS += -DBCM_BLOG
+		WLFILES_SRC += ../../shared/impl1/wl_blog.c
+    	endif
     endif
 
     ifneq ($(strip $(CONFIG_BCM_KF_NBUFF)),)
 	EXTRA_CFLAGS += -DBCM_NBUFF -DBCM_NBUFF_PKT
+	EXTRA_CFLAGS += $(INC_RDP_FLAGS)
 	WLFILES_SRC += ../../shared/impl1/wl_nbuff.c
     endif
 
@@ -289,7 +313,13 @@ endif
 ifeq ($(CONFIG_ARM64),)
 # 32 bits NIC driver size reduction, makes use of gcc/ld unused symbol collect capability
 KBUILD_CFLAGS += -fdata-sections -ffunction-sections
-LDFLAGS += --gc-sections --print-gc-sections --entry=fake_main --script=$(WLSRC_BASE)/shared/linux.module.arm.lds
+TMP_STR := --gc-sections --print-gc-sections --entry=fake_main --script=$(WLSRC_BASE)/shared/linux.module.arm.lds
+ifeq ($(CMWIFI),)
+LDFLAGS += $(TMP_STR)
+else
+# CMWIFI builds use a later Linux kernel (4.9) than DSL builds (4.1)
+KBUILD_LDFLAGS_MODULE += $(TMP_STR)
+endif
 endif
 
 else # SRCBASE/wl/sys doesn't exist
@@ -353,7 +383,10 @@ $(obj)/$(WLCONF_H): $(WLCFGDIR)/$(WLTUNEFILE) FORCE
 	@echo "WLTUNEFILE     = $(WLTUNEFILE)"
 	cp $< wltemp
 	$(UPDATESH) wltemp $@
+ifneq ($(CMWIFI),)
+	cp -a $(obj)/$(WLCONF_H) $(WLSRC_BASE)/wl/sys
+endif
 
 FORCE:
 
-clean-files += $(SRCBASE_OFFSET)/wl/sys/*.o $(SRCBASE_OFFSET)/../components/phy/old/*.o $(SRCBASE_OFFSET)/wl/phy/*.o $(SRCBASE_OFFSET)/wl/ppr/src/*.o $(SRCBASE_OFFSET)/wl/sys/.*.*.cmd $(SRCBASE_OFFSET)/../components/phy/old/.*.*.cmd $(SRCBASE_OFFSET)/wl/phy/.*.*.cmd $(SRCBASE_OFFSET)/bcmcrypto/.*.*.cmd $(SRCBASE_OFFSET)/wl/clm/src/*.o $(SRCBASE_OFFSET)/wl/clm/src/.*.*.cmd $(SRCBASE_OFFSET)/shared/bcmwifi/src/*.o $(SRCBASE_OFFSET)/shared/bcmwifi/src/.*.*.cmd $(WLCONF_H) $(WLCONF_O)
+clean-files += $(SRCBASE_OFFSET)/wl/sys/*.o $(SRCBASE_OFFSET)/../components/phy/old/*.o $(SRCBASE_OFFSET)/wl/phy/*.o $(SRCBASE_OFFSET)/wl/ppr/src/*.o $(SRCBASE_OFFSET)/wl/sys/.*.*.cmd $(SRCBASE_OFFSET)/../components/phy/old/.*.*.cmd $(SRCBASE_OFFSET)/wl/phy/.*.*.cmd $(SRCBASE_OFFSET)/bcmcrypto/.*.*.cmd $(SRCBASE_OFFSET)/wl/clm/src/*.o $(SRCBASE_OFFSET)/wl/clm/src/.*.*.cmd $(SRCBASE_OFFSET)/shared/bcmwifi/src/*.o $(SRCBASE_OFFSET)/shared/bcmwifi/src/.*.*.cmd ./$(WLCONF_H) $(WLCONF_O) ./$(D11SHM_TEMPDIR)/d11regs* ./$(D11SHM_TEMPDIR)/d11shm* ./autoregs*

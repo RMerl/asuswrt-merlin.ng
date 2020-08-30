@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 Broadcom
+ * Copyright 2020 Broadcom
  *
  * This program is the proprietary software of Broadcom and/or
  * its licensors, and may only be used, duplicated, modified or distributed
@@ -54,17 +54,17 @@
 
 #define	UPNP_MINOR_VERSION	10
 
-#define	UPNP_RC_NUMBER		99
+#define	UPNP_RC_NUMBER		121
 
-#define	UPNP_INCREMENTAL_NUMBER	17
+#define	UPNP_INCREMENTAL_NUMBER	2004
 
 #define	UPNP_BUILD_NUMBER	0
 
-#define	UPNP_VERSION		17, 10, 99, 17
+#define	UPNP_VERSION		17, 10, 121, 2004
 
-#define	UPNP_VERSION_NUM	0x110a6311
+#define	UPNP_VERSION_NUM	0x110a797d4
 
 /* Driver Version String, ASCII, 32 chars max */
-#define	UPNP_VERSION_STR	"17.10.99.17"
+#define	UPNP_VERSION_STR	"17.10.121.2004"
 
 #endif /* __LIBUPNP_VERSION_H__ */

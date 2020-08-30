@@ -4,7 +4,7 @@
  *
  * Definitions subject to change without notice.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -21,7 +21,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlioctl_defs.h 777802 2019-08-12 05:29:38Z $
+ * $Id: wlioctl_defs.h 783115 2020-01-14 10:24:55Z $
  */
 
 #ifndef wlioctl_defs_h
@@ -178,8 +178,8 @@
 #define WL_STA_DWDS		0x02000000	/* DWDS active */
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
 #define WL_WDS_LINKUP		WL_STA_WDS_LINKUP	/* deprecated */
-#define WL_STA_RRM_CAP         0x10000000	/* RRM CAP */
-#define WL_STA_RRM_BCN_PASSIVE_CAP 0x20000000	/* Beacon Passive Measurement CAP */
+#define WL_STA_RRM_CAP		0x10000000      /* RRM CAP */
+#define WL_STA_RRM_BCN_PASSIVE_CAP 0x20000000   /* Beacon Passive Measurement CAP */
 
 /* STA HT cap fields */
 #define WL_STA_CAP_LDPC_CODING		0x0001	/* Support for rx of LDPC coded pkts */
@@ -228,6 +228,45 @@
 #define WL_STA_HE_SU_BEAMFORMER		0x0010
 #define WL_STA_HE_SU_MU_BEAMFORMEE	0x0020
 #define WL_STA_HE_MU_BEAMFORMER		0x0040
+
+/* scb twt_info flags */
+#define WL_STA_TWT_CAP			0x0001
+#define WL_STA_TWT_SCHEDULED		0x0002
+#define WL_STA_TWT_ACTIVE		0x0004
+
+/* OM Control: See 9.2.4.6a.2 */
+#define HTC_OM_CONTROL_RX_NSS_MASK			0x007
+#define HTC_OM_CONTROL_RX_NSS_OFFSET			0
+#define HTC_OM_CONTROL_CHANNEL_WIDTH_MASK		0x018
+#define HTC_OM_CONTROL_CHANNEL_WIDTH_OFFSET		3
+#define HTC_OM_CONTROL_UL_MU_DISABLE_MASK		0x020
+#define HTC_OM_CONTROL_UL_MU_DISABLE_OFFSET		5
+#define HTC_OM_CONTROL_TX_NSTS_MASK			0x1C0
+#define HTC_OM_CONTROL_TX_NSTS_OFFSET			6
+#define HTC_OM_CONTROL_ER_SU_DISABLE_MASK		0x200
+#define HTC_OM_CONTROL_ER_SU_DISABLE_OFFSET		9
+#define HTC_OM_CONTROL_DL_MUMIMO_RESOUND_MASK		0x400
+#define HTC_OM_CONTROL_DL_MUMIMO_RESOUND_OFFSET		10
+#define HTC_OM_CONTROL_UL_MU_DATA_DISABLE_MASK		0x800
+#define HTC_OM_CONTROL_UL_MU_DATA_DISABLE_OFFSET	11
+
+#define HTC_OM_CONTROL_CHANNEL_WIDTH(omi)	(((omi) & HTC_OM_CONTROL_CHANNEL_WIDTH_MASK) \
+	>> HTC_OM_CONTROL_CHANNEL_WIDTH_OFFSET)
+#define HTC_OM_CONTROL_RX_NSS(omi)		(((omi) & HTC_OM_CONTROL_RX_NSS_MASK) \
+	>> HTC_OM_CONTROL_RX_NSS_OFFSET)
+#define HTC_OM_CONTROL_TX_NSTS(omi)		(((omi) & HTC_OM_CONTROL_TX_NSTS_MASK) \
+	>> HTC_OM_CONTROL_TX_NSTS_OFFSET)
+#define HTC_OM_CONTROL_ER_SU_DISABLE(omi)	(((omi) & HTC_OM_CONTROL_ER_SU_DISABLE_MASK) \
+	>> HTC_OM_CONTROL_ER_SU_DISABLE_OFFSET)
+#define HTC_OM_CONTROL_DL_MUMIMO_RESOUND(omi)	(((omi) & HTC_OM_CONTROL_DL_MUMIMO_RESOUND_MASK) \
+	>> HTC_OM_CONTROL_DL_MUMIMO_RESOUND_OFFSET)
+#define HTC_OM_CONTROL_UL_MU_DISABLE(omi)	(((omi) & HTC_OM_CONTROL_UL_MU_DISABLE_MASK) \
+	>> HTC_OM_CONTROL_UL_MU_DISABLE_OFFSET)
+#define HTC_OM_CONTROL_UL_MU_DATA_DISABLE(omi)	(((omi) & HTC_OM_CONTROL_UL_MU_DATA_DISABLE_MASK) \
+	>> HTC_OM_CONTROL_UL_MU_DATA_DISABLE_OFFSET)
+
+/* MultiAP Backhaul STA Flags */
+#define WL_MAP_STA_PROFILE2		0x0001	/* MultiAP Profile-2 Backhaul STA */
 
 /* Values for TX Filter override mode */
 #define WLC_TXFILTER_OVERRIDE_DISABLED  0
@@ -1007,6 +1046,7 @@
 #define	WLC_BAND_5G		1	/* 5 Ghz */
 #define	WLC_BAND_2G		2	/* 2.4 Ghz */
 #define	WLC_BAND_ALL		3	/* all bands */
+#define	WLC_BAND_6G		4	/* 6 Ghz */
 #define WLC_BAND_INVALID	-1	/* Invalid band */
 
 /* band range returned by band_range iovar */
@@ -1449,24 +1489,23 @@
 #define SPECT_MNGMT_LOOSE_11H_D		4		/* operation defined above */
 
 /* bit position in per_chan_info; these depend on current country/regulatory domain */
-#define WL_CHAN_VALID_HW		(1 << 0)	/* valid with current HW */
-#define WL_CHAN_VALID_SW		(1 << 1)	/* valid with current country setting */
-#define WL_CHAN_BAND_5G			(1 << 2)	/* 5GHz-band channel */
-#define WL_CHAN_RADAR			(1 << 3)	/* radar sensitive channel */
-#define WL_CHAN_INACTIVE		(1 << 4)	/* temporarily inactive due to radar */
-#define WL_CHAN_PASSIVE			(1 << 5)	/* channel is in passive mode */
-#define WL_CHAN_RESTRICTED		(1 << 6)	/* restricted use channel */
+#define WL_CHAN_VALID_HW           (1u << 0)     /* valid with current HW */
+#define WL_CHAN_VALID_SW           (1u << 1)     /* valid with current country setting */
+#define WL_CHAN_BAND_5G            (1u << 2)     /* 5GHz-band channel */
+#define WL_CHAN_RADAR              (1u << 3)     /* radar sensitive channel */
+#define WL_CHAN_INACTIVE           (1u << 4)     /* temporarily inactive due to radar */
+#define WL_CHAN_PASSIVE            (1u << 5)     /* channel is in passive mode */
+#define WL_CHAN_RESTRICTED         (1u << 6)     /* restricted use channel */
 #ifndef LINUX_POSTMOGRIFY_REMOVAL
-#define WL_CHAN_RADAR_EU_WEATHER	(1 << 7)	/* EU Radar weather channel. Implies an
-							 * EU Radar channel.
-							 */
-#define WL_CHAN_CLM_RESTRICTED		(1 << 8)	/* channel restricted in CLM
-							 * (i.e. by default)
-							 */
-
+#define WL_CHAN_RADAR_EU_WEATHER   (1u << 7)     /* EU Radar weather channel.
+						  * Implies an EU Radar channel.
+						  */
 /* following definition is for precommit; will be removed once wl, acsd switch to the new def */
 #define WL_CHAN_WEATHER_RADAR		WL_CHAN_RADAR_EU_WEATHER
 #endif /* LINUX_POSTMOGRIFY_REMOVAL */
+
+#define WL_CHAN_CLM_RESTRICTED     (1u << 8)     /* channel restricted in CLM (i.e. by default) */
+#define WL_CHAN_BAND_6G            (1u << 9)     /* 6GHz-band channel */
 
 /* BTC mode used by "btc_mode" iovar */
 #define	WL_BTC_DISABLE		0	/* disable BT coexistence */
@@ -1595,7 +1634,9 @@
 #define WL_PKTENG_PER_RX_WITH_ACK_START		0x05
 #define WL_PKTENG_PER_TX_WITH_ACK_START		0x06
 #define WL_PKTENG_PER_RX_STOP			0x08
-#define WL_PKTENG_PER_RU_TX_START		0x09
+#define WL_PKTENG_PER_RU_TX_START		0xee	// to be removed
+#define WL_PKTENG_PER_TX_HETB_START		0x09
+#define WL_PKTENG_PER_TX_HETB_WITH_TRG_START	0x0a
 #define WL_PKTENG_PER_MASK			0xff
 
 #define WL_PKTENG_SYNCHRONOUS			0x100	/* synchronous flag */

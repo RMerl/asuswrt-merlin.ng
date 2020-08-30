@@ -36,6 +36,9 @@ int hostapd_wps_config_ap(struct hostapd_data *hapd, const char *ssid,
 int hostapd_wps_config_map_bh(struct hostapd_data *hapd, const char *ssid,
 			  const char *auth, const char *encr, const char *key);
 #endif	/* CONFIG_DRIVER_BRCM_MAP */
+#if defined(CONFIG_DRIVER_BRCM) && defined(CONFIG_WPS_UPNP)
+int hostapd_wps_upnp_ifcae_ip_changed(struct hostapd_data *hapd);
+#endif	/* CONFIG_DRIVER_BRCM && CONFIG_WPS_UPNP */
 int hostapd_wps_nfc_tag_read(struct hostapd_data *hapd,
 			     const struct wpabuf *data);
 struct wpabuf * hostapd_wps_nfc_config_token(struct hostapd_data *hapd,

@@ -1,7 +1,7 @@
 /*
  * OTP support.
  *
- * Copyright (C) 2019, Broadcom. All Rights Reserved.
+ * Copyright (C) 2020, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: bcmotp.c 777343 2019-07-29 12:58:01Z $
+ * $Id: bcmotp.c 777734 2019-08-08 01:00:16Z $
  */
 
 #include <bcm_cfg.h>
@@ -608,6 +608,7 @@ BCMSROMCISDUMPATTACHFN(ipxotp_bt_region_get)(otpinfo_t *oi, uint16 *start, uint1
 	case BCM43666_CHIP_ID:
 	CASE_BCM43684_CHIP:
 	CASE_BCM6710_CHIP:
+	CASE_BCM6715_CHIP:
 		break; /* these (router) chips do not use the BT coex interface */
 	case BCM43570_CHIP_ID:
 		*start = OTP_BT_BASE_4350;
@@ -4402,9 +4403,10 @@ BCMSROMCISDUMPATTACHFN(otp_init)(si_t *sih)
 		sih->otpflag = ((CHIPC_REG(sih, chipstatus, 0, 0) & 0x8) ? 1: 0);
 	}
 
-	if (ISSIM_ENAB(sih) && (BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip))) {
+	if (ISSIM_ENAB(sih) && (BCM43684_CHIP(sih->chip) || BCM6710_CHIP(sih->chip) ||
+		BCM6715_CHIP(sih->chip))) {
 		/* Skip srom read in Veloce to save time */
-		OTP_ERR(("skip otp_init in 43684/6710 veloce development\n"));
+		OTP_ERR(("skip otp_init in 43684/6710/6715 veloce development\n"));
 		oi->fn = NULL;
 	}
 

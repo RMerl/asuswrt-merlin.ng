@@ -648,6 +648,9 @@ void __cfg80211_connect_result(struct net_device *dev, const u8 *bssid,
 	ASSERT_WDEV_LOCK(wdev);
 
 	if (WARN_ON(wdev->iftype != NL80211_IFTYPE_STATION &&
+#if defined(CONFIG_BCM_KF_WL_HOSTAPD)
+	    	    wdev->iftype != NL80211_IFTYPE_WDS &&
+#endif
 		    wdev->iftype != NL80211_IFTYPE_P2P_CLIENT)) {
 		cfg80211_put_bss(wdev->wiphy, bss);
 		return;
@@ -904,6 +907,9 @@ void __cfg80211_disconnected(struct net_device *dev, const u8 *ie,
 	ASSERT_WDEV_LOCK(wdev);
 
 	if (WARN_ON(wdev->iftype != NL80211_IFTYPE_STATION &&
+#if defined(CONFIG_BCM_KF_WL_HOSTAPD)
+	    	    wdev->iftype != NL80211_IFTYPE_WDS &&
+#endif
 		    wdev->iftype != NL80211_IFTYPE_P2P_CLIENT))
 		return;
 

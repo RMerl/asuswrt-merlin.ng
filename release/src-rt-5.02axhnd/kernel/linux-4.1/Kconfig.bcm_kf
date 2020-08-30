@@ -583,3 +583,11 @@ config BCM_KF_CFG80211_BACKPORT
 	bool
 	default y
 
+config BCM_KF_WL_HOSTAPD
+	bool
+	default y
+
+config BCM_KF_NL80211_6G_BAND_SUPPORT
+	bool
+	default y
+

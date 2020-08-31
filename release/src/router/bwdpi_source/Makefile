@@ -247,7 +247,7 @@ install:
 	@cd asus_sql/ && $(MAKE) install
 	# [INSTALL] prebuild into RC_INDEP
 	-@mkdir RC_INDEP
-	-@cp -f prebuild/$(BUILD_NAME)/files/* RC_INDEP/
+	-@cp -f prebuild/$(BUILD_NAME)/* RC_INDEP/
 ifneq ($(wildcard ~/amng.private/tm/$(BUILD_NAME)/*),)
 	-@cp ~/amng.private/tm/$(BUILD_NAME)/* RC_INDEP/
 endif

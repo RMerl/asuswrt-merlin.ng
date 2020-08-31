@@ -17036,6 +17036,10 @@ void setup_leds()
 			eval("wl", "-i", "eth2", "ledbh", "10", "7");
 #elif defined(RTCONFIG_BCM_7114) || defined(RTAC86U)
 			eval("wl", "ledbh", "9", "7");
+#elif defined(RTAX88U)
+			eval("wl", "-i", "eth6", "ledbh", "15", "7");
+#elif defined(RTAX58U) || defined(RTAX56U)
+			eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #endif
 		}
 
@@ -17051,6 +17055,12 @@ void setup_leds()
 #elif defined(RTAC87U)
 			qcsapi_wifi_run_script("router_command.sh", "wifi_led_on");
 			qcsapi_led_set(1, 1);
+#elif defined(RTAX88U)
+			eval("wl", "-i", "eth7", "ledbh", "15", "7");
+#elif defined(RTAX58U)
+			eval("wl", "-i", "eth6", "ledbh", "15", "7");
+#elif defined(RTAX56U)
+			eval("wl", "-i", "eth6", "ledbh", "0", "25");
 #endif
 		}
 

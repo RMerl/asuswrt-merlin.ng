@@ -27,8 +27,10 @@ export CONFIGURE := ./configure LD=$(CROSS_COMPILE)ld --host=arm-buildroot-linux
 ifeq ($(BRCM_CHIP),4908)
 export CONFIGURE_64 := ./configure LD=$(CROSS_COMPILE_64)ld --host=aarch64-buildroot-linux-gnu
 export HOSTCONFIG_64 := linux-aarch64 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=lp64 -ffixed-r8 -D__ARM_ARCH_8A__
-endif
+export HOSTCONFIG := linux-armv4 -DL_ENDIAN -march=armv8-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_8A__
+else
 export HOSTCONFIG := linux-armv4 -DL_ENDIAN -march=armv7-a -fomit-frame-pointer -mabi=aapcs-linux -marm -ffixed-r8 -msoft-float -D__ARM_ARCH_7A__
+endif
 export TOP_PLATFORM := $(SRCBASE)/router-sysdep
 export BCMEX :=
 export ARCH := arm

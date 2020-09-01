@@ -20,7 +20,7 @@ then
 	cp release/src/router/ctf_arm/bcm_7114_gmac3/* $REPO/release/src/router/ctf_arm/bcm_7114_gmac3/
 	cp release/src/router/wl_arm_7114/prebuilt/* $REPO/release/src/router/wl_arm_7114/prebuilt/$BUILD_NAME/
 	cp release/src/router/envram_bin/envram$ARCH$SDK/* $REPO/release/src/router/envram_bin/envram$ARCH$SDK/
-	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/
+	cp release/src-rt-7.14.114.x/src/wl/exe/prebuilt/* $REPO/release/src-rt-7.14.114.x/src/wl/exe/prebuilt/$BUILD_NAME/
 	cp -a release/src/router/tuxera/broadcom$ARCH$SDK/* $REPO/release/src/router/tuxera/broadcom$ARCH$SDK/
 	cp release/src/router/ookla_speedtest/OOKLA-36521/ookla-BCM7.x-6.x $REPO/release/src/router/ookla_speedtest/OOKLA-36521/
 
@@ -130,7 +130,7 @@ cp release/src/router/shared/prebuild/* $REPO/release/src/router/shared/prebuild
 cp release/src/router/sw-hw-auth/prebuild/* $REPO/release/src/router/sw-hw-auth/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/asus/prebuild/* $REPO/release/src/router/bwdpi_source/asus/prebuild/$BUILD_NAME/
 cp release/src/router/bwdpi_source/asus_sql/prebuild/* $REPO/release/src/router/bwdpi_source/asus_sql/prebuild/$BUILD_NAME/
-cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/files/
+cp release/src/router/bwdpi_source/prebuild/* $REPO/release/src/router/bwdpi_source/prebuild/$BUILD_NAME/
 cp release/src/router/dropbox_client/prebuild/* $REPO/release/src/router/dropbox_client/prebuild/$BUILD_NAME/
 cp release/src/router/ftpclient/prebuild/* $REPO/release/src/router/ftpclient/prebuild/$BUILD_NAME/
 cp release/src/router/protect_srv/prebuild/* $REPO/release/src/router/protect_srv/prebuild/$BUILD_NAME/
@@ -165,7 +165,7 @@ cp release/src/router/libasuslog/prebuild/* $REPO/release/src/router/libasuslog/
 cp release/src/router/sysstate/log_daemon/prebuild/* $REPO/release/src/router/sysstate/log_daemon/prebuild/$BUILD_NAME/
 cp release/src/router/sysstate/commands/prebuild/* $REPO/release/src/router/sysstate/commands/prebuild/$BUILD_NAME/
 cp release/src/router/wb/prebuild/* $REPO/release/src/router/wb/prebuild/$BUILD_NAME/
-
+cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/$BUILD_NAME/
 
 echo "*** Copying exceptions and special cases..."
 
@@ -176,8 +176,6 @@ then
 	cp release/src/router/emf$ARCH$SDK/*.o $REPO/release/src/router/emf$ARCH$SDK/
 	cp release/src/router/emf$ARCH$SDK/emfconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/emfconf/prebuilt/
 	cp release/src/router/emf$ARCH$SDK/igsconf/prebuilt/* $REPO/release/src/router/emf$ARCH$SDK/igsconf/prebuilt/
-else
-	cp release/src/router/eventd/prebuilt/* $REPO/release/src/router/eventd/prebuilt/$BUILD_NAME/
 fi
 
 # On AX these are in router-sysdep

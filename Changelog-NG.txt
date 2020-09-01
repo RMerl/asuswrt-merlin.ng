@@ -15,7 +15,7 @@ Asuswrt-Merlin 386/NG Changelog
 
   - UPDATED: Merged GPL 386_39179 (beta GPL from Asus).
   - UPDATED: Merged 386_39179 binary blobs for RT-AC86U,
-             RT-AC68U.
+             RT-AC68U, RT-AC5300 and RT-AX88U.
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
              purposes.  Devs who were using that nvram

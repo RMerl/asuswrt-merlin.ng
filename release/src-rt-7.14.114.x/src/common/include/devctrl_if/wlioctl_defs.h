@@ -138,6 +138,8 @@
 #define WL_STA_DWDS_CAP		0x01000000	/* DWDS CAP */
 #define WL_STA_DWDS		0x02000000	/* DWDS active */
 #define WL_WDS_LINKUP		WL_STA_WDS_LINKUP	/* deprecated */
+#define WL_STA_RRM_CAP		0x10000000	/* RRM CAP */
+#define WL_STA_RRM_BCN_PASSIVE_CAP 0x20000000	/* Beacon Passive Measurement CAP */
 
 /* STA HT cap fields */
 #define WL_STA_CAP_LDPC_CODING		0x0001	/* Support for rx of LDPC coded pkts */

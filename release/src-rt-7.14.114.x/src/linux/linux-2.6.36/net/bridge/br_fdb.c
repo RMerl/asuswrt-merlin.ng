@@ -37,6 +37,10 @@
 #define BCMFASTPATH_HOST
 #endif	/* HNDCTF */
 
+#ifdef CONFIG_BRIDGE_OOP
+extern unsigned int broop;
+#endif
+
 #ifdef HNDCTF
 static void
 br_brc_init(ctf_brc_t *brc, unsigned char *ea, struct net_device *rxdev, unsigned char *sip)
@@ -557,6 +561,9 @@ void BCMFASTPATH_HOST br_fdb_update(struct net_bridge *br, struct net_bridge_por
 	if (likely(fdb)) {
 		/* attempt to update an entry for a local interface */
 		if (unlikely(fdb->is_local)) {
+#ifdef CONFIG_BRIDGE_OOP
+			broop = 1;
+#endif
 			if (net_ratelimit())
 				br_info(br, "received packet on %s with "
 					"own address as source address\n",

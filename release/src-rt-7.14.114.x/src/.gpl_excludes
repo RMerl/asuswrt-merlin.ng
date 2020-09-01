@@ -9,6 +9,7 @@ release/src/include
 release/src-lantiq
 release/src/linux
 release/src-qca*
+release/src-mtk3.5
 release/src-ra*
 release/src/router/acsd_arm
 release/src/router/acsd*/*.c
@@ -135,6 +136,7 @@ release/src/router/wlcsm
 release/src/router/wps_arm
 release/src/router/www/fbwifi/*.asp
 release/src/router/www/fbwifi/*.js
+release/src-rt-5.02axhnd*
 release/src-rt-5.02hnd
 release/src-rt-6.x
 release/src-rt-6.x.4708/bcm57xx

@@ -148,7 +148,7 @@ endif
 robocfg: robocfg.c etc53xx.h
 
 et:
-	cp -f $(SRCBASE)/wl/exe/prebuilt/et et
+	cp -f $(SRCBASE)/wl/exe/prebuilt/$(BUILD_NAME)/et et
 
 clean:
 	rm -f *.o *~ $(UTILS)

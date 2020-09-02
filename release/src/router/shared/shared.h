@@ -813,7 +813,7 @@ extern int foreach_wif(int include_vifs, void *param,
 	int (*func)(int idx, int unit, int subunit, void *param));
 
 //shutils.c
-#define modprobe(mod, args...) ({ char *argv[] = { "modprobe", "-s", mod, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define modprobe(mod, args...) ({ char *argv[] = { "modprobe", "-q", "-s", mod, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
 extern int modprobe_r(const char *mod);
 extern void dbgprintf (const char * format, ...); //Ren
 extern void cprintf(const char *format, ...);

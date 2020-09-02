@@ -1168,14 +1168,6 @@ function check_AiMesh_fw_version(_fw) {
 	return manual_status;
 }
 
-function check_is_merlin_fw(_fw) {
-	var fw_array = _fw.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)\.([^_]+)_(\w+)/);
-	if (fw_array && (fw_array[5].indexOf('.') > 0) )
-		return true;
-	else
-		return false;
-}
-
 function toggle_fw_check(state) {
 	httpApi.nvramSet({
 			"firmware_check_enable" : state,

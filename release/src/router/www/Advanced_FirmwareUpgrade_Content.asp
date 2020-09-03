@@ -1021,9 +1021,9 @@ function show_amas_fw_result() {
 							ck_fw_result = newfwver;
 							$("#amas_update").css("display", "");
 						}
-						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").addClass("aimesh_fw_release_note");
-						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").html(ck_fw_result);
-						$("#amas_" + mac_id + "").children().find(".checkFWReuslt").click({"isMerlin" : check_is_merlin_fw(fwver), "model_name": model_name, "newfwver": newfwver}, show_fw_release_note);
+						$("#amas_" + mac_id + "").children().find(".checkFWResult").addClass("aimesh_fw_release_note");
+						$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
+						$("#amas_" + mac_id + "").children().find(".checkFWResult").click({"isMerlin" : check_is_merlin_fw(newfwver), "model_name": model_name, "newfwver": newfwver}, show_fw_release_note);
 					}
 					if(online == "1")
 						$("#amas_" + mac_id + "").children("#checkNewFW").css("display", "");
@@ -1152,13 +1152,12 @@ function check_AiMesh_fw_version(_fw) {
 	var support_manual_fw_id = 382;
 	var support_manual_fw_num = 18000;
 	var manual_status = false;
-	var fw_array = _fw.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)\.([^_]+)_(\w+)/);
-
-	if (fw_array) {
-		var fw_id = fw_array[5];
-		var fw_num = fw_array[6];
-		if( (parseInt(fw_id) > support_manual_fw_id) ||
-		    (parseInt(fw_id) == support_manual_fw_id) && (parseInt(fw_num) >= support_manual_fw_num) ) {
+	var fw_array = _fw.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)\.([^_]+)_([^-]+)/);
+	if(fw_array){
+		var fw_id = parseInt(fw_array[5]) || 0;
+		var fw_num = parseInt(fw_array[6]) || 0;
+		if(fw_id > support_manual_fw_id ||
+				(fw_id == support_manual_fw_id && fw_num >= support_manual_fw_num)){
 			manual_status = true;
 		}
 	}

@@ -489,7 +489,17 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	cconf->reneg = nvram_pf_get_int(prefix, "reneg");
 
 	cconf->direction = nvram_pf_get_int(prefix, "hmac");
-	cconf->tlscrypt = (cconf->direction == 3 ? 1 : 0);
+	switch (cconf->direction) {
+		case 3:
+			cconf->tlscrypt = 1;
+			break;
+		case 4:
+			cconf->tlscrypt = 2;
+			break;
+		default:
+			cconf->tlscrypt = 0;
+	}
+
 	cconf->verify_x509_type = nvram_pf_get_int(prefix, "tlsremote");
 	strlcpy(cconf->verify_x509_name, nvram_pf_safe_get(prefix, "cn"), sizeof(cconf->verify_x509_name));
 

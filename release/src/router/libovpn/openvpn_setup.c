@@ -625,8 +625,10 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 			fprintf(fp, "reneg-sec %d\n", cconf->reneg);
 
 		if ((cconf->direction >= 0) && ovpn_key_exists(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC)) {
-			if (cconf->tlscrypt)
+			if (cconf->tlscrypt == 1)
 				fprintf(fp, "tls-crypt static.key\n");
+			else if (cconf->tlscrypt == 2)
+				fprintf(fp, "tls-crypt-v2 static.key\n");
 			else {
 				fprintf(fp, "tls-auth static.key");
 				if (cconf->direction < 2)

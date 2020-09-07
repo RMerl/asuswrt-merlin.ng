@@ -1355,6 +1355,7 @@ function refreshVPNIP() {
 								<option value="0" <% nvram_match("vpn_client_hmac","0","selected"); %> >Incoming Auth (0)</option>
 								<option value="1" <% nvram_match("vpn_client_hmac","1","selected"); %> >Outgoing Auth (1)</option>
 								<option value="3" <% nvram_match("vpn_client_hmac","3","selected"); %> >Encrypt Channel</option>
+								<option value="4" <% nvram_match("vpn_client_hmac","4","selected"); %> >Encrypt Channel V2</option>
 							</select>
 						</td>
 					</tr>

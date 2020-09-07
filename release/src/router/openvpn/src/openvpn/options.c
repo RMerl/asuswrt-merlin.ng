@@ -6662,7 +6662,7 @@ add_option(struct options *options,
         remap_redirect_gateway_flags(options);
 #endif
 #ifdef ASUSWRT
-        setenv_unsigned(es, "routes_flags", options->routes->flags);
+        setenv_long_long(es, "routes_flags", options->routes->flags);
 #endif
     }
     else if (streq(p[0], "block-ipv6") && !p[1])

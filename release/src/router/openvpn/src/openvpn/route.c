@@ -634,7 +634,7 @@ init_route_list(struct route_list *rl,
 
     get_default_gateway(&rl->rgi, ctx);
 #ifdef ASUSWRT
-    setenv_unsigned(es, "rgi_flags", rl->rgi.flags);
+    setenv_long_long(es, "rgi_flags", rl->rgi.flags);
 #endif
     if (rl->rgi.flags & RGI_ADDR_DEFINED)
     {

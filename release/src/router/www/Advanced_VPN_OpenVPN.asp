@@ -1143,7 +1143,7 @@ function enable_server_igncrt(flag){
 	if (getRadioValue(document.form.vpn_server_userpass_auth) == 0)
 		flag = 0;
 
-	document.form.vpn_server_crypt.style.display = (flag==1)?"none":"";
+	document.getElementById("crypt_span").style.display = (flag==1)?"none":"";
 	document.form.vpn_server_crypt.value = (flag==1)?"tls":"<% nvram_get("vpn_server_crypt"); %>";
 	update_visibility();
 	document.getElementById("Hint_fixed_tls_crypto").style.display = (flag==1)?"":"none";
@@ -1535,19 +1535,15 @@ function callback_upload_cert(_flag) {
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 												<td>
-													<select name="vpn_server_if" class="input_option" onChange="update_visibility();">
-														<option value="tap" <% nvram_match("vpn_server_if","tap","selected"); %> >TAP</option>
-														<option value="tun" <% nvram_match("vpn_server_if","tun","selected"); %> >TUN</option>
-													</select>
+													<input type="radio" name="vpn_server_if" class="input" value="tun" onchange="update_visibility();" <% nvram_match_x("", "vpn_server_if", "tun", "checked"); %>>TUN
+													<input type="radio" name="vpn_server_if" class="input" value="tap" onchange="update_visibility();" <% nvram_match_x("", "vpn_server_if", "tap", "checked"); %>>TAP
 												</td>
 											</tr>
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 												<td>
-													<select name="vpn_server_proto" class="input_option">
-														<option value="tcp-server" <% nvram_match("vpn_server_proto","tcp-server","selected"); %> >TCP</option>
-														<option value="udp" <% nvram_match("vpn_server_proto","udp","selected"); %> >UDP</option>
-													</select>
+													<input type="radio" name="vpn_server_proto" class="input" value="tcp-server" <% nvram_match_x("", "vpn_server_proto", "tcp-server", "checked"); %>>TCP
+													<input type="radio" name="vpn_server_proto" class="input" value="udp" <% nvram_match_x("", "vpn_server_proto", "udp", "checked"); %>>UDP
 												</td>
 											</tr>
 											<tr>
@@ -1557,13 +1553,13 @@ function callback_upload_cert(_flag) {
 													<span style="color:#FC0">(<#Setting_factorydefault_value#> : 1194)</span>
 												</td>
 											</tr>
-											<tr>
+											<tr id="server_crypt_tr">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 												<td>
-													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
-														<option value="tls" <% nvram_match("vpn_server_crypt","tls","selected"); %> >TLS</option>
-														<option value="secret" <% nvram_match("vpn_server_crypt","secret","selected"); %> >Static Key</option>
-													</select>
+													<span id="crypt_span" style="color:#FFFFFF;">
+														<input type="radio" name="vpn_server_crypt" class="input" value="tls" <% nvram_match_x("", "vpn_server_crypt", "tls", "checked"); %>>TLS
+														<input type="radio" name="vpn_server_crypt" class="input" value="secret" <% nvram_match_x("", "vpn_server_crypt", "secret", "checked"); %>>Static Key
+													</span>
 													<span id="Fixed_tls_crypto" style="color:#FFFFFF;display:none;">TLS</span>
 												</td>
 											</tr>

@@ -248,8 +248,7 @@ function initial()
 	// Extract the type out of the interface name 
 	// (imported ovpn can result in this being tun3, for example)
 	currentiface = "<% nvram_get("vpn_client_if"); %>";
-	add_option(document.form.vpn_client_if_x, "TUN","tun",(currentiface.indexOf("tun") != -1));
-	add_option(document.form.vpn_client_if_x, "TAP","tap",(currentiface.indexOf("tap") != -1));
+	setRadioValue(document.form.vpn_client_if_x, currentiface.substring(0,3).toLowerCase());
 
 	for(var i = 0; i < ciphersarray.length; i++){
 		add_option(document.form.vpn_client_cipher,
@@ -1205,17 +1204,15 @@ function refreshVPNIP() {
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 						<td>
-							<select name="vpn_client_if_x"  onclick="update_rgw_options();update_visibility();" class="input_option">
-							</select>
+							<input type="radio" name="vpn_client_if_x" class="input" value="tun" onclick="update_rgw_options();update_visibility();" <% nvram_match_x("", "vpn_client_if_x", "tun", "checked"); %>>TUN
+							<input type="radio" name="vpn_client_if_x" class="input" value="tap" onclick="update_rgw_options();update_visibility();" <% nvram_match_x("", "vpn_client_if_x", "tap", "checked"); %>>TAP
 						</td>
 					</tr>
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 						<td>
-							<select name="vpn_client_proto" class="input_option">
-								<option value="tcp-client" <% nvram_match("vpn_client_proto","tcp-client","selected"); %> >TCP</option>
-								<option value="udp" <% nvram_match("vpn_client_proto","udp","selected"); %> >UDP</option>
-							</select>
+							<input type="radio" name="vpn_client_proto" class="input" value="tcp-client" <% nvram_match_x("", "vpn_client_proto", "tcp-client", "checked"); %>>TCP
+							<input type="radio" name="vpn_client_proto" class="input" value="udp" <% nvram_match_x("", "vpn_client_proto", "udp", "checked"); %>>UDP
 						</td>
 					</tr>
 					<tr>
@@ -1284,10 +1281,8 @@ function refreshVPNIP() {
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 						<td>
-							<select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
-								<option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %> >TLS</option>
-								<option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %> >Static Key</option>
-							</select>
+							<input type="radio" name="vpn_client_crypt" class="input" value="tls" <% nvram_match_x("", "vpn_client_crypt", "tls", "checked"); %>>TLS
+							<input type="radio" name="vpn_client_crypt" class="input" value="secret" <% nvram_match_x("", "vpn_client_crypt", "secret", "checked"); %>>Static Key
 						</td>
 					</tr>
 					<tr id="client_userauth">

@@ -897,7 +897,6 @@ function update_visibility(){
 		ccd = 0;
 	else
 		ccd = getRadioValue(document.form.vpn_server_ccd);
-	ncp = document.form.vpn_server_ncp_enable.value;
 	comp = document.form.vpn_server_comp.value;
 
 	showhide("server_authhmac", (auth != "secret"));
@@ -913,9 +912,7 @@ function update_visibility(){
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
 	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
 	showhide("server_igncrt", (userpass == 1));
-	showhide("server_cipher", (ncp != 2));
-	showhide("ncp_enable", (auth == "tls"));
-	showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
+	showhide("ncp_ciphers", (auth == "tls"));
 
 /* Warn if exported ovpn requires OpenVPN 2.4.0 */
 	showhide("ncp_24_warn", (ncp > 0));
@@ -1653,25 +1650,14 @@ function callback_upload_cert(_flag) {
 													<input type="radio" name="vpn_server_pdns" class="input" value="0" <% nvram_match_x("", "vpn_server_pdns", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
-											<tr id="ncp_enable">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
-												<td>
-													<select name="vpn_server_ncp_enable" onclick="update_visibility();" class="input_option">
-														<option value="0" <% nvram_match("vpn_server_ncp_enable","0","selected"); %> >Disabled</option>
-														<option value="1" <% nvram_match("vpn_server_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
-														<option value="2" <% nvram_match("vpn_server_ncp_enable","2","selected"); %> >Enable</option>
-													</select>
-													<span id="ncp_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
-												</td>
-											</tr>
 											<tr id="ncp_ciphers">
-												<th>Negotiable ciphers</th>
+												<th>Data ciphers</th>
 												<td>
 													<input type="text" maxlength="255" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 												</td>
 											</tr>
 											<tr id="server_cipher">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Legacy/fallback cipher</a></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Legacy (pre-2.4) cipher</a></th>
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
 													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>

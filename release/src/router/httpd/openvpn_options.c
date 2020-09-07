@@ -460,8 +460,6 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "cipher") && p[1])
 	{
 		nvram_pf_set(prefix, "cipher", p[1]);
-		if (nvram_pf_get_int(prefix, "ncp_enable") == 2)
-			nvram_pf_set(prefix, "ncp_enable", "1");	// Ensure legacy cipher is allowed
 	}
 	else if (streq (p[0], "auth") && p[1])
 	{
@@ -611,12 +609,6 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "ncp-ciphers") && p[1])
 	{
 		nvram_pf_set(prefix, "ncp_ciphers", p[1]);
-		if (nvram_pf_get_int(prefix, "ncp_enable") == 0)
-			nvram_pf_set(prefix, "ncp_enable", "1");    // Ensure ncp is not disabled
-	}
-	else if (streq (p[0], "ncp-disable"))
-	{
-		nvram_pf_set(prefix, "ncp_enable", "0");
 	}
 	else if (streq (p[0], "redirect-gateway") && (!p[1] || streq (p[1], "def1")))	// Only handle if default GW
 	{

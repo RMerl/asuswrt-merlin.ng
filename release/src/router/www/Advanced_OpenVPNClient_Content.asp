@@ -357,7 +357,6 @@ function update_visibility(){
 	tlsremote = document.form.vpn_client_tlsremote.value;
 	userauth = (getRadioValue(document.form.vpn_client_userauth) == 1) && (auth == 'tls') ? 1 : 0;
 	useronly = userauth && getRadioValue(document.form.vpn_client_useronly);
-	ncp = document.form.vpn_client_ncp_enable.value;
 
 	showhide("client_userauth", (auth == "tls"));
 	showhide("client_hmac", (auth == "tls"));
@@ -389,9 +388,7 @@ function update_visibility(){
 	showhide("selectiveTable", (rgw >= 2));
 	showhide("client_enforce", (rgw >= 2));
 
-	showhide("client_cipher", (ncp != 2));
-	showhide("ncp_enable", (auth == "tls"));
-	showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
+	showhide("ncp_ciphers", (auth == "tls"));
 }
 
 
@@ -1336,24 +1333,14 @@ function refreshVPNIP() {
 							<input type="button" onclick="edit_Keys();" value="Edit..."></td>
 						</td>
 					</tr>
-					<tr id="ncp_enable">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
-						<td>
-							<select name="vpn_client_ncp_enable" onclick="update_visibility();" class="input_option">
-								<option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %> >Disabled</option>
-								<option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
-								<option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %> >Enable</option>
-							</select>
-						</td>
-					</tr>
 					<tr id="ncp_ciphers">
-						<th>Negotiable ciphers</th>
+						<th>Data ciphers</th>
 						<td>
 							<input type="text" maxlength="255" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 						</td>
 					</tr>
 					<tr id="client_cipher">
-						<th>Legacy/fallback cipher</th>
+						<th>Legacy (pre-2.4) cipher</th>
 						<td>
 							<select name="vpn_client_cipher" class="input_option">
 								<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>

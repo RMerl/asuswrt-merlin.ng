@@ -476,7 +476,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 
 	strlcpy(cconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (cconf->comp));
 
-	cconf->ncp = nvram_pf_get_int(prefix, "ncp_enable");
 	strlcpy(cconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (cconf->ncp_ciphers));
 	strlcpy(cconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof(cconf->cipher));
 
@@ -544,7 +543,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	strlcpy(sconf->proto, nvram_pf_safe_get(prefix, "proto"), sizeof (sconf->proto));
 	sconf->port = nvram_pf_get_int(prefix, "port");
 
-	sconf->ncp = nvram_pf_get_int(prefix, "ncp_enable");
 	strlcpy(sconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (sconf->ncp_ciphers));
 	strlcpy(sconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof (sconf->cipher));
 	strlcpy(sconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof (sconf->digest));

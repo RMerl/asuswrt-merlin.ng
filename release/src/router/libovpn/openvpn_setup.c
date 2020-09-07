@@ -364,15 +364,12 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 
 	// cipher
 	if (sconf->auth_mode == OVPN_AUTH_TLS) {
-		if ((sconf->ncp > 0) && (*sconf->ncp_ciphers)) {
+		if (*sconf->ncp_ciphers) {
 			fprintf(fp, "data-ciphers %s\n", sconf->ncp_ciphers);
 			fprintf(fp_client, "ncp-ciphers %s\n", sconf->ncp_ciphers);
-		} else {
-			fprintf(fp, "ncp-disable\n");
 		}
 	}
-	if ((sconf->ncp < 2) ||
-	    (sconf->ncp == 2 && !*sconf->ncp_ciphers) ||
+	if ((!*sconf->ncp_ciphers) ||
 	    (sconf->auth_mode == OVPN_AUTH_STATIC)) {
 		if (strcmp(sconf->cipher, "default")) {
 			fprintf(fp, "cipher %s\n", sconf->cipher);
@@ -604,13 +601,10 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 
 	// cipher
 	if (cconf->auth_mode == OVPN_AUTH_TLS) {
-		if ((cconf->ncp > 0) && (*cconf->ncp_ciphers))
+		if (*cconf->ncp_ciphers)
 			fprintf(fp, "data-ciphers %s\n", cconf->ncp_ciphers);
-		else
-			fprintf(fp, "ncp-disable\n");
 	}
-	if ((cconf->ncp < 2) ||
-	    (cconf->ncp == 2 && !*cconf->ncp_ciphers) ||
+	if ((!*cconf->ncp_ciphers) ||
 	    (cconf->auth_mode == OVPN_AUTH_STATIC)) {
 		if (strcmp(cconf->cipher, "default")) {
 			fprintf(fp, "cipher %s\n", cconf->cipher);

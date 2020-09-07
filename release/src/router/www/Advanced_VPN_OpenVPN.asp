@@ -1647,7 +1647,7 @@ function callback_upload_cert(_flag) {
 											<tr id="ncp_ciphers">
 												<th>Data ciphers</th>
 												<td>
-													<input type="text" maxlength="255" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+													<input type="text" maxlength="127" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 												</td>
 											</tr>
 											<tr id="server_cipher">

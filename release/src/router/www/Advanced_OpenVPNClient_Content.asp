@@ -1336,7 +1336,7 @@ function refreshVPNIP() {
 					<tr id="ncp_ciphers">
 						<th>Data ciphers</th>
 						<td>
-							<input type="text" maxlength="255" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+							<input type="text" maxlength="127" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 						</td>
 					</tr>
 					<tr id="client_cipher">

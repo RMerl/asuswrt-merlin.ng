@@ -22,7 +22,7 @@
  */
 
 /*
- * Win32-specific OpenVPN code, targetted at the mingw
+ * Win32-specific OpenVPN code, targeted at the mingw
  * development environment.
  */
 
@@ -39,9 +39,9 @@
 #include "buffer.h"
 #include "error.h"
 #include "mtu.h"
+#include "run_command.h"
 #include "sig.h"
 #include "win32.h"
-#include "misc.h"
 #include "openvpn-msg.h"
 
 #include "memdbg.h"
@@ -1139,7 +1139,7 @@ openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned in
         else
         {
             ret = OPENVPN_EXECVE_NOT_ALLOWED;
-            if (!exec_warn && (script_security < SSEC_SCRIPTS))
+            if (!exec_warn && (script_security() < SSEC_SCRIPTS))
             {
                 msg(M_WARN, SCRIPT_SECURITY_WARNING);
                 exec_warn = true;
@@ -1267,7 +1267,6 @@ win_get_tempdir(void)
 static bool
 win_block_dns_service(bool add, int index, const HANDLE pipe)
 {
-    DWORD len;
     bool ret = false;
     ack_message_t ack;
     struct gc_arena gc = gc_new();
@@ -1281,11 +1280,8 @@ win_block_dns_service(bool add, int index, const HANDLE pipe)
         .iface = { .index = index, .name = "" }
     };
 
-    if (!WriteFile(pipe, &data, sizeof(data), &len, NULL)
-        || !ReadFile(pipe, &ack, sizeof(ack), &len, NULL))
+    if (!send_msg_iservice(pipe, &data, sizeof(data), &ack, "Block_DNS"))
     {
-        msg(M_WARN, "Block_DNS: could not talk to service: %s [%lu]",
-            strerror_win32(GetLastError(), &gc), GetLastError());
         goto out;
     }
 
@@ -1421,10 +1417,18 @@ win32_version_info(void)
     {
         return WIN_7;
     }
-    else
+
+    if (!IsWindows8Point1OrGreater())
     {
         return WIN_8;
     }
+
+    if (!IsWindows10OrGreater())
+    {
+        return WIN_8_1;
+    }
+
+    return WIN_10;
 }
 
 bool
@@ -1462,7 +1466,15 @@ win32_version_string(struct gc_arena *gc, bool add_name)
             break;
 
         case WIN_8:
-            buf_printf(&out, "6.2%s", add_name ? " (Windows 8 or greater)" : "");
+            buf_printf(&out, "6.2%s", add_name ? " (Windows 8)" : "");
+            break;
+
+        case WIN_8_1:
+            buf_printf(&out, "6.3%s", add_name ? " (Windows 8.1)" : "");
+            break;
+
+        case WIN_10:
+            buf_printf(&out, "10.0%s", add_name ? " (Windows 10 or greater)" : "");
             break;
 
         default:
@@ -1474,6 +1486,27 @@ win32_version_string(struct gc_arena *gc, bool add_name)
     buf_printf(&out, win32_is_64bit() ? " 64bit" : " 32bit");
 
     return (const char *)out.data;
+}
+
+bool
+send_msg_iservice(HANDLE pipe, const void *data, size_t size,
+                  ack_message_t *ack, const char *context)
+{
+    struct gc_arena gc = gc_new();
+    DWORD len;
+    bool ret = true;
+
+    if (!WriteFile(pipe, data, size, &len, NULL)
+        || !ReadFile(pipe, ack, sizeof(*ack), &len, NULL))
+    {
+        msg(M_WARN, "%s: could not talk to service: %s [%lu]",
+            context ? context : "Unknown",
+            strerror_win32(GetLastError(), &gc), GetLastError());
+        ret = false;
+    }
+
+    gc_free(&gc);
+    return ret;
 }
 
 #endif /* ifdef _WIN32 */

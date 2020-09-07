@@ -28,8 +28,6 @@
  */
 
 
-#ifdef ENABLE_CRYPTO
-
 #ifndef RELIABLE_H
 #define RELIABLE_H
 
@@ -125,7 +123,7 @@ bool reliable_ack_read(struct reliable_ack *ack,
  * @param ack The acknowledgment structure containing received
  *     acknowledgments.
  */
-void reliable_send_purge(struct reliable *rel, struct reliable_ack *ack);
+void reliable_send_purge(struct reliable *rel, const struct reliable_ack *ack);
 
 /** @} name Functions for processing incoming acknowledgments */
 
@@ -476,4 +474,3 @@ void reliable_ack_debug_print(const struct reliable_ack *ack, char *desc);
 
 
 #endif /* RELIABLE_H */
-#endif /* ENABLE_CRYPTO */

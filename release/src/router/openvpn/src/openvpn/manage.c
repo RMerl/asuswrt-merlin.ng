@@ -75,6 +75,7 @@ man_help(void)
     msg(M_CLIENT, "auth-retry t           : Auth failure retry mode (none,interact,nointeract).");
     msg(M_CLIENT, "bytecount n            : Show bytes in/out, update every n secs (0=off).");
     msg(M_CLIENT, "echo [on|off] [N|all]  : Like log, but only show messages in echo buffer.");
+    msg(M_CLIENT, "cr-response response   : Send a challenge response answer via CR_RESPONSE to server");
     msg(M_CLIENT, "exit|quit              : Close management session.");
     msg(M_CLIENT, "forget-passwords       : Forget passwords entered so far.");
     msg(M_CLIENT, "help                   : Print this message.");
@@ -104,18 +105,20 @@ man_help(void)
     msg(M_CLIENT, "client-auth-nt CID KID : Authenticate client-id/key-id CID/KID");
     msg(M_CLIENT, "client-deny CID KID R [CR] : Deny auth client-id/key-id CID/KID with log reason");
     msg(M_CLIENT, "                             text R and optional client reason text CR");
+    msg(M_CLIENT, "client-pending-auth CID MSG : Instruct OpenVPN to send AUTH_PENDING and INFO_PRE msg"
+        "                          to the client and wait for a final client-auth/client-deny");
     msg(M_CLIENT, "client-kill CID [M]    : Kill client instance CID with message M (def=RESTART)");
     msg(M_CLIENT, "env-filter [level]     : Set env-var filter level");
 #ifdef MANAGEMENT_PF
     msg(M_CLIENT, "client-pf CID          : Define packet filter for client CID (MULTILINE)");
 #endif
 #endif
-#ifdef MANAGMENT_EXTERNAL_KEY
-    msg(M_CLIENT, "rsa-sig                : Enter an RSA signature in response to >RSA_SIGN challenge");
+    msg(M_CLIENT, "rsa-sig                : Enter a signature in response to >RSA_SIGN challenge");
+    msg(M_CLIENT, "                         Enter signature base64 on subsequent lines followed by END");
+    msg(M_CLIENT, "pk-sig                 : Enter a signature in response to >PK_SIGN challenge");
     msg(M_CLIENT, "                         Enter signature base64 on subsequent lines followed by END");
     msg(M_CLIENT, "certificate            : Enter a client certificate in response to >NEED-CERT challenge");
     msg(M_CLIENT, "                         Enter certificate base64 on subsequent lines followed by END");
-#endif
     msg(M_CLIENT, "signal s               : Send signal s to daemon,");
     msg(M_CLIENT, "                         s = SIGHUP|SIGTERM|SIGUSR1|SIGUSR2.");
     msg(M_CLIENT, "state [on|off] [N|all] : Like log, but show state history.");
@@ -123,7 +126,7 @@ man_help(void)
     msg(M_CLIENT, "test n                 : Produce n lines of output for testing/debugging.");
     msg(M_CLIENT, "username type u        : Enter username u for a queried OpenVPN username.");
     msg(M_CLIENT, "verb [n]               : Set log verbosity level to n, or show if n is absent.");
-    msg(M_CLIENT, "version                : Show current version number.");
+    msg(M_CLIENT, "version [n]            : Set client's version to n or show current version of daemon.");
     msg(M_CLIENT, "END");
 }
 
@@ -762,10 +765,8 @@ man_query_need_str(struct management *man, const char *type, const char *action)
 static void
 man_forget_passwords(struct management *man)
 {
-#ifdef ENABLE_CRYPTO
     ssl_purge_auth(false);
     msg(M_CLIENT, "SUCCESS: Passwords were forgotten");
-#endif
 }
 
 static void
@@ -781,6 +782,27 @@ man_net(struct management *man)
     }
 }
 
+static void
+man_send_cc_message(struct management *man, const char *message, const char *parameters)
+{
+    if (man->persist.callback.send_cc_message)
+    {
+        const bool status = (*man->persist.callback.send_cc_message)
+                                (man->persist.callback.arg, message, parameters);
+        if (status)
+        {
+            msg(M_CLIENT, "SUCCESS: command succeeded");
+        }
+        else
+        {
+            msg(M_CLIENT, "ERROR: command failed");
+        }
+    }
+    else
+    {
+        msg(M_CLIENT, "ERROR: This command is not supported by the current daemon mode");
+    }
+}
 #ifdef ENABLE_PKCS11
 
 static void
@@ -846,8 +868,6 @@ man_hold(struct management *man, const char *cmd)
         msg(M_CLIENT, "SUCCESS: hold=%d", BOOL_CAST(man->settings.flags & MF_HOLD));
     }
 }
-
-#ifdef MANAGEMENT_IN_EXTRA
 
 #define IER_RESET      0
 #define IER_NEW        1
@@ -936,8 +956,7 @@ in_extra_dispatch(struct management *man)
             break;
 
 #endif /* ifdef MANAGEMENT_PF */
-#ifdef MANAGMENT_EXTERNAL_KEY
-        case IEC_RSA_SIGN:
+        case IEC_PK_SIGN:
             man->connection.ext_key_state = EKS_READY;
             buffer_list_free(man->connection.ext_key_input);
             man->connection.ext_key_input = man->connection.in_extra;
@@ -950,12 +969,9 @@ in_extra_dispatch(struct management *man)
             man->connection.ext_cert_input = man->connection.in_extra;
             man->connection.in_extra = NULL;
             return;
-#endif
     }
     in_extra_reset(&man->connection, IER_RESET);
 }
-
-#endif /* MANAGEMENT_IN_EXTRA */
 
 #ifdef MANAGEMENT_DEF_AUTH
 
@@ -984,6 +1000,43 @@ parse_kid(const char *str, unsigned int *kid)
     {
         msg(M_CLIENT, "ERROR: cannot parse KID");
         return false;
+    }
+}
+
+/**
+ * Will send a notification to the client that succesful authentication
+ * will require an additional step (web based SSO/2-factor auth/etc)
+ *
+ * @param man           The management interface struct
+ * @param cid_str       The CID in string form
+ * @param extra         The string to be send to the client containing
+ *                      the information of the additional steps
+ */
+static void
+man_client_pending_auth(struct management *man, const char *cid_str, const char *extra)
+{
+    unsigned long cid = 0;
+    if (parse_cid(cid_str, &cid))
+    {
+        if (man->persist.callback.client_pending_auth)
+        {
+            bool ret = (*man->persist.callback.client_pending_auth)
+                           (man->persist.callback.arg, cid, extra);
+
+            if (ret)
+            {
+                msg(M_CLIENT, "SUCCESS: client-pending-auth command succeeded");
+            }
+            else
+            {
+                msg(M_CLIENT, "SUCCESS: client-pending-auth command failed."
+                    " Extra paramter might be too long");
+            }
+        }
+        else
+        {
+            msg(M_CLIENT, "ERROR: The client-pending-auth command is not supported by the current daemon mode");
+        }
     }
 }
 
@@ -1102,21 +1155,19 @@ man_client_pf(struct management *man, const char *cid_str)
 #endif /* MANAGEMENT_PF */
 #endif /* MANAGEMENT_DEF_AUTH */
 
-#ifdef MANAGMENT_EXTERNAL_KEY
-
 static void
-man_rsa_sig(struct management *man)
+man_pk_sig(struct management *man, const char *cmd_name)
 {
     struct man_connection *mc = &man->connection;
     if (mc->ext_key_state == EKS_SOLICIT)
     {
         mc->ext_key_state = EKS_INPUT;
-        mc->in_extra_cmd = IEC_RSA_SIGN;
+        mc->in_extra_cmd = IEC_PK_SIGN;
         in_extra_reset(mc, IER_NEW);
     }
     else
     {
-        msg(M_CLIENT, "ERROR: The rsa-sig command is not currently available");
+        msg(M_CLIENT, "ERROR: The %s command is not currently available", cmd_name);
     }
 }
 
@@ -1136,8 +1187,6 @@ man_certificate(struct management *man)
     }
 }
 
-#endif /* ifdef MANAGMENT_EXTERNAL_KEY */
-
 static void
 man_load_stats(struct management *man)
 {
@@ -1156,7 +1205,15 @@ man_load_stats(struct management *man)
 }
 
 #define MN_AT_LEAST (1<<0)
-
+/**
+ * Checks if the correct number of arguments to a management command are present
+ * and otherwise prints an error and returns false.
+ *
+ * @param p         pointer to the parameter array
+ * @param n         number of arguments required
+ * @param flags     if MN_AT_LEAST require at least n parameters and not exactly n
+ * @return          Return whether p has n (or at least n) parameters
+ */
 static bool
 man_need(struct management *man, const char **p, const int n, unsigned int flags)
 {
@@ -1243,6 +1300,15 @@ man_network_change(struct management *man, bool samenetwork)
 #endif
 
 static void
+set_client_version(struct management *man, const char *version)
+{
+    if (version)
+    {
+        man->connection.client_version = atoi(version);
+    }
+}
+
+static void
 man_dispatch_command(struct management *man, struct status_output *so, const char **p, const int nparms)
 {
     struct gc_arena gc = gc_new();
@@ -1256,6 +1322,10 @@ man_dispatch_command(struct management *man, struct status_output *so, const cha
     else if (streq(p[0], "help"))
     {
         man_help();
+    }
+    else if (streq(p[0], "version") && p[1])
+    {
+        set_client_version(man, p[1]);
     }
     else if (streq(p[0], "version"))
     {
@@ -1459,6 +1529,13 @@ man_dispatch_command(struct management *man, struct status_output *so, const cha
             man_query_need_str(man, p[1], p[2]);
         }
     }
+    else if (streq(p[0], "cr-response"))
+    {
+        if (man_need(man, p, 1, 0))
+        {
+            man_send_cc_message(man, "CR_RESPONSE", p[1]);
+        }
+    }
     else if (streq(p[0], "net"))
     {
         man_net(man);
@@ -1503,6 +1580,13 @@ man_dispatch_command(struct management *man, struct status_output *so, const cha
             man_client_auth(man, p[1], p[2], true);
         }
     }
+    else if (streq(p[0], "client-pending-auth"))
+    {
+        if (man_need(man, p, 2, 0))
+        {
+            man_client_pending_auth(man, p[1], p[2]);
+        }
+    }
 #ifdef MANAGEMENT_PF
     else if (streq(p[0], "client-pf"))
     {
@@ -1513,16 +1597,18 @@ man_dispatch_command(struct management *man, struct status_output *so, const cha
     }
 #endif
 #endif /* ifdef MANAGEMENT_DEF_AUTH */
-#ifdef MANAGMENT_EXTERNAL_KEY
     else if (streq(p[0], "rsa-sig"))
     {
-        man_rsa_sig(man);
+        man_pk_sig(man, "rsa-sig");
+    }
+    else if (streq(p[0], "pk-sig"))
+    {
+        man_pk_sig(man, "pk-sig");
     }
     else if (streq(p[0], "certificate"))
     {
         man_certificate(man);
     }
-#endif
 #ifdef ENABLE_PKCS11
     else if (streq(p[0], "pkcs11-id-count"))
     {
@@ -1911,19 +1997,16 @@ man_reset_client_socket(struct management *man, const bool exiting)
         man->connection.state = MS_INITIAL;
         command_line_reset(man->connection.in);
         buffer_list_reset(man->connection.out);
-#ifdef MANAGEMENT_IN_EXTRA
         in_extra_reset(&man->connection, IER_RESET);
-#endif
         msg(D_MANAGEMENT, "MANAGEMENT: Client disconnected");
     }
     if (!exiting)
     {
-#ifdef ENABLE_CRYPTO
         if (man->settings.flags & MF_FORGET_DISCONNECT)
         {
             ssl_purge_auth(false);
         }
-#endif
+
         if (man->settings.flags & MF_SIGNAL)
         {
             int mysig = man_mod_signal(man, SIGUSR1);
@@ -1956,9 +2039,7 @@ man_process_command(struct management *man, const char *line)
 
     CLEAR(parms);
     so = status_open(NULL, 0, -1, &man->persist.vout, 0);
-#ifdef MANAGEMENT_IN_EXTRA
     in_extra_reset(&man->connection, IER_RESET);
-#endif
 
     if (man_password_needed(man))
     {
@@ -2196,7 +2277,6 @@ man_read(struct management *man)
             const char *line;
             while ((line = command_line_get(man->connection.in)))
             {
-#ifdef MANAGEMENT_IN_EXTRA
                 if (man->connection.in_extra)
                 {
                     if (!strcmp(line, "END"))
@@ -2209,8 +2289,9 @@ man_read(struct management *man)
                     }
                 }
                 else
-#endif
-                man_process_command(man, (char *) line);
+                {
+                    man_process_command(man, (char *) line);
+                }
                 if (man->connection.halt)
                 {
                     break;
@@ -2511,6 +2592,8 @@ man_connection_init(struct management *man)
             man->connection.es = event_set_init(&maxevents, EVENT_METHOD_FAST);
         }
 
+        man->connection.client_version = 1; /* default version */
+
         /*
          * Listen/connect socket
          */
@@ -2554,12 +2637,8 @@ man_connection_close(struct management *man)
     {
         buffer_list_free(mc->out);
     }
-#ifdef MANAGEMENT_IN_EXTRA
     in_extra_reset(&man->connection, IER_RESET);
-#endif
-#ifdef MANAGMENT_EXTERNAL_KEY
     buffer_list_free(mc->ext_key_input);
-#endif
     man_connection_clear(mc);
 }
 
@@ -2740,7 +2819,9 @@ env_filter_match(const char *env_str, const int env_filter_level)
         "ifconfig_pool_netmask=",
         "time_duration=",
         "bytes_sent=",
-        "bytes_received="
+        "bytes_received=",
+        "session_id=",
+        "session_state="
     };
 
     if (env_filter_level == 0)
@@ -2827,7 +2908,7 @@ management_notify_generic(struct management *man, const char *str)
 #ifdef MANAGEMENT_DEF_AUTH
 
 static void
-man_output_peer_info_env(struct management *man, struct man_def_auth_context *mdac)
+man_output_peer_info_env(struct management *man, const struct man_def_auth_context *mdac)
 {
     char line[256];
     if (man->persist.callback.get_peer_info)
@@ -2874,6 +2955,32 @@ management_notify_client_needing_auth(struct management *management,
         }
         man_output_env(es, true, management->connection.env_filter_level, "CLIENT");
         mdac->flags |= DAF_INITIAL_AUTH;
+    }
+}
+
+void
+management_notify_client_cr_response(unsigned mda_key_id,
+                                     const struct man_def_auth_context *mdac,
+                                     const struct env_set *es,
+                                     const char *response)
+{
+    struct gc_arena gc;
+    if (management)
+    {
+        gc = gc_new();
+
+        struct buffer out = alloc_buf_gc(256, &gc);
+        msg(M_CLIENT, ">CLIENT:CR_RESPONSE,%lu,%u,%s",
+            mdac->cid, mda_key_id, response);
+        man_output_extra_env(management, "CLIENT");
+        if (management->connection.env_filter_level>0)
+        {
+            man_output_peer_info_env(management, mdac);
+        }
+        man_output_env(es, true, management->connection.env_filter_level, "CLIENT");
+        management_notify_generic(management, BSTR(&out));
+
+        gc_free(&gc);
     }
 }
 
@@ -3394,9 +3501,7 @@ management_query_user_pass(struct management *man,
         const char *alert_type = NULL;
         const char *prefix = NULL;
         unsigned int up_query_mode = 0;
-#ifdef ENABLE_CLIENT_CR
         const char *sc = NULL;
-#endif
         ret = true;
         man->persist.standalone_disabled = false; /* This is so M_CLIENT messages will be correctly passed through msg() */
         man->persist.special_state_msg = NULL;
@@ -3426,12 +3531,10 @@ management_query_user_pass(struct management *man,
             up_query_mode = UP_QUERY_USER_PASS;
             prefix = "PASSWORD";
             alert_type = "username/password";
-#ifdef ENABLE_CLIENT_CR
             if (static_challenge)
             {
                 sc = static_challenge;
             }
-#endif
         }
         buf_printf(&alert_msg, ">%s:Need '%s' %s",
                    prefix,
@@ -3443,14 +3546,12 @@ management_query_user_pass(struct management *man,
             buf_printf(&alert_msg, " MSG:%s", up->username);
         }
 
-#ifdef ENABLE_CLIENT_CR
         if (sc)
         {
             buf_printf(&alert_msg, " SC:%d,%s",
                        BOOL_CAST(flags & GET_USER_PASS_STATIC_CHALLENGE_ECHO),
                        sc);
         }
-#endif
 
         man_wait_for_client_connection(man, &signal_received, 0, MWCC_PASSWORD_WAIT);
         if (signal_received)
@@ -3512,8 +3613,6 @@ management_query_user_pass(struct management *man,
     gc_free(&gc);
     return ret;
 }
-
-#ifdef MANAGMENT_EXTERNAL_KEY
 
 static int
 management_query_multiline(struct management *man,
@@ -3651,13 +3750,31 @@ management_query_multiline_flatten(struct management *man,
 
 char *
 /* returns allocated base64 signature */
-management_query_rsa_sig(struct management *man,
-                         const char *b64_data)
+management_query_pk_sig(struct management *man, const char *b64_data,
+                        const char *algorithm)
 {
-    return management_query_multiline_flatten(man, b64_data, "RSA_SIGN", "rsa-sign",
-                                              &man->connection.ext_key_state, &man->connection.ext_key_input);
-}
+    const char *prompt = "PK_SIGN";
+    const char *desc = "pk-sign";
+    struct buffer buf_data = alloc_buf(strlen(b64_data) + strlen(algorithm) + 20);
 
+    if (man->connection.client_version <= 1)
+    {
+        prompt = "RSA_SIGN";
+        desc = "rsa-sign";
+    }
+
+    buf_write(&buf_data, b64_data, (int) strlen(b64_data));
+    if (man->connection.client_version > 2)
+    {
+        buf_write(&buf_data, ",", (int) strlen(","));
+        buf_write(&buf_data, algorithm, (int) strlen(algorithm));
+    }
+    char *ret = management_query_multiline_flatten(man,
+                                                   (char *)buf_bptr(&buf_data), prompt, desc,
+                                                   &man->connection.ext_key_state, &man->connection.ext_key_input);
+    free_buf(&buf_data);
+    return ret;
+}
 
 char *
 management_query_cert(struct management *man, const char *cert_name)
@@ -3674,8 +3791,6 @@ management_query_cert(struct management *man, const char *cert_name)
     free_buf(&buf_prompt);
     return result;
 }
-
-#endif /* ifdef MANAGMENT_EXTERNAL_KEY */
 
 /*
  * Return true if management_hold() would block

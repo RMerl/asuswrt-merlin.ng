@@ -34,21 +34,24 @@
 
 #include "syshead.h"
 
-#if defined(ENABLE_CRYPTO) && defined(ENABLE_CRYPTO_MBEDTLS)
+#if defined(ENABLE_CRYPTO_MBEDTLS)
 
 #include "errlevel.h"
 #include "basic.h"
 #include "buffer.h"
+#include "crypto.h"
 #include "integer.h"
 #include "crypto_backend.h"
 #include "otime.h"
 #include "misc.h"
 
+#include <mbedtls/base64.h>
 #include <mbedtls/des.h>
 #include <mbedtls/error.h>
 #include <mbedtls/md5.h>
 #include <mbedtls/cipher.h>
 #include <mbedtls/havege.h>
+#include <mbedtls/pem.h>
 
 #include <mbedtls/entropy.h>
 
@@ -138,26 +141,6 @@ const cipher_name_pair cipher_name_translation_table[] = {
 const size_t cipher_name_translation_table_count =
     sizeof(cipher_name_translation_table) / sizeof(*cipher_name_translation_table);
 
-static void
-print_cipher(const cipher_kt_t *info)
-{
-    if (info && (cipher_kt_mode_cbc(info)
-#ifdef HAVE_AEAD_CIPHER_MODES
-                 || cipher_kt_mode_aead(info)
-#endif
-                 ))
-    {
-        const char *ssl_only = cipher_kt_mode_cbc(info) ?
-                               "" : ", TLS client/server mode only";
-        const char *var_key_size = info->flags & MBEDTLS_CIPHER_VARIABLE_KEY_LEN ?
-                                   " by default" : "";
-
-        printf("%s  (%d bit key%s, %d bit block%s)\n",
-               cipher_kt_name(info), cipher_kt_key_size(info) * 8, var_key_size,
-               cipher_kt_block_size(info) * 8, ssl_only);
-    }
-}
-
 void
 show_available_ciphers(void)
 {
@@ -166,14 +149,16 @@ show_available_ciphers(void)
 #ifndef ENABLE_SMALL
     printf("The following ciphers and cipher modes are available for use\n"
            "with " PACKAGE_NAME ".  Each cipher shown below may be used as a\n"
-           "parameter to the --cipher option.  Using a CBC or GCM mode is\n"
-           "recommended.  In static key mode only CBC mode is allowed.\n\n");
+           "parameter to the --data-ciphers (or --cipher) option.  Using a\n"
+           "GCM or CBC mode is recommended.  In static key mode only CBC\n"
+           "mode is allowed.\n\n");
 #endif
 
     while (*ciphers != 0)
     {
         const cipher_kt_t *info = mbedtls_cipher_info_from_type(*ciphers);
-        if (info && cipher_kt_block_size(info) >= 128/8)
+        if (info && !cipher_kt_insecure(info)
+            && (cipher_kt_mode_aead(info) || cipher_kt_mode_cbc(info)))
         {
             print_cipher(info);
         }
@@ -186,7 +171,8 @@ show_available_ciphers(void)
     while (*ciphers != 0)
     {
         const cipher_kt_t *info = mbedtls_cipher_info_from_type(*ciphers);
-        if (info && cipher_kt_block_size(info) < 128/8)
+        if (info && cipher_kt_insecure(info)
+            && (cipher_kt_mode_aead(info) || cipher_kt_mode_cbc(info)))
         {
             print_cipher(info);
         }
@@ -227,6 +213,84 @@ show_available_engines(void)
 {
     printf("Sorry, mbed TLS hardware crypto engine functionality is not "
            "available\n");
+}
+
+bool
+crypto_pem_encode(const char *name, struct buffer *dst,
+                  const struct buffer *src, struct gc_arena *gc)
+{
+    /* 1000 chars is the PEM line length limit (+1 for tailing NUL) */
+    char header[1000+1] = { 0 };
+    char footer[1000+1] = { 0 };
+
+    if (!openvpn_snprintf(header, sizeof(header), "-----BEGIN %s-----\n", name))
+    {
+        return false;
+    }
+    if (!openvpn_snprintf(footer, sizeof(footer), "-----END %s-----\n", name))
+    {
+        return false;
+    }
+
+    size_t out_len = 0;
+    if (MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL !=
+        mbedtls_pem_write_buffer(header, footer, BPTR(src), BLEN(src),
+                                 NULL, 0, &out_len))
+    {
+        return false;
+    }
+
+    /* We set the size buf to out_len-1 to NOT include the 0 byte that
+     * mbedtls_pem_write_buffer in its length calculation */
+    *dst = alloc_buf_gc(out_len, gc);
+    if (!mbed_ok(mbedtls_pem_write_buffer(header, footer, BPTR(src), BLEN(src),
+                                          BPTR(dst), BCAP(dst), &out_len))
+        || !buf_inc_len(dst, out_len-1))
+    {
+        CLEAR(*dst);
+        return false;
+    }
+
+    return true;
+}
+
+bool
+crypto_pem_decode(const char *name, struct buffer *dst,
+                  const struct buffer *src)
+{
+    /* 1000 chars is the PEM line length limit (+1 for tailing NUL) */
+    char header[1000+1] = { 0 };
+    char footer[1000+1] = { 0 };
+
+    if (!openvpn_snprintf(header, sizeof(header), "-----BEGIN %s-----", name))
+    {
+        return false;
+    }
+    if (!openvpn_snprintf(footer, sizeof(footer), "-----END %s-----", name))
+    {
+        return false;
+    }
+
+    /* mbed TLS requires the src to be null-terminated */
+    /* allocate a new buffer to avoid modifying the src buffer */
+    struct gc_arena gc = gc_new();
+    struct buffer input = alloc_buf_gc(BLEN(src) + 1, &gc);
+    buf_copy(&input, src);
+    buf_null_terminate(&input);
+
+    size_t use_len = 0;
+    mbedtls_pem_context ctx = { 0 };
+    bool ret = mbed_ok(mbedtls_pem_read_buffer(&ctx, header, footer, BPTR(&input),
+                                               NULL, 0, &use_len));
+    if (ret && !buf_write(dst, ctx.buf, ctx.buflen))
+    {
+        ret = false;
+        msg(M_WARN, "PEM decode error: destination buffer too small");
+    }
+
+    mbedtls_pem_free(&ctx);
+    gc_free(&gc);
+    return ret;
 }
 
 /*
@@ -402,6 +466,7 @@ cipher_kt_get(const char *ciphername)
 
     ASSERT(ciphername);
 
+    ciphername = translate_cipher_name_from_openvpn(ciphername);
     cipher = mbedtls_cipher_info_from_string(ciphername);
 
     if (NULL == cipher)
@@ -466,13 +531,21 @@ cipher_kt_block_size(const mbedtls_cipher_info_t *cipher_kt)
 int
 cipher_kt_tag_size(const mbedtls_cipher_info_t *cipher_kt)
 {
-#ifdef HAVE_AEAD_CIPHER_MODES
     if (cipher_kt && cipher_kt_mode_aead(cipher_kt))
     {
         return OPENVPN_AEAD_TAG_LENGTH;
     }
-#endif
     return 0;
+}
+
+bool
+cipher_kt_insecure(const mbedtls_cipher_info_t *cipher_kt)
+{
+    return !(cipher_kt_block_size(cipher_kt) >= 128 / 8
+#ifdef MBEDTLS_CHACHAPOLY_C
+             || cipher_kt->type == MBEDTLS_CIPHER_CHACHA20_POLY1305
+#endif
+             );
 }
 
 int
@@ -498,7 +571,11 @@ cipher_kt_mode_ofb_cfb(const cipher_kt_t *cipher)
 bool
 cipher_kt_mode_aead(const cipher_kt_t *cipher)
 {
-    return cipher && cipher_kt_mode(cipher) == OPENVPN_MODE_GCM;
+    return cipher && (cipher_kt_mode(cipher) == OPENVPN_MODE_GCM
+#ifdef MBEDTLS_CHACHAPOLY_C
+                      || cipher_kt_mode(cipher) == MBEDTLS_MODE_CHACHAPOLY
+#endif
+                      );
 }
 
 
@@ -554,7 +631,6 @@ cipher_ctx_iv_length(const mbedtls_cipher_context_t *ctx)
 int
 cipher_ctx_get_tag(cipher_ctx_t *ctx, uint8_t *tag, int tag_len)
 {
-#ifdef HAVE_AEAD_CIPHER_MODES
     if (tag_len > SIZE_MAX)
     {
         return 0;
@@ -566,9 +642,6 @@ cipher_ctx_get_tag(cipher_ctx_t *ctx, uint8_t *tag, int tag_len)
     }
 
     return 1;
-#else  /* ifdef HAVE_AEAD_CIPHER_MODES */
-    ASSERT(0);
-#endif /* HAVE_AEAD_CIPHER_MODES */
 }
 
 int
@@ -592,7 +665,7 @@ cipher_ctx_get_cipher_kt(const cipher_ctx_t *ctx)
 }
 
 int
-cipher_ctx_reset(mbedtls_cipher_context_t *ctx, uint8_t *iv_buf)
+cipher_ctx_reset(mbedtls_cipher_context_t *ctx, const uint8_t *iv_buf)
 {
     if (!mbed_ok(mbedtls_cipher_reset(ctx)))
     {
@@ -610,7 +683,6 @@ cipher_ctx_reset(mbedtls_cipher_context_t *ctx, uint8_t *iv_buf)
 int
 cipher_ctx_update_ad(cipher_ctx_t *ctx, const uint8_t *src, int src_len)
 {
-#ifdef HAVE_AEAD_CIPHER_MODES
     if (src_len > SIZE_MAX)
     {
         return 0;
@@ -622,9 +694,6 @@ cipher_ctx_update_ad(cipher_ctx_t *ctx, const uint8_t *src, int src_len)
     }
 
     return 1;
-#else  /* ifdef HAVE_AEAD_CIPHER_MODES */
-    ASSERT(0);
-#endif /* HAVE_AEAD_CIPHER_MODES */
 }
 
 int
@@ -663,7 +732,6 @@ int
 cipher_ctx_final_check_tag(mbedtls_cipher_context_t *ctx, uint8_t *dst,
                            int *dst_len, uint8_t *tag, size_t tag_len)
 {
-#ifdef HAVE_AEAD_CIPHER_MODES
     size_t olen = 0;
 
     if (MBEDTLS_DECRYPT != ctx->operation)
@@ -695,9 +763,6 @@ cipher_ctx_final_check_tag(mbedtls_cipher_context_t *ctx, uint8_t *dst,
     }
 
     return 1;
-#else  /* ifdef HAVE_AEAD_CIPHER_MODES */
-    ASSERT(0);
-#endif /* HAVE_AEAD_CIPHER_MODES */
 }
 
 void
@@ -751,7 +816,7 @@ md_kt_name(const mbedtls_md_info_t *kt)
     return mbedtls_md_get_name(kt);
 }
 
-int
+unsigned char
 md_kt_size(const mbedtls_md_info_t *kt)
 {
     if (NULL == kt)
@@ -781,7 +846,8 @@ md_ctx_new(void)
     return ctx;
 }
 
-void md_ctx_free(mbedtls_md_context_t *ctx)
+void
+md_ctx_free(mbedtls_md_context_t *ctx)
 {
     free(ctx);
 }
@@ -899,4 +965,23 @@ hmac_ctx_final(mbedtls_md_context_t *ctx, uint8_t *dst)
     ASSERT(0 == mbedtls_md_hmac_finish(ctx, dst));
 }
 
-#endif /* ENABLE_CRYPTO && ENABLE_CRYPTO_MBEDTLS */
+int
+memcmp_constant_time(const void *a, const void *b, size_t size)
+{
+    /* mbed TLS has a no const time memcmp function that it exposes
+     * via its APIs like OpenSSL does with CRYPTO_memcmp
+     * Adapt the function that mbedtls itself uses in
+     * mbedtls_safer_memcmp as it considers that to be safe */
+    volatile const unsigned char *A = (volatile const unsigned char *) a;
+    volatile const unsigned char *B = (volatile const unsigned char *) b;
+    volatile unsigned char diff = 0;
+
+    for (size_t i = 0; i < size; i++)
+    {
+        unsigned char x = A[i], y = B[i];
+        diff |= x ^ y;
+    }
+
+    return diff;
+}
+#endif /* ENABLE_CRYPTO_MBEDTLS */

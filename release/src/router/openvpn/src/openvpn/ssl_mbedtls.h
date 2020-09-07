@@ -33,9 +33,10 @@
 
 #include <mbedtls/ssl.h>
 #include <mbedtls/x509_crt.h>
+#include <mbedtls/version.h>
 
 #if defined(ENABLE_PKCS11)
-#include <mbedtls/pkcs11.h>
+#include <pkcs11-helper-1.0/pkcs11h-certificate.h>
 #endif
 
 typedef struct _buffer_entry buffer_entry;
@@ -58,6 +59,30 @@ typedef struct {
 } bio_ctx;
 
 /**
+ * External signing function prototype.  A function pointer to a function
+ * implementing this prototype is provided to
+ * tls_ctx_use_external_signing_func().
+ *
+ * @param sign_ctx  The context for the signing function.
+ * @param src       The data to be signed,
+ * @param src_len   The length of src, in bytes.
+ * @param dst       The destination buffer for the signature.
+ * @param dst_len   The length of the destination buffer.
+ *
+ * @return true if signing succeeded, false otherwise.
+ */
+typedef bool (*external_sign_func)(
+    void *sign_ctx, const void *src, size_t src_size,
+    void *dst, size_t dst_size);
+
+/** Context used by external_pkcs1_sign() */
+struct external_context {
+    size_t signature_length;
+    external_sign_func sign;
+    void *sign_ctx;
+};
+
+/**
  * Structure that wraps the TLS context. Contents differ depending on the
  * SSL library used.
  *
@@ -75,13 +100,12 @@ struct tls_root_ctx {
     mbedtls_x509_crl *crl;              /**< Certificate Revocation List */
     time_t crl_last_mtime;              /**< CRL last modification time */
     off_t crl_last_size;                /**< size of last loaded CRL */
-#if defined(ENABLE_PKCS11)
-    mbedtls_pkcs11_context *priv_key_pkcs11;    /**< PKCS11 private key */
+#ifdef ENABLE_PKCS11
+    pkcs11h_certificate_t pkcs11_cert;  /**< PKCS11 certificate */
 #endif
-#ifdef MANAGMENT_EXTERNAL_KEY
-    struct external_context *external_key; /**< Management external key */
-#endif
+    struct external_context external_key; /**< External key context */
     int *allowed_ciphers;       /**< List of allowed ciphers for this connection */
+    mbedtls_ecp_group_id *groups;     /**< List of allowed groups for this connection */
     mbedtls_x509_crt_profile cert_profile; /**< Allowed certificate types */
 };
 
@@ -89,7 +113,24 @@ struct key_state_ssl {
     mbedtls_ssl_config *ssl_config;     /**< mbedTLS global ssl config */
     mbedtls_ssl_context *ctx;           /**< mbedTLS connection context */
     bio_ctx *bio_ctx;
+
+    /** Keying material exporter cache (RFC 5705). */
+    uint8_t *exported_key_material;
+
 };
 
+/**
+ * Call the supplied signing function to create a TLS signature during the
+ * TLS handshake.
+ *
+ * @param ctx                   TLS context to use.
+ * @param sign_func             Signing function to call.
+ * @param sign_ctx              Context for the sign function.
+ *
+ * @return                      0 if successful, 1 if an error occurred.
+ */
+int tls_ctx_use_external_signing_func(struct tls_root_ctx *ctx,
+                                      external_sign_func sign_func,
+                                      void *sign_ctx);
 
 #endif /* SSL_MBEDTLS_H_ */

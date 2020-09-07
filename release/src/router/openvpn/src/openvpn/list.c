@@ -29,7 +29,6 @@
 
 #include "syshead.h"
 
-#if P2MP_SERVER
 
 #include "integer.h"
 #include "list.h"
@@ -220,18 +219,6 @@ hash_remove_marked(struct hash *hash, struct hash_bucket *bucket)
             he = he->next;
         }
     }
-}
-
-uint32_t
-void_ptr_hash_function(const void *key, uint32_t iv)
-{
-    return hash_func((const void *)&key, sizeof(key), iv);
-}
-
-bool
-void_ptr_compare_function(const void *key1, const void *key2)
-{
-    return key1 == key2;
 }
 
 void
@@ -668,10 +655,3 @@ hash_func(const uint8_t *k, uint32_t length, uint32_t initval)
     /*-------------------------------------- report the result */
     return c;
 }
-
-#else  /* if P2MP_SERVER */
-static void
-dummy(void)
-{
-}
-#endif /* P2MP_SERVER */

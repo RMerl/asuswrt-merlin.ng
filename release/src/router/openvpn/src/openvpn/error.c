@@ -31,6 +31,7 @@
 
 #include "error.h"
 #include "buffer.h"
+#include "init.h"
 #include "misc.h"
 #include "win32.h"
 #include "socket.h"
@@ -343,9 +344,9 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
                 struct timeval tv;
                 gettimeofday(&tv, NULL);
 
-                fprintf(fp, "%"PRIi64".%06lu %x %s%s%s%s",
+                fprintf(fp, "%" PRIi64 ".%06ld %x %s%s%s%s",
                         (int64_t)tv.tv_sec,
-                        (unsigned long)tv.tv_usec,
+                        (long)tv.tv_usec,
                         flags,
                         prefix,
                         prefix_sep,
@@ -688,7 +689,10 @@ x_check_status(int status,
         }
 #elif defined(_WIN32)
         /* get possible driver error from TAP-Windows driver */
-        extended_msg = tap_win_getinfo(tt, &gc);
+        if (tuntap_defined(tt))
+        {
+            extended_msg = tap_win_getinfo(tt, &gc);
+        }
 #endif
         if (!ignore_sys_error(my_errno))
         {
@@ -735,18 +739,12 @@ openvpn_exit(const int status)
 {
     if (!forked)
     {
-        void tun_abort();
-
-#ifdef ENABLE_PLUGIN
-        void plugin_abort(void);
-
-#endif
-
         tun_abort();
 
 #ifdef _WIN32
         uninit_win32();
 #endif
+        remove_pid_file();
 
         close_syslog();
 

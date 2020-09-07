@@ -51,6 +51,7 @@ static const WCHAR *white_list[] =
 };
 
 static BOOL IsUserInGroup(PSID sid, const PTOKEN_GROUPS groups, const WCHAR *group_name);
+
 static PTOKEN_GROUPS GetTokenGroups(const HANDLE token);
 
 /*
@@ -63,12 +64,14 @@ CheckConfigPath(const WCHAR *workdir, const WCHAR *fname, const settings_t *s)
     WCHAR tmp[MAX_PATH];
     const WCHAR *config_file = NULL;
     const WCHAR *config_dir = NULL;
+#ifndef UNICODE
+    WCHAR widepath[MAX_PATH];
+#endif
 
     /* convert fname to full path */
     if (PathIsRelativeW(fname) )
     {
-        swprintf(tmp, _countof(tmp), L"%s\\%s", workdir, fname);
-        tmp[_countof(tmp)-1] = L'\0';
+        openvpn_swprintf(tmp, _countof(tmp), L"%s\\%s", workdir, fname);
         config_file = tmp;
     }
     else
@@ -300,12 +303,12 @@ IsUserInGroup(PSID sid, const PTOKEN_GROUPS token_groups, const WCHAR *group_nam
             break;
         }
         /* If a match is already found, ret == TRUE and the loop is skipped */
-        for (int i = 0; i < nread && !ret; ++i)
+        for (DWORD i = 0; i < nread && !ret; ++i)
         {
             ret = EqualSid(members[i].lgrmi0_sid, sid);
         }
         NetApiBufferFree(members);
-    /* MSDN says the lookup should always iterate until err != ERROR_MORE_DATA */
+        /* MSDN says the lookup should always iterate until err != ERROR_MORE_DATA */
     } while (err == ERROR_MORE_DATA && nloop++ < 100);
 
     if (err != NERR_Success && err != NERR_GroupNotFound)

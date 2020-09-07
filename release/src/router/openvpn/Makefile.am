@@ -23,9 +23,6 @@
 #  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
 
-# This option prevents autoreconf from overriding our COPYING and
-# INSTALL targets:
-AUTOMAKE_OPTIONS = foreign 1.9
 ACLOCAL_AMFLAGS = -I m4
 
 MAINTAINERCLEANFILES = \
@@ -46,14 +43,14 @@ EXTRA_DIST = \
 	contrib \
 	debug
 
-.PHONY: config-version.h
+.PHONY: config-version.h doxygen
 
 if GIT_CHECKOUT
 BUILT_SOURCES = \
 	config-version.h
 endif
 
-SUBDIRS = build distro include src sample doc vendor tests
+SUBDIRS = build distro include src sample doc tests
 
 dist_doc_DATA = \
 	README \
@@ -96,3 +93,6 @@ config-version.h:
 	else \
 		rm -f config-version.h.tmp; \
 	fi
+
+doxygen:
+	$(MAKE) -C doc/doxygen doxygen

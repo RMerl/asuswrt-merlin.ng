@@ -61,12 +61,8 @@ typedef HMAC_CTX hmac_ctx_t;
 /** Cipher is in CFB mode */
 #define OPENVPN_MODE_CFB        EVP_CIPH_CFB_MODE
 
-#ifdef HAVE_AEAD_CIPHER_MODES
-
 /** Cipher is in GCM mode */
 #define OPENVPN_MODE_GCM        EVP_CIPH_GCM_MODE
-
-#endif /* HAVE_AEAD_CIPHER_MODES */
 
 /** Cipher should encrypt */
 #define OPENVPN_OP_ENCRYPT      1
@@ -101,5 +97,22 @@ void crypto_print_openssl_errors(const unsigned int flags);
         msg((flags), __VA_ARGS__); \
     } while (false)
 
+static inline bool
+cipher_kt_var_key_size(const cipher_kt_t *cipher)
+{
+    return EVP_CIPHER_flags(cipher) & EVP_CIPH_VARIABLE_LENGTH;
+}
+
+/**
+ * Load a key file from an engine
+ *
+ * @param file  The engine file to load
+ * @param ui    The UI method for the password prompt
+ * @param data  The data to pass to the UI method
+ *
+ * @return      The private key if successful or NULL if not
+ */
+EVP_PKEY *
+engine_load_key(const char *file, SSL_CTX *ctx);
 
 #endif /* CRYPTO_OPENSSL_H_ */

@@ -131,8 +131,6 @@ struct gc_arena
 
 void buf_clear(struct buffer *buf);
 
-struct buffer clear_buf(void);
-
 void free_buf(struct buffer *buf);
 
 bool buf_assign(struct buffer *dest, const struct buffer *src);
@@ -204,6 +202,13 @@ inline static void
 gc_freeaddrinfo_callback(void *addr)
 {
     freeaddrinfo((struct addrinfo *) addr);
+}
+
+/** Return an empty struct buffer */
+static inline struct buffer
+clear_buf(void)
+{
+    return (struct buffer) { 0 };
 }
 
 static inline bool
@@ -342,9 +347,9 @@ buf_set_read(struct buffer *buf, const uint8_t *data, int size)
 static inline void
 strncpynt(char *dest, const char *src, size_t maxlen)
 {
-    strncpy(dest, src, maxlen);
     if (maxlen > 0)
     {
+        strncpy(dest, src, maxlen-1);
         dest[maxlen - 1] = 0;
     }
 }
@@ -443,6 +448,23 @@ __attribute__ ((format(__printf__, 3, 4)))
 #endif
 ;
 
+
+#ifdef _WIN32
+/*
+ * Like swprintf but guarantees null termination for size > 0
+ *
+ * This is under #ifdef because only Windows-specific code in tun.c
+ * uses this function and its implementation breaks OpenBSD <= 4.9
+ */
+bool
+openvpn_swprintf(wchar_t *const str, const size_t size, const wchar_t *const format, ...);
+
+/*
+ * Unlike in openvpn_snprintf, we cannot use format attributes since
+ * GCC doesn't support wprintf as archetype.
+ */
+#endif
+
 /*
  * remove/add trailing characters
  */
@@ -464,11 +486,15 @@ const char *skip_leading_whitespace(const char *str);
 
 void string_null_terminate(char *str, int len, int capacity);
 
-/*
- * Write string in buf to file descriptor fd.
- * NOTE: requires that string be null terminated.
+/**
+ * Write buffer contents to file.
+ *
+ * @param filename  The filename to write the buffer to.
+ * @param buf       The buffer to write to the file.
+ *
+ * @return true on success, false otherwise.
  */
-void buf_write_string_file(const struct buffer *buf, const char *filename, int fd);
+bool buffer_write_file(const char *filename, const struct buffer *buf);
 
 /*
  * write a string to the end of a buffer that was
@@ -828,6 +854,13 @@ buf_read_u32(struct buffer *buf, bool *good)
     }
 }
 
+/** Return true if buffer contents are equal */
+static inline bool
+buf_equal(const struct buffer *a, const struct buffer *b)
+{
+    return BLEN(a) == BLEN(b) && 0 == memcmp(BPTR(a), BPTR(b), BLEN(a));
+}
+
 /**
  * Compare src buffer contents with match.
  * *NOT* constant time. Do not use when comparing HMACs.
@@ -1173,5 +1206,17 @@ void buffer_list_aggregate_separator(struct buffer_list *bl,
                                      const size_t max_len, const char *sep);
 
 struct buffer_list *buffer_list_file(const char *fn, int max_line_len);
+
+/**
+ * buffer_read_from_file - copy the content of a file into a buffer
+ *
+ * @param file      path to the file to read
+ * @param gc        the garbage collector to use when allocating the buffer. It
+ *                  is passed to alloc_buf_gc() and therefore can be NULL.
+ *
+ * @return the buffer storing the file content or an invalid buffer in case of
+ * error
+ */
+struct buffer buffer_read_from_file(const char *filename, struct gc_arena *gc);
 
 #endif /* BUFFER_H */

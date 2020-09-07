@@ -31,7 +31,7 @@
 #include "socket.h"
 #include "mroute.h"
 
-#define MANAGEMENT_VERSION                      1
+#define MANAGEMENT_VERSION                      3
 #define MANAGEMENT_N_PASSWORD_RETRIES           3
 #define MANAGEMENT_LOG_HISTORY_INITIAL_SIZE   100
 #define MANAGEMENT_ECHO_BUFFER_SIZE           100
@@ -164,6 +164,7 @@ struct management_callback
     int (*kill_by_addr) (void *arg, const in_addr_t addr, const int port);
     void (*delete_event) (void *arg, event_t event);
     int (*n_clients) (void *arg);
+    bool (*send_cc_message) (void *arg, const char *message, const char *parameter);
 #ifdef MANAGEMENT_DEF_AUTH
     bool (*kill_by_cid)(void *arg, const unsigned long cid, const char *kill_msg);
     bool (*client_auth) (void *arg,
@@ -173,6 +174,9 @@ struct management_callback
                          const char *reason,
                          const char *client_reason,
                          struct buffer_list *cc_config); /* ownership transferred */
+    bool (*client_pending_auth) (void *arg,
+                                 const unsigned long cid,
+                                 const char *url);
     char *(*get_peer_info) (void *arg, const unsigned long cid);
 #endif
 #ifdef MANAGEMENT_PF
@@ -275,19 +279,18 @@ struct man_connection {
     struct command_line *in;
     struct buffer_list *out;
 
-#ifdef MANAGEMENT_IN_EXTRA
 #define IEC_UNDEF       0
 #define IEC_CLIENT_AUTH 1
 #define IEC_CLIENT_PF   2
 #define IEC_RSA_SIGN    3
 #define IEC_CERTIFICATE 4
+#define IEC_PK_SIGN     5
     int in_extra_cmd;
     struct buffer_list *in_extra;
 #ifdef MANAGEMENT_DEF_AUTH
     unsigned long in_extra_cid;
     unsigned int in_extra_kid;
 #endif
-#ifdef MANAGMENT_EXTERNAL_KEY
 #define EKS_UNDEF   0
 #define EKS_SOLICIT 1
 #define EKS_INPUT   2
@@ -296,8 +299,6 @@ struct man_connection {
     struct buffer_list *ext_key_input;
     int ext_cert_state;
     struct buffer_list *ext_cert_input;
-#endif
-#endif /* ifdef MANAGEMENT_IN_EXTRA */
     struct event_set *es;
     int env_filter_level;
 
@@ -311,13 +312,11 @@ struct man_connection {
     int up_query_mode;
     struct user_pass up_query;
 
-#ifdef MANAGMENT_EXTERNAL_KEY
-    struct buffer_list *rsa_sig;
-#endif
 #ifdef TARGET_ANDROID
     int fdtosend;
     int lastfdreceived;
 #endif
+    int client_version;
 };
 
 struct management
@@ -346,14 +345,14 @@ struct management *management_init(void);
 #ifdef MANAGEMENT_PF
 #define MF_CLIENT_PF         (1<<7)
 #endif
-#define MF_UNIX_SOCK       (1<<8)
-#ifdef MANAGMENT_EXTERNAL_KEY
-#define MF_EXTERNAL_KEY    (1<<9)
-#endif
-#define MF_UP_DOWN          (1<<10)
-#define MF_QUERY_REMOTE     (1<<11)
-#define MF_QUERY_PROXY      (1<<12)
-#define MF_EXTERNAL_CERT    (1<<13)
+#define MF_UNIX_SOCK                (1<<8)
+#define MF_EXTERNAL_KEY             (1<<9)
+#define MF_EXTERNAL_KEY_NOPADDING   (1<<10)
+#define MF_EXTERNAL_KEY_PKCS1PAD    (1<<11)
+#define MF_UP_DOWN                  (1<<12)
+#define MF_QUERY_REMOTE             (1<<13)
+#define MF_QUERY_PROXY              (1<<14)
+#define MF_EXTERNAL_CERT            (1<<15)
 
 bool management_open(struct management *man,
                      const char *addr,
@@ -435,15 +434,17 @@ void management_learn_addr(struct management *management,
                            const struct mroute_addr *addr,
                            const bool primary);
 
-#endif
+void management_notify_client_cr_response(unsigned mda_key_id,
+                                          const struct man_def_auth_context *mdac,
+                                          const struct env_set *es,
+                                          const char *response);
 
-#ifdef MANAGMENT_EXTERNAL_KEY
+#endif /* ifdef MANAGEMENT_DEF_AUTH */
 
-char *management_query_rsa_sig(struct management *man, const char *b64_data);
+char *management_query_pk_sig(struct management *man, const char *b64_data,
+                              const char *algorithm);
 
 char *management_query_cert(struct management *man, const char *cert_name);
-
-#endif
 
 static inline bool
 management_connected(const struct management *man)
@@ -583,17 +584,17 @@ management_bytes_in(struct management *man, const int size)
 
 #ifdef MANAGEMENT_DEF_AUTH
 
+void man_bytecount_output_server(struct management *man,
+                                 const counter_type *bytes_in_total,
+                                 const counter_type *bytes_out_total,
+                                 struct man_def_auth_context *mdac);
+
 static inline void
 management_bytes_server(struct management *man,
                         const counter_type *bytes_in_total,
                         const counter_type *bytes_out_total,
                         struct man_def_auth_context *mdac)
 {
-    void man_bytecount_output_server(struct management *man,
-                                     const counter_type *bytes_in_total,
-                                     const counter_type *bytes_out_total,
-                                     struct man_def_auth_context *mdac);
-
     if (man->connection.bytecount_update_seconds > 0
         && now >= mdac->bytecount_last_update + man->connection.bytecount_update_seconds
         && (mdac->flags & (DAF_CONNECTION_ESTABLISHED|DAF_CONNECTION_CLOSED)) == DAF_CONNECTION_ESTABLISHED)

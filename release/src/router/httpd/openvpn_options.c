@@ -453,6 +453,10 @@ add_option (char *p[], int line, int unit)
 				nvram_pf_set(prefix, "comp", "lz4");
 			else if (streq (p[1], "lz4-v2"))
 				nvram_pf_set(prefix, "comp", "lz4-v2");
+			else if (streq (p[1], "stub"))
+				nvram_pf_set(prefix, "comp", "stub");
+                        else if (streq (p[1], "stub-v2"))
+                                nvram_pf_set(prefix, "comp", "stub-v2");
 		} else {
 			nvram_pf_set(prefix, "comp", "no");
 		}

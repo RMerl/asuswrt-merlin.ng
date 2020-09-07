@@ -1390,6 +1390,8 @@ function refreshVPNIP() {
 								<option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %> > LZO Adaptive</option>
 								<option value="lz4" <% nvram_match("vpn_client_comp","lz4","selected"); %> >LZ4</option>
 								<option value="lz4-v2" <% nvram_match("vpn_client_comp","lz4-v2","selected"); %> >LZ4-V2</option>
+								<option value="stub" <% nvram_match("vpn_client_comp","stub","selected"); %> >Stub</option>
+								<option value="stub-v2" <% nvram_match("vpn_client_comp","stub-v2","selected"); %> >Stub-V2</option>
 							</select>
 						</td>
 					</tr>

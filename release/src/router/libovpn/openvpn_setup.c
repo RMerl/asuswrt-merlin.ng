@@ -594,6 +594,8 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 			fprintf(fp, "comp-lzo adaptive\n");
 		} else if (!strcmp(cconf->comp, "no")) {
 			fprintf(fp, "compress\n");      // Disable, but can be overriden
+		} else if (!strncmp(cconf->comp, "stub", 4)) {
+			fprintf(fp, "compress %s\n", cconf->comp);
 		}
 	}
 

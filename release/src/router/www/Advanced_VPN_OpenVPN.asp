@@ -94,9 +94,6 @@ var ciphersarray = [
 		["AES-128-CBC"],
 		["AES-192-CBC"],
 		["AES-256-CBC"],
-		["AES-128-GCM"],
-		["AES-192-GCM"],
-		["AES-256-GCM"],
 		["BF-CBC"],
 		["CAST5-CBC"],
 		["CAMELLIA-128-CBC"],
@@ -913,6 +910,7 @@ function update_visibility(){
 	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
 	showhide("server_igncrt", (userpass == 1));
 	showhide("ncp_ciphers", (auth == "tls"));
+	showhide("server_cipher", (auth == "secret"));
 }
 
 function edit_Keys() {
@@ -1651,7 +1649,7 @@ function callback_upload_cert(_flag) {
 												</td>
 											</tr>
 											<tr id="server_cipher">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Legacy (pre-2.4) cipher</a></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Cipher</a></th>
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
 													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>

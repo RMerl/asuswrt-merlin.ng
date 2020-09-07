@@ -368,9 +368,7 @@ int ovpn_write_server_config(ovpn_sconf_t *sconf, int unit) {
 			fprintf(fp, "data-ciphers %s\n", sconf->ncp_ciphers);
 			fprintf(fp_client, "ncp-ciphers %s\n", sconf->ncp_ciphers);
 		}
-	}
-	if ((!*sconf->ncp_ciphers) ||
-	    (sconf->auth_mode == OVPN_AUTH_STATIC)) {
+	} else {	// OVPN_AUTH_STATIC
 		if (strcmp(sconf->cipher, "default")) {
 			fprintf(fp, "cipher %s\n", sconf->cipher);
 			fprintf(fp_client, "cipher %s\n", sconf->cipher);
@@ -603,9 +601,7 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	if (cconf->auth_mode == OVPN_AUTH_TLS) {
 		if (*cconf->ncp_ciphers)
 			fprintf(fp, "data-ciphers %s\n", cconf->ncp_ciphers);
-	}
-	if ((!*cconf->ncp_ciphers) ||
-	    (cconf->auth_mode == OVPN_AUTH_STATIC)) {
+	} else {	// OVPN_AUTH_STATIC
 		if (strcmp(cconf->cipher, "default")) {
 			fprintf(fp, "cipher %s\n", cconf->cipher);
 		}

@@ -163,9 +163,6 @@ ciphersarray = [
 		["AES-128-CBC"],
 		["AES-192-CBC"],
 		["AES-256-CBC"],
-		["AES-128-GCM"],
-		["AES-192-GCM"],
-		["AES-256-GCM"],
 		["BF-CBC"],
 		["CAST5-CBC"],
 		["DES-CBC"],
@@ -389,6 +386,8 @@ function update_visibility(){
 	showhide("client_enforce", (rgw >= 2));
 
 	showhide("ncp_ciphers", (auth == "tls"));
+	showhide("client_cipher", (auth == "secret"));
+
 }
 
 
@@ -1340,7 +1339,7 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr id="client_cipher">
-						<th>Legacy (pre-2.4) cipher</th>
+						<th>Cipher</th>
 						<td>
 							<select name="vpn_client_cipher" class="input_option">
 								<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>

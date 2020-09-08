@@ -1371,9 +1371,10 @@ function refreshVPNIP() {
 						</tr>
 					</thead>
 					<tr>
-						<th>Log verbosity<br><i>(0-6, default=3)</i></th>
+						<th>Log verbosity</th>
 						<td>
 							<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_verb"); %>">
+							<span style="color:#FC0">(Between 0 and 6. Default: 3)</span>
 						</td>
 					</tr>
 					<tr>
@@ -1392,15 +1393,17 @@ function refreshVPNIP() {
 						</td>
 					</tr>
 					<tr id="client_reneg">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time<br><i>(in seconds, -1 for default)</a></th>
+						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time</th>
 						<td>
 							<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" value="<% nvram_get("vpn_client_reneg"); %>">
+							<span style="color:#FC0">(in seconds, -1 for default)</span>
 						</td>
 					</tr>
 					<tr>
-						<th>Connection Retry attempts<br><i>(0 for infinite)</th>
+						<th>Connection Retry attempts</th>
 						<td>
 							<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
+							<span style="color:#FC0">(0 for infinite)</span>
 						</td>
 					</tr>
 					<tr id="client_tlsremote">

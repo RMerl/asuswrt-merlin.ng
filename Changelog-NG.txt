@@ -13,14 +13,27 @@ Asuswrt-Merlin 386/NG Changelog
           once again back on the master branch, with
           both mainline and ax being reunified again.
 
+  - NEW: Added stub and stub-v2 compression options to OpenVPN
+         clients.  Not added to server, since compression is
+         considered deprecated, and will be removed most likely
+         in OpenVPN 2.6, for security reasons.
+  - NEW: Added tls-crypt-v2 support to OpenVPN clients.
   - UPDATED: Merged GPL 386_39179 (beta GPL from Asus).
   - UPDATED: Merged 386_39179 binary blobs for RT-AC86U,
              RT-AC68U, RT-AC5300 and RT-AX88U.
+  - UPDATED: Updated to OpenVPN 2.5.0 Beta 3.  Note that OpenVPN
+             2.4.0 or newer is now required by the exported
+             client config file.
   - CHANGED: firmware update checks are no longer using the
              server address stored in nvram, for security
              purposes.  Devs who were using that nvram
              should instead edit the webs_scripts/* to
              use their own URL.
+  - CHANGED: The old legacy cipher setting is now only available
+             when running with static key authentication.
+  - CHANGED: Tweaks to the OpenVPN webui layout
+  - REMOVED: Option to disable NCP.  The NCP cipher list is
+             now used both for NCP and non-NCP endpoints.
 
 
 384.19 (14-Aug-2020)

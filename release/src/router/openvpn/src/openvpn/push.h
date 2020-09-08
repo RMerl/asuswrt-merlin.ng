@@ -50,14 +50,19 @@ void receive_auth_failed(struct context *c, const struct buffer *buffer);
 
 void server_pushed_signal(struct context *c, const struct buffer *buffer, const bool restart, const int adv);
 
+void server_pushed_info(struct context *c, const struct buffer *buffer,
+                        const int adv);
+
+void receive_cr_response(struct context *c, const struct buffer *buffer);
+
 void incoming_push_message(struct context *c, const struct buffer *buffer);
 
-#if P2MP_SERVER
 void clone_push_list(struct options *o);
 
 void push_option(struct options *o, const char *opt, int msglevel);
 
-void push_options(struct options *o, char **p, int msglevel, struct gc_arena *gc);
+void push_options(struct options *o, char **p, int msglevel,
+                  struct gc_arena *gc);
 
 void push_reset(struct options *o);
 
@@ -67,8 +72,22 @@ void remove_iroutes_from_push_route_list(struct options *o);
 
 void send_auth_failed(struct context *c, const char *client_reason);
 
+/**
+ * Sends the auth pending control messages to a client. See
+ * doc/management-notes.txt under client-pending-auth for
+ * more details on message format
+ */
+bool send_auth_pending_messages(struct context *c, const char *extra);
+
 void send_restart(struct context *c, const char *kill_msg);
 
-#endif
+/**
+ * Sends a push reply message only containin the auth-token to update
+ * the auth-token on the client
+ *
+ * @param multi  - The tls_multi structure belonging to the instance to push to
+ */
+void send_push_reply_auth_token(struct tls_multi *multi);
+
 #endif /* if P2MP */
 #endif /* ifndef PUSH_H */

@@ -1,3 +1,294 @@
+Overview of changes in 2.5
+==========================
+
+New features
+------------
+Client-specific tls-crypt keys (``--tls-crypt-v2``)
+    ``tls-crypt-v2`` adds the ability to supply each client with a unique
+    tls-crypt key.  This allows large organisations and VPN providers to profit
+    from the same DoS and TLS stack protection that small deployments can
+    already achieve using ``tls-auth`` or ``tls-crypt``.
+
+ChaCha20-Poly1305 cipher support
+    Added support for using the ChaCha20-Poly1305 cipher in the OpenVPN data
+    channel.
+
+Improved Data channel cipher negotiation
+    The option ``ncp-ciphers`` has been renamed to ``data-ciphers``.
+    The old name is still accepted. The change in name signals that
+    ``data-ciphers`` is the preferred way to configure data channel
+    ciphers and the data prefix is chosen to avoid the ambiguity that
+    exists with ``--cipher`` for the data cipher and ``tls-cipher``
+    for the TLS ciphers.
+
+    OpenVPN clients will now signal all supported ciphers from the
+    ``data-ciphers`` option to the server via ``IV_CIPHERS``. OpenVPN
+    servers will select the first common cipher from the ``data-ciphers``
+    list instead of blindly pushing the first cipher of the list. This
+    allows to use a configuration like
+    ``data-ciphers ChaCha20-Poly1305:AES-256-GCM`` on the server that
+    prefers ChaCha20-Poly1305 but uses it only if the client supports it.
+
+    See the data channel negotiation section in the manual for more details.
+
+Removal of BF-CBC support in default configuration:
+    By default OpenVPN 2.5 will only accept AES-256-GCM and AES-128-GCM as
+    data ciphers. OpenVPN 2.4 allows AES-256-GCM,AES-128-GCM and BF-CBC when
+    no --cipher and --ncp-ciphers options are present. Accepting BF-CBC can be
+    enabled by adding
+
+        data-ciphers AES-256-GCM:AES-128-GCM:BF-CBC
+
+    and when you need to support very old peers also
+
+        data-ciphers-fallback BF-CBC
+
+    To offer backwards compatibility with older configs an *explicit*
+
+        cipher BF-CBC
+
+    in the configuration will be automatically translated into adding BF-CBC
+    to the data-ciphers option and setting data-ciphers-fallback to BF-CBC
+    (as in the example commands above). We strongly recommend to switching
+    away from BF-CBC to a more secure cipher.
+
+Asynchronous (deferred) authentication support for auth-pam plugin.
+    See src/plugins/auth-pam/README.auth-pam for details.
+
+Deferred client-connect
+    The ``--client-connect`` option and the connect plugin API allow
+    asynchronous/deferred return of the configuration file in the same way
+    as the auth-plugin.
+
+Faster connection setup
+    A client will signal in the ``IV_PROTO`` variable that it is in pull
+    mode. This allows the server to push the configuration options to
+    the client without waiting for a ``PULL_REQUEST`` message. The feature
+    is automatically enabled if both client and server support it and
+    significantly reduces the connection setup time by avoiding one
+    extra packet round-trip and 1s of internal event delays.
+
+Netlink support
+    On Linux, if configured without ``--enable-iproute2``, configuring IP
+    addresses and adding/removing routes is now done via the netlink(3)
+    kernel interface.  This is much faster than calling ``ifconfig`` or
+    ``route`` and also enables OpenVPN to run with less privileges.
+
+    If configured with --enable-iproute2, the ``ip`` command is used
+    (as in 2.4).  Support for ``ifconfig`` and ``route`` is gone.
+
+Wintun support
+    On Windows, OpenVPN can now use ``wintun`` devices.  They are faster
+    than the traditional ``tap9`` tun/tap devices, but do not provide
+    ``--dev tap`` mode - so the official installers contain both.  To use
+    a wintun device, add ``--windows-driver wintun`` to your config
+    (and use of the interactive service is required as wintun needs
+    SYSTEM privileges to enable access).
+
+IPv6-only operation
+    It is now possible to have only IPv6 addresses inside the VPN tunnel,
+    and IPv6-only address pools (2.4 always required IPv4 config/pools
+    and IPv6 was the "optional extra").
+
+Improved Windows 10 detection
+    Correctly log OS on Windows 10 now.
+
+Linux VRF support
+    Using the new ``--bind-dev`` option, the OpenVPN outside socket can
+    now be put into a Linux VRF.  See the "Virtual Routing and Forwarding"
+    documentation in the man page.
+
+TLS 1.3 support
+    TLS 1.3 support has been added to OpenVPN.  Currently, this requires
+    OpenSSL 1.1.1+.
+    The options ``--tls-ciphersuites`` and ``--tls-groups`` have been
+    added to fine tune TLS protocol options.  Most of the improvements
+    were also backported to OpenVPN 2.4 as part of the maintainance
+    releases.
+
+Support setting DHCP search domain
+    A new option ``--dhcp-option DOMAIN-SEARCH my.example.com`` has been
+    defined, and Windows support for it is implemented (tun/tap only, no
+    wintun support yet).  Other platforms need to support this via ``--up``
+    script (Linux) or GUI (OSX/Tunnelblick).
+
+per-client changing of ``--data-ciphers`` or ``data-ciphers-fallback``
+    from client-connect script/dir (NOTE: this only changes preference of
+    ciphers for NCP, but can not override what the client announces as
+    "willing to accept")
+
+Handle setting of tun/tap interface MTU on Windows
+    If IPv6 is in use, MTU must be >= 1280 (Windows enforces IETF requirements)
+
+Add support for OpenSSL engines to access private key material (like TPM).
+
+HMAC based auth-token support
+    The ``--auth-gen-token`` support has been improved and now generates HMAC
+    based user token. If the optional ``--auth-gen-token-secret`` option is
+    used clients will be able to seamlessly reconnect to a different server
+    using the same secret file or to the same server after a server restart.
+
+Improved support for pending authentication
+    The protocol has been enhanced to be able to signal that
+    the authentication should use a secondary authentication
+    via web (like SAML) or a two factor authentication without
+    disconnecting the OpenVPN session with AUTH_FAILED. The
+    session will instead be stay in a authenticated state and
+    wait for the second factor authentication to complete.
+
+    This feature currently requires usage of the managent interface
+    on both client and server side. See the `management-notes.txt`
+    ``client-pending-auth`` and ``cr-response`` commands for more
+    details.
+
+VLAN support
+    OpenVPN servers in TAP mode can now use 802.1q tagged VLANs
+    on the TAP interface to separate clients into different groups
+    that can then be handled differently (different subnets / DHCP,
+    firewall zones, ...) further down the network.  See the new
+    options ``--vlan-tagging``, ``--vlan-accept``, ``--vlan-pvid``.
+
+    802.1q tagging on the client side TAP interface is not handled
+    today (= tags are just forwarded transparently to the server).
+
+Support building of .msi installers for Windows
+
+Allow unicode search string in ``--cryptoapicert`` option (Windows)
+
+Support IPv4 configs with /31 netmasks now
+    (By no longer trying to configure ``broadcast x.x.x.x'' in
+    ifconfig calls, /31 support "just works")
+
+New option ``--block-ipv6`` to reject all IPv6 packets (ICMPv6)
+    this is useful if the VPN service has no IPv6, but the clients
+    might have (LAN), to avoid client connections to IPv6-enabled
+    servers leaking "around" the IPv4-only VPN.
+
+``--ifconfig-ipv6`` and ``--ifconfig-ipv6-push`` will now accept
+    hostnames and do a DNS lookup to get the IPv6 address to use
+
+
+Deprecated features
+-------------------
+For an up-to-date list of all deprecated options, see this wiki page:
+https://community.openvpn.net/openvpn/wiki/DeprecatedOptions
+
+- ``ncp-disable`` has been deprecated
+    With the improved and matured data channel cipher negotiation, the use
+    of ``ncp-disable`` should not be necessary anymore.
+
+- ``inetd`` has been deprecated
+  This is a very limited and not-well-tested way to run OpenVPN, on TCP
+  and TAP mode only, which complicates the code quite a bit for little gain.
+  To be removed in OpenVPN 2.6 (unless users protest).
+
+- ``no-iv`` has been removed
+  This option was made into a NOOP option with OpenVPN 2.4.  This has now
+  been completely removed.
+
+- ``--client-cert-not-required`` has been removed
+  This option will now cause server configurations to not start.  Use
+  ``--verify-client-cert none`` instead.
+
+- ``--ifconfig-pool-linear`` has been removed
+  This option is removed.  Use ``--topology p2p`` or ``--topology subnet``
+  instead.
+
+- ``--compress xxx`` is considered risky and is warned against, see below.
+
+- ``--key-method 1`` has been removed
+
+
+User-visible Changes
+--------------------
+- If multiple connect handlers are used (client-connect, ccd, connect
+  plugin) and one of the handler succeeds but a subsequent fails, the
+  client-disconnect-script is now called immediately. Previously it
+  was called, when the VPN session was terminated.
+
+- Support for building with OpenSSL 1.0.1 has been removed. The minimum
+  supported OpenSSL version is now 1.0.2.
+
+- The GET_CONFIG management state is omitted if the server pushes
+  the client configuration almost immediately as result of the
+  faster connection setup feature.
+
+- ``--compress`` is nowadays considered risky, because attacks exist
+  leveraging compression-inside-crypto to reveal plaintext (VORACLE).  So
+  by default, ``--compress xxx`` will now accept incoming compressed
+  packets (for compatibility with peers that have not been upgraded yet),
+  but will not use compression outgoing packets.  This can be controlled with
+  the new option ``--allow-compression yes|no|asym``.
+
+- Stop changing ``--txlen`` aways from OS defaults unless explicitly specified
+  in config file.  OS defaults nowadays are actually larger then what we used
+  to configure, so our defaults sometimes caused packet drops = bad performance.
+
+- remove ``--writepid`` pid file on exit now
+
+- plugin-auth-pam now logs via OpenVPN logging method, no longer to stderr
+  (this means you'll have log messages in syslog or openvpn log file now)
+
+- use ISO 8601 time format for file based logging now (YYYY-MM-DD hh:mm:dd)
+  (syslog is not affected, nor is ``--machine-readable-output``)
+
+- ``--clr-verify`` now loads all CRLs if more than one CRL is in the same
+  file (OpenSSL backend only, mbedTLS always did that)
+
+- when ``--auth-user-pass file`` has no password, and the management interface
+  is active, query management interface (instead of trying console query,
+  which does not work on windows)
+
+- skip expired certificates in Windows certificate store (``--cryptoapicert``)
+
+- ``--socks-proxy`` + ``--proto udp*`` will now allways use IPv4, even if
+  IPv6 is requested and available.  Our SOCKS code does not handle IPv6+UDP,
+  and before that change it would just fail in non-obvious ways.
+
+- TCP listen() backlog queue is now set to 32 - this helps TCP servers that
+  receive lots of "invalid" connects by TCP port scanners
+
+- do no longer print OCC warnings ("option mismatch") about ``key-method``,
+  ``keydir``, ``tls-auth`` and ``cipher`` - these are either gone now, or
+  negotiated, and the warnings do not serve a useful purpose.
+
+- ``dhcp-option DNS`` and ``dhcp-option DNS6`` are now treated identically
+  (= both accept an IPv4 or IPv6 address for the nameserver)
+
+
+Maintainer-visible changes
+--------------------------
+- the man page is now in maintained in .rst format, so building the openvpn.8
+  manpage from a git checkout now requires python-docutils (if this is missing,
+  the manpage will not be built - which is not considered an error generally,
+  but for package builders or ``make distcheck`` it is).  Release tarballs
+  contain the openvpn.8 file, so unless some .rst is changed, doc-utils are
+  not needed for building.
+
+- OCC support can no longer be disabled
+
+- AEAD support is now required in the crypto library
+
+- ``--disable-server`` has been removed from configure (so it is no longer
+  possible to build a client-/p2p-only OpenVPN binary) - the saving in code
+  size no longer outweighs the extra maintenance effort.
+
+- ``--enable-iproute2`` will disable netlink(3) support, so maybe remove
+  that from package building configs (see above)
+
+- support building with MSVC 2019
+
+- cmocka based unit tests are now only run if cmocka is installed externally
+  (2.4 used to ship a local git submodule which was painful to maintain)
+
+- ``--disable-crypto`` configure option has been removed.  OpenVPN is now always
+  built with crypto support, which makes the code much easier to maintain.
+  This does not affect ``--cipher none`` to do a tunnel without encryption.
+
+- ``--disable-multi`` configure option has been removed
+
+
+
 Overview of changes in 2.4
 ==========================
 
@@ -10,7 +301,7 @@ Seamless client IP/port floating
     the new format. When a data packet arrives, the server identifies peer
     by peer-id. If peer's ip/port has changed, server assumes that
     client has floated, verifies HMAC and updates ip/port in internal structs.
-    This allows the connection to be immediatly restored, instead of requiring
+    This allows the connection to be immediately restored, instead of requiring
     a TLS handshake before the server accepts packets from the new client
     ip/port.
 
@@ -207,7 +498,7 @@ User-visible Changes
   of a field get _$N appended to it's field name, starting at N=1.  For the
   example above, that would result in e.g. X509_0_OU=one, X509_0_OU_1=two.
   Note that this breaks setups that rely on the fact that OpenVPN would
-  previously (incorrectly) only export the last occurence of a field.
+  previously (incorrectly) only export the last occurrence of a field.
 
 - ``proto udp`` and ``proto tcp`` now use both IPv4 and IPv6. The new
   options ``proto udp4`` and ``proto tcp4`` use IPv4 only.
@@ -321,190 +612,8 @@ Maintainer-visible changes
   i386/i686 builds on RHEL5.
 
 
-Version 2.4.9
-=============
-This is primarily a maintenance release with minor bugfixes and improvements.
-
-New features
-------------
-- Allow unicode search string in --cryptoapicert option (Windows)
-
-User visible changes
---------------------
-- Skip expired certificates in Windows certificate store (Windows) (trac #966)
-
-- OpenSSL: Fix --crl-verify not loading multiple CRLs in one file (trac #623)
-
-- When using "--auth-user-pass file" with just a username and no password
-  in the file, OpenVPN now queries the management interface (if active)
-  for the credentials.  Previously it would query the console for the 
-  password, and fail if no console available (normal case on Windows)
-  (trac #757)
-
-- Swap the order of checks for validating interactive service user
-  (Windows: check config location before querying domain controller for
-  group membership, which can be slow)
-
-
-Bug fixes
----------
-- fix condition where a client's session could "float" to a new IP address
-  that is not authorized ("fix illegal client float").
-
-  This can be used to disrupt service to a freshly connected client (no
-  session keys negotiated yet).  It can not be used to inject or steal 
-  VPN traffic.  CVE-2020-11810, trac #1272).
-
-- fix combination of async push (deferred auth) and NCP (trac #1259)
-
-- Fix OpenSSL 1.1.1 not using auto elliptic curve selection (trac #1228)
-
-- Fix OpenSSL error stack handling of tls_ctx_add_extra_certs
-
-- mbedTLS: Make sure TLS session survives move (trac #880)
-
-- Fix OpenSSL private key passphrase notices
-
-- Fix building with --enable-async-push in FreeBSD (trac #1256)
-
-- Fix broken fragmentation logic when using NCP (trac #1140)
-
-
-
-Version 2.4.8
-=============
-This is primarily a maintenance release with minor bugfixes and improvements.
-
-New features
-------------
-- Support compiling with OpenSSL 1.1 without deprecated APIs
-
-- handle PSS padding in cryptoapicert (necessary for TLS >= 1.2)
-
-
-User visible changes
---------------------
-- do not abort when hitting the combination of "--pull-filter" and
-  "--mode server" (this got hit when starting OpenVPN servers using
-  the windows GUI which installs a pull-filter to force ip-win32)
-
-- increase listen() backlog queue to 32  (improve response behaviour
-  on openvpn servers using TCP that get portscanned)
-
-- fix and enhance documentation (INSTALL, man page, ...)
-
-
-Bug fixes
----------
-- the combination "IPv6 and proto UDP and SOCKS proxy" did not work - as
-  a workaround, force IPv4 in this case until a full implementation for
-  IPv6-UDP-SOCKS can be made.
-
-- fix IPv6 routes on tap interfaces on OpenSolaris/OpenIndiana
-
-- fix building with LibreSSL
-
-- do not set pkcs11-helper 'safe fork mode' (should fix PIN querying in
-  systemd environments)
-
-- repair windows builds
-
-- repair Darwin builds (remove -no-cpp-precomp flag)
-
-
-
-Version 2.4.7
-=============
-This is primarily a maintenance release with minor bugfixes and improvements.
-
-New features
-------------
-- ifconfig-ipv6(-push): allow using hostnames (in place of IPv6 addresses)
-
-- new option: --ciphersuites to select TLS 1.3 cipher suites
-  (--cipher selects TLS 1.2 and earlier ciphers)
-
-- enable dhcp on tap adapter using interactive service
-  (previously this required a privileged netsh.exe call from OpenVPN)
-
-- clarify and expand management interface documentation
-
-- add Interactive Service developer documentation
-
-
-User visible changes
---------------------
-- add message explaining early TLS client hello failure (if TLS 1.0
-  only clients try to connect to TLS 1.3 capable servers)
-
-- --show-tls will now display TLS 1.3 and TLS 1.2 ciphers in separate
-  lists (if built with OpenSSL 1.1.1+)
-
-- don't print OCC warnings about 'key-method', 'keydir' and 'tls-auth'
-  (unnecessary warnings, and will cause spurious warnings with tls-crypt-v2)
-
-- bump version of openvpn plugin argument structs to 5
-
-- plugin: Export base64 encode and decode functions
-
-- man: add security considerations to --compress section
-
-
-Bug fixes
----------
-- print port numbers (again) for incoming IPv4 connections received on
-  a dual-stacked IPv6 socket.  This got lost at some point during 
-  rewrite of the dual-stack code and proper printing of IPv4 addresses.
-
-- fallback to password authentication when auth-token fails
-
-- fix combination of --dev tap and --topology subnet across multiple 
-  platforms (BSDs, MacOS, and Solaris).
-
-- fix Windows CryptoAPI usage for TLS 1.2 signatures
-
-- fix option handling in combination with NCP negotiation and OCC
-  (--opt-verify failure on reconnect if NCP modified options and server
-  verified "original" vs. "modified" options)
-
-- mbedtls: print warning if random personalisation fails
-
-- fix subnet topology on NetBSD (2.4).
-
-
-
-Version 2.4.6
-=============
-This is primarily a maintenance release with minor bugfixes and improvements,
-and one security relevant fix for the Windows Interactive Service.
-
-User visible changes
---------------------
-- warn if the management interface is configured with a TCP port and
-  no password is set (because it might be possible to interfere with
-  OpenVPN operation by tricking other programs into connecting to the
-  management interface and inject unwanted commands)
-
-Bug fixes
----------
-- CVE-2018-9336: fix potential double-free() in the Interactive Service
-  (Windows) on malformed input.
-
-- avoid possible integer overflow in wakeup computation (trac #922)
-
-- improve handling of incoming packet bursts for control channel data
-
-- fix compilation with older OpenSSL versions that were broken in 2.4.5
-
-- Windows + interactive Service: delete the IPv6 route to the "connected"
-  network on tun close
-
-
 Version 2.4.5
 =============
-This is primarily a maintenance release, with further improved OpenSSL 1.1
-integration, several minor bug fixes and other minor improvements.
-
 
 New features
 ------------
@@ -513,99 +622,6 @@ New features
   default profile is 'legacy' for now, which allows SHA1+, RSA-1024+ and any
   elliptic curve certificates.  The default will be changed to the 'preferred'
   profile in the future, which requires SHA2+, RSA-2048+ and any curve.
-
-- make CryptoAPI support (Windows) compatible with OpenSSL 1.1 builds
-
-- TLS v1.2 support for cryptoapicert (on Windows) -- RSA only
-
-- openvpnserv: Add support for multi-instances (to support multiple
-  parallel OpenVPN installations, like EduVPN and regular OpenVPN)
-
-- Use P_DATA_V2 for server->client packets too (better packet alignment)
-
-- improve management interface documentation
-
-- rework registry key handling for OpenVPN service, notably making most
-  registry values optional, falling back to reasonable defaults
-
-- accept IPv6 address for pushed "dhcp-option DNS ..."
-  (make OpenVPN 2 option compatible with OpenVPN 3 iOS and Android clients)
-
-
-Bug fixes
----------
-- Fix --tls-version-min and --tls-version-max for OpenSSL 1.1+
-
-- Fix lots of compiler warnings (format string, type casts, ...)
-
-- Fix --redirect-gateway route installation on Windows systems that have
-  multiple interfaces into the same network (e.g. Wifi and wired LAN).
-
-- Fix IPv6 interface route cleanup on Windows
-
-- reload HTTP proxy credentials when moving to the next connection profile
-
-- Fix build with LibreSSL (multiple times)
-
-- Remove non-useful warning on pushed tun-ipv6 option.
-
-- fix building with MSVC due to incompatible C constructs
-
-- autoconf: Fix engine checks for openssl 1.1
-
-- lz4: Rebase compat-lz4 against upstream v1.7.5
-
-- lz4: Fix broken builds when pkg-config is not present but system library is
-
-- Fix '--bind ipv6only'
-
-- Allow learning iroutes with network made up of all 0s
-
-
-Version 2.4.4
-=============
-This is primarily a maintenance release, with further improved OpenSSL 1.1
-integration, several minor bug fixes and other minor improvements.
-
-Bug fixes
----------
-- Fix issues when a pushed cipher via the Negotiable Crypto Parameters (NCP) is
-  rejected by the remote side
-
-- Ignore ``--keysize`` when NCP have resulted in a changed cipher.
-
-- Configurations using ``--auth-nocache`` and the management interface to provide
-  user credentials (like NetworkManager on Linux) on client side with servers
-  implementing authentication tokens (for example, using ``--auth-gen-token``)
-  will now behave correctly and not query the user for an, to them, unknown
-  authentication token on renegotiations of the tunnel.
-
-- Fix bug causing invalid or corrupt SOCKS port number when changing the
-  proxy via the management interface.
-
-- The man page should now have proper escaping of hyphens/minus characters
-  and have seen some minor corrections.
-
-User-visible Changes
---------------------
-- Linux servers with systemd which uses the ``openvpn-server@.service`` unit
-  file for server configurations will now utilize the automatic restart feature
-  in systemd.  If the OpenVPN server process dies unexpectedly, systemd will
-  ensure the OpenVPN configuration will be restarted without any user interaction.
-
-Deprecated features
--------------------
-- ``--no-replay`` is deprecated and will be removed in OpenVPN 2.5.
-- ``--keysize`` is deprecated in OpenVPN 2.4 and will be removed in v2.6
-
-Security
---------
-- CVE-2017-12166: Fix bounds check for configurations using ``--key-method 1``.
-  Before this fix, it could allow an attacker to send a malformed packet to
-  trigger a stack overflow.  This is considered to be a low risk issue, as
-  ``--key-method 2`` has been the default since OpenVPN 2.0 (released on
-  2005-04-17).  This option is already deprecated in v2.4 and will be
-  completely removed in v2.5.
 
 
 Version 2.4.3
@@ -630,7 +646,7 @@ Security
 
 - CVE-2017-7521: Fix post-authentication remote-triggerable memory leaks
   A client could cause a server to leak a few bytes each time it connects to the
-  server.  That can eventuall cause the server to run out of memory, and thereby
+  server.  That can eventually cause the server to run out of memory, and thereby
   causing the server process to terminate. Discovered and reported to the
   OpenVPN security team by Guido Vranken.  (OpenSSL builds only.)
 
@@ -658,7 +674,7 @@ Security
   are known.
 
 - Fix null-pointer dereference when talking to a malicious http proxy
-  that returns a malformed Proxy-Authenticate: headers for digest auth.
+  that returns a malformed ``Proxy-Authenticate:`` headers for digest auth.
 
 - Fix overflow check for long ``--tls-cipher`` option
 
@@ -697,7 +713,7 @@ Bugfixes
 
 - Fix TCP_NODELAY on OpenBSD
 
-- Remove erroneous limitation on max number of args for --plugin
+- Remove erroneous limitation on max number of args for ``--plugin``
 
 - Fix NCP behaviour on TLS reconnect (Server would not send a proper
   "cipher ..." message back to the client, leading to client and server
@@ -733,12 +749,10 @@ Version 2.4.1
 - ``--remote-cert-ku`` now only requires the certificate to have at least the
   bits set of one of the values in the supplied list, instead of requiring an
   exact match to one of the values in the list.
-
 - ``--remote-cert-tls`` now only requires that a keyUsage is present in the
   certificate, and leaves the verification of the value up to the crypto
   library, which has more information (i.e. the key exchange method in use)
   to verify that the keyUsage is correct.
-
 - ``--ns-cert-type`` is deprecated.  Use ``--remote-cert-tls`` instead.
   The nsCertType x509 extension is very old, and barely used.
   ``--remote-cert-tls`` uses the far more common keyUsage and extendedKeyUsage

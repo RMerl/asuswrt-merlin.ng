@@ -35,6 +35,7 @@
 #include "gremlin.h"
 #include "plugin.h"
 #include "ps.h"
+#include "run_command.h"
 #include "manage.h"
 #include "misc.h"
 #include "manage.h"
@@ -99,10 +100,12 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
             bits = 0;
             max_bits = sizeof(in_addr_t) * 8;
             break;
+
         case AF_INET6:
             bits = 64;
             max_bits = sizeof(struct in6_addr) * 8;
             break;
+
         default:
             msg(M_WARN,
                 "Unsupported AF family passed to getaddrinfo for %s (%d)",
@@ -124,7 +127,7 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
     }
 
     /* check if this hostname has a /bits suffix */
-    sep = strchr(var_host , '/');
+    sep = strchr(var_host, '/');
     if (sep)
     {
         bits = strtoul(sep + 1, &endp, 10);
@@ -155,10 +158,12 @@ get_addr_generic(sa_family_t af, unsigned int flags, const char *hostname,
                     *ip4 = ntohl(*ip4);
                 }
                 break;
+
             case AF_INET6:
                 ip6 = network;
                 *ip6 = ((struct sockaddr_in6 *)ai->ai_addr)->sin6_addr;
                 break;
+
             default:
                 /* can't get here because 'af' was previously checked */
                 msg(M_WARN,
@@ -987,7 +992,7 @@ link_socket_update_buffer_sizes(struct link_socket *ls, int rcvbuf, int sndbuf)
 }
 
 /*
- * SOCKET INITALIZATION CODE.
+ * SOCKET INITIALIZATION CODE.
  * Create a TCP/UDP socket
  */
 
@@ -1132,6 +1137,18 @@ create_socket(struct link_socket *sock, struct addrinfo *addr)
 
     /* set socket to --mark packets with given value */
     socket_set_mark(sock->sd, sock->mark);
+
+#if defined(TARGET_LINUX)
+    if (sock->bind_dev)
+    {
+        msg (M_INFO, "Using bind-dev %s", sock->bind_dev);
+        if (setsockopt (sock->sd, SOL_SOCKET, SO_BINDTODEVICE, sock->bind_dev, strlen (sock->bind_dev) + 1) != 0)
+        {
+            msg(M_WARN|M_ERRNO, "WARN: setsockopt SO_BINDTODEVICE=%s failed", sock->bind_dev);
+        }
+
+    }
+#endif
 
     bind_local(sock, addr->ai_family);
 }
@@ -1607,6 +1624,22 @@ done:
     gc_free(&gc);
 }
 
+/*
+ * Stream buffer handling prototypes -- stream_buf is a helper class
+ * to assist in the packetization of stream transport protocols
+ * such as TCP.
+ */
+
+static void
+stream_buf_init(struct stream_buf *sb, struct buffer *buf,
+                const unsigned int sockflags, const int proto);
+
+static void
+stream_buf_close(struct stream_buf *sb);
+
+static bool
+stream_buf_added(struct stream_buf *sb, int length_added);
+
 /* For stream protocols, allocate a buffer to build up packet.
  * Called after frame has been finalized. */
 
@@ -1859,6 +1892,7 @@ link_socket_init_phase1(struct link_socket *sock,
                         int rcvbuf,
                         int sndbuf,
                         int mark,
+                        const char *bind_dev,
                         struct event_timeout *server_poll_timeout,
                         unsigned int sockflags)
 {
@@ -1885,6 +1919,7 @@ link_socket_init_phase1(struct link_socket *sock,
 
     sock->sockflags = sockflags;
     sock->mark = mark;
+    sock->bind_dev = bind_dev;
 
     sock->info.proto = proto;
     sock->info.af = af;
@@ -2415,8 +2450,7 @@ ipchange_fmt(const bool include_cmd, struct argv *argv, const struct link_socket
 }
 
 void
-link_socket_connection_initiated(const struct buffer *buf,
-                                 struct link_socket_info *info,
+link_socket_connection_initiated(struct link_socket_info *info,
                                  const struct link_socket_actual *act,
                                  const char *common_name,
                                  struct env_set *es)
@@ -2450,7 +2484,7 @@ link_socket_connection_initiated(const struct buffer *buf,
         {
             msg(M_WARN, "WARNING: ipchange plugin call failed");
         }
-        argv_reset(&argv);
+        argv_free(&argv);
     }
 
     /* Process --ipchange option */
@@ -2460,7 +2494,7 @@ link_socket_connection_initiated(const struct buffer *buf,
         setenv_str(es, "script_type", "ipchange");
         ipchange_fmt(true, &argv, info, &gc);
         openvpn_run_script(&argv, es, 0, "--ipchange");
-        argv_reset(&argv);
+        argv_free(&argv);
     }
 
     gc_free(&gc);
@@ -2514,7 +2548,7 @@ link_socket_current_remote(const struct link_socket_info *info)
  * by now just ignore it
  *
  * For --remote entries with multiple addresses this
- * only return the actual endpoint we have sucessfully connected to
+ * only return the actual endpoint we have successfully connected to
  */
     if (lsa->actual.dest.addr.sa.sa_family != AF_INET)
     {
@@ -2545,7 +2579,7 @@ link_socket_current_remote_ipv6(const struct link_socket_info *info)
  * for PF_INET6 routes over PF_INET6 endpoints
  *
  * For --remote entries with multiple addresses this
- * only return the actual endpoint we have sucessfully connected to
+ * only return the actual endpoint we have successfully connected to
  */
     if (lsa->actual.dest.addr.sa.sa_family != AF_INET6)
     {
@@ -2616,7 +2650,7 @@ stream_buf_reset(struct stream_buf *sb)
     sb->len = -1;
 }
 
-void
+static void
 stream_buf_init(struct stream_buf *sb,
                 struct buffer *buf,
                 const unsigned int sockflags,
@@ -2690,7 +2724,7 @@ stream_buf_read_setup_dowork(struct link_socket *sock)
     return !sock->stream_buf.residual_fully_formed;
 }
 
-bool
+static bool
 stream_buf_added(struct stream_buf *sb,
                  int length_added)
 {
@@ -2757,7 +2791,7 @@ stream_buf_added(struct stream_buf *sb,
     }
 }
 
-void
+static void
 stream_buf_close(struct stream_buf *sb)
 {
     free_buf(&sb->residual);
@@ -3258,7 +3292,7 @@ addr_family_name(int af)
  *
  * IPv6 and IPv4 protocols are comptabile but OpenVPN
  * has always sent UDPv4, TCPv4 over the wire. Keep these
- * strings for backward compatbility
+ * strings for backward compatibility
  */
 const char *
 proto_remote(int proto, bool remote)
@@ -3343,7 +3377,7 @@ link_socket_read_tcp(struct link_socket *sock,
 
 #if ENABLE_IP_PKTINFO
 
-/* make the buffer large enough to handle ancilliary socket data for
+/* make the buffer large enough to handle ancillary socket data for
  * both IPv4 and IPv6 destination addresses, plus padding (see RFC 2292)
  */
 #if defined(HAVE_IN_PKTINFO) && defined(HAVE_IPI_SPEC_DST)
@@ -3858,7 +3892,7 @@ socket_finalize(SOCKET s,
         if (ret >= 0 && io->addr_defined)
         {
             /* TODO(jjo): streamline this mess */
-            /* in this func we dont have relevant info about the PF_ of this
+            /* in this func we don't have relevant info about the PF_ of this
              * endpoint, as link_socket_actual will be zero for the 1st received packet
              *
              * Test for inets PF_ possible sizes

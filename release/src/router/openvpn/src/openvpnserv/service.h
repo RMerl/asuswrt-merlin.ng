@@ -30,6 +30,7 @@
 #include "config-msvc.h"
 #endif
 
+#include <winsock2.h>
 #include <windows.h>
 #include <stdlib.h>
 #include <tchar.h>
@@ -76,14 +77,18 @@ extern openvpn_service_t interactive_service;
 extern LPCTSTR service_instance;
 
 VOID WINAPI ServiceStartAutomaticOwn(DWORD argc, LPTSTR *argv);
+
 VOID WINAPI ServiceStartAutomatic(DWORD argc, LPTSTR *argv);
 
 VOID WINAPI ServiceStartInteractiveOwn(DWORD argc, LPTSTR *argv);
+
 VOID WINAPI ServiceStartInteractive(DWORD argc, LPTSTR *argv);
 
-int openvpn_vsntprintf(LPTSTR str, size_t size, LPCTSTR format, va_list arglist);
+BOOL openvpn_vsntprintf(LPTSTR str, size_t size, LPCTSTR format, va_list arglist);
 
-int openvpn_sntprintf(LPTSTR str, size_t size, LPCTSTR format, ...);
+BOOL openvpn_sntprintf(LPTSTR str, size_t size, LPCTSTR format, ...);
+
+BOOL openvpn_swprintf(wchar_t *const str, const size_t size, const wchar_t *const format, ...);
 
 DWORD GetOpenvpnSettings(settings_t *s);
 

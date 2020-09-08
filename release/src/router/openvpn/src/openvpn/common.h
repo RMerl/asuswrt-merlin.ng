@@ -57,12 +57,10 @@ typedef int interval_t;
 #else
 #define ptr_format              "0x%08lx"
 #endif
-#define time_format             "%lu"
 #define fragment_header_format  "0x%08x"
 
 /* these are used to cast the arguments
  * and MUST match the formats above */
-typedef unsigned long time_type;
 #ifdef _WIN64
 typedef unsigned long long ptr_type;
 #else
@@ -89,12 +87,6 @@ typedef unsigned long ptr_type;
  * In how many seconds does client re-send PUSH_REQUEST if we haven't yet received a reply
  */
 #define PUSH_REQUEST_INTERVAL 5
-
-/*
- * A sort of pseudo-filename for data provided inline within
- * the configuration file.
- */
-#define INLINE_FILE_TAG "[[INLINE]]"
 
 /*
  * Script security warning

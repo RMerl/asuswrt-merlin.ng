@@ -298,6 +298,7 @@ do
         echo -e "OK.\n"
     else
 	echo -e "FAIL: make sure that ping hosts are ONLY reachable via VPN, SKIP test $SUF".
+	SUMMARY_FAIL="$SUMMARY_FAIL $SUF"
 	exit_code=31
 	continue
     fi
@@ -417,7 +418,7 @@ done
 
 if [ -z "$SUMMARY_OK" ] ; then SUMMARY_OK=" none"; fi
 if [ -z "$SUMMARY_FAIL" ] ; then SUMMARY_FAIL=" none"; fi
-echo "Test sets succeded:$SUMMARY_OK."
+echo "Test sets succeeded:$SUMMARY_OK."
 echo "Test sets failed:$SUMMARY_FAIL."
 
 # remove trap handler

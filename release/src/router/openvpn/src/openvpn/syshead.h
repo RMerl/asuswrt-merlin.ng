@@ -39,6 +39,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <winsock2.h>
+#include <tlhelp32.h>
 #define sleep(x) Sleep((x)*1000)
 #define random rand
 #define srandom srand
@@ -47,6 +48,7 @@
 #ifdef _MSC_VER /* Visual Studio */
 #define __func__ __FUNCTION__
 #define __attribute__(x)
+#include <inttypes.h>
 #endif
 
 #if defined(__APPLE__)
@@ -178,8 +180,8 @@
 #include <resolv.h>
 #endif
 
-#ifdef HAVE_SYS_POLL_H
-#include <sys/poll.h>
+#ifdef HAVE_POLL_H
+#include <poll.h>
 #endif
 
 #ifdef HAVE_SYS_EPOLL_H
@@ -513,22 +515,16 @@ socket_defined(const socket_descriptor_t sd)
  * Do we have point-to-multipoint capability?
  */
 
-#if defined(ENABLE_CRYPTO) && defined(HAVE_GETTIMEOFDAY_NANOSECONDS)
+#if defined(HAVE_GETTIMEOFDAY_NANOSECONDS)
 #define P2MP 1
 #else
 #define P2MP 0
 #endif
 
-#if P2MP && !defined(ENABLE_CLIENT_ONLY)
-#define P2MP_SERVER 1
-#else
-#define P2MP_SERVER 0
-#endif
-
 /*
  * HTTPS port sharing capability
  */
-#if defined(ENABLE_PORT_SHARE) && P2MP_SERVER && defined(SCM_RIGHTS) && defined(HAVE_MSGHDR) && defined(HAVE_CMSGHDR) && defined(HAVE_IOVEC) && defined(CMSG_FIRSTHDR) && defined(CMSG_NXTHDR) && defined(HAVE_RECVMSG) && defined(HAVE_SENDMSG)
+#if defined(ENABLE_PORT_SHARE) && defined(SCM_RIGHTS) && defined(HAVE_MSGHDR) && defined(HAVE_CMSGHDR) && defined(HAVE_IOVEC) && defined(CMSG_FIRSTHDR) && defined(CMSG_NXTHDR) && defined(HAVE_RECVMSG) && defined(HAVE_SENDMSG)
 #define PORT_SHARE 1
 #else
 #define PORT_SHARE 0
@@ -537,43 +533,27 @@ socket_defined(const socket_descriptor_t sd)
 /*
  * Enable deferred authentication?
  */
-#if defined(ENABLE_DEF_AUTH) && P2MP_SERVER && defined(ENABLE_PLUGIN)
+#if defined(ENABLE_DEF_AUTH) && defined(ENABLE_PLUGIN)
 #define PLUGIN_DEF_AUTH
 #endif
-#if defined(ENABLE_DEF_AUTH) && P2MP_SERVER && defined(ENABLE_MANAGEMENT)
+#if defined(ENABLE_DEF_AUTH) && defined(ENABLE_MANAGEMENT)
 #define MANAGEMENT_DEF_AUTH
 #endif
 #if !defined(PLUGIN_DEF_AUTH) && !defined(MANAGEMENT_DEF_AUTH)
 #undef ENABLE_DEF_AUTH
 #endif
 
-/*
- * Enable external private key
- */
-#if defined(ENABLE_MANAGEMENT) && defined(ENABLE_CRYPTO)
-#define MANAGMENT_EXTERNAL_KEY
-#endif
-
-/* Enable mbed TLS RNG prediction resistance support */
 #ifdef ENABLE_CRYPTO_MBEDTLS
 #define ENABLE_PREDICTION_RESISTANCE
 #endif /* ENABLE_CRYPTO_MBEDTLS */
 
 /*
- * MANAGEMENT_IN_EXTRA allows the management interface to
- * read multi-line inputs from clients.
- */
-#if defined(MANAGEMENT_DEF_AUTH) || defined(MANAGMENT_EXTERNAL_KEY)
-#define MANAGEMENT_IN_EXTRA
-#endif
-
-/*
  * Enable packet filter?
  */
-#if defined(ENABLE_PF) && P2MP_SERVER && defined(ENABLE_PLUGIN) && defined(HAVE_STAT)
+#if defined(ENABLE_PF) && defined(ENABLE_PLUGIN) && defined(HAVE_STAT)
 #define PLUGIN_PF
 #endif
-#if defined(ENABLE_PF) && P2MP_SERVER && defined(MANAGEMENT_DEF_AUTH)
+#if defined(ENABLE_PF) && defined(MANAGEMENT_DEF_AUTH)
 #define MANAGEMENT_PF
 #endif
 #if !defined(PLUGIN_PF) && !defined(MANAGEMENT_PF)
@@ -590,39 +570,26 @@ socket_defined(const socket_descriptor_t sd)
 #endif
 
 /*
- * Should we include OCC (options consistency check) code?
- */
-#define ENABLE_OCC
-
-/*
  * Should we include NTLM proxy functionality
  */
-#if defined(ENABLE_CRYPTO)
 #define NTLM 1
-#else
-#define NTLM 0
-#endif
 
 /*
  * Should we include proxy digest auth functionality
  */
-#if defined(ENABLE_CRYPTO)
 #define PROXY_DIGEST_AUTH 1
-#else
-#define PROXY_DIGEST_AUTH 0
-#endif
 
 /*
  * Do we have CryptoAPI capability?
  */
-#if defined(_WIN32) && defined(ENABLE_CRYPTO) && defined(ENABLE_CRYPTO_OPENSSL)
+#if defined(_WIN32) && defined(ENABLE_CRYPTO_OPENSSL)
 #define ENABLE_CRYPTOAPI
 #endif
 
 /*
  * Is poll available on this platform?
  */
-#if defined(HAVE_POLL) && defined(HAVE_SYS_POLL_H)
+#if defined(HAVE_POLL) && defined(HAVE_POLL_H)
 #define POLL 1
 #else
 #define POLL 0
@@ -663,29 +630,6 @@ socket_defined(const socket_descriptor_t sd)
  */
 #if defined(HAVE_GETSOCKOPT) && defined(SOL_SOCKET) && defined(SO_ERROR) && defined(EINPROGRESS) && defined(ETIMEDOUT)
 #define CONNECT_NONBLOCK
-#endif
-
-/*
- * Do we have the capability to support the AUTO_USERID feature?
- */
-#if defined(ENABLE_AUTO_USERID)
-#define AUTO_USERID 1
-#else
-#define AUTO_USERID 0
-#endif
-
-/*
- * Do we support challenge/response authentication as client?
- */
-#if defined(ENABLE_MANAGEMENT)
-#define ENABLE_CLIENT_CR
-#endif
-
-/*
- * Do we support pushing peer info?
- */
-#if defined(ENABLE_CRYPTO)
-#define ENABLE_PUSH_PEER_INFO
 #endif
 
 /*

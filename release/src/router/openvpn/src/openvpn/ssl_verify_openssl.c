@@ -34,7 +34,7 @@
 
 #include "syshead.h"
 
-#if defined(ENABLE_CRYPTO) && defined(ENABLE_CRYPTO_OPENSSL)
+#if defined(ENABLE_CRYPTO_OPENSSL)
 
 #include "ssl_verify_openssl.h"
 
@@ -44,8 +44,9 @@
 #include "ssl_verify_backend.h"
 #include "openssl_compat.h"
 
-#include <openssl/x509v3.h>
+#include <openssl/bn.h>
 #include <openssl/err.h>
+#include <openssl/x509v3.h>
 
 int
 verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
@@ -70,6 +71,7 @@ verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
     {
         /* get the X509 name */
         char *subject = x509_get_subject(current_cert, &gc);
+        char *serial = backend_x509_get_serial(current_cert, &gc);
 
         if (!subject)
         {
@@ -88,10 +90,10 @@ verify_callback(int preverify_ok, X509_STORE_CTX *ctx)
         }
 
         /* Remote site specified a certificate, but it's not correct */
-        msg(D_TLS_ERRORS, "VERIFY ERROR: depth=%d, error=%s: %s",
+        msg(D_TLS_ERRORS, "VERIFY ERROR: depth=%d, error=%s: %s, serial=%s",
             X509_STORE_CTX_get_error_depth(ctx),
             X509_verify_cert_error_string(X509_STORE_CTX_get_error(ctx)),
-            subject);
+            subject, serial ? serial : "<not available>");
 
         ERR_clear_error();
 
@@ -113,7 +115,8 @@ cleanup:
 }
 
 #ifdef ENABLE_X509ALTUSERNAME
-bool x509_username_field_ext_supported(const char *fieldname)
+bool
+x509_username_field_ext_supported(const char *fieldname)
 {
     int nid = OBJ_txt2nid(fieldname);
     return nid == NID_subject_alt_name || nid == NID_issuer_alt_name;
@@ -331,18 +334,6 @@ x509_get_subject(X509 *cert, struct gc_arena *gc)
     BUF_MEM *subject_mem;
     char *subject = NULL;
 
-    /*
-     * Generate the subject string in OpenSSL proprietary format,
-     * when in --compat-names mode
-     */
-    if (compat_flag(COMPAT_FLAG_QUERY | COMPAT_NAMES))
-    {
-        subject = gc_malloc(256, false, gc);
-        X509_NAME_oneline(X509_get_subject_name(cert), subject, 256);
-        subject[255] = '\0';
-        return subject;
-    }
-
     subject_bio = BIO_new(BIO_s_mem());
     if (subject_bio == NULL)
     {
@@ -479,8 +470,7 @@ x509_setenv_track(const struct x509_track *xt, struct env_set *es, const int dep
                         if (ent)
                         {
                             ASN1_STRING *val = X509_NAME_ENTRY_get_data(ent);
-                            unsigned char *buf;
-                            buf = (unsigned char *)1; /* bug in OpenSSL 0.9.6b ASN1_STRING_to_UTF8 requires this workaround */
+                            unsigned char *buf = NULL;
                             if (ASN1_STRING_to_UTF8(&buf, val) >= 0)
                             {
                                 do_setenv_x509(es, xt->name, (char *)buf, depth);
@@ -535,7 +525,7 @@ x509_setenv(struct env_set *es, int cert_depth, openvpn_x509_cert_t *peer_cert)
     ASN1_STRING *val;
     X509_NAME_ENTRY *ent;
     const char *objbuf;
-    unsigned char *buf;
+    unsigned char *buf = NULL;
     char *name_expand;
     size_t name_expand_size;
     X509_NAME *x509 = X509_get_subject_name(peer_cert);
@@ -568,7 +558,6 @@ x509_setenv(struct env_set *es, int cert_depth, openvpn_x509_cert_t *peer_cert)
         {
             continue;
         }
-        buf = (unsigned char *)1; /* bug in OpenSSL 0.9.6b ASN1_STRING_to_UTF8 requires this workaround */
         if (ASN1_STRING_to_UTF8(&buf, val) < 0)
         {
             continue;
@@ -600,7 +589,7 @@ x509_verify_ns_cert_type(openvpn_x509_cert_t *peer_cert, const int usage)
          * prevent it to take a const argument
          */
         result_t result = X509_check_purpose(peer_cert, X509_PURPOSE_SSL_CLIENT, 0) ?
-	       SUCCESS : FAILURE;
+                          SUCCESS : FAILURE;
 
         /*
          * old versions of OpenSSL allow us to make the less strict check we used to
@@ -628,7 +617,7 @@ x509_verify_ns_cert_type(openvpn_x509_cert_t *peer_cert, const int usage)
          * prevent it to take a const argument
          */
         result_t result = X509_check_purpose(peer_cert, X509_PURPOSE_SSL_SERVER, 0) ?
-	       SUCCESS : FAILURE;
+                          SUCCESS : FAILURE;
 
         /*
          * old versions of OpenSSL allow us to make the less strict check we used to
@@ -769,7 +758,7 @@ x509_write_pem(FILE *peercert_file, X509 *peercert)
 {
     if (PEM_write_X509(peercert_file, peercert) < 0)
     {
-        msg(M_ERR, "Failed to write peer certificate in PEM format");
+        msg(M_NONFATAL, "Failed to write peer certificate in PEM format");
         return FAILURE;
     }
     return SUCCESS;
@@ -802,4 +791,4 @@ tls_verify_crl_missing(const struct tls_options *opt)
     return true;
 }
 
-#endif /* defined(ENABLE_CRYPTO) && defined(ENABLE_CRYPTO_OPENSSL) */
+#endif /* defined(ENABLE_CRYPTO_OPENSSL) */

@@ -94,9 +94,6 @@ var ciphersarray = [
 		["AES-128-CBC"],
 		["AES-192-CBC"],
 		["AES-256-CBC"],
-		["AES-128-GCM"],
-		["AES-192-GCM"],
-		["AES-256-GCM"],
 		["BF-CBC"],
 		["CAST5-CBC"],
 		["CAMELLIA-128-CBC"],
@@ -791,7 +788,7 @@ function update_vpn_server_state() {
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail1#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";
 			}
-			else if(vpnd_state != '2' && (vpnd_errno == '4' || vpnd_errno == '7')){
+			else if(vpnd_state != '2' && vpnd_errno == '4'){
 				document.getElementById('openvpn_initial').style.display = "none";
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail2#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";
@@ -801,7 +798,7 @@ function update_vpn_server_state() {
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail3#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";
 			}
-			else if(vpnd_state == '-1' && vpnd_errno == '0'){
+			else if(vpnd_state == '-1' && (vpnd_errno == '0' || vpnd_error == '7')){
 				document.getElementById('openvpn_initial').style.display = "none";
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail4#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";
@@ -897,7 +894,6 @@ function update_visibility(){
 		ccd = 0;
 	else
 		ccd = getRadioValue(document.form.vpn_server_ccd);
-	ncp = document.form.vpn_server_ncp_enable.value;
 	comp = document.form.vpn_server_comp.value;
 
 	showhide("server_authhmac", (auth != "secret"));
@@ -913,14 +909,8 @@ function update_visibility(){
 	showhide("server_range", ((dhcp == 0) && (auth == "tls") && (iface == "tap")));
 	showhide("server_tls_crypto_tr", ((auth == "tls") || (auth == "secret")));		//add by Viz
 	showhide("server_igncrt", (userpass == 1));
-	showhide("server_cipher", (ncp != 2));
-	showhide("ncp_enable", (auth == "tls"));
-	showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
-
-/* Warn if exported ovpn requires OpenVPN 2.4.0 */
-	showhide("ncp_24_warn", (ncp > 0));
-	showhide("comp_24_warn", (comp == "lz4") || (comp == "lz4-v2"));
-	showhide("tlscrypt_24_warn", (hmac == 3));
+	showhide("ncp_ciphers", (auth == "tls"));
+	showhide("server_cipher", (auth == "secret"));
 }
 
 function edit_Keys() {
@@ -1153,7 +1143,7 @@ function enable_server_igncrt(flag){
 	if (getRadioValue(document.form.vpn_server_userpass_auth) == 0)
 		flag = 0;
 
-	document.form.vpn_server_crypt.style.display = (flag==1)?"none":"";
+	document.getElementById("crypt_span").style.display = (flag==1)?"none":"";
 	document.form.vpn_server_crypt.value = (flag==1)?"tls":"<% nvram_get("vpn_server_crypt"); %>";
 	update_visibility();
 	document.getElementById("Hint_fixed_tls_crypto").style.display = (flag==1)?"":"none";
@@ -1545,19 +1535,15 @@ function callback_upload_cert(_flag) {
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);"><#vpn_openvpn_interface#></a></th>
 												<td>
-													<select name="vpn_server_if" class="input_option" onChange="update_visibility();">
-														<option value="tap" <% nvram_match("vpn_server_if","tap","selected"); %> >TAP</option>
-														<option value="tun" <% nvram_match("vpn_server_if","tun","selected"); %> >TUN</option>
-													</select>
+													<input type="radio" name="vpn_server_if" class="input" value="tun" onchange="update_visibility();" <% nvram_match_x("", "vpn_server_if", "tun", "checked"); %>>TUN
+													<input type="radio" name="vpn_server_if" class="input" value="tap" onchange="update_visibility();" <% nvram_match_x("", "vpn_server_if", "tap", "checked"); %>>TAP
 												</td>
 											</tr>
 											<tr>
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);"><#IPConnection_VServerProto_itemname#></a></th>
 												<td>
-													<select name="vpn_server_proto" class="input_option">
-														<option value="tcp-server" <% nvram_match("vpn_server_proto","tcp-server","selected"); %> >TCP</option>
-														<option value="udp" <% nvram_match("vpn_server_proto","udp","selected"); %> >UDP</option>
-													</select>
+													<input type="radio" name="vpn_server_proto" class="input" value="tcp-server" <% nvram_match_x("", "vpn_server_proto", "tcp-server", "checked"); %>>TCP
+													<input type="radio" name="vpn_server_proto" class="input" value="udp" <% nvram_match_x("", "vpn_server_proto", "udp", "checked"); %>>UDP
 												</td>
 											</tr>
 											<tr>
@@ -1567,13 +1553,13 @@ function callback_upload_cert(_flag) {
 													<span style="color:#FC0">(<#Setting_factorydefault_value#> : 1194)</span>
 												</td>
 											</tr>
-											<tr>
+											<tr id="server_crypt_tr">
 												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);"><#vpn_openvpn_Auth#></a></th>
 												<td>
-													<select name="vpn_server_crypt" class="input_option" onChange="update_visibility();">
-														<option value="tls" <% nvram_match("vpn_server_crypt","tls","selected"); %> >TLS</option>
-														<option value="secret" <% nvram_match("vpn_server_crypt","secret","selected"); %> >Static Key</option>
-													</select>
+													<span id="crypt_span" style="color:#FFFFFF;">
+														<input type="radio" name="vpn_server_crypt" class="input" value="tls" <% nvram_match_x("", "vpn_server_crypt", "tls", "checked"); %>>TLS
+														<input type="radio" name="vpn_server_crypt" class="input" value="secret" <% nvram_match_x("", "vpn_server_crypt", "secret", "checked"); %>>Static Key
+													</span>
 													<span id="Fixed_tls_crypto" style="color:#FFFFFF;display:none;">TLS</span>
 												</td>
 											</tr>
@@ -1608,7 +1594,6 @@ function callback_upload_cert(_flag) {
 														<option value="1" <% nvram_match("vpn_server_hmac","1","selected"); %> >Outgoing Auth (1)</option>
 														<option value="3" <% nvram_match("vpn_server_hmac","3","selected"); %> >Encrypt channel</option>
 													</select>
-													<span id="tlscrypt_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
 												</td>
 											</tr>
 											<tr>
@@ -1653,25 +1638,14 @@ function callback_upload_cert(_flag) {
 													<input type="radio" name="vpn_server_pdns" class="input" value="0" <% nvram_match_x("", "vpn_server_pdns", "0", "checked"); %>><#checkbox_No#>
 												</td>
 											</tr>
-											<tr id="ncp_enable">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
-												<td>
-													<select name="vpn_server_ncp_enable" onclick="update_visibility();" class="input_option">
-														<option value="0" <% nvram_match("vpn_server_ncp_enable","0","selected"); %> >Disabled</option>
-														<option value="1" <% nvram_match("vpn_server_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
-														<option value="2" <% nvram_match("vpn_server_ncp_enable","2","selected"); %> >Enable</option>
-													</select>
-													<span id="ncp_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
-												</td>
-											</tr>
 											<tr id="ncp_ciphers">
-												<th>Negotiable ciphers</th>
+												<th>Data ciphers</th>
 												<td>
-													<input type="text" maxlength="255" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+													<input type="text" maxlength="127" class="input_32_table" name="vpn_server_ncp_ciphers" value="<% nvram_get("vpn_server_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 												</td>
 											</tr>
 											<tr id="server_cipher">
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Legacy/fallback cipher</a></th>
+												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,17);">Cipher</a></th>
 												<td>
 													<select name="vpn_server_cipher" class="input_option" onChange="update_cipher();"></select>
 													<span id="cipher_hint" style="color:#FC0">(Default : BF-CBC)</span>
@@ -1688,7 +1662,6 @@ function callback_upload_cert(_flag) {
 														<option value="lz4" <% nvram_match("vpn_server_comp","lz4","selected"); %> >LZ4</option>
 														<option value="lz4-v2" <% nvram_match("vpn_server_comp","lz4-v2","selected"); %> >LZ4-V2</option>
 													</select>
-													<span id="comp_24_warn"><br>The exported client ovpn file will require OpenVPN 2.4.0 or newer.</span>
 												</td>
 											</tr>
 											<tr>

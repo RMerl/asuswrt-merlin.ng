@@ -42,10 +42,10 @@
 #include "sig.h"
 #include "misc.h"
 #include "mbuf.h"
+#include "pf.h"
 #include "pool.h"
 #include "plugin.h"
 #include "manage.h"
-#include "pf.h"
 
 /*
  * Our global key schedules, packaged thusly
@@ -54,7 +54,6 @@
 
 struct key_schedule
 {
-#ifdef ENABLE_CRYPTO
     /* which cipher, HMAC digest, and key sizes are we using? */
     struct key_type key_type;
 
@@ -67,9 +66,9 @@ struct key_schedule
     /* optional TLS control channel wrapping */
     struct key_type tls_auth_key_type;
     struct key_ctx_bi tls_wrap_key;
-#else                           /* ENABLE_CRYPTO */
-    int dummy;
-#endif                          /* ENABLE_CRYPTO */
+    struct key_ctx tls_crypt_v2_server_key;
+    struct buffer tls_crypt_v2_wkc;             /**< Wrapped client key */
+    struct key_ctx auth_token_key;
 };
 
 /*
@@ -96,10 +95,8 @@ struct context_buffers
     struct buffer aux_buf;
 
     /* workspace buffers used by crypto routines */
-#ifdef ENABLE_CRYPTO
     struct buffer encrypt_buf;
     struct buffer decrypt_buf;
-#endif
 
     /* workspace buffers for compression */
 #ifdef USE_COMP
@@ -193,12 +190,9 @@ struct context_1
     bool socks_proxy_owned;
 
 #if P2MP
-
-#if P2MP_SERVER
     /* persist --ifconfig-pool db to file */
     struct ifconfig_pool_persist *ifconfig_pool_persist;
     bool ifconfig_pool_persist_owned;
-#endif
 
     /* if client mode, hash of option strings we pulled from server */
     struct sha256_digest pulled_options_digest_save;
@@ -215,6 +209,25 @@ struct context_1
     int keysize;                /**< Data channel keysize from config file */
 #endif
 };
+
+
+/* client authentication state, CAS_SUCCEEDED must be 0 since
+ * non multi code path still checks this variable but does not initialise it
+ * so the code depends on zero initialisation */
+enum client_connect_status {
+    CAS_SUCCEEDED=0,
+    CAS_PENDING,
+    CAS_PENDING_DEFERRED,
+    CAS_PENDING_DEFERRED_PARTIAL,   /**< at least handler succeeded, no result yet*/
+    CAS_FAILED,
+};
+
+static inline bool
+is_cas_pending(enum client_connect_status cas)
+{
+    return cas == CAS_PENDING || cas == CAS_PENDING_DEFERRED
+           || cas == CAS_PENDING_DEFERRED_PARTIAL;
+}
 
 /**
  * Level 2 %context containing state that is reset on both \c SIGHUP and
@@ -307,7 +320,6 @@ struct context_2
     struct event_timeout inactivity_interval;
     int inactivity_bytes;
 
-#ifdef ENABLE_OCC
     /* the option strings must match across peers */
     char *options_string_local;
     char *options_string_remote;
@@ -315,7 +327,6 @@ struct context_2
     int occ_op;                 /* INIT to -1 */
     int occ_n_tries;
     struct event_timeout occ_interval;
-#endif
 
     /*
      * Keep track of maximum packet size received so far
@@ -327,15 +338,12 @@ struct context_2
     int max_send_size_local;    /* max packet size sent */
     int max_send_size_remote;   /* max packet size sent by remote */
 
-#ifdef ENABLE_OCC
+
     /* remote wants us to send back a load test packet of this size */
     int occ_mtu_load_size;
 
     struct event_timeout occ_mtu_load_test_interval;
     int occ_mtu_load_n_tries;
-#endif
-
-#ifdef ENABLE_CRYPTO
 
     /*
      * TLS-mode crypto objects.
@@ -367,8 +375,6 @@ struct context_2
      *   process data channel packet. */
 
     struct event_timeout packet_id_persist_interval;
-
-#endif /* ENABLE_CRYPTO */
 
 #ifdef USE_COMP
     struct compress_context *comp_context;
@@ -424,13 +430,11 @@ struct context_2
     /* indicates that the do_up_delay function has run */
     bool do_up_ran;
 
-#ifdef ENABLE_OCC
     /* indicates that we have received a SIGTERM when
      * options->explicit_exit_notification is enabled,
      * but we have not exited yet */
     time_t explicit_exit_notification_time_wait;
     struct event_timeout explicit_exit_notification_interval;
-#endif
 
     /* environmental variables to pass to scripts */
     struct env_set *es;
@@ -441,12 +445,8 @@ struct context_2
 
 #if P2MP
 
-#if P2MP_SERVER
     /* --ifconfig endpoints to be pushed to client */
-    bool push_reply_deferred;
-#ifdef ENABLE_ASYNC_PUSH
     bool push_request_received;
-#endif
     bool push_ifconfig_defined;
     time_t sent_push_reply_expiry;
     in_addr_t push_ifconfig_local;
@@ -458,14 +458,8 @@ struct context_2
     int push_ifconfig_ipv6_netbits;
     struct in6_addr push_ifconfig_ipv6_remote;
 
-    /* client authentication state, CAS_SUCCEEDED must be 0 */
-#define CAS_SUCCEEDED 0
-#define CAS_PENDING   1
-#define CAS_FAILED    2
-#define CAS_PARTIAL   3  /* at least one client-connect script/plugin
-                          * succeeded while a later one in the chain failed */
-    int context_auth;
-#endif /* if P2MP_SERVER */
+
+    enum client_connect_status context_auth;
 
     struct event_timeout push_request_interval;
     int n_sent_push_requests;
@@ -531,6 +525,8 @@ struct context
 
     struct env_set *es;         /**< Set of environment variables. */
 
+    openvpn_net_ctx_t net_ctx;  /**< Networking API opaque context */
+
     struct signal_info *sig;    /**< Internal error signaling object. */
 
     struct plugin_list *plugins; /**< List of plug-ins. */
@@ -567,7 +563,6 @@ struct context
  * have been compiled in.
  */
 
-#ifdef ENABLE_CRYPTO
 #define TLS_MODE(c) ((c)->c2.tls_multi != NULL)
 #define PROTO_DUMP_FLAGS (check_debug_level(D_LINK_RW_VERBOSE) ? (PD_SHOW_DATA|PD_VERBOSE) : 0)
 #define PROTO_DUMP(buf, gc) protocol_dump((buf), \
@@ -575,22 +570,8 @@ struct context
                                           |(c->c2.tls_multi ? PD_TLS : 0)   \
                                           |(c->options.tls_auth_file ? c->c1.ks.key_type.hmac_length : 0), \
                                           gc)
-#else  /* ifdef ENABLE_CRYPTO */
-#define TLS_MODE(c) (false)
-#define PROTO_DUMP(buf, gc) format_hex(BPTR(buf), BLEN(buf), 80, gc)
-#endif
 
-#ifdef ENABLE_CRYPTO
-#define MD5SUM(buf, len, gc) md5sum((buf), (len), 0, (gc))
-#else
-#define MD5SUM(buf, len, gc) "[unavailable]"
-#endif
-
-#ifdef ENABLE_CRYPTO
 #define CIPHER_ENABLED(c) (c->c1.ks.key_type.cipher != NULL)
-#else
-#define CIPHER_ENABLED(c) (false)
-#endif
 
 /* this represents "disabled peer-id" */
 #define MAX_PEER_ID 0xFFFFFF

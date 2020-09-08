@@ -476,7 +476,6 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 
 	strlcpy(cconf->comp, nvram_pf_safe_get(prefix, "comp"), sizeof (cconf->comp));
 
-	cconf->ncp = nvram_pf_get_int(prefix, "ncp_enable");
 	strlcpy(cconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (cconf->ncp_ciphers));
 	strlcpy(cconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof(cconf->cipher));
 
@@ -490,7 +489,17 @@ ovpn_cconf_t *ovpn_get_cconf(int unit) {
 	cconf->reneg = nvram_pf_get_int(prefix, "reneg");
 
 	cconf->direction = nvram_pf_get_int(prefix, "hmac");
-	cconf->tlscrypt = (cconf->direction == 3 ? 1 : 0);
+	switch (cconf->direction) {
+		case 3:
+			cconf->tlscrypt = 1;
+			break;
+		case 4:
+			cconf->tlscrypt = 2;
+			break;
+		default:
+			cconf->tlscrypt = 0;
+	}
+
 	cconf->verify_x509_type = nvram_pf_get_int(prefix, "tlsremote");
 	strlcpy(cconf->verify_x509_name, nvram_pf_safe_get(prefix, "cn"), sizeof(cconf->verify_x509_name));
 
@@ -544,7 +553,6 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 	strlcpy(sconf->proto, nvram_pf_safe_get(prefix, "proto"), sizeof (sconf->proto));
 	sconf->port = nvram_pf_get_int(prefix, "port");
 
-	sconf->ncp = nvram_pf_get_int(prefix, "ncp_enable");
 	strlcpy(sconf->ncp_ciphers, nvram_pf_safe_get(prefix, "ncp_ciphers"), sizeof (sconf->ncp_ciphers));
 	strlcpy(sconf->cipher, nvram_pf_safe_get(prefix, "cipher"), sizeof (sconf->cipher));
 	strlcpy(sconf->digest, nvram_pf_safe_get(prefix, "digest"), sizeof (sconf->digest));

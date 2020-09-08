@@ -453,6 +453,10 @@ add_option (char *p[], int line, int unit)
 				nvram_pf_set(prefix, "comp", "lz4");
 			else if (streq (p[1], "lz4-v2"))
 				nvram_pf_set(prefix, "comp", "lz4-v2");
+			else if (streq (p[1], "stub"))
+				nvram_pf_set(prefix, "comp", "stub");
+                        else if (streq (p[1], "stub-v2"))
+                                nvram_pf_set(prefix, "comp", "stub-v2");
 		} else {
 			nvram_pf_set(prefix, "comp", "no");
 		}
@@ -460,8 +464,6 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "cipher") && p[1])
 	{
 		nvram_pf_set(prefix, "cipher", p[1]);
-		if (nvram_pf_get_int(prefix, "ncp_enable") == 2)
-			nvram_pf_set(prefix, "ncp_enable", "1");	// Ensure legacy cipher is allowed
 	}
 	else if (streq (p[0], "auth") && p[1])
 	{
@@ -550,6 +552,22 @@ add_option (char *p[], int line, int unit)
 			return VPN_UPLOAD_NEED_STATIC;
 		}
 	}
+	else if (streq (p[0], "tls-crypt-v2") && p[1])
+	{
+		if (streq (p[1], INLINE_FILE_TAG) && p[2] && strstr(p[2], PEM_START_TAG))
+		{
+			set_ovpn_key(OVPN_TYPE_CLIENT, unit, OVPN_CLIENT_STATIC, p[2], NULL);
+			if(nvram_pf_match(prefix, "hmac", "-1"))	//default, disable
+				nvram_pf_set(prefix, "hmac", "4");	//Enable tls-crypt-v2
+		}
+		else
+		{
+			if(p[2]) {
+				nvram_pf_set(prefix, "hmac", 4);
+			}
+			return VPN_UPLOAD_NEED_STATIC;
+		}
+	}
 	else if (streq (p[0], "secret") && p[1])
 	{
 		nvram_pf_set(prefix, "crypt", "secret");
@@ -611,12 +629,6 @@ add_option (char *p[], int line, int unit)
 	else if (streq (p[0], "ncp-ciphers") && p[1])
 	{
 		nvram_pf_set(prefix, "ncp_ciphers", p[1]);
-		if (nvram_pf_get_int(prefix, "ncp_enable") == 0)
-			nvram_pf_set(prefix, "ncp_enable", "1");    // Ensure ncp is not disabled
-	}
-	else if (streq (p[0], "ncp-disable"))
-	{
-		nvram_pf_set(prefix, "ncp_enable", "0");
 	}
 	else if (streq (p[0], "redirect-gateway") && (!p[1] || streq (p[1], "def1")))	// Only handle if default GW
 	{

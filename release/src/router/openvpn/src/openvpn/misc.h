@@ -27,6 +27,7 @@
 #include "argv.h"
 #include "basic.h"
 #include "common.h"
+#include "env_set.h"
 #include "integer.h"
 #include "buffer.h"
 #include "platform.h"
@@ -37,49 +38,6 @@
 /* forward declarations */
 struct plugin_list;
 
-/*
- * Handle environmental variable lists
- */
-
-struct env_item {
-    char *string;
-    struct env_item *next;
-};
-
-struct env_set {
-    struct gc_arena *gc;
-    struct env_item *list;
-};
-
-/* system flags */
-#define S_SCRIPT (1<<0)
-#define S_FATAL  (1<<1)
-
-const char *system_error_message(int, struct gc_arena *gc);
-
-/* openvpn_execve return codes */
-#define OPENVPN_EXECVE_ERROR       -1 /* generic error while forking to run an external program */
-#define OPENVPN_EXECVE_NOT_ALLOWED -2 /* external program not run due to script security */
-#define OPENVPN_EXECVE_FAILURE    127 /* exit code passed back from child when execve fails */
-
-/* wrapper around the execve() call */
-int openvpn_popen(const struct argv *a,  const struct env_set *es);
-
-int openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned int flags);
-
-bool openvpn_execve_check(const struct argv *a, const struct env_set *es, const unsigned int flags, const char *error_message);
-
-bool openvpn_execve_allowed(const unsigned int flags);
-
-static inline bool
-openvpn_run_script(const struct argv *a, const struct env_set *es, const unsigned int flags, const char *hook)
-{
-    char msg[256];
-
-    openvpn_snprintf(msg, sizeof(msg), "WARNING: Failed running command (%s)", hook);
-    return openvpn_execve_check(a, es, flags | S_SCRIPT, msg);
-}
-
 
 /* Set standard file descriptors to /dev/null */
 void set_std_files_to_null(bool stdin_only);
@@ -88,86 +46,14 @@ void set_std_files_to_null(bool stdin_only);
 extern int inetd_socket_descriptor;
 void save_inetd_socket_descriptor(void);
 
-/* set/delete environmental variable */
-void setenv_str_ex(struct env_set *es,
-                   const char *name,
-                   const char *value,
-                   const unsigned int name_include,
-                   const unsigned int name_exclude,
-                   const char name_replace,
-                   const unsigned int value_include,
-                   const unsigned int value_exclude,
-                   const char value_replace);
-
-void setenv_counter(struct env_set *es, const char *name, counter_type value);
-
-void setenv_int(struct env_set *es, const char *name, int value);
-
-void setenv_unsigned(struct env_set *es, const char *name, unsigned int value);
-
-void setenv_str(struct env_set *es, const char *name, const char *value);
-
-void setenv_str_safe(struct env_set *es, const char *name, const char *value);
-
-void setenv_del(struct env_set *es, const char *name);
-
-/**
- * Store the supplied name value pair in the env_set.  If the variable with the
- * supplied name  already exists, append _N to the name, starting at N=1.
- */
-void setenv_str_incr(struct env_set *es, const char *name, const char *value);
-
-void setenv_int_i(struct env_set *es, const char *name, const int value, const int i);
-
-void setenv_str_i(struct env_set *es, const char *name, const char *value, const int i);
-
-/* struct env_set functions */
-
-struct env_set *env_set_create(struct gc_arena *gc);
-
-void env_set_destroy(struct env_set *es);
-
-bool env_set_del(struct env_set *es, const char *str);
-
-void env_set_add(struct env_set *es, const char *str);
-
-const char *env_set_get(const struct env_set *es, const char *name);
-
-void env_set_print(int msglevel, const struct env_set *es);
-
-void env_set_inherit(struct env_set *es, const struct env_set *src);
-
 /* Make arrays of strings */
-
-const char **make_env_array(const struct env_set *es,
-                            const bool check_allowed,
-                            struct gc_arena *gc);
 
 const char **make_arg_array(const char *first, const char *parms, struct gc_arena *gc);
 
-const char **make_extended_arg_array(char **p, struct gc_arena *gc);
+const char **make_extended_arg_array(char **p, bool is_inline,
+                                     struct gc_arena *gc);
 
-/* an analogue to the random() function, but use OpenSSL functions if available */
-#ifdef ENABLE_CRYPTO
-long int get_random(void);
-
-#else
-#define get_random random
-#endif
-
-/* return true if filename can be opened for read */
-bool test_file(const char *filename);
-
-/* create a temporary file in directory, returns the filename of the created file */
-const char *create_temp_file(const char *directory, const char *prefix, struct gc_arena *gc);
-
-/* put a directory and filename together */
-const char *gen_path(const char *directory, const char *filename, struct gc_arena *gc);
-
-/* return true if pathname is absolute */
-bool absolute_pathname(const char *pathname);
-
-/* prepend a random prefix to hostname (need ENABLE_CRYPTO) */
+/* prepend a random prefix to hostname */
 const char *hostname_randomize(const char *hostname, struct gc_arena *gc);
 
 /*
@@ -190,7 +76,7 @@ struct user_pass
     char password[USER_PASS_LEN];
 };
 
-#ifdef ENABLE_CLIENT_CR
+#ifdef ENABLE_MANAGEMENT
 /*
  * Challenge response info on client as pushed by server.
  */
@@ -216,10 +102,10 @@ struct static_challenge_info {
     const char *challenge_text;
 };
 
-#else  /* ifdef ENABLE_CLIENT_CR */
+#else  /* ifdef ENABLE_MANAGEMENT */
 struct auth_challenge_info {};
 struct static_challenge_info {};
-#endif /* ifdef ENABLE_CLIENT_CR */
+#endif /* ifdef ENABLE_MANAGEMENT */
 
 /*
  * Flags for get_user_pass and management_query_user_pass
@@ -269,20 +155,10 @@ void set_auth_token(struct user_pass *up, struct user_pass *tk,
  */
 const char *safe_print(const char *str, struct gc_arena *gc);
 
-/* returns true if environmental variable safe to print to log */
-bool env_safe_to_print(const char *str);
-
-/* returns true if environmental variable may be passed to an external program */
-bool env_allowed(const char *str);
 
 void configure_path(void);
 
 const char *sanitize_control_message(const char *str, struct gc_arena *gc);
-
-#if AUTO_USERID
-void get_user_pass_auto_userid(struct user_pass *up, const char *tag);
-
-#endif
 
 /*
  * /sbin/ip path, may be overridden
@@ -291,27 +167,24 @@ void get_user_pass_auto_userid(struct user_pass *up, const char *tag);
 extern const char *iproute_path;
 #endif
 
-/* Script security */
-#define SSEC_NONE      0 /* strictly no calling of external programs */
-#define SSEC_BUILT_IN  1 /* only call built-in programs such as ifconfig, route, netsh, etc.*/
-#define SSEC_SCRIPTS   2 /* allow calling of built-in programs and user-defined scripts */
-#define SSEC_PW_ENV    3 /* allow calling of built-in programs and user-defined scripts that may receive a password as an environmental variable */
-extern int script_security; /* GLOBAL */
-
-
-#define COMPAT_FLAG_QUERY         0       /** compat_flags operator: Query for a flag */
-#define COMPAT_FLAG_SET           (1<<0)  /** compat_flags operator: Set a compat flag */
-#define COMPAT_NAMES              (1<<1)  /** compat flag: --compat-names set */
-#define COMPAT_NO_NAME_REMAPPING  (1<<2)  /** compat flag: --compat-names without char remapping */
-bool compat_flag(unsigned int flag);
-
-#if P2MP_SERVER
 /* helper to parse peer_info received from multi client, validate
  * (this is untrusted data) and put into environment */
 bool validate_peer_info_line(char *line);
 
 void output_peer_info_env(struct env_set *es, const char *peer_info);
 
-#endif /* P2MP_SERVER */
+/**
+ * Returns the occurrences of 'delimiter' in a string +1
+ * This is typically used to find out the number elements in a
+ * cipher string or similar that is separated by : like
+ *
+ *   X25519:secp256r1:X448:secp512r1:secp384r1:brainpoolP384r1
+ *
+ * @param string        the string to work on
+ * @param delimiter     the delimiter to count, typically ':'
+ * @return              occrrences of delimiter + 1
+ */
+int
+get_num_elements(const char *string, char delimiter);
 
 #endif /* ifndef MISC_H */

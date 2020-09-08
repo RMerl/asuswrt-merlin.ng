@@ -35,8 +35,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define ENABLE_CRYPTO
-
 #include "openvpn-plugin.h"
 
 /*
@@ -179,11 +177,15 @@ show(const int type, const char *argv[], const char *envp[])
 
     printf("ARGV\n");
     for (i = 0; argv[i] != NULL; ++i)
+    {
         printf("%d '%s'\n", (int)i, argv[i]);
+    }
 
     printf("ENVP\n");
     for (i = 0; envp[i] != NULL; ++i)
+    {
         printf("%d '%s'\n", (int)i, envp[i]);
+    }
 }
 
 static void
@@ -196,7 +198,7 @@ x509_print_info(X509 *x509crt)
     X509_NAME *x509_name;
     X509_NAME_ENTRY *ent;
     const char *objbuf;
-    unsigned char *buf;
+    unsigned char *buf = NULL;
 
     x509_name = X509_get_subject_name(x509crt);
     n = X509_NAME_entry_count(x509_name);

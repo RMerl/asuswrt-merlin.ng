@@ -14,9 +14,9 @@ MAINTAINERCLEANFILES = \
 
 SUBDIRS = unit_tests
 
-test_scripts = t_client.sh
-if ENABLE_CRYPTO
-test_scripts += t_lpback.sh t_cltsrv.sh
+test_scripts = t_client.sh t_lpback.sh t_cltsrv.sh
+if HAVE_SITNL
+test_scripts += t_net.sh
 endif
 
 TESTS_ENVIRONMENT = top_srcdir="$(top_srcdir)"

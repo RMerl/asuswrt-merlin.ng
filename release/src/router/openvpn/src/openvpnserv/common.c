@@ -31,7 +31,7 @@ static wchar_t win_sys_path[MAX_PATH];
  * These are necessary due to certain buggy implementations of (v)snprintf,
  * that don't guarantee null termination for size > 0.
  */
-int
+BOOL
 openvpn_vsntprintf(LPTSTR str, size_t size, LPCTSTR format, va_list arglist)
 {
     int len = -1;
@@ -40,20 +40,36 @@ openvpn_vsntprintf(LPTSTR str, size_t size, LPCTSTR format, va_list arglist)
         len = _vsntprintf(str, size, format, arglist);
         str[size - 1] = 0;
     }
-    return (len >= 0 && len < size);
+    return (len >= 0 && (size_t)len < size);
 }
-int
+
+BOOL
 openvpn_sntprintf(LPTSTR str, size_t size, LPCTSTR format, ...)
+{
+    va_list arglist;
+    BOOL res = FALSE;
+    if (size > 0)
+    {
+        va_start(arglist, format);
+        res = openvpn_vsntprintf(str, size, format, arglist);
+        va_end(arglist);
+    }
+    return res;
+}
+
+BOOL
+openvpn_swprintf(wchar_t *const str, const size_t size, const wchar_t *const format, ...)
 {
     va_list arglist;
     int len = -1;
     if (size > 0)
     {
         va_start(arglist, format);
-        len = openvpn_vsntprintf(str, size, format, arglist);
+        len = vswprintf(str, size, format, arglist);
         va_end(arglist);
+        str[size - 1] = L'\0';
     }
-    return len;
+    return (len >= 0 && len < size);
 }
 
 static DWORD
@@ -65,7 +81,7 @@ GetRegString(HKEY key, LPCTSTR value, LPTSTR data, DWORD size, LPCTSTR default_v
     if (status == ERROR_FILE_NOT_FOUND && default_value)
     {
         size_t len = size/sizeof(data[0]);
-        if (openvpn_sntprintf(data, len, default_value) > 0)
+        if (openvpn_sntprintf(data, len, default_value))
         {
             status = ERROR_SUCCESS;
         }

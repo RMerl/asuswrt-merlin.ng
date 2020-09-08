@@ -31,9 +31,9 @@
 #ifndef FORWARD_H
 #define FORWARD_H
 
-#include "openvpn.h"
-#include "occ.h"
-#include "ping.h"
+/* the following macros must be defined before including any other header
+ * file
+ */
 
 #define TUN_OUT(c)      (BLEN(&(c)->c2.to_tun) > 0)
 #define LINK_OUT(c)     (BLEN(&(c)->c2.to_link) > 0)
@@ -46,6 +46,10 @@
 #endif
 
 #define TO_LINK_DEF(c)  (LINK_OUT(c) || TO_LINK_FRAG(c))
+
+#include "openvpn.h"
+#include "occ.h"
+#include "ping.h"
 
 #define IOW_TO_TUN          (1<<0)
 #define IOW_TO_LINK         (1<<1)
@@ -60,6 +64,41 @@
 
 #define IOW_READ            (IOW_READ_TUN|IOW_READ_LINK)
 
+extern counter_type link_read_bytes_global;
+
+extern counter_type link_write_bytes_global;
+
+void check_tls(struct context *c);
+
+void check_tls_errors_co(struct context *c);
+
+void check_tls_errors_nco(struct context *c);
+
+#if P2MP
+void check_incoming_control_channel(struct context *c);
+
+void check_scheduled_exit(struct context *c);
+
+void check_push_request(struct context *c);
+
+#endif /* P2MP */
+
+#ifdef ENABLE_FRAGMENT
+void check_fragment(struct context *c);
+
+#endif /* ENABLE_FRAGMENT */
+
+void check_connection_established(struct context *c);
+
+void check_add_routes(struct context *c);
+
+void check_inactivity_timeout(struct context *c);
+
+void check_server_poll_timeout(struct context *c);
+
+void check_status_file(struct context *c);
+
+void io_wait_dowork(struct context *c, const unsigned int flags);
 
 void pre_select(struct context *c);
 
@@ -247,13 +286,44 @@ void process_outgoing_tun(struct context *c);
 
 /**************************************************************************/
 
-bool send_control_channel_string(struct context *c, const char *str, int msglevel);
+/*
+ * Send a string to remote over the TLS control channel.
+ * Used for push/pull messages, passing username/password,
+ * etc.
+ * @param c          - The context structure of the VPN tunnel associated with
+ *                     the packet.
+ * @param str        - The message to be sent
+ * @param msglevel   - Message level to use for logging
+ */
+bool
+send_control_channel_string(struct context *c, const char *str, int msglevel);
 
-#define PIPV4_PASSTOS         (1<<0)
-#define PIP_MSSFIX            (1<<1)         /* v4 and v6 */
-#define PIPV4_OUTGOING        (1<<2)
-#define PIPV4_EXTRACT_DHCP_ROUTER (1<<3)
-#define PIPV4_CLIENT_NAT      (1<<4)
+/*
+ * Send a string to remote over the TLS control channel.
+ * Used for push/pull messages, passing username/password,
+ * etc.
+ *
+ * This variant does not schedule the actual sending of the message
+ * The caller needs to ensure that it is scheduled or call
+ * send_control_channel_string
+ *
+ * @param multi      - The tls_multi structure of the VPN tunnel associated
+ *                     with the packet.
+ * @param str        - The message to be sent
+ * @param msglevel   - Message level to use for logging
+ */
+
+bool
+send_control_channel_string_dowork(struct tls_multi *multi,
+                                   const char *str, int msglevel);
+
+#define PIPV4_PASSTOS                   (1<<0)
+#define PIP_MSSFIX                      (1<<1)         /* v4 and v6 */
+#define PIP_OUTGOING                    (1<<2)
+#define PIPV4_EXTRACT_DHCP_ROUTER       (1<<3)
+#define PIPV4_CLIENT_NAT                (1<<4)
+#define PIPV6_IMCP_NOHOST_CLIENT        (1<<5)
+#define PIPV6_IMCP_NOHOST_SERVER        (1<<6)
 
 void process_ip_header(struct context *c, unsigned int flags, struct buffer *buf);
 
@@ -261,5 +331,117 @@ void process_ip_header(struct context *c, unsigned int flags, struct buffer *buf
 void schedule_exit(struct context *c, const int n_seconds, const int signal);
 
 #endif
+
+static inline struct link_socket_info *
+get_link_socket_info(struct context *c)
+{
+    if (c->c2.link_socket_info)
+    {
+        return c->c2.link_socket_info;
+    }
+    else
+    {
+        return &c->c2.link_socket->info;
+    }
+}
+
+static inline void
+register_activity(struct context *c, const int size)
+{
+    if (c->options.inactivity_timeout)
+    {
+        c->c2.inactivity_bytes += size;
+        if (c->c2.inactivity_bytes >= c->options.inactivity_minimum_bytes)
+        {
+            c->c2.inactivity_bytes = 0;
+            event_timeout_reset(&c->c2.inactivity_interval);
+        }
+    }
+}
+
+/*
+ * Return the io_wait() flags appropriate for
+ * a point-to-point tunnel.
+ */
+static inline unsigned int
+p2p_iow_flags(const struct context *c)
+{
+    unsigned int flags = (IOW_SHAPER|IOW_CHECK_RESIDUAL|IOW_FRAG|IOW_READ|IOW_WAIT_SIGNAL);
+    if (c->c2.to_link.len > 0)
+    {
+        flags |= IOW_TO_LINK;
+    }
+    if (c->c2.to_tun.len > 0)
+    {
+        flags |= IOW_TO_TUN;
+    }
+#ifdef _WIN32
+    if (tuntap_ring_empty(c->c1.tuntap))
+    {
+        flags &= ~IOW_READ_TUN;
+    }
+#endif
+    return flags;
+}
+
+/*
+ * This is the core I/O wait function, used for all I/O waits except
+ * for TCP in server mode.
+ */
+static inline void
+io_wait(struct context *c, const unsigned int flags)
+{
+    void io_wait_dowork(struct context *c, const unsigned int flags);
+
+    if (c->c2.fast_io && (flags & (IOW_TO_TUN|IOW_TO_LINK|IOW_MBUF)))
+    {
+        /* fast path -- only for TUN/TAP/UDP writes */
+        unsigned int ret = 0;
+        if (flags & IOW_TO_TUN)
+        {
+            ret |= TUN_WRITE;
+        }
+        if (flags & (IOW_TO_LINK|IOW_MBUF))
+        {
+            ret |= SOCKET_WRITE;
+        }
+        c->c2.event_set_status = ret;
+    }
+    else
+    {
+#ifdef _WIN32
+        bool skip_iowait = flags & IOW_TO_TUN;
+        if (flags & IOW_READ_TUN)
+        {
+            /*
+             * don't read from tun if we have pending write to link,
+             * since every tun read overwrites to_link buffer filled
+             * by previous tun read
+             */
+            skip_iowait = !(flags & IOW_TO_LINK);
+        }
+        if (tuntap_is_wintun(c->c1.tuntap) && skip_iowait)
+        {
+            unsigned int ret = 0;
+            if (flags & IOW_TO_TUN)
+            {
+                ret |= TUN_WRITE;
+            }
+            if (flags & IOW_READ_TUN)
+            {
+                ret |= TUN_READ;
+            }
+            c->c2.event_set_status = ret;
+        }
+        else
+#endif /* ifdef _WIN32 */
+        {
+            /* slow path */
+            io_wait_dowork(c, flags);
+        }
+    }
+}
+
+#define CONNECTION_ESTABLISHED(c) (get_link_socket_info(c)->connection_established)
 
 #endif /* FORWARD_H */

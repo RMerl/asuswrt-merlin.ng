@@ -318,7 +318,6 @@ static int
 get_proxy_authenticate(socket_descriptor_t sd,
                        int timeout,
                        char **data,
-                       struct gc_arena *gc,
                        volatile int *signal_received)
 {
     char buf[256];
@@ -341,14 +340,14 @@ get_proxy_authenticate(socket_descriptor_t sd,
             if (!strncmp(buf+20, "Basic ", 6))
             {
                 msg(D_PROXY, "PROXY AUTH BASIC: '%s'", buf);
-                *data = string_alloc(buf+26, gc);
+                *data = string_alloc(buf+26, NULL);
                 ret = HTTP_AUTH_BASIC;
             }
 #if PROXY_DIGEST_AUTH
             else if (!strncmp(buf+20, "Digest ", 7))
             {
                 msg(D_PROXY, "PROXY AUTH DIGEST: '%s'", buf);
-                *data = string_alloc(buf+27, gc);
+                *data = string_alloc(buf+27, NULL);
                 ret = HTTP_AUTH_DIGEST;
             }
 #endif
@@ -885,10 +884,10 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
                 const char *algor = get_pa_var("algorithm", pa, &gc);
                 const char *opaque = get_pa_var("opaque", pa, &gc);
 
-                if ( !realm || !nonce )
+                if (!realm || !nonce)
                 {
                     msg(D_LINK_ERRORS, "HTTP proxy: digest auth failed, malformed response "
-                            "from server: realm= or nonce= missing" );
+                        "from server: realm= or nonce= missing" );
                     goto error;
                 }
 
@@ -997,7 +996,6 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
             const int method = get_proxy_authenticate(sd,
                                                       get_server_poll_remaining_time(server_poll_timeout),
                                                       &pa,
-                                                      NULL,
                                                       signal_received);
             if (method != HTTP_AUTH_NONE)
             {

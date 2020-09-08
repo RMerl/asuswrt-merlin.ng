@@ -25,7 +25,11 @@
 #ifndef OPENVPN_WIN32_H
 #define OPENVPN_WIN32_H
 
+#include <winioctl.h>
+
 #include "mtu.h"
+#include "openvpn-msg.h"
+#include "argv.h"
 
 /* location of executables */
 #define SYS_PATH_ENV_VAR_NAME "SystemRoot"  /* environmental variable name that normally contains the system path */
@@ -35,7 +39,7 @@
 #define WIN_NET_PATH_SUFFIX "\\system32\\net.exe"
 
 /*
- * Win32-specific OpenVPN code, targetted at the mingw
+ * Win32-specific OpenVPN code, targeted at the mingw
  * development environment.
  */
 
@@ -65,7 +69,7 @@ struct security_attributes
 struct window_title
 {
     bool saved;
-    char old_window_title [256];
+    char old_window_title[256];
 };
 
 struct rw_handle {
@@ -294,10 +298,12 @@ bool win_wfp_block_dns(const NET_IFINDEX index, const HANDLE msg_channel);
 
 bool win_wfp_uninit(const NET_IFINDEX index, const HANDLE msg_channel);
 
-#define WIN_XP 0
+#define WIN_XP    0
 #define WIN_VISTA 1
-#define WIN_7 2
-#define WIN_8 3
+#define WIN_7     2
+#define WIN_8     3
+#define WIN_8_1   4
+#define WIN_10    5
 
 int win32_version_info(void);
 
@@ -306,6 +312,22 @@ int win32_version_info(void);
  * https://msdn.microsoft.com/en-us/library/windows/desktop/ms724832(v=vs.85).aspx
  */
 const char *win32_version_string(struct gc_arena *gc, bool add_name);
+
+/*
+ * Send the |size| bytes in buffer |data| to the interactive service |pipe|
+ * and read the result in |ack|. Returns false on communication error.
+ * The string in |context| is used to prefix error messages.
+ */
+bool send_msg_iservice(HANDLE pipe, const void *data, size_t size,
+                       ack_message_t *ack, const char *context);
+
+/*
+ * Attempt to simulate fork/execve on Windows
+ */
+int
+openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned int flags);
+
+bool impersonate_as_system();
 
 #endif /* ifndef OPENVPN_WIN32_H */
 #endif /* ifdef _WIN32 */

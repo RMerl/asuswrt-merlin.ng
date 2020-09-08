@@ -42,6 +42,7 @@
 
 #include "buffer.h"
 
+#include <openssl/rsa.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 
@@ -182,6 +183,12 @@ SSL_CTX_get_default_passwd_cb(SSL_CTX *ctx)
 }
 #endif
 
+/* This function is implemented as macro, so the configure check for the
+ * function may fail, so we check for both variants here */
+#if !defined(HAVE_SSL_CTX_SET1_GROUPS) && !defined(SSL_CTX_set1_groups)
+#define SSL_CTX_set1_groups SSL_CTX_set1_curves
+#endif
+
 #if !defined(HAVE_X509_GET0_PUBKEY)
 /**
  * Get the public key from a X509 certificate
@@ -204,8 +211,8 @@ X509_get0_pubkey(const X509 *x)
  * @param store              X509 object store
  * @return                   the X509 object stack
  */
-static inline STACK_OF(X509_OBJECT) *
-X509_STORE_get0_objects(X509_STORE *store)
+static inline STACK_OF(X509_OBJECT)
+*X509_STORE_get0_objects(X509_STORE *store)
 {
     return store ? store->objs : NULL;
 }
@@ -267,20 +274,6 @@ static inline EC_KEY *
 EVP_PKEY_get0_EC_KEY(EVP_PKEY *pkey)
 {
     return (pkey && pkey->type == EVP_PKEY_EC) ? pkey->pkey.ec : NULL;
-}
-#endif
-
-#if !defined(HAVE_EVP_PKEY_ID)
-/**
- * Get the PKEY type
- *
- * @param pkey                Public key object
- * @return                    The key type
- */
-static inline int
-EVP_PKEY_id(const EVP_PKEY *pkey)
-{
-    return pkey ? pkey->type : EVP_PKEY_NONE;
 }
 #endif
 
@@ -380,7 +373,7 @@ RSA_set0_key(RSA *rsa, BIGNUM *n, BIGNUM *e, BIGNUM *d)
 
     return 1;
 }
-#endif
+#endif /* if !defined(HAVE_RSA_SET0_KEY) */
 
 #if !defined(HAVE_RSA_BITS)
 /**
@@ -494,9 +487,9 @@ RSA_meth_free(RSA_METHOD *meth)
  */
 static inline int
 RSA_meth_set_pub_enc(RSA_METHOD *meth,
-                     int (*pub_enc) (int flen, const unsigned char *from,
-                                     unsigned char *to, RSA *rsa,
-                                     int padding))
+                     int (*pub_enc)(int flen, const unsigned char *from,
+                                    unsigned char *to, RSA *rsa,
+                                    int padding))
 {
     if (meth)
     {
@@ -517,9 +510,9 @@ RSA_meth_set_pub_enc(RSA_METHOD *meth,
  */
 static inline int
 RSA_meth_set_pub_dec(RSA_METHOD *meth,
-                     int (*pub_dec) (int flen, const unsigned char *from,
-                                     unsigned char *to, RSA *rsa,
-                                     int padding))
+                     int (*pub_dec)(int flen, const unsigned char *from,
+                                    unsigned char *to, RSA *rsa,
+                                    int padding))
 {
     if (meth)
     {
@@ -540,9 +533,9 @@ RSA_meth_set_pub_dec(RSA_METHOD *meth,
  */
 static inline int
 RSA_meth_set_priv_enc(RSA_METHOD *meth,
-                      int (*priv_enc) (int flen, const unsigned char *from,
-                                       unsigned char *to, RSA *rsa,
-                                       int padding))
+                      int (*priv_enc)(int flen, const unsigned char *from,
+                                      unsigned char *to, RSA *rsa,
+                                      int padding))
 {
     if (meth)
     {
@@ -563,9 +556,9 @@ RSA_meth_set_priv_enc(RSA_METHOD *meth,
  */
 static inline int
 RSA_meth_set_priv_dec(RSA_METHOD *meth,
-                      int (*priv_dec) (int flen, const unsigned char *from,
-                                       unsigned char *to, RSA *rsa,
-                                       int padding))
+                      int (*priv_dec)(int flen, const unsigned char *from,
+                                      unsigned char *to, RSA *rsa,
+                                      int padding))
 {
     if (meth)
     {
@@ -585,7 +578,7 @@ RSA_meth_set_priv_dec(RSA_METHOD *meth,
  * @return                   1 on success, 0 on error
  */
 static inline int
-RSA_meth_set_init(RSA_METHOD *meth, int (*init) (RSA *rsa))
+RSA_meth_set_init(RSA_METHOD *meth, int (*init)(RSA *rsa))
 {
     if (meth)
     {
@@ -605,11 +598,12 @@ RSA_meth_set_init(RSA_METHOD *meth, int (*init) (RSA *rsa))
  * @return                   1 on success, 0 on error
  */
 static inline
-int RSA_meth_set_sign(RSA_METHOD *meth,
-                      int (*sign) (int type, const unsigned char *m,
-                                   unsigned int m_length,
-                                   unsigned char *sigret, unsigned int *siglen,
-                                   const RSA *rsa))
+int
+RSA_meth_set_sign(RSA_METHOD *meth,
+                  int (*sign)(int type, const unsigned char *m,
+                              unsigned int m_length,
+                              unsigned char *sigret, unsigned int *siglen,
+                              const RSA *rsa))
 {
     meth->rsa_sign = sign;
     return 1;
@@ -625,7 +619,7 @@ int RSA_meth_set_sign(RSA_METHOD *meth,
  * @return                   1 on success, 0 on error
  */
 static inline int
-RSA_meth_set_finish(RSA_METHOD *meth, int (*finish) (RSA *rsa))
+RSA_meth_set_finish(RSA_METHOD *meth, int (*finish)(RSA *rsa))
 {
     if (meth)
     {
@@ -680,7 +674,7 @@ RSA_meth_get0_app_data(const RSA_METHOD *meth)
 static inline int
 EC_GROUP_order_bits(const EC_GROUP *group)
 {
-    BIGNUM* order = BN_new();
+    BIGNUM *order = BN_new();
     EC_GROUP_get_order(group, order, NULL);
     int bits = BN_num_bits(order);
     BN_free(order);
@@ -689,6 +683,14 @@ EC_GROUP_order_bits(const EC_GROUP *group)
 #endif
 
 /* SSLeay symbols have been renamed in OpenSSL 1.1 */
+#ifndef OPENSSL_VERSION
+#define OPENSSL_VERSION SSLEAY_VERSION
+#endif
+
+#ifndef HAVE_OPENSSL_VERSION
+#define OpenSSL_version SSLeay_version
+#endif
+
 #if !defined(RSA_F_RSA_OSSL_PRIVATE_ENCRYPT)
 #define RSA_F_RSA_OSSL_PRIVATE_ENCRYPT       RSA_F_RSA_EAY_PRIVATE_ENCRYPT
 #endif
@@ -704,18 +706,14 @@ SSL_CTX_get_min_proto_version(SSL_CTX *ctx)
     {
         return TLS1_VERSION;
     }
-#ifdef SSL_OP_NO_TLSv1_1
     if (!(sslopt & SSL_OP_NO_TLSv1_1))
     {
         return TLS1_1_VERSION;
     }
-#endif
-#ifdef SSL_OP_NO_TLSv1_2
     if (!(sslopt & SSL_OP_NO_TLSv1_2))
     {
         return TLS1_2_VERSION;
     }
-#endif
     return 0;
 }
 #endif /* SSL_CTX_get_min_proto_version */
@@ -727,18 +725,14 @@ static inline int
 SSL_CTX_get_max_proto_version(SSL_CTX *ctx)
 {
     long sslopt = SSL_CTX_get_options(ctx);
-#ifdef SSL_OP_NO_TLSv1_2
     if (!(sslopt & SSL_OP_NO_TLSv1_2))
     {
         return TLS1_2_VERSION;
     }
-#endif
-#ifdef SSL_OP_NO_TLSv1_1
     if (!(sslopt & SSL_OP_NO_TLSv1_1))
     {
         return TLS1_1_VERSION;
     }
-#endif
     if (!(sslopt & SSL_OP_NO_TLSv1))
     {
         return TLS1_VERSION;

@@ -29,11 +29,9 @@
 
 #include "syshead.h"
 
-#if P2MP_SERVER
-
 #include "multi.h"
 #include <inttypes.h>
-#include "forward-inline.h"
+#include "forward.h"
 
 #include "memdbg.h"
 
@@ -278,7 +276,12 @@ p2mp_iow_flags(const struct multi_context *m)
     {
         flags |= IOW_READ;
     }
-
+#ifdef _WIN32
+    if (tuntap_ring_empty(m->top.c1.tuntap))
+    {
+        flags &= ~IOW_READ_TUN;
+    }
+#endif
     return flags;
 }
 
@@ -379,4 +382,3 @@ tunnel_server_udp(struct context *top)
     tunnel_server_udp_single_threaded(top);
 }
 
-#endif /* if P2MP_SERVER */

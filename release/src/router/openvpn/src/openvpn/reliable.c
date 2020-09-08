@@ -34,8 +34,6 @@
 
 #include "syshead.h"
 
-#ifdef ENABLE_CRYPTO
-
 #include "buffer.h"
 #include "error.h"
 #include "common.h"
@@ -354,7 +352,7 @@ reliable_empty(const struct reliable *rel)
 
 /* del acknowledged items from send buf */
 void
-reliable_send_purge(struct reliable *rel, struct reliable_ack *ack)
+reliable_send_purge(struct reliable *rel, const struct reliable_ack *ack)
 {
     int i, j;
     for (i = 0; i < ack->len; ++i)
@@ -464,7 +462,7 @@ reliable_wont_break_sequentiality(const struct reliable *rel, packet_id_type id)
              (packet_id_print_type)id, reliable_print_ids(rel, &gc));
     }
 
-    dmsg(D_REL_DEBUG, "ACK RWBS rel->size=%d rel->packet_id=%08x id=%08x ret=%d\n", rel->size, rel->packet_id, id, ret);
+    dmsg(D_REL_DEBUG, "ACK RWBS rel->size=%d rel->packet_id=%08x id=%08x ret=%d", rel->size, rel->packet_id, id, ret);
 
     gc_free(&gc);
     return ret;
@@ -567,30 +565,6 @@ reliable_can_send(const struct reliable *rel)
     return n_current > 0 && !rel->hold;
 }
 
-#ifdef EXPONENTIAL_BACKOFF
-/* return a unique point-in-time to trigger retry */
-static time_t
-reliable_unique_retry(struct reliable *rel, time_t retry)
-{
-    int i;
-    while (true)
-    {
-        for (i = 0; i < rel->size; ++i)
-        {
-            struct reliable_entry *e = &rel->array[i];
-            if (e->active && e->next_try == retry)
-            {
-                goto again;
-            }
-        }
-        break;
-again:
-        ++retry;
-    }
-    return retry;
-}
-#endif /* ifdef EXPONENTIAL_BACKOFF */
-
 /* return next buffer to send to remote */
 struct buffer *
 reliable_send(struct reliable *rel, int *opcode)
@@ -614,7 +588,7 @@ reliable_send(struct reliable *rel, int *opcode)
     {
 #ifdef EXPONENTIAL_BACKOFF
         /* exponential backoff */
-        best->next_try = reliable_unique_retry(rel, local_now + best->timeout);
+        best->next_try = local_now + best->timeout;
         best->timeout *= 2;
 #else
         /* constant timeout, no backoff */
@@ -788,24 +762,17 @@ reliable_debug_print(const struct reliable *rel, char *desc)
     printf("********* struct reliable %s\n", desc);
     printf("  initial_timeout=%d\n", (int)rel->initial_timeout);
     printf("  packet_id=" packet_id_format "\n", rel->packet_id);
-    printf("  now=" time_format "\n", now);
+    printf("  now=%" PRIi64 "\n", (int64_t)now);
     for (i = 0; i < rel->size; ++i)
     {
         const struct reliable_entry *e = &rel->array[i];
         if (e->active)
         {
             printf("  %d: packet_id=" packet_id_format " len=%d", i, e->packet_id, e->buf.len);
-            printf(" next_try=" time_format, e->next_try);
+            printf(" next_try=%" PRIi64, (int64_t)e->next_try);
             printf("\n");
         }
     }
 }
 
 #endif /* if 0 */
-
-#else  /* ifdef ENABLE_CRYPTO */
-static void
-dummy(void)
-{
-}
-#endif /* ENABLE_CRYPTO */

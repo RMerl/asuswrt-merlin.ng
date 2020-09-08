@@ -115,7 +115,6 @@ typedef struct ovpn_cconf {
 //Data Channel Encryption Options:
 	int direction;	//key-direction of secret or tls-auth (hmac)
 	char digest[32]; //HMAC message digest algorithm: e.g. SHA1, RSA-SHA512, ecdsa-with-SHA1
-	int ncp;
 	char ncp_ciphers[256];
 	char cipher[32];	//cipher algorithm: e.g. AES-128-CBC, CAMELLIA-256-CBC
 
@@ -167,7 +166,6 @@ typedef struct ovpn_sconf {
 	int direction;	//key-direction of secret or tls-auth (hmac)
 	int tlscrypt;	//Encrypt and authenticate all control channel packets.
 	char digest[32]; //HMAC message digest algorithm: e.g. SHA1, RSA-SHA512, ecdsa-with-SHA1
-	int ncp;
 	char ncp_ciphers[256];
 	char cipher[32];	//cipher algorithm: e.g. AES-128-CBC, CAMELLIA-256-CBC
 

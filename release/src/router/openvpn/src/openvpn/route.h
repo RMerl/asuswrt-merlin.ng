@@ -31,6 +31,7 @@
 #include "basic.h"
 #include "tun.h"
 #include "misc.h"
+#include "networking.h"
 
 #ifdef _WIN32
 /*
@@ -183,7 +184,11 @@ struct route_ipv6_gateway_info {
 #ifdef _WIN32
     DWORD adapter_index; /* interface or ~0 if undefined */
 #else
-    char iface[16]; /* interface name (null terminated), may be empty */
+    /* non linux platform don't have this constant defined */
+#ifndef IFNAMSIZ
+#define IFNAMSIZ 16
+#endif
+    char iface[IFNAMSIZ]; /* interface name (null terminated), may be empty */
 #endif
 
     /* gateway interface hardware address */
@@ -256,15 +261,16 @@ void copy_route_ipv6_option_list(struct route_ipv6_option_list *dest,
 
 void route_ipv6_clear_host_bits( struct route_ipv6 *r6 );
 
-void add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es);
+void add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
 
-void delete_route_ipv6(const struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es);
+void delete_route_ipv6(const struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
 
 void add_route(struct route_ipv4 *r,
                const struct tuntap *tt,
                unsigned int flags,
                const struct route_gateway_info *rgi,
-               const struct env_set *es);
+               const struct env_set *es,
+               openvpn_net_ctx_t *ctx);
 
 void add_route_to_option_list(struct route_option_list *l,
                               const char *network,
@@ -282,14 +288,16 @@ bool init_route_list(struct route_list *rl,
                      const char *remote_endpoint,
                      int default_metric,
                      in_addr_t remote_host,
-                     struct env_set *es);
+                     struct env_set *es,
+                     openvpn_net_ctx_t *ctx);
 
 bool init_route_ipv6_list(struct route_ipv6_list *rl6,
                           const struct route_ipv6_option_list *opt6,
                           const char *remote_endpoint,
                           int default_metric,
                           const struct in6_addr *remote_host,
-                          struct env_set *es);
+                          struct env_set *es,
+                          openvpn_net_ctx_t *ctx);
 
 void route_list_add_vpn_gateway(struct route_list *rl,
                                 struct env_set *es,
@@ -299,26 +307,28 @@ void add_routes(struct route_list *rl,
                 struct route_ipv6_list *rl6,
                 const struct tuntap *tt,
                 unsigned int flags,
-                const struct env_set *es);
+                const struct env_set *es,
+                openvpn_net_ctx_t *ctx);
 
 void delete_routes(struct route_list *rl,
                    struct route_ipv6_list *rl6,
                    const struct tuntap *tt,
                    unsigned int flags,
-                   const struct env_set *es);
+                   const struct env_set *es,
+                   openvpn_net_ctx_t *ctx);
 
 void setenv_routes(struct env_set *es, const struct route_list *rl);
 
 void setenv_routes_ipv6(struct env_set *es, const struct route_ipv6_list *rl6);
 
-
-
 bool is_special_addr(const char *addr_str);
 
-void get_default_gateway(struct route_gateway_info *rgi);
+void get_default_gateway(struct route_gateway_info *rgi,
+                         openvpn_net_ctx_t *ctx);
 
 void get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi,
-                              const struct in6_addr *dest);
+                              const struct in6_addr *dest,
+                              openvpn_net_ctx_t *ctx);
 
 void print_default_gateway(const int msglevel,
                            const struct route_gateway_info *rgi,

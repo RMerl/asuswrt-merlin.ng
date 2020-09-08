@@ -14,7 +14,10 @@ MAINTAINERCLEANFILES = \
 
 EXTRA_DIST = \
 	compat.vcxproj \
-	compat.vcxproj.filters
+	compat.vcxproj.filters \
+	PropertySheet.props \
+	Debug.props \
+	Release.props
 
 noinst_LTLIBRARIES = libcompat.la
 
@@ -27,4 +30,5 @@ libcompat_la_SOURCES = \
 	compat-inet_ntop.c \
 	compat-inet_pton.c \
 	compat-lz4.c compat-lz4.h \
+	compat-strsep.c \
 	compat-versionhelpers.h

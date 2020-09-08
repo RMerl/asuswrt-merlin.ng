@@ -130,6 +130,7 @@ result_t backend_x509_get_username(char *common_name, int cn_len,
  * --x509-username-field option.
  */
 bool x509_username_field_ext_supported(const char *extname);
+
 #endif
 
 /*
@@ -175,7 +176,7 @@ void x509_setenv(struct env_set *es, int cert_depth, openvpn_x509_cert_t *cert);
  *
  * The tracked attributes are stored in ll_head.
  *
- * @param ll_head       The x509_track to store tracked atttributes in
+ * @param ll_head       The x509_track to store tracked attributes in
  * @param name          Name of the attribute to track
  * @param msglevel      Message level for errors
  * @param gc            Garbage collection arena for temp data

@@ -7,7 +7,7 @@ authentication via PAM, and essentially allows any authentication
 method supported by PAM (such as LDAP, RADIUS, or Linux Shadow
 passwords) to be used with OpenVPN.  While PAM supports
 username/password authentication, this can be combined with X509
-certificates to provide two indepedent levels of authentication.
+certificates to provide two independent levels of authentication.
 
 This module uses a split privilege execution model which will
 function even if you drop openvpn daemon privileges using the user,
@@ -36,19 +36,20 @@ pairs to answer PAM module queries.
 
 For example:
 
-  plugin openvpn-auth-pam.so "login login USERNAME password PASSWORD"
+  plugin openvpn-auth-pam.so "login login USERNAME password PASSWORD pin OTP"
 
 tells auth-pam to (a) use the "login" PAM module, (b) answer a
-"login" query with the username given by the OpenVPN client, and
-(c) answer a "password" query with the password given by the
-OpenVPN client.  This provides flexibility in dealing with the different
+"login" query with the username given by the OpenVPN client,
+(c) answer a "password" query with the password, and (d) answer a
+"pin" query with the OTP given by the OpenVPN client.
+This provides flexibility in dealing with different
 types of query strings which different PAM modules might generate.
 For example, suppose you were using a PAM module called
 "test" which queried for "name" rather than "login":
 
   plugin openvpn-auth-pam.so "test name USERNAME password PASSWORD"
 
-While "USERNAME" "COMMONNAME" and "PASSWORD" are special strings which substitute
+While "USERNAME" "COMMONNAME" "PASSWORD" and "OTP" are special strings which substitute
 to client-supplied values, it is also possible to name literal values
 to use as PAM module query responses.  For example, suppose that the
 login module queried for a third parameter, "domain" which
@@ -59,14 +60,53 @@ is to be answered with the constant value "mydomain.com":
 The following OpenVPN directives can also influence
 the operation of this plugin:
 
-  client-cert-not-required
+  verify-client-cert none
   username-as-common-name
+  static-challenge
+
+Use of --static challenege is required to pass a pin (represented by "OTP" in
+parameter substitution) or a second password.
 
 Run OpenVPN with --verb 7 or higher to get debugging output from
 this plugin, including the list of queries presented by the
 underlying PAM module.  This is a useful debugging tool to figure
 out which queries a given PAM module is making, so that you can
 craft the appropriate plugin directive to answer it.
+
+Since running OpenVPN with verb 7 is quite verbose, alternatively
+you can put
+
+   verb 3
+   setenv verb 9
+
+in the openvpn config which will only increase logging for this plugin.
+
+
+ASYNCHRONOUS OPERATION
+
+Sometimes PAM modules take very long to complete (for example, a LDAP
+or Radius query might timeout trying to connect an unreachable external
+server).  Normal plugin auth operation will block the whole OpenVPN
+process in this time, that is, all forwarding for all other clients stops.
+
+The auth-pam plugin can operate asynchronously ("deferred authentication")
+to remedy this situation.  To enable this, put
+
+  setenv deferred_auth_pam 1
+
+in your openvpn server config.  If set, this will make the "PAM background
+process" fork() and do its job detached from OpenVPN.  When finished, a
+status file is written, which OpenVPN will then pick up and read the
+success/failure result from it.
+
+While the plugin is working in the background, OpenVPN will continue to
+service other clients normally.
+
+Asynchronous operation is recommended for all PAM queries that could
+"take time" (LDAP, Radius, NIS, ...).  If only local files are queried
+(passwd, pam_userdb, ...), synchronous operation has slightly lower
+overhead, so this is still the default mode of operation.
+
 
 CAVEATS
 

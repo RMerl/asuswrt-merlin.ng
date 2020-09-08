@@ -35,9 +35,9 @@
 
 #include "init.h"
 #include "memdbg.h"
+#include "pf.h"
 #include "ssl_verify.h"
 
-#include "pf-inline.h"
 
 static void
 pf_destroy(struct pf_set *pfs)
@@ -547,9 +547,7 @@ pf_check_reload(struct context *c)
     const int wakeup_transition = 60;
     bool reloaded = false;
 
-    if (c->c2.pf.enabled
-        && c->c2.pf.filename
-        && event_timeout_trigger(&c->c2.pf.reload, &c->c2.timeval, ETT_DEFAULT))
+    if (c->c2.pf.filename)
     {
         platform_stat_t s;
         if (!platform_stat(c->c2.pf.filename, &s))
@@ -618,19 +616,18 @@ pf_load_from_buffer_list(struct context *c, const struct buffer_list *config)
 void
 pf_init_context(struct context *c)
 {
-    struct gc_arena gc = gc_new();
 #ifdef PLUGIN_PF
     if (plugin_defined(c->plugins, OPENVPN_PLUGIN_ENABLE_PF))
     {
-        const char *pf_file = create_temp_file(c->options.tmp_dir, "pf", &gc);
-        if (pf_file)
+        c->c2.pf.filename = platform_create_temp_file(c->options.tmp_dir, "pf",
+                                                      &c->c2.gc);
+        if (c->c2.pf.filename)
         {
-            setenv_str(c->c2.es, "pf_file", pf_file);
+            setenv_str(c->c2.es, "pf_file", c->c2.pf.filename);
 
             if (plugin_call(c->plugins, OPENVPN_PLUGIN_ENABLE_PF, NULL, NULL, c->c2.es) == OPENVPN_PLUGIN_FUNC_SUCCESS)
             {
                 event_timeout_init(&c->c2.pf.reload, 1, now);
-                c->c2.pf.filename = string_alloc(pf_file, &c->c2.gc);
                 c->c2.pf.enabled = true;
 #ifdef ENABLE_DEBUG
                 if (check_debug_level(D_PF_DEBUG))
@@ -639,10 +636,12 @@ pf_init_context(struct context *c)
                 }
 #endif
             }
-            else
-            {
-                msg(M_WARN, "WARNING: OPENVPN_PLUGIN_ENABLE_PF disabled");
-            }
+        }
+        if (!c->c2.pf.enabled)
+        {
+            msg(M_WARN, "WARNING: failed to init PF plugin, rejecting client.");
+            register_signal(c, SIGUSR1, "plugin-pf-init-failed");
+            return;
         }
     }
 #endif /* ifdef PLUGIN_PF */
@@ -658,7 +657,6 @@ pf_init_context(struct context *c)
 #endif
     }
 #endif
-    gc_free(&gc);
 }
 
 void

@@ -6,6 +6,7 @@
  *             packet compression.
  *
  *  Copyright (C) 2002-2018 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2016-2018 Selva Nair <selva.nair@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -61,9 +62,15 @@
 #define RESPONSE_INIT_FAILED      11
 #define RESPONSE_VERIFY_SUCCEEDED 12
 #define RESPONSE_VERIFY_FAILED    13
+#define RESPONSE_DEFER            14
 
 /* Pointers to functions exported from openvpn */
+static plugin_log_t plugin_log = NULL;
 static plugin_secure_memzero_t plugin_secure_memzero = NULL;
+static plugin_base64_decode_t plugin_base64_decode = NULL;
+
+/* module name for plugin_log() */
+static char *MODULE = "AUTH-PAM";
 
 /*
  * Plugin state, used by foreground
@@ -87,6 +94,7 @@ struct auth_pam_context
  *  "USERNAME" -- substitute client-supplied username
  *  "PASSWORD" -- substitute client-specified password
  *  "COMMONNAME" -- substitute client certificate common name
+ *  "OTP" -- substitute static challenge response if available
  */
 
 #define N_NAME_VALUE 16
@@ -111,6 +119,7 @@ struct user_pass {
     char username[128];
     char password[128];
     char common_name[128];
+    char response[128];
 
     const struct name_value_list *name_value_list;
 };
@@ -207,7 +216,7 @@ daemonize(const char *envp[])
         }
         if (daemon(0, 0) < 0)
         {
-            fprintf(stderr, "AUTH-PAM: daemonization failed\n");
+            plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "daemonization failed");
         }
         else if (fd >= 3)
         {
@@ -276,6 +285,66 @@ name_value_match(const char *query, const char *match)
     return strncasecmp(match, query, strlen(match)) == 0;
 }
 
+/*
+ * Split and decode up->password in the form SCRV1:base64_pass:base64_response
+ * into pass and response and save in up->password and up->response.
+ * If the password is not in the expected format, input is not changed.
+ */
+static void
+split_scrv1_password(struct user_pass *up)
+{
+    const int skip = strlen("SCRV1:");
+    if (strncmp(up->password, "SCRV1:", skip) != 0)
+    {
+        return;
+    }
+
+    char *tmp = strdup(up->password);
+    if (!tmp)
+    {
+        plugin_log(PLOG_ERR, MODULE, "out of memory parsing static challenge password");
+        goto out;
+    }
+
+    char *pass = tmp + skip;
+    char *resp = strchr(pass, ':');
+    if (!resp) /* string not in SCRV1:xx:yy format */
+    {
+        goto out;
+    }
+    *resp++ = '\0';
+
+    int n = plugin_base64_decode(pass, up->password, sizeof(up->password)-1);
+    if (n >= 0)
+    {
+        up->password[n] = '\0';
+        n = plugin_base64_decode(resp, up->response, sizeof(up->response)-1);
+        if (n >= 0)
+        {
+            up->response[n] = '\0';
+            if (DEBUG(up->verb))
+            {
+                plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: parsed static challenge password");
+            }
+            goto out;
+        }
+    }
+
+    /* decode error: reinstate original value of up->password and return */
+    plugin_secure_memzero(up->password, sizeof(up->password));
+    plugin_secure_memzero(up->response, sizeof(up->response));
+    strcpy(up->password, tmp); /* tmp is guaranteed to fit in up->password */
+
+    plugin_log(PLOG_ERR, MODULE, "base64 decode error while parsing static challenge password");
+
+out:
+    if (tmp)
+    {
+        plugin_secure_memzero(tmp, strlen(tmp));
+        free(tmp);
+    }
+}
+
 OPENVPN_EXPORT int
 openvpn_plugin_open_v3(const int v3structver,
                        struct openvpn_plugin_args_open_in const *args,
@@ -315,7 +384,9 @@ openvpn_plugin_open_v3(const int v3structver,
     ret->type_mask = OPENVPN_PLUGIN_MASK(OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY);
 
     /* Save global pointers to functions exported from openvpn */
+    plugin_log = args->callbacks->plugin_log;
     plugin_secure_memzero = args->callbacks->plugin_secure_memzero;
+    plugin_base64_decode = args->callbacks->plugin_base64_decode;
 
     /*
      * Make sure we have two string arguments: the first is the .so name,
@@ -323,7 +394,7 @@ openvpn_plugin_open_v3(const int v3structver,
      */
     if (string_array_len(argv) < base_parms)
     {
-        fprintf(stderr, "AUTH-PAM: need PAM service parameter\n");
+        plugin_log(PLOG_ERR, MODULE, "need PAM service parameter");
         goto error;
     }
 
@@ -339,7 +410,7 @@ openvpn_plugin_open_v3(const int v3structver,
 
         if ((nv_len & 1) == 1 || (nv_len / 2) > N_NAME_VALUE)
         {
-            fprintf(stderr, "AUTH-PAM: bad name/value list length\n");
+            plugin_log(PLOG_ERR, MODULE, "bad name/value list length");
             goto error;
         }
 
@@ -369,7 +440,7 @@ openvpn_plugin_open_v3(const int v3structver,
      */
     if (socketpair(PF_UNIX, SOCK_DGRAM, 0, fd) == -1)
     {
-        fprintf(stderr, "AUTH-PAM: socketpair call failed\n");
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "socketpair call failed");
         goto error;
     }
 
@@ -395,7 +466,7 @@ openvpn_plugin_open_v3(const int v3structver,
         /* don't let future subprocesses inherit child socket */
         if (fcntl(fd[0], F_SETFD, FD_CLOEXEC) < 0)
         {
-            fprintf(stderr, "AUTH-PAM: Set FD_CLOEXEC flag on socket file descriptor failed\n");
+            plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "Set FD_CLOEXEC flag on socket file descriptor failed");
         }
 
         /* wait for background child process to initialize */
@@ -404,6 +475,7 @@ openvpn_plugin_open_v3(const int v3structver,
         {
             context->foreground_fd = fd[0];
             ret->handle = (openvpn_plugin_handle_t *) context;
+            plugin_log( PLOG_NOTE, MODULE, "initialization succeeded (fg)" );
             return OPENVPN_PLUGIN_FUNC_SUCCESS;
         }
     }
@@ -453,14 +525,33 @@ openvpn_plugin_func_v1(openvpn_plugin_handle_t handle, const int type, const cha
         const char *password = get_env("password", envp);
         const char *common_name = get_env("common_name", envp) ? get_env("common_name", envp) : "";
 
+        /* should we do deferred auth?
+         *  yes, if there is "auth_control_file" and "deferred_auth_pam" env
+         */
+        const char *auth_control_file = get_env("auth_control_file", envp);
+        const char *deferred_auth_pam = get_env("deferred_auth_pam", envp);
+        if (auth_control_file != NULL && deferred_auth_pam != NULL)
+        {
+            if (DEBUG(context->verb))
+            {
+                plugin_log(PLOG_NOTE, MODULE, "do deferred auth '%s'",
+                           auth_control_file);
+            }
+        }
+        else
+        {
+            auth_control_file = "";
+        }
+
         if (username && strlen(username) > 0 && password)
         {
             if (send_control(context->foreground_fd, COMMAND_VERIFY) == -1
                 || send_string(context->foreground_fd, username) == -1
                 || send_string(context->foreground_fd, password) == -1
-                || send_string(context->foreground_fd, common_name) == -1)
+                || send_string(context->foreground_fd, common_name) == -1
+                || send_string(context->foreground_fd, auth_control_file) == -1)
             {
-                fprintf(stderr, "AUTH-PAM: Error sending auth info to background process\n");
+                plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "Error sending auth info to background process");
             }
             else
             {
@@ -469,9 +560,17 @@ openvpn_plugin_func_v1(openvpn_plugin_handle_t handle, const int type, const cha
                 {
                     return OPENVPN_PLUGIN_FUNC_SUCCESS;
                 }
+                if (status == RESPONSE_DEFER)
+                {
+                    if (DEBUG(context->verb))
+                    {
+                        plugin_log(PLOG_NOTE, MODULE, "deferred authentication");
+                    }
+                    return OPENVPN_PLUGIN_FUNC_DEFERRED;
+                }
                 if (status == -1)
                 {
-                    fprintf(stderr, "AUTH-PAM: Error receiving auth confirmation from background process\n");
+                    plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "Error receiving auth confirmation from background process");
                 }
             }
         }
@@ -486,7 +585,7 @@ openvpn_plugin_close_v1(openvpn_plugin_handle_t handle)
 
     if (DEBUG(context->verb))
     {
-        fprintf(stderr, "AUTH-PAM: close\n");
+        plugin_log(PLOG_NOTE, MODULE, "close");
     }
 
     if (context->foreground_fd >= 0)
@@ -494,7 +593,7 @@ openvpn_plugin_close_v1(openvpn_plugin_handle_t handle)
         /* tell background process to exit */
         if (send_control(context->foreground_fd, COMMAND_EXIT) == -1)
         {
-            fprintf(stderr, "AUTH-PAM: Error signaling background process to exit\n");
+            plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "Error signaling background process to exit");
         }
 
         /* wait for background process to exit */
@@ -556,7 +655,7 @@ my_conv(int n, const struct pam_message **msg_array,
 
         if (DEBUG(up->verb))
         {
-            fprintf(stderr, "AUTH-PAM: BACKGROUND: my_conv[%d] query='%s' style=%d\n",
+            plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: my_conv[%d] query='%s' style=%d",
                     i,
                     msg->msg ? msg->msg : "NULL",
                     msg->msg_style);
@@ -581,7 +680,7 @@ my_conv(int n, const struct pam_message **msg_array,
 
                     if (DEBUG(up->verb))
                     {
-                        fprintf(stderr, "AUTH-PAM: BACKGROUND: name match found, query/match-string ['%s', '%s'] = '%s'\n",
+                        plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: name match found, query/match-string ['%s', '%s'] = '%s'",
                                 msg->msg,
                                 match_name,
                                 match_value);
@@ -598,6 +697,10 @@ my_conv(int n, const struct pam_message **msg_array,
                     else if (strstr(match_value, "COMMONNAME"))
                     {
                         aresp[i].resp = searchandreplace(match_value, "COMMONNAME", up->common_name);
+                    }
+                    else if (strstr(match_value, "OTP"))
+                    {
+                        aresp[i].resp = searchandreplace(match_value, "OTP", up->response);
                     }
                     else
                     {
@@ -695,7 +798,7 @@ pam_auth(const char *service, const struct user_pass *up)
         /* Output error message if failed */
         if (!ret)
         {
-            fprintf(stderr, "AUTH-PAM: BACKGROUND: user '%s' failed to authenticate: %s\n",
+            plugin_log(PLOG_ERR, MODULE, "BACKGROUND: user '%s' failed to authenticate: %s",
                     up->username,
                     pam_strerror(pamh, status));
         }
@@ -708,12 +811,87 @@ pam_auth(const char *service, const struct user_pass *up)
 }
 
 /*
+ * deferred auth handler
+ *   - fork() (twice, to avoid the need for async wait / SIGCHLD handling)
+ *   - query PAM stack via pam_auth()
+ *   - send response back to OpenVPN via "ac_file_name"
+ *
+ * parent process returns "0" for "fork() and wait() succeeded",
+ *                        "-1" for "something went wrong, abort program"
+ */
+
+static void
+do_deferred_pam_auth(int fd, const char *ac_file_name,
+                     const char *service, const struct user_pass *up)
+{
+    if (send_control(fd, RESPONSE_DEFER) == -1)
+    {
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: write error on response socket [4]");
+        return;
+    }
+
+    /* double forking so we do not need to wait() for async auth kids */
+    pid_t p1 = fork();
+
+    if (p1 < 0)
+    {
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: fork(1) failed");
+        return;
+    }
+    if (p1 != 0)                           /* parent */
+    {
+        waitpid(p1, NULL, 0);
+        return;                            /* parent's job succeeded */
+    }
+
+    /* child */
+    close(fd);                              /* socketpair no longer needed */
+
+    pid_t p2 = fork();
+    if (p2 < 0)
+    {
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: fork(2) failed");
+        exit(1);
+    }
+
+    if (p2 != 0)                            /* new parent: exit right away */
+    {
+        exit(0);
+    }
+
+    /* grandchild */
+    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: deferred auth for '%s', pid=%d",
+               up->username, (int) getpid() );
+
+    /* the rest is very simple: do PAM, write status byte to file, done */
+    int ac_fd = open( ac_file_name, O_WRONLY );
+    if (ac_fd < 0)
+    {
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "cannot open '%s' for writing",
+                   ac_file_name );
+        exit(1);
+    }
+    int pam_success = pam_auth(service, up);
+
+    if (write( ac_fd, pam_success ? "1" : "0", 1 ) != 1)
+    {
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "cannot write to '%s'",
+                   ac_file_name );
+    }
+    close(ac_fd);
+    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: %s: deferred auth: PAM %s",
+               up->username, pam_success ? "succeeded" : "rejected" );
+    exit(0);
+}
+
+/*
  * Background process -- runs with privilege.
  */
 static void
 pam_server(int fd, const char *service, int verb, const struct name_value_list *name_value_list)
 {
     struct user_pass up;
+    char ac_file_name[PATH_MAX];
     int command;
 #ifdef USE_PAM_DLOPEN
     static const char pam_so[] = "libpam.so";
@@ -724,7 +902,7 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
      */
     if (DEBUG(verb))
     {
-        fprintf(stderr, "AUTH-PAM: BACKGROUND: INIT service='%s'\n", service);
+        plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: INIT service='%s'", service);
     }
 
 #ifdef USE_PAM_DLOPEN
@@ -733,7 +911,7 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
      */
     if (!dlopen_pam(pam_so))
     {
-        fprintf(stderr, "AUTH-PAM: BACKGROUND: could not load PAM lib %s: %s\n", pam_so, dlerror());
+        plugin_log(PLOG_ERR, MODULE, "BACKGROUND: could not load PAM lib %s: %s", pam_so, dlerror());
         send_control(fd, RESPONSE_INIT_FAILED);
         goto done;
     }
@@ -744,9 +922,11 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
      */
     if (send_control(fd, RESPONSE_INIT_SUCCEEDED) == -1)
     {
-        fprintf(stderr, "AUTH-PAM: BACKGROUND: write error on response socket [1]\n");
+        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: write error on response socket [1]");
         goto done;
     }
+
+    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: initialization succeeded");
 
     /*
      * Event loop
@@ -762,7 +942,7 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
 
         if (DEBUG(verb))
         {
-            fprintf(stderr, "AUTH-PAM: BACKGROUND: received command code: %d\n", command);
+            plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: received command code: %d", command);
         }
 
         switch (command)
@@ -770,9 +950,10 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
             case COMMAND_VERIFY:
                 if (recv_string(fd, up.username, sizeof(up.username)) == -1
                     || recv_string(fd, up.password, sizeof(up.password)) == -1
-                    || recv_string(fd, up.common_name, sizeof(up.common_name)) == -1)
+                    || recv_string(fd, up.common_name, sizeof(up.common_name)) == -1
+                    || recv_string(fd, ac_file_name, sizeof(ac_file_name)) == -1)
                 {
-                    fprintf(stderr, "AUTH-PAM: BACKGROUND: read error on command channel: code=%d, exiting\n",
+                    plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: read error on command channel: code=%d, exiting",
                             command);
                     goto done;
                 }
@@ -780,18 +961,33 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
                 if (DEBUG(verb))
                 {
 #if 0
-                    fprintf(stderr, "AUTH-PAM: BACKGROUND: USER/PASS: %s/%s\n",
+                    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: USER/PASS: %s/%s",
                             up.username, up.password);
 #else
-                    fprintf(stderr, "AUTH-PAM: BACKGROUND: USER: %s\n", up.username);
+                    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: USER: %s", up.username);
 #endif
                 }
 
+                /* If password is of the form SCRV1:base64:base64 split it up */
+                split_scrv1_password(&up);
+
+                /* client wants deferred auth
+                 */
+                if (strlen(ac_file_name) > 0)
+                {
+                    do_deferred_pam_auth(fd, ac_file_name, service, &up);
+                    break;
+                }
+
+
+                /* non-deferred auth: wait for pam result and send
+                 * result back via control socketpair
+                 */
                 if (pam_auth(service, &up)) /* Succeeded */
                 {
                     if (send_control(fd, RESPONSE_VERIFY_SUCCEEDED) == -1)
                     {
-                        fprintf(stderr, "AUTH-PAM: BACKGROUND: write error on response socket [2]\n");
+                        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: write error on response socket [2]");
                         goto done;
                     }
                 }
@@ -799,7 +995,7 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
                 {
                     if (send_control(fd, RESPONSE_VERIFY_FAILED) == -1)
                     {
-                        fprintf(stderr, "AUTH-PAM: BACKGROUND: write error on response socket [3]\n");
+                        plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: write error on response socket [3]");
                         goto done;
                     }
                 }
@@ -810,24 +1006,25 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
                 goto done;
 
             case -1:
-                fprintf(stderr, "AUTH-PAM: BACKGROUND: read error on command channel\n");
+                plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: read error on command channel");
                 goto done;
 
             default:
-                fprintf(stderr, "AUTH-PAM: BACKGROUND: unknown command code: code=%d, exiting\n",
+                plugin_log(PLOG_ERR, MODULE, "BACKGROUND: unknown command code: code=%d, exiting",
                         command);
                 goto done;
         }
+        plugin_secure_memzero(up.response, sizeof(up.response));
     }
 done:
-
     plugin_secure_memzero(up.password, sizeof(up.password));
+    plugin_secure_memzero(up.response, sizeof(up.response));
 #ifdef USE_PAM_DLOPEN
     dlclose_pam();
 #endif
     if (DEBUG(verb))
     {
-        fprintf(stderr, "AUTH-PAM: BACKGROUND: EXIT\n");
+        plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: EXIT");
     }
 
     return;

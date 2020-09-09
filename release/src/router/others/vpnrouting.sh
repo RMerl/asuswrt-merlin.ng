@@ -163,7 +163,8 @@ then
 	if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]
 	then
 		/usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
-		ip route change prohibit default table $VPN_TBL
+		ip route del default table $VPN_TBL
+		ip route add prohibit default table $VPN_TBL
 		create_client_list
 	else
 		ip route flush table $VPN_TBL
@@ -190,21 +191,14 @@ then
         create_client_list
 
 # Setup table default route
-	if [ -n "$VPN_IP_LIST" ]
+	[ "$VPN_FORCE" -eq 1 ] && /usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
+	if [ -n "$route_vpn_gateway" ]
 	then
-		if [ "$VPN_FORCE" -eq 1 ]
-		then
-			/usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
-		fi
-		if [ -n "$route_net_gateway" ]
-		then
-			ip route del default table $VPN_TBL
-			ip route add default via $route_vpn_gateway table $VPN_TBL
-		else
-			/usr/bin/logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
-		fi
+		ip route del default table $VPN_TBL
+		ip route add default via $route_vpn_gateway table $VPN_TBL
+	else
+		/usr/bin/logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
 	fi
-
 	if [ -n "$route_net_gateway" ]
 	then
 		ip route del default

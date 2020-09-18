@@ -798,7 +798,7 @@ function update_vpn_server_state() {
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail3#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";
 			}
-			else if(vpnd_state == '-1' && (vpnd_errno == '0' || vpnd_error == '7')){
+			else if(vpnd_state == '-1' && (vpnd_errno == '0' || vpnd_errno == '7')){
 				document.getElementById('openvpn_initial').style.display = "none";
 				document.getElementById('openvpn_error_message').innerHTML = "<span><#vpn_openvpn_fail4#></span>";
 				document.getElementById('openvpn_error_message').style.display = "";

@@ -309,7 +309,7 @@ function cancel_Edit(){
 		document.form.dhcp_staticip_x_0.value = backup_ip;
 		document.form.dhcp_dnsip_x_0.value = backup_dns;
 		document.form.dhcp_staticname_x_0.value = backup_name;
-		addRow_Group(128);
+		addRow_Group(64);
 	}
 }
 
@@ -956,7 +956,7 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
 				<thead>
 					<tr>
-						<td colspan="5" id="GWStatic"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;128)</td>
+						<td colspan="5" id="GWStatic"><#LANHostConfig_ManualDHCPList_groupitemdesc#>&nbsp;(<#List_limit#>&nbsp;64)</td>
 					</tr>
 				</thead>
 
@@ -964,7 +964,7 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
 					<th id="col0" style="cursor: pointer;" onclick="sortlist(0); showdhcp_staticlist();"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,10);"><#Client_Name#> (<#PPPConnection_x_MacAddressForISP_itemname#>)</a></th>
 					<th id="col1" style="cursor: pointer;" onclick="sortlist(1); showdhcp_staticlist();"><#IPConnection_ExternalIPAddress_itemname#></th>
 					<th id="col3" style="cursor: pointer;" onclick="sortlist(3); showdhcp_staticlist();"><#LANHostConfig_x_LDNSServer1_itemname#> (Optional)</th>
-					<th id="col2" style="cursor: pointer;" onclick="sortlist(2); showdhcp_staticlist();">Hostname</th>
+					<th id="col2" style="cursor: pointer;" onclick="sortlist(2); showdhcp_staticlist();">Hostname (Optional)</th>
 					<th>Edit</th>
 				</tr>
 				<tr>
@@ -985,7 +985,7 @@ function parse_vpnc_dev_policy_list(_oriNvram) {
 					</td>	
 					<td width="7%">
 						<div>
-							<input type="button" class="add_btn" onClick="addRow_Group(128);" value="">
+							<input type="button" class="add_btn" onClick="addRow_Group(64);" value="">
 						</div>
 					</td>
 			  	</tr>	 			  

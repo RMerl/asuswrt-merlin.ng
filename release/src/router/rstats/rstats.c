@@ -814,7 +814,7 @@ static enum if_id desc_to_id(char *desc)
 		}
 	}
 
-	if (id < 0 || id == IFID_MAX)
+	//if (id < 0 || id == IFID_MAX)
 		//_dprintf("%s: Unknown desc [%s]\n", __func__, desc);
 
 	return id;

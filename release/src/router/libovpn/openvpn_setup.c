@@ -905,8 +905,7 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 #endif
 	if (cconf->nat) {
 		netaddr.s_addr = inet_addr_(nvram_safe_get("lan_ipaddr")) & inet_addr_(nvram_safe_get("lan_netmask"));
-		fprintf(fp, "iptables -t nat -I POSTROUTING -s %s/%s -o %s -j MASQUERADE\n",
-		             inet_ntoa(netaddr), nvram_safe_get("lan_netmask"), cconf->if_name);
+		fprintf(fp, "iptables -t nat -I POSTROUTING -o %s -j MASQUERADE\n", cconf->if_name);
 	}
 	// Disable rp_filter when in policy mode - firewall restart would re-enable it
 	if (cconf->redirect_gateway >= OVPN_RGW_POLICY) {

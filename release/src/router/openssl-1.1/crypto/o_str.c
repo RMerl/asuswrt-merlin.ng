@@ -253,6 +253,7 @@ int openssl_strerror_r(int errnum, char *buf, size_t buflen)
     return !strerror_r(errnum, buf, buflen);
 #else
     char *err;
+
     /* Fall back to non-thread safe strerror()...its all we can do */
     if (buflen < 2)
         return 0;

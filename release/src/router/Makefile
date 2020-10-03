@@ -1449,9 +1449,7 @@ endif
 ifeq ($(RTCONFIG_BCMARM),y)
 obj-y += libnfnetlink-1.0.1
 obj-y += libmnl-1.0.4
-obj-y += ipset_arm
-else
-obj-y += ipset
+obj-y += ipset-6
 endif
 obj-$(RTCONFIG_NFS) += nfs-utils-1.3.4
 obj-$(RTCONFIG_NFS) += portmap
@@ -7595,44 +7593,34 @@ samba-3.6.x: libiconv-1.14
 samba-3.5.8:
 	@$(MAKE) -C samba-3.5.8 $(PARALLEL_BUILD)
 
-ipset:
-	$(MAKE) -C ipset binaries $(PARALLEL_BUILD)
-
-ipset-install:
-	install -D ipset/ipset $(INSTALLDIR)/ipset/usr/sbin/ipset
-	install -d $(INSTALLDIR)/ipset/usr/lib/
-	install ipset/*.so $(INSTALLDIR)/ipset/usr/lib/
-	$(STRIP) $(INSTALLDIR)/ipset/usr/lib/*.so
-	$(STRIP) $(INSTALLDIR)/ipset/usr/sbin/ipset
-
-ipset_arm/stamp-h1: libmnl-1.0.4
-	cd $(TOP)/ipset_arm && CC=$(CC) STRIP=$(STRIP) \
+ipset-6/stamp-h1: libmnl-1.0.4
+	cd $(TOP)/ipset-6 && CC=$(CC) STRIP=$(STRIP) \
 	autoreconf -i -f && \
 	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include/" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	libmnl_CFLAGS="-L$(TOP)/libmnl-1.0.4/src/.libs" \
 	libmnl_LIBS="-lmnl" \
 	$(CONFIGURE) --prefix=/usr --with-kmod=no --with-kbuild=$(LINUXDIR)
-	touch ipset_arm/stamp-h1
+	touch ipset-6/stamp-h1
 
-ipset_arm: ipset_arm/stamp-h1
-	$(MAKE) -C ipset_arm
-	$(MAKE) -C ipset_arm modules
+ipset-6: ipset-6/stamp-h1
+	$(MAKE) -C ipset-6
+	$(MAKE) -C ipset-6 modules
 
-ipset_arm-install:
-	install -D ipset_arm/src/ipset $(INSTALLDIR)/ipset_arm/usr/sbin/ipset
-	install -d $(INSTALLDIR)/ipset_arm/usr/lib/
-	install ipset_arm/lib/.libs/libipset.so.3.6.0 $(INSTALLDIR)/ipset_arm/usr/lib/libipset.so.3.6.0
-	$(STRIP) $(INSTALLDIR)/ipset_arm/usr/lib/libipset.so.3.6.0
-	$(STRIP) $(INSTALLDIR)/ipset_arm/usr/sbin/ipset
-	cd $(INSTALLDIR)/ipset_arm/usr/lib/ && \
+ipset-6-install:
+	install -D ipset-6/src/ipset $(INSTALLDIR)/ipset-6/usr/sbin/ipset
+	install -d $(INSTALLDIR)/ipset-6/usr/lib/
+	install ipset-6/lib/.libs/libipset.so.3.6.0 $(INSTALLDIR)/ipset-6/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset-6/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset-6/usr/sbin/ipset
+	cd $(INSTALLDIR)/ipset-6/usr/lib/ && \
 		ln -sf libipset.so.3.6.0 libipset.so.3 && \
 		ln -sf libipset.so.3.6.0 libipset.so
 
-ipset_arm-clean:
-	-@$(MAKE) -C ipset_arm clean
-	-@$(MAKE) -C ipset_arm modules_clean
-	-@rm -rf ipset_arm/Makefile ipset_arm/stamp-h1
+ipset-6-clean:
+	-@$(MAKE) -C ipset-6 clean
+	-@$(MAKE) -C ipset-6 modules_clean
+	-@rm -rf ipset-6/Makefile ipset-6/stamp-h1
 
 nfs-utils/stamp-h1:
 	cd nfs-utils && CPPFLAGS="$(EXTRACFLAGS) -Os" knfsd_cv_bsd_signals=no \

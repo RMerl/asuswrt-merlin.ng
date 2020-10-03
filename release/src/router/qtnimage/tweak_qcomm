@@ -1,3 +1,0 @@
-# sleep 5
-# iwpriv wifi0 pc_override 1 &
-echo "=== skip tweak done"

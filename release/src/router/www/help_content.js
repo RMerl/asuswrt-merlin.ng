@@ -148,8 +148,7 @@ helpcontent[7] = new Array("",
 							 "The IP address of the nameserver.",
 							 "TLS Port  (defaults to 853 if left empty).",
 							 "Authentication domain name checked against the server certificate.",
-							 "(Optional) Base64 hash value of the sha256 fingerprint of the public key.",
-							 "Pre-configured servers, select one to prefill the fields below for you, then click on the Add button to add it to the list.");	//41
+							 "(Optional) Base64 hash value of the sha256 fingerprint of the public key.");	// 40
 
 //Firewall
 helpcontent[8] = new Array("",

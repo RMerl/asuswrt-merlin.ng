@@ -323,11 +323,6 @@ void ovpn_process_eas(int start) {
 		}
 	}
 
-	// Update all clients routing (in case some are using a kill switch)
-	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
-		ovpn_update_routing(unit);
-	}
-
 	// Process clients
 	strlcpy(enabled, nvram_safe_get("vpn_clientx_eas"), sizeof(enabled));
 
@@ -336,6 +331,9 @@ void ovpn_process_eas(int start) {
 			continue;
 
 		unit = atoi(ptr);
+
+		// Update kill switch states for clients set to auto-start with WAN
+		ovpn_update_routing(unit);
 
 		if (unit > 0 && unit <= OVPN_CLIENT_MAX) {
 			sprintf(buffer2, "vpnclient%d", unit);

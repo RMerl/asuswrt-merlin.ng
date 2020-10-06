@@ -21,6 +21,7 @@ Asuswrt-Merlin 386/NG Changelog
   - UPDATED: Merged GPL 386_39179 (beta GPL from Asus).
   - UPDATED: Merged 386_39179 binary blobs for RT-AC86U,
              RT-AC68U, RT-AC5300 and RT-AX88U.
+  - UPDATED: Openssl to 1.1.1h.
   - UPDATED: Updated to OpenVPN 2.5.0 Beta 3.  Note that OpenVPN
              2.4.0 or newer is now required by the exported
              client config file.
@@ -32,6 +33,13 @@ Asuswrt-Merlin 386/NG Changelog
   - CHANGED: The old legacy cipher setting is now only available
              when running with static key authentication.
   - CHANGED: Tweaks to the OpenVPN webui layout
+  - CHANGED: OpenVPN clients will now NAT all outbound traffic,
+             regardless of the source subnet.
+  - CHANGED: Reworked the display of DNSPrivacy presets
+  - CHANGED: Added AdGuard (ad blocking) and CIRA Canadian Shield
+             (non US-based service) to the DNSPrivacy presets.
+  - CHANGED: At boot time, OpenVPN killswitch will only be
+             applied for clients set to auto-start with WAN.
   - REMOVED: Option to disable NCP.  The NCP cipher list is
              now used both for NCP and non-NCP endpoints.
 

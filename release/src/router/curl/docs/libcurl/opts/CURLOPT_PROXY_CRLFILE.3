@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CRLFILE 3 "April 17, 2018" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CRLFILE 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CRLFILE \- specify a proxy Certificate Revocation List file
@@ -31,7 +31,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_CRLFILE, char *file);
 .SH DESCRIPTION
 This option is for connecting to an HTTPS proxy, not an HTTPS server.
 
-Pass a char * to a zero terminated string naming a \fIfile\fP with the
+Pass a char * to a null-terminated string naming a \fIfile\fP with the
 concatenation of CRL (in PEM format) to use in the certificate validation that
 occurs during the SSL exchange.
 

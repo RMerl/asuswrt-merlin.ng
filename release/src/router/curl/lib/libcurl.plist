@@ -15,7 +15,7 @@
 	<string>se.haxx.curl.libcurl</string>
 
 	<key>CFBundleVersion</key>
-	<string>7.69.1</string>
+	<string>7.72.0</string>
 
 	<key>CFBundleName</key>
 	<string>libcurl</string>
@@ -27,9 +27,9 @@
 	<string>????</string>
 
 	<key>CFBundleShortVersionString</key>
-	<string>libcurl 7.69.1</string>
+	<string>libcurl 7.72.0</string>
 
 	<key>CFBundleGetInfoString</key>
-	<string>libcurl.plist 7.69.1</string>
+	<string>libcurl.plist 7.72.0</string>
 </dict>
 </plist>

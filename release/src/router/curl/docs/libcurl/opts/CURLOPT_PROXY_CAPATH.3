@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CAPATH 3 "May 15, 2019" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CAPATH 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CAPATH \- specify directory holding proxy CA certificates
@@ -29,7 +29,7 @@ CURLOPT_PROXY_CAPATH \- specify directory holding proxy CA certificates
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_CAPATH, char *capath);
 .SH DESCRIPTION
-Pass a char * to a zero terminated string naming a directory holding multiple
+Pass a char * to a null-terminated string naming a directory holding multiple
 CA certificates to verify the HTTPS proxy with. If libcurl is built against
 OpenSSL, the certificate directory must be prepared using the openssl c_rehash
 utility. This makes sense only when \fICURLOPT_PROXY_SSL_VERIFYPEER(3)\fP is

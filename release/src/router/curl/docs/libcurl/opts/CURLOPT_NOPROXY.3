@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_NOPROXY 3 "August 24, 2018" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_NOPROXY 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_NOPROXY \- disable proxy use for specific hosts
@@ -29,7 +29,7 @@ CURLOPT_NOPROXY \- disable proxy use for specific hosts
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_NOPROXY, char *noproxy);
 .SH DESCRIPTION
-Pass a pointer to a zero terminated string. The string consists of a comma
+Pass a pointer to a null-terminated string. The string consists of a comma
 separated list of host names that do not require a proxy to get reached, even
 if one is specified.  The only wildcard available is a single * character,
 which matches all hosts, and effectively disables the proxy. Each name in this

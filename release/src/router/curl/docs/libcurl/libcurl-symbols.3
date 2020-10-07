@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH libcurl-symbols 3 "Mar 11, 2020" "libcurl 7.41.0" "libcurl symbols"
+.TH libcurl-symbols 3 "Aug 19, 2020" "libcurl 7.41.0" "libcurl symbols"
 .SH NAME
 libcurl-symbols \- libcurl symbol version information
 .SH "libcurl symbols"
@@ -527,6 +527,8 @@ Introduced in 7.9.6
 Introduced in 7.9.6
 .IP CURLINFO_DOUBLE
 Introduced in 7.4.1
+.IP CURLINFO_EFFECTIVE_METHOD
+Introduced in 7.72.0
 .IP CURLINFO_EFFECTIVE_URL
 Introduced in 7.4
 .IP CURLINFO_END
@@ -765,6 +767,8 @@ Introduced in 7.15.4
 Introduced in 7.68.0
 .IP CURLOPT
 Introduced in 7.69.0
+.IP CURLOPTTYPE_BLOB
+Introduced in 7.71.0
 .IP CURLOPTTYPE_FUNCTIONPOINT
 Introduced in 7.1
 .IP CURLOPTTYPE_LONG
@@ -1001,6 +1005,8 @@ Introduced in 7.12.3
 Introduced in 7.10.8
 .IP CURLOPT_ISSUERCERT
 Introduced in 7.19.0
+.IP CURLOPT_ISSUERCERT_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_KEEP_SENDING_ON_ERROR
 Introduced in 7.51.0
 .IP CURLOPT_KEYPASSWD
@@ -1124,6 +1130,10 @@ Deprecated since 7.32.0
 Introduced in 7.19.4
 .IP CURLOPT_PROXY
 Introduced in 7.1
+.IP CURLOPT_PROXY_ISSUERCERT
+Introduced in 7.71.0
+.IP CURLOPT_PROXY_ISSUERCERT_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_PROXYAUTH
 Introduced in 7.10.7
 .IP CURLOPT_PROXYHEADER
@@ -1152,10 +1162,14 @@ Introduced in 7.52.0
 Introduced in 7.43.0
 .IP CURLOPT_PROXY_SSLCERT
 Introduced in 7.52.0
+.IP CURLOPT_PROXY_SSLCERT_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_PROXY_SSLCERTTYPE
 Introduced in 7.52.0
 .IP CURLOPT_PROXY_SSLKEY
 Introduced in 7.52.0
+.IP CURLOPT_PROXY_SSLKEY_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_PROXY_SSLKEYTYPE
 Introduced in 7.52.0
 .IP CURLOPT_PROXY_SSLVERSION
@@ -1279,6 +1293,8 @@ Introduced in 7.16.1
 Introduced in 7.16.1
 .IP CURLOPT_SSLCERT
 Introduced in 7.1
+.IP CURLOPT_SSLCERT_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_SSLCERTPASSWD
 Introduced in 7.1.1
 Deprecated since 7.17.0
@@ -1290,6 +1306,8 @@ Introduced in 7.9.3
 Introduced in 7.9.3
 .IP CURLOPT_SSLKEY
 Introduced in 7.9.3
+.IP CURLOPT_SSLKEY_BLOB
+Introduced in 7.71.0
 .IP CURLOPT_SSLKEYPASSWD
 Introduced in 7.9.3
 Deprecated since 7.17.0
@@ -1451,6 +1469,8 @@ Introduced in 7.20.0
 Introduced in 7.19.4
 .IP CURLPROTO_LDAPS
 Introduced in 7.19.4
+.IP CURLPROTO_MQTT
+Introduced in 7.71.0
 .IP CURLPROTO_POP3
 Introduced in 7.20.0
 .IP CURLPROTO_POP3S
@@ -1586,6 +1606,8 @@ Introduced in 7.64.1
 Introduced in 7.49.0
 .IP CURLSSLOPT_ALLOW_BEAST
 Introduced in 7.25.0
+.IP CURLSSLOPT_NATIVE_CA
+Introduced in 7.71.0
 .IP CURLSSLOPT_NO_PARTIALCHAIN
 Introduced in 7.68.0
 .IP CURLSSLOPT_NO_REVOKE
@@ -1594,6 +1616,8 @@ Introduced in 7.44.0
 Introduced in 7.56.0
 .IP CURLSSLSET_OK
 Introduced in 7.56.0
+.IP CURLSSLOPT_REVOKE_BEST_EFFORT
+Introduced in 7.70.0
 .IP CURLSSLSET_TOO_LATE
 Introduced in 7.56.0
 .IP CURLSSLSET_UNKNOWN_BACKEND
@@ -1686,6 +1710,8 @@ Introduced in 7.62.0
 Introduced in 7.62.0
 .IP CURLU_URLENCODE
 Introduced in 7.62.0
+.IP CURLVERSION_EIGHTH
+Introduced in 7.72.0
 .IP CURLVERSION_FIFTH
 Introduced in 7.57.0
 .IP CURLVERSION_FIRST
@@ -1696,6 +1722,8 @@ Introduced in 7.16.1
 Introduced in 7.10
 .IP CURLVERSION_SECOND
 Introduced in 7.11.1
+.IP CURLVERSION_SEVENTH
+Introduced in 7.70.0
 .IP CURLVERSION_SIXTH
 Introduced in 7.66.0
 .IP CURLVERSION_THIRD
@@ -1866,6 +1894,8 @@ Introduced in 7.1.1
 Introduced in 7.1.1
 .IP CURL_PUSH_DENY
 Introduced in 7.44.0
+.IP CURL_PUSH_ERROROUT
+Introduced in 7.72.0
 .IP CURL_PUSH_OK
 Introduced in 7.44.0
 .IP CURL_READFUNC_ABORT
@@ -1982,8 +2012,6 @@ Introduced in 7.15.4
 Introduced in 7.19.6
 .IP CURL_VERSION_DEBUG
 Introduced in 7.10.6
-.IP CURL_VERSION_ESNI
-Introduced in 7.67.0
 .IP CURL_VERSION_GSSAPI
 Introduced in 7.38.0
 .IP CURL_VERSION_GSSNEGOTIATE
@@ -2026,6 +2054,10 @@ Introduced in 7.13.2
 Introduced in 7.21.4
 .IP CURL_VERSION_UNIX_SOCKETS
 Introduced in 7.40.0
+.IP CURL_VERSION_ZSTD
+Introduced in 7.72.0
+.IP CURL_VERSION_UNICODE
+Introduced in 7.72.0
 .IP CURL_WAIT_POLLIN
 Introduced in 7.28.0
 .IP CURL_WAIT_POLLOUT

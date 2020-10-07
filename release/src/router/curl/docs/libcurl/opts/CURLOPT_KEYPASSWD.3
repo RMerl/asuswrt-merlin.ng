@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_KEYPASSWD 3 "May 31, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_KEYPASSWD 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_KEYPASSWD \- set passphrase to private key
@@ -29,7 +29,7 @@ CURLOPT_KEYPASSWD \- set passphrase to private key
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_KEYPASSWD, char *pwd);
 .SH DESCRIPTION
-Pass a pointer to a zero terminated string as parameter. It will be used as
+Pass a pointer to a null-terminated string as parameter. It will be used as
 the password required to use the \fICURLOPT_SSLKEY(3)\fP or
 \fICURLOPT_SSH_PRIVATE_KEYFILE(3)\fP private key.  You never needed a pass
 phrase to load a certificate but you need one to load your private key.

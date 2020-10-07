@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_MAX_SEND_SPEED_LARGE 3 "May 30, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_MAX_SEND_SPEED_LARGE 3 "August 14, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_MAX_SEND_SPEED_LARGE \- rate limit data upload speed
@@ -35,6 +35,13 @@ Pass a curl_off_t as parameter with the \fImaxspeed\fP.  If an upload exceeds
 this speed (counted in bytes per second) the transfer will pause to keep the
 speed less than or equal to the parameter value.  Defaults to unlimited
 speed.
+
+This is not an exact science. libcurl attempts to keep the average speed below
+the given threshold over a period time.
+
+If you set \fImaxspeed\fP to a value lower than
+\fICURLOPT_UPLOAD_BUFFERSIZE(3)\fP, libcurl might "shoot over" the limit on
+its first send and still send off a full buffer.
 
 This option doesn't affect transfer speeds done with FILE:// URLs.
 .SH DEFAULT

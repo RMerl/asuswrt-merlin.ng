@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_OPENSOCKETFUNCTION 3 "December 03, 2019" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_OPENSOCKETFUNCTION 3 "June 09, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_OPENSOCKETFUNCTION \- set callback for opening sockets
@@ -66,7 +66,7 @@ additional \fIsetsockopt(2)\fP calls can of course be done on the socket at
 the user's discretion.  A \fICURL_SOCKET_BAD\fP return value from the callback
 function will signal an unrecoverable error to libcurl and it will return
 \fICURLE_COULDNT_CONNECT\fP from the function that triggered this callback.
-This return code can be used for IP address blacklisting.
+This return code can be used for IP address block listing.
 
 If you want to pass in a socket with an already established connection, pass
 the socket back with this callback and then use

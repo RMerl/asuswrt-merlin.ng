@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_ISSUERCERT 3 "May 31, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_ISSUERCERT 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_ISSUERCERT \- issuer SSL certificate filename
@@ -29,7 +29,7 @@ CURLOPT_ISSUERCERT \- issuer SSL certificate filename
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_ISSUERCERT, char *file);
 .SH DESCRIPTION
-Pass a char * to a zero terminated string naming a \fIfile\fP holding a CA
+Pass a char * to a null-terminated string naming a \fIfile\fP holding a CA
 certificate in PEM format. If the option is set, an additional check against
 the peer certificate is performed to verify the issuer is indeed the one
 associated with the certificate provided by the option. This additional check

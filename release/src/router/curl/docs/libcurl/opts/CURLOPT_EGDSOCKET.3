@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_EGDSOCKET 3 "May 31, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_EGDSOCKET 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_EGDSOCKET \- set EGD socket path
@@ -29,7 +29,7 @@ CURLOPT_EGDSOCKET \- set EGD socket path
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_EGDSOCKET, char *path);
 .SH DESCRIPTION
-Pass a char * to the zero terminated path name to the Entropy Gathering Daemon
+Pass a char * to the null-terminated path name to the Entropy Gathering Daemon
 socket. It will be used to seed the random engine for SSL.
 
 The application does not have to keep the string around after setting this

@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_HEADERFUNCTION 3 "December 26, 2019" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_HEADERFUNCTION 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_HEADERFUNCTION \- callback that receives header data
@@ -42,7 +42,7 @@ data. The header callback will be called once for each header and only
 complete header lines are passed on to the callback. Parsing headers is very
 easy using this. \fIbuffer\fP points to the delivered data, and the size of
 that data is \fInitems\fP; \fIsize\fP is always 1. Do not assume that the
-header line is zero terminated!
+header line is null-terminated!
 
 The pointer named \fIuserdata\fP is the one you set with the
 \fICURLOPT_HEADERDATA(3)\fP option.

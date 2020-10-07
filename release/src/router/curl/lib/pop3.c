@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -178,7 +178,7 @@ static void pop3_to_pop3s(struct connectdata *conn)
   conn->handler = &Curl_handler_pop3s;
 
   /* Set the connection's upgraded to TLS flag */
-  conn->tls_upgraded = TRUE;
+  conn->bits.tls_upgraded = TRUE;
 }
 #else
 #define pop3_to_pop3s(x) Curl_nop_stmt
@@ -412,7 +412,7 @@ static CURLcode pop3_perform_apop(struct connectdata *conn)
   CURLcode result = CURLE_OK;
   struct pop3_conn *pop3c = &conn->proto.pop3c;
   size_t i;
-  MD5_context *ctxt;
+  struct MD5_context *ctxt;
   unsigned char digest[MD5_DIGEST_LEN];
   char secret[2 * MD5_DIGEST_LEN + 1];
 
@@ -1312,7 +1312,7 @@ static CURLcode pop3_setup_connection(struct connectdata *conn)
     return result;
 
   /* Clear the TLS upgraded flag */
-  conn->tls_upgraded = FALSE;
+  conn->bits.tls_upgraded = FALSE;
 
   return CURLE_OK;
 }
@@ -1390,7 +1390,7 @@ static CURLcode pop3_parse_url_path(struct connectdata *conn)
   const char *path = &data->state.up.path[1]; /* skip leading path */
 
   /* URL decode the path for the message ID */
-  return Curl_urldecode(data, path, 0, &pop3->id, NULL, TRUE);
+  return Curl_urldecode(data, path, 0, &pop3->id, NULL, REJECT_CTRL);
 }
 
 /***********************************************************************
@@ -1408,7 +1408,7 @@ static CURLcode pop3_parse_custom_request(struct connectdata *conn)
 
   /* URL decode the custom request */
   if(custom)
-    result = Curl_urldecode(data, custom, 0, &pop3->custom, NULL, TRUE);
+    result = Curl_urldecode(data, custom, 0, &pop3->custom, NULL, REJECT_CTRL);
 
   return result;
 }

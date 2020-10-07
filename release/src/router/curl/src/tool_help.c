@@ -40,13 +40,14 @@
  ---------------------------------------------------------
 
   cd $srcroot/docs/cmdline-opts
-  ./gen.pl listhelp
+  ./gen.pl listhelp *.d
  */
 
 struct helptxt {
   const char *opt;
   const char *desc;
 };
+
 
 static const struct helptxt helptext[] = {
   {"    --abstract-unix-socket <path>",
@@ -68,7 +69,7 @@ static const struct helptxt helptext[] = {
   {"    --cert-status",
    "Verify the status of the server certificate"},
   {"    --cert-type <type>",
-   "Certificate file type (DER/PEM/ENG)"},
+   "Certificate type (DER/PEM/ENG)"},
   {"    --ciphers <list of ciphers>",
    "SSL ciphers to use"},
   {"    --compressed",
@@ -131,10 +132,10 @@ static const struct helptxt helptext[] = {
    "EGD socket path for random data"},
   {"    --engine <name>",
    "Crypto engine to use"},
-  {"    --etag-save <file>",
-   "Get an ETag from response header and save it to a FILE"},
   {"    --etag-compare <file>",
-   "Get an ETag from a file and send a conditional request"},
+   "Pass an ETag from a file as a custom header"},
+  {"    --etag-save <file>",
+   "Parse ETag from a request and save it to a file"},
   {"    --expect100-timeout <seconds>",
    "How long to wait for 100-continue"},
   {"-f, --fail",
@@ -174,7 +175,7 @@ static const struct helptxt helptext[] = {
   {"-g, --globoff",
    "Disable URL sequences and ranges using {} and []"},
   {"    --happy-eyeballs-timeout-ms <milliseconds>",
-   "How long to wait in milliseconds for IPv6 before trying IPv4"},
+   "Time for IPv6 before trying IPv4"},
   {"    --haproxy-protocol",
    "Send HAProxy PROXY protocol v1 header"},
   {"-I, --head",
@@ -351,8 +352,8 @@ static const struct helptxt helptext[] = {
    "SPNEGO proxy service name"},
   {"    --proxy-ssl-allow-beast",
    "Allow security flaw for interop for HTTPS proxy"},
-  {"    --proxy-tls13-ciphers <list>",
-   "TLS 1.3 ciphersuites for proxy (OpenSSL)"},
+  {"    --proxy-tls13-ciphers <ciphersuite list>",
+   "TLS 1.3 proxy cipher suites"},
   {"    --proxy-tlsauthtype <type>",
    "TLS authentication type for HTTPS proxy"},
   {"    --proxy-tlspassword <string>",
@@ -391,18 +392,20 @@ static const struct helptxt helptext[] = {
    "Specify request command to use"},
   {"    --request-target",
    "Specify the target for this request"},
-  {"    --resolve <host:port:address[,address]...>",
+  {"    --resolve <host:port:addr[,addr]...>",
    "Resolve the host+port to this address"},
   {"    --retry <num>",
    "Retry request if transient problems occur"},
+  {"    --retry-all-errors",
+   "Retry all errors (use with --retry)"},
   {"    --retry-connrefused",
    "Retry on connection refused (use with --retry)"},
   {"    --retry-delay <seconds>",
    "Wait time between retries"},
   {"    --retry-max-time <seconds>",
    "Retry only within this period"},
-  {"    --sasl-authzid <identity> ",
-   "Use this identity to act as during SASL PLAIN authentication"},
+  {"    --sasl-authzid <identity>",
+   "Identity for SASL PLAIN authentication"},
   {"    --sasl-ir",
    "Enable initial response in SASL authentication"},
   {"    --service-name <name>",
@@ -439,6 +442,8 @@ static const struct helptxt helptext[] = {
    "Disable cert revocation checks (Schannel)"},
   {"    --ssl-reqd",
    "Require SSL/TLS"},
+  {"    --ssl-revoke-best-effort",
+   "Ignore missing/offline cert CRL dist points"},
   {"-2, --sslv2",
    "Use SSLv2"},
   {"-3, --sslv3",
@@ -463,8 +468,8 @@ static const struct helptxt helptext[] = {
    "Transfer based on a time condition"},
   {"    --tls-max <VERSION>",
    "Set maximum allowed TLS version"},
-  {"    --tls13-ciphers <list>",
-   "TLS 1.3 ciphersuites (OpenSSL)"},
+  {"    --tls13-ciphers <ciphersuite list>",
+   "TLS 1.3 cipher suites to use"},
   {"    --tlsauthtype <type>",
    "TLS authentication type"},
   {"    --tlspassword",
@@ -532,6 +537,7 @@ static const struct feat feats[] = {
   {"IDN",            CURL_VERSION_IDN},
   {"IPv6",           CURL_VERSION_IPV6},
   {"Largefile",      CURL_VERSION_LARGEFILE},
+  {"Unicode",        CURL_VERSION_UNICODE},
   {"SSPI",           CURL_VERSION_SSPI},
   {"GSS-API",        CURL_VERSION_GSSAPI},
   {"Kerberos",       CURL_VERSION_KERBEROS5},
@@ -541,6 +547,7 @@ static const struct feat feats[] = {
   {"SSL",            CURL_VERSION_SSL},
   {"libz",           CURL_VERSION_LIBZ},
   {"brotli",         CURL_VERSION_BROTLI},
+  {"zstd",           CURL_VERSION_ZSTD},
   {"CharConv",       CURL_VERSION_CONV},
   {"TLS-SRP",        CURL_VERSION_TLSAUTH_SRP},
   {"HTTP2",          CURL_VERSION_HTTP2},
@@ -550,7 +557,6 @@ static const struct feat feats[] = {
   {"MultiSSL",       CURL_VERSION_MULTI_SSL},
   {"PSL",            CURL_VERSION_PSL},
   {"alt-svc",        CURL_VERSION_ALTSVC},
-  {"ESNI",           CURL_VERSION_ESNI},
 };
 
 void tool_help(void)

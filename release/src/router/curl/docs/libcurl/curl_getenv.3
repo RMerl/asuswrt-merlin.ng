@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2011, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_getenv 3 "March 02, 2020" "libcurl 7.69.1" "libcurl Manual"
+.TH curl_getenv 3 "June 25, 2020" "libcurl 7.72.0" "libcurl Manual"
 
 .SH NAME
 curl_getenv - return value for environment name
@@ -39,7 +39,7 @@ This function will be removed from the public libcurl API in a near future. It
 will instead be made "available" by source code access only, and then as
 curlx_getenv().
 .SH RETURN VALUE
-A pointer to a zero terminated string or NULL if it failed to find the
+A pointer to a null-terminated string or NULL if it failed to find the
 specified name.
 .SH NOTE
 Under unix operating systems, there isn't any point in returning an allocated

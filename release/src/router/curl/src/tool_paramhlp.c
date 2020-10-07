@@ -115,8 +115,8 @@ ParameterError file2memory(char **bufp, size_t *size, FILE *file)
     size_t alloc = 512;
     do {
       if(!buffer || (alloc == nused)) {
-        /* size_t overflow detection for huge files */
-        if(alloc + 1 > ((size_t)-1)/2) {
+        /* size_t overflow detection and avoiding huge files */
+        if(alloc >= (SIZE_T_MAX/4)) {
           Curl_safefree(buffer);
           return PARAM_NO_MEM;
         }
@@ -180,7 +180,7 @@ void cleanarg(char *str)
 ParameterError str2num(long *val, const char *str)
 {
   if(str) {
-    char *endptr;
+    char *endptr = NULL;
     long num;
     errno = 0;
     num = strtol(str, &endptr, 10);

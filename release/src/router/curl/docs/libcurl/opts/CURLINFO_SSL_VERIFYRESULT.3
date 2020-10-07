@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SSL_VERIFYRESULT 3 "March 21, 2018" "libcurl 7.69.1" "curl_easy_getinfo options"
+.TH CURLINFO_SSL_VERIFYRESULT 3 "May 02, 2020" "libcurl 7.72.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_SSL_VERIFYRESULT \- get the result of the certificate verification
@@ -31,7 +31,7 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_SSL_VERIFYRESULT, long *result
 .SH DESCRIPTION
 Pass a pointer to a long to receive the result of the server SSL certificate
 verification that was requested (using the \fICURLOPT_SSL_VERIFYPEER(3)\fP
-option.
+option).
 
 0 is a positive result. Non-zero is an error.
 .SH PROTOCOLS
@@ -51,7 +51,7 @@ if(curl) {
 }
 .fi
 .SH AVAILABILITY
-Added in 7.5. Only set by the OpenSSL/libressl/boringssl and NSS backends.
+Added in 7.5. Only set by the OpenSSL/libressl/boringssl, NSS and GnuTLS backends.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"

@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_USERNAME 3 "May 05, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_USERNAME 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_USERNAME \- user name to use in authentication
@@ -31,7 +31,7 @@ CURLOPT_USERNAME \- user name to use in authentication
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_USERNAME,
                           char *username);
 .SH DESCRIPTION
-Pass a char * as parameter, which should be pointing to the zero terminated
+Pass a char * as parameter, which should be pointing to the null-terminated
 user name to use for the transfer.
 
 \fICURLOPT_USERNAME(3)\fP sets the user name to be used in protocol

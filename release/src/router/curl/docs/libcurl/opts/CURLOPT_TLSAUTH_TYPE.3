@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TLSAUTH_TYPE 3 "December 16, 2019" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_TLSAUTH_TYPE 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_TLSAUTH_TYPE \- set TLS authentication methods
@@ -29,7 +29,7 @@ CURLOPT_TLSAUTH_TYPE \- set TLS authentication methods
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TLSAUTH_TYPE, char *type);
 .SH DESCRIPTION
-Pass a pointer to a zero terminated string as parameter. The string should be
+Pass a pointer to a null-terminated string as parameter. The string should be
 the method of the TLS authentication. Supported method is "SRP".
 
 .IP SRP

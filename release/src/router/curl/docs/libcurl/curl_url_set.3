@@ -19,7 +19,7 @@
 .\" * KIND, either express or implied.
 .\" *
 .\" **************************************************************************
-.TH curl_url_set 3 "January 05, 2020" "libcurl 7.69.1" "libcurl Manual"
+.TH curl_url_set 3 "June 25, 2020" "libcurl 7.72.0" "libcurl Manual"
 
 .SH NAME
 curl_url_set - set a URL part
@@ -36,7 +36,7 @@ Given the \fIurl\fP handle of an already parsed URL, this function lets the
 user set/update individual pieces of it.
 
 The \fIpart\fP argument should identify the particular URL part (see list
-below) to set or change, with \fIcontent\fP pointing to a zero terminated
+below) to set or change, with \fIcontent\fP pointing to a null-terminated
 string with the new contents for that URL part. The contents should be in the
 form and encoding they'd use in a URL: URL encoded.
 
@@ -52,7 +52,7 @@ populated with a URL, the new URL can be relative to the previous.
 When successfully setting a new URL, relative or absolute, the handle contents
 will be replaced with the information of the newly set URL.
 
-Pass a pointer to a zero terminated string to the \fIurl\fP parameter. The
+Pass a pointer to a null-terminated string to the \fIurl\fP parameter. The
 string must point to a correctly formatted "RFC 3986+" URL or be a NULL
 pointer.
 .IP CURLUPART_SCHEME

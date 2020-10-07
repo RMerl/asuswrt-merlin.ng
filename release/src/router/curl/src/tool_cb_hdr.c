@@ -119,8 +119,8 @@ size_t tool_header_cb(char *ptr, size_t size, size_t nmemb, void *userdata)
 
       if(!first) {
         warnf(per->config->global,
-              "\nReceived header etag is missing double quote/s\n");
-        return 1;
+              "Received header etag is missing double quote/s\n");
+        return failure;
       }
       else {
         /* discard first double quote */
@@ -132,8 +132,8 @@ size_t tool_header_cb(char *ptr, size_t size, size_t nmemb, void *userdata)
 
       if(!last) {
         warnf(per->config->global,
-              "\nReceived header etag is missing double quote/s\n");
-        return 1;
+              "Received header etag is missing double quote/s\n");
+        return failure;
       }
 
       /* get length of desired etag */
@@ -186,25 +186,11 @@ size_t tool_header_cb(char *ptr, size_t size, size_t nmemb, void *userdata)
       filename = parse_filename(p, len);
       if(filename) {
         if(outs->stream) {
-          int rc;
-          /* already opened and possibly written to */
-          if(outs->fopened)
-            fclose(outs->stream);
-          outs->stream = NULL;
-
-          /* rename the initial file name to the new file name */
-          rc = rename(outs->filename, filename);
-          if(rc != 0) {
-            warnf(per->config->global, "Failed to rename %s -> %s: %s\n",
-                  outs->filename, filename, strerror(errno));
-          }
-          if(outs->alloc_filename)
-            Curl_safefree(outs->filename);
-          if(rc != 0) {
-            free(filename);
-            return failure;
-          }
+          /* indication of problem, get out! */
+          free(filename);
+          return failure;
         }
+
         outs->is_cd_filename = TRUE;
         outs->s_isreg = TRUE;
         outs->fopened = FALSE;

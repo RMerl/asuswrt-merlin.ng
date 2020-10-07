@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_SSLKEY 3 "May 31, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_SSLKEY 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_SSLKEY \- specify private keyfile for TLS and SSL proxy client cert
@@ -29,7 +29,7 @@ CURLOPT_PROXY_SSLKEY \- specify private keyfile for TLS and SSL proxy client cer
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_SSLKEY, char *keyfile);
 .SH DESCRIPTION
-Pass a pointer to a zero terminated string as parameter. The string should be
+Pass a pointer to a null-terminated string as parameter. The string should be
 the file name of your private key used for connecting to the HTTPS proxy. The
 default format is "PEM" and can be changed with
 \fICURLOPT_PROXY_SSLKEYTYPE(3)\fP.

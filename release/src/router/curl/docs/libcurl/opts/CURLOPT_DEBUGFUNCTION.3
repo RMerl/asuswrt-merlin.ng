@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2014, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DEBUGFUNCTION 3 "October 06, 2016" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_DEBUGFUNCTION 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_DEBUGFUNCTION \- debug callback
@@ -55,7 +55,7 @@ shown above.
 \fICURLOPT_VERBOSE(3)\fP is in effect. This callback receives debug
 information, as specified in the \fItype\fP argument. This function must
 return 0. The \fIdata\fP pointed to by the char * passed to this function WILL
-NOT be zero terminated, but will be exactly of the \fIsize\fP as told by the
+NOT be null-terminated, but will be exactly of the \fIsize\fP as told by the
 \fIsize\fP argument.
 
 The \fIuserptr\fP argument is the pointer set with \fICURLOPT_DEBUGDATA(3)\fP.

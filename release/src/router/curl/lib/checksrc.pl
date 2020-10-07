@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2011 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 2011 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -31,14 +31,14 @@ my $warnings = 0;
 my $swarnings = 0;
 my $errors = 0;
 my $serrors = 0;
-my $suppressed; # whitelisted problems
+my $suppressed; # skipped problems
 my $file;
 my $dir=".";
 my $wlist="";
 my @alist;
 my $windows_os = $^O eq 'MSWin32' || $^O eq 'cygwin' || $^O eq 'msys';
 my $verbose;
-my %whitelist;
+my %skiplist;
 
 my %ignore;
 my %ignore_set;
@@ -80,14 +80,16 @@ my %warnings = (
     'MULTISPACE'       => 'multiple spaces used when not suitable',
     'SIZEOFNOPAREN'    => 'use of sizeof without parentheses',
     'SNPRINTF'         => 'use of snprintf',
+    'ONELINECONDITION' => 'conditional block on the same line as the if()',
+    'TYPEDEFSTRUCT'    => 'typedefed struct',
     );
 
-sub readwhitelist {
-    open(W, "<$dir/checksrc.whitelist") or return;
+sub readskiplist {
+    open(W, "<$dir/checksrc.skip") or return;
     my @all=<W>;
     for(@all) {
         $windows_os ? $_ =~ s/\r?\n$// : chomp;
-        $whitelist{$_}=1;
+        $skiplist{$_}=1;
     }
     close(W);
 }
@@ -115,10 +117,19 @@ sub readlocalfile {
             }
             $warnings{$1} = $warnings_extended{$1};
         }
+        elsif (/^\s*disable ([A-Z]+)$/) {
+            if(!defined($warnings{$1})) {
+                print STDERR "invalid warning specified in .checksrc: \"$1\"\n";
+                next;
+            }
+            # Accept-list
+            push @alist, $1;
+        }
         else {
             die "Invalid format in $dir/.checksrc on line $i\n";
         }
     }
+    close($rcfile);
 }
 
 sub checkwarn {
@@ -131,8 +142,8 @@ sub checkwarn {
     #    print STDERR "Dev! there's no description for $name!\n";
     #}
 
-    # checksrc.whitelist
-    if($whitelist{$line}) {
+    # checksrc.skip
+    if($skiplist{$line}) {
         $nowarn = 1;
     }
     # !checksrc! controlled
@@ -217,7 +228,7 @@ if(!$file) {
     print "  -A[rule]  Accept this violation, can be used multiple times\n";
     print "  -D[DIR]   Directory to prepend file names\n";
     print "  -h        Show help output\n";
-    print "  -W[file]  Whitelist the given file - ignore all its flaws\n";
+    print "  -W[file]  Skip the given file - ignore all its flaws\n";
     print "  -i<n>     Indent spaces. Default: 2\n";
     print "  -m<n>     Maximum line length. Default: 79\n";
     print "\nDetects and warns for these problems:\n";
@@ -227,7 +238,7 @@ if(!$file) {
     exit;
 }
 
-readwhitelist();
+readskiplist();
 readlocalfile();
 
 do {
@@ -457,12 +468,33 @@ sub scanfile {
             }
         }
 
-        if($nostr =~ /^((.*)(if) *\()(.*)\)/) {
+        if($nostr =~ /^((.*\s)(if) *\()(.*)\)(.*)/) {
             my $pos = length($1);
-            if($4 =~ / = /) {
+            my $postparen = $5;
+            my $cond = $4;
+            if($cond =~ / = /) {
                 checkwarn("ASSIGNWITHINCONDITION",
                           $line, $pos+1, $file, $l,
                           "assignment within conditional expression");
+            }
+            my $temp = $cond;
+            $temp =~ s/\(//g; # remove open parens
+            my $openc = length($cond) - length($temp);
+
+            $temp = $cond;
+            $temp =~ s/\)//g; # remove close parens
+            my $closec = length($cond) - length($temp);
+            my $even = $openc == $closec;
+
+            if($l =~ / *\#/) {
+                # this is a #if, treat it differently
+            }
+            elsif($even && $postparen &&
+               ($postparen !~ /^ *$/) && ($postparen !~ /^ *[,{&|\\]+/)) {
+                print STDERR "5: '$postparen'\n";
+                checkwarn("ONELINECONDITION",
+                          $line, length($l)-length($postparen), $file, $l,
+                          "conditional block on the same line");
             }
         }
         # check spaces after open parentheses
@@ -560,7 +592,8 @@ sub scanfile {
 
         # scan for use of banned functions
         if($l =~ /^(.*\W)
-                   (gets|
+                   (gmtime|localtime|
+                    gets|
                     strtok|
                     v?sprintf|
                     (str|_mbs|_tcs|_wcs)n?cat|
@@ -617,10 +650,10 @@ sub scanfile {
         }
 
         # check for 'char * name'
-        if(($l =~ /(^.*(char|int|long|void|curl_slist|CURL|CURLM|CURLMsg|curl_httppost) *(\*+)) (\w+)/) && ($4 ne "const")) {
-            checkwarn("ASTERISKNOSPACE",
+        if(($l =~ /(^.*(char|int|long|void|CURL|CURLM|CURLMsg|[cC]url_[A-Za-z_]+|struct [a-zA-Z_]+) *(\*+)) (\w+)/) && ($4 !~ /^(const|volatile)$/)) {
+            checkwarn("ASTERISKSPACE",
                       $line, length($1), $file, $ol,
-                      "no space after declarative asterisk");
+                      "space after declarative asterisk");
         }
         # check for 'char*'
         if(($l =~ /(^.*(char|int|long|void|curl_slist|CURL|CURLM|CURLMsg|curl_httppost|sockaddr_in|FILE)\*)/)) {
@@ -673,6 +706,13 @@ sub scanfile {
             checkwarn("SEMINOSPACE",
                       $line, length($1)+1, $file, $ol,
                       "no space after semicolon");
+        }
+
+        # typedef struct ... {
+        if($nostr =~ /^(.*)typedef struct.*{/) {
+            checkwarn("TYPEDEFSTRUCT",
+                      $line, length($1)+1, $file, $ol,
+                      "typedef'ed struct");
         }
 
         # check for more than one consecutive space before open brace or

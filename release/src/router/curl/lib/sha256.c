@@ -196,10 +196,11 @@ static void SHA256_Final(unsigned char *digest, SHA256_CTX *ctx)
 
 #include <wincrypt.h>
 
-typedef struct {
+struct sha256_ctx {
   HCRYPTPROV hCryptProv;
   HCRYPTHASH hHash;
-} SHA256_CTX;
+};
+typedef struct sha256_ctx SHA256_CTX;
 
 #if !defined(CALG_SHA_256)
 #define CALG_SHA_256 0x0000800c
@@ -207,8 +208,8 @@ typedef struct {
 
 static void SHA256_Init(SHA256_CTX *ctx)
 {
-  if(CryptAcquireContext(&ctx->hCryptProv, NULL, NULL,
-                         PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
+  if(CryptAcquireContext(&ctx->hCryptProv, NULL, NULL, PROV_RSA_AES,
+                         CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
     CryptCreateHash(ctx->hCryptProv, CALG_SHA_256, 0, 0, &ctx->hHash);
   }
 }
@@ -222,7 +223,7 @@ static void SHA256_Update(SHA256_CTX *ctx,
 
 static void SHA256_Final(unsigned char *digest, SHA256_CTX *ctx)
 {
-  unsigned long length;
+  unsigned long length = 0;
 
   CryptGetHashParam(ctx->hHash, HP_HASHVAL, NULL, &length, 0);
   if(length == SHA256_DIGEST_LENGTH)
@@ -280,7 +281,7 @@ do {                                                          \
 } while(0)
 #endif
 
-typedef struct sha256_state {
+struct sha256_state {
 #ifdef HAVE_LONGLONG
   unsigned long long length;
 #else
@@ -288,7 +289,8 @@ typedef struct sha256_state {
 #endif
   unsigned long state[8], curlen;
   unsigned char buf[64];
-} SHA256_CTX;
+};
+typedef struct sha256_state SHA256_CTX;
 
 /* The K array */
 static const unsigned long K[64] = {

@@ -66,6 +66,10 @@
 #include <brotli/decode.h>
 #endif
 
+#ifdef HAVE_ZSTD
+#include <zstd.h>
+#endif
+
 #ifdef HAVE_BROTLI
 static size_t brotli_version(char *buf, size_t bufsz)
 {
@@ -78,6 +82,20 @@ static size_t brotli_version(char *buf, size_t bufsz)
 }
 #endif
 
+#ifdef HAVE_ZSTD
+static size_t zstd_version(char *buf, size_t bufsz)
+{
+  unsigned long zstd_version = (unsigned long)ZSTD_versionNumber();
+  unsigned int major = (unsigned int)(zstd_version / (100 * 100));
+  unsigned int minor = (unsigned int)((zstd_version -
+                         (major * 100 * 100)) / 100);
+  unsigned int patch = (unsigned int)(zstd_version -
+                         (major * 100 * 100) - (minor * 100));
+
+  return msnprintf(buf, bufsz, "%u.%u.%u", major, minor, patch);
+}
+#endif
+
 /*
  * curl_version() returns a pointer to a static buffer.
  *
@@ -85,14 +103,17 @@ static size_t brotli_version(char *buf, size_t bufsz)
  * generate the exact same string and never write any temporary data like
  * zeros in the data.
  */
+
+#define VERSION_PARTS 14 /* number of substrings we can concatenate */
+
 char *curl_version(void)
 {
-  static char out[250];
+  static char out[300];
   char *outp;
   size_t outlen;
-  const char *src[14];
+  const char *src[VERSION_PARTS];
 #ifdef USE_SSL
-  char ssl_version[40];
+  char ssl_version[200];
 #endif
 #ifdef HAVE_LIBZ
   char z_version[40];
@@ -100,10 +121,13 @@ char *curl_version(void)
 #ifdef HAVE_BROTLI
   char br_version[40] = "brotli/";
 #endif
+#ifdef HAVE_ZSTD
+  char zst_version[40] = "zstd/";
+#endif
 #ifdef USE_ARES
   char cares_version[40];
 #endif
-#if defined(USE_LIBIDN2) || defined(USE_WIN32_IDN)
+#if defined(USE_LIBIDN2)
   char idn_version[40];
 #endif
 #ifdef USE_LIBPSL
@@ -127,6 +151,16 @@ char *curl_version(void)
   int i = 0;
   int j;
 
+#ifdef DEBUGBUILD
+  /* Override version string when environment variable CURL_VERSION is set */
+  const char *debugversion = getenv("CURL_VERSION");
+  if(debugversion) {
+    strncpy(out, debugversion, sizeof(out)-1);
+    out[sizeof(out)-1] = '\0';
+    return out;
+  }
+#endif
+
   src[i++] = LIBCURL_NAME "/" LIBCURL_VERSION;
 #ifdef USE_SSL
   Curl_ssl_version(ssl_version, sizeof(ssl_version));
@@ -140,20 +174,21 @@ char *curl_version(void)
   brotli_version(&br_version[7], sizeof(br_version) - 7);
   src[i++] = br_version;
 #endif
+#ifdef HAVE_ZSTD
+  zstd_version(&zst_version[5], sizeof(zst_version) - 5);
+  src[i++] = zst_version;
+#endif
 #ifdef USE_ARES
   msnprintf(cares_version, sizeof(cares_version),
             "c-ares/%s", ares_version(NULL));
   src[i++] = cares_version;
 #endif
 #ifdef USE_LIBIDN2
-  if(idn2_check_version(IDN2_VERSION)) {
-    msnprintf(idn_version, sizeof(idn_version),
-              "libidn2/%s", idn2_check_version(NULL));
-    src[i++] = idn_version;
-  }
-#elif defined(USE_WIN32_IDN)
-  msnprintf(idn_version, sizeof(idn_version), "WinIDN");
+  msnprintf(idn_version, sizeof(idn_version),
+            "libidn2/%s", idn2_check_version(NULL));
   src[i++] = idn_version;
+#elif defined(USE_WIN32_IDN)
+  src[i++] = (char *)"WinIDN";
 #endif
 
 #ifdef USE_LIBPSL
@@ -197,6 +232,8 @@ char *curl_version(void)
     src[i++] = rtmp_version;
   }
 #endif
+
+  DEBUGASSERT(i <= VERSION_PARTS);
 
   outp = &out[0];
   outlen = sizeof(out);
@@ -260,6 +297,9 @@ static const char * const protocols[] = {
      (!defined(USE_OPENLDAP) && defined(HAVE_LDAP_SSL)))
   "ldaps",
 #endif
+#endif
+#ifdef CURL_ENABLE_MQTT
+  "mqtt",
 #endif
 #ifndef CURL_DISABLE_POP3
   "pop3",
@@ -350,6 +390,9 @@ static curl_version_info_data version_info = {
     ( (SIZEOF_OFF_T > 4) || defined(USE_WIN32_LARGE_FILES) )
   | CURL_VERSION_LARGEFILE
 #endif
+#if defined(WIN32) && defined(UNICODE) && defined(_UNICODE)
+  | CURL_VERSION_UNICODE
+#endif
 #if defined(CURL_DOES_CONVERSIONS)
   | CURL_VERSION_CONV
 #endif
@@ -374,11 +417,11 @@ static curl_version_info_data version_info = {
 #if defined(HAVE_BROTLI)
   | CURL_VERSION_BROTLI
 #endif
+#if defined(HAVE_ZSTD)
+  | CURL_VERSION_ZSTD
+#endif
 #if defined(USE_ALTSVC)
   | CURL_VERSION_ALTSVC
-#endif
-#ifdef USE_ESNI
-  | CURL_VERSION_ESNI
 #endif
   ,
   NULL, /* ssl_version */
@@ -394,7 +437,19 @@ static curl_version_info_data version_info = {
   NULL, /* brotli version */
   0,    /* nghttp2 version number */
   NULL, /* nghttp2 version string */
-  NULL  /* quic library string */
+  NULL, /* quic library string */
+#ifdef CURL_CA_BUNDLE
+  CURL_CA_BUNDLE, /* cainfo */
+#else
+  NULL,
+#endif
+#ifdef CURL_CA_PATH
+  CURL_CA_PATH,  /* capath */
+#else
+  NULL,
+#endif
+  0,    /* zstd_ver_num */
+  NULL  /* zstd version */
 };
 
 curl_version_info_data *curl_version_info(CURLversion stamp)
@@ -412,6 +467,10 @@ curl_version_info_data *curl_version_info(CURLversion stamp)
 #ifdef HAVE_BROTLI
   static char brotli_buffer[80];
 #endif
+#ifdef HAVE_ZSTD
+  static char zstd_buffer[80];
+#endif
+
 
 #ifdef USE_SSL
   Curl_ssl_version(ssl_buffer, sizeof(ssl_buffer));
@@ -461,6 +520,12 @@ curl_version_info_data *curl_version_info(CURLversion stamp)
   version_info.brotli_ver_num = BrotliDecoderVersion();
   brotli_version(brotli_buffer, sizeof(brotli_buffer));
   version_info.brotli_version = brotli_buffer;
+#endif
+
+#ifdef HAVE_ZSTD
+  version_info.zstd_ver_num = (unsigned int)ZSTD_versionNumber();
+  zstd_version(zstd_buffer, sizeof(zstd_buffer));
+  version_info.zstd_version = zstd_buffer;
 #endif
 
 #ifdef USE_NGHTTP2

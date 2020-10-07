@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2012, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -44,8 +44,9 @@ my $unix_socket;     # location to place a listening Unix socket
 my $ipvnum = 4;      # default IP version of http server
 my $idnum = 1;       # default http server instance number
 my $proto = 'http';  # protocol the http server speaks
-my $pidfile;         # http server pid file
-my $logfile;         # http server log file
+my $pidfile;         # pid file
+my $portfile;        # port number file
+my $logfile;         # log file
 my $connect;         # IP to connect to on CONNECT
 my $srcdir;
 my $gopher = 0;
@@ -58,6 +59,12 @@ while(@ARGV) {
     if($ARGV[0] eq '--pidfile') {
         if($ARGV[1]) {
             $pidfile = $ARGV[1];
+            shift @ARGV;
+        }
+    }
+    elsif($ARGV[0] eq '--portfile') {
+        if($ARGV[1]) {
+            $portfile = $ARGV[1];
             shift @ARGV;
         }
     }
@@ -122,11 +129,16 @@ if(!$srcdir) {
 if(!$pidfile) {
     $pidfile = "$path/". server_pidfilename($proto, $ipvnum, $idnum);
 }
+if(!$portfile) {
+    $portfile = "$path/". server_portfilename($proto, $ipvnum, $idnum);
+}
 if(!$logfile) {
     $logfile = server_logfilename($logdir, $proto, $ipvnum, $idnum);
 }
 
-$flags .= "--pidfile \"$pidfile\" --logfile \"$logfile\" ";
+$flags .= "--pidfile \"$pidfile\" ".
+    "--logfile \"$logfile\" ".
+    "--portfile \"$portfile\" ";
 $flags .= "--gopher " if($gopher);
 $flags .= "--connect $connect " if($connect);
 if($ipvnum eq 'unix') {

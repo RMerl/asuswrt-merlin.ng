@@ -21,6 +21,13 @@
  ***************************************************************************/
 #include "tool_setup.h"
 
+#ifdef HAVE_FCNTL_H
+/* for open() */
+#include <fcntl.h>
+#endif
+
+#include <sys/stat.h>
+
 #define ENABLE_CURLX_PRINTF
 /* use our own printf() functions */
 #include "curlx.h"
@@ -37,7 +44,7 @@ bool tool_create_output_file(struct OutStruct *outs,
                              struct OperationConfig *config)
 {
   struct GlobalConfig *global;
-  FILE *file;
+  FILE *file = NULL;
   DEBUGASSERT(outs);
   DEBUGASSERT(config);
   global = config->global;
@@ -48,17 +55,26 @@ bool tool_create_output_file(struct OutStruct *outs,
 
   if(outs->is_cd_filename) {
     /* don't overwrite existing files */
-    file = fopen(outs->filename, "rb");
-    if(file) {
-      fclose(file);
-      warnf(global, "Refusing to overwrite %s: %s\n", outs->filename,
-            strerror(EEXIST));
-      return FALSE;
+#ifndef O_BINARY
+#define O_BINARY 0
+#endif
+    int fd = open(outs->filename, O_CREAT | O_WRONLY | O_EXCL | O_BINARY,
+#ifdef WIN32
+                  S_IREAD | S_IWRITE
+#else
+                  S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH
+#endif
+      );
+    if(fd != -1) {
+      file = fdopen(fd, "wb");
+      if(!file)
+        close(fd);
     }
   }
+  else
+    /* open file for writing */
+    file = fopen(outs->filename, "wb");
 
-  /* open file for writing */
-  file = fopen(outs->filename, "wb");
   if(!file) {
     warnf(global, "Failed to create the file %s: %s\n", outs->filename,
           strerror(errno));

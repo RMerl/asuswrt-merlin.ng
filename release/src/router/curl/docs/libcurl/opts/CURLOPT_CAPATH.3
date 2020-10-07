@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAPATH 3 "March 04, 2020" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_CAPATH 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CAPATH \- specify directory holding CA certificates
@@ -29,7 +29,7 @@ CURLOPT_CAPATH \- specify directory holding CA certificates
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_CAPATH, char *capath);
 .SH DESCRIPTION
-Pass a char * to a zero terminated string naming a directory holding multiple
+Pass a char * to a null-terminated string naming a directory holding multiple
 CA certificates to verify the peer with. If libcurl is built against OpenSSL,
 the certificate directory must be prepared using the openssl c_rehash utility.
 This makes sense only when used in combination with the

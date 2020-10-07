@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2016, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SCHEME 3 "April 08, 2017" "libcurl 7.69.1" "curl_easy_getinfo options"
+.TH CURLINFO_SCHEME 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_getinfo options"
 
 .SH NAME
 CURLINFO_SCHEME \- get the URL scheme (sometimes called protocol) used in the connection
@@ -29,7 +29,7 @@ CURLINFO_SCHEME \- get the URL scheme (sometimes called protocol) used in the co
 
 CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_SCHEME, char **scheme);
 .SH DESCRIPTION
-Pass a pointer to a char pointer to receive the pointer to a zero-terminated
+Pass a pointer to a char pointer to receive the pointer to a null-terminated
 string holding the URL scheme used for the most recent connection done with
 this CURL \fBhandle\fP.
 

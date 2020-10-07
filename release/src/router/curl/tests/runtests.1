@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH runtests.pl 1 "March 03, 2020" "Curl 7.69.1" "runtests"
+.TH runtests.pl 1 "August 05, 2020" "Curl 7.72.0" "runtests"
 
 .SH NAME
 runtests.pl \- run one or more test cases
@@ -44,7 +44,7 @@ runs all available tests except number 66.
 Prefix a test number with a tilde (~) to still run it, but ignore the results.
 
 It is also possible to specify tests based on a keyword describing the test(s)
-to run, like "FTPS". The keywords are strings used in the indiviual tests.
+to run, like "FTPS". The keywords are strings used in the individual tests.
 
 You can also specify keywords with a leading exclamation point and the keyword
 or phrase, like "!HTTP NTLM auth" to run all tests \fBexcept\fP those using
@@ -56,8 +56,6 @@ Prefix a keyword with a tilde (~) to still run it, but ignore the results.
 .IP "-a"
 Continue running the rest of the test cases even if one test fails. By
 default, the test script stops as soon as an error is detected.
-.IP "-bN"
-Use N as the base TCP/UDP port number on which to start the test servers.
 .IP "-c <curl>"
 Provide a path to a custom curl binary to run the tests with. Default is the
 curl executable in the build tree.

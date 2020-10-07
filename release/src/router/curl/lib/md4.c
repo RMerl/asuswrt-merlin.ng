@@ -29,6 +29,10 @@
 
 #ifdef USE_OPENSSL
 #include <openssl/opensslconf.h>
+#if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+/* OpenSSL 3.0.0 marks the MD4 functions as deprecated */
+#define OPENSSL_NO_MD4
+#endif
 #endif /* USE_OPENSSL */
 
 #ifdef USE_MBEDTLS
@@ -98,7 +102,9 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 #include <openssl/md4.h>
 
 #elif (defined(__MAC_OS_X_VERSION_MAX_ALLOWED) && \
-              (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1040)) || \
+              (__MAC_OS_X_VERSION_MAX_ALLOWED >= 1040) && \
+       defined(__MAC_OS_X_VERSION_MIN_ALLOWED) && \
+              (__MAC_OS_X_VERSION_MIN_ALLOWED < 101500)) || \
       (defined(__IPHONE_OS_VERSION_MAX_ALLOWED) && \
               (__IPHONE_OS_VERSION_MAX_ALLOWED >= 20000))
 
@@ -135,10 +141,11 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 /* The last #include file should be: */
 #include "memdebug.h"
 
-typedef struct {
+struct md4_ctx {
   HCRYPTPROV hCryptProv;
   HCRYPTHASH hHash;
-} MD4_CTX;
+};
+typedef struct md4_ctx MD4_CTX;
 
 static void MD4_Init(MD4_CTX *ctx)
 {
@@ -146,7 +153,7 @@ static void MD4_Init(MD4_CTX *ctx)
   ctx->hHash = 0;
 
   if(CryptAcquireContext(&ctx->hCryptProv, NULL, NULL, PROV_RSA_FULL,
-                         CRYPT_VERIFYCONTEXT)) {
+                         CRYPT_VERIFYCONTEXT | CRYPT_SILENT)) {
     CryptCreateHash(ctx->hCryptProv, CALG_MD4, 0, 0, &ctx->hHash);
   }
 }
@@ -180,10 +187,11 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 /* The last #include file should be: */
 #include "memdebug.h"
 
-typedef struct {
+struct md4_ctx {
   void *data;
   unsigned long size;
-} MD4_CTX;
+};
+typedef struct md4_ctx MD4_CTX;
 
 static void MD4_Init(MD4_CTX *ctx)
 {
@@ -262,12 +270,13 @@ static void MD4_Final(unsigned char *result, MD4_CTX *ctx)
 /* Any 32-bit or wider unsigned integer data type will do */
 typedef unsigned int MD4_u32plus;
 
-typedef struct {
+struct md4_ctx {
   MD4_u32plus lo, hi;
   MD4_u32plus a, b, c, d;
   unsigned char buffer[64];
   MD4_u32plus block[16];
-} MD4_CTX;
+};
+typedef struct md4_ctx MD4_CTX;
 
 static void MD4_Init(MD4_CTX *ctx);
 static void MD4_Update(MD4_CTX *ctx, const void *data, unsigned long size);

@@ -191,6 +191,7 @@ static CURLcode ntlm_decode_type2_target(struct Curl_easy *data,
         return CURLE_BAD_CONTENT_ENCODING;
       }
 
+      free(ntlm->target_info); /* replace any previous data */
       ntlm->target_info = malloc(target_info_len);
       if(!ntlm->target_info)
         return CURLE_OUT_OF_MEMORY;
@@ -600,11 +601,14 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
 #endif
 
 #if defined(USE_NTRESPONSES) && defined(USE_NTLM2SESSION)
+
+#define CURL_MD5_DIGEST_LENGTH 16 /* fixed size */
+
   /* We don't support NTLM2 if we don't have USE_NTRESPONSES */
   if(ntlm->flags & NTLMFLAG_NEGOTIATE_NTLM_KEY) {
     unsigned char ntbuffer[0x18];
     unsigned char tmp[0x18];
-    unsigned char md5sum[MD5_DIGEST_LENGTH];
+    unsigned char md5sum[CURL_MD5_DIGEST_LENGTH];
     unsigned char entropy[8];
 
     /* Need to create 8 bytes random data */

@@ -199,7 +199,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="wldap32.lib ws2_32.lib libcurld.lib libeay32.lib ssleay32.lib libssh2d.lib"
+				AdditionalDependencies="crypt32.lib wldap32.lib ws2_32.lib libcurld.lib libeay32.lib ssleay32.lib libssh2d.lib"
 				OutputFile="$(OutDir)\$(ProjectName)d.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -427,7 +427,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="wldap32.lib ws2_32.lib libcurl.lib libeay32.lib ssleay32.lib"
+				AdditionalDependencies="crypt32.lib wldap32.lib ws2_32.lib libcurl.lib libeay32.lib ssleay32.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -482,7 +482,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="wldap32.lib ws2_32.lib libcurl.lib libeay32.lib ssleay32.lib libssh2.lib"
+				AdditionalDependencies="crypt32.lib wldap32.lib ws2_32.lib libcurl.lib libeay32.lib ssleay32.lib libssh2.lib"
 				OutputFile="$(OutDir)\$(ProjectName).exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -647,7 +647,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386 /FIXED:NO"
-				AdditionalDependencies="wldap32.lib ws2_32.lib libcurld.lib libeay32.lib ssleay32.lib"
+				AdditionalDependencies="crypt32.lib wldap32.lib ws2_32.lib libcurld.lib libeay32.lib ssleay32.lib"
 				OutputFile="$(OutDir)\$(ProjectName)d.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
@@ -1365,10 +1365,16 @@
 				RelativePath="..\..\..\..\lib\curl_ctype.c">
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_multibyte.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\nonblock.c">
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\strtoofft.c">
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\version_win32.c">
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\warnless.c">
@@ -1491,6 +1497,9 @@
 				RelativePath="..\..\..\..\src\tool_writeout.c">
 			</File>
 			<File
+				RelativePath="..\..\..\..\src\tool_writeout_json.c">
+			</File>
+			<File
 				RelativePath="..\..\..\..\src\tool_xattr.c">
 			</File>
 		</Filter>
@@ -1504,6 +1513,9 @@
 				RelativePath="..\..\..\..\lib\curl_ctype.h">
 			</File>
 			<File
+				RelativePath="..\..\..\..\lib\curl_multibyte.h">
+			</File>
+			<File
 				RelativePath="..\..\..\..\lib\curl_setup.h">
 			</File>
 			<File
@@ -1511,6 +1523,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\strtoofft.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\lib\version_win32.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\lib\warnless.h">
@@ -1640,6 +1655,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_writeout.h">
+			</File>
+			<File
+				RelativePath="..\..\..\..\src\tool_writeout_json.h">
 			</File>
 			<File
 				RelativePath="..\..\..\..\src\tool_xattr.h">

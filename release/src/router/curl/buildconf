@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -25,7 +25,7 @@
 # die prints argument string to stdout and exits this shell script.
 #
 die(){
-  echo "buildconf: $@"
+  echo "buildconf: $*"
   exit 1
 }
 
@@ -64,16 +64,7 @@ findtool(){
 #
 removethis(){
   if test "$#" = "1"; then
-    find . -depth -name $1 -print > buildconf.tmp.$$
-    while read fdname
-    do
-      if test -f "$fdname"; then
-        rm -f "$fdname"
-      elif test -d "$fdname"; then
-        rm -f -r "$fdname"
-      fi
-    done < buildconf.tmp.$$
-    rm -f buildconf.tmp.$$
+    find . -depth -name $1 -exec rm -rf {} \;
   fi
 }
 
@@ -291,9 +282,6 @@ for fname in .deps \
     Makefile.in \
     aclocal.m4 \
     aclocal.m4.bak \
-    ares_build.h \
-    ares_config.h \
-    ares_config.h.in \
     autom4te.cache \
     compile \
     config.guess \
@@ -363,6 +351,7 @@ if test -f m4/libtool.m4; then
 fi
 
 echo "buildconf: running aclocal"
+#shellcheck disable=SC2154
 ${ACLOCAL:-aclocal} -I m4 $ACLOCAL_FLAGS || die "aclocal command failed"
 
 echo "buildconf: converting all mv to mv -f in local aclocal.m4"
@@ -373,13 +362,6 @@ ${AUTOHEADER:-autoheader} || die "autoheader command failed"
 
 echo "buildconf: running autoconf"
 ${AUTOCONF:-autoconf} || die "autoconf command failed"
-
-if test -d ares; then
-  cd ares
-  echo "buildconf: running in ares"
-  ./buildconf
-  cd ..
-fi
 
 echo "buildconf: running automake"
 ${AUTOMAKE:-automake} --add-missing --copy || die "automake command failed"

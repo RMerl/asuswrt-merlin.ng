@@ -39,45 +39,48 @@ The curl Test Suite
  1.1 Requires to run
 
   perl (and a unix-style shell)
-  python (and a unix-style shell)
+  python (and a unix-style shell, for SMB and TELNET tests)
+  python-impacket (for SMB tests)
   diff (when a test fails, a diff is shown)
   stunnel (for HTTPS and FTPS tests)
   OpenSSH or SunSSH (for SCP, SFTP and SOCKS4/5 tests)
   nghttpx (for HTTP/2 tests)
   nroff (for --manual tests)
 
+ 1.1.1 Installation of python-impacket
+
+  The Python-based test servers support both recent Python 2 and 3.
+  You can figure out your default Python interpreter with python -V
+
+  Please install python-impacket in the correct Python environment.
+  You can use pip or your OS' package manager to install 'impacket'.
+
+  On Debian/Ubuntu the package names are:
+    Python 2: 'python-impacket'
+    Python 3: 'python3-impacket'
+
+  On FreeBSD the package names are:
+    Python 2: 'py27-impacket'
+    Python 3: 'py37-impacket'
+
+  On any system where pip is available:
+    Python 2: 'pip2 install impacket'
+    Python 3: 'pip3 install impacket'
+
+  You may also need to manually install the Python package 'six'
+  as that may be a missing requirement for impacket on Python 3.
+
  1.2 Port numbers used by test servers
 
-  - TCP/8990 for HTTP
-  - TCP/8991 for HTTPS
-  - TCP/8992 for FTP
-  - TCP/8993 for FTPS
-  - TCP/8994 for HTTP IPv6
-  - TCP/8995 for FTP (2)
-  - TCP/8996 for FTP IPv6
-  - UDP/8997 for TFTP
-  - UDP/8998 for TFTP IPv6
-  - TCP/8999 for SCP/SFTP
-  - TCP/9000 for SOCKS
-  - TCP/9001 for POP3
-  - TCP/9002 for POP3 IPv6
-  - TCP/9003 for IMAP
-  - TCP/9004 for IMAP IPv6
-  - TCP/9005 for SMTP
-  - TCP/9006 for SMTP IPv6
-  - TCP/9007 for RTSP
-  - TCP/9008 for RTSP IPv6
-  - TCP/9009 for GOPHER
-  - TCP/9010 for GOPHER IPv6
-  - TCP/9011 for HTTPS server with TLS-SRP support
-  - TCP/9012 for HTTPS IPv6 server with TLS-SRP support
-  - TCP/9013 for HTTP proxy server for CONNECT
-  - TCP/9014 for HTTP pipelining server
-  - TCP/9015 for HTTP/2 server
-  - TCP/9016 for DICT server
-  - TCP/9017 for SMB server
-  - TCP/9018 for SMBS server (reserved)
-  - TCP/9019 for TELNET server with negotiation support
+  Tests are written to use as few fixed fixed port numbers as possible and all
+  tests should be written to use suitable variables instead of port numbers so
+  that test cases continue to work independent on what port numbers the test
+  servers actually use.
+
+  The remaining fixed-port test servers that are still used, use the port
+  range 8890 - 8904 by default, but can be moved with runtests' -b option.
+
+  See the FILEFORMAT for a listing of existing port number variables.
 
  1.3 Test servers
 

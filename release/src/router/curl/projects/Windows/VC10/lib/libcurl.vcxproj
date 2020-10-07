@@ -1310,7 +1310,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win32\VC10\DLL Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ManifestFile>$(IntDir)$(TargetFileName).intermediate.manifest</ManifestFile>
@@ -1344,7 +1344,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win64\VC10\DLL Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -1377,7 +1377,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win32\VC10\DLL Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ManifestFile>$(IntDir)$(TargetFileName).intermediate.manifest</ManifestFile>
@@ -1409,7 +1409,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win64\VC10\DLL Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(TargetDir)$(TargetName).lib</ImportLibrary>
@@ -1700,7 +1700,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win32\VC10\DLL Debug;..\..\..\..\..\libssh2\build\Win32\VC10\DLL Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ManifestFile>$(IntDir)$(TargetFileName).intermediate.manifest</ManifestFile>
@@ -1734,7 +1734,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2d.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win64\VC10\DLL Debug;..\..\..\..\..\libssh2\build\Win64\VC10\DLL Debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -1767,7 +1767,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win32\VC10\DLL Release;..\..\..\..\..\libssh2\build\Win32\VC10\DLL Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ManifestFile>$(IntDir)$(TargetFileName).intermediate.manifest</ManifestFile>
@@ -1799,7 +1799,7 @@
       <Culture>0x0409</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;ws2_32.lib;wldap32.lib;libeay32.lib;ssleay32.lib;libssh2.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <AdditionalLibraryDirectories>..\..\..\..\..\openssl\build\Win64\VC10\DLL Release;..\..\..\..\..\libssh2\build\Win64\VC10\DLL Release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ImportLibrary>$(TargetDir)$(TargetName).lib</ImportLibrary>
@@ -2353,6 +2353,7 @@
     <ClCompile Include="..\..\..\..\lib\dict.c" />
     <ClCompile Include="..\..\..\..\lib\doh.c" />
     <ClCompile Include="..\..\..\..\lib\dotdot.c" />
+    <ClCompile Include="..\..\..\..\lib\dynbuf.c" />
     <ClCompile Include="..\..\..\..\lib\easy.c" />
     <ClCompile Include="..\..\..\..\lib\escape.c" />
     <ClCompile Include="..\..\..\..\lib\file.c" />
@@ -2391,6 +2392,7 @@
     <ClCompile Include="..\..\..\..\lib\memdebug.c" />
     <ClCompile Include="..\..\..\..\lib\mime.c" />
     <ClCompile Include="..\..\..\..\lib\mprintf.c" />
+    <ClCompile Include="..\..\..\..\lib\mqtt.c" />
     <ClCompile Include="..\..\..\..\lib\multi.c" />
     <ClCompile Include="..\..\..\..\lib\netrc.c" />
     <ClCompile Include="..\..\..\..\lib\non-ascii.c" />
@@ -2432,6 +2434,7 @@
     <ClCompile Include="..\..\..\..\lib\urlapi.c" />
     <ClCompile Include="..\..\..\..\lib\url.c" />
     <ClCompile Include="..\..\..\..\lib\version.c" />
+    <ClCompile Include="..\..\..\..\lib\version_win32.c" />
     <ClCompile Include="..\..\..\..\lib\warnless.c" />
     <ClCompile Include="..\..\..\..\lib\wildcard.c" />
     <ClCompile Include="..\..\..\..\lib\x509asn1.c" />
@@ -2449,12 +2452,14 @@
     <ClCompile Include="..\..\..\..\lib\vauth\vauth.c" />
     <ClCompile Include="..\..\..\..\lib\vquic\ngtcp2.c" />
     <ClCompile Include="..\..\..\..\lib\vquic\quiche.c" />
+    <ClCompile Include="..\..\..\..\lib\vquic\vquic.c" />
     <ClCompile Include="..\..\..\..\lib\vssh\libssh2.c" />
     <ClCompile Include="..\..\..\..\lib\vssh\libssh.c" />
     <ClCompile Include="..\..\..\..\lib\vssh\wolfssh.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\bearssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gtls.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\keylog.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls_threadlock.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mesalink.c" />
@@ -2509,6 +2514,7 @@
     <ClInclude Include="..\..\..\..\lib\dict.h" />
     <ClInclude Include="..\..\..\..\lib\doh.h" />
     <ClInclude Include="..\..\..\..\lib\dotdot.h" />
+    <ClInclude Include="..\..\..\..\lib\dynbuf.h" />
     <ClInclude Include="..\..\..\..\lib\easyif.h" />
     <ClInclude Include="..\..\..\..\lib\escape.h" />
     <ClInclude Include="..\..\..\..\lib\file.h" />
@@ -2535,6 +2541,7 @@
     <ClInclude Include="..\..\..\..\lib\llist.h" />
     <ClInclude Include="..\..\..\..\lib\memdebug.h" />
     <ClInclude Include="..\..\..\..\lib\mime.h" />
+    <ClInclude Include="..\..\..\..\lib\mqtt.h" />
     <ClInclude Include="..\..\..\..\lib\multihandle.h" />
     <ClInclude Include="..\..\..\..\lib\multiif.h" />
     <ClInclude Include="..\..\..\..\lib\netrc.h" />
@@ -2576,6 +2583,7 @@
     <ClInclude Include="..\..\..\..\lib\urlapi-int.h" />
     <ClInclude Include="..\..\..\..\lib\urldata.h" />
     <ClInclude Include="..\..\..\..\lib\url.h" />
+    <ClInclude Include="..\..\..\..\lib\version_win32.h" />
     <ClInclude Include="..\..\..\..\lib\warnless.h" />
     <ClInclude Include="..\..\..\..\lib\wildcard.h" />
     <ClInclude Include="..\..\..\..\lib\x509asn1.h" />
@@ -2584,10 +2592,12 @@
     <ClInclude Include="..\..\..\..\lib\vauth\vauth.h" />
     <ClInclude Include="..\..\..\..\lib\vquic\ngtcp2.h" />
     <ClInclude Include="..\..\..\..\lib\vquic\quiche.h" />
+    <ClInclude Include="..\..\..\..\lib\vquic\vquic.h" />
     <ClInclude Include="..\..\..\..\lib\vssh\ssh.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\bearssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gtls.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\keylog.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls_threadlock.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mesalink.h" />

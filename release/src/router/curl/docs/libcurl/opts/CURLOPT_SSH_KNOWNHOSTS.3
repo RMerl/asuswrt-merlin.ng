@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_KNOWNHOSTS 3 "May 31, 2017" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_SSH_KNOWNHOSTS 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSH_KNOWNHOSTS \- file name holding the SSH known hosts
@@ -29,7 +29,7 @@ CURLOPT_SSH_KNOWNHOSTS \- file name holding the SSH known hosts
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSH_KNOWNHOSTS, char *fname);
 .SH DESCRIPTION
-Pass a pointer to a zero terminated string holding the file name of the
+Pass a pointer to a null-terminated string holding the file name of the
 known_host file to use.  The known_hosts file should use the OpenSSH file
 format as supported by libssh2. If this file is specified, libcurl will only
 accept connections with hosts that are known and present in that file, with a

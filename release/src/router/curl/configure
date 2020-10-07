@@ -879,6 +879,7 @@ LIBOBJS
 SSL_BACKENDS
 SUPPORT_PROTOCOLS
 SUPPORT_FEATURES
+LIBCURL_NO_SHARED
 ENABLE_STATIC
 ENABLE_SHARED
 CROSSCOMPILING_FALSE
@@ -906,6 +907,7 @@ FISH_FUNCTIONS_DIR
 ZSH_FUNCTIONS_DIR
 USE_QUICHE
 USE_NGHTTP3
+USE_NGTCP2_CRYPTO_GNUTLS
 USE_NGTCP2_CRYPTO_OPENSSL
 USE_NGTCP2
 USE_NGHTTP2
@@ -945,6 +947,7 @@ BUILD_STUB_GSS_FALSE
 BUILD_STUB_GSS_TRUE
 IPV6_ENABLED
 USE_OPENLDAP
+HAVE_ZSTD
 HAVE_BROTLI
 ZLIB_LIBS
 HAVE_LIBZ_FALSE
@@ -952,6 +955,7 @@ HAVE_LIBZ_TRUE
 HAVE_LIBZ
 PKGCONFIG
 HAVE_PROTO_BSDSOCKET_H
+CURL_ENABLE_MQTT
 CURL_DISABLE_GOPHER
 CURL_DISABLE_SMTP
 CURL_DISABLE_SMB
@@ -974,6 +978,7 @@ BUILD_UNITTESTS_FALSE
 BUILD_UNITTESTS_TRUE
 CURLDEBUG_FALSE
 CURLDEBUG_TRUE
+CURL_CFLAG_EXTRAS
 USE_EXPLICIT_LIB_DEPS_FALSE
 USE_EXPLICIT_LIB_DEPS_TRUE
 REQUIRE_LIB_DEPS
@@ -1066,7 +1071,6 @@ AR
 EGREP
 GREP
 SED
-CURL_CFLAG_EXTRAS
 CONFIGURE_OPTIONS
 AM_BACKSLASH
 AM_DEFAULT_VERBOSITY
@@ -1156,11 +1160,13 @@ enable_imap
 enable_smb
 enable_smtp
 enable_gopher
+enable_mqtt
 enable_manual
 enable_libcurl_option
 enable_libgcc
 with_zlib
 with_brotli
+with_zstd
 with_ldap_lib
 with_lber_lib
 enable_ipv6
@@ -1924,6 +1930,8 @@ Optional Features:
   --disable-smtp          Disable SMTP support
   --enable-gopher         Enable Gopher support
   --disable-gopher        Disable Gopher support
+  --enable-mqtt           Enable MQTT support
+  --disable-mqtt          Disable MQTT support
   --enable-manual         Enable built-in manual
   --disable-manual        Disable built-in manual
   --enable-libcurl-option Enable --libcurl C code generation support
@@ -1998,6 +2006,11 @@ Optional Packages:
                           installation; when possible, set the PKG_CONFIG_PATH
                           environment variable instead of using this option
   --without-brotli        disable BROTLI
+  --with-zstd=PATH        Where to look for libzstd, PATH points to the
+                          libzstd installation; when possible, set the
+                          PKG_CONFIG_PATH environment variable instead of
+                          using this option
+  --without-zstd          disable libzstd
   --with-ldap-lib=libname Specify name of ldap lib file
   --with-lber-lib=libname Specify name of lber lib file
   --with-gssapi-includes=DIR
@@ -3408,17 +3421,6 @@ fi
 # save the configure arguments
 #
 CONFIGURE_OPTIONS="\"$ac_configure_args\""
-
-
-CURL_CFLAG_EXTRAS=""
-if test X"$want_werror" = Xyes; then
-  CURL_CFLAG_EXTRAS="-Werror"
-  if test "$compiler_id" = "GNU_C"; then
-            if test "$compiler_num" -ge "500"; then
-      CURL_CFLAG_EXTRAS="$CURL_CFLAG_EXTRAS -pedantic-errors"
-    fi
-  fi
-fi
 
 
 if test -z "$SED"; then
@@ -5873,6 +5875,7 @@ PKGADD_VENDOR="curl.haxx.se"
     curl_ssh_msg="no      (--with-{libssh,libssh2})"
    curl_zlib_msg="no      (--with-zlib)"
  curl_brotli_msg="no      (--with-brotli)"
+   curl_zstd_msg="no      (--with-zstd)"
     curl_gss_msg="no      (--with-gssapi)"
 curl_tls_srp_msg="no      (--enable-tls-srp)"
     curl_res_msg="default (--enable-ares / --enable-threaded-resolver)"
@@ -17003,45 +17006,6 @@ squeeze() {
       #
   if test "$compiler_id" != "unknown"; then
     #
-    if test "$compiler_id" = "GNU_C" ||
-      test "$compiler_id" = "CLANG"; then
-
-      if test "$compiler_id" = "GNU_C" ||
-    test "$compiler_id" = "CLANG"; then
-    tmp_has_include="no"
-    tmp_chg_FLAGS="$CFLAGS"
-    for word1 in $tmp_chg_FLAGS; do
-      case "$word1" in
-        -I*)
-          tmp_has_include="yes"
-          ;;
-      esac
-    done
-    if test "$tmp_has_include" = "yes"; then
-      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/^-I/ -isystem /g'`
-      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/ -I/ -isystem /g'`
-      CFLAGS="$tmp_chg_FLAGS"
-      squeeze CFLAGS
-    fi
-    tmp_has_include="no"
-    tmp_chg_FLAGS="$CPPFLAGS"
-    for word1 in $tmp_chg_FLAGS; do
-      case "$word1" in
-        -I*)
-          tmp_has_include="yes"
-          ;;
-      esac
-    done
-    if test "$tmp_has_include" = "yes"; then
-      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/^-I/ -isystem /g'`
-      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/ -I/ -isystem /g'`
-      CPPFLAGS="$tmp_chg_FLAGS"
-      squeeze CPPFLAGS
-    fi
-  fi
-
-    fi
-    #
     tmp_save_CPPFLAGS="$CPPFLAGS"
     tmp_save_CFLAGS="$CFLAGS"
     tmp_CPPFLAGS=""
@@ -17206,7 +17170,6 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
     if test "x$cross_compiling" != "xyes" &&
     test "$tmp_compiler_works" = "yes"; then
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -17403,7 +17366,6 @@ rm -f core conftest.err conftest.$ac_objext \
   fi
     if test "x$cross_compiling" != "xyes" &&
     test "$tmp_compiler_works" = "yes"; then
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -17654,7 +17616,6 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "x$cross_compiling" != "xyes" &&
     test "$tmp_compiler_works" = "yes"; then
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -17737,33 +17698,337 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
         #
         if test "$want_warnings" = "yes"; then
           tmp_CFLAGS="$tmp_CFLAGS -pedantic"
-          tmp_CFLAGS="$tmp_CFLAGS -Wall -Wextra"
-          tmp_CFLAGS="$tmp_CFLAGS -Wpointer-arith -Wwrite-strings"
-          tmp_CFLAGS="$tmp_CFLAGS -Wshadow"
-          tmp_CFLAGS="$tmp_CFLAGS -Winline -Wnested-externs"
-          tmp_CFLAGS="$tmp_CFLAGS -Wmissing-declarations"
-          tmp_CFLAGS="$tmp_CFLAGS -Wmissing-prototypes"
+
+    ac_var_added_warnings=""
+  for warning in all extra; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in pointer-arith write-strings; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in shadow; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in inline nested-externs; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in missing-declarations; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in missing-prototypes; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           tmp_CFLAGS="$tmp_CFLAGS -Wno-long-long"
-          tmp_CFLAGS="$tmp_CFLAGS -Wfloat-equal"
-          tmp_CFLAGS="$tmp_CFLAGS -Wno-multichar -Wsign-compare"
-          tmp_CFLAGS="$tmp_CFLAGS -Wundef"
+
+    ac_var_added_warnings=""
+  for warning in float-equal; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in no-multichar sign-compare; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in undef; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           tmp_CFLAGS="$tmp_CFLAGS -Wno-format-nonliteral"
-          tmp_CFLAGS="$tmp_CFLAGS -Wendif-labels -Wstrict-prototypes"
-          tmp_CFLAGS="$tmp_CFLAGS -Wdeclaration-after-statement"
-          tmp_CFLAGS="$tmp_CFLAGS -Wcast-align"
+
+    ac_var_added_warnings=""
+  for warning in endif-labels strict-prototypes; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in declaration-after-statement; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in cast-align; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           tmp_CFLAGS="$tmp_CFLAGS -Wno-system-headers"
-          tmp_CFLAGS="$tmp_CFLAGS -Wshorten-64-to-32"
+
+    ac_var_added_warnings=""
+  for warning in shorten-64-to-32; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           #
                     if test "$compiler_num" -ge "101"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wunused"
+
+    ac_var_added_warnings=""
+  for warning in unused; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "208"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wvla"
+
+    ac_var_added_warnings=""
+  for warning in vla; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "209"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wshift-sign-overflow"
+
+    ac_var_added_warnings=""
+  for warning in shift-sign-overflow; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "302"; then
@@ -17771,17 +18036,74 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
             cygwin* | mingw*)
                                           ;;
             *)
-              tmp_CFLAGS="$tmp_CFLAGS -Wmissing-variable-declarations"
+
+    ac_var_added_warnings=""
+  for warning in missing-variable-declarations; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
               ;;
             esac
           fi
           #
                     if test "$compiler_num" -ge "306"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wdouble-promotion"
+
+    ac_var_added_warnings=""
+  for warning in double-promotion; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "309"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wcomma"
+
+    ac_var_added_warnings=""
+  for warning in comma; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
             # avoid the varargs warning, fixed in 4.0
             # https://bugs.llvm.org/show_bug.cgi?id=29140
             if test "$compiler_num" -lt "400"; then
@@ -17807,34 +18129,226 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
             tmp_CFLAGS="$tmp_CFLAGS -pedantic"
           fi
           #
-                    tmp_CFLAGS="$tmp_CFLAGS -Wall -W"
+
+    ac_var_added_warnings=""
+  for warning in all; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+          tmp_CFLAGS="$tmp_CFLAGS -W"
           #
                     if test "$compiler_num" -ge "104"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wpointer-arith -Wwrite-strings"
+
+    ac_var_added_warnings=""
+  for warning in pointer-arith write-strings; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
                         if test "x$cross_compiling" != "xyes" ||
               test "$compiler_num" -ge "300"; then
-              tmp_CFLAGS="$tmp_CFLAGS -Wunused -Wshadow"
+
+    ac_var_added_warnings=""
+  for warning in unused shadow; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
             fi
           fi
           #
                     if test "$compiler_num" -ge "207"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Winline -Wnested-externs"
+
+    ac_var_added_warnings=""
+  for warning in inline nested-externs; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
                         if test "x$cross_compiling" != "xyes" ||
               test "$compiler_num" -ge "300"; then
-              tmp_CFLAGS="$tmp_CFLAGS -Wmissing-declarations"
-              tmp_CFLAGS="$tmp_CFLAGS -Wmissing-prototypes"
+
+    ac_var_added_warnings=""
+  for warning in missing-declarations; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in missing-prototypes; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
             fi
           fi
           #
                     if test "$compiler_num" -ge "295"; then
             tmp_CFLAGS="$tmp_CFLAGS -Wno-long-long"
-            tmp_CFLAGS="$tmp_CFLAGS -Wbad-function-cast"
+
+    ac_var_added_warnings=""
+  for warning in bad-function-cast; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "296"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wfloat-equal"
-            tmp_CFLAGS="$tmp_CFLAGS -Wno-multichar -Wsign-compare"
-                                                tmp_CFLAGS="$tmp_CFLAGS -Wundef"
+
+    ac_var_added_warnings=""
+  for warning in float-equal; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-multichar"
+
+    ac_var_added_warnings=""
+  for warning in sign-compare; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in undef; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "297"; then
@@ -17846,12 +18360,69 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
           fi
           #
                     if test "$compiler_num" -ge "303"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wendif-labels -Wstrict-prototypes"
+
+    ac_var_added_warnings=""
+  for warning in endif-labels strict-prototypes; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "304"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wdeclaration-after-statement"
-            tmp_CFLAGS="$tmp_CFLAGS -Wold-style-definition"
+
+    ac_var_added_warnings=""
+  for warning in declaration-after-statement; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in old-style-definition; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "400"; then
@@ -17859,14 +18430,130 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
           fi
           #
                     if test "$compiler_num" -ge "402"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wcast-align"
+
+    ac_var_added_warnings=""
+  for warning in cast-align; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "403"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wtype-limits -Wold-style-declaration"
-            tmp_CFLAGS="$tmp_CFLAGS -Wmissing-parameter-type -Wempty-body"
-            tmp_CFLAGS="$tmp_CFLAGS -Wclobbered -Wignored-qualifiers"
-            tmp_CFLAGS="$tmp_CFLAGS -Wconversion -Wno-sign-conversion -Wvla"
+
+    ac_var_added_warnings=""
+  for warning in type-limits old-style-declaration; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in missing-parameter-type empty-body; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in clobbered ignored-qualifiers; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in conversion; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+            tmp_CFLAGS="$tmp_CFLAGS -Wno-sign-conversion"
+
+    ac_var_added_warnings=""
+  for warning in vla; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
                         tmp_CFLAGS="$tmp_CFLAGS -ftree-vrp"
           fi
           #
@@ -17877,7 +18564,26 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
           fi
           #
                     if test "$compiler_num" -ge "406"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wdouble-promotion"
+
+    ac_var_added_warnings=""
+  for warning in double-promotion; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "408"; then
@@ -17889,17 +18595,151 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
           fi
           #
                     if test "$compiler_num" -ge "600"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wshift-negative-value"
+
+    ac_var_added_warnings=""
+  for warning in shift-negative-value; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
             tmp_CFLAGS="$tmp_CFLAGS -Wshift-overflow=2"
-            tmp_CFLAGS="$tmp_CFLAGS -Wnull-dereference -fdelete-null-pointer-checks"
-            tmp_CFLAGS="$tmp_CFLAGS -Wduplicated-cond"
-            tmp_CFLAGS="$tmp_CFLAGS -Wunused-const-variable"
+
+    ac_var_added_warnings=""
+  for warning in null-dereference; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+            tmp_CFLAGS="$tmp_CFLAGS -fdelete-null-pointer-checks"
+
+    ac_var_added_warnings=""
+  for warning in duplicated-cond; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in unused-const-variable; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
           fi
           #
                     if test "$compiler_num" -ge "700"; then
-            tmp_CFLAGS="$tmp_CFLAGS -Wduplicated-branches"
-            tmp_CFLAGS="$tmp_CFLAGS -Wrestrict"
-            tmp_CFLAGS="$tmp_CFLAGS -Walloc-zero"
+
+    ac_var_added_warnings=""
+  for warning in duplicated-branches; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in restrict; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in alloc-zero; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
             tmp_CFLAGS="$tmp_CFLAGS -Wformat-overflow=2"
             tmp_CFLAGS="$tmp_CFLAGS -Wformat-truncation=2"
             tmp_CFLAGS="$tmp_CFLAGS -Wimplicit-fallthrough=4"
@@ -17954,9 +18794,6 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
                 tmp_CFLAGS="$tmp_CFLAGS -fno-omit-frame-pointer"
                 tmp_CFLAGS="$tmp_CFLAGS -fno-strict-aliasing"
                 tmp_CFLAGS="$tmp_CFLAGS -fp-model precise"
-                if test "$compiler_num" -ge "1000"; then
-                    tmp_CFLAGS="$tmp_CFLAGS -vec-report0"
-        fi
         ;;
         #
       INTEL_WINDOWS_C)
@@ -17996,9 +18833,66 @@ $as_echo "$as_me: WARNING: compiler options rejected: $tmp_options" >&2;}
       TINY_C)
         #
         if test "$want_warnings" = "yes"; then
-                    tmp_CFLAGS="$tmp_CFLAGS -Wall"
-                    tmp_CFLAGS="$tmp_CFLAGS -Wwrite-strings"
-                    tmp_CFLAGS="$tmp_CFLAGS -Wunsupported"
+
+    ac_var_added_warnings=""
+  for warning in all; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in write-strings; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
+
+    ac_var_added_warnings=""
+  for warning in unsupported; do
+
+  ac_var_match_word="no"
+  for word1 in $CFLAGS; do
+    for word2 in -Wno-$warning -W$warning; do
+      if test "$word1" = "$word2"; then
+        ac_var_match_word="yes"
+      fi
+    done
+  done
+
+    if test "$ac_var_match_word" = "no"; then
+      ac_var_added_warnings="$ac_var_added_warnings -W$warning"
+    fi
+  done
+    tmp_CFLAGS="$tmp_CFLAGS $ac_var_added_warnings"
+  squeeze tmp_CFLAGS
+
         fi
         ;;
         #
@@ -18092,7 +18986,6 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "x$cross_compiling" != "xyes" &&
     test "$tmp_compiler_works" = "yes"; then
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -18170,6 +19063,17 @@ if test "$compiler_id" = "INTEL_UNIX_C"; then
   fi
   #
 fi
+
+CURL_CFLAG_EXTRAS=""
+if test X"$want_werror" = Xyes; then
+  CURL_CFLAG_EXTRAS="-Werror"
+  if test "$compiler_id" = "GNU_C"; then
+            if test "$compiler_num" -ge "500"; then
+      CURL_CFLAG_EXTRAS="$CURL_CFLAG_EXTRAS -pedantic-errors"
+    fi
+  fi
+fi
+
 
 
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking if compiler halts on compilation errors" >&5
@@ -19516,6 +20420,31 @@ $as_echo "yes" >&6; }
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to support mqtt" >&5
+$as_echo_n "checking whether to support mqtt... " >&6; }
+# Check whether --enable-mqtt was given.
+if test "${enable_mqtt+set}" = set; then :
+  enableval=$enable_mqtt;  case "$enableval" in
+  no)
+       { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+       ;;
+  *)   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+       experimental="$experimental MQTT"
+
+$as_echo "#define CURL_ENABLE_MQTT 1" >>confdefs.h
+
+       CURL_ENABLE_MQTT=1
+
+       ;;
+  esac
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to provide built-in manual" >&5
@@ -20521,7 +21450,6 @@ $as_echo "$curl_cv_gclk_LIBS" >&6; }
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking if monotonic clock_gettime works" >&5
 $as_echo_n "checking if monotonic clock_gettime works... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -21064,7 +21992,7 @@ $as_echo "found" >&6; }
       LD_BROTLI=`$PKGCONFIG --libs-only-L libbrotlidec`
       CPP_BROTLI=`$PKGCONFIG --cflags-only-I libbrotlidec`
       version=`$PKGCONFIG --modversion libbrotlidec`
-      DIR_BROTLI=`echo $LD_BROTLI | $SED -e 's/-L//'`
+      DIR_BROTLI=`echo $LD_BROTLI | $SED -e 's/^-L//'`
     fi
 
     ;;
@@ -21162,6 +22090,261 @@ done
          export CURL_LIBRARY_PATH
          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_BROTLI to CURL_LIBRARY_PATH" >&5
 $as_echo "$as_me: Added $DIR_BROTLI to CURL_LIBRARY_PATH" >&6;}
+       fi
+    fi
+  else
+        LDFLAGS=$CLEANLDFLAGS
+    CPPFLAGS=$CLEANCPPFLAGS
+    LIBS=$CLEANLIBS
+  fi
+fi
+
+
+OPT_ZSTD=off
+
+# Check whether --with-zstd was given.
+if test "${with_zstd+set}" = set; then :
+  withval=$with_zstd; OPT_ZSTD=$withval
+fi
+
+
+if test X"$OPT_ZSTD" != Xno; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+  case "$OPT_ZSTD" in
+  yes)
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libzstd options with pkg-config" >&5
+$as_echo_n "checking for libzstd options with pkg-config... " >&6; }
+            itexists=`
+    if test -n ""; then
+      PKG_CONFIG_LIBDIR=""
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists libzstd >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+    if test "$PKGCONFIG" != "no" ; then
+      LIB_ZSTD=`$PKGCONFIG --libs-only-l libzstd`
+      LD_ZSTD=`$PKGCONFIG --libs-only-L libzstd`
+      CPP_ZSTD=`$PKGCONFIG --cflags-only-I libzstd`
+      version=`$PKGCONFIG --modversion libzstd`
+      DIR_ZSTD=`echo $LD_ZSTD | $SED -e 's/-L//'`
+    fi
+
+    ;;
+  off)
+        ;;
+  *)
+        PREFIX_ZSTD=$OPT_ZSTD
+    ;;
+  esac
+
+    if test -n "$PREFIX_ZSTD"; then
+    LIB_ZSTD="-lzstd"
+    LD_ZSTD=-L${PREFIX_ZSTD}/lib$libsuff
+    CPP_ZSTD=-I${PREFIX_ZSTD}/include
+    DIR_ZSTD=${PREFIX_ZSTD}/lib$libsuff
+  fi
+
+  LDFLAGS="$LDFLAGS $LD_ZSTD"
+  CPPFLAGS="$CPPFLAGS $CPP_ZSTD"
+  LIBS="$LIB_ZSTD $LIBS"
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ZSTD_createDStream in -lzstd" >&5
+$as_echo_n "checking for ZSTD_createDStream in -lzstd... " >&6; }
+if ${ac_cv_lib_zstd_ZSTD_createDStream+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lzstd  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char ZSTD_createDStream ();
+int main (void)
+{
+return ZSTD_createDStream ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_zstd_ZSTD_createDStream=yes
+else
+  ac_cv_lib_zstd_ZSTD_createDStream=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_zstd_ZSTD_createDStream" >&5
+$as_echo "$ac_cv_lib_zstd_ZSTD_createDStream" >&6; }
+if test "x$ac_cv_lib_zstd_ZSTD_createDStream" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBZSTD 1
+_ACEOF
+
+  LIBS="-lzstd $LIBS"
+
+fi
+
+
+  for ac_header in zstd.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "zstd.h" "ac_cv_header_zstd_h" "$ac_includes_default"
+if test "x$ac_cv_header_zstd_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_ZSTD_H 1
+_ACEOF
+ curl_zstd_msg="enabled (libzstd)"
+    HAVE_ZSTD=1
+
+$as_echo "#define HAVE_ZSTD 1" >>confdefs.h
+
+    HAVE_ZSTD=1
+
+
+fi
+
+done
+
+
+  if test X"$OPT_ZSTD" != Xoff &&
+     test "$HAVE_ZSTD" != "1"; then
+    as_fn_error $? "libzstd was not found where specified!" "$LINENO" 5
+  fi
+
+  if test "$HAVE_ZSTD" = "1"; then
+    if test -n "$DIR_ZSTD"; then
+
+       if test "x$cross_compiling" != "xyes"; then
+         CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_ZSTD"
+         export CURL_LIBRARY_PATH
+         { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_ZSTD to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_ZSTD to CURL_LIBRARY_PATH" >&6;}
        fi
     fi
   else
@@ -21914,7 +23097,6 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if argv can be written to" >&5
 $as_echo_n "checking if argv can be written to... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -21925,9 +23107,11 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-int main(int argc, char ** argv) {
-    argv00 = ' ';
-    return (argv00 == ' ')?0:1;
+int main(int argc, char **argv)
+{
+  (void)argc;
+  argv[0][0] = ' ';
+  return (argv[0][0] == ' ')?0:1;
 }
 
 _ACEOF
@@ -22231,26 +23415,26 @@ esac
 
 
 
-OPT_WINSSL=no
+OPT_SCHANNEL=no
 
 # Check whether --with-winssl was given.
 if test "${with_winssl+set}" = set; then :
-  withval=$with_winssl; OPT_WINSSL=$withval
+  withval=$with_winssl; OPT_SCHANNEL=$withval
 fi
 
 
 
 # Check whether --with-schannel was given.
 if test "${with_schannel+set}" = set; then :
-  withval=$with_schannel; OPT_WINSSL=$withval
+  withval=$with_schannel; OPT_SCHANNEL=$withval
 fi
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable Windows native SSL/TLS (Windows native builds only)" >&5
 $as_echo_n "checking whether to enable Windows native SSL/TLS (Windows native builds only)... " >&6; }
-if test -z "$ssl_backends" -o "x$OPT_WINSSL" != xno; then
+if test -z "$ssl_backends" -o "x$OPT_SCHANNEL" != xno; then
   ssl_msg=
-  if test "x$OPT_WINSSL" != "xno"  &&
+  if test "x$OPT_SCHANNEL" != "xno"  &&
      test "x$curl_cv_native_windows" = "xyes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
@@ -22261,8 +23445,8 @@ $as_echo "#define USE_SCHANNEL 1" >>confdefs.h
 
     ssl_msg="Windows-native"
     test schannel != "$DEFAULT_SSL_BACKEND" || VALID_DEFAULT_SSL_BACKEND=yes
-    WINSSL_ENABLED=1
-    # --with-winssl implies --enable-sspi
+    SCHANNEL_ENABLED=1
+    # --with-schannel implies --enable-sspi
 
 $as_echo "#define USE_WINDOWS_SSPI 1" >>confdefs.h
 
@@ -22299,7 +23483,7 @@ fi
 $as_echo_n "checking whether to enable Secure Transport... " >&6; }
 if test -z "$ssl_backends" -o "x$OPT_SECURETRANSPORT" != xno; then
   if test "x$OPT_SECURETRANSPORT" != "xno" &&
-     test -d "/System/Library/Frameworks/Security.framework"; then
+     (test "x$cross_compiling" != "xno" || test -d "/System/Library/Frameworks/Security.framework"); then
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
 
@@ -22605,7 +23789,7 @@ $as_echo "$as_me: pkg-config: SSL_LDFLAGS: \"$SSL_LDFLAGS\"" >&6;}
       { $as_echo "$as_me:${as_lineno-$LINENO}: pkg-config: SSL_CPPFLAGS: \"$SSL_CPPFLAGS\"" >&5
 $as_echo "$as_me: pkg-config: SSL_CPPFLAGS: \"$SSL_CPPFLAGS\"" >&6;}
 
-      LIB_OPENSSL=`echo $SSL_LDFLAGS | sed -e 's/-L//g'`
+      LIB_OPENSSL=`echo $SSL_LDFLAGS | sed -e 's/^-L//'`
 
                                           LIBS="$SSL_LIBS $LIBS"
     fi
@@ -22659,6 +23843,8 @@ else
        # only set this if pkg-config wasn't used
        CPPFLAGS="$CLEANCPPFLAGS -I$PREFIX_OPENSSL/include/openssl -I$PREFIX_OPENSSL/include"
      fi
+     # Linking previously failed, try extra paths from --with-ssl or pkg-config.
+     # Use a different function name to avoid reusing the earlier cached result.
      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for HMAC_Init_ex in -lcrypto" >&5
 $as_echo_n "checking for HMAC_Init_ex in -lcrypto... " >&6; }
 if ${ac_cv_lib_crypto_HMAC_Init_ex+:} false; then :
@@ -23016,6 +24202,48 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
       ssl_msg="libressl"
+
+else
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenSSL >= v3" >&5
+$as_echo_n "checking for OpenSSL >= v3... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#include <openssl/opensslv.h>
+
+int main (void)
+{
+
+        #if defined(OPENSSL_VERSION_MAJOR) && (OPENSSL_VERSION_MAJOR >= 3)
+        return 0;
+        #else
+        #error older than 3
+        #endif
+
+ ;
+ return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_OPENSSL3 1
+_ACEOF
+
+                              CPPFLAGS="$CPPFLAGS -DOPENSSL_SUPPRESS_DEPRECATED"
+      ssl_msg="OpenSSL v3+"
 
 else
 
@@ -23988,7 +25216,7 @@ $as_echo "found" >&6; }
         addld=`$PKGCONFIG --libs-only-L gnutls`
         addcflags=`$PKGCONFIG --cflags-only-I gnutls`
         version=`$PKGCONFIG --modversion gnutls`
-        gtlslib=`echo $addld | $SED -e 's/-L//'`
+        gtlslib=`echo $addld | $SED -e 's/^-L//'`
       else
                         check=`libgnutls-config --version 2>/dev/null`
         if test -n "$check"; then
@@ -24031,9 +25259,9 @@ $as_echo "found" >&6; }
          CPPFLAGS="$CPPFLAGS $addcflags"
       fi
 
-      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnutls_check_version in -lgnutls" >&5
-$as_echo_n "checking for gnutls_check_version in -lgnutls... " >&6; }
-if ${ac_cv_lib_gnutls_gnutls_check_version+:} false; then :
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for gnutls_x509_crt_get_dn2 in -lgnutls" >&5
+$as_echo_n "checking for gnutls_x509_crt_get_dn2 in -lgnutls... " >&6; }
+if ${ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -24045,26 +25273,26 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char gnutls_check_version ();
+char gnutls_x509_crt_get_dn2 ();
 int main (void)
 {
-return gnutls_check_version ();
+return gnutls_x509_crt_get_dn2 ();
  ;
  return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_gnutls_gnutls_check_version=yes
+  ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2=yes
 else
-  ac_cv_lib_gnutls_gnutls_check_version=no
+  ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gnutls_gnutls_check_version" >&5
-$as_echo "$ac_cv_lib_gnutls_gnutls_check_version" >&6; }
-if test "x$ac_cv_lib_gnutls_gnutls_check_version" = xyes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2" >&5
+$as_echo "$ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2" >&6; }
+if test "x$ac_cv_lib_gnutls_gnutls_x509_crt_get_dn2" = xyes; then :
 
 
 $as_echo "#define USE_GNUTLS 1" >>confdefs.h
@@ -24096,18 +25324,6 @@ $as_echo "$as_me: detected GnuTLS version $version" >&6;}
 $as_echo "$as_me: Added $gtlslib to CURL_LIBRARY_PATH" >&6;}
           fi
         fi
-        for ac_func in gnutls_certificate_set_x509_key_file2 gnutls_alpn_set_protocols gnutls_ocsp_req_init
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
       fi
 
     fi
@@ -24511,6 +25727,15 @@ if test "${with_wolfssl+set}" = set; then :
 fi
 
 
+case "$OPT_WOLFSSL" in
+  yes|no)
+    wolfpkg=""
+    ;;
+  *)
+    wolfpkg="$withval/lib/pkgconfig"
+    ;;
+esac
+
 if test -z "$ssl_backends" -o "x$OPT_WOLFSSL" != xno; then
   ssl_msg=
 
@@ -24520,22 +25745,192 @@ if test -z "$ssl_backends" -o "x$OPT_WOLFSSL" != xno; then
       OPT_WOLFSSL=""
     fi
 
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wolfssl options with pkg-config" >&5
+$as_echo_n "checking for wolfssl options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$wolfpkg"; then
+      PKG_CONFIG_LIBDIR="$wolfpkg"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists wolfssl >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: Check dir $wolfpkg" >&5
+$as_echo "$as_me: Check dir $wolfpkg" >&6;}
+
     addld=""
     addlib=""
     addcflags=""
+    if test "$PKGCONFIG" != "no" ; then
+      addlib=`
+    if test -n "$wolfpkg"; then
+      PKG_CONFIG_LIBDIR="$wolfpkg"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+        $PKGCONFIG --libs-only-l wolfssl`
+      addld=`
+    if test -n "$wolfpkg"; then
+      PKG_CONFIG_LIBDIR="$wolfpkg"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+        $PKGCONFIG --libs-only-L wolfssl`
+      addcflags=`
+    if test -n "$wolfpkg"; then
+      PKG_CONFIG_LIBDIR="$wolfpkg"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+        $PKGCONFIG --cflags-only-I wolfssl`
+      version=`
+    if test -n "$wolfpkg"; then
+      PKG_CONFIG_LIBDIR="$wolfpkg"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+        $PKGCONFIG --modversion wolfssl`
+      wolfssllibpath=`echo $addld | $SED -e 's/^-L//'`
+    else
+      addlib=-lwolfssl
+            if test -n "$OPT_WOLFSSL"; then
+        addld=-L$OPT_WOLFSSL/lib$libsuff
+        addcflags=-I$OPT_WOLFSSL/include
+        wolfssllibpath=$OPT_WOLFSSL/lib$libsuff
+      fi
+    fi
 
     if test "x$USE_WOLFSSL" != "xyes"; then
-      addld=-L$OPT_WOLFSSL/lib$libsuff
-      addcflags=-I$OPT_WOLFSSL/include
-      wolfssllibpath=$OPT_WOLFSSL/lib$libsuff
 
       LDFLAGS="$LDFLAGS $addld"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Add $addld to LDFLAGS" >&5
+$as_echo "$as_me: Add $addld to LDFLAGS" >&6;}
       if test "$addcflags" != "-I/usr/include"; then
          CPPFLAGS="$CPPFLAGS $addcflags"
+         { $as_echo "$as_me:${as_lineno-$LINENO}: Add $addcflags to CPPFLAGS" >&5
+$as_echo "$as_me: Add $addcflags to CPPFLAGS" >&6;}
       fi
 
       my_ac_save_LIBS="$LIBS"
-      LIBS="-lwolfssl -lm $LIBS"
+      LIBS="$addlib $LIBS"
+      { $as_echo "$as_me:${as_lineno-$LINENO}: Add $addlib to LIBS" >&5
+$as_echo "$as_me: Add $addlib to LIBS" >&6;}
 
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for wolfSSL_Init in -lwolfssl" >&5
 $as_echo_n "checking for wolfSSL_Init in -lwolfssl... " >&6; }
@@ -24632,9 +26027,9 @@ _ACEOF
 
 
 
-      LIBS="-lwolfssl -lm $LIBS"
+      LIBS="$addlib -lm $LIBS"
 
-                  for ac_func in wolfSSLv3_client_method \
+                              for ac_func in wolfSSLv3_client_method \
                      wolfSSL_get_peer_certificate \
                      wolfSSL_UseALPN
 do :
@@ -24647,6 +26042,27 @@ _ACEOF
 
 fi
 done
+
+
+                  ac_fn_c_check_func "$LINENO" "wolfSSL_DES_ecb_encrypt" "ac_cv_func_wolfSSL_DES_ecb_encrypt"
+if test "x$ac_cv_func_wolfSSL_DES_ecb_encrypt" = xyes; then :
+
+
+$as_echo "#define HAVE_WOLFSSL_DES_ECB_ENCRYPT 1" >>confdefs.h
+
+            if test -n "$addcflags"; then
+              CPPFLAGS="$addcflags/wolfssl $CPPFLAGS"
+              { $as_echo "$as_me:${as_lineno-$LINENO}: Add $addcflags/wolfssl to CPPFLAGS" >&5
+$as_echo "$as_me: Add $addcflags/wolfssl to CPPFLAGS" >&6;}
+            else
+                                          CPPFLAGS="-I$includedir/wolfssl $CPPFLAGS"
+              { $as_echo "$as_me:${as_lineno-$LINENO}: Add $includedir/wolfssl to CPPFLAGS" >&5
+$as_echo "$as_me: Add $includedir/wolfssl to CPPFLAGS" >&6;}
+            fi
+            WOLFSSL_NTLM=1
+
+
+fi
 
 
       if test -n "$wolfssllibpath"; then
@@ -25424,7 +26840,7 @@ $as_echo "$as_me: Added $nssprefix/lib$libsuff to CURL_LIBRARY_PATH" >&6;}
   test -z "$ssl_msg" || ssl_backends="${ssl_backends:+$ssl_backends, }$ssl_msg"
 fi
 
-case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$MBEDTLS_ENABLED$WOLFSSL_ENABLED$WINSSL_ENABLED$SECURETRANSPORT_ENABLED$MESALINK_ENABLED$BEARSSL_ENABLED$AMISSL_ENABLED" in
+case "x$OPENSSL_ENABLED$GNUTLS_ENABLED$NSS_ENABLED$MBEDTLS_ENABLED$WOLFSSL_ENABLED$SCHANNEL_ENABLED$SECURETRANSPORT_ENABLED$MESALINK_ENABLED$BEARSSL_ENABLED$AMISSL_ENABLED" in
 x)
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&5
 $as_echo "$as_me: WARNING: SSL disabled, you will not be able to use HTTPS, FTPS, NTLM and more." >&2;}
@@ -26027,7 +27443,7 @@ $as_echo "found" >&6; }
       export PKG_CONFIG_LIBDIR
     fi
        $PKGCONFIG --modversion libmetalink`
-    libmetalinklib=`echo $addld | $SED -e 's/-L//'`
+    libmetalinklib=`echo $addld | $SED -e 's/^-L//'`
   fi
   if test -n "$addlib"; then
 
@@ -26270,7 +27686,7 @@ $as_echo "found" >&6; }
       LD_SSH2=`$PKGCONFIG --libs-only-L libssh2`
       CPP_SSH2=`$PKGCONFIG --cflags-only-I libssh2`
       version=`$PKGCONFIG --modversion libssh2`
-      DIR_SSH2=`echo $LD_SSH2 | $SED -e 's/-L//'`
+      DIR_SSH2=`echo $LD_SSH2 | $SED -e 's/^-L//'`
     fi
 
     ;;
@@ -26514,7 +27930,7 @@ $as_echo "found" >&6; }
       LD_SSH=`$PKGCONFIG --libs-only-L libssh`
       CPP_SSH=`$PKGCONFIG --cflags-only-I libssh`
       version=`$PKGCONFIG --modversion libssh`
-      DIR_SSH=`echo $LD_SSH | $SED -e 's/-L//'`
+      DIR_SSH=`echo $LD_SSH | $SED -e 's/^-L//'`
     fi
 
     ;;
@@ -26844,7 +28260,7 @@ $as_echo "found" >&6; }
       LD_RTMP=`$PKGCONFIG --libs-only-L librtmp`
       CPP_RTMP=`$PKGCONFIG --cflags-only-I librtmp`
       version=`$PKGCONFIG --modversion librtmp`
-      DIR_RTMP=`echo $LD_RTMP | $SED -e 's/-L//'`
+      DIR_RTMP=`echo $LD_RTMP | $SED -e 's/^-L//'`
     else
                   as_fn_error $? "--librtmp was specified but could not find librtmp pkgconfig file." "$LINENO" 5
     fi
@@ -26969,7 +28385,7 @@ $as_echo "yes" >&6; }
           versioned_symbols_flavour="NSS_"
         elif test "x$WOLFSSL_ENABLED" = "x1"; then
           versioned_symbols_flavour="WOLFSSL_"
-        elif test "x$WINSSL_ENABLED" = "x1"; then
+        elif test "x$SCHANNEL_ENABLED" = "x1"; then
           versioned_symbols_flavour="SCHANNEL_"
         elif test "x$SECURETRANSPORT_ENABLED" = "x1"; then
           versioned_symbols_flavour="SECURE_TRANSPORT_"
@@ -27294,7 +28710,7 @@ $as_echo "found" >&6; }
       export PKG_CONFIG_LIBDIR
     fi
          $PKGCONFIG --cflags-only-I libidn2 2>/dev/null`
-      IDN_DIR=`echo $IDN_LDFLAGS | $SED -e 's/-L//'`
+      IDN_DIR=`echo $IDN_LDFLAGS | $SED -e 's/^-L//'`
     else
             IDN_LIBS="-lidn2"
       IDN_LDFLAGS="-L$want_idn_path/lib$libsuff"
@@ -27432,7 +28848,7 @@ $as_echo "found" >&6; }
       IDN_LIBS=`$PKGCONFIG --libs-only-l libidn2 2>/dev/null`
       IDN_LDFLAGS=`$PKGCONFIG --libs-only-L libidn2 2>/dev/null`
       IDN_CPPFLAGS=`$PKGCONFIG --cflags-only-I libidn2 2>/dev/null`
-      IDN_DIR=`echo $IDN_LDFLAGS | $SED -e 's/-L//'`
+      IDN_DIR=`echo $IDN_LDFLAGS | $SED -e 's/^-L//'`
     else
             IDN_LIBS="-lidn2"
     fi
@@ -28012,7 +29428,7 @@ $as_echo "$as_me: -L is $LD_TCP2" >&6;}
     LIBS="$LIB_TCP2 $LIBS"
 
     if test "x$cross_compiling" != "xyes"; then
-      DIR_TCP2=`echo $LD_TCP2 | $SED -e 's/-L//'`
+      DIR_TCP2=`echo $LD_TCP2 | $SED -e 's/^-L//'`
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ngtcp2_conn_client_new in -lngtcp2" >&5
 $as_echo_n "checking for ngtcp2_conn_client_new in -lngtcp2... " >&6; }
@@ -28088,7 +29504,7 @@ fi
 
 fi
 
-if test "x$NGTCP2_ENABLED" = "x1"; then
+if test "x$NGTCP2_ENABLED" = "x1" -a "x$OPENSSL_ENABLED" = "x1"; then
     CLEANLDFLAGS="$LDFLAGS"
   CLEANCPPFLAGS="$CPPFLAGS"
   CLEANLIBS="$LIBS"
@@ -28255,7 +29671,7 @@ $as_echo "$as_me: -L is $LD_NGTCP2_CRYPTO_OPENSSL" >&6;}
     LIBS="$LIB_NGTCP2_CRYPTO_OPENSSL $LIBS"
 
     if test "x$cross_compiling" != "xyes"; then
-      DIR_NGTCP2_CRYPTO_OPENSSL=`echo $LD_NGTCP2_CRYPTO_OPENSSL | $SED -e 's/-L//'`
+      DIR_NGTCP2_CRYPTO_OPENSSL=`echo $LD_NGTCP2_CRYPTO_OPENSSL | $SED -e 's/^-L//'`
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_openssl" >&5
 $as_echo_n "checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_openssl... " >&6; }
@@ -28326,6 +29742,248 @@ fi
   else
         if test X"$want_tcp2" != Xdefault; then
                   as_fn_error $? "--with-ngtcp2 was specified but could not find ngtcp2_crypto_openssl pkg-config file." "$LINENO" 5
+    fi
+  fi
+fi
+
+if test "x$NGTCP2_ENABLED" = "x1" -a "x$GNUTLS_ENABLED" = "x1"; then
+    CLEANLDFLAGS="$LDFLAGS"
+  CLEANCPPFLAGS="$CPPFLAGS"
+  CLEANLIBS="$LIBS"
+
+
+    if test -n "$PKG_CONFIG"; then
+      PKGCONFIG="$PKG_CONFIG"
+    else
+      if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}pkg-config", so it can be a program name with args.
+set dummy ${ac_tool_prefix}pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKGCONFIG="$PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+PKGCONFIG=$ac_cv_path_PKGCONFIG
+if test -n "$PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKGCONFIG" >&5
+$as_echo "$PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_path_PKGCONFIG"; then
+  ac_pt_PKGCONFIG=$PKGCONFIG
+  # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_ac_pt_PKGCONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $ac_pt_PKGCONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_ac_pt_PKGCONFIG="$ac_pt_PKGCONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+as_dummy="$PATH:/usr/bin:/usr/local/bin"
+for as_dir in $as_dummy
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_ac_pt_PKGCONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac
+fi
+ac_pt_PKGCONFIG=$ac_cv_path_ac_pt_PKGCONFIG
+if test -n "$ac_pt_PKGCONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_pt_PKGCONFIG" >&5
+$as_echo "$ac_pt_PKGCONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_pt_PKGCONFIG" = x; then
+    PKGCONFIG="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    PKGCONFIG=$ac_pt_PKGCONFIG
+  fi
+else
+  PKGCONFIG="$ac_cv_path_PKGCONFIG"
+fi
+
+    fi
+
+    if test "x$PKGCONFIG" != "xno"; then
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libngtcp2_crypto_gnutls options with pkg-config" >&5
+$as_echo_n "checking for libngtcp2_crypto_gnutls options with pkg-config... " >&6; }
+            itexists=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+         $PKGCONFIG --exists libngtcp2_crypto_gnutls >/dev/null 2>&1 && echo 1`
+
+      if test -z "$itexists"; then
+                        PKGCONFIG="no"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: found" >&5
+$as_echo "found" >&6; }
+      fi
+    fi
+
+
+  if test "$PKGCONFIG" != "no" ; then
+    LIB_NGTCP2_CRYPTO_GNUTLS=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-l libngtcp2_crypto_gnutls`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -l is $LIB_NGTCP2_CRYPTO_GNUTLS" >&5
+$as_echo "$as_me: -l is $LIB_NGTCP2_CRYPTO_GNUTLS" >&6;}
+
+    CPP_NGTCP2_CRYPTO_GNUTLS=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+       $PKGCONFIG --cflags-only-I libngtcp2_crypto_gnutls`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -I is $CPP_NGTCP2_CRYPTO_GNUTLS" >&5
+$as_echo "$as_me: -I is $CPP_NGTCP2_CRYPTO_GNUTLS" >&6;}
+
+    LD_NGTCP2_CRYPTO_GNUTLS=`
+    if test -n "$want_tcp2_path"; then
+      PKG_CONFIG_LIBDIR="$want_tcp2_path"
+      export PKG_CONFIG_LIBDIR
+    fi
+
+      $PKGCONFIG --libs-only-L libngtcp2_crypto_gnutls`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: -L is $LD_NGTCP2_CRYPTO_GNUTLS" >&5
+$as_echo "$as_me: -L is $LD_NGTCP2_CRYPTO_GNUTLS" >&6;}
+
+    LDFLAGS="$LDFLAGS $LD_NGTCP2_CRYPTO_GNUTLS"
+    CPPFLAGS="$CPPFLAGS $CPP_NGTCP2_CRYPTO_GNUTLS"
+    LIBS="$LIB_NGTCP2_CRYPTO_GNUTLS $LIBS"
+
+    if test "x$cross_compiling" != "xyes"; then
+      DIR_NGTCP2_CRYPTO_GNUTLS=`echo $LD_NGTCP2_CRYPTO_GNUTLS | $SED -e 's/^-L//'`
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_gnutls" >&5
+$as_echo_n "checking for ngtcp2_crypto_ctx_initial in -lngtcp2_crypto_gnutls... " >&6; }
+if ${ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lngtcp2_crypto_gnutls  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+char ngtcp2_crypto_ctx_initial ();
+int main (void)
+{
+return ngtcp2_crypto_ctx_initial ();
+ ;
+ return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial=yes
+else
+  ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial" >&5
+$as_echo "$ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial" >&6; }
+if test "x$ac_cv_lib_ngtcp2_crypto_gnutls_ngtcp2_crypto_ctx_initial" = xyes; then :
+
+       for ac_header in ngtcp2/ngtcp2_crypto.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "ngtcp2/ngtcp2_crypto.h" "ac_cv_header_ngtcp2_ngtcp2_crypto_h" "$ac_includes_default"
+if test "x$ac_cv_header_ngtcp2_ngtcp2_crypto_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_NGTCP2_NGTCP2_CRYPTO_H 1
+_ACEOF
+ NGTCP2_ENABLED=1
+
+$as_echo "#define USE_NGTCP2_CRYPTO_GNUTLS 1" >>confdefs.h
+
+          USE_NGTCP2_CRYPTO_GNUTLS=1
+
+          CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_NGTCP2_CRYPTO_GNUTLS"
+          export CURL_LIBRARY_PATH
+          { $as_echo "$as_me:${as_lineno-$LINENO}: Added $DIR_NGTCP2_CRYPTO_GNUTLS to CURL_LIBRARY_PATH" >&5
+$as_echo "$as_me: Added $DIR_NGTCP2_CRYPTO_GNUTLS to CURL_LIBRARY_PATH" >&6;}
+
+fi
+
+done
+
+
+else
+          LDFLAGS=$CLEANLDFLAGS
+        CPPFLAGS=$CLEANCPPFLAGS
+        LIBS=$CLEANLIBS
+
+fi
+
+
+  else
+        if test X"$want_tcp2" != Xdefault; then
+                  as_fn_error $? "--with-ngtcp2 was specified but could not find ngtcp2_crypto_gnutls pkg-config file." "$LINENO" 5
     fi
   fi
 fi
@@ -28526,7 +30184,7 @@ $as_echo "$as_me: -L is $LD_NGHTTP3" >&6;}
     LIBS="$LIB_NGHTTP3 $LIBS"
 
     if test "x$cross_compiling" != "xyes"; then
-      DIR_NGHTTP3=`echo $LD_NGHTTP3 | $SED -e 's/-L//'`
+      DIR_NGHTTP3=`echo $LD_NGHTTP3 | $SED -e 's/^-L//'`
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for nghttp3_conn_client_new in -lnghttp3" >&5
 $as_echo_n "checking for nghttp3_conn_client_new in -lnghttp3... " >&6; }
@@ -28799,7 +30457,7 @@ $as_echo "$as_me: -L is $LD_QUICHE" >&6;}
     LIBS="$LIB_QUICHE $LIBS"
 
     if test "x$cross_compiling" != "xyes"; then
-      DIR_QUICHE=`echo $LD_QUICHE | $SED -e 's/-L//'`
+      DIR_QUICHE=`echo $LD_QUICHE | $SED -e 's/^-L//'`
     fi
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for quiche_connect in -lquiche" >&5
 $as_echo_n "checking for quiche_connect in -lquiche... " >&6; }
@@ -28852,6 +30510,17 @@ $as_echo "$as_me: HTTP3 support is experimental" >&6;}
 $as_echo "#define USE_QUICHE 1" >>confdefs.h
 
           USE_QUICHE=1
+
+          for ac_func in quiche_conn_set_qlog_fd
+do :
+  ac_fn_c_check_func "$LINENO" "quiche_conn_set_qlog_fd" "ac_cv_func_quiche_conn_set_qlog_fd"
+if test "x$ac_cv_func_quiche_conn_set_qlog_fd" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_QUICHE_CONN_SET_QLOG_FD 1
+_ACEOF
+
+fi
+done
 
           CURL_LIBRARY_PATH="$CURL_LIBRARY_PATH:$DIR_QUICHE"
           export CURL_LIBRARY_PATH
@@ -29391,6 +31060,8 @@ ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "
 #endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#elif defined(HAVE_UNISTD_H)
+#include <unistd.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -29748,7 +31419,6 @@ _ACEOF
 
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking run-time libs availability" >&5
 $as_echo_n "checking run-time libs availability... " >&6; }
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -30177,9 +31847,27 @@ fi
 fi
 
 
+# check for suseconds_t
+ac_fn_c_check_type "$LINENO" "suseconds_t" "ac_cv_type_suseconds_t" "
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+
+"
+if test "x$ac_cv_type_suseconds_t" = xyes; then :
+
+
+$as_echo "#define HAVE_SUSECONDS_T 1" >>confdefs.h
+
+
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking if time_t is unsigned" >&5
 $as_echo_n "checking if time_t is unsigned... " >&6; }
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -30607,6 +32295,8 @@ struct Library *SocketBase = NULL;
 #endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#elif defined(HAVE_UNISTD_H)
+#include <unistd.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -30692,6 +32382,8 @@ struct Library *SocketBase = NULL;
 #endif
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
+#elif defined(HAVE_UNISTD_H)
+#include <unistd.h>
 #endif
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -33515,7 +35207,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getaddrinfo seems to work" >&5
 $as_echo_n "checking if getaddrinfo seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -35501,7 +37192,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if getifaddrs seems to work" >&5
 $as_echo_n "checking if getifaddrs seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -35991,7 +37681,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if gmtime_r seems to work" >&5
 $as_echo_n "checking if gmtime_r seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -36447,7 +38136,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if inet_ntop seems to work" >&5
 $as_echo_n "checking if inet_ntop seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -36698,7 +38386,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     test "$tst_compi_inet_pton" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if inet_pton seems to work" >&5
 $as_echo_n "checking if inet_pton seems to work... " >&6; }
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -37716,7 +39403,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if localtime_r seems to work" >&5
 $as_echo_n "checking if localtime_r seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -38110,7 +39796,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     test "$tst_compi_poll" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if poll seems to work" >&5
 $as_echo_n "checking if poll seems to work... " >&6; }
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -40043,7 +41728,6 @@ $as_echo "yes" >&6; }
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if strerror_r seems to work" >&5
 $as_echo_n "checking if strerror_r seems to work... " >&6; }
 
-
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
    export LD_LIBRARY_PATH
@@ -40150,7 +41834,6 @@ $as_echo "yes" >&6; }
     test "$tst_posix_strerror_r" = "yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if strerror_r seems to work" >&5
 $as_echo_n "checking if strerror_r seems to work... " >&6; }
-
 
    old=$LD_LIBRARY_PATH
    LD_LIBRARY_PATH=$CURL_LIBRARY_PATH:$old
@@ -42265,12 +43948,15 @@ if test "x$ac_cv_header_pthread_h" = xyes; then :
 $as_echo "#define HAVE_PTHREAD_H 1" >>confdefs.h
 
       save_CFLAGS="$CFLAGS"
+                                    save_LIBS="$LIBS"
 
+      LIBS=
             ac_fn_c_check_func "$LINENO" "pthread_create" "ac_cv_func_pthread_create"
 if test "x$ac_cv_func_pthread_create" = xyes; then :
   USE_THREADS_POSIX=1
 fi
 
+      LIBS="$save_LIBS"
 
             case $host in
       *-hp-hpux*)
@@ -42352,6 +44038,49 @@ $as_echo "#define USE_THREADS_WIN32 1" >>confdefs.h
   fi
 fi
 
+
+      { $as_echo "$as_me:${as_lineno-$LINENO}: checking convert -I options to -isystem" >&5
+$as_echo_n "checking convert -I options to -isystem... " >&6; }
+  if test "$compiler_id" = "GNU_C" ||
+    test "$compiler_id" = "CLANG"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+    tmp_has_include="no"
+    tmp_chg_FLAGS="$CFLAGS"
+    for word1 in $tmp_chg_FLAGS; do
+      case "$word1" in
+        -I*)
+          tmp_has_include="yes"
+          ;;
+      esac
+    done
+    if test "$tmp_has_include" = "yes"; then
+      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/^-I/ -isystem /g'`
+      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/ -I/ -isystem /g'`
+      CFLAGS="$tmp_chg_FLAGS"
+      squeeze CFLAGS
+    fi
+    tmp_has_include="no"
+    tmp_chg_FLAGS="$CPPFLAGS"
+    for word1 in $tmp_chg_FLAGS; do
+      case "$word1" in
+        -I*)
+          tmp_has_include="yes"
+          ;;
+      esac
+    done
+    if test "$tmp_has_include" = "yes"; then
+      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/^-I/ -isystem /g'`
+      tmp_chg_FLAGS=`echo "$tmp_chg_FLAGS" | "$SED" 's/ -I/ -isystem /g'`
+      CPPFLAGS="$tmp_chg_FLAGS"
+      squeeze CPPFLAGS
+    fi
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+  fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to enable verbose strings" >&5
 $as_echo_n "checking whether to enable verbose strings... " >&6; }
 # Check whether --enable-verbose was given.
@@ -42399,8 +44128,8 @@ $as_echo "$as_me: WARNING: --enable-sspi Ignored. Only supported on native Windo
        fi
        ;;
   *)
-       if test "x$WINSSL_ENABLED" = "x1"; then
-         # --with-winssl implies --enable-sspi
+       if test "x$SCHANNEL_ENABLED" = "x1"; then
+         # --with-schannel implies --enable-sspi
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
        else
@@ -42410,8 +44139,8 @@ $as_echo "no" >&6; }
        ;;
   esac
 else
-  if test "x$WINSSL_ENABLED" = "x1"; then
-         # --with-winssl implies --enable-sspi
+  if test "x$SCHANNEL_ENABLED" = "x1"; then
+         # --with-schannel implies --enable-sspi
          { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
        else
@@ -42876,6 +44605,12 @@ ENABLE_SHARED="$enable_shared"
 ENABLE_STATIC="$enable_static"
 
 
+if test "x$enable_shared" = "xno"; then
+  LIBCURL_NO_SHARED=$LIBCURL_LIBS
+else
+  LIBCURL_NO_SHARED=
+fi
+
 
 
 if test "x$OPENSSL_ENABLED" = "x1"; then
@@ -42894,6 +44629,9 @@ if test "x$HAVE_LIBZ" = "x1"; then
 fi
 if test "x$HAVE_BROTLI" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES brotli"
+fi
+if test "x$HAVE_ZSTD" = "x1"; then
+  SUPPORT_FEATURES="$SUPPORT_FEATURES zstd"
 fi
 if test "x$USE_ARES" = "x1" -o "x$USE_THREADS_POSIX" = "x1" \
                             -o "x$USE_THREADS_WIN32" = "x1"; then
@@ -42931,7 +44669,8 @@ fi
 if test "x$CURL_DISABLE_CRYPTO_AUTH" != "x1"; then
   if test "x$OPENSSL_ENABLED" = "x1" -o "x$USE_WINDOWS_SSPI" = "x1" \
       -o "x$GNUTLS_ENABLED" = "x1" -o "x$MBEDTLS_ENABLED" = "x1" \
-      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1"; then
+      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1" \
+      -o "x$WOLFSSL_NTLM" = "x1"; then
     SUPPORT_FEATURES="$SUPPORT_FEATURES NTLM"
 
     if test "x$CURL_DISABLE_HTTP" != "x1" -a \
@@ -42966,6 +44705,7 @@ if test "x$ESNI_ENABLED" = "x1"; then
   SUPPORT_FEATURES="$SUPPORT_FEATURES ESNI"
 fi
 
+SUPPORT_FEATURES=`echo $SUPPORT_FEATURES | tr ' ' '\012' | sort | tr '\012' ' '`
 
 
 if test "x$CURL_DISABLE_HTTP" != "x1"; then
@@ -43004,6 +44744,9 @@ fi
 if test "x$CURL_DISABLE_GOPHER" != "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS GOPHER"
 fi
+if test "x$CURL_ENABLE_MQTT" = "x1"; then
+  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS MQTT"
+fi
 if test "x$CURL_DISABLE_POP3" != "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS POP3"
   if test "x$SSL_ENABLED" = "x1"; then
@@ -43020,7 +44763,8 @@ if test "x$CURL_DISABLE_SMB" != "x1" \
     -a "x$CURL_DISABLE_CRYPTO_AUTH" != "x1" \
     -a \( "x$OPENSSL_ENABLED" = "x1" -o "x$USE_WINDOWS_SSPI" = "x1" \
       -o "x$GNUTLS_ENABLED" = "x1" -o "x$MBEDTLS_ENABLED" = "x1" \
-      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1" \); then
+      -o "x$NSS_ENABLED" = "x1" -o "x$SECURETRANSPORT_ENABLED" = "x1" \
+      -o "x$WOLFSSL_NTLM" = "x1" \); then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SMB"
   if test "x$SSL_ENABLED" = "x1"; then
     SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SMBS"
@@ -43041,7 +44785,6 @@ if test "x$USE_LIBSSH" = "x1"; then
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi
 if test "x$USE_WOLFSSH" = "x1"; then
-  SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SCP"
   SUPPORT_PROTOCOLS="$SUPPORT_PROTOCOLS SFTP"
 fi
 if test "x$CURL_DISABLE_RTSP" != "x1"; then
@@ -45024,7 +46767,9 @@ $as_echo X/"$am_mf" |
     { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
 $as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
 as_fn_error $? "Something went wrong bootstrapping makefile fragments
-    for automatic dependency tracking.  Try re-running configure with the
+    for automatic dependency tracking.  If GNU make was not used, consider
+    re-running the configure script with MAKE=\"gmake\" (or whatever is
+    necessary).  You can also try re-running configure with the
     '--disable-dependency-tracking' option to at least be able to build
     the package (albeit without support for automatic dependency tracking).
 See \`config.log' for more details" "$LINENO" 5; }
@@ -45917,6 +47662,7 @@ done
   SSH:              ${curl_ssh_msg}
   zlib:             ${curl_zlib_msg}
   brotli:           ${curl_brotli_msg}
+  zstd:             ${curl_zstd_msg}
   GSS-API:          ${curl_gss_msg}
   TLS-SRP:          ${curl_tls_srp_msg}
   resolver:         ${curl_res_msg}
@@ -45960,6 +47706,7 @@ $as_echo "$as_me: Configured to build curl/libcurl:
   SSH:              ${curl_ssh_msg}
   zlib:             ${curl_zlib_msg}
   brotli:           ${curl_brotli_msg}
+  zstd:             ${curl_zstd_msg}
   GSS-API:          ${curl_gss_msg}
   TLS-SRP:          ${curl_tls_srp_msg}
   resolver:         ${curl_res_msg}

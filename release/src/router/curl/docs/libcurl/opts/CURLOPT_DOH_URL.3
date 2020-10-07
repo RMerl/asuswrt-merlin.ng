@@ -20,7 +20,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DOH_URL 3 "September 06, 2018" "libcurl 7.69.1" "curl_easy_setopt options"
+.TH CURLOPT_DOH_URL 3 "June 25, 2020" "libcurl 7.72.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_DOH_URL \- provide the DNS-over-HTTPS URL
@@ -30,7 +30,7 @@ CURLOPT_DOH_URL \- provide the DNS-over-HTTPS URL
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_DOH_URL, char *URL);
 .SH DESCRIPTION
 Pass in a pointer to a \fIURL\fP for the DOH server to use for name
-resolving. The parameter should be a char * to a zero terminated string which
+resolving. The parameter should be a char * to a null-terminated string which
 must be URL-encoded in the following format: "https://host:port/path". It MUST
 specify a HTTPS URL.
 

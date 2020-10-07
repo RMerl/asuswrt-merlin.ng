@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2019, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -29,7 +29,8 @@ EXTRA_DIST = Makefile.m32 config-win32.h config-win32ce.h           \
  makefile.amiga Makefile.netware nwlib.c nwos.c config-win32ce.h    \
  config-os400.h setup-os400.h config-symbian.h Makefile.Watcom      \
  config-tpf.h mk-ca-bundle.pl mk-ca-bundle.vbs $(CMAKE_DIST)        \
- firefox-db2pem.sh config-vxworks.h Makefile.vxworks checksrc.pl
+ firefox-db2pem.sh config-vxworks.h Makefile.vxworks checksrc.pl    \
+ setup-win32.h
 
 lib_LTLIBRARIES = libcurl.la
 

@@ -83,6 +83,7 @@ my $proto = 'ftp';  # default server protocol
 my $srcdir;         # directory where ftpserver.pl is located
 my $srvrname;       # server name for presentation purposes
 my $cwd_testno;     # test case numbers extracted from CWD command
+my $testno = 0;     # test case number (read from ftpserver.cmd)
 my $path   = '.';
 my $logdir = $path .'/log';
 
@@ -96,6 +97,7 @@ my $listenaddr = '127.0.0.1';  # default address for listener port
 # global vars used for file names
 #
 my $pidfile;            # server pid file name
+my $portfile=".ftpserver.port"; # server port file name
 my $logfile;            # server log file name
 my $mainsockf_pidfile;  # pid file for primary connection sockfilt process
 my $mainsockf_logfile;  # log file for primary connection sockfilt process
@@ -191,6 +193,7 @@ sub exit_signal_handler {
     # For now, simply mimic old behavior.
     killsockfilters($proto, $ipvnum, $idnum, $verbose);
     unlink($pidfile);
+    unlink($portfile);
     if($serverlogslocked) {
         $serverlogslocked = 0;
         clear_advisor_read_lock($SERVERLOGS_LOCK);
@@ -333,7 +336,7 @@ sub eXsysread {
 sub read_mainsockf {
     my $scalar  = shift;
     my $nbytes  = shift;
-    my $timeout = shift; # Optional argument, if zero blocks indefinitively
+    my $timeout = shift; # Optional argument, if zero blocks indefinitely
     my $FH = \*SFREAD;
 
     if(not defined $timeout) {
@@ -357,7 +360,7 @@ sub read_mainsockf {
 sub read_datasockf {
     my $scalar = shift;
     my $nbytes = shift;
-    my $timeout = shift; # Optional argument, if zero blocks indefinitively
+    my $timeout = shift; # Optional argument, if zero blocks indefinitely
     my $FH = \*DREAD;
 
     if(not defined $timeout) {
@@ -390,6 +393,7 @@ sub sysread_or_die {
                "line $lcaller. $srvrname server, sysread error: $!\n";
         killsockfilters($proto, $ipvnum, $idnum, $verbose);
         unlink($pidfile);
+        unlink($portfile);
         if($serverlogslocked) {
             $serverlogslocked = 0;
             clear_advisor_read_lock($SERVERLOGS_LOCK);
@@ -404,6 +408,7 @@ sub sysread_or_die {
                "line $lcaller. $srvrname server, read zero\n";
         killsockfilters($proto, $ipvnum, $idnum, $verbose);
         unlink($pidfile);
+        unlink($portfile);
         if($serverlogslocked) {
             $serverlogslocked = 0;
             clear_advisor_read_lock($SERVERLOGS_LOCK);
@@ -418,6 +423,7 @@ sub startsf {
     my $mainsockfcmd = "./server/sockfilt".exe_ext('SRV')." " .
         "--ipv$ipvnum --port $port " .
         "--pidfile \"$mainsockf_pidfile\" " .
+        "--portfile \"$portfile\" " .
         "--logfile \"$mainsockf_logfile\"";
     $sfpid = open2(*SFREAD, *SFWRITE, $mainsockfcmd);
 
@@ -431,6 +437,7 @@ sub startsf {
         logmsg "Failed sockfilt command: $mainsockfcmd\n";
         killsockfilters($proto, $ipvnum, $idnum, $verbose);
         unlink($pidfile);
+        unlink($portfile);
         if($serverlogslocked) {
             $serverlogslocked = 0;
             clear_advisor_read_lock($SERVERLOGS_LOCK);
@@ -443,16 +450,13 @@ sub startsf {
 # Returns the given test's reply data
 #
 sub getreplydata {
-    my ($testno) = @_;
+    my ($num) = @_;
     my $testpart = "";
 
-    $testno =~ s/^([^0-9]*)//;
-    if($testno > 10000) {
-       $testpart = $testno % 10000;
-       $testno = int($testno / 10000);
+    $num =~ s/^([^0-9]*)//;
+    if($num > 10000) {
+       $testpart = $num % 10000;
     }
-
-    loadtest("$srcdir/data/test$testno");
 
     my @data = getpart("reply", "data$testpart");
     if((!@data) && ($testpart ne "")) {
@@ -687,6 +691,7 @@ sub close_dataconn {
             print DWRITE "DISC\n";
             my $i;
             sysread DREAD, $i, 5;
+            logmsg "Server disconnected $datasockf_mode DATA connection\n";
         }
         else {
             logmsg "Server finds $datasockf_mode DATA connection already ".
@@ -699,10 +704,12 @@ sub close_dataconn {
     }
 
     if($datapid > 0) {
-        print DWRITE "QUIT\n";
-        waitpid($datapid, 0);
-        unlink($datasockf_pidfile) if(-f $datasockf_pidfile);
         logmsg "DATA sockfilt for $datasockf_mode data channel quits ".
+               "(pid $datapid)\n";
+        print DWRITE "QUIT\n";
+        pidwait($datapid, 0);
+        unlink($datasockf_pidfile) if(-f $datasockf_pidfile);
+        logmsg "DATA sockfilt for $datasockf_mode data channel quit ".
                "(pid $datapid)\n";
     }
     else {
@@ -826,13 +833,8 @@ sub MAIL_smtp {
             }
         }
 
-        # Validate the from address (only <> and a valid email address inside
-        # <> are allowed, such as <user@example.com>)
-        if (($from eq "<>") ||
-            (!$smtputf8 && $from =~
-              /^<([a-zA-Z0-9._%+-]+)\@(([a-zA-Z0-9-]+)\.)+([a-zA-Z]{2,4})>$/) ||
-            ($smtputf8 && $from =~
-              /^<([a-zA-Z0-9\x{80}-\x{ff}._%+-]+)\@(([a-zA-Z0-9\x{80}-\x{ff}-]+)\.)+([a-zA-Z]{2,4})>$/)) {
+        # this server doesn't "validate" MAIL FROM addresses
+        if (length($from)) {
             my @found;
             my $valid = 1;
 
@@ -2089,7 +2091,8 @@ my @ftpdir=("total 20\r\n",
     logmsg "pass LIST data on data connection\n";
 
     if($cwd_testno) {
-        loadtest("$srcdir/data/test$cwd_testno");
+        loadtest("$logdir/test$cwd_testno") ||
+            loadtest("$srcdir/data/test$cwd_testno");
 
         my @data = getpart("reply", "data");
         for(@data) {
@@ -2152,7 +2155,8 @@ sub MDTM_ftp {
         $testno = int($testno / 10000);
     }
 
-    loadtest("$srcdir/data/test$testno");
+    loadtest("$logdir/test$testno") ||
+        loadtest("$srcdir/data/test$testno");
 
     my @data = getpart("reply", "mdtm");
 
@@ -2205,7 +2209,8 @@ sub SIZE_ftp {
         $testno = int($testno / 10000);
     }
 
-    loadtest("$srcdir/data/test$testno");
+    loadtest("$logdir/test$testno") ||
+        loadtest("$srcdir/data/test$testno");
 
     my @data = getpart("reply", "size");
 
@@ -2294,7 +2299,8 @@ sub RETR_ftp {
         $testno = int($testno / 10000);
     }
 
-    loadtest("$srcdir/data/test$testno");
+    loadtest("$logdir/test$testno") ||
+        loadtest("$srcdir/data/test$testno");
 
     my @data = getpart("reply", "data$testpart");
 
@@ -2877,6 +2883,10 @@ sub customize {
             $nosave = 1;
             logmsg "FTPD: NOSAVE prevents saving of uploaded data\n";
         }
+        elsif($_ =~ /^Testnum (\d+)/){
+            $testno = $1;
+            logmsg "FTPD: run test case number: $testno\n";
+        }
     }
     close(CUSTOM);
 }
@@ -2897,6 +2907,7 @@ sub customize {
 # --id        # server instance number
 # --proto     # server protocol
 # --pidfile   # server pid file
+# --portfile  # server port file
 # --logfile   # server log file
 # --ipv4      # server IP version 4
 # --ipv6      # server IP version 6
@@ -2934,6 +2945,12 @@ while(@ARGV) {
             shift @ARGV;
         }
     }
+    elsif($ARGV[0] eq '--portfile') {
+        if($ARGV[1]) {
+            $portfile = $ARGV[1];
+            shift @ARGV;
+        }
+    }
     elsif($ARGV[0] eq '--logfile') {
         if($ARGV[1]) {
             $logfile = $ARGV[1];
@@ -2949,8 +2966,8 @@ while(@ARGV) {
         $listenaddr = '::1' if($listenaddr eq '127.0.0.1');
     }
     elsif($ARGV[0] eq '--port') {
-        if($ARGV[1] && ($ARGV[1] =~ /^(\d+)$/)) {
-            $port = $1 if($1 > 1024);
+        if($ARGV[1] =~ /^(\d+)$/) {
+            $port = $1;
             shift @ARGV;
         }
     }
@@ -3010,6 +3027,15 @@ $SIG{TERM} = \&exit_signal_handler;
 
 startsf();
 
+# actual port
+if($portfile && !$port) {
+    my $aport;
+    open(P, "<$portfile");
+    $aport = <P>;
+    close(P);
+    $port = 0 + $aport;
+}
+
 logmsg sprintf("%s server listens on port IPv${ipvnum}/${port}\n", uc($proto));
 
 open(PID, ">$pidfile");
@@ -3017,7 +3043,6 @@ print PID $$."\n";
 close(PID);
 
 logmsg("logged pid $$ in $pidfile\n");
-
 
 while(1) {
 
@@ -3050,6 +3075,8 @@ while(1) {
     $| = 1;
 
     &customize(); # read test control instructions
+    loadtest("$logdir/test$testno") ||
+        loadtest("$srcdir/data/test$testno");
 
     my $welcome = $commandreply{"welcome"};
     if(!$welcome) {

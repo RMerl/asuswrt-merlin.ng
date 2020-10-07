@@ -3,7 +3,7 @@ dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-dnl serial 10
+dnl serial 11
 
 AC_DEFUN([gl_UTIMENS],
 [
@@ -24,7 +24,8 @@ AC_DEFUN([gl_UTIMENS],
 #include <stddef.h>
 #include <sys/times.h>
 #include <fcntl.h>
-]], [[    int fd = open ("conftest.file", O_RDWR);
+]GL_MDA_DEFINES],
+        [[int fd = open ("conftest.file", O_RDWR);
           if (fd < 0) return 1;
           if (futimesat (fd, NULL, NULL)) return 2;
         ]])],

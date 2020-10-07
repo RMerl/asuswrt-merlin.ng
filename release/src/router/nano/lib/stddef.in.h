@@ -97,7 +97,7 @@
    and the C11 standard allows this.  Work around this problem by
    using __alignof__ (which returns 8 for double) rather than _Alignof
    (which returns 4), and align each union member accordingly.  */
-#   ifdef __GNUC__
+#   if defined __GNUC__ || (__clang_major__ >= 4)
 #    define _GL_STDDEF_ALIGNAS(type) \
        __attribute__ ((__aligned__ (__alignof__ (type))))
 #   else

@@ -1,4 +1,4 @@
-# sys_stat_h.m4 serial 33   -*- Autoconf -*-
+# sys_stat_h.m4 serial 34   -*- Autoconf -*-
 dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -46,8 +46,8 @@ AC_DEFUN([gl_HEADER_SYS_STAT_H],
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <sys/stat.h>
-    ]], [fchmodat fstat fstatat futimens lchmod lstat mkdirat mkfifo mkfifoat
-    mknod mknodat stat utimensat])
+    ]], [fchmodat fstat fstatat futimens getumask lchmod lstat
+    mkdirat mkfifo mkfifoat mknod mknodat stat utimensat])
 
   AC_REQUIRE([AC_C_RESTRICT])
 ])
@@ -68,6 +68,7 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   GNULIB_FSTAT=0;       AC_SUBST([GNULIB_FSTAT])
   GNULIB_FSTATAT=0;     AC_SUBST([GNULIB_FSTATAT])
   GNULIB_FUTIMENS=0;    AC_SUBST([GNULIB_FUTIMENS])
+  GNULIB_GETUMASK=0;    AC_SUBST([GNULIB_GETUMASK])
   GNULIB_LCHMOD=0;      AC_SUBST([GNULIB_LCHMOD])
   GNULIB_LSTAT=0;       AC_SUBST([GNULIB_LSTAT])
   GNULIB_MKDIRAT=0;     AC_SUBST([GNULIB_MKDIRAT])
@@ -82,6 +83,7 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   HAVE_FCHMODAT=1;      AC_SUBST([HAVE_FCHMODAT])
   HAVE_FSTATAT=1;       AC_SUBST([HAVE_FSTATAT])
   HAVE_FUTIMENS=1;      AC_SUBST([HAVE_FUTIMENS])
+  HAVE_GETUMASK=1;      AC_SUBST([HAVE_GETUMASK])
   HAVE_LCHMOD=1;        AC_SUBST([HAVE_LCHMOD])
   HAVE_LSTAT=1;         AC_SUBST([HAVE_LSTAT])
   HAVE_MKDIRAT=1;       AC_SUBST([HAVE_MKDIRAT])

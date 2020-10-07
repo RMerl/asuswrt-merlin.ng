@@ -1,15 +1,15 @@
 ## Sample initialization file for GNU nano.
 ##
-## Characters that are special in a shell should not be escaped here.
-## Inside string parameters, quotes should not be escaped -- the last
-## double quote on the line will be seen as the closing quote.
-##
 ## For the options that take parameters, the default value is shown.
 ## Other options are unset by default.  To make sure that an option
 ## is disabled, you can use "unset <option>".
+##
+## Characters that are special in a shell should not be escaped here.
+## Inside string parameters, quotes should not be escaped -- the last
+## double quote on the line will be seen as the closing quote.
 
-## Make the 'nextword' function (Ctrl+Right) stop at word ends
-## instead of at beginnings.
+## Make 'nextword' (Ctrl+Right) and 'chopwordright' (Ctrl+Delete)
+## stop at word ends instead of at beginnings.
 # set afterends
 
 ## When soft line wrapping is enabled, make it wrap lines at blanks
@@ -29,6 +29,9 @@
 
 ## Use bold text instead of reverse video text.
 # set boldtext
+
+## Treat any line with leading whitespace as the beginning of a paragraph.
+# set bookstyle
 
 ## The characters treated as closing brackets when justifying paragraphs.
 ## This may not include any blank characters.  Only closing punctuation,
@@ -59,10 +62,13 @@
 ## Remember the used search/replace strings for the next session.
 # set historylog
 
+## Display a "scrollbar" on the righthand side of the edit window.
+# set indicator
+
 ## Scroll the buffer contents per half-screen instead of per line.
 # set jumpyscrolling
 
-## Display line numbers to the left of the text.
+## Display line numbers to the left (and any anchors in the margin).
 # set linenumbers
 
 ## Enable vim-style lock-files.  This is just to let a vim user know you
@@ -130,6 +136,10 @@
 ## Regular expressions are of the extended type (ERE).
 # set regexp
 
+## Save a changed buffer automatically on exit; don't prompt.
+# set saveonexit
+## (The old form of this option, 'set tempfile', is deprecated.)
+
 ## Put the cursor on the highlighted item in the file browser, and show
 ## the cursor in the help viewer; useful for people who use a braille
 ## display and people with poor vision.
@@ -158,9 +168,6 @@
 
 ## Convert typed tabs to spaces.
 # set tabstospaces
-
-## Save automatically on exit; don't prompt.
-# set tempfile
 
 ## Snip whitespace at the end of lines when justifying or hard-wrapping.
 # set trimblanks
@@ -191,56 +198,38 @@
 
 ## Paint the interface elements of nano.  These are examples;
 ## by default there are no colors, except for errorcolor.
-# set titlecolor brightwhite,blue
-# set statuscolor brightwhite,green
-# set errorcolor brightwhite,red
-# set selectedcolor brightwhite,magenta
+# set titlecolor bold,lightwhite,blue
+# set statuscolor bold,lightwhite,green
+# set errorcolor bold,lightwhite,red
+# set selectedcolor lightwhite,magenta
 # set stripecolor ,yellow
 # set numbercolor cyan
 # set keycolor cyan
 # set functioncolor green
 ## In root's .nanorc you might want to use:
-# set titlecolor brightwhite,magenta
-# set statuscolor brightwhite,magenta
-# set errorcolor brightwhite,red
-# set selectedcolor brightwhite,cyan
+# set titlecolor bold,lightwhite,magenta
+# set statuscolor bold,lightwhite,magenta
+# set errorcolor bold,lightwhite,red
+# set selectedcolor lightwhite,cyan
 # set stripecolor ,yellow
 # set numbercolor magenta
-# set keycolor brightmagenta
+# set keycolor lightmagenta
 # set functioncolor magenta
 
 
-## Setup of syntax coloring.
-##
-##   syntax "name" ["filename regex" ...]
-##
-##   color|icolor foreground,background "regex" ["regex"...]
-##   [...]
-##
-## 'color' will do case-sensitive matches, while 'icolor' will do
-## case-insensitive matches.
-##
-## All color commands are applied in the order in which they are specified,
-## meaning that later commands can recolor stuff that was colored earlier.
-##
-## Valid color names for foreground and background are: white, black, normal,
-## red, blue, green, yellow, magenta, cyan.  For foreground colors, you may
-## use the prefix "bright" to get a stronger highlight.
-##
-## All regexes (regular expressions) are of the extended type (ERE).
-##
-## If the coloring rule should span multiple lines, use the following format:
-##
-##   color fg,bg  start="regex" end="regex"
-##
-## If you wish, you may put your syntax definitions in separate files.
-## You can make use of such files as follows:
-##
-##   include "/path/to/syntax_file.nanorc"
+## === Syntax coloring ===
+## For all details, see 'man nanorc', section SYNTAX HIGHLIGHTING.
 
 ## To include all existing syntax definitions, you can do:
 # include "@PKGDATADIR@/*.nanorc"
 
+## Or you can select just the ones you need.  For example:
+# include "@PKGDATADIR@/html.nanorc"
+# include "@PKGDATADIR@/python.nanorc"
+# include "@PKGDATADIR@/sh.nanorc"
+
+## In @PKGDATADIR@/extra/ you can find some syntaxes that are
+## specific for certain distros or for less common languages.
 
 ## If <Tab> should always produce four spaces when editing a Python file,
 ## independent of the settings of 'tabsize' and 'tabstospaces':
@@ -250,8 +239,8 @@
 # extendsyntax makefile tabgives "	"
 
 
-## Key bindings.
-## See nanorc(5) (section REBINDING KEYS) for more details on this.
+## === Key bindings ===
+## For all details, see 'man nanorc', section REBINDING KEYS.
 
 ## The <Ctrl+Delete> keystroke deletes the word to the right of the cursor.
 ## On some terminals the <Ctrl+Backspace> keystroke produces ^H, which is
@@ -280,7 +269,7 @@
 #bind ^X cut all
 #bind ^C copy main
 #bind ^V paste all
-#bind ^P curpos main
+#bind ^P location main
 #bind ^A mark main
 #unbind ^K main
 #unbind ^U all

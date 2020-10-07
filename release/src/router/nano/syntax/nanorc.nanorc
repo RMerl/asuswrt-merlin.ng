@@ -1,4 +1,4 @@
-## Here is an example for nanorc files.
+## Syntax highlighting for nanorc files.
 
 syntax nanorc "\.?nanorc$"
 comment "#"
@@ -7,12 +7,12 @@ comment "#"
 color brightred ".*"
 
 # Keywords
-color brightgreen "^[[:space:]]*(set|unset)[[:space:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|backwards|boldtext|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|finalnewline|historylog|jumpyscrolling|linenumbers|locking|morespace|mouse|multibuffer|noconvert|nohelp|nopauses|nonewlines|nowrap|positionlog|preserve|quickblank|quiet|rawsequences|rebinddelete|regexp|showcursor|smarthome|smooth|softwrap|suspendable|tabstospaces|tempfile|trimblanks|unix|view|wordbounds|zap)\>"
-color yellow "^[[:space:]]*set[[:space:]]+((error|function|key|number|selected|status|stripe|title)color)[[:space:]]+(bright)?(white|black|red|blue|green|yellow|magenta|cyan|normal)?(,(white|black|red|blue|green|yellow|magenta|cyan|normal))?\>"
+color brightgreen "^[[:space:]]*(set|unset)[[:space:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|backwards|boldtext|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|finalnewline|historylog|indicator|jumpyscrolling|linenumbers|locking|morespace|mouse|multibuffer|noconvert|nohelp|nopauses|nonewlines|nowrap|positionlog|preserve|quickblank|quiet|rawsequences|rebinddelete|regexp|saveonexit|showcursor|smarthome|smooth|softwrap|suspendable|tabstospaces|trimblanks|unix|view|wordbounds|zap)\>"
+color yellow "^[[:space:]]*set[[:space:]]+((error|function|key|number|selected|status|stripe|title)color)[[:space:]]+(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
 color brightgreen "^[[:space:]]*set[[:space:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|numbercolor|operatingdir|punct|quotestr|selectedcolor|speller|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:space:]]+"
 color brightgreen "^[[:space:]]*set[[:space:]]+(fill[[:space:]]+-?[[:digit:]]+|(guidestripe|tabsize)[[:space:]]+[1-9][0-9]*)\>"
-color brightgreen "^[[:space:]]*bind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([]!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+([a-z]+|".*")[[:space:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:space:]]+#|[[:space:]]*$)"
-color brightgreen "^[[:space:]]*unbind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([]!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:space:]]+#|[[:space:]]*$)"
+color brightgreen "^[[:space:]]*bind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+([a-z]+|".*")[[:space:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|browser|whereisfile|gotodir|execute|spell|linter|all)([[:space:]]+#|[[:space:]]*$)"
+color brightgreen "^[[:space:]]*unbind[[:space:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:space:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:space:]]+#|[[:space:]]*$)"
 color brightgreen "^[[:space:]]*extendsyntax[[:space:]]+[[:alpha:]]+[[:space:]]+(i?color|header|magic|comment|formatter|linter|tabgives)[[:space:]]+.*"
 color brightgreen "^[[:space:]]*(syntax[[:space:]]+[^[:blank:]]+|(formatter|linter)[[:space:]]+.+)"
 color green "^[[:space:]]*((un)?(bind|set)|include|syntax|header|magic|comment|formatter|linter|tabgives|extendsyntax)\>"
@@ -21,7 +21,7 @@ color green "^[[:space:]]*((un)?(bind|set)|include|syntax|header|magic|comment|f
 color brightmagenta "([[:space:]]|(start|end)=)".+"([[:space:]]|$)"
 
 # Colors
-color yellow "^[[:space:]]*i?color[[:space:]]*(bright)?(white|black|red|blue|green|yellow|magenta|cyan|normal)?(,(white|black|red|blue|green|yellow|magenta|cyan|normal))?\>"
+color yellow "^[[:space:]]*i?color[[:space:]]*(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
 color magenta "^[[:space:]]*i?color\>" "\<(start|end)="
 
 # Comments

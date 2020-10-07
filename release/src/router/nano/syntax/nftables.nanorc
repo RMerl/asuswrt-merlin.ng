@@ -1,4 +1,4 @@
-## Here is an example for nftables.
+## Syntax highlighting for the packet-filtering rules of Netfilter.
 
 syntax nftables "\.(nft|nftables)$"
 header "^#!.*(nft|nftables)"

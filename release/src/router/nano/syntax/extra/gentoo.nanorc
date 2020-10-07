@@ -1,5 +1,5 @@
-## Here is an example for Gentoo ebuilds/eclasses,
-## and (further down) one for Portage control files.
+## Syntax highlighting for Gentoo ebuilds/eclasses,
+## and (further down) for Portage control files.
 
 syntax ebuild "\.e(build|class|blit)$"
 comment "#"

@@ -1,4 +1,4 @@
-# wctype_h.m4 serial 24
+# wctype_h.m4 serial 25
 
 dnl A placeholder for ISO C99 <wctype.h>, for platforms that lack it.
 
@@ -57,7 +57,7 @@ AC_DEFUN([gl_WCTYPE_H],
              AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
                           #if __GNU_LIBRARY__ == 1
                           Linux libc5 i18n is broken.
-                          #endif]], [])],
+                          #endif]], [[]])],
               [gl_cv_func_iswcntrl_works="guessing yes"],
               [gl_cv_func_iswcntrl_works="guessing no"])
             ])

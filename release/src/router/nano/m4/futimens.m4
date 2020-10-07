@@ -1,4 +1,4 @@
-# serial 8
+# serial 9
 # See if we need to provide futimens replacement.
 
 dnl Copyright (C) 2009-2020 Free Software Foundation, Inc.
@@ -24,7 +24,8 @@ AC_DEFUN([gl_FUNC_FUTIMENS],
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-]], [[struct timespec ts[2];
+]GL_MDA_DEFINES],
+     [[struct timespec ts[2];
       int fd = creat ("conftest.file", 0600);
       struct stat st;
       if (fd < 0) return 1;

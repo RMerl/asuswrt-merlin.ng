@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #include <string.h>
 
@@ -195,12 +195,15 @@ void inject_into_answer(char *burst, size_t count)
 /* Get a verbatim keystroke and insert it into the answer. */
 void do_statusbar_verbatim_input(void)
 {
+	size_t count = 1;
 	char *bytes;
-	size_t count;
 
 	bytes = get_verbatim_kbinput(bottomwin, &count);
 
-	inject_into_answer(bytes, count);
+	if (0 < count && count < 999)
+		inject_into_answer(bytes, count);
+	else if (count == 0)
+		beep();
 
 	free(bytes);
 }
@@ -403,28 +406,22 @@ void add_or_remove_pipe_symbol_from_answer(void)
 #endif
 
 /* Get a string of input at the status-bar prompt. */
-functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
-		bool allow_files, bool *listed, linestruct **history_list,
-		void (*refresh_func)(void))
+functionptrtype acquire_an_answer(int *actual, bool *listed,
+					linestruct **history_list, void (*refresh_func)(void))
 {
 	int kbinput = ERR;
 	bool finished;
 	functionptrtype func;
-#ifdef ENABLE_TABCOMP
-	bool tabbed = FALSE;
-		/* Whether we've pressed Tab. */
-#endif
 #ifdef ENABLE_HISTORIES
 	char *history = NULL;
 		/* The current history string. */
 	char *magichistory = NULL;
 		/* The (partial) answer that was typed at the prompt, if any. */
 #ifdef ENABLE_TABCOMP
-	int last_kbinput = ERR;
-		/* The key we pressed before the current key. */
-	size_t complete_len = 0;
-		/* The length of the original string that we're trying to
-		 * tab complete, if any. */
+	bool previous_was_tab = FALSE;
+		/* Whether the previous keystroke was an attempt at tab completion. */
+	size_t fragment_length = 0;
+		/* The length of the fragment that the user tries to tab complete. */
 #endif
 #endif /* ENABLE_HISTORIES */
 
@@ -454,25 +451,23 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 			break;
 
 #ifdef ENABLE_TABCOMP
-		if (func != do_tab)
-			tabbed = FALSE;
-
 		if (func == do_tab) {
 #ifdef ENABLE_HISTORIES
 			if (history_list != NULL) {
-				if (last_kbinput != the_code_for(do_tab, '\t'))
-					complete_len = strlen(answer);
+				if (!previous_was_tab)
+					fragment_length = strlen(answer);
 
-				if (complete_len > 0) {
+				if (fragment_length > 0) {
 					answer = get_history_completion(history_list,
-										answer, complete_len);
+													answer, fragment_length);
 					typing_x = strlen(answer);
 				}
 			} else
 #endif
-			if (allow_tabs)
-				answer = input_tab(answer, allow_files, &typing_x,
-										&tabbed, refresh_func, listed);
+			/* Allow tab completion of filenames, but not in restricted mode. */
+			if ((currmenu == MINSERTFILE || currmenu == MWRITEFILE ||
+								currmenu == MGOTODIR) && !ISSET(RESTRICTED))
+				answer = input_tab(answer, &typing_x, refresh_func, listed);
 		} else
 #endif /* ENABLE_TABCOMP */
 #ifdef ENABLE_HISTORIES
@@ -509,17 +504,20 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 			}
 		} else
 #endif /* ENABLE_HISTORIES */
-		if (func == do_help) {
-			/* This key has a shortcut-list entry when it's used to go to
-			 * the help viewer or display a message indicating that help
-			 * is disabled, which means that finished has been set to TRUE.
-			 * Set it back to FALSE here, so that we aren't kicked out of
-			 * the status-bar prompt. */
+		/* If we ran a function that should not exit from the prompt... */
+		if (func == do_help || func == full_refresh)
 			finished = FALSE;
-		}
 #ifndef NANO_TINY
 		else if (func == do_nothing)
 			finished = FALSE;
+		else if (func == do_toggle_void) {
+			TOGGLE(NO_HELP);
+			window_init();
+			focusing = FALSE;
+			refresh_func();
+			bottombars(currmenu);
+			finished = FALSE;
+		}
 #endif
 
 		/* If we have a shortcut with an associated function, break out if
@@ -528,7 +526,7 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 			break;
 
 #if defined(ENABLE_HISTORIES) && defined(ENABLE_TABCOMP)
-		last_kbinput = kbinput;
+		previous_was_tab = (func == do_tab);
 #endif
 	}
 
@@ -547,15 +545,10 @@ functionptrtype acquire_an_answer(int *actual, bool allow_tabs,
 
 /* Ask a question on the status bar.  Return 0 when text was entered,
  * -1 for a cancelled entry, -2 for a blank string, and the relevant
- * keycode when a valid shortcut key was pressed.
- *
- * The allow_tabs parameter indicates whether tab completion is allowed,
- * and allow_files indicates whether all files (and not just directories)
- * can be tab completed.  The 'provided' parameter is the default answer
- * for when simply Enter is typed. */
-int do_prompt(bool allow_tabs, bool allow_files,
-		int menu, const char *provided, linestruct **history_list,
-		void (*refresh_func)(void), const char *msg, ...)
+ * keycode when a valid shortcut key was pressed.  The 'provided'
+ * parameter is the default answer for when simply Enter is typed. */
+int do_prompt(int menu, const char *provided, linestruct **history_list,
+				void (*refresh_func)(void), const char *msg, ...)
 {
 	va_list ap;
 	int retval;
@@ -582,8 +575,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
 
 	lastmessage = VACUUM;
 
-	func = acquire_an_answer(&retval, allow_tabs, allow_files, &listed,
-								history_list, refresh_func);
+	func = acquire_an_answer(&retval, &listed, history_list, refresh_func);
 	free(prompt);
 	prompt = saved_prompt;
 
@@ -608,8 +600,7 @@ int do_prompt(bool allow_tabs, bool allow_files,
 		wipe_statusbar();
 
 #ifdef ENABLE_TABCOMP
-	/* If we've done tab completion, there might still be a list of
-	 * filename matches on the edit window.  Clear them off. */
+	/* If possible filename completions are still listed, clear them off. */
 	if (listed)
 		refresh_func();
 #endif
@@ -744,6 +735,17 @@ int do_yesno_prompt(bool all, const char *msg)
 			}
 		}
 #endif /* ENABLE_MOUSE */
+		else if (func_from_key(&kbinput) == full_refresh)
+			full_refresh();
+#ifndef NANO_TINY
+		else if (func_from_key(&kbinput) == do_toggle_void) {
+			TOGGLE(NO_HELP);
+			window_init();
+			titlebar(NULL);
+			focusing = FALSE;
+			edit_refresh();
+		}
+#endif
 		else
 			beep();
 

@@ -1,4 +1,4 @@
-## Here is an example for HTML.
+## Syntax highlighting for HTML.
 
 syntax html "\.html?$"
 magic "HTML document"

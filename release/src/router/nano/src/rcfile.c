@@ -21,7 +21,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #ifdef ENABLE_NANORC
 
@@ -32,10 +32,10 @@
 #include <unistd.h>
 
 #ifndef RCFILE_NAME
-#define HOME_RC_NAME ".nanorc"
-#define RCFILE_NAME "nanorc"
+#define HOME_RC_NAME  ".nanorc"
+#define RCFILE_NAME  "nanorc"
 #else
-#define HOME_RC_NAME RCFILE_NAME
+#define HOME_RC_NAME  RCFILE_NAME
 #endif
 
 static const rcoption rcopts[] = {
@@ -46,6 +46,7 @@ static const rcoption rcopts[] = {
 #ifdef ENABLE_WRAPPING
 	{"breaklonglines", BREAK_LONG_LINES},
 #endif
+	{"casesensitive", CASE_SENSITIVE},
 	{"constantshow", CONSTANT_SHOW},
 	{"emptyline", EMPTY_LINE},
 #ifdef ENABLED_WRAPORJUSTIFY
@@ -86,24 +87,26 @@ static const rcoption rcopts[] = {
 	{"rawsequences", RAW_SEQUENCES},
 	{"rebinddelete", REBIND_DELETE},
 	{"regexp", USE_REGEXP},
+	{"saveonexit", SAVE_ON_EXIT},
 #ifdef ENABLE_SPELLER
 	{"speller", 0},
 #endif
 	{"suspend", SUSPENDABLE},  /* Deprecated; remove in 2022. */
 	{"suspendable", SUSPENDABLE},
 	{"tabsize", 0},
-	{"tempfile", TEMP_FILE},
+	{"tempfile", SAVE_ON_EXIT},  /* Deprecated; remove in 2022. */
 	{"view", VIEW_MODE},
 #ifndef NANO_TINY
 	{"afterends", AFTER_ENDS},
 	{"allow_insecure_backup", INSECURE_BACKUP},
 	{"atblanks", AT_BLANKS},
 	{"autoindent", AUTOINDENT},
-	{"backup", BACKUP_FILE},
+	{"backup", MAKE_BACKUP},
 	{"backupdir", 0},
-	{"casesensitive", CASE_SENSITIVE},
+	{"bookstyle", BOOKSTYLE},
 	{"cutfromcursor", CUT_FROM_CURSOR},
 	{"guidestripe", 0},
+	{"indicator", INDICATOR},
 	{"locking", LOCKING},
 	{"matchbrackets", 0},
 	{"noconvert", NO_CONVERT},
@@ -148,15 +151,15 @@ static colortype *lastcolor = NULL;
 		/* The end of the color list for the current syntax. */
 #endif
 
-#define NUMBER_OF_MENUS  16
+#define NUMBER_OF_MENUS  17  /* Remove the deprecated 'extcmd' in 2022. */
 char *menunames[NUMBER_OF_MENUS] = { "main", "search", "replace", "replacewith",
 									"yesno", "gotoline", "writeout", "insert",
-									"extcmd", "help", "spell", "linter",
+									"execute", "extcmd", "help", "spell", "linter",
 									"browser", "whereisfile", "gotodir",
 									"all" };
 int menusymbols[NUMBER_OF_MENUS] = { MMAIN, MWHEREIS, MREPLACE, MREPLACEWITH,
 									MYESNO, MGOTOLINE, MWRITEFILE, MINSERTFILE,
-									MEXTCMD, MHELP, MSPELL, MLINTER,
+									MEXECUTE, MEXECUTE, MHELP, MSPELL, MLINTER,
 									MBROWSER, MWHEREISFILE, MGOTODIR,
 									MMOST|MBROWSER|MHELP|MYESNO };
 #endif /* ENABLE_NANORC */
@@ -254,6 +257,8 @@ keystruct *strtosc(const char *input)
 	else if (!strcmp(input, "paste"))
 		s->func = paste_text;
 #ifndef NANO_TINY
+	else if (!strcmp(input, "execute"))
+		s->func = do_execute;
 	else if (!strcmp(input, "cutrestoffile"))
 		s->func = cut_till_eof;
 	else if (!strcmp(input, "copy"))
@@ -271,13 +276,12 @@ keystruct *strtosc(const char *input)
 #ifdef ENABLE_COLOR
 	else if (!strcmp(input, "linter"))
 		s->func = do_linter;
-#ifdef ENABLE_SPELLER
 	else if (!strcmp(input, "formatter"))
 		s->func = do_formatter;
 #endif
-#endif
-	else if (!strcmp(input, "curpos"))
-		s->func = do_cursorpos_void;
+	else if (!strcmp(input, "location") ||
+	         !strcmp(input, "curpos"))  /* Deprecated; remove in 2022. */
+		s->func = report_cursor_position;
 	else if (!strcmp(input, "gotoline"))
 		s->func = do_gotolinecolumn_void;
 #ifdef ENABLE_JUSTIFY
@@ -317,6 +321,12 @@ keystruct *strtosc(const char *input)
 		s->func = record_macro;
 	else if (!strcmp(input, "runmacro"))
 		s->func = run_macro;
+	else if (!strcmp(input, "anchor"))
+		s->func = put_or_lift_anchor;
+	else if (!strcmp(input, "prevanchor"))
+		s->func = to_prev_anchor;
+	else if (!strcmp(input, "nextanchor"))
+		s->func = to_next_anchor;
 	else if (!strcmp(input, "undo"))
 		s->func = do_undo;
 	else if (!strcmp(input, "redo"))
@@ -339,6 +349,8 @@ keystruct *strtosc(const char *input)
 		s->func = do_scroll_up;
 	else if (!strcmp(input, "scrolldown"))
 		s->func = do_scroll_down;
+	else if (!strcmp(input, "center"))
+		s->func = do_center;
 #endif
 	else if (!strcmp(input, "prevword"))
 		s->func = to_prev_word;
@@ -379,7 +391,7 @@ keystruct *strtosc(const char *input)
 	else if (!strcmp(input, "backspace"))
 		s->func = do_backspace;
 	else if (!strcmp(input, "refresh"))
-		s->func = total_refresh;
+		s->func = full_refresh;
 	else if (!strcmp(input, "suspend"))
 		s->func = do_suspend_void;
 	else if (!strcmp(input, "casesens"))
@@ -448,7 +460,7 @@ keystruct *strtosc(const char *input)
 			s->toggle = WHITESPACE_DISPLAY;
 #ifdef ENABLE_COLOR
 		else if (!strcmp(input, "nosyntax"))
-			s->toggle = NO_COLOR_SYNTAX;
+			s->toggle = NO_SYNTAX;
 #endif
 		else if (!strcmp(input, "smarthome"))
 			s->toggle = SMART_HOME;
@@ -808,13 +820,17 @@ void parse_binding(char *ptr, bool dobind)
 		goto free_things;
 
 	/* Limit the given menu to those where the function exists;
-	 * first handle three special cases, then the general case. */
+	 * first handle five special cases, then the general case. */
 	if (is_universal(newsc->func))
 		menu &= MMOST|MBROWSER;
 #ifndef NANO_TINY
+	else if (newsc->func == do_toggle_void && newsc->toggle == NO_HELP)
+		menu &= (MMOST|MBROWSER|MYESNO) & ~MFINDINHELP;
 	else if (newsc->func == do_toggle_void)
 		menu &= MMAIN;
 #endif
+	else if (newsc->func == full_refresh)
+		menu &= MMOST|MBROWSER|MHELP|MYESNO;
 	else if (newsc->func == (functionptrtype)implant)
 		menu &= MMOST|MBROWSER|MHELP;
 	else {
@@ -837,8 +853,8 @@ void parse_binding(char *ptr, bool dobind)
 	newsc->keystr = keycopy;
 	newsc->keycode = keycode;
 
-	/* Disallow rebinding ^[ and frequent escape-sequence starter "Esc [". */
-	if (newsc->keycode == ESC_CODE || newsc->keycode == '[') {
+	/* Disallow rebinding <Esc> (^[). */
+	if (newsc->keycode == ESC_CODE) {
 		jot_error(N_("Keystroke %s may not be rebound"), keycopy);
   free_things:
 		free(keycopy);
@@ -972,15 +988,27 @@ void parse_includes(char *ptr)
 	free(expanded);
 }
 
-/* Return the short value corresponding to the color named in colorname,
- * and set bright to TRUE if that color is bright. */
-short color_to_short(const char *colorname, bool *bright)
+const char hues[9][7] = { "pink", "purple", "mauve", "lagoon", "mint",
+						  "lime", "peach", "orange", "latte" };
+short indices[9] = { 204, 163, 134, 38, 48, 148, 215, 208, 137 };
+
+/* Return the short value corresponding to the given color name, and set
+ * vivid to TRUE for a lighter color, and thick for a heavier typeface. */
+short color_to_short(const char *colorname, bool *vivid, bool *thick)
 {
-	if (strncmp(colorname, "bright", 6) == 0) {
-		*bright = TRUE;
+	if (strncmp(colorname, "bright", 6) == 0 && colorname[6] != '\0') {
+		/* Prefix "bright" is deprecated; remove in 2024. */
+		*vivid = TRUE;
+		*thick = TRUE;
 		colorname += 6;
-	} else
-		*bright = FALSE;
+	} else if (strncmp(colorname, "light", 5) == 0 && colorname[5] != '\0') {
+		*vivid = TRUE;
+		*thick = FALSE;
+		colorname += 5;
+	} else {
+		*vivid = FALSE;
+		*thick = FALSE;
+	}
 
 	if (strcmp(colorname, "green") == 0)
 		return COLOR_GREEN;
@@ -999,7 +1027,18 @@ short color_to_short(const char *colorname, bool *bright)
 	else if (strcmp(colorname, "black") == 0)
 		return COLOR_BLACK;
 	else if (strcmp(colorname, "normal") == 0)
-		return USE_THE_DEFAULT;
+		return THE_DEFAULT;
+	else
+		for (int index = 0; index < 9; index++)
+			if (strcmp(colorname, hues[index]) == 0) {
+				if (*vivid) {
+					jot_error(N_("Color '%s' takes no prefix"), colorname);
+					return BAD_COLOR;
+				} else if (COLORS < 255)
+					return THE_DEFAULT;
+				else
+					return indices[index];
+			}
 
 	jot_error(N_("Color \"%s\" not understood"), colorname);
 	return BAD_COLOR;
@@ -1009,32 +1048,55 @@ short color_to_short(const char *colorname, bool *bright)
  * Return FALSE when any color name is invalid; otherwise return TRUE. */
 bool parse_combination(char *combostr, short *fg, short *bg, int *attributes)
 {
-	char *comma = strchr(combostr, ',');
-	bool bright;
+	bool vivid, thick;
+	char *comma;
 
 	*attributes = A_NORMAL;
 
-	if (comma != NULL) {
-		*bg = color_to_short(comma + 1, &bright);
-		if (bright) {
-			jot_error(N_("A background color cannot be bright"));
+	if (strncmp(combostr, "bold", 4) == 0) {
+		*attributes |= A_BOLD;
+		if (combostr[4] != ',') {
+			jot_error(N_("An attribute requires a subsequent comma"));
 			return FALSE;
 		}
-		if (*bg == BAD_COLOR)
-			return FALSE;
-		*comma = '\0';
-	} else
-		*bg = USE_THE_DEFAULT;
+		combostr += 5;
+	}
 
-	if (comma != combostr) {
-		*fg = color_to_short(combostr, &bright);
+	if (strncmp(combostr, "italic", 6) == 0) {
+#ifdef A_ITALIC
+		*attributes |= A_ITALIC;
+#endif
+		if (combostr[6] != ',') {
+			jot_error(N_("An attribute requires a subsequent comma"));
+			return FALSE;
+		}
+		combostr += 7;
+	}
+
+	comma = strchr(combostr, ',');
+
+	if (comma)
+		*comma = '\0';
+
+	if (!comma || comma > combostr) {
+		*fg = color_to_short(combostr, &vivid, &thick);
 		if (*fg == BAD_COLOR)
 			return FALSE;
-
-		if (bright)
-			*attributes = A_BOLD;
+		if (vivid && !thick && COLORS > 8)
+			*fg += 8;
+		else if (vivid)
+			*attributes |= A_BOLD;
 	} else
-		*fg = USE_THE_DEFAULT;
+		*fg = THE_DEFAULT;
+
+	if (comma) {
+		*bg = color_to_short(comma + 1, &vivid, &thick);
+		if (*bg == BAD_COLOR)
+			return FALSE;
+		if (vivid && COLORS > 8)
+			*bg += 8;
+	} else
+		*bg = THE_DEFAULT;
 
 	return TRUE;
 }
@@ -1225,7 +1287,7 @@ void pick_up_name(const char *kind, char *ptr, char **storage)
 	*storage = mallocstrcpy(*storage, ptr);
 }
 
-/* Handle the four syntax-only commands. */
+/* Handle the six syntax-only commands. */
 bool parse_syntax_commands(char *keyword, char *ptr)
 {
 	if (strcmp(keyword, "color") == 0)
@@ -1237,9 +1299,7 @@ bool parse_syntax_commands(char *keyword, char *ptr)
 		pick_up_name("comment", ptr, &live_syntax->comment);
 #endif
 	} else if (strcmp(keyword, "tabgives") == 0) {
-#ifdef ENABLE_COLOR
 		pick_up_name("tabgives", ptr, &live_syntax->tab);
-#endif
 	} else if (strcmp(keyword, "linter") == 0)
 		pick_up_name("linter", ptr, &live_syntax->linter);
 	else if (strcmp(keyword, "formatter") == 0)
@@ -1262,16 +1322,13 @@ static void check_vitals_mapped(void)
 	for (int v = 0; v < VITALS; v++) {
 		for (funcstruct *f = allfuncs; f != NULL; f = f->next) {
 			if (f->func == vitals[v] && f->menus & inmenus[v]) {
-				const keystruct *s = first_sc_for(inmenus[v], f->func);
-				if (!s) {
-					fprintf(stderr, _("No key is bound to function '%s' in "
-										"menu '%s'.  Exiting.\n"), f->desc,
-										menu_to_name(inmenus[v]));
-					fprintf(stderr, _("If needed, use nano with the -I option "
-										"to adjust your nanorc settings.\n"));
-					exit(1);
-				}
-				break;
+				if (first_sc_for(inmenus[v], f->func) == NULL) {
+					jot_error(N_("No key is bound to function '%s' in menu '%s'. "
+								" Exiting.\n"), f->desc, menu_to_name(inmenus[v]));
+					die(_("If needed, use nano with the -I option "
+								"to adjust your nanorc settings.\n"));
+				} else
+					break;
 			}
 		}
 	}
@@ -1405,7 +1462,7 @@ void parse_rcfile(FILE *rcstream, bool just_syntax, bool intros_only)
 			if (!opensyntax)
 				jot_error(N_("A '%s' command requires a preceding "
 									"'syntax' command"), keyword);
-			if (strcasestr("icolor", keyword))
+			if (strstr("icolor", keyword))
 				seen_color_command = TRUE;
 			continue;
 		} else if (parse_syntax_commands(keyword, ptr))

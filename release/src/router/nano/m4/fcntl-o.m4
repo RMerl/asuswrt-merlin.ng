@@ -1,4 +1,4 @@
-# fcntl-o.m4 serial 6
+# fcntl-o.m4 serial 7
 dnl Copyright (C) 2006, 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -32,6 +32,7 @@ AC_DEFUN([gl_FCNTL_O_FLAGS],
            # defined sleep(n) _sleep ((n) * 1000)
            #endif
            #include <fcntl.h>
+           ]GL_MDA_DEFINES[
            #ifndef O_NOATIME
             #define O_NOATIME 0
            #endif

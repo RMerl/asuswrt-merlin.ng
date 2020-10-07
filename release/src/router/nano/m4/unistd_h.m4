@@ -1,4 +1,4 @@
-# unistd_h.m4 serial 78
+# unistd_h.m4 serial 81
 dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -43,7 +43,7 @@ AC_DEFUN([gl_UNISTD_H],
 #endif
     ]], [access chdir chown dup dup2 dup3 environ euidaccess faccessat fchdir
     fchownat fdatasync fsync ftruncate getcwd getdomainname getdtablesize
-    getgroups gethostname getlogin getlogin_r getpagesize getpass
+    getentropy getgroups gethostname getlogin getlogin_r getpagesize getpass
     getusershell setusershell endusershell
     group_member isatty lchown link linkat lseek pipe pipe2 pread pwrite
     readlink readlinkat rmdir sethostname sleep symlink symlinkat
@@ -82,6 +82,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   GNULIB_GETCWD=0;               AC_SUBST([GNULIB_GETCWD])
   GNULIB_GETDOMAINNAME=0;        AC_SUBST([GNULIB_GETDOMAINNAME])
   GNULIB_GETDTABLESIZE=0;        AC_SUBST([GNULIB_GETDTABLESIZE])
+  GNULIB_GETENTROPY=0;           AC_SUBST([GNULIB_GETENTROPY])
   GNULIB_GETGROUPS=0;            AC_SUBST([GNULIB_GETGROUPS])
   GNULIB_GETHOSTNAME=0;          AC_SUBST([GNULIB_GETHOSTNAME])
   GNULIB_GETLOGIN=0;             AC_SUBST([GNULIB_GETLOGIN])
@@ -119,7 +120,6 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   dnl Assume proper GNU behavior unless another module says otherwise.
   HAVE_CHOWN=1;           AC_SUBST([HAVE_CHOWN])
   HAVE_COPY_FILE_RANGE=1; AC_SUBST([HAVE_COPY_FILE_RANGE])
-  HAVE_DUP2=1;            AC_SUBST([HAVE_DUP2])
   HAVE_DUP3=1;            AC_SUBST([HAVE_DUP3])
   HAVE_EUIDACCESS=1;      AC_SUBST([HAVE_EUIDACCESS])
   HAVE_FACCESSAT=1;       AC_SUBST([HAVE_FACCESSAT])
@@ -129,6 +129,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   HAVE_FSYNC=1;           AC_SUBST([HAVE_FSYNC])
   HAVE_FTRUNCATE=1;       AC_SUBST([HAVE_FTRUNCATE])
   HAVE_GETDTABLESIZE=1;   AC_SUBST([HAVE_GETDTABLESIZE])
+  HAVE_GETENTROPY=1;      AC_SUBST([HAVE_GETENTROPY])
   HAVE_GETGROUPS=1;       AC_SUBST([HAVE_GETGROUPS])
   HAVE_GETHOSTNAME=1;     AC_SUBST([HAVE_GETHOSTNAME])
   HAVE_GETLOGIN=1;        AC_SUBST([HAVE_GETLOGIN])
@@ -198,6 +199,7 @@ AC_DEFUN([gl_UNISTD_H_DEFAULTS],
   REPLACE_UNLINKAT=0;     AC_SUBST([REPLACE_UNLINKAT])
   REPLACE_USLEEP=0;       AC_SUBST([REPLACE_USLEEP])
   REPLACE_WRITE=0;        AC_SUBST([REPLACE_WRITE])
+  UNISTD_H_HAVE_SYS_RANDOM_H=0; AC_SUBST([UNISTD_H_HAVE_SYS_RANDOM_H])
   UNISTD_H_HAVE_WINSOCK2_H=0; AC_SUBST([UNISTD_H_HAVE_WINSOCK2_H])
   UNISTD_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS=0;
                            AC_SUBST([UNISTD_H_HAVE_WINSOCK2_H_AND_USE_SOCKETS])

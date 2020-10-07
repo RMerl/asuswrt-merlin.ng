@@ -1,4 +1,4 @@
-# stdint.m4 serial 54
+# stdint.m4 serial 55
 dnl Copyright (C) 2001-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -152,7 +152,7 @@ uintmax_t j = UINTMAX_MAX;
 /* Check that SIZE_MAX has the correct type, if possible.  */
 #if 201112 <= __STDC_VERSION__
 int k = _Generic (SIZE_MAX, size_t: 0);
-#elif (2 <= __GNUC__ || defined __IBM__TYPEOF__ \
+#elif (2 <= __GNUC__ || 4 <= __clang_major__ || defined __IBM__TYPEOF__ \
        || (0x5110 <= __SUNPRO_C && !__STDC__))
 extern size_t k;
 extern __typeof__ (SIZE_MAX) k;

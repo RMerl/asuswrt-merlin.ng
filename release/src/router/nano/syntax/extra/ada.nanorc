@@ -1,0 +1,39 @@
+## Syntax highlighting for Ada.
+
+## Original author:  Andreas K. Foerster
+## License:  GPL version 3 or newer
+
+## Language reference: http://www.ada-auth.org/standards/12rm/html/RM-TTL.html
+
+syntax ada "\.ad[abcs]$"
+comment "--"
+
+# This linter command leaves an ALI file in the working directory.
+linter gcc -c -gnatc
+
+# Reserved Words (RM 2.9)
+icolor yellow "\<(abort|abs|abstract|accept|access|aliased|all|and|array|at)\>"
+icolor yellow "\<(begin|body|case|constant|declare|delay|delta|do)\>"
+icolor yellow "\<(else|elsif|end|entry|exception|exit|for|function|generic|goto)\>"
+icolor yellow "\<(if|in|interface|is|limited|loop|mod|new|not|null|of|or|others|out|overriding)\>"
+icolor yellow "\<(package|pragma|private|procedure|protected|raise|range|record|rem|renames)\>"
+icolor yellow "\<(requeue|return|reverse|select|separate|some|subtype|synchronized)\>"
+icolor yellow "\<(tagged|task|terminate|then|type|until|use|when|while|with|xor)\>"
+
+# Separators / Operators
+color magenta "'|&|\*|\+|\-|\.|\,|\/|:|;|\(|\)|<|>|\||="
+
+# Attributes
+color cyan "'[[:alnum:]]+"
+
+# Numbers (RM 2.4)
+color green "\<[0-9][0-9A-Fa-f_#.+-]*"
+
+# Characters / Strings
+color red "'.'" ""[^"]*""
+
+# Comments
+color brightblue "--.*"
+
+# Trailing whitespace
+color ,blue "[[:space:]]+$"

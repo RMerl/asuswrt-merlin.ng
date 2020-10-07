@@ -1,4 +1,4 @@
-# memchr.m4 serial 15
+# memchr.m4 serial 16
 dnl Copyright (C) 2002-2004, 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -14,26 +14,17 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
   AC_CHECK_FUNCS_ONCE([mprotect])
 
   AC_REQUIRE([gl_HEADER_STRING_H_DEFAULTS])
-  m4_ifdef([gl_FUNC_MEMCHR_OBSOLETE], [
-    dnl These days, we assume memchr is present.  But if support for old
-    dnl platforms is desired:
-    AC_CHECK_FUNCS_ONCE([memchr])
-    if test $ac_cv_func_memchr = no; then
-      HAVE_MEMCHR=0
-    fi
-  ])
-  if test $HAVE_MEMCHR = 1; then
-    # Detect platform-specific bugs in some versions of glibc:
-    # memchr should not dereference anything with length 0
-    #   https://bugzilla.redhat.com/show_bug.cgi?id=499689
-    # memchr should not dereference overestimated length after a match
-    #   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=521737
-    #   https://sourceware.org/bugzilla/show_bug.cgi?id=10162
-    # memchr should cast the second argument to 'unsigned char'.
-    #   This bug exists in Android 4.3.
-    # Assume that memchr works on platforms that lack mprotect.
-    AC_CACHE_CHECK([whether memchr works], [gl_cv_func_memchr_works],
-      [AC_RUN_IFELSE([AC_LANG_PROGRAM([[
+  # Detect platform-specific bugs in some versions of glibc:
+  # memchr should not dereference anything with length 0
+  #   https://bugzilla.redhat.com/show_bug.cgi?id=499689
+  # memchr should not dereference overestimated length after a match
+  #   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=521737
+  #   https://sourceware.org/bugzilla/show_bug.cgi?id=10162
+  # memchr should cast the second argument to 'unsigned char'.
+  #   This bug exists in Android 4.3.
+  # Assume that memchr works on platforms that lack mprotect.
+  AC_CACHE_CHECK([whether memchr works], [gl_cv_func_memchr_works],
+    [AC_RUN_IFELSE([AC_LANG_PROGRAM([[
 #include <string.h>
 #if HAVE_SYS_MMAN_H
 # include <fcntl.h>
@@ -87,23 +78,22 @@ AC_DEFUN_ONCE([gl_FUNC_MEMCHR],
   }
   return result;
 ]])],
-         [gl_cv_func_memchr_works=yes],
-         [gl_cv_func_memchr_works=no],
-         [case "$host_os" in
-                             # Guess no on Android.
-            linux*-android*) gl_cv_func_memchr_works="guessing no" ;;
-                             # Guess yes on native Windows.
-            mingw*)          gl_cv_func_memchr_works="guessing yes" ;;
-                             # If we don't know, obey --enable-cross-guesses.
-            *)               gl_cv_func_memchr_works="$gl_cross_guess_normal" ;;
-          esac
-         ])
-      ])
-    case "$gl_cv_func_memchr_works" in
-      *yes) ;;
-      *) REPLACE_MEMCHR=1 ;;
-    esac
-  fi
+       [gl_cv_func_memchr_works=yes],
+       [gl_cv_func_memchr_works=no],
+       [case "$host_os" in
+                           # Guess no on Android.
+          linux*-android*) gl_cv_func_memchr_works="guessing no" ;;
+                           # Guess yes on native Windows.
+          mingw*)          gl_cv_func_memchr_works="guessing yes" ;;
+                           # If we don't know, obey --enable-cross-guesses.
+          *)               gl_cv_func_memchr_works="$gl_cross_guess_normal" ;;
+        esac
+       ])
+    ])
+  case "$gl_cv_func_memchr_works" in
+    *yes) ;;
+    *) REPLACE_MEMCHR=1 ;;
+  esac
 ])
 
 # Prerequisites of lib/memchr.c.

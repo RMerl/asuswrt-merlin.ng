@@ -1,4 +1,4 @@
-## Here is an example for Bourne shell scripts.
+## Syntax highlighting for Bourne shell scripts.
 
 syntax sh "(\.sh|(\.|/)(a|ba|c|da|k|mk|pdk|tc|z)sh(rc|_profile)?|/(etc/|\.)profile)$"
 header "^#!.*/(((a|ba|c|da|k|mk|pdk|tc|z)?sh)|(busybox|env) +sh|openrc-run|runscript)"

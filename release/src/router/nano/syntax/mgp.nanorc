@@ -1,9 +1,0 @@
-## Here is an example for Magicpoint presentations.
-
-syntax mgp "\.mgp$"
-header "^%include.*"
-comment "#"
-
-color green "^%[A-Za-z].*"
-color cyan "(^|[[:space:]])(#|%%).*"
-color ,green "[[:space:]]+$"

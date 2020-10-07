@@ -72,8 +72,8 @@
 # define __glob                 glob
 # define __getlogin_r(buf, len) getlogin_r (buf, len)
 # define __lstat64(fname, buf)  lstat (fname, buf)
-# ifdef __MINGW32__
-   /* Avoid GCC warning.  mingw has an unused __stat64 macro.  */
+# if defined _WIN32 && !defined __CYGWIN__
+   /* Avoid GCC or clang warning.  The original __stat64 macro is unused.  */
 #  undef __stat64
 # endif
 # define __stat64(fname, buf)   stat (fname, buf)

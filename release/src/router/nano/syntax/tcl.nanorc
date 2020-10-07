@@ -12,8 +12,8 @@ color green "\<string (bytelength|compare|equal|first|index|is|last|length|map|m
 # Extended TclX [info commands]:
 color green "\<(alarm|auto_load_pkg|bsearch|catclose|catgets|catopen|ccollate|cconcat|cequal|chgrp|chmod|chown|chroot|cindex|clength|cmdtrace|commandloop|crange|csubstr|ctoken|ctype|dup|echo|execl|fcntl|flock|fork|fstat|ftruncate|funlock|host_info|id|infox|keyldel|keylget|keylkeys|keylset|kill|lassign|lcontain|lempty|lgets|link|lmatch|loadlibindex|loop|lvarcat|lvarpop|lvarpush|max|min|nice|pipe|profile|random|readdir|replicate|scancontext|scanfile|scanmatch|select|server_accept|server_create|signal|sleep|sync|system|tclx_findinit|tclx_fork|tclx_load_tndxs|tclx_sleep|tclx_system|tclx_wait|times|translit|try_eval|umask|wait)\>"
 # Syntax:
-color brightblue "proc[[:space:]]" "(\{|\})"
-color green "(\(|\)|\;|`|\\|\$|<|>|!|=|&|\|)"
+color brightblue "\<proc[[:space:]]|\{|\}"
+color green "\(|\)|\;|`|\\|\$|<|>|!|=|&|\|"
 color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
 color brightred "\$\{?[0-9A-Za-z_!@#$*?-]+\}?"
 # Trailing whitespace:

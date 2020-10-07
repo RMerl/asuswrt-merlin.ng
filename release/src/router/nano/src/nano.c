@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 #include "revision.h"
 
 #include <ctype.h>
@@ -43,9 +43,9 @@
 #endif
 
 #ifdef ENABLE_MULTIBUFFER
-#define read_them_all TRUE
+#define read_them_all  TRUE
 #else
-#define read_them_all FALSE
+#define read_them_all  FALSE
 #endif
 
 #ifdef ENABLE_MOUSE
@@ -63,21 +63,6 @@ static struct termios original_state;
 static struct sigaction oldaction, newaction;
 		/* Containers for the original and the temporary handler for SIGINT. */
 
-/* The next six variables are used as temporary storage places for information
- * about the current buffer while it is partitioned during cutting/pasting. */
-static linestruct *filehead;
-		/* What was the top line of the buffer. */
-static linestruct *foreline;
-		/* The line before the first line of the partition. */
-static char *antedata = NULL;
-		/* The text on the first line of the partition before its beginning. */
-static char *postdata = NULL;
-		/* The text on the last line of the partition after its end. */
-static linestruct *hindline;
-		/* The line after the last line of the partition. */
-static linestruct *filetail;
-		/* What was the bottom line of the buffer. */
-
 /* Create a new linestruct node.  Note that we do not set prevnode->next. */
 linestruct *make_new_node(linestruct *prevnode)
 {
@@ -90,6 +75,10 @@ linestruct *make_new_node(linestruct *prevnode)
 	newnode->multidata = NULL;
 #endif
 	newnode->lineno = (prevnode) ? prevnode->lineno + 1 : 1;
+#ifndef NANO_TINY
+	newnode->extrarows = -2;  /* Bad value, to make it easier to find bugs. */
+	newnode->has_anchor = FALSE;
+#endif
 
 	return newnode;
 }
@@ -162,6 +151,10 @@ linestruct *copy_node(const linestruct *src)
 	dst->multidata = NULL;
 #endif
 	dst->lineno = src->lineno;
+#ifndef NANO_TINY
+	dst->extrarows = src->extrarows;
+	dst->has_anchor = FALSE;
+#endif
 
 	return dst;
 }
@@ -201,80 +194,6 @@ void renumber_from(linestruct *line)
 	}
 }
 
-/* Partition the current buffer so that it appears to begin at (top, top_x)
- * and appears to end at (bot, bot_x). */
-void partition_buffer(linestruct *top, size_t top_x,
-						linestruct *bot, size_t bot_x)
-{
-	/* Save the top and bottom of the buffer when they differ from top and
-	 * bottom of the partition, then shrink the buffer to the partition. */
-	if (top != openfile->filetop) {
-		filehead = openfile->filetop;
-		openfile->filetop = top;
-	} else
-		filehead = NULL;
-	if (bot != openfile->filebot) {
-		filetail = openfile->filebot;
-		openfile->filebot = bot;
-	} else
-		filetail = NULL;
-
-	/* Remember which line is above the top of the partition, detach the
-	 * top of the partition from it, and save the text before top_x. */
-	foreline = top->prev;
-	top->prev = NULL;
-	antedata = measured_copy(top->data, top_x);
-
-	/* Remember which line is below the bottom of the partition, detach the
-	 * bottom of the partition from it, and save the text after bot_x. */
-	hindline = bot->next;
-	bot->next = NULL;
-	postdata = copy_of(bot->data + bot_x);
-
-	/* At the end of the partition, remove all text after bot_x. */
-	bot->data[bot_x] = '\0';
-
-	/* At the beginning of the partition, remove all text before top_x. */
-	memmove(top->data, top->data + top_x, strlen(top->data) - top_x + 1);
-}
-
-/* Unpartition the current buffer so that it is complete again. */
-void unpartition_buffer(void)
-{
-	/* Reattach the line that was above the top of the partition. */
-	openfile->filetop->prev = foreline;
-	if (foreline != NULL)
-		foreline->next = openfile->filetop;
-
-	/* Restore the text that was on the first partition line before its start. */
-	openfile->filetop->data = charealloc(openfile->filetop->data,
-				strlen(antedata) + strlen(openfile->filetop->data) + 1);
-	memmove(openfile->filetop->data + strlen(antedata),
-				openfile->filetop->data, strlen(openfile->filetop->data) + 1);
-	memcpy(openfile->filetop->data, antedata, strlen(antedata));
-	free(antedata);
-	antedata = NULL;
-
-	/* Reattach the line that was below the bottom of the partition. */
-	openfile->filebot->next = hindline;
-	if (hindline != NULL)
-		hindline->prev = openfile->filebot;
-
-	/* Restore the text that was on the last partition line after its end. */
-	openfile->filebot->data = charealloc(openfile->filebot->data,
-				strlen(openfile->filebot->data) + strlen(postdata) + 1);
-	strcat(openfile->filebot->data, postdata);
-	free(postdata);
-	postdata = NULL;
-
-	/* Restore the top and bottom of the buffer, if they were
-	 * different from the top and bottom of the partition. */
-	if (filehead != NULL)
-		openfile->filetop = filehead;
-	if (filetail != NULL)
-		openfile->filebot = filetail;
-}
-
 /* Display a warning about a key disabled in view mode. */
 void print_view_warning(void)
 {
@@ -307,13 +226,13 @@ void restore_terminal(void)
 	curs_set(1);
 	endwin();
 #ifndef NANO_TINY
-	printf("\e[?2004l");
+	printf("\x1B[?2004l");
 	fflush(stdout);
 #endif
 	tcsetattr(0, TCSANOW, &original_state);
 }
 
-/* Exit normally: restore the terminal state and save history files. */
+/* Exit normally: restore terminal state and report any startup errors. */
 void finish(void)
 {
 	/* Blank the status bar and (if applicable) the shortcut list. */
@@ -335,16 +254,102 @@ void finish(void)
 	display_rcfile_errors();
 #endif
 
-#ifdef ENABLE_HISTORIES
-	/* If the user wants history persistence, write the relevant files. */
-	if (ISSET(HISTORYLOG))
-		save_history();
-	if (ISSET(POSITIONLOG) && openfile)
-		update_poshistory(openfile->filename, openfile->current->lineno, xplustabs() + 1);
-#endif
-
 	/* Get out. */
 	exit(0);
+}
+
+/* Close the current buffer, and terminate nano if it is the only buffer. */
+void close_and_go(void)
+{
+#ifndef NANO_TINY
+	if (openfile->lock_filename)
+		delete_lockfile(openfile->lock_filename);
+#endif
+#ifdef ENABLE_HISTORIES
+	if (ISSET(POSITIONLOG))
+		update_poshistory();
+#endif
+#ifdef ENABLE_MULTIBUFFER
+	/* If there is another buffer, close this one; otherwise just terminate. */
+	if (openfile != openfile->next) {
+		switch_to_next_buffer();
+		openfile = openfile->prev;
+		close_buffer();
+		openfile = openfile->next;
+		/* Adjust the count in the top bar. */
+		titlebar(NULL);
+	} else
+#endif
+	{
+#ifdef ENABLE_HISTORIES
+		if (ISSET(HISTORYLOG))
+			save_history();
+#endif
+		finish();
+	}
+}
+
+/* Close the current buffer if it is unmodified; otherwise (when not doing
+ * automatic saving), ask the user whether to save it, then close it and
+ * exit, or return when the user cancelled. */
+void do_exit(void)
+{
+	int choice;
+
+	/* When unmodified, simply close.  Else, when doing automatic saving
+	 * and the file has a name, simply save.  Otherwise, ask the user. */
+	if (!openfile->modified)
+		choice = 0;
+	else if (ISSET(SAVE_ON_EXIT) && openfile->filename[0] != '\0')
+		choice = 1;
+	else {
+		if (ISSET(SAVE_ON_EXIT))
+			warn_and_briefly_pause(_("No file name"));
+
+		choice = do_yesno_prompt(FALSE, _("Save modified buffer? "));
+	}
+
+	/* When not saving, or the save succeeds, close the buffer. */
+	if (choice == 0 || (choice == 1 && do_writeout(TRUE, TRUE) > 0))
+		close_and_go();
+	else if (choice != 1)
+		statusbar(_("Cancelled"));
+}
+
+/* Save the current buffer under the given name (or under the name "nano"
+ * for a nameless buffer).  If needed, the name is modified to be unique. */
+void emergency_save(const char *plainname)
+{
+	bool failed = TRUE;
+	char *targetname;
+
+	if (*plainname == '\0')
+		plainname = "nano";
+
+	targetname = get_next_filename(plainname, ".save");
+
+	if (*targetname != '\0')
+		failed = !write_file(targetname, NULL, TRUE, OVERWRITE, FALSE);
+
+	if (!failed)
+		fprintf(stderr, _("\nBuffer written to %s\n"), targetname);
+	else if (*targetname != '\0')
+		fprintf(stderr, _("\nBuffer not written to %s: %s\n"),
+										targetname, strerror(errno));
+	else
+		fprintf(stderr, _("\nToo many .save files"));
+
+#ifndef NANO_TINY
+	/* Try to chmod/chown the saved file to the values of the original file,
+	 * but ignore any failure as we are in a hurry to get out. */
+	if (openfile->statinfo) {
+		IGNORE_CALL_RESULT(chmod(targetname, openfile->statinfo->st_mode));
+		IGNORE_CALL_RESULT(chown(targetname, openfile->statinfo->st_uid,
+												openfile->statinfo->st_gid));
+	}
+#endif
+
+	free(targetname);
 }
 
 /* Die gracefully -- by restoring the terminal state and saving any buffers
@@ -368,20 +373,14 @@ void die(const char *msg, ...)
 	while (openfile) {
 #ifndef NANO_TINY
 		/* If the current buffer has a lockfile, remove it. */
-		if (ISSET(LOCKING) && openfile->lock_filename)
+		if (openfile->lock_filename)
 			delete_lockfile(openfile->lock_filename);
 #endif
-		/* If the current buffer was modified, ensure it is unpartitioned,
-		 * then save it.  When in restricted mode, we don't save anything,
-		 * because it would write files not mentioned on the command line. */
-		if (openfile->modified && !ISSET(RESTRICTED)) {
-			if (antedata != NULL)
-				unpartition_buffer();
+		/* When modified, save the current buffer.  But not when in restricted
+		 * mode, as it would write a file not mentioned on the command line. */
+		if (openfile->modified && !ISSET(RESTRICTED))
+			emergency_save(openfile->filename);
 
-			emergency_save(openfile->filename, openfile->current_stat);
-		}
-
-		antedata = NULL;
 #ifdef ENABLE_MULTIBUFFER
 		openfile = openfile->next;
 #endif
@@ -391,44 +390,6 @@ void die(const char *msg, ...)
 
 	/* Abandon the building. */
 	exit(1);
-}
-
-/* Save the current buffer under the given name.
- * If necessary, the name is modified to be unique. */
-void emergency_save(const char *die_filename, struct stat *die_stat)
-{
-	char *targetname;
-	bool failed = TRUE;
-
-	/* If the buffer has no name, simply call it "nano". */
-	if (*die_filename == '\0')
-		die_filename = "nano";
-
-	targetname = get_next_filename(die_filename, ".save");
-
-	if (*targetname != '\0')
-		failed = !write_file(targetname, NULL, TRUE, OVERWRITE, FALSE);
-
-	if (!failed)
-		fprintf(stderr, _("\nBuffer written to %s\n"), targetname);
-	else if (*targetname != '\0')
-		fprintf(stderr, _("\nBuffer not written to %s: %s\n"), targetname,
-				strerror(errno));
-	else
-		fprintf(stderr, _("\nBuffer not written: %s\n"),
-				_("Too many backup files?"));
-
-#ifndef NANO_TINY
-	/* Try to chmod/chown the saved file to the values of the original file,
-	 * but ignore any failure as we are in a hurry to get out. */
-	if (die_stat) {
-		IGNORE_CALL_RESULT(chmod(targetname, die_stat->st_mode));
-		IGNORE_CALL_RESULT(chown(targetname, die_stat->st_uid,
-												die_stat->st_gid));
-	}
-#endif
-
-	free(targetname);
 }
 
 /* Initialize the three window portions nano uses. */
@@ -580,6 +541,8 @@ void usage(void)
 #ifndef NANO_TINY
 	print_opt("-N", "--noconvert",
 					N_("Don't convert files from DOS/Mac format"));
+	print_opt("-O", "--bookstyle",
+					N_("Leading whitespace means new paragraph"));
 #endif
 #ifdef ENABLE_HISTORIES
 	if (!ISSET(RESTRICTED))
@@ -594,14 +557,17 @@ void usage(void)
 #endif
 	if (!ISSET(RESTRICTED))
 		print_opt("-R", "--restricted", N_("Restrict access to the filesystem"));
-	print_opt(_("-T <#cols>"), _("--tabsize=<#cols>"),
-					N_("Set width of a tab to #cols columns"));
+#ifndef NANO_TINY
+	print_opt("-S", "--softwrap", N_("Display overlong lines on multiple rows"));
+#endif
+	print_opt(_("-T <number>"), _("--tabsize=<number>"),
+					N_("Make a tab this number of columns wide"));
 	print_opt("-U", "--quickblank", N_("Wipe status bar upon next keystroke"));
 	print_opt("-V", "--version", N_("Print version information and exit"));
 #ifndef NANO_TINY
 	print_opt("-W", "--wordbounds",
 					N_("Detect word boundaries more accurately"));
-	print_opt(_("-X <str>"), _("--wordchars=<str>"),
+	print_opt(_("-X <string>"), _("--wordchars=<string>"),
 					N_("Which other characters are word parts"));
 #endif
 #ifdef ENABLE_COLOR
@@ -647,16 +613,19 @@ void usage(void)
 					N_("Set operating directory"));
 #endif
 	print_opt("-p", "--preserve", N_("Preserve XON (^Q) and XOFF (^S) keys"));
+#ifndef NANO_TINY
+	print_opt("-q", "--indicator", N_("Show a position+portion indicator"));
+#endif
 #ifdef ENABLED_WRAPORJUSTIFY
-	print_opt(_("-r <#cols>"), _("--fill=<#cols>"),
+	print_opt(_("-r <number>"), _("--fill=<number>"),
 					N_("Set width for hard-wrap and justify"));
 #endif
 #ifdef ENABLE_SPELLER
 	if (!ISSET(RESTRICTED))
-		print_opt(_("-s <prog>"), _("--speller=<prog>"),
-					N_("Enable alternate speller"));
+		print_opt(_("-s <program>"), _("--speller=<program>"),
+					N_("Use this alternative spell checker"));
 #endif
-	print_opt("-t", "--tempfile", N_("Auto save on exit, don't prompt"));
+	print_opt("-t", "--saveonexit", N_("Save changes on exit, don't prompt"));
 #ifndef NANO_TINY
 	print_opt("-u", "--unix", N_("Save a file by default in Unix format"));
 #endif
@@ -670,9 +639,6 @@ void usage(void)
 #endif
 	if (!ISSET(RESTRICTED))
 		print_opt("-z", "--suspendable", N_("Enable suspension"));
-#ifndef NANO_TINY
-	print_opt("-$", "--softwrap", N_("Display overlong lines on multiple rows"));
-#endif
 }
 
 /* Display the current version of nano, the date and time it was
@@ -808,70 +774,7 @@ void version(void)
 	printf("\n");
 }
 
-/* If the current file buffer has been modified, and the TEMP_FILE flag
- * isn't set, ask whether or not to save the file buffer.  If the
- * TEMP_FILE flag is set and the current file has a name, save it
- * unconditionally.  Then, if more than one file buffer is open, close
- * the current file buffer and switch to the next one.  If only one file
- * buffer is open, exit from nano. */
-void do_exit(void)
-{
-	int choice;
-
-	/* If the file hasn't been modified, pretend the user chose not to
-	 * save. */
-	if (!openfile->modified)
-		choice = 0;
-	/* If the TEMP_FILE flag is set and the current file has a name,
-	 * pretend the user chose to save. */
-	else if (openfile->filename[0] != '\0' && ISSET(TEMP_FILE))
-		choice = 1;
-	/* Otherwise, ask the user whether or not to save. */
-	else {
-		/* If the TEMP_FILE flag is set, and the current file doesn't
-		 * have a name, warn the user before prompting for a name. */
-		if (ISSET(TEMP_FILE))
-			warn_and_shortly_pause(_("No file name"));
-
-		choice = do_yesno_prompt(FALSE, _("Save modified buffer? "));
-	}
-
-	/* If the user chose not to save, or if the user chose to save and
-	 * the save succeeded, we're ready to exit. */
-	if (choice == 0 || (choice == 1 && do_writeout(TRUE, TRUE) > 0))
-		close_and_go();
-	else if (choice != 1)
-		statusbar(_("Cancelled"));
-}
-
-/* Close the current buffer, or terminate nano if it is the last. */
-void close_and_go(void)
-{
-#ifndef NANO_TINY
-	/* If there is a lockfile, remove it. */
-	if (ISSET(LOCKING) && openfile->lock_filename)
-		delete_lockfile(openfile->lock_filename);
-#endif
-#ifdef ENABLE_MULTIBUFFER
-	/* If there is another buffer, close this one; otherwise terminate. */
-	if (openfile != openfile->next) {
-#ifdef ENABLE_HISTORIES
-		if (ISSET(POSITIONLOG))
-			update_poshistory(openfile->filename,
-							openfile->current->lineno, xplustabs() + 1);
-#endif
-		switch_to_next_buffer();
-		openfile = openfile->prev;
-		close_buffer();
-		openfile = openfile->next;
-		/* Adjust the count in the top bar. */
-		titlebar(NULL);
-	} else
-#endif
-		finish();
-}
-
-/* Note that Ctrl+C was pressed during some system call. */
+/* Register that Ctrl+C was pressed during some system call. */
 RETSIGTYPE make_a_note(int signal)
 {
 	control_C_was_pressed = TRUE;
@@ -942,7 +845,7 @@ bool scoop_stdin(void)
 	make_new_buffer();
 	read_file(stream, 0, "stdin", TRUE);
 #ifdef ENABLE_COLOR
-	color_update();
+	find_and_prime_applicable_syntax();
 #endif
 
 	/* Restore the original ^C handler. */
@@ -1041,7 +944,7 @@ RETSIGTYPE do_suspend(int signal)
 	fflush(stdout);
 
 	/* The suspend keystroke must not elicit cursor-position display. */
-	suppress_cursorpos=TRUE;
+	lastmessage = HUSH;
 
 #ifdef SIGSTOP
 	/* Do what mutt does: send ourselves a SIGSTOP. */
@@ -1058,6 +961,8 @@ void do_suspend_void(void)
 		statusbar(_("Suspension is not enabled"));
 		beep();
 	}
+
+	ran_a_tool = TRUE;
 }
 
 /* Handler for SIGCONT (continue after suspend). */
@@ -1079,7 +984,7 @@ RETSIGTYPE do_continue(int signal)
 	ungetch(KEY_FLUSH);
 }
 
-#if !defined(NANO_TINY) || defined(ENABLE_SPELLER)
+#if !defined(NANO_TINY) || defined(ENABLE_SPELLER) || defined(ENABLE_COLOR)
 /* Block or unblock the SIGWINCH signal, depending on the blockit parameter. */
 void block_sigwinch(bool blockit)
 {
@@ -1102,6 +1007,14 @@ RETSIGTYPE handle_sigwinch(int signal)
 {
 	/* Let the input routine know that a SIGWINCH has occurred. */
 	the_window_resized = TRUE;
+}
+
+/* Compute and store how many extra rows each line needs when softwrapping. */
+void compute_the_extra_rows_per_line_from(linestruct *fromline)
+{
+	if (ISSET(SOFTWRAP))
+		for (linestruct *line = fromline; line != NULL; line = line->next)
+			line->extrarows = extra_chunks_in(line);
 }
 
 /* Reinitialize and redraw the screen completely. */
@@ -1130,7 +1043,10 @@ void regenerate_screen(void)
 	COLS = win.ws_col;
 	LINES = win.ws_row;
 #endif
-	editwincols = COLS - margin;
+	thebar = (ISSET(INDICATOR) && LINES > 5 && COLS > 9) ? 1 : 0;
+	bardata = nrealloc(bardata, LINES * sizeof(int));
+
+	editwincols = COLS - margin - thebar;
 
 	/* Do as the website suggests: leave and immediately reenter curses mode. */
 	endwin();
@@ -1143,8 +1059,9 @@ void regenerate_screen(void)
 
 	/* If we have an open buffer, redraw the contents of the subwindows. */
 	if (openfile) {
+		compute_the_extra_rows_per_line_from(openfile->filetop);
 		ensure_firstcolumn_is_aligned();
-		total_refresh();
+		draw_all_subwindows();
 	}
 }
 
@@ -1162,7 +1079,7 @@ void do_toggle(int flag)
 	switch (flag) {
 		case NO_HELP:
 			window_init();
-			total_refresh();
+			draw_all_subwindows();
 			break;
 #ifdef ENABLE_MOUSE
 		case USE_MOUSE:
@@ -1173,7 +1090,9 @@ void do_toggle(int flag)
 			signal_init();
 			break;
 		case SOFTWRAP:
-			if (!ISSET(SOFTWRAP))
+			if (ISSET(SOFTWRAP))
+				compute_the_extra_rows_per_line_from(openfile->filetop);
+			else
 				openfile->firstcolumn = 0;
 			refresh_needed = TRUE;
 			break;
@@ -1182,7 +1101,8 @@ void do_toggle(int flag)
 			refresh_needed = TRUE;
 			break;
 #ifdef ENABLE_COLOR
-		case NO_COLOR_SYNTAX:
+		case NO_SYNTAX:
+			precalc_multicolorinfo();
 			refresh_needed = TRUE;
 			break;
 #endif
@@ -1190,7 +1110,7 @@ void do_toggle(int flag)
 
 	enabled = ISSET(flag);
 
-	if (flag == NO_HELP || flag == NO_COLOR_SYNTAX)
+	if (flag == NO_HELP || flag == NO_SYNTAX)
 		enabled = !enabled;
 
 	statusline(HUSH, "%s %s", _(flagtostr(flag)),
@@ -1303,7 +1223,7 @@ void terminal_init(void)
 
 #ifndef NANO_TINY
 	/* Tell the terminal to enable bracketed pastes. */
-	printf("\e[?2004h");
+	printf("\x1B[?2004h");
 	fflush(stdout);
 #endif
 }
@@ -1336,10 +1256,12 @@ void confirm_margin(void)
 
 	if (needed_margin != margin) {
 		margin = needed_margin;
-		editwincols = COLS - margin;
+		editwincols = COLS - margin - thebar;
 
 #ifndef NANO_TINY
-		/* Ensure that firstcolumn is the starting column of its chunk. */
+		/* Recompute the softwrapped chunks for each line in the buffer,
+		 * and ensure a proper starting column for the first screen row. */
+		compute_the_extra_rows_per_line_from(openfile->filetop);
 		ensure_firstcolumn_is_aligned();
 #endif
 		/* The margin has changed -- schedule a full refresh. */
@@ -1351,20 +1273,23 @@ void confirm_margin(void)
 /* Say that an unbound key was struck, and if possible which one. */
 void unbound_key(int code)
 {
-	if (code > 0x7F)
+	if (code == FOREIGN_SEQUENCE)
+		/* TRANSLATORS: This refers to a sequence of escape codes
+		 * (from the keyboard) that nano does not recognize. */
+		statusline(ALERT, _("Unknown sequence"));
+	else if (code > 0x7F)
 		statusline(ALERT, _("Unbound key"));
 	else if (meta_key) {
-		if (code == '[')
-			statusline(ALERT, _("Unbindable key: M-["));
 #ifndef NANO_TINY
-		else if (code < 0x20)
+		if (code < 0x20)
 			statusline(ALERT, _("Unbindable key: M-^%c"), code + 0x40);
+		else
 #endif
 #ifdef ENABLE_NANORC
-		else if (shifted_metas && 'A' <= code && code <= 'Z')
+		if (shifted_metas && 'A' <= code && code <= 'Z')
 			statusline(ALERT, _("Unbound key: Sh-M-%c"), code);
-#endif
 		else
+#endif
 			statusline(ALERT, _("Unbound key: M-%c"), toupper(code));
 	} else if (code == ESC_CODE)
 		statusline(ALERT, _("Unbindable key: ^["));
@@ -1485,13 +1410,108 @@ void suck_up_input_and_paste_it(void)
 			beep();
 	}
 
-	cutbottom = line;
-
 	paste_text();
 
+	free_lines(cutbuffer);
 	cutbuffer = was_cutbuffer;
 }
 #endif
+
+/* Insert the given short burst of bytes into the edit buffer. */
+void inject(char *burst, size_t count)
+{
+	linestruct *thisline = openfile->current;
+	size_t datalen = strlen(thisline->data);
+#ifndef NANO_TINY
+	size_t old_amount = openfile->current->extrarows;
+	size_t original_row = 0;
+
+	if (ISSET(SOFTWRAP)) {
+		if (openfile->current_y == editwinrows - 1)
+			original_row = chunk_for(xplustabs(), thisline);
+	}
+#endif
+
+	/* Encode an embedded NUL byte as 0x0A. */
+	for (size_t index = 0; index < count; index++)
+		if (burst[index] == '\0')
+			burst[index] = '\n';
+
+#ifndef NANO_TINY
+	/* Only add a new undo item when the current item is not an ADD or when
+	 * the current typing is not contiguous with the previous typing. */
+	if (openfile->last_action != ADD ||
+				openfile->current_undo->tail_lineno != thisline->lineno ||
+				openfile->current_undo->tail_x != openfile->current_x)
+		add_undo(ADD, NULL);
+#endif
+
+	/* Make room for the new bytes and copy them into the line. */
+	thisline->data = charealloc(thisline->data, datalen + count + 1);
+	memmove(thisline->data + openfile->current_x + count,
+						thisline->data + openfile->current_x,
+						datalen - openfile->current_x + 1);
+	strncpy(thisline->data + openfile->current_x, burst, count);
+
+#ifndef NANO_TINY
+	/* When the mark is to the right of the cursor, compensate its position. */
+	if (thisline == openfile->mark && openfile->current_x < openfile->mark_x)
+		openfile->mark_x += count;
+
+	/* When the cursor is on the top row and not on the first chunk
+	 * of a line, adding text there might change the preceding chunk
+	 * and thus require an adjustment of firstcolumn. */
+	if (thisline == openfile->edittop && openfile->firstcolumn > 0) {
+		ensure_firstcolumn_is_aligned();
+		refresh_needed = TRUE;
+	}
+#endif
+	/* If text was added to the magic line, create a new magic line. */
+	if (thisline == openfile->filebot && !ISSET(NO_NEWLINES)) {
+		new_magicline();
+		if (margin > 0)
+			refresh_needed = TRUE;
+	}
+
+	openfile->current_x += count;
+
+	openfile->totsize += mbstrlen(burst);
+	set_modified();
+
+#ifndef NANO_TINY
+	update_undo(ADD);
+#endif
+
+#ifdef ENABLE_WRAPPING
+	/* Wrap the line when needed, and if so, schedule a refresh. */
+	if (ISSET(BREAK_LONG_LINES) && do_wrap())
+		refresh_needed = TRUE;
+#endif
+
+#ifndef NANO_TINY
+	/* When softwrapping and the number of chunks in the current line changed,
+	 * or we were on the last row of the edit window and moved to a new chunk,
+	 * we need a full refresh. */
+	if (ISSET(SOFTWRAP)) {
+		openfile->current->extrarows = extra_chunks_in(openfile->current);
+		if (openfile->current->extrarows != old_amount ||
+					(openfile->current_y == editwinrows - 1 &&
+					chunk_for(xplustabs(), openfile->current) > original_row)) {
+			refresh_needed = TRUE;
+			focusing = FALSE;
+		}
+	}
+#endif
+
+	openfile->placewewant = xplustabs();
+
+#ifdef ENABLE_COLOR
+	if (!refresh_needed)
+		check_the_multis(openfile->current);
+#endif
+	if (!refresh_needed)
+		update_line(openfile->current, openfile->current_x);
+}
 
 /* Read in a keystroke, and execute its command or insert it into the buffer. */
 void process_a_keystroke(void)
@@ -1532,16 +1552,16 @@ void process_a_keystroke(void)
 		else if (ISSET(VIEW_MODE))
 			print_view_warning();
 		else {
+#ifndef NANO_TINY
+			if (openfile->mark && openfile->kind_of_mark == SOFTMARK) {
+				openfile->mark = NULL;
+				refresh_needed = TRUE;
+			}
+#endif
 			/* Store the byte, and leave room for a terminating zero. */
 			puddle = charealloc(puddle, depth + 2);
 			puddle[depth++] = (char)input;
 		}
-#ifndef NANO_TINY
-		if (openfile->mark && openfile->kind_of_mark == SOFTMARK) {
-			openfile->mark = NULL;
-			refresh_needed = TRUE;
-		}
-#endif
 	}
 
 	/* If we have a command, or if there aren't any other key codes waiting,
@@ -1636,99 +1656,6 @@ void process_a_keystroke(void)
 #endif
 }
 
-/* Insert the given short burst of bytes into the edit buffer. */
-void inject(char *burst, size_t count)
-{
-	linestruct *thisline = openfile->current;
-	size_t datalen = strlen(thisline->data);
-#ifndef NANO_TINY
-	size_t original_row = 0, old_amount = 0;
-
-	if (ISSET(SOFTWRAP)) {
-		if (openfile->current_y == editwinrows - 1)
-			original_row = chunk_for(xplustabs(), thisline);
-		old_amount = number_of_chunks_in(thisline);
-	}
-#endif
-
-	/* Encode an embedded NUL byte as 0x0A. */
-	for (size_t index = 0; index < count; index++)
-		if (burst[index] == '\0')
-			burst[index] = '\n';
-
-#ifndef NANO_TINY
-	/* Only add a new undo item when the current item is not an ADD or when
-	 * the current typing is not contiguous with the previous typing. */
-	if (openfile->last_action != ADD ||
-				openfile->current_undo->tail_lineno != thisline->lineno ||
-				openfile->current_undo->tail_x != openfile->current_x)
-		add_undo(ADD, NULL);
-#endif
-
-	/* Make room for the new bytes and copy them into the line. */
-	thisline->data = charealloc(thisline->data, datalen + count + 1);
-	memmove(thisline->data + openfile->current_x + count,
-						thisline->data + openfile->current_x,
-						datalen - openfile->current_x + 1);
-	strncpy(thisline->data + openfile->current_x, burst, count);
-
-#ifndef NANO_TINY
-	/* When the mark is to the right of the cursor, compensate its position. */
-	if (thisline == openfile->mark && openfile->current_x < openfile->mark_x)
-		openfile->mark_x += count;
-
-	/* When the cursor is on the top row and not on the first chunk
-	 * of a line, adding text there might change the preceding chunk
-	 * and thus require an adjustment of firstcolumn. */
-	if (thisline == openfile->edittop && openfile->firstcolumn > 0) {
-		ensure_firstcolumn_is_aligned();
-		refresh_needed = TRUE;
-	}
-#endif
-	/* If text was added to the magic line, create a new magic line. */
-	if (thisline == openfile->filebot && !ISSET(NO_NEWLINES)) {
-		new_magicline();
-		if (margin > 0)
-			refresh_needed = TRUE;
-	}
-
-	openfile->current_x += count;
-
-	openfile->totsize += mbstrlen(burst);
-	set_modified();
-
-#ifndef NANO_TINY
-	update_undo(ADD);
-#endif
-
-#ifdef ENABLE_WRAPPING
-	/* Wrap the line when needed, and if so, schedule a refresh. */
-	if (ISSET(BREAK_LONG_LINES) && do_wrap())
-		refresh_needed = TRUE;
-#endif
-
-#ifndef NANO_TINY
-	/* If we were on the last row of the edit window and moved to a new chunk,
-	 * or if the number of chunks that the current softwrapped line occupies
-	 * changed, we need a full refresh. */
-	if (ISSET(SOFTWRAP) && ((openfile->current_y == editwinrows - 1 &&
-				chunk_for(xplustabs(), openfile->current) > original_row) ||
-				number_of_chunks_in(openfile->current) != old_amount)) {
-		refresh_needed = TRUE;
-		focusing = FALSE;
-	}
-#endif
-
-	openfile->placewewant = xplustabs();
-
-#ifdef ENABLE_COLOR
-	if (!refresh_needed)
-		check_the_multis(openfile->current);
-#endif
-	if (!refresh_needed)
-		update_line(openfile->current, openfile->current_x);
-}
-
 int main(int argc, char **argv)
 {
 	int stdin_flags, optchr;
@@ -1801,7 +1728,8 @@ int main(int argc, char **argv)
 #ifdef ENABLE_SPELLER
 		{"speller", 1, NULL, 's'},
 #endif
-		{"tempfile", 0, NULL, 't'},
+		{"saveonexit", 0, NULL, 't'},
+		{"tempfile", 0, NULL, 't'},  /* Deprecated; remove in 2022. */
 		{"view", 0, NULL, 'v'},
 #ifdef ENABLE_WRAPPING
 		{"nowrap", 0, NULL, 'w'},
@@ -1818,18 +1746,18 @@ int main(int argc, char **argv)
 		{"guidestripe", 1, NULL, 'J'},
 		{"nonewlines", 0, NULL, 'L'},
 		{"noconvert", 0, NULL, 'N'},
-		{"morespace", 0, NULL, 'O'},
+		{"bookstyle", 0, NULL, 'O'},
 		{"positionlog", 0, NULL, 'P'},
-		{"smooth", 0, NULL, 'S'},
+		{"softwrap", 0, NULL, 'S'},
 		{"wordbounds", 0, NULL, 'W'},
 		{"wordchars", 1, NULL, 'X'},
 		{"zap", 0, NULL, 'Z'},
 		{"atblanks", 0, NULL, 'a'},
 		{"autoindent", 0, NULL, 'i'},
 		{"cutfromcursor", 0, NULL, 'k'},
+		{"indicator", 0, NULL, 'q'},
 		{"unix", 0, NULL, 'u'},
 		{"afterends", 0, NULL, 'y'},
-		{"softwrap", 0, NULL, '$'},
 #endif
 		{NULL, 0, NULL, 0}
 	};
@@ -1838,7 +1766,7 @@ int main(int argc, char **argv)
 	struct vt_stat dummy;
 
 	/* Check whether we're running on a Linux console. */
-	on_a_vt = (ioctl(0, VT_GETSTATE, &dummy) == 0);
+	on_a_vt = (ioctl(1, VT_GETSTATE, &dummy) == 0);
 #endif
 
 	/* Back up the terminal settings so that they can be restored. */
@@ -1886,14 +1814,14 @@ int main(int argc, char **argv)
 		SET(RESTRICTED);
 
 	while ((optchr = getopt_long(argc, argv, "ABC:DEFGHIJ:KLMNOPQ:RST:UVWX:Y:Z"
-				"abcdef:ghijklmno:pr:s:tuvwxyz$", long_options, NULL)) != -1) {
+				"abcdef:ghijklmno:pqr:s:tuvwxyz$", long_options, NULL)) != -1) {
 		switch (optchr) {
 #ifndef NANO_TINY
 			case 'A':
 				SET(SMART_HOME);
 				break;
 			case 'B':
-				SET(BACKUP_FILE);
+				SET(MAKE_BACKUP);
 				break;
 			case 'C':
 				backup_dir = mallocstrcpy(backup_dir, optarg);
@@ -1954,8 +1882,7 @@ int main(int argc, char **argv)
 				SET(NO_CONVERT);
 				break;
 			case 'O':
-				fprintf(stderr, N_("Option %s is ignored; it is the default\n"),
-										"morespace");
+				SET(BOOKSTYLE);
 				break;
 #endif
 #ifdef ENABLE_HISTORIES
@@ -1973,8 +1900,8 @@ int main(int argc, char **argv)
 				break;
 #ifndef NANO_TINY
 			case 'S':
-				fprintf(stderr, N_("Option %s is ignored; it is the default\n"),
-										"smooth");
+			case '$':  /* Deprecated; remove in 2024. */
+				SET(SOFTWRAP);
 				break;
 #endif
 			case 'T':
@@ -2072,6 +1999,11 @@ int main(int argc, char **argv)
 			case 'p':
 				SET(PRESERVE);
 				break;
+#ifndef NANO_TINY
+			case 'q':
+				SET(INDICATOR);
+				break;
+#endif
 #ifdef ENABLED_WRAPORJUSTIFY
 			case 'r':
 				if (!parse_num(optarg, &fill)) {
@@ -2090,7 +2022,7 @@ int main(int argc, char **argv)
 				break;
 #endif
 			case 't':
-				SET(TEMP_FILE);
+				SET(SAVE_ON_EXIT);
 				break;
 #ifndef NANO_TINY
 			case 'u':
@@ -2116,16 +2048,21 @@ int main(int argc, char **argv)
 			case 'z':
 				SET(SUSPENDABLE);
 				break;
-#ifndef NANO_TINY
-			case '$':
-				SET(SOFTWRAP);
-				break;
-#endif
 			default:
 				printf(_("Type '%s -h' for a list of available options.\n"), argv[0]);
 				exit(1);
 		}
 	}
+
+	/* Enter into curses mode.  Abort if this fails. */
+	if (initscr() == NULL)
+		exit(1);
+
+#ifdef ENABLE_COLOR
+	/* If the terminal can do colors, tell ncurses to switch them on. */
+	if (has_colors())
+		start_color();
+#endif
 
 	/* Set up the function and shortcut lists.  This needs to be done
 	 * before reading the rcfile, to be able to rebind/unbind keys. */
@@ -2240,7 +2177,7 @@ int main(int argc, char **argv)
 	/* When in restricted mode, disable backups, suspending, and history files,
 	 * since they allow writing to files not specified on the command line. */
 	if (ISSET(RESTRICTED)) {
-		UNSET(BACKUP_FILE);
+		UNSET(MAKE_BACKUP);
 		UNSET(SUSPENDABLE);
 #ifdef ENABLE_NANORC
 		UNSET(HISTORYLOG);
@@ -2350,24 +2287,22 @@ int main(int argc, char **argv)
 	if (tabsize == -1)
 		tabsize = WIDTH_OF_TAB;
 
-	/* Initialize curses mode.  If this fails, get out. */
-	if (initscr() == NULL)
-		exit(1);
-
-	started_curses = TRUE;
-
 #ifdef ENABLE_COLOR
-	set_colorpairs();
-#else
-	interface_color_pair[TITLE_BAR] = hilite_attribute;
-	interface_color_pair[LINE_NUMBER] = hilite_attribute;
-	interface_color_pair[GUIDE_STRIPE] = A_REVERSE;
-	interface_color_pair[SELECTED_TEXT] = hilite_attribute;
-	interface_color_pair[STATUS_BAR] = hilite_attribute;
-	interface_color_pair[ERROR_MESSAGE] = hilite_attribute;
-	interface_color_pair[KEY_COMBO] = hilite_attribute;
-	interface_color_pair[FUNCTION_TAG] = A_NORMAL;
+	/* On capable terminals, use colors, otherwise just reverse or bold.*/
+	if (has_colors())
+		set_interface_colorpairs();
+	else
 #endif
+	{
+		interface_color_pair[TITLE_BAR] = hilite_attribute;
+		interface_color_pair[LINE_NUMBER] = hilite_attribute;
+		interface_color_pair[GUIDE_STRIPE] = A_REVERSE;
+		interface_color_pair[SELECTED_TEXT] = hilite_attribute;
+		interface_color_pair[STATUS_BAR] = hilite_attribute;
+		interface_color_pair[ERROR_MESSAGE] = hilite_attribute;
+		interface_color_pair[KEY_COMBO] = hilite_attribute;
+		interface_color_pair[FUNCTION_TAG] = A_NORMAL;
+	}
 
 	/* Set up the terminal state. */
 	terminal_init();
@@ -2376,7 +2311,11 @@ int main(int argc, char **argv)
 	window_init();
 	curs_set(0);
 
-	editwincols = COLS;
+#ifndef NANO_TINY
+	thebar = (ISSET(INDICATOR) && LINES > 5 && COLS > 9) ? 1 : 0;
+	bardata = nrealloc(bardata, LINES * sizeof(int));
+#endif
+	editwincols = COLS - thebar;
 
 	/* Set up the signal handlers. */
 	signal_init();
@@ -2413,6 +2352,10 @@ int main(int argc, char **argv)
 	altright = get_keycode("kRIT3", ALT_RIGHT);
 	altup = get_keycode("kUP3", ALT_UP);
 	altdown = get_keycode("kDN3", ALT_DOWN);
+
+	altpageup = get_keycode("kPRV3", ALT_PAGEUP);
+	altpagedown = get_keycode("kNXT3", ALT_PAGEDOWN);
+	altinsert = get_keycode("kIC3", ALT_INSERT);
 	altdelete = get_keycode("kDC3", ALT_DELETE);
 
 	shiftaltleft = get_keycode("kLFT4", SHIFT_ALT_LEFT);
@@ -2519,11 +2462,6 @@ int main(int argc, char **argv)
 	}
 #endif
 
-#ifdef __linux__
-	/* Check again whether we're running on a Linux console. */
-	on_a_vt = (ioctl(0, VT_GETSTATE, &dummy) == 0);
-#endif
-
 	prepare_for_display();
 
 #ifdef ENABLE_NANORC
@@ -2550,13 +2488,13 @@ int main(int argc, char **argv)
 		if (currmenu != MMAIN)
 			bottombars(MMAIN);
 
+		/* Update the displayed current cursor position only when there
+		 * is no message and no keys are waiting in the input buffer. */
+		if (ISSET(CONSTANT_SHOW) && lastmessage == VACUUM && get_key_buffer_len() == 0)
+			report_cursor_position();
+
 		lastmessage = VACUUM;
 		as_an_at = TRUE;
-
-		/* Update the displayed current cursor position only when there
-		 * are no keys waiting in the input buffer. */
-		if (ISSET(CONSTANT_SHOW) && get_key_buffer_len() == 0)
-			do_cursorpos(FALSE);
 
 		/* Refresh just the cursor position or the entire edit window. */
 		if (!refresh_needed) {

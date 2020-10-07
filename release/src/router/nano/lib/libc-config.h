@@ -180,4 +180,5 @@
 
 /* A substitute for glibc <shlib-compat.h>, good enough for Gnulib.  */
 #define SHLIB_COMPAT(lib, introduced, obsoleted) 0
-#define versioned_symbol(lib, local, symbol, version)
+#define compat_symbol(lib, local, symbol, version) extern int dummy
+#define versioned_symbol(lib, local, symbol, version) extern int dummy

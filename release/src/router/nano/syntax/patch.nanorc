@@ -1,4 +1,4 @@
-## Here is an example for patch files.
+## Syntax highlighting for patch and diff files.
 
 syntax patch "\.(patch|diff|debdiff)$"
 magic "diff output"

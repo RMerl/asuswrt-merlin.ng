@@ -45,7 +45,9 @@
    'configure' might #define 'restrict' to those words, so pick a
    different name.  */
 #ifndef _Restrict_
-# if defined __restrict || 2 < __GNUC__ + (95 <= __GNUC_MINOR__)
+# if defined __restrict \
+     || 2 < __GNUC__ + (95 <= __GNUC_MINOR__) \
+     || __clang_major__ >= 3
 #  define _Restrict_ __restrict
 # elif 199901L <= __STDC_VERSION__ || defined restrict
 #  define _Restrict_ restrict

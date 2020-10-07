@@ -30,6 +30,9 @@
 #if defined _WIN32 && ! defined __CYGWIN__
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
+/* Don't assume that UNICODE is not defined.  */
+# undef GetUserName
+# define GetUserName GetUserNameA
 #else
 # if !HAVE_DECL_GETLOGIN
 extern char *getlogin (void);

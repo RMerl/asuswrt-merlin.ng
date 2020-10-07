@@ -46,6 +46,7 @@ AC_DEFUN([gl_EARLY],
   # Code from module absolute-header:
   # Code from module alloca:
   # Code from module alloca-opt:
+  # Code from module attribute:
   # Code from module btowc:
   # Code from module builtin-expect:
   # Code from module c99:
@@ -55,7 +56,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module d-type:
   # Code from module dirent:
   # Code from module dirfd:
-  # Code from module dosname:
   # Code from module errno:
   # Code from module extensions:
   # Code from module extern-inline:
@@ -99,7 +99,6 @@ AC_DEFUN([gl_EARLY],
   # Code from module localcharset:
   # Code from module locale:
   # Code from module localeconv:
-  # Code from module localtime-buffer:
   # Code from module lock:
   # Code from module lstat:
   # Code from module malloc-posix:
@@ -184,6 +183,8 @@ AC_DEFUN([gl_EARLY],
   # Code from module windows-once:
   # Code from module windows-recmutex:
   # Code from module windows-rwlock:
+  # Code from module wmemchr:
+  # Code from module wmempcpy:
   # Code from module xalloc-oversized:
   # Code from module xsize:
 ])
@@ -373,8 +374,6 @@ AC_DEFUN([gl_INIT],
     gl_PREREQ_LOCALECONV
   fi
   gl_LOCALE_MODULE_INDICATOR([localeconv])
-  AC_REQUIRE([gl_LOCALTIME_BUFFER_DEFAULTS])
-  AC_LIBOBJ([localtime-buffer])
   gl_LOCK
   gl_MODULE_INDICATOR([lock])
   gl_FUNC_LSTAT
@@ -421,7 +420,7 @@ AC_DEFUN([gl_INIT],
   fi
   gl_STDLIB_MODULE_INDICATOR([mbtowc])
   gl_FUNC_MEMCHR
-  if test $HAVE_MEMCHR = 0 || test $REPLACE_MEMCHR = 1; then
+  if test $REPLACE_MEMCHR = 1; then
     AC_LIBOBJ([memchr])
     gl_PREREQ_MEMCHR
   fi
@@ -612,6 +611,16 @@ AC_DEFUN([gl_INIT],
       AC_LIBOBJ([windows-rwlock])
       ;;
   esac
+  gl_FUNC_WMEMCHR
+  if test $HAVE_WMEMCHR = 0; then
+    AC_LIBOBJ([wmemchr])
+  fi
+  gl_WCHAR_MODULE_INDICATOR([wmemchr])
+  gl_FUNC_WMEMPCPY
+  if test $HAVE_WMEMPCPY = 0; then
+    AC_LIBOBJ([wmempcpy])
+  fi
+  gl_WCHAR_MODULE_INDICATOR([wmempcpy])
   gl_XSIZE
   # End of code from modules
   m4_ifval(gl_LIBSOURCES_LIST, [
@@ -758,6 +767,7 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/alloca.in.h
   lib/arg-nonnull.h
   lib/asnprintf.c
+  lib/attribute.h
   lib/btowc.c
   lib/c++defs.h
   lib/cdefs.h
@@ -766,7 +776,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/dirent-private.h
   lib/dirent.in.h
   lib/dirfd.c
-  lib/dosname.h
   lib/errno.in.h
   lib/fcntl.in.h
   lib/filename.h
@@ -829,8 +838,6 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/localcharset.h
   lib/locale.in.h
   lib/localeconv.c
-  lib/localtime-buffer.c
-  lib/localtime-buffer.h
   lib/lstat.c
   lib/malloc.c
   lib/malloc/scratch_buffer.h
@@ -949,6 +956,9 @@ AC_DEFUN([gl_FILE_LIST], [
   lib/windows-recmutex.h
   lib/windows-rwlock.c
   lib/windows-rwlock.h
+  lib/wmemchr-impl.h
+  lib/wmemchr.c
+  lib/wmempcpy.c
   lib/xalloc-oversized.h
   lib/xsize.c
   lib/xsize.h
@@ -1014,7 +1024,6 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/locale-zh.m4
   m4/locale_h.m4
   m4/localeconv.m4
-  m4/localtime-buffer.m4
   m4/lock.m4
   m4/lstat.m4
   m4/malloc.m4
@@ -1091,6 +1100,8 @@ AC_DEFUN([gl_FILE_LIST], [
   m4/wctype_h.m4
   m4/wcwidth.m4
   m4/wint_t.m4
+  m4/wmemchr.m4
+  m4/wmempcpy.m4
   m4/xsize.m4
   m4/zzgnulib.m4
 ])

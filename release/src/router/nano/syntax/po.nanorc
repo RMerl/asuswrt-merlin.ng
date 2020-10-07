@@ -1,4 +1,4 @@
-## Colouring for PO files.
+## Syntax highlighting for PO files.
 
 syntax po "\.pot?$"
 comment "#"
@@ -7,9 +7,9 @@ comment "#"
 color green "^#.*$"
 color yellow "Copyright|\(C\)"
 # Header fields.
-color brightred "^\"X-Bugs:.*\"$"
-color brightmagenta "\<(Project\-Id\-Version|Report\-Msgid\-Bugs\-To|Last\-Translator|Language(\-Team)?|X-Bugs|X-Generator|Plural\-Forms)\>"
-color cyan "\<(POT\-Creation\-Date|PO\-Revision\-Date|MIME\-Version|Content\-Type|Content\-Transfer\-Encoding)\>"
+color brightred "^"X-Bugs:.*"$"
+color brightmagenta "\<(Project-Id-Version|Report-Msgid-Bugs-To|Last-Translator|Language(-Team)?|X-Bugs|X-Generator|Plural-Forms)\>"
+color cyan "\<(POT-Creation-Date|PO-Revision-Date|MIME-Version|Content-Type|Content-Transfer-Encoding)\>"
 # Encodings and numbers.
 color yellow "\<(UTF|ISO|Windows|Mac|IBM)-[0-9]+"
 color yellow "\<((pre|rc)?[0-9]+|[0-9]bit)\>"
@@ -21,9 +21,9 @@ color yellow " (no-)?[-[:alpha:]]+-format(,|$)"
 # Format specifiers.
 color brightmagenta "%([1-9]\$)?[a-z]*"
 # Quotes and escaped characters.
-color yellow "\""
+color yellow """
 color cyan "\\([abcefnrtv"\]|x[0-9abcdefABCDEF]{2}|[0-7]{3})"
 # Reminders.
-color brightwhite,yellow "(FIXME|TODO|XXX)"
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
 # Obsolete strings.
 color red "#~.*"

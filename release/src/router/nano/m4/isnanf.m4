@@ -1,4 +1,4 @@
-# isnanf.m4 serial 15
+# isnanf.m4 serial 17
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -74,9 +74,9 @@ AC_DEFUN([gl_HAVE_ISNANF_NO_LIBM],
       AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
            [[#include <math.h>
-             #if __GNUC__ >= 4
+             #if (__GNUC__ >= 4) || (__clang_major__ >= 4)
              # undef isnanf
-             # define isnanf(x) __builtin_isnanf ((float)(x))
+             # define isnanf(x) __builtin_isnan ((float)(x))
              #elif defined isnan
              # undef isnanf
              # define isnanf(x) isnan ((float)(x))
@@ -99,9 +99,9 @@ AC_DEFUN([gl_HAVE_ISNANF_IN_LIBM],
       AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
            [[#include <math.h>
-             #if __GNUC__ >= 4
+             #if (__GNUC__ >= 4) || (__clang_major__ >= 4)
              # undef isnanf
-             # define isnanf(x) __builtin_isnanf ((float)(x))
+             # define isnanf(x) __builtin_isnan ((float)(x))
              #elif defined isnan
              # undef isnanf
              # define isnanf(x) isnan ((float)(x))
@@ -127,9 +127,9 @@ AC_DEFUN([gl_ISNANF_WORKS],
       AC_RUN_IFELSE(
         [AC_LANG_SOURCE([[
 #include <math.h>
-#if __GNUC__ >= 4
+#if (__GNUC__ >= 4) || (__clang_major__ >= 4)
 # undef isnanf
-# define isnanf(x) __builtin_isnanf ((float)(x))
+# define isnanf(x) __builtin_isnan ((float)(x))
 #elif defined isnan
 # undef isnanf
 # define isnanf(x) isnan ((float)(x))

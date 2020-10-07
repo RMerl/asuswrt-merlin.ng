@@ -1,4 +1,4 @@
-## Here is an example for C/C++.
+## Syntax highlighting for C and C++ files.
 
 syntax c "\.([ch](pp|xx)?|C|cc|c\+\+|cu|H|hh|ii?)$"
 header "-\*-.*\<C(\+\+)?((;|\s).*)?-\*-"
@@ -24,9 +24,6 @@ color cyan "__attribute__[[:space:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidd
 # Strings.  In general you will want your strings and comments to come last,
 # because highlighting rules are applied in the order they are read in.
 color brightyellow ""([^"]|\\")*"" "#[[:space:]]*include[[:space:]]+<[^[:blank:]=]*>"
-# Multiline strings.  This regex is VERY resource intensive,
-# and sometimes colours things that shouldn't be coloured.
-###color brightyellow start=""(\\.|[^"])*\\[[:space:]]*$" end="^(\\.|[^"])*""
 
 # Preprocessor directives.
 color brightcyan start="^[[:space:]]*#[[:space:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\\])$"

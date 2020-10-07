@@ -1,4 +1,4 @@
-# Check for fnmatch - serial 14.  -*- coding: utf-8 -*-
+# Check for fnmatch - serial 15.  -*- coding: utf-8 -*-
 
 # Copyright (C) 2000-2007, 2009-2020 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
@@ -149,7 +149,5 @@ AC_DEFUN([gl_PREREQ_FNMATCH],
 [
   dnl Prerequisites of lib/fnmatch.c.
   AC_REQUIRE([AC_TYPE_MBSTATE_T])
-  AC_CHECK_DECLS([isblank], [], [], [[#include <ctype.h>]])
-  AC_CHECK_FUNCS_ONCE([btowc isblank iswctype mbsrtowcs mempcpy wmemchr wmemcpy wmempcpy])
-  AC_CHECK_HEADERS_ONCE([wctype.h])
+  AC_CHECK_FUNCS_ONCE([mbsrtowcs])
 ])

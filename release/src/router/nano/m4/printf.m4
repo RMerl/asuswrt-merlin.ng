@@ -1,4 +1,4 @@
-# printf.m4 serial 64
+# printf.m4 serial 69
 dnl Copyright (C) 2003, 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -257,6 +257,9 @@ changequote(,)dnl
            netbsd[1-2]* | netbsdelf[1-2]* | netbsdaout[1-2]* | netbsdcoff[1-2]*)
                                  gl_cv_func_printf_infinite="guessing no";;
            netbsd*)              gl_cv_func_printf_infinite="guessing yes";;
+                                 # Guess yes on OpenBSD >= 6.0.
+           openbsd[1-5].*)       gl_cv_func_printf_infinite="guessing no";;
+           openbsd*)             gl_cv_func_printf_infinite="guessing yes";;
                                  # Guess yes on BeOS.
            beos*)                gl_cv_func_printf_infinite="guessing yes";;
                                  # Guess no on Android.
@@ -469,6 +472,9 @@ changequote(,)dnl
                                          # Guess yes on HP-UX >= 11.
                    hpux[7-9]* | hpux10*) gl_cv_func_printf_infinite_long_double="guessing no";;
                    hpux*)                gl_cv_func_printf_infinite_long_double="guessing yes";;
+                                         # Guess yes on OpenBSD >= 6.0.
+                   openbsd[1-5].*)       gl_cv_func_printf_infinite_long_double="guessing no";;
+                   openbsd*)             gl_cv_func_printf_infinite_long_double="guessing yes";;
                                          # Guess no on Android.
                    linux*-android*)      gl_cv_func_printf_infinite_long_double="guessing no";;
 changequote([,])dnl
@@ -641,6 +647,9 @@ changequote(,)dnl
                                  # Guess yes on Mac OS X >= 10.3.
            darwin[1-6].*)        gl_cv_func_printf_directive_f="guessing no";;
            darwin*)              gl_cv_func_printf_directive_f="guessing yes";;
+                                 # Guess yes on OpenBSD >= 6.0.
+           openbsd[1-5].*)       gl_cv_func_printf_directive_f="guessing no";;
+           openbsd*)             gl_cv_func_printf_directive_f="guessing yes";;
                                  # Guess yes on Solaris >= 2.10.
            solaris2.[1-9][0-9]*) gl_cv_func_printf_directive_f="guessing yes";;
            solaris*)             gl_cv_func_printf_directive_f="guessing no";;
@@ -680,7 +689,10 @@ AC_DEFUN([gl_PRINTF_DIRECTIVE_N],
 #include <stdlib.h>
 #include <string.h>
 #ifdef _MSC_VER
-/* See page about "Parameter Validation" on msdn.microsoft.com.  */
+#include <inttypes.h>
+/* See page about "Parameter Validation" on msdn.microsoft.com.
+   <https://docs.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation>
+   <https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/set-invalid-parameter-handler-set-thread-local-invalid-parameter-handler>  */
 static void cdecl
 invalid_parameter_handler (const wchar_t *expression,
                            const wchar_t *function,
@@ -801,7 +813,9 @@ int main ()
         [
 changequote(,)dnl
          case "$host_os" in
-           openbsd*)        gl_cv_func_printf_directive_ls="guessing no";;
+                            # Guess yes on OpenBSD >= 6.0.
+           openbsd[1-5].*)  gl_cv_func_printf_directive_ls="guessing no";;
+           openbsd*)        gl_cv_func_printf_directive_ls="guessing yes";;
            irix*)           gl_cv_func_printf_directive_ls="guessing no";;
            solaris*)        gl_cv_func_printf_directive_ls="guessing no";;
            cygwin*)         gl_cv_func_printf_directive_ls="guessing no";;
@@ -1069,9 +1083,8 @@ AC_DEFUN([gl_PRINTF_ENOMEM],
       gl_cv_func_printf_enomem="guessing no"
       if test "$cross_compiling" = no; then
         if test $APPLE_UNIVERSAL_BUILD = 0; then
-          AC_LANG_CONFTEST([AC_LANG_SOURCE([
+          AC_LANG_CONFTEST([AC_LANG_SOURCE([[
 ]GL_NOCRASH[
-changequote(,)dnl
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/time.h>
@@ -1116,8 +1129,7 @@ int main()
   ret = printf ("%.5000000f", 1.0);
   return !(ret == 5000002 || (ret < 0 && errno == ENOMEM));
 }
-changequote([,])dnl
-          ])])
+          ]])])
           if AC_TRY_EVAL([ac_link]) && test -s conftest$ac_exeext; then
             (./conftest 2>&AS_MESSAGE_LOG_FD
              result=$?
@@ -1677,8 +1689,10 @@ dnl                                  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
 dnl   glibc 2.5                      .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 dnl   glibc 2.3.6                    .  .  .  .  #  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 dnl   FreeBSD 5.4, 6.1               .  .  .  .  #  .  .  .  .  .  .  #  .  #  .  .  .  .  .  .
+dnl   Mac OS X 10.13.5               .  .  .  #  #  .  #  .  .  .  .  .  .  .  .  .  .  #  .  .
 dnl   Mac OS X 10.5.8                .  .  .  #  #  .  .  .  .  .  .  #  .  .  .  .  .  .  .  .
 dnl   Mac OS X 10.3.9                .  .  .  .  #  .  .  .  .  .  .  #  .  #  .  .  .  .  .  .
+dnl   OpenBSD 6.0, 6.7               .  .  .  .  #  .  .  .  .  .  .  .  .  #  .  .  .  .  .  .
 dnl   OpenBSD 3.9, 4.0               .  .  #  #  #  #  .  #  .  #  .  #  .  #  .  .  .  .  .  .
 dnl   Cygwin 1.7.0 (2009)            .  .  .  #  .  .  .  ?  .  .  .  .  .  ?  .  .  .  .  .  .
 dnl   Cygwin 1.5.25 (2008)           .  .  .  #  #  .  .  #  .  .  .  .  .  #  .  .  .  .  .  .
@@ -1698,6 +1712,7 @@ dnl   HP-UX 10.20                    #  .  #  .  #  #  .  ?  .  .  #  #  .  .  .
 dnl   IRIX 6.5                       #  .  #  #  #  #  .  #  .  .  .  #  .  .  .  .  #  .  .  .
 dnl   OSF/1 5.1                      #  .  #  #  #  #  .  .  .  .  .  #  .  .  .  .  #  .  .  #
 dnl   OSF/1 4.0d                     #  .  #  #  #  #  .  .  .  .  .  #  .  .  #  #  #  #  #  #
+dnl   NetBSD 9.0                     .  .  .  .  #  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .
 dnl   NetBSD 5.0                     .  .  .  #  #  .  .  .  .  .  .  #  .  #  .  .  .  .  .  .
 dnl   NetBSD 4.0                     .  ?  ?  ?  ?  ?  .  ?  .  ?  ?  ?  ?  ?  .  .  .  ?  ?  ?
 dnl   NetBSD 3.0                     .  .  .  .  #  #  .  ?  #  #  ?  #  .  #  .  .  .  .  .  .

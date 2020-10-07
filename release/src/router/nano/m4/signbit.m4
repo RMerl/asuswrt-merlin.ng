@@ -1,4 +1,4 @@
-# signbit.m4 serial 19
+# signbit.m4 serial 20
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -40,15 +40,16 @@ AC_DEFUN([gl_SIGNBIT],
          esac
         ])
     ])
-  dnl GCC 4.0 and newer provides three built-ins for signbit.
+  dnl GCC >= 4.0 and clang provide three built-ins for signbit.
   dnl They can be used without warnings, also in C++, regardless of <math.h>.
   dnl But they may expand to calls to functions, which may or may not be in
   dnl libc.
-  AC_CACHE_CHECK([for signbit compiler built-ins], [gl_cv_func_signbit_gcc],
+  AC_CACHE_CHECK([for signbit compiler built-ins],
+    [gl_cv_func_signbit_builtins],
     [
       AC_RUN_IFELSE(
         [AC_LANG_SOURCE([[
-#if __GNUC__ >= 4
+#if (__GNUC__ >= 4) || (__clang_major__ >= 4)
 # define signbit(x) \
    (sizeof (x) == sizeof (long double) ? __builtin_signbitl (x) : \
     sizeof (x) == sizeof (double) ? __builtin_signbit (x) : \
@@ -59,30 +60,30 @@ AC_DEFUN([gl_SIGNBIT],
 #include <string.h>
 ]gl_SIGNBIT_TEST_PROGRAM
 ])],
-        [gl_cv_func_signbit_gcc=yes],
-        [gl_cv_func_signbit_gcc=no],
+        [gl_cv_func_signbit_builtins=yes],
+        [gl_cv_func_signbit_builtins=no],
         [case "$host_os" in
                           # Guess yes on glibc systems.
-           *-gnu* | gnu*) gl_cv_func_signbit_gcc="guessing yes" ;;
+           *-gnu* | gnu*) gl_cv_func_signbit_builtins="guessing yes" ;;
                           # Guess yes on musl systems.
-           *-musl*)       gl_cv_func_signbit_gcc="guessing yes" ;;
+           *-musl*)       gl_cv_func_signbit_builtins="guessing yes" ;;
                           # Guess yes on mingw, no on MSVC.
            mingw*)        if test -n "$GCC"; then
-                            gl_cv_func_signbit_gcc="guessing yes"
+                            gl_cv_func_signbit_builtins="guessing yes"
                           else
-                            gl_cv_func_signbit_gcc="guessing no"
+                            gl_cv_func_signbit_builtins="guessing no"
                           fi
                           ;;
                           # If we don't know, obey --enable-cross-guesses.
-           *)             gl_cv_func_signbit_gcc="$gl_cross_guess_normal" ;;
+           *)             gl_cv_func_signbit_builtins="$gl_cross_guess_normal" ;;
          esac
         ])
     ])
   dnl Use the compiler built-ins whenever possible, because they are more
   dnl efficient than the system library functions (if they exist).
-  case "$gl_cv_func_signbit_gcc" in
+  case "$gl_cv_func_signbit_builtins" in
     *yes)
-      REPLACE_SIGNBIT_USING_GCC=1
+      REPLACE_SIGNBIT_USING_BUILTINS=1
       ;;
     *)
       case "$gl_cv_func_signbit" in

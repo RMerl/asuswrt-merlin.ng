@@ -1,4 +1,4 @@
-# size_max.m4 serial 11
+# size_max.m4 serial 12
 dnl Copyright (C) 2003, 2005-2006, 2008-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -13,7 +13,7 @@ AC_DEFUN([gl_SIZE_MAX],
   AC_CHECK_HEADERS([stdint.h])
   dnl First test whether the system already has SIZE_MAX.
   AC_CACHE_CHECK([for SIZE_MAX], [gl_cv_size_max], [
-    gl_cv_size_max=
+    gl_cv_size_max=no
     AC_EGREP_CPP([Found it], [
 #include <limits.h>
 #if HAVE_STDINT_H
@@ -23,7 +23,7 @@ AC_DEFUN([gl_SIZE_MAX],
 Found it
 #endif
 ], [gl_cv_size_max=yes])
-    if test -z "$gl_cv_size_max"; then
+    if test $gl_cv_size_max != yes; then
       dnl Define it ourselves. Here we assume that the type 'size_t' is not wider
       dnl than the type 'unsigned long'. Try hard to find a definition that can
       dnl be used in a preprocessor #if, i.e. doesn't contain a cast.

@@ -1,4 +1,4 @@
-## Here is an example for PostgreSQL.
+## Syntax highlighting for (Postgres) SQL scripts.
 
 syntax sql "\.sql[2345s~]?$"
 comment "-- "
@@ -42,33 +42,31 @@ color ,green "[[:space:]]+$"
 # Regular expressions.
 color brightmagenta "/([^/]|(\\/))*/[iomx]*" "%r\{([^}]|(\\}))*\}[iomx]*"
 
-# Shell command expansion is in `backticks` or like %x{this}.  These are
-# "double-quotish" (to use a perlism).
+# Shell command expansion, between `backticks` or like %x{this}.
 color brightblue "`[^`]*`" "%x\{[^}]*\}"
 
 # Strings, double-quoted.
-color green ""([^"]|(\\"))*"" "%[QW]?\{[^}]*\}" "%[QW]?\([^)]*\)" "%[QW]?<[^>]*>"
-color green "%[QW]?\[[^]]*\]" "%[QW]?\$[^$]*\$" "%[QW]?\^[^^]*\^" "%[QW]?![^!]*!"
+color green ""([^"]|(\\"))*"" "%[QW]?(![^!]*!|\$[^$]*\$|\^[^^]*\^)"
+color green "%[QW]?(\([^)]*\)|<[^>]*>|\[[^]]*\]|\{[^}]*\})"
 
-# Expression substitution.  These go inside double-quoted strings,
-# "like #{this}".
+# Expression substitution for inside double-quoted strings, "like #{this}".
 color brightgreen "#\{[^}]*\}"
 
 # Strings, single-quoted.
-color green "'([^']|(\\'))*'" "%[qw]\{[^}]*\}" "%[qw]\([^)]*\)" "%[qw]<[^>]*>"
-color green "%[qw]\[[^]]*\]" "%[qw]\$[^$]*\$" "%[qw]\^[^^]*\^" "%[qw]![^!]*!"
+color green "'([^']|(\\'))*'" "%[qw](![^!]*!|\$[^$]*\$|\^[^^]*\^)"
+color green "%[qw](\([^)]*\)|<[^>]*>|\[[^]]*\]|\{[^}]*\})"
 
 # Comments.
-color red "##?[^{].*" "##?$"
-color red "--[^{].*" "--$"
+color red "##?([^{].*|$)"
+color red "--([^{].*|$)"
 color brightblue "//.*"
 color brightblue start="/\*" end="\*/"
 
 # PostgreSQL markings.
-color red "(--)"
+color red "--"
 
 # PostgreSQL default schemas.
-color brightred "(pg_catalog|public)"
+color brightred "\<(pg_catalog|public)\>"
 
 # PostgreSQL PLs.
-color brightblue "(pljava|plperlu?|plpgsql|plpy|plpythonu?|plr|plruby|plsh|pltcl|plscheme)"
+color brightblue "\<pl(java|perlu?|pgsql|py|pythonu?|r|ruby|scheme|sh|tcl)\>"

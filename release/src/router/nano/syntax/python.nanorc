@@ -1,4 +1,4 @@
-## Here is an example for Python.
+## Syntax highlighting for Python.
 
 syntax python "\.py$"
 header "^#!.*python"
@@ -34,7 +34,7 @@ color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
 color brightgreen    start=""""([^"),]|$)" end="(^|[^(\])""""
 
 # Reminders.
-color brightwhite,yellow "(FIXME|TODO|XXX)"
+color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

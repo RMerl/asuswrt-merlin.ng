@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Sat May 23 17:02:46 2020 -->
+<!-- CreationDate: Mon Aug 24 10:52:29 2020 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -108,8 +108,8 @@ the closing quote.</p>
 commands and arguments are: <b><br>
 set afterends</b></p>
 
-<p style="margin-left:15%;">Make Ctrl+Right stop at word
-ends instead of beginnings.</p>
+<p style="margin-left:15%;">Make Ctrl+Right and Ctrl+Delete
+stop at word ends instead of beginnings.</p>
 
 <p style="margin-left:11%;"><b>set
 allow_insecure_backup</b></p>
@@ -157,6 +157,12 @@ overridden by setting the options <b>titlecolor</b>,
 <b>statuscolor</b>, <b>keycolor</b>, <b>functioncolor</b>,
 <b>numbercolor</b>, and <b>selectedcolor</b>.</p>
 
+<p style="margin-left:11%;"><b>set bookstyle</b></p>
+
+<p style="margin-left:15%;">When justifying, treat any line
+that starts with whitespace as the beginning of a paragraph
+(unless auto-indenting is on).</p>
+
 <p style="margin-left:11%;"><b>set brackets
 &quot;</b><i>characters</i><b>&quot;</b></p>
 
@@ -195,7 +201,7 @@ cutting the whole line.</p>
 title bar, leaving it entirely blank.</p>
 
 <p style="margin-left:11%;"><b>set errorcolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Use this color combination for
 the status bar when an error message is displayed. The
@@ -214,7 +220,7 @@ screen if the screen is resized. The default value is
 <b>&minus;8</b>.</p>
 
 <p style="margin-left:11%;"><b>set functioncolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for the function descriptions in the two help lines
@@ -235,13 +241,20 @@ stripecolor</b>.)</p>
 strings and replacement strings and executed commands, so
 they can be easily reused in later sessions.</p>
 
+<p style="margin-left:11%;"><b>set indicator</b></p>
+
+<p style="margin-left:15%;">Display a &quot;scrollbar&quot;
+on the righthand side of the edit window. It shows the
+position of the viewport in the buffer and how much of the
+buffer is covered by the viewport.</p>
+
 <p style="margin-left:11%;"><b>set jumpyscrolling</b></p>
 
 <p style="margin-left:15%;">Scroll the buffer contents per
 half-screen instead of per line.</p>
 
 <p style="margin-left:11%;"><b>set keycolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for the shortcut key combos in the two help lines at
@@ -251,7 +264,8 @@ details.</p>
 <p style="margin-left:11%;"><b>set linenumbers</b></p>
 
 <p style="margin-left:15%;">Display line numbers to the
-left of the text area.</p>
+left of the text area. (Any line with an anchor additionally
+gets a mark in the margin.)</p>
 
 <p style="margin-left:11%;"><b>set locking</b></p>
 
@@ -261,7 +275,7 @@ when editing files.</p>
 <p style="margin-left:11%;"><b>set matchbrackets
 &quot;</b><i>characters</i><b>&quot;</b></p>
 
-<p style="margin-left:15%;">Set the opening and closing
+<p style="margin-left:15%;">Specify the opening and closing
 brackets that can be found by bracket searches. This may not
 include blank characters. The opening set must come before
 the closing set, and the two sets must be in the same order.
@@ -315,7 +329,7 @@ become the default setting. When needed, use <b>unset
 breaklonglines</b> instead.</p>
 
 <p style="margin-left:11%;"><b>set numbercolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for line numbers. See <b>set titlecolor</b> for more
@@ -390,8 +404,15 @@ Backspace.</p>
 by default. Regular expressions in <b>nano</b> are of the
 extended type (ERE).</p>
 
+<p style="margin-left:11%;"><b>set saveonexit</b></p>
+
+<p style="margin-left:15%;">Save a changed buffer
+automatically on exit (<b>^X</b>); don&rsquo;t prompt. (The
+old form of this option, <b>set tempfile</b>, is
+deprecated.)</p>
+
 <p style="margin-left:11%;"><b>set selectedcolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for selected text. See <b>set titlecolor</b> for more
@@ -436,14 +457,14 @@ built-in corrector that calls <b>hunspell</b> or GNU
 <b>spell</b>.</p>
 
 <p style="margin-left:11%;"><b>set statuscolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for the status bar. See <b>set titlecolor</b> for
 more details.</p>
 
 <p style="margin-left:11%;"><b>set stripecolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for the vertical guiding stripe. See <b>set
@@ -466,23 +487,26 @@ The default value is <b>8</b>.</p>
 <p style="margin-left:15%;">Convert typed tabs to
 spaces.</p>
 
-<p style="margin-left:11%;"><b>set tempfile</b></p>
-
-<p style="margin-left:15%;">Save automatically on exit,
-don&rsquo;t prompt.</p>
-
 <p style="margin-left:11%;"><b>set titlecolor</b>
-<i>fgcolor</i>,<i>bgcolor</i></p>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
 
 <p style="margin-left:15%;">Specify the color combination
 to use for the title bar. Valid names for the foreground and
-background colors are: <b>white</b>, <b>black</b>,
-<b>blue</b>, <b>green</b>, <b>red</b>, <b>cyan</b>,
-<b>yellow</b>, <b>magenta</b>, and <b>normal</b> -- where
+background colors are: <b>red</b>, <b>green</b>,
+<b>blue</b>, <b>magenta</b>, <b>yellow</b>, <b>cyan</b>,
+<b>white</b>, and <b>black</b>. Each of these eight names
+may be prefixed with the word <b>light</b> to get a brighter
+version of that color. On terminal emulators that can do at
+least 256 colors, other valid (but unprefixable) color names
+are: <b>pink</b>, <b>purple</b>, <b>mauve</b>,
+<b>lagoon</b>, <b>mint</b>, <b>lime</b>, <b>peach</b>,
+<b>orange</b>, <b>latte</b>, and <b>normal</b> -- where
 <b>normal</b> means the default foreground or background
-color. The name of the foreground color may be prefixed with
-<b>bright</b>. And either &quot;<i>fgcolor</i>&quot; or
-&quot;,<i>bgcolor</i>&quot; may be left out.</p>
+color. Either &quot;<i>fgcolor</i>&quot; or
+&quot;<b>,</b><i>bgcolor</i>&quot; may be left out, and the
+pair may be preceded by <b>bold</b> and/or <b>italic</b>
+(separated by commas) to get a bold and/or slanting
+typeface, if your terminal can do those.</p>
 
 <p style="margin-left:11%;"><b>set trimblanks</b></p>
 
@@ -524,8 +548,8 @@ words.</p>
 
 <p style="margin-left:15%;">Specify which other characters
 (besides the normal alphanumeric ones) should be considered
-as parts of words. This overrides the option
-<b>wordbounds</b>.</p>
+as parts of words. When using this option, you probably want
+to unset <b>wordbounds</b>.</p>
 
 <p style="margin-left:11%;"><b>set zap</b></p>
 
@@ -646,21 +670,26 @@ Python that want to see only spaces for indentation. This
 overrides the setting of the <b>tabstospaces</b> option.</p>
 
 <p style="margin-left:11%;"><b>color</b>
-<i>fgcolor</i><b>,</b><i>bgcolor</i>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i>
 <b>&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">Paint all pieces of text that
 match the extended regular expression <i>regex</i> with the
 given foreground and background colors, at least one of
-which must be specified. Valid color names are:
-<b>white</b>, <b>black</b>, <b>blue</b>, <b>green</b>,
-<b>red</b>, <b>cyan</b>, <b>yellow</b>, <b>magenta</b>, and
-<b>normal</b> -- where <b>normal</b> means the default
-foreground or background color. You may use the prefix
-<b>bright</b> for the foreground color to get a stronger
-highlight. If your terminal supports transparency, not
-specifying a <i>bgcolor</i> tells <b>nano</b> to attempt to
-use a transparent background.</p>
+which must be specified. Valid color names are: <b>red</b>,
+<b>green</b>, <b>blue</b>, <b>magenta</b>, <b>yellow</b>,
+<b>cyan</b>, <b>white</b>, and <b>black</b>. Each of these
+eight names may be prefixed with the word <b>light</b> to
+get a brighter version of that color. On terminal emulators
+that can do at least 256 colors, other valid (but
+unprefixable) color names are: <b>pink</b>, <b>purple</b>,
+<b>mauve</b>, <b>lagoon</b>, <b>mint</b>, <b>lime</b>,
+<b>peach</b>, <b>orange</b>, <b>latte</b>, and <b>normal</b>
+-- where <b>normal</b> means the default foreground or
+background color. The color pair may be preceded by
+<b>bold</b> and/or <b>italic</b> (separated by commas) to
+get a bold and/or slanting typeface, if your terminal can do
+those.</p>
 
 <p style="margin-left:22%; margin-top: 1em">All coloring
 commands are applied in the order in which they are
@@ -668,14 +697,14 @@ specified, which means that later commands can recolor stuff
 that was colored earlier.</p>
 
 <p style="margin-left:11%;"><b>icolor</b>
-<i>fgcolor</i><b>,</b><i>bgcolor</i>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i>
 <b>&quot;</b><i>regex</i><b>&quot;</b> ...</p>
 
 <p style="margin-left:22%;">Same as above, except that the
 matching is case insensitive.</p>
 
 <p style="margin-left:11%;"><b>color</b>
-<i>fgcolor</i><b>,</b><i>bgcolor</i>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i>
 <b>start=&quot;</b><i>fromrx</i><b>&quot;
 end=&quot;</b><i>torx</i><b>&quot;</b></p>
 
@@ -689,7 +718,7 @@ instance of <i>torx</i> will be colored. This allows syntax
 highlighting to span multiple lines.</p>
 
 <p style="margin-left:11%;"><b>icolor</b>
-<i>fgcolor</i><b>,</b><i>bgcolor</i>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i>
 <b>start=&quot;</b><i>fromrx</i><b>&quot;
 end=&quot;</b><i>torx</i><b>&quot;</b></p>
 
@@ -815,8 +844,10 @@ F10. (Often, <b>F13</b> to <b>F24</b> can be typed as
 <p style="margin-left:11%; margin-top: 1em">Rebinding
 <b>^M</b> (Enter) or <b>^I</b> (Tab) is probably not a good
 idea. Rebinding <b>^[</b> (Esc) is not possible, because its
-keycode is the starter byte of escape sequences and Meta
-keystrokes. On some terminals it&rsquo;s not possible to
+keycode is the starter byte of Meta keystrokes and escape
+sequences. Rebinding any of the dedicated cursor-moving keys
+(the arrows, Home, End, PageUp and PageDown) is not
+possible. On some terminals it&rsquo;s not possible to
 rebind <b>^H</b> (unless <b>&minus;&minus;raw</b> is used)
 because its keycode is identical to that of the Backspace
 key. <br>
@@ -834,7 +865,7 @@ command.</p>
 <p style="margin-left:15%;"><b>exit</b></p>
 
 <p style="margin-left:18%;">Exits from the program (or from
-the help viewer or the file browser).</p>
+the help viewer or file browser).</p>
 
 <p style="margin-left:15%;"><b>writeout</b></p>
 
@@ -928,15 +959,24 @@ position till the end of the buffer.</p>
 position, to start selecting text. Or, when it is set,
 unsets the mark.</p>
 
-<p style="margin-left:15%;"><b>curpos</b></p>
+<p style="margin-left:15%;"><b>location</b></p>
 
-<p style="margin-left:18%;">Shows the current cursor
-position: the line, column, and character positions.</p>
+<p style="margin-left:18%;">Reports the current position of
+the cursor in the buffer: the line, column, and character
+positions. (The old name of this function,
+&rsquo;curpos&rsquo;, is deprecated.)</p>
 
 <p style="margin-left:15%;"><b>wordcount</b></p>
 
 <p style="margin-left:18%;">Counts the number of words,
 lines and characters in the current buffer.</p>
+
+<p style="margin-left:15%;"><b>execute</b></p>
+
+<p style="margin-left:18%;">Prompts for a program to
+execute. The program&rsquo;s output will be inserted into
+the current buffer (or into a new buffer when <b>M-F</b> is
+toggled).</p>
 
 <p style="margin-left:15%;"><b>speller</b></p>
 
@@ -1024,6 +1064,11 @@ in the same text position, if possible.</p>
 row (meaning that the text slides up) while keeping the
 cursor in the same text position, if possible.</p>
 
+<p style="margin-left:15%;"><b>center</b></p>
+
+<p style="margin-left:18%;">Scrolls the line with the
+cursor to the middle of the screen.</p>
+
 <p style="margin-left:15%;"><b>prevword</b></p>
 
 <p style="margin-left:18%;">Moves the cursor to the
@@ -1092,8 +1137,24 @@ the file (and end of the line).</p>
 <p style="margin-left:15%;"><b>findbracket</b></p>
 
 <p style="margin-left:18%;">Moves the cursor to the bracket
-(brace, parenthesis, etc.) that matches (pairs) with the one
-under the cursor.</p>
+(or brace or parenthesis, etc.) that matches (pairs) with
+the one under the cursor. See <b>set matchbrackets</b>.</p>
+
+<p style="margin-left:15%;"><b>anchor</b></p>
+
+<p style="margin-left:18%;">Places an anchor at the current
+line, or removes it when already present. (An anchor is
+visible when line numbers are activated.)</p>
+
+<p style="margin-left:15%;"><b>prevanchor</b></p>
+
+<p style="margin-left:18%;">Goes to the first anchor before
+the current line.</p>
+
+<p style="margin-left:15%;"><b>nextanchor</b></p>
+
+<p style="margin-left:18%;">Goes to the first anchor after
+the current line.</p>
 
 <p style="margin-left:15%;"><b>prevbuf</b></p>
 
@@ -1251,12 +1312,13 @@ backup of the current file.</p>
 <p style="margin-left:18%;">When about to write a file,
 discard the current buffer without saving. (This function is
 bound by default only when option
-<b>&minus;&minus;tempfile</b> is in effect.)</p>
+<b>&minus;&minus;saveonexit</b> is in effect.)</p>
 
 <p style="margin-left:15%;"><b>browser</b></p>
 
-<p style="margin-left:18%;">Starts the file browser,
-allowing to select a file from a list.</p>
+<p style="margin-left:18%;">Starts the file browser (in the
+Read File and Write Out menus), allowing to select a file
+from a list.</p>
 
 <p style="margin-left:15%;"><b>gotodir</b></p>
 
@@ -1266,19 +1328,21 @@ filesystem.</p>
 
 <p style="margin-left:15%;"><b>firstfile</b></p>
 
-<p style="margin-left:18%;">Goes to the first file when
-using the file browser (reading or writing files).</p>
+<p style="margin-left:18%;">Goes to the first file in the
+list when using the file browser.</p>
 
 <p style="margin-left:15%;"><b>lastfile</b></p>
 
-<p style="margin-left:18%;">Goes to the last file when
-using the file browser (reading or writing files).</p>
+<p style="margin-left:18%;">Goes to the last file in the
+list when using the file browser.</p>
 
 <p style="margin-left:15%;"><b>nohelp</b></p>
 
 <p style="margin-left:18%;">Toggles the presence of the
-two-line list of key bindings at the bottom of the
-screen.</p>
+two-line list of key bindings at the bottom of the screen.
+(This toggle is special: it is available in all menus except
+the help viewer and the linter. All further toggles are
+available in the main menu only.)</p>
 
 <p style="margin-left:15%;"><b>constantshow</b></p>
 
@@ -1352,6 +1416,10 @@ are:</p>
 <p style="margin-left:18%;">The main editor window where
 text is entered and edited.</p>
 
+<p style="margin-left:15%;"><b>help</b></p>
+
+<p style="margin-left:18%;">The help-viewer menu.</p>
+
 <p style="margin-left:15%;"><b>search</b></p>
 
 <p style="margin-left:18%;">The search menu (AKA
@@ -1388,28 +1456,11 @@ menu.</p>
 <p style="margin-left:18%;">The &rsquo;insert file&rsquo;
 menu.</p>
 
-<p style="margin-left:15%;"><b>extcmd</b></p>
-
-<p style="margin-left:18%;">The menu for inserting output
-from an external command, reached from the insert menu.</p>
-
-<p style="margin-left:15%;"><b>help</b></p>
-
-<p style="margin-left:18%;">The help-viewer menu.</p>
-
-<p style="margin-left:15%;"><b>spell</b></p>
-
-<p style="margin-left:18%;">The menu of the integrated
-spell checker where the user can edit a misspelled word.</p>
-
-<p style="margin-left:15%;"><b>linter</b></p>
-
-<p style="margin-left:18%;">The linter menu.</p>
-
 <p style="margin-left:15%;"><b>browser</b></p>
 
-<p style="margin-left:18%;">The file browser for inserting
-or writing a file.</p>
+<p style="margin-left:18%;">The &rsquo;file browser&rsquo;
+menu, for selecting a file to be opened or inserted or
+written to.</p>
 
 <p style="margin-left:15%;"><b>whereisfile</b></p>
 
@@ -1420,6 +1471,24 @@ file&rsquo; menu in the file browser.</p>
 
 <p style="margin-left:18%;">The &rsquo;go to
 directory&rsquo; menu in the file browser.</p>
+
+<p style="margin-left:15%;"><b>execute</b></p>
+
+<p style="margin-left:18%;">The menu for inserting the
+output from an external command, or for filtering the buffer
+(or the marked region) through an external command, or for
+executing one of several tools. (The old form of this menu
+name, &rsquo;extcmd&rsquo;, is deprecated.)</p>
+
+<p style="margin-left:15%;"><b>spell</b></p>
+
+<p style="margin-left:18%;">The menu of the integrated
+spell checker where the user can edit a misspelled word.</p>
+
+<p style="margin-left:15%;"><b>linter</b></p>
+
+<p style="margin-left:18%;">The linter menu, which allows
+jumping through the linting messages.</p>
 
 <p style="margin-left:15%;"><b>all</b></p>
 

@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #ifdef ENABLE_COLOR
 
@@ -38,41 +38,15 @@
 #define A_BANDAID  A_NORMAL
 #endif
 
-/* Assign pair numbers for the colors in the given syntax, giving identical
- * color pairs the same number. */
-void set_syntax_colorpairs(syntaxtype *sntx)
+static bool defaults_allowed = FALSE;
+		/* Whether ncurses accepts -1 to mean "default color". */
+
+/* Initialize the color pairs for nano's interface. */
+void set_interface_colorpairs(void)
 {
-	int new_number = NUMBER_OF_ELEMENTS + 1;
-	colortype *ink;
-
-	for (ink = sntx->color; ink != NULL; ink = ink->next) {
-		const colortype *beforenow = sntx->color;
-
-		while (beforenow != ink && (beforenow->fg != ink->fg ||
-									beforenow->bg != ink->bg))
-			beforenow = beforenow->next;
-
-		if (beforenow != ink)
-			ink->pairnum = beforenow->pairnum;
-		else
-			ink->pairnum = new_number++;
-
-		ink->attributes |= COLOR_PAIR(ink->pairnum) | A_BANDAID;
-	}
-}
-
-/* Initialize the colors for nano's interface, and assign pair numbers
- * for the colors in each loaded syntax. */
-void set_colorpairs(void)
-{
-	bool using_defaults = FALSE;
-
-	/* Tell ncurses to enable colors. */
-	start_color();
-
 #ifdef HAVE_USE_DEFAULT_COLORS
-	/* Allow using the default colors, if available. */
-	using_defaults = (use_default_colors() != ERR);
+	/* Ask ncurses to allow -1 to mean "default color". */
+	defaults_allowed = (use_default_colors() == OK);
 #endif
 
 	/* Initialize the color pairs for nano's interface elements. */
@@ -80,10 +54,12 @@ void set_colorpairs(void)
 		colortype *combo = color_combo[index];
 
 		if (combo != NULL) {
-			if (combo->fg == USE_THE_DEFAULT && !using_defaults)
-				combo->fg = COLOR_WHITE;
-			if (combo->bg == USE_THE_DEFAULT && !using_defaults)
-				combo->bg = COLOR_BLACK;
+			if (!defaults_allowed) {
+				if (combo->fg == THE_DEFAULT)
+					combo->fg = COLOR_WHITE;
+				if (combo->bg == THE_DEFAULT)
+					combo->bg = COLOR_BLACK;
+			}
 			init_pair(index + 1, combo->fg, combo->bg);
 			interface_color_pair[index] = COLOR_PAIR(index + 1) | A_BANDAID |
 												combo->attributes;
@@ -102,42 +78,45 @@ void set_colorpairs(void)
 
 		free(color_combo[index]);
 	}
-
-	/* For each loaded syntax, assign pair numbers to color combinations. */
-	for (syntaxtype *sntx = syntaxes; sntx != NULL; sntx = sntx->next)
-		if (sntx->filename == NULL)
-			set_syntax_colorpairs(sntx);
 }
 
-/* Initialize the color information. */
-void color_init(void)
+/* Assign a pair number to each of the foreground/background color combinations
+ * in the given syntax, giving identical combinations the same number. */
+void set_syntax_colorpairs(syntaxtype *sntx)
 {
-	const colortype *ink;
-	bool using_defaults = FALSE;
-	short foreground, background;
+	short number = NUMBER_OF_ELEMENTS;
+	colortype *older;
 
-	/* If the terminal is not capable of colors, forget it. */
-	if (!has_colors())
-		return;
+	for (colortype *ink = sntx->color; ink != NULL; ink = ink->next) {
+		if (!defaults_allowed) {
+			if (ink->fg == THE_DEFAULT)
+				ink->fg = COLOR_WHITE;
+			if (ink->bg == THE_DEFAULT)
+				ink->bg = COLOR_BLACK;
+		}
 
-#ifdef HAVE_USE_DEFAULT_COLORS
-	/* Allow using the default colors, if available. */
-	using_defaults = (use_default_colors() != ERR);
-#endif
+		older = sntx->color;
 
-	/* For each coloring expression, initialize the color pair. */
-	for (ink = openfile->colorstrings; ink != NULL; ink = ink->next) {
-		foreground = ink->fg;
-		background = ink->bg;
+		while (older != ink && (older->fg != ink->fg || older->bg != ink->bg))
+			older = older->next;
 
-		if (foreground == USE_THE_DEFAULT && !using_defaults)
-			foreground = COLOR_WHITE;
+		ink->pairnum = (older != ink) ? older->pairnum : ++number;
 
-		if (background == USE_THE_DEFAULT && !using_defaults)
-			background = COLOR_BLACK;
-
-		init_pair(ink->pairnum, foreground, background);
+		ink->attributes |= COLOR_PAIR(ink->pairnum) | A_BANDAID;
 	}
+}
+
+/* Initialize the color pairs for the current syntax. */
+void prepare_palette(void)
+{
+	short number = NUMBER_OF_ELEMENTS;
+
+	/* For each unique pair number, tell ncurses the combination of colors. */
+	for (colortype *ink = openfile->syntax->color; ink != NULL; ink = ink->next)
+		if (ink->pairnum > number) {
+			init_pair(ink->pairnum, ink->fg, ink->bg);
+			number = ink->pairnum;
+		}
 
 	have_palette = TRUE;
 }
@@ -163,8 +142,9 @@ bool found_in_list(regexlisttype *head, const char *shibboleth)
 	return FALSE;
 }
 
-/* Update the color information based on the current filename and content. */
-void color_update(void)
+/* Find a syntax that applies to the current buffer, based upon filename
+ * or buffer content, and load and prime this syntax when needed. */
+void find_and_prime_applicable_syntax(void)
 {
 	syntaxtype *sntx = NULL;
 
@@ -258,7 +238,6 @@ void color_update(void)
 	}
 
 	openfile->syntax = sntx;
-	openfile->colorstrings = (sntx == NULL ? NULL : sntx->color);
 }
 
 /* Allocate and initialize (for the given line) the cache for multiline info. */
@@ -286,7 +265,7 @@ void check_the_multis(linestruct *line)
 	if (line->multidata == NULL)
 		set_up_multicache(line);
 
-	for (ink = openfile->colorstrings; ink != NULL; ink = ink->next) {
+	for (ink = openfile->syntax->color; ink != NULL; ink = ink->next) {
 		/* If it's not a multiline regex, skip. */
 		if (ink->end == NULL)
 			continue;
@@ -325,14 +304,15 @@ void precalc_multicolorinfo(void)
 	regmatch_t startmatch, endmatch;
 	linestruct *line, *tailline;
 
-	if (openfile->colorstrings == NULL || ISSET(NO_COLOR_SYNTAX))
+	if (openfile->syntax == NULL || openfile->syntax->nmultis == 0 ||
+					openfile->filetop->multidata || ISSET(NO_SYNTAX))
 		return;
 
 	/* For each line, allocate cache space for the multiline-regex info. */
 	for (line = openfile->filetop; line != NULL; line = line->next)
 		set_up_multicache(line);
 
-	for (ink = openfile->colorstrings; ink != NULL; ink = ink->next) {
+	for (ink = openfile->syntax->color; ink != NULL; ink = ink->next) {
 		/* If this is not a multi-line regex, skip it. */
 		if (ink->end == NULL)
 			continue;

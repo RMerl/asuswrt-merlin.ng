@@ -1,5 +1,5 @@
 # Detect some bugs in glibc's implementation of utimes.
-# serial 7
+# serial 8
 
 dnl Copyright (C) 2003-2005, 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
@@ -34,6 +34,7 @@ AC_DEFUN([gl_FUNC_UTIMES],
 #include <stdio.h>
 #include <utime.h>
 #include <errno.h>
+]GL_MDA_DEFINES[
 
 static int
 inorder (time_t a, time_t b, time_t c)

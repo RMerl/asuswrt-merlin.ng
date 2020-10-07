@@ -7,7 +7,7 @@ dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 45
+# wchar_h.m4 serial 46
 
 AC_DEFUN([gl_WCHAR_H],
 [
@@ -52,7 +52,8 @@ AC_DEFUN([gl_WCHAR_H],
 #include <wchar.h>
     ]],
     [btowc wctob mbsinit mbrtowc mbrlen mbsrtowcs mbsnrtowcs wcrtomb
-     wcsrtombs wcsnrtombs wcwidth wmemchr wmemcmp wmemcpy wmemmove wmemset
+     wcsrtombs wcsnrtombs wcwidth
+     wmemchr wmemcmp wmemcpy wmemmove wmempcpy wmemset
      wcslen wcsnlen wcscpy wcpcpy wcsncpy wcpncpy wcscat wcsncat wcscmp
      wcsncmp wcscasecmp wcsncasecmp wcscoll wcsxfrm wcsdup wcschr wcsrchr
      wcscspn wcsspn wcspbrk wcsstr wcstok wcswidth wcsftime
@@ -159,6 +160,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   GNULIB_WMEMCMP=0;     AC_SUBST([GNULIB_WMEMCMP])
   GNULIB_WMEMCPY=0;     AC_SUBST([GNULIB_WMEMCPY])
   GNULIB_WMEMMOVE=0;    AC_SUBST([GNULIB_WMEMMOVE])
+  GNULIB_WMEMPCPY=0;    AC_SUBST([GNULIB_WMEMPCPY])
   GNULIB_WMEMSET=0;     AC_SUBST([GNULIB_WMEMSET])
   GNULIB_WCSLEN=0;      AC_SUBST([GNULIB_WCSLEN])
   GNULIB_WCSNLEN=0;     AC_SUBST([GNULIB_WCSNLEN])
@@ -198,6 +200,7 @@ AC_DEFUN([gl_WCHAR_H_DEFAULTS],
   HAVE_WMEMCMP=1;       AC_SUBST([HAVE_WMEMCMP])
   HAVE_WMEMCPY=1;       AC_SUBST([HAVE_WMEMCPY])
   HAVE_WMEMMOVE=1;      AC_SUBST([HAVE_WMEMMOVE])
+  HAVE_WMEMPCPY=1;      AC_SUBST([HAVE_WMEMPCPY])
   HAVE_WMEMSET=1;       AC_SUBST([HAVE_WMEMSET])
   HAVE_WCSLEN=1;        AC_SUBST([HAVE_WCSLEN])
   HAVE_WCSNLEN=1;       AC_SUBST([HAVE_WCSNLEN])

@@ -1,4 +1,4 @@
-## Here is an example for Texinfo files.
+## Syntax highlighting for Texinfo files.
 
 syntax texinfo "\.texi$"
 header "^\\input texinfo"

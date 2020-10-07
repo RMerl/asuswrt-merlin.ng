@@ -69,6 +69,7 @@ Rishabh Dave <rishabhddave@gmail.com>
 
 Marco Diego Aurélio Mesquita <marcodiegomesquita@gmail.com>
 	* Filtering text through an external command.
+	* Placing anchors (bookmarks) and jumping to them.
 
 Brand Huntsman <alpha@qzx.com>
 	* The delayed parsing of syntax files.

@@ -20,6 +20,10 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
+/* Don't assume that UNICODE is not defined.  */
+#undef WIN32_FIND_DATA
+#define WIN32_FIND_DATA WIN32_FIND_DATAA
+
 struct gl_directory
 {
   /* Status, or error code to produce in next readdir() call.

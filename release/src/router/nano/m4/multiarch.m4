@@ -1,4 +1,4 @@
-# multiarch.m4 serial 7
+# multiarch.m4 serial 9
 dnl Copyright (C) 2008-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -21,37 +21,40 @@ dnl with or without modifications, as long as this notice is preserved.
 AC_DEFUN_ONCE([gl_MULTIARCH],
 [
   dnl Code similar to autoconf-2.63 AC_C_BIGENDIAN.
-  gl_cv_c_multiarch=no
-  AC_COMPILE_IFELSE(
-    [AC_LANG_SOURCE(
-      [[#ifndef __APPLE_CC__
-         not a universal capable compiler
-        #endif
-        typedef int dummy;
-      ]])],
-    [
-     dnl Check for potential -arch flags.  It is not universal unless
-     dnl there are at least two -arch flags with different values.
-     arch=
-     prev=
-     for word in ${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS}; do
-       if test -n "$prev"; then
-         case $word in
-           i?86 | x86_64 | ppc | ppc64)
-             if test -z "$arch" || test "$arch" = "$word"; then
-               arch="$word"
-             else
-               gl_cv_c_multiarch=yes
-             fi
-             ;;
-         esac
-         prev=
-       else
-         if test "x$word" = "x-arch"; then
-           prev=arch
-         fi
-       fi
-     done
+  AC_CACHE_CHECK([whether the compiler produces multi-arch binaries],
+    [gl_cv_c_multiarch],
+    [gl_cv_c_multiarch=no
+     AC_COMPILE_IFELSE(
+       [AC_LANG_SOURCE(
+         [[#ifndef __APPLE_CC__
+            not a universal capable compiler
+           #endif
+           typedef int dummy;
+         ]])],
+       [
+        dnl Check for potential -arch flags.  It is not universal unless
+        dnl there are at least two -arch flags with different values.
+        arch=
+        prev=
+        for word in ${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS}; do
+          if test -n "$prev"; then
+            case $word in
+              i?86 | x86_64 | ppc | ppc64 | arm | arm64)
+                if test -z "$arch" || test "$arch" = "$word"; then
+                  arch="$word"
+                else
+                  gl_cv_c_multiarch=yes
+                fi
+                ;;
+            esac
+            prev=
+          else
+            if test "x$word" = "x-arch"; then
+              prev=arch
+            fi
+          fi
+        done
+       ])
     ])
   if test $gl_cv_c_multiarch = yes; then
     APPLE_UNIVERSAL_BUILD=1

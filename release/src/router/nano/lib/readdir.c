@@ -24,6 +24,10 @@
 
 #include "dirent-private.h"
 
+/* Don't assume that UNICODE is not defined.  */
+#undef FindNextFile
+#define FindNextFile FindNextFileA
+
 struct dirent *
 readdir (DIR *dirp)
 {

@@ -89,7 +89,7 @@ extern void freea (void *p);
 /* ------------------- Auxiliary, non-public definitions ------------------- */
 
 /* Determine the alignment of a type at compile time.  */
-#if defined __GNUC__ || defined __IBM__ALIGNOF__
+#if defined __GNUC__ || defined __clang__ || defined __IBM__ALIGNOF__
 # define sa_alignof __alignof__
 #elif defined __cplusplus
   template <class type> struct sa_alignof_helper { char __slot1; type __slot2; };

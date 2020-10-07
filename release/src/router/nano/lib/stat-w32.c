@@ -21,8 +21,10 @@
 #if defined _WIN32 && ! defined __CYGWIN__
 
 /* Ensure that <windows.h> defines FILE_ID_INFO.  */
-#undef _WIN32_WINNT
-#define _WIN32_WINNT _WIN32_WINNT_WIN8
+#if !defined _WIN32_WINNT || (_WIN32_WINNT < _WIN32_WINNT_WIN8)
+# undef _WIN32_WINNT
+# define _WIN32_WINNT _WIN32_WINNT_WIN8
+#endif
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,21 +40,29 @@
 #include "pathmax.h"
 #include "verify.h"
 
-/* Avoid warnings from gcc -Wcast-function-type.  */
-#define GetProcAddress \
-  (void *) GetProcAddress
+/* Don't assume that UNICODE is not defined.  */
+#undef LoadLibrary
+#define LoadLibrary LoadLibraryA
+#undef GetFinalPathNameByHandle
+#define GetFinalPathNameByHandle GetFinalPathNameByHandleA
 
-#if _GL_WINDOWS_STAT_INODES == 2
+#if !(_WIN32_WINNT >= _WIN32_WINNT_VISTA)
+
+/* Avoid warnings from gcc -Wcast-function-type.  */
+# define GetProcAddress \
+   (void *) GetProcAddress
+
+# if _GL_WINDOWS_STAT_INODES == 2
 /* GetFileInformationByHandleEx was introduced only in Windows Vista.  */
 typedef DWORD (WINAPI * GetFileInformationByHandleExFuncType) (HANDLE hFile,
                                                                FILE_INFO_BY_HANDLE_CLASS fiClass,
                                                                LPVOID lpBuffer,
                                                                DWORD dwBufferSize);
 static GetFileInformationByHandleExFuncType GetFileInformationByHandleExFunc = NULL;
-#endif
+# endif
 /* GetFinalPathNameByHandle was introduced only in Windows Vista.  */
 typedef DWORD (WINAPI * GetFinalPathNameByHandleFuncType) (HANDLE hFile,
-                                                           LPTSTR lpFilePath,
+                                                           LPSTR lpFilePath,
                                                            DWORD lenFilePath,
                                                            DWORD dwFlags);
 static GetFinalPathNameByHandleFuncType GetFinalPathNameByHandleFunc = NULL;
@@ -64,15 +74,22 @@ initialize (void)
   HMODULE kernel32 = LoadLibrary ("kernel32.dll");
   if (kernel32 != NULL)
     {
-#if _GL_WINDOWS_STAT_INODES == 2
+# if _GL_WINDOWS_STAT_INODES == 2
       GetFileInformationByHandleExFunc =
         (GetFileInformationByHandleExFuncType) GetProcAddress (kernel32, "GetFileInformationByHandleEx");
-#endif
+# endif
       GetFinalPathNameByHandleFunc =
         (GetFinalPathNameByHandleFuncType) GetProcAddress (kernel32, "GetFinalPathNameByHandleA");
     }
   initialized = TRUE;
 }
+
+#else
+
+# define GetFileInformationByHandleExFunc GetFileInformationByHandleEx
+# define GetFinalPathNameByHandleFunc GetFinalPathNameByHandle
+
+#endif
 
 /* Converts a FILETIME to GMT time since 1970-01-01 00:00:00.  */
 #if _GL_WINDOWS_STAT_TIMESPEC
@@ -132,8 +149,10 @@ _gl_fstat_by_handle (HANDLE h, const char *path, struct stat *buf)
   DWORD type = GetFileType (h);
   if (type == FILE_TYPE_DISK)
     {
+#if !(_WIN32_WINNT >= _WIN32_WINNT_VISTA)
       if (!initialized)
         initialize ();
+#endif
 
       /* st_mode can be determined through
          GetFileAttributesEx

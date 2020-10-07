@@ -118,6 +118,17 @@
 # include <netdb.h>
 #endif
 
+/* Mac OS X 10.13, Solaris 11.4, and Android 9.0 declare getentropy in
+   <sys/random.h>, not in <unistd.h>.  */
+/* But avoid namespace pollution on glibc systems.  */
+#if (@GNULIB_GETENTROPY@ || defined GNULIB_POSIXCHECK) \
+    && ((defined __APPLE__ && defined __MACH__) || defined __sun \
+        || defined __ANDROID__) \
+    && @UNISTD_H_HAVE_SYS_RANDOM_H@ \
+    && !defined __GLIBC__
+# include <sys/random.h>
+#endif
+
 /* Android 4.3 declares fchownat in <sys/stat.h>, not in <unistd.h>.  */
 /* But avoid namespace pollution on glibc systems.  */
 #if (@GNULIB_FCHOWNAT@ || defined GNULIB_POSIXCHECK) && defined __ANDROID__ \
@@ -262,6 +273,12 @@ _GL_INLINE_HEADER_BEGIN
 _GL_FUNCDECL_RPL (access, int, (const char *file, int mode)
                                _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (access, int, (const char *file, int mode));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef access
+#   define access _access
+#  endif
+_GL_CXXALIAS_MDA (access, int, (const char *file, int mode));
 # else
 _GL_CXXALIAS_SYS (access, int, (const char *file, int mode));
 # endif
@@ -275,11 +292,22 @@ _GL_WARN_ON_USE (access, "access does not always support X_OK - "
                  "also, this function is a security risk - "
                  "use the gnulib module faccessat instead");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef access
+# define access _access
 #endif
 
 
 #if @GNULIB_CHDIR@
+# if defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef chdir
+#   define chdir _chdir
+#  endif
+_GL_CXXALIAS_MDA (chdir, int, (const char *file));
+# else
 _GL_CXXALIAS_SYS (chdir, int, (const char *file) _GL_ARG_NONNULL ((1)));
+# endif
 _GL_CXXALIASWARN (chdir);
 #elif defined GNULIB_POSIXCHECK
 # undef chdir
@@ -287,6 +315,9 @@ _GL_CXXALIASWARN (chdir);
 _GL_WARN_ON_USE (chown, "chdir is not always in <unistd.h> - "
                  "use gnulib module chdir for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef chdir
+# define chdir _chdir
 #endif
 
 
@@ -331,6 +362,12 @@ _GL_WARN_ON_USE (chown, "chown fails to follow symlinks on some systems and "
 #  endif
 _GL_FUNCDECL_RPL (close, int, (int fd));
 _GL_CXXALIAS_RPL (close, int, (int fd));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef close
+#   define close _close
+#  endif
+_GL_CXXALIAS_MDA (close, int, (int fd));
 # else
 _GL_CXXALIAS_SYS (close, int, (int fd));
 # endif
@@ -343,6 +380,9 @@ _GL_CXXALIASWARN (close);
 /* Assume close is always declared.  */
 _GL_WARN_ON_USE (close, "close does not portably work on sockets - "
                  "use gnulib module close for portability");
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef close
+# define close _close
 #endif
 
 
@@ -371,6 +411,12 @@ _GL_WARN_ON_USE (copy_file_range,
 #  endif
 _GL_FUNCDECL_RPL (dup, int, (int oldfd));
 _GL_CXXALIAS_RPL (dup, int, (int oldfd));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef dup
+#   define dup _dup
+#  endif
+_GL_CXXALIAS_MDA (dup, int, (int oldfd));
 # else
 _GL_CXXALIAS_SYS (dup, int, (int oldfd));
 # endif
@@ -381,6 +427,9 @@ _GL_CXXALIASWARN (dup);
 _GL_WARN_ON_USE (dup, "dup is unportable - "
                  "use gnulib module dup for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef dup
+# define dup _dup
 #endif
 
 
@@ -396,10 +445,13 @@ _GL_WARN_ON_USE (dup, "dup is unportable - "
 #  endif
 _GL_FUNCDECL_RPL (dup2, int, (int oldfd, int newfd));
 _GL_CXXALIAS_RPL (dup2, int, (int oldfd, int newfd));
-# else
-#  if !@HAVE_DUP2@
-_GL_FUNCDECL_SYS (dup2, int, (int oldfd, int newfd));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef dup2
+#   define dup2 _dup2
 #  endif
+_GL_CXXALIAS_MDA (dup2, int, (int oldfd, int newfd));
+# else
 _GL_CXXALIAS_SYS (dup2, int, (int oldfd, int newfd));
 # endif
 _GL_CXXALIASWARN (dup2);
@@ -409,6 +461,9 @@ _GL_CXXALIASWARN (dup2);
 _GL_WARN_ON_USE (dup2, "dup2 is unportable - "
                  "use gnulib module dup2 for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef dup2
+# define dup2 _dup2
 #endif
 
 
@@ -506,6 +561,43 @@ _GL_WARN_ON_USE (euidaccess, "the euidaccess function is a security risk - "
 _GL_WARN_ON_USE (euidaccess, "euidaccess is unportable - "
                  "use gnulib module euidaccess for portability");
 # endif
+#endif
+
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execl
+# define execl _execl
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execle
+# define execle _execle
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execlp
+# define execlp _execlp
+#endif
+
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execv
+# define execv _execv
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execve
+# define execve _execve
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execvp
+# define execvp _execvp
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef execvpe
+# define execvpe _execvpe
 #endif
 
 
@@ -684,6 +776,12 @@ _GL_WARN_ON_USE (ftruncate, "ftruncate is unportable - "
 #  endif
 _GL_FUNCDECL_RPL (getcwd, char *, (char *buf, size_t size));
 _GL_CXXALIAS_RPL (getcwd, char *, (char *buf, size_t size));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef getcwd
+#   define getcwd _getcwd
+#  endif
+_GL_CXXALIAS_MDA (getcwd, char *, (char *buf, size_t size));
 # else
 /* Need to cast, because on mingw, the second parameter is
                                                    int size.  */
@@ -696,6 +794,9 @@ _GL_CXXALIASWARN (getcwd);
 _GL_WARN_ON_USE (getcwd, "getcwd is unportable - "
                  "use gnulib module getcwd for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef getcwd
+# define getcwd _getcwd
 #endif
 
 
@@ -759,6 +860,22 @@ _GL_CXXALIASWARN (getdtablesize);
 # if HAVE_RAW_DECL_GETDTABLESIZE
 _GL_WARN_ON_USE (getdtablesize, "getdtablesize is unportable - "
                  "use gnulib module getdtablesize for portability");
+# endif
+#endif
+
+
+#if @GNULIB_GETENTROPY@
+/* Fill a buffer with random bytes.  */
+# if !@HAVE_GETENTROPY@
+_GL_FUNCDECL_SYS (getentropy, int, (void *buffer, size_t length));
+# endif
+_GL_CXXALIAS_SYS (getentropy, int, (void *buffer, size_t length));
+_GL_CXXALIASWARN (getentropy);
+#elif defined GNULIB_POSIXCHECK
+# undef getentropy
+# if HAVE_RAW_DECL_GETENTROPY
+_GL_WARN_ON_USE (getentropy, "getentropy is unportable - "
+                 "use gnulib module getentropy for portability");
 # endif
 #endif
 
@@ -1014,6 +1131,12 @@ _GL_WARN_ON_USE (getpass, "getpass is unportable - "
 #endif
 
 
+#if defined _WIN32 && !defined __CYGWIN__
+# undef getpid
+# define getpid _getpid
+#endif
+
+
 #if @GNULIB_GETUSERSHELL@
 /* Return the next valid login shell on the system, or NULL when the end of
    the list has been reached.  */
@@ -1086,6 +1209,12 @@ _GL_WARN_ON_USE (group_member, "group_member is unportable - "
 #  endif
 _GL_FUNCDECL_RPL (isatty, int, (int fd));
 _GL_CXXALIAS_RPL (isatty, int, (int fd));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef isatty
+#   define isatty _isatty
+#  endif
+_GL_CXXALIAS_MDA (isatty, int, (int fd));
 # else
 _GL_CXXALIAS_SYS (isatty, int, (int fd));
 # endif
@@ -1096,6 +1225,9 @@ _GL_CXXALIASWARN (isatty);
 _GL_WARN_ON_USE (isatty, "isatty has portability problems on native Windows - "
                  "use gnulib module isatty for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef isatty
+# define isatty _isatty
 #endif
 
 
@@ -1207,6 +1339,12 @@ _GL_WARN_ON_USE (linkat, "linkat is unportable - "
 #  endif
 _GL_FUNCDECL_RPL (lseek, off_t, (int fd, off_t offset, int whence));
 _GL_CXXALIAS_RPL (lseek, off_t, (int fd, off_t offset, int whence));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef lseek
+#   define lseek _lseek
+#  endif
+_GL_CXXALIAS_MDA (lseek, off_t, (int fd, off_t offset, int whence));
 # else
 _GL_CXXALIAS_SYS (lseek, off_t, (int fd, off_t offset, int whence));
 # endif
@@ -1217,6 +1355,9 @@ _GL_CXXALIASWARN (lseek);
 _GL_WARN_ON_USE (lseek, "lseek does not fail with ESPIPE on pipes on some "
                  "systems - use gnulib module lseek for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef lseek
+# define lseek _lseek
 #endif
 
 
@@ -1349,6 +1490,12 @@ _GL_WARN_ON_USE (pwrite, "pwrite is unportable - "
 _GL_FUNCDECL_RPL (read, ssize_t, (int fd, void *buf, size_t count)
                                  _GL_ARG_NONNULL ((2)));
 _GL_CXXALIAS_RPL (read, ssize_t, (int fd, void *buf, size_t count));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef read
+#   define read _read
+#  endif
+_GL_CXXALIAS_MDA (read, ssize_t, (int fd, void *buf, size_t count));
 # else
 /* Need to cast, because on mingw, the third parameter is
                                                           unsigned int count
@@ -1356,6 +1503,9 @@ _GL_CXXALIAS_RPL (read, ssize_t, (int fd, void *buf, size_t count));
 _GL_CXXALIAS_SYS_CAST (read, ssize_t, (int fd, void *buf, size_t count));
 # endif
 _GL_CXXALIASWARN (read);
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef read
+# define read _read
 #endif
 
 
@@ -1438,6 +1588,12 @@ _GL_WARN_ON_USE (readlinkat, "readlinkat is not portable - "
 #  endif
 _GL_FUNCDECL_RPL (rmdir, int, (char const *name) _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (rmdir, int, (char const *name));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef rmdir
+#   define rmdir _rmdir
+#  endif
+_GL_CXXALIAS_MDA (rmdir, int, (char const *name));
 # else
 _GL_CXXALIAS_SYS (rmdir, int, (char const *name));
 # endif
@@ -1448,6 +1604,9 @@ _GL_CXXALIASWARN (rmdir);
 _GL_WARN_ON_USE (rmdir, "rmdir is unportable - "
                  "use gnulib module rmdir for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef rmdir
+# define rmdir _rmdir
 #endif
 
 
@@ -1503,6 +1662,12 @@ _GL_CXXALIASWARN (sleep);
 _GL_WARN_ON_USE (sleep, "sleep is unportable - "
                  "use gnulib module sleep for portability");
 # endif
+#endif
+
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef swab
+# define swab _swab
 #endif
 
 
@@ -1630,6 +1795,12 @@ _GL_WARN_ON_USE (ttyname_r, "ttyname_r is not portable - "
 #  endif
 _GL_FUNCDECL_RPL (unlink, int, (char const *file) _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (unlink, int, (char const *file));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef unlink
+#   define unlink _unlink
+#  endif
+_GL_CXXALIAS_MDA (unlink, int, (char const *file));
 # else
 _GL_CXXALIAS_SYS (unlink, int, (char const *file));
 # endif
@@ -1640,6 +1811,9 @@ _GL_CXXALIASWARN (unlink);
 _GL_WARN_ON_USE (unlink, "unlink is not portable - "
                  "use gnulib module unlink for portability");
 # endif
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef unlink
+# define unlink _unlink
 #endif
 
 
@@ -1711,6 +1885,12 @@ _GL_WARN_ON_USE (usleep, "usleep is unportable - "
 _GL_FUNCDECL_RPL (write, ssize_t, (int fd, const void *buf, size_t count)
                                   _GL_ARG_NONNULL ((2)));
 _GL_CXXALIAS_RPL (write, ssize_t, (int fd, const void *buf, size_t count));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef write
+#   define write _write
+#  endif
+_GL_CXXALIAS_MDA (write, ssize_t, (int fd, const void *buf, size_t count));
 # else
 /* Need to cast, because on mingw, the third parameter is
                                                              unsigned int count
@@ -1718,6 +1898,9 @@ _GL_CXXALIAS_RPL (write, ssize_t, (int fd, const void *buf, size_t count));
 _GL_CXXALIAS_SYS_CAST (write, ssize_t, (int fd, const void *buf, size_t count));
 # endif
 _GL_CXXALIASWARN (write);
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef write
+# define write _write
 #endif
 
 _GL_INLINE_HEADER_END

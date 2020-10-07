@@ -1,4 +1,4 @@
-# getdelim.m4 serial 14
+# getdelim.m4 serial 15
 
 dnl Copyright (C) 2005-2007, 2009-2020 Free Software Foundation, Inc.
 dnl
@@ -42,6 +42,7 @@ AC_DEFUN([gl_FUNC_GETDELIM],
         int len = getdelim (&line, &siz, '\n', in);
         if (!(len == 4 && line && strcmp (line, "foo\n") == 0))
           { free (line); fclose (in); return 2; }
+        free (line);
       }
       {
         /* Test result for a NULL buffer and a non-zero size.

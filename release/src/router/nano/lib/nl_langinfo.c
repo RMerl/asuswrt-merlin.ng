@@ -57,7 +57,7 @@ ctype_codeset (void)
   codeset = buf;
   codeset[0] = '\0';
 
-  if (locale && locale[0])
+  if (locale[0])
     {
       /* If the locale name contains an encoding after the dot, return it.  */
       char *dot = strchr (locale, '.');

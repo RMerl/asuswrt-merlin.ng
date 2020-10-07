@@ -1,3 +1,60 @@
+2020.08.24 - GNU nano 5.2 "Ranrapalca"
+• Making certain replacements after a large paste does not crash.
+• Hitting a toggle at the Search prompt does not clear the answer.
+• Using --positionlog does not complain at the first start.
+• A macro containing a Search command will not sometimes fail.
+
+2020.08.12 - GNU nano 5.1 "Cantabria"
+• M-Bsp (Alt+Backspace) deletes a word backwards, like in Bash.
+• M-[ has become bindable.  (Be careful, though: as it is the
+  starting combination of many escape sequences, avoid gluing
+  it together with other keystrokes, like in a macro.)
+• With --indicator and --softwrap, the first keystroke in an
+  empty buffer does not crash.
+• Invoking the formatter while text is marked does not crash.
+• In UTF-8 locales, an anchor is shown as a diamond.
+
+2020.07.29 - GNU nano 5.0 "Among the fields of barley"
+• With --indicator (or -q or 'set indicator') nano will show a kind
+  of scrollbar on the righthand side of the screen to indicate where
+  in the buffer the viewport is located and how much it covers.
+• With <Alt+Insert> any line can be "tagged" with an anchor, and
+  <Alt+PageUp> and <Alt+PageDown> will jump to the nearest anchor.
+  When using line numbers, an anchor is shown as "+" in the margin.
+• The Execute Command prompt is now directly accessible from the
+  main menu (with ^T, replacing the Spell Checker).  The Linter,
+  Formatter, Spell Checker, Full Justification, Suspension, and
+  Cut-Till-End functions are available in this menu too.
+• On terminals that support at least 256 colors, nine new color
+  names are available: pink, purple, mauve, lagoon, mint, lime,
+  peach, orange, and latte.  These do not have lighter versions.
+• For the color names red, green, blue, yellow, cyan, magenta,
+  white, and black, the prefix 'light' gives a brighter color.
+  Prefix 'bright' is deprecated, as it means both bold AND light.
+• All color names can be preceded with "bold," and/or "italic,"
+  (in that order) to get a bold and/or italic typeface.
+• With --bookstyle (or -O or 'set bookstyle') nano considers any
+  line that begins with whitespace as the start of a paragraph.
+• Refreshing the screen with ^L now works in every menu.
+• In the main menu, ^L also centers the line with the cursor.
+• Toggling the help lines with M-X now works in all menus except
+  in the help viewer and the linter.
+• At a filename prompt, the first <Tab> lists the possibilities,
+  and these are listed near the bottom instead of near the top.
+• Bindable function 'curpos' has been renamed to 'location'.
+• Long option --tempfile has been renamed to --saveonexit.
+• Short option -S is now a synonym of --softwrap.
+• The New Buffer toggle (M-F) has become non-persistent.  Options
+  --multibuffer and 'set multibuffer' still make it default to on.
+• Backup files will retain their group ownership (when possible).
+• Data is synced to disk before "... lines written" is shown.
+• The raw escape sequences for F13 to F16 are no longer recognized.
+• Distro-specific syntaxes, and syntaxes of less common languages,
+  have been moved down to subdirectory syntax/extra/.  The affected
+  distros and others may wish to move wanted syntaxes one level up.
+• Syntaxes for Markdown, Haskell, and Ada were added.
+
+
 2020.05.23 - GNU nano 4.9.3 "Almendras"
 • One more bug introduced in version 4.9 is fixed: a crash when
   the terminal screen is resized while at a lock-file prompt.
@@ -1575,9 +1632,9 @@
              some compatibility issues with older ncurses libraries
              have also been fixed.  All in all, a lot to see.
 
-2001.01.31 - Nano 0.9.99pre2 is released.  Not surprisingly, all that is
-             new is bugfixes, bugfixes, bugfixes.  There were a few
-             cleanups in unneeded global variables and duplicate
+2001.01.31 - Nano 0.9.99pre2 is released.  Not surprisingly, all that
+             is new is bugfixes, bugfixes, bugfixes.  There were a
+             few cleanups in unneeded global variables and duplicate
              functions, but most is just fixing.  Specifically, there
              is now a preliminary (read: needs testing) fix for
              resizing the editor in any mode other than normal edit
@@ -1621,9 +1678,9 @@
              main reason for this release is the less-than-optimal
              fix for the security issue in nano with following
              symbolic links.  Hopefully this will fix the problem
-             permanently.  The --nofollow option also works again for
-             those who are real security nuts.  There are also some
-             display and search fixes, and the --disable-spell
+             permanently.  The --nofollow option also works again
+             for those who are real security nuts.  There are also
+             some display and search fixes, and the --disable-spell
              function was renamed to --disable-speller to be in line
              with nano and Pico's "speller" term.
 
@@ -1747,12 +1804,11 @@
              (id).
 
 2000.06.06 - Nano 0.9.10 is primarily a bugfix for the loss of SIGINT
-             when using "run and terminate" flags (for example,
-             --help).  There are also some minor documentation
-             updates.  This version of nano is the most stable in
-             quite some time, and is likely to be the most stable for
-             awhile.  Users are encouraged to upgrade to this
-             version.
+             when using "run and terminate" flags (for example, --help).
+             There are also some minor documentation updates.  This
+             version of nano is the most stable in quite some time,
+             and is likely to be the most stable for awhile.  Users
+             are encouraged to upgrade to this version.
 
 2000.05.31 - Nano 0.9.9 introduces much better working i18n support,
              more portability, and a ton of bugfixes.  While nano is
@@ -1767,10 +1823,10 @@
              are also the obligatory display fixes and speedups.
              Have fun with it.
 
-2000.05.14 - Nano 0.9.7 (the Mother's Day release) continues in the long
-             line of display fixes, and also fixes the broken symlink
-             behavior (i.e. symlinks weren't being followed by
-             default).  Hopefully all major bugs can be worked out
+2000.05.14 - Nano 0.9.7 (the Mother's Day release) continues in the
+             long line of display fixes, and also fixes the broken
+             symlink behavior (i.e. symlinks weren't being followed
+             by default).  Hopefully all major bugs can be worked out
              soon and we can have a 1.0 release before the end of the
              year, but who knows.
 
@@ -1781,15 +1837,14 @@
              most stable versions of nano to date, but this one may
              not be too bad =-)
 
-2000.05.01 - Nano 0.9.5 attempts to speed up the display of text
-             to be at least somewhat reasonable.  Much code profiling
-             has been done to reduce the ridiculous number of
-             redundant display updates.  This will probably expose a
-             lot of bugs that can then be fixed, so this release is
-             probably not for the faint of heart.  For anyone
-             curious, I would call nano 0.9.2 the most stable version
-             recently, so use that if you're not particularly
-             concerned with being on the bleeding edge.
+2000.05.01 - Nano 0.9.5 attempts to speed up the display of text to be
+             at least somewhat reasonable.  Much code profiling has been
+             done to reduce the ridiculous number of redundant display
+             updates.  This will probably expose a lot of bugs that can
+             then be fixed, so this release is probably not for the faint
+             of heart.  For anyone curious, I would call nano 0.9.2 the
+             most stable version recently, so use that if you're not
+             particularly concerned with being on the bleeding edge.
 
 2000.04.25 - Nano 0.9.4 fixes some problems in 0.9.3 with the last
              line code and related segfaults.  It now also has much

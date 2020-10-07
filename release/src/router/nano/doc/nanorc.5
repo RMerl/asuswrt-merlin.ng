@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANORC 5 "version 4.9.3" "May 2020"
+.TH NANORC 5 "version 5.2" "August 2020"
 
 .SH NAME
 nanorc \- GNU nano's configuration file
@@ -68,7 +68,7 @@ The supported commands and arguments are:
 
 .TP 3
 .B set afterends
-Make Ctrl+Right stop at word ends instead of beginnings.
+Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 .TP
 .B set allow_insecure_backup
 When backing up files, allow the backup to succeed even if its permissions
@@ -100,6 +100,10 @@ function tags, line numbers, and selected text.  This can be overridden by
 setting the options \fBtitlecolor\fP, \fBstatuscolor\fP, \fBkeycolor\fP,
 \fBfunctioncolor\fP, \fBnumbercolor\fP, and \fBselectedcolor\fP.
 .TP
+.B set bookstyle
+When justifying, treat any line that starts with whitespace as the
+beginning of a paragraph (unless auto-indenting is on).
+.TP
 .BI "set brackets """ characters """
 Set the characters treated as closing brackets when justifying
 paragraphs.  This may not include blank characters.  Only closing
@@ -122,7 +126,7 @@ Use cut-from-cursor-to-end-of-line by default, instead of cutting the whole line
 .B set emptyline
 Do not use the line below the title bar, leaving it entirely blank.
 .TP
-.B set errorcolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set errorcolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Use this color combination for the status bar when an error message is displayed.
 The default value is \fBbrightwhite,red\fR.
 See \fBset titlecolor\fR for valid color names.
@@ -134,7 +138,7 @@ at the width of the screen minus \fInumber\fR columns, allowing the wrap
 point to vary along with the width of the screen if the screen is resized.
 The default value is \fB\-8\fR.
 .TP
-.B set functioncolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set functioncolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for the function descriptions
 in the two help lines at the bottom of the screen.
 See \fBset titlecolor\fR for more details.
@@ -147,22 +151,28 @@ text.  (The color of the stripe can be changed with \fBset stripecolor\fR.)
 Save the last hundred search strings and replacement strings and
 executed commands, so they can be easily reused in later sessions.
 .TP
+.B set indicator
+Display a "scrollbar" on the righthand side of the edit window.
+It shows the position of the viewport in the buffer
+and how much of the buffer is covered by the viewport.
+.TP
 .B set jumpyscrolling
 Scroll the buffer contents per half-screen instead of per line.
 .TP
-.B set keycolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set keycolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for the shortcut key combos
 in the two help lines at the bottom of the screen.
 See \fBset titlecolor\fR for more details.
 .TP
 .B set linenumbers
 Display line numbers to the left of the text area.
+(Any line with an anchor additionally gets a mark in the margin.)
 .TP
 .B set locking
 Enable vim-style lock-files for when editing files.
 .TP
 .BI "set matchbrackets """ characters """
-Set the opening and closing brackets that can be found by bracket
+Specify the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
 come before the closing set, and the two sets must be in the same order.
 The default value is "\fB(<[{)>]}\fP".
@@ -198,7 +208,7 @@ Obsolete option.  Ignored.
 Deprecated option since it has become the default setting.
 When needed, use \fBunset breaklonglines\fR instead.
 .TP
-.B set numbercolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set numbercolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for line numbers.
 See \fBset titlecolor\fR for more details.
 .TP
@@ -247,7 +257,11 @@ system either Backspace acts like Delete or Delete acts like Backspace.
 Do regular-expression searches by default.
 Regular expressions in \fBnano\fR are of the extended type (ERE).
 .TP
-.B set selectedcolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set saveonexit
+Save a changed buffer automatically on exit (\fB^X\fR); don't prompt.
+(The old form of this option, \fBset tempfile\fR, is deprecated.)
+.TP
+.B set selectedcolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for selected text.
 See \fBset titlecolor\fR for more details.
 .TP
@@ -275,11 +289,11 @@ the screen's edge, by using also \fBset atblanks\fR.)
 Use the given \fIprogram\fR to do spell checking and correcting, instead of
 using the built-in corrector that calls \fBhunspell\fR or GNU \fBspell\fR.
 .TP
-.B set statuscolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set  statuscolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for the status bar.
 See \fBset titlecolor\fR for more details.
 .TP
-.B set stripecolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set stripecolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for the vertical guiding stripe.
 See \fBset titlecolor\fR for more details.
 .TP
@@ -293,17 +307,22 @@ greater than 0.  The default value is \fB8\fR.
 .B set tabstospaces
 Convert typed tabs to spaces.
 .TP
-.B set tempfile
-Save automatically on exit, don't prompt.
-.TP
-.B set titlecolor \fIfgcolor\fR,\fIbgcolor\fR
+.B set titlecolor \fR[\fBbold,\fR][\fBitalic,\fR]\fIfgcolor\fB,\fIbgcolor\fR
 Specify the color combination to use for the title bar.
 Valid names for the foreground and background colors are:
-.BR white ", " black ", " blue ", " green ", " red ", "
-.BR cyan ", " yellow ", " magenta ", and " normal
+.BR red ", " green ", " blue ", " magenta ", " yellow ", " cyan ", "
+.BR white ", and " black .
+Each of these eight names may be prefixed with the word \fBlight\fR
+to get a brighter version of that color.
+On terminal emulators that can do at least 256 colors,
+other valid (but unprefixable) color names are:
+.BR pink ", " purple ", " mauve ", " lagoon ", " mint ", "
+.BR lime ", " peach ", " orange ", " latte ", and " normal
 -- where \fBnormal\fR means the default foreground or background color.
-The name of the foreground color may be prefixed with \fBbright\fR.
-And either "\fIfgcolor\fR" or ",\fIbgcolor\fR" may be left out.
+Either "\fIfgcolor\fR" or "\fB,\fIbgcolor\fR" may be left out,
+and the pair may be preceded by \fBbold\fR and/or \fBitalic\fR
+(separated by commas) to get a bold and/or slanting typeface,
+if your terminal can do those.
 .TP
 .B set trimblanks
 Remove trailing whitespace from wrapped lines when automatic
@@ -330,8 +349,8 @@ characters as parts of words.
 .TP
 .BI "set wordchars """ characters """
 Specify which other characters (besides the normal alphanumeric ones)
-should be considered as parts of words.  This overrides the option
-\fBwordbounds\fR.
+should be considered as parts of words.  When using this option, you
+probably want to unset \fBwordbounds\fR.
 .TP
 .B set zap
 Let an unmodified Backspace or Delete erase the marked region
@@ -417,24 +436,30 @@ Make the <Tab> key produce the given \fIstring\fR.  Useful for languages like
 Python that want to see only spaces for indentation.
 This overrides the setting of the \fBtabstospaces\fR option.
 .TP
-.BI "color " fgcolor , bgcolor " """ regex """ " \fR...
+.BI "color \fR[\fBbold,\fR][\fBitalic,\fR]" fgcolor , bgcolor " """ regex """ " \fR...
 Paint all pieces of text that match the extended regular expression
 \fIregex\fP with the given foreground and background colors, at least
 one of which must be specified.  Valid color names are:
-.BR white ", " black ", " blue ", " green ", " red ", "
-.BR cyan ", " yellow ", " magenta ", and " normal
+.BR red ", " green ", " blue ", " magenta ", " yellow ", " cyan ", "
+.BR white ", and " black .
+Each of these eight names may be prefixed with the word \fBlight\fR
+to get a brighter version of that color.
+On terminal emulators that can do at least 256 colors,
+other valid (but unprefixable) color names are:
+.BR pink ", " purple ", " mauve ", " lagoon ", " mint ", "
+.BR lime ", " peach ", " orange ", " latte ", and " normal
 -- where \fBnormal\fR means the default foreground or background color.
-You may use the prefix \fBbright\fR for the foreground color to get a
-stronger highlight.  If your terminal supports transparency, not specifying
-a \fIbgcolor\fP tells \fBnano\fP to attempt to use a transparent background.
+The color pair may be preceded by \fBbold\fR and/or \fBitalic\fR
+(separated by commas) to get a bold and/or slanting typeface,
+if your terminal can do those.
 .sp
 All coloring commands are applied in the order in which they are specified,
 which means that later commands can recolor stuff that was colored earlier.
 .TP
-.BI "icolor " fgcolor , bgcolor " """ regex """ " \fR...
+.BI "icolor \fR[\fBbold,\fR][\fBitalic,\fR]" fgcolor , bgcolor " """ regex """ " \fR...
 Same as above, except that the matching is case insensitive.
 .TP
-.BI "color " fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
+.BI "color \fR[\fBbold,\fR][\fBitalic,\fR]" fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
 Paint all pieces of text whose start matches extended regular expression
 \fIfromrx\fP and whose end matches extended regular expression \fItorx\fP
 with the given foreground and background colors,
@@ -443,7 +468,7 @@ initial instance of \fIfromrx\fP, all text until the first instance of
 \fItorx\fP will be colored.  This allows syntax highlighting to span
 multiple lines.
 .TP
-.BI "icolor " fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
+.BI "icolor \fR[\fBbold,\fR][\fBitalic,\fR]" fgcolor , bgcolor " start=""" fromrx """ end=""" torx """
 Same as above, except that the matching is case insensitive.
 .TP
 .BI "include """ syntaxfile """
@@ -511,7 +536,9 @@ Example: F10.
 
 Rebinding \fB^M\fR (Enter) or \fB^I\fR (Tab) is probably not a good idea.
 Rebinding \fB^[\fR (Esc) is not possible, because its keycode
-is the starter byte of escape sequences and Meta keystrokes.
+is the starter byte of Meta keystrokes and escape sequences.
+Rebinding any of the dedicated cursor-moving keys (the arrows, Home, End,
+PageUp and PageDown) is not possible.
 On some terminals it's not possible to rebind \fB^H\fR (unless \fB\-\-raw\fR
 is used) because its keycode is identical to that of the Backspace key.
 
@@ -526,7 +553,7 @@ Invokes the help viewer.
 Cancels the current command.
 .TP
 .B exit
-Exits from the program (or from the help viewer or the file browser).
+Exits from the program (or from the help viewer or file browser).
 .TP
 .B writeout
 Writes the current buffer to disk, asking for a name.
@@ -586,11 +613,17 @@ Cuts all text from the cursor position till the end of the buffer.
 Sets the mark at the current position, to start selecting text.
 Or, when it is set, unsets the mark.
 .TP
-.B curpos
-Shows the current cursor position: the line, column, and character positions.
+.B location
+Reports the current position of the cursor in the buffer:
+the line, column, and character positions.
+(The old name of this function, 'curpos', is deprecated.)
 .TP
 .B wordcount
 Counts the number of words, lines and characters in the current buffer.
+.TP
+.B execute
+Prompts for a program to execute.  The program's output will be inserted
+into the current buffer (or into a new buffer when \fBM-F\fR is toggled).
 .TP
 .B speller
 Invokes a spell-checking program, either the default \fBhunspell\fR or GNU
@@ -645,6 +678,9 @@ while keeping the cursor in the same text position, if possible.
 Scrolls the viewport down one row (meaning that the text slides up)
 while keeping the cursor in the same text position, if possible.
 .TP
+.B center
+Scrolls the line with the cursor to the middle of the screen.
+.TP
 .B prevword
 Moves the cursor to the beginning of the previous word.
 .TP
@@ -687,8 +723,18 @@ Goes to a specific line (and column if specified).  Negative numbers count
 from the end of the file (and end of the line).
 .TP
 .B findbracket
-Moves the cursor to the bracket (brace, parenthesis, etc.) that matches
-(pairs) with the one under the cursor.
+Moves the cursor to the bracket (or brace or parenthesis, etc.) that matches
+(pairs) with the one under the cursor.  See \fBset matchbrackets\fR.
+.TP
+.B anchor
+Places an anchor at the current line, or removes it when already present.
+(An anchor is visible when line numbers are activated.)
+.TP
+.B prevanchor
+Goes to the first anchor before the current line.
+.TP
+.B nextanchor
+Goes to the first anchor after the current line.
 .TP
 .B prevbuf
 Switches to editing/viewing the previous buffer when multiple buffers are open.
@@ -785,24 +831,27 @@ When writing a file, creates a backup of the current file.
 .TP
 .B discardbuffer
 When about to write a file, discard the current buffer without saving.
-(This function is bound by default only when option \fB\-\-tempfile\fR
+(This function is bound by default only when option \fB\-\-saveonexit\fR
 is in effect.)
 .TP
 .B browser
-Starts the file browser, allowing to select a file from a list.
+Starts the file browser (in the Read File and Write Out menus),
+allowing to select a file from a list.
 .TP
 .B gotodir
 Goes to a directory to be specified, allowing to browse anywhere
 in the filesystem.
 .TP
 .B firstfile
-Goes to the first file when using the file browser (reading or writing files).
+Goes to the first file in the list when using the file browser.
 .TP
 .B lastfile
-Goes to the last file when using the file browser (reading or writing files).
+Goes to the last file in the list when using the file browser.
 .TP
 .B nohelp
 Toggles the presence of the two-line list of key bindings at the bottom of the screen.
+(This toggle is special: it is available in all menus except the help viewer
+and the linter.  All further toggles are available in the main menu only.)
 .TP
 .B constantshow
 Toggles the constant display of the current line, column, and character positions.
@@ -853,6 +902,9 @@ Valid \fImenu\fP sections are:
 .B main
 The main editor window where text is entered and edited.
 .TP
+.B help
+The help-viewer menu.
+.TP
 .B search
 The search menu (AKA whereis).
 .TP
@@ -874,26 +926,27 @@ The 'write file' menu.
 .B insert
 The 'insert file' menu.
 .TP
-.B extcmd
-The menu for inserting output from an external command, reached from the insert menu.
-.TP
-.B help
-The help-viewer menu.
-.TP
-.B spell
-The menu of the integrated spell checker where the user can edit a misspelled word.
-.TP
-.B linter
-The linter menu.
-.TP
 .B browser
-The file browser for inserting or writing a file.
+The 'file browser' menu, for selecting a file to be opened or
+inserted or written to.
 .TP
 .B whereisfile
 The 'search for a file' menu in the file browser.
 .TP
 .B gotodir
 The 'go to directory' menu in the file browser.
+.TP
+.B execute
+The menu for inserting the output from an external command,
+or for filtering the buffer (or the marked region) through
+an external command, or for executing one of several tools.
+(The old form of this menu name, 'extcmd', is deprecated.)
+.TP
+.B spell
+The menu of the integrated spell checker where the user can edit a misspelled word.
+.TP
+.B linter
+The linter menu, which allows jumping through the linting messages.
 .TP
 .B all
 A special name that encompasses all menus.

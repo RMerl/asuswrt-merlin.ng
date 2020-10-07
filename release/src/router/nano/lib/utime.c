@@ -29,6 +29,12 @@
 # include "filename.h"
 # include "malloca.h"
 
+/* Don't assume that UNICODE is not defined.  */
+# undef CreateFile
+# define CreateFile CreateFileA
+# undef GetFileAttributes
+# define GetFileAttributes GetFileAttributesA
+
 int
 _gl_utimens_windows (const char *name, struct timespec ts[2])
 {

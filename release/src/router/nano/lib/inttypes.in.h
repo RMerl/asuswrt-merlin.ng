@@ -78,110 +78,92 @@
 # define _LONG_LONG_FORMAT_PREFIX "ll"
 #endif
 
-#if !defined PRId8 || @PRI_MACROS_BROKEN@
-# undef PRId8
+#if !defined PRId8
 # ifdef INT8_MAX
 #  define PRId8 "d"
 # endif
 #endif
-#if !defined PRIi8 || @PRI_MACROS_BROKEN@
-# undef PRIi8
+#if !defined PRIi8
 # ifdef INT8_MAX
 #  define PRIi8 "i"
 # endif
 #endif
-#if !defined PRIo8 || @PRI_MACROS_BROKEN@
-# undef PRIo8
+#if !defined PRIo8
 # ifdef UINT8_MAX
 #  define PRIo8 "o"
 # endif
 #endif
-#if !defined PRIu8 || @PRI_MACROS_BROKEN@
-# undef PRIu8
+#if !defined PRIu8
 # ifdef UINT8_MAX
 #  define PRIu8 "u"
 # endif
 #endif
-#if !defined PRIx8 || @PRI_MACROS_BROKEN@
-# undef PRIx8
+#if !defined PRIx8
 # ifdef UINT8_MAX
 #  define PRIx8 "x"
 # endif
 #endif
-#if !defined PRIX8 || @PRI_MACROS_BROKEN@
-# undef PRIX8
+#if !defined PRIX8
 # ifdef UINT8_MAX
 #  define PRIX8 "X"
 # endif
 #endif
-#if !defined PRId16 || @PRI_MACROS_BROKEN@
-# undef PRId16
+#if !defined PRId16
 # ifdef INT16_MAX
 #  define PRId16 "d"
 # endif
 #endif
-#if !defined PRIi16 || @PRI_MACROS_BROKEN@
-# undef PRIi16
+#if !defined PRIi16
 # ifdef INT16_MAX
 #  define PRIi16 "i"
 # endif
 #endif
-#if !defined PRIo16 || @PRI_MACROS_BROKEN@
-# undef PRIo16
+#if !defined PRIo16
 # ifdef UINT16_MAX
 #  define PRIo16 "o"
 # endif
 #endif
-#if !defined PRIu16 || @PRI_MACROS_BROKEN@
-# undef PRIu16
+#if !defined PRIu16
 # ifdef UINT16_MAX
 #  define PRIu16 "u"
 # endif
 #endif
-#if !defined PRIx16 || @PRI_MACROS_BROKEN@
-# undef PRIx16
+#if !defined PRIx16
 # ifdef UINT16_MAX
 #  define PRIx16 "x"
 # endif
 #endif
-#if !defined PRIX16 || @PRI_MACROS_BROKEN@
-# undef PRIX16
+#if !defined PRIX16
 # ifdef UINT16_MAX
 #  define PRIX16 "X"
 # endif
 #endif
-#if !defined PRId32 || @PRI_MACROS_BROKEN@
-# undef PRId32
+#if !defined PRId32
 # ifdef INT32_MAX
 #  define PRId32 "d"
 # endif
 #endif
-#if !defined PRIi32 || @PRI_MACROS_BROKEN@
-# undef PRIi32
+#if !defined PRIi32
 # ifdef INT32_MAX
 #  define PRIi32 "i"
 # endif
 #endif
-#if !defined PRIo32 || @PRI_MACROS_BROKEN@
-# undef PRIo32
+#if !defined PRIo32
 # ifdef UINT32_MAX
 #  define PRIo32 "o"
 # endif
 #endif
-#if !defined PRIu32 || @PRI_MACROS_BROKEN@
-# undef PRIu32
+#if !defined PRIu32
 # ifdef UINT32_MAX
 #  define PRIu32 "u"
 # endif
 #endif
-#if !defined PRIx32 || @PRI_MACROS_BROKEN@
-# undef PRIx32
+#if !defined PRIx32
 # ifdef UINT32_MAX
 #  define PRIx32 "x"
 # endif
 #endif
-#if !defined PRIX32 || @PRI_MACROS_BROKEN@
-# undef PRIX32
+#if !defined PRIX32
 # ifdef UINT32_MAX
 #  define PRIX32 "X"
 # endif
@@ -194,12 +176,10 @@
 # elif LONG_MAX >> 30 == 1
 #  define _PRI64_PREFIX _LONG_LONG_FORMAT_PREFIX
 # endif
-# if !defined PRId64 || @PRI_MACROS_BROKEN@
-#  undef PRId64
+# if !defined PRId64
 #  define PRId64 _PRI64_PREFIX "d"
 # endif
-# if !defined PRIi64 || @PRI_MACROS_BROKEN@
-#  undef PRIi64
+# if !defined PRIi64
 #  define PRIi64 _PRI64_PREFIX "i"
 # endif
 #endif
@@ -211,263 +191,217 @@
 # elif ULONG_MAX >> 31 == 1
 #  define _PRIu64_PREFIX _LONG_LONG_FORMAT_PREFIX
 # endif
-# if !defined PRIo64 || @PRI_MACROS_BROKEN@
-#  undef PRIo64
+# if !defined PRIo64
 #  define PRIo64 _PRIu64_PREFIX "o"
 # endif
-# if !defined PRIu64 || @PRI_MACROS_BROKEN@
-#  undef PRIu64
+# if !defined PRIu64
 #  define PRIu64 _PRIu64_PREFIX "u"
 # endif
-# if !defined PRIx64 || @PRI_MACROS_BROKEN@
-#  undef PRIx64
+# if !defined PRIx64
 #  define PRIx64 _PRIu64_PREFIX "x"
 # endif
-# if !defined PRIX64 || @PRI_MACROS_BROKEN@
-#  undef PRIX64
+# if !defined PRIX64
 #  define PRIX64 _PRIu64_PREFIX "X"
 # endif
 #endif
 
-#if !defined PRIdLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIdLEAST8
+#if !defined PRIdLEAST8
 # define PRIdLEAST8 "d"
 #endif
-#if !defined PRIiLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIiLEAST8
+#if !defined PRIiLEAST8
 # define PRIiLEAST8 "i"
 #endif
-#if !defined PRIoLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIoLEAST8
+#if !defined PRIoLEAST8
 # define PRIoLEAST8 "o"
 #endif
-#if !defined PRIuLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIuLEAST8
+#if !defined PRIuLEAST8
 # define PRIuLEAST8 "u"
 #endif
-#if !defined PRIxLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIxLEAST8
+#if !defined PRIxLEAST8
 # define PRIxLEAST8 "x"
 #endif
-#if !defined PRIXLEAST8 || @PRI_MACROS_BROKEN@
-# undef PRIXLEAST8
+#if !defined PRIXLEAST8
 # define PRIXLEAST8 "X"
 #endif
-#if !defined PRIdLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIdLEAST16
+#if !defined PRIdLEAST16
 # define PRIdLEAST16 "d"
 #endif
-#if !defined PRIiLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIiLEAST16
+#if !defined PRIiLEAST16
 # define PRIiLEAST16 "i"
 #endif
-#if !defined PRIoLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIoLEAST16
+#if !defined PRIoLEAST16
 # define PRIoLEAST16 "o"
 #endif
-#if !defined PRIuLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIuLEAST16
+#if !defined PRIuLEAST16
 # define PRIuLEAST16 "u"
 #endif
-#if !defined PRIxLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIxLEAST16
+#if !defined PRIxLEAST16
 # define PRIxLEAST16 "x"
 #endif
-#if !defined PRIXLEAST16 || @PRI_MACROS_BROKEN@
-# undef PRIXLEAST16
+#if !defined PRIXLEAST16
 # define PRIXLEAST16 "X"
 #endif
-#if !defined PRIdLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIdLEAST32
+#if !defined PRIdLEAST32
 # define PRIdLEAST32 "d"
 #endif
-#if !defined PRIiLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIiLEAST32
+#if !defined PRIiLEAST32
 # define PRIiLEAST32 "i"
 #endif
-#if !defined PRIoLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIoLEAST32
+#if !defined PRIoLEAST32
 # define PRIoLEAST32 "o"
 #endif
-#if !defined PRIuLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIuLEAST32
+#if !defined PRIuLEAST32
 # define PRIuLEAST32 "u"
 #endif
-#if !defined PRIxLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIxLEAST32
+#if !defined PRIxLEAST32
 # define PRIxLEAST32 "x"
 #endif
-#if !defined PRIXLEAST32 || @PRI_MACROS_BROKEN@
-# undef PRIXLEAST32
+#if !defined PRIXLEAST32
 # define PRIXLEAST32 "X"
 #endif
 #ifdef INT64_MAX
-# if !defined PRIdLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIdLEAST64
+# if !defined PRIdLEAST64
 #  define PRIdLEAST64 PRId64
 # endif
-# if !defined PRIiLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIiLEAST64
+# if !defined PRIiLEAST64
 #  define PRIiLEAST64 PRIi64
 # endif
 #endif
 #ifdef UINT64_MAX
-# if !defined PRIoLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIoLEAST64
+# if !defined PRIoLEAST64
 #  define PRIoLEAST64 PRIo64
 # endif
-# if !defined PRIuLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIuLEAST64
+# if !defined PRIuLEAST64
 #  define PRIuLEAST64 PRIu64
 # endif
-# if !defined PRIxLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIxLEAST64
+# if !defined PRIxLEAST64
 #  define PRIxLEAST64 PRIx64
 # endif
-# if !defined PRIXLEAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIXLEAST64
+# if !defined PRIXLEAST64
 #  define PRIXLEAST64 PRIX64
 # endif
 #endif
 
-#if !defined PRIdFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIdFAST8
+#if !defined PRIdFAST8
 # if INT_FAST8_MAX > INT32_MAX
 #  define PRIdFAST8 PRId64
 # else
 #  define PRIdFAST8 "d"
 # endif
 #endif
-#if !defined PRIiFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIiFAST8
+#if !defined PRIiFAST8
 # if INT_FAST8_MAX > INT32_MAX
 #  define PRIiFAST8 PRIi64
 # else
 #  define PRIiFAST8 "i"
 # endif
 #endif
-#if !defined PRIoFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIoFAST8
+#if !defined PRIoFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define PRIoFAST8 PRIo64
 # else
 #  define PRIoFAST8 "o"
 # endif
 #endif
-#if !defined PRIuFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIuFAST8
+#if !defined PRIuFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define PRIuFAST8 PRIu64
 # else
 #  define PRIuFAST8 "u"
 # endif
 #endif
-#if !defined PRIxFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIxFAST8
+#if !defined PRIxFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define PRIxFAST8 PRIx64
 # else
 #  define PRIxFAST8 "x"
 # endif
 #endif
-#if !defined PRIXFAST8 || @PRI_MACROS_BROKEN@
-# undef PRIXFAST8
+#if !defined PRIXFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define PRIXFAST8 PRIX64
 # else
 #  define PRIXFAST8 "X"
 # endif
 #endif
-#if !defined PRIdFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIdFAST16
+#if !defined PRIdFAST16
 # if INT_FAST16_MAX > INT32_MAX
 #  define PRIdFAST16 PRId64
 # else
 #  define PRIdFAST16 "d"
 # endif
 #endif
-#if !defined PRIiFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIiFAST16
+#if !defined PRIiFAST16
 # if INT_FAST16_MAX > INT32_MAX
 #  define PRIiFAST16 PRIi64
 # else
 #  define PRIiFAST16 "i"
 # endif
 #endif
-#if !defined PRIoFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIoFAST16
+#if !defined PRIoFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define PRIoFAST16 PRIo64
 # else
 #  define PRIoFAST16 "o"
 # endif
 #endif
-#if !defined PRIuFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIuFAST16
+#if !defined PRIuFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define PRIuFAST16 PRIu64
 # else
 #  define PRIuFAST16 "u"
 # endif
 #endif
-#if !defined PRIxFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIxFAST16
+#if !defined PRIxFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define PRIxFAST16 PRIx64
 # else
 #  define PRIxFAST16 "x"
 # endif
 #endif
-#if !defined PRIXFAST16 || @PRI_MACROS_BROKEN@
-# undef PRIXFAST16
+#if !defined PRIXFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define PRIXFAST16 PRIX64
 # else
 #  define PRIXFAST16 "X"
 # endif
 #endif
-#if !defined PRIdFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIdFAST32
+#if !defined PRIdFAST32
 # if INT_FAST32_MAX > INT32_MAX
 #  define PRIdFAST32 PRId64
 # else
 #  define PRIdFAST32 "d"
 # endif
 #endif
-#if !defined PRIiFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIiFAST32
+#if !defined PRIiFAST32
 # if INT_FAST32_MAX > INT32_MAX
 #  define PRIiFAST32 PRIi64
 # else
 #  define PRIiFAST32 "i"
 # endif
 #endif
-#if !defined PRIoFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIoFAST32
+#if !defined PRIoFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define PRIoFAST32 PRIo64
 # else
 #  define PRIoFAST32 "o"
 # endif
 #endif
-#if !defined PRIuFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIuFAST32
+#if !defined PRIuFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define PRIuFAST32 PRIu64
 # else
 #  define PRIuFAST32 "u"
 # endif
 #endif
-#if !defined PRIxFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIxFAST32
+#if !defined PRIxFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define PRIxFAST32 PRIx64
 # else
 #  define PRIxFAST32 "x"
 # endif
 #endif
-#if !defined PRIXFAST32 || @PRI_MACROS_BROKEN@
-# undef PRIXFAST32
+#if !defined PRIXFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define PRIXFAST32 PRIX64
 # else
@@ -475,76 +409,64 @@
 # endif
 #endif
 #ifdef INT64_MAX
-# if !defined PRIdFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIdFAST64
+# if !defined PRIdFAST64
 #  define PRIdFAST64 PRId64
 # endif
-# if !defined PRIiFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIiFAST64
+# if !defined PRIiFAST64
 #  define PRIiFAST64 PRIi64
 # endif
 #endif
 #ifdef UINT64_MAX
-# if !defined PRIoFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIoFAST64
+# if !defined PRIoFAST64
 #  define PRIoFAST64 PRIo64
 # endif
-# if !defined PRIuFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIuFAST64
+# if !defined PRIuFAST64
 #  define PRIuFAST64 PRIu64
 # endif
-# if !defined PRIxFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIxFAST64
+# if !defined PRIxFAST64
 #  define PRIxFAST64 PRIx64
 # endif
-# if !defined PRIXFAST64 || @PRI_MACROS_BROKEN@
-#  undef PRIXFAST64
+# if !defined PRIXFAST64
 #  define PRIXFAST64 PRIX64
 # endif
 #endif
 
-#if !defined PRIdMAX || @PRI_MACROS_BROKEN@
-# undef PRIdMAX
+#if !defined PRIdMAX
 # if @INT32_MAX_LT_INTMAX_MAX@
 #  define PRIdMAX PRId64
 # else
 #  define PRIdMAX "ld"
 # endif
 #endif
-#if !defined PRIiMAX || @PRI_MACROS_BROKEN@
-# undef PRIiMAX
+#if !defined PRIiMAX
 # if @INT32_MAX_LT_INTMAX_MAX@
 #  define PRIiMAX PRIi64
 # else
 #  define PRIiMAX "li"
 # endif
 #endif
-#if !defined PRIoMAX || @PRI_MACROS_BROKEN@
-# undef PRIoMAX
+#if !defined PRIoMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define PRIoMAX PRIo64
 # else
 #  define PRIoMAX "lo"
 # endif
 #endif
-#if !defined PRIuMAX || @PRI_MACROS_BROKEN@
-# undef PRIuMAX
+#if !defined PRIuMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define PRIuMAX PRIu64
 # else
 #  define PRIuMAX "lu"
 # endif
 #endif
-#if !defined PRIxMAX || @PRI_MACROS_BROKEN@
-# undef PRIxMAX
+#if !defined PRIxMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define PRIxMAX PRIx64
 # else
 #  define PRIxMAX "lx"
 # endif
 #endif
-#if !defined PRIXMAX || @PRI_MACROS_BROKEN@
-# undef PRIXMAX
+#if !defined PRIXMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define PRIXMAX PRIX64
 # else
@@ -552,129 +474,108 @@
 # endif
 #endif
 
-#if !defined PRIdPTR || @PRI_MACROS_BROKEN@
-# undef PRIdPTR
+#if !defined PRIdPTR
 # ifdef INTPTR_MAX
 #  define PRIdPTR @PRIPTR_PREFIX@ "d"
 # endif
 #endif
-#if !defined PRIiPTR || @PRI_MACROS_BROKEN@
-# undef PRIiPTR
+#if !defined PRIiPTR
 # ifdef INTPTR_MAX
 #  define PRIiPTR @PRIPTR_PREFIX@ "i"
 # endif
 #endif
-#if !defined PRIoPTR || @PRI_MACROS_BROKEN@
-# undef PRIoPTR
+#if !defined PRIoPTR
 # ifdef UINTPTR_MAX
 #  define PRIoPTR @PRIPTR_PREFIX@ "o"
 # endif
 #endif
-#if !defined PRIuPTR || @PRI_MACROS_BROKEN@
-# undef PRIuPTR
+#if !defined PRIuPTR
 # ifdef UINTPTR_MAX
 #  define PRIuPTR @PRIPTR_PREFIX@ "u"
 # endif
 #endif
-#if !defined PRIxPTR || @PRI_MACROS_BROKEN@
-# undef PRIxPTR
+#if !defined PRIxPTR
 # ifdef UINTPTR_MAX
 #  define PRIxPTR @PRIPTR_PREFIX@ "x"
 # endif
 #endif
-#if !defined PRIXPTR || @PRI_MACROS_BROKEN@
-# undef PRIXPTR
+#if !defined PRIXPTR
 # ifdef UINTPTR_MAX
 #  define PRIXPTR @PRIPTR_PREFIX@ "X"
 # endif
 #endif
 
-#if !defined SCNd8 || @PRI_MACROS_BROKEN@
-# undef SCNd8
+#if !defined SCNd8
 # ifdef INT8_MAX
 #  define SCNd8 "hhd"
 # endif
 #endif
-#if !defined SCNi8 || @PRI_MACROS_BROKEN@
-# undef SCNi8
+#if !defined SCNi8
 # ifdef INT8_MAX
 #  define SCNi8 "hhi"
 # endif
 #endif
-#if !defined SCNo8 || @PRI_MACROS_BROKEN@
-# undef SCNo8
+#if !defined SCNo8
 # ifdef UINT8_MAX
 #  define SCNo8 "hho"
 # endif
 #endif
-#if !defined SCNu8 || @PRI_MACROS_BROKEN@
-# undef SCNu8
+#if !defined SCNu8
 # ifdef UINT8_MAX
 #  define SCNu8 "hhu"
 # endif
 #endif
-#if !defined SCNx8 || @PRI_MACROS_BROKEN@
-# undef SCNx8
+#if !defined SCNx8
 # ifdef UINT8_MAX
 #  define SCNx8 "hhx"
 # endif
 #endif
-#if !defined SCNd16 || @PRI_MACROS_BROKEN@
-# undef SCNd16
+#if !defined SCNd16
 # ifdef INT16_MAX
 #  define SCNd16 "hd"
 # endif
 #endif
-#if !defined SCNi16 || @PRI_MACROS_BROKEN@
-# undef SCNi16
+#if !defined SCNi16
 # ifdef INT16_MAX
 #  define SCNi16 "hi"
 # endif
 #endif
-#if !defined SCNo16 || @PRI_MACROS_BROKEN@
-# undef SCNo16
+#if !defined SCNo16
 # ifdef UINT16_MAX
 #  define SCNo16 "ho"
 # endif
 #endif
-#if !defined SCNu16 || @PRI_MACROS_BROKEN@
-# undef SCNu16
+#if !defined SCNu16
 # ifdef UINT16_MAX
 #  define SCNu16 "hu"
 # endif
 #endif
-#if !defined SCNx16 || @PRI_MACROS_BROKEN@
-# undef SCNx16
+#if !defined SCNx16
 # ifdef UINT16_MAX
 #  define SCNx16 "hx"
 # endif
 #endif
-#if !defined SCNd32 || @PRI_MACROS_BROKEN@
-# undef SCNd32
+#if !defined SCNd32
 # ifdef INT32_MAX
 #  define SCNd32 "d"
 # endif
 #endif
-#if !defined SCNi32 || @PRI_MACROS_BROKEN@
-# undef SCNi32
+#if !defined SCNi32
 # ifdef INT32_MAX
 #  define SCNi32 "i"
 # endif
 #endif
-#if !defined SCNo32 || @PRI_MACROS_BROKEN@
-# undef SCNo32
+#if !defined SCNo32
 # ifdef UINT32_MAX
 #  define SCNo32 "o"
 # endif
 #endif
-#if !defined SCNu32 || @PRI_MACROS_BROKEN@
-# undef SCNu32
+#if !defined SCNu32
 # ifdef UINT32_MAX
 #  define SCNu32 "u"
 # endif
 #endif
-#if !defined SCNx32 || @PRI_MACROS_BROKEN@
-# undef SCNx32
+#if !defined SCNx32
 # ifdef UINT32_MAX
 #  define SCNx32 "x"
 # endif
@@ -687,12 +588,10 @@
 # elif LONG_MAX >> 30 == 1
 #  define _SCN64_PREFIX _LONG_LONG_FORMAT_PREFIX
 # endif
-# if !defined SCNd64 || @PRI_MACROS_BROKEN@
-#  undef SCNd64
+# if !defined SCNd64
 #  define SCNd64 _SCN64_PREFIX "d"
 # endif
-# if !defined SCNi64 || @PRI_MACROS_BROKEN@
-#  undef SCNi64
+# if !defined SCNi64
 #  define SCNi64 _SCN64_PREFIX "i"
 # endif
 #endif
@@ -704,107 +603,83 @@
 # elif ULONG_MAX >> 31 == 1
 #  define _SCNu64_PREFIX _LONG_LONG_FORMAT_PREFIX
 # endif
-# if !defined SCNo64 || @PRI_MACROS_BROKEN@
-#  undef SCNo64
+# if !defined SCNo64
 #  define SCNo64 _SCNu64_PREFIX "o"
 # endif
-# if !defined SCNu64 || @PRI_MACROS_BROKEN@
-#  undef SCNu64
+# if !defined SCNu64
 #  define SCNu64 _SCNu64_PREFIX "u"
 # endif
-# if !defined SCNx64 || @PRI_MACROS_BROKEN@
-#  undef SCNx64
+# if !defined SCNx64
 #  define SCNx64 _SCNu64_PREFIX "x"
 # endif
 #endif
 
-#if !defined SCNdLEAST8 || @PRI_MACROS_BROKEN@
-# undef SCNdLEAST8
+#if !defined SCNdLEAST8
 # define SCNdLEAST8 "hhd"
 #endif
-#if !defined SCNiLEAST8 || @PRI_MACROS_BROKEN@
-# undef SCNiLEAST8
+#if !defined SCNiLEAST8
 # define SCNiLEAST8 "hhi"
 #endif
-#if !defined SCNoLEAST8 || @PRI_MACROS_BROKEN@
-# undef SCNoLEAST8
+#if !defined SCNoLEAST8
 # define SCNoLEAST8 "hho"
 #endif
-#if !defined SCNuLEAST8 || @PRI_MACROS_BROKEN@
-# undef SCNuLEAST8
+#if !defined SCNuLEAST8
 # define SCNuLEAST8 "hhu"
 #endif
-#if !defined SCNxLEAST8 || @PRI_MACROS_BROKEN@
-# undef SCNxLEAST8
+#if !defined SCNxLEAST8
 # define SCNxLEAST8 "hhx"
 #endif
-#if !defined SCNdLEAST16 || @PRI_MACROS_BROKEN@
-# undef SCNdLEAST16
+#if !defined SCNdLEAST16
 # define SCNdLEAST16 "hd"
 #endif
-#if !defined SCNiLEAST16 || @PRI_MACROS_BROKEN@
-# undef SCNiLEAST16
+#if !defined SCNiLEAST16
 # define SCNiLEAST16 "hi"
 #endif
-#if !defined SCNoLEAST16 || @PRI_MACROS_BROKEN@
-# undef SCNoLEAST16
+#if !defined SCNoLEAST16
 # define SCNoLEAST16 "ho"
 #endif
-#if !defined SCNuLEAST16 || @PRI_MACROS_BROKEN@
-# undef SCNuLEAST16
+#if !defined SCNuLEAST16
 # define SCNuLEAST16 "hu"
 #endif
-#if !defined SCNxLEAST16 || @PRI_MACROS_BROKEN@
-# undef SCNxLEAST16
+#if !defined SCNxLEAST16
 # define SCNxLEAST16 "hx"
 #endif
-#if !defined SCNdLEAST32 || @PRI_MACROS_BROKEN@
-# undef SCNdLEAST32
+#if !defined SCNdLEAST32
 # define SCNdLEAST32 "d"
 #endif
-#if !defined SCNiLEAST32 || @PRI_MACROS_BROKEN@
-# undef SCNiLEAST32
+#if !defined SCNiLEAST32
 # define SCNiLEAST32 "i"
 #endif
-#if !defined SCNoLEAST32 || @PRI_MACROS_BROKEN@
-# undef SCNoLEAST32
+#if !defined SCNoLEAST32
 # define SCNoLEAST32 "o"
 #endif
-#if !defined SCNuLEAST32 || @PRI_MACROS_BROKEN@
-# undef SCNuLEAST32
+#if !defined SCNuLEAST32
 # define SCNuLEAST32 "u"
 #endif
-#if !defined SCNxLEAST32 || @PRI_MACROS_BROKEN@
-# undef SCNxLEAST32
+#if !defined SCNxLEAST32
 # define SCNxLEAST32 "x"
 #endif
 #ifdef INT64_MAX
-# if !defined SCNdLEAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNdLEAST64
+# if !defined SCNdLEAST64
 #  define SCNdLEAST64 SCNd64
 # endif
-# if !defined SCNiLEAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNiLEAST64
+# if !defined SCNiLEAST64
 #  define SCNiLEAST64 SCNi64
 # endif
 #endif
 #ifdef UINT64_MAX
-# if !defined SCNoLEAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNoLEAST64
+# if !defined SCNoLEAST64
 #  define SCNoLEAST64 SCNo64
 # endif
-# if !defined SCNuLEAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNuLEAST64
+# if !defined SCNuLEAST64
 #  define SCNuLEAST64 SCNu64
 # endif
-# if !defined SCNxLEAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNxLEAST64
+# if !defined SCNxLEAST64
 #  define SCNxLEAST64 SCNx64
 # endif
 #endif
 
-#if !defined SCNdFAST8 || @PRI_MACROS_BROKEN@
-# undef SCNdFAST8
+#if !defined SCNdFAST8
 # if INT_FAST8_MAX > INT32_MAX
 #  define SCNdFAST8 SCNd64
 # elif INT_FAST8_MAX == 0x7fff
@@ -815,8 +690,7 @@
 #  define SCNdFAST8 "d"
 # endif
 #endif
-#if !defined SCNiFAST8 || @PRI_MACROS_BROKEN@
-# undef SCNiFAST8
+#if !defined SCNiFAST8
 # if INT_FAST8_MAX > INT32_MAX
 #  define SCNiFAST8 SCNi64
 # elif INT_FAST8_MAX == 0x7fff
@@ -827,8 +701,7 @@
 #  define SCNiFAST8 "i"
 # endif
 #endif
-#if !defined SCNoFAST8 || @PRI_MACROS_BROKEN@
-# undef SCNoFAST8
+#if !defined SCNoFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define SCNoFAST8 SCNo64
 # elif UINT_FAST8_MAX == 0xffff
@@ -839,8 +712,7 @@
 #  define SCNoFAST8 "o"
 # endif
 #endif
-#if !defined SCNuFAST8 || @PRI_MACROS_BROKEN@
-# undef SCNuFAST8
+#if !defined SCNuFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define SCNuFAST8 SCNu64
 # elif UINT_FAST8_MAX == 0xffff
@@ -851,8 +723,7 @@
 #  define SCNuFAST8 "u"
 # endif
 #endif
-#if !defined SCNxFAST8 || @PRI_MACROS_BROKEN@
-# undef SCNxFAST8
+#if !defined SCNxFAST8
 # if UINT_FAST8_MAX > UINT32_MAX
 #  define SCNxFAST8 SCNx64
 # elif UINT_FAST8_MAX == 0xffff
@@ -863,8 +734,7 @@
 #  define SCNxFAST8 "x"
 # endif
 #endif
-#if !defined SCNdFAST16 || @PRI_MACROS_BROKEN@
-# undef SCNdFAST16
+#if !defined SCNdFAST16
 # if INT_FAST16_MAX > INT32_MAX
 #  define SCNdFAST16 SCNd64
 # elif INT_FAST16_MAX == 0x7fff
@@ -873,8 +743,7 @@
 #  define SCNdFAST16 "d"
 # endif
 #endif
-#if !defined SCNiFAST16 || @PRI_MACROS_BROKEN@
-# undef SCNiFAST16
+#if !defined SCNiFAST16
 # if INT_FAST16_MAX > INT32_MAX
 #  define SCNiFAST16 SCNi64
 # elif INT_FAST16_MAX == 0x7fff
@@ -883,8 +752,7 @@
 #  define SCNiFAST16 "i"
 # endif
 #endif
-#if !defined SCNoFAST16 || @PRI_MACROS_BROKEN@
-# undef SCNoFAST16
+#if !defined SCNoFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define SCNoFAST16 SCNo64
 # elif UINT_FAST16_MAX == 0xffff
@@ -893,8 +761,7 @@
 #  define SCNoFAST16 "o"
 # endif
 #endif
-#if !defined SCNuFAST16 || @PRI_MACROS_BROKEN@
-# undef SCNuFAST16
+#if !defined SCNuFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define SCNuFAST16 SCNu64
 # elif UINT_FAST16_MAX == 0xffff
@@ -903,8 +770,7 @@
 #  define SCNuFAST16 "u"
 # endif
 #endif
-#if !defined SCNxFAST16 || @PRI_MACROS_BROKEN@
-# undef SCNxFAST16
+#if !defined SCNxFAST16
 # if UINT_FAST16_MAX > UINT32_MAX
 #  define SCNxFAST16 SCNx64
 # elif UINT_FAST16_MAX == 0xffff
@@ -913,40 +779,35 @@
 #  define SCNxFAST16 "x"
 # endif
 #endif
-#if !defined SCNdFAST32 || @PRI_MACROS_BROKEN@
-# undef SCNdFAST32
+#if !defined SCNdFAST32
 # if INT_FAST32_MAX > INT32_MAX
 #  define SCNdFAST32 SCNd64
 # else
 #  define SCNdFAST32 "d"
 # endif
 #endif
-#if !defined SCNiFAST32 || @PRI_MACROS_BROKEN@
-# undef SCNiFAST32
+#if !defined SCNiFAST32
 # if INT_FAST32_MAX > INT32_MAX
 #  define SCNiFAST32 SCNi64
 # else
 #  define SCNiFAST32 "i"
 # endif
 #endif
-#if !defined SCNoFAST32 || @PRI_MACROS_BROKEN@
-# undef SCNoFAST32
+#if !defined SCNoFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define SCNoFAST32 SCNo64
 # else
 #  define SCNoFAST32 "o"
 # endif
 #endif
-#if !defined SCNuFAST32 || @PRI_MACROS_BROKEN@
-# undef SCNuFAST32
+#if !defined SCNuFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define SCNuFAST32 SCNu64
 # else
 #  define SCNuFAST32 "u"
 # endif
 #endif
-#if !defined SCNxFAST32 || @PRI_MACROS_BROKEN@
-# undef SCNxFAST32
+#if !defined SCNxFAST32
 # if UINT_FAST32_MAX > UINT32_MAX
 #  define SCNxFAST32 SCNx64
 # else
@@ -954,64 +815,54 @@
 # endif
 #endif
 #ifdef INT64_MAX
-# if !defined SCNdFAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNdFAST64
+# if !defined SCNdFAST64
 #  define SCNdFAST64 SCNd64
 # endif
-# if !defined SCNiFAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNiFAST64
+# if !defined SCNiFAST64
 #  define SCNiFAST64 SCNi64
 # endif
 #endif
 #ifdef UINT64_MAX
-# if !defined SCNoFAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNoFAST64
+# if !defined SCNoFAST64
 #  define SCNoFAST64 SCNo64
 # endif
-# if !defined SCNuFAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNuFAST64
+# if !defined SCNuFAST64
 #  define SCNuFAST64 SCNu64
 # endif
-# if !defined SCNxFAST64 || @PRI_MACROS_BROKEN@
-#  undef SCNxFAST64
+# if !defined SCNxFAST64
 #  define SCNxFAST64 SCNx64
 # endif
 #endif
 
-#if !defined SCNdMAX || @PRI_MACROS_BROKEN@
-# undef SCNdMAX
+#if !defined SCNdMAX
 # if @INT32_MAX_LT_INTMAX_MAX@
 #  define SCNdMAX SCNd64
 # else
 #  define SCNdMAX "ld"
 # endif
 #endif
-#if !defined SCNiMAX || @PRI_MACROS_BROKEN@
-# undef SCNiMAX
+#if !defined SCNiMAX
 # if @INT32_MAX_LT_INTMAX_MAX@
 #  define SCNiMAX SCNi64
 # else
 #  define SCNiMAX "li"
 # endif
 #endif
-#if !defined SCNoMAX || @PRI_MACROS_BROKEN@
-# undef SCNoMAX
+#if !defined SCNoMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define SCNoMAX SCNo64
 # else
 #  define SCNoMAX "lo"
 # endif
 #endif
-#if !defined SCNuMAX || @PRI_MACROS_BROKEN@
-# undef SCNuMAX
+#if !defined SCNuMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define SCNuMAX SCNu64
 # else
 #  define SCNuMAX "lu"
 # endif
 #endif
-#if !defined SCNxMAX || @PRI_MACROS_BROKEN@
-# undef SCNxMAX
+#if !defined SCNxMAX
 # if @UINT32_MAX_LT_UINTMAX_MAX@
 #  define SCNxMAX SCNx64
 # else
@@ -1019,32 +870,27 @@
 # endif
 #endif
 
-#if !defined SCNdPTR || @PRI_MACROS_BROKEN@
-# undef SCNdPTR
+#if !defined SCNdPTR
 # ifdef INTPTR_MAX
 #  define SCNdPTR @PRIPTR_PREFIX@ "d"
 # endif
 #endif
-#if !defined SCNiPTR || @PRI_MACROS_BROKEN@
-# undef SCNiPTR
+#if !defined SCNiPTR
 # ifdef INTPTR_MAX
 #  define SCNiPTR @PRIPTR_PREFIX@ "i"
 # endif
 #endif
-#if !defined SCNoPTR || @PRI_MACROS_BROKEN@
-# undef SCNoPTR
+#if !defined SCNoPTR
 # ifdef UINTPTR_MAX
 #  define SCNoPTR @PRIPTR_PREFIX@ "o"
 # endif
 #endif
-#if !defined SCNuPTR || @PRI_MACROS_BROKEN@
-# undef SCNuPTR
+#if !defined SCNuPTR
 # ifdef UINTPTR_MAX
 #  define SCNuPTR @PRIPTR_PREFIX@ "u"
 # endif
 #endif
-#if !defined SCNxPTR || @PRI_MACROS_BROKEN@
-# undef SCNxPTR
+#if !defined SCNxPTR
 # ifdef UINTPTR_MAX
 #  define SCNxPTR @PRIPTR_PREFIX@ "x"
 # endif

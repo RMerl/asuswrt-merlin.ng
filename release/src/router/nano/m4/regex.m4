@@ -1,4 +1,4 @@
-# serial 69
+# serial 70
 
 # Copyright (C) 1996-2001, 2003-2020 Free Software Foundation, Inc.
 #
@@ -90,11 +90,14 @@ AC_DEFUN([gl_REGEX],
                   s = re_compile_pattern (pat, sizeof pat - 1, &regex);
                   if (s)
                     result |= 1;
-                  else if (re_search (&regex, data, sizeof data - 1,
-                                      0, sizeof data - 1, &regs)
-                           != -1)
-                    result |= 1;
-                  regfree (&regex);
+                  else
+                    {
+                      if (re_search (&regex, data, sizeof data - 1,
+                                     0, sizeof data - 1, &regs)
+                          != -1)
+                        result |= 1;
+                      regfree (&regex);
+                    }
                 }
 
                 {
@@ -125,8 +128,8 @@ AC_DEFUN([gl_REGEX],
                                      0, sizeof data - 1, 0);
                       if (i != 0 && i != 21)
                         result |= 1;
+                      regfree (&regex);
                     }
-                  regfree (&regex);
                 }
 
                 if (! setlocale (LC_ALL, "C"))
@@ -139,9 +142,13 @@ AC_DEFUN([gl_REGEX],
             s = re_compile_pattern ("a[^x]b", 6, &regex);
             if (s)
               result |= 2;
-            /* This should fail, but succeeds for glibc-2.5.  */
-            else if (re_search (&regex, "a\nb", 3, 0, 3, &regs) != -1)
-              result |= 2;
+            else
+              {
+                /* This should fail, but succeeds for glibc-2.5.  */
+                if (re_search (&regex, "a\nb", 3, 0, 3, &regs) != -1)
+                  result |= 2;
+                regfree (&regex);
+              }
 
             /* This regular expression is from Spencer ere test number 75
                in grep-2.3.  */
@@ -153,7 +160,10 @@ AC_DEFUN([gl_REGEX],
             s = re_compile_pattern ("a[[:@:>@:]]b\n", 11, &regex);
             /* This should fail with _Invalid character class name_ error.  */
             if (!s)
-              result |= 4;
+              {
+                result |= 4;
+                regfree (&regex);
+              }
 
             /* Ensure that [b-a] is diagnosed as invalid, when
                using RE_NO_EMPTY_RANGES. */
@@ -161,13 +171,18 @@ AC_DEFUN([gl_REGEX],
             memset (&regex, 0, sizeof regex);
             s = re_compile_pattern ("a[b-a]", 6, &regex);
             if (s == 0)
-              result |= 8;
+              {
+                result |= 8;
+                regfree (&regex);
+              }
 
             /* This should succeed, but does not for glibc-2.1.3.  */
             memset (&regex, 0, sizeof regex);
             s = re_compile_pattern ("{1", 2, &regex);
             if (s)
               result |= 8;
+            else
+              regfree (&regex);
 
             /* The following example is derived from a problem report
                against gawk from Jorge Stolfi <stolfi@ic.unicamp.br>.  */
@@ -175,17 +190,35 @@ AC_DEFUN([gl_REGEX],
             s = re_compile_pattern ("[an\371]*n", 7, &regex);
             if (s)
               result |= 8;
-            /* This should match, but does not for glibc-2.2.1.  */
-            else if (re_match (&regex, "an", 2, 0, &regs) != 2)
-              result |= 8;
+            else
+              {
+                /* This should match, but does not for glibc-2.2.1.  */
+                if (re_match (&regex, "an", 2, 0, &regs) != 2)
+                  result |= 8;
+                else
+                  {
+                    free (regs.start);
+                    free (regs.end);
+                  }
+                regfree (&regex);
+              }
 
             memset (&regex, 0, sizeof regex);
             s = re_compile_pattern ("x", 1, &regex);
             if (s)
               result |= 8;
-            /* glibc-2.2.93 does not work with a negative RANGE argument.  */
-            else if (re_search (&regex, "wxy", 3, 2, -2, &regs) != 1)
-              result |= 8;
+            else
+              {
+                /* glibc-2.2.93 does not work with a negative RANGE argument.  */
+                if (re_search (&regex, "wxy", 3, 2, -2, &regs) != 1)
+                  result |= 8;
+                else
+                  {
+                    free (regs.start);
+                    free (regs.end);
+                  }
+                regfree (&regex);
+              }
 
             /* The version of regex.c in older versions of gnulib
                ignored RE_ICASE.  Detect that problem too.  */
@@ -194,8 +227,17 @@ AC_DEFUN([gl_REGEX],
             s = re_compile_pattern ("x", 1, &regex);
             if (s)
               result |= 16;
-            else if (re_search (&regex, "WXY", 3, 0, 3, &regs) < 0)
-              result |= 16;
+            else
+              {
+                if (re_search (&regex, "WXY", 3, 0, 3, &regs) < 0)
+                  result |= 16;
+                else
+                  {
+                    free (regs.start);
+                    free (regs.end);
+                  }
+                regfree (&regex);
+              }
 
             /* Catch a bug reported by Vin Shelton in
                https://lists.gnu.org/r/bug-coreutils/2007-06/msg00089.html
@@ -207,6 +249,8 @@ AC_DEFUN([gl_REGEX],
             s = re_compile_pattern ("[[:alnum:]_-]\\\\+$", 16, &regex);
             if (s)
               result |= 32;
+            else
+              regfree (&regex);
 
             /* REG_STARTEND was added to glibc on 2004-01-15.
                Reject older versions.  */
@@ -221,8 +265,14 @@ AC_DEFUN([gl_REGEX],
             re_set_syntax (RE_SYNTAX_POSIX_EGREP);
             memset (&regex, 0, sizeof regex);
             s = re_compile_pattern ("0|()0|\\1|0", 10, &regex);
-            if (!s || strcmp (s, "Invalid back reference"))
+            if (!s)
               result |= 64;
+            else
+              {
+                if (strcmp (s, "Invalid back reference"))
+                  result |= 64;
+                regfree (&regex);
+              }
 
 #if 0
             /* It would be nice to reject hosts whose regoff_t values are too

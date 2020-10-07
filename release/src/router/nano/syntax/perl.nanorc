@@ -1,4 +1,4 @@
-## Here is an example for Perl.
+## Syntax highlighting for Perl.
 
 syntax perl "\.p[lm]$"
 header "^#!.*perl"

@@ -1,4 +1,4 @@
-## Here is a short example for TeX files.
+## Syntax highlighting for TeX files.
 
 syntax tex "\.tex$"
 magic "(La)?TeX document"

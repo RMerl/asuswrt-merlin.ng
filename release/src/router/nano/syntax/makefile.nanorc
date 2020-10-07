@@ -1,4 +1,4 @@
-## Here is an example for Makefiles.
+## Syntax highlighting for Makefiles.
 
 syntax makefile "(/((GNU)?m|M)akefile[^/]*$|\.(make|mk)$)"
 magic "makefile script"

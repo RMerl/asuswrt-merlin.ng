@@ -45,7 +45,7 @@ ul.no-bullet {list-style: none}
 
 
 <span id="Top"></span><span id="SEC_Top"></span>
-<p>This manual documents the GNU <code>nano</code> editor, version 4.9.3.
+<p>This manual documents the GNU <code>nano</code> editor, version 5.2.
 </p>
 <table class="menu" border="0" cellspacing="0">
 <tr><td align="left" valign="top">&bull; <a href="#Introduction" accesskey="1">Introduction</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
@@ -58,11 +58,11 @@ ul.no-bullet {list-style: none}
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Built_002din-Help" accesskey="5">Built-in Help</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Feature-Toggles" accesskey="6">Feature Toggles</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#The-File-Browser" accesskey="6">The File Browser</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Nanorc-Files" accesskey="7">Nanorc Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Feature-Toggles" accesskey="7">Feature Toggles</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#The-File-Browser" accesskey="8">The File Browser</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Nanorc-Files" accesskey="8">Nanorc Files</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Pico-Compatibility" accesskey="9">Pico Compatibility</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
@@ -88,7 +88,7 @@ See <a href="#Pico-Compatibility">Pico Compatibility</a> for more details on how
 Pico differ.
 </p>
 <p>Starting with version 4.0, <code>nano</code> no longer hard-wraps an overlong
-line by default.  It further uses smooth scrolling by default, and by
+line by default.  It further uses linewise scrolling by default, and by
 default includes the line below the title bar into the editing area.
 </p>
 <p>If you want the old, Pico behavior back, you can use the
@@ -232,10 +232,9 @@ hard-wrapping occurs or when text is justified.
 </p>
 </dd>
 <dt><samp>-O</samp></dt>
-<dt><samp>--morespace</samp></dt>
-<dd><p>Obsolete and ignored option, since the line below the title bar is included
-into the editing space by default.  If you prefer to keep this line blank,
-use <samp>-e</samp> or <samp>--emptyline</samp>.
+<dt><samp>--bookstyle</samp></dt>
+<dd><p>When justifying, treat any line that starts with whitespace as the
+beginning of a paragraph (unless auto-indenting is on).
 </p>
 </dd>
 <dt><samp>-P</samp></dt>
@@ -265,10 +264,11 @@ any name beginning with <code>r</code> (e.g. <code>rnano</code>).
 </p>
 </dd>
 <dt><samp>-S</samp></dt>
-<dt><samp>--smooth</samp></dt>
-<dd><p>Obsolete and ignored option, since smooth scrolling has become the default.
-If you prefer the chunk-by-chunk scrolling behavior,
-use <samp>-j</samp> or <samp>--jumpyscrolling</samp>.
+<dt><samp>--softwrap</samp></dt>
+<dd><p>Display over multiple screen rows lines that exceed the screen&rsquo;s width.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen&rsquo;s edge, by using also <code>--atblanks</code>.)
+(The old short option, <code>-$</code>, is deprecated.)
 </p>
 </dd>
 <dt><samp>-T <var>number</var></samp></dt>
@@ -298,8 +298,8 @@ characters as parts of words.
 <dt><samp>-X &quot;<var>characters</var>&quot;</samp></dt>
 <dt><samp>--wordchars=&quot;<var>characters</var>&quot;</samp></dt>
 <dd><p>Specify which other characters (besides the normal alphanumeric ones)
-should be considered as parts of words.  This overrides option
-<samp>-W</samp> (<samp>--wordbounds</samp>).
+should be considered as parts of words.  When using this option, you
+probably want to omit <samp>-W</samp> (<samp>--wordbounds</samp>).
 </p>
 </dd>
 <dt><samp>-Y <var>name</var></samp></dt>
@@ -385,6 +385,7 @@ position to the end of the line, instead of cutting the entire line.
 <dt><samp>-l</samp></dt>
 <dt><samp>--linenumbers</samp></dt>
 <dd><p>Display line numbers to the left of the text area.
+(Any line with an anchor additionally gets a mark in the margin.)
 </p>
 </dd>
 <dt><samp>-m</samp></dt>
@@ -417,6 +418,13 @@ similar to a chroot.
 sent to the editor can be stopped and started.
 </p>
 </dd>
+<dt><samp>-q</samp></dt>
+<dt><samp>--indicator</samp></dt>
+<dd><p>Display a &quot;scrollbar&quot; on the righthand side of the edit window.
+It shows the position of the viewport in the buffer
+and how much of the buffer is covered by the viewport.
+</p>
+</dd>
 <dt><samp>-r <var>number</var></samp></dt>
 <dt><samp>--fill=<var>number</var></samp></dt>
 <dd><p>Set the target width for justifying and automatic hard-wrapping at this
@@ -437,10 +445,11 @@ to be installed.
 </p>
 </dd>
 <dt><samp>-t</samp></dt>
-<dt><samp>--tempfile</samp></dt>
-<dd><p>Don&rsquo;t ask whether to save a modified buffer when exiting with <kbd>^X</kbd>, but
-assume yes.  This option is useful when <code>nano</code> is used as the
-composer of a mailer program.
+<dt><samp>--saveonexit</samp></dt>
+<dd><p>Save a changed buffer without prompting (when exiting with <kbd>^X</kbd>).
+This can be handy when <code>nano</code> is used as the composer of an
+email program.
+(The old form of the long option, <code>--tempfile</code>, is deprecated.)
 </p>
 </dd>
 <dt><samp>-u</samp></dt>
@@ -479,24 +488,13 @@ disabled to display the help-system navigation keys.
 </dd>
 <dt><samp>-y</samp></dt>
 <dt><samp>--afterends</samp></dt>
-<dd><p>Make Ctrl+Right stop at word ends instead of beginnings.
+<dd><p>Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 </p>
 </dd>
 <dt><samp>-z</samp></dt>
 <dt><samp>--suspendable</samp></dt>
 <dd><p>Enable the ability to suspend <code>nano</code> using the system&rsquo;s suspend
 keystroke (usually <kbd>^Z</kbd>).
-</p>
-</dd>
-<dt><samp>-$</samp></dt>
-<dt><samp>--softwrap</samp></dt>
-<dd><p>Display lines that exceed the screen&rsquo;s width over multiple screen lines.
-(You can make this soft-wrapping occur at whitespace instead of rudely at
-the screen&rsquo;s edge, by using also <code>--atblanks</code>.)
-Since
-<code>$</code> normally refers to a variable in the Unix shell, you should specify
-this option last when using other options (e.g. <code>nano -wS$</code>) or pass it
-separately (e.g. <code>nano -wS -$</code>).
 </p>
 </dd>
 </dl>
@@ -520,7 +518,9 @@ separately (e.g. <code>nano -wS -$</code>).
 </td></tr>
 <tr><td align="left" valign="top">&bull; <a href="#Using-the-Mouse" accesskey="7">Using the Mouse</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
-<tr><td align="left" valign="top">&bull; <a href="#Limitations" accesskey="8">Limitations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+<tr><td align="left" valign="top">&bull; <a href="#Anchors" accesskey="8">Anchors</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
+</td></tr>
+<tr><td align="left" valign="top">&bull; <a href="#Limitations" accesskey="9">Limitations</a></td><td>&nbsp;&nbsp;</td><td align="left" valign="top">
 </td></tr>
 </table>
 
@@ -652,7 +652,23 @@ Shift key during those actions.
 is running.
 </p>
 <hr>
-<span id="Limitations"></span><span id="Limitations-1"></span><h3 class="section">4.8 Limitations</h3>
+<span id="Anchors"></span><span id="Anchors-1"></span><h3 class="section">4.8 Anchors</h3>
+
+<p>With <kbd>M-Ins</kbd> you can place an anchor (a kind of temporary bookmark)
+at the current line.  With <kbd>M-PgUp</kbd> and <kbd>M-PgDn</kbd> you can jump
+to an anchor in the backward/forward direction.  This jumping wraps
+around at the top and bottom.
+</p>
+<p>When a line with an anchor is removed, the line where the cursor ends up
+inherits the anchor.  After performing an operation on the entire buffer
+(like formatting it, piping it through a command, or doing an external
+spell check on it), any anchors that were present are gone.  And when
+you close the buffer, all its anchors simply disappear; they are not saved.
+</p>
+<p>Anchors are visualized in the margin when line numbers are activated.
+</p>
+<hr>
+<span id="Limitations"></span><span id="Limitations-1"></span><h3 class="section">4.9 Limitations</h3>
 
 <p>The recording and playback of keyboard macros works correctly only on a
 terminal emulator, not on a Linux console (VT), because the latter does
@@ -669,7 +685,26 @@ and <kbd>^V</kbd> (Page Down) keys.  <kbd>^X</kbd> exits from the help system.
 </p>
 
 <hr>
-<span id="Feature-Toggles"></span><span id="Feature-Toggles-1"></span><h2 class="chapter">6 Feature Toggles</h2>
+<span id="The-File-Browser"></span><span id="The-File-Browser-1"></span><h2 class="chapter">6 The File Browser</h2>
+
+<p>When in the Read-File (<kbd>^R</kbd>) or Write-Out menu (<kbd>^O</kbd>),
+pressing <kbd>^T</kbd> will invoke the file browser.
+Here, one can navigate directories in a graphical manner in order to
+find the desired file.
+</p>
+<p>Basic movement in the file browser is accomplished with the arrow and
+other cursor-movement keys.  More targeted movement is accomplished by
+searching, via <kbd>^W</kbd> or <kbd>w</kbd>, or by changing directory, via
+<kbd>^_</kbd> or <kbd>g</kbd>.  The behavior of the <kbd>Enter</kbd> key (or <kbd>s</kbd>)
+varies by what is currently selected.
+If the currently selected object is a directory, the file browser will
+enter and display the contents of the directory.  If the object is a
+file, this filename and path are copied to the status bar, and the file
+browser exits.
+</p>
+
+<hr>
+<span id="Feature-Toggles"></span><span id="Feature-Toggles-1"></span><h2 class="chapter">7 Feature Toggles</h2>
 
 <p>Toggles allow you to change on-the-fly certain aspects of the editor
 which would normally be specified via command-line options.  They are
@@ -714,7 +749,7 @@ The following global toggles are available:
 </p>
 </dd>
 <dt><code>Soft Wrapping</code></dt>
-<dd><p><kbd>Meta-S</kbd> toggles the <samp>-$</samp> (<samp>--softwrap</samp>) command-line option.
+<dd><p><kbd>Meta-S</kbd> toggles the <samp>-S</samp> (<samp>--softwrap</samp>) command-line option.
 </p>
 </dd>
 <dt><code>Expert/No Help</code></dt>
@@ -734,7 +769,7 @@ The following global toggles are available:
 
 
 <hr>
-<span id="Nanorc-Files"></span><span id="Nanorc-Files-1"></span><h2 class="chapter">7 Nanorc Files</h2>
+<span id="Nanorc-Files"></span><span id="Nanorc-Files-1"></span><h2 class="chapter">8 Nanorc Files</h2>
 
 <p>The nanorc files contain the default settings for <code>nano</code>.  During
 startup, if <samp>--rcfile</samp> is not given, <code>nano</code> will read two files:
@@ -771,13 +806,13 @@ The last double quote on the line will be seen as the closing quote.
 </table>
 
 <hr>
-<span id="Settings"></span><span id="Settings-1"></span><h3 class="section">7.1 Settings</h3>
+<span id="Settings"></span><span id="Settings-1"></span><h3 class="section">8.1 Settings</h3>
 
 <p>The supported settings in a nanorc file are:
 </p>
 <dl compact="compact">
 <dt><code>set afterends</code></dt>
-<dd><p>Make Ctrl+Right stop at word ends instead of beginnings.
+<dd><p>Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 </p>
 </dd>
 <dt><code>set allow_insecure_backup</code></dt>
@@ -816,6 +851,11 @@ setting the options <code>titlecolor</code>, <code>statuscolor</code>, <code>key
 <code>functioncolor</code>, <code>numbercolor</code>, and/or <code>selectedcolor</code>.
 </p>
 </dd>
+<dt><code>set bookstyle</code></dt>
+<dd><p>When justifying, treat any line that starts with whitespace as the
+beginning of a paragraph (unless auto-indenting is on).
+</p>
+</dd>
 <dt><code>set brackets &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Set the characters treated as closing brackets when justifying
 paragraphs.  This may not include blank characters.  Only closing
@@ -845,7 +885,7 @@ Note that this overrides <samp>quickblank</samp>.
 <dd><p>Do not use the line below the title bar, leaving it entirely blank.
 </p>
 </dd>
-<dt><code>set errorcolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set errorcolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the status bar when an error message is displayed.
 The default value is <tt>brightwhite,red</tt>.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
@@ -859,15 +899,26 @@ point to vary along with the width of the screen if the screen is resized.
 The default value is <tt>-8</tt>.
 </p>
 <span id="set-functioncolor"></span></dd>
-<dt><code>set functioncolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set functioncolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the concise function descriptions
 in the two help lines at the bottom of the screen.
-Valid names for foreground and background color are:
-<code>white</code>, <code>black</code>, <code>blue</code>, <code>green</code>,
-<code>red</code>, <code>cyan</code>, <code>yellow</code>, <code>magenta</code>, and <code>normal</code>
+Valid names for the foreground and background colors are:
+<code>red</code>, <code>green</code>, <code>blue</code>,
+<code>magenta</code>, <code>yellow</code>, <code>cyan</code>,
+<code>white</code>, and <code>black</code>.
+Each of these eight names may be prefixed with the word
+<code>light</code> to get a brighter version of that color.
+</p>
+<p>On terminal emulators that can do at least 256 colors,
+other valid (but unprefixable) color names are:
+<code>pink</code>, <code>purple</code>, <code>mauve</code>,
+<code>lagoon</code>, <code>mint</code>, <code>lime</code>,
+<code>peach</code>, <code>orange</code>, <code>latte</code>, and <code>normal</code>
 &mdash; where <code>normal</code> means the default foreground or background color.
-The name of the foreground color may be prefixed with <code>bright</code>.
-And either <var>fgcolor</var> or ,<var>bgcolor</var> may be left out.
+Either <var>fgcolor</var> or ,<var>bgcolor</var> may be left out,
+and the pair may be preceded by <code>bold</code> and/or <code>italic</code>
+(separated by commas) to get a bold and/or slanting typeface,
+if your terminal can do those.
 </p>
 </dd>
 <dt><code>set guidestripe <var>number</var></code></dt>
@@ -884,7 +935,7 @@ executed commands, so they can be easily reused in later sessions.
 <dd><p>Scroll the buffer contents per half-screen instead of per line.
 </p>
 </dd>
-<dt><code>set keycolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set keycolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the shortcut key combos
 in the two help lines at the bottom of the screen.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
@@ -892,14 +943,15 @@ See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid co
 </dd>
 <dt><code>set linenumbers</code></dt>
 <dd><p>Display line numbers to the left of the text area.
+(Any line with an anchor additionally gets a mark in the margin.)
 </p>
 </dd>
 <dt><code>set locking</code></dt>
 <dd><p>Enable vim-style lock-files for when editing files.
 </p>
-</dd>
+<span id="set-matchbrackets"></span></dd>
 <dt><code>set matchbrackets &quot;<var>characters</var>&quot;</code></dt>
-<dd><p>Set the opening and closing brackets that can be found by bracket
+<dd><p>Specify the opening and closing brackets that can be found by bracket
 searches.  This may not include blank characters.  The opening set must
 come before the closing set, and the two sets must be in the same order.
 The default value is <tt>&quot;(&lt;[{)&gt;]}&quot;</tt>.
@@ -941,7 +993,7 @@ cursor, set the mark (with a double click), or execute shortcuts.
 When needed, use <code>unset breaklonglines</code> instead.
 </p>
 </dd>
-<dt><code>set numbercolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set numbercolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for line numbers.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
@@ -960,6 +1012,12 @@ The cursor position is remembered for the 200 most-recently edited files.
 </dd>
 <dt><code>set preserve</code></dt>
 <dd><p>Preserve the XON and XOFF keys (<kbd>^Q</kbd> and <kbd>^S</kbd>).
+</p>
+</dd>
+<dt><code>set indicator</code></dt>
+<dd><p>Display a &quot;scrollbar&quot; on the righthand side of the edit window.
+It shows the position of the viewport in the buffer
+and how much of the buffer is covered by the viewport.
 </p>
 </dd>
 <dt><code>set punct &quot;<var>characters</var>&quot;</code></dt>
@@ -1001,7 +1059,12 @@ system either Backspace acts like Delete or Delete acts like Backspace.
 Regular expressions in <code>nano</code> are of the extended type (ERE).
 </p>
 </dd>
-<dt><code>set selectedcolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set saveonexit</code></dt>
+<dd><p>Save a changed buffer automatically on exit (<kbd>^X</kbd>); don&rsquo;t prompt.
+(The old form of this option, <code>set tempfile</code>, is deprecated.)
+</p>
+</dd>
+<dt><code>set selectedcolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for selected text.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
@@ -1036,12 +1099,12 @@ the screen&rsquo;s edge, by using also <code>set atblanks</code>.)
 See <a href="#g_t_002d_002dspeller"><samp>--speller</samp></a> for details.
 </p>
 </dd>
-<dt><code>set statuscolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set statuscolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the status bar.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
 </dd>
-<dt><code>set stripecolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set stripecolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the vertical guiding stripe.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
@@ -1059,11 +1122,7 @@ greater than 0.  The default value is <tt>8</tt>.
 <dd><p>Convert typed tabs to spaces.
 </p>
 </dd>
-<dt><code>set tempfile</code></dt>
-<dd><p>Save automatically on exit, don&rsquo;t prompt.
-</p>
-</dd>
-<dt><code>set titlecolor <var>fgcolor</var>,<var>bgcolor</var></code></dt>
+<dt><code>set titlecolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var></code></dt>
 <dd><p>Use this color combination for the title bar.
 See <a href="#set-functioncolor"><code>set functioncolor</code></a> for valid color names.
 </p>
@@ -1098,8 +1157,8 @@ characters as part of a word.
 </dd>
 <dt><code>set wordchars &quot;<var>characters</var>&quot;</code></dt>
 <dd><p>Specify which other characters (besides the normal alphanumeric ones)
-should be considered as parts of words.  This overrides the option
-<code>wordbounds</code>.
+should be considered as parts of words.  When using this option, you
+probably want to unset <code>wordbounds</code>.
 </p>
 </dd>
 <dt><code>set zap</code></dt>
@@ -1110,7 +1169,7 @@ should be considered as parts of words.  This overrides the option
 </dl>
 
 <hr>
-<span id="Syntax-Highlighting"></span><span id="Syntax-Highlighting-1"></span><h3 class="section">7.2 Syntax Highlighting</h3>
+<span id="Syntax-Highlighting"></span><span id="Syntax-Highlighting-1"></span><h3 class="section">8.2 Syntax Highlighting</h3>
 
 <p>Coloring the different syntactic elements of a file
 is done via regular expressions (see the <code>color</code> command below).
@@ -1199,27 +1258,35 @@ Python that want to see only spaces for indentation.
 This overrides the setting of the <code>tabstospaces</code> option.
 </p>
 </dd>
-<dt><code>color <var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
+<dt><code>color [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
 <dd><p>Paint all pieces of text that match the extended regular expression &quot;regex&quot;
 with the given foreground and background colors, at least one of which must
 be specified.  Valid color names are:
-<code>white</code>, <code>black</code>, <code>blue</code>, <code>green</code>,
-<code>red</code>, <code>cyan</code>, <code>yellow</code>, <code>magenta</code>, and <code>normal</code>
+<code>red</code>, <code>green</code>, <code>blue</code>,
+<code>magenta</code>, <code>yellow</code>, <code>cyan</code>,
+<code>white</code>, and <code>black</code>.
+Each of these eight names may be prefixed with the word
+<code>light</code> to get a brighter version of that color.
+</p>
+<p>On terminal emulators that can do at least 256 colors,
+other valid (but unprefixable) color names are:
+<code>pink</code>, <code>purple</code>, <code>mauve</code>,
+<code>lagoon</code>, <code>mint</code>, <code>lime</code>,
+<code>peach</code>, <code>orange</code>, <code>latte</code>, and <code>normal</code>
 &mdash; where <code>normal</code> means the default foreground or background color.
-You may use the prefix <code>bright</code> for the foreground color to get a
-stronger highlight.
-If your terminal supports transparency, not specifying a &quot;bgcolor&quot;
-tells <code>nano</code> to attempt to use a transparent background.
+The color pair may be preceded by <code>bold</code> and/or <code>italic</code>
+(separated by commas) to get a bold and/or slanting typeface,
+if your terminal can do those.
 </p>
 <p>All coloring commands are applied in the order in which they are specified,
 which means that later commands can recolor stuff that was colored earlier.
 </p>
 </dd>
-<dt><code>icolor <var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
+<dt><code>icolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var> &quot;<var>regex</var>&quot; &hellip;</code></dt>
 <dd><p>Same as above, except that the matching is case insensitive.
 </p>
 </dd>
-<dt><code>color <var>fgcolor</var>,<var>bgcolor</var> start=&quot;<var>fromrx</var>&quot; end=&quot;<var>torx</var>&quot;</code></dt>
+<dt><code>color [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var> start=&quot;<var>fromrx</var>&quot; end=&quot;<var>torx</var>&quot;</code></dt>
 <dd><p>Paint all pieces of text whose start matches extended regular expression
 &quot;fromrx&quot; and whose end matches extended regular expression &quot;torx&quot; with
 the given foreground and background colors, at least one of
@@ -1228,7 +1295,7 @@ which must be specified.  This means that, after an initial instance of
 This allows syntax highlighting to span multiple lines.
 </p>
 </dd>
-<dt><code>icolor <var>fgcolor</var>,<var>bgcolor</var> start=&quot;<var>fromrx</var>&quot; end=&quot;<var>torx</var>&quot;</code></dt>
+<dt><code>icolor [bold,][italic,]<var>fgcolor</var>,<var>bgcolor</var> start=&quot;<var>fromrx</var>&quot; end=&quot;<var>torx</var>&quot;</code></dt>
 <dd><p>Same as above, except that the matching is case insensitive.
 </p>
 </dd>
@@ -1250,7 +1317,7 @@ in one of the system-installed files (which normally are not writable).
 </dl>
 
 <hr>
-<span id="Rebinding-Keys"></span><span id="Rebinding-Keys-1"></span><h3 class="section">7.3 Rebinding Keys</h3>
+<span id="Rebinding-Keys"></span><span id="Rebinding-Keys-1"></span><h3 class="section">8.3 Rebinding Keys</h3>
 
 <p>Key bindings can be changed via the following three commands in a
 nanorc file:
@@ -1304,7 +1371,9 @@ with Shift.)
 
 <p>Rebinding <code>^M</code> (Enter) or <code>^I</code> (Tab) is probably not a good idea.
 Rebinding <code>^[</code> (Esc) is not possible, because its keycode
-is the starter byte of escape sequences and Meta keystrokes.
+is the starter byte of Meta keystrokes and escape sequences.
+Rebinding any of the dedicated cursor-moving keys (the arrows, Home, End,
+PageUp and PageDown) is not possible.
 On some terminals it&rsquo;s not possible to rebind <code>^H</code> (unless <code>--raw</code>
 is used) because its keycode is identical to that of the Backspace key.
 </p>
@@ -1321,7 +1390,7 @@ is used) because its keycode is identical to that of the Backspace key.
 </p>
 </dd>
 <dt><code>exit</code></dt>
-<dd><p>Exits from the program (or from the help viewer or the file browser).
+<dd><p>Exits from the program (or from the help viewer or file browser).
 </p>
 </dd>
 <dt><code>writeout</code></dt>
@@ -1398,12 +1467,19 @@ the word to the left of the cursor by rebinding <kbd>^H</kbd> to this function.)
 Or, when it is set, unsets the mark.
 </p>
 </dd>
-<dt><code>curpos</code></dt>
-<dd><p>Shows the current cursor position: the line, column, and character positions.
+<dt><code>location</code></dt>
+<dd><p>Reports the current position of the cursor in the buffer:
+the line, column, and character positions.
+(The old name of this function, &rsquo;curpos&rsquo;, is deprecated.)
 </p>
 </dd>
 <dt><code>wordcount</code></dt>
 <dd><p>Counts the number of words, lines and characters in the current buffer.
+</p>
+</dd>
+<dt><code>execute</code></dt>
+<dd><p>Prompts for a program to execute.  The program&rsquo;s output will be inserted
+into the current buffer (or into a new buffer when <kbd>M-F</kbd> is toggled).
 </p>
 </dd>
 <dt><code>speller</code></dt>
@@ -1475,6 +1551,10 @@ while keeping the cursor in the same text position, if possible.
 while keeping the cursor in the same text position, if possible.
 </p>
 </dd>
+<dt><code>center</code></dt>
+<dd><p>Scrolls the line with the cursor to the middle of the screen.
+</p>
+</dd>
 <dt><code>prevword</code></dt>
 <dd><p>Moves the cursor to the beginning of the previous word.
 </p>
@@ -1530,8 +1610,21 @@ from the end of the file (and end of the line).
 </p>
 </dd>
 <dt><code>findbracket</code></dt>
-<dd><p>Moves the cursor to the bracket (brace, parenthesis, etc.) that matches
-(pairs) with the one under the cursor.
+<dd><p>Moves the cursor to the bracket (or brace or parenthesis, etc.) that matches
+(pairs) with the one under the cursor.  See <a href="#set-matchbrackets"><code>set matchbrackets</code></a>.
+</p>
+</dd>
+<dt><code>anchor</code></dt>
+<dd><p>Places an anchor at the current line, or removes it when already present.
+(An anchor is visible when line numbers are activated.)
+</p>
+</dd>
+<dt><code>prevanchor</code></dt>
+<dd><p>Goes to the first anchor before the current line.
+</p>
+</dd>
+<dt><code>nextanchor</code></dt>
+<dd><p>Goes to the first anchor after the current line.
 </p>
 </dd>
 <dt><code>prevbuf</code></dt>
@@ -1658,12 +1751,13 @@ it from DOS/Mac format.  Converting is the default.
 </dd>
 <dt><code>discardbuffer</code></dt>
 <dd><p>When about to write a file, discard the current buffer without saving.
-(This function is bound by default only when option <samp>--tempfile</samp>
+(This function is bound by default only when option <samp>--saveonexit</samp>
 is in effect.)
 </p>
 </dd>
 <dt><code>browser</code></dt>
-<dd><p>Starts the file browser, allowing to select a file from a list.
+<dd><p>Starts the file browser (in the Read File and Write Out menus),
+allowing to select a file from a list.
 </p>
 </dd>
 <dt><code>gotodir</code></dt>
@@ -1672,15 +1766,17 @@ in the filesystem.
 </p>
 </dd>
 <dt><code>firstfile</code></dt>
-<dd><p>Goes to the first file when using the file browser (reading or writing files).
+<dd><p>Goes to the first file in the list when using the file browser.
 </p>
 </dd>
 <dt><code>lastfile</code></dt>
-<dd><p>Goes to the last file when using the file browser (reading or writing files).
+<dd><p>Goes to the last file in the list when using the file browser.
 </p>
 </dd>
 <dt><code>nohelp</code></dt>
 <dd><p>Toggles the presence of the two-line list of key bindings at the bottom of the screen.
+(This toggle is special: it is available in all menus except the help viewer
+and the linter.  All further toggles are available in the main menu only.)
 </p>
 </dd>
 <dt><code>constantshow</code></dt>
@@ -1746,6 +1842,10 @@ will actually suspend the editor.
 <dd><p>The main editor window where text is entered and edited.
 </p>
 </dd>
+<dt><code>help</code></dt>
+<dd><p>The help-viewer menu.
+</p>
+</dd>
 <dt><code>search</code></dt>
 <dd><p>The search menu (AKA whereis).
 </p>
@@ -1774,24 +1874,9 @@ will actually suspend the editor.
 <dd><p>The &rsquo;insert file&rsquo; menu.
 </p>
 </dd>
-<dt><code>extcmd</code></dt>
-<dd><p>The menu for inserting output from an external command, reached from the insert menu.
-</p>
-</dd>
-<dt><code>help</code></dt>
-<dd><p>The help-viewer menu.
-</p>
-</dd>
-<dt><code>spell</code></dt>
-<dd><p>The menu of the integrated spell checker where the user can edit a misspelled word.
-</p>
-</dd>
-<dt><code>linter</code></dt>
-<dd><p>The linter menu.
-</p>
-</dd>
 <dt><code>browser</code></dt>
-<dd><p>The file browser, for choosing a file to read from or write to.
+<dd><p>The &rsquo;file browser&rsquo; menu, for selecting a file to be opened or
+inserted or written to.
 </p>
 </dd>
 <dt><code>whereisfile</code></dt>
@@ -1802,6 +1887,21 @@ will actually suspend the editor.
 <dd><p>The &rsquo;go to directory&rsquo; menu in the file browser.
 </p>
 </dd>
+<dt><code>execute</code></dt>
+<dd><p>The menu for inserting the output from an external command,
+or for filtering the buffer (or the marked region) through
+an external command, or for executing one of several tools.
+(The old form of this menu name, &rsquo;extcmd&rsquo;, is deprecated.)
+</p>
+</dd>
+<dt><code>spell</code></dt>
+<dd><p>The menu of the integrated spell checker where the user can edit a misspelled word.
+</p>
+</dd>
+<dt><code>linter</code></dt>
+<dd><p>The linter menu, which allows jumping through the linting messages.
+</p>
+</dd>
 <dt><code>all</code></dt>
 <dd><p>A special name that encompasses all menus.  For <code>bind</code> it means
 all menus where the specified <code>function</code> exists; for <code>unbind</code>
@@ -1810,25 +1910,6 @@ it means all menus where the specified <code>key</code> exists.
 </dd>
 </dl>
 
-
-<hr>
-<span id="The-File-Browser"></span><span id="The-File-Browser-1"></span><h2 class="chapter">8 The File Browser</h2>
-
-<p>When in the Read-File (<kbd>^R</kbd>) or Write-Out menu (<kbd>^O</kbd>),
-pressing <kbd>^T</kbd> will invoke the file browser.
-Here, one can navigate directories in a graphical manner in order to
-find the desired file.
-</p>
-<p>Basic movement in the file browser is accomplished with the arrow and
-other cursor-movement keys.  More targeted movement is accomplished by
-searching, via <kbd>^W</kbd> or <kbd>w</kbd>, or by changing directory, via
-<kbd>^_</kbd> or <kbd>g</kbd>.  The behavior of the <kbd>Enter</kbd> key (or <kbd>s</kbd>)
-varies by what is currently selected.
-If the currently selected object is a directory, the file browser will
-enter and display the contents of the directory.  If the object is a
-file, this filename and path are copied to the status bar, and the file
-browser exits.
-</p>
 
 <hr>
 <span id="Pico-Compatibility"></span><span id="Pico-Compatibility-1"></span><h2 class="chapter">9 Pico Compatibility</h2>
@@ -2103,17 +2184,18 @@ curses libraries.
     <li><a id="toc-Screen-Layout-1" href="#Screen-Layout">4.5 Screen Layout</a></li>
     <li><a id="toc-Search-and-Replace-1" href="#Search-and-Replace">4.6 Search and Replace</a></li>
     <li><a id="toc-Using-the-Mouse-1" href="#Using-the-Mouse">4.7 Using the Mouse</a></li>
-    <li><a id="toc-Limitations-1" href="#Limitations">4.8 Limitations</a></li>
+    <li><a id="toc-Anchors-1" href="#Anchors">4.8 Anchors</a></li>
+    <li><a id="toc-Limitations-1" href="#Limitations">4.9 Limitations</a></li>
   </ul></li>
   <li><a id="toc-Built_002din-Help-1" href="#Built_002din-Help">5 Built-in Help</a></li>
-  <li><a id="toc-Feature-Toggles-1" href="#Feature-Toggles">6 Feature Toggles</a></li>
-  <li><a id="toc-Nanorc-Files-1" href="#Nanorc-Files">7 Nanorc Files</a>
+  <li><a id="toc-The-File-Browser-1" href="#The-File-Browser">6 The File Browser</a></li>
+  <li><a id="toc-Feature-Toggles-1" href="#Feature-Toggles">7 Feature Toggles</a></li>
+  <li><a id="toc-Nanorc-Files-1" href="#Nanorc-Files">8 Nanorc Files</a>
   <ul class="no-bullet">
-    <li><a id="toc-Settings-1" href="#Settings">7.1 Settings</a></li>
-    <li><a id="toc-Syntax-Highlighting-1" href="#Syntax-Highlighting">7.2 Syntax Highlighting</a></li>
-    <li><a id="toc-Rebinding-Keys-1" href="#Rebinding-Keys">7.3 Rebinding Keys</a></li>
+    <li><a id="toc-Settings-1" href="#Settings">8.1 Settings</a></li>
+    <li><a id="toc-Syntax-Highlighting-1" href="#Syntax-Highlighting">8.2 Syntax Highlighting</a></li>
+    <li><a id="toc-Rebinding-Keys-1" href="#Rebinding-Keys">8.3 Rebinding Keys</a></li>
   </ul></li>
-  <li><a id="toc-The-File-Browser-1" href="#The-File-Browser">8 The File Browser</a></li>
   <li><a id="toc-Pico-Compatibility-1" href="#Pico-Compatibility">9 Pico Compatibility</a></li>
   <li><a id="toc-Building-and-Configure-Options-1" href="#Building-and-Configure-Options">10 Building and Configure Options</a></li>
 </ul>

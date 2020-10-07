@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 4.9.3" "May 2020"
+.TH NANO 1 "version 5.2" "August 2020"
 
 .SH NAME
 nano \- Nano's ANOther editor, inspired by Pico
@@ -155,10 +155,9 @@ hard-wrapping occurs or when text is justified.
 .BR \-N ", " \-\-noconvert
 Disable automatic conversion of files from DOS/Mac format.
 .TP
-.BR \-O ", " \-\-morespace
-Obsolete and ignored option, since the line below the title bar is included
-into the editing space by default.  If you prefer to keep this line blank,
-use \fB\-e\fR or \fB\-\-emptyline\fR.
+.BR \-O ", " \-\-bookstyle
+When justifying, treat any line that starts with whitespace as the
+beginning of a paragraph (unless auto-indenting is on).
 .TP
 .BR \-P ", " \-\-positionlog
 For the 200 most recent files, log the last position of the cursor,
@@ -180,10 +179,11 @@ different name if it already has one; and don't make backup files.
 Restricted mode can also be activated by invoking \fBnano\fP
 with any name beginning with 'r' (e.g. "rnano").
 .TP
-.BR \-S ", " \-\-smooth
-Obsolete and ignored option, since smooth scrolling has become the default.
-If you prefer the chunk-by-chunk scrolling behavior,
-use \fB\-j\fR or \fB\-\-jumpyscrolling\fR.
+.BR \-S ", " \-\-softwrap
+Display over multiple screen rows lines that exceed the screen's width.
+(You can make this soft-wrapping occur at whitespace instead of rudely at
+the screen's edge, by using also \fB\-\-atblanks\fR.)
+(The old short option, \fB\-$\fR, is deprecated.)
 .TP
 .BR \-T\ \fInumber ", " \-\-tabsize= \fInumber
 Set the size (width) of a tab to \fInumber\fP columns.  The value of
@@ -203,8 +203,8 @@ characters as part of a word.
 .TP
 .BR "\-X ""\fIcharacters\fB""" ", " "\-\-wordchars=""" \fIcharacters """
 Specify which other characters (besides the normal alphanumeric ones)
-should be considered as part of a word.  This overrides option
-\fB\-W\fR (\fB\-\-wordbounds\fR).
+should be considered as part of a word.  When using this option, you
+probably want to omit \fB\-W\fR (\fB\-\-wordbounds\fR).
 .TP
 .BR \-Y\ \fIname ", " \-\-syntax= \fIname
 Specify the name of the syntax highlighting to use from among the ones
@@ -261,6 +261,7 @@ position to the end of the line, instead of cutting the entire line.
 .TP
 .BR \-l ", " \-\-linenumbers
 Display line numbers to the left of the text area.
+(Any line with an anchor additionally gets a mark in the margin.)
 .TP
 .BR \-m ", " \-\-mouse
 Enable mouse support, if available for your system.  When enabled, mouse
@@ -284,6 +285,11 @@ similar to a chroot.
 Preserve the XON and XOFF sequences (\fB^Q\fR and \fB^S\fR) so they
 will be caught by the terminal.
 .TP
+.BR \-q ", " \-\-indicator
+Display a "scrollbar" on the righthand side of the edit window.
+It shows the position of the viewport in the buffer
+and how much of the buffer is covered by the viewport.
+.TP
 .BR \-r\ \fInumber ", " \-\-fill= \fInumber
 Set the target width for justifying and automatic hard-wrapping at this
 \fInumber\fR of columns.  If the value is 0 or less, wrapping will occur
@@ -295,8 +301,9 @@ The default value is \-8.
 Use this command to perform spell checking and correcting, instead of
 using the built-in corrector that calls \fBhunspell\fR or GNU \fBspell\fR.
 .TP
-.BR \-t ", " \-\-tempfile
+.BR \-t ", " \-\-saveonexit
 Save a changed buffer without prompting (when exiting with \fB^X\fR).
+(The old form of the long option, \fB\-\-tempfile\fR, is deprecated.)
 .TP
 .BR \-u ", " \-\-unix
 Save a file by default in Unix format.  This overrides nano's
@@ -318,19 +325,10 @@ This is the default.  (This option is the opposite of \fB\-b\fR
 Don't show the two help lines at the bottom of the screen.
 .TP
 .BR \-y ", " \-\-afterends
-Make Ctrl+Right stop at word ends instead of beginnings.
+Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 .TP
 .BR \-z ", " \-\-suspendable
 Allow the user to suspend the editor (with \fB^Z\fR by default).
-.TP
-.BR \-$ ", " \-\-softwrap
-Display lines that exceed the screen's width over multiple screen lines.
-(You can make this soft-wrapping occur at whitespace instead of rudely at
-the screen's edge, by using also \fB\-\-atblanks\fR.)
-Since
-\&'$' normally refers to a variable in the Unix shell, you should specify
-this option last when using other options (e.g.\& 'nano \-wS$') or pass it
-separately (e.g.\& 'nano \-wS \-$').
 
 .SH TOGGLES
 Several of the above options can be switched on and off also while
@@ -339,6 +337,10 @@ hard-wrapping of long lines, \fBM\-S\fR toggles soft-wrapping,
 \fBM\-N\fR toggles line numbers, \fBM\-M\fR toggles the mouse,
 \fBM\-I\fR auto-indentation, and \fBM\-X\fR the help lines.
 See at the end of the \fB^G\fR help text for a complete list.
+.sp
+The \fBM\-X\fR toggle is special: it works in all menus except
+the help viewer and the linter.  All other toggles work in
+the main menu only.
 
 .SH FILES
 When \fB\-\-rcfile\fR is given, \fBnano\fR will read just the specified file

@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #include <errno.h>
 #ifdef HAVE_PWD_H
@@ -38,7 +38,7 @@ void get_homedir(void)
 #ifdef HAVE_PWD_H
 		/* When HOME isn't set, or when we're root, get the home directory
 		 * from the password file instead. */
-		if (homenv == NULL || geteuid() == 0) {
+		if (homenv == NULL || geteuid() == ROOT_UID) {
 			const struct passwd *userage = getpwuid(geteuid());
 
 			if (userage != NULL)
@@ -160,7 +160,7 @@ bool parse_line_column(const char *str, ssize_t *line, ssize_t *column)
 }
 
 /* In the given string, recode each embedded NUL as a newline. */
-void unsunder(char *string, size_t length)
+void recode_NUL_to_LF(char *string, size_t length)
 {
 	while (length > 0) {
 		if (*string == '\0')
@@ -171,7 +171,7 @@ void unsunder(char *string, size_t length)
 }
 
 /* In the given string, recode each embedded newline as a NUL. */
-void sunder(char *string)
+void recode_LF_to_NUL(char *string)
 {
 	while (*string != '\0') {
 		if (*string == '\n')
@@ -330,7 +330,7 @@ char *measured_copy(const char *string, size_t count)
 {
 	char *thecopy = charalloc(count + 1);
 
-	strncpy(thecopy, string, count);
+	memcpy(thecopy, string, count);
 	thecopy[count] = '\0';
 
 	return thecopy;
@@ -431,6 +431,9 @@ void new_magicline(void)
 	openfile->filebot->next = make_new_node(openfile->filebot);
 	openfile->filebot->next->data = copy_of("");
 	openfile->filebot = openfile->filebot->next;
+#ifndef NANO_TINY
+	openfile->filebot->extrarows = 0;
+#endif
 	openfile->totsize++;
 }
 
@@ -459,32 +462,26 @@ bool mark_is_before_cursor(void)
 }
 
 /* Return in (top, top_x) and (bot, bot_x) the start and end "coordinates"
- * of the marked region.  If right_side_up isn't NULL, set it to TRUE when
- * the mark is at the top of the marked region, and to FALSE otherwise. */
-void get_region(const linestruct **top, size_t *top_x,
-				const linestruct **bot, size_t *bot_x, bool *right_side_up)
+ * of the marked region. */
+void get_region(linestruct **top, size_t *top_x, linestruct **bot, size_t *bot_x)
 {
 	if (mark_is_before_cursor()) {
 		*top = openfile->mark;
 		*top_x = openfile->mark_x;
 		*bot = openfile->current;
 		*bot_x = openfile->current_x;
-		if (right_side_up != NULL)
-			*right_side_up = TRUE;
 	} else {
 		*bot = openfile->mark;
 		*bot_x = openfile->mark_x;
 		*top = openfile->current;
 		*top_x = openfile->current_x;
-		if (right_side_up != NULL)
-			*right_side_up = FALSE;
 	}
 }
 
 /* Get the set of lines to work on -- either just the current line, or the
  * first to last lines of the marked region.  When the cursor (or mark) is
  * at the start of the last line of the region, exclude that line. */
-void get_range(const linestruct **top, const linestruct **bot)
+void get_range(linestruct **top, linestruct **bot)
 {
 	if (!openfile->mark) {
 		*top = openfile->current;
@@ -492,7 +489,7 @@ void get_range(const linestruct **top, const linestruct **bot)
 	} else {
 		size_t top_x, bot_x;
 
-		get_region(top, &top_x, bot, &bot_x, NULL);
+		get_region(top, &top_x, bot, &bot_x);
 
 		if (bot_x == 0 && *bot != *top && !also_the_last)
 			*bot = (*bot)->prev;
@@ -518,19 +515,15 @@ linestruct *line_from_number(ssize_t number)
 #endif /* !NANO_TINY */
 
 /* Count the number of characters from begin to end, and return it. */
-size_t get_totsize(const linestruct *begin, const linestruct *end)
+size_t number_of_characters_in(const linestruct *begin, const linestruct *end)
 {
 	const linestruct *line;
-	size_t totsize = 0;
+	size_t count = 0;
 
 	/* Sum the number of characters (plus a newline) in each line. */
 	for (line = begin; line != end->next; line = line->next)
-		totsize += mbstrlen(line->data) + 1;
+		count += mbstrlen(line->data) + 1;
 
-	/* The last line of a file doesn't have a newline -- otherwise it
-	 * wouldn't be the last line -- so subtract 1 when at EOF. */
-	if (line == NULL)
-		totsize--;
-
-	return totsize;
+	/* Do not count the final newline. */
+	return (count - 1);
 }

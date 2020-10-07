@@ -1,4 +1,4 @@
-## Here is an example for Java.
+## Syntax highlighting for Java.
 
 syntax java "\.java$"
 magic "Java "

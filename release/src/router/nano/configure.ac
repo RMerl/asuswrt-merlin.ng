@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses/.
 
-AC_INIT([GNU nano], [4.9.3], [nano-devel@gnu.org], [nano])
+AC_INIT([GNU nano], [5.2], [nano-devel@gnu.org], [nano])
 AC_CONFIG_SRCDIR([src/nano.c])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([1.14])
@@ -59,7 +59,7 @@ AC_DEFINE_DIR([PKGDATADIR], [pkgdatadir], [Where data are placed to.])
 dnl Whether this is a git repository.
 
 AC_MSG_CHECKING([whether building from git])
-if test -d .git ; then
+if test -f roll-a-release.sh ; then
 	AC_MSG_RESULT([yes])
 	from_git=yes
 else
@@ -74,7 +74,8 @@ if test x$from_git = xyes; then
 	if test ! -f $(aclocal --print-ac-dir)/pkg.m4; then
 		AC_MSG_ERROR([
   *** The pkg.m4 macros are missing. ***
-  *** The pkg-config package needs to be installed when building from git. ***])
+  *** The pkg-config package needs to be installed when building from git. ***
+  *** After fixing this problem, rerun ./autogen.sh. ***])
 	fi
 	if test "$ac_cv_path_MSGFMT" = ":"; then
 		AC_MSG_ERROR([
@@ -596,7 +597,7 @@ if eval "test x$CURSES_LIB_NAME = x"; then
   *** from libncursesw5-dev (Debian), ncurses-devel (Fedora), or similar.
   *** (Or install ncurses from https://ftp.gnu.org/gnu/ncurses/.)])
 else
-	AC_MSG_RESULT([Using $CURSES_LIB_NAME as the curses library])
+	AC_MSG_RESULT([  The curses library to be used is: $CURSES_LIB_NAME])
 fi
 
 AC_CHECK_LIB([$CURSES_LIB_NAME], [use_default_colors],
@@ -627,18 +628,16 @@ if test "x$enable_utf8" != xno && \
 else
 	if test "x$enable_utf8" = xyes; then
 		AC_MSG_ERROR([
-  *** UTF-8 support was requested, but insufficient UTF-8 support was
-  *** detected in your curses and/or C libraries.  Please verify that
-  *** your Slang was built with UTF-8 support or your curses was built
-  *** with wide-character support, and that your C library was built
+  *** UTF-8 support was requested, but insufficient support was
+  *** detected in your curses and/or C libraries.  Please verify
+  *** that both your curses library and your C library were built
   *** with wide-character support.])
 	elif test "x$enable_utf8" != xno; then
 		AC_MSG_WARN([
-  *** Insufficient UTF-8 support was detected in your curses and/or C
-  *** libraries.  If you want UTF-8 support, please verify that your
-  *** Slang was built with UTF-8 support or your curses was built with
-  *** wide-character support, and that your C library was built with
-  *** wide-character support.])
+  *** Insufficient UTF-8 support was detected in your curses
+  *** and/or C libraries.  If you want UTF-8 support, please
+  *** verify that both your curses library and your C library
+  *** were built with wide-character support.])
 	fi
 fi
 
@@ -738,7 +737,8 @@ m4/Makefile
 po/Makefile.in
 src/Makefile
 syntax/Makefile
-nano.spec
 ])
 
 AC_OUTPUT
+
+make showinfo

@@ -1,4 +1,4 @@
-# glob.m4 serial 23
+# glob.m4 serial 24
 dnl Copyright (C) 2005-2007, 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -47,6 +47,7 @@ char a[_GNU_GLOB_INTERFACE_VERSION == 1 || _GNU_GLOB_INTERFACE_VERSION == 2 ? 1 
                   [[glob_t found;
                     if (glob ("conf*-globtest", 0, NULL, &found) == GLOB_NOMATCH)
                       return 1;
+                    globfree (&found);
                   ]])],
                [gl_cv_glob_lists_symlinks=yes],
                [gl_cv_glob_lists_symlinks=no],

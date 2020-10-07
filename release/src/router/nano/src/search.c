@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #include <string.h>
 
@@ -69,14 +69,10 @@ void tidy_up_after_search(void)
 /* Prepare the prompt and ask the user what to search for.  Keep looping
  * as long as the user presses a toggle, and only take action and exit
  * when <Enter> is pressed or a non-toggle shortcut was executed. */
-void search_init(bool replacing, bool keep_the_answer)
+void search_init(bool replacing, bool retain_answer)
 {
 	char *thedefault;
-		/* What will be searched for when the user typed nothing. */
-
-	/* When starting a new search, clear the current answer. */
-	if (!keep_the_answer)
-		answer = mallocstrcpy(answer, "");
+		/* What will be searched for when the user types just <Enter>. */
 
 	/* If something was searched for earlier, include it in the prompt. */
 	if (*last_search != '\0') {
@@ -93,9 +89,9 @@ void search_init(bool replacing, bool keep_the_answer)
 	while (TRUE) {
 		functionptrtype func;
 		/* Ask the user what to search for (or replace). */
-		int response = do_prompt(FALSE, FALSE,
+		int response = do_prompt(
 					inhelp ? MFINDINHELP : (replacing ? MREPLACE : MWHEREIS),
-					answer, &search_history, edit_refresh,
+					retain_answer ? answer : "", &search_history, edit_refresh,
 					/* TRANSLATORS: This is the main search prompt. */
 					"%s%s%s%s%s%s", _("Search"),
 					/* TRANSLATORS: The next four modify the search prompt. */
@@ -125,18 +121,18 @@ void search_init(bool replacing, bool keep_the_answer)
 #endif
 			}
 
-			/* When not doing a regular-expression search, just search;
-			 * otherwise compile the search string, and only search when
-			 * the expression is valid. */
-			if (!ISSET(USE_REGEXP) || regexp_init(last_search)) {
-				if (replacing)
-					ask_for_replacement();
-				else
-					go_looking();
-			}
+			if (ISSET(USE_REGEXP) && !regexp_init(last_search))
+				break;
+
+			if (replacing)
+				ask_for_and_do_replacements();
+			else
+				go_looking();
 
 			break;
 		}
+
+		retain_answer = TRUE;
 
 		func = func_from_key(&response);
 
@@ -189,35 +185,12 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 		/* The time we last looked at the keyboard. */
 
 	/* Set non-blocking input so that we can just peek for a Cancel. */
-	disable_waiting();
+	nodelay(edit, TRUE);
 
 	if (begin == NULL)
 		came_full_circle = FALSE;
 
-	/* Start searching through the lines, looking for the needle. */
 	while (TRUE) {
-		/* Glance at the keyboard once every second. */
-		if (time(NULL) - lastkbcheck > 0) {
-			int input = parse_kbinput(edit);
-
-			lastkbcheck = time(NULL);
-
-			/* Consume all waiting keystrokes until a Cancel. */
-			while (input != ERR) {
-				if (func_from_key(&input) == do_cancel) {
-					statusbar(_("Cancelled"));
-					enable_waiting();
-					return -2;
-				}
-				input = parse_kbinput(NULL);
-			}
-
-			if (++feedback > 0)
-				/* TRANSLATORS: This is shown when searching takes
-				 * more than half a second. */
-				statusbar(_("Searching..."));
-		}
-
 		/* When starting a new search, skip the first character, then
 		 * (in either case) search for the needle in the current line. */
 		if (skipone) {
@@ -249,30 +222,32 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 			break;
 		}
 
+#ifndef NANO_TINY
+		if (the_window_resized) {
+			regenerate_screen();
+			nodelay(edit, TRUE);
+			statusbar(_("Searching..."));
+			feedback = 1;
+		}
+#endif
 		/* If we're back at the beginning, then there is no needle. */
 		if (came_full_circle) {
-			enable_waiting();
+			nodelay(edit, FALSE);
 			return 0;
 		}
 
 		/* Move to the previous or next line in the file. */
-		if (ISSET(BACKWARDS_SEARCH))
-			line = line->prev;
-		else
-			line = line->next;
+		line = (ISSET(BACKWARDS_SEARCH)) ? line->prev : line->next;
 
 		/* If we've reached the start or end of the buffer, wrap around;
 		 * but stop when spell-checking or replacing in a region. */
 		if (line == NULL) {
 			if (whole_word_only || modus == INREGION) {
-				enable_waiting();
+				nodelay(edit, FALSE);
 				return 0;
 			}
 
-			if (ISSET(BACKWARDS_SEARCH))
-				line = openfile->filebot;
-			else
-				line = openfile->filetop;
+			line = (ISSET(BACKWARDS_SEARCH)) ? openfile->filebot : openfile->filetop;
 
 			if (modus == JUSTFIND) {
 				statusbar(_("Search Wrapped"));
@@ -289,11 +264,48 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 		from = line->data;
 		if (ISSET(BACKWARDS_SEARCH))
 			from += strlen(line->data);
+
+		/* Glance at the keyboard once every second, to check for a Cancel. */
+		if (time(NULL) - lastkbcheck > 0) {
+			int input = wgetch(edit);
+
+			lastkbcheck = time(NULL);
+
+			/* Consume any queued-up keystrokes, until a Cancel or nothing. */
+			while (input != ERR) {
+				if (input == ESC_CODE) {
+					napms(20);
+					input = wgetch(edit);
+					meta_key = TRUE;
+				} else
+					meta_key = FALSE;
+
+				if (func_from_key(&input) == do_cancel) {
+#ifndef NANO_TINY
+					if (the_window_resized)
+						regenerate_screen();
+#endif
+					statusbar(_("Cancelled"));
+					/* Clear out the key buffer (in case a macro is running). */
+					while (input != ERR)
+						input = parse_kbinput(NULL);
+					nodelay(edit, FALSE);
+					return -2;
+				}
+
+				input = wgetch(edit);
+			}
+
+			if (++feedback > 0)
+				/* TRANSLATORS: This is shown when searching takes
+				 * more than half a second. */
+				statusbar(_("Searching..."));
+		}
 	}
 
 	found_x = found - line->data;
 
-	enable_waiting();
+	nodelay(edit, FALSE);
 
 	/* Ensure that the found occurrence is not beyond the starting x. */
 	if (came_full_circle && ((!ISSET(BACKWARDS_SEARCH) && (found_x > begin_x ||
@@ -309,33 +321,27 @@ int findnextstr(const char *needle, bool whole_word_only, int modus,
 	if (match_len != NULL)
 		*match_len = found_len;
 
-	/* Wipe the "Searching..." message and unset the suppression flag. */
+	/* Wipe the "Searching..." message and unsuppress cursor-position display. */
 	if (feedback > 0) {
 		wipe_statusbar();
-		suppress_cursorpos = FALSE;
+		lastmessage = VACUUM;
 	}
 
 	return 1;
 }
 
-/* Ask what to search for and then go looking for it. */
-void do_search(void)
-{
-	search_init(FALSE, FALSE);
-}
-
-/* Search forward for a string. */
+/* Ask for a string and then search forward for it. */
 void do_search_forward(void)
 {
 	UNSET(BACKWARDS_SEARCH);
-	do_search();
+	search_init(FALSE, FALSE);
 }
 
-/* Search backwards for a string. */
+/* Ask for a string and then search backwards for it. */
 void do_search_backward(void)
 {
 	SET(BACKWARDS_SEARCH);
-	do_search();
+	search_init(FALSE, FALSE);
 }
 
 /* Search for the last string without prompting. */
@@ -398,7 +404,7 @@ void go_looking(void)
 	linestruct *was_current = openfile->current;
 	size_t was_current_x = openfile->current_x;
 
-//#define TIMEIT 12
+//#define TIMEIT  12
 #ifdef TIMEIT
 #include <time.h>
 	clock_t start = clock();
@@ -500,6 +506,19 @@ char *replace_line(const char *needle)
 	return copy;
 }
 
+#ifdef ENABLE_COLOR
+/* Reset the multiline coloring info and then recalculate it. */
+void wipe_and_recalculate_colorinfo(void)
+{
+	for (linestruct *line = openfile->filetop; line != NULL; line = line->next)
+		if (line->multidata)
+			for (short index = 0; index < openfile->syntax->nmultis; index++)
+				line->multidata[index] = -1;
+
+	precalc_multicolorinfo();
+}
+#endif
+
 /* Step through each occurrence of the search string and prompt the user
  * before replacing it.  We seek for needle, and replace it with answer.
  * The parameters real_current and real_current_x are needed in order to
@@ -518,12 +537,11 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 	linestruct *was_mark = openfile->mark;
 	linestruct *top, *bot;
 	size_t top_x, bot_x;
-	bool right_side_up = FALSE;
+	bool right_side_up = (openfile->mark && mark_is_before_cursor());
 
 	/* If the mark is on, frame the region, and turn the mark off. */
 	if (openfile->mark) {
-		get_region((const linestruct **)&top, &top_x,
-					(const linestruct **)&bot, &bot_x, &right_side_up);
+		get_region(&top, &top_x, &bot, &bot_x);
 		openfile->mark = NULL;
 		modus = INREGION;
 
@@ -645,17 +663,17 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 			free(openfile->current->data);
 			openfile->current->data = copy;
 
-			if (!replaceall) {
-#ifdef ENABLE_COLOR
-				/* When doing syntax coloring, the replacement might require
-				 * a change of colors, so refresh the whole edit window. */
-				if (openfile->colorstrings != NULL && !ISSET(NO_COLOR_SYNTAX))
-					edit_refresh();
-				else
+#ifndef NANO_TINY
+			if (ISSET(SOFTWRAP))
+				openfile->current->extrarows = extra_chunks_in(openfile->current);
 #endif
-					update_line(openfile->current, openfile->current_x);
-			}
+#ifdef ENABLE_COLOR
+			/* Check whether the replacement requires a change in the coloring. */
+			check_the_multis(openfile->current);
 
+			if (refresh_needed && !replaceall)
+				wipe_and_recalculate_colorinfo();
+#endif
 			set_modified();
 			as_an_at = TRUE;
 			numreplaced++;
@@ -664,10 +682,12 @@ ssize_t do_replace_loop(const char *needle, bool whole_word_only,
 
 	if (numreplaced == -1)
 		not_found_msg(needle);
+
 #ifdef ENABLE_COLOR
-	else if (numreplaced > 0)
-		refresh_needed = TRUE;
+	if (refresh_needed)
+		wipe_and_recalculate_colorinfo();
 #endif
+
 #ifndef NANO_TINY
 	openfile->mark = was_mark;
 #endif
@@ -691,18 +711,20 @@ void do_replace(void)
 	}
 }
 
-/* Ask the user what the already given search string should be replaced with. */
-void ask_for_replacement(void)
+/* Ask the user what to replace the search string with, and do the replacements. */
+void ask_for_and_do_replacements(void)
 {
-	linestruct *edittop_save, *begin;
-	size_t firstcolumn_save, begin_x;
+	linestruct *was_edittop = openfile->edittop;
+	size_t was_firstcolumn = openfile->firstcolumn;
+	linestruct *beginline = openfile->current;
+	size_t begin_x = openfile->current_x;
 	ssize_t numreplaced;
-	int response = do_prompt(FALSE, FALSE, MREPLACEWITH, "",
+	int response = do_prompt(MREPLACEWITH, "", &replace_history,
 						/* TRANSLATORS: This is a prompt. */
-						&replace_history, edit_refresh, _("Replace with"));
+						edit_refresh, _("Replace with"));
 
 #ifdef ENABLE_HISTORIES
-	/* If the replace string is not "", add it to the replace history list. */
+	/* When not "", add the replace string to the replace history list. */
 	if (response == 0)
 		update_history(&replace_history, answer);
 #endif
@@ -714,18 +736,12 @@ void ask_for_replacement(void)
 	} else if (response > 0)
 		return;
 
-	/* Save where we are. */
-	edittop_save = openfile->edittop;
-	firstcolumn_save = openfile->firstcolumn;
-	begin = openfile->current;
-	begin_x = openfile->current_x;
-
-	numreplaced = do_replace_loop(last_search, FALSE, begin, &begin_x);
+	numreplaced = do_replace_loop(last_search, FALSE, beginline, &begin_x);
 
 	/* Restore where we were. */
-	openfile->edittop = edittop_save;
-	openfile->firstcolumn = firstcolumn_save;
-	openfile->current = begin;
+	openfile->edittop = was_edittop;
+	openfile->firstcolumn = was_firstcolumn;
+	openfile->current = beginline;
 	openfile->current_x = begin_x;
 	refresh_needed = TRUE;
 
@@ -750,15 +766,14 @@ void goto_line_posx(ssize_t line, size_t pos_x)
 /* Go to the specified line and column, or ask for them if interactive
  * is TRUE.  In the latter case also update the screen afterwards.
  * Note that both the line and column number should be one-based. */
-void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
+void do_gotolinecolumn(ssize_t line, ssize_t column, bool retain_answer,
 		bool interactive)
 {
 	if (interactive) {
 		/* Ask for the line and column. */
-		int response = do_prompt(FALSE, FALSE, MGOTOLINE,
-						use_answer ? answer : "", NULL, edit_refresh,
+		int response = do_prompt(MGOTOLINE, retain_answer ? answer : "", NULL,
 						/* TRANSLATORS: This is a prompt. */
-						_("Enter line number, column number"));
+						edit_refresh, _("Enter line number, column number"));
 
 		/* If the user cancelled or gave a blank answer, get out. */
 		if (response < 0) {
@@ -768,7 +783,7 @@ void do_gotolinecolumn(ssize_t line, ssize_t column, bool use_answer,
 
 		if (func_from_key(&response) == flip_goto) {
 			UNSET(BACKWARDS_SEARCH);
-			/* Retain what the user typed so far and switch to searching. */
+			/* Switch to searching but retain what the user typed so far. */
 			search_init(FALSE, TRUE);
 			return;
 		}
@@ -863,8 +878,8 @@ bool find_a_bracket(bool reverse, const char *bracket_pair)
 	linestruct *line = openfile->current;
 	const char *pointer, *found;
 
-	/* Step away from the current bracket, either backwards or forwards. */
 	if (reverse) {
+		/* First step away from the current bracket. */
 		if (openfile->current_x == 0) {
 			line = line->prev;
 			if (line == NULL)
@@ -872,31 +887,23 @@ bool find_a_bracket(bool reverse, const char *bracket_pair)
 			pointer = line->data + strlen(line->data);
 		} else
 			pointer = line->data + step_left(line->data, openfile->current_x);
-	} else
+
+		/* Now seek for any of the two brackets we are interested in. */
+		while (!(found = mbrevstrpbrk(line->data, bracket_pair, pointer))) {
+			line = line->prev;
+			if (line == NULL)
+				return FALSE;
+			pointer = line->data + strlen(line->data);
+		}
+	} else {
 		pointer = line->data + step_right(line->data, openfile->current_x);
 
-	/* Now seek for any of the two brackets, either backwards or forwards. */
-	while (TRUE) {
-		if (reverse)
-			found = mbrevstrpbrk(line->data, bracket_pair, pointer);
-		else
-			found = mbstrpbrk(pointer, bracket_pair);
-
-		if (found)
-			break;
-
-		if (reverse)
-			line = line->prev;
-		else
+		while (!(found = mbstrpbrk(pointer, bracket_pair))) {
 			line = line->next;
-
-		/* If we've reached the start or end of the buffer, get out. */
-		if (line == NULL)
-			return FALSE;
-
-		pointer = line->data;
-		if (reverse)
-			pointer += strlen(line->data);
+			if (line == NULL)
+				return FALSE;
+			pointer = line->data;
+		}
 	}
 
 	/* Set the current position to the found bracket. */
@@ -983,5 +990,56 @@ void do_find_bracket(void)
 	/* Restore the cursor position. */
 	openfile->current = was_current;
 	openfile->current_x = was_current_x;
+}
+
+/* Place an anchor at the current line when none exists, otherwise remove it. */
+void put_or_lift_anchor(void)
+{
+	openfile->current->has_anchor = !openfile->current->has_anchor;
+
+	update_line(openfile->current, openfile->current_x);
+
+	if (openfile->current->has_anchor)
+		statusbar(_("Placed anchor"));
+	else
+		statusbar(_("Removed anchor"));
+}
+
+/* Make the given line the current line, or report the anchoredness. */
+void go_to_and_confirm(linestruct *line)
+{
+	linestruct *was_current = openfile->current;
+
+	if (line != openfile->current) {
+		openfile->current = line;
+		openfile->current_x = 0;
+		edit_redraw(was_current, CENTERING);
+		statusbar(_("Jumped to anchor"));
+	} else if (openfile->current->has_anchor)
+		statusbar(_("This is the only anchor"));
+	else
+		statusbar(_("There are no anchors"));
+}
+
+/* Jump to the first anchor before the current line; wrap around at the top. */
+void to_prev_anchor(void)
+{
+	linestruct *line = openfile->current;
+
+	do { line = (line->prev) ? line->prev : openfile->filebot;
+	} while (!line->has_anchor && line != openfile->current);
+
+	go_to_and_confirm(line);
+}
+
+/* Jump to the first anchor after the current line; wrap around at the bottom. */
+void to_next_anchor(void)
+{
+	linestruct *line = openfile->current;
+
+	do { line = (line->next) ? line->next : openfile->filetop;
+	} while (!line->has_anchor && line != openfile->current);
+
+	go_to_and_confirm(line);
 }
 #endif /* !NANO_TINY */

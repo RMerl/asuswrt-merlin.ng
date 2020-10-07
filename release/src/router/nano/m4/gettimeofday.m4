@@ -1,4 +1,4 @@
-# serial 27
+# serial 28
 
 # Copyright (C) 2001-2003, 2005, 2007, 2009-2020 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
@@ -19,7 +19,6 @@ AC_DEFUN([gl_FUNC_GETTIMEOFDAY],
   if test $ac_cv_func_gettimeofday != yes; then
     HAVE_GETTIMEOFDAY=0
   else
-    gl_FUNC_GETTIMEOFDAY_CLOBBER
     AC_CACHE_CHECK([for gettimeofday with POSIX signature],
       [gl_cv_func_gettimeofday_posix_signature],
       [AC_COMPILE_IFELSE(
@@ -64,64 +63,6 @@ int gettimeofday (struct timeval *restrict, struct timezone *restrict);
   AC_DEFINE_UNQUOTED([GETTIMEOFDAY_TIMEZONE], [$gl_gettimeofday_timezone],
     [Define this to 'void' or 'struct timezone' to match the system's
      declaration of the second argument to gettimeofday.])
-])
-
-
-dnl See if gettimeofday clobbers the static buffer that localtime uses
-dnl for its return value.  The gettimeofday function from Mac OS X 10.0.4
-dnl (i.e., Darwin 1.3.7) has this problem.
-dnl
-dnl If it does, then arrange to use gettimeofday and localtime only via
-dnl the wrapper functions that work around the problem.
-
-AC_DEFUN([gl_FUNC_GETTIMEOFDAY_CLOBBER],
-[
- AC_REQUIRE([gl_HEADER_SYS_TIME_H])
- AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
- AC_REQUIRE([gl_LOCALTIME_BUFFER_DEFAULTS])
-
- AC_CACHE_CHECK([whether gettimeofday clobbers localtime buffer],
-  [gl_cv_func_gettimeofday_clobber],
-  [AC_RUN_IFELSE(
-     [AC_LANG_PROGRAM(
-        [[#include <string.h>
-          #include <sys/time.h>
-          #include <time.h>
-          #include <stdlib.h>
-        ]],
-        [[
-          time_t t = 0;
-          struct tm *lt;
-          struct tm saved_lt;
-          struct timeval tv;
-          lt = localtime (&t);
-          saved_lt = *lt;
-          gettimeofday (&tv, NULL);
-          return memcmp (lt, &saved_lt, sizeof (struct tm)) != 0;
-        ]])],
-     [gl_cv_func_gettimeofday_clobber=no],
-     [gl_cv_func_gettimeofday_clobber=yes],
-     [# When cross-compiling:
-      case "$host_os" in
-                       # Guess all is fine on glibc systems.
-        *-gnu* | gnu*) gl_cv_func_gettimeofday_clobber="guessing no" ;;
-                       # Guess all is fine on musl systems.
-        *-musl*)       gl_cv_func_gettimeofday_clobber="guessing no" ;;
-                       # Guess no on native Windows.
-        mingw*)        gl_cv_func_gettimeofday_clobber="guessing no" ;;
-                       # If we don't know, obey --enable-cross-guesses.
-        *)             gl_cv_func_gettimeofday_clobber="$gl_cross_guess_inverted" ;;
-      esac
-     ])])
-
- case "$gl_cv_func_gettimeofday_clobber" in
-   *yes)
-     REPLACE_GETTIMEOFDAY=1
-     AC_DEFINE([GETTIMEOFDAY_CLOBBERS_LOCALTIME], [1],
-       [Define if gettimeofday clobbers the localtime buffer.])
-     gl_LOCALTIME_BUFFER_NEEDED
-     ;;
- esac
 ])
 
 # Prerequisites of lib/gettimeofday.c.

@@ -70,7 +70,7 @@ _AS_ECHO_LOG([checking for _AC_LANG compiler version])
 set X $ac_compile
 ac_compiler=$[2]
 for ac_option in --version -v -V -qversion -version; do
-  m4_ifdef([_AC_DO_LIMIT],[_AC_DO_LIMIT],[_AC_DO])([$ac_compiler $ac_option >&AS_MESSAGE_LOG_FD])
+  _AC_DO_LIMIT([$ac_compiler $ac_option >&AS_MESSAGE_LOG_FD])
 done
 
 m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl
@@ -135,7 +135,7 @@ _AS_ECHO_LOG([checking for _AC_LANG compiler version])
 set X $ac_compile
 ac_compiler=$[2]
 for ac_option in --version -v -V -qversion; do
-  m4_ifdef([_AC_DO_LIMIT],[_AC_DO_LIMIT],[_AC_DO])([$ac_compiler $ac_option >&AS_MESSAGE_LOG_FD])
+  _AC_DO_LIMIT([$ac_compiler $ac_option >&AS_MESSAGE_LOG_FD])
 done
 
 m4_expand_once([_AC_COMPILER_EXEEXT])[]dnl

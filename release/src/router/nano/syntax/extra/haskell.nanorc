@@ -1,0 +1,40 @@
+## Syntax highlighting for Haskell files.
+
+## Original author:  Alex Taber
+## License:  GPL version 3
+
+syntax "haskell" "\.hs$"
+comment "--"
+
+# Keywords
+color red "\<(as|case|of|class|data|default|deriving|do|forall|foreign|hiding|if|then|else|import|infix(l|r)?|instance|let|in|mdo|module|newtype|qualified|type|where)\>"
+
+# Various symbols
+color cyan "\||@|!|:|_|~|=|\\|;|\(\)|,|\[|\]|\{|\}"
+
+# Operators
+color magenta "==|/=|&&|\|\||<|>|<=|>="
+
+# More symbols
+color cyan "->|<-|=>"
+color magenta "\.|\$"
+
+# Data constructors
+color magenta "\<(True|False|Nothing|Just|Left|Right|LT|EQ|GT)\>"
+# Data classes
+color magenta "\<(Bounded|Data|Enum|Eq|Floating|Fractional|Functor|Integral|Monad|MonadPlus|Num|Ord|Read|Real|RealFloat|RealFrac|Show|Typeable)\>"
+
+# Special keyword
+color brightred "undefined"
+
+# Strings
+color yellow ""([^\"]|\\.)*""
+# Characters
+color brightyellow "'([^\']|\\.)'"
+
+# Comments
+color green "--.*"
+color green start="\{-" end="-\}"
+
+# Trailing whitespace
+color ,green "[[:space:]]+$"

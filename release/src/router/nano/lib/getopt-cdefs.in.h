@@ -57,7 +57,7 @@
 #endif
 
 #ifndef __THROW
-# if defined __cplusplus && __GNUC_PREREQ (2,8)
+# if defined __cplusplus && (__GNUC_PREREQ (2,8) || __clang_major__ >= 4)
 #  define __THROW       throw ()
 # else
 #  define __THROW

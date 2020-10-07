@@ -1,4 +1,4 @@
-# langinfo_h.m4 serial 8
+# langinfo_h.m4 serial 9
 dnl Copyright (C) 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -23,8 +23,10 @@ AC_DEFUN([gl_LANGINFO_H],
   AC_CHECK_HEADERS_ONCE([langinfo.h])
   if test $ac_cv_header_langinfo_h = yes; then
     HAVE_LANGINFO_H=1
-    dnl Determine what <langinfo.h> defines. CODESET and ERA etc. are missing
-    dnl on OpenBSD 3.8. T_FMT_AMPM and YESEXPR, NOEXPR are missing on IRIX 5.3.
+    dnl Determine what <langinfo.h> defines.
+    dnl CODESET is missing on OpenBSD 3.8.
+    dnl ERA etc. are missing on OpenBSD 6.7.
+    dnl T_FMT_AMPM and YESEXPR, NOEXPR are missing on IRIX 5.3.
     dnl ALTMON_* are missing on glibc 2.26 and many other systems.
     AC_CACHE_CHECK([whether langinfo.h defines CODESET],
       [gl_cv_header_langinfo_codeset],

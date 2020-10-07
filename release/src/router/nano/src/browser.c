@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #ifdef ENABLE_BROWSER
 
@@ -39,24 +39,22 @@ static size_t longest = 0;
 static size_t selected = 0;
 		/* The currently selected filename in the list; zero-based. */
 
-/* Our main file browser function.  path is the tilde-expanded path we
- * start browsing from. */
-char *do_browser(char *path)
+/* Allow the user to browse through the directories in the filesystem,
+ * starting at the given path. */
+char *browse(char *path)
 {
-	char *retval = NULL;
-	int kbinput;
 	char *present_name = NULL;
 		/* The name of the currently selected file, or of the directory we
 		 * were in before backing up to "..". */
 	size_t old_selected;
 		/* The number of the selected file before the current selected file. */
-	functionptrtype func;
-		/* The function of the key the user typed in. */
 	DIR *dir;
 		/* The directory whose contents we are showing. */
+	char *chosen = NULL;
+		/* The name of the file that the user picked, or NULL if none. */
 
   read_directory_contents:
-		/* We come here when we refresh or select a new directory. */
+		/* We come here when the user refreshes or selects a new directory. */
 
 	path = free_and_assign(path, get_full_path(path));
 
@@ -67,10 +65,10 @@ char *do_browser(char *path)
 		statusline(ALERT, _("Cannot open directory: %s"), strerror(errno));
 		/* If we don't have a file list yet, there is nothing to show. */
 		if (filelist == NULL) {
-			napms(1200);
-			lastmessage = HUSH;
-			free(path);
+			lastmessage = VACUUM;
 			free(present_name);
+			free(path);
+			napms(1200);
 			return NULL;
 		}
 		path = mallocstrcpy(path, present_path);
@@ -101,7 +99,10 @@ char *do_browser(char *path)
 	titlebar(path);
 
 	while (TRUE) {
-		lastmessage = HUSH;
+		functionptrtype func;
+		int kbinput;
+
+		lastmessage = VACUUM;
 
 		bottombars(MBROWSER);
 
@@ -153,8 +154,8 @@ char *do_browser(char *path)
 #endif
 		func = interpret(&kbinput);
 
-		if (func == total_refresh) {
-			total_redraw();
+		if (func == full_refresh) {
+			full_refresh();
 #ifndef NANO_TINY
 			/* Simulate a window resize to force a directory reread. */
 			kbinput = KEY_WINCH;
@@ -168,6 +169,12 @@ char *do_browser(char *path)
 #endif
 #else
 			say_there_is_no_help();
+#endif
+#ifndef NANO_TINY
+		} else if (func == do_toggle_void) {
+			TOGGLE(NO_HELP);
+			window_init();
+			kbinput = KEY_WINCH;
 #endif
 		} else if (func == do_search_forward) {
 			do_filesearch(FORWARD);
@@ -227,7 +234,7 @@ char *do_browser(char *path)
 			selected = filelist_len - 1;
 		} else if (func == goto_dir) {
 			/* Ask for the directory to go to. */
-			if (do_prompt(TRUE, FALSE, MGOTODIR, "", NULL,
+			if (do_prompt(MGOTODIR, "", NULL,
 							/* TRANSLATORS: This is a prompt. */
 							browser_refresh, _("Go To Directory")) < 0) {
 				statusbar(_("Cancelled"));
@@ -291,7 +298,7 @@ char *do_browser(char *path)
 
 			/* If it isn't a directory, a file was selected -- we're done. */
 			if (!S_ISDIR(st.st_mode)) {
-				retval = copy_of(filelist[selected]);
+				chosen = copy_of(filelist[selected]);
 				break;
 			}
 
@@ -336,38 +343,29 @@ char *do_browser(char *path)
 	filelist = NULL;
 	filelist_len = 0;
 
-	return retval;
+	return chosen;
 }
 
-/* The file browser front end.  We check to see if inpath has a
- * directory in it.  If it does, we start do_browser() from there.
- * Otherwise, we start do_browser() from the current directory. */
-char *do_browse_from(const char *inpath)
+/* Prepare to start browsing.  If the given path has a directory part,
+ * start browsing in that directory, otherwise in the current directory. */
+char *browse_in(const char *inpath)
 {
-	struct stat st;
-	char *path;
-		/* This holds the tilde-expanded version of inpath. */
+	char *path = real_dir_from_tilde(inpath);
+	struct stat fileinfo;
 
-	path = real_dir_from_tilde(inpath);
-
-	/* Perhaps path is a directory.  If so, we'll pass it to
-	 * do_browser().  Or perhaps path is a directory / a file.  If so,
-	 * we'll try stripping off the last path element and passing it to
-	 * do_browser().  Or perhaps path doesn't have a directory portion
-	 * at all.  If so, we'll just pass the current directory to
-	 * do_browser(). */
-	if (stat(path, &st) == -1 || !S_ISDIR(st.st_mode)) {
+	/* If path is not a directory, try to strip a filename from it; if then
+	 * still not a directory, use the current working directory instead. */
+	if (stat(path, &fileinfo) == -1 || !S_ISDIR(fileinfo.st_mode)) {
 		path = free_and_assign(path, strip_last_component(path));
 
-		if (stat(path, &st) == -1 || !S_ISDIR(st.st_mode)) {
+		if (stat(path, &fileinfo) == -1 || !S_ISDIR(fileinfo.st_mode)) {
 			char *currentdir = charalloc(PATH_MAX + 1);
 
-			free(path);
-			path = getcwd(currentdir, PATH_MAX + 1);
+			path = free_and_assign(path, getcwd(currentdir, PATH_MAX + 1));
 
 			if (path == NULL) {
-				free(currentdir);
 				statusline(MILD, _("The working directory has disappeared"));
+				free(currentdir);
 				beep();
 				napms(1200);
 				return NULL;
@@ -382,7 +380,7 @@ char *do_browse_from(const char *inpath)
 		path = mallocstrcpy(path, operating_dir);
 #endif
 
-	return do_browser(path);
+	return browse(path);
 }
 
 /* Set filelist to the list of files contained in the directory path,
@@ -453,8 +451,7 @@ void read_the_list(const char *path, DIR *dir)
 	width = (COLS + 2) / (longest + 2);
 }
 
-/* Set width to the number of files that we can display per screen row,
- * if necessary, and display the list of files. */
+/* Display at most a screenful of filenames from the gleaned filelist. */
 void browser_refresh(void)
 {
 	int row = 0, col = 0;
@@ -467,11 +464,8 @@ void browser_refresh(void)
 	titlebar(present_path);
 	blank_edit();
 
-	wmove(edit, 0, 0);
-
 	for (size_t index = selected - selected % (editwinrows * width);
 					index < filelist_len && row < editwinrows; index++) {
-		struct stat st;
 		const char *thename = tail(filelist[index]);
 				/* The filename we display, minus the path. */
 		size_t namelen = breadth(thename);
@@ -488,6 +482,7 @@ void browser_refresh(void)
 				namelen + infomaxlen + 4 - longest : 0, longest, FALSE, FALSE);
 				/* The filename (or a fragment of it) in displayable format.
 				 * When a fragment, account for dots plus one space padding. */
+		struct stat state;
 
 		/* If this is the selected item, draw its highlighted bar upfront, and
 		 * remember its location to be able to place the cursor on it. */
@@ -503,20 +498,18 @@ void browser_refresh(void)
 			mvwaddstr(edit, row, col, "...");
 		mvwaddstr(edit, row, dots ? col + 3 : col, disp);
 
-		free(disp);
-
 		col += longest;
 
 		/* Show information about the file: "--" for symlinks (except when
 		 * they point to a directory) and for files that have disappeared,
 		 * "(dir)" for directories, and the file size for normal files. */
-		if (lstat(filelist[index], &st) == -1 || S_ISLNK(st.st_mode)) {
-			if (stat(filelist[index], &st) == -1 || !S_ISDIR(st.st_mode))
+		if (lstat(filelist[index], &state) == -1 || S_ISLNK(state.st_mode)) {
+			if (stat(filelist[index], &state) == -1 || !S_ISDIR(state.st_mode))
 				info = copy_of("--");
 			else
 				/* TRANSLATORS: Try to keep this at most 7 characters. */
 				info = copy_of(_("(dir)"));
-		} else if (S_ISDIR(st.st_mode)) {
+		} else if (S_ISDIR(state.st_mode)) {
 			if (strcmp(thename, "..") == 0) {
 				/* TRANSLATORS: Try to keep this at most 12 characters. */
 				info = copy_of(_("(parent dir)"));
@@ -524,18 +517,18 @@ void browser_refresh(void)
 			} else
 				info = copy_of(_("(dir)"));
 		} else {
-			off_t result = st.st_size;
+			off_t result = state.st_size;
 			char modifier;
 
 			info = charalloc(infomaxlen + 1);
 
 			/* Massage the file size into a human-readable form. */
-			if (st.st_size < (1 << 10))
+			if (state.st_size < (1 << 10))
 				modifier = ' ';  /* bytes */
-			else if (st.st_size < (1 << 20)) {
+			else if (state.st_size < (1 << 20)) {
 				result >>= 10;
 				modifier = 'K';  /* kilobytes */
-			} else if (st.st_size < (1 << 30)) {
+			} else if (state.st_size < (1 << 30)) {
 				result >>= 20;
 				modifier = 'M';  /* megabytes */
 			} else {
@@ -565,13 +558,13 @@ void browser_refresh(void)
 		if (index == selected)
 			wattroff(edit, interface_color_pair[SELECTED_TEXT]);
 
+		free(disp);
 		free(info);
 
 		/* Add some space between the columns. */
 		col += 2;
 
-		/* If the next entry isn't going to fit on the current row,
-		 * move to the next row. */
+		/* If the next entry will not fit on this row, move to next row. */
 		if (col > COLS - longest) {
 			row++;
 			col = 0;
@@ -633,7 +626,7 @@ int filesearch_init(bool forwards)
 		thedefault = copy_of("");
 
 	/* Now ask what to search for. */
-	response = do_prompt(FALSE, FALSE, MWHEREISFILE, "", &search_history,
+	response = do_prompt(MWHEREISFILE, "", &search_history,
 						browser_refresh, "%s%s%s", _("Search"),
 						/* TRANSLATORS: A modifier of the Search prompt. */
 						!forwards ? _(" [Backwards]") : "", thedefault);
@@ -740,18 +733,6 @@ void do_fileresearch(bool forwards)
 		statusbar(_("No current search pattern"));
 	else
 		findfile(last_search, forwards);
-}
-
-/* Select the first file in the list. */
-void to_first_file(void)
-{
-	selected = 0;
-}
-
-/* Select the last file in the list. */
-void to_last_file(void)
-{
-	selected = filelist_len - 1;
 }
 
 /* Strip one element from the end of path, and return the stripped path.

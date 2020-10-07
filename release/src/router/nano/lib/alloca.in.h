@@ -35,13 +35,16 @@
  */
 
 #ifndef alloca
-# ifdef __GNUC__
-   /* Some version of mingw have an <alloca.h> that causes trouble when
-      included after 'alloca' gets defined as a macro.  As a workaround, include
-      this <alloca.h> first and define 'alloca' as a macro afterwards.  */
-#  if (defined _WIN32 && ! defined __CYGWIN__) && @HAVE_ALLOCA_H@
-#   include_next <alloca.h>
-#  endif
+  /* Some version of mingw have an <alloca.h> that causes trouble when
+     included after 'alloca' gets defined as a macro.  As a workaround,
+     include this <alloca.h> first and define 'alloca' as a macro afterwards
+     if needed.  */
+# if defined __GNUC__ && (defined _WIN32 && ! defined __CYGWIN__) && @HAVE_ALLOCA_H@
+#  include_next <alloca.h>
+# endif
+#endif
+#ifndef alloca
+# if defined __GNUC__ || (__clang_major__ >= 4)
 #  define alloca __builtin_alloca
 # elif defined _AIX
 #  define alloca __alloca

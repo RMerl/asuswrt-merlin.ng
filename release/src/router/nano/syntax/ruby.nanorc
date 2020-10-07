@@ -1,10 +1,11 @@
-## Here is an example for Ruby.
+## Syntax highlighting for Ruby.
 
 syntax ruby "\.rb$"
 header "^#!.*ruby"
 magic "Ruby script"
-linter ruby -w -c
 comment "#"
+
+linter ruby -w -c
 
 # Constants.
 color brightblue "\<[A-Z]+[0-9A-Z_a-z]*|(\$|@|@@)[0-9A-Z_a-z]+"
@@ -33,4 +34,4 @@ color brightcyan "##[^{].*" "##$"
 # "Here" docs.
 color green start="<<-?'?EOT'?" end="^EOT"
 # Some common markers.
-color brightcyan "(XXX|TODO|FIXME|\?\?\?)"
+color brightcyan "XXX|TODO|FIXME|\?\?\?"

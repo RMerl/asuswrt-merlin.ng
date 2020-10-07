@@ -1,4 +1,4 @@
-## Here is an example for apt's sources.list.
+## Syntax highlighting for apt's sources.list.
 
 syntax sources.list "sources\.list(\.d/.*\.list)?(~|\.old|\.save)?$"
 comment "#"

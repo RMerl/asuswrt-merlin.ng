@@ -15,15 +15,31 @@
    You should have received a copy of the GNU General Public License
    along with this program; if not, see <https://www.gnu.org/licenses/>.  */
 
-#ifndef _@GUARD_PREFIX@_LIMITS_H
-
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
 #endif
 @PRAGMA_COLUMNS@
 
-/* The include_next requires a split double-inclusion guard.  */
+#if defined _GL_ALREADY_INCLUDING_LIMITS_H
+/* Special invocation convention:
+   On Haiku/x86_64, we have a sequence of nested includes
+   <limits.h> -> <syslimits.h> -> <limits.h>.
+   In this situation, LONG_MAX and INT_MAX are not yet defined,
+   therefore we should not attempt to define LONG_BIT.  */
+
 #@INCLUDE_NEXT@ @NEXT_LIMITS_H@
+
+#else
+/* Normal invocation convention.  */
+
+#ifndef _@GUARD_PREFIX@_LIMITS_H
+
+# define _GL_ALREADY_INCLUDING_LIMITS_H
+
+/* The include_next requires a split double-inclusion guard.  */
+# @INCLUDE_NEXT@ @NEXT_LIMITS_H@
+
+# undef _GL_ALREADY_INCLUDING_LIMITS_H
 
 #ifndef _@GUARD_PREFIX@_LIMITS_H
 #define _@GUARD_PREFIX@_LIMITS_H
@@ -102,3 +118,4 @@
 
 #endif /* _@GUARD_PREFIX@_LIMITS_H */
 #endif /* _@GUARD_PREFIX@_LIMITS_H */
+#endif

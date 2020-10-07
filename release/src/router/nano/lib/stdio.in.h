@@ -62,10 +62,12 @@
    We enable _GL_ATTRIBUTE_FORMAT only if these are supported too, because
    gnulib and libintl do '#define printf __printf__' when they override
    the 'printf' function.  */
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7)
-# define _GL_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
-#else
-# define _GL_ATTRIBUTE_FORMAT(spec) /* empty */
+#ifndef _GL_ATTRIBUTE_FORMAT
+# if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 7) || defined __clang__
+#  define _GL_ATTRIBUTE_FORMAT(spec) __attribute__ ((__format__ spec))
+# else
+#  define _GL_ATTRIBUTE_FORMAT(spec) /* empty */
+# endif
 #endif
 
 /* _GL_ATTRIBUTE_FORMAT_PRINTF
@@ -213,6 +215,11 @@ _GL_WARN_ON_USE (fclose, "fclose is not always POSIX compliant - "
                  "use gnulib module fclose for portable POSIX compliance");
 #endif
 
+#if defined _WIN32 && !defined __CYGWIN__
+# undef fcloseall
+# define fcloseall _fcloseall
+#endif
+
 #if @GNULIB_FDOPEN@
 # if @REPLACE_FDOPEN@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -222,6 +229,12 @@ _GL_WARN_ON_USE (fclose, "fclose is not always POSIX compliant - "
 _GL_FUNCDECL_RPL (fdopen, FILE *, (int fd, const char *mode)
                                   _GL_ARG_NONNULL ((2)));
 _GL_CXXALIAS_RPL (fdopen, FILE *, (int fd, const char *mode));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef fdopen
+#   define fdopen _fdopen
+#  endif
+_GL_CXXALIAS_MDA (fdopen, FILE *, (int fd, const char *mode));
 # else
 _GL_CXXALIAS_SYS (fdopen, FILE *, (int fd, const char *mode));
 # endif
@@ -231,6 +244,9 @@ _GL_CXXALIASWARN (fdopen);
 /* Assume fdopen is always declared.  */
 _GL_WARN_ON_USE (fdopen, "fdopen on native Windows platforms is not POSIX compliant - "
                  "use gnulib module fdopen for portability");
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef fdopen
+# define fdopen _fdopen
 #endif
 
 #if @GNULIB_FFLUSH@
@@ -293,6 +309,11 @@ _GL_CXXALIAS_SYS (fgets, char *,
 # if __GLIBC__ >= 2
 _GL_CXXALIASWARN (fgets);
 # endif
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef fileno
+# define fileno _fileno
 #endif
 
 #if @GNULIB_FOPEN@
@@ -822,6 +843,11 @@ _GL_WARN_ON_USE (getline, "getline is unportable - "
 _GL_WARN_ON_USE (gets, "gets is a security hole - use fgets instead");
 #endif
 
+#if defined _WIN32 && !defined __CYGWIN__
+# undef getw
+# define getw _getw
+#endif
+
 #if @GNULIB_OBSTACK_PRINTF@ || @GNULIB_OBSTACK_PRINTF_POSIX@
 struct obstack;
 /* Grow an obstack with formatted output.  Return the number of
@@ -938,7 +964,7 @@ _GL_WARN_ON_USE (popen, "popen is buggy on some platforms - "
 #if @GNULIB_PRINTF_POSIX@ || @GNULIB_PRINTF@
 # if (@GNULIB_PRINTF_POSIX@ && @REPLACE_PRINTF@) \
      || (@GNULIB_PRINTF@ && @REPLACE_STDIO_WRITE_FUNCS@ && (@GNULIB_STDIO_H_NONBLOCKING@ || @GNULIB_STDIO_H_SIGPIPE@))
-#  if defined __GNUC__
+#  if defined __GNUC__ || defined __clang__
 #   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 /* Don't break __attribute__((format(printf,M,N))).  */
 #    define printf __printf__
@@ -1035,6 +1061,11 @@ _GL_CXXALIASWARN (puts);
 # endif
 #endif
 
+#if defined _WIN32 && !defined __CYGWIN__
+# undef putw
+# define putw _putw
+#endif
+
 #if @GNULIB_REMOVE@
 # if @REPLACE_REMOVE@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -1112,7 +1143,7 @@ _GL_WARN_ON_USE (renameat, "renameat is not portable - "
 
 #if @GNULIB_SCANF@
 # if @REPLACE_STDIO_READ_FUNCS@ && @GNULIB_STDIO_H_NONBLOCKING@
-#  if defined __GNUC__
+#  if defined __GNUC__ || defined __clang__
 #   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #    undef scanf
 /* Don't break __attribute__((format(scanf,M,N))).  */
@@ -1168,7 +1199,9 @@ _GL_CXXALIAS_SYS (snprintf, int,
                   (char *restrict str, size_t size,
                    const char *restrict format, ...));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (snprintf);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef snprintf
 # if HAVE_RAW_DECL_SNPRINTF
@@ -1210,6 +1243,11 @@ _GL_CXXALIASWARN (sprintf);
 _GL_WARN_ON_USE (sprintf, "sprintf is not always POSIX compliant - "
                  "use gnulib module sprintf-posix for portable "
                  "POSIX compliance");
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef tempnam
+# define tempnam _tempnam
 #endif
 
 #if @GNULIB_TMPFILE@
@@ -1380,7 +1418,9 @@ _GL_CXXALIAS_SYS (vfscanf, int,
                   (FILE *restrict stream,
                    const char *restrict format, va_list args));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (vfscanf);
+# endif
 #endif
 
 #if @GNULIB_VPRINTF_POSIX@ || @GNULIB_VPRINTF@
@@ -1434,7 +1474,9 @@ _GL_CXXALIAS_RPL (vscanf, int, (const char *restrict format, va_list args));
 # else
 _GL_CXXALIAS_SYS (vscanf, int, (const char *restrict format, va_list args));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (vscanf);
+# endif
 #endif
 
 #if @GNULIB_VSNPRINTF@
@@ -1462,7 +1504,9 @@ _GL_CXXALIAS_SYS (vsnprintf, int,
                   (char *restrict str, size_t size,
                    const char *restrict format, va_list args));
 # endif
+# if __GLIBC__ >= 2
 _GL_CXXALIASWARN (vsnprintf);
+# endif
 #elif defined GNULIB_POSIXCHECK
 # undef vsnprintf
 # if HAVE_RAW_DECL_VSNPRINTF

@@ -1,4 +1,4 @@
-## Here is an example for Emacs Lisp.
+## Syntax highlighting for Emacs Lisp.
 
 syntax elisp "\.el$"
 magic "Lisp/Scheme program"
@@ -27,7 +27,7 @@ color brightred "\<(t|nil)\>"
 # Keywords
 color blue ":(\w|[?-])+"
 # Strings
-color yellow start="^[[:blank:]]+\"" end="[^\]\""
+color yellow start="^[[:blank:]]+"" end="[^\]""
 color yellow ""(\\.|[^"])*""
 # Comments
 color cyan "(^|[[:space:]]);.*"

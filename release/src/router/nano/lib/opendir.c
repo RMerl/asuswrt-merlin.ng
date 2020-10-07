@@ -45,6 +45,16 @@
 # include <fcntl.h>
 #endif
 
+#if defined _WIN32 && ! defined __CYGWIN__
+/* Don't assume that UNICODE is not defined.  */
+# undef WIN32_FIND_DATA
+# define WIN32_FIND_DATA WIN32_FIND_DATAA
+# undef GetFullPathName
+# define GetFullPathName GetFullPathNameA
+# undef FindFirstFile
+# define FindFirstFile FindFirstFileA
+#endif
+
 DIR *
 opendir (const char *dir_name)
 {

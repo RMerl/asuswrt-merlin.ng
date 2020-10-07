@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #include <string.h>
 
@@ -234,8 +234,8 @@ void to_prev_block(void)
 		seen_text = seen_text || is_text;
 	}
 
-	/* Step forward one line again if this one is blank. */
-	if (openfile->current->next != NULL &&
+	/* Step forward one line again if we passed text but this line is blank. */
+	if (seen_text && openfile->current->next != NULL &&
 				white_string(openfile->current->data))
 		openfile->current = openfile->current->next;
 
@@ -556,13 +556,21 @@ void do_scroll_down(void)
 
 	if (editwinrows > 1 && (openfile->edittop->next != NULL
 #ifndef NANO_TINY
-				|| chunk_for(openfile->firstcolumn, openfile->edittop) <
-					number_of_chunks_in(openfile->edittop)
+				|| (ISSET(SOFTWRAP) && (extra_chunks_in(openfile->edittop) >
+					chunk_for(openfile->firstcolumn, openfile->edittop)))
 #endif
 										))
 		edit_scroll(FORWARD);
 }
-#endif
+
+/* Scroll the line with the cursor to the center of the screen. */
+void do_center(void)
+{
+	adjust_viewport(CENTERING);
+	draw_all_subwindows();
+	full_refresh();
+}
+#endif /* !NANO_TINY || ENABLE_HELP */
 
 /* Move left one character. */
 void do_left(void)

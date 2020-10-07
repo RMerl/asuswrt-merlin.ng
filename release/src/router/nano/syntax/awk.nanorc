@@ -1,4 +1,4 @@
-## Here is an example for awk.
+## Syntax highlighting for AWK scripts.
 
 syntax awk "\.awk$"
 header "^#!.*awk"
@@ -14,7 +14,7 @@ color red "\<(PROCINFO|RS|RT|RSTART|RLENGTH|SUBSEP|TEXTDOMAIN)\>"
 # Function declarations and special patterns.
 color brightgreen "\<(function|extension|BEGIN|END)\>"
 # Operators.
-color green "(\{|\}|\(|\)|\;|\]|\[|\\|<|>|!|=|&|\+|-|\*|%|/|\?:|\^|\|)"
+color green "\{|\}|\(|\)|\;|\[|\]|\\|<|>|!|=|&|\+|-|\*|%|/|\?:|\^|\|"
 # Flow control.
 color brightyellow "\<(for|if|while|do|else|in|delete|exit)\>"
 color brightyellow "\<(break|continue|return)\>"

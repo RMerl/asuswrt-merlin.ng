@@ -1,7 +1,7 @@
 ## Syntax highlighting for Lua.
-#
-## Original author:  Matthew Wild <mwild1 (at) gmail.com>
-## License: GPL 3 or later
+
+## Original author:  Matthew Wild
+## License:  GPL version 3 or newer
 
 syntax lua "\.lua$"
 magic "Lua script"

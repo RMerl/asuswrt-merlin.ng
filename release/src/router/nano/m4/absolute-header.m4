@@ -1,4 +1,4 @@
-# absolute-header.m4 serial 16
+# absolute-header.m4 serial 17
 dnl Copyright (C) 2006-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -22,23 +22,21 @@ dnl From Derek Price.
 AC_DEFUN([gl_ABSOLUTE_HEADER],
 [AC_REQUIRE([AC_CANONICAL_HOST])
 AC_LANG_PREPROC_REQUIRE()dnl
-dnl FIXME: gl_absolute_header and ac_header_exists must be used unquoted
-dnl until we can assume autoconf 2.64 or newer.
 m4_foreach_w([gl_HEADER_NAME], [$1],
   [AS_VAR_PUSHDEF([gl_absolute_header],
                   [gl_cv_absolute_]m4_defn([gl_HEADER_NAME]))dnl
   AC_CACHE_CHECK([absolute name of <]m4_defn([gl_HEADER_NAME])[>],
-    m4_defn([gl_absolute_header]),
+    [gl_absolute_header],
     [AS_VAR_PUSHDEF([ac_header_exists],
                     [ac_cv_header_]m4_defn([gl_HEADER_NAME]))dnl
     AC_CHECK_HEADERS_ONCE(m4_defn([gl_HEADER_NAME]))dnl
-    if test AS_VAR_GET(ac_header_exists) = yes; then
+    if test AS_VAR_GET([ac_header_exists]) = yes; then
       gl_ABSOLUTE_HEADER_ONE(m4_defn([gl_HEADER_NAME]))
     fi
     AS_VAR_POPDEF([ac_header_exists])dnl
     ])dnl
   AC_DEFINE_UNQUOTED(AS_TR_CPP([ABSOLUTE_]m4_defn([gl_HEADER_NAME])),
-                     ["AS_VAR_GET(gl_absolute_header)"],
+                     ["AS_VAR_GET([gl_absolute_header])"],
                      [Define this to an absolute name of <]m4_defn([gl_HEADER_NAME])[>.])
   AS_VAR_POPDEF([gl_absolute_header])dnl
 ])dnl

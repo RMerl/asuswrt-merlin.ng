@@ -302,12 +302,11 @@ typedef gl_uint_fast32_t gl_uint_fast16_t;
 /* kLIBC's <stdint.h> defines _INTPTR_T_DECLARED and needs its own
    definitions of intptr_t and uintptr_t (which use int and unsigned)
    to avoid clashes with declarations of system functions like sbrk.
-   Similarly, mingw 5.22 <crtdefs.h> defines _INTPTR_T_DEFINED and
-   _UINTPTR_T_DEFINED and needs its own definitions of intptr_t and
+   Similarly, MinGW WSL-5.4.1 <stdint.h> needs its own intptr_t and
    uintptr_t to avoid conflicting declarations of system functions like
    _findclose in <io.h>.  */
 # if !((defined __KLIBC__ && defined _INTPTR_T_DECLARED) \
-       || (defined __MINGW32__ && defined _INTPTR_T_DEFINED && defined _UINTPTR_T_DEFINED))
+       || defined __MINGW32__)
 #  undef intptr_t
 #  undef uintptr_t
 #  ifdef _WIN64

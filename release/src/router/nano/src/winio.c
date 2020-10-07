@@ -19,7 +19,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 #include "revision.h"
 
 #include <ctype.h>
@@ -32,9 +32,9 @@
 #endif
 
 #ifdef REVISION
-#define BRANDING REVISION
+#define BRANDING  REVISION
 #else
-#define BRANDING PACKAGE_STRING
+#define BRANDING  PACKAGE_STRING
 #endif
 
 static int *key_buffer = NULL;
@@ -45,10 +45,10 @@ static bool solitary = FALSE;
 		/* Whether an Esc arrived by itself -- not as leader of a sequence. */
 static int digit_count = 0;
 		/* How many digits of a three-digit character code we've eaten. */
-static bool waiting_mode = TRUE;
-		/* Whether getting a character will wait for a key to be pressed. */
 static bool reveal_cursor = FALSE;
 		/* Whether the cursor should be shown when waiting for input. */
+static bool linger_after_escape = FALSE;
+		/* Whether to give ncurses some time to get the next code. */
 static int statusblank = 0;
 		/* The number of keystrokes left before we blank the status bar. */
 #ifdef USING_OLD_NCURSES
@@ -164,15 +164,6 @@ void run_macro(void)
  *   than the function keys, because the functions of the former are
  *   not arbitrary and the functions of the latter are.)
  * - F10 on FreeBSD console == PageUp on Mach console; the former is
- *   omitted.  (Same as above.)
- * - F13 on FreeBSD console == End on Mach console; the former is
- *   omitted.  (Same as above.)
- * - F15 on FreeBSD console == Shift-Up on rxvt/Eterm; the former is
- *   omitted.  (The arrow keys, with or without modifiers, are more
- *   important to have working than the function keys, because the
- *   functions of the former are not arbitrary and the functions of the
- *   latter are.)
- * - F16 on FreeBSD console == Shift-Down on rxvt/Eterm; the former is
  *   omitted.  (Same as above.) */
 
 /* Read in a sequence of keystrokes from the given window and save them
@@ -192,7 +183,7 @@ void read_keys_from(WINDOW *win)
 #endif
 	}
 
-	/* Read in the first keycode using whatever mode we're in. */
+	/* Read in the first keycode, waiting for it to arrive. */
 	while (input == ERR) {
 		input = wgetch(win);
 
@@ -202,16 +193,11 @@ void read_keys_from(WINDOW *win)
 			input = KEY_WINCH;
 		}
 #endif
-		if (input == ERR && !waiting_mode) {
-			curs_set(0);
-			return;
-		}
-
-		/* If we've failed to get a keycode MAX_BUF_SIZE times in a row,
+		/* When we've failed to get a keycode over a hundred times in a row,
 		 * assume our input source is gone and die gracefully.  We could
 		 * check if errno is set to EIO ("Input/output error") and die in
 		 * that case, but it's not always set properly.  Argh. */
-		if (input == ERR && ++errcount == MAX_BUF_SIZE)
+		if (input == ERR && ++errcount == 123)
 			die(_("Too many errors from stdin\n"));
 	}
 
@@ -228,8 +214,13 @@ void read_keys_from(WINDOW *win)
 		return;
 #endif
 
-	/* Read in the remaining characters using non-blocking input. */
+	/* Read in any remaining key codes using non-blocking input. */
 	nodelay(win, TRUE);
+
+	/* After an ESC, when ncurses does not translate escape sequences,
+	 * give the keyboard some time to bring the next code to ncurses. */
+	if (input == ESC_CODE && (linger_after_escape || ISSET(RAW_SEQUENCES)))
+		napms(20);
 
 	while (TRUE) {
 #ifndef NANO_TINY
@@ -248,9 +239,8 @@ void read_keys_from(WINDOW *win)
 		key_buffer[key_buffer_len - 1] = input;
 	}
 
-	/* Restore waiting mode if it was on. */
-	if (waiting_mode)
-		nodelay(win, FALSE);
+	/* Restore blocking-input mode. */
+	nodelay(win, FALSE);
 
 #ifdef DEBUG
 	fprintf(stderr, "\nSequence of hex codes:");
@@ -295,32 +285,25 @@ void implant(const char *string)
 }
 #endif
 
-/* Try to read input_len codes from the keystroke buffer.  If the
- * keystroke buffer is empty and win isn't NULL, try to read in more
- * codes from win and add them to the keystroke buffer before doing
- * anything else.  If the keystroke buffer is (still) empty, return NULL. */
-int *get_input(WINDOW *win, size_t input_len)
+/* Try to read one code from the keystroke buffer.  If the buffer is empty and
+ * win isn't NULL, try to get more codes from the keyboard.  Return the first
+ * code, or ERR if the keystroke buffer is still empty. */
+int get_input(WINDOW *win)
 {
-	int *input;
+	int input;
 
 	if (key_buffer_len == 0 && win != NULL)
 		read_keys_from(win);
 
 	if (key_buffer_len == 0)
-		return NULL;
+		return ERR;
 
-	/* Limit the request to the number of available codes in the buffer. */
-	if (input_len > key_buffer_len)
-		input_len = key_buffer_len;
+	/* Take the first code from the head of the keystroke buffer. */
+	input = key_buffer[0];
 
-	/* Copy input_len codes from the head of the keystroke buffer. */
-	input = (int *)nmalloc(input_len * sizeof(int));
-	memcpy(input, key_buffer, input_len * sizeof(int));
-	key_buffer_len -= input_len;
-
-	/* If the buffer still contains keystrokes, move them to the front. */
-	if (key_buffer_len > 0)
-		memmove(key_buffer, key_buffer + input_len, key_buffer_len * sizeof(int));
+	/* If the buffer contains more codes, move them to the front. */
+	if (--key_buffer_len > 0)
+		memmove(key_buffer, key_buffer + 1, key_buffer_len * sizeof(int));
 
 	return input;
 }
@@ -335,793 +318,764 @@ int arrow_from_ABCD(int letter)
 		return (letter == 'D' ? KEY_LEFT : KEY_RIGHT);
 }
 
-/* Translate escape sequences, most of which correspond to extended
- * keypad values, into their corresponding key values.  These sequences
- * are generated when the keypad doesn't support the needed keys.
- * Assume that Escape has already been read in. */
-int convert_sequence(const int *seq, size_t length, int *consumed)
+/* Translate a sequence that began with "Esc O" to its corresponding key code. */
+int convert_SS3_sequence(const int *seq, size_t length, int *consumed)
 {
-	if (length > 1) {
-		*consumed = 2;
-		switch (seq[0]) {
-			case 'O':
-				switch (seq[1]) {
-					case '1':
-						if (length > 4  && seq[2] == ';') {
-		/* <-<-<-<-<-<-<- */
-		*consumed = 5;
-		switch (seq[3]) {
-			case '2':
-				switch (seq[4]) {
-					case 'A': /* Esc O 1 ; 2 A == Shift-Up on Terminal. */
-					case 'B': /* Esc O 1 ; 2 B == Shift-Down on Terminal. */
-					case 'C': /* Esc O 1 ; 2 C == Shift-Right on Terminal. */
-					case 'D': /* Esc O 1 ; 2 D == Shift-Left on Terminal. */
-						shift_held = TRUE;
-						return arrow_from_ABCD(seq[4]);
-#ifdef ENABLE_NANORC
-					case 'P': /* Esc O 1 ; 2 P == F13 on old xterm. */
-					case 'Q': /* Esc O 1 ; 2 Q == F14 on old xterm. */
-					case 'R': /* Esc O 1 ; 2 R == F15 on old xterm. */
-					case 'S': /* Esc O 1 ; 2 S == F16 on old xterm. */
-						return KEY_F(13 + seq[4] - 'P');
-#endif
-				}
-				break;
-			case '5':
-				switch (seq[4]) {
-					case 'A': /* Esc O 1 ; 5 A == Ctrl-Up on Terminal. */
-						return CONTROL_UP;
-					case 'B': /* Esc O 1 ; 5 B == Ctrl-Down on Terminal. */
-						return CONTROL_DOWN;
-					case 'C': /* Esc O 1 ; 5 C == Ctrl-Right on Terminal. */
-						return CONTROL_RIGHT;
-					case 'D': /* Esc O 1 ; 5 D == Ctrl-Left on Terminal. */
-						return CONTROL_LEFT;
-				}
-				break;
-		}
-		/* ->->->->->->-> */
-						}
-						break;
-					case '2':
-						if (length > 2) {
-							*consumed = 3;
-#ifdef ENABLE_NANORC
-							if ('O' < seq[2] && seq[2] < 'T')
-								/* Esc O 2 P == F13 on Konsole. */
-								/* Esc O 2 Q == F14 on Konsole. */
-								/* Esc O 2 R == F15 on Konsole. */
-								/* Esc O 2 S == F16 on Konsole. */
-								return KEY_F(13 + seq[2] - 'P');
-#endif
-						}
-						break;
+	switch (seq[0]) {
 #ifndef NANO_TINY
+		case '1':
+			if (length > 3  && seq[1] == ';') {
+				*consumed = 4;
+				switch (seq[2]) {
+					case '2':
+						if ('A' <= seq[3] && seq[3] <= 'D') {
+							/* Esc O 1 ; 2 A == Shift-Up on old Terminal. */
+							/* Esc O 1 ; 2 B == Shift-Down on old Terminal. */
+							/* Esc O 1 ; 2 C == Shift-Right on old Terminal. */
+							/* Esc O 1 ; 2 D == Shift-Left on old Terminal. */
+							shift_held = TRUE;
+							return arrow_from_ABCD(seq[3]);
+						}
+						break;
 					case '5':
-						if (length > 2) {
-							*consumed = 3;
-							switch (seq[2]) {
-								case 'A': /* Esc O 5 A == Ctrl-Up on Haiku. */
-									return CONTROL_UP;
-								case 'B': /* Esc O 5 B == Ctrl-Down on Haiku. */
-									return CONTROL_DOWN;
-								case 'C': /* Esc O 5 C == Ctrl-Right on Haiku. */
-									return CONTROL_RIGHT;
-								case 'D': /* Esc O 5 D == Ctrl-Left on Haiku. */
-									return CONTROL_LEFT;
-							}
+						switch (seq[3]) {
+							case 'A': /* Esc O 1 ; 5 A == Ctrl-Up on old Terminal. */
+								return CONTROL_UP;
+							case 'B': /* Esc O 1 ; 5 B == Ctrl-Down on old Terminal. */
+								return CONTROL_DOWN;
+							case 'C': /* Esc O 1 ; 5 C == Ctrl-Right on old Terminal. */
+								return CONTROL_RIGHT;
+							case 'D': /* Esc O 1 ; 5 D == Ctrl-Left on old Terminal. */
+								return CONTROL_LEFT;
 						}
 						break;
-#endif
-					case 'A': /* Esc O A == Up on VT100/VT320. */
-					case 'B': /* Esc O B == Down on VT100/VT320. */
-					case 'C': /* Esc O C == Right on VT100/VT320. */
-					case 'D': /* Esc O D == Left on VT100/VT320. */
-						return arrow_from_ABCD(seq[1]);
-					case 'F': /* Esc O F == End on old xterm. */
-						return KEY_END;
-					case 'H': /* Esc O H == Home on old xterm. */
-						return KEY_HOME;
-					case 'M': /* Esc O M == Enter on numeric keypad with
-							   * NumLock off on VT100/VT220/VT320/xterm/
-							   * rxvt/Eterm. */
-						return KEY_ENTER;
-					case 'P': /* Esc O P == F1 on VT100/VT220/VT320/Mach console. */
-					case 'Q': /* Esc O Q == F2 on VT100/VT220/VT320/Mach console. */
-					case 'R': /* Esc O R == F3 on VT100/VT220/VT320/Mach console. */
-					case 'S': /* Esc O S == F4 on VT100/VT220/VT320/Mach console. */
-					case 'T': /* Esc O T == F5 on Mach console. */
-					case 'U': /* Esc O U == F6 on Mach console. */
-					case 'V': /* Esc O V == F7 on Mach console. */
-					case 'W': /* Esc O W == F8 on Mach console. */
-					case 'X': /* Esc O X == F9 on Mach console. */
-					case 'Y': /* Esc O Y == F10 on Mach console. */
-						return KEY_F(seq[1] - 'O');
-					case 'a': /* Esc O a == Ctrl-Up on rxvt/Eterm. */
-						return CONTROL_UP;
-					case 'b': /* Esc O b == Ctrl-Down on rxvt/Eterm. */
-						return CONTROL_DOWN;
-					case 'c': /* Esc O c == Ctrl-Right on rxvt/Eterm. */
-						return CONTROL_RIGHT;
-					case 'd': /* Esc O d == Ctrl-Left on rxvt/Eterm. */
-						return CONTROL_LEFT;
-					case 'j': /* Esc O j == '*' on numeric keypad with
-							   * NumLock off on VT100/VT220/VT320/xterm/
-							   * rxvt/Eterm/Terminal. */
-						return '*';
-					case 'k': /* Esc O k == '+' on the same. */
-						return '+';
-					case 'l': /* Esc O l == ',' on the same. */
-						return ',';
-					case 'm': /* Esc O m == '-' on the same. */
-						return '-';
-					case 'n': /* Esc O n == Delete (.) on the same. */
-						return KEY_DC;
-					case 'o': /* Esc O o == '/' on the same. */
-						return '/';
-					case 'p': /* Esc O p == Insert (0) on numeric keypad
-							   * with NumLock off on VT100/VT220/VT320/
-							   * rxvt/Eterm/Terminal. */
-						return KEY_IC;
-					case 'q': /* Esc O q == End (1) on the same. */
-						return KEY_END;
-					case 'r': /* Esc O r == Down (2) on the same. */
-						return KEY_DOWN;
-					case 's': /* Esc O s == PageDown (3) on the same. */
-						return KEY_NPAGE;
-					case 't': /* Esc O t == Left (4) on the same. */
-						return KEY_LEFT;
-					case 'v': /* Esc O v == Right (6) on numeric keypad
-							   * with NumLock off on VT100/VT220/VT320/
-							   * rxvt/Eterm/Terminal. */
-						return KEY_RIGHT;
-					case 'w': /* Esc O w == Home (7) on the same. */
-						return KEY_HOME;
-					case 'x': /* Esc O x == Up (8) on the same. */
-						return KEY_UP;
-					case 'y': /* Esc O y == PageUp (9) on the same. */
-						return KEY_PPAGE;
 				}
-				break;
-			case '[':
-				if (seq[1] < '9')
-					*consumed = 3;
+			}
+			break;
+#endif
+		case '2':  /* Shift */
+		case '3':  /* Alt */
+		case '4':  /* Shift+Alt */
+		case '5':  /* Ctrl */
+		case '6':  /* Shift+Ctrl */
+		case '7':  /* Alt+Ctrl */
+		case '8':  /* Shift+Alt+Ctrl */
+			if (length > 1) {
+				*consumed = 2;
+				/* Do not accept multiple modifiers. */
+				if (seq[0] == '4' || seq[0] > '5')
+					return FOREIGN_SEQUENCE;
+#ifndef NANO_TINY
 				switch (seq[1]) {
-					case '1':
-						if (length > 2 && seq[2] == '~')
-							/* Esc [ 1 ~ == Home on VT320/Linux console. */
-							return KEY_HOME;
-						else if (length > 3 && seq[3] == '~') {
-							*consumed = 4;
-							switch (seq[2]) {
-								case '1': /* Esc [ 1 1 ~ == F1 on rxvt/Eterm. */
-								case '2': /* Esc [ 1 2 ~ == F2 on rxvt/Eterm. */
-								case '3': /* Esc [ 1 3 ~ == F3 on rxvt/Eterm. */
-								case '4': /* Esc [ 1 4 ~ == F4 on rxvt/Eterm. */
-								case '5': /* Esc [ 1 5 ~ == F5 on xterm/rxvt/Eterm. */
-									return KEY_F(seq[2] - '0');
-								case '7': /* Esc [ 1 7 ~ == F6 on VT220/VT320/
-										   * Linux console/xterm/rxvt/Eterm. */
-								case '8': /* Esc [ 1 8 ~ == F7 on the same. */
-								case '9': /* Esc [ 1 9 ~ == F8 on the same. */
-									return KEY_F(seq[2] - '1');
-							}
-						} else if (length > 4 && seq[2] == ';') {
-		/* <-<-<-<-<-<-<- */
-		*consumed = 5;
-		switch (seq[3]) {
-			case '2':
-				switch (seq[4]) {
-					case 'A': /* Esc [ 1 ; 2 A == Shift-Up on xterm. */
-					case 'B': /* Esc [ 1 ; 2 B == Shift-Down on xterm. */
-					case 'C': /* Esc [ 1 ; 2 C == Shift-Right on xterm. */
-					case 'D': /* Esc [ 1 ; 2 D == Shift-Left on xterm. */
-						shift_held = TRUE;
-						return arrow_from_ABCD(seq[4]);
-#ifndef NANO_TINY
-					case 'F': /* Esc [ 1 ; 2 F == Shift-End on xterm. */
-						return SHIFT_END;
-					case 'H': /* Esc [ 1 ; 2 H == Shift-Home on xterm. */
-						return SHIFT_HOME;
-#endif
-#ifdef ENABLE_NANORC
-					case 'P': /* Esc [ 1 ; 2 P == F13 on xterm. */
-					case 'Q': /* Esc [ 1 ; 2 Q == F14 on xterm. */
-					case 'R': /* Esc [ 1 ; 2 R == F15 on xterm. */
-					case 'S': /* Esc [ 1 ; 2 S == F16 on xterm. */
-						return KEY_F(13 + seq[4] - 'P');
-#endif
-				}
-				break;
-#ifndef NANO_TINY
-			case '9': /* To accommodate iTerm2 in "xterm mode". */
-			case '3':
-				switch (seq[4]) {
-					case 'A': /* Esc [ 1 ; 3 A == Alt-Up on xterm. */
-						return ALT_UP;
-					case 'B': /* Esc [ 1 ; 3 B == Alt-Down on xterm. */
-						return ALT_DOWN;
-					case 'C': /* Esc [ 1 ; 3 C == Alt-Right on xterm. */
-						return ALT_RIGHT;
-					case 'D': /* Esc [ 1 ; 3 D == Alt-Left on xterm. */
-						return ALT_LEFT;
-				}
-				break;
-			case '4':
-				/* When the arrow keys are held together with Shift+Meta,
-				 * act as if they are Home/End/PgUp/PgDown with Shift. */
-				switch (seq[4]) {
-					case 'A': /* Esc [ 1 ; 4 A == Shift-Alt-Up on xterm. */
-						return SHIFT_PAGEUP;
-					case 'B': /* Esc [ 1 ; 4 B == Shift-Alt-Down on xterm. */
-						return SHIFT_PAGEDOWN;
-					case 'C': /* Esc [ 1 ; 4 C == Shift-Alt-Right on xterm. */
-						return SHIFT_END;
-					case 'D': /* Esc [ 1 ; 4 D == Shift-Alt-Left on xterm. */
-						return SHIFT_HOME;
-				}
-				break;
-#endif
-			case '5':
-				switch (seq[4]) {
-					case 'A': /* Esc [ 1 ; 5 A == Ctrl-Up on xterm. */
+					case 'A': /* Esc O 5 A == Ctrl-Up on Haiku. */
 						return CONTROL_UP;
-					case 'B': /* Esc [ 1 ; 5 B == Ctrl-Down on xterm. */
+					case 'B': /* Esc O 5 B == Ctrl-Down on Haiku. */
 						return CONTROL_DOWN;
-					case 'C': /* Esc [ 1 ; 5 C == Ctrl-Right on xterm. */
+					case 'C': /* Esc O 5 C == Ctrl-Right on Haiku. */
 						return CONTROL_RIGHT;
-					case 'D': /* Esc [ 1 ; 5 D == Ctrl-Left on xterm. */
+					case 'D': /* Esc O 5 D == Ctrl-Left on Haiku. */
 						return CONTROL_LEFT;
-					case 'F': /* Esc [ 1 ; 5 F == Ctrl-End on xterm. */
-						return CONTROL_END;
-					case 'H': /* Esc [ 1 ; 5 H == Ctrl-Home on xterm. */
-						return CONTROL_HOME;
 				}
-				break;
-#ifndef NANO_TINY
-			case '6':
-				switch (seq[4]) {
-					case 'A': /* Esc [ 1 ; 6 A == Shift-Ctrl-Up on xterm. */
-						return shiftcontrolup;
-					case 'B': /* Esc [ 1 ; 6 B == Shift-Ctrl-Down on xterm. */
-						return shiftcontroldown;
-					case 'C': /* Esc [ 1 ; 6 C == Shift-Ctrl-Right on xterm. */
-						return shiftcontrolright;
-					case 'D': /* Esc [ 1 ; 6 D == Shift-Ctrl-Left on xterm. */
-						return shiftcontrolleft;
-					case 'F': /* Esc [ 1 ; 6 F == Shift-Ctrl-End on xterm. */
-						return shiftcontrolend;
-					case 'H': /* Esc [ 1 ; 6 H == Shift-Ctrl-Home on xterm. */
-						return shiftcontrolhome;
-				}
-				break;
 #endif
-		}
-		/* ->->->->->->-> */
-						} else if (length > 5 && seq[3] == ';' && seq[5] == '~')
-							/* Esc [ 1 n ; 2 ~ == F17...F20 on some terminals. */
-							*consumed = 6;
-#ifdef USE_SLANG
-						else if (length == 4 && seq[3] == ';')
-							/* Discard broken sequences that Slang produces. */
-							*consumed = 4;
-#endif
-						break;
-					case '2':
-						if (length > 3 && seq[3] == '~') {
-							*consumed = 4;
-							switch (seq[2]) {
-								case '0': /* Esc [ 2 0 ~ == F9 on VT220/VT320/
-										   * Linux console/xterm/rxvt/Eterm. */
-									return KEY_F(9);
-								case '1': /* Esc [ 2 1 ~ == F10 on the same. */
-									return KEY_F(10);
-								case '3': /* Esc [ 2 3 ~ == F11 on the same. */
-									return KEY_F(11);
-								case '4': /* Esc [ 2 4 ~ == F12 on the same. */
-									return KEY_F(12);
-#ifdef ENABLE_NANORC
-								case '5': /* Esc [ 2 5 ~ == F13 on VT220/VT320/
-										   * Linux console/rxvt/Eterm. */
-									return KEY_F(13);
-								case '6': /* Esc [ 2 6 ~ == F14 on the same. */
-									return KEY_F(14);
-								case '8': /* Esc [ 2 8 ~ == F15 on the same. */
-									return KEY_F(15);
-								case '9': /* Esc [ 2 9 ~ == F16 on the same. */
-									return KEY_F(16);
-#endif
-							}
-						} else if (length > 2 && seq[2] == '~')
-							/* Esc [ 2 ~ == Insert on VT220/VT320/
-							 * Linux console/xterm/Terminal. */
-							return KEY_IC;
-						else if (length > 4 && seq[2] == ';' && seq[4] == '~')
-							/* Esc [ 2 ; x ~ == modified Insert on xterm. */
-							*consumed = 5;
-						else if (length > 5 && seq[3] == ';' && seq[5] == '~')
-							/* Esc [ 2 n ; 2 ~ == F21...F24 on some terminals. */
-							*consumed = 6;
-#ifdef USE_SLANG
-						else if (length == 4 && seq[3] == ';')
-							/* Discard broken sequences that Slang produces. */
-							*consumed = 4;
-#endif
-#ifndef NANO_TINY
-						else if (length > 4 && seq[2] == '0' && seq[4] == '~') {
-							/* Esc [ 2 0 0 ~ == start of a bracketed paste,
-							 * Esc [ 2 0 1 ~ == end of a bracketed paste. */
-							*consumed = 5;
-							if (seq[3] == '0') {
-								bracketed_paste = TRUE;
-								return BRACKETED_PASTE_MARKER;
-							} else if (seq[3] == '1') {
-								bracketed_paste = FALSE;
-								return BRACKETED_PASTE_MARKER;
-							}
-						}
-#endif
-						break;
-					case '3': /* Esc [ 3 ~ == Delete on VT220/VT320/
-							   * Linux console/xterm/Terminal. */
-						if (length > 2 && seq[2] == '~')
-							return KEY_DC;
-						if (length > 4 && seq[2] == ';' && seq[4] == '~') {
-							*consumed = 5;
-#ifndef NANO_TINY
-							if (seq[3] == '2')
-								/* Esc [ 3 ; 2 ~ == Shift-Delete on xterm/Terminal. */
-								return SHIFT_DELETE;
-							if (seq[3] == '3')
-								/* Esc [ 3 ; 3 ~ == Alt-Delete on xterm/rxvt/Eterm/Terminal. */
-								return ALT_DELETE;
-							if (seq[3] == '5')
-								/* Esc [ 3 ; 5 ~ == Ctrl-Delete on xterm. */
-								return CONTROL_DELETE;
-							if (seq[3] == '6')
-								/* Esc [ 3 ; 6 ~ == Ctrl-Shift-Delete on xterm. */
-								return controlshiftdelete;
-#endif
-						}
-#ifndef NANO_TINY
-						if (length > 2 && seq[2] == '$')
-							/* Esc [ 3 $ == Shift-Delete on urxvt. */
-							return SHIFT_DELETE;
-						if (length > 2 && seq[2] == '^')
-							/* Esc [ 3 ^ == Ctrl-Delete on urxvt. */
-							return CONTROL_DELETE;
-						if (length > 2 && seq[2] == '@')
-							/* Esc [ 3 @ == Ctrl-Shift-Delete on urxvt. */
-							return controlshiftdelete;
-						if (length > 3 && seq[3] == '~')
-							/* Esc [ 3 n ~ == F17...F20 on some terminals. */
-							*consumed = 4;
-#endif
-						break;
-					case '4': /* Esc [ 4 ~ == End on VT220/VT320/
-							   * Linux console/xterm. */
-						if (length > 2 && seq[2] == '~')
-							return KEY_END;
-						break;
-					case '5': /* Esc [ 5 ~ == PageUp on VT220/VT320/
-							   * Linux console/xterm/Eterm/urxvt/Terminal */
-						if (length > 2 && seq[2] == '~')
-							return KEY_PPAGE;
-						else if (length > 4 && seq[2] == ';' && seq[4] == '~') {
-							*consumed = 5;
-#ifndef NANO_TINY
-							if (seq[3] == '2')
-								return shiftaltup;
-#endif
-						}
-						break;
-					case '6': /* Esc [ 6 ~ == PageDown on VT220/VT320/
-							   * Linux console/xterm/Eterm/urxvt/Terminal */
-						if (length > 2 && seq[2] == '~')
-							return KEY_NPAGE;
-						else if (length > 4 && seq[2] == ';' && seq[4] == '~') {
-							*consumed = 5;
-#ifndef NANO_TINY
-							if (seq[3] == '2')
-								return shiftaltdown;
-#endif
-						}
-						break;
-					case '7': /* Esc [ 7 ~ == Home on Eterm/rxvt;
-							   * Esc [ 7 $ == Shift-Home on Eterm/rxvt;
-							   * Esc [ 7 ^ == Control-Home on Eterm/rxvt;
-							   * Esc [ 7 @ == Shift-Control-Home on same. */
-						if (length > 2 && seq[2] == '~')
-							return KEY_HOME;
-						else if (length > 2 && seq[2] == '$')
-							return SHIFT_HOME;
-						else if (length > 2 && seq[2] == '^')
-							return CONTROL_HOME;
-#ifndef NANO_TINY
-						else if (length > 2 && seq[2] == '@')
-							return shiftcontrolhome;
-#endif
-						break;
-					case '8': /* Esc [ 8 ~ == End on Eterm/rxvt;
-							   * Esc [ 8 $ == Shift-End on Eterm/rxvt;
-							   * Esc [ 8 ^ == Control-End on Eterm/rxvt;
-							   * Esc [ 8 @ == Shift-Control-End on same. */
-						if (length > 2 && seq[2] == '~')
-							return KEY_END;
-						else if (length > 2 && seq[2] == '$')
-							return SHIFT_END;
-						else if (length > 2 && seq[2] == '^')
-							return CONTROL_END;
-#ifndef NANO_TINY
-						else if (length > 2 && seq[2] == '@')
-							return shiftcontrolend;
-#endif
-						break;
-					case '9': /* Esc [ 9 == Delete on Mach console. */
-						return KEY_DC;
-					case '@': /* Esc [ @ == Insert on Mach console. */
-						return KEY_IC;
-					case 'A': /* Esc [ A == Up on ANSI/VT220/Linux console/
-							   * FreeBSD console/Mach console/xterm/Eterm/
-							   * urxvt/Gnome and Xfce Terminal. */
-					case 'B': /* Esc [ B == Down on the same. */
-					case 'C': /* Esc [ C == Right on the same. */
-					case 'D': /* Esc [ D == Left on the same. */
-						return arrow_from_ABCD(seq[1]);
-					case 'F': /* Esc [ F == End on FreeBSD console/Eterm. */
-						return KEY_END;
-					case 'G': /* Esc [ G == PageDown on FreeBSD console. */
-						return KEY_NPAGE;
-					case 'H': /* Esc [ H == Home on ANSI/VT220/FreeBSD
-							   * console/Mach console/Eterm. */
-						return KEY_HOME;
-					case 'I': /* Esc [ I == PageUp on FreeBSD console. */
-						return KEY_PPAGE;
-					case 'L': /* Esc [ L == Insert on ANSI/FreeBSD console. */
-						return KEY_IC;
-					case 'M': /* Esc [ M == F1 on FreeBSD console. */
-						return KEY_F(1);
-					case 'N': /* Esc [ N == F2 on FreeBSD console. */
-						return KEY_F(2);
-					case 'O':
-						if (length > 2) {
-							*consumed = 3;
-							if ('O' < seq[2] && seq[2] < 'T')
-								/* Esc [ O P == F1 on xterm. */
-								/* Esc [ O Q == F2 on xterm. */
-								/* Esc [ O R == F3 on xterm. */
-								/* Esc [ O S == F4 on xterm. */
-								return KEY_F(seq[2] - 'O');
-						} else
-							/* Esc [ O == F3 on FreeBSD console. */
-							return KEY_F(3);
-						break;
-					case 'P': /* Esc [ P == F4 on FreeBSD console. */
-					case 'Q': /* Esc [ Q == F5 on FreeBSD console. */
-					case 'R': /* Esc [ R == F6 on FreeBSD console. */
-					case 'S': /* Esc [ S == F7 on FreeBSD console. */
-					case 'T': /* Esc [ T == F8 on FreeBSD console. */
-						return KEY_F(4 + seq[1] - 'P');
-					case 'U': /* Esc [ U == PageDown on Mach console. */
-						return KEY_NPAGE;
-					case 'V': /* Esc [ V == PageUp on Mach console. */
-						return KEY_PPAGE;
-					case 'W': /* Esc [ W == F11 on FreeBSD console. */
-						return KEY_F(11);
-					case 'X': /* Esc [ X == F12 on FreeBSD console. */
-						return KEY_F(12);
-					case 'Y': /* Esc [ Y == End on Mach console. */
-						return KEY_END;
-					case 'Z': /* Esc [ Z == Shift-Tab on ANSI/Linux console/
-							   * FreeBSD console/xterm/rxvt/Terminal. */
-						return SHIFT_TAB;
-					case 'a': /* Esc [ a == Shift-Up on rxvt/Eterm. */
-					case 'b': /* Esc [ b == Shift-Down on rxvt/Eterm. */
-					case 'c': /* Esc [ c == Shift-Right on rxvt/Eterm. */
-					case 'd': /* Esc [ d == Shift-Left on rxvt/Eterm. */
-						shift_held = TRUE;
-						return arrow_from_ABCD(seq[1] - 0x20);
-					case '[':
-						if (length > 2) {
-							*consumed = 3;
-							if ('@' < seq[2] && seq[2] < 'F')
-								/* Esc [ [ A == F1 on Linux console. */
-								/* Esc [ [ B == F2 on Linux console. */
-								/* Esc [ [ C == F3 on Linux console. */
-								/* Esc [ [ D == F4 on Linux console. */
-								/* Esc [ [ E == F5 on Linux console. */
-								return KEY_F(seq[2] - '@');
-						}
-						break;
-				}
-				break;
-		}
+				/* Translate Shift+digit on the keypad to the digit
+				 * (Esc O 2 p == Shift-0, ...), modifier+operator to
+				 * the operator, and modifier+Enter to CR. */
+				return (seq[1] - 0x40);
+			}
+			break;
+		case 'A': /* Esc O A == Up on VT100/VT320. */
+		case 'B': /* Esc O B == Down on VT100/VT320. */
+		case 'C': /* Esc O C == Right on VT100/VT320. */
+		case 'D': /* Esc O D == Left on VT100/VT320. */
+			return arrow_from_ABCD(seq[0]);
+		case 'F': /* Esc O F == End on old xterm. */
+			return KEY_END;
+		case 'H': /* Esc O H == Home on old xterm. */
+			return KEY_HOME;
+		case 'M': /* Esc O M == Enter on numeric keypad
+				   * with NumLock off on VT100/VT220/VT320. */
+			return KEY_ENTER;
+		case 'P': /* Esc O P == F1 on VT100/VT220/VT320/Mach console. */
+		case 'Q': /* Esc O Q == F2 on VT100/VT220/VT320/Mach console. */
+		case 'R': /* Esc O R == F3 on VT100/VT220/VT320/Mach console. */
+		case 'S': /* Esc O S == F4 on VT100/VT220/VT320/Mach console. */
+		case 'T': /* Esc O T == F5 on Mach console. */
+		case 'U': /* Esc O U == F6 on Mach console. */
+		case 'V': /* Esc O V == F7 on Mach console. */
+		case 'W': /* Esc O W == F8 on Mach console. */
+		case 'X': /* Esc O X == F9 on Mach console. */
+		case 'Y': /* Esc O Y == F10 on Mach console. */
+			return KEY_F(seq[0] - 'O');
+		case 'a': /* Esc O a == Ctrl-Up on rxvt/Eterm. */
+			return CONTROL_UP;
+		case 'b': /* Esc O b == Ctrl-Down on rxvt/Eterm. */
+			return CONTROL_DOWN;
+		case 'c': /* Esc O c == Ctrl-Right on rxvt/Eterm. */
+			return CONTROL_RIGHT;
+		case 'd': /* Esc O d == Ctrl-Left on rxvt/Eterm. */
+			return CONTROL_LEFT;
+		case 'j': /* Esc O j == '*' on numeric keypad with
+				   * NumLock off on xterm/rxvt/Eterm. */
+			return '*';
+		case 'k': /* Esc O k == '+' on the same. */
+			return '+';
+		case 'l': /* Esc O l == ',' on VT100/VT220/VT320. */
+			return ',';
+		case 'm': /* Esc O m == '-' on numeric keypad with
+				   * NumLock off on VTnnn/xterm/rxvt/Eterm. */
+			return '-';
+		case 'n': /* Esc O n == Delete (.) on numeric keypad
+				   * with NumLock off on rxvt/Eterm. */
+			return KEY_DC;
+		case 'o': /* Esc O o == '/' on numeric keypad with
+				   * NumLock off on VTnnn/xterm/rxvt/Eterm. */
+			return '/';
+		case 'p': /* Esc O p == Insert (0) on numeric keypad
+				   * with NumLock off on rxvt/Eterm. */
+			return KEY_IC;
+		case 'q': /* Esc O q == End (1) on the same. */
+			return KEY_END;
+		case 'r': /* Esc O r == Down (2) on the same. */
+			return KEY_DOWN;
+		case 's': /* Esc O s == PageDown (3) on the same. */
+			return KEY_NPAGE;
+		case 't': /* Esc O t == Left (4) on the same. */
+			return KEY_LEFT;
+		case 'v': /* Esc O v == Right (6) on the same. */
+			return KEY_RIGHT;
+		case 'w': /* Esc O w == Home (7) on the same. */
+			return KEY_HOME;
+		case 'x': /* Esc O x == Up (8) on the same. */
+			return KEY_UP;
+		case 'y': /* Esc O y == PageUp (9) on the same. */
+			return KEY_PPAGE;
 	}
 
-	return ERR;
+	return FOREIGN_SEQUENCE;
 }
 
-/* Interpret the escape sequence in the keystroke buffer, the first
- * character of which is kbinput.  Assume that the keystroke buffer
- * isn't empty, and that the initial escape has already been read in. */
-int parse_escape_sequence(WINDOW *win, int kbinput)
+/* Translate a sequence that began with "Esc [" to its corresponding key code. */
+int convert_CSI_sequence(const int *seq, size_t length, int *consumed)
 {
-	int retval, *sequence, length, consumed;
-
-	/* Put back the non-escape code, then grab at most six integers
-	 * (the longest possible escape sequence) from the keybuffer and
-	 * translate the sequence into its corresponding keycode. */
-	put_back(kbinput);
-	length = (key_buffer_len < 6 ? key_buffer_len : 6);
-	sequence = get_input(NULL, length);
-	retval = convert_sequence(sequence, length, &consumed);
-
-	/* If not all grabbed integers were consumed, put the leftovers back. */
-	for (int i = length - 1; i >= consumed; i--)
-		put_back(sequence[i]);
-
-	free(sequence);
-
-	/* If we got an unrecognized escape sequence, notify the user. */
-	if (retval == ERR && win == edit) {
-		/* TRANSLATORS: This refers to a sequence of escape codes
-		 * (from the keyboard) that nano does not recognize. */
-		statusline(ALERT, _("Unknown sequence"));
-		suppress_cursorpos = FALSE;
-		lastmessage = HUSH;
-		if (currmenu == MMAIN) {
-			place_the_cursor();
-#ifdef __NetBSD__
-			wnoutrefresh(edit);  /* Needed for correct placement on NetBSD. */
+	if (seq[0] < '9')
+		*consumed = 2;
+	switch (seq[0]) {
+		case '1':
+			if (length > 1 && seq[1] == '~')
+				/* Esc [ 1 ~ == Home on VT320/Linux console. */
+				return KEY_HOME;
+			else if (length > 2 && seq[2] == '~') {
+				*consumed = 3;
+				switch (seq[1]) {
+					case '1': /* Esc [ 1 1 ~ == F1 on rxvt/Eterm. */
+					case '2': /* Esc [ 1 2 ~ == F2 on rxvt/Eterm. */
+					case '3': /* Esc [ 1 3 ~ == F3 on rxvt/Eterm. */
+					case '4': /* Esc [ 1 4 ~ == F4 on rxvt/Eterm. */
+					case '5': /* Esc [ 1 5 ~ == F5 on xterm/rxvt/Eterm. */
+						return KEY_F(seq[1] - '0');
+					case '7': /* Esc [ 1 7 ~ == F6 on VT220/VT320/
+							   * Linux console/xterm/rxvt/Eterm. */
+					case '8': /* Esc [ 1 8 ~ == F7 on the same. */
+					case '9': /* Esc [ 1 9 ~ == F8 on the same. */
+						return KEY_F(seq[1] - '1');
+				}
+			} else if (length > 3 && seq[1] == ';') {
+				*consumed = 4;
+				switch (seq[2]) {
+					case '2':
+						switch (seq[3]) {
+							case 'A': /* Esc [ 1 ; 2 A == Shift-Up on xterm. */
+							case 'B': /* Esc [ 1 ; 2 B == Shift-Down on xterm. */
+							case 'C': /* Esc [ 1 ; 2 C == Shift-Right on xterm. */
+							case 'D': /* Esc [ 1 ; 2 D == Shift-Left on xterm. */
+								shift_held = TRUE;
+								return arrow_from_ABCD(seq[3]);
+#ifndef NANO_TINY
+							case 'F': /* Esc [ 1 ; 2 F == Shift-End on xterm. */
+								return SHIFT_END;
+							case 'H': /* Esc [ 1 ; 2 H == Shift-Home on xterm. */
+								return SHIFT_HOME;
 #endif
-			curs_set(1);
-		}
+						}
+						break;
+#ifndef NANO_TINY
+					case '9': /* To accommodate iTerm2 in "xterm mode". */
+					case '3':
+						switch (seq[3]) {
+							case 'A': /* Esc [ 1 ; 3 A == Alt-Up on xterm. */
+								return ALT_UP;
+							case 'B': /* Esc [ 1 ; 3 B == Alt-Down on xterm. */
+								return ALT_DOWN;
+							case 'C': /* Esc [ 1 ; 3 C == Alt-Right on xterm. */
+								return ALT_RIGHT;
+							case 'D': /* Esc [ 1 ; 3 D == Alt-Left on xterm. */
+								return ALT_LEFT;
+						}
+						break;
+					case '4':
+						/* When the arrow keys are held together with Shift+Meta,
+						 * act as if they are Home/End/PgUp/PgDown with Shift. */
+						switch (seq[3]) {
+							case 'A': /* Esc [ 1 ; 4 A == Shift-Alt-Up on xterm. */
+								return SHIFT_PAGEUP;
+							case 'B': /* Esc [ 1 ; 4 B == Shift-Alt-Down on xterm. */
+								return SHIFT_PAGEDOWN;
+							case 'C': /* Esc [ 1 ; 4 C == Shift-Alt-Right on xterm. */
+								return SHIFT_END;
+							case 'D': /* Esc [ 1 ; 4 D == Shift-Alt-Left on xterm. */
+								return SHIFT_HOME;
+						}
+						break;
+#endif
+					case '5':
+						switch (seq[3]) {
+							case 'A': /* Esc [ 1 ; 5 A == Ctrl-Up on xterm. */
+								return CONTROL_UP;
+							case 'B': /* Esc [ 1 ; 5 B == Ctrl-Down on xterm. */
+								return CONTROL_DOWN;
+							case 'C': /* Esc [ 1 ; 5 C == Ctrl-Right on xterm. */
+								return CONTROL_RIGHT;
+							case 'D': /* Esc [ 1 ; 5 D == Ctrl-Left on xterm. */
+								return CONTROL_LEFT;
+							case 'F': /* Esc [ 1 ; 5 F == Ctrl-End on xterm. */
+								return CONTROL_END;
+							case 'H': /* Esc [ 1 ; 5 H == Ctrl-Home on xterm. */
+								return CONTROL_HOME;
+						}
+						break;
+#ifndef NANO_TINY
+					case '6':
+						switch (seq[3]) {
+							case 'A': /* Esc [ 1 ; 6 A == Shift-Ctrl-Up on xterm. */
+								return shiftcontrolup;
+							case 'B': /* Esc [ 1 ; 6 B == Shift-Ctrl-Down on xterm. */
+								return shiftcontroldown;
+							case 'C': /* Esc [ 1 ; 6 C == Shift-Ctrl-Right on xterm. */
+								return shiftcontrolright;
+							case 'D': /* Esc [ 1 ; 6 D == Shift-Ctrl-Left on xterm. */
+								return shiftcontrolleft;
+							case 'F': /* Esc [ 1 ; 6 F == Shift-Ctrl-End on xterm. */
+								return shiftcontrolend;
+							case 'H': /* Esc [ 1 ; 6 H == Shift-Ctrl-Home on xterm. */
+								return shiftcontrolhome;
+						}
+						break;
+#endif
+				}
+			} else if (length > 4 && seq[2] == ';' && seq[4] == '~')
+				/* Esc [ 1 n ; 2 ~ == F17...F20 on some terminals. */
+				*consumed = 5;
+#ifdef USE_SLANG
+			else if (length == 3 && seq[2] == ';')
+				/* Discard broken sequences that Slang produces. */
+				*consumed = 3;
+#endif
+			break;
+		case '2':
+			if (length > 2 && seq[2] == '~') {
+				*consumed = 3;
+				switch (seq[1]) {
+					case '0': /* Esc [ 2 0 ~ == F9 on VT220/VT320/
+							   * Linux console/xterm/rxvt/Eterm. */
+						return KEY_F(9);
+					case '1': /* Esc [ 2 1 ~ == F10 on the same. */
+						return KEY_F(10);
+					case '3': /* Esc [ 2 3 ~ == F11 on the same. */
+						return KEY_F(11);
+					case '4': /* Esc [ 2 4 ~ == F12 on the same. */
+						return KEY_F(12);
+				}
+			} else if (length > 1 && seq[1] == '~')
+				/* Esc [ 2 ~ == Insert on VT220/VT320/
+				 * Linux console/xterm/Terminal. */
+				return KEY_IC;
+			else if (length > 3 && seq[1] == ';' && seq[3] == '~') {
+				/* Esc [ 2 ; x ~ == modified Insert on xterm. */
+				*consumed = 4;
+#ifndef NANO_TINY
+				if (seq[2] == '3')
+					return ALT_INSERT;
+#endif
+			}
+			else if (length > 4 && seq[2] == ';' && seq[4] == '~')
+				/* Esc [ 2 n ; 2 ~ == F21...F24 on some terminals. */
+				*consumed = 5;
+#ifdef USE_SLANG
+			else if (length == 3 && seq[2] == ';')
+				/* Discard broken sequences that Slang produces. */
+				*consumed = 3;
+#endif
+#ifndef NANO_TINY
+			else if (length > 3 && seq[1] == '0' && seq[3] == '~') {
+				/* Esc [ 2 0 0 ~ == start of a bracketed paste,
+				 * Esc [ 2 0 1 ~ == end of a bracketed paste. */
+				*consumed = 4;
+				if (seq[2] == '0') {
+					bracketed_paste = TRUE;
+					return BRACKETED_PASTE_MARKER;
+				} else if (seq[2] == '1') {
+					bracketed_paste = FALSE;
+					return BRACKETED_PASTE_MARKER;
+				}
+			}
+#endif
+			break;
+		case '3': /* Esc [ 3 ~ == Delete on VT220/VT320/
+				   * Linux console/xterm/Terminal. */
+			if (length > 1 && seq[1] == '~')
+				return KEY_DC;
+			if (length > 3 && seq[1] == ';' && seq[3] == '~') {
+				*consumed = 4;
+#ifndef NANO_TINY
+				if (seq[2] == '2')
+					/* Esc [ 3 ; 2 ~ == Shift-Delete on xterm/Terminal. */
+					return SHIFT_DELETE;
+				if (seq[2] == '3')
+					/* Esc [ 3 ; 3 ~ == Alt-Delete on xterm/rxvt/Eterm/Terminal. */
+					return ALT_DELETE;
+				if (seq[2] == '5')
+					/* Esc [ 3 ; 5 ~ == Ctrl-Delete on xterm. */
+					return CONTROL_DELETE;
+				if (seq[2] == '6')
+					/* Esc [ 3 ; 6 ~ == Ctrl-Shift-Delete on xterm. */
+					return controlshiftdelete;
+#endif
+			}
+#ifndef NANO_TINY
+			if (length > 1 && seq[1] == '$')
+				/* Esc [ 3 $ == Shift-Delete on urxvt. */
+				return SHIFT_DELETE;
+			if (length > 1 && seq[1] == '^')
+				/* Esc [ 3 ^ == Ctrl-Delete on urxvt. */
+				return CONTROL_DELETE;
+			if (length > 1 && seq[1] == '@')
+				/* Esc [ 3 @ == Ctrl-Shift-Delete on urxvt. */
+				return controlshiftdelete;
+			if (length > 2 && seq[2] == '~')
+				/* Esc [ 3 n ~ == F17...F20 on some terminals. */
+				*consumed = 3;
+#endif
+			break;
+		case '4': /* Esc [ 4 ~ == End on VT220/VT320/
+				   * Linux console/xterm. */
+			if (length > 1 && seq[1] == '~')
+				return KEY_END;
+			break;
+		case '5': /* Esc [ 5 ~ == PageUp on VT220/VT320/
+				   * Linux console/xterm/Eterm/urxvt/Terminal */
+			if (length > 1 && seq[1] == '~')
+				return KEY_PPAGE;
+			else if (length > 3 && seq[1] == ';' && seq[3] == '~') {
+				*consumed = 4;
+#ifndef NANO_TINY
+				if (seq[2] == '2')
+					return shiftaltup;
+				if (seq[2] == '3')
+					return ALT_PAGEUP;
+#endif
+			}
+			break;
+		case '6': /* Esc [ 6 ~ == PageDown on VT220/VT320/
+				   * Linux console/xterm/Eterm/urxvt/Terminal */
+			if (length > 1 && seq[1] == '~')
+				return KEY_NPAGE;
+			else if (length > 3 && seq[1] == ';' && seq[3] == '~') {
+				*consumed = 4;
+#ifndef NANO_TINY
+				if (seq[2] == '2')
+					return shiftaltdown;
+				if (seq[2] == '3')
+					return ALT_PAGEDOWN;
+#endif
+			}
+			break;
+		case '7': /* Esc [ 7 ~ == Home on Eterm/rxvt;
+				   * Esc [ 7 $ == Shift-Home on Eterm/rxvt;
+				   * Esc [ 7 ^ == Control-Home on Eterm/rxvt;
+				   * Esc [ 7 @ == Shift-Control-Home on same. */
+			if (length > 1 && seq[1] == '~')
+				return KEY_HOME;
+			else if (length > 1 && seq[1] == '$')
+				return SHIFT_HOME;
+			else if (length > 1 && seq[1] == '^')
+				return CONTROL_HOME;
+#ifndef NANO_TINY
+			else if (length > 1 && seq[1] == '@')
+				return shiftcontrolhome;
+#endif
+			break;
+		case '8': /* Esc [ 8 ~ == End on Eterm/rxvt;
+				   * Esc [ 8 $ == Shift-End on Eterm/rxvt;
+				   * Esc [ 8 ^ == Control-End on Eterm/rxvt;
+				   * Esc [ 8 @ == Shift-Control-End on same. */
+			if (length > 1 && seq[1] == '~')
+				return KEY_END;
+			else if (length > 1 && seq[1] == '$')
+				return SHIFT_END;
+			else if (length > 1 && seq[1] == '^')
+				return CONTROL_END;
+#ifndef NANO_TINY
+			else if (length > 1 && seq[1] == '@')
+				return shiftcontrolend;
+#endif
+			break;
+		case '9': /* Esc [ 9 == Delete on Mach console. */
+			return KEY_DC;
+		case '@': /* Esc [ @ == Insert on Mach console. */
+			return KEY_IC;
+		case 'A': /* Esc [ A == Up on ANSI/VT220/Linux console/
+				   * FreeBSD console/Mach console/xterm/Eterm/
+				   * urxvt/Gnome and Xfce Terminal. */
+		case 'B': /* Esc [ B == Down on the same. */
+		case 'C': /* Esc [ C == Right on the same. */
+		case 'D': /* Esc [ D == Left on the same. */
+			return arrow_from_ABCD(seq[0]);
+		case 'F': /* Esc [ F == End on FreeBSD console/Eterm. */
+			return KEY_END;
+		case 'G': /* Esc [ G == PageDown on FreeBSD console. */
+			return KEY_NPAGE;
+		case 'H': /* Esc [ H == Home on ANSI/VT220/FreeBSD
+				   * console/Mach console/Eterm. */
+			return KEY_HOME;
+		case 'I': /* Esc [ I == PageUp on FreeBSD console. */
+			return KEY_PPAGE;
+		case 'L': /* Esc [ L == Insert on ANSI/FreeBSD console. */
+			return KEY_IC;
+		case 'M': /* Esc [ M == F1 on FreeBSD console. */
+			return KEY_F(1);
+		case 'N': /* Esc [ N == F2 on FreeBSD console. */
+			return KEY_F(2);
+		case 'O':
+			if (length > 1) {
+				*consumed = 2;
+				if ('O' < seq[1] && seq[1] < 'T')
+					/* Esc [ O P == F1 on xterm. */
+					/* Esc [ O Q == F2 on xterm. */
+					/* Esc [ O R == F3 on xterm. */
+					/* Esc [ O S == F4 on xterm. */
+					return KEY_F(seq[1] - 'O');
+			} else
+				/* Esc [ O == F3 on FreeBSD console. */
+				return KEY_F(3);
+			break;
+		case 'P': /* Esc [ P == F4 on FreeBSD console. */
+		case 'Q': /* Esc [ Q == F5 on FreeBSD console. */
+		case 'R': /* Esc [ R == F6 on FreeBSD console. */
+		case 'S': /* Esc [ S == F7 on FreeBSD console. */
+		case 'T': /* Esc [ T == F8 on FreeBSD console. */
+			return KEY_F(4 + seq[0] - 'P');
+		case 'U': /* Esc [ U == PageDown on Mach console. */
+			return KEY_NPAGE;
+		case 'V': /* Esc [ V == PageUp on Mach console. */
+			return KEY_PPAGE;
+		case 'W': /* Esc [ W == F11 on FreeBSD console. */
+			return KEY_F(11);
+		case 'X': /* Esc [ X == F12 on FreeBSD console. */
+			return KEY_F(12);
+		case 'Y': /* Esc [ Y == End on Mach console. */
+			return KEY_END;
+		case 'Z': /* Esc [ Z == Shift-Tab on ANSI/Linux console/
+				   * FreeBSD console/xterm/rxvt/Terminal. */
+			return SHIFT_TAB;
+		case 'a': /* Esc [ a == Shift-Up on rxvt/Eterm. */
+		case 'b': /* Esc [ b == Shift-Down on rxvt/Eterm. */
+		case 'c': /* Esc [ c == Shift-Right on rxvt/Eterm. */
+		case 'd': /* Esc [ d == Shift-Left on rxvt/Eterm. */
+			shift_held = TRUE;
+			return arrow_from_ABCD(seq[0] - 0x20);
+		case '[':
+			if (length > 1) {
+				*consumed = 2;
+				if ('@' < seq[1] && seq[1] < 'F')
+					/* Esc [ [ A == F1 on Linux console. */
+					/* Esc [ [ B == F2 on Linux console. */
+					/* Esc [ [ C == F3 on Linux console. */
+					/* Esc [ [ D == F4 on Linux console. */
+					/* Esc [ [ E == F5 on Linux console. */
+					return KEY_F(seq[1] - '@');
+			}
+			break;
 	}
 
-	return retval;
+	return FOREIGN_SEQUENCE;
 }
 
-/* Extract a single keystroke from the input stream.  Translate escape
- * sequences and extended keypad codes into their corresponding values.
- * Set meta_key to TRUE when appropriate.  Supported extended keypad values
- * are: [arrow key], Ctrl-[arrow key], Shift-[arrow key], Enter, Backspace,
- * the editing keypad (Insert, Delete, Home, End, PageUp, and PageDown),
- * the function keys (F1-F16), and the numeric keypad with NumLock off. */
+/* Interpret an escape sequence that has the given post-ESC starter byte
+ * and with the rest of the sequence still in the keystroke buffer. */
+int parse_escape_sequence(int starter)
+{
+	int consumed = 1;
+	int keycode = 0;
+
+	if (starter == 'O')
+		keycode = convert_SS3_sequence(key_buffer, key_buffer_len, &consumed);
+	else if (starter == '[')
+		keycode = convert_CSI_sequence(key_buffer, key_buffer_len, &consumed);
+#ifndef NANO_TINY
+	else
+		die("Bad sequence starter -- please report a bug\n");
+#endif
+
+	/* Remove the consumed sequence bytes from the keystroke buffer. */
+	key_buffer_len -= consumed;
+	memmove(key_buffer, key_buffer + consumed, key_buffer_len * sizeof(int));
+
+	return keycode;
+}
+
+#define PROCEED  -44
+
+/* For each consecutive call, gather the given digit into a three-digit
+ * decimal byte code (from 000 to 255).  Return the assembled code when
+ * it is complete, but until then return PROCEED when the given digit is
+ * valid, and the given digit itself otherwise. */
+int assemble_byte_code(int keycode)
+{
+	static int byte = 0;
+
+	digit_count++;
+
+	/* The first digit is either 0, 1, or 2 (checked before the call). */
+	if (digit_count == 1) {
+		byte = (keycode - '0') * 100;
+		return PROCEED;
+	}
+
+	/* The second digit may be at most 5 if the first was 2. */
+ 	if (digit_count == 2) {
+		if (byte < 200 || keycode <= '5') {
+			byte += (keycode - '0') * 10;
+			return PROCEED;
+		} else
+			return keycode;
+	}
+
+	/* The third digit may be at most 5 if the first two were 2 and 5. */
+	if (byte < 250 || keycode <= '5')
+		return (byte + keycode - '0');
+	else
+		return keycode;
+}
+
+/* Translate a normal ASCII character into its corresponding control code.
+ * The following groups of control keystrokes are equivalent:
+ *   Ctrl-2 == Ctrl-@ == Ctrl-` == Ctrl-Space
+ *   Ctrl-3 == Ctrl-[ == <Esc>
+ *   Ctrl-4 == Ctrl-\ == Ctrl-|
+ *   Ctrl-5 == Ctrl-]
+ *   Ctrl-6 == Ctrl-^ == Ctrl-~
+ *   Ctrl-7 == Ctrl-/ == Ctrl-_
+ *   Ctrl-8 == Ctrl-? */
+int convert_to_control(int kbinput)
+{
+	if ('@' <= kbinput && kbinput <= '_')
+		return kbinput - '@';
+	if ('`' <= kbinput && kbinput <= '~')
+		return kbinput - '`';
+	if ('3' <= kbinput && kbinput <= '7')
+		return kbinput - 24;
+	if (kbinput == '?' || kbinput == '8')
+		return DEL_CODE;
+	if (kbinput == ' ' || kbinput == '2')
+		return 0;
+	if (kbinput == '/')
+		return 31;
+
+	return kbinput;
+}
+
+/* Extract one keystroke from the input stream.  Translate escape sequences
+ * and possibly keypad codes into their corresponding values.  Set meta_key
+ * to TRUE when appropriate.  Supported keypad keystrokes are: the arrow keys,
+ * Insert, Delete, Home, End, PageUp, PageDown, Enter, and Backspace (many of
+ * them also when modified with Shift, Ctrl, Alt, Shift+Ctrl, or Shift+Alt),
+ * the function keys (F1-F12), and the numeric keypad with NumLock off. */
 int parse_kbinput(WINDOW *win)
 {
 	static int escapes = 0;
-	static bool double_esc = FALSE;
-	int *kbinput, keycode, retval = ERR;
+	int keycode;
 
 	meta_key = FALSE;
 	shift_held = FALSE;
 
-	/* Read in a character. */
-	kbinput = get_input(win, 1);
-
-	if (kbinput == NULL && !waiting_mode)
-		return ERR;
-
-	while (kbinput == NULL)
-		kbinput = get_input(win, 1);
-
-	keycode = *kbinput;
-	free(kbinput);
+	/* Get one code from the input stream. */
+	keycode = get_input(win);
 
 	if (keycode == ERR)
 		return ERR;
 
+	/* Remember whether an Esc arrived by itself, and increment
+	 * its counter, rolling around on three escapes. */
 	if (keycode == ESC_CODE) {
-		/* Increment the escape counter, but trim an overabundance. */
-		escapes++;
-		if (escapes > 3)
-			escapes = 1;
-		/* Take note when an Esc arrived by itself. */
 		solitary = (key_buffer_len == 0);
+		if (digit_count > 0) {
+			digit_count = 0;
+			escapes = 1;
+		} else if (++escapes > 2)
+			escapes = (solitary ? 0 : 1);
 		return ERR;
 	}
 
-	switch (escapes) {
-		case 0:
-			/* One non-escape: normal input mode. */
-			retval = keycode;
-			break;
-		case 1:
-			if (keycode >= 0x80)
-				retval = keycode;
-			else if (keycode == '\t')
-				retval = SHIFT_TAB;
-			else if ((keycode != 'O' && keycode != 'o' && keycode != '[') ||
-						key_buffer_len == 0 || *key_buffer == ESC_CODE) {
-				/* One escape followed by a single non-escape:
-				 * meta key sequence mode. */
-				if (!solitary || (0x20 <= keycode && keycode <= 0x7E))
-					meta_key = TRUE;
-				retval = (shifted_metas) ? keycode : tolower(keycode);
-			} else
-				/* One escape followed by a non-escape, and there
-				 * are more codes waiting: escape sequence mode. */
-				retval = parse_escape_sequence(win, keycode);
-			escapes = 0;
-			break;
-		case 2:
-			if (double_esc) {
-				/* An "ESC ESC [ X" sequence from Option+arrow, or
-				 * an "ESC ESC [ x" sequence from Shift+Alt+arrow. */
-				switch (keycode) {
-					case 'A':
-						retval = KEY_HOME;
-						break;
-					case 'B':
-						retval = KEY_END;
-						break;
-					case 'C':
-						retval = CONTROL_RIGHT;
-						break;
-					case 'D':
-						retval = CONTROL_LEFT;
-						break;
+	if (escapes == 0) {
+		/* Most key codes in byte range cannot be special keys. */
+		if (keycode <= 0xFF && keycode != '\t' && keycode != DEL_CODE)
+			return keycode;
+	} else if (escapes == 1) {
+		escapes = 0;
+		/* Codes out of ASCII printable range cannot form an escape sequence. */
+		if (keycode < 0x20 || 0x7E < keycode) {
+			if (keycode == '\t')
+				return SHIFT_TAB;
 #ifndef NANO_TINY
-					case 'a':
-						retval = shiftaltup;
-						break;
-					case 'b':
-						retval = shiftaltdown;
-						break;
-					case 'c':
-						retval = shiftaltright;
-						break;
-					case 'd':
-						retval = shiftaltleft;
-						break;
+			else if (keycode == KEY_BACKSPACE || keycode == '\b' ||
+												keycode == DEL_CODE)
+				return CONTROL_SHIFT_DELETE;
 #endif
-				}
-				double_esc = FALSE;
-				escapes = 0;
-			} else if (key_buffer_len == 0) {
-				if ('0' <= keycode && ((keycode <= '2' && digit_count == 0) ||
-										(keycode <= '9' && digit_count > 0))) {
-					/* Two escapes followed by one or more decimal
-					 * digits, and there aren't any other codes
-					 * waiting: byte sequence mode.  If the range of the
-					 * byte sequence is limited to 2XX, interpret it. */
-					int byte = get_byte_kbinput(keycode);
-
-					/* If the decimal byte value is complete, convert it and
-					 * put the obtained byte(s) back into the input buffer. */
-					if (byte != ERR) {
-						char *multibyte;
-						int count, onebyte, i;
-
-						/* Convert the decimal code to one or two bytes. */
-						multibyte = make_mbchar((long)byte, &count);
-
-						/* Insert the byte(s) into the input buffer. */
-						for (i = count; i > 0 ; i--) {
-							onebyte = (unsigned char)multibyte[i - 1];
-							put_back(onebyte);
-						}
-
-						free(multibyte);
-
-						escapes = 0;
-					}
-				} else {
-					if (digit_count == 0)
-						/* Two escapes followed by a non-digit: meta key
-						 * or control character sequence mode. */
-						if (!solitary) {
-							meta_key = TRUE;
-							retval = (shifted_metas) ? keycode : tolower(keycode);
-						} else
-							retval = get_control_kbinput(keycode);
-					else {
-						/* An invalid digit in the middle of a byte
-						 * sequence: reset the byte sequence counter
-						 * and save the code we got as the result. */
-						digit_count = 0;
-						retval = keycode;
-					}
-					escapes = 0;
-				}
-			} else if (keycode == '[' && key_buffer_len > 0 &&
+#ifdef ENABLE_UTF8
+			else if (0xC0 <= keycode && keycode <= 0xFF && using_utf8()) {
+				while (key_buffer_len > 0 && 0x80 <= *key_buffer && *key_buffer <= 0xBF)
+					get_input(NULL);
+				return FOREIGN_SEQUENCE;
+			}
+#endif
+			else if (!solitary && keycode < 0x20)
+				meta_key = TRUE;
+		} else if (key_buffer_len == 0 || *key_buffer == ESC_CODE ||
+								(keycode != 'O' && keycode != '[')) {
+			if (!shifted_metas)
+				keycode = tolower(keycode);
+			meta_key = TRUE;
+		} else
+			keycode = parse_escape_sequence(keycode);
+	} else {
+		escapes = 0;
+		if (keycode == '[' && key_buffer_len > 0 &&
 						(('A' <= *key_buffer && *key_buffer <= 'D') ||
 						('a' <= *key_buffer && *key_buffer <= 'd'))) {
-				/* An iTerm2/Eterm/rxvt sequence: ^[ ^[ [ X. */
-				double_esc = TRUE;
-			} else {
-				/* Two escapes followed by a non-escape, and there are more
-				 * codes waiting: combined meta and escape sequence mode. */
-				retval = parse_escape_sequence(win, keycode);
-				meta_key = TRUE;
-				escapes = 0;
+			/* An iTerm2/Eterm/rxvt double-escape sequence: Esc Esc [ X
+			 * for Option+arrow, or Esc Esc [ x for Shift+Alt+arrow. */
+			switch (get_input(NULL)) {
+				case 'A': return KEY_HOME;
+				case 'B': return KEY_END;
+				case 'C': return CONTROL_RIGHT;
+				case 'D': return CONTROL_LEFT;
+#ifndef NANO_TINY
+				case 'a': shift_held = TRUE; return KEY_PPAGE;
+				case 'b': shift_held = TRUE; return KEY_NPAGE;
+				case 'c': shift_held = TRUE; return KEY_HOME;
+				case 'd': shift_held = TRUE; return KEY_END;
+#endif
 			}
-			break;
-		case 3:
-			if (key_buffer_len == 0) {
-				if (!solitary) {
-					meta_key = TRUE;
-					retval = (shifted_metas) ? keycode : tolower(keycode);
-				} else
-					/* Three escapes followed by a non-escape, and no
-					 * other codes are waiting: normal input mode. */
-					retval = keycode;
+		} else if (key_buffer_len > 0 && *key_buffer != ESC_CODE &&
+								(keycode == '[' || keycode == 'O')) {
+			keycode = parse_escape_sequence(keycode);
+			meta_key = TRUE;
+		} else if ('0' <= keycode && (keycode <= '2' ||
+								(keycode <= '9' && digit_count > 0))) {
+			/* Two escapes followed by one digit: byte sequence mode. */
+			int byte = assemble_byte_code(keycode);
+
+			/* If the decimal byte value is not yet complete, return nothing. */
+			if (byte == PROCEED) {
+				escapes = 2;
+				return ERR;
+			}
+#ifdef ENABLE_UTF8
+			else if (byte > 0x7F && using_utf8()) {
+				/* Convert the code to the corresponding Unicode, and
+				 * put the second byte back into the keyboard buffer. */
+				if (byte < 0xC0) {
+					put_back((unsigned char)byte);
+					return 0xC2;
+				} else {
+					put_back((unsigned char)(byte - 0x40));
+					return 0xC3;
+				}
+			}
+#endif
+			else if (byte == '\t' || byte == DEL_CODE)
+				keycode = byte;
+			else
+				return byte;
+		} else if (digit_count == 0) {
+			/* If the second escape did not arrive alone, it is a Meta
+			 * keystroke; otherwise, it is an "Esc Esc control". */
+			if (!solitary) {
+				if (!shifted_metas)
+					keycode = tolower(keycode);
+				meta_key = TRUE;
 			} else
-				/* Three escapes followed by a non-escape, and more
-				 * codes are waiting: combined control character and
-				 * escape sequence mode.  First interpret the escape
-				 * sequence, then the result as a control sequence. */
-				retval = get_control_kbinput(
-						parse_escape_sequence(win, keycode));
-			escapes = 0;
-			break;
+				keycode = convert_to_control(keycode);
+		}
 	}
 
-	if (retval == ERR)
-		return ERR;
-
-	if (retval == controlleft)
+	if (keycode == controlleft)
 		return CONTROL_LEFT;
-	else if (retval == controlright)
+	else if (keycode == controlright)
 		return CONTROL_RIGHT;
-	else if (retval == controlup)
+	else if (keycode == controlup)
 		return CONTROL_UP;
-	else if (retval == controldown)
+	else if (keycode == controldown)
 		return CONTROL_DOWN;
-	else if (retval == controlhome)
+	else if (keycode == controlhome)
 		return CONTROL_HOME;
-	else if (retval == controlend)
+	else if (keycode == controlend)
 		return CONTROL_END;
 #ifndef NANO_TINY
-	else if (retval == controldelete)
+	else if (keycode == controldelete)
 		return CONTROL_DELETE;
-	else if (retval == controlshiftdelete)
+	else if (keycode == controlshiftdelete)
 		return CONTROL_SHIFT_DELETE;
-	else if (retval == shiftup) {
+	else if (keycode == shiftup) {
 		shift_held = TRUE;
 		return KEY_UP;
-	} else if (retval == shiftdown) {
+	} else if (keycode == shiftdown) {
 		shift_held = TRUE;
 		return KEY_DOWN;
-	} else if (retval == shiftcontrolleft) {
+	} else if (keycode == shiftcontrolleft) {
 		shift_held = TRUE;
 		return CONTROL_LEFT;
-	} else if (retval == shiftcontrolright) {
+	} else if (keycode == shiftcontrolright) {
 		shift_held = TRUE;
 		return CONTROL_RIGHT;
-	} else if (retval == shiftcontrolup) {
+	} else if (keycode == shiftcontrolup) {
 		shift_held = TRUE;
 		return CONTROL_UP;
-	} else if (retval == shiftcontroldown) {
+	} else if (keycode == shiftcontroldown) {
 		shift_held = TRUE;
 		return CONTROL_DOWN;
-	} else if (retval == shiftcontrolhome) {
+	} else if (keycode == shiftcontrolhome) {
 		shift_held = TRUE;
 		return CONTROL_HOME;
-	} else if (retval == shiftcontrolend) {
+	} else if (keycode == shiftcontrolend) {
 		shift_held = TRUE;
 		return CONTROL_END;
-	} else if (retval == altleft)
+	} else if (keycode == altleft)
 		return ALT_LEFT;
-	else if (retval == altright)
+	else if (keycode == altright)
 		return ALT_RIGHT;
-	else if (retval == altup)
+	else if (keycode == altup)
 		return ALT_UP;
-	else if (retval == altdown)
+	else if (keycode == altdown)
 		return ALT_DOWN;
-	else if (retval == altdelete)
+	else if (keycode == altpageup)
+		return ALT_PAGEUP;
+	else if (keycode == altpagedown)
+		return ALT_PAGEDOWN;
+	else if (keycode == altinsert)
+		return ALT_INSERT;
+	else if (keycode == altdelete)
 		return ALT_DELETE;
-	else if (retval == shiftaltleft) {
+	else if (keycode == shiftaltleft) {
 		shift_held = TRUE;
 		return KEY_HOME;
-	} else if (retval == shiftaltright) {
+	} else if (keycode == shiftaltright) {
 		shift_held = TRUE;
 		return KEY_END;
-	} else if (retval == shiftaltup) {
+	} else if (keycode == shiftaltup) {
 		shift_held = TRUE;
 		return KEY_PPAGE;
-	} else if (retval == shiftaltdown) {
+	} else if (keycode == shiftaltdown) {
 		shift_held = TRUE;
 		return KEY_NPAGE;
 	}
@@ -1135,58 +1089,50 @@ int parse_kbinput(WINDOW *win)
 	/* Modifiers are: Alt (8), Ctrl (4), Shift (1). */
 	if (on_a_vt && !mute_modifiers && ioctl(0, TIOCLINUX, &modifiers) >= 0) {
 #ifndef NANO_TINY
-		/* Is Delete pressed together with Shift or Shift+Ctrl? */
-		if (retval == KEY_DC) {
-			if (modifiers == 0x01)
-				return SHIFT_DELETE;
-			if (modifiers == 0x05)
-				return CONTROL_SHIFT_DELETE;
-		}
 		/* Is Shift being held? */
 		if (modifiers & 0x01) {
-			if (retval == '\t')
+			if (keycode == '\t')
 				return SHIFT_TAB;
+			if (keycode == KEY_DC && modifiers == 0x01)
+				return SHIFT_DELETE;
+			if (keycode == KEY_DC && modifiers == 0x05)
+				return CONTROL_SHIFT_DELETE;
 			if (!meta_key)
 				shift_held = TRUE;
 		}
 		/* Is Alt being held? */
 		if (modifiers == 0x08) {
-			if (retval == KEY_DC)
-				return ALT_DELETE;
-			if (retval == KEY_UP)
-				return ALT_UP;
-			if (retval == KEY_DOWN)
-				return ALT_DOWN;
+			switch (keycode) {
+				case KEY_UP:    return ALT_UP;
+				case KEY_DOWN:  return ALT_DOWN;
+				case KEY_PPAGE: return ALT_PAGEUP;
+				case KEY_NPAGE: return ALT_PAGEDOWN;
+				case KEY_DC:    return ALT_DELETE;
+				case KEY_IC:    return ALT_INSERT;
+			}
 		}
 #endif
 		/* Is Ctrl being held? */
 		if (modifiers & 0x04) {
-			if (retval == KEY_UP)
-				return CONTROL_UP;
-			else if (retval == KEY_DOWN)
-				return CONTROL_DOWN;
-			else if (retval == KEY_LEFT)
-				return CONTROL_LEFT;
-			else if (retval == KEY_RIGHT)
-				return CONTROL_RIGHT;
-			else if (retval == KEY_HOME)
-				return CONTROL_HOME;
-			else if (retval == KEY_END)
-				return CONTROL_END;
-			else if (retval == KEY_DC)
-				return CONTROL_DELETE;
+			switch (keycode) {
+				case KEY_UP:    return CONTROL_UP;
+				case KEY_DOWN:  return CONTROL_DOWN;
+				case KEY_LEFT:  return CONTROL_LEFT;
+				case KEY_RIGHT: return CONTROL_RIGHT;
+				case KEY_HOME:  return CONTROL_HOME;
+				case KEY_END:   return CONTROL_END;
+				case KEY_DC:    return CONTROL_DELETE;
+			}
 		}
 #ifndef NANO_TINY
 		/* Are both Shift and Alt being held? */
 		if ((modifiers & 0x09) == 0x09) {
-			if (retval == KEY_UP)
-				return KEY_PPAGE;
-			else if (retval == KEY_DOWN)
-				return KEY_NPAGE;
-			else if (retval == KEY_LEFT)
-				return KEY_HOME;
-			else if (retval == KEY_RIGHT)
-				return KEY_END;
+			switch (keycode) {
+				case KEY_UP:    return KEY_PPAGE;
+				case KEY_DOWN:  return KEY_NPAGE;
+				case KEY_LEFT:  return KEY_HOME;
+				case KEY_RIGHT: return KEY_END;
+			}
 		}
 #endif
 	}
@@ -1194,12 +1140,12 @@ int parse_kbinput(WINDOW *win)
 
 #ifndef NANO_TINY
 	/* When <Tab> is pressed while the mark is on, do an indent. */
-	if (retval == '\t' && openfile->mark && currmenu == MMAIN &&
+	if (keycode == '\t' && openfile->mark && currmenu == MMAIN &&
 				!bracketed_paste && openfile->mark != openfile->current)
 		return INDENT_KEY;
 #endif
 
-	switch (retval) {
+	switch (keycode) {
 #ifdef KEY_SLEFT  /* Slang doesn't support KEY_SLEFT. */
 		case KEY_SLEFT:
 			shift_held = TRUE;
@@ -1272,23 +1218,13 @@ int parse_kbinput(WINDOW *win)
 		case KEY_SDC:
 			return SHIFT_DELETE;
 #endif
-#ifdef KEY_SIC  /* Slang doesn't support KEY_SIC. */
-		case KEY_SIC:
-			return the_code_for(do_insertfile_void, KEY_IC);
-#endif
-#ifdef KEY_CANCEL  /* Slang doesn't support KEY_CANCEL. */
-#ifdef KEY_SCANCEL  /* Slang doesn't support KEY_SCANCEL. */
+#if defined(KEY_CANCEL) && defined(KEY_SCANCEL)  /* Slang doesn't support these. */
 		case KEY_SCANCEL:
+			return KEY_CANCEL;
 #endif
-		case KEY_CANCEL:
-			return the_code_for(do_cancel, 0x03);
-#endif
-#ifdef KEY_SUSPEND  /* Slang doesn't support KEY_SUSPEND. */
-#ifdef KEY_SSUSPEND  /* Slang doesn't support KEY_SSUSPEND. */
+#if defined(KEY_SUSPEND) && defined(KEY_SSUSPEND)  /* Slang doesn't support these. */
 		case KEY_SSUSPEND:
-#endif
-		case KEY_SUSPEND:
-			return the_code_for(do_suspend_void, KEY_SUSPEND);
+			return KEY_SUSPEND;
 #endif
 #ifdef KEY_BTAB  /* Slang doesn't support KEY_BTAB. */
 		case KEY_BTAB:
@@ -1319,7 +1255,7 @@ int parse_kbinput(WINDOW *win)
 			return ERR;    /* Ignore this keystroke. */
 	}
 
-	return retval;
+	return keycode;
 }
 
 /* Read in a single keystroke, ignoring any that are invalid. */
@@ -1340,127 +1276,71 @@ int get_kbinput(WINDOW *win, bool showcursor)
 	return kbinput;
 }
 
-/* Turn a three-digit decimal number (from 000 to 255) into its corresponding
- * byte value. */
-int get_byte_kbinput(int kbinput)
-{
-	static int byte = 0;
-	int retval = ERR;
-
-	/* Check that the given digit is within the allowed range for its position.
-	 * If yes, store it.  If no, return the digit (or character) itself. */
-	switch (++digit_count) {
-		case 1:
-			/* The first digit (the 100's position) must be from zero to two. */
-			if ('0' <= kbinput && kbinput <= '2')
-				byte = (kbinput - '0') * 100;
-			else
-				retval = kbinput;
-			break;
-		case 2:
-			/* The second digit (the 10's position) must be from zero to five
-			 * if the first was two, and may be any decimal value otherwise. */
-			if ((byte < 200 && '0' <= kbinput && kbinput <= '9') ||
-								('0' <= kbinput && kbinput <= '5'))
-				byte += (kbinput - '0') * 10;
-			else
-				retval = kbinput;
-			break;
-		case 3:
-			/* The third digit (the 1's position) must be from zero to five
-			 * if the first was two and the second was five, and may be any
-			 * decimal value otherwise. */
-			if ((byte < 250 && '0' <= kbinput && kbinput <= '9') ||
-								('0' <= kbinput && kbinput <= '5')) {
-				byte += kbinput - '0';
-				/* The byte sequence is complete. */
-				retval = byte;
-			} else
-				retval = kbinput;
-			break;
-	}
-
-	/* If we have a result, reset the counter and the byte holder. */
-	if (retval != ERR) {
-		digit_count = 0;
-		byte = 0;
-	}
-
-	return retval;
-}
-
 #ifdef ENABLE_UTF8
-/* If the character in kbinput is a valid hexadecimal digit, multiply it
- * by factor and add the result to uni, and return ERR to signify okay. */
-long add_unicode_digit(int kbinput, long factor, long *uni)
-{
-	if ('0' <= kbinput && kbinput <= '9')
-		*uni += (kbinput - '0') * factor;
-	else if ('a' <= tolower(kbinput) && tolower(kbinput) <= 'f')
-		*uni += (tolower(kbinput) - 'a' + 10) * factor;
-	else
-		/* The character isn't hexadecimal; give it as the result. */
-		return (long)kbinput;
+#define INVALID_DIGIT  -77
 
-	return ERR;
+/* If the given symbol is a valid hexadecimal digit, multiply it by factor
+ * and add the result to the given unicode, and return PROCEED to signify
+ * okay.  When not a hexadecimal digit, return the symbol itself. */
+long add_unicode_digit(int symbol, long factor, long *unicode)
+{
+	if ('0' <= symbol && symbol <= '9')
+		*unicode += (symbol - '0') * factor;
+	else if ('a' <= tolower(symbol) && tolower(symbol) <= 'f')
+		*unicode += (tolower(symbol) - 'a' + 10) * factor;
+	else
+		return INVALID_DIGIT;
+
+	return PROCEED;
 }
 
-/* Translate a Unicode sequence: turn a six-digit hexadecimal number
- * (from 000000 to 10FFFF, case-insensitive) into its corresponding
- * multibyte value. */
-long get_unicode_kbinput(WINDOW *win, int kbinput)
+/* For each consecutive call, gather the given symbol into a six-digit Unicode
+ * (from 000000 to 10FFFF, case-insensitive).  When it is complete, return the
+ * assembled Unicode; until then, return PROCEED when the symbol is valid. */
+long assemble_unicode(int symbol)
 {
-	static int uni_digits = 0;
-	static long uni = 0;
-	long retval = ERR;
+	static long unicode = 0;
+	static int digits = 0;
+	long retval = PROCEED;
 
-	/* Increment the Unicode digit counter. */
-	uni_digits++;
-
-	switch (uni_digits) {
+	switch (++digits) {
 		case 1:
-			/* The first digit must be zero or one.  Put it in the
-			 * 0x100000's position of the Unicode sequence holder.
-			 * Otherwise, return the character itself as the result. */
-			if (kbinput == '0' || kbinput == '1')
-				uni = (kbinput - '0') * 0x100000;
-			else
-				retval = kbinput;
+			unicode = (symbol - '0') * 0x100000;
 			break;
 		case 2:
 			/* The second digit must be zero if the first was one, but
 			 * may be any hexadecimal value if the first was zero. */
-			if (kbinput == '0' || uni == 0)
-				retval = add_unicode_digit(kbinput, 0x10000, &uni);
+			if (symbol == '0' || unicode == 0)
+				retval = add_unicode_digit(symbol, 0x10000, &unicode);
 			else
-				retval = kbinput;
+				retval = INVALID_DIGIT;
 			break;
 		case 3:
 			/* Later digits may be any hexadecimal value. */
-			retval = add_unicode_digit(kbinput, 0x1000, &uni);
+			retval = add_unicode_digit(symbol, 0x1000, &unicode);
 			break;
 		case 4:
-			retval = add_unicode_digit(kbinput, 0x100, &uni);
+			retval = add_unicode_digit(symbol, 0x100, &unicode);
 			break;
 		case 5:
-			retval = add_unicode_digit(kbinput, 0x10, &uni);
+			retval = add_unicode_digit(symbol, 0x10, &unicode);
 			break;
 		case 6:
-			retval = add_unicode_digit(kbinput, 0x1, &uni);
+			retval = add_unicode_digit(symbol, 0x1, &unicode);
 			/* If also the sixth digit was a valid hexadecimal value, then
 			 * the Unicode sequence is complete, so return it. */
-			if (retval == ERR)
-				retval = uni;
+			if (retval == PROCEED)
+				retval = unicode;
 			break;
 	}
 
 	/* Show feedback only when editing, not when at a prompt. */
-	if (retval == ERR && win == edit) {
+	if (retval == PROCEED && currmenu == MMAIN) {
 		char partial[7] = "......";
 
 		/* Construct the partial result, right-padding it with dots. */
-		snprintf(partial, uni_digits + 1, "%06lX", uni);
-		partial[uni_digits] = '.';
+		snprintf(partial, digits + 1, "%06lX", unicode);
+		partial[digits] = '.';
 
 		/* TRANSLATORS: This is shown while a six-digit hexadecimal
 		 * Unicode character code (%s) is being typed in. */
@@ -1468,39 +1348,12 @@ long get_unicode_kbinput(WINDOW *win, int kbinput)
 	}
 
 	/* If we have an end result, reset the Unicode digit counter. */
-	if (retval != ERR)
-		uni_digits = 0;
+	if (retval != PROCEED)
+		digits = 0;
 
 	return retval;
 }
 #endif /* ENABLE_UTF8 */
-
-/* Translate a normal ASCII character into its corresponding control code.
- * The following groups of control keystrokes are equivalent:
- *   Ctrl-2 == Ctrl-@ == Ctrl-` == Ctrl-Space
- *   Ctrl-3 == Ctrl-[ == <Esc>
- *   Ctrl-4 == Ctrl-\ == Ctrl-|
- *   Ctrl-5 == Ctrl-]
- *   Ctrl-6 == Ctrl-^ == Ctrl-~
- *   Ctrl-7 == Ctrl-/ == Ctrl-_
- *   Ctrl-8 == Ctrl-? */
-int get_control_kbinput(int kbinput)
-{
-	if ('@' <= kbinput && kbinput <= '_')
-		return kbinput - '@';
-	if ('`' <= kbinput && kbinput <= '~')
-		return kbinput - '`';
-	if ('3' <= kbinput && kbinput <= '7')
-		return kbinput - 24;
-	if (kbinput == '?' || kbinput == '8')
-		return DEL_CODE;
-	if (kbinput == ' ' || kbinput == '2')
-		return 0;
-	if (kbinput == '/')
-		return 31;
-
-	return kbinput;
-}
 
 /* Read in one control character (or an iTerm/Eterm/rxvt double Escape),
  * or convert a series of six digits into a Unicode codepoint.  Return
@@ -1508,79 +1361,88 @@ int get_control_kbinput(int kbinput)
  * multibyte sequence), or 2 (for an iTerm/Eterm/rxvt double Escape). */
 int *parse_verbatim_kbinput(WINDOW *win, size_t *count)
 {
-	int *kbinput = NULL;
+	int keycode, *yield;
 
 	reveal_cursor = TRUE;
 
 	/* Read in the first code. */
-	while (kbinput == NULL)
-		kbinput = get_input(win, 1);
+	keycode = get_input(win);
 
 #ifndef NANO_TINY
 	/* When the window was resized, abort and return nothing. */
-	if (*kbinput == KEY_WINCH) {
-		free(kbinput);
-		*count = 0;
+	if (keycode == KEY_WINCH) {
+		*count = 999;
 		return NULL;
 	}
 #endif
 
-	*count = 1;
+	/* Reserve ample space for the possible result. */
+	yield = (int *)nmalloc(6 * sizeof(int));
 
 #ifdef ENABLE_UTF8
-	if (using_utf8()) {
-		/* Check whether the first code is a valid starter digit: 0 or 1. */
-		long unicode = get_unicode_kbinput(win, *kbinput);
+	/* If the first code is a valid Unicode starter digit (0 or 1),
+	 * commence Unicode input.  Otherwise, put the code back. */
+	if (using_utf8() && (keycode == '0' || keycode == '1')) {
+		long unicode = assemble_unicode(keycode);
+		char *multibyte;
 
-		/* If the first code isn't the digit 0 nor 1, put it back. */
-		if (unicode != ERR)
-			put_back(*kbinput);
-		/* Otherwise, continue reading in digits until we have a complete
-		 * Unicode value, and put back the corresponding byte(s). */
-		else {
-			char *multibyte;
-			int onebyte;
+		reveal_cursor = FALSE;
 
-			reveal_cursor = FALSE;
-
-			while (unicode == ERR) {
-				free(kbinput);
-				while ((kbinput = get_input(win, 1)) == NULL)
-					;
-				unicode = get_unicode_kbinput(win, *kbinput);
-			}
-
-			/* Convert the Unicode value to a multibyte sequence. */
-			multibyte = make_mbchar(unicode, (int *)count);
-
-			/* Insert the multibyte sequence into the input buffer. */
-			for (size_t i = *count; i > 0 ; i--) {
-				onebyte = (unsigned char)multibyte[i - 1];
-				put_back(onebyte);
-			}
-
-			free(multibyte);
+		while (unicode == PROCEED) {
+			keycode = get_input(win);
+			unicode = assemble_unicode(keycode);
 		}
-	} else
+
+#ifndef NANO_TINY
+		if (keycode == KEY_WINCH) {
+			*count = 999;
+			free(yield);
+			return NULL;
+		}
+#endif
+		/* For an invalid digit, discard its possible continuation bytes. */
+		if (unicode == INVALID_DIGIT) {
+			if (keycode == ESC_CODE) {
+				get_input(NULL);
+				while (key_buffer_len > 0 && 0x1F < *key_buffer && *key_buffer < 0x40)
+					get_input(NULL);
+				if (key_buffer_len > 0 && 0x3F < *key_buffer && *key_buffer < 0x7F)
+					get_input(NULL);
+			} else if (0xC0 <= keycode && keycode <= 0xFF)
+				while (key_buffer_len > 0 && 0x7F < *key_buffer && *key_buffer < 0xC0)
+					get_input(NULL);
+		}
+
+		/* Convert the Unicode value to a multibyte sequence. */
+		multibyte = make_mbchar(unicode, (int *)count);
+
+		/* Change the multibyte character into a series of integers. */
+		for (size_t i = 0; i < *count; i++)
+			yield[i] = (int)multibyte[i];
+
+		free(multibyte);
+
+		return yield;
+	}
 #endif /* ENABLE_UTF8 */
-		/* Put back the first code. */
-		put_back(*kbinput);
 
-	free(kbinput);
+	yield[0] = keycode;
 
-	/* If this is an iTerm/Eterm/rxvt double escape, take both Escapes. */
-	if (key_buffer_len > 3 && *key_buffer == ESC_CODE &&
-				key_buffer[1] == ESC_CODE && key_buffer[2] == '[')
+	/* In case of an escape, take also a second code, as it might be another
+	 * escape (on iTerm2/rxvt) or a control code (for M-Bsp and M-Enter). */
+	if (keycode == ESC_CODE && key_buffer_len > 0) {
+		yield[1] = get_input(NULL);
 		*count = 2;
+	}
 
-	return get_input(NULL, *count);
+	return yield;
 }
 
 /* Read in one control code, one character byte, or the leading escapes of
  * an escape sequence, and return the resulting number of bytes in count. */
 char *get_verbatim_kbinput(WINDOW *win, size_t *count)
 {
-	char *bytes = charalloc(MAXCHARLEN + 1);
+	char *bytes = charalloc(MAXCHARLEN + 2);
 	int *input;
 
 	/* Turn off flow control characters if necessary so that we can type
@@ -1591,20 +1453,34 @@ char *get_verbatim_kbinput(WINDOW *win, size_t *count)
 	if (!ISSET(RAW_SEQUENCES))
 		keypad(win, FALSE);
 
+#ifndef NANO_TINY
+	/* Turn bracketed-paste mode off. */
+	printf("\x1B[?2004l");
+	fflush(stdout);
+#endif
+
+	linger_after_escape = TRUE;
+
 	/* Read in a single byte or two escapes. */
 	input = parse_verbatim_kbinput(win, count);
 
 	/* If the byte is invalid in the current mode, discard it;
 	 * if it is an incomplete Unicode sequence, stuff it back. */
 	if (input != NULL) {
-		if ((*input == '\n' && as_an_at) || (*input == '\0' && !as_an_at)) {
-			*count = 0;
-			beep();
-		} else if (*input >= 0x80 && *count == 1) {
+		if (*input >= 0x80 && *count == 1) {
 			put_back(*input);
+			*count = 999;
+		} else if ((*input == '\n' && as_an_at) || (*input == '\0' && !as_an_at))
 			*count = 0;
-		}
 	}
+
+	linger_after_escape = FALSE;
+
+#ifndef NANO_TINY
+	/* Turn bracketed-paste mode back on. */
+	printf("\x1B[?2004h");
+	fflush(stdout);
+#endif
 
 	/* Turn flow control characters back on if necessary and turn the
 	 * keypad back on if necessary now that we're done. */
@@ -1617,9 +1493,11 @@ char *get_verbatim_kbinput(WINDOW *win, size_t *count)
 		keypad(bottomwin, TRUE);
 	}
 
-	for (size_t i = 0; i < *count; i++)
-		bytes[i] = (char)input[i];
-	bytes[*count] = '\0';
+	if (*count < 999) {
+		for (size_t i = 0; i < *count; i++)
+			bytes[i] = (char)input[i];
+		bytes[*count] = '\0';
+	}
 
 	free(input);
 
@@ -2043,8 +1921,8 @@ void titlebar(const char *path)
 		/* The state of the current buffer -- "Modified", "View", or "". */
 	char *caption;
 		/* The presentable form of the pathname. */
-	char *indicator = NULL;
-		/* The buffer sequence number plus buffer count. */
+	char *ranking = NULL;
+		/* The buffer sequence number plus the total buffer count. */
 
 	/* If the screen is too small, there is no title bar. */
 	if (topwin == NULL)
@@ -2076,10 +1954,10 @@ void titlebar(const char *path)
 #ifdef ENABLE_MULTIBUFFER
 		/* If there are/were multiple buffers, show which out of how many. */
 		if (more_than_one) {
-			indicator = charalloc(24);
-			sprintf(indicator, "[%i/%i]", buffer_number(openfile),
+			ranking = charalloc(24);
+			sprintf(ranking, "[%i/%i]", buffer_number(openfile),
 										buffer_number(startfile->prev));
-			upperleft = indicator;
+			upperleft = ranking;
 		} else
 #endif
 			upperleft = BRANDING;
@@ -2124,7 +2002,7 @@ void titlebar(const char *path)
 		}
 	}
 
-	free(indicator);
+	free(ranking);
 
 	/* If we have side spaces left, center the path name. */
 	if (verlen > 0)
@@ -2163,9 +2041,8 @@ void titlebar(const char *path)
 	wrefresh(topwin);
 }
 
-/* Display a message on the status bar, and set suppress_cursorpos to
- * TRUE, so that the message won't be immediately overwritten if
- * constant cursor position display is on. */
+/* Display the given message on the status bar, but only if its importance
+ * is higher than that of a message that is already there. */
 void statusline(message_type importance, const char *msg, ...)
 {
 	va_list ap;
@@ -2177,22 +2054,15 @@ void statusline(message_type importance, const char *msg, ...)
 	bool old_whitespace = ISSET(WHITESPACE_DISPLAY);
 
 	UNSET(WHITESPACE_DISPLAY);
+
+	if (isendwin())
+		die("Out of curses -- please report a bug\n");
 #endif
 
 	/* Ignore a message with an importance that is lower than the last one. */
 	if ((lastmessage == ALERT && importance != ALERT) ||
 				(lastmessage == MILD && importance == HUSH))
 		return;
-
-#ifndef NANO_TINY
-	/* Curses mode shouldn't be off when trying to write to the status bar. */
-	if (!started_curses || isendwin()) {
-		fprintf(stderr, "Out of curses -- please report a bug\n");
-		lastmessage = HUSH;
-		napms(1400);
-		return;
-	}
-#endif
 
 	/* If there are multiple alert messages, add trailing dots to the first. */
 	if (lastmessage == ALERT) {
@@ -2249,8 +2119,6 @@ void statusline(message_type importance, const char *msg, ...)
 	/* Push the message to the screen straightaway. */
 	wrefresh(bottomwin);
 
-	suppress_cursorpos = TRUE;
-
 #ifndef NANO_TINY
 	if (old_whitespace)
 		SET(WHITESPACE_DISPLAY);
@@ -2272,11 +2140,11 @@ void statusbar(const char *msg)
 
 /* Warn the user on the status bar and pause for a moment, so that the
  * message can be noticed and read. */
-void warn_and_shortly_pause(const char *msg)
+void warn_and_briefly_pause(const char *msg)
 {
 	blank_bottombars();
 	statusline(ALERT, msg);
-	lastmessage = HUSH;
+	lastmessage = VACUUM;
 	napms(1500);
 }
 
@@ -2365,7 +2233,7 @@ void place_the_cursor(void)
 
 		/* Calculate how many rows the lines from edittop to current use. */
 		while (line != NULL && line != openfile->current) {
-			row += number_of_chunks_in(line) + 1;
+			row += 1 + extra_chunks_in(line);
 			line = line->next;
 		}
 
@@ -2417,7 +2285,17 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 #endif
 			mvwprintw(edit, row, 0, "%*zd", margin - 1, line->lineno);
 		wattroff(edit, interface_color_pair[LINE_NUMBER]);
-		wprintw(edit, " ");
+#ifndef NANO_TINY
+		if (line->has_anchor && (from_col == 0 || !ISSET(SOFTWRAP)))
+#ifdef ENABLE_UTF8
+			if (using_utf8())
+				wprintw(edit, "\xE2\x97\x86");  /* black diamond */
+			else
+#endif
+				wprintw(edit, "+");
+		else
+#endif
+			wprintw(edit, " ");
 	}
 #endif
 
@@ -2429,6 +2307,10 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 	if (is_shorter || ISSET(SOFTWRAP))
 		wclrtoeol(edit);
 
+#ifndef NANO_TINY
+	if (thebar)
+		mvwaddch(edit, row, COLS - 1, bardata[row]);
+#endif
 #ifdef USING_OLD_NCURSES
 	/* Tell ncurses to really redraw the line without trying to optimize
 	 * for what it thinks is already there, because it gets it wrong in
@@ -2438,9 +2320,9 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 #endif
 
 #ifdef ENABLE_COLOR
-	/* If color syntaxes are available and turned on, apply them. */
-	if (openfile->colorstrings != NULL && !ISSET(NO_COLOR_SYNTAX)) {
-		const colortype *varnish = openfile->colorstrings;
+	/* If there are color rules (and coloring is turned on), apply them. */
+	if (openfile->syntax && !ISSET(NO_SYNTAX)) {
+		const colortype *varnish = openfile->syntax->color;
 
 		/* If there are multiline regexes, make sure there is a cache. */
 		if (openfile->syntax->nmultis > 0 && line->multidata == NULL)
@@ -2720,7 +2602,7 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 						line->lineno <= openfile->current->lineno) ||
 						(line->lineno <= openfile->mark->lineno &&
 						line->lineno >= openfile->current->lineno))) {
-		const linestruct *top, *bot;
+		linestruct *top, *bot;
 			/* The lines where the marked region begins and ends. */
 		size_t top_x, bot_x;
 			/* The x positions where the marked region begins and ends. */
@@ -2731,7 +2613,7 @@ void draw_row(int row, const char *converted, linestruct *line, size_t from_col)
 		int paintlen = -1;
 			/* The number of characters to paint.  Negative means "all". */
 
-		get_region(&top, &top_x, &bot, &bot_x, NULL);
+		get_region(&top, &top_x, &bot, &bot_x);
 
 		if (top->lineno < line->lineno || top_x < from_x)
 			top_x = from_x;
@@ -2797,11 +2679,11 @@ int update_line(linestruct *line, size_t index)
 	}
 	if (has_more) {
 		wattron(edit, hilite_attribute);
-		mvwaddch(edit, row, COLS - 1, '>');
+		mvwaddch(edit, row, COLS - 1 - thebar, '>');
 		wattroff(edit, hilite_attribute);
 	}
 
-	if (spotlighted && !inhelp)
+	if (spotlighted && line == openfile->current && !inhelp)
 		spotlight(light_from_col, light_to_col);
 
 	return 1;
@@ -2835,7 +2717,7 @@ int update_softwrapped_line(linestruct *line)
 
 	/* Find out on which screen row the target line should be shown. */
 	while (someline != line && someline != NULL) {
-		row += number_of_chunks_in(someline) + 1;
+		row += 1 + extra_chunks_in(someline);
 		someline = someline->next;
 	}
 
@@ -2862,7 +2744,7 @@ int update_softwrapped_line(linestruct *line)
 		from_col = to_col;
 	}
 
-	if (spotlighted && !inhelp)
+	if (spotlighted && line == openfile->current && !inhelp)
 		spotlight_softwrapped(light_from_col, light_to_col);
 
 	return (row - starting_row);
@@ -2977,6 +2859,35 @@ bool less_than_a_screenful(size_t was_lineno, size_t was_leftedge)
 		return (openfile->current->lineno - was_lineno < editwinrows);
 }
 
+#ifndef NANO_TINY
+/* Draw a scroll bar on the righthand side of the screen. */
+void draw_scrollbar(void)
+{
+	int totalrows = openfile->filebot->lineno;
+	int first_row = openfile->edittop->lineno;
+
+	if (ISSET(SOFTWRAP)) {
+		for (linestruct *ln = openfile->filetop; ln != openfile->edittop; ln = ln->next)
+			first_row += ln->extrarows;
+		first_row += chunk_for(openfile->firstcolumn, openfile->edittop);
+
+		for (linestruct *ln = openfile->filetop; ln != NULL; ln = ln->next)
+			totalrows += ln->extrarows;
+	}
+
+	int lowest = ((first_row - 1) * editwinrows) / totalrows;
+	int highest = lowest + (editwinrows * editwinrows) / totalrows;
+
+	if (editwinrows > totalrows)
+		highest = editwinrows;
+
+	for (int row = 0; row < editwinrows; row++) {
+		bardata[row] = ' '|((row >= lowest && row <= highest) ? A_REVERSE : 0);
+		mvwaddch(edit, row, COLS - 1, bardata[row]);
+	}
+}
+#endif
+
 /* Scroll the edit window one row in the given direction, and
  * draw the relevant content on the resultant blank row. */
 void edit_scroll(bool direction)
@@ -3010,6 +2921,9 @@ void edit_scroll(bool direction)
 		go_forward_chunks(editwinrows - nrows, &line, &leftedge);
 
 #ifndef NANO_TINY
+	if (thebar)
+		draw_scrollbar();
+
 	if (ISSET(SOFTWRAP)) {
 		/* Compensate for the earlier chunks of a softwrapped line. */
 		nrows += chunk_for(leftedge, line);
@@ -3111,35 +3025,28 @@ size_t get_chunk_and_edge(size_t column, linestruct *line, size_t *leftedge)
 	}
 }
 
+/* Return how many extra rows the given line needs when softwrapping. */
+size_t extra_chunks_in(linestruct *line)
+{
+	return get_chunk_and_edge((size_t)-1, line, NULL);
+}
+
 /* Return the row of the softwrapped chunk of the given line that column is on,
  * relative to the first row (zero-based). */
 size_t chunk_for(size_t column, linestruct *line)
 {
-	if (ISSET(SOFTWRAP))
-		return get_chunk_and_edge(column, line, NULL);
-	else
-		return 0;
+	return get_chunk_and_edge(column, line, NULL);
 }
 
 /* Return the leftmost column of the softwrapped chunk of the given line that
- * column is on. */
+ * the given column is on. */
 size_t leftedge_for(size_t column, linestruct *line)
 {
-	if (ISSET(SOFTWRAP)) {
-		size_t leftedge;
+	size_t leftedge;
 
-		get_chunk_and_edge(column, line, &leftedge);
+	get_chunk_and_edge(column, line, &leftedge);
 
-		return leftedge;
-	} else
-		return 0;
-}
-
-/* Return the row of the last softwrapped chunk of the given line, relative to
- * the first row (zero-based). */
-size_t number_of_chunks_in(linestruct *line)
-{
-	return chunk_for((size_t)-1, line);
+	return leftedge;
 }
 
 /* Ensure that firstcolumn is at the starting column of the softwrapped chunk
@@ -3147,8 +3054,11 @@ size_t number_of_chunks_in(linestruct *line)
  * has changed, because then the width of softwrapped chunks has changed. */
 void ensure_firstcolumn_is_aligned(void)
 {
-	openfile->firstcolumn = leftedge_for(openfile->firstcolumn,
-												openfile->edittop);
+	if (ISSET(SOFTWRAP))
+		openfile->firstcolumn = leftedge_for(openfile->firstcolumn,
+														openfile->edittop);
+	else
+		openfile->firstcolumn = 0;
 
 	/* If smooth scrolling is on, make sure the viewport doesn't center. */
 	focusing = FALSE;
@@ -3275,14 +3185,19 @@ void edit_refresh(void)
 	int row = 0;
 
 #ifdef ENABLE_COLOR
-	/* When needed, initialize the colors for the current syntax. */
-	if (!have_palette)
-		color_init();
+	/* When needed and useful, initialize the colors for the current syntax. */
+	if (openfile->syntax && !have_palette && !ISSET(NO_SYNTAX) && has_colors())
+		prepare_palette();
 #endif
 
 	/* If the current line is out of view, get it back on screen. */
 	if (current_is_offscreen())
 		adjust_viewport((focusing || ISSET(JUMPY_SCROLLING)) ? CENTERING : FLOWING);
+
+#ifndef NANO_TINY
+	if (thebar)
+		draw_scrollbar();
+#endif
 
 	line = openfile->edittop;
 
@@ -3294,8 +3209,14 @@ void edit_refresh(void)
 		line = line->next;
 	}
 
-	while (row < editwinrows)
-		blank_row(edit, row++);
+	while (row < editwinrows) {
+		blank_row(edit, row);
+#ifndef NANO_TINY
+		if (thebar)
+			mvwaddch(edit, row, COLS - 1, bardata[row]);
+#endif
+		row++;
+	}
 
 	place_the_cursor();
 	wnoutrefresh(edit);
@@ -3329,8 +3250,8 @@ void adjust_viewport(update_type manner)
 	go_back_chunks(goal, &openfile->edittop, &openfile->firstcolumn);
 }
 
-/* Unconditionally redraw the entire screen. */
-void total_redraw(void)
+/* Tell curses to unconditionally redraw whatever was on the screen. */
+void full_refresh(void)
 {
 #ifdef USE_SLANG
 	/* Slang curses emulation brain damage, part 4: Slang doesn't define
@@ -3342,11 +3263,10 @@ void total_redraw(void)
 #endif
 }
 
-/* Redraw the entire screen, then refresh the title bar and the content of
- * the edit window (when not in the file browser), and the bottom bars. */
-void total_refresh(void)
+/* Draw all elements of the screen.  That is: the title bar plus the content
+ * of the edit window (when not in the file browser), and the bottom bars. */
+void draw_all_subwindows(void)
 {
-	total_redraw();
 	if (currmenu != MBROWSER && currmenu != MWHEREISFILE && currmenu != MGOTODIR)
 		titlebar(title);
 #ifdef ENABLE_HELP
@@ -3361,82 +3281,48 @@ void total_refresh(void)
 	bottombars(currmenu);
 }
 
-/* Show info about the current cursor position on the status bar.
- * Do this unconditionally when force is TRUE; otherwise, only if
- * suppress_cursorpos is FALSE.  In any case, reset the latter. */
-void do_cursorpos(bool force)
+/* Display on the status bar details about the current cursor position. */
+void report_cursor_position(void)
 {
-	char saved_byte;
-	size_t sum, cur_xpt = xplustabs() + 1;
-	size_t cur_lenpt = breadth(openfile->current->data) + 1;
+	size_t fullwidth = breadth(openfile->current->data) + 1;
+	size_t column = xplustabs() + 1;
 	int linepct, colpct, charpct;
+	char saved_byte;
+	size_t sum;
 
-	/* If the showing needs to be suppressed, don't suppress it next time. */
-	if (suppress_cursorpos && !force) {
-		suppress_cursorpos = FALSE;
-		return;
-	}
-
-	/* Determine the size of the file up to the cursor. */
 	saved_byte = openfile->current->data[openfile->current_x];
 	openfile->current->data[openfile->current_x] = '\0';
 
-	sum = get_totsize(openfile->filetop, openfile->current);
+	/* Determine the size of the file up to the cursor. */
+	sum = number_of_characters_in(openfile->filetop, openfile->current);
 
 	openfile->current->data[openfile->current_x] = saved_byte;
 
-	/* When not at EOF, subtract 1 for an overcounted newline. */
-	if (openfile->current != openfile->filebot)
-		sum--;
-
-	/* Display the current cursor position on the status bar. */
+	/* Calculate the percentages. */
 	linepct = 100 * openfile->current->lineno / openfile->filebot->lineno;
-	colpct = 100 * cur_xpt / cur_lenpt;
+	colpct = 100 * column / fullwidth;
 	charpct = (openfile->totsize == 0) ? 0 : 100 * sum / openfile->totsize;
 
 	statusline(HUSH,
-		_("line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"),
-		openfile->current->lineno, openfile->filebot->lineno, linepct,
-		cur_xpt, cur_lenpt, colpct, sum, openfile->totsize, charpct);
-
-	/* Displaying the cursor position should not suppress it next time. */
-	suppress_cursorpos = FALSE;
+			_("line %zd/%zd (%d%%), col %zu/%zu (%d%%), char %zu/%zu (%d%%)"),
+			openfile->current->lineno, openfile->filebot->lineno, linepct,
+			column, fullwidth, colpct, sum, openfile->totsize, charpct);
 }
 
-/* Unconditionally display the current cursor position. */
-void do_cursorpos_void(void)
-{
-	do_cursorpos(TRUE);
-}
-
-void disable_waiting(void)
-{
-	waiting_mode = FALSE;
-	nodelay(edit, TRUE);
-}
-
-void enable_waiting(void)
-{
-	waiting_mode = TRUE;
-	nodelay(edit, FALSE);
-}
-
-/* Highlight the text between from_col and to_col. */
+/* Highlight the text between the given two columns on the current line. */
 void spotlight(size_t from_col, size_t to_col)
 {
 	size_t right_edge = get_page_start(from_col) + editwincols;
-	bool overshoots = FALSE;
+	bool overshoots = (to_col > right_edge);
 	char *word;
 
 	place_the_cursor();
 
 	/* Limit the end column to the edge of the screen. */
-	if (to_col > right_edge) {
+	if (overshoots)
 		to_col = right_edge;
-		overshoots = TRUE;
-	}
 
-	/* This is so we can show zero-length matches. */
+	/* If the target text is of zero length, highlight a space instead. */
 	if (to_col == from_col) {
 		word = copy_of(" ");
 		to_col++;
@@ -3447,39 +3333,36 @@ void spotlight(size_t from_col, size_t to_col)
 	wattron(edit, interface_color_pair[SELECTED_TEXT]);
 	waddnstr(edit, word, actual_x(word, to_col));
 	if (overshoots)
-		mvwaddch(edit, openfile->current_y, COLS - 1, '>');
+		mvwaddch(edit, openfile->current_y, COLS - 1 - thebar, '>');
 	wattroff(edit, interface_color_pair[SELECTED_TEXT]);
 
 	free(word);
-
-	wnoutrefresh(edit);
 }
 
 #ifndef NANO_TINY
-/* Highlight the text between the given columns.  This will not highlight soft
- * line breaks, since they're not actually part of the spotlighted text. */
+/* Highlight the text between the given two columns on the current line. */
 void spotlight_softwrapped(size_t from_col, size_t to_col)
 {
-	ssize_t row = openfile->current_y;
+	ssize_t row;
 	size_t leftedge = leftedge_for(from_col, openfile->current);
 	size_t break_col;
 	bool end_of_line = FALSE;
 	char *word;
 
 	place_the_cursor();
+	row = openfile->current_y;
 
 	while (row < editwinrows) {
 		break_col = get_softwrap_breakpoint(openfile->current->data,
 												leftedge, &end_of_line);
 
-		/* Stop after the end of the word, by pretending the end of the word is
-		 * the end of the line. */
+		/* If the highlighting ends on this chunk, we can stop after it. */
 		if (break_col >= to_col) {
 			end_of_line = TRUE;
 			break_col = to_col;
 		}
 
-		/* This is so we can show zero-length matches. */
+		/* If the target text is of zero length, highlight a space instead. */
 		if (break_col == from_col) {
 			word = copy_of(" ");
 			break_col++;
@@ -3501,17 +3384,15 @@ void spotlight_softwrapped(size_t from_col, size_t to_col)
 		leftedge = break_col;
 		from_col = break_col;
 	}
-
-	wnoutrefresh(edit);
 }
 #endif
 
 #ifdef ENABLE_EXTRA
-#define CREDIT_LEN 54
-#define XLCREDIT_LEN 9
+#define CREDIT_LEN  54
+#define XLCREDIT_LEN  9
 
-/* Easter egg: Display credits.  Assume nodelay(edit) and scrollok(edit)
- * are FALSE. */
+/* Fully blank the terminal screen, then slowly "crawl" the credits over it.
+ * Abort the crawl upon any keystroke. */
 void do_credits(void)
 {
 	bool with_empty_line = ISSET(EMPTY_LINE);
@@ -3593,6 +3474,7 @@ void do_credits(void)
 	}
 
 	nodelay(edit, TRUE);
+	scrollok(edit, TRUE);
 
 	blank_titlebar();
 	blank_edit();
@@ -3604,41 +3486,31 @@ void do_credits(void)
 	napms(700);
 
 	for (crpos = 0; crpos < CREDIT_LEN + editwinrows / 2; crpos++) {
-		if ((kbinput = wgetch(edit)) != ERR)
-			break;
-
 		if (crpos < CREDIT_LEN) {
 			const char *what;
-			size_t start_col;
 
 			if (credits[crpos] == NULL)
 				what = _(xlcredits[xlpos++]);
 			else
 				what = credits[crpos];
 
-			start_col = COLS / 2 - breadth(what) / 2 - 1;
 			mvwaddstr(edit, editwinrows - 1 - (editwinrows % 2),
-												start_col, what);
+								COLS / 2 - breadth(what) / 2 - 1, what);
+			wrefresh(edit);
 		}
 
+		if ((kbinput = wgetch(edit)) != ERR)
+			break;
+
+		napms(700);
+		wscrl(edit, 1);
 		wrefresh(edit);
 
 		if ((kbinput = wgetch(edit)) != ERR)
 			break;
+
 		napms(700);
-
-		scrollok(edit, TRUE);
 		wscrl(edit, 1);
-		scrollok(edit, FALSE);
-		wrefresh(edit);
-
-		if ((kbinput = wgetch(edit)) != ERR)
-			break;
-		napms(700);
-
-		scrollok(edit, TRUE);
-		wscrl(edit, 1);
-		scrollok(edit, FALSE);
 		wrefresh(edit);
 	}
 
@@ -3651,8 +3523,9 @@ void do_credits(void)
 		UNSET(NO_HELP);
 	window_init();
 
+	scrollok(edit, FALSE);
 	nodelay(edit, FALSE);
 
-	total_refresh();
+	draw_all_subwindows();
 }
 #endif /* ENABLE_EXTRA */

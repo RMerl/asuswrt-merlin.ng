@@ -1,4 +1,4 @@
-# exponentl.m4 serial 4
+# exponentl.m4 serial 5
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -22,14 +22,14 @@ typedef union { long double value; unsigned int word[NWORDS]; }
         memory_long_double;
 static unsigned int ored_words[NWORDS];
 static unsigned int anded_words[NWORDS];
-static void add_to_ored_words (long double x)
+static void add_to_ored_words (long double *x)
 {
   memory_long_double m;
   size_t i;
   /* Clear it first, in case
      sizeof (long double) < sizeof (memory_long_double).  */
   memset (&m, 0, sizeof (memory_long_double));
-  m.value = x;
+  m.value = *x;
   for (i = 0; i < NWORDS; i++)
     {
       ored_words[i] |= m.word[i];
@@ -38,17 +38,15 @@ static void add_to_ored_words (long double x)
 }
 int main ()
 {
+  static long double samples[5] = { 0.25L, 0.5L, 1.0L, 2.0L, 4.0L };
   size_t j;
   FILE *fp = fopen ("conftest.out", "w");
   if (fp == NULL)
     return 1;
   for (j = 0; j < NWORDS; j++)
     anded_words[j] = ~ (unsigned int) 0;
-  add_to_ored_words (0.25L);
-  add_to_ored_words (0.5L);
-  add_to_ored_words (1.0L);
-  add_to_ored_words (2.0L);
-  add_to_ored_words (4.0L);
+  for (j = 0; j < 5; j++)
+    add_to_ored_words (&samples[j]);
   /* Remove bits that are common (e.g. if representation of the first mantissa
      bit is explicit).  */
   for (j = 0; j < NWORDS; j++)

@@ -1,6 +1,14 @@
 Improvements in GNU nano
 ========================
 
+Since 5.0:
+  - M-Bsp deletes a word leftward.
+  - With --indicator a "scrollbar" is shown, indicating position+portion.
+  - M-Ins places an anchor, M-PgUp/M-PgDn jump to the nearest anchor.
+  - Toggling help lines (M-X) and Refresh (^L) work nearly everywhere.
+  - Colors can be modified with the attributes "bold," and/or "italic,".
+  - Nine new color names: from pink and purple to orange and latte.
+
 Since 4.0:
   - Pasting from outside into nano suppresses auto-indentation.
   - Such an external paste can be undone with a single M-U.
@@ -28,7 +36,7 @@ Since 2.9.0:
   - Option 'set afterends' for making Ctrl+Right stop at word ends.
   - A crash handler that saves changed buffers in case of a crash.
   - Addition of the color name "normal", meaning the default color.
-  - A key can be bound to a string -- any mix of text and commands.
+  - A key can be bound to a string -- any mix of text and control codes.
   - Error messages are shown by default in bright white on red.
   - <Tab> and <Shift+Tab> can be used to indent/unindent a marked region.
   - Can snip trailing whitespace while typing, with 'set trimblanks'.
@@ -92,25 +100,19 @@ Since 2.3.0:
   - The option 'positionlog' for saving/restoring the cursor position.
   - The ability to read and write vim-style lock files.
 
-Visible changes since 2.0
--------------------------
-* Editor Features
-  - The ability to rebind (reassign) keys using the nanorc.
+Since 2.0.0:
+  - The ability to rebind keys, via a nanorc file.
   - The ability to read standard input like a pager ("nano -").
   - Color syntax highlighting can be set by the first line of a file.
   - The ability to silence nanorc error messages (-q).
-  - Undo/redo operations (-u).
+  - Undo/redo operations (M-U/M-E, enabled with -u).
   - Soft wrapping of text (-$).
-
-* File Handling
   - Better handling of backup files: if nano can't write a backup file,
     it won't try to write the original file afterward.
   - Emergency savefiles retain ownerships and permissions when possible.
   - Performance improvements in color syntax highlighting.
 
-Visible changes since 1.2
--------------------------
-* Editor Features
+Since 1.2.0:
   - Support for UTF-8.
   - Moving to a specified line and column of a file, instead of just a
     line (+LINE,COLUMN).
@@ -119,7 +121,7 @@ Visible changes since 1.2
   - Insertion of spaces instead of a tab when Tab is pressed (-E).
   - The long option for -K is now --rebindkeypad.
   - Regular expression searching can now be toggled when nano is built
-    with --enable-tiny, so -R now means something else (see below).
+    with --enable-tiny, so -R now means something else (see next item).
   - Restricted mode that provides more security than -o (-R).
   - Blanking of the statusbar after 1 keystroke instead of 25 (-U).
   - Word searches can optionally skip over punctuation (-W).
@@ -127,70 +129,58 @@ Visible changes since 1.2
   - Many more options are supported in the nanorc.
   - Improvements to color syntax highlighting support: case insensitive
     matching, the ability to include color syntaxes in separate files,
-    the ability to specify background colors without foreground colors,
-    etc.
+    the ability to specify background colors without foreground colors...
   - Insertion of single-byte characters via Esc Esc <000-255>.
-  - Insertion of all characters via "Verbatim Input" mode.
+  - Insertion of any character via Meta-V, "Verbatim Input".
   - Workaround for the "NumLock glitch".
-  - Meta-W now repeats the last search.  Wrapping is now toggled via
-    Meta-L.
+  - Meta-W now repeats the last search.  Wrapping is toggled via Meta-L.
   - Replacing and spell checking only selected text.
   - Indenting lines with one keystroke.
   - Copying text into the cutbuffer without cutting it.
-  - Scrolling the text up and down single lines without moving the
-    cursor.
+  - Scrolling the text up and down single lines without moving the cursor.
   - PageUp and PageDown work more smoothly when using -S.
   - Scrolling the help text up and down single lines.
   - Cutting all text from the current position to the end of the file
-    with one keystroke.
-  - Justifying the entire file with one keystroke.
+    with one keystroke (Meta-T).
+  - Justifying the entire file with one keystroke (Meta-J).
   - Justifying without removing spaces from the ends of lines.
   - Unjustifying after justifying and immediately resizing.
   - Going to the first or last line of the current paragraph.
   - Going to the first or last line of the file without having to go to
     the "Search" prompt.
   - Searching for filenames in the file browser.
-  - Displaying spaces and tabs differently to make it easier to tell
-    them apart.
-  - Many more functions available at the statusbar prompt: moving to the
-    next or previous word, searching for matching brackets, "Verbatim
-    Input" mode, etc.
-  - The glibc 2.2.3 crashes involving extended regular expressions are
-    no longer worked around, as they can break anything using extended
-    regular expressions, and glibc 2.2.3 is old.  You should upgrade to
-    at least glibc 2.2.4.
-
-* File Handling
+  - Spaces and tabs are shown differently to make it easier to tell them apart.
+  - Many more functions are available at the prompt: moving to the next or
+    previous word, searching for matching brackets, "Verbatim Input"...
+  - "To Line" (^W^T) and "Read from Command" (^R^X) return to their parent
+    menu when their keystroke is entered again (^W^T^T and ^R^X^X).
   - Automatic adding of newlines to the ends of files without them can
     now be disabled (-L).
-  - Converting from and to DOS/Mac file format is now toggled only at
-    the "Write File" prompt, via Meta-D and Meta-M, and the default file
-    format to save in is now set depending on what format the file was
-    originally in.  -D now makes nano use bold text instead of reverse
-    video text, and Meta-D at the edit window now does a
-    word/line/character count.  -O now makes the unused second line of
-    the screen part of the edit window, and Meta-O at the edit window
-    now toggles this behavior.
+  - Converting from and to DOS/Mac file format is now toggled only at the
+    "Write File" prompt, via Meta-D and Meta-M, and the default file format
+    to save in is now set depending on what format the file was originally
+    in.  -D now makes nano use bold text instead of reverse video text,
+    and Meta-D at the edit window now does a word/line/character count.
+    -O now makes the unused second line of the screen part of the edit
+    window, and Meta-O now toggles this behavior while editing.
   - Converting files that contain a mix of DOS and Mac format lines.
   - Automatic switching on of -N with binary files has been removed, as
     it causes problems with UTF-8 support.
 
-Visible changes since 1.0
--------------------------
-* Editor Features
-  - Complete Pico compatibility (--pico has been removed, and -p means
-    something else, see below).
-  - nanorc support (see nanorc.sample included in sources).
+Since 1.0
+  - Complete Pico compatibility (option --pico has been removed,
+    and -p now means something else, see below).
+  - Support for nanorc files.
   - Smooth scrolling (-S).
-  - Support for searching for matching braces, brackets, etc.
+  - Jumping to the matching brace, bracket, etc.
   - Help for all editor features.
   - Color syntax highlighting support.
   - Quote string support, useful for mail agents, etc. (-Q).
   - Insertion of output of external commands.
   - Optional enabling of XON and XOFF control characters (-p).
-  - Tons of bugfixes/enhancements for already existing features.
-
-* File Handling
+  - Option -o (--operatingdir) implements a chroot of sorts.
+  - Mouse support (-m) also allows clicking on shortcuts.
+  - Option -r allows a negative argument.
   - Overwriting and appending or prepending to files.
   - Writing marked text to separate files.
   - Multiple file buffers (-F).
@@ -199,4 +189,12 @@ Visible changes since 1.0
   - Creation of backup files (-B).
   - Search/replace history (-H).
 
-See the nano manual for detailed information on each feature.
+Available in 1.0:
+  - Spell checking (^T).
+  - Justification (^J) and unjustification (^U).
+  - Internationalization (more translations are welcome).
+  - Help texts (^G).
+  - Resizing in X.
+  - On PageUp/Down, the cursor is put on the first screen line (like Pico).
+  - Tab completion at the prompt (for filenames and ~user).
+  - Cut-to-end-of-line option (-k).

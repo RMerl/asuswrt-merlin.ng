@@ -1,4 +1,4 @@
-# isnanl.m4 serial 20
+# isnanl.m4 serial 22
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -68,9 +68,9 @@ AC_DEFUN([gl_HAVE_ISNANL_NO_LIBM],
       AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
            [[#include <math.h>
-             #if __GNUC__ >= 4
+             #if (__GNUC__ >= 4) || (__clang_major__ >= 4)
              # undef isnanl
-             # define isnanl(x) __builtin_isnanl ((long double)(x))
+             # define isnanl(x) __builtin_isnan ((long double)(x))
              #elif defined isnan
              # undef isnanl
              # define isnanl(x) isnan ((long double)(x))
@@ -93,9 +93,9 @@ AC_DEFUN([gl_HAVE_ISNANL_IN_LIBM],
       AC_LINK_IFELSE(
         [AC_LANG_PROGRAM(
            [[#include <math.h>
-             #if __GNUC__ >= 4
+             #if (__GNUC__ >= 4) || (__clang_major__ >= 4)
              # undef isnanl
-             # define isnanl(x) __builtin_isnanl ((long double)(x))
+             # define isnanl(x) __builtin_isnan ((long double)(x))
              #elif defined isnan
              # undef isnanl
              # define isnanl(x) isnan ((long double)(x))
@@ -123,9 +123,9 @@ AC_DEFUN([gl_FUNC_ISNANL_WORKS],
 #include <float.h>
 #include <limits.h>
 #include <math.h>
-#if __GNUC__ >= 4
+#if (__GNUC__ >= 4) || (__clang_major__ >= 4)
 # undef isnanl
-# define isnanl(x) __builtin_isnanl ((long double)(x))
+# define isnanl(x) __builtin_isnan ((long double)(x))
 #elif defined isnan
 # undef isnanl
 # define isnanl(x) isnan ((long double)(x))

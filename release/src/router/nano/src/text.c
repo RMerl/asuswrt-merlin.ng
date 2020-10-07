@@ -23,7 +23,7 @@
  *                                                                        *
  **************************************************************************/
 
-#include "proto.h"
+#include "prototypes.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -102,6 +102,9 @@ void indent_a_line(linestruct *line, char *indentation)
 
 	openfile->totsize += indent_len;
 
+	if (ISSET(SOFTWRAP))
+		line->extrarows = extra_chunks_in(line);
+
 	/* Compensate for the change in the current line. */
 	if (line == openfile->mark && openfile->mark_x > 0)
 		openfile->mark_x += indent_len;
@@ -120,7 +123,7 @@ void do_indent(void)
 	linestruct *top, *bot, *line;
 
 	/* Use either all the marked lines or just the current line. */
-	get_range((const linestruct **)&top, (const linestruct **)&bot);
+	get_range(&top, &bot);
 
 	/* Skip any leading empty lines. */
 	while (top != bot->next && top->data[0] == '\0')
@@ -230,6 +233,9 @@ void unindent_a_line(linestruct *line, size_t indent_len)
 
 	openfile->totsize -= indent_len;
 
+	if (ISSET(SOFTWRAP))
+		line->extrarows = extra_chunks_in(line);
+
 	/* Adjust the positions of mark and cursor, when they are affected. */
 	compensate_leftward(line, indent_len);
 }
@@ -241,7 +247,7 @@ void do_unindent(void)
 	linestruct *top, *bot, *line;
 
 	/* Use either all the marked lines or just the current line. */
-	get_range((const linestruct **)&top, (const linestruct **)&bot);
+	get_range(&top, &bot);
 
 	/* Skip any leading lines that cannot be unindented. */
 	while (top != bot->next && length_of_white(top->data) == 0)
@@ -386,7 +392,7 @@ void do_comment(void)
 #endif
 
 	/* Determine which lines to work on. */
-	get_range((const linestruct **)&top, (const linestruct **)&bot);
+	get_range(&top, &bot);
 
 	/* If only the magic line is selected, don't do anything. */
 	if (top == bot && bot == openfile->filebot && !ISSET(NO_NEWLINES)) {
@@ -418,8 +424,13 @@ void do_comment(void)
 	/* Comment/uncomment each of the selected lines when possible, and
 	 * store undo data when a line changed. */
 	for (line = top; line != bot->next; line = line->next) {
-		if (comment_line(action, line, comment_seq))
+		if (comment_line(action, line, comment_seq)) {
+#ifndef NANO_TINY
+			if (ISSET(SOFTWRAP))
+				line->extrarows = extra_chunks_in(line);
+#endif
 			update_multiline_undo(line->lineno, "");
+		}
 	}
 
 	set_modified();
@@ -458,8 +469,8 @@ void handle_comment_action(undostruct *u, bool undoing, bool add_comment)
 #endif /* ENABLE_COMMENT */
 
 #ifndef NANO_TINY
-#define redo_paste undo_cut
-#define undo_paste redo_cut
+#define redo_paste  undo_cut
+#define undo_paste  redo_cut
 
 /* Undo a cut, or redo a paste. */
 void undo_cut(undostruct *u)
@@ -491,7 +502,7 @@ void redo_cut(undostruct *u)
 
 	goto_line_posx(u->tail_lineno, u->tail_x);
 
-	do_snip(FALSE, TRUE, FALSE, u->type == ZAP);
+	do_snip(TRUE, FALSE, u->type == ZAP);
 
 	free_lines(cutbuffer);
 	cutbuffer = oldcutbuffer;
@@ -535,6 +546,7 @@ void do_undo(void)
 		line->data = charealloc(line->data, strlen(line->data) +
 								strlen(&u->strdata[regain_from_x]) + 1);
 		strcat(line->data, &u->strdata[regain_from_x]);
+		line->has_anchor |= line->next->has_anchor;
 		unlink_node(line->next);
 		renumber_from(line);
 		goto_line_posx(u->head_lineno, original_x);
@@ -560,6 +572,8 @@ void do_undo(void)
 			break;
 		}
 		line->data[u->tail_x] = '\0';
+		if (ISSET(SOFTWRAP))
+			line->extrarows = extra_chunks_in(line);
 		intruder = make_new_node(line);
 		intruder->data = copy_of(u->strdata);
 		splice_node(line, intruder);
@@ -608,7 +622,7 @@ void do_undo(void)
 		goto_line_posx(u->head_lineno, u->head_x);
 		openfile->mark = line_from_number(u->tail_lineno);
 		openfile->mark_x = u->tail_x;
-		cut_marked(NULL);
+		cut_marked_region();
 		u->cutbuffer = cutbuffer;
 		cutbuffer = oldcutbuffer;
 		if ((u->xflags & INCLUDED_LAST_LINE) && !ISSET(NO_NEWLINES) &&
@@ -659,6 +673,9 @@ void do_undo(void)
 	openfile->mark = NULL;
 	openfile->placewewant = xplustabs();
 
+	if (ISSET(SOFTWRAP))
+		openfile->current->extrarows = extra_chunks_in(openfile->current);
+
 	openfile->totsize = u->wassize;
 
 	/* When at the point where the file was last saved, unset "Modified". */
@@ -705,6 +722,8 @@ void do_redo(void)
 	case ENTER:
 		redidmsg = _("line break");
 		line->data[u->head_x] = '\0';
+		if (ISSET(SOFTWRAP))
+			line->extrarows = extra_chunks_in(line);
 		intruder = make_new_node(line);
 		intruder->data = copy_of(u->strdata);
 		splice_node(line, intruder);
@@ -817,6 +836,9 @@ void do_redo(void)
 	openfile->mark = NULL;
 	openfile->placewewant = xplustabs();
 
+	if (ISSET(SOFTWRAP))
+		openfile->current->extrarows = extra_chunks_in(openfile->current);
+
 	openfile->totsize = u->newsize;
 
 	/* When at the point where the file was last saved, unset "Modified". */
@@ -879,6 +901,11 @@ void do_enter(void)
 				openfile->mark_x > openfile->current_x) {
 		openfile->mark = newnode;
 		openfile->mark_x += extra - openfile->current_x;
+	}
+
+	if (ISSET(SOFTWRAP)) {
+		openfile->current->extrarows = extra_chunks_in(openfile->current);
+		newnode->extrarows = extra_chunks_in(newnode);
 	}
 #endif
 
@@ -1460,7 +1487,7 @@ size_t quote_length(const char *line)
 }
 
 /* The maximum depth of recursion.  This must be an even number. */
-#define RECURSION_LIMIT 222
+#define RECURSION_LIMIT  222
 
 /* Return TRUE when the given line is the beginning of a paragraph (BOP). */
 bool begpar(const linestruct *const line, int depth)
@@ -1482,6 +1509,10 @@ bool begpar(const linestruct *const line, int depth)
 	/* If this line contains no text, it is not a BOP. */
 	if (line->data[quot_len + indent_len] == '\0')
 		return FALSE;
+
+	/* When requested, treat a line that starts with whitespace as a BOP. */
+	if (ISSET(BOOKSTYLE) && !ISSET(AUTOINDENT) && is_blank_char(line->data))
+		return TRUE;
 
 	/* If the quote part of the preceding line differs, this is a BOP. */
 	if (quot_len != quote_length(line->prev->data) ||
@@ -1563,7 +1594,9 @@ void concat_paragraph(linestruct *line, size_t count)
 		line->data = charealloc(line->data,
 								line_len + next_line_len - next_lead_len + 1);
 		strcat(line->data, next_line->data + next_lead_len);
-
+#ifndef NANO_TINY
+		line->has_anchor |= next_line->has_anchor;
+#endif
 		unlink_node(next_line);
 		count--;
 	}
@@ -1728,8 +1761,6 @@ void do_justify(bool full_justify)
 	linestruct *jusline;
 		/* The line that we're justifying in the current cutbuffer. */
 #ifndef NANO_TINY
-	bool right_side_up = FALSE;
-		/* Whether the mark (if any) is before the cursor. */
 	bool before_eol = FALSE;
 		/* Whether the end of a marked region is before the end of its line. */
 	char *primary_lead = NULL;
@@ -1750,8 +1781,7 @@ void do_justify(bool full_justify)
 		size_t quot_len, fore_len, other_quot_len, other_white_len;
 		linestruct *sampleline;
 
-		get_region((const linestruct **)&startline, &start_x,
-					(const linestruct **)&endline, &end_x, &right_side_up);
+		get_region(&startline, &start_x, &endline, &end_x);
 
 		/* When the marked region is empty, do nothing. */
 		if (startline == endline && start_x == end_x) {
@@ -1939,6 +1969,8 @@ void do_justify(bool full_justify)
 
 #ifndef NANO_TINY
 	add_undo(PASTE, NULL);
+	if (full_justify && !openfile->mark && !cutbuffer->has_anchor)
+		openfile->current->has_anchor = FALSE;
 #endif
 	/* Do the equivalent of a paste of the justified text. */
 	ingraft_buffer(cutbuffer);
@@ -1946,7 +1978,7 @@ void do_justify(bool full_justify)
 	update_undo(PASTE);
 
 	/* After justifying a backward-marked text, swap mark and cursor. */
-	if (openfile->mark && !right_side_up) {
+	if (openfile->mark && !mark_is_before_cursor()) {
 		linestruct *bottom = openfile->current;
 		size_t bottom_x = openfile->current_x;
 
@@ -1991,6 +2023,7 @@ void do_justify_void(void)
 void do_full_justify(void)
 {
 	do_justify(TRUE);
+	ran_a_tool = TRUE;
 }
 #endif /* ENABLE_JUSTIFY */
 
@@ -2011,7 +2044,169 @@ void construct_argument_list(char ***arguments, char *command, char *filename)
 	(*arguments)[count - 2] = filename;
 	(*arguments)[count - 1] = NULL;
 }
+
+/* Open the specified file, and if that succeeds, remove the text of the marked
+ * region or of the entire buffer and read the file contents into its place. */
+bool replace_buffer(const char *filename, undo_type action, const char *operation)
+{
+	linestruct *was_cutbuffer = cutbuffer;
+	int descriptor;
+	FILE *stream;
+
+	descriptor = open_file(filename, FALSE, &stream);
+
+	if (descriptor < 0)
+		return FALSE;
+
+	cutbuffer = NULL;
+
+#ifndef NANO_TINY
+	add_undo(COUPLE_BEGIN, operation);
+
+	/* Cut either the marked region or the whole buffer. */
+	add_undo(action, NULL);
+	do_snip(openfile->mark != NULL, openfile->mark == NULL, FALSE);
+	update_undo(action);
+#else
+	do_snip(FALSE, TRUE, FALSE);
 #endif
+
+	/* Discard what was cut. */
+	free_lines(cutbuffer);
+	cutbuffer = was_cutbuffer;
+
+	/* Insert the spell-checked file into the cleared area. */
+	read_file(stream, descriptor, filename, TRUE);
+
+#ifndef NANO_TINY
+	add_undo(COUPLE_END, operation);
+#endif
+	return TRUE;
+}
+
+/* Execute the given program, with the given temp file as last argument. */
+void treat(char *tempfile_name, char *theprogram, bool spelling)
+{
+	ssize_t lineno_save = openfile->current->lineno;
+	size_t current_x_save = openfile->current_x;
+	size_t pww_save = openfile->placewewant;
+	bool was_at_eol = (openfile->current->data[openfile->current_x] == '\0');
+	struct stat fileinfo;
+	long timestamp_sec = 0;
+	long timestamp_nsec = 0;
+	static char **arguments = NULL;
+	pid_t thepid;
+	int program_status, errornumber;
+	bool replaced = FALSE;
+
+	/* Stat the temporary file.  If that succeeds and its size is zero,
+	 * there is nothing to do; otherwise, store its time of modification. */
+	if (stat(tempfile_name, &fileinfo) == 0) {
+		if (fileinfo.st_size == 0) {
+#ifndef NANO_TINY
+			if (spelling && openfile->mark)
+				statusline(ALERT, _("Selection is empty"));
+			else
+#endif
+				statusbar(_("Buffer is empty"));
+			return;
+		}
+
+		timestamp_sec = (long)fileinfo.st_mtim.tv_sec;
+		timestamp_nsec = (long)fileinfo.st_mtim.tv_nsec;
+	}
+
+	/* Exit from curses mode to give the program control of the terminal. */
+	endwin();
+
+	construct_argument_list(&arguments, theprogram, tempfile_name);
+
+	/* Fork a child process and run the given program in it. */
+	if ((thepid = fork()) == 0) {
+		execvp(arguments[0], arguments);
+
+		/* Terminate the child if the program is not found. */
+		exit(9);
+	} else if (thepid > 0) {
+		/* Block SIGWINCHes while waiting for the forked program to end,
+		 * so nano doesn't get pushed past the wait(). */
+		block_sigwinch(TRUE);
+		wait(&program_status);
+		block_sigwinch(FALSE);
+	}
+
+	errornumber = errno;
+
+	/* Restore the terminal state and reenter curses mode. */
+	terminal_init();
+	doupdate();
+
+	if (thepid < 0) {
+		statusline(ALERT, _("Could not fork: %s"), strerror(errornumber));
+		return;
+	} else if (!WIFEXITED(program_status) || WEXITSTATUS(program_status) > 2) {
+		statusline(ALERT, _("Error invoking '%s'"), arguments[0]);
+		return;
+	} else if (WEXITSTATUS(program_status) != 0)
+		statusline(ALERT, _("Program '%s' complained"), arguments[0]);
+
+	/* When the temporary file wasn't touched, say so and leave. */
+	if (timestamp_sec > 0 && stat(tempfile_name, &fileinfo) == 0 &&
+					(long)fileinfo.st_mtim.tv_sec == timestamp_sec &&
+					(long)fileinfo.st_mtim.tv_nsec == timestamp_nsec) {
+		statusbar(_("Nothing changed"));
+		return;
+	}
+
+#ifndef NANO_TINY
+	/* Replace the marked text (or entire text) with the corrected text. */
+	if (spelling && openfile->mark) {
+		ssize_t was_mark_lineno = openfile->mark->lineno;
+		bool upright = mark_is_before_cursor();
+
+		replaced = replace_buffer(tempfile_name, CUT, "spelling correction");
+
+		/* Adjust the end point of the marked region for any change in
+		 * length of the region's last line. */
+		if (upright)
+			current_x_save = openfile->current_x;
+		else
+			openfile->mark_x = openfile->current_x;
+
+		/* Restore the mark. */
+		openfile->mark = line_from_number(was_mark_lineno);
+	} else
+#endif
+	{
+		openfile->current = openfile->filetop;
+		openfile->current_x = 0;
+
+		replaced = replace_buffer(tempfile_name, CUT_TO_EOF,
+					/* TRANSLATORS: The next two go with Undid/Redid messages. */
+					(spelling ? N_("spelling correction") : N_("formatting")));
+	}
+
+	/* Go back to the old position. */
+	goto_line_posx(lineno_save, current_x_save);
+	if (was_at_eol || openfile->current_x > strlen(openfile->current->data))
+		openfile->current_x = strlen(openfile->current->data);
+
+	if (replaced) {
+#ifndef NANO_TINY
+		openfile->filetop->has_anchor = FALSE;
+		update_undo(COUPLE_END);
+#endif
+	}
+
+	openfile->placewewant = pww_save;
+	adjust_viewport(STATIONARY);
+
+	if (spelling)
+		statusbar(_("Finished checking spelling"));
+	else
+		statusbar(_("Buffer has been processed"));
+}
+#endif /* ENABLE_SPELLER || ENABLE_COLOR */
 
 #ifdef ENABLE_SPELLER
 /* Let the user edit the misspelled word.  Return FALSE if the user cancels. */
@@ -2030,7 +2225,7 @@ bool fix_spello(const char *word)
 #ifndef NANO_TINY
 	linestruct *top, *bot;
 	size_t top_x, bot_x;
-	bool right_side_up = FALSE;
+	bool right_side_up = (openfile->mark && mark_is_before_cursor());
 #endif
 
 	/* Save the current search string, then set it to the misspelled word. */
@@ -2040,8 +2235,7 @@ bool fix_spello(const char *word)
 #ifndef NANO_TINY
 	/* If the mark is on, start at the beginning of the marked region. */
 	if (openfile->mark) {
-		get_region((const linestruct **)&top, &top_x,
-					(const linestruct **)&bot, &bot_x, &right_side_up);
+		get_region(&top, &top_x, &bot, &bot_x);
 		/* If the region is marked normally, swap the end points, so that
 		 * (current, current_x) (where searching starts) is at the top. */
 		if (right_side_up) {
@@ -2064,7 +2258,7 @@ bool fix_spello(const char *word)
 	/* If the word isn't found, alert the user; if it is, allow correction. */
 	if (result == 0) {
 		statusline(ALERT, _("Unfindable word: %s"), word);
-		lastmessage = HUSH;
+		lastmessage = VACUUM;
 		proceed = TRUE;
 		napms(2800);
 	} else if (result == 1) {
@@ -2077,9 +2271,12 @@ bool fix_spello(const char *word)
 #endif
 		edit_refresh();
 
+		put_cursor_at_end_of_answer();
+
 		/* Let the user supply a correctly spelled alternative. */
-		proceed = (do_prompt(FALSE, FALSE, MSPELL, word, NULL,
-								edit_refresh, _("Edit a replacement")) != -1);
+		proceed = (do_prompt(MSPELL, word, NULL, edit_refresh,
+								/* TRANSLATORS: This is a prompt. */
+								_("Edit a replacement")) != -1);
 
 		spotlighted = FALSE;
 
@@ -2131,8 +2328,8 @@ bool fix_spello(const char *word)
 /* Run a spell-check on the given file, using 'spell' to produce a list of all
  * misspelled words, then feeding those through 'sort' and 'uniq' to obtain an
  * alphabetical list, which words are then offered one by one to the user for
- * correction.  Return NULL when okay, and the error string otherwise. */
-const char *do_int_speller(const char *tempfile_name)
+ * correction. */
+void do_int_speller(const char *tempfile_name)
 {
 	char *misspellings, *pointer, *oneword;
 	long pipesize;
@@ -2142,8 +2339,12 @@ const char *do_int_speller(const char *tempfile_name)
 	int spell_status, sort_status, uniq_status;
 
 	/* Create all three pipes up front. */
-	if (pipe(spell_fd) == -1 || pipe(sort_fd) == -1 || pipe(uniq_fd) == -1)
-		return _("Could not create pipe");
+	if (pipe(spell_fd) == -1 || pipe(sort_fd) == -1 || pipe(uniq_fd) == -1) {
+		statusline(ALERT, _("Could not create pipe: %s"), strerror(errno));
+		return;
+	}
+
+	statusbar(_("Invoking spell checker..."));
 
 	/* Fork a process to run spell in. */
 	if ((pid_spell = fork()) == 0) {
@@ -2219,16 +2420,18 @@ const char *do_int_speller(const char *tempfile_name)
 
 	/* When some child process was not forked successfully... */
 	if (pid_spell < 0 || pid_sort < 0 || pid_uniq < 0) {
+		statusline(ALERT, _("Could not fork: %s"), strerror(errno));
 		close(uniq_fd[0]);
-		return _("Could not fork");
+		return;
 	}
 
 	/* Get the system pipe buffer size. */
 	pipesize = fpathconf(uniq_fd[0], _PC_PIPE_BUF);
 
 	if (pipesize < 1) {
+		statusline(ALERT, _("Could not get size of pipe buffer"));
 		close(uniq_fd[0]);
-		return _("Could not get size of pipe buffer");
+		return;
 	}
 
 	/* Leave curses mode so that error messages go to the original screen. */
@@ -2294,168 +2497,13 @@ const char *do_int_speller(const char *tempfile_name)
 	waitpid(pid_uniq, &uniq_status, 0);
 
 	if (WIFEXITED(uniq_status) == 0 || WEXITSTATUS(uniq_status))
-		return _("Error invoking \"uniq\"");
-
-	if (WIFEXITED(sort_status) == 0 || WEXITSTATUS(sort_status))
-		return _("Error invoking \"sort\"");
-
-	if (WIFEXITED(spell_status) == 0 || WEXITSTATUS(spell_status))
-		return _("Error invoking \"spell\"");
-
-	/* When all went okay. */
-	statusbar(_("Finished checking spelling"));
-	return NULL;
-}
-
-/* Open the specified file, and if that succeeds, remove the text of the marked
- * region or of the entire buffer and read the file contents into its place. */
-bool replace_buffer(const char *filename, undo_type action, const char *operation)
-{
-	linestruct *was_cutbuffer = cutbuffer;
-	int descriptor;
-	FILE *stream;
-
-	descriptor = open_file(filename, FALSE, &stream);
-
-	if (descriptor < 0)
-		return FALSE;
-
-	cutbuffer = NULL;
-
-#ifndef NANO_TINY
-	add_undo(COUPLE_BEGIN, operation);
-
-	/* Cut either the marked region or the whole buffer. */
-	add_undo(action, NULL);
-#endif
-	do_snip(FALSE, openfile->mark, openfile->mark == NULL, FALSE);
-#ifndef NANO_TINY
-	update_undo(action);
-#endif
-
-	/* Discard what was cut. */
-	free_lines(cutbuffer);
-	cutbuffer = was_cutbuffer;
-
-	/* Insert the spell-checked file into the cleared area. */
-	read_file(stream, descriptor, filename, TRUE);
-
-#ifndef NANO_TINY
-	add_undo(COUPLE_END, operation);
-#endif
-	return TRUE;
-}
-
-/* Execute the given program, with the given temp file as last argument. */
-const char *treat(char *tempfile_name, char *theprogram, bool spelling)
-{
-	ssize_t lineno_save = openfile->current->lineno;
-	size_t current_x_save = openfile->current_x;
-	size_t pww_save = openfile->placewewant;
-	bool was_at_eol = (openfile->current->data[openfile->current_x] == '\0');
-	struct stat fileinfo;
-	long timestamp_sec, timestamp_nsec;
-	static char **arguments = NULL;
-	pid_t thepid;
-	int program_status;
-	bool replaced = FALSE;
-
-	/* Get the timestamp and the size of the temporary file. */
-	stat(tempfile_name, &fileinfo);
-	timestamp_sec = (long)fileinfo.st_mtim.tv_sec;
-	timestamp_nsec = (long)fileinfo.st_mtim.tv_nsec;
-
-	/* If the number of bytes to check is zero, get out. */
-	if (fileinfo.st_size == 0)
-		return NULL;
-
-	/* Exit from curses mode to give the program control of the terminal. */
-	endwin();
-
-	construct_argument_list(&arguments, theprogram, tempfile_name);
-
-	/* Fork a child process and run the given program in it. */
-	if ((thepid = fork()) == 0) {
-		execvp(arguments[0], arguments);
-
-		/* Terminate the child if the program is not found. */
-		exit(9);
-	} else if (thepid < 0)
-		return _("Could not fork");
-
-	/* Block SIGWINCHes while waiting for the program to end,
-	 * so nano doesn't get pushed past the wait(). */
-	block_sigwinch(TRUE);
-	wait(&program_status);
-	block_sigwinch(FALSE);
-
-	/* Restore the terminal state and reenter curses mode. */
-	terminal_init();
-	doupdate();
-
-	if (!WIFEXITED(program_status) || WEXITSTATUS(program_status) > 2) {
-		statusline(ALERT, _("Error invoking '%s'"), arguments[0]);
-		return NULL;
-	} else if (WEXITSTATUS(program_status) != 0)
-		statusline(ALERT, _("Program '%s' complained"), arguments[0]);
-
-	/* Stat the temporary file again. */
-	stat(tempfile_name, &fileinfo);
-
-	/* When the temporary file wasn't touched, say so and leave. */
-	if ((long)fileinfo.st_mtim.tv_sec == timestamp_sec &&
-				(long)fileinfo.st_mtim.tv_nsec == timestamp_nsec) {
-		statusbar(_("Nothing changed"));
-		return NULL;
-	}
-
-#ifndef NANO_TINY
-	/* Replace the marked text (or entire text) with the corrected text. */
-	if (spelling && openfile->mark) {
-		ssize_t was_mark_lineno = openfile->mark->lineno;
-		bool upright = mark_is_before_cursor();
-
-		replaced = replace_buffer(tempfile_name, CUT, "spelling correction");
-
-		/* Adjust the end point of the marked region for any change in
-		 * length of the region's last line. */
-		if (upright)
-			current_x_save = openfile->current_x;
-		else
-			openfile->mark_x = openfile->current_x;
-
-		/* Restore the mark. */
-		openfile->mark = line_from_number(was_mark_lineno);
-	} else
-#endif
-	{
-		openfile->current = openfile->filetop;
-		openfile->current_x = 0;
-
-		replaced = replace_buffer(tempfile_name, CUT_TO_EOF,
-					/* TRANSLATORS: The next two go with Undid/Redid messages. */
-					(spelling ? N_("spelling correction") : N_("formatting")));
-	}
-
-	/* Go back to the old position. */
-	goto_line_posx(lineno_save, current_x_save);
-	if (was_at_eol || openfile->current_x > strlen(openfile->current->data))
-		openfile->current_x = strlen(openfile->current->data);
-
-#ifndef NANO_TINY
-	if (replaced)
-		update_undo(COUPLE_END);
-#endif
-
-	openfile->placewewant = pww_save;
-	adjust_viewport(STATIONARY);
-
-	if (spelling)
-		statusbar(_("Finished checking spelling"));
+		statusline(ALERT, _("Error invoking \"uniq\""));
+	else if (WIFEXITED(sort_status) == 0 || WEXITSTATUS(sort_status))
+		statusline(ALERT, _("Error invoking \"sort\""));
+	else if (WIFEXITED(spell_status) == 0 || WEXITSTATUS(spell_status))
+		statusline(ALERT, _("Error invoking \"spell\""));
 	else
-		statusbar(_("Buffer has been processed"));
-
-	return NULL;
+		statusbar(_("Finished checking spelling"));
 }
 
 /* Spell check the current file.  If an alternate spell checker is
@@ -2465,8 +2513,9 @@ void do_spell(void)
 	FILE *stream;
 	char *temp_name;
 	unsigned stash[sizeof(flags) / sizeof(flags[0])];
-	const char *result_msg;
 	bool okay;
+
+	ran_a_tool = TRUE;
 
 	if (in_restricted_mode())
 		return;
@@ -2500,9 +2549,9 @@ void do_spell(void)
 	blank_bottombars();
 
 	if (alt_speller)
-		result_msg = treat(temp_name, alt_speller, TRUE);
+		treat(temp_name, alt_speller, TRUE);
 	else
-		result_msg = do_int_speller(temp_name);
+		do_int_speller(temp_name);
 
 	unlink(temp_name);
 	free(temp_name);
@@ -2513,14 +2562,6 @@ void do_spell(void)
 	/* Ensure the help lines will be redrawn and a selection is retained. */
 	currmenu = MMOST;
 	shift_held = TRUE;
-
-	if (result_msg != NULL) {
-		/* Avoid giving a failure reason of "Success". */
-		if (errno == 0)
-			statusline(ALERT, result_msg);
-		else
-			statusline(ALERT, _("%s: %s"), result_msg, strerror(errno));
-	}
 }
 #endif /* ENABLE_SPELLER */
 
@@ -2538,6 +2579,8 @@ void do_linter(void)
 	static char **lintargs = NULL;
 	lintstruct *lints = NULL, *tmplint = NULL, *curlint = NULL;
 	time_t last_wait = 0;
+
+	ran_a_tool = TRUE;
 
 	if (in_restricted_mode())
 		return;
@@ -2564,13 +2607,13 @@ void do_linter(void)
 
 	/* Create a pipe up front. */
 	if (pipe(lint_fd) == -1) {
-		statusline(ALERT, _("Could not create pipe"));
+		statusline(ALERT, _("Could not create pipe: %s"), strerror(errno));
 		return;
 	}
 
 	blank_bottombars();
 	currmenu = MLINTER;
-	statusbar(_("Invoking linter, please wait"));
+	statusbar(_("Invoking linter..."));
 
 	construct_argument_list(&lintargs, openfile->syntax->linter, openfile->filename);
 
@@ -2597,8 +2640,8 @@ void do_linter(void)
 
 	/* If the child process was not forked successfully... */
 	if (pid_lint < 0) {
+		statusline(ALERT, _("Could not fork: %s"), strerror(errno));
 		close(lint_fd[0]);
-		statusline(ALERT, _("Could not fork"));
 		return;
 	}
 
@@ -2606,8 +2649,8 @@ void do_linter(void)
 	pipesize = fpathconf(lint_fd[0], _PC_PIPE_BUF);
 
 	if (pipesize < 1) {
-		close(lint_fd[0]);
 		statusline(ALERT, _("Could not get size of pipe buffer"));
+		close(lint_fd[0]);
 		return;
 	}
 
@@ -2726,18 +2769,18 @@ void do_linter(void)
 		struct stat lintfileinfo;
 
 		if (stat(curlint->filename, &lintfileinfo) != -1 &&
-					(openfile->current_stat == NULL ||
-					openfile->current_stat->st_ino != lintfileinfo.st_ino)) {
+					(openfile->statinfo == NULL ||
+					openfile->statinfo->st_ino != lintfileinfo.st_ino)) {
 #ifdef ENABLE_MULTIBUFFER
 			const openfilestruct *started_at = openfile;
 
 			openfile = openfile->next;
-			while (openfile != started_at && (openfile->current_stat == NULL ||
-						openfile->current_stat->st_ino != lintfileinfo.st_ino))
+			while (openfile != started_at && (openfile->statinfo == NULL ||
+						openfile->statinfo->st_ino != lintfileinfo.st_ino))
 				openfile = openfile->next;
 
-			if (openfile->current_stat == NULL ||
-						openfile->current_stat->st_ino != lintfileinfo.st_ino) {
+			if (openfile->statinfo == NULL ||
+						openfile->statinfo->st_ino != lintfileinfo.st_ino) {
 				char *msg = charalloc(1024 + strlen(curlint->filename));
 				int choice;
 
@@ -2865,14 +2908,14 @@ void do_linter(void)
 	titlebar(NULL);
 }
 
-#ifdef ENABLE_SPELLER
 /* Run a manipulation program on the contents of the buffer. */
 void do_formatter(void)
 {
 	FILE *stream;
 	char *temp_name;
 	bool okay = FALSE;
-	const char *result_msg;
+
+	ran_a_tool = TRUE;
 
 	if (in_restricted_mode())
 		return;
@@ -2881,6 +2924,10 @@ void do_formatter(void)
 		statusbar(_("No formatter is defined for this type of file"));
 		return;
 	}
+
+#ifndef NANO_TINY
+	openfile->mark = NULL;
+#endif
 
 	temp_name = safe_tempfile(&stream);
 
@@ -2893,15 +2940,11 @@ void do_formatter(void)
 		return;
 	}
 
-	result_msg = treat(temp_name, openfile->syntax->formatter, FALSE);
-
-	if (result_msg != NULL)
-		statusline(ALERT, result_msg);
+	treat(temp_name, openfile->syntax->formatter, FALSE);
 
 	unlink(temp_name);
 	free(temp_name);
 }
-#endif /* ENABLE_SPELLER */
 #endif /* ENABLE_COLOR */
 
 #ifndef NANO_TINY
@@ -2911,43 +2954,44 @@ void do_wordlinechar_count(void)
 {
 	linestruct *was_current = openfile->current;
 	size_t was_x = openfile->current_x;
+	linestruct *topline, *botline;
+	size_t top_x, bot_x;
 	size_t words = 0, chars = 0;
 	ssize_t lines = 0;
-	linestruct *top, *bot;
-	size_t top_x, bot_x;
 
-	/* If the mark is on, partition the buffer so that it
-	 * contains only the marked text, and turn the mark off. */
+	/* Set the start and end point of the area to measure: either the marked
+	 * region or the whole buffer.  Then compute the number of characters. */
 	if (openfile->mark) {
-		get_region((const linestruct **)&top, &top_x,
-					(const linestruct **)&bot, &bot_x, NULL);
-		partition_buffer(top, top_x, bot, bot_x);
+		get_region(&topline, &top_x, &botline, &bot_x);
+
+		if (topline != botline)
+			chars = number_of_characters_in(topline->next, botline) + 1;
+
+		chars += mbstrlen(topline->data + top_x) - mbstrlen(botline->data + bot_x);
+	} else {
+		topline = openfile->filetop;
+		top_x = 0;
+		botline = openfile->filebot;
+		bot_x = strlen(botline->data);
+
+		chars = openfile->totsize;
 	}
 
-	/* Start at the top of the file. */
-	openfile->current = openfile->filetop;
-	openfile->current_x = 0;
+	/* Compute the number of lines. */
+	lines = botline->lineno - topline->lineno;
+	lines += (bot_x == 0 || (topline == botline && top_x == bot_x)) ? 0 : 1;
 
-	/* Keep moving to the next word (counting punctuation characters as
-	 * part of a word, as "wc -w" does), without updating the screen,
-	 * until we reach the end of the file, incrementing the total word
-	 * count whenever we're on a word just before moving. */
-	while (openfile->current != openfile->filebot ||
-					openfile->current->data[openfile->current_x] != '\0') {
+	openfile->current = topline;
+	openfile->current_x = top_x;
+
+	/* Keep stepping to the next word (considering punctuation as part of a
+	 * word, as "wc -w" does), until we reach the end of the relevant area,
+	 * incrementing the word count for each successful step. */
+	while (openfile->current->lineno < botline->lineno ||
+				(openfile->current == botline && openfile->current_x < bot_x)) {
 		if (do_next_word(FALSE, TRUE))
 			words++;
 	}
-
-	/* Get the number of lines, similar to what "wc -l" gives. */
-	lines = openfile->filebot->lineno - openfile->filetop->lineno +
-					((openfile->filebot->data[0] == '\0') ? 0 : 1);
-
-	/* Get the number of multibyte characters, similar to "wc -c". */
-	if (openfile->mark) {
-		chars = get_totsize(openfile->filetop, openfile->filebot);
-		unpartition_buffer();
-	} else
-		chars = openfile->totsize;
 
 	/* Restore where we were. */
 	openfile->current = was_current;
@@ -2962,8 +3006,8 @@ void do_wordlinechar_count(void)
 /* Get verbatim input. */
 void do_verbatim_input(void)
 {
+	size_t count = 1;
 	char *bytes;
-	size_t count;
 
 	/* TRANSLATORS: Shown when the next keystroke will be inserted verbatim. */
 	statusbar(_("Verbatim Input"));
@@ -2972,14 +3016,19 @@ void do_verbatim_input(void)
 	/* Read in the first one or two bytes of the next keystroke. */
 	bytes = get_verbatim_kbinput(edit, &count);
 
-	/* Unsuppress cursor-position display or blank the status bar. */
-	if (ISSET(CONSTANT_SHOW))
-		suppress_cursorpos = FALSE;
-	else
-		wipe_statusbar();
+	/* When something valid was obtained, unsuppress cursor-position display,
+	 * insert the bytes into the edit buffer, and blank the status bar. */
+	if (count > 0) {
+		if (ISSET(CONSTANT_SHOW))
+			lastmessage = VACUUM;
 
-	/* Insert the bytes into the edit buffer. */
-	inject(bytes, count);
+		if (count < 999)
+			inject(bytes, count);
+
+		wipe_statusbar();
+	} else
+		/* TRANSLATORS: An invalid verbatim Unicode code was typed. */
+		statusline(ALERT, _("Invalid code"));
 
 	free(bytes);
 }

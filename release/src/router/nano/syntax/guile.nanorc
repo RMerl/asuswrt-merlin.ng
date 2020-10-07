@@ -1,4 +1,4 @@
-## Here is an example for Guile Scheme.
+## Syntax highlighting for Guile Scheme.
 
 syntax guile "\.scm$"
 header "^#!.*guile"
@@ -18,7 +18,7 @@ color brightred "(#t|#f)\>"
 # Keywords
 color blue "#?:(\w|[?-])+"
 # Strings
-color yellow start="^[[:blank:]]+\"" end="[^\]\""
+color yellow start="^[[:blank:]]+"" end="[^\]""
 color yellow ""(\\.|[^"])*""
 # Comments
 color cyan "(^|[[:space:]]);.*"

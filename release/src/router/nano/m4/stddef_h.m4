@@ -1,5 +1,5 @@
 dnl A placeholder for <stddef.h>, for platforms that have issues.
-# stddef_h.m4 serial 6
+# stddef_h.m4 serial 7
 dnl Copyright (C) 2009-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -19,7 +19,7 @@ AC_DEFUN([gl_STDDEF_H],
        [AC_LANG_PROGRAM(
           [[#include <stddef.h>
             unsigned int s = sizeof (max_align_t);
-            #if defined __GNUC__ || defined __IBM__ALIGNOF__
+            #if defined __GNUC__ || defined __clang__ || defined __IBM__ALIGNOF__
             int check1[2 * (__alignof__ (double) <= __alignof__ (max_align_t)) - 1];
             int check2[2 * (__alignof__ (long double) <= __alignof__ (max_align_t)) - 1];
             #endif

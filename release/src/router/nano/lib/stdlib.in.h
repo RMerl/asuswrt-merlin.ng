@@ -101,10 +101,12 @@ struct random_data
 
 /* The __attribute__ feature is available in gcc versions 2.5 and later.
    The attribute __pure__ was added in gcc 2.96.  */
-#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96)
-# define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
-#else
-# define _GL_ATTRIBUTE_PURE /* empty */
+#ifndef _GL_ATTRIBUTE_PURE
+# if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 96) || defined __clang__
+#  define _GL_ATTRIBUTE_PURE __attribute__ ((__pure__))
+# else
+#  define _GL_ATTRIBUTE_PURE /* empty */
+# endif
 #endif
 
 /* The definition of _Noreturn is copied here.  */
@@ -213,6 +215,21 @@ _GL_WARN_ON_USE (canonicalize_file_name,
                  "canonicalize_file_name is unportable - "
                  "use gnulib module canonicalize-lgpl for portability");
 # endif
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef ecvt
+# define ecvt _ecvt
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef fcvt
+# define fcvt _fcvt
+#endif
+
+#if defined _WIN32 && !defined __CYGWIN__
+# undef gcvt
+# define gcvt _gcvt
 #endif
 
 #if @GNULIB_GETLOADAVG@
@@ -466,6 +483,11 @@ _GL_WARN_ON_USE (mkstemps, "mkstemps is unportable - "
 # endif
 #endif
 
+#if defined _WIN32 && !defined __CYGWIN__
+# undef mktemp
+# define mktemp _mktemp
+#endif
+
 #if @GNULIB_POSIX_OPENPT@
 /* Return an FD open to the master side of a pseudo-terminal.  Flags should
    include O_RDWR, and may also include O_NOCTTY.  */
@@ -544,10 +566,19 @@ _GL_WARN_ON_USE (ptsname_r, "ptsname_r is not portable - "
 #  endif
 _GL_FUNCDECL_RPL (putenv, int, (char *string) _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (putenv, int, (char *string));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef putenv
+#   define putenv _putenv
+#  endif
+_GL_CXXALIAS_MDA (putenv, int, (char *string));
 # else
 _GL_CXXALIAS_SYS (putenv, int, (char *string));
 # endif
 _GL_CXXALIASWARN (putenv);
+#elif defined _WIN32 && !defined __CYGWIN__
+# undef putenv
+# define putenv _putenv
 #endif
 
 #if @GNULIB_QSORT_R@

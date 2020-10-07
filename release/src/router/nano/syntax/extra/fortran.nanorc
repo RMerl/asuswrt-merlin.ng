@@ -1,6 +1,6 @@
-## Here is an example for Fortran 90/95.
+## Syntax highlighting for Fortran 90/95.
 
-syntax fortran "\.(f|f90|f95)$"
+syntax fortran "\.(f|for|f90|f95)$"
 comment "!"
 
 color red "\<[0-9]+\>"

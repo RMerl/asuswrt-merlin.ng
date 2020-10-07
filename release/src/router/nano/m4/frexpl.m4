@@ -1,4 +1,4 @@
-# frexpl.m4 serial 21
+# frexpl.m4 serial 22
 dnl Copyright (C) 2007-2020 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -150,6 +150,7 @@ extern
 "C"
 #endif
 long double frexpl (long double, int *);
+long double zero = 0.0L;
 int main()
 {
   int result = 0;
@@ -207,7 +208,8 @@ int main()
       }
   }
   /* Test on infinite numbers.  */
-  x = 1.0L / 0.0L;
+  /* The Microsoft MSVC 14 compiler chokes on the expression 1.0 / 0.0.  */
+  x = 1.0L / zero;
   {
     int exp;
     long double y = frexpl (x, &exp);

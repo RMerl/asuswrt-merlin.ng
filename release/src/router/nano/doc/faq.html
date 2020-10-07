@@ -41,12 +41,12 @@
 <h3><a href="#4">4. Running</a></h3>
 <blockquote><p>
   <a href="#4.1">4.1. How do I open a file with a name beginning with '+' from the command line?</a><br>
-  <a href="#4.2">4.2. Ack! My Backspace/Delete/Enter/Meta/double bucky key doesn't seem to work! What can I do?</a><br>
+  <a href="#4.2">4.2. How can I make Ctrl+Shift+Left/Right select words on urxvt?</a><br>
   <a href="#4.3">4.3. Ack! My numeric keypad's keys don't work properly when NumLock is off! What can I do?</a><br>
   <a href="#4.4">4.4. With what keystroke can I paste text from the clipboard into nano?</a><br>
   <a href="#4.5">4.5. How do I select text for or paste text from the clipboard when nano's mouse support is turned on?</a><br>
   <a href="#4.6">4.6. When I paste text into a document, each line gets indented further than the last. Why? And how can I stop this?</a><br>
-  <a href="#4.7">4.7. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?<a><br>
+  <a href="#4.7">4.7. When I paste from Windows into a remote nano, nano rewraps the lines. What gives?</a><br>
   <a href="#4.8">4.8. I've compiled nano with color support, but I don't see any color when I run it!</a><br>
   <a href="#4.9">4.9. How do I make nano my default editor (in Pine, mutt, etc.)?</a><br>
 </p></blockquote>
@@ -89,7 +89,7 @@
 <h3><a name="1.3"></a>1.3. Why the name change from TIP?</h3>
 <blockquote><p>On January 10, 2000, TIP was officially renamed to nano because of a namespace conflict with another program called 'tip'. The original 'tip' program &quot;establishes a full duplex terminal connection to a remote host&quot;, and was included with many older Unix systems (and newer ones like Solaris). The conflict was not noticed at first because there is no 'tip' utility included with most GNU/Linux distributions (where nano was developed).</p></blockquote>
 <h3><a name="1.4"></a>1.4. What is the current version of nano?</h3>
-<blockquote><p>The current version of nano <i>should</i> be <b>4.9.3</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
+<blockquote><p>The current version of nano <i>should</i> be <b>5.2</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
 <h3><a name="1.5"></a>1.5. I want to read the man page without having to download the program!</h3>
 <blockquote><p>Jeez, demanding, aren't we? Okay, look <a href="https://nano-editor.org/dist/latest/nano.1.html">here</a>.</p></blockquote>
 <hr width="100%">
@@ -182,10 +182,27 @@
   To open '+filename.txt' starting on line 1, column 20: <b>nano +,20 +filename.txt</b><br>
   To open '+filename.txt' starting on line 10, column 20: <b>nano +10,20 +filename.txt</b><br>
   To open '+filename.txt' starting on line 1 and 'filename.txt' starting on line 40: <b>nano +1 +filename.txt +40 filename.txt</b></p></blockquote>
-<h3><a name="4.2"></a>4.2. Ack! My Backspace/Delete/Enter/Meta/double bucky key doesn't seem to work! What can I do?</h3>
-<blockquote><p>Try setting your $TERM variable to 'vt100'. nano doesn't yet support every term entry under the sun.</p>
-  <p>Bourne shell users (bash and sh): <b>export TERM=vt100</b><br>
-  C Shell users (tcsh and csh): <b>setenv TERM vt100</b></p></blockquote>
+<h3><a name="4.2"></a>4.2. How can I make Ctrl+Shift+Left/Right select words on urxvt?</h3>
+<blockquote><p>The urxvt terminal emulator produces non-standard escape sequences for the modified cursor keys.  These deviant sequences are not listed in the terminfo database, which means that ncurses does not recognize them.  The easiest way around this is to tell urxvt to produce xterm-compatible escape sequences for the relevant keystrokes.  To achieve this, add the following lines to your ~/.Xresources file:</p>
+<pre>
+    URxvt.iso14755_52: False
+
+    URxvt.keysym.C-S-Up: \033[1;6A
+    URxvt.keysym.C-S-Down: \033[1;6B
+    URxvt.keysym.C-S-Right: \033[1;6C
+    URxvt.keysym.C-S-Left: \033[1;6D
+
+    URxvt.keysym.M-Up: \033[1;3A
+    URxvt.keysym.M-Down: \033[1;3B
+    URxvt.keysym.M-Right: \033[1;3C
+    URxvt.keysym.M-Left: \033[1;3D
+
+    URxvt.keysym.M-Insert: \033[2;3~
+    URxvt.keysym.M-Delete: \033[3;3~
+
+    URxvt.keysym.M-Page_Up: \033[5;3~
+    URxvt.keysym.M-Page_Down: \033[6;3~</pre>
+<p>Then run <b>xrdb ~/.Xresources</b> and restart your urxvt terminal.  Now <b>Ctrl+Shift+Left</b> and <b>Ctrl+Shift+Right</b> will select words, <b>Alt+Up</b> and <b>Alt+Down</b> will scroll the text without moving the cursor, and several such things more.</p></blockquote>
 <h3><a name="4.3"></a>4.3. Ack! My numeric keypad's keys don't work properly when NumLock is off! What can I do?</h3>
 <blockquote><p>You can use the <b>-K</b> or <b>--rawsequences</b> option on the command line, or add the line <b>set rawsequences</b> to your .nanorc. However, nano's mouse support will be disabled if you do any of these things.</p></blockquote>
 <h3><a name="4.4"></a>4.4. With what keystroke can I paste text from the clipboard into nano?</h3>

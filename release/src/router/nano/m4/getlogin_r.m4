@@ -1,4 +1,4 @@
-#serial 12
+#serial 13
 
 # Copyright (C) 2005-2007, 2009-2020 Free Software Foundation, Inc.
 #
@@ -30,7 +30,7 @@ AC_DEFUN([gl_FUNC_GETLOGIN_R],
     HAVE_GETLOGIN_R=0
   else
     HAVE_GETLOGIN_R=1
-    dnl On Mac OS X 10.12 and OSF/1 5.1, getlogin_r returns a truncated result
+    dnl On Mac OS X 10.13 and OSF/1 5.1, getlogin_r returns a truncated result
     dnl if the buffer is not large enough.
     AC_REQUIRE([AC_CANONICAL_HOST])
     AC_CACHE_CHECK([whether getlogin_r works with small buffers],

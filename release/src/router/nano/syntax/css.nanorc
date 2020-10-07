@@ -1,11 +1,20 @@
-## Here is an example for CSS files.
+## Syntax highlighting for CSS files.
 
 syntax css "\.css$"
 comment "/*|*/"
 
+# First make everything red:
 color brightred     "."
+# Then everything between braces yellow:
 color brightyellow  start="\{" end="\}"
-color brightwhite   start=":" end="([;^\{]|$)"
-color brightblue    ":active|:focus|:hover|:link|:visited|:link|:after|:before|$"
-color brightblue    start="\/\*" end="\\*/"
+# Then everything after a colon white:
+color brightwhite   start=":" end="([;^{]|$)"
+
+# Pseudo-classes:
+color brightcyan   ":(active|checked|focus|hover|link|visited|after|before)\>"
+
+# Comments:
+color brightblue    start="/\*" end="\*/"
+
+# Syntactic characters:
 color green         ";|:|\{|\}"

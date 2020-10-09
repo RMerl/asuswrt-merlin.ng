@@ -5710,10 +5710,10 @@ lz4-stage:
 	$(MAKE) -C lz4 install DESTDIR=$(STAGEDIR) PREFIX=/usr LIBDIR=/usr/lib
 
 lz4-install:
-	install -D lz4/lib/liblz4.so.1.8.3 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.8.3
-	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.8.3
-	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so.1
-	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.8.3 liblz4.so
+	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
+	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so.1
+	cd $(INSTALLDIR)/lz4/usr/lib && ln -sf liblz4.so.1.9.2 liblz4.so
 
 openpam: openpam/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD) && $(MAKE) $@-stage
